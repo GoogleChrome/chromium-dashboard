@@ -83,17 +83,9 @@ export function shouldShowDisplayNameField(feStages, stageType) {
   // The display name field is only available to a feature's stages
   // that have more than 1 of the same stage type associated.
   // It is used to differentiate those stages.
-  let matchingStageCount = 0;
-  for (let i = 0; i < feStages.length; i++) {
-    if (feStages[i].stage_type === stageType) {
-      matchingStageCount++;
-      // If we find two of the same stage type, then display the display name field.
-      if (matchingStageCount > 1) {
-        return true;
-      }
-    }
-  }
-  return false;
+  const stagesGroupedByType = Object.groupBy(feStages, ({stage_type}) => stage_type);
+  const stagesOfType = stagesGroupedByType[stageType];
+  return !!(stagesOfType && stagesOfType.length > 1);
 }
 
 /* Given a process stage, find the first feature entry stage of the same type. */
@@ -130,13 +122,11 @@ export function unambiguousStageName(
 
   // Count the stages of the same type that appear before this one. This is O(n^2) when it's used to
   // number every stage, but the total number of stages is generally <20.
-  const index = feature.stages
-    .filter(s => s.stage_type === stage.stage_type)
-    .findIndex(s => s.id === stage.id);
+  const stagesOfThisType = Object.groupBy(feature.stages, (s: StageDict) => s.stage_type)[stage.stage_type] || [];
+  const index = stagesOfThisType.findIndex(s => s.id === stage.id);
   if (index > 0) {
     return `${processStageName} ${index + 1}`;
   }
-  // Ignore if the stage wasn't found.
   return processStageName;
 }
 
@@ -586,61 +576,75 @@ interface FeatureUpdateInfo {
 
 // Prepare feature/stage changes to be submitted.
 export function formatFeatureChanges(
-  fieldValues,
-  featureId,
+  fieldValues: FieldInfo[],
+  featureId: number,
   formStageId?: number
 ): UpdateSubmitBody {
   let hasChanges = false;
-  const featureChanges = {id: featureId};
-  // Multiple stages can be mutated, so this object is a stage of stages.
-  const stages = {};
-  // When editing an individual stage, always provide stage ID so that
-  // active_stage_id can be set by the server.
-  if (formStageId) {
-    stages[formStageId] = {id: formStageId};
-  }
-  for (const {name, touched, value, stageId, implicitValue} of fieldValues) {
-    // Only submit changes for touched fields or accuracy verification updates.
+  const featureChanges: FeatureUpdateInfo = {id: featureId};
+
+  const directFeatureChanges: { name: string; value: any }[] = [];
+  const pendingStageChanges: {
+    stageId: number;
+    originalName: string;
+    value: any;
+  }[] = [];
+
+  for (const field of fieldValues) {
+    const {name, touched, value, stageId, implicitValue} = field;
     if (!touched) {
       continue;
     }
-
-    // Arrays should be submitted as comma-separated strings.
-    let formattedValue = value;
-    if (Array.isArray(formattedValue)) {
-      formattedValue = formattedValue.join(',');
-    }
-
-    // If an explicit value is present, the field value should be truthy.
-    // Otherwise, we ignore the change.
-    // For example, if this is a checkbox to set the active stage, it would need
-    // to be set to true (value), then the active stage would be set to a stage ID (implicitValue).
-    if (implicitValue !== undefined) {
-      // Falsey value with an implicit value should be ignored (like an unchecked checkbox).
-      if (!formattedValue) {
-        continue;
-      }
-      // fields with implicit values are always changes to feature entities.
-      featureChanges[name] = implicitValue;
-    } else if (!stageId) {
-      // If the field doesn't specify a stage ID, that means this change is for a feature field.
-      featureChanges[name] = formattedValue;
-    } else {
-      if (!(stageId in stages)) {
-        stages[stageId] = {id: stageId};
-      }
-      stages[stageId][STAGE_FIELD_NAME_MAPPING[name] || name] = {
-        form_field_name: name,
-        value: formattedValue,
-      };
-    }
-    // If we see a touched field, it means there are changes in the submission.
     hasChanges = true;
+
+    const formattedValue = Array.isArray(value) ? value.join(',') : value;
+
+    if (implicitValue !== undefined) {
+      if (formattedValue) {
+        directFeatureChanges.push({name, value: implicitValue});
+      }
+    } else if (!stageId) {
+      directFeatureChanges.push({name, value: formattedValue});
+    } else {
+      pendingStageChanges.push({
+        stageId,
+        originalName: name,
+        value: formattedValue,
+      });
+    }
+  }
+
+  for (const change of directFeatureChanges) {
+    featureChanges[change.name] = change.value;
+  }
+
+  const stagesUpdateObject: Record<number, StageUpdateInfo> = {};
+  // When editing an individual stage, always provide stage ID so that
+  // active_stage_id can be set by the server.
+  if (formStageId) {
+    stagesUpdateObject[formStageId] = {id: formStageId};
+  }
+
+  if (pendingStageChanges.length > 0) {
+    const groupedByStageId = Object.groupBy(pendingStageChanges, ({stageId}) => stageId);
+
+    for (const [sIdStr, changesForStage] of Object.entries(groupedByStageId)) {
+      const sId = Number(sIdStr);
+      if (!stagesUpdateObject[sId]) {
+        stagesUpdateObject[sId] = {id: sId};
+      }
+      for (const change of changesForStage) {
+        stagesUpdateObject[sId][STAGE_FIELD_NAME_MAPPING[change.originalName] || change.originalName] = {
+          form_field_name: change.originalName,
+          value: change.value,
+        };
+      }
+    }
   }
 
   return {
     feature_changes: featureChanges,
-    stages: Object.values(stages),
+    stages: Object.values(stagesUpdateObject),
     has_changes: hasChanges,
   };
 }
