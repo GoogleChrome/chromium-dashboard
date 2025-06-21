@@ -93,14 +93,7 @@ export class ChromedashFeatureTable extends LitElement {
     window.csClient
       .getPendingGates()
       .then(res => {
-        const gatesByFID: Record<number, GateDict[]> = {};
-        for (const g of res.gates) {
-          if (!gatesByFID.hasOwnProperty(g.feature_id)) {
-            gatesByFID[g.feature_id] = [];
-          }
-          gatesByFID[g.feature_id].push(g);
-        }
-        this.gates = gatesByFID;
+        this.gates = Object.groupBy(res.gates, ({feature_id}) => feature_id) as Record<number, GateDict[]>;
       })
       .catch(() => {
         showToastMessage(
