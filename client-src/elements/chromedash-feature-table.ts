@@ -93,7 +93,10 @@ export class ChromedashFeatureTable extends LitElement {
     window.csClient
       .getPendingGates()
       .then(res => {
-        this.gates = Object.groupBy(res.gates, ({feature_id}) => feature_id) as Record<number, GateDict[]>;
+        this.gates = Object.groupBy(
+          res.gates,
+          ({feature_id}) => feature_id
+        ) as Record<number, GateDict[]>;
       })
       .catch(() => {
         showToastMessage(
