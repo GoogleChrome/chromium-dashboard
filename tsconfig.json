@@ -21,7 +21,7 @@
       "outDir": "build",
       "emitDeclarationOnly": false,
       "incremental": true,
-      "lib": ["ES2023", "DOM"],
+      "lib": ["es2024", "DOM"],
       "experimentalDecorators": true,
       "useDefineForClassFields": false,
       "target": "ES2022",
