@@ -150,6 +150,11 @@ export class ChromedashHeader extends LitElement {
   @state()
   loading = false;
 
+  private _redirectToCurrentPage(): void {
+    const url = window.location.href.split('?')[0];
+    window.location.href = url;
+  }
+
   connectedCallback() {
     super.connectedCallback();
 
@@ -244,8 +249,7 @@ export class ChromedashHeader extends LitElement {
         })
         .then(() => {
           setTimeout(() => {
-            const url = window.location.href.split('?')[0];
-            window.location.href = url;
+            this._redirectToCurrentPage();
           }, 1000);
         })
         .catch(error => {
@@ -263,14 +267,13 @@ export class ChromedashHeader extends LitElement {
       this.insertAdjacentElement('afterbegin', signInTestingButton); // for MPA
     }
   }
-
+  
   handleCredentialResponse(credentialResponse) {
     window.csClient
       .signIn(credentialResponse)
       .then(() => {
         setTimeout(() => {
-          const url = window.location.href.split('?')[0];
-          window.location = url as string & Location;
+          this._redirectToCurrentPage();
         }, 1000);
       })
       .catch(() => {
@@ -372,7 +375,7 @@ export class ChromedashHeader extends LitElement {
         <aside>
           <a href="/roadmap" target="_top">
             <h1>
-              <img src="/static/img/chrome_logo.svg" />
+              <img src="/static/img/chrome_logo.svg" alt=""/>
               ${this.appTitle}
             </h1>
           </a>
