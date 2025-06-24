@@ -151,11 +151,11 @@ export class ChromedashHeader extends LitElement {
   loading = false;
 
   /**
- * Redirects the user to the current page without query parameters.
- * This is typically used after login or logout to refresh the page state.
- *
- * Removes any query string from the current URL and reloads the page.
- */
+   * Redirects the user to the current page without query parameters.
+   * This is typically used after login or logout to refresh the page state.
+   *
+   * Removes any query string from the current URL and reloads the page.
+   */
   private _redirectToCurrentPage(): void {
     const url = window.location.href.split('?')[0];
     window.location.href = url;
@@ -273,7 +273,7 @@ export class ChromedashHeader extends LitElement {
       this.insertAdjacentElement('afterbegin', signInTestingButton); // for MPA
     }
   }
-  
+
   handleCredentialResponse(credentialResponse) {
     window.csClient
       .signIn(credentialResponse)
