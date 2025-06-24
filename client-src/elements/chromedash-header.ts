@@ -150,6 +150,17 @@ export class ChromedashHeader extends LitElement {
   @state()
   loading = false;
 
+  /**
+   * Redirects the user to the current page without query parameters.
+   * This is typically used after login or logout to refresh the page state.
+   *
+   * Removes any query string from the current URL and reloads the page.
+   */
+  private _redirectToCurrentPage(): void {
+    const url = window.location.href.split('?')[0];
+    window.location.href = url;
+  }
+
   connectedCallback() {
     super.connectedCallback();
 
@@ -244,8 +255,7 @@ export class ChromedashHeader extends LitElement {
         })
         .then(() => {
           setTimeout(() => {
-            const url = window.location.href.split('?')[0];
-            window.location.href = url;
+            this._redirectToCurrentPage();
           }, 1000);
         })
         .catch(error => {
@@ -269,8 +279,7 @@ export class ChromedashHeader extends LitElement {
       .signIn(credentialResponse)
       .then(() => {
         setTimeout(() => {
-          const url = window.location.href.split('?')[0];
-          window.location = url as string & Location;
+          this._redirectToCurrentPage();
         }, 1000);
       })
       .catch(() => {
