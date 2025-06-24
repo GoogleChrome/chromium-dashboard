@@ -706,7 +706,14 @@ export class ChromeStatusClient {
   }
 
   // Security Reviews API
-  async createSecurityLaunchIssue(body) {
+  async createSecurityLaunchIssue(featureId, gateId, continuityId) {
+    const body = {
+      feature_id: this.featureId,
+      gate_id: this.gateId,
+    };
+    if (continuityId) {
+      body.continuity_id = continuityId;
+    }
     return this.doPost('/security-reviews/create-launch-issue', body);
   }
 

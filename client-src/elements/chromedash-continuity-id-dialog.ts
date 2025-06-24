@@ -73,17 +73,12 @@ export class ChromedashIdVerificationDialog extends LitElement {
           max-width: 720px;
           width: 90vw;
         }
-        sl-dialog::part(body) {
-          padding: var(--sl-spacing-large);
-        }
 
         p {
-          color: var(--sl-color-neutral-700);
           line-height: 1.6;
-          margin: 0 0 var(--sl-spacing-x-large) 0;
+          margin: 0 0 20px 0;
         }
         p a {
-          color: var(--sl-color-primary-600);
           text-decoration: none;
           font-weight: 500;
         }
@@ -93,9 +88,9 @@ export class ChromedashIdVerificationDialog extends LitElement {
 
         .controls {
           display: flex;
-          gap: var(--sl-spacing-small);
+          gap: 16px;
           align-items: anchor-center;
-          margin-bottom: var(--sl-spacing-x-small);
+          margin-bottom: 4px;
         }
         sl-input {
           flex-grow: 1;
@@ -106,10 +101,10 @@ export class ChromedashIdVerificationDialog extends LitElement {
           min-height: 1.2rem;
         }
         .success-message::part(form-control-help-text) {
-          color: var(--sl-color-success-700);
+          color: var(--md-green-600);
         }
         .error-message::part(form-control-help-text) {
-          color: var(--sl-color-danger-700);
+          color: var(--md-red-600);
         }
 
         .footer-actions {
@@ -117,9 +112,9 @@ export class ChromedashIdVerificationDialog extends LitElement {
           justify-content: space-between;
           align-items: center;
           width: 100%;
-          border-top: 1px solid var(--sl-color-neutral-200);
-          padding-top: var(--sl-spacing-medium);
-          margin-top: var(--sl-spacing-x-large);
+          border-top: 1px solid var(--md-gray-300);
+          padding-top: 12px;
+          margin-top: 24px;
         }
       `,
     ];
@@ -155,16 +150,16 @@ export class ChromedashIdVerificationDialog extends LitElement {
     }
     this._verificationState = 'loading';
     this._verificationMessage = 'Verifying...';
-    const body: {feature_id: number; gate_id: number; continuity_id?: number} =
-      {
-        feature_id: this.featureId,
-        gate_id: this.gateId,
-      };
+    let continuityId: number | null = null;
     if (usingContinuityId) {
-      body.continuity_id = parseInt(this._idValue);
+      continuityId = parseInt(this._idValue);
     }
     try {
-      const resp = await window.csClient.createSecurityLaunchIssue(body);
+      const resp = await window.csClient.createSecurityLaunchIssue(
+        this.featureId,
+        this.gateId,
+        continuityId,
+      );
       if (resp.failed_reason) {
         this._verificationState = 'error';
         this._verificationMessage = resp.failed_reason;
@@ -221,14 +216,14 @@ export class ChromedashIdVerificationDialog extends LitElement {
           library="material"
           slot="suffix"
           name="check_circle_outline"
-          style="color: var(--sl-color-success-500);"
+          style="color: var(--md-green-600);"
         ></sl-icon>`;
       case 'error':
         return html`<sl-icon
           library="material"
           slot="suffix"
           name="highlight_off"
-          style="color: var(--sl-color-danger-500);"
+          style="color: var(--md-red-600);"
         ></sl-icon>`;
       default:
         return html``;
@@ -303,6 +298,7 @@ export class ChromedashIdVerificationDialog extends LitElement {
             class="no-id-btn"
             variant="default"
             @click=${this._handleSubmitClickNoContinuityId}
+            ?disabled=${this._canCheck}
           >
             I don't have a Continuity ID
           </sl-button>
