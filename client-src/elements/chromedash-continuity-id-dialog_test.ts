@@ -160,10 +160,11 @@ describe('chromedash-continuity-id-dialog', () => {
 
     // Check that the API was called without a continuity_id.
     assert.isTrue(
-      csClient.createSecurityLaunchIssue.calledWith({
-        feature_id: component.featureId,
-        gate_id: component.gateId,
-      })
+      csClient.createSecurityLaunchIssue.calledWith(
+        component.featureId,
+        component.gateId,
+        null
+      )
     );
 
     assert.equal(component._verificationState, 'success');
@@ -200,7 +201,7 @@ describe('chromedash-continuity-id-dialog', () => {
     );
     assert.exists(icon);
     expect(icon!.getAttribute('style')).to.contain(
-      'color: var(--sl-color-success-500)'
+      'color: var(--md-green-600)'
     );
 
     // Error state
@@ -208,9 +209,7 @@ describe('chromedash-continuity-id-dialog', () => {
     await component.updateComplete;
     icon = component.shadowRoot!.querySelector('sl-icon[name="highlight_off"]');
     assert.exists(icon);
-    expect(icon!.getAttribute('style')).to.contain(
-      'color: var(--sl-color-danger-500)'
-    );
+    expect(icon!.getAttribute('style')).to.contain('color: var(--md-red-600)');
   });
 
   describe('openIdVerificationDialog', () => {

@@ -158,7 +158,7 @@ export class ChromedashIdVerificationDialog extends LitElement {
       const resp = await window.csClient.createSecurityLaunchIssue(
         this.featureId,
         this.gateId,
-        continuityId,
+        continuityId
       );
       if (resp.failed_reason) {
         this._verificationState = 'error';
