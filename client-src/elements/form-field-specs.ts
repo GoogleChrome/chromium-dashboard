@@ -1119,7 +1119,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     help_text: html` See
       <a
         target="_blank"
-        href="https://www.chromium.org/blink/launching-features/wide-review/ "
+        href="https://www.chromium.org/blink/launching-features/wide-review/"
       >
         chromium.org/blink/launching-features/wide-review
       </a>`,
