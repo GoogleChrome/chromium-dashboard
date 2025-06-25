@@ -1085,8 +1085,8 @@ export const ALL_FIELDS: Record<string, Field> = {
     initial: VENDOR_VIEWS_COMMON.NO_PUBLIC_SIGNALS[0],
     label: 'Safari views',
     help_text: html` See
-      <a target="_blank" href="https://bit.ly/blink-signals">
-        https://bit.ly/blink-signals</a
+      <a target="_blank" href="https://www.chromium.org/blink/launching-features/wide-review/ ">
+        chromium.org/blink/launching-features/wide-review </a
       >`,
   },
 
@@ -1114,8 +1114,8 @@ export const ALL_FIELDS: Record<string, Field> = {
     initial: VENDOR_VIEWS_GECKO.NO_PUBLIC_SIGNALS[0],
     label: 'Firefox views',
     help_text: html` See
-      <a target="_blank" href="https://bit.ly/blink-signals">
-        https://bit.ly/blink-signals</a
+      <a target="_blank" href="https://www.chromium.org/blink/launching-features/wide-review/ ">
+        chromium.org/blink/launching-features/wide-review </a
       >`,
   },
 
