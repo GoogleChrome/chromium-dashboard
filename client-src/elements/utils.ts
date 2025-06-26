@@ -363,6 +363,17 @@ export function setupScrollToHash(pageElement) {
   }
 }
 
+/**
+ * Redirects the user to the current page without query parameters.
+ * This is typically used after login or logout to refresh the page state.
+ *
+ * Removes any query string from the current URL and reloads the page.
+ */
+export function redirectToCurrentPage(): void {
+  const url = window.location.href.split('?')[0];
+  window.location.href = url;
+}
+
 /* Returns a html template if the condition is true, otherwise returns an empty html */
 export function renderHTMLIf(condition, originalHTML) {
   return condition ? originalHTML : nothing;

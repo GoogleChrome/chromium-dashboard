@@ -1,5 +1,5 @@
 import {LitElement, html, css, nothing} from 'lit';
-import {showToastMessage, IS_MOBILE} from './utils';
+import {showToastMessage, IS_MOBILE, redirectToCurrentPage} from './utils';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {customElement, property, state} from 'lit/decorators.js';
 import {User} from '../js-src/cs-client';
@@ -150,17 +150,6 @@ export class ChromedashHeader extends LitElement {
   @state()
   loading = false;
 
-  /**
-   * Redirects the user to the current page without query parameters.
-   * This is typically used after login or logout to refresh the page state.
-   *
-   * Removes any query string from the current URL and reloads the page.
-   */
-  private _redirectToCurrentPage(): void {
-    const url = window.location.href.split('?')[0];
-    window.location.href = url;
-  }
-
   connectedCallback() {
     super.connectedCallback();
 
@@ -255,7 +244,7 @@ export class ChromedashHeader extends LitElement {
         })
         .then(() => {
           setTimeout(() => {
-            this._redirectToCurrentPage();
+            redirectToCurrentPage();
           }, 1000);
         })
         .catch(error => {
@@ -279,7 +268,7 @@ export class ChromedashHeader extends LitElement {
       .signIn(credentialResponse)
       .then(() => {
         setTimeout(() => {
-          this._redirectToCurrentPage();
+          redirectToCurrentPage();
         }, 1000);
       })
       .catch(() => {
