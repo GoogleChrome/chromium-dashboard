@@ -139,6 +139,7 @@ class ChromedashFeatureRow extends LitElement {
     return GATE_ACTIVE_REVIEW_STATES.includes(gate.state);
   }
 
+  // TODO: Consider using Object.groupBy() here to group gates by stage_id first.
   getActiveStages(feature) {
     const featureGates: GateDict[] = this.gates[feature.id] || [];
     const activeGates = featureGates.filter(g => this.isActiveGate(g));
