@@ -29,3 +29,10 @@ updates:
     commit-message:
       # Prefix all commit messages with "gh-actions"
       prefix: "gh-actions"
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      # Prefix all commit messages with "pip"
+      prefix: "pip"
