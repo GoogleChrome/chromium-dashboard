@@ -13,7 +13,7 @@ google-api-python-client==2.47.0
 # See https://github.com/GoogleCloudPlatform/cloud-debug-python/issues/33
 
 google-cloud-tasks==2.7.0
-google-cloud-ndb==1.11.1
+google-cloud-ndb==2.3.4
 google-cloud-logging==3.6.0
 google-cloud-secret-manager==2.16.2
 google-cloud-storage==2.1.0
