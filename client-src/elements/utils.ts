@@ -160,9 +160,11 @@ function calcMaxMilestone(feStage, fieldName) {
   }
   let maxMilestone = getStageValue(feStage, fieldName) || 0;
   for (const extension of feStage.extensions) {
-    const extensionValue = getStageValue(extension, fieldName);
-    if (extensionValue) {
-      maxMilestone = Math.max(maxMilestone, extensionValue);
+    for (const otMilestoneField of Object.values(OT_MILESTONE_END_FIELDS)) {
+      const extensionValue = getStageValue(extension, otMilestoneField);
+      if (extensionValue) {
+        maxMilestone = Math.max(maxMilestone, extensionValue);
+      }
     }
   }
   // Save the findings with the "max_" prefix as a prop of the stage for reference.
@@ -170,7 +172,7 @@ function calcMaxMilestone(feStage, fieldName) {
 }
 
 // Get the milestone value that is displayed to the user regarding the origin trial end date.
-function getMilestoneExtensionValue(feStage, fieldName) {
+function _getMilestoneExtensionValue(feStage, fieldName) {
   if (!feStage) return undefined;
   const milestoneValue = getStageValue(feStage, fieldName);
   calcMaxMilestone(feStage, fieldName);
@@ -230,7 +232,7 @@ export function getFieldValueFromFeature(
       return value.map(platformId => PLATFORMS_DISPLAYNAME[platformId]);
     } else if (fieldName in OT_MILESTONE_END_FIELDS) {
       // If an origin trial end date is being displayed, handle extension milestones as well.
-      return getMilestoneExtensionValue(feStage, fieldName);
+      return _getMilestoneExtensionValue(feStage, fieldName);
     }
     return value;
   }
