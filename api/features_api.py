@@ -188,6 +188,8 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
       changed_fields: CHANGED_FIELDS_LIST_TYPE
     ) -> list[Stage]:
     """Update stage fields with changes provided in the PATCH request."""
+    # TODO(DanielRyanSmith): This method should be updated to use the logic
+    # for basehandlers.update_stage(). This logic is mostly duplicated otherwise.
     stages_to_store: list[Stage] = []
     for change_info in stage_changes_list:
       stage_was_updated = False
@@ -223,6 +225,12 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
         form_field_name = change_info[field]['form_field_name']
         old_value = getattr(milestones, field)
         new_value = change_info[field]['value']
+        # If this is the rollout milestone, also save it to the old field.
+        # TODO(DanielRyanSmith): Remove this double-storage once the
+        # rollout_milestone field is deprecated.
+        if form_field_name == 'rollout_milestone':
+          self.update_field_value(stage, 'rollout_milestone', 'int', new_value)
+
         self.update_field_value(milestones, field, field_type, new_value)
         changed_fields.append((form_field_name, old_value, new_value))
         stage_was_updated = True
