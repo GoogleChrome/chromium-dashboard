@@ -7,7 +7,7 @@
   {%- endfor -%}
 {%- endif -%}
 
-{%- if feature.explainer_links or feature.feature_type_int != 2 -%}
+{% if feature.explainer_links or (feature.feature_type_int != 1 and feature.feature_type_int != 2) %}
 <br>
 <br>
 <div><b>Explainer</b></div>
