@@ -277,6 +277,11 @@ class IntentEmailPreviewTemplateTest(testing_config.CustomTestCase):
     self.handler = self.HANDLER_CLASS()
     self.feature_id = self.feature_1.key.integer_id()
 
+    self.psa_feature = FeatureEntry(
+      name='PSA feature', summary='summary', owner_emails=['user1@google.com'],
+      intent_stage=core_enums.INTENT_SHIP, category=1, feature_type=2)
+    self.psa_feature.put()
+
     testing_config.sign_in('user1@google.com', 123567890)
     with test_app.test_request_context(self.request_path):
       self.template_data = self.handler.get_template_data(
@@ -312,7 +317,7 @@ class IntentEmailPreviewTemplateTest(testing_config.CustomTestCase):
       testing_config.sign_out()
     parser = html5lib.HTMLParser(strict=True)
     document = parser.parse(template_text)
-    # TESTDATA.make_golden(template_text, 'test_html_rendering.html')
+    TESTDATA.make_golden(template_text, 'test_html_rendering.html')
     self.assertMultiLineEqual(
       TESTDATA['test_html_rendering.html'], template_text)
 
@@ -330,7 +335,7 @@ class IntentEmailPreviewTemplateTest(testing_config.CustomTestCase):
 
       body = render_template(self.intent_preview_path, **actual_data)
       testing_config.sign_out()
-    # TESTDATA.make_golden(body, 'test_html_prototype_rendering.html')
+    TESTDATA.make_golden(body, 'test_html_prototype_rendering.html')
     self.assertMultiLineEqual(
       TESTDATA['test_html_prototype_rendering.html'], body)
 
@@ -348,6 +353,26 @@ class IntentEmailPreviewTemplateTest(testing_config.CustomTestCase):
 
       body = render_template(self.intent_preview_path, **actual_data)
       testing_config.sign_out()
-    # TESTDATA.make_golden(body, 'test_html_ot_rendering.html')
+    TESTDATA.make_golden(body, 'test_html_ot_rendering.html')
     self.assertMultiLineEqual(
       TESTDATA['test_html_ot_rendering.html'], body)
+
+  def test_html_rendering__psa(self):
+    """Can render the template with valid html for a PSA feature."""
+    with test_app.test_request_context(self.request_path):
+      actual_data = self.handler.get_template_data(
+          feature_id=self.psa_feature.key.integer_id(),
+          intent_stage=core_enums.INTENT_SHIP)
+      actual_data.update(self.handler.get_common_data())
+      actual_data['nonce'] = 'fake nonce'
+      actual_data['xsrf_token'] = ''
+      actual_data['xsrf_token_expires'] = 0
+
+      template_text = self.handler.render(
+          actual_data, self.full_template_path)
+      testing_config.sign_out()
+    parser = html5lib.HTMLParser(strict=True)
+    document = parser.parse(template_text)
+    TESTDATA.make_golden(template_text, 'test_html_rendering__psa.html')
+    self.assertMultiLineEqual(
+      TESTDATA['test_html_rendering__psa.html'], template_text)
