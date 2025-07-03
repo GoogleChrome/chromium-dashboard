@@ -136,12 +136,12 @@ export class ChromedashSurveyQuestions extends LitElement {
         <sl-textarea
           name="${name}"
           size="small"
-          rows=2
+          rows="2"
           value=${value}
           ?disabled=${!this.canEditSurvey()}
           @sl-change=${e => this.handleFieldChange(name, e.target?.value)}
           @keyup=${e => this.handleFieldKeyup(name, e.target?.value)}
-        ></sl-input>
+        ></sl-textarea>
       </li>
     `;
   }
