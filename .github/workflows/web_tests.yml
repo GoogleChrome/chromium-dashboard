@@ -2,9 +2,6 @@ name: Continuous Integration Web Tests
 env:
  CLOUDSDK_PYTHON: python3.12
 on:
-  push:
-    branches:
-      - main
   pull_request:
   merge_group:
 
