@@ -370,7 +370,11 @@ export class ChromedashHeader extends LitElement {
         <aside>
           <a href="/roadmap" target="_top">
             <h1>
-              <img src="/static/img/chrome_logo.svg" alt="Chrome logo" />
+              <img
+                src="/static/img/chrome_logo.svg"
+                alt=""
+                role="presentation"
+              />
               ${this.appTitle}
             </h1>
           </a>
