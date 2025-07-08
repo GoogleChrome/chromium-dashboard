@@ -2,10 +2,9 @@ name: Continuous Integration
 env:
  CLOUDSDK_PYTHON: python3.12
 on:
-  push:
-    branches:
-      - main
   pull_request:
+  merge_group:
+
 jobs:
   python_tests:
     runs-on: ubuntu-latest
