@@ -644,7 +644,7 @@ export class ChromedashFeaturePage extends LitElement {
             <span>
               Your feature hasn't been verified as accurate since&nbsp;
               <sl-relative-time
-                date=${this.feature.accurate_as_of}
+                date=${this.feature.accurate_as_of ?? ''}
               ></sl-relative-time
               >, but it is scheduled to ship&nbsp;
               <sl-relative-time
@@ -666,7 +666,7 @@ export class ChromedashFeaturePage extends LitElement {
             <span>
               This feature hasn't been verified as accurate since&nbsp;
               <sl-relative-time
-                date=${this.feature.accurate_as_of}
+                date=${this.feature.accurate_as_of ?? ''}
               ></sl-relative-time
               >, but it is scheduled to ship&nbsp;
               <sl-relative-time
@@ -693,7 +693,7 @@ export class ChromedashFeaturePage extends LitElement {
             <span>
               Your feature hasn't been verified as accurate since&nbsp;
               <sl-relative-time
-                date=${this.feature.accurate_as_of}
+                date=${this.feature.accurate_as_of ?? ''}
               ></sl-relative-time
               >, but it claims to have shipped&nbsp;
               <sl-relative-time
@@ -719,7 +719,7 @@ export class ChromedashFeaturePage extends LitElement {
             <span>
               This feature hasn't been verified as accurate since&nbsp;
               <sl-relative-time
-                date=${this.feature.accurate_as_of}
+                date=${this.feature.accurate_as_of ?? ''}
               ></sl-relative-time
               >, but it claims to have shipped&nbsp;
               <sl-relative-time
