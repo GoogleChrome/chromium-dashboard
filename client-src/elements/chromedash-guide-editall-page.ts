@@ -286,7 +286,7 @@ export class ChromedashGuideEditallPage extends LitElement {
         <chromedash-form-field
           name=${field}
           index=${index}
-          stageId=${ifDefined(stageId)}
+          stageId=${stageId ?? 0}
           value=${value}
           disabledReason="${getDisabledHelpText(field, feStage)}"
           .fieldValues=${this.fieldValues}
