@@ -641,6 +641,10 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
   def test_process_query__negated_single_field(self):
     """We can run single-field queries."""
 
+    q: ndb.Query = Gate.query(Gate.requested_on <> None) #@@@
+    gates = q.fetch()
+    print(gates)
+
     actual, tc = search.process_query('-category="Web Components"')
     self.assertEqual(1, len(actual))
     self.assertEqual(actual[0]['name'], 'feature 2')

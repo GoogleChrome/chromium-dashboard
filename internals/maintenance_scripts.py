@@ -121,44 +121,6 @@ class WriteMissingGates(FlaskHandler):
     return f'{len(gates_to_write)} missing gates created for stages.'
 
 
-class MigrateGeckoViews(FlaskHandler):
-
-  MAPPING = {
-      GECKO_IMPORTANT: PUBLIC_SUPPORT,
-      GECKO_WORTH_PROTOTYPING: PUBLIC_SUPPORT,
-      GECKO_NONHARMFUL: NEUTRAL,
-      GECKO_HARMFUL: OPPOSED,
-      }
-
-  def update_ff_views(self, fe) -> bool:
-    """Update ff_views and return True if update was needed."""
-    if fe.ff_views in self.MAPPING:
-      fe.ff_views = self.MAPPING[fe.ff_views]
-      return True
-
-    return False
-
-  def get_template_data(self, **kwargs) -> str:
-    """Change gecko views from old options to a more common list."""
-    self.require_cron_header()
-
-    features: ndb.Query = FeatureEntry.query(
-        FeatureEntry.ff_views != NO_PUBLIC_SIGNALS)
-    count = 0
-    batch = []
-    BATCH_SIZE = 100
-    for fe in features:
-      if self.update_ff_views(fe):
-        batch.append(fe)
-        count += 1
-        if len(batch) > BATCH_SIZE:
-          ndb.put_multi(batch)
-          batch = []
-
-    ndb.put_multi(batch)
-    return f'{count} FeatureEntry entities updated.'
-
-
 class BackfillRespondedOn(FlaskHandler):
 
   def update_responded_on(self, gate) -> bool:
@@ -192,12 +154,12 @@ class BackfillRespondedOn(FlaskHandler):
   def get_template_data(self, **kwargs) -> str:
     """Backfill responded_on dates for existing gates."""
     self.require_cron_header()
-    gates: ndb.Query = Gate.query(Gate.requested_on != None)
+    gates: ndb.Query = Gate.query()
     count = 0
     batch = []
     BATCH_SIZE = 100
     for g in gates:
-      if g.responded_on:
+      if g.responded_on or g.requested_on:
         continue
       if self.update_responded_on(g):
         batch.append(g)
@@ -903,7 +865,7 @@ class GenerateReviewActivityFile(FlaskHandler):
       'na (verified)': SkyhookDashStatus.FYI,
       'no_response': SkyhookDashStatus.PENDING_REVIEW,
   }
-  
+
   def _get_skyhook_status(self, review_status: str | None) -> str:
     if review_status is None:
       logging.warning('Event changed review status to null value.')
@@ -912,7 +874,7 @@ class GenerateReviewActivityFile(FlaskHandler):
       logging.warning(f'No status mapping found for status {review_status}.')
       return ''
     return self.VOTE_VALUE_MAPPING[review_status].value
-  
+
   def _generate_new_activities(
     self,
     start_timestamp: datetime,

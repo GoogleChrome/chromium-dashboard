@@ -87,7 +87,8 @@ def build_filter(
     elif operator == '>':
       return field > val
     elif operator == '!=':
-      return field != val
+      # NDB 2.3.4 seems to have lost support for !=.
+      return ndb.OR(field < val, field > val)
     else:
       raise ValueError('Unexpected query operator: %r' % operator)
 
