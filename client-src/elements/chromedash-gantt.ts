@@ -139,6 +139,7 @@ export class ChromedashGantt extends LitElement {
 
   // Get lists of all dev trial, origin trial, and shipping stages
   // associated with the feature.
+  // TODO: Consider using Object.groupBy() here to group stages by type (dev_trial, origin_trial, shipping).
   getByStageType() {
     const dtStages: StageDict[] = [];
     const otStages: StageDict[] = [];
