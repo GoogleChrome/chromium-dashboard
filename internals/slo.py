@@ -37,9 +37,13 @@ def weekdays_between(start: datetime.datetime, end: datetime.datetime) -> int:
   if calendar_days > MAX_DAYS:
     return calendar_days * 5 // 7
 
+  # Work-around for https://github.com/googleapis/proto-plus-python/issues/543
+  start = datetime.datetime.combine(start.date(), start.time(), start.tzinfo)
   d_ptz = start.astimezone(PACIFIC_TZ)
   # The day of the request does not count.
   d_ptz = d_ptz.replace(hour=23, minute=59, second=59)
+  # Work-around for https://github.com/googleapis/proto-plus-python/issues/543
+  end = datetime.datetime.combine(end.date(), end.time(), end.tzinfo)
   end_ptz = end.astimezone(tz=PACIFIC_TZ)
   weekday_counter = 0
   while d_ptz < end_ptz and weekday_counter < MAX_DAYS:
