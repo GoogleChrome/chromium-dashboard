@@ -56,7 +56,7 @@ def get_chromium_file(url: str) -> str:
     return  b64decode(conn.read()).decode('utf-8')
 
 
-def get_chromium_files_for_validation(uc_type: BlinkHistogramID | None) -> dict:
+def get_chromium_files_for_validation(uc_type: BlinkHistogramID | None) -> dict[str, str]:
   """Get all chromium file contents stored in a dictionary"""
   chromium_files = {}  # Chromium source file contents.
   files_to_fetch = []
@@ -89,7 +89,7 @@ def _get_use_counter_type(uc: str | None) -> BlinkHistogramID | None:
 
 
 def find_use_counter_value(
-    body: dict, chromium_files_dict: dict) -> int | None:
+    body: dict, chromium_files_dict: dict[str, str]) -> int | None:
   """Find where the use counter is defined and return its value."""
   # Chromium file checks can be bypassed, but only in non-prod environments.
   if (not settings.PROD and body['ot_creation__bypass_file_checks'] and
@@ -98,7 +98,7 @@ def find_use_counter_value(
   use_counter_name = (body['ot_webfeature_use_counter']['value']
                       if body['ot_webfeature_use_counter'] else None)
   uc_type = _get_use_counter_type(use_counter_name)
-  if not uc_type:
+  if not uc_type or not use_counter_name:
     return None
 
   match: re.Match | None = None
@@ -107,15 +107,15 @@ def find_use_counter_value(
   # Defaults for WebFeature use counter.
   if uc_type == BlinkHistogramID.web_feature:
     expression = f'(?<={use_counter_name} = )[0-9]+'
-    file = chromium_files_dict['webfeature_file']
+    file = chromium_files_dict.get('webfeature_file', '')
   if uc_type == BlinkHistogramID.webdx_feature:
     # Remove "WebDXFeature::" prefix.
     expression = f'(?<={use_counter_name[14:]} = )[0-9]+'
-    file = chromium_files_dict['webdxfeature_file']
+    file = chromium_files_dict.get('webdxfeature_file', '')
   if uc_type == BlinkHistogramID.css_property_id:
     # Remove "CSSSampleId::" prefix.
     expression = f'(?<={use_counter_name[13:]} = )[0-9]+'
-    file = chromium_files_dict['css_property_id_file']
+    file = chromium_files_dict.get('css_property_id_file', '')
   match = re.search(expression, file)
   if match:
     return int(match.group(0))

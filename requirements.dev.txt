@@ -7,7 +7,7 @@ coverage==7.9.2
 gunicorn==23.0.0
 
 # Mypy and dependencies
-mypy==1.4.1
+mypy==1.17.0
 types-protobuf
 types-redis
 types-requests
