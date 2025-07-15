@@ -357,6 +357,7 @@ class ExternalReviewsAPITest(testing_config.CustomTestCase):
     with test_app.test_request_context('/api/v0/features/create', json=initial_fields):
       response = FeaturesAPI().do_post()
     # A new feature ID should be returned.
+    assert isinstance(response, dict)
     self.assertIsInstance(response['feature_id'], int)
     # New feature should exist.
     new_feature = FeatureEntry.get_by_id(response['feature_id'])
@@ -386,6 +387,7 @@ class ExternalReviewsAPITest(testing_config.CustomTestCase):
 
     with test_app.test_request_context(f'/api/v0/features/{feature_id}', json=update):
       response = FeaturesAPI().do_patch()
+    assert isinstance(response, dict)
     self.assertEqual(f'Feature {feature_id} updated.', response['message'])
 
     return new_feature

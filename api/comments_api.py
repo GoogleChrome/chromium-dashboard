@@ -62,7 +62,7 @@ class CommentsAPI(basehandlers.APIHandler):
    and add their own, if allowed."""
 
   def _should_show_comment(
-      self, comment: Activity, email: str, is_admin: bool) -> bool:
+      self, comment: Activity, email: str | None, is_admin: bool) -> bool:
     """Check whether a comment should be visible to the user."""
     return comment.deleted_by is None or email == comment.deleted_by or is_admin
 
