@@ -25,6 +25,7 @@ HISTORY:-
 - It is largely a SPA (single-page application) with routing done via `page.js` (see [visionmedia/page.js: Micro client-side router inspired by the Express router](http://github.copm/visionmedia/page.js)), configured in `setUpRoutes` of `chromedash-app.js`.
 - It communicates with the server via code in `cs-client.js`.
 - We use [Shoelace widgets](https://shoelace.style).
+- Our supported browser set is the recent versions of Chrome, Safari, and Firefox, as well as other standards-compliant browsers.  Please test on these browsers because our users use them.
 
 
 ### Main site page rendering
