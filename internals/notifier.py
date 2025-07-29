@@ -27,7 +27,7 @@ from api import converters
 from framework import permissions
 from google.cloud import ndb  # type: ignore
 
-from flask import escape
+from markupsafe import escape
 from flask import render_template
 
 from framework import basehandlers
@@ -692,7 +692,7 @@ class OTCreationApprovedHandler(basehandlers.FlaskHandler):
     contacts = feature['owner_emails'] or []
     if len(contacts) == 0:
       return {'message': 'No contacts available for this feature'}
-    
+
     send_emails([self.build_email(feature, contacts)])
     return {'message': 'OK'}
 
