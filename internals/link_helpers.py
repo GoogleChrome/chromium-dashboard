@@ -83,7 +83,7 @@ TIMEOUT = 30  # We wait at most 30 seconds for each web page request.
 
 def valid_url(url):
   try:
-    return validators.url(url, public=True)
+    return validators.url(url)
   except:
     return False
 
