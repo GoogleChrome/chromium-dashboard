@@ -1,6 +1,7 @@
-import SlTextarea from '@shoelace-style/shoelace/dist/components/textarea/textarea.js';
+import {SlTextarea} from '@shoelace-style/shoelace';
 import {customElement, property} from 'lit/decorators.js';
 
+// @ts-expect-error
 @customElement('chromedash-textarea')
 export class ChromedashTextarea extends SlTextarea {
   @property({type: Boolean})
