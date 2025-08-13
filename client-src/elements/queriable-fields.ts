@@ -51,6 +51,11 @@ export const QUERIABLE_FIELDS: QueryField[] = [
     kind: TEXT_KIND,
     doc: 'Search tags for finding feature entries',
   },
+  {
+    name: 'web_feature_id',
+    kind: TEXT_KIND,
+    doc: 'String ID of a related WebDX feature',
+  },
   {name: 'owner', kind: EMAIL_KIND, doc: 'One of the feature owners'},
   //  'intent_to_implement_url': Feature.intent_to_implement_url,
   //  'intent_to_ship_url': Feature.intent_to_ship_url,

@@ -268,8 +268,9 @@ QUERIABLE_FIELDS: dict[str, Property] = {
 
     'browsers.chrome.blink_component': FeatureEntry.blink_components,
     'star_count': FeatureEntry.star_count,
-    'tag': FeatureEntry.search_tags,
+    'tags': FeatureEntry.search_tags,
     'feature_notes': FeatureEntry.feature_notes,
+    'web_feature_id': FeatureEntry.web_feature,
 
     'browsers.chrome.bug': FeatureEntry.bug_url,
     'launch_bug_url': FeatureEntry.launch_bug_url,

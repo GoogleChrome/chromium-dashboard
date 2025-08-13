@@ -227,8 +227,7 @@ def process_query_term(
   val_list = parse_query_value_list(vals_str, context)
   # Use exact match rather than word match on non-string fields.
   if op_str == ':':
-    if (core_enums.is_enum_field(field_name.lower()) or
-        val_list and not isinstance(val_list[0], str)):
+    if field_name.lower() not in search_fulltext.FULLTEXT_FIELDS:
       op_str = '='
   if is_negation:
     op_str = search_queries.negate_operator(op_str)
