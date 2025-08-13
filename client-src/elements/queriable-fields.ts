@@ -47,7 +47,7 @@ export const QUERIABLE_FIELDS: QueryField[] = [
   //  'motivation': Feature.motivation,
   //  'star_count': Feature.star_count,
   {
-    name: 'tags',
+    name: 'tag',
     kind: TEXT_KIND,
     doc: 'Search tags for finding feature entries',
   },
