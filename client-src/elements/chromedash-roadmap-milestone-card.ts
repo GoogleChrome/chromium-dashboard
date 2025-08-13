@@ -132,7 +132,7 @@ export class ChromedashRoadmapMilestoneCard extends LitElement {
     if (diff.days < 1) {
       return 'coming soon';
     }
-    return html` <sl-relative-time date="${date.toISOString()}">
+    return html`<sl-relative-time class="no-squeeze" date="${date.toISOString()}">
     </sl-relative-time>`;
   }
 
