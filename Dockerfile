@@ -14,7 +14,7 @@ USER appuser
 ENV NVM_DIR=/home/appuser/.nvm \
     # Need the full major.minor.patch version for NODE_VERISON
     # https://nodejs.org/en/download/releases
-    NODE_VERSION=18.17.1
+    NODE_VERSION=20.19.2
 
 RUN mkdir /home/appuser/.nvm && \
     curl https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.4/install.sh | bash \
