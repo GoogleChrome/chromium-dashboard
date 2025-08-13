@@ -364,7 +364,7 @@ export async function createNewFeature(page) {
 
   // Wait until we are on the Feature page.
   await page.waitForURL('**/feature/*');
-  await delay(1500);
+  await delay(2500);
 }
 
 export async function gotoNewFeatureList(page) {
