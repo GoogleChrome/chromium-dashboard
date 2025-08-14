@@ -428,6 +428,8 @@ class SLOOverdueHandler(basehandlers.FlaskHandler):
       gate_id = gate.key.integer_id()
       appr_def = approval_defs.APPROVAL_FIELDS_BY_ID[gate.gate_type]
       fe = relevant_features[gate.feature_id]
+      if fe.deleted:
+        continue
       feature_id = fe.key.integer_id()
       gate_url = settings.SITE_URL + f'feature/{feature_id}?gate={gate_id}'
       if is_initial_response:

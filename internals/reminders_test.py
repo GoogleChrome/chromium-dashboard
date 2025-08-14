@@ -689,6 +689,19 @@ class SLOOverdueHandlerTest(testing_config.CustomTestCase):
     self.assert_equal_ignoring_ids(
       TESTDATA['test_build_gate_email_tasks__initial_due.html'], task['html'])
 
+  def test_build_gate_email_tasks__no_deleted(self):
+    """We don't send reminders for gates on deleted features."""
+    self.gate_1.assignee_emails = [
+        'b_assignee@example.com', 'a_assignee@example.com']
+    self.feature_1.deleted = True
+    with test_app.app_context():
+      actual = self.handler.build_gate_email_tasks(
+        [self.gate_1],
+        {self.feature_1.key.integer_id(): self.feature_1},
+        False, True)
+
+    self.assertEqual([], actual)
+
   def test_build_gate_email_tasks__initial_overdue(self):
     """Check the email sent when an initial respose is overdue."""
     self.gate_1.assignee_emails = [
