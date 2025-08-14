@@ -738,7 +738,6 @@ export class ChromedashFeaturePage extends LitElement {
     return html`
       <chromedash-feature-detail
         appTitle=${this.appTitle}
-        .loading=${this.loading}
         .user=${this.user}
         ?canEdit=${this.userCanEdit()}
         .feature=${this.feature}
@@ -754,8 +753,6 @@ export class ChromedashFeaturePage extends LitElement {
   }
 
   render() {
-    // TODO: create another element - chromedash-feature-highlights
-    // for all the content of the <div id="feature"> part of the page
     // If loading, only render the skeletons.
     if (this.loading) {
       return this.renderSkeletons();

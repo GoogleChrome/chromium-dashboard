@@ -252,6 +252,10 @@ export const SHARED_STYLES = [
     margin: 0 -3px;  // Mitigate spacing from unknown cause.
   }
 
+  sl-relative-time.no-squeeze {
+    margin: 0 0;
+  }
+
   @media only screen and (max-width: 700px) {
     h1 {
       font-size: 24px;

@@ -365,6 +365,7 @@ export async function createNewFeature(page) {
   // Wait until we are on the Feature page.
   await page.waitForURL('**/feature/*');
   await delay(1500);
+  await page.locator('chromedash-feature-detail');
 }
 
 export async function gotoNewFeatureList(page) {

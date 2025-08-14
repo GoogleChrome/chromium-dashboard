@@ -8,12 +8,12 @@ jobs:
     name: 'Playwright Tests'
     runs-on: ubuntu-latest
     steps:
-        - uses: actions/checkout@v4
+        - uses: actions/checkout@v5
 
         # Steps for Playwright testing with container
         - uses: actions/setup-node@v4
           with:
-            node-version: 18
+            node-version: 20
         - name: Run your tests
           timeout-minutes: 30
           run: npm run pwtests-shutdown; npm run pwtests
