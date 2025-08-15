@@ -14,8 +14,9 @@ type Item = {
 };
 
 const WEB_FEATURE_ID_RE = new RegExp('^[a-z0-9]+(-[a-z0-9]+)*$');
-const CHROMESTATUS_URL_RE = new RegExp('https://(wwww.)?chromestatus.com/feature/(?<id>[0-9]+)');
-
+const CHROMESTATUS_URL_RE = new RegExp(
+  'https://(wwww.)?chromestatus.com/feature/(?<id>[0-9]+)'
+);
 
 @customElement('chromedash-bulk-edit-page')
 export class ChromedashBulkEditPage extends LitElement {
@@ -27,12 +28,12 @@ export class ChromedashBulkEditPage extends LitElement {
         section {
           margin: var(--content-padding);
         }
-      .diff.old {
-      background: #fcc;
-      }
-      .diff.new {
-      background: #cfc;
-      }
+        .diff.old {
+          background: #fcc;
+        }
+        .diff.new {
+          background: #cfc;
+        }
       `,
     ];
   }
@@ -64,34 +65,35 @@ export class ChromedashBulkEditPage extends LitElement {
   }
 
   isFeatureIdHeader(header: string, index: number) {
-    const headerOk = (
+    const headerOk =
       header === 'feature id' ||
       header === 'web-features' ||
-        (header.includes('feature') && !header.includes('chrome'))
-    );
-    const firstValueOk = (
-      this.cells.length > 1 &&
-        this.cells[1][index].match(WEB_FEATURE_ID_RE));
+      (header.includes('feature') && !header.includes('chrome'));
+    const firstValueOk =
+      this.cells.length > 1 && this.cells[1][index].match(WEB_FEATURE_ID_RE);
     return headerOk && firstValueOk;
   }
 
   isChromestatusURL(header: string, index: number) {
-    const headerOk = (
-        header.includes('chromestatus') ||
-          (header.includes('chrome') && header.includes('status'))
-    );
-    const firstValueOk = (
+    const headerOk =
+      header.includes('chromestatus') ||
+      (header.includes('chrome') && header.includes('status'));
+    const firstValueOk =
       this.cells.length > 1 &&
-        this.parseChromestatusIdFromURL(this.cells[1][index]));
+      this.parseChromestatusIdFromURL(this.cells[1][index]);
     return headerOk && firstValueOk;
   }
 
-
   detectColumns() {
-    const headerCells: string[] = this.cells[0].map(
-      header => header.toLowerCase());
-    this.featureIdIndex = headerCells.findIndex(this.isFeatureIdHeader.bind(this));
-    this.chromestatusUrlIndex = headerCells.findIndex(this.isChromestatusURL.bind(this));
+    const headerCells: string[] = this.cells[0].map(header =>
+      header.toLowerCase()
+    );
+    this.featureIdIndex = headerCells.findIndex(
+      this.isFeatureIdHeader.bind(this)
+    );
+    this.chromestatusUrlIndex = headerCells.findIndex(
+      this.isChromestatusURL.bind(this)
+    );
   }
 
   selectItems() {
@@ -120,8 +122,8 @@ export class ChromedashBulkEditPage extends LitElement {
     return window.csClient.getFeature(item.csFid).then(fe => {
       item.entryName = fe.name;
       item.existing = fe.web_feature;
-      this.requestUpdate();  // Render page to show progress.
-    })
+      this.requestUpdate(); // Render page to show progress.
+    });
   }
 
   getFileAndParse() {
@@ -214,16 +216,18 @@ export class ChromedashBulkEditPage extends LitElement {
   }
 
   renderItemRow(item: Item) {
-    const different = (item.existing != 'Loading...' &&
-      item.existing != item.desired);
+    const different =
+      item.existing != 'Loading...' && item.existing != item.desired;
     const differentClass = different ? 'diff' : '';
     return html`
       <tr>
         <td style="text-align: right; width: 4em">${item.row}</td>
-        <td><a href="/feature/${item.csFid}" target="_blank">${item.entryName || item.csFid}</a></td>
-        <td class="${differentClass} old"
-        >${item.existing || 'Not set'}
+        <td>
+          <a href="/feature/${item.csFid}" target="_blank"
+            >${item.entryName || item.csFid}</a
+          >
         </td>
+        <td class="${differentClass} old">${item.existing || 'Not set'}</td>
         <td>${different ? html`&larr;` : '=='}</td>
         <td class="${differentClass} new">${item.desired}</td>
       </tr>
