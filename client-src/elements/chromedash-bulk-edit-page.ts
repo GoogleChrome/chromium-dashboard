@@ -7,10 +7,15 @@ import {parse} from 'csv-parse/browser/esm/sync';
 
 type Item = {
   row: number;
+  entryName?: string;
   csFid: number;
-  existing: string;
+  existing?: string;
   desired: string;
 };
+
+const WEB_FEATURE_ID_RE = new RegExp('^[a-z0-9]+(-[a-z0-9]+)*$');
+const CHROMESTATUS_URL_RE = new RegExp('https://(wwww.)?chromestatus.com/feature/(?<id>[0-9]+)');
+
 
 @customElement('chromedash-bulk-edit-page')
 export class ChromedashBulkEditPage extends LitElement {
@@ -22,6 +27,12 @@ export class ChromedashBulkEditPage extends LitElement {
         section {
           margin: var(--content-padding);
         }
+      .diff.old {
+      background: #fcc;
+      }
+      .diff.new {
+      background: #cfc;
+      }
       `,
     ];
   }
@@ -33,39 +44,84 @@ export class ChromedashBulkEditPage extends LitElement {
   cells: string[][] = [];
 
   @state()
+  featureIdIndex: number = -1;
+
+  @state()
+  chromestatusUrlIndex: number = -1;
+
+  @state()
   items: Item[] = [];
 
   @state()
   submitting = false;
 
   parseChromestatusIdFromURL(url: string): number {
-    const parts = url.split('/');
-    const idStr = parts[parts.length - 1];
-    return Number(idStr);
+    const match = url.match(CHROMESTATUS_URL_RE);
+    if (match) {
+      return Number(match.groups?.id);
+    }
+    return 0;
+  }
+
+  isFeatureIdHeader(header: string, index: number) {
+    const headerOk = (
+      header === 'feature id' ||
+      header === 'web-features' ||
+        (header.includes('feature') && !header.includes('chrome'))
+    );
+    const firstValueOk = (
+      this.cells.length > 1 &&
+        this.cells[1][index].match(WEB_FEATURE_ID_RE));
+    return headerOk && firstValueOk;
+  }
+
+  isChromestatusURL(header: string, index: number) {
+    const headerOk = (
+        header.includes('chromestatus') ||
+          (header.includes('chrome') && header.includes('status'))
+    );
+    const firstValueOk = (
+      this.cells.length > 1 &&
+        this.parseChromestatusIdFromURL(this.cells[1][index]));
+    return headerOk && firstValueOk;
+  }
+
+
+  detectColumns() {
+    const headerCells: string[] = this.cells[0].map(
+      header => header.toLowerCase());
+    this.featureIdIndex = headerCells.findIndex(this.isFeatureIdHeader.bind(this));
+    this.chromestatusUrlIndex = headerCells.findIndex(this.isChromestatusURL.bind(this));
   }
 
   selectItems() {
-    const headerCells: string[] = this.cells[0];
-    const featureIdIndex: number = headerCells.indexOf('Feature ID');
-    const chromestatusUrlIndex: number = headerCells.indexOf(
-      'Chrome Status Entry'
-    );
     this.items = [];
+    if (this.featureIdIndex === -1 || this.chromestatusUrlIndex === -1) {
+      return;
+    }
     for (let i = 1; i < this.cells.length; i++) {
       const row = this.cells[i];
-      const webFeatureId: string = row[featureIdIndex];
-      const csUrl = row[chromestatusUrlIndex];
+      const webFeatureId: string = row[this.featureIdIndex];
+      const csUrl = row[this.chromestatusUrlIndex];
       const csFid: number = this.parseChromestatusIdFromURL(csUrl);
       if (csFid > 0) {
         const item: Item = {
           row: i + 1,
           csFid: csFid,
-          existing: 'loading...',
+          existing: 'Loading...',
           desired: webFeatureId,
         };
         this.items.push(item);
       }
     }
+  }
+
+  fetchFeature(item: Item): Promise<void> {
+    return window.csClient.getFeature(item.csFid).then(fe => {
+      item.entryName = fe.name;
+      item.existing = fe.web_feature;
+      this.requestUpdate();  // Render page to show progress.
+    })
   }
 
   getFileAndParse() {
@@ -79,8 +135,12 @@ export class ChromedashBulkEditPage extends LitElement {
         if (e.target && e.target.result) {
           const fileContent: string = e.target.result as string;
           this.cells = parse(fileContent);
+          this.detectColumns();
           this.selectItems();
-          this.parsing = false;
+          const promises = this.items.map(item => this.fetchFeature(item));
+          Promise.all(promises).then(() => {
+            this.parsing = false;
+          });
         }
       };
       reader.readAsText(file);
@@ -89,14 +149,38 @@ export class ChromedashBulkEditPage extends LitElement {
     }
   }
 
-  handleSubmit(e) {
+  saveFeature(item: Item): Promise<void> {
+    const submitBody = {
+      feature_changes: {
+        id: item.csFid,
+        web_feature: item.desired,
+      },
+      stages: [],
+      has_changes: true,
+    };
+    return window.csClient
+      .updateFeature(submitBody)
+      .then(resp => {
+        this.fetchFeature(item);
+      })
+      .catch(() => {
+        showToastMessage(
+          'Some errors occurred. Please refresh the page or try again later.'
+        );
+      });
+  }
+
+  async handleSubmit(e) {
     e.preventDefault();
     this.submitting = true;
     console.log('submitting');
-    // TODO: Implement logic to actually call the features API to make changes.
-    setTimeout(() => {
-      this.submitting = false;
-    }, 10000);
+    for (const item of this.items) {
+      if (item.existing != item.desired) {
+        // Save one at a time to avoid a load spike.
+        await this.saveFeature(item);
+      }
+    }
+    this.submitting = false;
   }
 
   handleChange(e) {
@@ -130,12 +214,18 @@ export class ChromedashBulkEditPage extends LitElement {
   }
 
   renderItemRow(item: Item) {
+    const different = (item.existing != 'Loading...' &&
+      item.existing != item.desired);
+    const differentClass = different ? 'diff' : '';
     return html`
       <tr>
         <td style="text-align: right; width: 4em">${item.row}</td>
-        <td>${item.csFid}</td>
-        <td>${item.existing}</td>
-        <td>${item.desired}</td>
+        <td><a href="/feature/${item.csFid}" target="_blank">${item.entryName || item.csFid}</a></td>
+        <td class="${differentClass} old"
+        >${item.existing || 'Not set'}
+        </td>
+        <td>${different ? html`&larr;` : '=='}</td>
+        <td class="${differentClass} new">${item.desired}</td>
       </tr>
     `;
   }
@@ -150,6 +240,7 @@ export class ChromedashBulkEditPage extends LitElement {
           <th>Row</th>
           <th>ChromeStatus feature</th>
           <th>Existing web feature ID</th>
+          <th></th>
           <th>Desired web feature ID</th>
         </tr>
         ${this.items.map(item => this.renderItemRow(item))}
@@ -160,12 +251,12 @@ export class ChromedashBulkEditPage extends LitElement {
   renderControls() {
     return html`
       <sl-button
-        ?disabled=${this.parsing || this.submitting}
+        ?disabled=${this.parsing || this.submitting || this.items.length == 0}
         @click=${this.handleSubmit}
         size="small"
         variant="primary"
       >
-        Submit
+        Update all
       </sl-button>
     `;
   }
