@@ -53,6 +53,7 @@ import './elements/chromedash-activity-page';
 import './elements/chromedash-activity-log';
 import './elements/chromedash-app';
 import './elements/chromedash-banner';
+import './elements/chromedash-bulk-edit-page';
 import './elements/chromedash-callout';
 import './elements/chromedash-color-status';
 import './elements/chromedash-drawer';

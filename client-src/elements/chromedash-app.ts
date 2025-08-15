@@ -538,6 +538,11 @@ export class ChromedashApp extends LitElement {
         return;
       this.pageComponent.user = this.user;
     });
+    page('/admin/bulk_edit', ctx => {
+      this.pageComponent = document.createElement('chromedash-bulk-edit-page');
+      this.pageComponent.user = this.user;
+      this.currentPage = ctx.path;
+    });
     page('/enterprise/releasenotes', ctx => {
       if (
         !this.setupNewPage(
