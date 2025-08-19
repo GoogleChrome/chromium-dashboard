@@ -74,7 +74,7 @@
     "@babel/plugin-syntax-dynamic-import": "^7.8.3",
     "@babel/plugin-transform-classes": "^7.27.7",
     "@babel/preset-env": "^7.28.0",
-    "@babel/register": "^7.27.1",
+    "@babel/register": "^7.28.3",
     "@open-wc/testing": "^4.0.0",
     "@openapitools/openapi-generator-cli": "^2.21.4",
     "@playwright/test": "1.54.2",
