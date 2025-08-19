@@ -29,10 +29,10 @@ export class ChromedashBulkEditPage extends LitElement {
           margin: var(--content-padding);
         }
         .diff.old {
-          background: #fcc;
+          background: #fdd;
         }
         .diff.new {
-          background: #cfc;
+          background: #dfd;
         }
       `,
     ];
@@ -126,6 +126,12 @@ export class ChromedashBulkEditPage extends LitElement {
     });
   }
 
+  parseFileContent(fileContent: string) {
+    this.cells = parse(fileContent);
+    this.detectColumns();
+    this.selectItems();
+  }
+
   getFileAndParse() {
     var fileField: HTMLInputElement = this.shadowRoot!.querySelector(
       '#id_file_form_field'
@@ -136,9 +142,7 @@ export class ChromedashBulkEditPage extends LitElement {
       reader.onload = e => {
         if (e.target && e.target.result) {
           const fileContent: string = e.target.result as string;
-          this.cells = parse(fileContent);
-          this.detectColumns();
-          this.selectItems();
+          this.parseFileContent(fileContent);
           const promises = this.items.map(item => this.fetchFeature(item));
           Promise.all(promises).then(() => {
             this.parsing = false;
@@ -236,7 +240,7 @@ export class ChromedashBulkEditPage extends LitElement {
 
   renderPreview() {
     if (this.items.length == 0) {
-      return html` <p>Select a CSV file to see the preview</p> `;
+      return html` <p id="instructions">Select a CSV file to see the preview</p> `;
     }
     return html`
       <table class="data-table">
