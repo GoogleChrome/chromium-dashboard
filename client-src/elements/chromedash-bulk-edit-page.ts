@@ -240,7 +240,9 @@ export class ChromedashBulkEditPage extends LitElement {
 
   renderPreview() {
     if (this.items.length == 0) {
-      return html` <p id="instructions">Select a CSV file to see the preview</p> `;
+      return html`
+        <p id="instructions">Select a CSV file to see the preview</p>
+      `;
     }
     return html`
       <table class="data-table">
