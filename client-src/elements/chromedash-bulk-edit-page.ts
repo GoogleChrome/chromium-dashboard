@@ -175,7 +175,7 @@ export class ChromedashBulkEditPage extends LitElement {
       });
   }
 
-  async handleSubmit(e) {
+  async handleSubmit(e: PointerEvent) {
     e.preventDefault();
     this.submitting = true;
     for (const item of this.items) {
