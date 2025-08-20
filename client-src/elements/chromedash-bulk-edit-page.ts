@@ -179,7 +179,6 @@ export class ChromedashBulkEditPage extends LitElement {
   async handleSubmit(e) {
     e.preventDefault();
     this.submitting = true;
-    console.log('submitting');
     for (const item of this.items) {
       if (item.existing != item.desired) {
         // Save one at a time to avoid a load spike.
