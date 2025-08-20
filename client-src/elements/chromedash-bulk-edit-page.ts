@@ -269,7 +269,15 @@ export class ChromedashBulkEditPage extends LitElement {
   renderPreview() {
     if (this.items.length == 0) {
       return html`
-        <p id="instructions">Select a CSV file to see the preview</p>
+        <p id="instructions">
+          Select a CSV file to see the preview. The CSV file should have one
+          column labeled "Chrome Status Entry" and one column labled "Feature
+          ID". Once the file is parsed, the table below will preview changes
+          that will be made. Your
+          <a href="/admin/users/new" target="_blank">chromestatus account</a>
+          must have "site editor" or "admin" permission to successfully complete
+          the edits.
+        </p>
       `;
     }
     return html`
