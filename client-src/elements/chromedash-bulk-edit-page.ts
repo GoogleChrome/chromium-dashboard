@@ -61,6 +61,9 @@ export class ChromedashBulkEditPage extends LitElement {
     if (match) {
       return Number(match.groups?.id);
     }
+    try {
+      return Number(url);
+    } catch {}
     return 0;
   }
 
@@ -77,7 +80,8 @@ export class ChromedashBulkEditPage extends LitElement {
   isChromestatusURL(header: string, index: number) {
     const headerOk =
       header.includes('chromestatus') ||
-      (header.includes('chrome') && header.includes('status'));
+      (header.includes('chrome') && header.includes('status')) ||
+      header === 'id';
     const firstValueOk =
       this.cells.length > 1 &&
       this.parseChromestatusIdFromURL(this.cells[1][index]);
@@ -85,6 +89,9 @@ export class ChromedashBulkEditPage extends LitElement {
   }
 
   detectColumns() {
+    if (!this.cells.length) {
+      return;
+    }
     const headerCells: string[] = this.cells[0].map(header =>
       header.toLowerCase()
     );
@@ -127,31 +134,53 @@ export class ChromedashBulkEditPage extends LitElement {
   }
 
   parseFileContent(fileContent: string) {
-    this.cells = parse(fileContent);
-    this.detectColumns();
-    this.selectItems();
+    try {
+      this.cells = parse(fileContent);
+    } catch (error) {
+      showToastMessage(
+        `An error occurred in parsing CSV file. ${JSON.stringify(error)}`
+      );
+    }
+    try {
+      this.detectColumns();
+    } catch (error) {
+      showToastMessage(
+        `An error occurred while detecting columns. ${JSON.stringify(error)}`
+      );
+    }
+    try {
+      this.selectItems();
+    } catch (error) {
+      showToastMessage(
+        `An error occurred while converting cells. ${JSON.stringify(error)}`
+      );
+    }
   }
 
-  getFileAndParse() {
+  async getFileAndParse() {
     const fileField = this.shadowRoot!.querySelector<HTMLInputElement>(
       '#id_file_form_field'
     );
-    if (fileField && fileField.files) {
+    if (!fileField?.files?.length) {
+      // The user canceled the file selection dialog, or selected an empty file.
+      this.cells = [];
+      this.featureIdIndex = -1;
+      this.chromestatusUrlIndex = -1;
+      this.items = [];
+      this.parsing = false;
+      return;
+    }
+    try {
       const file = fileField.files[0];
-      const reader = new FileReader();
-      reader.onload = e => {
-        if (e.target && e.target.result) {
-          const fileContent: string = e.target.result as string;
-          this.parseFileContent(fileContent);
-          const promises = this.items.map(item => this.fetchFeature(item));
-          Promise.all(promises).then(() => {
-            this.parsing = false;
-          });
-        }
-      };
-      reader.readAsText(file);
-      // TODO: Start fetching features to fill in their existing web feature ID,
-      // and to replace the feature ID number with a human-readable name.
+      const fileContent = await file.text();
+      this.parseFileContent(fileContent);
+      await Promise.all(this.items.map(item => this.fetchFeature(item)));
+    } catch (error) {
+      showToastMessage(
+        `An error occurred while processing the file. ${JSON.stringify(error)}`
+      );
+    } finally {
+      this.parsing = false;
     }
   }
 
@@ -188,9 +217,9 @@ export class ChromedashBulkEditPage extends LitElement {
     this.submitting = false;
   }
 
-  handleChange() {
+  async handleChange() {
     this.parsing = true;
-    this.getFileAndParse();
+    await this.getFileAndParse();
   }
 
   renderForm() {
