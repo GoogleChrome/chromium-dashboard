@@ -126,6 +126,7 @@
     "@polymer/iron-iconset-svg": "^3.0.1",
     "@types/google.accounts": "^0.0.17",
     "@types/google.visualization": "^0.0.74",
+    "csv-parse": "^6.1.0",
     "lit": "^3",
     "node-fetch": ">=3.3.2",
     "page": "^1.11.6",
