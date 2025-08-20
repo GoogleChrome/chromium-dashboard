@@ -134,7 +134,8 @@ export class ChromedashBulkEditPage extends LitElement {
 
   getFileAndParse() {
     const fileField = this.shadowRoot!.querySelector<HTMLInputElement>(
-      '#id_file_form_field');
+      '#id_file_form_field'
+    );
     if (fileField && fileField.files) {
       const file = fileField.files[0];
       const reader = new FileReader();
