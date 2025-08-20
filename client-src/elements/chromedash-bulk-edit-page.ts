@@ -187,7 +187,7 @@ export class ChromedashBulkEditPage extends LitElement {
     this.submitting = false;
   }
 
-  handleChange(e) {
+  handleChange() {
     this.parsing = true;
     this.getFileAndParse();
   }
