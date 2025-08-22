@@ -1,6 +1,11 @@
 import {assert, fixture} from '@open-wc/testing';
 import '@shoelace-style/shoelace/dist/components/input/input.js';
-import SlInput from '@shoelace-style/shoelace/dist/components/input/input.js';
+import {
+  SlInput,
+  SlDropdown,
+  type SlMenu,
+  type SlMenuItem,
+} from '@shoelace-style/shoelace';
 import '@shoelace-style/shoelace/dist/components/menu/menu.js';
 import {html} from 'lit';
 import {
@@ -184,12 +189,12 @@ describe('chromedash-typeahead-dropdown', () => {
     `);
     assert.exists(component);
     assert.instanceOf(component, ChromedashTypeaheadDropdown);
-    const item0 = component.querySelector('#item0');
-    const item1 = component.querySelector('#item1');
+    const item0 = component.querySelector<SlMenuItem>('#item0');
+    const item1 = component.querySelector<SlMenuItem>('#item1');
 
     assert.equal(item0, component.getCurrentItem());
 
-    component.setCurrentItem(item1);
+    component.setCurrentItem(item1!);
     assert.equal(item1, component.getCurrentItem());
 
     component.resetSelection();
