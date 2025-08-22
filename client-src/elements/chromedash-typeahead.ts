@@ -31,8 +31,6 @@ export interface Candidate {
   doc: string;
 }
 
-const NONSELECTABLE_ITEM_VALUE = 'NONSELECTABLE_ITEM_VALUE';
-
 @customElement('chromedash-typeahead')
 export class ChromedashTypeahead extends LitElement {
   slDropdownRef: Ref<ChromedashTypeaheadDropdown> = createRef();
@@ -214,11 +212,7 @@ export class ChromedashTypeahead extends LitElement {
       const slDropdown = this.slDropdownRef.value;
       if (!slDropdown) return;
       const currentItem = slDropdown.getCurrentItem();
-      if (
-        !slDropdown.open ||
-        !currentItem ||
-        currentItem.value === NONSELECTABLE_ITEM_VALUE
-      ) {
+      if (!slDropdown.open || !currentItem) {
         // User wants to send the query to the server.
         this._fireEvent('sl-change', this);
         event.stopPropagation();
@@ -293,9 +287,7 @@ export class ChromedashTypeahead extends LitElement {
     // sl-menu automatically selects the first menu item.  This nerfs
     // that undesired behavior by adding an invisible 0th menu item.
     const nonselectableItem = html`
-      <chromedash-typeahead-item
-        value="${NONSELECTABLE_ITEM_VALUE}"
-      ></chromedash-typeahead-item>
+      <chromedash-typeahead-invisible-item></chromedash-typeahead-invisible-item>
     `;
     return html`
       <sl-menu
@@ -332,13 +324,24 @@ export class ChromedashTypeahead extends LitElement {
 @customElement('chromedash-typeahead-dropdown')
 export class ChromedashTypeaheadDropdown extends SlDropdown {
   getCurrentItem(): SlMenuItem | undefined {
-    return this.getMenu()!.getCurrentItem();
+    const item = this.getMenu()!.getCurrentItem();
+    if (!item || item instanceof ChromedashTypeaheadInvisibleItem) {
+      return undefined;
+    }
+    return item;
   }
 
   setCurrentItem(newCurrentItem: SlMenuItem) {
     const menu = this.getMenu();
     menu!.setCurrentItem(newCurrentItem);
     newCurrentItem.scrollIntoView({block: 'nearest', behavior: 'smooth'});
+  }
+
+  getAllVisibleItems(menu: SlMenu): SlMenuItem[] {
+    const items = menu.getAllItems();
+    return items.filter(
+      item => !(item instanceof ChromedashTypeaheadInvisibleItem)
+    );
   }
 
   resetSelection() {
@@ -351,7 +354,7 @@ export class ChromedashTypeaheadDropdown extends SlDropdown {
     if (!menu) {
       return;
     }
-    const menuItems = menu.getAllItems();
+    const menuItems = this.getAllVisibleItems(menu);
     if (menuItems.length === 0) {
       return;
     }
@@ -382,11 +385,7 @@ export class ChromedashTypeaheadDropdown extends SlDropdown {
         if (event.key === 'ArrowDown' && menuItems[currentItemIndex + 1]) {
           this.setCurrentItem(menuItems[currentItemIndex + 1]);
         }
-        if (
-          event.key === 'ArrowUp' &&
-          menuItems[currentItemIndex - 1] &&
-          currentItemIndex > 1
-        ) {
+        if (event.key === 'ArrowUp' && menuItems[currentItemIndex - 1]) {
           this.setCurrentItem(menuItems[currentItemIndex - 1]);
         }
       } else {
@@ -477,9 +476,6 @@ export class ChromedashTypeaheadItem extends LitElement {
   }
 
   render(): TemplateResult {
-    if (this.value === NONSELECTABLE_ITEM_VALUE) {
-      return html`${nothing}`;
-    }
     const highlightedValue = this.highlight(this.value);
     const highlightedDoc = this.highlight(this.doc);
     return html`
@@ -491,5 +487,12 @@ export class ChromedashTypeaheadItem extends LitElement {
         <span id="doc">${highlightedDoc}</span>
       </div>
     `;
+  }
+}
+
+@customElement('chromedash-typeahead-invisible-item')
+export class ChromedashTypeaheadInvisibleItem extends ChromedashTypeaheadItem {
+  override render(): TemplateResult {
+    return html`${nothing}`;
   }
 }
