@@ -247,9 +247,12 @@ export class ChromedashBulkEditPage extends LitElement {
     `;
   }
 
+  isDifferent(item: Item): boolean {
+    return item.existing != 'Loading...' && item.existing != item.desired;
+  }
+
   renderItemRow(item: Item) {
-    const different =
-      item.existing != 'Loading...' && item.existing != item.desired;
+    const different = this.isDifferent(item);
     const differentClass = different ? 'diff' : '';
     return html`
       <tr>
@@ -277,6 +280,13 @@ export class ChromedashBulkEditPage extends LitElement {
         </p>
       `;
     }
+    const totalCount = this.items.length;
+    const matchCount = this.items.filter(
+      item => !this.isDifferent(item)
+    ).length;
+    const updateCount = this.items.filter(item =>
+      this.isDifferent(item)
+    ).length;
     return html`
       <table class="data-table">
         <tr>
@@ -288,6 +298,10 @@ export class ChromedashBulkEditPage extends LitElement {
         </tr>
         ${this.items.map(item => this.renderItemRow(item))}
       </table>
+      <p>
+        ${totalCount} rows: ${matchCount} already matching and ${updateCount} to
+        be updated.
+      </p>
     `;
   }
 
