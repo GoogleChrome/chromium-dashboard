@@ -1,5 +1,10 @@
-import {SlInput, SlDropdown} from '@shoelace-style/shoelace';
-import {css, html, LitElement, nothing} from 'lit';
+import {
+  SlInput,
+  SlDropdown,
+  type SlMenu,
+  type SlMenuItem,
+} from '@shoelace-style/shoelace';
+import {css, html, LitElement, type TemplateResult, nothing} from 'lit';
 import {customElement, property, state} from 'lit/decorators.js';
 import {live} from 'lit/directives/live.js';
 import {createRef, ref, Ref} from 'lit/directives/ref.js';
@@ -30,7 +35,7 @@ const NONSELECTABLE_ITEM_VALUE = 'NONSELECTABLE_ITEM_VALUE';
 
 @customElement('chromedash-typeahead')
 export class ChromedashTypeahead extends LitElement {
-  slDropdownRef: Ref<SlDropdown> = createRef();
+  slDropdownRef: Ref<ChromedashTypeaheadDropdown> = createRef();
   slInputRef: Ref<SlInput> = createRef();
 
   @property()
@@ -167,7 +172,7 @@ export class ChromedashTypeahead extends LitElement {
     return result;
   }
 
-  async handleCandidateSelected(e) {
+  async handleCandidateSelected(e: {detail: {item: SlMenuItem}}) {
     const candidateValue = e.detail.item.value;
     const inputEl = this.slInputRef.value?.renderRoot.querySelector('input');
     if (!inputEl) return;
@@ -206,8 +211,7 @@ export class ChromedashTypeahead extends LitElement {
   // If stopPropagation() is not called, the event will cause a completion.
   handleInputFieldKeyDown(event) {
     if (event.key === 'Enter') {
-      const slDropdown = this.slDropdownRef
-        .value as ChromedashTypeaheadDropdown;
+      const slDropdown = this.slDropdownRef.value;
       if (!slDropdown) return;
       const currentItem = slDropdown.getCurrentItem();
       if (
@@ -327,11 +331,11 @@ export class ChromedashTypeahead extends LitElement {
 
 @customElement('chromedash-typeahead-dropdown')
 export class ChromedashTypeaheadDropdown extends SlDropdown {
-  getCurrentItem() {
-    return this.getMenu()?.getCurrentItem();
+  getCurrentItem(): SlMenuItem | undefined {
+    return this.getMenu()!.getCurrentItem();
   }
 
-  setCurrentItem(newCurrentItem) {
+  setCurrentItem(newCurrentItem: SlMenuItem) {
     const menu = this.getMenu();
     menu!.setCurrentItem(newCurrentItem);
     newCurrentItem.scrollIntoView({block: 'nearest', behavior: 'smooth'});
@@ -342,7 +346,7 @@ export class ChromedashTypeaheadDropdown extends SlDropdown {
     currentItem?.setAttribute('tabindex', '-1');
   }
 
-  async handleTriggerKeyDown(event) {
+  async handleTriggerKeyDown(event: KeyboardEvent) {
     const menu = this.getMenu();
     if (!menu) {
       return;
@@ -454,8 +458,12 @@ export class ChromedashTypeaheadItem extends LitElement {
     ];
   }
 
-  handleMouseOver(event) {
-    (this.parentElement as ChromedashTypeaheadDropdown)?.setCurrentItem(this);
+  handleMouseOver(event: Event) {
+    if (this.parentElement) {
+      (this.parentElement as SlMenu).setCurrentItem(
+        this as unknown as SlMenuItem
+      );
+    }
     event.stopPropagation();
   }
 
@@ -468,9 +476,9 @@ export class ChromedashTypeaheadItem extends LitElement {
     return html`${before}<b>${matching}</b>${after}`;
   }
 
-  render() {
+  render(): TemplateResult {
     if (this.value === NONSELECTABLE_ITEM_VALUE) {
-      return html`${nothing}`;
+      return html`{nothing}`;
     }
     const highlightedValue = this.highlight(this.value);
     const highlightedDoc = this.highlight(this.doc);
