@@ -470,7 +470,7 @@ export class ChromedashTypeaheadItem extends LitElement {
 
   render() {
     if (this.value === NONSELECTABLE_ITEM_VALUE) {
-      return nothing;
+      return html`${nothing}`;
     }
     const highlightedValue = this.highlight(this.value);
     const highlightedDoc = this.highlight(this.doc);
