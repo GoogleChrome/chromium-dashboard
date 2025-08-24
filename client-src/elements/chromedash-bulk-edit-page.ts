@@ -115,7 +115,7 @@ export class ChromedashBulkEditPage extends LitElement {
       const csFid: number = this.parseChromestatusIdFromURL(csUrl);
       if (csFid > 0) {
         const item: Item = {
-          row: i + 1,
+          row: i,
           csFid: csFid,
           existing: 'Loading...',
           desired: webFeatureId,
