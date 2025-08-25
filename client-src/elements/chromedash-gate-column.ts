@@ -44,7 +44,7 @@ interface Vote {
 export interface ProgressItem {
   name: string;
   field?: string;
-  stage: ProcessStage;
+  stage: ProcessStage | null;
 }
 
 export interface Action {
@@ -360,12 +360,13 @@ export class ChromedashGateColumn extends LitElement {
     Promise.all([window.csClient.getGates(this.feature.id)])
       .then(([gatesRes]) => {
         this.featureGates = gatesRes.gates;
-        const vote = this.voteSelectRef.value?.value;
+        const vote = this.voteSelectRef.value!.value;
         maybeOpenPrevoteDialog(
+          this.feature,
           this.featureGates,
           this.stage,
           this.gate,
-          vote
+          Number(vote)
         ).then(() => {
           this.saveVote();
         });
