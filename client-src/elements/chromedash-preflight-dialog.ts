@@ -162,23 +162,37 @@ export class ChromedashPreflightDialog extends LitElement {
     this.hide();
   }
 
-  renderEditLink(stage: ProcessStage, feStage: StageDict, pi: ProgressItem) {
-    if (pi.field && stage && feStage) {
-      return html`
-        <a
-          class="edit-progress-item"
-          href="/guide/stage/${this._feature
-            .id}/${stage.outgoing_stage}/${feStage.id}#id_${pi.field}"
-          @click=${this.hide}
-        >
-          Edit
-        </a>
-      `;
+  renderEditLink(
+    stage: ProcessStage | null,
+    feStage: StageDict,
+    pi: ProgressItem
+  ) {
+    // This function only renders links for progress items that have a field.
+    if (!pi.field) {
+      return nothing;
     }
-    return nothing;
+
+    const pathSegment = stage
+      ? `${stage.outgoing_stage}/${feStage.id}`
+      : 'metadata';
+
+    return html`
+      <a
+        class="edit-progress-item"
+        href="/guide/stage/${this._feature.id}/${pathSegment}#id_${pi.field}"
+        @click=${this.hide}
+      >
+        Edit
+      </a>
+    `;
   }
 
   makePrereqItem(itemName) {
+    // TODO(jrobbins): Rewrite this logic to search forms rather than progress
+    // items. And eventually phase out progress items.
+    if (itemName === 'Web feature') {
+      return {name: 'Web feature', field: 'web_feature', stage: null};
+    }
     for (const s of this._process.stages || []) {
       for (const pi of s.progress_items) {
         if (itemName == pi.name) {
@@ -186,7 +200,7 @@ export class ChromedashPreflightDialog extends LitElement {
         }
       }
     }
-    throw new Error('prerequiste is not a defined progress item');
+    throw new Error('prerequiste is not a defined progress item: ' + itemName);
   }
 
   renderDialogContent() {
@@ -208,11 +222,11 @@ export class ChromedashPreflightDialog extends LitElement {
         ${prereqItems.map(
           item =>
             html` <li class="pending">
-              ${item.stage.name}: ${item.name}
+              ${item.stage?.name || 'Metadata'}: ${item.name}
               ${this.renderEditLink(
                 item.stage,
                 findFirstFeatureStage(
-                  item.stage.outgoing_stage,
+                  item.stage?.outgoing_stage,
                   this._stage,
                   this._feature
                 ),
