@@ -17,6 +17,7 @@ from dataclasses import asdict, dataclass
 
 from internals import approval_defs
 from internals import core_enums
+from internals.metrics_models import WebDXFeatureObserver
 
 
 @dataclass
@@ -81,6 +82,7 @@ PI_INITIAL_PUBLIC_PROPOSAL = ProgressItem(
     'Initial public proposal', 'initial_public_proposal_url')
 PI_MOTIVATION = ProgressItem('Motivation', 'motivation')
 PI_EXPLAINER = ProgressItem('Explainer', 'explainer_links')
+PI_WEB_FEATURE = ProgressItem('Web feature', 'web_feature')
 
 PI_SPEC_LINK = ProgressItem('Spec link', 'spec_link')
 PI_SPEC_MENTOR = ProgressItem('Spec mentor', 'spec_mentors')
@@ -188,7 +190,8 @@ BLINK_PROCESS_STAGES = [
       [PI_INITIAL_PUBLIC_PROPOSAL,
        PI_MOTIVATION,
        PI_EXPLAINER,
-      ],
+       PI_WEB_FEATURE,
+       ],
       [],
       [],
       core_enums.INTENT_NONE, core_enums.INTENT_INCUBATE,
@@ -258,6 +261,7 @@ BLINK_PROCESS_STAGES = [
       ],
       [Action('Draft Intent to Experiment email', INTENT_EMAIL_URL,
               [PI_INITIAL_PUBLIC_PROPOSAL.name, PI_MOTIVATION.name,
+               PI_WEB_FEATURE.name,
                PI_EXPLAINER.name, PI_SPEC_LINK.name,
                PI_EST_TARGET_MILESTONE.name])],
       [approval_defs.ExperimentApproval],
@@ -286,7 +290,7 @@ BLINK_PROCESS_STAGES = [
       ],
       [Action('Draft Intent to Ship email', INTENT_EMAIL_URL,
               [PI_INITIAL_PUBLIC_PROPOSAL.name, PI_MOTIVATION.name,
-               PI_EXPLAINER.name, PI_SPEC_LINK.name,
+               PI_EXPLAINER.name, PI_SPEC_LINK.name, PI_WEB_FEATURE.name,
                PI_FINCH_FEATURE_OR_JUSTIFY.name,
                PI_TAG_ADDRESSED.name, PI_UPDATED_VENDOR_SIGNALS.name,
                PI_UPDATED_TARGET_MILESTONE.name])],
@@ -323,6 +327,7 @@ BLINK_FAST_TRACK_STAGES = [
       'runtime enabled feature.',
       [PI_SPEC_LINK,
        PI_CODE_IN_CHROMIUM,
+       PI_WEB_FEATURE,
        ],
       [Action('Draft Intent to Prototype email', INTENT_EMAIL_URL,
               [PI_SPEC_LINK.name])],
@@ -359,7 +364,8 @@ BLINK_FAST_TRACK_STAGES = [
        PI_I2E_LGTMS,
       ],
       [Action('Draft Intent to Experiment email', INTENT_EMAIL_URL,
-              [PI_SPEC_LINK.name, PI_EST_TARGET_MILESTONE.name])],
+              [PI_SPEC_LINK.name, PI_WEB_FEATURE.name,
+               PI_EST_TARGET_MILESTONE.name])],
       [approval_defs.ExperimentApproval],
       core_enums.INTENT_EXPERIMENT, core_enums.INTENT_ORIGIN_TRIAL,
       stage_type=core_enums.STAGE_FAST_ORIGIN_TRIAL),
@@ -383,7 +389,7 @@ BLINK_FAST_TRACK_STAGES = [
        PI_I2S_LGTMS,
       ],
       [Action('Draft Intent to Ship email', INTENT_EMAIL_URL,
-              [PI_SPEC_LINK.name,
+              [PI_SPEC_LINK.name, PI_WEB_FEATURE.name,
                PI_FINCH_FEATURE_OR_JUSTIFY.name,
                PI_UPDATED_TARGET_MILESTONE.name])],
       [approval_defs.ShipApproval],
@@ -418,6 +424,7 @@ PSA_ONLY_STAGES = [
       'Check code into Chromium under a flag.',
       [PI_SPEC_LINK,
        PI_CODE_IN_CHROMIUM,
+       PI_WEB_FEATURE,
       ],
       [],
       [],
@@ -447,7 +454,7 @@ PSA_ONLY_STAGES = [
        PI_I2S_EMAIL,
       ],
       [Action('Draft Web-Facing Change PSA email', INTENT_EMAIL_URL,
-              [PI_SPEC_LINK.name,
+              [PI_SPEC_LINK.name, PI_WEB_FEATURE.name,
                PI_FINCH_FEATURE_OR_JUSTIFY.name,
                PI_UPDATED_TARGET_MILESTONE.name])],
       [approval_defs.ShipApproval],
@@ -648,6 +655,9 @@ PROGRESS_DETECTORS = {
 
     'Explainer':
     lambda f, _: f.explainer_links and f.explainer_links[0],
+
+    'Web feature':
+    lambda f, _: f.web_feature and f.web_feature != WebDXFeatureObserver.MISSING_FEATURE_ID,
 
     'Security review issues addressed':
     lambda f, _: review_is_done(f.security_review_status),
