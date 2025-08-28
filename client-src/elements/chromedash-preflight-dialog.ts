@@ -195,17 +195,17 @@ export class ChromedashPreflightDialog extends LitElement {
   }
 
   makePrereqItem(itemName) {
+    // TODO(jrobbins): Rewrite this logic to search forms rather than progress
+    // items. And eventually phase out progress items.
+    if (itemName === 'Web feature') {
+      return {name: 'Web feature', field: 'web_feature', stage: null};
+    }
     for (const s of this._process.stages || []) {
       for (const pi of s.progress_items) {
         if (itemName == pi.name) {
           return {...pi, stage: s};
         }
       }
-    }
-    // TODO(jrobbins): Rewrite this logic to search forms rather than progress
-    // items. And eventually phase out progress items.
-    if (itemName === 'Web feature') {
-      return {name: 'Web feature', field: 'web_feature', stage: null};
     }
     throw new Error('prerequiste is not a defined progress item: ' + itemName);
   }
