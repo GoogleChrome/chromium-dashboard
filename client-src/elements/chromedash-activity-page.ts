@@ -140,6 +140,7 @@ export class ChromedashActivityPage extends LitElement {
         id="comment_area"
         rows="2"
         cols="40"
+        resize="auto"
         ${ref(this.commentAreaRef)}
         @sl-change=${this.checkNeedsPost}
         @keypress=${this.checkNeedsPost}
