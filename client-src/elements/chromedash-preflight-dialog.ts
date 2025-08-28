@@ -167,31 +167,24 @@ export class ChromedashPreflightDialog extends LitElement {
     feStage: StageDict,
     pi: ProgressItem
   ) {
-    if (pi.field && stage && feStage) {
-      return html`
-        <a
-          class="edit-progress-item"
-          href="/guide/stage/${this._feature
-            .id}/${stage.outgoing_stage}/${feStage.id}#id_${pi.field}"
-          @click=${this.hide}
-        >
-          Edit
-        </a>
-      `;
+    // This function only renders links for progress items that have a field.
+    if (!pi.field) {
+      return nothing;
     }
-    // The field is in the metadata section.
-    if (pi.field && stage === null) {
-      return html`
-        <a
-          class="edit-progress-item"
-          href="/guide/stage/${this._feature.id}/metadata#id_${pi.field}"
-          @click=${this.hide}
-        >
-          Edit
-        </a>
-      `;
-    }
-    return nothing;
+
+    const pathSegment = stage
+      ? `${stage.outgoing_stage}/${feStage.id}`
+      : 'metadata';
+
+    return html`
+      <a
+        class="edit-progress-item"
+        href="/guide/stage/${this._feature.id}/${pathSegment}#id_${pi.field}"
+        @click=${this.hide}
+      >
+        Edit
+      </a>
+    `;
   }
 
   makePrereqItem(itemName) {

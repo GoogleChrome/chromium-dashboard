@@ -340,8 +340,9 @@ export class ChromedashGateColumn extends LitElement {
 
   saveVote() {
     this.submittingComment = true;
+    const vote = Number(this.voteSelectRef.value!.value);
     window.csClient
-      .setVote(this.feature.id, this.gate.id, this.voteSelectRef.value?.value)
+      .setVote(this.feature.id, this.gate.id, vote)
       .then(() => {
         this.needsSave = false;
         this.showSaved = true;
@@ -360,13 +361,13 @@ export class ChromedashGateColumn extends LitElement {
     Promise.all([window.csClient.getGates(this.feature.id)])
       .then(([gatesRes]) => {
         this.featureGates = gatesRes.gates;
-        const vote = this.voteSelectRef.value!.value;
+        const vote = Number(this.voteSelectRef.value!.value);
         maybeOpenPrevoteDialog(
           this.feature,
           this.featureGates,
           this.stage,
           this.gate,
-          Number(vote)
+          vote
         ).then(() => {
           this.saveVote();
         });

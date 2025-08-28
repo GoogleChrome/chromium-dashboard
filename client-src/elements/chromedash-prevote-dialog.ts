@@ -128,13 +128,16 @@ class ChromedashPrevoteDialog extends LitElement {
     if (this.pendingGates === undefined) {
       return html`Loading gates...`;
     }
+    if (this.pendingGates.length == 0) {
+      return nothing;
+    }
 
     return html`
       <div id="gates-header">The following gates are missing approvals:</div>
-      <br />
       <ul id="gates-list">
         ${this.pendingGates.map(gate => this.renderGateItem(gate))}
       </ul>
+      <br />
     `;
   }
 
@@ -152,7 +155,7 @@ class ChromedashPrevoteDialog extends LitElement {
 
   renderFieldItem(item: MissingFieldItem) {
     return html` <li class="pending">
-      'Metadata:' ${item.name} ${this.renderEditLink(item)}
+      Metadata: ${item.name} ${this.renderEditLink(item)}
     </li>`;
   }
 
@@ -165,17 +168,16 @@ class ChromedashPrevoteDialog extends LitElement {
       <div id="fields-header">
         The following prerequisite fields are missing:
       </div>
-      <br />
       <ul id="fields-list">
         ${missingFields.map(mf => this.renderFieldItem(mf))}
       </ul>
+      <br />
     `;
   }
 
   render() {
     return html` <sl-dialog label="Prerequsites for API Owner approval">
       ${this.renderFieldsSection()} ${this.renderGatesSection()}
-      <br />
       <sl-button size="small" @click=${this.handleProceed}
         >Approve anyway</sl-button
       >
