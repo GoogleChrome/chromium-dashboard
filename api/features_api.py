@@ -32,7 +32,7 @@ from internals.core_models import FeatureEntry, MilestoneSet, Stage
 from internals.data_types import CHANGED_FIELDS_LIST_TYPE
 from internals import feature_links
 from internals import notifier_helpers
-from internals.review_models import Gate
+from internals.review_models import Gate, Activity
 from internals.data_types import VerboseFeatureDict
 from internals import feature_helpers
 from internals import search
@@ -391,6 +391,15 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
     feature: FeatureEntry = self.get_specified_feature(feature_id=feature_id)
     feature.deleted = True
     feature.put()
+    
+    user = users.get_current_user()
+    email = user.email() if user else None
+    activity = Activity(
+        feature_id=feature_id,
+        author=email,
+        content=f'Feature "{feature.name}" was archived.')
+    activity.put()
+    
     rediscache.delete_keys_with_prefix(FeatureEntry.DEFAULT_CACHE_KEY)
     rediscache.delete_keys_with_prefix(FeatureEntry.SEARCH_CACHE_KEY)
 
