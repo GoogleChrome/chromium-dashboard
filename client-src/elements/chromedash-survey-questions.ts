@@ -137,6 +137,7 @@ export class ChromedashSurveyQuestions extends LitElement {
           name="${name}"
           size="small"
           rows="2"
+          resize="auto"
           value=${value}
           ?disabled=${!this.canEditSurvey()}
           @sl-change=${e => this.handleFieldChange(name, e.target?.value)}
