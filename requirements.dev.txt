@@ -3,7 +3,7 @@
 # are not needed on GAE because they are only for local development, or GAE
 # provides its own copy.
 
-coverage==7.10.4
+coverage==7.10.5
 gunicorn==23.0.0
 
 # Mypy and dependencies

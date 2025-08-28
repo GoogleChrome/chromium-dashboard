@@ -21,7 +21,7 @@ google-auth==2.40.3
 requests==2.32.5
 redis==6.4.0
 fakeredis==2.31.0
-Flask==3.1.1
+Flask==3.1.2
 flask-cors==6.0.1
 funcsigs==1.0.2
 Jinja2==3.1.6
@@ -38,4 +38,4 @@ pillow==11.3.0
 # OpenAPI files
 ./gen/py/chromestatus_openapi
 ./gen/py/webstatus_openapi
-types-python-dateutil==2.9.0.20250809
+types-python-dateutil==2.9.0.20250822
