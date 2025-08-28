@@ -195,7 +195,7 @@
  * @property {string} summary
  * @property {string} category
  * @property {number} category_int
- * @property {string} web_feature
+ * @property {string=} web_feature
  * @property {string[]} blink_components
  * @property {number} star_count
  * @property {string[]} search_tags

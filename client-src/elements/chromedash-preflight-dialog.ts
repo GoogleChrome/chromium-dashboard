@@ -162,7 +162,11 @@ export class ChromedashPreflightDialog extends LitElement {
     this.hide();
   }
 
-  renderEditLink(stage: ProcessStage | null, feStage: StageDict, pi: ProgressItem) {
+  renderEditLink(
+    stage: ProcessStage | null,
+    feStage: StageDict,
+    pi: ProgressItem
+  ) {
     if (pi.field && stage && feStage) {
       return html`
         <a

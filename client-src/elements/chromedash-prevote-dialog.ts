@@ -21,7 +21,7 @@ export function findMissingFields(feature: Feature): MissingFieldItem[] {
   return missingFields;
 }
 
-function shouldShowPrevoteDialog(
+export function shouldShowPrevoteDialog(
   feature: Feature,
   pendingGates: GateDict[],
   gate: GateDict,
@@ -39,7 +39,8 @@ export async function maybeOpenPrevoteDialog(
   featureGates: GateDict[],
   stage: StageDict,
   gate: GateDict,
-  vote: number) {
+  vote: number
+) {
   const pendingGates = findPendingGates(featureGates, stage);
   if (shouldShowPrevoteDialog(feature, pendingGates, gate, vote)) {
     return new Promise(resolve => {
@@ -129,9 +130,7 @@ class ChromedashPrevoteDialog extends LitElement {
     }
 
     return html`
-      <div id="gates-header">
-        The following gates are missing approvals:
-      </div>
+      <div id="gates-header">The following gates are missing approvals:</div>
       <br />
       <ul id="gates-list">
         ${this.pendingGates.map(gate => this.renderGateItem(gate))}
@@ -141,18 +140,19 @@ class ChromedashPrevoteDialog extends LitElement {
 
   renderEditLink(item: MissingFieldItem) {
     return html`
-    <a
-    class="edit-progress-item"
-    href="/guide/stage/${this.feature.id}/metadata#id_${item.field}"
-    @click=${this.hide}>
-    Edit
-    </a>
+      <a
+        class="edit-progress-item"
+        href="/guide/stage/${this.feature.id}/metadata#id_${item.field}"
+        @click=${this.hide}
+      >
+        Edit
+      </a>
     `;
   }
 
   renderFieldItem(item: MissingFieldItem) {
     return html` <li class="pending">
-    'Metadata:' ${item.name} ${this.renderEditLink(item)}
+      'Metadata:' ${item.name} ${this.renderEditLink(item)}
     </li>`;
   }
 
@@ -174,8 +174,7 @@ class ChromedashPrevoteDialog extends LitElement {
 
   render() {
     return html` <sl-dialog label="Prerequsites for API Owner approval">
-      ${this.renderFieldsSection()}
-      ${this.renderGatesSection()}
+      ${this.renderFieldsSection()} ${this.renderGatesSection()}
       <br />
       <sl-button size="small" @click=${this.handleProceed}
         >Approve anyway</sl-button
