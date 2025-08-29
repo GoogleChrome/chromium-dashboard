@@ -375,6 +375,7 @@ export class ChromedashFormField extends LitElement {
           name="${fieldName}"
           id="id_${this.name}"
           size="small"
+          resize="auto"
           value=${fieldValue}
           ?required=${this.fieldProps.required}
           @sl-change="${this.handleFieldUpdated}"

@@ -607,7 +607,12 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
         <p class="summary preformatted">${f.summary}</p>`;
     }
     return html`
-      <sl-textarea id="edit-feature-${f.id}" value=${f.summary} size="small">
+      <sl-textarea
+        id="edit-feature-${f.id}"
+        value=${f.summary}
+        size="small"
+        resize="auto"
+      >
       </sl-textarea>
       <sl-button
         @click=${() => {

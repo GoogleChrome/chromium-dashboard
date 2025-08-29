@@ -44,7 +44,7 @@ interface Vote {
 export interface ProgressItem {
   name: string;
   field?: string;
-  stage: ProcessStage;
+  stage: ProcessStage | null;
 }
 
 export interface Action {
@@ -340,8 +340,9 @@ export class ChromedashGateColumn extends LitElement {
 
   saveVote() {
     this.submittingComment = true;
+    const vote = Number(this.voteSelectRef.value!.value);
     window.csClient
-      .setVote(this.feature.id, this.gate.id, this.voteSelectRef.value?.value)
+      .setVote(this.feature.id, this.gate.id, vote)
       .then(() => {
         this.needsSave = false;
         this.showSaved = true;
@@ -360,8 +361,9 @@ export class ChromedashGateColumn extends LitElement {
     Promise.all([window.csClient.getGates(this.feature.id)])
       .then(([gatesRes]) => {
         this.featureGates = gatesRes.gates;
-        const vote = this.voteSelectRef.value?.value;
+        const vote = Number(this.voteSelectRef.value!.value);
         maybeOpenPrevoteDialog(
+          this.feature,
           this.featureGates,
           this.stage,
           this.gate,
@@ -1077,6 +1079,7 @@ export class ChromedashGateColumn extends LitElement {
         id="comment_area"
         rows="2"
         cols="40"
+        resize="auto"
         ${ref(this.commentAreaRef)}
         @sl-change=${this.checkNeedsPost}
         @keypress=${this.checkNeedsPost}
