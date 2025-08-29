@@ -77,6 +77,7 @@ def get_features_in_release_notes(milestone: int):
 
   cached_features = rediscache.get(cache_key)
   if cached_features:
+    logging.info('Returned cached features')
     return cached_features
 
   stages = Stage.query(
@@ -90,21 +91,35 @@ def get_features_in_release_notes(milestone: int):
           Stage.milestones.webview_last >= milestone,
           Stage.rollout_milestone >= milestone),
       Stage.stage_type.IN([STAGE_BLINK_SHIPPING, STAGE_PSA_SHIPPING,
-          STAGE_FAST_SHIPPING, STAGE_DEP_SHIPPING, STAGE_ENT_ROLLOUT])).filter().fetch()
+          STAGE_FAST_SHIPPING, STAGE_DEP_SHIPPING, STAGE_ENT_ROLLOUT])).fetch()
+  logging.info('Fetched %r relevent stages', len(stages))
 
-  feature_ids = list(set({
-      *[s.feature_id for s in stages]}))
-  features = [dict(converters.feature_entry_to_json_verbose(f))
-            for f in get_future_results(get_entries_by_id_async(feature_ids))]
+  feature_ids = list({s.feature_id for s in stages})
+  # Prefetch all stages for all those features, not just the stages that
+  # qualified the features to be considered.
+  prefetched_stages = organize_all_stages_by_feature(
+      Stage.query(
+          Stage.feature_id.IN(feature_ids), Stage.archived == False).fetch()
+      if feature_ids else [])
+  logging.info('prefetched %r stages for %r features', len(prefetched_stages),
+               len(feature_ids))
+  features = []
+  for f in get_future_results(get_entries_by_id_async(feature_ids)):
+    formatted_feature = converters.feature_entry_to_json_verbose(
+        f, prefetched_stages=prefetched_stages.get(f.key.integer_id()))
+    features.append(dict(formatted_feature))
+  logging.info('finished converting features to dicts')
+
   features = [f for f in filter_unlisted(features)
     if not f['deleted'] and
       (f['enterprise_impact'] > ENTERPRISE_IMPACT_NONE or
        f['feature_type_int'] == FEATURE_TYPE_ENTERPRISE_ID) and
       (f['first_enterprise_notification_milestone'] == None or
        f['first_enterprise_notification_milestone'] <= milestone)]
-  features = [f for f in features]
+  logging.info('finished filtering')
 
   rediscache.set(cache_key, features)
+  logging.info('finished storing in cache')
   return filter_confidential(features)
 
 
