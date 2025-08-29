@@ -247,6 +247,11 @@ class HistogramsHandlerTest(testing_config.CustomTestCase):
     self.request_path = '/cron/histograms'
     self.handler = fetchmetrics.HistogramsHandler()
 
+  def tearDown(self):
+    for model_class in fetchmetrics.HistogramsHandler.MODEL_CLASS.values():
+      for histo in model_class.query():
+        histo.key.delete()
+
   @mock.patch('requests.get')
   @mock.patch('internals.fetchmetrics.HistogramsHandler._SaveData')
   def test_get_template_data__normal(self, mock_save_data, mock_requests_get):
@@ -259,3 +264,57 @@ class HistogramsHandlerTest(testing_config.CustomTestCase):
 
     self.assertEqual('Success', actual_response)
     self.assertEqual(13, mock_save_data.call_count)
+
+  def test_save_data__new_usecounter(self):
+    """Chromium devs have added a new usecounter to enums.xml."""
+    with test_app.test_request_context(self.request_path):
+      self.handler._SaveData(
+          123, 'NewUseCounter', metrics_models.FeatureObserverHistogram)
+
+    all_histos = metrics_models.FeatureObserverHistogram.query().fetch()
+    self.assertEqual(1, len(all_histos))
+    self.assertEqual(123, all_histos[0].bucket_id)
+    self.assertEqual('NewUseCounter', all_histos[0].property_name)
+
+  def test_save_data__same_usecounter(self):
+    """We see an existing usecounter to enums.xml."""
+    metrics_models.FeatureObserverHistogram(
+        bucket_id=123, property_name='UseCounter').put()
+    with test_app.test_request_context(self.request_path):
+      self.handler._SaveData(
+          123, 'UseCounter', metrics_models.FeatureObserverHistogram)
+
+    all_histos = metrics_models.FeatureObserverHistogram.query().fetch()
+    self.assertEqual(1, len(all_histos))
+    self.assertEqual(123, all_histos[0].bucket_id)
+    self.assertEqual('UseCounter', all_histos[0].property_name)
+
+  def test_save_data__renamed_usecounter(self):
+    """Chromium devs have renamed a usecounter in enums.xml."""
+    metrics_models.FeatureObserverHistogram(
+        bucket_id=123, property_name='UseCounter').put()
+    with test_app.test_request_context(self.request_path):
+      self.handler._SaveData(
+          123, 'RenamedUseCounter', metrics_models.FeatureObserverHistogram)
+
+    all_histos = metrics_models.FeatureObserverHistogram.query().fetch()
+    self.assertEqual(1, len(all_histos))
+    self.assertEqual(123, all_histos[0].bucket_id)
+    self.assertEqual('RenamedUseCounter', all_histos[0].property_name)
+
+  def test_save_data__clean_up_dups(self):
+    """Our DB already has some duplicate entities that should be deleted.."""
+    metrics_models.FeatureObserverHistogram(
+        bucket_id=123, property_name='UseCounter').put()
+    metrics_models.FeatureObserverHistogram(
+        bucket_id=123, property_name='RenamedUseCounter').put()
+
+    with test_app.test_request_context(self.request_path):
+      self.handler._SaveData(
+          123, 'RenamedUseCounter', metrics_models.FeatureObserverHistogram)
+
+    all_histos = metrics_models.FeatureObserverHistogram.query().fetch()
+    # Note: entity for 'UseCounter' was deleted.
+    self.assertEqual(1, len(all_histos))
+    self.assertEqual(123, all_histos[0].bucket_id)
+    self.assertEqual('RenamedUseCounter', all_histos[0].property_name)

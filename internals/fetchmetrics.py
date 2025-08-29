@@ -229,31 +229,31 @@ class YesterdayHandler(basehandlers.FlaskHandler):
 
 class HistogramsHandler(basehandlers.FlaskHandler):
 
+  # Maps enum names to the historgram entity class that we use to store them.
   MODEL_CLASS = {
     'FeatureObserver': metrics_models.FeatureObserverHistogram,
     'MappedCSSProperties': metrics_models.CssPropertyHistogram,
     'WebDXFeatureObserver': metrics_models.WebDXFeatureObserver,
   }
 
-  def _SaveData(self, data, histogram_id):
-    try:
-      model_class = self.MODEL_CLASS[histogram_id]
-    except Exception:
-      logging.error('Invalid Histogram id used: %s' % histogram_id)
-      return
-
-    bucket_id = int(data['bucket_id'])
-    property_name = data['property_name']
-    key_name = '%s_%s' % (bucket_id, property_name)
-
+  def _SaveData(self, bucket_id, property_name, model_class):
+    """Save one entity for the given bucket_id, and delete any duplicates."""
     # Bucket ID 1 is reserved for number of CSS Pages Visited. So don't add it.
     if (model_class == metrics_models.CssPropertyHistogram and bucket_id == 1):
       return
 
-    model_class.get_or_insert(key_name,
-      bucket_id=bucket_id,
-      property_name=property_name
-    )
+    found = False
+    for existing in model_class.query(model_class.bucket_id == bucket_id):
+      if existing.property_name == property_name:
+        found = True
+      else:
+        existing.key.delete()
+
+    if not found:
+      new_entity = model_class(
+          bucket_id=bucket_id,
+          property_name=property_name)
+      new_entity.put()
 
   def get_template_data(self, **kwargs):
     self.require_cron_header()
@@ -276,20 +276,20 @@ class HistogramsHandler(basehandlers.FlaskHandler):
 
     # Save bucket ids for each histogram type, FeatureObserver and
     # MappedCSSProperties.
-    for histogram_id in list(self.MODEL_CLASS.keys()):
+    for enum_name, model_class in self.MODEL_CLASS.items():
       matching_els = [el for el in enum_els
-                      if el.attributes['name'].value == histogram_id]
+                      if el.attributes['name'].value == enum_name]
       if matching_els:
         enum = matching_els[0]
       else:
-        logging.error(f'Unable to find <enum name="{histogram_id}">.')
+        logging.error(f'Unable to find <enum name="{enum_name}">.')
         self.abort(500)
 
       for child in enum.getElementsByTagName('int'):
-        self._SaveData({
-          'bucket_id': child.attributes['value'].value,
-          'property_name': child.attributes['label'].value
-        }, histogram_id)
+        self._SaveData(
+            int(child.attributes['value'].value),
+            child.attributes['label'].value,
+            model_class)
 
     return 'Success'
 
