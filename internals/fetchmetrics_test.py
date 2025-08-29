@@ -269,7 +269,7 @@ class HistogramsHandlerTest(testing_config.CustomTestCase):
     """Chromium devs have added a new usecounter to enums.xml."""
     with test_app.test_request_context(self.request_path):
       self.handler._SaveData(
-          123, 'NewUseCounter', metrics_models.FeatureObserverHistogram)
+          123, 'NewUseCounter', metrics_models.FeatureObserverHistogram, [])
 
     all_histos = metrics_models.FeatureObserverHistogram.query().fetch()
     self.assertEqual(1, len(all_histos))
@@ -278,11 +278,13 @@ class HistogramsHandlerTest(testing_config.CustomTestCase):
 
   def test_save_data__same_usecounter(self):
     """We see an existing usecounter to enums.xml."""
-    metrics_models.FeatureObserverHistogram(
-        bucket_id=123, property_name='UseCounter').put()
+    ex_1 = metrics_models.FeatureObserverHistogram(
+        bucket_id=123, property_name='UseCounter')
+    ex_1.put()
     with test_app.test_request_context(self.request_path):
       self.handler._SaveData(
-          123, 'UseCounter', metrics_models.FeatureObserverHistogram)
+          123, 'UseCounter', metrics_models.FeatureObserverHistogram,
+          [ex_1])
 
     all_histos = metrics_models.FeatureObserverHistogram.query().fetch()
     self.assertEqual(1, len(all_histos))
@@ -291,11 +293,13 @@ class HistogramsHandlerTest(testing_config.CustomTestCase):
 
   def test_save_data__renamed_usecounter(self):
     """Chromium devs have renamed a usecounter in enums.xml."""
-    metrics_models.FeatureObserverHistogram(
-        bucket_id=123, property_name='UseCounter').put()
+    ex_1 = metrics_models.FeatureObserverHistogram(
+        bucket_id=123, property_name='UseCounter')
+    ex_1.put()
     with test_app.test_request_context(self.request_path):
       self.handler._SaveData(
-          123, 'RenamedUseCounter', metrics_models.FeatureObserverHistogram)
+          123, 'RenamedUseCounter', metrics_models.FeatureObserverHistogram,
+          [ex_1])
 
     all_histos = metrics_models.FeatureObserverHistogram.query().fetch()
     self.assertEqual(1, len(all_histos))
@@ -304,14 +308,17 @@ class HistogramsHandlerTest(testing_config.CustomTestCase):
 
   def test_save_data__clean_up_dups(self):
     """Our DB already has some duplicate entities that should be deleted.."""
-    metrics_models.FeatureObserverHistogram(
-        bucket_id=123, property_name='UseCounter').put()
-    metrics_models.FeatureObserverHistogram(
-        bucket_id=123, property_name='RenamedUseCounter').put()
+    ex_1 = metrics_models.FeatureObserverHistogram(
+        bucket_id=123, property_name='UseCounter')
+    ex_1.put()
+    ex_2 = metrics_models.FeatureObserverHistogram(
+        bucket_id=123, property_name='RenamedUseCounter')
+    ex_2.put()
 
     with test_app.test_request_context(self.request_path):
       self.handler._SaveData(
-          123, 'RenamedUseCounter', metrics_models.FeatureObserverHistogram)
+          123, 'RenamedUseCounter', metrics_models.FeatureObserverHistogram,
+          [ex_1, ex_2])
 
     all_histos = metrics_models.FeatureObserverHistogram.query().fetch()
     # Note: entity for 'UseCounter' was deleted.

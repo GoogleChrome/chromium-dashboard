@@ -236,17 +236,21 @@ class HistogramsHandler(basehandlers.FlaskHandler):
     'WebDXFeatureObserver': metrics_models.WebDXFeatureObserver,
   }
 
-  def _SaveData(self, bucket_id, property_name, model_class):
+  def _SaveData(self, bucket_id, property_name, model_class, all_existing):
     """Save one entity for the given bucket_id, and delete any duplicates."""
+    logging.info('Saving %r %r', bucket_id, property_name)
     # Bucket ID 1 is reserved for number of CSS Pages Visited. So don't add it.
     if (model_class == metrics_models.CssPropertyHistogram and bucket_id == 1):
       return
 
     found = False
-    for existing in model_class.query(model_class.bucket_id == bucket_id):
+    relevant_existing = [ex for ex in all_existing
+                         if ex.bucket_id == bucket_id]
+    for existing in relevant_existing:
       if existing.property_name == property_name:
         found = True
       else:
+        logging.info('Deleted dup %r', existing.property_name)
         existing.key.delete()
 
     if not found:
@@ -285,11 +289,13 @@ class HistogramsHandler(basehandlers.FlaskHandler):
         logging.error(f'Unable to find <enum name="{enum_name}">.')
         self.abort(500)
 
+      all_existing = model_class.query().fetch()
       for child in enum.getElementsByTagName('int'):
         self._SaveData(
             int(child.attributes['value'].value),
             child.attributes['label'].value,
-            model_class)
+            model_class,
+            all_existing)
 
     return 'Success'
 
