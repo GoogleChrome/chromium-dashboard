@@ -28,6 +28,12 @@ import settings
 CACHE_AGE = 86400 # 24hrs
 ROUNDING = 8  # 8 decimal places because all percents are < 1.0.
 
+# WebDX fallback mechanism constants
+WEBDX_DATA_CUTOFF_DATE = datetime.date(2024, 6, 1)  # After this date, WebDX data should be sufficient
+MIN_RECENT_DATAPOINTS = 5  # Minimum recent data points to consider WebDX data sufficient
+DATA_SOURCE_INFO_MARKER = '__DATA_SOURCE_INFO__'  # Special property name for metadata
+FALLBACK_METADATA_BUCKET_ID = -999  # Special bucket_id for metadata entries
+
 
 def _is_googler(user):
   return user and user.email().endswith('@google.com')
@@ -123,7 +129,127 @@ class WebFeatureTimelineHandler(TimelineHandler):
   MODEL_CLASS = metrics_models.WebDXFeature
 
   def get_template_data(self, **kwargs):
-    return super(WebFeatureTimelineHandler, self).get_template_data()
+    """Get WebDX timeline data with fallback to classic data if insufficient."""
+    bucket_id = self.get_int_arg('bucket_id')
+    if bucket_id is None:
+      return []
+    
+    # Try WebDX data first
+    webdx_data = self._get_webdx_data(bucket_id)
+    
+    if self._has_sufficient_webdx_data(webdx_data):
+      return self._add_data_source_info(webdx_data, 'webdx')
+    
+    # Fallback to classic FeatureObserver data
+    classic_data = self._get_classic_fallback_data(bucket_id)
+    if classic_data:
+      logging.info('Using classic fallback data for WebDX bucket_id %s', bucket_id)
+      return self._add_data_source_info(classic_data, 'classic_fallback')
+    
+    # Last resort - return limited WebDX data with warning
+    logging.warning(
+        'No sufficient data found, returning limited WebDX data for bucket_id %s', 
+        bucket_id)
+    return self._add_data_source_info(webdx_data, 'webdx_limited')
+  
+  def _add_data_source_info(self, data, source_type):
+    """Add metadata about data source for frontend notification."""
+    if not data:
+      return data
+    
+    metadata_messages = {
+      'classic_fallback': 'Data after June 2024 uses classic usecounter as fallback for WebDX data',
+      'webdx_limited': 'Limited WebDX data available after June 2024'
+    }
+    
+    message = metadata_messages.get(source_type)
+    if message:
+      metadata_entry = {
+        'bucket_id': FALLBACK_METADATA_BUCKET_ID,
+        'date': str(WEBDX_DATA_CUTOFF_DATE),
+        'day_percentage': 0,
+        'property_name': DATA_SOURCE_INFO_MARKER,
+        'source_type': source_type,
+        'message': message
+      }
+      data.append(metadata_entry)
+    
+    return data
+  
+  def _get_webdx_data(self, bucket_id):
+    """Get WebDX feature data using standard caching and query logic."""
+    cache_key = f'{self.CACHE_KEY}|{bucket_id}'
+    datapoints = rediscache.get(cache_key)
+    
+    if not datapoints:
+      query = self.make_query(bucket_id)
+      query = query.order(self.MODEL_CLASS.date)
+      datapoints = query.fetch(None)
+      rediscache.set(cache_key, datapoints, time=CACHE_AGE)
+    
+    return _datapoints_to_json_dicts(datapoints)
+  
+  def _has_sufficient_webdx_data(self, webdx_data):
+    """Check if WebDX data has sufficient recent entries after the cutoff date."""
+    if not webdx_data:
+      return False
+    
+    recent_data = [
+      dp for dp in webdx_data 
+      if datetime.datetime.strptime(dp['date'], '%Y-%m-%d').date() >= WEBDX_DATA_CUTOFF_DATE
+    ]
+    
+    return len(recent_data) >= MIN_RECENT_DATAPOINTS
+  
+  def _get_classic_fallback_data(self, webdx_bucket_id):
+    """Get classic FeatureObserver data as fallback for WebDX data."""
+    classic_bucket_id = self._map_webdx_to_classic_bucket(webdx_bucket_id)
+    
+    if not classic_bucket_id or classic_bucket_id == webdx_bucket_id:
+      # No mapping found or mapping failed
+      return []
+    
+    try:
+      query = metrics_models.FeatureObserver.query()
+      query = query.filter(metrics_models.FeatureObserver.bucket_id == classic_bucket_id)
+      query = query.order(metrics_models.FeatureObserver.date)
+      datapoints = query.fetch(None)
+      
+      return _datapoints_to_json_dicts(datapoints) if datapoints else []
+    
+    except Exception as e:
+      logging.warning('Error fetching classic fallback data: %s', e)
+      return []
+  
+  def _map_webdx_to_classic_bucket(self, webdx_bucket_id):
+    """Map WebDX bucket_id to classic FeatureObserver bucket_id."""
+    try:
+      # Get WebDX feature name
+      webdx_mapping = metrics_models.WebDXFeatureObserver.get_all()
+      
+      if webdx_bucket_id not in webdx_mapping:
+        logging.info('No WebDXFeatureObserver found for bucket_id %s', webdx_bucket_id)
+        return webdx_bucket_id
+      
+      web_feature_name = webdx_mapping[webdx_bucket_id]
+      
+      # Find classic bucket_id for same feature
+      classic_mapping = metrics_models.FeatureObserverHistogram.get_all()
+      
+      for classic_bucket_id, property_name in classic_mapping.items():
+        if property_name == web_feature_name:
+          logging.info(
+              'Mapped WebDX bucket %s (%s) -> Classic bucket %s',
+              webdx_bucket_id, web_feature_name, classic_bucket_id)
+          return classic_bucket_id
+      
+      logging.info(
+          'No classic mapping found for WebDX feature "%s"', web_feature_name)
+        
+    except Exception as e:
+      logging.warning('Error in bucket mapping: %s', e)
+    
+    return webdx_bucket_id  # Fallback to original bucket_id
 
 
 class FeatureHandler(basehandlers.FlaskHandler):

@@ -231,3 +231,203 @@ class FeatureBucketsHandlerTest(testing_config.CustomTestCase):
     self.assertEqual(
         [(6, 'HTTP/3'), (5, 'Popover')],
         actual_buckets)
+
+
+class WebFeatureTimelineHandlerTests(testing_config.CustomTestCase):
+
+  def setUp(self):
+    self.handler = metricsdata.WebFeatureTimelineHandler()
+    
+    self.webdx_datapoint = metrics_models.WebDXFeature(
+        day_percentage=0.0123456789, 
+        date=datetime.date(2024, 8, 1),
+        bucket_id=100, 
+        property_name='TestWebDXFeature')
+    self.webdx_datapoint.put()
+    
+    self.classic_datapoint = metrics_models.FeatureObserver(
+        day_percentage=0.0987654321,
+        date=datetime.date(2024, 5, 1),
+        bucket_id=100,
+        property_name='TestClassicFeature')
+    self.classic_datapoint.put()
+
+  def tearDown(self):
+    self.webdx_datapoint.key.delete()
+    self.classic_datapoint.key.delete()
+    
+    for webdx_entity in metrics_models.WebDXFeature.query().fetch():
+      if webdx_entity.bucket_id in [100, 200]:
+        webdx_entity.key.delete()
+    
+    for classic_entity in metrics_models.FeatureObserver.query().fetch():
+      if classic_entity.bucket_id in [100, 200]:
+        classic_entity.key.delete()
+
+  def test_get_template_data__webdx_sufficient(self):
+    """Test that WebDX data is returned when sufficient recent data exists."""
+    # Create additional WebDX datapoints to meet the threshold of 5
+    extra_datapoints = []
+    for i in range(4):  # We already have 1, need 4 more
+      dp = metrics_models.WebDXFeature(
+          day_percentage=0.01 + i * 0.001,
+          date=datetime.date(2024, 7, 1 + i),
+          bucket_id=100,
+          property_name=f'TestWebDXFeature{i}')
+      dp.put()
+      extra_datapoints.append(dp)
+    
+    try:
+      url = '/data/timeline/webfeaturepopularity?bucket_id=100'
+      
+      with test_app.test_request_context(url):
+        actual_datapoints = self.handler.get_template_data()
+      
+      # Should get 5 WebDX datapoints (no fallback needed)
+      self.assertEqual(5, len(actual_datapoints))
+      
+      # Check that we have the original datapoint
+      original_found = any(dp['property_name'] == 'TestWebDXFeature' and 
+                          dp['date'] == '2024-08-01' 
+                          for dp in actual_datapoints)
+      self.assertTrue(original_found, 'Original WebDX datapoint should be present')
+    
+    finally:
+      for dp in extra_datapoints:
+        dp.key.delete()
+
+  def test_get_template_data__no_bucket_id(self):
+    """Test that empty list is returned when no bucket_id provided."""
+    url = '/data/timeline/webfeaturepopularity'
+    
+    with test_app.test_request_context(url):
+      actual_datapoints = self.handler.get_template_data()
+    
+    self.assertEqual([], actual_datapoints)
+
+  def test_mapping_logic(self):
+    """Test WebDX to Classic bucket_id mapping."""
+    webdx_observer = metrics_models.WebDXFeatureObserver(
+        bucket_id=150,
+        property_name='MappingTestFeature'
+    )
+    webdx_observer.put()
+    
+    classic_observer = metrics_models.FeatureObserverHistogram(
+        bucket_id=250,
+        property_name='MappingTestFeature'  # Same feature name
+    )
+    classic_observer.put()
+    
+    try:
+      # Test the mapping function
+      mapped_bucket = self.handler._map_webdx_to_classic_bucket(150)
+      self.assertEqual(250, mapped_bucket, 
+                      'Should map WebDX bucket_id=150 to Classic bucket_id=250')
+      
+      # Test reverse lookup
+      enum_result = metrics_models.WebDXFeatureObserver.get_enum_by_web_feature('MappingTestFeature')
+      self.assertEqual('150', enum_result,
+                      'Should find WebDX bucket_id for feature name')
+      
+    finally:
+      webdx_observer.key.delete()
+      classic_observer.key.delete()
+
+  def test_performance_with_large_dataset(self):
+    """Test performance with realistic data volume."""
+    import time
+    
+    # Create 100 WebDX entries (realistic daily data for 3+ months)
+    webdx_entries = []
+    for i in range(100):
+      entry = metrics_models.WebDXFeature(
+          bucket_id=300,
+          property_name=f'PerfTestFeature_{i}',
+          date=datetime.date(2024, 6, 1) + datetime.timedelta(days=i),
+          day_percentage=0.01 + i * 0.0001
+      )
+      entry.put()
+      webdx_entries.append(entry)
+    
+    try:
+      url = '/data/timeline/webfeaturepopularity?bucket_id=300'
+      
+      # Test response time
+      start_time = time.time()
+      
+      with test_app.test_request_context(url):
+        result = self.handler.get_template_data()
+      
+      response_time = time.time() - start_time
+      
+      self.assertLess(response_time, 2.0, 'Response should be under 2 seconds')
+      self.assertEqual(100, len(result), 'Should return all 100 entries')
+      
+      start_time = time.time()
+      
+      with test_app.test_request_context(url):
+        result2 = self.handler.get_template_data()
+        
+      cached_response_time = time.time() - start_time
+      
+      self.assertLess(cached_response_time, response_time, 
+                     'Cached response should be faster')
+      
+    finally:
+      for entry in webdx_entries:
+        entry.key.delete()
+
+  def test_get_template_data__fallback_to_classic(self):
+    """Test fallback to classic data when WebDX data is insufficient."""
+    webdx_observer = metrics_models.WebDXFeatureObserver(
+        bucket_id=200,
+        property_name='TestFallbackFeature')
+    webdx_observer.put()
+    
+    classic_observer = metrics_models.FeatureObserverHistogram(
+        bucket_id=250,  # Different bucket_id for classic
+        property_name='TestFallbackFeature')  # Same property name
+    classic_observer.put()
+    
+    old_webdx_datapoint = metrics_models.WebDXFeature(
+        day_percentage=0.0555555555, 
+        date=datetime.date(2024, 3, 1),  # Before June 2024
+        bucket_id=200, 
+        property_name='TestFallbackFeature')
+    old_webdx_datapoint.put()
+    
+    # Create classic data for fallback
+    classic_fallback_datapoint = metrics_models.FeatureObserver(
+        day_percentage=0.0777777777,
+        date=datetime.date(2024, 7, 1),  # After June 2024
+        bucket_id=250,  # Classic bucket_id
+        property_name='TestFallbackFeature')
+    classic_fallback_datapoint.put()
+    
+    try:
+      url = '/data/timeline/webfeaturepopularity?bucket_id=200'
+      
+      with test_app.test_request_context(url):
+        actual_datapoints = self.handler.get_template_data()
+      
+      # Should get classic fallback data since WebDX data is insufficient
+      # Plus metadata marker about fallback usage
+      self.assertEqual(2, len(actual_datapoints))
+      
+      # First entry should be the actual classic fallback data
+      self.assertEqual(250, actual_datapoints[0]['bucket_id'])  # Classic bucket_id
+      self.assertEqual('TestFallbackFeature', actual_datapoints[0]['property_name'])
+      self.assertEqual('2024-07-01', actual_datapoints[0]['date'])
+      
+      # Second entry should be the metadata marker
+      self.assertEqual(-999, actual_datapoints[1]['bucket_id'])
+      self.assertEqual('__DATA_SOURCE_INFO__', actual_datapoints[1]['property_name'])
+      self.assertEqual('classic_fallback', actual_datapoints[1]['source_type'])
+      self.assertIn('classic usecounter as fallback', actual_datapoints[1]['message'])
+    
+    finally:
+      webdx_observer.key.delete()
+      classic_observer.key.delete()
+      old_webdx_datapoint.key.delete()
+      classic_fallback_datapoint.key.delete()
