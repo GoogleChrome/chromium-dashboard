@@ -95,6 +95,7 @@ def get_features_in_release_notes(milestone: int):
   logging.info('Fetched %r relevent stages', len(stages))
 
   feature_ids = list({s.feature_id for s in stages})
+  features_future = get_entries_by_id_async(feature_ids)
   # Prefetch all stages for all those features, not just the stages that
   # qualified the features to be considered.
   prefetched_stages = organize_all_stages_by_feature(
@@ -104,7 +105,7 @@ def get_features_in_release_notes(milestone: int):
   logging.info('prefetched %r stages for %r features', len(prefetched_stages),
                len(feature_ids))
   features = []
-  for f in get_future_results(get_entries_by_id_async(feature_ids)):
+  for f in get_future_results(features_future):
     formatted_feature = converters.feature_entry_to_json_verbose(
         f, prefetched_stages=prefetched_stages.get(f.key.integer_id()))
     features.append(dict(formatted_feature))
