@@ -78,20 +78,20 @@ def get_features_in_release_notes(milestone: int):
   cached_features = rediscache.get(cache_key)
   if cached_features:
     logging.info('Returned cached features')
-    return cached_features
+    return filter_confidential(cached_features)
 
   stages = Stage.query(
           Stage.archived == False,
-      ndb.OR(Stage.milestones.desktop_first >= milestone,
-          Stage.milestones.android_first >= milestone,
-          Stage.milestones.ios_first >= milestone,
-          Stage.milestones.webview_first >= milestone,
-          Stage.milestones.desktop_last >= milestone,
-          Stage.milestones.ios_last >= milestone,
-          Stage.milestones.webview_last >= milestone,
-          Stage.rollout_milestone >= milestone),
-      Stage.stage_type.IN([STAGE_BLINK_SHIPPING, STAGE_PSA_SHIPPING,
-          STAGE_FAST_SHIPPING, STAGE_DEP_SHIPPING, STAGE_ENT_ROLLOUT])).fetch()
+          Stage.stage_type.IN([STAGE_BLINK_SHIPPING, STAGE_PSA_SHIPPING,
+          STAGE_FAST_SHIPPING, STAGE_DEP_SHIPPING, STAGE_ENT_ROLLOUT]),
+          ndb.OR(Stage.milestones.desktop_first >= milestone,
+                 Stage.milestones.android_first >= milestone,
+                 Stage.milestones.ios_first >= milestone,
+                 Stage.milestones.webview_first >= milestone,
+                 Stage.milestones.desktop_last >= milestone,
+                 Stage.milestones.ios_last >= milestone,
+                 Stage.milestones.webview_last >= milestone,
+                 Stage.rollout_milestone >= milestone)).fetch()
   logging.info('Fetched %r relevent stages', len(stages))
 
   feature_ids = list({s.feature_id for s in stages})
