@@ -100,6 +100,7 @@ export class ChromedashGuideNewPage extends LitElement {
     for (const fv of this.fieldValues) {
       if (fv.name == 'feature_type' && fv.value !== undefined) {
         featureType = fv.value;
+        break;
       }
     }
     webFeatureField.forceRequired =
