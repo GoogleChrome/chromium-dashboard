@@ -90,9 +90,9 @@ export class ChromedashGuideNewPage extends LitElement {
   }
 
   maybeMakeWebFeatureRequired() {
-    const webFeatureField = this.shadowRoot?.querySelector(
+    const webFeatureField = this.shadowRoot?.querySelector<ChromedashFormField>(
       'chromedash-form-field[name="web_feature"]'
-    ) as ChromedashFormField;
+    );
     if (!webFeatureField) {
       return;
     }
