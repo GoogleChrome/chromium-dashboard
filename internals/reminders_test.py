@@ -232,7 +232,7 @@ class FunctionTest(testing_config.CustomTestCase):
     self.assertEqual('feature_owner@example.com', task['to'])
     self.assertEqual('Action requested - Verify feature one', task['subject'])
     self.assertEqual(None, task['reply_to'])
-    TESTDATA.make_golden(task['html'], 'test_build_email_tasks_feature_accuracy.html')
+    # TESTDATA.make_golden(task['html'], 'test_build_email_tasks_feature_accuracy.html')
     self.assertMultiLineEqual(
       TESTDATA['test_build_email_tasks_feature_accuracy.html'], task['html'])
 
@@ -253,7 +253,7 @@ class FunctionTest(testing_config.CustomTestCase):
     self.assertEqual('feature_owner@example.com', task['to'])
     self.assertEqual('Action requested - Verify feature one', task['subject'])
     self.assertEqual(None, task['reply_to'])
-    TESTDATA.make_golden(task['html'], 'test_build_email_tasks_feature_accuracy_enterprise.html')
+    # TESTDATA.make_golden(task['html'], 'test_build_email_tasks_feature_accuracy_enterprise.html')
     self.assertMultiLineEqual(
         TESTDATA['test_build_email_tasks_feature_accuracy_enterprise.html'],
         task['html'])
@@ -278,7 +278,7 @@ class FunctionTest(testing_config.CustomTestCase):
     self.assertEqual(
         'Escalation request - Verify feature one', task['subject'])
     self.assertEqual(None, task['reply_to'])
-    TESTDATA.make_golden(task['html'], 'test_build_email_tasks_escalated_feature_accuracy.html')
+    # TESTDATA.make_golden(task['html'], 'test_build_email_tasks_escalated_feature_accuracy.html')
     self.assertMultiLineEqual(
       TESTDATA['test_build_email_tasks_escalated_feature_accuracy.html'], task['html'])
 
@@ -298,7 +298,7 @@ class FunctionTest(testing_config.CustomTestCase):
     self.assertEqual('feature_owner@example.com', task['to'])
     self.assertEqual('Action requested - Verify feature one', task['subject'])
     self.assertEqual(None, task['reply_to'])
-    TESTDATA.make_golden(task['html'], 'test_build_email_tasks_prepublication.html')
+    # TESTDATA.make_golden(task['html'], 'test_build_email_tasks_prepublication.html')
     self.assertMultiLineEqual(
       TESTDATA['test_build_email_tasks_prepublication.html'], task['html'])
 
@@ -685,7 +685,7 @@ class SLOOverdueHandlerTest(testing_config.CustomTestCase):
     self.assertEqual('b_assignee@example.com', task['to'])
     self.assertEqual('Review due for: feature one', task['subject'])
     self.assertEqual(None, task['reply_to'])
-    TESTDATA.make_golden(task['html'], 'test_build_gate_email_tasks__initial_due.html')
+    # TESTDATA.make_golden(task['html'], 'test_build_gate_email_tasks__initial_due.html')
     self.assert_equal_ignoring_ids(
       TESTDATA['test_build_gate_email_tasks__initial_due.html'], task['html'])
 
@@ -717,7 +717,7 @@ class SLOOverdueHandlerTest(testing_config.CustomTestCase):
     self.assertEqual('a_assignee@example.com', task['to'])
     self.assertEqual('ESCALATED: Review due for: feature one', task['subject'])
     self.assertEqual(None, task['reply_to'])
-    TESTDATA.make_golden(task['html'], 'test_build_gate_email_tasks__initial_overdue.html')
+    # TESTDATA.make_golden(task['html'], 'test_build_gate_email_tasks__initial_overdue.html')
     self.assert_equal_ignoring_ids(
       TESTDATA['test_build_gate_email_tasks__initial_overdue.html'], task['html'])
 
@@ -736,7 +736,7 @@ class SLOOverdueHandlerTest(testing_config.CustomTestCase):
     self.assertEqual('b_assignee@example.com', task['to'])
     self.assertEqual('Review due for: feature one', task['subject'])
     self.assertEqual(None, task['reply_to'])
-    TESTDATA.make_golden(task['html'], 'test_build_gate_email_tasks__resolution_due.html')
+    # TESTDATA.make_golden(task['html'], 'test_build_gate_email_tasks__resolution_due.html')
     self.assert_equal_ignoring_ids(
       TESTDATA['test_build_gate_email_tasks__resolution_due.html'], task['html'])
 
@@ -755,6 +755,6 @@ class SLOOverdueHandlerTest(testing_config.CustomTestCase):
     self.assertEqual('a_assignee@example.com', task['to'])
     self.assertEqual('ESCALATED: Review due for: feature one', task['subject'])
     self.assertEqual(None, task['reply_to'])
-    TESTDATA.make_golden(task['html'], 'test_build_gate_email_tasks__resolution_overdue.html')
+    # TESTDATA.make_golden(task['html'], 'test_build_gate_email_tasks__resolution_overdue.html')
     self.assert_equal_ignoring_ids(
       TESTDATA['test_build_gate_email_tasks__resolution_overdue.html'], task['html'])
