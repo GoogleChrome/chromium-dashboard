@@ -40,6 +40,8 @@ export class ChromedashFormField extends LitElement {
   forEnterprise = false;
   @property({type: String})
   disabledReason = '';
+  @property({type: Boolean})
+  forceRequired = false;
   @property({type: Number})
   stageId;
   @property({type: Number})
@@ -340,7 +342,7 @@ export class ChromedashFormField extends LitElement {
           hoist
           multiple
           cleareable
-          ?required=${this.fieldProps.required}
+          ?required=${this.fieldProps.required || this.forceRequired}
           ?disabled=${fieldDisabled || this.disabled || this.loading}
           @sl-change="${this.handleFieldUpdated}"
         >
@@ -363,7 +365,7 @@ export class ChromedashFormField extends LitElement {
           .value=${fieldValue}
           help-text="${this.disabledReason}"
           ?disabled=${this.disabled || this.disabledReason || fieldDisabled}
-          ?required=${this.fieldProps.required}
+          ?required=${this.fieldProps.required || this.forceRequired}
           @sl-change="${this.handleFieldUpdated}"
         >
         </sl-input>
@@ -377,7 +379,7 @@ export class ChromedashFormField extends LitElement {
           size="small"
           resize="auto"
           value=${fieldValue}
-          ?required=${this.fieldProps.required}
+          ?required=${this.fieldProps.required || this.forceRequired}
           @sl-change="${this.handleFieldUpdated}"
         >
         </chromedash-textarea>
@@ -391,7 +393,7 @@ export class ChromedashFormField extends LitElement {
           id="id_${this.name}"
           size="small"
           value=${fieldValue}
-          ?required=${this.fieldProps.required}
+          ?required=${this.fieldProps.required || this.forceRequired}
           @sl-change="${this.handleFieldUpdated}"
         >
         </chromedash-attachments>
@@ -425,7 +427,7 @@ export class ChromedashFormField extends LitElement {
             class="datalist-input"
             type="search"
             list="${this.name}_list"
-            ?required=${this.fieldProps.required}
+            ?required=${this.fieldProps.required || this.forceRequired}
             @change=${this.handleFieldUpdated}
           />
         </div>
