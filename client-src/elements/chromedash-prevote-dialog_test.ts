@@ -1,6 +1,6 @@
 import {assert} from '@open-wc/testing';
 import {Feature, StageDict} from '../js-src/cs-client';
-import {VOTE_OPTIONS} from './form-field-enums';
+import {GATE_TYPES, VOTE_OPTIONS} from './form-field-enums';
 import {GateDict} from './chromedash-gate-chip.js';
 import {
   findMissingFields,
@@ -33,7 +33,7 @@ describe('prevote functions', () => {
     const goodFeature = {web_feature: 'array'} as Feature;
     const badFeature = {} as Feature;
     const pendingGates = [] as GateDict[];
-    const gate = {team_name: 'API Owners'} as GateDict;
+    const gate = {gate_type: GATE_TYPES.API_SHIP} as GateDict;
     const vote = VOTE_OPTIONS.APPROVED[0];
 
     it('does not show criteria are met', () => {
