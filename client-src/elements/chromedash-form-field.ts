@@ -40,6 +40,8 @@ export class ChromedashFormField extends LitElement {
   forEnterprise = false;
   @property({type: String})
   disabledReason = '';
+  @property({type: Boolean})
+  forceRequired = false;
   @property({type: Number})
   stageId;
   @property({type: Number})
@@ -284,6 +286,7 @@ export class ChromedashFormField extends LitElement {
     const type = this.fieldProps.type;
     const fieldDisabled = this.fieldProps.disabled;
     const fieldValue = this.getValue();
+    const isRequired = this.fieldProps.required || this.forceRequired;
 
     // form field name can be specified in form-field-spec to match DB field name
     const fieldName = this.fieldProps.name || this.name;
@@ -340,7 +343,7 @@ export class ChromedashFormField extends LitElement {
           hoist
           multiple
           cleareable
-          ?required=${this.fieldProps.required}
+          ?required=${isRequired}
           ?disabled=${fieldDisabled || this.disabled || this.loading}
           @sl-change="${this.handleFieldUpdated}"
         >
@@ -363,7 +366,7 @@ export class ChromedashFormField extends LitElement {
           .value=${fieldValue}
           help-text="${this.disabledReason}"
           ?disabled=${this.disabled || this.disabledReason || fieldDisabled}
-          ?required=${this.fieldProps.required}
+          ?required=${isRequired}
           @sl-change="${this.handleFieldUpdated}"
         >
         </sl-input>
@@ -377,7 +380,7 @@ export class ChromedashFormField extends LitElement {
           size="small"
           resize="auto"
           value=${fieldValue}
-          ?required=${this.fieldProps.required}
+          ?required=${isRequired}
           @sl-change="${this.handleFieldUpdated}"
         >
         </chromedash-textarea>
@@ -391,7 +394,7 @@ export class ChromedashFormField extends LitElement {
           id="id_${this.name}"
           size="small"
           value=${fieldValue}
-          ?required=${this.fieldProps.required}
+          ?required=${isRequired}
           @sl-change="${this.handleFieldUpdated}"
         >
         </chromedash-attachments>
@@ -425,7 +428,7 @@ export class ChromedashFormField extends LitElement {
             class="datalist-input"
             type="search"
             list="${this.name}_list"
-            ?required=${this.fieldProps.required}
+            ?required=${isRequired}
             @change=${this.handleFieldUpdated}
           />
         </div>
