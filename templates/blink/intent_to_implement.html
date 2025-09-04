@@ -31,10 +31,10 @@
   {% endfor %}
 
   <br><br><h4>Web Feature ID</h4>
-  {% if feature.web_feature == "Missing feature" %}
-    Missing feature
-  {% elif feature.web_feature %}
+  {% if feature.is_official_web_feature %}
     <a href="https://webstatus.dev/features/{{feature.web_feature}}">{{feature.web_feature}}</a>
+  {% elif feature.web_feature %}
+    {{feature.web_feature}}
   {% else %}
     None
   {% endif %}
