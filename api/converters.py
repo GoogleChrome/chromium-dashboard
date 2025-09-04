@@ -30,6 +30,7 @@ from internals.core_models import (
 )
 from internals.data_types import FeatureDictInnerViewInfo, StageDict, VerboseFeatureDict
 from internals.review_models import Gate, Vote
+from internals.metrics_models import WebDXFeatureObserver
 
 SIMPLE_TYPES = frozenset((int, float, bool, dict, str, list))
 
@@ -356,6 +357,8 @@ def feature_entry_to_json_verbose(
     'category_int': fe.category,
     'feature_notes': fe.feature_notes,
     'web_feature': fe.web_feature,
+    # TODO(jrobbins): Check against cached list of web feature IDs.
+    'is_official_web_feature': (fe.web_feature and fe.web_feature != WebDXFeatureObserver.MISSING_FEATURE_ID),
     'webdx_usecounter_enum': fe.webdx_usecounter_enum,
     'enterprise_feature_categories': fe.enterprise_feature_categories or [],
     'enterprise_product_category': fe.enterprise_product_category or ENTERPRISE_PRODUCT_CATEGORY_CHROME_BROWSER_UPDATE,

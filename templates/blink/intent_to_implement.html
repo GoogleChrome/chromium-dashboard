@@ -30,6 +30,15 @@
     <a href="https://issues.chromium.org/issues?q=customfield1222907:%22{{c}}%22" target="_blank" rel="noopener">{{c}}</a>
   {% endfor %}
 
+  <br><br><h4>Web Feature ID</h4>
+  {% if feature.is_official_web_feature %}
+    <a href="https://webstatus.dev/features/{{feature.web_feature}}">{{feature.web_feature}}</a>
+  {% elif feature.web_feature %}
+    {{feature.web_feature}}
+  {% else %}
+    None
+  {% endif %}
+
   {% if 'motivation' in sections_to_show %}
     <br><br><h4>Motivation</h4>
     <p class="preformatted">{{feature.motivation|urlize}}</p>
