@@ -1,7 +1,7 @@
 import {LitElement, css, html, nothing} from 'lit';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {findPendingGates} from './chromedash-preflight-dialog';
-import {VOTE_OPTIONS} from './form-field-enums';
+import {GATE_TYPES, VOTE_OPTIONS} from './form-field-enums';
 import {customElement, property} from 'lit/decorators.js';
 import {GateDict} from './chromedash-gate-chip.js';
 import {Feature, StageDict} from '../js-src/cs-client';
@@ -29,7 +29,7 @@ export function shouldShowPrevoteDialog(
 ) {
   return (
     (pendingGates.length > 0 || findMissingFields(feature).length > 0) &&
-    gate.team_name == 'API Owners' &&
+    gate.gate_type == GATE_TYPES.API_SHIP &&
     vote == VOTE_OPTIONS.APPROVED[0]
   );
 }
