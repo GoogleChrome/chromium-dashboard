@@ -43,19 +43,22 @@ class MockResponse:
 
 def make_test_features():
   feature_1 = FeatureEntry(
+      id=1,
       name='feature one', summary='sum',
       owner_emails=['feature_owner@example.com'],
       category=1, feature_type=0)
   feature_1.put()
   stages = [110, 120, 130, 140, 150, 151, 160]
   for stage_type in stages:
-    stage = Stage(feature_id=feature_1.key.integer_id(), stage_type=stage_type)
+    stage = Stage(id=(stage_type + 1), feature_id=feature_1.key.integer_id(),
+                  stage_type=stage_type)
     # Add a starting milestone for the origin trial stage.
     if stage_type == 150:
       stage.milestones = MilestoneSet(desktop_first=100)
     stage.put()
 
   feature_2 = FeatureEntry(
+      id=2,
       name='feature two', summary='sum',
       creator_email='owner_2@example.com',
       owner_emails=['owner_1@example.com', 'owner_2@example.com'],
@@ -66,18 +69,21 @@ def make_test_features():
 
   stages = [220, 230, 250, 251, 260]
   for stage_type in stages:
-    stage = Stage(feature_id=feature_2.key.integer_id(), stage_type=stage_type)
+    stage = Stage(id=(stage_type + 2), feature_id=feature_2.key.integer_id(),
+                  stage_type=stage_type)
     # Add a starting milestone for the shipping stage.
     if stage_type == 260:
       stage.milestones = MilestoneSet(desktop_first=150)
     stage.put()
 
   feature_3 = FeatureEntry(
+      id=3,
       name='feature three', summary='sum', category=1, feature_type=2)
   feature_3.put()
   stages = [320, 330, 360]
   for stage_type in stages:
-    stage = Stage(feature_id=feature_3.key.integer_id(), stage_type=stage_type)
+    stage = Stage(id=(stage_type + 3), feature_id=feature_3.key.integer_id(),
+                  stage_type=stage_type)
     stage.put()
 
   return feature_1, feature_2, feature_3
@@ -452,6 +458,7 @@ class SLOOverdueHandlerTest(testing_config.CustomTestCase):
   def setUp(self):
     self.feature_1, self.feature_2, self.feature_3 = make_test_features()
     self.gate_1 = Gate(
+        id=11,
         feature_id=self.feature_1.key.integer_id(),
         stage_id=1111, gate_type=core_enums.GATE_ENTERPRISE_SHIP,
         state=Gate.PREPARING)
@@ -645,16 +652,6 @@ class SLOOverdueHandlerTest(testing_config.CustomTestCase):
     expected = {'message': expected_message}
     self.assertEqual(actual, expected)
 
-  def assert_equal_ignoring_ids(self, expected, actual):
-    """Compare two strings, but ignore differences in NDB keys."""
-    feature_re = re.compile(r'/feature/\d+')
-    gate_re = re.compile(r'\?gate=\d+')
-    expected = feature_re.sub(expected, '/feature/ID')
-    expected = gate_re.sub(expected, '?gate=ID')
-    actual = feature_re.sub(actual, '/feature/ID')
-    actual = gate_re.sub(actual, '?gate=ID')
-    self.assertMultiLineEqual(expected, actual)
-
   @mock.patch('internals.slo.now_utc')
   def test_get_template_data__old_reviews(self, mock_now_utc):
     """More time has passed.  We don't keep reminding."""
@@ -686,7 +683,7 @@ class SLOOverdueHandlerTest(testing_config.CustomTestCase):
     self.assertEqual('Review due for: feature one', task['subject'])
     self.assertEqual(None, task['reply_to'])
     # TESTDATA.make_golden(task['html'], 'test_build_gate_email_tasks__initial_due.html')
-    self.assert_equal_ignoring_ids(
+    self.assertEqual(
       TESTDATA['test_build_gate_email_tasks__initial_due.html'], task['html'])
 
   def test_build_gate_email_tasks__no_deleted(self):
@@ -718,7 +715,7 @@ class SLOOverdueHandlerTest(testing_config.CustomTestCase):
     self.assertEqual('ESCALATED: Review due for: feature one', task['subject'])
     self.assertEqual(None, task['reply_to'])
     # TESTDATA.make_golden(task['html'], 'test_build_gate_email_tasks__initial_overdue.html')
-    self.assert_equal_ignoring_ids(
+    self.assertEqual(
       TESTDATA['test_build_gate_email_tasks__initial_overdue.html'], task['html'])
 
   def test_build_gate_email_tasks__resolution_due(self):
@@ -737,7 +734,7 @@ class SLOOverdueHandlerTest(testing_config.CustomTestCase):
     self.assertEqual('Review due for: feature one', task['subject'])
     self.assertEqual(None, task['reply_to'])
     # TESTDATA.make_golden(task['html'], 'test_build_gate_email_tasks__resolution_due.html')
-    self.assert_equal_ignoring_ids(
+    self.assertEqual(
       TESTDATA['test_build_gate_email_tasks__resolution_due.html'], task['html'])
 
   def test_build_gate_email_tasks__resolution_overdue(self):
@@ -756,5 +753,5 @@ class SLOOverdueHandlerTest(testing_config.CustomTestCase):
     self.assertEqual('ESCALATED: Review due for: feature one', task['subject'])
     self.assertEqual(None, task['reply_to'])
     # TESTDATA.make_golden(task['html'], 'test_build_gate_email_tasks__resolution_overdue.html')
-    self.assert_equal_ignoring_ids(
+    self.assertEqual(
       TESTDATA['test_build_gate_email_tasks__resolution_overdue.html'], task['html'])
