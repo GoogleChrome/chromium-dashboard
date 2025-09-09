@@ -80,6 +80,11 @@ def get_features_in_release_notes(milestone: int):
     logging.info('Returned cached features')
     return filter_confidential(cached_features)
 
+  all_enterprise_feature_keys_future = FeatureEntry.query(
+      FeatureEntry.deleted == False,
+      ndb.OR(FeatureEntry.enterprise_impact > ENTERPRISE_IMPACT_NONE,
+             FeatureEntry.feature_type == FEATURE_TYPE_ENTERPRISE_ID)
+  ).fetch_async(keys_only=True)
   stages = Stage.query(
           Stage.archived == False,
           Stage.stage_type.IN([STAGE_BLINK_SHIPPING, STAGE_PSA_SHIPPING,
@@ -93,30 +98,35 @@ def get_features_in_release_notes(milestone: int):
                  Stage.milestones.webview_last >= milestone,
                  Stage.rollout_milestone >= milestone)).fetch()
   logging.info('Fetched %r relevent stages', len(stages))
+  all_enterprise_feature_ids = {
+      key.integer_id()
+      for key in all_enterprise_feature_keys_future.get_result()}
+  logging.info('Finished fetching all %r enterprise feature IDs',
+               len(all_enterprise_feature_ids))
 
-  feature_ids = list({s.feature_id for s in stages})
+  feature_ids: list[int] = list(
+      {s.feature_id for s in stages}.intersection(all_enterprise_feature_ids))
+  logging.info('Narrowed list of feature IDs to %r', len(feature_ids))
   features_future = get_entries_by_id_async(feature_ids)
   # Prefetch all stages for all those features, not just the stages that
   # qualified the features to be considered.
-  prefetched_stages = organize_all_stages_by_feature(
-      Stage.query(
-          Stage.feature_id.IN(feature_ids), Stage.archived == False).fetch()
-      if feature_ids else [])
+  prefetched_stages: list[Stage] = []
+  if feature_ids:
+    prefetched_stages = Stage.query(
+        Stage.feature_id.IN(feature_ids), Stage.archived == False).fetch()
+  prefetched_stages_dict = organize_all_stages_by_feature(prefetched_stages)
   logging.info('prefetched %r stages for %r features', len(prefetched_stages),
                len(feature_ids))
   features = []
   for f in get_future_results(features_future):
     formatted_feature = converters.feature_entry_to_json_verbose(
-        f, prefetched_stages=prefetched_stages.get(f.key.integer_id()))
+        f, prefetched_stages=prefetched_stages_dict.get(f.key.integer_id()))
     features.append(dict(formatted_feature))
   logging.info('finished converting features to dicts')
 
   features = [f for f in filter_unlisted(features)
-    if not f['deleted'] and
-      (f['enterprise_impact'] > ENTERPRISE_IMPACT_NONE or
-       f['feature_type_int'] == FEATURE_TYPE_ENTERPRISE_ID) and
-      (f['first_enterprise_notification_milestone'] == None or
-       f['first_enterprise_notification_milestone'] <= milestone)]
+    if (f['first_enterprise_notification_milestone'] == None or
+        f['first_enterprise_notification_milestone'] <= milestone)]
   logging.info('finished filtering')
 
   rediscache.set(cache_key, features)
