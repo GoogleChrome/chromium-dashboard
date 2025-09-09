@@ -48,15 +48,15 @@
 <br>
 <br>
 <div><b>Web Feature ID</b></div>
-  {% if feature.is_official_web_feature %}
+  {% if feature.is_official_web_feature -%}
     <a href="https://webstatus.dev/features/{{feature.web_feature}}">{{feature.web_feature}}</a>
-  {% elif feature.web_feature %}
+  {%- elif feature.web_feature -%}
     {{feature.web_feature}}
-  {% else %}
+  {%- else -%}
     None
-  {% endif %}
+  {%- endif %}
 
-{%- if 'motivation' in sections_to_show -%}
+{% if 'motivation' in sections_to_show -%}
 <br>
 <br>
 <div><b>Motivation</b></div>
