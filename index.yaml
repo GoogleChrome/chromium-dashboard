@@ -88,6 +88,10 @@ indexes:
   - name: created
 - kind: FeatureEntry
   properties:
+  - name: deleted
+  - name: enterprise_impact
+- kind: FeatureEntry
+  properties:
   - name: impl_status_chrome
   - name: name
 - kind: FeatureEntry
