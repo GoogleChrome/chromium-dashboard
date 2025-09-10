@@ -251,6 +251,7 @@ class IntentEmailPreviewTemplateTest(testing_config.CustomTestCase):
     self.feature_1 = FeatureEntry(
         id=234, name='feature one', summary='sum',
         owner_emails=['user1@google.com'], feature_type=0,
+        web_feature='WebFeature',
         category=1, intent_stage=core_enums.INTENT_IMPLEMENT)
     # Hardcode the key for the template test
     self.feature_1.key = ndb.Key('FeatureEntry', 234)
