@@ -105,6 +105,7 @@ export class ChromedashStackRankPage extends LitElement {
         id="datalist-input"
         type="search"
         list="features"
+        autocomplete="off"
         placeholder=${this.viewList.length
           ? 'Select or search a property for detailed stats'
           : 'loading...'}
