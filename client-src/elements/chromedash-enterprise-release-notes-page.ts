@@ -1,5 +1,6 @@
 import {css, html, LitElement, TemplateResult} from 'lit';
 import {customElement, state, property} from 'lit/decorators.js';
+import {ifDefined} from 'lit/directives/if-defined.js';
 import {SlDialog, SlTextarea} from '@shoelace-style/shoelace';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {Feature, User} from '../js-src/cs-client.js';
@@ -605,7 +606,7 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
         <a
           href="/feature/${f.id}/activity"
           target="_blank"
-          title=${f.updated.when}
+          title=${ifDefined(f.updated.when)}
         >
           ${renderRelativeDate(f.updated.when)}
         </a>
