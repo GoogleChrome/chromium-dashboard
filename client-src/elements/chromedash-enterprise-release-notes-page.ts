@@ -627,7 +627,7 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
       });
   }
 
-  renderToRemoveParaagraph(f: Feature): TemplateResult {
+  renderToRemoveParagraph(f: Feature): TemplateResult {
     return html`
       <p class="toremove">
         <b>< To remove</b>
@@ -789,7 +789,7 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
           html` <section class="feature">
             ${this.renderEditButton(f)}
             <strong>${f.name}</strong>
-            ${this.renderToRemoveParaagraph(f)}
+            ${this.renderToRemoveParagraph(f)}
             ${this.editingFeatureIds.has(f.id)
               ? this.renderEditableFeatureSummary(f)
               : this.renderFeatureSummary(f)}
