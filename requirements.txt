@@ -33,7 +33,7 @@ ghapi==1.0.6
 validators==0.35.0
 # Work-around for failure to deploy
 # https://stackoverflow.com/questions/69936420/google-cloud-platform-app-deploy-failure-due-to-pyparsing
-pyparsing==3.2.3
+pyparsing==3.2.4
 pillow==11.3.0
 # OpenAPI files
 ./gen/py/chromestatus_openapi
