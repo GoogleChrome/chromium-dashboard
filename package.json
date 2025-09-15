@@ -96,7 +96,7 @@
     "glob-parent": ">=6.0.2",
     "gts": "^6.0.2",
     "gulp": "^5.0.1",
-    "gulp-autoprefixer": "^9.0.0",
+    "gulp-autoprefixer": "^10.0.0",
     "gulp-babel": "^8.0.0",
     "gulp-concat": "^2.6.1",
     "gulp-license": "^1.1.0",
