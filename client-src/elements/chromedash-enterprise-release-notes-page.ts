@@ -1,5 +1,6 @@
 import {css, html, LitElement, TemplateResult} from 'lit';
 import {customElement, state, property} from 'lit/decorators.js';
+import {ifDefined} from 'lit/directives/if-defined.js';
 import {SlDialog, SlTextarea} from '@shoelace-style/shoelace';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {Feature, User} from '../js-src/cs-client.js';
@@ -118,6 +119,11 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
 
         .feature {
           margin: 1rem 0 2rem;
+          background: var(--card-background);
+          border: var(--card-border);
+          border-radius: var(--default-border-radius);
+          box-shadow: var(--card-box-shadow);
+          padding: var(--content-padding);
         }
 
         .feature p {
@@ -588,10 +594,31 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
       });
   }
 
-  renderOrEditFeatureSummary(f: Feature) {
-    let editButton = html``;
-    if (this.userCanEdit(f)) {
-      editButton = html`
+  renderToRemoveParagraph(f: Feature): TemplateResult {
+    return html`
+      <p class="toremove">
+        <b>< To remove</b>
+        - <a target="_blank" href="/feature/${f.id}">Feature details</a> -
+        <b>Owners:</b> ${f.browsers.chrome.owners?.join(', ')} -
+        <b>Editors:</b> ${(f.editors || []).join(', ')} -
+        <b>First Notice:</b> ${f.first_enterprise_notification_milestone} -
+        <b>Last Updated:</b>
+        <a
+          href="/feature/${f.id}/activity"
+          target="_blank"
+          title=${ifDefined(f.updated.when)}
+        >
+          ${renderRelativeDate(f.updated.when)}
+        </a>
+        by ${f.updated.by}
+        <b>></b>
+      </p>
+    `;
+  }
+
+  renderEditButton(f: Feature): TemplateResult {
+    if (this.userCanEdit(f) && !this.editingFeatureIds.has(f.id)) {
+      return html`
         <sl-button
           @click=${() => {
             this.startEditing(f.id);
@@ -602,10 +629,14 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
         >
       `;
     }
-    if (!this.editingFeatureIds.has(f.id)) {
-      return html` ${editButton}
-        <p class="summary preformatted">${f.summary}</p>`;
-    }
+    return html``;
+  }
+
+  renderFeatureSummary(f: Feature): TemplateResult {
+    return html` <p class="summary preformatted">${f.summary}</p>`;
+  }
+
+  renderEditableFeatureSummary(f: Feature): TemplateResult {
     return html`
       <sl-textarea
         id="edit-feature-${f.id}"
@@ -614,22 +645,64 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
         resize="auto"
       >
       </sl-textarea>
-      <sl-button
-        @click=${() => {
-          this.save(f);
-        }}
-        size="small"
-        variant="primary"
-        >Save</sl-button
-      >
-      <sl-button
-        @click=${() => {
-          this.cancel(f.id);
-        }}
-        size="small"
-        >Cancel</sl-button
-      >
     `;
+  }
+
+  renderEditableStageItem(
+    f: Feature,
+    s,
+    shouldDisplayStageTitleInBold
+  ): TemplateResult {
+    // TODO(jrobbins): Implement editing widgets in the next CL.
+    return this.renderStageItem(f, s, shouldDisplayStageTitleInBold);
+  }
+
+  renderStageItem(
+    f: Feature,
+    s,
+    shouldDisplayStageTitleInBold
+  ): TemplateResult {
+    return html`
+      <li>
+        <span
+          class="${shouldDisplayStageTitleInBold(
+            s.rollout_milestone,
+            f.stages.map(s => s.rollout_milestone).sort()
+          )
+            ? 'bold'
+            : ''}"
+        >
+          ${this.getStageTitle(s)}
+        </span>
+        ${renderHTMLIf(
+          s.rollout_details,
+          html`<br /><span class="preformatted">${s.rollout_details}</span>`
+        )}
+      </li>
+    `;
+  }
+
+  renderSaveAndCancel(f: Feature): TemplateResult {
+    if (this.editingFeatureIds.has(f.id)) {
+      return html`
+        <sl-button
+          @click=${() => {
+            this.save(f);
+          }}
+          size="small"
+          variant="primary"
+          >Save</sl-button
+        >
+        <sl-button
+          @click=${() => {
+            this.cancel(f.id);
+          }}
+          size="small"
+          >Cancel</sl-button
+        >
+      `;
+    }
+    return html``;
   }
 
   renderReleaseNotesDetailsSection(
@@ -644,48 +717,25 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
       ${features.map(
         f =>
           html` <section class="feature">
+            ${this.renderEditButton(f)}
             <strong>${f.name}</strong>
-            <p class="toremove">
-              <b>< To remove</b>
-              - <a target="_blank" href="/feature/${f.id}">Feature details</a> -
-              <b>Owners:</b> ${f.browsers.chrome.owners.join(', ')} -
-              <b>Editors:</b> ${(f.editors || []).join(', ')} -
-              <b>First Notice:</b> ${f.first_enterprise_notification_milestone}
-              - <b>Last Updated:</b>
-              <a
-                href="/feature/${f.id}/activity"
-                target="_blank"
-                title=${f.updated.when}
-              >
-                ${renderRelativeDate(f.updated.when)}
-              </a>
-              by ${f.updated.by}
-              <b>></b>
-            </p>
-            ${this.renderOrEditFeatureSummary(f)}
+            ${this.renderToRemoveParagraph(f)}
+            ${this.editingFeatureIds.has(f.id)
+              ? this.renderEditableFeatureSummary(f)
+              : this.renderFeatureSummary(f)}
             <ul>
-              ${f.stages.map(
-                s =>
-                  html` <li>
-                    <span
-                      class="${shouldDisplayStageTitleInBold(
-                        s.rollout_milestone,
-                        f.stages.map(s => s.rollout_milestone).sort()
-                      )
-                        ? 'bold'
-                        : ''}"
-                    >
-                      ${this.getStageTitle(s)}
-                    </span>
-                    ${renderHTMLIf(
-                      s.rollout_details,
-                      html`<br /><span class="preformatted"
-                          >${s.rollout_details}</span
-                        >`
-                    )}
-                  </li>`
+              ${f.stages.map(s =>
+                this.editingFeatureIds.has(f.id)
+                  ? this.renderEditableStageItem(
+                      f,
+                      s,
+                      shouldDisplayStageTitleInBold
+                    )
+                  : this.renderStageItem(f, s, shouldDisplayStageTitleInBold)
               )}
             </ul>
+            ${this.renderSaveAndCancel(f)}
+
             <div class="screenshots">
               ${f.screenshot_links.map(
                 (url, i) =>
