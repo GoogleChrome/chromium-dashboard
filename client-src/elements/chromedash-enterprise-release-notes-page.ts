@@ -1,9 +1,9 @@
 import {css, html, LitElement, TemplateResult} from 'lit';
 import {customElement, state, property} from 'lit/decorators.js';
 import {ifDefined} from 'lit/directives/if-defined.js';
-import {SlDialog, SlTextarea, SlInput} from '@shoelace-style/shoelace';
+import {SlDialog, SlTextarea, SlInput, SlSelect} from '@shoelace-style/shoelace';
 import {SHARED_STYLES} from '../css/shared-css.js';
-import {Feature, User} from '../js-src/cs-client.js';
+import {Feature, User, StageDict} from '../js-src/cs-client.js';
 import {
   ENTERPRISE_FEATURE_CATEGORIES,
   ENTERPRISE_PRODUCT_CATEGORY,
@@ -251,6 +251,16 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
     );
   }
 
+  convertFeatureShippingStagesToRolloutStages(f: Feature): Feature {
+    return {
+        ...f,
+        stages: f.stages
+          .filter(s => STAGE_TYPES_SHIPPING.has(s.stage_type))
+          .map(s => this.convertShippingStageToRolloutStages(s) as unknown as StageDict[])
+          .flatMap(x => x),
+    };
+  }
+
   updateFeatures(features) {
     // Simulate rollout stage for features with breaking changes and planned
     // milestones but without rollout stages so that they appear on the release
@@ -261,13 +271,7 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
           !stages.some(s => s.stage_type === STAGE_ENT_ROLLOUT) &&
           stages.some(s => STAGE_TYPES_SHIPPING.has(s.stage_type))
       )
-      .map(f => ({
-        ...f,
-        stages: f.stages
-          .filter(s => STAGE_TYPES_SHIPPING.has(s.stage_type))
-          .map(this.convertShippingStageToRolloutStages)
-          .flatMap(x => x),
-      }));
+      .map(f => this.convertFeatureShippingStagesToRolloutStages(f));
 
     // Filter out features that don't have rollout stages.
     // Ensure that the stages are only rollout stages.
@@ -284,6 +288,10 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
           .sort((a, b) => a.rollout_milestone - b.rollout_milestone),
       }));
 
+    this.categorizeFeatures();
+  }
+
+  categorizeFeatures() {
     // Features with a rollout stage in the selected milestone sorted with the highest impact.
     const currentFeatures = this.features
       .filter(({stages}) =>
@@ -363,6 +371,13 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
         f.enterprise_product_category ===
         ENTERPRISE_PRODUCT_CATEGORY.CHROME_ENTERPRISE_PREMIUM[0]
     );
+  }
+
+  replaceOneFeature(revisedFeature: Feature) {
+    const revisedList = this.features.map(f =>
+      f.id === revisedFeature.id ? revisedFeature : f);
+    this.features = revisedList;
+    this.categorizeFeatures();
   }
 
   connectedCallback() {
@@ -573,39 +588,33 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
     return nowStr;
   }
 
-  _addFieldValue(
-    fieldValues: FieldInfo[],
-    name: string,
-    value,
-    originalValue,
-    stage?
-  ) {
-    if (value !== undefined && value != originalValue) {
-      fieldValues.push({name, value, touched: true, stageId: stage?.id});
-    }
-  }
-
   save(f: Feature) {
     const fieldValues: FieldInfo[] = [];
-    let textarea: SlTextarea = this.shadowRoot?.querySelector<SlTextarea>(
+    const addFieldValue = (name, el, originalValue, stage?) => {
+      const value = el?.value;
+      if (value !== undefined && value != originalValue) {
+        fieldValues.push({name, value, touched: true, stageId: stage?.id});
+      }
+    };
+    let summaryEl: SlTextarea = this.shadowRoot?.querySelector<SlTextarea>(
       '#edit-feature-' + f.id
     )!;
-    const newSummary = textarea?.value;
-    this._addFieldValue(fieldValues, 'summary', newSummary, f.summary);
+    addFieldValue('summary', summaryEl, f.summary);
 
     for (const s of f.stages) {
       if (s.id) {
-        const rmInput: SlInput = this.shadowRoot?.querySelector<SlInput>(
+        const milestoneEl = this.shadowRoot?.querySelector<SlInput>(
           '#edit-rollout-milestone-' + s.id
         )!;
-        const newRolloutMilestone = rmInput?.value;
-        this._addFieldValue(
-          fieldValues,
-          'rollout_milestone',
-          newRolloutMilestone,
-          s.rollout_milestone,
-          s
-        );
+        addFieldValue('rollout_milestone', milestoneEl, s.rollout_milestone, s);
+        const platformsEl = this.shadowRoot?.querySelector<SlSelect>(
+          '#edit-rollout-platforms-' + s.id
+        )!;
+        addFieldValue('rollout_platforms', platformsEl, s.rollout_platforms, s);
+        const detailsEl = this.shadowRoot?.querySelector<SlInput>(
+          '#edit-rollout-details-' + s.id
+        )!;
+        addFieldValue('rollout_details', detailsEl, s.rollout_details, s);
       }
     }
 
@@ -613,9 +622,10 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
     window.csClient
       .updateFeature(submitBody)
       .then(resp => {
-        f.summary = newSummary;
-        f.updated.when = this.nowString();
-        f.updated.by = this.user.email;
+        window.csClient.getFeature(f.id)
+          .then(resp2 => {
+            this.replaceOneFeature(this.convertFeatureShippingStagesToRolloutStages(resp2 as Feature));
+          })
       })
       .catch(() => {
         showToastMessage(
@@ -708,7 +718,7 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
             class="rollout-platforms"
             multiple
             clearable
-            id="edit-rollout-platform-${s.id}"
+            id="edit-rollout-platforms-${s.id}"
             .value=${platforms}
           >
             ${availableOptions.map(
