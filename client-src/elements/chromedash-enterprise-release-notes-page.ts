@@ -596,10 +596,14 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
     const fieldValues: FieldInfo[] = [];
     const addFieldValue = (name, el, originalValue, stage?) => {
       const value = el?.value;
-      if (value !== undefined && value != originalValue) {
+      if (value !== undefined && '' + value != '' + originalValue) {
         fieldValues.push({name, value, touched: true, stageId: stage?.id});
       }
     };
+    let nameEl: SlTextarea = this.shadowRoot?.querySelector<SlTextarea>(
+      '#edit-name-' + f.id
+    )!;
+    addFieldValue('name', nameEl, f.name);
     let summaryEl: SlTextarea = this.shadowRoot?.querySelector<SlTextarea>(
       '#edit-feature-' + f.id
     )!;
@@ -678,6 +682,22 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
       `;
     }
     return html``;
+  }
+
+  renderFeatureName(f: Feature): TemplateResult {
+    return html`<strong>${f.name}</strong>`;
+  }
+
+  renderEditableFeatureName(f: Feature): TemplateResult {
+    return html`
+      <sl-input
+        class="feature-name"
+        id="edit-name-${f.id}"
+        value=${f.name}
+        size="small"
+      >
+      </sl-input>
+    `;
   }
 
   renderFeatureSummary(f: Feature): TemplateResult {
@@ -790,6 +810,35 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
     return html``;
   }
 
+  renderFeatureReleaseNote(f: Feature, shouldDisplayStageTitleInBold) {
+    const isEditing = this.editingFeatureIds.has(f.id);
+    return html` <section class="feature">
+      ${this.renderEditButton(f)}
+      ${isEditing
+        ? this.renderEditableFeatureName(f)
+        : this.renderFeatureName(f)}
+      ${this.renderToRemoveParagraph(f)}
+      ${isEditing
+        ? this.renderEditableFeatureSummary(f)
+        : this.renderFeatureSummary(f)}
+      <ul>
+        ${f.stages.map(s =>
+          isEditing && s.id
+            ? this.renderEditableStageItem(f, s, shouldDisplayStageTitleInBold)
+            : this.renderStageItem(f, s, shouldDisplayStageTitleInBold)
+        )}
+      </ul>
+      ${this.renderSaveAndCancel(f)}
+
+      <div class="screenshots">
+        ${f.screenshot_links.map(
+          (url, i) =>
+            html`<img src="${url}" alt="Feature screenshot ${i + 1}" />`
+        )}
+      </div>
+    </section>`;
+  }
+
   renderReleaseNotesDetailsSection(
     title,
     features,
@@ -799,35 +848,8 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
     // That line is to be removed by whomever copy/pastes the content into the final release notes.
     return html` <div class="note-section">
       <h2>${title}</h2>
-      ${features.map(
-        f =>
-          html` <section class="feature">
-            ${this.renderEditButton(f)}
-            <strong>${f.name}</strong>
-            ${this.renderToRemoveParagraph(f)}
-            ${this.editingFeatureIds.has(f.id)
-              ? this.renderEditableFeatureSummary(f)
-              : this.renderFeatureSummary(f)}
-            <ul>
-              ${f.stages.map(s =>
-                this.editingFeatureIds.has(f.id) && s.id
-                  ? this.renderEditableStageItem(
-                      f,
-                      s,
-                      shouldDisplayStageTitleInBold
-                    )
-                  : this.renderStageItem(f, s, shouldDisplayStageTitleInBold)
-              )}
-            </ul>
-            ${this.renderSaveAndCancel(f)}
-
-            <div class="screenshots">
-              ${f.screenshot_links.map(
-                (url, i) =>
-                  html`<img src="${url}" alt="Feature screenshot ${i + 1}" />`
-              )}
-            </div>
-          </section>`
+      ${features.map(f =>
+        this.renderFeatureReleaseNote(f, shouldDisplayStageTitleInBold)
       )}
     </div>`;
   }
