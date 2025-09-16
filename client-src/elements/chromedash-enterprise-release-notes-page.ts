@@ -1,7 +1,12 @@
 import {css, html, LitElement, TemplateResult} from 'lit';
 import {customElement, state, property} from 'lit/decorators.js';
 import {ifDefined} from 'lit/directives/if-defined.js';
-import {SlDialog, SlTextarea, SlInput, SlSelect} from '@shoelace-style/shoelace';
+import {
+  SlDialog,
+  SlTextarea,
+  SlInput,
+  SlSelect,
+} from '@shoelace-style/shoelace';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {Feature, User, StageDict} from '../js-src/cs-client.js';
 import {
@@ -252,41 +257,40 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
   }
 
   convertFeatureShippingStagesToRolloutStages(f: Feature): Feature {
+    const rollouts: StageDict[] = [];
+    let converted: StageDict[] = [];
+
+    for (const s of f.stages) {
+      if (STAGE_TYPES_SHIPPING.has(s.stage_type)) {
+        converted = this.convertShippingStageToRolloutStages(
+          s
+        ) as unknown as StageDict[];
+      } else if (s.stage_type === STAGE_ENT_ROLLOUT) {
+        rollouts.push(s);
+      }
+    }
+    let newStages = rollouts.length > 0 ? rollouts : converted;
+    newStages = newStages.filter(s => !!s.rollout_milestone);
+    newStages = newStages.sort(
+      (a, b) => a.rollout_milestone! - b.rollout_milestone!
+    );
+
     return {
-        ...f,
-        stages: f.stages
-          .filter(s => STAGE_TYPES_SHIPPING.has(s.stage_type))
-          .map(s => this.convertShippingStageToRolloutStages(s) as unknown as StageDict[])
-          .flatMap(x => x),
+      ...f,
+      stages: newStages,
     };
   }
 
   updateFeatures(features) {
-    // Simulate rollout stage for features with breaking changes and planned
-    // milestones but without rollout stages so that they appear on the release
-    // notes.
-    const featuresRequiringRolloutStages = features
-      .filter(
-        ({stages}) =>
-          !stages.some(s => s.stage_type === STAGE_ENT_ROLLOUT) &&
-          stages.some(s => STAGE_TYPES_SHIPPING.has(s.stage_type))
-      )
-      .map(f => this.convertFeatureShippingStagesToRolloutStages(f));
+    features = features.map(f =>
+      this.convertFeatureShippingStagesToRolloutStages(f)
+    );
 
     // Filter out features that don't have rollout stages.
     // Ensure that the stages are only rollout stages.
-    this.features = [...features, ...featuresRequiringRolloutStages]
-      .filter(({stages}) =>
-        stages.some(s => s.stage_type === STAGE_ENT_ROLLOUT)
-      )
-      .map(f => ({
-        ...f,
-        stages: f.stages
-          .filter(
-            s => s.stage_type === STAGE_ENT_ROLLOUT && !!s.rollout_milestone
-          )
-          .sort((a, b) => a.rollout_milestone - b.rollout_milestone),
-      }));
+    this.features = features.filter(({stages}) =>
+      stages.some(s => s.stage_type === STAGE_ENT_ROLLOUT)
+    );
 
     this.categorizeFeatures();
   }
@@ -375,7 +379,8 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
 
   replaceOneFeature(revisedFeature: Feature) {
     const revisedList = this.features.map(f =>
-      f.id === revisedFeature.id ? revisedFeature : f);
+      f.id === revisedFeature.id ? revisedFeature : f
+    );
     this.features = revisedList;
     this.categorizeFeatures();
   }
@@ -622,10 +627,11 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
     window.csClient
       .updateFeature(submitBody)
       .then(resp => {
-        window.csClient.getFeature(f.id)
-          .then(resp2 => {
-            this.replaceOneFeature(this.convertFeatureShippingStagesToRolloutStages(resp2 as Feature));
-          })
+        window.csClient.getFeature(f.id).then(resp2 => {
+          this.replaceOneFeature(
+            this.convertFeatureShippingStagesToRolloutStages(resp2 as Feature)
+          );
+        });
       })
       .catch(() => {
         showToastMessage(
