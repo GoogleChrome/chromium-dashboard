@@ -257,18 +257,17 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
   }
 
   convertFeatureShippingStagesToRolloutStages(f: Feature): Feature {
-    const rollouts: StageDict[] = [];
-    let converted: StageDict[] = [];
+    const rollouts: StageDict[] = f.stages.filter(
+      s => s.stage_type === STAGE_ENT_ROLLOUT
+    );
+    const converted: StageDict[] = f.stages
+      .filter(s => STAGE_TYPES_SHIPPING.has(s.stage_type))
+      .map(
+        s =>
+          this.convertShippingStageToRolloutStages(s) as unknown as StageDict[]
+      )
+      .flatMap(x => x);
 
-    for (const s of f.stages) {
-      if (STAGE_TYPES_SHIPPING.has(s.stage_type)) {
-        converted = this.convertShippingStageToRolloutStages(
-          s
-        ) as unknown as StageDict[];
-      } else if (s.stage_type === STAGE_ENT_ROLLOUT) {
-        rollouts.push(s);
-      }
-    }
     let newStages = rollouts.length > 0 ? rollouts : converted;
     newStages = newStages.filter(s => !!s.rollout_milestone);
     newStages = newStages.sort(
