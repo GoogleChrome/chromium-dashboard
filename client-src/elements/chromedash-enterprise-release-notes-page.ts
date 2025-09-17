@@ -1,12 +1,7 @@
 import {css, html, LitElement, TemplateResult} from 'lit';
 import {customElement, state, property} from 'lit/decorators.js';
 import {ifDefined} from 'lit/directives/if-defined.js';
-import {
-  SlDialog,
-  SlTextarea,
-  SlInput,
-  SlSelect,
-} from '@shoelace-style/shoelace';
+import {SlTextarea, SlInput, SlSelect} from '@shoelace-style/shoelace';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {Feature, User, StageDict} from '../js-src/cs-client.js';
 import {
@@ -791,6 +786,7 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
     if (this.editingFeatureIds.has(f.id)) {
       return html`
         <sl-button
+          class="save-button"
           @click=${() => {
             this.save(f);
           }}
@@ -799,6 +795,7 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
           >Save</sl-button
         >
         <sl-button
+          class="cancel-button"
           @click=${() => {
             this.cancel(f.id);
           }}
