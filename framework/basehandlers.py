@@ -845,7 +845,10 @@ def FlaskApplication(import_name, routes, pattern_base='', debug=False):
   CORS(app, resources={
       r'/data/.*': {'origins': '*'},
       r'/api/v0/features.*': {'origins': ALLOWED_API_ORIGINS,
-                              'methods': ['GET']}})
+                              'methods': ['GET']},
+      r'/api/v0/channels.*': {'origins': ALLOWED_API_ORIGINS,
+                              'methods': ['GET']},
+  })
 
   # Set cookie headers in Flask; see
   # https://flask.palletsprojects.com/en/2.0.x/config/
