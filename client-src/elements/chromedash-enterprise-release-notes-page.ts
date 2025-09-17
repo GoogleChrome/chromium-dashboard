@@ -30,6 +30,11 @@ interface Channels {
   };
 }
 
+// A simple interface for any Shoelace element that has a .value
+interface ValueElement {
+  value: string | string[] | undefined;
+}
+
 @customElement('chromedash-enterprise-release-notes-page')
 export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
   @property({attribute: false})
@@ -170,7 +175,7 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
     ];
   }
 
-  convertShippingStageToRolloutStages(stage) {
+  convertShippingStageToRolloutStages(stage): Partial<StageDict>[] {
     const milestones = [
       stage.desktop_first,
       stage.android_first,
@@ -245,7 +250,7 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
       ([milestone, platforms]) => ({
         stage_type: STAGE_ENT_ROLLOUT,
         rollout_milestone: Number(milestone),
-        rollout_platforms: Array.from(platforms),
+        rollout_platforms: Array.from(platforms).map(String),
         rollout_impact: 1,
       })
     );
@@ -257,10 +262,7 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
     );
     const converted: StageDict[] = f.stages
       .filter(s => STAGE_TYPES_SHIPPING.has(s.stage_type))
-      .map(
-        s =>
-          this.convertShippingStageToRolloutStages(s) as unknown as StageDict[]
-      )
+      .map(s => this.convertShippingStageToRolloutStages(s) as StageDict[])
       .flatMap(x => x);
 
     let newStages = rollouts.length > 0 ? rollouts : converted;
@@ -589,7 +591,12 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
 
   save(f: Feature) {
     const fieldValues: FieldInfo[] = [];
-    const addFieldValue = (name, el, originalValue, stage?) => {
+    const addFieldValue = (
+      name: string,
+      el: ValueElement,
+      originalValue: string | string[] | number | undefined,
+      stage?: StageDict
+    ) => {
       const value = el?.value;
       if (value !== undefined && '' + value != '' + originalValue) {
         fieldValues.push({name, value, touched: true, stageId: stage?.id});
