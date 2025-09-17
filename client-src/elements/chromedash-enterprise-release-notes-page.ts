@@ -1,9 +1,9 @@
 import {css, html, LitElement, TemplateResult} from 'lit';
 import {customElement, state, property} from 'lit/decorators.js';
 import {ifDefined} from 'lit/directives/if-defined.js';
-import {SlDialog, SlTextarea} from '@shoelace-style/shoelace';
+import {SlTextarea, SlInput, SlSelect} from '@shoelace-style/shoelace';
 import {SHARED_STYLES} from '../css/shared-css.js';
-import {Feature, User} from '../js-src/cs-client.js';
+import {Feature, User, StageDict} from '../js-src/cs-client.js';
 import {
   ENTERPRISE_FEATURE_CATEGORIES,
   ENTERPRISE_PRODUCT_CATEGORY,
@@ -13,6 +13,8 @@ import {
   STAGE_TYPES_SHIPPING,
 } from './form-field-enums.js';
 import {
+  FieldInfo,
+  formatFeatureChanges,
   parseRawQuery,
   renderHTMLIf,
   renderRelativeDate,
@@ -26,6 +28,11 @@ interface Channels {
   stable: {
     version: number;
   };
+}
+
+// A simple interface for any Shoelace element that has a .value
+interface ValueElement {
+  value: string | string[] | undefined;
 }
 
 @customElement('chromedash-enterprise-release-notes-page')
@@ -142,6 +149,16 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
         .edit-button {
           float: right;
         }
+        .feature-summary {
+          margin-bottom: var(--content-padding);
+        }
+        .rollout-milestone {
+          width: 6em;
+        }
+        .rollout-platforms {
+          margin-left: 2em;
+          flex-grow: 1;
+        }
 
         .screenshots {
           display: flex;
@@ -158,7 +175,7 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
     ];
   }
 
-  convertShippingStageToRolloutStages(stage) {
+  convertShippingStageToRolloutStages(stage): Partial<StageDict>[] {
     const milestones = [
       stage.desktop_first,
       stage.android_first,
@@ -233,45 +250,48 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
       ([milestone, platforms]) => ({
         stage_type: STAGE_ENT_ROLLOUT,
         rollout_milestone: Number(milestone),
-        rollout_platforms: Array.from(platforms),
+        rollout_platforms: Array.from(platforms).map(String),
         rollout_impact: 1,
       })
     );
   }
 
+  convertFeatureShippingStagesToRolloutStages(f: Feature): Feature {
+    const rollouts: StageDict[] = f.stages.filter(
+      s => s.stage_type === STAGE_ENT_ROLLOUT
+    );
+    const converted: StageDict[] = f.stages
+      .filter(s => STAGE_TYPES_SHIPPING.has(s.stage_type))
+      .map(s => this.convertShippingStageToRolloutStages(s) as StageDict[])
+      .flatMap(x => x);
+
+    let newStages = rollouts.length > 0 ? rollouts : converted;
+    newStages = newStages.filter(s => !!s.rollout_milestone);
+    newStages = newStages.sort(
+      (a, b) => a.rollout_milestone! - b.rollout_milestone!
+    );
+
+    return {
+      ...f,
+      stages: newStages,
+    };
+  }
+
   updateFeatures(features) {
-    // Simulate rollout stage for features with breaking changes and planned
-    // milestones but without rollout stages so that they appear on the release
-    // notes.
-    const featuresRequiringRolloutStages = features
-      .filter(
-        ({stages}) =>
-          !stages.some(s => s.stage_type === STAGE_ENT_ROLLOUT) &&
-          stages.some(s => STAGE_TYPES_SHIPPING.has(s.stage_type))
-      )
-      .map(f => ({
-        ...f,
-        stages: f.stages
-          .filter(s => STAGE_TYPES_SHIPPING.has(s.stage_type))
-          .map(this.convertShippingStageToRolloutStages)
-          .flatMap(x => x),
-      }));
+    features = features.map(f =>
+      this.convertFeatureShippingStagesToRolloutStages(f)
+    );
 
     // Filter out features that don't have rollout stages.
     // Ensure that the stages are only rollout stages.
-    this.features = [...features, ...featuresRequiringRolloutStages]
-      .filter(({stages}) =>
-        stages.some(s => s.stage_type === STAGE_ENT_ROLLOUT)
-      )
-      .map(f => ({
-        ...f,
-        stages: f.stages
-          .filter(
-            s => s.stage_type === STAGE_ENT_ROLLOUT && !!s.rollout_milestone
-          )
-          .sort((a, b) => a.rollout_milestone - b.rollout_milestone),
-      }));
+    this.features = features.filter(({stages}) =>
+      stages.some(s => s.stage_type === STAGE_ENT_ROLLOUT)
+    );
 
+    this.categorizeFeatures();
+  }
+
+  categorizeFeatures() {
     // Features with a rollout stage in the selected milestone sorted with the highest impact.
     const currentFeatures = this.features
       .filter(({stages}) =>
@@ -351,6 +371,14 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
         f.enterprise_product_category ===
         ENTERPRISE_PRODUCT_CATEGORY.CHROME_ENTERPRISE_PREMIUM[0]
     );
+  }
+
+  replaceOneFeature(revisedFeature: Feature) {
+    const revisedList = this.features.map(f =>
+      f.id === revisedFeature.id ? revisedFeature : f
+    );
+    this.features = revisedList;
+    this.categorizeFeatures();
   }
 
   connectedCallback() {
@@ -562,27 +590,53 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
   }
 
   save(f: Feature) {
-    let textarea: SlTextarea = this.shadowRoot?.querySelector(
-      '#edit-feature-' + f.id
-    ) as SlTextarea;
-    let newSummary = textarea?.value;
-    if (newSummary === undefined) {
-      return;
-    }
-    const submitBody = {
-      feature_changes: {
-        id: f.id,
-        summary: newSummary,
-      },
-      stages: [],
-      has_changes: true,
+    const fieldValues: FieldInfo[] = [];
+    const addFieldValue = (
+      name: string,
+      el: ValueElement,
+      originalValue: string | string[] | number | undefined,
+      stage?: StageDict
+    ) => {
+      const value = el?.value;
+      if (value !== undefined && '' + value != '' + originalValue) {
+        fieldValues.push({name, value, touched: true, stageId: stage?.id});
+      }
     };
+    let nameEl: SlTextarea = this.shadowRoot?.querySelector<SlTextarea>(
+      '#edit-name-' + f.id
+    )!;
+    addFieldValue('name', nameEl, f.name);
+    let summaryEl: SlTextarea = this.shadowRoot?.querySelector<SlTextarea>(
+      '#edit-feature-' + f.id
+    )!;
+    addFieldValue('summary', summaryEl, f.summary);
+
+    for (const s of f.stages) {
+      if (s.id) {
+        const milestoneEl = this.shadowRoot?.querySelector<SlInput>(
+          '#edit-rollout-milestone-' + s.id
+        )!;
+        addFieldValue('rollout_milestone', milestoneEl, s.rollout_milestone, s);
+        const platformsEl = this.shadowRoot?.querySelector<SlSelect>(
+          '#edit-rollout-platforms-' + s.id
+        )!;
+        addFieldValue('rollout_platforms', platformsEl, s.rollout_platforms, s);
+        const detailsEl = this.shadowRoot?.querySelector<SlInput>(
+          '#edit-rollout-details-' + s.id
+        )!;
+        addFieldValue('rollout_details', detailsEl, s.rollout_details, s);
+      }
+    }
+
+    const submitBody = formatFeatureChanges(fieldValues, f.id);
     window.csClient
       .updateFeature(submitBody)
       .then(resp => {
-        f.summary = newSummary;
-        f.updated.when = this.nowString();
-        f.updated.by = this.user.email;
+        window.csClient.getFeature(f.id).then(resp2 => {
+          this.replaceOneFeature(
+            this.convertFeatureShippingStagesToRolloutStages(resp2 as Feature)
+          );
+        });
       })
       .catch(() => {
         showToastMessage(
@@ -632,13 +686,30 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
     return html``;
   }
 
+  renderFeatureName(f: Feature): TemplateResult {
+    return html`<strong>${f.name}</strong>`;
+  }
+
+  renderEditableFeatureName(f: Feature): TemplateResult {
+    return html`
+      <sl-input
+        class="feature-name"
+        id="edit-name-${f.id}"
+        value=${f.name}
+        size="small"
+      >
+      </sl-input>
+    `;
+  }
+
   renderFeatureSummary(f: Feature): TemplateResult {
     return html` <p class="summary preformatted">${f.summary}</p>`;
   }
 
   renderEditableFeatureSummary(f: Feature): TemplateResult {
     return html`
-      <sl-textarea
+    <sl-textarea
+    class="feature-summary""
         id="edit-feature-${f.id}"
         value=${f.summary}
         size="small"
@@ -654,7 +725,43 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
     shouldDisplayStageTitleInBold
   ): TemplateResult {
     // TODO(jrobbins): Implement editing widgets in the next CL.
-    return this.renderStageItem(f, s, shouldDisplayStageTitleInBold);
+    const platforms: string[] = s.rollout_platforms;
+    const choices = PLATFORM_CATEGORIES;
+    const availableOptions = Object.values(choices).filter(
+      ([value, label, obsolete]) => !obsolete || platforms.includes('' + value)
+    );
+
+    return html`
+      <li>
+        <div class="hbox">
+          <sl-input
+            class="rollout-milestone"
+            id="edit-rollout-milestone-${s.id}"
+            type="number"
+            value=${s.rollout_milestone}
+          ></sl-input>
+
+          <sl-select
+            class="rollout-platforms"
+            multiple
+            clearable
+            id="edit-rollout-platforms-${s.id}"
+            .value=${platforms}
+          >
+            ${availableOptions.map(
+              ([value, label]) => html`
+                <sl-option value="${value}"> ${label} </sl-option>
+              `
+            )}
+          </sl-select>
+        </div>
+        <sl-input
+          class="rollout-details"
+          id="edit-rollout-details-${s.id}"
+          value=${s.rollout_details}
+        ></sl-input>
+      </li>
+    `;
   }
 
   renderStageItem(
@@ -686,6 +793,7 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
     if (this.editingFeatureIds.has(f.id)) {
       return html`
         <sl-button
+          class="save-button"
           @click=${() => {
             this.save(f);
           }}
@@ -694,6 +802,7 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
           >Save</sl-button
         >
         <sl-button
+          class="cancel-button"
           @click=${() => {
             this.cancel(f.id);
           }}
@@ -705,6 +814,35 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
     return html``;
   }
 
+  renderFeatureReleaseNote(f: Feature, shouldDisplayStageTitleInBold) {
+    const isEditing = this.editingFeatureIds.has(f.id);
+    return html` <section class="feature">
+      ${this.renderEditButton(f)}
+      ${isEditing
+        ? this.renderEditableFeatureName(f)
+        : this.renderFeatureName(f)}
+      ${this.renderToRemoveParagraph(f)}
+      ${isEditing
+        ? this.renderEditableFeatureSummary(f)
+        : this.renderFeatureSummary(f)}
+      <ul>
+        ${f.stages.map(s =>
+          isEditing && s.id
+            ? this.renderEditableStageItem(f, s, shouldDisplayStageTitleInBold)
+            : this.renderStageItem(f, s, shouldDisplayStageTitleInBold)
+        )}
+      </ul>
+      ${this.renderSaveAndCancel(f)}
+
+      <div class="screenshots">
+        ${f.screenshot_links.map(
+          (url, i) =>
+            html`<img src="${url}" alt="Feature screenshot ${i + 1}" />`
+        )}
+      </div>
+    </section>`;
+  }
+
   renderReleaseNotesDetailsSection(
     title,
     features,
@@ -714,35 +852,8 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
     // That line is to be removed by whomever copy/pastes the content into the final release notes.
     return html` <div class="note-section">
       <h2>${title}</h2>
-      ${features.map(
-        f =>
-          html` <section class="feature">
-            ${this.renderEditButton(f)}
-            <strong>${f.name}</strong>
-            ${this.renderToRemoveParagraph(f)}
-            ${this.editingFeatureIds.has(f.id)
-              ? this.renderEditableFeatureSummary(f)
-              : this.renderFeatureSummary(f)}
-            <ul>
-              ${f.stages.map(s =>
-                this.editingFeatureIds.has(f.id)
-                  ? this.renderEditableStageItem(
-                      f,
-                      s,
-                      shouldDisplayStageTitleInBold
-                    )
-                  : this.renderStageItem(f, s, shouldDisplayStageTitleInBold)
-              )}
-            </ul>
-            ${this.renderSaveAndCancel(f)}
-
-            <div class="screenshots">
-              ${f.screenshot_links.map(
-                (url, i) =>
-                  html`<img src="${url}" alt="Feature screenshot ${i + 1}" />`
-              )}
-            </div>
-          </section>`
+      ${features.map(f =>
+        this.renderFeatureReleaseNote(f, shouldDisplayStageTitleInBold)
       )}
     </div>`;
   }
