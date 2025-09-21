@@ -627,6 +627,6 @@ export function enhanceUrl(url, featureLinks: FeatureLink[] = [], text?) {
 }
 
 // prettier-ignore
-export function enhanceAutolink(part, featureLinks: FeatureLink[]) {
+export function enhanceAutolink(part, featureLinks: FeatureLink[]): TemplateResult {
   return html`<chromedash-link href=${part.href} .featureLinks=${featureLinks} .ignoreHttpErrorCodes=${[404]}>${part.content}</chromedash-link>`;
 }

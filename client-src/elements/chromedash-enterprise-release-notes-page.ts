@@ -13,6 +13,7 @@ import {
   STAGE_TYPES_SHIPPING,
 } from './form-field-enums.js';
 import {
+  autolink,
   FieldInfo,
   formatFeatureChanges,
   parseRawQuery,
@@ -703,7 +704,12 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
   }
 
   renderFeatureSummary(f: Feature): TemplateResult {
-    return html` <p class="summary preformatted">${f.summary}</p>`;
+    const markup = autolink(
+      f.summary,
+      [],
+      (f.markdown_fields || []).includes('summary')
+    );
+    return html` <p class="summary preformatted">${markup}</p>`;
   }
 
   renderEditableFeatureSummary(f: Feature): TemplateResult {

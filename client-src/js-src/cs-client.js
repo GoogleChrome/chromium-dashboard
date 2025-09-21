@@ -193,6 +193,7 @@
  * Descriptive info.
  * @property {string} name
  * @property {string} summary
+ * @property {string[]} markdown_fields
  * @property {string} category
  * @property {number} category_int
  * @property {string=} web_feature

@@ -342,6 +342,7 @@ def feature_entry_to_json_verbose(
     'id': id,
     'name': fe.name,
     'summary': fe.summary,
+    'markdown_fields': fe.markdown_fields or [],
     'blink_components': fe.blink_components or [],
     'star_count': fe.star_count,
     'search_tags': fe.search_tags or [],
