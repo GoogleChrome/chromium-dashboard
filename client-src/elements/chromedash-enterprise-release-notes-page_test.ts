@@ -1,5 +1,6 @@
 import {html} from 'lit';
 import {assert, fixture, nextFrame} from '@open-wc/testing';
+import {SlButton} from '@shoelace-style/shoelace';
 import {ChromedashEnterpriseReleaseNotesPage} from './chromedash-enterprise-release-notes-page';
 import {parseRawQuery, clearURLParams} from './utils.js';
 import './chromedash-toast';
@@ -12,6 +13,13 @@ function normalizedTextContent(element) {
     .replace(/\s+$/, '')
     .replaceAll(/\s+/g, ' ');
 }
+
+const adminUser = {
+  can_create_feature: true,
+  can_edit_all: true,
+  is_admin: true,
+  email: 'admin@google.com',
+};
 
 // prettier-ignore
 describe('chromedash-enterprise-release-notes-page', () => {
@@ -575,4 +583,76 @@ describe('chromedash-enterprise-release-notes-page', () => {
       }
     }
   });
+
+    it('renders Edit buttons to admins', async () => {
+    const component = await fixture(html`
+    <chromedash-enterprise-release-notes-page
+    .user=${adminUser}
+    ></chromedash-enterprise-release-notes-page>`);
+    assert.exists(component);
+      assert.instanceOf(component, ChromedashEnterpriseReleaseNotesPage);
+
+      const firstNote = component.shadowRoot!.querySelector('.feature');
+      assert.exists(firstNote);
+      const editButton = firstNote?.querySelector('.edit-button');
+      assert.exists(editButton);
+  });
+
+    it('renders editing form', async () => {
+    const component = await fixture(html`
+    <chromedash-enterprise-release-notes-page
+    .user=${adminUser}
+    ></chromedash-enterprise-release-notes-page>`);
+    assert.exists(component);
+      assert.instanceOf(component, ChromedashEnterpriseReleaseNotesPage);
+
+      const firstNote = component.shadowRoot!.querySelector('.feature');
+      const editButton = firstNote?.querySelector<SlButton>('.edit-button');
+      editButton!.click();
+      await component.updateComplete;
+
+      const nameEl = firstNote?.querySelector('.feature-name');
+      assert.exists(nameEl);
+      const summaryEl = firstNote?.querySelector('.feature-summary');
+      assert.exists(summaryEl);
+      const milestoneEl = firstNote?.querySelector('.rollout-milestone');
+      assert.exists(milestoneEl);
+      const platformsEl = firstNote?.querySelector('.rollout-platforms');
+      assert.exists(platformsEl);
+      const detailsEl = firstNote?.querySelector('.rollout-details');
+      assert.exists(detailsEl);
+      const saveEl = firstNote?.querySelector('.save-button');
+      assert.exists(saveEl);
+      const cancelEl = firstNote?.querySelector('.cancel-button');
+      assert.exists(cancelEl);
+  });
+
+    it('toggles the editing form', async () => {
+    const component = await fixture(html`
+    <chromedash-enterprise-release-notes-page
+    .user=${adminUser}
+    ></chromedash-enterprise-release-notes-page>`);
+    assert.exists(component);
+      assert.instanceOf(component, ChromedashEnterpriseReleaseNotesPage);
+
+      const firstNote = component.shadowRoot!.querySelector('.feature');
+      const editButton = firstNote?.querySelector<SlButton>('.edit-button');
+      const nameElBefore = firstNote?.querySelector('.feature-name');
+      assert.notExists(nameElBefore);
+
+      editButton!.click();
+      await component.updateComplete;
+
+      const nameElDuring = firstNote?.querySelector('.feature-name');
+      assert.exists(nameElDuring);
+
+      const cancelEl = firstNote?.querySelector<SlButton>('.cancel-button');
+      assert.exists(cancelEl);
+      cancelEl!.click();
+      await component.updateComplete;
+
+      const nameElAfter = firstNote?.querySelector('.feature-name');
+      assert.notExists(nameElAfter);
+  });
+
 });

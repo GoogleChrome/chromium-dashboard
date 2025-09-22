@@ -1,5 +1,5 @@
 import {LitElement, html, css, nothing} from 'lit';
-import {showToastMessage, IS_MOBILE} from './utils';
+import {showToastMessage, IS_MOBILE, redirectToCurrentPage} from './utils';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {customElement, property, state} from 'lit/decorators.js';
 import {User} from '../js-src/cs-client';
@@ -244,8 +244,7 @@ export class ChromedashHeader extends LitElement {
         })
         .then(() => {
           setTimeout(() => {
-            const url = window.location.href.split('?')[0];
-            window.location.href = url;
+            redirectToCurrentPage();
           }, 1000);
         })
         .catch(error => {
@@ -269,8 +268,7 @@ export class ChromedashHeader extends LitElement {
       .signIn(credentialResponse)
       .then(() => {
         setTimeout(() => {
-          const url = window.location.href.split('?')[0];
-          window.location = url as string & Location;
+          redirectToCurrentPage();
         }, 1000);
       })
       .catch(() => {
@@ -372,7 +370,11 @@ export class ChromedashHeader extends LitElement {
         <aside>
           <a href="/roadmap" target="_top">
             <h1>
-              <img src="/static/img/chrome_logo.svg" />
+              <img
+                src="/static/img/chrome_logo.svg"
+                alt=""
+                role="presentation"
+              />
               ${this.appTitle}
             </h1>
           </a>

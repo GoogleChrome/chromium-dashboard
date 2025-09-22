@@ -195,6 +195,7 @@
  * @property {string} summary
  * @property {string} category
  * @property {number} category_int
+ * @property {string=} web_feature
  * @property {string[]} blink_components
  * @property {number} star_count
  * @property {string[]} search_tags
@@ -248,6 +249,8 @@
  * @property {number} [security_review_status_int]
  * @property {string} privacy_review_status
  * @property {number} [privacy_review_status_int]
+ * @property {number} [security_continuity_id]
+ * @property {number} [security_launch_issue_id]
  * Gate: Testing / Regressions
  * @property {string} [ergonomics_risks]
  * @property {boolean} [wpt]
@@ -701,6 +704,18 @@ export class ChromeStatusClient {
 
   async extendOriginTrial(featureId, stageId, body) {
     return this.doPatch(`/origintrials/${featureId}/${stageId}/extend`, body);
+  }
+
+  // Security Reviews API
+  async createSecurityLaunchIssue(featureId, gateId, continuityId) {
+    const body = {
+      feature_id: this.featureId,
+      gate_id: this.gateId,
+    };
+    if (continuityId) {
+      body.continuity_id = continuityId;
+    }
+    return this.doPost('/security-reviews/create-launch-issue', body);
   }
 
   // Processes API

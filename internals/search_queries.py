@@ -87,7 +87,8 @@ def build_filter(
     elif operator == '>':
       return field > val
     elif operator == '!=':
-      return field != val
+      # NDB 2.3.4 seems to have lost support for !=.
+      return ndb.OR(field < val, field > val)
     else:
       raise ValueError('Unexpected query operator: %r' % operator)
 
@@ -269,6 +270,7 @@ QUERIABLE_FIELDS: dict[str, Property] = {
     'star_count': FeatureEntry.star_count,
     'tag': FeatureEntry.search_tags,
     'feature_notes': FeatureEntry.feature_notes,
+    'web_feature_id': FeatureEntry.web_feature,
 
     'browsers.chrome.bug': FeatureEntry.bug_url,
     'launch_bug_url': FeatureEntry.launch_bug_url,

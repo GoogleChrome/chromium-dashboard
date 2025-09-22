@@ -22,6 +22,7 @@ from internals import core_enums
 from internals import core_models
 from internals import processes
 from internals import stage_helpers
+from internals.metrics_models import WebDXFeatureObserver
 
 
 BakeGateInfo = approval_defs.GateInfo(
@@ -182,6 +183,14 @@ class ProgressDetectorsTest(testing_config.CustomTestCase):
     detector = processes.PROGRESS_DETECTORS['Explainer']
     self.assertFalse(detector(self.feature_1, self.stages_dict))
     self.feature_1.explainer_links = ['http://example.com']
+    self.assertTrue(detector(self.feature_1, self.stages_dict))
+
+  def test_web__faeture(self):
+    detector = processes.PROGRESS_DETECTORS['Web feature']
+    self.assertFalse(detector(self.feature_1, self.stages_dict))
+    self.feature_1.web_feature = WebDXFeatureObserver.MISSING_FEATURE_ID
+    self.assertFalse(detector(self.feature_1, self.stages_dict))
+    self.feature_1.web_feature = 'array'
     self.assertTrue(detector(self.feature_1, self.stages_dict))
 
   def test_security_review_completed(self):

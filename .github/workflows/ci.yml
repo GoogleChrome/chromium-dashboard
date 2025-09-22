@@ -1,32 +1,31 @@
 name: Continuous Integration
 env:
- CLOUDSDK_PYTHON: python3.12
+ CLOUDSDK_PYTHON: python3.13
 on:
-  push:
-    branches:
-      - main
   pull_request:
+  merge_group:
+
 jobs:
   python_tests:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: '18.x'
 
       - name: set up Java JDK
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: 'temurin'
           java-version: '21'
 
       - name: set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
-          python-version: '3.12'
+          python-version: '3.13'
 
       - name: pre-installation
         run: |

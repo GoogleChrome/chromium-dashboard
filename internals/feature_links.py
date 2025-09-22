@@ -99,9 +99,9 @@ def _get_index_link(link: Link, fe: FeatureEntry, should_parse_new_link: bool = 
   """
 
   feature_id = fe.key.integer_id()
-  feature_links = FeatureLinks.query(FeatureLinks.url == link.url).fetch(None)
-  feature_link: FeatureLinks = feature_links[0] if feature_links else None
-  if hasattr(feature_link, 'feature_ids'):
+  feature_links: list[FeatureLinks] = FeatureLinks.query(FeatureLinks.url == link.url).fetch(None)
+  feature_link: FeatureLinks | None = feature_links[0] if feature_links else None
+  if feature_link and hasattr(feature_link, 'feature_ids'):
     if feature_id not in feature_link.feature_ids:
       feature_link.feature_ids.append(feature_id)
       feature_link.type = link.type
@@ -126,9 +126,9 @@ def _get_index_link(link: Link, fe: FeatureEntry, should_parse_new_link: bool = 
 def _remove_link(link: Link, fe: FeatureEntry) -> None:
   """Un-index the given link."""
   feature_id = fe.key.integer_id()
-  feature_links = FeatureLinks.query(FeatureLinks.url == link.url).fetch(None)
-  feature_link: FeatureLinks = feature_links[0] if feature_links else None
-  if hasattr(feature_link, 'feature_ids'):
+  feature_links: list[FeatureLinks] = FeatureLinks.query(FeatureLinks.url == link.url).fetch(None)
+  feature_link: FeatureLinks | None = feature_links[0] if feature_links else None
+  if feature_link and hasattr(feature_link, 'feature_ids'):
     if feature_id in feature_link.feature_ids:
       feature_link.feature_ids.remove(feature_id)
       if feature_link.feature_ids:

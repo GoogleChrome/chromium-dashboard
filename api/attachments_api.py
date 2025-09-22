@@ -27,7 +27,10 @@ class AttachmentsAPI(basehandlers.EntitiesAPIHandler):
   @permissions.require_create_feature
   def do_post(self, **kwargs) -> dict[str, str]:
     """Handle POST requests to create a single attachment."""
-    feature_id = kwargs.get('feature_id', None)
+    feature_id: int | None = kwargs.get('feature_id', None)
+
+    if feature_id is None:
+        self.abort(400, msg='Feature ID is required')
 
     # Validate the user has edit permissions and redirect if needed.
     redirect_resp = permissions.validate_feature_edit_permission(

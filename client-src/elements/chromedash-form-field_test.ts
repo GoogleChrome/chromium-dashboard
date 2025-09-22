@@ -50,6 +50,19 @@ describe('chromedash-form-field', () => {
     assert.include(renderElement.innerHTML, 'category');
     assert.include(renderElement.innerHTML, 'sl-select');
     assert.include(renderElement.innerHTML, 'sl-option');
+    assert.notInclude(renderElement.innerHTML, 'required');
+  });
+
+  it('makes the field required if forceRequired is set', async () => {
+    const component = await fixture(
+      html` <chromedash-form-field name="search_tags" value="0" forceRequired>
+      </chromedash-form-field>`
+    );
+    assert.exists(component);
+    assert.instanceOf(component, ChromedashFormField);
+
+    const renderElement = component.renderRoot as HTMLElement;
+    assert.include(renderElement.innerHTML, 'required');
   });
 
   it('renders a input type of field (with extraHelp)', async () => {

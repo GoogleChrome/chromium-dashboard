@@ -375,6 +375,7 @@ class FeatureConvertersTest(testing_config.CustomTestCase):
       'explainer_links': [],
       'feature_notes': 'notes',
       'web_feature': 'css',
+      'is_official_web_feature': True,
       'webdx_usecounter_enum': '321',
       'ff_views': 5,
       'flag_name': None,

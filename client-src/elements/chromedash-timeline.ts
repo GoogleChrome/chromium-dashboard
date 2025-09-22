@@ -326,6 +326,7 @@ ORDER BY date DESC, client`;
         id="datalist-input"
         type="search"
         list="features"
+        autocomplete="off"
         placeholder="Select or search a property"
         @change="${this.updateSelectedBucketId}"
       />

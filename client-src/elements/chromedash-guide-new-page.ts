@@ -2,10 +2,13 @@ import {LitElement, css, html, nothing} from 'lit';
 import {ref} from 'lit/directives/ref.js';
 import './chromedash-form-table';
 import './chromedash-form-field';
+import {type ChromedashFormField} from './chromedash-form-field';
 import {
   NEW_FEATURE_FORM_FIELDS,
   ENTERPRISE_NEW_FEATURE_FORM_FIELDS,
 } from './form-definition';
+import {FEATURE_TYPES} from './form-field-enums';
+
 import {ALL_FIELDS} from './form-field-specs';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {FORM_STYLES} from '../css/forms-css.js';
@@ -86,6 +89,25 @@ export class ChromedashGuideNewPage extends LitElement {
     });
   }
 
+  maybeMakeWebFeatureRequired() {
+    const webFeatureField = this.shadowRoot?.querySelector<ChromedashFormField>(
+      'chromedash-form-field[name="web_feature"]'
+    );
+    if (!webFeatureField) {
+      return;
+    }
+    let featureType = FEATURE_TYPES.FEATURE_TYPE_INCUBATE_ID[0];
+    for (const fv of this.fieldValues) {
+      if (fv.name == 'feature_type' && fv.value !== undefined) {
+        featureType = fv.value;
+        break;
+      }
+    }
+    webFeatureField.forceRequired =
+      featureType == FEATURE_TYPES.FEATURE_TYPE_INCUBATE_ID[0] ||
+      featureType == FEATURE_TYPES.FEATURE_TYPE_EXISTING_ID[0];
+  }
+
   // Handler to update form values when a field update event is fired.
   handleFormFieldUpdate(event) {
     const value = event.detail.value;
@@ -97,6 +119,7 @@ export class ChromedashGuideNewPage extends LitElement {
     // The field has been updated, so it is considered touched.
     this.fieldValues[index].touched = true;
     this.fieldValues[index].value = value;
+    this.maybeMakeWebFeatureRequired();
   }
 
   renderSubHeader() {

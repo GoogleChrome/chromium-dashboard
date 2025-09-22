@@ -83,7 +83,7 @@ TIMEOUT = 30  # We wait at most 30 seconds for each web page request.
 
 def valid_url(url):
   try:
-    return validators.url(url, public=True)
+    return validators.url(url)
   except:
     return False
 
@@ -207,7 +207,7 @@ class Link():
       else:
         raise e
 
-  def _parse_github_issue(self) -> dict[str, str | None]:
+  def _parse_github_issue(self) -> dict[str, str | list[str | None] | None]:
     """Parse the information from the github issue tracker."""
 
     parsed_url = urlparse(self.url)
@@ -235,7 +235,7 @@ class Link():
 
     return information
 
-  def _parse_chromium_bug(self) -> dict[str, object]:
+  def _parse_chromium_bug(self) -> dict[str, object] | None:
     """Parse the information from the chromium bug tracker."""
 
     endpoint = 'https://bugs.chromium.org/prpc/monorail.Issues/GetIssue'
@@ -254,15 +254,15 @@ class Link():
 
     csrf_response = requests.get(
         "https://bugs.chromium.org/p/chromium/issues/wizard", timeout=TIMEOUT)
-    csrf_token = re.findall("'token': '(.*?)'", csrf_response.text)
-    csrf_token = csrf_token[0] if csrf_token else None
+    csrf_tokens_list = re.findall("'token': '(.*?)'", csrf_response.text)
+    csrf_token_str: str | None = str(csrf_tokens_list[0]) if csrf_tokens_list else None
 
-    if csrf_token is None:
+    if csrf_token_str is None:
       raise Exception("Could not find bugs.chromium.org CSRF token")
 
     headers = {
         'accept': 'application/json',
-        'x-xsrf-token': str(csrf_token),
+        'x-xsrf-token': csrf_token_str,
         'content-type': 'application/json',
     }
     body = {

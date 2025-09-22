@@ -22,7 +22,7 @@ import werkzeug.exceptions  # Flask HTTP stuff.
 from api import features_api
 from internals import core_enums
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
-from internals.review_models import Gate
+from internals.review_models import Gate, Activity
 from internals import user_models
 from framework import rediscache
 
@@ -73,6 +73,15 @@ class FeaturesAPITestDelete(testing_config.CustomTestCase):
 
     revised_feature = FeatureEntry.get_by_id(self.feature_id)
     self.assertTrue(revised_feature.deleted)
+    
+    # Check that an activity log record was created
+    activities = Activity.get_activities(self.feature_id)
+    archive_activities = [a for a in activities if 'archived' in a.content.lower()]
+    self.assertEqual(1, len(archive_activities))
+    archive_activity = archive_activities[0]
+    self.assertEqual(email, archive_activity.author)
+    self.assertIn('feature one', archive_activity.content)
+    self.assertIn('archived', archive_activity.content)
 
   def test_delete__valid_admin(self):
     """Admin wants to soft-delete a feature."""

@@ -34,7 +34,7 @@ class ChromedashPostIntentDialog extends LitElement {
   stageId = 0;
   @property({type: Number})
   gateId = 0;
-  @property({type: Array<string>})
+  @property({attribute: false})
   ownerEmails = [];
 
   static get styles() {

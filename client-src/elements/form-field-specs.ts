@@ -491,11 +491,15 @@ export const ALL_FIELDS: Record<string, Field> = {
     choices: undefined, // this gets replaced in chromedash-form-field via an web features api
     label: 'Web Feature ID',
     attrs: {placeholder: 'Please select a Web feature ID'},
-    help_text: html` Select the feature this belongs to in the web-features
-      project:
+    help_text: html` Select the web feature this belongs to in the
       <a href="https://github.com/web-platform-dx/web-features" target="_blank"
-        >https://github.com/web-platform-dx/web-features</a
-      >. If your feature is not listed, pick "Missing feature".`,
+        >web-features project</a
+      >. If your feature is not listed,
+      <a
+        href="https://github.com/web-platform-dx/web-features/issues/new?template=new-feature.yml"
+        target="_blank"
+        >propose a new web feature ID</a
+      >, and pick "Missing feature".`,
   },
 
   category: {
@@ -1085,9 +1089,12 @@ export const ALL_FIELDS: Record<string, Field> = {
     initial: VENDOR_VIEWS_COMMON.NO_PUBLIC_SIGNALS[0],
     label: 'Safari views',
     help_text: html` See
-      <a target="_blank" href="https://bit.ly/blink-signals">
-        https://bit.ly/blink-signals</a
-      >`,
+      <a
+        target="_blank"
+        href="https://www.chromium.org/blink/launching-features/wide-review/"
+      >
+        chromium.org/blink/launching-features/wide-review
+      </a>`,
   },
 
   safari_views_link: {
@@ -1114,9 +1121,12 @@ export const ALL_FIELDS: Record<string, Field> = {
     initial: VENDOR_VIEWS_GECKO.NO_PUBLIC_SIGNALS[0],
     label: 'Firefox views',
     help_text: html` See
-      <a target="_blank" href="https://bit.ly/blink-signals">
-        https://bit.ly/blink-signals</a
-      >`,
+      <a
+        target="_blank"
+        href="https://www.chromium.org/blink/launching-features/wide-review/"
+      >
+        chromium.org/blink/launching-features/wide-review
+      </a>`,
   },
 
   ff_views_link: {
