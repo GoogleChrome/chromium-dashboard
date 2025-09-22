@@ -87,6 +87,7 @@ class FeatureEntry(ndb.Model):  # Copy from Feature
   # Descriptive info.
   name = ndb.StringProperty(required=True)
   summary = ndb.TextProperty(required=True)
+  markdown_fields = ndb.StringProperty(repeated=True)
   category = ndb.IntegerProperty(required=True)
   enterprise_product_category = ndb.IntegerProperty(required=False, default=ENTERPRISE_PRODUCT_CATEGORY_CHROME_BROWSER_UPDATE)
   enterprise_feature_categories = ndb.StringProperty(repeated=True)

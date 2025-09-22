@@ -304,6 +304,7 @@ class FeatureConvertersTest(testing_config.CustomTestCase):
       'id': 123,
       'name': 'feature template',
       'summary': 'sum',
+      'markdown_fields': [],
       'unlisted': False,
       'api_spec': False,
       'automation_spec': False,

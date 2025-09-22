@@ -197,6 +197,7 @@ class VerboseFeatureDict(TypedDict):
   # Descriptive info.
   name: str
   summary: str
+  markdown_fields: list[str]
   category: str
   category_int: int
   blink_components: list[str]
