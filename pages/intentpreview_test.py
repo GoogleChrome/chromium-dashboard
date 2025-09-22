@@ -317,7 +317,7 @@ class IntentEmailPreviewTemplateTest(testing_config.CustomTestCase):
       testing_config.sign_out()
     parser = html5lib.HTMLParser(strict=True)
     document = parser.parse(template_text)
-    TESTDATA.make_golden(template_text, 'test_html_rendering.html')
+    # TESTDATA.make_golden(template_text, 'test_html_rendering.html')
     self.assertMultiLineEqual(
       TESTDATA['test_html_rendering.html'], template_text)
 
@@ -335,7 +335,7 @@ class IntentEmailPreviewTemplateTest(testing_config.CustomTestCase):
 
       body = render_template(self.intent_preview_path, **actual_data)
       testing_config.sign_out()
-    TESTDATA.make_golden(body, 'test_html_prototype_rendering.html')
+    # TESTDATA.make_golden(body, 'test_html_prototype_rendering.html')
     self.assertMultiLineEqual(
       TESTDATA['test_html_prototype_rendering.html'], body)
 
@@ -353,7 +353,7 @@ class IntentEmailPreviewTemplateTest(testing_config.CustomTestCase):
 
       body = render_template(self.intent_preview_path, **actual_data)
       testing_config.sign_out()
-    TESTDATA.make_golden(body, 'test_html_ot_rendering.html')
+    # TESTDATA.make_golden(body, 'test_html_ot_rendering.html')
     self.assertMultiLineEqual(
       TESTDATA['test_html_ot_rendering.html'], body)
 
@@ -373,6 +373,6 @@ class IntentEmailPreviewTemplateTest(testing_config.CustomTestCase):
       testing_config.sign_out()
     parser = html5lib.HTMLParser(strict=True)
     document = parser.parse(template_text)
-    TESTDATA.make_golden(template_text, 'test_html_rendering__psa.html')
+    # TESTDATA.make_golden(template_text, 'test_html_rendering__psa.html')
     self.assertMultiLineEqual(
       TESTDATA['test_html_rendering__psa.html'], template_text)
