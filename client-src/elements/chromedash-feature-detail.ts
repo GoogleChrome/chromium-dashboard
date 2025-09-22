@@ -344,9 +344,13 @@ export class ChromedashFeatureDetail extends LitElement {
     `;
   }
 
-  renderText(value) {
+  renderText(value, isMarkdown: boolean = false): TemplateResult {
     value = String(value);
-    const markup = autolink(value, this.featureLinks);
+    const markup: TemplateResult[] = autolink(
+      value,
+      this.featureLinks,
+      isMarkdown
+    );
     if (value.length > LONG_TEXT || value.includes('\n')) {
       return html`<span class="longtext">${markup}</span>`;
     }
@@ -364,7 +368,7 @@ export class ChromedashFeatureDetail extends LitElement {
     return this.renderText(value);
   }
 
-  renderValue(fieldType, value) {
+  renderValue(fieldType, value, isMarkdown: boolean): TemplateResult {
     if (fieldType == 'checkbox') {
       return this.renderText(value ? 'True' : 'False');
     } else if (fieldType == 'url') {
@@ -376,7 +380,7 @@ export class ChromedashFeatureDetail extends LitElement {
         </ul>
       `;
     }
-    return this.renderText(value);
+    return this.renderText(value, isMarkdown);
   }
 
   renderField(fieldDef, feStage) {
@@ -386,6 +390,7 @@ export class ChromedashFeatureDetail extends LitElement {
     if (!isDefined && deprecated) {
       return nothing;
     }
+    const isMarkdown = (this.feature.markdown_fields || []).includes(fieldId);
 
     const icon = isDefined
       ? html`<sl-icon library="material" name="check_circle_20px"></sl-icon>`
@@ -395,7 +400,7 @@ export class ChromedashFeatureDetail extends LitElement {
       <dt id=${fieldId}>${icon} ${fieldDisplayName}</dt>
       <dd>
         ${isDefined
-          ? this.renderValue(fieldType, value)
+          ? this.renderValue(fieldType, value, isMarkdown)
           : html`<i>No information provided yet</i>`}
       </dd>
     `;

@@ -1,6 +1,9 @@
 // This file contains helper functions for our elements.
 
-import {html, nothing} from 'lit';
+import {html, nothing, TemplateResult} from 'lit';
+import {unsafeHTML} from 'lit/directives/unsafe-html.js';
+import DOMPurify from 'dompurify';
+import {marked} from 'marked';
 import {Feature, FeatureLink, StageDict} from '../js-src/cs-client.js';
 import {markupAutolinks} from './autolink.js';
 import {FORMS_BY_STAGE_TYPE, FormattedFeature} from './form-definition.js';
@@ -36,11 +39,22 @@ export const IS_MOBILE = (() => {
 })();
 
 /* Convert user-entered text into safe HTML with clickable links
- * where appropriate.  Returns an array with text and anchor tags.
+ * where appropriate.
  */
-export function autolink(s, featureLinks: FeatureLink[] = []) {
-  const withLinks = markupAutolinks(s, featureLinks);
-  return withLinks;
+export function autolink(
+  s,
+  featureLinks: FeatureLink[] = [],
+  isMarkdown: boolean = false
+): TemplateResult[] {
+  if (isMarkdown) {
+    const rendered: string = marked.parse(s) as string;
+    const sanitized: string = DOMPurify.sanitize(rendered);
+    const markup: TemplateResult = html`${unsafeHTML(sanitized)}`;
+    return [markup];
+  } else {
+    const withLinks = markupAutolinks(s, featureLinks);
+    return withLinks;
+  }
 }
 
 export function showToastMessage(msg) {

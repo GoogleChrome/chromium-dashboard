@@ -30,31 +30,31 @@ AKA issue 1234 #c3. https://example.com/ --- testing. bug 1234 also.
 https://example.com#testing https://example.com/test?querystring=here&q=1234 ??.
 send requests to user@example.com or just check out request.net`;
       const expected = [
-        'This is a test & result of the autolinking.',
-        '\n',
+        html`${'This is a test & result of the autolinking.'}`,
+        html`${'\n'}`,
         html`<chromedash-link href=${'http://go/this-is-a-test'} .featureLinks=${[]} .ignoreHttpErrorCodes=${[404]}>${'go/this-is-a-test'}</chromedash-link>`,
-        '.',
-        '\nA bug',
-        ' ',
+        html`${'.'}`,
+        html`${'\nA bug'}`,
+        html`${' '}`,
         html`<chromedash-link href=${'http://cr/1234'} .featureLinks=${[]} .ignoreHttpErrorCodes=${[404]}>${'cr/1234'}</chromedash-link>`,
-        ' exists and also',
-        ' ',
+        html`${' exists and also'}`,
+        html`${' '}`,
         html`<chromedash-link href=${'http://cl/1234'} .featureLinks=${[]} .ignoreHttpErrorCodes=${[404]}>${'cl/1234'}</chromedash-link>`,
-        '. Info at ',
+        html`${'. Info at '}`,
         html`<chromedash-link href=${'https://bugs.chromium.org/p/chromium/issues/detail?id=1234#c3'} .featureLinks=${[]} .ignoreHttpErrorCodes=${[404]}>${'issue 1234 comment 3'}</chromedash-link>`,
-        '.\nAKA ',
+        html`${'.\nAKA '}`,
         html`<chromedash-link href=${'https://bugs.chromium.org/p/chromium/issues/detail?id=1234#c3'} .featureLinks=${[]} .ignoreHttpErrorCodes=${[404]}>${'issue 1234 #c3'}</chromedash-link>`,
-        '. ',
+        html`${'. '}`,
         html`<chromedash-link href=${'https://example.com/'} .featureLinks=${[]} .ignoreHttpErrorCodes=${[404]}>${'https://example.com/'}</chromedash-link>`,
-        ' --- testing. ',
+        html`${' --- testing. '}`,
         html`<chromedash-link href=${'https://bugs.chromium.org/p/chromium/issues/detail?id=1234'} .featureLinks=${[]} .ignoreHttpErrorCodes=${[404]}>${'bug 1234'}</chromedash-link>`,
-        ' ',
-        'also.\n',
+        html`${' '}`,
+        html`${'also.\n'}`,
         html`<chromedash-link href=${'https://example.com#testing'} .featureLinks=${[]} .ignoreHttpErrorCodes=${[404]}>${'https://example.com#testing'}</chromedash-link>`,
-        ' ',
+        html`${' '}`,
         html`<chromedash-link href=${'https://example.com/test?querystring=here&q=1234'} .featureLinks=${[]} .ignoreHttpErrorCodes=${[404]}>${'https://example.com/test?querystring=here&q=1234'}</chromedash-link>`,
-        ' ??.\nsend requests to user@example.com or just check out',
-        ' ',
+        html`${' ??.\nsend requests to user@example.com or just check out'}`,
+        html`${' '}`,
         html`<chromedash-link href=${'https://request.net'} .featureLinks=${[]} .ignoreHttpErrorCodes=${[404]}>${'request.net'}</chromedash-link>`,
       ];
 
@@ -68,10 +68,10 @@ go this-is-a-test.
 A bug cr /1234 exists and also /1234. This is an example sentence.
 AKA issue here 1234. example com --- testing.`;
       const expected = [
-        'This is a test of the autolinking.\n' +
+        html`${'This is a test of the autolinking.\n' +
           'go this-is-a-test.\n' +
           'A bug cr /1234 exists and also /1234. This is an example sentence.\n' +
-          'AKA issue here 1234. example com --- testing.',
+          'AKA issue here 1234. example com --- testing.'}`,
       ];
 
       const result = autolink(before);
@@ -84,10 +84,10 @@ go/this-is-a-test
 <p>Do not convert this</p>
 <script>Dangerous stuff</script>`;
       const expected = [
-        '<b>Test</b>',
-        '\n',
+        html`${'<b>Test</b>'}`,
+        html`${'\n'}`,
         html`<chromedash-link href=${'http://go/this-is-a-test'} .featureLinks=${[]} .ignoreHttpErrorCodes=${[404]}>${'go/this-is-a-test'}</chromedash-link>`,
-        '\n<p>Do not convert this</p>\n<script>Dangerous stuff</script>',
+        html`${'\n<p>Do not convert this</p>\n<script>Dangerous stuff</script>'}`,
       ];
 
       const result = autolink(before);

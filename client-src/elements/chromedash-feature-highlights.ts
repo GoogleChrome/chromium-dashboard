@@ -88,35 +88,30 @@ export class ChromedashFeatureHighlights extends LitElement {
     this.dispatchEvent(new Event('resume', {bubbles: true, composed: true}));
   }
 
+  renderSummary() {
+    if (this.feature.summary) {
+      const markup = autolink(
+        this.feature.summary,
+        this.featureLinks,
+        (this.feature.markdown_fields || []).includes('summary')
+      );
+      return html`
+        <section id="summary">
+          <p class="preformatted">${markup}</p>
+        </section>
+      `;
+    } else {
+      return html``;
+    }
+  }
+
   renderEnterpriseFeatureContent() {
-    return html`
-      ${this.feature.summary
-        ? html`
-            <section id="summary">
-              <!-- prettier-ignore -->
-              <p class="preformatted">${autolink(
-                this.feature.summary,
-                this.featureLinks
-              )}</p>
-            </section>
-          `
-        : nothing}
-    `;
+    return this.renderSummary();
   }
 
   renderFeatureContent() {
     return html`
-      ${this.feature.summary
-        ? html`
-            <section id="summary">
-              <!-- prettier-ignore -->
-              <p class="preformatted">${autolink(
-                this.feature.summary,
-                this.featureLinks
-              )}</p>
-            </section>
-          `
-        : nothing}
+      ${this.renderSummary()}
       ${this.feature.motivation
         ? html`
             <section id="motivation">
