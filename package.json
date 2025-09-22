@@ -90,7 +90,7 @@
     "acorn": ">=8.15.0",
     "color-string": ">=2.1.2",
     "del": "^8.0.0",
-    "dot-prop": ">=9.0.0",
+    "dot-prop": ">=10.0.0",
     "eslint": "^9.35.0",
     "eslint-config-prettier": "^10.1.8",
     "glob-parent": ">=6.0.2",
