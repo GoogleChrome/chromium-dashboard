@@ -59,8 +59,9 @@ class FeaturesAPITestDelete(testing_config.CustomTestCase):
   def tearDown(self):
     cache_key = '%s|%s' % (
         FeatureEntry.DEFAULT_CACHE_KEY, self.feature_1.key.integer_id())
-    self.feature_1.key.delete()
-    self.app_admin.key.delete()
+    for kind in [Activity, user_models.AppUser, FeatureEntry, Stage]:
+      for entity in kind.query():
+        entity.key.delete()
     testing_config.sign_out()
     rediscache.delete(cache_key)
 
@@ -729,6 +730,13 @@ class FeaturesAPITest(testing_config.CustomTestCase):
     request_path = f'{self.request_path}/update'
     with test_app.test_request_context(request_path, json=valid_request_body):
       self.handler.do_patch(feature_id=self.feature_1_id)
+    # Ensure that the accuracy verification was captured as an activity.
+    activities: list[Activity] = Activity.query(Activity.feature_id == self.feature_1_id).fetch()
+    accuracy_activity = next(
+      (a for a in activities 
+       if any(amend.field_name == 'accurate_as_of' for amend in a.amendments)), 
+      None)
+    self.assertIsNotNone(accuracy_activity)
     # Assert that changes were made.
     self.assertIsNotNone(self.feature_1.accurate_as_of)
     self.assertTrue(self.feature_1.accurate_as_of > old_accuracy_date)
