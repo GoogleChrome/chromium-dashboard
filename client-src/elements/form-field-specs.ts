@@ -499,7 +499,7 @@ export const ALL_FIELDS: Record<string, Field> = {
         href="https://github.com/web-platform-dx/web-features/issues/new?template=new-feature.yml"
         target="_blank"
         >propose a new web feature ID</a
-      >, and pick "Missing feature".`,
+      >, then return to this tab and choose "Missing feature".`,
   },
 
   category: {
