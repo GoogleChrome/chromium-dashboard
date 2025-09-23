@@ -252,6 +252,7 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
     feature_id = feature.key.integer_id()
     # Set accurate_as_of if this is an accuracy verification request.
     if 'accurate_as_of' in feature_changes:
+      changed_fields.append(('accurate_as_of', feature.accurate_as_of, now))
       feature.accurate_as_of = now
       feature.outstanding_notifications = 0
       has_updated = True
