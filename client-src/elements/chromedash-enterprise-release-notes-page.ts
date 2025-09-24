@@ -1,7 +1,12 @@
 import {css, html, LitElement, TemplateResult} from 'lit';
 import {customElement, state, property} from 'lit/decorators.js';
 import {ifDefined} from 'lit/directives/if-defined.js';
-import {SlTextarea, SlInput, SlSelect} from '@shoelace-style/shoelace';
+import {
+  SlTextarea,
+  SlInput,
+  SlSelect,
+  SlCheckbox,
+} from '@shoelace-style/shoelace';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {Feature, User, StageDict} from '../js-src/cs-client.js';
 import {
@@ -34,6 +39,8 @@ interface Channels {
 // A simple interface for any Shoelace element that has a .value
 interface ValueElement {
   value: string | string[] | undefined;
+  checked?: boolean;
+  tagName: string;
 }
 
 @customElement('chromedash-enterprise-release-notes-page')
@@ -136,6 +143,12 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
 
         .feature p {
           margin: 1rem 0;
+        }
+
+        .confidential {
+          background: var(--warning-background);
+          padding: var(--content-padding-quarter) var(--content-padding-half);
+          border-radius: var(--pill-border-radius);
         }
 
         .toremove {
@@ -595,10 +608,10 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
     const addFieldValue = (
       name: string,
       el: ValueElement,
-      originalValue: string | string[] | number | undefined,
+      originalValue: string | string[] | number | boolean | undefined,
       stage?: StageDict
     ) => {
-      const value = el?.value;
+      const value = el?.tagName === 'SL-CHECKBOX' ? el?.checked : el?.value;
       if (value !== undefined && '' + value != '' + originalValue) {
         fieldValues.push({name, value, touched: true, stageId: stage?.id});
       }
@@ -607,6 +620,10 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
       '#edit-name-' + f.id
     )!;
     addFieldValue('name', nameEl, f.name);
+    let confidentialEl: SlCheckbox = this.shadowRoot?.querySelector<SlCheckbox>(
+      '#edit-confidential-' + f.id
+    )!;
+    addFieldValue('confidential', confidentialEl, f.confidential); //@@@
     let summaryEl: SlTextarea = this.shadowRoot?.querySelector<SlTextarea>(
       '#edit-feature-' + f.id
     )!;
@@ -685,6 +702,27 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
       `;
     }
     return html``;
+  }
+
+  renderConfidential(f: Feature): TemplateResult {
+    if (f.confidential) {
+      return html`<span class="confidential"><strong>CONFIDENTIAL</strong></div>`;
+    } else {
+      return html``;
+    }
+  }
+
+  renderEditableConfidential(f: Feature): TemplateResult {
+    return html`
+      <sl-checkbox
+        class="feature-confidential"
+        id="edit-confidential-${f.id}"
+        ?checked=${f.confidential}
+        size="small"
+      >
+        Confidential
+      </sl-checkbox>
+    `;
   }
 
   renderFeatureName(f: Feature): TemplateResult {
@@ -824,6 +862,9 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
     const isEditing = this.editingFeatureIds.has(f.id);
     return html` <section class="feature">
       ${this.renderEditButton(f)}
+      ${isEditing
+        ? this.renderEditableConfidential(f)
+        : this.renderConfidential(f)}
       ${isEditing
         ? this.renderEditableFeatureName(f)
         : this.renderFeatureName(f)}
