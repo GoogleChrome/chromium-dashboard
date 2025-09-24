@@ -1020,5 +1020,8 @@ class MigrateRolloutMilestones(FlaskHandler):
         stage.milestones = MilestoneSet()
       stage.milestones.desktop_first = stage.rollout_milestone
       changed_stages.append(stage)
+      if len(changed_stages) >= 200:
+        ndb.put_multi(changed_stages)
+        changed_stages = []
     if changed_stages:
       ndb.put_multi(changed_stages)
