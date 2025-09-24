@@ -118,7 +118,7 @@ export class ChromedashGuideNewPage extends LitElement {
     }
     let enterpriseImpact = ENTERPRISE_IMPACT.IMPACT_NONE[0];
     for (const fv of this.fieldValues) {
-      if (fv.name == 'enterprise_impact' && fv.value !== undefined) {
+      if (fv.name === 'enterprise_impact' && fv.value !== undefined) {
         enterpriseImpact = fv.value;
         break;
       }
