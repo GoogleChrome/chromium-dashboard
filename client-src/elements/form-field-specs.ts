@@ -2105,8 +2105,10 @@ export const ALL_FIELDS: Record<string, Field> = {
     type: 'multiselect',
     choices: ENTERPRISE_FEATURE_CATEGORIES,
     required: false,
-    label: 'Categories',
-    help_text: html` Select all that apply.`,
+    label: 'Enterprise feature categories',
+    help_text: html` If your feature impacts enterprise users, select at least
+    one.`,
+    enterprise_help_text: html` Select all that apply.`,
   },
 
   enterprise_impact: {
