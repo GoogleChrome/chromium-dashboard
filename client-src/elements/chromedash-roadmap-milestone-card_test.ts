@@ -97,7 +97,7 @@ describe('chromedash-roadmap-milestone-card', () => {
 
   const channel: ReleaseInfo = {
     version: 108,
-    final_beta: '2020-02 - 13T00:00:00',
+    early_stable: '2020-02 - 13T00:00:00',
     features: {} as Feature,
   };
   channel.features['Origin trial'] = [mockFeature];
