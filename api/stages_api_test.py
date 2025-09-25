@@ -117,6 +117,9 @@ class StagesAPITest(testing_config.CustomTestCase):
         created=datetime(2020, 1, 1))
     self.stage_5.put()
 
+    self.stage_6 = Stage(id=60, feature_id=1, stage_type=1061, browser='Chrome')
+    self.stage_6.put()
+
     self.expected_stage_1 = {
         'android_first': None,
         'android_last': None,
@@ -649,6 +652,25 @@ class StagesAPITest(testing_config.CustomTestCase):
     self.assertIsNone(stage.display_name)
     # Existing fields not specified should not be changed.
     self.assertEqual(stage.experiment_goals, 'To be the very best.')
+
+  def test_patch__valid_rollout_milestone(self):
+    """A valid PATCH request should update an existing stage with the rollout_milestone."""
+    testing_config.sign_in('feature_owner@example.com', 123)
+    json = {
+        'desktop_first': {
+          'form_field_name': 'rollout_milestone',
+          'value': 105,
+        },
+      }
+
+    with test_app.test_request_context(
+        f'{self.request_path}1/stages/60', json=json):
+      actual = self.handler.do_patch(feature_id=1, stage_id=60)
+    self.assertEqual(actual['message'], 'Stage values updated.')
+    stage = self.stage_6
+    # The rollout milestone should be set in the milestones field and the rollout_milestone field.
+    self.assertEqual(stage.rollout_milestone, 105)
+    self.assertEqual(stage.milestones.desktop_first, 105)
 
   @mock.patch('internals.notifier_helpers.send_ot_creation_notification')
   def test_patch__ot_creation(self, mock_send_ot_creation_notification):

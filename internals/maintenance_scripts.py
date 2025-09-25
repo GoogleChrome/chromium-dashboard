@@ -1004,3 +1004,25 @@ class GenerateReviewActivityFile(FlaskHandler):
 
     return (f'{len(csv_rows)} '
             'new rows added to chromestatus-review-activity.csv uploaded.')
+
+
+class MigrateRolloutMilestones(FlaskHandler):
+  """Migrate the rollout milestone field to be stored in the 'milestones' field."""
+
+  def get_template_data(self, **kwargs):
+    self.require_cron_header()
+    stages: list[Stage] = Stage.query(Stage.stage_type == STAGE_ENT_ROLLOUT).fetch()
+    changed_stages: list[Stage] = []
+    for stage in stages:
+      if stage.milestones and stage.milestones.desktop_first:
+        continue
+      if not stage.milestones:
+        stage.milestones = MilestoneSet()
+      # desktop_first will be considered the default "start" milestone.
+      stage.milestones.desktop_first = stage.rollout_milestone
+      changed_stages.append(stage)
+      if len(changed_stages) >= 200:
+        ndb.put_multi(changed_stages)
+        changed_stages = []
+    if changed_stages:
+      ndb.put_multi(changed_stages)

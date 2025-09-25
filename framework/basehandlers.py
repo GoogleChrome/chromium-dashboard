@@ -431,6 +431,13 @@ class EntitiesAPIHandler(APIHandler):
       form_field_name = change_info[field]['form_field_name']
       old_value = getattr(milestones, field)
       new_value = change_info[field].get('value')
+
+      # If this is the rollout milestone, also save it to the old field.
+      # TODO(DanielRyanSmith): Remove this double-storage once the
+      # rollout_milestone field is deprecated.
+      if form_field_name == 'rollout_milestone':
+        self.update_field_value(stage, 'rollout_milestone', 'int', new_value)
+
       self.update_field_value(milestones, field, field_type, new_value)
       changed_fields.append((form_field_name, old_value, new_value))
       stage_was_updated = True

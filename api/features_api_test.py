@@ -147,6 +147,9 @@ class FeaturesAPITest(testing_config.CustomTestCase):
         stage_type=160, milestones=MilestoneSet(desktop_first=1))
     self.ship_stage_1.put()
     self.ship_stage_1_id = self.ship_stage_1.key.integer_id()
+    self.enterprise_stage = Stage(id=60, feature_id=self.feature_1_id,
+                                  stage_type=1061)
+    self.enterprise_stage.put()
 
     self.feature_2 = FeatureEntry(
         name='feature two', summary='sum K', feature_type=1,
@@ -605,6 +608,13 @@ class FeaturesAPITest(testing_config.CustomTestCase):
             'value': new_desktop_first,
           },
         },
+        {
+          'id': self.enterprise_stage.key.integer_id(),
+          'desktop_first': {
+            'form_field_name': 'rollout_milestone',
+            'value': 105,
+          },
+        },
       ],
     }
     request_path = f'{self.request_path}/update'
@@ -621,6 +631,9 @@ class FeaturesAPITest(testing_config.CustomTestCase):
     # Updater email field should be changed.
     self.assertIsNotNone(self.feature_1.updated)
     self.assertEqual(self.feature_1.updater_email, 'admin@example.com')
+    # The rollout milestone should be set in the milestones field and the rollout_milestone field.
+    self.assertEqual(self.enterprise_stage.rollout_milestone, 105)
+    self.assertEqual(self.enterprise_stage.milestones.desktop_first, 105)
 
   def test_patch__milestone_changes_null(self):
     """Valid PATCH updates milestone fields when milestones object is null."""

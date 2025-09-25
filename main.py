@@ -369,6 +369,8 @@ internals_routes: list[Route] = [
         maintenance_scripts.SendManualOTCreatedEmail),
   Route('/scripts/send_ot_activation_email/<int:stage_id>',
         maintenance_scripts.SendManualOTActivatedEmail),
+  Route('/scripts/migrate_rollout_milestones',
+        maintenance_scripts.MigrateRolloutMilestones),
 ]
 
 dev_routes: list[Route] = []

@@ -478,6 +478,7 @@ export const STAGE_FIELD_NAME_MAPPING: Record<string, string> = {
   extension_desktop_last: 'desktop_last',
   extension_android_last: 'android_last',
   extension_webview_last: 'webview_last',
+  rollout_milestone: 'desktop_first',
 
   // Intent fields.
   intent_to_implement_url: 'intent_thread_url',
