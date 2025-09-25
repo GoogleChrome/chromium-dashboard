@@ -36,6 +36,24 @@ describe('chromedash-form-field', () => {
     assert.include(renderElement.innerHTML, 'A specific label');
   });
 
+  it('initially checks a checkbox based on initial', async () => {
+    const component = await fixture(
+      html` <chromedash-form-field
+        name="confidential"
+      >
+      </chromedash-form-field>`
+    );
+    assert.exists(component);
+    assert.instanceOf(component, ChromedashFormField);
+    const fieldRow = component.renderRoot.querySelector('tr');
+    assert.exists(fieldRow);
+
+    const renderElement = component.renderRoot as HTMLElement;
+    assert.include(renderElement.innerHTML, 'Confidential');
+    assert.include(renderElement.innerHTML, 'sl-checkbox');
+    assert.include(renderElement.innerHTML, 'checked');
+  });
+
   it('renders a select type of field', async () => {
     const component = await fixture(
       html` <chromedash-form-field name="category" value="0">
