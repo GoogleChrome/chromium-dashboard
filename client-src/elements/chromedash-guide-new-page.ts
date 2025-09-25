@@ -124,7 +124,8 @@ export class ChromedashGuideNewPage extends LitElement {
       }
     }
     enterpriseFeatureCategoriesField.forceRequired =
-      enterpriseImpact > ENTERPRISE_IMPACT.IMPACT_NONE[0];
+      enterpriseImpact > ENTERPRISE_IMPACT.IMPACT_NONE[0] ||
+      this.isEnterpriseFeature;
   }
 
   // Handler to update form values when a field update event is fired.
