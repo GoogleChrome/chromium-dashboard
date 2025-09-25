@@ -193,6 +193,7 @@
     Does this intent deprecate or change behavior of existing APIs,
     such that it has potentially high risk for Android WebView-based
     applications?
+  </p>
   {{feature.webview_risks|urlize}}
 
 </div> <!-- end risks -->
@@ -344,6 +345,7 @@
     Does the feature depend on any code or APIs outside the Chromium
     open source repository and its open-source dependencies to
     function?
+  </p>
   {{feature.non_oss_deps|urlize}}
 {%- endif -%}
 
@@ -374,6 +376,7 @@
     issues in the project for the feature specification) whose resolution
     may introduce web compat/interop risk (e.g., changing to naming or
     structure of the API in a non-backward-compatible way).
+  </p>
   {{feature.anticipated_spec_changes|urlize}}
 {%- endif -%}
 
