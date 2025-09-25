@@ -184,6 +184,7 @@
  * @property {string[]} cc_emails
  * @property {string[]} spec_mentor_emails
  * @property {boolean} unlisted
+ * @property {boolean} confidential
  * @property {boolean} deleted
  * Renamed metadata fields
  * @property {string[]} editors
