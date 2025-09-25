@@ -160,15 +160,6 @@ indexes:
   - name: spec_mentor_emails
   - name: updated
     direction: desc
-- kind: FeatureEntry
-  properties:
-  - name: __key__
-  - name: cc_emails
-  - name: confidential
-  - name: deleted
-  - name: editor_emails
-  - name: name
-  - name: owner_emails
 - kind: FeatureWords
   properties:
   - name: words
