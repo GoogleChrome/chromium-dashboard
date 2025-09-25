@@ -623,7 +623,7 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
     let confidentialEl: SlCheckbox = this.shadowRoot?.querySelector<SlCheckbox>(
       '#edit-confidential-' + f.id
     )!;
-    addFieldValue('confidential', confidentialEl, f.confidential); //@@@
+    addFieldValue('confidential', confidentialEl, f.confidential);
     let summaryEl: SlTextarea = this.shadowRoot?.querySelector<SlTextarea>(
       '#edit-feature-' + f.id
     )!;
