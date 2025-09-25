@@ -225,6 +225,9 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
         form_field_name = change_info[field]['form_field_name']
         old_value = getattr(milestones, field)
         new_value = change_info[field]['value']
+        # desktop_first will be the new default field for "start" milestone,
+        # like rollout_milestone.
+
         # If this is the rollout milestone, also save it to the old field.
         # TODO(DanielRyanSmith): Remove this double-storage once the
         # rollout_milestone field is deprecated.

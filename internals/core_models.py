@@ -363,6 +363,8 @@ class Stage(ndb.Model):
 
   #Enterprise
   rollout_impact = ndb.IntegerProperty(default=2) # default to "Medium impact"
+  # rollout_milestone will be migrated to milestones.desktop_first as the
+  # default "start" milestone.
   rollout_milestone = ndb.IntegerProperty()
   rollout_platforms = ndb.StringProperty(repeated=True)
   rollout_details = ndb.TextProperty()

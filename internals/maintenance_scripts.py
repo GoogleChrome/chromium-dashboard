@@ -1018,6 +1018,7 @@ class MigrateRolloutMilestones(FlaskHandler):
         continue
       if not stage.milestones:
         stage.milestones = MilestoneSet()
+      # desktop_first will be considered the default "start" milestone.
       stage.milestones.desktop_first = stage.rollout_milestone
       changed_stages.append(stage)
       if len(changed_stages) >= 200:
