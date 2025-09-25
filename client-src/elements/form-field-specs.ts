@@ -2108,7 +2108,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     label: 'Enterprise feature categories',
     help_text: html` If your feature impacts enterprise users, select at least
     one.`,
-    enterprise_help_text: html` Select all that apply.`,
+    enterprise_help_text: html` Select at least one.`,
   },
 
   enterprise_impact: {
