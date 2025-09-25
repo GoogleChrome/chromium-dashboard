@@ -197,6 +197,7 @@ export const FLAT_METADATA_FIELDS: MetadataFields = {
         'summary',
         'unlisted',
         'enterprise_impact',
+        'enterprise_feature_categories',
         'shipping_year',
         'owner',
         'editors',

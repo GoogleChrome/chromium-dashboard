@@ -79,6 +79,8 @@ class FeatureCreateHandler(basehandlers.FlaskHandler):
     # Write for new FeatureEntry entity.
     feature_entry = FeatureEntry(
         category=int(self.form.get('category')),
+        enterprise_feature_categories=self.form.getlist(
+            'enterprise_feature_categories'),
         name=self.form.get('name'),
         feature_type=feature_type,
         summary=self.form.get('summary'),
