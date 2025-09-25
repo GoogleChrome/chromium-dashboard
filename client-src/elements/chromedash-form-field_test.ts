@@ -38,9 +38,7 @@ describe('chromedash-form-field', () => {
 
   it('initially checks a checkbox based on initial', async () => {
     const component = await fixture(
-      html` <chromedash-form-field
-        name="confidential"
-      >
+      html` <chromedash-form-field name="confidential">
       </chromedash-form-field>`
     );
     assert.exists(component);
