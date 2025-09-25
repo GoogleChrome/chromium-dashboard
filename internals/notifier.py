@@ -673,6 +673,7 @@ class OTActivatedHandler(basehandlers.FlaskHandler):
     body = render_template(self.EMAIL_TEMPLATE_PATH, **body_data)
     return {
       'to': contacts,
+      'cc': [OT_SUPPORT_EMAIL],
       'subject': f'{stage["ot_display_name"]} origin trial is now available',
       'reply_to': None,
       'html': body,
@@ -735,6 +736,7 @@ class OTCreationProcessedHandler(basehandlers.FlaskHandler):
     body = render_template(self.EMAIL_TEMPLATE_PATH, **body_data)
     return {
       'to': contacts,
+      'cc': [OT_SUPPORT_EMAIL],
       'subject': (f'{stage["ot_display_name"]} origin trial has been created '
                   f'and will begin {stage["ot_activation_date"]}'),
       'reply_to': None,
