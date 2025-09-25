@@ -903,8 +903,8 @@ class OTExtensionApprovedHandler(basehandlers.FlaskHandler):
     return {
       'to': requester_email,
       'cc': [OT_SUPPORT_EMAIL],
-      'subject': ('Origin trial extension approved and ready to be '
-                  f'initiated: {ot_display_name}'),
+      'subject': ('[Action Required] Initiate your origin trial extension '
+                  f'for {ot_display_name}'),
       'reply_to': None,
       'html': body,
     }

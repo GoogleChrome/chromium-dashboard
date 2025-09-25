@@ -1171,7 +1171,7 @@ class OTExtensionApprovedHandlerTest(testing_config.CustomTestCase):
       # TESTDATA.make_golden(email_task['html'], 'test_make_extension_approved_email.html')
       self.assertEqual(
           email_task['subject'],
-          ('Origin trial extension approved and ready to be initiated: '
+          ('[Action Required] Initiate your origin trial extension for '
            'OT Display Name'))
       self.assertEqual(email_task['html'],
         TESTDATA['test_make_extension_approved_email.html'])
