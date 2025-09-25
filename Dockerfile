@@ -1,4 +1,4 @@
-ARG PYTHON_VARIANT=3.13-bullseye
+ARG PYTHON_VARIANT=3.13-bookworm
 FROM python:${PYTHON_VARIANT} as app
 
 RUN groupadd -g 1001 appuser && \
