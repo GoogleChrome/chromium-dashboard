@@ -1013,6 +1013,7 @@ class MigrateRolloutMilestones(FlaskHandler):
     self.require_cron_header()
     stages: list[Stage] = Stage.query(Stage.stage_type == STAGE_ENT_ROLLOUT).fetch()
     changed_stages: list[Stage] = []
+    count = 0
     for stage in stages:
       if stage.milestones and stage.milestones.desktop_first:
         continue
@@ -1023,6 +1024,10 @@ class MigrateRolloutMilestones(FlaskHandler):
       changed_stages.append(stage)
       if len(changed_stages) >= 200:
         ndb.put_multi(changed_stages)
+        count += len(changed_stages)
         changed_stages = []
     if changed_stages:
       ndb.put_multi(changed_stages)
+      count += len(changed_stages)
+
+    return f'{count} rollout_milestone fields migrated'
