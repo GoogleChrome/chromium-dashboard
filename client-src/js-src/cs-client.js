@@ -300,6 +300,7 @@
  * @property {string | null} [stable_date] (optional).
  * @property {string | null} [latest_beta] - The latest beta release date (optional).
  * @property {string | null} [final_beta]
+ * @property {string | null} [early_stable] (optional).
  * @property {Feature} features
  */
 
