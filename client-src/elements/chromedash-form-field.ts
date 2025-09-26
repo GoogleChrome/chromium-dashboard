@@ -303,7 +303,9 @@ export class ChromedashFormField extends LitElement {
           name="${fieldName}"
           id="id_${this.name}"
           size="small"
-          ?checked=${fieldValue === 'true' || fieldValue === 'True'}
+          ?checked=${fieldValue === true ||
+          fieldValue === 'true' ||
+          fieldValue === 'True'}
           ?disabled=${this.disabled || fieldDisabled}
           @sl-change="${this.handleFieldUpdated}"
         >
