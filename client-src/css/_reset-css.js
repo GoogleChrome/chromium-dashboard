@@ -29,7 +29,6 @@ pl, ul {
   padding: revert;
 }
 
-
 blockquote, q {
   margin: 0;
   padding: 0;
