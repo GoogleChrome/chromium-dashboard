@@ -25,9 +25,6 @@ export class ChromedashSurveyQuestions extends LitElement {
         #questionnaire ul {
           padding-left: 1em;
         }
-        #questionnaire ul li {
-          list-style: disc;
-        }
         #questionnaire ol li {
           list-style: auto;
           margin-left: var(--content-padding);

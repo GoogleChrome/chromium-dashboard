@@ -45,10 +45,6 @@ input, textarea {
   padding: 7px;
 }
 
-li {
-  list-style: none;
-}
-
 form[name=feature_form] h3 {
   margin: 8px 0;
 }

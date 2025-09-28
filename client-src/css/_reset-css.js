@@ -25,6 +25,10 @@ dl, dt, dd, ol, ul, li, fieldset, form, label, legend, caption, tbody, tfoot, th
   vertical-align: baseline;
 }
 
+pl, ul {
+  padding: revert;
+}
+
 blockquote, q {
   margin: 0;
   padding: 0;

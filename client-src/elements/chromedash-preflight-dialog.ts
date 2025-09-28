@@ -89,22 +89,12 @@ export class ChromedashPreflightDialog extends LitElement {
     return [
       ...SHARED_STYLES,
       css`
-        ol {
-          list-style: none;
-          padding: 0;
-        }
-
-        ol li {
+        li {
           margin-top: 0.5em;
         }
 
         .missing-prereqs-list {
           padding-bottom: 1em;
-        }
-
-        .missing-prereqs-list li {
-          list-style: circle;
-          margin-left: 2em;
         }
 
         .edit-progress-item {
@@ -218,7 +208,7 @@ export class ChromedashPreflightDialog extends LitElement {
     return html`
       Before you ${this._action.name}, it is strongly recommended that you do
       the following:
-      <ol class="missing-prereqs-list">
+      <ul class="missing-prereqs-list">
         ${prereqItems.map(
           item =>
             html` <li class="pending">
@@ -247,7 +237,7 @@ export class ChromedashPreflightDialog extends LitElement {
             </li>
           `
         )}
-      </ol>
+      </ul>
 
       <sl-button
         href="${this._url}"

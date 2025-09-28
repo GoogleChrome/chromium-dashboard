@@ -11,7 +11,6 @@ export const SHARED_STYLES = [
 
   * {
     box-sizing: border-box;
-    list-style: none;
      /* font: inherit; */
     text-decoration: inherit;
     -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
@@ -158,7 +157,6 @@ export const SHARED_STYLES = [
   }
 
   details summary {
-    list-style: revert; /* Show small triangle */
     white-space: nowrap;
     box-sizing: border-box;
     contain: content;

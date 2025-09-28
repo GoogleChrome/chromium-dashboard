@@ -149,6 +149,7 @@ export const ROADMAP_MILESTONE_CARD_CSS = [
     .features_list ol {
       margin-top: 8px;
       list-style: none;
+      padding: 0;
     }
     .features_list li {
       padding: 8px;

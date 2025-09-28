@@ -59,10 +59,6 @@ export const FORM_STYLES = [
       padding: 7px;
     }
 
-    li {
-      list-style: none;
-    }
-
     form[name="feature_form"] h3 {
       margin: var(--content-padding-half) 0;
     }
@@ -189,11 +185,6 @@ export const FORM_STYLES = [
 
     chromedash-form-field .helptext ul {
       margin: 1em 0;
-    }
-
-    chromedash-form-field .helptext li {
-      list-style: circle;
-      margin-left: 2em;
     }
 
     chromedash-form-field .helptext blockquote {
