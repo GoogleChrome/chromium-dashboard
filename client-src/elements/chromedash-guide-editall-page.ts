@@ -50,7 +50,6 @@ export class ChromedashGuideEditallPage extends LitElement {
         .enterprise-help-text li {
           margin: revert;
           padding: revert;
-          list-style: revert;
         }
       `,
     ];

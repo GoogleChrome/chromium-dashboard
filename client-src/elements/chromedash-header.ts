@@ -73,6 +73,7 @@ export class ChromedashHeader extends LitElement {
           position: absolute;
           top: 80%;
           left: 0;
+          padding: 0;
           list-style: none;
           z-index: 1;
           background: var(--card-background);

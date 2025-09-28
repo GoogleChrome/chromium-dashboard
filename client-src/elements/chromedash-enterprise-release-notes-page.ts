@@ -128,7 +128,6 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
         }
 
         li {
-          list-style: circle;
           margin-block-end: 16px;
         }
 

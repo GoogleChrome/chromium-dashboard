@@ -35,7 +35,6 @@ export class ChromedashSearchHelpDialog extends LitElement {
           max-width: 60rem;
         }
         li {
-          list-style: disc;
           margin-left: var(--content-padding);
         }
       `,

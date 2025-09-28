@@ -20,6 +20,9 @@ export class ChromedashGantt extends LitElement {
         :host {
           width: 600px;
         }
+        ul {
+          padding: 0;
+        }
 
         label {
           display: block;
@@ -30,6 +33,7 @@ export class ChromedashGantt extends LitElement {
 
         .platform-row {
           margin: var(--content-padding) 0;
+          list-style: none;
         }
 
         .platform {
@@ -41,7 +45,6 @@ export class ChromedashGantt extends LitElement {
 
         /* On small displays, show milestones as a bullet list. */
         .chart li {
-          list-style: circle;
           margin-left: var(--content-padding);
         }
 

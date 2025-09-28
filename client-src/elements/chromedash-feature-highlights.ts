@@ -27,10 +27,6 @@ export class ChromedashFeatureHighlights extends LitElement {
           margin-right: 5px;
         }
 
-        li {
-          list-style: none;
-        }
-
         #consensus li {
           display: flex;
         }
@@ -166,9 +162,12 @@ export class ChromedashFeatureHighlights extends LitElement {
           ? html`
               <section id="specification">
                 <h3>Explainer(s)</h3>
-                ${this.feature.explainer_links?.map(
-                  link => html`<p>${enhanceUrl(link, this.featureLinks)}</p>`
-                )}
+                <ul>
+                  ${this.feature.explainer_links?.map(
+                    link =>
+                      html`<li>${enhanceUrl(link, this.featureLinks)}</li>`
+                  )}
+                </ul>
               </section>
             `
           : nothing}

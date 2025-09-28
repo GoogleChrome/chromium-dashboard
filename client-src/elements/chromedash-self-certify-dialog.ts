@@ -53,7 +53,6 @@ class ChromedashSelfCertifyDialog extends LitElement {
         #prereqs-list li {
           margin-left: 8px;
           margin-bottom: 8px;
-          list-style: circle;
         }
         #prereqs-header {
           margin-bottom: 8px;
