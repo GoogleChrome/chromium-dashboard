@@ -6,7 +6,7 @@ appengine-python-standard>=1.0.0
 html5lib==1.1
 funcsigs==1.0.2
 json5==0.12.1
-google-api-python-client==2.182.0
+google-api-python-client==2.183.0
 
 # TODO(jrobbins): Add this back or replace it when python 3.10 is supported.
 # google-python-cloud-debugger==2.18
