@@ -139,7 +139,6 @@ export const SHARED_STYLES = [
   }
 
   code {
-   white-space: nowrap;
    font-family: monospace;
   }
 

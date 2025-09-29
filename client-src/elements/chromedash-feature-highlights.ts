@@ -86,14 +86,18 @@ export class ChromedashFeatureHighlights extends LitElement {
 
   renderSummary() {
     if (this.feature.summary) {
+      const isMarkdown = (this.feature.markdown_fields || []).includes(
+        'summary'
+      );
+
       const markup = autolink(
         this.feature.summary,
         this.featureLinks,
-        (this.feature.markdown_fields || []).includes('summary')
+        isMarkdown
       );
       return html`
         <section id="summary">
-          <p class="preformatted">${markup}</p>
+          ${isMarkdown ? markup : html`<p class="preformatted">${markup}</p>`}
         </section>
       `;
     } else {

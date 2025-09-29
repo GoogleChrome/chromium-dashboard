@@ -187,7 +187,6 @@ export class ChromedashFeatureDetail extends LitElement {
         .longtext {
           display: block;
           white-space: pre-wrap;
-          padding: var(--content-padding-half);
         }
 
         .longurl {
@@ -351,6 +350,9 @@ export class ChromedashFeatureDetail extends LitElement {
       this.featureLinks,
       isMarkdown
     );
+    if (isMarkdown) {
+      return html`${markup}`;
+    }
     if (value.length > LONG_TEXT || value.includes('\n')) {
       return html`<span class="longtext">${markup}</span>`;
     }
