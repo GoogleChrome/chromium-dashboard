@@ -89,7 +89,7 @@
     "@web/test-runner-puppeteer": "^0.18.0",
     "acorn": ">=8.15.0",
     "color-string": ">=2.1.2",
-    "del": "^8.0.0",
+    "del": "^8.0.1",
     "dot-prop": ">=10.0.0",
     "eslint": "^9.36.0",
     "eslint-config-prettier": "^10.1.8",
