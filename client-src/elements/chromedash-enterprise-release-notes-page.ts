@@ -127,7 +127,7 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
           padding-inline-start: 1rem;
         }
 
-        li {
+        .stages li {
           margin-block-end: 16px;
         }
 
@@ -741,12 +741,13 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
   }
 
   renderFeatureSummary(f: Feature): TemplateResult {
-    const markup = autolink(
-      f.summary,
-      [],
-      (f.markdown_fields || []).includes('summary')
-    );
-    return html` <p class="summary preformatted">${markup}</p>`;
+    const isMarkdown = (f.markdown_fields || []).includes('summary');
+    const markup = autolink(f.summary, [], isMarkdown);
+    if (isMarkdown) {
+      return html`${markup}`;
+    } else {
+      return html`<p class="summary preformatted">${markup}</p>`;
+    }
   }
 
   renderEditableFeatureSummary(f: Feature): TemplateResult {
@@ -871,7 +872,7 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
       ${isEditing
         ? this.renderEditableFeatureSummary(f)
         : this.renderFeatureSummary(f)}
-      <ul>
+      <ul class="stages">
         ${f.stages.map(s =>
           isEditing && s.id
             ? this.renderEditableStageItem(f, s, shouldDisplayStageTitleInBold)
