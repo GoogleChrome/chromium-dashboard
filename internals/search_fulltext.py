@@ -92,10 +92,10 @@ def _get_strings_dict(fe: FeatureEntry) -> dict[str, list[str|None]]:
       # TODO: safari_views
       # TODO: web_dev_views
       'browsers.ff.view.url': [fe.ff_views_link],
-      'browsers.safari.view.url': [fe.safari_views_link],
+      'browsers.webkit.view.url': [fe.safari_views_link],
       'browsers.webdev.view.url': [fe.web_dev_views_link],
       'browsers.ff.view.notes': [fe.ff_views_notes],
-      'browsers.safari.view.notes': [fe.safari_views_notes],
+      'browsers.webkit.view.notes': [fe.safari_views_notes],
       'browsers.webdev.view.notes': [fe.web_dev_views_notes],
       'other_views_notes': [fe.other_views_notes],
 

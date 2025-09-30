@@ -758,7 +758,7 @@ PROPERTY_NAMES_TO_ENUM_DICTS = {
     'browsers.ff.view': VENDOR_VIEWS,
     'ie_views': VENDOR_VIEWS,
     'safari_views': VENDOR_VIEWS,
-    'browsers.safari.view': VENDOR_VIEWS,
+    'browsers.webkit.view': VENDOR_VIEWS,
     'web_dev_views': WEB_DEV_VIEWS,
     'browsers.webdev.view': WEB_DEV_VIEWS,
     'rollout_impact': IMPACT_CATEGORIES,

@@ -260,7 +260,7 @@ export class ChromedashFeatureHighlights extends LitElement {
           ${this.feature.browsers.safari.view.val
             ? html`
                 <li>
-                  <label>Safari:</label>
+                  <label>WebKit:</label>
                   <chromedash-vendor-views
                     href=${this.feature.browsers.safari.view.url || nothing}
                     .featureLinks=${this.featureLinks}

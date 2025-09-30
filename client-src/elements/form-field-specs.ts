@@ -1087,7 +1087,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     type: 'select',
     choices: VENDOR_VIEWS_COMMON,
     initial: VENDOR_VIEWS_COMMON.NO_PUBLIC_SIGNALS[0],
-    label: 'Safari views',
+    label: 'WebKit views',
     help_text: html` See
       <a
         target="_blank"
@@ -1102,7 +1102,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     attrs: URL_FIELD_ATTRS,
     required: false,
     label: '',
-    displayLabel: 'Safari views link',
+    displayLabel: 'WebKit views link',
     help_text: html`Citation link.`,
   },
 
@@ -1111,7 +1111,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     attrs: {rows: 2, placeholder: 'Notes'},
     required: false,
     label: '',
-    displayLabel: 'Safari views notes',
+    displayLabel: 'WebKit views notes',
     help_text: '',
   },
 

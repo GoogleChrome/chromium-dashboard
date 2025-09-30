@@ -334,7 +334,7 @@ QUERIABLE_FIELDS: dict[str, Property] = {
     'tag_review_status': FeatureEntry.tag_review_status,
     'standards.maturity': FeatureEntry.standard_maturity,
     'browsers.ff.view': FeatureEntry.ff_views,
-    'browsers.safari.view': FeatureEntry.safari_views,
+    'browsers.webkit.view': FeatureEntry.safari_views,
     'browsers.webdev.view': FeatureEntry.web_dev_views,
 }
 

@@ -285,7 +285,7 @@ describe('chromedash-feature-page', () => {
       'section#consensus'
     ) as HTMLElement;
     assert.exists(consensusSection);
-    // FF and Safari views are present and clickable.
+    // FF and WebKit views are present and clickable.
     await assertClickableVendorLink(consensusSection, {
       href: 'fake ff url',
       text: 'fake ff view text',

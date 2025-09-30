@@ -258,9 +258,9 @@ export const QUERIABLE_FIELDS: QueryField[] = [
     choices: REVIEW_STATUS_CHOICES,
   },
   {
-    name: 'browsers.safari.view',
+    name: 'browsers.webkit.view',
     kind: ENUM_KIND,
-    doc: 'Safari views',
+    doc: 'WebKit views',
     choices: VENDOR_VIEWS_COMMON,
   },
   {
