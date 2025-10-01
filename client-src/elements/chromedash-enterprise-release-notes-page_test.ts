@@ -529,8 +529,8 @@ describe('chromedash-enterprise-release-notes-page', () => {
           features[0].querySelector('strong')!.textContent);
         assert.equal(
           '< To remove - Feature details - ' +
-          'Owners: owner - Editors: editor1, editor2 - First Notice: n_milestone_feat_6 - ' +
-            'Last Updated: ( ) by updater6 >',
+            'Owners: owner - Editors: editor1, editor2 - Enterprise impact: Medium - First notice: n_milestone_feat_6 - ' +
+            'Last updated: ( ) by updater6 >',
           normalizedTextContent(features[0].querySelector('.toremove')));
         assert.equal(
           'feature 6 summary',
@@ -567,8 +567,8 @@ describe('chromedash-enterprise-release-notes-page', () => {
           features[0].querySelector('strong')!.textContent);
         assert.equal(
           '< To remove - Feature details - ' +
-          'Owners: owner - Editors: editor1, editor2 - First Notice: n_milestone_feat_8 - ' +
-            'Last Updated: by updater8 >',
+            'Owners: owner - Editors: editor1, editor2 - Enterprise impact: Medium - First notice: n_milestone_feat_8 - ' +
+            'Last updated: by updater8 >',
           normalizedTextContent(features[0].querySelector('.toremove')));
         assert.equal(
           'future premium feature summary',
