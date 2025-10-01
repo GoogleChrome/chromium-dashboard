@@ -230,6 +230,7 @@ def stage_to_json_dict(
     'rollout_milestone': stage.rollout_milestone,
     'rollout_platforms': stage.rollout_platforms,
     'rollout_details': stage.rollout_details,
+    # TODO(jrobbins): remove this in the next deployment.
     'rollout_impact': stage.rollout_impact,  # Deprecated
     'enterprise_policies': stage.enterprise_policies,
 
