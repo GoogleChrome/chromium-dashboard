@@ -262,6 +262,7 @@
      >{{feature.devtrial_instructions}}</a>
 {%- endif -%}
 
+{%- if 'experiment' in sections_to_show or 'ship' in sections_to_show -%}
 <br>
 <br>
 <div><b>Flag name on about://flags</b></div>
@@ -282,6 +283,7 @@
 <br>
 <div><b>Non-finch justification</b></div>
   None
+{%- endif -%}
 {%- endif -%}
 
 {%- if 'ship' in sections_to_show -%}

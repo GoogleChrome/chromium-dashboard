@@ -265,9 +265,9 @@ class IntentEmailPreviewTemplateTest(testing_config.CustomTestCase):
                        gate_type=3, state=Vote.NA)
     self.gate_1.put()
 
-    self.stage_2 = Stage(id=200, feature_id=234, stage_type=110)
+    self.stage_2 = Stage(id=200, feature_id=234, stage_type=120)
     self.stage_2.put()
-    self.gate_2 = Gate(id=201, feature_id=234, stage_id=100,
+    self.gate_2 = Gate(id=201, feature_id=234, stage_id=200,
                        gate_type=1, state=Vote.NA)
     self.gate_2.put()
 
