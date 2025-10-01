@@ -254,6 +254,12 @@ class IntentEmailPreviewTemplateTest(testing_config.CustomTestCase):
         web_feature='WebFeature',
         category=1, intent_stage=core_enums.INTENT_IMPLEMENT,
         wpt=True, wpt_descr='WPT description, https://example.com/wpt')
+    self.feature_2 = FeatureEntry(
+        id=456, name='feature two', summary='sum',
+        owner_emails=['user1@google.com'], feature_type=2,
+        web_feature='WebFeature2',
+        category=1, intent_stage=core_enums.INTENT_SHIP)
+    self.feature_2.put()
     # Hardcode the key for the template test
     self.feature_1.key = ndb.Key('FeatureEntry', 234)
     self.feature_1.put()
@@ -277,6 +283,11 @@ class IntentEmailPreviewTemplateTest(testing_config.CustomTestCase):
     self.gate_3 = Gate(id=201, feature_id=234, stage_id=100,
                        gate_type=4, state=Vote.APPROVED)
     self.gate_3.put()
+    self.stage_2_1 = Stage(id=210, feature_id=456, stage_type=360)
+    self.stage_2_1.put()
+    self.gate_2_1 = Gate(id=302, feature_id=456, stage_id=210,
+                         gate_type=4, state=Vote.APPROVED)
+    self.gate_2_1.put()
 
     self.request_path = '/admin/features/launch/%d/%d?intent' % (
         core_enums.INTENT_SHIP, self.feature_1.key.integer_id())
@@ -376,3 +387,21 @@ class IntentEmailPreviewTemplateTest(testing_config.CustomTestCase):
     # TESTDATA.make_golden(body, 'test_html_ship_rendering.html')
     self.assertMultiLineEqual(
       TESTDATA['test_html_ship_rendering.html'], body)
+
+  def test_template_rendering_psa_ship(self):
+    """We can render the ship intent template for PSA features."""
+    with test_app.test_request_context(self.request_path):
+      actual_data = self.handler.get_template_data(
+          feature_id=self.feature_2.key.integer_id(),
+          intent_stage=core_enums.INTENT_SHIP,
+          gate_id=self.gate_2_1.key.integer_id())
+      actual_data.update(self.handler.get_common_data())
+      actual_data['nonce'] = 'fake nonce'
+      actual_data['xsrf_token'] = ''
+      actual_data['xsrf_token_expires'] = 0
+
+      body = render_template(self.intent_preview_path, **actual_data)
+      testing_config.sign_out()
+    # TESTDATA.make_golden(body, 'test_html_psa_ship_rendering.html')
+    self.assertMultiLineEqual(
+      TESTDATA['test_html_psa_ship_rendering.html'], body)
