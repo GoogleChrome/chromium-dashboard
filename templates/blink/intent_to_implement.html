@@ -78,6 +78,7 @@
 
 <br>
 <br>
+{%- if feature.feature_type_int != 2 %}
 <div><b>TAG review</b></div>
 {{feature.tag_review|urlize}}
 
@@ -86,6 +87,7 @@
 <br>
 <div><b>TAG review status</b></div>
   {{feature.tag_review_status}}
+{%- endif -%}
 {%- endif -%}
 
 {% for stage in stage_info.ot_stages -%}
@@ -294,8 +296,10 @@
 
 <br>
 <br>
+{%- if feature.feature_type_int != 2 %}
 <div><b>Requires code in //chrome?</b></div>
 {{feature.requires_embedder_support}}
+{%- endif -%}
 
 {%- if feature.browsers.chrome.bug -%}
 <br>
@@ -368,6 +372,7 @@
 <div><b>Estimated milestones</b></div>
 {%- include "estimated-milestones-table.html" -%}
 
+{%- if feature.feature_type_int != 2 -%}
 {%- if 'anticipated_spec_changes' in sections_to_show or feature.anticipated_spec_changes -%}
 <br>
 <br>
@@ -380,6 +385,7 @@
     structure of the API in a non-backward-compatible way).
   </p>
   {{feature.anticipated_spec_changes|urlize}}
+{%- endif -%}
 {%- endif -%}
 
 <br>
