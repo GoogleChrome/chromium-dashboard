@@ -80,7 +80,6 @@
  * @property {string} [experiment_extension_reason]
  * @property {string} [finch_url]
  * @property {string} [rollout_details]
- * @property {number} [rollout_impact]
  * @property {number} [rollout_milestone]
  * @property {string[]} rollout_platforms
  * @property {string[]} enterprise_policies

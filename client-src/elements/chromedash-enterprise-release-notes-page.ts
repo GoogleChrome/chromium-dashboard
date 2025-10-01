@@ -12,6 +12,7 @@ import {Feature, User, StageDict} from '../js-src/cs-client.js';
 import {
   ENTERPRISE_FEATURE_CATEGORIES,
   ENTERPRISE_PRODUCT_CATEGORY,
+  ENTERPRISE_IMPACT_DISPLAYNAME,
   PLATFORM_CATEGORIES,
   PLATFORMS_DISPLAYNAME,
   STAGE_ENT_ROLLOUT,
@@ -264,7 +265,6 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
         stage_type: STAGE_ENT_ROLLOUT,
         rollout_milestone: Number(milestone),
         rollout_platforms: Array.from(platforms).map(String),
-        rollout_impact: 1,
       })
     );
   }
@@ -311,19 +311,8 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
         stages.some(s => s.rollout_milestone === this.selectedMilestone)
       )
       .sort((a, b) => {
-        // Highest impact of the stages from feature A.
-        const impactA = Math.max(
-          ...a.stages
-            .filter(s => s.rollout_milestone === this.selectedMilestone)
-            .map(s => s.rollout_impact ?? 0)
-        );
-        // Highest impact of the stages from feature B.
-        const impactB = Math.max(
-          ...b.stages
-            .filter(s => s.rollout_milestone === this.selectedMilestone)
-            .map(s => s.rollout_impact ?? 0)
-        );
-        return impactB - impactA;
+        // Descending order
+        return b.enterprise_impact - a.enterprise_impact;
       });
 
     this.currentChromeBrowserUpdates = currentFeatures.filter(
@@ -672,8 +661,11 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
         - <a target="_blank" href="/feature/${f.id}">Feature details</a> -
         <b>Owners:</b> ${f.browsers.chrome.owners?.join(', ')} -
         <b>Editors:</b> ${(f.editors || []).join(', ')} -
-        <b>First Notice:</b> ${f.first_enterprise_notification_milestone} -
-        <b>Last Updated:</b>
+        <b>Enterprise impact:</b> ${ENTERPRISE_IMPACT_DISPLAYNAME[
+          f.enterprise_impact
+        ]}
+        - <b>First notice:</b> ${f.first_enterprise_notification_milestone} -
+        <b>Last updated:</b>
         <a
           href="/feature/${f.id}/activity"
           target="_blank"

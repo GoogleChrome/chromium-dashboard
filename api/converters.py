@@ -230,7 +230,7 @@ def stage_to_json_dict(
     'rollout_milestone': stage.rollout_milestone,
     'rollout_platforms': stage.rollout_platforms,
     'rollout_details': stage.rollout_details,
-    'rollout_impact': stage.rollout_impact,
+    'rollout_impact': stage.rollout_impact,  # Deprecated
     'enterprise_policies': stage.enterprise_policies,
 
     # Milestone fields to be populated later.

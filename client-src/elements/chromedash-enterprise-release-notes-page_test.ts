@@ -2,6 +2,7 @@ import {html} from 'lit';
 import {assert, fixture, nextFrame} from '@open-wc/testing';
 import {SlButton} from '@shoelace-style/shoelace';
 import {ChromedashEnterpriseReleaseNotesPage} from './chromedash-enterprise-release-notes-page';
+import {ENTERPRISE_IMPACT} from './form-field-enums.js';
 import {parseRawQuery, clearURLParams} from './utils.js';
 import './chromedash-toast';
 import {ChromeStatusClient} from '../js-src/cs-client';
@@ -81,6 +82,7 @@ describe('chromedash-enterprise-release-notes-page', () => {
           editors: ['editor1', 'editor2'],
           enterprise_feature_categories: ['1', '2', '3'],
           enterprise_product_category: 0,
+          enterprise_impact: ENTERPRISE_IMPACT.IMPACT_LOW[0],
           first_enterprise_notification_milestone: 'n_milestone_feat_3',
           stages: [
             {
@@ -88,7 +90,6 @@ describe('chromedash-enterprise-release-notes-page', () => {
               stage_type: 1061,
               rollout_milestone: 100,
               rollout_details: 'fake rollout details 100',
-              rollout_impact: 1,
               rollout_platforms: [],
             },
             {
@@ -115,6 +116,7 @@ describe('chromedash-enterprise-release-notes-page', () => {
           editors: ['editor1'],
           enterprise_feature_categories: ['3'],
           enterprise_product_category: 1,
+          enterprise_impact: ENTERPRISE_IMPACT.IMPACT_MEDIUM[0],
           first_enterprise_notification_milestone: 'n_milestone_feat_4',
           stages: [
             {
@@ -122,7 +124,6 @@ describe('chromedash-enterprise-release-notes-page', () => {
               stage_type: 1061,
               rollout_milestone: 100,
               rollout_details: 'fake rollout details 100',
-              rollout_impact: 2,
               rollout_platforms: [],
             },
             {
@@ -130,7 +131,6 @@ describe('chromedash-enterprise-release-notes-page', () => {
               stage_type: 1061,
               rollout_milestone: 101,
               rollout_details: 'fake rollout details 101',
-              rollout_impact: 2,
               rollout_platforms: [],
             },
           ],
@@ -153,6 +153,7 @@ describe('chromedash-enterprise-release-notes-page', () => {
           editors: ['editor1', 'editor2'],
           enterprise_feature_categories: ['2'],
           enterprise_product_category: 3,
+          enterprise_impact: ENTERPRISE_IMPACT.IMPACT_HIGH[0],
           first_enterprise_notification_milestone: 'n_milestone_feat_5',
           stages: [
             {
@@ -160,7 +161,6 @@ describe('chromedash-enterprise-release-notes-page', () => {
               stage_type: 1061,
               rollout_milestone: 1,
               rollout_details: 'fake rollout details 1',
-              rollout_impact: 3,
               rollout_platforms: [],
             },
             {
@@ -168,7 +168,6 @@ describe('chromedash-enterprise-release-notes-page', () => {
               stage_type: 1061,
               rollout_milestone: 1000,
               rollout_details: 'fake rollout details 1000',
-              rollout_impact: 2,
               rollout_platforms: [],
             },
           ],
@@ -191,6 +190,7 @@ describe('chromedash-enterprise-release-notes-page', () => {
           editors: ['editor1', 'editor2'],
           enterprise_feature_categories: ['2'],
           enterprise_product_category: 0,
+          enterprise_impact: ENTERPRISE_IMPACT.IMPACT_MEDIUM[0],
           first_enterprise_notification_milestone: 'n_milestone_feat_6',
           stages: [
             {
@@ -198,7 +198,6 @@ describe('chromedash-enterprise-release-notes-page', () => {
               stage_type: 1061,
               rollout_milestone: 999,
               rollout_details: 'fake rollout details 999',
-              rollout_impact: 2,
               rollout_platforms: [],
             },
           ],
@@ -221,6 +220,7 @@ describe('chromedash-enterprise-release-notes-page', () => {
           editors: ['editor1', 'editor2'],
           enterprise_feature_categories: [],
           enterprise_product_category: 1,
+          enterprise_impact: ENTERPRISE_IMPACT.IMPACT_NONE[0],
           first_enterprise_notification_milestone: 'n_milestone_feat_7',
           stages: [
             {
@@ -255,6 +255,7 @@ describe('chromedash-enterprise-release-notes-page', () => {
           editors: ['editor1', 'editor2'],
           enterprise_feature_categories: [],
           enterprise_product_category: 2,
+          enterprise_impact: ENTERPRISE_IMPACT.IMPACT_MEDIUM[0],
           first_enterprise_notification_milestone: 'n_milestone_feat_8',
           stages: [
             {
@@ -262,7 +263,6 @@ describe('chromedash-enterprise-release-notes-page', () => {
               stage_type: 1061,
               rollout_milestone: 1000,
               rollout_details: 'fake rollout details 1000',
-              rollout_impact: 2,
               rollout_platforms: [],
             },
           ],

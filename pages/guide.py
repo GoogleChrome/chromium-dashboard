@@ -178,6 +178,7 @@ class EnterpriseFeatureCreateHandler(FeatureCreateHandler):
         blink_components=[settings.DEFAULT_ENTERPRISE_COMPONENT],
         confidential=self.form.get('confidential') == 'on',
         enterprise_product_category=int(self.form.get('enterprise_product_category', '0')),
+        enterprise_impact=int(self.form.get('enterprise_impact', '1')),
         tag_review_status=core_enums.REVIEW_NA)
     key: ndb.Key = feature_entry.put()
     search_fulltext.index_feature(feature_entry)

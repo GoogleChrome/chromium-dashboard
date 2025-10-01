@@ -13,7 +13,6 @@ import {
   OT_MILESTONE_START_FIELDS,
   PLATFORM_CATEGORIES,
   REVIEW_STATUS_CHOICES,
-  ROLLOUT_IMPACT,
   ROLLOUT_PLAN,
   SHIPPED_MILESTONE_FIELDS,
   STAGE_TYPES_DEV_TRIAL,
@@ -2125,16 +2124,6 @@ export const ALL_FIELDS: Record<string, Field> = {
     introduces a breaking change on the stable channel, or seriously changes the
     experience of using Chrome. Use your judgment; Enterprise reviewers can help
     judge risk if you're unsure.`,
-  },
-
-  rollout_impact: {
-    type: 'select',
-    choices: ROLLOUT_IMPACT,
-    initial: ROLLOUT_IMPACT.IMPACT_MEDIUM[0],
-    label: 'Impact',
-    help_text: html` A stage is probably high impact if it introduces a breaking
-    change on the stable channel, or seriously changes the experience of using
-    Chrome. Use your judgment; if you're unsure, most stages are Medium impact.`,
   },
 
   rollout_milestone: {
