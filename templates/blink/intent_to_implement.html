@@ -248,8 +248,9 @@
 <br>
 <br>
 <div><b>Is this feature fully tested by <a href="https://chromium.googlesource.com/chromium/src/+/main/docs/testing/web_platform_tests.md">web-platform-tests</a>?</b></div>
-{%- if feature.wpt -%}Yes{%- else -%}No{%- endif -%}
-{%- if feature.wpt_descr -%}
+{% if feature.wpt -%}Yes{%- else -%}No{%- endif %}
+<br>
+{% if feature.wpt_descr -%}
   {{feature.wpt_descr|urlize}}
 {%- endif -%}
 
