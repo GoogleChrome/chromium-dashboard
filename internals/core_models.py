@@ -362,8 +362,8 @@ class Stage(ndb.Model):
   # Origin trial stage id that this stage extends, if trial extension stage.
   ot_stage_id = ndb.IntegerProperty()
 
-  #Enterprise
-  rollout_impact = ndb.IntegerProperty(default=2) # default to "Medium impact"
+  # Enterprise
+  rollout_impact = ndb.IntegerProperty(default=2) # deprecated
   # rollout_milestone will be migrated to milestones.desktop_first as the
   # default "start" milestone.
   rollout_milestone = ndb.IntegerProperty()

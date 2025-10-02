@@ -14,7 +14,6 @@ import {
   OT_MILESTONE_END_FIELDS,
   OT_SETUP_STATUS_OPTIONS,
   PLATFORMS_DISPLAYNAME,
-  ROLLOUT_IMPACT_DISPLAYNAME,
   ROLLOUT_PLAN_DISPLAYNAME,
   STAGE_FIELD_NAME_MAPPING,
   STAGE_SPECIFIC_FIELDS,
@@ -239,9 +238,6 @@ export function getFieldValueFromFeature(
 ) {
   if (STAGE_SPECIFIC_FIELDS.has(fieldName)) {
     const value = getStageValue(feStage, fieldName);
-    if (fieldName === 'rollout_impact' && value) {
-      return ROLLOUT_IMPACT_DISPLAYNAME[value];
-    }
     if (fieldName === 'rollout_platforms' && value) {
       return value.map(platformId => PLATFORMS_DISPLAYNAME[platformId]);
     } else if (fieldName in OT_MILESTONE_END_FIELDS) {

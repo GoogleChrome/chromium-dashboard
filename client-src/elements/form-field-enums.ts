@@ -80,18 +80,6 @@ export const ENTERPRISE_IMPACT: Record<string, [number, string]> = {
   IMPACT_HIGH: [4, 'High'],
 };
 
-export const ROLLOUT_IMPACT: Record<string, [number, string]> = {
-  IMPACT_LOW: [1, 'Low'],
-  IMPACT_MEDIUM: [2, 'Medium'],
-  IMPACT_HIGH: [3, 'High'],
-};
-
-export const ROLLOUT_IMPACT_DISPLAYNAME: Record<number, string> = {
-  1: 'Low', // IMPACT_LOW
-  2: 'Medium', // IMPACT_MEDIUM
-  3: 'High', // IMPACT_HIGH
-};
-
 export const ROLLOUT_PLAN: Record<string, [number, string]> = {
   ROLLOUT_100: [0, 'Will ship enabled for all users'],
   ROLLOUT_0_THEN_100: [1, '(RARE) Ships disabled, then flips on for all users'],
@@ -446,7 +434,6 @@ export const STAGE_SPECIFIC_FIELDS = new Set<string>([
   'experiment_goals',
   'experiment_risks',
   'experiment_extension_reason',
-  'rollout_impact',
   'rollout_milestone',
   'rollout_platforms',
   'rollout_details',

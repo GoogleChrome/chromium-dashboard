@@ -9,7 +9,6 @@ import {
   IMPLEMENTATION_STATUS,
   INTENT_STAGES,
   REVIEW_STATUS_CHOICES,
-  ROLLOUT_IMPACT,
   VENDOR_VIEWS_COMMON,
   VENDOR_VIEWS_GECKO,
   WEB_DEV_VIEWS,
@@ -222,12 +221,6 @@ export const QUERIABLE_FIELDS: QueryField[] = [
     kind: ENUM_KIND,
     doc: 'Spec process stage',
     choices: INTENT_STAGES,
-  },
-  {
-    name: 'rollout_impact',
-    kind: ENUM_KIND,
-    doc: 'Impact',
-    choices: ROLLOUT_IMPACT,
   },
   // TODO: rollout_platforms is not yet supported.
   // {name: 'rollout_platforms', kind: ENUM_KIND,
