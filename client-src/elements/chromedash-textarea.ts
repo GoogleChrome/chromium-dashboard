@@ -1,3 +1,4 @@
+import {TemplateResult, html} from 'lit';
 import SlTextarea from '@shoelace-style/shoelace/dist/components/textarea/textarea.js';
 import {customElement, property} from 'lit/decorators.js';
 
@@ -15,6 +16,12 @@ export class ChromedashTextarea extends SlTextarea {
   cols = 50;
   @property({type: Number})
   rows = 10;
+  @property({type: Boolean})
+  offerMarkdown = false;
+  @property({type: Boolean})
+  isMarkdown = false;
+  @property({type: Number}) // Represents which field this is on the form.
+  index = -1;
   // This is the longest string that a cloud ndb StringProperty seems to accept.
   // Fields that accept a URL list can be longer, provided that each individual
   // URL is no more than this length.
@@ -77,5 +84,26 @@ export class ChromedashTextarea extends SlTextarea {
       return;
     }
     this.validate();
+  }
+
+  handleMarkdownChecked(e) {
+    this.isMarkdown = Boolean(e.target?.checked);
+    // Note: The sl-change event continues to propagate to chromedash-form-field.
+  }
+
+  render() {
+    const editor = super.render();
+    if (!this.offerMarkdown) {
+      return editor;
+    }
+    return html`
+    ${editor}
+    <sl-checkbox name="${this.name}_is_markdown"
+    ?checked=${this.isMarkdown}
+    @sl-change=${e => this.handleMarkdownChecked(e)}
+    >
+    Use markdown
+        </sl-checkbox>
+    `;
   }
 }

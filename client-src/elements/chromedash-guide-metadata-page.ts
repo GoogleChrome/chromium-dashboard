@@ -103,6 +103,8 @@ export class ChromedashGuideMetadataPage extends LitElement {
 
   // Handler to update form field values when a field update event is fired.
   handleFormFieldUpdate(event) {
+    console.log('handleFormFieldUpdate in guide metadata');
+    console.log(event.detail);
     const value = event.detail.value;
     // Index represents which form field was updated.
     const index = event.detail.index;
@@ -112,6 +114,8 @@ export class ChromedashGuideMetadataPage extends LitElement {
     // The field has been updated, so it is considered touched.
     this.fieldValues[index].touched = true;
     this.fieldValues[index].value = value;
+    this.fieldValues[index].isMarkdown = event.detail.isMarkdown;
+    console.log({fieldValue: this.fieldValues[index]});
   }
 
   handleCancelClick() {
