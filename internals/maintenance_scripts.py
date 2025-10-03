@@ -14,7 +14,7 @@
 
 import collections
 import csv
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, timedelta, timezone
 from io import StringIO
 import logging
 from typing import Any
@@ -1011,10 +1011,13 @@ class GenerateStaleFeaturesFile(FlaskHandler):
   """Generate a CSV file with all stale features that have upcoming shipping milestones."""
   DATE_FORMAT = '%Y-%m-%dT%H:%M:%S'
 
-  def _gather_stale_features(self) -> list[FeatureEntry]:
+  def _gather_stale_features(
+    self,
+    current_milestone: int
+  ) -> list[FeatureEntry]:
     """Generate a list of stale features that have an upcoming shipping milestone."""
     # Get all features that have not been verified for accuracy in over a month.
-    now = datetime.now()
+    now = datetime.now(timezone.utc)
     one_month_ago = now - timedelta(weeks=4)
     stale_features = FeatureEntry.query(
       ndb.OR(
@@ -1024,8 +1027,6 @@ class GenerateStaleFeaturesFile(FlaskHandler):
     )
 
     stale_features_with_upcoming_ship_stages: list[FeatureEntry] = []
-    current_milestone_info = get_current_milestone_info('current')
-    current_milestone = int(current_milestone_info['mstone'])
     for f in stale_features:
       shipping_stage_type = STAGE_TYPES_SHIPPING[f.feature_type]
       upcoming_ship_stages = Stage.query(
@@ -1044,7 +1045,11 @@ class GenerateStaleFeaturesFile(FlaskHandler):
 
     return stale_features_with_upcoming_ship_stages
 
-  def _generate_rows(self, features: list[FeatureEntry]):
+  def _generate_rows(
+    self,
+    features: list[FeatureEntry],
+    current_milestone: int
+  ) -> list[list[str]]:
     current_milestone_info = get_current_milestone_info('current')
     current_milestone = int(current_milestone_info['mstone'])
     csv_rows: list[list[str]] = []
@@ -1056,12 +1061,12 @@ class GenerateStaleFeaturesFile(FlaskHandler):
                                                    self.DATE_FORMAT))
       csv_rows.append(
         [
-          current_milestone,
+          str(current_milestone),
           f.name,
           f'{settings.SITE_URL}feature/{f.key.integer_id()}',
           owner_emails_str,
           accurate_as_of_str,
-          f.outstanding_notifications,
+          str(f.outstanding_notifications),
         ]
       )
 
@@ -1088,14 +1093,16 @@ class GenerateStaleFeaturesFile(FlaskHandler):
     blob = bucket.blob('chromestatus-stale-features.csv')
     blob.upload_from_string(csv_io.getvalue())
 
-  def get_template_data(self, **kwargs):
+  def get_template_data(self, **kwargs) -> str:
     self.require_cron_header()
 
+    current_milestone_info = get_current_milestone_info('current')
+    current_milestone = int(current_milestone_info['mstone'])
     storage_client = storage.Client()
     bucket = storage_client.bucket(settings.FILES_BUCKET)
 
-    stale_features = self._gather_stale_features()
-    csv_rows = self._generate_rows(stale_features)
+    stale_features = self._gather_stale_features(current_milestone)
+    csv_rows = self._generate_rows(stale_features, current_milestone)
     self._write_csv(bucket, csv_rows)
 
     return f'{len(csv_rows)} rows added to chromestatus-stale-features.csv'
