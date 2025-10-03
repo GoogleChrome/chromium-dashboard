@@ -50,3 +50,6 @@ cron:
 - description: Generate a CSV of all review activities in ChromeStatus.
   url: /cron/generate_review_activities
   schedule: every day 8:00
+- description: Generate a CSV of all stale features with upcoming shipping milestones.
+  url: /cron/generate_stale_features
+  schedule: every day 8:05
