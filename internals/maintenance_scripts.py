@@ -14,7 +14,7 @@
 
 import collections
 import csv
-from datetime import date, datetime, timedelta, timezone
+from datetime import date, datetime, timedelta
 from io import StringIO
 import logging
 from typing import Any
@@ -1017,7 +1017,7 @@ class GenerateStaleFeaturesFile(FlaskHandler):
   ) -> list[FeatureEntry]:
     """Generate a list of stale features that have an upcoming shipping milestone."""
     # Get all features that have not been verified for accuracy in over a month.
-    now = datetime.now(timezone.utc)
+    now = datetime.now()
     one_month_ago = now - timedelta(weeks=4)
     stale_features = FeatureEntry.query(
       ndb.OR(

@@ -12,10 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import csv
 import testing_config  # Must be imported before the module under test.
 
+from io import StringIO
 import requests
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from unittest import mock
 
 from api import converters
@@ -1291,3 +1293,199 @@ class GenerateReviewActivityFileTest(testing_config.CustomTestCase):
       ],
     ]
     self.assertEqual(expected_rows, csv_rows)
+
+
+class GenerateStaleFeaturesFileTest(testing_config.CustomTestCase):
+  """Tests for the GenerateStaleFeaturesFile handler."""
+
+  def setUp(self):
+    self.maxDiff = None
+    self.handler = maintenance_scripts.GenerateStaleFeaturesFile()
+    self.current_milestone = 125
+
+    now = datetime.now()
+    self.recently = now - timedelta(days=15)
+    self.long_ago = now - timedelta(days=45)
+
+    # Feature 1: Stale (old 'accurate_as_of') with a matching shipping milestone.
+    # Should be INCLUDED.
+    self.feature_1 = FeatureEntry(
+        id=1, name='Stale Feature 1', summary='summary', category=1,
+        feature_type=0,
+        owner_emails=['owner1@example.com'], accurate_as_of=self.long_ago,
+        outstanding_notifications=5)
+    self.feature_1.put()
+    self.stage_1 = Stage(
+        id=101, feature_id=1, stage_type=160,
+        milestones=MilestoneSet(desktop_first=self.current_milestone))
+    self.stage_1.put()
+
+    # Feature 2: Stale (None 'accurate_as_of') with a matching shipping milestone.
+    # Should be INCLUDED.
+    self.feature_2 = FeatureEntry(
+        id=2, name='Stale Feature 2 (None date)', summary='summary', category=1,
+        feature_type=core_enums.FEATURE_TYPE_INCUBATE_ID,
+        owner_emails=['owner2@example.com', 'owner2.2@example.com'],
+        accurate_as_of=None, outstanding_notifications=0)
+    self.feature_2.put()
+    self.stage_2 = Stage(
+        id=102, feature_id=2, stage_type=160,
+        milestones=MilestoneSet(android_first=self.current_milestone))
+    self.stage_2.put()
+
+    # Feature 3: Not stale ('accurate_as_of' is recent).
+    # Should be EXCLUDED.
+    self.feature_3 = FeatureEntry(
+        id=3, name='Fresh Feature', summary='summary', category=1,
+        feature_type=0,
+        owner_emails=['owner3@example.com'], accurate_as_of=self.recently)
+    self.feature_3.put()
+    self.stage_3 = Stage(
+        id=103, feature_id=3, stage_type=160,
+        milestones=MilestoneSet(desktop_first=self.current_milestone))
+    self.stage_3.put()
+
+    # Feature 4: Stale, but its shipping milestone is not the current one.
+    # Should be EXCLUDED.
+    self.feature_4 = FeatureEntry(
+        id=4, name='Stale Feature Wrong Milestone', summary='summary', category=1,
+        feature_type=1,
+        owner_emails=['owner4@example.com'], accurate_as_of=self.long_ago)
+    self.feature_4.put()
+    self.stage_4 = Stage(
+        id=104, feature_id=4, stage_type=260,
+        milestones=MilestoneSet(desktop_first=self.current_milestone + 1))
+    self.stage_4.put()
+
+    # Feature 5: Stale, but has no associated shipping stages at all.
+    # Should be EXCLUDED.
+    self.feature_5 = FeatureEntry(
+        id=5, name='Stale Feature No Shipping Stage', summary='summary', category=1,
+        feature_type=0,
+        owner_emails=['owner5@example.com'], accurate_as_of=self.long_ago)
+    self.feature_5.put()
+
+    # Feature 6: Stale, with correct milestone, but the stage is not a shipping type.
+    # Should be EXCLUDED.
+    self.feature_6 = FeatureEntry(
+        id=6, name='Stale Feature Non-Shipping Stage', summary='summary', category=1,
+        feature_type=core_enums.FEATURE_TYPE_INCUBATE_ID,
+        owner_emails=['owner6@example.com'], accurate_as_of=self.long_ago)
+    self.feature_6.put()
+    self.stage_6 = Stage(
+        id=106, feature_id=6, stage_type=110,  # Not a shipping stage
+        milestones=MilestoneSet(desktop_first=self.current_milestone))
+    self.stage_6.put()
+
+  def tearDown(self):
+    for kind in [FeatureEntry, Stage]:
+      for entity in kind.query():
+        entity.key.delete()
+
+  @mock.patch('internals.maintenance_scripts.datetime')
+  def test_gather_stale_features(self, mock_datetime):
+    """Should return only stale features with a current shipping milestone."""
+    # Freeze time to make the "one month ago" calculation deterministic.
+    mock_datetime.now.return_value = datetime.now()
+    mock_datetime.side_effect = lambda *args, **kw: datetime(*args, **kw)
+
+    stale_features = self.handler._gather_stale_features(self.current_milestone)
+    self.assertEqual(len(stale_features), 2)
+
+    feature_ids = {f.key.integer_id() for f in stale_features}
+    self.assertEqual(feature_ids, {self.feature_1.key.integer_id(), self.feature_2.key.integer_id()})
+
+  @mock.patch('internals.maintenance_scripts.get_current_milestone_info')
+  def test_generate_rows(self, mock_get_milestone):
+    """Should format feature data into correct CSV rows."""
+    mock_get_milestone.return_value = {'mstone': str(self.current_milestone)}
+    features_to_process = [self.feature_1, self.feature_2]
+
+    csv_rows = self.handler._generate_rows(features_to_process, self.current_milestone)
+
+    expected_rows = [
+        [
+            str(self.current_milestone),
+            'Stale Feature 1',
+            f'{settings.SITE_URL}feature/{self.feature_1.key.integer_id()}',
+            'owner1@example.com',
+            self.long_ago.strftime(self.handler.DATE_FORMAT),
+            '5'
+        ],
+        [
+            str(self.current_milestone),
+            'Stale Feature 2 (None date)',
+            f'{settings.SITE_URL}feature/{self.feature_2.key.integer_id()}',
+            'owner2@example.com,owner2.2@example.com',
+            '',
+            '0'
+        ]
+    ]
+    self.assertEqual(expected_rows, csv_rows)
+
+  def test_write_csv(self):
+    """Should write the correct header and rows to a GCS blob."""
+    mock_bucket = mock.MagicMock()
+    mock_blob = mock.MagicMock()
+    mock_bucket.blob.return_value = mock_blob
+
+    csv_rows = [
+        ['125', 'Feat A', 'url_a', 'a@example.com', '2025-10-01T00:00:00', '1'],
+        ['125', 'Feat B', 'url_b', 'b@example.com', '', '3']
+    ]
+    self.handler._write_csv(mock_bucket, csv_rows)
+
+    mock_bucket.blob.assert_called_once_with('chromestatus-stale-features.csv')
+    upload_call = mock_blob.upload_from_string.call_args
+    self.assertIsNotNone(upload_call)
+
+    # Verify the string content that was "uploaded".
+    uploaded_string = upload_call[0][0]
+    string_io = StringIO(uploaded_string)
+    reader = csv.reader(string_io, lineterminator='\n')
+
+    header = next(reader)
+    self.assertEqual(header, [
+        'current_milestone', 'name', 'chromestatus_url', 'owner_emails',
+        'accurate_as_of', 'outstanding_notifications'
+    ])
+    self.assertEqual(list(reader), csv_rows)
+
+  @mock.patch('internals.maintenance_scripts.get_current_milestone_info')
+  @mock.patch('google.cloud.storage.Client')
+  @mock.patch('framework.basehandlers.FlaskHandler.require_cron_header')
+  @mock.patch('internals.maintenance_scripts.datetime')
+  def test_get_template_data__end_to_end(
+      self, mock_datetime, mock_require_cron, mock_storage_client, mock_get_milestone):
+    """Should correctly orchestrate the entire file generation process."""
+    mock_datetime.now.return_value = datetime.now()
+    mock_datetime.side_effect = lambda *args, **kw: datetime(*args, **kw)
+    mock_get_milestone.return_value = {'mstone': str(self.current_milestone)}
+
+    mock_bucket = mock.MagicMock()
+    mock_blob = mock.MagicMock()
+    mock_storage_client.return_value.bucket.return_value = mock_bucket
+    mock_bucket.blob.return_value = mock_blob
+
+    result = self.handler.get_template_data()
+
+    mock_require_cron.assert_called_once()
+    mock_storage_client.return_value.bucket.assert_called_once_with(
+        settings.FILES_BUCKET)
+    mock_bucket.blob.assert_called_once_with('chromestatus-stale-features.csv')
+
+    # Verify the final content passed to GCS is correct
+    upload_call = mock_blob.upload_from_string.call_args[0][0]
+    string_io = StringIO(upload_call)
+    reader = list(csv.reader(string_io, lineterminator='\n'))
+
+    self.assertEqual(len(reader), 3)  # Header + 2 data rows
+    self.assertEqual(reader[0][1], 'name')
+
+    # Get the set of names from the data rows (all rows after the header).
+    # This check is order-independent.
+    actual_names = {row[1] for row in reader[1:]}
+    expected_names = {self.feature_1.name, self.feature_2.name}
+    self.assertEqual(actual_names, expected_names)
+
+    self.assertEqual(result, '2 rows added to chromestatus-stale-features.csv')
