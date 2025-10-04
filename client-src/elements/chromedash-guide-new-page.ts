@@ -86,7 +86,8 @@ export class ChromedashGuideNewPage extends LitElement {
       createBody.feature_type = FEATURE_TYPES.FEATURE_TYPE_ENTERPRISE_ID[0];
     } else {
       const selectedRadio = this.shadowRoot?.querySelector<HTMLInputElement>(
-        'input[name="feature_type"]:checked');
+        'input[name="feature_type"]:checked'
+      );
       if (selectedRadio) {
         createBody.feature_type = selectedRadio.value;
       } else {
@@ -94,8 +95,9 @@ export class ChromedashGuideNewPage extends LitElement {
       }
     }
     this.submitting = true;
-    window.csClient.createFeature(createBody)
-      .then((resp) => {
+    window.csClient
+      .createFeature(createBody)
+      .then(resp => {
         this.submitting = false;
         window.location.href = `/feature/${resp.feature_id}`;
       })
@@ -237,7 +239,7 @@ export class ChromedashGuideNewPage extends LitElement {
       const index = this.fieldValues.length;
       this.fieldValues.push({
         name: featureJSONKey,
-        touched: true,  // Submit everything
+        touched: true, // Submit everything
         value,
       });
 
