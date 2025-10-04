@@ -265,6 +265,7 @@ export class ChromedashGuideNewPage extends LitElement {
     return html`
       <section id="stage_form">
         <form>
+          <input type="hidden" name="token" />
           <chromedash-form-table ${ref(this.registerHandlers)}>
             ${this.renderWarnings()}
             ${!this.isEnterpriseFeature
