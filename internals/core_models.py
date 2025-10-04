@@ -58,15 +58,9 @@ class FeatureEntry(ndb.Model):  # Copy from Feature
 
   # All required fields needed upon feature creation.
   REQUIRED_FIELDS = frozenset([
+    'feature_type',
     'name',
     'summary',
-    'category',
-    'feature_type',
-    'impl_status_chrome',
-    'standard_maturity',
-    'ff_views',
-    'safari_views',
-    'web_dev_views',
   ])
 
   # Metadata: Creation and updates.

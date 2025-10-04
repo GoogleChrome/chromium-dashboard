@@ -34,9 +34,9 @@ describe('chromedash-guide-new-page', () => {
 
     // overview form exists and is with action path
     const overviewForm = component.renderRoot.querySelector(
-      'form[name="overview_form"]'
+      'form'
     )!;
-    assert.include(overviewForm.outerHTML, 'action="/guide/new"');
+    assert.exists(overviewForm);
 
     // owner field filled with the user email
     assert.include(overviewForm.innerHTML, userEmail);

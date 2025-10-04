@@ -74,7 +74,7 @@ class FeaturesAPITestDelete(testing_config.CustomTestCase):
 
     revised_feature = FeatureEntry.get_by_id(self.feature_id)
     self.assertTrue(revised_feature.deleted)
-    
+
     # Check that an activity log record was created
     activities = Activity.get_activities(self.feature_id)
     archive_activities = [a for a in activities if 'archived' in a.content.lower()]
@@ -746,8 +746,8 @@ class FeaturesAPITest(testing_config.CustomTestCase):
     # Ensure that the accuracy verification was captured as an activity.
     activities: list[Activity] = Activity.query(Activity.feature_id == self.feature_1_id).fetch()
     accuracy_activity = next(
-      (a for a in activities 
-       if any(amend.field_name == 'accurate_as_of' for amend in a.amendments)), 
+      (a for a in activities
+       if any(amend.field_name == 'accurate_as_of' for amend in a.amendments)),
       None)
     self.assertIsNotNone(accuracy_activity)
     # Assert that changes were made.

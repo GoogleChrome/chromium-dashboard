@@ -16,6 +16,7 @@ import {
   setupScrollToHash,
   formatFeatureChanges,
   getDisabledHelpText,
+  showToastMessage,
   FieldInfo,
 } from './utils';
 import {customElement, property, state} from 'lit/decorators.js';
@@ -79,14 +80,30 @@ export class ChromedashGuideNewPage extends LitElement {
 
   handleFormSubmit(event, hiddenTokenField) {
     event.preventDefault();
-    formatFeatureChanges(this.fieldValues, this.featureId);
-
-    // get the XSRF token and update it if it's expired before submission
-    window.csClient.ensureTokenIsValid().then(() => {
-      hiddenTokenField.value = window.csClient.token;
-      this.submitting = true;
-      event.target.submit();
-    });
+    const changesBody = formatFeatureChanges(this.fieldValues, this.featureId);
+    const createBody = changesBody.feature_changes;
+    if (this.isEnterpriseFeature) {
+      createBody.feature_type = FEATURE_TYPES.FEATURE_TYPE_ENTERPRISE_ID[0];
+    } else {
+      const selectedRadio = this.shadowRoot?.querySelector<HTMLInputElement>(
+        'input[name="feature_type"]:checked');
+      if (selectedRadio) {
+        createBody.feature_type = selectedRadio.value;
+      } else {
+        createBody.feature_type = FEATURE_TYPES.FEATURE_TYPE_INCUBATE_ID[0];
+      }
+    }
+    this.submitting = true;
+    window.csClient.createFeature(createBody)
+      .then((resp) => {
+        this.submitting = false;
+        window.location.href = `/feature/${resp.feature_id}`;
+      })
+      .catch(() => {
+        showToastMessage(
+          'Some errors occurred. Please refresh the page or try again later.'
+        );
+      });
   }
 
   maybeMakeWebFeatureRequired() {
@@ -209,18 +226,19 @@ export class ChromedashGuideNewPage extends LitElement {
     const formFields = this.isEnterpriseFeature
       ? ENTERPRISE_NEW_FEATURE_FORM_FIELDS
       : NEW_FEATURE_FORM_FIELDS;
-    const postAction = this.isEnterpriseFeature
-      ? '/guide/enterprise/new'
-      : '/guide/new';
 
     const renderFormField = (field, className?) => {
-      const featureJSONKey = ALL_FIELDS[field].name || field;
-      const value = newFeatureInitialValues[field];
+      const fieldProps = ALL_FIELDS[field];
+      const featureJSONKey = fieldProps.name || field;
+      const initialValue = this.isEnterpriseFeature
+        ? (fieldProps.enterprise_initial ?? fieldProps.initial)
+        : fieldProps.initial;
+      const value = newFeatureInitialValues[field] ?? initialValue;
       const index = this.fieldValues.length;
       this.fieldValues.push({
         name: featureJSONKey,
-        touched: false,
-        value, // stageId
+        touched: true,  // Submit everything
+        value,
       });
 
       return html`
@@ -244,8 +262,7 @@ export class ChromedashGuideNewPage extends LitElement {
         : 'Submit';
     return html`
       <section id="stage_form">
-        <form name="overview_form" method="post" action=${postAction}>
-          <input type="hidden" name="token" />
+        <form>
           <chromedash-form-table ${ref(this.registerHandlers)}>
             ${this.renderWarnings()}
             ${!this.isEnterpriseFeature
