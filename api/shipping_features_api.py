@@ -50,17 +50,17 @@ class ShippingFeaturesAPI(basehandlers.EntitiesAPIHandler):
     """Get all features that have met all conditions to ship for a given milestone"""
     milestone_arg = kwargs.get('mstone', None)
     milestone = 0
+    if milestone_arg is None:
+        self.abort(400, msg='No milestone provided.')
     try:
-      milestone = int(milestone_arg)
-    except TypeError:
-      self.abort(400, msg='No milestone provided')
+        milestone = int(milestone_arg)
     except ValueError:
-      self.abort(400, msg=f'Invalid milestone argument {milestone_arg}')
+        self.abort(400, msg=f'Invalid milestone: "{milestone_arg}" is not an integer.')
 
     shipping_stages = self._get_shipping_stages(milestone)
 
-    complete_features: list[FeatureEntry] = []
-    incomplete_features: list[tuple[FeatureEntry, list[str]]] = []
+    complete_features: list[VerboseFeatureDict] = []
+    incomplete_features: list[tuple[VerboseFeatureDict, list[str]]] = []
     for stage in shipping_stages:
       criteria_missing: list[str] = []
       feature = FeatureEntry.get_by_id(stage.feature_id)
