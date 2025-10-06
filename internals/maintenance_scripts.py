@@ -14,7 +14,7 @@
 
 import collections
 import csv
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from io import StringIO
 import logging
 from typing import Any
@@ -31,6 +31,7 @@ from internals.core_models import FeatureEntry, MilestoneSet, Stage
 from internals.review_models import Gate, Vote, Activity
 from internals.core_enums import *
 from internals.feature_links import batch_index_feature_entries
+from internals.reminders import get_current_milestone_info
 from internals import stage_helpers
 from internals.webdx_feature_models import WebdxFeatures
 from webstatus_openapi import ApiClient, DefaultApi, Configuration, ApiException, Feature
@@ -1004,6 +1005,107 @@ class GenerateReviewActivityFile(FlaskHandler):
 
     return (f'{len(csv_rows)} '
             'new rows added to chromestatus-review-activity.csv uploaded.')
+
+
+class GenerateStaleFeaturesFile(FlaskHandler):
+  """Generate a CSV file with all stale features that have upcoming shipping milestones."""
+  DATE_FORMAT = '%Y-%m-%dT%H:%M:%S'
+
+  def _gather_stale_features(
+    self,
+    current_milestone: int
+  ) -> list[FeatureEntry]:
+    """Generate a list of stale features that have an upcoming shipping milestone."""
+    # Get all features that have not been verified for accuracy in over a month.
+    now = datetime.now()
+    one_month_ago = now - timedelta(weeks=4)
+    stale_features = FeatureEntry.query(
+      ndb.OR(
+        FeatureEntry.accurate_as_of < one_month_ago,
+        FeatureEntry.accurate_as_of == None,
+      )
+    )
+
+    stale_features_with_upcoming_ship_stages: list[FeatureEntry] = []
+    for f in stale_features:
+      shipping_stage_type = STAGE_TYPES_SHIPPING[f.feature_type]
+      upcoming_ship_stages = Stage.query(
+        Stage.feature_id == f.key.integer_id(),
+        Stage.stage_type == shipping_stage_type,
+        ndb.OR(
+          Stage.milestones.desktop_first == current_milestone,
+          Stage.milestones.android_first == current_milestone,
+          Stage.milestones.ios_first == current_milestone,
+          Stage.milestones.webview_first == current_milestone,
+        )
+      ).fetch()
+      if upcoming_ship_stages:
+        stale_features_with_upcoming_ship_stages.append(f)
+    logging.info(f'{len(stale_features_with_upcoming_ship_stages)} stale features found.')
+
+    return stale_features_with_upcoming_ship_stages
+
+  def _generate_rows(
+    self,
+    features: list[FeatureEntry],
+    current_milestone: int
+  ) -> list[list[str]]:
+    current_milestone_info = get_current_milestone_info('current')
+    current_milestone = int(current_milestone_info['mstone'])
+    csv_rows: list[list[str]] = []
+    for f in features:
+      owner_emails_str = ','.join(f.owner_emails)
+      accurate_as_of_str = ''
+      if f.accurate_as_of:
+        accurate_as_of_str = str(datetime.strftime(f.accurate_as_of,
+                                                   self.DATE_FORMAT))
+      csv_rows.append(
+        [
+          str(current_milestone),
+          f.name,
+          f'{settings.SITE_URL}feature/{f.key.integer_id()}',
+          owner_emails_str,
+          accurate_as_of_str,
+          str(f.outstanding_notifications),
+        ]
+      )
+
+    return csv_rows
+
+  def _write_csv(self, bucket, csv_rows: list[list[str]]) -> None:
+    """Write stale features CSV to the GCP bucket."""
+    csv_io = StringIO()
+    writer = csv.writer(csv_io, lineterminator='\n')
+    # Write header row.
+    writer.writerow(
+      [
+        'current_milestone',
+        'name',
+        'chromestatus_url',
+        'owner_emails',
+        'accurate_as_of',
+        'outstanding_notifications',
+       ]
+    )
+    for row in csv_rows:
+      writer.writerow(row)
+
+    blob = bucket.blob('chromestatus-stale-features.csv')
+    blob.upload_from_string(csv_io.getvalue())
+
+  def get_template_data(self, **kwargs) -> str:
+    self.require_cron_header()
+
+    current_milestone_info = get_current_milestone_info('current')
+    current_milestone = int(current_milestone_info['mstone'])
+    storage_client = storage.Client()
+    bucket = storage_client.bucket(settings.FILES_BUCKET)
+
+    stale_features = self._gather_stale_features(current_milestone)
+    csv_rows = self._generate_rows(stale_features, current_milestone)
+    self._write_csv(bucket, csv_rows)
+
+    return f'{len(csv_rows)} rows added to chromestatus-stale-features.csv'
 
 
 class MigrateRolloutMilestones(FlaskHandler):
