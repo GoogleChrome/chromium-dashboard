@@ -310,6 +310,8 @@ internals_routes: list[Route] = [
   Route('/cron/fetch_webdx_feature_ids', maintenance_scripts.FetchWebdxFeatureId),
   Route('/cron/generate_review_activities',
         maintenance_scripts.GenerateReviewActivityFile),
+  Route('/cron/generate_stale_features',
+        maintenance_scripts.GenerateStaleFeaturesFile),
 
   Route('/admin/find_stop_words', search_fulltext.FindStopWords),
 
