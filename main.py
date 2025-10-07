@@ -60,6 +60,7 @@ from internals import (
   reminders,
   search_fulltext,
 )
+# TODO(jrobbins): Remove guide routes after a few weeks.
 from pages import featurelist, guide, intentpreview, metrics, ot_requests, users
 
 # Patch treading library to work-around bug with Google Cloud Logging.
@@ -312,6 +313,8 @@ internals_routes: list[Route] = [
   Route('/cron/fetch_webdx_feature_ids', maintenance_scripts.FetchWebdxFeatureId),
   Route('/cron/generate_review_activities',
         maintenance_scripts.GenerateReviewActivityFile),
+  Route('/cron/generate_stale_features',
+        maintenance_scripts.GenerateStaleFeaturesFile),
 
   Route('/admin/find_stop_words', search_fulltext.FindStopWords),
 
