@@ -346,6 +346,7 @@ class ExternalReviewsAPITest(testing_config.CustomTestCase):
       blink_components=patch_update.pop('blink_components', 'Blink'),
       category=patch_update.pop('category', MISC),
       feature_type=patch_update.pop('feature_type', FEATURE_TYPE_INCUBATE_ID),
+      owner_emails='',
       ff_views=patch_update.pop('ff_views'),
       impl_status_chrome=patch_update.pop('impl_status_chrome'),
       name=patch_update.pop('name'),
@@ -354,7 +355,7 @@ class ExternalReviewsAPITest(testing_config.CustomTestCase):
       summary=patch_update.pop('summary', f'Summary for {name}'),
       web_dev_views=patch_update.pop('web_dev_views', NO_PUBLIC_SIGNALS),
     )
-    with test_app.test_request_context('/api/v0/features/create', json=initial_fields):
+    with test_app.test_request_context('/api/v0/features', json=initial_fields):
       response = FeaturesAPI().do_post()
     # A new feature ID should be returned.
     assert isinstance(response, dict)
