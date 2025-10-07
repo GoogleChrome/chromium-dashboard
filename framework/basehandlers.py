@@ -159,7 +159,7 @@ class BaseHandler(flask.views.MethodView):
       return default
     return self.request.args[name].lower() in ('true', '1', '')
 
-  def get_int_arg(self, name, default=None):
+  def get_int_arg(self, name, default=None) -> int | None:
     """Get the specified integer from the query string."""
     val = self.request.args.get(name, default) or default
     if val is None:

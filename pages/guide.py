@@ -41,6 +41,11 @@ import settings
 DEVREL_EMAIL = 'devrel-chromestatus-all@google.com'
 
 
+# TODO(jrobbins): Remove this file after a few weeks.  We are just keeping
+# it for now because some users may have tabs open on an old version of
+# chromestatus that will still POST to this handler.
+
+
 class FeatureCreateHandler(basehandlers.FlaskHandler):
 
   TEMPLATE_PATH = 'spa.html'

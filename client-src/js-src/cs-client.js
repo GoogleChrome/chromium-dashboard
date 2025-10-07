@@ -641,6 +641,10 @@ export class ChromeStatusClient {
     return this.doGet(`/features?${query.toString()}`);
   }
 
+  async createFeature(featureChanges) {
+    return this.doPost('/features', featureChanges);
+  }
+
   async updateFeature(featureChanges) {
     return this.doPatch('/features', featureChanges);
   }

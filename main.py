@@ -41,6 +41,7 @@ from api import (
   review_latency_api,
   reviews_api,
   settings_api,
+  shipping_features_api,
   spec_mentors_api,
   stages_api,
   stars_api,
@@ -59,6 +60,7 @@ from internals import (
   reminders,
   search_fulltext,
 )
+# TODO(jrobbins): Remove guide routes after a few weeks.
 from pages import featurelist, guide, intentpreview, metrics, ot_requests, users
 
 # Patch treading library to work-around bug with Google Cloud Logging.
@@ -147,7 +149,8 @@ api_routes: list[Route] = [
           intents_api.IntentsAPI),
     Route(f'{API_BASE}/features/<int:feature_id>/<int:stage_id>/<int:gate_id>/intent',
           intents_api.IntentsAPI),
-
+    Route(f'{API_BASE}/features/shipping/<int:mstone>',
+          shipping_features_api.ShippingFeaturesAPI),
     Route(f'{API_BASE}/blinkcomponents',
         blink_components_api.BlinkComponentsAPI),
     Route(f'{API_BASE}/componentsusers',
@@ -310,6 +313,8 @@ internals_routes: list[Route] = [
   Route('/cron/fetch_webdx_feature_ids', maintenance_scripts.FetchWebdxFeatureId),
   Route('/cron/generate_review_activities',
         maintenance_scripts.GenerateReviewActivityFile),
+  Route('/cron/generate_stale_features',
+        maintenance_scripts.GenerateStaleFeaturesFile),
 
   Route('/admin/find_stop_words', search_fulltext.FindStopWords),
 

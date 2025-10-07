@@ -35,6 +35,7 @@ from internals import notifier_helpers
 from internals.review_models import Gate, Activity
 from internals.data_types import VerboseFeatureDict
 from internals import feature_helpers
+from internals import processes
 from internals import search
 from internals import search_fulltext
 from internals import stage_helpers
@@ -50,6 +51,8 @@ URL_RE = re.compile(r'\b%s%s%s\b' % (
     SCHEME_PATTERN, DOMAIN_PATTERN, PATH_PARAMS_ANCHOR_PATTERN))
 ALLOWED_SCHEMES = [None, 'http', 'https']
 
+# Internal DevRel mailing list for ChromeStatus.
+DEVREL_EMAIL = 'devrel-chromestatus-all@google.com'
 
 class FeaturesAPI(basehandlers.EntitiesAPIHandler):
   """Features are the the main records that we track."""
@@ -133,29 +136,53 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
       if field not in body:
         self.abort(400, msg=f'Required field "{field}" not provided.')
 
-    fields_dict = {}
+    fields_dict = {
+        'owner_emails': [self.get_current_user().email()],
+        'devrel_emails': [DEVREL_EMAIL],
+        'category': int(MISC),
+        'blink_components': [settings.DEFAULT_COMPONENT],
+    }
     for field, field_type in api_specs.FEATURE_FIELD_DATA_TYPES:
       if field in body:
         fields_dict[field] = self.format_field_val(
             field, field_type, body[field])
 
-    # If no enterprise notification milestone was set, set one since it will be shown in the next
-    # release notes by default. This is true for breaking changes and enterprise features only.
+    # If no enterprise notification milestone was set, set one since it will
+    # be shown in the next release notes by default. This is true for breaking
+    # changes and enterprise features only.
     if ('first_enterprise_notification_milestone' in body):
       fields_dict['first_enterprise_notification_milestone'] = body['first_enterprise_notification_milestone']
     elif needs_default_first_notification_milestone(new_fields=body):
       fields_dict['first_enterprise_notification_milestone'] = get_default_first_notice_milestone_for_feature()
 
+    feature_type = fields_dict['feature_type']
+    fields_dict.update(
+        creator_email=self.get_current_user().email(),
+        updater_email=self.get_current_user().email(),
+        accurate_as_of=datetime.now(),
+    )
+    if feature_type == FEATURE_TYPE_ENTERPRISE_ID:
+      fields_dict['blink_components'] = [settings.DEFAULT_ENTERPRISE_COMPONENT]
+      fields_dict['tag_review_status'] = REVIEW_NA
+    else:
+      fields_dict['tag_review_status'] = processes.initial_tag_review_status(
+          feature_type)
+
     # Try to create the feature using the provided data.
     try:
-      feature = FeatureEntry(**fields_dict,
-                             creator_email=self.get_current_user().email())
+      feature = FeatureEntry(**fields_dict)
       feature.put()
     except Exception as e:
       self.abort(400, msg=str(e))
     id = feature.key.integer_id()
 
+    search_fulltext.index_feature(feature)
     self._write_stages_and_gates_for_feature(id, feature.feature_type)
+
+    # Remove all feature-related cache.
+    rediscache.delete_keys_with_prefix(FeatureEntry.DEFAULT_CACHE_KEY)
+    rediscache.delete_keys_with_prefix(FeatureEntry.SEARCH_CACHE_KEY)
+
     return {'message': f'Feature {id} created.',
             'feature_id': id}
 
@@ -403,7 +430,7 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
     feature: FeatureEntry = self.get_specified_feature(feature_id=feature_id)
     feature.deleted = True
     feature.put()
-    
+
     user = users.get_current_user()
     email = user.email() if user else None
     activity = Activity(
@@ -411,7 +438,7 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
         author=email,
         content=f'Feature "{feature.name}" was archived.')
     activity.put()
-    
+
     rediscache.delete_keys_with_prefix(FeatureEntry.DEFAULT_CACHE_KEY)
     rediscache.delete_keys_with_prefix(FeatureEntry.SEARCH_CACHE_KEY)
 
