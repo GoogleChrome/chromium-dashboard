@@ -32,12 +32,12 @@ describe('chromedash-guide-editall-page', () => {
         intent_stage: 2,
       },
       {
-        id: 3,
+        id: 4,
         stage_type: 1061,
         intent_stage: 1,
       },
       {
-        id: 4,
+        id: 5,
         stage_type: 1061,
         intent_stage: 1,
       },
@@ -144,24 +144,62 @@ describe('chromedash-guide-editall-page', () => {
     assert.equal(deleteButtons.length, 2);
   });
 
-  it('avoids duplicating fields', async () => {
+  it('avoids duplicating feature-level fields in stages of the same type', async () => {
     const featureId = 123456;
+    // The mock feature has two stages of type 160 (ids 2 and 3).
     window.csClient.getFeature.withArgs(featureId).returns(validFeaturePromise);
 
-    const component = await fixture(
+    const component = await fixture<ChromedashGuideEditallPage>(
       html`<chromedash-guide-editall-page .featureId=${featureId}>
       </chromedash-guide-editall-page>`
     );
-    assert.exists(component);
-    assert.instanceOf(component, ChromedashGuideEditallPage);
 
-    // There are two shipping stage types, but 'tag_review_status' is not a stage-specific field,
-    // so only one field should display and it should not display for the second stage.
-    const measurementFields = component.renderRoot.querySelectorAll(
-      'sl-select[name="tag_review_status"]'
+    // Wait for component to render and update.
+    await component.updateComplete;
+
+    // Find all the sections for the duplicated stage type.
+    const sections = component.renderRoot.querySelectorAll('section[stage="160"]');
+    assert.equal(
+      sections.length,
+      2,
+      'Should render a section for each stage of type 160'
     );
-    assert.exists(measurementFields);
-    assert.isTrue(measurementFields.length === 1);
+
+    // Get all the form fields within each section.
+    const firstSectionFields =
+      sections[0].querySelectorAll('chromedash-form-field');
+    const secondSectionFields =
+      sections[1].querySelectorAll('chromedash-form-field');
+
+    assert.isAbove(
+      firstSectionFields.length,
+      0,
+      'First section should have fields'
+    );
+
+    assert.isBelow(
+      secondSectionFields.length,
+      firstSectionFields.length,
+      'Second section of same stage type should have fewer fields due to de-duplication'
+    );
+
+    // 'tag_review_status' is a feature-level field that should appear in the first section.
+    const featureFieldInFirstSection = sections[0].querySelector(
+      'chromedash-form-field[name="tag_review_status"]'
+    );
+    assert.exists(
+      featureFieldInFirstSection,
+      'Feature-level field should be in the first section'
+    );
+
+    // It should NOT appear in the second section.
+    const featureFieldInSecondSection = sections[1].querySelector(
+      'chromedash-form-field[name="tag_review_status"]'
+    );
+    assert.isNull(
+      featureFieldInSecondSection,
+      'Feature-level field should NOT be in the second section'
+    );
   });
 
   // TODO: make this work
