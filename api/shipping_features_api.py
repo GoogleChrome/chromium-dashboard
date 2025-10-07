@@ -18,7 +18,11 @@ from google.cloud import ndb
 
 from api import converters
 from framework import basehandlers
-from internals.core_enums import FEATURE_TYPE_CODE_CHANGE_ID, STAGE_TYPES_SHIPPING
+from internals.core_enums import (
+  FEATURE_TYPE_CODE_CHANGE_ID,
+  GATE_API_SHIP,
+  STAGE_TYPES_SHIPPING
+)
 from internals.core_models import FeatureEntry, Stage
 from internals.review_models import Gate, Vote
 from internals.data_types import VerboseFeatureDict
@@ -48,14 +52,10 @@ class ShippingFeaturesAPI(basehandlers.EntitiesAPIHandler):
 
   def do_get(self, **kwargs) -> GetShippingFeaturesResponse:
     """Get all features that have met all conditions to ship for a given milestone"""
-    milestone_arg = kwargs.get('mstone', None)
-    milestone = 0
-    if milestone_arg is None:
-        self.abort(400, msg='No milestone provided.')
-    try:
-        milestone = int(milestone_arg)
-    except ValueError:
-        self.abort(400, msg=f'Invalid milestone: "{milestone_arg}" is not an integer.')
+    milestone = self.get_int_arg('mstone')
+
+    if milestone is None:
+      self.abort(400, msg='No milestone provided.')
 
     shipping_stages = self._get_shipping_stages(milestone)
 
@@ -75,7 +75,8 @@ class ShippingFeaturesAPI(basehandlers.EntitiesAPIHandler):
         continue
 
       api_owner_gate: Gate | None = Gate.query(
-          Gate.stage_id == stage.key.integer_id()).get()
+          Gate.stage_id == stage.key.integer_id(),
+          Gate.gate_type == GATE_API_SHIP).get()
       if api_owner_gate is None or api_owner_gate.state != Vote.APPROVED:
         criteria_missing.append('lgtms')
       if not stage.intent_thread_url:

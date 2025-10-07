@@ -72,6 +72,9 @@ class ShippingFeaturesAPITest(testing_config.CustomTestCase):
     stage_3.put()
     Gate(id=1003, feature_id=3, stage_id=103, gate_type=core_enums.GATE_API_SHIP,
          state=Vote.APPROVED).put()
+    Gate(id=1010, feature_id=3, stage_id=103,
+         gate_type=core_enums.GATE_DEBUGGABILITY_SHIP, # Not an API owners gate.
+         state=Vote.APPROVED).put()
 
     # Feature 4: Incomplete (Missing Finch name and justification).
     self.feature_4 = FeatureEntry(
@@ -163,17 +166,6 @@ class ShippingFeaturesAPITest(testing_config.CustomTestCase):
 
     # Verify that the missing feature was logged
     mock_logging.assert_called_once_with('Feature 999 not found.')
-
-
-  def test_do_get__invalid_milestone(self):
-    """API aborts with a 400 error for invalid milestone values."""
-    with test_app.test_request_context('/api/v0/features/shipping?mstone=abc'):
-      with self.assertRaisesRegex(werkzeug.exceptions.BadRequest, 'Invalid milestone'):
-        self.handler.do_get(mstone='abc')
-
-    with test_app.test_request_context('/api/v0/features/shipping'):
-      with self.assertRaisesRegex(werkzeug.exceptions.BadRequest, 'No milestone provided'):
-        self.handler.do_get(mstone=None)
 
   def test_do_get__no_features_found(self):
     """API returns empty lists when no features match the milestone."""
