@@ -41,6 +41,7 @@ from api import (
   review_latency_api,
   reviews_api,
   settings_api,
+  shipping_features_api,
   spec_mentors_api,
   stages_api,
   stars_api,
@@ -148,7 +149,8 @@ api_routes: list[Route] = [
           intents_api.IntentsAPI),
     Route(f'{API_BASE}/features/<int:feature_id>/<int:stage_id>/<int:gate_id>/intent',
           intents_api.IntentsAPI),
-
+    Route(f'{API_BASE}/features/shipping/<int:mstone>',
+          shipping_features_api.ShippingFeaturesAPI),
     Route(f'{API_BASE}/blinkcomponents',
         blink_components_api.BlinkComponentsAPI),
     Route(f'{API_BASE}/componentsusers',
