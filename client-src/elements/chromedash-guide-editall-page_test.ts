@@ -158,7 +158,9 @@ describe('chromedash-guide-editall-page', () => {
     await component.updateComplete;
 
     // Find all the sections for the duplicated stage type.
-    const sections = component.renderRoot.querySelectorAll('section[stage="160"]');
+    const sections = component.renderRoot.querySelectorAll(
+      'section[stage="160"]'
+    );
     assert.equal(
       sections.length,
       2,
@@ -166,10 +168,12 @@ describe('chromedash-guide-editall-page', () => {
     );
 
     // Get all the form fields within each section.
-    const firstSectionFields =
-      sections[0].querySelectorAll('chromedash-form-field');
-    const secondSectionFields =
-      sections[1].querySelectorAll('chromedash-form-field');
+    const firstSectionFields = sections[0].querySelectorAll(
+      'chromedash-form-field'
+    );
+    const secondSectionFields = sections[1].querySelectorAll(
+      'chromedash-form-field'
+    );
 
     assert.isAbove(
       firstSectionFields.length,

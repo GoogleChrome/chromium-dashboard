@@ -238,7 +238,7 @@ export class ChromedashGuideEditallPage extends LitElement {
     sectionBaseName,
     feStage,
     stageFields,
-    featureFieldsDisplayed: Set<string>,
+    featureFieldsDisplayed: Set<string>
   ) {
     if (!stageFields) return nothing;
 
@@ -357,7 +357,7 @@ export class ChromedashGuideEditallPage extends LitElement {
         FLAT_METADATA_FIELDS.name,
         {id: -1},
         fieldsOnly,
-        featureFieldsDisplayed,
+        featureFieldsDisplayed
       ),
     ];
 
@@ -405,7 +405,7 @@ export class ChromedashGuideEditallPage extends LitElement {
             sectionName,
             extensionStage,
             fieldsOnly,
-            featureFieldsDisplayed,
+            featureFieldsDisplayed
           )
         );
       });
