@@ -121,4 +121,44 @@ describe('chromedash-textarea', () => {
       assert.equal(component.checkValidity(), false);
     });
   });
+
+  describe('when considering markdown support', () => {
+    it('does not offer markdown if not specified', async () => {
+      const component = await fixture<ChromedashTextarea>(
+        html`<chromedash-textarea></chromedash-textarea>`
+      );
+      assert.exists(component);
+      await component.updateComplete;
+      const checkbox = component.renderRoot.querySelector('sl-checkbox');
+      assert.notExists(checkbox);
+    });
+
+    it('offer markdown when specified', async () => {
+      const component = await fixture<ChromedashTextarea>(
+        html`<chromedash-textarea offermarkdown></chromedash-textarea>`
+      );
+      assert.exists(component);
+      await component.updateComplete;
+      const checkbox = component.renderRoot.querySelector('sl-checkbox');
+      assert.exists(checkbox);
+      const outer = checkbox.outerHTML;
+      assert.notInclude(outer, 'checked');
+    });
+
+    it('check the box for markdown when in use', async () => {
+      const component = await fixture<ChromedashTextarea>(
+        html`<chromedash-textarea
+          offermarkdown
+          ismarkdown
+        ></chromedash-textarea>`
+      );
+      assert.exists(component);
+      await component.updateComplete;
+      const checkbox = component.renderRoot.querySelector('sl-checkbox');
+      assert.exists(checkbox);
+      assert.exists(checkbox);
+      const outer = checkbox.outerHTML;
+      assert.include(outer, 'checked');
+    });
+  });
 });

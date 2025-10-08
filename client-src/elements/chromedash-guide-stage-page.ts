@@ -70,8 +70,6 @@ export class ChromedashGuideStagePage extends LitElement {
     const value = event.detail.value;
     // Index represents which form was updated.
     const index = event.detail.index;
-    console.log('handleFormFieldUpdate in guide');
-    console.log(event.detail);
     if (index >= this.fieldValues.length) {
       throw new Error('Out of bounds index when updating field values.');
     }

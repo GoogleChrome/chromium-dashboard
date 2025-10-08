@@ -19,13 +19,12 @@ dl, dt, dd, ol, ul, li, fieldset, form, label, legend, caption, tbody, tfoot, th
   padding: 0;
   border: 0;
   font-weight: inherit;
-  font-style: inherit;
   font-size: 100%;
   font-family: inherit;
   vertical-align: baseline;
 }
 
-pl, ul {
+ol, ul {
   padding: revert;
 }
 
@@ -40,6 +39,13 @@ blockquote, q {
   vertical-align: baseline;
   quotes: "" "";
 }
+
+blockquote {
+  margin-left: 1em;
+  border-left: 2px solid #999;
+  padding-left: 1em;
+}
+
 blockquote:before, q:before,
 blockquote:after, q:after {
   content: "";

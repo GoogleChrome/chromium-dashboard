@@ -133,6 +133,24 @@ describe('chromedash-form-field', () => {
     assert.include(renderElement.innerHTML, 'Summary');
     assert.include(renderElement.innerHTML, 'chromedash-textarea');
     assert.include(renderElement.innerHTML, 'required');
+    assert.notInclude(renderElement.innerHTML, 'offermarkdown');
+  });
+
+  it('renders a textarea with markdown checkbox', async () => {
+    const component = await fixture(
+      html` <chromedash-form-field name="summary" value="" forEnterprise>
+      </chromedash-form-field>`
+    );
+    assert.exists(component);
+    assert.instanceOf(component, ChromedashFormField);
+    const fieldRow = component.renderRoot.querySelector('tr');
+    assert.exists(fieldRow);
+
+    const renderElement = component.renderRoot as HTMLElement;
+    assert.include(renderElement.innerHTML, 'Summary');
+    assert.include(renderElement.innerHTML, 'chromedash-textarea');
+    assert.include(renderElement.innerHTML, 'required');
+    assert.include(renderElement.innerHTML, 'offermarkdown');
   });
 
   it('renders an attachments type of field', async () => {

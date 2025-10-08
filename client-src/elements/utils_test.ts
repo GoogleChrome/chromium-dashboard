@@ -290,6 +290,34 @@ go/this-is-a-test
       };
       assert.deepEqual(formatFeatureChanges(testFieldValues, featureId), expected);
     });
+    it('sends changes for the "Use Markdown" checkbox', () => {
+      const testFieldValues = [
+        {
+          name: 'summary',
+          value: 'Now with **Markdown**',
+          touched: true,
+          isMarkdown: true,
+        },
+        {
+          name: 'description',
+          value: 'No longer desires markdown',
+          touched: true,
+          isMarkdown: false,
+        },
+      ];
+      const expected = {
+        feature_changes: {
+          id: 1,
+          summary: 'Now with **Markdown**',
+          summary_is_markdown: true,
+          description: 'No longer desires markdown',
+          description_is_markdown: false,
+        },
+        stages: [],
+        has_changes: true,
+      };
+      assert.deepEqual(formatFeatureChanges(testFieldValues, featureId), expected);
+    });
   });
 
   describe('getDisabledHelpText', () => {

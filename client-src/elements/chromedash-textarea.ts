@@ -97,13 +97,14 @@ export class ChromedashTextarea extends SlTextarea {
       return editor;
     }
     return html`
-    ${editor}
-    <sl-checkbox name="${this.name}_is_markdown"
-    ?checked=${this.isMarkdown}
-    @sl-change=${e => this.handleMarkdownChecked(e)}
-    >
-    Use markdown
-        </sl-checkbox>
+      ${editor}
+      <sl-checkbox
+        name="${this.name}_is_markdown"
+        ?checked=${this.isMarkdown}
+        @sl-change=${e => this.handleMarkdownChecked(e)}
+      >
+        Use markdown
+      </sl-checkbox>
     `;
   }
 }

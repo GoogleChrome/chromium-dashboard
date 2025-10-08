@@ -172,7 +172,6 @@ export class ChromedashFormField extends LitElement {
 
   // Event handler whenever the input field is changed by the user.
   handleFieldUpdated(e) {
-    console.log('handleFieldUpdate in form field');
     // Determine the value based on the input type.
     const type = this.fieldProps.type;
     let fieldValue: string;
@@ -189,7 +188,6 @@ export class ChromedashFormField extends LitElement {
     let isMarkdown: undefined | boolean = undefined;
     if (e.target.offerMarkdown) {
       isMarkdown = e.target.isMarkdown;
-      console.log('setting isMarkdown');
     }
     const eventOptions = {
       detail: {
@@ -295,11 +293,16 @@ export class ChromedashFormField extends LitElement {
     const fieldValue = this.getValue();
     const isRequired = this.fieldProps.required || this.forceRequired;
     const offerMarkdown = Boolean(
-      this.forEnterprise ? this.fieldProps.enterprise_offer_markdown : this.fieldProps.offer_markdown);
+      this.forEnterprise
+        ? this.fieldProps.enterprise_offer_markdown
+        : this.fieldProps.offer_markdown
+    );
 
     // form field name can be specified in form-field-spec to match DB field name
     const fieldName = this.fieldProps.name || this.name;
-    const isMarkdown = (this.feature?.markdown_fields || []).includes(fieldName);
+    const isMarkdown = (this.feature?.markdown_fields || []).includes(
+      fieldName
+    );
 
     // choices can be specified in form-field-spec or fetched from API
     const choices: [number, string][] | [number, string, string][] =
