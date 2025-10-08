@@ -69,11 +69,10 @@ def process_to_dict(process):
 
 # This page generates a preview of an email that can be sent
 # to a mailing list to announce an intent.
-# {feature_id}, {intent_stage}, and {gate_id} are filled in by JS code.
-# The param "intent" adds clauses the template to include details
-# needed for an intent email.  The param "launch" causes those
-# details to be omitted and a link to create a launch bug shown instead.
+# {feature_id}, {stage_id}, and {gate_id} are filled in by JS code.
 INTENT_EMAIL_URL = ('/feature/{feature_id}/gate/{gate_id}/intent')
+INTENT_EMAIL_URL_NO_APPROVALS = (
+    '/feature/{feature_id}/stage/{stage_id}/intent')
 LAUNCH_BUG_TEMPLATE_URL = '/admin/features/launch/{feature_id}?launch=1'
 # TODO(jrobbins): Creation of the launch bug has been a TODO for 5 years.
 
@@ -228,7 +227,7 @@ BLINK_PROCESS_STAGES = [
        PI_UPDATED_VENDOR_SIGNALS,
        PI_FINCH_FEATURE_OR_JUSTIFY,
       ],
-      [Action('Draft Ready for Developer Testing email', INTENT_EMAIL_URL,
+      [Action('Draft Ready for Developer Testing email', INTENT_EMAIL_URL_NO_APPROVALS,
               [PI_INITIAL_PUBLIC_PROPOSAL.name, PI_MOTIVATION.name,
                PI_EXPLAINER.name, PI_SPEC_LINK.name])],
       [],
@@ -345,7 +344,7 @@ BLINK_FAST_TRACK_STAGES = [
        PI_EST_TARGET_MILESTONE,
        PI_FINCH_FEATURE_OR_JUSTIFY,
       ],
-      [Action('Draft Ready for Developer Testing email', INTENT_EMAIL_URL,
+      [Action('Draft Ready for Developer Testing email', INTENT_EMAIL_URL_NO_APPROVALS,
               [PI_SPEC_LINK.name, PI_EST_TARGET_MILESTONE.name])],
       [],
       core_enums.INTENT_IMPLEMENT, core_enums.INTENT_EXPERIMENT,
@@ -438,7 +437,7 @@ PSA_ONLY_STAGES = [
        PI_EST_TARGET_MILESTONE,
        PI_FINCH_FEATURE_OR_JUSTIFY,
       ],
-      [Action('Draft Ready for Developer Testing email', INTENT_EMAIL_URL,
+      [Action('Draft Ready for Developer Testing email', INTENT_EMAIL_URL_NO_APPROVALS,
               [PI_SPEC_LINK.name, PI_EST_TARGET_MILESTONE.name])],
       [],
       core_enums.INTENT_IMPLEMENT, core_enums.INTENT_EXPERIMENT,
@@ -451,7 +450,7 @@ PSA_ONLY_STAGES = [
        PI_UPDATED_TARGET_MILESTONE,
        PI_I2S_EMAIL,
       ],
-      [Action('Draft Web-Facing Change PSA email', INTENT_EMAIL_URL,
+      [Action('Draft Web-Facing Change PSA email', INTENT_EMAIL_URL_NO_APPROVALS,
               [PI_SPEC_LINK.name,
                PI_FINCH_FEATURE_OR_JUSTIFY.name,
                PI_UPDATED_TARGET_MILESTONE.name])],
@@ -505,7 +504,7 @@ DEPRECATION_STAGES = [
        PI_EST_TARGET_MILESTONE,
        PI_FINCH_FEATURE_OR_JUSTIFY,
       ],
-      [Action('Draft Ready for Developer Testing email', INTENT_EMAIL_URL,
+      [Action('Draft Ready for Developer Testing email', INTENT_EMAIL_URL_NO_APPROVALS,
               [PI_MOTIVATION.name, PI_VENDOR_SIGNALS.name,
                PI_EST_TARGET_MILESTONE.name])],
       [],

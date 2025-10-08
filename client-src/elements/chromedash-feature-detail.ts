@@ -559,6 +559,16 @@ export class ChromedashFeatureDetail extends LitElement {
   }
 
   hasStageActions(stage, feStage) {
+    // TODO(DanielRyanSmith): This can be removed once PSA ship stages have
+    // their API owners gate removed.
+    if (
+      stage?.actions?.length > 0 &&
+      this.feature.feature_type_int ===
+        FEATURE_TYPES.FEATURE_TYPE_CODE_CHANGE_ID[0]
+    ) {
+      return true;
+    }
+
     // See if there is an API owners gate where actions are displayed.
     const hasOwnersGate = this.gates.some(
       g => g.team_name === 'API Owners' && g.stage_id === feStage.id
@@ -575,6 +585,7 @@ export class ChromedashFeatureDetail extends LitElement {
     const label = action.name;
     const url = action.url
       .replace('{feature_id}', this.feature.id)
+      .replace('{stage_id}', feStage.id)
       // No gate_id for this URL. Use 0 by default.
       .replace('{gate_id}', '0');
 
