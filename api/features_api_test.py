@@ -986,6 +986,34 @@ class FeaturesAPITest(testing_config.CustomTestCase):
     self.assertIsNotNone(self.feature_1.updated)
     self.assertIsNone(self.feature_1.updater_email)
 
+  def test_shared_update_special_fields__no_markdown_changes(self):
+    feature_changes = {'some_other_field': 'some value'}
+    self.handler._shared_update_special_fields(self.feature_1, feature_changes)
+    self.assertEqual([], self.feature_1.markdown_fields)
+
+    self.feature_1.markdown_fields = ['summary']
+    self.handler._shared_update_special_fields(self.feature_1, feature_changes)
+    self.assertEqual(['summary'], self.feature_1.markdown_fields)
+
+  def test_shared_update_special_fields__add_markdown(self):
+    feature_changes = {'summary_is_markdown': True}
+    self.handler._shared_update_special_fields(self.feature_1, feature_changes)
+    self.assertEqual(['summary'], self.feature_1.markdown_fields)
+
+    feature_changes = {'motivation_is_markdown': True}
+    self.handler._shared_update_special_fields(self.feature_1, feature_changes)
+    self.assertEqual(['summary', 'motivation'], self.feature_1.markdown_fields)
+
+  def test_shared_update_special_fields__remove_markdown(self):
+    self.feature_1.markdown_fields = ['summary', 'motivation']
+    feature_changes = {'summary_is_markdown': False}
+    self.handler._shared_update_special_fields(self.feature_1, feature_changes)
+    self.assertEqual(['motivation'], self.feature_1.markdown_fields)
+
+    feature_changes = {'motivation_is_markdown': False}
+    self.handler._shared_update_special_fields(self.feature_1, feature_changes)
+    self.assertEqual([], self.feature_1.markdown_fields)
+
   def test_post__valid(self):
     """POST request successful with valid input from user with permissions."""
     # Signed-in user with permissions.
@@ -1362,5 +1390,5 @@ class FeaturesAPITest(testing_config.CustomTestCase):
       else:
         self.assertEqual(getattr(new_feature, field), value)
 
-    # Enterprise first notice should be created.
+    # Enterprise first notice should set as specified.
     self.assertEqual(new_feature.first_enterprise_notification_milestone, 123)

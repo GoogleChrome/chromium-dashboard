@@ -126,14 +126,61 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
       return self.get_one_feature(feature_id)
     return self.do_search()
 
+  def _shared_update_special_fields(
+      self,
+      feature: FeatureEntry,
+      feature_changes: dict[str, Any],
+    ) -> bool:
+    """Handle any special FeatureEntry fields common to creating or updating."""
+    has_updated = False
+    # Handle "Use Markdown" checkboxes.
+    for field, field_type in api_specs.FEATURE_FIELD_DATA_TYPES:
+      new_markdown = feature_changes.get(field + '_is_markdown')
+      if new_markdown is None:
+        continue
+      if new_markdown and field not in feature.markdown_fields:
+        feature.markdown_fields.append(field)
+        has_updated = True
+      elif not new_markdown and field in feature.markdown_fields:
+        feature.markdown_fields = [mf for mf in feature.markdown_fields
+                                   if mf != field]
+        has_updated = True
+
+    return has_updated
+
+  def _post_update_special_fields(
+      self,
+      feature: FeatureEntry,
+      feature_changes: dict[str, Any],
+    ) -> None:
+    """Handle any special FeatureEntry fields when creating."""
+    self._shared_update_special_fields(feature, feature_changes)
+
+    if ('first_enterprise_notification_milestone' in feature_changes):
+      feature.first_enterprise_notification_milestone = int(feature_changes['first_enterprise_notification_milestone'])
+      has_updated = True
+    elif needs_default_first_notification_milestone(new_fields=feature_changes):
+      feature.first_enterprise_notification_milestone = get_default_first_notice_milestone_for_feature()
+
+    if feature.feature_type == FEATURE_TYPE_ENTERPRISE_ID:
+      feature.blink_components = [settings.DEFAULT_ENTERPRISE_COMPONENT]
+      feature.tag_review_status = REVIEW_NA
+    else:
+      feature.tag_review_status = processes.initial_tag_review_status(
+          feature.feature_type)
+
+    feature.creator_email = self.get_current_user().email()
+    feature.updater_email = self.get_current_user().email()
+    feature.accurate_as_of = datetime.now()
+
   @permissions.require_create_feature
   def do_post(self, **kwargs):
     """Handle POST requests to create a single feature."""
-    body = self.get_json_param_dict()
+    feature_changes = self.get_json_param_dict()
 
     # A feature creation request should have all required fields.
     for field in FeatureEntry.REQUIRED_FIELDS:
-      if field not in body:
+      if field not in feature_changes:
         self.abort(400, msg=f'Required field "{field}" not provided.')
 
     fields_dict = {
@@ -143,34 +190,14 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
         'blink_components': [settings.DEFAULT_COMPONENT],
     }
     for field, field_type in api_specs.FEATURE_FIELD_DATA_TYPES:
-      if field in body:
+      if field in feature_changes:
         fields_dict[field] = self.format_field_val(
-            field, field_type, body[field])
-
-    # If no enterprise notification milestone was set, set one since it will
-    # be shown in the next release notes by default. This is true for breaking
-    # changes and enterprise features only.
-    if ('first_enterprise_notification_milestone' in body):
-      fields_dict['first_enterprise_notification_milestone'] = body['first_enterprise_notification_milestone']
-    elif needs_default_first_notification_milestone(new_fields=body):
-      fields_dict['first_enterprise_notification_milestone'] = get_default_first_notice_milestone_for_feature()
-
-    feature_type = fields_dict['feature_type']
-    fields_dict.update(
-        creator_email=self.get_current_user().email(),
-        updater_email=self.get_current_user().email(),
-        accurate_as_of=datetime.now(),
-    )
-    if feature_type == FEATURE_TYPE_ENTERPRISE_ID:
-      fields_dict['blink_components'] = [settings.DEFAULT_ENTERPRISE_COMPONENT]
-      fields_dict['tag_review_status'] = REVIEW_NA
-    else:
-      fields_dict['tag_review_status'] = processes.initial_tag_review_status(
-          feature_type)
+            field, field_type, feature_changes[field])
 
     # Try to create the feature using the provided data.
     try:
       feature = FeatureEntry(**fields_dict)
+      self._post_update_special_fields(feature, feature_changes)
       feature.put()
     except Exception as e:
       self.abort(400, msg=str(e))
@@ -285,7 +312,7 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
       changed_fields: CHANGED_FIELDS_LIST_TYPE,
       stage_ids: list[int]
     ) -> None:
-    """Handle any special FeatureEntry fields."""
+    """Handle any special FeatureEntry fields when updating."""
     now = datetime.now()
     feature_id = feature.key.integer_id()
     # Set accurate_as_of if this is an accuracy verification request.
@@ -299,6 +326,7 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
       attachments.delete_orphan_attachments(
           feature_id, feature_changes['screenshot_links'])
 
+    has_updated |= self._shared_update_special_fields(feature, feature_changes)
     # Set enterprise first notification milestones.
     if is_update_first_notification_milestone(feature, feature_changes):
       feature.first_enterprise_notification_milestone = int(feature_changes['first_enterprise_notification_milestone'])
