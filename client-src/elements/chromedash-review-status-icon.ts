@@ -3,7 +3,7 @@ import {SHARED_STYLES} from '../css/shared-css.js';
 import {customElement, property, state} from 'lit/decorators.js';
 import {Feature} from '../js-src/cs-client.js';
 import {GateDict} from './chromedash-gate-chip.js';
-import {GATE_PREPARING, VOTE_OPTIONS, VOTE_NA_SELF} from './form-field-enums';
+import {FEATURE_TYPES, GATE_PREPARING, VOTE_OPTIONS, VOTE_NA_SELF} from './form-field-enums';
 
 type statusEnum =
   | 'Not started'
@@ -23,7 +23,7 @@ const STATUS_TO_ICON_NAME: Record<statusEnum, string> = {
 @customElement('chromedash-review-status-icon')
 export class ChromedashReviewStatusIcon extends LitElement {
   @property({type: Object})
-  feature!: {id: number; roadmap_stage_ids: number[]};
+  feature!: {id: number; feature_type_int: number; roadmap_stage_ids: number[]};
 
   @state()
   gates: GateDict[] = [];
@@ -109,6 +109,15 @@ export class ChromedashReviewStatusIcon extends LitElement {
     ) {
       status = 'Approved';
       targetGateId = apiOwnersGateId;
+    }
+
+    // Assume that PSA features are approved even if not started,
+    // since they do not require obtaining approvals.
+    // TODO(DanielRyanSmith): This conditional can be removed once PSA
+    // shipping stages no longer have API owner gates.
+    if (this.feature?.feature_type_int === FEATURE_TYPES.FEATURE_TYPE_CODE_CHANGE_ID[0]) {
+      status = 'Approved';
+      targetGateId = undefined;
     }
 
     // If any gate needs work, the icon needs work and links to that gate.

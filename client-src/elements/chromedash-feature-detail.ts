@@ -17,10 +17,11 @@ import {
   FORMS_BY_STAGE_TYPE,
 } from './form-definition';
 import {
+  FEATURE_TYPES,
+  GATE_APPROVED_REVIEW_STATES,
   OT_SETUP_STATUS_OPTIONS,
   STAGE_SHORT_NAMES,
-  STAGE_TYPES_ORIGIN_TRIAL,
-  GATE_APPROVED_REVIEW_STATES,
+  STAGE_TYPES_ORIGIN_TRIAL
 } from './form-field-enums';
 import {makeDisplaySpecs} from './form-field-specs';
 import {getFieldValueFromFeature, hasFieldValue, isDefinedValue} from './utils';
@@ -535,7 +536,17 @@ export class ChromedashFeatureDetail extends LitElement {
   }
 
   renderGateChips(feStage) {
-    const gatesForStage = this.gates.filter(g => g.stage_id == feStage.id);
+    const gatesForStage = this.gates.filter(g => {
+      // Don't show API owner gate chips for shipping stages in PSA features.
+      // TODO(DanielRyanSmith): This conditional can be removed once PSA
+      // shipping stages no longer have API owner gates.
+      if (this.feature.feature_type_int === FEATURE_TYPES.FEATURE_TYPE_CODE_CHANGE_ID[0]
+          && g.gate_type === GATE_TYPES.API_SHIP) {
+        return false
+      }
+
+      return g.stage_id === feStage.id;
+    });
     gatesForStage.sort(
       (g1, g2) =>
         GATE_TEAM_ORDER.indexOf(g1.team_name) -
