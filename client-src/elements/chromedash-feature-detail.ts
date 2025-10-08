@@ -21,7 +21,7 @@ import {
   GATE_APPROVED_REVIEW_STATES,
   OT_SETUP_STATUS_OPTIONS,
   STAGE_SHORT_NAMES,
-  STAGE_TYPES_ORIGIN_TRIAL
+  STAGE_TYPES_ORIGIN_TRIAL,
 } from './form-field-enums';
 import {makeDisplaySpecs} from './form-field-specs';
 import {getFieldValueFromFeature, hasFieldValue, isDefinedValue} from './utils';
@@ -540,9 +540,12 @@ export class ChromedashFeatureDetail extends LitElement {
       // Don't show API owner gate chips for shipping stages in PSA features.
       // TODO(DanielRyanSmith): This conditional can be removed once PSA
       // shipping stages no longer have API owner gates.
-      if (this.feature.feature_type_int === FEATURE_TYPES.FEATURE_TYPE_CODE_CHANGE_ID[0]
-          && g.gate_type === GATE_TYPES.API_SHIP) {
-        return false
+      if (
+        this.feature.feature_type_int ===
+          FEATURE_TYPES.FEATURE_TYPE_CODE_CHANGE_ID[0] &&
+        g.gate_type === GATE_TYPES.API_SHIP
+      ) {
+        return false;
       }
 
       return g.stage_id === feStage.id;

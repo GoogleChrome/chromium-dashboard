@@ -1,9 +1,13 @@
 import {LitElement, css, html} from 'lit';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {customElement, property, state} from 'lit/decorators.js';
-import {Feature} from '../js-src/cs-client.js';
 import {GateDict} from './chromedash-gate-chip.js';
-import {FEATURE_TYPES, GATE_PREPARING, VOTE_OPTIONS, VOTE_NA_SELF} from './form-field-enums';
+import {
+  FEATURE_TYPES,
+  GATE_PREPARING,
+  VOTE_OPTIONS,
+  VOTE_NA_SELF,
+} from './form-field-enums';
 
 type statusEnum =
   | 'Not started'
@@ -115,7 +119,10 @@ export class ChromedashReviewStatusIcon extends LitElement {
     // since they do not require obtaining approvals.
     // TODO(DanielRyanSmith): This conditional can be removed once PSA
     // shipping stages no longer have API owner gates.
-    if (this.feature?.feature_type_int === FEATURE_TYPES.FEATURE_TYPE_CODE_CHANGE_ID[0]) {
+    if (
+      this.feature?.feature_type_int ===
+      FEATURE_TYPES.FEATURE_TYPE_CODE_CHANGE_ID[0]
+    ) {
       status = 'Approved';
       targetGateId = undefined;
     }
