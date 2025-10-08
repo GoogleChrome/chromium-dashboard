@@ -338,6 +338,7 @@ def _set_feature_fields_for_roadmap(
     # The feature's stages that caused it to appear in this roadmap section.
     feature_trigger_stages = triggering_stages_by_fid.get(ff['id'], [])
     ff['roadmap_stage_ids'] = [s.key.integer_id() for s in feature_trigger_stages]
+    ff['feature_type_int'] = ff['feature_type_int']
     ff['finch_urls'] = [
         s.finch_url for s in feature_trigger_stages if s.finch_url]
 
