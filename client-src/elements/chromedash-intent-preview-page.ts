@@ -108,14 +108,16 @@ class ChromedashIntentPreviewPage extends LitElement {
               }
             }
           }
-        // If the component is supplied a stage ID, find the matching stage.
+          // If the component is supplied a stage ID, find the matching stage.
         } else if (this.stageId) {
-          const matchingStage = this.feature.stages.find(s => s.id === this.stageId);
+          const matchingStage = this.feature.stages.find(
+            s => s.id === this.stageId
+          );
           if (!matchingStage) {
-            throw new Error(`No matching stage found for ID ${this.stageId}`)
+            throw new Error(`No matching stage found for ID ${this.stageId}`);
           }
           this.stage = matchingStage;
-        // If neither a gate ID nor a stage ID are supplied, 
+          // If neither a gate ID nor a stage ID are supplied,
         } else {
           throw new Error('Invalid gate ID');
         }

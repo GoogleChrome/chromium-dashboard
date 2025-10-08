@@ -548,8 +548,11 @@ export class ChromedashFeatureDetail extends LitElement {
   hasStageActions(stage, feStage) {
     // TODO(DanielRyanSmith): This can be removed once PSA ship stages have
     // their API owners gate removed.
-    if (stage?.actions?.length > 0
-        && this.feature.feature_type_int === FEATURE_TYPES.FEATURE_TYPE_CODE_CHANGE_ID[0]) {
+    if (
+      stage?.actions?.length > 0 &&
+      this.feature.feature_type_int ===
+        FEATURE_TYPES.FEATURE_TYPE_CODE_CHANGE_ID[0]
+    ) {
       return true;
     }
 
