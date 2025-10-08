@@ -18,7 +18,10 @@ class ChromedashIntentPreviewPage extends LitElement {
   @property({type: Number})
   featureId = 0;
   @property({type: Number})
+  stageId = 0;
+  @property({type: Number})
   gateId = 0;
+
   @state()
   feature!: Feature;
   @state()
@@ -74,16 +77,19 @@ class ChromedashIntentPreviewPage extends LitElement {
   fetchData() {
     Promise.all([
       window.csClient.getFeature(this.featureId),
+      // TODO(DanielRyanSmith): only fetch a single gate based on given ID.
       window.csClient.getGates(this.featureId),
     ])
       .then(([feature, gates]) => {
         this.feature = feature;
         document.title = `${this.feature.name} - ${this.appTitle}`;
-        // TODO(DanielRyanSmith): only fetch a single gate based on given ID.
+
+        // If the component is supplied a specific gate ID, find the matching gate.
         if (this.gateId) {
           this.gate = gates.gates.find(gate => gate.id === this.gateId);
-        }
-        if (this.gate) {
+          if (!this.gate) {
+            throw new Error('Invalid gate ID');
+          }
           // Find the stage that matches the given gate.
           for (const stage of this.feature.stages) {
             if (this.stage) {
@@ -102,14 +108,14 @@ class ChromedashIntentPreviewPage extends LitElement {
               }
             }
           }
-        } else if (!this.gateId) {
-          // This is a "Ready for Developer Testing" intent if no gate is supplied (0).
-          const devTrialStage = this.feature.stages.find(stage =>
-            STAGE_TYPES_DEV_TRIAL.has(stage.stage_type)
-          );
-          if (devTrialStage) {
-            this.stage = devTrialStage;
+        // If the component is supplied a stage ID, find the matching stage.
+        } else if (this.stageId) {
+          const matchingStage = this.feature.stages.find(s => s.id === this.stageId);
+          if (!matchingStage) {
+            throw new Error(`No matching stage found for ID ${this.stageId}`)
           }
+          this.stage = matchingStage;
+        // If neither a gate ID nor a stage ID are supplied, 
         } else {
           throw new Error('Invalid gate ID');
         }
