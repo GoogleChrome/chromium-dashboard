@@ -233,7 +233,13 @@ export class ChromedashGuideEditallPage extends LitElement {
     }
   }
 
-  renderStageSection(formattedFeature, sectionBaseName, feStage, stageFields) {
+  renderStageSection(
+    formattedFeature,
+    sectionBaseName,
+    feStage,
+    stageFields,
+    featureFieldsDisplayed: Set<string>
+  ) {
     if (!stageFields) return nothing;
 
     // Add a number differentiation if this stage type is the same as another stage.
@@ -267,7 +273,7 @@ export class ChromedashGuideEditallPage extends LitElement {
       if (STAGE_SPECIFIC_FIELDS.has(featureJSONKey)) {
         value = getStageValue(feStage, featureJSONKey);
         stageId = feStage.id;
-      } else if (this.sameTypeRendered > 1) {
+      } else if (featureFieldsDisplayed.has(featureJSONKey)) {
         // Don't render fields that are not stage-specific if this is
         // a stage type that is already being rendered.
         // This is to avoid repeated fields on the edit-all page.
@@ -280,6 +286,7 @@ export class ChromedashGuideEditallPage extends LitElement {
         value,
         stageId,
       });
+      featureFieldsDisplayed.add(featureJSONKey);
 
       return html`
         <chromedash-form-field
@@ -340,12 +347,17 @@ export class ChromedashGuideEditallPage extends LitElement {
         ? FLAT_ENTERPRISE_METADATA_FIELDS
         : FLAT_METADATA_FIELDS
     );
+    // Keep track of the feature fields being displayed so that the same field
+    // is not displayed more than once.
+    const featureFieldsDisplayed = new Set<string>();
+
     const formsToRender: (typeof nothing | FormToRender)[] = [
       this.renderStageSection(
         formattedFeature,
         FLAT_METADATA_FIELDS.name,
         {id: -1},
-        fieldsOnly
+        fieldsOnly,
+        featureFieldsDisplayed
       ),
     ];
 
@@ -373,7 +385,8 @@ export class ChromedashGuideEditallPage extends LitElement {
           formattedFeature,
           stageForm.name,
           feStage,
-          fieldsOnly
+          fieldsOnly,
+          featureFieldsDisplayed
         )
       );
 
@@ -391,7 +404,8 @@ export class ChromedashGuideEditallPage extends LitElement {
             formattedFeature,
             sectionName,
             extensionStage,
-            fieldsOnly
+            fieldsOnly,
+            featureFieldsDisplayed
           )
         );
       });
