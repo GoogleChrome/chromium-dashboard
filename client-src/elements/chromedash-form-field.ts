@@ -25,8 +25,14 @@ interface getFieldValue {
   feature?: Feature;
 }
 
+interface IntentTypeDetail {
+  abbreviation: string;
+  className: string;
+  title: string;
+}
+
 // Helper map to store details for each intent type.
-const INTENT_TYPE_DETAILS = {
+const INTENT_TYPE_DETAILS: Record<IntentType, IntentTypeDetail> = {
   [IntentType.Prototype]: {
     abbreviation: 'P',
     className: 'intent-tag--prototype',

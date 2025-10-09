@@ -133,11 +133,13 @@ export const WEBFEATURE_USE_COUNTER_TYPES: Record<
   ],
 };
 
-export const FEATURE_TYPE_INCUBATE_ID = 0;
-export const FEATURE_TYPE_EXISTING_ID = 1;
-export const FEATURE_TYPE_CODE_CHANGE_ID = 2;
-export const FEATURE_TYPE_DEPRECATION_ID = 3;
-export const FEATURE_TYPE_ENTERPRISE_ID = 4;
+export enum FeatureType {
+  Incubate = 0,
+  Existing = 1,
+  CodeChange = 2,
+  Deprecation = 3,
+  Enterprise = 4,
+}
 
 // FEATURE_TYPES object is organized as [intValue, stringLabel, description],
 // the descriptions are used only for the descriptions of feature_type_radio_group
@@ -146,7 +148,7 @@ export const FEATURE_TYPES_WITHOUT_ENTERPRISE: Record<
   [number, string, string | HTMLTemplateResult]
 > = {
   FEATURE_TYPE_INCUBATE_ID: [
-    FEATURE_TYPE_INCUBATE_ID,
+    0,
     'New or changed feature',
     html`Choose this if you're still working on the design of a feature and
       might need to send an Intent to Prototype or request a TAG review. Note
@@ -161,7 +163,7 @@ export const FEATURE_TYPES_WITHOUT_ENTERPRISE: Record<
       process.`,
   ],
   FEATURE_TYPE_EXISTING_ID: [
-    FEATURE_TYPE_EXISTING_ID,
+    1,
     'Chromium catches up',
     html`Choose this if a standards body already has consensus for a feature, or
       it's already shipped in another implementation. This feature type omits
@@ -174,7 +176,7 @@ export const FEATURE_TYPES_WITHOUT_ENTERPRISE: Record<
       process.`,
   ],
   FEATURE_TYPE_CODE_CHANGE_ID: [
-    FEATURE_TYPE_CODE_CHANGE_ID,
+    2,
     'No developer-visible change',
     html`Choose this if you're hoping that nobody notices the change you're
       going to make, but there's a chance that a bug will make it visible. This
@@ -187,7 +189,7 @@ export const FEATURE_TYPES_WITHOUT_ENTERPRISE: Record<
       process.`,
   ],
   FEATURE_TYPE_DEPRECATION_ID: [
-    FEATURE_TYPE_DEPRECATION_ID,
+    3,
     'Feature removal',
     html`Choose this if you are deprecating and then removing an existing
       feature. This feature type follows the
@@ -205,7 +207,7 @@ export const FEATURE_TYPES: Record<
 > = {
   ...FEATURE_TYPES_WITHOUT_ENTERPRISE,
   FEATURE_TYPE_ENTERPRISE_ID: [
-    FEATURE_TYPE_ENTERPRISE_ID,
+    4,
     'New Feature or removal affecting enterprises',
     'For features or changes that need to be communicated to enterprises or schools.',
   ],
@@ -417,10 +419,10 @@ export const ALL_FEATURE_TYPE_DEPRECATION_INTENTS = new Set<IntentType>([
 ]);
 
 export const ALL_INTENT_USAGE_BY_FEATURE_TYPE = {
-  [FEATURE_TYPE_INCUBATE_ID]: ALL_FEATURE_TYPE_INCUBATE_INTENTS,
-  [FEATURE_TYPE_EXISTING_ID]: ALL_FEATURE_TYPE_EXISTING_INTENTS,
-  [FEATURE_TYPE_CODE_CHANGE_ID]: ALL_FEATURE_TYPE_CODE_CHANGE_INTENTS,
-  [FEATURE_TYPE_DEPRECATION_ID]: ALL_FEATURE_TYPE_DEPRECATION_INTENTS,
+  [FeatureType.Incubate]: ALL_FEATURE_TYPE_INCUBATE_INTENTS,
+  [FeatureType.Existing]: ALL_FEATURE_TYPE_EXISTING_INTENTS,
+  [FeatureType.CodeChange]: ALL_FEATURE_TYPE_CODE_CHANGE_INTENTS,
+  [FeatureType.Deprecation]: ALL_FEATURE_TYPE_DEPRECATION_INTENTS,
 };
 
 // Every mutable field that exists on the Stage entity and every key
