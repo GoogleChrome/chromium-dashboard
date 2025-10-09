@@ -35,7 +35,7 @@ const INTENT_TYPE_DETAILS = {
   [IntentType.DeveloperTesting]: {
     abbreviation: 'T',
     className: 'intent-tag--dev-testing',
-    title: 'Intent for Developer Testing',
+    title: 'Ready for Developer Testing',
   },
   [IntentType.Experiment]: {
     abbreviation: 'E',
@@ -50,7 +50,7 @@ const INTENT_TYPE_DETAILS = {
   [IntentType.PSA]: {
     abbreviation: 'PSA',
     className: 'intent-tag--psa',
-    title: 'Intent for PSA',
+    title: 'Web-Facing Change PSA',
   },
   [IntentType.DeprecateAndRemove]: {
     abbreviation: 'D',
