@@ -105,6 +105,13 @@ export class ChromedashTextarea extends SlTextarea {
       >
         Use markdown
       </sl-checkbox>
+      <sl-icon-button
+        name="info-circle"
+        id="info-button"
+        title="GitHub flavored markdown docs"
+        href="https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax"
+        target="_blank"
+      ></sl-icon-button>
     `;
   }
 }
