@@ -76,6 +76,7 @@ export class ChromedashGuideStagePage extends LitElement {
     // The field has been updated, so it is considered touched.
     this.fieldValues[index].touched = true;
     this.fieldValues[index].value = value;
+    this.fieldValues[index].isMarkdown = event.detail.isMarkdown;
   }
 
   fetchData() {

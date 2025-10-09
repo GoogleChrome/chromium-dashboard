@@ -80,6 +80,8 @@ interface ResolvedField {
   type?: string;
   name?: keyof FormattedFeature;
   attrs?: FieldAttrs;
+  offer_markdown?: boolean;
+  enterprise_offer_markdown?: boolean;
   required?: boolean;
   label?: string;
   help_text?: TemplateResult | string;
@@ -329,6 +331,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     required: true,
     label: 'Summary',
     intent_usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
+    enterprise_offer_markdown: true,
     enterprise_help_text: html` <p>
         This text will be used in the
         <a

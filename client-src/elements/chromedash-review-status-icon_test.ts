@@ -4,19 +4,31 @@ import {ChromedashReviewStatusIcon} from './chromedash-review-status-icon';
 import {ChromeStatusClient} from '../js-src/cs-client';
 import sinon from 'sinon';
 import {
-  GATE_TYPES,
   GATE_PREPARING,
   VOTE_OPTIONS,
   VOTE_NA_SELF,
+  FEATURE_TYPES,
 } from './form-field-enums';
 
 const FEATURE = {
   id: 5347893,
   roadmap_stage_ids: [57463],
+  feature_type_int: 0, // Not a PSA feature
+};
+
+const FEATURE_PSA = {
+  id: 5347894,
+  roadmap_stage_ids: [57463],
+  // This feature type should trigger the new conditional logic.
+  feature_type_int: FEATURE_TYPES.FEATURE_TYPE_CODE_CHANGE_ID[0],
 };
 
 const COMPONENT_HTML = html` <chromedash-review-status-icon
   .feature=${FEATURE}
+></chromedash-review-status-icon>`;
+
+const COMPONENT_HTML_PSA = html` <chromedash-review-status-icon
+  .feature=${FEATURE_PSA}
 ></chromedash-review-status-icon>`;
 
 const GATE_WRONG_STAGE = {
@@ -226,5 +238,24 @@ describe('chromedash-review-status-icon', () => {
     const icon = component.shadowRoot!.querySelector('sl-icon');
     assert.exists(icon);
     assert.equal(icon.getAttribute('name'), 'block_20px');
+  });
+
+  it('renders "approved" for a PSA feature even if gates are not started', async () => {
+    getGatesStub.returns(
+      Promise.resolve({gates: [GATE_API_PREPARING, GATE_PRIVACY_PREPARING]})
+    );
+    const component = await fixture(COMPONENT_HTML_PSA);
+    assert.exists(component);
+    assert.instanceOf(component, ChromedashReviewStatusIcon);
+    const icon = component.shadowRoot!.querySelector('sl-icon');
+    assert.exists(icon);
+    assert.equal(
+      icon.getAttribute('name'),
+      'check_circle_filled_20px',
+      'PSA feature should be approved by default'
+    );
+    // Check that there is no link, because targetGateId is set to undefined.
+    const link = component.shadowRoot!.querySelector('a');
+    assert.isNull(link, 'should not have a link for PSA features');
   });
 });
