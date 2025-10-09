@@ -1,4 +1,4 @@
-import {css, html, LitElement, TemplateResult} from 'lit';
+import {css, html, LitElement, TemplateResult, nothing} from 'lit';
 import {customElement, state, property} from 'lit/decorators.js';
 import {ifDefined} from 'lit/directives/if-defined.js';
 import {
@@ -68,6 +68,8 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
   selectedMilestone?: number;
   @state()
   editingFeatureIds = new Set<number>();
+  @state()
+  previewingFeatureIds = new Set<number>();
 
   static get styles() {
     return [
@@ -747,9 +749,20 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
     }
   }
 
+  handlePreviewChecked(e, featureId) {
+    const newPreviewing = new Set(this.previewingFeatureIds);
+    if (e.target.checked) {
+      newPreviewing.add(featureId);
+    } else {
+      newPreviewing.delete(featureId);
+    }
+    this.previewingFeatureIds = newPreviewing;
+  }
+
   renderEditableFeatureSummary(f: Feature): TemplateResult {
     const isMarkdown = (f.markdown_fields || []).includes('summary');
-    return html`
+    const isPreviewing = this.previewingFeatureIds.has(f.id);
+    const editor = html`
     <sl-textarea
     class="feature-summary""
         id="edit-summary-${f.id}"
@@ -757,16 +770,40 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
         size="small"
         resize="auto"
       >
-    </sl-textarea>
-    <sl-checkbox class="markdown-checkbox" id="summary-is-markdown-${f.id}" size="small" ?checked=${isMarkdown}>Use markdown</sl-checkbox>
-    <sl-icon-button
+        </sl-textarea>`;
+    const preview = html`
+      <div
+        id="preview"
+        style="border:var(--card-border); padding:0 var(--content-padding); min-height:14em; background:var(--table-alternate-background)"
+      >
+        ${autolink(f.summary, [], true)}
+      </div>
+    `;
+    const controls = html`
+      <sl-checkbox
+        class="markdown-checkbox"
+        id="summary-is-markdown-${f.id}"
+        size="small"
+        ?checked=${isMarkdown}
+        >Use markdown</sl-checkbox
+      >
+      <sl-icon-button
         name="info-circle"
         id="info-button"
         title="GitHub flavored markdown docs"
         href="https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax"
         target="_blank"
       ></sl-icon-button>
+      <sl-checkbox
+        id="show-preview-${f.id}"
+        size="small"
+        ?checked=${isPreviewing}
+        @sl-change=${e => this.handlePreviewChecked(e, f.id)}
+      >
+        Preview
+      </sl-checkbox>
     `;
+    return html` ${isPreviewing ? preview : editor} ${controls} `;
   }
 
   renderEditableStageItem(

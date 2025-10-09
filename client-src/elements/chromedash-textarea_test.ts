@@ -1,4 +1,5 @@
 import {html} from 'lit';
+import SlCheckbox from '@shoelace-style/shoelace/dist/components/checkbox/checkbox.js';
 import {assert, fixture} from '@open-wc/testing';
 import {ChromedashTextarea} from './chromedash-textarea';
 
@@ -129,8 +130,12 @@ describe('chromedash-textarea', () => {
       );
       assert.exists(component);
       await component.updateComplete;
-      const checkbox = component.renderRoot.querySelector('sl-checkbox');
-      assert.notExists(checkbox);
+      const useMarkdownEl = component.renderRoot.querySelector('#use-markdown');
+      assert.notExists(useMarkdownEl);
+      const showPreviewEl = component.renderRoot.querySelector('#show-preview');
+      assert.notExists(showPreviewEl);
+      const previewEl = component.renderRoot.querySelector('#preview');
+      assert.notExists(previewEl);
     });
 
     it('offer markdown when specified', async () => {
@@ -139,10 +144,13 @@ describe('chromedash-textarea', () => {
       );
       assert.exists(component);
       await component.updateComplete;
-      const checkbox = component.renderRoot.querySelector('sl-checkbox');
-      assert.exists(checkbox);
-      const outer = checkbox.outerHTML;
-      assert.notInclude(outer, 'checked');
+      const useMarkdownEl = component.renderRoot.querySelector('#use-markdown');
+      assert.exists(useMarkdownEl);
+      assert.notInclude(useMarkdownEl.outerHTML, 'checked');
+      const showPreviewEl = component.renderRoot.querySelector('#show-preview');
+      assert.notExists(showPreviewEl);
+      const previewEl = component.renderRoot.querySelector('#preview');
+      assert.notExists(previewEl);
     });
 
     it('check the box for markdown when in use', async () => {
@@ -154,11 +162,40 @@ describe('chromedash-textarea', () => {
       );
       assert.exists(component);
       await component.updateComplete;
-      const checkbox = component.renderRoot.querySelector('sl-checkbox');
-      assert.exists(checkbox);
-      assert.exists(checkbox);
-      const outer = checkbox.outerHTML;
-      assert.include(outer, 'checked');
+      const useMarkdownEl = component.renderRoot.querySelector('#use-markdown');
+      assert.exists(useMarkdownEl);
+      assert.include(useMarkdownEl.outerHTML, 'checked');
+      const showPreviewEl = component.renderRoot.querySelector('#show-preview');
+      assert.exists(showPreviewEl);
+      assert.notInclude(showPreviewEl.outerHTML, 'checked');
+      const previewEl = component.renderRoot.querySelector('#preview');
+      assert.notExists(previewEl);
+    });
+
+    it('show the preview when checked', async () => {
+      const component = await fixture<ChromedashTextarea>(
+        html`<chromedash-textarea
+          value="This is some **markdown**"
+          offermarkdown
+          ismarkdown
+          .showPreview=${true}
+        ></chromedash-textarea>`
+      );
+      assert.exists(component);
+      await component.updateComplete;
+      const useMarkdownEl = component.renderRoot.querySelector('#use-markdown');
+      assert.exists(useMarkdownEl);
+      assert.include(useMarkdownEl.outerHTML, 'checked');
+      const showPreviewEl =
+        component.renderRoot.querySelector<SlCheckbox>('#show-preview');
+      assert.exists(showPreviewEl);
+      assert.include(showPreviewEl.outerHTML, 'checked');
+      const previewEl = component.renderRoot.querySelector('#preview');
+      assert.exists(previewEl);
+      const boldWord =
+        component.renderRoot.querySelector<HTMLElement>('#preview strong');
+      assert.exists(boldWord);
+      assert.equal(boldWord.innerText, 'markdown');
     });
   });
 });
