@@ -764,7 +764,7 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
     const isPreviewing = this.previewingFeatureIds.has(f.id);
     const editor = html`
     <sl-textarea
-    class="feature-summary""
+    class="feature-summary"
         id="edit-summary-${f.id}"
         value=${f.summary}
         size="small"
