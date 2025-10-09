@@ -1546,7 +1546,7 @@ export const ALL_FIELDS: Record<string, Field> = {
         IntentType.Experiment,
         IntentType.Ship,
       ]),
-      [FEATURE_TYPE_CODE_CHANGE_ID]: new Set<IntentType>([IntentType.Ship]),
+      [FEATURE_TYPE_CODE_CHANGE_ID]: new Set<IntentType>([IntentType.PSA]),
       [FEATURE_TYPE_DEPRECATION_ID]: new Set<IntentType>([
         IntentType.Experiment,
         IntentType.Ship,
@@ -1930,7 +1930,7 @@ export const ALL_FIELDS: Record<string, Field> = {
         IntentType.Experiment,
         IntentType.Ship,
       ]),
-      [FEATURE_TYPE_CODE_CHANGE_ID]: new Set<IntentType>([IntentType.Ship]),
+      [FEATURE_TYPE_CODE_CHANGE_ID]: new Set<IntentType>([IntentType.PSA]),
       [FEATURE_TYPE_DEPRECATION_ID]: new Set<IntentType>([
         IntentType.Experiment,
         IntentType.Ship,
@@ -1954,7 +1954,7 @@ export const ALL_FIELDS: Record<string, Field> = {
         IntentType.Experiment,
         IntentType.Ship,
       ]),
-      [FEATURE_TYPE_CODE_CHANGE_ID]: new Set<IntentType>([IntentType.Ship]),
+      [FEATURE_TYPE_CODE_CHANGE_ID]: new Set<IntentType>([IntentType.PSA]),
       [FEATURE_TYPE_DEPRECATION_ID]: new Set<IntentType>([
         IntentType.Experiment,
         IntentType.Ship,
@@ -2004,7 +2004,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     intent_usage: {
       [FEATURE_TYPE_INCUBATE_ID]: new Set<IntentType>([IntentType.Ship]),
       [FEATURE_TYPE_EXISTING_ID]: new Set<IntentType>([IntentType.Ship]),
-      [FEATURE_TYPE_CODE_CHANGE_ID]: new Set<IntentType>([IntentType.Ship]),
+      [FEATURE_TYPE_CODE_CHANGE_ID]: new Set<IntentType>([IntentType.PSA]),
       [FEATURE_TYPE_DEPRECATION_ID]: new Set<IntentType>([IntentType.Ship]),
     },
     help_text: html` Links to demos and samples (one URL per line).`,
@@ -2197,7 +2197,7 @@ export const ALL_FIELDS: Record<string, Field> = {
         IntentType.Experiment,
         IntentType.Ship,
       ]),
-      [FEATURE_TYPE_CODE_CHANGE_ID]: new Set<IntentType>([IntentType.Ship]),
+      [FEATURE_TYPE_CODE_CHANGE_ID]: new Set<IntentType>([IntentType.PSA]),
       [FEATURE_TYPE_DEPRECATION_ID]: new Set<IntentType>([
         IntentType.Experiment,
         IntentType.Ship,
@@ -2227,7 +2227,7 @@ export const ALL_FIELDS: Record<string, Field> = {
         IntentType.Experiment,
         IntentType.Ship,
       ]),
-      [FEATURE_TYPE_CODE_CHANGE_ID]: new Set<IntentType>([IntentType.Ship]),
+      [FEATURE_TYPE_CODE_CHANGE_ID]: new Set<IntentType>([IntentType.PSA]),
       [FEATURE_TYPE_DEPRECATION_ID]: new Set<IntentType>([
         IntentType.Experiment,
         IntentType.Ship,
@@ -2257,7 +2257,7 @@ export const ALL_FIELDS: Record<string, Field> = {
         IntentType.Experiment,
         IntentType.Ship,
       ]),
-      [FEATURE_TYPE_CODE_CHANGE_ID]: new Set<IntentType>([IntentType.Ship]),
+      [FEATURE_TYPE_CODE_CHANGE_ID]: new Set<IntentType>([IntentType.PSA]),
       [FEATURE_TYPE_DEPRECATION_ID]: new Set<IntentType>([
         IntentType.Experiment,
         IntentType.Ship,
