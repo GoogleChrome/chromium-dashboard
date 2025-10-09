@@ -304,6 +304,11 @@ go/this-is-a-test
           touched: true,
           isMarkdown: false,
         },
+        {
+          name: 'motivation',
+          value: 'Makes no change to markdown',
+          touched: true,
+        },
       ];
       const expected = {
         feature_changes: {
@@ -312,6 +317,7 @@ go/this-is-a-test
           summary_is_markdown: true,
           description: 'No longer desires markdown',
           description_is_markdown: false,
+          motivation: 'Makes no change to markdown',
         },
         stages: [],
         has_changes: true,
