@@ -3,7 +3,11 @@
 {%- endmacro -%}
 
 {%- macro urlize_with_default(value) -%}
-  {{ value | urlize | default('<i>No value provided</i>', true) | safe }}
+  {%- if value -%}
+    {{ value | urlize | safe }}
+  {%- else -%}
+    <i>No value provided</i>
+  {%- endif -%}
 {%- endmacro -%}
 
 <div><b>Contact emails</b></div>
