@@ -253,6 +253,27 @@ export const FORM_STYLES = [
       box-shadow: 0 0 0 3px #0ea5e966;
     }
 
+    chromedash-form-field .form-field-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+    }
+    chromedash-form-field .intent-tag {
+      padding: 2px 6px;
+      margin-inline-start: 4px;
+      border-radius: 12px;
+      font-size: 0.85em;
+      font-weight: 700;
+      text-align: center;
+      white-space: nowrap;
+      vertical-align: middle;
+      cursor: help;
+      color: #424242;
+      background-color: #f5f5f5;
+      border: 1px solid #bdbdbd;
+    }
+
     sl-skeleton {
       margin-bottom: 1em;
       width: 60%;
