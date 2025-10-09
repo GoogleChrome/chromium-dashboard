@@ -762,15 +762,14 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
   renderEditableFeatureSummary(f: Feature): TemplateResult {
     const isMarkdown = (f.markdown_fields || []).includes('summary');
     const isPreviewing = this.previewingFeatureIds.has(f.id);
-    const editor = html`
-    <sl-textarea
-    class="feature-summary"
-        id="edit-summary-${f.id}"
-        value=${f.summary}
-        size="small"
-        resize="auto"
-      >
-        </sl-textarea>`;
+    const editor = html` <sl-textarea
+      class="feature-summary"
+      id="edit-summary-${f.id}"
+      value=${f.summary}
+      size="small"
+      resize="auto"
+    >
+    </sl-textarea>`;
     const preview = html`
       <div
         id="preview"
