@@ -613,9 +613,14 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
     )!;
     addFieldValue('confidential', confidentialEl, f.confidential);
     let summaryEl: SlTextarea = this.shadowRoot?.querySelector<SlTextarea>(
-      '#edit-feature-' + f.id
+      '#edit-summary-' + f.id
     )!;
     addFieldValue('summary', summaryEl, f.summary);
+    const isMarkdown = (f.markdown_fields || []).includes('summary');
+    let markdownEl: SlCheckbox = this.shadowRoot?.querySelector<SlCheckbox>(
+      '#summary-is-markdown-' + f.id
+    )!;
+    addFieldValue('summary_is_markdown', markdownEl, isMarkdown);
 
     for (const s of f.stages) {
       if (s.id) {
@@ -743,15 +748,24 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
   }
 
   renderEditableFeatureSummary(f: Feature): TemplateResult {
+    const isMarkdown = (f.markdown_fields || []).includes('summary');
     return html`
     <sl-textarea
     class="feature-summary""
-        id="edit-feature-${f.id}"
+        id="edit-summary-${f.id}"
         value=${f.summary}
         size="small"
         resize="auto"
       >
-      </sl-textarea>
+    </sl-textarea>
+    <sl-checkbox class="markdown-checkbox" id="summary-is-markdown-${f.id}" size="small" ?checked=${isMarkdown}>Use markdown</sl-checkbox>
+    <sl-icon-button
+        name="info-circle"
+        id="info-button"
+        title="GitHub flavored markdown docs"
+        href="https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax"
+        target="_blank"
+      ></sl-icon-button>
     `;
   }
 
