@@ -615,6 +615,8 @@ describe('chromedash-enterprise-release-notes-page', () => {
       assert.exists(nameEl);
       const summaryEl = firstNote?.querySelector('.feature-summary');
       assert.exists(summaryEl);
+      const markdownEl = firstNote?.querySelector('.markdown-checkbox');
+      assert.exists(markdownEl);
       const milestoneEl = firstNote?.querySelector('.rollout-milestone');
       assert.exists(milestoneEl);
       const platformsEl = firstNote?.querySelector('.rollout-platforms');
