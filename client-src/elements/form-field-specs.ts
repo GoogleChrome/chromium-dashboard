@@ -11,11 +11,7 @@ import {
   ENTERPRISE_IMPACT,
   ENTERPRISE_PRODUCT_CATEGORY,
   FEATURE_CATEGORIES,
-  FEATURE_TYPE_CODE_CHANGE_ID,
-  FEATURE_TYPE_DEPRECATION_ID,
-  FEATURE_TYPE_ENTERPRISE_ID,
-  FEATURE_TYPE_EXISTING_ID,
-  FEATURE_TYPE_INCUBATE_ID,
+  FeatureType,
   FEATURE_TYPES,
   FEATURE_TYPES_WITHOUT_ENTERPRISE,
   IntentType,
@@ -78,13 +74,7 @@ export type CheckFunction = (
   initialValue: string
 ) => CheckResult | Promise<CheckResult>;
 
-export interface FieldIntentUsage {
-  [FEATURE_TYPE_INCUBATE_ID]?: Set<IntentType>;
-  [FEATURE_TYPE_EXISTING_ID]?: Set<IntentType>;
-  [FEATURE_TYPE_CODE_CHANGE_ID]?: Set<IntentType>;
-  [FEATURE_TYPE_DEPRECATION_ID]?: Set<IntentType>;
-  [FEATURE_TYPE_ENTERPRISE_ID]?: Set<IntentType>;
-}
+export type FieldIntentUsage = Partial<Record<FeatureType, Set<IntentType>>>;
 
 interface ResolvedField {
   type?: string;
@@ -674,9 +664,9 @@ export const ALL_FIELDS: Record<string, Field> = {
     required: false,
     label: 'Motivation',
     intent_usage: {
-      [FEATURE_TYPE_INCUBATE_ID]: new Set<IntentType>([IntentType.Prototype]),
-      [FEATURE_TYPE_EXISTING_ID]: new Set<IntentType>([IntentType.Prototype]),
-      [FEATURE_TYPE_DEPRECATION_ID]: new Set<IntentType>([
+      [FeatureType.Incubate]: new Set<IntentType>([IntentType.Prototype]),
+      [FeatureType.Existing]: new Set<IntentType>([IntentType.Prototype]),
+      [FeatureType.Deprecation]: new Set<IntentType>([
         IntentType.DeprecateAndRemove,
       ]),
     },
@@ -704,7 +694,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     required: false,
     label: 'Motivation',
     intent_usage: {
-      [FEATURE_TYPE_DEPRECATION_ID]: new Set<IntentType>([
+      [FeatureType.Deprecation]: new Set<IntentType>([
         IntentType.DeprecateAndRemove,
       ]),
     },
@@ -749,8 +739,8 @@ export const ALL_FIELDS: Record<string, Field> = {
     required: false,
     label: 'Explainer link(s)',
     intent_usage: {
-      [FEATURE_TYPE_INCUBATE_ID]: ALL_FEATURE_TYPE_INCUBATE_INTENTS,
-      [FEATURE_TYPE_DEPRECATION_ID]: ALL_FEATURE_TYPE_DEPRECATION_INTENTS,
+      [FeatureType.Incubate]: ALL_FEATURE_TYPE_INCUBATE_INTENTS,
+      [FeatureType.Deprecation]: ALL_FEATURE_TYPE_DEPRECATION_INTENTS,
     },
     help_text: html`Link to explainer(s) (one URL per line). See the
       <a
@@ -1357,11 +1347,9 @@ export const ALL_FIELDS: Record<string, Field> = {
     required: false,
     label: 'Experiment Timeline',
     intent_usage: {
-      [FEATURE_TYPE_INCUBATE_ID]: new Set<IntentType>([IntentType.Experiment]),
-      [FEATURE_TYPE_EXISTING_ID]: new Set<IntentType>([IntentType.Experiment]),
-      [FEATURE_TYPE_DEPRECATION_ID]: new Set<IntentType>([
-        IntentType.Experiment,
-      ]),
+      [FeatureType.Incubate]: new Set<IntentType>([IntentType.Experiment]),
+      [FeatureType.Existing]: new Set<IntentType>([IntentType.Experiment]),
+      [FeatureType.Deprecation]: new Set<IntentType>([IntentType.Experiment]),
     },
     help_text: html` When does the experiment start and expire? Deprecated:
     Please use the numeric fields above instead.`,
@@ -1464,11 +1452,9 @@ export const ALL_FIELDS: Record<string, Field> = {
     required: false,
     label: 'Experiment Extension Reason',
     intent_usage: {
-      [FEATURE_TYPE_INCUBATE_ID]: new Set<IntentType>([IntentType.Experiment]),
-      [FEATURE_TYPE_EXISTING_ID]: new Set<IntentType>([IntentType.Experiment]),
-      [FEATURE_TYPE_DEPRECATION_ID]: new Set<IntentType>([
-        IntentType.Experiment,
-      ]),
+      [FeatureType.Incubate]: new Set<IntentType>([IntentType.Experiment]),
+      [FeatureType.Existing]: new Set<IntentType>([IntentType.Experiment]),
+      [FeatureType.Deprecation]: new Set<IntentType>([IntentType.Experiment]),
     },
     help_text: html` If this is a repeated or extended experiment, explain why
     it's being repeated or extended. Also, fill in discussion link fields below.`,
@@ -1520,11 +1506,9 @@ export const ALL_FIELDS: Record<string, Field> = {
     required: false,
     label: 'Ongoing Constraints',
     intent_usage: {
-      [FEATURE_TYPE_INCUBATE_ID]: new Set<IntentType>([IntentType.Experiment]),
-      [FEATURE_TYPE_EXISTING_ID]: new Set<IntentType>([IntentType.Experiment]),
-      [FEATURE_TYPE_DEPRECATION_ID]: new Set<IntentType>([
-        IntentType.Experiment,
-      ]),
+      [FeatureType.Incubate]: new Set<IntentType>([IntentType.Experiment]),
+      [FeatureType.Existing]: new Set<IntentType>([IntentType.Experiment]),
+      [FeatureType.Deprecation]: new Set<IntentType>([IntentType.Experiment]),
     },
     help_text: html` Do you anticipate adding any ongoing technical constraints
     to the codebase while implementing this feature? We prefer to avoid features
@@ -1538,16 +1522,16 @@ export const ALL_FIELDS: Record<string, Field> = {
     initial: ROLLOUT_PLAN.ROLLOUT_100[0],
     label: 'Rollout plan',
     intent_usage: {
-      [FEATURE_TYPE_INCUBATE_ID]: new Set<IntentType>([
+      [FeatureType.Incubate]: new Set<IntentType>([
         IntentType.Experiment,
         IntentType.Ship,
       ]),
-      [FEATURE_TYPE_EXISTING_ID]: new Set<IntentType>([
+      [FeatureType.Existing]: new Set<IntentType>([
         IntentType.Experiment,
         IntentType.Ship,
       ]),
-      [FEATURE_TYPE_CODE_CHANGE_ID]: new Set<IntentType>([IntentType.PSA]),
-      [FEATURE_TYPE_DEPRECATION_ID]: new Set<IntentType>([
+      [FeatureType.CodeChange]: new Set<IntentType>([IntentType.PSA]),
+      [FeatureType.Deprecation]: new Set<IntentType>([
         IntentType.Experiment,
         IntentType.Ship,
       ]),
@@ -1833,9 +1817,9 @@ export const ALL_FIELDS: Record<string, Field> = {
     required: false,
     label: 'Anticipated spec changes',
     intent_usage: {
-      [FEATURE_TYPE_INCUBATE_ID]: ALL_FEATURE_TYPE_INCUBATE_INTENTS,
-      [FEATURE_TYPE_EXISTING_ID]: ALL_FEATURE_TYPE_EXISTING_INTENTS,
-      [FEATURE_TYPE_DEPRECATION_ID]: ALL_FEATURE_TYPE_DEPRECATION_INTENTS,
+      [FeatureType.Incubate]: ALL_FEATURE_TYPE_INCUBATE_INTENTS,
+      [FeatureType.Existing]: ALL_FEATURE_TYPE_EXISTING_INTENTS,
+      [FeatureType.Deprecation]: ALL_FEATURE_TYPE_DEPRECATION_INTENTS,
     },
     help_text: html` Open questions about a feature may be a source of future
     web compat or interop issues. Please list open issues (e.g. links to known
@@ -1922,16 +1906,16 @@ export const ALL_FIELDS: Record<string, Field> = {
     initial: false,
     label: 'Supported on all platforms?',
     intent_usage: {
-      [FEATURE_TYPE_INCUBATE_ID]: new Set<IntentType>([
+      [FeatureType.Incubate]: new Set<IntentType>([
         IntentType.Experiment,
         IntentType.Ship,
       ]),
-      [FEATURE_TYPE_EXISTING_ID]: new Set<IntentType>([
+      [FeatureType.Existing]: new Set<IntentType>([
         IntentType.Experiment,
         IntentType.Ship,
       ]),
-      [FEATURE_TYPE_CODE_CHANGE_ID]: new Set<IntentType>([IntentType.PSA]),
-      [FEATURE_TYPE_DEPRECATION_ID]: new Set<IntentType>([
+      [FeatureType.CodeChange]: new Set<IntentType>([IntentType.PSA]),
+      [FeatureType.Deprecation]: new Set<IntentType>([
         IntentType.Experiment,
         IntentType.Ship,
       ]),
@@ -1946,16 +1930,16 @@ export const ALL_FIELDS: Record<string, Field> = {
     required: false,
     label: 'Platform Support Explanation',
     intent_usage: {
-      [FEATURE_TYPE_INCUBATE_ID]: new Set<IntentType>([
+      [FeatureType.Incubate]: new Set<IntentType>([
         IntentType.Experiment,
         IntentType.Ship,
       ]),
-      [FEATURE_TYPE_EXISTING_ID]: new Set<IntentType>([
+      [FeatureType.Existing]: new Set<IntentType>([
         IntentType.Experiment,
         IntentType.Ship,
       ]),
-      [FEATURE_TYPE_CODE_CHANGE_ID]: new Set<IntentType>([IntentType.PSA]),
-      [FEATURE_TYPE_DEPRECATION_ID]: new Set<IntentType>([
+      [FeatureType.CodeChange]: new Set<IntentType>([IntentType.PSA]),
+      [FeatureType.Deprecation]: new Set<IntentType>([
         IntentType.Experiment,
         IntentType.Ship,
       ]),
@@ -2002,10 +1986,10 @@ export const ALL_FIELDS: Record<string, Field> = {
     required: false,
     label: 'Demo and sample links',
     intent_usage: {
-      [FEATURE_TYPE_INCUBATE_ID]: new Set<IntentType>([IntentType.Ship]),
-      [FEATURE_TYPE_EXISTING_ID]: new Set<IntentType>([IntentType.Ship]),
-      [FEATURE_TYPE_CODE_CHANGE_ID]: new Set<IntentType>([IntentType.PSA]),
-      [FEATURE_TYPE_DEPRECATION_ID]: new Set<IntentType>([IntentType.Ship]),
+      [FeatureType.Incubate]: new Set<IntentType>([IntentType.Ship]),
+      [FeatureType.Existing]: new Set<IntentType>([IntentType.Ship]),
+      [FeatureType.CodeChange]: new Set<IntentType>([IntentType.PSA]),
+      [FeatureType.Deprecation]: new Set<IntentType>([IntentType.Ship]),
     },
     help_text: html` Links to demos and samples (one URL per line).`,
   },
@@ -2096,9 +2080,9 @@ export const ALL_FIELDS: Record<string, Field> = {
     initial: false,
     label: 'Requires Embedder Support',
     intent_usage: {
-      [FEATURE_TYPE_INCUBATE_ID]: ALL_FEATURE_TYPE_INCUBATE_INTENTS,
-      [FEATURE_TYPE_EXISTING_ID]: ALL_FEATURE_TYPE_EXISTING_INTENTS,
-      [FEATURE_TYPE_DEPRECATION_ID]: ALL_FEATURE_TYPE_DEPRECATION_INTENTS,
+      [FeatureType.Incubate]: ALL_FEATURE_TYPE_INCUBATE_INTENTS,
+      [FeatureType.Existing]: ALL_FEATURE_TYPE_EXISTING_INTENTS,
+      [FeatureType.Deprecation]: ALL_FEATURE_TYPE_DEPRECATION_INTENTS,
     },
     help_text: html` Will this feature require support in //chrome? That
       includes any code in //chrome, even if that is for functionality on top of
@@ -2189,16 +2173,16 @@ export const ALL_FIELDS: Record<string, Field> = {
     required: false,
     label: 'Flag name',
     intent_usage: {
-      [FEATURE_TYPE_INCUBATE_ID]: new Set<IntentType>([
+      [FeatureType.Incubate]: new Set<IntentType>([
         IntentType.Experiment,
         IntentType.Ship,
       ]),
-      [FEATURE_TYPE_EXISTING_ID]: new Set<IntentType>([
+      [FeatureType.Existing]: new Set<IntentType>([
         IntentType.Experiment,
         IntentType.Ship,
       ]),
-      [FEATURE_TYPE_CODE_CHANGE_ID]: new Set<IntentType>([IntentType.PSA]),
-      [FEATURE_TYPE_DEPRECATION_ID]: new Set<IntentType>([
+      [FeatureType.CodeChange]: new Set<IntentType>([IntentType.PSA]),
+      [FeatureType.Deprecation]: new Set<IntentType>([
         IntentType.Experiment,
         IntentType.Ship,
       ]),
@@ -2219,16 +2203,16 @@ export const ALL_FIELDS: Record<string, Field> = {
     required: false,
     label: 'Finch feature name',
     intent_usage: {
-      [FEATURE_TYPE_INCUBATE_ID]: new Set<IntentType>([
+      [FeatureType.Incubate]: new Set<IntentType>([
         IntentType.Experiment,
         IntentType.Ship,
       ]),
-      [FEATURE_TYPE_EXISTING_ID]: new Set<IntentType>([
+      [FeatureType.Existing]: new Set<IntentType>([
         IntentType.Experiment,
         IntentType.Ship,
       ]),
-      [FEATURE_TYPE_CODE_CHANGE_ID]: new Set<IntentType>([IntentType.PSA]),
-      [FEATURE_TYPE_DEPRECATION_ID]: new Set<IntentType>([
+      [FeatureType.CodeChange]: new Set<IntentType>([IntentType.PSA]),
+      [FeatureType.Deprecation]: new Set<IntentType>([
         IntentType.Experiment,
         IntentType.Ship,
       ]),
@@ -2249,16 +2233,16 @@ export const ALL_FIELDS: Record<string, Field> = {
     required: false,
     label: 'Non-finch justification',
     intent_usage: {
-      [FEATURE_TYPE_INCUBATE_ID]: new Set<IntentType>([
+      [FeatureType.Incubate]: new Set<IntentType>([
         IntentType.Experiment,
         IntentType.Ship,
       ]),
-      [FEATURE_TYPE_EXISTING_ID]: new Set<IntentType>([
+      [FeatureType.Existing]: new Set<IntentType>([
         IntentType.Experiment,
         IntentType.Ship,
       ]),
-      [FEATURE_TYPE_CODE_CHANGE_ID]: new Set<IntentType>([IntentType.PSA]),
-      [FEATURE_TYPE_DEPRECATION_ID]: new Set<IntentType>([
+      [FeatureType.CodeChange]: new Set<IntentType>([IntentType.PSA]),
+      [FeatureType.Deprecation]: new Set<IntentType>([
         IntentType.Experiment,
         IntentType.Ship,
       ]),
