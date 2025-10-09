@@ -185,10 +185,15 @@ export class ChromedashFormField extends LitElement {
     this.value = fieldValue; // TODO: Is this safe?
 
     // Dispatch a new event to notify other components of the changes.
+    let isMarkdown: undefined | boolean = undefined;
+    if (e.target.offerMarkdown) {
+      isMarkdown = e.target.isMarkdown;
+    }
     const eventOptions = {
       detail: {
         value: fieldValue,
         index: this.index,
+        isMarkdown,
       },
     };
     this.dispatchEvent(new CustomEvent('form-field-update', eventOptions));
@@ -287,9 +292,17 @@ export class ChromedashFormField extends LitElement {
     const fieldDisabled = this.fieldProps.disabled;
     const fieldValue = this.getValue();
     const isRequired = this.fieldProps.required || this.forceRequired;
+    const offerMarkdown = Boolean(
+      this.forEnterprise
+        ? this.fieldProps.enterprise_offer_markdown
+        : this.fieldProps.offer_markdown
+    );
 
     // form field name can be specified in form-field-spec to match DB field name
     const fieldName = this.fieldProps.name || this.name;
+    const isMarkdown = (this.feature?.markdown_fields || []).includes(
+      fieldName
+    );
 
     // choices can be specified in form-field-spec or fetched from API
     const choices: [number, string][] | [number, string, string][] =
@@ -382,7 +395,10 @@ export class ChromedashFormField extends LitElement {
           size="small"
           resize="auto"
           value=${fieldValue}
+          index=${this.index}
           ?required=${isRequired}
+          ?offerMarkdown=${offerMarkdown}
+          ?isMarkdown=${isMarkdown}
           @sl-change="${this.handleFieldUpdated}"
         >
         </chromedash-textarea>

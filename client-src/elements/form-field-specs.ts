@@ -73,6 +73,8 @@ interface ResolvedField {
   type?: string;
   name?: keyof FormattedFeature;
   attrs?: FieldAttrs;
+  offer_markdown?: boolean;
+  enterprise_offer_markdown?: boolean;
   required?: boolean;
   label?: string;
   help_text?: TemplateResult | string;
@@ -319,6 +321,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     type: 'textarea',
     required: true,
     label: 'Summary',
+    enterprise_offer_markdown: true,
     enterprise_help_text: html` <p>
         This text will be used in the
         <a

@@ -588,6 +588,7 @@ export interface FieldInfo {
    * e.g. "set_stage" is a checkbox, but should change the field to a stage ID if true.
    */
   implicitValue?: any;
+  isMarkdown?: boolean;
   alwaysHidden?: boolean;
   isApprovalsField?: boolean;
   checkMessage?: string;
@@ -622,7 +623,14 @@ export function formatFeatureChanges(
   if (formStageId) {
     stages[formStageId] = {id: formStageId};
   }
-  for (const {name, touched, value, stageId, implicitValue} of fieldValues) {
+  for (const {
+    name,
+    touched,
+    value,
+    stageId,
+    implicitValue,
+    isMarkdown,
+  } of fieldValues) {
     // Only submit changes for touched fields or accuracy verification updates.
     if (!touched) {
       continue;
@@ -648,7 +656,12 @@ export function formatFeatureChanges(
     } else if (!stageId) {
       // If the field doesn't specify a stage ID, that means this change is for a feature field.
       featureChanges[name] = formattedValue;
+      if (isMarkdown !== undefined) {
+        featureChanges[name + '_is_markdown'] = isMarkdown;
+      }
     } else {
+      // TODO(jrobbins): When we are ready to support markdown on stage fields,
+      // just make all long text fields always use markdown.
       if (!(stageId in stages)) {
         stages[stageId] = {id: stageId};
       }
