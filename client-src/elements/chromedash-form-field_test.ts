@@ -1,11 +1,13 @@
 import {assert, fixture} from '@open-wc/testing';
 import '@shoelace-style/shoelace/dist/components/option/option.js';
-import {html} from 'lit';
+import {html, render} from 'lit';
 import {
   ChromedashFormField,
   enumLabelToFeatureKey,
 } from './chromedash-form-field';
 import {
+  ALL_INTENT_USAGE_BY_FEATURE_TYPE,
+  IntentType,
   STAGE_BLINK_INCUBATE,
   STAGE_BLINK_ORIGIN_TRIAL,
   STAGE_BLINK_SHIPPING,
@@ -211,8 +213,15 @@ describe('chromedash-form-field', () => {
   });
 
   it('skips unused obsolete multiselect choices', async () => {
+    const formattedFeature = {
+      id: 12345,
+      feature_type_int: 0,
+    };
     const component = await fixture(
-      html` <chromedash-form-field name="rollout_platforms">
+      html` <chromedash-form-field
+        name="rollout_platforms"
+        .feature=${formattedFeature}
+      >
       </chromedash-form-field>`
     );
     assert.exists(component);
@@ -308,6 +317,101 @@ describe('chromedash-form-field', () => {
 
     it('should handle mixed-case input', () => {
       assert.equal(enumLabelToFeatureKey('fOoBaR123'), 'f-oo-ba-r-123');
+    });
+  });
+
+  describe('renderIntentIcons', () => {
+    let component;
+    const container = document.createElement('div');
+
+    const MOCK_FEATURE_TYPE_NEW_FEATURE = 0;
+    const MOCK_FEATURE_TYPE_DEPRECATION = 1;
+    ALL_INTENT_USAGE_BY_FEATURE_TYPE[MOCK_FEATURE_TYPE_NEW_FEATURE] = new Set([
+      IntentType.Prototype,
+      IntentType.Experiment,
+      IntentType.Ship,
+    ]);
+
+    beforeEach(async () => {
+      component = new ChromedashFormField();
+    });
+
+    it('renders specific intent icons for a given array of intents', () => {
+      const intents = [IntentType.Prototype, IntentType.Ship];
+      const fieldIntentInfo = {[MOCK_FEATURE_TYPE_NEW_FEATURE]: intents};
+
+      const result = component.renderIntentIcons(
+        fieldIntentInfo,
+        MOCK_FEATURE_TYPE_NEW_FEATURE
+      );
+      render(result, container);
+
+      const spans = container.querySelectorAll('.intent-tag');
+      assert.equal(spans.length, 2, 'Should render two tags');
+
+      const firstSpan = spans[0];
+      assert.equal(firstSpan.textContent!.trim(), 'P');
+      assert.isTrue(firstSpan.classList.contains('intent-tag--prototype'));
+      assert.equal(
+        firstSpan.getAttribute('title'),
+        'This field is used to populate the Intent to Prototype template'
+      );
+
+      const secondSpan = spans[1];
+      assert.equal(secondSpan.textContent!.trim(), 'S');
+      assert.isTrue(secondSpan.classList.contains('intent-tag--ship'));
+      assert.equal(
+        secondSpan.getAttribute('title'),
+        'This field is used to populate the Intent to Ship template'
+      );
+    });
+
+    it('renders the "All" tag when intents match the feature type\'s full set', () => {
+      const allIntents =
+        ALL_INTENT_USAGE_BY_FEATURE_TYPE[MOCK_FEATURE_TYPE_NEW_FEATURE];
+      const fieldIntentInfo = {[MOCK_FEATURE_TYPE_NEW_FEATURE]: allIntents};
+
+      const result = component.renderIntentIcons(
+        fieldIntentInfo,
+        MOCK_FEATURE_TYPE_NEW_FEATURE
+      );
+      render(result, container);
+
+      const spans = container.querySelectorAll('.intent-tag');
+      assert.equal(spans.length, 1, 'Should render only one "All" tag');
+
+      const span = spans[0];
+      assert.equal(span.textContent!.trim(), 'A');
+      assert.isTrue(span.classList.contains('intent-tag--all'));
+      assert.equal(
+        span.getAttribute('title'),
+        'This field is used to populate all intent templates when provided'
+      );
+    });
+
+    it('returns an empty template when no intents are defined for the feature type', () => {
+      const fieldIntentInfo = {
+        [MOCK_FEATURE_TYPE_NEW_FEATURE]: [IntentType.Prototype],
+      };
+      // Use a feature type that is not in the fieldIntentInfo object.
+      const result = component.renderIntentIcons(
+        fieldIntentInfo,
+        MOCK_FEATURE_TYPE_DEPRECATION
+      );
+      render(result, container);
+      // An empty lit-html template renders as a comment block.
+      assert.equal(container.innerHTML.trim(), '<!---->');
+    });
+
+    it('returns an empty template for an empty array of intents', () => {
+      const fieldIntentInfo = {[MOCK_FEATURE_TYPE_NEW_FEATURE]: []};
+      const result = component.renderIntentIcons(
+        fieldIntentInfo,
+        MOCK_FEATURE_TYPE_NEW_FEATURE
+      );
+      render(result, container);
+      // An empty lit-html template renders as a comment block.
+      assert.equal(container.innerHTML.trim(), '<!---->');
     });
   });
 });

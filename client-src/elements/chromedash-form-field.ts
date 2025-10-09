@@ -1,12 +1,16 @@
 import {SlDetails, SlIconButton, SlInput} from '@shoelace-style/shoelace';
-import {LitElement, TemplateResult, html, nothing} from 'lit';
+import {LitElement, TemplateResult, css, html, nothing} from 'lit';
 import {customElement, property, state} from 'lit/decorators.js';
 import {ref} from 'lit/directives/ref.js';
 
 import {ChromedashApp} from './chromedash-app';
 import './chromedash-attachments';
 import './chromedash-textarea';
-import {ALL_FIELDS, resolveFieldForFeature} from './form-field-specs';
+import {
+  ALL_FIELDS,
+  FieldIntentUsage,
+  resolveFieldForFeature,
+} from './form-field-specs';
 import {
   FieldInfo,
   getFieldValueFromFeature,
@@ -14,11 +18,46 @@ import {
 } from './utils.js';
 import {Feature, StageDict} from '../js-src/cs-client';
 import {FormattedFeature} from './form-definition';
+import {ALL_INTENT_USAGE_BY_FEATURE_TYPE, IntentType} from './form-field-enums';
 
 interface getFieldValue {
   (fieldName: string, stageOrId: any): any;
   feature?: Feature;
 }
+
+// Helper map to store details for each intent type.
+const INTENT_TYPE_DETAILS = {
+  [IntentType.Prototype]: {
+    abbreviation: 'P',
+    className: 'intent-tag--prototype',
+    title: 'Intent to Prototype',
+  },
+  [IntentType.DeveloperTesting]: {
+    abbreviation: 'T',
+    className: 'intent-tag--dev-testing',
+    title: 'Intent for Developer Testing',
+  },
+  [IntentType.Experiment]: {
+    abbreviation: 'E',
+    className: 'intent-tag--experiment',
+    title: 'Intent to Experiment',
+  },
+  [IntentType.Ship]: {
+    abbreviation: 'S',
+    className: 'intent-tag--ship',
+    title: 'Intent to Ship',
+  },
+  [IntentType.PSA]: {
+    abbreviation: 'PSA',
+    className: 'intent-tag--psa',
+    title: 'Intent for PSA',
+  },
+  [IntentType.DeprecateAndRemove]: {
+    abbreviation: 'D',
+    className: 'intent-tag--deprecate',
+    title: 'Intent to Deprecate and Remove',
+  },
+};
 
 @customElement('chromedash-form-field')
 export class ChromedashFormField extends LitElement {
@@ -462,6 +501,52 @@ export class ChromedashFormField extends LitElement {
     return fieldHTML;
   }
 
+  /**
+   * Generates an array of Lit TemplateResults for intent tags.
+   * @param fieldIntentInfo An object containing the intent usage for a field.
+   * @param featureType The type of the current feature.
+   * @return An array of TemplateResults, each rendering a <span> tag.
+   */
+  renderIntentIcons(
+    fieldIntentInfo: FieldIntentUsage,
+    featureType: number | undefined
+  ): TemplateResult[] {
+    if (featureType === undefined) {
+      return [];
+    }
+    const intentTypesUsed = fieldIntentInfo[featureType];
+    if (!intentTypesUsed) {
+      return [];
+    }
+
+    // If the field is used in ALL intents, render a special "All" tag.
+    if (intentTypesUsed === ALL_INTENT_USAGE_BY_FEATURE_TYPE[featureType]) {
+      return [
+        html`<span
+          class="intent-tag intent-tag--all"
+          title="This field is used to populate all intent templates when provided"
+        >
+          A
+        </span>`,
+      ];
+    }
+
+    const intentIcons: TemplateResult[] = [];
+    for (const intentType of intentTypesUsed) {
+      const details = INTENT_TYPE_DETAILS[intentType];
+      if (details) {
+        const tooltipText = `This field is used to populate the ${details.title} template`;
+        intentIcons.push(html`
+          <span class="intent-tag ${details.className}" title="${tooltipText}"
+            >${details.abbreviation}</span
+          >
+        `);
+      }
+    }
+
+    return intentIcons;
+  }
+
   render() {
     if (this.fieldProps.deprecated && !this.value) {
       return nothing;
@@ -479,8 +564,16 @@ export class ChromedashFormField extends LitElement {
       ${this.fieldProps.label
         ? html`
             <tr class="${fadeInClass}">
-              <th colspan="2">
-                <b>${this.fieldProps.label}:</b>
+              <th class="form-field-header">
+                <div>
+                  <b>${this.fieldProps.label}:</b>
+                </div>
+                <div>
+                  ${this.renderIntentIcons(
+                    this.fieldProps.intent_usage,
+                    this.feature?.feature_type_int
+                  )}
+                </div>
               </th>
             </tr>
           `
