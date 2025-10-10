@@ -14,6 +14,7 @@
 # limitations under the License.
 
 from asyncio import Future
+from datetime import datetime, timedelta
 import logging
 from typing import Any, Optional
 from google.cloud import ndb  # type: ignore
@@ -22,9 +23,11 @@ from api import converters
 from framework import rediscache
 from framework import users
 from framework import permissions
+from internals import stage_helpers
+from internals.reminders import get_current_milestone_info
 from internals.stage_helpers import organize_all_stages_by_feature
 from internals.core_enums import *
-from internals.core_models import FeatureEntry, Stage
+from internals.core_models import FeatureEntry, MilestoneSet, Stage
 from internals.data_types import VerboseFeatureDict
 
 
@@ -544,3 +547,62 @@ def get_features_by_impl_status(limit: int | None=None, update_cache: bool=False
     rediscache.set(cache_key, feature_list)
 
   return filter_confidential(feature_list)
+
+
+def get_stale_features() -> list[tuple[FeatureEntry, int, str]]:
+  features: list[FeatureEntry] = FeatureEntry.query(
+      FeatureEntry.deleted == False).fetch()
+  now = datetime.now()
+  stale_features = [
+  feature for feature in features
+    # It needs review if never reviewed, or if grace period has passed.
+    if (feature.accurate_as_of is None or
+        feature.accurate_as_of + timedelta(weeks=4) < now)]
+  current_milestone_info = get_current_milestone_info('current')
+
+  min_mstone = int(current_milestone_info['mstone'])
+  max_mstone = min_mstone + 2
+
+  milestone_fields = [
+    'dt_milestone_android_start',
+    'dt_milestone_desktop_start',
+    'dt_milestone_ios_start',
+    'dt_milestone_webview_start',
+    'ot_milestone_android_start',
+    'ot_milestone_desktop_start',
+    'ot_milestone_webview_start',
+    'shipped_android_milestone',
+    'shipped_ios_milestone',
+    'shipped_milestone',
+    'shipped_webview_milestone',
+    'rollout_milestone',
+  ]
+
+  stale_features: list[tuple[FeatureEntry, int, str]] = []
+  for feature in features:
+    stages = stage_helpers.get_feature_stages(feature.key.integer_id())
+    min_milestone = None
+    milestone_field = None
+    for field in milestone_fields:
+      # Get fields that are relevant to the milestones field specified
+      # (e.g. 'shipped_milestone' implies shipping stages)
+      relevant_stages = stages.get(
+          STAGE_TYPES_BY_FIELD_MAPPING[field][feature.feature_type] or -1, [])
+      for stage in relevant_stages:
+        milestones = stage.milestones
+        m: int | None = (None if milestones is None
+             else getattr(milestones,
+                          MilestoneSet.MILESTONE_FIELD_MAPPING[field]))
+        if m is not None and m >= min_mstone and m <= max_mstone:
+          if min_milestone is None or m < min_milestone:
+            min_milestone = m
+            milestone_field = field
+    # If a matching milestone was ever found, use it for the reminder.
+    if min_milestone is not None and milestone_field is not None:
+      stale_features.append((
+        feature,
+        min_milestone,
+        milestone_field
+      ))
+  
+  return stale_features
