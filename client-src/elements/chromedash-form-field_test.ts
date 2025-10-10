@@ -391,7 +391,9 @@ describe('chromedash-form-field', () => {
 
     it('returns an empty template when no usage is defined for the feature type', () => {
       const fieldIntentInfo = {
-        [MOCK_FEATURE_TYPE_NEW_FEATURE]: new Set<UsageType>([UsageType.Prototype]),
+        [MOCK_FEATURE_TYPE_NEW_FEATURE]: new Set<UsageType>([
+          UsageType.Prototype,
+        ]),
       };
       // Use a feature type that is not in the fieldIntentInfo object.
       const result = component.renderUsageIcons(
@@ -404,7 +406,9 @@ describe('chromedash-form-field', () => {
     });
 
     it('returns an empty template for an empty array of usage', () => {
-      const fieldIntentInfo = {[MOCK_FEATURE_TYPE_NEW_FEATURE]: new Set<UsageType>([])};
+      const fieldIntentInfo = {
+        [MOCK_FEATURE_TYPE_NEW_FEATURE]: new Set<UsageType>([]),
+      };
       const result = component.renderUsageIcons(
         fieldIntentInfo,
         MOCK_FEATURE_TYPE_NEW_FEATURE

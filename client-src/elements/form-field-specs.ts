@@ -2364,11 +2364,21 @@ export const ALL_FIELDS: Record<string, Field> = {
     required: false,
     label: 'Enterprise policies',
     usage: {
-      [FeatureType.Incubate]: new Set<UsageType>([UsageType.CrossFunctionReview]),
-      [FeatureType.Existing]: new Set<UsageType>([UsageType.CrossFunctionReview]),
-      [FeatureType.CodeChange]: new Set<UsageType>([UsageType.CrossFunctionReview]),
-      [FeatureType.Deprecation]: new Set<UsageType>([UsageType.CrossFunctionReview]),
-      [FeatureType.Enterprise]: new Set<UsageType>([UsageType.CrossFunctionReview]),
+      [FeatureType.Incubate]: new Set<UsageType>([
+        UsageType.CrossFunctionReview,
+      ]),
+      [FeatureType.Existing]: new Set<UsageType>([
+        UsageType.CrossFunctionReview,
+      ]),
+      [FeatureType.CodeChange]: new Set<UsageType>([
+        UsageType.CrossFunctionReview,
+      ]),
+      [FeatureType.Deprecation]: new Set<UsageType>([
+        UsageType.CrossFunctionReview,
+      ]),
+      [FeatureType.Enterprise]: new Set<UsageType>([
+        UsageType.CrossFunctionReview,
+      ]),
     },
     help_text: html` List the policies that are being introduced, removed, or
     can be used to control the feature at this stage, if any.`,

@@ -72,7 +72,7 @@ const USAGE_TYPE_DETAILS: Record<UsageType, UsageTypeDetail> = {
     abbreviation: 'XFN',
     className: 'usage-tag-xfn',
     title: 'Cross-Functional Review',
-  }
+  },
 };
 
 @customElement('chromedash-form-field')
@@ -536,7 +536,9 @@ export class ChromedashFormField extends LitElement {
     }
 
     // If the field is used in ALL intents, render a special "All" tag.
-    if (ALL_INTENT_USAGE_BY_FEATURE_TYPE[featureType].isSubsetOf(intentTypesUsed)) {
+    if (
+      ALL_INTENT_USAGE_BY_FEATURE_TYPE[featureType].isSubsetOf(intentTypesUsed)
+    ) {
       return [
         html`<span
           class="usage-tag usage-tag--all"
