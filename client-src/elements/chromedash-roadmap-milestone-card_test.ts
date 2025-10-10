@@ -1,11 +1,11 @@
 import {assert, fixture} from '@open-wc/testing';
 import {html} from 'lit';
-import sinon from 'sinon';
 import {ReleaseInfo, Feature} from '../js-src/cs-client';
 import {
   ChromedashRoadmapMilestoneCard,
   TemplateContent,
 } from './chromedash-roadmap-milestone-card';
+import { FEATURE_TYPES } from './form-field-enums';
 
 describe('chromedash-roadmap-milestone-card', () => {
   const mockFeature = {
@@ -212,5 +212,136 @@ describe('chromedash-roadmap-milestone-card', () => {
 
     const oudated = el.shadowRoot!.querySelector('#outdated-icon');
     assert.isNull(oudated);
+  });
+describe('renderOTFeatures', () => {
+
+    const otFeature = {
+      ...mockFeature,
+      id: 101,
+      name: 'Origin Trial Feature',
+      feature_type_int: 1,
+    };
+    const deprecationFeature = {
+      ...mockFeature,
+      id: 102,
+      name: 'Deprecation Trial Feature',
+      feature_type_int: FEATURE_TYPES.FEATURE_TYPE_DEPRECATION_ID[0],
+    };
+    const anotherDeprecationFeature = {
+      ...mockFeature,
+      id: 103,
+      name: 'Another Deprecation Trial Feature',
+      feature_type_int: FEATURE_TYPES.FEATURE_TYPE_DEPRECATION_ID[0],
+    };
+
+    it('returns an empty array for undefined or empty input', async () => {
+      const el: ChromedashRoadmapMilestoneCard =
+        await fixture<ChromedashRoadmapMilestoneCard>(
+          html`<chromedash-roadmap-milestone-card
+          .templateContent=${templateContent}
+          .channel=${channel}
+          .stableMilestone=${stableMilestone}
+          ></chromedash-roadmap-milestone-card>`
+        );
+      assert.deepEqual(el.renderOTFeatures(undefined), []);
+      assert.deepEqual(el.renderOTFeatures([]), []);
+    });
+
+    it('renders only origin trial features', async () => {
+      const el: ChromedashRoadmapMilestoneCard =
+        await fixture<ChromedashRoadmapMilestoneCard>(
+          html`<chromedash-roadmap-milestone-card
+          .templateContent=${templateContent}
+          .channel=${channel}
+          .stableMilestone=${stableMilestone}
+          ></chromedash-roadmap-milestone-card>`
+        );
+      const features = [otFeature];
+      const resultTemplates = el.renderOTFeatures(features);
+
+      assert.lengthOf(resultTemplates, 1);
+
+      const container = await fixture(html`<div>${resultTemplates}</div>`);
+      const header = container.querySelector('h3.feature_shipping_type');
+      assert.exists(header);
+      assert.include(header!.textContent, 'Origin trial');
+
+      const featureItems = container.querySelectorAll('li');
+      assert.lengthOf(featureItems, 1);
+      assert.include(featureItems[0].textContent, 'Origin Trial Feature');
+
+      // Ensure no deprecation trial header is rendered.
+      const allHeaders = container.querySelectorAll('h3.feature_shipping_type');
+      assert.lengthOf(allHeaders, 1);
+    });
+
+    it('renders only deprecation trial features', async () => {
+      const el: ChromedashRoadmapMilestoneCard =
+        await fixture<ChromedashRoadmapMilestoneCard>(
+          html`<chromedash-roadmap-milestone-card
+          .templateContent=${templateContent}
+          .channel=${channel}
+          .stableMilestone=${stableMilestone}
+          ></chromedash-roadmap-milestone-card>`
+        );
+      const features = [
+        deprecationFeature,
+        anotherDeprecationFeature,
+      ];
+      const resultTemplates = el.renderOTFeatures(features);
+
+      assert.lengthOf(resultTemplates, 1);
+
+      const container = await fixture(html`<div>${resultTemplates}</div>`);
+      const header = container.querySelector('h3.feature_shipping_type');
+      assert.exists(header);
+      assert.include(header!.textContent, 'Deprecation trial');
+
+      const featureItems = container.querySelectorAll('li');
+      assert.lengthOf(featureItems, 2);
+      assert.include(
+        featureItems[0].textContent,
+        'Deprecation Trial Feature'
+      );
+      assert.include(
+        featureItems[1].textContent,
+        'Another Deprecation Trial Feature'
+      );
+    });
+
+    it('renders a mix of origin trial and deprecation trial features', async () => {
+      const el: ChromedashRoadmapMilestoneCard =
+        await fixture<ChromedashRoadmapMilestoneCard>(
+          html`<chromedash-roadmap-milestone-card
+            .templateContent=${templateContent}
+            .channel=${channel}
+            .stableMilestone=${stableMilestone}
+          ></chromedash-roadmap-milestone-card>`
+        );
+      const features = [otFeature, deprecationFeature];
+      const resultTemplates = el.renderOTFeatures(features);
+
+      assert.lengthOf(resultTemplates, 2);
+
+      const container = await fixture(html`<div>${resultTemplates}</div>`);
+      const headers = container.querySelectorAll('h3.feature_shipping_type');
+      assert.lengthOf(headers, 2);
+      assert.include(headers[0].textContent, 'Origin trial');
+      assert.include(headers[1].textContent, 'Deprecation trial');
+
+      const lists = container.querySelectorAll('ul');
+      assert.lengthOf(lists, 2);
+
+      const otItems = lists[0].querySelectorAll('li');
+      assert.lengthOf(otItems, 1);
+      assert.include(otItems[0].textContent, 'Origin Trial Feature');
+
+      const deprecationItems = lists[1].querySelectorAll('li');
+      assert.lengthOf(deprecationItems, 1);
+      assert.include(
+        deprecationItems[0].textContent,
+        'Deprecation Trial Feature'
+      );
+    });
   });
 });

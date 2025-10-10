@@ -1,15 +1,17 @@
 import {SlPopup} from '@shoelace-style/shoelace';
-import {LitElement, html, nothing} from 'lit';
+import {LitElement, TemplateResult, html, nothing} from 'lit';
 import {customElement, property, state} from 'lit/decorators.js';
 import {createRef, ref} from 'lit/directives/ref.js';
 import {ROADMAP_MILESTONE_CARD_CSS} from '../css/elements/chromedash-roadmap-milestone-card-css.js';
-import {Channels, ReleaseInfo} from '../js-src/cs-client.js';
+import {Feature, ReleaseInfo} from '../js-src/cs-client.js';
 import {isVerifiedWithinGracePeriod} from './utils.js';
 import './chromedash-review-status-icon.js';
+import {FEATURE_TYPES} from './form-field-enums.js';
 
 const REMOVED_STATUS = ['Removed'];
 const DEPRECATED_STATUS = ['Deprecated', 'No longer pursuing'];
 const ORIGIN_TRIAL = ['Origin trial'];
+const DEPRECATION_TRIAL = ['Deprecation trial'];
 const BROWSER_INTERVENTION = ['Browser Intervention'];
 const NO_FEATURE_STRING = 'NO FEATURES ARE PLANNED FOR THIS MILESTONE YET';
 
@@ -330,6 +332,17 @@ export class ChromedashRoadmapMilestoneCard extends LitElement {
                 </span>
               `
             : nothing}
+          ${DEPRECATION_TRIAL.includes(shippingType)
+            ? html`
+                <span class="tooltip" title="Deprecation Trial">
+                  <iron-icon
+                    icon="chromestatus:extension"
+                    class="experimental"
+                    data-tooltip
+                  ></iron-icon>
+                </span>
+              `
+            : nothing}
           ${BROWSER_INTERVENTION.includes(shippingType)
             ? html`
                 <span class="tooltip" title="Browser intervention">
@@ -386,26 +399,72 @@ export class ChromedashRoadmapMilestoneCard extends LitElement {
     `;
   }
 
+  renderOTFeatures(features): TemplateResult[] {
+    if (!features) {
+      return [];
+    }
+
+    const display: TemplateResult[] = [];
+    const otFeatures = features.filter(
+      f => f.feature_type_int !== FEATURE_TYPES.FEATURE_TYPE_DEPRECATION_ID[0]
+    );
+    const deprecationFeatures = features.filter(
+      f => f.feature_type_int === FEATURE_TYPES.FEATURE_TYPE_DEPRECATION_ID[0]
+    );
+
+    if (otFeatures.length > 0) {
+      display.push(html`
+        <h3 class="feature_shipping_type">${ORIGIN_TRIAL[0]}</h3>
+        <ul>
+          ${otFeatures.map(
+            f => html` ${this._cardFeatureItemTemplate(f, ORIGIN_TRIAL[0])} `
+          )}
+        </ul>
+      `);
+    }
+    if (deprecationFeatures.length > 0) {
+      display.push(html`
+        <h3 class="feature_shipping_type">${DEPRECATION_TRIAL[0]}</h3>
+        <ul>
+          ${deprecationFeatures.map(
+            f => html`
+              ${this._cardFeatureItemTemplate(f, DEPRECATION_TRIAL[0])}
+            `
+          )}
+        </ul>
+      `);
+    }
+
+    return display;
+  }
+
   renderCardFeatureList() {
+    const featureListItems: (
+      | TemplateResult[]
+      | TemplateResult
+      | typeof nothing
+    )[] = this._objKeys(this.channel?.features).map(shippingType => {
+      if (shippingType === ORIGIN_TRIAL[0]) {
+        return this.renderOTFeatures(this.channel?.features[shippingType]);
+      } else if (this.channel?.features[shippingType].length !== 0) {
+        return html`
+          <h3 class="feature_shipping_type">${shippingType}</h3>
+          <ul>
+            ${this.channel?.features[shippingType].map(
+              f => html` ${this._cardFeatureItemTemplate(f, shippingType)} `
+            )}
+          </ul>
+        `;
+      }
+      return nothing;
+    });
+
     return html`
       <div class="features_list">
         ${this._isAnyFeatureReleased()
           ? html`
         <div class="features_header">${this.templateContent.featureHeader}:</div>
-          ${this._objKeys(this.channel?.features).map(shippingType =>
-            this.channel?.features[shippingType] != 0
-              ? html`
-                  <h3 class="feature_shipping_type">${shippingType}</h3>
-                  <ul>
-                    ${this.channel?.features[shippingType].map(
-                      f => html`
-                        ${this._cardFeatureItemTemplate(f, shippingType)}
-                      `
-                    )}
-                  </ul>
-                `
-              : nothing
-          )}
+          ${featureListItems}
           </div>`
           : html`
               <div class="features_header no_feature_released">
