@@ -350,7 +350,7 @@ describe('chromedash-form-field', () => {
       assert.equal(spans.length, 2, 'Should render two tags');
 
       const firstSpan = spans[0];
-      assert.equal(firstSpan.textContent!.trim(), 'P');
+      assert.equal(firstSpan.textContent!.trim(), 'I2P');
       assert.isTrue(firstSpan.classList.contains('intent-tag--prototype'));
       assert.equal(
         firstSpan.getAttribute('title'),
@@ -358,7 +358,7 @@ describe('chromedash-form-field', () => {
       );
 
       const secondSpan = spans[1];
-      assert.equal(secondSpan.textContent!.trim(), 'S');
+      assert.equal(secondSpan.textContent!.trim(), 'I2S');
       assert.isTrue(secondSpan.classList.contains('intent-tag--ship'));
       assert.equal(
         secondSpan.getAttribute('title'),
