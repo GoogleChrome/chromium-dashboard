@@ -1,18 +1,18 @@
 {%- macro show_value(value) -%}
-  {{ value | default('<i>No value provided</i>', true) | safe }}
+  {{ value | default('<i>No information provided</i>', true) | safe }}
 {%- endmacro -%}
 
 {%- macro urlize_with_default(value) -%}
   {%- if value -%}
     {{ value | urlize | safe }}
   {%- else -%}
-    <i>No value provided</i>
+    <i>No information provided</i>
   {%- endif -%}
 {%- endmacro -%}
 
 <div><b>Contact emails</b></div>
 {%- if not feature.browsers.chrome.owners -%}
-  <i>No value provided</i>
+  <i>No information provided</i>
 {%- else -%}
   {%- for owner in feature.browsers.chrome.owners -%}
     <a href="mailto:{{owner}}">{{owner}}</a>{%- if not loop.last -%}, {% endif %}
@@ -24,7 +24,7 @@
 <br>
 <div><b>Explainer</b></div>
   {%- if not feature.explainer_links -%}
-    <i>No value provided</i>
+    <i>No information provided</i>
   {%- else -%}
     {%- for link in feature.explainer_links -%}
       {% if loop.index0 %}<br>{% endif %}<a href="{{link}}">{{link}}</a>
@@ -42,7 +42,7 @@
 <br>
 <div><b>Design docs</b></div>
   {%- if not feature.explainer_links -%}
-    <i>No value provided</i>
+    <i>No information provided</i>
   {%- endif -%}
   {%- for link in feature.resources.docs -%}
     <br><a href="{{link}}">{{link}}</a>
@@ -68,7 +68,7 @@
 {%- elif feature.web_feature -%}
   {{ show_value(feature.web_feature) }}
 {%- else -%}
-  <i>No value provided</i>
+  <i>No information provided</i>
 {%- endif %}
 
 {% if 'motivation' in sections_to_show -%}
@@ -297,7 +297,7 @@
 <br>
 <br>
 <div><b>Non-finch justification</b></div>
-  <i>No value provided</i>
+  <i>No information provided</i>
 {%- endif -%}
 {%- endif -%}
 
