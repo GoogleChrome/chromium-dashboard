@@ -1,23 +1,25 @@
 import {LitElement, css, html} from 'lit';
-import {
-  showToastMessage,
-} from './utils.js';
+import {showToastMessage} from './utils.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {FORM_STYLES} from '../css/forms-css.js';
 import {customElement, state} from 'lit/decorators.js';
 
-
 interface StaleFeatureInfo {
-    id: number;
-    name: string;
-    owner_emails: string[];
-    milestone: number;
-    milestone_field: string;
-    outstanding_notifications: number;
-    accurate_as_of: string;
+  id: number;
+  name: string;
+  owner_emails: string[];
+  milestone: number;
+  milestone_field: string;
+  outstanding_notifications: number;
+  accurate_as_of: string;
 }
 
-type SortableColumns = 'name' | 'milestone' | 'milestone_field' | 'outstanding_notifications' | 'accurate_as_of';
+type SortableColumns =
+  | 'name'
+  | 'milestone'
+  | 'milestone_field'
+  | 'outstanding_notifications'
+  | 'accurate_as_of';
 
 @customElement('chromedash-stale-features-page')
 export class ChromedashStaleFeaturesPage extends LitElement {
@@ -51,7 +53,8 @@ export class ChromedashStaleFeaturesPage extends LitElement {
           border-collapse: collapse;
         }
 
-        th, td {
+        th,
+        td {
           padding: 14px 18px;
           text-align: left;
           border-bottom: 1px solid #ddd;
@@ -68,7 +71,7 @@ export class ChromedashStaleFeaturesPage extends LitElement {
           font-size: 0.85em;
           letter-spacing: 0.05em;
         }
-        
+
         th.sortable {
           cursor: pointer;
           user-select: none;
@@ -117,7 +120,7 @@ export class ChromedashStaleFeaturesPage extends LitElement {
           border: 1px solid #ddd;
           border-radius: 8px;
         }
-      `
+      `,
     ];
   }
   @state()
@@ -129,7 +132,6 @@ export class ChromedashStaleFeaturesPage extends LitElement {
   @state()
   private _sortDirection: 'asc' | 'desc' = 'asc';
 
-
   connectedCallback() {
     super.connectedCallback();
     this.fetchData();
@@ -139,36 +141,7 @@ export class ChromedashStaleFeaturesPage extends LitElement {
     this.loading = true;
     try {
       const staleFeaturesResp = await window.csClient.getStaleFeatures();
-      // this.staleFeatures = staleFeaturesResp.stale_features;
-      this.staleFeatures = [
-        {
-          id: 1,
-          name: 'Exceptionally.long.FeatureName()',
-          owner_emails: ['user1@chromium.org', 'user2@google.com'],
-          milestone: 102,
-          milestone_field: 'shipped_milestone',
-          outstanding_notifications: 3,
-          accurate_as_of: '2020-01-01T00:00:00',
-        },
-        {
-          id: 2,
-          name: 'Another feature name that is rather long',
-          owner_emails: ['otheruser@chromium.org', 'generic@google.com'],
-          milestone: 100,
-          milestone_field: 'ot_milestone_desktop_start',
-          outstanding_notifications: 5,
-          accurate_as_of: '2020-12-01T00:00:00',
-        },
-        {
-          id: 3,
-          name: 'Feature 1',
-          owner_emails: ['no.one@chromium.org'],
-          milestone: 101,
-          milestone_field: 'shipped_android_milestone',
-          outstanding_notifications: 1,
-          accurate_as_of: '2022-01-31T00:00:00',
-        },
-      ];
+      this.staleFeatures = staleFeaturesResp.stale_features;
     } catch (error) {
       console.error(error);
       showToastMessage(
@@ -217,9 +190,7 @@ export class ChromedashStaleFeaturesPage extends LitElement {
   renderSubheader() {
     return html`
       <div id="subheader">
-        <h2 id="breadcrumbs">
-            Stale Features
-        </h2>
+        <h2 id="breadcrumbs">Stale Features</h2>
       </div>
     `;
   }
@@ -236,7 +207,7 @@ export class ChromedashStaleFeaturesPage extends LitElement {
     const sortedFeatures = [...this.staleFeatures].sort((a, b) => {
       const valA = a[this._sortColumn];
       const valB = b[this._sortColumn];
-      
+
       let comparison = 0;
       if (typeof valA === 'string' && typeof valB === 'string') {
         comparison = valA.localeCompare(valB);
@@ -255,34 +226,67 @@ export class ChromedashStaleFeaturesPage extends LitElement {
           <thead>
             <tr>
               <th class="sortable" @click=${() => this._handleSort('name')}>
-                  Name <span class="sort-indicator">${this._renderSortIndicator('name')}</span>
+                Name
+                <span class="sort-indicator"
+                  >${this._renderSortIndicator('name')}</span
+                >
               </th>
               <th>Owner Emails</th>
-              <th class="sortable" @click=${() => this._handleSort('milestone_field')}>
-                  Milestone Field <span class="sort-indicator">${this._renderSortIndicator('milestone_field')}</span>
+              <th
+                class="sortable"
+                @click=${() => this._handleSort('milestone_field')}
+              >
+                Milestone Field
+                <span class="sort-indicator"
+                  >${this._renderSortIndicator('milestone_field')}</span
+                >
               </th>
-              <th class="sortable" @click=${() => this._handleSort('milestone')}>
-                  Milestone <span class="sort-indicator">${this._renderSortIndicator('milestone')}</span>
+              <th
+                class="sortable"
+                @click=${() => this._handleSort('milestone')}
+              >
+                Milestone
+                <span class="sort-indicator"
+                  >${this._renderSortIndicator('milestone')}</span
+                >
               </th>
-              <th class="sortable" @click=${() => this._handleSort('outstanding_notifications')}>
-                  Notifications <span class="sort-indicator">${this._renderSortIndicator('outstanding_notifications')}</span>
+              <th
+                class="sortable"
+                @click=${() => this._handleSort('outstanding_notifications')}
+              >
+                Notifications
+                <span class="sort-indicator"
+                  >${this._renderSortIndicator(
+                    'outstanding_notifications'
+                  )}</span
+                >
               </th>
-              <th class="sortable" @click=${() => this._handleSort('accurate_as_of')}>
-                  Last Updated <span class="sort-indicator">${this._renderSortIndicator('accurate_as_of')}</span>
+              <th
+                class="sortable"
+                @click=${() => this._handleSort('accurate_as_of')}
+              >
+                Last Updated
+                <span class="sort-indicator"
+                  >${this._renderSortIndicator('accurate_as_of')}</span
+                >
               </th>
             </tr>
           </thead>
           <tbody>
-            ${sortedFeatures.map(feature => html`
-              <tr>
-                <td><a href="/feature/${feature.id}">${feature.name}</a></td>
-                <td>${feature.owner_emails.join(', ')}</td>
+            ${sortedFeatures.map(
+              feature => html`
+                <tr>
+                  <td><a href="/feature/${feature.id}">${feature.name}</a></td>
+                  <td>${feature.owner_emails.join(', ')}</td>
                   <td>${feature.milestone_field}</td>
-                <td>${feature.milestone}</td>
-                <td>${feature.outstanding_notifications}</td>
-                <td>${new Date(feature.accurate_as_of).toLocaleDateString()}</td>
-              </tr>
-            `)}
+                  <td>${feature.milestone}</td>
+                  <td>${feature.outstanding_notifications}</td>
+                  <td>
+                    ${new Date(feature.accurate_as_of).toLocaleDateString()}
+                  </td>
+                </tr>
+              `
+            )}
           </tbody>
         </table>
       </div>
