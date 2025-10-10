@@ -1,18 +1,12 @@
-// @ts-check
-const { defineConfig, devices } = require('@playwright/test');
+import {defineConfig, devices} from '@playwright/test';
 
-/**
- * Read environment variables from file.
- * https://github.com/motdotla/dotenv
- */
-// require('dotenv').config();
 
 /**
  * @see https://playwright.dev/docs/test-configuration
  */
-module.exports = defineConfig({
+export default defineConfig({
   // Directory where the tests are located. "." for top-level directory.
-  testDir: '.',
+  testDir: 'packages/playwright/tests',
   // Glob patterns or regular expressions that match test files.
   testMatch: '*/*_pwtest.js',
   snapshotPathTemplate: '{testDir}/{testFileDir}/__screenshots__/{testFileName}/{testName}/{arg}-{projectName}-{platform}{ext}',
