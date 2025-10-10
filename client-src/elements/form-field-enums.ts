@@ -381,41 +381,43 @@ export const SHIPPED_MILESTONE_FIELDS = new Set<string>([
   'shipped_webview_milestone',
 ]);
 
-// Types of intent emails that can be generated.
-export enum IntentType {
+// Types of documents in which fields are used.
+export enum UsageType {
   Prototype,
   DeveloperTesting,
   Experiment,
   Ship,
   PSA,
   DeprecateAndRemove,
+  CrossFunctionReview,
+  ReleaseNotes
 }
 
 // All intent types that are relevant to a given feature type.
-export const ALL_FEATURE_TYPE_INCUBATE_INTENTS = new Set<IntentType>([
-  IntentType.Prototype,
-  IntentType.DeveloperTesting,
-  IntentType.Experiment,
-  IntentType.Ship,
+export const ALL_FEATURE_TYPE_INCUBATE_INTENTS = new Set<UsageType>([
+  UsageType.Prototype,
+  UsageType.DeveloperTesting,
+  UsageType.Experiment,
+  UsageType.Ship,
 ]);
 
-export const ALL_FEATURE_TYPE_EXISTING_INTENTS = new Set<IntentType>([
-  IntentType.Prototype,
-  IntentType.DeveloperTesting,
-  IntentType.Experiment,
-  IntentType.Ship,
+export const ALL_FEATURE_TYPE_EXISTING_INTENTS = new Set<UsageType>([
+  UsageType.Prototype,
+  UsageType.DeveloperTesting,
+  UsageType.Experiment,
+  UsageType.Ship,
 ]);
 
-export const ALL_FEATURE_TYPE_CODE_CHANGE_INTENTS = new Set<IntentType>([
-  IntentType.DeveloperTesting,
-  IntentType.PSA,
+export const ALL_FEATURE_TYPE_CODE_CHANGE_INTENTS = new Set<UsageType>([
+  UsageType.DeveloperTesting,
+  UsageType.PSA,
 ]);
 
-export const ALL_FEATURE_TYPE_DEPRECATION_INTENTS = new Set<IntentType>([
-  IntentType.DeprecateAndRemove,
-  IntentType.DeveloperTesting,
-  IntentType.Experiment,
-  IntentType.Ship,
+export const ALL_FEATURE_TYPE_DEPRECATION_INTENTS = new Set<UsageType>([
+  UsageType.DeprecateAndRemove,
+  UsageType.DeveloperTesting,
+  UsageType.Experiment,
+  UsageType.Ship,
 ]);
 
 export const ALL_INTENT_USAGE_BY_FEATURE_TYPE = {
