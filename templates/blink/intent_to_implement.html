@@ -15,7 +15,7 @@
   <i>No value provided</i>
 {%- else -%}
   {%- for owner in feature.browsers.chrome.owners -%}
-    <a href="mailto:{{ owner | default('', true) }}">{{ show_value(owner) }}</a>{%- if not loop.last -%}, {% endif %}
+    <a href="mailto:{{owner}}">{{owner}}</a>{%- if not loop.last -%}, {% endif %}
   {%- endfor -%}
 {%- endif -%}
 
@@ -27,7 +27,7 @@
     <i>No value provided</i>
   {%- else -%}
     {%- for link in feature.explainer_links -%}
-      {% if loop.index0 %}<br>{% endif %}<a href="{{ link | default('#', true) }}">{{ show_value(link) }}</a>
+      {% if loop.index0 %}<br>{% endif %}<a href="{{link}}">{{link}}</a>
     {%- endfor -%}
   {%- endif -%}
 {%- endif -%}
@@ -41,8 +41,11 @@
 <br>
 <br>
 <div><b>Design docs</b></div>
+  {%- if not feature.explainer_links -%}
+    <i>No value provided</i>
+  {%- endif -%}
   {%- for link in feature.resources.docs -%}
-<br><a href="{{ link | default('#', true) }}">{{ show_value(link) }}</a>
+    <br><a href="{{link}}">{{link}}</a>
   {%- endfor -%}
 {%- endif -%}
 <br>
@@ -84,7 +87,7 @@
 <br>
 <div><b>Search tags</b></div>
   {%- for tag in feature.tags -%}
-    <a href="/features#tags:{{ tag | default('', true) }}">{{ show_value(tag) }}</a>{%- if not loop.last -%}, {% endif %}
+    <a href="/features#tags:{{tag}}">{{tag}}</a>{%- if not loop.last -%}, {% endif %}
   {%- endfor -%}
 {%- endif -%}
 
@@ -107,31 +110,31 @@
 <br>
 <br>
 <div><b>Origin Trial Name</b></div>
-    {{ show_value(stage.ot_display_name) }}
+    {{stage.ot_display_name}}
   {%- endif -%}
   {%- if stage.ot_chromium_trial_name -%}
 <br>
 <br>
 <div><b>Chromium Trial Name</b></div>
-    {{ show_value(stage.ot_chromium_trial_name) }}
+    {{stage.ot_chromium_trial_name}}
   {%- endif -%}
   {%- if stage.origin_trial_feedback_url -%}
 <br>
 <br>
 <div><b>Link to origin trial feedback summary</b></div>
-    {{ show_value(stage.origin_trial_feedback_url) }}
+    {{stage.origin_trial_feedback_url}}
   {%- endif -%}
   {%- if stage.ot_documentation_url -%}
 <br>
 <br>
 <div><b>Origin Trial documentation link</b></div>
-    {{ show_value(stage.ot_documentation_url) }}
+    {{stage.ot_documentation_url}}
   {%- endif -%}
   {%- if stage.ot_webfeature_use_counter -%}
 <br>
 <br>
 <div><b>WebFeature UseCounter name</b></div>
-    {{ show_value(stage.ot_webfeature_use_counter) }}
+    {{stage.ot_webfeature_use_counter}}
   {%- endif -%}
 {%- endfor -%}
 
