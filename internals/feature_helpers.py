@@ -570,7 +570,9 @@ def _map_relevant_milestones(
         if min_milestone is None or m < min_milestone:
           min_milestone = m
           milestone_field = field
-    mstones_by_feature_id[s.feature_id] = (min_milestone, milestone_field)
+    if min_milestone is not None and milestone_field is not None:
+      mstones_by_feature_id[s.feature_id] = (min_milestone, milestone_field)
+
 
 def get_stale_features() -> list[tuple[FeatureEntry, int, str]]:
   current_milestone_info = get_current_milestone_info('current')
@@ -631,8 +633,8 @@ def get_stale_features() -> list[tuple[FeatureEntry, int, str]]:
 
   ent_milestone_fields = ['rollout_milestone']
 
-  feature_keys = []
-  mstones_by_feature_id = {}
+  feature_keys: list[ndb.Key] = []
+  mstones_by_feature_id: dict[int, tuple[int, str]] = {}
 
   _map_relevant_milestones(
     feature_keys,
