@@ -31,7 +31,22 @@ from internals.core_models import FeatureEntry, MilestoneSet, Stage
 from internals.data_types import VerboseFeatureDict
 
 
-def filter_unlisted(feature_list: list[dict]) -> list[dict]:
+def filter_unlisted(feature_list: list[FeatureEntry]) -> list[FeatureEntry]:
+  """Filters a FeatureEntry list to display only features the user should see."""
+  user = users.get_current_user()
+  email = None
+  if user:
+    email = user.email()
+  return [
+    f for f in feature_list
+    if (not f.unlisted
+        or (email in f.owner_emails or email in f.editor_emails
+        or (email is not None and f.creator_email == email))
+    )
+  ]
+
+
+def filter_unlisted_formatted(feature_list: list[dict]) -> list[dict]:
   """Filters a feature list to display only features the user should see."""
   user = users.get_current_user()
   email = None
@@ -49,7 +64,7 @@ def filter_unlisted(feature_list: list[dict]) -> list[dict]:
   return listed_features
 
 
-def filter_confidential(feature_list: list[dict]) -> list[dict]:
+def filter_confidential_formatted(feature_list: list[dict]) -> list[dict]:
   """Filters a feature list to display only features the user should see."""
   user = users.get_current_user()
   visible_features = []
@@ -58,6 +73,12 @@ def filter_confidential(feature_list: list[dict]) -> list[dict]:
       visible_features.append(f)
 
   return visible_features
+
+
+def filter_confidential(feature_list: list[FeatureEntry]) -> list[FeatureEntry]:
+  """Filters a FeatureEntry list to display only features the user should see."""
+  user = users.get_current_user()
+  return [f for f in feature_list if permissions.can_view_feature(user, f)]
 
 
 def get_entries_by_id_async(ids) -> Future | None:
@@ -81,7 +102,7 @@ def get_features_in_release_notes(milestone: int):
   cached_features = rediscache.get(cache_key)
   if cached_features:
     logging.info('Returned cached features')
-    return filter_confidential(cached_features)
+    return filter_confidential_formatted(cached_features)
 
   all_enterprise_feature_keys_future = FeatureEntry.query(
       FeatureEntry.deleted == False,
@@ -127,14 +148,14 @@ def get_features_in_release_notes(milestone: int):
     features.append(dict(formatted_feature))
   logging.info('finished converting features to dicts')
 
-  features = [f for f in filter_unlisted(features)
+  features = [f for f in filter_unlisted_formatted(features)
     if (f['first_enterprise_notification_milestone'] == None or
         f['first_enterprise_notification_milestone'] <= milestone)]
   logging.info('finished filtering')
 
   rediscache.set(cache_key, features)
   logging.info('finished storing in cache')
-  return filter_confidential(features)
+  return filter_confidential_formatted(features)
 
 
 def get_in_milestone(milestone: int,
@@ -283,9 +304,9 @@ def get_in_milestone(milestone: int,
 
   for shipping_type in features_by_type:
     if not show_unlisted:
-      features_by_type[shipping_type] = filter_unlisted(
+      features_by_type[shipping_type] = filter_unlisted_formatted(
           features_by_type[shipping_type])
-    features_by_type[shipping_type] = filter_confidential(
+    features_by_type[shipping_type] = filter_confidential_formatted(
         features_by_type[shipping_type])
 
   return features_by_type
@@ -435,7 +456,7 @@ def get_feature_names_by_ids(feature_ids: list[int],
   result_list = [
       result_dict[feature_id] for feature_id in feature_ids
       if feature_id in result_dict]
-  return filter_confidential(result_list)
+  return filter_confidential_formatted(result_list)
 
 def get_by_ids(feature_ids: list[int],
                update_cache: bool=True) -> list[dict[str, Any]]:
@@ -495,7 +516,7 @@ def get_by_ids(feature_ids: list[int],
   result_list = [
       result_dict[feature_id] for feature_id in feature_ids
       if feature_id in result_dict]
-  return filter_confidential(result_list)
+  return filter_confidential_formatted(result_list)
 
 
 def get_features_by_impl_status(limit: int | None=None, update_cache: bool=False,
@@ -541,12 +562,12 @@ def get_features_by_impl_status(limit: int | None=None, update_cache: bool=False
             f, all_stages[f.key.integer_id()]) for f in section]
         section[0]['first_of_section'] = True
         if not show_unlisted:
-          section = filter_unlisted(section)
+          section = filter_unlisted_formatted(section)
         feature_list.extend(section)
 
     rediscache.set(cache_key, feature_list)
 
-  return filter_confidential(feature_list)
+  return filter_confidential_formatted(feature_list)
 
 
 def _map_relevant_milestones(
@@ -666,6 +687,8 @@ def get_stale_features() -> list[tuple[FeatureEntry, int, str]]:
   )
 
   relevant_features: list[FeatureEntry] = ndb.get_multi(feature_keys)
+  relevant_features = filter_confidential(relevant_features)
+  relevant_features = filter_unlisted(relevant_features)
   now = datetime.now()
 
   return [
