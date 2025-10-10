@@ -23,8 +23,8 @@ from api import converters
 from framework import rediscache
 from framework import users
 from framework import permissions
+from framework.utils import get_current_milestone_info
 from internals import stage_helpers
-from internals.reminders import get_current_milestone_info
 from internals.stage_helpers import organize_all_stages_by_feature
 from internals.core_enums import *
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
@@ -578,8 +578,8 @@ def get_stale_features() -> list[tuple[FeatureEntry, int, str]]:
     'rollout_milestone',
   ]
 
-  stale_features: list[tuple[FeatureEntry, int, str]] = []
-  for feature in features:
+  upcoming_stale_features: list[tuple[FeatureEntry, int, str]] = []
+  for feature in stale_features:
     stages = stage_helpers.get_feature_stages(feature.key.integer_id())
     min_milestone = None
     milestone_field = None
@@ -599,10 +599,10 @@ def get_stale_features() -> list[tuple[FeatureEntry, int, str]]:
             milestone_field = field
     # If a matching milestone was ever found, use it for the reminder.
     if min_milestone is not None and milestone_field is not None:
-      stale_features.append((
+      upcoming_stale_features.append((
         feature,
         min_milestone,
         milestone_field
       ))
   
-  return stale_features
+  return upcoming_stale_features

@@ -31,7 +31,6 @@ from internals.core_models import FeatureEntry, MilestoneSet, Stage
 from internals.review_models import Gate, Vote, Activity
 from internals.core_enums import *
 from internals.feature_links import batch_index_feature_entries
-from internals.reminders import get_current_milestone_info
 from internals import stage_helpers
 from internals.webdx_feature_models import WebdxFeatures
 from webstatus_openapi import ApiClient, DefaultApi, Configuration, ApiException, Feature
@@ -1050,7 +1049,7 @@ class GenerateStaleFeaturesFile(FlaskHandler):
     features: list[FeatureEntry],
     current_milestone: int
   ) -> list[list[str]]:
-    current_milestone_info = get_current_milestone_info('current')
+    current_milestone_info = utils.get_current_milestone_info('current')
     current_milestone = int(current_milestone_info['mstone'])
     csv_rows: list[list[str]] = []
     for f in features:
@@ -1096,7 +1095,7 @@ class GenerateStaleFeaturesFile(FlaskHandler):
   def get_template_data(self, **kwargs) -> str:
     self.require_cron_header()
 
-    current_milestone_info = get_current_milestone_info('current')
+    current_milestone_info = utils.get_current_milestone_info('current')
     current_milestone = int(current_milestone_info['mstone'])
     storage_client = storage.Client()
     bucket = storage_client.bucket(settings.FILES_BUCKET)
