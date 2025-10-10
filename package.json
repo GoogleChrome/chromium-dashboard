@@ -50,13 +50,13 @@
     "openapi-frontend": "rm -rf gen/js/chromestatus-openapi && openapi-generator-cli generate  --reserved-words-mappings field=field -i openapi/api.yaml -g typescript-fetch  -o gen/js/chromestatus-openapi --config openapi/js-config.yaml && npm install",
     "openapi-backend": ". cs-env/bin/activate; rm -rf gen/py/chromestatus_openapi && openapi-generator-cli generate  --reserved-words-mappings field=field -i openapi/api.yaml -g python-flask  -o gen/py/chromestatus_openapi --additional-properties=packageName=chromestatus_openapi && pip install -r requirements.txt",
     "openapi-validate": "openapi-generator-cli validate -i openapi/api.yaml",
-    "pwtests": "npm run pwtests-shutdown; ./packages/playwright/run.sh bash -c \"./wait-for-app.sh && npx playwright test\"",
-    "pwtests-update": "npm run pwtests-shutdown; ./packages/playwright/run.sh bash -c \"./wait-for-app.sh && npx playwright test --update-snapshots $npm_config_filename \"",
-    "pwtests-report": "npm run pwtests-shutdown; ./packages/playwright/run.sh bash -c \"./wait-for-app.sh && npx playwright show-report\"",
-    "pwtests-ui": "npm run pwtests-shutdown; ./packages/playwright/run.sh bash -c \"./wait-for-app.sh && npx playwright test --ui --ui-port=8123\"",
-    "pwtests-shell": "./packages/playwright/run.sh bash",
-    "pwtests-debug": "./packages/playwright/run.sh debug",
-    "pwtests-shutdown": "./packages/playwright/run.sh down"
+    "pwtests": "npm run pwtests-shutdown; ./scripts/playwright.sh bash -c \"./wait-for-app.sh && npx playwright test\"",
+    "pwtests-update": "npm run pwtests-shutdown; ./scripts/playwright.sh bash -c \"./wait-for-app.sh && npx playwright test --update-snapshots $npm_config_filename \"",
+    "pwtests-report": "npm run pwtests-shutdown; ./scripts/playwright.sh bash -c \"./wait-for-app.sh && npx playwright show-report\"",
+    "pwtests-ui": "npm run pwtests-shutdown; ./scripts/playwright.sh bash -c \"./wait-for-app.sh && npx playwright test --ui --ui-port=8123\"",
+    "pwtests-shell": "./scripts/playwright.sh bash",
+    "pwtests-debug": "./scripts/playwright.sh debug",
+    "pwtests-shutdown": "./scripts/playwright.sh down"
   },
   "repository": {
     "type": "git",

@@ -2,12 +2,9 @@
 // https://github.com/microsoft/vscode-dev-containers/tree/v0.245.2/containers/python-3
 {
 	"name": "Chromium Dashboard",
-	"dockerComposeFile": [
-		"docker-compose.yml",
-		"db-docker-compose.yml"
-	],
-	"service": "ide",
-	"workspaceFolder": "/workspace",
+	"build": {
+		"dockerfile": "Dockerfile"
+	},
 
 	// Configure tool-specific properties.
 	"customizations": {
@@ -16,7 +13,7 @@
 			// Set *default* container specific settings.json values on container create.
 			"settings": {
 				"mypy-type-checker.args": ["--ignore-missing-imports --exclude cs-env/ --exclude gen/ --exclude appengine_config.py --disable-error-code \"annotation-unchecked\""],
-				"python.defaultInterpreterPath": "/workspace/cs-env/bin/python",
+				"python.defaultInterpreterPath": "/workspaces/chromium-dashboard/cs-env/bin/python",
 				"python.languageServer": "Jedi",
 				"python.testing.pytestEnabled": false,
 				"python.testing.unittestArgs": [
@@ -59,30 +56,44 @@
 				"esbenp.prettier-vscode",
 				"ms-python.mypy-type-checker",
 				"ms-python.python",
-				"EditorConfig.EditorConfig"
+				"EditorConfig.EditorConfig",
+				"Google.gemini-cli-vscode-ide-companion"
 			]
 		}
 	},
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	"forwardPorts": [
-		// datastore emulator
-		15606,
 		// datastore emulator viewer
 		8888
 	],
 
 	// Use 'postCreateCommand' to run commands after the container is created.
-	"postCreateCommand": "npm run clean-setup",
+	"postCreateCommand": "npm install -g gulp-cli && npm run clean-setup",
 	// 'postStartCommand' runs each time the devcontainer is started.
-	"postStartCommand": "npm run setup && npx playwright install --with-deps",
-
-	// Comment out to connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
-	"remoteUser": "vscode",
-
+	"postStartCommand": "docker-compose -f .devcontainer/db-docker-compose.yml down && docker-compose -f .devcontainer/db-docker-compose.yml up -d && npm run setup && npx playwright install --with-deps",
+	// Use 'postAttachCommand' to run commands after the container is created and attached.
+	"postAttachCommand": "./.devcontainer/post_attach.sh",
 	"features": {
 		// https://github.com/devcontainers/features/tree/main/src/docker-in-docker
 		"ghcr.io/devcontainers/features/docker-in-docker:2": {},
-		"ghcr.io/devcontainers/features/github-cli:1": {}
+		"ghcr.io/devcontainers/features/github-cli:1": {},
+		"ghcr.io/devcontainers/features/java:1": {
+			// Only pick LTS versions from
+			// https://www.oracle.com/java/technologies/java-se-support-roadmap.html
+			// Match the version on Cloudtops
+			"version": "25"
+		},
+		"ghcr.io/devcontainers/features/node:1": {
+			// Match the version on Cloudtops
+			"version": "20"
+		},
+		"ghcr.io/devcontainers/features/python:1": {
+			// Match the version on Cloudtops
+			"version": "3.13"
+		}
+	},
+	"remoteEnv": {
+		"GEMINI_API_KEY": "${localEnv:GEMINI_API_KEY}"
 	}
 }

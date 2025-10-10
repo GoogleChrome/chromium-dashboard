@@ -1,15 +1,21 @@
 #!/bin/bash
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+REPO_ROOT_DIR="${SCRIPT_DIR}/../"
+PLAYWRIGHT_DIR="${REPO_ROOT_DIR}/packages/playwright"
 
 export USERID=$(id -u)
 export GROUPID=$(id -g)
-export PLAYWRIGHT_VERSION=$(bash -c "${SCRIPT_DIR}/get-npm-package-version.sh ./package.json '@playwright/test'")
+export PLAYWRIGHT_VERSION=$(bash -c "${PLAYWRIGHT_DIR}/get-npm-package-version.sh ./package.json '@playwright/test'")
+
+# playwright.config.ts needs to be in the root of the repository so that vscode will pick up automatically.
+# In the meantime for the pwtests container, we copy a version over
+cp ${REPO_ROOT_DIR}/playwright.config.ts ${PLAYWRIGHT_DIR}/playwright.config.ts
 
 set -e
 
-export COMPOSE_FILES_FLAG="-f ${SCRIPT_DIR}/docker-compose.yml
-    -f  ${SCRIPT_DIR}/../../.devcontainer/db-docker-compose.yml"
+export COMPOSE_FILES_FLAG="-f ${PLAYWRIGHT_DIR}/docker-compose.yml
+    -f  ${REPO_ROOT_DIR}/.devcontainer/db-docker-compose.yml"
 echo $COMPOSE_FILES_FLAG
 build() {
    docker compose \

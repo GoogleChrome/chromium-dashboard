@@ -26,4 +26,9 @@ ARG PLAYWRIGHT_VERSION
 RUN npm install @playwright/test@${PLAYWRIGHT_VERSION}
 
 # Copy the root directory. Subdirectories are mounted in docker-compose.yml.
-COPY --chown=pwuser:pwuser wait-for-app.sh playwright.config.cjs /work/
+COPY --chown=pwuser:pwuser wait-for-app.sh playwright.config.ts /work/
+
+# The playwright.config.ts file is copied from the repository root, where it is
+# needed for VS Code integration. Inside the container, the test directory is
+# the root, so we update the path.
+RUN sed -i "s|testDir: 'packages/playwright/tests'|testDir: '.'|" /work/playwright.config.ts
