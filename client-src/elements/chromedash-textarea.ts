@@ -1,6 +1,7 @@
-import {TemplateResult, html} from 'lit';
+import {TemplateResult, html, nothing} from 'lit';
 import SlTextarea from '@shoelace-style/shoelace/dist/components/textarea/textarea.js';
-import {customElement, property} from 'lit/decorators.js';
+import {customElement, property, state} from 'lit/decorators.js';
+import {autolink} from './utils.js';
 
 @customElement('chromedash-textarea')
 export class ChromedashTextarea extends SlTextarea {
@@ -27,6 +28,8 @@ export class ChromedashTextarea extends SlTextarea {
   // URL is no more than this length.
   @property({type: Number})
   maxlength = 1400;
+  @state()
+  showPreview = false;
 
   /**
    * Checks whether the value conforms to custom validation constraints.
@@ -88,7 +91,15 @@ export class ChromedashTextarea extends SlTextarea {
 
   handleMarkdownChecked(e) {
     this.isMarkdown = Boolean(e.target?.checked);
+    if (!this.isMarkdown) {
+      this.showPreview = false;
+    }
     // Note: The sl-change event continues to propagate to chromedash-form-field.
+  }
+
+  handlePreviewChecked(e) {
+    this.showPreview = Boolean(e.target?.checked);
+    e.stopPropagation();
   }
 
   render() {
@@ -96,12 +107,27 @@ export class ChromedashTextarea extends SlTextarea {
     if (!this.offerMarkdown) {
       return editor;
     }
+
+    // Since this class subclasses SlTextarea, we need to render (but
+    // not display) the content from that class, otherwise there will
+    // be errors in validation code.
+    const preview = html`
+      <div style="display:none">${editor}</div>
+      <div
+        id="preview"
+        style="border:var(--card-border); padding:0 var(--content-padding); min-height:14em; background:var(--table-alternate-background)"
+      >
+        ${autolink(this.value, [], true)}
+      </div>
+    `;
+
     return html`
-      ${editor}
+      ${this.showPreview ? preview : editor}
       <sl-checkbox
+        id="use-markdown"
         name="${this.name}_is_markdown"
         ?checked=${this.isMarkdown}
-        @sl-change=${e => this.handleMarkdownChecked(e)}
+        @sl-change=${this.handleMarkdownChecked}
       >
         Use markdown
       </sl-checkbox>
@@ -112,6 +138,15 @@ export class ChromedashTextarea extends SlTextarea {
         href="https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax"
         target="_blank"
       ></sl-icon-button>
+      ${this.isMarkdown
+        ? html` <sl-checkbox
+            id="show-preview"
+            ?checked=${this.showPreview}
+            @sl-change=${this.handlePreviewChecked}
+          >
+            Preview
+          </sl-checkbox>`
+        : nothing}
     `;
   }
 }
