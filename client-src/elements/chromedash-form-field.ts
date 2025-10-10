@@ -34,22 +34,22 @@ interface IntentTypeDetail {
 // Helper map to store details for each intent type.
 const INTENT_TYPE_DETAILS: Record<IntentType, IntentTypeDetail> = {
   [IntentType.Prototype]: {
-    abbreviation: 'P',
+    abbreviation: 'I2P',
     className: 'intent-tag--prototype',
     title: 'Intent to Prototype',
   },
   [IntentType.DeveloperTesting]: {
-    abbreviation: 'T',
+    abbreviation: 'R4DT',
     className: 'intent-tag--dev-testing',
     title: 'Ready for Developer Testing',
   },
   [IntentType.Experiment]: {
-    abbreviation: 'E',
+    abbreviation: 'I2E',
     className: 'intent-tag--experiment',
     title: 'Intent to Experiment',
   },
   [IntentType.Ship]: {
-    abbreviation: 'S',
+    abbreviation: 'I2S',
     className: 'intent-tag--ship',
     title: 'Intent to Ship',
   },
@@ -59,7 +59,7 @@ const INTENT_TYPE_DETAILS: Record<IntentType, IntentTypeDetail> = {
     title: 'Web-Facing Change PSA',
   },
   [IntentType.DeprecateAndRemove]: {
-    abbreviation: 'D',
+    abbreviation: 'I2D',
     className: 'intent-tag--deprecate',
     title: 'Intent to Deprecate and Remove',
   },
@@ -532,7 +532,7 @@ export class ChromedashFormField extends LitElement {
           class="intent-tag intent-tag--all"
           title="This field is used to populate all intent templates when provided"
         >
-          A
+          All
         </span>`,
       ];
     }

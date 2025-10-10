@@ -1056,7 +1056,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     attrs: URL_FIELD_ATTRS,
     required: false,
     label: 'Intent to Ship link',
-    intent_usage: {},
+    intent_usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
     help_text: html`After you have started the "Intent to Ship" discussion
     thread, link to it here.`,
   },
