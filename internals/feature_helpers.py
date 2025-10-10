@@ -549,60 +549,127 @@ def get_features_by_impl_status(limit: int | None=None, update_cache: bool=False
   return filter_confidential(feature_list)
 
 
+def _map_relevant_milestones(
+  feature_keys: list[ndb.Key],
+  mstones_by_feature_id: dict[int, tuple[int, str]],
+  stages: list[Stage],
+  milestone_fields: list[str],
+  min_mstone: int,
+):
+  for s in stages:
+    if s.feature_id not in mstones_by_feature_id:
+      feature_keys.append(ndb.Key('FeatureEntry', s.feature_id))
+    min_milestone = None
+    milestone_field = None
+    for field in milestone_fields:
+      milestones = s.milestones
+      m: int | None = (None if milestones is None
+            else getattr(milestones,
+                        MilestoneSet.MILESTONE_FIELD_MAPPING[field]))
+      if m is not None and m >= min_mstone and m <= min_mstone + 2:
+        if min_milestone is None or m < min_milestone:
+          min_milestone = m
+          milestone_field = field
+    mstones_by_feature_id[s.feature_id] = (min_milestone, milestone_field)
+
 def get_stale_features() -> list[tuple[FeatureEntry, int, str]]:
-  features: list[FeatureEntry] = FeatureEntry.query(
-      FeatureEntry.deleted == False).fetch()
-  now = datetime.now()
-  stale_features = [
-  feature for feature in features
-    # It needs review if never reviewed, or if grace period has passed.
-    if (feature.accurate_as_of is None or
-        feature.accurate_as_of + timedelta(weeks=4) < now)]
   current_milestone_info = get_current_milestone_info('current')
 
   min_mstone = int(current_milestone_info['mstone'])
-  max_mstone = min_mstone + 2
+  mstone_range = (min_mstone, min_mstone + 1, min_mstone + 2)
 
-  milestone_fields = [
+  relevant_dev_trial_stages_future = Stage.query(
+    Stage.stage_type.IN([st for st in STAGE_TYPES_DEV_TRIAL.values() if st]),
+    ndb.OR(
+      Stage.milestones.desktop_first.IN(mstone_range),
+      Stage.milestones.android_first.IN(mstone_range),
+      Stage.milestones.ios_first.IN(mstone_range),
+      Stage.milestones.webview_first.IN(mstone_range),
+    )).fetch_async()
+  relevant_origin_trial_stages_future = Stage.query(
+    Stage.stage_type.IN([st for st in STAGE_TYPES_ORIGIN_TRIAL.values() if st]),
+    ndb.OR(
+      Stage.milestones.desktop_first.IN(mstone_range),
+      Stage.milestones.android_first.IN(mstone_range),
+      Stage.milestones.webview_first.IN(mstone_range),
+    )).fetch_async()
+  relevant_ship_stages_future = Stage.query(
+    Stage.stage_type.IN([st for st in STAGE_TYPES_SHIPPING.values() if st]),
+    ndb.OR(
+      Stage.milestones.desktop_first.IN(mstone_range),
+      Stage.milestones.android_first.IN(mstone_range),
+      Stage.milestones.ios_first.IN(mstone_range),
+      Stage.milestones.webview_first.IN(mstone_range),
+    )).fetch_async()
+  relevant_enterprise_stages_future = Stage.query(
+    Stage.stage_type == STAGE_ENT_ROLLOUT,
+    Stage.milestones.desktop_first.IN(mstone_range),
+  ).fetch_async()
+
+  relevant_dev_trial_stages: list[Stage] = relevant_dev_trial_stages_future.get_result()
+  relevant_origin_trial_stages: list[Stage] = relevant_origin_trial_stages_future.get_result()
+  relevant_ship_stages: list[Stage] = relevant_ship_stages_future.get_result()
+  relevant_ent_stages: list[Stage] = relevant_enterprise_stages_future.get_result()
+
+  dt_milestone_fields = [
     'dt_milestone_android_start',
     'dt_milestone_desktop_start',
     'dt_milestone_ios_start',
     'dt_milestone_webview_start',
+  ] 
+  ot_milestone_fields = [
     'ot_milestone_android_start',
     'ot_milestone_desktop_start',
     'ot_milestone_webview_start',
+  ]
+  ship_milestone_fields = [
     'shipped_android_milestone',
     'shipped_ios_milestone',
     'shipped_milestone',
     'shipped_webview_milestone',
-    'rollout_milestone',
   ]
 
-  upcoming_stale_features: list[tuple[FeatureEntry, int, str]] = []
-  for feature in stale_features:
-    stages = stage_helpers.get_feature_stages(feature.key.integer_id())
-    min_milestone = None
-    milestone_field = None
-    for field in milestone_fields:
-      # Get fields that are relevant to the milestones field specified
-      # (e.g. 'shipped_milestone' implies shipping stages)
-      relevant_stages = stages.get(
-          STAGE_TYPES_BY_FIELD_MAPPING[field][feature.feature_type] or -1, [])
-      for stage in relevant_stages:
-        milestones = stage.milestones
-        m: int | None = (None if milestones is None
-             else getattr(milestones,
-                          MilestoneSet.MILESTONE_FIELD_MAPPING[field]))
-        if m is not None and m >= min_mstone and m <= max_mstone:
-          if min_milestone is None or m < min_milestone:
-            min_milestone = m
-            milestone_field = field
-    # If a matching milestone was ever found, use it for the reminder.
-    if min_milestone is not None and milestone_field is not None:
-      upcoming_stale_features.append((
-        feature,
-        min_milestone,
-        milestone_field
-      ))
-  
-  return upcoming_stale_features
+  ent_milestone_fields = ['rollout_milestone']
+
+  feature_keys = []
+  mstones_by_feature_id = {}
+
+  _map_relevant_milestones(
+    feature_keys,
+    mstones_by_feature_id,
+    relevant_dev_trial_stages,
+    dt_milestone_fields,
+    min_mstone,
+  )
+  _map_relevant_milestones(
+    feature_keys,
+    mstones_by_feature_id,
+    relevant_origin_trial_stages,
+    ot_milestone_fields,
+    min_mstone,
+  )
+  _map_relevant_milestones(
+    feature_keys,
+    mstones_by_feature_id,
+    relevant_ship_stages,
+    ship_milestone_fields,
+    min_mstone,
+  )
+  _map_relevant_milestones(
+    feature_keys,
+    mstones_by_feature_id,
+    relevant_ent_stages,
+    ent_milestone_fields,
+    min_mstone,
+  )
+
+  relevant_features: list[FeatureEntry] = ndb.get_multi(feature_keys)
+  now = datetime.now()
+
+  return [
+    (f,
+     mstones_by_feature_id[f.key.integer_id()][0],
+     mstones_by_feature_id[f.key.integer_id()][1]
+    ) for f in relevant_features
+    if (f.accurate_as_of and f.accurate_as_of + timedelta(weeks=4) < now
+        and not f.deleted)]

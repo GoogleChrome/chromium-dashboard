@@ -787,30 +787,6 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
 
   @mock.patch('internals.feature_helpers.get_current_milestone_info')
   @mock.patch('internals.feature_helpers.datetime')
-  def test_get_stale_features__never_reviewed(
-      self, mock_dt, mock_mstone_info):
-    """A feature that has never been reviewed (accurate_as_of=None) is stale."""
-    mock_dt.now.return_value = datetime(2023, 1, 1)
-    mock_mstone_info.return_value = {'mstone': '110'}
-
-    # This feature has never been reviewed, so it is stale.
-    self.feature_1.accurate_as_of = None
-    self.feature_1.put()
-
-    # And its milestone is upcoming (between 110 and 112).
-    shipping_stage = self.fe_1_stages_dict[160][0]
-    shipping_stage.milestones = MilestoneSet(desktop_first=111)
-    shipping_stage.put()
-
-    actual = feature_helpers.get_stale_features()
-    self.assertEqual(1, len(actual))
-    feature, mstone, field = actual[0]
-    self.assertEqual(self.feature_1.key.integer_id(), feature.key.integer_id())
-    self.assertEqual(111, mstone)
-    self.assertEqual('shipped_milestone', field)
-
-  @mock.patch('internals.feature_helpers.get_current_milestone_info')
-  @mock.patch('internals.feature_helpers.datetime')
   def test_get_stale_features__deleted_feature_is_ignored(
       self, mock_dt, mock_mstone_info):
     """A deleted feature should not be returned, even if it is stale."""
@@ -837,7 +813,7 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
     mock_mstone_info.return_value = {'mstone': '100'}
 
     # This feature is stale.
-    self.feature_1.accurate_as_of = None
+    self.feature_1.accurate_as_of = datetime(2022, 1, 1)
     self.feature_1.put()
 
     # Dev trial milestone is 102.
