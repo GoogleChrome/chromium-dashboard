@@ -390,7 +390,7 @@ export enum UsageType {
   PSA,
   DeprecateAndRemove,
   CrossFunctionReview,
-  ReleaseNotes
+  ReleaseNotes,
 }
 
 // All intent types that are relevant to a given feature type.
