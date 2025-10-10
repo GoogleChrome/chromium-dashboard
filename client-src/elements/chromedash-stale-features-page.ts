@@ -190,7 +190,7 @@ export class ChromedashStaleFeaturesPage extends LitElement {
   renderSubheader() {
     return html`
       <div id="subheader">
-        <h2 id="breadcrumbs">Stale Features</h2>
+        <h2 id="breadcrumbs">Stale features</h2>
       </div>
     `;
   }

@@ -70,7 +70,7 @@ describe('ChromedashStaleFeaturesPage', () => {
       const subheader = element.shadowRoot?.querySelector('#subheader');
       assert.isNotNull(subheader);
       const breadcrumbs = subheader?.querySelector('#breadcrumbs');
-      assert.strictEqual(breadcrumbs?.textContent?.trim(), 'Stale Features');
+      assert.strictEqual(breadcrumbs?.textContent?.trim(), 'Stale features');
     });
 
     it('fetches and renders stale features on connection', async () => {
