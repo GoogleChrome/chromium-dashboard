@@ -5,7 +5,7 @@ import {
   ChromedashRoadmapMilestoneCard,
   TemplateContent,
 } from './chromedash-roadmap-milestone-card';
-import { FEATURE_TYPES } from './form-field-enums';
+import {FEATURE_TYPES} from './form-field-enums';
 
 describe('chromedash-roadmap-milestone-card', () => {
   const mockFeature = {
@@ -213,8 +213,7 @@ describe('chromedash-roadmap-milestone-card', () => {
     const oudated = el.shadowRoot!.querySelector('#outdated-icon');
     assert.isNull(oudated);
   });
-describe('renderOTFeatures', () => {
-
+  describe('renderOTFeatures', () => {
     const otFeature = {
       ...mockFeature,
       id: 101,
@@ -238,9 +237,9 @@ describe('renderOTFeatures', () => {
       const el: ChromedashRoadmapMilestoneCard =
         await fixture<ChromedashRoadmapMilestoneCard>(
           html`<chromedash-roadmap-milestone-card
-          .templateContent=${templateContent}
-          .channel=${channel}
-          .stableMilestone=${stableMilestone}
+            .templateContent=${templateContent}
+            .channel=${channel}
+            .stableMilestone=${stableMilestone}
           ></chromedash-roadmap-milestone-card>`
         );
       assert.deepEqual(el.renderOTFeatures(undefined), []);
@@ -251,9 +250,9 @@ describe('renderOTFeatures', () => {
       const el: ChromedashRoadmapMilestoneCard =
         await fixture<ChromedashRoadmapMilestoneCard>(
           html`<chromedash-roadmap-milestone-card
-          .templateContent=${templateContent}
-          .channel=${channel}
-          .stableMilestone=${stableMilestone}
+            .templateContent=${templateContent}
+            .channel=${channel}
+            .stableMilestone=${stableMilestone}
           ></chromedash-roadmap-milestone-card>`
         );
       const features = [otFeature];
@@ -279,15 +278,12 @@ describe('renderOTFeatures', () => {
       const el: ChromedashRoadmapMilestoneCard =
         await fixture<ChromedashRoadmapMilestoneCard>(
           html`<chromedash-roadmap-milestone-card
-          .templateContent=${templateContent}
-          .channel=${channel}
-          .stableMilestone=${stableMilestone}
+            .templateContent=${templateContent}
+            .channel=${channel}
+            .stableMilestone=${stableMilestone}
           ></chromedash-roadmap-milestone-card>`
         );
-      const features = [
-        deprecationFeature,
-        anotherDeprecationFeature,
-      ];
+      const features = [deprecationFeature, anotherDeprecationFeature];
       const resultTemplates = el.renderOTFeatures(features);
 
       assert.lengthOf(resultTemplates, 1);
@@ -299,10 +295,7 @@ describe('renderOTFeatures', () => {
 
       const featureItems = container.querySelectorAll('li');
       assert.lengthOf(featureItems, 2);
-      assert.include(
-        featureItems[0].textContent,
-        'Deprecation Trial Feature'
-      );
+      assert.include(featureItems[0].textContent, 'Deprecation Trial Feature');
       assert.include(
         featureItems[1].textContent,
         'Another Deprecation Trial Feature'
