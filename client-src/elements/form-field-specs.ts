@@ -14,7 +14,7 @@ import {
   FeatureType,
   FEATURE_TYPES,
   FEATURE_TYPES_WITHOUT_ENTERPRISE,
-  IntentType,
+  UsageType,
   OT_MILESTONE_START_FIELDS,
   PLATFORM_CATEGORIES,
   REVIEW_STATUS_CHOICES,
@@ -74,7 +74,7 @@ export type CheckFunction = (
   initialValue: string
 ) => CheckResult | Promise<CheckResult>;
 
-export type FieldIntentUsage = Partial<Record<FeatureType, Set<IntentType>>>;
+export type FieldUsage = Partial<Record<FeatureType, Set<UsageType>>>;
 
 interface ResolvedField {
   type?: string;
@@ -98,7 +98,7 @@ interface ResolvedField {
   displayLabel?: string;
   disabled?: boolean;
   deprecated?: boolean;
-  intent_usage: FieldIntentUsage;
+  usage: FieldUsage;
 }
 
 interface Field extends ResolvedField {
@@ -290,7 +290,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     attrs: TEXT_FIELD_ATTRS,
     required: true,
     label: 'Feature name',
-    intent_usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
+    usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
     help_text: html` <p>
       Capitalize only the first letter and the beginnings of proper nouns.
     </p>`,
@@ -330,7 +330,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     type: 'textarea',
     required: true,
     label: 'Summary',
-    intent_usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
+    usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
     enterprise_offer_markdown: true,
     enterprise_help_text: html` <p>
         This text will be used in the
@@ -444,7 +444,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     attrs: MULTI_EMAIL_FIELD_ATTRS,
     required: true,
     label: 'Feature owners',
-    intent_usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
+    usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
     help_text: html` Comma separated list of full email addresses.`,
   },
 
@@ -454,7 +454,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     attrs: MULTI_EMAIL_FIELD_ATTRS,
     required: false,
     label: 'Feature editors',
-    intent_usage: {},
+    usage: {},
     help_text: html` Comma separated list of full email addresses. These users
     will be allowed to edit this feature, but will not be listed as feature
     owners. User groups are not supported.`,
@@ -466,7 +466,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     attrs: MULTI_EMAIL_FIELD_ATTRS,
     required: false,
     label: 'CC',
-    intent_usage: {},
+    usage: {},
     help_text: html` Comma separated list of full email addresses. These users
     will be notified of any changes to the feature, but do not gain permission
     to edit. User groups must allow posting from
@@ -477,7 +477,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     type: 'checkbox',
     label: 'Unlisted',
     initial: false,
-    intent_usage: {},
+    usage: {},
     help_text: html` Check this box to hide draft features in list views. Anyone
     with a link will be able to view the feature's detail page.`,
   },
@@ -486,7 +486,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     type: 'checkbox',
     label: 'Confirm accuracy',
     initial: true,
-    intent_usage: {},
+    usage: {},
     help_text: html` Check this box to indicate that feature information is
     accurate as of today. (Selecting this avoids reminder emails for four
     weeks.)`,
@@ -497,7 +497,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     required: true,
     choices: undefined, // this gets replaced in chromedash-form-field via the blink component api
     label: 'Blink component',
-    intent_usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
+    usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
     attrs: {placeholder: 'Please select a Blink component'},
     help_text: html` Select the most specific component. If unsure, leave as
     "Blink".`,
@@ -509,7 +509,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     choices: undefined, // this gets replaced in chromedash-form-field via an web features api
     label: 'Web Feature ID',
     attrs: {placeholder: 'Please select a Web feature ID'},
-    intent_usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
+    usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
     help_text: html` Select the web feature this belongs to in the
       <a href="https://github.com/web-platform-dx/web-features" target="_blank"
         >web-features project</a
@@ -526,7 +526,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     choices: FEATURE_CATEGORIES,
     initial: FEATURE_CATEGORIES.MISC[0],
     label: 'Category',
-    intent_usage: {},
+    usage: {},
     help_text: html` Select the most specific category. If unsure, leave as
     "Miscellaneous".`,
   },
@@ -536,7 +536,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     name: 'enterprise_product_category',
     choices: ENTERPRISE_PRODUCT_CATEGORY,
     label: 'Enterprise product category',
-    intent_usage: {},
+    usage: {},
     help_text: html` Select the appropriate category.`,
   },
 
@@ -545,7 +545,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     disabled: true,
     choices: FEATURE_TYPES,
     label: 'Feature type',
-    intent_usage: {},
+    usage: {},
     help_text: html` Feature type chosen at time of creation.
       <br />
       <p style="color: red">
@@ -561,7 +561,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     type: 'radios',
     choices: FEATURE_TYPES_WITHOUT_ENTERPRISE,
     label: 'Feature type',
-    intent_usage: {},
+    usage: {},
     help_text: html`If all goes well, how will developers experience the change
       you're planning to make to Chromium?
       <br />
@@ -585,7 +585,7 @@ export const ALL_FIELDS: Record<string, Field> = {
       return result;
     },
     label: 'Active stage',
-    intent_usage: {},
+    usage: {},
     help_text: html`The active stage opens by default in this feature's page.
     And, it roughly indicates progress in the process.`,
   },
@@ -595,7 +595,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     attrs: TEXT_FIELD_ATTRS,
     required: false,
     label: 'Search tags',
-    intent_usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
+    usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
     help_text: html` Comma separated keywords used only in search.`,
   },
 
@@ -604,7 +604,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     attrs: URL_FIELD_ATTRS,
     required: false,
     label: 'Tracking bug URL',
-    intent_usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
+    usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
     help_text: html` Tracking bug url (https://bugs.chromium.org/...). This bug
       should have "Type=Feature" set and be world readable. Note: This field
       only accepts one URL.
@@ -622,7 +622,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     attrs: URL_FIELD_ATTRS,
     required: false,
     label: 'Launch URL',
-    intent_usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
+    usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
     help_text: html` Launch URL (https://launch.corp.google.com/...) to track
       internal approvals, if any.
       <br /><br />
@@ -635,7 +635,13 @@ export const ALL_FIELDS: Record<string, Field> = {
     attrs: MULTI_URL_FIELD_ATTRS,
     required: false,
     label: 'Screenshot link(s)',
-    intent_usage: {},
+    usage: {
+      [FeatureType.Incubate]: new Set<UsageType>([UsageType.ReleaseNotes]),
+      [FeatureType.Existing]: new Set<UsageType>([UsageType.ReleaseNotes]),
+      [FeatureType.CodeChange]: new Set<UsageType>([UsageType.ReleaseNotes]),
+      [FeatureType.Deprecation]: new Set<UsageType>([UsageType.ReleaseNotes]),
+      [FeatureType.Enterprise]: new Set<UsageType>([UsageType.ReleaseNotes]),
+    },
     help_text: html` Optional: Links to screenshots showcasing this feature (one
     URL per line). Be sure to link directly to the image with a URL ending in
     .png, .gif, or .jpg, rather than linking to an HTML page that contains the
@@ -648,7 +654,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     attrs: MILESTONE_NUMBER_FIELD_ATTRS,
     required: false,
     label: 'First notification milestone',
-    intent_usage: {},
+    usage: {},
     help_text: html` Optional: Unless you're sure you need to use this, leave it
       blank.
       <br /><br />
@@ -666,11 +672,11 @@ export const ALL_FIELDS: Record<string, Field> = {
     type: 'textarea',
     required: false,
     label: 'Motivation',
-    intent_usage: {
-      [FeatureType.Incubate]: new Set<IntentType>([IntentType.Prototype]),
-      [FeatureType.Existing]: new Set<IntentType>([IntentType.Prototype]),
-      [FeatureType.Deprecation]: new Set<IntentType>([
-        IntentType.DeprecateAndRemove,
+    usage: {
+      [FeatureType.Incubate]: new Set<UsageType>([UsageType.Prototype]),
+      [FeatureType.Existing]: new Set<UsageType>([UsageType.Prototype]),
+      [FeatureType.Deprecation]: new Set<UsageType>([
+        UsageType.DeprecateAndRemove,
       ]),
     },
     help_text: html` Explain why the web needs this change. It may be useful to
@@ -696,9 +702,9 @@ export const ALL_FIELDS: Record<string, Field> = {
     type: 'textarea',
     required: false,
     label: 'Motivation',
-    intent_usage: {
-      [FeatureType.Deprecation]: new Set<IntentType>([
-        IntentType.DeprecateAndRemove,
+    usage: {
+      [FeatureType.Deprecation]: new Set<UsageType>([
+        UsageType.DeprecateAndRemove,
       ]),
     },
     help_text: html` Deprecations and removals must have strong reasons, backed
@@ -723,7 +729,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     attrs: URL_FIELD_ATTRS,
     required: false,
     label: 'Initial public proposal URL',
-    intent_usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
+    usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
     help_text: html` Link to the first public proposal to create this feature.`,
     extra_help: html` If there isn't another obvious place to propose your
       feature, create a
@@ -741,7 +747,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     attrs: MULTI_URL_FIELD_ATTRS,
     required: false,
     label: 'Explainer link(s)',
-    intent_usage: {
+    usage: {
       [FeatureType.Incubate]: ALL_FEATURE_TYPE_INCUBATE_INTENTS,
       [FeatureType.Deprecation]: ALL_FEATURE_TYPE_DEPRECATION_INTENTS,
     },
@@ -800,7 +806,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     attrs: URL_FIELD_ATTRS,
     required: false,
     label: 'Spec link',
-    intent_usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
+    usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
     help_text: html` Link to the spec, if and when available. When implementing
     a spec update, please link to a heading in a published spec rather than a
     pull request when possible.`,
@@ -827,7 +833,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     attrs: {rows: 4},
     required: false,
     label: 'Comments',
-    intent_usage: {},
+    usage: {},
     help_text: html` Additional comments, caveats, info...`,
   },
 
@@ -836,7 +842,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     choices: STANDARD_MATURITY_CHOICES,
     initial: STANDARD_MATURITY_CHOICES.PROPOSAL_STD[0],
     label: 'Standard maturity',
-    intent_usage: {},
+    usage: {},
     help_text: html` How far along is the standard that this feature implements?`,
   },
 
@@ -844,7 +850,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     type: 'checkbox',
     initial: false,
     label: 'API spec',
-    intent_usage: {},
+    usage: {},
     help_text: html` The spec document has details in a specification language
     such as Web IDL, or there is an existing MDN page.`,
   },
@@ -853,7 +859,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     type: 'checkbox',
     initial: false,
     label: 'Automation spec',
-    intent_usage: {},
+    usage: {},
     help_text: html` The platform has sufficient automation features for website
     authors to test use of this new feature. These automation features can
     include new automation APIs, like WebDriver BiDi modules, that are defined
@@ -866,7 +872,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     attrs: MULTI_EMAIL_FIELD_ATTRS,
     required: false,
     label: 'Spec mentors',
-    intent_usage: {},
+    usage: {},
     help_text: html` Experienced
       <a target="_blank" href="https://www.chromium.org/blink/spec-mentors">
         spec mentors</a
@@ -879,7 +885,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     attrs: URL_FIELD_ATTRS,
     required: false,
     label: 'Intent to Prototype link',
-    intent_usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
+    usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
     help_text: html` After you have started the "Intent to Prototype" discussion
     thread, link to it here.`,
   },
@@ -889,7 +895,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     attrs: MULTI_URL_FIELD_ATTRS,
     required: false,
     label: 'Doc link(s)',
-    intent_usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
+    usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
     help_text: html` Links to design doc(s) (one URL per line), if and when
     available. [This is not required to send out an Intent to Prototype. Please
     update the intent thread with the design doc when ready]. An explainer
@@ -902,7 +908,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     attrs: {rows: 4},
     required: false,
     label: 'Measurement',
-    intent_usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
+    usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
     help_text: html` It's important to measure the adoption and success of
     web-exposed features. Note here what measurements you have added to track
     the success of this feature, such as a link to the UseCounter(s) you have
@@ -914,7 +920,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     attrs: {rows: 4},
     required: false,
     label: 'Availability expectation',
-    intent_usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
+    usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
     help_text: html` What is your availability expectation for this feature?
     Examples:`,
     extra_help: html`
@@ -937,7 +943,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     attrs: {rows: 4},
     required: false,
     label: 'Adoption expectation',
-    intent_usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
+    usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
     help_text: html` What is your adoption expectation for this feature?
     Examples:`,
     extra_help: html`
@@ -965,7 +971,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     attrs: {rows: 4},
     required: false,
     label: 'Adoption plan',
-    intent_usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
+    usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
     help_text: html` What is the plan to achieve the stated expectations? Please
     provide a plan that covers availability and adoption for the feature.`,
   },
@@ -975,7 +981,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     choices: REVIEW_STATUS_CHOICES,
     initial: REVIEW_STATUS_CHOICES.REVIEW_PENDING[0],
     label: 'Security review status',
-    intent_usage: {},
+    usage: {},
     help_text: html` Status of the security review.`,
   },
 
@@ -984,7 +990,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     choices: REVIEW_STATUS_CHOICES,
     initial: REVIEW_STATUS_CHOICES.REVIEW_PENDING[0],
     label: 'Privacy review status',
-    intent_usage: {},
+    usage: {},
     help_text: html`Status of the privacy review.`,
   },
 
@@ -993,7 +999,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     attrs: {rows: 2},
     required: false,
     label: 'TAG Specification Review',
-    intent_usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
+    usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
     help_text: html` Link(s) to TAG specification review(s), or explanation why
     this is not needed.`,
     extra_help: html` <p>
@@ -1049,7 +1055,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     choices: REVIEW_STATUS_CHOICES,
     initial: REVIEW_STATUS_CHOICES.REVIEW_PENDING[0],
     label: 'TAG Specification Review Status',
-    intent_usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
+    usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
     help_text: html`Status of the TAG specification review.`,
   },
 
@@ -1058,7 +1064,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     attrs: URL_FIELD_ATTRS,
     required: false,
     label: 'Intent to Ship link',
-    intent_usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
+    usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
     help_text: html`After you have started the "Intent to Ship" discussion
     thread, link to it here.`,
   },
@@ -1068,7 +1074,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     attrs: URL_FIELD_ATTRS,
     required: false,
     label: 'Ready for Developer Testing link',
-    intent_usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
+    usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
     help_text: html`After you have started the "Ready for Developer Testing"
     discussion thread, link to it here.`,
   },
@@ -1078,7 +1084,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     attrs: URL_FIELD_ATTRS,
     required: false,
     label: 'Intent to Experiment link',
-    intent_usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
+    usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
     help_text: html`After you have started the "Intent to Experiment" discussion
     thread, link to it here.`,
   },
@@ -1088,7 +1094,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     attrs: URL_FIELD_ATTRS,
     required: false,
     label: 'Intent to Extend Experiment link',
-    intent_usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
+    usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
     help_text: html`If this feature has an "Intent to Extend Experiment"
     discussion thread, link to it here.`,
   },
@@ -1098,7 +1104,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     attrs: URL_FIELD_ATTRS,
     required: true,
     label: 'Intent to Extend Experiment link',
-    intent_usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
+    usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
     help_text: html` Link to the approved Intent to Extend Experiment, as per
       <a
         target="_blank"
@@ -1115,7 +1121,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     attrs: URL_FIELD_ATTRS,
     required: false,
     label: 'Request for Deprecation Trial link',
-    intent_usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
+    usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
     help_text: html`After you have started the "Request for Deprecation Trial"
     discussion thread, link to it here.`,
   },
@@ -1124,7 +1130,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     type: 'textarea',
     required: false,
     label: 'Interoperability and Compatibility Risks',
-    intent_usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
+    usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
     help_text: html` Describe the degree of
       <a
         target="_blank"
@@ -1157,7 +1163,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     choices: VENDOR_VIEWS_COMMON,
     initial: VENDOR_VIEWS_COMMON.NO_PUBLIC_SIGNALS[0],
     label: 'WebKit views',
-    intent_usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
+    usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
     help_text: html` See
       <a
         target="_blank"
@@ -1173,7 +1179,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     required: false,
     label: '',
     displayLabel: 'WebKit views link',
-    intent_usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
+    usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
     help_text: html`Citation link.`,
   },
 
@@ -1183,7 +1189,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     required: false,
     label: '',
     displayLabel: 'WebKit views notes',
-    intent_usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
+    usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
     help_text: '',
   },
 
@@ -1192,7 +1198,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     choices: VENDOR_VIEWS_GECKO,
     initial: VENDOR_VIEWS_GECKO.NO_PUBLIC_SIGNALS[0],
     label: 'Firefox views',
-    intent_usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
+    usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
     help_text: html` See
       <a
         target="_blank"
@@ -1208,7 +1214,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     required: false,
     label: '',
     displayLabel: 'Firefox views link',
-    intent_usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
+    usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
     help_text: html` Citation link.`,
   },
 
@@ -1218,7 +1224,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     required: false,
     label: '',
     displayLabel: 'Firefox views notes',
-    intent_usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
+    usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
     help_text: '',
   },
 
@@ -1227,7 +1233,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     choices: WEB_DEV_VIEWS,
     initial: WEB_DEV_VIEWS.DEV_NO_SIGNALS[0],
     label: 'Web / Framework developer views',
-    intent_usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
+    usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
     help_text: html` If unsure, default to "No signals". See
       <a target="_blank" href="https://goo.gle/developer-signals">
         https://goo.gle/developer-signals</a
@@ -1240,7 +1246,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     required: false,
     label: '',
     displayLabel: 'Web / Framework developer views link',
-    intent_usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
+    usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
     help_text: html` Citation link.`,
   },
 
@@ -1250,7 +1256,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     required: false,
     label: '',
     displayLabel: 'Web / Framework developer views notes',
-    intent_usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
+    usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
     help_text: html` Reference known representative examples of opinions, both
     positive and negative.`,
   },
@@ -1260,7 +1266,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     attrs: {rows: 4, placeholder: 'Notes'},
     required: false,
     label: 'Other views',
-    intent_usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
+    usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
     help_text: html` For example, other browsers.`,
   },
 
@@ -1268,7 +1274,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     type: 'textarea',
     required: false,
     label: 'Ergonomics Risks',
-    intent_usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
+    usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
     help_text: html` Are there any other platform APIs this feature will
     frequently be used in tandem with? Could the default usage of this API make
     it hard for Chrome to maintain good performance (i.e. synchronous return,
@@ -1279,7 +1285,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     type: 'textarea',
     required: false,
     label: 'Activation Risks',
-    intent_usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
+    usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
     help_text: html` Will it be challenging for developers to take advantage of
     this feature immediately, as-is? Would this feature benefit from having
     polyfills, significant documentation and outreach, and/or libraries built on
@@ -1290,7 +1296,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     type: 'textarea',
     required: false,
     label: 'Security Risks',
-    intent_usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
+    usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
     help_text: html` List any security considerations that were taken into
     account when designing this feature.`,
   },
@@ -1299,7 +1305,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     type: 'textarea',
     required: false,
     label: 'WebView application risks',
-    intent_usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
+    usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
     help_text: html` Does this feature deprecate or change behavior of existing
       APIs, such that it has potentially high risk for Android WebView-based
       applications? (See
@@ -1332,7 +1338,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     type: 'textarea',
     required: false,
     label: 'Experiment Goals',
-    intent_usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
+    usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
     help_text: html` Which pieces of the API surface are you looking to gain
       insight on? What metrics/measurement/feedback will you be using to
       validate designs? Double check that your experiment makes sense given that
@@ -1349,10 +1355,10 @@ export const ALL_FIELDS: Record<string, Field> = {
     attrs: {rows: 2, placeholder: 'This field is deprecated', disabled: true},
     required: false,
     label: 'Experiment Timeline',
-    intent_usage: {
-      [FeatureType.Incubate]: new Set<IntentType>([IntentType.Experiment]),
-      [FeatureType.Existing]: new Set<IntentType>([IntentType.Experiment]),
-      [FeatureType.Deprecation]: new Set<IntentType>([IntentType.Experiment]),
+    usage: {
+      [FeatureType.Incubate]: new Set<UsageType>([UsageType.Experiment]),
+      [FeatureType.Existing]: new Set<UsageType>([UsageType.Experiment]),
+      [FeatureType.Deprecation]: new Set<UsageType>([UsageType.Experiment]),
     },
     help_text: html` When does the experiment start and expire? Deprecated:
     Please use the numeric fields above instead.`,
@@ -1364,7 +1370,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     attrs: MILESTONE_NUMBER_FIELD_ATTRS,
     required: false,
     label: 'OT desktop start',
-    intent_usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
+    usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
     help_text: html` First desktop milestone that will support an origin trial
     of this feature.`,
     check: (_value, getFieldValue) =>
@@ -1379,7 +1385,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     attrs: MILESTONE_NUMBER_FIELD_ATTRS,
     required: false,
     label: 'OT desktop end',
-    intent_usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
+    usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
     help_text: html` Last desktop milestone that will support an origin trial of
     this feature.`,
     check: (_value, getFieldValue) =>
@@ -1391,7 +1397,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     attrs: MILESTONE_NUMBER_FIELD_ATTRS,
     required: false,
     label: 'OT Android start',
-    intent_usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
+    usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
     help_text: html` First android milestone that will support an origin trial
     of this feature.`,
     check: (_value, getFieldValue) =>
@@ -1406,7 +1412,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     attrs: MILESTONE_NUMBER_FIELD_ATTRS,
     required: false,
     label: 'OT Android end',
-    intent_usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
+    usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
     help_text: html` Last android milestone that will support an origin trial of
     this feature.`,
     check: (_value, getFieldValue) =>
@@ -1418,7 +1424,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     attrs: MILESTONE_NUMBER_FIELD_ATTRS,
     required: false,
     label: 'OT WebView start',
-    intent_usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
+    usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
     help_text: html` First WebView milestone that will support an origin trial
     of this feature.`,
     check: (_value, getFieldValue) =>
@@ -1433,7 +1439,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     attrs: MILESTONE_NUMBER_FIELD_ATTRS,
     required: false,
     label: 'OT WebView end',
-    intent_usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
+    usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
     help_text: html` Last WebView milestone that will support an origin trial of
     this feature.`,
     check: (_value, getFieldValue) =>
@@ -1444,7 +1450,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     type: 'textarea',
     required: false,
     label: 'Experiment Risks',
-    intent_usage: {},
+    usage: {},
     help_text: html` When this experiment comes to an end are there any risks to
     the sites that were using it, for example losing access to important storage
     due to an experimental storage API?`,
@@ -1454,10 +1460,10 @@ export const ALL_FIELDS: Record<string, Field> = {
     type: 'textarea',
     required: false,
     label: 'Experiment Extension Reason',
-    intent_usage: {
-      [FeatureType.Incubate]: new Set<IntentType>([IntentType.Experiment]),
-      [FeatureType.Existing]: new Set<IntentType>([IntentType.Experiment]),
-      [FeatureType.Deprecation]: new Set<IntentType>([IntentType.Experiment]),
+    usage: {
+      [FeatureType.Incubate]: new Set<UsageType>([UsageType.Experiment]),
+      [FeatureType.Existing]: new Set<UsageType>([UsageType.Experiment]),
+      [FeatureType.Deprecation]: new Set<UsageType>([UsageType.Experiment]),
     },
     help_text: html` If this is a repeated or extended experiment, explain why
     it's being repeated or extended. Also, fill in discussion link fields below.`,
@@ -1468,7 +1474,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     attrs: MILESTONE_NUMBER_FIELD_ATTRS,
     required: true,
     label: 'Trial extension end milestone',
-    intent_usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
+    usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
     help_text: html` The last desktop milestone in which the trial will be
     available after extension.`,
   },
@@ -1478,7 +1484,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     attrs: MILESTONE_NUMBER_FIELD_ATTRS,
     required: false,
     label: 'Trial extension Android end',
-    intent_usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
+    usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
     help_text: html` The last android milestone in which the trial will be
     available after extension.`,
   },
@@ -1488,7 +1494,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     attrs: MILESTONE_NUMBER_FIELD_ATTRS,
     required: false,
     label: 'Trial extension WebView end',
-    intent_usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
+    usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
     help_text: html` The last WebView milestone in which the trial will be
     available after extension.`,
   },
@@ -1498,7 +1504,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     attrs: MILESTONE_NUMBER_FIELD_ATTRS,
     required: true,
     label: 'Trial extension end milestone',
-    intent_usage: {},
+    usage: {},
     help_text: html` The last milestone in which the trial will be available
     after extension.`,
     check: _value => checkExtensionMilestoneIsValid(_value),
@@ -1508,10 +1514,10 @@ export const ALL_FIELDS: Record<string, Field> = {
     type: 'textarea',
     required: false,
     label: 'Ongoing Constraints',
-    intent_usage: {
-      [FeatureType.Incubate]: new Set<IntentType>([IntentType.Experiment]),
-      [FeatureType.Existing]: new Set<IntentType>([IntentType.Experiment]),
-      [FeatureType.Deprecation]: new Set<IntentType>([IntentType.Experiment]),
+    usage: {
+      [FeatureType.Incubate]: new Set<UsageType>([UsageType.Experiment]),
+      [FeatureType.Existing]: new Set<UsageType>([UsageType.Experiment]),
+      [FeatureType.Deprecation]: new Set<UsageType>([UsageType.Experiment]),
     },
     help_text: html` Do you anticipate adding any ongoing technical constraints
     to the codebase while implementing this feature? We prefer to avoid features
@@ -1524,19 +1530,19 @@ export const ALL_FIELDS: Record<string, Field> = {
     choices: ROLLOUT_PLAN,
     initial: ROLLOUT_PLAN.ROLLOUT_100[0],
     label: 'Rollout plan',
-    intent_usage: {
-      [FeatureType.Incubate]: new Set<IntentType>([
-        IntentType.Experiment,
-        IntentType.Ship,
+    usage: {
+      [FeatureType.Incubate]: new Set<UsageType>([
+        UsageType.Experiment,
+        UsageType.Ship,
       ]),
-      [FeatureType.Existing]: new Set<IntentType>([
-        IntentType.Experiment,
-        IntentType.Ship,
+      [FeatureType.Existing]: new Set<UsageType>([
+        UsageType.Experiment,
+        UsageType.Ship,
       ]),
-      [FeatureType.CodeChange]: new Set<IntentType>([IntentType.PSA]),
-      [FeatureType.Deprecation]: new Set<IntentType>([
-        IntentType.Experiment,
-        IntentType.Ship,
+      [FeatureType.CodeChange]: new Set<UsageType>([UsageType.PSA]),
+      [FeatureType.Deprecation]: new Set<UsageType>([
+        UsageType.Experiment,
+        UsageType.Ship,
       ]),
     },
     help_text: html`Normally, WP features that ship in a milestone go to all
@@ -1549,7 +1555,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     attrs: URL_FIELD_ATTRS,
     required: false,
     label: 'Origin trial feedback summary',
-    intent_usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
+    usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
     help_text: html` If your feature was available as an origin trial, link to a
     summary of usage and developer feedback. If not, leave this empty. DO NOT
     USE FEEDBACK VERBATIM without prior consultation with the Origin Trials
@@ -1561,7 +1567,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     attrs: TEXT_FIELD_ATTRS,
     required: true,
     label: 'Chromium trial name',
-    intent_usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
+    usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
     help_text: html` Name for the trial, given as the value of the property
       "origin_trial_feature_name" as specified in
       <a
@@ -1580,7 +1586,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     type: 'input',
     attrs: URL_FIELD_ATTRS,
     label: 'Documentation link',
-    intent_usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
+    usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
     help_text: html` Link to more information to help developers use the trial's
     feature (e.g. blog post, Github explainer, etc.).`,
   },
@@ -1590,7 +1596,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     attrs: URL_FIELD_ATTRS,
     required: true,
     label: 'Documentation link',
-    intent_usage: {},
+    usage: {},
     help_text: html` Link to more information to help developers use the trial's
     feature (e.g. blog post, Github explainer, etc.).`,
   },
@@ -1600,7 +1606,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     attrs: MULTI_EMAIL_FIELD_ATTRS,
     required: false,
     label: 'Origin trial contacts',
-    intent_usage: {},
+    usage: {},
     help_text: html` List any other individuals or groups to include on the
       contact list (e.g. for reminders on trial milestones). Mailing list emails
       can be used here, but only email addresses of individuals will receive
@@ -1620,7 +1626,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     type: 'checkbox',
     initial: false,
     label: 'Origin trial supports third party origins',
-    intent_usage: {},
+    usage: {},
     help_text: html` Whether this trial supports third party origins. See
       <a href="https://web.dev/third-party-origin-trials/">this article</a>
       for more information. The feature should have
@@ -1636,7 +1642,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     type: 'checkbox',
     initial: false,
     label: 'Critical origin trial',
-    intent_usage: {},
+    usage: {},
     help_text: html` See
       <a href="https://goto.google.com/running-an-origin-trial"
         >go/running-an-origin-trial</a
@@ -1654,7 +1660,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     type: 'checkbox',
     initial: false,
     label: 'Deprecation trial',
-    intent_usage: {},
+    usage: {},
     help_text: html` Is this a deprecation trial? See the
       <a
         href="https://www.chromium.org/blink/launching-features/#deprecation-trial"
@@ -1667,7 +1673,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     type: 'textarea',
     required: false,
     label: 'Anything else?',
-    intent_usage: {},
+    usage: {},
     help_text: html`<p>
       Let us know if you have any further questions or comments.
     </p>`,
@@ -1681,7 +1687,7 @@ export const ALL_FIELDS: Record<string, Field> = {
       pattern: String.raw`k\S*`,
     },
     label: 'WebFeature UseCounter name',
-    intent_usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
+    usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
     help_text: html` For measuring usage, this must be a single named value from
       the WebFeature enum, e.g. kWorkerStart. The use counter must be landed in
       either
@@ -1702,7 +1708,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     type: 'radios',
     label: 'Use counter type',
     choices: WEBFEATURE_USE_COUNTER_TYPES,
-    intent_usage: {},
+    usage: {},
     help_text: html`Which type of use counter the feature is using. This can be
     determined by which file the use counter is defined in.`,
   },
@@ -1711,7 +1717,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     type: 'checkbox',
     initial: false,
     label: 'Trial participation requires approval',
-    intent_usage: {},
+    usage: {},
     help_text: html` <p>
       Will this trial require registrants to receive approval before
       participating? Please reach out to origin-trials-support@google.com
@@ -1724,7 +1730,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     attrs: {type: 'number'},
     required: true,
     label: 'Approvals Buganizer component ID',
-    intent_usage: {},
+    usage: {},
     help_text: html`Buganizer component ID used for approvals requests.`,
   },
 
@@ -1733,7 +1739,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     attrs: {type: 'number'},
     required: true,
     label: 'Approvals Buganizer custom field ID',
-    intent_usage: {},
+    usage: {},
     help_text: html`The Buganizer custom field ID for trial registration
     approval. This custom field in Buganizer provides approval/rejection
     rationales for registration requests under ot_approval_buganizer_component.`,
@@ -1748,7 +1754,7 @@ export const ALL_FIELDS: Record<string, Field> = {
       placeholder: 'ex. "approval-requests@google.com"',
     },
     label: 'Registration request notifications group',
-    intent_usage: {},
+    usage: {},
     help_text: html` <p>
       Google group email to be used for new registration request notifications.
       Please supply a '@google.com' domain email address only.
@@ -1760,7 +1766,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     attrs: URL_FIELD_ATTRS,
     required: true,
     label: 'Approval criteria link',
-    intent_usage: {},
+    usage: {},
     help_text: html` <p>
       Link to public documentation describing the requirements to be approved
       for trial participation.
@@ -1772,7 +1778,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     attrs: URL_FIELD_ATTRS,
     required: true,
     label: 'Intent to Experiment link',
-    intent_usage: {},
+    usage: {},
     help_text: html`Your "Intent to Experiment" discussion thread. The necessary
     LGTMs should already have been received.`,
   },
@@ -1782,7 +1788,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     attrs: MILESTONE_NUMBER_FIELD_ATTRS,
     required: true,
     label: 'Trial milestone start',
-    intent_usage: {},
+    usage: {},
     help_text: html` First milestone that will support an origin trial of this
     feature.`,
     check: (_value, getFieldValue) =>
@@ -1797,7 +1803,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     attrs: MILESTONE_NUMBER_FIELD_ATTRS,
     required: true,
     label: 'Trial milestone end',
-    intent_usage: {},
+    usage: {},
     help_text: html` Last milestone that will support an origin trial of this
     feature.`,
     check: (_value, getFieldValue) =>
@@ -1808,7 +1814,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     type: 'checkbox',
     initial: false,
     label: 'Bypass Chromium file checks (staging testing)',
-    intent_usage: {},
+    usage: {},
     help_text: html`This option should only be visible in ChromeStatus staging
     environments. Allow this form to be submitted without verifying Chromium
     code has landed.`,
@@ -1819,7 +1825,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     attrs: {rows: 4},
     required: false,
     label: 'Anticipated spec changes',
-    intent_usage: {
+    usage: {
       [FeatureType.Incubate]: ALL_FEATURE_TYPE_INCUBATE_INTENTS,
       [FeatureType.Existing]: ALL_FEATURE_TYPE_EXISTING_INTENTS,
       [FeatureType.Deprecation]: ALL_FEATURE_TYPE_DEPRECATION_INTENTS,
@@ -1836,7 +1842,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     attrs: URL_FIELD_ATTRS,
     required: false,
     label: 'Finch experiment',
-    intent_usage: {},
+    usage: {},
     help_text: html` If your feature will roll out gradually via a
       <a target="_blank" href="http://go/finch">Finch experiment</a>, link to it
       here.`,
@@ -1851,7 +1857,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     },
     required: false,
     label: 'Intent to Experiment LGTM by',
-    intent_usage: {},
+    usage: {},
     help_text: html` Full email address of API owner who LGTM'd the Intent to
     Experiment email thread.`,
     deprecated: true,
@@ -1866,7 +1872,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     },
     required: false,
     label: 'Intent to Ship LGTMs by',
-    intent_usage: {},
+    usage: {},
     help_text: html`
       Comma separated list of email addresses of API owners who LGTM'd the
       Intent to Ship email thread.
@@ -1885,7 +1891,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     },
     required: false,
     label: 'Request for Deprecation Trial LGTM by',
-    intent_usage: {},
+    usage: {},
     help_text: html` Full email addresses of API owners who LGTM'd the Request
     for Deprecation Trial email thread.`,
     deprecated: true,
@@ -1895,7 +1901,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     type: 'textarea',
     required: false,
     label: 'Debuggability',
-    intent_usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
+    usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
     help_text: html` Description of the DevTools debugging support for your
       feature. Please follow the
       <a target="_blank" href="https://goo.gle/devtools-checklist">
@@ -1908,19 +1914,19 @@ export const ALL_FIELDS: Record<string, Field> = {
     type: 'checkbox',
     initial: false,
     label: 'Supported on all platforms?',
-    intent_usage: {
-      [FeatureType.Incubate]: new Set<IntentType>([
-        IntentType.Experiment,
-        IntentType.Ship,
+    usage: {
+      [FeatureType.Incubate]: new Set<UsageType>([
+        UsageType.Experiment,
+        UsageType.Ship,
       ]),
-      [FeatureType.Existing]: new Set<IntentType>([
-        IntentType.Experiment,
-        IntentType.Ship,
+      [FeatureType.Existing]: new Set<UsageType>([
+        UsageType.Experiment,
+        UsageType.Ship,
       ]),
-      [FeatureType.CodeChange]: new Set<IntentType>([IntentType.PSA]),
-      [FeatureType.Deprecation]: new Set<IntentType>([
-        IntentType.Experiment,
-        IntentType.Ship,
+      [FeatureType.CodeChange]: new Set<UsageType>([UsageType.PSA]),
+      [FeatureType.Deprecation]: new Set<UsageType>([
+        UsageType.Experiment,
+        UsageType.Ship,
       ]),
     },
     help_text: html` Will this feature be supported on all six Blink platforms
@@ -1932,19 +1938,19 @@ export const ALL_FIELDS: Record<string, Field> = {
     attrs: {rows: 2},
     required: false,
     label: 'Platform Support Explanation',
-    intent_usage: {
-      [FeatureType.Incubate]: new Set<IntentType>([
-        IntentType.Experiment,
-        IntentType.Ship,
+    usage: {
+      [FeatureType.Incubate]: new Set<UsageType>([
+        UsageType.Experiment,
+        UsageType.Ship,
       ]),
-      [FeatureType.Existing]: new Set<IntentType>([
-        IntentType.Experiment,
-        IntentType.Ship,
+      [FeatureType.Existing]: new Set<UsageType>([
+        UsageType.Experiment,
+        UsageType.Ship,
       ]),
-      [FeatureType.CodeChange]: new Set<IntentType>([IntentType.PSA]),
-      [FeatureType.Deprecation]: new Set<IntentType>([
-        IntentType.Experiment,
-        IntentType.Ship,
+      [FeatureType.CodeChange]: new Set<UsageType>([UsageType.PSA]),
+      [FeatureType.Deprecation]: new Set<UsageType>([
+        UsageType.Experiment,
+        UsageType.Ship,
       ]),
     },
     help_text: html` Explain why this feature is, or is not, supported on all
@@ -1955,7 +1961,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     type: 'checkbox',
     initial: false,
     label: 'Web Platform Tests',
-    intent_usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
+    usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
     help_text: html` Is this feature fully tested in Web Platform Tests?`,
   },
 
@@ -1963,7 +1969,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     type: 'textarea',
     required: false,
     label: 'Web Platform Tests Description',
-    intent_usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
+    usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
     help_text: html` Please link to the
       <a target="_blank" href="https://wpt.fyi/results">results on wpt.fyi</a>.
       If any part of the feature is not tested by web-platform-tests, please
@@ -1988,11 +1994,11 @@ export const ALL_FIELDS: Record<string, Field> = {
     attrs: MULTI_URL_FIELD_ATTRS,
     required: false,
     label: 'Demo and sample links',
-    intent_usage: {
-      [FeatureType.Incubate]: new Set<IntentType>([IntentType.Ship]),
-      [FeatureType.Existing]: new Set<IntentType>([IntentType.Ship]),
-      [FeatureType.CodeChange]: new Set<IntentType>([IntentType.PSA]),
-      [FeatureType.Deprecation]: new Set<IntentType>([IntentType.Ship]),
+    usage: {
+      [FeatureType.Incubate]: new Set<UsageType>([UsageType.Ship]),
+      [FeatureType.Existing]: new Set<UsageType>([UsageType.Ship]),
+      [FeatureType.CodeChange]: new Set<UsageType>([UsageType.PSA]),
+      [FeatureType.Deprecation]: new Set<UsageType>([UsageType.Ship]),
     },
     help_text: html` Links to demos and samples (one URL per line).`,
   },
@@ -2001,7 +2007,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     type: 'textarea',
     required: false,
     label: 'Non-OSS dependencies',
-    intent_usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
+    usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
     help_text: html` Does the feature depend on any code or APIs outside the
     Chromium open source repository and its open-source dependencies to
     function? (e.g. server-side APIs, operating system APIs tailored to this
@@ -2015,7 +2021,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     attrs: MULTI_EMAIL_FIELD_ATTRS,
     required: false,
     label: 'Developer relations emails',
-    intent_usage: {},
+    usage: {},
     help_text: html` Comma separated list of full email addresses.`,
   },
 
@@ -2024,7 +2030,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     attrs: MILESTONE_NUMBER_FIELD_ATTRS,
     required: false,
     label: 'Chrome for desktop',
-    intent_usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
+    usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
     help_text: SHIPPED_HELP_TXT,
     check: (_value, getFieldValue) =>
       checkMilestoneRanges(
@@ -2041,7 +2047,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     attrs: MILESTONE_NUMBER_FIELD_ATTRS,
     required: false,
     label: 'Chrome for Android',
-    intent_usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
+    usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
     help_text: SHIPPED_HELP_TXT,
     check: (_value, getFieldValue) =>
       checkMilestoneRanges(
@@ -2058,7 +2064,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     attrs: MILESTONE_NUMBER_FIELD_ATTRS,
     required: false,
     label: 'Chrome for iOS (RARE)',
-    intent_usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
+    usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
     help_text: SHIPPED_HELP_TXT,
     check: (_value, getFieldValue) =>
       checkMilestoneRanges([ALL_DT_SHIPPED_MILESTONE_IOS_RANGE], getFieldValue),
@@ -2069,7 +2075,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     attrs: MILESTONE_NUMBER_FIELD_ATTRS,
     required: false,
     label: 'Android Webview',
-    intent_usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
+    usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
     help_text: SHIPPED_WEBVIEW_HELP_TXT,
     check: (_value, getFieldValue) =>
       checkMilestoneRanges(
@@ -2082,7 +2088,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     type: 'checkbox',
     initial: false,
     label: 'Requires Embedder Support',
-    intent_usage: {
+    usage: {
       [FeatureType.Incubate]: ALL_FEATURE_TYPE_INCUBATE_INTENTS,
       [FeatureType.Existing]: ALL_FEATURE_TYPE_EXISTING_INTENTS,
       [FeatureType.Deprecation]: ALL_FEATURE_TYPE_DEPRECATION_INTENTS,
@@ -2104,7 +2110,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     attrs: URL_FIELD_ATTRS,
     required: false,
     label: 'DevTrial instructions',
-    intent_usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
+    usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
     help_text: html` Link to a HOWTO or FAQ describing how developers can get
       started using this feature in a DevTrial.
       <br /><br />
@@ -2127,7 +2133,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     attrs: MILESTONE_NUMBER_FIELD_ATTRS,
     required: false,
     label: 'DevTrial on desktop',
-    intent_usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
+    usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
     help_text: html` First milestone that allows web developers to try this
     feature on desktop platforms by setting a flag. When flags are enabled by
     default in preparation for shipping or removal, please use the fields in the
@@ -2144,7 +2150,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     attrs: MILESTONE_NUMBER_FIELD_ATTRS,
     required: false,
     label: 'DevTrial on Android',
-    intent_usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
+    usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
     help_text: html` First milestone that allows web developers to try this
     feature on Android by setting a flag. When flags are enabled by default in
     preparation for shipping or removal, please use the fields in the ship
@@ -2161,7 +2167,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     attrs: MILESTONE_NUMBER_FIELD_ATTRS,
     required: false,
     label: 'DevTrial on iOS (RARE)',
-    intent_usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
+    usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
     help_text: html` First milestone that allows web developers to try this
     feature on iOS by setting a flag. When flags are enabled by default in
     preparation for shipping or removal, please use the fields in the ship
@@ -2175,19 +2181,19 @@ export const ALL_FIELDS: Record<string, Field> = {
     attrs: TEXT_FIELD_ATTRS,
     required: false,
     label: 'Flag name on about://flags',
-    intent_usage: {
-      [FeatureType.Incubate]: new Set<IntentType>([
-        IntentType.Experiment,
-        IntentType.Ship,
+    usage: {
+      [FeatureType.Incubate]: new Set<UsageType>([
+        UsageType.Experiment,
+        UsageType.Ship,
       ]),
-      [FeatureType.Existing]: new Set<IntentType>([
-        IntentType.Experiment,
-        IntentType.Ship,
+      [FeatureType.Existing]: new Set<UsageType>([
+        UsageType.Experiment,
+        UsageType.Ship,
       ]),
-      [FeatureType.CodeChange]: new Set<IntentType>([IntentType.PSA]),
-      [FeatureType.Deprecation]: new Set<IntentType>([
-        IntentType.Experiment,
-        IntentType.Ship,
+      [FeatureType.CodeChange]: new Set<UsageType>([UsageType.PSA]),
+      [FeatureType.Deprecation]: new Set<UsageType>([
+        UsageType.Experiment,
+        UsageType.Ship,
       ]),
     },
     help_text: html` Name of the flag on about://flags that allows a web
@@ -2205,19 +2211,19 @@ export const ALL_FIELDS: Record<string, Field> = {
     attrs: TEXT_FIELD_ATTRS,
     required: false,
     label: 'Finch feature name',
-    intent_usage: {
-      [FeatureType.Incubate]: new Set<IntentType>([
-        IntentType.Experiment,
-        IntentType.Ship,
+    usage: {
+      [FeatureType.Incubate]: new Set<UsageType>([
+        UsageType.Experiment,
+        UsageType.Ship,
       ]),
-      [FeatureType.Existing]: new Set<IntentType>([
-        IntentType.Experiment,
-        IntentType.Ship,
+      [FeatureType.Existing]: new Set<UsageType>([
+        UsageType.Experiment,
+        UsageType.Ship,
       ]),
-      [FeatureType.CodeChange]: new Set<IntentType>([IntentType.PSA]),
-      [FeatureType.Deprecation]: new Set<IntentType>([
-        IntentType.Experiment,
-        IntentType.Ship,
+      [FeatureType.CodeChange]: new Set<UsageType>([UsageType.PSA]),
+      [FeatureType.Deprecation]: new Set<UsageType>([
+        UsageType.Experiment,
+        UsageType.Ship,
       ]),
     },
     help_text: html` String name of the <code>base::Feature</code> defined via
@@ -2235,19 +2241,19 @@ export const ALL_FIELDS: Record<string, Field> = {
     type: 'textarea',
     required: false,
     label: 'Non-finch justification',
-    intent_usage: {
-      [FeatureType.Incubate]: new Set<IntentType>([
-        IntentType.Experiment,
-        IntentType.Ship,
+    usage: {
+      [FeatureType.Incubate]: new Set<UsageType>([
+        UsageType.Experiment,
+        UsageType.Ship,
       ]),
-      [FeatureType.Existing]: new Set<IntentType>([
-        IntentType.Experiment,
-        IntentType.Ship,
+      [FeatureType.Existing]: new Set<UsageType>([
+        UsageType.Experiment,
+        UsageType.Ship,
       ]),
-      [FeatureType.CodeChange]: new Set<IntentType>([IntentType.PSA]),
-      [FeatureType.Deprecation]: new Set<IntentType>([
-        IntentType.Experiment,
-        IntentType.Ship,
+      [FeatureType.CodeChange]: new Set<UsageType>([UsageType.PSA]),
+      [FeatureType.Deprecation]: new Set<UsageType>([
+        UsageType.Experiment,
+        UsageType.Ship,
       ]),
     },
     help_text: html` The
@@ -2264,7 +2270,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     type: 'checkbox',
     label: 'Prefixed?',
     initial: false,
-    intent_usage: {},
+    usage: {},
     help_text: '',
   },
 
@@ -2273,7 +2279,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     attrs: TEXT_FIELD_ATTRS,
     required: false,
     label: 'Stage display name',
-    intent_usage: {},
+    usage: {},
     help_text: html` <p>
       Optional. Stage name to display on the feature detail page.
     </p>`,
@@ -2294,7 +2300,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     attrs: TEXT_FIELD_ATTRS,
     required: true,
     label: 'Origin trial display name',
-    intent_usage: {},
+    usage: {},
     help_text: html` <p>
       Name shown in the
       <a href="https://developer.chrome.com/origintrials/" target="_blank">
@@ -2308,7 +2314,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     type: 'textarea',
     required: true,
     label: 'Trial description',
-    intent_usage: {},
+    usage: {},
     help_text: html` <p>
       A brief description of the feature to interest web developers in joining
       the trial (1-2 sentences). Shown as the trial description in the
@@ -2322,7 +2328,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     type: 'input',
     required: true,
     attrs: {...TEXT_FIELD_ATTRS, pattern: GOOGLE_EMAIL_ADDRESS_REGEX},
-    intent_usage: {},
+    usage: {},
     label: 'Google point of contact',
     help_text: html` <p>
       A Googler contact for this origin trial. Please supply a '@google.com'
@@ -2335,7 +2341,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     attrs: URL_FIELD_ATTRS,
     required: true,
     label: 'Feature feedback link',
-    intent_usage: {},
+    usage: {},
     help_text: html` Link for developers to file feedback on the feature (e.g.
     GitHub issues, or WICG page).`,
   },
@@ -2345,7 +2351,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     attrs: {type: 'number', min: 2000, max: 2050},
     required: true,
     label: 'Estimated shipping year',
-    intent_usage: {},
+    usage: {},
     help_text: html` Estimate of the calendar year in which this will first ship
     on any platform. E.g., 2024.`,
   },
@@ -2355,7 +2361,13 @@ export const ALL_FIELDS: Record<string, Field> = {
     attrs: MULTI_STRING_FIELD_ATTRS,
     required: false,
     label: 'Enterprise policies',
-    intent_usage: {},
+    usage: {
+      [FeatureType.Incubate]: new Set<UsageType>([UsageType.CrossFunctionReview]),
+      [FeatureType.Existing]: new Set<UsageType>([UsageType.CrossFunctionReview]),
+      [FeatureType.CodeChange]: new Set<UsageType>([UsageType.CrossFunctionReview]),
+      [FeatureType.Deprecation]: new Set<UsageType>([UsageType.CrossFunctionReview]),
+      [FeatureType.Enterprise]: new Set<UsageType>([UsageType.CrossFunctionReview]),
+    },
     help_text: html` List the policies that are being introduced, removed, or
     can be used to control the feature at this stage, if any.`,
     disabled: true,
@@ -2367,7 +2379,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     choices: ENTERPRISE_FEATURE_CATEGORIES,
     required: false,
     label: 'Enterprise feature categories',
-    intent_usage: {},
+    usage: {},
     help_text: html` If your feature impacts enterprise users, select at least
     one.`,
     enterprise_help_text: html` Select at least one.`,
@@ -2379,7 +2391,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     initial: ENTERPRISE_IMPACT.IMPACT_NONE[0],
     enterprise_initial: ENTERPRISE_IMPACT.IMPACT_MEDIUM[0],
     label: 'Enterprise impact / risk',
-    intent_usage: {},
+    usage: {},
     help_text: html` Most web platform changes have no enterprise impact or risk
     unless they introduce a breaking change that could cause breakage without
     remediation from the web developer. Enterprise reviewers can help judge risk
@@ -2395,7 +2407,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     attrs: {...MILESTONE_NUMBER_FIELD_ATTRS, min: 100},
     required: true,
     label: 'Chrome milestone',
-    intent_usage: {},
+    usage: {},
     help_text: html` The milestone in which this stage rolls out to the stable
     channel (even a 1% rollout). If you don't yet know which milestone it will
     be, put in your best estimate. You can always change this later.`,
@@ -2406,7 +2418,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     choices: PLATFORM_CATEGORIES,
     required: true,
     label: 'Rollout platforms',
-    intent_usage: {},
+    usage: {},
     help_text: html` The platform(s) affected by this stage`,
   },
 
@@ -2415,7 +2427,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     attrs: {rows: 4},
     required: false,
     label: 'Rollout details (optional)',
-    intent_usage: {},
+    usage: {},
     help_text: html` Explain what specifically is changing in this milestone,
     for the given platforms. Many features are composed of multiple stages on
     different milestones. For example, you may have a stage that introduces a
@@ -2428,7 +2440,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     type: 'checkbox',
     label: 'Breaking change',
     initial: false,
-    intent_usage: {},
+    usage: {},
     help_text: html` This is a breaking change: customers or developers must
     take action to continue using some existing functionaity.`,
   },
@@ -2437,7 +2449,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     type: 'checkbox',
     label: 'Confidential',
     initial: true,
-    intent_usage: {},
+    usage: {},
     help_text: html`Most enterprise feature entries should be marked
     confidential until they have been reviewed for publication. Confidential
     entrys are only visible to admins, chromium contributors and the feature's
@@ -2449,7 +2461,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     attrs: MULTI_EMAIL_FIELD_ATTRS,
     required: false,
     label: 'Intent email CC list',
-    intent_usage: {},
+    usage: {},
     help_text: html`Add emails to the CC list of the intent email.<br />
       Comma separated list of full email addresses.`,
   },

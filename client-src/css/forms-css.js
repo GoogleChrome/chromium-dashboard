@@ -259,7 +259,7 @@ export const FORM_STYLES = [
       align-items: center;
       width: 100%;
     }
-    chromedash-form-field .intent-tag {
+    chromedash-form-field .usage-tag {
       padding: 2px 6px;
       margin-inline-start: 4px;
       border-radius: 12px;

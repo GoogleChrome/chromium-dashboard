@@ -7,7 +7,7 @@ import {
 } from './chromedash-form-field';
 import {
   ALL_INTENT_USAGE_BY_FEATURE_TYPE,
-  IntentType,
+  UsageType,
   STAGE_BLINK_INCUBATE,
   STAGE_BLINK_ORIGIN_TRIAL,
   STAGE_BLINK_SHIPPING,
@@ -320,38 +320,38 @@ describe('chromedash-form-field', () => {
     });
   });
 
-  describe('renderIntentIcons', () => {
+  describe('renderUsageIcons', () => {
     let component;
     const container = document.createElement('div');
 
     const MOCK_FEATURE_TYPE_NEW_FEATURE = 0;
     const MOCK_FEATURE_TYPE_DEPRECATION = 1;
     ALL_INTENT_USAGE_BY_FEATURE_TYPE[MOCK_FEATURE_TYPE_NEW_FEATURE] = new Set([
-      IntentType.Prototype,
-      IntentType.Experiment,
-      IntentType.Ship,
+      UsageType.Prototype,
+      UsageType.Experiment,
+      UsageType.Ship,
     ]);
 
     beforeEach(async () => {
       component = new ChromedashFormField();
     });
 
-    it('renders specific intent icons for a given array of intents', () => {
-      const intents = [IntentType.Prototype, IntentType.Ship];
-      const fieldIntentInfo = {[MOCK_FEATURE_TYPE_NEW_FEATURE]: intents};
+    it('renders specific usage icons for a given array of usage', () => {
+      const usage = new Set<UsageType>([UsageType.Prototype, UsageType.Ship]);
+      const fieldIntentInfo = {[MOCK_FEATURE_TYPE_NEW_FEATURE]: usage};
 
-      const result = component.renderIntentIcons(
+      const result = component.renderUsageIcons(
         fieldIntentInfo,
         MOCK_FEATURE_TYPE_NEW_FEATURE
       );
       render(result, container);
 
-      const spans = container.querySelectorAll('.intent-tag');
+      const spans = container.querySelectorAll('.usage-tag');
       assert.equal(spans.length, 2, 'Should render two tags');
 
       const firstSpan = spans[0];
       assert.equal(firstSpan.textContent!.trim(), 'I2P');
-      assert.isTrue(firstSpan.classList.contains('intent-tag--prototype'));
+      assert.isTrue(firstSpan.classList.contains('usage-tag--prototype'));
       assert.equal(
         firstSpan.getAttribute('title'),
         'This field is used to populate the Intent to Prototype template'
@@ -359,7 +359,7 @@ describe('chromedash-form-field', () => {
 
       const secondSpan = spans[1];
       assert.equal(secondSpan.textContent!.trim(), 'I2S');
-      assert.isTrue(secondSpan.classList.contains('intent-tag--ship'));
+      assert.isTrue(secondSpan.classList.contains('usage-tag--ship'));
       assert.equal(
         secondSpan.getAttribute('title'),
         'This field is used to populate the Intent to Ship template'
@@ -371,30 +371,30 @@ describe('chromedash-form-field', () => {
         ALL_INTENT_USAGE_BY_FEATURE_TYPE[MOCK_FEATURE_TYPE_NEW_FEATURE];
       const fieldIntentInfo = {[MOCK_FEATURE_TYPE_NEW_FEATURE]: allIntents};
 
-      const result = component.renderIntentIcons(
+      const result = component.renderUsageIcons(
         fieldIntentInfo,
         MOCK_FEATURE_TYPE_NEW_FEATURE
       );
       render(result, container);
 
-      const spans = container.querySelectorAll('.intent-tag');
+      const spans = container.querySelectorAll('.usage-tag');
       assert.equal(spans.length, 1, 'Should render only one "All" tag');
 
       const span = spans[0];
       assert.equal(span.textContent!.trim(), 'All');
-      assert.isTrue(span.classList.contains('intent-tag--all'));
+      assert.isTrue(span.classList.contains('usage-tag--all'));
       assert.equal(
         span.getAttribute('title'),
         'This field is used to populate all intent templates when provided'
       );
     });
 
-    it('returns an empty template when no intents are defined for the feature type', () => {
+    it('returns an empty template when no usage is defined for the feature type', () => {
       const fieldIntentInfo = {
-        [MOCK_FEATURE_TYPE_NEW_FEATURE]: [IntentType.Prototype],
+        [MOCK_FEATURE_TYPE_NEW_FEATURE]: new Set<UsageType>([UsageType.Prototype]),
       };
       // Use a feature type that is not in the fieldIntentInfo object.
-      const result = component.renderIntentIcons(
+      const result = component.renderUsageIcons(
         fieldIntentInfo,
         MOCK_FEATURE_TYPE_DEPRECATION
       );
@@ -403,9 +403,9 @@ describe('chromedash-form-field', () => {
       assert.equal(container.innerHTML.trim(), '<!---->');
     });
 
-    it('returns an empty template for an empty array of intents', () => {
-      const fieldIntentInfo = {[MOCK_FEATURE_TYPE_NEW_FEATURE]: []};
-      const result = component.renderIntentIcons(
+    it('returns an empty template for an empty array of usage', () => {
+      const fieldIntentInfo = {[MOCK_FEATURE_TYPE_NEW_FEATURE]: new Set<UsageType>([])};
+      const result = component.renderUsageIcons(
         fieldIntentInfo,
         MOCK_FEATURE_TYPE_NEW_FEATURE
       );
