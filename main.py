@@ -206,6 +206,7 @@ spa_page_routes = [
   Route('/myfeatures/starred', defaults={'require_signin': True}),
   Route('/myfeatures/editable', defaults={'require_signin': True}),
   Route('/features'),
+  Route('/features/stale'),
   Route('/newfeatures'),
   Route('/feature/<int:feature_id>'),
   Route('/feature/<int:feature_id>/activity'),
