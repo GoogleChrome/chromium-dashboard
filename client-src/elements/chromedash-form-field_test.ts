@@ -381,7 +381,7 @@ describe('chromedash-form-field', () => {
       assert.equal(spans.length, 1, 'Should render only one "All" tag');
 
       const span = spans[0];
-      assert.equal(span.textContent!.trim(), 'A');
+      assert.equal(span.textContent!.trim(), 'All');
       assert.isTrue(span.classList.contains('intent-tag--all'));
       assert.equal(
         span.getAttribute('title'),
