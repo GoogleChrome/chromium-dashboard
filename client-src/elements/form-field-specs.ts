@@ -1968,7 +1968,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     type: 'input',
     attrs: TEXT_FIELD_ATTRS,
     required: false,
-    label: 'Flag name',
+    label: 'Flag name on about://flags',
     help_text: html` Name of the flag on about://flags that allows a web
       developer to enable this feature in their own browser to try it out. E.g.,
       "storage-buckets". These are defined in
