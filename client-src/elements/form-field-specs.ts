@@ -2174,7 +2174,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     type: 'input',
     attrs: TEXT_FIELD_ATTRS,
     required: false,
-    label: 'Flag name',
+    label: 'Flag name on about://flags',
     intent_usage: {
       [FeatureType.Incubate]: new Set<IntentType>([
         IntentType.Experiment,
