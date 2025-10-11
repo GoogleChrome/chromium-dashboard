@@ -611,27 +611,6 @@ ALL_PROCESSES = {
     }
 
 
-INTENT_EMAIL_SECTIONS: dict[int, list[str]] = {
-    core_enums.INTENT_NONE: [],
-    core_enums.INTENT_INCUBATE: [],
-    core_enums.INTENT_IMPLEMENT: ['motivation'],
-    core_enums.INTENT_EXPERIMENT: ['i2p_thread', 'experiment'],
-    core_enums.INTENT_IMPLEMENT_SHIP: [
-        'need_api_owners_lgtms', 'motivation', 'tracking_bug', 'sample_links'],
-    core_enums.INTENT_ORIGIN_TRIAL: [
-        'i2p_thread', 'experiment', 'extension_reason'],
-    core_enums.INTENT_EXTEND_ORIGIN_TRIAL: [
-      'i2p_thread', 'experiment', 'extension_reason',
-    ],
-    core_enums.INTENT_SHIP: [
-        'need_api_owners_lgtms', 'i2p_thread', 'tracking_bug', 'sample_links',
-        'anticipated_spec_changes', 'ship'],
-    core_enums.INTENT_REMOVED: [],
-    core_enums.INTENT_SHIPPED: [],
-    core_enums.INTENT_PARKED: [],
-    }
-
-
 def initial_tag_review_status(feature_type):
   """Incubating a new feature requires a TAG review, other types do not."""
   if feature_type == core_enums.FEATURE_TYPE_INCUBATE_ID:
