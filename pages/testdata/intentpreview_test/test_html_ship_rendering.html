@@ -1,28 +1,39 @@
-<div><b>Contact emails</b></div><a href="mailto:user1@google.com">user1@google.com</a><br>
+<div><b>Contact emails</b></div><a href="mailto:owner.one@example.com">owner.one@example.com</a>, <a href="mailto:owner.two@example.com">owner.two@example.com</a><br>
 <br>
-<div><b>Explainer</b></div><i>No information provided</i><br>
+<div><b>Explainer</b></div><a href="https://example.com/explainer.md">https://example.com/explainer.md</a><br><a href="https://example.com/explainer_slides.pdf">https://example.com/explainer_slides.pdf</a><br>
 <br>
 
 <div><b>Specification</b></div>
-<i>No information provided</i>
+<a href="https://w3c.github.io/test-feature-spec/" rel="noopener">https://w3c.github.io/test-feature-spec/</a>
 
 <br>
 <br>
+<div><b>Design docs</b></div><br><a href="https://developer.chrome.com/docs/test-feature/">https://developer.chrome.com/docs/test-feature/</a><br>
+<br>
 <div><b>Summary</b></div>
-sum
+This is a detailed summary of the test feature being created. It is designed to populate every possible field for testing purposes.
 
 <br>
 <br>
 <div><b>Blink component</b></div>
-<a href="https://issues.chromium.org/issues?q=customfield1222907:%22Blink%22" target="_blank" rel="noopener">Blink</a><br>
+<a href="https://issues.chromium.org/issues?q=customfield1222907:%22Blink%3ETest%22" target="_blank" rel="noopener">Blink>Test</a><a href="https://issues.chromium.org/issues?q=customfield1222907:%22Blink%3EInternals%3ETest%22" target="_blank" rel="noopener">Blink>Internals>Test</a><br>
 <br>
 <div><b>Web Feature ID</b></div>
-<a href="https://webstatus.dev/features/WebFeature">WebFeature</a>
+<a href="https://webstatus.dev/features/test-feature-ndb-constructor">test-feature-ndb-constructor</a>
 
 <br>
 <br>
+<div><b>Motivation</b></div>
+  The motivation for this feature is to provide a comprehensive example for developers.
+<br>
+<br>
+<div><b>Initial public proposal</b></div>
+  <a href="https://discourse.wicg.io/t/proposal-for-test-feature/9999" rel="noopener">https://discourse.wicg.io/t/proposal-for-test-feature/9999</a><br>
+<br>
+<div><b>Search tags</b></div><a href="/features#tags:test">test</a>, <a href="/features#tags:example">example</a>, <a href="/features#tags:constructor">constructor</a><br>
+<br>
 <div><b>TAG review</b></div>
-<i>No information provided</i>
+<a href="https://github.com/w3ctag/design-reviews/issues/999" rel="noopener">https://github.com/w3ctag/design-reviews/issues/999</a>
 
 <br>
 <br>
@@ -37,16 +48,25 @@ sum
 <br>
 <br>
 <div><b>Interoperability and Compatibility</b></div>
-  <i>No information provided</i>
+  Low risk. The API surface is small and unlikely to conflict with other browser implementations.
 <br>
 <br>
-<i>Gecko</i>: No signal<br>
+<i>Gecko</i>: In development&nbsp;(<a href="https://github.com/mozilla/standards-positions/issues/999">https://github.com/mozilla/standards-positions/issues/999</a>)&nbsp;Has expressed cautious optimism.<br>
 <br>
-<i>WebKit</i>: No signal<br>
+<i>WebKit</i>: Positive&nbsp;(<a href="https://lists.webkit.org/pipermail/webkit-dev/2025-October/subject.html">https://lists.webkit.org/pipermail/webkit-dev/2025-October/subject.html</a>)&nbsp;Has raised concerns about potential privacy implications.<br>
 <br>
-<i>Web developers</i>: No signals<br>
+<i>Web developers</i>: Strongly positive&nbsp;(<a href="https://developer.chrome.com/blog/test-feature-coming-soon/">https://developer.chrome.com/blog/test-feature-coming-soon/</a>)&nbsp;Positive feedback received from the web developer community via social media.<br>
 <br>
-<i>Other signals</i>:<br>
+<i>Other signals</i>:&nbsp;No signals from other implementers at this time.<br>
+<br>
+<div><b>Ergonomics</b></div>
+    The API could be complex for new developers, but documentation should mitigate this.<br>
+<br>
+<div><b>Activation</b></div>
+    There are minimal activation risks, primarily related to experimental flag interactions.<br>
+<br>
+<div><b>Security</b></div>
+    The main security risk involves ensuring that data is properly sanitized.<br>
 <br>
 <div><b>WebView application risks</b></div>
   <p style="font-style: italic">
@@ -54,46 +74,86 @@ sum
     such that it has potentially high risk for Android WebView-based
     applications?
   </p>
-  <i>No information provided</i>
+  No specific WebView risks have been identified.
 
 </div> <!-- end risks --> <br>
 <br>
-<div><b>Goals for experimentation</b></div>
-  <i>No information provided</i><br>
-<br>
-<div><b>Ongoing technical constraints</b></div>
-  <i>No information provided</i><br>
-<br>
 <div><b>Debuggability</b></div>
-<i>No information provided</i>
+The feature is fully debuggable via Chrome DevTools, with a dedicated panel.
 
 <br>
 <br>
 <div><b>Will this feature be supported on all six Blink platforms
-      (Windows, Mac, Linux, ChromeOS, Android, and Android WebView)?</b></div>No<br>
+      (Windows, Mac, Linux, ChromeOS, Android, and Android WebView)?</b></div>YesThis feature is expected to work on all desktop and mobile platforms.<br>
 <br>
 <div><b>Is this feature fully tested by <a href="https://chromium.googlesource.com/chromium/src/+/main/docs/testing/web_platform_tests.md">web-platform-tests</a>?</b></div>
 Yes
 <br>
-WPT description, <a href="https://example.com/wpt" rel="noopener">https://example.com/wpt</a><br>
+A full suite of Web Platform Tests (WPT) will be developed and upstreamed.<br>
+<br>
+<div><b>DevTrial instructions</b></div>
+  <a href="To test, navigate to chrome://flags and enable #enable-test-feature-constructor."
+      >To test, navigate to chrome://flags and enable #enable-test-feature-constructor.</a><br>
 <br>
 <div><b>Flag name on about://flags</b></div>
-<i>No information provided</i>
+enable-test-feature-constructor
 
 <br>
 <br>
 <div><b>Finch feature name</b></div>
-<i>No information provided</i>
+TestFeatureConstructorStudy
 
 <br>
 <br>
 <div><b>Non-finch justification</b></div>
-  <i>No information provided</i><br>
+  This feature is not suitable for a Finch experiment due to its nature.<br>
+<br>
+<div><b>Rollout plan</b></div>
+  Will ship enabled for all users<br>
 <br>
 <div><b>Requires code in //chrome?</b></div>
 False<br>
 <br>
+<div><b>Tracking bug</b></div>
+  <a href="https://bugs.chromium.org/p/chromium/issues/detail?id=12345">https://bugs.chromium.org/p/chromium/issues/detail?id=12345</a><br>
+<br>
+<div><b>Launch bug</b></div>
+  <a href="https://buganizer.corp.google.com/issues/67890">https://buganizer.corp.google.com/issues/67890</a><br>
+<br>
+<div><b>Measurement</b></div>
+  Usage will be measured via a UMA histogram named &#34;Test.Feature.Constructor.Usage&#34;.<br>
+<br>
+<div><b>Availability expectation</b></div>
+  Expected to be available in developer channels by M132.<br>
+<br>
+<div><b>Adoption expectation</b></div>
+  We expect 100% adoption within our test suites.<br>
+<br>
+<div><b>Adoption plan</b></div>
+  No external adoption plan is necessary as this is for testing.<br>
+<br>
+<div><b>Non-OSS dependencies</b></div>
+  <p style="font-style: italic">
+    Does the feature depend on any code or APIs outside the Chromium
+    open source repository and its open-source dependencies to
+    function?
+  </p>
+  There are no non-Open-Source dependencies.<br>
+<br>
+<div><b>Sample links</b></div><br>
+<a href="https://github.com/GoogleChrome/samples/tree/gh-pages/test-feature">https://github.com/GoogleChrome/samples/tree/gh-pages/test-feature</a><br>
+<br>
 <div><b>Estimated milestones</b></div><p>No milestones specified</p><br>
+<br>
+<div><b>Anticipated spec changes</b></div>
+  <p style="font-style: italic">
+    Open questions about a feature may be a source of future web compat or
+    interop issues. Please list open issues (e.g. links to known github
+    issues in the project for the feature specification) whose resolution
+    may introduce web compat/interop risk (e.g., changing to naming or
+    structure of the API in a non-backward-compatible way).
+  </p>
+  We anticipate minor changes to the spec based on implementer feedback.<br>
 <br>
 <div><b>Link to entry on the Local testing</b></div>
 <a href="http://localhost/feature/234?gate=201">http://localhost/feature/234?gate=201</a><br>

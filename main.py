@@ -269,13 +269,6 @@ mpa_page_routes: list[Route] = [
     Route('/admin/users/new', users.UserListHandler),
     Route('/admin/ot_requests', ot_requests.OriginTrialsRequests),
 
-    Route('/admin/features/launch/<int:feature_id>',
-        intentpreview.IntentEmailPreviewHandler),
-    Route('/admin/features/launch/<int:feature_id>/<int:intent_stage>',
-        intentpreview.IntentEmailPreviewHandler),
-    Route('/admin/features/launch/<int:feature_id>/<int:intent_stage>/<int:gate_id>',
-        intentpreview.IntentEmailPreviewHandler),
-
     # Note: The only requests being made now hit /features.json and
     # /features_v2.json, but both of those cause version == 2.
     # There was logic to accept another version value, but it it was not used.
