@@ -1,12 +1,16 @@
 import {SlDetails, SlIconButton, SlInput} from '@shoelace-style/shoelace';
-import {LitElement, TemplateResult, html, nothing} from 'lit';
+import {LitElement, TemplateResult, css, html, nothing} from 'lit';
 import {customElement, property, state} from 'lit/decorators.js';
 import {ref} from 'lit/directives/ref.js';
 
 import {ChromedashApp} from './chromedash-app';
 import './chromedash-attachments';
 import './chromedash-textarea';
-import {ALL_FIELDS, resolveFieldForFeature} from './form-field-specs';
+import {
+  ALL_FIELDS,
+  FieldUsage,
+  resolveFieldForFeature,
+} from './form-field-specs';
 import {
   FieldInfo,
   getFieldValueFromFeature,
@@ -14,11 +18,62 @@ import {
 } from './utils.js';
 import {Feature, StageDict} from '../js-src/cs-client';
 import {FormattedFeature} from './form-definition';
+import {ALL_INTENT_USAGE_BY_FEATURE_TYPE, UsageType} from './form-field-enums';
 
 interface getFieldValue {
   (fieldName: string, stageOrId: any): any;
   feature?: Feature;
 }
+
+interface UsageTypeDetail {
+  abbreviation: string;
+  className: string;
+  title: string;
+}
+
+// Helper map to store details for each intent type.
+const USAGE_TYPE_DETAILS: Record<UsageType, UsageTypeDetail> = {
+  [UsageType.Prototype]: {
+    abbreviation: 'I2P',
+    className: 'usage-tag--prototype',
+    title: 'Intent to Prototype',
+  },
+  [UsageType.DeveloperTesting]: {
+    abbreviation: 'R4DT',
+    className: 'usage-tag--dev-testing',
+    title: 'Ready for Developer Testing',
+  },
+  [UsageType.Experiment]: {
+    abbreviation: 'I2E',
+    className: 'usage-tag--experiment',
+    title: 'Intent to Experiment',
+  },
+  [UsageType.Ship]: {
+    abbreviation: 'I2S',
+    className: 'usage-tag--ship',
+    title: 'Intent to Ship',
+  },
+  [UsageType.PSA]: {
+    abbreviation: 'PSA',
+    className: 'usage-tag--psa',
+    title: 'Web-Facing Change PSA',
+  },
+  [UsageType.DeprecateAndRemove]: {
+    abbreviation: 'I2D',
+    className: 'usage-tag--deprecate',
+    title: 'Intent to Deprecate and Remove',
+  },
+  [UsageType.ReleaseNotes]: {
+    abbreviation: 'RN',
+    className: 'usage-tag--rn',
+    title: 'Release Notes',
+  },
+  [UsageType.CrossFunctionReview]: {
+    abbreviation: 'XFN',
+    className: 'usage-tag-xfn',
+    title: 'Cross-Functional Review',
+  },
+};
 
 @customElement('chromedash-form-field')
 export class ChromedashFormField extends LitElement {
@@ -462,6 +517,54 @@ export class ChromedashFormField extends LitElement {
     return fieldHTML;
   }
 
+  /**
+   * Generates an array of Lit TemplateResults for intent tags.
+   * @param fieldUsageInfo An object containing the intent usage for a field.
+   * @param featureType The type of the current feature.
+   * @return An array of TemplateResults, each rendering a <span> tag.
+   */
+  renderUsageIcons(
+    fieldUsageInfo: FieldUsage,
+    featureType: number | undefined
+  ): TemplateResult[] {
+    if (featureType === undefined) {
+      return [];
+    }
+    const intentTypesUsed = fieldUsageInfo[featureType];
+    if (!intentTypesUsed) {
+      return [];
+    }
+
+    // If the field is used in ALL intents, render a special "All" tag.
+    if (
+      ALL_INTENT_USAGE_BY_FEATURE_TYPE[featureType].isSubsetOf(intentTypesUsed)
+    ) {
+      return [
+        html`<span
+          class="usage-tag usage-tag--all"
+          title="This field is used to populate all intent templates when provided"
+        >
+          All
+        </span>`,
+      ];
+    }
+
+    const intentIcons: TemplateResult[] = [];
+    for (const intentType of intentTypesUsed) {
+      const details = USAGE_TYPE_DETAILS[intentType];
+      if (details) {
+        const tooltipText = `This field is used to populate the ${details.title} template`;
+        intentIcons.push(html`
+          <span class="usage-tag ${details.className}" title="${tooltipText}"
+            >${details.abbreviation}</span
+          >
+        `);
+      }
+    }
+
+    return intentIcons;
+  }
+
   render() {
     if (this.fieldProps.deprecated && !this.value) {
       return nothing;
@@ -479,8 +582,16 @@ export class ChromedashFormField extends LitElement {
       ${this.fieldProps.label
         ? html`
             <tr class="${fadeInClass}">
-              <th colspan="2">
-                <b>${this.fieldProps.label}:</b>
+              <th class="form-field-header">
+                <div>
+                  <b>${this.fieldProps.label}:</b>
+                </div>
+                <div>
+                  ${this.renderUsageIcons(
+                    this.fieldProps.usage,
+                    this.feature?.feature_type_int
+                  )}
+                </div>
               </th>
             </tr>
           `
