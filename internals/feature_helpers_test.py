@@ -12,8 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from datetime import datetime
+from datetime import datetime, timedelta
 import testing_config  # Must be imported before the module under test.
+from unittest import mock
 
 from api import converters
 from framework import rediscache
@@ -704,3 +705,336 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
                      set(f['name'] for f in features))
     self.assertEqual('feature a', features[1]['name'])
     self.assertEqual('feature b', features[2]['name'])
+
+  @mock.patch('internals.feature_helpers.get_current_milestone_info')
+  @mock.patch('internals.feature_helpers.datetime')
+  def test_get_stale_features__none_stale(self, mock_dt, mock_mstone_info):
+    """No features are stale, so the function should return an empty list."""
+    mock_dt.now.return_value = datetime(2023, 1, 1)
+    mock_mstone_info.return_value = {'mstone': '100'}
+
+    # Set features to be recently reviewed and therefore not stale.
+    self.feature_1.accurate_as_of = datetime(2022, 12, 20)
+    self.feature_1.put()
+    self.feature_2.accurate_as_of = datetime(2022, 12, 15)
+    self.feature_2.put()
+
+    actual = feature_helpers.get_stale_features()
+    self.assertEqual([], actual)
+
+  @mock.patch('internals.feature_helpers.get_current_milestone_info')
+  @mock.patch('internals.feature_helpers.datetime')
+  def test_get_stale_features__stale_but_no_relevant_milestone(
+      self, mock_dt, mock_mstone_info):
+    """Stale features with no milestones in the upcoming window are ignored."""
+    mock_dt.now.return_value = datetime(2023, 1, 1)
+    mock_mstone_info.return_value = {'mstone': '100'}
+
+    # feature_1 is stale, but its milestone is in the past (before 100).
+    self.feature_1.accurate_as_of = None
+    self.feature_1.put()
+    shipping_stage_1 = self.fe_1_stages_dict[160][0]
+    shipping_stage_1.milestones = MilestoneSet(desktop_first=99)
+    shipping_stage_1.put()
+
+    # feature_2 is stale, but its milestone is too far in the future (after 102).
+    self.feature_2.accurate_as_of = None
+    self.feature_2.put()
+    shipping_stage_2 = self.fe_2_stages_dict[260][0]
+    shipping_stage_2.milestones = MilestoneSet(desktop_first=103)
+    shipping_stage_2.put()
+
+    # feature_3 is stale, but its stage has no milestones set.
+    self.feature_3.accurate_as_of = None
+    self.feature_3.put()
+    shipping_stage_3 = self.fe_3_stages_dict[360][0]
+    shipping_stage_3.milestones = None
+    shipping_stage_3.put()
+
+    actual = feature_helpers.get_stale_features()
+    self.assertEqual([], actual)
+
+  @mock.patch('internals.feature_helpers.get_current_milestone_info')
+  @mock.patch('internals.feature_helpers.datetime')
+  def test_get_stale_features__one_stale_one_fresh(
+      self, mock_dt, mock_mstone_info):
+    """Correctly identifies one stale feature with an upcoming milestone."""
+    mock_dt.now.return_value = datetime(2023, 1, 1)
+    mock_mstone_info.return_value = {'mstone': '100'}
+
+    # This feature is stale because it was reviewed over a month ago.
+    self.feature_1.accurate_as_of = datetime(2022, 11, 1)
+    self.feature_1.put()
+
+    # And its milestone is upcoming (between 100 and 102).
+    shipping_stage = self.fe_1_stages_dict[160][0]
+    shipping_stage.milestones = MilestoneSet(desktop_first=102)
+    shipping_stage.put()
+
+    # This feature is not stale.
+    self.feature_2.accurate_as_of = datetime(2022, 12, 15)
+    self.feature_2.put()
+    shipping_stage_2 = self.fe_2_stages_dict[260][0]
+    shipping_stage_2.milestones = MilestoneSet(desktop_first=101)
+    shipping_stage_2.put()
+
+    actual = feature_helpers.get_stale_features()
+    self.assertEqual(1, len(actual))
+    feature, mstone, field = actual[0]
+    self.assertEqual(self.feature_1.key.integer_id(), feature.key.integer_id())
+    self.assertEqual(102, mstone)
+    self.assertEqual('shipped_milestone', field)
+
+  @mock.patch('internals.feature_helpers.get_current_milestone_info')
+  @mock.patch('internals.feature_helpers.datetime')
+  def test_get_stale_features__deleted_feature_is_ignored(
+      self, mock_dt, mock_mstone_info):
+    """A deleted feature should not be returned, even if it is stale."""
+    mock_dt.now.return_value = datetime(2023, 1, 1)
+    mock_mstone_info.return_value = {'mstone': '100'}
+
+    # This feature is stale and deleted.
+    self.feature_1.accurate_as_of = None
+    self.feature_1.deleted = True
+    self.feature_1.put()
+    shipping_stage = self.fe_1_stages_dict[160][0]
+    shipping_stage.milestones = MilestoneSet(desktop_first=101)
+    shipping_stage.put()
+
+    actual = feature_helpers.get_stale_features()
+    self.assertEqual([], actual)
+
+  @mock.patch('internals.feature_helpers.get_current_milestone_info')
+  @mock.patch('internals.feature_helpers.datetime')
+  def test_get_stale_features__finds_earliest_milestone(
+      self, mock_dt, mock_mstone_info):
+    """If a feature has multiple upcoming milestones, choose the earliest one."""
+    mock_dt.now.return_value = datetime(2023, 1, 1)
+    mock_mstone_info.return_value = {'mstone': '100'}
+
+    # This feature is stale.
+    self.feature_1.accurate_as_of = datetime(2022, 1, 1)
+    self.feature_1.put()
+
+    # Dev trial milestone is 102.
+    dev_trial_stage = self.fe_1_stages_dict[130][0]
+    dev_trial_stage.milestones = MilestoneSet(desktop_first=102)
+    dev_trial_stage.put()
+
+    # Shipping milestone is 101.
+    shipping_stage = self.fe_1_stages_dict[160][0]
+    shipping_stage.milestones = MilestoneSet(desktop_first=101)
+    shipping_stage.put()
+
+    # Origin trial milestone is also 102.
+    ot_stage = self.fe_1_stages_dict[150][0]
+    ot_stage.milestones = MilestoneSet(desktop_first=102)
+    ot_stage.put()
+
+    actual = feature_helpers.get_stale_features()
+    self.assertEqual(1, len(actual))
+    feature, mstone, field = actual[0]
+    self.assertEqual(self.feature_1.key.integer_id(), feature.key.integer_id())
+    # The function should identify 101 as the earliest upcoming milestone.
+    self.assertEqual(101, mstone)
+    self.assertEqual('shipped_milestone', field)
+
+
+class FeatureHelpersFilteringTest(testing_config.CustomTestCase):
+
+  def setUp(self):
+    self.owner_email = 'owner@example.com'
+    self.editor_email = 'editor@example.com'
+    self.creator_email = 'creator@example.com'
+    self.other_user_email = 'other@example.com'
+
+    # FeatureEntry objects for filter_unlisted and filter_confidential
+    self.feature_public = FeatureEntry(
+        name='Public feature', summary='sum', category=1, unlisted=False)
+    self.feature_public.put()
+
+    self.feature_unlisted_viewable = FeatureEntry(
+        name='Unlisted viewable', summary='sum', category=1, unlisted=True,
+        owner_emails=[self.owner_email],
+        editor_emails=[self.editor_email],
+        creator_email=self.creator_email)
+    self.feature_unlisted_viewable.put()
+
+    self.feature_unlisted_hidden = FeatureEntry(
+        name='Unlisted hidden', summary='sum', category=1, unlisted=True,
+        owner_emails=['someone_else@example.com'])
+    self.feature_unlisted_hidden.put()
+
+    self.all_feature_entries = [
+        self.feature_public,
+        self.feature_unlisted_viewable,
+        self.feature_unlisted_hidden,
+    ]
+
+    # Formatted dicts for the "_formatted" filter versions
+    self.formatted_public = {
+        'id': 1, 'name': 'Public feature', 'unlisted': False,
+        'creator': 'random@example.com',
+        'editors': [], 'browsers': {'chrome': {'owners': []}}}
+
+    self.formatted_unlisted_viewable = {
+        'id': 2, 'name': 'Unlisted viewable', 'unlisted': True,
+        'creator': self.creator_email,
+        'editors': [self.editor_email],
+        'browsers': {'chrome': {'owners': [self.owner_email]}}}
+
+    self.formatted_unlisted_hidden = {
+        'id': 3, 'name': 'Unlisted hidden', 'unlisted': True,
+        'creator': 'random@example.com',
+        'editors': [],
+        'browsers': {'chrome': {'owners': ['someone_else@example.com']}}}
+
+    self.all_formatted_features = [
+        self.formatted_public,
+        self.formatted_unlisted_viewable,
+        self.formatted_unlisted_hidden,
+    ]
+
+  def tearDown(self):
+    for entity in FeatureEntry.query():
+      entity.key.delete()
+    testing_config.sign_out()
+
+  def _get_names(self, feature_list):
+    """Helper to get a list of names from FeatureEntry or dict lists."""
+    if not feature_list:
+      return []
+    if isinstance(feature_list[0], FeatureEntry):
+      return [f.name for f in feature_list]
+    return [f['name'] for f in feature_list]
+
+  def test_filter_unlisted__no_user(self):
+    """Anonymous users should only see public features."""
+    testing_config.sign_out()
+    actual = feature_helpers.filter_unlisted(self.all_feature_entries)
+    self.assertEqual(1, len(actual))
+    self.assertEqual(['Public feature'], self._get_names(actual))
+
+  def test_filter_unlisted__user_with_no_access(self):
+    """A logged-in user should not see unlisted features they don't own/edit."""
+    testing_config.sign_in(self.other_user_email, 1)
+    actual = feature_helpers.filter_unlisted(self.all_feature_entries)
+    self.assertEqual(1, len(actual))
+    self.assertEqual(['Public feature'], self._get_names(actual))
+
+  def test_filter_unlisted__user_is_owner(self):
+    """A logged-in user should see unlisted features they own."""
+    testing_config.sign_in(self.owner_email, 1)
+    actual = feature_helpers.filter_unlisted(self.all_feature_entries)
+    self.assertCountEqual(
+        ['Public feature', 'Unlisted viewable'], self._get_names(actual))
+    self.assertEqual(2, len(actual))
+
+  def test_filter_unlisted__user_is_editor(self):
+    """A logged-in user should see unlisted features they can edit."""
+    testing_config.sign_in(self.editor_email, 1)
+    actual = feature_helpers.filter_unlisted(self.all_feature_entries)
+    self.assertCountEqual(
+        ['Public feature', 'Unlisted viewable'], self._get_names(actual))
+    self.assertEqual(2, len(actual))
+
+  def test_filter_unlisted__user_is_creator(self):
+    """A logged-in user should see unlisted features they created."""
+    testing_config.sign_in(self.creator_email, 1)
+    actual = feature_helpers.filter_unlisted(self.all_feature_entries)
+    self.assertCountEqual(
+        ['Public feature', 'Unlisted viewable'], self._get_names(actual))
+    self.assertEqual(2, len(actual))
+
+  def test_filter_unlisted_formatted__no_user(self):
+    """Anonymous users should only see public features (formatted)."""
+    testing_config.sign_out()
+    actual = feature_helpers.filter_unlisted_formatted(
+        self.all_formatted_features)
+    self.assertEqual(1, len(actual))
+    self.assertEqual(['Public feature'], self._get_names(actual))
+
+  def test_filter_unlisted_formatted__user_with_no_access(self):
+    """A logged-in user should not see unlisted features they don't own/edit (formatted)."""
+    testing_config.sign_in(self.other_user_email, 1)
+    actual = feature_helpers.filter_unlisted_formatted(
+        self.all_formatted_features)
+    self.assertEqual(1, len(actual))
+    self.assertEqual(['Public feature'], self._get_names(actual))
+
+  def test_filter_unlisted_formatted__user_is_owner(self):
+    """A logged-in user should see unlisted features they own (formatted)."""
+    testing_config.sign_in(self.owner_email, 1)
+    actual = feature_helpers.filter_unlisted_formatted(
+        self.all_formatted_features)
+    self.assertCountEqual(
+        ['Public feature', 'Unlisted viewable'], self._get_names(actual))
+    self.assertEqual(2, len(actual))
+
+  def test_filter_unlisted_formatted__user_is_editor(self):
+    """A logged-in user should see unlisted features they can edit (formatted)."""
+    testing_config.sign_in(self.editor_email, 1)
+    actual = feature_helpers.filter_unlisted_formatted(
+        self.all_formatted_features)
+    self.assertCountEqual(
+        ['Public feature', 'Unlisted viewable'], self._get_names(actual))
+    self.assertEqual(2, len(actual))
+
+  def test_filter_unlisted_formatted__user_is_creator(self):
+    """A logged-in user should see unlisted features they created (formatted)."""
+    testing_config.sign_in(self.creator_email, 1)
+    actual = feature_helpers.filter_unlisted_formatted(
+        self.all_formatted_features)
+    self.assertCountEqual(
+        ['Public feature', 'Unlisted viewable'], self._get_names(actual))
+    self.assertEqual(2, len(actual))
+
+  @mock.patch('internals.feature_helpers.permissions.can_view_feature')
+  def test_filter_confidential__all_visible(self, mock_can_view):
+    """Returns all features if user can view all of them."""
+    mock_can_view.return_value = True
+    actual = feature_helpers.filter_confidential(self.all_feature_entries)
+    self.assertEqual(len(self.all_feature_entries), len(actual))
+
+  @mock.patch('internals.feature_helpers.permissions.can_view_feature')
+  def test_filter_confidential__none_visible(self, mock_can_view):
+    """Returns an empty list if user can view none of them."""
+    mock_can_view.return_value = False
+    actual = feature_helpers.filter_confidential(self.all_feature_entries)
+    self.assertEqual(0, len(actual))
+
+  @mock.patch('internals.feature_helpers.permissions.can_view_feature')
+  def test_filter_confidential__some_visible(self, mock_can_view):
+    """Returns a subset of features that the user can view."""
+    # The mock will return True for the first and third features in the list.
+    mock_can_view.side_effect = [True, False, True]
+    actual = feature_helpers.filter_confidential(self.all_feature_entries)
+    self.assertEqual(2, len(actual))
+    self.assertCountEqual(
+        ['Public feature', 'Unlisted hidden'], self._get_names(actual))
+
+  @mock.patch('internals.feature_helpers.permissions.can_view_feature_formatted')
+  def test_filter_confidential_formatted__all_visible(self, mock_can_view):
+    """Returns all features if user can view all of them (formatted)."""
+    mock_can_view.return_value = True
+    actual = feature_helpers.filter_confidential_formatted(
+        self.all_formatted_features)
+    self.assertEqual(len(self.all_formatted_features), len(actual))
+
+  @mock.patch('internals.feature_helpers.permissions.can_view_feature_formatted')
+  def test_filter_confidential_formatted__none_visible(self, mock_can_view):
+    """Returns an empty list if user can view none of them (formatted)."""
+    mock_can_view.return_value = False
+    actual = feature_helpers.filter_confidential_formatted(
+        self.all_formatted_features)
+    self.assertEqual(0, len(actual))
+
+  @mock.patch('internals.feature_helpers.permissions.can_view_feature_formatted')
+  def test_filter_confidential_formatted__some_visible(self, mock_can_view):
+    """Returns a subset of features that the user can view (formatted)."""
+    mock_can_view.side_effect = [False, True, True]
+    actual = feature_helpers.filter_confidential_formatted(
+        self.all_formatted_features)
+    self.assertEqual(2, len(actual))
+    self.assertCountEqual(
+        ['Unlisted viewable', 'Unlisted hidden'], self._get_names(actual))

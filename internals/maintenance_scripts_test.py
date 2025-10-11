@@ -1395,7 +1395,7 @@ class GenerateStaleFeaturesFileTest(testing_config.CustomTestCase):
     feature_ids = {f.key.integer_id() for f in stale_features}
     self.assertEqual(feature_ids, {self.feature_1.key.integer_id(), self.feature_2.key.integer_id()})
 
-  @mock.patch('internals.maintenance_scripts.get_current_milestone_info')
+  @mock.patch('framework.utils.get_current_milestone_info')
   def test_generate_rows(self, mock_get_milestone):
     """Should format feature data into correct CSV rows."""
     mock_get_milestone.return_value = {'mstone': str(self.current_milestone)}
@@ -1451,7 +1451,7 @@ class GenerateStaleFeaturesFileTest(testing_config.CustomTestCase):
     ])
     self.assertEqual(list(reader), csv_rows)
 
-  @mock.patch('internals.maintenance_scripts.get_current_milestone_info')
+  @mock.patch('framework.utils.get_current_milestone_info')
   @mock.patch('google.cloud.storage.Client')
   @mock.patch('framework.basehandlers.FlaskHandler.require_cron_header')
   @mock.patch('internals.maintenance_scripts.datetime')

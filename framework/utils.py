@@ -15,6 +15,7 @@
 
 import calendar
 import datetime
+import json
 import logging
 import requests
 import time
@@ -22,6 +23,8 @@ import traceback
 
 import settings
 
+CHROME_RELEASE_SCHEDULE_URL = (
+    'https://chromiumdash.appspot.com/fetch_milestone_schedule')
 CHROMIUM_SCHEDULE_DATE_FORMAT = '%Y-%m-%dT%H:%M:%S'
 
 
@@ -130,3 +133,13 @@ def get_chromium_milestone_info(milestone: int) -> dict:
     logging.exception('Failed to get response from Chromium schedule API.')
     raise e
   return response.json()
+
+
+def get_current_milestone_info(anchor_channel: str):
+  """Return a dict of info about the next milestone reaching anchor_channel."""
+  try:
+    resp = requests.get(f'{CHROME_RELEASE_SCHEDULE_URL}?mstone={anchor_channel}')
+  except requests.RequestException as e:
+    raise e
+  mstone_info = json.loads(resp.text)
+  return mstone_info['mstones'][0]

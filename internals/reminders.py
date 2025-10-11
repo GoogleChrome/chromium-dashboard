@@ -23,6 +23,7 @@ from google.cloud import ndb  # type: ignore
 from flask import render_template
 
 from framework import basehandlers
+from framework.utils import get_current_milestone_info
 from internals import approval_defs
 from internals.core_models import FeatureEntry, MilestoneSet
 from internals.review_models import Gate
@@ -36,22 +37,10 @@ from internals.user_models import UserPref
 import settings
 
 
-CHROME_RELEASE_SCHEDULE_URL = (
-    'https://chromiumdash.appspot.com/fetch_milestone_schedule')
 WEBSTATUS_EMAIL = 'webstatus@google.com'
 CBE_ESCLATION_EMAIL = 'cbe-releasenotes@google.com'
 STAGING_EMAIL = 'jrobbins-test@googlegroups.com'
 EMAIL_SUBJECT_PREFIX = 'Action requested'
-
-
-def get_current_milestone_info(anchor_channel: str):
-  """Return a dict of info about the next milestone reaching anchor_channel."""
-  try:
-    resp = requests.get(f'{CHROME_RELEASE_SCHEDULE_URL}?mstone={anchor_channel}')
-  except requests.RequestException as e:
-    raise e
-  mstone_info = json.loads(resp.text)
-  return mstone_info['mstones'][0]
 
 
 def choose_email_recipients(

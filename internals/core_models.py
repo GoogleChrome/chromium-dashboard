@@ -258,6 +258,7 @@ class MilestoneSet(ndb.Model):  # copy from milestone fields of Feature
       'dt_milestone_android_start': 'android_first',
       'dt_milestone_ios_start': 'ios_first',
       'dt_milestone_webview_start': 'webview_first',
+      'rollout_milestone': 'desktop_first',
     }
 
   # List of milestone fields relevant to the origin trial stage types.

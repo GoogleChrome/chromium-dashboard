@@ -14,6 +14,7 @@
 # limitations under the License.
 
 from asyncio import Future
+from datetime import datetime, timedelta
 import logging
 from typing import Any, Optional
 from google.cloud import ndb  # type: ignore
@@ -22,13 +23,29 @@ from api import converters
 from framework import rediscache
 from framework import users
 from framework import permissions
+from framework.utils import get_current_milestone_info
 from internals.stage_helpers import organize_all_stages_by_feature
 from internals.core_enums import *
-from internals.core_models import FeatureEntry, Stage
-from internals.data_types import VerboseFeatureDict
+from internals.core_models import FeatureEntry, MilestoneSet, Stage
 
 
-def filter_unlisted(feature_list: list[dict]) -> list[dict]:
+def filter_unlisted(feature_list: list[FeatureEntry]) -> list[FeatureEntry]:
+  """Filters a FeatureEntry list to display only features the user should see."""
+  user = users.get_current_user()
+  email = None
+  if user:
+    email = user.email()
+  return [
+    f for f in feature_list
+    if (not f.unlisted
+        # Owners and editors of a feature should still be able to see their features.
+        or email in f.owner_emails
+        or email in f.editor_emails
+        or (email is not None and f.creator_email == email))
+  ]
+
+
+def filter_unlisted_formatted(feature_list: list[dict]) -> list[dict]:
   """Filters a feature list to display only features the user should see."""
   user = users.get_current_user()
   email = None
@@ -46,7 +63,7 @@ def filter_unlisted(feature_list: list[dict]) -> list[dict]:
   return listed_features
 
 
-def filter_confidential(feature_list: list[dict]) -> list[dict]:
+def filter_confidential_formatted(feature_list: list[dict]) -> list[dict]:
   """Filters a feature list to display only features the user should see."""
   user = users.get_current_user()
   visible_features = []
@@ -55,6 +72,12 @@ def filter_confidential(feature_list: list[dict]) -> list[dict]:
       visible_features.append(f)
 
   return visible_features
+
+
+def filter_confidential(feature_list: list[FeatureEntry]) -> list[FeatureEntry]:
+  """Filters a FeatureEntry list to display only features the user should see."""
+  user = users.get_current_user()
+  return [f for f in feature_list if permissions.can_view_feature(user, f)]
 
 
 def get_entries_by_id_async(ids) -> Future | None:
@@ -78,7 +101,7 @@ def get_features_in_release_notes(milestone: int):
   cached_features = rediscache.get(cache_key)
   if cached_features:
     logging.info('Returned cached features')
-    return filter_confidential(cached_features)
+    return filter_confidential_formatted(cached_features)
 
   all_enterprise_feature_keys_future = FeatureEntry.query(
       FeatureEntry.deleted == False,
@@ -124,14 +147,14 @@ def get_features_in_release_notes(milestone: int):
     features.append(dict(formatted_feature))
   logging.info('finished converting features to dicts')
 
-  features = [f for f in filter_unlisted(features)
+  features = [f for f in filter_unlisted_formatted(features)
     if (f['first_enterprise_notification_milestone'] == None or
         f['first_enterprise_notification_milestone'] <= milestone)]
   logging.info('finished filtering')
 
   rediscache.set(cache_key, features)
   logging.info('finished storing in cache')
-  return filter_confidential(features)
+  return filter_confidential_formatted(features)
 
 
 def get_in_milestone(milestone: int,
@@ -280,9 +303,9 @@ def get_in_milestone(milestone: int,
 
   for shipping_type in features_by_type:
     if not show_unlisted:
-      features_by_type[shipping_type] = filter_unlisted(
+      features_by_type[shipping_type] = filter_unlisted_formatted(
           features_by_type[shipping_type])
-    features_by_type[shipping_type] = filter_confidential(
+    features_by_type[shipping_type] = filter_confidential_formatted(
         features_by_type[shipping_type])
 
   return features_by_type
@@ -432,7 +455,7 @@ def get_feature_names_by_ids(feature_ids: list[int],
   result_list = [
       result_dict[feature_id] for feature_id in feature_ids
       if feature_id in result_dict]
-  return filter_confidential(result_list)
+  return filter_confidential_formatted(result_list)
 
 def get_by_ids(feature_ids: list[int],
                update_cache: bool=True) -> list[dict[str, Any]]:
@@ -492,7 +515,7 @@ def get_by_ids(feature_ids: list[int],
   result_list = [
       result_dict[feature_id] for feature_id in feature_ids
       if feature_id in result_dict]
-  return filter_confidential(result_list)
+  return filter_confidential_formatted(result_list)
 
 
 def get_features_by_impl_status(limit: int | None=None, update_cache: bool=False,
@@ -538,9 +561,139 @@ def get_features_by_impl_status(limit: int | None=None, update_cache: bool=False
             f, all_stages[f.key.integer_id()]) for f in section]
         section[0]['first_of_section'] = True
         if not show_unlisted:
-          section = filter_unlisted(section)
+          section = filter_unlisted_formatted(section)
         feature_list.extend(section)
 
     rediscache.set(cache_key, feature_list)
 
-  return filter_confidential(feature_list)
+  return filter_confidential_formatted(feature_list)
+
+
+def _map_relevant_milestones(
+  feature_keys: list[ndb.Key],
+  mstones_by_feature_id: dict[int, tuple[int, str]],
+  stages: list[Stage],
+  milestone_fields: list[str],
+  min_mstone: int,
+):
+  for s in stages:
+    if s.feature_id not in mstones_by_feature_id:
+      feature_keys.append(ndb.Key('FeatureEntry', s.feature_id))
+    min_milestone = None
+    milestone_field = None
+    for field in milestone_fields:
+      milestones = s.milestones
+      m: int | None = (None if milestones is None
+            else getattr(milestones,
+                        MilestoneSet.MILESTONE_FIELD_MAPPING[field]))
+      if m is not None and m >= min_mstone and m <= min_mstone + 2:
+        if min_milestone is None or m < min_milestone:
+          min_milestone = m
+          milestone_field = field
+    if min_milestone is not None and milestone_field is not None:
+      mstones_by_feature_id[s.feature_id] = (min_milestone, milestone_field)
+
+
+def get_stale_features() -> list[tuple[FeatureEntry, int, str]]:
+  current_milestone_info = get_current_milestone_info('current')
+
+  min_mstone = int(current_milestone_info['mstone'])
+  mstone_range = (min_mstone, min_mstone + 1, min_mstone + 2)
+
+  relevant_dev_trial_stages_future = Stage.query(
+    Stage.stage_type.IN([st for st in STAGE_TYPES_DEV_TRIAL.values() if st]),
+    ndb.OR(
+      Stage.milestones.desktop_first.IN(mstone_range),
+      Stage.milestones.android_first.IN(mstone_range),
+      Stage.milestones.ios_first.IN(mstone_range),
+      Stage.milestones.webview_first.IN(mstone_range),
+    )).fetch_async()
+  relevant_origin_trial_stages_future = Stage.query(
+    Stage.stage_type.IN([st for st in STAGE_TYPES_ORIGIN_TRIAL.values() if st]),
+    ndb.OR(
+      Stage.milestones.desktop_first.IN(mstone_range),
+      Stage.milestones.android_first.IN(mstone_range),
+      Stage.milestones.webview_first.IN(mstone_range),
+    )).fetch_async()
+  relevant_ship_stages_future = Stage.query(
+    Stage.stage_type.IN([st for st in STAGE_TYPES_SHIPPING.values() if st]),
+    ndb.OR(
+      Stage.milestones.desktop_first.IN(mstone_range),
+      Stage.milestones.android_first.IN(mstone_range),
+      Stage.milestones.ios_first.IN(mstone_range),
+      Stage.milestones.webview_first.IN(mstone_range),
+    )).fetch_async()
+  relevant_enterprise_stages_future = Stage.query(
+    Stage.stage_type == STAGE_ENT_ROLLOUT,
+    Stage.milestones.desktop_first.IN(mstone_range),
+  ).fetch_async()
+
+  relevant_dev_trial_stages: list[Stage] = relevant_dev_trial_stages_future.get_result()
+  relevant_origin_trial_stages: list[Stage] = relevant_origin_trial_stages_future.get_result()
+  relevant_ship_stages: list[Stage] = relevant_ship_stages_future.get_result()
+  relevant_ent_stages: list[Stage] = relevant_enterprise_stages_future.get_result()
+
+  dt_milestone_fields = [
+    'dt_milestone_android_start',
+    'dt_milestone_desktop_start',
+    'dt_milestone_ios_start',
+    'dt_milestone_webview_start',
+  ] 
+  ot_milestone_fields = [
+    'ot_milestone_android_start',
+    'ot_milestone_desktop_start',
+    'ot_milestone_webview_start',
+  ]
+  ship_milestone_fields = [
+    'shipped_android_milestone',
+    'shipped_ios_milestone',
+    'shipped_milestone',
+    'shipped_webview_milestone',
+  ]
+
+  ent_milestone_fields = ['rollout_milestone']
+
+  feature_keys: list[ndb.Key] = []
+  mstones_by_feature_id: dict[int, tuple[int, str]] = {}
+
+  _map_relevant_milestones(
+    feature_keys,
+    mstones_by_feature_id,
+    relevant_dev_trial_stages,
+    dt_milestone_fields,
+    min_mstone,
+  )
+  _map_relevant_milestones(
+    feature_keys,
+    mstones_by_feature_id,
+    relevant_origin_trial_stages,
+    ot_milestone_fields,
+    min_mstone,
+  )
+  _map_relevant_milestones(
+    feature_keys,
+    mstones_by_feature_id,
+    relevant_ship_stages,
+    ship_milestone_fields,
+    min_mstone,
+  )
+  _map_relevant_milestones(
+    feature_keys,
+    mstones_by_feature_id,
+    relevant_ent_stages,
+    ent_milestone_fields,
+    min_mstone,
+  )
+
+  relevant_features: list[FeatureEntry] = ndb.get_multi(feature_keys)
+  relevant_features = filter_confidential(relevant_features)
+  relevant_features = filter_unlisted(relevant_features)
+  now = datetime.now()
+
+  return [
+    (f,
+     mstones_by_feature_id[f.key.integer_id()][0],
+     mstones_by_feature_id[f.key.integer_id()][1]
+    ) for f in relevant_features
+    if (f.accurate_as_of and f.accurate_as_of + timedelta(weeks=4) < now
+        and not f.deleted)]
