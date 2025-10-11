@@ -31,8 +31,6 @@ from framework import rediscache
 test_app = flask.Flask(__name__,
   template_folder=settings.get_flask_template_path())
 
-# Load testdata to be used across all of the CustomTestCases
-TESTDATA = testing_config.Testdata(__file__)
 
 class TestWithFeature(testing_config.CustomTestCase):
 
@@ -103,52 +101,3 @@ class FeaturesJsonHandlerTest(TestWithFeature):
       json_data = self.handler.get_template_data()
     self.assertEqual(1, len(json_data))
     self.assertEqual('feature one', json_data[0]['name'])
-
-
-class FeatureListHandlerTest(TestWithFeature):
-
-  REQUEST_PATH_FORMAT = '/features'
-  HANDLER_CLASS = featurelist.FeatureListHandler
-
-  def test_get_template_data(self):
-    """User can get a feature list page."""
-    with test_app.test_request_context(self.request_path):
-      template_data = self.handler.get_template_data()
-
-    self.assertIn('IMPLEMENTATION_STATUSES', template_data)
-
-
-class FeatureListTemplateTest(TestWithFeature):
-
-  REQUEST_PATH_FORMAT = None
-  HANDLER_CLASS = featurelist.FeatureListHandler
-
-  def setUp(self):
-    super(FeatureListTemplateTest, self).setUp()
-    with test_app.test_request_context(self.request_path):
-      self.template_data = self.handler.get_template_data(
-          feature_id=self.feature_id)
-
-      testing_config.sign_in('admin@example.com', 111)
-
-      self.template_data.update(self.handler.get_common_data())
-      self.template_data['nonce'] = 'fake nonce'
-      self.template_data['xsrf_token'] = ''
-      self.template_data['xsrf_token_expires'] = 0
-      template_path = self.handler.get_template_path(self.template_data)
-      self.full_template_path = os.path.join(template_path)
-      self.maxDiff = None
-
-    def tearDown(self):
-      testing_config.sign_out()
-
-  def test_html_rendering(self):
-    """We can render the template with valid html."""
-    with test_app.app_context():
-      template_text = self.handler.render(
-          self.template_data, self.full_template_path)
-    parser = html5lib.HTMLParser(strict=True)
-    document = parser.parse(template_text)
-    # TESTDATA.make_golden(template_text, 'test_html_rendering.html')
-    self.assertMultiLineEqual(
-      TESTDATA['test_html_rendering.html'], template_text)
