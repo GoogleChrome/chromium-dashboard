@@ -24,11 +24,9 @@ from framework import rediscache
 from framework import users
 from framework import permissions
 from framework.utils import get_current_milestone_info
-from internals import stage_helpers
 from internals.stage_helpers import organize_all_stages_by_feature
 from internals.core_enums import *
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
-from internals.data_types import VerboseFeatureDict
 
 
 def filter_unlisted(feature_list: list[FeatureEntry]) -> list[FeatureEntry]:
@@ -40,9 +38,10 @@ def filter_unlisted(feature_list: list[FeatureEntry]) -> list[FeatureEntry]:
   return [
     f for f in feature_list
     if (not f.unlisted
-        or (email in f.owner_emails or email in f.editor_emails
+        # Owners and editors of a feature should still be able to see their features.
+        or email in f.owner_emails
+        or email in f.editor_emails
         or (email is not None and f.creator_email == email))
-    )
   ]
 
 
