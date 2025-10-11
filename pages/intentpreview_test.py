@@ -175,7 +175,7 @@ class IntentEmailPreviewTemplateTest(testing_config.CustomTestCase):
     self.gate_3 = Gate(id=201, feature_id=234, stage_id=300,
                        gate_type=4, state=Vote.APPROVED)
     self.gate_3.put()
-    self.stage_2_1 = Stage(id=210, feature_id=456, stage_type=360)
+    self.stage_2_1 = Stage(id=210, feature_id=456, stage_type=460)
     self.stage_2_1.put()
 
     self.request_path = '/features/234/stage/300'

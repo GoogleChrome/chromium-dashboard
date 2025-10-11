@@ -30,6 +30,8 @@ import settings
 test_app = flask.Flask(__name__,
   template_folder=settings.get_flask_template_path())
 
+# Load testdata to be used across all of the CustomTestCases
+TESTDATA = testing_config.Testdata(__file__)
 
 class IntentsAPITest(testing_config.CustomTestCase):
 
