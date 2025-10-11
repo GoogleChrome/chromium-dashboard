@@ -762,6 +762,11 @@ export class ChromeStatusClient {
     return this.doGet('/channels');
   }
 
+  // Stale Features API
+  async getStaleFeatures() {
+    return this.doGet('/features/stale');
+  }
+
   async getSpecifiedChannels(start, end) {
     return this.doGet(`/channels?start=${start}&end=${end}`);
   }
