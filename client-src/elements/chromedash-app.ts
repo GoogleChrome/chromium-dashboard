@@ -475,6 +475,9 @@ export class ChromedashApp extends LitElement {
       this.pageComponent.view = ctx.params.view;
       this.pageComponent.selectedBucketId = ctx.params.bucketId;
     });
+    page('/features/stale', ctx => {
+      if (!this.setupNewPage(ctx, 'chromedash-stale-features-page')) return;
+    });
     page('/metrics', () => page.redirect('/metrics/css/popularity'));
     page('/metrics/css', () => page.redirect('/metrics/css/popularity'));
     page('/metrics/css/timeline/popularity', () =>
