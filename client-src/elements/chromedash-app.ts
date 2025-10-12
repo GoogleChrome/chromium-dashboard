@@ -359,7 +359,6 @@ export class ChromedashApp extends LitElement {
       this.pageComponent.showQuery = false;
       this.pageComponent.rawQuery = parseRawQuery(ctx.querystring);
     });
-    page('/newfeatures', () => page.redirect('/features'));
     page('/features', ctx => {
       if (!this.setupNewPage(ctx, 'chromedash-all-features-page', true)) return;
       this.pageComponent.user = this.user;

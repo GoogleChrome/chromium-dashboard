@@ -51,7 +51,6 @@ gulp.task('rollup', () => {
       'build/components.js',
       'build/js-src/openapi-client.js',
       'build/js-src/cs-client.js',
-      'build/js-src/features-page.js',
       'build/js-src/shared.js',
     ],
     plugins: [

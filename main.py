@@ -278,8 +278,6 @@ mpa_page_routes: list[Route] = [
     Route(r'/features.json', featurelist.FeaturesJsonHandler),
     Route(r'/features_v2.json', featurelist.FeaturesJsonHandler),
 
-    Route('/oldfeatures', featurelist.FeatureListHandler),
-    Route('/features/<int:feature_id>', featurelist.FeatureListHandler),
     Route('/features.xml', basehandlers.ConstHandler,
         defaults={'template_path': 'farewell-rss.xml'}),
     Route('/samples', basehandlers.ConstHandler,
