@@ -141,19 +141,26 @@ class ShippingFeaturesAPITest(testing_config.CustomTestCase):
       response = self.handler.do_get(mstone=self.milestone)
 
     # Verify Complete Features
+    # The response now contains a list of URLs.
     complete_features = response['complete_features']
     self.assertEqual(len(complete_features), 2)
-    complete_ids = {f['id'] for f in complete_features}
     # Feature 1 is complete, Feature 5 is a PSA that bypasses checks.
-    self.assertEqual(complete_ids, {self.feature_1.key.integer_id(), self.feature_5.key.integer_id()})
+    expected_complete_urls = {
+        'http://localhost/feature/1',
+        'http://localhost/feature/5'
+    }
+    self.assertEqual(set(complete_features), expected_complete_urls)
 
     # Verify Incomplete Features
+    # The response is a list of (URL, reasons) tuples.
     incomplete_features = response['incomplete_features']
     self.assertEqual(len(incomplete_features), 3)
 
     # Use a dictionary for easy, order-independent lookup and assertion.
+    # Parse the feature ID from the URL to use as the dictionary key.
     incomplete_map = {
-        item[0]['id']: item[1] for item in incomplete_features
+        int(url.split('/')[-1]): reasons
+        for url, reasons in incomplete_features
     }
     self.assertIn(self.feature_2.key.integer_id(), incomplete_map)
     self.assertEqual(incomplete_map[self.feature_2.key.integer_id()], ['lgtms'])

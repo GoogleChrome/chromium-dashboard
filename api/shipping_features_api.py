@@ -25,12 +25,11 @@ from internals.core_enums import (
 )
 from internals.core_models import FeatureEntry, Stage
 from internals.review_models import Gate, Vote
-from internals.data_types import VerboseFeatureDict
 
 
 class GetShippingFeaturesResponse(TypedDict):
-  complete_features: list[VerboseFeatureDict]
-  incomplete_features: list[tuple[VerboseFeatureDict, list[str]]]
+  complete_features: list[str]
+  incomplete_features: list[tuple[str, list[str]]]
   
 
 class ShippingFeaturesAPI(basehandlers.EntitiesAPIHandler):
