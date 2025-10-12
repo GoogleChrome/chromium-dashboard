@@ -704,7 +704,9 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
 
   renderConfidential(f: Feature): TemplateResult {
     if (f.confidential) {
-      return html`<span class="confidential"><strong>CONFIDENTIAL</strong></span>`;
+      return html`<span class="confidential"
+        ><strong>CONFIDENTIAL</strong></span
+      >`;
     } else {
       return html``;
     }
