@@ -1,6 +1,18 @@
+{%- macro show_value(value) -%}
+  {{ value | default('<i>No information provided</i>', true) | safe }}
+{%- endmacro -%}
+
+{%- macro urlize_with_default(value) -%}
+  {%- if value -%}
+    {{ value | urlize | safe }}
+  {%- else -%}
+    <i>No information provided</i>
+  {%- endif -%}
+{%- endmacro -%}
+
 <div><b>Contact emails</b></div>
 {%- if not feature.browsers.chrome.owners -%}
-  None
+  <i>No information provided</i>
 {%- else -%}
   {%- for owner in feature.browsers.chrome.owners -%}
     <a href="mailto:{{owner}}">{{owner}}</a>{%- if not loop.last -%}, {% endif %}
@@ -12,7 +24,7 @@
 <br>
 <div><b>Explainer</b></div>
   {%- if not feature.explainer_links -%}
-    None
+    <i>No information provided</i>
   {%- else -%}
     {%- for link in feature.explainer_links -%}
       {% if loop.index0 %}<br>{% endif %}<a href="{{link}}">{{link}}</a>
@@ -23,48 +35,51 @@
 <br>
 
 <div><b>Specification</b></div>
-{{feature.standards.spec|urlize}}
+{{ urlize_with_default(feature.standards.spec) }}
 
 {% if feature.resources and feature.resources.docs -%}
 <br>
 <br>
-  <div><b>Design docs</b></div>
+<div><b>Design docs</b></div>
+  {%- if not feature.explainer_links -%}
+    <i>No information provided</i>
+  {%- endif -%}
   {%- for link in feature.resources.docs -%}
-<br><a href="{{link}}">{{link}}</a>
+    <br><a href="{{link}}">{{link}}</a>
   {%- endfor -%}
 {%- endif -%}
 <br>
 <br>
 <div><b>Summary</b></div>
-{{ feature.summary | urlize }}
+{{ urlize_with_default(feature.summary) }}
 
 <br>
 <br>
 <div><b>Blink component</b></div>
 {% for c in feature.browsers.chrome.blink_components -%}
-  <a href="https://issues.chromium.org/issues?q=customfield1222907:%22{{c}}%22" target="_blank" rel="noopener">{{c}}</a>
+  <a href="https://issues.chromium.org/issues?q=customfield1222907:%22{{ c | urlencode | default('', true) }}%22" target="_blank" rel="noopener">{{ show_value(c) }}</a>
 {%- endfor -%}
 
 <br>
 <br>
 <div><b>Web Feature ID</b></div>
-  {% if feature.is_official_web_feature -%}
-    <a href="https://webstatus.dev/features/{{feature.web_feature}}">{{feature.web_feature}}</a>
-  {%- elif feature.web_feature -%}
-    {{feature.web_feature}}
-  {%- else -%}
-    None
-  {%- endif %}
+{% if feature.is_official_web_feature -%}
+  <a href="https://webstatus.dev/features/{{ feature.web_feature | default('', true) }}">{{ show_value(feature.web_feature) }}</a>
+{%- elif feature.web_feature -%}
+  {{ show_value(feature.web_feature) }}
+{%- else -%}
+  <i>No information provided</i>
+{%- endif %}
 
 {% if 'motivation' in sections_to_show -%}
 <br>
 <br>
 <div><b>Motivation</b></div>
-  {{feature.motivation|urlize}}
+  {{ urlize_with_default(feature.motivation) }}
 <br>
 <br>
 <div><b>Initial public proposal</b></div>
-  {{feature.initial_public_proposal_url|urlize}}
+  {{ urlize_with_default(feature.initial_public_proposal_url) }}
 {%- endif -%}
 
 {% if feature.tags -%}
@@ -80,13 +95,13 @@
 <br>
 {%- if feature.feature_type_int != 2 %}
 <div><b>TAG review</b></div>
-{{feature.tag_review|urlize}}
+{{ urlize_with_default(feature.tag_review) }}
 
 {% if feature.tag_review_status -%}
 <br>
 <br>
 <div><b>TAG review status</b></div>
-  {{feature.tag_review_status}}
+  {{ show_value(feature.tag_review_status) }}
 {%- endif -%}
 {%- endif -%}
 
@@ -130,62 +145,62 @@
 <br>
 <br>
 <div><b>Interoperability and Compatibility</b></div>
-  {{feature.interop_compat_risks|urlize}}
+  {{ urlize_with_default(feature.interop_compat_risks) }}
 <br>
 <br>
-<i>Gecko</i>: {{feature.browsers.ff.view.text}}
+<i>Gecko</i>: {{ show_value(feature.browsers.ff.view.text) }}
   {%- if feature.browsers.ff.view.url -%}
-    &nbsp;(<a href="{{feature.browsers.ff.view.url}}">{{feature.browsers.ff.view.url}}</a>)
+    &nbsp;(<a href="{{ feature.browsers.ff.view.url | default('#', true) }}">{{ show_value(feature.browsers.ff.view.url) }}</a>)
   {%- endif -%}
   {%- if feature.browsers.ff.view.notes -%}
-    &nbsp;{{feature.browsers.ff.view.notes|urlize}}
+    &nbsp;{{ urlize_with_default(feature.browsers.ff.view.notes) }}
   {%- endif -%}
 <br>
 <br>
-<i>WebKit</i>: {{feature.browsers.safari.view.text}}
+<i>WebKit</i>: {{ show_value(feature.browsers.safari.view.text) }}
   {%- if feature.browsers.safari.view.url -%}
-    &nbsp;(<a href="{{feature.browsers.safari.view.url}}">{{feature.browsers.safari.view.url}}</a>)
+    &nbsp;(<a href="{{ feature.browsers.safari.view.url | default('#', true) }}">{{ show_value(feature.browsers.safari.view.url) }}</a>)
   {%- endif -%}
   {%- if feature.browsers.safari.view.notes -%}
-    &nbsp;{{feature.browsers.safari.view.notes|urlize}}
+    &nbsp;{{ urlize_with_default(feature.browsers.safari.view.notes) }}
   {%- endif -%}
 
 <br>
 <br>
-<i>Web developers</i>: {{feature.browsers.webdev.view.text}}
+<i>Web developers</i>: {{ show_value(feature.browsers.webdev.view.text) }}
   {%- if feature.browsers.webdev.view.url -%}
-    &nbsp;(<a href="{{feature.browsers.webdev.view.url}}">{{feature.browsers.webdev.view.url}}</a>)
+    &nbsp;(<a href="{{ feature.browsers.webdev.view.url | default('#', true) }}">{{ show_value(feature.browsers.webdev.view.url) }}</a>)
   {%- endif -%}
   {%- if feature.browsers.webdev.view.notes -%}
-    &nbsp;{{feature.browsers.webdev.view.notes|urlize}}
+    &nbsp;{{ urlize_with_default(feature.browsers.webdev.view.notes) }}
   {%- endif -%}
 
 <br>
 <br>
 <i>Other signals</i>:
   {%- if feature.browsers.other.view.notes -%}
-    &nbsp;{{feature.browsers.other.view.notes|urlize}}
+    &nbsp;{{ urlize_with_default(feature.browsers.other.view.notes) }}
   {%- endif -%}
 
   {%- if feature.ergonomics_risks -%}
 <br>
 <br>
 <div><b>Ergonomics</b></div>
-    {{feature.ergonomics_risks|urlize}}
+    {{ urlize_with_default(feature.ergonomics_risks) }}
   {%- endif -%}
 
   {%- if feature.activation_risks -%}
 <br>
 <br>
 <div><b>Activation</b></div>
-    {{feature.activation_risks|urlize}}
+    {{ urlize_with_default(feature.activation_risks) }}
   {%- endif -%}
 
   {%- if feature.security_risks -%}
 <br>
 <br>
 <div><b>Security</b></div>
-    {{feature.security_risks|urlize}}
+    {{ urlize_with_default(feature.security_risks) }}
   {%- endif -%}
 
 <br>
@@ -196,21 +211,19 @@
     such that it has potentially high risk for Android WebView-based
     applications?
   </p>
-  {{feature.webview_risks|urlize}}
+  {{ urlize_with_default(feature.webview_risks) }}
 
-</div> <!-- end risks -->
-
-{% if 'experiment' in sections_to_show -%}
+</div> <!-- end risks --> {% if 'experiment' in sections_to_show -%}
 <br>
 <br>
 <div><b>Goals for experimentation</b></div>
-  {{feature.experiment_goals|urlize}}
+  {{ urlize_with_default(feature.experiment_goals) }}
 
   {%- if feature.experiment_timeline -%}
 <br>
 <br>
 <div><b>Experimental timeline</b></div>
-    {{feature.experiment_timeline|urlize}}
+    {{ urlize_with_default(feature.experiment_timeline) }}
   {%- endif -%}
 
   {%- if 'extension_reason' in sections_to_show -%}
@@ -219,7 +232,7 @@
 <br>
 <br>
 <div><b>Reason this experiment is being extended</b></div>
-        {{stage.experiment_extension_reason|urlize}}
+        {{ urlize_with_default(stage.experiment_extension_reason) }}
       {%- endif -%}
     {%- endfor -%}
   {%- endif -%}
@@ -227,14 +240,14 @@
 <br>
 <br>
 <div><b>Ongoing technical constraints</b></div>
-  {{feature.ongoing_constraints|urlize}}
+  {{ urlize_with_default(feature.ongoing_constraints) }}
 
 {%- endif -%}
 
 <br>
 <br>
 <div><b>Debuggability</b></div>
-{{feature.debuggability|urlize}}
+{{ urlize_with_default(feature.debuggability) }}
 
 {% if 'experiment' in sections_to_show or 'ship' in sections_to_show -%}
 <br>
@@ -243,7 +256,7 @@
       (Windows, Mac, Linux, ChromeOS, Android, and Android WebView)?</b></div>
   {%- if feature.all_platforms -%}Yes{%- else -%}No{%- endif -%}
   {%- if feature.all_platforms_descr -%}
-    {{feature.all_platforms_descr|urlize}}
+    {{ urlize_with_default(feature.all_platforms_descr) }}
   {%- endif -%}
 {%- endif -%}
 
@@ -253,38 +266,38 @@
 {% if feature.wpt -%}Yes{%- else -%}No{%- endif %}
 <br>
 {% if feature.wpt_descr -%}
-  {{feature.wpt_descr|urlize}}
+  {{ urlize_with_default(feature.wpt_descr) }}
 {%- endif -%}
 
 {% if feature.devtrial_instructions -%}
 <br>
 <br>
 <div><b>DevTrial instructions</b></div>
-  <a href="{{feature.devtrial_instructions}}"
-     >{{feature.devtrial_instructions}}</a>
+  <a href="{{ feature.devtrial_instructions | default('#', true) }}"
+      >{{ show_value(feature.devtrial_instructions) }}</a>
 {%- endif -%}
 
 {%- if 'experiment' in sections_to_show or 'ship' in sections_to_show -%}
 <br>
 <br>
 <div><b>Flag name on about://flags</b></div>
-{{feature.flag_name}}
+{{ show_value(feature.flag_name) }}
 
 <br>
 <br>
 <div><b>Finch feature name</b></div>
-{{feature.finch_name}}
+{{ show_value(feature.finch_name) }}
 
 {% if feature.non_finch_justification -%}
 <br>
 <br>
 <div><b>Non-finch justification</b></div>
-  {{feature.non_finch_justification|urlize}}
+  {{ urlize_with_default(feature.non_finch_justification) }}
 {%- elif not feature.finch_name -%}
 <br>
 <br>
 <div><b>Non-finch justification</b></div>
-  None
+  <i>No information provided</i>
 {%- endif -%}
 {%- endif -%}
 
@@ -292,7 +305,7 @@
 <br>
 <br>
 <div><b>Rollout plan</b></div>
-  {{feature.rollout_plan_displayname}}
+  {{ show_value(feature.rollout_plan_displayname) }}
 {%- endif -%}
 
 <br>
@@ -306,42 +319,42 @@
 <br>
 <br>
 <div><b>Tracking bug</b></div>
-  <a href="{{feature.browsers.chrome.bug}}">{{feature.browsers.chrome.bug}}</a>
+  <a href="{{ feature.browsers.chrome.bug | default('#', true) }}">{{ show_value(feature.browsers.chrome.bug) }}</a>
 {%- endif -%}
 
 {%- if feature.launch_bug_url -%}
 <br>
 <br>
 <div><b>Launch bug</b></div>
-  <a href="{{feature.launch_bug_url}}">{{feature.launch_bug_url}}</a>
+  <a href="{{ feature.launch_bug_url | default('#', true) }}">{{ show_value(feature.launch_bug_url) }}</a>
 {%- endif -%}
 
 {%- if feature.measurement -%}
 <br>
 <br>
 <div><b>Measurement</b></div>
-  {{feature.measurement|urlize}}
+  {{ urlize_with_default(feature.measurement) }}
 {%- endif -%}
 
 {%- if feature.availability_expectation -%}
 <br>
 <br>
 <div><b>Availability expectation</b></div>
-  {{feature.availability_expectation|urlize}}
+  {{ urlize_with_default(feature.availability_expectation) }}
 {%- endif -%}
 
 {%- if feature.adoption_expectation -%}
 <br>
 <br>
 <div><b>Adoption expectation</b></div>
-  {{feature.adoption_expectation|urlize}}
+  {{ urlize_with_default(feature.adoption_expectation) }}
 {%- endif -%}
 
 {%- if feature.adoption_plan -%}
 <br>
 <br>
 <div><b>Adoption plan</b></div>
-  {{feature.adoption_plan|urlize}}
+  {{ urlize_with_default(feature.adoption_plan) }}
 {%- endif -%}
 
 {%- if feature.non_oss_deps -%}
@@ -353,7 +366,7 @@
     open source repository and its open-source dependencies to
     function?
   </p>
-  {{feature.non_oss_deps|urlize}}
+  {{ urlize_with_default(feature.non_oss_deps) }}
 {%- endif -%}
 
 {%- if 'sample_links' in sections_to_show -%}
@@ -363,7 +376,7 @@
 <div><b>Sample links</b></div>
     {%- for link in feature.resources.samples -%}
 <br>
-<a href="{{link}}">{{link}}</a>
+<a href="{{ link | default('#', true) }}">{{ show_value(link) }}</a>
     {%- endfor -%}
   {%- endif -%}
 {%- endif -%}
@@ -385,14 +398,14 @@
     may introduce web compat/interop risk (e.g., changing to naming or
     structure of the API in a non-backward-compatible way).
   </p>
-  {{feature.anticipated_spec_changes|urlize}}
+  {{ urlize_with_default(feature.anticipated_spec_changes) }}
 {%- endif -%}
 {%- endif -%}
 
 <br>
 <br>
 <div><b>Link to entry on the {{APP_TITLE}}</b></div>
-<a href="{{default_url}}">{{default_url}}</a>
+<a href="{{ default_url | default('#', true) }}">{{ show_value(default_url) }}</a>
 
 {%- if should_render_intents -%}
 <br>
@@ -400,27 +413,27 @@
 <div><b>Links to previous Intent discussions</b></div>
   {%- for stage in stage_info.proto_stages -%}
     {%- if stage.intent_thread_url -%}
-      Intent to Prototype: {{stage.intent_thread_url|urlize}}<br>
+      Intent to Prototype: {{ urlize_with_default(stage.intent_thread_url) }}<br>
     {%- endif -%}
   {%- endfor -%}
   {%- for stage in stage_info.dt_stages -%}
     {%- if stage.announcement_url -%}
-      Ready for Trial: {{stage.announcement_url|urlize}}<br>
+      Ready for Trial: {{ urlize_with_default(stage.announcement_url) }}<br>
     {%- endif -%}
   {%- endfor -%}
   {%- for stage in stage_info.ot_stages -%}
     {%- if stage.intent_thread_url -%}
-      Intent to Experiment: {{stage.intent_thread_url|urlize}}<br>
+      Intent to Experiment: {{ urlize_with_default(stage.intent_thread_url) }}<br>
     {%- endif -%}
   {%- endfor -%}
   {%- for stage in stage_info.extension_stages -%}
     {%- if stage.intent_thread_url -%}
-      Intent to Extend Experiment {{loop.index}}: {{stage.intent_thread_url|urlize}}<br>
+      Intent to Extend Experiment {{loop.index}}: {{ urlize_with_default(stage.intent_thread_url) }}<br>
     {%- endif -%}
   {%- endfor -%}
   {%- for stage in stage_info.ship_stages -%}
     {%- if stage.intent_thread_url -%}
-      Intent to Ship: {{stage.intent_thread_url|urlize}}<br>
+      Intent to Ship: {{ urlize_with_default(stage.intent_thread_url) }}<br>
     {%- endif -%}
   {%- endfor -%}
 {%- endif -%}

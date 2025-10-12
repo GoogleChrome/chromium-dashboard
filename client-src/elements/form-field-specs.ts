@@ -1548,20 +1548,24 @@ export const ALL_FIELDS: Record<string, Field> = {
       placeholder: 'e.g. "kWebFeature"',
       pattern: String.raw`k\S*`,
     },
-    label: 'WebFeature UseCounter name',
+    label: 'UseCounter name',
     help_text: html` For measuring usage, this must be a single named value from
-      the WebFeature enum, e.g. kWorkerStart. The use counter must be landed in
-      either
+      the WebFeature, WebDXFeature, or CSSSampleId enum, e.g. kWorkerStart. The
+      use counter must be landed in either
       <a
         target="_blank"
         href="https://source.chromium.org/chromium/chromium/src/+/main:third_party/blink/public/mojom/use_counter/metrics/web_feature.mojom"
         >web_feature.mojom</a
-      >
-      or
+      >,
       <a
         target="_blank"
         href="https://source.chromium.org/chromium/chromium/src/+/main:third_party/blink/public/mojom/use_counter/metrics/webdx_feature.mojom"
         >webdx_feature.mojom</a
+      >, or
+      <a
+        target="_blank"
+        href="https://source.chromium.org/chromium/chromium/src/+/main:third_party/blink/public/mojom/use_counter/metrics/css_property_id.mojom"
+        >css_property_id.mojom</a
       >. Not required for deprecation trials.`,
   },
 
@@ -1968,7 +1972,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     type: 'input',
     attrs: TEXT_FIELD_ATTRS,
     required: false,
-    label: 'Flag name',
+    label: 'Flag name on about://flags',
     help_text: html` Name of the flag on about://flags that allows a web
       developer to enable this feature in their own browser to try it out. E.g.,
       "storage-buckets". These are defined in

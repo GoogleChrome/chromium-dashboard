@@ -1,6 +1,5 @@
 // @ts-check
 import { expect } from '@playwright/test';
-import { Page } from "playwright-core";
 
 
 /**
@@ -14,12 +13,12 @@ export async function delay(ms) {
 /**
  * Call this, say in your test.beforeEach() method, to capture all
  * console messages and copy them to the playwright console.
- * @param {Page} page
+ * @param {import("playwright-core").Page} page
  */
 export function captureConsoleMessages(page) {
   page.on('console', async msg => {
     // ignore warnings for now.  There are tons of them.
-    if (msg.type() === 'warn') {
+    if (msg.type() === 'warning') {
       return;
     }
 
@@ -37,7 +36,7 @@ export function captureConsoleMessages(page) {
         // Sometimes this fails with something like:
         //  "Protocol error (Runtime.callFunctionOn): Target closed."
         argString = (await arg.jsonValue()).toString();
-      } catch (e) {
+      } catch {
         argString = arg.toString();
       }
       // Simplify tons of "SameSite" warnings.
@@ -53,7 +52,7 @@ export function captureConsoleMessages(page) {
 }
 
 /**
- * @param {Page} page
+ * @param {import("playwright-core").Page} page
  */
 export function capturePageEvents(page) {
   // page.on('open', async () => {
@@ -88,7 +87,7 @@ export function capturePageEvents(page) {
 }
 
 /**
- * @param {Page} page
+ * @param {import("playwright-core").Page} page
  */
 export async function decodeCookies(page) {
   const cookies = await page.context().cookies();
@@ -98,7 +97,7 @@ export async function decodeCookies(page) {
 }
 
 /**
- * @param {Page} page
+ * @param {import("playwright-core").Page} page
  */
 export async function isMobile(page) {
   const viewportSize = page.viewportSize();
@@ -152,7 +151,7 @@ export function acceptAlertDialogs(page) {
 let loginTimeout = 20000;
 
 /**
- * @param {Page} page
+ * @param {import("playwright-core").Page} page
  */
 export async function login(page) {
 
@@ -213,7 +212,7 @@ export async function login(page) {
 }
 
 /**
- * @param {Page} page
+ * @param {import("playwright-core").Page} page
  */
 export async function logout(page) {
   // Attempt to sign out after running each test.
@@ -263,7 +262,7 @@ export async function logout(page) {
 
 /**
  * From top-level page, after logging in, go to the New Feature page.
- * @param {Page} page
+ * @param {import('@playwright/test').Page} page
  */
 export async function gotoNewFeaturePage(page) {
   // console.log('navigate to create feature page');
@@ -293,7 +292,7 @@ export async function gotoNewFeaturePage(page) {
 /**
  * Enters a blink component on the page.
  *
- * @param {Page} page - The page object representing the web page.
+ * @param {import("playwright-core").Page} page - The page object representing the web page.
  * @return {Promise<void>} A promise that resolves once the blink component is entered.
  */
 export async function enterBlinkComponent(page) {
@@ -312,7 +311,7 @@ export async function enterBlinkComponent(page) {
 /**
  * Enters a web feature id on the page.
  *
- * @param {Page} page - The page object representing the web page.
+ * @param {import("playwright-core").Page} page - The page object representing the web page.
  * @return {Promise<void>} A promise that resolves once the web feature id is entered.
  */
 export async function enterWebFeatureId(page) {
@@ -369,6 +368,10 @@ export async function createNewFeature(page) {
   await delay(1500);
 }
 
+/**
+ * Navigates to new features list page.
+ * @param {import("playwright-core").Page} page
+ */
 export async function gotoNewFeatureList(page) {
   await page.goto('/newfeatures');
   await page.locator('chromedash-feature-pagination');
