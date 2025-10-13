@@ -42,25 +42,21 @@ class IntentEmailPreviewTemplateTest(testing_config.CustomTestCase):
     super(IntentEmailPreviewTemplateTest, self).setUp()
     self.complete_feature = FeatureEntry(
       id=234,
-      # Metadata: Creation and updates (creator/updater are populated, others are auto-set)
+      # Metadata
       accurate_as_of=datetime.datetime(2025, 10, 11, 12, 0, 0),
       outstanding_notifications=5,
       creator_email='creator.test@example.com',
       updater_email='updater.test@example.com',
-
-      # Metadata: Access controls
       owner_emails=['owner.one@example.com', 'owner.two@example.com'],
       editor_emails=['editor.one@example.com', 'editor.two@example.com'],
       cc_emails=['cc.one@example.com', 'cc.two@example.com'],
       unlisted=False,
       deleted=False,
-
-      # Descriptive info
       name='Test Feature for NDB Constructor',
       summary='This is a detailed summary of the test feature being created. It is designed to populate every possible field for testing purposes.',
       markdown_fields=['summary', 'motivation'],
-      category=1,  # Assuming a constant, e.g., WEB_COMPONENTS
-      enterprise_product_category=2, # Assuming a constant
+      category=1,
+      enterprise_product_category=2,
       enterprise_feature_categories=['testing', 'developer-tools'],
       blink_components=['Blink>Test', 'Blink>Internals>Test'],
       star_count=42,
@@ -68,8 +64,6 @@ class IntentEmailPreviewTemplateTest(testing_config.CustomTestCase):
       feature_notes='Some internal notes about this feature entry, not typically user-visible.',
       web_feature='test-feature-ndb-constructor',
       webdx_usecounter_enum='TestFeatureNdbConstructor',
-
-      # Metadata: Process information
       feature_type=0,
       intent_stage=1,
       active_stage_id=1001,
@@ -90,7 +84,7 @@ class IntentEmailPreviewTemplateTest(testing_config.CustomTestCase):
       ongoing_constraints='This feature is only available in secure contexts (HTTPS).',
       rollout_plan=0,
 
-      # Topic: Adoption
+      # Adoption
       motivation='The motivation for this feature is to provide a comprehensive example for developers.',
       devtrial_instructions='To test, navigate to chrome://flags and enable #enable-test-feature-constructor.',
       activation_risks='There are minimal activation risks, primarily related to experimental flag interactions.',
@@ -99,7 +93,7 @@ class IntentEmailPreviewTemplateTest(testing_config.CustomTestCase):
       adoption_expectation='We expect 100% adoption within our test suites.',
       adoption_plan='No external adoption plan is necessary as this is for testing.',
 
-      # Gate: Standardization & Interop
+      # Standardization & Interop
       initial_public_proposal_url='https://discourse.wicg.io/t/proposal-for-test-feature/9999',
       explainer_links=['https://example.com/explainer.md', 'https://example.com/explainer_slides.pdf'],
       requires_embedder_support=False,
@@ -117,7 +111,7 @@ class IntentEmailPreviewTemplateTest(testing_config.CustomTestCase):
       non_oss_deps='There are no non-Open-Source dependencies.',
       anticipated_spec_changes='We anticipate minor changes to the spec based on implementer feedback.',
 
-      # Views from other vendors
+      # Vendor views
       ff_views=2,
       safari_views=3,
       web_dev_views=1,
@@ -129,20 +123,20 @@ class IntentEmailPreviewTemplateTest(testing_config.CustomTestCase):
       web_dev_views_notes='Positive feedback received from the web developer community via social media.',
       other_views_notes='No signals from other implementers at this time.',
 
-      # Gate: Security & Privacy
+      # Security & Privacy
       security_risks='The main security risk involves ensuring that data is properly sanitized.',
       security_review_status=0,
       privacy_review_status=0,
       security_continuity_id=112233,
       security_launch_issue_id=445566,
 
-      # Gate: Testing / Regressions
+      # Testing / Regressions
       ergonomics_risks='The API could be complex for new developers, but documentation should mitigate this.',
       wpt=True,
       wpt_descr='A full suite of Web Platform Tests (WPT) will be developed and upstreamed.',
       webview_risks='No specific WebView risks have been identified.',
 
-      # Gate: Devrel & Docs
+      # Devrel & Docs
       devrel_emails=['devrel-lead@example.com'],
       debuggability='The feature is fully debuggable via Chrome DevTools, with a dedicated panel.',
       doc_links=['https://developer.chrome.com/docs/test-feature/'],
@@ -177,11 +171,8 @@ class IntentEmailPreviewTemplateTest(testing_config.CustomTestCase):
     self.gate_3 = Gate(id=201, feature_id=234, stage_id=300,
                        gate_type=4, state=Vote.APPROVED)
     self.gate_3.put()
-    self.stage_2_1 = Stage(id=210, feature_id=456, stage_type=460)
+    self.stage_2_1 = Stage(id=210, feature_id=456, stage_type=360)
     self.stage_2_1.put()
-    self.gate_2_1 = Gate(id=302, feature_id=456, stage_id=410,
-                         gate_type=4, state=Vote.APPROVED)
-    self.gate_2_1.put()
 
     self.request_path = '/features/234/stage/300'
     self.intent_preview_path = 'blink/intent_to_implement.html'
@@ -265,8 +256,7 @@ class IntentEmailPreviewTemplateTest(testing_config.CustomTestCase):
     with test_app.test_request_context(self.request_path):
       actual_data = self.handler.get_template_data(
           feature_id=self.feature_2.key.integer_id(),
-          stage_id=self.stage_2_1.key.integer_id(),
-          gate_id=self.gate_2_1.key.integer_id())
+          stage_id=self.stage_2_1.key.integer_id())
       actual_data.update(self.handler.get_common_data())
       actual_data['nonce'] = 'fake nonce'
       actual_data['xsrf_token'] = ''
