@@ -249,7 +249,7 @@ export class ChromedashOTExtensionPage extends LitElement {
       ? nothing
       : html`
           <a href=${this.getNextPage()}>
-            <iron-icon icon="chromestatus:arrow-back"></iron-icon>
+            <sl-icon name="arrow-left"></sl-icon>
             Request origin trial extension: ${this.feature.name}
           </a>
         `;

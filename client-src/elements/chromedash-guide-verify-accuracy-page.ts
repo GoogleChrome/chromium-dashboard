@@ -147,7 +147,7 @@ export class ChromedashGuideVerifyAccuracyPage extends LitElement {
       <div id="subheader">
         <h2 id="breadcrumbs">
           <a href="/feature/${this.featureId}">
-            <iron-icon icon="chromestatus:arrow-back"></iron-icon>
+            <sl-icon name="arrow-left"></sl-icon>
             Verify feature data for ${this.feature.name}
           </a>
         </h2>

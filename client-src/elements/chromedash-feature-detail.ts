@@ -26,7 +26,6 @@ import {
 import {makeDisplaySpecs} from './form-field-specs';
 import {getFieldValueFromFeature, hasFieldValue, isDefinedValue} from './utils';
 
-import '@polymer/iron-icon';
 import {property, state} from 'lit/decorators.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {Feature, FeatureLink, StageDict, User} from '../js-src/cs-client';

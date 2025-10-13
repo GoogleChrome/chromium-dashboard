@@ -127,11 +127,11 @@ class ChromedashCallout extends LitElement {
         ?hidden=${this.hidden}
         style="top:${this.top}px; left:${this.left}px;"
       >
-        <iron-icon
+        <sl-icon
           id="closebox"
-          icon="chromestatus:close"
+          name="x"
           @click=${this.dismiss}
-        ></iron-icon>
+        ></sl-icon>
         <div id="cue-content-container">
           <slot></slot>
         </div>
