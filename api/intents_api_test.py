@@ -270,7 +270,7 @@ class IntentsAPITest(testing_config.CustomTestCase):
         'Intent to Deprecate and Remove',
         intents_api.compute_subject_prefix(
           core_enums.FEATURE_TYPE_DEPRECATION_ID,
-          core_enums.IntentDraftType.PROTOTYPE))
+          core_enums.IntentDraftType.DEPRECATE))
 
     self.assertEqual(
         'Request for Deprecation Trial',
