@@ -944,36 +944,33 @@ export const ALL_FIELDS: Record<string, Field> = {
         >
         (TAG) is a special working group of the W3C that consists of a few
         appointed and elected members, all of whom are experienced members of
-        the web standards community. The Blink launch process has a formal
-        requirement for requesting a
-        <a target="_blank" href="https://github.com/w3ctag/design-reviews"
-          >TAG specification review</a
+        the web standards community. The Blink launch process has a <a
+          target="_blank"
+          href="https://www.chromium.org/blink/launching-features/wide-review/#tag"
+          >formal requirement for requesting a
+          TAG specification review</a
         >
         for all features. The review happens publicly on a GitHub issue.
       </p>
       <p>
         You will likely have asked for an "<a
           target="_blank"
-          href="https://github.com/w3ctag/design-reviews/issues/new?template=005-early-design-review.md"
-          >Early Design Review</a
+          href="https://github.com/w3ctag/design-reviews/issues/new?template=000-incubation-review.yaml"
+          >Early design/incubation review</a
         >" earlier in the process to get the TAG familiar with your feature.
         This isn't that.
       </p>
       <p>
-        It's recommended that you file a TAG
-        <a
-          target="_blank"
-          href="https://github.com/w3ctag/design-reviews/issues/new?template=010-specification-review.md"
-          >Specification Review</a
-        >
+        It's recommended that you file a TAG specification review
         as soon as your specification is written, and at least a month ahead of
         sending an Intent to Ship. There may be some work involved in preparing
-        your feature for review (see the
+        your feature for review. See the
         <a
           target="_blank"
-          href="https://github.com/w3ctag/design-reviews/blob/main/.github/ISSUE_TEMPLATE/010-specification-review.md"
-          >submission template fields</a
-        >).
+          href="https://www.chromium.org/blink/launching-features/wide-review/#tag"
+          >launch process</a
+        > for help picking which kind of specification review to file, and then
+        look through that template to find what data to collect.
       </p>
       <p>
         A large number of Intents to Ship are delayed because a TAG
