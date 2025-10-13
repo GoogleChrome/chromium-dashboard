@@ -72,7 +72,6 @@ class ShippingFeaturesAPI(basehandlers.EntitiesAPIHandler):
 
       if feature.feature_type == FEATURE_TYPE_CODE_CHANGE_ID:
         # PSA features do not require intents or approvals.
-        feature_dict = converters.feature_entry_to_json_verbose(feature)
         complete_features.append(chromestatus_url)
         continue
 
