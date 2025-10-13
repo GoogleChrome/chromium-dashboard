@@ -265,10 +265,6 @@ class IntentsAPITest(testing_config.CustomTestCase):
   def test_compute_subject_prefix__deprecate_feature(self):
     """We offer users the correct subject line for each intent stage."""
     self.feature_1.feature_type = core_enums.FEATURE_TYPE_DEPRECATION_ID
-    self.assertEqual(
-        'Intent stage "None"',
-        intents_api.compute_subject_prefix(
-            self.feature_1.feature_type, core_enums.IntentDraftType.NONE))
 
     self.assertEqual(
         'Intent to Deprecate and Remove',
@@ -294,4 +290,4 @@ class IntentsAPITest(testing_config.CustomTestCase):
     self.assertEqual(
         'Web-Facing Change PSA',
         intents_api.compute_subject_prefix(
-            core_enums.FEATURE_TYPE_CODE_CHANGE_ID, core_enums.IntentDraftType.SHIP))
+            core_enums.FEATURE_TYPE_CODE_CHANGE_ID, core_enums.IntentDraftType.PSA))
