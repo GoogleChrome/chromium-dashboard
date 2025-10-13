@@ -31,27 +31,14 @@ export const ROADMAP_MILESTONE_CARD_CSS = [
       counter-reset: featurecount;
       margin: 8px;
     }
-    iron-icon {
-      --iron-icon-height: 18px;
-      --iron-icon-width: 18px;
+    sl-icon {
+      font-size: 1.4rem;
       color: #366597;
     }
-    iron-icon:hover.android {
-      color: #a4c739;
+    sl-icon:hover {
+      color: #248;
     }
-    iron-icon:hover.remove {
-      color: var(--paper-red-700);
-    }
-    iron-icon:hover.deprecated {
-      color: var(--paper-orange-700);
-    }
-    iron-icon:hover.experimental {
-      color: var(--paper-green-700);
-    }
-    iron-icon:hover.intervention {
-      color: var(--paper-yellow-800);
-    }
-    iron-icon.pushicon {
+    sl-icon.pushicon {
       cursor: pointer;
     }
     sl-icon-button {
