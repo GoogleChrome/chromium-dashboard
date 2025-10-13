@@ -1,4 +1,3 @@
-import '@polymer/iron-icon';
 import {LitElement, css, html, nothing} from 'lit';
 import {property, state} from 'lit/decorators.js';
 import {SHARED_STYLES} from '../css/shared-css.js';

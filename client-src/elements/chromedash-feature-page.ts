@@ -530,12 +530,12 @@ export class ChromedashFeaturePage extends LitElement {
                     id="star-when-signed-in"
                     @click=${this.handleStarClick}
                   >
-                    <iron-icon
-                      icon=${this.starred
-                        ? 'chromestatus:star'
-                        : 'chromestatus:star-border'}
+                    <sl-icon
+                      name=${this.starred
+                        ? 'star-fill'
+                        : 'star'}
                       class="pushicon"
-                    ></iron-icon>
+                    ></sl-icon>
                   </a>
                 </span>
               `
@@ -548,7 +548,7 @@ export class ChromedashFeaturePage extends LitElement {
               target="_blank"
               rel="noopener"
             >
-              <iron-icon icon="chromestatus:bug-report"></iron-icon>
+              <sl-icon name="bug"></sl-icon>
             </a>
           </span>
           <span
@@ -561,7 +561,7 @@ export class ChromedashFeaturePage extends LitElement {
               id="share-feature"
               @click=${this.handleShareClick}
             >
-              <iron-icon icon="chromestatus:share"></iron-icon>
+              <sl-icon name="share"></sl-icon>
             </a>
           </span>
           <span
@@ -574,13 +574,13 @@ export class ChromedashFeaturePage extends LitElement {
               id="copy-link"
               @click=${this.handleCopyLinkClick}
             >
-              <iron-icon icon="chromestatus:link"></iron-icon>
+              <sl-icon name="link"></sl-icon>
             </a>
           </span>
         </div>
         <h2 id="breadcrumbs">
           <a href="${this.contextLink}">
-            <iron-icon icon="chromestatus:arrow-back"></iron-icon>
+            <sl-icon name="arrow-left"></sl-icon>
           </a>
           <a href="/feature/${this.featureId}">
             Feature: ${this.feature.name}
@@ -639,7 +639,7 @@ export class ChromedashFeaturePage extends LitElement {
         warnings.push(html`
           <div class="warning layout horizontal center">
             <span class="tooltip" id="outdated-icon" title="Feature outdated ">
-              <iron-icon icon="chromestatus:error" data-tooltip></iron-icon>
+              <sl-icon name="exclamation-circle-fill" data-tooltip></sl-icon>
             </span>
             <span>
               Your feature hasn't been verified as accurate since&nbsp;
@@ -661,7 +661,7 @@ export class ChromedashFeaturePage extends LitElement {
         warnings.push(html`
           <div class="warning layout horizontal center">
             <span class="tooltip" id="outdated-icon" title="Feature outdated ">
-              <iron-icon icon="chromestatus:error" data-tooltip></iron-icon>
+              <sl-icon name="exclamation-circle-fill" data-tooltip></sl-icon>
             </span>
             <span>
               This feature hasn't been verified as accurate since&nbsp;
@@ -688,7 +688,7 @@ export class ChromedashFeaturePage extends LitElement {
               id="shipped-outdated-author"
               title="Feature outdated "
             >
-              <iron-icon icon="chromestatus:error" data-tooltip></iron-icon>
+              <sl-icon name="exclamation-circle-fill" data-tooltip></sl-icon>
             </span>
             <span>
               Your feature hasn't been verified as accurate since&nbsp;
@@ -714,7 +714,7 @@ export class ChromedashFeaturePage extends LitElement {
               id="shipped-outdated-all"
               title="Feature outdated "
             >
-              <iron-icon icon="chromestatus:error" data-tooltip></iron-icon>
+              <sl-icon name="exclamation-circle-fill" data-tooltip></sl-icon>
             </span>
             <span>
               This feature hasn't been verified as accurate since&nbsp;

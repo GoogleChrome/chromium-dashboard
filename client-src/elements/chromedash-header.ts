@@ -328,7 +328,7 @@ export class ChromedashHeader extends LitElement {
             <div class="nav-dropdown-container" data-testid="account-indicator">
               <a class="nav-dropdown-trigger">
                 ${this.user.email}
-                <iron-icon icon="chromestatus:arrow-drop-down"></iron-icon>
+                <sl-icon name="caret-down-fill"></sl-icon>
               </a>
               <ul>
                 <li><a href="/settings">Settings</a></li>

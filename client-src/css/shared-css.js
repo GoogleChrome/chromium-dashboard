@@ -185,11 +185,6 @@ export const SHARED_STYLES = [
     display: none;
   }
 
-  iron-icon {
-    height: var(--icon-size);
-    width: var(--icon-size);
-  }
-
   .preformatted {
     white-space: pre-wrap;
   }
