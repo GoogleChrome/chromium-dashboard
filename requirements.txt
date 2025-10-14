@@ -16,11 +16,11 @@ google-cloud-tasks==2.19.3
 google-cloud-ndb==2.3.4
 google-cloud-logging==3.12.1
 google-cloud-secret-manager==2.24.0
-google-cloud-storage==3.4.0
+google-cloud-storage==3.4.1
 google-auth==2.41.1
 requests==2.32.5
 redis==6.4.0
-fakeredis==2.31.3
+fakeredis==2.32.0
 Flask==3.1.2
 flask-cors==6.0.1
 funcsigs==1.0.2
@@ -38,4 +38,4 @@ pillow==11.3.0
 # OpenAPI files
 ./gen/py/chromestatus_openapi
 ./gen/py/webstatus_openapi
-types-python-dateutil==2.9.0.20250822
+types-python-dateutil==2.9.0.20251008
