@@ -531,9 +531,7 @@ export class ChromedashFeaturePage extends LitElement {
                     @click=${this.handleStarClick}
                   >
                     <sl-icon
-                      name=${this.starred
-                        ? 'star-fill'
-                        : 'star'}
+                      name=${this.starred ? 'star-fill' : 'star'}
                       class="pushicon"
                     ></sl-icon>
                   </a>
