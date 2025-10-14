@@ -78,7 +78,7 @@
     "@open-wc/testing": "^4.0.0",
     "@openapitools/openapi-generator-cli": "^2.24.0",
     "@playwright/test": "1.56.0",
-    "@rollup/plugin-babel": "^6.0.4",
+    "@rollup/plugin-babel": "^6.1.0",
     "@rollup/plugin-node-resolve": "^16.0.2",
     "@rollup/plugin-typescript": "^12.1.4",
     "@shoelace-style/shoelace": "^2.20.1",
