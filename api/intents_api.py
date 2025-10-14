@@ -33,9 +33,20 @@ from internals.review_models import Gate
 import settings
 
 
+SUBJECT_PREFIXES = {
+  IntentDraftType.PROTOTYPE: 'Intent to Prototype',
+  IntentDraftType.DEVELOPER_TESTING: 'Ready for Developer Testing',
+  IntentDraftType.EXPERIMENT: 'Intent to Experiment',
+  IntentDraftType.EXTEND_EXPERIMENT: 'Intent to Extend Experiment',
+  IntentDraftType.PSA: 'Web-Facing Change PSA',
+  IntentDraftType.DEPRECATE: 'Intent to Deprecate and Remove',
+  IntentDraftType.SHIP: 'Intent to Ship'
+}
+
+
 def compute_subject_prefix(
     feature_type: int, intent_type: IntentDraftType):
-  """Return part of the subject line for an intent email."""
+  """Compute the subject line prefix for an intent email based on the feature and intent type."""
   # Deprecation-specific intent names.
   if feature_type == FEATURE_TYPE_DEPRECATION_ID:
     if intent_type == IntentDraftType.EXPERIMENT:
@@ -43,22 +54,7 @@ def compute_subject_prefix(
     if intent_type == IntentDraftType.EXTEND_EXPERIMENT:
       return 'Intent to Extend Deprecation Trial'
 
-  if intent_type == IntentDraftType.PROTOTYPE:
-    return 'Intent to Prototype'
-  if intent_type == IntentDraftType.DEVELOPER_TESTING:
-    return 'Ready for Developer Testing'
-  if intent_type == IntentDraftType.EXPERIMENT:
-    return 'Intent to Experiment'
-  if intent_type == IntentDraftType.EXTEND_EXPERIMENT:
-    return 'Intent to Extend Experiment'
-  if intent_type == IntentDraftType.PSA:
-    return 'Web-Facing Change PSA'
-  if intent_type == IntentDraftType.DEPRECATE:
-    return 'Intent to Deprecate and Remove'
-  if intent_type == IntentDraftType.SHIP:
-    return 'Intent to Ship'
-
-  return 'Unknown Intent Type'
+  return SUBJECT_PREFIXES.get(intent_type, 'Unknown Intent Type')
 
 
 # Format for Google Cloud Task body passed to cloud_tasks_helpers.enqueue_task
@@ -181,7 +177,7 @@ class IntentsAPI(basehandlers.APIHandler):
     params: IntentGenerationOptions = {
       'subject': subject,
       'feature_id': feature_id,
-      'intent_type': intent_type,
+      'intent_type': intent_type.value,
       'default_url': default_url,
       'intent_cc_emails': cc_emails,
     }
