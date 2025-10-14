@@ -133,6 +133,14 @@ export const WEBFEATURE_USE_COUNTER_TYPES: Record<
   ],
 };
 
+export enum FeatureType {
+  Incubate = 0,
+  Existing = 1,
+  CodeChange = 2,
+  Deprecation = 3,
+  Enterprise = 4,
+}
+
 // FEATURE_TYPES object is organized as [intValue, stringLabel, description],
 // the descriptions are used only for the descriptions of feature_type_radio_group
 export const FEATURE_TYPES_WITHOUT_ENTERPRISE: Record<
@@ -372,6 +380,52 @@ export const SHIPPED_MILESTONE_FIELDS = new Set<string>([
   'shipped_ios_milestone',
   'shipped_webview_milestone',
 ]);
+
+// Types of documents in which fields are used.
+export enum UsageType {
+  Prototype,
+  DeveloperTesting,
+  Experiment,
+  Ship,
+  PSA,
+  DeprecateAndRemove,
+  CrossFunctionReview,
+  ReleaseNotes,
+}
+
+// All intent types that are relevant to a given feature type.
+export const ALL_FEATURE_TYPE_INCUBATE_INTENTS = new Set<UsageType>([
+  UsageType.Prototype,
+  UsageType.DeveloperTesting,
+  UsageType.Experiment,
+  UsageType.Ship,
+]);
+
+export const ALL_FEATURE_TYPE_EXISTING_INTENTS = new Set<UsageType>([
+  UsageType.Prototype,
+  UsageType.DeveloperTesting,
+  UsageType.Experiment,
+  UsageType.Ship,
+]);
+
+export const ALL_FEATURE_TYPE_CODE_CHANGE_INTENTS = new Set<UsageType>([
+  UsageType.DeveloperTesting,
+  UsageType.PSA,
+]);
+
+export const ALL_FEATURE_TYPE_DEPRECATION_INTENTS = new Set<UsageType>([
+  UsageType.DeprecateAndRemove,
+  UsageType.DeveloperTesting,
+  UsageType.Experiment,
+  UsageType.Ship,
+]);
+
+export const ALL_INTENT_USAGE_BY_FEATURE_TYPE = {
+  [FeatureType.Incubate]: ALL_FEATURE_TYPE_INCUBATE_INTENTS,
+  [FeatureType.Existing]: ALL_FEATURE_TYPE_EXISTING_INTENTS,
+  [FeatureType.CodeChange]: ALL_FEATURE_TYPE_CODE_CHANGE_INTENTS,
+  [FeatureType.Deprecation]: ALL_FEATURE_TYPE_DEPRECATION_INTENTS,
+};
 
 // Every mutable field that exists on the Stage entity and every key
 // in MilestoneSet.MILESTONE_FIELD_MAPPING should be listed here.
