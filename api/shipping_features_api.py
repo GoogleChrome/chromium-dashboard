@@ -25,12 +25,11 @@ from internals.core_enums import (
 )
 from internals.core_models import FeatureEntry, Stage
 from internals.review_models import Gate, Vote
-from internals.data_types import VerboseFeatureDict
 
 
 class GetShippingFeaturesResponse(TypedDict):
-  complete_features: list[VerboseFeatureDict]
-  incomplete_features: list[tuple[VerboseFeatureDict, list[str]]]
+  complete_features: list[str]
+  incomplete_features: list[tuple[str, list[str]]]
   
 
 class ShippingFeaturesAPI(basehandlers.EntitiesAPIHandler):
@@ -59,19 +58,21 @@ class ShippingFeaturesAPI(basehandlers.EntitiesAPIHandler):
 
     shipping_stages = self._get_shipping_stages(milestone)
 
-    complete_features: list[VerboseFeatureDict] = []
-    incomplete_features: list[tuple[VerboseFeatureDict, list[str]]] = []
+    complete_features: list[str] = []
+    incomplete_features: list[tuple[str, list[str]]] = []
     for stage in shipping_stages:
       criteria_missing: list[str] = []
-      feature = FeatureEntry.get_by_id(stage.feature_id)
+      feature: FeatureEntry | None = FeatureEntry.get_by_id(stage.feature_id)
       if feature is None:
         logging.warning(f'Feature {stage.feature_id} not found.')
         continue
 
+      chromestatus_url = (f'{self.request.scheme}://{self.request.host}'
+                          f'/feature/{feature.key.integer_id()}')
+
       if feature.feature_type == FEATURE_TYPE_CODE_CHANGE_ID:
         # PSA features do not require intents or approvals.
-        feature_dict = converters.feature_entry_to_json_verbose(feature)
-        complete_features.append(feature_dict)
+        complete_features.append(chromestatus_url)
         continue
 
       api_owner_gate: Gate | None = Gate.query(
@@ -84,11 +85,10 @@ class ShippingFeaturesAPI(basehandlers.EntitiesAPIHandler):
       if not feature.finch_name and not feature.non_finch_justification:
         criteria_missing.append('finch_name')
 
-      feature_dict = converters.feature_entry_to_json_verbose(feature)
       if criteria_missing:
-        incomplete_features.append((feature_dict, criteria_missing))
+        incomplete_features.append((chromestatus_url, criteria_missing))
       else:
-        complete_features.append(feature_dict)
+        complete_features.append(chromestatus_url)
 
     return {
       'complete_features': complete_features,

@@ -150,7 +150,7 @@ api_routes: list[Route] = [
           intents_api.IntentsAPI),
     Route(f'{API_BASE}/features/<int:feature_id>/<int:stage_id>/<int:gate_id>/intent',
           intents_api.IntentsAPI),
-    Route(f'{API_BASE}/features/shipping/<int:mstone>',
+    Route(f'{API_BASE}/features/shipping',
           shipping_features_api.ShippingFeaturesAPI),
     Route(f'{API_BASE}/features/stale',
           stale_features_api.StaleFeaturesAPI),
