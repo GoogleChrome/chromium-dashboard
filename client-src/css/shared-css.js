@@ -199,6 +199,12 @@ export const SHARED_STYLES = [
   #breadcrumbs a {
     text-decoration: none;
     color: inherit;
+    display: flex;
+    align-items: center;
+  }
+
+  #breadcrumbs a sl-icon {
+    padding-right: var(--content-padding-half);
   }
 
   sl-dialog::part(title) {
