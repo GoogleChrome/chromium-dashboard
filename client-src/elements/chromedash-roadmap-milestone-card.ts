@@ -317,7 +317,10 @@ export class ChromedashRoadmapMilestoneCard extends LitElement {
                   id="outdated-icon"
                   title="Feature outdated - last checked for overall accuracy more than four weeks ago"
                 >
-                  <sl-icon name="exclamation-circle-fill" data-tooltip></sl-icon>
+                  <sl-icon
+                    name="exclamation-circle-fill"
+                    data-tooltip
+                  ></sl-icon>
                 </span>
               `
             : nothing}
