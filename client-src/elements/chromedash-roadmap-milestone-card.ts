@@ -325,7 +325,8 @@ export class ChromedashRoadmapMilestoneCard extends LitElement {
             ? html`
                 <span class="tooltip" title="Origin Trial">
                   <sl-icon
-                    name="puzzle"
+                    library="material"
+                    name="extension"
                     class="experimental"
                     data-tooltip
                   ></sl-icon>
@@ -336,7 +337,8 @@ export class ChromedashRoadmapMilestoneCard extends LitElement {
             ? html`
                 <span class="tooltip" title="Deprecation Trial">
                   <sl-icon
-                    name="puzzle"
+                    library="material"
+                    name="extension"
                     class="experimental"
                     data-tooltip
                   ></sl-icon>
@@ -347,7 +349,8 @@ export class ChromedashRoadmapMilestoneCard extends LitElement {
             ? html`
                 <span class="tooltip" title="Browser intervention">
                   <sl-icon
-                    name="sign-stop"
+                    library="material"
+                    name="pan-tool"
                     class="intervention"
                     data-tooltip
                   ></sl-icon>
