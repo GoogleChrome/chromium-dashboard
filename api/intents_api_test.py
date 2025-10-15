@@ -13,6 +13,8 @@
 # limitations under the License.
 
 
+from internals import core_enums
+from internals.core_enums import IntentDraftType
 import testing_config  # Must be imported before the module under test.
 import werkzeug.exceptions
 
@@ -131,8 +133,7 @@ class IntentsAPITest(testing_config.CustomTestCase):
     expected_task_params: intents_api.IntentGenerationOptions = {
       'subject': 'Intent to Extend Experiment: feature one',
       'feature_id': self.feature_1_id,
-      'sections_to_show': ['i2p_thread', 'experiment', 'extension_reason'],
-      'intent_stage': 11,
+      'intent_type': IntentDraftType.EXTEND_EXPERIMENT,
       'default_url': (f'http://localhost/feature/{self.feature_1_id}'
                       f'?gate={self.extension_gate_1.key.integer_id()}'),
       'intent_cc_emails': ['cc1@example.com', 'owner@example.com'],
@@ -161,8 +162,7 @@ class IntentsAPITest(testing_config.CustomTestCase):
     expected_task_params: intents_api.IntentGenerationOptions = {
       'subject': 'Intent to Experiment: feature one',
       'feature_id': self.feature_1_id,
-      'sections_to_show': ['i2p_thread', 'experiment', 'extension_reason'],
-      'intent_stage': 3,
+      'intent_type': IntentDraftType.EXPERIMENT,
       'default_url': (f'http://localhost/feature/{self.feature_1_id}'
                       f'?gate={self.ot_gate_1.key.integer_id()}'),
       'intent_cc_emails': ['cc33@example.com', 'owner@example.com'],
@@ -190,8 +190,7 @@ class IntentsAPITest(testing_config.CustomTestCase):
     expected_task_params: intents_api.IntentGenerationOptions = {
       'subject': 'Ready for Developer Testing: feature one',
       'feature_id': self.feature_1_id,
-      'sections_to_show': ['i2p_thread', 'experiment'],
-      'intent_stage': 2,
+      'intent_type': IntentDraftType.DEVELOPER_TESTING,
       'default_url': f'http://localhost/feature/{self.feature_1_id}',
       'intent_cc_emails': ['cc1@example.com', 'owner@example.com'],
     }
@@ -235,3 +234,60 @@ class IntentsAPITest(testing_config.CustomTestCase):
       with self.assertRaises(werkzeug.exceptions.NotFound):
         self.handler.do_post(feature_id=self.feature_1_id,
                             stage_id=-1)
+
+  def test_compute_subject_prefix__incubate_new_feature(self):
+    """We offer users the correct subject line for each intent stage."""
+    self.assertEqual(
+        'Intent to Prototype',
+        intents_api.compute_subject_prefix(
+            self.feature_1.feature_type, core_enums.IntentDraftType.PROTOTYPE))
+
+    self.assertEqual(
+        'Ready for Developer Testing',
+        intents_api.compute_subject_prefix(
+            self.feature_1.feature_type, core_enums.IntentDraftType.DEVELOPER_TESTING))
+
+    self.assertEqual(
+        'Intent to Experiment',
+        intents_api.compute_subject_prefix(
+            self.feature_1.feature_type, core_enums.IntentDraftType.EXPERIMENT))
+
+    self.assertEqual(
+        'Intent to Extend Experiment',
+        intents_api.compute_subject_prefix(
+            self.feature_1.feature_type, core_enums.IntentDraftType.EXTEND_EXPERIMENT))
+
+    self.assertEqual(
+        'Intent to Ship',
+        intents_api.compute_subject_prefix(
+            self.feature_1.feature_type, core_enums.IntentDraftType.SHIP))
+
+  def test_compute_subject_prefix__deprecate_feature(self):
+    """We offer users the correct subject line for each intent stage."""
+    self.feature_1.feature_type = core_enums.FEATURE_TYPE_DEPRECATION_ID
+
+    self.assertEqual(
+        'Intent to Deprecate and Remove',
+        intents_api.compute_subject_prefix(
+          core_enums.FEATURE_TYPE_DEPRECATION_ID,
+          core_enums.IntentDraftType.DEPRECATE))
+
+    self.assertEqual(
+        'Request for Deprecation Trial',
+        intents_api.compute_subject_prefix(
+          core_enums.FEATURE_TYPE_DEPRECATION_ID,
+          core_enums.IntentDraftType.EXPERIMENT))
+
+    self.assertEqual(
+        'Intent to Extend Deprecation Trial',
+        intents_api.compute_subject_prefix(
+          core_enums.FEATURE_TYPE_DEPRECATION_ID,
+          core_enums.IntentDraftType.EXTEND_EXPERIMENT))
+
+  def test_compute_subject_prefix__PSA_feature(self):
+    """We offer users the correct subject line for each intent stage."""
+    self.feature_1.feature_type = core_enums.FEATURE_TYPE_CODE_CHANGE_ID
+    self.assertEqual(
+        'Web-Facing Change PSA',
+        intents_api.compute_subject_prefix(
+            core_enums.FEATURE_TYPE_CODE_CHANGE_ID, core_enums.IntentDraftType.PSA))

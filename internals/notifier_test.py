@@ -1375,8 +1375,7 @@ class IntentToBlinkDevHandlerTest(testing_config.CustomTestCase):
     json_data = {
       'subject': 'Intent to Experiment: feature one',
       'feature_id': self.feature_1_id,
-      'sections_to_show': ['i2p_thread', 'experiment', 'extension_reason'],
-      'intent_stage': 3,
+      'intent_type': core_enums.IntentDraftType.EXPERIMENT.value,
       'default_url': (f'https://chromestatus.com/feature/{self.feature_1_id}'
                       f'?gate=${self.ot_gate_1.key.integer_id()}'),
       'intent_cc_emails': ['cc1@example.com', 'owner@example.com'],

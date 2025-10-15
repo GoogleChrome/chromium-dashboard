@@ -71,7 +71,7 @@
   <i>No information provided</i>
 {%- endif %}
 
-{% if 'motivation' in sections_to_show -%}
+{% if intent_type in ['prototype', 'deprecate', 'ship'] -%}
 <br>
 <br>
 <div><b>Motivation</b></div>
@@ -213,7 +213,7 @@
   </p>
   {{ urlize_with_default(feature.webview_risks) }}
 
-</div> <!-- end risks --> {% if 'experiment' in sections_to_show -%}
+</div> <!-- end risks --> {% if intent_type in ['experiment', 'extend_experiment'] -%}
 <br>
 <br>
 <div><b>Goals for experimentation</b></div>
@@ -226,7 +226,7 @@
     {{ urlize_with_default(feature.experiment_timeline) }}
   {%- endif -%}
 
-  {%- if 'extension_reason' in sections_to_show -%}
+  {%- if intent_type in ['experiment', 'extend_experiment'] -%}
     {%- for stage in stage_info.extension_stages -%}
       {%- if stage.experiment_extension_reason -%}
 <br>
@@ -249,7 +249,7 @@
 <div><b>Debuggability</b></div>
 {{ urlize_with_default(feature.debuggability) }}
 
-{% if 'experiment' in sections_to_show or 'ship' in sections_to_show -%}
+{% if intent_type in ['experiment', 'extend_experiment', 'ship'] -%}
 <br>
 <br>
 <div><b>Will this feature be supported on all six Blink platforms
@@ -277,7 +277,7 @@
       >{{ show_value(feature.devtrial_instructions) }}</a>
 {%- endif -%}
 
-{%- if 'experiment' in sections_to_show or 'ship' in sections_to_show -%}
+{%- if intent_type in ['experiment', 'extend_experiment', 'ship'] -%}
 <br>
 <br>
 <div><b>Flag name on about://flags</b></div>
@@ -301,7 +301,7 @@
 {%- endif -%}
 {%- endif -%}
 
-{%- if 'ship' in sections_to_show -%}
+{%- if intent_type == 'ship' -%}
 <br>
 <br>
 <div><b>Rollout plan</b></div>
@@ -369,7 +369,7 @@
   {{ urlize_with_default(feature.non_oss_deps) }}
 {%- endif -%}
 
-{%- if 'sample_links' in sections_to_show -%}
+{%- if intent_type == 'ship' -%}
   {%- if feature.resources and feature.resources.samples -%}
 <br>
 <br>
@@ -387,7 +387,7 @@
 {%- include "estimated-milestones-table.html" -%}
 
 {%- if feature.feature_type_int != 2 -%}
-{%- if 'anticipated_spec_changes' in sections_to_show or feature.anticipated_spec_changes -%}
+{%- if intent_type == 'ship' or feature.anticipated_spec_changes -%}
 <br>
 <br>
 <div><b>Anticipated spec changes</b></div>

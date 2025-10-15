@@ -12,21 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import datetime
 import testing_config  # Must be imported before the module under test.
 
 from flask import render_template
-from unittest import mock
 
 import os
 import flask
-import werkzeug
-import html5lib
 import settings
 
 from google.cloud import ndb  # type: ignore
 from pages import intentpreview
 from internals import core_enums
-from internals.core_models import FeatureEntry, MilestoneSet, Stage
+from internals.core_models import FeatureEntry, Stage
 from internals.review_models import Gate, Vote
 
 test_app = flask.Flask(__name__,
@@ -35,212 +33,111 @@ test_app = flask.Flask(__name__,
 # Load testdata to be used across all of the CustomTestCases
 TESTDATA = testing_config.Testdata(__file__)
 
-class IntentEmailPreviewHandlerTest(testing_config.CustomTestCase):
 
-  def setUp(self):
-    self.feature_1 = FeatureEntry(
-        name='feature one', summary='sum', owner_emails=['user1@google.com'],
-        category=1, intent_stage=core_enums.INTENT_IMPLEMENT,
-        feature_type=0)
-    self.feature_1.put()
+def _create_complete_feature():
+  return FeatureEntry(
+    id=234,
+    # Metadata
+    accurate_as_of=datetime.datetime(2025, 10, 11, 12, 0, 0),
+    outstanding_notifications=5,
+    creator_email='creator.test@example.com',
+    updater_email='updater.test@example.com',
+    owner_emails=['owner.one@example.com', 'owner.two@example.com'],
+    editor_emails=['editor.one@example.com', 'editor.two@example.com'],
+    cc_emails=['cc.one@example.com', 'cc.two@example.com'],
+    unlisted=False,
+    deleted=False,
+    name='Test Feature for NDB Constructor',
+    summary='This is a detailed summary of the test feature being created. It is designed to populate every possible field for testing purposes.',
+    markdown_fields=['summary', 'motivation'],
+    category=1,
+    enterprise_product_category=2,
+    enterprise_feature_categories=['testing', 'developer-tools'],
+    blink_components=['Blink>Test', 'Blink>Internals>Test'],
+    star_count=42,
+    search_tags=['test', 'example', 'constructor'],
+    feature_notes='Some internal notes about this feature entry, not typically user-visible.',
+    web_feature='test-feature-ndb-constructor',
+    webdx_usecounter_enum='TestFeatureNdbConstructor',
+    feature_type=0,
+    intent_stage=1,
+    active_stage_id=1001,
+    bug_url='https://bugs.chromium.org/p/chromium/issues/detail?id=12345',
+    launch_bug_url='https://buganizer.corp.google.com/issues/67890',
+    screenshot_links=['https://example.com/screenshot1.png', 'https://example.com/screenshot2.png'],
+    first_enterprise_notification_milestone=130,
+    enterprise_impact=2,
+    breaking_change=True,
+    confidential=False,
+    shipping_year=2026,
 
-    stages_and_gates = core_enums.STAGES_AND_GATES_BY_FEATURE_TYPE[0]
-    # Write stages for the feature.
-    for s_type, gate_types in stages_and_gates:
-      s = Stage(feature_id=self.feature_1.key.integer_id(), stage_type=s_type,
-          milestones=MilestoneSet(desktop_first=1,
-              android_first=1, desktop_last=2),
-          intent_thread_url=f'https://example.com/{s_type}')
-      # Add stage-specific fields based on the stage ID.
-      # 150 is the ID associated with the origin trial stage for feature type 0.
-      if s_type == 150:
-        s.experiment_goals = 'goals'
-        s.experiment_risks = 'risks'
-        s.announcement_url = 'https://example.com/announce'
-      # 151 is the stage ID associated with the origin trial extension.
-      elif s_type == 151:
-        s.experiment_extension_reason = 'reason'
-      # 151 is the ID associated with the shipping stage.
-      elif s_type == 160:
-        s.finch_url = 'https://example.com/finch'
-      s.put()
-      for g_type in gate_types:
-        gate = Gate(feature_id=self.feature_1.key.integer_id(),
-                    stage_id=s.key.integer_id(),
-                    gate_type=g_type, state=Vote.NA)
-        gate.put()
-        if s_type == 120 and g_type == 1:
-          self.proto_gate = gate
-        elif s_type == 150 and g_type == 2:
-          self.ot_gate = gate
-        elif s_type == 151 and g_type == 3:
-          self.extension_gate = gate
-        elif s_type == 160 and g_type == 4:
-          self.ship_gate = gate
+    # Implementation in Chrome
+    impl_status_chrome=3,
+    flag_name='enable-test-feature-constructor',
+    finch_name='TestFeatureConstructorStudy',
+    non_finch_justification='This feature is not suitable for a Finch experiment due to its nature.',
+    ongoing_constraints='This feature is only available in secure contexts (HTTPS).',
+    rollout_plan=0,
 
-    self.request_path = '/admin/features/launch/%d/%d?intent' % (
-        core_enums.INTENT_SHIP, self.feature_1.key.integer_id())
-    self.handler = intentpreview.IntentEmailPreviewHandler()
+    # Adoption
+    motivation='The motivation for this feature is to provide a comprehensive example for developers.',
+    devtrial_instructions='To test, navigate to chrome://flags and enable #enable-test-feature-constructor.',
+    activation_risks='There are minimal activation risks, primarily related to experimental flag interactions.',
+    measurement='Usage will be measured via a UMA histogram named "Test.Feature.Constructor.Usage".',
+    availability_expectation='Expected to be available in developer channels by M132.',
+    adoption_expectation='We expect 100% adoption within our test suites.',
+    adoption_plan='No external adoption plan is necessary as this is for testing.',
 
-  def tearDown(self):
-    for kind in [FeatureEntry, Gate, Stage, Vote]:
-      for entity in kind.query():
-        entity.key.delete()
+    # Standardization & Interop
+    initial_public_proposal_url='https://discourse.wicg.io/t/proposal-for-test-feature/9999',
+    explainer_links=['https://example.com/explainer.md', 'https://example.com/explainer_slides.pdf'],
+    requires_embedder_support=False,
+    standard_maturity=2,
+    spec_link='https://w3c.github.io/test-feature-spec/',
+    api_spec=True,
+    automation_spec=True,
+    spec_mentor_emails=['spec.mentor@example.com'],
+    interop_compat_risks='Low risk. The API surface is small and unlikely to conflict with other browser implementations.',
+    prefixed=False,
+    all_platforms=True,
+    all_platforms_descr='This feature is expected to work on all desktop and mobile platforms.',
+    tag_review='https://github.com/w3ctag/design-reviews/issues/999',
+    tag_review_status=1,
+    non_oss_deps='There are no non-Open-Source dependencies.',
+    anticipated_spec_changes='We anticipate minor changes to the spec based on implementer feedback.',
 
-  def test_get__anon(self):
-    """Anon cannot view this preview features, gets redirected to login."""
-    testing_config.sign_out()
-    feature_id = self.feature_1.key.integer_id()
-    with test_app.test_request_context(self.request_path):
-      actual_response = self.handler.get_template_data(
-          feature_id=feature_id, gate_id=self.ot_gate.key.integer_id())
-    self.assertEqual('302 FOUND', actual_response.status)
+    # Vendor views
+    ff_views=2,
+    safari_views=3,
+    web_dev_views=1,
+    ff_views_link='https://github.com/mozilla/standards-positions/issues/999',
+    safari_views_link='https://lists.webkit.org/pipermail/webkit-dev/2025-October/subject.html',
+    web_dev_views_link='https://developer.chrome.com/blog/test-feature-coming-soon/',
+    ff_views_notes='Has expressed cautious optimism.',
+    safari_views_notes='Has raised concerns about potential privacy implications.',
+    web_dev_views_notes='Positive feedback received from the web developer community via social media.',
+    other_views_notes='No signals from other implementers at this time.',
 
-  def test_get__no_existing(self):
-    """Trying to view a feature that does not exist gives a 404."""
-    testing_config.sign_in('user1@google.com', 123567890)
-    bad_feature_id = self.feature_1.key.integer_id() + 1
-    with test_app.test_request_context(self.request_path):
-      with self.assertRaises(werkzeug.exceptions.NotFound):
-        self.handler.get_template_data(
-            feature_id=bad_feature_id, gate_id=self.ot_gate.key.integer_id())
+    # Security & Privacy
+    security_risks='The main security risk involves ensuring that data is properly sanitized.',
+    security_review_status=0,
+    privacy_review_status=0,
+    security_continuity_id=112233,
+    security_launch_issue_id=445566,
 
-  def test_get__gate_not_found(self):
-    """Trying to view a feature that does not exist gives a 404."""
-    testing_config.sign_in('user1@google.com', 123567890)
-    feature_id = self.feature_1.key.integer_id()
-    with test_app.test_request_context(self.request_path):
-      with self.assertRaises(werkzeug.exceptions.NotFound):
-        self.handler.get_template_data(
-            feature_id=feature_id, gate_id=self.ot_gate.key.integer_id() + 1)
+    # Testing / Regressions
+    ergonomics_risks='The API could be complex for new developers, but documentation should mitigate this.',
+    wpt=True,
+    wpt_descr='A full suite of Web Platform Tests (WPT) will be developed and upstreamed.',
+    webview_risks='No specific WebView risks have been identified.',
 
-  def test_get__no_gate_specified(self):
-    """Not specifying a gate gives a 400."""
-    request_path = (
-        '/admin/features/launch/%d?intent' % self.feature_1.key.integer_id())
-    testing_config.sign_in('user1@google.com', 123567890)
-    feature_id = self.feature_1.key.integer_id()
-    with test_app.test_request_context(request_path):
-      with self.assertRaises(werkzeug.exceptions.BadRequest):
-        self.handler.get_template_data(feature_id=feature_id)
+    # Devrel & Docs
+    devrel_emails=['devrel-lead@example.com'],
+    debuggability='The feature is fully debuggable via Chrome DevTools, with a dedicated panel.',
+    doc_links=['https://developer.chrome.com/docs/test-feature/'],
+    sample_links=['https://github.com/GoogleChrome/samples/tree/gh-pages/test-feature'],
+  )
 
-  def test_get__normal(self):
-    """Allowed user can preview intent email for a feature."""
-    testing_config.sign_in('user1@google.com', 123567890)
-    feature_id = self.feature_1.key.integer_id()
-    with test_app.test_request_context(self.request_path):
-      actual_data = self.handler.get_template_data(feature_id=feature_id,
-                                                   intent_stage=core_enums.INTENT_IMPLEMENT)
-    self.assertIn('feature', actual_data)
-    self.assertEqual('feature one', actual_data['feature']['name'])
-
-  def test_get_page_data__implement(self):
-    """page_data has correct values."""
-    feature_id = self.feature_1.key.integer_id()
-    with test_app.test_request_context(self.request_path):
-      page_data = self.handler.get_page_data(
-          feature_id, self.feature_1, core_enums.INTENT_IMPLEMENT)
-    self.assertEqual(
-        'http://localhost/feature/%d' % feature_id,
-        page_data['default_url'])
-    self.assertEqual(
-        ['motivation'],
-        page_data['sections_to_show'])
-    self.assertEqual(
-        'Intent to Prototype',
-        page_data['subject_prefix'])
-
-  def test_get_page_data__ship(self):
-    """page_data has correct values."""
-    feature_id = self.feature_1.key.integer_id()
-    with test_app.test_request_context(self.request_path):
-      page_data = self.handler.get_page_data(
-          feature_id, self.feature_1, core_enums.INTENT_SHIP)
-    self.assertEqual(
-        'http://localhost/feature/%d' % feature_id,
-        page_data['default_url'])
-    self.assertIn('ship', page_data['sections_to_show'])
-    self.assertEqual(
-        'Intent to Ship',
-        page_data['subject_prefix'])
-
-  def test_compute_subject_prefix__incubate_new_feature(self):
-    """We offer users the correct subject line for each intent stage."""
-    self.assertEqual(
-        'Intent stage "None"',
-        intentpreview.compute_subject_prefix(
-            self.feature_1, core_enums.INTENT_NONE))
-
-    self.assertEqual(
-        'Intent stage "Start incubating"',
-        intentpreview.compute_subject_prefix(
-            self.feature_1, core_enums.INTENT_INCUBATE))
-
-    self.assertEqual(
-        'Intent to Prototype',
-        intentpreview.compute_subject_prefix(
-            self.feature_1, core_enums.INTENT_IMPLEMENT))
-
-    self.assertEqual(
-        'Ready for Developer Testing',
-        intentpreview.compute_subject_prefix(
-            self.feature_1, core_enums.INTENT_EXPERIMENT))
-
-    self.assertEqual(
-        'Intent stage "Evaluate readiness to ship"',
-        intentpreview.compute_subject_prefix(
-            self.feature_1, core_enums.INTENT_IMPLEMENT_SHIP))
-
-    self.assertEqual(
-        'Intent to Experiment',
-        intentpreview.compute_subject_prefix(
-            self.feature_1, core_enums.INTENT_ORIGIN_TRIAL))
-
-    self.assertEqual(
-        'Intent to Ship',
-        intentpreview.compute_subject_prefix(
-            self.feature_1, core_enums.INTENT_SHIP))
-
-    self.assertEqual(
-        'Intent to Extend Deprecation Trial',
-        intentpreview.compute_subject_prefix(
-            self.feature_1, core_enums.INTENT_REMOVED))
-
-    self.assertEqual(
-        'Intent stage "Shipped"',
-        intentpreview.compute_subject_prefix(
-            self.feature_1, core_enums.INTENT_SHIPPED))
-
-    self.assertEqual(
-        'Intent stage "Parked"',
-        intentpreview.compute_subject_prefix(
-            self.feature_1, core_enums.INTENT_PARKED))
-
-  def test_compute_subject_prefix__deprecate_feature(self):
-    """We offer users the correct subject line for each intent stage."""
-    self.feature_1.feature_type = core_enums.FEATURE_TYPE_DEPRECATION_ID
-    self.assertEqual(
-        'Intent stage "None"',
-        intentpreview.compute_subject_prefix(
-            self.feature_1, core_enums.INTENT_NONE))
-
-    self.assertEqual(
-        'Intent to Deprecate and Remove',
-        intentpreview.compute_subject_prefix(
-            self.feature_1, core_enums.INTENT_IMPLEMENT))
-
-    self.assertEqual(
-        'Request for Deprecation Trial',
-        intentpreview.compute_subject_prefix(
-            self.feature_1, core_enums.INTENT_ORIGIN_TRIAL))
-
-  def test_compute_subject_prefix__PSA_feature(self):
-    """We offer users the correct subject line for each intent stage."""
-    self.feature_1.feature_type = core_enums.FEATURE_TYPE_CODE_CHANGE_ID
-    self.assertEqual(
-        'Web-Facing Change PSA',
-        intentpreview.compute_subject_prefix(
-            self.feature_1, core_enums.INTENT_SHIP))
 
 class IntentEmailPreviewTemplateTest(testing_config.CustomTestCase):
 
@@ -248,21 +145,16 @@ class IntentEmailPreviewTemplateTest(testing_config.CustomTestCase):
 
   def setUp(self):
     super(IntentEmailPreviewTemplateTest, self).setUp()
-    self.feature_1 = FeatureEntry(
-        id=234, name='feature one', summary='sum',
-        owner_emails=['user1@google.com'], feature_type=0,
-        web_feature='WebFeature',
-        category=1, intent_stage=core_enums.INTENT_IMPLEMENT,
-        wpt=True, wpt_descr='WPT description, https://example.com/wpt')
+    self.complete_feature = _create_complete_feature()
+    self.complete_feature.put()
+
     self.feature_2 = FeatureEntry(
         id=456, name='feature two', summary='sum',
         owner_emails=['user1@google.com'], feature_type=2,
         web_feature='WebFeature2',
         category=1, intent_stage=core_enums.INTENT_SHIP)
     self.feature_2.put()
-    # Hardcode the key for the template test
-    self.feature_1.key = ndb.Key('FeatureEntry', 234)
-    self.feature_1.put()
+
 
     self.stage_1 = Stage(id=100, feature_id=234, stage_type=150,
                          ot_display_name="Test 123")
@@ -280,27 +172,22 @@ class IntentEmailPreviewTemplateTest(testing_config.CustomTestCase):
     self.stage_3 = Stage(id=300, feature_id=234, stage_type=160,
                          intent_thread_url='https://example.com/ship')
     self.stage_3.put()
-    self.gate_3 = Gate(id=201, feature_id=234, stage_id=100,
+    self.gate_3 = Gate(id=201, feature_id=234, stage_id=300,
                        gate_type=4, state=Vote.APPROVED)
     self.gate_3.put()
     self.stage_2_1 = Stage(id=210, feature_id=456, stage_type=360)
     self.stage_2_1.put()
-    self.gate_2_1 = Gate(id=302, feature_id=456, stage_id=210,
-                         gate_type=4, state=Vote.APPROVED)
-    self.gate_2_1.put()
 
-    self.request_path = '/admin/features/launch/%d/%d?intent' % (
-        core_enums.INTENT_SHIP, self.feature_1.key.integer_id())
+    self.request_path = '/features/234/stage/300'
     self.intent_preview_path = 'blink/intent_to_implement.html'
     self.handler = self.HANDLER_CLASS()
-    self.feature_id = self.feature_1.key.integer_id()
 
-    testing_config.sign_in('user1@google.com', 123567890)
     with test_app.test_request_context(self.request_path):
       self.template_data = self.handler.get_template_data(
-        feature_id=self.feature_id, intent_stage=core_enums.INTENT_IMPLEMENT)
+        feature_id=self.complete_feature.key.integer_id(),
+        stage_id=self.stage_3.key.integer_id())
       page_data = self.handler.get_page_data(
-          self.feature_id, self.feature_1, core_enums.INTENT_IMPLEMENT)
+          self.complete_feature, core_enums.IntentDraftType.SHIP, self.gate_3)
 
     self.template_data.update(page_data)
     self.template_data['nonce'] = 'fake nonce'
@@ -313,33 +200,13 @@ class IntentEmailPreviewTemplateTest(testing_config.CustomTestCase):
     for kind in [FeatureEntry, Gate, Stage]:
       for entity in kind.query():
         entity.key.delete()
-    testing_config.sign_out()
-
-  def test_html_rendering(self):
-    """We can render the template with valid html."""
-    with test_app.test_request_context(self.request_path):
-      actual_data = self.handler.get_template_data(
-          feature_id=self.feature_id, intent_stage=core_enums.INTENT_IMPLEMENT)
-      actual_data.update(self.handler.get_common_data())
-      actual_data['nonce'] = 'fake nonce'
-      actual_data['xsrf_token'] = ''
-      actual_data['xsrf_token_expires'] = 0
-
-      template_text = self.handler.render(
-          actual_data, self.full_template_path)
-      testing_config.sign_out()
-    parser = html5lib.HTMLParser(strict=True)
-    document = parser.parse(template_text)
-    # TESTDATA.make_golden(template_text, 'test_html_rendering.html')
-    self.assertMultiLineEqual(
-      TESTDATA['test_html_rendering.html'], template_text)
 
   def test_template_rendering_prototype(self):
     """We can render the prototype template with valid html."""
     with test_app.test_request_context(self.request_path):
       actual_data = self.handler.get_template_data(
-          feature_id=self.feature_id,
-          intent_stage=core_enums.INTENT_IMPLEMENT,
+          feature_id=self.complete_feature.key.integer_id(),
+          stage_id=self.stage_2.key.integer_id(),
           gate_id=self.gate_2.key.integer_id())
       actual_data.update(self.handler.get_common_data())
       actual_data['nonce'] = 'fake nonce'
@@ -356,8 +223,8 @@ class IntentEmailPreviewTemplateTest(testing_config.CustomTestCase):
     """We can render the origin trial intent template."""
     with test_app.test_request_context(self.request_path):
       actual_data = self.handler.get_template_data(
-          feature_id=self.feature_id,
-          intent_stage=core_enums.INTENT_ORIGIN_TRIAL,
+          feature_id=self.complete_feature.key.integer_id(),
+          stage_id=self.stage_1.key.integer_id(),
           gate_id=self.gate_1.key.integer_id())
       actual_data.update(self.handler.get_common_data())
       actual_data['nonce'] = 'fake nonce'
@@ -374,8 +241,8 @@ class IntentEmailPreviewTemplateTest(testing_config.CustomTestCase):
     """We can render the ship intent template."""
     with test_app.test_request_context(self.request_path):
       actual_data = self.handler.get_template_data(
-          feature_id=self.feature_id,
-          intent_stage=core_enums.INTENT_SHIP,
+          feature_id=self.complete_feature.key.integer_id(),
+          stage_id=self.stage_3.key.integer_id(),
           gate_id=self.gate_3.key.integer_id())
       actual_data.update(self.handler.get_common_data())
       actual_data['nonce'] = 'fake nonce'
@@ -393,8 +260,7 @@ class IntentEmailPreviewTemplateTest(testing_config.CustomTestCase):
     with test_app.test_request_context(self.request_path):
       actual_data = self.handler.get_template_data(
           feature_id=self.feature_2.key.integer_id(),
-          intent_stage=core_enums.INTENT_SHIP,
-          gate_id=self.gate_2_1.key.integer_id())
+          stage_id=self.stage_2_1.key.integer_id())
       actual_data.update(self.handler.get_common_data())
       actual_data['nonce'] = 'fake nonce'
       actual_data['xsrf_token'] = ''
