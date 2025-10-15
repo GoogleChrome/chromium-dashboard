@@ -21,7 +21,7 @@ USER pwuser
 WORKDIR /work
 
 # Set environment variable so we can tell we're performing Playwright tests.
-ENV PLAYWRIGHT_MODE=1
+ENV PLAYWRIGHT_MODE=true
 
 # Install a consistent version of Playwright. The duplicate ARG line is needed to copy the value
 # into this build stage.
