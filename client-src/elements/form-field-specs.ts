@@ -1132,7 +1132,27 @@ export const ALL_FIELDS: Record<string, Field> = {
     type: 'textarea',
     required: false,
     label: 'Interoperability and Compatibility Risks',
-    usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
+    usage: {
+      [FeatureType.Incubate]: new Set<UsageType>([
+        UsageType.DeveloperTesting,
+        UsageType.Experiment,
+        UsageType.Ship,
+      ]),
+      [FeatureType.Existing]: new Set<UsageType>([
+        UsageType.DeveloperTesting,
+        UsageType.Experiment,
+        UsageType.Ship,
+      ]),
+      [FeatureType.CodeChange]: new Set<UsageType>([
+        UsageType.DeveloperTesting,
+        UsageType.PSA,
+      ]),
+      [FeatureType.Deprecation]: new Set<UsageType>([
+        UsageType.DeveloperTesting,
+        UsageType.Experiment,
+        UsageType.Ship,
+      ]),
+    },
     help_text: html` Describe the degree of
       <a
         target="_blank"
@@ -1165,7 +1185,27 @@ export const ALL_FIELDS: Record<string, Field> = {
     choices: VENDOR_VIEWS_COMMON,
     initial: VENDOR_VIEWS_COMMON.NO_PUBLIC_SIGNALS[0],
     label: 'WebKit views',
-    usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
+    usage: {
+      [FeatureType.Incubate]: new Set<UsageType>([
+        UsageType.DeveloperTesting,
+        UsageType.Experiment,
+        UsageType.Ship,
+      ]),
+      [FeatureType.Existing]: new Set<UsageType>([
+        UsageType.DeveloperTesting,
+        UsageType.Experiment,
+        UsageType.Ship,
+      ]),
+      [FeatureType.CodeChange]: new Set<UsageType>([
+        UsageType.DeveloperTesting,
+        UsageType.PSA,
+      ]),
+      [FeatureType.Deprecation]: new Set<UsageType>([
+        UsageType.DeveloperTesting,
+        UsageType.Experiment,
+        UsageType.Ship,
+      ]),
+    },
     help_text: html` See
       <a
         target="_blank"
@@ -1181,7 +1221,27 @@ export const ALL_FIELDS: Record<string, Field> = {
     required: false,
     label: '',
     displayLabel: 'WebKit views link',
-    usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
+    usage: {
+      [FeatureType.Incubate]: new Set<UsageType>([
+        UsageType.DeveloperTesting,
+        UsageType.Experiment,
+        UsageType.Ship,
+      ]),
+      [FeatureType.Existing]: new Set<UsageType>([
+        UsageType.DeveloperTesting,
+        UsageType.Experiment,
+        UsageType.Ship,
+      ]),
+      [FeatureType.CodeChange]: new Set<UsageType>([
+        UsageType.DeveloperTesting,
+        UsageType.PSA,
+      ]),
+      [FeatureType.Deprecation]: new Set<UsageType>([
+        UsageType.DeveloperTesting,
+        UsageType.Experiment,
+        UsageType.Ship,
+      ]),
+    },
     help_text: html`Citation link.`,
   },
 
@@ -1191,7 +1251,27 @@ export const ALL_FIELDS: Record<string, Field> = {
     required: false,
     label: '',
     displayLabel: 'WebKit views notes',
-    usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
+    usage: {
+      [FeatureType.Incubate]: new Set<UsageType>([
+        UsageType.DeveloperTesting,
+        UsageType.Experiment,
+        UsageType.Ship,
+      ]),
+      [FeatureType.Existing]: new Set<UsageType>([
+        UsageType.DeveloperTesting,
+        UsageType.Experiment,
+        UsageType.Ship,
+      ]),
+      [FeatureType.CodeChange]: new Set<UsageType>([
+        UsageType.DeveloperTesting,
+        UsageType.PSA,
+      ]),
+      [FeatureType.Deprecation]: new Set<UsageType>([
+        UsageType.DeveloperTesting,
+        UsageType.Experiment,
+        UsageType.Ship,
+      ]),
+    },
     help_text: '',
   },
 
@@ -1200,7 +1280,27 @@ export const ALL_FIELDS: Record<string, Field> = {
     choices: VENDOR_VIEWS_GECKO,
     initial: VENDOR_VIEWS_GECKO.NO_PUBLIC_SIGNALS[0],
     label: 'Firefox views',
-    usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
+    usage: {
+      [FeatureType.Incubate]: new Set<UsageType>([
+        UsageType.DeveloperTesting,
+        UsageType.Experiment,
+        UsageType.Ship,
+      ]),
+      [FeatureType.Existing]: new Set<UsageType>([
+        UsageType.DeveloperTesting,
+        UsageType.Experiment,
+        UsageType.Ship,
+      ]),
+      [FeatureType.CodeChange]: new Set<UsageType>([
+        UsageType.DeveloperTesting,
+        UsageType.PSA,
+      ]),
+      [FeatureType.Deprecation]: new Set<UsageType>([
+        UsageType.DeveloperTesting,
+        UsageType.Experiment,
+        UsageType.Ship,
+      ]),
+    },
     help_text: html` See
       <a
         target="_blank"
@@ -1216,7 +1316,27 @@ export const ALL_FIELDS: Record<string, Field> = {
     required: false,
     label: '',
     displayLabel: 'Firefox views link',
-    usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
+    usage: {
+      [FeatureType.Incubate]: new Set<UsageType>([
+        UsageType.DeveloperTesting,
+        UsageType.Experiment,
+        UsageType.Ship,
+      ]),
+      [FeatureType.Existing]: new Set<UsageType>([
+        UsageType.DeveloperTesting,
+        UsageType.Experiment,
+        UsageType.Ship,
+      ]),
+      [FeatureType.CodeChange]: new Set<UsageType>([
+        UsageType.DeveloperTesting,
+        UsageType.PSA,
+      ]),
+      [FeatureType.Deprecation]: new Set<UsageType>([
+        UsageType.DeveloperTesting,
+        UsageType.Experiment,
+        UsageType.Ship,
+      ]),
+    },
     help_text: html` Citation link.`,
   },
 
@@ -1226,7 +1346,27 @@ export const ALL_FIELDS: Record<string, Field> = {
     required: false,
     label: '',
     displayLabel: 'Firefox views notes',
-    usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
+    usage: {
+      [FeatureType.Incubate]: new Set<UsageType>([
+        UsageType.DeveloperTesting,
+        UsageType.Experiment,
+        UsageType.Ship,
+      ]),
+      [FeatureType.Existing]: new Set<UsageType>([
+        UsageType.DeveloperTesting,
+        UsageType.Experiment,
+        UsageType.Ship,
+      ]),
+      [FeatureType.CodeChange]: new Set<UsageType>([
+        UsageType.DeveloperTesting,
+        UsageType.PSA,
+      ]),
+      [FeatureType.Deprecation]: new Set<UsageType>([
+        UsageType.DeveloperTesting,
+        UsageType.Experiment,
+        UsageType.Ship,
+      ]),
+    },
     help_text: '',
   },
 
@@ -1235,7 +1375,27 @@ export const ALL_FIELDS: Record<string, Field> = {
     choices: WEB_DEV_VIEWS,
     initial: WEB_DEV_VIEWS.DEV_NO_SIGNALS[0],
     label: 'Web / Framework developer views',
-    usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
+    usage: {
+      [FeatureType.Incubate]: new Set<UsageType>([
+        UsageType.DeveloperTesting,
+        UsageType.Experiment,
+        UsageType.Ship,
+      ]),
+      [FeatureType.Existing]: new Set<UsageType>([
+        UsageType.DeveloperTesting,
+        UsageType.Experiment,
+        UsageType.Ship,
+      ]),
+      [FeatureType.CodeChange]: new Set<UsageType>([
+        UsageType.DeveloperTesting,
+        UsageType.PSA,
+      ]),
+      [FeatureType.Deprecation]: new Set<UsageType>([
+        UsageType.DeveloperTesting,
+        UsageType.Experiment,
+        UsageType.Ship,
+      ]),
+    },
     help_text: html` If unsure, default to "No signals". See
       <a target="_blank" href="https://goo.gle/developer-signals">
         https://goo.gle/developer-signals</a
@@ -1248,7 +1408,27 @@ export const ALL_FIELDS: Record<string, Field> = {
     required: false,
     label: '',
     displayLabel: 'Web / Framework developer views link',
-    usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
+    usage: {
+      [FeatureType.Incubate]: new Set<UsageType>([
+        UsageType.DeveloperTesting,
+        UsageType.Experiment,
+        UsageType.Ship,
+      ]),
+      [FeatureType.Existing]: new Set<UsageType>([
+        UsageType.DeveloperTesting,
+        UsageType.Experiment,
+        UsageType.Ship,
+      ]),
+      [FeatureType.CodeChange]: new Set<UsageType>([
+        UsageType.DeveloperTesting,
+        UsageType.PSA,
+      ]),
+      [FeatureType.Deprecation]: new Set<UsageType>([
+        UsageType.DeveloperTesting,
+        UsageType.Experiment,
+        UsageType.Ship,
+      ]),
+    },
     help_text: html` Citation link.`,
   },
 
@@ -1258,7 +1438,27 @@ export const ALL_FIELDS: Record<string, Field> = {
     required: false,
     label: '',
     displayLabel: 'Web / Framework developer views notes',
-    usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
+    usage: {
+      [FeatureType.Incubate]: new Set<UsageType>([
+        UsageType.DeveloperTesting,
+        UsageType.Experiment,
+        UsageType.Ship,
+      ]),
+      [FeatureType.Existing]: new Set<UsageType>([
+        UsageType.DeveloperTesting,
+        UsageType.Experiment,
+        UsageType.Ship,
+      ]),
+      [FeatureType.CodeChange]: new Set<UsageType>([
+        UsageType.DeveloperTesting,
+        UsageType.PSA,
+      ]),
+      [FeatureType.Deprecation]: new Set<UsageType>([
+        UsageType.DeveloperTesting,
+        UsageType.Experiment,
+        UsageType.Ship,
+      ]),
+    },
     help_text: html` Reference known representative examples of opinions, both
     positive and negative.`,
   },
@@ -1268,7 +1468,27 @@ export const ALL_FIELDS: Record<string, Field> = {
     attrs: {rows: 4, placeholder: 'Notes'},
     required: false,
     label: 'Other views',
-    usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
+    usage: {
+      [FeatureType.Incubate]: new Set<UsageType>([
+        UsageType.DeveloperTesting,
+        UsageType.Experiment,
+        UsageType.Ship,
+      ]),
+      [FeatureType.Existing]: new Set<UsageType>([
+        UsageType.DeveloperTesting,
+        UsageType.Experiment,
+        UsageType.Ship,
+      ]),
+      [FeatureType.CodeChange]: new Set<UsageType>([
+        UsageType.DeveloperTesting,
+        UsageType.PSA,
+      ]),
+      [FeatureType.Deprecation]: new Set<UsageType>([
+        UsageType.DeveloperTesting,
+        UsageType.Experiment,
+        UsageType.Ship,
+      ]),
+    },
     help_text: html` For example, other browsers.`,
   },
 
@@ -1276,7 +1496,27 @@ export const ALL_FIELDS: Record<string, Field> = {
     type: 'textarea',
     required: false,
     label: 'Ergonomics Risks',
-    usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
+    usage: {
+      [FeatureType.Incubate]: new Set<UsageType>([
+        UsageType.DeveloperTesting,
+        UsageType.Experiment,
+        UsageType.Ship,
+      ]),
+      [FeatureType.Existing]: new Set<UsageType>([
+        UsageType.DeveloperTesting,
+        UsageType.Experiment,
+        UsageType.Ship,
+      ]),
+      [FeatureType.CodeChange]: new Set<UsageType>([
+        UsageType.DeveloperTesting,
+        UsageType.PSA,
+      ]),
+      [FeatureType.Deprecation]: new Set<UsageType>([
+        UsageType.DeveloperTesting,
+        UsageType.Experiment,
+        UsageType.Ship,
+      ]),
+    },
     help_text: html` Are there any other platform APIs this feature will
     frequently be used in tandem with? Could the default usage of this API make
     it hard for Chrome to maintain good performance (i.e. synchronous return,
@@ -1287,7 +1527,27 @@ export const ALL_FIELDS: Record<string, Field> = {
     type: 'textarea',
     required: false,
     label: 'Activation Risks',
-    usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
+    usage: {
+      [FeatureType.Incubate]: new Set<UsageType>([
+        UsageType.DeveloperTesting,
+        UsageType.Experiment,
+        UsageType.Ship,
+      ]),
+      [FeatureType.Existing]: new Set<UsageType>([
+        UsageType.DeveloperTesting,
+        UsageType.Experiment,
+        UsageType.Ship,
+      ]),
+      [FeatureType.CodeChange]: new Set<UsageType>([
+        UsageType.DeveloperTesting,
+        UsageType.PSA,
+      ]),
+      [FeatureType.Deprecation]: new Set<UsageType>([
+        UsageType.DeveloperTesting,
+        UsageType.Experiment,
+        UsageType.Ship,
+      ]),
+    },
     help_text: html` Will it be challenging for developers to take advantage of
     this feature immediately, as-is? Would this feature benefit from having
     polyfills, significant documentation and outreach, and/or libraries built on
@@ -1298,7 +1558,27 @@ export const ALL_FIELDS: Record<string, Field> = {
     type: 'textarea',
     required: false,
     label: 'Security Risks',
-    usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
+    usage: {
+      [FeatureType.Incubate]: new Set<UsageType>([
+        UsageType.DeveloperTesting,
+        UsageType.Experiment,
+        UsageType.Ship,
+      ]),
+      [FeatureType.Existing]: new Set<UsageType>([
+        UsageType.DeveloperTesting,
+        UsageType.Experiment,
+        UsageType.Ship,
+      ]),
+      [FeatureType.CodeChange]: new Set<UsageType>([
+        UsageType.DeveloperTesting,
+        UsageType.PSA,
+      ]),
+      [FeatureType.Deprecation]: new Set<UsageType>([
+        UsageType.DeveloperTesting,
+        UsageType.Experiment,
+        UsageType.Ship,
+      ]),
+    },
     help_text: html` List any security considerations that were taken into
     account when designing this feature.`,
   },
@@ -1307,7 +1587,27 @@ export const ALL_FIELDS: Record<string, Field> = {
     type: 'textarea',
     required: false,
     label: 'WebView application risks',
-    usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
+    usage: {
+      [FeatureType.Incubate]: new Set<UsageType>([
+        UsageType.DeveloperTesting,
+        UsageType.Experiment,
+        UsageType.Ship,
+      ]),
+      [FeatureType.Existing]: new Set<UsageType>([
+        UsageType.DeveloperTesting,
+        UsageType.Experiment,
+        UsageType.Ship,
+      ]),
+      [FeatureType.CodeChange]: new Set<UsageType>([
+        UsageType.DeveloperTesting,
+        UsageType.PSA,
+      ]),
+      [FeatureType.Deprecation]: new Set<UsageType>([
+        UsageType.DeveloperTesting,
+        UsageType.Experiment,
+        UsageType.Ship,
+      ]),
+    },
     help_text: html` Does this feature deprecate or change behavior of existing
       APIs, such that it has potentially high risk for Android WebView-based
       applications? (See
@@ -1907,7 +2207,27 @@ export const ALL_FIELDS: Record<string, Field> = {
     type: 'textarea',
     required: false,
     label: 'Debuggability',
-    usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
+    usage: {
+      [FeatureType.Incubate]: new Set<UsageType>([
+        UsageType.DeveloperTesting,
+        UsageType.Experiment,
+        UsageType.Ship,
+      ]),
+      [FeatureType.Existing]: new Set<UsageType>([
+        UsageType.DeveloperTesting,
+        UsageType.Experiment,
+        UsageType.Ship,
+      ]),
+      [FeatureType.CodeChange]: new Set<UsageType>([
+        UsageType.DeveloperTesting,
+        UsageType.PSA,
+      ]),
+      [FeatureType.Deprecation]: new Set<UsageType>([
+        UsageType.DeveloperTesting,
+        UsageType.Experiment,
+        UsageType.Ship,
+      ]),
+    },
     help_text: html` Description of the DevTools debugging support for your
       feature. Please follow the
       <a target="_blank" href="https://goo.gle/devtools-checklist">
@@ -1922,15 +2242,21 @@ export const ALL_FIELDS: Record<string, Field> = {
     label: 'Supported on all platforms?',
     usage: {
       [FeatureType.Incubate]: new Set<UsageType>([
+        UsageType.DeveloperTesting,
         UsageType.Experiment,
         UsageType.Ship,
       ]),
       [FeatureType.Existing]: new Set<UsageType>([
+        UsageType.DeveloperTesting,
         UsageType.Experiment,
         UsageType.Ship,
       ]),
-      [FeatureType.CodeChange]: new Set<UsageType>([UsageType.PSA]),
+      [FeatureType.CodeChange]: new Set<UsageType>([
+        UsageType.DeveloperTesting,
+        UsageType.PSA
+      ]),
       [FeatureType.Deprecation]: new Set<UsageType>([
+        UsageType.DeveloperTesting,
         UsageType.Experiment,
         UsageType.Ship,
       ]),
@@ -1946,15 +2272,21 @@ export const ALL_FIELDS: Record<string, Field> = {
     label: 'Platform Support Explanation',
     usage: {
       [FeatureType.Incubate]: new Set<UsageType>([
+        UsageType.DeveloperTesting,
         UsageType.Experiment,
         UsageType.Ship,
       ]),
       [FeatureType.Existing]: new Set<UsageType>([
+        UsageType.DeveloperTesting,
         UsageType.Experiment,
         UsageType.Ship,
       ]),
-      [FeatureType.CodeChange]: new Set<UsageType>([UsageType.PSA]),
+      [FeatureType.CodeChange]: new Set<UsageType>([
+        UsageType.DeveloperTesting,
+        UsageType.PSA,
+      ]),
       [FeatureType.Deprecation]: new Set<UsageType>([
+        UsageType.DeveloperTesting,
         UsageType.Experiment,
         UsageType.Ship,
       ]),
@@ -2001,10 +2333,25 @@ export const ALL_FIELDS: Record<string, Field> = {
     required: false,
     label: 'Demo and sample links',
     usage: {
-      [FeatureType.Incubate]: new Set<UsageType>([UsageType.Ship]),
-      [FeatureType.Existing]: new Set<UsageType>([UsageType.Ship]),
-      [FeatureType.CodeChange]: new Set<UsageType>([UsageType.PSA]),
-      [FeatureType.Deprecation]: new Set<UsageType>([UsageType.Ship]),
+      [FeatureType.Incubate]: new Set<UsageType>([
+        UsageType.DeveloperTesting,
+        UsageType.Experiment,
+        UsageType.Ship,
+      ]),
+      [FeatureType.Existing]: new Set<UsageType>([
+        UsageType.DeveloperTesting,
+        UsageType.Experiment,
+        UsageType.Ship,
+      ]),
+      [FeatureType.CodeChange]: new Set<UsageType>([
+        UsageType.DeveloperTesting,
+        UsageType.PSA,
+      ]),
+      [FeatureType.Deprecation]: new Set<UsageType>([
+        UsageType.DeveloperTesting,
+        UsageType.Experiment,
+        UsageType.Ship,
+      ]),
     },
     help_text: html` Links to demos and samples (one URL per line).`,
   },
@@ -2189,15 +2536,21 @@ export const ALL_FIELDS: Record<string, Field> = {
     label: 'Flag name on about://flags',
     usage: {
       [FeatureType.Incubate]: new Set<UsageType>([
+        UsageType.DeveloperTesting,
         UsageType.Experiment,
         UsageType.Ship,
       ]),
       [FeatureType.Existing]: new Set<UsageType>([
+        UsageType.DeveloperTesting,
         UsageType.Experiment,
         UsageType.Ship,
       ]),
-      [FeatureType.CodeChange]: new Set<UsageType>([UsageType.PSA]),
+      [FeatureType.CodeChange]: new Set<UsageType>([
+        UsageType.DeveloperTesting,
+        UsageType.PSA,
+      ]),
       [FeatureType.Deprecation]: new Set<UsageType>([
+        UsageType.DeveloperTesting,
         UsageType.Experiment,
         UsageType.Ship,
       ]),
@@ -2219,15 +2572,21 @@ export const ALL_FIELDS: Record<string, Field> = {
     label: 'Finch feature name',
     usage: {
       [FeatureType.Incubate]: new Set<UsageType>([
+        UsageType.DeveloperTesting,
         UsageType.Experiment,
         UsageType.Ship,
       ]),
       [FeatureType.Existing]: new Set<UsageType>([
+        UsageType.DeveloperTesting,
         UsageType.Experiment,
         UsageType.Ship,
       ]),
-      [FeatureType.CodeChange]: new Set<UsageType>([UsageType.PSA]),
+      [FeatureType.CodeChange]: new Set<UsageType>([
+        UsageType.DeveloperTesting,
+        UsageType.PSA,
+      ]),
       [FeatureType.Deprecation]: new Set<UsageType>([
+        UsageType.DeveloperTesting,
         UsageType.Experiment,
         UsageType.Ship,
       ]),
@@ -2249,15 +2608,21 @@ export const ALL_FIELDS: Record<string, Field> = {
     label: 'Non-finch justification',
     usage: {
       [FeatureType.Incubate]: new Set<UsageType>([
+        UsageType.DeveloperTesting,
         UsageType.Experiment,
         UsageType.Ship,
       ]),
       [FeatureType.Existing]: new Set<UsageType>([
+        UsageType.DeveloperTesting,
         UsageType.Experiment,
         UsageType.Ship,
       ]),
-      [FeatureType.CodeChange]: new Set<UsageType>([UsageType.PSA]),
+      [FeatureType.CodeChange]: new Set<UsageType>([
+        UsageType.DeveloperTesting,
+        UsageType.PSA,
+      ]),
       [FeatureType.Deprecation]: new Set<UsageType>([
+        UsageType.DeveloperTesting,
         UsageType.Experiment,
         UsageType.Ship,
       ]),
