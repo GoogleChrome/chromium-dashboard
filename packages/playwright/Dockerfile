@@ -20,7 +20,7 @@ RUN npm config set script-shell bash --global
 USER pwuser
 WORKDIR /work
 
-
+# Set environment variable so we can tell we're performing Playwright tests.
 ENV PLAYWRIGHT_MODE=1
 
 # Install a consistent version of Playwright. The duplicate ARG line is needed to copy the value
