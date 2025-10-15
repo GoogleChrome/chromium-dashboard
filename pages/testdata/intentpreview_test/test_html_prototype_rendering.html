@@ -32,61 +32,8 @@ This is a detailed summary of the test feature being created. It is designed to 
 <br>
 <div><b>Search tags</b></div><a href="/features#tags:test">test</a>, <a href="/features#tags:example">example</a>, <a href="/features#tags:constructor">constructor</a><br>
 <br>
-<div><b>TAG review</b></div>
-<a href="https://github.com/w3ctag/design-reviews/issues/999" rel="noopener">https://github.com/w3ctag/design-reviews/issues/999</a>
-
-<br>
-<br>
-<div><b>TAG review status</b></div>
-  Pending<br>
-<br>
 <div><b>Origin Trial Name</b></div>
     Test 123<br>
-<br>
-<div><b>Risks</b></div>
-<div style="margin-left: 4em;">
-<br>
-<br>
-<div><b>Interoperability and Compatibility</b></div>
-  Low risk. The API surface is small and unlikely to conflict with other browser implementations.
-<br>
-<br>
-<i>Gecko</i>: In development&nbsp;(<a href="https://github.com/mozilla/standards-positions/issues/999">https://github.com/mozilla/standards-positions/issues/999</a>)&nbsp;Has expressed cautious optimism.<br>
-<br>
-<i>WebKit</i>: Positive&nbsp;(<a href="https://lists.webkit.org/pipermail/webkit-dev/2025-October/subject.html">https://lists.webkit.org/pipermail/webkit-dev/2025-October/subject.html</a>)&nbsp;Has raised concerns about potential privacy implications.<br>
-<br>
-<i>Web developers</i>: Strongly positive&nbsp;(<a href="https://developer.chrome.com/blog/test-feature-coming-soon/">https://developer.chrome.com/blog/test-feature-coming-soon/</a>)&nbsp;Positive feedback received from the web developer community via social media.<br>
-<br>
-<i>Other signals</i>:&nbsp;No signals from other implementers at this time.<br>
-<br>
-<div><b>Ergonomics</b></div>
-    The API could be complex for new developers, but documentation should mitigate this.<br>
-<br>
-<div><b>Activation</b></div>
-    There are minimal activation risks, primarily related to experimental flag interactions.<br>
-<br>
-<div><b>Security</b></div>
-    The main security risk involves ensuring that data is properly sanitized.<br>
-<br>
-<div><b>WebView application risks</b></div>
-  <p style="font-style: italic">
-    Does this intent deprecate or change behavior of existing APIs,
-    such that it has potentially high risk for Android WebView-based
-    applications?
-  </p>
-  No specific WebView risks have been identified.
-
-</div> <!-- end risks --> <br>
-<br>
-<div><b>Debuggability</b></div>
-The feature is fully debuggable via Chrome DevTools, with a dedicated panel.
-
-<br>
-<br>
-<div><b>Is this feature fully tested by <a href="https://chromium.googlesource.com/chromium/src/+/main/docs/testing/web_platform_tests.md">web-platform-tests</a>?</b></div>
-Yes
-<br>
-A full suite of Web Platform Tests (WPT) will be developed and upstreamed.<br>
 <br>
 <div><b>DevTrial instructions</b></div>
   <a href="To test, navigate to chrome://flags and enable #enable-test-feature-constructor."

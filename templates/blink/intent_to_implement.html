@@ -91,9 +91,9 @@
   {%- endfor -%}
 {%- endif -%}
 
+{%- if intent_type in ['experiment', 'extend_experiment', 'ship'] -%}
 <br>
 <br>
-{%- if feature.feature_type_int != 2 %}
 <div><b>TAG review</b></div>
 {{ urlize_with_default(feature.tag_review) }}
 
@@ -137,8 +137,8 @@
     {{stage.ot_webfeature_use_counter}}
   {%- endif -%}
 {%- endfor -%}
-
-<br>
+{%- if intent_type in ['developer_testing', 'experiment', 'extend_experiment', 'ship', 'psa'] %}
+<!-- Begin risks section --><br>
 <br>
 <div><b>Risks</b></div>
 <div style="margin-left: 4em;">
@@ -213,7 +213,9 @@
   </p>
   {{ urlize_with_default(feature.webview_risks) }}
 
-</div> <!-- end risks --> {% if intent_type in ['experiment', 'extend_experiment'] -%}
+</div> <!-- end risks -->
+{%- endif -%}
+{%- if intent_type in ['experiment', 'extend_experiment'] -%}
 <br>
 <br>
 <div><b>Goals for experimentation</b></div>
@@ -243,22 +245,22 @@
   {{ urlize_with_default(feature.ongoing_constraints) }}
 
 {%- endif -%}
-
+{%- if intent_type in ['developer_testing', 'experiment', 'extend_experiment', 'ship', 'psa', 'deprecate'] -%}
 <br>
 <br>
 <div><b>Debuggability</b></div>
 {{ urlize_with_default(feature.debuggability) }}
-
-{% if intent_type in ['experiment', 'extend_experiment', 'ship'] -%}
+{% endif -%}
+{% if intent_type in ['developer_testing', 'experiment', 'extend_experiment', 'psa', 'ship'] -%}
 <br>
 <br>
 <div><b>Will this feature be supported on all six Blink platforms
       (Windows, Mac, Linux, ChromeOS, Android, and Android WebView)?</b></div>
   {%- if feature.all_platforms -%}Yes{%- else -%}No{%- endif -%}
-  {%- if feature.all_platforms_descr -%}
+  {%- if feature.all_platforms_descr %}
+    <br>
     {{ urlize_with_default(feature.all_platforms_descr) }}
-  {%- endif -%}
-{%- endif -%}
+  {% endif -%}
 
 <br>
 <br>
@@ -267,6 +269,7 @@
 <br>
 {% if feature.wpt_descr -%}
   {{ urlize_with_default(feature.wpt_descr) }}
+{%- endif -%}
 {%- endif -%}
 
 {% if feature.devtrial_instructions -%}
@@ -277,7 +280,7 @@
       >{{ show_value(feature.devtrial_instructions) }}</a>
 {%- endif -%}
 
-{%- if intent_type in ['experiment', 'extend_experiment', 'ship'] -%}
+{%- if intent_type in ['developer_testing', 'experiment', 'extend_experiment', 'ship'] -%}
 <br>
 <br>
 <div><b>Flag name on about://flags</b></div>
@@ -369,7 +372,7 @@
   {{ urlize_with_default(feature.non_oss_deps) }}
 {%- endif -%}
 
-{%- if intent_type == 'ship' -%}
+{%- if intent_type == ['developer_testing', 'experiment', 'extend_experiment', 'ship'] -%}
   {%- if feature.resources and feature.resources.samples -%}
 <br>
 <br>
