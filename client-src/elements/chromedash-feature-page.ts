@@ -517,7 +517,7 @@ export class ChromedashFeaturePage extends LitElement {
     const canShare = typeof navigator.share === 'function';
     return html`
       <div id="subheader" style="display:block">
-        <div class="tooltips" style="float:right">
+    <div class="tooltips" style="float:right; font-size:1.1rem">
           ${this.user
             ? html`
                 <span
@@ -572,7 +572,7 @@ export class ChromedashFeaturePage extends LitElement {
               id="copy-link"
               @click=${this.handleCopyLinkClick}
             >
-              <sl-icon name="link"></sl-icon>
+              <sl-icon library="material" name="link"></sl-icon>
             </a>
           </span>
         </div>
