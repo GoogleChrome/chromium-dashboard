@@ -51,6 +51,7 @@ SEND_EMAIL = False  # Just log email
 DEV_MODE = (os.environ['SERVER_SOFTWARE'].startswith('Development') or
             os.environ.get('GAE_ENV', '').startswith('localdev'))
 UNIT_TEST_MODE = os.environ['SERVER_SOFTWARE'].startswith('test')
+PLAYWRIGHT_MODE = os.environ.get('PLAYWRIGHT_MODE') == 'true'
 
 if not UNIT_TEST_MODE:
   # Py3 defaults to level WARN.

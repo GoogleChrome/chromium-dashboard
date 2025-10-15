@@ -64,6 +64,28 @@ export class ChromedashHeader extends LitElement {
           width: 100%;
         }
 
+        .nav-dropdown-trigger {
+          display: flex;
+          align-items: flex-end;
+        }
+        .nav-dropdown-trigger sl-icon {
+          padding-left: var(--content-padding-half);
+        }
+
+        .menu {
+          margin-left: 15px;
+          margin-right: 7px;
+          align-items: center;
+        }
+        .menu:hover {
+          color: black;
+          background: var(--nav-link-hover-background);
+        }
+        .menu [active] {
+          color: var(--nav-link-active-color);
+          border-bottom: var(--nav-link-active-border);
+        }
+
         @media only screen and (max-width: 700px) {
           header {
             --logoSize: 24px;

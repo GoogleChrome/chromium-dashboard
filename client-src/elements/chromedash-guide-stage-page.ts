@@ -228,7 +228,7 @@ export class ChromedashGuideStagePage extends LitElement {
       <div id="subheader">
         <h2 id="breadcrumbs">
           <a href=${this.getNextPage()}>
-            <iron-icon icon="chromestatus:arrow-back"></iron-icon>
+            <sl-icon name="arrow-left"></sl-icon>
             Edit feature: ${this.feature.name}
           </a>
         </h2>

@@ -227,18 +227,11 @@ class ChannelsAPITest(testing_config.CustomTestCase):
     self.maxDiff = None
     self.assertEqual(expected, actual)
 
-  @mock.patch('api.channels_api.construct_chrome_channels_details')
-  def test_do_get__simple(self, mock_call):
-    expected =  {
-        'earliest_beta': '2020-02-13T00:00:00',
-        'mstone': 'fake milestone number',
-    }
-    mock_call.return_value = expected
-
+  def test_do_get__simple(self):
     with test_app.test_request_context(self.request_path):
       actual_response = self.handler.do_get()
 
-    self.assertEqual(expected, actual_response)
+    self.assertEqual(channels_api.TEST_CHANNEL_DATA, actual_response)
 
   def test_do_get__error(self):
     with test_app.test_request_context(self.request_path + '?start=2&end=1'):
