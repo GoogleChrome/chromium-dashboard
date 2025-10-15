@@ -213,7 +213,7 @@
   </p>
   {{ urlize_with_default(feature.webview_risks) }}
 
-</div> <!-- end risks --> {% if intent_type == 'experiment' -%}
+</div> <!-- end risks --> {% if intent_type in ['experiment', 'extend_experiment'] -%}
 <br>
 <br>
 <div><b>Goals for experimentation</b></div>
@@ -226,7 +226,7 @@
     {{ urlize_with_default(feature.experiment_timeline) }}
   {%- endif -%}
 
-  {%- if intent_type == 'experiment' -%}
+  {%- if intent_type in ['experiment', 'extend_experiment'] -%}
     {%- for stage in stage_info.extension_stages -%}
       {%- if stage.experiment_extension_reason -%}
 <br>
@@ -249,7 +249,7 @@
 <div><b>Debuggability</b></div>
 {{ urlize_with_default(feature.debuggability) }}
 
-{% if intent_type in ['experiment', 'ship'] -%}
+{% if intent_type in ['experiment', 'extend_experiment', 'ship'] -%}
 <br>
 <br>
 <div><b>Will this feature be supported on all six Blink platforms
@@ -277,7 +277,7 @@
       >{{ show_value(feature.devtrial_instructions) }}</a>
 {%- endif -%}
 
-{%- if intent_type in ['experiment', 'ship'] -%}
+{%- if intent_type in ['experiment', 'extend_experiment', 'ship'] -%}
 <br>
 <br>
 <div><b>Flag name on about://flags</b></div>
