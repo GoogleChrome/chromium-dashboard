@@ -311,9 +311,13 @@ export const ALL_FIELDS: Record<string, Field> = {
         </li>
         <li>
           Write keywords and identifiers as they would appear to a web
-          developer, not as they are in source code. For example, a method
-          implemented as NewInterface#dostuff would be written as in JavaScript:
-          NewInterface.doStuff().
+          developer, not as they are in source code. In particular, do not use
+          static method/property syntax for instance methods/properties. For
+          example, for an instance method doStuff() on an interface
+          NewInterface, write "NewInterface's doStuff() method" (not
+          "NewInterface.doStuff() method"). Or for a method on a well-known
+          global like Document, write "document.doStuff()" (not
+          "Document.doStuff()").
         </li>
       </ul>
 
