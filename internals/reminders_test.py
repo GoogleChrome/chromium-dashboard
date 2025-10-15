@@ -13,13 +13,11 @@
 # limitations under the License.
 
 import testing_config  # Must be imported before the module under test.
-import re
 import flask
 import settings
 from datetime import datetime
 from unittest import mock
 
-from internals import approval_defs
 from internals import core_enums
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
 from internals.review_models import Gate, Vote
@@ -323,13 +321,9 @@ class FeatureAccuracyHandlerTest(testing_config.CustomTestCase):
     self.owner_user_pref_2.put()
 
   def tearDown(self):
-    self.feature_1.key.delete()
-    self.feature_2.key.delete()
-    self.feature_3.key.delete()
-    for stage in Stage.query():
-      stage.key.delete()
-    self.owner_user_pref_1.key.delete()
-    self.owner_user_pref_2.key.delete()
+    for kind in [FeatureEntry, Stage, UserPref]:
+      for entity in kind.query():
+        entity.key.delete()
 
 
   @mock.patch('requests.get')
@@ -345,15 +339,17 @@ class FeatureAccuracyHandlerTest(testing_config.CustomTestCase):
   @mock.patch('requests.get')
   def test_determine_features_to_notify__valid_features(self, mock_get):
     mock_return = MockResponse(
-        text=('{"mstones":[{"mstone": "100", '
+        text=('{"mstones":[{"mstone": "150", '
               '"earliest_beta": "2022-08-01T01:23:45"}]}'))
     mock_get.return_value = mock_return
     with test_app.app_context():
       result = self.handler.get_template_data()
-    expected_message = ('2 email(s) sent or logged.\n'
+
+    expected_message = ('3 email(s) sent or logged.\n'
                         'Recipients:\n'
-                        'feature_owner@example.com\n'
-                        'jrobbins-test@googlegroups.com')
+                        'jrobbins-test@googlegroups.com\n'
+                        'owner_1@example.com\n'
+                        'owner_2@example.com')
     expected = {'message': expected_message}
     self.assertEqual(result, expected)
 
@@ -543,7 +539,7 @@ class SLOOverdueHandlerTest(testing_config.CustomTestCase):
     with test_app.app_context():
       actual = self.handler.get_template_data()
 
-    expected_message = (f'2 email(s) sent or logged.\n'
+    expected_message = ('2 email(s) sent or logged.\n'
                         'Recipients:\n'
                         'a_assignee@example.com\n'
                         'b_assignee@example.com')
@@ -590,7 +586,7 @@ class SLOOverdueHandlerTest(testing_config.CustomTestCase):
     with test_app.app_context():
       actual = self.handler.get_template_data()
 
-    expected_message = (f'12 email(s) sent or logged.\n'
+    expected_message = ('12 email(s) sent or logged.\n'
                         'Recipients:\n'
                         'a_assignee@example.com\n'
                         'aaudi@google.com\n'
@@ -618,7 +614,7 @@ class SLOOverdueHandlerTest(testing_config.CustomTestCase):
     with test_app.app_context():
       actual = self.handler.get_template_data()
 
-    expected_message = (f'11 email(s) sent or logged.\n'
+    expected_message = ('11 email(s) sent or logged.\n'
                         'Recipients:\n'
                         'aaudi@google.com\n'
                         'angelaweber@google.com\n'
@@ -646,7 +642,7 @@ class SLOOverdueHandlerTest(testing_config.CustomTestCase):
     with test_app.app_context():
       actual = self.handler.get_template_data()
 
-    expected_message = (f'11 email(s) sent or logged.\n'
+    expected_message = ('11 email(s) sent or logged.\n'
                         'Recipients:\n'
                         'aaudi@google.com\n'
                         'angelaweber@google.com\n'
