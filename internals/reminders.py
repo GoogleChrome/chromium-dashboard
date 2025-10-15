@@ -232,13 +232,6 @@ class FeatureAccuracyHandler(AbstractReminderHandler):
   EMAIL_TEMPLATE_PATH = 'accuracy_notice_email.html'
   FUTURE_MILESTONES_TO_CONSIDER = 2
   MILESTONE_FIELDS = [
-      'dt_milestone_android_start',
-      'dt_milestone_desktop_start',
-      'dt_milestone_ios_start',
-      'dt_milestone_webview_start',
-      'ot_milestone_android_start',
-      'ot_milestone_desktop_start',
-      'ot_milestone_webview_start',
       'shipped_android_milestone',
       'shipped_ios_milestone',
       'shipped_milestone',
