@@ -196,6 +196,11 @@ export const SHARED_STYLES = [
     color: var(--warning-color);
   }
 
+  #breadcrumbs {
+    display: flex;
+    align-items: center;
+  }
+
   #breadcrumbs a {
     text-decoration: none;
     color: inherit;
