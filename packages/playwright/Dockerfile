@@ -20,6 +20,9 @@ RUN npm config set script-shell bash --global
 USER pwuser
 WORKDIR /work
 
+
+ENV PLAYWRIGHT_MODE=1
+
 # Install a consistent version of Playwright. The duplicate ARG line is needed to copy the value
 # into this build stage.
 ARG PLAYWRIGHT_VERSION

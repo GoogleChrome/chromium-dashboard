@@ -13,12 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import logging
-import json
-import requests
-
 from framework import basehandlers
-from framework import rediscache
 from internals import fetchchannels
 import settings
 
@@ -134,7 +129,7 @@ class ChannelsAPI(basehandlers.APIHandler):
     end = self.get_int_arg('end')
     if start is None or end is None:
       # Use default values when tests are running.
-      if settings.UNIT_TEST_MODE:
+      if settings.UNIT_TEST_MODE or settings.PLAYWRIGHT_MODE:
         return TEST_CHANNEL_DATA
       return construct_chrome_channels_details()
 
