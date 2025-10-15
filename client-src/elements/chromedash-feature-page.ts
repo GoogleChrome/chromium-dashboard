@@ -517,7 +517,7 @@ export class ChromedashFeaturePage extends LitElement {
     const canShare = typeof navigator.share === 'function';
     return html`
       <div id="subheader" style="display:block">
-    <div class="tooltips" style="float:right; font-size:1.1rem">
+        <div class="tooltips" style="float:right; font-size:1.1rem">
           ${this.user
             ? html`
                 <span
