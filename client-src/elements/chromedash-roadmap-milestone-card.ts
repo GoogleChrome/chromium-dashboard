@@ -317,62 +317,68 @@ export class ChromedashRoadmapMilestoneCard extends LitElement {
                   id="outdated-icon"
                   title="Feature outdated - last checked for overall accuracy more than four weeks ago"
                 >
-                  <iron-icon icon="chromestatus:error" data-tooltip></iron-icon>
+                  <sl-icon
+                    name="exclamation-circle-fill"
+                    data-tooltip
+                  ></sl-icon>
                 </span>
               `
             : nothing}
           ${ORIGIN_TRIAL.includes(shippingType)
             ? html`
                 <span class="tooltip" title="Origin Trial">
-                  <iron-icon
-                    icon="chromestatus:extension"
+                  <sl-icon
+                    library="material"
+                    name="extension"
                     class="experimental"
                     data-tooltip
-                  ></iron-icon>
+                  ></sl-icon>
                 </span>
               `
             : nothing}
           ${DEPRECATION_TRIAL.includes(shippingType)
             ? html`
                 <span class="tooltip" title="Deprecation Trial">
-                  <iron-icon
-                    icon="chromestatus:extension"
+                  <sl-icon
+                    library="material"
+                    name="extension"
                     class="experimental"
                     data-tooltip
-                  ></iron-icon>
+                  ></sl-icon>
                 </span>
               `
             : nothing}
           ${BROWSER_INTERVENTION.includes(shippingType)
             ? html`
                 <span class="tooltip" title="Browser intervention">
-                  <iron-icon
-                    icon="chromestatus:pan-tool"
+                  <sl-icon
+                    library="material"
+                    name="pan-tool"
                     class="intervention"
                     data-tooltip
-                  ></iron-icon>
+                  ></sl-icon>
                 </span>
               `
             : nothing}
           ${REMOVED_STATUS.includes(shippingType)
             ? html`
                 <span class="tooltip" title="Removed">
-                  <iron-icon
-                    icon="chromestatus:cancel"
+                  <sl-icon
+                    name="x-circle-fill"
                     class="remove"
                     data-tooltip
-                  ></iron-icon>
+                  ></sl-icon>
                 </span>
               `
             : nothing}
           ${DEPRECATED_STATUS.includes(shippingType)
             ? html`
                 <span class="tooltip" title="Deprecated">
-                  <iron-icon
-                    icon="chromestatus:warning"
+                  <sl-icon
+                    name="exclamation-triangle-fill"
                     class="deprecated"
                     data-tooltip
-                  ></iron-icon>
+                  ></sl-icon>
                 </span>
               `
             : nothing}
@@ -382,15 +388,15 @@ export class ChromedashRoadmapMilestoneCard extends LitElement {
                   class="tooltip"
                   title="Receive an email notification when there are updates"
                 >
-                  <iron-icon
-                    icon="${this.starredFeatures.has(Number(f.id))
-                      ? 'chromestatus:star'
-                      : 'chromestatus:star-border'}"
+                  <sl-icon
+                    name="${this.starredFeatures.has(Number(f.id))
+                      ? 'star-fill'
+                      : 'star'}"
                     class="pushicon"
                     data-feature-id="${f.id}"
                     @click="${this.toggleStar}"
                   >
-                  </iron-icon>
+                  </sl-icon>
                 </span>
               `
             : nothing}

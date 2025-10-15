@@ -238,7 +238,7 @@ describe('chromedash-feature-page', () => {
     // crbug link is clickable
     assert.include(subheaderDiv.innerHTML, 'href="fake crbug link"');
     // star icon is rendered and the feature is starred
-    assert.include(subheaderDiv.innerHTML, 'icon="chromestatus:star"');
+    assert.include(subheaderDiv.innerHTML, 'name="star-fill"');
 
     const breadcrumbsH2 = component.shadowRoot?.querySelector('h2#breadcrumbs');
     assert.exists(breadcrumbsH2);

@@ -185,11 +185,6 @@ export const SHARED_STYLES = [
     display: none;
   }
 
-  iron-icon {
-    height: var(--icon-size);
-    width: var(--icon-size);
-  }
-
   .preformatted {
     white-space: pre-wrap;
   }
@@ -201,9 +196,20 @@ export const SHARED_STYLES = [
     color: var(--warning-color);
   }
 
+  #breadcrumbs {
+    display: flex;
+    align-items: center;
+  }
+
   #breadcrumbs a {
     text-decoration: none;
     color: inherit;
+    display: flex;
+    align-items: center;
+  }
+
+  #breadcrumbs a sl-icon {
+    padding-right: var(--content-padding-half);
   }
 
   sl-dialog::part(title) {

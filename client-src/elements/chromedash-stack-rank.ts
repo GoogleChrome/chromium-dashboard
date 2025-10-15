@@ -1,4 +1,3 @@
-import '@polymer/iron-icon';
 import {LitElement, css, html, nothing} from 'lit';
 import {customElement, property, state} from 'lit/decorators.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
@@ -218,7 +217,7 @@ class ChromedashStackRank extends LitElement {
               variant="text"
               ?disabled=${!this.viewList.length}
             >
-              <iron-icon icon="chromestatus:sort"></iron-icon>
+              <sl-icon name="filter-left"></sl-icon>
               SORT BY
             </sl-button>
             <sl-menu @click="${this.sort}">
@@ -276,10 +275,7 @@ class ChromedashStackRank extends LitElement {
                 href="#${item.property_name}"
                 @click=${this.scrollToPosition}
               >
-                <iron-icon
-                  class="hash-link"
-                  icon="chromestatus:link"
-                ></iron-icon>
+                <sl-icon class="hash-link" name="link"></sl-icon>
                 <p>${item.property_name}</p>
               </a>
             </div>
@@ -298,7 +294,7 @@ class ChromedashStackRank extends LitElement {
                   .view}/${item.bucket_id}"
                 title="Click to see a timeline view of this property"
               >
-                <iron-icon icon="chromestatus:timeline"></iron-icon>
+                <sl-icon name="graph-up"></sl-icon>
                 <p class="icon-text">Timeline</p>
               </a>
             </div>
@@ -334,7 +330,7 @@ class ChromedashStackRank extends LitElement {
           <div class="stack-rank-item-result">
             <p class="title-text">Percentage</p>
             <a class="icon-wrapper spacer">
-              <iron-icon icon="chromestatus:timeline"></iron-icon>
+              <sl-icon name="graph-up"></sl-icon>
               <p class="icon-text">Timeline</p>
             </a>
           </div>

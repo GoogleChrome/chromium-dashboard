@@ -2,8 +2,6 @@
 
 // polymer components
 import '@polymer/iron-collapse';
-import '@polymer/iron-icon';
-import '@polymer/iron-iconset-svg';
 
 // Shoelace components
 // css is imported via _base.html in base.css, built by gulpfile.babel.js.
@@ -44,7 +42,6 @@ registerIconLibrary('material', {
 
 
 // chromedash components
-import './elements/icons';
 import './elements/chromedash-admin-blink-component-listing';
 import './elements/chromedash-admin-blink-page';
 import './elements/chromedash-admin-feature-links-page';

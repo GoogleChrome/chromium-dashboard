@@ -160,7 +160,7 @@ export class ChromedashActivityPage extends LitElement {
       <div id="header">
         <h2 id="breadcrumbs">
           <a href="/feature/${this.featureId}">
-            <iron-icon icon="chromestatus:arrow-back"></iron-icon>
+            <sl-icon name="arrow-left"></sl-icon>
             Comments &amp; Activity
           </a>
         </h2>

@@ -106,6 +106,14 @@ export class ChromedashHeader extends LitElement {
           width: 100%;
         }
 
+        .nav-dropdown-trigger {
+          display: flex;
+          align-items: flex-end;
+        }
+        .nav-dropdown-trigger sl-icon {
+          padding-left: var(--content-padding-half);
+        }
+
         .menu {
           margin-left: 15px;
           margin-right: 7px;
@@ -325,10 +333,11 @@ export class ChromedashHeader extends LitElement {
                   </sl-button>
                 `
               : nothing}
+
             <div class="nav-dropdown-container" data-testid="account-indicator">
               <a class="nav-dropdown-trigger">
                 ${this.user.email}
-                <iron-icon icon="chromestatus:arrow-drop-down"></iron-icon>
+                <sl-icon name="caret-down-fill"></sl-icon>
               </a>
               <ul>
                 <li><a href="/settings">Settings</a></li>
