@@ -259,7 +259,7 @@ class OriginTrialsAPI(basehandlers.EntitiesAPIHandler):
                    if body['ot_webfeature_use_counter'] else None)
     uc_type = _get_use_counter_type(use_counter)
     try:
-      chromium_files_dict = utils.get_chromium_files_for_validation(uc_type)
+      chromium_files_dict = get_chromium_files_for_validation(uc_type)
     except Exception as exc:
       self.abort(
           500, f'Error obtaining Chromium file for validation: {str(exc)}')
