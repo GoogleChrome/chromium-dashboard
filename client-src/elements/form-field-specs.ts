@@ -2253,7 +2253,7 @@ export const ALL_FIELDS: Record<string, Field> = {
       ]),
       [FeatureType.CodeChange]: new Set<UsageType>([
         UsageType.DeveloperTesting,
-        UsageType.PSA
+        UsageType.PSA,
       ]),
       [FeatureType.Deprecation]: new Set<UsageType>([
         UsageType.DeveloperTesting,
