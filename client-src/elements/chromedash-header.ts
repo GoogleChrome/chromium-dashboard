@@ -244,6 +244,10 @@ export class ChromedashHeader extends LitElement {
       });
   }
 
+  gotoSettings() {
+    window.location.href = '/settings';
+  }
+
   signOut() {
     window.csClient.signOut().then(() => {
       window.location.reload();
@@ -297,9 +301,9 @@ export class ChromedashHeader extends LitElement {
                 ${this.user.email}
               </sl-button>
               <sl-menu>
-                <a href="/settings">
-                  <sl-menu-item>Settings</sl-menu-item>
-                </a>
+                <sl-menu-item @click=${this.gotoSettings}>
+                  Settings
+                </sl-menu-item>
                 <sl-menu-item
                   id="sign-out-link"
                   data-testid="sign-out-link"
