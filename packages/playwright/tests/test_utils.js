@@ -238,7 +238,7 @@ export async function logout(page) {
   } else {
     const accountIndicator = page.getByTestId('account-indicator');
     await expect(accountIndicator).toBeVisible({ timeout: 20000 });
-    await accountIndicator.hover({timeout: 5000});
+    await accountIndicator.click({timeout: 5000});
   }
   await delay(1000);
 

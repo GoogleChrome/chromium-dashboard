@@ -41,51 +41,9 @@ export class ChromedashHeader extends LitElement {
           margin: 0 var(--content-padding);
           -webkit-font-smoothing: initial;
         }
-        header nav a {
-          cursor: pointer;
-          font-size: var(--nav-link-font-size);
-          text-align: center;
-          padding: var(--content-padding-half) var(--content-padding);
-          color: var(--nav-link-color);
-          white-space: nowrap;
-          border-bottom: var(--nav-link-border);
-        }
-        header nav a:hover {
-          color: black;
-          background: var(--nav-link-hover-background);
-        }
-        header nav a.disabled {
-          opacity: 0.5;
-          pointer-events: none;
-        }
-        header nav [active] {
-          color: var(--nav-link-active-color);
-          border-bottom: var(--nav-link-active-border);
-        }
-        header nav [active] a {
-          color: var(--nav-link-active-color);
-        }
-        header nav .nav-dropdown-container {
-          position: relative;
-        }
-        header nav .nav-dropdown-container ul {
-          display: none;
-          position: absolute;
-          top: 80%;
-          left: 0;
-          padding: 0;
-          list-style: none;
-          z-index: 1;
-          background: var(--card-background);
-          border-bottom: var(--card-border);
-          box-shadow: var(--card-box-shadow);
-        }
-        header nav .nav-dropdown-container a {
-          display: block;
-        }
-        header nav .nav-dropdown-container .nav-dropdown-trigger:hover + ul,
-        header nav .nav-dropdown-container ul:hover {
-          display: block;
+
+        sl-button[slot='trigger']::part(base) {
+          color: var(--unimportant-text-color);
         }
         header aside a {
           color: var(--logo-color);
@@ -286,11 +244,6 @@ export class ChromedashHeader extends LitElement {
       });
   }
 
-  handleSignOutClick(e) {
-    e.preventDefault();
-    this.signOut();
-  }
-
   signOut() {
     window.csClient.signOut().then(() => {
       window.location.reload();
@@ -333,25 +286,28 @@ export class ChromedashHeader extends LitElement {
                   </sl-button>
                 `
               : nothing}
-
-            <div class="nav-dropdown-container" data-testid="account-indicator">
-              <a class="nav-dropdown-trigger">
+            <sl-dropdown>
+              <sl-button
+                slot="trigger"
+                variant="text"
+                size="medium"
+                data-testid="account-indicator"
+                caret
+              >
                 ${this.user.email}
-                <sl-icon name="caret-down-fill"></sl-icon>
-              </a>
-              <ul>
-                <li><a href="/settings">Settings</a></li>
-                <li>
-                  <a
-                    href="#"
-                    id="sign-out-link"
-                    data-testid="sign-out-link"
-                    @click=${this.handleSignOutClick}
-                    >Sign out</a
-                  >
-                </li>
-              </ul>
-            </div>
+              </sl-button>
+              <sl-menu>
+                <a href="/settings">
+                  <sl-menu-item>Settings</sl-menu-item>
+                </a>
+                <sl-menu-item
+                  id="sign-out-link"
+                  data-testid="sign-out-link"
+                  @click=${this.signOut}
+                  >Sign out</sl-menu-item
+                >
+              </sl-menu>
+            </sl-dropdown>
           `
         : html` <slot></slot> `}
     `;
