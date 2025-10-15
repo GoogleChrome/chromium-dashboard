@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import flask
+import json5
 import werkzeug.exceptions
 from unittest import mock
 
@@ -24,6 +25,30 @@ from internals.review_models import Gate, Vote
 
 test_app = flask.Flask(__name__)
 
+# Mock data representing the content of Chromium source files.
+MOCK_ENABLED_FEATURES_JSON5 = """
+{
+  "data": [
+    // For feature_1: A complete feature that is stable.
+    { "name": "featureOneFinch", "status": "stable" },
+    // For feature_7: An incomplete feature that is not stable.
+    { "name": "feature7-unstable", "status": "experimental" }
+  ]
+}
+"""
+
+MOCK_CONTENT_FEATURES_CC = """
+// Some C++ code here...
+// For feature_8: A complete feature, enabled by default.
+BASE_FEATURE(kFeature8Enabled,
+             // Some rogue comment.
+             base::FEATURE_ENABLED_BY_DEFAULT);
+// More C++ code...
+// For feature_9: An incomplete feature, disabled by default.
+BASE_FEATURE(kFeature9Disabled, base::FEATURE_DISABLED_BY_DEFAULT);
+// Even more C++ code...
+"""
+
 
 class ShippingFeaturesAPITest(testing_config.CustomTestCase):
 
@@ -32,10 +57,11 @@ class ShippingFeaturesAPITest(testing_config.CustomTestCase):
     self.milestone = 120
 
     # Feature 1: Complete - Should be in `complete_features`.
+    # Finch name 'featureOneFinch' is in MOCK_ENABLED_FEATURES_JSON5 as "stable".
     self.feature_1 = FeatureEntry(
         id=1, name='Feature 1 (Complete)', summary='sum', category=1,
         feature_type=core_enums.FEATURE_TYPE_INCUBATE_ID,
-        finch_name='feature1-finch', owner_emails=['owner@example.com'])
+        finch_name='featureOneFinch', owner_emails=['owner@example.com'])
     self.feature_1.put()
     stage_1 = Stage(
         id=101, feature_id=1, stage_type=160,  # Shipping stage
@@ -109,14 +135,71 @@ class ShippingFeaturesAPITest(testing_config.CustomTestCase):
     stage_6 = Stage(
         id=106, feature_id=6, stage_type=160,
         intent_thread_url='https://example.com/intent6',
-        milestones=MilestoneSet(desktop_first=self.milestone + 1)) # Future mstone
+        milestones=MilestoneSet(desktop_first=self.milestone + 1))  # Future mstone
     stage_6.put()
     Gate(id=1006, feature_id=6, stage_id=106, gate_type=core_enums.GATE_API_SHIP,
          state=Vote.APPROVED).put()
 
+    # Feature 7: Incomplete (Not stable in runtime_enabled_features.json5).
+    self.feature_7 = FeatureEntry(
+        id=7, name='F7 Unstable', summary='sum', category=1,
+        feature_type=core_enums.FEATURE_TYPE_INCUBATE_ID,
+        finch_name='feature7-unstable')
+    self.feature_7.put()
+    stage_7 = Stage(
+        id=107, feature_id=7, stage_type=160,
+        intent_thread_url='https://example.com/intent7',
+        milestones=MilestoneSet(desktop_first=self.milestone))
+    stage_7.put()
+    Gate(id=1007, feature_id=7, stage_id=107, gate_type=core_enums.GATE_API_SHIP,
+         state=Vote.APPROVED).put()
+
+    # Feature 8: Complete (Enabled in content_features.cc).
+    self.feature_8 = FeatureEntry(
+        id=8, name='F8 Enabled', summary='sum', category=1,
+        feature_type=core_enums.FEATURE_TYPE_INCUBATE_ID,
+        finch_name='Feature8Enabled')
+    self.feature_8.put()
+    stage_8 = Stage(
+        id=108, feature_id=8, stage_type=160,
+        intent_thread_url='https://example.com/intent8',
+        milestones=MilestoneSet(desktop_first=self.milestone))
+    stage_8.put()
+    Gate(id=1008, feature_id=8, stage_id=108, gate_type=core_enums.GATE_API_SHIP,
+         state=Vote.APPROVED).put()
+
+    # Feature 9: Incomplete (Disabled in content_features.cc).
+    self.feature_9 = FeatureEntry(
+        id=9, name='F9 Disabled', summary='sum', category=1,
+        feature_type=core_enums.FEATURE_TYPE_INCUBATE_ID,
+        finch_name='Feature9Disabled')
+    self.feature_9.put()
+    stage_9 = Stage(
+        id=109, feature_id=9, stage_type=160,
+        intent_thread_url='https://example.com/intent9',
+        milestones=MilestoneSet(desktop_first=self.milestone))
+    stage_9.put()
+    Gate(id=1009, feature_id=9, stage_id=109, gate_type=core_enums.GATE_API_SHIP,
+         state=Vote.APPROVED).put()
+
+    # Feature 10: Incomplete (Not found in Chromium files).
+    self.feature_10 = FeatureEntry(
+        id=10, name='F10 Not Found', summary='sum', category=1,
+        feature_type=core_enums.FEATURE_TYPE_INCUBATE_ID,
+        finch_name='non-existent-feature')
+    self.feature_10.put()
+    stage_10 = Stage(
+        id=110, feature_id=10, stage_type=160,
+        intent_thread_url='https://example.com/intent10',
+        milestones=MilestoneSet(desktop_first=self.milestone))
+    stage_10.put()
+    Gate(id=1010, feature_id=10, stage_id=110, gate_type=core_enums.GATE_API_SHIP,
+         state=Vote.APPROVED).put()
+
+
     # Stage for a feature that doesn't exist - Should be logged and ignored.
     self.stage_deleted_feature = Stage(
-        id=107, feature_id=999, stage_type=160,
+        id=999, feature_id=999, stage_type=160,
         milestones=MilestoneSet(desktop_first=self.milestone))
     self.stage_deleted_feature.put()
 
@@ -128,48 +211,109 @@ class ShippingFeaturesAPITest(testing_config.CustomTestCase):
   def test_get_shipping_stages__success(self):
     """Should retrieve only stages with the correct milestone and type."""
     shipping_stages = self.handler._get_shipping_stages(self.milestone)
-    self.assertEqual(len(shipping_stages), 6)
-    
+    # 10 stages are in the target milestone (stages for features 1-5, 7-10,
+    # and the deleted feature 999).
+    self.assertEqual(len(shipping_stages), 10)
+
     feature_ids = {s.feature_id for s in shipping_stages}
-    expected_ids = {1, 2, 3, 4, 5, 999} # Excludes feature 6 (wrong milestone)
+    expected_ids = {1, 2, 3, 4, 5, 7, 8, 9, 10, 999}
     self.assertEqual(feature_ids, expected_ids)
 
+  def test_validate_feature_in_chromium__all_cases(self):
+    """Tests the validation logic against mock Chromium file content."""
+    handler = shipping_features_api.ShippingFeaturesAPI()
+    enabled_features_json = json5.loads(MOCK_ENABLED_FEATURES_JSON5)
+    content_features_file = MOCK_CONTENT_FEATURES_CC
+
+    # Case 1: Found in JSON and stable -> No missing criteria.
+    result = handler._validate_feature_in_chromium(
+        'featureOneFinch', enabled_features_json, content_features_file)
+    self.assertEqual(result, [])
+
+    # Case 2: Found in JSON but not stable.
+    result = handler._validate_feature_in_chromium(
+        'feature7-unstable', enabled_features_json, content_features_file)
+    self.assertEqual(result,
+        [shipping_features_api.Criteria.RUNTIME_FEATURE_NOT_STABLE])
+
+    # Case 3: Found in .cc file and enabled.
+    result = handler._validate_feature_in_chromium(
+        'Feature8Enabled', enabled_features_json, content_features_file)
+    self.assertEqual(result, [])
+
+    # Case 4: Found in .cc file but disabled.
+    result = handler._validate_feature_in_chromium(
+        'Feature9Disabled', enabled_features_json, content_features_file)
+    self.assertEqual(result,
+        [shipping_features_api.Criteria.CONTENT_FEATURE_NOT_ENABLED])
+
+    # Case 5: Not found in either file.
+    result = handler._validate_feature_in_chromium(
+        'not-a-real-feature', enabled_features_json, content_features_file)
+    self.assertEqual(result,
+        [shipping_features_api.Criteria.CHROMIUM_FEATURE_NOT_FOUND])
+
+
   @mock.patch('logging.warning')
-  def test_do_get__success(self, mock_logging):
+  @mock.patch('api.shipping_features_api.utils.get_chromium_file')
+  def test_do_get__success(self, mock_get_chromium_file, mock_logging):
     """Correctly categorizes features into complete and incomplete lists."""
-    with test_app.test_request_context(f'/api/v0/features/shipping?mstone={self.milestone}'):
+    def mock_get_file(url):
+      if url == core_enums.ENABLED_FEATURES_FILE_URL:
+        return MOCK_ENABLED_FEATURES_JSON5
+      if url == core_enums.CONTENT_FEATURES_FILE:
+        return MOCK_CONTENT_FEATURES_CC
+      return ''
+    mock_get_chromium_file.side_effect = mock_get_file
+
+    with test_app.test_request_context(
+        f'/api/v0/features/shipping?mstone={self.milestone}'):
       response = self.handler.do_get(mstone=self.milestone)
 
     # Verify Complete Features
-    # The response now contains a list of URLs.
     complete_features = response['complete_features']
-    self.assertEqual(len(complete_features), 2)
-    # Feature 1 is complete, Feature 5 is a PSA that bypasses checks.
+    self.assertEqual(len(complete_features), 3)
+    # feature_1 is complete.
+    # feature_5 is a PSA that bypasses checks.
+    # feature_8 is enabled in the mock .cc file.
     expected_complete_urls = {
         'http://localhost/feature/1',
-        'http://localhost/feature/5'
+        'http://localhost/feature/5',
+        'http://localhost/feature/8'
     }
     self.assertEqual(set(complete_features), expected_complete_urls)
 
     # Verify Incomplete Features
-    # The response is a list of (URL, reasons) tuples.
     incomplete_features = response['incomplete_features']
-    self.assertEqual(len(incomplete_features), 3)
+    self.assertEqual(len(incomplete_features), 6)
 
-    # Use a dictionary for easy, order-independent lookup and assertion.
-    # Parse the feature ID from the URL to use as the dictionary key.
     incomplete_map = {
         int(url.split('/')[-1]): reasons
         for url, reasons in incomplete_features
     }
-    self.assertIn(self.feature_2.key.integer_id(), incomplete_map)
-    self.assertEqual(incomplete_map[self.feature_2.key.integer_id()], ['lgtms'])
-
-    self.assertIn(self.feature_3.key.integer_id(), incomplete_map)
-    self.assertEqual(incomplete_map[self.feature_3.key.integer_id()], ['i2s'])
-
-    self.assertIn(self.feature_4.key.integer_id(), incomplete_map)
-    self.assertEqual(incomplete_map[self.feature_4.key.integer_id()], ['finch_name'])
+    # Feature 2: Missing LGTM
+    self.assertIn(self.feature_2.key.id(), incomplete_map)
+    self.assertEqual(incomplete_map[self.feature_2.key.id()],
+                     ['lgtms', 'chromium_feature_not_found'])
+    # Feature 3: Missing Intent to Ship
+    self.assertIn(self.feature_3.key.id(), incomplete_map)
+    self.assertEqual(incomplete_map[self.feature_3.key.id()],
+                     ['i2s', 'chromium_feature_not_found'])
+    # Feature 4: Missing Finch name
+    self.assertIn(self.feature_4.key.id(), incomplete_map)
+    self.assertEqual(incomplete_map[self.feature_4.key.id()], ['finch_name'])
+    # Feature 7: Not stable in JSON
+    self.assertIn(self.feature_7.key.id(), incomplete_map)
+    self.assertEqual(
+        incomplete_map[self.feature_7.key.id()], ['runtime_feature_not_stable'])
+    # Feature 9: Not enabled in .cc file
+    self.assertIn(self.feature_9.key.id(), incomplete_map)
+    self.assertEqual(
+        incomplete_map[self.feature_9.key.id()], ['content_feature_not_enabled'])
+    # Feature 10: Not found in Chromium files
+    self.assertIn(self.feature_10.key.id(), incomplete_map)
+    self.assertEqual(
+        incomplete_map[self.feature_10.key.id()], ['chromium_feature_not_found'])
 
     # Verify that the missing feature was logged
     mock_logging.assert_called_once_with('Feature 999 not found.')
@@ -177,8 +321,15 @@ class ShippingFeaturesAPITest(testing_config.CustomTestCase):
   def test_do_get__no_features_found(self):
     """API returns empty lists when no features match the milestone."""
     unmatched_milestone = 99
-    with test_app.test_request_context(f'/api/v0/features/shipping?mstone={unmatched_milestone}'):
+    with test_app.test_request_context(
+        f'/api/v0/features/shipping?mstone={unmatched_milestone}'):
       response = self.handler.do_get(mstone=unmatched_milestone)
-    
+
     self.assertEqual(response['complete_features'], [])
     self.assertEqual(response['incomplete_features'], [])
+
+  def test_do_get__no_milestone(self):
+    """API aborts with 400 if the milestone parameter is missing."""
+    with test_app.test_request_context('/api/v0/features/shipping'):
+      with self.assertRaises(werkzeug.exceptions.BadRequest):
+        self.handler.do_get()

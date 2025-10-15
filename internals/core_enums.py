@@ -19,6 +19,16 @@ from enum import Enum
 from typing import Optional
 
 
+# URL constants.
+# Chromium code file references. All of these are base64 encoded.
+WEBFEATURE_FILE_URL = 'https://chromium.googlesource.com/chromium/src/+/main/third_party/blink/public/mojom/use_counter/metrics/web_feature.mojom?format=TEXT'
+WEBDXFEATURE_FILE_URL = 'https://chromium.googlesource.com/chromium/src/+/main/third_party/blink/public/mojom/use_counter/metrics/webdx_feature.mojom?format=TEXT'
+CSS_PROPERTY_ID_FILE_URL = 'https://chromium.googlesource.com/chromium/src/+/main/third_party/blink/public/mojom/use_counter/metrics/css_property_id.mojom?format=TEXT'
+ENABLED_FEATURES_FILE_URL = 'https://chromium.googlesource.com/chromium/src/+/main/third_party/blink/renderer/platform/runtime_enabled_features.json5?format=TEXT'
+GRACE_PERIOD_FILE = 'https://chromium.googlesource.com/chromium/src/+/main/third_party/blink/common/origin_trials/manual_completion_origin_trial_features.cc?format=TEXT'
+CONTENT_FEATURES_FILE = 'https://chromium.googlesource.com/chromium/src/+/main/content/public/common/content_features.cc?format=TEXT'
+
+
 # NOTE: The enum mapping in this file needs to be consistent with
 # chromium-dashboard/client-src/elements/form-field-enums.js.
 WEBCOMPONENTS = 1
