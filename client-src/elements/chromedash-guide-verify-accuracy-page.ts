@@ -29,10 +29,10 @@ export class ChromedashGuideVerifyAccuracyPage extends LitElement {
       ...SHARED_STYLES,
       ...FORM_STYLES,
       css`
-      .verify-banner {
+        .verify-banner {
           margin-bottom: 12px;
         }
-      `
+      `,
     ];
   }
   @property({attribute: false})
@@ -94,6 +94,10 @@ export class ChromedashGuideVerifyAccuracyPage extends LitElement {
     });
   }
 
+  navigateToFeaturePage() {
+    window.location.href = `/feature/${this.featureId}`;
+  }
+
   handleFormSubmit(e, hiddenTokenField) {
     e.preventDefault();
     const submitBody = formatFeatureChanges(this.fieldValues, this.featureId);
@@ -107,7 +111,7 @@ export class ChromedashGuideVerifyAccuracyPage extends LitElement {
         return window.csClient.updateFeature(submitBody);
       })
       .then(() => {
-        window.location.href = `/feature/${this.featureId}`;
+        this.navigateToFeaturePage();
       })
       .catch(() => {
         this.submitting = false;
@@ -128,10 +132,6 @@ export class ChromedashGuideVerifyAccuracyPage extends LitElement {
     // The field has been updated, so it is considered touched.
     this.fieldValues[index].touched = true;
     this.fieldValues[index].value = value;
-  }
-
-  handleCancelClick() {
-    window.location.href = `/feature/${this.featureId}`;
   }
 
   renderSkeletons() {
@@ -312,10 +312,10 @@ export class ChromedashGuideVerifyAccuracyPage extends LitElement {
     const title = this.feature.accurate_as_of
       ? `Accuracy last verified ${this.feature.accurate_as_of.split(' ')[0]}.`
       : 'Accuracy last verified at time of creation.';
-    const submitButtonTitle = (this.submitting) ? 'Submitting...' : 'Submit';
+    const submitButtonTitle = this.submitting ? 'Submitting...' : 'Submit';
     return html`
       <form name="feature_form" method="post">
-        <input type="hidden" name="stages" value="${stageIds}" />
+        <input type="hidden" name="stages" .value="${stageIds}" />
         <input type="hidden" name="token" />
         <input
           type="hidden"
@@ -325,18 +325,25 @@ export class ChromedashGuideVerifyAccuracyPage extends LitElement {
         <h3>${title}</h3>
         <sl-alert variant="warning" open class="verify-banner">
           <sl-icon slot="icon" name="info-circle"></sl-icon>
-          <strong>Please submit this form to verify accuracy, even if no changes are made!</strong>
+          <strong
+            >Please review your information below and click 'Submit' to confirm it is accurate, <u>even if no changes are made</u></strong
+          >
         </sl-alert>
         <chromedash-form-table ${ref(this.registerFormSubmitHandler)}>
           ${formsToRender}
         </chromedash-form-table>
 
         <section class="final_buttons">
-          <input class="button" type="submit" value="${submitButtonTitle}" ?disabled=${this.submitting} />
+          <input
+            class="button"
+            type="submit"
+            value="${submitButtonTitle}"
+            ?disabled=${this.submitting}
+          />
           <button
             id="cancel-button"
             type="reset"
-            @click=${this.handleCancelClick}
+            @click=${this.navigateToFeaturePage}
           >
             Cancel
           </button>
