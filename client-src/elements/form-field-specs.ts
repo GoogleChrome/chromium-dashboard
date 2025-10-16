@@ -2567,7 +2567,11 @@ export const ALL_FIELDS: Record<string, Field> = {
 
   finch_name: {
     type: 'input',
-    attrs: TEXT_FIELD_ATTRS,
+    attrs: {
+      ...TEXT_FIELD_ATTRS,
+      placeholder: 'e.g. "StorageBuckets"',
+      pattern: String.raw`k\S*`,
+    },
     required: false,
     label: 'Finch feature name',
     usage: {
@@ -2599,7 +2603,12 @@ export const ALL_FIELDS: Record<string, Field> = {
         href="https://chromium.googlesource.com/chromium/src/+/main/third_party/blink/renderer/platform/runtime_enabled_features.json5"
         >runtime_enabled_features.json5</a
       >
-      and finch GCL files`,
+      (or
+      <a
+        target="_blank"
+        href="https://chromium.googlesource.com/chromium/src/+/main/content/public/common/content_features.cc"
+        >content_features.cc</a
+      >), and finch GCL files`,
   },
 
   non_finch_justification: {
