@@ -1078,12 +1078,12 @@ class GenerateReviewActivityFileTest(testing_config.CustomTestCase):
   def setUp(self):
     self.maxDiff = None
     self.handler = maintenance_scripts.GenerateReviewActivityFile()
-    
+
     self.gate_1 = Gate(id=11, feature_id=1, stage_id=100,
                        gate_type=4, # API Owners.
                        state=Vote.NA)
     self.gate_1.put()
-    
+
     self.gate_2 = Gate(id=12, feature_id=2, stage_id=200,
                        gate_type=32, # Privacy team.
                        state=Vote.NA)
@@ -1093,7 +1093,7 @@ class GenerateReviewActivityFileTest(testing_config.CustomTestCase):
       feature_id=1, gate_id=11, author='user1@example.com',
       created=datetime(2020, 1, 1, 11), content='test comment', amendments=[])
     self.activity_1.put()
-    
+
     self.activity_2 = Activity(
       feature_id=1, gate_id=11, created=datetime(2020, 1, 2, 9),
       author='user1@example.com', content=None,
@@ -1159,9 +1159,9 @@ class GenerateReviewActivityFileTest(testing_config.CustomTestCase):
       feature_id=2, gate_id=12, author='user3@example.com',
       created=datetime(2020, 1, 15, 8), content='test comment 5', amendments=[])
     self.activity_10.put()
-    
+
     # Activity whose gate doesn't exist.
-    self.activity_11 = Activity(feature_id=2, gate_id=13, author='user4@example.com', 
+    self.activity_11 = Activity(feature_id=2, gate_id=13, author='user4@example.com',
       created=datetime(2020, 1, 14, 8), content='test comment 5', amendments=[])
     self.activity_11.put()
 
@@ -1307,7 +1307,8 @@ class GenerateStaleFeaturesFileTest(testing_config.CustomTestCase):
     self.recently = now - timedelta(days=15)
     self.long_ago = now - timedelta(days=45)
 
-    # Feature 1: Stale (old 'accurate_as_of') with a matching shipping milestone.
+    # Feature 1: Stale (old 'accurate_as_of') AND notifications >= 1.
+    # Has matching shipping milestone.
     # Should be INCLUDED.
     self.feature_1 = FeatureEntry(
         id=1, name='Stale Feature 1', summary='summary', category=1,
@@ -1320,13 +1321,14 @@ class GenerateStaleFeaturesFileTest(testing_config.CustomTestCase):
         milestones=MilestoneSet(desktop_first=self.current_milestone))
     self.stage_1.put()
 
-    # Feature 2: Stale (None 'accurate_as_of') with a matching shipping milestone.
-    # Should be INCLUDED.
+    # Feature 2: Stale (None 'accurate_as_of'), but notifications = 0.
+    # Has matching shipping milestone.
+    # Should be EXCLUDED (due to outstanding_notifications < 1).
     self.feature_2 = FeatureEntry(
-        id=2, name='Stale Feature 2 (None date)', summary='summary', category=1,
+        id=2, name='Stale Feature 2 (Zero notifications)', summary='summary', category=1,
         feature_type=core_enums.FEATURE_TYPE_INCUBATE_ID,
         owner_emails=['owner2@example.com', 'owner2.2@example.com'],
-        accurate_as_of=None, outstanding_notifications=0)
+        accurate_as_of=None, outstanding_notifications=0) # <-- Now an exclusion case
     self.feature_2.put()
     self.stage_2 = Stage(
         id=102, feature_id=2, stage_type=160,
@@ -1334,48 +1336,67 @@ class GenerateStaleFeaturesFileTest(testing_config.CustomTestCase):
     self.stage_2.put()
 
     # Feature 3: Not stale ('accurate_as_of' is recent).
-    # Should be EXCLUDED.
+    # Has notifications and matching milestone.
+    # Should be EXCLUDED (due to accurate_as_of).
     self.feature_3 = FeatureEntry(
         id=3, name='Fresh Feature', summary='summary', category=1,
         feature_type=0,
-        owner_emails=['owner3@example.com'], accurate_as_of=self.recently)
+        owner_emails=['owner3@example.com'], accurate_as_of=self.recently,
+        outstanding_notifications=5) # Added for clarity
     self.feature_3.put()
     self.stage_3 = Stage(
         id=103, feature_id=3, stage_type=160,
         milestones=MilestoneSet(desktop_first=self.current_milestone))
     self.stage_3.put()
 
-    # Feature 4: Stale, but its shipping milestone is not the current one.
-    # Should be EXCLUDED.
+    # Feature 4: Stale, has notifications, but milestone is not current.
+    # Should be EXCLUDED (due to milestone).
     self.feature_4 = FeatureEntry(
         id=4, name='Stale Feature Wrong Milestone', summary='summary', category=1,
         feature_type=1,
-        owner_emails=['owner4@example.com'], accurate_as_of=self.long_ago)
+        owner_emails=['owner4@example.com'], accurate_as_of=self.long_ago,
+        outstanding_notifications=5) # Added for clarity
     self.feature_4.put()
     self.stage_4 = Stage(
         id=104, feature_id=4, stage_type=260,
         milestones=MilestoneSet(desktop_first=self.current_milestone + 1))
     self.stage_4.put()
 
-    # Feature 5: Stale, but has no associated shipping stages at all.
-    # Should be EXCLUDED.
+    # Feature 5: Stale, has notifications, but has no shipping stage.
+    # Should be EXCLUDED (due to no stage).
     self.feature_5 = FeatureEntry(
         id=5, name='Stale Feature No Shipping Stage', summary='summary', category=1,
         feature_type=0,
-        owner_emails=['owner5@example.com'], accurate_as_of=self.long_ago)
+        owner_emails=['owner5@example.com'], accurate_as_of=self.long_ago,
+        outstanding_notifications=5) # Added for clarity
     self.feature_5.put()
 
-    # Feature 6: Stale, with correct milestone, but the stage is not a shipping type.
-    # Should be EXCLUDED.
+    # Feature 6: Stale, has notifications, but stage is not a shipping type.
+    # Should be EXCLUDED (due to stage_type).
     self.feature_6 = FeatureEntry(
         id=6, name='Stale Feature Non-Shipping Stage', summary='summary', category=1,
         feature_type=core_enums.FEATURE_TYPE_INCUBATE_ID,
-        owner_emails=['owner6@example.com'], accurate_as_of=self.long_ago)
+        owner_emails=['owner6@example.com'], accurate_as_of=self.long_ago,
+        outstanding_notifications=5) # Added for clarity
     self.feature_6.put()
     self.stage_6 = Stage(
         id=106, feature_id=6, stage_type=110,  # Not a shipping stage
         milestones=MilestoneSet(desktop_first=self.current_milestone))
     self.stage_6.put()
+
+    # Feature 7: Stale (None 'accurate_as_of') AND notifications = 1 (boundary).
+    # Has matching shipping milestone.
+    # Should be INCLUDED.
+    self.feature_7 = FeatureEntry(
+        id=7, name='Stale Feature 7 (None date, 1 notification)', summary='summary', category=1,
+        feature_type=core_enums.FEATURE_TYPE_INCUBATE_ID,
+        owner_emails=['owner7@example.com'],
+        accurate_as_of=None, outstanding_notifications=1)
+    self.feature_7.put()
+    self.stage_7 = Stage(
+        id=107, feature_id=7, stage_type=160,
+        milestones=MilestoneSet(ios_first=self.current_milestone))
+    self.stage_7.put()
 
   def tearDown(self):
     for kind in [FeatureEntry, Stage]:
@@ -1393,13 +1414,13 @@ class GenerateStaleFeaturesFileTest(testing_config.CustomTestCase):
     self.assertEqual(len(stale_features), 2)
 
     feature_ids = {f.key.integer_id() for f in stale_features}
-    self.assertEqual(feature_ids, {self.feature_1.key.integer_id(), self.feature_2.key.integer_id()})
+    self.assertEqual(feature_ids, {self.feature_1.key.integer_id(), self.feature_7.key.integer_id()})
 
   @mock.patch('framework.utils.get_current_milestone_info')
   def test_generate_rows(self, mock_get_milestone):
     """Should format feature data into correct CSV rows."""
     mock_get_milestone.return_value = {'mstone': str(self.current_milestone)}
-    features_to_process = [self.feature_1, self.feature_2]
+    features_to_process = [self.feature_1, self.feature_7]
 
     csv_rows = self.handler._generate_rows(features_to_process, self.current_milestone)
 
@@ -1414,11 +1435,11 @@ class GenerateStaleFeaturesFileTest(testing_config.CustomTestCase):
         ],
         [
             str(self.current_milestone),
-            'Stale Feature 2 (None date)',
-            f'{settings.SITE_URL}feature/{self.feature_2.key.integer_id()}',
-            'owner2@example.com,owner2.2@example.com',
+            'Stale Feature 7 (None date, 1 notification)',
+            f'{settings.SITE_URL}feature/{self.feature_7.key.integer_id()}',
+            'owner7@example.com',
             '',
-            '0'
+            '1'
         ]
     ]
     self.assertEqual(expected_rows, csv_rows)
@@ -1485,7 +1506,7 @@ class GenerateStaleFeaturesFileTest(testing_config.CustomTestCase):
     # Get the set of names from the data rows (all rows after the header).
     # This check is order-independent.
     actual_names = {row[1] for row in reader[1:]}
-    expected_names = {self.feature_1.name, self.feature_2.name}
+    expected_names = {self.feature_1.name, self.feature_7.name}
     self.assertEqual(actual_names, expected_names)
 
     self.assertEqual(result, '2 rows added to chromestatus-stale-features.csv')

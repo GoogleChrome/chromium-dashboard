@@ -1022,9 +1022,11 @@ class GenerateStaleFeaturesFile(FlaskHandler):
       ndb.OR(
         FeatureEntry.accurate_as_of < one_month_ago,
         FeatureEntry.accurate_as_of == None,
-      )
+      ),
     )
-
+    # We should only surface features we have sent notifications about.
+    # (This cannot be added to the query, since only 1 inequality is allowed per query.)
+    stale_features = [f for f in stale_features if f.outstanding_notifications >= 1]
     stale_features_with_upcoming_ship_stages: list[FeatureEntry] = []
     for f in stale_features:
       shipping_stage_type = STAGE_TYPES_SHIPPING[f.feature_type]
