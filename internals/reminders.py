@@ -40,7 +40,7 @@ import settings
 WEBSTATUS_EMAIL = 'webstatus@google.com'
 CBE_ESCLATION_EMAIL = 'cbe-releasenotes@google.com'
 STAGING_EMAIL = 'jrobbins-test@googlegroups.com'
-EMAIL_SUBJECT_PREFIX = 'Action requested'
+EMAIL_SUBJECT_PREFIX = '[Action required]'
 
 
 def choose_email_recipients(
@@ -100,7 +100,7 @@ def build_email_tasks(
     subject = subject_format % fe.name
     if is_escalated:
       if EMAIL_SUBJECT_PREFIX in subject:
-        subject = subject.replace(EMAIL_SUBJECT_PREFIX, 'Escalation request')
+        subject = subject.replace(EMAIL_SUBJECT_PREFIX, '[Escalated Request]')
       else:
         subject = f'ESCALATED: {subject}'
     recipients = choose_email_recipients(fe, is_escalated, is_accuracy_email())
@@ -228,7 +228,8 @@ class FeatureAccuracyHandler(AbstractReminderHandler):
   # This grace period needs to be consistent with
   # ACCURACY_GRACE_PERIOD in client-src/elements/utils.ts.
   ACCURACY_GRACE_PERIOD = timedelta(weeks=4)
-  SUBJECT_FORMAT = EMAIL_SUBJECT_PREFIX + ' - Verify %s'
+  SUBJECT_FORMAT = (EMAIL_SUBJECT_PREFIX +
+                    ' Verify important information about your shipping feature (%s)')
   EMAIL_TEMPLATE_PATH = 'accuracy_notice_email.html'
   FUTURE_MILESTONES_TO_CONSIDER = 2
   MILESTONE_FIELDS = [
