@@ -20,6 +20,9 @@ import logging
 import requests
 import time
 import traceback
+import urllib.request
+from base64 import b64decode
+from framework import rediscache
 
 import settings
 
@@ -143,3 +146,19 @@ def get_current_milestone_info(anchor_channel: str):
     raise e
   mstone_info = json.loads(resp.text)
   return mstone_info['mstones'][0]
+
+
+def get_chromium_file(url: str) -> str:
+  """Fetches a file from Chromium source, caching the result for 1 hour."""
+  content = rediscache.get(url)
+  if content is None:
+    logging.info(f'Fetching and caching file: {url}')
+    try:
+      with urllib.request.urlopen(url, timeout=60) as conn:
+        content = b64decode(conn.read()).decode('utf-8')
+        # Cache page for 30 minutes.
+        rediscache.set(url, content, time=1800)
+    except (urllib.error.URLError, TypeError, ValueError) as e:
+      logging.error(f'Could not fetch or parse file at {url}: {e}')
+      return ""
+  return content

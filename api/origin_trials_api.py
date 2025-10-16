@@ -13,8 +13,6 @@
 # limitations under the License.
 
 import concurrent.futures
-import urllib.request
-from base64 import b64decode
 
 import flask
 import json5
@@ -24,36 +22,27 @@ import validators
 
 from chromestatus_openapi.models import (CreateOriginTrialRequest, GetOriginTrialsResponse, SuccessMessage)
 
-from framework import basehandlers, origin_trials_client, permissions
+from framework import basehandlers, origin_trials_client, permissions, utils
+from internals import core_enums
 from internals import notifier_helpers
 from internals.core_enums import BlinkHistogramID, OT_READY_FOR_CREATION
 from internals.core_models import FeatureEntry, Stage
-from internals.review_models import Gate, Vote
+from internals.review_models import Gate
 import settings
 
-WEBFEATURE_FILE_URL = 'https://chromium.googlesource.com/chromium/src/+/main/third_party/blink/public/mojom/use_counter/metrics/web_feature.mojom?format=TEXT'
-WEBDXFEATURE_FILE_URL = 'https://chromium.googlesource.com/chromium/src/+/main/third_party/blink/public/mojom/use_counter/metrics/webdx_feature.mojom?format=TEXT'
-CSS_PROPERTY_ID_FILE_URL = 'https://chromium.googlesource.com/chromium/src/+/main/third_party/blink/public/mojom/use_counter/metrics/css_property_id.mojom?format=TEXT'
-ENABLED_FEATURES_FILE_URL = 'https://chromium.googlesource.com/chromium/src/+/main/third_party/blink/renderer/platform/runtime_enabled_features.json5?format=TEXT'
-GRACE_PERIOD_FILE = 'https://chromium.googlesource.com/chromium/src/+/main/third_party/blink/common/origin_trials/manual_completion_origin_trial_features.cc?format=TEXT'
+
 CHROMIUM_SRC_FILES = [
-  {'name': 'enabled_features_text', 'url': ENABLED_FEATURES_FILE_URL},
-  {'name': 'grace_period_file', 'url': GRACE_PERIOD_FILE}
+  {'name': 'enabled_features_text', 'url': core_enums.ENABLED_FEATURES_FILE_URL},
+  {'name': 'grace_period_file', 'url': core_enums.GRACE_PERIOD_FILE}
 ]
 CHROMIUM_USE_COUNTER_FILES_MAP = {
   BlinkHistogramID.web_feature: {
-      'name': 'webfeature_file', 'url': WEBFEATURE_FILE_URL},
+      'name': 'webfeature_file', 'url': core_enums.WEBFEATURE_FILE_URL},
   BlinkHistogramID.webdx_feature: {
-      'name': 'webdxfeature_file', 'url': WEBDXFEATURE_FILE_URL},
+      'name': 'webdxfeature_file', 'url': core_enums.WEBFEATURE_FILE_URL},
   BlinkHistogramID.css_property_id: {
-      'name': 'css_property_id_file', 'url': CSS_PROPERTY_ID_FILE_URL},
+      'name': 'css_property_id_file', 'url': core_enums.CSS_PROPERTY_ID_FILE_URL},
 }
-
-
-def get_chromium_file(url: str) -> str:
-  """Get chromium file contents from a given URL"""
-  with urllib.request.urlopen(url, timeout=60) as conn:
-    return  b64decode(conn.read()).decode('utf-8')
 
 
 def get_chromium_files_for_validation(uc_type: BlinkHistogramID | None) -> dict[str, str]:
@@ -66,7 +55,7 @@ def get_chromium_files_for_validation(uc_type: BlinkHistogramID | None) -> dict[
   files_to_fetch.extend(CHROMIUM_SRC_FILES)
 
   with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
-    future_to_name = {executor.submit(get_chromium_file, f['url']): f['name']
+    future_to_name = {executor.submit(utils.get_chromium_file, f['url']): f['name']
                       for f in files_to_fetch}
     for future in concurrent.futures.as_completed(future_to_name):
       name = future_to_name[future]
