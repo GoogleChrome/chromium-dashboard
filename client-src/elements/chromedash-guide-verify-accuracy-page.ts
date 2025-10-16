@@ -331,7 +331,9 @@ export class ChromedashGuideVerifyAccuracyPage extends LitElement {
           <sl-icon slot="icon" name="info-circle"></sl-icon>
           <strong
             >Please review your information below and click 'Submit' to confirm
-            it is accurate, <p id="alertUnderline">even if no changes are made</p>!</strong
+            it is accurate,
+            <p id="alertUnderline">even if no changes are made</p>
+            !</strong
           >
         </sl-alert>
         <chromedash-form-table ${ref(this.registerFormSubmitHandler)}>
