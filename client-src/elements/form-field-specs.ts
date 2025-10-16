@@ -2570,7 +2570,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     attrs: {
       ...TEXT_FIELD_ATTRS,
       placeholder: 'e.g. "StorageBuckets"',
-      pattern: String.raw`k\S*`,
+      pattern: String.raw`[a-zA-Z0-9]*`,
     },
     required: false,
     label: 'Finch feature name',
