@@ -1078,12 +1078,12 @@ class GenerateReviewActivityFileTest(testing_config.CustomTestCase):
   def setUp(self):
     self.maxDiff = None
     self.handler = maintenance_scripts.GenerateReviewActivityFile()
-    
+
     self.gate_1 = Gate(id=11, feature_id=1, stage_id=100,
                        gate_type=4, # API Owners.
                        state=Vote.NA)
     self.gate_1.put()
-    
+
     self.gate_2 = Gate(id=12, feature_id=2, stage_id=200,
                        gate_type=32, # Privacy team.
                        state=Vote.NA)
@@ -1093,7 +1093,7 @@ class GenerateReviewActivityFileTest(testing_config.CustomTestCase):
       feature_id=1, gate_id=11, author='user1@example.com',
       created=datetime(2020, 1, 1, 11), content='test comment', amendments=[])
     self.activity_1.put()
-    
+
     self.activity_2 = Activity(
       feature_id=1, gate_id=11, created=datetime(2020, 1, 2, 9),
       author='user1@example.com', content=None,
@@ -1159,9 +1159,9 @@ class GenerateReviewActivityFileTest(testing_config.CustomTestCase):
       feature_id=2, gate_id=12, author='user3@example.com',
       created=datetime(2020, 1, 15, 8), content='test comment 5', amendments=[])
     self.activity_10.put()
-    
+
     # Activity whose gate doesn't exist.
-    self.activity_11 = Activity(feature_id=2, gate_id=13, author='user4@example.com', 
+    self.activity_11 = Activity(feature_id=2, gate_id=13, author='user4@example.com',
       created=datetime(2020, 1, 14, 8), content='test comment 5', amendments=[])
     self.activity_11.put()
 
@@ -1489,3 +1489,67 @@ class GenerateStaleFeaturesFileTest(testing_config.CustomTestCase):
     self.assertEqual(actual_names, expected_names)
 
     self.assertEqual(result, '2 rows added to chromestatus-stale-features.csv')
+
+
+class ResetOutstandingNotificationsTest(testing_config.CustomTestCase):
+  """Tests for the ResetOutstandingNotifications handler."""
+
+  def setUp(self):
+    """Set up test data before each test."""
+    self.handler = maintenance_scripts.ResetOutstandingNotifications()
+
+    # Feature 1: Has multiple outstanding notifications.
+    # Should be RESET to 0.
+    self.feature_to_reset = FeatureEntry(
+        id=101, name='Feature to Reset', summary='summary', category=1,
+        outstanding_notifications=5)
+    self.feature_to_reset.put()
+
+    # Feature 2: Has exactly one outstanding notification (boundary condition).
+    # Should be RESET to 0.
+    self.feature_at_boundary = FeatureEntry(
+        id=102, name='Feature at Boundary', summary='summary', category=1,
+        outstanding_notifications=1)
+    self.feature_at_boundary.put()
+
+    # Feature 3: Has zero outstanding notifications.
+    # Should be IGNORED and remain 0.
+    self.feature_to_ignore_zero = FeatureEntry(
+        id=103, name='Feature to Ignore (Zero)', summary='summary', category=1,
+        outstanding_notifications=0)
+    self.feature_to_ignore_zero.put()
+
+    # Feature 4: Has a null (None) value for notifications.
+    # Should be IGNORED and remain None.
+    self.feature_to_ignore_none = FeatureEntry(
+        id=104, name='Feature to Ignore (None)', summary='summary', category=1,
+        outstanding_notifications=None)
+    self.feature_to_ignore_none.put()
+
+  def tearDown(self):
+    """Clean up test data after each test."""
+    for entity in FeatureEntry.query():
+      entity.key.delete()
+
+  @mock.patch('framework.basehandlers.FlaskHandler.require_cron_header')
+  def test_get_template_data__resets_counters_and_ignores_others(
+      self, mock_require_cron):
+    """Should reset counters >= 1, ignore others, and return correct summary."""
+    result = self.handler.get_template_data()
+
+    mock_require_cron.assert_called_once()
+
+    self.assertEqual('2 reverted to 0 outstanding notifications.', result)
+
+    updated_feature_1 = self.feature_to_reset.key.get()
+    self.assertEqual(0, updated_feature_1.outstanding_notifications)
+
+    updated_feature_2 = self.feature_at_boundary.key.get()
+    self.assertEqual(0, updated_feature_2.outstanding_notifications)
+
+    ignored_feature_1 = self.feature_to_ignore_zero.key.get()
+    self.assertEqual(0, ignored_feature_1.outstanding_notifications)
+
+    # This feature should have been untouched and its counter should still be None.
+    ignored_feature_2 = self.feature_to_ignore_none.key.get()
+    self.assertIsNone(ignored_feature_2.outstanding_notifications)

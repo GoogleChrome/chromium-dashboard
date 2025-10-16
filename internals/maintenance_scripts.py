@@ -1132,3 +1132,17 @@ class MigrateRolloutMilestones(FlaskHandler):
       count += len(changed_stages)
 
     return f'{count} rollout_milestone fields migrated'
+
+
+class ResetOutstandingNotifications(FlaskHandler):
+  """Reset the FeatureEntry.outstanding_notifications counter for all features"""
+
+  def get_template_data(self, **kwargs) -> str:
+    self.require_cron_header()
+    notified_features = FeatureEntry.query(
+      FeatureEntry.outstanding_notifications >= 1
+    ).fetch()
+    for f in notified_features:
+      f.outstanding_notifications = 0
+    ndb.put_multi(notified_features)
+    return f'{len(notified_features)} reverted to 0 outstanding notifications.'
