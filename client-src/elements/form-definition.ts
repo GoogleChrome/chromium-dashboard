@@ -643,55 +643,16 @@ const DEPRECATION_PREPARE_TO_SHIP_FIELDS: MetadataFields = {
 // Only one stage can be used for each definition object, so
 // multiple definitions exist for each stage that might be updated.
 export const VERIFY_ACCURACY_METADATA_FIELDS: MetadataFields = {
-  name: 'Feature Metadata',
+  name: 'Important fields',
   sections: [
     {
       name: 'Feature Metadata',
-      fields: ['summary', 'owner', 'editors', 'cc_recipients'],
-    },
-  ],
-};
-
-const VERIFY_ACCURACY_DEV_TRIAL_FIELDS: MetadataFields = {
-  name: 'Dev trials and iterate on design',
-  sections: [
-    {
-      name: 'Dev trials milestones',
       fields: [
-        'dt_milestone_desktop_start',
-        'dt_milestone_android_start',
-        'dt_milestone_ios_start',
-      ],
-    },
-  ],
-};
-
-const VERIFY_ACCURACY_ORIGIN_TRIAL_FIELDS: MetadataFields = {
-  name: 'Origin trial',
-  sections: [
-    {
-      name: 'Origin trial milestones',
-      fields: [
-        'ot_milestone_desktop_start',
-        'ot_milestone_desktop_end',
-        'ot_milestone_android_start',
-        'ot_milestone_android_end',
-        'ot_milestone_webview_start',
-        'ot_milestone_webview_end',
-      ],
-    },
-  ],
-};
-
-export const VERIFY_ACCURACY_TRIAL_EXTENSION_FIELDS: MetadataFields = {
-  name: 'Trial extension',
-  sections: [
-    {
-      name: 'Trial extension milestones',
-      fields: [
-        'extension_android_last',
-        'extension_desktop_last',
-        'extension_webview_last',
+        'summary',
+        'owner',
+        'finch_name',
+        'non_finch_justification',
+        'bug_url',
       ],
     },
   ],
@@ -796,19 +757,12 @@ export const VERIFY_ACCURACY_FORMS_BY_STAGE_TYPE: Record<
   number,
   MetadataFields
 > = {
-  [enums.STAGE_BLINK_DEV_TRIAL]: VERIFY_ACCURACY_DEV_TRIAL_FIELDS,
-  [enums.STAGE_BLINK_ORIGIN_TRIAL]: VERIFY_ACCURACY_ORIGIN_TRIAL_FIELDS,
   [enums.STAGE_BLINK_SHIPPING]: VERIFY_ACCURACY_PREPARE_TO_SHIP_FIELDS,
 
-  [enums.STAGE_FAST_DEV_TRIAL]: VERIFY_ACCURACY_DEV_TRIAL_FIELDS,
-  [enums.STAGE_FAST_ORIGIN_TRIAL]: VERIFY_ACCURACY_ORIGIN_TRIAL_FIELDS,
   [enums.STAGE_FAST_SHIPPING]: VERIFY_ACCURACY_PREPARE_TO_SHIP_FIELDS,
 
-  [enums.STAGE_PSA_DEV_TRIAL]: VERIFY_ACCURACY_DEV_TRIAL_FIELDS,
   [enums.STAGE_PSA_SHIPPING]: VERIFY_ACCURACY_PREPARE_TO_SHIP_FIELDS,
 
-  [enums.STAGE_DEP_DEV_TRIAL]: VERIFY_ACCURACY_DEV_TRIAL_FIELDS,
-  [enums.STAGE_DEP_DEPRECATION_TRIAL]: VERIFY_ACCURACY_ORIGIN_TRIAL_FIELDS,
   [enums.STAGE_DEP_SHIPPING]: VERIFY_ACCURACY_PREPARE_TO_SHIP_FIELDS,
 
   [enums.STAGE_ENT_ROLLOUT]: VERIFY_ACCURACY_ENTERPRISE_PREPARE_TO_SHIP_FIELDS,
