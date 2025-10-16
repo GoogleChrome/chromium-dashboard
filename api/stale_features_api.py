@@ -31,12 +31,12 @@ class StaleFeatureInfo(TypedDict):
 
 class GetStaleFeaturesResponse(TypedDict):
   stale_features: list[StaleFeatureInfo]
-  
+
 
 class StaleFeaturesAPI(basehandlers.EntitiesAPIHandler):
   """Endpoint for obtaining information on stale features."""
 
-  def do_get(self, **kwargs):
+  def do_get(self, **kwargs) -> GetStaleFeaturesResponse:
     """Get all stale features."""
     stale_features = feature_helpers.get_stale_features()
     stale_features_info: list[StaleFeatureInfo] = []
