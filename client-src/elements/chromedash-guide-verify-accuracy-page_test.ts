@@ -209,7 +209,9 @@ describe('chromedash-guide-verify-accuracy-page', () => {
     await component.updateComplete;
 
     // The 'accurate_as_of' field is special (touched=true).
-    const accurateAsOf = component.fieldValues.find(fv => fv.name === 'accurate_as_of');
+    const accurateAsOf = component.fieldValues.find(
+      fv => fv.name === 'accurate_as_of'
+    );
     assert.exists(accurateAsOf);
     assert.isTrue(accurateAsOf.touched);
 
