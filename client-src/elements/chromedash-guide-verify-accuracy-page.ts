@@ -15,7 +15,6 @@ import {
   VERIFY_ACCURACY_CONFIRMATION_FIELD,
   VERIFY_ACCURACY_FORMS_BY_STAGE_TYPE,
   VERIFY_ACCURACY_METADATA_FIELDS,
-  VERIFY_ACCURACY_TRIAL_EXTENSION_FIELDS,
 } from './form-definition';
 import {STAGE_SHORT_NAMES, STAGE_SPECIFIC_FIELDS} from './form-field-enums.js';
 import {ALL_FIELDS} from './form-field-specs';
@@ -26,7 +25,15 @@ import {Feature} from '../js-src/cs-client.js';
 
 export class ChromedashGuideVerifyAccuracyPage extends LitElement {
   static get styles() {
-    return [...SHARED_STYLES, ...FORM_STYLES, css``];
+    return [
+      ...SHARED_STYLES,
+      ...FORM_STYLES,
+      css`
+      .verify-banner {
+          margin-bottom: 12px;
+        }
+      `
+    ];
   }
   @property({attribute: false})
   featureId = 0;
@@ -42,6 +49,8 @@ export class ChromedashGuideVerifyAccuracyPage extends LitElement {
   previousStageTypeRendered = 0;
   @state()
   sameTypeRendered = 0;
+  @state()
+  submitting = false;
 
   connectedCallback() {
     super.connectedCallback();
@@ -94,12 +103,14 @@ export class ChromedashGuideVerifyAccuracyPage extends LitElement {
       .ensureTokenIsValid()
       .then(() => {
         hiddenTokenField.value = window.csClient.token;
+        this.submitting = true;
         return window.csClient.updateFeature(submitBody);
       })
       .then(() => {
         window.location.href = `/feature/${this.featureId}`;
       })
       .catch(() => {
+        this.submitting = false;
         showToastMessage(
           'Some errors occurred. Please refresh the page or try again later.'
         );
@@ -267,26 +278,6 @@ export class ChromedashGuideVerifyAccuracyPage extends LitElement {
         )
       );
       allFormFields = [...allFormFields, ...fieldsOnly];
-
-      // If extension stages are associated with this stage,
-      // render them in a separate section as well.
-      const extensions = feStage.extensions || [];
-      extensions.forEach(extensionStage => {
-        fieldsOnly = flattenSections(VERIFY_ACCURACY_TRIAL_EXTENSION_FIELDS);
-        let sectionName = VERIFY_ACCURACY_TRIAL_EXTENSION_FIELDS.name;
-        if (feStage.display_name) {
-          sectionName = `${feStage.display_name} ${VERIFY_ACCURACY_TRIAL_EXTENSION_FIELDS.name}`;
-        }
-        formsToRender.push(
-          this.renderStageSection(
-            formattedFeature,
-            sectionName,
-            extensionStage,
-            fieldsOnly
-          )
-        );
-        allFormFields = [...allFormFields, ...fieldsOnly];
-      });
     }
 
     // Add the verify accuracy checkbox at the end of all forms.
@@ -305,14 +296,7 @@ export class ChromedashGuideVerifyAccuracyPage extends LitElement {
   }
 
   getAllStageIds() {
-    const stageIds: number[] = [];
-    this.feature.stages.forEach(feStage => {
-      stageIds.push(feStage.id);
-      // Check if any trial extension exist, and collect their IDs as well.
-      const extensions = feStage.extensions || [];
-      extensions.forEach(extensionStage => stageIds.push(extensionStage.id));
-    });
-    return stageIds.join(',');
+    return this.feature.stages.map(feStage => feStage.id);
   }
 
   renderForm() {
@@ -328,7 +312,7 @@ export class ChromedashGuideVerifyAccuracyPage extends LitElement {
     const title = this.feature.accurate_as_of
       ? `Accuracy last verified ${this.feature.accurate_as_of.split(' ')[0]}.`
       : 'Accuracy last verified at time of creation.';
-
+    const submitButtonTitle = (this.submitting) ? 'Submitting...' : 'Submit';
     return html`
       <form name="feature_form" method="post">
         <input type="hidden" name="stages" value="${stageIds}" />
@@ -339,12 +323,16 @@ export class ChromedashGuideVerifyAccuracyPage extends LitElement {
           value=${allFormFields.join(',')}
         />
         <h3>${title}</h3>
+        <sl-alert variant="warning" open class="verify-banner">
+          <sl-icon slot="icon" name="info-circle"></sl-icon>
+          <strong>Please submit this form to verify accuracy, even if no changes are made!</strong>
+        </sl-alert>
         <chromedash-form-table ${ref(this.registerFormSubmitHandler)}>
           ${formsToRender}
         </chromedash-form-table>
 
         <section class="final_buttons">
-          <input class="button" type="submit" value="Submit" />
+          <input class="button" type="submit" value="${submitButtonTitle}" ?disabled=${this.submitting} />
           <button
             id="cancel-button"
             type="reset"
