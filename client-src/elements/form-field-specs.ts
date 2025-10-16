@@ -128,6 +128,7 @@ const DOMAIN_NAME_REGEX: string = String.raw`(([A-Za-z0-9\-]+\.)+[A-Za-z]{2,6})`
 const LOCALHOST_REGEX: string = String.raw`(localhost|127\.0\.0\.1)`;
 const DOMAIN_REGEX: string =
   '(' + DOMAIN_NAME_REGEX + '|' + LOCALHOST_REGEX + ')';
+const ALPHANUMERIC_REGEX = String.raw`[a-zA-Z0-9]*`;
 
 const EMAIL_ADDRESS_REGEX: string = USER_REGEX + '@' + DOMAIN_NAME_REGEX;
 const GOOGLE_EMAIL_ADDRESS_REGEX: string = `${USER_REGEX}@google.com`;
@@ -2567,7 +2568,11 @@ export const ALL_FIELDS: Record<string, Field> = {
 
   finch_name: {
     type: 'input',
-    attrs: TEXT_FIELD_ATTRS,
+    attrs: {
+      ...TEXT_FIELD_ATTRS,
+      placeholder: 'e.g. "StorageBuckets"',
+      pattern: ALPHANUMERIC_REGEX,
+    },
     required: false,
     label: 'Finch feature name',
     usage: {
@@ -2599,7 +2604,12 @@ export const ALL_FIELDS: Record<string, Field> = {
         href="https://chromium.googlesource.com/chromium/src/+/main/third_party/blink/renderer/platform/runtime_enabled_features.json5"
         >runtime_enabled_features.json5</a
       >
-      and finch GCL files`,
+      (or
+      <a
+        target="_blank"
+        href="https://chromium.googlesource.com/chromium/src/+/main/content/public/common/content_features.cc"
+        >content_features.cc</a
+      >), and finch GCL files`,
   },
 
   non_finch_justification: {
