@@ -654,4 +654,4 @@ def get_stale_features() -> list[tuple[FeatureEntry, int, str]]:
     ) for f in relevant_features
     if (f.accurate_as_of and f.accurate_as_of + timedelta(weeks=4) < now
         and not f.deleted
-        and f.outstanding_notifications >= 1)]
+        and f.outstanding_notifications > 0)]
