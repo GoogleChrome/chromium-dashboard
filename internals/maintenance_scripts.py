@@ -1018,15 +1018,19 @@ class GenerateStaleFeaturesFile(FlaskHandler):
     # Get all features that have not been verified for accuracy in over a month.
     now = datetime.now()
     one_month_ago = now - timedelta(weeks=4)
-    stale_features = FeatureEntry.query(
+    stale_features: list[FeatureEntry] = FeatureEntry.query(
       ndb.OR(
         FeatureEntry.accurate_as_of < one_month_ago,
         FeatureEntry.accurate_as_of == None,
-      )
-    )
+      ),
+    ).fetch()
 
     stale_features_with_upcoming_ship_stages: list[FeatureEntry] = []
     for f in stale_features:
+      # We should only surface features we have sent notifications about.
+      # (This cannot be added to the query, since only 1 inequality is allowed per query.)
+      if f.outstanding_notifications == 0:
+        continue
       shipping_stage_type = STAGE_TYPES_SHIPPING[f.feature_type]
       upcoming_ship_stages = Stage.query(
         Stage.feature_id == f.key.integer_id(),
