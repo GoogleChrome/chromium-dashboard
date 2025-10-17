@@ -23,6 +23,7 @@ from framework import utils
 from internals.core_enums import (
     INTENT_NONE,
     INTENT_STAGES_BY_STAGE_TYPE,
+    STAGE_ENT_ROLLOUT,
     STAGE_TYPES_PROTOTYPE,
     STAGE_TYPES_DEV_TRIAL,
     STAGE_TYPES_ORIGIN_TRIAL,
@@ -44,6 +45,7 @@ class StageTemplateInfo(TypedDict):
   ot_stages: list[Stage]
   extension_stages: list[Stage]
   ship_stages: list[Stage]
+  enterprise_stages: list[Stage]
   should_render_mstone_table: bool
   should_render_intents: bool
 
@@ -134,6 +136,7 @@ def get_stage_info_for_templates(
   ot_stage_type = STAGE_TYPES_ORIGIN_TRIAL[f_type]
   extension_stage_type = STAGE_TYPES_EXTEND_ORIGIN_TRIAL[f_type]
   ship_stage_type = STAGE_TYPES_SHIPPING[f_type]
+  enterprise_stage_type = STAGE_ENT_ROLLOUT
 
   stage_info: StageTemplateInfo = {
     'proto_stages': [],
@@ -141,6 +144,7 @@ def get_stage_info_for_templates(
     'ot_stages': [],
     'extension_stages': [],
     'ship_stages': [],
+    'enterprise_stages': [],
     # Note if any milestones that can be displayed are seen while organizing.
     # This is used to check if rendering the milestone table is needed.
     'should_render_mstone_table': False,
@@ -155,7 +159,8 @@ def get_stage_info_for_templates(
         s.stage_type != dt_stage_type and
         s.stage_type != ot_stage_type and
         s.stage_type != extension_stage_type and
-        s.stage_type != ship_stage_type):
+        s.stage_type != ship_stage_type and
+        s.stage_type != enterprise_stage_type):
       continue
 
     # If an intent thread is present in any stage,
@@ -194,6 +199,11 @@ def get_stage_info_for_templates(
     if s.stage_type == ship_stage_type:
       stage_info['ship_stages'].append(s)
       if m.desktop_first or m.android_first or m.webview_first or m.ios_first:
+        stage_info['should_render_mstone_table'] = True
+
+    if s.stage_type == enterprise_stage_type:
+      stage_info['enterprise_stages'].append(s)
+      if m.desktop_first:
         stage_info['should_render_mstone_table'] = True
 
   # Returns a dictionary of stages needed for rendering info, as well as
