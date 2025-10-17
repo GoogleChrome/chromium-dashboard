@@ -30,7 +30,7 @@
     {%- endfor -%}
     {%- for stage in stage_info.ot_stages -%}
       {%- if stage.milestones.android_first %}
-        <tr><td>Origin trial Android first</td><td>{{stage.milestones.android_first}}</td></tr>
+      <tr><td>Origin trial Android first</td><td>{{stage.milestones.android_first}}</td></tr>
       {%- endif -%}
       {%- if stage.milestones.android_last %}
         <tr><td>Origin trial Android last</td><td>{{stage.milestones.android_last}}</td></tr>
@@ -62,6 +62,11 @@
     {%- for stage in stage_info.dt_stages -%}
       {%- if stage.milestones.ios_first %}
         <tr><td>DevTrial on iOS</td><td>{{stage.milestones.ios_first}}</td></tr>
+      {%- endif -%}
+    {%- endfor %}
+    {%- for stage in stage_info.enterprise_stages -%}
+      {%- if stage.milestones.desktop_first %}
+        <tr><td>Rollout step {{loop.index}}</td><td>{{stage.milestones.desktop_first}}</td></tr>
       {%- endif -%}
     {%- endfor %}
   </table>

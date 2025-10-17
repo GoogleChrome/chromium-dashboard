@@ -24,7 +24,7 @@ import settings
 from google.cloud import ndb  # type: ignore
 from pages import intentpreview
 from internals import core_enums
-from internals.core_models import FeatureEntry, Stage
+from internals.core_models import FeatureEntry, MilestoneSet, Stage
 from internals.review_models import Gate, Vote
 
 test_app = flask.Flask(__name__,
@@ -239,6 +239,10 @@ class IntentEmailPreviewTemplateTest(testing_config.CustomTestCase):
 
   def test_template_rendering_ship(self):
     """We can render the ship intent template."""
+    # Add a shipping stage.
+    Stage(feature_id=self.complete_feature.key.integer_id(), stage_type=160,
+          milestones=MilestoneSet(desktop_first=100),
+          intent_thread_url='https://example.com/ship').put()
     with test_app.test_request_context(self.request_path):
       actual_data = self.handler.get_template_data(
           feature_id=self.complete_feature.key.integer_id(),
@@ -254,6 +258,31 @@ class IntentEmailPreviewTemplateTest(testing_config.CustomTestCase):
     # TESTDATA.make_golden(body, 'test_html_ship_rendering.html')
     self.assertMultiLineEqual(
       TESTDATA['test_html_ship_rendering.html'], body)
+
+  def test_template_rendering_ship__enterprise(self):
+    """We can render the ship intent template with enterprise stages."""
+    # Add some enterprise stages with milestones.
+    Stage(feature_id=self.complete_feature.key.integer_id(), stage_type=1061,
+          milestones=MilestoneSet(desktop_first=100)).put()
+    Stage(feature_id=self.complete_feature.key.integer_id(), stage_type=1061,
+          milestones=MilestoneSet(desktop_first=105)).put()
+    Stage(feature_id=self.complete_feature.key.integer_id(),
+          stage_type=1061).put()
+    with test_app.test_request_context(self.request_path):
+      actual_data = self.handler.get_template_data(
+          feature_id=self.complete_feature.key.integer_id(),
+          stage_id=self.stage_3.key.integer_id(),
+          gate_id=self.gate_3.key.integer_id())
+      actual_data.update(self.handler.get_common_data())
+      actual_data['nonce'] = 'fake nonce'
+      actual_data['xsrf_token'] = ''
+      actual_data['xsrf_token_expires'] = 0
+
+      body = render_template(self.intent_preview_path, **actual_data)
+      testing_config.sign_out()
+    # TESTDATA.make_golden(body, 'test_html_ship_enterprise_rendering.html')
+    self.assertMultiLineEqual(
+      TESTDATA['test_html_ship_enterprise_rendering.html'], body)
 
   def test_template_rendering_psa_ship(self):
     """We can render the ship intent template for PSA features."""
