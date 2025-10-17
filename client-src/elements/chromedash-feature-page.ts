@@ -176,7 +176,6 @@ export class ChromedashFeaturePage extends LitElement {
             feature.stages
           );
 
-
           this.loading = false;
         }
       )
@@ -494,7 +493,12 @@ export class ChromedashFeaturePage extends LitElement {
       `);
     }
     const userCanEdit = this.userCanEdit();
-    const featureOutdatedBanner = getFeatureOutdatedBanner(this.feature, this.shippingInfo, this.currentDate, userCanEdit);
+    const featureOutdatedBanner = getFeatureOutdatedBanner(
+      this.feature,
+      this.shippingInfo,
+      this.currentDate,
+      userCanEdit
+    );
     if (featureOutdatedBanner) {
       warnings.push(featureOutdatedBanner);
     }

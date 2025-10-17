@@ -224,7 +224,7 @@ describe('chromedash-feature-page', () => {
     const contextLink = '/features';
     window.csClient.getFeature.withArgs(featureId).returns(validFeaturePromise);
 
-    const component = await fixture(
+    const component = await fixture<ChromedashFeaturePage>(
       html`<chromedash-feature-page
         .user=${user}
         .featureId=${featureId}
@@ -232,17 +232,20 @@ describe('chromedash-feature-page', () => {
       >
       </chromedash-feature-page>`
     );
-    assert.exists(component);
+
+    await component.updateComplete;
+
+    assert.exists(component, 'Feature page exists.');
 
     const subheaderDiv = component.shadowRoot?.querySelector('div#subheader');
-    assert.exists(subheaderDiv);
+    assert.exists(subheaderDiv, 'Subheader div exists.');
     // crbug link is clickable
     assert.include(subheaderDiv.innerHTML, 'href="fake crbug link"');
     // star icon is rendered and the feature is starred
     assert.include(subheaderDiv.innerHTML, 'name="star-fill"');
 
     const breadcrumbsH2 = component.shadowRoot?.querySelector('h2#breadcrumbs');
-    assert.exists(breadcrumbsH2);
+    assert.exists(breadcrumbsH2, 'Breadcrumbs exist.');
     // feature name is rendered
     assert.include(breadcrumbsH2.innerHTML, 'feature one');
     // context link is clickable
@@ -253,16 +256,16 @@ describe('chromedash-feature-page', () => {
     const highlightsElement = component.shadowRoot?.querySelector(
       'chromedash-feature-highlights'
     );
-    assert.exists(highlightsElement);
+    assert.exists(highlightsElement, 'Highlights element exists.');
     const summarySection =
       highlightsElement.shadowRoot?.querySelector('section#summary');
-    assert.exists(summarySection);
+    assert.exists(summarySection, 'Summary section exists.');
     // feature summary is rendered
     assert.include(summarySection.innerHTML, 'detailed sum');
 
     const sampleSection =
       highlightsElement.shadowRoot?.querySelector('section#demo');
-    assert.exists(sampleSection);
+    assert.exists(sampleSection, 'Sample section exists.');
     // sample links are clickable
     assert.include(sampleSection.innerHTML, 'href="fake sample link one"');
     assert.include(sampleSection.innerHTML, 'href="fake sample link two"');
@@ -270,7 +273,7 @@ describe('chromedash-feature-page', () => {
     const docSection = highlightsElement.shadowRoot?.querySelector(
       'section#documentation'
     );
-    assert.exists(docSection);
+    assert.exists(docSection, 'Docs section exists.');
     // doc links are clickable
     assert.include(docSection.innerHTML, 'href="fake doc link one"');
     assert.include(docSection.innerHTML, 'href="fake doc link two"');
@@ -278,14 +281,14 @@ describe('chromedash-feature-page', () => {
     const specSection = highlightsElement.shadowRoot?.querySelector(
       'section#specification'
     );
-    assert.exists(specSection);
+    assert.exists(specSection, 'Spec section exists.');
     // spec link is clickable
     assert.include(specSection.innerHTML, 'href="fake spec link"');
 
     const consensusSection = highlightsElement.shadowRoot?.querySelector(
       'section#consensus'
     ) as HTMLElement;
-    assert.exists(consensusSection);
+    assert.exists(consensusSection, 'Consensus section exists.');
     // FF and WebKit views are present and clickable.
     await assertClickableVendorLink(consensusSection, {
       href: 'fake ff url',
@@ -299,7 +302,7 @@ describe('chromedash-feature-page', () => {
 
     const tagSection =
       highlightsElement.shadowRoot?.querySelector('section#tags');
-    assert.exists(tagSection);
+    assert.exists(tagSection, 'TAG section exists.');
     // feature tag link is clickable
     assert.include(tagSection.innerHTML, 'href="/features#tags:tag_one"');
   });
@@ -314,7 +317,7 @@ describe('chromedash-feature-page', () => {
       .withArgs(featureId)
       .returns(Promise.resolve(features));
 
-    const component = await fixture(
+    const component = await fixture<ChromedashFeaturePage>(
       html`<chromedash-feature-page
         .user=${user}
         .featureId=${featureId}
@@ -322,159 +325,22 @@ describe('chromedash-feature-page', () => {
       >
       </chromedash-feature-page>`
     );
-    assert.exists(component);
+
+    await component.updateComplete;
+
+    assert.exists(component, 'Feature page exists.');
 
     const highlightsElement = component.shadowRoot?.querySelector(
       'chromedash-feature-highlights'
     );
-    assert.exists(highlightsElement);
+    assert.exists(highlightsElement, 'Highlights element exists.');
     const consensusSection =
       highlightsElement.shadowRoot?.querySelector('section#consensus');
-    assert.exists(consensusSection);
+    assert.exists(consensusSection, 'Consensus section exists.');
     // Views are omitted based on an empty 'val' field.
     assert.notInclude(consensusSection.innerHTML, '<chromedash-vendor-views');
     // But it does still include webdev views.
     assert.include(consensusSection.innerHTML, 'fake webdev view text');
-  });
-
-  it('findClosestShippingDate() tests for isUpcoming state', async () => {
-    const featureId = 123456;
-    const contextLink = '/features';
-    const feature: any = structuredClone(await validFeaturePromise);
-
-    let shippingInfo = await findClosestShippingDate({}, feature.stages);
-    assert.isFalse(shippingInfo.isUpcoming);
-    assert.equal(shippingInfo.closestShippingDate, '');
-
-    shippingInfo = await findClosestShippingDate(channels, []);
-    assert.isFalse(shippingInfo.isUpcoming);
-    assert.equal(shippingInfo.closestShippingDate, '');
-
-    // No shipping milestones.
-    let stages: any = structuredClone(feature.stages);
-    stages[2].stage_type = 130;
-    shippingInfo = await findClosestShippingDate(channels, stages);
-    assert.isFalse(shippingInfo.isUpcoming);
-    assert.equal(shippingInfo.closestShippingDate, '');
-
-    // No upcoming shipping milestones.
-    stages = structuredClone(feature.stages);
-    stages[2].desktop_first = 20;
-    shippingInfo = await findClosestShippingDate(channels, stages);
-    assert.isFalse(shippingInfo.isUpcoming);
-    assert.isFalse(shippingInfo.hasShipped);
-    assert.equal(shippingInfo.closestShippingDate, '');
-
-    shippingInfo = await findClosestShippingDate(channels, feature.stages);
-    assert.isTrue(shippingInfo.isUpcoming);
-    assert.isFalse(shippingInfo.hasShipped);
-    assert.equal(shippingInfo.closestShippingDate, '2020-03-13T00:00:00');
-
-    stages = structuredClone(feature.stages);
-    // Test with STAGE_BLINK_ORIGIN_TRIAL type.
-    stages[2].stage_type = 150;
-    shippingInfo = await findClosestShippingDate(channels, stages);
-    assert.isTrue(shippingInfo.isUpcoming);
-    assert.isFalse(shippingInfo.hasShipped);
-    assert.equal(shippingInfo.closestShippingDate, '2020-03-13T00:00:00');
-  });
-
-  it('findClosestShippingDate() tests for hasShipped state', async () => {
-    const featureId = 123456;
-    const contextLink = '/features';
-    const feature: any = structuredClone(await validFeaturePromise);
-
-    let shippingInfo = await findClosestShippingDate({}, feature.stages);
-    assert.isFalse(shippingInfo.hasShipped);
-    assert.equal(shippingInfo.closestShippingDate, '');
-
-    shippingInfo = await findClosestShippingDate(channels, []);
-    assert.isFalse(shippingInfo.hasShipped);
-    assert.equal(shippingInfo.closestShippingDate, '');
-
-    // No shipping milestones.
-    let stages: any = structuredClone(feature.stages);
-    stages[2].stage_type = 130;
-    shippingInfo = await findClosestShippingDate(channels, stages);
-    assert.isFalse(shippingInfo.hasShipped);
-    assert.equal(shippingInfo.closestShippingDate, '');
-
-    // No shipped milestones in the past.
-    const testChannels: any = structuredClone(channels);
-    testChannels['stable'].version = 10;
-    shippingInfo = await findClosestShippingDate(testChannels, stages);
-    assert.isFalse(shippingInfo.hasShipped);
-    assert.equal(shippingInfo.closestShippingDate, '');
-
-    // Shipped on the stable milestone.
-    stages = structuredClone(feature.stages);
-    stages[2].desktop_first = 79;
-    shippingInfo = await findClosestShippingDate(channels, stages);
-    assert.isFalse(shippingInfo.isUpcoming);
-    assert.isTrue(shippingInfo.hasShipped);
-    assert.equal(shippingInfo.closestShippingDate, '2020-03-13T00:00:00');
-
-    // Ignore OT milestones in the past.
-    stages = structuredClone(feature.stages);
-    stages[2].desktop_first = 79;
-    // The type for STAGE_BLINK_ORIGIN_TRIAL.
-    stages[2].stage_type = 150;
-    shippingInfo = await findClosestShippingDate(channels, stages);
-    assert.isFalse(shippingInfo.isUpcoming);
-    assert.isFalse(shippingInfo.hasShipped);
-    assert.equal(shippingInfo.closestShippingDate, '');
-  });
-
-  it('findClosestShippingDate() tests when fetch specific channels', async () => {
-    const featureId = 123456;
-    const contextLink = '/features';
-    const feature: any = structuredClone(await validFeaturePromise);
-    feature.stages[2].desktop_first = 20;
-    window.csClient.getFeature
-      .withArgs(featureId)
-      .returns(Promise.resolve(feature));
-
-    const component: ChromedashFeaturePage =
-      await fixture<ChromedashFeaturePage>(
-        html`<chromedash-feature-page
-          .user=${user}
-          .featureId=${featureId}
-          .contextLink=${contextLink}
-        >
-        </chromedash-feature-page>`
-      );
-
-    assert.exists(component);
-    assert.isFalse(component.shippingInfo.isUpcoming);
-    assert.isTrue(component.shippingInfo.hasShipped);
-    assert.equal(component.shippingInfo.closestShippingDate, '2018-02-13T00:00:00');
-  });
-
-  it('isUpcomingFeatureOutdated() tests', async () => {
-    const featureId = 123456;
-    const contextLink = '/features';
-    const feature: any = structuredClone(await validFeaturePromise);
-    feature.accurate_as_of = '2024-08-28 21:51:34.22386';
-    window.csClient.getFeature
-      .withArgs(featureId)
-      .returns(Promise.resolve(feature));
-    const component: ChromedashFeaturePage =
-      await fixture<ChromedashFeaturePage>(
-        html`<chromedash-feature-page
-          .user=${user}
-          .featureId=${featureId}
-          .contextLink=${contextLink}
-        >
-        </chromedash-feature-page>`
-      );
-    component.currentDate = new Date('2024-10-23').getTime();
-    assert.exists(component);
-
-    component.shippingInfo.isUpcoming = true;
-    component.shippingInfo.closestShippingDate = '2020-03-13T00:00:00';
-
-    // accurate_as_of is not outdated and within the 4-week grace period.
-    component.currentDate = new Date('2024-09-18').getTime();
   });
 
   it('render shipped feature outdated warnings for authors', async () => {

@@ -2,8 +2,11 @@ import {html} from 'lit';
 import {
   autolink,
   clamp,
+  findClosestShippingDate,
   formatFeatureChanges,
   getDisabledHelpText,
+  getFeatureOutdatedBanner,
+  isVerifiedWithinGracePeriod,
 } from './utils';
 import {assert} from '@open-wc/testing';
 import {OT_SETUP_STATUS_OPTIONS} from './form-field-enums';
@@ -17,6 +20,21 @@ const compareAutolinkResult = (result, expected) => {
       assert.deepEqual(result[i], expected[i]);
     }
   }
+};
+
+/**
+ * Helper to identify which banner is returned by checking the ID
+ * of the first element with an ID.
+ * @param {TemplateResult | null} result
+ * @returns {string | null} The ID of the banner, or null.
+ */
+const getBannerId = result => {
+  if (!result) return null;
+  // A lit TemplateResult has a 'strings' array.
+  // We can find the ID in the strings.
+  const htmlString = result.strings.join('');
+  const match = htmlString.match(/id="([^"]+)"/);
+  return match ? match[1] : null;
 };
 
 // prettier-ignore
@@ -344,6 +362,309 @@ go/this-is-a-test
     it('returns an empty string for fields with no conditional disabling', () => {
       const result = getDisabledHelpText('name', {});
       assert.equal(result, '');
+    });
+  });
+
+describe('isVerifiedWithinGracePeriod', () => {
+    const GRACE_PERIOD = 4 * 7 * 24 * 60 * 60 * 1000; // 4 weeks
+    const CURRENT_DATE = Date.parse('2025-03-01T00:00:00Z');
+
+    it('should return false if accurateAsOf is undefined', () => {
+      assert.isFalse(isVerifiedWithinGracePeriod(undefined, CURRENT_DATE));
+    });
+
+    it('should return true if within the grace period', () => {
+      // 2 weeks ago
+      const accurateAsOf = '2025-02-15T00:00:00Z';
+      assert.isTrue(isVerifiedWithinGracePeriod(accurateAsOf, CURRENT_DATE));
+    });
+
+    it('should return false if outside the grace period', () => {
+      // 5 weeks ago
+      const accurateAsOf = '2025-01-25T00:00:00Z';
+      assert.isFalse(isVerifiedWithinGracePeriod(accurateAsOf, CURRENT_DATE));
+    });
+
+    it('should return true if exactly on the edge of the grace period', () => {
+      // Exactly 4 weeks ago
+      const accurateAsOf = '2025-02-01T00:00:00Z';
+      // The check is (date + grace < current), so exact match is still valid
+      const edgeDate = Date.parse(accurateAsOf) + GRACE_PERIOD;
+      assert.isTrue(isVerifiedWithinGracePeriod(accurateAsOf, edgeDate));
+    });
+
+    it('should return false if 1ms past the grace period', () => {
+      const accurateAsOf = '2025-02-01T00:00:00Z';
+      const edgeDate = Date.parse(accurateAsOf) + GRACE_PERIOD + 1;
+      assert.isFalse(isVerifiedWithinGracePeriod(accurateAsOf, edgeDate));
+    });
+
+    it('should respect custom grace period', () => {
+      // 5 weeks ago
+      const accurateAsOf = '2025-01-25T00:00:00Z';
+      const NINE_WEEKS = 9 * 7 * 24 * 60 * 60 * 1000;
+      // Still valid under a 9-week grace period
+      assert.isTrue(
+        isVerifiedWithinGracePeriod(accurateAsOf, CURRENT_DATE, NINE_WEEKS)
+      );
+      // Invalid under a 2-week grace period
+      const TWO_WEEKS = 2 * 7 * 24 * 60 * 60 * 1000;
+      assert.isFalse(
+        isVerifiedWithinGracePeriod(accurateAsOf, CURRENT_DATE, TWO_WEEKS)
+      );
+    });
+  });
+
+  describe('findClosestShippingDate', () => {
+    const mockChannels = {
+      stable: {version: 100, final_beta: '2025-01-01T00:00:00Z'},
+      beta: {version: 101, final_beta: '2025-02-01T00:00:00Z'},
+      dev: {version: 102, final_beta: '2025-03-01T00:00:00Z'},
+      canary: {version: 103, final_beta: '2025-04-01T00:00:00Z'},
+    };
+    const shippingStageType = 160;
+    const otStageType = 150;
+    const devTrialStageType = 130;
+
+    it('should identify an upcoming feature (M+1)', async () => {
+      const stages = [{stage_type: shippingStageType, desktop_first: 101}];
+      const result = await findClosestShippingDate(mockChannels, stages);
+      assert.deepEqual(result, {
+        closestShippingDate: '2025-02-01T00:00:00Z',
+        isUpcoming: true,
+        hasShipped: false,
+      });
+    });
+
+    it('should identify an upcoming feature (M+2)', async () => {
+      const stages = [{stage_type: shippingStageType, android_first: 102}];
+      const result = await findClosestShippingDate(mockChannels, stages);
+      assert.deepEqual(result, {
+        closestShippingDate: '2025-03-01T00:00:00Z',
+        isUpcoming: true,
+        hasShipped: false,
+      });
+    });
+
+    it('should identify a shipped feature (current stable)', async () => {
+      const stages = [{stage_type: shippingStageType, desktop_first: 100}];
+      const result = await findClosestShippingDate(mockChannels, stages);
+      assert.deepEqual(result, {
+        closestShippingDate: '2025-01-01T00:00:00Z',
+        isUpcoming: false,
+        hasShipped: true,
+      });
+    });
+
+    it('should not a shipped feature for a past milestone', async () => {
+      const stages = [{stage_type: shippingStageType, webview_first: 98}];
+      const result = await findClosestShippingDate(mockChannels, stages);
+      assert.deepEqual(result, {
+        closestShippingDate: '',
+        isUpcoming: false,
+        hasShipped: true,
+      });
+    });
+
+    it('should find latest shipped milestone among many', async () => {
+      const stages = [
+        {stage_type: shippingStageType, desktop_first: 95},
+        {stage_type: shippingStageType, android_first: 98},
+        {stage_type: otStageType, ios_first: 99}, // Ignored, not a shipping type
+        {stage_type: shippingStageType, webview_first: 101},
+      ];
+      const result = await findClosestShippingDate(mockChannels, stages);
+      assert.deepEqual(result, {
+        closestShippingDate: '2025-02-01T00:00:00Z',
+        isUpcoming: true,
+        hasShipped: false,
+      });
+    });
+  });
+
+  describe('getFeatureOutdatedBanner', () => {
+    // 4 weeks
+    const FOUR_WEEKS = 4 * 7 * 24 * 60 * 60 * 1000;
+    // 9 weeks
+    const NINE_WEEKS = 9 * 7 * 24 * 60 * 60 * 1000;
+    // Current date: March 1, 2025
+    const CURRENT_DATE_MS = Date.parse('2025-03-01T00:00:00Z');
+    // Verified: Feb 15, 2025 (within 4 weeks)
+    const VERIFIED_DATE = new Date(CURRENT_DATE_MS - FOUR_WEEKS / 2).toISOString();
+    // Outdated: Jan 15, 2025 (outside 4 weeks)
+    const OUTDATED_DATE = new Date(
+      CURRENT_DATE_MS - FOUR_WEEKS - 1000
+    ).toISOString();
+    // Very Outdated: Dec 1, 2024 (outside 9 weeks)
+    const VERY_OUTDATED_DATE = new Date(
+      CURRENT_DATE_MS - NINE_WEEKS - 1000
+    ).toISOString();
+
+    const UPCOMING_SHIPPING_DATE = '2025-03-15T00:00:00Z';
+    const SHIPPED_SHIPPING_DATE = '2025-02-01T00:00:00Z';
+
+    const baseFeature = {id: 1, accurate_as_of: VERIFIED_DATE};
+    const shippingInfoUpcoming = {
+      closestShippingDate: UPCOMING_SHIPPING_DATE,
+      isUpcoming: true,
+      hasShipped: false,
+    };
+    const shippingInfoShipped = {
+      closestShippingDate: SHIPPED_SHIPPING_DATE,
+      isUpcoming: false,
+      hasShipped: true,
+    };
+    const shippingInfoNeither = {
+      closestShippingDate: undefined,
+      isUpcoming: false,
+      hasShipped: false,
+    };
+
+    // --- Upcoming Features ---
+
+    it('should return null if feature is upcoming but verified', () => {
+      const feature = {...baseFeature, accurate_as_of: VERIFIED_DATE};
+      const result = getFeatureOutdatedBanner(
+        feature,
+        shippingInfoUpcoming,
+        CURRENT_DATE_MS,
+        true
+      );
+      assert.isNull(result);
+    });
+
+    it('should return upcoming banner if upcoming, outdated, and user can edit', () => {
+      const feature = {...baseFeature, accurate_as_of: OUTDATED_DATE};
+      const result = getFeatureOutdatedBanner(
+        feature,
+        shippingInfoUpcoming,
+        CURRENT_DATE_MS,
+        true
+      );
+      assert.equal(getBannerId(result), 'outdated-icon');
+    });
+
+    it('should return upcoming banner if upcoming, outdated, and user cannot edit', () => {
+      const feature = {...baseFeature, accurate_as_of: OUTDATED_DATE};
+      const result = getFeatureOutdatedBanner(
+        feature,
+        shippingInfoUpcoming,
+        CURRENT_DATE_MS,
+        false
+      );
+      assert.equal(getBannerId(result), 'outdated-icon');
+    });
+
+    // --- Shipped Features ---
+
+    it('should return null if feature is shipped but verified', () => {
+      const feature = {...baseFeature, accurate_as_of: VERIFIED_DATE};
+      const result = getFeatureOutdatedBanner(
+        feature,
+        shippingInfoShipped,
+        CURRENT_DATE_MS,
+        true
+      );
+      assert.isNull(result);
+    });
+
+    it('should return author banner if shipped, outdated (<9 weeks), and user can edit', () => {
+      const feature = {...baseFeature, accurate_as_of: OUTDATED_DATE};
+      const result = getFeatureOutdatedBanner(
+        feature,
+        shippingInfoShipped,
+        CURRENT_DATE_MS,
+        true
+      );
+      assert.equal(getBannerId(result), 'shipped-outdated-author');
+    });
+
+    it('should return null if shipped, outdated (<9 weeks), and user cannot edit', () => {
+      const feature = {...baseFeature, accurate_as_of: OUTDATED_DATE};
+      const result = getFeatureOutdatedBanner(
+        feature,
+        shippingInfoShipped,
+        CURRENT_DATE_MS,
+        false
+      );
+      assert.isNull(result);
+    });
+
+    it('should return "all" banner if shipped, outdated (>9 weeks), and user can edit', () => {
+      const feature = {...baseFeature, accurate_as_of: VERY_OUTDATED_DATE};
+      const result = getFeatureOutdatedBanner(
+        feature,
+        shippingInfoShipped,
+        CURRENT_DATE_MS,
+        true
+      );
+      // Author banner still takes precedence
+      assert.equal(getBannerId(result), 'shipped-outdated-author');
+    });
+
+    it('should return "all" banner if shipped, outdated (>9 weeks), and user cannot edit', () => {
+      const feature = {...baseFeature, accurate_as_of: VERY_OUTDATED_DATE};
+      const result = getFeatureOutdatedBanner(
+        feature,
+        shippingInfoShipped,
+        CURRENT_DATE_MS,
+        false
+      );
+      assert.equal(getBannerId(result), 'shipped-outdated-all');
+    });
+
+    // --- Edge Cases ---
+
+    it('should return null if not upcoming and not shipped', () => {
+      const feature = {...baseFeature, accurate_as_of: OUTDATED_DATE};
+      const result = getFeatureOutdatedBanner(
+        feature,
+        shippingInfoNeither,
+        CURRENT_DATE_MS,
+        true
+      );
+      assert.isNull(result);
+    });
+
+    it('should return a banner if accurate_as_of is missing for upcoming', () => {
+      const feature = {...baseFeature, accurate_as_of: undefined};
+      const result = getFeatureOutdatedBanner(
+        feature,
+        shippingInfoUpcoming,
+        CURRENT_DATE_MS,
+        true
+      );
+      // isUpcomingFeatureOutdated returns false if accurate_as_of is missing
+      assert.isNotNull(result);
+    });
+
+    it('should return null if accurate_as_of is missing for shipped', () => {
+      const feature = {...baseFeature, accurate_as_of: undefined};
+      const result = getFeatureOutdatedBanner(
+        feature,
+        shippingInfoShipped,
+        CURRENT_DATE_MS,
+        true
+      );
+      // isShippedFeatureOutdated returns false if accurate_as_of is missing
+      assert.isNull(result);
+    });
+
+    it('should return null if closestShippingDate is missing', () => {
+      const feature = {...baseFeature, accurate_as_of: OUTDATED_DATE};
+      const shippingInfo = {
+        closestShippingDate: undefined,
+        isUpcoming: false,
+        hasShipped: true,
+      };
+      const result = getFeatureOutdatedBanner(
+        feature,
+        shippingInfo,
+        CURRENT_DATE_MS,
+        true
+      );
+      // isShippedFeatureOutdated returns false if closestShippingDate is missing
+      assert.isNull(result);
     });
   });
 });

@@ -747,7 +747,12 @@ export const METRICS_TYPE_AND_VIEW_TO_SUBTITLE = {
 
 /**
  * A feature is outdated if it has shipped, and its
- * accurate_as_of is before its latest shipping date before today.*/
+ * accurate_as_of is before its latest shipping date before today.
+ * @param {Feature} feature The feature object.
+ * @param {boolean} hasShipped Whether the feature has any shipping stages.
+ * @param {string | undefined} closestShippingDate The ISO string of the latest shipping date.
+ * @returns {boolean} True if the shipped feature is outdated, false otherwise.
+ */
 function isShippedFeatureOutdated(
   feature,
   hasShipped: boolean,
@@ -769,7 +774,13 @@ function isShippedFeatureOutdated(
 
 /**
  * Determine if it should show warnings to a feature author, if
- * a shipped feature is outdated, and it has edit access.*/
+ * a shipped feature is outdated, and it has edit access.
+ * @param {Feature} feature The feature object.
+ * @param {boolean} userCanEdit Whether the current user can edit the feature.
+ * @param {boolean} hasShipped Whether the feature has any shipping stages.
+ * @param {string | undefined} closestShippingDate The ISO string of the latest shipping date.
+ * @returns {boolean} True if the banner should be shown for an author.
+ */
 function isShippedFeatureOutdatedForAuthor(
   feature,
   userCanEdit: boolean,
@@ -784,7 +795,13 @@ function isShippedFeatureOutdatedForAuthor(
 
 /**
  * Determine if it should show warnings to all readers, if
- * a shipped feature is outdated, and last update was > 2 months.*/
+ * a shipped feature is outdated, and last update was > 9 weeks.
+ * @param {Feature} feature The feature object.
+ * @param {boolean} hasShipped Whether the feature has any shipping stages.
+ * @param {number} currentDate The current date as a timestamp.
+ * @param {string | undefined} closestShippingDate The ISO string of the latest shipping date.
+ * @returns {boolean} True if the banner should be shown for all users.
+ */
 function isShippedFeatureOutdatedForAll(
   feature,
   hasShipped: boolean,
@@ -805,6 +822,11 @@ function isShippedFeatureOutdatedForAll(
   return !isVerified;
 }
 
+/**
+ * Fetches the shipping date (final_beta) for a specific milestone.
+ * @param {number} milestone The milestone number to fetch data for.
+ * @returns {Promise<string>} A promise that resolves to the shipping date ISO string, or empty string.
+ */
 async function fetchClosestShippingDate(milestone: number): Promise<string> {
   if (milestone === 0) {
     return '';
@@ -833,21 +855,26 @@ export interface closestShippingDateInfo {
 /**
  * Determine if this feature is upcoming - scheduled to ship
  * within two milestones, then find the closest shipping date
- * for that upcoming milestone or an already shipped milestone.*/
+ * for that upcoming milestone or an already shipped milestone.
+ * @param {object} channels Channel information object.
+ * @param stages Array of feature stages.
+ * @returns {Promise<closestShippingDateInfo>} An object containing the closest shipping date,
+ *   and booleans for isUpcoming and hasShipped.
+ */
 export async function findClosestShippingDate(
   channels,
-  stages: Array<StageDict>
+  stages
 ): Promise<closestShippingDateInfo> {
-  const latestStableVersion = channels['stable']?.version;
+  const latestStableVersion = channels?.stable?.version;
   if (!latestStableVersion || !stages) {
     return {
-      closestShippingDate: undefined,
+      closestShippingDate: '',
       isUpcoming: false,
       hasShipped: false,
     };
   }
 
-  let closestShippingDate: string | undefined;
+  let closestShippingDate = '';
   let isUpcoming = false;
   let hasShipped = false;
 
@@ -917,15 +944,32 @@ export async function findClosestShippingDate(
 
 /**
  * A feature is outdated if it is scheduled to ship in the next 2 milestones,
- * and its accurate_as_of date is at least 4 weeks ago.*/
+ * and its accurate_as_of date is at least 4 weeks ago.
+ * @param {Feature} feature The feature object.
+ * @param {boolean} isUpcoming Whether the feature is shipping in the next 2 milestones.
+ * @param {number} currentDate The current date as a timestamp.
+ * @returns {boolean} True if the upcoming feature is outdated, false otherwise.
+ */
 function isUpcomingFeatureOutdated(
   feature,
   isUpcoming: boolean,
-  currentDate: number,
+  currentDate: number
 ): boolean {
-  return isUpcoming && !isVerifiedWithinGracePeriod(feature.accurate_as_of, currentDate);
+  return (
+    isUpcoming &&
+    !isVerifiedWithinGracePeriod(feature.accurate_as_of, currentDate)
+  );
 }
 
+/**
+ * Returns a warning banner TemplateResult if a feature is considered outdated,
+ * otherwise returns null.
+ * @param {Feature} feature The feature object.
+ * @param {closestShippingDateInfo} shippingInfo The shipping information from findClosestShippingDate.
+ * @param {number | undefined} currentDate The current date as a timestamp.
+ * @param {boolean} userCanEdit Whether the current user can edit the feature.
+ * @returns {TemplateResult | null} A lit-html template or null.
+ */
 export function getFeatureOutdatedBanner(
   feature,
   shippingInfo: closestShippingDateInfo,
