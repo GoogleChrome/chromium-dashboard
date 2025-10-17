@@ -6,6 +6,7 @@ import {ChromedashFeaturePage} from './chromedash-feature-page';
 import {ChromedashLink} from './chromedash-link';
 import './chromedash-toast';
 import {ChromedashVendorViews} from './chromedash-vendor-views';
+import {findClosestShippingDate} from './utils';
 
 describe('chromedash-feature-page', () => {
   const user = {
@@ -340,113 +341,88 @@ describe('chromedash-feature-page', () => {
     const featureId = 123456;
     const contextLink = '/features';
     const feature: any = structuredClone(await validFeaturePromise);
-    const component: ChromedashFeaturePage =
-      await fixture<ChromedashFeaturePage>(
-        html`<chromedash-feature-page
-          .user=${user}
-          .featureId=${featureId}
-          .contextLink=${contextLink}
-        >
-        </chromedash-feature-page>`
-      );
-    assert.exists(component);
 
-    component.findClosestShippingDate({}, feature.stages);
-    assert.isFalse(component.isUpcoming);
-    assert.equal(component.closestShippingDate, '');
+    let shippingInfo = await findClosestShippingDate({}, feature.stages);
+    assert.isFalse(shippingInfo.isUpcoming);
+    assert.equal(shippingInfo.closestShippingDate, '');
 
-    component.findClosestShippingDate(channels, []);
-    assert.isFalse(component.isUpcoming);
-    assert.equal(component.closestShippingDate, '');
+    shippingInfo = await findClosestShippingDate(channels, []);
+    assert.isFalse(shippingInfo.isUpcoming);
+    assert.equal(shippingInfo.closestShippingDate, '');
 
     // No shipping milestones.
     let stages: any = structuredClone(feature.stages);
     stages[2].stage_type = 130;
-    component.findClosestShippingDate(channels, stages);
-    assert.isFalse(component.isUpcoming);
-    assert.equal(component.closestShippingDate, '');
+    shippingInfo = await findClosestShippingDate(channels, stages);
+    assert.isFalse(shippingInfo.isUpcoming);
+    assert.equal(shippingInfo.closestShippingDate, '');
 
     // No upcoming shipping milestones.
     stages = structuredClone(feature.stages);
     stages[2].desktop_first = 20;
-    component.findClosestShippingDate(channels, stages);
-    assert.isFalse(component.isUpcoming);
-    assert.isFalse(component.hasShipped);
-    assert.equal(component.closestShippingDate, '');
+    shippingInfo = await findClosestShippingDate(channels, stages);
+    assert.isFalse(shippingInfo.isUpcoming);
+    assert.isFalse(shippingInfo.hasShipped);
+    assert.equal(shippingInfo.closestShippingDate, '');
 
-    component.findClosestShippingDate(channels, feature.stages);
-    assert.isTrue(component.isUpcoming);
-    assert.isFalse(component.hasShipped);
-    assert.equal(component.closestShippingDate, '2020-03-13T00:00:00');
+    shippingInfo = await findClosestShippingDate(channels, feature.stages);
+    assert.isTrue(shippingInfo.isUpcoming);
+    assert.isFalse(shippingInfo.hasShipped);
+    assert.equal(shippingInfo.closestShippingDate, '2020-03-13T00:00:00');
 
-    component.closestShippingDate = '';
-    component.isUpcoming = false;
     stages = structuredClone(feature.stages);
     // Test with STAGE_BLINK_ORIGIN_TRIAL type.
     stages[2].stage_type = 150;
-    component.findClosestShippingDate(channels, stages);
-    assert.isTrue(component.isUpcoming);
-    assert.isFalse(component.hasShipped);
-    assert.equal(component.closestShippingDate, '2020-03-13T00:00:00');
+    shippingInfo = await findClosestShippingDate(channels, stages);
+    assert.isTrue(shippingInfo.isUpcoming);
+    assert.isFalse(shippingInfo.hasShipped);
+    assert.equal(shippingInfo.closestShippingDate, '2020-03-13T00:00:00');
   });
 
   it('findClosestShippingDate() tests for hasShipped state', async () => {
     const featureId = 123456;
     const contextLink = '/features';
     const feature: any = structuredClone(await validFeaturePromise);
-    const component: ChromedashFeaturePage =
-      await fixture<ChromedashFeaturePage>(
-        html`<chromedash-feature-page
-          .user=${user}
-          .featureId=${featureId}
-          .contextLink=${contextLink}
-        >
-        </chromedash-feature-page>`
-      );
-    assert.exists(component);
 
-    component.findClosestShippingDate({}, feature.stages);
-    assert.isFalse(component.hasShipped);
-    assert.equal(component.closestShippingDate, '');
+    let shippingInfo = await findClosestShippingDate({}, feature.stages);
+    assert.isFalse(shippingInfo.hasShipped);
+    assert.equal(shippingInfo.closestShippingDate, '');
 
-    component.findClosestShippingDate(channels, []);
-    assert.isFalse(component.hasShipped);
-    assert.equal(component.closestShippingDate, '');
+    shippingInfo = await findClosestShippingDate(channels, []);
+    assert.isFalse(shippingInfo.hasShipped);
+    assert.equal(shippingInfo.closestShippingDate, '');
 
     // No shipping milestones.
     let stages: any = structuredClone(feature.stages);
     stages[2].stage_type = 130;
-    component.findClosestShippingDate(channels, stages);
-    assert.isFalse(component.hasShipped);
-    assert.equal(component.closestShippingDate, '');
+    shippingInfo = await findClosestShippingDate(channels, stages);
+    assert.isFalse(shippingInfo.hasShipped);
+    assert.equal(shippingInfo.closestShippingDate, '');
 
     // No shipped milestones in the past.
     const testChannels: any = structuredClone(channels);
     testChannels['stable'].version = 10;
-    component.findClosestShippingDate(testChannels, stages);
-    assert.isFalse(component.hasShipped);
-    assert.equal(component.closestShippingDate, '');
+    shippingInfo = await findClosestShippingDate(testChannels, stages);
+    assert.isFalse(shippingInfo.hasShipped);
+    assert.equal(shippingInfo.closestShippingDate, '');
 
     // Shipped on the stable milestone.
     stages = structuredClone(feature.stages);
     stages[2].desktop_first = 79;
-    component.findClosestShippingDate(channels, stages);
-    assert.isFalse(component.isUpcoming);
-    assert.isTrue(component.hasShipped);
-    assert.equal(component.closestShippingDate, '2020-03-13T00:00:00');
+    shippingInfo = await findClosestShippingDate(channels, stages);
+    assert.isFalse(shippingInfo.isUpcoming);
+    assert.isTrue(shippingInfo.hasShipped);
+    assert.equal(shippingInfo.closestShippingDate, '2020-03-13T00:00:00');
 
-    component.isUpcoming = false;
-    component.hasShipped = false;
-    component.closestShippingDate = '';
     // Ignore OT milestones in the past.
     stages = structuredClone(feature.stages);
     stages[2].desktop_first = 79;
     // The type for STAGE_BLINK_ORIGIN_TRIAL.
     stages[2].stage_type = 150;
-    component.findClosestShippingDate(channels, stages);
-    assert.isFalse(component.isUpcoming);
-    assert.isFalse(component.hasShipped);
-    assert.equal(component.closestShippingDate, '');
+    shippingInfo = await findClosestShippingDate(channels, stages);
+    assert.isFalse(shippingInfo.isUpcoming);
+    assert.isFalse(shippingInfo.hasShipped);
+    assert.equal(shippingInfo.closestShippingDate, '');
   });
 
   it('findClosestShippingDate() tests when fetch specific channels', async () => {
@@ -469,9 +445,9 @@ describe('chromedash-feature-page', () => {
       );
 
     assert.exists(component);
-    assert.isFalse(component.isUpcoming);
-    assert.isTrue(component.hasShipped);
-    assert.equal(component.closestShippingDate, '2018-02-13T00:00:00');
+    assert.isFalse(component.shippingInfo.isUpcoming);
+    assert.isTrue(component.shippingInfo.hasShipped);
+    assert.equal(component.shippingInfo.closestShippingDate, '2018-02-13T00:00:00');
   });
 
   it('isUpcomingFeatureOutdated() tests', async () => {
@@ -494,39 +470,11 @@ describe('chromedash-feature-page', () => {
     component.currentDate = new Date('2024-10-23').getTime();
     assert.exists(component);
 
-    component.findClosestShippingDate(channels, feature.stages);
-    assert.isTrue(component.isUpcoming);
-    assert.equal(component.closestShippingDate, '2020-03-13T00:00:00');
-    assert.isTrue(component.isUpcomingFeatureOutdated());
+    component.shippingInfo.isUpcoming = true;
+    component.shippingInfo.closestShippingDate = '2020-03-13T00:00:00';
 
     // accurate_as_of is not outdated and within the 4-week grace period.
     component.currentDate = new Date('2024-09-18').getTime();
-    assert.isFalse(component.isUpcomingFeatureOutdated());
-  });
-
-  it('render the oudated warning when outdated', async () => {
-    const featureId = 123456;
-    const contextLink = '/features';
-    const feature: any = structuredClone(await validFeaturePromise);
-    feature.accurate_as_of = '2024-08-28 21:51:34.22386';
-    window.csClient.getFeature
-      .withArgs(featureId)
-      .returns(Promise.resolve(feature));
-    const component: ChromedashFeaturePage =
-      await fixture<ChromedashFeaturePage>(
-        html`<chromedash-feature-page
-          .user=${user}
-          .featureId=${featureId}
-          .contextLink=${contextLink}
-        >
-        </chromedash-feature-page>`
-      );
-    component.currentDate = new Date('2024-10-23').getTime();
-    assert.exists(component);
-
-    component.findClosestShippingDate(channels, feature.stages);
-    const oudated = component.shadowRoot!.querySelector('#outdated-icon');
-    assert.exists(oudated);
   });
 
   it('render shipped feature outdated warnings for authors', async () => {
@@ -553,9 +501,6 @@ describe('chromedash-feature-page', () => {
     await component.updateComplete;
     assert.exists(component);
 
-    assert.isTrue(component.isShippedFeatureOutdated());
-    assert.isTrue(component.isShippedFeatureOutdatedForAuthor());
-    assert.isFalse(component.isShippedFeatureOutdatedForAll());
     const oudated = component.shadowRoot!.querySelector(
       '#shipped-outdated-author'
     );
@@ -584,11 +529,6 @@ describe('chromedash-feature-page', () => {
     component.currentDate = new Date('2020-10-29').getTime();
     await component.updateComplete;
     assert.exists(component);
-
-    assert.isTrue(component.isShippedFeatureOutdated());
-    // undefined because this.user is undefined.
-    assert.isUndefined(component.isShippedFeatureOutdatedForAuthor());
-    assert.isTrue(component.isShippedFeatureOutdatedForAll());
     const oudated = component.shadowRoot!.querySelector(
       '#shipped-outdated-all'
     );

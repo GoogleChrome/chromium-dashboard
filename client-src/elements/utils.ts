@@ -17,6 +17,8 @@ import {
   ROLLOUT_PLAN_DISPLAYNAME,
   STAGE_FIELD_NAME_MAPPING,
   STAGE_SPECIFIC_FIELDS,
+  STAGE_TYPES_ORIGIN_TRIAL,
+  STAGE_TYPES_SHIPPING,
 } from './form-field-enums';
 
 let toastEl;
@@ -742,3 +744,299 @@ export const METRICS_TYPE_AND_VIEW_TO_SUBTITLE = {
   featurepopularity: 'HTML & JavaScript usage metrics > all features',
   webfeaturepopularity: 'Web features usage metrics > all features',
 };
+
+/**
+ * A feature is outdated if it has shipped, and its
+ * accurate_as_of is before its latest shipping date before today.*/
+function isShippedFeatureOutdated(
+  feature,
+  hasShipped: boolean,
+  closestShippingDate: string | undefined
+): boolean {
+  // Check if a feature has shipped.
+  if (!hasShipped) {
+    return false;
+  }
+
+  // If accurate_as_of is missing from a shipped feature, it is likely
+  // an old feature. Treat it as not oudated.
+  if (!feature.accurate_as_of || !closestShippingDate) {
+    return false;
+  }
+
+  return Date.parse(feature.accurate_as_of) < Date.parse(closestShippingDate);
+}
+
+/**
+ * Determine if it should show warnings to a feature author, if
+ * a shipped feature is outdated, and it has edit access.*/
+function isShippedFeatureOutdatedForAuthor(
+  feature,
+  userCanEdit: boolean,
+  hasShipped: boolean,
+  closestShippingDate
+): boolean {
+  return (
+    userCanEdit &&
+    isShippedFeatureOutdated(feature, hasShipped, closestShippingDate)
+  );
+}
+
+/**
+ * Determine if it should show warnings to all readers, if
+ * a shipped feature is outdated, and last update was > 2 months.*/
+function isShippedFeatureOutdatedForAll(
+  feature,
+  hasShipped: boolean,
+  currentDate: number,
+  closestShippingDate
+): boolean {
+  if (!isShippedFeatureOutdated(feature, hasShipped, closestShippingDate)) {
+    return false;
+  }
+
+  // Represent two months grace period.
+  const nineWeekPeriod = 9 * 7 * 24 * 60 * 60 * 1000;
+  const isVerified = isVerifiedWithinGracePeriod(
+    feature.accurate_as_of,
+    currentDate,
+    nineWeekPeriod
+  );
+  return !isVerified;
+}
+
+async function fetchClosestShippingDate(milestone: number): Promise<string> {
+  if (milestone === 0) {
+    return '';
+  }
+  try {
+    const newMilestonesInfo = await window.csClient.getSpecifiedChannels(
+      milestone,
+      milestone
+    );
+    return newMilestonesInfo[milestone]?.final_beta;
+  } catch {
+    showToastMessage(
+      'Some errors occurred. Please refresh the page or try again later.'
+    );
+    return '';
+  }
+}
+
+export interface closestShippingDateInfo {
+  // The closest milestone shipping date as an ISO string.
+  closestShippingDate: string | undefined;
+  isUpcoming: boolean;
+  hasShipped: boolean;
+}
+
+/**
+ * Determine if this feature is upcoming - scheduled to ship
+ * within two milestones, then find the closest shipping date
+ * for that upcoming milestone or an already shipped milestone.*/
+export async function findClosestShippingDate(
+  channels,
+  stages: Array<StageDict>
+): Promise<closestShippingDateInfo> {
+  const latestStableVersion = channels['stable']?.version;
+  if (!latestStableVersion || !stages) {
+    return {
+      closestShippingDate: undefined,
+      isUpcoming: false,
+      hasShipped: false,
+    };
+  }
+
+  let closestShippingDate: string | undefined;
+  let isUpcoming = false;
+  let hasShipped = false;
+
+  const shippingTypeMilestones = new Set<number | undefined>();
+  const otTypeMilestones = new Set<number | undefined>();
+  for (const stage of stages) {
+    if (STAGE_TYPES_SHIPPING.has(stage.stage_type)) {
+      shippingTypeMilestones.add(stage.desktop_first);
+      shippingTypeMilestones.add(stage.android_first);
+      shippingTypeMilestones.add(stage.ios_first);
+      shippingTypeMilestones.add(stage.webview_first);
+    }
+  }
+  for (const stage of stages) {
+    if (STAGE_TYPES_ORIGIN_TRIAL.has(stage.stage_type)) {
+      otTypeMilestones.add(stage.desktop_first);
+      otTypeMilestones.add(stage.android_first);
+      otTypeMilestones.add(stage.ios_first);
+      otTypeMilestones.add(stage.webview_first);
+    }
+  }
+
+  const upcomingMilestonesTarget = new Set<number | undefined>([
+    ...shippingTypeMilestones,
+    ...otTypeMilestones,
+  ]);
+  // Check if this feature is shipped within two milestones.
+  let foundMilestone = 0;
+  if (upcomingMilestonesTarget.has(latestStableVersion + 1)) {
+    foundMilestone = latestStableVersion + 1;
+    isUpcoming = true;
+  } else if (upcomingMilestonesTarget.has(latestStableVersion + 2)) {
+    foundMilestone = latestStableVersion + 2;
+    isUpcoming = true;
+  }
+
+  if (isUpcoming) {
+    Object.keys(channels).forEach(key => {
+      if (channels[key].version === foundMilestone) {
+        closestShippingDate = channels[key].final_beta;
+      }
+    });
+  } else {
+    const shippedMilestonesTarget = shippingTypeMilestones;
+    // If not upcoming, find the closest milestone that has shipped.
+    let latestMilestone = 0;
+    for (const ms of shippedMilestonesTarget) {
+      if (ms && ms <= latestStableVersion) {
+        latestMilestone = Math.max(latestMilestone, ms);
+      }
+    }
+
+    if (latestMilestone === latestStableVersion) {
+      closestShippingDate = channels['stable']?.final_beta;
+      hasShipped = true;
+    } else {
+      closestShippingDate = await fetchClosestShippingDate(latestMilestone);
+      hasShipped = true;
+    }
+  }
+  return {
+    closestShippingDate,
+    isUpcoming,
+    hasShipped,
+  };
+}
+
+/**
+ * A feature is outdated if it is scheduled to ship in the next 2 milestones,
+ * and its accurate_as_of date is at least 4 weeks ago.*/
+function isUpcomingFeatureOutdated(
+  feature,
+  isUpcoming: boolean,
+  currentDate: number,
+): boolean {
+  return isUpcoming && !isVerifiedWithinGracePeriod(feature.accurate_as_of, currentDate);
+}
+
+export function getFeatureOutdatedBanner(
+  feature,
+  shippingInfo: closestShippingDateInfo,
+  currentDate: number | undefined,
+  userCanEdit: boolean
+): TemplateResult | null {
+  if (!currentDate) {
+    currentDate = Date.now();
+  }
+  const {closestShippingDate, hasShipped, isUpcoming} = shippingInfo;
+  if (isUpcomingFeatureOutdated(feature, isUpcoming, currentDate)) {
+    if (userCanEdit) {
+      return html`
+        <div class="warning layout horizontal center">
+          <span class="tooltip" id="outdated-icon" title="Feature outdated ">
+            <sl-icon name="exclamation-circle-fill" data-tooltip></sl-icon>
+          </span>
+          <span>
+            Your feature hasn't been verified as accurate since&nbsp;
+            <sl-relative-time
+              date=${feature.accurate_as_of ?? ''}
+            ></sl-relative-time
+            >, but it is scheduled to ship&nbsp;
+            <sl-relative-time date=${closestShippingDate}></sl-relative-time>.
+            Please
+            <a href="/guide/verify_accuracy/${feature.id}"
+              >verify that your feature is accurate</a
+            >.
+          </span>
+        </div>
+      `;
+    } else {
+      return html`
+        <div class="warning layout horizontal center">
+          <span class="tooltip" id="outdated-icon" title="Feature outdated ">
+            <sl-icon name="exclamation-circle-fill" data-tooltip></sl-icon>
+          </span>
+          <span>
+            This feature hasn't been verified as accurate since&nbsp;
+            <sl-relative-time
+              date=${feature.accurate_as_of ?? ''}
+            ></sl-relative-time
+            >, but it is scheduled to ship&nbsp;
+            <sl-relative-time date=${closestShippingDate}></sl-relative-time>.
+          </span>
+        </div>
+      `;
+    }
+  } else if (
+    isShippedFeatureOutdated(feature, hasShipped, closestShippingDate)
+  ) {
+    if (
+      isShippedFeatureOutdatedForAuthor(
+        feature,
+        userCanEdit,
+        hasShipped,
+        closestShippingDate
+      )
+    ) {
+      return html`
+        <div class="warning layout horizontal center">
+          <span
+            class="tooltip"
+            id="shipped-outdated-author"
+            title="Feature outdated "
+          >
+            <sl-icon name="exclamation-circle-fill" data-tooltip></sl-icon>
+          </span>
+          <span>
+            Your feature hasn't been verified as accurate since&nbsp;
+            <sl-relative-time
+              date=${feature.accurate_as_of ?? ''}
+            ></sl-relative-time
+            >, but it claims to have shipped&nbsp;
+            <sl-relative-time date=${closestShippingDate}></sl-relative-time>.
+            Please
+            <a href="/guide/verify_accuracy/${feature.id}"
+              >verify that your feature is accurate</a
+            >.
+          </span>
+        </div>
+      `;
+    } else if (
+      isShippedFeatureOutdatedForAll(
+        feature,
+        hasShipped,
+        currentDate,
+        closestShippingDate
+      )
+    ) {
+      return html`
+        <div class="warning layout horizontal center">
+          <span
+            class="tooltip"
+            id="shipped-outdated-all"
+            title="Feature outdated "
+          >
+            <sl-icon name="exclamation-circle-fill" data-tooltip></sl-icon>
+          </span>
+          <span>
+            This feature hasn't been verified as accurate since&nbsp;
+            <sl-relative-time
+              date=${feature.accurate_as_of ?? ''}
+            ></sl-relative-time
+            >, but it claims to have shipped&nbsp;
+            <sl-relative-time date=${closestShippingDate}></sl-relative-time>.
+          </span>
+        </div>
+      `;
+    }
+  }
+
+  return null;
+}
