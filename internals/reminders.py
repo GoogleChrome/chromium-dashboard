@@ -41,6 +41,7 @@ WEBSTATUS_EMAIL = 'webstatus@google.com'
 CBE_ESCLATION_EMAIL = 'cbe-releasenotes@google.com'
 STAGING_EMAIL = 'jrobbins-test@googlegroups.com'
 EMAIL_SUBJECT_PREFIX = '[Action required]'
+ESCALATION_SUBJECT_PREFIX = '[Escalated Request]'
 
 
 def choose_email_recipients(
@@ -100,7 +101,7 @@ def build_email_tasks(
     subject = subject_format % fe.name
     if is_escalated:
       if EMAIL_SUBJECT_PREFIX in subject:
-        subject = subject.replace(EMAIL_SUBJECT_PREFIX, '[Escalated Request]')
+        subject = subject.replace(EMAIL_SUBJECT_PREFIX, ESCALATION_SUBJECT_PREFIX)
       else:
         subject = f'ESCALATED: {subject}'
     recipients = choose_email_recipients(fe, is_escalated, is_accuracy_email())
