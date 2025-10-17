@@ -824,7 +824,7 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
 
   @mock.patch('internals.feature_helpers.get_current_milestone_info')
   @mock.patch('internals.feature_helpers.datetime')
-  def test_get_stale_features__no_outstanding_notifications(
+  def test_get_stale_features__non_shipping_stages(
       self, mock_dt, mock_mstone_info):
     """Ignores features with relevant milestones in non-shipping stages."""
     mock_dt.now.return_value = datetime(2023, 1, 1)
