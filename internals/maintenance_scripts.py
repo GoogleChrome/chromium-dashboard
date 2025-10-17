@@ -1139,10 +1139,12 @@ class ResetOutstandingNotifications(FlaskHandler):
 
   def get_template_data(self, **kwargs) -> str:
     self.require_cron_header()
-    notified_features = FeatureEntry.query(
+    notified_features: list[FeatureEntry] = FeatureEntry.query(
       FeatureEntry.outstanding_notifications >= 1
     ).fetch()
     for f in notified_features:
+      logging.info(f'Setting outstanding notifications for feature {f.key.integer_id()} '
+                   f'from {f.outstanding_notifications} to 0.')
       f.outstanding_notifications = 0
     ndb.put_multi(notified_features)
     return f'{len(notified_features)} reverted to 0 outstanding notifications.'
