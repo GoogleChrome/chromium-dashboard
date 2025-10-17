@@ -1140,7 +1140,7 @@ class ResetOutstandingNotifications(FlaskHandler):
   def get_template_data(self, **kwargs) -> str:
     self.require_cron_header()
     notified_features: list[FeatureEntry] = FeatureEntry.query(
-      FeatureEntry.outstanding_notifications >= 1
+      FeatureEntry.outstanding_notifications > 0
     ).fetch()
     for f in notified_features:
       logging.info(f'Setting outstanding notifications for feature {f.key.integer_id()} '
