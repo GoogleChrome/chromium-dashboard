@@ -148,7 +148,7 @@ def get_stage_info_for_templates(
     # Note if any milestones that can be displayed are seen while organizing.
     # This is used to check if rendering the milestone table is needed.
     'should_render_mstone_table': False,
-    # Note if any intewnt URLs are seen while organizing.
+    # Note if any intent URLs are seen while organizing.
     # This is used to check if rendering the table is needed.
     'should_render_intents': False,
   }
