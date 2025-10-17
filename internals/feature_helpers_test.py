@@ -890,6 +890,12 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
     shipping_stage.milestones = MilestoneSet(desktop_first=102)
     shipping_stage.put()
 
+    # Another shipping stage exists with a later milestone.
+    shipping_stage_2 = Stage(feature_id=self.feature_1.key.integer_id(),
+                             stage_type=160)
+    shipping_stage_2.milestones = MilestoneSet(android_first=105)
+    shipping_stage_2.put()
+
     actual = feature_helpers.get_stale_features()
     self.assertEqual(1, len(actual))
     feature, mstone, field = actual[0]
