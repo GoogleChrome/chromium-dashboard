@@ -715,8 +715,10 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
 
     # Set features to be recently reviewed and therefore not stale.
     self.feature_1.accurate_as_of = datetime(2022, 12, 20)
+    self.feature_1.outstanding_notifications = 1
     self.feature_1.put()
     self.feature_2.accurate_as_of = datetime(2022, 12, 15)
+    self.feature_2.outstanding_notifications = 1
     self.feature_2.put()
 
     actual = feature_helpers.get_stale_features()
@@ -732,6 +734,7 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
 
     # feature_1 is stale, but its milestone is in the past (before 100).
     self.feature_1.accurate_as_of = None
+    self.feature_1.outstanding_notifications = 2
     self.feature_1.put()
     shipping_stage_1 = self.fe_1_stages_dict[160][0]
     shipping_stage_1.milestones = MilestoneSet(desktop_first=99)
@@ -739,6 +742,7 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
 
     # feature_2 is stale, but its milestone is too far in the future (after 102).
     self.feature_2.accurate_as_of = None
+    self.feature_2.outstanding_notifications = 1
     self.feature_2.put()
     shipping_stage_2 = self.fe_2_stages_dict[260][0]
     shipping_stage_2.milestones = MilestoneSet(desktop_first=103)
@@ -746,6 +750,7 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
 
     # feature_3 is stale, but its stage has no milestones set.
     self.feature_3.accurate_as_of = None
+    self.feature_3.outstanding_notifications = 2
     self.feature_3.put()
     shipping_stage_3 = self.fe_3_stages_dict[360][0]
     shipping_stage_3.milestones = None
@@ -764,6 +769,7 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
 
     # This feature is stale because it was reviewed over a month ago.
     self.feature_1.accurate_as_of = datetime(2022, 11, 1)
+    self.feature_1.outstanding_notifications = 1
     self.feature_1.put()
 
     # And its milestone is upcoming (between 100 and 102).
@@ -773,6 +779,7 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
 
     # This feature is not stale.
     self.feature_2.accurate_as_of = datetime(2022, 12, 15)
+    self.feature_2.outstanding_notifications = 1
     self.feature_2.put()
     shipping_stage_2 = self.fe_2_stages_dict[260][0]
     shipping_stage_2.milestones = MilestoneSet(desktop_first=101)
@@ -787,6 +794,66 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
 
   @mock.patch('internals.feature_helpers.get_current_milestone_info')
   @mock.patch('internals.feature_helpers.datetime')
+  def test_get_stale_features__no_outstanding_notifications(
+      self, mock_dt, mock_mstone_info):
+    """Ignores stale features that have not had a notification sent."""
+    mock_dt.now.return_value = datetime(2023, 1, 1)
+    mock_mstone_info.return_value = {'mstone': '100'}
+
+    # This feature is stale because it was reviewed over a month ago,
+    # but has not yet received a notification.
+    self.feature_1.accurate_as_of = datetime(2022, 11, 1)
+    self.feature_1.outstanding_notifications = 0
+    self.feature_1.put()
+
+    # And its milestone is upcoming (between 100 and 102).
+    shipping_stage = self.fe_1_stages_dict[160][0]
+    shipping_stage.milestones = MilestoneSet(desktop_first=102)
+    shipping_stage.put()
+
+    # This feature is not stale.
+    self.feature_2.accurate_as_of = datetime(2022, 12, 15)
+    self.feature_2.outstanding_notifications = 0
+    self.feature_2.put()
+    shipping_stage_2 = self.fe_2_stages_dict[260][0]
+    shipping_stage_2.milestones = MilestoneSet(desktop_first=101)
+    shipping_stage_2.put()
+
+    actual = feature_helpers.get_stale_features()
+    self.assertEqual(0, len(actual))
+
+  @mock.patch('internals.feature_helpers.get_current_milestone_info')
+  @mock.patch('internals.feature_helpers.datetime')
+  def test_get_stale_features__non_shipping_stages(
+      self, mock_dt, mock_mstone_info):
+    """Ignores features with relevant milestones in non-shipping stages."""
+    mock_dt.now.return_value = datetime(2023, 1, 1)
+    mock_mstone_info.return_value = {'mstone': '100'}
+
+    # This feature is stale because it was reviewed over a month ago.
+    self.feature_1.accurate_as_of = datetime(2022, 11, 1)
+    self.feature_1.outstanding_notifications = 1
+    self.feature_1.put()
+
+    # And its milestone is upcoming (between 100 and 102),
+    # but it's a dev trial milestone.
+    shipping_stage = self.fe_1_stages_dict[130][0]
+    shipping_stage.milestones = MilestoneSet(desktop_first=102)
+    shipping_stage.put()
+
+    # This feature is not stale.
+    self.feature_2.accurate_as_of = datetime(2022, 12, 15)
+    self.feature_2.outstanding_notifications = 0
+    self.feature_2.put()
+    shipping_stage_2 = self.fe_2_stages_dict[260][0]
+    shipping_stage_2.milestones = MilestoneSet(desktop_first=101)
+    shipping_stage_2.put()
+
+    actual = feature_helpers.get_stale_features()
+    self.assertEqual(0, len(actual))
+
+  @mock.patch('internals.feature_helpers.get_current_milestone_info')
+  @mock.patch('internals.feature_helpers.datetime')
   def test_get_stale_features__deleted_feature_is_ignored(
       self, mock_dt, mock_mstone_info):
     """A deleted feature should not be returned, even if it is stale."""
@@ -796,6 +863,7 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
     # This feature is stale and deleted.
     self.feature_1.accurate_as_of = None
     self.feature_1.deleted = True
+    self.feature_1.outstanding_notifications = 2
     self.feature_1.put()
     shipping_stage = self.fe_1_stages_dict[160][0]
     shipping_stage.milestones = MilestoneSet(desktop_first=101)
@@ -806,37 +874,34 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
 
   @mock.patch('internals.feature_helpers.get_current_milestone_info')
   @mock.patch('internals.feature_helpers.datetime')
-  def test_get_stale_features__finds_earliest_milestone(
+  def test_get_stale_features__finds_milestone_from_relevant_stages(
       self, mock_dt, mock_mstone_info):
-    """If a feature has multiple upcoming milestones, choose the earliest one."""
+    """Finds a milestone from one of several stages."""
     mock_dt.now.return_value = datetime(2023, 1, 1)
     mock_mstone_info.return_value = {'mstone': '100'}
 
     # This feature is stale.
     self.feature_1.accurate_as_of = datetime(2022, 1, 1)
+    self.feature_1.outstanding_notifications = 3
     self.feature_1.put()
 
-    # Dev trial milestone is 102.
-    dev_trial_stage = self.fe_1_stages_dict[130][0]
-    dev_trial_stage.milestones = MilestoneSet(desktop_first=102)
-    dev_trial_stage.put()
-
-    # Shipping milestone is 101.
+    # Shipping milestone is 102 (in range).
     shipping_stage = self.fe_1_stages_dict[160][0]
-    shipping_stage.milestones = MilestoneSet(desktop_first=101)
+    shipping_stage.milestones = MilestoneSet(desktop_first=102)
     shipping_stage.put()
 
-    # Origin trial milestone is also 102.
-    ot_stage = self.fe_1_stages_dict[150][0]
-    ot_stage.milestones = MilestoneSet(desktop_first=102)
-    ot_stage.put()
+    # Another shipping stage exists with a later milestone.
+    shipping_stage_2 = Stage(feature_id=self.feature_1.key.integer_id(),
+                             stage_type=160)
+    shipping_stage_2.milestones = MilestoneSet(android_first=105)
+    shipping_stage_2.put()
 
     actual = feature_helpers.get_stale_features()
     self.assertEqual(1, len(actual))
     feature, mstone, field = actual[0]
     self.assertEqual(self.feature_1.key.integer_id(), feature.key.integer_id())
-    # The function should identify 101 as the earliest upcoming milestone.
-    self.assertEqual(101, mstone)
+    # The function should identify 102 as the only relevant milestone.
+    self.assertEqual(102, mstone)
     self.assertEqual('shipped_milestone', field)
 
 
