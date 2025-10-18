@@ -72,6 +72,66 @@ describe('chromedash-guide-editall-page', () => {
     tags: ['tag_one'],
   });
 
+  const validChannelsPromise = Promise.resolve({
+    stable: {
+      "branch_point": "2025-09-01T00:00:00",
+      "earliest_beta": "2025-09-03T00:00:00",
+      "earliest_beta_chromeos": "2025-09-16T00:00:00",
+      "earliest_beta_ios": "2025-09-03T00:00:00",
+      "early_stable": "2025-09-24T00:00:00",
+      "early_stable_ios": "2025-09-17T00:00:00",
+      "final_beta": "2025-09-24T00:00:00",
+      "final_beta_cut": "2025-09-23T00:00:00",
+      "late_stable_date": "2025-10-14T00:00:00",
+      "latest_beta": "2025-09-18T00:00:00",
+      "mstone": 141,
+      "next_late_stable_refresh": "2025-10-28T00:00:00",
+      "next_stable_refresh": "2025-10-14T00:00:00",
+      "stable_cut": "2025-09-23T00:00:00",
+      "stable_cut_ios": "2025-09-16T00:00:00",
+      "stable_date": "2025-09-30T00:00:00",
+      "stable_refresh_first": "2025-10-14T00:00:00",
+      "version": 141
+    },
+    beta: {
+      "branch_point": "2025-09-29T00:00:00",
+      "earliest_beta": "2025-10-01T00:00:00",
+      "earliest_beta_chromeos": "2025-10-14T00:00:00",
+      "earliest_beta_ios": "2025-10-01T00:00:00",
+      "early_stable": "2025-10-22T00:00:00",
+      "early_stable_ios": "2025-10-22T00:00:00",
+      "final_beta": "2025-10-22T00:00:00",
+      "final_beta_cut": "2025-10-21T00:00:00",
+      "late_stable_date": "2025-11-11T00:00:00",
+      "latest_beta": "2025-10-16T00:00:00",
+      "mstone": 142,
+      "stable_cut": "2025-10-21T00:00:00",
+      "stable_cut_ios": "2025-10-21T00:00:00",
+      "stable_date": "2025-10-28T00:00:00",
+      "stable_refresh_first": "2025-11-11T00:00:00",
+      "stable_refresh_second": "2025-12-02T00:00:00",
+      "stable_refresh_third": "2025-12-16T00:00:00",
+      "version": 142
+    },
+    dev: {
+      "branch_point": "2025-10-27T00:00:00",
+      "earliest_beta": "2025-10-29T00:00:00",
+      "earliest_beta_chromeos": "2025-11-11T00:00:00",
+      "earliest_beta_ios": "2025-10-29T00:00:00",
+      "early_stable": "2025-11-19T00:00:00",
+      "early_stable_ios": "2025-11-19T00:00:00",
+      "final_beta": "2025-11-19T00:00:00",
+      "final_beta_cut": "2025-11-18T00:00:00",
+      "late_stable_date": "2025-12-16T00:00:00",
+      "latest_beta": "2025-11-13T00:00:00",
+      "mstone": 143,
+      "stable_cut": "2025-11-18T00:00:00",
+      "stable_cut_ios": "2025-11-18T00:00:00",
+      "stable_date": "2025-12-02T00:00:00",
+      "version": 143
+    }
+  });
+
   /* window.csClient and <chromedash-toast> are initialized at spa.html
    * which are not available here, so we initialize them before each test.
    * We also stub out the API calls here so that they return test data. */
@@ -79,6 +139,7 @@ describe('chromedash-guide-editall-page', () => {
     await fixture(html`<chromedash-toast></chromedash-toast>`);
     window.csClient = new ChromeStatusClient('fake_token', 1);
     sinon.stub(window.csClient, 'getFeature');
+    sinon.stub(window.csClient, 'getChannels');
     sinon.stub(window.csClient, 'getBlinkComponents');
     window.csClient.getBlinkComponents.returns(Promise.resolve({}));
   });
@@ -86,6 +147,7 @@ describe('chromedash-guide-editall-page', () => {
   afterEach(() => {
     window.csClient.getFeature.restore();
     window.csClient.getBlinkComponents.restore();
+    window.csClient.getChannels.restore();
   });
 
   it('renders with no data', async () => {
@@ -112,16 +174,20 @@ describe('chromedash-guide-editall-page', () => {
   it('renders with fake data', async () => {
     const featureId = 123456;
     window.csClient.getFeature.withArgs(featureId).returns(validFeaturePromise);
+    window.csClient.getChannels.returns(validChannelsPromise);
 
-    const component = await fixture(
+    const component = await fixture<ChromedashGuideEditallPage>(
       html`<chromedash-guide-editall-page .featureId=${featureId}>
       </chromedash-guide-editall-page>`
     );
-    assert.exists(component);
+
+    await component.updateComplete;
+
+    assert.exists(component, 'component exists.');
     assert.instanceOf(component, ChromedashGuideEditallPage);
 
     const subheaderDiv = component.renderRoot.querySelector('div#subheader');
-    assert.exists(subheaderDiv);
+    assert.exists(subheaderDiv, 'Subheader exists.');
     // subheader title is correct and clickable
     assert.include(subheaderDiv.innerHTML, 'href="/feature/123456"');
     assert.include(subheaderDiv.innerHTML, 'Edit feature:');
@@ -130,14 +196,14 @@ describe('chromedash-guide-editall-page', () => {
     const featureForm = component.renderRoot.querySelector(
       'form[name="feature_form"]'
     );
-    assert.exists(featureForm);
+    assert.exists(featureForm, 'Feature form exists.');
     assert.include(featureForm.innerHTML, '<input type="hidden" name="token">');
     assert.include(featureForm.innerHTML, '<section class="final_buttons">');
 
     const formTable = component.renderRoot.querySelector(
       'chromedash-form-table'
     );
-    assert.exists(formTable);
+    assert.exists(formTable, 'Form table exists.');
 
     // delete button shown on rollout steps only
     const deleteButtons = formTable.querySelectorAll('sl-button[stage="1061"]');
@@ -148,13 +214,13 @@ describe('chromedash-guide-editall-page', () => {
     const featureId = 123456;
     // The mock feature has two stages of type 160 (ids 2 and 3).
     window.csClient.getFeature.withArgs(featureId).returns(validFeaturePromise);
+    window.csClient.getChannels.returns(validChannelsPromise);
 
     const component = await fixture<ChromedashGuideEditallPage>(
       html`<chromedash-guide-editall-page .featureId=${featureId}>
       </chromedash-guide-editall-page>`
     );
 
-    // Wait for component to render and update.
     await component.updateComplete;
 
     // Find all the sections for the duplicated stage type.

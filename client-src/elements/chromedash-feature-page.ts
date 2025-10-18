@@ -7,7 +7,6 @@ import {
   FeatureLink,
   FeatureNotFoundError,
   User,
-  StageDict,
 } from '../js-src/cs-client.js';
 import './chromedash-feature-detail';
 import {DETAILS_STYLES} from './chromedash-feature-detail';
@@ -19,10 +18,9 @@ import {
   getFeatureOutdatedBanner,
   findClosestShippingDate,
   closestShippingDateInfo,
+  userCanEdit,
 } from './utils.js';
 import {
-  STAGE_TYPES_SHIPPING,
-  STAGE_TYPES_ORIGIN_TRIAL,
   IMPLEMENTATION_STATUS,
 } from './form-field-enums';
 
@@ -269,7 +267,7 @@ export class ChromedashFeaturePage extends LitElement {
   }
 
   canDeleteFeature() {
-    return this.user?.is_admin || this.userCanEdit();
+    return this.user?.is_admin || userCanEdit(this.user, this.featureId);
   }
 
   handleArchiveFeature() {
@@ -356,14 +354,6 @@ export class ChromedashFeaturePage extends LitElement {
     const status =
       (this.feature && this.feature.browsers.chrome.status.text) || '';
     return INACTIVE_STATES.includes(status);
-  }
-
-  userCanEdit() {
-    return (
-      this.user &&
-      (this.user.can_edit_all ||
-        this.user.editable_features.includes(this.featureId))
-    );
   }
 
   pairedUserCanEdit() {
@@ -469,7 +459,8 @@ export class ChromedashFeaturePage extends LitElement {
         </div>
       `);
     }
-    if (!this.userCanEdit() && this.pairedUserCanEdit()) {
+    const canEdit = userCanEdit(this.user, this.featureId);
+    if (!canEdit && this.pairedUserCanEdit()) {
       warnings.push(html`
         <div id="switch_to_edit" class="warning">
           User ${this.user.email} cannot edit this feature or request reviews.
@@ -492,12 +483,12 @@ export class ChromedashFeaturePage extends LitElement {
         </div>
       `);
     }
-    const userCanEdit = this.userCanEdit();
+
     const featureOutdatedBanner = getFeatureOutdatedBanner(
       this.feature,
       this.shippingInfo,
       this.currentDate,
-      userCanEdit
+      canEdit
     );
     if (featureOutdatedBanner) {
       warnings.push(featureOutdatedBanner);
@@ -511,7 +502,7 @@ export class ChromedashFeaturePage extends LitElement {
       <chromedash-feature-detail
         appTitle=${this.appTitle}
         .user=${this.user}
-        ?canEdit=${this.userCanEdit()}
+        ?canEdit=${userCanEdit(this.user, this.featureId)}
         .feature=${this.feature}
         .gates=${this.gates}
         .comments=${this.comments}
@@ -540,7 +531,7 @@ export class ChromedashFeaturePage extends LitElement {
         .feature=${this.feature}
         .featureLinks=${this.featureLinks}
         ?canDeleteFeature=${this.canDeleteFeature()}
-        ?canEditFeature=${this.userCanEdit()}
+        ?canEditFeature=${userCanEdit(this.user, this.featureId)}
         @archive=${this.handleArchiveFeature}
         @suspend=${this.handleSuspend}
         @resume=${this.handleResume}
