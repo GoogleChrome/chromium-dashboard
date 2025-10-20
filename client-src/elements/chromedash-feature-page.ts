@@ -20,9 +20,7 @@ import {
   closestShippingDateInfo,
   userCanEdit,
 } from './utils.js';
-import {
-  IMPLEMENTATION_STATUS,
-} from './form-field-enums';
+import {IMPLEMENTATION_STATUS} from './form-field-enums';
 
 const INACTIVE_STATES = ['No longer pursuing', 'Deprecated', 'Removed'];
 declare var ga: Function;
