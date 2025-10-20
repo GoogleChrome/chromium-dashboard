@@ -22,7 +22,7 @@ export interface FormattedFeature {
   devrel?: string[];
   owner?: string[];
   prefixed?: boolean;
-  impl_status_chrome?: string;
+  impl_status_chrome?: number;
   shipped_milestone?: number;
   shipped_android_milestone?: number;
   shipped_webview_milestone?: number;

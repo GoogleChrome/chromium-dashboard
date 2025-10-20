@@ -119,7 +119,7 @@
 /**
  * @typedef {Object} FeatureDictInnerBrowserStatus
  * @property {string} [text]
- * @property {string} [val]
+ * @property {number} [val]
  * @property {string} [milestone_str]
  */
 
@@ -237,7 +237,7 @@
  * @property {boolean} [prefixed]
  * @property {string} [interop_compat_risks]
  * @property {boolean} [all_platforms]
- * @property {boolean} [all_platforms_descr]
+ * @property {string} [all_platforms_descr]
  * @property {string} [tag_review]
  * @property {string} [non_oss_deps]
  * @property {string} [anticipated_spec_changes]
@@ -300,7 +300,7 @@
  * @property {string | null} [latest_beta] - The latest beta release date (optional).
  * @property {string | null} [final_beta]
  * @property {string | null} [early_stable] (optional).
- * @property {Feature} features
+ * @property {Object.<string, Feature[]>} features
  */
 
 /**
