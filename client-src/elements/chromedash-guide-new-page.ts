@@ -98,7 +98,6 @@ export class ChromedashGuideNewPage extends LitElement {
     window.csClient
       .createFeature(createBody)
       .then(resp => {
-        this.submitting = false;
         window.location.href = `/feature/${resp.feature_id}`;
       })
       .catch(() => {
@@ -282,8 +281,8 @@ export class ChromedashGuideNewPage extends LitElement {
           <input
             type="submit"
             class="primary"
-            ?disabled=${this.submitting}
             value=${submitLabel}
+            ?disabled=${this.submitting}
           />
         </form>
       </section>

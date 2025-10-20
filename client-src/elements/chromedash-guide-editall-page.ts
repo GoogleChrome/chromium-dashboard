@@ -65,6 +65,8 @@ export class ChromedashGuideEditallPage extends LitElement {
   @state()
   loading = true;
   @state()
+  submitting = false;
+  @state()
   previousStageTypeRendered = 0;
   @state()
   sameTypeRendered = 0;
@@ -116,6 +118,7 @@ export class ChromedashGuideEditallPage extends LitElement {
 
   handleFormSubmit(e, hiddenTokenField) {
     e.preventDefault();
+    this.submitting = true;
     const submitBody = formatFeatureChanges(this.fieldValues, this.featureId);
 
     // get the XSRF token and update it if it's expired before submission
@@ -129,6 +132,7 @@ export class ChromedashGuideEditallPage extends LitElement {
         window.location.href = this.getNextPage();
       })
       .catch(() => {
+        this.submitting = false;
         showToastMessage(
           'Some errors occurred. Please refresh the page or try again later.'
         );
@@ -485,7 +489,12 @@ export class ChromedashGuideEditallPage extends LitElement {
         ${this.renderAddStageButton()}
 
         <section class="final_buttons">
-          <input class="button" type="submit" value="Submit" />
+          <input
+            class="button"
+            type="submit"
+            value="Submit"
+            ?disabled=${this.submitting}
+          />
           <button
             id="cancel-button"
             type="reset"
