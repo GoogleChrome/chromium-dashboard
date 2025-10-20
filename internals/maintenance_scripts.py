@@ -1152,3 +1152,38 @@ class ResetOutstandingNotifications(FlaskHandler):
       f.outstanding_notifications = 0
     ndb.put_multi(notified_features)
     return f'{len(notified_features)} reverted to 0 outstanding notifications.'
+
+
+class ResetStaleShippingMilestones(FlaskHandler):
+  """Reset the shipping milestones of features have not been verified after 4+ notifications."""
+
+  def get_template_data(self, **kwargs) -> str:
+    self.require_cron_header()
+
+    num_features_reset = 0
+    stale_features: list[FeatureEntry] = FeatureEntry.query(
+      FeatureEntry.outstanding_notifications >= 4
+    ).fetch()
+    entities_to_update: list[ndb.Model] = []
+    for f in stale_features:
+
+      # Get all the shipping stages of the stale feature and reset any
+      # milestones that are set.
+      stages: list[Stage] = Stage.query(
+        Stage.feature_id == f.key.integer_id(),
+        Stage.stage_type == STAGE_TYPES_SHIPPING[f.feature_type]
+      ).fetch()
+      for s in stages:
+        if s.milestones:
+          s.milestones.desktop_first = None
+          s.milestones.android_first = None
+          s.milestones.ios_first = None
+          s.milestones.webview_first = None
+          entities_to_update.append(s)
+        entities_to_update.append(f)
+      f.outstanding_notifications = 0
+      num_features_reset += 1
+    if entities_to_update:
+      ndb.put_multi(entities_to_update)
+
+    return f'{num_features_reset} features with shipping milestones reset.'
