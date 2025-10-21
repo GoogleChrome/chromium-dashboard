@@ -599,22 +599,6 @@ def get_stale_features() -> list[tuple[FeatureEntry, int, str]]:
 
   min_mstone = int(current_milestone_info['mstone'])
   mstone_range = (min_mstone, min_mstone + 1, min_mstone + 2)
-
-  relevant_dev_trial_stages_future = Stage.query(
-    Stage.stage_type.IN([st for st in STAGE_TYPES_DEV_TRIAL.values() if st]),
-    ndb.OR(
-      Stage.milestones.desktop_first.IN(mstone_range),
-      Stage.milestones.android_first.IN(mstone_range),
-      Stage.milestones.ios_first.IN(mstone_range),
-      Stage.milestones.webview_first.IN(mstone_range),
-    )).fetch_async()
-  relevant_origin_trial_stages_future = Stage.query(
-    Stage.stage_type.IN([st for st in STAGE_TYPES_ORIGIN_TRIAL.values() if st]),
-    ndb.OR(
-      Stage.milestones.desktop_first.IN(mstone_range),
-      Stage.milestones.android_first.IN(mstone_range),
-      Stage.milestones.webview_first.IN(mstone_range),
-    )).fetch_async()
   relevant_ship_stages_future = Stage.query(
     Stage.stage_type.IN([st for st in STAGE_TYPES_SHIPPING.values() if st]),
     ndb.OR(
@@ -628,22 +612,9 @@ def get_stale_features() -> list[tuple[FeatureEntry, int, str]]:
     Stage.milestones.desktop_first.IN(mstone_range),
   ).fetch_async()
 
-  relevant_dev_trial_stages: list[Stage] = relevant_dev_trial_stages_future.get_result()
-  relevant_origin_trial_stages: list[Stage] = relevant_origin_trial_stages_future.get_result()
   relevant_ship_stages: list[Stage] = relevant_ship_stages_future.get_result()
   relevant_ent_stages: list[Stage] = relevant_enterprise_stages_future.get_result()
 
-  dt_milestone_fields = [
-    'dt_milestone_android_start',
-    'dt_milestone_desktop_start',
-    'dt_milestone_ios_start',
-    'dt_milestone_webview_start',
-  ] 
-  ot_milestone_fields = [
-    'ot_milestone_android_start',
-    'ot_milestone_desktop_start',
-    'ot_milestone_webview_start',
-  ]
   ship_milestone_fields = [
     'shipped_android_milestone',
     'shipped_ios_milestone',
@@ -656,20 +627,6 @@ def get_stale_features() -> list[tuple[FeatureEntry, int, str]]:
   feature_keys: list[ndb.Key] = []
   mstones_by_feature_id: dict[int, tuple[int, str]] = {}
 
-  _map_relevant_milestones(
-    feature_keys,
-    mstones_by_feature_id,
-    relevant_dev_trial_stages,
-    dt_milestone_fields,
-    min_mstone,
-  )
-  _map_relevant_milestones(
-    feature_keys,
-    mstones_by_feature_id,
-    relevant_origin_trial_stages,
-    ot_milestone_fields,
-    min_mstone,
-  )
   _map_relevant_milestones(
     feature_keys,
     mstones_by_feature_id,
@@ -696,4 +653,5 @@ def get_stale_features() -> list[tuple[FeatureEntry, int, str]]:
      mstones_by_feature_id[f.key.integer_id()][1]
     ) for f in relevant_features
     if (f.accurate_as_of and f.accurate_as_of + timedelta(weeks=4) < now
-        and not f.deleted)]
+        and not f.deleted
+        and f.outstanding_notifications > 0)]

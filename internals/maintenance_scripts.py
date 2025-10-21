@@ -1018,15 +1018,19 @@ class GenerateStaleFeaturesFile(FlaskHandler):
     # Get all features that have not been verified for accuracy in over a month.
     now = datetime.now()
     one_month_ago = now - timedelta(weeks=4)
-    stale_features = FeatureEntry.query(
+    stale_features: list[FeatureEntry] = FeatureEntry.query(
       ndb.OR(
         FeatureEntry.accurate_as_of < one_month_ago,
         FeatureEntry.accurate_as_of == None,
-      )
-    )
+      ),
+    ).fetch()
 
     stale_features_with_upcoming_ship_stages: list[FeatureEntry] = []
     for f in stale_features:
+      # We should only surface features we have sent notifications about.
+      # (This cannot be added to the query, since only 1 inequality is allowed per query.)
+      if f.outstanding_notifications == 0:
+        continue
       shipping_stage_type = STAGE_TYPES_SHIPPING[f.feature_type]
       upcoming_ship_stages = Stage.query(
         Stage.feature_id == f.key.integer_id(),
@@ -1132,3 +1136,19 @@ class MigrateRolloutMilestones(FlaskHandler):
       count += len(changed_stages)
 
     return f'{count} rollout_milestone fields migrated'
+
+
+class ResetOutstandingNotifications(FlaskHandler):
+  """Reset the FeatureEntry.outstanding_notifications counter for all features"""
+
+  def get_template_data(self, **kwargs) -> str:
+    self.require_cron_header()
+    notified_features: list[FeatureEntry] = FeatureEntry.query(
+      FeatureEntry.outstanding_notifications > 0
+    ).fetch()
+    for f in notified_features:
+      logging.info(f'Setting outstanding notifications for feature {f.key.integer_id()} '
+                   f'from {f.outstanding_notifications} to 0.')
+      f.outstanding_notifications = 0
+    ndb.put_multi(notified_features)
+    return f'{len(notified_features)} reverted to 0 outstanding notifications.'

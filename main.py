@@ -373,6 +373,8 @@ internals_routes: list[Route] = [
         maintenance_scripts.SendManualOTActivatedEmail),
   Route('/scripts/migrate_rollout_milestones',
         maintenance_scripts.MigrateRolloutMilestones),
+  Route('/scripts/reset_outstanding_notifications',
+        maintenance_scripts.ResetOutstandingNotifications),
 ]
 
 dev_routes: list[Route] = []
