@@ -1416,61 +1416,105 @@ class GenerateStaleFeaturesFileTest(testing_config.CustomTestCase):
     feature_ids = {f.key.integer_id() for f in stale_features}
     self.assertEqual(feature_ids, {self.feature_1.key.integer_id(), self.feature_7.key.integer_id()})
 
-  @mock.patch('framework.utils.get_current_milestone_info')
-  def test_generate_rows(self, mock_get_milestone):
-    """Should format feature data into correct CSV rows."""
-    mock_get_milestone.return_value = {'mstone': str(self.current_milestone)}
-    features_to_process = [self.feature_1, self.feature_7]
+  def test_generate_rows(self):
+    """Should format feature data into correct feature and owner CSV rows."""
+    features_to_process = [self.feature_1, self.feature_7, self.feature_2]
+    feature_rows, owner_rows = self.handler._generate_rows(features_to_process, self.current_milestone)
 
-    csv_rows = self.handler._generate_rows(features_to_process, self.current_milestone)
-
-    expected_rows = [
+    expected_feature_rows = [
         [
+            '1',
             str(self.current_milestone),
             'Stale Feature 1',
-            f'{settings.SITE_URL}feature/{self.feature_1.key.integer_id()}',
-            'owner1@example.com',
+            f'{settings.SITE_URL}feature/1',
             self.long_ago.strftime(self.handler.DATE_FORMAT),
             '5'
         ],
         [
+            '7',
             str(self.current_milestone),
             'Stale Feature 7 (None date, 1 notification)',
-            f'{settings.SITE_URL}feature/{self.feature_7.key.integer_id()}',
-            'owner7@example.com',
+            f'{settings.SITE_URL}feature/7',
             '',
             '1'
+        ],
+        [
+            '2',
+            str(self.current_milestone),
+            'Stale Feature 2 (Zero notifications)',
+            f'{settings.SITE_URL}feature/2',
+            '',
+            '0'
         ]
     ]
-    self.assertEqual(expected_rows, csv_rows)
+    expected_owner_rows = [
+        ['1', 'owner1@example.com'],
+        ['7', 'owner7@example.com'],
+        ['2', 'owner2@example.com'],
+        ['2', 'owner2.2@example.com'],
+    ]
+
+    self.assertEqual(expected_feature_rows, feature_rows)
+    self.assertCountEqual(expected_owner_rows, owner_rows)
 
   def test_write_csv(self):
-    """Should write the correct header and rows to a GCS blob."""
+    """Should write the correct headers and rows to two GCS blobs."""
     mock_bucket = mock.MagicMock()
-    mock_blob = mock.MagicMock()
-    mock_bucket.blob.return_value = mock_blob
+    mock_feature_blob = mock.MagicMock()
+    mock_owner_blob = mock.MagicMock()
 
-    csv_rows = [
-        ['125', 'Feat A', 'url_a', 'a@example.com', '2025-10-01T00:00:00', '1'],
-        ['125', 'Feat B', 'url_b', 'b@example.com', '', '3']
+    # Use side_effect to return the correct blob mock based on the filename
+    def blob_switcher(blob_name):
+      if blob_name == 'chromestatus-stale-features.csv':
+        return mock_feature_blob
+      if blob_name == 'chromestatus-stale-feature-owners.csv':
+        return mock_owner_blob
+      return mock.MagicMock()
+    mock_bucket.blob.side_effect = blob_switcher
+
+    feature_rows = [
+        ['1', '125', 'Feat A', 'url_a', '2025-10-01T00:00:00', '1'],
+        ['2', '125', 'Feat B', 'url_b', '', '3']
     ]
-    self.handler._write_csv(mock_bucket, csv_rows)
+    owner_rows = [
+        ['1', 'a@example.com'],
+        ['2', 'b@example.com'],
+        ['2', 'b2@example.com']
+    ]
 
-    mock_bucket.blob.assert_called_once_with('chromestatus-stale-features.csv')
-    upload_call = mock_blob.upload_from_string.call_args
-    self.assertIsNotNone(upload_call)
+    self.handler._write_csv(mock_bucket, feature_rows, owner_rows)
 
-    # Verify the string content that was "uploaded".
-    uploaded_string = upload_call[0][0]
+    # Check that .blob() was called for both files
+    expected_calls = [
+        mock.call('chromestatus-stale-features.csv'),
+        mock.call('chromestatus-stale-feature-owners.csv')
+    ]
+    mock_bucket.blob.assert_has_calls(expected_calls)
+    self.assertEqual(mock_bucket.blob.call_count, 2)
+
+    feature_upload_call = mock_feature_blob.upload_from_string.call_args
+    self.assertIsNotNone(feature_upload_call)
+    uploaded_string = feature_upload_call[0][0]
     string_io = StringIO(uploaded_string)
     reader = csv.reader(string_io, lineterminator='\n')
 
     header = next(reader)
     self.assertEqual(header, [
-        'current_milestone', 'name', 'chromestatus_url', 'owner_emails',
+        'id', 'current_milestone', 'name', 'chromestatus_url',
         'accurate_as_of', 'outstanding_notifications'
     ])
-    self.assertEqual(list(reader), csv_rows)
+    self.assertEqual(list(reader), feature_rows)
+
+    owner_upload_call = mock_owner_blob.upload_from_string.call_args
+    self.assertIsNotNone(owner_upload_call)
+    uploaded_string = owner_upload_call[0][0]
+    string_io = StringIO(uploaded_string)
+    reader = csv.reader(string_io, lineterminator='\n')
+
+    header = next(reader)
+    self.assertEqual(header, ['id', 'owner_email'])
+    self.assertEqual(list(reader), owner_rows)
+
 
   @mock.patch('framework.utils.get_current_milestone_info')
   @mock.patch('google.cloud.storage.Client')
@@ -1478,36 +1522,55 @@ class GenerateStaleFeaturesFileTest(testing_config.CustomTestCase):
   @mock.patch('internals.maintenance_scripts.datetime')
   def test_get_template_data__end_to_end(
       self, mock_datetime, mock_require_cron, mock_storage_client, mock_get_milestone):
-    """Should correctly orchestrate the entire file generation process."""
+    """Should correctly orchestrate the entire file generation process for both files."""
     mock_datetime.now.return_value = datetime.now()
     mock_datetime.side_effect = lambda *args, **kw: datetime(*args, **kw)
     mock_get_milestone.return_value = {'mstone': str(self.current_milestone)}
 
     mock_bucket = mock.MagicMock()
-    mock_blob = mock.MagicMock()
     mock_storage_client.return_value.bucket.return_value = mock_bucket
-    mock_bucket.blob.return_value = mock_blob
+
+    mock_feature_blob = mock.MagicMock()
+    mock_owner_blob = mock.MagicMock()
+
+    mock_bucket.blob.side_effect = [mock_feature_blob, mock_owner_blob]
 
     result = self.handler.get_template_data()
 
     mock_require_cron.assert_called_once()
     mock_storage_client.return_value.bucket.assert_called_once_with(
         settings.FILES_BUCKET)
-    mock_bucket.blob.assert_called_once_with('chromestatus-stale-features.csv')
 
-    # Verify the final content passed to GCS is correct
-    upload_call = mock_blob.upload_from_string.call_args[0][0]
-    string_io = StringIO(upload_call)
-    reader = list(csv.reader(string_io, lineterminator='\n'))
+    # Check that .blob() was called for both files in order
+    expected_calls = [
+        mock.call('chromestatus-stale-features.csv'),
+        mock.call('chromestatus-stale-feature-owners.csv')
+    ]
+    mock_bucket.blob.assert_has_calls(expected_calls)
 
-    self.assertEqual(len(reader), 3)  # Header + 2 data rows
-    self.assertEqual(reader[0][1], 'name')
+    # Verify Feature CSV content
+    feature_upload_call = mock_feature_blob.upload_from_string.call_args[0][0]
+    feature_reader = list(csv.reader(StringIO(feature_upload_call), lineterminator='\n'))
 
-    # Get the set of names from the data rows (all rows after the header).
-    # This check is order-independent.
-    actual_names = {row[1] for row in reader[1:]}
-    expected_names = {self.feature_1.name, self.feature_7.name}
-    self.assertEqual(actual_names, expected_names)
+    self.assertEqual(len(feature_reader), 3)  # Header + 2 data rows
+    self.assertEqual(feature_reader[0], [
+        'id', 'current_milestone', 'name', 'chromestatus_url',
+        'accurate_as_of', 'outstanding_notifications'
+    ])
+    feature_ids = {row[0] for row in feature_reader[1:]}
+    self.assertEqual(feature_ids, {'1', '7'})
+
+    # Verify Owner CSV content
+    owner_upload_call = mock_owner_blob.upload_from_string.call_args[0][0]
+    owner_reader = list(csv.reader(StringIO(owner_upload_call), lineterminator='\n'))
+
+    self.assertEqual(len(owner_reader), 3)  # Header + 2 data rows
+    self.assertEqual(owner_reader[0], ['id', 'owner_email'])
+    expected_owners = [
+        [str(self.feature_1.key.integer_id()), self.feature_1.owner_emails[0]],
+        [str(self.feature_7.key.integer_id()), self.feature_7.owner_emails[0]],
+    ]
+    self.assertCountEqual(owner_reader[1:], expected_owners)
 
     self.assertEqual(result, '2 rows added to chromestatus-stale-features.csv')
 

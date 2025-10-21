@@ -1052,48 +1052,65 @@ class GenerateStaleFeaturesFile(FlaskHandler):
     self,
     features: list[FeatureEntry],
     current_milestone: int
-  ) -> list[list[str]]:
-    current_milestone_info = utils.get_current_milestone_info('current')
-    current_milestone = int(current_milestone_info['mstone'])
-    csv_rows: list[list[str]] = []
+  ) -> tuple[list[list[str]], list[list[str]]]:
+    """Generate rows for the two tables representing stale features."""
+    # We generate a table for the stale features, and another for the owners of
+    # those stale features.
+    feature_csv_rows: list[list[str]] = []
+    owner_csv_rows: list[list[str]] = []
     for f in features:
-      owner_emails_str = ','.join(f.owner_emails)
+      for email in f.owner_emails:
+        owner_csv_rows.append([str(f.key.integer_id()), email])
       accurate_as_of_str = ''
       if f.accurate_as_of:
         accurate_as_of_str = str(datetime.strftime(f.accurate_as_of,
                                                    self.DATE_FORMAT))
-      csv_rows.append(
+      feature_csv_rows.append(
         [
+          str(f.key.integer_id()),
           str(current_milestone),
           f.name,
           f'{settings.SITE_URL}feature/{f.key.integer_id()}',
-          owner_emails_str,
           accurate_as_of_str,
           str(f.outstanding_notifications),
         ]
       )
 
-    return csv_rows
+    return feature_csv_rows, owner_csv_rows
 
-  def _write_csv(self, bucket, csv_rows: list[list[str]]) -> None:
-    """Write stale features CSV to the GCP bucket."""
+  def _write_csv(
+    self,
+    bucket,
+    feature_csv_rows: list[list[str]],
+    owner_csv_rows: list[list[str]]
+  ) -> None:
+    """Write stale features CSV and owners CSV to the GCP bucket."""
     csv_io = StringIO()
     writer = csv.writer(csv_io, lineterminator='\n')
     # Write header row.
     writer.writerow(
       [
+        'id',
         'current_milestone',
         'name',
         'chromestatus_url',
-        'owner_emails',
         'accurate_as_of',
         'outstanding_notifications',
        ]
     )
-    for row in csv_rows:
+    for row in feature_csv_rows:
       writer.writerow(row)
 
     blob = bucket.blob('chromestatus-stale-features.csv')
+    blob.upload_from_string(csv_io.getvalue())
+
+    # Do the same process for the owners file.
+    csv_io = StringIO()
+    writer = csv.writer(csv_io, lineterminator='\n')
+    writer.writerow(['id', 'owner_email'])
+    for row in owner_csv_rows:
+      writer.writerow(row)
+    blob = bucket.blob('chromestatus-stale-feature-owners.csv')
     blob.upload_from_string(csv_io.getvalue())
 
   def get_template_data(self, **kwargs) -> str:
@@ -1105,10 +1122,10 @@ class GenerateStaleFeaturesFile(FlaskHandler):
     bucket = storage_client.bucket(settings.FILES_BUCKET)
 
     stale_features = self._gather_stale_features(current_milestone)
-    csv_rows = self._generate_rows(stale_features, current_milestone)
-    self._write_csv(bucket, csv_rows)
+    feature_csv_rows, owner_csv_rows = self._generate_rows(stale_features, current_milestone)
+    self._write_csv(bucket, feature_csv_rows, owner_csv_rows)
 
-    return f'{len(csv_rows)} rows added to chromestatus-stale-features.csv'
+    return f'{len(feature_csv_rows)} rows added to chromestatus-stale-features.csv'
 
 
 class MigrateRolloutMilestones(FlaskHandler):
