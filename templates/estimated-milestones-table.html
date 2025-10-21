@@ -64,6 +64,11 @@
         <tr><td>DevTrial on iOS</td><td>{{stage.milestones.ios_first}}</td></tr>
       {%- endif -%}
     {%- endfor %}
+    {%- for stage in stage_info.enterprise_stages -%}
+      {%- if stage.milestones.desktop_first %}
+        <tr><td>Rollout step {{loop.index}}</td><td>{{stage.milestones.desktop_first}}</td></tr>
+      {%- endif -%}
+    {%- endfor %}
   </table>
 {%- else -%}
   <p>No milestones specified</p>
