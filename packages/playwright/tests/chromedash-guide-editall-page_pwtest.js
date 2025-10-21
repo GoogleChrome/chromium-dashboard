@@ -11,13 +11,13 @@ async function gotoEditAllPage(page) {
     const editButton = page.locator('a[href^="/guide/editall/"]');
     await delay(500);
     await editButton.click();
-    await delay(500);
+    await delay(1500);
 }
 
 
 test.beforeEach(async ({ page }, testInfo) => {
     captureConsoleMessages(page);
-    testInfo.setTimeout(90000);
+    testInfo.setTimeout(30000);
 
     // Login before running each test.
     await login(page);

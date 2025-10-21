@@ -11,6 +11,10 @@ import {
   shouldShowDisplayNameField,
   renderHTMLIf,
   FieldInfo,
+  closestShippingDateInfo,
+  findClosestShippingDate,
+  getFeatureOutdatedBanner,
+  userCanEdit,
 } from './utils.js';
 import './chromedash-form-table';
 import './chromedash-form-field';
@@ -31,8 +35,7 @@ import {
 import {ALL_FIELDS} from './form-field-specs';
 import {openAddStageDialog} from './chromedash-add-stage-dialog';
 import {customElement, property, state} from 'lit/decorators.js';
-import {Feature} from '../js-src/cs-client.js';
-import {ifDefined} from 'lit/directives/if-defined.js';
+import {Feature, User} from '../js-src/cs-client.js';
 
 interface FormToRender {
   id: number;
@@ -56,6 +59,8 @@ export class ChromedashGuideEditallPage extends LitElement {
   }
   @property({attribute: false})
   featureId = 0;
+  @property({attribute: false})
+  user!: User;
   @property({type: String})
   appTitle = '';
   @property({type: Number})
@@ -72,6 +77,13 @@ export class ChromedashGuideEditallPage extends LitElement {
   sameTypeRendered = 0;
   @state()
   fieldValues: FieldInfo[] & {feature?: Feature} = [];
+  @state()
+  shippingInfo: closestShippingDateInfo = {
+    // The closest milestone shipping date as an ISO string.
+    closestShippingDate: '',
+    hasShipped: false,
+    isUpcoming: false,
+  };
 
   connectedCallback() {
     super.connectedCallback();
@@ -80,12 +92,19 @@ export class ChromedashGuideEditallPage extends LitElement {
 
   fetchData() {
     this.loading = true;
-    Promise.all([window.csClient.getFeature(this.featureId)])
-      .then(([feature]) => {
+    Promise.all([
+      window.csClient.getFeature(this.featureId),
+      window.csClient.getChannels(),
+    ])
+      .then(async ([feature, channels]) => {
         this.feature = feature;
         if (this.feature.name) {
           document.title = `${this.feature.name} - ${this.appTitle}`;
         }
+        this.shippingInfo = await findClosestShippingDate(
+          channels,
+          feature.stages
+        );
         this.loading = false;
       })
       .catch(() => {
@@ -510,6 +529,14 @@ export class ChromedashGuideEditallPage extends LitElement {
   render() {
     return html`
       ${this.renderSubheader()}
+      ${this.loading
+        ? nothing
+        : getFeatureOutdatedBanner(
+            this.feature,
+            this.shippingInfo,
+            Date.now(),
+            userCanEdit(this.user, this.feature.id)
+          )}
       ${this.loading ? this.renderSkeletons() : this.renderForm()}
     `;
   }

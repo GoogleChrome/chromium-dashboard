@@ -405,6 +405,7 @@ export class ChromedashApp extends LitElement {
     page('/guide/editall/:featureId(\\d+)', ctx => {
       if (!this.setupNewPage(ctx, 'chromedash-guide-editall-page')) return;
       this.pageComponent.featureId = parseInt(ctx.params.featureId);
+      this.pageComponent.user = this.user;
       this.pageComponent.appTitle = this.appTitle;
     });
     page('/guide/verify_accuracy/:featureId(\\d+)', ctx => {

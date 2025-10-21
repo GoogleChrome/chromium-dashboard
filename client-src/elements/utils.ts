@@ -9,6 +9,7 @@ import {
   Feature,
   FeatureLink,
   StageDict,
+  User,
 } from '../js-src/cs-client.js';
 import {markupAutolinks} from './autolink.js';
 import {FORMS_BY_STAGE_TYPE, FormattedFeature} from './form-definition.js';
@@ -718,6 +719,13 @@ export function extensionMilestoneIsValid(value, currentMilestone) {
   }
   // End milestone should not be in the past.
   return parseInt(currentMilestone) <= intValue;
+}
+
+// Check if a specific user has edit permission for a specific feature.
+export function userCanEdit(user: User | undefined, featureId): boolean {
+  return Boolean(
+    user && (user.can_edit_all || user.editable_features.includes(featureId))
+  );
 }
 
 /**
