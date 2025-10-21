@@ -1585,17 +1585,19 @@ class ResetStaleShippingMilestonesTest(testing_config.CustomTestCase):
 
     # 1. Stale feature (notifications=5) with shipping milestones.
     #    EXPECTED: Feature notifications reset to 0, Stage milestones reset to None.
+    #    Activity created with 2 amendments.
     self.feature_stale_reset = FeatureEntry(
         id=201, name='Stale w/ Milestones', summary='summary', category=1,
         feature_type=0,
         outstanding_notifications=5)
-    self.milestones_1 = MilestoneSet(desktop_first=123, android_first=456)
+    self.milestones_1 = MilestoneSet(desktop_first=141, android_first=456)
     self.stage_stale_reset = Stage(
         id=301, feature_id=201, stage_type=160,
         milestones=self.milestones_1)
 
     # 2. Stale feature (notifications=4, boundary) with shipping milestones.
     #    EXPECTED: Feature notifications reset to 0, Stage milestones reset to None.
+    #    Activity created with 1 amendment.
     self.feature_boundary_reset = FeatureEntry(
         id=202, name='Stale Boundary w/ Milestones', summary='summary', category=1,
         feature_type=0,
@@ -1607,6 +1609,7 @@ class ResetStaleShippingMilestonesTest(testing_config.CustomTestCase):
 
     # 3. Stale feature (notifications=5) with NO milestones (milestones=None).
     #    EXPECTED: Feature notifications reset to 0. Stage is untouched.
+    #    No Activity created.
     self.feature_stale_no_milestones = FeatureEntry(
         id=203, name='Stale w/ No Milestones', summary='summary', category=1,
         feature_type=2,
@@ -1618,6 +1621,7 @@ class ResetStaleShippingMilestonesTest(testing_config.CustomTestCase):
     # 4. Stale feature (notifications=5) with NO shipping stage.
     #    (It has a *non-shipping* stage, which should be ignored).
     #    EXPECTED: Feature notifications reset to 0. Non-shipping stage untouched.
+    #    No Activity created.
     self.feature_stale_no_stage = FeatureEntry(
         id=204, name='Stale w/ No Shipping Stage', summary='summary', category=1,
         feature_type=0,
@@ -1659,7 +1663,7 @@ class ResetStaleShippingMilestonesTest(testing_config.CustomTestCase):
     ])
 
   def tearDown(self):
-    for kind in [Stage, FeatureEntry]:
+    for kind in [Stage, FeatureEntry, Activity]:
       for entity in kind.query():
         entity.key.delete()
 
@@ -1700,3 +1704,32 @@ class ResetStaleShippingMilestonesTest(testing_config.CustomTestCase):
     # 6. Check Non-stale feature (notifications=0) is ignored
     self.assertEqual(0, self.feature_zero.outstanding_notifications)
     self.assertEqual(333, self.stage_zero.milestones.desktop_first)
+
+    # Check that Activity and Amendment entities were created
+    activities = Activity.query().fetch()
+    # Only features 201 and 202 should have generated an activity
+    self.assertEqual(2, len(activities))
+
+    # Check Activity for Feature 201
+    act_201 = Activity.query(Activity.feature_id == 201).get()
+    self.assertIsNotNone(act_201)
+    self.assertEqual(
+        'Shipping milestones were unset due to failure to verify accuracy.',
+        act_201.content)
+    # Sort amendments to have a stable test
+    amends_201 = sorted(act_201.amendments, key=lambda a: a.field_name)
+    self.assertEqual(2, len(amends_201))
+    self.assertEqual('android_first', amends_201[0].field_name)
+    self.assertEqual('456', amends_201[0].old_value)
+    self.assertIsNone(amends_201[0].new_value)
+    self.assertEqual('desktop_first', amends_201[1].field_name)
+    self.assertEqual('141', amends_201[1].old_value)
+    self.assertIsNone(amends_201[1].new_value)
+
+    # Check Activity for Feature 202
+    act_202 = Activity.query(Activity.feature_id == 202).get()
+    self.assertIsNotNone(act_202)
+    self.assertEqual(1, len(act_202.amendments))
+    self.assertEqual('desktop_first', act_202.amendments[0].field_name)
+    self.assertEqual('789', act_202.amendments[0].old_value)
+    self.assertIsNone(act_202.amendments[0].new_value)

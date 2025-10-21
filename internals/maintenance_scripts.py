@@ -28,7 +28,7 @@ from framework import origin_trials_client
 from framework import utils
 from internals import approval_defs
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
-from internals.review_models import Gate, Vote, Activity
+from internals.review_models import Amendment, Gate, Vote, Activity
 from internals.core_enums import *
 from internals.feature_links import batch_index_feature_entries
 from internals import stage_helpers
@@ -1157,6 +1157,16 @@ class ResetOutstandingNotifications(FlaskHandler):
 class ResetStaleShippingMilestones(FlaskHandler):
   """Reset the shipping milestones of features have not been verified after 4+ notifications."""
 
+  def _reset_milestone(self, stage: Stage, field: str, activity: Activity):
+    old_value = getattr(stage.milestones, field) if stage.milestones else None
+    if old_value and old_value > 140:
+      old_value = getattr(stage.milestones, field)
+      # Capture the old value in an Amendment.
+      activity.amendments.append(
+        Amendment(field_name=field, old_value=str(old_value), new_value=None)
+      )
+      setattr(stage.milestones, field, None)
+
   def get_template_data(self, **kwargs) -> str:
     self.require_cron_header()
 
@@ -1174,13 +1184,18 @@ class ResetStaleShippingMilestones(FlaskHandler):
         Stage.stage_type == STAGE_TYPES_SHIPPING[f.feature_type]
       ).fetch()
       for s in stages:
+        # Create an activity that shows all the shipping milestones have been set to null.
+        activity = Activity(
+          feature_id=f.key.integer_id(),
+          content='Shipping milestones were unset due to failure to verify accuracy.')
         if s.milestones:
-          s.milestones.desktop_first = None
-          s.milestones.android_first = None
-          s.milestones.ios_first = None
-          s.milestones.webview_first = None
+          self._reset_milestone(s, 'desktop_first', activity)
+          self._reset_milestone(s, 'android_first', activity)
+          self._reset_milestone(s, 'ios_first', activity)
+          self._reset_milestone(s, 'webview_first', activity)
           entities_to_update.append(s)
-        entities_to_update.append(f)
+          entities_to_update.append(activity)
+      entities_to_update.append(f)
       f.outstanding_notifications = 0
       num_features_reset += 1
     if entities_to_update:
