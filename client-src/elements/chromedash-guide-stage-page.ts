@@ -18,11 +18,7 @@ import {
   FORMS_BY_STAGE_TYPE,
   MetadataFields,
 } from './form-definition';
-import {
-  IMPLEMENTATION_STATUS,
-  OT_EXTENSION_STAGE_TYPES,
-  STAGE_SPECIFIC_FIELDS,
-} from './form-field-enums';
+import {STAGE_SPECIFIC_FIELDS} from './form-field-enums';
 import {ALL_FIELDS} from './form-field-specs';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {FORM_STYLES} from '../css/forms-css.js';
@@ -55,6 +51,8 @@ export class ChromedashGuideStagePage extends LitElement {
   featureFormFields!: MetadataFields;
   @state()
   loading = true;
+  @state()
+  submitting = false;
   @state()
   fieldValues: FieldInfo[] & {feature?: Feature} = [];
   @state()
@@ -152,6 +150,7 @@ export class ChromedashGuideStagePage extends LitElement {
       this.featureId,
       this.stageId
     );
+    this.submitting = true;
 
     // get the XSRF token and update it if it's expired before submission
     window.csClient
@@ -170,6 +169,7 @@ export class ChromedashGuideStagePage extends LitElement {
         }
       })
       .catch(() => {
+        this.submitting = false;
         showToastMessage(
           'Some errors occurred. Please refresh the page or try again later.'
         );
@@ -332,6 +332,7 @@ export class ChromedashGuideStagePage extends LitElement {
             class="button"
             type="submit"
             value="Submit"
+            ?disabled=${this.submitting}
           />
           <button
             id="cancel-button"

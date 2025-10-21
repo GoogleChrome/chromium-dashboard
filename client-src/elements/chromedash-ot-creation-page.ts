@@ -386,7 +386,6 @@ export class ChromedashOTCreationPage extends LitElement {
           this.submitting = false;
           this.requestUpdate();
         } else {
-          this.submitting = false;
           showToastMessage('Creation request submitted!');
           setTimeout(() => {
             window.location.href = `/feature/${this.featureId}`;
@@ -522,6 +521,7 @@ export class ChromedashOTCreationPage extends LitElement {
             class="button"
             type="submit"
             value="Submit"
+            ?disabled=${this.submitting}
           />
           <button
             id="cancel-button"
