@@ -18,12 +18,6 @@ import {
   getFeatureOutdatedBanner,
   findClosestShippingDate,
   closestShippingDateInfo,
-} from './utils.js';
-import {
-  showToastMessage,
-  getFeatureOutdatedBanner,
-  findClosestShippingDate,
-  closestShippingDateInfo,
   userCanEdit,
 } from './utils.js';
 import {IMPLEMENTATION_STATUS} from './form-field-enums';
