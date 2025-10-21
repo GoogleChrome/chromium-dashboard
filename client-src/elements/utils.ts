@@ -9,7 +9,7 @@ import {
   Feature,
   FeatureLink,
   StageDict,
-  User
+  User,
 } from '../js-src/cs-client.js';
 import {markupAutolinks} from './autolink.js';
 import {FORMS_BY_STAGE_TYPE, FormattedFeature} from './form-definition.js';
