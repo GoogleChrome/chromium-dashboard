@@ -125,7 +125,7 @@
     "@types/google.accounts": "^0.0.18",
     "@types/google.visualization": "^0.0.74",
     "dompurify": "^3.3.0",
-    "marked": "^16.4.0",
+    "marked": "^16.4.1",
     "csv-parse": "^6.1.0",
     "lit": "^3",
     "node-fetch": ">=3.3.2",
