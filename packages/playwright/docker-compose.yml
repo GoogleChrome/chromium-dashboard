@@ -79,6 +79,7 @@ services:
       - SERVER_SOFTWARE=Development
       - DATASTORE_PROJECT_ID=cr-status-staging
       - DATASTORE_EMULATOR_HOST=localhost:15607
+      - PLAYWRIGHT_MODE=true
   debugapp:
     <<: *myapp
     command: bash -c "source cs-env/bin/activate; env && whoami && npm run debug-app"

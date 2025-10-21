@@ -1,6 +1,4 @@
-ARG PLAYWRIGHT_VERSION
-
-FROM mcr.microsoft.com/playwright:v${PLAYWRIGHT_VERSION}-jammy
+FROM mcr.microsoft.com/devcontainers/base:bookworm
 
 ARG USERID
 ARG GROUPID
@@ -19,9 +17,6 @@ RUN npm config set script-shell bash --global
 
 USER pwuser
 WORKDIR /work
-
-# Set environment variable so we can tell we're performing Playwright tests.
-ENV PLAYWRIGHT_MODE=true
 
 # Install a consistent version of Playwright. The duplicate ARG line is needed to copy the value
 # into this build stage.

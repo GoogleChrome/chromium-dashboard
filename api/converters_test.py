@@ -145,7 +145,6 @@ class FeatureConvertersTest(testing_config.CustomTestCase):
           'devrel':['devrel@example.com'],
           'owners':['feature_owner@example.com'],
           'origintrial': False,
-          'intervention': False,
           'prefixed': False,
           'flag': False,
           'status': {
