@@ -1,0 +1,12 @@
+#!/bin/bash
+# Deploys the site to the staging environment.
+set -e
+
+# Get the directory of the script
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+export APP_NAME="cr-status-staging"
+export APP_YAML="app.staging.yaml"
+export NOTIFIER_YAML="notifier.staging.yaml"
+
+"$DIR/deploy-env"

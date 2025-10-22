@@ -1,0 +1,48 @@
+#!/bin/bash
+set -e
+
+# This is a helper script for deploying to a specific environment.
+# It is called by the deploy-staging and deploy-production scripts.
+
+# Run pre-deploy checks.
+if ! gcloud auth list --format='value(account)' | grep -q .; then
+  echo 'You are not authenticated with gcloud. Running `gcloud auth login`.'
+  gcloud auth login
+fi
+if [ "$(gcloud config get-value project)" != 'cr-status' ]; then
+  echo 'gcloud project is not set to cr-status. Running `gcloud config set project cr-status`.'
+  gcloud config set project cr-status
+fi
+
+# Check that all required environment variables are set.
+if [ -z "$APP_NAME" ] || [ -z "$APP_YAML" ] || [ -z "$NOTIFIER_YAML" ]; then
+    echo "Error: One or more required environment variables are not set."
+    echo "Please ensure the environment variables APP_NAME, APP_YAML, and NOTIFIER_YAML are exported."
+    exit 1
+fi
+
+echo "Starting deployment for $APP_NAME..."
+
+# 1. Set up the environment and build the client-side code.
+npm run clean-setup
+npm run build
+
+# 2. Deploy the application services.
+VERSION=$(git describe --always --abbrev=7 --match 'NOT A TAG' --dirty='-tainted')
+
+echo gcloud app deploy \
+  --project "$APP_NAME" \
+  --version "$VERSION" \
+  --no-cache \
+  --no-promote \
+  "$APP_YAML" \
+  "$NOTIFIER_YAML" \
+  dispatch.yaml \
+  cron.yaml
+
+# 3. Deploy the datastore indexes.
+echo gcloud app deploy \
+  --project "$APP_NAME" \
+  index.yaml
+
+echo "Deployment to $APP_NAME complete."

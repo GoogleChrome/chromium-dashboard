@@ -1,0 +1,37 @@
+#!/bin/bash
+# Deploys the site to the production environment.
+set -e
+
+# Verify we are on the main branch
+BRANCH=$(git rev-parse --abbrev-ref HEAD)
+if [ "$BRANCH" != "main" ]; then
+  echo "Not on the main branch. Aborting deployment."
+  exit 1
+fi
+
+# Check for uncommitted changes
+if [ -n "$(git status --porcelain)" ]; then
+  echo "Uncommitted changes detected:"
+  git status
+  read -p "Do you want to proceed with the deployment? (y/n) " -n 1 -r
+  echo
+  if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+    echo "Deployment aborted."
+    exit 1
+  fi
+fi
+
+# Get the directory of the script
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+# Create the GitHub issue for this deployment if it doesn't already exist.
+"$DIR/create-deployment-issue"
+
+export APP_NAME="cr-status"
+export APP_YAML="app.yaml"
+export NOTIFIER_YAML="notifier.yaml"
+
+"$DIR/deploy-env"
+
+echo "Remember to close the GitHub release issue."
+echo "https://github.com/GoogleChrome/chromium-dashboard/issues?q=is%3Aissue+label%3Arelease+is%3Aopen"
