@@ -181,7 +181,9 @@ export class ChromedashPreflightDialog extends LitElement {
     // TODO(jrobbins): Rewrite this logic to search forms rather than progress
     // items. And eventually phase out progress items.
     if (itemName === 'Web feature') {
-      return {name: 'Web feature', field: 'web_feature', stage: null};
+      return {name: itemName, field: 'web_feature', stage: null};
+    } else if (itemName === 'Tracking bug URL') {
+      return {name: itemName, field: 'bug_url', stage: null};
     }
     for (const s of this._process.stages || []) {
       for (const pi of s.progress_items) {

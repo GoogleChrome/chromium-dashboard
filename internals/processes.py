@@ -82,6 +82,7 @@ PI_INITIAL_PUBLIC_PROPOSAL = ProgressItem(
 PI_MOTIVATION = ProgressItem('Motivation', 'motivation')
 PI_EXPLAINER = ProgressItem('Explainer', 'explainer_links')
 PI_WEB_FEATURE = ProgressItem('Web feature', 'web_feature')
+PI_TRACKING_BUG = ProgressItem('Tracking bug URL', 'bug_url')
 
 PI_SPEC_LINK = ProgressItem('Spec link', 'spec_link')
 PI_SPEC_MENTOR = ProgressItem('Spec mentor', 'spec_mentors')
@@ -174,6 +175,7 @@ FEATURE_ROLLOUT_STAGE = ProcessStage(
        PI_ROLLOUT_PLATFORMS,
        PI_ROLLOUT_DETAILS,
        PI_ENTERPRISE_POLICIES,
+       PI_TRACKING_BUG,
       ],
       [],
       [],
@@ -190,6 +192,7 @@ BLINK_PROCESS_STAGES = [
        PI_MOTIVATION,
        PI_EXPLAINER,
        PI_WEB_FEATURE,
+       PI_TRACKING_BUG,
        ],
       [],
       [],
@@ -206,8 +209,12 @@ BLINK_PROCESS_STAGES = [
        PI_I2P_EMAIL,
       ],
       [Action('Draft Intent to Prototype email', INTENT_EMAIL_URL,
-              [PI_INITIAL_PUBLIC_PROPOSAL.name, PI_MOTIVATION.name,
-               PI_EXPLAINER.name])],
+              [
+                PI_TRACKING_BUG.name,
+                PI_INITIAL_PUBLIC_PROPOSAL.name,
+                PI_MOTIVATION.name,
+                PI_EXPLAINER.name
+              ])],
       [approval_defs.PrototypeApproval],
       core_enums.INTENT_INCUBATE, core_enums.INTENT_IMPLEMENT,
       stage_type=core_enums.STAGE_BLINK_PROTOTYPE),
@@ -228,8 +235,13 @@ BLINK_PROCESS_STAGES = [
        PI_FINCH_FEATURE_OR_JUSTIFY,
       ],
       [Action('Draft Ready for Developer Testing email', INTENT_EMAIL_URL_NO_APPROVALS,
-              [PI_INITIAL_PUBLIC_PROPOSAL.name, PI_MOTIVATION.name,
-               PI_EXPLAINER.name, PI_SPEC_LINK.name])],
+              [
+                PI_TRACKING_BUG.name,
+                PI_INITIAL_PUBLIC_PROPOSAL.name,
+                PI_MOTIVATION.name,
+                PI_EXPLAINER.name,
+                PI_SPEC_LINK.name
+              ])],
       [],
       core_enums.INTENT_IMPLEMENT, core_enums.INTENT_EXPERIMENT,
       stage_type=core_enums.STAGE_BLINK_DEV_TRIAL),
@@ -260,9 +272,13 @@ BLINK_PROCESS_STAGES = [
        PI_I2E_LGTMS,
       ],
       [Action('Draft Intent to Experiment email', INTENT_EMAIL_URL,
-              [PI_INITIAL_PUBLIC_PROPOSAL.name, PI_MOTIVATION.name,
-               PI_EXPLAINER.name, PI_SPEC_LINK.name,
-               PI_EST_TARGET_MILESTONE.name])],
+              [
+                PI_TRACKING_BUG.name,
+                PI_INITIAL_PUBLIC_PROPOSAL.name,
+                PI_MOTIVATION.name,
+                PI_EXPLAINER.name,
+                PI_SPEC_LINK.name,
+                PI_EST_TARGET_MILESTONE.name])],
       [approval_defs.ExperimentApproval],
       core_enums.INTENT_IMPLEMENT_SHIP, core_enums.INTENT_ORIGIN_TRIAL,
       stage_type=core_enums.STAGE_BLINK_ORIGIN_TRIAL),
@@ -287,10 +303,18 @@ BLINK_PROCESS_STAGES = [
        PI_I2S_LGTMS,
       ],
       [Action('Draft Intent to Ship email', INTENT_EMAIL_URL,
-              [PI_INITIAL_PUBLIC_PROPOSAL.name, PI_MOTIVATION.name,
-               PI_EXPLAINER.name, PI_SPEC_LINK.name, PI_WEB_FEATURE.name,
-               PI_FINCH_FEATURE_OR_JUSTIFY.name, PI_UPDATED_VENDOR_SIGNALS.name,
-               PI_TAG_ADDRESSED.name, PI_UPDATED_TARGET_MILESTONE.name])],
+              [
+                PI_INITIAL_PUBLIC_PROPOSAL.name,
+                PI_MOTIVATION.name,
+                PI_EXPLAINER.name,
+                PI_SPEC_LINK.name,
+                PI_WEB_FEATURE.name,
+                PI_TRACKING_BUG.name,
+                PI_FINCH_FEATURE_OR_JUSTIFY.name,
+                PI_UPDATED_VENDOR_SIGNALS.name,
+                PI_TAG_ADDRESSED.name,
+                PI_UPDATED_TARGET_MILESTONE.name
+              ])],
       [approval_defs.ShipApproval],
       core_enums.INTENT_IMPLEMENT_SHIP, core_enums.INTENT_SHIP,
       stage_type=core_enums.STAGE_BLINK_SHIPPING),
@@ -325,6 +349,7 @@ BLINK_FAST_TRACK_STAGES = [
       [PI_SPEC_LINK,
        PI_CODE_IN_CHROMIUM,
        PI_WEB_FEATURE,
+       PI_TRACKING_BUG,
        ],
       [Action('Draft Intent to Prototype email', INTENT_EMAIL_URL,
               [PI_SPEC_LINK.name])],
@@ -345,7 +370,11 @@ BLINK_FAST_TRACK_STAGES = [
        PI_FINCH_FEATURE_OR_JUSTIFY,
       ],
       [Action('Draft Ready for Developer Testing email', INTENT_EMAIL_URL_NO_APPROVALS,
-              [PI_SPEC_LINK.name, PI_EST_TARGET_MILESTONE.name])],
+              [
+                PI_TRACKING_BUG.name,
+                PI_SPEC_LINK.name,
+                PI_EST_TARGET_MILESTONE.name
+              ])],
       [],
       core_enums.INTENT_IMPLEMENT, core_enums.INTENT_EXPERIMENT,
       stage_type=core_enums.STAGE_FAST_DEV_TRIAL),
@@ -361,8 +390,11 @@ BLINK_FAST_TRACK_STAGES = [
        PI_I2E_LGTMS,
       ],
       [Action('Draft Intent to Experiment email', INTENT_EMAIL_URL,
-              [PI_SPEC_LINK.name,
-               PI_EST_TARGET_MILESTONE.name])],
+              [
+                PI_TRACKING_BUG.name,
+                PI_SPEC_LINK.name,
+                PI_EST_TARGET_MILESTONE.name
+              ])],
       [approval_defs.ExperimentApproval],
       core_enums.INTENT_EXPERIMENT, core_enums.INTENT_ORIGIN_TRIAL,
       stage_type=core_enums.STAGE_FAST_ORIGIN_TRIAL),
@@ -386,9 +418,13 @@ BLINK_FAST_TRACK_STAGES = [
        PI_I2S_LGTMS,
       ],
       [Action('Draft Intent to Ship email', INTENT_EMAIL_URL,
-              [PI_SPEC_LINK.name, PI_WEB_FEATURE.name,
-               PI_FINCH_FEATURE_OR_JUSTIFY.name,
-               PI_UPDATED_TARGET_MILESTONE.name])],
+              [
+                PI_TRACKING_BUG.name,
+                PI_SPEC_LINK.name,
+                PI_WEB_FEATURE.name,
+                PI_FINCH_FEATURE_OR_JUSTIFY.name,
+                PI_UPDATED_TARGET_MILESTONE.name
+              ])],
       [approval_defs.ShipApproval],
       core_enums.INTENT_EXPERIMENT, core_enums.INTENT_SHIP,
       stage_type=core_enums.STAGE_FAST_SHIPPING),
@@ -422,6 +458,7 @@ PSA_ONLY_STAGES = [
       [PI_SPEC_LINK,
        PI_CODE_IN_CHROMIUM,
        PI_WEB_FEATURE,
+       PI_TRACKING_BUG
       ],
       [],
       [],
@@ -438,7 +475,11 @@ PSA_ONLY_STAGES = [
        PI_FINCH_FEATURE_OR_JUSTIFY,
       ],
       [Action('Draft Ready for Developer Testing email', INTENT_EMAIL_URL_NO_APPROVALS,
-              [PI_SPEC_LINK.name, PI_EST_TARGET_MILESTONE.name])],
+              [
+                PI_TRACKING_BUG.name,
+                PI_SPEC_LINK.name,
+                PI_EST_TARGET_MILESTONE.name
+              ])],
       [],
       core_enums.INTENT_IMPLEMENT, core_enums.INTENT_EXPERIMENT,
       stage_type=core_enums.STAGE_PSA_DEV_TRIAL),
@@ -451,9 +492,12 @@ PSA_ONLY_STAGES = [
        PI_I2S_EMAIL,
       ],
       [Action('Draft Web-Facing Change PSA email', INTENT_EMAIL_URL_NO_APPROVALS,
-              [PI_SPEC_LINK.name,
-               PI_FINCH_FEATURE_OR_JUSTIFY.name,
-               PI_UPDATED_TARGET_MILESTONE.name])],
+              [
+                PI_TRACKING_BUG.name,
+                PI_SPEC_LINK.name,
+                PI_FINCH_FEATURE_OR_JUSTIFY.name,
+                PI_UPDATED_TARGET_MILESTONE.name
+                ])],
       [approval_defs.ShipApproval],
       core_enums.INTENT_EXPERIMENT, core_enums.INTENT_SHIP,
       stage_type=core_enums.STAGE_PSA_SHIPPING),
@@ -488,9 +532,14 @@ DEPRECATION_STAGES = [
       'Then, get approval for your deprecation plans.',
       [PI_EXISTING_FEATURE,
        PI_MOTIVATION,
+       PI_TRACKING_BUG,
       ],
       [Action('Draft Intent to Deprecate and Remove email', INTENT_EMAIL_URL,
-              [PI_MOTIVATION.name])],
+              [
+                PI_TRACKING_BUG.name,
+                PI_MOTIVATION.name,
+                PI_TRACKING_BUG.name,
+              ])],
       [approval_defs.PrototypeApproval],
       core_enums.INTENT_NONE, core_enums.INTENT_IMPLEMENT,
       stage_type=core_enums.STAGE_DEP_PLAN),
@@ -505,8 +554,12 @@ DEPRECATION_STAGES = [
        PI_FINCH_FEATURE_OR_JUSTIFY,
       ],
       [Action('Draft Ready for Developer Testing email', INTENT_EMAIL_URL_NO_APPROVALS,
-              [PI_MOTIVATION.name, PI_VENDOR_SIGNALS.name,
-               PI_EST_TARGET_MILESTONE.name])],
+              [
+                PI_TRACKING_BUG.name,
+                PI_MOTIVATION.name,
+                PI_VENDOR_SIGNALS.name,
+                PI_EST_TARGET_MILESTONE.name
+              ])],
       [],
       core_enums.INTENT_IMPLEMENT, core_enums.INTENT_EXPERIMENT,
       stage_type=core_enums.STAGE_DEP_DEV_TRIAL),
@@ -521,8 +574,11 @@ DEPRECATION_STAGES = [
        PI_DT_LGTMS,
       ],
       [Action('Draft Request for Deprecation Trial email', INTENT_EMAIL_URL,
-              [PI_MOTIVATION.name, PI_VENDOR_SIGNALS.name,
-               PI_EST_TARGET_MILESTONE.name])],
+              [
+                PI_TRACKING_BUG.name,
+                PI_MOTIVATION.name,
+                PI_VENDOR_SIGNALS.name,
+                PI_EST_TARGET_MILESTONE.name])],
       [approval_defs.ExperimentApproval],
       core_enums.INTENT_EXPERIMENT, core_enums.INTENT_ORIGIN_TRIAL,
       stage_type=core_enums.STAGE_DEP_DEPRECATION_TRIAL),
@@ -547,9 +603,12 @@ DEPRECATION_STAGES = [
        PI_I2S_LGTMS,
       ],
       [Action('Draft Intent to Ship email', INTENT_EMAIL_URL,
-              [PI_MOTIVATION.name,
-               PI_FINCH_FEATURE_OR_JUSTIFY.name, PI_VENDOR_SIGNALS.name,
-               PI_UPDATED_TARGET_MILESTONE.name])],
+              [
+                PI_TRACKING_BUG.name,
+                PI_MOTIVATION.name,
+                PI_FINCH_FEATURE_OR_JUSTIFY.name,
+                PI_VENDOR_SIGNALS.name,
+                PI_UPDATED_TARGET_MILESTONE.name])],
       [approval_defs.ShipApproval],
       core_enums.INTENT_EXPERIMENT, core_enums.INTENT_SHIP,
       stage_type=core_enums.STAGE_DEP_SHIPPING),
@@ -561,8 +620,12 @@ DEPRECATION_STAGES = [
       ],
       [Action('Generate an Intent to Extend Deprecation Trial',
               INTENT_EMAIL_URL,
-              [PI_MOTIVATION.name, PI_VENDOR_SIGNALS.name,
-               PI_UPDATED_TARGET_MILESTONE.name]),
+              [
+                PI_TRACKING_BUG.name,
+                PI_MOTIVATION.name,
+                PI_VENDOR_SIGNALS.name,
+                PI_UPDATED_TARGET_MILESTONE.name
+              ]),
        ],
       [],
       core_enums.INTENT_SHIP, core_enums.INTENT_REMOVED,
@@ -634,6 +697,8 @@ PROGRESS_DETECTORS = {
 
     'Web feature':
     lambda f, _: f.web_feature and f.web_feature != WebDXFeatureObserver.MISSING_FEATURE_ID,
+
+    'Tracking bug URL': lambda f, _: f.bug_url,
 
     'Security review issues addressed':
     lambda f, _: review_is_done(f.security_review_status),
