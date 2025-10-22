@@ -30,7 +30,7 @@ npm run build
 # 2. Deploy the application services.
 VERSION=$(git describe --always --abbrev=7 --match 'NOT A TAG' --dirty='-tainted')
 
-echo gcloud app deploy \
+gcloud app deploy \
   --project "$APP_NAME" \
   --version "$VERSION" \
   --no-cache \
@@ -41,7 +41,7 @@ echo gcloud app deploy \
   cron.yaml
 
 # 3. Deploy the datastore indexes.
-echo gcloud app deploy \
+gcloud app deploy \
   --project "$APP_NAME" \
   index.yaml
 
