@@ -232,7 +232,7 @@ export async function logout(page) {
   await delay(1000);
 
   if (await isMobile(page)) {
-    const menuButton = page.locator('[data-testid=menu]');
+    const menuButton = page.getByTestId('menu');
     await expect(menuButton).toBeVisible();
     await menuButton.click();
   } else {
@@ -268,7 +268,7 @@ export async function gotoNewFeaturePage(page) {
   // console.log('navigate to create feature page');
   const mobile = await isMobile(page);
   const createFeatureButton = page.getByTestId('create-feature-button');
-  const menuButton = page.locator('[data-testid=menu]');
+  const menuButton = page.getByTestId('menu');
 
   // Navigate to the new feature page.
   await expect(menuButton).toBeVisible();
@@ -296,7 +296,7 @@ export async function gotoNewFeaturePage(page) {
  * @return {Promise<void>} A promise that resolves once the blink component is entered.
  */
 export async function enterBlinkComponent(page) {
-  const blinkComponentsInputWrapper = page.locator('data-testid=blink_components_wrapper');
+  const blinkComponentsInputWrapper = page.getByTestId('blink_components_wrapper');
   await expect(blinkComponentsInputWrapper).toBeVisible();
 
   // Trying to show options, doesn't work yet.
@@ -315,7 +315,7 @@ export async function enterBlinkComponent(page) {
  * @return {Promise<void>} A promise that resolves once the web feature id is entered.
  */
 export async function enterWebFeatureId(page) {
-  const webFeatureIdInputWrapper = page.locator('data-testid=web_feature_wrapper');
+  const webFeatureIdInputWrapper = page.getByTestId('web_feature_wrapper');
   await expect(webFeatureIdInputWrapper).toBeVisible();
 
   // Trying to show options, doesn't work yet.
@@ -336,36 +336,36 @@ export async function enterWebFeatureId(page) {
  */
 export async function createNewFeature(page) {
   await gotoNewFeaturePage(page);
-
+  console.log(222);
   // Enter feature name
   const featureNameInput = page.locator('input[name="name"]');
   await featureNameInput.fill('Test feature name');
-  await delay(500);
 
   // Enter summary description
   const summaryInput = page.locator('textarea[name="summary"]');
   await summaryInput.fill('Test summary description');
-  await delay(500);
+  console.log(333);
 
   await enterBlinkComponent(page);
-
   await enterWebFeatureId(page);
+  console.log(444);
 
   // Select feature type.
   const featureTypeRadioNew = page.locator('input[name="feature_type"][value="0"]');
   await featureTypeRadioNew.click();
-  await delay(500);
+  console.log(555);
 
   // Submit the form.
   const submitButton = page.locator('input[type="submit"]');
   await submitButton.click();
-  await delay(1500);
+  console.log(66);
 
   // Wait until we are on the Feature page.
   await page.waitForURL('**/feature/*');
-  await delay(1500);
-  await page.locator('chromedash-feature-detail');
-  await delay(1500);
+  console.log(777);
+  const detail = page.locator('chromedash-feature-detail');
+  await expect(detail).toBeVisible({timeout: 30000});
+  console.log(888);
 }
 
 /**
@@ -374,6 +374,6 @@ export async function createNewFeature(page) {
  */
 export async function gotoNewFeatureList(page) {
   await page.goto('/newfeatures');
-  await page.locator('chromedash-feature-pagination');
-  await delay(500);
+  const pagiation = page.locator('chromedash-feature-pagination');
+  await expect(pagiation).toBeVisible();
 }

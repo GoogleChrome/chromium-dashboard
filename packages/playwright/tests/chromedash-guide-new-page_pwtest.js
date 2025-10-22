@@ -117,6 +117,7 @@ test('enter web feature id', async ({ page }) => {
 
 test('create new feature', async ({ page }) => {
   await createNewFeature(page);
+  console.log(111);
 
   // Screenshot of this new feature.
   await expect(page).toHaveScreenshot('new-feature-created.png', {
