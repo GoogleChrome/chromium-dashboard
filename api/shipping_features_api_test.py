@@ -32,7 +32,26 @@ MOCK_ENABLED_FEATURES_JSON5 = """
     // For feature_1: A complete feature that is stable.
     { "name": "featureOneFinch", "status": "stable" },
     // For feature_7: An incomplete feature that is not stable.
-    { "name": "feature7-unstable", "status": "experimental" }
+    { "name": "feature7-unstable", "status": "experimental" },
+
+    // Status is a dict, and at least one platform is "stable".
+    {
+      "name": "FeatureDictStable",
+      "status": {
+        "Mac": "experimental",
+        "Win": "stable",
+        "Linux": "dev"
+      }
+    },
+    // Status is a dict, but no platform is "stable".
+    {
+      "name": "FeatureDictUnstable",
+      "status": {
+        "Mac": "experimental",
+        "Win": "experimental",
+        "Linux": "experimental"
+      }
+    }
   ]
 }
 """
@@ -252,6 +271,17 @@ class ShippingFeaturesAPITest(testing_config.CustomTestCase):
         'not-a-real-feature', enabled_features_json, content_features_file)
     self.assertEqual(result,
         [shipping_features_api.Criteria.CHROMIUM_FEATURE_NOT_FOUND])
+
+    # Found in JSON, status is dict, one platform is "stable".
+    result = handler._validate_feature_in_chromium(
+        'FeatureDictStable', enabled_features_json, content_features_file)
+    self.assertEqual(result, [])
+
+    # Found in JSON, status is dict, no platforms are "stable".
+    result = handler._validate_feature_in_chromium(
+        'FeatureDictUnstable', enabled_features_json, content_features_file)
+    self.assertEqual(result,
+        [shipping_features_api.Criteria.RUNTIME_FEATURE_NOT_STABLE])
 
 
   @mock.patch('logging.warning')

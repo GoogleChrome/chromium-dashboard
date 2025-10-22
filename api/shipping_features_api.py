@@ -80,7 +80,15 @@ class ShippingFeaturesAPI(basehandlers.EntitiesAPIHandler):
       None)
     if feature_info:
       feature_found = True
-      if feature_info.get('status', None) != 'stable':
+      # The status of a feature can be represented as a string (meaning the same
+      # status for all platforms), or an object mapping the status of each
+      # platform individually.
+      if isinstance(feature_info.get('status', None), dict):
+        # If we're checking by platform, we just check if at least one platform
+        # is designated as stable.
+        if not any(s for s in feature_info['status'].values() if s == 'stable'):
+          criteria_missing.append(Criteria.RUNTIME_FEATURE_NOT_STABLE)
+      elif feature_info.get('status', None) != 'stable':
         criteria_missing.append(Criteria.RUNTIME_FEATURE_NOT_STABLE)
     else:
       # Search for the feature and determine if it is enabled.
