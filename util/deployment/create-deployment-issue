@@ -1,0 +1,77 @@
+#!/bin/bash
+set -e
+
+REPO="GoogleChrome/chromium-dashboard"
+
+# Ensure we are in the project root
+if [ "$(git rev-parse --git-dir 2>/dev/null)" != ".git" ]; then
+  echo "Please run this script from the root of the repository."
+  exit 1
+fi
+
+echo "Checking GitHub CLI authentication status..."
+if ! gh auth status > /dev/null 2>/dev/null; then
+  echo "You are not logged into the GitHub CLI. Starting login process..."
+  gh auth login
+  if ! gh auth status > /dev/null 2>/dev/null; then
+    echo "GitHub login failed. Please run 'gh auth login' manually and try again."
+    exit 1
+  fi
+fi
+echo "Authenticated."
+
+PREVIOUS_SHORT_SHA=$(gh issue list --state=closed --label="release" --json title --repo "$REPO" | jq -r '.[0].title' | awk '{print $NF}')
+if [ -z "$PREVIOUS_SHORT_SHA" ]; then
+  echo "Could not determine the previous release SHA. Using last 10 commits for changelog."
+  CHANGELOG=$(git log --oneline -10 --format="- %C(auto) %h %s")
+else
+  CHANGELOG=$(git log --oneline "$PREVIOUS_SHORT_SHA..HEAD" --format="- %C(auto) %h %s")
+fi
+
+NEW_SHA=$(git rev-parse --short HEAD)
+
+DIRTY_PREFIX=""
+if [[ -n $(git status --porcelain) ]]; then
+    DIRTY_PREFIX="(contains uncommitted changes) "
+fi
+
+ISSUE_TITLE="Deploy $DIRTY_PREFIX$NEW_SHA"
+
+echo "Checking for existing issue with title: $ISSUE_TITLE"
+EXISTING_ISSUE_JSON=$(gh issue list --search "$ISSUE_TITLE in:title" --label release --state all --repo "$REPO" --json number,title,state,url | jq --arg title "$ISSUE_TITLE" '.[] | select(.title == $title)')
+
+echo "Existing issue: $EXISTING_ISSUE_JSON"
+
+if [[ -n "$EXISTING_ISSUE_JSON" ]]; then
+  ISSUE_STATE=$(echo "$EXISTING_EXISTING_ISSUE_JSON" | jq -r '.state')
+  ISSUE_URL=$(echo "$EXISTING_ISSUE_JSON" | jq -r '.url')
+  echo -e "An issue with the title '$ISSUE_TITLE' already exists in state $ISSUE_STATE:\n  $ISSUE_URL"
+  exit 0
+fi
+
+ISSUE_BODY=$(cat << EOF
+Changelist $PREVIOUS_SHORT_SHA...$NEW_SHA
+
+Changes:
+
+$CHANGELOG
+
+This push is happening as part of the regular weekly push.
+EOF
+)
+
+echo "Creating issue with the following details:"
+echo "---"
+echo "Title: $ISSUE_TITLE"
+echo "Body:"
+echo "$ISSUE_BODY"
+echo "---"
+echo "Press enter to create the issue, or Ctrl+C to cancel."
+read -r
+
+if ( ! gh issue create --title "$ISSUE_TITLE" --body "$ISSUE_BODY" --label "release" -R "$REPO"); then
+  echo "GitHub issue creation failed."
+  exit 1
+fi
+
+echo "Successfully created GitHub issue."
