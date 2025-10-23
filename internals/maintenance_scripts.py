@@ -1187,16 +1187,19 @@ class ResetStaleShippingMilestones(FlaskHandler):
         # Create an activity that shows all the shipping milestones have been set to null.
         activity = Activity(
           feature_id=f.key.integer_id(),
+          amendments=[],
           content='Shipping milestones were unset due to failure to verify accuracy.')
         if s.milestones:
           self._reset_milestone(s, 'desktop_first', activity)
           self._reset_milestone(s, 'android_first', activity)
           self._reset_milestone(s, 'ios_first', activity)
           self._reset_milestone(s, 'webview_first', activity)
-          entities_to_update.append(s)
-          entities_to_update.append(activity)
-      entities_to_update.append(f)
+          # Only update the stage and save the activity if some milestones were unset.
+          if activity.amendments:
+            entities_to_update.append(s)
+            entities_to_update.append(activity)
       f.outstanding_notifications = 0
+      entities_to_update.append(f)
       num_features_reset += 1
     if entities_to_update:
       ndb.put_multi(entities_to_update)
