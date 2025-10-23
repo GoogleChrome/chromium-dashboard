@@ -9,9 +9,8 @@ import { captureConsoleMessages, delay, login, logout, createNewFeature } from '
  */
 async function gotoEditAllPage(page) {
     const editButton = page.locator('a[href^="/guide/editall/"]');
-    await delay(500);
     await editButton.click();
-    await delay(1500);
+    await expect(page.locator('chromedash-form-table')).toBeVisible();
 }
 
 
