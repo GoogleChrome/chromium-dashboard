@@ -312,6 +312,8 @@ internals_routes: list[Route] = [
         maintenance_scripts.GenerateReviewActivityFile),
   Route('/cron/generate_stale_features',
         maintenance_scripts.GenerateStaleFeaturesFile),
+  Route('/cron/reset_stale_shipping_milestones',
+        maintenance_scripts.ResetStaleShippingMilestones),
 
   Route('/admin/find_stop_words', search_fulltext.FindStopWords),
 

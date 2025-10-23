@@ -14,6 +14,7 @@
 
 import csv
 import testing_config  # Must be imported before the module under test.
+from google.cloud import ndb
 
 from io import StringIO
 import requests
@@ -1637,3 +1638,161 @@ class ResetOutstandingNotificationsTest(testing_config.CustomTestCase):
     # This feature should have been untouched and its counter should still be None.
     ignored_feature_2 = self.feature_to_ignore_none.key.get()
     self.assertIsNone(ignored_feature_2.outstanding_notifications)
+
+
+class ResetStaleShippingMilestonesTest(testing_config.CustomTestCase):
+  """Tests for the ResetStaleShippingMilestones handler."""
+
+  def setUp(self):
+    self.handler = maintenance_scripts.ResetStaleShippingMilestones()
+
+    # 1. Stale feature (notifications=5) with shipping milestones.
+    #    EXPECTED: Feature notifications reset to 0, Stage milestones reset to None.
+    #    Activity created with 2 amendments.
+    self.feature_stale_reset = FeatureEntry(
+        id=201, name='Stale w/ Milestones', summary='summary', category=1,
+        feature_type=0,
+        outstanding_notifications=5)
+    self.milestones_1 = MilestoneSet(desktop_first=141, android_first=456)
+    self.stage_stale_reset = Stage(
+        id=301, feature_id=201, stage_type=160,
+        milestones=self.milestones_1)
+
+    # 2. Stale feature (notifications=4, boundary) with shipping milestones.
+    #    EXPECTED: Feature notifications reset to 0, Stage milestones reset to None.
+    #    Activity created with 1 amendment.
+    self.feature_boundary_reset = FeatureEntry(
+        id=202, name='Stale Boundary w/ Milestones', summary='summary', category=1,
+        feature_type=0,
+        outstanding_notifications=4)
+    self.milestones_2 = MilestoneSet(desktop_first=789)
+    self.stage_boundary_reset = Stage(
+        id=302, feature_id=202, stage_type=160,
+        milestones=self.milestones_2)
+
+    # 3. Stale feature (notifications=5) with NO milestones (milestones=None).
+    #    EXPECTED: Feature notifications reset to 0. Stage is untouched.
+    #    No Activity created.
+    self.feature_stale_no_milestones = FeatureEntry(
+        id=203, name='Stale w/ No Milestones', summary='summary', category=1,
+        feature_type=2,
+        outstanding_notifications=5)
+    self.stage_stale_no_milestones = Stage(
+        id=303, feature_id=203, stage_type=260,
+        milestones=None)
+
+    # 4. Stale feature (notifications=5) with NO shipping stage.
+    #    (It has a *non-shipping* stage, which should be ignored).
+    #    EXPECTED: Feature notifications reset to 0. Non-shipping stage untouched.
+    #    No Activity created.
+    self.feature_stale_no_stage = FeatureEntry(
+        id=204, name='Stale w/ No Shipping Stage', summary='summary', category=1,
+        feature_type=0,
+        outstanding_notifications=5)
+    self.milestones_3 = MilestoneSet(desktop_first=111)
+    self.stage_stale_wrong_type = Stage(
+        id=304, feature_id=204, stage_type=150,
+        milestones=self.milestones_3)
+
+    # 5. Non-stale feature (notifications=3) with milestones.
+    #    EXPECTED: IGNORED. Feature and Stage untouched.
+    self.feature_not_stale = FeatureEntry(
+        id=205, name='Not Stale w/ Milestones', summary='summary', category=1,
+        feature_type=3,
+        outstanding_notifications=3)
+    self.milestones_4 = MilestoneSet(desktop_first=222)
+    self.stage_not_stale = Stage(
+        id=305, feature_id=205, stage_type=460,
+        milestones=self.milestones_4)
+
+    # 6. Non-stale feature (notifications=0) with milestones.
+    #    EXPECTED: IGNORED. Feature and Stage untouched.
+    self.feature_zero = FeatureEntry(
+        id=206, name='Zero Notifications w/ Milestones', summary='summary', category=1,
+        feature_type=0,
+        outstanding_notifications=0)
+    self.milestones_5 = MilestoneSet(desktop_first=333)
+    self.stage_zero = Stage(
+        id=306, feature_id=206, stage_type=160,
+        milestones=self.milestones_5)
+
+    ndb.put_multi([
+        self.feature_stale_reset, self.stage_stale_reset,
+        self.feature_boundary_reset, self.stage_boundary_reset,
+        self.feature_stale_no_milestones, self.stage_stale_no_milestones,
+        self.feature_stale_no_stage, self.stage_stale_wrong_type,
+        self.feature_not_stale, self.stage_not_stale,
+        self.feature_zero, self.stage_zero
+    ])
+
+  def tearDown(self):
+    for kind in [Stage, FeatureEntry, Activity]:
+      for entity in kind.query():
+        entity.key.delete()
+
+  @mock.patch('framework.basehandlers.FlaskHandler.require_cron_header')
+  def test_get_template_data__resets_stale_features_and_milestones(
+      self, mock_require_cron):
+    """Should reset counters and milestones for features >= 4, ignore others."""
+    result = self.handler.get_template_data()
+
+    mock_require_cron.assert_called_once()
+
+    # Features 201, 202, 203, and 204 should be reset.
+    self.assertEqual('4 features with shipping milestones reset.', result)
+
+    # 1. Check Stale feature (notifications=5) w/ milestones
+    self.assertEqual(0, self.feature_stale_reset.outstanding_notifications)
+    self.assertIsNone(self.stage_stale_reset.milestones.desktop_first)
+    self.assertIsNone(self.stage_stale_reset.milestones.android_first)
+    self.assertIsNone(self.stage_stale_reset.milestones.ios_first)
+    self.assertIsNone(self.stage_stale_reset.milestones.webview_first)
+
+    # 2. Check Stale feature (notifications=4, boundary) w/ milestones
+    self.assertEqual(0, self.feature_boundary_reset.outstanding_notifications)
+    self.assertIsNone(self.stage_boundary_reset.milestones.desktop_first)
+
+    # 3. Check Stale feature (notifications=5) w/ NO milestones
+    self.assertEqual(0, self.feature_stale_no_milestones.outstanding_notifications)
+    self.assertIsNone(self.stage_stale_no_milestones.milestones)
+
+    # 4. Check Stale feature (notifications=5) w/ NO shipping stage
+    self.assertEqual(0, self.feature_stale_no_stage.outstanding_notifications)
+    self.assertEqual(111, self.stage_stale_wrong_type.milestones.desktop_first)
+
+    # 5. Check Non-stale feature (notifications=3)  is ignored.
+    self.assertEqual(3, self.feature_not_stale.outstanding_notifications)
+    self.assertEqual(222, self.stage_not_stale.milestones.desktop_first)
+
+    # 6. Check Non-stale feature (notifications=0) is ignored
+    self.assertEqual(0, self.feature_zero.outstanding_notifications)
+    self.assertEqual(333, self.stage_zero.milestones.desktop_first)
+
+    # Check that Activity and Amendment entities were created
+    activities = Activity.query().fetch()
+    # Only features 201 and 202 should have generated an activity
+    self.assertEqual(2, len(activities))
+
+    # Check Activity for Feature 201
+    act_201 = Activity.query(Activity.feature_id == 201).get()
+    self.assertIsNotNone(act_201)
+    self.assertEqual(
+        'Shipping milestones were unset due to failure to verify accuracy.',
+        act_201.content)
+    # Sort amendments to have a stable test
+    amends_201 = sorted(act_201.amendments, key=lambda a: a.field_name)
+    self.assertEqual(2, len(amends_201))
+    self.assertEqual('android_first', amends_201[0].field_name)
+    self.assertEqual('456', amends_201[0].old_value)
+    self.assertIsNone(amends_201[0].new_value)
+    self.assertEqual('desktop_first', amends_201[1].field_name)
+    self.assertEqual('141', amends_201[1].old_value)
+    self.assertIsNone(amends_201[1].new_value)
+
+    # Check Activity for Feature 202
+    act_202 = Activity.query(Activity.feature_id == 202).get()
+    self.assertIsNotNone(act_202)
+    self.assertEqual(1, len(act_202.amendments))
+    self.assertEqual('desktop_first', act_202.amendments[0].field_name)
+    self.assertEqual('789', act_202.amendments[0].old_value)
+    self.assertIsNone(act_202.amendments[0].new_value)
