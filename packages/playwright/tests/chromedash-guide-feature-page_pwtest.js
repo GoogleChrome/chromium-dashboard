@@ -21,7 +21,7 @@ test.afterEach(async ({ page }) => {
 
 
 test('add an origin trial stage', async ({ page }) => {
-  // Safest way to work with a unique feature is to create it.
+    // Safest way to work with a unique feature is to create it.
     await createNewFeature(page);
 
     // Expand the "Start incubating" panel to scroll the history section away from the dialog we're testing.
