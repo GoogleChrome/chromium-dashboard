@@ -89,21 +89,16 @@ test('test semantic checks', async ({ page }) => {
 
 
 test('enter blink component', async ({ page }) => {
-  console.log('ebc 1');
   await gotoNewFeaturePage(page);
-  console.log('ebc 2');
 
   // Scroll to blink components field.
   const blinkComponentsField = page.locator('chromedash-form-field[name=blink_components]');
   await blinkComponentsField.scrollIntoViewIfNeeded();
   await expect(blinkComponentsField).toBeVisible();
-  console.log('ebc 3');
 
   await enterBlinkComponent(page);
-  console.log('ebc 4');
 
   await expect(page).toHaveScreenshot('blink-components.png');
-  console.log('ebc 5');
 });
 
 test('enter web feature id', async ({ page }) => {
@@ -122,7 +117,6 @@ test('enter web feature id', async ({ page }) => {
 
 test('create new feature', async ({ page }) => {
   await createNewFeature(page);
-  console.log(111);
 
   // Screenshot of this new feature.
   await expect(page).toHaveScreenshot('new-feature-created.png', {

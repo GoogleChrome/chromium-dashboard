@@ -336,7 +336,6 @@ export async function enterWebFeatureId(page) {
  */
 export async function createNewFeature(page) {
   await gotoNewFeaturePage(page);
-  console.log(222);
   // Enter feature name
   const featureNameInput = page.locator('input[name="name"]');
   await featureNameInput.fill('Test feature name');
@@ -344,28 +343,22 @@ export async function createNewFeature(page) {
   // Enter summary description
   const summaryInput = page.locator('textarea[name="summary"]');
   await summaryInput.fill('Test summary description');
-  console.log(333);
 
   await enterBlinkComponent(page);
   await enterWebFeatureId(page);
-  console.log(444);
 
   // Select feature type.
   const featureTypeRadioNew = page.locator('input[name="feature_type"][value="0"]');
   await featureTypeRadioNew.click();
-  console.log(555);
 
   // Submit the form.
   const submitButton = page.locator('input[type="submit"]');
   await submitButton.click();
-  console.log(66);
 
   // Wait until we are on the Feature page.
   await page.waitForURL('**/feature/*');
-  console.log(777);
   const detail = page.locator('chromedash-feature-detail');
   await expect(detail).toBeVisible({timeout: 30000});
-  console.log(888);
 }
 
 /**

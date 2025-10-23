@@ -46,12 +46,10 @@ test('test semantic checks', async ({ page }) => {
     await devTrialDesktopInput.blur(); // Must blur to trigger change event.
     await delay(500);
 
-  console.log('aaa');
     // Check that there is no error now for the dev trail milestone field
     const devTrailDesktopMilestoneLocator = page.locator('chromedash-form-field[name="dt_milestone_desktop_start"]');
     await expect(devTrailDesktopMilestoneLocator.locator('.check-warning')).toHaveCount(0);
 
-  console.log('aabbb');
     // Enter shipped desktop milestone of same number
     const shippedDesktopInput = page.locator('input[name="shipped_milestone"]');
     await shippedDesktopInput.fill('100');
@@ -63,7 +61,6 @@ test('test semantic checks', async ({ page }) => {
     await shippedAndroidInput.scrollIntoViewIfNeeded();
     await delay(500);
 
-  console.log('ccc');
     // Test that the error message is shown for invalid shipped date
     await expect(page).toHaveScreenshot('shipped-desktop-error.png');
 
@@ -71,7 +68,6 @@ test('test semantic checks', async ({ page }) => {
     await shippedDesktopInput.fill('');
     await shippedDesktopInput.blur(); // Must blur to trigger change event.
     await delay(500);
-  console.log('ddd');
 
     // Check that there is no error now for the dev trail milestone field
     const shippedDesktopMilestoneLocator = page.locator('chromedash-form-field[name="shipped_milestone"]');
