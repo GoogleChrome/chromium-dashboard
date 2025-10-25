@@ -80,7 +80,9 @@ class ShippingFeaturesAPITest(testing_config.CustomTestCase):
     self.feature_1 = FeatureEntry(
         id=1, name='Feature 1 (Complete)', summary='sum', category=1,
         feature_type=core_enums.FEATURE_TYPE_INCUBATE_ID,
-        finch_name='featureOneFinch', owner_emails=['owner@example.com'])
+        finch_name='featureOneFinch', owner_emails=['owner@example.com'],
+        bug_url='https://example.com/bug1',
+        launch_bug_url='https://example.com/launch1')
     self.feature_1.put()
     stage_1 = Stage(
         id=101, feature_id=1, stage_type=160,  # Shipping stage
@@ -306,44 +308,68 @@ class ShippingFeaturesAPITest(testing_config.CustomTestCase):
     # feature_1 is complete.
     # feature_5 is a PSA that bypasses checks.
     # feature_8 is enabled in the mock .cc file.
+
+    # Check that the right features are present by checking their URLs
+    complete_urls = {f['chromestatus_url'] for f in complete_features}
     expected_complete_urls = {
         'http://localhost/feature/1',
         'http://localhost/feature/5',
         'http://localhost/feature/8'
     }
-    self.assertEqual(set(complete_features), expected_complete_urls)
+    self.assertEqual(complete_urls, expected_complete_urls)
+
+    # Spot-check the data structure of a complete feature (Feature 1)
+    feature_1_info = next(
+        f for f in complete_features if f['name'] == self.feature_1.name)
+    self.assertIsNotNone(feature_1_info)
+    self.assertEqual(feature_1_info['tracking_bug_url'], 'https://example.com/bug1')
+    self.assertEqual(feature_1_info['launch_bug_url'], 'https://example.com/launch1')
+    self.assertEqual(feature_1_info['finch_name'], 'featureOneFinch')
+    self.assertEqual(feature_1_info['owner_emails'], ['owner@example.com'])
+    self.assertEqual(feature_1_info['intent_to_ship'], 'https://example.com/intent1')
 
     # Verify Incomplete Features
     incomplete_features = response['incomplete_features']
     self.assertEqual(len(incomplete_features), 6)
 
+    # Create a map of {feature_name: [reasons]} for easier assertion
     incomplete_map = {
-        int(url.split('/')[-1]): reasons
-        for url, reasons in incomplete_features
+        f_info['name']: reasons
+        for f_info, reasons in incomplete_features
     }
+
+    # Spot-check the data structure of an incomplete feature (Feature 2)
+    self.assertIn(self.feature_2.name, incomplete_map)
+    feature_2_tuple = next(
+        t for t in incomplete_features if t[0]['name'] == self.feature_2.name)
+    feature_2_info = feature_2_tuple[0]
+    self.assertEqual(feature_2_info['chromestatus_url'], 'http://localhost/feature/2')
+    self.assertEqual(feature_2_info['finch_name'], 'feature2-finch')
+    self.assertEqual(feature_2_info['intent_to_ship'], 'https://example.com/intent2')
+
+    # Check the reasons for incompleteness for all 6 features
     # Feature 2: Missing LGTM
-    self.assertIn(self.feature_2.key.id(), incomplete_map)
-    self.assertEqual(incomplete_map[self.feature_2.key.id()],
+    self.assertEqual(incomplete_map[self.feature_2.name],
                      ['lgtms', 'chromium_feature_not_found'])
     # Feature 3: Missing Intent to Ship
-    self.assertIn(self.feature_3.key.id(), incomplete_map)
-    self.assertEqual(incomplete_map[self.feature_3.key.id()],
+    self.assertIn(self.feature_3.name, incomplete_map)
+    self.assertEqual(incomplete_map[self.feature_3.name],
                      ['i2s', 'chromium_feature_not_found'])
     # Feature 4: Missing Finch name
-    self.assertIn(self.feature_4.key.id(), incomplete_map)
-    self.assertEqual(incomplete_map[self.feature_4.key.id()], ['finch_name'])
+    self.assertIn(self.feature_4.name, incomplete_map)
+    self.assertEqual(incomplete_map[self.feature_4.name], ['finch_name'])
     # Feature 7: Not stable in JSON
-    self.assertIn(self.feature_7.key.id(), incomplete_map)
+    self.assertIn(self.feature_7.name, incomplete_map)
     self.assertEqual(
-        incomplete_map[self.feature_7.key.id()], ['runtime_feature_not_stable'])
+        incomplete_map[self.feature_7.name], ['runtime_feature_not_stable'])
     # Feature 9: Not enabled in .cc file
-    self.assertIn(self.feature_9.key.id(), incomplete_map)
+    self.assertIn(self.feature_9.name, incomplete_map)
     self.assertEqual(
-        incomplete_map[self.feature_9.key.id()], ['content_feature_not_enabled'])
+        incomplete_map[self.feature_9.name], ['content_feature_not_enabled'])
     # Feature 10: Not found in Chromium files
-    self.assertIn(self.feature_10.key.id(), incomplete_map)
+    self.assertIn(self.feature_10.name, incomplete_map)
     self.assertEqual(
-        incomplete_map[self.feature_10.key.id()], ['chromium_feature_not_found'])
+        incomplete_map[self.feature_10.name], ['chromium_feature_not_found'])
 
     # Verify that the missing feature was logged
     mock_logging.assert_called_once_with('Feature 999 not found.')

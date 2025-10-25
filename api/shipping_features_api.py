@@ -31,9 +31,20 @@ from internals.core_models import FeatureEntry, Stage
 from internals.review_models import Gate, Vote
 
 
+class ShippingFeatureInfo(TypedDict):
+  name: str
+  chromestatus_url: str
+  tracking_bug_url: str
+  launch_bug_url: str
+  finch_name: str
+  non_finch_justification: str
+  owner_emails: list[str]
+  intent_to_ship: str
+
+
 class GetShippingFeaturesResponse(TypedDict):
-  complete_features: list[str]
-  incomplete_features: list[tuple[str, list[str]]]
+  complete_features: list[ShippingFeatureInfo]
+  incomplete_features: list[tuple[ShippingFeatureInfo, list[str]]]
 
 class Criteria(str, Enum):
   # Intent to Ship thread URL is missing.
@@ -133,8 +144,8 @@ class ShippingFeaturesAPI(basehandlers.EntitiesAPIHandler):
     enabled_features_json = json5.loads(enabled_features_file)
     content_features_file = utils.get_chromium_file(CONTENT_FEATURES_FILE)
 
-    complete_features: list[str] = []
-    incomplete_features: list[tuple[str, list[str]]] = []
+    complete_features: list[ShippingFeatureInfo] = []
+    incomplete_features: list[tuple[ShippingFeatureInfo, list[str]]] = []
     for stage in shipping_stages:
       criteria_missing: list[Criteria] = []
       feature: FeatureEntry | None = FeatureEntry.get_by_id(stage.feature_id)
@@ -144,19 +155,29 @@ class ShippingFeaturesAPI(basehandlers.EntitiesAPIHandler):
 
       chromestatus_url = (f'{self.request.scheme}://{self.request.host}'
                           f'/feature/{feature.key.integer_id()}')
+      feature_info: ShippingFeatureInfo = {
+        'name': feature.name,
+        'chromestatus_url': chromestatus_url,
+        'tracking_bug_url': feature.bug_url,
+        'launch_bug_url': feature.launch_bug_url,
+        'finch_name': feature.finch_name,
+        'non_finch_justification': feature.non_finch_justification,
+        'owner_emails': feature.owner_emails,
+        'intent_to_ship': stage.intent_thread_url,
+      }
 
       if feature.feature_type == FEATURE_TYPE_CODE_CHANGE_ID:
         # PSA features do not require intents or approvals.
-        complete_features.append(chromestatus_url)
+        complete_features.append(feature_info)
         continue
 
       api_owner_gate: Gate | None = Gate.query(
           Gate.stage_id == stage.key.integer_id(),
           Gate.gate_type == GATE_API_SHIP).get()
-      if api_owner_gate is None or api_owner_gate.state != Vote.APPROVED:
-        criteria_missing.append(Criteria.API_OWNER_LGTMS_MISSING)
       if not stage.intent_thread_url:
         criteria_missing.append(Criteria.INTENT_TO_SHIP_MISSING)
+      elif api_owner_gate is None or api_owner_gate.state != Vote.APPROVED:
+        criteria_missing.append(Criteria.API_OWNER_LGTMS_MISSING)
       if not feature.finch_name and not feature.non_finch_justification:
         criteria_missing.append(Criteria.FINCH_NAME_MISSING)
       if feature.finch_name:
@@ -167,10 +188,10 @@ class ShippingFeaturesAPI(basehandlers.EntitiesAPIHandler):
         ))
 
       if criteria_missing:
-        incomplete_features.append((chromestatus_url,
+        incomplete_features.append((feature_info,
                                     [c.value for c in criteria_missing]))
       else:
-        complete_features.append(chromestatus_url)
+        complete_features.append(feature_info)
 
     return {
       'complete_features': complete_features,
