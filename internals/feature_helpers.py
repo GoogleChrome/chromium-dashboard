@@ -438,16 +438,13 @@ def get_feature_names_by_ids(feature_ids: list[int],
     # Create ndb.Key objects for the batch operation
     needed_keys = [ndb.Key(FeatureEntry, fid) for fid in needed_ids]
 
-    features_future = FeatureEntry.query(
-        FeatureEntry.key.IN(needed_keys)
-      ).fetch_async()
-    features_list = features_future.get_result()
+    features_list: list[FeatureEntry | None] = ndb.get_multi(needed_keys)
 
     for fe in features_list:
       if fe and not fe.deleted:
         feature_id = fe.key.integer_id()
         result_dict[feature_id] = converters.feature_entry_to_json_tiny(fe)
-  
+
   if update_cache and needed_ids:
     to_cache = {}
     for feature_id in needed_ids:
@@ -491,15 +488,20 @@ def get_by_ids(feature_ids: list[int],
     # Create ndb.Key objects for the batch operation
     needed_keys = [ndb.Key(FeatureEntry, fid) for fid in needed_ids]
 
-    feature_futures = ndb.get_multi_async(needed_keys)
-    stages_future = Stage.query(
-      Stage.feature_id.IN(needed_ids), Stage.archived == False).fetch_async()
-    ndb.Future.wait_all(feature_futures + [stages_future])
+    # Get all features and stages asynchronously.
+    unformatted_features_future: list[ndb.Future] = ndb.get_multi_async(needed_keys)
+    stages_futures: list[ndb.Future] = []
+    for f_id in needed_ids:
+      stages_futures.append(Stage.query(
+        Stage.feature_id == f_id, Stage.archived == False
+      ).fetch_async())
 
-    unformatted_features = [f.get_result() for f in feature_futures]
-    stages_list = stages_future.get_result()
+    stages_list: list[Stage] = []
+    for stages_future in stages_futures:
+      stages_list.extend(stages_future.get_result())
     stages_dict = organize_all_stages_by_feature(stages_list)
 
+    unformatted_features = [uf.get_result() for uf in unformatted_features_future]
     for unformatted_feature in unformatted_features:
       if unformatted_feature and not unformatted_feature.deleted:
         feature_id = unformatted_feature.key.integer_id()
