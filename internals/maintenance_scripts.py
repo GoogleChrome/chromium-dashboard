@@ -1034,7 +1034,10 @@ class GenerateStaleFeaturesFile(FlaskHandler):
       shipping_stage_type = STAGE_TYPES_SHIPPING[f.feature_type]
       upcoming_ship_stages = Stage.query(
         Stage.feature_id == f.key.integer_id(),
-        Stage.stage_type == shipping_stage_type,
+        ndb.OR(
+          Stage.stage_type == STAGE_ENT_ROLLOUT,
+          Stage.stage_type == shipping_stage_type,
+        ),
         ndb.OR(
           Stage.milestones.desktop_first == current_milestone,
           Stage.milestones.android_first == current_milestone,

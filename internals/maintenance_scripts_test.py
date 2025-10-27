@@ -1372,16 +1372,17 @@ class GenerateStaleFeaturesFileTest(testing_config.CustomTestCase):
         outstanding_notifications=5) # Added for clarity
     self.feature_5.put()
 
-    # Feature 6: Stale, has notifications, but stage is not a shipping type.
-    # Should be EXCLUDED (due to stage_type).
+    # Feature 6: Stale, has notifications. Stage type is not the
+    # feature's shipping type (160), but it IS STAGE_ENT_ROLLOUT (mocked to 110).
+    # Should be INCLUDED (due to new OR condition).
     self.feature_6 = FeatureEntry(
         id=6, name='Stale Feature Non-Shipping Stage', summary='summary', category=1,
         feature_type=core_enums.FEATURE_TYPE_INCUBATE_ID,
         owner_emails=['owner6@example.com'], accurate_as_of=self.long_ago,
-        outstanding_notifications=5) # Added for clarity
+        outstanding_notifications=5)
     self.feature_6.put()
     self.stage_6 = Stage(
-        id=106, feature_id=6, stage_type=110,  # Not a shipping stage
+        id=106, feature_id=6, stage_type=1061,
         milestones=MilestoneSet(desktop_first=self.current_milestone))
     self.stage_6.put()
 
@@ -1412,10 +1413,16 @@ class GenerateStaleFeaturesFileTest(testing_config.CustomTestCase):
     mock_datetime.side_effect = lambda *args, **kw: datetime(*args, **kw)
 
     stale_features = self.handler._gather_stale_features(self.current_milestone)
-    self.assertEqual(len(stale_features), 2)
+
+    self.assertEqual(len(stale_features), 3)
 
     feature_ids = {f.key.integer_id() for f in stale_features}
-    self.assertEqual(feature_ids, {self.feature_1.key.integer_id(), self.feature_7.key.integer_id()})
+    expected_ids = {
+        self.feature_1.key.integer_id(),
+        self.feature_6.key.integer_id(),
+        self.feature_7.key.integer_id()
+    }
+    self.assertEqual(feature_ids, expected_ids)
 
   def test_generate_rows(self):
     """Should format feature data into correct feature and owner CSV rows."""
@@ -1553,27 +1560,28 @@ class GenerateStaleFeaturesFileTest(testing_config.CustomTestCase):
     feature_upload_call = mock_feature_blob.upload_from_string.call_args[0][0]
     feature_reader = list(csv.reader(StringIO(feature_upload_call), lineterminator='\n'))
 
-    self.assertEqual(len(feature_reader), 3)  # Header + 2 data rows
+    self.assertEqual(len(feature_reader), 4)
     self.assertEqual(feature_reader[0], [
         'id', 'current_milestone', 'name', 'chromestatus_url',
         'accurate_as_of', 'outstanding_notifications'
     ])
     feature_ids = {row[0] for row in feature_reader[1:]}
-    self.assertEqual(feature_ids, {'1', '7'})
+    self.assertEqual(feature_ids, {'1', '6', '7'})
 
     # Verify Owner CSV content
     owner_upload_call = mock_owner_blob.upload_from_string.call_args[0][0]
     owner_reader = list(csv.reader(StringIO(owner_upload_call), lineterminator='\n'))
 
-    self.assertEqual(len(owner_reader), 3)  # Header + 2 data rows
+    self.assertEqual(len(owner_reader), 4)
     self.assertEqual(owner_reader[0], ['id', 'owner_email'])
     expected_owners = [
         [str(self.feature_1.key.integer_id()), self.feature_1.owner_emails[0]],
+        [str(self.feature_6.key.integer_id()), self.feature_6.owner_emails[0]],
         [str(self.feature_7.key.integer_id()), self.feature_7.owner_emails[0]],
     ]
     self.assertCountEqual(owner_reader[1:], expected_owners)
 
-    self.assertEqual(result, '2 rows added to chromestatus-stale-features.csv')
+    self.assertEqual(result, '3 rows added to chromestatus-stale-features.csv')
 
 
 class ResetOutstandingNotificationsTest(testing_config.CustomTestCase):
