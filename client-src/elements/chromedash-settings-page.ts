@@ -89,6 +89,8 @@ export class ChromedashSettingsPage extends LitElement {
   }
 
   render() {
+    const submitButtonTitle = this.submitting ? 'Submitting...' : 'Submit';
+
     return html`
       <div id="subheader">
         <h2>User preferences</h2>
@@ -117,7 +119,7 @@ export class ChromedashSettingsPage extends LitElement {
               </tr>
             </tbody>
           </table>
-          <input type="submit" value="Submit" ?disabled=${this.submitting} />
+          <input type="submit" value=${submitButtonTitle} ?disabled=${this.submitting} />
         </form>
       </section>
       ${this.submitting

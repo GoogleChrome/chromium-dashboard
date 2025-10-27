@@ -316,6 +316,7 @@ export class ChromedashGuideStagePage extends LitElement {
   renderForm() {
     const formattedFeature = formatFeatureForEdit(this.feature);
     this.fieldValues.feature = this.feature;
+    const submitButtonTitle = this.submitting ? 'Submitting...' : 'Submit';
 
     return html`
       <form name="feature_form">
@@ -331,7 +332,7 @@ export class ChromedashGuideStagePage extends LitElement {
             id="submit-button"
             class="button"
             type="submit"
-            value="Submit"
+            value=${submitButtonTitle}
             ?disabled=${this.submitting}
           />
           <button
