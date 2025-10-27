@@ -76,7 +76,7 @@
     "@playwright/test": "1.56.0",
     "@rollup/plugin-babel": "^6.1.0",
     "@rollup/plugin-node-resolve": "^16.0.3",
-    "@rollup/plugin-typescript": "^12.1.4",
+    "@rollup/plugin-typescript": "^12.3.0",
     "@shoelace-style/shoelace": "^2.20.1",
     "@types/jest": "^30.0.0",
     "@types/node": "^24.9.0",
