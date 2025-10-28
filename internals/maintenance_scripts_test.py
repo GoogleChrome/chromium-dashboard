@@ -1373,7 +1373,7 @@ class GenerateStaleFeaturesFileTest(testing_config.CustomTestCase):
     self.feature_5.put()
 
     # Feature 6: Stale, has notifications. Stage type is not the
-    # feature's shipping type (160), but it IS STAGE_ENT_ROLLOUT (mocked to 110).
+    # feature's shipping type, but it IS STAGE_ENT_ROLLOUT.
     # Should be INCLUDED (due to new OR condition).
     self.feature_6 = FeatureEntry(
         id=6, name='Stale Feature Non-Shipping Stage', summary='summary', category=1,
