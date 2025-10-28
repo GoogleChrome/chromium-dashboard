@@ -138,7 +138,6 @@
  * @property {string[]} [devrel]
  * @property {string[]} [owners]
  * @property {boolean} [origintrial]
- * @property {boolean} [intervention]
  * @property {boolean} [prefixed]
  * @property {boolean} [flag]
  * @property {FeatureDictInnerBrowserStatus} status

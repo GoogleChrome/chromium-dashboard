@@ -583,7 +583,7 @@ ENABLED_BY_DEFAULT = 5
 DEPRECATED = 6
 REMOVED = 7
 ORIGIN_TRIAL = 8
-INTERVENTION = 9
+INTERVENTION = 9  # Deprecated: discouraged. https://github.com/GoogleChrome/chromium-dashboard/issues/3527
 ON_HOLD = 10
 NO_LONGER_PURSUING = 1000 # ensure it is at the bottom of the list
 

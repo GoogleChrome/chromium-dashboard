@@ -417,14 +417,14 @@ class FeaturesAPITest(testing_config.CustomTestCase):
     # At least one feature is present in milestone
     with test_app.test_request_context(self.request_path+'?milestone=1'):
       actual = self.handler.do_get()
-    self.assertEqual(7, len(actual['features_by_type']))
+    self.assertEqual(6, len(actual['features_by_type']))
     self.assertEqual(1, actual['total_count'])
     self.assertEqual(1, len(actual['features_by_type']['Enabled by default']))
 
     # No Feature is present in milestone
     with test_app.test_request_context(self.request_path+'?milestone=99'):
       actual = self.handler.do_get()
-    self.assertEqual(7, len(actual['features_by_type']))
+    self.assertEqual(6, len(actual['features_by_type']))
     self.assertEqual(0, actual['total_count'])
     self.assertEqual(0, len(actual['features_by_type']['Enabled by default']))
 
@@ -436,7 +436,7 @@ class FeaturesAPITest(testing_config.CustomTestCase):
     # No signed-in user
     with test_app.test_request_context(self.request_path+'?milestone=1'):
       actual = self.handler.do_get()
-    self.assertEqual(7, len(actual['features_by_type']))
+    self.assertEqual(6, len(actual['features_by_type']))
     self.assertEqual(0, actual['total_count'])
     self.assertEqual(0, len(actual['features_by_type']['Enabled by default']))
 
@@ -444,7 +444,7 @@ class FeaturesAPITest(testing_config.CustomTestCase):
     testing_config.sign_in('one@example.com', 123567890)
     with test_app.test_request_context(self.request_path+'?milestone=1'):
       actual = self.handler.do_get()
-    self.assertEqual(7, len(actual['features_by_type']))
+    self.assertEqual(6, len(actual['features_by_type']))
     self.assertEqual(0, actual['total_count'])
     self.assertEqual(0, len(actual['features_by_type']['Enabled by default']))
 
@@ -459,14 +459,14 @@ class FeaturesAPITest(testing_config.CustomTestCase):
     # Feature is present in milestone
     with test_app.test_request_context(self.request_path+'?milestone=1'):
       actual = self.handler.do_get()
-    self.assertEqual(7, len(actual['features_by_type']))
+    self.assertEqual(6, len(actual['features_by_type']))
     self.assertEqual(2, actual['total_count'])
     self.assertEqual(2, len(actual['features_by_type']['Enabled by default']))
 
     # Feature is not present in milestone
     with test_app.test_request_context(self.request_path+'?milestone=99'):
       actual = self.handler.do_get()
-    self.assertEqual(7, len(actual['features_by_type']))
+    self.assertEqual(6, len(actual['features_by_type']))
     self.assertEqual(0, actual['total_count'])
     self.assertEqual(0, len(actual['features_by_type']['Enabled by default']))
 

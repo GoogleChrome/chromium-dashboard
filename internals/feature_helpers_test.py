@@ -458,7 +458,6 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
         self.fe_2_stages_dict[260][0].key.integer_id()]
     expected_fe_2['finch_urls'] = ['https://example.com/finch']
     expected = {
-        'Browser Intervention': [],
         'Deprecated': [],
         'Enabled by default': [],
         'In developer trial (Behind a flag)': [],
@@ -593,7 +592,6 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
         'Enabled by default': [],
         'Deprecated': [],
         'Removed': [],
-        'Browser Intervention': [],
         'Stepped rollout': [],
         'Origin trial': [],
         'In developer trial (Behind a flag)': [],
@@ -613,13 +611,6 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
     actual = feature_helpers._group_by_roadmap_section(
         [fe], [], [], [])
     self.assertEqual(actual['Deprecated'], [fe])
-
-  def test_group_by_roadmap_section__intervention(self):
-    """A shipping feature with impl_status_chrome=INTERVENTION is here."""
-    fe = FeatureEntry(impl_status_chrome=INTERVENTION)
-    actual = feature_helpers._group_by_roadmap_section(
-        [fe], [], [], [])
-    self.assertEqual(actual['Browser Intervention'], [fe])
 
   def test_group_by_roadmap_section__enabled(self):
     """A shipping feature without a special case is here."""

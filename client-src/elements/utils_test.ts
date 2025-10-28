@@ -765,7 +765,6 @@ describe('isVerifiedWithinGracePeriod', () => {
           devrel: ['devrel1@example.com'],
           owners: ['owner1@example.com'],
           origintrial: true,
-          intervention: false,
           prefixed: false,
           flag: true,
           status: {
