@@ -12,7 +12,6 @@ const REMOVED_STATUS = ['Removed'];
 const DEPRECATED_STATUS = ['Deprecated', 'No longer pursuing'];
 const ORIGIN_TRIAL = ['Origin trial'];
 const DEPRECATION_TRIAL = ['Deprecation trial'];
-const BROWSER_INTERVENTION = ['Browser Intervention'];
 const NO_FEATURE_STRING = 'NO FEATURES ARE PLANNED FOR THIS MILESTONE YET';
 
 export interface TemplateContent {
@@ -343,18 +342,6 @@ export class ChromedashRoadmapMilestoneCard extends LitElement {
                     library="material"
                     name="extension"
                     class="experimental"
-                    data-tooltip
-                  ></sl-icon>
-                </span>
-              `
-            : nothing}
-          ${BROWSER_INTERVENTION.includes(shippingType)
-            ? html`
-                <span class="tooltip" title="Browser intervention">
-                  <sl-icon
-                    library="material"
-                    name="pan-tool"
-                    class="intervention"
                     data-tooltip
                   ></sl-icon>
                 </span>

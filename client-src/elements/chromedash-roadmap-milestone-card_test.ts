@@ -185,7 +185,6 @@ describe('chromedash-roadmap-milestone-card', () => {
         devrel: ['devrel1@example.com'],
         owners: ['owner1@example.com'],
         origintrial: true,
-        intervention: false,
         prefixed: false,
         flag: true,
         status: {
@@ -285,7 +284,6 @@ describe('chromedash-roadmap-milestone-card', () => {
         devrel: ['devrel-chromestatus-all@google.com'],
         owners: ['example@chromium.org'],
         origintrial: false,
-        intervention: false,
         prefixed: false,
         flag: false,
         status: {

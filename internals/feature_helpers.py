@@ -287,8 +287,7 @@ def get_in_milestone(milestone: int,
     _set_feature_fields_for_roadmap(
         features_by_type[IMPLEMENTATION_STATUS[ENABLED_BY_DEFAULT]] +
         features_by_type[IMPLEMENTATION_STATUS[DEPRECATED]] +
-        features_by_type[IMPLEMENTATION_STATUS[REMOVED]] +
-        features_by_type[IMPLEMENTATION_STATUS[INTERVENTION]],
+        features_by_type[IMPLEMENTATION_STATUS[REMOVED]],
         shipping_stages_by_fid)
 
     _set_feature_fields_for_roadmap(
@@ -319,7 +318,6 @@ def _group_by_roadmap_section(
   """Return a dict of roadmap sections with features belonging in each."""
   removed_features = []
   deprecated_features = []
-  intervention_features = []
   enabled_features = []
 
   # Push features to lists corresponding to the appropriate section
@@ -329,8 +327,6 @@ def _group_by_roadmap_section(
       removed_features.append(fe)
     elif fe.feature_type == FEATURE_TYPE_DEPRECATION_ID:
       deprecated_features.append(fe)
-    elif fe.impl_status_chrome == INTERVENTION:
-      intervention_features.append(fe)
     else:
       enabled_features.append(fe)
 
@@ -338,7 +334,6 @@ def _group_by_roadmap_section(
       IMPLEMENTATION_STATUS[ENABLED_BY_DEFAULT]: enabled_features,
       IMPLEMENTATION_STATUS[DEPRECATED]: deprecated_features,
       IMPLEMENTATION_STATUS[REMOVED]: removed_features,
-      IMPLEMENTATION_STATUS[INTERVENTION]: intervention_features,
       ROLLOUT_SECTION: rollout_features,
       IMPLEMENTATION_STATUS[ORIGIN_TRIAL]: origin_trial_features,
       IMPLEMENTATION_STATUS[BEHIND_A_FLAG]: dev_trial_features,

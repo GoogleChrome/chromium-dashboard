@@ -279,10 +279,10 @@ const MULTI_URL_FIELD_ATTRS: FieldAttrs = {
 };
 
 const SHIPPED_HELP_TXT = html` First milestone to ship with this status. Applies
-to: Enabled by default, Browser Intervention, Deprecated, and Removed.`;
+to: Enabled by default, Deprecated, and Removed.`;
 
 const SHIPPED_WEBVIEW_HELP_TXT = html` First milestone to ship with this status.
-Applies to Enabled by default, Browser Intervention, Deprecated, and Removed.`;
+Applies to Enabled by default, Deprecated, and Removed.`;
 
 // Map of specifications for all form fields.
 export const ALL_FIELDS: Record<string, Field> = {

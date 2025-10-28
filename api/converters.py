@@ -276,8 +276,7 @@ def _format_new_crbug_url(blink_components: Optional[list[str]],
       PROPOSED,
       IN_DEVELOPMENT,
       BEHIND_A_FLAG,
-      ORIGIN_TRIAL,
-      INTERVENTION):
+      ORIGIN_TRIAL):
     params.append('blocking=' + crbug_number)
   if owner_emails:
     params.append('cc=' + ','.join(owner_emails))
@@ -458,7 +457,6 @@ def feature_entry_to_json_verbose(
         'devrel': fe.devrel_emails or [],
         'owners': fe.owner_emails or [],
         'origintrial': fe.impl_status_chrome == ORIGIN_TRIAL,
-        'intervention': fe.impl_status_chrome == INTERVENTION,
         'prefixed': fe.prefixed,
         'flag': fe.impl_status_chrome == BEHIND_A_FLAG,
         'status': {
@@ -578,7 +576,6 @@ def feature_entry_to_json_basic(fe: FeatureEntry,
         'devrel': fe.devrel_emails or [],
         'owners': fe.owner_emails or [],
         'origintrial': fe.impl_status_chrome == ORIGIN_TRIAL,
-        'intervention': fe.impl_status_chrome == INTERVENTION,
         'prefixed': fe.prefixed,
         'flag': fe.impl_status_chrome == BEHIND_A_FLAG,
         'status': {

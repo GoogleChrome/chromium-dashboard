@@ -136,7 +136,6 @@ class FeatureDictInnerChromeBrowserInfo(TypedDict):
   devrel: list[str] | None
   owners: list[str] | None
   origintrial: bool | None
-  intervention: bool | None
   prefixed: bool | None
   flag: bool | None
   status: FeatureDictInnerBrowserStatus

@@ -622,7 +622,6 @@ export const IMPLEMENTATION_STATUS: Record<string, [number, string]> = {
   DEPRECATED: [6, 'Deprecated'],
   REMOVED: [7, 'Removed'],
   ORIGIN_TRIAL: [8, 'Origin trial'],
-  INTERVENTION: [9, 'Browser Intervention'],
   ON_HOLD: [10, 'On hold'],
   NO_LONGER_PURSUING: [1000, 'No longer pursuing'],
 };
