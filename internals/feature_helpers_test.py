@@ -368,7 +368,7 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
     self.assertEqual(
         ['feature a', 'feature c'],
         enabled_by_default)
-    self.assertEqual(7, len(actual))
+    self.assertEqual(6, len(actual))
 
     cache_key = '%s|%s|%s' % (
         FeatureEntry.DEFAULT_CACHE_KEY, 'milestone', 1)
@@ -652,7 +652,7 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
     """The roadmap does not include inactive feature entries."""
     for status in [
         PROPOSED, IN_DEVELOPMENT, BEHIND_A_FLAG, ENABLED_BY_DEFAULT,
-        DEPRECATED, REMOVED, ORIGIN_TRIAL, INTERVENTION]:
+        DEPRECATED, REMOVED, ORIGIN_TRIAL]:
       self.assertTrue(feature_helpers._should_appear_on_roadmap(
           FeatureEntry(impl_status_chrome=status)))
 
