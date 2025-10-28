@@ -488,7 +488,7 @@ const DEPRECATION_PLAN_FIELDS: MetadataFields = {
   sections: [
     {
       name: 'Write up deprecation plan',
-      fields: ['motivation', 'spec_link'],
+      fields: ['deprecation_motivation', 'spec_link'],
     },
   ],
 };
