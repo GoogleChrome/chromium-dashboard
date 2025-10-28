@@ -3,6 +3,7 @@ import SlTextarea from '@shoelace-style/shoelace/dist/components/textarea/textar
 import {customElement, property, state} from 'lit/decorators.js';
 import {autolink} from './utils.js';
 
+/* eslint-disable TS1238 */
 @customElement('chromedash-textarea')
 export class ChromedashTextarea extends SlTextarea {
   @property({type: Boolean})
