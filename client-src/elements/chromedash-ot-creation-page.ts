@@ -490,6 +490,7 @@ export class ChromedashOTCreationPage extends LitElement {
   renderForm() {
     this.fieldValues.feature = this.feature;
 
+    const submitButtonTitle = this.submitting ? 'Submitting...' : 'Submit';
     // OT creation page only has one section.
     const section = ORIGIN_TRIAL_CREATION_FIELDS.sections[0];
     return html`
@@ -520,7 +521,7 @@ export class ChromedashOTCreationPage extends LitElement {
             id="submit-button"
             class="button"
             type="submit"
-            value="Submit"
+            value=${submitButtonTitle}
             ?disabled=${this.submitting}
           />
           <button
