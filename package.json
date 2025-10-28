@@ -113,7 +113,7 @@
     "tar": ">=7.5.1",
     "trim-newlines": ">=5.0.0",
     "ts-lit-plugin": "^2.0.2",
-    "typescript": "^5.8.3"
+    "typescript": "^5.9.3"
   },
   "dependencies": {
     "@lit/task": "^1.0.3",
