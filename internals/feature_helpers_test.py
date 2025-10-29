@@ -22,6 +22,7 @@ from internals.core_enums import *
 from internals import feature_helpers
 from internals import stage_helpers
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
+from internals.review_models import Gate, Vote
 
 
 class FeatureHelpersTest(testing_config.CustomTestCase):
@@ -82,7 +83,7 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
         self.feature_4.key.integer_id())
 
   def tearDown(self):
-    for kind in [FeatureEntry, Stage]:
+    for kind in [FeatureEntry, Stage, Gate]:
       for entity in kind.query():
         entity.key.delete()
 
@@ -479,17 +480,70 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
         cached_test_feature,
         actual)
 
-  def test_get_in_milestone__non_enterprise_features(self):
-    """We can retrieve a list of features."""
+  def _create_wp_stages_and_gates(self):
     self.fe_1_stages_dict[160][0].milestones = MilestoneSet(desktop_first=1)
     self.fe_1_stages_dict[160][0].put()
+    self.g1 = Gate(feature_id=self.feature_1.key.integer_id(),
+                   stage_id=self.fe_1_stages_dict[160][0].key.integer_id(),
+                   gate_type=GATE_ENTERPRISE_SHIP,
+                   state=Vote.APPROVED)
+    self.g1.put()
     self.fe_2_stages_dict[260][0].milestones = MilestoneSet(desktop_last=2)
     self.fe_2_stages_dict[260][0].put()
+    self.g2 = Gate(feature_id=self.feature_2.key.integer_id(),
+                   stage_id=self.fe_2_stages_dict[260][0].key.integer_id(),
+                   gate_type=GATE_ENTERPRISE_SHIP,
+                   state=Vote.APPROVED)
+    self.g2.put()
     self.fe_3_stages_dict[360][0].milestones = MilestoneSet(ios_first=3)
     self.fe_3_stages_dict[360][0].put()
+    self.g3 = Gate(feature_id=self.feature_3.key.integer_id(),
+                   stage_id=self.fe_3_stages_dict[360][0].key.integer_id(),
+                   gate_type=GATE_ENTERPRISE_SHIP,
+                   state=Vote.APPROVED)
+    self.g3.put()
     self.fe_4_stages_dict[460][0].milestones = MilestoneSet(ios_last=4)
     self.fe_4_stages_dict[460][0].put()
+    self.g4 = Gate(feature_id=self.feature_4.key.integer_id(),
+                   stage_id=self.fe_4_stages_dict[460][0].key.integer_id(),
+                   gate_type=GATE_ENTERPRISE_SHIP,
+                   state=Vote.APPROVED)
+    self.g4.put()
 
+  def test_get_in_milestone__wp_need_enterprise_approval(self):
+    """We include WP features only if enterprise shipping gate is approved."""
+    self._create_wp_stages_and_gates()
+    cache_key = '%s|%s|%s' % (
+        FeatureEntry.DEFAULT_CACHE_KEY, 'release_notes_milestone', 1)
+    self.feature_1.enterprise_impact = ENTERPRISE_IMPACT_LOW
+    self.feature_1.put()
+    self.feature_2.enterprise_impact = ENTERPRISE_IMPACT_MEDIUM
+    self.feature_2.put()
+    self.feature_3.enterprise_impact = ENTERPRISE_IMPACT_HIGH
+    self.feature_3.put()
+    self.feature_4.enterprise_impact = ENTERPRISE_IMPACT_LOW
+    self.feature_4.put()
+
+    features = feature_helpers.get_features_in_release_notes(milestone=1)
+    self.assertEqual(4, len(features))
+    rediscache.delete(cache_key)
+
+    self.g1.state = Gate.PREPARING
+    self.g1.put()
+    self.g2.state = Vote.NEEDS_WORK
+    self.g2.put()
+    self.g3.gate_type = GATE_API_SHIP
+    self.g3.put()
+    self.g4.gate_type = GATE_ENTERPRISE_PLAN
+    self.g4.put()
+
+    features = feature_helpers.get_features_in_release_notes(milestone=1)
+    self.assertEqual(0, len(features))
+    rediscache.delete(cache_key)
+
+  def test_get_in_milestone__non_enterprise_features(self):
+    """We can retrieve a list of features."""
+    self._create_wp_stages_and_gates()
     cache_key = '%s|%s|%s' % (
         FeatureEntry.DEFAULT_CACHE_KEY, 'release_notes_milestone', 1)
 
