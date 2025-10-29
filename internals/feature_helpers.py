@@ -104,11 +104,14 @@ def _filter_out_wp_features_lacking_enterprise_approval(
   approved_enterprise_gates: list[Gate] = []
   if wp_feature_ids:
     approved_enterprise_gates = Gate.query(
-        Gate.feature_id.IN(wp_feature_ids),
-        Gate.gate_type == GATE_ENTERPRISE_SHIP).fetch()
+        # Use a range because the IN operator is limited to 30.  This gets
+        # extra Gates, but that doesn't matter.
+        Gate.feature_id >= min(wp_feature_ids),
+        Gate.feature_id <= max(wp_feature_ids),
+        Gate.gate_type == GATE_ENTERPRISE_SHIP,
+        Gate.state.IN(Gate.APPROVED_STATES)).fetch()
   approved_wp_feature_ids = {
-      g.feature_id for g in approved_enterprise_gates
-      if g.state in Gate.APPROVED_STATES}
+      g.feature_id for g in approved_enterprise_gates}
   result = [
       fe for fe in features
       if (fe.key.integer_id() not in wp_feature_ids or
@@ -118,7 +121,7 @@ def _filter_out_wp_features_lacking_enterprise_approval(
 
 def get_features_in_release_notes(milestone: int):
   cache_key = '%s|%s|%s' % (
-      FeatureEntry.DEFAULT_CACHE_KEY, 'release_notes_milestone', milestone)
+      FeatureEntry.SEARCH_CACHE_KEY, 'release_notes_milestone', milestone)
 
   cached_features = rediscache.get(cache_key)
   if cached_features:

@@ -514,7 +514,7 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
     """We include WP features only if enterprise shipping gate is approved."""
     self._create_wp_stages_and_gates()
     cache_key = '%s|%s|%s' % (
-        FeatureEntry.DEFAULT_CACHE_KEY, 'release_notes_milestone', 1)
+        FeatureEntry.SEARCH_CACHE_KEY, 'release_notes_milestone', 1)
     self.feature_1.enterprise_impact = ENTERPRISE_IMPACT_LOW
     self.feature_1.put()
     self.feature_2.enterprise_impact = ENTERPRISE_IMPACT_MEDIUM
@@ -545,7 +545,7 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
     """We can retrieve a list of features."""
     self._create_wp_stages_and_gates()
     cache_key = '%s|%s|%s' % (
-        FeatureEntry.DEFAULT_CACHE_KEY, 'release_notes_milestone', 1)
+        FeatureEntry.SEARCH_CACHE_KEY, 'release_notes_milestone', 1)
 
     # There is no breaking change
     features = feature_helpers.get_features_in_release_notes(milestone=1)
@@ -574,7 +574,7 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
     self.assertEqual(cached_result, features)
 
     cache_key = '%s|%s|%s' % (
-        FeatureEntry.DEFAULT_CACHE_KEY, 'release_notes_milestone', 3)
+        FeatureEntry.SEARCH_CACHE_KEY, 'release_notes_milestone', 3)
     features = feature_helpers.get_features_in_release_notes(milestone=3)
     self.assertEqual(2, len(features))
     self.assertEqual(
@@ -598,7 +598,7 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
     self.assertEqual(cached_result, features)
 
     cache_key = '%s|%s|%s' % (
-        FeatureEntry.DEFAULT_CACHE_KEY, 'release_notes_milestone', 1)
+        FeatureEntry.SEARCH_CACHE_KEY, 'release_notes_milestone', 1)
     features = feature_helpers.get_features_in_release_notes(milestone=1)
     self.assertEqual(2, len(features))
     self.assertEqual(
