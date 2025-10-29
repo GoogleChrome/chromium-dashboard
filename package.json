@@ -117,7 +117,6 @@
   },
   "dependencies": {
     "@lit/task": "^1.0.3",
-    "@polymer/iron-collapse": "^3.0.1",
     "@types/google.accounts": "^0.0.18",
     "@types/google.visualization": "^0.0.74",
     "dompurify": "^3.3.0",

@@ -1,7 +1,5 @@
-/** This is the entry file for rollup. It bundles all the web components: polymer-paper components and our own components */
-
-// polymer components
-import '@polymer/iron-collapse';
+/** This is the entry file for rollup. It bundles all the web components:
+    shoelace components and our own components */
 
 // Shoelace components
 // css is imported via _base.html in base.css, built by gulpfile.babel.js.
