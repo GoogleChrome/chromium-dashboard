@@ -1,0 +1,38 @@
+{% import 'email-styles.html' as styles %}
+<div style="{{styles.body}}">
+<div style="{{styles.branding}}">{{APP_TITLE}}</div>
+
+<div style="{{styles.content}} {{styles.content_alert}}">
+
+<section id="details" style="{{styles.section}}">
+  <h3>What Happened</h3>
+  <p>
+    This is an automated notification to inform you that the upcoming milestones
+    for your Chromestatus feature have been reset.
+  </p>
+
+  <h3>Reason for this Change</h3>
+  <p>
+    This action was taken because the accuracy of your feature's data was not
+    verified in response to our recent notifications.
+  </p>
+  <p>
+    To prevent this in the future, please respond to the accuracy
+    verification notifications sent by Chromestatus. This ensures your
+    milestones remain active and your feature's data remains accurate.
+  </p>
+</section>
+
+<section id="why-triggered" style="{{styles.section}}">
+  <h3>Next Steps</h3>
+  <p>
+    You can continue to edit and update your feature normally. Please visit your
+    feature page to make any necessary updates:
+  </p>
+  <div style="{{styles.button_div}}">
+    <a href="{{chromestatus_url}}" style="{{styles.button_a}}">View/Edit Your Feature</a>
+  </div>
+</section>
+
+</div>
+</div>
