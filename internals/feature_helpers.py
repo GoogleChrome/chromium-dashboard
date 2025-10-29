@@ -27,6 +27,7 @@ from framework.utils import get_current_milestone_info
 from internals.stage_helpers import organize_all_stages_by_feature
 from internals.core_enums import *
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
+from internals.review_models import Gate
 
 
 def filter_unlisted(feature_list: list[FeatureEntry]) -> list[FeatureEntry]:
@@ -94,9 +95,33 @@ def get_future_results(async_features: Future | None) -> list[FeatureEntry]:
     return []
   return async_features.result()
 
+
+def _filter_out_wp_features_lacking_enterprise_approval(
+    features: list[FeatureEntry]) -> list[FeatureEntry]:
+  """Take out any WP features that did not yet earn enterprise approval."""
+  wp_feature_ids = {fe.key.integer_id() for fe in features
+                    if fe.feature_type != FEATURE_TYPE_ENTERPRISE_ID}
+  approved_enterprise_gates: list[Gate] = []
+  if wp_feature_ids:
+    approved_enterprise_gates = Gate.query(
+        # Use a range because the IN operator is limited to 30.  This gets
+        # extra Gates, but that doesn't matter.
+        Gate.feature_id >= min(wp_feature_ids),
+        Gate.feature_id <= max(wp_feature_ids),
+        Gate.gate_type == GATE_ENTERPRISE_SHIP,
+        Gate.state.IN(Gate.APPROVED_STATES)).fetch()
+  approved_wp_feature_ids = {
+      g.feature_id for g in approved_enterprise_gates}
+  result = [
+      fe for fe in features
+      if (fe.key.integer_id() not in wp_feature_ids or
+          fe.key.integer_id() in approved_wp_feature_ids)]
+  return result
+
+
 def get_features_in_release_notes(milestone: int):
   cache_key = '%s|%s|%s' % (
-      FeatureEntry.DEFAULT_CACHE_KEY, 'release_notes_milestone', milestone)
+      FeatureEntry.SEARCH_CACHE_KEY, 'release_notes_milestone', milestone)
 
   cached_features = rediscache.get(cache_key)
   if cached_features:
@@ -140,21 +165,23 @@ def get_features_in_release_notes(milestone: int):
   prefetched_stages_dict = organize_all_stages_by_feature(prefetched_stages)
   logging.info('prefetched %r stages for %r features', len(prefetched_stages),
                len(feature_ids))
-  features = []
-  for f in get_future_results(features_future):
+  features: list[FeatureEntry] = get_future_results(features_future)
+  features = _filter_out_wp_features_lacking_enterprise_approval(features)
+  formatted_features = []
+  for fe in features:
     formatted_feature = converters.feature_entry_to_json_verbose(
-        f, prefetched_stages=prefetched_stages_dict.get(f.key.integer_id()))
-    features.append(dict(formatted_feature))
+        fe, prefetched_stages=prefetched_stages_dict.get(fe.key.integer_id()))
+    formatted_features.append(dict(formatted_feature))
   logging.info('finished converting features to dicts')
 
-  features = [f for f in filter_unlisted_formatted(features)
+  formatted_features = [f for f in filter_unlisted_formatted(formatted_features)
     if (f['first_enterprise_notification_milestone'] == None or
         f['first_enterprise_notification_milestone'] <= milestone)]
   logging.info('finished filtering')
 
-  rediscache.set(cache_key, features)
+  rediscache.set(cache_key, formatted_features)
   logging.info('finished storing in cache')
-  return filter_confidential_formatted(features)
+  return filter_confidential_formatted(formatted_features)
 
 
 def get_in_milestone(milestone: int,
