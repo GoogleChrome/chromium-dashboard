@@ -1275,7 +1275,7 @@ def post_comment_to_mailing_list(
   send_emails([email_task])
 
 
-class ResetShippingMilestonesNotifier(basehandlers.FlaskHandler):
+class ResetShippingMilestonesEmailHandler(basehandlers.FlaskHandler):
   """Notify about a feature's shipping and rollout milestones being reset."""
 
   IS_INTERNAL_HANDLER = True

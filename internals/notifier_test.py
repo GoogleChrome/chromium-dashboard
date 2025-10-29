@@ -1513,14 +1513,14 @@ class OTAutomatedProcessEmailHandlerTest(testing_config.CustomTestCase):
         TESTDATA['test_make_ot_process_email.html'])
 
 
-class OTAutomatedProcessEmailHandlerTest(testing_config.CustomTestCase):
+class ResetShippingMilestonesEmailHandlerTest(testing_config.CustomTestCase):
   def test_make_ot_process_email(self):
     body_data = {
       'chromestatus_url': 'https://chromestatus.com/feature/123',
       'APP_TITLE': 'Chrome Status Dev',
     }
     with test_app.app_context():
-      handler = notifier.ResetShippingMilestonesNotifier()
+      handler = notifier.ResetShippingMilestonesEmailHandler()
       email_task = handler.build_email(
         123,
         'Feature Name',
