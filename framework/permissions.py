@@ -153,8 +153,8 @@ def feature_edit_list(user: User) -> list[int]:
     return []
 
   # Query features to find which can be edited.
-  editable_feature_keys: list[ndb.Key] = feature_helpers.get_all(
-      filterby=('can_edit', user.email()), keys_only=True)
+  editable_feature_keys: list[ndb.Key] = feature_helpers.get_by_participant(
+      user.email())
   # Return a list of unique ids of features that can be edited.
   return list(set([fk.integer_id() for fk in editable_feature_keys]))
 

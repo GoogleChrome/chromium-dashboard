@@ -361,54 +361,23 @@ def _set_feature_fields_for_roadmap(
         s.finch_url for s in feature_trigger_stages if s.finch_url]
 
 
-def get_all(limit: Optional[int]=None,
-    order: str='-updated', filterby: Optional[tuple[str, Any]]=None,
-    update_cache: bool=False, keys_only: bool=False
- ) -> list[dict] | list[ndb.Key]:
-  """Return JSON dicts for entities that fit the filterby criteria.
+def get_by_participant(email: str) -> list[ndb.Key]:
+  """Return NDB keys of FeatureEntrys that the user can edit."""
+  CACHE_KEY = '%s|participant|%s' % (FeatureEntry.DEFAULT_CACHE_KEY, email)
+  result = rediscache.get(CACHE_KEY)
 
-  Because the cache may rarely have stale data, this should only be
-  used for displaying data read-only, not for populating forms or
-  procesing a POST to edit data.  For editing use case, load the
-  data from NDB directly.
-  """
-  KEY = '%s|%s|%s|%s' % (
-      FeatureEntry.DEFAULT_CACHE_KEY, order, limit, keys_only)
+  if result is None:
+    query = FeatureEntry.query()
+    query = query.filter(
+        FeatureEntry.deleted == False,
+        ndb.OR(FeatureEntry.owner_emails == email,
+               FeatureEntry.editor_emails == email,
+               FeatureEntry.creator_email == email,
+               FeatureEntry.spec_mentor_emails == email))
+    result = query.fetch(keys_only=True)
+    rediscache.set(CACHE_KEY, result)
+  return result
 
-  # TODO(ericbidelman): Support more than one filter.
-  if filterby is not None:
-    s = ('%s%s' % (filterby[0], filterby[1])).replace(' ', '')
-    KEY += '|%s' % s
-
-  feature_list = rediscache.get(KEY)
-
-  if feature_list is None or update_cache:
-    query = FeatureEntry.query().order(-FeatureEntry.updated) #.order('name')
-    query = query.filter(FeatureEntry.deleted == False)
-
-    # TODO(ericbidelman): Support more than one filter.
-    if filterby:
-      filter_type, comparator = filterby
-      if filter_type == 'can_edit':
-        # can_edit will check if the user has any access to edit the feature.
-        # This includes being an owner, editor, or the original creator
-        # of the feature.
-        query = query.filter(
-          ndb.OR(FeatureEntry.owner_emails == comparator,
-              FeatureEntry.editor_emails == comparator,
-              FeatureEntry.creator_email == comparator,
-              FeatureEntry.spec_mentor_emails == comparator))
-      else:
-        query = query.filter(getattr(FeatureEntry, filter_type) == comparator)
-
-    feature_list = query.fetch(limit, keys_only=keys_only)
-    if not keys_only:
-      feature_list = [
-          converters.feature_entry_to_json_basic(f) for f in feature_list]
-
-    rediscache.set(KEY, feature_list)
-
-  return feature_list
 
 def get_feature_names_by_ids(feature_ids: list[int],
                update_cache: bool=True) -> list[dict[str, Any]]:
