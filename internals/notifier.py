@@ -1279,7 +1279,7 @@ class ResetShippingMilestonesEmailHandler(basehandlers.FlaskHandler):
   """Notify about a feature's shipping and rollout milestones being reset."""
 
   IS_INTERNAL_HANDLER = True
-  EMAIL_TEMPLATE_PATH = '/reset-shipping-milestones-email.html'
+  EMAIL_TEMPLATE_PATH = 'reset-shipping-milestones-email.html'
 
   def process_post_data(self, **kwargs):
     self.require_task_header()
