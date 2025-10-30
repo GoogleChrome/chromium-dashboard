@@ -1273,3 +1273,35 @@ def post_comment_to_mailing_list(
       'html': html,
       }
   send_emails([email_task])
+
+
+class ResetShippingMilestonesEmailHandler(basehandlers.FlaskHandler):
+  """Notify about a feature's shipping and rollout milestones being reset."""
+
+  IS_INTERNAL_HANDLER = True
+  EMAIL_TEMPLATE_PATH = 'reset-shipping-milestones-email.html'
+
+  def process_post_data(self, **kwargs):
+    self.require_task_header()
+    feature_id = self.get_param('feature_id')
+    f = self.get_validated_entity(feature_id, FeatureEntry)
+    logging.info('Starting to notify about shipping/rollout milestone reset.')
+    send_emails([self.build_email(feature_id, f.name, f.owner_emails)])
+
+    return {'message': 'OK'}
+
+  def build_email(self, feature_id, feature_name, owner_emails):
+    body_data = {
+      'chromestatus_url': (f'https://chromestatus.com/feature/{feature_id}'),
+      'APP_TITLE': settings.APP_TITLE,
+    }
+    body = render_template(self.EMAIL_TEMPLATE_PATH, **body_data)
+
+    return {
+      'to': owner_emails,
+      'cc': OT_SUPPORT_EMAIL,
+      'subject': ('Shipping and Rollout milestones reset for ChromeStatus feature '
+                  f'({feature_name})'),
+      'reply_to': None,
+      'html': body,
+    }

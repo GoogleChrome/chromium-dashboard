@@ -1513,6 +1513,26 @@ class OTAutomatedProcessEmailHandlerTest(testing_config.CustomTestCase):
         TESTDATA['test_make_ot_process_email.html'])
 
 
+class ResetShippingMilestonesEmailHandlerTest(testing_config.CustomTestCase):
+  def test_make_ot_process_email(self):
+    body_data = {
+      'chromestatus_url': 'https://chromestatus.com/feature/123',
+      'APP_TITLE': 'Chrome Status Dev',
+    }
+    with test_app.app_context():
+      handler = notifier.ResetShippingMilestonesEmailHandler()
+      email_task = handler.build_email(
+        123,
+        'Feature Name',
+        ['owner1@example.com', 'owner2@example.com']
+      )
+      # TESTDATA.make_golden(email_task['html'], 'test_reset_shipping_milestones_email.html')
+      self.assertEqual(email_task['subject'],
+        'Shipping and Rollout milestones reset for ChromeStatus feature (Feature Name)')
+      self.assertEqual(email_task['html'],
+        TESTDATA['test_reset_shipping_milestones_email.html'])
+
+
 class FunctionsTest(testing_config.CustomTestCase):
 
   def setUp(self):
