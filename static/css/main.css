@@ -330,7 +330,7 @@ sl-skeleton {
   --default-border: 1px solid var(--sl-color-neutral-300);
   --card-background: white;
   --card-border: var(--default-border);
-  --shadow-color: var(--sl-color-neutral-100);
+  --shadow-color: var(--sl-color-neutral-200);
   --card-box-shadow: var(--shadow-color) 1px 1px 4px;
   --spot-card-border: 1px solid var(--dark-spot-color);
   --spot-card-box-shadow: none;
