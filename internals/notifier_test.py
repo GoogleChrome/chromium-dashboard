@@ -1528,7 +1528,7 @@ class ResetShippingMilestonesEmailHandlerTest(testing_config.CustomTestCase):
       )
       # TESTDATA.make_golden(email_task['html'], 'test_reset_shipping_milestones_email.html')
       self.assertEqual(email_task['subject'],
-        'Shipping and Rollout milestones reset for Chromestatus feature (Feature Name)')
+        'Shipping and Rollout milestones reset for ChromeStatus feature (Feature Name)')
       self.assertEqual(email_task['html'],
         TESTDATA['test_reset_shipping_milestones_email.html'])
 

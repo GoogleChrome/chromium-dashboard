@@ -1285,7 +1285,7 @@ class ResetShippingMilestonesEmailHandler(basehandlers.FlaskHandler):
     self.require_task_header()
     feature_id = self.get_param('feature_id')
     f = self.get_validated_entity(feature_id, FeatureEntry)
-    logging.info('Starting to notify about successful origin trial extension.')
+    logging.info('Starting to notify about shipping/rollout milestone reset.')
     send_emails([self.build_email(feature_id, f.name, f.owner_emails)])
 
     return {'message': 'OK'}
@@ -1300,7 +1300,7 @@ class ResetShippingMilestonesEmailHandler(basehandlers.FlaskHandler):
     return {
       'to': owner_emails,
       'cc': OT_SUPPORT_EMAIL,
-      'subject': ('Shipping and Rollout milestones reset for Chromestatus feature '
+      'subject': ('Shipping and Rollout milestones reset for ChromeStatus feature '
                   f'({feature_name})'),
       'reply_to': None,
       'html': body,
