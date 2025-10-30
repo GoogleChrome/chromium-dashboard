@@ -89,81 +89,28 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
 
     rediscache.flushall()
 
-  def test_get_all__normal(self):
-    """We can retrieve a list of all features with no filter."""
-    actual = feature_helpers.get_all(update_cache=True)
-    names = [f['name'] for f in actual]
-    self.assertEqual(
-        ['feature b', 'feature a', 'feature d', 'feature c'],
-        names)
-
-    self.feature_1.summary = 'revised summary'
-    self.feature_1.put()  # Changes updated field.
-    actual = feature_helpers.get_all(update_cache=True)
-    names = [f['name'] for f in actual]
-    self.assertEqual(
-        ['feature b', 'feature a', 'feature d', 'feature c'],
-        names)
-
-  def test_get_all__category(self):
-    """We can retrieve a list of all features of a given category."""
-    actual = feature_helpers.get_all(
-        filterby=('category', CSS), update_cache=True)
-    names = [f['name'] for f in actual]
-    self.assertEqual(
-        [],
-        names)
-
-    self.feature_1.category = CSS
-    self.feature_1.put()  # Changes updated field.
-    actual = feature_helpers.get_all(
-        filterby=('category', CSS), update_cache=True)
-    names = [f['name'] for f in actual]
-    self.assertEqual(
-        ['feature a'],
-        names)
-
-  def test_get_all__owner(self):
-    """We can retrieve a list of all features with a given owner."""
-    actual = feature_helpers.get_all(
-        filterby=('owner_emails', 'owner@example.com'), update_cache=True)
-    names = [f['name'] for f in actual]
-    self.assertEqual(
-        [],
-        names)
-
-    self.feature_1.owner_emails = ['owner@example.com']
-    self.feature_1.put()  # Changes updated field.
-    actual = feature_helpers.get_all(
-        filterby=('owner_emails', 'owner@example.com'), update_cache=True)
-    names = [f['name'] for f in actual]
-    self.assertEqual(
-        ['feature a'],
-        names)
-
-  def test_get_all__owner_unlisted(self):
-    """Unlisted features should still be visible to their owners."""
-    self.feature_2.unlisted = True
-    self.feature_2.owner_emails = ['feature_owner@example.com']
+  def test_get_by_participant(self):
+    """The people who are involve in a feature can edit it, others can't."""
+    self.feature_2.cc_emails = ['cc@example.com']
+    self.feature_2.editor_emails = ['editor@example.com']
     self.feature_2.put()
-    testing_config.sign_in('feature_owner@example.com', 1234567890)
-    actual = feature_helpers.get_all(update_cache=True)
-    names = [f['name'] for f in actual]
-    testing_config.sign_out()
-    self.assertEqual(
-      ['feature b', 'feature a', 'feature d', 'feature c'], names)
+    self.feature_3.creator_email = 'creator@example.com'
+    self.feature_3.put()
+    self.feature_4.spec_mentor_emails = ['mentor@example.com']
+    self.feature_4.put()
 
-  def test_get_all__editor_unlisted(self):
-    """Unlisted features should still be visible to feature editors."""
-    self.feature_2.unlisted = True
-    self.feature_2.editor_emails = ['feature_editor@example.com']
-    self.feature_2.put()
-    testing_config.sign_in("feature_editor@example.com", 1234567890)
-    actual = feature_helpers.get_all(update_cache=True)
-    names = [f['name'] for f in actual]
-    testing_config.sign_out()
-    self.assertEqual(
-      ['feature b', 'feature a', 'feature d', 'feature c'], names)
+    owner_keys = feature_helpers.get_by_participant('feature_owner@example.com')
+    self.assertEqual(4, len(owner_keys))
+    cc_keys = feature_helpers.get_by_participant('cc@example.com')
+    self.assertEqual([], cc_keys)
+    editor_keys = feature_helpers.get_by_participant('editor@example.com')
+    self.assertEqual([self.feature_2.key], editor_keys)
+    creator_keys = feature_helpers.get_by_participant('creator@example.com')
+    self.assertEqual([self.feature_3.key], creator_keys)
+    mentor_keys = feature_helpers.get_by_participant('mentor@example.com')
+    self.assertEqual([self.feature_4.key], mentor_keys)
+    other_keys = feature_helpers.get_by_participant('other@example.com')
+    self.assertEqual([], other_keys)
 
   def test_get_by_ids__empty(self):
     """A request to load zero features returns zero results."""
