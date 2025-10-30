@@ -96,7 +96,7 @@ export const ROADMAP_MILESTONE_CARD_CSS = [
       font-size: 10px;
       font-weight: bold;
       color: white;
-      background: var(--md-gray-900-alpha);
+      background: var(--sl-color-neutral-900);
     }
     .release {
       padding: 16px;

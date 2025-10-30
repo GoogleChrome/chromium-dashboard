@@ -201,7 +201,7 @@ describe('chromedash-continuity-id-dialog', () => {
     );
     assert.exists(icon);
     expect(icon!.getAttribute('style')).to.contain(
-      'color: var(--md-green-600)'
+      'color: var(--sl-color-success-600)'
     );
 
     // Error state
@@ -209,7 +209,9 @@ describe('chromedash-continuity-id-dialog', () => {
     await component.updateComplete;
     icon = component.shadowRoot!.querySelector('sl-icon[name="highlight_off"]');
     assert.exists(icon);
-    expect(icon!.getAttribute('style')).to.contain('color: var(--md-red-600)');
+    expect(icon!.getAttribute('style')).to.contain(
+      'color: var(--sl-color-error-600)'
+    );
   });
 
   describe('openIdVerificationDialog', () => {
