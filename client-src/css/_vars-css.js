@@ -29,9 +29,6 @@ export const VARS = css`
   --card-border: 1px solid #ddd;
   --card-box-shadow: rgba(0, 0, 0, 0.067) 1px 1px 4px;
 
-  --md-yellow-100: #FFF9C4;
-  --md-yellow-200: #FFF59D;
-
   /* App specific */
   --invalid-color: rgba(255,0,0,0.75);
   --content-padding: 16px;

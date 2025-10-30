@@ -60,7 +60,7 @@ class ChromedashStackRank extends LitElement {
         }
 
         #dropdown-selection:hover {
-          background: var(--md-gray-100-alpha);
+          background: var(--sl-color-neutral-100);
         }
 
         sl-button::part(base) {

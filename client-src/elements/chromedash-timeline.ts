@@ -73,7 +73,7 @@ class ChromedashTimeline extends LitElement {
         .callout {
           padding: var(--content-padding);
           margin-top: var(--content-padding);
-          background-color: var(--md-yellow-100);
+          background-color: var(--sl-color-warning-100);
           border-color: rgba(27, 31, 35, 0.15);
           line-height: 1.4;
         }
