@@ -101,10 +101,10 @@ export class ChromedashIdVerificationDialog extends LitElement {
           min-height: 1.2rem;
         }
         .success-message::part(form-control-help-text) {
-          color: var(--md-green-600);
+          color: var(--sl-color-success-600);
         }
         .error-message::part(form-control-help-text) {
-          color: var(--md-red-600);
+          color: var(--sl-color-error-600);
         }
 
         .footer-actions {
@@ -112,7 +112,7 @@ export class ChromedashIdVerificationDialog extends LitElement {
           justify-content: space-between;
           align-items: center;
           width: 100%;
-          border-top: 1px solid var(--md-gray-300);
+          border-top: 1px solid var(--sl-color-neutral-300);
           padding-top: 12px;
           margin-top: 24px;
         }
@@ -216,14 +216,14 @@ export class ChromedashIdVerificationDialog extends LitElement {
           library="material"
           slot="suffix"
           name="check_circle_outline"
-          style="color: var(--md-green-600);"
+          style="color: var(--sl-color-success-600);"
         ></sl-icon>`;
       case 'error':
         return html`<sl-icon
           library="material"
           slot="suffix"
           name="highlight_off"
-          style="color: var(--md-red-600);"
+          style="color: var(--sl-color-error-600);"
         ></sl-icon>`;
       default:
         return html``;

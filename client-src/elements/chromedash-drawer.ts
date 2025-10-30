@@ -14,14 +14,10 @@ export class ChromedashDrawer extends LitElement {
       ...SHARED_STYLES,
       css`
         :host {
-          --md-gray-100-alpha: hsla(0, 0%, 0%, 0.12);
-          --md-gray-700-alpha: hsla(0, 0%, 0%, 0.62);
-          --md-blue-900: #01579b;
-
-          --nav-link-color: var(--md-gray-700-alpha);
+          --nav-link-color: var(--sl-color-neutral-700);
           --nav-link-font-size: 16px;
-          --nav-link-hover-background: var(--md-gray-50-alpha);
-          --nav-link-active-color: var(--md-blue-900);
+          --nav-link-hover-background: var(--sl-color-neutral-100);
+          --nav-link-active-color: var(--sl-color-primary-900);
           --nav-link-active-background: var(--light-accent-color);
         }
         nav {
@@ -58,7 +54,7 @@ export class ChromedashDrawer extends LitElement {
           background: var(--nav-link-active-background);
         }
         nav [active]:hover {
-          background: var(--md-gray-100-alpha);
+          background: var(--sl-color-neutral-100);
         }
         hr {
           margin: 15px var(--content-padding-half);
