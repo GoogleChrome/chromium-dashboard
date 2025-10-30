@@ -240,11 +240,12 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
       self,
       stage_changes_list: list[dict[str, Any]],
       changed_fields: CHANGED_FIELDS_LIST_TYPE
-    ) -> list[Stage]:
+    ) -> tuple[list[Stage], bool]:
     """Update stage fields with changes provided in the PATCH request."""
     # TODO(DanielRyanSmith): This method should be updated to use the logic
     # for basehandlers.update_stage(). This logic is mostly duplicated otherwise.
     stages_to_store: list[Stage] = []
+    ship_milestones_were_updated = False
     for change_info in stage_changes_list:
       stage_was_updated = False
       # Check if valid ID is provided and fetch stage if it exists.
@@ -288,6 +289,15 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
         if form_field_name == 'rollout_milestone':
           self.update_field_value(stage, 'rollout_milestone', 'int', new_value)
 
+        # Track if any shipping milestones were updated so we know to reset
+        # outstanding notifications if so.
+        if (form_field_name == 'rollout_milestone' or
+            form_field_name == 'shipped_milestone' or
+            form_field_name == 'shipped_android_milestone' or
+            form_field_name == 'shipped_ios_milestone' or
+            form_field_name == 'shipped_webview_milestone'):
+          ship_milestones_were_updated = True
+
         self.update_field_value(milestones, field, field_type, new_value)
         changed_fields.append((form_field_name, old_value, new_value))
         stage_was_updated = True
@@ -300,8 +310,9 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
     if stages_to_store:
       ndb.put_multi(stages_to_store)
 
-    # Return the list of modified stages.
-    return stages_to_store
+    # Return the list of modified stages, and whether any shipping/rollout
+    # milestones were updated.
+    return stages_to_store, ship_milestones_were_updated
 
   def _patch_update_special_fields(
       self,
@@ -426,7 +437,12 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
 
     changed_fields: CHANGED_FIELDS_LIST_TYPE = []
     stage_ids = [s['id'] for s in body['stages'] if 'id' in s]
-    updated_stages = self._patch_update_stages(body['stages'], changed_fields)
+    updated_stages, ship_milestones_were_updated = self._patch_update_stages(
+      body['stages'], changed_fields)
+    # Reset outstanding notifications if the user updated any ship/rollout milestones.
+    if ship_milestones_were_updated:
+      feature.outstanding_notifications = 0
+
     self._patch_update_feature(
         feature, body['feature_changes'], updated_stages, changed_fields,
         stage_ids)

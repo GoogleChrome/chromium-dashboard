@@ -758,6 +758,92 @@ class FeaturesAPITest(testing_config.CustomTestCase):
     self.assertIsNotNone(self.feature_1.updated)
     self.assertEqual(self.feature_1.updater_email, 'admin@example.com')
 
+  def _setup_notification_test(self):
+    """Helper to sign in admin and set outstanding notifications."""
+    testing_config.sign_in('admin@example.com', 123567890)
+    self.feature_1.outstanding_notifications = 5
+    self.feature_1.put()
+
+  def _run_notification_test(
+      self, form_field_name, new_value, expected_notifications,
+      milestone_key='desktop_first'):
+    """Helper to run a patch test and check notifications."""
+    self._setup_notification_test()
+
+    request_body = {
+      'feature_changes': {
+        'id': self.feature_1_id,
+      },
+      'stages': [
+        {
+          'id': self.ship_stage_1_id,
+          milestone_key: {
+            'form_field_name': form_field_name,
+            'value': new_value,
+          },
+        },
+      ],
+    }
+    request_path = f'{self.request_path}/update'
+    with test_app.test_request_context(request_path, json=request_body):
+      response = self.handler.do_patch()
+
+    self.assertEqual(
+        {'message': f'Feature {self.feature_1_id} updated.'}, response)
+    self.assertEqual(
+        self.feature_1.outstanding_notifications, expected_notifications)
+
+  def test_patch__reset_notifications_on_rollout_milestone_change(self):
+    """Notifications are reset when 'rollout_milestone' is changed."""
+    self._run_notification_test(
+        'rollout_milestone', 101, 0, milestone_key='desktop_first')
+
+  def test_patch__reset_notifications_on_shipped_milestone_change(self):
+    """Notifications are reset when 'shipped_milestone' is changed."""
+    self._run_notification_test(
+        'shipped_milestone', 102, 0, milestone_key='desktop_first')
+
+  def test_patch__reset_notifications_on_shipped_android_milestone_change(self):
+    """Notifications are reset when 'shipped_android_milestone' is changed."""
+    self._run_notification_test(
+        'shipped_android_milestone', 103, 0, milestone_key='android_first')
+
+  def test_patch__reset_notifications_on_shipped_ios_milestone_change(self):
+    """Notifications are reset when 'shipped_ios_milestone' is changed."""
+    self._run_notification_test(
+        'shipped_ios_milestone', 104, 0, milestone_key='ios_first')
+
+  def test_patch__reset_notifications_on_shipped_webview_milestone_change(self):
+    """Notifications are reset when 'shipped_webview_milestone' is changed."""
+    self._run_notification_test(
+        'shipped_webview_milestone', 105, 0, milestone_key='webview_first')
+
+  def test_patch__no_reset_notifications_on_other_stage_field_change(self):
+    """Notifications are NOT reset for non-milestone stage fields."""
+    self._setup_notification_test()
+    new_intent_url = 'https://example.com/intent-notify-test'
+    request_body = {
+      'feature_changes': {
+        'id': self.feature_1_id,
+      },
+      'stages': [
+        {
+          'id': self.ship_stage_1_id,
+          'intent_thread_url': {
+            'form_field_name': 'intent_thread_url',
+            'value': new_intent_url,
+          },
+        },
+      ],
+    }
+    request_path = f'{self.request_path}/update'
+    with test_app.test_request_context(request_path, json=request_body):
+      response = self.handler.do_patch()
+
+    self.assertEqual(
+        {'message': f'Feature {self.feature_1_id} updated.'}, response)
+    updated_feature = FeatureEntry.get_by_id(self.feature_1_id)
+    self.assertEqual(updated_feature.outstanding_notifications, 5)
 
   @mock.patch('api.channels_api.construct_specified_milestones_details')
   def test_patch__enterprise_first_notice_wrong_non_enterprise_feature(self, mock_call):
