@@ -363,6 +363,8 @@ def feature_entry_to_json_verbose(
     'webdx_usecounter_enum': fe.webdx_usecounter_enum,
     'enterprise_feature_categories': fe.enterprise_feature_categories or [],
     'enterprise_product_category': fe.enterprise_product_category or ENTERPRISE_PRODUCT_CATEGORY_CHROME_BROWSER_UPDATE,
+    'is_releasenotes_content_reviewed': fe.is_releasenotes_content_reviewed,
+    'is_releasenotes_publish_ready': fe.is_releasenotes_publish_ready,
     'stages': stage_info['all_stages'],
     'accurate_as_of': _date_to_str(fe.accurate_as_of),
     'creator_email': fe.creator_email,
