@@ -48,6 +48,12 @@ export interface UserPermissions {
      * @type {boolean}
      * @memberof UserPermissions
      */
+    can_review_release_notes?: boolean;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof UserPermissions
+     */
     is_admin: boolean;
     /**
      * 
@@ -91,6 +97,7 @@ export function UserPermissionsFromJSONTyped(json: any, ignoreDiscriminator: boo
         'approvable_gate_types': json['approvable_gate_types'],
         'can_comment': json['can_comment'],
         'can_edit_all': json['can_edit_all'],
+        'can_review_release_notes': json['can_review_release_notes'] == null ? undefined : json['can_review_release_notes'],
         'is_admin': json['is_admin'],
         'email': json['email'],
         'editable_features': json['editable_features'],
@@ -107,6 +114,7 @@ export function UserPermissionsToJSON(value?: UserPermissions | null): any {
         'approvable_gate_types': value['approvable_gate_types'],
         'can_comment': value['can_comment'],
         'can_edit_all': value['can_edit_all'],
+        'can_review_release_notes': value['can_review_release_notes'],
         'is_admin': value['is_admin'],
         'email': value['email'],
         'editable_features': value['editable_features'],

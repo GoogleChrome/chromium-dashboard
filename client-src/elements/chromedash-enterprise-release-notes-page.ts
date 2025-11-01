@@ -147,10 +147,23 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
           margin: 1rem 0;
         }
 
-        .confidential {
-          background: var(--warning-background);
+        .labels {
+          margin-bottom: var(--content-padding-half);
+        }
+        .labels span {
           padding: var(--content-padding-quarter) var(--content-padding-half);
           border-radius: var(--pill-border-radius);
+          margin: 0 var(--content-padding-half) 0 0;
+        }
+        .confidential {
+          background: var(--warning-background);
+          font-weight: bold;
+        }
+        .reviewed {
+          background: var(--sl-color-blue-100);
+        }
+        .ready {
+          background: var(--success-background);
         }
 
         .toremove {
@@ -564,6 +577,12 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
     );
   }
 
+  userCanReview() {
+    return (
+      this.user && (this.user.is_admin || this.user.can_review_release_notes)
+    );
+  }
+
   startEditing(featureId) {
     const newEditing = new Set(this.editingFeatureIds);
     newEditing.add(featureId);
@@ -614,6 +633,22 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
       '#edit-confidential-' + f.id
     )!;
     addFieldValue('confidential', confidentialEl, f.confidential);
+    let reviewedEl: SlCheckbox = this.shadowRoot?.querySelector<SlCheckbox>(
+      '#edit-reviewed-' + f.id
+    )!;
+    addFieldValue(
+      'is_releasenotes_content_reviewed',
+      reviewedEl,
+      f.is_releasenotes_content_reviewed
+    );
+    let readyEl: SlCheckbox = this.shadowRoot?.querySelector<SlCheckbox>(
+      '#edit-ready-' + f.id
+    )!;
+    addFieldValue(
+      'is_releasenotes_publish_ready',
+      readyEl,
+      f.is_releasenotes_publish_ready
+    );
     let summaryEl: SlTextarea = this.shadowRoot?.querySelector<SlTextarea>(
       '#edit-summary-' + f.id
     )!;
@@ -702,27 +737,71 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
     return html``;
   }
 
-  renderConfidential(f: Feature): TemplateResult {
+  renderLabels(f: Feature): TemplateResult {
+    let confidentialLabel = html``;
     if (f.confidential) {
-      return html`<span class="confidential"
-        ><strong>CONFIDENTIAL</strong></span
-      >`;
-    } else {
-      return html``;
+      confidentialLabel = html`<span class="confidential">CONFIDENTIAL</span>`;
     }
+    let reviewedLabel = html``;
+    if (f.is_releasenotes_content_reviewed) {
+      reviewedLabel = html`<span class="reviewed"
+        >Release Notes Content Finalized</span
+      >`;
+    }
+    let readyLabel = html``;
+    if (f.is_releasenotes_publish_ready) {
+      readyLabel = html`<span class="ready">Ready for Publishing</span>`;
+    }
+    return html`<div class="labels">
+      ${confidentialLabel} ${reviewedLabel} ${readyLabel}
+    </div>`;
   }
 
-  renderEditableConfidential(f: Feature): TemplateResult {
-    return html`
-      <sl-checkbox
-        class="feature-confidential"
-        id="edit-confidential-${f.id}"
-        ?checked=${f.confidential}
-        size="small"
-      >
-        Confidential
-      </sl-checkbox>
+  renderEditableLabels(f: Feature): TemplateResult {
+    let confidentialBox = html`
+      <div>
+        <sl-checkbox
+          class="feature-confidential"
+          id="edit-confidential-${f.id}"
+          ?checked=${f.confidential}
+          size="small"
+        >
+          Confidential
+        </sl-checkbox>
+      </div>
     `;
+
+    let reviewedBox = html``;
+    if (this.userCanReview()) {
+      reviewedBox = html`
+        <div>
+          <sl-checkbox
+            class="feature-reviewed"
+            id="edit-reviewed-${f.id}"
+            ?checked=${f.is_releasenotes_content_reviewed}
+            size="small"
+          >
+            Release Notes Content Finalized
+          </sl-checkbox>
+        </div>
+      `;
+    }
+
+    let readyBox = html``;
+    if (this.userCanReview()) {
+      readyBox = html`<div>
+        <sl-checkbox
+          class="feature-ready"
+          id="edit-ready-${f.id}"
+          ?checked=${f.is_releasenotes_publish_ready}
+          size="small"
+        >
+          Ready for Publishing
+        </sl-checkbox>
+      </div> `;
+    }
+
+    return html`${confidentialBox} ${reviewedBox} ${readyBox}`;
   }
 
   renderFeatureName(f: Feature): TemplateResult {
@@ -906,9 +985,7 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
     const isEditing = this.editingFeatureIds.has(f.id);
     return html` <section class="feature">
       ${this.renderEditButton(f)}
-      ${isEditing
-        ? this.renderEditableConfidential(f)
-        : this.renderConfidential(f)}
+      ${isEditing ? this.renderEditableLabels(f) : this.renderLabels(f)}
       ${isEditing
         ? this.renderEditableFeatureName(f)
         : this.renderFeatureName(f)}

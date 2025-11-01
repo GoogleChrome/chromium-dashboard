@@ -373,6 +373,16 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
             feature.shipping_year = year
             has_updated = True
 
+    # Release notes flags get reset if a non-reviewer makes a change.
+    if ('name' in feature_changes or 'summary' in feature_changes and
+        not permissions.can_review_release_notes(self.get_current_user())):
+      if feature.is_releasenotes_content_reviewed:
+        feature.is_releasenotes_content_reviewed = False
+        changed_fields.append(('is_releasenotes_content_reviewed', True, False))
+      if feature.is_releasenotes_publish_ready:
+        feature.is_releasenotes_publish_ready = False
+        changed_fields.append(('is_releasenotes_publish_ready', True, False))
+
     # If any stages were mentioned, update active_stage_id.
     if stage_ids:
       stage_type_to_stage_ids = stage_helpers.get_feature_stage_ids(feature_id)

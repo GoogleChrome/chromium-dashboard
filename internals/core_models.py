@@ -101,6 +101,8 @@ class FeatureEntry(ndb.Model):  # Copy from Feature
   screenshot_links = ndb.StringProperty(repeated=True)
   first_enterprise_notification_milestone = ndb.IntegerProperty()
   enterprise_impact = ndb.IntegerProperty(default=ENTERPRISE_IMPACT_NONE)
+  is_releasenotes_content_reviewed = ndb.BooleanProperty(default=False)
+  is_releasenotes_publish_ready = ndb.BooleanProperty(default=False)
   breaking_change = ndb.BooleanProperty(default=False)
   confidential = ndb.BooleanProperty(default=False)
   shipping_year = ndb.IntegerProperty()

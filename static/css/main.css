@@ -332,6 +332,7 @@ sl-skeleton {
   --accordion-background: var(--sl-color-neutral-100);
   --accordion-color: var(--default-color);
   --accordion-border-radius: var(--border-radius);
+  --success-background: var(--sl-color-success-200);
   --warning-background: var(--sl-color-warning-200);
   --warning-color: var(--sl-color-neutral-900);
   --invalid-color: var(--sl-color-danger-700);

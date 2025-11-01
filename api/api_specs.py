@@ -45,6 +45,8 @@ FEATURE_FIELD_DATA_TYPES: FIELD_INFO_DATA_TYPE = [
   ('editor_emails', 'emails'),
   ('enterprise_feature_categories', 'split_str'),
   ('enterprise_product_category', 'int'),
+  ('is_releasenotes_content_reviewed', 'bool'),
+  ('is_releasenotes_publish_ready', 'bool'),
   ('ergonomics_risks', 'str'),
   ('explainer_links', 'links'),
   ('feature_notes', 'str'),
