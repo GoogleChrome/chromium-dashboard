@@ -210,7 +210,7 @@ def _parse_wpt_fyi_url(url: str) -> str:
   return path
 
 
-def get_file_contents(file_url: str) -> str:
+def get_wpt_file_contents(file_url: str) -> str:
   """
   Fetches the raw text contents of a single file from a wpt.fyi URL.
 
@@ -271,7 +271,7 @@ def _fetch_file_content(url: str) -> str | None:
     return None
 
 
-def get_directory_contents(dir_url: str) -> dict[str, str]:
+def get_wpt_directory_contents(dir_url: str) -> dict[str, str]:
   """
   Fetches the raw contents of all files in a GitHub directory concurrently.
   Ignores subdirectories.

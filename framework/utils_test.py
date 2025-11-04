@@ -301,7 +301,7 @@ class UtilsGitHubTests(unittest.TestCase):
   @mock.patch('framework.utils._parse_wpt_fyi_url')
   @mock.patch('framework.utils._get_github_headers')
   @mock.patch('framework.utils.requests.get')
-  def test_get_file_contents__success(
+  def test_get_wpt_file_contents__success(
       self, mock_requests_get, mock_get_headers, mock_parse_url, mock_get_token):
     """Should fetch and return file content on success."""
     mock_get_token.return_value = 'test_token'
@@ -320,7 +320,7 @@ class UtilsGitHubTests(unittest.TestCase):
 
     mock_requests_get.side_effect = [mock_api_response, mock_content_response]
 
-    content = utils.get_file_contents('https://wpt.fyi/results/dom/file.html')
+    content = utils.get_wpt_file_contents('https://wpt.fyi/results/dom/file.html')
 
     self.assertEqual(content, self.mock_file_content)
     mock_get_token.assert_called_once()
@@ -338,30 +338,30 @@ class UtilsGitHubTests(unittest.TestCase):
     mock_requests_get.assert_has_calls(expected_calls)
 
   @mock.patch('framework.utils.secrets.get_github_token')
-  def test_get_file_contents__no_token(self, mock_get_token):
+  def test_get_wpt_file_contents__no_token(self, mock_get_token):
     """Should return an empty string if no token is found."""
     mock_get_token.return_value = None
-    content = utils.get_file_contents('https://wpt.fyi/results/dom/file.html')
+    content = utils.get_wpt_file_contents('https://wpt.fyi/results/dom/file.html')
     self.assertEqual(content, '')
 
   @mock.patch('framework.utils.secrets.get_github_token')
   @mock.patch('framework.utils._parse_wpt_fyi_url')
   @mock.patch('framework.utils.logging.error')
-  def test_get_file_contents__parse_error(
+  def test_get_wpt_file_contents__parse_error(
       self, mock_logging, mock_parse_url, mock_get_token):
     """Should re-raise ValueError and log an error on URL parse failure."""
     mock_get_token.return_value = 'test_token'
     mock_parse_url.side_effect = ValueError('Bad URL')
 
     with self.assertRaises(ValueError):
-      utils.get_file_contents('bad_url')
+      utils.get_wpt_file_contents('bad_url')
     mock_logging.assert_called_once()
 
   @mock.patch('framework.utils.secrets.get_github_token')
   @mock.patch('framework.utils._parse_wpt_fyi_url')
   @mock.patch('framework.utils.requests.get')
   @mock.patch('framework.utils.logging.error')
-  def test_get_file_contents__api_request_fails(
+  def test_get_wpt_file_contents__api_request_fails(
       self, mock_logging, mock_requests_get, mock_parse_url, mock_get_token):
     """Should re-raise RequestException and log an error on API failure."""
     mock_get_token.return_value = 'test_token'
@@ -369,13 +369,13 @@ class UtilsGitHubTests(unittest.TestCase):
     mock_requests_get.side_effect = requests.exceptions.RequestException('Failed')
 
     with self.assertRaises(requests.exceptions.RequestException):
-      utils.get_file_contents('https://wpt.fyi/results/dom/file.html')
+      utils.get_wpt_file_contents('https://wpt.fyi/results/dom/file.html')
     mock_logging.assert_called_once()
 
   @mock.patch('framework.utils.secrets.get_github_token')
   @mock.patch('framework.utils._parse_wpt_fyi_url')
   @mock.patch('framework.utils.requests.get')
-  def test_get_file_contents__not_a_file(
+  def test_get_wpt_file_contents__not_a_file(
       self, mock_requests_get, mock_parse_url, mock_get_token):
     """Should raise ValueError if the API response is not type 'file'."""
     mock_get_token.return_value = 'test_token'
@@ -387,12 +387,12 @@ class UtilsGitHubTests(unittest.TestCase):
     mock_requests_get.return_value = mock_api_response
 
     with self.assertRaisesRegex(ValueError, 'URL does not point to a file'):
-      utils.get_file_contents('https://wpt.fyi/results/dom/dir')
+      utils.get_wpt_file_contents('https://wpt.fyi/results/dom/dir')
 
   @mock.patch('framework.utils.secrets.get_github_token')
   @mock.patch('framework.utils._parse_wpt_fyi_url')
   @mock.patch('framework.utils.requests.get')
-  def test_get_file_contents__no_download_url(
+  def test_get_wpt_file_contents__no_download_url(
       self, mock_requests_get, mock_parse_url, mock_get_token):
     """Should raise ValueError if the API response lacks a download_url."""
     mock_get_token.return_value = 'test_token'
@@ -404,14 +404,14 @@ class UtilsGitHubTests(unittest.TestCase):
     mock_requests_get.return_value = mock_api_response
 
     with self.assertRaisesRegex(ValueError, 'Could not find download_url'):
-      utils.get_file_contents('https://wpt.fyi/results/dom/file.html')
+      utils.get_wpt_file_contents('https://wpt.fyi/results/dom/file.html')
 
   @mock.patch('framework.utils.secrets.get_github_token')
   @mock.patch('framework.utils._parse_wpt_fyi_url')
   @mock.patch('framework.utils._get_github_headers')
   @mock.patch('framework.utils.requests.get')
   @mock.patch('framework.utils.concurrent.futures.ThreadPoolExecutor')
-  def test_get_directory_contents__success(
+  def test_get_wpt_directory_contents__success(
       self, mock_executor, mock_requests_get, mock_get_headers, mock_parse_url, mock_get_token):
     """Should fetch and return contents for all files in a directory."""
     mock_get_token.return_value = 'test_token'
@@ -429,7 +429,7 @@ class UtilsGitHubTests(unittest.TestCase):
     mock_map_results = [self.mock_file1_content, self.mock_file2_content]
     mock_executor.return_value.__enter__.return_value.map.return_value = mock_map_results
 
-    contents = utils.get_directory_contents('https://wpt.fyi/results/dom/events')
+    contents = utils.get_wpt_directory_contents('https://wpt.fyi/results/dom/events')
 
     # Check results
     expected_contents = {
@@ -457,16 +457,16 @@ class UtilsGitHubTests(unittest.TestCase):
     )
 
   @mock.patch('framework.utils.secrets.get_github_token')
-  def test_get_directory_contents__no_token(self, mock_get_token):
+  def test_get_wpt_directory_contents__no_token(self, mock_get_token):
     """Should return an empty dict if no token is found."""
     mock_get_token.return_value = None
-    contents = utils.get_directory_contents('https://wpt.fyi/results/dom/events')
+    contents = utils.get_wpt_directory_contents('https://wpt.fyi/results/dom/events')
     self.assertEqual(contents, {})
 
   @mock.patch('framework.utils.secrets.get_github_token')
   @mock.patch('framework.utils._parse_wpt_fyi_url')
   @mock.patch('framework.utils.requests.get')
-  def test_get_directory_contents__not_a_directory(
+  def test_get_wpt_directory_contents__not_a_directory(
       self, mock_requests_get, mock_parse_url, mock_get_token):
     """Should raise ValueError if the API response is not a list."""
     mock_get_token.return_value = 'test_token'
@@ -478,13 +478,13 @@ class UtilsGitHubTests(unittest.TestCase):
     mock_requests_get.return_value = mock_api_response
 
     with self.assertRaisesRegex(ValueError, 'URL does not point to a directory'):
-      utils.get_directory_contents('https://wpt.fyi/results/dom/file.html')
+      utils.get_wpt_directory_contents('https://wpt.fyi/results/dom/file.html')
 
   @mock.patch('framework.utils.secrets.get_github_token')
   @mock.patch('framework.utils._parse_wpt_fyi_url')
   @mock.patch('framework.utils.requests.get')
   @mock.patch('framework.utils.concurrent.futures.ThreadPoolExecutor')
-  def test_get_directory_contents__partial_failure(
+  def test_get_wpt_directory_contents__partial_failure(
       self, mock_executor, mock_requests_get, mock_parse_url, mock_get_token):
     """Should return only successfully fetched files if some downloads fail."""
     mock_get_token.return_value = 'test_token'
@@ -500,7 +500,7 @@ class UtilsGitHubTests(unittest.TestCase):
     mock_map_results = [self.mock_file1_content, None]
     mock_executor.return_value.__enter__.return_value.map.return_value = mock_map_results
 
-    contents = utils.get_directory_contents('https://wpt.fyi/results/dom/events')
+    contents = utils.get_wpt_directory_contents('https://wpt.fyi/results/dom/events')
 
     # Check results, only the successful file should be present
     expected_contents = {
