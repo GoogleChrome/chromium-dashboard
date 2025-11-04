@@ -195,6 +195,51 @@ class UtilsFunctionTests(unittest.TestCase):
     mock_logging_error.assert_called_once()
     mock_rediscache.set.assert_not_called()
 
+  def test_extract_wpt_fyi_results_urls(self):
+    """Tests the regex for finding wpt.fyi/results URLs."""
+    test_cases = {
+      # Input string (key): expected list of URLs (value)
+      'Example string with no URLs': [],
+      'Empty string': [],
+      'Invalid domain: https://google.com/results/foo': [],
+      'Invalid path: https://wpt.fyi/wrong/path/foo': [],
+      'Protocol relative: //wpt.fyi/results/foo': [],
+      'Malformed: https:wpt.fyi/results/foo': [],
+      'Path-less URL: https://wpt.fyi/results': [],
+
+      # Case: One URL with query
+      'https://wpt.fyi/results/fedcm/fedcm-error-attribute?label=experimental':
+        ['https://wpt.fyi/results/fedcm/fedcm-error-attribute'],
+
+      # Case: One URL, no query, embedded
+      'Random characters https://wpt.fyi/results/dom/historical.html other':
+        ['https://wpt.fyi/results/dom/historical.html'],
+
+      # Case: Two URLs, mixed http/https, one with query string
+      'https://wpt.fyi/results/a?q=1 and http://wpt.fyi/results/b':
+        ['https://wpt.fyi/results/a', 'http://wpt.fyi/results/b'],
+
+      # Case: URL at end of string
+      'Here is the URL: http://wpt.fyi/results/css/foo.css':
+        ['http://wpt.fyi/results/css/foo.css'],
+
+      # Case: URL with hash fragment
+      'Check https://wpt.fyi/results/css/bar.html#section1 for details':
+        ['https://wpt.fyi/results/css/bar.html#section1'],
+
+      # Case: Multiple URLs complex
+      ('See https://wpt.fyi/results/a?q=1 http://wpt.fyi/results/b and '
+       "'https://wpt.fyi/results/c.html?foo=bar#hash for info."):
+        ['https://wpt.fyi/results/a',
+         'http://wpt.fyi/results/b',
+         'https://wpt.fyi/results/c.html'],
+    }
+
+    for input_str, expected in test_cases.items():
+      with self.subTest(input=input_str):
+        actual = utils.extract_wpt_fyi_results_urls(input_str)
+        self.assertEqual(expected, actual)
+
 
 class UtilsGitHubTests(unittest.TestCase):
   """Tests for the GitHub fetching utility functions."""
@@ -329,9 +374,9 @@ class UtilsGitHubTests(unittest.TestCase):
 
     expected_calls = [
       mock.call(
-        f'{utils.WPT_GITHUB_API_URL}dom/file.html',
-        headers={'Authorization': 'Bearer test_token'},
-        params={'ref': 'master'}
+          f'{utils.WPT_GITHUB_API_URL}dom/file.html',
+          headers={'Authorization': 'Bearer test_token'},
+          params={'ref': 'master'}
       ),
       mock.call('https://raw.github.com/some/file.html')
     ]
