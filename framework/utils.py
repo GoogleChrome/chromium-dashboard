@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 # Copyright 2021 Google Inc.
 #
-# Licensed under the Apache License, Version 2.0 (the 'License')
+# Licensed under the Apache License, Version 2.0 (the "License")
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
 #     http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an 'AS IS' BASIS,
+# distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
@@ -55,11 +55,11 @@ def retry(tries, delay=1, backoff=2):
              delay*=backoff seconds.
   """
   if backoff <= 1:
-    raise ValueError('backoff must be greater than 1')
+    raise ValueError("backoff must be greater than 1")
   if tries < 0:
-    raise ValueError('tries must be 0 or greater')
+    raise ValueError("tries must be 0 or greater")
   if delay <= 0:
-    raise ValueError('delay must be greater than 0')
+    raise ValueError("delay must be greater than 0")
 
   def decorator(func):
     def wrapper(*args, **kwargs):
@@ -102,7 +102,7 @@ class _UTCTimeZone(datetime.tzinfo):
     def utcoffset(self, _dt):
         return _ZERO
     def tzname(self, _dt):
-        return 'UTC'
+        return "UTC"
     def dst(self, _dt):
         return _ZERO
 
@@ -163,7 +163,7 @@ def get_chromium_file(url: str) -> str:
         rediscache.set(url, content, time=1800)
     except (urllib.error.URLError, TypeError, ValueError) as e:
       logging.error(f'Could not fetch or parse file at {url}: {e}')
-      return ''
+      return ""
   return content
 
 
