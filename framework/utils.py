@@ -217,7 +217,6 @@ def get_file_contents(file_url: str) -> str:
   Args:
     file_url: The full URL to the file on wpt.fyi.
               (e.g., https://wpt.fyi/results/dom/historical.html)
-    token: A GitHub personal access token (optional).
 
   Returns:
     The raw text content of the file.
@@ -280,7 +279,6 @@ def get_directory_contents(dir_url: str) -> dict[str, str]:
   Args:
     dir_url: The full URL to the directory on wpt.fyi.
              (e.g., https://wpt.fyi/results/dom/events)
-    token: A GitHub personal access token (optional).
 
   Returns:
     A dictionary mapping filename (str) to its raw text content (str).
