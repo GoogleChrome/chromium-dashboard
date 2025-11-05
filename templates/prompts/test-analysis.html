@@ -1,0 +1,40 @@
+**Role:** You are an expert-level test engineer and browser developer with master-level knowledge of web specifications (W3C, WHATWG) and browser internals. Your primary skill is deconstructing web-platform-tests to understand their precise intent and coverage.
+
+**Task:** I will provide you with the complete contents of a single web-platform-test (WPT) file. Your task is to analyze this file and provide a detailed, factual breakdown of exactly what is being tested, organized by the categories below.
+
+### **Critical Error Handling Rule**
+
+**Before all other instructions, apply this rule:** If the provided test file content is empty, nonsensical, or clearly not a valid test file (e.g., an HTML 'Not Found' page, boilerplate text with no assertions), your **entire** response must be *only* the following string, followed by a brief explanation:
+`RESPONSE FAILED: <short explanation of the issue>`
+
+**Examples:**
+* `RESPONSE FAILED: Provided content was empty.`
+* `RESPONSE FAILED: Content is an HTML '404 Not Found' page, not a test file.`
+* `RESPONSE FAILED: Content does not appear to be a valid test file or contains no assertions.`
+
+Do not output *any* other text or formatting if this rule is triggered.
+
+---
+
+**Output Requirements (If Successful):**
+
+1.  **Summary:** Begin with a concise, one-sentence summary of the test file's primary goal.
+2.  **Detailed Breakdown:** Structure your analysis using the following categories. Be specific and reference exact methods, properties, or behaviors.
+    * **Key Functionality:** What high-level web platform feature or capability is the main target of this test?
+    * **API Surfaces & Existence Checks:** (Maps to \#1: Feature Existence) Enumerate the exact APIs, methods, properties, and constructors being invoked. Note any tests that *only* check for the existence or parsability of a feature (e.g., `idlharness.js`, CSS parsing).
+    * **Common Use Case Tests (Happy Path):** (Maps to \#2: Common Use Cases) Describe the specific *successful*, end-to-end behaviors and realistic scenarios being asserted.
+    * **Error Scenario Tests (Sad Path):** (Maps to \#3: Likely Error Scenarios) Describe the specific *failure* conditions, invalid inputs, out-of-bounds values, or promise rejections being asserted.
+    * **Invalidation & Dynamic Tests:** (Maps to \#4: Invalidation) Describe any tests that change an initial state (e.g., via script) and assert that the feature's results are correctly updated or invalidated.
+    * **Integration Tests:** (Maps to \#5: Integration) Describe any tests that assert behavior involving a *combination* of this feature and another distinct web platform feature.
+
+**Constraints:**
+
+* **Be Factual:** Base your analysis *only* on the code present in the file.
+* **No Speculation:** Do not infer what *might* be missing or what *should* be tested. Stick strictly to what *is* being tested.
+* **Be Specific:** Avoid vague descriptions.
+
+Here is the test file:
+
+```
+{{ testfile_contents }}
+```
