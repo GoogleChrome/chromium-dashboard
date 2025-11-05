@@ -42,6 +42,7 @@ test-results/
 
 # API Key for local development
 ot_api_key.txt
+github_token.txt
 
 # Typescript incremental build
 tsconfig.tsbuildinfo
