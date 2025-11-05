@@ -26,7 +26,6 @@ from google.cloud import ndb  # type: ignore
 RANDOM_KEY_LENGTH = 128
 RANDOM_KEY_CHARACTERS = string.ascii_letters + string.digits
 
-ot_api_key: str|None = None
 
 def make_random_key(length=RANDOM_KEY_LENGTH, chars=RANDOM_KEY_CHARACTERS):
   """Return a string with lots of random characters."""
@@ -149,6 +148,33 @@ def get_ot_api_key() -> str|None:
     if response:
       settings.OT_API_KEY = response.payload.data.decode("UTF-8")
       return settings.OT_API_KEY
+  return None
+
+
+def get_github_token() -> str|None:
+  """Obtain a token to be used for requests to the GitHub API."""
+  if settings.GITHUB_TOKEN is not None:
+    return settings.GITHUB_TOKEN
+
+  if settings.DEV_MODE or settings.UNIT_TEST_MODE:
+    # In dev or unit test mode, pull the token from a local file.
+    try:
+      with open(f'{settings.ROOT_DIR}/github_token.txt', 'r') as f:
+        settings.GITHUB_TOKEN = f.read().strip()
+        return settings.GITHUB_TOKEN
+    except:
+      logging.info('No key found locally for the GitHub API.')
+      return None
+  else:
+    # If in staging or prod, pull the token from the project secrets.
+    from google.cloud.secretmanager import SecretManagerServiceClient
+    client = SecretManagerServiceClient()
+    name = (f'{client.secret_path(settings.APP_ID, "GITHUB_TOKEN")}'
+            '/versions/latest')
+    response = client.access_secret_version(request={'name': name})
+    if response:
+      settings.GITHUB_TOKEN = response.payload.data.decode("UTF-8")
+      return settings.GITHUB_TOKEN
   return None
 
 

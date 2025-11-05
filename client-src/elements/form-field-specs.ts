@@ -128,7 +128,7 @@ const DOMAIN_NAME_REGEX: string = String.raw`(([A-Za-z0-9\-]+\.)+[A-Za-z]{2,6})`
 const LOCALHOST_REGEX: string = String.raw`(localhost|127\.0\.0\.1)`;
 const DOMAIN_REGEX: string =
   '(' + DOMAIN_NAME_REGEX + '|' + LOCALHOST_REGEX + ')';
-const ALPHANUMERIC_REGEX = String.raw`[a-zA-Z0-9]*`;
+const ALPHANUMERIC_REGEX = String.raw`[-_a-zA-Z0-9,]*`;
 
 const EMAIL_ADDRESS_REGEX: string = USER_REGEX + '@' + DOMAIN_NAME_REGEX;
 const GOOGLE_EMAIL_ADDRESS_REGEX: string = `${USER_REGEX}@google.com`;
