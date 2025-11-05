@@ -707,7 +707,7 @@ class TestDefaultController(BaseTestCase):
 
         Set the assignees for a gate.
         """
-        patch_gate_request = {"assignees":["assignees","assignees"],"survey_answers":{"launch_or_contact":"launch_or_contact","is_language_polyfill":True,"covers_errors":True,"is_api_polyfill":True,"covers_common_cases":True,"covers_integration":True,"covers_existance":True,"is_same_origin_css":True,"explanation":"explanation","covers_invalidation":True}}
+        patch_gate_request = {"assignees":["assignees","assignees"],"survey_answers":{"launch_or_contact":"launch_or_contact","is_language_polyfill":True,"covers_errors":True,"is_api_polyfill":True,"covers_existence":True,"covers_common_cases":True,"covers_integration":True,"is_same_origin_css":True,"explanation":"explanation","covers_invalidation":True}}
         headers = { 
             'Accept': 'application/json',
             'Content-Type': 'application/json',

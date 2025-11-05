@@ -166,7 +166,7 @@ class SurveyAnswers(ndb.Model):
   is_same_origin_css = ndb.BooleanProperty(default=False)
 
   # Questions from the test team.
-  covers_existance = ndb.BooleanProperty(default=False)
+  covers_existence = ndb.BooleanProperty(default=False)
   covers_common_cases = ndb.BooleanProperty(default=False)
   covers_errors = ndb.BooleanProperty(default=False)
   covers_invalidation = ndb.BooleanProperty(default=False)

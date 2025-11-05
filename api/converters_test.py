@@ -606,7 +606,7 @@ class GateConvertersTest(testing_config.CustomTestCase):
           'is_api_polyfill': False,
           'is_language_polyfill': True,
           'is_same_origin_css': False,
-          'covers_existance': False,
+          'covers_existence': False,
           'covers_common_cases': False,
           'covers_errors': False,
           'covers_invalidation': False,

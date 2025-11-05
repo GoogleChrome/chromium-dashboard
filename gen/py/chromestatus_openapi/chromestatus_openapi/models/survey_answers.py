@@ -12,7 +12,7 @@ class SurveyAnswers(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, is_language_polyfill=None, is_api_polyfill=None, is_same_origin_css=None, covers_existance=None, covers_common_cases=None, covers_errors=None, covers_invalidation=None, covers_integration=None, launch_or_contact=None, explanation=None):  # noqa: E501
+    def __init__(self, is_language_polyfill=None, is_api_polyfill=None, is_same_origin_css=None, covers_existence=None, covers_common_cases=None, covers_errors=None, covers_invalidation=None, covers_integration=None, launch_or_contact=None, explanation=None):  # noqa: E501
         """SurveyAnswers - a model defined in OpenAPI
 
         :param is_language_polyfill: The is_language_polyfill of this SurveyAnswers.  # noqa: E501
@@ -21,8 +21,8 @@ class SurveyAnswers(Model):
         :type is_api_polyfill: bool
         :param is_same_origin_css: The is_same_origin_css of this SurveyAnswers.  # noqa: E501
         :type is_same_origin_css: bool
-        :param covers_existance: The covers_existance of this SurveyAnswers.  # noqa: E501
-        :type covers_existance: bool
+        :param covers_existence: The covers_existence of this SurveyAnswers.  # noqa: E501
+        :type covers_existence: bool
         :param covers_common_cases: The covers_common_cases of this SurveyAnswers.  # noqa: E501
         :type covers_common_cases: bool
         :param covers_errors: The covers_errors of this SurveyAnswers.  # noqa: E501
@@ -40,7 +40,7 @@ class SurveyAnswers(Model):
             'is_language_polyfill': bool,
             'is_api_polyfill': bool,
             'is_same_origin_css': bool,
-            'covers_existance': bool,
+            'covers_existence': bool,
             'covers_common_cases': bool,
             'covers_errors': bool,
             'covers_invalidation': bool,
@@ -53,7 +53,7 @@ class SurveyAnswers(Model):
             'is_language_polyfill': 'is_language_polyfill',
             'is_api_polyfill': 'is_api_polyfill',
             'is_same_origin_css': 'is_same_origin_css',
-            'covers_existance': 'covers_existance',
+            'covers_existence': 'covers_existence',
             'covers_common_cases': 'covers_common_cases',
             'covers_errors': 'covers_errors',
             'covers_invalidation': 'covers_invalidation',
@@ -65,7 +65,7 @@ class SurveyAnswers(Model):
         self._is_language_polyfill = is_language_polyfill
         self._is_api_polyfill = is_api_polyfill
         self._is_same_origin_css = is_same_origin_css
-        self._covers_existance = covers_existance
+        self._covers_existence = covers_existence
         self._covers_common_cases = covers_common_cases
         self._covers_errors = covers_errors
         self._covers_invalidation = covers_invalidation
@@ -148,25 +148,25 @@ class SurveyAnswers(Model):
         self._is_same_origin_css = is_same_origin_css
 
     @property
-    def covers_existance(self) -> bool:
-        """Gets the covers_existance of this SurveyAnswers.
+    def covers_existence(self) -> bool:
+        """Gets the covers_existence of this SurveyAnswers.
 
 
-        :return: The covers_existance of this SurveyAnswers.
+        :return: The covers_existence of this SurveyAnswers.
         :rtype: bool
         """
-        return self._covers_existance
+        return self._covers_existence
 
-    @covers_existance.setter
-    def covers_existance(self, covers_existance: bool):
-        """Sets the covers_existance of this SurveyAnswers.
+    @covers_existence.setter
+    def covers_existence(self, covers_existence: bool):
+        """Sets the covers_existence of this SurveyAnswers.
 
 
-        :param covers_existance: The covers_existance of this SurveyAnswers.
-        :type covers_existance: bool
+        :param covers_existence: The covers_existence of this SurveyAnswers.
+        :type covers_existence: bool
         """
 
-        self._covers_existance = covers_existance
+        self._covers_existence = covers_existence
 
     @property
     def covers_common_cases(self) -> bool:

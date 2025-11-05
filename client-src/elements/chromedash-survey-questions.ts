@@ -197,7 +197,7 @@ export class ChromedashSurveyQuestions extends LitElement {
         Do your tests for this feature cover the following?
         <ol>
           ${this.renderBooleanField(
-            'covers_existance',
+            'covers_existence',
             html`<b>Feature existence</b>. This is typically done with
               surface-level tests like idlharness.js for APIs or
               parsing-testcommon.js for CSS. These tests don’t verify actual

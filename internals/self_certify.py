@@ -38,8 +38,8 @@ def update_survey_answers(gate: Gate, new_answers: OASurveyAnswers):
   if new_answers.is_same_origin_css is not None:
     answers.is_same_origin_css = new_answers.is_same_origin_css
 
-  if new_answers.covers_existance is not None:
-    answers.covers_existance = new_answers.covers_existance
+  if new_answers.covers_existence is not None:
+    answers.covers_existence = new_answers.covers_existence
   if new_answers.covers_common_cases is not None:
     answers.covers_common_cases = new_answers.covers_common_cases
   if new_answers.covers_errors is not None:
@@ -65,7 +65,7 @@ def is_privacy_eligible(answers: SurveyAnswers) -> bool:
 def is_testing_eligible(answers: SurveyAnswers) -> bool:
   """Return True if the answers allow self-certify for the Testing gate."""
   return (
-      answers.covers_existance and
+      answers.covers_existence and
       answers.covers_common_cases and
       answers.covers_errors and
       answers.covers_invalidation and

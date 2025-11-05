@@ -1325,9 +1325,9 @@ components:
           is_language_polyfill: true
           covers_errors: true
           is_api_polyfill: true
+          covers_existence: true
           covers_common_cases: true
           covers_integration: true
-          covers_existance: true
           is_same_origin_css: true
           explanation: explanation
           covers_invalidation: true
@@ -1439,9 +1439,9 @@ components:
         is_language_polyfill: true
         covers_errors: true
         is_api_polyfill: true
+        covers_existence: true
         covers_common_cases: true
         covers_integration: true
-        covers_existance: true
         is_same_origin_css: true
         explanation: explanation
         covers_invalidation: true
@@ -1455,8 +1455,8 @@ components:
         is_same_origin_css:
           title: is_same_origin_css
           type: boolean
-        covers_existance:
-          title: covers_existance
+        covers_existence:
+          title: covers_existence
           type: boolean
         covers_common_cases:
           title: covers_common_cases
@@ -1500,9 +1500,9 @@ components:
             is_language_polyfill: true
             covers_errors: true
             is_api_polyfill: true
+            covers_existence: true
             covers_common_cases: true
             covers_integration: true
-            covers_existance: true
             is_same_origin_css: true
             explanation: explanation
             covers_invalidation: true
@@ -1538,9 +1538,9 @@ components:
             is_language_polyfill: true
             covers_errors: true
             is_api_polyfill: true
+            covers_existence: true
             covers_common_cases: true
             covers_integration: true
-            covers_existance: true
             is_same_origin_css: true
             explanation: explanation
             covers_invalidation: true
@@ -1575,9 +1575,9 @@ components:
           is_language_polyfill: true
           covers_errors: true
           is_api_polyfill: true
+          covers_existence: true
           covers_common_cases: true
           covers_integration: true
-          covers_existance: true
           is_same_origin_css: true
           explanation: explanation
           covers_invalidation: true

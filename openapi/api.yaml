@@ -1149,7 +1149,7 @@ components:
           type: boolean
         is_same_origin_css:
           type: boolean
-        covers_existance:
+        covers_existence:
           type: boolean
         covers_common_cases:
           type: boolean
