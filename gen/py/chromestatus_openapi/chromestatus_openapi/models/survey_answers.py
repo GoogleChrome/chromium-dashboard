@@ -12,7 +12,7 @@ class SurveyAnswers(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, is_language_polyfill=None, is_api_polyfill=None, is_same_origin_css=None, launch_or_contact=None, explanation=None):  # noqa: E501
+    def __init__(self, is_language_polyfill=None, is_api_polyfill=None, is_same_origin_css=None, covers_existance=None, covers_common_cases=None, covers_errors=None, covers_invalidation=None, covers_integration=None, launch_or_contact=None, explanation=None):  # noqa: E501
         """SurveyAnswers - a model defined in OpenAPI
 
         :param is_language_polyfill: The is_language_polyfill of this SurveyAnswers.  # noqa: E501
@@ -21,6 +21,16 @@ class SurveyAnswers(Model):
         :type is_api_polyfill: bool
         :param is_same_origin_css: The is_same_origin_css of this SurveyAnswers.  # noqa: E501
         :type is_same_origin_css: bool
+        :param covers_existance: The covers_existance of this SurveyAnswers.  # noqa: E501
+        :type covers_existance: bool
+        :param covers_common_cases: The covers_common_cases of this SurveyAnswers.  # noqa: E501
+        :type covers_common_cases: bool
+        :param covers_errors: The covers_errors of this SurveyAnswers.  # noqa: E501
+        :type covers_errors: bool
+        :param covers_invalidation: The covers_invalidation of this SurveyAnswers.  # noqa: E501
+        :type covers_invalidation: bool
+        :param covers_integration: The covers_integration of this SurveyAnswers.  # noqa: E501
+        :type covers_integration: bool
         :param launch_or_contact: The launch_or_contact of this SurveyAnswers.  # noqa: E501
         :type launch_or_contact: str
         :param explanation: The explanation of this SurveyAnswers.  # noqa: E501
@@ -30,6 +40,11 @@ class SurveyAnswers(Model):
             'is_language_polyfill': bool,
             'is_api_polyfill': bool,
             'is_same_origin_css': bool,
+            'covers_existance': bool,
+            'covers_common_cases': bool,
+            'covers_errors': bool,
+            'covers_invalidation': bool,
+            'covers_integration': bool,
             'launch_or_contact': str,
             'explanation': str
         }
@@ -38,6 +53,11 @@ class SurveyAnswers(Model):
             'is_language_polyfill': 'is_language_polyfill',
             'is_api_polyfill': 'is_api_polyfill',
             'is_same_origin_css': 'is_same_origin_css',
+            'covers_existance': 'covers_existance',
+            'covers_common_cases': 'covers_common_cases',
+            'covers_errors': 'covers_errors',
+            'covers_invalidation': 'covers_invalidation',
+            'covers_integration': 'covers_integration',
             'launch_or_contact': 'launch_or_contact',
             'explanation': 'explanation'
         }
@@ -45,6 +65,11 @@ class SurveyAnswers(Model):
         self._is_language_polyfill = is_language_polyfill
         self._is_api_polyfill = is_api_polyfill
         self._is_same_origin_css = is_same_origin_css
+        self._covers_existance = covers_existance
+        self._covers_common_cases = covers_common_cases
+        self._covers_errors = covers_errors
+        self._covers_invalidation = covers_invalidation
+        self._covers_integration = covers_integration
         self._launch_or_contact = launch_or_contact
         self._explanation = explanation
 
@@ -121,6 +146,111 @@ class SurveyAnswers(Model):
         """
 
         self._is_same_origin_css = is_same_origin_css
+
+    @property
+    def covers_existance(self) -> bool:
+        """Gets the covers_existance of this SurveyAnswers.
+
+
+        :return: The covers_existance of this SurveyAnswers.
+        :rtype: bool
+        """
+        return self._covers_existance
+
+    @covers_existance.setter
+    def covers_existance(self, covers_existance: bool):
+        """Sets the covers_existance of this SurveyAnswers.
+
+
+        :param covers_existance: The covers_existance of this SurveyAnswers.
+        :type covers_existance: bool
+        """
+
+        self._covers_existance = covers_existance
+
+    @property
+    def covers_common_cases(self) -> bool:
+        """Gets the covers_common_cases of this SurveyAnswers.
+
+
+        :return: The covers_common_cases of this SurveyAnswers.
+        :rtype: bool
+        """
+        return self._covers_common_cases
+
+    @covers_common_cases.setter
+    def covers_common_cases(self, covers_common_cases: bool):
+        """Sets the covers_common_cases of this SurveyAnswers.
+
+
+        :param covers_common_cases: The covers_common_cases of this SurveyAnswers.
+        :type covers_common_cases: bool
+        """
+
+        self._covers_common_cases = covers_common_cases
+
+    @property
+    def covers_errors(self) -> bool:
+        """Gets the covers_errors of this SurveyAnswers.
+
+
+        :return: The covers_errors of this SurveyAnswers.
+        :rtype: bool
+        """
+        return self._covers_errors
+
+    @covers_errors.setter
+    def covers_errors(self, covers_errors: bool):
+        """Sets the covers_errors of this SurveyAnswers.
+
+
+        :param covers_errors: The covers_errors of this SurveyAnswers.
+        :type covers_errors: bool
+        """
+
+        self._covers_errors = covers_errors
+
+    @property
+    def covers_invalidation(self) -> bool:
+        """Gets the covers_invalidation of this SurveyAnswers.
+
+
+        :return: The covers_invalidation of this SurveyAnswers.
+        :rtype: bool
+        """
+        return self._covers_invalidation
+
+    @covers_invalidation.setter
+    def covers_invalidation(self, covers_invalidation: bool):
+        """Sets the covers_invalidation of this SurveyAnswers.
+
+
+        :param covers_invalidation: The covers_invalidation of this SurveyAnswers.
+        :type covers_invalidation: bool
+        """
+
+        self._covers_invalidation = covers_invalidation
+
+    @property
+    def covers_integration(self) -> bool:
+        """Gets the covers_integration of this SurveyAnswers.
+
+
+        :return: The covers_integration of this SurveyAnswers.
+        :rtype: bool
+        """
+        return self._covers_integration
+
+    @covers_integration.setter
+    def covers_integration(self, covers_integration: bool):
+        """Sets the covers_integration of this SurveyAnswers.
+
+
+        :param covers_integration: The covers_integration of this SurveyAnswers.
+        :type covers_integration: bool
+        """
+
+        self._covers_integration = covers_integration
 
     @property
     def launch_or_contact(self) -> str:

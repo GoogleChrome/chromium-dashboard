@@ -1323,9 +1323,14 @@ components:
         survey_answers:
           launch_or_contact: launch_or_contact
           is_language_polyfill: true
+          covers_errors: true
           is_api_polyfill: true
+          covers_common_cases: true
+          covers_integration: true
+          covers_existance: true
           is_same_origin_css: true
           explanation: explanation
+          covers_invalidation: true
         escalation_email: escalation_email
         assignee_emails:
         - assignee_emails
@@ -1432,9 +1437,14 @@ components:
       example:
         launch_or_contact: launch_or_contact
         is_language_polyfill: true
+        covers_errors: true
         is_api_polyfill: true
+        covers_common_cases: true
+        covers_integration: true
+        covers_existance: true
         is_same_origin_css: true
         explanation: explanation
+        covers_invalidation: true
       properties:
         is_language_polyfill:
           title: is_language_polyfill
@@ -1444,6 +1454,21 @@ components:
           type: boolean
         is_same_origin_css:
           title: is_same_origin_css
+          type: boolean
+        covers_existance:
+          title: covers_existance
+          type: boolean
+        covers_common_cases:
+          title: covers_common_cases
+          type: boolean
+        covers_errors:
+          title: covers_errors
+          type: boolean
+        covers_invalidation:
+          title: covers_invalidation
+          type: boolean
+        covers_integration:
+          title: covers_integration
           type: boolean
         launch_or_contact:
           title: launch_or_contact
@@ -1473,9 +1498,14 @@ components:
           survey_answers:
             launch_or_contact: launch_or_contact
             is_language_polyfill: true
+            covers_errors: true
             is_api_polyfill: true
+            covers_common_cases: true
+            covers_integration: true
+            covers_existance: true
             is_same_origin_css: true
             explanation: explanation
+            covers_invalidation: true
           escalation_email: escalation_email
           assignee_emails:
           - assignee_emails
@@ -1506,9 +1536,14 @@ components:
           survey_answers:
             launch_or_contact: launch_or_contact
             is_language_polyfill: true
+            covers_errors: true
             is_api_polyfill: true
+            covers_common_cases: true
+            covers_integration: true
+            covers_existance: true
             is_same_origin_css: true
             explanation: explanation
+            covers_invalidation: true
           escalation_email: escalation_email
           assignee_emails:
           - assignee_emails
@@ -1538,9 +1573,14 @@ components:
         survey_answers:
           launch_or_contact: launch_or_contact
           is_language_polyfill: true
+          covers_errors: true
           is_api_polyfill: true
+          covers_common_cases: true
+          covers_integration: true
+          covers_existance: true
           is_same_origin_css: true
           explanation: explanation
+          covers_invalidation: true
       properties:
         assignees:
           items:

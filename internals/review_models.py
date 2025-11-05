@@ -165,6 +165,13 @@ class SurveyAnswers(ndb.Model):
   is_api_polyfill = ndb.BooleanProperty(default=False)
   is_same_origin_css = ndb.BooleanProperty(default=False)
 
+  # Questions from the test team.
+  covers_existance = ndb.BooleanProperty(default=False)
+  covers_common_cases = ndb.BooleanProperty(default=False)
+  covers_errors = ndb.BooleanProperty(default=False)
+  covers_invalidation = ndb.BooleanProperty(default=False)
+  covers_integration = ndb.BooleanProperty(default=False)
+
   # Questions that are potentially useful to several teams.
   launch_or_contact = ndb.StringProperty()  # URL or email for more info.
   explanation = ndb.StringProperty()  # Explain why you chose those answers.
