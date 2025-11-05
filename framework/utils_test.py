@@ -374,9 +374,9 @@ class UtilsGitHubTests(unittest.TestCase):
 
     expected_calls = [
       mock.call(
-          f'{utils.WPT_GITHUB_API_URL}dom/file.html',
-          headers={'Authorization': 'Bearer test_token'},
-          params={'ref': 'master'}
+        f'{utils.WPT_GITHUB_API_URL}dom/file.html',
+        headers={'Authorization': 'Bearer test_token'},
+        params={'ref': 'master'}
       ),
       mock.call('https://raw.github.com/some/file.html')
     ]
