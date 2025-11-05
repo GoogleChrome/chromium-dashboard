@@ -18,6 +18,7 @@ import concurrent.futures
 import datetime
 import json
 import logging
+import re
 import requests
 import time
 import traceback
@@ -165,6 +166,22 @@ def get_chromium_file(url: str) -> str:
       logging.error(f'Could not fetch or parse file at {url}: {e}')
       return ""
   return content
+
+
+def extract_wpt_fyi_results_urls(text: str) -> list[str]:
+  """
+  Finds all 'wpt.fyi/results' URLs within a given string and returns
+  them without any query parameters.
+
+  Args:
+      text: The input string to search for URLs.
+
+  Returns:
+      A list of matching URL strings.
+  """
+  pattern = r"(https?://wpt\.fyi/results[^\s?]+)"
+  urls = re.findall(pattern, text)
+  return urls
 
 
 def _get_github_headers(token: str | None = None) -> dict[str, str]:
