@@ -193,54 +193,102 @@ export class ChromedashSurveyQuestions extends LitElement {
 
   renderTestingForm(): TemplateResult {
     return html`
-    <div id="questionnaire">
-    Do your tests for this feature cover the following?
+      <div id="questionnaire">
+        Do your tests for this feature cover the following?
         <ol>
           ${this.renderBooleanField(
             'covers_existance',
-            html`<b>Feature existence</b>.  This is typically done with
-            surface-level tests like idlharness.js for APIs or
-            parsing-testcommon.js for CSS. These tests don’t verify
-            actual behavior.
-            <a href="https://wpt.fyi/results/idle-detection/idlharness.https.window.html" target="_blank">API example</a>.
-            <a href="https://wpt.fyi/results/css/css-logical/parsing/inset-valid.html" target="_blank">CSS example</a>.`
+            html`<b>Feature existence</b>. This is typically done with
+              surface-level tests like idlharness.js for APIs or
+              parsing-testcommon.js for CSS. These tests don’t verify actual
+              behavior.
+              <a
+                href="https://wpt.fyi/results/idle-detection/idlharness.https.window.html"
+                target="_blank"
+                >API example</a
+              >.
+              <a
+                href="https://wpt.fyi/results/css/css-logical/parsing/inset-valid.html"
+                target="_blank"
+                >CSS example</a
+              >.`
           )}
           ${this.renderBooleanField(
             'covers_common_cases',
-            html`<b>Common use cases</b>.  Use the feature in a realistic
-            and straightforward way and verify the expected behavior.
-            <a href="https://github.com/web-platform-tests/wpt/blob/master/requestidlecallback/basic.html" target="_blank">API example</a>.
-            <a href="https://wpt.fyi/results/css/css-flexbox/gap-001-ltr.html" target="_blank">CSS example</a>.
-            <a href="https://wpt.fyi/results/cors/basic.htm" target="_blank">HTML example</a>.`
+            html`<b>Common use cases</b>. Use the feature in a realistic and
+              straightforward way and verify the expected behavior.
+              <a
+                href="https://github.com/web-platform-tests/wpt/blob/master/requestidlecallback/basic.html"
+                target="_blank"
+                >API example</a
+              >.
+              <a
+                href="https://wpt.fyi/results/css/css-flexbox/gap-001-ltr.html"
+                target="_blank"
+                >CSS example</a
+              >.
+              <a href="https://wpt.fyi/results/cors/basic.htm" target="_blank"
+                >HTML example</a
+              >.`
           )}
           ${this.renderBooleanField(
             'covers_errors',
             html`<b>Likely error scenarios</b>. Test realistic error scenarios
-            like out-of-bounds inputs, network errors, or the user
-            rejecting a permission prompt.
-            <a href="https://wpt.fyi/results/fetch/api/basic/error-after-response.any.html" target="_blank">API example</a>.
-            <a href="https://wpt.fyi/results/css/css-color/hsl-clamp-negative-saturation.html" target="_blank">CSS example</a>.
-            <a href="https://wpt.fyi/results/client-hints/accept-ch-malformed-header.https.html" target="_blank">HTML example</a>.
-            `
+              like out-of-bounds inputs, network errors, or the user rejecting a
+              permission prompt.
+              <a
+                href="https://wpt.fyi/results/fetch/api/basic/error-after-response.any.html"
+                target="_blank"
+                >API example</a
+              >.
+              <a
+                href="https://wpt.fyi/results/css/css-color/hsl-clamp-negative-saturation.html"
+                target="_blank"
+                >CSS example</a
+              >.
+              <a
+                href="https://wpt.fyi/results/client-hints/accept-ch-malformed-header.https.html"
+                target="_blank"
+                >HTML example</a
+              >. `
           )}
           ${this.renderBooleanField(
             'covers_invalidation',
-            html`<b>Invalidation</b>. Rendering or other output often needs
-            to be invalidated when the inputs change. This kind of test
-            is common for CSS features, but can make sense for other features
-            too. Often called “dynamic” when an initial state is updated by
-            script.
-            <a href="https://wpt.fyi/results/dom/nodes/Element-childElementCount-dynamic-add.html" target="_blank">API example</a>.
-            <a href="https://wpt.fyi/results/css/css-content/quotes-lang-dynamic-001.html" target="_blank">CSS example</a>.
-            `
+            html`<b>Invalidation</b>. Rendering or other output often needs to
+              be invalidated when the inputs change. This kind of test is common
+              for CSS features, but can make sense for other features too. Often
+              called “dynamic” when an initial state is updated by script.
+              <a
+                href="https://wpt.fyi/results/dom/nodes/Element-childElementCount-dynamic-add.html"
+                target="_blank"
+                >API example</a
+              >.
+              <a
+                href="https://wpt.fyi/results/css/css-content/quotes-lang-dynamic-001.html"
+                target="_blank"
+                >CSS example</a
+              >. `
           )}
           ${this.renderBooleanField(
             'covers_integration',
-            html`<b>Integration with other features</b>. If the feature integrates with other features in some meaningful way, test that the combination of the two features behaves as expected.
-            <a href="https://wpt.fyi/results/permissions-policy/reporting/fullscreen-reporting.html" target="_blank">API example</a>.
-            <a href="https://wpt.fyi/results/css/css-anchor-position/anchor-scroll-to-sticky-001.html" target="_blank">CSS example</a>.
-            <a href="https://wpt.fyi/results/clear-site-data/set-cookie-before-clear-cookies.https.html" target="_blank">HTML example</a>.
-            `
+            html`<b>Integration with other features</b>. If the feature
+              integrates with other features in some meaningful way, test that
+              the combination of the two features behaves as expected.
+              <a
+                href="https://wpt.fyi/results/permissions-policy/reporting/fullscreen-reporting.html"
+                target="_blank"
+                >API example</a
+              >.
+              <a
+                href="https://wpt.fyi/results/css/css-anchor-position/anchor-scroll-to-sticky-001.html"
+                target="_blank"
+                >CSS example</a
+              >.
+              <a
+                href="https://wpt.fyi/results/clear-site-data/set-cookie-before-clear-cookies.https.html"
+                target="_blank"
+                >HTML example</a
+              >. `
           )}
         </ol>
       </div>
