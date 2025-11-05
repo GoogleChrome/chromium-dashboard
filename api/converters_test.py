@@ -405,6 +405,7 @@ class FeatureConvertersTest(testing_config.CustomTestCase):
       'webview_risks': None,
       'wpt': None,
       'wpt_descr': None,
+      'ai_test_eval_report': None,
 
       'tag_review_status': 'Pending',
       'tag_review_status_int': 1,

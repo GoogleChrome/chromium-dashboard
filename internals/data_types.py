@@ -286,6 +286,9 @@ class VerboseFeatureDict(TypedDict):
   resources: FeatureDictInnerResourceInfo
   comments: str | None  # feature_notes
 
+  # AI evaluation fields
+  ai_test_eval_report: str | None
+
   # Repeated in 'browsers' section. TODO(danielrsmith): delete these?
   ff_views: int
   safari_views: int
