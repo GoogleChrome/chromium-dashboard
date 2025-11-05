@@ -150,19 +150,14 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
         .labels {
           margin-bottom: var(--content-padding-half);
         }
-        .labels span {
-          padding: var(--content-padding-quarter) var(--content-padding-half);
-          border-radius: var(--pill-border-radius);
-          margin: 0 var(--content-padding-half) 0 0;
-        }
-        .confidential {
+        .confidential::part(base) {
           background: var(--warning-background);
           font-weight: bold;
         }
-        .reviewed {
+        .reviewed::part(base) {
           background: var(--sl-color-blue-100);
         }
-        .ready {
+        .ready::part(base) {
           background: var(--success-background);
         }
 
@@ -740,17 +735,21 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
   renderLabels(f: Feature): TemplateResult {
     let confidentialLabel = html``;
     if (f.confidential) {
-      confidentialLabel = html`<span class="confidential">CONFIDENTIAL</span>`;
+      confidentialLabel = html`<sl-tag pill size="small" class="confidential"
+        >CONFIDENTIAL</sl-tag
+      >`;
     }
     let reviewedLabel = html``;
     if (f.is_releasenotes_content_reviewed) {
-      reviewedLabel = html`<span class="reviewed"
-        >Release Notes Content Finalized</span
+      reviewedLabel = html`<sl-tag pill size="small" class="reviewed"
+        >Release Notes Content Finalized</sl-tag
       >`;
     }
     let readyLabel = html``;
     if (f.is_releasenotes_publish_ready) {
-      readyLabel = html`<span class="ready">Ready for Publishing</span>`;
+      readyLabel = html`<sl-tag pill size="small" class="ready"
+        >Ready for Publishing</sl-tag
+      >`;
     }
     return html`<div class="labels">
       ${confidentialLabel} ${reviewedLabel} ${readyLabel}
