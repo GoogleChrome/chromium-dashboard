@@ -39,7 +39,7 @@ CHROMIUM_USE_COUNTER_FILES_MAP = {
   BlinkHistogramID.web_feature: {
       'name': 'webfeature_file', 'url': core_enums.WEBFEATURE_FILE_URL},
   BlinkHistogramID.webdx_feature: {
-      'name': 'webdxfeature_file', 'url': core_enums.WEBFEATURE_FILE_URL},
+      'name': 'webdxfeature_file', 'url': core_enums.WEBDXFEATURE_FILE_URL},
   BlinkHistogramID.css_property_id: {
       'name': 'css_property_id_file', 'url': core_enums.CSS_PROPERTY_ID_FILE_URL},
 }
