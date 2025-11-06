@@ -205,6 +205,8 @@ class VerboseFeatureDict(TypedDict):
   feature_notes: str | None
   enterprise_feature_categories: list[str]
   enterprise_product_category: int
+  is_releasenotes_content_reviewed: bool
+  is_releasenotes_publish_ready: bool
   web_feature: str | None
   is_official_web_feature: bool
   webdx_usecounter_enum: str | None

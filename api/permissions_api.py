@@ -52,6 +52,7 @@ class PermissionsAPI(basehandlers.APIHandler):
         approval_defs.fields_approvable_by(user))
     can_comment = permissions.can_comment(user)
     can_edit_all = permissions.can_edit_any_feature(user)
+    can_review_release_notes = permissions.can_review_release_notes(user)
     is_admin = permissions.can_admin_site(user)
     editable_features = permissions.feature_edit_list(user)
     logging.info('got editable_features')
@@ -61,6 +62,7 @@ class PermissionsAPI(basehandlers.APIHandler):
         approvable_gate_types=approvable_gate_types,
         can_comment=can_comment,
         can_edit_all=can_edit_all,
+        can_review_release_notes=can_review_release_notes,
         is_admin=is_admin,
         email=user.email(),
         editable_features=editable_features)

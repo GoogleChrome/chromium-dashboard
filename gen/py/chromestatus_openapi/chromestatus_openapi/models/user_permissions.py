@@ -12,7 +12,7 @@ class UserPermissions(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, can_create_feature=None, approvable_gate_types=None, can_comment=None, can_edit_all=None, is_admin=None, email=None, editable_features=None):  # noqa: E501
+    def __init__(self, can_create_feature=None, approvable_gate_types=None, can_comment=None, can_edit_all=None, can_review_release_notes=None, is_admin=None, email=None, editable_features=None):  # noqa: E501
         """UserPermissions - a model defined in OpenAPI
 
         :param can_create_feature: The can_create_feature of this UserPermissions.  # noqa: E501
@@ -23,6 +23,8 @@ class UserPermissions(Model):
         :type can_comment: bool
         :param can_edit_all: The can_edit_all of this UserPermissions.  # noqa: E501
         :type can_edit_all: bool
+        :param can_review_release_notes: The can_review_release_notes of this UserPermissions.  # noqa: E501
+        :type can_review_release_notes: bool
         :param is_admin: The is_admin of this UserPermissions.  # noqa: E501
         :type is_admin: bool
         :param email: The email of this UserPermissions.  # noqa: E501
@@ -35,6 +37,7 @@ class UserPermissions(Model):
             'approvable_gate_types': List[int],
             'can_comment': bool,
             'can_edit_all': bool,
+            'can_review_release_notes': bool,
             'is_admin': bool,
             'email': str,
             'editable_features': List[int]
@@ -45,6 +48,7 @@ class UserPermissions(Model):
             'approvable_gate_types': 'approvable_gate_types',
             'can_comment': 'can_comment',
             'can_edit_all': 'can_edit_all',
+            'can_review_release_notes': 'can_review_release_notes',
             'is_admin': 'is_admin',
             'email': 'email',
             'editable_features': 'editable_features'
@@ -54,6 +58,7 @@ class UserPermissions(Model):
         self._approvable_gate_types = approvable_gate_types
         self._can_comment = can_comment
         self._can_edit_all = can_edit_all
+        self._can_review_release_notes = can_review_release_notes
         self._is_admin = is_admin
         self._email = email
         self._editable_features = editable_features
@@ -162,6 +167,27 @@ class UserPermissions(Model):
             raise ValueError("Invalid value for `can_edit_all`, must not be `None`")  # noqa: E501
 
         self._can_edit_all = can_edit_all
+
+    @property
+    def can_review_release_notes(self) -> bool:
+        """Gets the can_review_release_notes of this UserPermissions.
+
+
+        :return: The can_review_release_notes of this UserPermissions.
+        :rtype: bool
+        """
+        return self._can_review_release_notes
+
+    @can_review_release_notes.setter
+    def can_review_release_notes(self, can_review_release_notes: bool):
+        """Sets the can_review_release_notes of this UserPermissions.
+
+
+        :param can_review_release_notes: The can_review_release_notes of this UserPermissions.
+        :type can_review_release_notes: bool
+        """
+
+        self._can_review_release_notes = can_review_release_notes
 
     @property
     def is_admin(self) -> bool:

@@ -94,7 +94,7 @@ export class ChromedashActivity extends LitElement {
         }
 
         .comment {
-          background: var(--table-alternate-background);
+          background: var(--accordion-background);
           border-radius: var(--large-border-radius);
           padding: var(--content-padding-half);
           margin-bottom: var(--content-padding);

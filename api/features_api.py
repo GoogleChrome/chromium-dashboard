@@ -303,6 +303,11 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
         stage_was_updated = True
       stage.milestones = milestones
 
+      # Changing other rollout details also counts.
+      if ('rollout_platforms' in change_info or
+          'rollout_details' in change_info):
+        ship_milestones_were_updated = True
+
       if stage_was_updated:
         stages_to_store.append(stage)
 
@@ -313,6 +318,18 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
     # Return the list of modified stages, and whether any shipping/rollout
     # milestones were updated.
     return stages_to_store, ship_milestones_were_updated
+
+  def _maybe_reset_releasenotes_flags(
+      self, feature: FeatureEntry,
+      changed_fields: CHANGED_FIELDS_LIST_TYPE) -> None:
+    if permissions.can_review_release_notes(self.get_current_user()):
+      return
+    if feature.is_releasenotes_content_reviewed:
+      feature.is_releasenotes_content_reviewed = False
+      changed_fields.append(('is_releasenotes_content_reviewed', True, False))
+    if feature.is_releasenotes_publish_ready:
+      feature.is_releasenotes_publish_ready = False
+      changed_fields.append(('is_releasenotes_publish_ready', True, False))
 
   def _patch_update_special_fields(
       self,
@@ -372,6 +389,10 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
             changed_fields.append(('shipping_year', feature.shipping_year, year))
             feature.shipping_year = year
             has_updated = True
+
+    # Release notes flags get reset if a non-reviewer makes a change.
+    if 'name' in feature_changes or 'summary' in feature_changes:
+      self._maybe_reset_releasenotes_flags(feature, changed_fields)
 
     # If any stages were mentioned, update active_stage_id.
     if stage_ids:
@@ -442,6 +463,7 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
     # Reset outstanding notifications if the user updated any ship/rollout milestones.
     if ship_milestones_were_updated:
       feature.outstanding_notifications = 0
+      self._maybe_reset_releasenotes_flags(feature, changed_fields)
 
     self._patch_update_feature(
         feature, body['feature_changes'], updated_stages, changed_fields,
