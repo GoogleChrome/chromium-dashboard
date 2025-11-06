@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import asyncio
 import calendar
 import concurrent.futures
 import datetime
@@ -227,56 +228,6 @@ def _parse_wpt_fyi_url(url: str) -> str:
   return path
 
 
-def get_wpt_file_contents(file_url: str) -> str:
-  """
-  Fetches the raw text contents of a single file from a wpt.fyi URL.
-
-  Args:
-    file_url: The full URL to the file on wpt.fyi.
-              (e.g., https://wpt.fyi/results/dom/historical.html)
-
-  Returns:
-    The raw text content of the file.
-  """
-  token = secrets.get_github_token()
-  # Return an empty string if no token is found.
-  if token is None:
-    return ''
-
-  try:
-    dir = _parse_wpt_fyi_url(file_url)
-  except ValueError as e:
-    logging.error(f'Error parsing URL: {e}')
-    raise
-
-  api_endpoint = f'{WPT_GITHUB_API_URL}{dir}'
-
-  headers = _get_github_headers(token)
-  params = {'ref': 'master'}
-
-  try:
-    response = requests.get(api_endpoint, headers=headers, params=params)
-    response.raise_for_status()  # Raise HTTPError for bad responses (4xx or 5xx)
-
-    data = response.json()
-
-    if data.get('type') != 'file':
-      raise ValueError(f'URL does not point to a file: {file_url}')
-
-    if 'download_url' not in data or not data['download_url']:
-      raise ValueError('Could not find download_url for file.')
-
-    # Fetch the raw content from the download_url
-    content_response = requests.get(data['download_url'])
-    content_response.raise_for_status()
-
-    return content_response.text
-
-  except requests.exceptions.RequestException as e:
-    logging.error(f'API request failed: {e}')
-    raise
-
-
 def _fetch_file_content(url: str) -> str | None:
   """Helper function to download a single file's content for ThreadPool."""
   try:
@@ -288,66 +239,133 @@ def _fetch_file_content(url: str) -> str | None:
     return None
 
 
-def get_wpt_directory_contents(dir_url: str) -> dict[str, str]:
+def _fetch_dir_listing(url: str, headers: dict[str, str]) -> list[tuple[str, str]]:
   """
-  Fetches the raw contents of all files in a GitHub directory concurrently.
-  Ignores subdirectories.
+  Fetches a GitHub directory listing and extracts all valid file entries.
+  Intended to be run in a thread pool.
+  """
+  try:
+    path = _parse_wpt_fyi_url(url)
+    endpoint = f'{WPT_GITHUB_API_URL}{path}'
+    resp = requests.get(endpoint, headers=headers, params={'ref': 'master'})
+    resp.raise_for_status()
+    data = resp.json()
+    if isinstance(data, list):
+      return [(i['name'], i['download_url']) for i in data
+              if i.get('type') == 'file' and i.get('download_url')]
+  except Exception as e:
+    logging.error(f'Error fetching directory listing for {url}: {e}')
+  return []
+
+
+def _resolve_file_url(url: str, headers: dict[str, str]) -> tuple[str, str] | None:
+  """
+  Resolves a single WPT file URL to its filename and raw download URL.
+  Does NOT fetch the file content. Intended to be run in a thread pool.
 
   Args:
-    dir_url: The full URL to the directory on wpt.fyi.
-             (e.g., https://wpt.fyi/results/dom/events)
+    url: The WPT URL (e.g., https://wpt.fyi/results/dom/historical.html)
+    headers: GitHub API headers.
 
   Returns:
-    A dictionary mapping filename (str) to its raw text content (str).
+    A tuple of (filename, download_url), or None if resolution fails.
+  """
+  try:
+    path = _parse_wpt_fyi_url(url)
+    endpoint = f'{WPT_GITHUB_API_URL}{path}'
+    resp = requests.get(endpoint, headers=headers, params={'ref': 'master'})
+    resp.raise_for_status()
+    data = resp.json()
+
+    # Verify it is a file and has the necessary download link
+    if data.get('type') == 'file' and data.get('download_url'):
+       return (data['name'], data['download_url'])
+    else:
+       logging.warning(f'URL resolved but was not a valid file: {url}')
+
+  except Exception as e:
+    logging.error(f'Error resolving file URL {url}: {e}')
+  return None
+
+
+async def _fetch_and_pair(fname: str, furl: str) -> tuple[str, str | None]:
+  """
+  Async wrapper for the actual WPT content fetching phase.
+  """
+  content = await asyncio.to_thread(_fetch_file_content, furl)
+  return fname, content
+
+
+async def get_mixed_wpt_contents_async(
+    dir_urls: list[str],
+    additional_file_urls: list[str]
+) -> dict[str, str]:
+  """
+  Orchestrates concurrent fetching of complete directories and individual WPT file URLs.
+
+  Phase 1: concurrently resolves ALL directory listings and individual file URLs
+           to their raw GitHub download links.
+  Phase 2: concurrently fetches the actual content for every unique download link found.
+
+  Args:
+    dir_urls: List of WPT directory URLs to scan.
+    additional_file_urls: list of individual WPT file URLs.
+
+  Returns:
+    Dict mapping filename to raw text content.
   """
   token = secrets.get_github_token()
-  # Return an empty dict if no token is found.
   if token is None:
     return {}
 
-  try:
-    path = _parse_wpt_fyi_url(dir_url)
-  except ValueError as e:
-    logging.error(f'Error parsing URL: {e}')
-    raise
-
-  api_endpoint = f'{WPT_GITHUB_API_URL}{path}'
-
   headers = _get_github_headers(token)
-  params = {'ref': 'master'}
+  all_contents: dict[str, str] = {}
 
-  try:
-    # Get the directory listing
-    response = requests.get(api_endpoint, headers=headers, params=params)
-    response.raise_for_status()
+  # PHASE 1: Async Resolution (Directories & Individual Files)
 
-    data = response.json()
+  # 1a. Create tasks to scan directories
+  dir_tasks = [
+      asyncio.to_thread(_fetch_dir_listing, u, headers)
+      for u in dir_urls
+  ]
 
-    if not isinstance(data, list):
-      raise ValueError(f'URL does not point to a directory: {dir_url}')
+  # 1b. Create tasks to resolve individual file URLs
+  file_res_tasks = [
+      asyncio.to_thread(_resolve_file_url, u, headers)
+      for u in additional_file_urls
+  ]
 
-    all_contents: dict[str, str] = {}
+  # Wait for all resolution tasks to complete concurrently
+  dir_results, file_res_results = await asyncio.gather(
+      asyncio.gather(*dir_tasks),
+      asyncio.gather(*file_res_tasks)
+  )
 
-    # Create lists of files to fetch.
-    files_to_fetch = []
-    filenames = []
-    for item in data:
-      if item.get('type') == 'file' and item.get('download_url'):
-        files_to_fetch.append(item['download_url'])
-        filenames.append(item['name'])
+  # INTERMEDIATE PHASE: Aggregation & Deduplication
+  # Map raw download URLs to filenames. This automatically handles deduplication
+  # if the same file appears in a directory and the explicit list.
+  files_to_fetch_map: dict[str, str] = {}
 
-    # Use a ThreadPoolExecutor to fetch files concurrently.
-    with concurrent.futures.ThreadPoolExecutor() as executor:
-      # 'map' maintains the order of the results corresponding to 'files_to_fetch'
-      contents = executor.map(_fetch_file_content, files_to_fetch)
+  # Process directory results (each result is a list of tuples)
+  for dir_list in dir_results:
+    for fname, url in dir_list:
+      files_to_fetch_map[url] = fname
 
-    # Combine filenames with their fetched content
-    for name, content in zip(filenames, contents):
-      if content is not None:  # Only add if download was successful
-        all_contents[name] = content
+  # Process individual file results (each result is a single tuple or None)
+  for res in file_res_results:
+    if res is not None:
+      fname, url = res
+      files_to_fetch_map[url] = fname
 
-    return all_contents
+  # PHASE 2: Async Content Fetching
+  file_tasks = [
+      _fetch_and_pair(fname, url)
+      for url, fname in files_to_fetch_map.items()
+  ]
+  file_results = await asyncio.gather(*file_tasks)
 
-  except requests.exceptions.RequestException as e:
-    logging.error(f'GitHub API request failed: {e}')
-    raise
+  for fname, content in file_results:
+    if content is not None:
+      all_contents[fname] = content
+
+  return all_contents
