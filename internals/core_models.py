@@ -55,7 +55,7 @@ class FeatureEntry(ndb.Model):
     'star_count',
     'feature_type',
     'ai_test_eval_report',
-    'ai_test_eval_in_progress',
+    'ai_test_eval_status',
     'ai_test_eval_last_request_time',
   ])
 
@@ -159,7 +159,7 @@ class FeatureEntry(ndb.Model):
 
   # AI evaluation fields.
   ai_test_eval_report = ndb.TextProperty(indexed=False)
-  ai_test_eval_in_progress = ndb.BooleanProperty(default=False)
+  ai_test_eval_status = ndb.IntegerProperty()
   ai_test_eval_last_request_time = ndb.DateTimeProperty()
 
   @ndb.ComputedProperty
