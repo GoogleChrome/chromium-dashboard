@@ -202,6 +202,8 @@
  * @property {string} [feature_notes]
  * @property {string[]} enterprise_feature_categories
  * @property {number} enterprise_product_category
+ * @property {boolean} [is_releasenotes_content_reviewed]
+ * @property {boolean} [is_releasenotes_publish_ready]
  * Metadata: Process information
  * @property {string} feature_type
  * @property {number} feature_type_int
@@ -284,6 +286,7 @@
  * @property {number} id
  * @property {boolean} can_create_feature
  * @property {boolean} can_edit_all
+ * @property {boolean} can_review_release_notes
  * @property {boolean} can_comment
  * @property {boolean} is_admin
  * @property {string} email
