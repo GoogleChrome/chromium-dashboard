@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import asyncio
 import logging
 from google import genai
 
@@ -26,6 +27,7 @@ class GeminiClient:
   """
 
   GEMINI_MODEL = 'gemini-2.5-pro'
+  MAX_CONCURRENCY = 20
 
   def __init__(self):
     """Initializes the Gemini client with the API key from settings.
@@ -36,6 +38,8 @@ class GeminiClient:
     """
     try:
       self.client = genai.Client(api_key=settings.GEMINI_API_KEY)
+      # Semaphore to control concurrency level across this client instance
+      self._semaphore = asyncio.Semaphore(GeminiClient.MAX_CONCURRENCY)
     except Exception as e:
       logging.error(f'An unexpected error occurred during client initialization: {e}')
       raise RuntimeError(f'Could not initialize API client: {e}') from e
@@ -78,3 +82,46 @@ class GeminiClient:
     except Exception as e:
       logging.error(f'An error occurred while obtaining Gemini response: {e}')
       raise RuntimeError(f'Failed to get response from Gemini API: {e}') from e
+
+  async def get_response_async(self, prompt: str) -> str:
+    """Asynchronously sends a prompt to the Gemini model.
+
+    This method wraps the synchronous `get_response` in a thread to ensure
+    it does not block the main event loop when called.
+
+    Args:
+      prompt: The input prompt string.
+
+    Returns:
+      The text response from the model.
+    """
+    # Use a semaphore to limit how many threads are hitting the API at once.
+    async with self._semaphore:
+        # asyncio.to_thread runs the blocking I/O in a separate thread,
+        # allowing the asyncio event loop to continue servicing other tasks.
+        return await asyncio.to_thread(self.get_response, prompt)
+
+  async def get_batch_responses_async(self, prompts: list[str]) -> list[str|BaseException]:
+    """Concurrently sends a list of prompts to the Gemini API.
+
+    This is highly time-efficient for multiple requests as it waits for
+    network I/O in parallel rather than sequentially.
+
+    Args:
+      prompts: A list of prompt strings to send.
+
+    Returns:
+      A list containing either the string response or an Exception object
+      for each prompt, in the same order as the input list.
+    """
+    logging.info(f'Starting batch processing for {len(prompts)} prompts...')
+
+    # Create a list of coroutine objects
+    tasks = [self.get_response_async(prompt) for prompt in prompts]
+
+    # asyncio.gather runs them concurrently.
+    # return_exceptions=True ensures one failure doesn't crash the entire batch.
+    results = await asyncio.gather(*tasks, return_exceptions=True)
+
+    logging.info(f'Batch processing complete for {len(prompts)} prompts.')
+    return results
