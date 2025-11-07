@@ -12,11 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import asyncio
 import logging
 import re
 from flask import render_template
-from google import genai
 
 from framework import utils
 from framework.gemini_client import GeminiClient
@@ -31,11 +29,16 @@ GAP_ANALYSIS_TEMPLATE_PATH = 'prompts/gap-analysis.html'
 WPT_FILE_REGEX = re.compile(r"\/[^/]*\.[^/]*$")
 
 
+class PipelineError(Exception):
+  """Base exception for errors occurring during the AI evaluation pipeline."""
+  pass
+
+
 def _create_feature_definition(feature: FeatureEntry) -> str:
   return f'Name: {feature.name}\nDescription: {feature.summary}'
 
 
-def _get_test_analysis_prompts(test_locations: list[str]) -> list[str]:
+async def _get_test_analysis_prompts(test_locations: list[str]) -> list[str]:
   test_urls = []
   test_directories = []
   for test_loc in test_locations:
@@ -44,26 +47,46 @@ def _get_test_analysis_prompts(test_locations: list[str]) -> list[str]:
     else:
       test_directories.append(test_loc)
 
-  all_file_contents = asyncio.run(
-    utils.get_mixed_wpt_contents_async(test_directories, test_urls)
+  all_file_contents = await utils.get_mixed_wpt_contents_async(
+    test_directories, test_urls
   )
   return list(all_file_contents.values())
 
 
-def run_wpt_test_eval_pipeline(feature: FeatureEntry):
-  """Run the full prompt pipeline for WPT test coverage evaluation."""
+async def run_wpt_test_eval_pipeline(feature: FeatureEntry) -> None:
+  """Execute the three-stage AI pipeline for WPT coverage evaluation.
+
+  This pipeline performs the following steps:
+  1. Spec Synthesis: Summarizes the relevant specifications for the feature.
+  2. Test Analysis: Analyzes existing WPT files for coverage concurrently.
+  3. Gap Analysis: Compares the spec synthesis with test analyses to identify
+     missing coverage.
+
+  The final report is saved to `feature.ai_test_eval_report`.
+
+  Args:
+    feature: The FeatureEntry model containing spec links and WPT descriptions
+      needed for the analysis.
+
+  Raises:
+    PipelineError: If the pipeline fails due to missing data (e.g., no spec URL)
+      or if critical AI generation steps fail.
+  """
   if not feature.spec_link:
-    return 'No spec URL provided.'
+    raise PipelineError('No spec URL provided.')
+
   test_locations = utils.extract_wpt_fyi_results_urls(feature.wpt_descr)
   if len(test_locations) == 0:
-    return 'No valid wpt.fyi results URLs found.'
+    raise PipelineError('No valid wpt.fyi results URLs found in WPT description.')
 
   template_data = {
     'spec_contents': feature.spec_link,
     'feature_definition': _create_feature_definition(feature)
   }
   spec_synthesis_prompt = render_template(SPEC_SYNTHESIS_TEMPLATE_PATH, **template_data)
-  test_analysis_file_contents = _get_test_analysis_prompts(test_locations)
+
+  test_analysis_file_contents = await _get_test_analysis_prompts(test_locations)
+
   prompts = []
   for fc in test_analysis_file_contents:
     prompts.append(
@@ -71,15 +94,15 @@ def run_wpt_test_eval_pipeline(feature: FeatureEntry):
     )
   # Add the spec synthesis prompt to the end for batch processing.
   prompts.append(spec_synthesis_prompt)
+
   gemini_client = GeminiClient()
 
-  all_responses = asyncio.run(gemini_client.get_batch_responses_async(prompts))
+  all_responses = await gemini_client.get_batch_responses_async(prompts)
+
   spec_synthesis_response = all_responses.pop()
   if not isinstance(spec_synthesis_response, str):
-    return f'Spec synthesis prompt failure: {spec_synthesis_response}'
+    raise PipelineError(f'Spec synthesis prompt failure: {spec_synthesis_response}')
 
-  print(f'\n\n\n\n\n\n{spec_synthesis_response}\n\n\n\n\n')
-  print(f'\n\n\n\n\n\n\n{all_responses}\n\n\n\n\n\n')
   test_analysis_responses_formatted = []
   counter = 1
   for resp in all_responses:
@@ -90,14 +113,17 @@ def run_wpt_test_eval_pipeline(feature: FeatureEntry):
     test_analysis_responses_formatted.append(resp)
     test_analysis_responses_formatted.append('\n\n')
     counter += 1
+
   if not test_analysis_responses_formatted:
-    return 'No successful test analysis responses.'
+    raise PipelineError('No successful test analysis responses.')
+
   template_data = {
     'spec_synthesis': spec_synthesis_response,
     'test_analysis': ''.join(test_analysis_responses_formatted)
   }
   gap_analysis_prompt = render_template(GAP_ANALYSIS_TEMPLATE_PATH, **template_data)
-  gap_analysis_response = gemini_client.get_response(gap_analysis_prompt)
-  print(f'\n\n\n\n\n\n{gap_analysis_response}\n\n\n\n\n\n\n')
+
+  # Use the async version of get_response to keep the whole pipeline non-blocking.
+  gap_analysis_response = await gemini_client.get_response_async(gap_analysis_prompt)
+
   feature.ai_test_eval_report = gap_analysis_response
-  return 'Success.'

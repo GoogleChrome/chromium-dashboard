@@ -104,9 +104,6 @@ class GeminiClient:
   async def get_batch_responses_async(self, prompts: list[str]) -> list[str|BaseException]:
     """Concurrently sends a list of prompts to the Gemini API.
 
-    This is highly time-efficient for multiple requests as it waits for
-    network I/O in parallel rather than sequentially.
-
     Args:
       prompts: A list of prompt strings to send.
 
