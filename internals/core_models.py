@@ -56,7 +56,7 @@ class FeatureEntry(ndb.Model):
     'feature_type',
     'ai_test_eval_report',
     'ai_test_eval_run_status',
-    'ai_test_eval_last_request_time',
+    'ai_test_eval_status_timestamp',
   ])
 
   # All required fields needed upon feature creation.
@@ -162,7 +162,7 @@ class FeatureEntry(ndb.Model):
   # AI evaluation fields.
   ai_test_eval_report = ndb.TextProperty(indexed=False)
   ai_test_eval_run_status = ndb.IntegerProperty()
-  ai_test_eval_last_request_time = ndb.DateTimeProperty()
+  ai_test_eval_status_timestamp = ndb.DateTimeProperty()
 
   @ndb.ComputedProperty
   def has_open_tag_review(self):
