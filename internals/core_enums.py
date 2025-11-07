@@ -809,6 +809,12 @@ PROPERTY_NAMES_TO_ENUM_DICTS = {
     'rollout_plan': ROLLOUT_PLAN_DISPLAYNAMES,
   }
 
+# Valid values for FeatureEntry.ai_test_eval_run_status
+class AITestEvaluationStatus(int, Enum):
+  COMPLETE = 1
+  IN_PROGRESS = 2
+  FAILED = 3
+
 
 def convert_enum_int_to_string(property_name, value):
   """If the property is an enum, return human-readable string, else value."""

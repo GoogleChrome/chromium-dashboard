@@ -267,6 +267,8 @@
  * @property {string} [experiment_timeline]
  * @property {FeatureDictInnerResourceInfo} resources
  * @property {string} [comments]
+ * AI evaluation fields
+ * @property {string} [ai_test_eval_report]
  * Repeated in 'browsers' section. TODO: delete these?
  * @property {number} ff_views
  * @property {number} safari_views

@@ -162,6 +162,7 @@ def add_features(server: str, after: datetime, detailsAfter: datetime):
       fe.tag_review_status = details['tag_review_status_int']
       fe.security_review_status = details['security_review_status_int']
       fe.privacy_review_status = details['privacy_review_status_int']
+      fe.ai_test_eval_report = details['ai_test_eval_report']
 
       fe.experiment_timeline = details['experiment_timeline']
 

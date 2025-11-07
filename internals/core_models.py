@@ -39,7 +39,7 @@ class ReviewResultProperty(ndb.StringProperty):
   CLOSED_WITHOUT_POSITION = 'closed'
 
 
-class FeatureEntry(ndb.Model):  # Copy from Feature
+class FeatureEntry(ndb.Model):
   """This is the main representation of a feature that we are tracking."""
 
   # Fields that should not be mutated by user edit requests.
@@ -54,6 +54,9 @@ class FeatureEntry(ndb.Model):  # Copy from Feature
     'deleted',
     'star_count',
     'feature_type',
+    'ai_test_eval_report',
+    'ai_test_eval_run_status',
+    'ai_test_eval_status_timestamp',
   ])
 
   # All required fields needed upon feature creation.
@@ -155,6 +158,11 @@ class FeatureEntry(ndb.Model):  # Copy from Feature
   safari_views_notes = ndb.TextProperty()
   web_dev_views_notes = ndb.TextProperty()
   other_views_notes = ndb.TextProperty()
+
+  # AI evaluation fields.
+  ai_test_eval_report = ndb.TextProperty(indexed=False)
+  ai_test_eval_run_status = ndb.IntegerProperty()
+  ai_test_eval_status_timestamp = ndb.DateTimeProperty()
 
   @ndb.ComputedProperty
   def has_open_tag_review(self):

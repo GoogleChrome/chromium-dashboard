@@ -517,6 +517,7 @@ def feature_entry_to_json_verbose(
     'is_released': fe.impl_status_chrome in RELEASE_IMPL_STATES,
     'is_enterprise_feature': fe.feature_type == FEATURE_TYPE_ENTERPRISE_ID,
     'experiment_timeline': fe.experiment_timeline,
+    'ai_test_eval_report': fe.ai_test_eval_report,
   }
 
   if (d['is_released'] and
