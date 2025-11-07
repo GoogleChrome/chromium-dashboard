@@ -197,6 +197,30 @@ def _get_github_headers(token: str | None = None) -> dict[str, str]:
   return headers
 
 
+def reformat_wpt_fyi_url(url: str) -> str:
+  """
+  Normalizes a WPT URL by converting multi-global test variants back to their
+  source ".any.js" file.
+
+  If the URL does not contain ".any.", it is returned unchanged.
+
+  See documentation: https://web-platform-tests.org/writing-tests/testharness.html#tests-for-other-or-multiple-globals-any-js
+
+  Args:
+    url: The full wpt.fyi URL (e.g., '.../test.any.worker.html').
+
+  Returns:
+    The URL normalized to the source file (e.g., '.../test.any.js').
+  """
+  substring = ".any."
+  if substring in url:
+    # Find the index where ".any." ends
+    end_index = url.find('.any.') + len(substring)
+    # Slice the string up to that point and add "js"
+    return url[:end_index] + "js"
+  return url
+
+
 def _parse_wpt_fyi_url(url: str) -> str:
   """
   Parses a wpt.fyi URL to map it to a GitHub repo path.
@@ -209,6 +233,7 @@ def _parse_wpt_fyi_url(url: str) -> str:
   Expected URL format:
   [http|https]://wpt.fyi/results/<path>...
   """
+  url = reformat_wpt_fyi_url(url)
   parsed_url = urlparse(url)
 
   if parsed_url.netloc != 'wpt.fyi':

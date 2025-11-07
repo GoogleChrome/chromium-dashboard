@@ -240,6 +240,37 @@ class UtilsFunctionTests(unittest.TestCase):
         actual = utils.extract_wpt_fyi_results_urls(input_str)
         self.assertEqual(expected, actual)
 
+  def test_reformat_wpt_fyi_url(self):
+    """Ensure .any.js variant URLs are correctly reformatted to their source."""
+    # Case: Standard URL that should not change.
+    self.assertEqual(
+      'https://wpt.fyi/results/dom/nodes/Element-firstElementChild.html',
+      utils.reformat_wpt_fyi_url(
+        'https://wpt.fyi/results/dom/nodes/Element-firstElementChild.html'))
+
+    # Case: A standard .any.html file.
+    self.assertEqual(
+      'https://wpt.fyi/results/dpub-aam/doc-afterword.any.js',
+      utils.reformat_wpt_fyi_url(
+        'https://wpt.fyi/results/dpub-aam/doc-afterword.any.html'))
+
+    # Case: A worker variant of an .any.js test.
+    self.assertEqual(
+      'https://wpt.fyi/results/content-security-policy/reporting/report-only-in-worker.any.js',
+      utils.reformat_wpt_fyi_url(
+        'https://wpt.fyi/results/content-security-policy/reporting/report-only-in-worker.any.worker.html'))
+
+    # Case: A sharedworker variant.
+    self.assertEqual(
+      'https://wpt.fyi/results/fs/FileSystemFileHandle-sync-access-handle-lock-modes.any.js',
+      utils.reformat_wpt_fyi_url(
+        'https://wpt.fyi/results/fs/FileSystemFileHandle-sync-access-handle-lock-modes.any.sharedworker.html'))
+
+    # Case: Edge case to ensure it strictly matches '.any.' and not just '.any'.
+    self.assertEqual(
+      'https://wpt.fyi/results/foo/bar.anything.html',
+      utils.reformat_wpt_fyi_url('https://wpt.fyi/results/foo/bar.anything.html'))
+
 
 class UtilsGitHubTests(unittest.TestCase):
   """Tests for the GitHub fetching utility functions."""
