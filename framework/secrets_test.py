@@ -25,17 +25,20 @@ class SecretsFunctionsTest(testing_config.CustomTestCase):
   def setUp(self):
     # Store original values to restore them after each test
     self.original_github_token = secrets.settings.GITHUB_TOKEN
+    self.original_gemini_api_key = secrets.settings.GEMINI_API_KEY
     self.original_unit_test_mode = secrets.settings.UNIT_TEST_MODE
     self.original_dev_mode = secrets.settings.DEV_MODE
 
     # Reset cache and flags before each test
     secrets.settings.GITHUB_TOKEN = None
+    secrets.settings.GEMINI_API_KEY = None
     secrets.settings.UNIT_TEST_MODE = False
     secrets.settings.DEV_MODE = False
 
   def tearDown(self):
     # Restore original settings
     secrets.settings.GITHUB_TOKEN = self.original_github_token
+    secrets.settings.GEMINI_API_KEY = self.original_gemini_api_key
     secrets.settings.UNIT_TEST_MODE = self.original_unit_test_mode
     secrets.settings.DEV_MODE = self.original_dev_mode
 
@@ -162,6 +165,104 @@ class SecretsFunctionsTest(testing_config.CustomTestCase):
 
     # Cache should not be set.
     self.assertIsNone(secrets.settings.GITHUB_TOKEN)
+
+  @mock.patch('google.cloud.secretmanager.SecretManagerServiceClient')
+  @mock.patch('builtins.open')
+  def test_get_gemini_api_key__cached(
+      self, mock_open, mock_sm_client):
+    """The function returns the cached API key if it exists."""
+    secrets.settings.GEMINI_API_KEY = 'cached_api_key'
+
+    key = secrets.get_gemini_api_key()
+
+    self.assertEqual('cached_api_key', key)
+    # Ensure no file I/O or API calls were made.
+    mock_open.assert_not_called()
+    mock_sm_client.assert_not_called()
+
+  @mock.patch('builtins.open', new_callable=mock.mock_open, read_data='test_file_api_key\n  ')
+  def test_get_gemini_api_key__unit_test_mode_file_exists(self, mock_file):
+    """In test mode, it reads the API key from a local file."""
+    secrets.settings.UNIT_TEST_MODE = True
+
+    key = secrets.get_gemini_api_key()
+
+    # Should be stripped of whitespace.
+    self.assertEqual('test_file_api_key', key)
+    mock_file.assert_called_once_with(
+        f'{secrets.settings.ROOT_DIR}/gemini_api_key.txt', 'r')
+    # Verify that the value was cached.
+    self.assertEqual('test_file_api_key', secrets.settings.GEMINI_API_KEY)
+
+  @mock.patch('builtins.open')
+  def test_get_gemini_api_key__unit_test_mode_file_not_found(self, mock_open):
+    """In test mode, it returns None if the file is not found."""
+    secrets.settings.UNIT_TEST_MODE = True
+    mock_open.side_effect = FileNotFoundError
+
+    key = secrets.get_gemini_api_key()
+
+    self.assertIsNone(key)
+    # Cache should remain None.
+    self.assertIsNone(secrets.settings.GEMINI_API_KEY)
+
+  @mock.patch('google.cloud.secretmanager.SecretManagerServiceClient')
+  def test_get_gemini_api_key__prod_mode_secret_exists(self, mock_sm_client_class):
+    """In prod mode, it fetches the API key from Secret Manager."""
+    # Mock the client and its response.
+    mock_client = mock.Mock()
+    mock_sm_client_class.return_value = mock_client
+    mock_client.secret_path.return_value = 'projects/test-app/secrets/GEMINI_API_KEY'
+
+    # Mock the response object structure.
+    mock_response = mock.Mock()
+    mock_response.payload.data.decode.return_value = 'prod_secret_api_key'
+    mock_client.access_secret_version.return_value = mock_response
+
+    key = secrets.get_gemini_api_key()
+
+    # Verify the key and that it was cached.
+    self.assertEqual('prod_secret_api_key', key)
+    self.assertEqual('prod_secret_api_key', secrets.settings.GEMINI_API_KEY)
+
+    # Verify the correct API calls were made.
+    mock_sm_client_class.assert_called_once()
+    mock_client.secret_path.assert_called_once_with(
+        secrets.settings.APP_ID, 'GEMINI_API_KEY')
+    mock_client.access_secret_version.assert_called_once_with(
+        request={'name': 'projects/test-app/secrets/GEMINI_API_KEY/versions/latest'})
+
+  @mock.patch('google.cloud.secretmanager.SecretManagerServiceClient')
+  def test_get_gemini_api_key__prod_mode_secret_fails(self, mock_sm_client_class):
+    """In prod mode, it returns None if Secret Manager gives no response."""
+    mock_client = mock.Mock()
+    mock_sm_client_class.return_value = mock_client
+    mock_client.secret_path.return_value = 'projects/test-app/secrets/GEMINI_API_KEY'
+
+    # Mock a "falsy" response (e.g., None).
+    mock_client.access_secret_version.return_value = None
+
+    key = secrets.get_gemini_api_key()
+
+    self.assertIsNone(key)
+    self.assertIsNone(secrets.settings.GEMINI_API_KEY)
+
+  @mock.patch('google.cloud.secretmanager.SecretManagerServiceClient')
+  def test_get_gemini_api_key__prod_mode_secret_exception(self, mock_sm_client_class):
+    """In prod mode, it raises an exception if Secret Manager does."""
+    mock_client = mock.Mock()
+    mock_sm_client_class.return_value = mock_client
+    mock_client.secret_path.return_value = 'projects/test-app/secrets/GEMINI_API_KEY'
+
+    # Mock an exception (e.g., permissions error).
+    mock_client.access_secret_version.side_effect = Exception('Permission denied')
+
+    # The function does not catch exceptions in prod mode, so it should propagate.
+    with self.assertRaises(Exception, msg='Permission denied'):
+      secrets.get_gemini_api_key()
+
+    # Cache should not be set.
+    self.assertIsNone(secrets.settings.GEMINI_API_KEY)
 
 
 class SecretsTest(testing_config.CustomTestCase):
