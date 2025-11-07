@@ -66,7 +66,7 @@ class GeminiClient:
                  '---------------------------------')
     try:
       response = self.client.models.generate_content(
-        model=self.GEMINI_MODEL,
+        model=GeminiClient.GEMINI_MODEL,
         contents=prompt
       )
 
