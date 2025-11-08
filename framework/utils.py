@@ -303,10 +303,6 @@ async def get_mixed_wpt_contents_async(
   """
   Orchestrates concurrent fetching of complete directories and individual WPT file URLs.
 
-  Phase 1: concurrently resolves ALL directory listings and individual file URLs
-           to their raw GitHub download links.
-  Phase 2: concurrently fetches the actual content for every unique download link found.
-
   Args:
     dir_urls: List of WPT directory URLs to scan.
     additional_file_urls: list of individual WPT file URLs.
@@ -341,7 +337,6 @@ async def get_mixed_wpt_contents_async(
       asyncio.gather(*file_res_tasks)
   )
 
-  # INTERMEDIATE PHASE: Aggregation & Deduplication
   # Map raw download URLs to filenames. This automatically handles deduplication
   # if the same file appears in a directory and the explicit list.
   files_to_fetch_map: dict[str, str] = {}
