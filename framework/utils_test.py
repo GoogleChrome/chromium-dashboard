@@ -15,6 +15,7 @@
 import unittest
 import testing_config  # Must be imported before the module under test.
 
+import asyncio
 from unittest import mock
 import werkzeug.exceptions  # Flask HTTP stuff.
 
@@ -22,7 +23,6 @@ from framework import utils
 import base64
 import urllib
 import requests  # Added for requests.exceptions.RequestException
-import concurrent.futures # Added to mock ThreadPoolExecutor
 
 
 class MockHandler(object):
@@ -273,18 +273,16 @@ class UtilsFunctionTests(unittest.TestCase):
 
 
 class UtilsGitHubTests(unittest.TestCase):
-  """Tests for the GitHub fetching utility functions."""
+  """Tests for the GitHub fetching utility functions (synchronous helpers)."""
 
   def setUp(self):
+    self.mock_headers = {'Authorization': 'Bearer test_token'}
     # Mock successful file API response
     self.mock_file_api_response = {
       'type': 'file',
       'download_url': 'https://raw.github.com/some/file.html',
       'name': 'file.html'
     }
-    # Mock file content response
-    self.mock_file_content = '<html>Hello</html>'
-
     # Mock successful directory API response
     self.mock_dir_api_response = [
       {
@@ -303,8 +301,6 @@ class UtilsGitHubTests(unittest.TestCase):
         'download_url': 'https://raw.github.com/some/file2.js'
       }
     ]
-    self.mock_file1_content = '<html>File 1</html>'
-    self.mock_file2_content = 'console.log("File 2");'
 
   def test_get_github_headers__with_token(self):
     """Headers should include Authorization when a token is provided."""
@@ -373,213 +369,178 @@ class UtilsGitHubTests(unittest.TestCase):
     mock_requests_get.assert_called_once_with('http://example.com/file.txt')
     mock_logging.assert_called_once()
 
-  @mock.patch('framework.utils.secrets.get_github_token')
-  @mock.patch('framework.utils._parse_wpt_fyi_url')
-  @mock.patch('framework.utils._get_github_headers')
   @mock.patch('framework.utils.requests.get')
-  def test_get_wpt_file_contents__success(
-      self, mock_requests_get, mock_get_headers, mock_parse_url, mock_get_token):
-    """Should fetch and return file content on success."""
-    mock_get_token.return_value = 'test_token'
-    mock_parse_url.return_value = 'dom/file.html'
-    mock_get_headers.return_value = {'Authorization': 'Bearer test_token'}
+  @mock.patch('framework.utils._parse_wpt_fyi_url')
+  def test_fetch_dir_listing__success(self, mock_parse_url, mock_requests_get):
+    """Should return a list of (name, url) tuples for files only."""
+    mock_parse_url.return_value = 'dom/events'
+    mock_response = mock.Mock()
+    mock_response.json.return_value = self.mock_dir_api_response
+    mock_response.raise_for_status.return_value = None
+    mock_requests_get.return_value = mock_response
 
-    # Mock API response
-    mock_api_response = mock.Mock()
-    mock_api_response.json.return_value = self.mock_file_api_response
-    mock_api_response.raise_for_status.return_value = None
+    result = utils._fetch_dir_listing('https://wpt.fyi/results/dom/events', self.mock_headers)
 
-    # Mock Content download response
-    mock_content_response = mock.Mock()
-    mock_content_response.text = self.mock_file_content
-    mock_content_response.raise_for_status.return_value = None
-
-    mock_requests_get.side_effect = [mock_api_response, mock_content_response]
-
-    content = utils.get_wpt_file_contents('https://wpt.fyi/results/dom/file.html')
-
-    self.assertEqual(content, self.mock_file_content)
-    mock_get_token.assert_called_once()
-    mock_parse_url.assert_called_once_with('https://wpt.fyi/results/dom/file.html')
-    mock_get_headers.assert_called_once_with('test_token')
-
-    expected_calls = [
-      mock.call(
-        f'{utils.WPT_GITHUB_API_URL}dom/file.html',
-        headers={'Authorization': 'Bearer test_token'},
-        params={'ref': 'master'}
-      ),
-      mock.call('https://raw.github.com/some/file.html')
+    expected = [
+        ('file1.html', 'https://raw.github.com/some/file1.html'),
+        ('file2.js', 'https://raw.github.com/some/file2.js')
     ]
-    mock_requests_get.assert_has_calls(expected_calls)
+    self.assertEqual(result, expected)
+    mock_requests_get.assert_called_once()
 
-  @mock.patch('framework.utils.secrets.get_github_token')
-  def test_get_wpt_file_contents__no_token(self, mock_get_token):
-    """Should return an empty string if no token is found."""
-    mock_get_token.return_value = None
-    content = utils.get_wpt_file_contents('https://wpt.fyi/results/dom/file.html')
-    self.assertEqual(content, '')
-
-  @mock.patch('framework.utils.secrets.get_github_token')
-  @mock.patch('framework.utils._parse_wpt_fyi_url')
-  @mock.patch('framework.utils.logging.error')
-  def test_get_wpt_file_contents__parse_error(
-      self, mock_logging, mock_parse_url, mock_get_token):
-    """Should re-raise ValueError and log an error on URL parse failure."""
-    mock_get_token.return_value = 'test_token'
-    mock_parse_url.side_effect = ValueError('Bad URL')
-
-    with self.assertRaises(ValueError):
-      utils.get_wpt_file_contents('bad_url')
-    mock_logging.assert_called_once()
-
-  @mock.patch('framework.utils.secrets.get_github_token')
-  @mock.patch('framework.utils._parse_wpt_fyi_url')
   @mock.patch('framework.utils.requests.get')
   @mock.patch('framework.utils.logging.error')
-  def test_get_wpt_file_contents__api_request_fails(
-      self, mock_logging, mock_requests_get, mock_parse_url, mock_get_token):
-    """Should re-raise RequestException and log an error on API failure."""
-    mock_get_token.return_value = 'test_token'
-    mock_parse_url.return_value = 'dom/file.html'
-    mock_requests_get.side_effect = requests.exceptions.RequestException('Failed')
-
-    with self.assertRaises(requests.exceptions.RequestException):
-      utils.get_wpt_file_contents('https://wpt.fyi/results/dom/file.html')
+  def test_fetch_dir_listing__failure(self, mock_logging, mock_requests_get):
+    """Should return an empty list and log error on failure."""
+    mock_requests_get.side_effect = Exception('API Error')
+    result = utils._fetch_dir_listing('https://bad.url', self.mock_headers)
+    self.assertEqual(result, [])
     mock_logging.assert_called_once()
 
-  @mock.patch('framework.utils.secrets.get_github_token')
-  @mock.patch('framework.utils._parse_wpt_fyi_url')
   @mock.patch('framework.utils.requests.get')
-  def test_get_wpt_file_contents__not_a_file(
-      self, mock_requests_get, mock_parse_url, mock_get_token):
-    """Should raise ValueError if the API response is not type 'file'."""
-    mock_get_token.return_value = 'test_token'
-    mock_parse_url.return_value = 'dom/dir'
+  def test_fetch_dir_listing__not_a_list(self, mock_requests_get):
+    """Should return empty list if response is not a list (e.g. it's a file)."""
+    mock_response = mock.Mock()
+    mock_response.json.return_value = {'type': 'file'}  # Not a list
+    mock_requests_get.return_value = mock_response
 
-    mock_api_response = mock.Mock()
-    mock_api_response.json.return_value = {'type': 'dir'}  # Not 'file'
-    mock_api_response.raise_for_status.return_value = None
-    mock_requests_get.return_value = mock_api_response
+    result = utils._fetch_dir_listing('https://wpt.fyi/results/somefile', self.mock_headers)
+    self.assertEqual(result, [])
 
-    with self.assertRaisesRegex(ValueError, 'URL does not point to a file'):
-      utils.get_wpt_file_contents('https://wpt.fyi/results/dom/dir')
-
-  @mock.patch('framework.utils.secrets.get_github_token')
-  @mock.patch('framework.utils._parse_wpt_fyi_url')
   @mock.patch('framework.utils.requests.get')
-  def test_get_wpt_file_contents__no_download_url(
-      self, mock_requests_get, mock_parse_url, mock_get_token):
-    """Should raise ValueError if the API response lacks a download_url."""
-    mock_get_token.return_value = 'test_token'
+  @mock.patch('framework.utils._parse_wpt_fyi_url')
+  def test_resolve_file_url__success(self, mock_parse_url, mock_requests_get):
+    """Should resolve a single file URL to (name, download_url)."""
     mock_parse_url.return_value = 'dom/file.html'
+    mock_response = mock.Mock()
+    mock_response.json.return_value = self.mock_file_api_response
+    mock_response.raise_for_status.return_value = None
+    mock_requests_get.return_value = mock_response
 
-    mock_api_response = mock.Mock()
-    mock_api_response.json.return_value = {'type': 'file', 'download_url': None}  # Missing URL
-    mock_api_response.raise_for_status.return_value = None
-    mock_requests_get.return_value = mock_api_response
+    result = utils._resolve_file_url('https://wpt.fyi/results/dom/file.html', self.mock_headers)
+    self.assertEqual(result, ('file.html', 'https://raw.github.com/some/file.html'))
 
-    with self.assertRaisesRegex(ValueError, 'Could not find download_url'):
-      utils.get_wpt_file_contents('https://wpt.fyi/results/dom/file.html')
-
-  @mock.patch('framework.utils.secrets.get_github_token')
-  @mock.patch('framework.utils._parse_wpt_fyi_url')
-  @mock.patch('framework.utils._get_github_headers')
   @mock.patch('framework.utils.requests.get')
-  @mock.patch('framework.utils.concurrent.futures.ThreadPoolExecutor')
-  def test_get_wpt_directory_contents__success(
-      self, mock_executor, mock_requests_get, mock_get_headers, mock_parse_url, mock_get_token):
-    """Should fetch and return contents for all files in a directory."""
-    mock_get_token.return_value = 'test_token'
-    mock_parse_url.return_value = 'dom/events'
-    mock_get_headers.return_value = {'Authorization': 'Bearer test_token'}
+  @mock.patch('framework.utils.logging.warning')
+  def test_resolve_file_url__not_a_file(self, mock_warning, mock_requests_get):
+    """Should return None and log warning if URL is not a valid file."""
+    mock_response = mock.Mock()
+    # Missing download_url or wrong type
+    mock_response.json.return_value = {'type': 'dir'}
+    mock_requests_get.return_value = mock_response
 
-    # Mock API response for directory listing.
-    mock_api_response = mock.Mock()
-    mock_api_response.json.return_value = self.mock_dir_api_response
-    mock_api_response.raise_for_status.return_value = None
-    mock_requests_get.return_value = mock_api_response
+    result = utils._resolve_file_url('https://wpt.fyi/results/dom/dir', self.mock_headers)
+    self.assertIsNone(result)
+    mock_warning.assert_called_once()
 
-    # Mock the thread pool's map function to return the content.
-    # This makes it run sequentially and avoids actual threading.
-    mock_map_results = [self.mock_file1_content, self.mock_file2_content]
-    mock_executor.return_value.__enter__.return_value.map.return_value = mock_map_results
+  @mock.patch('framework.utils.requests.get')
+  @mock.patch('framework.utils.logging.error')
+  def test_resolve_file_url__failure(self, mock_error, mock_requests_get):
+    """Should return None and log error on API failure."""
+    mock_requests_get.side_effect = Exception('Net Error')
+    result = utils._resolve_file_url('https://wpt.fyi/results/fail', self.mock_headers)
+    self.assertIsNone(result)
+    mock_error.assert_called_once()
 
-    contents = utils.get_wpt_directory_contents('https://wpt.fyi/results/dom/events')
 
-    # Check results
-    expected_contents = {
-      'file1.html': self.mock_file1_content,
-      'file2.js': self.mock_file2_content
+class AsyncUtilsGitHubTests(unittest.IsolatedAsyncioTestCase):
+  """Tests for the async GitHub orchestration functions."""
+
+  async def test_fetch_and_pair(self):
+    """Should pair filename with fetched content asynchronously."""
+    fname = 'test.html'
+    furl = 'http://example.com/test.html'
+    expected_content = '<html>content</html>'
+
+    # We use a patch on the sync function it wraps with to_thread
+    with mock.patch('framework.utils._fetch_file_content', return_value=expected_content) as mock_fetch:
+      result = await utils._fetch_and_pair(fname, furl)
+      self.assertEqual(result, (fname, expected_content))
+      mock_fetch.assert_called_once_with(furl)
+
+  @mock.patch('framework.utils.secrets.get_github_token', return_value='token')
+  @mock.patch('framework.utils._fetch_dir_listing')
+  @mock.patch('framework.utils._resolve_file_url')
+  @mock.patch('framework.utils._fetch_file_content')
+  async def test_get_mixed_wpt_contents_async__success(
+      self, mock_fetch_content, mock_resolve_file, mock_fetch_dir, _mock_token):
+    """Test full orchestration with mixed directory and file URLs."""
+    # Setup Inputs
+    dir_urls = ['https://wpt.fyi/results/dir1']
+    file_urls = ['https://wpt.fyi/results/extra.js']
+
+    # Dir 1 contains file A and file B
+    mock_fetch_dir.return_value = [
+        ('a.html', 'http://dl/a.html'),
+        ('b.css', 'http://dl/b.css')
+    ]
+    # Individual file resolves to file C
+    mock_resolve_file.return_value = ('c.js', 'http://dl/c.js')
+
+    # Content fetching returns a simple string based on the URL for verification
+    mock_fetch_content.side_effect = lambda url: f'content of {url}'
+
+    # Execute
+    results = await utils.get_mixed_wpt_contents_async(dir_urls, file_urls)
+
+    # Assertions
+    expected_results = {
+        'a.html': 'content of http://dl/a.html',
+        'b.css': 'content of http://dl/b.css',
+        'c.js': 'content of http://dl/c.js',
     }
-    self.assertEqual(contents, expected_contents)
+    self.assertEqual(results, expected_results)
+    self.assertEqual(mock_fetch_dir.call_count, 1)
+    self.assertEqual(mock_resolve_file.call_count, 1)
+    # Should have fetched content for all 3 unique files
+    self.assertEqual(mock_fetch_content.call_count, 3)
 
-    # Check calls
-    mock_get_token.assert_called_once()
-    mock_parse_url.assert_called_once_with('https://wpt.fyi/results/dom/events')
-    mock_get_headers.assert_called_once_with('test_token')
+  @mock.patch('framework.utils.secrets.get_github_token', return_value='token')
+  @mock.patch('framework.utils._fetch_dir_listing')
+  @mock.patch('framework.utils._resolve_file_url')
+  @mock.patch('framework.utils._fetch_file_content')
+  async def test_get_mixed_wpt_contents_async__deduplication(
+      self, mock_fetch_content, mock_resolve_file, mock_fetch_dir, _mock_token):
+    """If the same file is in a dir and explicitly listed, fetch only once."""
+    dir_urls = ['https://wpt.fyi/results/dir1']
+    # This file URL will resolve to the same download URL as one in the directory
+    file_urls = ['https://wpt.fyi/results/dir1/a.html']
 
-    # Check that the API was called for the dir listing
-    mock_requests_get.assert_called_once_with(
-      f'{utils.WPT_GITHUB_API_URL}dom/events',
-      headers={'Authorization': 'Bearer test_token'},
-      params={'ref': 'master'}
-    )
+    mock_fetch_dir.return_value = [('a.html', 'http://dl/a.html')]
+    mock_resolve_file.return_value = ('a.html', 'http://dl/a.html')
+    mock_fetch_content.return_value = 'content'
 
-    # Check that the executor was called with the correct download URLs
-    mock_executor.return_value.__enter__.return_value.map.assert_called_once_with(
-      utils._fetch_file_content,
-      ['https://raw.github.com/some/file1.html', 'https://raw.github.com/some/file2.js']
-    )
+    results = await utils.get_mixed_wpt_contents_async(dir_urls, file_urls)
 
-  @mock.patch('framework.utils.secrets.get_github_token')
-  def test_get_wpt_directory_contents__no_token(self, mock_get_token):
-    """Should return an empty dict if no token is found."""
-    mock_get_token.return_value = None
-    contents = utils.get_wpt_directory_contents('https://wpt.fyi/results/dom/events')
-    self.assertEqual(contents, {})
+    self.assertEqual(len(results), 1)
+    self.assertEqual(results['a.html'], 'content')
+    # Crucial: content fetch should only happen once despite appearing twice in resolution phase
+    mock_fetch_content.assert_called_once_with('http://dl/a.html')
 
-  @mock.patch('framework.utils.secrets.get_github_token')
-  @mock.patch('framework.utils._parse_wpt_fyi_url')
-  @mock.patch('framework.utils.requests.get')
-  def test_get_wpt_directory_contents__not_a_directory(
-      self, mock_requests_get, mock_parse_url, mock_get_token):
-    """Should raise ValueError if the API response is not a list."""
-    mock_get_token.return_value = 'test_token'
-    mock_parse_url.return_value = 'dom/file.html'
+  @mock.patch('framework.utils.secrets.get_github_token', return_value='token')
+  @mock.patch('framework.utils._fetch_dir_listing')
+  @mock.patch('framework.utils._resolve_file_url')
+  @mock.patch('framework.utils._fetch_file_content')
+  async def test_get_mixed_wpt_contents_async__partial_failures(
+      self, mock_fetch_content, mock_resolve_file, mock_fetch_dir, _mock_token):
+    """Should gracefully handle failures in resolution or fetching phases."""
+    dir_urls = ['https://wpt.fyi/results/dir1', 'https://wpt.fyi/results/fail_dir']
+    file_urls = ['https://wpt.fyi/results/fail_file']
 
-    mock_api_response = mock.Mock()
-    mock_api_response.json.return_value = {'type': 'file'}  # Not a list
-    mock_api_response.raise_for_status.return_value = None
-    mock_requests_get.return_value = mock_api_response
+    # One dir fails (returns empty list), one succeeds
+    mock_fetch_dir.side_effect = [[('a.html', 'http://dl/a.html')], []]
+    # Individual file resolution fails (returns None)
+    mock_resolve_file.return_value = None
 
-    with self.assertRaisesRegex(ValueError, 'URL does not point to a directory'):
-      utils.get_wpt_directory_contents('https://wpt.fyi/results/dom/file.html')
+    # Content fetch succeeds for the one valid file
+    mock_fetch_content.return_value = 'content_a'
 
-  @mock.patch('framework.utils.secrets.get_github_token')
-  @mock.patch('framework.utils._parse_wpt_fyi_url')
-  @mock.patch('framework.utils.requests.get')
-  @mock.patch('framework.utils.concurrent.futures.ThreadPoolExecutor')
-  def test_get_wpt_directory_contents__partial_failure(
-      self, mock_executor, mock_requests_get, mock_parse_url, mock_get_token):
-    """Should return only successfully fetched files if some downloads fail."""
-    mock_get_token.return_value = 'test_token'
-    mock_parse_url.return_value = 'dom/events'
+    results = await utils.get_mixed_wpt_contents_async(dir_urls, file_urls)
 
-    # Mock API response
-    mock_api_response = mock.Mock()
-    mock_api_response.json.return_value = self.mock_dir_api_response
-    mock_api_response.raise_for_status.return_value = None
-    mock_requests_get.return_value = mock_api_response
+    self.assertEqual(results, {'a.html': 'content_a'})
 
-    # Mock map results where one file fails (returns None)
-    mock_map_results = [self.mock_file1_content, None]
-    mock_executor.return_value.__enter__.return_value.map.return_value = mock_map_results
-
-    contents = utils.get_wpt_directory_contents('https://wpt.fyi/results/dom/events')
-
-    # Check results, only the successful file should be present
-    expected_contents = {
-      'file1.html': self.mock_file1_content
-    }
-    self.assertEqual(contents, expected_contents)
+  @mock.patch('framework.utils.secrets.get_github_token', return_value=None)
+  async def test_get_mixed_wpt_contents_async__no_token(self, _mock_token):
+    """Should return empty dict immediately if no GitHub token is available."""
+    results = await utils.get_mixed_wpt_contents_async(['url1'], ['url2'])
+    self.assertEqual(results, {})
