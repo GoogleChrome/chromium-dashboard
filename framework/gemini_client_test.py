@@ -18,6 +18,7 @@ import asyncio
 from unittest import mock
 
 from framework import gemini_client
+from google.genai import types
 
 
 class GeminiClientTest(testing_config.CustomTestCase):
@@ -86,7 +87,7 @@ class GeminiClientTest(testing_config.CustomTestCase):
     )
 
   def test_get_response__success(self):
-    """The client returns a valid text response."""
+    """The client returns a valid text response with correct timeout config."""
     prompt = 'Hello Gemini'
     expected_response = 'Hello there!'
 
@@ -108,10 +109,23 @@ class GeminiClientTest(testing_config.CustomTestCase):
       f'{prompt}\n'
       '---------------------------------')
 
-    self.mock_client_instance.models.generate_content.assert_called_once_with(
-      model=client.GEMINI_MODEL,  # Check it uses the class attribute
-      contents=prompt
+    # Capture the actual call arguments to verify the config object
+    call_args = self.mock_client_instance.models.generate_content.call_args
+    self.assertIsNotNone(call_args)
+
+    # Check simple arguments
+    self.assertEqual(call_args.kwargs['model'], client.GEMINI_MODEL)
+    self.assertEqual(call_args.kwargs['contents'], prompt)
+
+    # Check the nested config object for the timeout
+    actual_config = call_args.kwargs['config']
+    self.assertIsInstance(actual_config, types.GenerateContentConfig)
+    self.assertIsInstance(actual_config.http_options, types.HttpOptions)
+    self.assertEqual(
+        actual_config.http_options.timeout,
+        client.API_TIMEOUT_SECONDS
     )
+
     self.mock_logging.error.assert_not_called()
 
   def test_get_response__no_text_in_response(self):
@@ -195,6 +209,26 @@ class GeminiClientTest(testing_config.CustomTestCase):
 
       self.assertEqual(result, expected_response)
       mock_sync_get.assert_called_once_with(prompt)
+
+  def test_get_response_async__timeout(self):
+    """Test that the outer async timeout works correctly."""
+    client = gemini_client.GeminiClient()
+    # Set a very short timeout for this specific test to make it run fast.
+    client.ASYNC_TIMEOUT_SECONDS = 0.1
+
+    # Mock get_response to sleep longer than the timeout.
+    def slow_response(prompt):
+        import time
+        time.sleep(0.2)
+        return "Too late"
+
+    with mock.patch.object(client, 'get_response', side_effect=slow_response):
+        with self.assertRaisesRegex(TimeoutError, 'Gemini request timed out after 0.1s'):
+             asyncio.run(client.get_response_async('test'))
+
+    self.mock_logging.error.assert_called_with(
+        'Gemini request timed out after 0.1 seconds.'
+    )
 
   def test_get_response_async__propagates_exception(self):
     """Test that exceptions from the synchronous method propagate asynchronously."""

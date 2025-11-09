@@ -15,6 +15,7 @@
 import asyncio
 import logging
 from google import genai
+from google.genai import types
 
 import settings
 
@@ -27,7 +28,12 @@ class GeminiClient:
   """
 
   GEMINI_MODEL = 'gemini-2.5-pro'
-  MAX_CONCURRENCY = 20
+
+  # Outer timeout: The absolute max time the async task will wait (3 minutes).
+  ASYNC_TIMEOUT_SECONDS = 180
+  # Inner timeout: slightly shorter so the SDK raises its own error first,
+  # preventing stuck threads in the background.
+  API_TIMEOUT_SECONDS = 175
 
   def __init__(self):
     """Initializes the Gemini client with the API key from settings.
@@ -38,8 +44,6 @@ class GeminiClient:
     """
     try:
       self.client = genai.Client(api_key=settings.GEMINI_API_KEY)
-      # Semaphore to control concurrency level across this client instance
-      self._semaphore = asyncio.Semaphore(GeminiClient.MAX_CONCURRENCY)
     except Exception as e:
       logging.error(f'An unexpected error occurred during client initialization: {e}')
       raise RuntimeError(f'Could not initialize API client: {e}') from e
@@ -71,7 +75,10 @@ class GeminiClient:
     try:
       response = self.client.models.generate_content(
         model=GeminiClient.GEMINI_MODEL,
-        contents=prompt
+        contents=prompt,
+        config=types.GenerateContentConfig(
+          http_options=types.HttpOptions(timeout=GeminiClient.API_TIMEOUT_SECONDS)
+        )
       )
 
       if response.text:
@@ -86,20 +93,23 @@ class GeminiClient:
   async def get_response_async(self, prompt: str) -> str:
     """Asynchronously sends a prompt to the Gemini model.
 
-    This method wraps the synchronous `get_response` in a thread to ensure
-    it does not block the main event loop when called.
-
     Args:
       prompt: The input prompt string.
 
     Returns:
       The text response from the model.
+
+    Raises:
+      TimeoutError: If the request exceeds ASYNC_TIMEOUT_SECONDS.
     """
-    # Use a semaphore to limit how many threads are hitting the API at once.
-    async with self._semaphore:
-        # asyncio.to_thread runs the blocking I/O in a separate thread,
-        # allowing the asyncio event loop to continue servicing other tasks.
-        return await asyncio.to_thread(self.get_response, prompt)
+    try:
+      return await asyncio.wait_for(
+        asyncio.to_thread(self.get_response, prompt),
+        timeout=self.ASYNC_TIMEOUT_SECONDS
+      )
+    except asyncio.TimeoutError:
+      logging.error(f'Gemini request timed out after {self.ASYNC_TIMEOUT_SECONDS} seconds.')
+      raise TimeoutError(f'Gemini request timed out after {self.ASYNC_TIMEOUT_SECONDS}s')
 
   async def get_batch_responses_async(self, prompts: list[str]) -> list[str|BaseException]:
     """Concurrently sends a list of prompts to the Gemini API.
