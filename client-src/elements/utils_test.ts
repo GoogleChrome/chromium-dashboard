@@ -514,6 +514,7 @@ describe('isVerifiedWithinGracePeriod', () => {
     };
     const shippingStageType = 160;
     const otStageType = 150;
+    const entRolloutStageType = 1061;
 
     it('should identify an upcoming feature (M+1)', async () => {
       const stages = [{...baseStage, stage_type: shippingStageType, desktop_first: 101}];
@@ -535,8 +536,38 @@ describe('isVerifiedWithinGracePeriod', () => {
       });
     });
 
+    it('should NOT identify an upcoming feature based solely on OT', async () => {
+      const stages = [{...baseStage, stage_type: otStageType, desktop_first: 101}];
+      const result = await findClosestShippingDate(mockChannels, stages);
+      assert.deepEqual(result, {
+        closestShippingDate: '',
+        isUpcoming: false,
+        hasShipped: false,
+      });
+    });
+
+    it('should identify an upcoming feature based on Enterprise Rollout', async () => {
+      const stages = [{...baseStage, stage_type: entRolloutStageType, desktop_first: 101}];
+      const result = await findClosestShippingDate(mockChannels, stages);
+      assert.deepEqual(result, {
+        closestShippingDate: '2025-02-01T00:00:00Z',
+        isUpcoming: true,
+        hasShipped: false,
+      });
+    });
+
     it('should identify a shipped feature (current stable)', async () => {
       const stages = [{...baseStage, stage_type: shippingStageType, desktop_first: 100}];
+      const result = await findClosestShippingDate(mockChannels, stages);
+      assert.deepEqual(result, {
+        closestShippingDate: '2025-01-01T00:00:00Z',
+        isUpcoming: false,
+        hasShipped: true,
+      });
+    });
+
+    it('should identify a shipped feature based on Enterprise Rollout', async () => {
+      const stages = [{...baseStage, stage_type: entRolloutStageType, desktop_first: 100}];
       const result = await findClosestShippingDate(mockChannels, stages);
       assert.deepEqual(result, {
         closestShippingDate: '2025-01-01T00:00:00Z',
