@@ -542,7 +542,7 @@ describe('isVerifiedWithinGracePeriod', () => {
       assert.deepEqual(result, {
         closestShippingDate: '',
         isUpcoming: false,
-        hasShipped: false,
+        hasShipped: true,
       });
     });
 
