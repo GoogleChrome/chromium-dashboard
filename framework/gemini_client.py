@@ -28,7 +28,12 @@ class GeminiClient:
   """
 
   GEMINI_MODEL = 'gemini-2.5-pro'
-  MAX_CONCURRENCY = 20
+
+  # Outer timeout: The absolute max time the async task will wait (3 minutes).
+  ASYNC_TIMEOUT_SECONDS = 180
+  # Inner timeout: slightly shorter so the SDK raises its own error first,
+  # preventing stuck threads in the background.
+  API_TIMEOUT_SECONDS = 175
 
   # Outer timeout: The absolute max time the async task will wait (3 minutes).
   ASYNC_TIMEOUT_SECONDS = 180
@@ -45,8 +50,6 @@ class GeminiClient:
     """
     try:
       self.client = genai.Client(api_key=settings.GEMINI_API_KEY)
-      # Semaphore to control concurrency level across this client instance
-      self._semaphore = asyncio.Semaphore(GeminiClient.MAX_CONCURRENCY)
     except Exception as e:
       logging.error(f'An unexpected error occurred during client initialization: {e}')
       raise RuntimeError(f'Could not initialize API client: {e}') from e
