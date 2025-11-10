@@ -357,7 +357,6 @@ export class ChromedashWPTEvalPage extends LitElement {
       this.managePolling();
 
       await window.csClient.generateWPTCoverageEvaluation(this.featureId);
-      showToastMessage('Evaluation started.');
     } catch (e) {
       showToastMessage('Failed to start evaluation. Please try again later.');
       this.fetchData();
