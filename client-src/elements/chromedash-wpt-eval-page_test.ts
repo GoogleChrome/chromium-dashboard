@@ -3,7 +3,7 @@ import sinon from 'sinon';
 import './chromedash-wpt-eval-page.js';
 import {ChromedashWPTEvalPage} from './chromedash-wpt-eval-page.js';
 import {FeatureNotFoundError} from '../js-src/cs-client.js';
-import { AITestEvaluationStatus } from './form-field-enums.js';
+import {AITestEvaluationStatus} from './form-field-enums.js';
 
 describe('chromedash-wpt-eval-page', () => {
   let csClientStub: {
@@ -142,7 +142,9 @@ describe('chromedash-wpt-eval-page', () => {
         spec_link: '', // Missing spec
       });
       const el = await fixture<ChromedashWPTEvalPage>(
-        html`<chromedash-wpt-eval-page .featureId=${1}></chromedash-wpt-eval-page>`
+        html`<chromedash-wpt-eval-page
+          .featureId=${1}
+        ></chromedash-wpt-eval-page>`
       );
       await el.updateComplete;
 
@@ -155,7 +157,9 @@ describe('chromedash-wpt-eval-page', () => {
       // mockFeatureV1 has all prerequisites met
       csClientStub.getFeature.resolves(mockFeatureV1);
       const el = await fixture<ChromedashWPTEvalPage>(
-        html`<chromedash-wpt-eval-page .featureId=${1}></chromedash-wpt-eval-page>`
+        html`<chromedash-wpt-eval-page
+          .featureId=${1}
+        ></chromedash-wpt-eval-page>`
       );
       await el.updateComplete;
 
@@ -170,7 +174,9 @@ describe('chromedash-wpt-eval-page', () => {
       const setIntervalSpy = sinon.spy(window, 'setInterval');
 
       const el = await fixture<ChromedashWPTEvalPage>(
-        html`<chromedash-wpt-eval-page .featureId=${99}></chromedash-wpt-eval-page>`
+        html`<chromedash-wpt-eval-page
+          .featureId=${99}
+        ></chromedash-wpt-eval-page>`
       );
       await el.updateComplete;
 
@@ -181,10 +187,14 @@ describe('chromedash-wpt-eval-page', () => {
       await el.updateComplete;
 
       // API called
-      expect(csClientStub.generateWPTCoverageEvaluation).to.have.been.calledWith(99);
+      expect(
+        csClientStub.generateWPTCoverageEvaluation
+      ).to.have.been.calledWith(99);
 
       // UI entered IN_PROGRESS state immediately (optimistic update)
-      expect(el.feature?.ai_test_eval_run_status).to.equal(AITestEvaluationStatus.IN_PROGRESS);
+      expect(el.feature?.ai_test_eval_run_status).to.equal(
+        AITestEvaluationStatus.IN_PROGRESS
+      );
       expect(el.shadowRoot!.querySelector('.status-in-progress')).to.exist;
       expect(el.shadowRoot!.querySelector('sl-spinner')).to.exist;
 
@@ -194,13 +204,15 @@ describe('chromedash-wpt-eval-page', () => {
 
     it('renders IN_PROGRESS state when loaded from server', async () => {
       csClientStub.getFeature.resolves({
-          ...mockFeatureV1,
-          ai_test_eval_run_status: AITestEvaluationStatus.IN_PROGRESS
+        ...mockFeatureV1,
+        ai_test_eval_run_status: AITestEvaluationStatus.IN_PROGRESS,
       });
       const setIntervalSpy = sinon.spy(window, 'setInterval');
 
       const el = await fixture<ChromedashWPTEvalPage>(
-        html`<chromedash-wpt-eval-page .featureId=${1}></chromedash-wpt-eval-page>`
+        html`<chromedash-wpt-eval-page
+          .featureId=${1}
+        ></chromedash-wpt-eval-page>`
       );
       await el.updateComplete;
 
@@ -210,61 +222,69 @@ describe('chromedash-wpt-eval-page', () => {
     });
 
     it('stops polling and shows success message when status becomes COMPLETE during session', async () => {
-       // 1. Start in progress
-       csClientStub.getFeature.onFirstCall().resolves({
-           ...mockFeatureV1,
-           ai_test_eval_run_status: AITestEvaluationStatus.IN_PROGRESS
-       });
-       // 2. Subsequent call completes it
-       csClientStub.getFeature.onSecondCall().resolves({
-           ...mockFeatureV1,
-           ai_test_eval_run_status: AITestEvaluationStatus.COMPLETE
-       });
+      // 1. Start in progress
+      csClientStub.getFeature.onFirstCall().resolves({
+        ...mockFeatureV1,
+        ai_test_eval_run_status: AITestEvaluationStatus.IN_PROGRESS,
+      });
+      // 2. Subsequent call completes it
+      csClientStub.getFeature.onSecondCall().resolves({
+        ...mockFeatureV1,
+        ai_test_eval_run_status: AITestEvaluationStatus.COMPLETE,
+      });
 
-       const clearIntervalSpy = sinon.spy(window, 'clearInterval');
+      const clearIntervalSpy = sinon.spy(window, 'clearInterval');
 
-       const el = await fixture<ChromedashWPTEvalPage>(
-         html`<chromedash-wpt-eval-page .featureId=${1}></chromedash-wpt-eval-page>`
-       );
-       await el.updateComplete;
+      const el = await fixture<ChromedashWPTEvalPage>(
+        html`<chromedash-wpt-eval-page
+          .featureId=${1}
+        ></chromedash-wpt-eval-page>`
+      );
+      await el.updateComplete;
 
-       // Verify initially in progress
-       expect(el.feature?.ai_test_eval_run_status).to.equal(AITestEvaluationStatus.IN_PROGRESS);
+      // Verify initially in progress
+      expect(el.feature?.ai_test_eval_run_status).to.equal(
+        AITestEvaluationStatus.IN_PROGRESS
+      );
 
-       // Manually trigger the next fetch (simulating the poll interval hitting)
-       await el.fetchData();
-       await el.updateComplete;
+      // Manually trigger the next fetch (simulating the poll interval hitting)
+      await el.fetchData();
+      await el.updateComplete;
 
-       // Verify it is now complete
-       expect(el.feature?.ai_test_eval_run_status).to.equal(AITestEvaluationStatus.COMPLETE);
-       expect(el.completedInThisSession).to.be.true;
+      // Verify it is now complete
+      expect(el.feature?.ai_test_eval_run_status).to.equal(
+        AITestEvaluationStatus.COMPLETE
+      );
+      expect(el.completedInThisSession).to.be.true;
 
-       // Check UI for success message
-       const successMsg = el.shadowRoot!.querySelector('.status-complete');
-       expect(successMsg).to.exist;
-       expect(successMsg!.textContent).to.contain('Evaluation complete!');
+      // Check UI for success message
+      const successMsg = el.shadowRoot!.querySelector('.status-complete');
+      expect(successMsg).to.exist;
+      expect(successMsg!.textContent).to.contain('Evaluation complete!');
 
-       // Verify polling stopped
-       expect(clearIntervalSpy).to.have.been.called;
+      // Verify polling stopped
+      expect(clearIntervalSpy).to.have.been.called;
     });
 
     it('shows error alert if previous run FAILED', async () => {
-        csClientStub.getFeature.resolves({
-            ...mockFeatureV1,
-            ai_test_eval_run_status: AITestEvaluationStatus.FAILED
-        });
+      csClientStub.getFeature.resolves({
+        ...mockFeatureV1,
+        ai_test_eval_run_status: AITestEvaluationStatus.FAILED,
+      });
 
-        const el = await fixture<ChromedashWPTEvalPage>(
-          html`<chromedash-wpt-eval-page .featureId=${1}></chromedash-wpt-eval-page>`
-        );
-        await el.updateComplete;
+      const el = await fixture<ChromedashWPTEvalPage>(
+        html`<chromedash-wpt-eval-page
+          .featureId=${1}
+        ></chromedash-wpt-eval-page>`
+      );
+      await el.updateComplete;
 
-        const alert = el.shadowRoot!.querySelector('sl-alert[variant="danger"]');
-        expect(alert).to.exist;
-        expect(alert!.textContent).to.contain('previous evaluation run failed');
+      const alert = el.shadowRoot!.querySelector('sl-alert[variant="danger"]');
+      expect(alert).to.exist;
+      expect(alert!.textContent).to.contain('previous evaluation run failed');
 
-        // Button should still be visible to try again
-        expect(el.shadowRoot!.querySelector('.generate-button')).to.exist;
+      // Button should still be visible to try again
+      expect(el.shadowRoot!.querySelector('.generate-button')).to.exist;
     });
   });
 

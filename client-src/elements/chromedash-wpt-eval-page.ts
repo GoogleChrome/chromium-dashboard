@@ -5,11 +5,10 @@ import {marked} from 'marked';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {Feature} from '../js-src/cs-client.js';
 import {showToastMessage} from './utils.js';
-import { AITestEvaluationStatus } from './form-field-enums.js';
+import {AITestEvaluationStatus} from './form-field-enums.js';
 
 // Matches http or https, followed by wpt.fyi/results, followed by any non-whitespace and non-question mark characters.
 const WPT_RESULTS_REGEX = /(https?:\/\/wpt\.fyi\/results[^\s?]+)/g;
-
 
 @customElement('chromedash-wpt-eval-page')
 export class ChromedashWPTEvalPage extends LitElement {
@@ -154,35 +153,35 @@ export class ChromedashWPTEvalPage extends LitElement {
         }
 
         .generate-button {
-            font-size: 1.1rem;
-            padding-left: 2rem;
-            padding-right: 2rem;
+          font-size: 1.1rem;
+          padding-left: 2rem;
+          padding-right: 2rem;
         }
         .generate-button sl-icon {
-            font-size: 1.3em;
+          font-size: 1.3em;
         }
 
         .status-in-progress,
         .status-complete {
-           display: flex;
-           flex-direction: column;
-           align-items: center;
-           gap: 16px;
-           font-size: 1.1rem;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 16px;
+          font-size: 1.1rem;
         }
         .status-in-progress {
-           color: var(--sl-color-primary-600);
+          color: var(--sl-color-primary-600);
         }
         .status-in-progress sl-spinner {
-            font-size: 3rem;
-            --track-width: 4px;
+          font-size: 3rem;
+          --track-width: 4px;
         }
         .status-complete {
-            color: var(--sl-color-success-700);
+          color: var(--sl-color-success-700);
         }
         .status-complete sl-icon {
-            font-size: 3rem;
-            color: var(--sl-color-success-600);
+          font-size: 3rem;
+          color: var(--sl-color-success-600);
         }
 
         .report-content {
@@ -221,18 +220,24 @@ export class ChromedashWPTEvalPage extends LitElement {
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
         }
 
         .fade-in {
-            animation: fadeIn 0.8s ease-out forwards;
+          animation: fadeIn 0.8s ease-out forwards;
         }
         .delay-title {
-            animation-delay: 0.1s;
+          animation-delay: 0.1s;
         }
         .delay-content {
-            animation-delay: 0.4s;
+          animation-delay: 0.4s;
         }
 
         sl-alert {
@@ -266,7 +271,7 @@ export class ChromedashWPTEvalPage extends LitElement {
 
   async fetchData() {
     if (!this.feature) {
-        this.loading = true;
+      this.loading = true;
     }
     try {
       this.feature = await window.csClient.getFeature(this.featureId);
@@ -308,12 +313,13 @@ export class ChromedashWPTEvalPage extends LitElement {
 
   checkRequirements() {
     if (!this.feature) {
-        this.isRequirementsFulfilled = false;
-        return;
+      this.isRequirementsFulfilled = false;
+      return;
     }
     const hasSpecLink = !!this.feature.spec_link;
     const hasWptDescr = !!this.feature.wpt_descr;
-    const hasValidUrls = (this.feature.wpt_descr || '').match(WPT_RESULTS_REGEX) !== null;
+    const hasValidUrls =
+      (this.feature.wpt_descr || '').match(WPT_RESULTS_REGEX) !== null;
 
     this.isRequirementsFulfilled = hasSpecLink && hasWptDescr && hasValidUrls;
   }
@@ -350,8 +356,8 @@ export class ChromedashWPTEvalPage extends LitElement {
 
     try {
       this.feature = {
-          ...this.feature,
-          ai_test_eval_run_status: AITestEvaluationStatus.IN_PROGRESS
+        ...this.feature,
+        ai_test_eval_run_status: AITestEvaluationStatus.IN_PROGRESS,
       };
       this.completedInThisSession = false; // Reset if user tries to regenerate.
       this.managePolling();
@@ -382,10 +388,7 @@ export class ChromedashWPTEvalPage extends LitElement {
       <div class="requirement-item">
         ${icon}
         <span>${text}</span>
-        <a
-          class="edit-link"
-          href="/guide/editall/${this.featureId}#${urlHash}"
-        >
+        <a class="edit-link" href="/guide/editall/${this.featureId}#${urlHash}">
           Edit
         </a>
       </div>
@@ -441,53 +444,55 @@ export class ChromedashWPTEvalPage extends LitElement {
   }
 
   renderActionSection(): TemplateResult {
-      if (!this.feature) return html`${nothing}`;
+    if (!this.feature) return html`${nothing}`;
 
-      const status = this.feature.ai_test_eval_run_status;
+    const status = this.feature.ai_test_eval_run_status;
 
-      if (status === AITestEvaluationStatus.IN_PROGRESS) {
-          return html`
-            <section class="card action-section">
-                <div class="status-in-progress">
-                    <sl-spinner></sl-spinner>
-                    <span>Evaluation in progress... This may take a few minutes.</span>
-                </div>
-            </section>
-          `;
-      }
-
-      // Show success message if completed in this session.
-      if (this.completedInThisSession) {
-        return html`
-            <section class="card action-section">
-                <div class="status-complete fade-in">
-                    <sl-icon library="material" name="check_circle_20px"></sl-icon>
-                    <span>Evaluation complete! The report is available below.</span>
-                </div>
-            </section>
-        `;
-      }
-
-      // Default to showing the button if not in progress and not already completed on page load
+    if (status === AITestEvaluationStatus.IN_PROGRESS) {
       return html`
         <section class="card action-section">
-            ${status === AITestEvaluationStatus.FAILED ? html`
-                <sl-alert variant="danger" open>
-                  The previous evaluation run failed. Please try again.
-                </sl-alert>
-            ` : nothing}
-
-            <sl-button
-                variant="primary"
-                size="large"
-                class="generate-button"
-                ?disabled=${!this.isRequirementsFulfilled}
-                @click=${this.handleGenerateClick}
-            >
-              Evaluate test coverage
-            </sl-button>
+          <div class="status-in-progress">
+            <sl-spinner></sl-spinner>
+            <span>Evaluation in progress... This may take a few minutes.</span>
+          </div>
         </section>
       `;
+    }
+
+    // Show success message if completed in this session.
+    if (this.completedInThisSession) {
+      return html`
+        <section class="card action-section">
+          <div class="status-complete fade-in">
+            <sl-icon library="material" name="check_circle_20px"></sl-icon>
+            <span>Evaluation complete! The report is available below.</span>
+          </div>
+        </section>
+      `;
+    }
+
+    // Default to showing the button if not in progress and not already completed on page load
+    return html`
+      <section class="card action-section">
+        ${status === AITestEvaluationStatus.FAILED
+          ? html`
+              <sl-alert variant="danger" open>
+                The previous evaluation run failed. Please try again.
+              </sl-alert>
+            `
+          : nothing}
+
+        <sl-button
+          variant="primary"
+          size="large"
+          class="generate-button"
+          ?disabled=${!this.isRequirementsFulfilled}
+          @click=${this.handleGenerateClick}
+        >
+          Evaluate test coverage
+        </sl-button>
+      </section>
+    `;
   }
 
   renderReport(): TemplateResult {
@@ -499,7 +504,9 @@ export class ChromedashWPTEvalPage extends LitElement {
 
     // Apply fade-in only if _reportContentChanged is true
     const titleClass = this._reportContentChanged ? 'fade-in delay-title' : '';
-    const contentClass = this._reportContentChanged ? 'fade-in delay-content' : '';
+    const contentClass = this._reportContentChanged
+      ? 'fade-in delay-content'
+      : '';
 
     return html`
       <section class="card report-section">
@@ -572,8 +579,9 @@ export class ChromedashWPTEvalPage extends LitElement {
               <strong>Specification:</strong> A valid Spec URL must be provided.
             </li>
             <li>
-              <strong>Test Results:</strong> Add relevant <code>wpt.fyi</code> URLs
-              to the <i>Web Platform Tests</i> description field.
+              <strong>Test Results:</strong> Add relevant
+              <code>wpt.fyi</code> URLs to the
+              <i>Web Platform Tests</i> description field.
               <ul>
                 <li>
                   URLs must begin with <code>https://wpt.fyi/results/</code>.
@@ -583,11 +591,14 @@ export class ChromedashWPTEvalPage extends LitElement {
                   <code>dom/historical.html</code>).
                 </li>
                 <li>
-                  Directory URLs are accepted, but <strong>only</strong> if every
-                  test in that directory is relevant.
+                  Directory URLs are accepted, but <strong>only</strong> if
+                  every test in that directory is relevant.
                 </li>
                 <li>
-                  <em>Note: Subdirectories within listed directories are not scanned.</em>
+                  <em
+                    >Note: Subdirectories within listed directories are not
+                    scanned.</em
+                  >
                 </li>
               </ul>
             </li>
@@ -597,8 +608,7 @@ export class ChromedashWPTEvalPage extends LitElement {
         ${this.loading
           ? this.renderSkeletons()
           : html`
-              ${this.renderRequirementsChecks()}
-              ${this.renderActionSection()}
+              ${this.renderRequirementsChecks()} ${this.renderActionSection()}
               ${this.renderReport()}
             `}
       </div>
