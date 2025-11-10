@@ -77,7 +77,8 @@ class GeminiClient:
         model=GeminiClient.GEMINI_MODEL,
         contents=prompt,
         config=types.GenerateContentConfig(
-          http_options=types.HttpOptions(timeout=GeminiClient.API_TIMEOUT_SECONDS)
+          # timeout is passed to the config using milliseconds.
+          http_options=types.HttpOptions(timeout=GeminiClient.API_TIMEOUT_SECONDS * 1000)
         )
       )
 
