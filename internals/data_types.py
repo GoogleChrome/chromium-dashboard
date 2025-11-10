@@ -290,6 +290,7 @@ class VerboseFeatureDict(TypedDict):
 
   # AI evaluation fields
   ai_test_eval_report: str | None
+  ai_test_eval_run_status: int | None
 
   # Repeated in 'browsers' section. TODO(danielrsmith): delete these?
   ff_views: int
