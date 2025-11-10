@@ -133,7 +133,7 @@ async def run_wpt_test_eval_pipeline(feature: FeatureEntry) -> None:
 
 
 class GenerateWPTCoverageEvalReportHandler(basehandlers.FlaskHandler):
-  """This task runs the WPT coverage evaluation pipeline for a given feature."""
+  """Cloud Task handler for running the AI-powered WPT coverage evaluation."""
 
   IS_INTERNAL_HANDLER = True
 
