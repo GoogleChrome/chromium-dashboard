@@ -21,6 +21,7 @@ import {
   OT_SETUP_STATUS_OPTIONS,
   PLATFORMS_DISPLAYNAME,
   ROLLOUT_PLAN_DISPLAYNAME,
+  STAGE_ENT_ROLLOUT,
   STAGE_FIELD_NAME_MAPPING,
   STAGE_SPECIFIC_FIELDS,
   STAGE_TYPES_ORIGIN_TRIAL,
@@ -873,27 +874,20 @@ export async function findClosestShippingDate(
   let hasShipped = false;
 
   const shippingTypeMilestones = new Set<number | undefined>();
-  const otTypeMilestones = new Set<number | undefined>();
   for (const stage of stages) {
-    if (STAGE_TYPES_SHIPPING.has(stage.stage_type)) {
+    if (
+      STAGE_TYPES_SHIPPING.has(stage.stage_type) ||
+      stage.stage_type === STAGE_ENT_ROLLOUT
+    ) {
       shippingTypeMilestones.add(stage.desktop_first);
       shippingTypeMilestones.add(stage.android_first);
       shippingTypeMilestones.add(stage.ios_first);
       shippingTypeMilestones.add(stage.webview_first);
     }
   }
-  for (const stage of stages) {
-    if (STAGE_TYPES_ORIGIN_TRIAL.has(stage.stage_type)) {
-      otTypeMilestones.add(stage.desktop_first);
-      otTypeMilestones.add(stage.android_first);
-      otTypeMilestones.add(stage.ios_first);
-      otTypeMilestones.add(stage.webview_first);
-    }
-  }
 
   const upcomingMilestonesTarget = new Set<number | undefined>([
     ...shippingTypeMilestones,
-    ...otTypeMilestones,
   ]);
   // Check if this feature is shipped within two milestones.
   let foundMilestone = 0;

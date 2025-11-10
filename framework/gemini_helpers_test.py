@@ -199,7 +199,7 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
         asyncio.run(gemini_helpers.run_wpt_test_eval_pipeline(self.feature))
 
       # Should have logged warnings for the failures
-      self.assertEqual(self.mock_logging.warning.call_count, 2)
+      self.assertEqual(self.mock_logging.error.call_count, 2)
 
   def test_run_pipeline__partial_test_analysis_success(self):
     """Pipeline should continue if at least ONE test analysis succeeds."""
@@ -226,7 +226,7 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
 
       self.assertEqual(self.feature.ai_test_eval_report, 'Final Report')
       # Verify one warning logged for the failure
-      self.mock_logging.warning.assert_called_once()
+      self.mock_logging.error.assert_called_once()
       # Verify the gap analysis prompt only contains the successful one
       # We can check the 'test_analysis' kwarg passed to render_template for the gap analysis
       call_args_list = self.mock_render_template.call_args_list
