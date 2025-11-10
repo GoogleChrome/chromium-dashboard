@@ -106,11 +106,11 @@ class GeminiClient:
     try:
       return await asyncio.wait_for(
         asyncio.to_thread(self.get_response, prompt),
-        timeout=self.ASYNC_TIMEOUT_SECONDS
+        timeout=GeminiClient.ASYNC_TIMEOUT_SECONDS
       )
     except asyncio.TimeoutError:
-      logging.error(f'Gemini request timed out after {self.ASYNC_TIMEOUT_SECONDS} seconds.')
-      raise TimeoutError(f'Gemini request timed out after {self.ASYNC_TIMEOUT_SECONDS}s')
+      logging.error(f'Gemini request timed out after {GeminiClient.ASYNC_TIMEOUT_SECONDS} seconds.')
+      raise TimeoutError(f'Gemini request timed out after {GeminiClient.ASYNC_TIMEOUT_SECONDS}s')
 
   async def get_batch_responses_async(self, prompts: list[str]) -> list[str|BaseException]:
     """Concurrently sends a list of prompts to the Gemini API.
