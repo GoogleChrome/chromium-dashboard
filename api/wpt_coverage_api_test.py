@@ -124,9 +124,10 @@ class WPTCoverageAPITest(testing_config.CustomTestCase):
     """Ensure requests abort with 409 if an evaluation is already running."""
     mock_can_edit.return_value = True
 
-    # Set the feature status to IN_PROGRESS specifically to trigger the new conditional.
     self.feature_1.ai_test_eval_run_status = (
         core_enums.AITestEvaluationStatus.IN_PROGRESS.value)
+    # Only in progress statuses from the last hour are acknowledged.
+    self.feature_1.ai_test_eval_status_timestamp = datetime.now()
     self.feature_1.put()
 
     params = {'feature_id': self.feature_1.key.integer_id()}
@@ -136,5 +137,5 @@ class WPTCoverageAPITest(testing_config.CustomTestCase):
       with self.assertRaises(werkzeug.exceptions.Conflict) as cm:
         self.handler.do_post()
 
-    # Verify we did not enqueue a duplicate task
+    # Verify we did not enqueue a duplicate task.
     mock_enqueue.assert_not_called()
