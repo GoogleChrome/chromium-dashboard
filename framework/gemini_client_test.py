@@ -214,7 +214,7 @@ class GeminiClientTest(testing_config.CustomTestCase):
     """Test that the outer async timeout works correctly."""
     client = gemini_client.GeminiClient()
     # Set a very short timeout for this specific test to make it run fast.
-    client.ASYNC_TIMEOUT_SECONDS = 0.1
+    gemini_client.GeminiClient.ASYNC_TIMEOUT_SECONDS = 0.1
 
     # Mock get_response to sleep longer than the timeout.
     def slow_response(prompt):
