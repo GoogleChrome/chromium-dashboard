@@ -444,7 +444,10 @@ export class ChromedashWPTEvalPage extends LitElement {
       <div class="requirement-item">
         ${icon}
         <span>${text}</span>
-        <a class="edit-link" href="/guide/editall/${this.featureId}#${urlHash}">
+        <a
+          class="edit-link"
+          href="/guide/editall/${this.featureId}#${urlHash}"
+        >
           Edit
         </a>
       </div>
@@ -647,9 +650,8 @@ export class ChromedashWPTEvalPage extends LitElement {
               <strong>Specification:</strong> A valid Spec URL must be provided.
             </li>
             <li>
-              <strong>Test Results:</strong> Add relevant
-              <code>wpt.fyi</code> URLs to the
-              <i>Web Platform Tests</i> description field.
+              <strong>Test Results:</strong> Add relevant <code>wpt.fyi</code> URLs
+              to the <i>Web Platform Tests</i> description field.
               <ul>
                 <li>
                   URLs must begin with <code>https://wpt.fyi/results/</code>.
@@ -659,8 +661,8 @@ export class ChromedashWPTEvalPage extends LitElement {
                   <code>dom/historical.html</code>).
                 </li>
                 <li>
-                  Directory URLs are accepted, but <strong>only</strong> if
-                  every test in that directory is relevant to your feature.
+                  Directory URLs are accepted, but <strong>only</strong> if every
+                  test in that directory is relevant.
                 </li>
                 <li>
                   There is a limit of <strong>50 individual test files</strong>
