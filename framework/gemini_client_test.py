@@ -123,7 +123,7 @@ class GeminiClientTest(testing_config.CustomTestCase):
     self.assertIsInstance(actual_config.http_options, types.HttpOptions)
     self.assertEqual(
         actual_config.http_options.timeout,
-        client.API_TIMEOUT_SECONDS
+        client.API_TIMEOUT_SECONDS * 1000
     )
 
     self.mock_logging.error.assert_not_called()
