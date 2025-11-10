@@ -342,7 +342,7 @@ export class ChromedashFeatureDetail extends LitElement {
       ${this.canEdit &&
       this.feature.feature_type_int !==
         FEATURE_TYPES.FEATURE_TYPE_ENTERPRISE_ID[0]
-        ? nothing  // Add wptEvalButton here.
+        ? nothing // Add wptEvalButton here.
         : nothing}
       ${this.canEdit ? editAllButton : nothing}
       <sl-button
