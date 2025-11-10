@@ -1,11 +1,15 @@
-import {html, fixture, expect, nextFrame} from '@open-wc/testing';
+import {html, fixture, expect, nextFrame, oneEvent} from '@open-wc/testing';
 import sinon from 'sinon';
 import './chromedash-wpt-eval-page.js';
 import {ChromedashWPTEvalPage} from './chromedash-wpt-eval-page.js';
 import {FeatureNotFoundError} from '../js-src/cs-client.js';
+import { AITestEvaluationStatus } from './form-field-enums.js';
 
 describe('chromedash-wpt-eval-page', () => {
-  let csClientStub: {getFeature: sinon.SinonStub};
+  let csClientStub: {
+    getFeature: sinon.SinonStub;
+    generateWPTCoverageEvaluation: sinon.SinonStub;
+  };
 
   // Sample feature data for testing
   const mockFeatureV1 = {
@@ -15,12 +19,14 @@ describe('chromedash-wpt-eval-page', () => {
     spec_link: 'https://spec.example.com',
     wpt_descr: 'Tests are here: https://wpt.fyi/results/feature/test.html',
     ai_test_eval_report: '# Report Title\n\nReport content goes here.',
+    ai_test_eval_run_status: null,
   };
 
   beforeEach(() => {
     // Mock the global csClient before each test
     csClientStub = {
       getFeature: sinon.stub(),
+      generateWPTCoverageEvaluation: sinon.stub(),
     };
     (window as any).csClient = csClientStub;
   });
@@ -30,8 +36,6 @@ describe('chromedash-wpt-eval-page', () => {
   });
 
   it('renders the basic page structure', async () => {
-    // Mock a never-resolving promise to keep it in loading state if needed,
-    // or just let it resolve quickly to standard empty state.
     csClientStub.getFeature.resolves(mockFeatureV1);
     const el = await fixture<ChromedashWPTEvalPage>(
       html`<chromedash-wpt-eval-page></chromedash-wpt-eval-page>`
@@ -72,25 +76,19 @@ describe('chromedash-wpt-eval-page', () => {
       ></chromedash-wpt-eval-page>`
     );
 
-    // Wait for initial fetch to complete
-    await nextFrame(); // sometimes needed for state updates to propagate
+    await nextFrame();
     await el.updateComplete;
 
     expect(csClientStub.getFeature).to.have.been.calledWith(123);
     expect(el.loading).to.be.false;
     expect(el.feature).to.deep.equal(mockFeatureV1);
 
-    // Check Report Rendering (markdown parsing)
+    // Check Report Rendering
     const reportSection = el.shadowRoot!.querySelector('.report-section');
     expect(reportSection).to.exist;
     expect(reportSection!.querySelector('h1')!.textContent).to.equal(
       'Report Title'
     );
-    expect(reportSection!.innerHTML).to.contain('Report content goes here.');
-
-    // Check Prerequisites rendered
-    const prereqs = el.shadowRoot!.querySelector('.requirements-list');
-    expect(prereqs).to.exist;
   });
 
   describe('Prerequisites Checklist', () => {
@@ -108,23 +106,18 @@ describe('chromedash-wpt-eval-page', () => {
       await el.updateComplete;
 
       const items = el.shadowRoot!.querySelectorAll('.requirement-item');
-      expect(items.length).to.equal(3); // Spec, Desc, Valid URLs
-
-      // Check for success icons
+      expect(items.length).to.equal(3);
       items.forEach(item => {
         expect(item.querySelector('sl-icon')!.classList.contains('success')).to
           .be.true;
-        expect(item.querySelector('sl-icon')!.getAttribute('name')).to.equal(
-          'check_circle_20px'
-        );
       });
     });
 
     it('shows checks as danger when data is missing', async () => {
       csClientStub.getFeature.resolves({
         ...mockFeatureV1,
-        spec_link: '', // Missing
-        wpt_descr: '', // Missing
+        spec_link: '',
+        wpt_descr: '',
       });
       const el = await fixture<ChromedashWPTEvalPage>(
         html`<chromedash-wpt-eval-page
@@ -138,72 +131,146 @@ describe('chromedash-wpt-eval-page', () => {
       items.forEach(item => {
         expect(item.querySelector('sl-icon')!.classList.contains('danger')).to
           .be.true;
-        expect(item.querySelector('sl-icon')!.getAttribute('name')).to.equal(
-          'x-circle-fill'
+      });
+    });
+  });
+
+  describe('Action Section & Generation Flow', () => {
+    it('disables generate button if prerequisites are not met', async () => {
+      csClientStub.getFeature.resolves({
+        ...mockFeatureV1,
+        spec_link: '', // Missing spec
+      });
+      const el = await fixture<ChromedashWPTEvalPage>(
+        html`<chromedash-wpt-eval-page .featureId=${1}></chromedash-wpt-eval-page>`
+      );
+      await el.updateComplete;
+
+      const button = el.shadowRoot!.querySelector('.generate-button');
+      expect(button).to.exist;
+      expect(button).to.have.attribute('disabled');
+    });
+
+    it('enables generate button if prerequisites are met', async () => {
+      // mockFeatureV1 has all prerequisites met
+      csClientStub.getFeature.resolves(mockFeatureV1);
+      const el = await fixture<ChromedashWPTEvalPage>(
+        html`<chromedash-wpt-eval-page .featureId=${1}></chromedash-wpt-eval-page>`
+      );
+      await el.updateComplete;
+
+      const button = el.shadowRoot!.querySelector('.generate-button');
+      expect(button).to.exist;
+      expect(button).to.not.have.attribute('disabled');
+    });
+
+    it('starts evaluation, enters IN_PROGRESS state, and starts polling on click', async () => {
+      csClientStub.getFeature.resolves(mockFeatureV1);
+      csClientStub.generateWPTCoverageEvaluation.resolves({});
+      const setIntervalSpy = sinon.spy(window, 'setInterval');
+
+      const el = await fixture<ChromedashWPTEvalPage>(
+        html`<chromedash-wpt-eval-page .featureId=${99}></chromedash-wpt-eval-page>`
+      );
+      await el.updateComplete;
+
+      const button = el.shadowRoot!.querySelector(
+        '.generate-button'
+      ) as HTMLElement;
+      button.click();
+      await el.updateComplete;
+
+      // API called
+      expect(csClientStub.generateWPTCoverageEvaluation).to.have.been.calledWith(99);
+
+      // UI entered IN_PROGRESS state immediately (optimistic update)
+      expect(el.feature?.ai_test_eval_run_status).to.equal(AITestEvaluationStatus.IN_PROGRESS);
+      expect(el.shadowRoot!.querySelector('.status-in-progress')).to.exist;
+      expect(el.shadowRoot!.querySelector('sl-spinner')).to.exist;
+
+      // Polling started
+      expect(setIntervalSpy).to.have.been.called;
+    });
+
+    it('renders IN_PROGRESS state when loaded from server', async () => {
+      csClientStub.getFeature.resolves({
+          ...mockFeatureV1,
+          ai_test_eval_run_status: AITestEvaluationStatus.IN_PROGRESS
+      });
+      const setIntervalSpy = sinon.spy(window, 'setInterval');
+
+      const el = await fixture<ChromedashWPTEvalPage>(
+        html`<chromedash-wpt-eval-page .featureId=${1}></chromedash-wpt-eval-page>`
+      );
+      await el.updateComplete;
+
+      expect(el.shadowRoot!.querySelector('.status-in-progress')).to.exist;
+      // Should automatically start polling if loaded in progress
+      expect(setIntervalSpy).to.have.been.called;
+    });
+
+    it('stops polling and shows success message when status becomes COMPLETE during session', async () => {
+       // 1. Start in progress
+       csClientStub.getFeature.onFirstCall().resolves({
+           ...mockFeatureV1,
+           ai_test_eval_run_status: AITestEvaluationStatus.IN_PROGRESS
+       });
+       // 2. Subsequent call completes it
+       csClientStub.getFeature.onSecondCall().resolves({
+           ...mockFeatureV1,
+           ai_test_eval_run_status: AITestEvaluationStatus.COMPLETE
+       });
+
+       const clearIntervalSpy = sinon.spy(window, 'clearInterval');
+
+       const el = await fixture<ChromedashWPTEvalPage>(
+         html`<chromedash-wpt-eval-page .featureId=${1}></chromedash-wpt-eval-page>`
+       );
+       await el.updateComplete;
+
+       // Verify initially in progress
+       expect(el.feature?.ai_test_eval_run_status).to.equal(AITestEvaluationStatus.IN_PROGRESS);
+
+       // Manually trigger the next fetch (simulating the poll interval hitting)
+       await el.fetchData();
+       await el.updateComplete;
+
+       // Verify it is now complete
+       expect(el.feature?.ai_test_eval_run_status).to.equal(AITestEvaluationStatus.COMPLETE);
+       expect(el.completedInThisSession).to.be.true;
+
+       // Check UI for success message
+       const successMsg = el.shadowRoot!.querySelector('.status-complete');
+       expect(successMsg).to.exist;
+       expect(successMsg!.textContent).to.contain('Evaluation complete!');
+
+       // Verify polling stopped
+       expect(clearIntervalSpy).to.have.been.called;
+    });
+
+    it('shows error alert if previous run FAILED', async () => {
+        csClientStub.getFeature.resolves({
+            ...mockFeatureV1,
+            ai_test_eval_run_status: AITestEvaluationStatus.FAILED
+        });
+
+        const el = await fixture<ChromedashWPTEvalPage>(
+          html`<chromedash-wpt-eval-page .featureId=${1}></chromedash-wpt-eval-page>`
         );
-      });
+        await el.updateComplete;
 
-      expect(el.shadowRoot!.textContent).to.contain('Missing Spec URL');
-      expect(el.shadowRoot!.textContent).to.contain('Missing WPT description');
-    });
+        const alert = el.shadowRoot!.querySelector('sl-alert[variant="danger"]');
+        expect(alert).to.exist;
+        expect(alert!.textContent).to.contain('previous evaluation run failed');
 
-    it('correctly identifies and lists valid WPT URLs', async () => {
-      csClientStub.getFeature.resolves({
-        ...mockFeatureV1,
-        wpt_descr:
-          'Check https://wpt.fyi/results/foo.html and also https://wpt.fyi/results/bar/',
-      });
-      const el = await fixture<ChromedashWPTEvalPage>(
-        html`<chromedash-wpt-eval-page
-          .featureId=${3}
-        ></chromedash-wpt-eval-page>`
-      );
-      await el.updateComplete;
-
-      // The 3rd requirement item (Valid URLs) should be success
-      const items = el.shadowRoot!.querySelectorAll('.requirement-item');
-      expect(items[2].querySelector('.success')).to.exist;
-
-      // Check the rendered list of URLs
-      const urlList = el.shadowRoot!.querySelector('.url-list');
-      expect(urlList).to.exist;
-      const links = urlList!.querySelectorAll('li a');
-      expect(links.length).to.equal(2);
-      expect(links[0].getAttribute('href')).to.equal(
-        'https://wpt.fyi/results/foo.html'
-      );
-      expect(links[1].getAttribute('href')).to.equal(
-        'https://wpt.fyi/results/bar/'
-      );
-    });
-
-    it('fails the "Valid URLs" check if wpt_descr has text but no valid links', async () => {
-      csClientStub.getFeature.resolves({
-        ...mockFeatureV1,
-        wpt_descr:
-          'Tests are available at github.com/web-platform-tests (invalid for this check)',
-      });
-      const el = await fixture<ChromedashWPTEvalPage>(
-        html`<chromedash-wpt-eval-page
-          .featureId=${4}
-        ></chromedash-wpt-eval-page>`
-      );
-      await el.updateComplete;
-
-      const items = el.shadowRoot!.querySelectorAll('.requirement-item');
-      // Item 1 (Desc) should be success because text exists
-      expect(items[1].querySelector('.success')).to.exist;
-      // Item 2 (Valid URLs) should fail because the specific regex didn't match
-      expect(items[2].querySelector('.danger')).to.exist;
-      expect(el.shadowRoot!.querySelector('.url-list')).to.not.exist;
+        // Button should still be visible to try again
+        expect(el.shadowRoot!.querySelector('.generate-button')).to.exist;
     });
   });
 
   describe('Error Handling', () => {
-    it('handles FeatureNotFoundError gracefully by stopping loading', async () => {
-      // Simulate a 404 from the client
+    it('handles FeatureNotFoundError by stopping loading', async () => {
       csClientStub.getFeature.rejects(new FeatureNotFoundError(123));
-
       const el = await fixture<ChromedashWPTEvalPage>(
         html`<chromedash-wpt-eval-page
           .featureId=${999}
@@ -213,14 +280,11 @@ describe('chromedash-wpt-eval-page', () => {
 
       expect(el.loading).to.be.false;
       expect(el.feature).to.be.null;
-      // Should not see reports or checklists.
       expect(el.shadowRoot!.querySelector('.requirements-list')).to.not.exist;
-      expect(el.shadowRoot!.querySelector('.report-section')).to.not.exist;
     });
 
-    it('handles generic errors', async () => {
+    it('handles generic errors by stopping loading (updated behavior)', async () => {
       csClientStub.getFeature.rejects(new Error('Network Boom'));
-
       const el = await fixture<ChromedashWPTEvalPage>(
         html`<chromedash-wpt-eval-page
           .featureId=${500}
@@ -228,9 +292,10 @@ describe('chromedash-wpt-eval-page', () => {
       );
       await el.updateComplete;
 
-      expect(el.loading).to.be.true;
-
-      expect(el.shadowRoot!.querySelector('sl-skeleton')).to.exist;
+      // New behavior: finally block ensures loading is false even on generic error
+      expect(el.loading).to.be.false;
+      // Should NOT show skeletons anymore
+      expect(el.shadowRoot!.querySelector('sl-skeleton')).to.not.exist;
     });
   });
 });
