@@ -21,7 +21,7 @@ google-auth==2.42.1
 google-genai==1.48.0
 requests==2.32.5
 redis==6.4.0
-fakeredis==2.32.0
+fakeredis==2.32.1
 Flask==3.1.2
 flask-cors==6.0.1
 funcsigs==1.0.2
