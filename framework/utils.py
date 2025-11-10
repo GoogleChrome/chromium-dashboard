@@ -277,7 +277,12 @@ def _fetch_dir_listing(url: str, headers: dict[str, str]) -> list[tuple[str, str
     data = resp.json()
     if isinstance(data, list):
       return [(i['name'], i['download_url']) for i in data
-              if i.get('type') == 'file' and i.get('download_url')]
+              if (
+                # Ignore YAML files.
+                not i.get('name', '').endswith('.yml')
+                and not i.get('name', '').endswith('.yaml')
+                and i.get('type') == 'file'
+                and i.get('download_url'))]
   except Exception as e:
     logging.error(f'Error fetching directory listing for {url}: {e}')
   return []
