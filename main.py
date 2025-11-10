@@ -213,6 +213,7 @@ spa_page_routes = [
   Route('/newfeatures'),
   Route('/feature/<int:feature_id>'),
   Route('/feature/<int:feature_id>/activity'),
+  Route('/feature/<int:feature_id>/ai-coverage-evaluation'),
   Route('/guide/new', guide.FeatureCreateHandler,
       defaults={'require_create_feature': True}),
   Route('/guide/enterprise/new', guide.EnterpriseFeatureCreateHandler,
