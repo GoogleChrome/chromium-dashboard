@@ -34,6 +34,11 @@ class WPTCoverageAPI(basehandlers.EntitiesAPIHandler):
     if not can_edit:
       self.abort(403, f'User does not have dit access to feature {feature_id}')
 
+    if feature.ai_test_eval_run_status == core_enums.AITestEvaluationStatus.IN_PROGRESS:
+      self.abort(
+        409,
+        'The WPT coverage evaluation pipeline is already running for this feature.')
+
     feature.ai_test_eval_run_status = core_enums.AITestEvaluationStatus.IN_PROGRESS.value
     feature.ai_test_eval_status_timestamp = datetime.now()
     feature.put()
