@@ -409,6 +409,35 @@ class UtilsGitHubTests(unittest.TestCase):
 
   @mock.patch('framework.utils.requests.get')
   @mock.patch('framework.utils._parse_wpt_fyi_url')
+  def test_fetch_dir_listing__ignores_yaml(self, mock_parse_url, mock_requests_get):
+    """Should specifically ignore .yaml and .yml files in listings."""
+    mock_parse_url.return_value = 'css/css-grid'
+
+    # Mock a response containing mixed content including YAML files
+    mixed_response = [
+        {'type': 'file', 'name': 'grid-basic.html', 'download_url': 'http://dl/grid-basic.html'},
+        {'type': 'file', 'name': 'META.yml', 'download_url': 'http://dl/META.yml'},
+        {'type': 'file', 'name': 'config.yaml', 'download_url': 'http://dl/config.yaml'},
+        {'type': 'dir', 'name': 'subtests', 'download_url': None},
+        {'type': 'file', 'name': 'grid-api.js', 'download_url': 'http://dl/grid-api.js'},
+    ]
+
+    mock_response = mock.Mock()
+    mock_response.json.return_value = mixed_response
+    mock_response.raise_for_status.return_value = None
+    mock_requests_get.return_value = mock_response
+
+    result = utils._fetch_dir_listing('https://wpt.fyi/results/css/css-grid', self.mock_headers)
+
+    # Assert only non-YAML files are returned
+    expected = [
+        ('grid-basic.html', 'http://dl/grid-basic.html'),
+        ('grid-api.js', 'http://dl/grid-api.js')
+    ]
+    self.assertEqual(result, expected)
+
+  @mock.patch('framework.utils.requests.get')
+  @mock.patch('framework.utils._parse_wpt_fyi_url')
   def test_resolve_file_url__success(self, mock_parse_url, mock_requests_get):
     """Should resolve a single file URL to (name, download_url)."""
     mock_parse_url.return_value = 'dom/file.html'
