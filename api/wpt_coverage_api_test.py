@@ -65,7 +65,7 @@ class WPTCoverageAPITest(testing_config.CustomTestCase):
 
     # Verify Cloud Task was enqueued with correct parameters.
     mock_enqueue.assert_called_once_with(
-        '/tasks/generate-wpt-coverage-eval-report',
+        '/tasks/generate-wpt-coverage-evaluation',
         {'feature_id': 123456}
     )
 
@@ -117,3 +117,24 @@ class WPTCoverageAPITest(testing_config.CustomTestCase):
       # basehandlers usually raise BadRequest (400) if a required int param is missing
       with self.assertRaises(werkzeug.exceptions.BadRequest):
         self.handler.do_post()
+
+  @mock.patch('framework.cloud_tasks_helpers.enqueue_task')
+  @mock.patch('framework.permissions.can_edit_feature')
+  def test_do_post__already_in_progress(self, mock_can_edit, mock_enqueue):
+    """Ensure requests abort with 409 if an evaluation is already running."""
+    mock_can_edit.return_value = True
+
+    # Set the feature status to IN_PROGRESS specifically to trigger the new conditional.
+    self.feature_1.ai_test_eval_run_status = (
+        core_enums.AITestEvaluationStatus.IN_PROGRESS.value)
+    self.feature_1.put()
+
+    params = {'feature_id': self.feature_1.key.integer_id()}
+    with test_app.test_request_context('/api/v0/generate-wpt-coverage-evaluation',
+                                       method='POST', json=params):
+      # We expect werkzeug.exceptions.Conflict (409)
+      with self.assertRaises(werkzeug.exceptions.Conflict) as cm:
+        self.handler.do_post()
+
+    # Verify we did not enqueue a duplicate task
+    mock_enqueue.assert_not_called()
