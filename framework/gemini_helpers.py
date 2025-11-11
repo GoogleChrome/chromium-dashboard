@@ -12,12 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import asyncio
+from datetime import datetime
 import logging
 import re
 from flask import render_template
 
-from framework import utils
+from framework import basehandlers, utils
 from framework.gemini_client import GeminiClient
+from internals import core_enums
 from internals.core_models import FeatureEntry
 
 
@@ -127,3 +130,36 @@ async def run_wpt_test_eval_pipeline(feature: FeatureEntry) -> None:
   gap_analysis_response = await gemini_client.get_response_async(gap_analysis_prompt)
 
   feature.ai_test_eval_report = gap_analysis_response
+
+
+class GenerateWPTCoverageEvalReportHandler(basehandlers.FlaskHandler):
+  """Cloud Task handler for running the AI-powered WPT coverage evaluation."""
+
+  IS_INTERNAL_HANDLER = True
+
+  def process_post_data(self, **kwargs):
+    self.require_task_header()
+
+    feature_id = self.get_int_param('feature_id')
+    feature = self.get_validated_entity(feature_id, FeatureEntry)
+
+    logging.info(f'Starting WPT coverage evaluation pipeline for feature {feature_id}')
+
+    try:
+      asyncio.run(run_wpt_test_eval_pipeline(feature))
+    except Exception as e:
+      feature.ai_test_eval_run_status = core_enums.AITestEvaluationStatus.FAILED
+      feature.ai_test_eval_status_timestamp = datetime.now()
+      feature.ai_test_eval_report = (
+        'Web Platform Tests coverage evaluation report failed to generate. '
+        'Try again later.'
+      )
+      feature.put()
+      error_message = f'WPT coverage evaluation report failure: {e}'
+      logging.error(error_message)
+      return {'message': error_message}
+
+    feature.ai_test_eval_run_status = core_enums.AITestEvaluationStatus.COMPLETE
+    feature.ai_test_eval_status_timestamp = datetime.now()
+    feature.put()
+    return {'message': 'WPT coverage evaluation report generated.'}

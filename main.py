@@ -48,8 +48,9 @@ from api import (
   stars_api,
   token_refresh_api,
   webdx_feature_api,
+  wpt_coverage_api,
 )
-from framework import basehandlers, csp, sendemail
+from framework import basehandlers, csp, gemini_helpers, sendemail
 from internals import (
   data_backup,
   detect_intent,
@@ -150,6 +151,8 @@ api_routes: list[Route] = [
           intents_api.IntentsAPI),
     Route(f'{API_BASE}/features/<int:feature_id>/<int:stage_id>/<int:gate_id>/intent',
           intents_api.IntentsAPI),
+    Route(f'{API_BASE}/features/generate-wpt-coverage-evaluation',
+          wpt_coverage_api.WPTCoverageAPI),
     Route(f'{API_BASE}/features/shipping',
           shipping_features_api.ShippingFeaturesAPI),
     Route(f'{API_BASE}/features/stale',
@@ -339,6 +342,8 @@ internals_routes: list[Route] = [
   Route('/tasks/email-intent-to-blink-dev', notifier.IntentToBlinkDevHandler),
   Route('/tasks/email-reset-shipping-milestones',
         notifier.ResetShippingMilestonesEmailHandler),
+  Route('/tasks/generate-wpt-coverage-evaluation',
+        gemini_helpers.GenerateWPTCoverageEvalReportHandler),
 
   # OT process reminder emails
   Route('/tasks/email-ot-first-branch', notifier.OTFirstBranchReminderHandler),

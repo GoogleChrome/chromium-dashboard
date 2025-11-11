@@ -16,6 +16,7 @@ import testing_config  # Must be imported before the module under test.
 
 import asyncio
 from unittest import mock
+from internals import core_enums
 from internals.core_models import FeatureEntry
 from framework import gemini_helpers
 
@@ -233,3 +234,85 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
       gap_call_kwargs = call_args_list[-1][1]
       self.assertIn('Analysis 2 Success', gap_call_kwargs.get('test_analysis', ''))
       self.assertNotIn('Fail 1', gap_call_kwargs.get('test_analysis', ''))
+
+
+class GenerateWPTCoverageEvalReportHandlerTest(testing_config.CustomTestCase):
+
+  def setUp(self):
+    super(GenerateWPTCoverageEvalReportHandlerTest, self).setUp()
+    self.feature = FeatureEntry(
+      name='Test Feature',
+      summary='A test feature summary',
+      feature_type=0,
+      category=1,
+      spec_link='https://spec.example.com',
+      wpt_descr='https://wpt.fyi/results/test'
+    )
+    self.feature.put()
+    self.feature_id = self.feature.key.integer_id()
+
+    # Instantiate handler
+    self.handler = gemini_helpers.GenerateWPTCoverageEvalReportHandler()
+
+    self.handler.require_task_header = mock.Mock()
+    self.handler.get_int_param = mock.Mock(return_value=self.feature_id)
+    self.handler.get_validated_entity = mock.Mock(return_value=self.feature)
+
+    self.mock_pipeline = mock.patch(
+      'framework.gemini_helpers.run_wpt_test_eval_pipeline',
+      new_callable=mock.AsyncMock).start()
+
+  def tearDown(self):
+    mock.patch.stopall()
+    self.feature.key.delete()
+
+  def test_process_post_data__success(self):
+    """Tests that a successful pipeline run updates status to COMPLETE."""
+    self.mock_pipeline.return_value = None
+
+    response = self.handler.process_post_data()
+
+    # Verify inputs were retrieved
+    self.handler.require_task_header.assert_called_once()
+    self.handler.get_int_param.assert_called_with('feature_id')
+    self.handler.get_validated_entity.assert_called_with(
+      self.feature_id, FeatureEntry)
+
+    # Verify pipeline was called
+    self.mock_pipeline.assert_awaited_once_with(self.feature)
+
+    # Verify feature state was updated correctly
+    updated_feature = FeatureEntry.get_by_id(self.feature_id)
+    self.assertEqual(
+      updated_feature.ai_test_eval_run_status,
+      core_enums.AITestEvaluationStatus.COMPLETE.value
+    )
+    self.assertIsNotNone(updated_feature.ai_test_eval_status_timestamp)
+
+    # Verify response.
+    self.assertEqual(
+      response, {'message': 'WPT coverage evaluation report generated.'})
+
+  def test_process_post_data__pipeline_failure(self):
+    """Tests that a pipeline exception updates status to FAILED and saves report."""
+    self.mock_pipeline.side_effect = gemini_helpers.PipelineError('Test failure')
+
+    with mock.patch('framework.gemini_helpers.logging.error') as mock_log_error:
+      response = self.handler.process_post_data()
+      mock_log_error.assert_called_once()
+
+    # Verify feature state was updated to FAILED
+    updated_feature = FeatureEntry.get_by_id(self.feature_id)
+    self.assertEqual(
+      updated_feature.ai_test_eval_run_status,
+      core_enums.AITestEvaluationStatus.FAILED.value
+    )
+    self.assertIsNotNone(updated_feature.ai_test_eval_status_timestamp)
+
+    # Verify a user-friendly error report was saved to the feature.
+    self.assertIn(
+      'Web Platform Tests coverage evaluation report failed to generate',
+      updated_feature.ai_test_eval_report
+    )
+
+    self.assertIn('Test failure', response['message'])
