@@ -10,6 +10,9 @@ import {AITestEvaluationStatus} from './form-field-enums.js';
 // Matches http or https, followed by wpt.fyi/results, followed by any non-whitespace and non-question mark characters.
 const WPT_RESULTS_REGEX = /(https?:\/\/wpt\.fyi\/results[^\s?]+)/g;
 
+// 30 minute cooldown for regenerating the evaluation report.
+const COOLDOWN_MS = 30 * 60 * 1000;
+
 @customElement('chromedash-wpt-eval-page')
 export class ChromedashWPTEvalPage extends LitElement {
   static get styles() {
@@ -155,6 +158,15 @@ export class ChromedashWPTEvalPage extends LitElement {
           font-size: 1.3em;
         }
 
+        .cooldown-message {
+          margin-top: 12px;
+          color: var(--sl-color-neutral-600);
+          font-size: 0.9em;
+          display: flex;
+          align-items: center;
+          gap: 6px;
+        }
+
         .status-in-progress,
         .status-complete {
           display: flex;
@@ -254,11 +266,15 @@ export class ChromedashWPTEvalPage extends LitElement {
   @state()
   completedInThisSession = false;
 
-  // Tracks if report content has just changed to re-trigger animation
+  // Milliseconds remaining before another run can be requested
+  @state()
+  private _cooldownRemaining = 0;
+
   @state()
   private _reportContentChanged = false;
 
   private _pollIntervalId: number | null = null;
+  private _cooldownIntervalId: number | null = null;
   private _previousReportContent: string | null = null;
 
   async fetchData() {
@@ -269,6 +285,7 @@ export class ChromedashWPTEvalPage extends LitElement {
       this.feature = await window.csClient.getFeature(this.featureId);
       this.checkRequirements();
       this.managePolling();
+      this.updateCooldown();
     } catch (error) {
       showToastMessage(
         'Some errors occurred. Please refresh the page or try again later.'
@@ -301,6 +318,7 @@ export class ChromedashWPTEvalPage extends LitElement {
   disconnectedCallback() {
     super.disconnectedCallback();
     this.stopPolling();
+    this.stopCooldownTimer();
   }
 
   checkRequirements() {
@@ -314,6 +332,47 @@ export class ChromedashWPTEvalPage extends LitElement {
       (this.feature.wpt_descr || '').match(WPT_RESULTS_REGEX) !== null;
 
     this.isRequirementsFulfilled = hasSpecLink && hasWptDescr && hasValidUrls;
+  }
+
+  updateCooldown() {
+    if (
+      this.feature?.ai_test_eval_run_status ===
+        AITestEvaluationStatus.COMPLETE &&
+      this.feature.ai_test_eval_status_timestamp
+    ) {
+      const completedAt = new Date(
+        this.feature.ai_test_eval_status_timestamp
+      ).getTime();
+      const now = Date.now();
+      const elapsed = now - completedAt;
+
+      if (elapsed < COOLDOWN_MS) {
+        this._cooldownRemaining = COOLDOWN_MS - elapsed;
+        this.startCooldownTimer();
+      } else {
+        this._cooldownRemaining = 0;
+        this.stopCooldownTimer();
+      }
+    } else {
+      this._cooldownRemaining = 0;
+      this.stopCooldownTimer();
+    }
+  }
+
+  startCooldownTimer() {
+    if (!this._cooldownIntervalId) {
+      // Update cooldown every minute to refresh the UI.
+      this._cooldownIntervalId = window.setInterval(() => {
+        this.updateCooldown();
+      }, 60000);
+    }
+  }
+
+  stopCooldownTimer() {
+    if (this._cooldownIntervalId) {
+      window.clearInterval(this._cooldownIntervalId);
+      this._cooldownIntervalId = null;
+    }
   }
 
   managePolling() {
@@ -344,7 +403,12 @@ export class ChromedashWPTEvalPage extends LitElement {
   }
 
   async handleGenerateClick() {
-    if (!this.isRequirementsFulfilled || !this.feature) return;
+    if (
+      !this.isRequirementsFulfilled ||
+      !this.feature ||
+      this._cooldownRemaining > 0
+    )
+      return;
 
     try {
       this.feature = {
@@ -463,7 +527,9 @@ export class ChromedashWPTEvalPage extends LitElement {
       `;
     }
 
-    // Default to showing the button if not in progress and not already completed on page load
+    const isCooldownActive = this._cooldownRemaining > 0;
+    const minutesRemaining = Math.ceil(this._cooldownRemaining / 60000);
+
     return html`
       <section class="card action-section">
         ${status === AITestEvaluationStatus.FAILED
@@ -478,11 +544,22 @@ export class ChromedashWPTEvalPage extends LitElement {
           variant="primary"
           size="large"
           class="generate-button"
-          ?disabled=${!this.isRequirementsFulfilled}
+          ?disabled=${!this.isRequirementsFulfilled || isCooldownActive}
           @click=${this.handleGenerateClick}
         >
           Evaluate test coverage
         </sl-button>
+
+        ${isCooldownActive
+          ? html`
+              <div class="cooldown-message">
+                <sl-icon name="hourglass-split"></sl-icon>
+                Available in ${minutesRemaining} minute${minutesRemaining !== 1
+                  ? 's'
+                  : ''}
+              </div>
+            `
+          : nothing}
       </section>
     `;
   }
@@ -585,6 +662,12 @@ export class ChromedashWPTEvalPage extends LitElement {
                 <li>
                   Directory URLs are accepted, but <strong>only</strong> if
                   every test in that directory is relevant to your feature.
+                </li>
+                <li>
+                  There is a limit of <strong>50 individual test files</strong>
+                  In the Web Platform Tests repository. If more than 50 relevant
+                  test files are found via the listed URLs, the test suite size
+                  is too big for automated test coverage evaluation.
                 </li>
                 <li>
                   <em

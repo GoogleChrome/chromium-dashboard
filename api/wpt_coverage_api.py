@@ -35,14 +35,29 @@ class WPTCoverageAPI(basehandlers.EntitiesAPIHandler):
       self.abort(403, f'User does not have dit access to feature {feature_id}')
 
     last_status_time = feature.ai_test_eval_status_timestamp
+
     one_hour = timedelta(hours=1)
-    if (feature.ai_test_eval_run_status == core_enums.AITestEvaluationStatus.IN_PROGRESS
-        and last_status_time
-        # Assume that a request that is in progress for over an hour is hanging.
-        and last_status_time + one_hour > datetime.now()):
+    request_in_progress = (
+      feature.ai_test_eval_run_status == core_enums.AITestEvaluationStatus.IN_PROGRESS
+      and last_status_time
+      # Assume that a request that is in progress for over an hour is hanging.
+      and last_status_time + one_hour > datetime.now())
+
+    # Be more generous with the cooldown so we don't block the UI sending a
+    # request accidentally.
+    twenty_nine_minutes = timedelta(minutes=29)
+    on_cooldown = (
+      feature.ai_test_eval_run_status == core_enums.AITestEvaluationStatus.COMPLETE
+      and last_status_time
+      # Assume that a request that is in progress for over an hour is hanging.
+      and last_status_time + twenty_nine_minutes > datetime.now())
+
+    if (request_in_progress):
       self.abort(
         409,
         'The WPT coverage evaluation pipeline is already running for this feature.')
+    if (on_cooldown):
+      self.abort(409, 'Requests to the pipeline are on cooldown for this feature.')
 
     feature.ai_test_eval_run_status = core_enums.AITestEvaluationStatus.IN_PROGRESS.value
     feature.ai_test_eval_status_timestamp = datetime.now()

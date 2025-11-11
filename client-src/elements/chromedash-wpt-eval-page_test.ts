@@ -318,4 +318,81 @@ describe('chromedash-wpt-eval-page', () => {
       expect(el.shadowRoot!.querySelector('sl-skeleton')).to.not.exist;
     });
   });
+
+  // NEW: Cooldown Logic Tests
+  describe('Cooldown Logic', () => {
+    it('disables button and shows cooldown message if last run was COMPLETE < 30 mins ago', async () => {
+      const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+
+      csClientStub.getFeature.resolves({
+        ...mockFeatureV1,
+        ai_test_eval_run_status: AITestEvaluationStatus.COMPLETE,
+        ai_test_eval_status_timestamp: fiveMinutesAgo,
+      });
+
+      const el = await fixture<ChromedashWPTEvalPage>(
+        html`<chromedash-wpt-eval-page
+          .featureId=${1}
+        ></chromedash-wpt-eval-page>`
+      );
+      await el.updateComplete;
+
+      const button = el.shadowRoot!.querySelector('.generate-button');
+      const message = el.shadowRoot!.querySelector('.cooldown-message');
+
+      expect(button).to.exist;
+      expect(button).to.have.attribute('disabled');
+      expect(message).to.exist;
+      expect(message!.textContent).to.contain('Available in');
+    });
+
+    it('enables button if last run was COMPLETE > 30 mins ago', async () => {
+      const thirtyFiveMinutesAgo = new Date(Date.now() - 35 * 60 * 1000).toISOString();
+
+      csClientStub.getFeature.resolves({
+        ...mockFeatureV1,
+        ai_test_eval_run_status: AITestEvaluationStatus.COMPLETE,
+        ai_test_eval_status_timestamp: thirtyFiveMinutesAgo,
+      });
+
+      const el = await fixture<ChromedashWPTEvalPage>(
+        html`<chromedash-wpt-eval-page
+          .featureId=${1}
+        ></chromedash-wpt-eval-page>`
+      );
+      await el.updateComplete;
+
+      const button = el.shadowRoot!.querySelector('.generate-button');
+      const message = el.shadowRoot!.querySelector('.cooldown-message');
+
+      expect(button).to.exist;
+      expect(button).to.not.have.attribute('disabled');
+      expect(message).to.not.exist;
+    });
+
+    it('enables button if last run was FAILED even if timestamp is recent', async () => {
+      // If failed, we usually allow retrying immediately
+      const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+
+      csClientStub.getFeature.resolves({
+        ...mockFeatureV1,
+        ai_test_eval_run_status: AITestEvaluationStatus.FAILED,
+        ai_test_eval_status_timestamp: fiveMinutesAgo,
+      });
+
+      const el = await fixture<ChromedashWPTEvalPage>(
+        html`<chromedash-wpt-eval-page
+          .featureId=${1}
+        ></chromedash-wpt-eval-page>`
+      );
+      await el.updateComplete;
+
+      const button = el.shadowRoot!.querySelector('.generate-button');
+      const message = el.shadowRoot!.querySelector('.cooldown-message');
+
+      expect(button).to.exist;
+      expect(button).to.not.have.attribute('disabled');
+      expect(message).to.not.exist;
+    });
+  });
 });
