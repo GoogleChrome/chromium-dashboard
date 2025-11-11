@@ -14,6 +14,7 @@
 
 import asyncio
 import logging
+import time
 from google import genai
 from google.genai import types
 
@@ -29,11 +30,16 @@ class GeminiClient:
 
   GEMINI_MODEL = 'gemini-2.5-pro'
 
-  # Outer timeout: The absolute max time the async task will wait (3 minutes).
-  ASYNC_TIMEOUT_SECONDS = 180
-  # Inner timeout: slightly shorter so the SDK raises its own error first,
+  # Retry configuration.
+  MAX_RETRIES = 3
+  RETRY_BACKOFF_SECONDS = 2
+
+
+  # Inner timeout: Shorter so the SDK raises its own error first,
   # preventing stuck threads in the background.
   API_TIMEOUT_SECONDS = 175
+  # Outer timeout: The absolute max time the async task will wait (9 minutes).
+  ASYNC_TIMEOUT_SECONDS = 540
 
   # Outer timeout: The absolute max time the async task will wait (3 minutes).
   ASYNC_TIMEOUT_SECONDS = 180
@@ -55,10 +61,7 @@ class GeminiClient:
       raise RuntimeError(f'Could not initialize API client: {e}') from e
 
   def __del__(self):
-    """Closes the client connection upon object deletion.
-
-    This attempts to gracefully close the underlying client connection.
-    """
+    """Closes the client connection upon object deletion."""
     if hasattr(self, 'client') and self.client:
       self.client.close()
 
@@ -72,33 +75,58 @@ class GeminiClient:
       The text response from the model.
 
     Raises:
-      RuntimeError: If the API request fails, times out, or if the API
-        succeeds but returns no text content.
+      RuntimeError: If a valid response is not received after all retries.
     """
     logging.info('--- Sending Prompt to Gemini --- \n'
                  f'{prompt}\n'
                  '---------------------------------')
-    try:
-      response = self.client.models.generate_content(
-        model=GeminiClient.GEMINI_MODEL,
-        contents=prompt,
-        config=types.GenerateContentConfig(
-          # timeout is passed to the config using milliseconds.
-          http_options=types.HttpOptions(timeout=GeminiClient.API_TIMEOUT_SECONDS * 1000)
-        )
-      )
+    last_exception = None
 
-      if response.text:
+    for attempt in range(1, GeminiClient.MAX_RETRIES + 1):
+      try:
+        if attempt > 1:
+          logging.info(f'Starting attempt {attempt}/{GeminiClient.MAX_RETRIES}...')
+
+        response = self.client.models.generate_content(
+          model=GeminiClient.GEMINI_MODEL,
+          contents=prompt,
+          config=types.GenerateContentConfig(
+            # timeout is passed to the config using milliseconds.
+            http_options=types.HttpOptions(timeout=GeminiClient.API_TIMEOUT_SECONDS * 1000)
+          )
+        )
+
+        if not response.text:
+          raise RuntimeError('No text response received from the API.')
+
+        # Check for the specific failure sentinel in the response.
+        # Using lstrip().upper() for robustness against minor formatting variations.
+        if response.text.lstrip().upper().startswith("RESPONSE FAILED"):
+          # Log the specific failure reason returned by the model
+          logging.warning(f'Model returned failure sentinel on attempt {attempt}: {response.text}')
+          raise RuntimeError(f'Model reported failure: {response.text}')
+
         return response.text
-      else:
-        logging.error('No text response received from the API.')
-        raise RuntimeError('No text response received from the API.')
-    except Exception as e:
-      logging.error(f'An error occurred while obtaining Gemini response: {e}')
-      raise RuntimeError(f'Failed to get response from Gemini API: {e}') from e
+
+      except Exception as e:
+        last_exception = e
+        logging.error(f'Attempt {attempt}/{GeminiClient.MAX_RETRIES} failed: {e}')
+
+        if attempt < GeminiClient.MAX_RETRIES:
+          sleep_time = GeminiClient.RETRY_BACKOFF_SECONDS * attempt
+          logging.info(f'Waiting {sleep_time}s before retry...')
+          time.sleep(sleep_time)
+
+    # If loop finishes without returning, raise the last error encountered.
+    raise RuntimeError(
+      f'Failed to get valid response after {GeminiClient.MAX_RETRIES} attempts'
+    ) from last_exception
 
   async def get_response_async(self, prompt: str) -> str:
     """Asynchronously sends a prompt to the Gemini model.
+
+    Wraps the synchronous `get_response` method in a thread, inheriting
+    its retry logic.
 
     Args:
       prompt: The input prompt string.
@@ -107,7 +135,8 @@ class GeminiClient:
       The text response from the model.
 
     Raises:
-      TimeoutError: If the request exceeds ASYNC_TIMEOUT_SECONDS.
+      TimeoutError: If the total execution time (including retries)
+        exceeds ASYNC_TIMEOUT_SECONDS.
     """
     try:
       return await asyncio.wait_for(
