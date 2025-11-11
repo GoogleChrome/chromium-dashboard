@@ -12,11 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from internals import core_enums
 import testing_config  # Must be imported before the module under test.
 
 import asyncio
 from unittest import mock
+from internals import core_enums
 from internals.core_models import FeatureEntry
 from framework import gemini_helpers
 
