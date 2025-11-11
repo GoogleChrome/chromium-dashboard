@@ -554,9 +554,8 @@ export class ChromedashWPTEvalPage extends LitElement {
           ? html`
               <div class="cooldown-message">
                 <sl-icon name="hourglass-split"></sl-icon>
-                Available in ${minutesRemaining} minute${minutesRemaining !== 1
-                  ? 's'
-                  : ''}
+                Available in ${minutesRemaining}
+                minute${minutesRemaining !== 1 ? 's' : ''}
               </div>
             `
           : nothing}

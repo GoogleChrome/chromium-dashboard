@@ -347,7 +347,9 @@ describe('chromedash-wpt-eval-page', () => {
     });
 
     it('enables button if last run was COMPLETE > 30 mins ago', async () => {
-      const thirtyFiveMinutesAgo = new Date(Date.now() - 35 * 60 * 1000).toISOString();
+      const thirtyFiveMinutesAgo = new Date(
+        Date.now() - 35 * 60 * 1000
+      ).toISOString();
 
       csClientStub.getFeature.resolves({
         ...mockFeatureV1,
