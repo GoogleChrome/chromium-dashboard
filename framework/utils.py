@@ -15,10 +15,10 @@
 
 import asyncio
 import calendar
-import concurrent.futures
 import datetime
 import json
 import logging
+from pathlib import Path
 import re
 import requests
 import time
@@ -34,6 +34,7 @@ CHROME_RELEASE_SCHEDULE_URL = (
     'https://chromiumdash.appspot.com/fetch_milestone_schedule')
 CHROMIUM_SCHEDULE_DATE_FORMAT = '%Y-%m-%dT%H:%M:%S'
 WPT_GITHUB_API_URL = 'https://api.github.com/repos/web-platform-tests/wpt/contents/'
+WPT_GITHUB_RAW_CONTENTS_URL = 'https://raw.githubusercontent.com/web-platform-tests/wpt/master/'
 
 
 def normalized_name(val):
@@ -288,36 +289,6 @@ def _fetch_dir_listing(url: str, headers: dict[str, str]) -> list[tuple[str, str
   return []
 
 
-def _resolve_file_url(url: str, headers: dict[str, str]) -> tuple[str, str] | None:
-  """
-  Resolves a single WPT file URL to its filename and raw download URL.
-  Does NOT fetch the file content. Intended to be run in a thread pool.
-
-  Args:
-    url: The WPT URL (e.g., https://wpt.fyi/results/dom/historical.html)
-    headers: GitHub API headers.
-
-  Returns:
-    A tuple of (filename, download_url), or None if resolution fails.
-  """
-  try:
-    path = _parse_wpt_fyi_url(url)
-    endpoint = f'{WPT_GITHUB_API_URL}{path}'
-    resp = requests.get(endpoint, headers=headers, params={'ref': 'master'})
-    resp.raise_for_status()
-    data = resp.json()
-
-    # Verify it is a file and has the necessary download link
-    if data.get('type') == 'file' and data.get('download_url'):
-       return (data['name'], data['download_url'])
-    else:
-       logging.warning(f'URL resolved but was not a valid file: {url}')
-
-  except Exception as e:
-    logging.error(f'Error resolving file URL {url}: {e}')
-  return None
-
-
 async def _fetch_and_pair(fname: str, furl: str) -> tuple[str, str | None]:
   """
   Async wrapper for the actual WPT content fetching phase.
@@ -354,18 +325,17 @@ async def get_mixed_wpt_contents_async(
       asyncio.to_thread(_fetch_dir_listing, u, headers)
       for u in dir_urls
   ]
-
-  # 1b. Create tasks to resolve individual file URLs
-  file_res_tasks = [
-      asyncio.to_thread(_resolve_file_url, u, headers)
-      for u in additional_file_urls
-  ]
+  file_path_info: list[tuple[str, str]] = []
+  for furl in additional_file_urls:
+    path = _parse_wpt_fyi_url(furl)
+    file_path_info.append((
+      f'{WPT_GITHUB_RAW_CONTENTS_URL}{path}',
+      # Infer the test name by getting the name from a Path object.
+      Path(path).name,
+    ))
 
   # Wait for all resolution tasks to complete concurrently
-  dir_results, file_res_results = await asyncio.gather(
-      asyncio.gather(*dir_tasks),
-      asyncio.gather(*file_res_tasks)
-  )
+  dir_results = await asyncio.gather(*dir_tasks)
 
   # Map raw download URLs to filenames. This automatically handles deduplication
   # if the same file appears in a directory and the explicit list.
@@ -377,10 +347,8 @@ async def get_mixed_wpt_contents_async(
       files_to_fetch_map[url] = fname
 
   # Process individual file results (each result is a single tuple or None)
-  for res in file_res_results:
-    if res is not None:
-      fname, url = res
-      files_to_fetch_map[url] = fname
+  for url, fname in file_path_info:
+    files_to_fetch_map[url] = fname
 
   # PHASE 2: Async Content Fetching
   file_tasks = [

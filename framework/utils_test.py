@@ -15,7 +15,6 @@
 import unittest
 import testing_config  # Must be imported before the module under test.
 
-import asyncio
 from unittest import mock
 import werkzeug.exceptions  # Flask HTTP stuff.
 
@@ -436,41 +435,6 @@ class UtilsGitHubTests(unittest.TestCase):
     ]
     self.assertEqual(result, expected)
 
-  @mock.patch('framework.utils.requests.get')
-  @mock.patch('framework.utils._parse_wpt_fyi_url')
-  def test_resolve_file_url__success(self, mock_parse_url, mock_requests_get):
-    """Should resolve a single file URL to (name, download_url)."""
-    mock_parse_url.return_value = 'dom/file.html'
-    mock_response = mock.Mock()
-    mock_response.json.return_value = self.mock_file_api_response
-    mock_response.raise_for_status.return_value = None
-    mock_requests_get.return_value = mock_response
-
-    result = utils._resolve_file_url('https://wpt.fyi/results/dom/file.html', self.mock_headers)
-    self.assertEqual(result, ('file.html', 'https://raw.github.com/some/file.html'))
-
-  @mock.patch('framework.utils.requests.get')
-  @mock.patch('framework.utils.logging.warning')
-  def test_resolve_file_url__not_a_file(self, mock_warning, mock_requests_get):
-    """Should return None and log warning if URL is not a valid file."""
-    mock_response = mock.Mock()
-    # Missing download_url or wrong type
-    mock_response.json.return_value = {'type': 'dir'}
-    mock_requests_get.return_value = mock_response
-
-    result = utils._resolve_file_url('https://wpt.fyi/results/dom/dir', self.mock_headers)
-    self.assertIsNone(result)
-    mock_warning.assert_called_once()
-
-  @mock.patch('framework.utils.requests.get')
-  @mock.patch('framework.utils.logging.error')
-  def test_resolve_file_url__failure(self, mock_error, mock_requests_get):
-    """Should return None and log error on API failure."""
-    mock_requests_get.side_effect = Exception('Net Error')
-    result = utils._resolve_file_url('https://wpt.fyi/results/fail', self.mock_headers)
-    self.assertIsNone(result)
-    mock_error.assert_called_once()
-
 
 class AsyncUtilsGitHubTests(unittest.IsolatedAsyncioTestCase):
   """Tests for the async GitHub orchestration functions."""
@@ -489,22 +453,22 @@ class AsyncUtilsGitHubTests(unittest.IsolatedAsyncioTestCase):
 
   @mock.patch('framework.utils.secrets.get_github_token', return_value='token')
   @mock.patch('framework.utils._fetch_dir_listing')
-  @mock.patch('framework.utils._resolve_file_url')
   @mock.patch('framework.utils._fetch_file_content')
   async def test_get_mixed_wpt_contents_async__success(
-      self, mock_fetch_content, mock_resolve_file, mock_fetch_dir, _mock_token):
+      self, mock_fetch_content, mock_fetch_dir, _mock_token):
     """Test full orchestration with mixed directory and file URLs."""
     # Setup Inputs
     dir_urls = ['https://wpt.fyi/results/dir1']
-    file_urls = ['https://wpt.fyi/results/extra.js']
+    # This URL will be parsed to construct the raw GitHub URL
+    file_urls = ['https://wpt.fyi/results/c.js']
 
     # Dir 1 contains file A and file B
     mock_fetch_dir.return_value = [
         ('a.html', 'http://dl/a.html'),
         ('b.css', 'http://dl/b.css')
     ]
-    # Individual file resolves to file C
-    mock_resolve_file.return_value = ('c.js', 'http://dl/c.js')
+    raw_base = utils.WPT_GITHUB_RAW_CONTENTS_URL
+    expected_c_url = f'{raw_base}c.js'
 
     # Content fetching returns a simple string based on the URL for verification
     mock_fetch_content.side_effect = lambda url: f'content of {url}'
@@ -516,27 +480,33 @@ class AsyncUtilsGitHubTests(unittest.IsolatedAsyncioTestCase):
     expected_results = {
         'a.html': 'content of http://dl/a.html',
         'b.css': 'content of http://dl/b.css',
-        'c.js': 'content of http://dl/c.js',
+        'c.js': f'content of {expected_c_url}',
     }
     self.assertEqual(results, expected_results)
     self.assertEqual(mock_fetch_dir.call_count, 1)
-    self.assertEqual(mock_resolve_file.call_count, 1)
     # Should have fetched content for all 3 unique files
     self.assertEqual(mock_fetch_content.call_count, 3)
+    mock_fetch_content.assert_any_call(expected_c_url)
 
   @mock.patch('framework.utils.secrets.get_github_token', return_value='token')
   @mock.patch('framework.utils._fetch_dir_listing')
-  @mock.patch('framework.utils._resolve_file_url')
   @mock.patch('framework.utils._fetch_file_content')
   async def test_get_mixed_wpt_contents_async__deduplication(
-      self, mock_fetch_content, mock_resolve_file, mock_fetch_dir, _mock_token):
+      self, mock_fetch_content, mock_fetch_dir, _mock_token):
     """If the same file is in a dir and explicitly listed, fetch only once."""
     dir_urls = ['https://wpt.fyi/results/dir1']
-    # This file URL will resolve to the same download URL as one in the directory
+
+    # We assume the user lists a file that is also inside dir1.
+    # The code will construct a raw URL for this file.
     file_urls = ['https://wpt.fyi/results/dir1/a.html']
 
-    mock_fetch_dir.return_value = [('a.html', 'http://dl/a.html')]
-    mock_resolve_file.return_value = ('a.html', 'http://dl/a.html')
+    # Calculate the expected raw URL the code will generate
+    raw_base = utils.WPT_GITHUB_RAW_CONTENTS_URL
+    expected_url = f'{raw_base}dir1/a.html'
+
+    # The directory listing MUST return the same URL for deduplication to work.
+    mock_fetch_dir.return_value = [('a.html', expected_url)]
+
     mock_fetch_content.return_value = 'content'
 
     results = await utils.get_mixed_wpt_contents_async(dir_urls, file_urls)
@@ -544,22 +514,19 @@ class AsyncUtilsGitHubTests(unittest.IsolatedAsyncioTestCase):
     self.assertEqual(len(results), 1)
     self.assertEqual(results['a.html'], 'content')
     # Crucial: content fetch should only happen once despite appearing twice in resolution phase
-    mock_fetch_content.assert_called_once_with('http://dl/a.html')
+    mock_fetch_content.assert_called_once_with(expected_url)
 
   @mock.patch('framework.utils.secrets.get_github_token', return_value='token')
   @mock.patch('framework.utils._fetch_dir_listing')
-  @mock.patch('framework.utils._resolve_file_url')
   @mock.patch('framework.utils._fetch_file_content')
   async def test_get_mixed_wpt_contents_async__partial_failures(
-      self, mock_fetch_content, mock_resolve_file, mock_fetch_dir, _mock_token):
+      self, mock_fetch_content, mock_fetch_dir, _mock_token):
     """Should gracefully handle failures in resolution or fetching phases."""
     dir_urls = ['https://wpt.fyi/results/dir1', 'https://wpt.fyi/results/fail_dir']
-    file_urls = ['https://wpt.fyi/results/fail_file']
+    file_urls = []
 
     # One dir fails (returns empty list), one succeeds
     mock_fetch_dir.side_effect = [[('a.html', 'http://dl/a.html')], []]
-    # Individual file resolution fails (returns None)
-    mock_resolve_file.return_value = None
 
     # Content fetch succeeds for the one valid file
     mock_fetch_content.return_value = 'content_a'
