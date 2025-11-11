@@ -41,7 +41,7 @@ def _create_feature_definition(feature: FeatureEntry) -> str:
   return f'Name: {feature.name}\nDescription: {feature.summary}'
 
 
-async def _get_test_analysis_prompts(test_locations: list[str]) -> list[str]:
+async def _get_test_analysis_prompts(test_locations: list[str]) -> dict[str, str]:
   test_urls = []
   test_directories = []
   for test_loc in test_locations:
@@ -53,7 +53,7 @@ async def _get_test_analysis_prompts(test_locations: list[str]) -> list[str]:
   all_file_contents = await utils.get_mixed_wpt_contents_async(
     test_directories, test_urls
   )
-  return list(all_file_contents.values())
+  return all_file_contents
 
 
 async def run_wpt_test_eval_pipeline(feature: FeatureEntry) -> None:
@@ -90,11 +90,13 @@ async def run_wpt_test_eval_pipeline(feature: FeatureEntry) -> None:
 
   test_analysis_file_contents = await _get_test_analysis_prompts(test_locations)
 
+  file_names: list[str] = []
   prompts = []
-  for fc in test_analysis_file_contents:
+  for fname, fc in test_analysis_file_contents.items():
     prompts.append(
       render_template(TEST_ANALYSIS_TEMPLATE_PATH, testfile_contents=fc)
     )
+    file_names.append(fname)
   # Add the spec synthesis prompt to the end for batch processing.
   prompts.append(spec_synthesis_prompt)
 
@@ -106,16 +108,15 @@ async def run_wpt_test_eval_pipeline(feature: FeatureEntry) -> None:
   if not isinstance(spec_synthesis_response, str):
     raise PipelineError(f'Spec synthesis prompt failure: {spec_synthesis_response}')
 
-  test_analysis_responses_formatted = []
-  counter = 1
-  for resp in all_responses:
+  test_analysis_responses_formatted: list[str] = []
+  for fname, resp in zip(file_names, all_responses):
     if not isinstance(resp, str):
       logging.error(f'Test analysis prompt failure: {resp}')
       continue
-    test_analysis_responses_formatted.append(f'Test {counter} summary:\n')
+    print(f'\n\n\n\n TEST NAME: {fname}')
+    test_analysis_responses_formatted.append(f'Test {fname} summary:\n')
     test_analysis_responses_formatted.append(resp)
     test_analysis_responses_formatted.append('\n\n')
-    counter += 1
 
   if not test_analysis_responses_formatted:
     raise PipelineError('No successful test analysis responses.')

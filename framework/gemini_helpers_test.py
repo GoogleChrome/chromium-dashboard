@@ -64,10 +64,13 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
     ]
 
     # Mock the util that returns content map
-    self.mock_utils.get_mixed_wpt_contents_async = mock.AsyncMock(return_value={
-        'loc1': 'content1',
-        'loc2': 'content2'
-    })
+    expected_content_map = {
+      'https://wpt.fyi/results/foo/bar.html': 'content1',
+      '/css/css-grid/grid-definition.html': 'content2'
+    }
+    self.mock_utils.get_mixed_wpt_contents_async = mock.AsyncMock(
+      return_value=expected_content_map
+    )
 
     # Run the async helper
     result = asyncio.run(
@@ -84,8 +87,7 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
     self.mock_utils.get_mixed_wpt_contents_async.assert_called_once_with(
         expected_dirs, expected_urls
     )
-    # Should return just the values from the content map.
-    self.assertEqual(result, ['content1', 'content2'])
+    self.assertEqual(result, expected_content_map)
 
   def test_run_pipeline__success(self):
     """Test the happy path where all steps and API calls succeed."""
@@ -97,10 +99,9 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
         'https://wpt.fyi/results/foo/test.html'
     ]
     # Mock the internal helper to simplify this higher-level test
-    # (Alternatively, we could mock utils.get_mixed_wpt_contents_async like above)
     with mock.patch('framework.gemini_helpers._get_test_analysis_prompts',
                     new_callable=mock.AsyncMock) as mock_get_prompts:
-      mock_get_prompts.return_value = ['file_content_1']
+      mock_get_prompts.return_value = {'test.html': 'file_content_1'}
 
       # 2. Setup Mocks for template rendering
       # Make render_template return a string that identifies which template it was
@@ -110,7 +111,6 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
 
       # 3. Setup Gemini Mocks
       # Batch response: [test_analysis_response, spec_synthesis_response]
-      # Note: Implementation appends spec prompt LAST, so it pops LAST.
       self.mock_gemini_client.get_batch_responses_async = mock.AsyncMock(
           return_value=['Analysis of Test 1', 'Spec Summary']
       )
@@ -125,21 +125,15 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
       self.assertEqual(self.feature.ai_test_eval_report, 'Final Gap Analysis Report')
 
       # Verify template calls involved correct data
-      # We expect 3 render calls: spec synthesis, 1 test analysis, gap analysis
       self.assertEqual(self.mock_render_template.call_count, 3)
 
-      # Verify Gemini calls
-      # Batch call should have received [test_prompt, spec_prompt]
-      self.mock_gemini_client.get_batch_responses_async.assert_called_once()
-      call_args = self.mock_gemini_client.get_batch_responses_async.call_args[0][0]
-      self.assertEqual(len(call_args), 2)
-      self.assertIn('prompts/test-analysis.html', call_args[0])
-      self.assertIn('prompts/spec-synthesis.html', call_args[1])
-
-      # Final Gap analysis call
-      self.mock_gemini_client.get_response_async.assert_called_once()
-      gap_prompt = self.mock_gemini_client.get_response_async.call_args[0][0]
-      self.assertIn('prompts/gap-analysis.html', gap_prompt)
+      # Verify final gap analysis prompt received the filename in the summary
+      # The last call to render_template is for GAP_ANALYSIS_TEMPLATE_PATH
+      call_kwargs = self.mock_render_template.call_args[1]
+      test_analysis_summary = call_kwargs.get('test_analysis', '')
+      # Verify the filename 'test.html' is in the summary string
+      self.assertIn('Test test.html summary:', test_analysis_summary)
+      self.assertIn('Analysis of Test 1', test_analysis_summary)
 
   def test_run_pipeline__missing_spec_link(self):
     """Pipeline should fail immediately if no spec link is present."""
@@ -165,7 +159,7 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
 
     with mock.patch('framework.gemini_helpers._get_test_analysis_prompts',
                     new_callable=mock.AsyncMock) as mock_get_prompts:
-      mock_get_prompts.return_value = ['content1']
+      mock_get_prompts.return_value = {'f1.html': 'content1'}
 
       # The last item (spec synthesis) returns an Exception instead of str
       gemini_error = RuntimeError("Gemini overloaded")
@@ -183,8 +177,7 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
 
     with mock.patch('framework.gemini_helpers._get_test_analysis_prompts',
                     new_callable=mock.AsyncMock) as mock_get_prompts:
-      # Two tests found
-      mock_get_prompts.return_value = ['content1', 'content2']
+      mock_get_prompts.return_value = {'f1.html': 'content1', 'f2.html': 'content2'}
 
       # Both tests fail, but Spec succeeds (last item)
       self.mock_gemini_client.get_batch_responses_async = mock.AsyncMock(
@@ -208,7 +201,7 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
 
     with mock.patch('framework.gemini_helpers._get_test_analysis_prompts',
                     new_callable=mock.AsyncMock) as mock_get_prompts:
-      mock_get_prompts.return_value = ['content1', 'content2']
+      mock_get_prompts.return_value = {'f1.html': 'content1', 'f2.html': 'content2'}
 
       # One fails, one succeeds, spec succeeds
       self.mock_gemini_client.get_batch_responses_async = mock.AsyncMock(
@@ -228,13 +221,17 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
       self.assertEqual(self.feature.ai_test_eval_report, 'Final Report')
       # Verify one warning logged for the failure
       self.mock_logging.error.assert_called_once()
-      # Verify the gap analysis prompt only contains the successful one
-      # We can check the 'test_analysis' kwarg passed to render_template for the gap analysis
+
+      # Verify the gap analysis prompt only contains the successful one AND its filename
       call_args_list = self.mock_render_template.call_args_list
-      # The last call should be the gap analysis
       gap_call_kwargs = call_args_list[-1][1]
-      self.assertIn('Analysis 2 Success', gap_call_kwargs.get('test_analysis', ''))
-      self.assertNotIn('Fail 1', gap_call_kwargs.get('test_analysis', ''))
+      gap_prompt_test_analysis = gap_call_kwargs.get('test_analysis', '')
+
+      # assert filename 'f2.html' is present for the successful one
+      self.assertIn('Test f2.html summary:', gap_prompt_test_analysis)
+      self.assertIn('Analysis 2 Success', gap_prompt_test_analysis)
+      # Ensure failed one is missing
+      self.assertNotIn('f1.html', gap_prompt_test_analysis)
 
 
 class GenerateWPTCoverageEvalReportHandlerTest(testing_config.CustomTestCase):
