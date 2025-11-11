@@ -3,8 +3,9 @@ import {customElement, property, state} from 'lit/decorators.js';
 import {unsafeHTML} from 'lit/directives/unsafe-html.js';
 import {marked} from 'marked';
 import {SHARED_STYLES} from '../css/shared-css.js';
-import {Feature, FeatureNotFoundError} from '../js-src/cs-client.js';
+import {Feature} from '../js-src/cs-client.js';
 import {showToastMessage} from './utils.js';
+import {AITestEvaluationStatus} from './form-field-enums.js';
 
 // Matches http or https, followed by wpt.fyi/results, followed by any non-whitespace and non-question mark characters.
 const WPT_RESULTS_REGEX = /(https?:\/\/wpt\.fyi\/results[^\s?]+)/g;
@@ -18,6 +19,7 @@ export class ChromedashWPTEvalPage extends LitElement {
         :host {
           display: block;
           min-height: 100vh;
+          background: var(--sl-color-neutral-50);
           padding: 2em;
         }
 
@@ -135,6 +137,47 @@ export class ChromedashWPTEvalPage extends LitElement {
           text-decoration: underline;
         }
 
+        .action-section {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          text-align: center;
+          min-height: 120px;
+        }
+
+        .generate-button {
+          font-size: 1.1rem;
+          padding-left: 2rem;
+          padding-right: 2rem;
+        }
+        .generate-button sl-icon {
+          font-size: 1.3em;
+        }
+
+        .status-in-progress,
+        .status-complete {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 16px;
+          font-size: 1.1rem;
+        }
+        .status-in-progress {
+          color: var(--sl-color-primary-600);
+        }
+        .status-in-progress sl-spinner {
+          font-size: 3rem;
+          --track-width: 4px;
+        }
+        .status-complete {
+          color: var(--sl-color-success-700);
+        }
+        .status-complete sl-icon {
+          font-size: 3rem;
+          color: var(--sl-color-success-600);
+        }
+
         .report-content {
           overflow-wrap: break-word;
           line-height: 1.6;
@@ -165,6 +208,28 @@ export class ChromedashWPTEvalPage extends LitElement {
         .report-content pre code {
           background: transparent;
           padding: 0;
+          color: inherit;
+        }
+
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        .fade-in {
+          animation: fadeIn 0.8s ease-out forwards;
+        }
+        .delay-title {
+          animation-delay: 0.1s;
+        }
+        .delay-content {
+          animation-delay: 0.4s;
         }
 
         sl-alert {
@@ -183,25 +248,117 @@ export class ChromedashWPTEvalPage extends LitElement {
   @state()
   loading = false;
 
+  @state()
+  isRequirementsFulfilled = false;
+
+  @state()
+  completedInThisSession = false;
+
+  // Tracks if report content has just changed to re-trigger animation
+  @state()
+  private _reportContentChanged = false;
+
+  private _pollIntervalId: number | null = null;
+  private _previousReportContent: string | null = null;
+
   async fetchData() {
-    this.loading = true;
+    if (!this.feature) {
+      this.loading = true;
+    }
     try {
       this.feature = await window.csClient.getFeature(this.featureId);
-      this.loading = false;
+      this.checkRequirements();
+      this.managePolling();
     } catch (error) {
-      if (error instanceof FeatureNotFoundError) {
-        this.loading = false;
-      } else {
-        showToastMessage(
-          'Some errors occurred. Please refresh the page or try again later.'
-        );
+      showToastMessage(
+        'Some errors occurred. Please refresh the page or try again later.'
+      );
+    } finally {
+      this.loading = false;
+    }
+  }
+
+  updated(changedProperties: Map<string | symbol, unknown>) {
+    if (changedProperties.has('feature') && this.feature) {
+      const currentReport = this.feature.ai_test_eval_report || null;
+      // Check if report content has actually changed
+      if (currentReport && currentReport !== this._previousReportContent) {
+        this._reportContentChanged = true;
+        // Reset the animation trigger after a short delay
+        setTimeout(() => {
+          this._reportContentChanged = false;
+        }, 100); // Small delay to allow CSS to register the class removal
       }
+      this._previousReportContent = currentReport;
     }
   }
 
   connectedCallback() {
     super.connectedCallback();
     this.fetchData();
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    this.stopPolling();
+  }
+
+  checkRequirements() {
+    if (!this.feature) {
+      this.isRequirementsFulfilled = false;
+      return;
+    }
+    const hasSpecLink = !!this.feature.spec_link;
+    const hasWptDescr = !!this.feature.wpt_descr;
+    const hasValidUrls =
+      (this.feature.wpt_descr || '').match(WPT_RESULTS_REGEX) !== null;
+
+    this.isRequirementsFulfilled = hasSpecLink && hasWptDescr && hasValidUrls;
+  }
+
+  managePolling() {
+    const status = this.feature?.ai_test_eval_run_status;
+    if (status === AITestEvaluationStatus.IN_PROGRESS) {
+      this.startPolling();
+    } else {
+      if (this._pollIntervalId && status === AITestEvaluationStatus.COMPLETE) {
+        this.completedInThisSession = true;
+      }
+      this.stopPolling();
+    }
+  }
+
+  startPolling() {
+    if (!this._pollIntervalId) {
+      this._pollIntervalId = window.setInterval(() => {
+        this.fetchData();
+      }, 5000);
+    }
+  }
+
+  stopPolling() {
+    if (this._pollIntervalId) {
+      window.clearInterval(this._pollIntervalId);
+      this._pollIntervalId = null;
+    }
+  }
+
+  async handleGenerateClick() {
+    if (!this.isRequirementsFulfilled || !this.feature) return;
+
+    try {
+      this.feature = {
+        ...this.feature,
+        ai_test_eval_run_status: AITestEvaluationStatus.IN_PROGRESS,
+      };
+      this.completedInThisSession = false; // Reset if user tries to regenerate.
+      this.managePolling();
+
+      await window.csClient.generateWPTCoverageEvaluation(this.featureId);
+    } catch (e) {
+      showToastMessage('Failed to start evaluation. Please try again later.');
+      this.fetchData();
+    }
   }
 
   renderRequirementItem(
@@ -217,7 +374,6 @@ export class ChromedashWPTEvalPage extends LitElement {
         ></sl-icon>`
       : html`<sl-icon name="x-circle-fill" class="danger"></sl-icon>`;
 
-    // Ensure label capitalization is consistent in output
     const text = isFulfilled ? `${label} provided` : `Missing ${label}`;
 
     return html`
@@ -279,6 +435,58 @@ export class ChromedashWPTEvalPage extends LitElement {
     `;
   }
 
+  renderActionSection(): TemplateResult {
+    if (!this.feature) return html`${nothing}`;
+
+    const status = this.feature.ai_test_eval_run_status;
+
+    if (status === AITestEvaluationStatus.IN_PROGRESS) {
+      return html`
+        <section class="card action-section">
+          <div class="status-in-progress">
+            <sl-spinner></sl-spinner>
+            <span>Evaluation in progress... This may take a few minutes.</span>
+          </div>
+        </section>
+      `;
+    }
+
+    // Show success message if completed in this session.
+    if (this.completedInThisSession) {
+      return html`
+        <section class="card action-section">
+          <div class="status-complete fade-in">
+            <sl-icon library="material" name="check_circle_20px"></sl-icon>
+            <span>Evaluation complete! The report is available below.</span>
+          </div>
+        </section>
+      `;
+    }
+
+    // Default to showing the button if not in progress and not already completed on page load
+    return html`
+      <section class="card action-section">
+        ${status === AITestEvaluationStatus.FAILED
+          ? html`
+              <sl-alert variant="danger" open>
+                The previous evaluation run failed. Please try again.
+              </sl-alert>
+            `
+          : nothing}
+
+        <sl-button
+          variant="primary"
+          size="large"
+          class="generate-button"
+          ?disabled=${!this.isRequirementsFulfilled}
+          @click=${this.handleGenerateClick}
+        >
+          Evaluate test coverage
+        </sl-button>
+      </section>
+    `;
+  }
+
   renderReport(): TemplateResult {
     if (!this.feature?.ai_test_eval_report) {
       return html`${nothing}`;
@@ -286,10 +494,16 @@ export class ChromedashWPTEvalPage extends LitElement {
 
     const rawHtml = marked.parse(this.feature.ai_test_eval_report) as string;
 
+    // Apply fade-in only if _reportContentChanged is true
+    const titleClass = this._reportContentChanged ? 'fade-in delay-title' : '';
+    const contentClass = this._reportContentChanged
+      ? 'fade-in delay-content'
+      : '';
+
     return html`
       <section class="card report-section">
-        <h2>Evaluation Report</h2>
-        <div class="report-content">${unsafeHTML(rawHtml)}</div>
+        <h2 class="${titleClass}">Evaluation Report</h2>
+        <div class="report-content ${contentClass}">${unsafeHTML(rawHtml)}</div>
       </section>
     `;
   }
@@ -337,7 +551,7 @@ export class ChromedashWPTEvalPage extends LitElement {
         <section class="card description">
           <h2>About</h2>
           <p>
-            Here, you can generate an AI-powered test coverage report for your
+            Here you can generate an AI-powered test coverage report for your
             feature using Gemini. Gemini will analyze your feature's details,
             specification, and listed Web Platform Tests to evaluate if it meets
             standard minimum test coverage criteria.
@@ -385,7 +599,10 @@ export class ChromedashWPTEvalPage extends LitElement {
 
         ${this.loading
           ? this.renderSkeletons()
-          : html` ${this.renderRequirementsChecks()} ${this.renderReport()} `}
+          : html`
+              ${this.renderRequirementsChecks()} ${this.renderActionSection()}
+              ${this.renderReport()}
+            `}
       </div>
     `;
   }

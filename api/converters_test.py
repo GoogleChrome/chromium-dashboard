@@ -410,6 +410,7 @@ class FeatureConvertersTest(testing_config.CustomTestCase):
       'wpt': None,
       'wpt_descr': None,
       'ai_test_eval_report': None,
+      'ai_test_eval_run_status': None,
 
       'tag_review_status': 'Pending',
       'tag_review_status_int': 1,
