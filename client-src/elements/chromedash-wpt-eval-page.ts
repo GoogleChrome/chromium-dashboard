@@ -18,7 +18,6 @@ export class ChromedashWPTEvalPage extends LitElement {
         :host {
           display: block;
           min-height: 100vh;
-          background: var(--sl-color-neutral-50);
           padding: 2em;
         }
 
@@ -34,16 +33,13 @@ export class ChromedashWPTEvalPage extends LitElement {
           font-weight: 400;
           margin-top: 0;
           margin-bottom: 1rem;
-          color: var(--sl-color-neutral-900);
         }
 
         h3 {
           margin-top: 1.5em;
-          color: var(--sl-color-neutral-700);
         }
 
         .experimental-tag {
-          color: var(--sl-color-neutral-500);
           font-size: 0.6em;
           font-weight: normal;
           vertical-align: middle;
@@ -63,7 +59,6 @@ export class ChromedashWPTEvalPage extends LitElement {
         }
 
         .description ul {
-          color: var(--sl-color-neutral-700);
           line-height: 1.6;
         }
         .description li {
@@ -126,7 +121,6 @@ export class ChromedashWPTEvalPage extends LitElement {
           border: 1px solid var(--sl-color-neutral-200);
           max-height: 150px;
           overflow-y: auto;
-          color: var(--sl-color-neutral-700);
         }
         .url-list li {
           margin-bottom: 4px;
@@ -135,7 +129,6 @@ export class ChromedashWPTEvalPage extends LitElement {
           text-overflow: ellipsis;
         }
         .url-list a {
-          color: var(--sl-color-primary-700);
           text-decoration: none;
         }
         .url-list a:hover {
@@ -144,7 +137,6 @@ export class ChromedashWPTEvalPage extends LitElement {
 
         .report-content {
           overflow-wrap: break-word;
-          color: var(--sl-color-neutral-900);
           line-height: 1.6;
         }
         .report-content h1,
@@ -159,7 +151,6 @@ export class ChromedashWPTEvalPage extends LitElement {
         }
         .report-content pre {
           background: var(--sl-color-neutral-900);
-          color: var(--sl-color-neutral-50);
           padding: 16px;
           border-radius: 6px;
           overflow-x: auto;
@@ -174,7 +165,6 @@ export class ChromedashWPTEvalPage extends LitElement {
         .report-content pre code {
           background: transparent;
           padding: 0;
-          color: inherit;
         }
 
         sl-alert {
