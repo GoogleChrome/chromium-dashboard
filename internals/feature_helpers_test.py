@@ -31,25 +31,26 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
     self.feature_2 = FeatureEntry(
         name='feature b', summary='sum',
         owner_emails=['feature_owner@example.com'], category=1,
-        updated=datetime(2020, 4, 1), feature_type=1, impl_status_chrome=1)
+        updated=datetime(2020, 4, 1), feature_type=FEATURE_TYPE_EXISTING_ID,
+        impl_status_chrome=1)
     self.feature_2.put()
 
     self.feature_1 = FeatureEntry(
         name='feature a', summary='sum', impl_status_chrome=3,
         owner_emails=['feature_owner@example.com'], category=1,
-        updated=datetime(2020, 3, 1), feature_type=0)
+        updated=datetime(2020, 3, 1), feature_type=FEATURE_TYPE_INCUBATE_ID)
     self.feature_1.put()
 
     self.feature_3 = FeatureEntry(
         name='feature c', summary='sum', category=1, impl_status_chrome=2,
         owner_emails=['feature_owner@example.com'],
-        updated=datetime(2020, 1, 1), feature_type=2)
+        updated=datetime(2020, 1, 1), feature_type=FEATURE_TYPE_CODE_CHANGE_ID)
     self.feature_3.put()
 
     self.feature_4 = FeatureEntry(
         name='feature d', summary='sum', category=1, impl_status_chrome=2,
         owner_emails=['feature_owner@example.com'],
-        updated=datetime(2020, 2, 1), feature_type=3)
+        updated=datetime(2020, 2, 1), feature_type=FEATURE_TYPE_DEPRECATION_ID)
     self.feature_4.put()
 
     fe_1_stage_types = [110, 120, 130, 140, 150, 151, 160]
@@ -485,7 +486,8 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
     self.g4.put()
 
     features = feature_helpers.get_features_in_release_notes(milestone=1)
-    self.assertEqual(0, len(features))
+    # feature_4 is a deprecation, so it is always included.
+    self.assertEqual(['feature d'], [f['name'] for f in features])
     rediscache.delete(cache_key)
 
   def test_get_in_milestone__non_enterprise_features(self):
