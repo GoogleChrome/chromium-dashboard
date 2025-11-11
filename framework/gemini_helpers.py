@@ -155,7 +155,8 @@ class GenerateWPTCoverageEvalReportHandler(basehandlers.FlaskHandler):
         'Try again later.'
       )
       feature.put()
-      error_message = f'WPT coverage evaluation report failure: {e}'
+      error_message = ('WPT coverage evaluation report failure for feature '
+                       f'{feature_id}: {e}')
       logging.error(error_message)
       return {'message': error_message}
 

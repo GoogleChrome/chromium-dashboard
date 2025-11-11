@@ -771,6 +771,13 @@ export class ChromeStatusClient {
     return this.doGet('/features/stale');
   }
 
+  // WPT Coverage API
+  async generateWPTCoverageEvaluation(featureId) {
+    return this.doPost('/features/generate-wpt-coverage-evaluation', {
+      feature_id: featureId,
+    });
+  }
+
   async getSpecifiedChannels(start, end) {
     return this.doGet(`/channels?start=${start}&end=${end}`);
   }
