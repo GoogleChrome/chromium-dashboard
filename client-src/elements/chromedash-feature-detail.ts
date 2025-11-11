@@ -325,9 +325,12 @@ export class ChromedashFeatureDetail extends LitElement {
     let wptEvalButton = html`${nothing}`;
     // For now, the WPT coverage evaluation page is only visible to Googlers.
     if (this.user?.email?.endsWith('@google.com')) {
-      if (this.canEdit &&
-          // Enterprise features don't provide spec URLs or Web Platform Tests info.
-          this.feature.feature_type_int !== FEATURE_TYPES.FEATURE_TYPE_ENTERPRISE_ID[0]) {
+      if (
+        this.canEdit &&
+        // Enterprise features don't provide spec URLs or Web Platform Tests info.
+        this.feature.feature_type_int !==
+          FEATURE_TYPES.FEATURE_TYPE_ENTERPRISE_ID[0]
+      ) {
         wptEvalButton = html` <chromedash-wpt-eval-button
           .featureId=${this.feature.id}
         ></chromedash-wpt-eval-button>`;
@@ -335,8 +338,7 @@ export class ChromedashFeatureDetail extends LitElement {
     }
     const toggleLabel = this.anyCollapsed ? 'Expand all' : 'Collapse all';
     return html`
-      ${wptEvalButton}
-      ${this.canEdit ? editAllButton : nothing}
+      ${wptEvalButton} ${this.canEdit ? editAllButton : nothing}
       <sl-button
         variant="text"
         title="Expand or collapse all sections"
