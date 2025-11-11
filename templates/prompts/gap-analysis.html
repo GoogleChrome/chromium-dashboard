@@ -34,10 +34,10 @@ Do not output *any* other text or formatting if this rule is triggered.
 
 ### Required Output Structure
 
-Your response must be a formal coverage analysis structured as follows:
+Your response must be a formal, yet constructive and softly-toned, coverage analysis structured as follows:
 
-1.  **Overall Verdict:** Start with a brief, direct conclusion (e.g., "VERDICT: Minimum satisfactory coverage has **NOT** been met.")
-2.  **Summary of Analysis:** In 1-2 sentences, explain the *primary reason* for your verdict (e.g., "While feature existence and common use cases are well-tested, the suite fails to cover any error scenarios or the critical invalidation behavior defined in the spec.")
+1.  **Overall Conclusion:** Start with a brief, direct conclusion (e.g., "**Conclusion**: Minimum satisfactory coverage has been achieved!", or "**Conclusion**: Changes are required to meet minimum satisfactory coverage.")
+2.  **Summary of Analysis:** In 1-2 sentences, explain the *primary reason* for your conclusion (e.g., "While feature existence and common use cases are well-tested, the suite is missing coverage for error scenarios and for the critical invalidation behavior defined in the spec.")
 
 -----
 
@@ -49,7 +49,7 @@ For each category, compare the spec requirements to the test coverage and provid
 
   * **Spec Requirement:** [Briefly summarize required API surface from `FEATURE_SPEC_SUMMARY`]
   * **Test Coverage:** [Briefly summarize existence tests found in `EXISTING_TEST_SUMMARY`]
-  * **Verdict:** [COVERED / PARTIALLY COVERED / NOT COVERED]
+  * **Conclusion:** [Covered / Partially Covered / Not Covered]
   * **Gaps & Notes:** [List any missing existence checks]
 
 -----
@@ -58,7 +58,7 @@ For each category, compare the spec requirements to the test coverage and provid
 
   * **Spec Requirement:** [Summarize 1-2 key "happy paths" from `FEATURE_SPEC_SUMMARY`]
   * **Test Coverage:** [Summarize "happy path" tests found in `EXISTING_TEST_SUMMARY`]
-  * **Verdict:** [COVERED / PARTIALLY COVERED / NOT COVERED]
+  * **Conclusion:** [Covered / Partially Covered / Not Covered]
   * **Gaps & Notes:** [List any un-tested common use cases]
 
 -----
@@ -67,7 +67,7 @@ For each category, compare the spec requirements to the test coverage and provid
 
   * **Spec Requirement:** [Summarize 1-2 key error scenarios from `FEATURE_SPEC_SUMMARY`]
   * **Test Coverage:** [Summarize "sad path" tests found in `EXISTING_TEST_SUMMARY`]
-  * **Verdict:** [COVERED / PARTIALLY COVERED / NOT COVERED]
+  * **Conclusion:** [Covered / Partially Covered / Not Covered]
   * **Gaps & Notes:** [List any un-tested error scenarios]
 
 -----
@@ -76,7 +76,7 @@ For each category, compare the spec requirements to the test coverage and provid
 
   * **Spec Requirement:** [Summarize invalidation behavior from `FEATURE_SPEC_SUMMARY`, or "Not Applicable"]
   * **Test Coverage:** [Summarize invalidation tests found in `EXISTING_TEST_SUMMARY`]
-  * **Verdict:** [COVERED / NOT COVERED / NOT APPLICABLE]
+  * **Conclusion:** [Covered / Not Covered / Not Applicable]
   * **Gaps & Notes:** [List any missing invalidation tests]
 
 -----
@@ -85,7 +85,7 @@ For each category, compare the spec requirements to the test coverage and provid
 
   * **Spec Requirement:** [Summarize specified integrations from `FEATURE_SPEC_SUMMARY`, or "Not Applicable"]
   * **Test Coverage:** [Summarize integration tests found in `EXISTING_TEST_SUMMARY`]
-  * **Verdict:** [COVERED / NOT COVERED / NOT APPLICABLE]
+  * **Conclusion:** [Covered / Not Covered / Not Applicable]
   * **Gaps & Notes:** [List any missing integration tests]
 
 -----
