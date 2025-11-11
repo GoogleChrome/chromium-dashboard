@@ -34,7 +34,6 @@ class GeminiClient:
   MAX_RETRIES = 3
   RETRY_BACKOFF_SECONDS = 2
 
-
   # Inner timeout: Shorter so the SDK raises its own error first,
   # preventing stuck threads in the background.
   API_TIMEOUT_SECONDS = 175
