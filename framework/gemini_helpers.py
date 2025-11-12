@@ -113,7 +113,6 @@ async def run_wpt_test_eval_pipeline(feature: FeatureEntry) -> None:
     if not isinstance(resp, str):
       logging.error(f'Test analysis prompt failure: {resp}')
       continue
-    print(f'\n\n\n\n TEST NAME: {fname}')
     test_analysis_responses_formatted.append(f'Test {fname} summary:\n')
     test_analysis_responses_formatted.append(resp)
     test_analysis_responses_formatted.append('\n\n')
