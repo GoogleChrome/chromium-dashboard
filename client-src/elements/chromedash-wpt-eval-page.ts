@@ -584,7 +584,7 @@ export class ChromedashWPTEvalPage extends LitElement {
                 </li>
                 <li>
                   Directory URLs are accepted, but <strong>only</strong> if
-                  every test in that directory is relevant.
+                  every test in that directory is relevant to your feature.
                 </li>
                 <li>
                   <em
