@@ -39,6 +39,10 @@ class GeminiClientTest(testing_config.CustomTestCase):
     # Patch logging
     self.mock_logging = mock.patch('framework.gemini_client.logging').start()
 
+    # Patch time.sleep to avoid slow tests during retries.
+    self.mock_sleep = mock.patch('framework.gemini_client.time.sleep').start()
+    self.mock_utils_sleep = mock.patch('framework.utils.time.sleep').start()
+
     # Add cleanup to stop all patches
     self.addCleanup(mock.patch.stopall)
 
@@ -122,11 +126,41 @@ class GeminiClientTest(testing_config.CustomTestCase):
     self.assertIsInstance(actual_config, types.GenerateContentConfig)
     self.assertIsInstance(actual_config.http_options, types.HttpOptions)
     self.assertEqual(
-        actual_config.http_options.timeout,
-        client.API_TIMEOUT_SECONDS * 1000
+      actual_config.http_options.timeout,
+      client.API_TIMEOUT_SECONDS * 1000
     )
 
     self.mock_logging.error.assert_not_called()
+    self.mock_sleep.assert_not_called()
+    self.mock_utils_sleep.assert_not_called()
+
+  def test_get_response__retry_success(self):
+    """The client fails twice but succeeds on the third attempt."""
+    prompt = 'Retry me'
+    expected_response = 'Success after retries'
+
+    # Setup: 2 failures (exceptions), then 1 success
+    api_error = Exception('Temporary glitch')
+    mock_success_response = mock.MagicMock()
+    mock_success_response.text = expected_response
+
+    self.mock_client_instance.models.generate_content.side_effect = [
+      api_error,
+      api_error,
+      mock_success_response
+    ]
+
+    client = gemini_client.GeminiClient()
+    actual_response = client.get_response(prompt)
+
+    self.assertEqual(actual_response, expected_response)
+    # Should have called the API 3 times total
+    self.assertEqual(self.mock_client_instance.models.generate_content.call_count, 3)
+
+    # Should have slept twice.
+    self.assertEqual(self.mock_utils_sleep.call_count, 2)
+    # Verify backoff times: 2s after 1st fail, 4s after 2nd fail
+    self.mock_utils_sleep.assert_has_calls([mock.call(2), mock.call(4)])
 
   def test_get_response__no_text_in_response(self):
     """The API returns a response, but it has no 'text' attribute."""
@@ -135,50 +169,68 @@ class GeminiClientTest(testing_config.CustomTestCase):
     # Configure the mock response to have no .text
     mock_api_response = mock.MagicMock()
     mock_api_response.text = None  # or ""
+    # Fail all 4 times with empty response
     self.mock_client_instance.models.generate_content.return_value = mock_api_response
 
     client = gemini_client.GeminiClient()
 
-    # Call the method, expecting it to raise the *final* RuntimeError
+    # Call the method, expecting it to raise the *final* RuntimeError after retries.
     with self.assertRaisesRegex(
-        RuntimeError,
-        'Failed to get response from Gemini API: No text response received from the API.'
+      RuntimeError,
+      'No text response received from the API.'
     ):
-        client.get_response(prompt)
+      client.get_response(prompt)
 
     # Verify logging and API call
-    self.mock_logging.info.assert_called_once()
-    self.mock_client_instance.models.generate_content.assert_called_once()
-
-    # Verify the error was logged twice, as explained
-    self.assertEqual(self.mock_logging.error.call_count, 2)
-    self.mock_logging.error.assert_any_call(
-        'No text response received from the API.'
-    )
-    self.mock_logging.error.assert_any_call(
-        'An error occurred while obtaining Gemini response: No text response received from the API.'
-    )
+    self.mock_client_instance.models.generate_content.assert_called()
+    # Expect 4 calls (1 initial + 3 retries)
+    self.assertEqual(self.mock_client_instance.models.generate_content.call_count, 4)
 
   def test_get_response__api_exception(self):
-    """The API client raises an exception during the request."""
+    """The API client raises an exception during all retry attempts."""
     prompt = 'Hello Gemini'
 
-    # Configure the mock client to raise an exception
+    # Configure the mock client to raise an exception every time
     api_error = Exception('API rate limit exceeded')
     self.mock_client_instance.models.generate_content.side_effect = api_error
 
     client = gemini_client.GeminiClient()
 
+    # The utils.retry decorator allows the underlying exception to bubble up.
     with self.assertRaisesRegex(
-      RuntimeError,
-      'Failed to get response from Gemini API: API rate limit exceeded'
+      Exception,
+      'API rate limit exceeded'
     ):
       client.get_response(prompt)
 
     # Verify logging
-    self.mock_logging.info.assert_called_once()
-    self.mock_logging.error.assert_called_once_with(
-      f'An error occurred while obtaining Gemini response: {api_error}'
+    self.mock_logging.info.assert_called()
+
+  def test_get_response__failure_sentinel_retries(self):
+    """The model returns 'RESPONSE FAILED', triggering retries."""
+    prompt = 'Bad prompt'
+    mock_fail_response = mock.MagicMock()
+    mock_fail_response.text = 'RESPONSE FAILED: Invalid spec.'
+
+    # Fail all 4 times with the sentinel
+    self.mock_client_instance.models.generate_content.return_value = mock_fail_response
+
+    client = gemini_client.GeminiClient()
+
+    # The client raises a specific RuntimeError with the sentinel message
+    with self.assertRaisesRegex(
+      RuntimeError,
+      'Model reported failure: RESPONSE FAILED: Invalid spec.'
+    ):
+      client.get_response(prompt)
+
+    # Expect 4 calls (1 initial + 3 retries)
+    self.assertEqual(self.mock_client_instance.models.generate_content.call_count, 4)
+
+    # Verify it logged warnings for the sentinel
+    self.assertEqual(self.mock_logging.warning.call_count, 4)
+    self.mock_logging.warning.assert_any_call(
+      f'Model returned failure sentinel: {mock_fail_response.text}'
     )
 
   def test_del__closes_client(self):
@@ -213,22 +265,30 @@ class GeminiClientTest(testing_config.CustomTestCase):
   def test_get_response_async__timeout(self):
     """Test that the outer async timeout works correctly."""
     client = gemini_client.GeminiClient()
-    # Set a very short timeout for this specific test to make it run fast.
+
+    # Save original timeout to restore later
+    original_timeout = gemini_client.GeminiClient.ASYNC_TIMEOUT_SECONDS
+    # Set a very short timeout for this test
     gemini_client.GeminiClient.ASYNC_TIMEOUT_SECONDS = 0.1
 
-    # Mock get_response to sleep longer than the timeout.
-    def slow_response(prompt):
-        import time
-        time.sleep(0.2)
-        return "Too late"
+    # Create a mock for asyncio.to_thread that simulates a slow operation
+    # by using asyncio.sleep.
+    async def mock_slow_to_thread(func, *args, **kwargs):
+      await asyncio.sleep(0.2)
+      return "Should not be reached"
 
-    with mock.patch.object(client, 'get_response', side_effect=slow_response):
+    try:
+      # Patch asyncio.to_thread specifically within the gemini_client module
+      with mock.patch('framework.gemini_client.asyncio.to_thread', side_effect=mock_slow_to_thread):
         with self.assertRaisesRegex(TimeoutError, 'Gemini request timed out after 0.1s'):
-             asyncio.run(client.get_response_async('test'))
+          asyncio.run(client.get_response_async('test'))
 
-    self.mock_logging.error.assert_called_with(
+      self.mock_logging.error.assert_called_with(
         'Gemini request timed out after 0.1 seconds.'
-    )
+      )
+    finally:
+      # Always restore the original timeout constant
+      gemini_client.GeminiClient.ASYNC_TIMEOUT_SECONDS = original_timeout
 
   def test_get_response_async__propagates_exception(self):
     """Test that exceptions from the synchronous method propagate asynchronously."""
