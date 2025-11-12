@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import flask
 from datetime import datetime, timedelta
 from framework import basehandlers
 from framework import cloud_tasks_helpers
@@ -49,15 +50,23 @@ class WPTCoverageAPI(basehandlers.EntitiesAPIHandler):
     on_cooldown = (
       feature.ai_test_eval_run_status == core_enums.AITestEvaluationStatus.COMPLETE
       and last_status_time
-      # Assume that a request that is in progress for over an hour is hanging.
       and last_status_time + twenty_nine_minutes > datetime.now())
 
-    if (request_in_progress):
-      self.abort(
-        409,
-        'The WPT coverage evaluation pipeline is already running for this feature.')
-    if (on_cooldown):
-      self.abort(409, 'Requests to the pipeline are on cooldown for this feature.')
+    if request_in_progress or on_cooldown:
+      msg = (
+        'The WPT coverage evaluation pipeline is already running for this feature.'
+        if request_in_progress
+        else 'Requests to the pipeline are on cooldown for this feature.')
+      retry_after = ((last_status_time + one_hour) - datetime.now()
+                     if request_in_progress
+                     else (last_status_time + twenty_nine_minutes) - datetime.now())
+      # Safety check: Ensure we never send a negative Retry-After
+      # (which can happen if the condition evaluated true milliseconds ago but time passed)
+      retry_after_seconds = int(max(0, retry_after.total_seconds()))
+      error_resp = {'error': msg}
+      resp = flask.make_response(flask.jsonify(error_resp), 409)
+      resp.headers['Retry-After'] = retry_after_seconds
+      flask.abort(resp)
 
     feature.ai_test_eval_run_status = core_enums.AITestEvaluationStatus.IN_PROGRESS.value
     feature.ai_test_eval_status_timestamp = datetime.now()
