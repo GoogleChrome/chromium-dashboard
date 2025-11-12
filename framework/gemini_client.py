@@ -35,17 +35,6 @@ class GeminiClient:
   MAX_RETRIES = 3
   RETRY_BACKOFF_SECONDS = 2
 
-
-  # Inner timeout: Shorter so the SDK raises its own error first,
-  # preventing stuck threads in the background.
-  API_TIMEOUT_SECONDS = 175
-  # Outer timeout: The absolute max time the async task will wait (9 minutes).
-  ASYNC_TIMEOUT_SECONDS = 540
-
-  # Retry configuration.
-  MAX_RETRIES = 3
-  RETRY_BACKOFF_SECONDS = 2
-
   # Inner timeout: Shorter so the SDK raises its own error first,
   # preventing stuck threads in the background.
   API_TIMEOUT_SECONDS = 175
