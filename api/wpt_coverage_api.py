@@ -64,6 +64,8 @@ class WPTCoverageAPI(basehandlers.EntitiesAPIHandler):
       # (which can happen if the condition evaluated true milliseconds ago but time passed)
       retry_after_seconds = int(max(0, retry_after.total_seconds()))
       error_resp = {'error': msg}
+      # TODO(#5688): Create a BaseHandler.abort_with_headers helper method
+      # and refactor these lines to use that new method.
       resp = flask.make_response(flask.jsonify(error_resp), 409)
       resp.headers['Retry-After'] = retry_after_seconds
       flask.abort(resp)
