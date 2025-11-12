@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import flask
 from datetime import datetime, timedelta
 from framework import basehandlers
 from framework import cloud_tasks_helpers
@@ -35,14 +36,39 @@ class WPTCoverageAPI(basehandlers.EntitiesAPIHandler):
       self.abort(403, f'User does not have dit access to feature {feature_id}')
 
     last_status_time = feature.ai_test_eval_status_timestamp
+
     one_hour = timedelta(hours=1)
-    if (feature.ai_test_eval_run_status == core_enums.AITestEvaluationStatus.IN_PROGRESS
-        and last_status_time
-        # Assume that a request that is in progress for over an hour is hanging.
-        and last_status_time + one_hour > datetime.now()):
-      self.abort(
-        409,
-        'The WPT coverage evaluation pipeline is already running for this feature.')
+    request_in_progress = (
+      feature.ai_test_eval_run_status == core_enums.AITestEvaluationStatus.IN_PROGRESS
+      and last_status_time
+      # Assume that a request that is in progress for over an hour is hanging.
+      and last_status_time + one_hour > datetime.now())
+
+    # Be more generous with the cooldown so we don't block the UI sending a
+    # request accidentally.
+    twenty_nine_minutes = timedelta(minutes=29)
+    on_cooldown = (
+      feature.ai_test_eval_run_status == core_enums.AITestEvaluationStatus.COMPLETE
+      and last_status_time
+      and last_status_time + twenty_nine_minutes > datetime.now())
+
+    if request_in_progress or on_cooldown:
+      msg = (
+        'The WPT coverage evaluation pipeline is already running for this feature.'
+        if request_in_progress
+        else 'Requests to the pipeline are on cooldown for this feature.')
+      retry_after = ((last_status_time + one_hour) - datetime.now()
+                     if request_in_progress
+                     else (last_status_time + twenty_nine_minutes) - datetime.now())
+      # Safety check: Ensure we never send a negative Retry-After
+      # (which can happen if the condition evaluated true milliseconds ago but time passed)
+      retry_after_seconds = int(max(0, retry_after.total_seconds()))
+      error_resp = {'error': msg}
+      # TODO(#5688): Create a BaseHandler.abort_with_headers helper method
+      # and refactor these lines to use that new method.
+      resp = flask.make_response(flask.jsonify(error_resp), 409)
+      resp.headers['Retry-After'] = retry_after_seconds
+      flask.abort(resp)
 
     feature.ai_test_eval_run_status = core_enums.AITestEvaluationStatus.IN_PROGRESS.value
     feature.ai_test_eval_status_timestamp = datetime.now()

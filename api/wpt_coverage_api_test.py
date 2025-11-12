@@ -126,16 +126,22 @@ class WPTCoverageAPITest(testing_config.CustomTestCase):
 
     self.feature_1.ai_test_eval_run_status = (
         core_enums.AITestEvaluationStatus.IN_PROGRESS.value)
-    # Only in progress statuses from the last hour are acknowledged.
     self.feature_1.ai_test_eval_status_timestamp = datetime.now()
     self.feature_1.put()
 
     params = {'feature_id': self.feature_1.key.integer_id()}
     with test_app.test_request_context('/api/v0/generate-wpt-coverage-evaluation',
                                        method='POST', json=params):
-      # We expect werkzeug.exceptions.Conflict (409)
-      with self.assertRaises(werkzeug.exceptions.Conflict) as cm:
+      with self.assertRaises(werkzeug.exceptions.HTTPException) as cm:
         self.handler.do_post()
+
+      # Verify the status code inside the exception.
+      self.assertEqual(cm.exception.response.status_code, 409)
+
+      # Verify the Retry-After header is present and is an integer.
+      self.assertIn('Retry-After', cm.exception.response.headers)
+      retry_after = cm.exception.response.headers['Retry-After']
+      self.assertTrue(str(retry_after).isdigit())
 
     # Verify we did not enqueue a duplicate task.
     mock_enqueue.assert_not_called()

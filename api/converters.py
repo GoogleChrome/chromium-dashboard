@@ -519,6 +519,7 @@ def feature_entry_to_json_verbose(
     'experiment_timeline': fe.experiment_timeline,
     'ai_test_eval_report': fe.ai_test_eval_report,
     'ai_test_eval_run_status': fe.ai_test_eval_run_status,
+    'ai_test_eval_status_timestamp': fe.ai_test_eval_status_timestamp,
   }
 
   if (d['is_released'] and

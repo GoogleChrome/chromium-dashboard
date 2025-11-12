@@ -270,6 +270,7 @@
  * AI evaluation fields
  * @property {string} [ai_test_eval_report]
  * @property {number} [ai_test_eval_run_status]
+ * @property {string} [ai_test_eval_status_timestamp]
  * Repeated in 'browsers' section. TODO: delete these?
  * @property {number} ff_views
  * @property {number} safari_views
