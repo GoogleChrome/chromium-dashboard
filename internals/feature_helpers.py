@@ -98,9 +98,17 @@ def get_future_results(async_features: Future | None) -> list[FeatureEntry]:
 
 def _filter_out_wp_features_lacking_enterprise_approval(
     features: list[FeatureEntry]) -> list[FeatureEntry]:
-  """Take out any WP features that did not yet earn enterprise approval."""
+  """Take out any WP features that did not yet earn enterprise approval.
+  But, leave in any deprecation-type features.
+  """
+  FEATURE_TYPES_TO_FILTER = [
+      FEATURE_TYPE_INCUBATE_ID,
+      FEATURE_TYPE_EXISTING_ID,
+      FEATURE_TYPE_CODE_CHANGE_ID,
+      # Not enterprise- or deprecation-type features.
+  ]
   wp_feature_ids = {fe.key.integer_id() for fe in features
-                    if fe.feature_type != FEATURE_TYPE_ENTERPRISE_ID}
+                    if fe.feature_type in FEATURE_TYPES_TO_FILTER}
   approved_enterprise_gates: list[Gate] = []
   if wp_feature_ids:
     approved_enterprise_gates = Gate.query(
