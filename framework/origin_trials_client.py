@@ -88,7 +88,7 @@ def get_trials_list() -> list[dict[str, Any]]:
       the HTTP status code is not successful.
     KeyError: If the response from the OT API is not in the expected format.
   """
-  key = secrets.get_ot_api_key()
+  key = settings.OT_API_KEY
   # Return an empty list if no API key is found.
   if key is None:
     return []
@@ -274,7 +274,7 @@ def create_origin_trial(ot_stage: Stage) -> tuple[str|None, str|None]:
     logging.info('Creation request will not be sent to origin trials API in '
                  'local environment.')
     return None, None
-  key = secrets.get_ot_api_key()
+  key = settings.OT_API_KEY
   if key is None:
     return None, 'No API key found for origin trials API'
   ot_support_emails = secrets.get_ot_support_emails()
@@ -321,7 +321,7 @@ def activate_origin_trial(origin_trial_id: str) -> None:
     logging.info('Activation request will not be sent to origin trials API in '
                  'local environment.')
     return None
-  key = secrets.get_ot_api_key()
+  key = settings.OT_API_KEY
   if key is None:
     return None
 
@@ -351,7 +351,7 @@ def extend_origin_trial(trial_id: str, end_milestone: int, intent_url: str):
     logging.info('Extension request will not be sent to origin trials API in '
                  'local environment.')
     return
-  key = secrets.get_ot_api_key()
+  key = settings.OT_API_KEY
   # Return if no API key is found.
   if key is None:
     return

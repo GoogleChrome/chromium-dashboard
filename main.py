@@ -82,9 +82,9 @@ if not settings.UNIT_TEST_MODE and not settings.DEV_MODE:
   client.setup_logging()
 
 # Load in app secrets.
-secrets.get_gemini_api_key()
-secrets.get_github_token()
-secrets.get_ot_api_key()
+secrets.load_gemini_api_key()
+secrets.load_github_token()
+secrets.load_ot_api_key()
 
 
 # Note: In the URLs below, parameters like <int:feature_id> are

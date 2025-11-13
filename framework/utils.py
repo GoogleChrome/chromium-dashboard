@@ -190,7 +190,7 @@ def _get_github_headers(token: str | None = None) -> dict[str, str]:
   """Helper function to construct API headers."""
 
   if token is None:
-    token = secrets.get_github_token()
+    token = settings.GITHUB_TOKEN
 
   headers = {
     'Accept': 'application/vnd.github.v3+json',
@@ -314,7 +314,7 @@ async def get_mixed_wpt_contents_async(
   Returns:
     Dict mapping filename to raw text content.
   """
-  token = secrets.get_github_token()
+  token = settings.GITHUB_TOKEN
   if token is None:
     return {}
 

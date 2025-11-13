@@ -49,7 +49,7 @@ class GeminiClient:
       RuntimeError: If the client could not be initialized due to an
         API key issue or other unexpected error.
     """
-    api_key = secrets.get_gemini_api_key()
+    api_key = settings.GEMINI_API_KEY
     if api_key is None:
       raise RuntimeError('No Gemini API key found.')
 

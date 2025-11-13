@@ -22,6 +22,7 @@ from framework import utils
 import base64
 import urllib
 import requests  # Added for requests.exceptions.RequestException
+import settings
 
 
 class MockHandler(object):
@@ -275,6 +276,7 @@ class UtilsGitHubTests(unittest.TestCase):
   """Tests for the GitHub fetching utility functions (synchronous helpers)."""
 
   def setUp(self):
+    self.original_github_token = settings.GITHUB_TOKEN
     self.mock_headers = {'Authorization': 'Bearer test_token'}
     # Mock successful file API response
     self.mock_file_api_response = {
@@ -301,6 +303,9 @@ class UtilsGitHubTests(unittest.TestCase):
       }
     ]
 
+  def tearDown(self):
+    settings.GITHUB_TOKEN = self.original_github_token
+
   def test_get_github_headers__with_token(self):
     """Headers should include Authorization when a token is provided."""
     headers = utils._get_github_headers('test_token')
@@ -309,31 +314,25 @@ class UtilsGitHubTests(unittest.TestCase):
     self.assertIn('Accept', headers)
     self.assertIn('X-GitHub-Api-Version', headers)
 
-  @mock.patch('framework.utils.secrets.get_github_token')
-  def test_get_github_headers__no_token(self, mock_get_token):
+  def test_get_github_headers__no_token(self):
     """Headers should not include Authorization when token is None AND secrets returns None."""
     # Simulate that the secret lookup fails/returns nothing
-    mock_get_token.return_value = None
+    settings.GITHUB_TOKEN = None
 
     headers = utils._get_github_headers(None)
 
-    # Should verify we tried to get it
-    mock_get_token.assert_called_once()
     # Verify header is missing
     self.assertNotIn('Authorization', headers)
     self.assertIn('Accept', headers)
     self.assertIn('X-GitHub-Api-Version', headers)
 
-  @mock.patch('framework.utils.secrets.get_github_token')
-  def test_get_github_headers__fetches_token_from_secrets(self, mock_get_token):
+  def test_get_github_headers__fetches_token_from_secrets(self):
     """Headers should include Authorization when token arg is None but secrets returns one."""
     # Simulate that secrets has a token
-    mock_get_token.return_value = 'secret_token'
+    settings.GITHUB_TOKEN = 'secret_token'
 
     headers = utils._get_github_headers(None)
 
-    # Should verify we tried to get it
-    mock_get_token.assert_called_once()
     # Verify header uses the secret token
     self.assertIn('Authorization', headers)
     self.assertEqual(headers['Authorization'], 'Bearer secret_token')
@@ -473,16 +472,16 @@ class AsyncUtilsGitHubTests(unittest.IsolatedAsyncioTestCase):
       self.assertEqual(result, (fname, expected_content))
       mock_fetch.assert_called_once_with(furl)
 
-  @mock.patch('framework.utils.secrets.get_github_token', return_value='token')
   @mock.patch('framework.utils._fetch_dir_listing')
   @mock.patch('framework.utils._fetch_file_content')
   async def test_get_mixed_wpt_contents_async__success(
-      self, mock_fetch_content, mock_fetch_dir, _mock_token):
+      self, mock_fetch_content, mock_fetch_dir):
     """Test full orchestration with mixed directory and file URLs."""
     # Setup Inputs
     dir_urls = ['https://wpt.fyi/results/dir1']
     # This URL will be parsed to construct the raw GitHub URL
     file_urls = ['https://wpt.fyi/results/c.js']
+    settings.GITHUB_TOKEN = 'token'
 
     # Dir 1 contains file A and file B
     mock_fetch_dir.return_value = [
@@ -510,17 +509,18 @@ class AsyncUtilsGitHubTests(unittest.IsolatedAsyncioTestCase):
     self.assertEqual(mock_fetch_content.call_count, 3)
     mock_fetch_content.assert_any_call(expected_c_url)
 
-  @mock.patch('framework.utils.secrets.get_github_token', return_value='token')
   @mock.patch('framework.utils._fetch_dir_listing')
   @mock.patch('framework.utils._fetch_file_content')
   async def test_get_mixed_wpt_contents_async__deduplication(
-      self, mock_fetch_content, mock_fetch_dir, _mock_token):
+      self, mock_fetch_content, mock_fetch_dir):
     """If the same file is in a dir and explicitly listed, fetch only once."""
     dir_urls = ['https://wpt.fyi/results/dir1']
 
     # We assume the user lists a file that is also inside dir1.
     # The code will construct a raw URL for this file.
     file_urls = ['https://wpt.fyi/results/dir1/a.html']
+
+    settings.GITHUB_TOKEN = 'token'
 
     # Calculate the expected raw URL the code will generate
     raw_base = utils.WPT_GITHUB_RAW_CONTENTS_URL
@@ -538,14 +538,14 @@ class AsyncUtilsGitHubTests(unittest.IsolatedAsyncioTestCase):
     # Crucial: content fetch should only happen once despite appearing twice in resolution phase
     mock_fetch_content.assert_called_once_with(expected_url)
 
-  @mock.patch('framework.utils.secrets.get_github_token', return_value='token')
   @mock.patch('framework.utils._fetch_dir_listing')
   @mock.patch('framework.utils._fetch_file_content')
   async def test_get_mixed_wpt_contents_async__partial_failures(
-      self, mock_fetch_content, mock_fetch_dir, _mock_token):
+      self, mock_fetch_content, mock_fetch_dir):
     """Should gracefully handle failures in resolution or fetching phases."""
     dir_urls = ['https://wpt.fyi/results/dir1', 'https://wpt.fyi/results/fail_dir']
     file_urls = []
+    settings.GITHUB_TOKEN = 'token'
 
     # One dir fails (returns empty list), one succeeds
     mock_fetch_dir.side_effect = [[('a.html', 'http://dl/a.html')], []]
@@ -557,8 +557,8 @@ class AsyncUtilsGitHubTests(unittest.IsolatedAsyncioTestCase):
 
     self.assertEqual(results, {'a.html': 'content_a'})
 
-  @mock.patch('framework.utils.secrets.get_github_token', return_value=None)
-  async def test_get_mixed_wpt_contents_async__no_token(self, _mock_token):
+  async def test_get_mixed_wpt_contents_async__no_token(self):
     """Should return empty dict immediately if no GitHub token is available."""
+    settings.GITHUB_TOKEN = None
     results = await utils.get_mixed_wpt_contents_async(['url1'], ['url2'])
     self.assertEqual(results, {})

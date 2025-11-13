@@ -17,6 +17,7 @@ import testing_config  # Must be imported before the module under test.
 import asyncio
 from unittest import mock
 
+import settings
 from framework import gemini_client
 from google.genai import types
 
@@ -30,7 +31,7 @@ class GeminiClientTest(testing_config.CustomTestCase):
 
     # Patch secrets to control the API key retrieval.
     self.mock_secrets = mock.patch('framework.gemini_client.secrets').start()
-    self.mock_secrets.get_gemini_api_key.return_value = 'test_api_key_123'
+    self.original_gemini_api_key = settings.GEMINI_API_KEY
 
     # Patch genai.Client class
     self.mock_genai_client_class = mock.patch('framework.gemini_client.genai.Client').start()
@@ -49,6 +50,9 @@ class GeminiClientTest(testing_config.CustomTestCase):
     # Add cleanup to stop all patches
     self.addCleanup(mock.patch.stopall)
 
+  def tearDown(self):
+    settings.GEMINI_API_KEY = self.original_gemini_api_key
+
   def test_init__success(self):
     """The client is initialized correctly with the API key."""
     # Stop the class-level patch to test __init__ in isolation
@@ -59,10 +63,9 @@ class GeminiClientTest(testing_config.CustomTestCase):
     mock_client_instance = mock.MagicMock()
     mock_genai_client.return_value = mock_client_instance
 
-    client = gemini_client.GeminiClient()
+    self.mock_settings.GEMINI_API_KEY = 'test_api_key_123'
 
-    # Verify we fetched the key from secrets
-    self.mock_secrets.get_gemini_api_key.assert_called_once()
+    client = gemini_client.GeminiClient()
 
     # Verify the client was initialized with that key
     mock_genai_client.assert_called_once_with(
@@ -74,8 +77,8 @@ class GeminiClientTest(testing_config.CustomTestCase):
 
   def test_init__no_api_key(self):
     """RuntimeError is raised if secrets returns None."""
-    # Configure secrets to return None
-    self.mock_secrets.get_gemini_api_key.return_value = None
+    # Configure the mocked settings object to return None
+    self.mock_settings.GEMINI_API_KEY = None
 
     with self.assertRaisesRegex(RuntimeError, 'No Gemini API key found'):
       gemini_client.GeminiClient()
