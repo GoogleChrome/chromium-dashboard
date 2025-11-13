@@ -50,7 +50,7 @@ from api import (
   webdx_feature_api,
   wpt_coverage_api,
 )
-from framework import basehandlers, csp, gemini_helpers, sendemail
+from framework import basehandlers, csp, gemini_helpers, secrets, sendemail
 from internals import (
   data_backup,
   detect_intent,
@@ -80,6 +80,11 @@ if not settings.UNIT_TEST_MODE and not settings.DEV_MODE:
   import google.cloud.logging
   client = google.cloud.logging.Client()
   client.setup_logging()
+
+# Load in app secrets.
+secrets.load_gemini_api_key()
+secrets.load_github_token()
+secrets.load_ot_api_key()
 
 
 # Note: In the URLs below, parameters like <int:feature_id> are

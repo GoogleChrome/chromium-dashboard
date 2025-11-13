@@ -1,9 +1,6 @@
 import logging
 import os
 
-from framework.secrets import get_ot_api_key
-
-
 ROOT_DIR = os.path.abspath(os.path.dirname(__file__))
 
 def get_flask_template_path() -> str:
