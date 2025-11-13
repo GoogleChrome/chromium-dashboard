@@ -13,11 +13,12 @@
 # limitations under the License.
 
 import asyncio
-import logging
 import time
+import logging
 from google import genai
 from google.genai import types
 
+from framework import secrets
 from framework import utils
 import settings
 
@@ -48,8 +49,12 @@ class GeminiClient:
       RuntimeError: If the client could not be initialized due to an
         API key issue or other unexpected error.
     """
+    api_key = secrets.get_gemini_api_key()
+    if api_key is None:
+      raise RuntimeError('No Gemini API key found.')
+
     try:
-      self.client = genai.Client(api_key=settings.GEMINI_API_KEY)
+      self.client = genai.Client(api_key=api_key)
     except Exception as e:
       logging.error(f'An unexpected error occurred during client initialization: {e}')
       raise RuntimeError(f'Could not initialize API client: {e}') from e

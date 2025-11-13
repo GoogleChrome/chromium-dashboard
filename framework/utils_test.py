@@ -309,12 +309,34 @@ class UtilsGitHubTests(unittest.TestCase):
     self.assertIn('Accept', headers)
     self.assertIn('X-GitHub-Api-Version', headers)
 
-  def test_get_github_headers__no_token(self):
-    """Headers should not include Authorization when token is None."""
+  @mock.patch('framework.utils.secrets.get_github_token')
+  def test_get_github_headers__no_token(self, mock_get_token):
+    """Headers should not include Authorization when token is None AND secrets returns None."""
+    # Simulate that the secret lookup fails/returns nothing
+    mock_get_token.return_value = None
+
     headers = utils._get_github_headers(None)
+
+    # Should verify we tried to get it
+    mock_get_token.assert_called_once()
+    # Verify header is missing
     self.assertNotIn('Authorization', headers)
     self.assertIn('Accept', headers)
     self.assertIn('X-GitHub-Api-Version', headers)
+
+  @mock.patch('framework.utils.secrets.get_github_token')
+  def test_get_github_headers__fetches_token_from_secrets(self, mock_get_token):
+    """Headers should include Authorization when token arg is None but secrets returns one."""
+    # Simulate that secrets has a token
+    mock_get_token.return_value = 'secret_token'
+
+    headers = utils._get_github_headers(None)
+
+    # Should verify we tried to get it
+    mock_get_token.assert_called_once()
+    # Verify header uses the secret token
+    self.assertIn('Authorization', headers)
+    self.assertEqual(headers['Authorization'], 'Bearer secret_token')
 
   def test_parse_wpt_fyi_url__valid_cases(self):
     """Should correctly parse valid wpt.fyi URLs."""

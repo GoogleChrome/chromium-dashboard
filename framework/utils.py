@@ -189,6 +189,9 @@ def extract_wpt_fyi_results_urls(text: str) -> list[str]:
 def _get_github_headers(token: str | None = None) -> dict[str, str]:
   """Helper function to construct API headers."""
 
+  if token is None:
+    token = secrets.get_github_token()
+
   headers = {
     'Accept': 'application/vnd.github.v3+json',
     'X-GitHub-Api-Version': '2022-11-28',
