@@ -359,7 +359,8 @@ class UtilsGitHubTests(unittest.TestCase):
   @mock.patch('framework.utils.requests.get')
   @mock.patch('framework.utils.logging.error')
   def test_fetch_file_content__failure(self, mock_logging, mock_requests_get):
-    """Should return None and log an error on download failure."""
+    """Should return None and log an error on download failure for non-.html URL."""
+    # Ensure this test still uses a URL that does NOT trigger the fallback
     mock_requests_get.side_effect = requests.exceptions.RequestException('Failed')
 
     content = utils._fetch_file_content('http://example.com/file.txt')
@@ -367,6 +368,45 @@ class UtilsGitHubTests(unittest.TestCase):
     self.assertIsNone(content)
     mock_requests_get.assert_called_once_with('http://example.com/file.txt')
     mock_logging.assert_called_once()
+
+  @mock.patch('framework.utils.requests.get')
+  @mock.patch('framework.utils.logging.error')
+  @mock.patch('framework.utils.logging.info')
+  def test_fetch_file_content__fallback_success(
+      self, mock_info, mock_error, mock_requests_get):
+    """Tests the fallback logic: initial .html fails, subsequent .js succeeds."""
+    html_url = 'http://example.com/test.html'
+    js_url = 'http://example.com/test.js'
+    js_content = 'JS file content'
+
+    # Define a side effect function to control responses for each URL
+    def mock_get_side_effect(url):
+      if url == html_url:
+        # First request (html) fails, raising an exception
+        raise requests.exceptions.RequestException('HTML URL failed (e.g. 404)')
+      if url == js_url:
+        # Second request (js) succeeds
+        mock_response = mock.Mock()
+        mock_response.text = js_content
+        mock_response.raise_for_status.return_value = None
+        return mock_response
+      # Should not happen
+      raise Exception('Unexpected URL')
+
+    mock_requests_get.side_effect = mock_get_side_effect
+
+    content = utils._fetch_file_content(html_url)
+
+    self.assertEqual(content, js_content)
+
+    # Should have been called twice (once for .html, once for .js)
+    self.assertEqual(mock_requests_get.call_count, 2)
+    mock_requests_get.assert_any_call(html_url)
+    mock_requests_get.assert_any_call(js_url)
+
+    # Should log the initial warning and the info for the fallback attempt
+    self.assertEqual(mock_error.call_count, 1)
+    mock_info.assert_called_once()
 
   @mock.patch('framework.utils.requests.get')
   @mock.patch('framework.utils._parse_wpt_fyi_url')
