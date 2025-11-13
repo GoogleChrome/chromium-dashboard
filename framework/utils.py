@@ -262,7 +262,19 @@ def _fetch_file_content(url: str) -> str | None:
     return response.text
   except requests.exceptions.RequestException as e:
     logging.error(f'Warning: Failed to fetch {url}: {e}')
-    return None
+  # Some tests results are represented with ".html" file extensions, but
+  # their test contents are located in an equivalent ".js" file.
+  # If we fail to find the html version, instead attempt the js verion.
+  if url.endswith('.html'):
+    logging.info('Attempting to obtain test file using .js extension')
+    url = url.removesuffix('.html') + '.js'
+    try:
+      response = requests.get(url)
+      response.raise_for_status()
+      return response.text
+    except requests.exceptions.RequestException as e:
+      logging.error(f'Failed to fetch alternate URL {url}: {e}')
+  return None
 
 
 def _fetch_dir_listing(url: str, headers: dict[str, str]) -> list[tuple[str, str]]:
