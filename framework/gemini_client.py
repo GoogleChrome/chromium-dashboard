@@ -50,6 +50,9 @@ class GeminiClient:
         API key issue or other unexpected error.
     """
     api_key = settings.GEMINI_API_KEY
+    # This error should only be raised locally. The application will already
+    # raise this type of error when trying to load the Gemini API key in a
+    # non-local environment.
     if api_key is None:
       raise RuntimeError('No Gemini API key found.')
 
