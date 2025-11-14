@@ -28,6 +28,7 @@ test_app = flask.Flask(__name__)
 class OriginTrialsClientTest(testing_config.CustomTestCase):
 
   def setUp(self):
+    self.original_ot_api_key = settings.OT_API_KEY
     self.ot_stage = Stage(
         feature_id=1, stage_type=150, ot_display_name='Example Trial',
         milestones=MilestoneSet(desktop_first=100, desktop_last=106),
@@ -84,30 +85,28 @@ class OriginTrialsClientTest(testing_config.CustomTestCase):
     }
 
   def tearDown(self):
+    settings.OT_API_KEY = self.original_ot_api_key
     for entity in Stage.query():
       entity.key.delete()
 
-  @mock.patch('framework.secrets.get_ot_api_key')
   @mock.patch('requests.get')
   def test_get_trials_list__no_api_key(
-      self, mock_requests_get, mock_api_key_get):
+      self, mock_requests_get,):
     """If no API key is available, return an empty list of trials."""
-    mock_api_key_get.return_value = None
+    settings.OT_API_KEY = None
     trials_list = origin_trials_client.get_trials_list()
 
     self.assertEqual(trials_list, [])
-    mock_api_key_get.assert_called_once()
     # GET request should not be executed with no API key.
     mock_requests_get.assert_not_called()
 
-  @mock.patch('framework.secrets.get_ot_api_key')
   @mock.patch('requests.get')
   def test_get_trials_list__with_api_key(
-      self, mock_requests_get, mock_api_key_get):
+      self, mock_requests_get,):
     """If an API key is available, GET should return a list of trials."""
     mock_requests_get.return_value = mock.MagicMock(
         status_code=200, json=lambda : self.mock_list_trials_json)
-    mock_api_key_get.return_value = 'api_key_value'
+    settings.OT_API_KEY = 'api_key_value'
 
     expected = [
       {
@@ -133,40 +132,35 @@ class OriginTrialsClientTest(testing_config.CustomTestCase):
     trials_list = origin_trials_client.get_trials_list()
     self.assertEqual(trials_list, expected)
 
-    mock_api_key_get.assert_called_once()
     mock_requests_get.assert_called_once()
 
-  @mock.patch('framework.secrets.get_ot_api_key')
   @mock.patch('requests.post')
   def test_extend_origin_trial__no_api_key(
-      self, mock_requests_post, mock_api_key_get):
+      self, mock_requests_post):
     """If no API key is available, do not send extension request."""
-    mock_api_key_get.return_value = None
+    settings.OT_API_KEY = None
     origin_trials_client.extend_origin_trial(
         '1234567890', '123', 'https://example.com/intent')
 
-    mock_api_key_get.assert_called_once()
     # POST request should not be executed with no API key.
     mock_requests_post.assert_not_called()
 
-  @mock.patch('framework.secrets.get_ot_api_key')
   @mock.patch('framework.origin_trials_client._get_ot_access_token')
   @mock.patch('framework.origin_trials_client._get_trial_end_time')
   @mock.patch('requests.post')
   def test_extend_origin_trial__with_api_key(
       self, mock_requests_post, mock_get_trial_end_time,
-      mock_get_ot_access_token, mock_api_key_get):
+      mock_get_ot_access_token):
     """If an API key is available, POST should extend trial."""
     mock_requests_post.return_value = mock.MagicMock(
         status_code=200, json=lambda : {})
     mock_get_trial_end_time.return_value = 111222333
     mock_get_ot_access_token.return_value = mock.MagicMock('access_token')
-    mock_api_key_get.return_value = 'api_key_value'
+    settings.OT_API_KEY = 'api_key_value'
 
     origin_trials_client.extend_origin_trial(
         '1234567890', '123', 'https://example.com/intent')
 
-    mock_api_key_get.assert_called_once()
     mock_get_ot_access_token.assert_called_once()
     mock_requests_post.assert_called_once()
 
@@ -185,42 +179,38 @@ class OriginTrialsClientTest(testing_config.CustomTestCase):
     self.assertEqual(return_result, 1682812800)
     mock_requests_get.assert_called_once()
 
-  @mock.patch('framework.secrets.get_ot_api_key')
   @mock.patch('requests.post')
   def test_create_origin_trial__no_api_key(
-      self, mock_requests_post, mock_api_key_get):
+      self, mock_requests_post):
     """If no API key is available, do not send creation request."""
-    mock_api_key_get.return_value = None
+    settings.OT_API_KEY = None
     ot_id, error_text = origin_trials_client.create_origin_trial(self.ot_stage)
 
     self.assertIsNone(ot_id)
     self.assertEqual('No API key found for origin trials API', error_text)
-    mock_api_key_get.assert_called_once()
     # POST request should not be executed with no API key.
     mock_requests_post.assert_not_called()
 
   @mock.patch('framework.secrets.get_ot_data_access_admin_group')
-  @mock.patch('framework.secrets.get_ot_api_key')
   @mock.patch('framework.origin_trials_client._get_ot_access_token')
   @mock.patch('framework.origin_trials_client._get_trial_end_time')
   @mock.patch('requests.post')
   def test_create_origin_trial__with_api_key(
       self, mock_requests_post, mock_get_trial_end_time,
-      mock_get_ot_access_token, mock_api_key_get, mock_get_admin_group):
+      mock_get_ot_access_token, mock_get_admin_group):
     """If an API key is available, POST should create trial and return true."""
     mock_requests_post.return_value = mock.MagicMock(
         status_code=200, json=lambda : (
             {'trial': {'id': -1234567890}}))
     mock_get_trial_end_time.return_value = 111222333
     mock_get_ot_access_token.return_value = 'access_token'
-    mock_api_key_get.return_value = 'api_key_value'
+    settings.OT_API_KEY = 'api_key_value'
     mock_get_admin_group.return_value = 'test-group-123'
 
     ot_id, error_text = origin_trials_client.create_origin_trial(self.ot_stage)
     self.assertEqual(ot_id, '-1234567890')
     self.assertIsNone(error_text)
 
-    mock_api_key_get.assert_called_once()
     mock_get_ot_access_token.assert_called_once()
     # Two separate POST requests made.
     self.assertEqual(2, mock_requests_post.call_count)
@@ -262,13 +252,12 @@ class OriginTrialsClientTest(testing_config.CustomTestCase):
     self.assertEqual(-1234567890, set_up_trial_json['trial_id'])
 
   @mock.patch('framework.secrets.get_ot_data_access_admin_group')
-  @mock.patch('framework.secrets.get_ot_api_key')
   @mock.patch('framework.origin_trials_client._get_ot_access_token')
   @mock.patch('framework.origin_trials_client._get_trial_end_time')
   @mock.patch('requests.post')
   def test_create_origin_trial__webdx_feature(
       self, mock_requests_post, mock_get_trial_end_time,
-      mock_get_ot_access_token, mock_api_key_get, mock_get_admin_group):
+      mock_get_ot_access_token, mock_get_admin_group):
     """WebDXFeature use counters should have different config in request."""
     self.ot_stage.ot_webfeature_use_counter = 'WebDXFeature::Example'
     self.ot_stage.put()
@@ -277,14 +266,13 @@ class OriginTrialsClientTest(testing_config.CustomTestCase):
             {'trial': {'id': -1234567890}}))
     mock_get_trial_end_time.return_value = 111222333
     mock_get_ot_access_token.return_value = 'access_token'
-    mock_api_key_get.return_value = 'api_key_value'
+    settings.OT_API_KEY = 'api_key_value'
     mock_get_admin_group.return_value = 'test-group-123'
 
     ot_id, error_text = origin_trials_client.create_origin_trial(self.ot_stage)
     self.assertEqual(ot_id, '-1234567890')
     self.assertIsNone(error_text)
 
-    mock_api_key_get.assert_called_once()
     mock_get_ot_access_token.assert_called_once()
     # Two separate POST requests made.
     self.assertEqual(2, mock_requests_post.call_count)
@@ -294,13 +282,12 @@ class OriginTrialsClientTest(testing_config.CustomTestCase):
                      create_trial_json['trial']['blink_use_counter_config'])
 
   @mock.patch('framework.secrets.get_ot_data_access_admin_group')
-  @mock.patch('framework.secrets.get_ot_api_key')
   @mock.patch('framework.origin_trials_client._get_ot_access_token')
   @mock.patch('framework.origin_trials_client._get_trial_end_time')
   @mock.patch('requests.post')
   def test_create_origin_trial__css_property_id(
       self, mock_requests_post, mock_get_trial_end_time,
-      mock_get_ot_access_token, mock_api_key_get, mock_get_admin_group):
+      mock_get_ot_access_token, mock_get_admin_group):
     """CSSSampleId use counters should have different config in request."""
     self.ot_stage.ot_webfeature_use_counter = 'CSSSampleId::Example'
     self.ot_stage.put()
@@ -309,14 +296,13 @@ class OriginTrialsClientTest(testing_config.CustomTestCase):
             {'trial': {'id': -1234567890}}))
     mock_get_trial_end_time.return_value = 111222333
     mock_get_ot_access_token.return_value = 'access_token'
-    mock_api_key_get.return_value = 'api_key_value'
+    settings.OT_API_KEY = 'api_key_value'
     mock_get_admin_group.return_value = 'test-group-123'
 
     ot_id, error_text = origin_trials_client.create_origin_trial(self.ot_stage)
     self.assertEqual(ot_id, '-1234567890')
     self.assertIsNone(error_text)
 
-    mock_api_key_get.assert_called_once()
     mock_get_ot_access_token.assert_called_once()
     # Two separate POST requests made.
     self.assertEqual(2, mock_requests_post.call_count)
@@ -325,35 +311,31 @@ class OriginTrialsClientTest(testing_config.CustomTestCase):
     self.assertEqual({'bucket_number': 11, 'histogram_id': 'CSS_PROPERTY_ID'},
                      create_trial_json['trial']['blink_use_counter_config'])
 
-  @mock.patch('framework.secrets.get_ot_api_key')
   @mock.patch('requests.post')
   def test_activate_origin_trial__no_api_key(
-      self, mock_requests_post, mock_api_key_get):
+      self, mock_requests_post):
     """If no API key is available, do not send activation request."""
-    mock_api_key_get.return_value = None
+    settings.OT_API_KEY = None
     origin_trials_client.activate_origin_trial(self.ot_stage)
 
-    mock_api_key_get.assert_called_once()
     # POST request should not be executed with no API key.
     mock_requests_post.assert_not_called()
 
-  @mock.patch('framework.secrets.get_ot_api_key')
   @mock.patch('framework.origin_trials_client._get_ot_access_token')
   @mock.patch('framework.origin_trials_client._get_trial_end_time')
   @mock.patch('requests.post')
   def test_activate_origin_trial__with_api_key(
       self, mock_requests_post, mock_get_trial_end_time,
-      mock_get_ot_access_token, mock_api_key_get):
+      mock_get_ot_access_token):
     """If an API key is available, POST should activate trial."""
     mock_requests_post.return_value = mock.MagicMock(
         status_code=200, json=lambda : {})
     mock_get_trial_end_time.return_value = 111222333
     mock_get_ot_access_token.return_value = 'access_token'
-    mock_api_key_get.return_value = 'api_key_value'
+    settings.OT_API_KEY = 'api_key_value'
 
     origin_trials_client.activate_origin_trial('-1234567890')
 
-    mock_api_key_get.assert_called_once()
     mock_get_ot_access_token.assert_called_once()
     mock_requests_post.assert_called_once_with(
       f'{settings.OT_API_URL}/v1/trials/-1234567890:start',

@@ -189,6 +189,9 @@ def extract_wpt_fyi_results_urls(text: str) -> list[str]:
 def _get_github_headers(token: str | None = None) -> dict[str, str]:
   """Helper function to construct API headers."""
 
+  if token is None:
+    token = settings.GITHUB_TOKEN
+
   headers = {
     'Accept': 'application/vnd.github.v3+json',
     'X-GitHub-Api-Version': '2022-11-28',
@@ -262,7 +265,19 @@ def _fetch_file_content(url: str) -> str | None:
     return response.text
   except requests.exceptions.RequestException as e:
     logging.error(f'Warning: Failed to fetch {url}: {e}')
-    return None
+  # Some tests results are represented with ".html" file extensions, but
+  # their test contents are located in an equivalent ".js" file.
+  # If we fail to find the html version, instead attempt the js verion.
+  if url.endswith('.html'):
+    logging.info('Attempting to obtain test file using .js extension')
+    url = url.removesuffix('.html') + '.js'
+    try:
+      response = requests.get(url)
+      response.raise_for_status()
+      return response.text
+    except requests.exceptions.RequestException as e:
+      logging.error(f'Failed to fetch alternate URL {url}: {e}')
+  return None
 
 
 def _fetch_dir_listing(url: str, headers: dict[str, str]) -> list[tuple[str, str]]:
@@ -311,7 +326,7 @@ async def get_mixed_wpt_contents_async(
   Returns:
     Dict mapping filename to raw text content.
   """
-  token = secrets.get_github_token()
+  token = settings.GITHUB_TOKEN
   if token is None:
     return {}
 

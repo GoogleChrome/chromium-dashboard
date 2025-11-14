@@ -17,6 +17,7 @@ import testing_config  # Must be imported before the module under test.
 import asyncio
 from unittest import mock
 
+import settings
 from framework import gemini_client
 from google.genai import types
 
@@ -27,7 +28,10 @@ class GeminiClientTest(testing_config.CustomTestCase):
     """Set up shared mocks for all tests in this class."""
     # Patch settings for all tests
     self.mock_settings = mock.patch('framework.gemini_client.settings').start()
-    self.mock_settings.GEMINI_API_KEY = 'test_api_key_123'
+
+    # Patch secrets to control the API key retrieval.
+    self.mock_secrets = mock.patch('framework.gemini_client.secrets').start()
+    self.original_gemini_api_key = settings.GEMINI_API_KEY
 
     # Patch genai.Client class
     self.mock_genai_client_class = mock.patch('framework.gemini_client.genai.Client').start()
@@ -46,6 +50,9 @@ class GeminiClientTest(testing_config.CustomTestCase):
     # Add cleanup to stop all patches
     self.addCleanup(mock.patch.stopall)
 
+  def tearDown(self):
+    settings.GEMINI_API_KEY = self.original_gemini_api_key
+
   def test_init__success(self):
     """The client is initialized correctly with the API key."""
     # Stop the class-level patch to test __init__ in isolation
@@ -56,14 +63,28 @@ class GeminiClientTest(testing_config.CustomTestCase):
     mock_client_instance = mock.MagicMock()
     mock_genai_client.return_value = mock_client_instance
 
+    self.mock_settings.GEMINI_API_KEY = 'test_api_key_123'
+
     client = gemini_client.GeminiClient()
 
+    # Verify the client was initialized with that key
     mock_genai_client.assert_called_once_with(
       api_key='test_api_key_123'
     )
     # Verify the instance's client attribute is the mock
     self.assertIs(client.client, mock_client_instance)
     self.mock_logging.error.assert_not_called()
+
+  def test_init__no_api_key(self):
+    """RuntimeError is raised if secrets returns None."""
+    # Configure the mocked settings object to return None
+    self.mock_settings.GEMINI_API_KEY = None
+
+    with self.assertRaisesRegex(RuntimeError, 'No Gemini API key found'):
+      gemini_client.GeminiClient()
+
+    # Ensure we didn't try to initialize the GenAI client with None
+    self.mock_genai_client_class.assert_not_called()
 
   def test_init__exception(self):
     """The genai.Client raises an exception during initialization."""
