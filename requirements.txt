@@ -20,7 +20,7 @@ google-cloud-storage==3.6.0
 google-auth==2.43.0
 google-genai==1.50.1
 requests==2.32.5
-redis==6.4.0
+redis==7.0.1
 fakeredis==2.32.1
 Flask==3.1.2
 flask-cors==6.0.1
