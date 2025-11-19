@@ -19,6 +19,7 @@ import {
 import {Feature, StageDict} from '../js-src/cs-client';
 import {FormattedFeature} from './form-definition';
 import {ALL_INTENT_USAGE_BY_FEATURE_TYPE, UsageType} from './form-field-enums';
+import {WEB_FEATURES_MANIFEST} from './WEB_FEATURES_MANIFEST';
 
 interface getFieldValue {
   (fieldName: string, stageOrId: any): any;
@@ -145,6 +146,16 @@ export class ChromedashFormField extends LitElement {
         window.csClient.getBlinkComponents(),
         'Error fetching Blink Components. Please refresh the page or try again later.'
       );
+    } else if (this.name === 'wpt_tests') {
+      console.log(WEB_FEATURES_MANIFEST.data);
+      console.log(this.feature.web_feature);
+      console.log(WEB_FEATURES_MANIFEST.data[this.feature.web_feature]);
+      const possible = WEB_FEATURES_MANIFEST.data[this.feature.web_feature] || [];
+      const choices = {};
+      for (let p of possible) {
+        choices[p] = [p, p];
+      }
+      this.fetchedChoices = choices;
     } else if (this.name === 'web_feature') {
       this.fetchChoices(
         window.csClient.getWebFeatureIDs().then((feature_ids: string[]) => {
@@ -510,6 +521,35 @@ export class ChromedashFormField extends LitElement {
             ([value]) => html` <option value="${value}"></option> `
           )}
         </datalist>
+      `;
+    } else if (type === 'multidatalist') {
+      const valueArray: string[] = fieldValue.length ? fieldValue.split(',') : ['one', 'two'];
+      const valueItems = valueArray.map(v => html`
+      <div><sl-checkbox checked @sl-change=${e => console.log('remove')}>${v}</sl-checkbox></div>
+      `);
+      fieldHTML = html`
+      <div class="hbox" style="nowrap" data-testid="${this.name}_wrapper">
+          <input
+            ${ref(this.updateAttributes)}
+            name="${fieldName}"
+            id="id_${this.name}"
+            value=""
+            class="datalist-input"
+            style="flex-grow:1;"
+            type="search"
+            list="${this.name}_list"
+            ?required=${isRequired}
+            />
+            <sl-button size="small" @click=${e => console.log('add')}>Add</sl-button>
+        </div>
+        <datalist id="${this.name}_list">
+          ${Object.values(choices).map(
+            ([value]) => html` <option value="${value}"></option> `
+          )}
+          </datalist>
+          <div>
+          ${valueItems.length ? valueItems : 'Add items by typing above.'}
+          </div>
       `;
     } else {
       console.error(`unknown form field type: ${type}`);
