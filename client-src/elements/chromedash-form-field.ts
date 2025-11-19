@@ -593,10 +593,99 @@ export class ChromedashFormField extends LitElement {
             ''}
           </div>
       `;
+    } else if (type === 'tree') {
+      fieldHTML = this.fakeTree();
     } else {
       console.error(`unknown form field type: ${type}`);
     }
     return fieldHTML;
+  }
+
+  fakeTree() {
+    return html`
+    <sl-tree>
+  <sl-tree-item>
+    <sl-checkbox checked>/css/css-sizing/aspect-ratio/</sl-checkbox>
+     <sl-tree-item><sl-checkbox checked>abspos-001.html</sl-checkbox></sl-tree-item>
+     <sl-tree-item><sl-checkbox checked>abspos-002.html</sl-checkbox></sl-tree-item>
+     <sl-tree-item><sl-checkbox checked>abspos-003.html</sl-checkbox></sl-tree-item>
+     <sl-tree-item><sl-checkbox checked>abspos-004.html</sl-checkbox></sl-tree-item>
+     <sl-tree-item><sl-checkbox checked>abspos-005.html</sl-checkbox></sl-tree-item>
+     <sl-tree-item><sl-checkbox checked>abspos-006.html</sl-checkbox></sl-tree-item>
+     <sl-tree-item><sl-checkbox checked>abspos-007.html</sl-checkbox></sl-tree-item>
+     <sl-tree-item><sl-checkbox checked>abspos-008.html</sl-checkbox></sl-tree-item>
+     <sl-tree-item><sl-checkbox checked>abspos-009.html</sl-checkbox></sl-tree-item>
+     <sl-tree-item><sl-checkbox checked>abspos-010.html</sl-checkbox></sl-tree-item>
+     <sl-tree-item><sl-checkbox checked>abspos-011.html</sl-checkbox></sl-tree-item>
+     <sl-tree-item><sl-checkbox checked>abspos-012.html</sl-checkbox></sl-tree-item>
+     <sl-tree-item><sl-checkbox checked>abspos-013.html</sl-checkbox></sl-tree-item>
+     <sl-tree-item><sl-checkbox checked>abspos-014.html</sl-checkbox></sl-tree-item>
+     <sl-tree-item><sl-checkbox checked>abspos-015.html</sl-checkbox></sl-tree-item>
+     <sl-tree-item><sl-checkbox checked>abspos-016.html</sl-checkbox></sl-tree-item>
+     <sl-tree-item><sl-checkbox checked>abspos-017.html</sl-checkbox></sl-tree-item>
+     <sl-tree-item><sl-checkbox checked>abspos-018.html</sl-checkbox></sl-tree-item>
+     <sl-tree-item><sl-checkbox checked>abspos-019.html</sl-checkbox></sl-tree-item>
+     <sl-tree-item><sl-checkbox checked>abspos-020.html</sl-checkbox></sl-tree-item>
+     <sl-tree-item><sl-checkbox checked>abspos-021.html</sl-checkbox></sl-tree-item>
+     <sl-tree-item><sl-checkbox checked>auto-margins-001.html</sl-checkbox></sl-tree-item>
+     <sl-tree-item><sl-checkbox checked>block-aspect-ratio-001.html</sl-checkbox></sl-tree-item>
+     <sl-tree-item><sl-checkbox checked>block-aspect-ratio-002.html</sl-checkbox></sl-tree-item>
+     <sl-tree-item><sl-checkbox checked>block-aspect-ratio-003.html</sl-checkbox></sl-tree-item>
+     <sl-tree-item><sl-checkbox checked>block-aspect-ratio-004.html</sl-checkbox></sl-tree-item>
+     <sl-tree-item><sl-checkbox checked>block-aspect-ratio-005.html</sl-checkbox></sl-tree-item>
+     <sl-tree-item><sl-checkbox checked>block-aspect-ratio-006.html</sl-checkbox></sl-tree-item>
+     <sl-tree-item><sl-checkbox checked>block-aspect-ratio-007.html</sl-checkbox></sl-tree-item>
+     <sl-tree-item><sl-checkbox checked>block-aspect-ratio-008.html</sl-checkbox></sl-tree-item>
+     <sl-tree-item><sl-checkbox checked>block-aspect-ratio-009.html</sl-checkbox></sl-tree-item>
+     <sl-tree-item><sl-checkbox checked>block-aspect-ratio-010.html</sl-checkbox></sl-tree-item>
+     <sl-tree-item><sl-checkbox checked>block-aspect-ratio-011.html</sl-checkbox></sl-tree-item>
+     <sl-tree-item><sl-checkbox checked>block-aspect-ratio-012.html</sl-checkbox></sl-tree-item>
+     <sl-tree-item><sl-checkbox checked>block-aspect-ratio-013.html</sl-checkbox></sl-tree-item>
+     <sl-tree-item><sl-checkbox checked>block-aspect-ratio-014.html</sl-checkbox></sl-tree-item>
+     <sl-tree-item><sl-checkbox checked>block-aspect-ratio-015.html</sl-checkbox></sl-tree-item>
+     <sl-tree-item><sl-checkbox checked>block-aspect-ratio-016.html</sl-checkbox></sl-tree-item>
+     <sl-tree-item><sl-checkbox checked>block-aspect-ratio-017.html</sl-checkbox></sl-tree-item>
+     <sl-tree-item><sl-checkbox checked>block-aspect-ratio-018.html</sl-checkbox></sl-tree-item>
+     <sl-tree-item><sl-checkbox checked>block-aspect-ratio-019.html</sl-checkbox></sl-tree-item>
+     <sl-tree-item><sl-checkbox checked>block-aspect-ratio-020.html</sl-checkbox></sl-tree-item>
+     <sl-tree-item><sl-checkbox checked>block-aspect-ratio-021.html</sl-checkbox></sl-tree-item>
+     <sl-tree-item><sl-checkbox checked>block-aspect-ratio-022.html</sl-checkbox></sl-tree-item>
+     <sl-tree-item><sl-checkbox checked>block-aspect-ratio-023.html</sl-checkbox></sl-tree-item>
+     <sl-tree-item><sl-checkbox checked>block-aspect-ratio-024.html</sl-checkbox></sl-tree-item>
+     <sl-tree-item><sl-checkbox checked>block-aspect-ratio-025.html</sl-checkbox></sl-tree-item>
+     <sl-tree-item><sl-checkbox checked>block-aspect-ratio-026.html</sl-checkbox></sl-tree-item>
+     <sl-tree-item><sl-checkbox checked>block-aspect-ratio-027.html</sl-checkbox></sl-tree-item>
+     <sl-tree-item><sl-checkbox checked>block-aspect-ratio-028.html</sl-checkbox></sl-tree-item>
+     <sl-tree-item><sl-checkbox checked>block-aspect-ratio-029-crash.html</sl-checkbox></sl-tree-item>
+     <sl-tree-item><sl-checkbox checked>block-aspect-ratio-030.html</sl-checkbox></sl-tree-item>
+     <sl-tree-item><sl-checkbox checked>block-aspect-ratio-031.html</sl-checkbox></sl-tree-item>
+     <sl-tree-item><sl-checkbox checked>block-aspect-ratio-032.html</sl-checkbox></sl-tree-item>
+     <sl-tree-item><sl-checkbox checked>block-aspect-ratio-033.html</sl-checkbox></sl-tree-item>
+     <sl-tree-item><sl-checkbox checked>block-aspect-ratio-034.html</sl-checkbox></sl-tree-item>
+     <sl-tree-item><sl-checkbox checked>block-aspect-ratio-035.html</sl-checkbox></sl-tree-item>
+     <sl-tree-item><sl-checkbox checked>block-aspect-ratio-036.html</sl-checkbox></sl-tree-item>
+     <sl-tree-item><sl-checkbox checked>block-aspect-ratio-037.html</sl-checkbox></sl-tree-item>
+     <sl-tree-item><sl-checkbox checked>block-aspect-ratio-038.html</sl-checkbox></sl-tree-item>
+     <sl-tree-item><sl-checkbox checked>block-aspect-ratio-039.html</sl-checkbox></sl-tree-item>
+     <sl-tree-item><sl-checkbox checked>block-aspect-ratio-040.html</sl-checkbox></sl-tree-item>
+     <sl-tree-item><sl-checkbox checked>block-aspect-ratio-041.html</sl-checkbox></sl-tree-item>
+     <sl-tree-item><sl-checkbox checked>block-aspect-ratio-042.html</sl-checkbox></sl-tree-item>
+     <sl-tree-item><sl-checkbox checked>block-aspect-ratio-043.html</sl-checkbox></sl-tree-item>
+     <sl-tree-item><sl-checkbox checked>block-aspect-ratio-044.html</sl-checkbox></sl-tree-item>
+     <sl-tree-item><sl-checkbox checked>block-aspect-ratio-045.html</sl-checkbox></sl-tree-item>
+     <sl-tree-item><sl-checkbox checked>block-aspect-ratio-046.html</sl-checkbox></sl-tree-item>
+     <sl-tree-item><sl-checkbox checked>block-aspect-ratio-047.html</sl-checkbox></sl-tree-item>
+     <sl-tree-item><sl-checkbox checked>block-aspect-ratio-048.html</sl-checkbox></sl-tree-item>
+     <sl-tree-item><sl-checkbox checked>block-aspect-ratio-049.html</sl-checkbox></sl-tree-item>
+     <sl-tree-item><sl-checkbox checked>block-aspect-ratio-050.html</sl-checkbox></sl-tree-item>
+     <sl-tree-item><sl-checkbox checked>block-aspect-ratio-051-crash.html</sl-checkbox></sl-tree-item>
+     <sl-tree-item><sl-checkbox checked>block-aspect-ratio-052.html</sl-checkbox></sl-tree-item>
+     <sl-tree-item><sl-checkbox checked>block-aspect-ratio-053.html</sl-checkbox></sl-tree-item>
+     <sl-tree-item><sl-checkbox checked>block-aspect-ratio-054.html</sl-checkbox></sl-tree-item>
+  </sl-tree-item>
+</sl-tree>
+
+    `;
   }
 
   /**
