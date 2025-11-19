@@ -354,12 +354,8 @@ export class ChromedashFormField extends LitElement {
     }
   }
 
-  addMultidatalistItem() {
+  addMultidatalistItem(valueToAdd: string) {
     console.log('add');
-    const input = this.renderRoot.querySelector<HTMLInputElement>('#id_' + this.name);
-    if (!input) {console.log('renderRoot'); return;}
-    const valueToAdd = (input.value || '').trim();
-    if (valueToAdd == '') {console.log('empty'); return;}
     const fieldValue = this.getValue();
     const valueArray: string[] = fieldValue.split(',').filter(v => v.length > 0);
     if (!valueArray.includes(valueToAdd)) {
@@ -367,7 +363,19 @@ export class ChromedashFormField extends LitElement {
       valueArray.sort();
       this.value = valueArray.join(',');
     }
-    input.value = '';
+  }
+
+  multidatalistChanged() {
+    console.log('changed');
+    const input = this.renderRoot.querySelector<HTMLInputElement>('#id_' + this.name);
+    if (!input) {console.log('renderRoot'); return;}
+    const valueToAdd = (input.value || '').trim();
+    console.log(valueToAdd);
+    if (valueToAdd == '') {console.log('empty'); return;}
+    if (Object.keys(this.fetchedChoices).includes(valueToAdd)) {
+      this.addMultidatalistItem(valueToAdd);
+      input.value = '';
+    }
   }
 
   removeMultidatalistItem(valueToRemove: string) {
@@ -558,6 +566,7 @@ export class ChromedashFormField extends LitElement {
           <input
             ${ref(this.updateAttributes)}
             name="${fieldName}"
+            placeholder="Type here and select to add a test path"
             id="id_${this.name}"
             value=""
             class="datalist-input"
@@ -565,8 +574,9 @@ export class ChromedashFormField extends LitElement {
             type="search"
             list="${this.name}_list"
             ?required=${isRequired}
+            @keyup=${e => this.multidatalistChanged()}
+            @click=${e => this.multidatalistChanged()}
             />
-            <sl-button size="small" @click=${e => this.addMultidatalistItem()}>Add</sl-button>
         </div>
         <datalist id="${this.name}_list">
           ${Object.values(choices)
@@ -580,7 +590,7 @@ export class ChromedashFormField extends LitElement {
             repeat(
               valueArray, (v) => v, (v) =>
                 html`<div style="margin-bottom: 4px;"><sl-checkbox checked @sl-change=${e => this.removeMultidatalistItem(v)}>${v}</sl-checkbox></div>`) :
-            'Add items by typing above and click "Add".'}
+            ''}
           </div>
       `;
     } else {
