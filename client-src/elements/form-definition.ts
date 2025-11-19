@@ -310,7 +310,6 @@ const FLAT_DEV_TRIAL_FIELDS: MetadataFields = {
         'measurement',
         'all_platforms',
         'all_platforms_descr',
-        'wpt',
         'wpt_tests',
         'wpt_descr',
         'sample_links',

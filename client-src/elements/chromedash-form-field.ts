@@ -2,6 +2,7 @@ import {SlDetails, SlIconButton, SlInput} from '@shoelace-style/shoelace';
 import {LitElement, TemplateResult, css, html, nothing} from 'lit';
 import {customElement, property, state} from 'lit/decorators.js';
 import {ref} from 'lit/directives/ref.js';
+import {repeat} from 'lit/directives/repeat.js';
 
 import {ChromedashApp} from './chromedash-app';
 import './chromedash-attachments';
@@ -353,6 +354,34 @@ export class ChromedashFormField extends LitElement {
     }
   }
 
+  addMultidatalistItem() {
+    console.log('add');
+    const input = this.renderRoot.querySelector<HTMLInputElement>('#id_' + this.name);
+    if (!input) {console.log('renderRoot'); return;}
+    const valueToAdd = (input.value || '').trim();
+    if (valueToAdd == '') {console.log('empty'); return;}
+    const fieldValue = this.getValue();
+    const valueArray: string[] = fieldValue.split(',').filter(v => v.length > 0);
+    if (!valueArray.includes(valueToAdd)) {
+      valueArray.push(valueToAdd);
+      valueArray.sort();
+      this.value = valueArray.join(',');
+    }
+    input.value = '';
+  }
+
+  removeMultidatalistItem(valueToRemove: string) {
+    console.log('remove ' + valueToRemove);
+    const fieldValue = this.getValue();
+    const valueArray: string[] = fieldValue.split(',');
+    const index = valueArray.indexOf(valueToRemove);
+    if (index > -1) { // Only splice if the value is found
+      valueArray.splice(index, 1);
+    }
+    this.value = valueArray.join(',');
+    console.log(this.value);
+  }
+
   renderWidget() {
     const type = this.fieldProps.type;
     const fieldDisabled = this.fieldProps.disabled;
@@ -523,10 +552,7 @@ export class ChromedashFormField extends LitElement {
         </datalist>
       `;
     } else if (type === 'multidatalist') {
-      const valueArray: string[] = fieldValue.length ? fieldValue.split(',') : ['one', 'two'];
-      const valueItems = valueArray.map(v => html`
-      <div><sl-checkbox checked @sl-change=${e => console.log('remove')}>${v}</sl-checkbox></div>
-      `);
+      const valueArray: string[] = fieldValue.length ? fieldValue.split(',') : [];
       fieldHTML = html`
       <div class="hbox" style="nowrap" data-testid="${this.name}_wrapper">
           <input
@@ -540,15 +566,21 @@ export class ChromedashFormField extends LitElement {
             list="${this.name}_list"
             ?required=${isRequired}
             />
-            <sl-button size="small" @click=${e => console.log('add')}>Add</sl-button>
+            <sl-button size="small" @click=${e => this.addMultidatalistItem()}>Add</sl-button>
         </div>
         <datalist id="${this.name}_list">
-          ${Object.values(choices).map(
+          ${Object.values(choices)
+          .filter(([value]) => !valueArray.includes(value))
+          .map(
             ([value]) => html` <option value="${value}"></option> `
           )}
           </datalist>
           <div>
-          ${valueItems.length ? valueItems : 'Add items by typing above.'}
+          ${valueArray.length ?
+            repeat(
+              valueArray, (v) => v, (v) =>
+                html`<div style="margin-bottom: 4px;"><sl-checkbox checked @sl-change=${e => this.removeMultidatalistItem(v)}>${v}</sl-checkbox></div>`) :
+            'Add items by typing above and click "Add".'}
           </div>
       `;
     } else {
