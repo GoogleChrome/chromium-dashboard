@@ -275,7 +275,11 @@ class ChromedashStackRank extends LitElement {
                 href="#${item.property_name}"
                 @click=${this.scrollToPosition}
               >
-                <sl-icon class="hash-link" library="material" name="link"></sl-icon>
+                <sl-icon
+                  class="hash-link"
+                  library="material"
+                  name="link"
+                ></sl-icon>
                 <p>${item.property_name}</p>
               </a>
             </div>
