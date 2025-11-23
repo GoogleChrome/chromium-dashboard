@@ -39,6 +39,36 @@ export interface SurveyAnswers {
     is_same_origin_css?: boolean;
     /**
      * 
+     * @type {boolean}
+     * @memberof SurveyAnswers
+     */
+    covers_existence?: boolean;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof SurveyAnswers
+     */
+    covers_common_cases?: boolean;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof SurveyAnswers
+     */
+    covers_errors?: boolean;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof SurveyAnswers
+     */
+    covers_invalidation?: boolean;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof SurveyAnswers
+     */
+    covers_integration?: boolean;
+    /**
+     * 
      * @type {string}
      * @memberof SurveyAnswers
      */
@@ -71,6 +101,11 @@ export function SurveyAnswersFromJSONTyped(json: any, ignoreDiscriminator: boole
         'is_language_polyfill': json['is_language_polyfill'] == null ? undefined : json['is_language_polyfill'],
         'is_api_polyfill': json['is_api_polyfill'] == null ? undefined : json['is_api_polyfill'],
         'is_same_origin_css': json['is_same_origin_css'] == null ? undefined : json['is_same_origin_css'],
+        'covers_existence': json['covers_existence'] == null ? undefined : json['covers_existence'],
+        'covers_common_cases': json['covers_common_cases'] == null ? undefined : json['covers_common_cases'],
+        'covers_errors': json['covers_errors'] == null ? undefined : json['covers_errors'],
+        'covers_invalidation': json['covers_invalidation'] == null ? undefined : json['covers_invalidation'],
+        'covers_integration': json['covers_integration'] == null ? undefined : json['covers_integration'],
         'launch_or_contact': json['launch_or_contact'] == null ? undefined : json['launch_or_contact'],
         'explanation': json['explanation'] == null ? undefined : json['explanation'],
     };
@@ -85,6 +120,11 @@ export function SurveyAnswersToJSON(value?: SurveyAnswers | null): any {
         'is_language_polyfill': value['is_language_polyfill'],
         'is_api_polyfill': value['is_api_polyfill'],
         'is_same_origin_css': value['is_same_origin_css'],
+        'covers_existence': value['covers_existence'],
+        'covers_common_cases': value['covers_common_cases'],
+        'covers_errors': value['covers_errors'],
+        'covers_invalidation': value['covers_invalidation'],
+        'covers_integration': value['covers_integration'],
         'launch_or_contact': value['launch_or_contact'],
         'explanation': value['explanation'],
     };
