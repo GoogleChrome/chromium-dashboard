@@ -1,3 +1,8 @@
+import {
+  hasPendingPSAEmail,
+  getPendingPSAStage,
+} from './psa-email-status-helper';
+import {PSA_STATUS_CSS} from '../css/psa-status-css';
 import {SlPopup} from '@shoelace-style/shoelace';
 import {LitElement, TemplateResult, html, nothing} from 'lit';
 import {customElement, property, state} from 'lit/decorators.js';
@@ -26,7 +31,7 @@ export interface TemplateContent {
 export class ChromedashRoadmapMilestoneCard extends LitElement {
   infoPopupRef = createRef<SlPopup>();
 
-  static styles = ROADMAP_MILESTONE_CARD_CSS;
+  static styles = [ROADMAP_MILESTONE_CARD_CSS, PSA_STATUS_CSS];
 
   @property({attribute: false})
   starredFeatures = new Set<number>();
@@ -251,6 +256,24 @@ export class ChromedashRoadmapMilestoneCard extends LitElement {
    *  @param accurateAsOf The accurate_as_of date as an ISO string.
    *  @param liveChromeVersion The Chrome milestone when a feature is live.
    */
+  /**
+   * Renders the PSA pending email indicator badge
+   */
+  renderPSAStatusBadge(feature: any) {
+    if (!hasPendingPSAEmail(feature)) {
+      return '';
+    }
+
+    return html`
+      <span
+        class="psa-email-pending-badge"
+        title="PSA email has not been sent to blink-dev"
+      >
+        ⚠️ PSA Email Pending
+      </span>
+    `;
+  }
+
   _isFeatureOutdated(
     accurateAsOf: string | undefined,
     liveChromeVersion: number | undefined
@@ -295,6 +318,7 @@ export class ChromedashRoadmapMilestoneCard extends LitElement {
           >
             ${f.name}
           </a>
+          ${this.renderPSAStatusBadge(f)}
           ${f.finch_urls?.map(
             url => html`
               <a
