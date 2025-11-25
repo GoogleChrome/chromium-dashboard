@@ -1149,6 +1149,16 @@ components:
           type: boolean
         is_same_origin_css:
           type: boolean
+        covers_existence:
+          type: boolean
+        covers_common_cases:
+          type: boolean
+        covers_errors:
+          type: boolean
+        covers_invalidation:
+          type: boolean
+        covers_integration:
+          type: boolean
         launch_or_contact:
           type: string
         explanation:
