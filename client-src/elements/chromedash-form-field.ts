@@ -395,6 +395,30 @@ export class ChromedashFormField extends LitElement {
     console.log(this.value);
   }
 
+  accumulateDecendents(tree: NaryTreeNode, result: string[]) {
+    result.push(tree.value);
+    for (const c of tree.children) {
+      this.accumulateDecendents(c, result);
+    }
+  }
+
+  setValueItem(value: string, tree: NaryTreeNode, add: boolean) {
+    console.log((add ? 'add ' : 'remove ') + value);
+    const fieldValue = this.getValue();
+    let valueArray: string[] = fieldValue.split(',').filter(v => v.length > 0);
+    if (add) {
+      const decendents: string[] = [];
+      this.accumulateDecendents(tree, decendents);
+      valueArray.push(...decendents);
+    } else {
+      valueArray = valueArray.filter((v) => !v.startsWith(value));
+      valueArray = valueArray.filter((v) => !value.startsWith(v));
+    }
+    // When removing, what about siblings?
+    this.value = valueArray.join(',');
+    console.log(this.value);
+  }
+
   renderWidget() {
     const type = this.fieldProps.type;
     const fieldDisabled = this.fieldProps.disabled;
@@ -599,10 +623,11 @@ export class ChromedashFormField extends LitElement {
           </div>
       `;
     } else if (type === 'tree') {
-      console.log({choices});
+      const valueArray: string[] = fieldValue.length ? fieldValue.split(',') : [];
       const paths: string[] = Object.values(choices).map(([value]) => value);
       const forest = this.organizeTree(paths);
-      fieldHTML = this.renderTree(forest);
+      forest.forEach((t) => this.simplifyTree(t));
+      fieldHTML = this.renderTree(forest, valueArray);
     } else {
       console.error(`unknown form field type: ${type}`);
     }
@@ -617,11 +642,13 @@ export class ChromedashFormField extends LitElement {
     for (const path of paths) {
       const segments = path.split('/').filter(s => s !== '');
       let currentLevel = forest;
+      let subPathValue = '/';
 
       console.log({segments});
       for (let i = 0; i < segments.length; i++) {
         const isLastSegment = i === segments.length - 1;
         const segmentName = segments[i] + (isLastSegment ? '' : '/');
+        subPathValue = subPathValue + segmentName;
 
         let existingNode = currentLevel.find(node => node.name === segmentName);
         if (existingNode) {
@@ -629,7 +656,7 @@ export class ChromedashFormField extends LitElement {
         } else {
           const newNode: NaryTreeNode = {
             name: segmentName,
-            value: '@@@',
+            value: subPathValue,
             children: []
           };
           currentLevel.push(newNode);
@@ -641,22 +668,34 @@ export class ChromedashFormField extends LitElement {
     return forest;
   }
 
+  simplifyTree(tree: NaryTreeNode) {
+    if (tree.children.length == 1) {
+      tree.name = tree.name + tree.children[0].name;
+      tree.value = tree.children[0].value;
+      tree.children = tree.children[0].children;
+    }
+    tree.children.forEach((c) => this.simplifyTree(c));
+  }
 
-  renderTreeNode(tree: NaryTreeNode) {
+  renderTreeNode(tree: NaryTreeNode, valueArray: string[]) {
+    const checked = valueArray.includes(tree.value);
+    // xxx valueArray.some((v) => tree.value.startsWith(v));
     return html`
       <sl-tree-item>
-        <sl-checkbox checked>${tree.name}</sl-checkbox>
-        ${tree.children.map(t => this.renderTreeNode(t))}
+    <sl-checkbox ?checked=${checked}
+    @sl-change=${e => this.setValueItem(tree.value, tree, !checked)}
+    >${tree.name}</sl-checkbox>
+        ${tree.children.map(t => this.renderTreeNode(t, valueArray))}
       </sl-tree-item>
     `;
   }
 
-  renderTree(forest: NaryTreeNode[]) {
+  renderTree(forest: NaryTreeNode[], valueArray: string[]) {
     return html`
     <sl-tree style="--indent-guide-width: 4px;">
      <sl-icon name="plus-square" slot="expand-icon"></sl-icon>
      <sl-icon name="dash-square" slot="collapse-icon"></sl-icon>
-     ${forest.map(t => this.renderTreeNode(t))}
+     ${forest.map(t => this.renderTreeNode(t, valueArray))}
     </sl-tree>
     `;
   }
