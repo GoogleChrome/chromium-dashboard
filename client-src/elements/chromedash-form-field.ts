@@ -33,6 +33,12 @@ interface UsageTypeDetail {
   title: string;
 }
 
+interface NaryTreeNode {
+  name: string;
+  value: string;
+  children: NaryTreeNode[];
+}
+
 // Helper map to store details for each intent type.
 const USAGE_TYPE_DETAILS: Record<UsageType, UsageTypeDetail> = {
   [UsageType.Prototype]: {
@@ -147,8 +153,7 @@ export class ChromedashFormField extends LitElement {
         window.csClient.getBlinkComponents(),
         'Error fetching Blink Components. Please refresh the page or try again later.'
       );
-    } else if (this.name === 'wpt_tests') {
-      console.log(WEB_FEATURES_MANIFEST.data);
+    } else if (this.name === 'wpt_tests' || this.name === 'wpt_tree') {
       console.log(this.feature.web_feature);
       console.log(WEB_FEATURES_MANIFEST.data[this.feature.web_feature]);
       const possible = WEB_FEATURES_MANIFEST.data[this.feature.web_feature] || [];
@@ -594,97 +599,65 @@ export class ChromedashFormField extends LitElement {
           </div>
       `;
     } else if (type === 'tree') {
-      fieldHTML = this.fakeTree();
+      console.log({choices});
+      const paths: string[] = Object.values(choices).map(([value]) => value);
+      const forest = this.organizeTree(paths);
+      fieldHTML = this.renderTree(forest);
     } else {
       console.error(`unknown form field type: ${type}`);
     }
     return fieldHTML;
   }
 
-  fakeTree() {
-    return html`
-    <sl-tree>
-  <sl-tree-item>
-    <sl-checkbox checked>/css/css-sizing/aspect-ratio/</sl-checkbox>
-     <sl-tree-item><sl-checkbox checked>abspos-001.html</sl-checkbox></sl-tree-item>
-     <sl-tree-item><sl-checkbox checked>abspos-002.html</sl-checkbox></sl-tree-item>
-     <sl-tree-item><sl-checkbox checked>abspos-003.html</sl-checkbox></sl-tree-item>
-     <sl-tree-item><sl-checkbox checked>abspos-004.html</sl-checkbox></sl-tree-item>
-     <sl-tree-item><sl-checkbox checked>abspos-005.html</sl-checkbox></sl-tree-item>
-     <sl-tree-item><sl-checkbox checked>abspos-006.html</sl-checkbox></sl-tree-item>
-     <sl-tree-item><sl-checkbox checked>abspos-007.html</sl-checkbox></sl-tree-item>
-     <sl-tree-item><sl-checkbox checked>abspos-008.html</sl-checkbox></sl-tree-item>
-     <sl-tree-item><sl-checkbox checked>abspos-009.html</sl-checkbox></sl-tree-item>
-     <sl-tree-item><sl-checkbox checked>abspos-010.html</sl-checkbox></sl-tree-item>
-     <sl-tree-item><sl-checkbox checked>abspos-011.html</sl-checkbox></sl-tree-item>
-     <sl-tree-item><sl-checkbox checked>abspos-012.html</sl-checkbox></sl-tree-item>
-     <sl-tree-item><sl-checkbox checked>abspos-013.html</sl-checkbox></sl-tree-item>
-     <sl-tree-item><sl-checkbox checked>abspos-014.html</sl-checkbox></sl-tree-item>
-     <sl-tree-item><sl-checkbox checked>abspos-015.html</sl-checkbox></sl-tree-item>
-     <sl-tree-item><sl-checkbox checked>abspos-016.html</sl-checkbox></sl-tree-item>
-     <sl-tree-item><sl-checkbox checked>abspos-017.html</sl-checkbox></sl-tree-item>
-     <sl-tree-item><sl-checkbox checked>abspos-018.html</sl-checkbox></sl-tree-item>
-     <sl-tree-item><sl-checkbox checked>abspos-019.html</sl-checkbox></sl-tree-item>
-     <sl-tree-item><sl-checkbox checked>abspos-020.html</sl-checkbox></sl-tree-item>
-     <sl-tree-item><sl-checkbox checked>abspos-021.html</sl-checkbox></sl-tree-item>
-     <sl-tree-item><sl-checkbox checked>auto-margins-001.html</sl-checkbox></sl-tree-item>
-     <sl-tree-item><sl-checkbox checked>block-aspect-ratio-001.html</sl-checkbox></sl-tree-item>
-     <sl-tree-item><sl-checkbox checked>block-aspect-ratio-002.html</sl-checkbox></sl-tree-item>
-     <sl-tree-item><sl-checkbox checked>block-aspect-ratio-003.html</sl-checkbox></sl-tree-item>
-     <sl-tree-item><sl-checkbox checked>block-aspect-ratio-004.html</sl-checkbox></sl-tree-item>
-     <sl-tree-item><sl-checkbox checked>block-aspect-ratio-005.html</sl-checkbox></sl-tree-item>
-     <sl-tree-item><sl-checkbox checked>block-aspect-ratio-006.html</sl-checkbox></sl-tree-item>
-     <sl-tree-item><sl-checkbox checked>block-aspect-ratio-007.html</sl-checkbox></sl-tree-item>
-     <sl-tree-item><sl-checkbox checked>block-aspect-ratio-008.html</sl-checkbox></sl-tree-item>
-     <sl-tree-item><sl-checkbox checked>block-aspect-ratio-009.html</sl-checkbox></sl-tree-item>
-     <sl-tree-item><sl-checkbox checked>block-aspect-ratio-010.html</sl-checkbox></sl-tree-item>
-     <sl-tree-item><sl-checkbox checked>block-aspect-ratio-011.html</sl-checkbox></sl-tree-item>
-     <sl-tree-item><sl-checkbox checked>block-aspect-ratio-012.html</sl-checkbox></sl-tree-item>
-     <sl-tree-item><sl-checkbox checked>block-aspect-ratio-013.html</sl-checkbox></sl-tree-item>
-     <sl-tree-item><sl-checkbox checked>block-aspect-ratio-014.html</sl-checkbox></sl-tree-item>
-     <sl-tree-item><sl-checkbox checked>block-aspect-ratio-015.html</sl-checkbox></sl-tree-item>
-     <sl-tree-item><sl-checkbox checked>block-aspect-ratio-016.html</sl-checkbox></sl-tree-item>
-     <sl-tree-item><sl-checkbox checked>block-aspect-ratio-017.html</sl-checkbox></sl-tree-item>
-     <sl-tree-item><sl-checkbox checked>block-aspect-ratio-018.html</sl-checkbox></sl-tree-item>
-     <sl-tree-item><sl-checkbox checked>block-aspect-ratio-019.html</sl-checkbox></sl-tree-item>
-     <sl-tree-item><sl-checkbox checked>block-aspect-ratio-020.html</sl-checkbox></sl-tree-item>
-     <sl-tree-item><sl-checkbox checked>block-aspect-ratio-021.html</sl-checkbox></sl-tree-item>
-     <sl-tree-item><sl-checkbox checked>block-aspect-ratio-022.html</sl-checkbox></sl-tree-item>
-     <sl-tree-item><sl-checkbox checked>block-aspect-ratio-023.html</sl-checkbox></sl-tree-item>
-     <sl-tree-item><sl-checkbox checked>block-aspect-ratio-024.html</sl-checkbox></sl-tree-item>
-     <sl-tree-item><sl-checkbox checked>block-aspect-ratio-025.html</sl-checkbox></sl-tree-item>
-     <sl-tree-item><sl-checkbox checked>block-aspect-ratio-026.html</sl-checkbox></sl-tree-item>
-     <sl-tree-item><sl-checkbox checked>block-aspect-ratio-027.html</sl-checkbox></sl-tree-item>
-     <sl-tree-item><sl-checkbox checked>block-aspect-ratio-028.html</sl-checkbox></sl-tree-item>
-     <sl-tree-item><sl-checkbox checked>block-aspect-ratio-029-crash.html</sl-checkbox></sl-tree-item>
-     <sl-tree-item><sl-checkbox checked>block-aspect-ratio-030.html</sl-checkbox></sl-tree-item>
-     <sl-tree-item><sl-checkbox checked>block-aspect-ratio-031.html</sl-checkbox></sl-tree-item>
-     <sl-tree-item><sl-checkbox checked>block-aspect-ratio-032.html</sl-checkbox></sl-tree-item>
-     <sl-tree-item><sl-checkbox checked>block-aspect-ratio-033.html</sl-checkbox></sl-tree-item>
-     <sl-tree-item><sl-checkbox checked>block-aspect-ratio-034.html</sl-checkbox></sl-tree-item>
-     <sl-tree-item><sl-checkbox checked>block-aspect-ratio-035.html</sl-checkbox></sl-tree-item>
-     <sl-tree-item><sl-checkbox checked>block-aspect-ratio-036.html</sl-checkbox></sl-tree-item>
-     <sl-tree-item><sl-checkbox checked>block-aspect-ratio-037.html</sl-checkbox></sl-tree-item>
-     <sl-tree-item><sl-checkbox checked>block-aspect-ratio-038.html</sl-checkbox></sl-tree-item>
-     <sl-tree-item><sl-checkbox checked>block-aspect-ratio-039.html</sl-checkbox></sl-tree-item>
-     <sl-tree-item><sl-checkbox checked>block-aspect-ratio-040.html</sl-checkbox></sl-tree-item>
-     <sl-tree-item><sl-checkbox checked>block-aspect-ratio-041.html</sl-checkbox></sl-tree-item>
-     <sl-tree-item><sl-checkbox checked>block-aspect-ratio-042.html</sl-checkbox></sl-tree-item>
-     <sl-tree-item><sl-checkbox checked>block-aspect-ratio-043.html</sl-checkbox></sl-tree-item>
-     <sl-tree-item><sl-checkbox checked>block-aspect-ratio-044.html</sl-checkbox></sl-tree-item>
-     <sl-tree-item><sl-checkbox checked>block-aspect-ratio-045.html</sl-checkbox></sl-tree-item>
-     <sl-tree-item><sl-checkbox checked>block-aspect-ratio-046.html</sl-checkbox></sl-tree-item>
-     <sl-tree-item><sl-checkbox checked>block-aspect-ratio-047.html</sl-checkbox></sl-tree-item>
-     <sl-tree-item><sl-checkbox checked>block-aspect-ratio-048.html</sl-checkbox></sl-tree-item>
-     <sl-tree-item><sl-checkbox checked>block-aspect-ratio-049.html</sl-checkbox></sl-tree-item>
-     <sl-tree-item><sl-checkbox checked>block-aspect-ratio-050.html</sl-checkbox></sl-tree-item>
-     <sl-tree-item><sl-checkbox checked>block-aspect-ratio-051-crash.html</sl-checkbox></sl-tree-item>
-     <sl-tree-item><sl-checkbox checked>block-aspect-ratio-052.html</sl-checkbox></sl-tree-item>
-     <sl-tree-item><sl-checkbox checked>block-aspect-ratio-053.html</sl-checkbox></sl-tree-item>
-     <sl-tree-item><sl-checkbox checked>block-aspect-ratio-054.html</sl-checkbox></sl-tree-item>
-  </sl-tree-item>
-</sl-tree>
 
+  organizeTree(paths: string[]): NaryTreeNode[] {
+    const forest: NaryTreeNode[] = [];
+    console.log({paths});
+
+    for (const path of paths) {
+      const segments = path.split('/').filter(s => s !== '');
+      let currentLevel = forest;
+
+      console.log({segments});
+      for (let i = 0; i < segments.length; i++) {
+        const isLastSegment = i === segments.length - 1;
+        const segmentName = segments[i] + (isLastSegment ? '' : '/');
+
+        let existingNode = currentLevel.find(node => node.name === segmentName);
+        if (existingNode) {
+          currentLevel = existingNode.children;
+        } else {
+          const newNode: NaryTreeNode = {
+            name: segmentName,
+            value: '@@@',
+            children: []
+          };
+          currentLevel.push(newNode);
+          currentLevel = newNode.children;
+        }
+      }
+    }
+    console.log({forest});
+    return forest;
+  }
+
+
+  renderTreeNode(tree: NaryTreeNode) {
+    return html`
+      <sl-tree-item>
+        <sl-checkbox checked>${tree.name}</sl-checkbox>
+        ${tree.children.map(t => this.renderTreeNode(t))}
+      </sl-tree-item>
+    `;
+  }
+
+  renderTree(forest: NaryTreeNode[]) {
+    return html`
+    <sl-tree style="--indent-guide-width: 4px;">
+     <sl-icon name="plus-square" slot="expand-icon"></sl-icon>
+     <sl-icon name="dash-square" slot="collapse-icon"></sl-icon>
+     ${forest.map(t => this.renderTreeNode(t))}
+    </sl-tree>
     `;
   }
 
