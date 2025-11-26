@@ -205,24 +205,6 @@ export class ChromedashFeatureHighlights extends LitElement {
     return html`
       <section id="status">
         <h3>Status in Chromium</h3>
-        ${this.feature.browsers.chrome.blink_components
-          ? html`
-              <p>
-                <label>Blink components:</label>
-                ${this.feature.browsers.chrome.blink_components.map(
-                  c => html`
-                    <a
-                      href="https://issues.chromium.org/issues?q=customfield1222907:%22${c}%22"
-                      target="_blank"
-                      rel="noopener"
-                      >${c}</a
-                    >
-                  `
-                )}
-              </p>
-            `
-          : nothing}
-        <br />
         <p>
           ${this.isSuspended()
             ? html` <label>Implementation status:</label>
@@ -321,19 +303,41 @@ export class ChromedashFeatureHighlights extends LitElement {
             </section>
           `
         : nothing}
-      ${this.feature.tags
-        ? html`
-            <section id="tags">
-              <h3>Search tags</h3>
+      <section id="metadata">
+        <h3>Metadata</h3>
+        <p>
+          <label>Feature type:</label>
+          ${this.feature.feature_type}
+        </p>
+        <p>
+          <label>Web feature ID:</label>
+          ${this.feature.web_feature}
+        </p>
+        <p>
+          <label>Blink components:</label>
+          ${this.feature.browsers.chrome.blink_components.map(
+            c => html`
+              <a
+                href="https://issues.chromium.org/issues?q=customfield1222907:%22${c}%22"
+                target="_blank"
+                rel="noopener"
+                >${c}</a
+              >
+            `
+          )}
+        </p>
+        ${this.feature.tags?.length
+          ? html` <p>
+              <label>Search tags:</label>
               ${this.feature.tags.map(
                 tag => html`
-                  <a href="/features#tags:${tag}">${tag}</a
+                  <a href="/features?q=tag:${tag}">${tag}</a
                   ><span class="conditional-comma">, </span>
                 `
               )}
-            </section>
-          `
-        : nothing}
+            </p>`
+          : nothing}
+      </section>
     `;
   }
 

@@ -144,6 +144,11 @@ def can_edit_any_feature(user: User) -> bool:
 RELEASE_NOTE_REVIEWERS = [
     'elmirakalali@google.com',
     'siobhankeating@google.com',
+    'mhoste@google.com',
+    'kimreardon@google.com',
+    'aaudi@google.com',
+    'crushworth@google.com',
+    'atarrant@google.com',
     'jrobbins@google.com']
 
 def can_review_release_notes(user: User) -> bool:
