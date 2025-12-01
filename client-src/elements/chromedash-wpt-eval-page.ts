@@ -326,6 +326,8 @@ export class ChromedashWPTEvalPage extends LitElement {
       this.isRequirementsFulfilled = false;
       return;
     }
+    // Name and summary are required for all features,
+    // so they are assumed to exist.
     const hasSpecLink = !!this.feature.spec_link;
     const hasWptDescr = !!this.feature.wpt_descr;
     const hasValidUrls =
@@ -466,12 +468,43 @@ export class ChromedashWPTEvalPage extends LitElement {
       <section class="card">
         <h2>Prerequisites Checklist</h2>
         <div class="requirements-list">
+          <!-- Name and summary are assumed to always be filled -->
+          ${this.renderRequirementItem(true, 'Feature name', 'id_name')}
+          <div class="url-list-container">
+            <div class="url-list">${this.feature.name}</div>
+          </div>
+          ${this.renderRequirementItem(true, 'Feature summary', 'id_summary')}
+          <div class="url-list-container">
+            <div class="url-list" style="white-space: pre-wrap;">
+              ${this.feature.summary}
+            </div>
+          </div>
           ${this.renderRequirementItem(hasSpecLink, 'Spec URL', 'id_spec_link')}
+          ${hasSpecLink
+            ? html`
+                <div class="url-list-container">
+                  <div class="url-list">
+                    <a href="${this.feature.spec_link}" target="_blank"
+                      >${this.feature.spec_link}</a
+                    >
+                  </div>
+                </div>
+              `
+            : nothing}
           ${this.renderRequirementItem(
             hasWptDescr,
             'WPT description',
             'id_wpt_descr'
           )}
+          ${hasWptDescr
+            ? html`
+                <div class="url-list-container">
+                  <div class="url-list" style="white-space: pre-wrap;">
+                    ${this.feature.wpt_descr}
+                  </div>
+                </div>
+              `
+            : nothing}
           ${this.renderRequirementItem(
             hasValidUrls,
             'Valid wpt.fyi results URLs',

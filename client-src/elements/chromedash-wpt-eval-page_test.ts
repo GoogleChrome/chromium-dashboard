@@ -92,11 +92,14 @@ describe('chromedash-wpt-eval-page', () => {
   });
 
   describe('Prerequisites Checklist', () => {
-    it('shows all checks as success when all data is present', async () => {
+    it('shows all checks as success and displays values when all data is present', async () => {
+      const specLink = 'https://valid.spec';
+      const wptDescr = 'Description text https://wpt.fyi/results/a';
+
       csClientStub.getFeature.resolves({
         ...mockFeatureV1,
-        spec_link: 'https://valid.spec',
-        wpt_descr: 'https://wpt.fyi/results/a',
+        spec_link: specLink,
+        wpt_descr: wptDescr,
       });
       const el = await fixture<ChromedashWPTEvalPage>(
         html`<chromedash-wpt-eval-page
@@ -111,9 +114,30 @@ describe('chromedash-wpt-eval-page', () => {
         expect(item.querySelector('sl-icon')!.classList.contains('success')).to
           .be.true;
       });
+
+      // Check displayed data
+      const dataContainers = el.shadowRoot!.querySelectorAll(
+        '.url-list-container'
+      );
+      // We expect 3 containers: Spec URL, WPT Description, and Valid URLs list
+      expect(dataContainers.length).to.equal(3);
+
+      // Verify Spec URL display (Index 0)
+      const specAnchor = dataContainers[0].querySelector('a');
+      expect(specAnchor).to.exist;
+      expect(specAnchor!.href).to.contain(specLink);
+      expect(specAnchor!.textContent).to.contain(specLink);
+
+      // Verify WPT Description display (Index 1)
+      const descrDiv = dataContainers[1].querySelector('.url-list');
+      expect(descrDiv).to.exist;
+      expect(descrDiv!.textContent).to.contain(wptDescr);
+      expect(descrDiv!.getAttribute('style')).to.contain(
+        'white-space: pre-wrap'
+      );
     });
 
-    it('shows checks as danger when data is missing', async () => {
+    it('shows checks as danger and hides values when data is missing', async () => {
       csClientStub.getFeature.resolves({
         ...mockFeatureV1,
         spec_link: '',
@@ -132,6 +156,12 @@ describe('chromedash-wpt-eval-page', () => {
         expect(item.querySelector('sl-icon')!.classList.contains('danger')).to
           .be.true;
       });
+
+      // Ensure data containers are NOT displayed
+      const dataContainers = el.shadowRoot!.querySelectorAll(
+        '.url-list-container'
+      );
+      expect(dataContainers.length).to.equal(0);
     });
   });
 
