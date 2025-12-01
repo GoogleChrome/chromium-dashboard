@@ -76,7 +76,7 @@ def _get_client():
 
 
 def _make_task(handler_path, task_params):
-  body_json = json.dumps(task_params)
+  body_json = json.dumps(task_params, default=str)
   return {
       'app_engine_http_request': {
           'relative_uri': handler_path,

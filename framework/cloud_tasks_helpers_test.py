@@ -13,6 +13,7 @@
 # limitations under the License.
 
 from unittest import mock
+import datetime
 import unittest
 import testing_config  # Must be imported before the module under test.
 
@@ -78,14 +79,16 @@ class CloudTasksHelpersTest(unittest.TestCase):
   def test_make_task(self):
     """We can make a task info dict in the expected format."""
     handler_path = '/handler'
-    task_params = {'a': 1}
+    task_params = {'a': 1,
+                   'when': datetime.datetime(2025, 12, 1, 2, 3, 4),
+                   "missing": None}
 
     actual = cloud_tasks_helpers._make_task(handler_path, task_params)
 
     self.assertEqual(
         { 'app_engine_http_request': {
             'relative_uri': '/handler',
-            'body': b'{"a": 1}',
+            'body': b'{"a": 1, "when": "2025-12-01 02:03:04", "missing": null}',
             }
          },
         actual)
