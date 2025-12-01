@@ -475,9 +475,9 @@ export class ChromedashWPTEvalPage extends LitElement {
           </div>
           ${this.renderRequirementItem(true, 'Feature summary', 'id_summary')}
           <div class="url-list-container">
-            <div class="url-list" style="white-space: pre-wrap;">
-              ${this.feature.summary}
-            </div>
+            <!-- prettier-ignore -->
+            <div class="url-list" style="white-space: pre-wrap;"
+              >${this.feature.summary}</div>
           </div>
           ${this.renderRequirementItem(hasSpecLink, 'Spec URL', 'id_spec_link')}
           ${hasSpecLink
@@ -499,9 +499,9 @@ export class ChromedashWPTEvalPage extends LitElement {
           ${hasWptDescr
             ? html`
                 <div class="url-list-container">
-                  <div class="url-list" style="white-space: pre-wrap;">
-                    ${this.feature.wpt_descr}
-                  </div>
+                  <!-- prettier-ignore -->
+                  <div class="url-list" style="white-space: pre-wrap;"
+                    >${this.feature.wpt_descr}</div>
                 </div>
               `
             : nothing}
