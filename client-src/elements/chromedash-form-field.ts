@@ -669,7 +669,7 @@ export class ChromedashFormField extends LitElement {
   }
 
   simplifyTree(tree: NaryTreeNode) {
-    if (tree.children.length == 1) {
+    while (tree.children.length == 1) {
       tree.name = tree.name + tree.children[0].name;
       tree.value = tree.children[0].value;
       tree.children = tree.children[0].children;
