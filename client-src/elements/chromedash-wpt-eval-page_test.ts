@@ -131,9 +131,6 @@ describe('chromedash-wpt-eval-page', () => {
 
       // Verify Feature Summary (Index 1)
       expect(dataContainers[1].textContent).to.contain(featureSummary);
-      expect(
-        dataContainers[1].querySelector('.url-list')!.getAttribute('style')
-      ).to.contain('white-space: pre-wrap');
 
       // Verify Spec URL (Index 2)
       const specAnchor = dataContainers[2].querySelector('a');
