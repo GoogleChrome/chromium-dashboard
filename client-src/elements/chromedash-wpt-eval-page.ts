@@ -6,6 +6,7 @@ import {SHARED_STYLES} from '../css/shared-css.js';
 import {Feature} from '../js-src/cs-client.js';
 import {showToastMessage} from './utils.js';
 import {AITestEvaluationStatus} from './form-field-enums.js';
+import {ifDefined} from 'lit/directives/if-defined.js';
 
 // Matches http or https, followed by wpt.fyi/results, followed by any non-whitespace and non-question mark characters.
 const WPT_RESULTS_REGEX = /(https?:\/\/wpt\.fyi\/results[^\s?]+)/g;
@@ -484,7 +485,9 @@ export class ChromedashWPTEvalPage extends LitElement {
             ? html`
                 <div class="url-list-container">
                   <div class="url-list">
-                    <a href="${this.feature.spec_link}" target="_blank"
+                    <a
+                      href="${ifDefined(this.feature.spec_link)}"
+                      target="_blank"
                       >${this.feature.spec_link}</a
                     >
                   </div>
