@@ -458,6 +458,23 @@ export class ChromedashWPTEvalPage extends LitElement {
     `;
   }
 
+  /**
+   * Renders pre-formatted text within a div, applying `prettier-ignore`
+   * to prevent unwanted whitespace from being introduced by Prettier's
+   * formatting when `white-space: pre-wrap` is used.
+   * @param content The text content to render.
+   * @returns A TemplateResult containing the pre-formatted text, or nothing if content is undefined.
+   */
+  private _renderPreformattedText(
+    content: string | undefined
+  ): TemplateResult | typeof nothing {
+    if (!content) {
+      return nothing;
+    }
+    // prettier-ignore
+    return html`<div class="url-list prewrap">${content}</div>`;
+  }
+
   renderRequirementsChecks(): TemplateResult {
     if (!this.feature) {
       return html`${nothing}`;
@@ -480,8 +497,7 @@ export class ChromedashWPTEvalPage extends LitElement {
           </div>
           ${this.renderRequirementItem(true, 'Feature summary', 'id_summary')}
           <div class="url-list-container">
-            <!-- prettier-ignore -->
-            <div class="url-list prewrap">${this.feature.summary}</div>
+            ${this._renderPreformattedText(this.feature.summary)}
           </div>
           ${this.renderRequirementItem(hasSpecLink, 'Spec URL', 'id_spec_link')}
           ${hasSpecLink
@@ -505,8 +521,7 @@ export class ChromedashWPTEvalPage extends LitElement {
           ${hasWptDescr
             ? html`
                 <div class="url-list-container">
-                  <!-- prettier-ignore -->
-                  <div class="url-list prewrap">${this.feature.wpt_descr}</div>
+                  ${this._renderPreformattedText(this.feature.wpt_descr)}
                 </div>
               `
             : nothing}
