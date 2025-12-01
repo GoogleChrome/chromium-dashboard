@@ -134,10 +134,13 @@ class VotesAPI(basehandlers.APIHandler):
 
   def check_voting_rules(self, gate, new_state):
     """Abort the request if the user casts a vote that we cannot accept."""
-    if (new_state == Vote.NA_VERIFIED and
-        gate.state not in [Vote.NA_SELF, Vote.NA_VERIFIED]):
-      self.abort(
-          400, msg='User may not verify when gate was not self-certified')
+    if new_state == Vote.NA_VERIFIED:
+      existing_na_votes = Vote.get_votes(
+          feature_id=gate.feature_id, gate_id=gate.key.integer_id(),
+          states=[Vote.NA_SELF, Vote.NA_VERIFIED])
+      if not existing_na_votes:
+        self.abort(
+            400, msg='User may not verify when gate has no self-certifications')
 
 
 class GatesAPI(basehandlers.APIHandler):
