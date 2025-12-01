@@ -541,13 +541,15 @@ export class ChromedashWPTEvalPage extends LitElement {
           : nothing}
 
         <sl-button
-          variant="${(this.feature.ai_test_eval_report) ? 'danger' : 'primary'}"
+          variant="${this.feature.ai_test_eval_report ? 'danger' : 'primary'}"
           size="large"
           class="generate-button"
           ?disabled=${!this.isRequirementsFulfilled || isCooldownActive}
           @click=${this.handleGenerateClick}
         >
-          ${(this.feature.ai_test_eval_report) ? 'Discard this report and reevaluate test coverage' : 'Evaluate test coverage'}
+          ${this.feature.ai_test_eval_report
+            ? 'Discard this report and reevaluate test coverage'
+            : 'Evaluate test coverage'}
         </sl-button>
 
         ${isCooldownActive
@@ -682,7 +684,8 @@ export class ChromedashWPTEvalPage extends LitElement {
         ${this.loading
           ? this.renderSkeletons()
           : html`
-              ${this.renderRequirementsChecks()} ${this.renderReport()} ${this.renderActionSection()}
+              ${this.renderRequirementsChecks()} ${this.renderReport()}
+              ${this.renderActionSection()}
             `}
       </div>
     `;
