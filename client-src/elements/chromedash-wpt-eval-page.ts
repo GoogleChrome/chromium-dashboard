@@ -224,6 +224,10 @@ export class ChromedashWPTEvalPage extends LitElement {
           color: inherit;
         }
 
+        .prewrap {
+          white-space: pre-wrap;
+        }
+
         @keyframes fadeIn {
           from {
             opacity: 0;
@@ -477,8 +481,7 @@ export class ChromedashWPTEvalPage extends LitElement {
           ${this.renderRequirementItem(true, 'Feature summary', 'id_summary')}
           <div class="url-list-container">
             <!-- prettier-ignore -->
-            <div class="url-list" style="white-space: pre-wrap;"
-              >${this.feature.summary}</div>
+            <div class="url-list prewrap">${this.feature.summary}</div>
           </div>
           ${this.renderRequirementItem(hasSpecLink, 'Spec URL', 'id_spec_link')}
           ${hasSpecLink
@@ -503,8 +506,7 @@ export class ChromedashWPTEvalPage extends LitElement {
             ? html`
                 <div class="url-list-container">
                   <!-- prettier-ignore -->
-                  <div class="url-list" style="white-space: pre-wrap;"
-                    >${this.feature.wpt_descr}</div>
+                  <div class="url-list prewrap">${this.feature.wpt_descr}</div>
                 </div>
               `
             : nothing}
