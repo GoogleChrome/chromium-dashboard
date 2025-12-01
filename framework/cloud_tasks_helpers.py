@@ -76,6 +76,9 @@ def _get_client():
 
 
 def _make_task(handler_path, task_params):
+  # Note: `default=str` is used to handle datetimes. Be cautious, as
+  # this will also stringify any other non-serializable objects
+  # passed in task_params.
   body_json = json.dumps(task_params, default=str)
   return {
       'app_engine_http_request': {
