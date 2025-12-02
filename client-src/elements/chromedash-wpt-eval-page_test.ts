@@ -214,6 +214,50 @@ describe('chromedash-wpt-eval-page', () => {
       expect(button).to.not.have.attribute('disabled');
     });
 
+    it('renders primary evaluate button when no report exists', async () => {
+      // Feature has no report yet
+      csClientStub.getFeature.resolves({
+        ...mockFeatureV1,
+        ai_test_eval_report: null,
+        ai_test_eval_run_status: null,
+      });
+
+      const el = await fixture<ChromedashWPTEvalPage>(
+        html`<chromedash-wpt-eval-page
+          .featureId=${1}
+        ></chromedash-wpt-eval-page>`
+      );
+      await el.updateComplete;
+
+      const button = el.shadowRoot!.querySelector('.generate-button');
+
+      expect(button).to.have.attribute('variant', 'primary');
+      expect(button!.textContent?.trim()).to.equal('Evaluate test coverage');
+    });
+
+    it('renders danger re-evaluate button when a report already exists', async () => {
+      // Feature already has a report
+      csClientStub.getFeature.resolves({
+        ...mockFeatureV1,
+        ai_test_eval_report: 'Existing report content',
+        ai_test_eval_run_status: null,
+      });
+
+      const el = await fixture<ChromedashWPTEvalPage>(
+        html`<chromedash-wpt-eval-page
+          .featureId=${1}
+        ></chromedash-wpt-eval-page>`
+      );
+      await el.updateComplete;
+
+      const button = el.shadowRoot!.querySelector('.generate-button');
+
+      expect(button).to.have.attribute('variant', 'danger');
+      expect(button!.textContent?.trim()).to.equal(
+        'Discard this report and reevaluate test coverage'
+      );
+    });
+
     it('starts evaluation, enters IN_PROGRESS state, and starts polling on click', async () => {
       csClientStub.getFeature.resolves(mockFeatureV1);
       csClientStub.generateWPTCoverageEvaluation.resolves({});
