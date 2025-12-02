@@ -93,8 +93,14 @@ async def run_wpt_test_eval_pipeline(feature: FeatureEntry) -> None:
   file_names: list[str] = []
   prompts = []
   for fname, fc in test_analysis_file_contents.items():
+    testfile_url = f'{utils.WPT_GITHUB_RAW_CONTENTS_URL}{fname}'
     prompts.append(
-      render_template(TEST_ANALYSIS_TEMPLATE_PATH, testfile_contents=fc)
+      render_template(
+        TEST_ANALYSIS_TEMPLATE_PATH,
+        testfile_name=fname,
+        testfile_url=testfile_url,
+        testfile_contents=fc
+      )
     )
     file_names.append(fname)
   # Add the spec synthesis prompt to the end for batch processing.
