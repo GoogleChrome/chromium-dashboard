@@ -92,11 +92,18 @@ describe('chromedash-wpt-eval-page', () => {
   });
 
   describe('Prerequisites Checklist', () => {
-    it('shows all checks as success when all data is present', async () => {
+    it('shows all checks as success and displays all values when all data is present', async () => {
+      const specLink = 'https://valid.spec';
+      const wptDescr = 'Description text https://wpt.fyi/results/a';
+      const featureName = 'Test Feature Name';
+      const featureSummary = 'Test Feature Summary';
+
       csClientStub.getFeature.resolves({
         ...mockFeatureV1,
-        spec_link: 'https://valid.spec',
-        wpt_descr: 'https://wpt.fyi/results/a',
+        name: featureName,
+        summary: featureSummary,
+        spec_link: specLink,
+        wpt_descr: wptDescr,
       });
       const el = await fixture<ChromedashWPTEvalPage>(
         html`<chromedash-wpt-eval-page
@@ -105,15 +112,40 @@ describe('chromedash-wpt-eval-page', () => {
       );
       await el.updateComplete;
 
+      // Check requirement items (Total 5: Name, Summary, Spec, Descr, Valid URLs)
       const items = el.shadowRoot!.querySelectorAll('.requirement-item');
-      expect(items.length).to.equal(3);
+      expect(items.length).to.equal(5);
       items.forEach(item => {
         expect(item.querySelector('sl-icon')!.classList.contains('success')).to
           .be.true;
       });
+
+      // Check displayed data containers (Total 5)
+      const dataContainers = el.shadowRoot!.querySelectorAll(
+        '.url-list-container'
+      );
+      expect(dataContainers.length).to.equal(5);
+
+      // Verify Feature Name (Index 0)
+      expect(dataContainers[0].textContent).to.contain(featureName);
+
+      // Verify Feature Summary (Index 1)
+      expect(dataContainers[1].textContent).to.contain(featureSummary);
+
+      // Verify Spec URL (Index 2)
+      const specAnchor = dataContainers[2].querySelector('a');
+      expect(specAnchor).to.exist;
+      expect(specAnchor!.href).to.contain(specLink);
+
+      // Verify WPT Description (Index 3)
+      expect(dataContainers[3].textContent).to.contain(wptDescr);
+
+      // Verify Valid URLs (Index 4)
+      expect(dataContainers[4].querySelector('ul')).to.exist;
     });
 
-    it('shows checks as danger when data is missing', async () => {
+    it('shows Name/Summary as success, but other checks as danger when optional data is missing', async () => {
+      // Feature has name/summary (default mock), but missing spec and wpt_descr
       csClientStub.getFeature.resolves({
         ...mockFeatureV1,
         spec_link: '',
@@ -127,11 +159,25 @@ describe('chromedash-wpt-eval-page', () => {
       await el.updateComplete;
 
       const items = el.shadowRoot!.querySelectorAll('.requirement-item');
-      // Check for danger icons
-      items.forEach(item => {
-        expect(item.querySelector('sl-icon')!.classList.contains('danger')).to
-          .be.true;
-      });
+      expect(items.length).to.equal(5);
+
+      // Name (0) and Summary (1) should be SUCCESS
+      expect(items[0].querySelector('.success')).to.exist;
+      expect(items[1].querySelector('.success')).to.exist;
+
+      // Spec (2), Descr (3), Valid URLs (4) should be DANGER
+      expect(items[2].querySelector('.danger')).to.exist;
+      expect(items[3].querySelector('.danger')).to.exist;
+      expect(items[4].querySelector('.danger')).to.exist;
+
+      // Check displayed data containers
+      const dataContainers = el.shadowRoot!.querySelectorAll(
+        '.url-list-container'
+      );
+      // Should only show 2 containers (Name and Summary)
+      expect(dataContainers.length).to.equal(2);
+      expect(dataContainers[0].textContent).to.contain(mockFeatureV1.name);
+      expect(dataContainers[1].textContent).to.contain(mockFeatureV1.summary);
     });
   });
 

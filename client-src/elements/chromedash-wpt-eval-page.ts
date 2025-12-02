@@ -6,6 +6,7 @@ import {SHARED_STYLES} from '../css/shared-css.js';
 import {Feature} from '../js-src/cs-client.js';
 import {showToastMessage} from './utils.js';
 import {AITestEvaluationStatus} from './form-field-enums.js';
+import {ifDefined} from 'lit/directives/if-defined.js';
 
 // Matches http or https, followed by wpt.fyi/results, followed by any non-whitespace and non-question mark characters.
 const WPT_RESULTS_REGEX = /(https?:\/\/wpt\.fyi\/results[^\s?]+)/g;
@@ -223,6 +224,10 @@ export class ChromedashWPTEvalPage extends LitElement {
           color: inherit;
         }
 
+        .prewrap {
+          white-space: pre-wrap;
+        }
+
         @keyframes fadeIn {
           from {
             opacity: 0;
@@ -326,6 +331,8 @@ export class ChromedashWPTEvalPage extends LitElement {
       this.isRequirementsFulfilled = false;
       return;
     }
+    // Name and summary are required for all features,
+    // so they are assumed to exist.
     const hasSpecLink = !!this.feature.spec_link;
     const hasWptDescr = !!this.feature.wpt_descr;
     const hasValidUrls =
@@ -451,6 +458,23 @@ export class ChromedashWPTEvalPage extends LitElement {
     `;
   }
 
+  /**
+   * Renders pre-formatted text within a div, applying `prettier-ignore`
+   * to prevent unwanted whitespace from being introduced by Prettier's
+   * formatting when `white-space: pre-wrap` is used.
+   * @param content The text content to render.
+   * @returns A TemplateResult containing the pre-formatted text, or nothing if content is undefined.
+   */
+  private _renderPreformattedText(
+    content: string | undefined
+  ): TemplateResult | typeof nothing {
+    if (!content) {
+      return nothing;
+    }
+    // prettier-ignore
+    return html`<div class="url-list prewrap">${content}</div>`;
+  }
+
   renderRequirementsChecks(): TemplateResult {
     if (!this.feature) {
       return html`${nothing}`;
@@ -466,12 +490,41 @@ export class ChromedashWPTEvalPage extends LitElement {
       <section class="card">
         <h2>Prerequisites Checklist</h2>
         <div class="requirements-list">
+          <!-- Name and summary are assumed to always be filled -->
+          ${this.renderRequirementItem(true, 'Feature name', 'id_name')}
+          <div class="url-list-container">
+            <div class="url-list">${this.feature.name}</div>
+          </div>
+          ${this.renderRequirementItem(true, 'Feature summary', 'id_summary')}
+          <div class="url-list-container">
+            ${this._renderPreformattedText(this.feature.summary)}
+          </div>
           ${this.renderRequirementItem(hasSpecLink, 'Spec URL', 'id_spec_link')}
+          ${hasSpecLink
+            ? html`
+                <div class="url-list-container">
+                  <div class="url-list">
+                    <a
+                      href="${ifDefined(this.feature.spec_link)}"
+                      target="_blank"
+                      >${this.feature.spec_link}</a
+                    >
+                  </div>
+                </div>
+              `
+            : nothing}
           ${this.renderRequirementItem(
             hasWptDescr,
             'WPT description',
             'id_wpt_descr'
           )}
+          ${hasWptDescr
+            ? html`
+                <div class="url-list-container">
+                  ${this._renderPreformattedText(this.feature.wpt_descr)}
+                </div>
+              `
+            : nothing}
           ${this.renderRequirementItem(
             hasValidUrls,
             'Valid wpt.fyi results URLs',
