@@ -15,6 +15,7 @@
 import asyncio
 from datetime import datetime
 import logging
+from pathlib import Path
 import re
 from flask import render_template
 
@@ -41,7 +42,7 @@ def _create_feature_definition(feature: FeatureEntry) -> str:
   return f'Name: {feature.name}\nDescription: {feature.summary}'
 
 
-async def _get_test_analysis_prompts(test_locations: list[str]) -> dict[str, str]:
+async def _get_test_analysis_prompts(test_locations: list[str]) -> dict[Path, str]:
   test_urls = []
   test_directories = []
   for test_loc in test_locations:
@@ -92,17 +93,17 @@ async def run_wpt_test_eval_pipeline(feature: FeatureEntry) -> None:
 
   file_names: list[str] = []
   prompts = []
-  for fname, fc in test_analysis_file_contents.items():
-    testfile_url = f'{utils.WPT_GITHUB_RAW_CONTENTS_URL}{fname}'
+  for fpath, fc in test_analysis_file_contents.items():
+    testfile_url = f'{utils.WPT_GITHUB_RAW_CONTENTS_URL}{fpath}'
     prompts.append(
       render_template(
         TEST_ANALYSIS_TEMPLATE_PATH,
-        testfile_name=fname,
+        testfile_name=fpath.name,
         testfile_url=testfile_url,
         testfile_contents=fc
       )
     )
-    file_names.append(fname)
+    file_names.append(fpath.name)
   # Add the spec synthesis prompt to the end for batch processing.
   prompts.append(spec_synthesis_prompt)
 
