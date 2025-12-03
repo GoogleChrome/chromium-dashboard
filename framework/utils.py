@@ -226,7 +226,7 @@ def reformat_wpt_fyi_url(url: str) -> str:
   return url
 
 
-def _parse_wpt_fyi_url(url: str) -> str:
+def _parse_wpt_fyi_url(url: str) -> Path:
   """
   Parses a wpt.fyi URL to map it to a GitHub repo path.
 
@@ -254,7 +254,7 @@ def _parse_wpt_fyi_url(url: str) -> str:
   if not path:
     raise ValueError('Invalid URL path: No path found after \'/results/\'.')
 
-  return path
+  return Path(path)
 
 
 def _fetch_file_content(url: str) -> str | None:
@@ -280,7 +280,7 @@ def _fetch_file_content(url: str) -> str | None:
   return None
 
 
-def _fetch_dir_listing(url: str, headers: dict[str, str]) -> list[tuple[str, str]]:
+def _fetch_dir_listing(url: str, headers: dict[str, str]) -> list[tuple[Path, str]]:
   """
   Fetches a GitHub directory listing and extracts all valid file entries.
   Intended to be run in a thread pool.
@@ -292,30 +292,31 @@ def _fetch_dir_listing(url: str, headers: dict[str, str]) -> list[tuple[str, str
     resp.raise_for_status()
     data = resp.json()
     if isinstance(data, list):
-      return [(i['name'], i['download_url']) for i in data
+      return [(Path(i['path']), i['download_url']) for i in data
               if (
                 # Ignore YAML files.
                 not i.get('name', '').endswith('.yml')
                 and not i.get('name', '').endswith('.yaml')
                 and i.get('type') == 'file'
-                and i.get('download_url'))]
+                and i.get('download_url'))
+                and i.get('path')]
   except Exception as e:
     logging.error(f'Error fetching directory listing for {url}: {e}')
   return []
 
 
-async def _fetch_and_pair(fname: str, furl: str) -> tuple[str, str | None]:
+async def _fetch_and_pair(fpath: Path, furl: str) -> tuple[Path, str | None]:
   """
   Async wrapper for the actual WPT content fetching phase.
   """
   content = await asyncio.to_thread(_fetch_file_content, furl)
-  return fname, content
+  return fpath, content
 
 
 async def get_mixed_wpt_contents_async(
     dir_urls: list[str],
     additional_file_urls: list[str]
-) -> dict[str, str]:
+) -> dict[Path, str]:
   """
   Orchestrates concurrent fetching of complete directories and individual WPT file URLs.
 
@@ -331,7 +332,7 @@ async def get_mixed_wpt_contents_async(
     return {}
 
   headers = _get_github_headers(token)
-  all_contents: dict[str, str] = {}
+  all_contents: dict[Path, str] = {}
 
   # PHASE 1: Async Resolution (Directories & Individual Files)
 
@@ -340,13 +341,13 @@ async def get_mixed_wpt_contents_async(
       asyncio.to_thread(_fetch_dir_listing, u, headers)
       for u in dir_urls
   ]
-  file_path_info: list[tuple[str, str]] = []
+  file_path_info: list[tuple[str, Path]] = []
   for furl in additional_file_urls:
     path = _parse_wpt_fyi_url(furl)
     file_path_info.append((
       f'{WPT_GITHUB_RAW_CONTENTS_URL}{path}',
+      path,
       # Infer the test name by getting the name from a Path object.
-      Path(path).name,
     ))
 
   # Wait for all resolution tasks to complete concurrently
@@ -354,26 +355,26 @@ async def get_mixed_wpt_contents_async(
 
   # Map raw download URLs to filenames. This automatically handles deduplication
   # if the same file appears in a directory and the explicit list.
-  files_to_fetch_map: dict[str, str] = {}
+  files_to_fetch_map: dict[str, Path] = {}
 
   # Process directory results (each result is a list of tuples)
   for dir_list in dir_results:
-    for fname, url in dir_list:
-      files_to_fetch_map[url] = fname
+    for fpath, url in dir_list:
+      files_to_fetch_map[url] = fpath
 
   # Process individual file results (each result is a single tuple or None)
-  for url, fname in file_path_info:
-    files_to_fetch_map[url] = fname
+  for url, fpath in file_path_info:
+    files_to_fetch_map[url] = fpath
 
   # PHASE 2: Async Content Fetching
   file_tasks = [
-      _fetch_and_pair(fname, url)
-      for url, fname in files_to_fetch_map.items()
+    _fetch_and_pair(fpath, url)
+    for url, fpath in files_to_fetch_map.items()
   ]
   file_results = await asyncio.gather(*file_tasks)
 
-  for fname, content in file_results:
+  for fpath, content in file_results:
     if content is not None:
-      all_contents[fname] = content
+      all_contents[fpath] = content
 
   return all_contents

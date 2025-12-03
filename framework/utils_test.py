@@ -23,6 +23,7 @@ import base64
 import urllib
 import requests  # Added for requests.exceptions.RequestException
 import settings
+from pathlib import Path
 
 
 class MockHandler(object):
@@ -282,24 +283,28 @@ class UtilsGitHubTests(unittest.TestCase):
     self.mock_file_api_response = {
       'type': 'file',
       'download_url': 'https://raw.github.com/some/file.html',
-      'name': 'file.html'
+      'name': 'file.html',
+      'path': 'some/file.html'
     }
     # Mock successful directory API response
     self.mock_dir_api_response = [
       {
         'type': 'file',
         'name': 'file1.html',
-        'download_url': 'https://raw.github.com/some/file1.html'
+        'download_url': 'https://raw.github.com/some/file1.html',
+        'path': 'file1.html'
       },
       {
         'type': 'dir',
         'name': 'subdir',
-        'download_url': None
+        'download_url': None,
+        'path': 'subdir'
       },
       {
         'type': 'file',
         'name': 'file2.js',
-        'download_url': 'https://raw.github.com/some/file2.js'
+        'download_url': 'https://raw.github.com/some/file2.js',
+        'path': 'file2.js'
       }
     ]
 
@@ -347,7 +352,7 @@ class UtilsGitHubTests(unittest.TestCase):
     }
     for url, expected_path in urls.items():
       with self.subTest(url=url):
-        self.assertEqual(expected_path, utils._parse_wpt_fyi_url(url))
+        self.assertEqual(Path(expected_path), utils._parse_wpt_fyi_url(url))
 
   def test_parse_wpt_fyi_url__invalid_cases(self):
     """Should raise ValueError for invalid URLs."""
@@ -433,7 +438,7 @@ class UtilsGitHubTests(unittest.TestCase):
   @mock.patch('framework.utils._parse_wpt_fyi_url')
   def test_fetch_dir_listing__success(self, mock_parse_url, mock_requests_get):
     """Should return a list of (name, url) tuples for files only."""
-    mock_parse_url.return_value = 'dom/events'
+    mock_parse_url.return_value = Path('dom/events')
     mock_response = mock.Mock()
     mock_response.json.return_value = self.mock_dir_api_response
     mock_response.raise_for_status.return_value = None
@@ -442,8 +447,8 @@ class UtilsGitHubTests(unittest.TestCase):
     result = utils._fetch_dir_listing('https://wpt.fyi/results/dom/events', self.mock_headers)
 
     expected = [
-        ('file1.html', 'https://raw.github.com/some/file1.html'),
-        ('file2.js', 'https://raw.github.com/some/file2.js')
+      (Path('file1.html'), 'https://raw.github.com/some/file1.html'),
+      (Path('file2.js'), 'https://raw.github.com/some/file2.js')
     ]
     self.assertEqual(result, expected)
     mock_requests_get.assert_called_once()
@@ -471,15 +476,15 @@ class UtilsGitHubTests(unittest.TestCase):
   @mock.patch('framework.utils._parse_wpt_fyi_url')
   def test_fetch_dir_listing__ignores_yaml(self, mock_parse_url, mock_requests_get):
     """Should specifically ignore .yaml and .yml files in listings."""
-    mock_parse_url.return_value = 'css/css-grid'
+    mock_parse_url.return_value = Path('css/css-grid')
 
     # Mock a response containing mixed content including YAML files
     mixed_response = [
-        {'type': 'file', 'name': 'grid-basic.html', 'download_url': 'http://dl/grid-basic.html'},
-        {'type': 'file', 'name': 'META.yml', 'download_url': 'http://dl/META.yml'},
-        {'type': 'file', 'name': 'config.yaml', 'download_url': 'http://dl/config.yaml'},
-        {'type': 'dir', 'name': 'subtests', 'download_url': None},
-        {'type': 'file', 'name': 'grid-api.js', 'download_url': 'http://dl/grid-api.js'},
+      {'type': 'file', 'name': 'grid-basic.html', 'download_url': 'http://dl/grid-basic.html', 'path': 'grid-basic.html'},
+      {'type': 'file', 'name': 'META.yml', 'download_url': 'http://dl/META.yml', 'path': 'META.yml'},
+      {'type': 'file', 'name': 'config.yaml', 'download_url': 'http://dl/config.yaml', 'path': 'config.yaml'},
+      {'type': 'dir', 'name': 'subtests', 'download_url': None, 'path': 'subtests'},
+      {'type': 'file', 'name': 'grid-api.js', 'download_url': 'http://dl/grid-api.js', 'path': 'grid-api.js'},
     ]
 
     mock_response = mock.Mock()
@@ -491,8 +496,8 @@ class UtilsGitHubTests(unittest.TestCase):
 
     # Assert only non-YAML files are returned
     expected = [
-        ('grid-basic.html', 'http://dl/grid-basic.html'),
-        ('grid-api.js', 'http://dl/grid-api.js')
+      (Path('grid-basic.html'), 'http://dl/grid-basic.html'),
+      (Path('grid-api.js'), 'http://dl/grid-api.js')
     ]
     self.assertEqual(result, expected)
 
@@ -502,7 +507,7 @@ class AsyncUtilsGitHubTests(unittest.IsolatedAsyncioTestCase):
 
   async def test_fetch_and_pair(self):
     """Should pair filename with fetched content asynchronously."""
-    fname = 'test.html'
+    fname = Path('test.html')
     furl = 'http://example.com/test.html'
     expected_content = '<html>content</html>'
 
@@ -525,8 +530,8 @@ class AsyncUtilsGitHubTests(unittest.IsolatedAsyncioTestCase):
 
     # Dir 1 contains file A and file B
     mock_fetch_dir.return_value = [
-        ('a.html', 'http://dl/a.html'),
-        ('b.css', 'http://dl/b.css')
+      (Path('a.html'), 'http://dl/a.html'),
+      (Path('b.css'), 'http://dl/b.css')
     ]
     raw_base = utils.WPT_GITHUB_RAW_CONTENTS_URL
     expected_c_url = f'{raw_base}c.js'
@@ -539,9 +544,9 @@ class AsyncUtilsGitHubTests(unittest.IsolatedAsyncioTestCase):
 
     # Assertions
     expected_results = {
-        'a.html': 'content of http://dl/a.html',
-        'b.css': 'content of http://dl/b.css',
-        'c.js': f'content of {expected_c_url}',
+      Path('a.html'): 'content of http://dl/a.html',
+      Path('b.css'): 'content of http://dl/b.css',
+      Path('c.js'): f'content of {expected_c_url}',
     }
     self.assertEqual(results, expected_results)
     self.assertEqual(mock_fetch_dir.call_count, 1)
@@ -567,14 +572,14 @@ class AsyncUtilsGitHubTests(unittest.IsolatedAsyncioTestCase):
     expected_url = f'{raw_base}dir1/a.html'
 
     # The directory listing MUST return the same URL for deduplication to work.
-    mock_fetch_dir.return_value = [('a.html', expected_url)]
+    mock_fetch_dir.return_value = [(Path('dir1/a.html'), expected_url)]
 
     mock_fetch_content.return_value = 'content'
 
     results = await utils.get_mixed_wpt_contents_async(dir_urls, file_urls)
 
     self.assertEqual(len(results), 1)
-    self.assertEqual(results['a.html'], 'content')
+    self.assertEqual(results[Path('dir1/a.html')], 'content')
     # Crucial: content fetch should only happen once despite appearing twice in resolution phase
     mock_fetch_content.assert_called_once_with(expected_url)
 
@@ -588,14 +593,14 @@ class AsyncUtilsGitHubTests(unittest.IsolatedAsyncioTestCase):
     settings.GITHUB_TOKEN = 'token'
 
     # One dir fails (returns empty list), one succeeds
-    mock_fetch_dir.side_effect = [[('a.html', 'http://dl/a.html')], []]
+    mock_fetch_dir.side_effect = [[(Path('a.html'), 'http://dl/a.html')], []]
 
     # Content fetch succeeds for the one valid file
     mock_fetch_content.return_value = 'content_a'
 
     results = await utils.get_mixed_wpt_contents_async(dir_urls, file_urls)
 
-    self.assertEqual(results, {'a.html': 'content_a'})
+    self.assertEqual(results, {Path('a.html'): 'content_a'})
 
   async def test_get_mixed_wpt_contents_async__no_token(self):
     """Should return empty dict immediately if no GitHub token is available."""

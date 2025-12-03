@@ -16,6 +16,7 @@ import testing_config  # Must be imported before the module under test.
 
 import asyncio
 from unittest import mock
+from pathlib import Path
 from internals import core_enums
 from internals.core_models import FeatureEntry
 from framework import gemini_helpers
@@ -64,8 +65,8 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
 
     # Mock the util that returns content map
     expected_content_map = {
-      'https://wpt.fyi/results/foo/bar.html': 'content1',
-      '/css/css-grid/grid-definition.html': 'content2'
+      Path('https://wpt.fyi/results/foo/bar.html'): 'content1',
+      Path('/css/css-grid/grid-definition.html'): 'content2'
     }
     self.mock_utils.get_mixed_wpt_contents_async = mock.AsyncMock(
       return_value=expected_content_map
@@ -100,7 +101,7 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
     # Mock the internal helper to simplify this higher-level test
     with mock.patch('framework.gemini_helpers._get_test_analysis_prompts',
                     new_callable=mock.AsyncMock) as mock_get_prompts:
-      mock_get_prompts.return_value = {'test.html': 'file_content_1'}
+      mock_get_prompts.return_value = {Path('test.html'): 'file_content_1'}
 
       # 2. Setup Mocks for template rendering
       # Make render_template return a string that identifies which template it was
@@ -158,7 +159,7 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
 
     with mock.patch('framework.gemini_helpers._get_test_analysis_prompts',
                     new_callable=mock.AsyncMock) as mock_get_prompts:
-      mock_get_prompts.return_value = {'f1.html': 'content1'}
+      mock_get_prompts.return_value = {Path('f1.html'): 'content1'}
 
       # The last item (spec synthesis) returns an Exception instead of str
       gemini_error = RuntimeError("Gemini overloaded")
@@ -176,7 +177,10 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
 
     with mock.patch('framework.gemini_helpers._get_test_analysis_prompts',
                     new_callable=mock.AsyncMock) as mock_get_prompts:
-      mock_get_prompts.return_value = {'f1.html': 'content1', 'f2.html': 'content2'}
+      mock_get_prompts.return_value = {
+        Path('f1.html'): 'content1',
+        Path('f2.html'): 'content2'
+      }
 
       # Both tests fail, but Spec succeeds (last item)
       self.mock_gemini_client.get_batch_responses_async = mock.AsyncMock(
@@ -200,7 +204,10 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
 
     with mock.patch('framework.gemini_helpers._get_test_analysis_prompts',
                     new_callable=mock.AsyncMock) as mock_get_prompts:
-      mock_get_prompts.return_value = {'f1.html': 'content1', 'f2.html': 'content2'}
+      mock_get_prompts.return_value = {
+        Path('f1.html'): 'content1',
+        Path('f2.html'): 'content2'
+      }
 
       # One fails, one succeeds, spec succeeds
       self.mock_gemini_client.get_batch_responses_async = mock.AsyncMock(
