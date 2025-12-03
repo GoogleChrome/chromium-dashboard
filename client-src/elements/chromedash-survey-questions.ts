@@ -194,7 +194,8 @@ export class ChromedashSurveyQuestions extends LitElement {
   renderTestingForm(): TemplateResult {
     return html`
       <div id="questionnaire">
-        Do your tests for this feature cover the following?
+        Does your feature have WPT or other automated tests that cover the
+        following?
         <ol>
           ${this.renderBooleanField(
             'covers_existence',
@@ -257,7 +258,8 @@ export class ChromedashSurveyQuestions extends LitElement {
             html`<b>Invalidation</b>. Rendering or other output often needs to
               be invalidated when the inputs change. This kind of test is common
               for CSS features, but can make sense for other features too. Often
-              called “dynamic” when an initial state is updated by script.
+              called “dynamic” when an initial state is updated by script. Or,
+              if your feature needs no invalidation tests, check this box.
               <a
                 href="https://wpt.fyi/results/dom/nodes/Element-childElementCount-dynamic-add.html"
                 target="_blank"
@@ -273,7 +275,8 @@ export class ChromedashSurveyQuestions extends LitElement {
             'covers_integration',
             html`<b>Integration with other features</b>. If the feature
               integrates with other features in some meaningful way, test that
-              the combination of the two features behaves as expected.
+              the combination of the two features behaves as expected. Or, if
+              your feature needs no integration tests, check this box.
               <a
                 href="https://wpt.fyi/results/permissions-policy/reporting/fullscreen-reporting.html"
                 target="_blank"
