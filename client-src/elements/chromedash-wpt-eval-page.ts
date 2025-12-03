@@ -574,7 +574,7 @@ export class ChromedashWPTEvalPage extends LitElement {
         <section class="card action-section">
           <div class="status-complete fade-in">
             <sl-icon library="material" name="check_circle_20px"></sl-icon>
-            <span>Evaluation complete! The report is available below.</span>
+            <span>Evaluation complete! The report is available above.</span>
           </div>
         </section>
       `;
