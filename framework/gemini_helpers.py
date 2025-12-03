@@ -84,7 +84,7 @@ async def run_wpt_test_eval_pipeline(feature: FeatureEntry) -> None:
     raise PipelineError('No valid wpt.fyi results URLs found in WPT description.')
 
   template_data = {
-    'spec_contents': feature.spec_link,
+    'spec_url': feature.spec_link,
     'feature_definition': _create_feature_definition(feature)
   }
   spec_synthesis_prompt = render_template(SPEC_SYNTHESIS_TEMPLATE_PATH, **template_data)
