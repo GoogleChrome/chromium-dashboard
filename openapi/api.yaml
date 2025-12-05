@@ -1958,6 +1958,8 @@ components:
           type: boolean
         can_edit_all:
           type: boolean
+        can_review_release_notes:
+          type: boolean
         is_admin:
           type: boolean
         email:

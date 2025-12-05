@@ -17,7 +17,7 @@ export class ChromedashSurveyQuestions extends LitElement {
         #questionnaire {
           padding: var(--content-padding-half);
           border-radius: var(--border-radius);
-          background: var(--table-alternate-background);
+          background: var(--accordion-background);
         }
         #questionnaire * + * {
           padding-top: var(--content-padding);

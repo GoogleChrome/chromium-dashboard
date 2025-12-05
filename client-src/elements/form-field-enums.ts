@@ -141,6 +141,12 @@ export enum FeatureType {
   Enterprise = 4,
 }
 
+export enum AITestEvaluationStatus {
+  COMPLETE = 1,
+  IN_PROGRESS = 2,
+  FAILED = 3,
+}
+
 // FEATURE_TYPES object is organized as [intValue, stringLabel, description],
 // the descriptions are used only for the descriptions of feature_type_radio_group
 export const FEATURE_TYPES_WITHOUT_ENTERPRISE: Record<

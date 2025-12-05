@@ -48,8 +48,9 @@ from api import (
   stars_api,
   token_refresh_api,
   webdx_feature_api,
+  wpt_coverage_api,
 )
-from framework import basehandlers, csp, sendemail
+from framework import basehandlers, csp, gemini_helpers, secrets, sendemail
 from internals import (
   data_backup,
   detect_intent,
@@ -79,6 +80,11 @@ if not settings.UNIT_TEST_MODE and not settings.DEV_MODE:
   import google.cloud.logging
   client = google.cloud.logging.Client()
   client.setup_logging()
+
+# Load in app secrets.
+secrets.load_gemini_api_key()
+secrets.load_github_token()
+secrets.load_ot_api_key()
 
 
 # Note: In the URLs below, parameters like <int:feature_id> are
@@ -150,6 +156,8 @@ api_routes: list[Route] = [
           intents_api.IntentsAPI),
     Route(f'{API_BASE}/features/<int:feature_id>/<int:stage_id>/<int:gate_id>/intent',
           intents_api.IntentsAPI),
+    Route(f'{API_BASE}/features/generate-wpt-coverage-evaluation',
+          wpt_coverage_api.WPTCoverageAPI),
     Route(f'{API_BASE}/features/shipping',
           shipping_features_api.ShippingFeaturesAPI),
     Route(f'{API_BASE}/features/stale',
@@ -210,6 +218,7 @@ spa_page_routes = [
   Route('/newfeatures'),
   Route('/feature/<int:feature_id>'),
   Route('/feature/<int:feature_id>/activity'),
+  Route('/feature/<int:feature_id>/ai-coverage-evaluation'),
   Route('/guide/new', guide.FeatureCreateHandler,
       defaults={'require_create_feature': True}),
   Route('/guide/enterprise/new', guide.EnterpriseFeatureCreateHandler,
@@ -339,6 +348,8 @@ internals_routes: list[Route] = [
   Route('/tasks/email-intent-to-blink-dev', notifier.IntentToBlinkDevHandler),
   Route('/tasks/email-reset-shipping-milestones',
         notifier.ResetShippingMilestonesEmailHandler),
+  Route('/tasks/generate-wpt-coverage-evaluation',
+        gemini_helpers.GenerateWPTCoverageEvalReportHandler),
 
   # OT process reminder emails
   Route('/tasks/email-ot-first-branch', notifier.OTFirstBranchReminderHandler),

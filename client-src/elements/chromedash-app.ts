@@ -388,6 +388,13 @@ export class ChromedashApp extends LitElement {
       this.pageComponent.featureId = parseInt(ctx.params.featureId);
       this.pageComponent.user = this.user;
     });
+    page('/feature/:featureId(\\d+)/ai-coverage-evaluation', ctx => {
+      if (!this.setupNewPage(ctx, 'chromedash-wpt-eval-page', true, false))
+        return;
+      this.pageComponent.featureId = parseInt(ctx.params.featureId);
+      this.pageComponent.user = this.user;
+      this.pageComponent.appTitle = this.appTitle;
+    });
     page('/guide/new', ctx => {
       if (!this.setupNewPage(ctx, 'chromedash-guide-new-page')) return;
       if (ctx.querystring.search('loginStatus=False') == -1) {

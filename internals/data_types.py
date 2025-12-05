@@ -205,6 +205,8 @@ class VerboseFeatureDict(TypedDict):
   feature_notes: str | None
   enterprise_feature_categories: list[str]
   enterprise_product_category: int
+  is_releasenotes_content_reviewed: bool
+  is_releasenotes_publish_ready: bool
   web_feature: str | None
   is_official_web_feature: bool
   webdx_usecounter_enum: str | None
@@ -285,6 +287,11 @@ class VerboseFeatureDict(TypedDict):
   experiment_timeline: str | None
   resources: FeatureDictInnerResourceInfo
   comments: str | None  # feature_notes
+
+  # AI evaluation fields
+  ai_test_eval_report: str | None
+  ai_test_eval_run_status: int | None
+  ai_test_eval_status_timestamp: str | None
 
   # Repeated in 'browsers' section. TODO(danielrsmith): delete these?
   ff_views: int

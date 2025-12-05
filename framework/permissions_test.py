@@ -235,6 +235,17 @@ class PermissionFunctionTests(testing_config.CustomTestCase):
         unregistered=False, registered=False,
         special=False, site_editor=True, admin=True, anon=False)
 
+  def test_can_review_release_notes__anon_other_site_admin(self):
+    self.check_function_results(
+        permissions.can_review_release_notes, tuple(),
+        unregistered=False, registered=False,
+        special=False, site_editor=False, admin=True, anon=False)
+
+  def test_can_review_release_notes__allow_list(self):
+    testing_config.sign_in(permissions.RELEASE_NOTE_REVIEWERS[0], 123)
+    user = users.get_current_user()
+    self.assertTrue(permissions.can_review_release_notes(user))
+
   def test_can_edit_feature(self):
     self.check_function_results(
         permissions.can_edit_feature, (None,),

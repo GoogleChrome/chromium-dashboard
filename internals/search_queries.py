@@ -278,6 +278,9 @@ QUERIABLE_FIELDS: dict[str, Property] = {
     'confidential': FeatureEntry.confidential,
     'enterprise_impact': FeatureEntry.enterprise_impact,
     'enterprise_product_category': FeatureEntry.enterprise_product_category,
+
+    'is_releasenotes_content_reviewed': FeatureEntry.is_releasenotes_content_reviewed,
+    'is_releasenotes_publish_ready': FeatureEntry.is_releasenotes_publish_ready,
     'shipping_year': FeatureEntry.shipping_year,
 
     'browsers.chrome.status': FeatureEntry.impl_status_chrome,
