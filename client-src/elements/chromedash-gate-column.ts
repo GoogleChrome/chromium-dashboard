@@ -426,7 +426,10 @@ export class ChromedashGateColumn extends LitElement {
         if (selfCertifying) {
           this.handleSelfCertify(VOTE_NA_SELF);
         } else {
-          maybeOpenSecondarySurveyDialog(this.gate).then(() => {
+          maybeOpenSecondarySurveyDialog(this.gate).then(commentText => {
+            if (commentText) {
+              this.postComment(commentText);
+            }
             this.handleFullReviewRequest();
           });
         }
@@ -445,9 +448,7 @@ export class ChromedashGateColumn extends LitElement {
         if (selfCertifying) {
           this.handleSelfCertify(VOTE_NA_SELF);
         } else {
-          maybeOpenSecondarySurveyDialog(this.gate).then(() => {
-            this.handleFullNARequested();
-          });
+          this.handleFullNARequested();
         }
       });
     });
