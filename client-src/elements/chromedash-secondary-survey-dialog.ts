@@ -7,14 +7,16 @@ import {GATE_TYPES} from './form-field-enums.js';
 
 let secondarySurveyDialogEl;
 
-function isTestingGate(gate: GateDict): boolean {
+export function isTestingGate(gate: {gate_type: number}): boolean {
   return (
     gate.gate_type === GATE_TYPES.TESTING_PLAN ||
     gate.gate_type === GATE_TYPES.TESTING_SHIP
   );
 }
 
-function shouldShowSecondarySurveyDialog(gate: GateDict): boolean {
+export function shouldShowSecondarySurveyDialog(gate: {
+  gate_type: number;
+}): boolean {
   return isTestingGate(gate);
 }
 
@@ -42,9 +44,9 @@ async function openSecondarySurveyDialog(gate, resolve) {
 }
 
 @customElement('chromedash-secondary-survey-dialog')
-class ChromedashSelfCertifyDialog extends LitElement {
+export class ChromedashSecondaySurveyDialog extends LitElement {
   @property({type: Object})
-  gate!: GateDict;
+  gate!: {gate_type: number};
   @property({attribute: false})
   resolve: (commentText?: string) => void = () => {
     console.log('Missing resolve action');
@@ -200,6 +202,7 @@ ${answer4}
       ${isTestingGate(this.gate) ? this.renderTestingContent() : nothing}
       <div>
         <sl-button
+          id="generate_button"
           size="small"
           variant="primary"
           @click=${this.handleGenerateComment}
