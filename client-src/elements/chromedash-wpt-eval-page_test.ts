@@ -379,7 +379,9 @@ describe('chromedash-wpt-eval-page', () => {
 
     it('shows retry button and help text if IN_PROGRESS but hanging (> 60 mins)', async () => {
       // Set timestamp to 61 minutes ago
-      const sixtyOneMinutesAgo = new Date(Date.now() - 61 * 60 * 1000).toISOString();
+      const sixtyOneMinutesAgo = new Date(
+        Date.now() - 61 * 60 * 1000
+      ).toISOString();
 
       csClientStub.getFeature.resolves({
         ...mockFeatureV1,

@@ -570,8 +570,10 @@ export class ChromedashWPTEvalPage extends LitElement {
     let isHanging = false;
 
     // Check if IN_PROGRESS but hanging (older than 1 hour).
-    if (status === AITestEvaluationStatus.IN_PROGRESS &&
-        this.feature.ai_test_eval_status_timestamp) {
+    if (
+      status === AITestEvaluationStatus.IN_PROGRESS &&
+      this.feature.ai_test_eval_status_timestamp
+    ) {
       const startedAt = new Date(
         this.feature.ai_test_eval_status_timestamp
       ).getTime();
@@ -594,7 +596,10 @@ export class ChromedashWPTEvalPage extends LitElement {
     }
 
     // Show success message if completed in this session.
-    if (this.completedInThisSession && status !== AITestEvaluationStatus.IN_PROGRESS) {
+    if (
+      this.completedInThisSession &&
+      status !== AITestEvaluationStatus.IN_PROGRESS
+    ) {
       return html`
         <section class="card action-section">
           <div class="status-complete fade-in">
@@ -638,11 +643,11 @@ export class ChromedashWPTEvalPage extends LitElement {
         ${isHanging
           ? html`
               <div class="help-text">
-                The previous evaluation seems to be stuck. You can try starting a new one.
+                The previous evaluation seems to be stuck. You can try starting
+                a new one.
               </div>
             `
           : nothing}
-
         ${isCooldownActive
           ? html`
               <div class="cooldown-message">
