@@ -37,12 +37,13 @@ class WPTCoverageAPI(basehandlers.EntitiesAPIHandler):
 
     last_status_time = feature.ai_test_eval_status_timestamp
 
-    one_hour = timedelta(hours=1)
+    fifty_nine_minutes = timedelta(minutes=59)
+
     request_in_progress = (
       feature.ai_test_eval_run_status == core_enums.AITestEvaluationStatus.IN_PROGRESS
       and last_status_time
       # Assume that a request that is in progress for over an hour is hanging.
-      and last_status_time + one_hour > datetime.now())
+      and last_status_time + fifty_nine_minutes > datetime.now())
 
     # Be more generous with the cooldown so we don't block the UI sending a
     # request accidentally.
@@ -57,7 +58,7 @@ class WPTCoverageAPI(basehandlers.EntitiesAPIHandler):
         'The WPT coverage evaluation pipeline is already running for this feature.'
         if request_in_progress
         else 'Requests to the pipeline are on cooldown for this feature.')
-      retry_after = ((last_status_time + one_hour) - datetime.now()
+      retry_after = ((last_status_time + fifty_nine_minutes) - datetime.now()
                      if request_in_progress
                      else (last_status_time + twenty_nine_minutes) - datetime.now())
       # Safety check: Ensure we never send a negative Retry-After

@@ -14,6 +14,9 @@ const WPT_RESULTS_REGEX = /(https?:\/\/wpt\.fyi\/results[^\s?]+)/g;
 // 30 minute cooldown for regenerating the evaluation report.
 const COOLDOWN_MS = 30 * 60 * 1000;
 
+// 1 hour timeout to allow retrying if the process hangs.
+const HANGING_TIMEOUT_MS = 60 * 60 * 1000;
+
 @customElement('chromedash-wpt-eval-page')
 export class ChromedashWPTEvalPage extends LitElement {
   static get styles() {
@@ -166,6 +169,14 @@ export class ChromedashWPTEvalPage extends LitElement {
           display: flex;
           align-items: center;
           gap: 6px;
+        }
+
+        .help-text {
+          margin-top: 8px;
+          color: var(--sl-color-neutral-600);
+          font-size: 0.9rem;
+          max-width: 400px;
+          line-height: 1.4;
         }
 
         .status-in-progress,
@@ -556,8 +567,22 @@ export class ChromedashWPTEvalPage extends LitElement {
     if (!this.feature) return html`${nothing}`;
 
     const status = this.feature.ai_test_eval_run_status;
+    let isHanging = false;
 
-    if (status === AITestEvaluationStatus.IN_PROGRESS) {
+    // Check if IN_PROGRESS but hanging (older than 1 hour).
+    if (status === AITestEvaluationStatus.IN_PROGRESS &&
+        this.feature.ai_test_eval_status_timestamp) {
+      const startedAt = new Date(
+        this.feature.ai_test_eval_status_timestamp
+      ).getTime();
+      const now = Date.now();
+      if (now - startedAt > HANGING_TIMEOUT_MS) {
+        isHanging = true;
+      }
+    }
+
+    // Only show the spinner if it is in progress AND NOT hanging
+    if (status === AITestEvaluationStatus.IN_PROGRESS && !isHanging) {
       return html`
         <section class="card action-section">
           <div class="status-in-progress">
@@ -569,7 +594,7 @@ export class ChromedashWPTEvalPage extends LitElement {
     }
 
     // Show success message if completed in this session.
-    if (this.completedInThisSession) {
+    if (this.completedInThisSession && status !== AITestEvaluationStatus.IN_PROGRESS) {
       return html`
         <section class="card action-section">
           <div class="status-complete fade-in">
@@ -582,6 +607,13 @@ export class ChromedashWPTEvalPage extends LitElement {
 
     const isCooldownActive = this._cooldownRemaining > 0;
     const minutesRemaining = Math.ceil(this._cooldownRemaining / 60000);
+
+    let buttonLabel = 'Evaluate test coverage';
+    if (isHanging) {
+      buttonLabel = 'Retry evaluation (Process timed out)';
+    } else if (this.feature.ai_test_eval_report) {
+      buttonLabel = 'Discard this report and reevaluate test coverage';
+    }
 
     return html`
       <section class="card action-section">
@@ -600,10 +632,16 @@ export class ChromedashWPTEvalPage extends LitElement {
           ?disabled=${!this.isRequirementsFulfilled || isCooldownActive}
           @click=${this.handleGenerateClick}
         >
-          ${this.feature.ai_test_eval_report
-            ? 'Discard this report and reevaluate test coverage'
-            : 'Evaluate test coverage'}
+          ${buttonLabel}
         </sl-button>
+
+        ${isHanging
+          ? html`
+              <div class="help-text">
+                The previous evaluation seems to be stuck. You can try starting a new one.
+              </div>
+            `
+          : nothing}
 
         ${isCooldownActive
           ? html`
