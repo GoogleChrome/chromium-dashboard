@@ -105,7 +105,7 @@
     "lodash.template": ">=4.5.0",
     "minimist": ">=1.2.8",
     "path-parse": ">=1.0.7",
-    "prettier": "^3.7.3",
+    "prettier": "^3.7.4",
     "regenerator-runtime": "^0.14.1",
     "rollup": "^4.53.3",
     "rollup-plugin-babel-minify": "^10.0.0",
