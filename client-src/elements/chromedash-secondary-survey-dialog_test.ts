@@ -6,15 +6,15 @@ import './chromedash-secondary-survey-dialog.js';
 import {
   isTestingGate,
   shouldShowSecondarySurveyDialog,
-  ChromedashSecondaySurveyDialog,
+  ChromedashSecondarySurveyDialog,
 } from './chromedash-secondary-survey-dialog.js';
 import {GATE_TYPES} from './form-field-enums.js';
 
 describe('chromedash-secondary-survey-dialog', () => {
-  let component: ChromedashSecondaySurveyDialog;
+  let component: ChromedashSecondarySurveyDialog;
 
   beforeEach(async () => {
-    component = await fixture<ChromedashSecondaySurveyDialog>(html`
+    component = await fixture<ChromedashSecondarySurveyDialog>(html`
       <chromedash-secondary-survey-dialog></chromedash-secondary-survey-dialog>
     `);
     document.body.appendChild(component);
@@ -46,8 +46,8 @@ describe('chromedash-secondary-survey-dialog', () => {
     );
   });
 
-  it('is an instance of ChromedashSecondaySurveyDialog', () => {
-    assert.instanceOf(component, ChromedashSecondaySurveyDialog);
+  it('is an instance of ChromedashSecondarySurveyDialog', () => {
+    assert.instanceOf(component, ChromedashSecondarySurveyDialog);
   });
 
   it('renders the testing form', async () => {

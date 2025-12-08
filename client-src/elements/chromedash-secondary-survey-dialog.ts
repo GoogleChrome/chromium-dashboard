@@ -5,7 +5,8 @@ import {customElement, property} from 'lit/decorators.js';
 import {GateDict} from './chromedash-gate-chip.js';
 import {GATE_TYPES} from './form-field-enums.js';
 
-let secondarySurveyDialogEl;
+let secondarySurveyDialogEl: ChromedashSecondarySurveyDialog | undefined =
+  undefined;
 
 export function isTestingGate(gate: {gate_type: number}): boolean {
   return (
@@ -34,7 +35,7 @@ async function openSecondarySurveyDialog(gate, resolve) {
   if (!secondarySurveyDialogEl) {
     secondarySurveyDialogEl = document.createElement(
       'chromedash-secondary-survey-dialog'
-    );
+    ) as ChromedashSecondarySurveyDialog;
     document.body.appendChild(secondarySurveyDialogEl);
   }
   secondarySurveyDialogEl.gate = gate;
