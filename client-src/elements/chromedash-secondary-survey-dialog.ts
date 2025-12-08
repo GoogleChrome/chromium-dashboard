@@ -44,7 +44,7 @@ async function openSecondarySurveyDialog(gate, resolve) {
 }
 
 @customElement('chromedash-secondary-survey-dialog')
-export class ChromedashSecondaySurveyDialog extends LitElement {
+export class ChromedashSecondarySurveyDialog extends LitElement {
   @property({type: Object})
   gate!: {gate_type: number};
   @property({attribute: false})
