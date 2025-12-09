@@ -122,6 +122,10 @@ Note: *Only developers with access to the cr-status-staging GCP project will be 
 
 - Occasionally, the Google Cloud CLI will requires an update, which will cause a failure when trying to run the development server with `npm start`. An unrelated error message `Failed to connect to localhost port 15606 after 0 ms: Connection refused` will appear. Running the `gcloud components update` command will update as needed and resolve this issue.
 
+### WPT Coverage Evaluation using Gemini
+
+[See documentation here.](https://github.com/GoogleChrome/chromium-dashboard/blob/main/docs/wpt-coverage-evaluation.md)
+
 #### Blink components
 
 Chromestatus currently gets the list of Blink components from the file `hack_components.py`.
