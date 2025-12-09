@@ -2822,14 +2822,21 @@ export const ALL_FIELDS: Record<string, Field> = {
     enterprise_initial: ENTERPRISE_IMPACT.IMPACT_MEDIUM[0],
     label: 'Enterprise impact / risk',
     usage: {},
-    help_text: html` Most web platform changes have no enterprise impact or risk
-    unless they introduce a breaking change that could cause breakage without
-    remediation from the web developer. Enterprise reviewers can help judge risk
-    if you're unsure.`,
-    enterprise_help_text: html` A feature is probably high impact if it
-    introduces a breaking change on the stable channel, or seriously changes the
-    experience of using Chrome. Use your judgment; Enterprise reviewers can help
-    judge risk if you're unsure.`,
+    help_text: html`
+      <b>Low Risk:</b> Important for Admin Awareness. Negligible disruption, but
+      provides value (new APIs, optional features, strictly additive) or
+      requires minor internal documentation updates. Select this to ensure the
+      feature is published in the Release Notes.
+      <br />
+      <b>Med Risk:</b>Noticeable impact. Potential to alter some workflows or
+      cause minor confusion/help desk calls. Admins may want to review and set a
+      policy. An escape hatch is often recommended.
+      <br />
+      <b>High Risk:</b> Significant disruption. Intentional "breaking changes"
+      or major new functionality that will require mandatory preparation,
+      testing, and communication from IT admins. Requires an escape hatch or
+      permanent policy.
+    `,
   },
 
   rollout_milestone: {
