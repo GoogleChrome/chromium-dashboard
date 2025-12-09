@@ -376,6 +376,43 @@ describe('chromedash-wpt-eval-page', () => {
       // Button should still be visible to try again
       expect(el.shadowRoot!.querySelector('.generate-button')).to.exist;
     });
+
+    it('shows retry button and help text if IN_PROGRESS but hanging (> 60 mins)', async () => {
+      // Set timestamp to 61 minutes ago
+      const sixtyOneMinutesAgo = new Date(
+        Date.now() - 61 * 60 * 1000
+      ).toISOString();
+
+      csClientStub.getFeature.resolves({
+        ...mockFeatureV1,
+        ai_test_eval_run_status: AITestEvaluationStatus.IN_PROGRESS,
+        ai_test_eval_status_timestamp: sixtyOneMinutesAgo,
+      });
+
+      const el = await fixture<ChromedashWPTEvalPage>(
+        html`<chromedash-wpt-eval-page
+          .featureId=${1}
+        ></chromedash-wpt-eval-page>`
+      );
+      await el.updateComplete;
+
+      // Spinner should NOT exist
+      expect(el.shadowRoot!.querySelector('.status-in-progress')).to.not.exist;
+      expect(el.shadowRoot!.querySelector('sl-spinner')).to.not.exist;
+
+      // Button SHOULD exist and have specific text
+      const button = el.shadowRoot!.querySelector('.generate-button');
+      expect(button).to.exist;
+      expect(button).to.not.have.attribute('disabled');
+      expect(button!.textContent?.trim()).to.equal(
+        'Retry evaluation (Process timed out)'
+      );
+
+      // Help text should exist
+      const helpText = el.shadowRoot!.querySelector('.help-text');
+      expect(helpText).to.exist;
+      expect(helpText!.textContent).to.contain('seems to be stuck');
+    });
   });
 
   describe('Error Handling', () => {
