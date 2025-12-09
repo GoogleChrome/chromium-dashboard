@@ -1,4 +1,4 @@
-   Chrome Platform Status
+     Chrome Platform Status
 ==================
 
 ### Mission
