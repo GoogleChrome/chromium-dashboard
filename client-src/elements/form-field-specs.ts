@@ -652,6 +652,45 @@ export const ALL_FIELDS: Record<string, Field> = {
     .png, .gif, or .jpg, rather than linking to an HTML page that contains the
     image. Or, use the upload button to upload an image to be served from
     chromestatus.com. These will be shared publicly.`,
+    check: async value => {
+      const warning = {
+        warning:
+          'One or more urls are not actual images. Use a valid link to an actual image.',
+      };
+      const urls = value
+        .split('\n')
+        .filter(x => !!x)
+        .map(x => x.trim());
+      if (!urls.length) {
+        return undefined;
+      }
+      // If some items are not urls, return a warning.
+      if (
+        urls.some(x => {
+          try {
+            new URL(x);
+            return false;
+          } catch {
+            return true;
+          }
+        })
+      ) {
+        return warning;
+      }
+      const urlTypes = await Promise.all(
+        urls.map(url =>
+          fetch(url, {method: 'HEAD'})
+            .then(response => response.blob())
+            .then(blob => blob.type)
+            .catch(() => 'error')
+        )
+      );
+      // All urls must link to an image.
+      if (urlTypes.some(type => !type.startsWith('image'))) {
+        return warning;
+      }
+      return undefined;
+    },
   },
 
   first_enterprise_notification_milestone: {

@@ -13,7 +13,7 @@ jobs:
         # Steps for Playwright testing with container
         - uses: actions/setup-node@v6
           with:
-            node-version: 20
+            node-version: 24
         - name: Run your tests
           timeout-minutes: 30
           run: npm run pwtests-shutdown; npm run pwtests
