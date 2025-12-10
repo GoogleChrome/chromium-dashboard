@@ -18,6 +18,7 @@ import random
 import settings
 import string
 import time
+from framework import utils
 
 from google.cloud import ndb  # type: ignore
 
@@ -25,6 +26,11 @@ from google.cloud import ndb  # type: ignore
 # For random key generation
 RANDOM_KEY_LENGTH = 128
 RANDOM_KEY_CHARACTERS = string.ascii_letters + string.digits
+
+
+# Retry constants for obtaining secrets from GCP.
+SECRETS_MAX_RETRIES = 3
+SECRETS_RETRY_BACKOFF_SECONDS = 2
 
 
 def make_random_key(length=RANDOM_KEY_LENGTH, chars=RANDOM_KEY_CHARACTERS):
@@ -174,6 +180,7 @@ def load_github_token():
       raise RuntimeError('Failed to obtain the GitHub token from secrets.')
 
 
+@utils.retry(SECRETS_MAX_RETRIES, delay=SECRETS_RETRY_BACKOFF_SECONDS)
 def load_gemini_api_key() -> None:
   """Obtain an API key to be used for requests to the Gemini API."""
   # Reuse the API key's value if we've already obtained it.
