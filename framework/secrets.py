@@ -129,6 +129,7 @@ class ApiCredential(ndb.Model):
     self.put()
 
 
+@utils.retry(SECRETS_MAX_RETRIES, delay=SECRETS_RETRY_BACKOFF_SECONDS)
 def load_ot_api_key():
   """Obtain an API key to be used for requests to the origin trials API."""
   # Reuse the API key's value if we've already obtained it.
@@ -155,6 +156,7 @@ def load_ot_api_key():
       raise RuntimeError('Failed to obtain the origin trials API key from secrets.')
 
 
+@utils.retry(SECRETS_MAX_RETRIES, delay=SECRETS_RETRY_BACKOFF_SECONDS)
 def load_github_token():
   """Obtain a token to be used for requests to the GitHub API."""
   if settings.GITHUB_TOKEN is not None:
