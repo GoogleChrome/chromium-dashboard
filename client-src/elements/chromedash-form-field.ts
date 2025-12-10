@@ -454,6 +454,7 @@ export class ChromedashFormField extends LitElement {
           ?required=${isRequired}
           ?offerMarkdown=${offerMarkdown}
           ?isMarkdown=${isMarkdown}
+          ?alwaysMarkdown=${this.fieldProps.always_markdown}
           @sl-change="${this.handleFieldUpdated}"
         >
         </chromedash-textarea>
