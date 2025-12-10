@@ -1042,7 +1042,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     type: 'textarea',
     attrs: {rows: 2},
     required: false,
-    label: 'TAG Specification Review',
+    label: 'TAG specification review',
     usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
     help_text: html` Link(s) to TAG specification review(s), or explanation why
     this is not needed.`,
@@ -1096,7 +1096,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     type: 'select',
     choices: REVIEW_STATUS_CHOICES,
     initial: REVIEW_STATUS_CHOICES.REVIEW_PENDING[0],
-    label: 'TAG Specification Review Status',
+    label: 'TAG specification review status',
     usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
     help_text: html`Status of the TAG specification review.`,
   },
@@ -1171,7 +1171,7 @@ export const ALL_FIELDS: Record<string, Field> = {
   interop_compat_risks: {
     type: 'textarea',
     required: false,
-    label: 'Interoperability and Compatibility Risks',
+    label: 'Interoperability and compatibility risks',
     usage: {
       [FeatureType.Incubate]: new Set<UsageType>([
         UsageType.DeveloperTesting,
@@ -1535,7 +1535,7 @@ export const ALL_FIELDS: Record<string, Field> = {
   ergonomics_risks: {
     type: 'textarea',
     required: false,
-    label: 'Ergonomics Risks',
+    label: 'Ergonomics risks',
     usage: {
       [FeatureType.Incubate]: new Set<UsageType>([
         UsageType.DeveloperTesting,
@@ -1566,7 +1566,7 @@ export const ALL_FIELDS: Record<string, Field> = {
   activation_risks: {
     type: 'textarea',
     required: false,
-    label: 'Activation Risks',
+    label: 'Activation risks',
     usage: {
       [FeatureType.Incubate]: new Set<UsageType>([
         UsageType.DeveloperTesting,
@@ -1679,7 +1679,7 @@ export const ALL_FIELDS: Record<string, Field> = {
   experiment_goals: {
     type: 'textarea',
     required: false,
-    label: 'Experiment Goals',
+    label: 'Experiment goals',
     usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
     help_text: html` Which pieces of the API surface are you looking to gain
       insight on? What metrics/measurement/feedback will you be using to
@@ -1696,7 +1696,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     type: 'textarea',
     attrs: {rows: 2, placeholder: 'This field is deprecated', disabled: true},
     required: false,
-    label: 'Experiment Timeline',
+    label: 'Experiment timeline',
     usage: {
       [FeatureType.Incubate]: new Set<UsageType>([UsageType.Experiment]),
       [FeatureType.Existing]: new Set<UsageType>([UsageType.Experiment]),
@@ -1791,7 +1791,7 @@ export const ALL_FIELDS: Record<string, Field> = {
   experiment_risks: {
     type: 'textarea',
     required: false,
-    label: 'Experiment Risks',
+    label: 'Experiment risks',
     usage: {},
     help_text: html` When this experiment comes to an end are there any risks to
     the sites that were using it, for example losing access to important storage
@@ -1801,7 +1801,7 @@ export const ALL_FIELDS: Record<string, Field> = {
   experiment_extension_reason: {
     type: 'textarea',
     required: false,
-    label: 'Experiment Extension Reason',
+    label: 'Experiment extension reason',
     usage: {
       [FeatureType.Incubate]: new Set<UsageType>([UsageType.Experiment]),
       [FeatureType.Existing]: new Set<UsageType>([UsageType.Experiment]),
@@ -2309,7 +2309,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     type: 'textarea',
     attrs: {rows: 2},
     required: false,
-    label: 'Platform Support Explanation',
+    label: 'Platform support explanation',
     usage: {
       [FeatureType.Incubate]: new Set<UsageType>([
         UsageType.DeveloperTesting,
@@ -2346,13 +2346,14 @@ export const ALL_FIELDS: Record<string, Field> = {
   wpt_descr: {
     type: 'textarea',
     required: false,
-    label: 'Web Platform Tests Description',
+    label: 'Web Platform Tests or other automated test description',
     usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
     help_text: html` Please link to the
       <a target="_blank" href="https://wpt.fyi/results">results on wpt.fyi</a>.
       If any part of the feature is not tested by web-platform-tests, please
-      include links to issues, e.g. a web-platform-tests issue with the "infra"
-      label explaining why a certain thing cannot be tested (<a
+      include links to other automated tests or links to issues, e.g. a
+      web-platform-tests issue with the "infra" label explaining why a certain
+      thing cannot be tested (<a
         target="_blank"
         href="https://github.com/w3c/web-platform-tests/issues/3867"
         >example</a
@@ -2480,7 +2481,7 @@ export const ALL_FIELDS: Record<string, Field> = {
   requires_embedder_support: {
     type: 'checkbox',
     initial: false,
-    label: 'Requires Embedder Support',
+    label: 'Requires embedder support',
     usage: {
       [FeatureType.Incubate]: ALL_FEATURE_TYPE_INCUBATE_INTENTS,
       [FeatureType.Existing]: ALL_FEATURE_TYPE_EXISTING_INTENTS,
