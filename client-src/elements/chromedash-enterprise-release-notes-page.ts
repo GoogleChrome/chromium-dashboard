@@ -668,6 +668,15 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
           '#edit-rollout-details-' + s.id
         )!;
         addFieldValue('rollout_details', detailsEl, s.rollout_details, s);
+        // const rolloutStagePlanEl = this.shadowRoot?.querySelector<SlSelect>(
+        //   '#edit-rollout-stage-plan-' + s.id
+        // )!;
+        // addFieldValue(
+        //   'rollout_stage_plan',
+        //   rolloutStagePlanEl,
+        //   s.rollout_stage_plan,
+        //   s
+        // );
       }
     }
 
@@ -926,6 +935,12 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
           id="edit-rollout-details-${s.id}"
           value=${s.rollout_details}
         ></sl-input>
+        <sl-select
+          class="rollout-stage-plan"
+          id="edit-rollout-stage-plan-${s.id}"
+          .value=${s.rollout_stage_plan}
+        >
+        </sl-select>
       </li>
     `;
   }

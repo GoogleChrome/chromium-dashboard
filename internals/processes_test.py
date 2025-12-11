@@ -309,6 +309,13 @@ class ProgressDetectorsTest(testing_config.CustomTestCase):
     self.stages_dict[1061][0].rollout_platforms = ['iOS', 'Android']
     self.assertTrue(detector(self.feature_1, self.stages_dict))
 
+  def test_rollout_stage_plan(self):
+    detector = processes.PROGRESS_DETECTORS['Rollout stage plan']
+    self.assertFalse(detector(self.feature_1, self.stages_dict))
+    self.stages_dict[1061][0].rollout_stage_plan = 1
+    self.assertTrue(detector(self.feature_1, self.stages_dict))
+
+
   def test_rollout_details(self):
     detector = processes.PROGRESS_DETECTORS['Rollout details']
     self.assertFalse(detector(self.feature_1, self.stages_dict))

@@ -80,6 +80,7 @@ describe('chromedash-guide-stage-page', () => {
     rollout_milestone: null,
     rollout_platforms: [],
     rollout_details: null,
+    rollout_stage_plan: 0,
     enterprise_policies: [],
   });
 

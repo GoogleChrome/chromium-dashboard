@@ -82,6 +82,7 @@
  * @property {string} [rollout_details]
  * @property {number} [rollout_milestone]
  * @property {string[]} rollout_platforms
+ * @property {number} rollout_stage_plan
  * @property {string[]} enterprise_policies
  * @property {string[]} pm_emails
  * @property {string[]} tl_emails

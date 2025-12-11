@@ -181,6 +181,11 @@ export const QUERIABLE_FIELDS: QueryField[] = [
     doc: 'Stable rollout milestone',
   },
   {
+    name: 'rollout_stage_plan',
+    kind: ENUM_KIND,
+    doc: 'Stage rollout plan',
+  },
+  {
     name: 'any_start_milestone',
     kind: MILESTONE_KIND,
     doc:

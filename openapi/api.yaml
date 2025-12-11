@@ -1497,6 +1497,8 @@ components:
           $ref: '#/components/schemas/FieldInfo'
         rollout_details:
           $ref: '#/components/schemas/FieldInfo'
+        rollout_stage_plan:
+          $ref: '#/components/schemas/FieldInfo'
     MilestoneSetField:
       type: object
       properties:
