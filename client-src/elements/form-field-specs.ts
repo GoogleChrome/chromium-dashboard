@@ -2933,7 +2933,8 @@ function makeDisplaySpec(fieldName: string) {
     fieldProps.label || fieldProps.displayLabel || makeHumanReadable(fieldName);
   const fieldType = categorizeFieldType(fieldProps);
   const deprecated = fieldProps.deprecated;
-  return [fieldName, displayName, fieldType, deprecated];
+  const alwaysMarkdown = fieldProps.always_markdown;
+  return [fieldName, displayName, fieldType, deprecated, alwaysMarkdown];
 }
 
 export function makeDisplaySpecs(fieldNames: string[]) {
