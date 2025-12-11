@@ -2831,7 +2831,7 @@ export const ALL_FIELDS: Record<string, Field> = {
   rollout_stage_plan: {
     type: 'select',
     choices: ROLLOUT_STAGE_PLAN_CATEGORIES,
-    initial: ROLLOUT_STAGE_PLAN_CATEGORIES.ROLLOUT_FULL[0],
+    initial: ROLLOUT_STAGE_PLAN_CATEGORIES.ROLLOUT_STAGE_PLAN_SLOW[0],
     required: true,
     label: 'Rollout plan',
     usage: {},

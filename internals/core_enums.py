@@ -173,16 +173,14 @@ ROLLOUT_PLAN_DISPLAYNAMES = {
   ROLLOUT_OTHER: "(RARE) It's complicated or unusual",
 }
 
-ROLLOUT_FULL = 0,
-ROLLOUT_SLOW = 1,
-ROLLOUT_STAGE_PLAN_TRUSTED_TESTERS = 2
-ROLLOUT_CUSTOM = 3
+ROLLOUT_STAGE_PLAN_SLOW = 0,
+ROLLOUT_STAGE_PLAN_TRUSTED_TESTERS = 1
+ROLLOUT_STAGE_PLAN_OTHER = 2
 
 ROLLOUT_STAGE_PLAN_DISPLAYNAMES = {
-  ROLLOUT_FULL: 'Feature rolls out to all users immediately',
   ROLLOUT_STAGE_PLAN_TRUSTED_TESTERS: 'Early preview available to Chrome Enterprise Truster Testers',
-  ROLLOUT_SLOW: 'Feature rolls out gradually',
-  ROLLOUT_CUSTOM: 'Custom rollout',
+  ROLLOUT_STAGE_PLAN_SLOW: 'Feature rolls out gradually',
+  ROLLOUT_STAGE_PLAN_OTHER: 'Other',
 }
 
 # Intent stages and mapping from stage to stage name.

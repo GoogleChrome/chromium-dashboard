@@ -67,20 +67,18 @@ export const PLATFORMS_DISPLAYNAME: Record<number, string> = {
 };
 
 export const ROLLOUT_STAGE_PLAN_CATEGORIES: Record<string, [number, string]> = {
-  ROLLOUT_FULL: [0, 'Feature rolls out to all users immediately'],
-  ROLLOUT_SLOW: [1, 'Feature rolls out gradually'],
+  ROLLOUT_STAGE_PLAN_SLOW: [0, 'Feature rolls out gradually'],
   ROLLOUT_STAGE_PLAN_TRUSTED_TESTERS: [
-    2,
+    1,
     'Early preview available to Chrome Enterprise Truster Testers',
   ],
-  ROLLOUT_CUSTOM: [3, 'Custom rollout'],
+  ROLLOUT_STAGE_PLAN_OTHER: [2, 'Other'],
 };
 
 export const ROLLOUT_STAGE_PLAN_DISPLAYNAME: Record<number, string> = {
-  0: 'Feature rolls out to all users immediately',
-  1: 'Feature rolls out gradually',
-  2: 'Early preview available to Chrome Enterprise Truster Testers',
-  3: 'Custom rollout',
+  0: 'Feature rolls out gradually',
+  1: 'Early preview available to Chrome Enterprise Truster Testers',
+  2: 'Custom rollout',
 };
 
 export const ENTERPRISE_IMPACT_DISPLAYNAME: Record<number, string> = {
