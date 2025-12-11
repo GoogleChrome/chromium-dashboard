@@ -655,8 +655,9 @@ export const ALL_FIELDS: Record<string, Field> = {
     chromestatus.com. These will be shared publicly.`,
     check: async value => {
       const warning = {
-        warning:
-          'One or more urls are not actual images. Use a valid link to an actual image.',
+        warning: `One or more urls are not actual images or requires the consumer some kind
+           of authentication to access them. Use a valid link to an actual image free
+           of authentication or upload your image.`,
       };
       const urls = value
         .split('\n')
