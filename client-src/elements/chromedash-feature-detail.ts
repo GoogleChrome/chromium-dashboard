@@ -151,15 +151,6 @@ export class ChromedashFeatureDetail extends LitElement {
           border: 1px solid var(--sl-color-primary-600);
         }
 
-        ol {
-          list-style: none;
-          padding: 0;
-        }
-
-        ol li {
-          margin-top: 0.5em;
-        }
-
         dl {
           padding: 0 var(--content-padding-half);
         }

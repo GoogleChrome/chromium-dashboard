@@ -82,6 +82,7 @@ interface ResolvedField {
   attrs?: FieldAttrs;
   offer_markdown?: boolean;
   enterprise_offer_markdown?: boolean;
+  always_markdown?: boolean;
   required?: boolean;
   label?: string;
   help_text?: TemplateResult | string;
@@ -2862,6 +2863,7 @@ export const ALL_FIELDS: Record<string, Field> = {
 
   rollout_details: {
     type: 'textarea',
+    always_markdown: true,
     attrs: {rows: 4},
     required: false,
     label: 'Rollout details (optional)',
