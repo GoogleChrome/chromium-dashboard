@@ -915,11 +915,7 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
       </div>
     `;
     const controls = html`
-      <sl-checkbox
-        class="markdown-checkbox"
-        size="small"
-        checked
-        disabled
+      <sl-checkbox class="markdown-checkbox" size="small" checked disabled
         >Use markdown</sl-checkbox
       >
       <sl-icon-button
@@ -962,8 +958,8 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
               `
             )}
           </sl-select>
-          </div>
-       ${isPreviewing ? preview : editor} ${controls}
+        </div>
+        ${isPreviewing ? preview : editor} ${controls}
       </li>
     `;
   }
