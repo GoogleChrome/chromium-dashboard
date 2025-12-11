@@ -389,16 +389,15 @@ export class ChromedashFeatureDetail extends LitElement {
   }
 
   renderField(fieldDef, feStage) {
-    const [fieldId, fieldDisplayName, fieldType, deprecated,
-      alwaysMarkdown] = fieldDef;
+    const [fieldId, fieldDisplayName, fieldType, deprecated, alwaysMarkdown] =
+      fieldDef;
     const value = getFieldValueFromFeature(fieldId, feStage, this.feature);
     const isDefined = isDefinedValue(value);
     if (!isDefined && deprecated) {
       return nothing;
     }
-    const isMarkdown = (
-      (this.feature.markdown_fields || []).includes(fieldId) ||
-        alwaysMarkdown);
+    const isMarkdown =
+      (this.feature.markdown_fields || []).includes(fieldId) || alwaysMarkdown;
 
     const icon = isDefined
       ? html`<sl-icon library="material" name="check_circle_20px"></sl-icon>`
