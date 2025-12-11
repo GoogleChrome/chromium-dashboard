@@ -432,6 +432,7 @@ export class ChromedashWPTEvalPage extends LitElement {
       this.feature = {
         ...this.feature,
         ai_test_eval_run_status: AITestEvaluationStatus.IN_PROGRESS,
+        ai_test_eval_status_timestamp: new Date().toString(),
       };
       this.completedInThisSession = false; // Reset if user tries to regenerate.
       this.managePolling();
