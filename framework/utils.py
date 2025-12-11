@@ -13,22 +13,28 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import asyncio
 import calendar
 import datetime
 import json
 import logging
+from pathlib import Path
+import re
 import requests
 import time
 import traceback
 import urllib.request
 from base64 import b64decode
-from framework import rediscache
+from framework import rediscache, secrets
+from urllib.parse import urlparse
 
 import settings
 
 CHROME_RELEASE_SCHEDULE_URL = (
     'https://chromiumdash.appspot.com/fetch_milestone_schedule')
 CHROMIUM_SCHEDULE_DATE_FORMAT = '%Y-%m-%dT%H:%M:%S'
+WPT_GITHUB_API_URL = 'https://api.github.com/repos/web-platform-tests/wpt/contents/'
+WPT_GITHUB_RAW_CONTENTS_URL = 'https://raw.githubusercontent.com/web-platform-tests/wpt/master/'
 
 
 def normalized_name(val):
@@ -162,3 +168,213 @@ def get_chromium_file(url: str) -> str:
       logging.error(f'Could not fetch or parse file at {url}: {e}')
       return ""
   return content
+
+
+def extract_wpt_fyi_results_urls(text: str) -> list[str]:
+  """
+  Finds all 'wpt.fyi/results' URLs within a given string and returns
+  them without any query parameters.
+
+  Args:
+      text: The input string to search for URLs.
+
+  Returns:
+      A list of matching URL strings.
+  """
+  pattern = r"(https?://wpt\.fyi/results[^\s?]+)"
+  urls = re.findall(pattern, text)
+  return urls
+
+
+def _get_github_headers(token: str | None = None) -> dict[str, str]:
+  """Helper function to construct API headers."""
+
+  if token is None:
+    token = settings.GITHUB_TOKEN
+
+  headers = {
+    'Accept': 'application/vnd.github.v3+json',
+    'X-GitHub-Api-Version': '2022-11-28',
+  }
+  if token:
+    headers['Authorization'] = f'Bearer {token}'
+
+  return headers
+
+
+def reformat_wpt_fyi_url(url: str) -> str:
+  """
+  Normalizes a WPT URL by converting multi-global test variants back to their
+  source ".any.js" file.
+
+  If the URL does not contain ".any.", it is returned unchanged.
+
+  See documentation: https://web-platform-tests.org/writing-tests/testharness.html#tests-for-other-or-multiple-globals-any-js
+
+  Args:
+    url: The full wpt.fyi URL (e.g., '.../test.any.worker.html').
+
+  Returns:
+    The URL normalized to the source file (e.g., '.../test.any.js').
+  """
+  substring = ".any."
+  if substring in url:
+    # Find the index where ".any." ends
+    end_index = url.find('.any.') + len(substring)
+    # Slice the string up to that point and add "js"
+    return url[:end_index] + "js"
+  return url
+
+
+def _parse_wpt_fyi_url(url: str) -> Path:
+  """
+  Parses a wpt.fyi URL to map it to a GitHub repo path.
+
+  Assumes all wpt.fyi URLs map to:
+  - owner: 'web-platform-tests'
+  - repo: 'wpt'
+  - ref: 'master'
+
+  Expected URL format:
+  [http|https]://wpt.fyi/results/<path>...
+  """
+  url = reformat_wpt_fyi_url(url)
+  parsed_url = urlparse(url)
+
+  if parsed_url.netloc != 'wpt.fyi':
+    raise ValueError('Invalid URL: Not a wpt.fyi URL.')
+
+  path_prefix = '/results/'
+  if not parsed_url.path.startswith(path_prefix):
+    raise ValueError(f'Invalid URL path: Expected to start with \'{path_prefix}\'.')
+
+  # Extract the file/dir path after '/results/'
+  path = parsed_url.path[len(path_prefix):].strip('/')
+
+  if not path:
+    raise ValueError('Invalid URL path: No path found after \'/results/\'.')
+
+  return Path(path)
+
+
+def _fetch_file_content(url: str) -> str | None:
+  """Helper function to download a single file's content for ThreadPool."""
+  try:
+    response = requests.get(url)
+    response.raise_for_status()
+    return response.text
+  except requests.exceptions.RequestException as e:
+    logging.error(f'Warning: Failed to fetch {url}: {e}')
+  # Some tests results are represented with ".html" file extensions, but
+  # their test contents are located in an equivalent ".js" file.
+  # If we fail to find the html version, instead attempt the js verion.
+  if url.endswith('.html'):
+    logging.info('Attempting to obtain test file using .js extension')
+    url = url.removesuffix('.html') + '.js'
+    try:
+      response = requests.get(url)
+      response.raise_for_status()
+      return response.text
+    except requests.exceptions.RequestException as e:
+      logging.error(f'Failed to fetch alternate URL {url}: {e}')
+  return None
+
+
+def _fetch_dir_listing(url: str, headers: dict[str, str]) -> list[tuple[Path, str]]:
+  """
+  Fetches a GitHub directory listing and extracts all valid file entries.
+  Intended to be run in a thread pool.
+  """
+  try:
+    path = _parse_wpt_fyi_url(url)
+    endpoint = f'{WPT_GITHUB_API_URL}{path}'
+    resp = requests.get(endpoint, headers=headers, params={'ref': 'master'})
+    resp.raise_for_status()
+    data = resp.json()
+    if isinstance(data, list):
+      return [(Path(i['path']), i['download_url']) for i in data
+              if (
+                # Ignore YAML files.
+                not i.get('name', '').endswith('.yml')
+                and not i.get('name', '').endswith('.yaml')
+                and i.get('type') == 'file'
+                and i.get('download_url'))
+                and i.get('path')]
+  except Exception as e:
+    logging.error(f'Error fetching directory listing for {url}: {e}')
+  return []
+
+
+async def _fetch_and_pair(fpath: Path, furl: str) -> tuple[Path, str | None]:
+  """
+  Async wrapper for the actual WPT content fetching phase.
+  """
+  content = await asyncio.to_thread(_fetch_file_content, furl)
+  return fpath, content
+
+
+async def get_mixed_wpt_contents_async(
+    dir_urls: list[str],
+    additional_file_urls: list[str]
+) -> dict[Path, str]:
+  """
+  Orchestrates concurrent fetching of complete directories and individual WPT file URLs.
+
+  Args:
+    dir_urls: List of WPT directory URLs to scan.
+    additional_file_urls: list of individual WPT file URLs.
+
+  Returns:
+    Dict mapping filename to raw text content.
+  """
+  token = settings.GITHUB_TOKEN
+  if token is None:
+    return {}
+
+  headers = _get_github_headers(token)
+  all_contents: dict[Path, str] = {}
+
+  # PHASE 1: Async Resolution (Directories & Individual Files)
+
+  # 1a. Create tasks to scan directories
+  dir_tasks = [
+      asyncio.to_thread(_fetch_dir_listing, u, headers)
+      for u in dir_urls
+  ]
+  file_path_info: list[tuple[str, Path]] = []
+  for furl in additional_file_urls:
+    path = _parse_wpt_fyi_url(furl)
+    file_path_info.append((
+      f'{WPT_GITHUB_RAW_CONTENTS_URL}{path}',
+      path,
+      # Infer the test name by getting the name from a Path object.
+    ))
+
+  # Wait for all resolution tasks to complete concurrently
+  dir_results = await asyncio.gather(*dir_tasks)
+
+  # Map raw download URLs to filenames. This automatically handles deduplication
+  # if the same file appears in a directory and the explicit list.
+  files_to_fetch_map: dict[str, Path] = {}
+
+  # Process directory results (each result is a list of tuples)
+  for dir_list in dir_results:
+    for fpath, url in dir_list:
+      files_to_fetch_map[url] = fpath
+
+  # Process individual file results (each result is a single tuple or None)
+  for url, fpath in file_path_info:
+    files_to_fetch_map[url] = fpath
+
+  # PHASE 2: Async Content Fetching
+  file_tasks = [
+    _fetch_and_pair(fpath, url)
+    for url, fpath in files_to_fetch_map.items()
+  ]
+  file_results = await asyncio.gather(*file_tasks)
+
+  for fpath, content in file_results:
+    if content is not None:
+      all_contents[fpath] = content
+
+  return all_contents

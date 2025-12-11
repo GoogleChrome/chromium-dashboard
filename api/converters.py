@@ -276,8 +276,7 @@ def _format_new_crbug_url(blink_components: Optional[list[str]],
       PROPOSED,
       IN_DEVELOPMENT,
       BEHIND_A_FLAG,
-      ORIGIN_TRIAL,
-      INTERVENTION):
+      ORIGIN_TRIAL):
     params.append('blocking=' + crbug_number)
   if owner_emails:
     params.append('cc=' + ','.join(owner_emails))
@@ -364,6 +363,8 @@ def feature_entry_to_json_verbose(
     'webdx_usecounter_enum': fe.webdx_usecounter_enum,
     'enterprise_feature_categories': fe.enterprise_feature_categories or [],
     'enterprise_product_category': fe.enterprise_product_category or ENTERPRISE_PRODUCT_CATEGORY_CHROME_BROWSER_UPDATE,
+    'is_releasenotes_content_reviewed': fe.is_releasenotes_content_reviewed,
+    'is_releasenotes_publish_ready': fe.is_releasenotes_publish_ready,
     'stages': stage_info['all_stages'],
     'accurate_as_of': _date_to_str(fe.accurate_as_of),
     'creator_email': fe.creator_email,
@@ -458,7 +459,6 @@ def feature_entry_to_json_verbose(
         'devrel': fe.devrel_emails or [],
         'owners': fe.owner_emails or [],
         'origintrial': fe.impl_status_chrome == ORIGIN_TRIAL,
-        'intervention': fe.impl_status_chrome == INTERVENTION,
         'prefixed': fe.prefixed,
         'flag': fe.impl_status_chrome == BEHIND_A_FLAG,
         'status': {
@@ -517,6 +517,9 @@ def feature_entry_to_json_verbose(
     'is_released': fe.impl_status_chrome in RELEASE_IMPL_STATES,
     'is_enterprise_feature': fe.feature_type == FEATURE_TYPE_ENTERPRISE_ID,
     'experiment_timeline': fe.experiment_timeline,
+    'ai_test_eval_report': fe.ai_test_eval_report,
+    'ai_test_eval_run_status': fe.ai_test_eval_run_status,
+    'ai_test_eval_status_timestamp': fe.ai_test_eval_status_timestamp,
   }
 
   if (d['is_released'] and
@@ -578,7 +581,6 @@ def feature_entry_to_json_basic(fe: FeatureEntry,
         'devrel': fe.devrel_emails or [],
         'owners': fe.owner_emails or [],
         'origintrial': fe.impl_status_chrome == ORIGIN_TRIAL,
-        'intervention': fe.impl_status_chrome == INTERVENTION,
         'prefixed': fe.prefixed,
         'flag': fe.impl_status_chrome == BEHIND_A_FLAG,
         'status': {

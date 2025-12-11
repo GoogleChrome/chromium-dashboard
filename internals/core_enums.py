@@ -583,7 +583,7 @@ ENABLED_BY_DEFAULT = 5
 DEPRECATED = 6
 REMOVED = 7
 ORIGIN_TRIAL = 8
-INTERVENTION = 9
+INTERVENTION = 9  # Deprecated: discouraged. https://github.com/GoogleChrome/chromium-dashboard/issues/3527
 ON_HOLD = 10
 NO_LONGER_PURSUING = 1000 # ensure it is at the bottom of the list
 
@@ -808,6 +808,12 @@ PROPERTY_NAMES_TO_ENUM_DICTS = {
     'rollout_platforms': PLATFORM_CATEGORIES,
     'rollout_plan': ROLLOUT_PLAN_DISPLAYNAMES,
   }
+
+# Valid values for FeatureEntry.ai_test_eval_run_status
+class AITestEvaluationStatus(int, Enum):
+  COMPLETE = 1
+  IN_PROGRESS = 2
+  FAILED = 3
 
 
 def convert_enum_int_to_string(property_name, value):

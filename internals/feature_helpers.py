@@ -27,6 +27,7 @@ from framework.utils import get_current_milestone_info
 from internals.stage_helpers import organize_all_stages_by_feature
 from internals.core_enums import *
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
+from internals.review_models import Gate
 
 
 def filter_unlisted(feature_list: list[FeatureEntry]) -> list[FeatureEntry]:
@@ -94,9 +95,41 @@ def get_future_results(async_features: Future | None) -> list[FeatureEntry]:
     return []
   return async_features.result()
 
+
+def _filter_out_wp_features_lacking_enterprise_approval(
+    features: list[FeatureEntry]) -> list[FeatureEntry]:
+  """Take out any WP features that did not yet earn enterprise approval.
+  But, leave in any deprecation-type features.
+  """
+  FEATURE_TYPES_TO_FILTER = [
+      FEATURE_TYPE_INCUBATE_ID,
+      FEATURE_TYPE_EXISTING_ID,
+      FEATURE_TYPE_CODE_CHANGE_ID,
+      # Not enterprise- or deprecation-type features.
+  ]
+  wp_feature_ids = {fe.key.integer_id() for fe in features
+                    if fe.feature_type in FEATURE_TYPES_TO_FILTER}
+  approved_enterprise_gates: list[Gate] = []
+  if wp_feature_ids:
+    approved_enterprise_gates = Gate.query(
+        # Use a range because the IN operator is limited to 30.  This gets
+        # extra Gates, but that doesn't matter.
+        Gate.feature_id >= min(wp_feature_ids),
+        Gate.feature_id <= max(wp_feature_ids),
+        Gate.gate_type == GATE_ENTERPRISE_SHIP,
+        Gate.state.IN(Gate.APPROVED_STATES)).fetch()
+  approved_wp_feature_ids = {
+      g.feature_id for g in approved_enterprise_gates}
+  result = [
+      fe for fe in features
+      if (fe.key.integer_id() not in wp_feature_ids or
+          fe.key.integer_id() in approved_wp_feature_ids)]
+  return result
+
+
 def get_features_in_release_notes(milestone: int):
   cache_key = '%s|%s|%s' % (
-      FeatureEntry.DEFAULT_CACHE_KEY, 'release_notes_milestone', milestone)
+      FeatureEntry.SEARCH_CACHE_KEY, 'release_notes_milestone', milestone)
 
   cached_features = rediscache.get(cache_key)
   if cached_features:
@@ -140,21 +173,23 @@ def get_features_in_release_notes(milestone: int):
   prefetched_stages_dict = organize_all_stages_by_feature(prefetched_stages)
   logging.info('prefetched %r stages for %r features', len(prefetched_stages),
                len(feature_ids))
-  features = []
-  for f in get_future_results(features_future):
+  features: list[FeatureEntry] = get_future_results(features_future)
+  features = _filter_out_wp_features_lacking_enterprise_approval(features)
+  formatted_features = []
+  for fe in features:
     formatted_feature = converters.feature_entry_to_json_verbose(
-        f, prefetched_stages=prefetched_stages_dict.get(f.key.integer_id()))
-    features.append(dict(formatted_feature))
+        fe, prefetched_stages=prefetched_stages_dict.get(fe.key.integer_id()))
+    formatted_features.append(dict(formatted_feature))
   logging.info('finished converting features to dicts')
 
-  features = [f for f in filter_unlisted_formatted(features)
+  formatted_features = [f for f in filter_unlisted_formatted(formatted_features)
     if (f['first_enterprise_notification_milestone'] == None or
         f['first_enterprise_notification_milestone'] <= milestone)]
   logging.info('finished filtering')
 
-  rediscache.set(cache_key, features)
+  rediscache.set(cache_key, formatted_features)
   logging.info('finished storing in cache')
-  return filter_confidential_formatted(features)
+  return filter_confidential_formatted(formatted_features)
 
 
 def get_in_milestone(milestone: int,
@@ -287,8 +322,7 @@ def get_in_milestone(milestone: int,
     _set_feature_fields_for_roadmap(
         features_by_type[IMPLEMENTATION_STATUS[ENABLED_BY_DEFAULT]] +
         features_by_type[IMPLEMENTATION_STATUS[DEPRECATED]] +
-        features_by_type[IMPLEMENTATION_STATUS[REMOVED]] +
-        features_by_type[IMPLEMENTATION_STATUS[INTERVENTION]],
+        features_by_type[IMPLEMENTATION_STATUS[REMOVED]],
         shipping_stages_by_fid)
 
     _set_feature_fields_for_roadmap(
@@ -319,7 +353,6 @@ def _group_by_roadmap_section(
   """Return a dict of roadmap sections with features belonging in each."""
   removed_features = []
   deprecated_features = []
-  intervention_features = []
   enabled_features = []
 
   # Push features to lists corresponding to the appropriate section
@@ -329,8 +362,6 @@ def _group_by_roadmap_section(
       removed_features.append(fe)
     elif fe.feature_type == FEATURE_TYPE_DEPRECATION_ID:
       deprecated_features.append(fe)
-    elif fe.impl_status_chrome == INTERVENTION:
-      intervention_features.append(fe)
     else:
       enabled_features.append(fe)
 
@@ -338,7 +369,6 @@ def _group_by_roadmap_section(
       IMPLEMENTATION_STATUS[ENABLED_BY_DEFAULT]: enabled_features,
       IMPLEMENTATION_STATUS[DEPRECATED]: deprecated_features,
       IMPLEMENTATION_STATUS[REMOVED]: removed_features,
-      IMPLEMENTATION_STATUS[INTERVENTION]: intervention_features,
       ROLLOUT_SECTION: rollout_features,
       IMPLEMENTATION_STATUS[ORIGIN_TRIAL]: origin_trial_features,
       IMPLEMENTATION_STATUS[BEHIND_A_FLAG]: dev_trial_features,
@@ -366,54 +396,23 @@ def _set_feature_fields_for_roadmap(
         s.finch_url for s in feature_trigger_stages if s.finch_url]
 
 
-def get_all(limit: Optional[int]=None,
-    order: str='-updated', filterby: Optional[tuple[str, Any]]=None,
-    update_cache: bool=False, keys_only: bool=False
- ) -> list[dict] | list[ndb.Key]:
-  """Return JSON dicts for entities that fit the filterby criteria.
+def get_by_participant(email: str) -> list[ndb.Key]:
+  """Return NDB keys of FeatureEntrys that the user can edit."""
+  CACHE_KEY = '%s|participant|%s' % (FeatureEntry.DEFAULT_CACHE_KEY, email)
+  result = rediscache.get(CACHE_KEY)
 
-  Because the cache may rarely have stale data, this should only be
-  used for displaying data read-only, not for populating forms or
-  procesing a POST to edit data.  For editing use case, load the
-  data from NDB directly.
-  """
-  KEY = '%s|%s|%s|%s' % (
-      FeatureEntry.DEFAULT_CACHE_KEY, order, limit, keys_only)
+  if result is None:
+    query = FeatureEntry.query()
+    query = query.filter(
+        FeatureEntry.deleted == False,
+        ndb.OR(FeatureEntry.owner_emails == email,
+               FeatureEntry.editor_emails == email,
+               FeatureEntry.creator_email == email,
+               FeatureEntry.spec_mentor_emails == email))
+    result = query.fetch(keys_only=True)
+    rediscache.set(CACHE_KEY, result)
+  return result
 
-  # TODO(ericbidelman): Support more than one filter.
-  if filterby is not None:
-    s = ('%s%s' % (filterby[0], filterby[1])).replace(' ', '')
-    KEY += '|%s' % s
-
-  feature_list = rediscache.get(KEY)
-
-  if feature_list is None or update_cache:
-    query = FeatureEntry.query().order(-FeatureEntry.updated) #.order('name')
-    query = query.filter(FeatureEntry.deleted == False)
-
-    # TODO(ericbidelman): Support more than one filter.
-    if filterby:
-      filter_type, comparator = filterby
-      if filter_type == 'can_edit':
-        # can_edit will check if the user has any access to edit the feature.
-        # This includes being an owner, editor, or the original creator
-        # of the feature.
-        query = query.filter(
-          ndb.OR(FeatureEntry.owner_emails == comparator,
-              FeatureEntry.editor_emails == comparator,
-              FeatureEntry.creator_email == comparator,
-              FeatureEntry.spec_mentor_emails == comparator))
-      else:
-        query = query.filter(getattr(FeatureEntry, filter_type) == comparator)
-
-    feature_list = query.fetch(limit, keys_only=keys_only)
-    if not keys_only:
-      feature_list = [
-          converters.feature_entry_to_json_basic(f) for f in feature_list]
-
-    rediscache.set(KEY, feature_list)
-
-  return feature_list
 
 def get_feature_names_by_ids(feature_ids: list[int],
                update_cache: bool=True) -> list[dict[str, Any]]:

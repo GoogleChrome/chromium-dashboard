@@ -49,6 +49,7 @@ class PermissionsAPITest(testing_config.CustomTestCase):
         'approvable_gate_types': [],
         'can_comment': False,
         'can_edit_all': False,
+        'can_review_release_notes': False,
         'is_admin': False,
         'email': 'one@example.com',
         'editable_features': []
@@ -66,6 +67,7 @@ class PermissionsAPITest(testing_config.CustomTestCase):
         'approvable_gate_types': [],
         'can_comment': True,
         'can_edit_all': False,
+        'can_review_release_notes': False,
         'is_admin': False,
         'email': 'one@google.com',
         'editable_features': [],
@@ -83,6 +85,7 @@ class PermissionsAPITest(testing_config.CustomTestCase):
           'approvable_gate_types': [],
           'can_comment': True,
           'can_edit_all': False,
+          'can_review_release_notes': False,
           'is_admin': False,
           'email': 'one@chromium.org',
           'editable_features': []

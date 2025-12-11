@@ -138,7 +138,6 @@
  * @property {string[]} [devrel]
  * @property {string[]} [owners]
  * @property {boolean} [origintrial]
- * @property {boolean} [intervention]
  * @property {boolean} [prefixed]
  * @property {boolean} [flag]
  * @property {FeatureDictInnerBrowserStatus} status
@@ -203,6 +202,8 @@
  * @property {string} [feature_notes]
  * @property {string[]} enterprise_feature_categories
  * @property {number} enterprise_product_category
+ * @property {boolean} [is_releasenotes_content_reviewed]
+ * @property {boolean} [is_releasenotes_publish_ready]
  * Metadata: Process information
  * @property {string} feature_type
  * @property {number} feature_type_int
@@ -266,6 +267,10 @@
  * @property {string} [experiment_timeline]
  * @property {FeatureDictInnerResourceInfo} resources
  * @property {string} [comments]
+ * AI evaluation fields
+ * @property {string} [ai_test_eval_report]
+ * @property {number} [ai_test_eval_run_status]
+ * @property {string} [ai_test_eval_status_timestamp]
  * Repeated in 'browsers' section. TODO: delete these?
  * @property {number} ff_views
  * @property {number} safari_views
@@ -283,6 +288,7 @@
  * @property {number} id
  * @property {boolean} can_create_feature
  * @property {boolean} can_edit_all
+ * @property {boolean} can_review_release_notes
  * @property {boolean} can_comment
  * @property {boolean} is_admin
  * @property {string} email
@@ -765,6 +771,13 @@ export class ChromeStatusClient {
   // Stale Features API
   async getStaleFeatures() {
     return this.doGet('/features/stale');
+  }
+
+  // WPT Coverage API
+  async generateWPTCoverageEvaluation(featureId) {
+    return this.doPost('/features/generate-wpt-coverage-evaluation', {
+      feature_id: featureId,
+    });
   }
 
   async getSpecifiedChannels(start, end) {

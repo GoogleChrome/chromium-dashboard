@@ -1034,7 +1034,10 @@ class GenerateStaleFeaturesFile(FlaskHandler):
       shipping_stage_type = STAGE_TYPES_SHIPPING[f.feature_type]
       upcoming_ship_stages = Stage.query(
         Stage.feature_id == f.key.integer_id(),
-        Stage.stage_type == shipping_stage_type,
+        ndb.OR(
+          Stage.stage_type == STAGE_ENT_ROLLOUT,
+          Stage.stage_type == shipping_stage_type,
+        ),
         ndb.OR(
           Stage.milestones.desktop_first == current_milestone,
           Stage.milestones.android_first == current_milestone,
@@ -1174,10 +1177,10 @@ class ResetOutstandingNotifications(FlaskHandler):
 class ResetStaleShippingMilestones(FlaskHandler):
   """Reset the shipping milestones of features have not been verified after 4+ notifications."""
 
-  def _reset_milestone(self, stage: Stage, field: str, activity: Activity):
+  def _reset_milestone(self, stage: Stage, field: str, current_milestone: int, activity: Activity):
     old_value = getattr(stage.milestones, field) if stage.milestones else None
-    if old_value and old_value > 140:
-      old_value = getattr(stage.milestones, field)
+    # Only reset milestones that fall in the current milestone range.
+    if old_value and current_milestone <= old_value <= current_milestone + 2:
       # Capture the old value in an Amendment.
       activity.amendments.append(
         Amendment(field_name=field, old_value=str(old_value), new_value=None)
@@ -1191,33 +1194,41 @@ class ResetStaleShippingMilestones(FlaskHandler):
     stale_features: list[FeatureEntry] = FeatureEntry.query(
       FeatureEntry.outstanding_notifications >= 4
     ).fetch()
+    current_milestone_info = utils.get_current_milestone_info('current')
+    current_milestone = int(current_milestone_info['mstone'])
     entities_to_update: list[ndb.Model] = []
     for f in stale_features:
-
       # Get all the shipping stages of the stale feature and reset any
       # milestones that are set.
       stages: list[Stage] = Stage.query(
         Stage.feature_id == f.key.integer_id(),
-        Stage.stage_type == STAGE_TYPES_SHIPPING[f.feature_type]
+        ndb.OR(
+          Stage.stage_type == STAGE_TYPES_SHIPPING[f.feature_type],
+          Stage.stage_type == STAGE_ENT_ROLLOUT,
+        )
       ).fetch()
       for s in stages:
         # Create an activity that shows all the shipping milestones have been set to null.
         activity = Activity(
           feature_id=f.key.integer_id(),
           amendments=[],
-          content='Shipping milestones were unset due to failure to verify accuracy.')
+          content='Shipping/Rollout milestones were unset due to failure to verify accuracy.')
         if s.milestones:
-          self._reset_milestone(s, 'desktop_first', activity)
-          self._reset_milestone(s, 'android_first', activity)
-          self._reset_milestone(s, 'ios_first', activity)
-          self._reset_milestone(s, 'webview_first', activity)
+          self._reset_milestone(s, 'desktop_first', current_milestone, activity,)
+          self._reset_milestone(s, 'android_first', current_milestone, activity)
+          self._reset_milestone(s, 'ios_first', current_milestone, activity)
+          self._reset_milestone(s, 'webview_first', current_milestone, activity)
           # Only update the stage and save the activity if some milestones were unset.
           if activity.amendments:
             entities_to_update.append(s)
             entities_to_update.append(activity)
+
       f.outstanding_notifications = 0
       entities_to_update.append(f)
       num_features_reset += 1
+      cloud_tasks_helpers.enqueue_task(
+        '/tasks/email-reset-shipping-milestones',
+        {'feature_id': f.key.integer_id()})
     if entities_to_update:
       ndb.put_multi(entities_to_update)
 

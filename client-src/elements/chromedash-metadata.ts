@@ -146,8 +146,6 @@ class ChromedashMetadata extends LitElement {
     this._versions.push(removed);
     const originTrial = this.implStatuses[this.status.ORIGINTRIAL - 1].val;
     this._versions.push(originTrial);
-    const intervention = this.implStatuses[this.status.INTERVENTION - 1].val;
-    this._versions.push(intervention);
     const onHold = this.implStatuses[this.status.ON_HOLD - 1].val;
     this._versions.push(onHold);
   }

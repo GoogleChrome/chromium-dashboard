@@ -91,7 +91,6 @@ def feature_to_legacy_json(f: Feature) -> dict[str, Any]:
       'devrel': d.pop('devrel', []),
       'owners': d.pop('owner', []),
       'origintrial': f.impl_status_chrome == ORIGIN_TRIAL,
-      'intervention': f.impl_status_chrome == INTERVENTION,
       'prefixed': d.pop('prefixed', False),
       'flag': f.impl_status_chrome == BEHIND_A_FLAG,
       'status': {

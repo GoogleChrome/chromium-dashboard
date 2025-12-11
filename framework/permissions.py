@@ -141,6 +141,25 @@ def can_edit_any_feature(user: User) -> bool:
   # Site editors or admins should be able to edit any feature.
   return app_user.is_admin or app_user.is_site_editor
 
+RELEASE_NOTE_REVIEWERS = [
+    'elmirakalali@google.com',
+    'siobhankeating@google.com',
+    'mhoste@google.com',
+    'kimreardon@google.com',
+    'aaudi@google.com',
+    'crushworth@google.com',
+    'atarrant@google.com',
+    'jrobbins@google.com']
+
+def can_review_release_notes(user: User) -> bool:
+  """Return True if the user is allowed to mark release notes final."""
+  if not user:
+    return False
+  app_user = AppUser.get_app_user(user.email())
+
+  return ((app_user and app_user.is_admin) or
+          user.email() in RELEASE_NOTE_REVIEWERS)
+
 
 def feature_edit_list(user: User) -> list[int]:
   """Return a list of features the current user can edit"""
@@ -153,8 +172,8 @@ def feature_edit_list(user: User) -> list[int]:
     return []
 
   # Query features to find which can be edited.
-  editable_feature_keys: list[ndb.Key] = feature_helpers.get_all(
-      filterby=('can_edit', user.email()), keys_only=True)
+  editable_feature_keys: list[ndb.Key] = feature_helpers.get_by_participant(
+      user.email())
   # Return a list of unique ids of features that can be edited.
   return list(set([fk.integer_id() for fk in editable_feature_keys]))
 

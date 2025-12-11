@@ -1,9 +1,6 @@
 import logging
 import os
 
-from framework.secrets import get_ot_api_key
-
-
 ROOT_DIR = os.path.abspath(os.path.dirname(__file__))
 
 def get_flask_template_path() -> str:
@@ -95,6 +92,8 @@ OT_API_URL = 'https://staging-chromeorigintrials-pa.sandbox.googleapis.com'
 
 # Values are set later when request is needed.
 OT_API_KEY: str|None = None
+GITHUB_TOKEN: str|None = None
+GEMINI_API_KEY: str|None = None
 OT_DATA_ACCESS_ADMIN_GROUP_NAME: str|None = None
 
 # Dummy data for local OT support emails.

@@ -173,12 +173,9 @@ export class ChromedashAdminBlinkPage extends LitElement {
           </div>
         </div>
         <div class="layout horizontal subheader_toggles">
-          <!-- <paper-toggle-button> doesn't working here. Related links:
-            https://github.com/PolymerElements/paper-toggle-button/pull/132 -->
           <label
             ><input
               type="checkbox"
-              class="paper-toggle-button"
               ?checked="${this._editMode}"
               @change="${this._onEditModeToggle}"
             />Edit mode</label

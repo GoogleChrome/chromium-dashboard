@@ -54,7 +54,6 @@ describe('chromedash-roadmap-page', () => {
     },
   });
   const featuresInMilestonePromise = Promise.resolve({
-    'Brower Intervention': [{name: 'fake feature one'}],
     Deprecated: [{name: 'fake feature two'}],
     'Enabled by default': [{name: 'fake feature three'}],
     'Original Trial': [{name: 'fake feature four'}],

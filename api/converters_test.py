@@ -145,7 +145,6 @@ class FeatureConvertersTest(testing_config.CustomTestCase):
           'devrel':['devrel@example.com'],
           'owners':['feature_owner@example.com'],
           'origintrial': False,
-          'intervention': False,
           'prefixed': False,
           'flag': False,
           'status': {
@@ -237,7 +236,6 @@ class FeatureConvertersTest(testing_config.CustomTestCase):
           'devrel':['devrel@example.com'],
           'owners':['feature_owner@example.com'],
           'origintrial': False,
-          'intervention': False,
           'prefixed': False,
           'flag': False,
           'status': {
@@ -312,6 +310,8 @@ class FeatureConvertersTest(testing_config.CustomTestCase):
       'automation_spec': False,
       'enterprise_impact': ENTERPRISE_IMPACT_NONE,
       'enterprise_product_category': 0,
+      'is_releasenotes_content_reviewed': False,
+      'is_releasenotes_publish_ready': False,
       'shipping_year': 2024,
       'breaking_change': False,
       'is_released': True,
@@ -373,6 +373,8 @@ class FeatureConvertersTest(testing_config.CustomTestCase):
       'devtrial_instructions': None,
       'editor_emails': ['feature_editor@example.com', 'owner_1@example.com'],
       'enterprise_feature_categories': [],
+      'is_releasenotes_content_reviewed': False,
+      'is_releasenotes_publish_ready': False,
       'ergonomics_risks': None,
       'experiment_timeline': None,
       'explainer_links': [],
@@ -407,6 +409,9 @@ class FeatureConvertersTest(testing_config.CustomTestCase):
       'webview_risks': None,
       'wpt': None,
       'wpt_descr': None,
+      'ai_test_eval_report': None,
+      'ai_test_eval_run_status': None,
+      'ai_test_eval_status_timestamp': None,
 
       'tag_review_status': 'Pending',
       'tag_review_status_int': 1,
@@ -431,7 +436,6 @@ class FeatureConvertersTest(testing_config.CustomTestCase):
           'ios': None,
 
           'origintrial': False,
-          'intervention': False,
           'prefixed': False,
           'flag': False,
           'webview': None,
@@ -609,10 +613,16 @@ class GateConvertersTest(testing_config.CustomTestCase):
           'is_api_polyfill': False,
           'is_language_polyfill': True,
           'is_same_origin_css': False,
+          'covers_existence': False,
+          'covers_common_cases': False,
+          'covers_errors': False,
+          'covers_invalidation': False,
+          'covers_integration': False,
           'launch_or_contact': 'reviewer@example.com',
           'explanation': 'something',
         },
       }
+    self.maxDiff = None
     self.assertEqual(expected, actual)
 
   def test_slo_complete_review(self):

@@ -22,6 +22,7 @@ from internals.core_enums import *
 from internals import feature_helpers
 from internals import stage_helpers
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
+from internals.review_models import Gate, Vote
 
 
 class FeatureHelpersTest(testing_config.CustomTestCase):
@@ -30,25 +31,26 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
     self.feature_2 = FeatureEntry(
         name='feature b', summary='sum',
         owner_emails=['feature_owner@example.com'], category=1,
-        updated=datetime(2020, 4, 1), feature_type=1, impl_status_chrome=1)
+        updated=datetime(2020, 4, 1), feature_type=FEATURE_TYPE_EXISTING_ID,
+        impl_status_chrome=1)
     self.feature_2.put()
 
     self.feature_1 = FeatureEntry(
         name='feature a', summary='sum', impl_status_chrome=3,
         owner_emails=['feature_owner@example.com'], category=1,
-        updated=datetime(2020, 3, 1), feature_type=0)
+        updated=datetime(2020, 3, 1), feature_type=FEATURE_TYPE_INCUBATE_ID)
     self.feature_1.put()
 
     self.feature_3 = FeatureEntry(
         name='feature c', summary='sum', category=1, impl_status_chrome=2,
         owner_emails=['feature_owner@example.com'],
-        updated=datetime(2020, 1, 1), feature_type=2)
+        updated=datetime(2020, 1, 1), feature_type=FEATURE_TYPE_CODE_CHANGE_ID)
     self.feature_3.put()
 
     self.feature_4 = FeatureEntry(
         name='feature d', summary='sum', category=1, impl_status_chrome=2,
         owner_emails=['feature_owner@example.com'],
-        updated=datetime(2020, 2, 1), feature_type=3)
+        updated=datetime(2020, 2, 1), feature_type=FEATURE_TYPE_DEPRECATION_ID)
     self.feature_4.put()
 
     fe_1_stage_types = [110, 120, 130, 140, 150, 151, 160]
@@ -82,87 +84,34 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
         self.feature_4.key.integer_id())
 
   def tearDown(self):
-    for kind in [FeatureEntry, Stage]:
+    for kind in [FeatureEntry, Stage, Gate]:
       for entity in kind.query():
         entity.key.delete()
 
     rediscache.flushall()
 
-  def test_get_all__normal(self):
-    """We can retrieve a list of all features with no filter."""
-    actual = feature_helpers.get_all(update_cache=True)
-    names = [f['name'] for f in actual]
-    self.assertEqual(
-        ['feature b', 'feature a', 'feature d', 'feature c'],
-        names)
-
-    self.feature_1.summary = 'revised summary'
-    self.feature_1.put()  # Changes updated field.
-    actual = feature_helpers.get_all(update_cache=True)
-    names = [f['name'] for f in actual]
-    self.assertEqual(
-        ['feature b', 'feature a', 'feature d', 'feature c'],
-        names)
-
-  def test_get_all__category(self):
-    """We can retrieve a list of all features of a given category."""
-    actual = feature_helpers.get_all(
-        filterby=('category', CSS), update_cache=True)
-    names = [f['name'] for f in actual]
-    self.assertEqual(
-        [],
-        names)
-
-    self.feature_1.category = CSS
-    self.feature_1.put()  # Changes updated field.
-    actual = feature_helpers.get_all(
-        filterby=('category', CSS), update_cache=True)
-    names = [f['name'] for f in actual]
-    self.assertEqual(
-        ['feature a'],
-        names)
-
-  def test_get_all__owner(self):
-    """We can retrieve a list of all features with a given owner."""
-    actual = feature_helpers.get_all(
-        filterby=('owner_emails', 'owner@example.com'), update_cache=True)
-    names = [f['name'] for f in actual]
-    self.assertEqual(
-        [],
-        names)
-
-    self.feature_1.owner_emails = ['owner@example.com']
-    self.feature_1.put()  # Changes updated field.
-    actual = feature_helpers.get_all(
-        filterby=('owner_emails', 'owner@example.com'), update_cache=True)
-    names = [f['name'] for f in actual]
-    self.assertEqual(
-        ['feature a'],
-        names)
-
-  def test_get_all__owner_unlisted(self):
-    """Unlisted features should still be visible to their owners."""
-    self.feature_2.unlisted = True
-    self.feature_2.owner_emails = ['feature_owner@example.com']
+  def test_get_by_participant(self):
+    """The people who are involve in a feature can edit it, others can't."""
+    self.feature_2.cc_emails = ['cc@example.com']
+    self.feature_2.editor_emails = ['editor@example.com']
     self.feature_2.put()
-    testing_config.sign_in('feature_owner@example.com', 1234567890)
-    actual = feature_helpers.get_all(update_cache=True)
-    names = [f['name'] for f in actual]
-    testing_config.sign_out()
-    self.assertEqual(
-      ['feature b', 'feature a', 'feature d', 'feature c'], names)
+    self.feature_3.creator_email = 'creator@example.com'
+    self.feature_3.put()
+    self.feature_4.spec_mentor_emails = ['mentor@example.com']
+    self.feature_4.put()
 
-  def test_get_all__editor_unlisted(self):
-    """Unlisted features should still be visible to feature editors."""
-    self.feature_2.unlisted = True
-    self.feature_2.editor_emails = ['feature_editor@example.com']
-    self.feature_2.put()
-    testing_config.sign_in("feature_editor@example.com", 1234567890)
-    actual = feature_helpers.get_all(update_cache=True)
-    names = [f['name'] for f in actual]
-    testing_config.sign_out()
-    self.assertEqual(
-      ['feature b', 'feature a', 'feature d', 'feature c'], names)
+    owner_keys = feature_helpers.get_by_participant('feature_owner@example.com')
+    self.assertEqual(4, len(owner_keys))
+    cc_keys = feature_helpers.get_by_participant('cc@example.com')
+    self.assertEqual([], cc_keys)
+    editor_keys = feature_helpers.get_by_participant('editor@example.com')
+    self.assertEqual([self.feature_2.key], editor_keys)
+    creator_keys = feature_helpers.get_by_participant('creator@example.com')
+    self.assertEqual([self.feature_3.key], creator_keys)
+    mentor_keys = feature_helpers.get_by_participant('mentor@example.com')
+    self.assertEqual([self.feature_4.key], mentor_keys)
+    other_keys = feature_helpers.get_by_participant('other@example.com')
+    self.assertEqual([], other_keys)
 
   def test_get_by_ids__empty(self):
     """A request to load zero features returns zero results."""
@@ -368,7 +317,7 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
     self.assertEqual(
         ['feature a', 'feature c'],
         enabled_by_default)
-    self.assertEqual(7, len(actual))
+    self.assertEqual(6, len(actual))
 
     cache_key = '%s|%s|%s' % (
         FeatureEntry.DEFAULT_CACHE_KEY, 'milestone', 1)
@@ -458,7 +407,6 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
         self.fe_2_stages_dict[260][0].key.integer_id()]
     expected_fe_2['finch_urls'] = ['https://example.com/finch']
     expected = {
-        'Browser Intervention': [],
         'Deprecated': [],
         'Enabled by default': [],
         'In developer trial (Behind a flag)': [],
@@ -480,19 +428,73 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
         cached_test_feature,
         actual)
 
-  def test_get_in_milestone__non_enterprise_features(self):
-    """We can retrieve a list of features."""
+  def _create_wp_stages_and_gates(self):
     self.fe_1_stages_dict[160][0].milestones = MilestoneSet(desktop_first=1)
     self.fe_1_stages_dict[160][0].put()
+    self.g1 = Gate(feature_id=self.feature_1.key.integer_id(),
+                   stage_id=self.fe_1_stages_dict[160][0].key.integer_id(),
+                   gate_type=GATE_ENTERPRISE_SHIP,
+                   state=Vote.APPROVED)
+    self.g1.put()
     self.fe_2_stages_dict[260][0].milestones = MilestoneSet(desktop_last=2)
     self.fe_2_stages_dict[260][0].put()
+    self.g2 = Gate(feature_id=self.feature_2.key.integer_id(),
+                   stage_id=self.fe_2_stages_dict[260][0].key.integer_id(),
+                   gate_type=GATE_ENTERPRISE_SHIP,
+                   state=Vote.APPROVED)
+    self.g2.put()
     self.fe_3_stages_dict[360][0].milestones = MilestoneSet(ios_first=3)
     self.fe_3_stages_dict[360][0].put()
+    self.g3 = Gate(feature_id=self.feature_3.key.integer_id(),
+                   stage_id=self.fe_3_stages_dict[360][0].key.integer_id(),
+                   gate_type=GATE_ENTERPRISE_SHIP,
+                   state=Vote.APPROVED)
+    self.g3.put()
     self.fe_4_stages_dict[460][0].milestones = MilestoneSet(ios_last=4)
     self.fe_4_stages_dict[460][0].put()
+    self.g4 = Gate(feature_id=self.feature_4.key.integer_id(),
+                   stage_id=self.fe_4_stages_dict[460][0].key.integer_id(),
+                   gate_type=GATE_ENTERPRISE_SHIP,
+                   state=Vote.APPROVED)
+    self.g4.put()
 
+  def test_get_in_milestone__wp_need_enterprise_approval(self):
+    """We include WP features only if enterprise shipping gate is approved."""
+    self._create_wp_stages_and_gates()
     cache_key = '%s|%s|%s' % (
-        FeatureEntry.DEFAULT_CACHE_KEY, 'release_notes_milestone', 1)
+        FeatureEntry.SEARCH_CACHE_KEY, 'release_notes_milestone', 1)
+    self.feature_1.enterprise_impact = ENTERPRISE_IMPACT_LOW
+    self.feature_1.put()
+    self.feature_2.enterprise_impact = ENTERPRISE_IMPACT_MEDIUM
+    self.feature_2.put()
+    self.feature_3.enterprise_impact = ENTERPRISE_IMPACT_HIGH
+    self.feature_3.put()
+    self.feature_4.enterprise_impact = ENTERPRISE_IMPACT_LOW
+    self.feature_4.put()
+
+    features = feature_helpers.get_features_in_release_notes(milestone=1)
+    self.assertEqual(4, len(features))
+    rediscache.delete(cache_key)
+
+    self.g1.state = Gate.PREPARING
+    self.g1.put()
+    self.g2.state = Vote.NEEDS_WORK
+    self.g2.put()
+    self.g3.gate_type = GATE_API_SHIP
+    self.g3.put()
+    self.g4.gate_type = GATE_ENTERPRISE_PLAN
+    self.g4.put()
+
+    features = feature_helpers.get_features_in_release_notes(milestone=1)
+    # feature_4 is a deprecation, so it is always included.
+    self.assertEqual(['feature d'], [f['name'] for f in features])
+    rediscache.delete(cache_key)
+
+  def test_get_in_milestone__non_enterprise_features(self):
+    """We can retrieve a list of features."""
+    self._create_wp_stages_and_gates()
+    cache_key = '%s|%s|%s' % (
+        FeatureEntry.SEARCH_CACHE_KEY, 'release_notes_milestone', 1)
 
     # There is no breaking change
     features = feature_helpers.get_features_in_release_notes(milestone=1)
@@ -521,7 +523,7 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
     self.assertEqual(cached_result, features)
 
     cache_key = '%s|%s|%s' % (
-        FeatureEntry.DEFAULT_CACHE_KEY, 'release_notes_milestone', 3)
+        FeatureEntry.SEARCH_CACHE_KEY, 'release_notes_milestone', 3)
     features = feature_helpers.get_features_in_release_notes(milestone=3)
     self.assertEqual(2, len(features))
     self.assertEqual(
@@ -545,7 +547,7 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
     self.assertEqual(cached_result, features)
 
     cache_key = '%s|%s|%s' % (
-        FeatureEntry.DEFAULT_CACHE_KEY, 'release_notes_milestone', 1)
+        FeatureEntry.SEARCH_CACHE_KEY, 'release_notes_milestone', 1)
     features = feature_helpers.get_features_in_release_notes(milestone=1)
     self.assertEqual(2, len(features))
     self.assertEqual(
@@ -593,7 +595,6 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
         'Enabled by default': [],
         'Deprecated': [],
         'Removed': [],
-        'Browser Intervention': [],
         'Stepped rollout': [],
         'Origin trial': [],
         'In developer trial (Behind a flag)': [],
@@ -613,13 +614,6 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
     actual = feature_helpers._group_by_roadmap_section(
         [fe], [], [], [])
     self.assertEqual(actual['Deprecated'], [fe])
-
-  def test_group_by_roadmap_section__intervention(self):
-    """A shipping feature with impl_status_chrome=INTERVENTION is here."""
-    fe = FeatureEntry(impl_status_chrome=INTERVENTION)
-    actual = feature_helpers._group_by_roadmap_section(
-        [fe], [], [], [])
-    self.assertEqual(actual['Browser Intervention'], [fe])
 
   def test_group_by_roadmap_section__enabled(self):
     """A shipping feature without a special case is here."""
@@ -661,7 +655,7 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
     """The roadmap does not include inactive feature entries."""
     for status in [
         PROPOSED, IN_DEVELOPMENT, BEHIND_A_FLAG, ENABLED_BY_DEFAULT,
-        DEPRECATED, REMOVED, ORIGIN_TRIAL, INTERVENTION]:
+        DEPRECATED, REMOVED, ORIGIN_TRIAL]:
       self.assertTrue(feature_helpers._should_appear_on_roadmap(
           FeatureEntry(impl_status_chrome=status)))
 

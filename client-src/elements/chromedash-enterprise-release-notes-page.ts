@@ -69,7 +69,7 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
   @state()
   editingFeatureIds = new Set<number>();
   @state()
-  previewingFeatureIds = new Set<number>();
+  previewingIds = new Set<number>();
 
   static get styles() {
     return [
@@ -130,8 +130,8 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
           padding-inline-start: 1rem;
         }
 
-        .stages li {
-          margin-block-end: 16px;
+        .stage {
+          margin-top: 16px;
         }
 
         .feature {
@@ -143,14 +143,22 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
           padding: var(--content-padding);
         }
 
-        .feature p {
+        .toremove {
           margin: 1rem 0;
         }
 
-        .confidential {
+        .labels {
+          margin-bottom: var(--content-padding-half);
+        }
+        .confidential::part(base) {
           background: var(--warning-background);
-          padding: var(--content-padding-quarter) var(--content-padding-half);
-          border-radius: var(--pill-border-radius);
+          font-weight: bold;
+        }
+        .reviewed::part(base) {
+          background: var(--sl-color-blue-100);
+        }
+        .ready::part(base) {
+          background: var(--success-background);
         }
 
         .toremove {
@@ -564,6 +572,12 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
     );
   }
 
+  userCanReview() {
+    return (
+      this.user && (this.user.is_admin || this.user.can_review_release_notes)
+    );
+  }
+
   startEditing(featureId) {
     const newEditing = new Set(this.editingFeatureIds);
     newEditing.add(featureId);
@@ -614,6 +628,22 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
       '#edit-confidential-' + f.id
     )!;
     addFieldValue('confidential', confidentialEl, f.confidential);
+    let reviewedEl: SlCheckbox = this.shadowRoot?.querySelector<SlCheckbox>(
+      '#edit-reviewed-' + f.id
+    )!;
+    addFieldValue(
+      'is_releasenotes_content_reviewed',
+      reviewedEl,
+      f.is_releasenotes_content_reviewed
+    );
+    let readyEl: SlCheckbox = this.shadowRoot?.querySelector<SlCheckbox>(
+      '#edit-ready-' + f.id
+    )!;
+    addFieldValue(
+      'is_releasenotes_publish_ready',
+      readyEl,
+      f.is_releasenotes_publish_ready
+    );
     let summaryEl: SlTextarea = this.shadowRoot?.querySelector<SlTextarea>(
       '#edit-summary-' + f.id
     )!;
@@ -702,27 +732,75 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
     return html``;
   }
 
-  renderConfidential(f: Feature): TemplateResult {
+  renderLabels(f: Feature): TemplateResult {
+    let confidentialLabel = html``;
     if (f.confidential) {
-      return html`<span class="confidential"
-        ><strong>CONFIDENTIAL</strong></span
+      confidentialLabel = html`<sl-tag pill size="small" class="confidential"
+        >CONFIDENTIAL</sl-tag
       >`;
-    } else {
-      return html``;
     }
+    let reviewedLabel = html``;
+    if (f.is_releasenotes_content_reviewed) {
+      reviewedLabel = html`<sl-tag pill size="small" class="reviewed"
+        >Release Notes Content Finalized</sl-tag
+      >`;
+    }
+    let readyLabel = html``;
+    if (f.is_releasenotes_publish_ready) {
+      readyLabel = html`<sl-tag pill size="small" class="ready"
+        >Ready for Publishing</sl-tag
+      >`;
+    }
+    return html`<div class="labels">
+      ${confidentialLabel} ${reviewedLabel} ${readyLabel}
+    </div>`;
   }
 
-  renderEditableConfidential(f: Feature): TemplateResult {
-    return html`
-      <sl-checkbox
-        class="feature-confidential"
-        id="edit-confidential-${f.id}"
-        ?checked=${f.confidential}
-        size="small"
-      >
-        Confidential
-      </sl-checkbox>
+  renderEditableLabels(f: Feature): TemplateResult {
+    let confidentialBox = html`
+      <div>
+        <sl-checkbox
+          class="feature-confidential"
+          id="edit-confidential-${f.id}"
+          ?checked=${f.confidential}
+          size="small"
+        >
+          Confidential
+        </sl-checkbox>
+      </div>
     `;
+
+    let reviewedBox = html``;
+    if (this.userCanReview()) {
+      reviewedBox = html`
+        <div>
+          <sl-checkbox
+            class="feature-reviewed"
+            id="edit-reviewed-${f.id}"
+            ?checked=${f.is_releasenotes_content_reviewed}
+            size="small"
+          >
+            Release Notes Content Finalized
+          </sl-checkbox>
+        </div>
+      `;
+    }
+
+    let readyBox = html``;
+    if (this.userCanReview()) {
+      readyBox = html`<div>
+        <sl-checkbox
+          class="feature-ready"
+          id="edit-ready-${f.id}"
+          ?checked=${f.is_releasenotes_publish_ready}
+          size="small"
+        >
+          Ready for Publishing
+        </sl-checkbox>
+      </div> `;
+    }
+
+    return html`${confidentialBox} ${reviewedBox} ${readyBox}`;
   }
 
   renderFeatureName(f: Feature): TemplateResult {
@@ -751,19 +829,19 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
     }
   }
 
-  handlePreviewChecked(e, featureId) {
-    const newPreviewing = new Set(this.previewingFeatureIds);
+  handlePreviewChecked(e, featureOrStageId) {
+    const newPreviewing = new Set(this.previewingIds);
     if (e.target.checked) {
-      newPreviewing.add(featureId);
+      newPreviewing.add(featureOrStageId);
     } else {
-      newPreviewing.delete(featureId);
+      newPreviewing.delete(featureOrStageId);
     }
-    this.previewingFeatureIds = newPreviewing;
+    this.previewingIds = newPreviewing;
   }
 
   renderEditableFeatureSummary(f: Feature): TemplateResult {
     const isMarkdown = (f.markdown_fields || []).includes('summary');
-    const isPreviewing = this.previewingFeatureIds.has(f.id);
+    const isPreviewing = this.previewingIds.has(f.id);
     const editor = html` <sl-textarea
       class="feature-summary"
       id="edit-summary-${f.id}"
@@ -812,15 +890,53 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
     s,
     shouldDisplayStageTitleInBold
   ): TemplateResult {
-    // TODO(jrobbins): Implement editing widgets in the next CL.
     const platforms: string[] = s.rollout_platforms;
     const choices = PLATFORM_CATEGORIES;
     const availableOptions = Object.values(choices).filter(
       ([value, label, obsolete]) => !obsolete || platforms.includes('' + value)
     );
 
+    const isPreviewing = this.previewingIds.has(s.id);
+    const editor = html` <sl-textarea
+      class="rollout-details"
+      id="edit-rollout-details-${s.id}"
+      value=${s.rollout_details}
+      size="small"
+      rows="1"
+      resize="auto"
+    >
+    </sl-textarea>`;
+    const preview = html`
+      <div
+        id="preview"
+        style="border:var(--card-border); padding:0 var(--content-padding); min-height:14em; background:var(--table-alternate-background)"
+      >
+        ${autolink(s.rollout_details, [], true)}
+      </div>
+    `;
+    const controls = html`
+      <sl-checkbox class="markdown-checkbox" size="small" checked disabled
+        >Use markdown</sl-checkbox
+      >
+      <sl-icon-button
+        name="info-circle"
+        id="info-button"
+        title="GitHub flavored markdown docs"
+        href="https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax"
+        target="_blank"
+      ></sl-icon-button>
+      <sl-checkbox
+        id="show-preview-${s.id}"
+        size="small"
+        ?checked=${isPreviewing}
+        @sl-change=${e => this.handlePreviewChecked(e, s.id)}
+      >
+        Preview
+      </sl-checkbox>
+    `;
+
     return html`
-      <li>
+      <li class="stage">
         <div class="hbox">
           <sl-input
             class="rollout-milestone"
@@ -843,11 +959,7 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
             )}
           </sl-select>
         </div>
-        <sl-input
-          class="rollout-details"
-          id="edit-rollout-details-${s.id}"
-          value=${s.rollout_details}
-        ></sl-input>
+        ${isPreviewing ? preview : editor} ${controls}
       </li>
     `;
   }
@@ -857,8 +969,14 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
     s,
     shouldDisplayStageTitleInBold
   ): TemplateResult {
+    let details: TemplateResult = html``;
+    if (s.rollout_details) {
+      const markup = autolink(s.rollout_details, [], true);
+      details = html`${markup}`;
+    }
+
     return html`
-      <li>
+      <li class="stage">
         <span
           class="${shouldDisplayStageTitleInBold(
             s.rollout_milestone,
@@ -869,10 +987,7 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
         >
           ${this.getStageTitle(s)}
         </span>
-        ${renderHTMLIf(
-          s.rollout_details,
-          html`<br /><span class="preformatted">${s.rollout_details}</span>`
-        )}
+        ${details}
       </li>
     `;
   }
@@ -906,9 +1021,7 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
     const isEditing = this.editingFeatureIds.has(f.id);
     return html` <section class="feature">
       ${this.renderEditButton(f)}
-      ${isEditing
-        ? this.renderEditableConfidential(f)
-        : this.renderConfidential(f)}
+      ${isEditing ? this.renderEditableLabels(f) : this.renderLabels(f)}
       ${isEditing
         ? this.renderEditableFeatureName(f)
         : this.renderFeatureName(f)}

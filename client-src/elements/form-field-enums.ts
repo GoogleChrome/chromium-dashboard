@@ -141,6 +141,12 @@ export enum FeatureType {
   Enterprise = 4,
 }
 
+export enum AITestEvaluationStatus {
+  COMPLETE = 1,
+  IN_PROGRESS = 2,
+  FAILED = 3,
+}
+
 // FEATURE_TYPES object is organized as [intValue, stringLabel, description],
 // the descriptions are used only for the descriptions of feature_type_radio_group
 export const FEATURE_TYPES_WITHOUT_ENTERPRISE: Record<
@@ -622,7 +628,6 @@ export const IMPLEMENTATION_STATUS: Record<string, [number, string]> = {
   DEPRECATED: [6, 'Deprecated'],
   REMOVED: [7, 'Removed'],
   ORIGIN_TRIAL: [8, 'Origin trial'],
-  INTERVENTION: [9, 'Browser Intervention'],
   ON_HOLD: [10, 'On hold'],
   NO_LONGER_PURSUING: [1000, 'No longer pursuing'],
 };

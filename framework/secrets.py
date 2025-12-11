@@ -18,6 +18,7 @@ import random
 import settings
 import string
 import time
+from framework import utils
 
 from google.cloud import ndb  # type: ignore
 
@@ -26,7 +27,11 @@ from google.cloud import ndb  # type: ignore
 RANDOM_KEY_LENGTH = 128
 RANDOM_KEY_CHARACTERS = string.ascii_letters + string.digits
 
-ot_api_key: str|None = None
+
+# Retry constants for obtaining secrets from GCP.
+SECRETS_MAX_RETRIES = 3
+SECRETS_RETRY_BACKOFF_SECONDS = 2
+
 
 def make_random_key(length=RANDOM_KEY_LENGTH, chars=RANDOM_KEY_CHARACTERS):
   """Return a string with lots of random characters."""
@@ -124,21 +129,20 @@ class ApiCredential(ndb.Model):
     self.put()
 
 
-def get_ot_api_key() -> str|None:
+@utils.retry(SECRETS_MAX_RETRIES, delay=SECRETS_RETRY_BACKOFF_SECONDS)
+def load_ot_api_key():
   """Obtain an API key to be used for requests to the origin trials API."""
   # Reuse the API key's value if we've already obtained it.
   if settings.OT_API_KEY is not None:
-    return settings.OT_API_KEY
+    return
 
   if settings.DEV_MODE or settings.UNIT_TEST_MODE:
     # In dev or unit test mode, pull the API key from a local file.
     try:
       with open(f'{settings.ROOT_DIR}/ot_api_key.txt', 'r') as f:
         settings.OT_API_KEY = f.read().strip()
-        return settings.OT_API_KEY
     except:
       logging.info('No key found locally for the Origin Trials API.')
-      return None
   else:
     # If in staging or prod, pull the API key from the project secrets.
     from google.cloud.secretmanager import SecretManagerServiceClient
@@ -148,8 +152,61 @@ def get_ot_api_key() -> str|None:
     response = client.access_secret_version(request={'name': name})
     if response:
       settings.OT_API_KEY = response.payload.data.decode("UTF-8")
-      return settings.OT_API_KEY
-  return None
+    else:
+      raise RuntimeError('Failed to obtain the origin trials API key from secrets.')
+
+
+@utils.retry(SECRETS_MAX_RETRIES, delay=SECRETS_RETRY_BACKOFF_SECONDS)
+def load_github_token():
+  """Obtain a token to be used for requests to the GitHub API."""
+  if settings.GITHUB_TOKEN is not None:
+    return
+
+  if settings.DEV_MODE or settings.UNIT_TEST_MODE:
+    # In dev or unit test mode, pull the token from a local file.
+    try:
+      with open(f'{settings.ROOT_DIR}/github_token.txt', 'r') as f:
+        settings.GITHUB_TOKEN = f.read().strip()
+    except:
+      logging.info('No key found locally for the GitHub API.')
+  else:
+    # If in staging or prod, pull the token from the project secrets.
+    from google.cloud.secretmanager import SecretManagerServiceClient
+    client = SecretManagerServiceClient()
+    name = (f'{client.secret_path(settings.APP_ID, "GITHUB_TOKEN")}'
+            '/versions/latest')
+    response = client.access_secret_version(request={'name': name})
+    if response:
+      settings.GITHUB_TOKEN = response.payload.data.decode("UTF-8")
+    else:
+      raise RuntimeError('Failed to obtain the GitHub token from secrets.')
+
+
+@utils.retry(SECRETS_MAX_RETRIES, delay=SECRETS_RETRY_BACKOFF_SECONDS)
+def load_gemini_api_key() -> None:
+  """Obtain an API key to be used for requests to the Gemini API."""
+  # Reuse the API key's value if we've already obtained it.
+  if settings.GEMINI_API_KEY is not None:
+    return
+
+  if settings.DEV_MODE or settings.UNIT_TEST_MODE:
+    # In dev or unit test mode, pull the API key from a local file.
+    try:
+      with open(f'{settings.ROOT_DIR}/gemini_api_key.txt', 'r') as f:
+        settings.GEMINI_API_KEY = f.read().strip()
+    except:
+      logging.info('No key found locally for the Gemini API.')
+  else:
+    # If in staging or prod, pull the API key from the project secrets.
+    from google.cloud.secretmanager import SecretManagerServiceClient
+    client = SecretManagerServiceClient()
+    name = (f'{client.secret_path(settings.APP_ID, "GEMINI_API_KEY")}'
+            '/versions/latest')
+    response = client.access_secret_version(request={'name': name})
+    if response:
+      settings.GEMINI_API_KEY = response.payload.data.decode("UTF-8")
+    else:
+      raise RuntimeError('Failed to obtain the Gemini API key from secrets.')
 
 
 def get_ot_support_emails() -> str|None:

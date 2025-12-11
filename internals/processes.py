@@ -788,7 +788,7 @@ PROGRESS_DETECTORS = {
     lambda f, _: f.impl_status_chrome in (
         core_enums.IN_DEVELOPMENT, core_enums.BEHIND_A_FLAG,
         core_enums.ENABLED_BY_DEFAULT,
-        core_enums.ORIGIN_TRIAL, core_enums.INTERVENTION),
+        core_enums.ORIGIN_TRIAL),
 
     'Motivation':
     lambda f, _: bool(f.motivation),

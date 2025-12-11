@@ -342,6 +342,25 @@ class VotesAPITest(testing_config.CustomTestCase):
         self.feature_1, self.gate_1, 'owner1@example.com',
         Vote.NA_SELF, Vote.NO_RESPONSE)
 
+  def test_check_voting_rules__not_verification(self):
+    """We allow anything that is not NA_VERIFIED."""
+    self.handler.check_voting_rules(self.gate_1, Vote.NO_RESPONSE)
+    self.handler.check_voting_rules(self.gate_1, Vote.NA_SELF)
+    self.handler.check_voting_rules(self.gate_1, Vote.APPROVED)
+    self.handler.check_voting_rules(self.gate_1, Vote.REVIEW_REQUESTED)
+    self.handler.check_voting_rules(self.gate_1, Vote.DENIED)
+    self.handler.check_voting_rules(self.gate_1, Vote.NEEDS_WORK)
+
+  def test_check_voting_rules__verification(self):
+    """A NA_VERIFIED is only accepted if there was a NA_SELF."""
+    self.vote_1_1.put()
+    with self.assertRaises(werkzeug.exceptions.BadRequest):
+      self.handler.check_voting_rules(self.gate_1, Vote.NA_VERIFIED)
+
+    self.vote_1_1.state = Vote.NA_SELF
+    self.vote_1_1.put()
+    self.handler.check_voting_rules(self.gate_1, Vote.NA_VERIFIED)
+
 
 class GatesAPITest(testing_config.CustomTestCase):
 

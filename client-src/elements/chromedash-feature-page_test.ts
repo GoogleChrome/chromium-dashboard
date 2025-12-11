@@ -300,11 +300,11 @@ describe('chromedash-feature-page', () => {
     });
     assert.include(consensusSection.innerHTML, 'fake webdev view text');
 
-    const tagSection =
-      highlightsElement.shadowRoot?.querySelector('section#tags');
-    assert.exists(tagSection, 'TAG section exists.');
+    const metadataSection =
+      highlightsElement.shadowRoot?.querySelector('section#metadata');
+    assert.exists(metadataSection, 'Metadata section exists.');
     // feature tag link is clickable
-    assert.include(tagSection.innerHTML, 'href="/features#tags:tag_one"');
+    assert.include(metadataSection.innerHTML, 'href="/features?q=tag:tag_one"');
   });
 
   it('omits absent vendor views', async () => {

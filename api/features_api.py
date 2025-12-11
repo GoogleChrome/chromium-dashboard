@@ -240,11 +240,12 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
       self,
       stage_changes_list: list[dict[str, Any]],
       changed_fields: CHANGED_FIELDS_LIST_TYPE
-    ) -> list[Stage]:
+    ) -> tuple[list[Stage], bool]:
     """Update stage fields with changes provided in the PATCH request."""
     # TODO(DanielRyanSmith): This method should be updated to use the logic
     # for basehandlers.update_stage(). This logic is mostly duplicated otherwise.
     stages_to_store: list[Stage] = []
+    ship_milestones_were_updated = False
     for change_info in stage_changes_list:
       stage_was_updated = False
       # Check if valid ID is provided and fetch stage if it exists.
@@ -288,10 +289,24 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
         if form_field_name == 'rollout_milestone':
           self.update_field_value(stage, 'rollout_milestone', 'int', new_value)
 
+        # Track if any shipping milestones were updated so we know to reset
+        # outstanding notifications if so.
+        if (form_field_name == 'rollout_milestone' or
+            form_field_name == 'shipped_milestone' or
+            form_field_name == 'shipped_android_milestone' or
+            form_field_name == 'shipped_ios_milestone' or
+            form_field_name == 'shipped_webview_milestone'):
+          ship_milestones_were_updated = True
+
         self.update_field_value(milestones, field, field_type, new_value)
         changed_fields.append((form_field_name, old_value, new_value))
         stage_was_updated = True
       stage.milestones = milestones
+
+      # Changing other rollout details also counts.
+      if ('rollout_platforms' in change_info or
+          'rollout_details' in change_info):
+        ship_milestones_were_updated = True
 
       if stage_was_updated:
         stages_to_store.append(stage)
@@ -300,8 +315,21 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
     if stages_to_store:
       ndb.put_multi(stages_to_store)
 
-    # Return the list of modified stages.
-    return stages_to_store
+    # Return the list of modified stages, and whether any shipping/rollout
+    # milestones were updated.
+    return stages_to_store, ship_milestones_were_updated
+
+  def _maybe_reset_releasenotes_flags(
+      self, feature: FeatureEntry,
+      changed_fields: CHANGED_FIELDS_LIST_TYPE) -> None:
+    if permissions.can_review_release_notes(self.get_current_user()):
+      return
+    if feature.is_releasenotes_content_reviewed:
+      feature.is_releasenotes_content_reviewed = False
+      changed_fields.append(('is_releasenotes_content_reviewed', True, False))
+    if feature.is_releasenotes_publish_ready:
+      feature.is_releasenotes_publish_ready = False
+      changed_fields.append(('is_releasenotes_publish_ready', True, False))
 
   def _patch_update_special_fields(
       self,
@@ -361,6 +389,10 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
             changed_fields.append(('shipping_year', feature.shipping_year, year))
             feature.shipping_year = year
             has_updated = True
+
+    # Release notes flags get reset if a non-reviewer makes a change.
+    if 'name' in feature_changes or 'summary' in feature_changes:
+      self._maybe_reset_releasenotes_flags(feature, changed_fields)
 
     # If any stages were mentioned, update active_stage_id.
     if stage_ids:
@@ -426,7 +458,13 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
 
     changed_fields: CHANGED_FIELDS_LIST_TYPE = []
     stage_ids = [s['id'] for s in body['stages'] if 'id' in s]
-    updated_stages = self._patch_update_stages(body['stages'], changed_fields)
+    updated_stages, ship_milestones_were_updated = self._patch_update_stages(
+      body['stages'], changed_fields)
+    # Reset outstanding notifications if the user updated any ship/rollout milestones.
+    if ship_milestones_were_updated:
+      feature.outstanding_notifications = 0
+      self._maybe_reset_releasenotes_flags(feature, changed_fields)
+
     self._patch_update_feature(
         feature, body['feature_changes'], updated_stages, changed_fields,
         stage_ids)

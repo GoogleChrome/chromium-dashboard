@@ -18,6 +18,7 @@ import {
 } from './form-definition';
 import {
   FEATURE_TYPES,
+  FEATURE_TYPES_WITHOUT_ENTERPRISE,
   GATE_APPROVED_REVIEW_STATES,
   OT_SETUP_STATUS_OPTIONS,
   STAGE_SHORT_NAMES,
@@ -32,6 +33,7 @@ import {Feature, FeatureLink, StageDict, User} from '../js-src/cs-client';
 import './chromedash-activity-log';
 import './chromedash-callout';
 import './chromedash-gate-chip';
+import './chromedash-wpt-eval-button';
 import {GateDict} from './chromedash-gate-chip';
 import {Process, ProgressItem} from './chromedash-gate-column';
 import {
@@ -147,15 +149,6 @@ export class ChromedashFeatureDetail extends LitElement {
         sl-details sl-button[variant='default']::part(base) {
           color: var(--sl-color-primary-600);
           border: 1px solid var(--sl-color-primary-600);
-        }
-
-        ol {
-          list-style: none;
-          padding: 0;
-        }
-
-        ol li {
-          margin-top: 0.5em;
         }
 
         dl {
@@ -329,10 +322,20 @@ export class ChromedashFeatureDetail extends LitElement {
         Edit all fields
       </sl-button>
     `;
+    // TODO(DanielRyanSmith): Add this to the main view when all aspects of
+    // the WPT coverage evaluation pipeline have been implemented
+    // const wptEvalButton = html` <chromedash-wpt-eval-button
+    //   .featureId=${this.feature.id}
+    // ></chromedash-wpt-eval-button>`;
     const toggleLabel = this.anyCollapsed ? 'Expand all' : 'Collapse all';
     return html`
+      <!-- Enterprise features don't provide spec URLs or Web Platform Tests info. -->
+      ${this.canEdit &&
+      this.feature.feature_type_int !==
+        FEATURE_TYPES.FEATURE_TYPE_ENTERPRISE_ID[0]
+        ? nothing // Add wptEvalButton here.
+        : nothing}
       ${this.canEdit ? editAllButton : nothing}
-
       <sl-button
         variant="text"
         title="Expand or collapse all sections"

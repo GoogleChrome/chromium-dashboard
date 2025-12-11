@@ -1,7 +1,5 @@
-/** This is the entry file for rollup. It bundles all the web components: polymer-paper components and our own components */
-
-// polymer components
-import '@polymer/iron-collapse';
+/** This is the entry file for rollup. It bundles all the web components:
+    shoelace components and our own components */
 
 // Shoelace components
 // css is imported via _base.html in base.css, built by gulpfile.babel.js.
@@ -19,6 +17,8 @@ import '@shoelace-style/shoelace/dist/components/menu-item/menu-item.js';
 import '@shoelace-style/shoelace/dist/components/option/option.js';
 import '@shoelace-style/shoelace/dist/components/popup/popup.js';
 import '@shoelace-style/shoelace/dist/components/progress-bar/progress-bar.js';
+import '@shoelace-style/shoelace/dist/components/radio-group/radio-group.js';
+import '@shoelace-style/shoelace/dist/components/radio/radio.js';
 import '@shoelace-style/shoelace/dist/components/relative-time/relative-time.js';
 import '@shoelace-style/shoelace/dist/components/skeleton/skeleton.js';
 import '@shoelace-style/shoelace/dist/components/select/select.js';
@@ -101,3 +101,5 @@ import './elements/chromedash-userlist';
 import './elements/chromedash-x-meter';
 import './elements/chromedash-enterprise-page';
 import './elements/chromedash-enterprise-release-notes-page';
+import './elements/chromedash-wpt-eval-button';
+import './elements/chromedash-wpt-eval-page';
