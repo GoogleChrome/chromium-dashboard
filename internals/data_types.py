@@ -79,6 +79,7 @@ class StageDict(TypedDict):
   rollout_milestone: int | None
   rollout_platforms: list[str]
   rollout_stage_plan: int | None
+  rollout_stage_plan_custom: str | None
   enterprise_policies: list[str]
 
   # Email information

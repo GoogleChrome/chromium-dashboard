@@ -233,6 +233,7 @@ def stage_to_json_dict(
     # TODO(jrobbins): remove this in the next deployment.
     'rollout_impact': stage.rollout_impact,  # Deprecated
     'rollout_stage_plan': stage.rollout_stage_plan,
+    'rollout_stage_plan_custom': stage.rollout_stage_plan_custom,
     'enterprise_policies': stage.enterprise_policies,
 
     # Milestone fields to be populated later.

@@ -163,6 +163,7 @@ PI_ROLLOUT_MILESTONE = ProgressItem('Rollout milestone', 'rollout_milestone')
 PI_ROLLOUT_PLATFORMS = ProgressItem('Rollout platforms', 'rollout_platforms')
 PI_ROLLOUT_DETAILS = ProgressItem('Rollout details', 'rollout_details')
 PI_ROLLOUT_STAGE_PLAN = ProgressItem('Rollout stage plan', 'rollout_stage_plan')
+PI_ROLLOUT_STAGE_PLAN_CUSTOM = ProgressItem('Rollout stage plan custom', 'rollout_stage_plan_custom')
 PI_ENTERPRISE_POLICIES = ProgressItem('Enterprise policies', 'enterprise_policies')
 
 
@@ -176,6 +177,7 @@ FEATURE_ROLLOUT_STAGE = ProcessStage(
        PI_ROLLOUT_PLATFORMS,
        PI_ROLLOUT_DETAILS,
        PI_ROLLOUT_STAGE_PLAN,
+       PI_ROLLOUT_STAGE_PLAN_CUSTOM,
        PI_ENTERPRISE_POLICIES,
        PI_TRACKING_BUG,
       ],
@@ -645,6 +647,7 @@ ENTERPRISE_STAGES = [
        PI_ROLLOUT_PLATFORMS,
        PI_ROLLOUT_DETAILS,
        PI_ROLLOUT_STAGE_PLAN,
+       PI_ROLLOUT_STAGE_PLAN_CUSTOM,
        PI_ENTERPRISE_POLICIES,
       ],
       [],
@@ -818,6 +821,10 @@ PROGRESS_DETECTORS = {
     'Rollout stage plan':
     lambda f, stages: stages[core_enums.STAGE_TYPES_ROLLOUT[f.feature_type]] and
         stages[core_enums.STAGE_TYPES_ROLLOUT[f.feature_type]][0].rollout_stage_plan,
+
+    'Rollout stage plan custom':
+    lambda f, stages: stages[core_enums.STAGE_TYPES_ROLLOUT[f.feature_type]] and
+        stages[core_enums.STAGE_TYPES_ROLLOUT[f.feature_type]][0].rollout_stage_plan_custom,
 
     'Enterprise policies':
     lambda f, stages: stages[core_enums.STAGE_TYPES_ROLLOUT[f.feature_type]] and

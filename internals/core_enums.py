@@ -549,7 +549,9 @@ STAGE_TYPES_BY_FIELD_MAPPING: dict[str, dict[int, Optional[int]]] = {
     'rollout_impact': STAGE_TYPES_ROLLOUT,
     'rollout_milestone': STAGE_TYPES_ROLLOUT,
     'rollout_platforms': STAGE_TYPES_ROLLOUT,
-    'rollout_details': STAGE_TYPES_ROLLOUT
+    'rollout_details': STAGE_TYPES_ROLLOUT,
+    'rollout_stage_plan': STAGE_TYPES_ROLLOUT,
+    'rollout_stage_plan_custom': STAGE_TYPES_ROLLOUT,
   }
 
 # Mapping of which stage types are associated with each gate type.

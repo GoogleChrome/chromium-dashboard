@@ -513,6 +513,7 @@ export const STAGE_SPECIFIC_FIELDS = new Set<string>([
   'rollout_platforms',
   'rollout_details',
   'rollout_stage_plan',
+  'rollout_stage_plan_custom',
   'enterprise_policies',
   'announcement_url',
 ]);
