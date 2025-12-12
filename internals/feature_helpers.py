@@ -419,7 +419,6 @@ def get_feature_names_by_ids(feature_ids: list[int],
   """Return a list of JSON dicts for the specified feature names.
   """
   result_dict = {}
-  futures_by_id = {}
 
   if update_cache:
     lookup_keys = [
@@ -432,24 +431,28 @@ def get_feature_names_by_ids(feature_ids: list[int],
                      for f in cached_features.values()
                      if f is not None and f.get('id')}
 
-  for feature_id in feature_ids:
-    if feature_id not in result_dict:
-      futures_by_id[feature_id] = FeatureEntry.get_by_id_async(feature_id)
+  needed_ids = [fid for fid in feature_ids if fid not in result_dict]
 
-  for future in futures_by_id.values():
-    fe: Optional[FeatureEntry] = future.get_result()
-    if fe and not fe.deleted:
-      feature_id = fe.key.integer_id()
-      result_dict[feature_id] = converters.feature_entry_to_json_tiny(fe)
+  if needed_ids:
+    # Create ndb.Key objects for the batch operation
+    needed_keys = [ndb.Key(FeatureEntry, fid) for fid in needed_ids]
 
-  if update_cache:
+    features_list: list[FeatureEntry | None] = ndb.get_multi(needed_keys)
+
+    for fe in features_list:
+      if fe and not fe.deleted:
+        feature_id = fe.key.integer_id()
+        result_dict[feature_id] = converters.feature_entry_to_json_tiny(fe)
+
+  if update_cache and needed_ids:
     to_cache = {}
-    for feature_id in futures_by_id:
+    for feature_id in needed_ids:
       if feature_id in result_dict:
         store_key = FeatureEntry.feature_cache_key(
             FeatureEntry.FEATURE_NAME_CACHE_KEY, feature_id)
         to_cache[store_key] = result_dict[feature_id]
-    rediscache.set_multi(to_cache)
+    if to_cache:
+      rediscache.set_multi(to_cache)
 
   result_list = [
       result_dict[feature_id] for feature_id in feature_ids
@@ -466,7 +469,6 @@ def get_by_ids(feature_ids: list[int],
   data from NDB directly.
   """
   result_dict = {}
-  futures_by_id = {}
 
   if update_cache:
     lookup_keys = [
@@ -479,37 +481,48 @@ def get_by_ids(feature_ids: list[int],
                      for f in cached_features.values()
                      if f is not None and f.get('id')}
 
-  for feature_id in feature_ids:
-    if result_dict.get(feature_id) is None:
-      futures_by_id[feature_id] = FeatureEntry.get_by_id_async(feature_id)
+  needed_ids = [fid for fid in feature_ids if fid not in result_dict]
 
-  stages_dict = {}
-  if futures_by_id:
-    needed_ids = list(futures_by_id.keys())
-    stages_list = Stage.query(Stage.feature_id.IN(needed_ids), Stage.archived == False).fetch(None)
+  if needed_ids:
+    # Create ndb.Key objects for the batch operation
+    needed_keys = [ndb.Key(FeatureEntry, fid) for fid in needed_ids]
+
+    # Get all features and stages asynchronously.
+    unformatted_features_future: list[ndb.Future] = ndb.get_multi_async(needed_keys)
+    stages_futures: list[ndb.Future] = []
+    for f_id in needed_ids:
+      stages_futures.append(Stage.query(
+        Stage.feature_id == f_id, Stage.archived == False
+      ).fetch_async())
+
+    stages_list: list[Stage] = []
+    for stages_future in stages_futures:
+      stages_list.extend(stages_future.get_result())
     stages_dict = organize_all_stages_by_feature(stages_list)
 
-  for future in futures_by_id.values():
-    unformatted_feature: Optional[FeatureEntry] = future.get_result()
-    if unformatted_feature and not unformatted_feature.deleted:
-      feature_id = unformatted_feature.key.integer_id()
-      feature = converters.feature_entry_to_json_verbose(
+    unformatted_features = [uf.get_result() for uf in unformatted_features_future]
+    for unformatted_feature in unformatted_features:
+      if unformatted_feature and not unformatted_feature.deleted:
+        feature_id = unformatted_feature.key.integer_id()
+        feature = converters.feature_entry_to_json_verbose(
           unformatted_feature, prefetched_stages=stages_dict.get(feature_id))
-      if unformatted_feature.updated is not None:
-        feature['updated_display'] = (
-            unformatted_feature.updated.strftime("%Y-%m-%d"))
-      else:
-        feature['updated_display'] = ''
-      result_dict[feature_id] = feature
 
-  if update_cache:
+        if unformatted_feature.updated is not None:
+          feature['updated_display'] = (
+            unformatted_feature.updated.strftime("%Y-%m-%d"))
+        else:
+          feature['updated_display'] = ''
+        result_dict[feature_id] = feature
+
+  if update_cache and needed_ids:
     to_cache = {}
-    for feature_id in futures_by_id:
+    for feature_id in needed_ids:
       if feature_id in result_dict:
         store_key = FeatureEntry.feature_cache_key(
-            FeatureEntry.DEFAULT_CACHE_KEY, feature_id)
+          FeatureEntry.DEFAULT_CACHE_KEY, feature_id)
         to_cache[store_key] = result_dict[feature_id]
-    rediscache.set_multi(to_cache)
+    if to_cache:
+      rediscache.set_multi(to_cache)
 
   result_list = [
       result_dict[feature_id] for feature_id in feature_ids
