@@ -17,7 +17,7 @@ jobs:
         - name: Run your tests
           timeout-minutes: 30
           run: npm run pwtests-shutdown; npm run pwtests
-        - uses: actions/upload-artifact@v5
+        - uses: actions/upload-artifact@v6
           if: failure()
           with:
             name: test-results
