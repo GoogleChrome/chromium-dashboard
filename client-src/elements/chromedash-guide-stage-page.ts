@@ -24,7 +24,6 @@ import {SHARED_STYLES} from '../css/shared-css.js';
 import {FORM_STYLES} from '../css/forms-css.js';
 import {customElement, property, state} from 'lit/decorators.js';
 import {Feature, StageDict} from '../js-src/cs-client.js';
-import {ChromedashFormField} from './chromedash-form-field';
 
 @customElement('chromedash-guide-stage-page')
 export class ChromedashGuideStagePage extends LitElement {
@@ -76,7 +75,6 @@ export class ChromedashGuideStagePage extends LitElement {
     this.fieldValues[index].touched = true;
     this.fieldValues[index].value = value;
     this.fieldValues[index].isMarkdown = event.detail.isMarkdown;
-    this.updateCustomValue(this.fieldValues[index].name, value);
   }
 
   fetchData() {
@@ -238,51 +236,6 @@ export class ChromedashGuideStagePage extends LitElement {
     `;
   }
 
-  isHiddenCustomValue(formattedFeature, fieldDefinition, feStage) {
-    if (
-      !fieldDefinition?.custom_value_for ||
-      ALL_FIELDS[fieldDefinition.custom_value_for]?.custom_value_for
-    ) {
-      return false;
-    }
-    const {name, custom_value_field} =
-      ALL_FIELDS[fieldDefinition.custom_value_for];
-    const itemKey = name || fieldDefinition.custom_value_for;
-    const value = STAGE_SPECIFIC_FIELDS.has(itemKey)
-      ? getStageValue(feStage, itemKey)
-      : formattedFeature[itemKey];
-
-    return value !== custom_value_field!.trigger_value;
-  }
-
-  updateCustomValue(fieldName, newValue) {
-    const {custom_value_field} = ALL_FIELDS[fieldName];
-    if (!custom_value_field) {
-      return;
-    }
-    const itemKey =
-      ALL_FIELDS[custom_value_field.name].name || custom_value_field.name;
-
-    const index = this.fieldValues.findIndex(({name}) => name === itemKey);
-    if (index === -1) {
-      return;
-    }
-
-    const allowCustomValue = newValue == custom_value_field.trigger_value;
-
-    this.fieldValues[index].touched = true;
-    if (!allowCustomValue) {
-      this.fieldValues[index].value = '';
-    }
-
-    const customValueFormField = this.renderRoot.querySelector(
-      `chromedash-form-field[name=${itemKey}]`
-    ) as ChromedashFormField;
-
-    customValueFormField.hidden = !allowCustomValue;
-    customValueFormField.disabled = !allowCustomValue;
-  }
-
   renderFields(formattedFeature, section, feStage?) {
     if (!feStage) {
       feStage = this.stage;
@@ -312,11 +265,7 @@ export class ChromedashGuideStagePage extends LitElement {
         value,
         stageId,
       });
-      const isHiddenCustomValue = this.isHiddenCustomValue(
-        formattedFeature,
-        ALL_FIELDS[field],
-        feStage
-      );
+
       return html`
         <chromedash-form-field
           name=${field}
@@ -327,8 +276,6 @@ export class ChromedashGuideStagePage extends LitElement {
           .feature=${formattedFeature}
           stageId=${feStage.id}
           ?forEnterprise=${formattedFeature.is_enterprise_feature}
-          ?hidden=${isHiddenCustomValue}
-          ?disabled=${isHiddenCustomValue}
           @form-field-update="${this.handleFormFieldUpdate}"
         >
         </chromedash-form-field>

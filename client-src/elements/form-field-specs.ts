@@ -100,11 +100,6 @@ interface ResolvedField {
   disabled?: boolean;
   deprecated?: boolean;
   usage: FieldUsage;
-  custom_value_field?: {
-    name: string;
-    trigger_value: number | boolean;
-  };
-  custom_value_for?: string;
 }
 
 interface Field extends ResolvedField {
@@ -2840,22 +2835,8 @@ export const ALL_FIELDS: Record<string, Field> = {
     required: true,
     label: 'Rollout plan',
     usage: {},
-    custom_value_field: {
-      name: 'rollout_stage_plan_custom',
-      trigger_value: ROLLOUT_STAGE_PLAN_CATEGORIES.ROLLOUT_STAGE_PLAN_OTHER[0],
-    },
     help_text: html` Select the type of rollout that matches what will happen in
     the stage`,
-  },
-
-  rollout_stage_plan_custom: {
-    type: 'input',
-    attrs: TEXT_FIELD_ATTRS,
-    required: true,
-    label: 'Custom stage rollout plan',
-    usage: {},
-    custom_value_for: 'rollout_stage_plan',
-    help_text: html` Describe you rollout plan. `,
   },
 
   breaking_change: {

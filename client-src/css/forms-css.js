@@ -134,10 +134,6 @@ export const FORM_STYLES = [
       display: table-row-group;
     }
 
-    chromedash-form-field[hidden] {
-      display: none;
-    }
-
     chromedash-form-field tr[hidden] th,
     chromedash-form-field tr[hidden] td {
       padding: 0;

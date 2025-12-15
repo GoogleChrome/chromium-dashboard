@@ -140,7 +140,6 @@ STAGE_FIELD_DATA_TYPES: FIELD_INFO_DATA_TYPE = [
   ('rollout_platforms', 'split_str'),
   ('rollout_details', 'str'),
   ('rollout_stage_plan', 'int'),
-  {'rollout_stage_plan_custom', 'str'},
 ]
 
 MILESTONESET_FIELD_DATA_TYPES: FIELD_INFO_DATA_TYPE = [

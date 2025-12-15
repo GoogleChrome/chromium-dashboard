@@ -17,7 +17,6 @@ import {
   PLATFORMS_DISPLAYNAME,
   STAGE_ENT_ROLLOUT,
   STAGE_TYPES_SHIPPING,
-  ROLLOUT_STAGE_PLAN_CATEGORIES,
 } from './form-field-enums.js';
 import {
   autolink,
@@ -678,16 +677,6 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
           s.rollout_stage_plan,
           s
         );
-        const rolloutStagePlanCustomEl =
-          this.shadowRoot?.querySelector<SlInput>(
-            '#edit-rollout-stage-plan-custom-' + s.id
-          )!;
-        addFieldValue(
-          'rollout_stage_plan_custom',
-          rolloutStagePlanCustomEl,
-          s.rollout_stage_plan_custom,
-          s
-        );
       }
     }
 
@@ -912,12 +901,9 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
   ): TemplateResult {
     // TODO(jrobbins): Implement editing widgets in the next CL.
     const platforms: string[] = s.rollout_platforms;
-    const platformChoices = PLATFORM_CATEGORIES;
-    const availablePlatforms = Object.values(platformChoices).filter(
+    const choices = PLATFORM_CATEGORIES;
+    const availableOptions = Object.values(choices).filter(
       ([value, label, obsolete]) => !obsolete || platforms.includes('' + value)
-    );
-    const rolloutStagePlanChoices = Object.values(
-      ROLLOUT_STAGE_PLAN_CATEGORIES
     );
 
     return html`
@@ -937,7 +923,7 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
             id="edit-rollout-platforms-${s.id}"
             .value=${platforms}
           >
-            ${availablePlatforms.map(
+            ${availableOptions.map(
               ([value, label]) => html`
                 <sl-option value="${value}"> ${label} </sl-option>
               `
@@ -954,17 +940,7 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
           id="edit-rollout-stage-plan-${s.id}"
           .value=${s.rollout_stage_plan}
         >
-          ${rolloutStagePlanChoices.map(
-            ([value, label]) => html`
-              <sl-option value="${value}"> ${label} </sl-option>
-            `
-          )}
         </sl-select>
-        <sl-input
-          class="rollout-stage-plan-custom"
-          id="edit-rollout=stage-plan-custom-${s.id}"
-          .value=${s.rollout_stage_plan_custom}
-        ></sl-input>
       </li>
     `;
   }
