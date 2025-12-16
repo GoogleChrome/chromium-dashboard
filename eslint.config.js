@@ -1,9 +1,9 @@
 import js from "@eslint/js";
 import eslintConfigPrettier from "eslint-config-prettier";
 import gts from "./node_modules/gts/build/src/index.js";
+import {defineConfig} from "eslint/config";
 
-
-export default [
+export default defineConfig([
   js.configs.recommended,
   eslintConfigPrettier,
   {
@@ -49,4 +49,4 @@ export default [
       "static/dist/",
     ]
   }
-];
+]);
