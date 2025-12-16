@@ -1,14 +1,12 @@
 import js from "@eslint/js";
 import eslintConfigPrettier from "eslint-config-prettier";
 import gts from "./node_modules/gts/build/src/index.js";
+import {defineConfig} from "eslint/config";
 
-
-export default [
+export default defineConfig([
   js.configs.recommended,
   eslintConfigPrettier,
-  {
-    rules: gts.rules,
-  },
+  ...gts,
   {
     languageOptions: {
       ecmaVersion: 2022,
@@ -20,11 +18,6 @@ export default [
     },
     rules: {
       "no-warning-comments": "off",
-      "no-unused-vars": ["error", {
-        "vars": "all",
-        "args": "after-used",
-        "argsIgnorePattern": "^var_args$"
-      }],
       "require-jsdoc": 0,
       "valid-jsdoc": "off",
       "no-var": 1,
@@ -49,4 +42,4 @@ export default [
       "static/dist/",
     ]
   }
-];
+]);
