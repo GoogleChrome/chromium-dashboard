@@ -851,6 +851,7 @@ def FlaskApplication(import_name, routes, pattern_base='', debug=False):
   ]
   CORS(app, resources={
       r'/data/.*': {'origins': '*'},
+      r'/feature/\d+/attachment/\d+': {'origins': '*'},
       r'/api/v0/features.*': {'origins': ALLOWED_API_ORIGINS,
                               'methods': ['GET']},
       r'/api/v0/channels.*': {'origins': ALLOWED_API_ORIGINS,

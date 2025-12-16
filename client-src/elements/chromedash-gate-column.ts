@@ -4,6 +4,7 @@ import './chromedash-activity-log';
 import './chromedash-survey-questions';
 import {openNaRationaleDialog} from './chromedash-na-rationale-dialog';
 import {maybeOpenCertifyDialog} from './chromedash-self-certify-dialog';
+import {maybeOpenSecondarySurveyDialog} from './chromedash-secondary-survey-dialog';
 import {
   openPreflightDialog,
   somePendingGates,
@@ -425,7 +426,12 @@ export class ChromedashGateColumn extends LitElement {
         if (selfCertifying) {
           this.handleSelfCertify(VOTE_NA_SELF);
         } else {
-          this.handleFullReviewRequest();
+          maybeOpenSecondarySurveyDialog(this.gate).then(commentText => {
+            if (commentText) {
+              this.postComment(commentText);
+            }
+            this.handleFullReviewRequest();
+          });
         }
       });
     });

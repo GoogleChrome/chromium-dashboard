@@ -83,6 +83,7 @@ interface ResolvedField {
   attrs?: FieldAttrs;
   offer_markdown?: boolean;
   enterprise_offer_markdown?: boolean;
+  always_markdown?: boolean;
   required?: boolean;
   label?: string;
   help_text?: TemplateResult | string;
@@ -653,6 +654,46 @@ export const ALL_FIELDS: Record<string, Field> = {
     .png, .gif, or .jpg, rather than linking to an HTML page that contains the
     image. Or, use the upload button to upload an image to be served from
     chromestatus.com. These will be shared publicly.`,
+    check: async value => {
+      const warning = {
+        warning: `One or more urls are not actual images or requires the consumer some kind
+           of authentication to access them. Use a valid link to an actual image free
+           of authentication or upload your image.`,
+      };
+      const urls = value
+        .split('\n')
+        .filter(x => !!x)
+        .map(x => x.trim());
+      if (!urls.length) {
+        return undefined;
+      }
+      // If some items are not urls, return a warning.
+      if (
+        urls.some(x => {
+          try {
+            new URL(x);
+            return false;
+          } catch {
+            return true;
+          }
+        })
+      ) {
+        return warning;
+      }
+      const urlTypes = await Promise.all(
+        urls.map(url =>
+          fetch(url, {method: 'HEAD'})
+            .then(response => response.blob())
+            .then(blob => blob.type)
+            .catch(() => 'error')
+        )
+      );
+      // All urls must link to an image.
+      if (urlTypes.some(type => !type.startsWith('image'))) {
+        return warning;
+      }
+      return undefined;
+    },
   },
 
   first_enterprise_notification_milestone: {
@@ -1004,7 +1045,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     type: 'textarea',
     attrs: {rows: 2},
     required: false,
-    label: 'TAG Specification Review',
+    label: 'TAG specification review',
     usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
     help_text: html` Link(s) to TAG specification review(s), or explanation why
     this is not needed.`,
@@ -1058,7 +1099,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     type: 'select',
     choices: REVIEW_STATUS_CHOICES,
     initial: REVIEW_STATUS_CHOICES.REVIEW_PENDING[0],
-    label: 'TAG Specification Review Status',
+    label: 'TAG specification review status',
     usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
     help_text: html`Status of the TAG specification review.`,
   },
@@ -1133,7 +1174,7 @@ export const ALL_FIELDS: Record<string, Field> = {
   interop_compat_risks: {
     type: 'textarea',
     required: false,
-    label: 'Interoperability and Compatibility Risks',
+    label: 'Interoperability and compatibility risks',
     usage: {
       [FeatureType.Incubate]: new Set<UsageType>([
         UsageType.DeveloperTesting,
@@ -1497,7 +1538,7 @@ export const ALL_FIELDS: Record<string, Field> = {
   ergonomics_risks: {
     type: 'textarea',
     required: false,
-    label: 'Ergonomics Risks',
+    label: 'Ergonomics risks',
     usage: {
       [FeatureType.Incubate]: new Set<UsageType>([
         UsageType.DeveloperTesting,
@@ -1528,7 +1569,7 @@ export const ALL_FIELDS: Record<string, Field> = {
   activation_risks: {
     type: 'textarea',
     required: false,
-    label: 'Activation Risks',
+    label: 'Activation risks',
     usage: {
       [FeatureType.Incubate]: new Set<UsageType>([
         UsageType.DeveloperTesting,
@@ -1641,7 +1682,7 @@ export const ALL_FIELDS: Record<string, Field> = {
   experiment_goals: {
     type: 'textarea',
     required: false,
-    label: 'Experiment Goals',
+    label: 'Experiment goals',
     usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
     help_text: html` Which pieces of the API surface are you looking to gain
       insight on? What metrics/measurement/feedback will you be using to
@@ -1658,7 +1699,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     type: 'textarea',
     attrs: {rows: 2, placeholder: 'This field is deprecated', disabled: true},
     required: false,
-    label: 'Experiment Timeline',
+    label: 'Experiment timeline',
     usage: {
       [FeatureType.Incubate]: new Set<UsageType>([UsageType.Experiment]),
       [FeatureType.Existing]: new Set<UsageType>([UsageType.Experiment]),
@@ -1753,7 +1794,7 @@ export const ALL_FIELDS: Record<string, Field> = {
   experiment_risks: {
     type: 'textarea',
     required: false,
-    label: 'Experiment Risks',
+    label: 'Experiment risks',
     usage: {},
     help_text: html` When this experiment comes to an end are there any risks to
     the sites that were using it, for example losing access to important storage
@@ -1763,7 +1804,7 @@ export const ALL_FIELDS: Record<string, Field> = {
   experiment_extension_reason: {
     type: 'textarea',
     required: false,
-    label: 'Experiment Extension Reason',
+    label: 'Experiment extension reason',
     usage: {
       [FeatureType.Incubate]: new Set<UsageType>([UsageType.Experiment]),
       [FeatureType.Existing]: new Set<UsageType>([UsageType.Experiment]),
@@ -2271,7 +2312,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     type: 'textarea',
     attrs: {rows: 2},
     required: false,
-    label: 'Platform Support Explanation',
+    label: 'Platform support explanation',
     usage: {
       [FeatureType.Incubate]: new Set<UsageType>([
         UsageType.DeveloperTesting,
@@ -2308,13 +2349,14 @@ export const ALL_FIELDS: Record<string, Field> = {
   wpt_descr: {
     type: 'textarea',
     required: false,
-    label: 'Web Platform Tests Description',
+    label: 'Web Platform Tests or other automated test description',
     usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
     help_text: html` Please link to the
       <a target="_blank" href="https://wpt.fyi/results">results on wpt.fyi</a>.
       If any part of the feature is not tested by web-platform-tests, please
-      include links to issues, e.g. a web-platform-tests issue with the "infra"
-      label explaining why a certain thing cannot be tested (<a
+      include links to other automated tests or links to issues, e.g. a
+      web-platform-tests issue with the "infra" label explaining why a certain
+      thing cannot be tested (<a
         target="_blank"
         href="https://github.com/w3c/web-platform-tests/issues/3867"
         >example</a
@@ -2442,7 +2484,7 @@ export const ALL_FIELDS: Record<string, Field> = {
   requires_embedder_support: {
     type: 'checkbox',
     initial: false,
-    label: 'Requires Embedder Support',
+    label: 'Requires embedder support',
     usage: {
       [FeatureType.Incubate]: ALL_FEATURE_TYPE_INCUBATE_INTENTS,
       [FeatureType.Existing]: ALL_FEATURE_TYPE_EXISTING_INTENTS,
@@ -2784,14 +2826,21 @@ export const ALL_FIELDS: Record<string, Field> = {
     enterprise_initial: ENTERPRISE_IMPACT.IMPACT_MEDIUM[0],
     label: 'Enterprise impact / risk',
     usage: {},
-    help_text: html` Most web platform changes have no enterprise impact or risk
-    unless they introduce a breaking change that could cause breakage without
-    remediation from the web developer. Enterprise reviewers can help judge risk
-    if you're unsure.`,
-    enterprise_help_text: html` A feature is probably high impact if it
-    introduces a breaking change on the stable channel, or seriously changes the
-    experience of using Chrome. Use your judgment; Enterprise reviewers can help
-    judge risk if you're unsure.`,
+    help_text: html`
+      <b>Low Risk:</b> Important for Admin Awareness. Negligible disruption, but
+      provides value (new APIs, optional features, strictly additive) or
+      requires minor internal documentation updates. Select this to ensure the
+      feature is published in the Release Notes.
+      <br />
+      <b>Med Risk:</b>Noticeable impact. Potential to alter some workflows or
+      cause minor confusion/help desk calls. Admins may want to review and set a
+      policy. An escape hatch is often recommended.
+      <br />
+      <b>High Risk:</b> Significant disruption. Intentional "breaking changes"
+      or major new functionality that will require mandatory preparation,
+      testing, and communication from IT admins. Requires an escape hatch or
+      permanent policy.
+    `,
   },
 
   rollout_milestone: {
@@ -2816,6 +2865,7 @@ export const ALL_FIELDS: Record<string, Field> = {
 
   rollout_details: {
     type: 'textarea',
+    always_markdown: true,
     attrs: {rows: 4},
     required: false,
     label: 'Rollout details (optional)',
@@ -2896,7 +2946,8 @@ function makeDisplaySpec(fieldName: string) {
     fieldProps.label || fieldProps.displayLabel || makeHumanReadable(fieldName);
   const fieldType = categorizeFieldType(fieldProps);
   const deprecated = fieldProps.deprecated;
-  return [fieldName, displayName, fieldType, deprecated];
+  const alwaysMarkdown = fieldProps.always_markdown;
+  return [fieldName, displayName, fieldType, deprecated, alwaysMarkdown];
 }
 
 export function makeDisplaySpecs(fieldNames: string[]) {
