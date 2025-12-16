@@ -6,9 +6,7 @@ import {defineConfig} from "eslint/config";
 export default defineConfig([
   js.configs.recommended,
   eslintConfigPrettier,
-  {
-    rules: gts.rules,
-  },
+  ...gts,
   {
     languageOptions: {
       ecmaVersion: 2022,
@@ -20,11 +18,6 @@ export default defineConfig([
     },
     rules: {
       "no-warning-comments": "off",
-      "no-unused-vars": ["error", {
-        "vars": "all",
-        "args": "after-used",
-        "argsIgnorePattern": "^var_args$"
-      }],
       "require-jsdoc": 0,
       "valid-jsdoc": "off",
       "no-var": 1,
