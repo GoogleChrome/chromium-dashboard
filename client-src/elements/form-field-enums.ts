@@ -72,13 +72,13 @@ export const ROLLOUT_STAGE_PLAN_CATEGORIES: Record<string, [number, string]> = {
     1,
     'Early preview available to Chrome Enterprise Truster Testers',
   ],
-  ROLLOUT_STAGE_PLAN_OTHER: [2, 'Other'],
+  ROLLOUT_STAGE_PLAN_CUSTOM: [2, 'Custom rollout (explain in Rollout details field)'],
 };
 
 export const ROLLOUT_STAGE_PLAN_DISPLAYNAME: Record<number, string> = {
   0: 'Feature rolls out gradually',
   1: 'Early preview available to Chrome Enterprise Truster Testers',
-  2: 'Custom rollout',
+  2: 'Custom rollout (explain in Rollout details field)',
 };
 
 export const ENTERPRISE_IMPACT_DISPLAYNAME: Record<number, string> = {
