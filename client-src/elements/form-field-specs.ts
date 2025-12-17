@@ -17,6 +17,7 @@ import {
   UsageType,
   OT_MILESTONE_START_FIELDS,
   PLATFORM_CATEGORIES,
+  ROLLOUT_STAGE_PLAN_CATEGORIES,
   REVIEW_STATUS_CHOICES,
   ROLLOUT_PLAN,
   SHIPPED_MILESTONE_FIELDS,
@@ -2875,6 +2876,17 @@ export const ALL_FIELDS: Record<string, Field> = {
     change and a temporary policy to control it, then another stage on a
     subsequent milestone that removes the policy. Alternatively, you may ship
     the feature to different platforms in different milestones.`,
+  },
+
+  rollout_stage_plan: {
+    type: 'select',
+    choices: ROLLOUT_STAGE_PLAN_CATEGORIES,
+    initial: ROLLOUT_STAGE_PLAN_CATEGORIES.ROLLOUT_STAGE_PLAN_SLOW[0],
+    required: true,
+    label: 'Rollout plan',
+    usage: {},
+    help_text: html` Select the type of rollout that matches what will happen in
+    the stage`,
   },
 
   breaking_change: {

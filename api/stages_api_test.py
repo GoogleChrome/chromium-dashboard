@@ -167,6 +167,7 @@ class StagesAPITest(testing_config.CustomTestCase):
         'rollout_impact': 2,
         'rollout_milestone': None,
         'rollout_platforms': [],
+        'rollout_stage_plan': 0,
         'stage_type': 150,
         'te_emails': [],
         'tl_emails': [],
@@ -267,6 +268,7 @@ class StagesAPITest(testing_config.CustomTestCase):
         'rollout_impact': 2,
         'rollout_milestone': None,
         'rollout_platforms': [],
+        'rollout_stage_plan': 0,
         }
     extension_2 = {
         'id': 51,
@@ -320,6 +322,7 @@ class StagesAPITest(testing_config.CustomTestCase):
         'rollout_impact': 2,
         'rollout_milestone': None,
         'rollout_platforms': [],
+        'rollout_stage_plan': 0,
     }
 
     expect = {
@@ -371,6 +374,7 @@ class StagesAPITest(testing_config.CustomTestCase):
         'rollout_impact': 2,
         'rollout_milestone': None,
         'rollout_platforms': [],
+        'rollout_stage_plan': 0,
         'ot_stage_id': None,
         'ios_first': None,
         'ios_last': None,

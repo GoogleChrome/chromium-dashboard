@@ -17,13 +17,14 @@ import {
   PLATFORMS_DISPLAYNAME,
   STAGE_ENT_ROLLOUT,
   STAGE_TYPES_SHIPPING,
+  ROLLOUT_STAGE_PLAN_CATEGORIES,
+  ROLLOUT_STAGE_PLAN_DISPLAYNAME,
 } from './form-field-enums.js';
 import {
   autolink,
   FieldInfo,
   formatFeatureChanges,
   parseRawQuery,
-  renderHTMLIf,
   renderRelativeDate,
   showToastMessage,
   updateURLParams,
@@ -559,9 +560,15 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
     ) {
       return `Chrome ${stage.rollout_milestone}`;
     }
+    const rollout_staqe_plan_display =
+      stage.rollout_stage_plan !==
+      ROLLOUT_STAGE_PLAN_CATEGORIES.ROLLOUT_STAGE_PLAN_CUSTOM[0]
+        ? ROLLOUT_STAGE_PLAN_DISPLAYNAME[stage.rollout_stage_plan]
+        : stage.rollout_details;
     return (
       `Chrome ${stage.rollout_milestone} on ` +
-      `${stage.rollout_platforms.map(p => PLATFORMS_DISPLAYNAME[p]).join(', ')}`
+      `${stage.rollout_platforms.map(p => PLATFORMS_DISPLAYNAME[p]).join(', ')}` +
+      ` - ${rollout_staqe_plan_display}`
     );
   }
 
@@ -664,6 +671,15 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
           '#edit-rollout-platforms-' + s.id
         )!;
         addFieldValue('rollout_platforms', platformsEl, s.rollout_platforms, s);
+        const rolloutStagePlanEl = this.shadowRoot?.querySelector<SlSelect>(
+          '#edit-rollout-stage-plan-' + s.id
+        )!;
+        addFieldValue(
+          'rollout_stage_plan',
+          rolloutStagePlanEl,
+          s.rollout_stage_plan,
+          s
+        );
         const detailsEl = this.shadowRoot?.querySelector<SlInput>(
           '#edit-rollout-details-' + s.id
         )!;
@@ -959,6 +975,12 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
             )}
           </sl-select>
         </div>
+        <sl-select
+          class="rollout-stage-plan"
+          id="edit-rollout-stage-plan-${s.id}"
+          .value=${s.rollout_stage_plan}
+        >
+        </sl-select>
         ${isPreviewing ? preview : editor} ${controls}
       </li>
     `;
