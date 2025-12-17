@@ -54,10 +54,11 @@ export const IS_MOBILE = (() => {
  * where appropriate.
  */
 export function autolink(
-  s,
+  s: string | null | undefined,
   featureLinks: FeatureLink[] = [],
   isMarkdown: boolean = false
 ): TemplateResult[] {
+  s = s ?? '';
   if (isMarkdown) {
     const rendered: string = marked.parse(s) as string;
     const sanitized: string = DOMPurify.sanitize(rendered);
