@@ -1230,6 +1230,9 @@ def send_emails(email_tasks):
         del task['to']
     else:
       task['to'] = [addr for addr in to if addr not in bounced_emails]
+    if not task.get('to'):
+      logging.info('Skipping email task with no non-bounced To: addrs')
+      continue  # We cannot send a message with an empty To: line.
     logging.info(
         'Working on the following email:\n'
         'To: %s\n'
