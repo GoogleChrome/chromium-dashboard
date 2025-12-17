@@ -80,6 +80,9 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
           margin: 2rem 0;
         }
 
+        *[hidden] {
+          display: none;
+        }
         h1 {
           font-size: 2rem;
           line-height: 2.5rem;
@@ -276,6 +279,9 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
         stage_type: STAGE_ENT_ROLLOUT,
         rollout_milestone: Number(milestone),
         rollout_platforms: Array.from(platforms).map(String),
+        rollout_stage_plan:
+          ROLLOUT_STAGE_PLAN_CATEGORIES.ROLLOUT_STAGE_PLAN_CUSTOM[0],
+        rollout_details: 'No rollout step',
       })
     );
   }
@@ -564,11 +570,11 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
       stage.rollout_stage_plan !==
       ROLLOUT_STAGE_PLAN_CATEGORIES.ROLLOUT_STAGE_PLAN_CUSTOM[0]
         ? ROLLOUT_STAGE_PLAN_DISPLAYNAME[stage.rollout_stage_plan]
-        : stage.rollout_details;
+        : 'Custom rollout';
     return (
       `Chrome ${stage.rollout_milestone} on ` +
       `${stage.rollout_platforms.map(p => PLATFORMS_DISPLAYNAME[p]).join(', ')}` +
-      ` - ${rollout_staqe_plan_display}`
+      ` - ${rollout_staqe_plan_display || 'No plan specified'}`
     );
   }
 
@@ -859,6 +865,7 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
     const isMarkdown = (f.markdown_fields || []).includes('summary');
     const isPreviewing = this.previewingIds.has(f.id);
     const editor = html` <sl-textarea
+      ?hidden=${isPreviewing}
       class="feature-summary"
       id="edit-summary-${f.id}"
       value=${f.summary}
@@ -866,12 +873,19 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
       resize="auto"
     >
     </sl-textarea>`;
+    const previewText =
+      this.shadowRoot?.querySelector<SlTextarea>('#edit-summary-' + f.id)
+        ?.value ?? f.summary;
+    const markdownChecked =
+      this.shadowRoot?.querySelector<SlCheckbox>('#summary-is-markdown-' + f.id)
+        ?.checked ?? isMarkdown;
     const preview = html`
       <div
         id="preview"
+        ?hidden=${!isPreviewing}
         style="border:var(--card-border); padding:0 var(--content-padding); min-height:14em; background:var(--table-alternate-background)"
       >
-        ${autolink(f.summary, [], true)}
+        ${autolink(previewText, [], markdownChecked)}
       </div>
     `;
     const controls = html`
@@ -898,7 +912,7 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
         Preview
       </sl-checkbox>
     `;
-    return html` ${isPreviewing ? preview : editor} ${controls} `;
+    return html` ${preview} ${editor} ${controls} `;
   }
 
   renderEditableStageItem(
@@ -914,6 +928,7 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
 
     const isPreviewing = this.previewingIds.has(s.id);
     const editor = html` <sl-textarea
+      ?hidden=${isPreviewing}
       class="rollout-details"
       id="edit-rollout-details-${s.id}"
       value=${s.rollout_details}
@@ -922,12 +937,17 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
       resize="auto"
     >
     </sl-textarea>`;
+    const previewText =
+      this.shadowRoot?.querySelector<SlTextarea>(
+        '#edit-rollout-details-' + s.id
+      )?.value ?? s.rollout_details;
     const preview = html`
       <div
+        ?hidden=${!isPreviewing}
         id="preview"
         style="border:var(--card-border); padding:0 var(--content-padding); min-height:14em; background:var(--table-alternate-background)"
       >
-        ${autolink(s.rollout_details, [], true)}
+        ${autolink(previewText, [], true)}
       </div>
     `;
     const controls = html`
@@ -978,10 +998,15 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
         <sl-select
           class="rollout-stage-plan"
           id="edit-rollout-stage-plan-${s.id}"
-          .value=${s.rollout_stage_plan}
+          value=${s.rollout_stage_plan ??
+          ROLLOUT_STAGE_PLAN_CATEGORIES.ROLLOUT_STAGE_PLAN_SLOW[0]}
         >
+          ${Object.values(ROLLOUT_STAGE_PLAN_CATEGORIES).map(
+            ([value, label]) =>
+              html`<sl-option value=${value}>${label}</sl-option>`
+          )}
         </sl-select>
-        ${isPreviewing ? preview : editor} ${controls}
+        ${preview} ${editor} ${controls}
       </li>
     `;
   }
