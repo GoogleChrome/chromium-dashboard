@@ -62,7 +62,7 @@ def handle_outbound_mail_task():
   json_body = flask.request.get_json(force=True)
   logging.info('params: %r', json_body)
 
-  to = get_param(flask.request, 'to')
+  to = get_param(flask.request, 'to') or []
   cc = get_param(flask.request, 'cc', required=False)
   from_user = get_param(flask.request, 'from_user', required=False)
   subject = get_param(flask.request, 'subject')

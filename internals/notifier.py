@@ -360,8 +360,7 @@ class FeatureStar(ndb.Model):
     emails: list[str] = [fs.email for fs in feature_stars]
     logging.info('looking up %r', repr(emails)[:settings.MAX_LOG_LINE])
     user_prefs = UserPref.get_prefs_for_emails(emails)
-    user_prefs = [up for up in user_prefs
-                  if up.notify_as_starrer and not up.bounced]
+    user_prefs = [up for up in user_prefs if up.notify_as_starrer]
     return user_prefs
 
 
@@ -423,7 +422,7 @@ class NotifyInactiveUsersHandler(basehandlers.FlaskHandler):
     for email in users_to_notify:
       body_data = {'SITE_URL': settings.SITE_URL}
       html = render_template(self.EMAIL_TEMPLATE_PATH, **body_data)
-      subject = f'Notice of WebStatus user inactivity for {email}'
+      subject = f'Notice of ChromeStatus user inactivity for {email}'
       email_tasks.append({
         'to': email,
         'subject': subject,
@@ -1203,10 +1202,34 @@ def get_thread_id(stage: Stage):
   return thread_id
 
 
+def find_bounced_emails(email_tasks):
+  """Look up all user prefs and make a set of the emails that bounced."""
+  emails = []
+  for task in email_tasks:
+    to = task.get('to')
+    if isinstance(to, str):
+      to = [to]
+    if to:
+      emails.extend(to)
+
+  user_prefs = UserPref.get_prefs_for_emails(emails)
+  return {
+      up.email for up in user_prefs
+      if up.bounced
+      }
+
+
 def send_emails(email_tasks):
   """Process a list of email tasks (send or log)."""
   logging.info('Processing %d email tasks', len(email_tasks))
+  bounced_emails = find_bounced_emails(email_tasks)
   for task in email_tasks:
+    to = task.get('to') or []
+    if isinstance(to, str):
+      if to in bounced_emails:
+        del task['to']
+    else:
+      task['to'] = [addr for addr in to if addr not in bounced_emails]
     logging.info(
         'Working on the following email:\n'
         'To: %s\n'
