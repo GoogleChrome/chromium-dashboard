@@ -28,7 +28,7 @@ npm run clean-setup
 npm run build
 
 # 2. Deploy the application services.
-VERSION=$(git describe --always --abbrev=7 --match 'NOT A TAG' --dirty='-tainted2')
+VERSION=$(git describe --always --abbrev=7 --match 'NOT A TAG' --dirty='-tainted')
 
 gcloud app deploy \
   --project "$APP_NAME" \
