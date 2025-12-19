@@ -116,7 +116,7 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     self.maxDiff = None
 
   def tearDown(self):
-    kinds = [FeatureEntry, Stage, FeatureOwner, BlinkComponent, Gate]
+    kinds = [FeatureEntry, Stage, FeatureOwner, BlinkComponent, Gate, UserPref]
     for kind in kinds:
       for entity in kind.query():
         entity.key.delete()
@@ -1616,10 +1616,35 @@ class FunctionsTest(testing_config.CustomTestCase):
         notifier.generate_thread_subject(
             self.fe_1, approval_defs.ShipApproval))
 
-
   def test_get_thread_id__trailing_junk(self):
     """We can select the correct approval thread field of a feature."""
     self.proto_stage.intent_thread_url += '?param=val#anchor'
     self.assertEqual(
         '123xxx=yyy@mail.gmail.com',
         notifier.get_thread_id(self.proto_stage))
+
+  def test_find_bounced_emails(self):
+    """We build a set of emails that are marked as bounced."""
+    up_1 = UserPref(email='fine@example.com')
+    up_1.put()
+    up_2 = UserPref(email='bounced@example.com', bounced=True)
+    up_2.put()
+    actual_1 = notifier.find_bounced_emails([
+        {'to': 'fine@example.com'},
+        {},
+        {'to': 'bounced@example.com'},
+        {'to': 'other@example.com'},
+        ])
+    self.assertEqual({'bounced@example.com'}, actual_1)
+    actual_2 = notifier.find_bounced_emails([
+        {'to': ['fine@example.com']},
+        {},
+        {'to': ['bounced@example.com']},
+        {'to': ['other@example.com']},
+        ])
+    self.assertEqual({'bounced@example.com'}, actual_2)
+    actual_3 = notifier.find_bounced_emails([
+        {'to': ['fine@example.com', 'bounced@example.com',
+                'other@example.com']},
+        ])
+    self.assertEqual({'bounced@example.com'}, actual_3)
