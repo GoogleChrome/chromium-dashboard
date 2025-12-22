@@ -570,11 +570,11 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
       stage.rollout_stage_plan !==
       ROLLOUT_STAGE_PLAN_CATEGORIES.ROLLOUT_STAGE_PLAN_CUSTOM[0]
         ? ROLLOUT_STAGE_PLAN_DISPLAYNAME[stage.rollout_stage_plan]
-        : 'Custom rollout';
+        : '';
     return (
       `Chrome ${stage.rollout_milestone} on ` +
       `${stage.rollout_platforms.map(p => PLATFORMS_DISPLAYNAME[p]).join(', ')}` +
-      ` - ${rollout_staqe_plan_display || 'No plan specified'}`
+      ` ${rollout_staqe_plan_display ? '- ' + rollout_staqe_plan_display : ''}`
     );
   }
 
@@ -998,8 +998,7 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
         <sl-select
           class="rollout-stage-plan"
           id="edit-rollout-stage-plan-${s.id}"
-          value=${s.rollout_stage_plan ??
-          ROLLOUT_STAGE_PLAN_CATEGORIES.ROLLOUT_STAGE_PLAN_SLOW[0]}
+          value=${s.rollout_stage_plan}
         >
           ${Object.values(ROLLOUT_STAGE_PLAN_CATEGORIES).map(
             ([value, label]) =>
