@@ -176,13 +176,11 @@ ROLLOUT_PLAN_DISPLAYNAMES = {
 ROLLOUT_STAGE_PLAN_SLOW = 0,
 ROLLOUT_STAGE_PLAN_TRUSTED_TESTERS = 1
 ROLLOUT_STAGE_PLAN_CUSTOM = 2
-ROLLOUT_STAGE_PLAN_UNSPECIFIED = 3
 
 ROLLOUT_STAGE_PLAN_DISPLAYNAMES = {
   ROLLOUT_STAGE_PLAN_TRUSTED_TESTERS: 'Early preview available to Chrome Enterprise Truster Testers',
   ROLLOUT_STAGE_PLAN_SLOW: 'Feature rolls out gradually',
   ROLLOUT_STAGE_PLAN_CUSTOM: 'Custom rollout (explain in Rollout details field)',
-  ROLLOUT_STAGE_PLAN_UNSPECIFIED: 'No rollout plan specified',
 }
 
 # Intent stages and mapping from stage to stage name.
