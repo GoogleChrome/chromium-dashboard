@@ -352,7 +352,8 @@ class SLOOverdueHandler(basehandlers.FlaskHandler):
     # Add an alphabetical list of unique recipients to the return message.
     if len(email_tasks):
       recipients = '\n'.join(
-          sorted(list(set([task['to'] for task in email_tasks]))))
+          sorted(list(set([task['to'] for task in email_tasks
+                           if 'to' in task]))))
       recipients_str = f'\nRecipients:\n{recipients}'
     message =  f'{len(email_tasks)} email(s) sent or logged.{recipients_str}'
     logging.info(message)

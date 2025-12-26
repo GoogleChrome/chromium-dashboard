@@ -45,7 +45,6 @@ ENTERPRISE_APPROVERS = [
     'mhoste@google.com',
     'angelaweber@google.com',
     'davidayad@google.com',
-    'omole@google.com',
     'nsamarakkody@google.com',
     'pastarmovj@google.com',
     'aaudi@google.com',
