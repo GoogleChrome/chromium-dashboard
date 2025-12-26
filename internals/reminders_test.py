@@ -513,7 +513,7 @@ class SLOOverdueHandlerTest(testing_config.CustomTestCase):
     with test_app.app_context():
       actual = self.handler.get_template_data()
 
-    expected_message = (f'11 email(s) sent or logged.\n'
+    expected_message = (f'10 email(s) sent or logged.\n'
                         'Recipients:\n'
                         'aaudi@google.com\n'
                         'angelaweber@google.com\n'
@@ -524,7 +524,6 @@ class SLOOverdueHandlerTest(testing_config.CustomTestCase):
                         'kimreardon@google.com\n'
                         'mhoste@google.com\n'
                         'nsamarakkody@google.com\n'
-                        'omole@google.com\n'
                         'pastarmovj@google.com'
                         )
     expected = {'message': expected_message}
@@ -551,6 +550,27 @@ class SLOOverdueHandlerTest(testing_config.CustomTestCase):
     self.assertEqual(actual, expected)
 
   @mock.patch('internals.slo.now_utc')
+  def test_get_template_data__one_due_assigned_bounced(self, mock_now_utc):
+    """One gate is due, but one reviewer has bounced email."""
+    self.gate_1.state = Vote.REVIEW_REQUESTED
+    self.gate_1.assignee_emails = [
+        'b_assignee@example.com', 'a_assignee@example.com']
+    self.gate_1.requested_on = self.request_date
+    self.gate_1.put()
+    mock_now_utc.return_value = self.day_6
+    user_pref = UserPref(email='b_assignee@example.com', bounced=True)
+    user_pref.put()
+
+    with test_app.app_context():
+      actual = self.handler.get_template_data()
+
+    expected_message = ('2 email(s) sent or logged.\n'
+                        'Recipients:\n'
+                        'a_assignee@example.com')
+    expected = {'message': expected_message}
+    self.assertEqual(actual, expected)
+
+  @mock.patch('internals.slo.now_utc')
   def test_get_template_data__initial_overdue_unassigned(self, mock_now_utc):
     """Overdue for initial response. Notify all reviewers."""
     self.gate_1.state = Vote.REVIEW_REQUESTED
@@ -561,7 +581,7 @@ class SLOOverdueHandlerTest(testing_config.CustomTestCase):
     with test_app.app_context():
       actual = self.handler.get_template_data()
 
-    expected_message = (f'11 email(s) sent or logged.\n'
+    expected_message = (f'10 email(s) sent or logged.\n'
                         'Recipients:\n'
                         'aaudi@google.com\n'
                         'angelaweber@google.com\n'
@@ -572,7 +592,6 @@ class SLOOverdueHandlerTest(testing_config.CustomTestCase):
                         'kimreardon@google.com\n'
                         'mhoste@google.com\n'
                         'nsamarakkody@google.com\n'
-                        'omole@google.com\n'
                         'pastarmovj@google.com')
     expected = {'message': expected_message}
     self.assertEqual(actual, expected)
@@ -590,7 +609,7 @@ class SLOOverdueHandlerTest(testing_config.CustomTestCase):
     with test_app.app_context():
       actual = self.handler.get_template_data()
 
-    expected_message = ('12 email(s) sent or logged.\n'
+    expected_message = ('11 email(s) sent or logged.\n'
                         'Recipients:\n'
                         'a_assignee@example.com\n'
                         'aaudi@google.com\n'
@@ -602,7 +621,6 @@ class SLOOverdueHandlerTest(testing_config.CustomTestCase):
                         'kimreardon@google.com\n'
                         'mhoste@google.com\n'
                         'nsamarakkody@google.com\n'
-                        'omole@google.com\n'
                         'pastarmovj@google.com')
     expected = {'message': expected_message}
     self.assertEqual(actual, expected)
@@ -618,7 +636,7 @@ class SLOOverdueHandlerTest(testing_config.CustomTestCase):
     with test_app.app_context():
       actual = self.handler.get_template_data()
 
-    expected_message = ('11 email(s) sent or logged.\n'
+    expected_message = ('10 email(s) sent or logged.\n'
                         'Recipients:\n'
                         'aaudi@google.com\n'
                         'angelaweber@google.com\n'
@@ -629,7 +647,6 @@ class SLOOverdueHandlerTest(testing_config.CustomTestCase):
                         'kimreardon@google.com\n'
                         'mhoste@google.com\n'
                         'nsamarakkody@google.com\n'
-                        'omole@google.com\n'
                         'pastarmovj@google.com')
     expected = {'message': expected_message}
     self.assertEqual(actual, expected)
@@ -646,7 +663,7 @@ class SLOOverdueHandlerTest(testing_config.CustomTestCase):
     with test_app.app_context():
       actual = self.handler.get_template_data()
 
-    expected_message = ('11 email(s) sent or logged.\n'
+    expected_message = ('10 email(s) sent or logged.\n'
                         'Recipients:\n'
                         'aaudi@google.com\n'
                         'angelaweber@google.com\n'
@@ -657,7 +674,6 @@ class SLOOverdueHandlerTest(testing_config.CustomTestCase):
                         'kimreardon@google.com\n'
                         'mhoste@google.com\n'
                         'nsamarakkody@google.com\n'
-                        'omole@google.com\n'
                         'pastarmovj@google.com')
     expected = {'message': expected_message}
     self.assertEqual(actual, expected)
@@ -719,7 +735,7 @@ class SLOOverdueHandlerTest(testing_config.CustomTestCase):
         {self.feature_1.key.integer_id(): self.feature_1},
         True, True)
 
-    self.assertEqual(13, len(actual))
+    self.assertEqual(12, len(actual))
     task = actual[0]
     self.assertEqual('a_assignee@example.com', task['to'])
     self.assertEqual('ESCALATED: Review due for: feature one', task['subject'])
@@ -757,7 +773,7 @@ class SLOOverdueHandlerTest(testing_config.CustomTestCase):
         {self.feature_1.key.integer_id(): self.feature_1},
         True, False)
 
-    self.assertEqual(13, len(actual))
+    self.assertEqual(12, len(actual))
     task = actual[0]
     self.assertEqual('a_assignee@example.com', task['to'])
     self.assertEqual('ESCALATED: Review due for: feature one', task['subject'])
