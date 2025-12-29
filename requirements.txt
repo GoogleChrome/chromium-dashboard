@@ -14,7 +14,7 @@ google-api-python-client==2.187.0
 
 google-cloud-tasks==2.20.0
 google-cloud-ndb==2.3.4
-google-cloud-logging==3.12.1
+google-cloud-logging==3.13.0
 google-cloud-secret-manager==2.26.0
 google-cloud-storage==3.7.0
 google-auth==2.45.0
