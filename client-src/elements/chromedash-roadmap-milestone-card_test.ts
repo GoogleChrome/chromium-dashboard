@@ -152,6 +152,7 @@ describe('chromedash-roadmap-milestone-card', () => {
         rollout_details: 'Rolling out to 1% of users.',
         rollout_milestone: 124,
         rollout_platforms: ['Desktop', 'Android'],
+        rollout_stage_plan: 1,
         enterprise_policies: ['TestFeatureEnabled', 'LegacyFeatureDisabled'],
         pm_emails: ['pm@example.com'],
         tl_emails: ['tl@example.com'],

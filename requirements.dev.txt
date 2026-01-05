@@ -3,11 +3,11 @@
 # are not needed on GAE because they are only for local development, or GAE
 # provides its own copy.
 
-coverage==7.13.0
+coverage==7.13.1
 gunicorn==23.0.0
 
 # Mypy and dependencies
-mypy==1.19.0
+mypy==1.19.1
 types-protobuf
 types-redis
 types-requests

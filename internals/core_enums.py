@@ -173,6 +173,15 @@ ROLLOUT_PLAN_DISPLAYNAMES = {
   ROLLOUT_OTHER: "(RARE) It's complicated or unusual",
 }
 
+ROLLOUT_STAGE_PLAN_SLOW = 0,
+ROLLOUT_STAGE_PLAN_TRUSTED_TESTERS = 1
+ROLLOUT_STAGE_PLAN_CUSTOM = 2
+
+ROLLOUT_STAGE_PLAN_DISPLAYNAMES = {
+  ROLLOUT_STAGE_PLAN_TRUSTED_TESTERS: 'Early preview available to Chrome Enterprise Truster Testers',
+  ROLLOUT_STAGE_PLAN_SLOW: 'Feature rolls out gradually',
+  ROLLOUT_STAGE_PLAN_CUSTOM: 'Custom rollout (explain in Rollout details field)',
+}
 
 # Intent stages and mapping from stage to stage name.
 INTENT_NONE = 0
@@ -806,6 +815,7 @@ PROPERTY_NAMES_TO_ENUM_DICTS = {
     'browsers.webdev.view': WEB_DEV_VIEWS,
     'rollout_impact': IMPACT_CATEGORIES,
     'rollout_platforms': PLATFORM_CATEGORIES,
+    'rollout_stage_plan': ROLLOUT_STAGE_PLAN_DISPLAYNAMES,
     'rollout_plan': ROLLOUT_PLAN_DISPLAYNAMES,
   }
 

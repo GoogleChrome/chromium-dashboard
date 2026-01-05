@@ -66,6 +66,26 @@ export const PLATFORMS_DISPLAYNAME: Record<number, string> = {
   8: 'Fuchsia', // PLATFORM_FUCHSIA
 };
 
+export const ROLLOUT_STAGE_PLAN_CATEGORIES: Record<string, [number, string]> = {
+  ROLLOUT_STAGE_PLAN_SLOW: [0, 'Feature rolls out gradually'],
+  ROLLOUT_STAGE_PLAN_TRUSTED_TESTERS: [
+    1,
+    'Early preview available to Chrome Enterprise Truster Testers',
+  ],
+  ROLLOUT_STAGE_PLAN_CUSTOM: [
+    2,
+    'Custom rollout (explain in Rollout details field)',
+  ],
+  // When null, nothing menu item will be selected.
+};
+
+export const ROLLOUT_STAGE_PLAN_DISPLAYNAME: Record<number, string> = {
+  0: 'Feature rolls out gradually',
+  1: 'Early preview available to Chrome Enterprise Truster Testers',
+  2: 'Custom rollout (explain in Rollout details field)',
+  // When null, the standard "No information provided yet" will be shown.
+};
+
 export const ENTERPRISE_IMPACT_DISPLAYNAME: Record<number, string> = {
   1: 'None', // IMPACT_NONE
   2: 'Low', // IMPACT_LOW
@@ -497,6 +517,7 @@ export const STAGE_SPECIFIC_FIELDS = new Set<string>([
   'rollout_milestone',
   'rollout_platforms',
   'rollout_details',
+  'rollout_stage_plan',
   'enterprise_policies',
   'announcement_url',
 ]);

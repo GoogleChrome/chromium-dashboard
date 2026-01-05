@@ -212,6 +212,7 @@ def add_features(server: str, after: datetime, detailsAfter: datetime):
         s.rollout_platforms = stage['rollout_platforms']
         s.rollout_details = stage['rollout_details']
         s.rollout_impact = stage['rollout_impact']
+        s.rollout_stage_plan = stage['rollout_stage_plan']
         s.enterprise_policies = stage['enterprise_policies']
 
         s.milestones = MilestoneSet()

@@ -17,6 +17,7 @@ import {
   UsageType,
   OT_MILESTONE_START_FIELDS,
   PLATFORM_CATEGORIES,
+  ROLLOUT_STAGE_PLAN_CATEGORIES,
   REVIEW_STATUS_CHOICES,
   ROLLOUT_PLAN,
   SHIPPED_MILESTONE_FIELDS,
@@ -655,8 +656,9 @@ export const ALL_FIELDS: Record<string, Field> = {
     chromestatus.com. These will be shared publicly.`,
     check: async value => {
       const warning = {
-        warning:
-          'One or more urls are not actual images. Use a valid link to an actual image.',
+        warning: `One or more urls are not actual images or requires the consumer some kind
+           of authentication to access them. Use a valid link to an actual image free
+           of authentication or upload your image.`,
       };
       const urls = value
         .split('\n')
@@ -2876,6 +2878,17 @@ export const ALL_FIELDS: Record<string, Field> = {
     the feature to different platforms in different milestones.`,
   },
 
+  rollout_stage_plan: {
+    type: 'select',
+    choices: ROLLOUT_STAGE_PLAN_CATEGORIES,
+    initial: ROLLOUT_STAGE_PLAN_CATEGORIES.ROLLOUT_STAGE_PLAN_SLOW[0],
+    required: true,
+    label: 'Rollout plan',
+    usage: {},
+    help_text: html` Select the type of rollout that matches what will happen in
+    the stage`,
+  },
+
   breaking_change: {
     type: 'checkbox',
     label: 'Breaking change',
@@ -2933,7 +2946,8 @@ function makeDisplaySpec(fieldName: string) {
     fieldProps.label || fieldProps.displayLabel || makeHumanReadable(fieldName);
   const fieldType = categorizeFieldType(fieldProps);
   const deprecated = fieldProps.deprecated;
-  return [fieldName, displayName, fieldType, deprecated];
+  const alwaysMarkdown = fieldProps.always_markdown;
+  return [fieldName, displayName, fieldType, deprecated, alwaysMarkdown];
 }
 
 export function makeDisplaySpecs(fieldNames: string[]) {

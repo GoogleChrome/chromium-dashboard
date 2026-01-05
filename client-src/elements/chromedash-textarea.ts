@@ -142,7 +142,7 @@ export class ChromedashTextarea extends SlTextarea {
         href="https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax"
         target="_blank"
       ></sl-icon-button>
-      ${this.isMarkdown
+      ${this.isMarkdown || this.alwaysMarkdown
         ? html` <sl-checkbox
             id="show-preview"
             ?checked=${this.showPreview}

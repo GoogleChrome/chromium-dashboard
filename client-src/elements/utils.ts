@@ -21,6 +21,7 @@ import {
   OT_SETUP_STATUS_OPTIONS,
   PLATFORMS_DISPLAYNAME,
   ROLLOUT_PLAN_DISPLAYNAME,
+  ROLLOUT_STAGE_PLAN_DISPLAYNAME,
   STAGE_ENT_ROLLOUT,
   STAGE_FIELD_NAME_MAPPING,
   STAGE_SPECIFIC_FIELDS,
@@ -53,10 +54,11 @@ export const IS_MOBILE = (() => {
  * where appropriate.
  */
 export function autolink(
-  s,
+  s: string | null | undefined,
   featureLinks: FeatureLink[] = [],
   isMarkdown: boolean = false
 ): TemplateResult[] {
+  s = s ?? '';
   if (isMarkdown) {
     const rendered: string = marked.parse(s) as string;
     const sanitized: string = DOMPurify.sanitize(rendered);
@@ -252,7 +254,11 @@ export function getFieldValueFromFeature(
     const value = getStageValue(feStage, fieldName);
     if (fieldName === 'rollout_platforms' && value) {
       return value.map(platformId => PLATFORMS_DISPLAYNAME[platformId]);
-    } else if (fieldName in OT_MILESTONE_END_FIELDS) {
+    }
+    if (fieldName === 'rollout_stage_plan') {
+      return ROLLOUT_STAGE_PLAN_DISPLAYNAME[value];
+    }
+    if (fieldName in OT_MILESTONE_END_FIELDS) {
       // If an origin trial end date is being displayed, handle extension milestones as well.
       return _getMilestoneExtensionValue(feStage, fieldName);
     }
