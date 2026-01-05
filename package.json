@@ -72,7 +72,7 @@
     "@babel/preset-env": "^7.28.5",
     "@babel/register": "^7.28.3",
     "@open-wc/testing": "^4.0.0",
-    "@openapitools/openapi-generator-cli": "^2.26.0",
+    "@openapitools/openapi-generator-cli": "^2.27.0",
     "@playwright/test": "1.56.1",
     "@rollup/plugin-babel": "^6.1.0",
     "@rollup/plugin-node-resolve": "^16.0.3",
