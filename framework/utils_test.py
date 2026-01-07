@@ -502,6 +502,70 @@ class UtilsGitHubTests(unittest.TestCase):
     self.assertEqual(result, expected)
 
 
+class UtilsDependencyTests(unittest.TestCase):
+  """Tests for dependency extraction and path resolution."""
+
+  def test_extract_dependencies__scripts(self):
+    """Should extract script src attributes."""
+    content = """
+    <!doctype html>
+    <script src="/resources/testharness.js"></script>
+    <script src='../support/helper.js'></script>
+    <script>console.log('inline');</script>
+    """
+    deps = utils.extract_dependencies(content)
+    self.assertIn('/resources/testharness.js', deps)
+    self.assertIn('../support/helper.js', deps)
+    self.assertEqual(len(deps), 2)
+
+  def test_extract_dependencies__imports(self):
+    """Should extract JS import paths."""
+    content = """
+    import {foo} from "./utils.js";
+    import bar from '../common.js';
+    import "side-effect.js";
+    export * from "./exports.js";
+    """
+    deps = utils.extract_dependencies(content)
+    self.assertIn('./utils.js', deps)
+    self.assertIn('../common.js', deps)
+    self.assertIn('side-effect.js', deps)
+    self.assertIn('./exports.js', deps)
+    self.assertEqual(len(deps), 4)
+
+  def test_resolve_dependency_path__relative(self):
+    """Should resolve relative paths."""
+    base = Path('fedcm/test.html')
+    # Same directory
+    self.assertEqual(
+        Path('fedcm/helper.js'),
+        utils.resolve_dependency_path(base, 'helper.js'))
+    self.assertEqual(
+        Path('fedcm/helper.js'),
+        utils.resolve_dependency_path(base, './helper.js'))
+
+  def test_resolve_dependency_path__parent(self):
+    """Should resolve parent directory paths."""
+    base = Path('fedcm/sub/test.html')
+    self.assertEqual(
+        Path('fedcm/helper.js'),
+        utils.resolve_dependency_path(base, '../helper.js'))
+
+  def test_resolve_dependency_path__root_absolute(self):
+    """Should resolve root-absolute paths (starting with /)."""
+    base = Path('fedcm/test.html')
+    # /resources/testharness.js -> resources/testharness.js
+    self.assertEqual(
+        Path('resources/testharness.js'),
+        utils.resolve_dependency_path(base, '/resources/testharness.js'))
+
+  def test_resolve_dependency_path__external(self):
+    """Should return None for external URLs."""
+    base = Path('test.html')
+    self.assertIsNone(utils.resolve_dependency_path(base, 'https://example.com/lib.js'))
+    self.assertIsNone(utils.resolve_dependency_path(base, '//example.com/lib.js'))
+
+
 class AsyncUtilsGitHubTests(unittest.IsolatedAsyncioTestCase):
   """Tests for the async GitHub orchestration functions."""
 
@@ -519,40 +583,52 @@ class AsyncUtilsGitHubTests(unittest.IsolatedAsyncioTestCase):
 
   @mock.patch('framework.utils._fetch_dir_listing')
   @mock.patch('framework.utils._fetch_file_content')
-  async def test_get_mixed_wpt_contents_async__success(
+  async def test_get_mixed_wpt_contents_async__recursive_success(
       self, mock_fetch_content, mock_fetch_dir):
-    """Test full orchestration with mixed directory and file URLs."""
+    """Test full orchestration with recursive dependency fetching."""
     # Setup Inputs
     dir_urls = ['https://wpt.fyi/results/dir1']
-    # This URL will be parsed to construct the raw GitHub URL
-    file_urls = ['https://wpt.fyi/results/c.js']
+    file_urls = ['https://wpt.fyi/results/test.js']
     settings.GITHUB_TOKEN = 'token'
 
-    # Dir 1 contains file A and file B
+    # Mock Directory Listing: dir1 contains 'a.html'
     mock_fetch_dir.return_value = [
       (Path('a.html'), 'http://dl/a.html'),
-      (Path('b.css'), 'http://dl/b.css')
     ]
-    raw_base = utils.WPT_GITHUB_RAW_CONTENTS_URL
-    expected_c_url = f'{raw_base}c.js'
 
-    # Content fetching returns a simple string based on the URL for verification
-    mock_fetch_content.side_effect = lambda url: f'content of {url}'
+    # Mock Content Fetching with recursion
+    # 1. a.html has no dependencies.
+    # 2. test.js imports 'dep.js'.
+    # 3. dep.js imports '/resources/common.js'.
+    # 4. common.js has no dependencies.
+    def side_effect(url):
+      if url == 'http://dl/a.html':
+        return 'content of a'
+      if url.endswith('test.js'):
+        return 'import "./dep.js";'
+      if url.endswith('dep.js'):
+        return 'import "/resources/common.js";'
+      if url.endswith('common.js'):
+        return 'console.log("common");'
+      return ''
 
-    # Execute
-    results = await utils.get_mixed_wpt_contents_async(dir_urls, file_urls)
+    mock_fetch_content.side_effect = side_effect
 
-    # Assertions
-    expected_results = {
-      Path('a.html'): 'content of http://dl/a.html',
-      Path('b.css'): 'content of http://dl/b.css',
-      Path('c.js'): f'content of {expected_c_url}',
-    }
-    self.assertEqual(results, expected_results)
-    self.assertEqual(mock_fetch_dir.call_count, 1)
-    # Should have fetched content for all 3 unique files
-    self.assertEqual(mock_fetch_content.call_count, 3)
-    mock_fetch_content.assert_any_call(expected_c_url)
+    tests, deps = await utils.get_mixed_wpt_contents_async(dir_urls, file_urls)
+
+    # Test Files (explicitly requested or from dir)
+    self.assertIn(Path('a.html'), tests)
+    self.assertIn(Path('test.js'), tests)
+    self.assertEqual(len(tests), 2)
+
+    # Dependency Files (discovered recursively)
+    # dep.js (relative to test.js) -> dep.js
+    # common.js -> resources/common.js
+    self.assertIn(Path('dep.js'), deps)
+    self.assertIn(Path('resources/common.js'), deps)
+    self.assertEqual(len(deps), 2)
+
+    self.assertEqual(mock_fetch_content.call_count, 4)
 
   @mock.patch('framework.utils._fetch_dir_listing')
   @mock.patch('framework.utils._fetch_file_content')
@@ -562,7 +638,6 @@ class AsyncUtilsGitHubTests(unittest.IsolatedAsyncioTestCase):
     dir_urls = ['https://wpt.fyi/results/dir1']
 
     # We assume the user lists a file that is also inside dir1.
-    # The code will construct a raw URL for this file.
     file_urls = ['https://wpt.fyi/results/dir1/a.html']
 
     settings.GITHUB_TOKEN = 'token'
@@ -576,11 +651,14 @@ class AsyncUtilsGitHubTests(unittest.IsolatedAsyncioTestCase):
 
     mock_fetch_content.return_value = 'content'
 
-    results = await utils.get_mixed_wpt_contents_async(dir_urls, file_urls)
+    tests, deps = await utils.get_mixed_wpt_contents_async(dir_urls, file_urls)
 
-    self.assertEqual(len(results), 1)
-    self.assertEqual(results[Path('dir1/a.html')], 'content')
-    # Crucial: content fetch should only happen once despite appearing twice in resolution phase
+    # It should be in tests, not deps
+    self.assertEqual(len(tests), 1)
+    self.assertEqual(tests[Path('dir1/a.html')], 'content')
+    self.assertEqual(len(deps), 0)
+
+    # Crucial: content fetch should only happen once
     mock_fetch_content.assert_called_once_with(expected_url)
 
   @mock.patch('framework.utils._fetch_dir_listing')
@@ -598,12 +676,13 @@ class AsyncUtilsGitHubTests(unittest.IsolatedAsyncioTestCase):
     # Content fetch succeeds for the one valid file
     mock_fetch_content.return_value = 'content_a'
 
-    results = await utils.get_mixed_wpt_contents_async(dir_urls, file_urls)
+    tests, deps = await utils.get_mixed_wpt_contents_async(dir_urls, file_urls)
 
-    self.assertEqual(results, {Path('a.html'): 'content_a'})
+    self.assertEqual(tests, {Path('a.html'): 'content_a'})
+    self.assertEqual(deps, {})
 
   async def test_get_mixed_wpt_contents_async__no_token(self):
-    """Should return empty dict immediately if no GitHub token is available."""
+    """Should return empty tuple immediately if no GitHub token is available."""
     settings.GITHUB_TOKEN = None
     results = await utils.get_mixed_wpt_contents_async(['url1'], ['url2'])
-    self.assertEqual(results, {})
+    self.assertEqual(results, ({}, {}))

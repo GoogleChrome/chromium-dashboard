@@ -37,6 +37,13 @@ CHROMIUM_SCHEDULE_DATE_FORMAT = '%Y-%m-%dT%H:%M:%S'
 WPT_GITHUB_API_URL = 'https://api.github.com/repos/web-platform-tests/wpt/contents/'
 WPT_GITHUB_RAW_CONTENTS_URL = 'https://raw.githubusercontent.com/web-platform-tests/wpt/master/'
 
+# Match <script src="...">
+SCRIPT_DEPENDENCY_REGEX = r'<script\s+[^>]*src=["\']([^"\']+)["\']'
+
+# Match import/export ... from "..." or import "..."
+# Matches: import { x } from './foo.js' | import './bar.js' | export * from './baz.js'
+IMPORT_DEPENDENCY_REGEX = r'(?:import|export)\s+(?:[^"\']+\s+from\s+)?["\']([^"\']+)["\']'
+
 
 def normalized_name(val):
   return val.lower().replace(' ', '').replace('/', '')
@@ -325,15 +332,9 @@ def extract_dependencies(content: str) -> list[str]:
   """
   dependencies = set()
 
-  # Match <script src="...">
-  # Note: simple regex, assumes standard formatting
-  script_pattern = r'<script\s+[^>]*src=["\']([^"\']+)["\']'
-  dependencies.update(re.findall(script_pattern, content))
+  dependencies.update(re.findall(SCRIPT_DEPENDENCY_REGEX, content))
 
-  # Match import/export ... from "..." or import "..."
-  # Matches: import { x } from './foo.js' | import './bar.js' | export * from './baz.js'
-  import_pattern = r'(?:import|export)\s+(?:[\s\S]*?\s+from\s+)?["\']([^"\']+)["\']'
-  dependencies.update(re.findall(import_pattern, content))
+  dependencies.update(re.findall(IMPORT_DEPENDENCY_REGEX, content))
 
   return list(dependencies)
 
@@ -366,27 +367,33 @@ def resolve_dependency_path(current_file_path: Path, dep_ref: str) -> Path | Non
 async def get_mixed_wpt_contents_async(
     dir_urls: list[str],
     additional_file_urls: list[str]
-) -> dict[Path, str]:
+) -> tuple[dict[Path, str], dict[Path, str]]:
   """
-  Orchestrates concurrent fetching of complete directories and individual WPT file URLs,
-  including recursive fetching of dependencies found within those files.
+  Orchestrates concurrent fetching of WPT files and recursively fetches their dependencies.
 
   Args:
     dir_urls: List of WPT directory URLs to scan.
     additional_file_urls: list of individual WPT file URLs.
 
   Returns:
-    Dict mapping filename to raw text content.
+    A tuple containing two dictionaries:
+    1. test_files: {filename: content} for files explicitly requested (or in requested dirs).
+    2. dependency_files: {filename: content} for files found recursively via imports/scripts.
   """
   token = settings.GITHUB_TOKEN
   if token is None:
-    return {}
+    return {}, {}
 
   headers = _get_github_headers(token)
-  all_contents: dict[Path, str] = {}
+
+  test_contents: dict[Path, str] = {}
+  dependency_contents: dict[Path, str] = {}
 
   # Set of paths we have already queued or fetched to prevent infinite recursion
   visited_paths: set[Path] = set()
+
+  # Set of paths that are explicitly requested (Test Files)
+  initial_paths: set[Path] = set()
 
   # PHASE 1: Initial Resolution (Directories & Individual Files)
 
@@ -409,7 +416,6 @@ async def get_mixed_wpt_contents_async(
   dir_results = await asyncio.gather(*dir_tasks)
 
   # Queue of items to fetch: list of (Path, RawURL)
-  # using a dict initially to handle duplicates between dir scan and file list
   files_to_fetch_map: dict[Path, str] = {}
 
   # Process directory results
@@ -424,8 +430,9 @@ async def get_mixed_wpt_contents_async(
   # Initialize processing queue
   processing_queue = list(files_to_fetch_map.items())
 
-  # Mark initial set as visited
+  # Record the initial set of paths so we know they are "Tests"
   for fpath, _ in processing_queue:
+    initial_paths.add(fpath)
     visited_paths.add(fpath)
 
   # PHASE 2: Recursive Content Fetching
@@ -446,8 +453,11 @@ async def get_mixed_wpt_contents_async(
       if content is None:
         continue
 
-      # Store valid content
-      all_contents[fpath] = content
+      # Sort into the correct bucket
+      if fpath in initial_paths:
+        test_contents[fpath] = content
+      else:
+        dependency_contents[fpath] = content
 
       # Analyze for dependencies
       dependencies = extract_dependencies(content)
@@ -460,9 +470,8 @@ async def get_mixed_wpt_contents_async(
           visited_paths.add(resolved_path)
 
           # Construct the raw GitHub URL for this dependency
-          # We assume it lives in the same master branch of WPT
           dep_url = f'{WPT_GITHUB_RAW_CONTENTS_URL}{resolved_path}'
 
           processing_queue.append((resolved_path, dep_url))
 
-  return all_contents
+  return test_contents, dependency_contents
