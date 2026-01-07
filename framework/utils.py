@@ -18,16 +18,17 @@ import calendar
 import datetime
 import json
 import logging
-from pathlib import Path
+import posixpath
 import re
 import requests
 import time
 import traceback
 import urllib.request
 from base64 import b64decode
-from framework import rediscache, secrets
+from pathlib import Path
 from urllib.parse import urlparse
 
+from framework import rediscache
 import settings
 
 CHROME_RELEASE_SCHEDULE_URL = (
@@ -313,12 +314,62 @@ async def _fetch_and_pair(fpath: Path, furl: str) -> tuple[Path, str | None]:
   return fpath, content
 
 
+def extract_dependencies(content: str) -> list[str]:
+  """
+  Scans file content for references to other files.
+  Looks for:
+    - <script src="...">
+    - import ... from "..."
+    - export ... from "..."
+    - import "..." (side-effect import)
+  """
+  dependencies = set()
+
+  # Match <script src="...">
+  # Note: simple regex, assumes standard formatting
+  script_pattern = r'<script\s+[^>]*src=["\']([^"\']+)["\']'
+  dependencies.update(re.findall(script_pattern, content))
+
+  # Match import/export ... from "..." or import "..."
+  # Matches: import { x } from './foo.js' | import './bar.js' | export * from './baz.js'
+  import_pattern = r'(?:import|export)\s+(?:[\s\S]*?\s+from\s+)?["\']([^"\']+)["\']'
+  dependencies.update(re.findall(import_pattern, content))
+
+  return list(dependencies)
+
+
+def resolve_dependency_path(current_file_path: Path, dep_ref: str) -> Path | None:
+  """
+  Resolves a dependency reference to a concrete WPT repository path.
+  Args:
+      current_file_path: The Path of the file containing the reference (e.g. 'fedcm/test.html')
+      dep_ref: The string reference found in the file (e.g. '../support/helper.js')
+  """
+  # Ignore absolute URLs (external dependencies)
+  if dep_ref.startswith('http') or dep_ref.startswith('//'):
+    return None
+
+  # Use posixpath for URL-style path manipulation (always forward slashes)
+  current_dir = posixpath.dirname(str(current_file_path))
+
+  if dep_ref.startswith('/'):
+    # Absolute path relative to repo root (e.g. /resources/testharness.js)
+    # Strip the leading slash to make it a relative path for the repo root
+    resolved_str = dep_ref.lstrip('/')
+  else:
+    # Relative path (e.g. ../resources/testharness.js or helper.js)
+    resolved_str = posixpath.normpath(posixpath.join(current_dir, dep_ref))
+
+  return Path(resolved_str)
+
+
 async def get_mixed_wpt_contents_async(
     dir_urls: list[str],
     additional_file_urls: list[str]
 ) -> dict[Path, str]:
   """
-  Orchestrates concurrent fetching of complete directories and individual WPT file URLs.
+  Orchestrates concurrent fetching of complete directories and individual WPT file URLs,
+  including recursive fetching of dependencies found within those files.
 
   Args:
     dir_urls: List of WPT directory URLs to scan.
@@ -334,47 +385,84 @@ async def get_mixed_wpt_contents_async(
   headers = _get_github_headers(token)
   all_contents: dict[Path, str] = {}
 
-  # PHASE 1: Async Resolution (Directories & Individual Files)
+  # Set of paths we have already queued or fetched to prevent infinite recursion
+  visited_paths: set[Path] = set()
+
+  # PHASE 1: Initial Resolution (Directories & Individual Files)
 
   # 1a. Create tasks to scan directories
   dir_tasks = [
       asyncio.to_thread(_fetch_dir_listing, u, headers)
       for u in dir_urls
   ]
-  file_path_info: list[tuple[str, Path]] = []
+
+  # 1b. Parse individual file URLs provided by user
+  initial_file_infos: list[tuple[str, Path]] = []
   for furl in additional_file_urls:
     path = _parse_wpt_fyi_url(furl)
-    file_path_info.append((
+    initial_file_infos.append((
       f'{WPT_GITHUB_RAW_CONTENTS_URL}{path}',
-      path,
-      # Infer the test name by getting the name from a Path object.
+      path
     ))
 
-  # Wait for all resolution tasks to complete concurrently
+  # Wait for all directory resolution tasks to complete
   dir_results = await asyncio.gather(*dir_tasks)
 
-  # Map raw download URLs to filenames. This automatically handles deduplication
-  # if the same file appears in a directory and the explicit list.
-  files_to_fetch_map: dict[str, Path] = {}
+  # Queue of items to fetch: list of (Path, RawURL)
+  # using a dict initially to handle duplicates between dir scan and file list
+  files_to_fetch_map: dict[Path, str] = {}
 
-  # Process directory results (each result is a list of tuples)
+  # Process directory results
   for dir_list in dir_results:
     for fpath, url in dir_list:
-      files_to_fetch_map[url] = fpath
+      files_to_fetch_map[fpath] = url
 
-  # Process individual file results (each result is a single tuple or None)
-  for url, fpath in file_path_info:
-    files_to_fetch_map[url] = fpath
+  # Process individual file results
+  for url, fpath in initial_file_infos:
+    files_to_fetch_map[fpath] = url
 
-  # PHASE 2: Async Content Fetching
-  file_tasks = [
-    _fetch_and_pair(fpath, url)
-    for url, fpath in files_to_fetch_map.items()
-  ]
-  file_results = await asyncio.gather(*file_tasks)
+  # Initialize processing queue
+  processing_queue = list(files_to_fetch_map.items())
 
-  for fpath, content in file_results:
-    if content is not None:
+  # Mark initial set as visited
+  for fpath, _ in processing_queue:
+    visited_paths.add(fpath)
+
+  # PHASE 2: Recursive Content Fetching
+  while processing_queue:
+    # Create fetch tasks for the current batch
+    file_tasks = [
+      _fetch_and_pair(fpath, url)
+      for fpath, url in processing_queue
+    ]
+
+    # Fetch content concurrently
+    results = await asyncio.gather(*file_tasks)
+
+    # Prepare the next batch of files (dependencies)
+    processing_queue = []
+
+    for fpath, content in results:
+      if content is None:
+        continue
+
+      # Store valid content
       all_contents[fpath] = content
+
+      # Analyze for dependencies
+      dependencies = extract_dependencies(content)
+
+      for dep in dependencies:
+        resolved_path = resolve_dependency_path(fpath, dep)
+
+        # If valid path and we haven't seen it yet
+        if resolved_path and resolved_path not in visited_paths:
+          visited_paths.add(resolved_path)
+
+          # Construct the raw GitHub URL for this dependency
+          # We assume it lives in the same master branch of WPT
+          dep_url = f'{WPT_GITHUB_RAW_CONTENTS_URL}{resolved_path}'
+
+          processing_queue.append((resolved_path, dep_url))
 
   return all_contents
