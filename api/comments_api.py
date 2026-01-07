@@ -36,8 +36,8 @@ from internals.review_models import Activity, Amendment, Gate
 def amendment_to_OAM(amendment: Amendment) -> AmendmentModel:
   return AmendmentModel(
       field_name = amendment.field_name,
-      old_value = amendment.old_value.strip('[]'),
-      new_value = amendment.new_value.strip('[]'),
+      old_value = (amendment.old_value or '').strip('[]'),
+      new_value = (amendment.new_value or '').strip('[]'),
   )
 
 

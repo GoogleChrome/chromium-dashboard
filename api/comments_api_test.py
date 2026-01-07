@@ -34,6 +34,25 @@ NOW = datetime.datetime.now()
 
 class CommentsConvertersTest(testing_config.CustomTestCase):
 
+  def test_amendment_to_OAM__normal(self):
+    """We can convert a NDB Amendment to a Open API Amendment."""
+    amend = Amendment(
+        field_name='summary',
+        old_value='old',
+        new_value='[new,fresh]')
+    oam = comments_api.amendment_to_OAM(amend)
+    self.assertEqual(oam.field_name, 'summary')
+    self.assertEqual(oam.old_value, 'old')
+    self.assertEqual(oam.new_value, 'new,fresh')
+
+  def test_amendment_to_OAM__null(self):
+    """We can convert, even if some field was specified."""
+    amend = Amendment(field_name='summary', old_value='old')
+    oam = comments_api.amendment_to_OAM(amend)
+    self.assertEqual(oam.field_name, 'summary')
+    self.assertEqual(oam.old_value, 'old')
+    self.assertEqual(oam.new_value, '')
+
   def test_amendment_to_json_dict(self):
     amnd = Amendment(
         field_name='summary', old_value='foo', new_value='bar')
