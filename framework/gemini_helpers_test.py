@@ -15,6 +15,7 @@
 import testing_config  # Must be imported before the module under test.
 
 import asyncio
+import requests
 from unittest import mock
 from pathlib import Path
 from internals import core_enums
@@ -47,6 +48,118 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
   def tearDown(self):
     for f in FeatureEntry.query():
       f.key.delete()
+
+  def test_fetch_spec_content__github_pull_request_success(self):
+    """GitHub PR URLs should be converted to .diff URLs and fetched."""
+    url = 'https://github.com/w3c/fedid/pull/123'
+    expected_diff_url = 'https://github.com/w3c/fedid/pull/123.diff'
+    fake_content = 'diff --git a/spec.bs b/spec.bs...'
+
+    with mock.patch('framework.gemini_helpers.requests.get') as mock_get:
+      mock_get.return_value.text = fake_content
+      mock_get.return_value.raise_for_status = mock.Mock()
+
+      result = gemini_helpers._fetch_spec_content(url)
+
+      self.assertEqual(result, fake_content)
+      mock_get.assert_called_once_with(expected_diff_url)
+
+  def test_fetch_spec_content__github_pull_request_failure(self):
+    """GitHub PR fetch failures should return an error string."""
+    url = 'https://github.com/w3c/fedid/pull/123'
+
+    with mock.patch('framework.gemini_helpers.requests.get') as mock_get:
+      mock_get.side_effect = requests.exceptions.RequestException("404 Not Found")
+
+      result = gemini_helpers._fetch_spec_content(url)
+
+      self.assertIn("Error fetching GitHub Diff", result)
+      self.assertIn("404 Not Found", result)
+
+  def test_fetch_spec_content__github_blob_success(self):
+    """GitHub Blob URLs should be converted to raw content URLs."""
+    url = 'https://github.com/w3c/fedid/blob/main/index.html'
+    expected_raw_url = 'https://raw.githubusercontent.com/w3c/fedid/main/index.html'
+    fake_content = '<html>...</html>'
+
+    with mock.patch('framework.gemini_helpers.requests.get') as mock_get:
+      mock_get.return_value.text = fake_content
+      mock_get.return_value.raise_for_status = mock.Mock()
+
+      result = gemini_helpers._fetch_spec_content(url)
+
+      self.assertEqual(result, fake_content)
+      mock_get.assert_called_once_with(expected_raw_url)
+
+  def test_fetch_spec_content__github_blob_failure(self):
+    """GitHub Blob fetch failures should return an error string."""
+    url = 'https://github.com/w3c/fedid/blob/main/index.html'
+
+    with mock.patch('framework.gemini_helpers.requests.get') as mock_get:
+      mock_get.side_effect = requests.exceptions.RequestException("Network Error")
+
+      result = gemini_helpers._fetch_spec_content(url)
+
+      self.assertIn("Error fetching GitHub Raw", result)
+      self.assertIn("Network Error", result)
+
+  def test_fetch_spec_content__web_spec_success(self):
+    """Standard web URLs should use trafilatura to extract markdown."""
+    url = 'https://drafts.csswg.org/css-grid/'
+    fake_download = '<html><body><h1>Grid</h1><p>Content</p></body></html>'
+    fake_markdown = '# Grid\n\nContent'
+
+    with mock.patch('framework.gemini_helpers.trafilatura') as mock_traf:
+      mock_traf.fetch_url.return_value = fake_download
+      mock_traf.extract.return_value = fake_markdown
+
+      result = gemini_helpers._fetch_spec_content(url)
+
+      self.assertEqual(result, fake_markdown)
+      mock_traf.fetch_url.assert_called_once_with(url)
+      mock_traf.extract.assert_called_once_with(
+        fake_download,
+        include_comments=False,
+        include_tables=True,
+        output_format="markdown"
+      )
+
+  def test_fetch_spec_content__web_spec_fetch_failure(self):
+    """If trafilatura fails to download (returns None), return error."""
+    url = 'https://example.com/bad-url'
+
+    with mock.patch('framework.gemini_helpers.trafilatura') as mock_traf:
+      mock_traf.fetch_url.return_value = None
+
+      result = gemini_helpers._fetch_spec_content(url)
+
+      self.assertIn("Error: Could not fetch URL", result)
+      # extract should not be called if fetch returns None
+      mock_traf.extract.assert_not_called()
+
+  def test_fetch_spec_content__web_spec_extract_failure(self):
+    """If trafilatura returns None during extraction, return error."""
+    url = 'https://example.com/empty-page'
+
+    with mock.patch('framework.gemini_helpers.trafilatura') as mock_traf:
+      mock_traf.fetch_url.return_value = '<html></html>'
+      mock_traf.extract.return_value = None
+
+      result = gemini_helpers._fetch_spec_content(url)
+
+      self.assertIn("Error: No main content found", result)
+
+  def test_fetch_spec_content__web_spec_exception(self):
+    """General exceptions during trafilatura processing should be caught."""
+    url = 'https://example.com/crash'
+
+    with mock.patch('framework.gemini_helpers.trafilatura') as mock_traf:
+      mock_traf.fetch_url.side_effect = Exception("Unexpected Crash")
+
+      result = gemini_helpers._fetch_spec_content(url)
+
+      self.assertIn("Error processing Web Spec", result)
+      self.assertIn("Unexpected Crash", result)
 
   def test_create_feature_definition(self):
     """Tests the internal helper for formatting feature definitions."""
