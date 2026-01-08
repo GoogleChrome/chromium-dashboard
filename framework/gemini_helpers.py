@@ -124,6 +124,22 @@ def unified_prompt_evaluation(
   test_files: dict[Path, str],
   dependency_files: dict[Path, str]
 ) -> str:
+  """Evaluates WPT coverage using a single, unified prompt.
+
+  This method is used when the number of test files is small enough to fit
+  within the context window of a single prompt. It combines the feature
+  specification, all test file contents, and all dependency file contents
+  into one "gap analysis" prompt.
+
+  Args:
+    feature: The feature entry containing metadata (name, summary, spec URL).
+    test_files: A dictionary mapping test file paths to their raw text content.
+    dependency_files: A dictionary mapping dependency file paths to their raw
+      text content.
+
+  Returns:
+    A string containing the generated coverage report.
+  """
   template_data = {
     'spec_url': feature.spec_link,
     'spec_content': _fetch_spec_content(feature.spec_link),
@@ -143,6 +159,26 @@ def unified_prompt_evaluation(
 
 
 async def prompt_evaluation(feature: FeatureEntry, test_files: dict[Path, str]) -> str:
+  """Evaluates WPT coverage using a multi-stage prompt flow.
+
+  This method is used when the number of test files is too large for a single
+  prompt. It breaks the evaluation into three distinct stages:
+  1. Spec Synthesis: Summarizes the spec into a concise reference.
+  2. Test Analysis: Analyzes each test file individually in parallel batches.
+  3. Gap Analysis: Compares the spec synthesis with the aggregated test
+     summaries to identify gaps.
+
+  Args:
+    feature: The feature entry containing metadata and the spec URL.
+    test_files: A dictionary mapping test file paths to their raw text content.
+
+  Returns:
+    A string containing the generated coverage report.
+
+  Raises:
+    PipelineError: If any critical stage of the prompt pipeline fails (e.g.,
+      spec synthesis failure or total failure of all test analyses).
+  """
   prompts = []
   file_names: list[str] = []
   for fpath, fc in test_files.items():
