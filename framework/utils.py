@@ -38,11 +38,15 @@ WPT_GITHUB_API_URL = 'https://api.github.com/repos/web-platform-tests/wpt/conten
 WPT_GITHUB_RAW_CONTENTS_URL = 'https://raw.githubusercontent.com/web-platform-tests/wpt/master/'
 
 # Match <script src="...">
-SCRIPT_DEPENDENCY_REGEX = r'<script\s+[^>]*src=["\']([^"\']+)["\']'
+SCRIPT_DEPENDENCY_REGEX = re.compile(r'<script\s+[^>]*src=["\']([^"\']+)["\']')
 
 # Match import/export ... from "..." or import "..."
 # Matches: import { x } from './foo.js' | import './bar.js' | export * from './baz.js'
-IMPORT_DEPENDENCY_REGEX = r'(?:import|export)\s+(?:[^"\']+\s+from\s+)?["\']([^"\']+)["\']'
+IMPORT_DEPENDENCY_REGEX = re.compile(
+  r'(?:import|export)\s+(?:[^"\']+\s+from\s+)?["\']([^"\']+)["\']')
+
+# The maximum number of dependency files that will be fetched for coverage evalution.
+MAXIMUM_FETCHED_DEPENDENCIES = 100
 
 
 def normalized_name(val):
@@ -435,7 +439,7 @@ async def get_mixed_wpt_contents_async(
     initial_paths.add(fpath)
     visited_paths.add(fpath)
 
-  # PHASE 2: Recursive Content Fetching
+  # PHASE 2: Iterative Content Fetching
   while processing_queue:
     # Create fetch tasks for the current batch
     file_tasks = [
@@ -472,6 +476,8 @@ async def get_mixed_wpt_contents_async(
           # Construct the raw GitHub URL for this dependency
           dep_url = f'{WPT_GITHUB_RAW_CONTENTS_URL}{resolved_path}'
 
-          processing_queue.append((resolved_path, dep_url))
+          # Avoid an arbitrarily large amount of files to fetch..
+          if len(visited_paths) <= MAXIMUM_FETCHED_DEPENDENCIES:
+            processing_queue.append((resolved_path, dep_url))
 
   return test_contents, dependency_contents
