@@ -168,7 +168,7 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
     expected = 'Name: Test Feature\nDescription: A test feature summary'
     self.assertEqual(result, expected)
 
-  def test_get_test_analysis_prompts(self):
+  def test_get_test_file_contents(self):
     """Tests splitting of URLs and directories and fetching content."""
     test_locations = [
         'https://wpt.fyi/results/foo/bar.html',  # Matches file regex
@@ -187,7 +187,7 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
 
     # Run the async helper
     result = asyncio.run(
-        gemini_helpers._get_test_analysis_prompts(test_locations)
+        gemini_helpers._get_test_file_contents(test_locations)
     )
 
     # Verify it split the locations correctly based on the regex
@@ -212,7 +212,7 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
         'https://wpt.fyi/results/foo/test.html'
     ]
     # Mock the internal helper to simplify this higher-level test
-    with mock.patch('framework.gemini_helpers._get_test_analysis_prompts',
+    with mock.patch('framework.gemini_helpers._get_test_file_contents',
                     new_callable=mock.AsyncMock) as mock_get_prompts:
 
       mock_get_prompts.return_value = ({Path('test.html'): 'file_content_1'}, {})
@@ -271,7 +271,7 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
     """Pipeline should fail if the spec synthesis prompt (popped last) fails."""
     self.mock_utils.extract_wpt_fyi_results_urls.return_value = ['url1']
 
-    with mock.patch('framework.gemini_helpers._get_test_analysis_prompts',
+    with mock.patch('framework.gemini_helpers._get_test_file_contents',
                     new_callable=mock.AsyncMock) as mock_get_prompts:
 
       mock_get_prompts.return_value = ({Path('f1.html'): 'content1'}, {})
@@ -290,7 +290,7 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
     """Pipeline should fail if ALL test analysis prompts fail."""
     self.mock_utils.extract_wpt_fyi_results_urls.return_value = ['url1', 'url2']
 
-    with mock.patch('framework.gemini_helpers._get_test_analysis_prompts',
+    with mock.patch('framework.gemini_helpers._get_test_file_contents',
                     new_callable=mock.AsyncMock) as mock_get_prompts:
 
       mock_get_prompts.return_value = ({
@@ -318,7 +318,7 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
     """Pipeline should continue if at least ONE test analysis succeeds."""
     self.mock_utils.extract_wpt_fyi_results_urls.return_value = ['url1', 'url2']
 
-    with mock.patch('framework.gemini_helpers._get_test_analysis_prompts',
+    with mock.patch('framework.gemini_helpers._get_test_file_contents',
                     new_callable=mock.AsyncMock) as mock_get_prompts:
 
       mock_get_prompts.return_value = ({
