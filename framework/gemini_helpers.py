@@ -233,13 +233,7 @@ async def prompt_evaluation(feature: FeatureEntry, test_files: dict[Path, str]) 
   return gap_analysis_response
 
 async def run_wpt_test_eval_pipeline(feature: FeatureEntry) -> None:
-  """Execute the three-stage AI pipeline for WPT coverage evaluation.
-
-  This pipeline performs the following steps:
-  1. Spec Synthesis: Summarizes the relevant specifications for the feature.
-  2. Test Analysis: Analyzes existing WPT files for coverage concurrently.
-  3. Gap Analysis: Compares the spec synthesis with test analyses to identify
-     missing coverage.
+  """Execute the AI pipeline for WPT coverage evaluation.
 
   The final report is saved to `feature.ai_test_eval_report`.
 
