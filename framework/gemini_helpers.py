@@ -36,6 +36,11 @@ UNIFIED_GAP_ANALYSIS_TEMPLATE_PATH = 'prompts/unified-gap-analysis.html'
 # Otherwise, it's a directory.
 WPT_FILE_REGEX = re.compile(r"\/[^/]*\.[^/]*$")
 
+# Define the maximum number of listed tests for the feature that can be used in
+# the single prompt format. Any more than this will cause the trigger the use
+# of the three-prompt flow that utilizes separate test summaries.
+MAX_SINGLE_PROMPT_TEST_COUNT = 10
+
 
 class PipelineError(Exception):
   """Base exception for errors occurring during the AI evaluation pipeline."""
@@ -219,7 +224,7 @@ async def run_wpt_test_eval_pipeline(feature: FeatureEntry) -> None:
 
   test_files, dependency_files = await _get_test_file_contents(test_locations)
 
-  if len(test_files) <= 10:
+  if len(test_files) <= MAX_SINGLE_PROMPT_TEST_COUNT:
     gap_analysis_response = unified_prompt_evaluation(feature, test_files, dependency_files)
   else:
     gap_analysis_response = await prompt_evaluation(feature, test_files)
