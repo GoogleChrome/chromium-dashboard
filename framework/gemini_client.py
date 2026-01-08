@@ -30,7 +30,7 @@ class GeminiClient:
   handling API key configuration and simplifying content generation requests.
   """
 
-  GEMINI_MODEL = 'gemini-2.5-pro'
+  GEMINI_MODEL = 'gemini-3-pro-preview'
 
   # Retry configuration.
   MAX_RETRIES = 3
