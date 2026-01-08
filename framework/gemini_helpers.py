@@ -17,7 +17,10 @@ from datetime import datetime
 import logging
 from pathlib import Path
 import re
+import requests
+import trafilatura
 from flask import render_template
+from urllib.parse import urlparse
 
 from framework import basehandlers, utils
 from framework.gemini_client import GeminiClient
@@ -40,6 +43,58 @@ class PipelineError(Exception):
 
 def _create_feature_definition(feature: FeatureEntry) -> str:
   return f'Name: {feature.name}\nDescription: {feature.summary}'
+
+
+def _fetch_spec_content(url: str) -> str:
+  """
+  Routes the URL to the correct extraction logic to return clean text.
+  """
+  parsed = urlparse(url)
+
+  # URL type 1: GitHub pull requests
+  if "github.com" in parsed.netloc and "/pull/" in parsed.path:
+    diff_url = url.rstrip('/') + ".diff"
+    try:
+      resp = requests.get(diff_url)
+      resp.raise_for_status()
+      return resp.text
+    except Exception as e:
+      return f"Error fetching GitHub Diff: {e}"
+
+  # URL type 2: GitHub file blobs
+  if "github.com" in parsed.netloc and "/blob/" in parsed.path:
+    raw_url = url.replace("github.com", "raw.githubusercontent.com").replace("/blob/", "/")
+    try:
+      resp = requests.get(raw_url)
+      resp.raise_for_status()
+      return resp.text
+    except Exception as e:
+      return f"Error fetching GitHub Raw: {e}"
+
+  # URL type 3: Standard W3C, Web specs, or other webpages
+  try:
+    downloaded = trafilatura.fetch_url(url)
+
+    if downloaded is None:
+      return f"Error: Could not fetch URL {url}"
+
+    # Extract content to Markdown.
+    # include_comments=False skips comments.
+    # include_tables=True is critical for Specs which often use tables for definitions.
+    result = trafilatura.extract(
+      downloaded,
+      include_comments=False,
+      include_tables=True,
+      output_format="markdown"
+    )
+
+    if not result:
+      return f"Error: No main content found at {url}"
+
+    return result
+
+  except Exception as e:
+    return f"Error processing Web Spec: {e}"
 
 
 async def _get_test_analysis_prompts(test_locations: list[str]) -> tuple[dict[Path, str], dict[Path, str]]:
