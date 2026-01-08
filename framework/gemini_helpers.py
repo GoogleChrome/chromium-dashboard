@@ -42,7 +42,7 @@ def _create_feature_definition(feature: FeatureEntry) -> str:
   return f'Name: {feature.name}\nDescription: {feature.summary}'
 
 
-async def _get_test_analysis_prompts(test_locations: list[str]) -> dict[Path, str]:
+async def _get_test_analysis_prompts(test_locations: list[str]) -> tuple[dict[Path, str], dict[Path, str]]:
   test_urls = []
   test_directories = []
   for test_loc in test_locations:
@@ -51,10 +51,10 @@ async def _get_test_analysis_prompts(test_locations: list[str]) -> dict[Path, st
     else:
       test_directories.append(test_loc)
 
-  all_file_contents = await utils.get_mixed_wpt_contents_async(
+  test_file_contents, dependency_contents = await utils.get_mixed_wpt_contents_async(
     test_directories, test_urls
   )
-  return all_file_contents
+  return test_file_contents, dependency_contents
 
 
 async def run_wpt_test_eval_pipeline(feature: FeatureEntry) -> None:
@@ -89,7 +89,7 @@ async def run_wpt_test_eval_pipeline(feature: FeatureEntry) -> None:
   }
   spec_synthesis_prompt = render_template(SPEC_SYNTHESIS_TEMPLATE_PATH, **template_data)
 
-  test_analysis_file_contents = await _get_test_analysis_prompts(test_locations)
+  test_analysis_file_contents, _ = await _get_test_analysis_prompts(test_locations)
 
   file_names: list[str] = []
   prompts = []
@@ -104,6 +104,7 @@ async def run_wpt_test_eval_pipeline(feature: FeatureEntry) -> None:
       )
     )
     file_names.append(fpath.name)
+
   # Add the spec synthesis prompt to the end for batch processing.
   prompts.append(spec_synthesis_prompt)
 
