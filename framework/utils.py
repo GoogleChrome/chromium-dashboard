@@ -439,7 +439,7 @@ async def get_mixed_wpt_contents_async(
     initial_paths.add(fpath)
     visited_paths.add(fpath)
 
-  # PHASE 2: Recursive Content Fetching
+  # PHASE 2: Iterative Content Fetching
   while processing_queue:
     # Create fetch tasks for the current batch
     file_tasks = [
