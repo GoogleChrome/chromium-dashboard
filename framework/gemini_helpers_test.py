@@ -202,52 +202,179 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
     )
     self.assertEqual(result, (expected_content_map, {}))
 
-  def test_run_pipeline__success(self):
-    """Test the happy path where all steps and API calls succeed."""
+  @mock.patch('framework.gemini_helpers._fetch_spec_content', return_value="Mock Spec Content")
+  def test_unified_prompt_evaluation__success(self, mock_fetch_spec):
+    """Tests that the unified evaluator renders the template and calls Gemini."""
+    test_files = {Path('test1.html'): 'content1'}
+    dependency_files = {Path('dep.js'): 'dep_content'}
+
+    self.mock_gemini_client.get_response.return_value = 'Unified Report'
+
+    result = gemini_helpers.unified_prompt_evaluation(
+        self.feature, test_files, dependency_files
+    )
+
+    self.assertEqual(result, 'Unified Report')
+
+    # Verify render_template called with correct path and data
+    self.mock_render_template.assert_called_once()
+    args, kwargs = self.mock_render_template.call_args
+    self.assertEqual(args[0], gemini_helpers.UNIFIED_GAP_ANALYSIS_TEMPLATE_PATH)
+    self.assertEqual(kwargs['test_files'], test_files)
+    self.assertEqual(kwargs['dependency_files'], dependency_files)
+
+    self.mock_gemini_client.get_response.assert_called_once()
+
+  @mock.patch('framework.gemini_helpers._fetch_spec_content', return_value="Mock Spec Content")
+  def test_prompt_evaluation__success(self, mock_fetch_spec):
+    """Test the multi-prompt path where all steps and API calls succeed."""
+    test_files = {Path('test.html'): 'file_content_1'}
+
+    # Setup mocks for template rendering
+    def fake_render(template_path, **kwargs):
+      return f'RENDERED: {template_path}'
+    self.mock_render_template.side_effect = fake_render
+
+    # Batch response (test_analysis_response, spec_synthesis_response)
+    self.mock_gemini_client.get_batch_responses_async = mock.AsyncMock(
+        return_value=['Analysis of Test 1', 'Spec Summary']
+    )
+    self.mock_gemini_client.get_response_async = mock.AsyncMock(
+        return_value='Final Gap Analysis Report'
+    )
+
+    result = asyncio.run(gemini_helpers.prompt_evaluation(self.feature, test_files))
+
+    self.assertEqual(result, 'Final Gap Analysis Report')
+
+    # Verify template calls involved correct data
+    self.assertEqual(self.mock_render_template.call_count, 3)
+
+    # Verify final gap analysis prompt received the filename in the summary
+    call_kwargs = self.mock_render_template.call_args[1]
+    test_analysis_summary = call_kwargs.get('test_analysis', '')
+    self.assertIn('Test test.html summary:', test_analysis_summary)
+    self.assertIn('Analysis of Test 1', test_analysis_summary)
+
+  @mock.patch('framework.gemini_helpers._fetch_spec_content', return_value="Mock Spec Content")
+  def test_prompt_evaluation__spec_synthesis_failure(self, mock_fetch_spec):
+    """Prompt evaluation should fail if spec synthesis prompt (popped last) fails."""
+    test_files = {Path('f1.html'): 'content1'}
+
+    # The last item (spec synthesis) returns an Exception instead of str
+    gemini_error = RuntimeError("Gemini overloaded")
+    self.mock_gemini_client.get_batch_responses_async = mock.AsyncMock(
+        return_value=['Test analysis OK', gemini_error]
+    )
+
+    with self.assertRaisesRegex(gemini_helpers.PipelineError,
+                                'Spec synthesis prompt failure'):
+      asyncio.run(gemini_helpers.prompt_evaluation(self.feature, test_files))
+
+  @mock.patch('framework.gemini_helpers._fetch_spec_content', return_value="Mock Spec Content")
+  def test_prompt_evaluation__all_test_analysis_failure(self, mock_fetch_spec):
+    """Prompt evaluation should fail if ALL test analysis prompts fail."""
+    test_files = {
+      Path('f1.html'): 'content1',
+      Path('f2.html'): 'content2'
+    }
+
+    # Both tests fail, but Spec succeeds (last item)
+    self.mock_gemini_client.get_batch_responses_async = mock.AsyncMock(
+      return_value=[
+        RuntimeError("Fail 1"),
+        RuntimeError("Fail 2"),
+        'Spec Summary Success'
+      ]
+    )
+
+    with self.assertRaisesRegex(gemini_helpers.PipelineError,
+                                'No successful test analysis responses'):
+      asyncio.run(gemini_helpers.prompt_evaluation(self.feature, test_files))
+
+    # Should have logged warnings for the failures
+    self.assertEqual(self.mock_logging.error.call_count, 2)
+
+  @mock.patch('framework.gemini_helpers._fetch_spec_content', return_value="Mock Spec Content")
+  def test_prompt_evaluation__partial_test_analysis_success(self, mock_fetch_spec):
+    """Prompt evaluation should continue if at least ONE test analysis succeeds."""
+    test_files = {
+      Path('f1.html'): 'content1',
+      Path('f2.html'): 'content2'
+    }
+
+    # One fails, one succeeds, spec succeeds
+    self.mock_gemini_client.get_batch_responses_async = mock.AsyncMock(
+        return_value=[
+            RuntimeError("Fail 1"),
+            'Analysis 2 Success',
+            'Spec Summary Success'
+        ]
+    )
+    self.mock_gemini_client.get_response_async = mock.AsyncMock(
+        return_value='Final Report'
+    )
+
+    # Should NOT raise exception
+    result = asyncio.run(gemini_helpers.prompt_evaluation(self.feature, test_files))
+
+    self.assertEqual(result, 'Final Report')
+    # Verify one warning logged for the failure
+    self.mock_logging.error.assert_called_once()
+
+  def test_run_pipeline__routes_to_unified_eval(self):
+    """If file count is small, verify routing to unified_prompt_evaluation."""
     self.feature.spec_link = 'https://spec.example.com'
-    self.feature.wpt_descr = 'See https://wpt.fyi/results/foo'
+    self.feature.wpt_descr = 'https://wpt.fyi/results/test'
 
-    # 1. Setup Mocks for initial data gathering.
-    self.mock_utils.extract_wpt_fyi_results_urls.return_value = [
-        'https://wpt.fyi/results/foo/test.html'
-    ]
-    # Mock the internal helper to simplify this higher-level test
+    # Return 1 file (less than MAX_SINGLE_PROMPT_TEST_COUNT)
+    mock_test_files = {Path('t1.html'): 'c1'}
+    mock_deps = {}
+
+    self.mock_utils.extract_wpt_fyi_results_urls.return_value = ['url1']
+
     with mock.patch('framework.gemini_helpers._get_test_file_contents',
-                    new_callable=mock.AsyncMock) as mock_get_prompts:
+                    new_callable=mock.AsyncMock) as mock_get_content, \
+         mock.patch('framework.gemini_helpers.unified_prompt_evaluation') as mock_unified, \
+         mock.patch('framework.gemini_helpers.prompt_evaluation', new_callable=mock.AsyncMock) as mock_multi:
 
-      mock_get_prompts.return_value = ({Path('test.html'): 'file_content_1'}, {})
+      mock_get_content.return_value = (mock_test_files, mock_deps)
+      mock_unified.return_value = "Unified Success"
 
-      # 2. Setup Mocks for template rendering
-      # Make render_template return a string that identifies which template it was
-      def fake_render(template_path, **kwargs):
-        return f'RENDERED: {template_path}'
-      self.mock_render_template.side_effect = fake_render
-
-      # 3. Setup Gemini Mocks
-      # Batch response: [test_analysis_response, spec_synthesis_response]
-      self.mock_gemini_client.get_batch_responses_async = mock.AsyncMock(
-          return_value=['Analysis of Test 1', 'Spec Summary']
-      )
-      self.mock_gemini_client.get_response_async = mock.AsyncMock(
-          return_value='Final Gap Analysis Report'
-      )
-
-      # Execute Pipeline
       asyncio.run(gemini_helpers.run_wpt_test_eval_pipeline(self.feature))
 
-      # Verification
-      self.assertEqual(self.feature.ai_test_eval_report, 'Final Gap Analysis Report')
+      # Verify Unified Called
+      mock_unified.assert_called_once_with(self.feature, mock_test_files, mock_deps)
+      # Verify Multi NOT Called
+      mock_multi.assert_not_called()
+      self.assertEqual(self.feature.ai_test_eval_report, "Unified Success")
 
-      # Verify template calls involved correct data
-      self.assertEqual(self.mock_render_template.call_count, 3)
+  def test_run_pipeline__routes_to_multi_prompt_eval(self):
+    """If file count is large, verify routing to prompt_evaluation."""
+    self.feature.spec_link = 'https://spec.example.com'
+    self.feature.wpt_descr = 'https://wpt.fyi/results/test'
 
-      # Verify final gap analysis prompt received the filename in the summary
-      # The last call to render_template is for GAP_ANALYSIS_TEMPLATE_PATH
-      call_kwargs = self.mock_render_template.call_args[1]
-      test_analysis_summary = call_kwargs.get('test_analysis', '')
-      # Verify the filename 'test.html' is in the summary string
-      self.assertIn('Test test.html summary:', test_analysis_summary)
-      self.assertIn('Analysis of Test 1', test_analysis_summary)
+    # Create enough files to exceed threshold (10)
+    mock_test_files = {Path(f't{i}.html'): 'c' for i in range(12)}
+    mock_deps = {}
+
+    self.mock_utils.extract_wpt_fyi_results_urls.return_value = ['url1']
+
+    with mock.patch('framework.gemini_helpers._get_test_file_contents',
+                    new_callable=mock.AsyncMock) as mock_get_content, \
+         mock.patch('framework.gemini_helpers.unified_prompt_evaluation') as mock_unified, \
+         mock.patch('framework.gemini_helpers.prompt_evaluation', new_callable=mock.AsyncMock) as mock_multi:
+
+      mock_get_content.return_value = (mock_test_files, mock_deps)
+      mock_multi.return_value = "Multi Success"
+
+      asyncio.run(gemini_helpers.run_wpt_test_eval_pipeline(self.feature))
+
+      # Verify Multi Called
+      mock_multi.assert_awaited_once_with(self.feature, mock_test_files)
+      # Verify Unified NOT Called
+      mock_unified.assert_not_called()
+      self.assertEqual(self.feature.ai_test_eval_report, "Multi Success")
 
   def test_run_pipeline__missing_spec_link(self):
     """Pipeline should fail immediately if no spec link is present."""
@@ -266,95 +393,6 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
       asyncio.run(gemini_helpers.run_wpt_test_eval_pipeline(self.feature))
 
     self.mock_gemini_client_cls.assert_not_called()
-
-  def test_run_pipeline__spec_synthesis_failure(self):
-    """Pipeline should fail if the spec synthesis prompt (popped last) fails."""
-    self.mock_utils.extract_wpt_fyi_results_urls.return_value = ['url1']
-
-    with mock.patch('framework.gemini_helpers._get_test_file_contents',
-                    new_callable=mock.AsyncMock) as mock_get_prompts:
-
-      mock_get_prompts.return_value = ({Path('f1.html'): 'content1'}, {})
-
-      # The last item (spec synthesis) returns an Exception instead of str
-      gemini_error = RuntimeError("Gemini overloaded")
-      self.mock_gemini_client.get_batch_responses_async = mock.AsyncMock(
-          return_value=['Test analysis OK', gemini_error]
-      )
-
-      with self.assertRaisesRegex(gemini_helpers.PipelineError,
-                                  'Spec synthesis prompt failure'):
-        asyncio.run(gemini_helpers.run_wpt_test_eval_pipeline(self.feature))
-
-  def test_run_pipeline__all_test_analysis_failure(self):
-    """Pipeline should fail if ALL test analysis prompts fail."""
-    self.mock_utils.extract_wpt_fyi_results_urls.return_value = ['url1', 'url2']
-
-    with mock.patch('framework.gemini_helpers._get_test_file_contents',
-                    new_callable=mock.AsyncMock) as mock_get_prompts:
-
-      mock_get_prompts.return_value = ({
-        Path('f1.html'): 'content1',
-        Path('f2.html'): 'content2'
-      }, {})
-
-      # Both tests fail, but Spec succeeds (last item)
-      self.mock_gemini_client.get_batch_responses_async = mock.AsyncMock(
-          return_value=[
-              RuntimeError("Fail 1"),
-              RuntimeError("Fail 2"),
-              'Spec Summary Success'
-          ]
-      )
-
-      with self.assertRaisesRegex(gemini_helpers.PipelineError,
-                                  'No successful test analysis responses'):
-        asyncio.run(gemini_helpers.run_wpt_test_eval_pipeline(self.feature))
-
-      # Should have logged warnings for the failures
-      self.assertEqual(self.mock_logging.error.call_count, 2)
-
-  def test_run_pipeline__partial_test_analysis_success(self):
-    """Pipeline should continue if at least ONE test analysis succeeds."""
-    self.mock_utils.extract_wpt_fyi_results_urls.return_value = ['url1', 'url2']
-
-    with mock.patch('framework.gemini_helpers._get_test_file_contents',
-                    new_callable=mock.AsyncMock) as mock_get_prompts:
-
-      mock_get_prompts.return_value = ({
-        Path('f1.html'): 'content1',
-        Path('f2.html'): 'content2'
-      }, {})
-
-      # One fails, one succeeds, spec succeeds
-      self.mock_gemini_client.get_batch_responses_async = mock.AsyncMock(
-          return_value=[
-              RuntimeError("Fail 1"),
-              'Analysis 2 Success',
-              'Spec Summary Success'
-          ]
-      )
-      self.mock_gemini_client.get_response_async = mock.AsyncMock(
-          return_value='Final Report'
-      )
-
-      # Should NOT raise exception
-      asyncio.run(gemini_helpers.run_wpt_test_eval_pipeline(self.feature))
-
-      self.assertEqual(self.feature.ai_test_eval_report, 'Final Report')
-      # Verify one warning logged for the failure
-      self.mock_logging.error.assert_called_once()
-
-      # Verify the gap analysis prompt only contains the successful one AND its filename
-      call_args_list = self.mock_render_template.call_args_list
-      gap_call_kwargs = call_args_list[-1][1]
-      gap_prompt_test_analysis = gap_call_kwargs.get('test_analysis', '')
-
-      # assert filename 'f2.html' is present for the successful one
-      self.assertIn('Test f2.html summary:', gap_prompt_test_analysis)
-      self.assertIn('Analysis 2 Success', gap_prompt_test_analysis)
-      # Ensure failed one is missing
-      self.assertNotIn('f1.html', gap_prompt_test_analysis)
 
 
 class GenerateWPTCoverageEvalReportHandlerTest(testing_config.CustomTestCase):
