@@ -32,10 +32,10 @@ Scan the test file for references to other files within the same repository (e.g
 1.  **Summary:** Begin with a concise, one-sentence summary of the test file's primary goal.
 2.  **Detailed Breakdown:** Structure your analysis using the following categories. Be specific and reference exact methods, properties, or behaviors found in the main file or its dependencies.
     * **Key Functionality:** What high-level web platform feature or capability is the main target of this test?
-    * **API Surfaces & Existence Checks:** Enumerate the exact APIs, methods, properties, and constructors being invoked. Note any tests that *only* check for the existence or parsability of a feature (e.g., `idlharness.js`, CSS parsing).
-    * **Common Use Case Tests (Happy Path):** Describe the specific *successful*, end-to-end behaviors and realistic scenarios being asserted.
-    * **Error Scenario Tests (Sad Path):** Describe the specific *failure* conditions, invalid inputs, out-of-bounds values, or promise rejections being asserted.
-    * **Invalidation & Dynamic Tests:** Describe any tests that change an initial state (e.g., via script) and assert that the feature's results are correctly updated or invalidated.
+    * **Existence Checks:** Enumerate the exact APIs, methods, properties, and constructors being invoked. Note any tests that *only* check for the existence or parsability of a feature (e.g., `idlharness.js`, CSS parsing).
+    * **Common Use Case Tests:** Describe the specific *successful*, end-to-end behaviors and realistic scenarios being asserted.
+    * **Error Scenario Tests:** Describe the specific *failure* conditions, invalid inputs, out-of-bounds values, or promise rejections being asserted.
+    * **Invalidation Tests:** Describe any tests that change an initial state (e.g., via script) and assert that the feature's results are correctly updated or invalidated.
     * **Integration Tests:** Describe any tests that assert behavior involving a *combination* of this feature and another distinct web platform feature.
 
 **Constraints:**
