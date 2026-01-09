@@ -32,6 +32,7 @@ from internals.review_models import Gate, Vote
 
 class ShippingFeatureInfo(TypedDict):
   name: str
+  id: int
   chromestatus_url: str
   tracking_bug_url: str
   launch_bug_url: str
@@ -746,6 +747,7 @@ def build_feature_info(feature: FeatureEntry, stage: Stage, url_root: str) -> Sh
   chromestatus_url = f'{url_root}/feature/{feature.key.integer_id()}'
   return {
     'name': feature.name,
+    'id': feature.key.integer_id(),
     'chromestatus_url': chromestatus_url,
     'tracking_bug_url': feature.bug_url,
     'launch_bug_url': feature.launch_bug_url,
