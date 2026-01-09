@@ -75,6 +75,20 @@ def filter_confidential_formatted(feature_list: list[dict]) -> list[dict]:
   return visible_features
 
 
+def filter_unpublished_formatted(feature_list: list[dict]) -> list[dict]:
+  """Filters a feature list to display only features marked ready to publish."""
+  user = users.get_current_user()
+  if (permissions.is_google_or_chromium_account(user) or
+      permissions.can_admin_site(user)):
+    return feature_list  # no filtering needed
+  visible_features = []
+  for f in feature_list:
+    if f['is_releasenotes_publish_ready']:
+      visible_features.append(f)
+
+  return visible_features
+
+
 def filter_confidential(feature_list: list[FeatureEntry]) -> list[FeatureEntry]:
   """Filters a FeatureEntry list to display only features the user should see."""
   user = users.get_current_user()
@@ -189,7 +203,9 @@ def get_features_in_release_notes(milestone: int):
 
   rediscache.set(cache_key, formatted_features)
   logging.info('finished storing in cache')
-  return filter_confidential_formatted(formatted_features)
+  formatted_features = filter_confidential_formatted(formatted_features)
+  formatted_features = filter_unpublished_formatted(formatted_features)
+  return formatted_features
 
 
 def get_in_milestone(milestone: int,
