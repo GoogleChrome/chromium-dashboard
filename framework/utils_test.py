@@ -569,6 +569,12 @@ class UtilsDependencyTests(unittest.TestCase):
 class AsyncUtilsGitHubTests(unittest.IsolatedAsyncioTestCase):
   """Tests for the async GitHub orchestration functions."""
 
+  def setUp(self):
+    self.previous_max = utils.MAXIMUM_FETCHED_DEPENDENCIES
+
+  def tearDown(self):
+    utils.MAXIMUM_FETCHED_DEPENDENCIES = self.previous_max
+
   async def test_fetch_and_pair(self):
     """Should pair filename with fetched content asynchronously."""
     fname = Path('test.html')
@@ -629,6 +635,49 @@ class AsyncUtilsGitHubTests(unittest.IsolatedAsyncioTestCase):
     self.assertEqual(len(deps), 2)
 
     self.assertEqual(mock_fetch_content.call_count, 4)
+
+  @mock.patch('framework.utils.MAXIMUM_FETCHED_DEPENDENCIES', 2)
+  @mock.patch('framework.utils._fetch_dir_listing')
+  @mock.patch('framework.utils._fetch_file_content')
+  async def test_get_mixed_wpt_contents_async__dependency_limit(
+      self, mock_fetch_content, mock_fetch_dir):
+    """Should stop fetching dependencies when limit is reached."""
+    # We set MAX limit to 2.
+    # 1 Test File -> Dep 1 -> Dep 2 -> Dep 3 (should be ignored)
+    utils.MAXIMUM_FETCHED_DEPENDENCIES = 2
+
+    dir_urls = []
+    file_urls = ['https://wpt.fyi/results/test.js']
+    settings.GITHUB_TOKEN = 'token'
+
+    mock_fetch_dir.return_value = []
+
+    def side_effect(url):
+      if url.endswith('test.js'):
+        return 'import "./dep1.js";'
+      if url.endswith('dep1.js'):
+        return 'import "./dep2.js";'
+      if url.endswith('dep2.js'):
+        return 'import "./dep3.js";'
+      if url.endswith('dep3.js'):
+        return 'console.log("Too deep");'
+      return ''
+
+    mock_fetch_content.side_effect = side_effect
+
+    # Execute
+    tests, deps = await utils.get_mixed_wpt_contents_async(dir_urls, file_urls)
+
+    # 1. Start: 1 Test file (test.js). Visited count = 1.
+    # 2. Fetch test.js. Find dep1. Visited count = 2. (2 <= 2) -> Queue dep1.
+    # 3. Fetch dep1. Find dep2. Visited count = 3. (3 <= 2) -> False. Do NOT queue dep2.
+
+    # Assertions
+    self.assertIn(Path('test.js'), tests)
+    self.assertIn(Path('dep1.js'), deps)
+
+    # Dep 2 should NOT be in the fetched content because we exceeded limit before queuing it
+    self.assertNotIn(Path('dep2.js'), deps)
 
   @mock.patch('framework.utils._fetch_dir_listing')
   @mock.patch('framework.utils._fetch_file_content')
