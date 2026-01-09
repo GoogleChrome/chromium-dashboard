@@ -16,7 +16,7 @@
 from asyncio import Future
 from datetime import datetime, timedelta
 import logging
-from typing import Any, Optional
+from typing import Any, TypedDict
 from google.cloud import ndb  # type: ignore
 
 from api import converters
@@ -27,7 +27,33 @@ from framework.utils import get_current_milestone_info
 from internals.stage_helpers import organize_all_stages_by_feature
 from internals.core_enums import *
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
-from internals.review_models import Gate
+from internals.review_models import Gate, Vote
+
+
+class ShippingFeatureInfo(TypedDict):
+  name: str
+  chromestatus_url: str
+  tracking_bug_url: str
+  launch_bug_url: str
+  finch_name: str
+  non_finch_justification: str
+  owner_emails: list[str]
+  intent_to_ship: str
+
+
+# Enum representing the criteria that is missing for a feature that is shipping.
+class Criteria(str, Enum):
+  # Intent to Ship thread URL is missing.
+  INTENT_TO_SHIP_MISSING = 'i2s'
+  # API Owner approvals have not been obtained on the ship gate.
+  API_OWNER_LGTMS_MISSING = 'lgtms'
+  # Both the finch name and the non-finch justification fields are missing.
+  FINCH_NAME_MISSING = 'finch_name'
+  # The feature exists in runtime_enabled_features.json5, but is not marked as 'status: "stable"'.
+  RUNTIME_FEATURE_NOT_STABLE = 'runtime_feature_not_stable'
+  # The feature exists in content_features.cc, but is not marked as enabled.
+  CONTENT_FEATURE_NOT_ENABLED = 'content_feature_not_enabled'
+  CHROMIUM_FEATURE_NOT_FOUND = 'chromium_feature_not_found'
 
 
 def filter_unlisted(feature_list: list[FeatureEntry]) -> list[FeatureEntry]:
@@ -667,3 +693,136 @@ def get_stale_features() -> list[tuple[FeatureEntry, int, str]]:
     if (f.accurate_as_of and f.accurate_as_of + timedelta(weeks=4) < now
         and not f.deleted
         and f.outstanding_notifications > 0)]
+
+
+def validate_feature_in_chromium(
+    name: str,
+    enabled_features_json: dict,
+    content_features_file: str
+  ) -> list[Criteria]:
+  """Verify required info exists in Chromium files. Return a list of missing criteria."""
+  criteria_missing = []
+  feature_found = False
+
+  # Check enabled_features_json
+  feature_info = next(
+    (finfo for finfo in enabled_features_json['data']
+     if finfo['name'] == name),
+    None)
+
+  if feature_info:
+    feature_found = True
+    # Check if status is stable (can be a string or a dict of platforms)
+    status = feature_info.get('status', None)
+    if isinstance(status, dict):
+      if not any(s for s in status.values() if s == 'stable'):
+        criteria_missing.append(Criteria.RUNTIME_FEATURE_NOT_STABLE)
+    elif status != 'stable':
+      criteria_missing.append(Criteria.RUNTIME_FEATURE_NOT_STABLE)
+
+  else:
+    # Check content_features_file
+    pattern = re.compile(
+      rf"BASE_FEATURE\(\s*k{name}\s*,"
+      r"(?:(?:\s|//.*))*"
+      r"base::FEATURE_(\w+)_BY_DEFAULT"
+      r"\s*\);",
+      re.MULTILINE
+    )
+    match = re.search(pattern, content_features_file)
+    if match:
+      feature_found = True
+      if match.group(1) != 'ENABLED':
+        criteria_missing.append(Criteria.CONTENT_FEATURE_NOT_ENABLED)
+
+  if not feature_found:
+    criteria_missing.append(Criteria.CHROMIUM_FEATURE_NOT_FOUND)
+
+  return criteria_missing
+
+
+def build_feature_info(feature: FeatureEntry, stage: Stage, url_root: str) -> ShippingFeatureInfo:
+  """Constructs the dictionary representation of a shipping feature."""
+  chromestatus_url = f'{url_root}/feature/{feature.key.integer_id()}'
+  return {
+    'name': feature.name,
+    'chromestatus_url': chromestatus_url,
+    'tracking_bug_url': feature.bug_url,
+    'launch_bug_url': feature.launch_bug_url,
+    'finch_name': feature.finch_name,
+    'non_finch_justification': feature.non_finch_justification,
+    'owner_emails': feature.owner_emails,
+    'intent_to_ship': stage.intent_thread_url,
+  }
+
+
+def validate_shipping_criteria(
+    feature: FeatureEntry,
+    stage: Stage,
+    enabled_features_json: dict,
+    content_features_file: str
+  ) -> list[Criteria]:
+  """Checks a feature against shipping requirements (Gates, Intents, Finch, Code)."""
+  criteria_missing: list[Criteria] = []
+
+  # Check Intent to Ship
+  if not stage.intent_thread_url:
+    criteria_missing.append(Criteria.INTENT_TO_SHIP_MISSING)
+
+  # Check API Owner Gate
+  api_owner_gate: Gate | None = Gate.query(
+      Gate.stage_id == stage.key.integer_id(),
+      Gate.gate_type == GATE_API_SHIP).get()
+
+  if api_owner_gate is None or api_owner_gate.state != Vote.APPROVED:
+    criteria_missing.append(Criteria.API_OWNER_LGTMS_MISSING)
+
+  # Check Finch / Non-Finch Justification
+  if not feature.finch_name and not feature.non_finch_justification:
+    criteria_missing.append(Criteria.FINCH_NAME_MISSING)
+
+  # Check Chromium Internal Status (if finch name is present)
+  if feature.finch_name:
+    criteria_missing.extend(validate_feature_in_chromium(
+      feature.finch_name,
+      enabled_features_json,
+      content_features_file
+    ))
+
+  return criteria_missing
+
+
+def aggregate_shipping_features(
+    shipping_stages: list[Stage],
+    enabled_features_json: dict,
+    content_features_file: str,
+    url_root: str
+  ) -> tuple[list[ShippingFeatureInfo], list[tuple[ShippingFeatureInfo, list[str]]]]:
+  """Aggregates and validates features based on shipping stages and chromium files."""
+  complete_features: list[ShippingFeatureInfo] = []
+  incomplete_features: list[tuple[ShippingFeatureInfo, list[str]]] = []
+
+  for stage in shipping_stages:
+    feature: FeatureEntry | None = FeatureEntry.get_by_id(stage.feature_id)
+    if feature is None:
+      logging.warning(f'Feature {stage.feature_id} not found.')
+      continue
+
+    feature_info = build_feature_info(feature, stage, url_root)
+
+    # PSA features do not require strict validation
+    if feature.feature_type == FEATURE_TYPE_CODE_CHANGE_ID:
+      complete_features.append(feature_info)
+      continue
+
+    # Perform strict validation
+    criteria_missing = validate_shipping_criteria(
+        feature, stage, enabled_features_json, content_features_file
+    )
+
+    if criteria_missing:
+      incomplete_features.append((feature_info, [c.value for c in criteria_missing]))
+    else:
+      complete_features.append(feature_info)
+
+  return complete_features, incomplete_features
