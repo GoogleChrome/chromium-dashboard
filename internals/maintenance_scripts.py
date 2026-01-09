@@ -1188,22 +1188,25 @@ class GenerateShippingFeaturesFile(FlaskHandler):
     owner_csv_rows: list[list[str]] = []
     missing_criteria_csv_rows: list[list[str]] = []
 
-    def add_feature_row(f, status):
-        feature_csv_rows.append([
-            str(f['id']),
-            str(current_milestone),
-            f['name'],
-            f['chromestatus_url'],
-            status,
-        ])
-
     for f in complete_features:
-      add_feature_row(f, 'complete')
+      feature_csv_rows.append([
+        str(f['id']),
+        str(current_milestone),
+        f['name'],
+        f['chromestatus_url'],
+        'complete',
+      ])
       for email in f['owner_emails']:
         owner_csv_rows.append([str(f['id']), email])
 
     for f, missing_criteria in incomplete_features:
-      add_feature_row(f, 'incomplete')
+      feature_csv_rows.append([
+        str(f['id']),
+        str(current_milestone),
+        f['name'],
+        f['chromestatus_url'],
+        'incomplete',
+      ])
       for criteria in missing_criteria:
         missing_criteria_csv_rows.append([str(f['id']), criteria])
 
