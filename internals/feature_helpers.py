@@ -148,7 +148,9 @@ def get_features_in_release_notes(milestone: int):
   cached_features = rediscache.get(cache_key)
   if cached_features:
     logging.info('Returned cached features')
-    return filter_confidential_formatted(cached_features)
+    cached_features = filter_confidential_formatted(cached_features)
+    cached_features = filter_unpublished_formatted(cached_features)
+    return cached_features
 
   all_enterprise_feature_keys_future = FeatureEntry.query(
       FeatureEntry.deleted == False,
