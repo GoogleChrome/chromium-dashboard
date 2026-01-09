@@ -27,7 +27,8 @@ from framework.basehandlers import FlaskHandler
 from framework import cloud_tasks_helpers
 from framework import origin_trials_client
 from framework import utils
-from internals import approval_defs, feature_helpers
+from internals import approval_defs
+from internals import feature_helpers
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
 from internals.review_models import Amendment, Gate, Vote, Activity
 from internals.core_enums import *
