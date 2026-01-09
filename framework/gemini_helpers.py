@@ -140,6 +140,7 @@ async def run_wpt_test_eval_pipeline(feature: FeatureEntry) -> None:
 
   template_data = {
     'spec_url': feature.spec_link,
+    'spec_content': _fetch_spec_content(feature.spec_link),
     'feature_definition': _create_feature_definition(feature)
   }
   spec_synthesis_prompt = render_template(SPEC_SYNTHESIS_TEMPLATE_PATH, **template_data)
