@@ -1136,10 +1136,14 @@ class GenerateShippingFeaturesFile(FlaskHandler):
   """Generate a CSV file with all shipping features and information about their missing fields."""
   DATE_FORMAT = '%Y-%m-%dT%H:%M:%S'
 
+  FILENAME_FEATURES = 'chromestatus-shipping-features.csv'
+  FILENAME_OWNERS = 'chromestatus-shipping-feature-owners.csv'
+  FILENAME_MISSING = 'chromestatus-shipping-feature-missing-criteria.csv'
+
   def _get_shipping_stages(self, milestone: int) -> list[Stage]:
-    shipping_stage_types = [
-      st for st in STAGE_TYPES_SHIPPING.values() if st] + [STAGE_ENT_ROLLOUT]
-    shipping_stages: list[Stage] = Stage.query(
+    shipping_stage_types = [st for st in STAGE_TYPES_SHIPPING.values() if st]
+
+    return Stage.query(
       Stage.stage_type.IN(shipping_stage_types),
       ndb.OR(
         Stage.milestones.desktop_first == milestone,
@@ -1149,13 +1153,12 @@ class GenerateShippingFeaturesFile(FlaskHandler):
       )
     ).fetch()
 
-    return shipping_stages
-
   def _get_feature_info(
     self,
     shipping_stages: list[Stage],
   ) -> tuple[list[feature_helpers.ShippingFeatureInfo],
              list[tuple[feature_helpers.ShippingFeatureInfo, list[str]]]]:
+
     enabled_features_file = utils.get_chromium_file(ENABLED_FEATURES_FILE_URL)
     enabled_features_json = json5.loads(enabled_features_file)
     content_features_file = utils.get_chromium_file(CONTENT_FEATURES_FILE)
@@ -1180,36 +1183,47 @@ class GenerateShippingFeaturesFile(FlaskHandler):
     # shipping feature.
 
     complete_features, incomplete_features = self._get_feature_info(shipping_stages)
+
     feature_csv_rows: list[list[str]] = []
     owner_csv_rows: list[list[str]] = []
-    missing_criteria_csv_rows: list[list[str]]=  []
+    missing_criteria_csv_rows: list[list[str]] = []
+
+    def add_feature_row(f, status):
+        feature_csv_rows.append([
+            str(f['id']),
+            str(current_milestone),
+            f['name'],
+            f['chromestatus_url'],
+            status,
+        ])
+
     for f in complete_features:
+      add_feature_row(f, 'complete')
       for email in f['owner_emails']:
         owner_csv_rows.append([str(f['id']), email])
-      feature_csv_rows.append(
-        [
-          str(f['id']),
-          str(current_milestone),
-          f['name'],
-          f['chromestatus_url'],
-          'complete',
-        ]
-      )
+
     for f, missing_criteria in incomplete_features:
+      add_feature_row(f, 'incomplete')
       for criteria in missing_criteria:
         missing_criteria_csv_rows.append([str(f['id']), criteria])
-      feature_csv_rows.append(
-        [
-          str(f['id']),
-          str(current_milestone),
-          f['name'],
-          f['chromestatus_url'],
-          'incomplete',
-        ]
-      )
-
 
     return feature_csv_rows, owner_csv_rows, missing_criteria_csv_rows
+
+  def _upload_csv(
+      self,
+      bucket,
+      filename: str,
+      header: list[str],
+      rows: list[list[str]]
+  ) -> None:
+    """Helper to write rows to a CSV in memory and upload to GCS."""
+    csv_io = StringIO()
+    writer = csv.writer(csv_io, lineterminator='\n')
+    writer.writerow(header)
+    writer.writerows(rows) # Bulk write is cleaner
+
+    blob = bucket.blob(filename)
+    blob.upload_from_string(csv_io.getvalue())
 
   def _write_csv(
     self,
@@ -1219,60 +1233,47 @@ class GenerateShippingFeaturesFile(FlaskHandler):
     missing_criteria_csv_rows: list[list[str]],
   ) -> None:
     """Write shipping features CSV, owners CSV, and missing criteria CSV to the GCP bucket."""
-    csv_io = StringIO()
-    writer = csv.writer(csv_io, lineterminator='\n')
-    # Write header row.
-    writer.writerow(
-      [
-        'id',
-        'current_milestone',
-        'name',
-        'chromestatus_url',
-        'status',
-       ]
+
+    self._upload_csv(
+        bucket,
+        self.FILENAME_FEATURES,
+        ['id', 'current_milestone', 'name', 'chromestatus_url', 'status'],
+        feature_csv_rows
     )
-    for row in feature_csv_rows:
-      writer.writerow(row)
 
-    blob = bucket.blob('chromestatus-shipping-features.csv')
-    blob.upload_from_string(csv_io.getvalue())
+    self._upload_csv(
+        bucket,
+        self.FILENAME_OWNERS,
+        ['id', 'owner_email'],
+        owner_csv_rows
+    )
 
-    # Do the same process for the owners file and missing criteria file.
-    csv_io = StringIO()
-    writer = csv.writer(csv_io, lineterminator='\n')
-    writer.writerow(['id', 'owner_email'])
-    for row in owner_csv_rows:
-      writer.writerow(row)
-    blob = bucket.blob('chromestatus-shipping-feature-owners.csv')
-    blob.upload_from_string(csv_io.getvalue())
-
-    csv_io = StringIO()
-    writer = csv.writer(csv_io, lineterminator='\n')
-    writer.writerow(['id', 'missing_criteria'])
-    for row in missing_criteria_csv_rows:
-      writer.writerow(row)
-    blob = bucket.blob('chromestatus-shipping-feature-missing-criteria.csv')
-    blob.upload_from_string(csv_io.getvalue())
+    self._upload_csv(
+        bucket,
+        self.FILENAME_MISSING,
+        ['id', 'missing_criteria'],
+        missing_criteria_csv_rows
+    )
 
   def get_template_data(self, **kwargs) -> str:
     self.require_cron_header()
 
     current_milestone_info = utils.get_current_milestone_info('current')
     current_milestone = int(current_milestone_info['mstone'])
+
     storage_client = storage.Client()
     bucket = storage_client.bucket(settings.FILES_BUCKET)
 
     shipping_stages = self._get_shipping_stages(current_milestone)
-    feature_csv_rows, owner_csv_rows, missing_criteria_csv_rows = (
-      self._generate_rows(shipping_stages, current_milestone))
-    self._write_csv(
-      bucket,
-      feature_csv_rows,
-      owner_csv_rows,
-      missing_criteria_csv_rows
+
+    (feature_rows, owner_rows, missing_rows) = self._generate_rows(
+        shipping_stages, current_milestone
     )
 
-    return f'{len(feature_csv_rows)} rows added to chromestatus-shipping-features.csv'
+    self._write_csv(bucket, feature_rows, owner_rows, missing_rows)
+
+    return f'{len(feature_rows)} rows added to {self.FILENAME_FEATURES}'
+
 
 class MigrateRolloutMilestones(FlaskHandler):
   """Migrate the rollout milestone field to be stored in the 'milestones' field."""
