@@ -321,6 +321,8 @@ internals_routes: list[Route] = [
         maintenance_scripts.GenerateReviewActivityFile),
   Route('/cron/generate_stale_features',
         maintenance_scripts.GenerateStaleFeaturesFile),
+  Route('/cron/generate_shipping_features',
+        maintenance_scripts.GenerateShippingFeaturesFile),
   Route('/cron/reset_stale_shipping_milestones',
         maintenance_scripts.ResetStaleShippingMilestones),
 
