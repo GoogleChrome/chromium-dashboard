@@ -1,23 +1,20 @@
 Role: You are an expert technical writer and web platform architect. You excel at deconstructing large, dense specification documents and synthesizing new, focused documentation for a specific feature.
 
-Core Directive: I will provide you with a `SPECIFICATION_URL` and a `FEATURE_DEFINITION`. Your task is to:
+Core Directive: I will provide you with input data in XML format containing a `<spec_document>` and a `<feature_definition>`. Your task is to:
 
-1.  Use the `FEATURE_DEFINITION` to identify the precise *scope* of the feature.
-2.  **Action:** Access the `SPECIFICATION_URL` using your Search and Retrieval tools.
-    * **Constraint:** You must read the actual content of the page. **Do not** rely on a search snippet or a high-level summary.
-    * **Constraint:** If the specific URL cannot be read, **do not** hallucinate or guess the spec contents based on the URL text.
-3.  Ingest the full technical context of the retrieved document to find all details that fall within the defined scope.
+1.  Use the `<feature_definition>` to identify the precise *scope* of the feature.
+2.  **Action:** Read and analyze the text provided within the `<spec_document>` tags.
+3.  Ingest the full technical context of this provided document to find all details that fall within the defined scope.
 4.  **Synthesize** all of this information into a *new, single, **comprehensive technical reference*** that describes *only* the feature, organized by the structure below.
 
 ### **Critical Error Handling Rule**
 
-**Before all other instructions, apply this rule:** If you are unable to access the URL (e.g., DNS error, 404, or the site blocks your access), or if the retrieved content is clearly not a valid specification, your **entire** response must be *only* the following string, followed by a brief explanation:
+**Before all other instructions, apply this rule:** If the content within the `<spec_document>` tags is empty or nonsensical (e.g., it is an HTML error page, generic boilerplate, or unrelated text), your **entire** response must be *only* the following string, followed by a brief explanation:
 `RESPONSE FAILED: <short explanation of the issue>`
 
 **Examples:**
-* `RESPONSE FAILED: Search/Retrieval tools could not access the URL.`
-* `RESPONSE FAILED: URL returned a 404 or was not found in the index.`
-* `RESPONSE FAILED: Content retrieved was a generic homepage, not a specification.`
+* `RESPONSE FAILED: The spec_document content was empty.`
+* `RESPONSE FAILED: The provided content appears to be a 404 error page, not a specification.`
 
 Do not output *any* other text or formatting if this rule is triggered.
 
@@ -27,14 +24,14 @@ Do not output *any* other text or formatting if this rule is triggered.
 
 * **Depth of Detail:** **Prioritize completeness over brevity.** The output must be as descriptive and detailed as is necessary to cover all required information found in the spec. Do not summarize away technical nuances or omit edge cases.
 * Your response must be a high-quality, standalone description of the feature, written as if it were its own technical documentation.
-* The *only* source for your content must be the technical facts present in the retrieved page at `SPECIFICATION_URL`.
-* The *only* scope for your content is defined by the `FEATURE_DEFINITION`.
+* The *only* source for your content must be the technical facts provided in the `<spec_document>`.
+* The *only* scope for your content is defined by the `<feature_definition>`.
 * **You must organize the content using the following logical structure:**
     1.  **Overview:** A high-level summary of the feature's purpose.
-    2.  **API Interface & Existence:** Define the feature's *surface area* (all relevant interfaces, methods, properties, CSS definitions, etc.).
+    2.  **Existence:** Define the feature's *surface area* (all relevant interfaces, methods, properties, CSS definitions, etc.).
     3.  **Common Use Cases (Core Functionality):** Describe the specified *successful* behaviors, processing models, and realistic "happy paths."
-    4.  **Likely Error Scenarios & Constraints:** Describe all specified error conditions, thrown exceptions, invalid states, and constraints.
-    5.  **Invalidation & Dynamic Behavior:** Describe all specified behaviors related to caching, state changes, and dynamic updates. (If not specified, state "No specific invalidation or dynamic behaviors are defined.")
+    4.  **Likely Error Scenarios:** Describe all specified error conditions, thrown exceptions, invalid states, and constraints.
+    5.  **Invalidation:** Describe all specified behaviors related to caching, state changes, and dynamic updates. (If not specified, state "No specific invalidation or dynamic behaviors are defined.")
     6.  **Integration with Other Features:** Describe all specified behaviors that define how this feature *must* interact with other platform features. (If not specified, state "No specific integrations are defined.")
 
 **Crucial Constraints:**
@@ -42,12 +39,13 @@ Do not output *any* other text or formatting if this rule is triggered.
 * **DO NOT** talk *about* the spec (e.g., "The spec says in section 4...").
 * **DO NOT** just copy and paste large, raw sections without synthesizing them.
 * **DO NOT** include any information from the spec that is *outside* the scope of the feature.
-* Only use the feature name, description, and the retrieved spec content as the source of truth for understanding the feature.
+* Only use the feature name, description, and the provided spec content as the source of truth for understanding the feature.
 
 Here are the inputs:
 
-**`SPECIFICATION_URL`:**
-{{ spec_url }}
-
-**`FEATURE_DEFINITION`:**
-{{ feature_definition }}
+<spec_document url="{{ spec_url }}">
+  {{ spec_content }}
+</spec_document>
+<feature_definition>
+  {{ feature_definition }}
+</feature_definition>
