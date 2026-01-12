@@ -23,6 +23,49 @@ from internals import feature_helpers
 from internals import stage_helpers
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
 from internals.review_models import Gate, Vote
+from internals.user_models import AppUser
+
+
+
+MOCK_ENABLED_FEATURES_JSON = {
+  "data": [
+    # For feature_1: A complete feature that is stable.
+    { "name": "featureOneFinch", "status": "stable" },
+    # For feature_7: An incomplete feature that is not stable.
+    { "name": "feature7-unstable", "status": "experimental" },
+
+    # Status is a dict, and at least one platform is "stable".
+    {
+      "name": "FeatureDictStable",
+      "status": {
+        "Mac": "experimental",
+        "Win": "stable",
+        "Linux": "dev"
+      }
+    },
+    # Status is a dict, but no platform is "stable".
+    {
+      "name": "FeatureDictUnstable",
+      "status": {
+        "Mac": "experimental",
+        "Win": "experimental",
+        "Linux": "experimental"
+      }
+    }
+  ]
+}
+
+MOCK_CONTENT_FEATURES_CC = """
+// Some C++ code here...
+// For feature_8: A complete feature, enabled by default.
+BASE_FEATURE(kFeature8Enabled,
+             // Some rogue comment.
+             base::FEATURE_ENABLED_BY_DEFAULT);
+// More C++ code...
+// For feature_9: An incomplete feature, disabled by default.
+BASE_FEATURE(kFeature9Disabled, base::FEATURE_DISABLED_BY_DEFAULT);
+// Even more C++ code...
+"""
 
 
 
@@ -125,8 +168,13 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
     self.fe_4_stages_dict = stage_helpers.get_feature_stages(
         self.feature_4.key.integer_id())
 
+    self.admin_email = 'admin@example.com'
+    self.app_admin = AppUser(email='admin@example.com')
+    self.app_admin.is_admin = True
+    self.app_admin.put()
+
   def tearDown(self):
-    for kind in [FeatureEntry, Stage, Gate]:
+    for kind in [FeatureEntry, Stage, Gate, AppUser]:
       for entity in kind.query():
         entity.key.delete()
 
@@ -500,18 +548,64 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
                    state=Vote.APPROVED)
     self.g4.put()
 
-  def test_get_in_milestone__wp_need_enterprise_approval(self):
+  def test_get_features_in_release_notes__ready__or_not_admin(self):
+    """Admins see the complete list regardless of being ready to publish."""
+    cache_key = '%s|%s|%s' % (
+        FeatureEntry.SEARCH_CACHE_KEY, 'release_notes_milestone', 1)
+    self._create_wp_stages_and_gates()
+
+    self.feature_1.enterprise_impact = ENTERPRISE_IMPACT_LOW
+    self.feature_1.put()
+    self.feature_2.feature_type = FEATURE_TYPE_ENTERPRISE_ID
+    self.feature_2.put()
+    features = feature_helpers.get_features_in_release_notes(milestone=1)
+    # Nothing is ready to publish yet, and user is not an admin.
+    self.assertEqual(0, len(features))
+
+    testing_config.sign_in(self.admin_email, 1)
+    features = feature_helpers.get_features_in_release_notes(milestone=1)
+    # Admin sees release note items that are not yet ready for non-admins.
+    self.assertEqual(2, len(features))
+
+  def test_get_features_in_release_notes__only_ready_anon(self):
+    """We include features only if they are marked ready to publish."""
+    cache_key = '%s|%s|%s' % (
+        FeatureEntry.SEARCH_CACHE_KEY, 'release_notes_milestone', 1)
+    self._create_wp_stages_and_gates()
+
+    self.feature_1.enterprise_impact = ENTERPRISE_IMPACT_LOW
+    self.feature_1.put()
+    self.feature_2.feature_type = FEATURE_TYPE_ENTERPRISE_ID
+    self.feature_2.put()
+    features = feature_helpers.get_features_in_release_notes(milestone=1)
+    # Nothing is ready to publish yet.
+    self.assertEqual(0, len(features))
+    rediscache.delete(cache_key)
+
+    self.feature_1.is_releasenotes_publish_ready = True
+    self.feature_1.put()
+    self.feature_2.is_releasenotes_publish_ready = True
+    self.feature_2.put()
+    features = feature_helpers.get_features_in_release_notes(milestone=1)
+    # Now they are ready to publish.
+    self.assertEqual(2, len(features))
+
+  def test_get_features_in_release_notes__wp_need_enterprise_approval(self):
     """We include WP features only if enterprise shipping gate is approved."""
     self._create_wp_stages_and_gates()
     cache_key = '%s|%s|%s' % (
         FeatureEntry.SEARCH_CACHE_KEY, 'release_notes_milestone', 1)
     self.feature_1.enterprise_impact = ENTERPRISE_IMPACT_LOW
+    self.feature_1.is_releasenotes_publish_ready = True
     self.feature_1.put()
     self.feature_2.enterprise_impact = ENTERPRISE_IMPACT_MEDIUM
+    self.feature_2.is_releasenotes_publish_ready = True
     self.feature_2.put()
     self.feature_3.enterprise_impact = ENTERPRISE_IMPACT_HIGH
+    self.feature_3.is_releasenotes_publish_ready = True
     self.feature_3.put()
     self.feature_4.enterprise_impact = ENTERPRISE_IMPACT_LOW
+    self.feature_4.is_releasenotes_publish_ready = True
     self.feature_4.put()
 
     features = feature_helpers.get_features_in_release_notes(milestone=1)
@@ -532,7 +626,7 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
     self.assertEqual(['feature d'], [f['name'] for f in features])
     rediscache.delete(cache_key)
 
-  def test_get_in_milestone__non_enterprise_features(self):
+  def test_get_features_in_release_notes__non_enterprise_features(self):
     """We can retrieve a list of features."""
     self._create_wp_stages_and_gates()
     cache_key = '%s|%s|%s' % (
@@ -547,12 +641,16 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
 
     # Features 1, 2, 3 and 4 are breaking changes
     self.feature_1.enterprise_impact = ENTERPRISE_IMPACT_LOW
+    self.feature_1.is_releasenotes_publish_ready = True
     self.feature_1.put()
     self.feature_2.enterprise_impact = ENTERPRISE_IMPACT_MEDIUM
+    self.feature_2.is_releasenotes_publish_ready = True
     self.feature_2.put()
     self.feature_3.enterprise_impact = ENTERPRISE_IMPACT_HIGH
+    self.feature_3.is_releasenotes_publish_ready = True
     self.feature_3.put()
     self.feature_4.enterprise_impact = ENTERPRISE_IMPACT_LOW
+    self.feature_4.is_releasenotes_publish_ready = True
     self.feature_4.put()
 
     features = feature_helpers.get_features_in_release_notes(milestone=1)

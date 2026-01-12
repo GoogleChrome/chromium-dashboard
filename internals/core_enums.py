@@ -96,7 +96,7 @@ PLATFORM_CATEGORIES = collections.OrderedDict([
   (PLATFORM_CHROMEOS, 'ChromeOS'),
   (PLATFORM_LACROS, 'LaCROS'),
   (PLATFORM_LINUX, 'Linux'),
-  (PLATFORM_MAC, 'MacOS'),
+  (PLATFORM_MAC, 'macOS'),
   (PLATFORM_WINDOWS, 'Windows'),
   (PLATFORM_FUCHSIA, 'Fuchsia'),
 ])
