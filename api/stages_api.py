@@ -113,20 +113,32 @@ class StagesAPI(basehandlers.EntitiesAPIHandler):
 
     redirect_resp = self._validate_edit_permissions(feature_id, body)
     if redirect_resp:
-      return redirect_resp
+        return redirect_resp
 
     changed_fields: CHANGED_FIELDS_LIST_TYPE = []
+
+    # Block intent advancement unless a blink-dev thread exists
+    if (
+        'intent_stage' in body and
+        not stage.intent_thread_url
+    ):
+        self.abort(
+            400,
+            msg='Intent stage cannot be advanced until the blink-dev email is successfully posted.'
+        )
+
     # Update specified fields.
     self.update_stage(stage, body, changed_fields)
 
     notifier_helpers.notify_subscribers_and_save_amendments(
         feature, changed_fields, notify=True)
-    # Changing stage values means the cached feature should be invalidated.
+
     lookup_key = FeatureEntry.feature_cache_key(
         FeatureEntry.DEFAULT_CACHE_KEY, feature_id)
     rediscache.delete(lookup_key)
 
     return {'message': 'Stage values updated.'}
+
 
   def do_delete(self, **kwargs):
     """Delete an existing stage."""
