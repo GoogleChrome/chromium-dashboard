@@ -745,8 +745,8 @@ export class ChromedashWPTEvalPage extends LitElement {
             </li>
             <li>
               <strong>Metadata:</strong> Ensure the feature name and summary are
-              accurate. These will be used to narrow the scope of the
-              test coverage requirements.
+              accurate. These will be used to narrow the scope of the test
+              coverage requirements.
             </li>
             <li>
               <strong>Test Results:</strong> Add relevant
