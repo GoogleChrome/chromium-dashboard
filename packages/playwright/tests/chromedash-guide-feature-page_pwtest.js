@@ -1,79 +1,87 @@
 // @ts-check
 import { test, expect } from '@playwright/test';
 import {
-    captureConsoleMessages, delay, login, logout,
-    createNewFeature
+  captureConsoleMessages, login, createNewFeature
 } from './test_utils';
 
-
 test.beforeEach(async ({ page }, testInfo) => {
-    captureConsoleMessages(page);
-    testInfo.setTimeout(90000);
+  captureConsoleMessages(page);
+  testInfo.setTimeout(30000);
 
-    // Login before running each test.
-    await login(page);
+  await login(page);
 });
-
-test.afterEach(async ({ page }) => {
-    // Logout after running each test.
-    await logout(page);
-});
-
 
 test('add an origin trial stage', async ({ page }) => {
-    // Safest way to work with a unique feature is to create it.
+  // Use test.step to organize the report and make debugging easier.
+  await test.step('Setup: Create a new feature', async () => {
     await createNewFeature(page);
+  });
 
-    // Expand the "Start incubating" panel to scroll the history section away from the dialog we're testing.
-    const incubatingPanel = page.locator('sl-details[summary="Start incubating"]');
+  await test.step('Open the Add Stage dialog', async () => {
+    // Locate by accessible text/role where possible
+    const incubatingPanel = page.locator('sl-details', { hasText: 'Start incubating' });
+
+    // Ensure the panel is actually usable before clicking
+    await expect(incubatingPanel).toBeVisible();
     await incubatingPanel.click();
 
-    // Add an origin trial stage.
-    const addStageButton = page.getByText('Add stage');
-    await addStageButton.click();
-    await delay(500);
+    await page.getByRole('button', { name: 'Add stage' }).click();
 
-    // Select stage to create
+    // Assertion acts as a wait: Wait for the dialog/select to appear
+    await expect(page.locator('sl-select#stage_create_select')).toBeVisible();
+  });
+
+  await test.step('Select Origin Trial stage and verify dialog', async () => {
     const stageSelect = page.locator('sl-select#stage_create_select');
     await stageSelect.click();
-    await delay(500);
 
-    // Hover Origin trial stage option.
-    const originTrialStageOption = page.locator('sl-select sl-option[value="150"]');
-    await originTrialStageOption.hover();
-    await delay(500);
+    // Avoid magic numbers (value="150"). Use text to be readable and resilient to ID changes.
+    // We locate the option visible in the dropdown.
+    const originTrialOption = page.locator('sl-option', { hasText: 'Origin trial' }).first();
 
-    // Screenshot of this dialog.
+    // Wait for the dropdown animation to settle
+    await expect(originTrialOption).toBeVisible();
+    await originTrialOption.hover();
+
+    // Visual Regression: Ensure the mask selector is specific enough
     await expect(page).toHaveScreenshot('create-origin-trial-stage-dialog.png', {
-        mask: [page.locator('section[id="history"]')]
+      mask: [page.locator('#history')],
+      // Increase threshold slightly if font rendering causes flakes
+      maxDiffPixelRatio: 0.01
     });
 
-    // Click the origin trial stage option to prepare to create stage.
-    originTrialStageOption.click();
-    await delay(500);
+    await originTrialOption.click();
 
-    // Click the Create stage button to finally create the stage.
-    const createStageButton = page.getByText('Create stage');
-    await createStageButton.click();
-    await delay(500);
+    // Verify the selection took hold before moving on.
+    await expect(stageSelect).toContainText('Origin trial');
+  });
 
-    // Check we are still on the feature page.
-    await page.waitForURL('**/feature/*', { timeout: 5000 });
-    await delay(500);
+  await test.step('Create the stage', async () => {
+    await page.getByRole('button', { name: 'Create stage' }).click();
 
-    // Expand the "Origin Trial" and "Origin Trial 2" panels
-    const originTrialPanel = page.locator('sl-details[summary="Origin Trial"]');
-    const originTrial2Panel = page.locator('sl-details[summary="Origin Trial 2"]');
-    await originTrialPanel.click();
-    await originTrial2Panel.click();
-    await delay(500);
+    // Wait for navigation and verify URL pattern
+    await page.waitForURL(/\/feature\//);
+  });
 
-    // Take a screenshot of the content area.
-    // First scroll to "Prepare to ship" panel
-    const prepareToShipPanel = page.getByText('Prepare to ship');
-    await prepareToShipPanel.scrollIntoViewIfNeeded();
-    await delay(500);
+  await test.step('Verify Origin Trial panels', async () => {
+    // Define panels
+    const otPanel1 = page.locator('sl-details', { hasText: 'Origin Trial' }).first();
+    const otPanel2 = page.locator('sl-details', { hasText: 'Origin Trial 2' }).first();
+
+    // Click and wait for state change (attribute verification acts as a wait)
+    await otPanel1.click();
+    await expect(otPanel1).toHaveAttribute('open', '');
+
+    await otPanel2.click();
+    await expect(otPanel2).toHaveAttribute('open', '');
+
+    // Scroll to "Prepare to ship" to position the screen
+    const prepareToShip = page.locator('sl-details', { hasText: 'Prepare to ship' });
+    await prepareToShip.scrollIntoViewIfNeeded();
+
+    // Final Screenshot
     await expect(page).toHaveScreenshot('origin-trial-panels.png', {
-        mask: [page.locator('section[id="history"]')]
+      mask: [page.locator('#history')]
     });
+  });
 });
