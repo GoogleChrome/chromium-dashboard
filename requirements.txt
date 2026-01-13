@@ -5,7 +5,7 @@
 appengine-python-standard>=1.0.0
 html5lib==1.1
 funcsigs==1.0.2
-json5==0.12.1
+json5==0.13.0
 google-api-python-client==2.187.0
 trafilatura==2.0.0
 
@@ -27,7 +27,7 @@ Flask==3.1.2
 flask-cors==6.0.2
 funcsigs==1.0.2
 Jinja2==3.1.6
-json5==0.12.1
+json5==0.13.0
 MarkupSafe==3.0.3
 Werkzeug==3.1.5
 click==8.3.1
