@@ -566,7 +566,9 @@ class SLOOverdueHandlerTest(testing_config.CustomTestCase):
 
     expected_message = ('2 email(s) sent or logged.\n'
                         'Recipients:\n'
-                        'a_assignee@example.com')
+                        'a_assignee@example.com\n'
+                         # Note: Bounce avoidance logic is disabled
+                        'b_assignee@example.com')
     expected = {'message': expected_message}
     self.assertEqual(actual, expected)
 
