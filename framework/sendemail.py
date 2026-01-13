@@ -165,6 +165,10 @@ def receive(bounce_message):
   message.check_initialized()
   if settings.SEND_EMAIL:
     message.send()
+  logging.info('Full parsed original message that was sent: %r',
+               bounce_message.original)
+  logging.info('Full parsed notification of the bounce: %r',
+               bounce_message.notification)
 
 
 def _extract_addrs(header_value):

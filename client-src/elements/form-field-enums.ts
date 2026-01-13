@@ -50,7 +50,7 @@ export const PLATFORM_CATEGORIES: Record<string, [number, string, boolean?]> = {
   PLATFORM_CHROMEOS: [3, 'ChromeOS'],
   PLATFORM_LACROS: [4, 'LaCrOS', true], // Obsolete. Cannot be added.
   PLATFORM_LINUX: [5, 'Linux'],
-  PLATFORM_MAC: [6, 'MacOS'],
+  PLATFORM_MAC: [6, 'macOS'],
   PLATFORM_WINDOWS: [7, 'Windows'],
   PLATFORM_FUCHSIA: [8, 'Fuchsia'],
 };
@@ -61,7 +61,7 @@ export const PLATFORMS_DISPLAYNAME: Record<number, string> = {
   3: 'ChromeOS', // PLATFORM_CHROMEOS
   4: 'LaCrOS', // PLATFORM_LACROS
   5: 'Linux', // PLATFORM_LINUX
-  6: 'MacOS', // PLATFORM_MAC
+  6: 'macOS', // PLATFORM_MAC
   7: 'Windows', // PLATFORM_WINDOWS
   8: 'Fuchsia', // PLATFORM_FUCHSIA
 };

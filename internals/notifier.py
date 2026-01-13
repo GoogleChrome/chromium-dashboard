@@ -1202,6 +1202,9 @@ def get_thread_id(stage: Stage):
   return thread_id
 
 
+# TODO(jrobbins): Find a robust way to avoid repeatedly sending emails
+# to invalid email addresses, even if valid addresses sometimes bounce.
+# This function is currently unused.
 def find_bounced_emails(email_tasks):
   """Look up all user prefs and make a set of the emails that bounced."""
   emails = []
@@ -1222,7 +1225,7 @@ def find_bounced_emails(email_tasks):
 def send_emails(email_tasks):
   """Process a list of email tasks (send or log)."""
   logging.info('Processing %d email tasks', len(email_tasks))
-  bounced_emails = find_bounced_emails(email_tasks)
+  bounced_emails = []  # See TODO for find_bounced_emails().
   for task in email_tasks:
     to = task.get('to') or []
     if isinstance(to, str):

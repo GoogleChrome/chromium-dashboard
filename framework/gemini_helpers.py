@@ -31,9 +31,15 @@ from internals.core_models import FeatureEntry
 SPEC_SYNTHESIS_TEMPLATE_PATH = 'prompts/spec-synthesis.html'
 TEST_ANALYSIS_TEMPLATE_PATH = 'prompts/test-analysis.html'
 GAP_ANALYSIS_TEMPLATE_PATH = 'prompts/gap-analysis.html'
+UNIFIED_GAP_ANALYSIS_TEMPLATE_PATH = 'prompts/unified-gap-analysis.html'
 # Regex to determine if the wpt.fyi URL is a test file link.
 # Otherwise, it's a directory.
 WPT_FILE_REGEX = re.compile(r"\/[^/]*\.[^/]*$")
+
+# Define the maximum number of listed tests for the feature that can be used in
+# the single prompt format. Any more than this will cause the trigger the use
+# of the three-prompt flow that utilizes separate test summaries.
+MAX_SINGLE_PROMPT_TEST_COUNT = 10
 
 
 class PipelineError(Exception):
@@ -97,7 +103,8 @@ def _fetch_spec_content(url: str) -> str:
     return f"Error processing Web Spec: {e}"
 
 
-async def _get_test_analysis_prompts(test_locations: list[str]) -> tuple[dict[Path, str], dict[Path, str]]:
+async def _get_test_file_contents(test_locations: list[str]) -> tuple[dict[Path, str], dict[Path, str]]:
+  """Obtain the contents of test files, as well as the contents of their dependencies."""
   test_urls = []
   test_directories = []
   for test_loc in test_locations:
@@ -112,44 +119,69 @@ async def _get_test_analysis_prompts(test_locations: list[str]) -> tuple[dict[Pa
   return test_file_contents, dependency_contents
 
 
-async def run_wpt_test_eval_pipeline(feature: FeatureEntry) -> None:
-  """Execute the three-stage AI pipeline for WPT coverage evaluation.
+def unified_prompt_evaluation(
+  feature: FeatureEntry,
+  test_files: dict[Path, str],
+  dependency_files: dict[Path, str]
+) -> str:
+  """Evaluates WPT coverage using a single, unified prompt.
 
-  This pipeline performs the following steps:
-  1. Spec Synthesis: Summarizes the relevant specifications for the feature.
-  2. Test Analysis: Analyzes existing WPT files for coverage concurrently.
-  3. Gap Analysis: Compares the spec synthesis with test analyses to identify
-     missing coverage.
-
-  The final report is saved to `feature.ai_test_eval_report`.
+  This method is used when the number of test files is small enough to fit
+  within the context window of a single prompt. It combines the feature
+  specification, all test file contents, and all dependency file contents
+  into one "gap analysis" prompt.
 
   Args:
-    feature: The FeatureEntry model containing spec links and WPT descriptions
-      needed for the analysis.
+    feature: The feature entry containing metadata (name, summary, spec URL).
+    test_files: A dictionary mapping test file paths to their raw text content.
+    dependency_files: A dictionary mapping dependency file paths to their raw
+      text content.
 
-  Raises:
-    PipelineError: If the pipeline fails due to missing data (e.g., no spec URL)
-      or if critical AI generation steps fail.
+  Returns:
+    A string containing the generated coverage report.
   """
-  if not feature.spec_link:
-    raise PipelineError('No spec URL provided.')
-
-  test_locations = utils.extract_wpt_fyi_results_urls(feature.wpt_descr)
-  if len(test_locations) == 0:
-    raise PipelineError('No valid wpt.fyi results URLs found in WPT description.')
-
   template_data = {
     'spec_url': feature.spec_link,
     'spec_content': _fetch_spec_content(feature.spec_link),
-    'feature_definition': _create_feature_definition(feature)
+    'feature_name': feature.name,
+    'feature_summary': feature.summary,
+    'test_files': test_files,
+    'dependency_files': dependency_files,
   }
-  spec_synthesis_prompt = render_template(SPEC_SYNTHESIS_TEMPLATE_PATH, **template_data)
+  unified_gap_analysis_prompt = render_template(
+    UNIFIED_GAP_ANALYSIS_TEMPLATE_PATH,
+    **template_data,
+  )
 
-  test_analysis_file_contents, _ = await _get_test_analysis_prompts(test_locations)
+  gemini_client = GeminiClient()
+  gap_analysis_response = gemini_client.get_response(unified_gap_analysis_prompt)
+  return gap_analysis_response
 
-  file_names: list[str] = []
+
+async def prompt_evaluation(feature: FeatureEntry, test_files: dict[Path, str]) -> str:
+  """Evaluates WPT coverage using a multi-stage prompt flow.
+
+  This method is used when the number of test files is too large for a single
+  prompt. It breaks the evaluation into three distinct stages:
+  1. Spec Synthesis: Summarizes the spec into a concise reference.
+  2. Test Analysis: Analyzes each test file individually in parallel batches.
+  3. Gap Analysis: Compares the spec synthesis with the aggregated test
+     summaries to identify gaps.
+
+  Args:
+    feature: The feature entry containing metadata and the spec URL.
+    test_files: A dictionary mapping test file paths to their raw text content.
+
+  Returns:
+    A string containing the generated coverage report.
+
+  Raises:
+    PipelineError: If any critical stage of the prompt pipeline fails (e.g.,
+      spec synthesis failure or total failure of all test analyses).
+  """
   prompts = []
-  for fpath, fc in test_analysis_file_contents.items():
+  file_names: list[str] = []
+  for fpath, fc in test_files.items():
     testfile_url = f'{utils.WPT_GITHUB_RAW_CONTENTS_URL}{fpath}'
     prompts.append(
       render_template(
@@ -161,6 +193,12 @@ async def run_wpt_test_eval_pipeline(feature: FeatureEntry) -> None:
     )
     file_names.append(fpath.name)
 
+  template_data = {
+    'spec_url': feature.spec_link,
+    'spec_content': _fetch_spec_content(feature.spec_link),
+    'feature_definition': _create_feature_definition(feature)
+  }
+  spec_synthesis_prompt = render_template(SPEC_SYNTHESIS_TEMPLATE_PATH, **template_data)
   # Add the spec synthesis prompt to the end for batch processing.
   prompts.append(spec_synthesis_prompt)
 
@@ -192,6 +230,34 @@ async def run_wpt_test_eval_pipeline(feature: FeatureEntry) -> None:
 
   # Use the async version of get_response to keep the whole pipeline non-blocking.
   gap_analysis_response = await gemini_client.get_response_async(gap_analysis_prompt)
+  return gap_analysis_response
+
+async def run_wpt_test_eval_pipeline(feature: FeatureEntry) -> None:
+  """Execute the AI pipeline for WPT coverage evaluation.
+
+  The final report is saved to `feature.ai_test_eval_report`.
+
+  Args:
+    feature: The FeatureEntry model containing spec links and WPT descriptions
+      needed for the analysis.
+
+  Raises:
+    PipelineError: If the pipeline fails due to missing data (e.g., no spec URL)
+      or if critical AI generation steps fail.
+  """
+  if not feature.spec_link:
+    raise PipelineError('No spec URL provided.')
+
+  test_locations = utils.extract_wpt_fyi_results_urls(feature.wpt_descr)
+  if len(test_locations) == 0:
+    raise PipelineError('No valid wpt.fyi results URLs found in WPT description.')
+
+  test_files, dependency_files = await _get_test_file_contents(test_locations)
+
+  if len(test_files) <= MAX_SINGLE_PROMPT_TEST_COUNT:
+    gap_analysis_response = unified_prompt_evaluation(feature, test_files, dependency_files)
+  else:
+    gap_analysis_response = await prompt_evaluation(feature, test_files)
 
   feature.ai_test_eval_report = gap_analysis_response
 
