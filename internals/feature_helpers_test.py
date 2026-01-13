@@ -68,6 +68,48 @@ BASE_FEATURE(kFeature9Disabled, base::FEATURE_DISABLED_BY_DEFAULT);
 """
 
 
+
+MOCK_ENABLED_FEATURES_JSON = {
+  "data": [
+    # For feature_1: A complete feature that is stable.
+    { "name": "featureOneFinch", "status": "stable" },
+    # For feature_7: An incomplete feature that is not stable.
+    { "name": "feature7-unstable", "status": "experimental" },
+
+    # Status is a dict, and at least one platform is "stable".
+    {
+      "name": "FeatureDictStable",
+      "status": {
+        "Mac": "experimental",
+        "Win": "stable",
+        "Linux": "dev"
+      }
+    },
+    # Status is a dict, but no platform is "stable".
+    {
+      "name": "FeatureDictUnstable",
+      "status": {
+        "Mac": "experimental",
+        "Win": "experimental",
+        "Linux": "experimental"
+      }
+    }
+  ]
+}
+
+MOCK_CONTENT_FEATURES_CC = """
+// Some C++ code here...
+// For feature_8: A complete feature, enabled by default.
+BASE_FEATURE(kFeature8Enabled,
+             // Some rogue comment.
+             base::FEATURE_ENABLED_BY_DEFAULT);
+// More C++ code...
+// For feature_9: An incomplete feature, disabled by default.
+BASE_FEATURE(kFeature9Disabled, base::FEATURE_DISABLED_BY_DEFAULT);
+// Even more C++ code...
+"""
+
+
 class FeatureHelpersTest(testing_config.CustomTestCase):
 
   def setUp(self):

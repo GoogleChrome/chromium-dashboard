@@ -1584,6 +1584,164 @@ class GenerateStaleFeaturesFileTest(testing_config.CustomTestCase):
     self.assertEqual(result, '3 rows added to chromestatus-stale-features.csv')
 
 
+class GenerateShippingFeaturesFileTest(testing_config.CustomTestCase):
+
+  def setUp(self):
+    self.handler = maintenance_scripts.GenerateShippingFeaturesFile()
+    self.current_milestone = 120
+
+    self.feature_1 = FeatureEntry(
+        id=1, name='Feature 1', summary='sum', category=1,
+        owner_emails=['owner1@example.com'], feature_type=0)
+    self.feature_1.put()
+
+    self.feature_2 = FeatureEntry(
+        id=2, name='Feature 2', summary='sum', category=1,
+        owner_emails=['owner2@example.com'], feature_type=1)
+    self.feature_2.put()
+
+    # 1. Valid Shipping Stage for Desktop
+    self.stage_1 = Stage(
+        id=101, feature_id=1, stage_type=160,
+        milestones=MilestoneSet(desktop_first=self.current_milestone))
+    self.stage_1.put()
+
+    # 2. Valid Shipping Stage for Android (different field)
+    self.stage_2 = Stage(
+        id=102, feature_id=2, stage_type=160,
+        milestones=MilestoneSet(android_first=self.current_milestone))
+    self.stage_2.put()
+
+    # 3. Invalid: Wrong Milestone
+    self.stage_3 = Stage(
+        id=103, feature_id=1, stage_type=160,
+        milestones=MilestoneSet(desktop_first=self.current_milestone + 10))
+    self.stage_3.put()
+
+    # 4. Invalid: Wrong Stage Type
+    self.stage_4 = Stage(
+        id=104, feature_id=1, stage_type=150, # Dev trial
+        milestones=MilestoneSet(desktop_first=self.current_milestone))
+    self.stage_4.put()
+
+  def tearDown(self):
+    for kind in [FeatureEntry, Stage]:
+      for entity in kind.query():
+        entity.key.delete()
+
+  def test_get_shipping_stages(self):
+    """Only stages matching the milestone and shipping type are returned."""
+    stages = self.handler._get_shipping_stages(self.current_milestone)
+
+    stage_ids = sorted([s.key.integer_id() for s in stages])
+    expected_ids = sorted([101, 102])
+    self.assertEqual(stage_ids, expected_ids)
+
+  @mock.patch('internals.maintenance_scripts.GenerateShippingFeaturesFile._get_feature_info')
+  def test_generate_rows(self, mock_get_feature_info):
+    """Rows are generated correctly for complete and incomplete features."""
+
+    # Mock the return value of _get_feature_info
+    mock_complete = [
+        {
+            'id': 1,
+            'name': 'Feature 1',
+            'chromestatus_url': 'http://example.com/1',
+            'owner_emails': ['owner1@example.com']
+        }
+    ]
+    mock_incomplete = [
+        (
+            {
+                'id': 2,
+                'name': 'Feature 2',
+                'chromestatus_url': 'http://example.com/2',
+                'owner_emails': ['owner2@example.com']
+            },
+            ['i2s', 'lgtms']
+        )
+    ]
+    mock_get_feature_info.return_value = (mock_complete, mock_incomplete)
+
+    # Pass empty stages because we mocked the result of processing them
+    f_rows, o_rows, m_rows = self.handler._generate_rows([], self.current_milestone)
+
+    # Verify rows
+    self.assertEqual(len(f_rows), 2)
+    self.assertEqual(f_rows[0], ['1', '120', 'Feature 1', 'http://example.com/1', 'complete'])
+    self.assertEqual(f_rows[1], ['2', '120', 'Feature 2', 'http://example.com/2', 'incomplete'])
+
+    self.assertEqual(len(o_rows), 1)
+    self.assertEqual(o_rows[0], ['1', 'owner1@example.com'])
+
+    self.assertEqual(len(m_rows), 2)
+    self.assertEqual(m_rows[0], ['2', 'i2s'])
+    self.assertEqual(m_rows[1], ['2', 'lgtms'])
+
+  def test_write_csv(self):
+    """CSVs are correctly formatted and uploaded to the bucket."""
+    mock_bucket = mock.MagicMock()
+    mock_blob_features = mock.MagicMock()
+    mock_blob_owners = mock.MagicMock()
+    mock_blob_missing = mock.MagicMock()
+
+    def blob_side_effect(filename):
+      if 'features.csv' in filename: return mock_blob_features
+      if 'owners.csv' in filename: return mock_blob_owners
+      if 'missing-criteria.csv' in filename: return mock_blob_missing
+      return mock.MagicMock()
+
+    mock_bucket.blob.side_effect = blob_side_effect
+
+    f_rows = [['1', '120', 'Feat 1', 'url1', 'complete']]
+    o_rows = [['1', 'owner@example.com']]
+    m_rows = [['2', 'Bad summary']]
+
+    self.handler._write_csv(mock_bucket, f_rows, o_rows, m_rows)
+
+    # Check CSV contents
+    mock_blob_features.upload_from_string.assert_called_once()
+    content_f = mock_blob_features.upload_from_string.call_args[0][0]
+    self.assertIn('id,current_milestone,name,chromestatus_url,status\n', content_f)
+    self.assertIn('1,120,Feat 1,url1,complete\n', content_f)
+
+    mock_blob_owners.upload_from_string.assert_called_once()
+    content_o = mock_blob_owners.upload_from_string.call_args[0][0]
+    self.assertIn('id,owner_email\n', content_o)
+    self.assertIn('1,owner@example.com\n', content_o)
+
+    mock_blob_missing.upload_from_string.assert_called_once()
+    content_m = mock_blob_missing.upload_from_string.call_args[0][0]
+    self.assertIn('id,missing_criteria\n', content_m)
+    self.assertIn('2,Bad summary\n', content_m)
+
+  @mock.patch('framework.utils.get_current_milestone_info')
+  @mock.patch('google.cloud.storage.Client')
+  @mock.patch('framework.basehandlers.FlaskHandler.require_cron_header')
+  @mock.patch('internals.maintenance_scripts.GenerateShippingFeaturesFile._generate_rows')
+  @mock.patch('internals.maintenance_scripts.GenerateShippingFeaturesFile._write_csv')
+  def test_get_template_data(
+      self, mock_write_csv, mock_gen_rows, mock_require_cron,
+      mock_storage, mock_get_milestone):
+    """End-to-end flow of the handler."""
+    mock_get_milestone.return_value = {'mstone': str(self.current_milestone)}
+    mock_gen_rows.return_value = (['row1'], ['row2'], ['row3'])
+
+    result = self.handler.get_template_data()
+
+    mock_require_cron.assert_called_once()
+    mock_storage.return_value.bucket.assert_called_with(settings.FILES_BUCKET)
+
+    # Ensure stages were queried and passed to row generation
+    mock_gen_rows.assert_called_once()
+    call_args = mock_gen_rows.call_args
+    self.assertEqual(len(call_args[0][0]), 2)
+    self.assertEqual(call_args[0][1], self.current_milestone)
+
+    mock_write_csv.assert_called_once()
+    self.assertEqual(result, '1 rows added to chromestatus-shipping-features.csv')
+
+
 class ResetOutstandingNotificationsTest(testing_config.CustomTestCase):
   """Tests for the ResetOutstandingNotifications handler."""
 
