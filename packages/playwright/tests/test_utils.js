@@ -110,9 +110,14 @@ export async function login(page) {
   // window.location.reload(). We must wait for this specific navigation event,
   // otherwise Playwright checks for the account indicator on the *old* page
   // before the reload happens.
-  await page.waitForEvent('load');
-  await page.waitForEvent('domcontentloaded');
-  await loginButton.click();
+
+  await Promise.all([
+    // Wait for the navigation (reload) to complete.
+    // We expect the URL to effectively remain the same (or match the base),
+    // but the 'load' event ensures the reload finished.
+    page.waitForEvent('load'),
+    loginButton.click()
+  ]);
 
   // 5. Verify Success
   // Now that the page has reloaded, the account indicator should appear.
