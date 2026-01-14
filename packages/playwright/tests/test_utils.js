@@ -63,7 +63,7 @@ export function acceptDialogs(page) {
  * @param {import("@playwright/test").Page} page
  */
 export async function login(page) {
-  // 1. Setup: Expose the helper function needed by the component
+  // Prevent error if function is already exposed in this context
   try {
     await page.exposeFunction('isPlaywright', () => {});
   } catch (e) {
@@ -73,7 +73,7 @@ export async function login(page) {
   // Handle dialogs
   acceptDialogs(page);
 
-  // 2. Navigation: Go to the homepage
+  // Navigate to home
   await page.goto('/');
 
   // Define locators
@@ -81,8 +81,8 @@ export async function login(page) {
   const loginButton = page.getByTestId('dev-mode-sign-in-button');
   const signOutLink = page.getByTestId('sign-out-link');
 
-  // 3. Check specific "Already Logged In" state
-  // If we see the account indicator, we are logged in. We must log out first.
+  // 1. Handling "Already Logged In" State
+  // We check if the account indicator is visible. If so, we logout to ensure a fresh session.
   if (await accountIndicator.isVisible()) {
     // Handle mobile/desktop menu interaction differences for logging out
     if (isMobile(page)) {
@@ -103,18 +103,14 @@ export async function login(page) {
     await expect(loginButton).toBeVisible();
   }
 
-  // 4. Perform Login
+  // 2. Perform Login
   // We explicitly wait for the login button to be ready/clickable
   await expect(loginButton).toBeVisible();
   await loginButton.click();
 
-  // 5. Verify Success
-  // Wait for the Login Button to vanish.
-  await expect(loginButton).toBeHidden({ timeout: 20000 });
-
-  // Wait for the Account Indicator to appear.
-  // Now that the login button is gone, we confirm the user avatar is present.
-  await expect(accountIndicator).toBeVisible({ timeout: 20000 });
+  // 3. Verify Success
+  // Wait for the account indicator to appear, confirming successful login.
+  await expect(accountIndicator).toBeVisible({ timeout: 15000 });
 }
 
 /**
