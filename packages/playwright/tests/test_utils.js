@@ -63,7 +63,7 @@ export function acceptDialogs(page) {
  * @param {import("@playwright/test").Page} page
  */
 export async function login(page) {
-  // Defensive check: Prevent error if function is already exposed in this context
+  // 1. Setup: Expose the helper function needed by the component
   try {
     await page.exposeFunction('isPlaywright', () => {});
   } catch (e) {
@@ -73,7 +73,7 @@ export async function login(page) {
   // Handle dialogs (Fixed name to match exported function)
   acceptDialogs(page);
 
-  // Navigate to home
+  // 2. Navigation: Go to the homepage
   await page.goto('/');
 
   // Define locators
@@ -81,8 +81,7 @@ export async function login(page) {
   const loginButton = page.getByTestId('dev-mode-sign-in-button');
   const signOutLink = page.getByTestId('sign-out-link');
 
-  // 1. Handling "Already Logged In" State
-  // We check if the account indicator is visible. If so, we logout to ensure a fresh session.
+  // 3. Check specific "Already Logged In" state
   if (await accountIndicator.isVisible()) {
     // Handle mobile/desktop menu interaction differences for logging out
     if (isMobile(page)) {
@@ -103,14 +102,25 @@ export async function login(page) {
     await expect(loginButton).toBeVisible();
   }
 
-  // 2. Perform Login
+  // 4. Perform Login
   // We explicitly wait for the login button to be ready/clickable
   await expect(loginButton).toBeVisible();
-  await loginButton.click();
 
-  // 3. Verify Success
-  // Wait for the account indicator to appear, confirming successful login.
-  await expect(accountIndicator).toBeVisible({ timeout: 15000 });
+  // The component uses a setTimeout(..., 1000) followed by a
+  // window.location.reload(). We must wait for this specific navigation event,
+  // otherwise Playwright checks for the account indicator on the *old* page
+  // before the reload happens.
+  await Promise.all([
+    // Wait for the navigation (reload) to complete.
+    // We expect the URL to effectively remain the same (or match the base),
+    // but the 'load' event ensures the reload finished.
+    page.waitForLoadState('domcontentloaded'),
+    loginButton.click()
+  ]);
+
+  // 5. Verify Success
+  // Now that the page has reloaded, the account indicator should appear.
+  await expect(accountIndicator).toBeVisible({ timeout: 20000 });
 }
 
 /**
