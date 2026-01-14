@@ -54,7 +54,7 @@ test('external reviewers report renders', async ({ page }) => {
     const dataRow = rows.nth(1);
     await expect(dataRow).toContainText('Feature 7 shares a review with Feature 5');
     await expect(dataRow).toContainText('#5 A Title');
-    await expect(dataRow).toContainText('M100-M104');
+    await expect(dataRow).toContainText('M100–M104');
 
     // Verify Links
     await expect(dataRow.getByRole('link', { name: 'Feature 7 shares a review with Feature 5' }))
@@ -82,7 +82,7 @@ test('external reviewers report renders', async ({ page }) => {
 
     // Specific check for Feature 3 details
     await expect(rows.filter({ hasText: 'Feature 3' }))
-      .toContainText('M101-M103');
+      .toContainText('M101–M103');
   });
 
   await test.step('Verify "Already shipped" section', async () => {

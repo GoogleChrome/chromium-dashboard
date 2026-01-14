@@ -60,40 +60,43 @@ export function acceptDialogs(page) {
 
 
 /**
- * fastLogin performs a robust login via the "Dev Mode" sign-in button.
- * It detects if the user is already logged in to save time.
- * @param {import("@playwright/test").Page} page
+ * @param {import("playwright-core").Page} page
  */
 export async function login(page) {
-  // 1. Handle potential alerts (like "Do you want to leave?")
-  acceptDialogs(page);
-
-  // 2. Navigate to the app.
-  // We use domcontentloaded to be faster than 'load', relying on locators later.
-  await page.goto('/', { waitUntil: 'domcontentloaded' });
-
-  // 3. Check authentication state efficiently.
-  const accountIndicator = page.getByTestId('account-indicator');
-  const loginButton = page.getByTestId('dev-mode-sign-in-button');
-
-  // Wait for either the login button OR the account indicator to appear.
-  // This avoids fixed delays or assuming one state.
-  await Promise.race([
-    expect(accountIndicator).toBeVisible(),
-    expect(loginButton).toBeVisible()
-  ]);
-
-  if (await accountIndicator.isVisible()) {
-    // Already logged in.
-    return;
+  // 1. Expose the flag so the app knows it's being tested.
+  // This enables the "Dev Mode" sign-in logic on the client side.
+  // We wrap it in a try-catch in case the function is already exposed in this context.
+  try {
+    await page.exposeFunction('isPlaywright', () => {});
+  } catch (e) {
+    // Ignore if already exposed
   }
 
-  // 4. Perform Login
-  await loginButton.click();
+  // 2. Handle Dialogs
+  acceptDialogs(page);
 
-  // 5. Verification
-  // Wait for the account indicator to confirm login success.
-  await expect(accountIndicator).toBeVisible({ timeout: 10000 });
+  // 3. Navigate and Reset
+  // We use domcontentloaded for speed, then ensure we are on the roadmap.
+  await page.goto('/', { waitUntil: 'domcontentloaded' });
+  await page.waitForURL('**/roadmap');
+
+  const loginButton = page.getByTestId('dev-mode-sign-in-button');
+  const accountIndicator = page.getByTestId('account-indicator');
+
+  // 4. Check State & Login
+  // If the login button is visible, we need to log in.
+  if (await loginButton.isVisible()) {
+    await loginButton.click();
+  }
+
+  // 5. Verify Login Success
+  if (isMobile(page)) {
+    // On Mobile: The absence of the login button confirms success.
+    await expect(loginButton).toBeHidden({ timeout: 10000 });
+  } else {
+    // On Desktop: The account indicator (avatar) must appear.
+    await expect(accountIndicator).toBeVisible({ timeout: 10000 });
+  }
 }
 
 /**
