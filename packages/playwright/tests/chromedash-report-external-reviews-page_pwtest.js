@@ -52,7 +52,9 @@ test('external reviewers report renders', async ({ page }) => {
     // Verify Data Row Content
     // We match the whole row text once, rather than individual cells, for speed
     const dataRow = rows.nth(1);
-    await expect(dataRow).toHaveText(/Feature 7 shares a review with Feature 5.*#5 A Title.*M100–M104/);
+    await expect(dataRow).toHaveText(
+      /Feature 7 shares a review with Feature 5[\s\S]*#5 A Title[\s\S]*M100-M104/
+    );
 
     // Verify Links
     await expect(dataRow.getByRole('link', { name: 'Feature 7 shares a review with Feature 5' }))
@@ -80,7 +82,7 @@ test('external reviewers report renders', async ({ page }) => {
 
     // Specific check for Feature 3 details
     await expect(rows.filter({ hasText: 'Feature 3' }))
-      .toContainText('M101–M103');
+      .toContainText('M101-M103');
   });
 
   await test.step('Verify "Already shipped" section', async () => {
