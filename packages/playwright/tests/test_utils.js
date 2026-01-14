@@ -2,15 +2,6 @@
 import { expect } from '@playwright/test';
 
 /**
- * @deprecated Avoid using hard delays. Use web-first assertions or page.waitForTimeout() if absolutely necessary.
- * @param {number} ms
- */
-export async function delay(ms) {
-  // eslint-disable-next-line no-restricted-syntax
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-/**
  * Capture console messages.
  * Optimized to handle argument parsing safely without blocking.
  * @param {import("playwright-core").Page} page

@@ -159,7 +159,8 @@ export class ChromedashDrawer extends LitElement {
 
   initializeTestingSignIn() {
     // Check if it already exists to prevent duplicates
-    if (document.querySelector('[data-testid="dev-mode-sign-in-button"]')) return;
+    if (document.querySelector('[data-testid="dev-mode-sign-in-button"]'))
+      return;
 
     const signInTestingButton = document.createElement('button');
     signInTestingButton.innerText = 'Sign in as example@chromium.org';
@@ -197,7 +198,7 @@ export class ChromedashDrawer extends LitElement {
 
   handleTestSignIn = async () => {
     try {
-      const response = await fetch('/dev/mock_login', { method: 'POST' });
+      const response = await fetch('/dev/mock_login', {method: 'POST'});
       if (!response.ok) throw new Error(response.statusText);
 
       // Reload immediately

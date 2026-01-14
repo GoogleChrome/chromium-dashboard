@@ -35,7 +35,7 @@ test('edit origin trial stage', async ({ page }) => {
     await page.getByRole('button', { name: 'Create stage' }).click();
 
     // Wait for the page to settle (Feature page reload)
-    await page.waitForURL(/\/feature\/\d+/);
+    await page.waitForURL('**/feature/*');
   });
 
   await test.step('Step 1: Trigger Semantic Check Error (Start == End)', async () => {
@@ -45,7 +45,7 @@ test('edit origin trial stage', async ({ page }) => {
 
     // Click "Edit fields"
     await otPanel.getByRole('button', { name: 'Edit fields' }).click();
-    await page.waitForURL(/\/guide\/stage\/\d+\/\d+\/\d+/);
+    await page.waitForURL('**/guide/stage/*/*/*');
 
     // Locate inputs
     const startInput = page.locator('input[name="ot_milestone_desktop_start"]');
@@ -79,7 +79,7 @@ test('edit origin trial stage', async ({ page }) => {
 
     // Submit and return to Feature page
     await page.locator('input[type="submit"]').click();
-    await page.waitForURL(/\/feature\/\d+/);
+    await page.waitForURL('**/feature/*');
   });
 
   await test.step('Step 2: Verify Origin Trial 2 (No conflicts)', async () => {
@@ -88,7 +88,7 @@ test('edit origin trial stage', async ({ page }) => {
 
     // Navigate to Edit
     await otPanel2.getByRole('button', { name: 'Edit fields' }).click();
-    await page.waitForURL(/\/guide\/stage\/\d+\/\d+\/\d+/);
+    await page.waitForURL('**/guide/stage/*/*/*');
 
     // Set End Milestone only
     const endInput = page.locator('input[name="ot_milestone_desktop_end"]');
@@ -101,7 +101,7 @@ test('edit origin trial stage', async ({ page }) => {
 
     // Submit
     await page.locator('input[type="submit"]').click();
-    await page.waitForURL(/\/feature\/\d+/);
+    await page.waitForURL('**/feature/*');
   });
 
   await test.step('Step 3: Verify "Prepare to Ship" Warning', async () => {
@@ -110,7 +110,7 @@ test('edit origin trial stage', async ({ page }) => {
 
     // Navigate to Edit
     await shipPanel.getByRole('button', { name: 'Edit fields' }).click();
-    await page.waitForURL(/\/guide\/stage\/\d+\/\d+\/\d+/);
+    await page.waitForURL('**/guide/stage/*/*/*');
 
     // Enter Shipped Milestone = 100 (Same as OT Start, which should trigger warning)
     const shippedInput = page.locator('input[name="shipped_milestone"]');
@@ -123,6 +123,6 @@ test('edit origin trial stage', async ({ page }) => {
 
     // Warnings are non-blocking; Submit should succeed.
     await page.locator('input[type="submit"]').click();
-    await page.waitForURL(/\/feature\/\d+/);
+    await page.waitForURL('**/feature/*');
   });
 });
