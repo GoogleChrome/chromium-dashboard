@@ -19,122 +19,116 @@ test.afterEach(async ({ page }) => {
 });
 
 test('edit origin trial stage', async ({ page }) => {
-  // Safest way to work with a unique feature is to create it.
-  await createNewFeature(page);
+  await test.step('Setup: Create Feature and Origin Trial Stage', async () => {
+    await createNewFeature(page);
 
-  // Add an origin trial stage.
-  await page.getByText('Add stage').click();
+    // Expand "Start incubating"
+    const incubatingPanel = page.locator('sl-details', { hasText: 'Start incubating' });
+    await incubatingPanel.click();
 
-  // Select stage to create.
-  // We wait for the select element to be ready before interacting.
-  const stageSelect = page.locator('sl-select#stage_create_select');
-  await stageSelect.click();
+    // Open "Add Stage" dialog
+    await page.getByRole('button', { name: 'Add stage' }).click();
 
-  // Click the origin trial stage option.
-  const originTrialStageOption = page.locator('sl-select sl-option[value="150"]');
-  await expect(originTrialStageOption).toBeVisible();
-  await originTrialStageOption.click();
+    // Select "Origin trial" from the dropdown
+    const stageSelect = page.locator('sl-select#stage_create_select');
+    await stageSelect.click();
 
-  // Click the Create stage button to finally create the stage.
-  await page.getByRole('button', { name: 'Create stage' }).click();
+    const originTrialOption = page.locator('sl-option', { hasText: 'Origin trial' }).first();
+    await expect(originTrialOption).toBeVisible();
+    await originTrialOption.click();
 
-  // Edit the Origin Trial (1) stage
-  const originTrialPanel = page.locator('sl-details[summary="Origin Trial"]');
-  await originTrialPanel.click();
+    // Create
+    await page.getByRole('button', { name: 'Create stage' }).click();
 
-  const editFieldsButton = originTrialPanel.locator('sl-button[href^="/guide/stage"]');
-  // Ensure the panel animation is done and button is visible
-  await expect(editFieldsButton).toBeVisible();
-  await editFieldsButton.click();
+    // Wait for the page to settle (Feature page reload)
+    await page.waitForURL('**/feature/*');
+  });
 
-  await page.waitForURL('**/guide/stage/*/*/*');
+  await test.step('Step 1: Trigger Semantic Check Error (Start == End)', async () => {
+    // Open the first Origin Trial panel
+    const otPanel = page.locator('sl-details', { hasText: 'Origin Trial' }).first();
+    await otPanel.click();
 
-  // Find the desktop start milestone field
-  const originTrialDesktopInput = page.locator('input[name="ot_milestone_desktop_start"]');
-  await originTrialDesktopInput.fill('100');
-  await originTrialDesktopInput.blur(); // Triggers change event logic in the app
+    // Click "Edit fields"
+    await otPanel.getByRole('button', { name: 'Edit fields' }).click();
+    await page.waitForURL('**/guide/stage/*/*/*');
 
-  // Enter the same value for the _end field
-  const originTrialDesktopEndInput = page.locator('input[name="ot_milestone_desktop_end"]');
-  await originTrialDesktopEndInput.fill('100');
-  await originTrialDesktopEndInput.blur(); // Triggers change event logic in the app
+    // Locate inputs
+    const startInput = page.locator('input[name="ot_milestone_desktop_start"]');
+    const endInput = page.locator('input[name="ot_milestone_desktop_end"]');
 
-  // Check that there is an error now for the origin trial milestone fields.
-  // Playwright will retry this assertion automatically until the UI renders the error.
-  const originTrialDesktopStartError = page.locator('chromedash-form-field[name="ot_milestone_desktop_start"] .check-error');
-  await expect(originTrialDesktopStartError).toBeVisible();
+    // Enter conflicting values (Start 100, End 100)
+    await startInput.fill('100');
+    await startInput.blur();
+    await endInput.fill('100');
+    await endInput.blur(); // Trigger validation
 
-  const originTrialDesktopEndError = page.locator('chromedash-form-field[name="ot_milestone_desktop_end"] .check-error');
-  await expect(originTrialDesktopEndError).toBeVisible();
+    // Verify Error Messages appear
+    // Use standard CSS attribute selectors
+    const startField = page.locator('chromedash-form-field[name="ot_milestone_desktop_start"]');
+    const endField = page.locator('chromedash-form-field[name="ot_milestone_desktop_end"]');
 
-  // Scroll to a later field to center the OT milestone fields for the screenshot.
-  const originTrialAndroidMilestoneStart = page.locator('chromedash-form-field[name="ot_milestone_android_start"]');
-  await originTrialAndroidMilestoneStart.scrollIntoViewIfNeeded();
+    await expect(startField.locator('.check-error')).toBeVisible();
+    await expect(endField.locator('.check-error')).toBeVisible();
 
-  await expect(page).toHaveScreenshot('semantic-check-origin-trial.png');
+    // Screenshot (Visual Regression)
+    await page.locator('input[name="ot_milestone_android_start"]').scrollIntoViewIfNeeded();
+    await expect(page).toHaveScreenshot('semantic-check-origin-trial.png');
 
-  // Remove the end value
-  await originTrialDesktopEndInput.fill('');
-  await originTrialDesktopEndInput.blur();
+    // Fix the error (Clear End date)
+    await endInput.fill('');
+    await endInput.blur();
 
-  // Check that there is no error now.
-  await expect(originTrialDesktopStartError).not.toBeVisible();
-  await expect(originTrialDesktopEndError).not.toBeVisible();
+    // Verify Errors disappear
+    await expect(startField.locator('.check-error')).toBeHidden();
+    await expect(endField.locator('.check-error')).toBeHidden();
 
-  // Submit the change of OT start milestone.
-  const submitButton = page.locator('input[type="submit"]');
-  await submitButton.click();
+    // Submit and return to Feature page
+    await page.locator('input[type="submit"]').click();
+    await page.waitForURL('**/feature/*');
+  });
 
-  // Check that we are back on the Feature page
-  await page.waitForURL('**/feature/*');
+  await test.step('Step 2: Verify Origin Trial 2 (No conflicts)', async () => {
+    const otPanel2 = page.locator('sl-details', { hasText: 'Origin Trial 2' });
+    await otPanel2.click();
 
-  // Edit the Origin Trial (2) stage
-  const originTrial2Panel = page.locator('sl-details[summary="Origin Trial 2"]');
-  await originTrial2Panel.click();
+    // Navigate to Edit
+    await otPanel2.getByRole('button', { name: 'Edit fields' }).click();
+    await page.waitForURL('**/guide/stage/*/*/*');
 
-  const editFieldsButton2 = originTrial2Panel.locator('sl-button[href^="/guide/stage"]');
-  await expect(editFieldsButton2).toBeVisible();
-  await editFieldsButton2.click();
+    // Set End Milestone only
+    const endInput = page.locator('input[name="ot_milestone_desktop_end"]');
+    await endInput.fill('100');
+    await endInput.blur();
 
-  await page.waitForURL('**/guide/stage/*/*/*');
+    // Assert NO error exists
+    const endField = page.locator('chromedash-form-field[name="ot_milestone_desktop_end"]');
+    await expect(endField.locator('.check-error')).toBeHidden();
 
-  // Find the desktop end milestone field
-  const originTrial2DesktopInput = page.locator('input[name="ot_milestone_desktop_end"]');
-  await originTrial2DesktopInput.fill('100');
-  await originTrial2DesktopInput.blur();
+    // Submit
+    await page.locator('input[type="submit"]').click();
+    await page.waitForURL('**/feature/*');
+  });
 
-  // Check that there is no error.
-  const originTrial2DesktopEndError = page.locator('chromedash-form-field[name="ot_milestone_desktop_end"] .check-error');
-  await expect(originTrial2DesktopEndError).not.toBeVisible();
+  await test.step('Step 3: Verify "Prepare to Ship" Warning', async () => {
+    const shipPanel = page.locator('sl-details', { hasText: 'Prepare to ship' });
+    await shipPanel.click();
 
-  await submitButton.click();
+    // Navigate to Edit
+    await shipPanel.getByRole('button', { name: 'Edit fields' }).click();
+    await page.waitForURL('**/guide/stage/*/*/*');
 
-  // Wait until we are back on the feature page
-  await page.waitForURL('**/feature/*');
+    // Enter Shipped Milestone = 100 (Same as OT Start, which should trigger warning)
+    const shippedInput = page.locator('input[name="shipped_milestone"]');
+    await shippedInput.fill('100');
+    await shippedInput.blur();
 
-  // Open the Prepare to ship section.
-  const prepareToShipPanel = page.locator('sl-details[summary="Prepare to ship"]');
-  await prepareToShipPanel.click();
+    // Verify Warning Text
+    const fieldWrapper = page.locator('chromedash-form-field[name="shipped_milestone"]');
+    await expect(fieldWrapper).toContainText('All origin trials starting milestones should be before feature shipping milestone');
 
-  // click 'Edit fields' button to go to the stage page.
-  const editFieldsButton3 = prepareToShipPanel.locator('sl-button[href^="/guide/stage"]');
-  await expect(editFieldsButton3).toBeVisible();
-  await editFieldsButton3.click();
-
-  // Find the shipped_milestone field
-  const shippedMilestoneInput = page.locator('input[name="shipped_milestone"]');
-
-  // Enter the same milestone as the OT 1 start.
-  await shippedMilestoneInput.fill('100');
-  await shippedMilestoneInput.blur();
-
-  // Check that there is a warning message.
-  const shippedMilestoneField = page.locator('chromedash-form-field[name="shipped_milestone"]');
-  await expect(shippedMilestoneField).toContainText('All origin trials starting milestones should be before feature shipping milestone.');
-
-  // Warning should allow submit
-  await submitButton.click();
-
-  // We should be back on the feature page.
-  await page.waitForURL('**/feature/*');
+    // Warnings are non-blocking; Submit should succeed.
+    await page.locator('input[type="submit"]').click();
+    await page.waitForURL('**/feature/*');
+  });
 });
