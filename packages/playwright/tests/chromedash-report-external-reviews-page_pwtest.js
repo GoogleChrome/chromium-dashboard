@@ -52,9 +52,9 @@ test('external reviewers report renders', async ({ page }) => {
     // Verify Data Row Content
     // We match the whole row text once, rather than individual cells, for speed
     const dataRow = rows.nth(1);
-    await expect(dataRow).toHaveText(
-      /Feature 7 shares a review with Feature 5[\s\S]*#5 A Title[\s\S]*M100-M104/
-    );
+    await expect(dataRow).toContainText('Feature 7 shares a review with Feature 5');
+    await expect(dataRow).toContainText('#5 A Title');
+    await expect(dataRow).toContainText('M100-M104');
 
     // Verify Links
     await expect(dataRow.getByRole('link', { name: 'Feature 7 shares a review with Feature 5' }))
