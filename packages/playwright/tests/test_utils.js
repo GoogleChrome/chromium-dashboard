@@ -2,55 +2,82 @@
 import { expect } from '@playwright/test';
 
 /**
- * Checks if the current viewport is mobile width (<= 700px).
- * @param {import("@playwright/test").Page} page
+ * @deprecated Avoid using hard delays. Use web-first assertions or page.waitForTimeout() if absolutely necessary.
+ * @param {number} ms
  */
-export function isMobile(page) {
-  const size = page.viewportSize();
-  return size ? size.width <= 700 : false;
+export async function delay(ms) {
+  // eslint-disable-next-line no-restricted-syntax
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 /**
- * Captures console messages and forwards them to the Node console with timestamps.
- * Filters out common noise (SameSite warnings).
- * @param {import("@playwright/test").Page} page
+ * Capture console messages.
+ * Optimized to handle argument parsing safely without blocking.
+ * @param {import("playwright-core").Page} page
  */
 export function captureConsoleMessages(page) {
   page.on('console', async msg => {
     if (msg.type() === 'warning') return;
 
     const now = new Date();
-    const time = now.toISOString().split('T')[1].slice(0, -1); // HH:mm:ss.mmm
+    const time = now.toISOString().split('T')[1].slice(0, -1); // HH:mm:ss.sss
 
-    const args = await Promise.all(
-      msg.args().map(arg => arg.jsonValue().catch(() => arg.toString()))
-    );
+    const args = [];
+    for (const arg of msg.args()) {
+      let argValue;
+      try {
+        // jsonValue() is safer than generic toString on handles
+        argValue = await arg.jsonValue();
+      } catch (e) {
+        argValue = msg.text();
+      }
 
-    let logLine = args.join(' ');
+      let argString = String(argValue);
 
-    // Filter noisy SameSite cookie warnings
-    if (logLine.includes('does not have a proper “SameSite” attribute value')) {
-      return;
+      // SameSite warning filter
+      if (argString.includes('does not have a proper “SameSite” attribute value')) {
+        argString = argString.replace('JavaScript Warning: ', 'SameSite ')
+          .split('Soon, cookies without')[0]
+          .trim();
+      }
+      args.push(argString);
     }
-
-    console.log(`${time}: console.${msg.type()}: ${logLine}`);
+    console.log(`${time}: console.${msg.type()}: ${args.join(' ')}`);
   });
 }
 
 /**
- * Basic event listeners for debugging page crashes or errors.
- * @param {import("@playwright/test").Page} page
+ * @param {import("playwright-core").Page} page
  */
 export function capturePageEvents(page) {
-  page.on('pageerror', error => console.error(`pageerror: ${error}`));
-  page.on('crash', () => console.error(`crash: ${page.url()}`));
+  // Only keeping the active ones from original code to reduce noise
+  page.on('close', () => console.log(`close: ${page.url()}`));
+  page.on('pageerror', (error) => console.log(`pageerror: ${error.message}`));
+  page.on('crash', () => console.log(`crash: ${page.url()}`));
+  page.on('domcontentloaded', () => console.log(`domcontentloaded: ${page.url()}`));
 }
 
 /**
- * Auto-accepts dialogs (alert, confirm, beforeunload).
- * Note: Playwright auto-dismisses dialogs by default, so we only need this
- * if we explicitly want to 'accept' them.
- * @param {import("@playwright/test").Page} page
+ * @param {import("playwright-core").Page} page
+ */
+export async function decodeCookies(page) {
+  const cookies = await page.context().cookies();
+  for (const cookie of cookies) {
+    console.log('Decoded Cookie:', cookie);
+  }
+}
+
+/**
+ * @param {import("playwright-core").Page} page
+ */
+export async function isMobile(page) {
+  const viewportSize = page.viewportSize();
+  return (viewportSize?.width || 1024) <= 700;
+}
+
+/**
+ * consolidated dialog handler.
+ * @param {import('@playwright/test').Page} page
  */
 export function acceptDialogs(page) {
   page.on('dialog', async dialog => {
@@ -58,161 +85,191 @@ export function acceptDialogs(page) {
   });
 }
 
+// Re-export specific ones if existing tests rely on strict naming
+export const acceptBeforeUnloadDialogs = acceptDialogs;
+export const acceptConfirmDialogs = acceptDialogs;
+export const acceptAlertDialogs = acceptDialogs;
 
 /**
- * @param {import("@playwright/test").Page} page
+ * @param {import("playwright-core").Page} page
  */
 export async function login(page) {
-  // Prevent error if function is already exposed in this context
-  try {
-    await page.exposeFunction('isPlaywright', () => {});
-  } catch (e) {
-    // Function already exposed, ignore
-  }
+  await page.exposeFunction('isPlaywright', () => {});
 
-  // Handle dialogs
   acceptDialogs(page);
 
-  // Navigate to home
-  await page.goto('/');
+  // Navigate and wait for load
+  await page.goto('/', { waitUntil: 'domcontentloaded' });
+  await page.waitForURL('**/roadmap');
+  await expect(page).toHaveTitle(/Chrome Status/);
 
-  // Define locators
+  // 1. Check if we need to logout first
   const accountIndicator = page.getByTestId('account-indicator');
-  const loginButton = page.getByTestId('dev-mode-sign-in-button');
-  const signOutLink = page.getByTestId('sign-out-link');
 
-  // 1. Handling "Already Logged In" State
-  // We check if the account indicator is visible. If so, we logout to ensure a fresh session.
-  if (await accountIndicator.isVisible()) {
-    // Handle mobile/desktop menu interaction differences for logging out
-    if (isMobile(page)) {
-      const menuButton = page.getByTestId('menu');
-      if (await menuButton.isVisible()) {
-        await menuButton.click();
-      }
-    } else {
-      // On Desktop, hover/click the avatar to reveal the sign out link
-      await accountIndicator.click();
-    }
-
-    // Ensure sign out link is ready before clicking
-    await expect(signOutLink).toBeVisible();
-    await signOutLink.click();
-
-    // Wait for the login button to appear to confirm we are logged out
-    await expect(loginButton).toBeVisible();
+  // isVisible() does not wait, it returns immediate status.
+  // We use a short wait here to account for hydration.
+  try {
+    await accountIndicator.waitFor({ state: 'visible', timeout: 2000 });
+    // If we are here, we are logged in. Logout.
+    await performLogout(page);
+  } catch (e) {
+    // If timeout, we are not logged in, proceed.
   }
 
   // 2. Perform Login
-  // We explicitly wait for the login button to be ready/clickable
-  await expect(loginButton).toBeVisible();
+  const loginButton = page.getByTestId('dev-mode-sign-in-button');
+  await expect(loginButton).toBeVisible(); // Default 30s timeout is safer than custom vars
   await loginButton.click();
 
-  // 3. Verify Success
-  // Wait for the account indicator to appear, confirming successful login.
-  await expect(accountIndicator).toBeVisible({ timeout: 15000 });
+  // 3. Verify Login Success
+  // Waiting for the account indicator is the best proof of login
+  await expect(accountIndicator).toBeVisible({ timeout: 10000 });
 }
 
 /**
- * Logs out via the UI.
- * @param {import("@playwright/test").Page} page
+ * Helper function to handle the actual clicking for logout
+ * @param {import("playwright-core").Page} page
  */
-export async function logout(page) {
-  acceptDialogs(page); // Handle "Changes may not be saved" dialogs
-
-  await page.goto('/');
-
-  // Handle Mobile/Desktop menu differences
-  if (isMobile(page)) {
-    // On mobile, the sign-out link is inside the drawer menu.
-    // Open the drawer first.
+async function performLogout(page) {
+  // Handle mobile menu interaction
+  if (await isMobile(page)) {
     const menuButton = page.getByTestId('menu');
+    await expect(menuButton).toBeVisible();
     await menuButton.click();
-    await expect(page.locator('sl-drawer')).toBeVisible();
   } else {
-    // Desktop: Click avatar to see dropdown
-    await page.getByTestId('account-indicator').click();
+    const accountIndicator = page.getByTestId('account-indicator');
+    await accountIndicator.click();
   }
 
   const signOutLink = page.getByTestId('sign-out-link');
   await expect(signOutLink).toBeVisible();
   await signOutLink.click();
 
-  // Verify logout state
+  // Wait for the login button to reappear to confirm logout
   await expect(page.getByTestId('dev-mode-sign-in-button')).toBeVisible();
 }
 
 /**
- * Navigates to the "Create Feature" form.
- * @param {import("@playwright/test").Page} page
+ * @param {import("playwright-core").Page} page
+ */
+export async function logout(page) {
+  acceptDialogs(page);
+
+  // Go home first
+  await page.goto('/');
+  await page.waitForURL('**/roadmap');
+
+  // Check if we are actually logged in before trying to log out
+  const loginButton = page.getByTestId('dev-mode-sign-in-button');
+  if (await loginButton.isVisible()) {
+    // Already logged out
+    return;
+  }
+
+  await performLogout(page);
+
+  // Verify clean state
+  await expect(page).toHaveTitle(/Chrome Status/);
+}
+
+/**
+ * From top-level page, after logging in, go to the New Feature page.
+ * @param {import('@playwright/test').Page} page
  */
 export async function gotoNewFeaturePage(page) {
+  const mobile = await isMobile(page);
   const createFeatureButton = page.getByTestId('create-feature-button');
+  const menuButton = page.getByTestId('menu');
 
-  // If button is not visible, it might be behind the mobile menu
-  if (!await createFeatureButton.isVisible() && isMobile(page)) {
-    // If mobile, open the menu to find the create button
-    await page.getByTestId('menu').click();
-    await expect(page.locator('sl-drawer')).toBeVisible();
+  if (mobile) {
+    await expect(menuButton).toBeVisible();
+    await menuButton.click();
   }
 
+  // Ensure button is actionable before clicking
+  await expect(createFeatureButton).toBeVisible();
   await createFeatureButton.click();
 
-  // Close menu if mobile (cleanup)
-  if (isMobile(page)) {
-    // Click the overlay or close button to dismiss the drawer
-    await page.mouse.click(0, 0);
+  if (mobile) {
+    // If the menu overlaps content, close it.
+    // If navigation happened, the menu might auto-close.
+    // Checking visibility before clicking is safer.
+    if (await menuButton.isVisible()) {
+      await menuButton.click();
+    }
   }
 
-  await expect(page.getByTestId('add-a-feature')).toBeVisible();
+  // Assertion: Page Transition occurred
+  const addAFeatureHeader = page.getByTestId('add-a-feature');
+  await expect(addAFeatureHeader).toBeVisible();
 }
 
 /**
- * Helper to handle Shoelace/Custom component input fields.
- * @param {import("@playwright/test").Page} page
- * @param {string} wrapperTestId
- * @param {string} value
+ * Enters a blink component on the page.
+ * @param {import("playwright-core").Page} page
  */
-async function fillCustomComponent(page, wrapperTestId, value) {
-  const wrapper = page.getByTestId(wrapperTestId);
+export async function enterBlinkComponent(page) {
+  const wrapper = page.getByTestId('blink_components_wrapper');
   await expect(wrapper).toBeVisible();
 
-  // Click wrapper to ensure the internal input is active/rendered
-  await wrapper.click();
-
+  // Scoped locator: Find the input *inside* the wrapper
   const input = wrapper.locator('input');
-  await expect(input).toBeEditable();
-  await input.fill(value);
-  // Press Enter if the component requires it to set the value
-  await input.press('Enter');
+
+  // Fill automatically waits for visibility, checks actionability, and focuses.
+  await input.fill('blink');
+
+  // If the UI requires selecting from a dropdown that appears after typing:
+  // await page.keyboard.press('Enter'); // Uncomment if a selection is required
 }
 
 /**
- * Creates a new feature with default test values.
- * @param {import("@playwright/test").Page} page
+ * Enters a web feature id on the page.
+ * @param {import("playwright-core").Page} page
+ */
+export async function enterWebFeatureId(page) {
+  const wrapper = page.getByTestId('web_feature_wrapper');
+  await expect(wrapper).toBeVisible();
+
+  const input = wrapper.locator('input');
+  await input.fill('hwb');
+}
+
+/**
+ * Create a new feature, starting from top-level page, ending up on feature page.
+ * @param {import('@playwright/test').Page} page
  */
 export async function createNewFeature(page) {
   await gotoNewFeaturePage(page);
 
-  // Use labeled locators where possible for better accessibility testing
+  // Using specific locators.
+  // 'fill' is robust; it will retry if the element is being hydrated.
   await page.locator('input[name="name"]').fill('Test feature name');
   await page.locator('textarea[name="summary"]').fill('Test summary description');
 
-  // Use helper for custom components to avoid code duplication and delays
-  await fillCustomComponent(page, 'blink_components_wrapper', 'blink');
-  await fillCustomComponent(page, 'web_feature_wrapper', 'hwb');
+  await enterBlinkComponent(page);
+  await enterWebFeatureId(page);
 
-  // Select feature type (Radio button)
-  // We use .first() or exact locator to ensure we click the input, not the label wrapper if strict
+  // Select feature type
   await page.locator('input[name="feature_type"][value="0"]').click();
 
-  // Use Promise.all to handle the navigation race condition.
-  // The click causes a navigation, which can detach the button before click() returns,
-  // causing an error. Promise.all ensures we listen for URL change while clicking.
-  await Promise.all([
-    page.waitForURL(/\/feature\/\d+/),
-    page.locator('input[type="submit"]').click()
-  ]);
+  // Submit and wait for navigation
+  const submitButton = page.locator('input[type="submit"]');
+  await submitButton.click();
 
-  await expect(page.locator('chromedash-feature-detail')).toBeVisible({ timeout: 15000 });
+  // Verification: Wait for URL change first (fastest check)
+  await page.waitForURL('**/feature/*');
+
+  // Verification: Wait for content
+  const detail = page.locator('chromedash-feature-detail');
+  await expect(detail).toBeVisible({ timeout: 15000 });
+}
+
+/**
+ * Navigates to new features list page.
+ * @param {import("playwright-core").Page} page
+ */
+export async function gotoNewFeatureList(page) {
+  await page.goto('/newfeatures');
+  const pagination = page.locator('chromedash-feature-pagination');
+  await expect(pagination).toBeVisible();
 }
