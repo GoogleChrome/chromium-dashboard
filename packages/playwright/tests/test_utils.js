@@ -1,12 +1,5 @@
 // @ts-check
-import {expect} from '@playwright/test';
-
-/**
- * @param {number | undefined} ms
- */
-export async function delay(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
+import { expect } from '@playwright/test';
 
 /**
  * Call this, say in your test.beforeEach() method, to capture all
@@ -59,15 +52,9 @@ export function captureConsoleMessages(page) {
  * @param {import("playwright-core").Page} page
  */
 export function capturePageEvents(page) {
-  // page.on('open', async () => {
-  //   console.log(`open: ${page.url()}`);
-  // });
   page.on('close', async () => {
     console.log(`close: ${page.url()}`);
   });
-  // page.on('requestfailed', request => {
-  //   console.log(`requestfailed: ${request.url()} with: ${request.failure().errorText}`);
-  // });
   page.on('pageerror', async (/** @type {Error} */ error) => {
     console.log(`pageerror: ${error}`);
   });
@@ -77,17 +64,6 @@ export function capturePageEvents(page) {
   page.on('domcontentloaded', async () => {
     console.log(`domcontentloaded: ${page.url()}`);
   });
-  // The following are often not useful, since there are so many
-  // requests and responses.  But you can look for particular urls.
-  // page.on('request', async (/** @type {Request} */ request) => {
-  //   console.log(`request: ${request.url()}`);
-  // });
-  // page.on('response', async (/** @type {Response} */ response) => {
-  //   console.log(`response: ${response.url()}`);
-  // });
-  // page.on('requestfinished', request => {
-  //   console.log(`requestfinished: ${request.url()}`);
-  // });
 }
 
 /**
@@ -105,7 +81,7 @@ export async function decodeCookies(page) {
  */
 export async function isMobile(page) {
   const viewportSize = page.viewportSize();
-  return viewportSize && viewportSize.width <= 700;
+  return (viewportSize && viewportSize.width <= 700);
 }
 
 /**
@@ -146,12 +122,6 @@ export function acceptAlertDialogs(page) {
   });
 }
 
-// Timeout for logging in, in milliseconds.
-// Initially set to longer timeout, in case server needs to warm up and
-// respond to the login.  Changed to shorter timeout after login is successful.
-// Not sure we need this yet.
-let loginTimeout = 20000;
-
 /**
  * @param {import("playwright-core").Page} page
  */
@@ -163,53 +133,37 @@ export async function login(page) {
   // can occur in Chrome when not logged in.
   acceptAlertDialogs(page);
 
-  await page.pause();
-  // console.log('login: goto /');
-  await page.goto('/', {timeout: 20000});
-  await page.waitForURL('**/roadmap', {timeout: 20000});
+  await page.goto('/', { timeout: 20000 });
+  await page.waitForURL('**/roadmap', { timeout: 20000 });
 
-  await delay(1000);
   await expect(page).toHaveTitle(/Chrome Status/);
-  page.mouse.move(0, 0); // Move away from content on page.
-  await delay(1000);
 
   // Check whether we are already or still logged in.
-  let accountIndicator = page.getByTestId('account-indicator');
-  while (await accountIndicator.isVisible()) {
-    // console.log('Already (still) logged in. Need to logout.');
-    await accountIndicator.hover({timeout: 5000});
+  const accountIndicator = page.getByTestId('account-indicator');
+
+  if (await accountIndicator.isVisible()) {
+    // Perform logout if already logged in.
     const signOutLink = page.getByTestId('sign-out-link');
+
+    // We hover the account indicator to make sure the menu appears
+    await accountIndicator.hover();
     await expect(signOutLink).toBeVisible();
+    await signOutLink.click();
 
-    await signOutLink.hover({timeout: 5000});
-    await signOutLink.click({timeout: 5000});
-
-    await delay(1000);
     await page.waitForURL('**/roadmap');
-    await expect(page).toHaveTitle(/Chrome Status/);
-    page.mouse.move(0, 0); // Move away from content on page.
-    await delay(1000);
-
-    accountIndicator = page.getByTestId('account-indicator');
+    await expect(accountIndicator).not.toBeVisible();
   }
-  await delay(1000);
 
   // Expect login button to be present.
-  // console.info('expect login button to be present and visible');
   const loginButton = page.getByTestId('dev-mode-sign-in-button');
-  await expect(loginButton).toBeVisible({timeout: loginTimeout});
+  await expect(loginButton).toBeVisible();
 
-  await loginButton.click({timeout: 5000, delay: 1000});
-  await delay(loginTimeout / 3); // longer delay here, to allow for initial login.
+  // Click login
+  await loginButton.click();
 
-  // Expect the title to contain a substring.
+  // Validate successful login by checking title or account indicator
   await expect(page).toHaveTitle(/Chrome Status/);
-  page.mouse.move(0, 0); // Move away from content on page.
-  await delay(1000);
-
-  // After first login, reduce timeout/delay.
-  loginTimeout = 5000;
-  // console.log('login: done');
+  await expect(accountIndicator).toBeVisible();
 }
 
 /**
@@ -223,41 +177,30 @@ export async function logout(page) {
   // accept leaving them unsaved.
   acceptBeforeUnloadDialogs(page);
 
-  // console.log('logout: goto /');
   await page.goto('/');
   await page.waitForURL('**/roadmap');
-  await delay(1000);
   await expect(page).toHaveTitle(/Chrome Status/);
 
-  page.mouse.move(0, 0); // Move away from content on page.
-  await delay(1000);
-
+  // Handle Mobile Menu
   if (await isMobile(page)) {
     const menuButton = page.getByTestId('menu');
     await expect(menuButton).toBeVisible();
     await menuButton.click();
   } else {
     const accountIndicator = page.getByTestId('account-indicator');
-    await expect(accountIndicator).toBeVisible({timeout: 20000});
-    await accountIndicator.click({timeout: 5000});
+    await expect(accountIndicator).toBeVisible({ timeout: 20000 });
+    // Click account indicator to open the menu
+    await accountIndicator.click();
   }
-  await delay(1000);
 
-  // Need to hover to see the sign-out-link
+  // Need to wait for the sign-out-link to be visible
   const signOutLink = page.getByTestId('sign-out-link');
   await expect(signOutLink).toBeVisible();
-  await signOutLink.click({timeout: 5000});
-  await delay(500);
+  await signOutLink.click();
 
+  // Confirm we are back on roadmap and signed out
   await page.waitForURL('**/roadmap');
   await expect(page).toHaveTitle(/Chrome Status/);
-
-  // Redundant? Go to roadmap page.
-  await page.goto('/');
-  await page.waitForURL('**/roadmap');
-  await delay(500);
-
-  // console.log('logout: done');
 }
 
 /**
@@ -265,7 +208,6 @@ export async function logout(page) {
  * @param {import('@playwright/test').Page} page
  */
 export async function gotoNewFeaturePage(page) {
-  // console.log('navigate to create feature page');
   const mobile = await isMobile(page);
   const createFeatureButton = page.getByTestId('create-feature-button');
   const menuButton = page.getByTestId('menu');
@@ -275,17 +217,18 @@ export async function gotoNewFeaturePage(page) {
   if (mobile) {
     await menuButton.click(); // To show menu.
   }
+
+  await expect(createFeatureButton).toBeVisible();
   await createFeatureButton.click();
+
   if (mobile) {
-    await menuButton.click(); // To hide menu
-    await delay(500);
+    await menuButton.click();  // To hide menu
+    await expect(menuButton).not.toBeVisible();
   }
 
   // Expect "Add a feature" header to be present.
   const addAFeatureHeader = page.getByTestId('add-a-feature');
-  await expect(addAFeatureHeader).toBeVisible({timeout: 10000});
-  // console.log('navigate to create feature page done');
-  await delay(500);
+  await expect(addAFeatureHeader).toBeVisible({ timeout: 10000 });
 }
 
 /**
@@ -300,13 +243,11 @@ export async function enterBlinkComponent(page) {
   );
   await expect(blinkComponentsInputWrapper).toBeVisible();
 
-  // Trying to show options, doesn't work yet.
-  await blinkComponentsInputWrapper.focus();
-  await delay(500);
-
   const blinkComponentsInput = blinkComponentsInputWrapper.locator('input');
   await blinkComponentsInput.fill('blink');
-  await delay(500);
+
+  // If you need to verify the value "stuck"
+  await expect(blinkComponentsInput).toHaveValue('blink');
 }
 
 /**
@@ -319,13 +260,11 @@ export async function enterWebFeatureId(page) {
   const webFeatureIdInputWrapper = page.getByTestId('web_feature_wrapper');
   await expect(webFeatureIdInputWrapper).toBeVisible();
 
-  // Trying to show options, doesn't work yet.
-  await webFeatureIdInputWrapper.focus();
-  await delay(500);
-
   const webFeatureIdInput = webFeatureIdInputWrapper.locator('input');
   await webFeatureIdInput.fill('hwb');
-  await delay(500);
+
+  // Verify the value
+  await expect(webFeatureIdInput).toHaveValue('hwb');
 
   // TODO(kyleju): assert that the link to webstatus.dev is present.
   // It is missing in the current test setup.
