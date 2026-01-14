@@ -104,6 +104,9 @@ export class ChromedashDrawer extends LitElement {
   @state()
   loading = false;
 
+  // Track the test button to remove it on disconnect
+  private testSignInButton: HTMLButtonElement | null = null;
+
   connectedCallback() {
     super.connectedCallback();
 
@@ -155,58 +158,55 @@ export class ChromedashDrawer extends LitElement {
   }
 
   initializeTestingSignIn() {
-    // Create DEV_MODE login button for testing
+    // Check if it already exists to prevent duplicates
+    if (document.querySelector('[data-testid="dev-mode-sign-in-button"]')) return;
+
     const signInTestingButton = document.createElement('button');
     signInTestingButton.innerText = 'Sign in as example@chromium.org';
-    signInTestingButton.setAttribute('type', 'button');
+    signInTestingButton.type = 'button';
     signInTestingButton.setAttribute('data-testid', 'dev-mode-sign-in-button');
-    signInTestingButton.setAttribute(
-      'style',
-      'position:fixed; right:0; z-index:1000; background: lightblue; border: 1px solid blue;'
-    );
-
-    signInTestingButton.addEventListener('click', () => {
-      // POST to '/dev/mock_login' to login as example@chromium.
-      fetch('/dev/mock_login', {method: 'POST'})
-        .then(response => {
-          if (!response.ok) {
-            throw new Error(`Sign in failed! Response: ${response.status}`);
-          }
-        })
-        .then(() => {
-          setTimeout(() => {
-            const url = window.location.href.split('?')[0];
-            window.location.href = url;
-          }, 1000);
-        })
-        .catch(error => {
-          console.error('Sign in failed.', error);
-        });
+    Object.assign(signInTestingButton.style, {
+      position: 'fixed',
+      right: '0',
+      zIndex: '1000',
+      background: 'lightblue',
+      border: '1px solid blue',
     });
 
-    const signInButtonContainer = document.querySelector('body');
-    if (signInButtonContainer) {
-      signInButtonContainer.insertAdjacentElement(
-        'afterbegin',
-        signInTestingButton
-      ); // for SPA
+    signInTestingButton.addEventListener('click', this.handleTestSignIn);
+
+    // Append to body (SPA workaround) and track it for cleanup
+    document.body.prepend(signInTestingButton);
+    this.testSignInButton = signInTestingButton;
+  }
+
+  async handleCredentialResponse(credentialResponse: any) {
+    try {
+      // Await ensures the backend has finished processing before we move on
+      await window.csClient.signIn(credentialResponse);
+
+      // Reload immediately. No timeout needed.
+      // using 'location.assign' or 'location.href' cleans the URL if you construct it manually
+      const url = window.location.href.split('?')[0];
+      window.location.href = url;
+    } catch (err) {
+      console.error('Sign in failed', err);
+      this.signOut();
     }
   }
 
-  handleCredentialResponse(credentialResponse) {
-    window.csClient
-      .signIn(credentialResponse)
-      .then(() => {
-        setTimeout(() => {
-          const url = window.location.href.split('?')[0];
-          window.location.href = url;
-        }, 1000);
-      })
-      .catch(() => {
-        console.error('Sign in failed, so signing out to allow retry');
-        this.signOut();
-      });
-  }
+  handleTestSignIn = async () => {
+    try {
+      const response = await fetch('/dev/mock_login', { method: 'POST' });
+      if (!response.ok) throw new Error(response.statusText);
+
+      // Reload immediately
+      const url = window.location.href.split('?')[0];
+      window.location.href = url;
+    } catch (error) {
+      console.error('Sign in failed.', error);
+    }
+  };
 
   handleSignOutClick(e) {
     e.preventDefault();
