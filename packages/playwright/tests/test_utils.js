@@ -70,7 +70,7 @@ export async function login(page) {
     // Function already exposed, ignore
   }
 
-  // Handle dialogs (Fixed name to match exported function)
+  // Handle dialogs
   acceptDialogs(page);
 
   // 2. Navigation: Go to the homepage
@@ -82,6 +82,7 @@ export async function login(page) {
   const signOutLink = page.getByTestId('sign-out-link');
 
   // 3. Check specific "Already Logged In" state
+  // If we see the account indicator, we are logged in. We must log out first.
   if (await accountIndicator.isVisible()) {
     // Handle mobile/desktop menu interaction differences for logging out
     if (isMobile(page)) {
@@ -105,22 +106,14 @@ export async function login(page) {
   // 4. Perform Login
   // We explicitly wait for the login button to be ready/clickable
   await expect(loginButton).toBeVisible();
-
-  // The component uses a setTimeout(..., 1000) followed by a
-  // window.location.reload(). We must wait for this specific navigation event,
-  // otherwise Playwright checks for the account indicator on the *old* page
-  // before the reload happens.
-
-  await Promise.all([
-    // Wait for the navigation (reload) to complete.
-    // We expect the URL to effectively remain the same (or match the base),
-    // but the 'load' event ensures the reload finished.
-    page.waitForEvent('load'),
-    loginButton.click()
-  ]);
+  await loginButton.click();
 
   // 5. Verify Success
-  // Now that the page has reloaded, the account indicator should appear.
+  // Wait for the Login Button to vanish.
+  await expect(loginButton).toBeHidden({ timeout: 20000 });
+
+  // Wait for the Account Indicator to appear.
+  // Now that the login button is gone, we confirm the user avatar is present.
   await expect(accountIndicator).toBeVisible({ timeout: 20000 });
 }
 
