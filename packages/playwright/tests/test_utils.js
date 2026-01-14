@@ -60,58 +60,57 @@ export function acceptDialogs(page) {
 
 
 /**
- * fastLogin performs a robust login via the "Dev Mode" sign-in button.
- * It waits for the async button injection and handles mobile overlays.
  * @param {import("@playwright/test").Page} page
  */
 export async function login(page) {
-  // 1. Expose the flag so the app knows it's being tested.
-  // This enables the "Dev Mode" sign-in logic in chromedash-drawer.ts
+  // Defensive check: Prevent error if function is already exposed in this context
   try {
     await page.exposeFunction('isPlaywright', () => {});
   } catch (e) {
-    // Ignore if already exposed
+    // Function already exposed, ignore
   }
 
+  // Handle dialogs (Fixed name to match exported function)
   acceptDialogs(page);
 
-  // 2. Navigate
-  await page.goto('/', { waitUntil: 'domcontentloaded' });
-  await page.waitForURL('**/roadmap');
+  // Navigate to home
+  await page.goto('/');
 
-  const loginButton = page.getByTestId('dev-mode-sign-in-button');
+  // Define locators
   const accountIndicator = page.getByTestId('account-indicator');
+  const loginButton = page.getByTestId('dev-mode-sign-in-button');
+  const signOutLink = page.getByTestId('sign-out-link');
 
-  // 3. Wait for Auth State Resolution
-  try {
-    // Wait up to 10s for the button to be injected into the DOM
-    await loginButton.waitFor({ state: 'visible', timeout: 10000 });
-  } catch (e) {
-    // If the button never shows up, check if we are possibly already logged in
-    // (This handles flaky re-runs or desktop persistence)
-    if (!isMobile(page) && await accountIndicator.isVisible()) {
-      return;
+  // 1. Handling "Already Logged In" State
+  // We check if the account indicator is visible. If so, we logout to ensure a fresh session.
+  if (await accountIndicator.isVisible()) {
+    // Handle mobile/desktop menu interaction differences for logging out
+    if (isMobile(page)) {
+      const menuButton = page.getByTestId('menu');
+      if (await menuButton.isVisible()) {
+        await menuButton.click();
+      }
+    } else {
+      // On Desktop, hover/click the avatar to reveal the sign out link
+      await accountIndicator.click();
     }
-    // If we are on mobile (where avatar is hidden) or avatar is missing,
-    // and the button is also missing, then something is wrong.
-    console.error('Login button failed to appear.');
-    throw e;
+
+    // Ensure sign out link is ready before clicking
+    await expect(signOutLink).toBeVisible();
+    await signOutLink.click();
+
+    // Wait for the login button to appear to confirm we are logged out
+    await expect(loginButton).toBeVisible();
   }
 
-  // 4. Perform Login
-  // We click, then wait for the login button to detach (indicating reload/success).
-  await loginButton.click({ force: true });
+  // 2. Perform Login
+  // We explicitly wait for the login button to be ready/clickable
+  await expect(loginButton).toBeVisible();
+  await loginButton.click();
 
-  // Wait for the button to disappear. This confirms the app has processed the login
-  // and triggered the page reload.
-  await expect(loginButton).toBeHidden({ timeout: 15000 });
-
-  // 5. Verification
-  if (!isMobile(page)) {
-    // On Desktop, verify the avatar appears after the reload.
-    // We increase timeout slightly to account for the full page reload.
-    await expect(accountIndicator).toBeVisible({ timeout: 15000 });
-  }
+  // 3. Verify Success
+  // Wait for the account indicator to appear, confirming successful login.
+  await expect(accountIndicator).toBeVisible({ timeout: 15000 });
 }
 
 /**
