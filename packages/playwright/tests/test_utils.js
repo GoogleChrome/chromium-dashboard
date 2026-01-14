@@ -65,28 +65,27 @@ export function acceptDialogs(page) {
 export async function login(page) {
   // 1. Expose the flag so the app knows it's being tested.
   // This enables the "Dev Mode" sign-in logic on the client side.
-  // We wrap it in a try-catch in case the function is already exposed in this context.
   try {
     await page.exposeFunction('isPlaywright', () => {});
   } catch (e) {
-    // Ignore if already exposed
+    // Ignore if already exposed in this context
   }
 
   // 2. Handle Dialogs
   acceptDialogs(page);
 
-  // 3. Navigate and Reset
-  // We use domcontentloaded for speed, then ensure we are on the roadmap.
+  // 3. Navigate
   await page.goto('/', { waitUntil: 'domcontentloaded' });
   await page.waitForURL('**/roadmap');
 
   const loginButton = page.getByTestId('dev-mode-sign-in-button');
   const accountIndicator = page.getByTestId('account-indicator');
+  const mobileMenu = page.getByTestId('menu');
 
   // 4. Check State & Login
-  // If the login button is visible, we need to log in.
+  // We check visibility first to avoid clicking if already logged in.
   if (await loginButton.isVisible()) {
-    await loginButton.click();
+    await loginButton.click({ delay: 500 });
   }
 
   // 5. Verify Login Success
