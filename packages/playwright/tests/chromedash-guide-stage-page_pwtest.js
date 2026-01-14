@@ -1,7 +1,7 @@
 // @ts-check
 import { test, expect } from '@playwright/test';
 import {
-  captureConsoleMessages, login, createNewFeature
+  captureConsoleMessages, login, logout, createNewFeature
 } from './test_utils';
 
 test.beforeEach(async ({ page }, testInfo) => {
@@ -10,6 +10,11 @@ test.beforeEach(async ({ page }, testInfo) => {
 
   // Login is required to create and edit features
   await login(page);
+});
+
+test.afterEach(async ({ page }) => {
+    // Logout after running each test.
+    await logout(page);
 });
 
 test('edit origin trial stage', async ({ page }) => {

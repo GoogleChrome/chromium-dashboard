@@ -1,7 +1,7 @@
 // @ts-check
 import { test, expect } from '@playwright/test';
 import {
-  captureConsoleMessages, login, gotoNewFeaturePage, createNewFeature
+  captureConsoleMessages, login, logout, gotoNewFeaturePage, createNewFeature
 } from './test_utils';
 
 test.beforeEach(async ({ page }, testInfo) => {
@@ -10,6 +10,11 @@ test.beforeEach(async ({ page }, testInfo) => {
 
   // Login is required for all tests in this file
   await login(page);
+});
+
+test.afterEach(async ({ page }) => {
+    // Logout after running each test.
+    await logout(page);
 });
 
 test('navigate to create feature page', async ({ page }) => {

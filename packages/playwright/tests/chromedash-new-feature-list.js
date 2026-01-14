@@ -1,7 +1,7 @@
 // @ts-check
 import { test, expect } from '@playwright/test';
 import {
-  captureConsoleMessages, login, gotoNewFeatureList
+  captureConsoleMessages, login, logout, gotoNewFeatureList
 } from './test_utils';
 
 test.beforeEach(async ({ page }) => {
@@ -9,6 +9,11 @@ test.beforeEach(async ({ page }) => {
 
   // Login is required to access the feature list features fully
   await login(page);
+});
+
+test.afterEach(async ({ page }) => {
+    // Logout after running each test.
+    await logout(page);
 });
 
 test('Typing slash focuses on searchbox', async ({ page }) => {

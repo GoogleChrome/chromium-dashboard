@@ -1,6 +1,6 @@
 // @ts-check
 import { test, expect } from '@playwright/test';
-import { captureConsoleMessages, login, createNewFeature } from './test_utils';
+import { captureConsoleMessages, login, logout, createNewFeature } from './test_utils';
 
 /**
  * Starting from the feature page, goto 'Edit all fields'.
@@ -21,6 +21,11 @@ test.beforeEach(async ({ page }, testInfo) => {
   testInfo.setTimeout(30000);
 
   await login(page);
+});
+
+test.afterEach(async ({ page }) => {
+    // Logout after running each test.
+    await logout(page);
 });
 
 test('editall page', async ({ page }) => {
