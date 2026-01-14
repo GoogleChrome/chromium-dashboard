@@ -60,41 +60,57 @@ export function acceptDialogs(page) {
 
 
 /**
- * @param {import("playwright-core").Page} page
+ * fastLogin performs a robust login via the "Dev Mode" sign-in button.
+ * It waits for the async button injection and handles mobile overlays.
+ * @param {import("@playwright/test").Page} page
  */
 export async function login(page) {
   // 1. Expose the flag so the app knows it's being tested.
-  // This enables the "Dev Mode" sign-in logic on the client side.
+  // This enables the "Dev Mode" sign-in logic in chromedash-drawer.ts
   try {
     await page.exposeFunction('isPlaywright', () => {});
   } catch (e) {
-    // Ignore if already exposed in this context
+    // Ignore if already exposed
   }
 
-  // 2. Handle Dialogs
   acceptDialogs(page);
 
-  // 3. Navigate
+  // 2. Navigate
   await page.goto('/', { waitUntil: 'domcontentloaded' });
   await page.waitForURL('**/roadmap');
 
   const loginButton = page.getByTestId('dev-mode-sign-in-button');
   const accountIndicator = page.getByTestId('account-indicator');
-  const mobileMenu = page.getByTestId('menu');
 
-  // 4. Check State & Login
-  // We check visibility first to avoid clicking if already logged in.
-  if (await loginButton.isVisible()) {
-    await loginButton.click({ delay: 500 });
+  // 3. Wait for Auth State Resolution
+  try {
+    // Wait up to 10s for the button to be injected into the DOM
+    await loginButton.waitFor({ state: 'visible', timeout: 10000 });
+  } catch (e) {
+    // If the button never shows up, check if we are possibly already logged in
+    // (This handles flaky re-runs or desktop persistence)
+    if (!isMobile(page) && await accountIndicator.isVisible()) {
+      return;
+    }
+    // If we are on mobile (where avatar is hidden) or avatar is missing,
+    // and the button is also missing, then something is wrong.
+    console.error('Login button failed to appear.');
+    throw e;
   }
 
-  // 5. Verify Login Success
+  // 4. Perform Login
+  // We use force: true because the button is position:fixed and appended to body,
+  // which sometimes causes Playwright to think it's obscured or not actionable.
+  await loginButton.click({ force: true });
+
+  // 5. Verification
   if (isMobile(page)) {
-    // On Mobile: The absence of the login button confirms success.
-    await expect(loginButton).toBeHidden({ timeout: 10000 });
+    // On Mobile: The button injects a script that reloads the page after 1s.
+    // We wait for the button to disappear.
+    await expect(loginButton).toBeHidden({ timeout: 15000 });
   } else {
     // On Desktop: The account indicator (avatar) must appear.
-    await expect(accountIndicator).toBeVisible({ timeout: 10000 });
+    await expect(accountIndicator).toBeVisible({ timeout: 15000 });
   }
 }
 
@@ -111,19 +127,23 @@ export async function logout(page) {
 
   // Handle Mobile/Desktop menu differences
   if (isMobile(page)) {
+    // On mobile, the sign-out link is inside the drawer menu.
+    // Open the drawer first.
     const menuButton = page.getByTestId('menu');
     await menuButton.click();
+    await expect(page.locator('sl-drawer')).toBeVisible();
   } else {
+    // Desktop: Click avatar to see dropdown
     await page.getByTestId('account-indicator').click();
   }
 
   const signOutLink = page.getByTestId('sign-out-link');
+  await expect(signOutLink).toBeVisible();
   await signOutLink.click();
 
-  // Verify logout state by checking for the login button
+  // Verify logout state
   await expect(page.getByTestId('dev-mode-sign-in-button')).toBeVisible();
 }
-
 
 /**
  * Navigates to the "Create Feature" form.
@@ -134,16 +154,17 @@ export async function gotoNewFeaturePage(page) {
 
   // If button is not visible, it might be behind the mobile menu
   if (!await createFeatureButton.isVisible() && isMobile(page)) {
+    // If mobile, open the menu to find the create button
     await page.getByTestId('menu').click();
+    await expect(page.locator('sl-drawer')).toBeVisible();
   }
 
   await createFeatureButton.click();
 
   // Close menu if mobile (cleanup)
   if (isMobile(page)) {
-    // Short wait to ensure menu animation doesn't block interactions,
-    // or click the overlay/menu button again.
-    await page.getByTestId('menu').click();
+    // Click the overlay or close button to dismiss the drawer
+    await page.mouse.click(0, 0);
   }
 
   await expect(page.getByTestId('add-a-feature')).toBeVisible();
@@ -187,10 +208,8 @@ export async function createNewFeature(page) {
   // Select feature type (Radio button)
   // We use .first() or exact locator to ensure we click the input, not the label wrapper if strict
   await page.locator('input[name="feature_type"][value="0"]').click();
-
   await page.locator('input[type="submit"]').click();
 
-  // Wait for navigation to the feature details page
-  await page.waitForURL(/\/feature\/\d+/); // Regex matches /feature/1234...
+  await page.waitForURL(/\/feature\/\d+/);
   await expect(page.locator('chromedash-feature-detail')).toBeVisible({ timeout: 15000 });
 }
