@@ -1325,6 +1325,21 @@ class ShippingFeatureHelpersTest(testing_config.CustomTestCase):
     Gate(id=1010, feature_id=10, stage_id=110, gate_type=GATE_API_SHIP,
          state=Vote.APPROVED).put()
 
+    # Feature 11: Complete (skipped checks due to Blink Component).
+    self.feature_11 = FeatureEntry(
+        id=11, name='F11 WebGPU', summary='sum', category=1,
+        feature_type=FEATURE_TYPE_INCUBATE_ID,
+        finch_name='WebGPUFeature',
+        blink_components=['Blink>WebGPU'])
+    self.feature_11.put()
+    self.stage_11 = Stage(
+        id=111, feature_id=11, stage_type=160,
+        intent_thread_url='https://example.com/intent11',
+        milestones=MilestoneSet(desktop_first=self.milestone))
+    self.stage_11.put()
+    Gate(id=1011, feature_id=11, stage_id=111, gate_type=GATE_API_SHIP,
+         state=Vote.APPROVED).put()
+
   def tearDown(self):
     for kind in [FeatureEntry, Gate, Stage, Vote]:
       for entity in kind.query():
@@ -1403,11 +1418,18 @@ class ShippingFeatureHelpersTest(testing_config.CustomTestCase):
         MOCK_ENABLED_FEATURES_JSON, MOCK_CONTENT_FEATURES_CC)
     self.assertIn(feature_helpers.Criteria.API_OWNER_LGTMS_MISSING, result)
 
+    # Case 4: Skipped checks (Feature 11)
+    result = feature_helpers.validate_shipping_criteria(
+        self.feature_11, self.stage_11,
+        MOCK_ENABLED_FEATURES_JSON, MOCK_CONTENT_FEATURES_CC)
+    self.assertEqual(result, [])
+
   def test_aggregate_shipping_features(self):
     """Tests the full aggregation logic."""
     stages = [
         self.stage_1, self.stage_2, self.stage_3, self.stage_4,
-        self.stage_5, self.stage_7, self.stage_8, self.stage_9, self.stage_10
+        self.stage_5, self.stage_7, self.stage_8, self.stage_9, self.stage_10,
+        self.stage_11
     ]
 
     complete, incomplete = feature_helpers.aggregate_shipping_features(
@@ -1415,11 +1437,11 @@ class ShippingFeatureHelpersTest(testing_config.CustomTestCase):
         'http://localhost')
 
     # Verify Complete Features
-    self.assertEqual(len(complete), 3)
-    # IDs 1, 5, 8 are complete.
+    self.assertEqual(len(complete), 4)
+    # IDs 1, 5, 8, 11 are complete.
     complete_names = sorted([f['name'] for f in complete])
     self.assertEqual(complete_names,
-        ['F8 Enabled', 'Feature 1 (Complete)', 'Feature 5 (PSA)'])
+        ['F11 WebGPU', 'F8 Enabled', 'Feature 1 (Complete)', 'Feature 5 (PSA)'])
 
     # Verify Incomplete Features
     self.assertEqual(len(incomplete), 6)
