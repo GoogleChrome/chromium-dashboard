@@ -99,25 +99,23 @@ export async function login(page) {
   }
 
   // 4. Perform Login
-  // We use force: true because the button is position:fixed and appended to body,
-  // which sometimes causes Playwright to think it's obscured or not actionable.
+  // We click, then wait for the login button to detach (indicating reload/success).
   await loginButton.click({ force: true });
 
+  // Wait for the button to disappear. This confirms the app has processed the login
+  // and triggered the page reload.
+  await expect(loginButton).toBeHidden({ timeout: 15000 });
+
   // 5. Verification
-  if (isMobile(page)) {
-    // On Mobile: The button injects a script that reloads the page after 1s.
-    // We wait for the button to disappear.
-    await expect(loginButton).toBeHidden({ timeout: 15000 });
-  } else {
-    // On Desktop: The account indicator (avatar) must appear.
+  if (!isMobile(page)) {
+    // On Desktop, verify the avatar appears after the reload.
+    // We increase timeout slightly to account for the full page reload.
     await expect(accountIndicator).toBeVisible({ timeout: 15000 });
   }
 }
 
 /**
  * Logs out via the UI.
- * Note: In standard Playwright tests, you typically don't need to logout
- * if tests run in isolated contexts.
  * @param {import("@playwright/test").Page} page
  */
 export async function logout(page) {
@@ -208,8 +206,14 @@ export async function createNewFeature(page) {
   // Select feature type (Radio button)
   // We use .first() or exact locator to ensure we click the input, not the label wrapper if strict
   await page.locator('input[name="feature_type"][value="0"]').click();
-  await page.locator('input[type="submit"]').click();
 
-  await page.waitForURL(/\/feature\/\d+/);
+  // Use Promise.all to handle the navigation race condition.
+  // The click causes a navigation, which can detach the button before click() returns,
+  // causing an error. Promise.all ensures we listen for URL change while clicking.
+  await Promise.all([
+    page.waitForURL(/\/feature\/\d+/),
+    page.locator('input[type="submit"]').click()
+  ]);
+
   await expect(page.locator('chromedash-feature-detail')).toBeVisible({ timeout: 15000 });
 }
