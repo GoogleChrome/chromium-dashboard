@@ -32,9 +32,7 @@ test('editall page', async ({ page }) => {
   await createNewFeature(page);
   await gotoEditAllPage(page);
 
-  await expect(page).toHaveScreenshot('edit-all-fields.png', {
-    mask: [page.locator('#history')] // Mask volatile history if present
-  });
+  await expect(page).toHaveScreenshot('edit-all-fields.png');
 });
 
 test('test semantic checks', async ({ page }) => {
@@ -68,9 +66,7 @@ test('test semantic checks', async ({ page }) => {
     const nextField = page.locator('input[name="shipped_android_milestone"]');
     await nextField.scrollIntoViewIfNeeded();
 
-    await expect(page).toHaveScreenshot('shipped-desktop-error.png', {
-      mask: [page.locator('#history')]
-    });
+    await expect(page).toHaveScreenshot('shipped-desktop-error.png');
   });
 
   await test.step('Resolve Conflict', async () => {
