@@ -15,8 +15,8 @@ test.beforeEach(async ({ page }) => {
  * @param {string} headingText
  */
 function getSection(page, headingText) {
-  // Finds any <section> that contains a heading with the specific name
-  return page.locator('section').filter({
+  // Finds a <section> that contains a heading with the specific name
+  return page.locator('chromedash-report-external-reviews-page section section').filter({
     has: page.getByRole('heading', { name: headingText })
   });
 }
