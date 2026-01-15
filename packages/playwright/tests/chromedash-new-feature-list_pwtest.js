@@ -20,7 +20,7 @@ test('Typing slash focuses on searchbox', async ({ page }) => {
   // Use the utility to navigate (removes hardcoded localhost URL)
   await gotoNewFeatureList(page);
 
-  const searchbox = page.locator('#inputfield');
+  const searchbox = page.locator('#inputfield input');
 
   // Verify initial state
   await expect(searchbox).toBeVisible();
