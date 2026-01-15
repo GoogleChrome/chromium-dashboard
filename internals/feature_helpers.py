@@ -32,6 +32,7 @@ from internals.review_models import Gate, Vote
 
 class ShippingFeatureInfo(TypedDict):
   name: str
+  id: int
   chromestatus_url: str
   tracking_bug_url: str
   launch_bug_url: str
@@ -54,6 +55,10 @@ class Criteria(str, Enum):
   # The feature exists in content_features.cc, but is not marked as enabled.
   CONTENT_FEATURE_NOT_ENABLED = 'content_feature_not_enabled'
   CHROMIUM_FEATURE_NOT_FOUND = 'chromium_feature_not_found'
+
+# Blink components that are hard to verify existence in the Chromium code.
+# We bypass the Chromium code checks here in order to avoid false positives.
+BLINK_COMPONENTS_SKIP_CHROMIUM_CHECKS = ['Blink>WebGPU']
 
 
 def filter_unlisted(feature_list: list[FeatureEntry]) -> list[FeatureEntry]:
@@ -764,6 +769,7 @@ def build_feature_info(feature: FeatureEntry, stage: Stage, url_root: str) -> Sh
   chromestatus_url = f'{url_root}/feature/{feature.key.integer_id()}'
   return {
     'name': feature.name,
+    'id': feature.key.integer_id(),
     'chromestatus_url': chromestatus_url,
     'tracking_bug_url': feature.bug_url,
     'launch_bug_url': feature.launch_bug_url,
@@ -783,6 +789,12 @@ def validate_shipping_criteria(
   """Checks a feature against shipping requirements (Gates, Intents, Finch, Code)."""
   criteria_missing: list[Criteria] = []
 
+  # Skip the Chromium code checks if it is associated with any of the Blink
+  # components that are difficult to detect in the codebase.
+  skip_chromium_code_checks = bool(
+    set(BLINK_COMPONENTS_SKIP_CHROMIUM_CHECKS) & set(feature.blink_components)
+  )
+
   # Check Intent to Ship
   if not stage.intent_thread_url:
     criteria_missing.append(Criteria.INTENT_TO_SHIP_MISSING)
@@ -800,7 +812,7 @@ def validate_shipping_criteria(
     criteria_missing.append(Criteria.FINCH_NAME_MISSING)
 
   # Check Chromium Internal Status (if finch name is present)
-  if feature.finch_name:
+  if feature.finch_name and not skip_chromium_code_checks:
     criteria_missing.extend(validate_feature_in_chromium(
       feature.finch_name,
       enabled_features_json,

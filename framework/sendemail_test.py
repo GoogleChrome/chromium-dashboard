@@ -170,7 +170,8 @@ class BouncedEmailHandlerTest(testing_config.CustomTestCase):
         original={'to': 'starrer_3@example.com',
                   'from': 'sender',
                   'subject': 'subject',
-                  'text': 'body'})
+                  'text': 'body'},
+        notification={'some': 'more details'})
 
     sendemail.receive(bounce_message)
 
@@ -197,7 +198,8 @@ class BouncedEmailHandlerTest(testing_config.CustomTestCase):
         original={'to': 'starrer_4@example.com',
                   'from': 'sender',
                   'subject': 'subject',
-                  'text': 'body'})
+                  'text': 'body'},
+        notification={'some': 'more details'})
 
     sendemail.receive(bounce_message)
 

@@ -739,11 +739,14 @@ export class ChromedashWPTEvalPage extends LitElement {
           </p>
           <ul>
             <li>
-              <strong>Metadata:</strong> Ensure the feature name and summary are
-              accurate.
+              <strong>Specification:</strong> A valid Spec URL must be provided.
+              Although not recommended, this can be provided as a GitHub pull
+              request URL.
             </li>
             <li>
-              <strong>Specification:</strong> A valid Spec URL must be provided.
+              <strong>Metadata:</strong> Ensure the feature name and summary are
+              accurate. These will be used to narrow the scope of the test
+              coverage requirements.
             </li>
             <li>
               <strong>Test Results:</strong> Add relevant
