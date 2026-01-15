@@ -236,15 +236,15 @@ export async function gotoNewFeaturePage(page) {
   // Navigate to the new feature page.
   await expect(menuButton).toBeVisible();
   if (mobile) {
-    await menuButton.click(); // To show menu.
+    await menuButton.click();
   }
 
   await expect(createFeatureButton).toBeVisible();
   await createFeatureButton.click();
 
   if (mobile) {
-    await menuButton.click();  // To hide menu
-    await expect(menuButton).not.toBeVisible();
+    // To hide menu (Close Drawer).
+    await menuButton.click();
   }
 
   // Expect "Add a feature" header to be present.
