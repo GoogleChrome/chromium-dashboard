@@ -145,8 +145,7 @@ export async function login(page) {
 
   if (await loginButton.isHidden()) {
     // If the login button is hidden, we assume we are logged in.
-    // We must logout first to ensure a clean state.
-    await logout(page);
+    return;
   }
 
   // Expect login button to be present now.
@@ -200,7 +199,9 @@ export async function logout(page) {
       if (await signOutLink.isVisible()) {
         await signOutLink.click();
         await page.waitForURL('**/roadmap');
-        await expect(page).toHaveTitle(/Chrome Status/);
+        // The sign in button should be visible again if we are logged out.
+        const loginButton = page.getByTestId('dev-mode-sign-in-button');
+        await expect(loginButton).toBeVisible();
       }
     }
   } else {
