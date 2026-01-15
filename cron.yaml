@@ -53,8 +53,7 @@ cron:
 - description: Generate a CSV of all stale features with upcoming shipping milestones.
   url: /cron/generate_stale_features
   schedule: every day 8:05
-- description: |
-    Generate CSVs for all features with upcoming shipping milestones and their missing criteria.
+- description: Generate CSVs for all features with upcoming shipping milestones and their missing criteria.
   url: /cron/generate_shipping_features
   schedule: every day 8:30
 - description: Reset the shipping milestones of features have not been verified after 4+ notifications.
