@@ -366,7 +366,7 @@ export async function createNewFeature(page) {
  * @param {import("playwright-core").Page} page
  */
 export async function gotoNewFeatureList(page) {
-  await page.goto('/newfeatures');
+  await page.goto('/features');
   const pagiation = page.locator('chromedash-feature-pagination');
   await expect(pagiation).toBeVisible();
 }
