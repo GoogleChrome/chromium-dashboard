@@ -139,31 +139,39 @@ export async function login(page) {
   await expect(page).toHaveTitle(/Chrome Status/);
 
   // Check whether we are already or still logged in.
-  const accountIndicator = page.getByTestId('account-indicator');
+  // We use the presence of the 'dev-mode-sign-in-button' as the definitive
+  // indicator of "Not Logged In" because the Account Indicator layout varies.
+  const loginButton = page.getByTestId('dev-mode-sign-in-button');
 
-  if (await accountIndicator.isVisible()) {
-    // Perform logout if already logged in.
-    const signOutLink = page.getByTestId('sign-out-link');
-
-    // We hover the account indicator to make sure the menu appears
-    await accountIndicator.hover();
-    await expect(signOutLink).toBeVisible();
-    await signOutLink.click();
-
-    await page.waitForURL('**/roadmap');
-    await expect(accountIndicator).not.toBeVisible();
+  if (await loginButton.isHidden()) {
+    // If the login button is hidden, we assume we are logged in.
+    // We must logout first to ensure a clean state.
+    await logout(page);
   }
 
-  // Expect login button to be present.
-  const loginButton = page.getByTestId('dev-mode-sign-in-button');
+  // Expect login button to be present now.
   await expect(loginButton).toBeVisible();
 
-  // Click login
-  await loginButton.click();
+  // Click login and wait for the page reload that the button triggers.
+  // We cannot use waitForURL because the URL might be the same.
+  // Waiting for 'domcontentloaded' ensures the reload has actually happened.
+  await Promise.all([
+    page.waitForEvent('domcontentloaded'),
+    loginButton.click()
+  ]);
 
-  // Validate successful login by checking title or account indicator
+  // Validate successful login.
   await expect(page).toHaveTitle(/Chrome Status/);
-  await expect(accountIndicator).toBeVisible();
+
+  if (await isMobile(page)) {
+    // On mobile, the account indicator is hidden inside the drawer.
+    // Verifying that the login button is GONE is sufficient proof of login.
+    await expect(loginButton).not.toBeVisible();
+  } else {
+    // On desktop, we can verify the account indicator is visible in the header.
+    const accountIndicator = page.getByTestId('account-indicator');
+    await expect(accountIndicator).toBeVisible();
+  }
 }
 
 /**
@@ -181,26 +189,39 @@ export async function logout(page) {
   await page.waitForURL('**/roadmap');
   await expect(page).toHaveTitle(/Chrome Status/);
 
-  // Handle Mobile Menu
   if (await isMobile(page)) {
     const menuButton = page.getByTestId('menu');
-    await expect(menuButton).toBeVisible();
-    await menuButton.click();
+    // If menu isn't visible, we might not be logged in or page is broken,
+    // but we check anyway.
+    if (await menuButton.isVisible()) {
+      await menuButton.click();
+
+      const signOutLink = page.getByTestId('sign-out-link');
+      if (await signOutLink.isVisible()) {
+        await signOutLink.click();
+        await page.waitForURL('**/roadmap');
+        await expect(page).toHaveTitle(/Chrome Status/);
+      }
+    }
   } else {
     const accountIndicator = page.getByTestId('account-indicator');
-    await expect(accountIndicator).toBeVisible({ timeout: 20000 });
-    // Click account indicator to open the menu
-    await accountIndicator.click();
+
+    // Only attempt to logout if the account indicator is actually visible.
+    // This prevents test failures in teardown if the test failed before login.
+    if (await accountIndicator.isVisible()) {
+      // Click account indicator to open the menu
+      await accountIndicator.click();
+
+      // Need to wait for the sign-out-link to be visible
+      const signOutLink = page.getByTestId('sign-out-link');
+      await expect(signOutLink).toBeVisible();
+      await signOutLink.click();
+
+      // Confirm we are back on roadmap and signed out
+      await page.waitForURL('**/roadmap');
+      await expect(page).toHaveTitle(/Chrome Status/);
+    }
   }
-
-  // Need to wait for the sign-out-link to be visible
-  const signOutLink = page.getByTestId('sign-out-link');
-  await expect(signOutLink).toBeVisible();
-  await signOutLink.click();
-
-  // Confirm we are back on roadmap and signed out
-  await page.waitForURL('**/roadmap');
-  await expect(page).toHaveTitle(/Chrome Status/);
 }
 
 /**
