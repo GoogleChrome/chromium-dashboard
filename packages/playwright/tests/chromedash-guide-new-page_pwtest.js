@@ -26,6 +26,10 @@ test.afterEach(async ({page}) => {
 test('navigate to create feature page', async ({page}) => {
   await gotoNewFeaturePage(page);
 
+  // Wait for the menu icon to appear.
+  const menuButton = page.locator('chromedash-header sl-icon-button');
+  await expect(menuButton).toBeVisible();
+
   // Take a screenshot of the content area.
   await expect(page).toHaveScreenshot('new-feature-page.png');
 });
