@@ -176,6 +176,7 @@ export async function login(page) {
   // Check whether we are already or still logged in.
   let accountIndicator = page.getByTestId('account-indicator');
   while (await accountIndicator.isVisible()) {
+    console.log('inside while in test_utils');
     // console.log('Already (still) logged in. Need to logout.');
     await accountIndicator.hover({timeout: 5000});
     const signOutLink = page.getByTestId('sign-out-link');
