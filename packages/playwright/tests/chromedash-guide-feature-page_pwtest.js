@@ -1,12 +1,13 @@
 // @ts-check
-import { test, expect } from '@playwright/test';
+import {test, expect} from '@playwright/test';
 import {
-  captureConsoleMessages, login, logout,
-  createNewFeature
+  captureConsoleMessages,
+  login,
+  logout,
+  createNewFeature,
 } from './test_utils';
 
-
-test.beforeEach(async ({ page }, testInfo) => {
+test.beforeEach(async ({page}, testInfo) => {
   captureConsoleMessages(page);
   testInfo.setTimeout(90000);
 
@@ -14,13 +15,12 @@ test.beforeEach(async ({ page }, testInfo) => {
   await login(page);
 });
 
-test.afterEach(async ({ page }) => {
+test.afterEach(async ({page}) => {
   // Logout after running each test.
   await logout(page);
 });
 
-
-test('add an origin trial stage', async ({ page }) => {
+test('add an origin trial stage', async ({page}) => {
   // Safest way to work with a unique feature is to create it.
   await createNewFeature(page);
 
@@ -33,7 +33,9 @@ test('add an origin trial stage', async ({ page }) => {
   await stageSelect.click();
 
   // Wait for the option to appear in the dropdown.
-  const originTrialStageOption = page.locator('sl-select sl-option[value="150"]');
+  const originTrialStageOption = page.locator(
+    'sl-select sl-option[value="150"]'
+  );
   await expect(originTrialStageOption).toBeVisible();
 
   // Hover Origin trial stage option.
@@ -41,7 +43,7 @@ test('add an origin trial stage', async ({ page }) => {
 
   // Screenshot of this dialog.
   await expect(page).toHaveScreenshot('create-origin-trial-stage-dialog.png', {
-    mask: [page.locator('section[id="history"]')]
+    mask: [page.locator('section[id="history"]')],
   });
 
   // Click the origin trial stage option to prepare to create stage.
@@ -52,19 +54,25 @@ test('add an origin trial stage', async ({ page }) => {
   await createStageButton.click();
 
   // Check we are still on the feature page (waits for navigation/URL update).
-  await page.waitForURL('**/feature/*', { timeout: 5000 });
+  await page.waitForURL('**/feature/*', {timeout: 5000});
 
   // Expand the "Origin Trial" and "Origin Trial 2" panels
   const originTrialPanel = page.locator('sl-details[summary="Origin Trial"]');
-  const originTrial2Panel = page.locator('sl-details[summary="Origin Trial 2"]');
+  const originTrial2Panel = page.locator(
+    'sl-details[summary="Origin Trial 2"]'
+  );
 
   await originTrialPanel.click();
   await originTrial2Panel.click();
 
   // Wait for the expansion to finish.
   // We do this by checking if the "Edit" button inside the panel is visible.
-  const editButton1 = originTrialPanel.locator('sl-button[href^="/guide/stage"]');
-  const editButton2 = originTrial2Panel.locator('sl-button[href^="/guide/stage"]');
+  const editButton1 = originTrialPanel.locator(
+    'sl-button[href^="/guide/stage"]'
+  );
+  const editButton2 = originTrial2Panel.locator(
+    'sl-button[href^="/guide/stage"]'
+  );
   await expect(editButton1).toBeVisible();
   await expect(editButton2).toBeVisible();
 
@@ -74,6 +82,6 @@ test('add an origin trial stage', async ({ page }) => {
   await prepareToShipPanel.scrollIntoViewIfNeeded();
 
   await expect(page).toHaveScreenshot('origin-trial-panels.png', {
-    mask: [page.locator('section[id="history"]')]
+    mask: [page.locator('section[id="history"]')],
   });
 });

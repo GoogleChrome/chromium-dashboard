@@ -1,11 +1,11 @@
 // @ts-check
-import { expect, test } from '@playwright/test';
-import { captureConsoleMessages } from './test_utils';
+import {expect, test} from '@playwright/test';
+import {captureConsoleMessages} from './test_utils';
 import external_reviews_api_result from './external_reviews_api_result.json';
 
 const API_PREFIX = ")]}'\n";
 
-test.beforeEach(async ({ page }) => {
+test.beforeEach(async ({page}) => {
   captureConsoleMessages(page);
 });
 
@@ -16,12 +16,14 @@ test.beforeEach(async ({ page }) => {
  */
 function getSection(page, headingText) {
   // Finds a <section> that contains a heading with the specific name
-  return page.locator('chromedash-report-external-reviews-page section').filter({
-    has: page.getByRole('heading', { name: headingText })
-  });
+  return page
+    .locator('chromedash-report-external-reviews-page section')
+    .filter({
+      has: page.getByRole('heading', {name: headingText}),
+    });
 }
 
-test('external reviewers report renders', async ({ page }) => {
+test('external reviewers report renders', async ({page}) => {
   await test.step('Setup: Mock API and Navigate', async () => {
     await page.route('/api/v0/external_reviews/gecko', async route => {
       await route.fulfill({
@@ -34,11 +36,13 @@ test('external reviewers report renders', async ({ page }) => {
   });
 
   await test.step('Verify Headers', async () => {
-    await expect(page.getByRole('heading', { level: 2 })).toContainText('Mozilla');
-    await expect(page.getByRole('heading', { level: 3 })).toHaveText([
+    await expect(page.getByRole('heading', {level: 2})).toContainText(
+      'Mozilla'
+    );
+    await expect(page.getByRole('heading', {level: 3})).toHaveText([
       'In Origin Trial',
       'Prototyping',
-      'Already shipped'
+      'Already shipped',
     ]);
   });
 
@@ -52,16 +56,25 @@ test('external reviewers report renders', async ({ page }) => {
     // Verify Data Row Content
     // We match the whole row text once, rather than individual cells, for speed
     const dataRow = rows.nth(1);
-    await expect(dataRow).toContainText('Feature 7 shares a review with Feature 5');
+    await expect(dataRow).toContainText(
+      'Feature 7 shares a review with Feature 5'
+    );
     await expect(dataRow).toContainText('#5 A Title');
     await expect(dataRow).toContainText('M100–M104');
 
     // Verify Links
-    await expect(dataRow.getByRole('link', { name: 'Feature 7 shares a review with Feature 5' }))
-      .toHaveAttribute('href', '/feature/1001');
+    await expect(
+      dataRow.getByRole('link', {
+        name: 'Feature 7 shares a review with Feature 5',
+      })
+    ).toHaveAttribute('href', '/feature/1001');
 
-    await expect(dataRow.getByRole('link', { name: /#5 A Title/i }))
-      .toHaveAttribute('href', 'https://github.com/mozilla/standards-positions/issues/5');
+    await expect(
+      dataRow.getByRole('link', {name: /#5 A Title/i})
+    ).toHaveAttribute(
+      'href',
+      'https://github.com/mozilla/standards-positions/issues/5'
+    );
   });
 
   await test.step('Verify "Prototyping" section', async () => {
@@ -77,12 +90,13 @@ test('external reviewers report renders', async ({ page }) => {
       /Feature/,
       /Feature 3/,
       /Feature 5/,
-      /Feature 4/
+      /Feature 4/,
     ]);
 
     // Specific check for Feature 3 details
-    await expect(rows.filter({ hasText: 'Feature 3' }))
-      .toContainText('M101–M103');
+    await expect(rows.filter({hasText: 'Feature 3'})).toContainText(
+      'M101–M103'
+    );
   });
 
   await test.step('Verify "Already shipped" section', async () => {
@@ -92,13 +106,13 @@ test('external reviewers report renders', async ({ page }) => {
   });
 });
 
-test('sorts features by target milestone', async ({ page }) => {
+test('sorts features by target milestone', async ({page}) => {
   // Factory for cleaner mock data generation
   const createFeature = (id, start, end) => ({
     current_stage: 'incubating',
     estimated_start_milestone: start,
     estimated_end_milestone: end,
-    feature: { id, name: `Feature ${id}` },
+    feature: {id, name: `Feature ${id}`},
     review_link: `https://github.com/w3ctag/design-reviews/issues/${id}`,
   });
 
@@ -115,7 +129,7 @@ test('sorts features by target milestone', async ({ page }) => {
         createFeature(7, 103, 108),
         createFeature(8, 105, 106),
       ],
-      link_previews: []
+      link_previews: [],
     };
 
     await page.route('/api/v0/external_reviews/tag', async route => {
@@ -137,7 +151,7 @@ test('sorts features by target milestone', async ({ page }) => {
     // 2. By Start Milestone (asc)
     // 3. No milestone (by ID/Review Link)
     await expect(section.getByRole('row')).toHaveText([
-      /Feature/,   // Header
+      /Feature/, // Header
       /Feature 5/, // End: 102
       /Feature 8/, // End: 106
       /Feature 6/, // End: 107
