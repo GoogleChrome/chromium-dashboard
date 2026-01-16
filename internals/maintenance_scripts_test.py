@@ -1671,8 +1671,9 @@ class GenerateShippingFeaturesFileTest(testing_config.CustomTestCase):
     self.assertEqual(f_rows[0], ['1', '120', 'Feature 1', 'http://example.com/1', 'complete'])
     self.assertEqual(f_rows[1], ['2', '120', 'Feature 2', 'http://example.com/2', 'incomplete'])
 
-    self.assertEqual(len(o_rows), 1)
+    self.assertEqual(len(o_rows), 2)
     self.assertEqual(o_rows[0], ['1', 'owner1@example.com'])
+    self.assertEqual(o_rows[1], ['2', 'owner2@example.com'])
 
     self.assertEqual(len(m_rows), 2)
     self.assertEqual(m_rows[0], ['2', 'i2s'])
