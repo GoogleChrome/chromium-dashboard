@@ -57,6 +57,16 @@ class ShippingFeaturesAPI(basehandlers.EntitiesAPIHandler):
 
     shipping_stages = self._get_shipping_stages(milestone)
 
+   shipping_stages = [
+    s for s in shipping_stages
+    if s.milestones and any([
+        s.milestones.desktop_first,
+        s.milestones.android_first,
+        s.milestones.ios_first,
+        s.milestones.webview_first,
+    ])
+]
+
     if len(shipping_stages) == 0:
       return {
         'complete_features': [],

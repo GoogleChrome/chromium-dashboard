@@ -184,4 +184,9 @@ class IntentsAPI(basehandlers.APIHandler):
 
     cloud_tasks_helpers.enqueue_task('/tasks/email-intent-to-blink-dev',
                                      params)
-    return {'message': 'Email task submitted successfully.'}
+    return {
+  'message': (
+    'Intent email queued for delivery. '
+    'Feature status will update after successful posting to blink-dev.'
+  )
+}

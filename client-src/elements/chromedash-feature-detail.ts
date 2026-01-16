@@ -399,9 +399,21 @@ export class ChromedashFeatureDetail extends LitElement {
     const isMarkdown =
       (this.feature.markdown_fields || []).includes(fieldId) || alwaysMarkdown;
 
-    const icon = isDefined
-      ? html`<sl-icon library="material" name="check_circle_20px"></sl-icon>`
-      : html`<sl-icon library="material" name="blank_20px"></sl-icon>`;
+
+    const isReviewStatusField =
+  fieldId === 'security_review_status' ||
+  fieldId === 'privacy_review_status';
+
+   const reviewIsComplete =
+   typeof value === 'string' && value === 'Complete';
+
+   const showCheckmark =
+  isReviewStatusField ? reviewIsComplete : isDefined;
+
+   const icon = showCheckmark
+  ? html`<sl-icon library="material" name="check_circle_20px"></sl-icon>`
+  : html`<sl-icon library="material" name="blank_20px"></sl-icon>`;
+
 
     return html`
       <dt id=${fieldId}>${icon} ${fieldDisplayName}</dt>
