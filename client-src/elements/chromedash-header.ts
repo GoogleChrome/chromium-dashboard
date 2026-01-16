@@ -206,9 +206,7 @@ export class ChromedashHeader extends LitElement {
           }
         })
         .then(() => {
-          setTimeout(() => {
-            redirectToCurrentPage();
-          }, 1000);
+          redirectToCurrentPage();
         })
         .catch(error => {
           console.error('Sign in failed.', error);

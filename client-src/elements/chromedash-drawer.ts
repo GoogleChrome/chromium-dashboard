@@ -174,10 +174,8 @@ export class ChromedashDrawer extends LitElement {
           }
         })
         .then(() => {
-          setTimeout(() => {
-            const url = window.location.href.split('?')[0];
-            window.location.href = url;
-          }, 1000);
+          const url = window.location.href.split('?')[0];
+          window.location.href = url;
         })
         .catch(error => {
           console.error('Sign in failed.', error);
