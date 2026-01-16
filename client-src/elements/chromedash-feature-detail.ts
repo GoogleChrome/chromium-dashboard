@@ -389,29 +389,43 @@ export class ChromedashFeatureDetail extends LitElement {
   }
 
   renderField(fieldDef, feStage) {
-    const [fieldId, fieldDisplayName, fieldType, deprecated, alwaysMarkdown] =
-      fieldDef;
-    const value = getFieldValueFromFeature(fieldId, feStage, this.feature);
-    const isDefined = isDefinedValue(value);
-    if (!isDefined && deprecated) {
-      return nothing;
-    }
-    const isMarkdown =
-      (this.feature.markdown_fields || []).includes(fieldId) || alwaysMarkdown;
+  const [fieldId, fieldDisplayName, fieldType, deprecated, alwaysMarkdown] =
+    fieldDef;
+  const value = getFieldValueFromFeature(fieldId, feStage, this.feature);
+  const isDefined = isDefinedValue(value);
 
-    const icon = isDefined
-      ? html`<sl-icon library="material" name="check_circle_20px"></sl-icon>`
-      : html`<sl-icon library="material" name="blank_20px"></sl-icon>`;
-
-    return html`
-      <dt id=${fieldId}>${icon} ${fieldDisplayName}</dt>
-      <dd>
-        ${isDefined
-          ? this.renderValue(fieldType, value, isMarkdown)
-          : html`<i>No information provided yet</i>`}
-      </dd>
-    `;
+  if (!isDefined && deprecated) {
+    return nothing;
   }
+
+  const isMarkdown =
+    (this.feature.markdown_fields || []).includes(fieldId) || alwaysMarkdown;
+
+  const isReviewStatusField =
+    fieldId === 'security_review_status' ||
+    fieldId === 'privacy_review_status';
+
+  const reviewIsComplete =
+    isReviewStatusField && typeof value === 'string' && value === 'Complete';
+
+  const showCheckmark = isReviewStatusField
+    ? reviewIsComplete
+    : isDefined;
+
+  const icon = showCheckmark
+    ? html`<sl-icon library="material" name="check_circle_20px"></sl-icon>`
+    : html`<sl-icon library="material" name="blank_20px"></sl-icon>`;
+
+  return html`
+    <dt id=${fieldId}>${icon} ${fieldDisplayName}</dt>
+    <dd>
+      ${isDefined
+        ? this.renderValue(fieldType, value, isMarkdown)
+        : html`<i>No information provided yet</i>`}
+    </dd>
+  `;
+}
+
 
   stageHasAnyFilledFields(fields, feStage) {
     return fields.some(fieldDef =>
