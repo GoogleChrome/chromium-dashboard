@@ -1,14 +1,12 @@
 // @ts-check
-import { expect } from '@playwright/test';
-
+import {expect} from '@playwright/test';
 
 /**
  * @param {number | undefined} ms
  */
 export async function delay(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+  return new Promise(resolve => setTimeout(resolve, ms));
 }
-
 
 /**
  * Call this, say in your test.beforeEach() method, to capture all
@@ -40,9 +38,15 @@ export function captureConsoleMessages(page) {
         argString = arg.toString();
       }
       // Simplify tons of "SameSite" warnings.
-      if (argString.match(/does not have a proper “SameSite” attribute value/)) {
-        argString = argString.replace('JavaScript Warning: ', 'SameSite ')
-          .replace('does not have a proper “SameSite” attribute value. Soon, cookies without the “SameSite” attribute or with an invalid value will be treated as “Lax”. This means that the cookie will no longer be sent in third-party contexts. If your application depends on this cookie being available in such contexts, please add the “SameSite=None“ attribute to it. To know more about the “SameSite“ attribute, read https://developer.mozilla.org/docs/Web/HTTP/Headers/Set-Cookie/SameSite', '');
+      if (
+        argString.match(/does not have a proper “SameSite” attribute value/)
+      ) {
+        argString = argString
+          .replace('JavaScript Warning: ', 'SameSite ')
+          .replace(
+            'does not have a proper “SameSite” attribute value. Soon, cookies without the “SameSite” attribute or with an invalid value will be treated as “Lax”. This means that the cookie will no longer be sent in third-party contexts. If your application depends on this cookie being available in such contexts, please add the “SameSite=None“ attribute to it. To know more about the “SameSite“ attribute, read https://developer.mozilla.org/docs/Web/HTTP/Headers/Set-Cookie/SameSite',
+            ''
+          );
       }
       values.push(argString);
     }
@@ -91,7 +95,7 @@ export function capturePageEvents(page) {
  */
 export async function decodeCookies(page) {
   const cookies = await page.context().cookies();
-  cookies.forEach((cookie) => {
+  cookies.forEach(cookie => {
     console.log('Decoded Cookie:', cookie);
   });
 }
@@ -101,9 +105,8 @@ export async function decodeCookies(page) {
  */
 export async function isMobile(page) {
   const viewportSize = page.viewportSize();
-  return (viewportSize && viewportSize.width <= 700)
+  return viewportSize && viewportSize.width <= 700;
 }
-
 
 /**
  * Handle beforeunload by accepting it.
@@ -143,7 +146,6 @@ export function acceptAlertDialogs(page) {
   });
 }
 
-
 // Timeout for logging in, in milliseconds.
 // Initially set to longer timeout, in case server needs to warm up and
 // respond to the login.  Changed to shorter timeout after login is successful.
@@ -154,7 +156,6 @@ let loginTimeout = 20000;
  * @param {import("playwright-core").Page} page
  */
 export async function login(page) {
-
   page.exposeFunction('isPlaywright', () => {});
 
   // Always reset to the roadmap page.
@@ -237,7 +238,7 @@ export async function logout(page) {
     await menuButton.click();
   } else {
     const accountIndicator = page.getByTestId('account-indicator');
-    await expect(accountIndicator).toBeVisible({ timeout: 20000 });
+    await expect(accountIndicator).toBeVisible({timeout: 20000});
     await accountIndicator.click({timeout: 5000});
   }
   await delay(1000);
@@ -245,7 +246,7 @@ export async function logout(page) {
   // Need to hover to see the sign-out-link
   const signOutLink = page.getByTestId('sign-out-link');
   await expect(signOutLink).toBeVisible();
-  await signOutLink.click({ timeout: 5000 });
+  await signOutLink.click({timeout: 5000});
   await delay(500);
 
   await page.waitForURL('**/roadmap');
@@ -258,7 +259,6 @@ export async function logout(page) {
 
   // console.log('logout: done');
 }
-
 
 /**
  * From top-level page, after logging in, go to the New Feature page.
@@ -273,21 +273,20 @@ export async function gotoNewFeaturePage(page) {
   // Navigate to the new feature page.
   await expect(menuButton).toBeVisible();
   if (mobile) {
-    await menuButton.click();  // To show menu.
+    await menuButton.click(); // To show menu.
   }
   await createFeatureButton.click();
   if (mobile) {
-    await menuButton.click();  // To hide menu
+    await menuButton.click(); // To hide menu
     await delay(500);
   }
 
   // Expect "Add a feature" header to be present.
   const addAFeatureHeader = page.getByTestId('add-a-feature');
-  await expect(addAFeatureHeader).toBeVisible({ timeout: 10000 });
+  await expect(addAFeatureHeader).toBeVisible({timeout: 10000});
   // console.log('navigate to create feature page done');
   await delay(500);
 }
-
 
 /**
  * Enters a blink component on the page.
@@ -296,7 +295,9 @@ export async function gotoNewFeaturePage(page) {
  * @return {Promise<void>} A promise that resolves once the blink component is entered.
  */
 export async function enterBlinkComponent(page) {
-  const blinkComponentsInputWrapper = page.getByTestId('blink_components_wrapper');
+  const blinkComponentsInputWrapper = page.getByTestId(
+    'blink_components_wrapper'
+  );
   await expect(blinkComponentsInputWrapper).toBeVisible();
 
   // Trying to show options, doesn't work yet.
@@ -348,7 +349,9 @@ export async function createNewFeature(page) {
   await enterWebFeatureId(page);
 
   // Select feature type.
-  const featureTypeRadioNew = page.locator('input[name="feature_type"][value="0"]');
+  const featureTypeRadioNew = page.locator(
+    'input[name="feature_type"][value="0"]'
+  );
   await featureTypeRadioNew.click();
 
   // Submit the form.
