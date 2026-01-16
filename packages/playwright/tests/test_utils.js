@@ -1,5 +1,5 @@
 // @ts-check
-import { expect } from '@playwright/test';
+import {expect} from '@playwright/test';
 
 /**
  * Call this, say in your test.beforeEach() method, to capture all
@@ -81,7 +81,7 @@ export async function decodeCookies(page) {
  */
 export async function isMobile(page) {
   const viewportSize = page.viewportSize();
-  return (viewportSize && viewportSize.width <= 700);
+  return viewportSize && viewportSize.width <= 700;
 }
 
 /**
@@ -133,8 +133,8 @@ export async function login(page) {
   // can occur in Chrome when not logged in.
   acceptAlertDialogs(page);
 
-  await page.goto('/', { timeout: 20000 });
-  await page.waitForURL('**/roadmap', { timeout: 20000 });
+  await page.goto('/', {timeout: 20000});
+  await page.waitForURL('**/roadmap', {timeout: 20000});
 
   await expect(page).toHaveTitle(/Chrome Status/);
 
@@ -156,7 +156,7 @@ export async function login(page) {
   // Waiting for 'domcontentloaded' ensures the reload has actually happened.
   await Promise.all([
     page.waitForEvent('domcontentloaded'),
-    loginButton.click()
+    loginButton.click(),
   ]);
 
   // Validate successful login.
@@ -250,7 +250,7 @@ export async function gotoNewFeaturePage(page) {
 
   // Expect "Add a feature" header to be present.
   const addAFeatureHeader = page.getByTestId('add-a-feature');
-  await expect(addAFeatureHeader).toBeVisible({ timeout: 10000 });
+  await expect(addAFeatureHeader).toBeVisible({timeout: 10000});
 }
 
 /**
