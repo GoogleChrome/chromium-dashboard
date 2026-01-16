@@ -69,9 +69,10 @@ test('test semantic checks', async ({page}) => {
   const summaryLocator = page.locator('chromedash-form-field[name="summary"]');
   await expect(summaryLocator).toContainText('Feature summary should be');
 
-
   // This forces Playwright to wait for the icon to be fully painted
-  const helpIcon = page.locator('chromedash-form-field[name="name"] sl-icon-button');
+  const helpIcon = page.locator(
+    'chromedash-form-field[name="name"] sl-icon-button'
+  );
   await expect(helpIcon).toBeVisible();
 
   // Screenshot of warnings about feature name summary length
