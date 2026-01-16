@@ -1,14 +1,13 @@
 // @ts-check
 import { test, expect } from '@playwright/test';
 import {
-  captureConsoleMessages, delay, login, logout,
+  captureConsoleMessages, login, logout,
   gotoNewFeaturePage, enterBlinkComponent, createNewFeature, enterWebFeatureId
 } from './test_utils';
 
-
 test.beforeEach(async ({ page }, testInfo) => {
   captureConsoleMessages(page);
-  testInfo.setTimeout(90000);
+  testInfo.setTimeout(30000);
 
   // Login before running each test.
   await login(page);
@@ -19,21 +18,18 @@ test.afterEach(async ({ page }) => {
   await logout(page);
 });
 
-
-test('navigate to create feature page', async ({page}) => {
+test('navigate to create feature page', async ({ page }) => {
   await gotoNewFeaturePage(page);
 
   // Take a screenshot of the content area.
   await expect(page).toHaveScreenshot('new-feature-page.png');
 });
 
-
-test('enter feature name', async ({page}) => {
+test('enter feature name', async ({ page }) => {
   await gotoNewFeaturePage(page);
 
-  test.setTimeout(90000);
   const featureNameInput = page.locator('input[name="name"]');
-  await expect(featureNameInput).toBeVisible({timeout: 60000});
+  await expect(featureNameInput).toBeVisible();
 
   // Expand the extra help.
   const extraHelpButton = page.locator('chromedash-form-field[name="name"] sl-icon-button');
@@ -42,12 +38,12 @@ test('enter feature name', async ({page}) => {
 
   // Enter a feature name.
   await featureNameInput.fill('Test feature name');
-  await delay(500);
+
+  // Verify the input has the value before screenshotting (implicitly waits for fill to complete)
+  await expect(featureNameInput).toHaveValue('Test feature name');
 
   await expect(page).toHaveScreenshot('feature-name.png');
-
 });
-
 
 test('test semantic checks', async ({ page }) => {
   await gotoNewFeaturePage(page);
@@ -55,15 +51,14 @@ test('test semantic checks', async ({ page }) => {
   // Enter feature name
   const featureNameInput = page.locator('input[name="name"]');
   await featureNameInput.fill('Test deprecated feature name');
-  await delay(500);
 
   // Enter summary description
   const summaryInput = page.locator('textarea[name="summary"]');
   await summaryInput.fill('Test summary description');
-  await summaryInput.blur(); // Must blur to trigger change event.
-  await delay(500);
+  await summaryInput.blur(); // Must blur to trigger change event logic.
 
   // Check that the warning shows up.
+  // Playwright automatically retries this assertion until it passes or times out.
   const summaryLocator = page.locator('chromedash-form-field[name="summary"]');
   await expect(summaryLocator).toContainText('Feature summary should be');
 
@@ -71,7 +66,6 @@ test('test semantic checks', async ({ page }) => {
   await expect(page).toHaveScreenshot('warning-feature-name-and-summary-length.png', {
     mask: [page.locator('section[id="history"]')]
   });
-  await delay(500);
 
   // Fix cause of the error
   await summaryInput.fill('0123456789 0123456789 0123456789 0123456789 0123456789 0123456789 0123456789 0123456789 0123456789 0123456789');
@@ -79,14 +73,7 @@ test('test semantic checks', async ({ page }) => {
 
   // Check that there is no error now for the summary field
   await expect(summaryLocator).not.toContainText('Feature summary should be');
-
-  // // Save changes
-  // const submitButton = page.locator('input[type="submit"]');
-  // await expect(submitButton).toBeVisible();
-  // await submitButton.click();
-  // await delay(500);
 });
-
 
 test('enter blink component', async ({ page }) => {
   await gotoNewFeaturePage(page);
@@ -114,13 +101,12 @@ test('enter web feature id', async ({ page }) => {
   await expect(page).toHaveScreenshot('feature-id.png');
 });
 
-
 test('create new feature', async ({ page }) => {
   await createNewFeature(page);
 
   // Screenshot of this new feature.
+  // The mask handles the dynamic history section.
   await expect(page).toHaveScreenshot('new-feature-created.png', {
     mask: [page.locator('section[id="history"]')]
   });
-  await delay(500);
 });
