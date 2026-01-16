@@ -25,10 +25,13 @@ test.afterEach(async ({page}) => {
 
 test('navigate to create feature page', async ({page}) => {
   await gotoNewFeaturePage(page);
+  const menuButton = page.getByTestId('menu');
 
-  // Wait for the menu icon to appear.
-  const menuButton = page.locator('chromedash-header sl-icon-button');
+  // 1. Wait for the button container
   await expect(menuButton).toBeVisible();
+
+  // 2. Wait for the internal icon to paint
+  await expect(menuButton.locator('sl-icon')).toBeVisible();
 
   // Take a screenshot of the content area.
   await expect(page).toHaveScreenshot('new-feature-page.png');
@@ -73,11 +76,12 @@ test('test semantic checks', async ({page}) => {
   const summaryLocator = page.locator('chromedash-form-field[name="summary"]');
   await expect(summaryLocator).toContainText('Feature summary should be');
 
-  // This forces Playwright to wait for the icon to be fully painted
   const helpIcon = page.locator(
     'chromedash-form-field[name="name"] sl-icon-button'
   );
   await expect(helpIcon).toBeVisible();
+  // This forces Playwright to wait for the icon to be fully painted
+  await expect(helpIcon.locator('sl-icon')).toBeVisible();
 
   // Screenshot of warnings about feature name summary length
   await expect(page).toHaveScreenshot(
