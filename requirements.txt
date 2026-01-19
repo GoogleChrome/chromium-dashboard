@@ -17,7 +17,7 @@ google-cloud-tasks==2.20.0
 google-cloud-ndb==2.4.0
 google-cloud-logging==3.13.0
 google-cloud-secret-manager==2.26.0
-google-cloud-storage==3.7.0
+google-cloud-storage==3.8.0
 google-auth==2.47.0
 google-genai==1.56.0
 requests==2.32.5
