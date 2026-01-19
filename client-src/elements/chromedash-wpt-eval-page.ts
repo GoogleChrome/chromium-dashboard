@@ -363,7 +363,9 @@ export class ChromedashWPTEvalPage extends LitElement {
       return;
     }
 
-    const completedAt = parseRawTimestamp(this.feature?.ai_test_eval_status_timestamp);
+    const completedAt = parseRawTimestamp(
+      this.feature?.ai_test_eval_status_timestamp
+    );
 
     if (completedAt) {
       const now = Date.now();
@@ -577,7 +579,9 @@ export class ChromedashWPTEvalPage extends LitElement {
       status === AITestEvaluationStatus.IN_PROGRESS &&
       this.feature.ai_test_eval_status_timestamp
     ) {
-      const startedAt = parseRawTimestamp(this.feature.ai_test_eval_status_timestamp);
+      const startedAt = parseRawTimestamp(
+        this.feature.ai_test_eval_status_timestamp
+      );
 
       if (startedAt) {
         const now = Date.now();

@@ -7,7 +7,7 @@ import {
   getDisabledHelpText,
   getFeatureOutdatedBanner,
   isVerifiedWithinGracePeriod,
-  parseRawTimestamp
+  parseRawTimestamp,
 } from './utils';
 import {assert} from '@open-wc/testing';
 import {OT_SETUP_STATUS_OPTIONS} from './form-field-enums';
@@ -1017,7 +1017,6 @@ describe('isVerifiedWithinGracePeriod', () => {
     });
   });
 });
-
 
 describe('parseRawTimestamp', () => {
   it('returns null for null, undefined, or empty inputs', () => {

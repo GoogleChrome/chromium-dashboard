@@ -1077,13 +1077,14 @@ export function getFeatureOutdatedBanner(
   return null;
 }
 
-
 /**
  * Parses a timestamp string from the server.
  * If the string is "naive" (has no timezone offset or Z), it appends 'Z'
  * to force the browser to interpret it as UTC.
  */
-export function parseRawTimestamp(timestamp: string | undefined | null): number | null {
+export function parseRawTimestamp(
+  timestamp: string | undefined | null
+): number | null {
   if (!timestamp) {
     return null;
   }
