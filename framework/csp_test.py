@@ -27,6 +27,10 @@ test_app = flask.Flask(__name__)
 class CspTest(unittest.TestCase):
 
   def setUp(self):
+    # Helps silence logging during tests
+    self.logging_patcher = mock.patch('framework.csp.logging')
+    self.mock_logging = self.logging_patcher.start()
+
     csp.ENABLED = True
     csp.REPORT_ONLY = False
     csp.REPORT_URI = 'test'
@@ -38,6 +42,11 @@ class CspTest(unittest.TestCase):
         'object-src': ["'none'"],
         'img-src': ["'self'", 'https:', 'data:'],
     }
+
+  def tearDown(self):
+    self.logging_patcher.stop()
+
+    
 
   def test_get_nonce(self):
     """Many different nonce values are all different."""
@@ -96,11 +105,11 @@ class CspTest(unittest.TestCase):
 
 class CspReporttest(unittest.TestCase):
 
-  @mock.patch('logging.error')
-  def test_report_handler(self, mock_error):
+  @mock.patch('framework.csp.logging')
+  def test_report_handler(self, mock_logging):
     """The report handler logs something for each request."""
     with test_app.test_request_context('/csp', data='12345', method='POST'):
       actual = csp.report_handler()
 
     self.assertEqual('', actual)
-    mock_error.assert_called_once()
+    mock_logging.error.assert_called_once()
