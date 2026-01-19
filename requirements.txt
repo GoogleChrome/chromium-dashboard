@@ -13,7 +13,7 @@ trafilatura==2.0.0
 # google-python-cloud-debugger==2.18
 # See https://github.com/GoogleCloudPlatform/cloud-debug-python/issues/33
 
-google-cloud-tasks==2.20.0
+google-cloud-tasks==2.21.0
 google-cloud-ndb==2.4.0
 google-cloud-logging==3.13.0
 google-cloud-secret-manager==2.26.0
