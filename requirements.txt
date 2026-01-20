@@ -6,20 +6,20 @@ appengine-python-standard>=1.0.0
 html5lib==1.1
 funcsigs==1.0.2
 json5==0.13.0
-google-api-python-client==2.187.0
+google-api-python-client==2.188.0
 trafilatura==2.0.0
 
 # TODO(jrobbins): Add this back or replace it when python 3.10 is supported.
 # google-python-cloud-debugger==2.18
 # See https://github.com/GoogleCloudPlatform/cloud-debug-python/issues/33
 
-google-cloud-tasks==2.20.0
+google-cloud-tasks==2.21.0
 google-cloud-ndb==2.4.0
 google-cloud-logging==3.13.0
 google-cloud-secret-manager==2.26.0
-google-cloud-storage==3.7.0
+google-cloud-storage==3.8.0
 google-auth==2.47.0
-google-genai==1.56.0
+google-genai==1.59.0
 requests==2.32.5
 redis==6.4.0
 fakeredis==2.33.0
@@ -32,7 +32,7 @@ MarkupSafe==3.0.3
 Werkzeug==3.1.5
 click==8.3.1
 itsdangerous==2.2.0
-ghapi==1.0.8
+ghapi==1.0.9
 validators==0.35.0
 # Work-around for failure to deploy
 # https://stackoverflow.com/questions/69936420/google-cloud-platform-app-deploy-failure-due-to-pyparsing

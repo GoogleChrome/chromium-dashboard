@@ -1208,6 +1208,8 @@ class GenerateShippingFeaturesFile(FlaskHandler):
         f['chromestatus_url'],
         'incomplete',
       ])
+      for email in f['owner_emails']:
+        owner_csv_rows.append([str(f['id']), email])
       for criteria in missing_criteria:
         missing_criteria_csv_rows.append([str(f['id']), criteria])
 
