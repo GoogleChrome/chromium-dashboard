@@ -25,6 +25,13 @@ test.afterEach(async ({page}) => {
 
 test('navigate to create feature page', async ({page}) => {
   await gotoNewFeaturePage(page);
+  const menuButton = page.getByTestId('menu');
+
+  // 1. Wait for the button container
+  await expect(menuButton).toBeVisible();
+
+  // 2. Wait for the internal icon to paint
+  await expect(menuButton.locator('sl-icon svg')).toBeVisible({timeout: 10000});
 
   // Take a screenshot of the content area.
   await expect(page).toHaveScreenshot('new-feature-page.png');
@@ -40,6 +47,11 @@ test('enter feature name', async ({page}) => {
   const extraHelpButton = page.locator(
     'chromedash-form-field[name="name"] sl-icon-button'
   );
+  // Wait for the SVG inside the Shadow DOM to be present.
+  // This ensures the icon graphic has actually rendered.
+  await expect(extraHelpButton.locator('sl-icon svg')).toBeVisible({
+    timeout: 10000,
+  });
   await expect(extraHelpButton).toBeVisible();
   await extraHelpButton.click();
 
@@ -69,11 +81,13 @@ test('test semantic checks', async ({page}) => {
   const summaryLocator = page.locator('chromedash-form-field[name="summary"]');
   await expect(summaryLocator).toContainText('Feature summary should be');
 
-  // This forces Playwright to wait for the icon to be fully painted
   const helpIcon = page.locator(
     'chromedash-form-field[name="name"] sl-icon-button'
   );
   await expect(helpIcon).toBeVisible();
+  // Wait for the SVG inside the Shadow DOM to be present.
+  // This ensures the icon graphic has actually rendered.
+  await expect(helpIcon.locator('sl-icon svg')).toBeVisible({timeout: 10000});
 
   // Screenshot of warnings about feature name summary length
   await expect(page).toHaveScreenshot(
