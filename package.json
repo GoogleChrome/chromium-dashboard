@@ -101,7 +101,7 @@
     "ini": ">=6.0.0",
     "kind-of": ">=6.0.3",
     "lit-analyzer": "^2.0.3",
-    "lodash": ">=4.17.21",
+    "lodash": ">=4.17.23",
     "lodash.template": ">=4.5.0",
     "minimist": ">=1.2.8",
     "path-parse": ">=1.0.7",
