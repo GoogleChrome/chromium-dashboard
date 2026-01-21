@@ -4,7 +4,7 @@ import {unsafeHTML} from 'lit/directives/unsafe-html.js';
 import {marked} from 'marked';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {Feature} from '../js-src/cs-client.js';
-import {showToastMessage} from './utils.js';
+import {parseRawTimestamp, showToastMessage} from './utils.js';
 import {AITestEvaluationStatus} from './form-field-enums.js';
 import {ifDefined} from 'lit/directives/if-defined.js';
 
@@ -354,13 +354,20 @@ export class ChromedashWPTEvalPage extends LitElement {
 
   updateCooldown() {
     if (
-      this.feature?.ai_test_eval_run_status ===
-        AITestEvaluationStatus.COMPLETE &&
-      this.feature.ai_test_eval_status_timestamp
+      this.feature?.ai_test_eval_run_status !==
+        AITestEvaluationStatus.COMPLETE ||
+      !this.feature.ai_test_eval_status_timestamp
     ) {
-      const completedAt = new Date(
-        this.feature.ai_test_eval_status_timestamp
-      ).getTime();
+      this._cooldownRemaining = 0;
+      this.stopCooldownTimer();
+      return;
+    }
+
+    const completedAt = parseRawTimestamp(
+      this.feature?.ai_test_eval_status_timestamp
+    );
+
+    if (completedAt) {
       const now = Date.now();
       const elapsed = now - completedAt;
 
@@ -371,9 +378,6 @@ export class ChromedashWPTEvalPage extends LitElement {
         this._cooldownRemaining = 0;
         this.stopCooldownTimer();
       }
-    } else {
-      this._cooldownRemaining = 0;
-      this.stopCooldownTimer();
     }
   }
 
@@ -432,7 +436,7 @@ export class ChromedashWPTEvalPage extends LitElement {
       this.feature = {
         ...this.feature,
         ai_test_eval_run_status: AITestEvaluationStatus.IN_PROGRESS,
-        ai_test_eval_status_timestamp: new Date().toString(),
+        ai_test_eval_status_timestamp: new Date().toISOString(),
       };
       this.completedInThisSession = false; // Reset if user tries to regenerate.
       this.managePolling();
@@ -575,12 +579,15 @@ export class ChromedashWPTEvalPage extends LitElement {
       status === AITestEvaluationStatus.IN_PROGRESS &&
       this.feature.ai_test_eval_status_timestamp
     ) {
-      const startedAt = new Date(
+      const startedAt = parseRawTimestamp(
         this.feature.ai_test_eval_status_timestamp
-      ).getTime();
-      const now = Date.now();
-      if (now - startedAt > HANGING_TIMEOUT_MS) {
-        isHanging = true;
+      );
+
+      if (startedAt) {
+        const now = Date.now();
+        if (now - startedAt > HANGING_TIMEOUT_MS) {
+          isHanging = true;
+        }
       }
     }
 
