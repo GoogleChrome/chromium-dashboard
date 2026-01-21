@@ -110,7 +110,7 @@
     "rollup": "^4.55.2",
     "rollup-plugin-babel-minify": "^10.0.0",
     "sinon": "^21.0.1",
-    "tar": ">=7.5.3",
+    "tar": ">=7.5.4",
     "trim-newlines": ">=5.0.0",
     "ts-lit-plugin": "^2.0.2",
     "typescript": "^5.9.3"
