@@ -192,9 +192,8 @@ export class ChromedashRoadmapMilestoneCard extends LitElement {
       return nothing;
     }
     const stableStart =
-      this.channel.version >= 110
-        ? this.channel?.early_stable
-        : this.channel?.stable_date;
+      this.channel?.stable_release_date ||
+      this.channel?.early_stable_release_date;
     const logo = html`
       <span class="chrome-logo">
         ${this.templateContent.channelTag
