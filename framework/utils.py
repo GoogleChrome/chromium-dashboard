@@ -453,7 +453,7 @@ async def get_mixed_wpt_contents_async(
   # We don't fetch the files if the test suite is too large.
   if len(files_to_fetch_map) > MAXIMUM_TEST_SUITE_SIZE:
     raise PipelineError(
-      MAXIMUM_TEST_SUITE_SIZE_OUTPUT.format(len(files_to_fetch_map)))
+      MAXIMUM_TEST_SUITE_SIZE_OUTPUT.format(num_files=len(files_to_fetch_map)))
 
   # Initialize processing queue
   processing_queue = list(files_to_fetch_map.items())
