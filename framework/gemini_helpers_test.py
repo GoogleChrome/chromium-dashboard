@@ -38,6 +38,9 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
     self.mock_render_template = mock.patch(
         'framework.gemini_helpers.render_template').start()
     self.mock_utils = mock.patch('framework.gemini_helpers.utils').start()
+    # Ensure PipelineError is the real exception class
+    self.mock_utils.PipelineError = utils.PipelineError
+
     self.mock_logging = mock.patch('framework.gemini_helpers.logging').start()
 
     # Mock GeminiClient and its instance
