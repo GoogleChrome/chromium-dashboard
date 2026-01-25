@@ -263,6 +263,17 @@ export class ChromedashWPTEvalPage extends LitElement {
         sl-alert {
           margin-bottom: var(--sl-spacing-large);
         }
+
+        .report-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 1rem;
+        }
+
+        .report-header h2 {
+          margin: 0;
+        }
       `,
     ];
   }
@@ -445,6 +456,18 @@ export class ChromedashWPTEvalPage extends LitElement {
     } catch (e) {
       showToastMessage('Failed to start evaluation. Please try again later.');
       this.fetchData();
+    }
+  }
+
+  async handleCopyReport() {
+    if (!this.feature?.ai_test_eval_report) return;
+
+    try {
+      await navigator.clipboard.writeText(this.feature.ai_test_eval_report);
+      showToastMessage('Report copied to clipboard.');
+    } catch (err) {
+      console.error('Failed to copy text: ', err);
+      showToastMessage('Failed to copy report.');
     }
   }
 
@@ -684,7 +707,18 @@ export class ChromedashWPTEvalPage extends LitElement {
 
     return html`
       <section class="card report-section">
-        <h2 class="${titleClass}">Evaluation Report</h2>
+        <div class="report-header">
+          <h2 class="${titleClass}">Evaluation Report</h2>
+          <sl-button
+            variant="default"
+            size="small"
+            @click=${this.handleCopyReport}
+            title="Copy report to clipboard"
+          >
+            <sl-icon slot="prefix" name="copy"></sl-icon>
+            Copy Report
+          </sl-button>
+        </div>
         <div class="report-content ${contentClass}">${unsafeHTML(rawHtml)}</div>
       </section>
     `;
