@@ -35,6 +35,7 @@ describe('chromedash-wpt-eval-page', () => {
     sinon.restore();
   });
 
+
   it('renders the basic page structure', async () => {
     csClientStub.getFeature.resolves(mockFeatureV1);
     const el = await fixture<ChromedashWPTEvalPage>(
@@ -232,6 +233,36 @@ describe('chromedash-wpt-eval-page', () => {
       expect(dataContainers[0].textContent).to.contain(mockFeatureV1.name);
       expect(dataContainers[1].textContent).to.contain(mockFeatureV1.summary);
     });
+    it('screenshot: prerequisites list shows directory annotation', async () => {
+    csClientStub.getFeature.resolves({
+    ...mockFeatureV1,
+    wpt_descr: [
+      'https://wpt.fyi/results/css/',                 // directory
+      'https://wpt.fyi/results/dom/historical.html',  // file
+    ].join('\n'),
+  });
+
+  const el = await fixture<ChromedashWPTEvalPage>(
+    html`<chromedash-wpt-eval-page .featureId=${1}></chromedash-wpt-eval-page>`
+  );
+  await el.updateComplete;
+
+  // Wait a tick so rendering settles.
+  await nextFrame();
+
+  // Take a screenshot of the rendered page.
+  // @web/test-runner-playwright supports page screenshots when running in browser context.
+  // In this setup you can just use: window.__wtrPlaywright?.page
+
+  const w = window as any;
+  const page = w.__wtrPlaywright?.page;
+  if (!page) return; // skip if not available
+  await page.setViewportSize({width: 1200, height: 800});
+  document.body.append(
+  document.createElement('hr'),
+  document.createTextNode('DEBUG VIEW BELOW'),
+  );
+  });
   });
 
   describe('Action Section & Generation Flow', () => {
@@ -575,33 +606,6 @@ describe('chromedash-wpt-eval-page', () => {
       expect(button).to.exist;
       expect(button).to.not.have.attribute('disabled');
       expect(message).to.not.exist;
-      it('screenshot: prerequisites list shows directory annotation', async () => {
-  csClientStub.getFeature.resolves({
-    ...mockFeatureV1,
-    wpt_descr: [
-      'https://wpt.fyi/results/css/',                 // directory
-      'https://wpt.fyi/results/dom/historical.html',  // file
-    ].join('\n'),
-  });
-
-  const el = await fixture<ChromedashWPTEvalPage>(
-    html`<chromedash-wpt-eval-page .featureId=${1}></chromedash-wpt-eval-page>`
-  );
-  await el.updateComplete;
-
-  // Wait a tick so rendering settles.
-  await nextFrame();
-
-  // Take a screenshot of the rendered page.
-  // @web/test-runner-playwright supports page screenshots when running in browser context.
-  // In this setup you can just use: window.__wtrPlaywright?.page
-  const w = window as any;
-  const page = w.__wtrPlaywright?.page;
-  if (!page) return; // skip if not available
-  await page.setViewportSize({width: 1200, height: 800});
-  await page.screenshot({path: 'wpt-eval-prereqs.png', fullPage: true});
-});
-
     });
-  });
+});
 });
