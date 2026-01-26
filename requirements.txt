@@ -32,7 +32,7 @@ MarkupSafe==3.0.3
 Werkzeug==3.1.5
 click==8.3.1
 itsdangerous==2.2.0
-ghapi==1.0.9
+ghapi==1.0.10
 validators==0.35.0
 # Work-around for failure to deploy
 # https://stackoverflow.com/questions/69936420/google-cloud-platform-app-deploy-failure-due-to-pyparsing
