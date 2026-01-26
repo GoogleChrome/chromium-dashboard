@@ -143,6 +143,51 @@ describe('chromedash-wpt-eval-page', () => {
       // Verify Valid URLs (Index 4)
       expect(dataContainers[4].querySelector('ul')).to.exist;
     });
+    it('annotates directory WPT URLs but not individual test file URLs', async () => {
+      const dirUrl = 'https://wpt.fyi/results/css';
+      const fileUrl = 'https://wpt.fyi/results/dom/historical.html';
+
+      csClientStub.getFeature.resolves({
+        ...mockFeatureV1,
+        wpt_descr: `Relevant tests:\n${dirUrl}\n${fileUrl}`,
+      });
+
+      const el = await fixture<ChromedashWPTEvalPage>(
+        html`<chromedash-wpt-eval-page
+          .featureId=${1}
+        ></chromedash-wpt-eval-page>`
+      );
+
+      await el.updateComplete;
+
+      // Get all URL list items
+      const listItems = Array.from(
+        el.shadowRoot!.querySelectorAll<HTMLLIElement>(
+          '.url-list-container ul.url-list li'
+        )
+      );
+
+      // Find the list items by URL text
+      const dirItem = listItems.find(li => li.textContent?.includes(dirUrl));
+      const fileItem = listItems.find(li => li.textContent?.includes(fileUrl));
+
+      expect(dirItem, 'directory URL item should exist').to.exist;
+      expect(fileItem, 'file URL item should exist').to.exist;
+
+      // Directory URL should be annotated
+      expect(
+        dirItem!.querySelector('.dir-note'),
+        'directory URL should show annotation'
+      ).to.exist;
+      expect(dirItem!.textContent).to.contain('(all tests in directory)');
+
+      // File URL should NOT be annotated
+      expect(
+        fileItem!.querySelector('.dir-note'),
+        'file URL should not show annotation'
+      ).to.not.exist;
+      expect(fileItem!.textContent).to.not.contain('(all tests in directory)');
+    });
 
     it('shows Name/Summary as success, but other checks as danger when optional data is missing', async () => {
       // Feature has name/summary (default mock), but missing spec and wpt_descr
