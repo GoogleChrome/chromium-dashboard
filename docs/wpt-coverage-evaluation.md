@@ -6,6 +6,11 @@ that audits the test coverage of a web platform feature. It utilizes a chain of
 Gemini prompts to compare a feature's specification against its Web Platform
 Tests (WPT).
 
+Depending on the size of the test suite, the system dynamically selects between
+a **Unified Flow** (single chain-of-thought prompt) or a **Complex Flow**
+(multi-stage prompt chain) to optimize for context retention and processing
+speed.
+
 This feature is backed by **App Engine Task Queues** (Cloud Tasks)
 to handle the long-running, asynchronous nature of LLM analysis and WPT content
 fetching.
@@ -17,10 +22,11 @@ fetching.
 | :--- | :--- | :--- |
 | **Frontend UI** | `client-src/elements/chromedash-wpt-eval-page.ts` | Handles user input validation, polling, and report rendering. |
 | **Client Wrapper** | `framework/gemini_client.py` | Manages `google.genai` client, timeouts, and retries. |
-| **Pipeline Logic** | `framework/gemini_helpers.py` | Orchestrates the 3-stage pipeline (`run_wpt_test_eval_pipeline`) and formats prompts. |
+| **Pipeline Logic** | `framework/gemini_helpers.py` | Orchestrates the branching pipeline (Unified vs. Batch) and formats prompts. |
 | **API Handler** | `api/wpt_coverage_api.py` | Handles the POST request, permissions, and locking/throttling logic. |
 | **WPT Fetching** | `framework/utils.py` | Handles GitHub API interaction, directory parsing, and URL normalization (e.g., `.any.js`). |
 | **Task Handler** | `framework/gemini_helpers.py` | `GenerateWPTCoverageEvalReportHandler` executes the background task. |
+| **Prompts** | `templates/prompts/` | Contains prompt templates sent in Gemini requests in the pipeline. |
 
 ---
 
@@ -41,25 +47,53 @@ URLs.
     * **Fallback:** If an `.html` file fetch fails, it attempts to fetch the
     equivalent `.js` file before giving up.
 
-### 2. Batch Processing (Spec & Test Analysis)
-To optimize execution time, the system uses `asyncio.gather` to run prompts
-concurrently.
-1.  **Prompt Generation:** It iterates through every fetched WPT file and
-    generates a `TEST_ANALYSIS` prompt.
-2.  **Spec Injection:** The `SPEC_SYNTHESIS` prompt is appended to the **end**
-    of this list.
-3.  **Execution:** `GeminiClient.get_batch_responses_async` sends all prompts to
-    Gemini simultaneously.
-4.  **Unpacking:**
-    * The system pops the **last** response from the list, assuming it is the
-    Spec Synthesis result (`all_responses.pop()`).
-    * The remaining responses are treated as Test Analyses.
+### 2. Branching Logic
+Once files are fetched, the pipeline determines the strategy based on the
+count of valid test files:
+* **≤ 10 Files:** Executes **Path A (Unified Flow)**.
+* **> 10 Files:** Executes **Path B (Complex Flow)**.
 
-### 3. Gap Analysis
-* The `spec_synthesis_response` and aggregated `test_analysis_responses` are
-combined into the `GAP_ANALYSIS` template.
-* This final step is executed via `gemini_client.get_response_async`.
-* **Result:** The Markdown output is saved to `feature.ai_test_eval_report`.
+---
+
+### Path A: Unified Flow (≤ 10 Files)
+For smaller test suites, the risk of context overloading is low. A single prompt
+is used to prevent the loss of nuance that can occur when summarizing individual
+files in the multi-stage flow.
+
+1.  **Prompt Assembly:** The system loads `templates/prompts/unified-gap-analysis.html`.
+2.  **Context Injection:**
+    * `<spec_document>`: The full text or diff of the specification.
+    * `<feature_definition>`: The name and summary of the feature.
+    * `<test_suite>`: All raw test files and dependencies are injected directly
+      into the prompt context.
+3.  **Execution:** A single request is sent to Gemini via
+    `gemini_client.get_response_async`.
+4.  **Chain-of-Thought:** The model is instructed to perform internal
+    "scratchpad" phases (Scope Analysis, Spec Extraction, Test Verification)
+    before generating the final Markdown report.
+5.  **Result:** The response is returned directly as the final report.
+
+---
+
+### Path B: Complex Flow (> 10 Files)
+For larger suites, the context window would be exceeded by a unified prompt.
+The system uses `asyncio.gather` to run prompts concurrently and summarize data
+step-by-step.
+
+1.  **Batch Processing (Spec & Test Analysis):**
+    * **Prompt Generation:** Iterates through every fetched WPT file and
+      generates a `TEST_ANALYSIS` prompt for each.
+    * **Spec Injection:** A `<` prompt is appended to the **end** of this list.
+    * **Execution:** `GeminiClient.get_batch_responses_async` sends all prompts
+      to Gemini simultaneously.
+    * **Unpacking:**
+        * The system pops the **last** response from the list (Spec Synthesis).
+        * The remaining responses are collected as Test Analyses summaries.
+
+2.  **Gap Analysis:**
+    * The `spec_synthesis_response` and aggregated `test_analysis_responses` are
+      combined into the `GAP_ANALYSIS` template.
+    * This final step is executed via `gemini_client.get_response_async`.
 
 ---
 
@@ -68,7 +102,7 @@ The system is tuned to balance App Engine limits against LLM generation time.
 These constants are defined in `framework/gemini_client.py`.
 
 ### Gemini Model
-* **Model:** `gemini-2.5-pro` (Hardcoded as `GEMINI_MODEL`).
+* **Model:** `gemini-3-pro-preview` (Hardcoded as `GEMINI_MODEL`).
 
 ### Timeout Strategy
 To prevent "Task Deadline Exceeded" errors in Cloud Tasks, the system uses a
@@ -102,7 +136,7 @@ the input (e.g., empty file content).
 mechanism. If it fails 3 times, the specific error from the model is logged.
 
 ### 3. Batch Resilience
-In `get_batch_responses_async`, `asyncio.gather` is called with
+In `get_batch_responses_async` (Path B), `asyncio.gather` is called with
 `return_exceptions=True`.
 * **Significance:** If *one* test file analysis fails (e.g., a specific file is
 too large), it **does not** crash the entire pipeline. The error object is
@@ -141,8 +175,8 @@ expired.
 update `ai_test_eval_run_status` to `FAILED` or wait for the 1-hour expiration.
 
 ### 2. Task fails with `PipelineError: No successful test analysis responses`
-* **Cause:** The batch processing finished, but every single test analysis
-prompt returned an exception or failure.
+* **Cause (Path B):** The batch processing finished, but every single test
+analysis prompt returned an exception or failure.
 * **Check:** Verify `wpt_descr` contains valid URLs.
 * **Check:** If using a directory, ensure the GitHub API token (`GITHUB_TOKEN`
 in settings) is valid and not rate-limited. `utils.get_mixed_wpt_contents_async`
@@ -176,6 +210,7 @@ has a hard 10-minute limit for HTTP requests).
     the user provided a directory URL that contains only subfolders but no
     files *directly* inside it, the file list will be empty, causing a
     `PipelineError`.
-* **Check File Count:** If the directory contains >50 files, the system may
-    process them but hit timeout limits, or the LLM context window might be
-    exceeded during aggregation.
+* **Check File Count:** If the directory contains >50 individual test files, the
+pipeline will fail to run, and a generic error will populate the report contents
+with an error message. E.g. "The number of individual Web Platform Test files
+was too large for automated report generation."
