@@ -735,3 +735,23 @@ class AsyncUtilsGitHubTests(unittest.IsolatedAsyncioTestCase):
     settings.GITHUB_TOKEN = None
     results = await utils.get_mixed_wpt_contents_async(['url1'], ['url2'])
     self.assertEqual(results, ({}, {}))
+
+  @mock.patch('framework.utils.MAXIMUM_TEST_SUITE_SIZE', 5)
+  @mock.patch('framework.utils._fetch_dir_listing')
+  async def test_get_mixed_wpt_contents_async__exceeds_suite_size(
+      self, mock_fetch_dir):
+    """Should raise PipelineError if too many test files are requested."""
+    dir_urls = ['https://wpt.fyi/results/dir1']
+    file_urls = []
+    settings.GITHUB_TOKEN = 'token'
+
+    # Mock returning 6 files, which exceeds the patched limit of 5.
+    mock_files = [(Path(f'test{i}.html'), f'http://dl/test{i}.html') for i in range(6)]
+    mock_fetch_dir.return_value = mock_files
+
+    with self.assertRaises(utils.PipelineError) as cm:
+      await utils.get_mixed_wpt_contents_async(dir_urls, file_urls)
+
+    # We verify the error message contains the number of files found.
+    self.assertIn('6', str(cm.exception))
+    self.assertIn('too large', str(cm.exception))

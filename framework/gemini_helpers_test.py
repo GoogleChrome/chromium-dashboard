@@ -18,9 +18,11 @@ import asyncio
 import requests
 from unittest import mock
 from pathlib import Path
+from framework import gemini_helpers
+from framework import utils
 from internals import core_enums
 from internals.core_models import FeatureEntry
-from framework import gemini_helpers
+
 
 class GeminiHelpersTest(testing_config.CustomTestCase):
 
@@ -36,6 +38,9 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
     self.mock_render_template = mock.patch(
         'framework.gemini_helpers.render_template').start()
     self.mock_utils = mock.patch('framework.gemini_helpers.utils').start()
+    # Ensure PipelineError is the real exception class
+    self.mock_utils.PipelineError = utils.PipelineError
+
     self.mock_logging = mock.patch('framework.gemini_helpers.logging').start()
 
     # Mock GeminiClient and its instance
@@ -267,7 +272,7 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
         return_value=['Test analysis OK', gemini_error]
     )
 
-    with self.assertRaisesRegex(gemini_helpers.PipelineError,
+    with self.assertRaisesRegex(utils.PipelineError,
                                 'Spec synthesis prompt failure'):
       asyncio.run(gemini_helpers.prompt_analysis(self.feature, test_files))
 
@@ -288,7 +293,7 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
       ]
     )
 
-    with self.assertRaisesRegex(gemini_helpers.PipelineError,
+    with self.assertRaisesRegex(utils.PipelineError,
                                 'No successful test analysis responses'):
       asyncio.run(gemini_helpers.prompt_analysis(self.feature, test_files))
 
@@ -341,13 +346,14 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
       mock_get_content.return_value = (mock_test_files, mock_deps)
       mock_unified.return_value = "Unified Success"
 
-      asyncio.run(gemini_helpers.run_wpt_test_eval_pipeline(self.feature))
+      result = asyncio.run(gemini_helpers.run_wpt_test_eval_pipeline(self.feature))
 
       # Verify Unified Called
       mock_unified.assert_called_once_with(self.feature, mock_test_files, mock_deps)
       # Verify Multi NOT Called
       mock_multi.assert_not_called()
       self.assertEqual(self.feature.ai_test_eval_report, "Unified Success")
+      self.assertEqual(result, core_enums.AITestEvaluationStatus.COMPLETE)
 
   def test_run_pipeline__routes_to_multi_prompt_eval(self):
     """If file count is large, verify routing to prompt_analysis."""
@@ -368,18 +374,19 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
       mock_get_content.return_value = (mock_test_files, mock_deps)
       mock_multi.return_value = "Multi Success"
 
-      asyncio.run(gemini_helpers.run_wpt_test_eval_pipeline(self.feature))
+      result = asyncio.run(gemini_helpers.run_wpt_test_eval_pipeline(self.feature))
 
       # Verify Multi Called
       mock_multi.assert_awaited_once_with(self.feature, mock_test_files)
       # Verify Unified NOT Called
       mock_unified.assert_not_called()
       self.assertEqual(self.feature.ai_test_eval_report, "Multi Success")
+      self.assertEqual(result, core_enums.AITestEvaluationStatus.COMPLETE)
 
   def test_run_pipeline__missing_spec_link(self):
     """Pipeline should fail immediately if no spec link is present."""
     self.feature.spec_link = None
-    with self.assertRaisesRegex(gemini_helpers.PipelineError, 'No spec URL provided'):
+    with self.assertRaisesRegex(utils.PipelineError, 'No spec URL provided'):
       asyncio.run(gemini_helpers.run_wpt_test_eval_pipeline(self.feature))
 
     self.mock_gemini_client_cls.assert_not_called()
@@ -388,11 +395,27 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
     """Pipeline should fail if no WPT URLs can be extracted."""
     self.mock_utils.extract_wpt_fyi_results_urls.return_value = []
 
-    with self.assertRaisesRegex(gemini_helpers.PipelineError,
+    with self.assertRaisesRegex(utils.PipelineError,
                                 'No valid wpt.fyi results URLs found'):
       asyncio.run(gemini_helpers.run_wpt_test_eval_pipeline(self.feature))
 
     self.mock_gemini_client_cls.assert_not_called()
+
+  def test_run_pipeline__content_fetch_failure(self):
+    """Pipeline should return FAILED status if test content fetching fails."""
+    self.feature.spec_link = 'https://spec.example.com'
+    self.feature.wpt_descr = 'https://wpt.fyi/results/test'
+    self.mock_utils.extract_wpt_fyi_results_urls.return_value = ['url1']
+
+    error_msg = "Content Fetch Error"
+    with mock.patch('framework.gemini_helpers._get_test_file_contents',
+                    new_callable=mock.AsyncMock) as mock_get_content:
+      mock_get_content.side_effect = utils.PipelineError(error_msg)
+
+      result = asyncio.run(gemini_helpers.run_wpt_test_eval_pipeline(self.feature))
+
+      self.assertEqual(result, core_enums.AITestEvaluationStatus.FAILED)
+      self.assertEqual(self.feature.ai_test_eval_report, error_msg)
 
 
 class GenerateWPTCoverageEvalReportHandlerTest(testing_config.CustomTestCase):
@@ -427,7 +450,7 @@ class GenerateWPTCoverageEvalReportHandlerTest(testing_config.CustomTestCase):
 
   def test_process_post_data__success(self):
     """Tests that a successful pipeline run updates status to COMPLETE."""
-    self.mock_pipeline.return_value = None
+    self.mock_pipeline.return_value = core_enums.AITestEvaluationStatus.COMPLETE
 
     response = self.handler.process_post_data()
 
@@ -454,7 +477,7 @@ class GenerateWPTCoverageEvalReportHandlerTest(testing_config.CustomTestCase):
 
   def test_process_post_data__pipeline_failure(self):
     """Tests that a pipeline exception updates status to FAILED and saves report."""
-    self.mock_pipeline.side_effect = gemini_helpers.PipelineError('Test failure')
+    self.mock_pipeline.side_effect = utils.PipelineError('Test failure')
 
     with mock.patch('framework.gemini_helpers.logging.error') as mock_log_error:
       response = self.handler.process_post_data()

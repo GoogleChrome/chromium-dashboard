@@ -42,11 +42,6 @@ WPT_FILE_REGEX = re.compile(r"\/[^/]*\.[^/]*$")
 MAX_SINGLE_PROMPT_TEST_COUNT = 10
 
 
-class PipelineError(Exception):
-  """Base exception for errors occurring during the AI analysis pipeline."""
-  pass
-
-
 def _create_feature_definition(feature: FeatureEntry) -> str:
   return f'Name: {feature.name}\nDescription: {feature.summary}'
 
@@ -208,7 +203,7 @@ async def prompt_analysis(feature: FeatureEntry, test_files: dict[Path, str]) ->
 
   spec_synthesis_response = all_responses.pop()
   if not isinstance(spec_synthesis_response, str):
-    raise PipelineError(f'Spec synthesis prompt failure: {spec_synthesis_response}')
+    raise utils.PipelineError(f'Spec synthesis prompt failure: {spec_synthesis_response}')
 
   test_analysis_responses_formatted: list[str] = []
   for fname, resp in zip(file_names, all_responses):
@@ -220,7 +215,7 @@ async def prompt_analysis(feature: FeatureEntry, test_files: dict[Path, str]) ->
     test_analysis_responses_formatted.append('\n\n')
 
   if not test_analysis_responses_formatted:
-    raise PipelineError('No successful test analysis responses.')
+    raise utils.PipelineError('No successful test analysis responses.')
 
   template_data = {
     'spec_synthesis': spec_synthesis_response,
@@ -232,7 +227,7 @@ async def prompt_analysis(feature: FeatureEntry, test_files: dict[Path, str]) ->
   gap_analysis_response = await gemini_client.get_response_async(gap_analysis_prompt)
   return gap_analysis_response
 
-async def run_wpt_test_eval_pipeline(feature: FeatureEntry) -> None:
+async def run_wpt_test_eval_pipeline(feature: FeatureEntry) -> core_enums.AITestEvaluationStatus:
   """Execute the AI pipeline for WPT coverage analysis.
 
   The final report is saved to `feature.ai_test_eval_report`.
@@ -246,13 +241,17 @@ async def run_wpt_test_eval_pipeline(feature: FeatureEntry) -> None:
       or if critical AI generation steps fail.
   """
   if not feature.spec_link:
-    raise PipelineError('No spec URL provided.')
+    raise utils.PipelineError('No spec URL provided.')
 
   test_locations = utils.extract_wpt_fyi_results_urls(feature.wpt_descr)
   if len(test_locations) == 0:
-    raise PipelineError('No valid wpt.fyi results URLs found in WPT description.')
+    raise utils.PipelineError('No valid wpt.fyi results URLs found in WPT description.')
 
-  test_files, dependency_files = await _get_test_file_contents(test_locations)
+  try:
+    test_files, dependency_files = await _get_test_file_contents(test_locations)
+  except utils.PipelineError as e:
+    feature.ai_test_eval_report = str(e)
+    return core_enums.AITestEvaluationStatus.FAILED
 
   if len(test_files) <= MAX_SINGLE_PROMPT_TEST_COUNT:
     gap_analysis_response = unified_prompt_analysis(feature, test_files, dependency_files)
@@ -260,6 +259,7 @@ async def run_wpt_test_eval_pipeline(feature: FeatureEntry) -> None:
     gap_analysis_response = await prompt_analysis(feature, test_files)
 
   feature.ai_test_eval_report = gap_analysis_response
+  return core_enums.AITestEvaluationStatus.COMPLETE
 
 
 class GenerateWPTCoverageEvalReportHandler(basehandlers.FlaskHandler):
@@ -276,7 +276,7 @@ class GenerateWPTCoverageEvalReportHandler(basehandlers.FlaskHandler):
     logging.info(f'Starting WPT coverage analysis pipeline for feature {feature_id}')
 
     try:
-      asyncio.run(run_wpt_test_eval_pipeline(feature))
+      result_status = asyncio.run(run_wpt_test_eval_pipeline(feature))
     except Exception as e:
       feature.ai_test_eval_run_status = core_enums.AITestEvaluationStatus.FAILED
       feature.ai_test_eval_status_timestamp = datetime.now()
@@ -290,7 +290,7 @@ class GenerateWPTCoverageEvalReportHandler(basehandlers.FlaskHandler):
       logging.error(error_message)
       return {'message': error_message}
 
-    feature.ai_test_eval_run_status = core_enums.AITestEvaluationStatus.COMPLETE
+    feature.ai_test_eval_run_status = result_status
     feature.ai_test_eval_status_timestamp = datetime.now()
     feature.put()
     return {'message': 'WPT coverage analysis report generated.'}

@@ -263,6 +263,11 @@ export class ChromedashWPTEvalPage extends LitElement {
         sl-alert {
           margin-bottom: var(--sl-spacing-large);
         }
+        .dir-note {
+          margin-left: 6px;
+          opacity: 0.75;
+          font-style: italic;
+        }
       `,
     ];
   }
@@ -491,6 +496,21 @@ export class ChromedashWPTEvalPage extends LitElement {
     return html`<div class="url-list prewrap">${content}</div>`;
   }
 
+  /**
+   * Returns true if a WPT results URL represents a directory rather than a test file.
+   */
+  private _isDirectoryWptUrl(rawUrl: string): boolean {
+    // Strip query/hash (URLs regex already excludes '?', but safe anyway)
+    const noHash = rawUrl.split('#')[0];
+    const noQuery = noHash.split('?')[0];
+    // Last path segment
+    const parts = noQuery.split('/');
+    const last = parts[parts.length - 1] ?? '';
+    // If it ends with ".ext" (1-6 chars), treat as file
+    const looksLikeFile = /\.[a-z0-9]{1,6}$/i.test(last);
+    return !looksLikeFile;
+  }
+
   renderRequirementsChecks(): TemplateResult {
     if (!this.feature) {
       return html`${nothing}`;
@@ -550,15 +570,21 @@ export class ChromedashWPTEvalPage extends LitElement {
             ? html`
                 <div class="url-list-container">
                   <ul class="url-list">
-                    ${wptUrls.map(
-                      url => html`
+                    ${wptUrls.map(url => {
+                      const isDir = this._isDirectoryWptUrl(url);
+                      return html`
                         <li>
                           <a href="${url}" target="_blank" title="${url}"
                             >${url}</a
                           >
+                          ${isDir
+                            ? html`<span class="dir-note"
+                                >(all tests in directory)</span
+                              >`
+                            : nothing}
                         </li>
-                      `
-                    )}
+                      `;
+                    })}
                   </ul>
                 </div>
               `
