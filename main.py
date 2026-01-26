@@ -156,6 +156,10 @@ api_routes: list[Route] = [
           intents_api.IntentsAPI),
     Route(f'{API_BASE}/features/<int:feature_id>/<int:stage_id>/<int:gate_id>/intent',
           intents_api.IntentsAPI),
+    Route(f'{API_BASE}/features/generate-wpt-coverage-analysis',
+          wpt_coverage_api.WPTCoverageAPI),
+    # TODO(DanielRyanSmith): Remove the "-evaluation" route after the
+    # "-analysis" route had landed.
     Route(f'{API_BASE}/features/generate-wpt-coverage-evaluation',
           wpt_coverage_api.WPTCoverageAPI),
     Route(f'{API_BASE}/features/shipping',
@@ -218,6 +222,9 @@ spa_page_routes = [
   Route('/newfeatures'),
   Route('/feature/<int:feature_id>'),
   Route('/feature/<int:feature_id>/activity'),
+  Route('/feature/<int:feature_id>/ai-coverage-analysis'),
+  # TODO(DanielRyanSmith): Remove the "-evaluation" route after the
+  # "-analysis" route had landed.
   Route('/feature/<int:feature_id>/ai-coverage-evaluation'),
   Route('/guide/new', guide.FeatureCreateHandler,
       defaults={'require_create_feature': True}),
@@ -350,6 +357,10 @@ internals_routes: list[Route] = [
   Route('/tasks/email-intent-to-blink-dev', notifier.IntentToBlinkDevHandler),
   Route('/tasks/email-reset-shipping-milestones',
         notifier.ResetShippingMilestonesEmailHandler),
+  Route('/tasks/generate-wpt-coverage-analysis',
+        gemini_helpers.GenerateWPTCoverageEvalReportHandler),
+  # TODO(DanielRyanSmith): Remove the "-evaluation" route after the
+  # "-analysis" route had landed.
   Route('/tasks/generate-wpt-coverage-evaluation',
         gemini_helpers.GenerateWPTCoverageEvalReportHandler),
 

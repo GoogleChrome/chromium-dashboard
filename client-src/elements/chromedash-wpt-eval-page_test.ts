@@ -43,7 +43,7 @@ describe('chromedash-wpt-eval-page', () => {
 
     expect(el.shadowRoot!.querySelector('h1')).to.exist;
     expect(el.shadowRoot!.textContent).to.contain(
-      'AI-powered WPT coverage evaluation'
+      'AI-powered WPT coverage analysis'
     );
     expect(el.shadowRoot!.querySelector('.experimental-tag')).to.exist;
     expect(el.shadowRoot!.querySelector('sl-alert')).to.exist;
@@ -383,7 +383,7 @@ describe('chromedash-wpt-eval-page', () => {
       );
     });
 
-    it('starts evaluation, enters IN_PROGRESS state, and starts polling on click', async () => {
+    it('starts analysis, enters IN_PROGRESS state, and starts polling on click', async () => {
       csClientStub.getFeature.resolves(mockFeatureV1);
       csClientStub.generateWPTCoverageEvaluation.resolves({});
       const setIntervalSpy = sinon.spy(window, 'setInterval');
@@ -496,7 +496,7 @@ describe('chromedash-wpt-eval-page', () => {
 
       const alert = el.shadowRoot!.querySelector('sl-alert[variant="danger"]');
       expect(alert).to.exist;
-      expect(alert!.textContent).to.contain('previous evaluation run failed');
+      expect(alert!.textContent).to.contain('previous analysis run failed');
 
       // Button should still be visible to try again
       expect(el.shadowRoot!.querySelector('.generate-button')).to.exist;
@@ -530,7 +530,7 @@ describe('chromedash-wpt-eval-page', () => {
       expect(button).to.exist;
       expect(button).to.not.have.attribute('disabled');
       expect(button!.textContent?.trim()).to.equal(
-        'Retry evaluation (Process timed out)'
+        'Retry analysis (Process timed out)'
       );
 
       // Help text should exist

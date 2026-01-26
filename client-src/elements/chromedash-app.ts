@@ -388,6 +388,15 @@ export class ChromedashApp extends LitElement {
       this.pageComponent.featureId = parseInt(ctx.params.featureId);
       this.pageComponent.user = this.user;
     });
+    page('/feature/:featureId(\\d+)/ai-coverage-analysis', ctx => {
+      if (!this.setupNewPage(ctx, 'chromedash-wpt-eval-page', true, false))
+        return;
+      this.pageComponent.featureId = parseInt(ctx.params.featureId);
+      this.pageComponent.user = this.user;
+      this.pageComponent.appTitle = this.appTitle;
+    });
+    // TODO(DanielRyanSmith): Remove the "-evaluation" address after the
+    // "-analysis" address had landed.
     page('/feature/:featureId(\\d+)/ai-coverage-evaluation', ctx => {
       if (!this.setupNewPage(ctx, 'chromedash-wpt-eval-page', true, false))
         return;

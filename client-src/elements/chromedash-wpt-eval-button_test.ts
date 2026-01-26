@@ -11,7 +11,7 @@ describe('chromedash-wpt-eval-button', () => {
     const button = el.shadowRoot!.querySelector('sl-button');
     expect(button).to.exist;
     expect(button!.getAttribute('href')).to.equal(
-      '/feature/0/ai-coverage-evaluation'
+      '/feature/0/ai-coverage-analysis'
     );
     expect(el.shadowRoot!.textContent).to.contain('Evaluate test coverage');
   });
@@ -28,7 +28,7 @@ describe('chromedash-wpt-eval-button', () => {
     expect(button).to.exist;
     // Verify the href is constructed correctly with the passed ID
     expect(button!.getAttribute('href')).to.equal(
-      `/feature/${featureId}/ai-coverage-evaluation`
+      `/feature/${featureId}/ai-coverage-analysis`
     );
   });
 

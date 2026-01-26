@@ -268,7 +268,7 @@
  * @property {string} [experiment_timeline]
  * @property {FeatureDictInnerResourceInfo} resources
  * @property {string} [comments]
- * AI evaluation fields
+ * AI WPT analysis fields
  * @property {string} [ai_test_eval_report]
  * @property {number} [ai_test_eval_run_status]
  * @property {string} [ai_test_eval_status_timestamp]
@@ -776,7 +776,7 @@ export class ChromeStatusClient {
 
   // WPT Coverage API
   async generateWPTCoverageEvaluation(featureId) {
-    return this.doPost('/features/generate-wpt-coverage-evaluation', {
+    return this.doPost('/features/generate-wpt-coverage-analysis', {
       feature_id: featureId,
     });
   }
