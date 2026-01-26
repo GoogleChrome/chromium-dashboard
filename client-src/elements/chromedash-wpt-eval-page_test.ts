@@ -86,9 +86,89 @@ describe('chromedash-wpt-eval-page', () => {
     // Check Report Rendering
     const reportSection = el.shadowRoot!.querySelector('.report-section');
     expect(reportSection).to.exist;
-    expect(reportSection!.querySelector('h1')!.textContent).to.equal(
-      'Report Title'
+
+    // Check Header Structure
+    const header = reportSection!.querySelector('.report-header');
+    expect(header).to.exist;
+    expect(header!.querySelector('h2')!.textContent).to.equal(
+      'Evaluation Report'
     );
+
+    // Check Content
+    const content = reportSection!.querySelector('.report-content');
+    expect(content!.querySelector('h1')!.textContent).to.equal('Report Title');
+  });
+
+  describe('Report Copy Functionality', () => {
+    // Mock the clipboard API
+    const mockWriteText = sinon.stub();
+
+    beforeEach(() => {
+      // Define a mock clipboard on the navigator instance
+      Object.defineProperty(navigator, 'clipboard', {
+        value: {
+          writeText: mockWriteText,
+        },
+        configurable: true,
+        writable: true,
+      });
+
+      mockWriteText.reset();
+    });
+
+    it('renders the copy button with correct text', async () => {
+      csClientStub.getFeature.resolves(mockFeatureV1);
+      const el = await fixture<ChromedashWPTEvalPage>(
+        html`<chromedash-wpt-eval-page
+          .featureId=${1}
+        ></chromedash-wpt-eval-page>`
+      );
+      await el.updateComplete;
+
+      const copyButton = el.shadowRoot!.querySelector(
+        '.report-header sl-button'
+      );
+      expect(copyButton).to.exist;
+      expect(copyButton!.textContent).to.contain('Copy Report');
+      expect(copyButton!.getAttribute('title')).to.equal(
+        'Copy report to clipboard'
+      );
+    });
+
+    it('copies report content to clipboard when clicked', async () => {
+      csClientStub.getFeature.resolves(mockFeatureV1);
+      const el = await fixture<ChromedashWPTEvalPage>(
+        html`<chromedash-wpt-eval-page
+          .featureId=${1}
+        ></chromedash-wpt-eval-page>`
+      );
+      await el.updateComplete;
+
+      const copyButton = el.shadowRoot!.querySelector(
+        '.report-header sl-button'
+      ) as HTMLElement;
+      copyButton.click();
+
+      expect(mockWriteText).to.have.been.calledWith(
+        mockFeatureV1.ai_test_eval_report
+      );
+    });
+
+    it('does not render copy button if no report exists', async () => {
+      csClientStub.getFeature.resolves({
+        ...mockFeatureV1,
+        ai_test_eval_report: null,
+      });
+      const el = await fixture<ChromedashWPTEvalPage>(
+        html`<chromedash-wpt-eval-page
+          .featureId=${1}
+        ></chromedash-wpt-eval-page>`
+      );
+      await el.updateComplete;
+
+      const reportSection = el.shadowRoot!.querySelector('.report-section');
+      expect(reportSection).to.not.exist;
+    });
   });
 
   describe('Prerequisites Checklist', () => {
