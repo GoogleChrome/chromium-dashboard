@@ -323,8 +323,11 @@ export class ChromedashFeatureDetail extends LitElement {
       </sl-button>
     `;
     let wptEvalButton = html`${nothing}`;
-    // For now, the WPT coverage evaluation page is only visible to Googlers.
-    if (this.user?.email?.endsWith('@google.com')) {
+    // For now, the WPT coverage evaluation page is only visible to Googlers and Chromium users.
+    if (
+      this.user?.email?.endsWith('@google.com') ||
+      this.user?.email?.endsWith('@chromium.org')
+    ) {
       if (
         this.canEdit &&
         // Enterprise features don't provide spec URLs or Web Platform Tests info.
