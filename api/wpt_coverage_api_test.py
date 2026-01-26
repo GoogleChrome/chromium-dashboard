@@ -55,7 +55,7 @@ class WPTCoverageAPITest(testing_config.CustomTestCase):
     before_call = datetime.now()
 
     params = {'feature_id': 123456}
-    with test_app.test_request_context('/api/v0/generate-wpt-coverage-evaluation',
+    with test_app.test_request_context('/api/v0/generate-wpt-coverage-analysis',
                                        method='POST', json=params):
       response = self.handler.do_post()
 
@@ -65,7 +65,7 @@ class WPTCoverageAPITest(testing_config.CustomTestCase):
 
     # Verify Cloud Task was enqueued with correct parameters.
     mock_enqueue.assert_called_once_with(
-        '/tasks/generate-wpt-coverage-evaluation',
+        '/tasks/generate-wpt-coverage-analysis',
         {'feature_id': 123456}
     )
 
@@ -85,7 +85,7 @@ class WPTCoverageAPITest(testing_config.CustomTestCase):
     mock_can_edit.return_value = False
 
     params = {'feature_id': 123456}
-    with test_app.test_request_context('/api/v0/generate-wpt-coverage-evaluation',
+    with test_app.test_request_context('/api/v0/generate-wpt-coverage-analysis',
                                        method='POST', json=params):
       with self.assertRaises(werkzeug.exceptions.Forbidden):
         self.handler.do_post()
@@ -102,7 +102,7 @@ class WPTCoverageAPITest(testing_config.CustomTestCase):
   def test_do_post__not_found(self, mock_enqueue):
     """Ensure requests for non-existent features abort with 404."""
     params = {'feature_id': 999999}  # ID that does not exist.
-    with test_app.test_request_context('/api/v0/generate-wpt-coverage-evaluation',
+    with test_app.test_request_context('/api/v0/generate-wpt-coverage-analysis',
                                        method='POST', json=params):
       with self.assertRaises(werkzeug.exceptions.NotFound):
         self.handler.do_post(feature_id=999999)
@@ -112,7 +112,7 @@ class WPTCoverageAPITest(testing_config.CustomTestCase):
   def test_do_post__missing_param(self):
     """Ensure requests missing required parameters abort appropriately."""
     # Missing 'feature_id'
-    with test_app.test_request_context('/api/v0/generate-wpt-coverage-evaluation',
+    with test_app.test_request_context('/api/v0/generate-wpt-coverage-analysis',
                                        method='POST', json={}):
       # basehandlers usually raise BadRequest (400) if a required int param is missing
       with self.assertRaises(werkzeug.exceptions.BadRequest):
@@ -121,7 +121,7 @@ class WPTCoverageAPITest(testing_config.CustomTestCase):
   @mock.patch('framework.cloud_tasks_helpers.enqueue_task')
   @mock.patch('framework.permissions.can_edit_feature')
   def test_do_post__already_in_progress(self, mock_can_edit, mock_enqueue):
-    """Ensure requests abort with 409 if an evaluation is already running."""
+    """Ensure requests abort with 409 if an analysis is already running."""
     mock_can_edit.return_value = True
 
     self.feature_1.ai_test_eval_run_status = (
@@ -130,7 +130,7 @@ class WPTCoverageAPITest(testing_config.CustomTestCase):
     self.feature_1.put()
 
     params = {'feature_id': self.feature_1.key.integer_id()}
-    with test_app.test_request_context('/api/v0/generate-wpt-coverage-evaluation',
+    with test_app.test_request_context('/api/v0/generate-wpt-coverage-analysis',
                                        method='POST', json=params):
       with self.assertRaises(werkzeug.exceptions.HTTPException) as cm:
         self.handler.do_post()

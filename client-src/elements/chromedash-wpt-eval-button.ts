@@ -26,7 +26,7 @@ export class ChromedashWPTEvalButton extends LitElement {
 
   render() {
     return html`
-      <sl-button href="/feature/${this.featureId}/ai-coverage-evaluation">
+      <sl-button href="/feature/${this.featureId}/ai-coverage-analysis">
         <img
           slot="prefix"
           class="gemini-icon"

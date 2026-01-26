@@ -125,7 +125,7 @@ previous task crashed silently and allows a new request.
 ### The Cooldown
 * **Condition:** `ai_test_eval_run_status == COMPLETE`
 * **Duration:** 29 Minutes.
-* **Logic:** Users cannot re-run the evaluation immediately after a success.
+* **Logic:** Users cannot re-run the analysis immediately after a success.
 * **Response:** Returns HTTP `409 Conflict` with a `Retry-After` header
 indicating the remaining seconds.
 

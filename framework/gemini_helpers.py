@@ -43,7 +43,7 @@ MAX_SINGLE_PROMPT_TEST_COUNT = 10
 
 
 class PipelineError(Exception):
-  """Base exception for errors occurring during the AI evaluation pipeline."""
+  """Base exception for errors occurring during the AI analysis pipeline."""
   pass
 
 
@@ -119,7 +119,7 @@ async def _get_test_file_contents(test_locations: list[str]) -> tuple[dict[Path,
   return test_file_contents, dependency_contents
 
 
-def unified_prompt_evaluation(
+def unified_prompt_analysis(
   feature: FeatureEntry,
   test_files: dict[Path, str],
   dependency_files: dict[Path, str]
@@ -158,11 +158,11 @@ def unified_prompt_evaluation(
   return gap_analysis_response
 
 
-async def prompt_evaluation(feature: FeatureEntry, test_files: dict[Path, str]) -> str:
+async def prompt_analysis(feature: FeatureEntry, test_files: dict[Path, str]) -> str:
   """Evaluates WPT coverage using a multi-stage prompt flow.
 
   This method is used when the number of test files is too large for a single
-  prompt. It breaks the evaluation into three distinct stages:
+  prompt. It breaks the analysis into three distinct stages:
   1. Spec Synthesis: Summarizes the spec into a concise reference.
   2. Test Analysis: Analyzes each test file individually in parallel batches.
   3. Gap Analysis: Compares the spec synthesis with the aggregated test
@@ -233,7 +233,7 @@ async def prompt_evaluation(feature: FeatureEntry, test_files: dict[Path, str]) 
   return gap_analysis_response
 
 async def run_wpt_test_eval_pipeline(feature: FeatureEntry) -> None:
-  """Execute the AI pipeline for WPT coverage evaluation.
+  """Execute the AI pipeline for WPT coverage analysis.
 
   The final report is saved to `feature.ai_test_eval_report`.
 
@@ -255,15 +255,15 @@ async def run_wpt_test_eval_pipeline(feature: FeatureEntry) -> None:
   test_files, dependency_files = await _get_test_file_contents(test_locations)
 
   if len(test_files) <= MAX_SINGLE_PROMPT_TEST_COUNT:
-    gap_analysis_response = unified_prompt_evaluation(feature, test_files, dependency_files)
+    gap_analysis_response = unified_prompt_analysis(feature, test_files, dependency_files)
   else:
-    gap_analysis_response = await prompt_evaluation(feature, test_files)
+    gap_analysis_response = await prompt_analysis(feature, test_files)
 
   feature.ai_test_eval_report = gap_analysis_response
 
 
 class GenerateWPTCoverageEvalReportHandler(basehandlers.FlaskHandler):
-  """Cloud Task handler for running the AI-powered WPT coverage evaluation."""
+  """Cloud Task handler for running the AI-powered WPT coverage analysis."""
 
   IS_INTERNAL_HANDLER = True
 
@@ -273,7 +273,7 @@ class GenerateWPTCoverageEvalReportHandler(basehandlers.FlaskHandler):
     feature_id = self.get_int_param('feature_id')
     feature = self.get_validated_entity(feature_id, FeatureEntry)
 
-    logging.info(f'Starting WPT coverage evaluation pipeline for feature {feature_id}')
+    logging.info(f'Starting WPT coverage analysis pipeline for feature {feature_id}')
 
     try:
       asyncio.run(run_wpt_test_eval_pipeline(feature))
@@ -281,11 +281,11 @@ class GenerateWPTCoverageEvalReportHandler(basehandlers.FlaskHandler):
       feature.ai_test_eval_run_status = core_enums.AITestEvaluationStatus.FAILED
       feature.ai_test_eval_status_timestamp = datetime.now()
       feature.ai_test_eval_report = (
-        'Web Platform Tests coverage evaluation report failed to generate. '
+        'Web Platform Tests coverage analysis report failed to generate. '
         'Try again later.'
       )
       feature.put()
-      error_message = ('WPT coverage evaluation report failure for feature '
+      error_message = ('WPT coverage analysis report failure for feature '
                        f'{feature_id}: {e}')
       logging.error(error_message)
       return {'message': error_message}
@@ -293,4 +293,4 @@ class GenerateWPTCoverageEvalReportHandler(basehandlers.FlaskHandler):
     feature.ai_test_eval_run_status = core_enums.AITestEvaluationStatus.COMPLETE
     feature.ai_test_eval_status_timestamp = datetime.now()
     feature.put()
-    return {'message': 'WPT coverage evaluation report generated.'}
+    return {'message': 'WPT coverage analysis report generated.'}

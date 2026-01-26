@@ -159,7 +159,7 @@ class FeatureEntry(ndb.Model):
   web_dev_views_notes = ndb.TextProperty()
   other_views_notes = ndb.TextProperty()
 
-  # AI evaluation fields.
+  # AI WPT analysis fields.
   ai_test_eval_report = ndb.TextProperty(indexed=False)
   ai_test_eval_run_status = ndb.IntegerProperty()
   ai_test_eval_status_timestamp = ndb.DateTimeProperty()

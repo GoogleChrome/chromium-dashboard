@@ -11,7 +11,7 @@ import {ifDefined} from 'lit/directives/if-defined.js';
 // Matches http or https, followed by wpt.fyi/results, followed by any non-whitespace and non-question mark characters.
 const WPT_RESULTS_REGEX = /(https?:\/\/wpt\.fyi\/results[^\s?]+)/g;
 
-// 30 minute cooldown for regenerating the evaluation report.
+// 30 minute cooldown for regenerating the coverage report.
 const COOLDOWN_MS = 30 * 60 * 1000;
 
 // 1 hour timeout to allow retrying if the process hangs.
@@ -443,7 +443,7 @@ export class ChromedashWPTEvalPage extends LitElement {
 
       await window.csClient.generateWPTCoverageEvaluation(this.featureId);
     } catch (e) {
-      showToastMessage('Failed to start evaluation. Please try again later.');
+      showToastMessage('Failed to generate report. Please try again later.');
       this.fetchData();
     }
   }
@@ -623,7 +623,7 @@ export class ChromedashWPTEvalPage extends LitElement {
 
     let buttonLabel = 'Evaluate test coverage';
     if (isHanging) {
-      buttonLabel = 'Retry evaluation (Process timed out)';
+      buttonLabel = 'Retry analysis (Process timed out)';
     } else if (this.feature.ai_test_eval_report) {
       buttonLabel = 'Discard this report and reevaluate test coverage';
     }
@@ -633,7 +633,7 @@ export class ChromedashWPTEvalPage extends LitElement {
         ${status === AITestEvaluationStatus.FAILED
           ? html`
               <sl-alert variant="danger" open>
-                The previous evaluation run failed. Please try again.
+                The previous analysis run failed. Please try again.
               </sl-alert>
             `
           : nothing}
@@ -651,8 +651,8 @@ export class ChromedashWPTEvalPage extends LitElement {
         ${isHanging
           ? html`
               <div class="help-text">
-                The previous evaluation seems to be stuck. You can try starting
-                a new one.
+                The previous analysis seems to be stuck. You can try starting a
+                new one.
               </div>
             `
           : nothing}
@@ -715,7 +715,7 @@ export class ChromedashWPTEvalPage extends LitElement {
     return html`
       <div>
         <h1>
-          AI-powered WPT coverage evaluation
+          AI-powered WPT coverage analysis
           <span class="experimental-tag">Experimental</span>
         </h1>
 
@@ -775,7 +775,7 @@ export class ChromedashWPTEvalPage extends LitElement {
                   There is a limit of <strong>50 individual test files</strong>
                   In the Web Platform Tests repository. If more than 50 relevant
                   test files are found via the listed URLs, the test suite size
-                  is too big for automated test coverage evaluation.
+                  is too big for automated test coverage analysis.
                 </li>
                 <li>
                   <em
