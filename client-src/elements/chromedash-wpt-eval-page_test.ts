@@ -34,6 +34,7 @@ describe('chromedash-wpt-eval-page', () => {
   afterEach(() => {
     sinon.restore();
   });
+
   it('renders the basic page structure', async () => {
     csClientStub.getFeature.resolves(mockFeatureV1);
     const el = await fixture<ChromedashWPTEvalPage>(
@@ -187,6 +188,7 @@ describe('chromedash-wpt-eval-page', () => {
       ).to.not.exist;
       expect(fileItem!.textContent).to.not.contain('(all tests in directory)');
     });
+
     it('shows Name/Summary as success, but other checks as danger when optional data is missing', async () => {
       // Feature has name/summary (default mock), but missing spec and wpt_descr
       csClientStub.getFeature.resolves({
@@ -223,6 +225,7 @@ describe('chromedash-wpt-eval-page', () => {
       expect(dataContainers[1].textContent).to.contain(mockFeatureV1.summary);
     });
   });
+
   describe('Action Section & Generation Flow', () => {
     it('disables generate button if prerequisites are not met', async () => {
       csClientStub.getFeature.resolves({
@@ -514,6 +517,7 @@ describe('chromedash-wpt-eval-page', () => {
       expect(message).to.exist;
       expect(message!.textContent).to.contain('Available in');
     });
+
     it('enables button if last run was COMPLETE > 30 mins ago', async () => {
       const thirtyFiveMinutesAgo = new Date(
         Date.now() - 35 * 60 * 1000

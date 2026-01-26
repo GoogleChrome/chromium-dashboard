@@ -478,6 +478,7 @@ export class ChromedashWPTEvalPage extends LitElement {
       </div>
     `;
   }
+
   /**
    * Renders pre-formatted text within a div, applying `prettier-ignore`
    * to prevent unwanted whitespace from being introduced by Prettier's
@@ -494,6 +495,7 @@ export class ChromedashWPTEvalPage extends LitElement {
     // prettier-ignore
     return html`<div class="url-list prewrap">${content}</div>`;
   }
+
   /**
    * Returns true if a WPT results URL represents a directory rather than a test file.
    */
