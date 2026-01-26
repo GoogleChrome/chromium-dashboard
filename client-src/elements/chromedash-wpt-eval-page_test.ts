@@ -34,8 +34,6 @@ describe('chromedash-wpt-eval-page', () => {
   afterEach(() => {
     sinon.restore();
   });
-
-
   it('renders the basic page structure', async () => {
     csClientStub.getFeature.resolves(mockFeatureV1);
     const el = await fixture<ChromedashWPTEvalPage>(
@@ -144,9 +142,8 @@ describe('chromedash-wpt-eval-page', () => {
       // Verify Valid URLs (Index 4)
       expect(dataContainers[4].querySelector('ul')).to.exist;
     });
-
     it('annotates directory WPT URLs but not individual test file URLs', async () => {
-      const dirUrl = 'https://wpt.fyi/results/css/';
+      const dirUrl = 'https://wpt.fyi/results/css';
       const fileUrl = 'https://wpt.fyi/results/dom/historical.html';
 
       csClientStub.getFeature.resolves({
@@ -170,12 +167,8 @@ describe('chromedash-wpt-eval-page', () => {
       );
 
       // Find the list items by URL text
-      const dirItem = listItems.find(li =>
-        li.textContent?.includes(dirUrl)
-      );
-      const fileItem = listItems.find(li =>
-        li.textContent?.includes(fileUrl)
-      );
+      const dirItem = listItems.find(li => li.textContent?.includes(dirUrl));
+      const fileItem = listItems.find(li => li.textContent?.includes(fileUrl));
 
       expect(dirItem, 'directory URL item should exist').to.exist;
       expect(fileItem, 'file URL item should exist').to.exist;
@@ -185,18 +178,14 @@ describe('chromedash-wpt-eval-page', () => {
         dirItem!.querySelector('.dir-note'),
         'directory URL should show annotation'
       ).to.exist;
-      expect(dirItem!.textContent).to.contain(
-        '(all tests in directory)'
-      );
+      expect(dirItem!.textContent).to.contain('(all tests in directory)');
 
       // File URL should NOT be annotated
       expect(
         fileItem!.querySelector('.dir-note'),
         'file URL should not show annotation'
       ).to.not.exist;
-      expect(fileItem!.textContent).to.not.contain(
-        '(all tests in directory)'
-      );
+      expect(fileItem!.textContent).to.not.contain('(all tests in directory)');
     });
     it('shows Name/Summary as success, but other checks as danger when optional data is missing', async () => {
       // Feature has name/summary (default mock), but missing spec and wpt_descr
@@ -233,38 +222,7 @@ describe('chromedash-wpt-eval-page', () => {
       expect(dataContainers[0].textContent).to.contain(mockFeatureV1.name);
       expect(dataContainers[1].textContent).to.contain(mockFeatureV1.summary);
     });
-    it('screenshot: prerequisites list shows directory annotation', async () => {
-    csClientStub.getFeature.resolves({
-    ...mockFeatureV1,
-    wpt_descr: [
-      'https://wpt.fyi/results/css/',                 // directory
-      'https://wpt.fyi/results/dom/historical.html',  // file
-    ].join('\n'),
   });
-
-  const el = await fixture<ChromedashWPTEvalPage>(
-    html`<chromedash-wpt-eval-page .featureId=${1}></chromedash-wpt-eval-page>`
-  );
-  await el.updateComplete;
-
-  // Wait a tick so rendering settles.
-  await nextFrame();
-
-  // Take a screenshot of the rendered page.
-  // @web/test-runner-playwright supports page screenshots when running in browser context.
-  // In this setup you can just use: window.__wtrPlaywright?.page
-
-  const w = window as any;
-  const page = w.__wtrPlaywright?.page;
-  if (!page) return; // skip if not available
-  await page.setViewportSize({width: 1200, height: 800});
-  document.body.append(
-  document.createElement('hr'),
-  document.createTextNode('DEBUG VIEW BELOW'),
-  );
-  });
-  });
-
   describe('Action Section & Generation Flow', () => {
     it('disables generate button if prerequisites are not met', async () => {
       csClientStub.getFeature.resolves({
@@ -556,7 +514,6 @@ describe('chromedash-wpt-eval-page', () => {
       expect(message).to.exist;
       expect(message!.textContent).to.contain('Available in');
     });
-
     it('enables button if last run was COMPLETE > 30 mins ago', async () => {
       const thirtyFiveMinutesAgo = new Date(
         Date.now() - 35 * 60 * 1000
@@ -607,5 +564,5 @@ describe('chromedash-wpt-eval-page', () => {
       expect(button).to.not.have.attribute('disabled');
       expect(message).to.not.exist;
     });
-});
+  });
 });

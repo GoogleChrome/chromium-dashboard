@@ -268,7 +268,6 @@ export class ChromedashWPTEvalPage extends LitElement {
           opacity: 0.75;
           font-style: italic;
         }
-
       `,
     ];
   }
@@ -479,7 +478,6 @@ export class ChromedashWPTEvalPage extends LitElement {
       </div>
     `;
   }
-
   /**
    * Renders pre-formatted text within a div, applying `prettier-ignore`
    * to prevent unwanted whitespace from being introduced by Prettier's
@@ -487,23 +485,6 @@ export class ChromedashWPTEvalPage extends LitElement {
    * @param content The text content to render.
    * @returns A TemplateResult containing the pre-formatted text, or nothing if content is undefined.
    */
-    private _isDirectoryWptUrl(rawUrl: string): boolean {
-    // Strip query/hash (URLs regex already excludes '?', but safe anyway)
-    const noHash = rawUrl.split('#')[0];
-    const noQuery = noHash.split('?')[0];
-
-    // If it ends with '/', treat as directory
-    if (noQuery.endsWith('/')) return true;
-
-    // Last path segment
-    const parts = noQuery.split('/');
-    const last = parts[parts.length - 1] ?? '';
-
-    // If it ends with ".ext" (1-6 chars), treat as file
-    const looksLikeFile = /\.[a-z0-9]{1,6}$/i.test(last);
-    return !looksLikeFile;
-  }
-
   private _renderPreformattedText(
     content: string | undefined
   ): TemplateResult | typeof nothing {
@@ -512,6 +493,20 @@ export class ChromedashWPTEvalPage extends LitElement {
     }
     // prettier-ignore
     return html`<div class="url-list prewrap">${content}</div>`;
+  }
+  /**
+   * Returns true if a WPT results URL represents a directory rather than a test file.
+   */
+  private _isDirectoryWptUrl(rawUrl: string): boolean {
+    // Strip query/hash (URLs regex already excludes '?', but safe anyway)
+    const noHash = rawUrl.split('#')[0];
+    const noQuery = noHash.split('?')[0];
+    // Last path segment
+    const parts = noQuery.split('/');
+    const last = parts[parts.length - 1] ?? '';
+    // If it ends with ".ext" (1-6 chars), treat as file
+    const looksLikeFile = /\.[a-z0-9]{1,6}$/i.test(last);
+    return !looksLikeFile;
   }
 
   renderRequirementsChecks(): TemplateResult {
@@ -573,7 +568,7 @@ export class ChromedashWPTEvalPage extends LitElement {
             ? html`
                 <div class="url-list-container">
                   <ul class="url-list">
-                      ${wptUrls.map(url => {
+                    ${wptUrls.map(url => {
                       const isDir = this._isDirectoryWptUrl(url);
                       return html`
                         <li>
