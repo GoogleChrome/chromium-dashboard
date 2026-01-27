@@ -42,6 +42,14 @@ class WPTCoverageAPI(basehandlers.EntitiesAPIHandler):
     if not can_edit:
       self.abort(403, f'User does not have dit access to feature {feature_id}')
 
+    if feature.confidential:
+      self.abort(
+        400, (
+          'Confidential feature information cannot be used to '
+          'generate WTP coverage reports.'
+        )
+      )
+
     last_status_time = feature.ai_test_eval_status_timestamp
 
     request_in_progress = (

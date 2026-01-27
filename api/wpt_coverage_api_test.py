@@ -145,3 +145,29 @@ class WPTCoverageAPITest(testing_config.CustomTestCase):
 
     # Verify we did not enqueue a duplicate task.
     mock_enqueue.assert_not_called()
+
+  @mock.patch('framework.cloud_tasks_helpers.enqueue_task')
+  @mock.patch('framework.permissions.can_edit_feature')
+  def test_do_post__confidential_feature(self, mock_can_edit, mock_enqueue):
+    """Ensure requests for confidential features abort with 400."""
+    mock_can_edit.return_value = True
+
+    # Set the feature to confidential.
+    self.feature_1.confidential = True
+    self.feature_1.put()
+
+    params = {'feature_id': self.feature_1.key.integer_id()}
+    with test_app.test_request_context('/api/v0/generate-wpt-coverage-analysis',
+                                       method='POST', json=params):
+      with self.assertRaises(werkzeug.exceptions.BadRequest) as cm:
+        self.handler.do_post()
+
+      # Verify the specific error message matches your logic.
+      self.assertEqual(
+        cm.exception.description,
+        ('Confidential feature information cannot be used to '
+         'generate WTP coverage reports.')
+      )
+
+    # Verify no task was enqueued.
+    mock_enqueue.assert_not_called()
