@@ -691,12 +691,22 @@ export class ChromedashWPTEvalPage extends LitElement {
           variant="${this.feature.ai_test_eval_report ? 'danger' : 'primary'}"
           size="large"
           class="generate-button"
-          ?disabled=${!this.isRequirementsFulfilled || isCooldownActive}
+          ?disabled=${!this.isRequirementsFulfilled ||
+          isCooldownActive ||
+          this.feature.confidential}
           @click=${this.handleGenerateClick}
         >
           ${buttonLabel}
         </sl-button>
 
+        ${this.feature.confidential
+          ? html`
+              <div class="help-text">
+                This feature is set to "confidential". The feature's information
+                cannot be sent to Gemini for evaluation.
+              </div>
+            `
+          : nothing}
         ${isHanging
           ? html`
               <div class="help-text">
@@ -705,7 +715,7 @@ export class ChromedashWPTEvalPage extends LitElement {
               </div>
             `
           : nothing}
-        ${isCooldownActive
+        ${isCooldownActive && !this.feature.confidential
           ? html`
               <div class="cooldown-message">
                 <sl-icon name="hourglass-split"></sl-icon>

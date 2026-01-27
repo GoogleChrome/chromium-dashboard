@@ -1,4 +1,4 @@
-import {html, fixture, expect, nextFrame, oneEvent} from '@open-wc/testing';
+import {html, fixture, expect, nextFrame} from '@open-wc/testing';
 import sinon from 'sinon';
 import './chromedash-wpt-eval-page.js';
 import {ChromedashWPTEvalPage} from './chromedash-wpt-eval-page.js';
@@ -20,6 +20,7 @@ describe('chromedash-wpt-eval-page', () => {
     wpt_descr: 'Tests are here: https://wpt.fyi/results/feature/test.html',
     ai_test_eval_report: '# Report Title\n\nReport content goes here.',
     ai_test_eval_run_status: null,
+    confidential: false,
   };
 
   beforeEach(() => {
@@ -647,6 +648,40 @@ describe('chromedash-wpt-eval-page', () => {
       expect(button).to.exist;
       expect(button).to.not.have.attribute('disabled');
       expect(message).to.not.exist;
+    });
+  });
+
+  describe('Confidentiality Logic', () => {
+    it('disables button and shows specific message if feature is confidential', async () => {
+      csClientStub.getFeature.resolves({
+        ...mockFeatureV1,
+        confidential: true,
+      });
+
+      const el = await fixture<ChromedashWPTEvalPage>(
+        html`<chromedash-wpt-eval-page
+          .featureId=${1}
+        ></chromedash-wpt-eval-page>`
+      );
+      await el.updateComplete;
+
+      const button = el.shadowRoot!.querySelector('.generate-button');
+      const helpText = el.shadowRoot!.querySelector('.help-text');
+      const cooldownMsg = el.shadowRoot!.querySelector('.cooldown-message');
+
+      expect(button).to.exist;
+      expect(button).to.have.attribute('disabled');
+
+      expect(helpText).to.exist;
+      expect(helpText!.textContent).to.contain(
+        'This feature is set to "confidential"'
+      );
+      expect(helpText!.textContent).to.contain(
+        'cannot be sent to Gemini for evaluation'
+      );
+
+      // Cooldown message should NOT be shown even if no cooldown exists.
+      expect(cooldownMsg).to.not.exist;
     });
   });
 });
