@@ -74,7 +74,6 @@ class ShippingFeaturesAPI(basehandlers.EntitiesAPIHandler):
         shipping_stages,
         enabled_features_json,
         content_features_file,
-        url_root,
     ))
 
     return {
