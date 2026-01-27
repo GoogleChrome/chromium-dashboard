@@ -1388,8 +1388,9 @@ class ShippingFeatureHelpersTest(testing_config.CustomTestCase):
 
   def test_build_feature_info(self):
     """Verifies that the feature info dict is constructed correctly."""
-    info = feature_helpers.build_feature_info(
-        self.feature_1, self.stage_1, 'http://localhost')
+
+    with mock.patch('settings.SITE_URL', 'http://localhost'):
+      info = feature_helpers.build_feature_info(self.feature_1, self.stage_1)
 
     self.assertEqual(info['name'], 'Feature 1 (Complete)')
     self.assertEqual(info['chromestatus_url'], 'http://localhost/feature/1')
@@ -1433,8 +1434,7 @@ class ShippingFeatureHelpersTest(testing_config.CustomTestCase):
     ]
 
     complete, incomplete = feature_helpers.aggregate_shipping_features(
-        stages, MOCK_ENABLED_FEATURES_JSON, MOCK_CONTENT_FEATURES_CC,
-        'http://localhost')
+        stages, MOCK_ENABLED_FEATURES_JSON, MOCK_CONTENT_FEATURES_CC)
 
     # Verify Complete Features
     self.assertEqual(len(complete), 4)
