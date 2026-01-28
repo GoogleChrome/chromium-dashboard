@@ -1389,7 +1389,7 @@ class ShippingFeatureHelpersTest(testing_config.CustomTestCase):
   def test_build_feature_info(self):
     """Verifies that the feature info dict is constructed correctly."""
 
-    with mock.patch('settings.SITE_URL', 'http://localhost'):
+    with mock.patch('settings.SITE_URL', 'http://localhost/'):
       info = feature_helpers.build_feature_info(self.feature_1, self.stage_1)
 
     self.assertEqual(info['name'], 'Feature 1 (Complete)')
