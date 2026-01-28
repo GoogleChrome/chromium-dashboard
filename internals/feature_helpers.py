@@ -28,6 +28,7 @@ from internals.stage_helpers import organize_all_stages_by_feature
 from internals.core_enums import *
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
 from internals.review_models import Gate, Vote
+import settings
 
 
 class ShippingFeatureInfo(TypedDict):
@@ -764,9 +765,9 @@ def validate_feature_in_chromium(
   return criteria_missing
 
 
-def build_feature_info(feature: FeatureEntry, stage: Stage, url_root: str) -> ShippingFeatureInfo:
+def build_feature_info(feature: FeatureEntry, stage: Stage) -> ShippingFeatureInfo:
   """Constructs the dictionary representation of a shipping feature."""
-  chromestatus_url = f'{url_root}/feature/{feature.key.integer_id()}'
+  chromestatus_url = f'{settings.SITE_URL}feature/{feature.key.integer_id()}'
   return {
     'name': feature.name,
     'id': feature.key.integer_id(),
@@ -825,8 +826,7 @@ def validate_shipping_criteria(
 def aggregate_shipping_features(
     shipping_stages: list[Stage],
     enabled_features_json: dict,
-    content_features_file: str,
-    url_root: str
+    content_features_file: str
   ) -> tuple[list[ShippingFeatureInfo], list[tuple[ShippingFeatureInfo, list[str]]]]:
   """Aggregates and validates features based on shipping stages and chromium files."""
   complete_features: list[ShippingFeatureInfo] = []
@@ -838,7 +838,7 @@ def aggregate_shipping_features(
       logging.warning(f'Feature {stage.feature_id} not found.')
       continue
 
-    feature_info = build_feature_info(feature, stage, url_root)
+    feature_info = build_feature_info(feature, stage)
 
     # PSA features do not require strict validation
     if feature.feature_type == FEATURE_TYPE_CODE_CHANGE_ID:
