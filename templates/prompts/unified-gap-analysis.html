@@ -45,43 +45,55 @@ Your task is to act as an auditor. You must compare the `<test_suite>` against t
 
 #### Output Format
 
-**Conclusion:** [Start with a brief, direct conclusion (e.g., "**Minimum satisfactory coverage has been achieved!**", or "**Some additional tests may be required to meet minimum satisfactory coverage. See the test suggestions below.**")]
+**Conclusion:** [Start with a brief conclusion (e.g., "**Minimum satisfactory coverage has been achieved!**", or "**Some additional tests may be required to meet minimum satisfactory coverage. See the test suggestions below.**")]
 
-**Summary of Analysis:** [In 1-2 sentences, explain the state of the coverage (e.g., "Feature existence is proven, but the suite currently requires tests for the specific error handling defined in the spec.")]
+**Summary of Analysis:** [In 1-2 sentences, explain the state of the coverage in language that is not harsh. (e.g., "Feature existence is proven, but the suite may require tests for the specific error handling defined in the spec.")]
 
-## Detailed Coverage Analysis
+-----
 
-### 1. Feature Existence
-* **Status:** [**Covered** / **Partially Covered** / **Not Covered**]
+### Detailed Coverage Analysis
+
+#### 1. Feature Existence
+* **Status:** [Covered / Partially Covered / Not Covered]
 * **Spec Requirement:** [Briefly describe the interface defined in the spec]
 * **Evidence:** [If covered, cite the specific test file and assertion mechanism (e.g., "Verified in `idlharness.js`")]
 * **Gaps:** [If not covered, explicitly state what is missing]
 
-### 2. Common Use Cases
-* **Status:** [**Covered** / **Partially Covered** / **Not Covered**]
+-----
+
+#### 2. Common Use Cases
+* **Status:** [Covered / Partially Covered / Not Covered]
 * **Spec Requirement:** [Describe the core successful behaviors]
 * **Evidence:** [Cite specific test files and logic that verify these behaviors]
 * **Gaps:** [List any core scenarios missing from the tests]
 
-### 3. Likely Error Scenarios
-* **Status:** [**Covered** / **Partially Covered** / **Not Covered**]
+-----
+
+#### 3. Likely Error Scenarios
+* **Status:** [Covered / Partially Covered / Not Covered]
 * **Spec Requirement:** [Describe required error handling, exceptions, or boundary checks]
 * **Evidence:** [Cite specific test files handling errors]
 * **Gaps:** [List specific error cases defined in the spec but absent in the tests]
 
-### 4. Invalidation & Dynamic Behavior
-* **Status:** [**Covered** / **Not Covered** / **N/A**]
+-----
+
+#### 4. Invalidation & Dynamic Behavior
+* **Status:** [Covered / Not Covered / N/A]
 * **Spec Requirement:** [Describe dynamic updates/caching rules, or state "None defined"]
 * **Evidence:** [Cite tests that modify state and check results]
 * **Gaps:** [List missing dynamic tests]
 
-### 5. Integration with Other Features
-* **Status:** [**Covered** / **Not Covered** / **N/A**]
+-----
+
+#### 5. Integration with Other Features
+* **Status:** [Covered / Not Covered / N/A]
 * **Spec Requirement:** [Describe specific interactions with other features, or "None defined"]
 * **Evidence:** [Cite integration tests]
 * **Gaps:** [List missing integration scenarios]
 
-## Test Suggestions
+-----
+
+### Test Suggestions
 *Instructions: This is the most critical section. Based on the "Gaps" identified above, provide a list of every new test suggestion (if any), sectioned by each of the 5 requirement categories. If no gaps exist in a category, write "No gaps".*
 
 * **Existence:** [State the number of test suggestions or clarify there are no gaps. e.g. "No gaps." or "X Test suggestion(s)."]
