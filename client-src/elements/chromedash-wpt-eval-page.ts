@@ -4,14 +4,14 @@ import {unsafeHTML} from 'lit/directives/unsafe-html.js';
 import {marked} from 'marked';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {Feature} from '../js-src/cs-client.js';
-import {showToastMessage} from './utils.js';
+import {parseRawTimestamp, showToastMessage} from './utils.js';
 import {AITestEvaluationStatus} from './form-field-enums.js';
 import {ifDefined} from 'lit/directives/if-defined.js';
 
 // Matches http or https, followed by wpt.fyi/results, followed by any non-whitespace and non-question mark characters.
 const WPT_RESULTS_REGEX = /(https?:\/\/wpt\.fyi\/results[^\s?]+)/g;
 
-// 30 minute cooldown for regenerating the evaluation report.
+// 30 minute cooldown for regenerating the coverage report.
 const COOLDOWN_MS = 30 * 60 * 1000;
 
 // 1 hour timeout to allow retrying if the process hangs.
@@ -263,6 +263,22 @@ export class ChromedashWPTEvalPage extends LitElement {
         sl-alert {
           margin-bottom: var(--sl-spacing-large);
         }
+
+        .report-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 1rem;
+        }
+        .report-header h2 {
+          margin: 0;
+        }
+
+        .dir-note {
+          margin-left: 6px;
+          opacity: 0.75;
+          font-style: italic;
+        }
       `,
     ];
   }
@@ -354,13 +370,20 @@ export class ChromedashWPTEvalPage extends LitElement {
 
   updateCooldown() {
     if (
-      this.feature?.ai_test_eval_run_status ===
-        AITestEvaluationStatus.COMPLETE &&
-      this.feature.ai_test_eval_status_timestamp
+      this.feature?.ai_test_eval_run_status !==
+        AITestEvaluationStatus.COMPLETE ||
+      !this.feature.ai_test_eval_status_timestamp
     ) {
-      const completedAt = new Date(
-        this.feature.ai_test_eval_status_timestamp
-      ).getTime();
+      this._cooldownRemaining = 0;
+      this.stopCooldownTimer();
+      return;
+    }
+
+    const completedAt = parseRawTimestamp(
+      this.feature?.ai_test_eval_status_timestamp
+    );
+
+    if (completedAt) {
       const now = Date.now();
       const elapsed = now - completedAt;
 
@@ -371,9 +394,6 @@ export class ChromedashWPTEvalPage extends LitElement {
         this._cooldownRemaining = 0;
         this.stopCooldownTimer();
       }
-    } else {
-      this._cooldownRemaining = 0;
-      this.stopCooldownTimer();
     }
   }
 
@@ -432,15 +452,27 @@ export class ChromedashWPTEvalPage extends LitElement {
       this.feature = {
         ...this.feature,
         ai_test_eval_run_status: AITestEvaluationStatus.IN_PROGRESS,
-        ai_test_eval_status_timestamp: new Date().toString(),
+        ai_test_eval_status_timestamp: new Date().toISOString(),
       };
       this.completedInThisSession = false; // Reset if user tries to regenerate.
       this.managePolling();
 
       await window.csClient.generateWPTCoverageEvaluation(this.featureId);
     } catch (e) {
-      showToastMessage('Failed to start evaluation. Please try again later.');
+      showToastMessage('Failed to generate report. Please try again later.');
       this.fetchData();
+    }
+  }
+
+  async handleCopyReport() {
+    if (!this.feature?.ai_test_eval_report) return;
+
+    try {
+      await navigator.clipboard.writeText(this.feature.ai_test_eval_report);
+      showToastMessage('Report copied to clipboard.');
+    } catch (err) {
+      console.error('Failed to copy text: ', err);
+      showToastMessage('Failed to copy report.');
     }
   }
 
@@ -485,6 +517,21 @@ export class ChromedashWPTEvalPage extends LitElement {
     }
     // prettier-ignore
     return html`<div class="url-list prewrap">${content}</div>`;
+  }
+
+  /**
+   * Returns true if a WPT results URL represents a directory rather than a test file.
+   */
+  private _isDirectoryWptUrl(rawUrl: string): boolean {
+    // Strip query/hash (URLs regex already excludes '?', but safe anyway)
+    const noHash = rawUrl.split('#')[0];
+    const noQuery = noHash.split('?')[0];
+    // Last path segment
+    const parts = noQuery.split('/');
+    const last = parts[parts.length - 1] ?? '';
+    // If it ends with ".ext" (1-6 chars), treat as file
+    const looksLikeFile = /\.[a-z0-9]{1,6}$/i.test(last);
+    return !looksLikeFile;
   }
 
   renderRequirementsChecks(): TemplateResult {
@@ -546,15 +593,21 @@ export class ChromedashWPTEvalPage extends LitElement {
             ? html`
                 <div class="url-list-container">
                   <ul class="url-list">
-                    ${wptUrls.map(
-                      url => html`
+                    ${wptUrls.map(url => {
+                      const isDir = this._isDirectoryWptUrl(url);
+                      return html`
                         <li>
                           <a href="${url}" target="_blank" title="${url}"
                             >${url}</a
                           >
+                          ${isDir
+                            ? html`<span class="dir-note"
+                                >(all tests in directory)</span
+                              >`
+                            : nothing}
                         </li>
-                      `
-                    )}
+                      `;
+                    })}
                   </ul>
                 </div>
               `
@@ -575,12 +628,15 @@ export class ChromedashWPTEvalPage extends LitElement {
       status === AITestEvaluationStatus.IN_PROGRESS &&
       this.feature.ai_test_eval_status_timestamp
     ) {
-      const startedAt = new Date(
+      const startedAt = parseRawTimestamp(
         this.feature.ai_test_eval_status_timestamp
-      ).getTime();
-      const now = Date.now();
-      if (now - startedAt > HANGING_TIMEOUT_MS) {
-        isHanging = true;
+      );
+
+      if (startedAt) {
+        const now = Date.now();
+        if (now - startedAt > HANGING_TIMEOUT_MS) {
+          isHanging = true;
+        }
       }
     }
 
@@ -616,7 +672,7 @@ export class ChromedashWPTEvalPage extends LitElement {
 
     let buttonLabel = 'Evaluate test coverage';
     if (isHanging) {
-      buttonLabel = 'Retry evaluation (Process timed out)';
+      buttonLabel = 'Retry analysis (Process timed out)';
     } else if (this.feature.ai_test_eval_report) {
       buttonLabel = 'Discard this report and reevaluate test coverage';
     }
@@ -626,7 +682,7 @@ export class ChromedashWPTEvalPage extends LitElement {
         ${status === AITestEvaluationStatus.FAILED
           ? html`
               <sl-alert variant="danger" open>
-                The previous evaluation run failed. Please try again.
+                The previous analysis run failed. Please try again.
               </sl-alert>
             `
           : nothing}
@@ -635,21 +691,31 @@ export class ChromedashWPTEvalPage extends LitElement {
           variant="${this.feature.ai_test_eval_report ? 'danger' : 'primary'}"
           size="large"
           class="generate-button"
-          ?disabled=${!this.isRequirementsFulfilled || isCooldownActive}
+          ?disabled=${!this.isRequirementsFulfilled ||
+          isCooldownActive ||
+          this.feature.confidential}
           @click=${this.handleGenerateClick}
         >
           ${buttonLabel}
         </sl-button>
 
-        ${isHanging
+        ${this.feature.confidential
           ? html`
               <div class="help-text">
-                The previous evaluation seems to be stuck. You can try starting
-                a new one.
+                This feature is set to "confidential". The feature's information
+                cannot be sent to Gemini for evaluation.
               </div>
             `
           : nothing}
-        ${isCooldownActive
+        ${isHanging
+          ? html`
+              <div class="help-text">
+                The previous analysis seems to be stuck. You can try starting a
+                new one.
+              </div>
+            `
+          : nothing}
+        ${isCooldownActive && !this.feature.confidential
           ? html`
               <div class="cooldown-message">
                 <sl-icon name="hourglass-split"></sl-icon>
@@ -677,7 +743,18 @@ export class ChromedashWPTEvalPage extends LitElement {
 
     return html`
       <section class="card report-section">
-        <h2 class="${titleClass}">Evaluation Report</h2>
+        <div class="report-header">
+          <h2 class="${titleClass}">Evaluation Report</h2>
+          <sl-button
+            variant="default"
+            size="small"
+            @click=${this.handleCopyReport}
+            title="Copy report to clipboard"
+          >
+            <sl-icon slot="prefix" name="copy"></sl-icon>
+            Copy Report
+          </sl-button>
+        </div>
         <div class="report-content ${contentClass}">${unsafeHTML(rawHtml)}</div>
       </section>
     `;
@@ -708,7 +785,7 @@ export class ChromedashWPTEvalPage extends LitElement {
     return html`
       <div>
         <h1>
-          AI-powered WPT coverage evaluation
+          AI-powered WPT coverage analysis
           <span class="experimental-tag">Experimental</span>
         </h1>
 
@@ -768,7 +845,7 @@ export class ChromedashWPTEvalPage extends LitElement {
                   There is a limit of <strong>50 individual test files</strong>
                   In the Web Platform Tests repository. If more than 50 relevant
                   test files are found via the listed URLs, the test suite size
-                  is too big for automated test coverage evaluation.
+                  is too big for automated test coverage analysis.
                 </li>
                 <li>
                   <em

@@ -188,40 +188,62 @@ export async function logout(page) {
   await page.waitForURL('**/roadmap');
   await expect(page).toHaveTitle(/Chrome Status/);
 
+  // If we are already logged out, return immediately.
+  // This avoids unnecessary menu clicking and flaky checks.
+  const loginButton = page.getByTestId('dev-mode-sign-in-button');
+  if (await loginButton.isVisible()) {
+    return;
+  }
+
+  // Variable to store the promise for the page reload
+  let reloadPromise = null;
+
   if (await isMobile(page)) {
     const menuButton = page.getByTestId('menu');
-    // If menu isn't visible, we might not be logged in or page is broken,
-    // but we check anyway.
-    if (await menuButton.isVisible()) {
-      await menuButton.click();
+    // Force the menu to open, retrying if necessary
+    await menuButton.click();
 
-      const signOutLink = page.getByTestId('sign-out-link');
-      if (await signOutLink.isVisible()) {
-        await signOutLink.click();
-        await page.waitForURL('**/roadmap');
-        // The sign in button should be visible again if we are logged out.
-        const loginButton = page.getByTestId('dev-mode-sign-in-button');
-        await expect(loginButton).toBeVisible();
-      }
-    }
+    const signOutLink = page.getByTestId('sign-out-link');
+    await expect(signOutLink).toBeVisible();
+
+    // Setup the listener BEFORE the action
+    reloadPromise = page.waitForEvent('load');
+    await signOutLink.click();
   } else {
+    // Desktop Logic
     const accountIndicator = page.getByTestId('account-indicator');
+    await expect(accountIndicator).toBeVisible();
+    await accountIndicator.click();
 
-    // Only attempt to logout if the account indicator is actually visible.
-    // This prevents test failures in teardown if the test failed before login.
-    if (await accountIndicator.isVisible()) {
-      // Click account indicator to open the menu
-      await accountIndicator.click();
+    const signOutLink = page.getByTestId('sign-out-link');
+    await expect(signOutLink).toBeVisible();
 
-      // Need to wait for the sign-out-link to be visible
-      const signOutLink = page.getByTestId('sign-out-link');
-      await expect(signOutLink).toBeVisible();
-      await signOutLink.click();
+    // Setup the listener BEFORE the action
+    reloadPromise = page.waitForEvent('load');
+    await signOutLink.click();
+  }
 
-      // Confirm we are back on roadmap and signed out
-      await page.waitForURL('**/roadmap');
-      await expect(page).toHaveTitle(/Chrome Status/);
-    }
+  // Await the reload only if we triggered it.
+  if (reloadPromise) {
+    await reloadPromise;
+  }
+
+  // If the button is missing, it implies either:
+  //    a) The 'getPermissions' call failed on the new page (Limbo state)
+  //    b) The session wasn't cleared (Still logged in)
+  // We reload the page to fix (a) and recursively try logout to fix (b).
+  try {
+    // Give it a short time (5s) to appear normally
+    await expect(loginButton).toBeVisible({timeout: 5000});
+  } catch {
+    console.log('Login button not found after logout. Retrying...');
+
+    // Reloading to avoid a "getPermissions failed" state.
+    await page.reload();
+
+    // Recursively calling logout handles the "Still logged in" state.
+    // (The recursive call will hit step 1 and return immediately if successful)
+    await logout(page);
   }
 }
 
@@ -322,6 +344,16 @@ export async function createNewFeature(page) {
   // Wait until we are on the Feature page.
   await page.waitForURL('**/feature/*');
   const detail = page.locator('chromedash-feature-detail');
+
+  // If the feature detail doesn't appear within 5 seconds, it's likely a 404.
+  // Reload the page to try fetching the data again.
+  try {
+    await detail.waitFor({state: 'visible', timeout: 5000});
+  } catch {
+    console.log('Feature detail not found immediately. Reloading...');
+    await page.reload();
+  }
+
   await expect(detail).toBeVisible({timeout: 30000});
 }
 

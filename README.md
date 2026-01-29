@@ -124,7 +124,7 @@ Note: *Only developers with access to the cr-status-staging GCP project will be 
 
 ### WPT Coverage Evaluation using Gemini
 
-[See documentation here.](https://github.com/GoogleChrome/chromium-dashboard/blob/main/docs/wpt-coverage-evaluation.md)
+[See documentation here.](https://github.com/GoogleChrome/chromium-dashboard/blob/main/docs/wpt-coverage-analysis.md)
 
 #### Blink components
 

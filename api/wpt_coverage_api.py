@@ -20,7 +20,7 @@ from framework import permissions
 from internals import core_enums
 from internals.core_models import FeatureEntry
 
-# 29 minute cooldown for regenerating the evaluation report.
+# 29 minute cooldown for regenerating the analysis report.
 # 29 minutes instead of 30 so we don't block the UI sending a request
 # accidentally.
 COOLDOWN_THRESHOLD = timedelta(minutes=29)
@@ -29,10 +29,10 @@ COOLDOWN_THRESHOLD = timedelta(minutes=29)
 HANGING_TIMEOUT_THRESHOLD = timedelta(minutes=59)
 
 class WPTCoverageAPI(basehandlers.EntitiesAPIHandler):
-  """Accepts requests related to WPT AI coverage evaluations."""
+  """Accepts requests related to WPT AI coverage analyses."""
 
   def do_post(self, **kwargs):
-    """Enqueue a Cloud Task for generating a WPT coverage evaluation report."""
+    """Enqueue a Cloud Task for generating a WPT coverage analysis report."""
     feature_id = self.get_int_param('feature_id')
     feature = self.get_validated_entity(feature_id, FeatureEntry)
 
@@ -41,6 +41,14 @@ class WPTCoverageAPI(basehandlers.EntitiesAPIHandler):
       self.get_current_user(), feature_id)
     if not can_edit:
       self.abort(403, f'User does not have dit access to feature {feature_id}')
+
+    if feature.confidential:
+      self.abort(
+        400, (
+          'Confidential feature information cannot be used to '
+          'generate WTP coverage reports.'
+        )
+      )
 
     last_status_time = feature.ai_test_eval_status_timestamp
 
@@ -57,7 +65,7 @@ class WPTCoverageAPI(basehandlers.EntitiesAPIHandler):
 
     if request_in_progress or on_cooldown:
       msg = (
-        'The WPT coverage evaluation pipeline is already running for this feature.'
+        'The WPT coverage pipeline is already running for this feature.'
         if request_in_progress
         else 'Requests to the pipeline are on cooldown for this feature.')
       retry_after = ((last_status_time + HANGING_TIMEOUT_THRESHOLD) - datetime.now()
@@ -76,7 +84,7 @@ class WPTCoverageAPI(basehandlers.EntitiesAPIHandler):
     feature.ai_test_eval_run_status = core_enums.AITestEvaluationStatus.IN_PROGRESS.value
     feature.ai_test_eval_status_timestamp = datetime.now()
     feature.put()
-    cloud_tasks_helpers.enqueue_task('/tasks/generate-wpt-coverage-evaluation',
+    cloud_tasks_helpers.enqueue_task('/tasks/generate-wpt-coverage-analysis',
                                      { 'feature_id': feature_id })
 
     return {'message': 'Task enqueued'}

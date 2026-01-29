@@ -48,6 +48,21 @@ IMPORT_DEPENDENCY_REGEX = re.compile(
 # The maximum number of dependency files that will be fetched for coverage evalution.
 MAXIMUM_FETCHED_DEPENDENCIES = 100
 
+# The maximum number of test files that can be analyzed in a single test suite.
+# If more than this number is provided, the report generation will be aborted.
+MAXIMUM_TEST_SUITE_SIZE = 50
+
+# Output response when the test suite is too large to evaluate.
+MAXIMUM_TEST_SUITE_SIZE_OUTPUT = (
+  'The number of individual Web Platform Test files ({num_files}) '
+  'was too large for automated report generation.'
+)
+
+
+class PipelineError(Exception):
+  """Base exception for errors occurring during the AI evaluation pipeline."""
+  pass
+
 
 def normalized_name(val):
   return val.lower().replace(' ', '').replace('/', '')
@@ -383,6 +398,10 @@ async def get_mixed_wpt_contents_async(
     A tuple containing two dictionaries:
     1. test_files: {filename: content} for files explicitly requested (or in requested dirs).
     2. dependency_files: {filename: content} for files found recursively via imports/scripts.
+
+  Raises:
+    PipelineError: If the test suite contains over the maximum number of test
+      files to analyze (not including dependency files).
   """
   token = settings.GITHUB_TOKEN
   if token is None:
@@ -430,6 +449,11 @@ async def get_mixed_wpt_contents_async(
   # Process individual file results
   for url, fpath in initial_file_infos:
     files_to_fetch_map[fpath] = url
+
+  # We don't fetch the files if the test suite is too large.
+  if len(files_to_fetch_map) > MAXIMUM_TEST_SUITE_SIZE:
+    raise PipelineError(
+      MAXIMUM_TEST_SUITE_SIZE_OUTPUT.format(num_files=len(files_to_fetch_map)))
 
   # Initialize processing queue
   processing_queue = list(files_to_fetch_map.items())

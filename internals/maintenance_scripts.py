@@ -1164,13 +1164,10 @@ class GenerateShippingFeaturesFile(FlaskHandler):
     enabled_features_json = json5.loads(enabled_features_file)
     content_features_file = utils.get_chromium_file(CONTENT_FEATURES_FILE)
 
-    url_root = f'{self.request.scheme}://{self.request.host}'
-
     return feature_helpers.aggregate_shipping_features(
       shipping_stages,
       enabled_features_json,
-      content_features_file,
-      url_root,
+      content_features_file
     )
 
   def _generate_rows(
