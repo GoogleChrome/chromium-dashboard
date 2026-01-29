@@ -31,7 +31,7 @@ from internals.core_enums import *
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
 from internals.data_types import CHANGED_FIELDS_LIST_TYPE
 from internals import feature_links
-from internals import notifier_helpers
+from internals import notifier, notifier_helpers
 from internals.review_models import Gate, Activity
 from internals.data_types import VerboseFeatureDict
 from internals import feature_helpers
@@ -324,12 +324,17 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
       changed_fields: CHANGED_FIELDS_LIST_TYPE) -> None:
     if permissions.can_review_release_notes(self.get_current_user()):
       return
+    notify_reviewers = False
     if feature.is_releasenotes_content_reviewed:
       feature.is_releasenotes_content_reviewed = False
       changed_fields.append(('is_releasenotes_content_reviewed', True, False))
+      notify_reviewers = True
     if feature.is_releasenotes_publish_ready:
       feature.is_releasenotes_publish_ready = False
       changed_fields.append(('is_releasenotes_publish_ready', True, False))
+      notify_reviewers = True
+    if notify_reviewers:
+      notifier.notify_releasenotes_reviewers(feature)
 
   def _patch_update_special_fields(
       self,

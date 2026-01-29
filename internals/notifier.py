@@ -1334,3 +1334,30 @@ class ResetShippingMilestonesEmailHandler(basehandlers.FlaskHandler):
       'reply_to': None,
       'html': body,
     }
+
+
+RELEASENOTES_NOTIFY_ADDRS = [
+    'cbe-tpgms@google.com',
+    'siobhankeating@google.com',
+    ]
+RESET_RELEASENOTES_TEMPLATE_PATH = 'reset-releasenotes-flags-email.html'
+
+
+def notify_releasenotes_reviewers(fe: FeatureEntry) -> None:
+  """Notify releasenotes reviewers that a feature's flags were reset."""
+  subject = 'Review flags reset on %s' % fe.name
+  site_url = settings.SITE_URL
+  feature_id = fe.key.integer_id()
+  body_data = {
+      'feature_url': f'{site_url}feature/{feature_id}',
+      'APP_TITLE': settings.APP_TITLE,
+      'feature': converters.feature_entry_to_json_verbose(fe),
+      'releasenotes_url': f'{site_url}enterprise/releasenotes',
+  }
+  html = render_template(RESET_RELEASENOTES_TEMPLATE_PATH, **body_data)
+  email_task = {
+      'to': RELEASENOTES_NOTIFY_ADDRS,
+      'subject': subject,
+      'html': html,
+      }
+  send_emails([email_task])
