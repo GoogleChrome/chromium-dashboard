@@ -92,7 +92,7 @@ describe('chromedash-wpt-eval-page', () => {
     const header = reportSection!.querySelector('.report-header');
     expect(header).to.exist;
     expect(header!.querySelector('h2')!.textContent).to.equal(
-      'Evaluation Report'
+      'Analysis Results'
     );
 
     // Check Content
@@ -476,7 +476,7 @@ describe('chromedash-wpt-eval-page', () => {
       // Check UI for success message
       const successMsg = el.shadowRoot!.querySelector('.status-complete');
       expect(successMsg).to.exist;
-      expect(successMsg!.textContent).to.contain('Evaluation complete!');
+      expect(successMsg!.textContent).to.contain('Analysis complete!');
 
       // Verify polling stopped
       expect(clearIntervalSpy).to.have.been.called;

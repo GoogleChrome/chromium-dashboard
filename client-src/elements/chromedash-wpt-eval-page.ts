@@ -646,7 +646,7 @@ export class ChromedashWPTEvalPage extends LitElement {
         <section class="card action-section">
           <div class="status-in-progress">
             <sl-spinner></sl-spinner>
-            <span>Evaluation in progress... This may take a few minutes.</span>
+            <span>Analysis in progress... This may take a few minutes.</span>
           </div>
         </section>
       `;
@@ -661,7 +661,7 @@ export class ChromedashWPTEvalPage extends LitElement {
         <section class="card action-section">
           <div class="status-complete fade-in">
             <sl-icon library="material" name="check_circle_20px"></sl-icon>
-            <span>Evaluation complete! The report is available above.</span>
+            <span>Analysis complete! The report is available above.</span>
           </div>
         </section>
       `;
@@ -744,7 +744,7 @@ export class ChromedashWPTEvalPage extends LitElement {
     return html`
       <section class="card report-section">
         <div class="report-header">
-          <h2 class="${titleClass}">Evaluation Report</h2>
+          <h2 class="${titleClass}">Analysis Results</h2>
           <sl-button
             variant="default"
             size="small"
@@ -805,8 +805,8 @@ export class ChromedashWPTEvalPage extends LitElement {
           <p>
             Here you can generate an AI-powered test coverage report for your
             feature using Gemini. Gemini will analyze your feature's details,
-            specification, and listed Web Platform Tests to evaluate if it meets
-            standard minimum test coverage criteria.
+            specification, and listed Web Platform Tests to analyze coverage and
+            suggest additional tests to increase test coverage.
           </p>
 
           <h3>Before you begin</h3>
