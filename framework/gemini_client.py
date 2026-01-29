@@ -68,6 +68,22 @@ class GeminiClient:
       self.client.close()
 
   @utils.retry(MAX_RETRIES, delay=RETRY_BACKOFF_SECONDS)
+  def count_tokens(self, prompt: str) -> int:
+    """Counts the number of tokens in the given prompt.
+
+    Args:
+      prompt: The input prompt string.
+
+    Returns:
+      The total number of tokens.
+    """
+    response = self.client.models.count_tokens(
+      model=GeminiClient.GEMINI_MODEL,
+      contents=prompt
+    )
+    return response.total_tokens
+
+  @utils.retry(MAX_RETRIES, delay=RETRY_BACKOFF_SECONDS)
   def get_response(self, prompt: str) -> str:
     """Sends a prompt to the Gemini model and returns the text response.
 

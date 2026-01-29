@@ -111,6 +111,27 @@ class GeminiClientTest(testing_config.CustomTestCase):
       f'An unexpected error occurred during client initialization: {init_error}'
     )
 
+  def test_count_tokens__success(self):
+    """The client correctly calls the API to count tokens."""
+    prompt = "Test prompt for counting."
+    expected_token_count = 42
+
+    # Configure the mock response
+    mock_count_response = mock.MagicMock()
+    mock_count_response.total_tokens = expected_token_count
+    self.mock_client_instance.models.count_tokens.return_value = mock_count_response
+
+    client = gemini_client.GeminiClient()
+    result = client.count_tokens(prompt)
+
+    self.assertEqual(result, expected_token_count)
+
+    # Verify the API call arguments
+    self.mock_client_instance.models.count_tokens.assert_called_once_with(
+        model=client.GEMINI_MODEL,
+        contents=prompt
+    )
+
   def test_get_response__success(self):
     """The client returns a valid text response with correct timeout config."""
     prompt = 'Hello Gemini'
