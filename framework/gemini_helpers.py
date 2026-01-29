@@ -118,9 +118,9 @@ async def _get_test_file_contents(test_locations: list[str]) -> tuple[dict[Path,
 
 
 def _generate_unified_prompt_text(
-    feature: FeatureEntry,
-    test_files: dict[Path, str],
-    dependency_files: dict[Path, str]
+  feature: FeatureEntry,
+  test_files: dict[Path, str],
+  dependency_files: dict[Path, str]
 ) -> str:
   """Generates the text for the unified gap analysis prompt."""
   template_data = {
