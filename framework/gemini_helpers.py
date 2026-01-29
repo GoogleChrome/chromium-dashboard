@@ -263,7 +263,7 @@ async def run_wpt_test_eval_pipeline(feature: FeatureEntry) -> core_enums.AITest
     # Don't use the single prompt if it will overload the context.
     if token_count > MAX_UNIFIED_PROMPT_TOKEN_COUNT:
       logging.warning(
-        'The unified gap analysis prompt is too large ({token_count} tokens). '
+        f'The unified gap analysis prompt is too large ({token_count} tokens). '
         'Using the 3-prompt flow instead.'
       )
       gap_analysis_response = await prompt_analysis(feature, test_files)
