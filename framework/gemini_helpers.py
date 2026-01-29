@@ -46,7 +46,7 @@ def _create_feature_definition(feature: FeatureEntry) -> str:
   return f'Name: {feature.name}\nDescription: {feature.summary}'
 
 
-def _fetch_spec_content(url: str) -> str:
+def _fetch_spec_content(url: str) -> str | None:
   """
   Routes the URL to the correct extraction logic to return clean text.
   """
@@ -60,8 +60,9 @@ def _fetch_spec_content(url: str) -> str:
       resp.raise_for_status()
       return resp.text
     except Exception as e:
-      return f"Error fetching GitHub Diff: {e}"
-
+      logging.error(f'Failed to fetch GitHub diff for {url}: {e}')
+      return None
+ 
   # URL type 2: GitHub file blobs
   if "github.com" in parsed.netloc and "/blob/" in parsed.path:
     raw_url = url.replace("github.com", "raw.githubusercontent.com").replace("/blob/", "/")
@@ -70,14 +71,16 @@ def _fetch_spec_content(url: str) -> str:
       resp.raise_for_status()
       return resp.text
     except Exception as e:
-      return f"Error fetching GitHub Raw: {e}"
+      logging.error(f'Failed to fetch GitHub raw for {url}: {e}')
+      return None
 
   # URL type 3: Standard W3C, Web specs, or other webpages
   try:
     downloaded = trafilatura.fetch_url(url)
 
     if downloaded is None:
-      return f"Error: Could not fetch URL {url}"
+      logging.error(f'Could not fetch spec URL: {url}')
+      return None
 
     # Extract content to Markdown.
     # include_comments=False skips comments.
@@ -90,14 +93,15 @@ def _fetch_spec_content(url: str) -> str:
     )
 
     if not result:
-      return f"Error: No main content found at {url}"
+      logging.error(f'No main content extracted from spec URL: {url}')
+      return None
 
     return result
 
   except Exception as e:
-    return f"Error processing Web Spec: {e}"
-
-
+    logging.error(f'Error processing spec URL {url}: {e}')
+    return None
+  
 async def _get_test_file_contents(test_locations: list[str]) -> tuple[dict[Path, str], dict[Path, str]]:
   """Obtain the contents of test files, as well as the contents of their dependencies."""
   test_urls = []
@@ -135,9 +139,13 @@ def unified_prompt_analysis(
   Returns:
     A string containing the generated coverage report.
   """
+  spec_content = _fetch_spec_content(feature.spec_link)
+  if not spec_content:
+    raise utils.PipelineError(f'Failed to fetch spec content: {feature.spec_link}')
+
   template_data = {
     'spec_url': feature.spec_link,
-    'spec_content': _fetch_spec_content(feature.spec_link),
+    'spec_content': spec_content,
     'feature_name': feature.name,
     'feature_summary': feature.summary,
     'test_files': test_files,
@@ -187,10 +195,12 @@ async def prompt_analysis(feature: FeatureEntry, test_files: dict[Path, str]) ->
       )
     )
     file_names.append(fpath.name)
-
+  spec_content = _fetch_spec_content(feature.spec_link)
+  if not spec_content:
+    raise utils.PipelineError(f'Failed to fetch spec content: {feature.spec_link}')
   template_data = {
     'spec_url': feature.spec_link,
-    'spec_content': _fetch_spec_content(feature.spec_link),
+    'spec_content': spec_content,
     'feature_definition': _create_feature_definition(feature)
   }
   spec_synthesis_prompt = render_template(SPEC_SYNTHESIS_TEMPLATE_PATH, **template_data)
