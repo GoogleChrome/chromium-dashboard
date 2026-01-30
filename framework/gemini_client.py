@@ -68,20 +68,25 @@ class GeminiClient:
       self.client.close()
 
   @utils.retry(MAX_RETRIES, delay=RETRY_BACKOFF_SECONDS)
-  def count_tokens(self, prompt: str) -> int:
-    """Counts the number of tokens in the given prompt.
+  def prompt_exceeds_input_token_limit(self, prompt: str) -> bool:
+    """Checks the token size of a prompt and checks if it exceeds the input
+       limit of the Gemini model.
 
     Args:
       prompt: The input prompt string.
 
     Returns:
-      The total number of tokens.
+      Boolean value of whether the input token limit is exceedded.
     """
     response = self.client.models.count_tokens(
       model=GeminiClient.GEMINI_MODEL,
       contents=prompt
     )
-    return response.total_tokens
+    model_info = self.client.get(model=self.GEMINI_MODEL)
+    logging.info('Prompt token count:', response.total_tokens)
+    logging.info('Models context limit token count:',
+                 model_info.input_token_limit)
+    return response.total_tokens > model_info.input_token_limit
 
   @utils.retry(MAX_RETRIES, delay=RETRY_BACKOFF_SECONDS)
   def get_response(self, prompt: str) -> str:

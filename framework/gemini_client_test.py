@@ -111,25 +111,37 @@ class GeminiClientTest(testing_config.CustomTestCase):
       f'An unexpected error occurred during client initialization: {init_error}'
     )
 
-  def test_count_tokens__success(self):
-    """The client correctly calls the API to count tokens."""
+  def test_prompt_exceeds_input_token_limit(self):
+    """The client checks token count against the model limit."""
     prompt = "Test prompt for counting."
-    expected_token_count = 42
+    current_tokens = 42
+    token_limit = 100
 
-    # Configure the mock response
+    # Configure the mock response for count_tokens
     mock_count_response = mock.MagicMock()
-    mock_count_response.total_tokens = expected_token_count
+    mock_count_response.total_tokens = current_tokens
     self.mock_client_instance.models.count_tokens.return_value = mock_count_response
 
+    # Configure the mock response for client.get (to fetch model info)
+    mock_model_info = mock.MagicMock()
+    mock_model_info.input_token_limit = token_limit
+    self.mock_client_instance.get.return_value = mock_model_info
+
     client = gemini_client.GeminiClient()
-    result = client.count_tokens(prompt)
+    result = client.prompt_exceeds_input_token_limit(prompt)
 
-    self.assertEqual(result, expected_token_count)
+    # 42 < 100, so it should NOT exceed the limit (False)
+    self.assertFalse(result)
 
-    # Verify the API call arguments
+    # Verify the count_tokens API call
     self.mock_client_instance.models.count_tokens.assert_called_once_with(
         model=client.GEMINI_MODEL,
         contents=prompt
+    )
+
+    # Verify the get model info API call
+    self.mock_client_instance.get.assert_called_once_with(
+        model=client.GEMINI_MODEL
     )
 
   def test_get_response__success(self):

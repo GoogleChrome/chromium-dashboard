@@ -40,9 +40,6 @@ WPT_FILE_REGEX = re.compile(r"\/[^/]*\.[^/]*$")
 # the single prompt format. Any more than this will cause the trigger the use
 # of the three-prompt flow that utilizes separate test summaries.
 MAX_SINGLE_PROMPT_TEST_COUNT = 10
-# Maximum token count allowed for the unified prompt before falling back to
-# the multi-stage analysis.
-MAX_UNIFIED_PROMPT_TOKEN_COUNT = 1_000_000
 
 
 def _create_feature_definition(feature: FeatureEntry) -> str:
@@ -259,11 +256,10 @@ async def run_wpt_test_eval_pipeline(feature: FeatureEntry) -> core_enums.AITest
     prompt_text = _generate_unified_prompt_text(feature, test_files, dependency_files)
 
     gemini_client = GeminiClient()
-    token_count = gemini_client.count_tokens(prompt_text)
     # Don't use the single prompt if it will overload the context.
-    if token_count > MAX_UNIFIED_PROMPT_TOKEN_COUNT:
+    if gemini_client.prompt_exceeds_input_token_limit(prompt_text):
       logging.warning(
-        f'The unified gap analysis prompt is too large ({token_count} tokens). '
+        'The unified gap analysis prompt is too large. '
         'Using the 3-prompt flow instead.'
       )
       gap_analysis_response = await prompt_analysis(feature, test_files)

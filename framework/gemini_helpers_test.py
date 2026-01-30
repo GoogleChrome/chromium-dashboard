@@ -346,7 +346,7 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
     mock_deps = {}
 
     self.mock_utils.extract_wpt_fyi_results_urls.return_value = ['url1']
-    self.mock_gemini_client.count_tokens.return_value = 500
+    self.mock_gemini_client.prompt_exceeds_input_token_limit.return_value = False
 
     with mock.patch('framework.gemini_helpers._get_test_file_contents',
                     new_callable=mock.AsyncMock) as mock_get_content, \
@@ -364,7 +364,8 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
       mock_gen_prompt.assert_called_once_with(self.feature, mock_test_files, mock_deps)
 
       # Verify Token Count Checked
-      self.mock_gemini_client.count_tokens.assert_called_once_with("Generated Prompt Text")
+      self.mock_gemini_client.prompt_exceeds_input_token_limit.assert_called_once_with(
+        "Generated Prompt Text")
 
       # Verify Unified Called
       mock_unified.assert_called_once_with("Generated Prompt Text")
@@ -385,8 +386,7 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
 
     self.mock_utils.extract_wpt_fyi_results_urls.return_value = ['url1']
 
-    # Mock token count to be HIGH (over 1 million limit)
-    self.mock_gemini_client.count_tokens.return_value = 1_000_001
+    self.mock_gemini_client.prompt_exceeds_input_token_limit.return_value = True
 
     with mock.patch('framework.gemini_helpers._get_test_file_contents',
                     new_callable=mock.AsyncMock) as mock_get_content, \
@@ -401,7 +401,8 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
       result = asyncio.run(gemini_helpers.run_wpt_test_eval_pipeline(self.feature))
 
       # Verify Token Count Checked
-      self.mock_gemini_client.count_tokens.assert_called_once_with("Generated Huge Prompt")
+      self.mock_gemini_client.prompt_exceeds_input_token_limit.assert_called_once_with(
+        "Generated Huge Prompt")
 
       # Verify Multi Called
       mock_multi.assert_awaited_once_with(self.feature, mock_test_files)
@@ -442,7 +443,7 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
 
       # Verify Generation and Token Count Skipped
       mock_gen_prompt.assert_not_called()
-      self.mock_gemini_client.count_tokens.assert_not_called()
+      self.mock_gemini_client.prompt_exceeds_input_token_limit.assert_not_called()
 
       self.assertEqual(self.feature.ai_test_eval_report, "Multi Success")
       self.assertEqual(result, core_enums.AITestEvaluationStatus.COMPLETE)
