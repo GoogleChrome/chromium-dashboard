@@ -337,7 +337,7 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
     self.mock_logging.error.assert_called_once()
 
   def test_run_pipeline__routes_to_unified_eval(self):
-    """If file count is small, verify routing to unified_prompt_analysis."""
+    """Verify routing to unified_prompt_analysis when token count is low."""
     self.feature.spec_link = 'https://spec.example.com'
     self.feature.wpt_descr = 'https://wpt.fyi/results/test'
 
@@ -376,7 +376,7 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
       self.assertEqual(result, core_enums.AITestEvaluationStatus.COMPLETE)
 
   def test_run_pipeline__routes_to_multi_prompt_due_to_tokens(self):
-    """If file count is small BUT token count is huge, verify routing to prompt_analysis."""
+    """Verify routing to prompt_analysis when token count is high."""
     self.feature.spec_link = 'https://spec.example.com'
     self.feature.wpt_descr = 'https://wpt.fyi/results/test'
 
@@ -409,41 +409,6 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
 
       # Verify Unified NOT Called
       mock_unified.assert_not_called()
-
-      self.assertEqual(self.feature.ai_test_eval_report, "Multi Success")
-      self.assertEqual(result, core_enums.AITestEvaluationStatus.COMPLETE)
-
-  def test_run_pipeline__routes_to_multi_prompt_eval(self):
-    """If file count is large, verify routing to prompt_analysis (skips token check)."""
-    self.feature.spec_link = 'https://spec.example.com'
-    self.feature.wpt_descr = 'https://wpt.fyi/results/test'
-
-    # Create enough files to exceed threshold (10)
-    mock_test_files = {Path(f't{i}.html'): 'c' for i in range(12)}
-    mock_deps = {}
-
-    self.mock_utils.extract_wpt_fyi_results_urls.return_value = ['url1']
-
-    with mock.patch('framework.gemini_helpers._get_test_file_contents',
-                    new_callable=mock.AsyncMock) as mock_get_content, \
-         mock.patch('framework.gemini_helpers.unified_prompt_analysis') as mock_unified, \
-         mock.patch('framework.gemini_helpers._generate_unified_prompt_text') as mock_gen_prompt, \
-         mock.patch('framework.gemini_helpers.prompt_analysis', new_callable=mock.AsyncMock) as mock_multi:
-
-      mock_get_content.return_value = (mock_test_files, mock_deps)
-      mock_multi.return_value = "Multi Success"
-
-      result = asyncio.run(gemini_helpers.run_wpt_test_eval_pipeline(self.feature))
-
-      # Verify Multi Called
-      mock_multi.assert_awaited_once_with(self.feature, mock_test_files)
-
-      # Verify Unified NOT Called
-      mock_unified.assert_not_called()
-
-      # Verify Generation and Token Count Skipped
-      mock_gen_prompt.assert_not_called()
-      self.mock_gemini_client.prompt_exceeds_input_token_limit.assert_not_called()
 
       self.assertEqual(self.feature.ai_test_eval_report, "Multi Success")
       self.assertEqual(result, core_enums.AITestEvaluationStatus.COMPLETE)

@@ -36,11 +36,6 @@ UNIFIED_GAP_ANALYSIS_TEMPLATE_PATH = 'prompts/unified-gap-analysis.html'
 # Otherwise, it's a directory.
 WPT_FILE_REGEX = re.compile(r"\/[^/]*\.[^/]*$")
 
-# Define the maximum number of listed tests for the feature that can be used in
-# the single prompt format. Any more than this will cause the trigger the use
-# of the three-prompt flow that utilizes separate test summaries.
-MAX_SINGLE_PROMPT_TEST_COUNT = 10
-
 
 def _create_feature_definition(feature: FeatureEntry) -> str:
   return f'Name: {feature.name}\nDescription: {feature.summary}'
@@ -252,21 +247,18 @@ async def run_wpt_test_eval_pipeline(feature: FeatureEntry) -> core_enums.AITest
     feature.ai_test_eval_report = str(e)
     return core_enums.AITestEvaluationStatus.FAILED
 
-  if len(test_files) <= MAX_SINGLE_PROMPT_TEST_COUNT:
-    prompt_text = _generate_unified_prompt_text(feature, test_files, dependency_files)
+  prompt_text = _generate_unified_prompt_text(feature, test_files, dependency_files)
 
-    gemini_client = GeminiClient()
-    # Don't use the single prompt if it will overload the context.
-    if gemini_client.prompt_exceeds_input_token_limit(prompt_text):
-      logging.warning(
-        'The unified gap analysis prompt is too large. '
-        'Using the 3-prompt flow instead.'
-      )
-      gap_analysis_response = await prompt_analysis(feature, test_files)
-    else:
-      gap_analysis_response = unified_prompt_analysis(prompt_text)
-  else:
+  gemini_client = GeminiClient()
+  # Don't use the single prompt if it will overload the context.
+  if gemini_client.prompt_exceeds_input_token_limit(prompt_text):
+    logging.warning(
+      'The unified gap analysis prompt is too large. '
+      'Using the 3-prompt flow instead.'
+    )
     gap_analysis_response = await prompt_analysis(feature, test_files)
+  else:
+    gap_analysis_response = unified_prompt_analysis(prompt_text)
 
   feature.ai_test_eval_report = gap_analysis_response
   return core_enums.AITestEvaluationStatus.COMPLETE
