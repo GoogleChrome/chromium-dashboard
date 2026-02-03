@@ -103,9 +103,9 @@ async def _get_test_file_contents(test_locations: list[str]) -> tuple[dict[Path,
     else:
       test_directories.append(test_loc)
 
-  test_file_contents, dependency_contents = await utils.get_mixed_wpt_contents_async(
-    test_directories, test_urls
-  )
+  (
+    test_file_contents, dependency_contents, _
+  ) = await utils.get_mixed_wpt_contents_async(test_directories, test_urls)
   return test_file_contents, dependency_contents
 
 
