@@ -45,9 +45,21 @@ Your task is to act as an auditor. You must compare the `<test_suite>` against t
 
 #### Output Format
 
-**Conclusion:** [Start with a brief conclusion (e.g., "**Minimum satisfactory coverage has been achieved!**", or "**Some additional tests may be required to meet minimum satisfactory coverage. See the test suggestions below.**")]
+**Conclusion:** [Start with one of two brief conclusions.
+  - "No test suggestions found. This feature has great test coverage!" If there are no gaps in test coverage.
+  - "Some test suggestions are available. See below." If there are available test suggestions to improve test coverage.
+]
 
-**Summary of Analysis:** [In 1-2 sentences, explain the state of the coverage in language that is not harsh. (e.g., "Feature existence is proven, but the suite may require tests for the specific error handling defined in the spec.")]
+**Summary of Analysis:** [In 1-2 sentences, explain the state of the coverage in language that is not harsh.
+  - Non-exhaustive guidance:
+    - Consider: Highlighting where happy paths are covered but edge cases are missing.
+    - Consider: Pointing out specific error handling defined in the spec that lacks tests.
+    - Avoid: Using strong negative wording, like "completely" or "lacking".
+  - Examples of output:
+    - "Feature existence is proven, but the suite may require tests for the specific error handling defined in the spec."
+    - "The provided test suite successfully verifies basic visual rendering the `@font-language-override` descriptor effectively. However, tests the `@font-face` descriptor mentioned in the spec are still needed."
+]
+
 
 -----
 
@@ -96,15 +108,40 @@ Your task is to act as an auditor. You must compare the `<test_suite>` against t
 ### Test Suggestions
 *Instructions: This is the most critical section. Based on the "Gaps" identified above, provide a list of every new test suggestion (if any), sectioned by each of the 5 requirement categories. If no gaps exist in a category, write "No gaps".*
 
-* **Existence:** [State the number of test suggestions or clarify there are no gaps. e.g. "No gaps." or "X Test suggestion(s)."]
+* **Existence:** [State the number of test suggestions or clarify there are no gaps.
+  Examples:
+  - "No gaps."
+  - "1 test suggestion."
+  - "2 test suggestions."
+]
     * [1 or more bullets containing individual test suggestions]
-* **Common Use Cases:** [State the number of test suggestions or clarify there are no gaps. e.g. "No gaps." or "X Test suggestion(s)."]
+* **Common Use Cases:** [State the number of test suggestions for this section or clarify there are no gaps.
+  Examples:
+  - "No gaps."
+  - "1 test suggestion."
+  - "2 test suggestions."
+]
     * [1 or more bullets containing individual test suggestions]
-* **Error Scenarios:** [State the number of test suggestions or clarify there are no gaps. e.g. "No gaps." or "X Test suggestion(s)."]
+* **Error Scenarios:** [State the number of test suggestions for this section or clarify there are no gaps.
+  Examples:
+  - "No gaps."
+  - "1 test suggestion."
+  - "2 test suggestions."
+]
     * [1 or more bullets containing individual test suggestions]
-* **Invalidation:** [State the number of test suggestions or clarify there are no gaps. e.g. "No gaps." or "X Test suggestion(s)."]
+* **Invalidation:** [State the number of test suggestions for this section or clarify there are no gaps.
+  Examples:
+  - "No gaps."
+  - "1 test suggestion."
+  - "2 test suggestions."
+]
     * [1 or more bullets containing individual test suggestions]
-* **Integration:** [State the number of test suggestions or clarify there are no gaps. e.g. "No gaps." or "X Test suggestion(s)."]
+* **Integration:** [State the number of test suggestions for this section or clarify there are no gaps.
+  Examples:
+  - "No gaps."
+  - "1 test suggestion."
+  - "2 test suggestions."
+]
     * [1 or more bullets containing individual test suggestions]
 
 #### End Output Format
