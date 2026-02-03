@@ -478,8 +478,8 @@ async def get_mixed_wpt_contents_async(
     processing_queue = []
 
     for fpath, content in results:
-      if content is None:
-        continue
+      if content is None or not content.strip():
+       continue
 
       # Sort into the correct bucket
       if fpath in initial_paths:

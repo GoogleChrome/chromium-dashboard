@@ -755,3 +755,39 @@ class AsyncUtilsGitHubTests(unittest.IsolatedAsyncioTestCase):
     # We verify the error message contains the number of files found.
     self.assertIn('6', str(cm.exception))
     self.assertIn('too large', str(cm.exception))
+  @mock.patch('framework.utils._fetch_dir_listing')
+  @mock.patch('framework.utils._fetch_file_content')
+  async def test_get_mixed_wpt_contents_async__skips_none_and_whitespace(
+      self, mock_fetch_content, mock_fetch_dir):
+    """Should skip files whose fetched contents are None or whitespace-only."""
+    dir_urls = ['https://wpt.fyi/results/dir1']
+    file_urls = []
+    settings.GITHUB_TOKEN = 'token'
+
+    mock_fetch_dir.return_value = [
+      (Path('a.html'), 'http://dl/a.html'),
+      (Path('b.html'), 'http://dl/b.html'),
+      (Path('c.html'), 'http://dl/c.html'),
+    ]
+
+    def side_effect(url):
+      if url == 'http://dl/a.html':
+        return None
+      if url == 'http://dl/b.html':
+        return '   \n\t'
+      if url == 'http://dl/c.html':
+        return 'valid content'
+      return None
+
+    mock_fetch_content.side_effect = side_effect
+
+    tests, deps = await utils.get_mixed_wpt_contents_async(dir_urls, file_urls)
+
+    self.assertNotIn(Path('a.html'), tests)
+    self.assertNotIn(Path('b.html'), tests)
+    self.assertIn(Path('c.html'), tests)
+    self.assertEqual(tests[Path('c.html')], 'valid content')
+    self.assertEqual(deps, {})
+  
+  
+      
