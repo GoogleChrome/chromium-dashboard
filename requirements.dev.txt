@@ -4,7 +4,7 @@
 # provides its own copy.
 
 coverage==7.13.2
-gunicorn==24.1.1
+gunicorn==25.0.1
 
 # Mypy and dependencies
 mypy==1.19.1
