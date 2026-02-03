@@ -523,7 +523,7 @@ async def get_mixed_wpt_contents_async(
   for test_path in test_contents:
     relevant_deps = set()
 
-    # Perform a traversal (DFS) to find all reachable dependencies for this test file
+    # Perform a traversal (DFS) to find all reachable dependencies for this test file.
     stack = [test_path]
     seen_in_traversal = {test_path}
 
@@ -533,8 +533,9 @@ async def get_mixed_wpt_contents_async(
       # If the current node is a dependency (and not the start node), record it.
       # We check 'in dependency_contents' to ensure we only return files
       # that were actually fetched and categorized as dependencies.
-      if current_path != test_path and current_path in dependency_contents:
-        relevant_deps.add(current_path)
+      if current_path != test_path:
+        if current_path in dependency_contents or current_path in test_contents:
+           relevant_deps.add(current_path)
 
       # Add children to stack
       if current_path in dependency_graph:
