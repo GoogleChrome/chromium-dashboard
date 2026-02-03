@@ -41,4 +41,4 @@ pillow==12.1.0
 # OpenAPI files
 ./gen/py/chromestatus_openapi
 ./gen/py/webstatus_openapi
-types-python-dateutil==2.9.0.20251115
+types-python-dateutil==2.9.0.20260124
