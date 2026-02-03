@@ -36,11 +36,6 @@ UNIFIED_GAP_ANALYSIS_TEMPLATE_PATH = 'prompts/unified-gap-analysis.html'
 # Otherwise, it's a directory.
 WPT_FILE_REGEX = re.compile(r"\/[^/]*\.[^/]*$")
 
-# Define the maximum number of listed tests for the feature that can be used in
-# the single prompt format. Any more than this will cause the trigger the use
-# of the three-prompt flow that utilizes separate test summaries.
-MAX_SINGLE_PROMPT_TEST_COUNT = 10
-
 
 def _create_feature_definition(feature: FeatureEntry) -> str:
   return f'Name: {feature.name}\nDescription: {feature.summary}'
@@ -114,27 +109,12 @@ async def _get_test_file_contents(test_locations: list[str]) -> tuple[dict[Path,
   return test_file_contents, dependency_contents
 
 
-def unified_prompt_analysis(
+def _generate_unified_prompt_text(
   feature: FeatureEntry,
   test_files: dict[Path, str],
   dependency_files: dict[Path, str]
 ) -> str:
-  """Evaluates WPT coverage using a single, unified prompt.
-
-  This method is used when the number of test files is small enough to fit
-  within the context window of a single prompt. It combines the feature
-  specification, all test file contents, and all dependency file contents
-  into one "gap analysis" prompt.
-
-  Args:
-    feature: The feature entry containing metadata (name, summary, spec URL).
-    test_files: A dictionary mapping test file paths to their raw text content.
-    dependency_files: A dictionary mapping dependency file paths to their raw
-      text content.
-
-  Returns:
-    A string containing the generated coverage report.
-  """
+  """Generates the text for the unified gap analysis prompt."""
   template_data = {
     'spec_url': feature.spec_link,
     'spec_content': _fetch_spec_content(feature.spec_link),
@@ -143,13 +123,26 @@ def unified_prompt_analysis(
     'test_files': test_files,
     'dependency_files': dependency_files,
   }
-  unified_gap_analysis_prompt = render_template(
+  return render_template(
     UNIFIED_GAP_ANALYSIS_TEMPLATE_PATH,
     **template_data,
   )
 
+
+def unified_prompt_analysis(prompt_text: str) -> str:
+  """Evaluates WPT coverage using a single, unified prompt.
+
+  This method is used when the number of test files and the total token count
+  are small enough to fit within the context window of a single prompt.
+
+  Args:
+    prompt_text: The complete text of the unified prompt to be sent to Gemini.
+
+  Returns:
+    A string containing the generated coverage report.
+  """
   gemini_client = GeminiClient()
-  gap_analysis_response = gemini_client.get_response(unified_gap_analysis_prompt)
+  gap_analysis_response = gemini_client.get_response(prompt_text)
   return gap_analysis_response
 
 
@@ -227,6 +220,7 @@ async def prompt_analysis(feature: FeatureEntry, test_files: dict[Path, str]) ->
   gap_analysis_response = await gemini_client.get_response_async(gap_analysis_prompt)
   return gap_analysis_response
 
+
 async def run_wpt_test_eval_pipeline(feature: FeatureEntry) -> core_enums.AITestEvaluationStatus:
   """Execute the AI pipeline for WPT coverage analysis.
 
@@ -253,10 +247,18 @@ async def run_wpt_test_eval_pipeline(feature: FeatureEntry) -> core_enums.AITest
     feature.ai_test_eval_report = str(e)
     return core_enums.AITestEvaluationStatus.FAILED
 
-  if len(test_files) <= MAX_SINGLE_PROMPT_TEST_COUNT:
-    gap_analysis_response = unified_prompt_analysis(feature, test_files, dependency_files)
-  else:
+  prompt_text = _generate_unified_prompt_text(feature, test_files, dependency_files)
+
+  gemini_client = GeminiClient()
+  # Don't use the single prompt if it will overload the context.
+  if gemini_client.prompt_exceeds_input_token_limit(prompt_text):
+    logging.warning(
+      'The unified gap analysis prompt is too large. '
+      'Using the 3-prompt flow instead.'
+    )
     gap_analysis_response = await prompt_analysis(feature, test_files)
+  else:
+    gap_analysis_response = unified_prompt_analysis(prompt_text)
 
   feature.ai_test_eval_report = gap_analysis_response
   return core_enums.AITestEvaluationStatus.COMPLETE

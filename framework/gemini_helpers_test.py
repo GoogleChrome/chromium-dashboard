@@ -208,18 +208,19 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
     self.assertEqual(result, (expected_content_map, {}))
 
   @mock.patch('framework.gemini_helpers._fetch_spec_content', return_value="Mock Spec Content")
-  def test_unified_prompt_analysis__success(self, mock_fetch_spec):
-    """Tests that the unified evaluator renders the template and calls Gemini."""
+  def test_generate_unified_prompt_text(self, mock_fetch_spec):
+    """Tests that the generator creates the template data and renders it."""
     test_files = {Path('test1.html'): 'content1'}
     dependency_files = {Path('dep.js'): 'dep_content'}
 
-    self.mock_gemini_client.get_response.return_value = 'Unified Report'
+    # Mock render_template to return a predictable string
+    self.mock_render_template.return_value = "Rendered Prompt"
 
-    result = gemini_helpers.unified_prompt_analysis(
+    result = gemini_helpers._generate_unified_prompt_text(
         self.feature, test_files, dependency_files
     )
 
-    self.assertEqual(result, 'Unified Report')
+    self.assertEqual(result, "Rendered Prompt")
 
     # Verify render_template called with correct path and data
     self.mock_render_template.assert_called_once()
@@ -228,7 +229,15 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
     self.assertEqual(kwargs['test_files'], test_files)
     self.assertEqual(kwargs['dependency_files'], dependency_files)
 
-    self.mock_gemini_client.get_response.assert_called_once()
+  def test_unified_prompt_analysis__success(self):
+    """Tests that the unified evaluator calls Gemini with the provided text."""
+    prompt_text = "The full unified prompt text"
+    self.mock_gemini_client.get_response.return_value = 'Unified Report'
+
+    result = gemini_helpers.unified_prompt_analysis(prompt_text)
+
+    self.assertEqual(result, 'Unified Report')
+    self.mock_gemini_client.get_response.assert_called_once_with(prompt_text)
 
   @mock.patch('framework.gemini_helpers._fetch_spec_content', return_value="Mock Spec Content")
   def test_prompt_analysis__success(self, mock_fetch_spec):
@@ -328,7 +337,7 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
     self.mock_logging.error.assert_called_once()
 
   def test_run_pipeline__routes_to_unified_eval(self):
-    """If file count is small, verify routing to unified_prompt_analysis."""
+    """Verify routing to unified_prompt_analysis when token count is low."""
     self.feature.spec_link = 'https://spec.example.com'
     self.feature.wpt_descr = 'https://wpt.fyi/results/test'
 
@@ -337,49 +346,70 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
     mock_deps = {}
 
     self.mock_utils.extract_wpt_fyi_results_urls.return_value = ['url1']
+    self.mock_gemini_client.prompt_exceeds_input_token_limit.return_value = False
 
     with mock.patch('framework.gemini_helpers._get_test_file_contents',
                     new_callable=mock.AsyncMock) as mock_get_content, \
          mock.patch('framework.gemini_helpers.unified_prompt_analysis') as mock_unified, \
+         mock.patch('framework.gemini_helpers._generate_unified_prompt_text') as mock_gen_prompt, \
          mock.patch('framework.gemini_helpers.prompt_analysis', new_callable=mock.AsyncMock) as mock_multi:
 
       mock_get_content.return_value = (mock_test_files, mock_deps)
+      mock_gen_prompt.return_value = "Generated Prompt Text"
       mock_unified.return_value = "Unified Success"
 
       result = asyncio.run(gemini_helpers.run_wpt_test_eval_pipeline(self.feature))
 
+      # Verify Generator Called
+      mock_gen_prompt.assert_called_once_with(self.feature, mock_test_files, mock_deps)
+
+      # Verify Token Count Checked
+      self.mock_gemini_client.prompt_exceeds_input_token_limit.assert_called_once_with(
+        "Generated Prompt Text")
+
       # Verify Unified Called
-      mock_unified.assert_called_once_with(self.feature, mock_test_files, mock_deps)
+      mock_unified.assert_called_once_with("Generated Prompt Text")
+
       # Verify Multi NOT Called
       mock_multi.assert_not_called()
       self.assertEqual(self.feature.ai_test_eval_report, "Unified Success")
       self.assertEqual(result, core_enums.AITestEvaluationStatus.COMPLETE)
 
-  def test_run_pipeline__routes_to_multi_prompt_eval(self):
-    """If file count is large, verify routing to prompt_analysis."""
+  def test_run_pipeline__routes_to_multi_prompt_due_to_tokens(self):
+    """Verify routing to prompt_analysis when token count is high."""
     self.feature.spec_link = 'https://spec.example.com'
     self.feature.wpt_descr = 'https://wpt.fyi/results/test'
 
-    # Create enough files to exceed threshold (10)
-    mock_test_files = {Path(f't{i}.html'): 'c' for i in range(12)}
+    # Return 1 file (small count)
+    mock_test_files = {Path('t1.html'): 'c1'}
     mock_deps = {}
 
     self.mock_utils.extract_wpt_fyi_results_urls.return_value = ['url1']
 
+    self.mock_gemini_client.prompt_exceeds_input_token_limit.return_value = True
+
     with mock.patch('framework.gemini_helpers._get_test_file_contents',
                     new_callable=mock.AsyncMock) as mock_get_content, \
          mock.patch('framework.gemini_helpers.unified_prompt_analysis') as mock_unified, \
+         mock.patch('framework.gemini_helpers._generate_unified_prompt_text') as mock_gen_prompt, \
          mock.patch('framework.gemini_helpers.prompt_analysis', new_callable=mock.AsyncMock) as mock_multi:
 
       mock_get_content.return_value = (mock_test_files, mock_deps)
+      mock_gen_prompt.return_value = "Generated Huge Prompt"
       mock_multi.return_value = "Multi Success"
 
       result = asyncio.run(gemini_helpers.run_wpt_test_eval_pipeline(self.feature))
 
+      # Verify Token Count Checked
+      self.mock_gemini_client.prompt_exceeds_input_token_limit.assert_called_once_with(
+        "Generated Huge Prompt")
+
       # Verify Multi Called
       mock_multi.assert_awaited_once_with(self.feature, mock_test_files)
+
       # Verify Unified NOT Called
       mock_unified.assert_not_called()
+
       self.assertEqual(self.feature.ai_test_eval_report, "Multi Success")
       self.assertEqual(result, core_enums.AITestEvaluationStatus.COMPLETE)
 
