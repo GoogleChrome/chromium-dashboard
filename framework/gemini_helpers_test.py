@@ -187,7 +187,7 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
       Path('/css/css-grid/grid-definition.html'): 'content2'
     }
     self.mock_utils.get_mixed_wpt_contents_async = mock.AsyncMock(
-      return_value=(expected_content_map, {})
+      return_value=(expected_content_map, {}, {})
     )
 
     # Run the async helper
