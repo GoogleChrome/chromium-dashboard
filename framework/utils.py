@@ -386,7 +386,7 @@ def resolve_dependency_path(current_file_path: Path, dep_ref: str) -> Path | Non
 async def get_mixed_wpt_contents_async(
     dir_urls: list[str],
     additional_file_urls: list[str]
-) -> tuple[dict[Path, str], dict[Path, str]]:
+) -> tuple[dict[Path, str], dict[Path, str], dict[Path, set[Path]]]:
   """
   Orchestrates concurrent fetching of WPT files and recursively fetches their dependencies.
 
@@ -395,9 +395,11 @@ async def get_mixed_wpt_contents_async(
     additional_file_urls: list of individual WPT file URLs.
 
   Returns:
-    A tuple containing two dictionaries:
+    A tuple containing three dictionaries:
     1. test_files: {filename: content} for files explicitly requested (or in requested dirs).
     2. dependency_files: {filename: content} for files found recursively via imports/scripts.
+    3. test_to_dependencies_map: {test_filename: set(dependency_filenames)}
+       mapping each test file to all its recursive dependency files.
 
   Raises:
     PipelineError: If the test suite contains over the maximum number of test
@@ -405,12 +407,15 @@ async def get_mixed_wpt_contents_async(
   """
   token = settings.GITHUB_TOKEN
   if token is None:
-    return {}, {}
+    return {}, {}, {}
 
   headers = _get_github_headers(token)
 
   test_contents: dict[Path, str] = {}
   dependency_contents: dict[Path, str] = {}
+
+  # Adjacency list to track the dependency graph: Parent -> Set of Children
+  dependency_graph: dict[Path, set[Path]] = {}
 
   # Set of paths we have already queued or fetched to prevent infinite recursion
   visited_paths: set[Path] = set()
@@ -422,8 +427,8 @@ async def get_mixed_wpt_contents_async(
 
   # 1a. Create tasks to scan directories
   dir_tasks = [
-      asyncio.to_thread(_fetch_dir_listing, u, headers)
-      for u in dir_urls
+    asyncio.to_thread(_fetch_dir_listing, u, headers)
+    for u in dir_urls
   ]
 
   # 1b. Parse individual file URLs provided by user
@@ -493,15 +498,51 @@ async def get_mixed_wpt_contents_async(
       for dep in dependencies:
         resolved_path = resolve_dependency_path(fpath, dep)
 
-        # If valid path and we haven't seen it yet
-        if resolved_path and resolved_path not in visited_paths:
-          visited_paths.add(resolved_path)
+        # If valid path
+        if resolved_path:
+          # Always record the edge in the graph, even if we've seen the file.
+          # This ensures shared dependencies are mapped to all their parents.
+          if fpath not in dependency_graph:
+            dependency_graph[fpath] = set()
+          dependency_graph[fpath].add(resolved_path)
 
-          # Construct the raw GitHub URL for this dependency
-          dep_url = f'{WPT_GITHUB_RAW_CONTENTS_URL}{resolved_path}'
+          # If we haven't seen it yet, queue it for fetching.
+          if resolved_path not in visited_paths:
+            visited_paths.add(resolved_path)
 
-          # Avoid an arbitrarily large amount of files to fetch..
-          if len(visited_paths) <= MAXIMUM_FETCHED_DEPENDENCIES:
-            processing_queue.append((resolved_path, dep_url))
+            # Construct the raw GitHub URL for this dependency
+            dep_url = f'{WPT_GITHUB_RAW_CONTENTS_URL}{resolved_path}'
 
-  return test_contents, dependency_contents
+            # Avoid an arbitrarily large amount of files to fetch.
+            if len(visited_paths) <= MAXIMUM_FETCHED_DEPENDENCIES:
+              processing_queue.append((resolved_path, dep_url))
+
+  # PHASE 3: Build Test-to-Dependency Mapping
+  test_to_dependencies_map: dict[Path, set[Path]] = {}
+
+  for test_path in test_contents:
+    relevant_deps = set()
+
+    # Perform a traversal (DFS) to find all reachable dependencies for this test file
+    stack = [test_path]
+    seen_in_traversal = {test_path}
+
+    while stack:
+      current_path = stack.pop()
+
+      # If the current node is a dependency (and not the start node), record it.
+      # We check 'in dependency_contents' to ensure we only return files
+      # that were actually fetched and categorized as dependencies.
+      if current_path != test_path and current_path in dependency_contents:
+        relevant_deps.add(current_path)
+
+      # Add children to stack
+      if current_path in dependency_graph:
+        for child in dependency_graph[current_path]:
+          if child not in seen_in_traversal:
+            seen_in_traversal.add(child)
+            stack.append(child)
+
+    test_to_dependencies_map[test_path] = relevant_deps
+
+  return test_contents, dependency_contents, test_to_dependencies_map
