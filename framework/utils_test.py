@@ -640,6 +640,14 @@ class AsyncUtilsGitHubTests(unittest.IsolatedAsyncioTestCase):
     # a.html has no dependencies
     self.assertEqual(result.test_to_dependencies_map[Path('a.html')], set())
 
+    # Test Dependency Mapping
+    self.assertEqual(
+      result.test_to_dependency_map[Path('test.js')],
+      {Path('dep.js'), Path('resources/common.js')}
+    )
+    # a.html has no dependencies
+    self.assertEqual(result.test_to_dependency_map[Path('a.html')], set())
+
     self.assertEqual(mock_fetch_content.call_count, 4)
 
   @mock.patch('framework.utils.MAXIMUM_FETCHED_DEPENDENCIES', 2)
