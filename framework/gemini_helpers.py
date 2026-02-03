@@ -164,15 +164,25 @@ async def prompt_analysis(feature: FeatureEntry, wpt_contents: utils.WPTContents
       spec synthesis failure or total failure of all test analyses).
   """
   prompts = []
+  test_contents = wpt_contents.test_contents
+  dependency_contents = wpt_contents.dependency_contents
   file_names: list[str] = []
   for fpath, fc in wpt_contents.test_contents.items():
-    testfile_url = f'{utils.WPT_GITHUB_RAW_CONTENTS_URL}{fpath}'
+    # Aggregate the dependency file contents for this test file.
+    relevant_dependencies: list[tuple[Path, str]] = []
+    for dep_path in wpt_contents.test_to_dependencies_map[fpath]:
+      dep_contents = (
+        dependency_contents[dep_path]
+        if dep_path in dependency_contents else test_contents[dep_path]
+      )
+      relevant_dependencies.append((dep_path, dep_contents))
+
     prompts.append(
       render_template(
         TEST_ANALYSIS_TEMPLATE_PATH,
-        testfile_name=fpath.name,
-        testfile_url=testfile_url,
-        testfile_contents=fc
+        testfile_path=fpath,
+        testfile_contents=fc,
+        dependency_files=relevant_dependencies,
       )
     )
     file_names.append(fpath.name)
