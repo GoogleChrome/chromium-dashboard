@@ -758,7 +758,9 @@ export class ChromedashWPTEvalPage extends LitElement {
             Copy Report
           </sl-button>
         </div>
-        <div class="report-content ${contentClass}">${unsafeHTML(safeHtml)}</div>
+        <div class="report-content ${contentClass}">
+          ${unsafeHTML(safeHtml)}
+        </div>
       </section>
     `;
   }

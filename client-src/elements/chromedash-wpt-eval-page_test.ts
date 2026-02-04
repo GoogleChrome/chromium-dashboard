@@ -101,8 +101,7 @@ describe('chromedash-wpt-eval-page', () => {
   });
 
   it('sanitizes HTML in the report to prevent XSS', async () => {
-    const maliciousContent =
-    `# Safe Title
+    const maliciousContent = `# Safe Title
      <script>window.alert("XSS")</script>
      <img src="x" onerror="window.alert('img XSS')">
      <a href="javascript:alert('link XSS')">Bad Link</a>
