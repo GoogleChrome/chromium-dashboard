@@ -414,11 +414,7 @@ async def get_mixed_wpt_contents_async(
     PipelineError: If the test suite contains over the maximum number of test
       files to analyze (not including dependency files).
   """
-  token = settings.GITHUB_TOKEN
-  if token is None:
-    return WPTContents()
-
-  headers = _get_github_headers(token)
+  headers = _get_github_headers(settings.GITHUB_TOKEN)
 
   test_contents: dict[Path, str] = {}
   dependency_contents: dict[Path, str] = {}

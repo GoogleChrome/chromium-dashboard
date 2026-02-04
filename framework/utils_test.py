@@ -742,12 +742,6 @@ class AsyncUtilsGitHubTests(unittest.IsolatedAsyncioTestCase):
     self.assertEqual(result.dependency_contents, {})
     self.assertEqual(result.test_to_dependencies_map, {Path('a.html'): set()})
 
-  async def test_get_mixed_wpt_contents_async__no_token(self):
-    """Should return empty tuple immediately if no GitHub token is available."""
-    settings.GITHUB_TOKEN = None
-    result = await utils.get_mixed_wpt_contents_async(['url1'], ['url2'])
-    self.assertEqual(result, utils.WPTContents())
-
   @mock.patch('framework.utils.MAXIMUM_TEST_SUITE_SIZE', 5)
   @mock.patch('framework.utils._fetch_dir_listing')
   async def test_get_mixed_wpt_contents_async__exceeds_suite_size(
