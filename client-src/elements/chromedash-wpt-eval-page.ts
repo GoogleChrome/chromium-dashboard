@@ -2,6 +2,7 @@ import {LitElement, TemplateResult, css, html, nothing} from 'lit';
 import {customElement, property, state} from 'lit/decorators.js';
 import {unsafeHTML} from 'lit/directives/unsafe-html.js';
 import {marked} from 'marked';
+import DOMPurify from 'dompurify';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {Feature} from '../js-src/cs-client.js';
 import {parseRawTimestamp, showToastMessage} from './utils.js';
@@ -734,6 +735,8 @@ export class ChromedashWPTEvalPage extends LitElement {
     }
 
     const rawHtml = marked.parse(this.feature.ai_test_eval_report) as string;
+    const purify = DOMPurify(window);
+    const safeHtml = purify.sanitize(rawHtml);
 
     // Apply fade-in only if _reportContentChanged is true
     const titleClass = this._reportContentChanged ? 'fade-in delay-title' : '';
@@ -755,7 +758,7 @@ export class ChromedashWPTEvalPage extends LitElement {
             Copy Report
           </sl-button>
         </div>
-        <div class="report-content ${contentClass}">${unsafeHTML(rawHtml)}</div>
+        <div class="report-content ${contentClass}">${unsafeHTML(safeHtml)}</div>
       </section>
     `;
   }

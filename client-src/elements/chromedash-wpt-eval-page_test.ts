@@ -100,6 +100,48 @@ describe('chromedash-wpt-eval-page', () => {
     expect(content!.querySelector('h1')!.textContent).to.equal('Report Title');
   });
 
+  it('sanitizes HTML in the report to prevent XSS', async () => {
+    const maliciousContent =
+    `# Safe Title
+     <script>window.alert("XSS")</script>
+     <img src="x" onerror="window.alert('img XSS')">
+     <a href="javascript:alert('link XSS')">Bad Link</a>
+    `;
+
+    csClientStub.getFeature.resolves({
+      ...mockFeatureV1,
+      ai_test_eval_report: maliciousContent,
+    });
+
+    const el = await fixture<ChromedashWPTEvalPage>(
+      html`<chromedash-wpt-eval-page
+        .featureId=${123}
+      ></chromedash-wpt-eval-page>`
+    );
+    await el.updateComplete;
+
+    const content = el.shadowRoot!.querySelector('.report-content');
+    expect(content).to.exist;
+
+    // The title should still exist
+    expect(content!.querySelector('h1')!.textContent).to.equal('Safe Title');
+
+    // The script tag should be completely removed
+    expect(content!.querySelector('script')).to.not.exist;
+
+    // The img tag might exist (depending on config), but the onerror attribute must be gone
+    const img = content!.querySelector('img');
+    if (img) {
+      expect(img.hasAttribute('onerror')).to.be.false;
+    }
+
+    // The link should not have a javascript: href
+    const link = content!.querySelector('a');
+    if (link) {
+      expect(link.href).to.not.contain('javascript:');
+    }
+  });
+
   describe('Report Copy Functionality', () => {
     // Mock the clipboard API
     const mockWriteText = sinon.stub();
