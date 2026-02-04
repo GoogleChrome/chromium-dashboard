@@ -40,6 +40,8 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
     self.mock_utils = mock.patch('framework.gemini_helpers.utils').start()
     # Ensure PipelineError is the real exception class
     self.mock_utils.PipelineError = utils.PipelineError
+    # Ensure WPTContents is the real dataclass
+    self.mock_utils.WPTContents = utils.WPTContents
 
     self.mock_logging = mock.patch('framework.gemini_helpers.logging').start()
 
@@ -186,8 +188,16 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
       Path('https://wpt.fyi/results/foo/bar.html'): 'content1',
       Path('/css/css-grid/grid-definition.html'): 'content2'
     }
+
+    # Construct the dataclass object expected as return
+    mock_wpt_contents = utils.WPTContents(
+        test_contents=expected_content_map,
+        dependency_contents={},
+        test_to_dependencies_map={}
+    )
+
     self.mock_utils.get_mixed_wpt_contents_async = mock.AsyncMock(
-      return_value=(expected_content_map, {}, {})
+      return_value=mock_wpt_contents
     )
 
     # Run the async helper
@@ -205,7 +215,7 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
     self.mock_utils.get_mixed_wpt_contents_async.assert_called_once_with(
         expected_dirs, expected_urls
     )
-    self.assertEqual(result, (expected_content_map, {}))
+    self.assertEqual(result, mock_wpt_contents)
 
   @mock.patch('framework.gemini_helpers._fetch_spec_content', return_value="Mock Spec Content")
   def test_generate_unified_prompt_text(self, mock_fetch_spec):
@@ -213,11 +223,17 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
     test_files = {Path('test1.html'): 'content1'}
     dependency_files = {Path('dep.js'): 'dep_content'}
 
+    # Create the dataclass input
+    wpt_contents = utils.WPTContents(
+        test_contents=test_files,
+        dependency_contents=dependency_files
+    )
+
     # Mock render_template to return a predictable string
     self.mock_render_template.return_value = "Rendered Prompt"
 
     result = gemini_helpers._generate_unified_prompt_text(
-        self.feature, test_files, dependency_files
+        self.feature, wpt_contents
     )
 
     self.assertEqual(result, "Rendered Prompt")
@@ -243,6 +259,7 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
   def test_prompt_analysis__success(self, mock_fetch_spec):
     """Test the multi-prompt path where all steps and API calls succeed."""
     test_files = {Path('test.html'): 'file_content_1'}
+    wpt_contents = utils.WPTContents(test_contents=test_files)
 
     # Setup mocks for template rendering
     def fake_render(template_path, **kwargs):
@@ -257,7 +274,7 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
         return_value='Final Gap Analysis Report'
     )
 
-    result = asyncio.run(gemini_helpers.prompt_analysis(self.feature, test_files))
+    result = asyncio.run(gemini_helpers.prompt_analysis(self.feature, wpt_contents))
 
     self.assertEqual(result, 'Final Gap Analysis Report')
 
@@ -274,6 +291,7 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
   def test_prompt_analysis__spec_synthesis_failure(self, mock_fetch_spec):
     """Prompt analysis should fail if spec synthesis prompt (popped last) fails."""
     test_files = {Path('f1.html'): 'content1'}
+    wpt_contents = utils.WPTContents(test_contents=test_files)
 
     # The last item (spec synthesis) returns an Exception instead of str
     gemini_error = RuntimeError("Gemini overloaded")
@@ -283,7 +301,7 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
 
     with self.assertRaisesRegex(utils.PipelineError,
                                 'Spec synthesis prompt failure'):
-      asyncio.run(gemini_helpers.prompt_analysis(self.feature, test_files))
+      asyncio.run(gemini_helpers.prompt_analysis(self.feature, wpt_contents))
 
   @mock.patch('framework.gemini_helpers._fetch_spec_content', return_value="Mock Spec Content")
   def test_prompt_analysis__all_test_analysis_failure(self, mock_fetch_spec):
@@ -292,6 +310,7 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
       Path('f1.html'): 'content1',
       Path('f2.html'): 'content2'
     }
+    wpt_contents = utils.WPTContents(test_contents=test_files)
 
     # Both tests fail, but Spec succeeds (last item)
     self.mock_gemini_client.get_batch_responses_async = mock.AsyncMock(
@@ -304,7 +323,7 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
 
     with self.assertRaisesRegex(utils.PipelineError,
                                 'No successful test analysis responses'):
-      asyncio.run(gemini_helpers.prompt_analysis(self.feature, test_files))
+      asyncio.run(gemini_helpers.prompt_analysis(self.feature, wpt_contents))
 
     # Should have logged warnings for the failures
     self.assertEqual(self.mock_logging.error.call_count, 2)
@@ -316,6 +335,7 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
       Path('f1.html'): 'content1',
       Path('f2.html'): 'content2'
     }
+    wpt_contents = utils.WPTContents(test_contents=test_files)
 
     # One fails, one succeeds, spec succeeds
     self.mock_gemini_client.get_batch_responses_async = mock.AsyncMock(
@@ -330,7 +350,7 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
     )
 
     # Should NOT raise exception
-    result = asyncio.run(gemini_helpers.prompt_analysis(self.feature, test_files))
+    result = asyncio.run(gemini_helpers.prompt_analysis(self.feature, wpt_contents))
 
     self.assertEqual(result, 'Final Report')
     # Verify one warning logged for the failure
@@ -343,7 +363,7 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
 
     # Return 1 file (less than MAX_SINGLE_PROMPT_TEST_COUNT)
     mock_test_files = {Path('t1.html'): 'c1'}
-    mock_deps = {}
+    mock_wpt_contents = utils.WPTContents(test_contents=mock_test_files)
 
     self.mock_utils.extract_wpt_fyi_results_urls.return_value = ['url1']
     self.mock_gemini_client.prompt_exceeds_input_token_limit.return_value = False
@@ -354,14 +374,14 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
          mock.patch('framework.gemini_helpers._generate_unified_prompt_text') as mock_gen_prompt, \
          mock.patch('framework.gemini_helpers.prompt_analysis', new_callable=mock.AsyncMock) as mock_multi:
 
-      mock_get_content.return_value = (mock_test_files, mock_deps)
+      mock_get_content.return_value = mock_wpt_contents
       mock_gen_prompt.return_value = "Generated Prompt Text"
       mock_unified.return_value = "Unified Success"
 
       result = asyncio.run(gemini_helpers.run_wpt_test_eval_pipeline(self.feature))
 
       # Verify Generator Called
-      mock_gen_prompt.assert_called_once_with(self.feature, mock_test_files, mock_deps)
+      mock_gen_prompt.assert_called_once_with(self.feature, mock_wpt_contents)
 
       # Verify Token Count Checked
       self.mock_gemini_client.prompt_exceeds_input_token_limit.assert_called_once_with(
@@ -382,7 +402,7 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
 
     # Return 1 file (small count)
     mock_test_files = {Path('t1.html'): 'c1'}
-    mock_deps = {}
+    mock_wpt_contents = utils.WPTContents(test_contents=mock_test_files)
 
     self.mock_utils.extract_wpt_fyi_results_urls.return_value = ['url1']
 
@@ -394,7 +414,7 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
          mock.patch('framework.gemini_helpers._generate_unified_prompt_text') as mock_gen_prompt, \
          mock.patch('framework.gemini_helpers.prompt_analysis', new_callable=mock.AsyncMock) as mock_multi:
 
-      mock_get_content.return_value = (mock_test_files, mock_deps)
+      mock_get_content.return_value = mock_wpt_contents
       mock_gen_prompt.return_value = "Generated Huge Prompt"
       mock_multi.return_value = "Multi Success"
 
@@ -405,7 +425,7 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
         "Generated Huge Prompt")
 
       # Verify Multi Called
-      mock_multi.assert_awaited_once_with(self.feature, mock_test_files)
+      mock_multi.assert_awaited_once_with(self.feature, mock_wpt_contents)
 
       # Verify Unified NOT Called
       mock_unified.assert_not_called()
