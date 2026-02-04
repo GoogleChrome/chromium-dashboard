@@ -643,7 +643,7 @@ class AsyncUtilsGitHubTests(unittest.IsolatedAsyncioTestCase):
     # Test Dependency Mapping
     self.assertEqual(
       result.test_to_dependencies_map[Path('test.js')],
-      {Path('dep.js'), Path('resourcetss/common.js')}
+      {Path('dep.js'), Path('resources/common.js')}
     )
     # a.html has no dependencies
     self.assertEqual(result.test_to_dependencies_map[Path('a.html')], set())
