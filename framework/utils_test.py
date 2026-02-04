@@ -620,24 +620,25 @@ class AsyncUtilsGitHubTests(unittest.IsolatedAsyncioTestCase):
 
     mock_fetch_content.side_effect = side_effect
 
-    tests, deps, mapping = await utils.get_mixed_wpt_contents_async(dir_urls, file_urls)
+    result = await utils.get_mixed_wpt_contents_async(dir_urls, file_urls)
 
     # Test Files (explicitly requested or from dir)
-    self.assertIn(Path('a.html'), tests)
-    self.assertIn(Path('test.js'), tests)
-    self.assertEqual(len(tests), 2)
+    self.assertIn(Path('a.html'), result.test_contents)
+    self.assertIn(Path('test.js'), result.test_contents)
+    self.assertEqual(len(result.test_contents), 2)
 
     # Dependency Files (discovered recursively)
     # dep.js (relative to test.js) -> dep.js
     # common.js -> resources/common.js
-    self.assertIn(Path('dep.js'), deps)
-    self.assertIn(Path('resources/common.js'), deps)
-    self.assertEqual(len(deps), 2)
+    self.assertIn(Path('dep.js'), result.dependency_contents)
+    self.assertIn(Path('resources/common.js'), result.dependency_contents)
+    self.assertEqual(len(result.dependency_contents), 2)
 
     # Test Dependency Mapping
-    self.assertEqual(mapping[Path('test.js')], {Path('dep.js'), Path('resources/common.js')})
+    self.assertEqual(result.test_to_dependencies_map[Path('test.js')],
+                     {Path('dep.js'), Path('resources/common.js')})
     # a.html has no dependencies
-    self.assertEqual(mapping[Path('a.html')], set())
+    self.assertEqual(result.test_to_dependencies_map[Path('a.html')], set())
 
     self.assertEqual(mock_fetch_content.call_count, 4)
 
@@ -671,22 +672,22 @@ class AsyncUtilsGitHubTests(unittest.IsolatedAsyncioTestCase):
     mock_fetch_content.side_effect = side_effect
 
     # Execute
-    tests, deps, mapping = await utils.get_mixed_wpt_contents_async(dir_urls, file_urls)
+    result = await utils.get_mixed_wpt_contents_async(dir_urls, file_urls)
 
     # 1. Start: 1 Test file (test.js). Visited count = 1.
     # 2. Fetch test.js. Find dep1. Visited count = 2. (2 <= 2) -> Queue dep1.
     # 3. Fetch dep1. Find dep2. Visited count = 3. (3 <= 2) -> False. Do NOT queue dep2.
 
     # Assertions
-    self.assertIn(Path('test.js'), tests)
-    self.assertIn(Path('dep1.js'), deps)
+    self.assertIn(Path('test.js'), result.test_contents)
+    self.assertIn(Path('dep1.js'), result.dependency_contents)
 
     # Dep 2 should NOT be in the fetched content because we exceeded limit before queuing it
-    self.assertNotIn(Path('dep2.js'), deps)
+    self.assertNotIn(Path('dep2.js'), result.dependency_contents)
 
     # Mapping should reflect only what was fetched
-    self.assertIn(Path('dep1.js'), mapping[Path('test.js')])
-    self.assertNotIn(Path('dep2.js'), mapping[Path('test.js')])
+    self.assertIn(Path('dep1.js'), result.test_to_dependencies_map[Path('test.js')])
+    self.assertNotIn(Path('dep2.js'), result.test_to_dependencies_map[Path('test.js')])
 
   @mock.patch('framework.utils._fetch_dir_listing')
   @mock.patch('framework.utils._fetch_file_content')
@@ -709,13 +710,13 @@ class AsyncUtilsGitHubTests(unittest.IsolatedAsyncioTestCase):
 
     mock_fetch_content.return_value = 'content'
 
-    tests, deps, mapping = await utils.get_mixed_wpt_contents_async(dir_urls, file_urls)
+    result = await utils.get_mixed_wpt_contents_async(dir_urls, file_urls)
 
     # It should be in tests, not deps
-    self.assertEqual(len(tests), 1)
-    self.assertEqual(tests[Path('dir1/a.html')], 'content')
-    self.assertEqual(len(deps), 0)
-    self.assertEqual(mapping[Path('dir1/a.html')], set())
+    self.assertEqual(len(result.test_contents), 1)
+    self.assertEqual(result.test_contents[Path('dir1/a.html')], 'content')
+    self.assertEqual(len(result.dependency_contents), 0)
+    self.assertEqual(result.test_to_dependencies_map[Path('dir1/a.html')], set())
 
     # Crucial: content fetch should only happen once
     mock_fetch_content.assert_called_once_with(expected_url)
@@ -735,17 +736,17 @@ class AsyncUtilsGitHubTests(unittest.IsolatedAsyncioTestCase):
     # Content fetch succeeds for the one valid file
     mock_fetch_content.return_value = 'content_a'
 
-    tests, deps, mapping = await utils.get_mixed_wpt_contents_async(dir_urls, file_urls)
+    result = await utils.get_mixed_wpt_contents_async(dir_urls, file_urls)
 
-    self.assertEqual(tests, {Path('a.html'): 'content_a'})
-    self.assertEqual(deps, {})
-    self.assertEqual(mapping, {Path('a.html'): set()})
+    self.assertEqual(result.test_contents, {Path('a.html'): 'content_a'})
+    self.assertEqual(result.dependency_contents, {})
+    self.assertEqual(result.test_to_dependencies_map, {Path('a.html'): set()})
 
   async def test_get_mixed_wpt_contents_async__no_token(self):
     """Should return empty tuple immediately if no GitHub token is available."""
     settings.GITHUB_TOKEN = None
-    results = await utils.get_mixed_wpt_contents_async(['url1'], ['url2'])
-    self.assertEqual(results, ({}, {}, {}))
+    result = await utils.get_mixed_wpt_contents_async(['url1'], ['url2'])
+    self.assertEqual(result, utils.WPTContents())
 
   @mock.patch('framework.utils.MAXIMUM_TEST_SUITE_SIZE', 5)
   @mock.patch('framework.utils._fetch_dir_listing')
@@ -791,10 +792,10 @@ class AsyncUtilsGitHubTests(unittest.IsolatedAsyncioTestCase):
 
     mock_fetch_content.side_effect = side_effect
 
-    _, deps, mapping = await utils.get_mixed_wpt_contents_async(dir_urls, file_urls)
+    result = await utils.get_mixed_wpt_contents_async(dir_urls, file_urls)
 
-    self.assertIn(Path('shared.js'), deps)
+    self.assertIn(Path('shared.js'), result.dependency_contents)
 
     # Both tests should map to the same shared file
-    self.assertEqual(mapping[Path('test_a.js')], {Path('shared.js')})
-    self.assertEqual(mapping[Path('test_b.js')], {Path('shared.js')})
+    self.assertEqual(result.test_to_dependencies_map[Path('test_a.js')], {Path('shared.js')})
+    self.assertEqual(result.test_to_dependencies_map[Path('test_b.js')], {Path('shared.js')})
