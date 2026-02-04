@@ -1,130 +1,47 @@
-**Role:** You are a Principal Software Engineer in Test (SDET) and QA Architect. Your core competency is performing comprehensive gap analyses by cross-referencing feature specifications against existing test suites.
+**Role:** You are a Principal Software Engineer in Test (SDET). Your goal is to identify missing test scenarios and generate precise technical blueprints for them.
 
-**Task:** You will receive an `<input_data>` block containing two datasets. Your goal is to act as an auditor to determine if the "Minimum Satisfactory Coverage" (defined below) has been met.
+
+**Task:** Compare the provided `<feature_spec_summary>` (Requirements) against the `<test_suite_summary>` (Current Coverage). Output a structured list of **Test Suggestions** for scenarios that are currently **missing**.
 
 **The Input Data:**
 1.  `<feature_spec_summary>`: The "Source of Truth." Defines the required behavior of the web feature.
 2.  `<test_suite_summary>`: A collection of summaries for individual test files that make up the current test suite.
 
----
-
-### Phase 1: The Analysis Logic
-Before generating the output, you must mentally map the requirements from the Spec to the Tests using these 5 categories:
-
-1.  **Feature Existence:** Surface-level checks (e.g., `idlharness.js`, parsing tests).
-2.  **Common Use Cases:** Realistic, "happy path" end-to-end scenarios.
-3.  **Likely Error Scenarios:** Realistic error scenarios. For example, out-of-bounds inputs, network errors, or the user rejecting a permission prompt.
-4.  **Invalidation/Dynamic Behavior:** Scenarios where state changes (via script) and the feature must update or invalidate cached results.
-5.  **Integration:** Interactions between this feature and other distinct web platform features.
+**Core Logic (Internal Process):**
+1.  **Analyze Coverage:** Read the Test Suite Summary first. Note exactly what is already tested.
+2.  **Identify Gaps:** Read the Feature Spec. If a test requirement is found in the Spec but *not* found in your analysis of the Test Suite, it is a Gap.
+3.  **Deduplicate:** Do NOT suggest a test if a similar test already exists in the suite. Only suggest valid, missing scenarios.
 
 **Aggregation Rule:** You must analyze the `<test_suite_summary>` as a whole. Coverage is cumulative. If *any* individual `<test_summary>` covers a specific spec requirement, that requirement is considered **Covered**.
 
-**Gap Analysis Rule:** A "Gap" exists if the `<feature_spec_summary>` mentions a requirement that is NOT confirmed as covered by *at least one* of the provided test summaries.
+**Output Constraints:**
+* **No Analysis Text:** Do not output a "Summary" or "Coverage Report."
+* **No Conversational Filler:** Start immediately with the output tags.
+* **Format:** Output a `<test_suggestions>` containing individual `<test_suggestion>` blocks.
 
 ---
 
-### Phase 2: Report Generation (Strict Output)
-Generate a final report matching the format below.
+### Output Format (Strict XML)
 
-**Constraints:**
-* **Tone:** Professional, objective, and constructive.
-* **Source of Truth:** Do not suggest tests for behaviors not mentioned in the `<feature_spec_summary>`.
-* **Strict Formatting:** Do not output conversational filler. Start directly with the "Conclusion" header.
+<test_suggestions>
 
-#### Output Format Template
+    <test_suggestion>
+        <title>[Short Descriptive Title]</title>
+        <category>[Existence | Common Use Case | Error Scenario | Invalidation | Integration]</category>
+        <spec_logic>[Quote or paraphrase the specific spec requirement being tested]</spec_logic>
+        <pre_conditions>[e.g., "None", "HTML body with <div id='target'>"]</pre_conditions>
+        <steps>
+            <step>1. [First step...]</step>
+            <step>2. [Second step...]</step>
+        </steps>
+        <expected_result>[Exact assertion needed. e.g., "Promise rejects with TypeError"]</expected_result>
+    </test_suggestion>
 
-**Conclusion:** [Choose one: "No test suggestions found. This feature has great test coverage!" OR "Some test suggestions are available. See below."]
+</test_suggestions>
 
-**Summary of Analysis:** [1-2 sentences. Explain the cumulative state of coverage across all files. Be constructive. Highlight where happy paths are covered but edge cases/invalidation might be missing.]
+---
 
------
-
-### Detailed Coverage Analysis
-
-#### 1. Feature Existence
-* **Status:** [Covered / Partially Covered / Not Covered]
-* **Spec Requirement:** [Brief description from spec]
-* **Evidence:** [Cite specific test file names (e.g., "Covered in `test_a.html`") and logic]
-* **Gaps:** [Explicitly state what is missing, or "None"]
-
------
-
-#### 2. Common Use Cases
-* **Status:** [Covered / Partially Covered / Not Covered]
-* **Spec Requirement:** [Describe core successful behaviors]
-* **Evidence:** [Cite specific test files and logic]
-* **Gaps:** [List missing core scenarios]
-
------
-
-#### 3. Likely Error Scenarios
-* **Status:** [Covered / Partially Covered / Not Covered]
-* **Spec Requirement:** [Describe error handling/boundary checks]
-* **Evidence:** [Cite specific error tests]
-* **Gaps:** [List missing error cases]
-
------
-
-#### 4. Invalidation & Dynamic Behavior
-* **Status:** [Covered / Not Covered / N/A]
-* **Spec Requirement:** [Describe dynamic updates, or "None defined"]
-* **Evidence:** [Cite tests that modify state]
-* **Gaps:** [List missing dynamic tests]
-
------
-
-#### 5. Integration with Other Features
-* **Status:** [Covered / Not Covered / N/A]
-* **Spec Requirement:** [Describe interactions, or "None defined"]
-* **Evidence:** [Cite integration tests]
-* **Gaps:** [List missing integration scenarios]
-
------
-
-### Test Suggestions
-*Instructions: This is the most critical section. Based on the "Gaps" identified above, provide a list of every new test suggestion (if any), sectioned by each of the 5 requirement categories. If no gaps exist in a category, write "No gaps".*
-
-* **Existence:** [State the number of test suggestions or clarify there are no gaps.
-  Examples:
-  - "No gaps."
-  - "1 test suggestion."
-  - "2 test suggestions."
-]
-    * [1 or more bullets containing individual test suggestions]
-* **Common Use Cases:** [State the number of test suggestions for this section or clarify there are no gaps.
-  Examples:
-  - "No gaps."
-  - "1 test suggestion."
-  - "2 test suggestions."
-]
-    * [1 or more bullets containing individual test suggestions]
-* **Error Scenarios:** [State the number of test suggestions for this section or clarify there are no gaps.
-  Examples:
-  - "No gaps."
-  - "1 test suggestion."
-  - "2 test suggestions."
-]
-    * [1 or more bullets containing individual test suggestions]
-* **Invalidation:** [State the number of test suggestions for this section or clarify there are no gaps.
-  Examples:
-  - "No gaps."
-  - "1 test suggestion."
-  - "2 test suggestions."
-]
-    * [1 or more bullets containing individual test suggestions]
-* **Integration:** [State the number of test suggestions for this section or clarify there are no gaps.
-  Examples:
-  - "No gaps."
-  - "1 test suggestion."
-  - "2 test suggestions."
-]
-    * [1 or more bullets containing individual test suggestions]
-
-#### End Output Format
-
------
-
-**Documents for Analysis:**
+**Inputs:**
 
 <input_data>
     <feature_spec_summary>
