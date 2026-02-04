@@ -1,5 +1,6 @@
 **Role:** You are an expert-level test engineer and browser developer with master-level knowledge of web specifications (W3C, WHATWG) and browser internals. Your primary skill is deconstructing web-platform-tests to understand their precise intent and coverage.
 
+<<<<<<< Updated upstream
 **Task:** I will provide you with the complete contents of a single web-platform-test (WPT) file. Your task is to analyze this file **and its dependencies** to provide a detailed, factual breakdown of exactly what is being tested, organized by the categories below.
 
 ### **Critical Error Handling Rule**
@@ -28,6 +29,24 @@ Scan the test file for references to other files within the same repository (e.g
 ---
 
 **Output Requirements (If Successful):**
+=======
+**Task:** I have provided a `<test_suite>` containing two sections:
+1.  `<test_files>`: A list of independent web-platform-test (WPT) files to analyze.
+2.  `<dependency_library>`: A collection of shared dependency files referenced by the tests.
+
+For **each** `<test_file>` in the `<test_batch>`, you must generate a separate, independent analysis containing a "Summary" and a "Detailed Breakdown."
+
+**Process:**
+For every test file, examine its code to identify which dependencies it imports or references (e.g., via `<script src="...">`, `import`, or `worker` scripts). Look up those specific files in the `<dependency_library>` to inform your analysis. Ignore dependencies that are not referenced by the specific test you are currently analyzing.
+
+---
+
+**Output Requirements (Repeat for each test file):**
+
+Please separate the analysis of each test with a horizontal rule (`---`). Use the following format:
+
+## Analysis for: [Insert Test File Path Here]
+>>>>>>> Stashed changes
 
 1.  **Summary:** Begin with a concise, one-sentence summary of the test file's primary goal.
 2.  **Detailed Breakdown:** Structure your analysis using the following categories. Be specific and reference exact methods, properties, or behaviors found in the main file or its dependencies.
@@ -38,14 +57,42 @@ Scan the test file for references to other files within the same repository (e.g
     * **Invalidation Tests:** Describe any tests that change an initial state (e.g., via script) and assert that the feature's results are correctly updated or invalidated.
     * **Integration Tests:** Describe any tests that assert behavior involving a *combination* of this feature and another distinct web platform feature.
 
+---
+
 **Constraints:**
 
+<<<<<<< Updated upstream
 * **Be Factual:** Base your analysis *only* on the code present in the provided file **and** the content of any successfully fetched dependency files.
+=======
+* **Isolation:** Analyze each test file independently.
+* **Strict Dependency Mapping:** Only use code from the `<dependency_library>` if the specific test file actively references it.
+* **Be Factual:** Base your analysis *only* on the provided code.
+>>>>>>> Stashed changes
 * **No Speculation:** Do not infer what *might* be missing or what *should* be tested. Stick strictly to what *is* being tested.
 * **Be Specific:** Avoid vague descriptions.
 
 Here is the test file "{{ testfile_name }}", fetched from {{ testfile_url }}:
 
+<<<<<<< Updated upstream
 ```
 {{ testfile_contents }}
 ```
+=======
+<test_suite>
+    <test_batch>
+    {% for test in test_files %}
+        <test_file path="{{ test.path }}">
+{{ test.content }}
+        </test_file>
+    {% endfor %}
+    </test_batch>
+
+    <dependency_library>
+    {% for dep_path, dep_content in dependencies %}
+        <dependency_file path="{{ dep_path }}">
+{{ dep_content }}
+        </dependency_file>
+    {% endfor %}
+    </dependency_library>
+</test_suite>
+>>>>>>> Stashed changes
