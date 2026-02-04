@@ -17,9 +17,9 @@ google-cloud-tasks==2.21.0
 google-cloud-ndb==2.4.0
 google-cloud-logging==3.13.0
 google-cloud-secret-manager==2.26.0
-google-cloud-storage==3.8.0
-google-auth==2.47.0
-google-genai==1.60.0
+google-cloud-storage==3.9.0
+google-auth==2.48.0
+google-genai==1.61.0
 requests==2.32.5
 redis==6.4.0
 fakeredis==2.33.0
@@ -41,4 +41,4 @@ pillow==12.1.0
 # OpenAPI files
 ./gen/py/chromestatus_openapi
 ./gen/py/webstatus_openapi
-types-python-dateutil==2.9.0.20251115
+types-python-dateutil==2.9.0.20260124
