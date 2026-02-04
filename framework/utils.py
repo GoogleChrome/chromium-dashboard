@@ -1,18 +1,3 @@
-# -*- coding: utf-8 -*-
-# Copyright 2021 Google Inc.
-#
-# Licensed under the Apache License, Version 2.0 (the "License")
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 import asyncio
 import calendar
 import datetime
@@ -25,6 +10,7 @@ import time
 import traceback
 import urllib.request
 from base64 import b64decode
+from dataclasses import dataclass, field
 from pathlib import Path
 from urllib.parse import urlparse
 
@@ -59,6 +45,14 @@ MAXIMUM_TEST_SUITE_SIZE_OUTPUT = (
 )
 
 
+@dataclass
+class WPTContents:
+  """Holds the results of a WPT content fetch operation."""
+  test_contents: dict[Path, str] = field(default_factory=dict)
+  dependency_contents: dict[Path, str] = field(default_factory=dict)
+  test_to_dependencies_map: dict[Path, set[Path]] = field(default_factory=dict)
+
+
 class PipelineError(Exception):
   """Base exception for errors occurring during the AI evaluation pipeline."""
   pass
@@ -82,7 +76,7 @@ def retry(tries, delay=1, backoff=2):
     tries: int Number of times to retry, set to 0 to disable retry.
     delay: float Initial sleep time in seconds.
     backoff: float Must be greater than 1, further failures would sleep
-             delay*=backoff seconds.
+              delay*=backoff seconds.
   """
   if backoff <= 1:
     raise ValueError("backoff must be greater than 1")
@@ -143,8 +137,8 @@ def get_banner_time(timestamp):
   """Converts a timestamp into data so it can appear in the banner.
   Args:
     timestamp: timestamp expressed in the following format:
-         [year,month,day,hour,minute,second]
-         e.g. [2009,3,20,21,45,50] represents March 20 2009 9:45:50 PM
+          [year,month,day,hour,minute,second]
+          e.g. [2009,3,20,21,45,50] represents March 20 2009 9:45:50 PM
   Returns:
     EZT-ready data used to display the time inside the banner message.
   """
@@ -386,7 +380,7 @@ def resolve_dependency_path(current_file_path: Path, dep_ref: str) -> Path | Non
 async def get_mixed_wpt_contents_async(
     dir_urls: list[str],
     additional_file_urls: list[str]
-) -> tuple[dict[Path, str], dict[Path, str], dict[Path, set[Path]]]:
+) -> WPTContents:
   """
   Orchestrates concurrent fetching of WPT files and recursively fetches their dependencies.
 
@@ -395,11 +389,11 @@ async def get_mixed_wpt_contents_async(
     additional_file_urls: list of individual WPT file URLs.
 
   Returns:
-    A tuple containing three dictionaries:
-    1. test_files: {filename: content} for files explicitly requested (or in requested dirs).
-    2. dependency_files: {filename: content} for files found recursively via imports/scripts.
+    A WPTContents object containing:
+    1. test_contents: {filename: content} for files explicitly requested (or in requested dirs).
+    2. dependency_contents: {filename: content} for files found recursively via imports/scripts.
     3. test_to_dependencies_map: {test_filename: set(dependency_filenames)}
-       mapping each test file to all its recursive dependency files.
+        mapping each test file to all its recursive dependency files.
 
   Raises:
     PipelineError: If the test suite contains over the maximum number of test
@@ -407,7 +401,7 @@ async def get_mixed_wpt_contents_async(
   """
   token = settings.GITHUB_TOKEN
   if token is None:
-    return {}, {}, {}
+    return WPTContents()
 
   headers = _get_github_headers(token)
 
@@ -546,4 +540,8 @@ async def get_mixed_wpt_contents_async(
 
     test_to_dependencies_map[test_path] = relevant_deps
 
-  return test_contents, dependency_contents, test_to_dependencies_map
+  return WPTContents(
+    test_contents=test_contents,
+    dependency_contents=dependency_contents,
+    test_to_dependencies_map=test_to_dependencies_map
+  )
