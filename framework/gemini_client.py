@@ -82,10 +82,9 @@ class GeminiClient:
       model=GeminiClient.GEMINI_MODEL,
       contents=prompt
     )
-    model_info = self.client.get(model=self.GEMINI_MODEL)
-    logging.info('Prompt token count:', response.total_tokens)
-    logging.info('Models context limit token count:',
-                 model_info.input_token_limit)
+    model_info = self.client.models.get(model=self.GEMINI_MODEL)
+    logging.info(f'Prompt token count: {response.total_tokens}')
+    logging.info(f'Model\'s context limit token count: {model_info.input_token_limit}')
     return response.total_tokens > model_info.input_token_limit
 
   @utils.retry(MAX_RETRIES, delay=RETRY_BACKOFF_SECONDS)

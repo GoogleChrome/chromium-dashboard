@@ -258,8 +258,15 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
   @mock.patch('framework.gemini_helpers._fetch_spec_content', return_value="Mock Spec Content")
   def test_prompt_analysis__success(self, mock_fetch_spec):
     """Test the multi-prompt path where all steps and API calls succeed."""
-    test_files = {Path('test.html'): 'file_content_1'}
-    wpt_contents = utils.WPTContents(test_contents=test_files)
+    test_path = Path('test.html')
+    test_files = {test_path: 'file_content_1'}
+    dependency_files = {Path('dep.js'): 'dep_content'}
+    dependency_mapping = {test_path: {Path('dep.js')}}
+    wpt_contents = utils.WPTContents(
+      test_contents=test_files,
+      dependency_contents=dependency_files,
+      test_to_dependencies_map=dependency_mapping,
+    )
 
     # Setup mocks for template rendering
     def fake_render(template_path, **kwargs):
@@ -290,8 +297,15 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
   @mock.patch('framework.gemini_helpers._fetch_spec_content', return_value="Mock Spec Content")
   def test_prompt_analysis__spec_synthesis_failure(self, mock_fetch_spec):
     """Prompt analysis should fail if spec synthesis prompt (popped last) fails."""
-    test_files = {Path('f1.html'): 'content1'}
-    wpt_contents = utils.WPTContents(test_contents=test_files)
+    test_path = Path('test.html')
+    test_files = {Path('test.html'): 'content1'}
+    dependency_files = {}
+    dependency_mapping = {test_path: set()}
+    wpt_contents = utils.WPTContents(
+      test_contents=test_files,
+      dependency_contents=dependency_files,
+      test_to_dependencies_map=dependency_mapping
+    )
 
     # The last item (spec synthesis) returns an Exception instead of str
     gemini_error = RuntimeError("Gemini overloaded")
@@ -310,7 +324,13 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
       Path('f1.html'): 'content1',
       Path('f2.html'): 'content2'
     }
-    wpt_contents = utils.WPTContents(test_contents=test_files)
+    dependency_files = {}
+    dependency_mapping = {Path('f1.html'): set(), Path('f2.html'): set()}
+    wpt_contents = utils.WPTContents(
+      test_contents=test_files,
+      dependency_contents=dependency_files,
+      test_to_dependencies_map=dependency_mapping
+    )
 
     # Both tests fail, but Spec succeeds (last item)
     self.mock_gemini_client.get_batch_responses_async = mock.AsyncMock(
@@ -335,7 +355,13 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
       Path('f1.html'): 'content1',
       Path('f2.html'): 'content2'
     }
-    wpt_contents = utils.WPTContents(test_contents=test_files)
+    dependency_files = {}
+    dependency_mapping = {Path('f1.html'): set(), Path('f2.html'): set()}
+    wpt_contents = utils.WPTContents(
+      test_contents=test_files,
+      dependency_contents=dependency_files,
+      test_to_dependencies_map=dependency_mapping
+    )
 
     # One fails, one succeeds, spec succeeds
     self.mock_gemini_client.get_batch_responses_async = mock.AsyncMock(
@@ -362,8 +388,14 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
     self.feature.wpt_descr = 'https://wpt.fyi/results/test'
 
     # Return 1 file (less than MAX_SINGLE_PROMPT_TEST_COUNT)
-    mock_test_files = {Path('t1.html'): 'c1'}
-    mock_wpt_contents = utils.WPTContents(test_contents=mock_test_files)
+    test_files = {Path('t1.html'): 'c1'}
+    dependency_files = {}
+    dependency_mapping = {Path('t1.html'): set()}
+    wpt_contents = utils.WPTContents(
+      test_contents=test_files,
+      dependency_contents=dependency_files,
+      test_to_dependencies_map=dependency_mapping
+    )
 
     self.mock_utils.extract_wpt_fyi_results_urls.return_value = ['url1']
     self.mock_gemini_client.prompt_exceeds_input_token_limit.return_value = False
@@ -374,14 +406,14 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
          mock.patch('framework.gemini_helpers._generate_unified_prompt_text') as mock_gen_prompt, \
          mock.patch('framework.gemini_helpers.prompt_analysis', new_callable=mock.AsyncMock) as mock_multi:
 
-      mock_get_content.return_value = mock_wpt_contents
+      mock_get_content.return_value = wpt_contents
       mock_gen_prompt.return_value = "Generated Prompt Text"
       mock_unified.return_value = "Unified Success"
 
       result = asyncio.run(gemini_helpers.run_wpt_test_eval_pipeline(self.feature))
 
       # Verify Generator Called
-      mock_gen_prompt.assert_called_once_with(self.feature, mock_wpt_contents)
+      mock_gen_prompt.assert_called_once_with(self.feature, wpt_contents)
 
       # Verify Token Count Checked
       self.mock_gemini_client.prompt_exceeds_input_token_limit.assert_called_once_with(
@@ -400,9 +432,15 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
     self.feature.spec_link = 'https://spec.example.com'
     self.feature.wpt_descr = 'https://wpt.fyi/results/test'
 
-    # Return 1 file (small count)
-    mock_test_files = {Path('t1.html'): 'c1'}
-    mock_wpt_contents = utils.WPTContents(test_contents=mock_test_files)
+    # Create enough files to exceed threshold (10)
+    test_files = {Path(f't{i}.html'): 'c' for i in range(12)}
+    dependency_files = {}
+    dependency_mapping = {Path(f't{i}.html'): set() for i in range(12)}
+    wpt_contents = utils.WPTContents(
+      test_contents=test_files,
+      dependency_contents=dependency_files,
+      test_to_dependencies_map=dependency_mapping
+    )
 
     self.mock_utils.extract_wpt_fyi_results_urls.return_value = ['url1']
 
@@ -414,7 +452,7 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
          mock.patch('framework.gemini_helpers._generate_unified_prompt_text') as mock_gen_prompt, \
          mock.patch('framework.gemini_helpers.prompt_analysis', new_callable=mock.AsyncMock) as mock_multi:
 
-      mock_get_content.return_value = mock_wpt_contents
+      mock_get_content.return_value = wpt_contents
       mock_gen_prompt.return_value = "Generated Huge Prompt"
       mock_multi.return_value = "Multi Success"
 
@@ -425,7 +463,7 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
         "Generated Huge Prompt")
 
       # Verify Multi Called
-      mock_multi.assert_awaited_once_with(self.feature, mock_wpt_contents)
+      mock_multi.assert_awaited_once_with(self.feature, wpt_contents)
 
       # Verify Unified NOT Called
       mock_unified.assert_not_called()
