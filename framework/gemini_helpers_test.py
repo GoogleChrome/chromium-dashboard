@@ -256,26 +256,28 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
     self.mock_gemini_client.get_response.assert_called_once_with(prompt_text)
 
   @mock.patch('framework.gemini_helpers._fetch_spec_content', return_value="Mock Spec Content")
-  def test_prompt_analysis__success(self, mock_fetch_spec):
-    """Test the multi-prompt path where all steps and API calls succeed."""
-    test_path = Path('test.html')
-    test_files = {test_path: 'file_content_1'}
-    dependency_files = {Path('dep.js'): 'dep_content'}
-    dependency_mapping = {test_path: {Path('dep.js')}}
+  def test_prompt_analysis__success_batching(self, mock_fetch_spec):
+    """Test that multiple small files are batched into a single prompt."""
+    test_files = {
+      Path('test1.html'): 'content1',
+      Path('test2.html'): 'content2'
+    }
+    dependency_files = {}
+    dependency_mapping = {
+      Path('test1.html'): set(),
+      Path('test2.html'): set()
+    }
     wpt_contents = utils.WPTContents(
       test_contents=test_files,
       dependency_contents=dependency_files,
       test_to_dependencies_map=dependency_mapping,
     )
 
-    # Setup mocks for template rendering
-    def fake_render(template_path, **kwargs):
-      return f'RENDERED: {template_path}'
-    self.mock_render_template.side_effect = fake_render
+    # Mock token limit to always return False (never exceeds)
+    self.mock_gemini_client.prompt_exceeds_input_token_limit.return_value = False
 
-    # Batch response (test_analysis_response, spec_synthesis_response)
     self.mock_gemini_client.get_batch_responses_async = mock.AsyncMock(
-        return_value=['Analysis of Test 1', 'Spec Summary']
+        return_value=['Analysis of Batch 1', 'Spec Summary']
     )
     self.mock_gemini_client.get_response_async = mock.AsyncMock(
         return_value='Final Gap Analysis Report'
@@ -285,14 +287,94 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
 
     self.assertEqual(result, 'Final Gap Analysis Report')
 
-    # Verify template calls involved correct data
-    self.assertEqual(self.mock_render_template.call_count, 3)
+    # Verify that get_batch_responses_async was called with 2 prompts:
+    # 1. The batched test analysis (containing both files)
+    # 2. The spec synthesis
+    call_args = self.mock_gemini_client.get_batch_responses_async.call_args[0][0]
+    self.assertEqual(len(call_args), 2)
 
-    # Verify final gap analysis prompt received the filename in the summary
-    call_kwargs = self.mock_render_template.call_args[1]
-    test_analysis_summary = call_kwargs.get('test_analysis', '')
-    self.assertIn('Test test.html summary:', test_analysis_summary)
-    self.assertIn('Analysis of Test 1', test_analysis_summary)
+    # Verify correct template rendering for the test batch
+    # We check the call_args_list of render_template to ensure the batch was constructed
+    found_batch_render = False
+    for call in self.mock_render_template.call_args_list:
+      kwargs = call.kwargs
+      if 'test_files' in kwargs and len(kwargs['test_files']) == 2:
+        found_batch_render = True
+        self.assertEqual(kwargs['test_files'][0]['path'], Path('test1.html'))
+        self.assertEqual(kwargs['test_files'][1]['path'], Path('test2.html'))
+    self.assertTrue(found_batch_render, "Did not find a render call with both test files")
+
+  @mock.patch('framework.gemini_helpers._fetch_spec_content', return_value="Mock Spec Content")
+  def test_prompt_analysis__splitting_on_limit(self, mock_fetch_spec):
+    """Test that files are split into separate batches when token limit is exceeded."""
+    test_files = {
+        Path('small.html'): 'small_content',
+        Path('large.html'): 'large_content'
+    }
+    # Force sorted order for deterministic test execution if dict is unordered
+    # (Note: Python 3.7+ preserves insertion order, but explicit key usage in loop ensures sequence)
+    wpt_contents = utils.WPTContents(
+      test_contents=test_files,
+      dependency_contents={},
+      test_to_dependencies_map={p: set() for p in test_files},
+    )
+
+    # Mock token limit:
+    # 1. 'small.html' (Candidate) -> False (Fits)
+    # 2. 'small.html' + 'large.html' (Candidate) -> True (Exceeds)
+    # 3. 'large.html' (Candidate/Single) -> False (Fits in new batch)
+    self.mock_gemini_client.prompt_exceeds_input_token_limit.side_effect = [False, True, False]
+
+    self.mock_gemini_client.get_batch_responses_async = mock.AsyncMock(
+      return_value=['Analysis 1', 'Analysis 2', 'Spec Summary']
+    )
+    self.mock_gemini_client.get_response_async = mock.AsyncMock(
+      return_value='Final Report'
+    )
+
+    asyncio.run(gemini_helpers.prompt_analysis(self.feature, wpt_contents))
+
+    # Verify batch responses called with 3 prompts (Batch 1, Batch 2, Spec)
+    call_args = self.mock_gemini_client.get_batch_responses_async.call_args[0][0]
+    self.assertEqual(len(call_args), 3)
+
+  @mock.patch('framework.gemini_helpers._fetch_spec_content', return_value="Mock Spec Content")
+  def test_prompt_analysis__single_file_exceeds_drops_deps(self, mock_fetch_spec):
+    """Test the edge case where a single file + deps exceeds limit, forcing dropped deps."""
+    test_files = {Path('huge.html'): 'huge_content'}
+    dependency_files = {Path('dep.js'): 'dep'}
+    wpt_contents = utils.WPTContents(
+      test_contents=test_files,
+      dependency_contents=dependency_files,
+      test_to_dependencies_map={Path('huge.html'): {Path('dep.js')}},
+    )
+
+    # Mock token limit:
+    # 1. 'huge.html' + deps (Candidate) -> True (Exceeds)
+    # 2. 'huge.html' + deps (Single check) -> True (Still Exceeds)
+    self.mock_gemini_client.prompt_exceeds_input_token_limit.return_value = True
+
+    self.mock_gemini_client.get_batch_responses_async = mock.AsyncMock(
+      return_value=['Analysis Huge', 'Spec Summary']
+    )
+    self.mock_gemini_client.get_response_async = mock.AsyncMock(return_value='Rep')
+
+    asyncio.run(gemini_helpers.prompt_analysis(self.feature, wpt_contents))
+
+    # Verify a warning was logged
+    self.mock_logging.warning.assert_called_with(
+      "Test file huge.html with dependencies exceeds token limit. Generating prompt without dependencies."
+    )
+
+    # Verify render_template was eventually called with empty dependencies list
+    # Look for the specific call that commits the single file
+    found_empty_deps = False
+    for call in self.mock_render_template.call_args_list:
+        kwargs = call.kwargs
+        if 'test_files' in kwargs and kwargs['test_files'][0]['path'] == Path('huge.html'):
+            if 'dependency_files' in kwargs and kwargs['dependency_files'] == []:
+                found_empty_deps = True
+    self.assertTrue(found_empty_deps, "Did not find render call forcing empty dependencies")
 
   @mock.patch('framework.gemini_helpers._fetch_spec_content', return_value="Mock Spec Content")
   def test_prompt_analysis__spec_synthesis_failure(self, mock_fetch_spec):
@@ -306,6 +388,8 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
       dependency_contents=dependency_files,
       test_to_dependencies_map=dependency_mapping
     )
+
+    self.mock_gemini_client.prompt_exceeds_input_token_limit.return_value = False
 
     # The last item (spec synthesis) returns an Exception instead of str
     gemini_error = RuntimeError("Gemini overloaded")
@@ -332,11 +416,11 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
       test_to_dependencies_map=dependency_mapping
     )
 
-    # Both tests fail, but Spec succeeds (last item)
+    self.mock_gemini_client.prompt_exceeds_input_token_limit.return_value = False
+
     self.mock_gemini_client.get_batch_responses_async = mock.AsyncMock(
       return_value=[
         RuntimeError("Fail 1"),
-        RuntimeError("Fail 2"),
         'Spec Summary Success'
       ]
     )
@@ -346,7 +430,7 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
       asyncio.run(gemini_helpers.prompt_analysis(self.feature, wpt_contents))
 
     # Should have logged warnings for the failures
-    self.assertEqual(self.mock_logging.error.call_count, 2)
+    self.assertEqual(self.mock_logging.error.call_count, 1)
 
   @mock.patch('framework.gemini_helpers._fetch_spec_content', return_value="Mock Spec Content")
   def test_prompt_analysis__partial_test_analysis_success(self, mock_fetch_spec):
@@ -363,7 +447,10 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
       test_to_dependencies_map=dependency_mapping
     )
 
-    # One fails, one succeeds, spec succeeds
+    # Mock split: f1 fits, f2 exceeds -> 2 batches
+    self.mock_gemini_client.prompt_exceeds_input_token_limit.side_effect = [False, True, False]
+
+    # One batch fails, one succeeds, spec succeeds
     self.mock_gemini_client.get_batch_responses_async = mock.AsyncMock(
         return_value=[
             RuntimeError("Fail 1"),
