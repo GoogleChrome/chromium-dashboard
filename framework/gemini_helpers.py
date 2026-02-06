@@ -276,7 +276,7 @@ async def prompt_analysis(feature: FeatureEntry, wpt_contents: utils.WPTContents
     if not isinstance(resp, str):
       logging.error(f'Test analysis prompt failure: {resp}')
       continue
-  test_analysis_responses = [resp for resp in all_responses if resp]
+  test_analysis_responses = [resp for resp in all_responses if isinstance(resp, str)]
 
   if not test_analysis_responses:
     raise utils.PipelineError('No successful test analysis responses.')
