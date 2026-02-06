@@ -134,6 +134,16 @@ class FeaturesAPITestDelete(testing_config.CustomTestCase):
     revised_feature = FeatureEntry.get_by_id(self.feature_id)
     self.assertFalse(revised_feature.deleted)
 
+  def test_delete__clears_ai_content(self):
+    """Deleting a feature should clear any AI-generated content."""
+    self.feature_1.ai_test_eval_report = 'Some AI content'
+    self.feature_1.put()
+
+    self.check_delete_is_valid('admin@example.com')
+
+    revised_feature = FeatureEntry.get_by_id(self.feature_id)
+    self.assertIsNone(revised_feature.ai_test_eval_report)
+
 
 class FeaturesAPITest(testing_config.CustomTestCase):
 
