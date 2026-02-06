@@ -271,12 +271,19 @@ async def prompt_analysis(feature: FeatureEntry, wpt_contents: utils.WPTContents
   if not isinstance(spec_synthesis_response, str):
     raise utils.PipelineError(f'Spec synthesis prompt failure: {spec_synthesis_response}')
 
-  if not all_responses:
+  # Log if any test summary responses failed.
+  for resp in all_responses:
+    if not isinstance(resp, str):
+      logging.error(f'Test analysis prompt failure: {resp}')
+      continue
+  test_analysis_responses = [resp for resp in all_responses if resp]
+
+  if not test_analysis_responses:
     raise utils.PipelineError('No successful test analysis responses.')
 
   template_data = {
     'spec_synthesis': spec_synthesis_response,
-    'test_summaries': all_responses,
+    'test_summaries': test_analysis_responses,
   }
   gap_analysis_prompt = render_template(GAP_ANALYSIS_TEMPLATE_PATH, **template_data)
 
