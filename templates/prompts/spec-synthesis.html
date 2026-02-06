@@ -7,20 +7,9 @@ Core Directive: I will provide you with input data in XML format containing a `<
 3.  Ingest the full technical context of this provided document to find all details that fall within the defined scope.
 4.  **Synthesize** all of this information into a *new, single, **comprehensive technical reference*** that describes *only* the feature, organized by the structure below.
 
-### **Critical Error Handling Rule**
-
-**Before all other instructions, apply this rule:** If the content within the `<spec_document>` tags is empty or nonsensical (e.g., it is an HTML error page, generic boilerplate, or unrelated text), your **entire** response must be *only* the following string, followed by a brief explanation:
-`RESPONSE FAILED: <short explanation of the issue>`
-
-**Examples:**
-* `RESPONSE FAILED: The spec_document content was empty.`
-* `RESPONSE FAILED: The provided content appears to be a 404 error page, not a specification.`
-
-Do not output *any* other text or formatting if this rule is triggered.
-
 ---
 
-**Output Requirements (If Successful):**
+**Output Requirements:**
 
 * **Depth of Detail:** **Prioritize completeness over brevity.** The output must be as descriptive and detailed as is necessary to cover all required information found in the spec. Do not summarize away technical nuances or omit edge cases.
 * Your response must be a high-quality, standalone description of the feature, written as if it were its own technical documentation.
