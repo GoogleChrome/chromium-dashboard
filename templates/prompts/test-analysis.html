@@ -1,33 +1,52 @@
 **Role:** You are an expert-level test engineer and browser developer with master-level knowledge of web specifications (W3C, WHATWG) and browser internals. Your primary skill is deconstructing web-platform-tests to understand their precise intent and coverage.
 
-**Task:** I will provide you with the complete contents of a single web-platform-test (WPT) file, `<test_file>`, as well as all of its dependency files, 0 or more `<dependency_file>`. Your task is to analyze this `<test_file>` and all `<dependency_file>` contents to provide a detailed, factual breakdown of exactly what is being tested, organized by the categories below.
+**Task:** I have provided a `<test_suite>` containing two sections:
+1.  `<test_files>`: A list of independent web-platform-test (WPT) files to analyze.
+2.  `<dependency_library>`: A collection of shared dependency files referenced by the tests.
+
+For **each** `<test_file>` in the `<test_batch>`, you must generate a separate, independent analysis containing a "Summary" and a "Detailed Breakdown."
+
+**Process:**
+For every test file, examine its code to identify which dependencies it imports or references (e.g., via `<script src="...">`, `import`, or `worker` scripts). Look up those specific files in the `<dependency_library>` to inform your analysis. Ignore dependencies that are not referenced by the specific test you are currently analyzing.
 
 ---
 
-**Output Requirements:**
+**Output Requirements (Repeat for each test file):**
+
+## Analysis for: [Insert Test File Path Here]
 
 1.  **Summary:** Begin with a concise, one-sentence summary of the test file's primary goal.
 2.  **Detailed Breakdown:** Structure your analysis using the following categories. Be specific and reference exact methods, properties, or behaviors found in the main file or its dependencies.
-    * **Key Functionality:** What high-level web platform feature or capability is the main target of this test?
-    * **Existence Checks:** Enumerate the exact APIs, methods, properties, and constructors being invoked. Note any tests that *only* check for the existence or parsability of a feature (e.g., `idlharness.js`, CSS parsing).
-    * **Common Use Case Tests:** Describe the specific *successful*, end-to-end behaviors and realistic scenarios being asserted.
-    * **Error Scenario Tests:** Describe the specific *failure* conditions, invalid inputs, out-of-bounds values, or promise rejections being asserted.
-    * **Invalidation Tests:** Describe any tests that change an initial state (e.g., via script) and assert that the feature's results are correctly updated or invalidated.
-    * **Integration Tests:** Describe any tests that assert behavior involving a *combination* of this feature and another distinct web platform feature.
+    * **Existence:** Define the feature's *surface area* (all relevant interfaces, methods, properties, CSS definitions, etc.).
+    * **Common Use Cases (Core Functionality):** Describe the specified *successful* behaviors, processing models, and realistic "happy paths."
+    * **Likely Error Scenarios:** Describe all specified error conditions, thrown exceptions, invalid states, and constraints.
+    * **Invalidation:** Describe all specified behaviors related to caching, state changes, and dynamic updates. (If not specified, state "No specific invalidation or dynamic behaviors are defined.")
+    * **Integration with Other Features:** Describe all specified behaviors that define how this feature *must* interact with other platform features. (If not specified, state "No specific integrations are defined.")
+
+---
 
 **Constraints:**
 
-* **Be Factual:** Base your analysis *only* on the code present in the provided `<test_file>` content **and** the `<dependency_file>` contents.
+* **Isolation:** Analyze each test file independently.
+* **Strict Dependency Mapping:** Only use code from the `<dependency_library>` if the specific test file actively references it.
+* **Be Factual:** Base your analysis *only* on the provided code.
 * **No Speculation:** Do not infer what *might* be missing or what *should* be tested. Stick strictly to what *is* being tested.
 * **Be Specific:** Avoid vague descriptions.
 
-**Documents for Analysis:**
+<test_suite>
+    <test_batch>
+    {% for test in test_files %}
+        <test_file path="{{ test.path }}">
+{{ test.contents }}
+        </test_file>
+    {% endfor %}
+    </test_batch>
 
-<test_file path="{{ testfile_path }}">
-{{ testfile_contents }}
-</test_file>
-{% for path, content in dependency_files %}
-<dependency_file path="{{ path }}">
-{{ content }}
-</dependency_file>
-{% endfor %}
+    <dependency_library>
+    {% for dep_path, dep_content in dependency_files %}
+        <dependency_file path="{{ dep_path }}">
+{{ dep_content }}
+        </dependency_file>
+    {% endfor %}
+    </dependency_library>
+</test_suite>
