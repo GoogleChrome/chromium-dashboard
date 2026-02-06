@@ -2,25 +2,15 @@
 
 **Core Directive:** I will provide you with two inputs:
 
-1.  **`FEATURE_SPEC_SUMMARY`:** This document defines the *required* behavior for a web feature, organized by testable categories. This is the "source of truth."
-2.  **`EXISTING_TEST_SUMMARY`:** This document describes the *actual* coverage of the current test suite, organized by the same categories.
+1.  **`<feature_spec_summary>`:** This document defines the *required* behavior for a web feature, organized by testable categories. This is the "source of truth."
+2.  **`<existing_test_summaries>`:** This section contains a list of `<test_summary>` entries. Each entry describes the coverage of a specific test file or suite.
 
-Your task is to act as an auditor. You must meticulously compare the `EXISTING_TEST_SUMMARY` against the `FEATURE_SPEC_SUMMARY` to determine if a "minimum satisfactory level of test coverage" has been met, based *explicitly* on the definition provided below.
+Your task is to act as an auditor. You must meticulously compare the collective content of the `<existing_test_summaries>` against the `<feature_spec_summary>`.
+
+**Crucial Note on Multiple Test Summaries:**
+You must treat the list of test summaries as a **collective whole**. If *any* individual `<test_summary>` covers a specific requirement from the spec, that requirement is considered "Covered." You are looking for gaps that exist after aggregating the coverage of ALL provided test summaries.
 
 **Goal:** Identify every missing test scenario required to achieve minimum satisfactory coverage. The output must be a list identifying any tests needed to achieve this.
-
-### **Critical Error Handling Rule**
-
-**Before all other instructions, apply this rule:** If either the `FEATURE_SPEC_SUMMARY` or the `EXISTING_TEST_SUMMARY` is empty, nonsensical, or clearly not the structured summary it is supposed to be (e.g., it contains an error message, is just random text), your **entire** response must be *only* the following string, followed by a brief explanation:
-`RESPONSE FAILED: <short explanation of the issue>`
-
-**Examples:**
-
-  * `RESPONSE FAILED: The FEATURE_SPEC_SUMMARY input was empty.`
-  * `RESPONSE FAILED: The EXISTING_TEST_SUMMARY input was empty.`
-  * `RESPONSE FAILED: The provided inputs are not valid summaries and cannot be compared.`
-
-Do not output *any* other text or formatting if this rule is triggered.
 
 -----
 
@@ -65,7 +55,7 @@ Do not output *any* other text or formatting if this rule is triggered.
 #### 1. Feature Existence
 * **Status:** [Covered / Partially Covered / Not Covered]
 * **Spec Requirement:** [Briefly describe the interface defined in the spec]
-* **Evidence:** [If covered, cite the specific test file and assertion mechanism (e.g., "Verified in `idlharness.js`")]
+* **Evidence:** [If covered, cite the specific test file(s) and assertion mechanism (e.g., "Verified in `idlharness.js`")]
 * **Gaps:** [If not covered, explicitly state what is missing]
 
 -----
@@ -147,14 +137,14 @@ Do not output *any* other text or formatting if this rule is triggered.
 
 **Inputs:**
 
-**`FEATURE_SPEC_SUMMARY`:**
-
-```
+<feature_spec_summary>
 {{ spec_synthesis }}
-```
+</feature_spec_summary>
 
-**`EXISTING_TEST_SUMMARY`:**
-
-```
-{{ test_analysis }}
-```
+<existing_test_summaries>
+{% for summary in test_summaries %}
+  <test_summary>
+{{ summary }}
+  </test_summary>
+{% endfor %}
+</existing_test_summaries>
