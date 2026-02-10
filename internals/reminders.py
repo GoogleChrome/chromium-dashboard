@@ -25,6 +25,7 @@ from flask import render_template
 from framework import basehandlers
 from framework.utils import get_current_milestone_info
 from internals import approval_defs
+from internals.core_enums import CBE_ESCLATION_EMAIL, STAGING_EMAIL, WEBSTATUS_EMAIL
 from internals.core_models import FeatureEntry, MilestoneSet
 from internals.review_models import Gate
 from internals import notifier
@@ -37,9 +38,6 @@ from internals.user_models import UserPref
 import settings
 
 
-WEBSTATUS_EMAIL = 'webstatus@google.com'
-CBE_ESCLATION_EMAIL = 'cbe-releasenotes@google.com'
-STAGING_EMAIL = 'jrobbins-test@googlegroups.com'
 EMAIL_SUBJECT_PREFIX = '[Action required]'
 ESCALATION_SUBJECT_PREFIX = '[Escalated Request]'
 
