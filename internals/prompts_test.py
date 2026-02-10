@@ -21,7 +21,7 @@ from flask import Flask, render_template
 import settings
 
 # WARNING: Only do this when you are sure the output is correct!
-REGENERATE_GOLDENS = True
+REGENERATE_GOLDENS = False
 
 test_app = Flask(__name__,
   template_folder=settings.get_flask_template_path())
