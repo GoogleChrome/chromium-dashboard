@@ -59,9 +59,13 @@ class WPTCoverageAPI(basehandlers.EntitiesAPIHandler):
       and last_status_time + HANGING_TIMEOUT_THRESHOLD > datetime.now())
 
     on_cooldown = (
-      feature.ai_test_eval_run_status == core_enums.AITestEvaluationStatus.COMPLETE
+      (
+        feature.ai_test_eval_run_status == core_enums.AITestEvaluationStatus.COMPLETE
+        or feature.ai_test_eval_run_status == core_enums.AITestEvaluationStatus.DELETED
+      )
       and last_status_time
-      and last_status_time + COOLDOWN_THRESHOLD > datetime.now())
+      and last_status_time + COOLDOWN_THRESHOLD > datetime.now()
+    )
 
     if request_in_progress or on_cooldown:
       msg = (
