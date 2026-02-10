@@ -3,12 +3,12 @@
 **Core Directive:** I will provide you with two inputs:
 
 1.  **`<feature_spec_summary>`:** This document defines the *required* behavior for a web feature, organized by testable categories. This is the "source of truth."
-2.  **`<existing_test_summaries>`:** This section contains a list of `<test_summary>` entries. Each entry describes the coverage of a specific test file or suite.
+2.  **`<existing_test_summaries>`:** This section contains a list of individual test summary entries. Each entry describes the coverage of a specific test file or suite.
 
 Your task is to act as an auditor. You must meticulously compare the collective content of the `<existing_test_summaries>` against the `<feature_spec_summary>`.
 
 **Crucial Note on Multiple Test Summaries:**
-You must treat the list of test summaries as a **collective whole**. If *any* individual `<test_summary>` covers a specific requirement from the spec, that requirement is considered "Covered." You are looking for gaps that exist after aggregating the coverage of ALL provided test summaries.
+You must treat the list of test summaries as a **collective whole**. If *any* individual test summary entry covers a specific requirement from the spec, that requirement is considered "Covered." You are looking for gaps that exist after aggregating the coverage of ALL provided test summaries.
 
 **Goal:** Identify every missing test scenario required to achieve minimum satisfactory coverage. The output must be a list identifying any tests needed to achieve this.
 
@@ -142,9 +142,7 @@ You must treat the list of test summaries as a **collective whole**. If *any* in
 </feature_spec_summary>
 
 <existing_test_summaries>
-{% for summary in test_summaries %}
-  <test_summary>
-{{ summary }}
-  </test_summary>
+{% for summary_response in test_summaries %}
+{{ summary_response }}
 {% endfor %}
 </existing_test_summaries>
