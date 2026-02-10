@@ -88,3 +88,20 @@ class WPTCoverageAPI(basehandlers.EntitiesAPIHandler):
                                      { 'feature_id': feature_id })
 
     return {'message': 'Task enqueued'}
+
+  def do_delete(self, **kwargs):
+    """Delete the generated WPT coverage analysis report."""
+    feature_id = self.get_int_param('feature_id')
+    feature = self.get_validated_entity(feature_id, FeatureEntry)
+
+    # Validate the user has edit permissions.
+    can_edit = permissions.can_edit_feature(
+      self.get_current_user(), feature_id)
+    if not can_edit:
+      self.abort(403, f'User does not have edit access to feature {feature_id}')
+
+    feature.ai_test_eval_report = None
+    feature.ai_test_eval_run_status = core_enums.AITestEvaluationStatus.DELETED.value
+    feature.put()
+
+    return {'message': 'WPT coverage analysis report deleted.'}

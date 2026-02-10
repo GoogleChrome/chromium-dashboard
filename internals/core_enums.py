@@ -824,6 +824,7 @@ class AITestEvaluationStatus(int, Enum):
   COMPLETE = 1
   IN_PROGRESS = 2
   FAILED = 3
+  DELETED = 4
 
 
 def convert_enum_int_to_string(property_name, value):
