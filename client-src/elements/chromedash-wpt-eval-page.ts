@@ -370,10 +370,11 @@ export class ChromedashWPTEvalPage extends LitElement {
   }
 
   updateCooldown() {
+    const status = this.feature?.ai_test_eval_run_status;
     if (
-      this.feature?.ai_test_eval_run_status !==
-        AITestEvaluationStatus.COMPLETE ||
-      !this.feature.ai_test_eval_status_timestamp
+      (status !== AITestEvaluationStatus.COMPLETE &&
+        status !== AITestEvaluationStatus.DELETED) ||
+      !this.feature?.ai_test_eval_status_timestamp
     ) {
       this._cooldownRemaining = 0;
       this.stopCooldownTimer();
@@ -474,6 +475,29 @@ export class ChromedashWPTEvalPage extends LitElement {
     } catch (err) {
       console.error('Failed to copy text: ', err);
       showToastMessage('Failed to copy report.');
+    }
+  }
+
+  async handleDeleteReport() {
+    if (!this.feature?.ai_test_eval_report) return;
+
+    if (
+      !window.confirm(
+        'Delete this WPT coverage report? This action cannot be undone.'
+    )
+    ) {
+      return;
+    }
+
+    try {
+      await window.csClient.deleteWPTCoverageEvaluation(this.featureId);
+      showToastMessage('Report deleted successfully.');
+      // Refresh data to update the UI
+      this.fetchData();
+
+    } catch (err) {
+      console.error('Failed to delete report: ', err);
+      showToastMessage('Failed to delete report. Please try again later.');
     }
   }
 
@@ -656,7 +680,7 @@ export class ChromedashWPTEvalPage extends LitElement {
     // Show success message if completed in this session.
     if (
       this.completedInThisSession &&
-      status !== AITestEvaluationStatus.IN_PROGRESS
+      status !== AITestEvaluationStatus.IN_PROGRESS && status !== AITestEvaluationStatus.DELETED
     ) {
       return html`
         <section class="card action-section">
@@ -667,7 +691,19 @@ export class ChromedashWPTEvalPage extends LitElement {
         </section>
       `;
     }
-
+    if (
+      this.completedInThisSession &&
+      status == AITestEvaluationStatus.DELETED
+    ) {
+      return html`
+        <section class="card action-section">
+          <div class="status-complete fade-in">
+            <sl-icon library="material" name="check_circle_20px"></sl-icon>
+            <span>Report deleted.</span>
+          </div>
+        </section>
+      `;
+    }
     const isCooldownActive = this._cooldownRemaining > 0;
     const minutesRemaining = Math.ceil(this._cooldownRemaining / 60000);
 
@@ -756,6 +792,15 @@ export class ChromedashWPTEvalPage extends LitElement {
           >
             <sl-icon slot="prefix" name="copy"></sl-icon>
             Copy Report
+          </sl-button>
+          <sl-button
+            variant="danger"
+            size="small"
+            @click=${this.handleDeleteReport}
+            title="Delete report"
+          >
+            <sl-icon slot="prefix" name="trash"></sl-icon>
+            Delete Report
           </sl-button>
         </div>
         <div class="report-content ${contentClass}">
