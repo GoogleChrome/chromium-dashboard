@@ -242,8 +242,10 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
     self.mock_render_template.assert_called_once()
     args, kwargs = self.mock_render_template.call_args
     self.assertEqual(args[0], gemini_helpers.UNIFIED_GAP_ANALYSIS_TEMPLATE_PATH)
-    self.assertEqual(kwargs['test_files'], test_files)
-    self.assertEqual(kwargs['dependency_files'], dependency_files)
+    self.assertEqual(kwargs['test_files'],
+                     [{'path': Path('test1.html'), 'contents': 'content1'}])
+    self.assertEqual(kwargs['dependency_files'],
+                     [{'path': Path('dep.js'), 'contents': 'dep_content'}])
 
   def test_unified_prompt_analysis__success(self):
     """Tests that the unified evaluator calls Gemini with the provided text."""

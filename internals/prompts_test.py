@@ -21,7 +21,7 @@ from flask import Flask, render_template
 import settings
 
 # WARNING: Only do this when you are sure the output is correct!
-REGENERATE_GOLDENS = False
+REGENERATE_GOLDENS = True
 
 test_app = Flask(__name__,
   template_folder=settings.get_flask_template_path())
@@ -45,6 +45,10 @@ def assert_matches_golden(
 
 class TestAIPromptTemplatesHandler(unittest.TestCase):
 
+  def setUp(self):
+    self.maxDiff = None
+    return super().setUp()
+
   def render_and_verify(self, template_path, context_data, golden_name):
     """Helper to render template and verify against golden."""
 
@@ -60,15 +64,15 @@ class TestAIPromptTemplatesHandler(unittest.TestCase):
       'spec_content': 'Some content.',
       'feature_name': 'Feature One',
       'feature_summary': 'A generic feature',
-      'test_files': {
-          'css/a.html': 'contents of file a.html',
-          'css/b.html': 'contents of file b.html',
-      },
-      'dependency_files': {
-          'css/c.html': 'contents of file c.html',
-          'css/d.html': 'contents of file d.html',
-          'css/e.html': 'contents of file e.html',
-      },
+      'test_files': [
+        {'path': 'css/a.html', 'contents': 'contents of file a.html'},
+        {'path': 'css/b.html', 'contents': 'contents of file b.html'},
+      ],
+      'dependency_files': [
+        {'path': 'css/c.html', 'contents': 'contents of file c.html'},
+        {'path': 'css/d.html', 'contents': 'contents of file d.html'},
+        {'path': 'css/e.html', 'contents': 'contents of file e.html'},
+      ],
     }
     self.render_and_verify(
       'prompts/unified-gap-analysis.html',
@@ -98,9 +102,9 @@ class TestAIPromptTemplatesHandler(unittest.TestCase):
         {'path': 'css/b.html', 'contents': 'contents of file b.html'},
       ],
       'dependency_files': [
-        (  'css/c.html', 'contents of file c.html'),
-        (  'css/d.html', 'contents of file d.html'),
-        (  'css/e.html', 'contents of file e.html'),
+        {'path': 'css/c.html', 'contents': 'contents of file c.html'},
+        {'path': 'css/d.html', 'contents': 'contents of file d.html'},
+        {'path': 'css/e.html', 'contents': 'contents of file e.html'},
       ]
     }
 
