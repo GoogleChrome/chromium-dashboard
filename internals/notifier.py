@@ -44,10 +44,6 @@ from internals.user_models import (
     AppUser, BlinkComponent, FeatureOwner, UserPref)
 
 
-OT_SUPPORT_EMAIL = 'origin-trials-support@google.com'
-BLINK_DEV_EMAIL = 'blink-dev@chromium.org'
-
-
 def _determine_milestone_string(ship_stages: list[Stage]) -> str:
   """Determine the shipping milestone string to display in the template."""
   # Get the earliest desktop and android milestones.
@@ -672,7 +668,7 @@ class OTActivatedHandler(basehandlers.FlaskHandler):
     body = render_template(self.EMAIL_TEMPLATE_PATH, **body_data)
     return {
       'to': contacts,
-      'cc': [OT_SUPPORT_EMAIL],
+      'cc': [core_enums.OT_SUPPORT_EMAIL],
       'subject': f'{stage["ot_display_name"]} origin trial is now available',
       'reply_to': None,
       'html': body,
@@ -735,7 +731,7 @@ class OTCreationProcessedHandler(basehandlers.FlaskHandler):
     body = render_template(self.EMAIL_TEMPLATE_PATH, **body_data)
     return {
       'to': contacts,
-      'cc': [OT_SUPPORT_EMAIL],
+      'cc': [core_enums.OT_SUPPORT_EMAIL],
       'subject': (f'{stage["ot_display_name"]} origin trial has been created '
                   f'and will begin {stage["ot_activation_date"]}'),
       'reply_to': None,
@@ -765,7 +761,7 @@ class OTCreationRequestFailedHandler(basehandlers.FlaskHandler):
     }
     body = render_template(self.EMAIL_TEMPLATE_PATH, **body_data)
     return {
-      'to': OT_SUPPORT_EMAIL,
+      'to': core_enums.OT_SUPPORT_EMAIL,
       'subject': ('Automated trial creation request failed for '
                   f'{stage["ot_display_name"]}'),
       'reply_to': None,
@@ -793,7 +789,7 @@ class OTActivationFailedHandler(basehandlers.FlaskHandler):
     }
     body = render_template(self.EMAIL_TEMPLATE_PATH, **body_data)
     return {
-      'to': OT_SUPPORT_EMAIL,
+      'to': core_enums.OT_SUPPORT_EMAIL,
       'subject': ('Automated trial activation request failed for '
                   f'{stage["ot_display_name"]}'),
       'reply_to': None,
@@ -860,7 +856,7 @@ class OTCreationRequestHandler(basehandlers.FlaskHandler):
 """
 
     return {
-      'to': OT_SUPPORT_EMAIL,
+      'to': core_enums.OT_SUPPORT_EMAIL,
       'subject': f'New Trial Creation Request for {stage["ot_display_name"]}',
       'reply_to': None,
       'html': email_body,
@@ -903,7 +899,7 @@ class OTExtensionApprovedHandler(basehandlers.FlaskHandler):
 
     return {
       'to': requester_email,
-      'cc': [OT_SUPPORT_EMAIL],
+      'cc': [core_enums.OT_SUPPORT_EMAIL],
       'subject': ('[Action Required] Initiate your origin trial extension '
                   f'for {ot_display_name}'),
       'reply_to': None,
@@ -945,7 +941,7 @@ class IntentToBlinkDevHandler(basehandlers.FlaskHandler):
     body = render_template(self.EMAIL_TEMPLATE_PATH, **template_data)
 
     return {
-      'to': BLINK_DEV_EMAIL,
+      'to': core_enums.BLINK_DEV_EMAIL,
       'cc': json_data['intent_cc_emails'],
       'subject': json_data['subject'],
       'reply_to': None,
@@ -954,7 +950,7 @@ class IntentToBlinkDevHandler(basehandlers.FlaskHandler):
 
 
 GLOBAL_OT_PROCESS_REMINDER_CC_LIST = [
-  OT_SUPPORT_EMAIL,
+  core_enums.OT_SUPPORT_EMAIL,
   'origin-trials-timeline-updates@google.com'
   ]
 
@@ -1125,7 +1121,7 @@ class OTAutomatedProcessEmailHandler(basehandlers.FlaskHandler):
   def build_email(self, body_data: dict[str, Any]):
     body = render_template(self.EMAIL_TEMPLATE_PATH, **body_data)
     return {
-      'to': OT_SUPPORT_EMAIL,
+      'to': core_enums.OT_SUPPORT_EMAIL,
       'subject': 'Origin trials automated process reminder just ran',
       'reply_to': None,
       'html': body,
@@ -1155,7 +1151,7 @@ class OTExtendedHandler(basehandlers.FlaskHandler):
     body = render_template(self.EMAIL_TEMPLATE_PATH, **body_data)
 
     return {
-      'to': OT_SUPPORT_EMAIL,
+      'to': core_enums.OT_SUPPORT_EMAIL,
       'subject': ('Origin trial extension processed: '
                   f'{ot_stage["ot_display_name"]}'),
       'reply_to': None,
@@ -1256,7 +1252,7 @@ def send_emails(email_tasks):
       try:
         cloud_tasks_helpers.enqueue_task(
             '/tasks/outbound-email', task)
-      except e:
+      except:
         logging.exception('could not enqueue.')
     else:
       logging.info('Not enqueued because of settings.SEND_EMAIL')
@@ -1328,7 +1324,7 @@ class ResetShippingMilestonesEmailHandler(basehandlers.FlaskHandler):
 
     return {
       'to': owner_emails,
-      'cc': OT_SUPPORT_EMAIL,
+      'cc': core_enums.WEBSTATUS_EMAIL,
       'subject': ('Shipping and Rollout milestones reset for ChromeStatus feature '
                   f'({feature_name})'),
       'reply_to': None,
