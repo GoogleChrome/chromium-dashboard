@@ -94,8 +94,8 @@ class TestAIPromptTemplatesHandler(unittest.TestCase):
     """Ensure test-analysis renders correctly."""
     data = {
       'test_files': [
-        {'path':   'css/a.html', 'contents': 'contents of file a.html'},
-        {'path':   'css/b.html', 'contents': 'contents of file b.html'},
+        {'path': 'css/a.html', 'contents': 'contents of file a.html'},
+        {'path': 'css/b.html', 'contents': 'contents of file b.html'},
       ],
       'dependency_files': [
         (  'css/c.html', 'contents of file c.html'),
