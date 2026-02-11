@@ -704,21 +704,28 @@ describe('chromedash-wpt-eval-page', () => {
       // 1. Initial load is in cooldown.
       csClientStub.getFeature.resolves(featureInCooldown);
       const el = await fixture<ChromedashWPTEvalPage>(
-        html`<chromedash-wpt-eval-page .featureId=${1}></chromedash-wpt-eval-page>`
+        html`<chromedash-wpt-eval-page
+          .featureId=${1}
+        ></chromedash-wpt-eval-page>`
       );
       await el.updateComplete;
 
       // Verify cooldown is active.
       let button = el.shadowRoot!.querySelector('.generate-button');
       let message = el.shadowRoot!.querySelector('.cooldown-message');
-      expect(button, 'Button should initially be disabled').to.have.attribute('disabled');
+      expect(button, 'Button should initially be disabled').to.have.attribute(
+        'disabled'
+      );
       expect(message, 'Cooldown message should initially be visible').to.exist;
 
       // 2. User deletes the report.
       const confirmStub = sinon.stub(window, 'confirm').returns(true);
       csClientStub.deleteWPTCoverageEvaluation.resolves({});
       // Subsequent fetchData call will get the same data, but we'll pretend the report is gone.
-      csClientStub.getFeature.resolves({ ...featureInCooldown, ai_test_eval_report: null });
+      csClientStub.getFeature.resolves({
+        ...featureInCooldown,
+        ai_test_eval_report: null,
+      });
 
       const deleteButton = el.shadowRoot!.querySelector(
         'sl-button[title="Delete report"]'
@@ -730,8 +737,12 @@ describe('chromedash-wpt-eval-page', () => {
       // 3. Verify cooldown is STILL active.
       button = el.shadowRoot!.querySelector('.generate-button');
       message = el.shadowRoot!.querySelector('.cooldown-message');
-      expect(button, 'Button should still be disabled after deletion').to.have.attribute('disabled');
-      expect(message, 'Cooldown message should still be visible after deletion').to.exist;
+      expect(
+        button,
+        'Button should still be disabled after deletion'
+      ).to.have.attribute('disabled');
+      expect(message, 'Cooldown message should still be visible after deletion')
+        .to.exist;
       expect(message!.textContent).to.contain('Available in');
 
       confirmStub.restore();
@@ -782,7 +793,9 @@ describe('chromedash-wpt-eval-page', () => {
     it('renders the delete button when a report is present', async () => {
       csClientStub.getFeature.resolves(mockFeatureV1); // Has a report by default.
       const el = await fixture<ChromedashWPTEvalPage>(
-        html`<chromedash-wpt-eval-page .featureId=${1}></chromedash-wpt-eval-page>`
+        html`<chromedash-wpt-eval-page
+          .featureId=${1}
+        ></chromedash-wpt-eval-page>`
       );
       await el.updateComplete;
 
@@ -799,7 +812,9 @@ describe('chromedash-wpt-eval-page', () => {
         ai_test_eval_report: null,
       });
       const el = await fixture<ChromedashWPTEvalPage>(
-        html`<chromedash-wpt-eval-page .featureId=${1}></chromedash-wpt-eval-page>`
+        html`<chromedash-wpt-eval-page
+          .featureId=${1}
+        ></chromedash-wpt-eval-page>`
       );
       await el.updateComplete;
 
@@ -815,7 +830,9 @@ describe('chromedash-wpt-eval-page', () => {
       confirmStub.returns(true); // User clicks "OK"
 
       const el = await fixture<ChromedashWPTEvalPage>(
-        html`<chromedash-wpt-eval-page .featureId=${12345}></chromedash-wpt-eval-page>`
+        html`<chromedash-wpt-eval-page
+          .featureId=${12345}
+        ></chromedash-wpt-eval-page>`
       );
       await el.updateComplete;
 
@@ -828,9 +845,9 @@ describe('chromedash-wpt-eval-page', () => {
       await nextFrame();
 
       expect(confirmStub).to.have.been.calledOnce;
-      expect(
-        csClientStub.deleteWPTCoverageEvaluation
-      ).to.have.been.calledWith(12345);
+      expect(csClientStub.deleteWPTCoverageEvaluation).to.have.been.calledWith(
+        12345
+      );
 
       // It should call getFeature again to refresh the data.
       // Called once on load, and a second time after deletion.
