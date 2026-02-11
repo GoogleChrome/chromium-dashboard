@@ -489,7 +489,7 @@ export class ChromedashWPTEvalPage extends LitElement {
     if (
       !window.confirm(
         'Delete this WPT coverage report? This action cannot be undone.'
-    )
+      )
     ) {
       return;
     }
@@ -499,7 +499,6 @@ export class ChromedashWPTEvalPage extends LitElement {
       showToastMessage('Report deleted successfully.');
       // Refresh data to update the UI
       this.fetchData();
-
     } catch (err) {
       console.error('Failed to delete report: ', err);
       showToastMessage('Failed to delete report. Please try again later.');
@@ -685,7 +684,8 @@ export class ChromedashWPTEvalPage extends LitElement {
     // Show success message if completed in this session.
     if (
       this.completedInThisSession &&
-      status !== AITestEvaluationStatus.IN_PROGRESS && status !== AITestEvaluationStatus.DELETED
+      status !== AITestEvaluationStatus.IN_PROGRESS &&
+      status !== AITestEvaluationStatus.DELETED
     ) {
       return html`
         <section class="card action-section">
