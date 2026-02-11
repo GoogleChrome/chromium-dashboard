@@ -46,11 +46,13 @@ class WPTCoverageAPITest(testing_config.CustomTestCase):
     for entity in FeatureEntry.query():
       entity.key.delete()
 
+  @mock.patch('framework.permissions.is_google_or_chromium_account')
   @mock.patch('framework.cloud_tasks_helpers.enqueue_task')
   @mock.patch('framework.permissions.can_edit_feature')
-  def test_do_post__success(self, mock_can_edit, mock_enqueue):
+  def test_do_post__success(self, mock_can_edit, mock_enqueue, mock_is_google):
     """Ensure valid requests update the feature and enqueue a task."""
     mock_can_edit.return_value = True
+    mock_is_google.return_value = True
     # Track the time before the operation to verify the timestamp update.
     before_call = datetime.now()
 
@@ -62,6 +64,7 @@ class WPTCoverageAPITest(testing_config.CustomTestCase):
     self.assertEqual(response, {'message': 'Task enqueued'})
 
     mock_can_edit.assert_called_once()
+    mock_is_google.assert_called_once()
 
     # Verify Cloud Task was enqueued with correct parameters.
     mock_enqueue.assert_called_once_with(
@@ -98,6 +101,29 @@ class WPTCoverageAPITest(testing_config.CustomTestCase):
     self.assertIsNone(unchanged_feature.ai_test_eval_run_status)
     self.assertIsNone(unchanged_feature.ai_test_eval_status_timestamp)
 
+  @mock.patch('framework.permissions.is_google_or_chromium_account')
+  @mock.patch('framework.cloud_tasks_helpers.enqueue_task')
+  @mock.patch('framework.permissions.can_edit_feature')
+  def test_do_post__not_google_or_chromium_account(self, mock_can_edit,
+                                                   mock_enqueue, mock_is_google):
+    """Ensure requests from non-Google/Chromium accounts abort with 403."""
+    mock_can_edit.return_value = True
+    mock_is_google.return_value = False
+
+    params = {'feature_id': 123456}
+    with test_app.test_request_context('/api/v0/generate-wpt-coverage-analysis',
+                                       method='POST', json=params):
+      with self.assertRaises(werkzeug.exceptions.Forbidden) as cm:
+        self.handler.do_post()
+
+      self.assertEqual(
+        cm.exception.description,
+        'This feature is currently only available to Google or Chromium accounts.'
+      )
+
+    # Verify no task was enqueued.
+    mock_enqueue.assert_not_called()
+
   @mock.patch('framework.cloud_tasks_helpers.enqueue_task')
   def test_do_post__not_found(self, mock_enqueue):
     """Ensure requests for non-existent features abort with 404."""
@@ -118,11 +144,14 @@ class WPTCoverageAPITest(testing_config.CustomTestCase):
       with self.assertRaises(werkzeug.exceptions.BadRequest):
         self.handler.do_post()
 
+  @mock.patch('framework.permissions.is_google_or_chromium_account')
   @mock.patch('framework.cloud_tasks_helpers.enqueue_task')
   @mock.patch('framework.permissions.can_edit_feature')
-  def test_do_post__already_in_progress(self, mock_can_edit, mock_enqueue):
+  def test_do_post__already_in_progress(self, mock_can_edit, mock_enqueue,
+                                        mock_is_google):
     """Ensure requests abort with 409 if an analysis is already running."""
     mock_can_edit.return_value = True
+    mock_is_google.return_value = True
 
     self.feature_1.ai_test_eval_run_status = (
         core_enums.AITestEvaluationStatus.IN_PROGRESS.value)
@@ -146,11 +175,18 @@ class WPTCoverageAPITest(testing_config.CustomTestCase):
     # Verify we did not enqueue a duplicate task.
     mock_enqueue.assert_not_called()
 
+  @mock.patch('framework.permissions.is_google_or_chromium_account')
   @mock.patch('framework.cloud_tasks_helpers.enqueue_task')
   @mock.patch('framework.permissions.can_edit_feature')
-  def test_do_post__confidential_feature(self, mock_can_edit, mock_enqueue):
+  def test_do_post__confidential_feature(
+    self,
+    mock_can_edit,
+    mock_enqueue,
+    mock_is_google
+  ):
     """Ensure requests for confidential features abort with 400."""
     mock_can_edit.return_value = True
+    mock_is_google.return_value = True
 
     # Set the feature to confidential.
     self.feature_1.confidential = True
