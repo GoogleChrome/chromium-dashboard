@@ -59,3 +59,6 @@ cron:
 - description: Reset the shipping milestones of features have not been verified after 4+ notifications.
   url: /cron/reset_stale_shipping_milestones
   schedule: every sunday 09:00
+# - description: Delete WPT Coverage Report after 180 days
+#   url: /cron/delete_wpt_coverage_report
+#   schedule: every day 7:30

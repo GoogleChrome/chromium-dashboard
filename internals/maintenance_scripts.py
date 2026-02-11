@@ -21,6 +21,7 @@ from typing import Any
 from google.cloud import ndb, storage  # type: ignore
 import json5
 import requests
+from internals import core_enums
 
 from api import converters, channels_api
 from framework.basehandlers import FlaskHandler
@@ -1380,3 +1381,42 @@ class ResetStaleShippingMilestones(FlaskHandler):
       ndb.put_multi(entities_to_update)
 
     return f'{num_features_reset} features with shipping milestones reset.'
+
+class DeleteWPTCoverageReport(FlaskHandler):
+
+  def get_template_data(self, **kwargs) -> str:
+    """Delete WPT coverage reports older than 180 days."""
+    self.require_cron_header()
+    BATCH_SIZE = 100
+    RETENTION_DAYS = 180
+    batch = []
+    count = 0
+
+    # Calculate the date threshold: 180 days ago.
+    date_threshold = datetime.now() - timedelta(days=RETENTION_DAYS)
+
+    # Query for features with a WPT evaluation timestamp older than the threshold.
+    query = FeatureEntry.query(
+        FeatureEntry.ai_test_eval_status_timestamp <= date_threshold)
+
+    for feature in query:
+      # We check for the report's existence here, instead of in the query,
+      # because the `ai_test_eval_report` field is not indexed.
+      if feature.ai_test_eval_report:
+        feature.ai_test_eval_report = None
+        feature.ai_test_eval_run_status = core_enums.AITestEvaluationStatus.DELETED
+        # Update the timestamp to reflect when this cron job ran.
+        feature.ai_test_eval_status_timestamp = datetime.now()
+        batch.append(feature)
+        count += 1
+        if len(batch) >= BATCH_SIZE:
+          ndb.put_multi(batch)
+          batch = []
+          logging.info(f'Deleted a batch of {BATCH_SIZE} reports.')
+
+    if batch:
+      ndb.put_multi(batch)
+
+    logging.info(f'Finished. Deleted a total of {count} old WPT coverage reports.')
+    return f'{count} WPT coverage reports deleted.'
+

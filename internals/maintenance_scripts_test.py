@@ -2026,3 +2026,77 @@ class ResetStaleShippingMilestonesTest(testing_config.CustomTestCase):
     self.assertEqual(1, len(act_210.amendments))
     self.assertEqual('desktop_first', act_210.amendments[0].field_name)
     self.assertEqual('101', act_210.amendments[0].old_value)
+
+class DeleteWPTCoverageReportTest(testing_config.CustomTestCase):
+
+  def setUp(self):
+    self.handler = maintenance_scripts.DeleteWPTCoverageReport()
+    self.mock_now = datetime(2025, 1, 1)
+    old_timestamp = self.mock_now - timedelta(days=181)
+    boundary_timestamp = self.mock_now - timedelta(days=180)
+    self.new_timestamp = self.mock_now - timedelta(days=10)
+
+    # Feature 1: Old report, should be deleted.
+    self.feature_old = FeatureEntry(
+        id=1, name='Old Feature', summary='summary', category=1,
+        ai_test_eval_report='This is an old report.',
+        ai_test_eval_status_timestamp=old_timestamp)
+    self.feature_old.put()
+
+    # Feature 2: New report, should NOT be deleted.
+    self.feature_new = FeatureEntry(
+        id=2, name='New Feature', summary='summary', category=1,
+        ai_test_eval_report='This is a new report.',
+        ai_test_eval_status_timestamp=self.new_timestamp)
+    self.feature_new.put()
+
+    # Feature 3: No report, should be ignored.
+    self.feature_none = FeatureEntry(
+        id=3, name='No Report Feature', summary='summary', category=1,
+        ai_test_eval_report=None,
+        ai_test_eval_status_timestamp=old_timestamp) # Still old, but no report
+    self.feature_none.put()
+
+    # Feature 4: Boundary case report, should be deleted.
+    self.feature_boundary = FeatureEntry(
+        id=4, name='Boundary Feature', summary='summary', category=1,
+        ai_test_eval_report='This is a boundary report.',
+        ai_test_eval_status_timestamp=boundary_timestamp)
+    self.feature_boundary.put()
+
+
+  def tearDown(self):
+    for entity in FeatureEntry.query():
+      entity.key.delete()
+
+  @mock.patch('internals.maintenance_scripts.datetime')
+  def test_get_template_data__deletes_old_reports(self, mock_datetime):
+    """Should delete reports older than 180 days and leave others."""
+    # Mock the time to the same predictable value used in setUp.
+    mock_datetime.now.return_value = self.mock_now
+    mock_datetime.timedelta = timedelta
+
+    result = self.handler.get_template_data()
+
+    self.assertEqual('2 WPT coverage reports deleted.', result)
+
+    # Check Feature 1 (Old) - should be deleted.
+    updated_feature_old = self.feature_old.key.get()
+    self.assertIsNone(updated_feature_old.ai_test_eval_report)
+    self.assertEqual(updated_feature_old.ai_test_eval_run_status, core_enums.AITestEvaluationStatus.DELETED)
+    self.assertEqual(updated_feature_old.ai_test_eval_status_timestamp, self.mock_now)
+
+    # Check Feature 2 (New) - should be untouched.
+    updated_feature_new = self.feature_new.key.get()
+    self.assertEqual(updated_feature_new.ai_test_eval_report, 'This is a new report.')
+    self.assertEqual(updated_feature_new.ai_test_eval_status_timestamp, self.new_timestamp)
+
+    # Check Feature 3 (None) - should be untouched.
+    updated_feature_none = self.feature_none.key.get()
+    self.assertIsNone(updated_feature_none.ai_test_eval_report)
+
+    # Check Feature 4 (Boundary) - should be deleted.
+    updated_feature_boundary = self.feature_boundary.key.get()
+    self.assertIsNone(updated_feature_boundary.ai_test_eval_report)
+    self.assertEqual(updated_feature_boundary.ai_test_eval_run_status, core_enums.AITestEvaluationStatus.DELETED)
+    self.assertEqual(updated_feature_boundary.ai_test_eval_status_timestamp, self.mock_now)
