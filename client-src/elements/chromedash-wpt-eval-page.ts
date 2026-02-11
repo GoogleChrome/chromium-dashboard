@@ -280,6 +280,11 @@ export class ChromedashWPTEvalPage extends LitElement {
           opacity: 0.75;
           font-style: italic;
         }
+
+        .report-actions {
+          display: flex;
+          gap: 12px;
+        }
       `,
     ];
   }
@@ -784,24 +789,27 @@ export class ChromedashWPTEvalPage extends LitElement {
       <section class="card report-section">
         <div class="report-header">
           <h2 class="${titleClass}">Analysis Results</h2>
-          <sl-button
-            variant="default"
-            size="small"
-            @click=${this.handleCopyReport}
-            title="Copy report to clipboard"
-          >
-            <sl-icon slot="prefix" name="copy"></sl-icon>
-            Copy Report
-          </sl-button>
-          <sl-button
-            variant="danger"
-            size="small"
-            @click=${this.handleDeleteReport}
-            title="Delete report"
-          >
-            <sl-icon slot="prefix" name="trash"></sl-icon>
-            Delete Report
-          </sl-button>
+          <div class="report-actions">
+            <sl-button
+              variant="danger"
+              outline
+              size="small"
+              @click=${this.handleDeleteReport}
+              title="Delete report"
+            >
+              <sl-icon slot="prefix" name="trash"></sl-icon>
+              Delete Report
+            </sl-button>
+            <sl-button
+              variant="default"
+              size="small"
+              @click=${this.handleCopyReport}
+              title="Copy report to clipboard"
+            >
+              <sl-icon slot="prefix" name="copy"></sl-icon>
+              Copy Report
+            </sl-button>
+          </div>
         </div>
         <div class="report-content ${contentClass}">
           ${unsafeHTML(safeHtml)}
