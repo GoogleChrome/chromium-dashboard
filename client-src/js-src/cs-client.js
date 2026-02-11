@@ -788,7 +788,6 @@ export class ChromeStatusClient {
     });
   }
 
-
   async getSpecifiedChannels(start, end) {
     return this.doGet(`/channels?start=${start}&end=${end}`);
   }

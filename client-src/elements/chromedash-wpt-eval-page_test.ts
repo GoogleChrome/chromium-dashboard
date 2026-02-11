@@ -9,6 +9,7 @@ describe('chromedash-wpt-eval-page', () => {
   let csClientStub: {
     getFeature: sinon.SinonStub;
     generateWPTCoverageEvaluation: sinon.SinonStub;
+    deleteWPTCoverageEvaluation: sinon.SinonStub;
   };
 
   // Sample feature data for testing
@@ -28,6 +29,7 @@ describe('chromedash-wpt-eval-page', () => {
     csClientStub = {
       getFeature: sinon.stub(),
       generateWPTCoverageEvaluation: sinon.stub(),
+      deleteWPTCoverageEvaluation: sinon.stub(),
     };
     (window as any).csClient = csClientStub;
   });
@@ -168,7 +170,7 @@ describe('chromedash-wpt-eval-page', () => {
       await el.updateComplete;
 
       const copyButton = el.shadowRoot!.querySelector(
-        '.report-header sl-button'
+        'sl-button[title="Copy report to clipboard"]'
       );
       expect(copyButton).to.exist;
       expect(copyButton!.textContent).to.contain('Copy Report');
@@ -187,7 +189,7 @@ describe('chromedash-wpt-eval-page', () => {
       await el.updateComplete;
 
       const copyButton = el.shadowRoot!.querySelector(
-        '.report-header sl-button'
+        'sl-button[title="Copy report to clipboard"]'
       ) as HTMLElement;
       copyButton.click();
 
