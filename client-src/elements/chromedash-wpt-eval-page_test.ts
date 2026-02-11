@@ -784,7 +784,7 @@ describe('chromedash-wpt-eval-page', () => {
   });
 
   describe('Report Deletion Functionality', () => {
-    let confirmStub: sinon.sinon.SinonStub;
+    let confirmStub: sinon.SinonStub;
 
     beforeEach(() => {
       confirmStub = sinon.stub(window, 'confirm');
