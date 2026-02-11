@@ -442,9 +442,9 @@ export class ChromeStatusClient {
     });
   }
 
-  async doDelete(resource, body) {
+  async doDelete(resource) {
     return this.ensureTokenIsValid().then(() => {
-      return this.doFetch(resource, 'DELETE', body);
+      return this.doFetch(resource, 'DELETE', null);
     });
   }
 
@@ -783,9 +783,7 @@ export class ChromeStatusClient {
 
   // Delete WPT Coverage Report
   async deleteWPTCoverageEvaluation(featureId) {
-    return this.doDelete('/features/generate-wpt-coverage-analysis', {
-      feature_id: featureId,
-    });
+    return this.doDelete(`/features/wpt-coverage-analysis/${featureId}/delete`);
   }
 
   async getSpecifiedChannels(start, end) {

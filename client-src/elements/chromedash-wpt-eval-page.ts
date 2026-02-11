@@ -698,7 +698,7 @@ export class ChromedashWPTEvalPage extends LitElement {
     }
     if (
       this.completedInThisSession &&
-      status == AITestEvaluationStatus.DELETED
+      status === AITestEvaluationStatus.DELETED
     ) {
       return html`
         <section class="card action-section">
