@@ -171,3 +171,66 @@ class WPTCoverageAPITest(testing_config.CustomTestCase):
 
     # Verify no task was enqueued.
     mock_enqueue.assert_not_called()
+
+  @mock.patch('framework.permissions.can_edit_feature')
+  def test_do_delete__success(self, mock_can_edit):
+    """User with edit access can delete a WPT coverage report."""
+    mock_can_edit.return_value = True
+
+    # Set initial report data on the feature.
+    self.feature_1.ai_test_eval_report = 'This is a test report.'
+    self.feature_1.ai_test_eval_run_status = (
+        core_enums.AITestEvaluationStatus.COMPLETE.value)
+    self.feature_1.ai_test_eval_status_timestamp = datetime(2024, 5, 20, 15, 30, 0)
+    self.feature_1.put()
+
+
+    params = {'feature_id': 123456}
+    with test_app.test_request_context('/api/v0/wpt-coverage-reports',
+                                       method='DELETE', json=params):
+      response = self.handler.do_delete()
+
+    self.assertEqual(response,
+                         {'message': 'WPT coverage analysis report deleted.'})
+
+    mock_can_edit.assert_called_once()
+
+    # Verify the feature has been updated.
+    updated_feature = FeatureEntry.get_by_id(123456)
+    self.assertIsNone(updated_feature.ai_test_eval_report)
+    self.assertEqual(
+        updated_feature.ai_test_eval_run_status,
+        core_enums.AITestEvaluationStatus.DELETED.value
+    )
+    self.assertEqual(
+        updated_feature.ai_test_eval_status_timestamp,
+        datetime(2024, 5, 20, 15, 30, 0)
+    )
+
+  @mock.patch('framework.permissions.can_edit_feature')
+  def test_do_delete__forbidden(self, mock_can_edit):
+    """User without edit access cannot delete a report."""
+    mock_can_edit.return_value = False
+
+    # Set initial report data on the feature.
+    self.feature_1.ai_test_eval_report = 'This is a test report.'
+    self.feature_1.ai_test_eval_run_status = (
+        core_enums.AITestEvaluationStatus.COMPLETE.value)
+    self.feature_1.put()
+
+    params = {'feature_id': 123456}
+    with test_app.test_request_context('/api/v0/wpt-coverage-reports',
+                                       method='DELETE', json=params):
+      with self.assertRaises(werkzeug.exceptions.Forbidden):
+        self.handler.do_delete()
+
+    mock_can_edit.assert_called_once()
+
+    # Verify the feature was NOT updated.
+    unchanged_feature = FeatureEntry.get_by_id(123456)
+    self.assertEqual(unchanged_feature.ai_test_eval_report,
+                         'This is a test report.')
+    self.assertEqual(
+        unchanged_feature.ai_test_eval_run_status,
+        core_enums.AITestEvaluationStatus.COMPLETE.value
+    )

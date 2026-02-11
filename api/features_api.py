@@ -500,6 +500,8 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
 
     feature: FeatureEntry = self.get_specified_feature(feature_id=feature_id)
     feature.deleted = True
+    # Delete any AI-generated content during archival.
+    feature.ai_test_eval_report = None
     feature.put()
 
     user = users.get_current_user()

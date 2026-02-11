@@ -148,34 +148,113 @@ async def prompt_analysis(feature: FeatureEntry, wpt_contents: utils.WPTContents
   This method is used when the number of test files is too large for a single
   prompt. It breaks the analysis into three distinct stages:
   1. Spec Synthesis: Summarizes the spec into a concise reference.
-  2. Test Analysis: Analyzes each test file individually in parallel batches.
+  2. Test Analysis: Analyzes test files in packed batches to maximize context usage.
   3. Gap Analysis: Compares the spec synthesis with the aggregated test
      summaries to identify gaps.
 
   Args:
     feature: The feature entry containing metadata and the spec URL.
-    test_files: A dictionary mapping test file paths to their raw text content.
+    wpt_contents: The contents of the test files and dependencies.
 
   Returns:
     A string containing the generated coverage report.
 
   Raises:
-    PipelineError: If any critical stage of the prompt pipeline fails (e.g.,
-      spec synthesis failure or total failure of all test analyses).
+    PipelineError: If any critical stage of the prompt pipeline fails.
   """
+  gemini_client = GeminiClient()
   prompts = []
-  file_names: list[str] = []
-  for fpath, fc in wpt_contents.test_contents.items():
-    testfile_url = f'{utils.WPT_GITHUB_RAW_CONTENTS_URL}{fpath}'
-    prompts.append(
-      render_template(
-        TEST_ANALYSIS_TEMPLATE_PATH,
-        testfile_name=fpath.name,
-        testfile_url=testfile_url,
-        testfile_contents=fc
-      )
+
+  test_contents = wpt_contents.test_contents
+  dependency_contents = wpt_contents.dependency_contents
+
+  current_test_files: list[dict[str, Path | str]] = []
+  current_dependencies: dict[Path, str] = {}
+
+  for fpath, fc in test_contents.items():
+    # 1. Identify dependencies for the current file
+    file_deps = {}
+    if fpath in wpt_contents.test_to_dependencies_map:
+      for dep_path in wpt_contents.test_to_dependencies_map[fpath]:
+        content = (
+          dependency_contents[dep_path]
+          if dep_path in dependency_contents else test_contents.get(dep_path)
+        )
+        if content:
+          file_deps[dep_path] = content
+
+    # 2. Create candidate batch (current batch + new file)
+    candidate_test_files = current_test_files + [{'path': fpath, 'contents': fc}]
+    candidate_dependencies = current_dependencies.copy()
+    candidate_dependencies.update(file_deps)
+
+    # Render candidate prompt to check token limits
+    # dependency_files arg: list of (Path, content) tuples
+    candidate_prompt = render_template(
+      TEST_ANALYSIS_TEMPLATE_PATH,
+      test_files=candidate_test_files,
+      dependency_files=list(candidate_dependencies.items()),
     )
-    file_names.append(fpath.name)
+
+    # 3. Check token limit
+    if gemini_client.prompt_exceeds_input_token_limit(candidate_prompt):
+      # Commit the previous valid batch if it exists
+      if current_test_files:
+        prompts.append(
+            render_template(
+              TEST_ANALYSIS_TEMPLATE_PATH,
+              test_files=current_test_files,
+              dependency_files=list(current_dependencies.items()),
+            )
+        )
+        # Reset the buffer; we will decide what to put in it next
+        current_test_files = []
+        current_dependencies = {}
+
+      # Check if the current file + its dependencies fit on their own
+      single_file_list: list[dict[str, Path | str]] = [{'path': fpath, 'contents': fc}]
+
+      single_prompt_with_deps = render_template(
+        TEST_ANALYSIS_TEMPLATE_PATH,
+        test_files=single_file_list,
+        dependency_files=list(file_deps.items())
+      )
+      if gemini_client.prompt_exceeds_input_token_limit(single_prompt_with_deps):
+        # Edge Case: The file + deps is too large. (this should be very rare).
+        # Create a prompt with ONLY the test file (omit dependencies) and commit immediately.
+        logging.warning(
+            f'Test file {fpath} with dependencies exceeds token limit. '
+            'Generating prompt without dependencies.'
+        )
+        prompts.append(
+            render_template(
+              TEST_ANALYSIS_TEMPLATE_PATH,
+              test_files=single_file_list,
+              dependency_files=[]
+            )
+        )
+        # Buffer remains empty for the next iteration
+        current_test_files = []
+        current_dependencies = {}
+      else:
+        # Start the new batch.
+        current_test_files = single_file_list
+        current_dependencies = file_deps
+
+    else:
+      # It fits; update the current batch state
+      current_test_files = candidate_test_files
+      current_dependencies = candidate_dependencies
+
+  # 4. Commit any remaining tests in the buffer
+  if current_test_files:
+    prompts.append(
+        render_template(
+          TEST_ANALYSIS_TEMPLATE_PATH,
+          test_files=current_test_files,
+          dependency_files=list(current_dependencies.items()),
+        )
+    )
 
   template_data = {
     'spec_url': feature.spec_link,
@@ -186,29 +265,25 @@ async def prompt_analysis(feature: FeatureEntry, wpt_contents: utils.WPTContents
   # Add the spec synthesis prompt to the end for batch processing.
   prompts.append(spec_synthesis_prompt)
 
-  gemini_client = GeminiClient()
-
   all_responses = await gemini_client.get_batch_responses_async(prompts)
 
   spec_synthesis_response = all_responses.pop()
   if not isinstance(spec_synthesis_response, str):
     raise utils.PipelineError(f'Spec synthesis prompt failure: {spec_synthesis_response}')
 
-  test_analysis_responses_formatted: list[str] = []
-  for fname, resp in zip(file_names, all_responses):
+  # Log if any test summary responses failed.
+  for resp in all_responses:
     if not isinstance(resp, str):
       logging.error(f'Test analysis prompt failure: {resp}')
       continue
-    test_analysis_responses_formatted.append(f'Test {fname} summary:\n')
-    test_analysis_responses_formatted.append(resp)
-    test_analysis_responses_formatted.append('\n\n')
+  test_analysis_responses = [resp for resp in all_responses if isinstance(resp, str)]
 
-  if not test_analysis_responses_formatted:
+  if not test_analysis_responses:
     raise utils.PipelineError('No successful test analysis responses.')
 
   template_data = {
     'spec_synthesis': spec_synthesis_response,
-    'test_analysis': ''.join(test_analysis_responses_formatted)
+    'test_summaries': test_analysis_responses,
   }
   gap_analysis_prompt = render_template(GAP_ANALYSIS_TEMPLATE_PATH, **template_data)
 

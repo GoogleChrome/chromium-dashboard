@@ -35,18 +35,30 @@ For every test file, examine its code to identify which dependencies it imports 
 
 <test_suite>
     <test_batch>
-    {% for test in test_files %}
-        <test_file path="{{ test.path }}">
-{{ test.contents }}
+    
+        <test_file path="css/a.html">
+contents of file a.html
         </test_file>
-    {% endfor %}
+    
+        <test_file path="css/b.html">
+contents of file b.html
+        </test_file>
+    
     </test_batch>
 
     <dependency_library>
-    {% for dep_path, dep_content in dependency_files %}
-        <dependency_file path="{{ dep_path }}">
-{{ dep_content }}
+    
+        <dependency_file path="css/c.html">
+contents of file c.html
         </dependency_file>
-    {% endfor %}
+    
+        <dependency_file path="css/d.html">
+contents of file d.html
+        </dependency_file>
+    
+        <dependency_file path="css/e.html">
+contents of file e.html
+        </dependency_file>
+    
     </dependency_library>
 </test_suite>
