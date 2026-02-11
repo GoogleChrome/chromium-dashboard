@@ -222,10 +222,12 @@ spa_page_routes = [
   Route('/newfeatures'),
   Route('/feature/<int:feature_id>'),
   Route('/feature/<int:feature_id>/activity'),
-  Route('/feature/<int:feature_id>/ai-coverage-analysis'),
+  Route('/feature/<int:feature_id>/ai-coverage-analysis',
+        defaults={'require_edit_feature': True}),
   # TODO(DanielRyanSmith): Remove the "-evaluation" route after the
   # "-analysis" route had landed.
-  Route('/feature/<int:feature_id>/ai-coverage-evaluation'),
+  Route('/feature/<int:feature_id>/ai-coverage-evaluation',
+        defaults={'require_edit_feature': True}),
   Route('/guide/new', guide.FeatureCreateHandler,
       defaults={'require_create_feature': True}),
   Route('/guide/enterprise/new', guide.EnterpriseFeatureCreateHandler,
