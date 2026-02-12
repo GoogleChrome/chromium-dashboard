@@ -322,20 +322,26 @@ export class ChromedashFeatureDetail extends LitElement {
         Edit all fields
       </sl-button>
     `;
-    // TODO(DanielRyanSmith): Add this to the main view when all aspects of
-    // the WPT coverage evaluation pipeline have been implemented
-    // const wptEvalButton = html` <chromedash-wpt-eval-button
-    //   .featureId=${this.feature.id}
-    // ></chromedash-wpt-eval-button>`;
+    let wptEvalButton = html`${nothing}`;
+    // For now, the WPT coverage evaluation page is only visible to Googlers and Chromium users.
+    if (
+      this.user?.email?.endsWith('@google.com') ||
+      this.user?.email?.endsWith('@chromium.org')
+    ) {
+      if (
+        this.canEdit &&
+        // Enterprise features don't provide spec URLs or Web Platform Tests info.
+        this.feature.feature_type_int !==
+          FEATURE_TYPES.FEATURE_TYPE_ENTERPRISE_ID[0]
+      ) {
+        wptEvalButton = html` <chromedash-wpt-eval-button
+          .featureId=${this.feature.id}
+        ></chromedash-wpt-eval-button>`;
+      }
+    }
     const toggleLabel = this.anyCollapsed ? 'Expand all' : 'Collapse all';
     return html`
-      <!-- Enterprise features don't provide spec URLs or Web Platform Tests info. -->
-      ${this.canEdit &&
-      this.feature.feature_type_int !==
-        FEATURE_TYPES.FEATURE_TYPE_ENTERPRISE_ID[0]
-        ? nothing // Add wptEvalButton here.
-        : nothing}
-      ${this.canEdit ? editAllButton : nothing}
+      ${wptEvalButton} ${this.canEdit ? editAllButton : nothing}
       <sl-button
         variant="text"
         title="Expand or collapse all sections"

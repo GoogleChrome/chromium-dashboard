@@ -13,7 +13,7 @@ describe('chromedash-wpt-eval-button', () => {
     expect(button!.getAttribute('href')).to.equal(
       '/feature/0/ai-coverage-analysis'
     );
-    expect(el.shadowRoot!.textContent).to.contain('Evaluate test coverage');
+    expect(el.shadowRoot!.textContent).to.contain('Analyze test coverage');
   });
 
   it('renders with a specific featureId', async () => {

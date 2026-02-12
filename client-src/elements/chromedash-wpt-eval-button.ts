@@ -33,7 +33,7 @@ export class ChromedashWPTEvalButton extends LitElement {
           src="https://www.gstatic.com/images/branding/productlogos/gemini_2025/v1/192px.svg"
           alt="Gemini AI Logo"
         />
-        Evaluate test coverage
+        Analyze test coverage
       </sl-button>
     `;
   }
