@@ -332,7 +332,8 @@ const FLAT_DEV_TRIAL_FIELDS: MetadataFields = {
 };
 
 const FAST_DEV_TRIAL_FIELDS: MetadataFields = structuredClone(
-  FLAT_DEV_TRIAL_FIELDS);
+  FLAT_DEV_TRIAL_FIELDS
+);
 FAST_DEV_TRIAL_FIELDS.sections[0].fields.push('tag_review');
 
 // TODO(jrobbins): UA support signals section
