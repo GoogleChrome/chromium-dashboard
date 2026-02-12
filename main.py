@@ -336,6 +336,8 @@ internals_routes: list[Route] = [
         maintenance_scripts.GenerateShippingFeaturesFile),
   Route('/cron/reset_stale_shipping_milestones',
         maintenance_scripts.ResetStaleShippingMilestones),
+  Route('/cron/delete_old_wpt_coverage_report',
+        maintenance_scripts.DeleteWPTCoverageReport),
 
   Route('/admin/find_stop_words', search_fulltext.FindStopWords),
 
