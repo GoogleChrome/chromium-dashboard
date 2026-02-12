@@ -156,6 +156,8 @@ api_routes: list[Route] = [
           intents_api.IntentsAPI),
     Route(f'{API_BASE}/features/<int:feature_id>/<int:stage_id>/<int:gate_id>/intent',
           intents_api.IntentsAPI),
+    Route(f'{API_BASE}/features/wpt-coverage-analysis/<int:feature_id>/delete',
+          wpt_coverage_api.WPTCoverageAPI),
     Route(f'{API_BASE}/features/generate-wpt-coverage-analysis',
           wpt_coverage_api.WPTCoverageAPI),
     # TODO(DanielRyanSmith): Remove the "-evaluation" route after the

@@ -781,6 +781,11 @@ export class ChromeStatusClient {
     });
   }
 
+  // Delete WPT Coverage Report
+  async deleteWPTCoverageEvaluation(featureId) {
+    return this.doDelete(`/features/wpt-coverage-analysis/${featureId}/delete`);
+  }
+
   async getSpecifiedChannels(start, end) {
     return this.doGet(`/channels?start=${start}&end=${end}`);
   }

@@ -165,6 +165,7 @@ export enum AITestEvaluationStatus {
   COMPLETE = 1,
   IN_PROGRESS = 2,
   FAILED = 3,
+  DELETED = 4,
 }
 
 // FEATURE_TYPES object is organized as [intValue, stringLabel, description],

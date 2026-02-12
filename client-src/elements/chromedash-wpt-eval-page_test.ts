@@ -9,6 +9,7 @@ describe('chromedash-wpt-eval-page', () => {
   let csClientStub: {
     getFeature: sinon.SinonStub;
     generateWPTCoverageEvaluation: sinon.SinonStub;
+    deleteWPTCoverageEvaluation: sinon.SinonStub;
   };
 
   // Sample feature data for testing
@@ -28,6 +29,7 @@ describe('chromedash-wpt-eval-page', () => {
     csClientStub = {
       getFeature: sinon.stub(),
       generateWPTCoverageEvaluation: sinon.stub(),
+      deleteWPTCoverageEvaluation: sinon.stub(),
     };
     (window as any).csClient = csClientStub;
   });
@@ -168,7 +170,7 @@ describe('chromedash-wpt-eval-page', () => {
       await el.updateComplete;
 
       const copyButton = el.shadowRoot!.querySelector(
-        '.report-header sl-button'
+        'sl-button[title="Copy report to clipboard"]'
       );
       expect(copyButton).to.exist;
       expect(copyButton!.textContent).to.contain('Copy Report');
@@ -187,7 +189,7 @@ describe('chromedash-wpt-eval-page', () => {
       await el.updateComplete;
 
       const copyButton = el.shadowRoot!.querySelector(
-        '.report-header sl-button'
+        'sl-button[title="Copy report to clipboard"]'
       ) as HTMLElement;
       copyButton.click();
 
@@ -690,6 +692,61 @@ describe('chromedash-wpt-eval-page', () => {
       expect(button).to.not.have.attribute('disabled');
       expect(message).to.not.exist;
     });
+
+    it('persists cooldown even after deleting a report within the cooldown window', async () => {
+      const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+      const featureInCooldown = {
+        ...mockFeatureV1,
+        ai_test_eval_run_status: AITestEvaluationStatus.COMPLETE,
+        ai_test_eval_status_timestamp: fiveMinutesAgo,
+      };
+
+      // 1. Initial load is in cooldown.
+      csClientStub.getFeature.resolves(featureInCooldown);
+      const el = await fixture<ChromedashWPTEvalPage>(
+        html`<chromedash-wpt-eval-page
+          .featureId=${1}
+        ></chromedash-wpt-eval-page>`
+      );
+      await el.updateComplete;
+
+      // Verify cooldown is active.
+      let button = el.shadowRoot!.querySelector('.generate-button');
+      let message = el.shadowRoot!.querySelector('.cooldown-message');
+      expect(button, 'Button should initially be disabled').to.have.attribute(
+        'disabled'
+      );
+      expect(message, 'Cooldown message should initially be visible').to.exist;
+
+      // 2. User deletes the report.
+      const confirmStub = sinon.stub(window, 'confirm').returns(true);
+      csClientStub.deleteWPTCoverageEvaluation.resolves({});
+      // Subsequent fetchData call will get the same data, but we'll pretend the report is gone.
+      csClientStub.getFeature.resolves({
+        ...featureInCooldown,
+        ai_test_eval_report: null,
+      });
+
+      const deleteButton = el.shadowRoot!.querySelector(
+        'sl-button[title="Delete report"]'
+      ) as HTMLElement;
+      deleteButton.click();
+      await nextFrame(); // Let delete operation process
+      await el.updateComplete; // Let UI update after fetchData
+
+      // 3. Verify cooldown is STILL active.
+      button = el.shadowRoot!.querySelector('.generate-button');
+      message = el.shadowRoot!.querySelector('.cooldown-message');
+      expect(
+        button,
+        'Button should still be disabled after deletion'
+      ).to.have.attribute('disabled');
+      expect(message, 'Cooldown message should still be visible after deletion')
+        .to.exist;
+      expect(message!.textContent).to.contain('Available in');
+
+      confirmStub.restore();
+    });
   });
 
   describe('Confidentiality Logic', () => {
@@ -723,6 +780,78 @@ describe('chromedash-wpt-eval-page', () => {
 
       // Cooldown message should NOT be shown even if no cooldown exists.
       expect(cooldownMsg).to.not.exist;
+    });
+  });
+
+  describe('Report Deletion Functionality', () => {
+    let confirmStub: sinon.SinonStub;
+
+    beforeEach(() => {
+      confirmStub = sinon.stub(window, 'confirm');
+    });
+
+    it('renders the delete button when a report is present', async () => {
+      csClientStub.getFeature.resolves(mockFeatureV1); // Has a report by default.
+      const el = await fixture<ChromedashWPTEvalPage>(
+        html`<chromedash-wpt-eval-page
+          .featureId=${1}
+        ></chromedash-wpt-eval-page>`
+      );
+      await el.updateComplete;
+
+      const deleteButton = el.shadowRoot!.querySelector(
+        'sl-button[title="Delete report"]'
+      );
+      expect(deleteButton).to.exist;
+      expect(deleteButton!.textContent).to.contain('Delete Report');
+    });
+
+    it('does not render the delete button if no report exists', async () => {
+      csClientStub.getFeature.resolves({
+        ...mockFeatureV1,
+        ai_test_eval_report: null,
+      });
+      const el = await fixture<ChromedashWPTEvalPage>(
+        html`<chromedash-wpt-eval-page
+          .featureId=${1}
+        ></chromedash-wpt-eval-page>`
+      );
+      await el.updateComplete;
+
+      const deleteButton = el.shadowRoot!.querySelector(
+        'sl-button[title="Delete report"]'
+      );
+      expect(deleteButton).to.not.exist;
+    });
+
+    it('calls delete API and refetches data when user confirms', async () => {
+      csClientStub.getFeature.resolves(mockFeatureV1);
+      csClientStub.deleteWPTCoverageEvaluation.resolves({});
+      confirmStub.returns(true); // User clicks "OK"
+
+      const el = await fixture<ChromedashWPTEvalPage>(
+        html`<chromedash-wpt-eval-page
+          .featureId=${12345}
+        ></chromedash-wpt-eval-page>`
+      );
+      await el.updateComplete;
+
+      const deleteButton = el.shadowRoot!.querySelector(
+        'sl-button[title="Delete report"]'
+      ) as HTMLElement;
+      deleteButton.click();
+
+      // Give time for the async operation to complete.
+      await nextFrame();
+
+      expect(confirmStub).to.have.been.calledOnce;
+      expect(csClientStub.deleteWPTCoverageEvaluation).to.have.been.calledWith(
+        12345
+      );
+
+      // It should call getFeature again to refresh the data.
+      // Called once on load, and a second time after deletion.
+      expect(csClientStub.getFeature).to.have.been.calledTwice;
     });
   });
 });
