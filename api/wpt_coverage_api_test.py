@@ -224,7 +224,7 @@ class WPTCoverageAPITest(testing_config.CustomTestCase):
     params = {'feature_id': 123456}
     with test_app.test_request_context('/api/v0/wpt-coverage-reports',
                                        method='DELETE', json=params):
-      response = self.handler.do_delete()
+      response = self.handler.do_delete(feature_id=123456)
 
     self.assertEqual(response,
                          {'message': 'WPT coverage analysis report deleted.'})
@@ -258,7 +258,7 @@ class WPTCoverageAPITest(testing_config.CustomTestCase):
     with test_app.test_request_context('/api/v0/wpt-coverage-reports',
                                        method='DELETE', json=params):
       with self.assertRaises(werkzeug.exceptions.Forbidden):
-        self.handler.do_delete()
+        self.handler.do_delete(feature_id=123456)
 
     mock_can_edit.assert_called_once()
 
