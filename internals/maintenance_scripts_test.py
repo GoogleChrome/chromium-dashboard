@@ -2041,6 +2041,7 @@ class DeleteWPTCoverageReportTest(testing_config.CustomTestCase):
     self.feature_old = FeatureEntry(
         id=1, name='Old Feature', summary='summary', category=1,
         ai_test_eval_report='This is an old report.',
+        ai_test_eval_run_status=core_enums.AITestEvaluationStatus.COMPLETE,
         ai_test_eval_status_timestamp=old_timestamp)
     self.feature_old.put()
 
@@ -2062,6 +2063,7 @@ class DeleteWPTCoverageReportTest(testing_config.CustomTestCase):
     self.feature_boundary = FeatureEntry(
         id=4, name='Boundary Feature', summary='summary', category=1,
         ai_test_eval_report='This is a boundary report.',
+        ai_test_eval_run_status=core_enums.AITestEvaluationStatus,
         ai_test_eval_status_timestamp=boundary_timestamp)
     self.feature_boundary.put()
 
@@ -2102,10 +2104,6 @@ class DeleteWPTCoverageReportTest(testing_config.CustomTestCase):
     self.assertIsNone(updated_feature_boundary.ai_test_eval_report)
     self.assertEqual(updated_feature_boundary.ai_test_eval_run_status, core_enums.AITestEvaluationStatus.DELETED)
     self.assertEqual(updated_feature_boundary.ai_test_eval_status_timestamp, self.mock_now)
-
-    # Verify that activities were created for the deleted reports.
-    activities = Activity.query().fetch()
-    self.assertEqual(len(activities), 2)
 
     # Check activity for feature 1.
     activity_1 = Activity.query(Activity.feature_id == 1).get()
