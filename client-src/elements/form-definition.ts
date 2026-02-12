@@ -330,6 +330,11 @@ const FLAT_DEV_TRIAL_FIELDS: MetadataFields = {
     },
   ],
 };
+
+const FAST_DEV_TRIAL_FIELDS: MetadataFields = structuredClone(
+  FLAT_DEV_TRIAL_FIELDS);
+FAST_DEV_TRIAL_FIELDS.sections[0].fields.push('tag_review');
+
 // TODO(jrobbins): UA support signals section
 // TODO(jrobbins): api overview link
 
@@ -711,7 +716,7 @@ export const FORMS_BY_STAGE_TYPE: Record<number, MetadataFields> = {
   [enums.STAGE_BLINK_SHIPPING]: FLAT_PREPARE_TO_SHIP_FIELDS,
 
   [enums.STAGE_FAST_PROTOTYPE]: FLAT_PROTOTYPE_FIELDS,
-  [enums.STAGE_FAST_DEV_TRIAL]: FLAT_DEV_TRIAL_FIELDS,
+  [enums.STAGE_FAST_DEV_TRIAL]: FAST_DEV_TRIAL_FIELDS,
   [enums.STAGE_FAST_ORIGIN_TRIAL]: FLAT_ORIGIN_TRIAL_FIELDS,
   [enums.STAGE_FAST_EXTEND_ORIGIN_TRIAL]: FLAT_TRIAL_EXTENSION_FIELDS,
   [enums.STAGE_FAST_SHIPPING]: FLAT_PREPARE_TO_SHIP_FIELDS,
