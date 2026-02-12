@@ -2067,8 +2067,9 @@ class DeleteWPTCoverageReportTest(testing_config.CustomTestCase):
 
 
   def tearDown(self):
-    for entity in FeatureEntry.query():
-      entity.key.delete()
+    for kind in (FeatureEntry, Activity):
+      for entity in kind.query():
+        entity.key.delete()
 
   @mock.patch('internals.maintenance_scripts.datetime')
   def test_get_template_data__deletes_old_reports(self, mock_datetime):
@@ -2101,3 +2102,12 @@ class DeleteWPTCoverageReportTest(testing_config.CustomTestCase):
     self.assertIsNone(updated_feature_boundary.ai_test_eval_report)
     self.assertEqual(updated_feature_boundary.ai_test_eval_run_status, core_enums.AITestEvaluationStatus.DELETED)
     self.assertEqual(updated_feature_boundary.ai_test_eval_status_timestamp, self.mock_now)
+
+    # Verify that activities were created for the deleted reports.
+    activities = Activity.query().fetch()
+    self.assertEqual(len(activities), 2)
+
+    # Check activity for feature 1.
+    activity_1 = Activity.query(Activity.feature_id == 1).get()
+    self.assertIsNotNone(activity_1)
+    self.assertEqual(activity_1.content, 'WPT coverage report was deleted due to 180-day retention policy.')

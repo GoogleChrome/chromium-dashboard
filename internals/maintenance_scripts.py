@@ -1391,7 +1391,7 @@ class DeleteWPTCoverageReport(FlaskHandler):
     batch = []
     count = 0
 
-    # Calculate the date threshold: 180 days ago.
+    # Calculate the date threshold
     date_threshold = datetime.now() - timedelta(days=self.RETENTION_DAYS)
 
     # Query for features with a WPT evaluation timestamp older than the threshold.
@@ -1402,6 +1402,12 @@ class DeleteWPTCoverageReport(FlaskHandler):
       # We check for the report's existence here, instead of in the query,
       # because the `ai_test_eval_report` field is not indexed.
       if feature.ai_test_eval_report:
+        activity = Activity(
+            feature_id=feature.key.integer_id(),
+            content=(f'WPT coverage report was deleted due to {self.RETENTION_DAYS}-day '
+                     'retention policy.'),
+            amendments=[])
+        batch.append(activity)
         feature.ai_test_eval_report = None
         feature.ai_test_eval_run_status = AITestEvaluationStatus.DELETED
         # Update the timestamp to reflect when this cron job ran.
