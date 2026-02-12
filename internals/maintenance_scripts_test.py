@@ -2027,6 +2027,7 @@ class ResetStaleShippingMilestonesTest(testing_config.CustomTestCase):
     self.assertEqual('desktop_first', act_210.amendments[0].field_name)
     self.assertEqual('101', act_210.amendments[0].old_value)
 
+
 class DeleteWPTCoverageReportTest(testing_config.CustomTestCase):
 
   def setUp(self):
