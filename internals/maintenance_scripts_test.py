@@ -663,6 +663,9 @@ class ActivateOriginTrialsTest(testing_config.CustomTestCase):
 class DeleteEmptyExtensionStagesTest(testing_config.CustomTestCase):
 
   def setUp(self):
+    for kind in [Gate, Stage]:
+      for entity in kind.query():
+        entity.key.delete()
     # Fully filled out extension stage.
     self.extension_stage_1 = Stage(
         feature_id=1, stage_type=151, experiment_extension_reason='idk',
@@ -2031,6 +2034,9 @@ class ResetStaleShippingMilestonesTest(testing_config.CustomTestCase):
 class DeleteWPTCoverageReportTest(testing_config.CustomTestCase):
 
   def setUp(self):
+    for kind in [Gate, Stage]:
+      for entity in kind.query():
+        entity.key.delete()
     self.handler = maintenance_scripts.DeleteWPTCoverageReport()
     self.mock_now = datetime(2025, 1, 1)
     old_timestamp = self.mock_now - timedelta(days=181)
@@ -2063,7 +2069,7 @@ class DeleteWPTCoverageReportTest(testing_config.CustomTestCase):
     self.feature_boundary = FeatureEntry(
         id=4, name='Boundary Feature', summary='summary', category=1,
         ai_test_eval_report='This is a boundary report.',
-        ai_test_eval_run_status=core_enums.AITestEvaluationStatus,
+        ai_test_eval_run_status=core_enums.AITestEvaluationStatus.COMPLETE,
         ai_test_eval_status_timestamp=boundary_timestamp)
     self.feature_boundary.put()
 
@@ -2109,3 +2115,7 @@ class DeleteWPTCoverageReportTest(testing_config.CustomTestCase):
     activity_1 = Activity.query(Activity.feature_id == 1).get()
     self.assertIsNotNone(activity_1)
     self.assertEqual(activity_1.content, 'WPT coverage report was deleted due to 180-day retention policy.')
+
+    # Verify that activities were created for the deleted reports.
+    activities = Activity.query().fetch()
+    self.assertEqual(len(activities), 2)
