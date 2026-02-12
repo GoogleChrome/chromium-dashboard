@@ -2034,7 +2034,7 @@ class ResetStaleShippingMilestonesTest(testing_config.CustomTestCase):
 class DeleteWPTCoverageReportTest(testing_config.CustomTestCase):
 
   def setUp(self):
-    for kind in [Gate, Stage]:
+    for kind in [Gate, Stage, Activity]:
       for entity in kind.query():
         entity.key.delete()
     self.handler = maintenance_scripts.DeleteWPTCoverageReport()
@@ -2043,31 +2043,31 @@ class DeleteWPTCoverageReportTest(testing_config.CustomTestCase):
     boundary_timestamp = self.mock_now - timedelta(days=180)
     self.new_timestamp = self.mock_now - timedelta(days=10)
 
-    # Feature 1: Old report, should be deleted.
+    # Feature 921: Old report, should be deleted.
     self.feature_old = FeatureEntry(
-        id=1, name='Old Feature', summary='summary', category=1,
+        id=921, name='Old Feature', summary='summary', category=1,
         ai_test_eval_report='This is an old report.',
         ai_test_eval_run_status=core_enums.AITestEvaluationStatus.COMPLETE,
         ai_test_eval_status_timestamp=old_timestamp)
     self.feature_old.put()
 
-    # Feature 2: New report, should NOT be deleted.
+    # Feature 922: New report, should NOT be deleted.
     self.feature_new = FeatureEntry(
-        id=2, name='New Feature', summary='summary', category=1,
+        id=922, name='New Feature', summary='summary', category=1,
         ai_test_eval_report='This is a new report.',
         ai_test_eval_status_timestamp=self.new_timestamp)
     self.feature_new.put()
 
-    # Feature 3: No report, should be ignored.
+    # Feature 923: No report, should be ignored.
     self.feature_none = FeatureEntry(
-        id=3, name='No Report Feature', summary='summary', category=1,
+        id=923, name='No Report Feature', summary='summary', category=1,
         ai_test_eval_report=None,
         ai_test_eval_status_timestamp=old_timestamp) # Still old, but no report
     self.feature_none.put()
 
-    # Feature 4: Boundary case report, should be deleted.
+    # Feature 924: Boundary case report, should be deleted.
     self.feature_boundary = FeatureEntry(
-        id=4, name='Boundary Feature', summary='summary', category=1,
+        id=924, name='Boundary Feature', summary='summary', category=1,
         ai_test_eval_report='This is a boundary report.',
         ai_test_eval_run_status=core_enums.AITestEvaluationStatus.COMPLETE,
         ai_test_eval_status_timestamp=boundary_timestamp)
@@ -2090,29 +2090,29 @@ class DeleteWPTCoverageReportTest(testing_config.CustomTestCase):
 
     self.assertEqual('2 WPT coverage reports deleted.', result)
 
-    # Check Feature 1 (Old) - should be deleted.
+    # Check Feature 921 (Old) - should be deleted.
     updated_feature_old = self.feature_old.key.get()
     self.assertIsNone(updated_feature_old.ai_test_eval_report)
     self.assertEqual(updated_feature_old.ai_test_eval_run_status, core_enums.AITestEvaluationStatus.DELETED)
     self.assertEqual(updated_feature_old.ai_test_eval_status_timestamp, self.mock_now)
 
-    # Check Feature 2 (New) - should be untouched.
+    # Check Feature 922 (New) - should be untouched.
     updated_feature_new = self.feature_new.key.get()
     self.assertEqual(updated_feature_new.ai_test_eval_report, 'This is a new report.')
     self.assertEqual(updated_feature_new.ai_test_eval_status_timestamp, self.new_timestamp)
 
-    # Check Feature 3 (None) - should be untouched.
+    # Check Feature 923 (None) - should be untouched.
     updated_feature_none = self.feature_none.key.get()
     self.assertIsNone(updated_feature_none.ai_test_eval_report)
 
-    # Check Feature 4 (Boundary) - should be deleted.
+    # Check Feature 924 (Boundary) - should be deleted.
     updated_feature_boundary = self.feature_boundary.key.get()
     self.assertIsNone(updated_feature_boundary.ai_test_eval_report)
     self.assertEqual(updated_feature_boundary.ai_test_eval_run_status, core_enums.AITestEvaluationStatus.DELETED)
     self.assertEqual(updated_feature_boundary.ai_test_eval_status_timestamp, self.mock_now)
 
-    # Check activity for feature 1.
-    activity_1 = Activity.query(Activity.feature_id == 1).get()
+    # Check activity for feature 921.
+    activity_1 = Activity.query(Activity.feature_id == 921).get()
     self.assertIsNotNone(activity_1)
     self.assertEqual(activity_1.content, 'WPT coverage report was deleted due to 180-day retention policy.')
 
