@@ -156,13 +156,13 @@ api_routes: list[Route] = [
           intents_api.IntentsAPI),
     Route(f'{API_BASE}/features/<int:feature_id>/<int:stage_id>/<int:gate_id>/intent',
           intents_api.IntentsAPI),
+    Route(f'{API_BASE}/features/wpt-coverage-analysis/<int:feature_id>/generate',
+          wpt_coverage_api.WPTCoverageAPI),
     Route(f'{API_BASE}/features/wpt-coverage-analysis/<int:feature_id>/delete',
           wpt_coverage_api.WPTCoverageAPI),
+    # TODO(suzyliu): Remove the "generate-wpt-coverage-analysis" route after the
+    # "{featureId}/generate" route had landed.
     Route(f'{API_BASE}/features/generate-wpt-coverage-analysis',
-          wpt_coverage_api.WPTCoverageAPI),
-    # TODO(DanielRyanSmith): Remove the "-evaluation" route after the
-    # "-analysis" route had landed.
-    Route(f'{API_BASE}/features/generate-wpt-coverage-evaluation',
           wpt_coverage_api.WPTCoverageAPI),
     Route(f'{API_BASE}/features/shipping',
           shipping_features_api.ShippingFeaturesAPI),
@@ -364,10 +364,6 @@ internals_routes: list[Route] = [
   Route('/tasks/email-reset-shipping-milestones',
         notifier.ResetShippingMilestonesEmailHandler),
   Route('/tasks/generate-wpt-coverage-analysis',
-        gemini_helpers.GenerateWPTCoverageEvalReportHandler),
-  # TODO(DanielRyanSmith): Remove the "-evaluation" route after the
-  # "-analysis" route had landed.
-  Route('/tasks/generate-wpt-coverage-evaluation',
         gemini_helpers.GenerateWPTCoverageEvalReportHandler),
 
   # OT process reminder emails

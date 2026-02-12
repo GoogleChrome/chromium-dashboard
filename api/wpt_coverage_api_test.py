@@ -56,10 +56,11 @@ class WPTCoverageAPITest(testing_config.CustomTestCase):
     # Track the time before the operation to verify the timestamp update.
     before_call = datetime.now()
 
-    params = {'feature_id': 123456}
-    with test_app.test_request_context('/api/v0/generate-wpt-coverage-analysis',
-                                       method='POST', json=params):
-      response = self.handler.do_post()
+    feature_id = 123456
+    with test_app.test_request_context(
+        f'/api/v0/features/wpt-coverage-analysis/{feature_id}/generate',
+        method='POST'):
+      response = self.handler.do_post(feature_id=feature_id)
 
     self.assertEqual(response, {'message': 'Task enqueued'})
 
@@ -87,11 +88,12 @@ class WPTCoverageAPITest(testing_config.CustomTestCase):
     """Ensure requests without edit permissions abort with 403."""
     mock_can_edit.return_value = False
 
-    params = {'feature_id': 123456}
-    with test_app.test_request_context('/api/v0/generate-wpt-coverage-analysis',
-                                       method='POST', json=params):
+    feature_id = 123456
+    with test_app.test_request_context(
+        f'/api/v0/features/wpt-coverage-analysis/{feature_id}/generate',
+        method='POST'):
       with self.assertRaises(werkzeug.exceptions.Forbidden):
-        self.handler.do_post()
+        self.handler.do_post(feature_id=feature_id)
 
     # Verify no task was enqueued.
     mock_enqueue.assert_not_called()
@@ -110,11 +112,12 @@ class WPTCoverageAPITest(testing_config.CustomTestCase):
     mock_can_edit.return_value = True
     mock_is_google.return_value = False
 
-    params = {'feature_id': 123456}
-    with test_app.test_request_context('/api/v0/generate-wpt-coverage-analysis',
-                                       method='POST', json=params):
+    feature_id = 123456
+    with test_app.test_request_context(
+        f'/api/v0/features/wpt-coverage-analysis/{feature_id}/generate',
+        method='POST'):
       with self.assertRaises(werkzeug.exceptions.Forbidden) as cm:
-        self.handler.do_post()
+        self.handler.do_post(feature_id=feature_id)
 
       self.assertEqual(
         cm.exception.description,
@@ -127,22 +130,14 @@ class WPTCoverageAPITest(testing_config.CustomTestCase):
   @mock.patch('framework.cloud_tasks_helpers.enqueue_task')
   def test_do_post__not_found(self, mock_enqueue):
     """Ensure requests for non-existent features abort with 404."""
-    params = {'feature_id': 999999}  # ID that does not exist.
-    with test_app.test_request_context('/api/v0/generate-wpt-coverage-analysis',
-                                       method='POST', json=params):
+    feature_id = 999999  # ID that does not exist.
+    with test_app.test_request_context(
+        f'/api/v0/features/wpt-coverage-analysis/{feature_id}/generate',
+        method='POST'):
       with self.assertRaises(werkzeug.exceptions.NotFound):
-        self.handler.do_post(feature_id=999999)
+        self.handler.do_post(feature_id=feature_id)
 
     mock_enqueue.assert_not_called()
-
-  def test_do_post__missing_param(self):
-    """Ensure requests missing required parameters abort appropriately."""
-    # Missing 'feature_id'
-    with test_app.test_request_context('/api/v0/generate-wpt-coverage-analysis',
-                                       method='POST', json={}):
-      # basehandlers usually raise BadRequest (400) if a required int param is missing
-      with self.assertRaises(werkzeug.exceptions.BadRequest):
-        self.handler.do_post()
 
   @mock.patch('framework.permissions.is_google_or_chromium_account')
   @mock.patch('framework.cloud_tasks_helpers.enqueue_task')
@@ -158,11 +153,12 @@ class WPTCoverageAPITest(testing_config.CustomTestCase):
     self.feature_1.ai_test_eval_status_timestamp = datetime.now()
     self.feature_1.put()
 
-    params = {'feature_id': self.feature_1.key.integer_id()}
-    with test_app.test_request_context('/api/v0/generate-wpt-coverage-analysis',
-                                       method='POST', json=params):
+    feature_id = self.feature_1.key.integer_id()
+    with test_app.test_request_context(
+        f'/api/v0/features/wpt-coverage-analysis/{feature_id}/generate',
+        method='POST'):
       with self.assertRaises(werkzeug.exceptions.HTTPException) as cm:
-        self.handler.do_post()
+        self.handler.do_post(feature_id=feature_id)
 
       # Verify the status code inside the exception.
       self.assertEqual(cm.exception.response.status_code, 409)
@@ -192,11 +188,12 @@ class WPTCoverageAPITest(testing_config.CustomTestCase):
     self.feature_1.confidential = True
     self.feature_1.put()
 
-    params = {'feature_id': self.feature_1.key.integer_id()}
-    with test_app.test_request_context('/api/v0/generate-wpt-coverage-analysis',
-                                       method='POST', json=params):
+    feature_id = self.feature_1.key.integer_id()
+    with test_app.test_request_context(
+        f'/api/v0/features/wpt-coverage-analysis/{feature_id}/generate',
+        method='POST'):
       with self.assertRaises(werkzeug.exceptions.BadRequest) as cm:
-        self.handler.do_post()
+        self.handler.do_post(feature_id=feature_id)
 
       # Verify the specific error message matches your logic.
       self.assertEqual(
@@ -221,10 +218,11 @@ class WPTCoverageAPITest(testing_config.CustomTestCase):
     self.feature_1.put()
 
 
-    params = {'feature_id': 123456}
-    with test_app.test_request_context('/api/v0/wpt-coverage-reports',
-                                       method='DELETE', json=params):
-      response = self.handler.do_delete(feature_id=123456)
+    feature_id = 123456
+    with test_app.test_request_context(
+        f'/api/v0/features/wpt-coverage-analysis/{feature_id}/delete',
+        method='DELETE'):
+      response = self.handler.do_delete(feature_id=feature_id)
 
     self.assertEqual(response,
                          {'message': 'WPT coverage analysis report deleted.'})
@@ -254,11 +252,12 @@ class WPTCoverageAPITest(testing_config.CustomTestCase):
         core_enums.AITestEvaluationStatus.COMPLETE.value)
     self.feature_1.put()
 
-    params = {'feature_id': 123456}
-    with test_app.test_request_context('/api/v0/wpt-coverage-reports',
-                                       method='DELETE', json=params):
+    feature_id = 123456
+    with test_app.test_request_context(
+        f'/api/v0/features/wpt-coverage-analysis/{feature_id}/delete',
+        method='DELETE'):
       with self.assertRaises(werkzeug.exceptions.Forbidden):
-        self.handler.do_delete(feature_id=123456)
+        self.handler.do_delete(feature_id=feature_id)
 
     mock_can_edit.assert_called_once()
 
