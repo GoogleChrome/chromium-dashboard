@@ -116,8 +116,10 @@ def _generate_unified_prompt_text(
     'spec_content': _fetch_spec_content(feature.spec_link),
     'feature_name': feature.name,
     'feature_summary': feature.summary,
-    'test_files': wpt_contents.test_contents,
-    'dependency_files': wpt_contents.dependency_contents,
+    'test_files': [{'path': fpath, 'contents': fc}
+                   for fpath, fc in wpt_contents.test_contents.items()],
+    'dependency_files': [{'path': fpath, 'contents': fc}
+                         for fpath, fc in wpt_contents.dependency_contents.items()],
   }
   return render_template(
     UNIFIED_GAP_ANALYSIS_TEMPLATE_PATH,
@@ -193,7 +195,8 @@ async def prompt_analysis(feature: FeatureEntry, wpt_contents: utils.WPTContents
     candidate_prompt = render_template(
       TEST_ANALYSIS_TEMPLATE_PATH,
       test_files=candidate_test_files,
-      dependency_files=list(candidate_dependencies.items()),
+      dependency_files=[{'path': fpath, 'contents': fc}
+                        for fpath, fc in candidate_dependencies.items()],
     )
 
     # 3. Check token limit
@@ -204,7 +207,8 @@ async def prompt_analysis(feature: FeatureEntry, wpt_contents: utils.WPTContents
             render_template(
               TEST_ANALYSIS_TEMPLATE_PATH,
               test_files=current_test_files,
-              dependency_files=list(current_dependencies.items()),
+              dependency_files=[{'path': fpath, 'contents': fc}
+                                for fpath, fc in current_dependencies.items()],
             )
         )
         # Reset the buffer; we will decide what to put in it next
@@ -217,7 +221,8 @@ async def prompt_analysis(feature: FeatureEntry, wpt_contents: utils.WPTContents
       single_prompt_with_deps = render_template(
         TEST_ANALYSIS_TEMPLATE_PATH,
         test_files=single_file_list,
-        dependency_files=list(file_deps.items())
+        dependency_files=[{'path': fpath, 'contents': fc}
+                          for fpath, fc in file_deps.items()],
       )
       if gemini_client.prompt_exceeds_input_token_limit(single_prompt_with_deps):
         # Edge Case: The file + deps is too large. (this should be very rare).
@@ -252,7 +257,8 @@ async def prompt_analysis(feature: FeatureEntry, wpt_contents: utils.WPTContents
         render_template(
           TEST_ANALYSIS_TEMPLATE_PATH,
           test_files=current_test_files,
-          dependency_files=list(current_dependencies.items()),
+          dependency_files=[{'path': fpath, 'contents': fc}
+                            for fpath, fc in current_dependencies.items()],
         )
     )
 

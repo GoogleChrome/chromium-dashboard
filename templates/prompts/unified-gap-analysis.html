@@ -151,7 +151,7 @@ Your task is to act as an auditor. You must compare the `<test_suite>` against t
 **Documents for Analysis:**
 
 <spec_document url="{{ spec_url }}">
-  {{ spec_content }}
+{{ spec_content }}
 </spec_document>
 
 <feature_definition>
@@ -160,15 +160,15 @@ Your task is to act as an auditor. You must compare the `<test_suite>` against t
 </feature_definition>
 
 <test_suite>
-{% for path, content in test_files.items() %}
-  <test_file path="{{ path }}">
-    {{ content }}
+{% for test in test_files %}
+  <test_file path="{{ test.path }}">
+{{ test.contents }}
   </test_file>
 {% endfor %}
 
-{% for path, content in dependency_files.items() %}
-  <dependency_file path="{{ path }}">
-    {{ content }}
+{% for dep in dependency_files %}
+  <dependency_file path="{{ dep.path }}">
+{{ dep.contents }}
   </dependency_file>
 {% endfor %}
 </test_suite>
