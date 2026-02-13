@@ -58,7 +58,7 @@ class WPTCoverageAPITest(testing_config.CustomTestCase):
 
     feature_id = 123456
     with test_app.test_request_context(
-        f'/api/v0/features/wpt-coverage-analysis/{feature_id}/generate',
+        f'/api/v0/features/{feature_id}/wpt-coverage-analysis',
         method='POST'):
       response = self.handler.do_post(feature_id=feature_id)
 
@@ -90,7 +90,7 @@ class WPTCoverageAPITest(testing_config.CustomTestCase):
 
     feature_id = 123456
     with test_app.test_request_context(
-        f'/api/v0/features/wpt-coverage-analysis/{feature_id}/generate',
+        f'/api/v0/features/{feature_id}/wpt-coverage-analysis',
         method='POST'):
       with self.assertRaises(werkzeug.exceptions.Forbidden):
         self.handler.do_post(feature_id=feature_id)
@@ -114,7 +114,7 @@ class WPTCoverageAPITest(testing_config.CustomTestCase):
 
     feature_id = 123456
     with test_app.test_request_context(
-        f'/api/v0/features/wpt-coverage-analysis/{feature_id}/generate',
+        f'/api/v0/features/{feature_id}/wpt-coverage-analysis',
         method='POST'):
       with self.assertRaises(werkzeug.exceptions.Forbidden) as cm:
         self.handler.do_post(feature_id=feature_id)
@@ -132,7 +132,7 @@ class WPTCoverageAPITest(testing_config.CustomTestCase):
     """Ensure requests for non-existent features abort with 404."""
     feature_id = 999999  # ID that does not exist.
     with test_app.test_request_context(
-        f'/api/v0/features/wpt-coverage-analysis/{feature_id}/generate',
+        f'/api/v0/features/{feature_id}/wpt-coverage-analysis',
         method='POST'):
       with self.assertRaises(werkzeug.exceptions.NotFound):
         self.handler.do_post(feature_id=feature_id)
@@ -155,7 +155,7 @@ class WPTCoverageAPITest(testing_config.CustomTestCase):
 
     feature_id = self.feature_1.key.integer_id()
     with test_app.test_request_context(
-        f'/api/v0/features/wpt-coverage-analysis/{feature_id}/generate',
+        f'/api/v0/features/{feature_id}/wpt-coverage-analysis',
         method='POST'):
       with self.assertRaises(werkzeug.exceptions.HTTPException) as cm:
         self.handler.do_post(feature_id=feature_id)
@@ -190,7 +190,7 @@ class WPTCoverageAPITest(testing_config.CustomTestCase):
 
     feature_id = self.feature_1.key.integer_id()
     with test_app.test_request_context(
-        f'/api/v0/features/wpt-coverage-analysis/{feature_id}/generate',
+        f'/api/v0/features/{feature_id}/wpt-coverage-analysis',
         method='POST'):
       with self.assertRaises(werkzeug.exceptions.BadRequest) as cm:
         self.handler.do_post(feature_id=feature_id)
@@ -220,7 +220,7 @@ class WPTCoverageAPITest(testing_config.CustomTestCase):
 
     feature_id = 123456
     with test_app.test_request_context(
-        f'/api/v0/features/wpt-coverage-analysis/{feature_id}/delete',
+        f'/api/v0/features/{feature_id}/wpt-coverage-analysis',
         method='DELETE'):
       response = self.handler.do_delete(feature_id=feature_id)
 
@@ -254,7 +254,7 @@ class WPTCoverageAPITest(testing_config.CustomTestCase):
 
     feature_id = 123456
     with test_app.test_request_context(
-        f'/api/v0/features/wpt-coverage-analysis/{feature_id}/delete',
+        f'/api/v0/features/{feature_id}/wpt-coverage-analysis',
         method='DELETE'):
       with self.assertRaises(werkzeug.exceptions.Forbidden):
         self.handler.do_delete(feature_id=feature_id)

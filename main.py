@@ -156,12 +156,14 @@ api_routes: list[Route] = [
           intents_api.IntentsAPI),
     Route(f'{API_BASE}/features/<int:feature_id>/<int:stage_id>/<int:gate_id>/intent',
           intents_api.IntentsAPI),
-    Route(f'{API_BASE}/features/wpt-coverage-analysis/<int:feature_id>/generate',
+    Route(f'{API_BASE}/features/<int:feature_id>/wpt-coverage-analysis',
           wpt_coverage_api.WPTCoverageAPI),
+    # TODO(suzyliu): Remove the "delete" route after the
+    # unified route had landed.
     Route(f'{API_BASE}/features/wpt-coverage-analysis/<int:feature_id>/delete',
           wpt_coverage_api.WPTCoverageAPI),
     # TODO(suzyliu): Remove the "generate-wpt-coverage-analysis" route after the
-    # "{featureId}/generate" route had landed.
+    # unified route had landed.
     Route(f'{API_BASE}/features/generate-wpt-coverage-analysis',
           wpt_coverage_api.WPTCoverageAPI),
     Route(f'{API_BASE}/features/shipping',
