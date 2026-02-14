@@ -776,14 +776,12 @@ export class ChromeStatusClient {
 
   // WPT Coverage API
   async generateWPTCoverageEvaluation(featureId) {
-    return this.doPost('/features/generate-wpt-coverage-analysis', {
-      feature_id: featureId,
-    });
+    return this.doPost(`/features/${featureId}/wpt-coverage-analysis`);
   }
 
   // Delete WPT Coverage Report
   async deleteWPTCoverageEvaluation(featureId) {
-    return this.doDelete(`/features/wpt-coverage-analysis/${featureId}/delete`);
+    return this.doDelete(`/features/${featureId}/wpt-coverage-analysis`);
   }
 
   async getSpecifiedChannels(start, end) {

@@ -33,7 +33,7 @@ class WPTCoverageAPI(basehandlers.EntitiesAPIHandler):
 
   def do_post(self, **kwargs):
     """Enqueue a Cloud Task for generating a WPT coverage analysis report."""
-    feature_id = self.get_int_param('feature_id')
+    feature_id = kwargs.get('feature_id')
     feature = self.get_validated_entity(feature_id, FeatureEntry)
 
     # Validate the user has edit permissions.
