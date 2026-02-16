@@ -1333,7 +1333,7 @@ class ResetShippingMilestonesEmailHandler(basehandlers.FlaskHandler):
 
 
 RELEASENOTES_NOTIFY_ADDRS = [
-    'cbe-tpgms@google.com',
+    core_enums.CBE_ESCLATION_EMAIL,
     'siobhankeating@google.com',
     ]
 RESET_RELEASENOTES_TEMPLATE_PATH = 'reset-releasenotes-flags-email.html'
