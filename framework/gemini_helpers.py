@@ -40,6 +40,71 @@ WPT_FILE_REGEX = re.compile(r"\/[^/]*\.[^/]*$")
 def _create_feature_definition(feature: FeatureEntry) -> str:
   return f'Name: {feature.name}\nDescription: {feature.summary}'
 
+def _fetch_explainer_link(url: str) -> str:
+    """
+    Fetches explainer content with specialized handling for technical data.
+    Prioritizes raw formats for GitHub to preserve code blocks.
+    """
+    parsed = urlparse(url)
+
+    # 1. Specialized GitHub Handling (Best for code blocks)
+    # Convert blob links to raw links to get original Markdown source.
+    if "github.com" in parsed.netloc and "/blob/" in parsed.path:
+        raw_url = url.replace("github.com", "raw.githubusercontent.com").replace("/blob/", "/")
+        try:
+            resp = requests.get(raw_url)
+            resp.raise_for_status()
+            # Return raw markdown which Gemini handles better than mangled HTML
+            return resp.text
+        except Exception as e:
+            logging.error(f"Failed to fetch raw GitHub explainer: {e}")
+
+    # 2. Standard Webpage Extraction
+    try:
+        downloaded = trafilatura.fetch_url(url)
+        if downloaded is None:
+            return f"Error: Could not fetch URL {url}"
+
+        # CRITICAL: Use include_formatting=True and include_tables=True
+        # This helps Trafilatura preserve <pre> and <code> blocks which
+        # are common in explainers like those on open-ui.org.
+        result = trafilatura.extract(
+            downloaded,
+            include_comments=False,
+            include_tables=True,
+            include_formatting=True,  # Added to preserve code structure
+            output_format="markdown"
+        )
+
+        if not result:
+            return f"Error: No main content found at {url}"
+
+        return result
+    except Exception as e:
+        return f"Error: Unable to process explainer: {e}"
+
+def _fetch_explainer_content(explainer_links: list[str]) -> str:
+  """4
+  Fetches and concatenates content from multiple explainer links.
+  """
+  if not explainer_links:
+    return ""
+
+  contents = []
+  for item in explainer_links:
+    item = item.strip()
+    if not item:
+      continue
+
+    url_match = re.search(r'https?://[^\s]+', item)
+    if url_match:
+      url = url_match.group(0)
+      content = _fetch_explainer_link(url)
+
+      if content and not content.startswith("Error:"):
+        contents.append(f"## Explainer Link: {url}\n{content}")
+
+  return "\n\n".join(contents)
 
 def _fetch_spec_content(url: str) -> str:
   """
