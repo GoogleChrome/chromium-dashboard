@@ -37,6 +37,11 @@ UNIFIED_GAP_ANALYSIS_TEMPLATE_PATH = 'prompts/unified-gap-analysis.html'
 WPT_FILE_REGEX = re.compile(r"\/[^/]*\.[^/]*$")
 
 
+def _validate_github_domain(netloc: str) -> bool:
+  """Allow exact match OR valid subdomains for github.com."""
+  return netloc == 'github.com' or netloc.endswith('.github.com')
+
+
 def _create_feature_definition(feature: FeatureEntry) -> str:
   return f'Name: {feature.name}\nDescription: {feature.summary}'
 
@@ -49,7 +54,7 @@ def _fetch_explainer_link(url: str) -> str:
 
     # 1. Specialized GitHub Handling (Best for code blocks)
     # Convert blob links to raw links to get original Markdown source.
-    if "github.com" in parsed.netloc and "/blob/" in parsed.path:
+    if _validate_github_domain(parsed.netloc) and "/blob/" in parsed.path:
         raw_url = url.replace("github.com", "raw.githubusercontent.com").replace("/blob/", "/")
         try:
             resp = requests.get(raw_url)
@@ -113,7 +118,7 @@ def _fetch_spec_content(url: str) -> str:
   parsed = urlparse(url)
 
   # URL type 1: GitHub pull requests
-  if "github.com" in parsed.netloc and "/pull/" in parsed.path:
+  if _validate_github_domain(parsed.netloc) and "/pull/" in parsed.path:
     diff_url = url.rstrip('/') + ".diff"
     try:
       resp = requests.get(diff_url)
@@ -123,7 +128,7 @@ def _fetch_spec_content(url: str) -> str:
       raise utils.PipelineError(f"Error fetching GitHub Diff: {e}") from e
 
   # URL type 2: GitHub file blobs
-  if "github.com" in parsed.netloc and "/blob/" in parsed.path:
+  if _validate_github_domain(parsed.netloc) and "/blob/" in parsed.path:
     raw_url = url.replace("github.com", "raw.githubusercontent.com").replace("/blob/", "/")
     try:
       resp = requests.get(raw_url)
