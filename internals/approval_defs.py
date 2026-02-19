@@ -58,7 +58,7 @@ DEBUGGABILITY_APPROVERS = IN_NDB
 TESTING_APPROVERS = [
     'sadapala@google.com',
     'santhoshkumarm@google.com',
-    'maguschen@google.com',
+    'rnanjappan@google.com',
     'karala@google.com',
     'aichein@google.com',
 ]
