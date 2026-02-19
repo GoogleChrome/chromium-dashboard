@@ -54,7 +54,7 @@ def _fetch_explainer_link(url: str) -> str:
 
     # 1. Specialized GitHub Handling (Best for code blocks)
     # Convert blob links to raw links to get original Markdown source.
-    if "github.com" in parsed.netloc and "/blob/" in parsed.path:
+    if _validate_github_domain(parsed.netloc) and "/blob/" in parsed.path:
         raw_url = url.replace("github.com", "raw.githubusercontent.com").replace("/blob/", "/")
         try:
             resp = requests.get(raw_url)
