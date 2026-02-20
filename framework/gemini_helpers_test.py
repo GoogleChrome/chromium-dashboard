@@ -72,16 +72,14 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
       mock_get.assert_called_once_with(expected_diff_url)
 
   def test_fetch_spec_content__github_pull_request_failure(self):
-    """GitHub PR fetch failures should return an error string."""
+    """GitHub PR fetch failures should raise PipelineError."""
     url = 'https://github.com/w3c/fedid/pull/123'
 
     with mock.patch('framework.gemini_helpers.requests.get') as mock_get:
       mock_get.side_effect = requests.exceptions.RequestException("404 Not Found")
 
-      result = gemini_helpers._fetch_spec_content(url)
-
-      self.assertIn("Error fetching GitHub Diff", result)
-      self.assertIn("404 Not Found", result)
+      with self.assertRaisesRegex(utils.PipelineError, "Error fetching GitHub Diff"):
+        gemini_helpers._fetch_spec_content(url)
 
   def test_fetch_spec_content__github_blob_success(self):
     """GitHub Blob URLs should be converted to raw content URLs."""
@@ -99,16 +97,14 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
       mock_get.assert_called_once_with(expected_raw_url)
 
   def test_fetch_spec_content__github_blob_failure(self):
-    """GitHub Blob fetch failures should return an error string."""
+    """GitHub Blob fetch failures should raise PipelineError."""
     url = 'https://github.com/w3c/fedid/blob/main/index.html'
 
     with mock.patch('framework.gemini_helpers.requests.get') as mock_get:
       mock_get.side_effect = requests.exceptions.RequestException("Network Error")
 
-      result = gemini_helpers._fetch_spec_content(url)
-
-      self.assertIn("Error fetching GitHub Raw", result)
-      self.assertIn("Network Error", result)
+      with self.assertRaisesRegex(utils.PipelineError, "Error fetching GitHub Raw"):
+        gemini_helpers._fetch_spec_content(url)
 
   def test_fetch_spec_content__web_spec_success(self):
     """Standard web URLs should use trafilatura to extract markdown."""
@@ -132,41 +128,37 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
       )
 
   def test_fetch_spec_content__web_spec_fetch_failure(self):
-    """If trafilatura fails to download (returns None), return error."""
+    """If trafilatura fails to download (returns None), raise PipelineError."""
     url = 'https://example.com/bad-url'
 
     with mock.patch('framework.gemini_helpers.trafilatura') as mock_traf:
       mock_traf.fetch_url.return_value = None
 
-      result = gemini_helpers._fetch_spec_content(url)
-
-      self.assertIn("Error: Could not fetch URL", result)
+      with self.assertRaisesRegex(utils.PipelineError, "Error: Could not fetch URL"):
+        gemini_helpers._fetch_spec_content(url)
       # extract should not be called if fetch returns None
       mock_traf.extract.assert_not_called()
 
   def test_fetch_spec_content__web_spec_extract_failure(self):
-    """If trafilatura returns None during extraction, return error."""
+    """If trafilatura returns None during extraction, raise PipelineError."""
     url = 'https://example.com/empty-page'
 
     with mock.patch('framework.gemini_helpers.trafilatura') as mock_traf:
       mock_traf.fetch_url.return_value = '<html></html>'
       mock_traf.extract.return_value = None
 
-      result = gemini_helpers._fetch_spec_content(url)
-
-      self.assertIn("Error: No main content found", result)
+      with self.assertRaisesRegex(utils.PipelineError, "Error: No main content found"):
+        gemini_helpers._fetch_spec_content(url)
 
   def test_fetch_spec_content__web_spec_exception(self):
-    """General exceptions during trafilatura processing should be caught."""
+    """General exceptions during trafilatura processing should raise PipelineError."""
     url = 'https://example.com/crash'
 
     with mock.patch('framework.gemini_helpers.trafilatura') as mock_traf:
       mock_traf.fetch_url.side_effect = Exception("Unexpected Crash")
 
-      result = gemini_helpers._fetch_spec_content(url)
-
-      self.assertIn("Error processing Web Spec", result)
-      self.assertIn("Unexpected Crash", result)
+      with self.assertRaisesRegex(utils.PipelineError, "Error processing Web Spec"):
+        gemini_helpers._fetch_spec_content(url)
 
   def test_create_feature_definition(self):
     """Tests the internal helper for formatting feature definitions."""
@@ -563,19 +555,20 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
   def test_run_pipeline__missing_spec_link(self):
     """Pipeline should fail immediately if no spec link is present."""
     self.feature.spec_link = None
-    with self.assertRaisesRegex(utils.PipelineError, 'No spec URL provided'):
-      asyncio.run(gemini_helpers.run_wpt_test_eval_pipeline(self.feature))
+    result = asyncio.run(gemini_helpers.run_wpt_test_eval_pipeline(self.feature))
 
+    self.assertEqual(result, core_enums.AITestEvaluationStatus.FAILED)
+    self.assertEqual(self.feature.ai_test_eval_report, 'No spec URL provided.')
     self.mock_gemini_client_cls.assert_not_called()
 
   def test_run_pipeline__no_wpt_urls(self):
     """Pipeline should fail if no WPT URLs can be extracted."""
     self.mock_utils.extract_wpt_fyi_results_urls.return_value = []
 
-    with self.assertRaisesRegex(utils.PipelineError,
-                                'No valid wpt.fyi results URLs found'):
-      asyncio.run(gemini_helpers.run_wpt_test_eval_pipeline(self.feature))
+    result = asyncio.run(gemini_helpers.run_wpt_test_eval_pipeline(self.feature))
 
+    self.assertEqual(result, core_enums.AITestEvaluationStatus.FAILED)
+    self.assertIn('No valid wpt.fyi results URLs found', self.feature.ai_test_eval_report)
     self.mock_gemini_client_cls.assert_not_called()
 
   def test_run_pipeline__content_fetch_failure(self):

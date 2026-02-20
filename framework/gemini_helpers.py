@@ -55,7 +55,7 @@ def _fetch_spec_content(url: str) -> str:
       resp.raise_for_status()
       return resp.text
     except Exception as e:
-      return f"Error fetching GitHub Diff: {e}"
+      raise utils.PipelineError(f"Error fetching GitHub Diff: {e}") from e
 
   # URL type 2: GitHub file blobs
   if "github.com" in parsed.netloc and "/blob/" in parsed.path:
@@ -65,14 +65,14 @@ def _fetch_spec_content(url: str) -> str:
       resp.raise_for_status()
       return resp.text
     except Exception as e:
-      return f"Error fetching GitHub Raw: {e}"
+      raise utils.PipelineError(f"Error fetching GitHub Raw: {e}") from e
 
   # URL type 3: Standard W3C, Web specs, or other webpages
   try:
     downloaded = trafilatura.fetch_url(url)
 
     if downloaded is None:
-      return f"Error: Could not fetch URL {url}"
+      raise utils.PipelineError(f"Error: Could not fetch URL {url}")
 
     # Extract content to Markdown.
     # include_comments=False skips comments.
@@ -85,12 +85,14 @@ def _fetch_spec_content(url: str) -> str:
     )
 
     if not result:
-      return f"Error: No main content found at {url}"
+      raise utils.PipelineError(f"Error: No main content found at {url}")
 
     return result
 
   except Exception as e:
-    return f"Error processing Web Spec: {e}"
+    if isinstance(e, utils.PipelineError):
+      raise
+    raise utils.PipelineError(f"Error processing Web Spec: {e}") from e
 
 
 async def _get_test_file_contents(test_locations: list[str]) -> utils.WPTContents:
@@ -307,38 +309,36 @@ async def run_wpt_test_eval_pipeline(feature: FeatureEntry) -> core_enums.AITest
     feature: The FeatureEntry model containing spec links and WPT descriptions
       needed for the analysis.
 
-  Raises:
-    PipelineError: If the pipeline fails due to missing data (e.g., no spec URL)
-      or if critical AI generation steps fail.
+  Returns:
+    AITestEvaluationStatus indicating success or failure.
   """
-  if not feature.spec_link:
-    raise utils.PipelineError('No spec URL provided.')
-
-  test_locations = utils.extract_wpt_fyi_results_urls(feature.wpt_descr)
-  if len(test_locations) == 0:
-    raise utils.PipelineError('No valid wpt.fyi results URLs found in WPT description.')
-
   try:
+    if not feature.spec_link:
+      raise utils.PipelineError('No spec URL provided.')
+
+    test_locations = utils.extract_wpt_fyi_results_urls(feature.wpt_descr)
+    if len(test_locations) == 0:
+      raise utils.PipelineError('No valid wpt.fyi results URLs found in WPT description.')
+
     wpt_contents = await _get_test_file_contents(test_locations)
+    prompt_text = _generate_unified_prompt_text(feature, wpt_contents)
+
+    gemini_client = GeminiClient()
+    # Don't use the single prompt if it will overload the context.
+    if gemini_client.prompt_exceeds_input_token_limit(prompt_text):
+      logging.warning(
+        'The unified gap analysis prompt is too large. '
+        'Using the 3-prompt flow instead.'
+      )
+      gap_analysis_response = await prompt_analysis(feature, wpt_contents)
+    else:
+      gap_analysis_response = unified_prompt_analysis(prompt_text)
+
+    feature.ai_test_eval_report = gap_analysis_response
+    return core_enums.AITestEvaluationStatus.COMPLETE
   except utils.PipelineError as e:
     feature.ai_test_eval_report = str(e)
     return core_enums.AITestEvaluationStatus.FAILED
-
-  prompt_text = _generate_unified_prompt_text(feature, wpt_contents)
-
-  gemini_client = GeminiClient()
-  # Don't use the single prompt if it will overload the context.
-  if gemini_client.prompt_exceeds_input_token_limit(prompt_text):
-    logging.warning(
-      'The unified gap analysis prompt is too large. '
-      'Using the 3-prompt flow instead.'
-    )
-    gap_analysis_response = await prompt_analysis(feature, wpt_contents)
-  else:
-    gap_analysis_response = unified_prompt_analysis(prompt_text)
-
-  feature.ai_test_eval_report = gap_analysis_response
-  return core_enums.AITestEvaluationStatus.COMPLETE
 
 
 class GenerateWPTCoverageEvalReportHandler(basehandlers.FlaskHandler):
