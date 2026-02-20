@@ -45,7 +45,7 @@ def _validate_github_domain(netloc: str) -> bool:
 def _create_feature_definition(feature: FeatureEntry) -> str:
   return f'Name: {feature.name}\nDescription: {feature.summary}'
 
-def _fetch_explainer_link(url: str) -> str:
+def _fetch_explainer_content(url: str) -> str:
     """
     Fetches explainer content with specialized handling for technical data.
     Prioritizes raw formats for GitHub to preserve code blocks.
@@ -70,9 +70,8 @@ def _fetch_explainer_link(url: str) -> str:
         if downloaded is None:
             return f"Error: Could not fetch URL {url}"
 
-        # CRITICAL: Use include_formatting=True and include_tables=True
-        # This helps Trafilatura preserve <pre> and <code> blocks which
-        # are common in explainers like those on open-ui.org.
+        # Use include_formatting=True and include_tables=True
+        # This helps Trafilatura preserve <pre> and <code> blocks.
         result = trafilatura.extract(
             downloaded,
             include_comments=False,
@@ -88,8 +87,8 @@ def _fetch_explainer_link(url: str) -> str:
     except Exception as e:
         return f"Error: Unable to process explainer: {e}"
 
-def _fetch_explainer_content(explainer_links: list[str]) -> str:
-  """4
+def _get_explainer_content(explainer_links: list[str]) -> str:
+  """
   Fetches and concatenates content from multiple explainer links.
   """
   if not explainer_links:
@@ -104,7 +103,11 @@ def _fetch_explainer_content(explainer_links: list[str]) -> str:
     url_match = re.search(r'https?://[^\s]+', item)
     if url_match:
       url = url_match.group(0)
-      content = _fetch_explainer_link(url)
+      try:
+        content = _fetch_explainer_content(url)
+      except Exception as e:
+        logging.warning(f'Failed to fetch explainer content for {url}: {e}')
+        continue
 
       if content and not content.startswith("Error:"):
         contents.append(f"## Explainer Link: {url}\n{content}")
