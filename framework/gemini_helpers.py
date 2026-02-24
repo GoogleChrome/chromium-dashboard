@@ -46,46 +46,48 @@ def _create_feature_definition(feature: FeatureEntry) -> str:
   return f'Name: {feature.name}\nDescription: {feature.summary}'
 
 def _fetch_explainer_content(url: str) -> str:
-    """
-    Fetches explainer content with specialized handling for technical data.
-    Prioritizes raw formats for GitHub to preserve code blocks.
-    """
-    parsed = urlparse(url)
+  """
+  Fetches explainer content with specialized handling for technical data.
+  Prioritizes raw formats for GitHub to preserve code blocks.
+  """
+  parsed = urlparse(url)
 
-    # 1. Specialized GitHub Handling (Best for code blocks)
-    # Convert blob links to raw links to get original Markdown source.
-    if _validate_github_domain(parsed.netloc) and "/blob/" in parsed.path:
-        raw_url = url.replace("github.com", "raw.githubusercontent.com").replace("/blob/", "/")
-        try:
-            resp = requests.get(raw_url)
-            resp.raise_for_status()
-            # Return raw markdown which Gemini handles better than mangled HTML
-            return resp.text
-        except Exception as e:
-            logging.error(f"Failed to fetch raw GitHub explainer: {e}")
-
-    # 2. Standard Webpage Extraction
+  # 1. Specialized GitHub Handling (Best for code blocks)
+  # Convert blob links to raw links to get original Markdown source.
+  if _validate_github_domain(parsed.netloc) and "/blob/" in parsed.path:
+    raw_url = url.replace("github.com", "raw.githubusercontent.com").replace("/blob/", "/")
     try:
-        downloaded = trafilatura.fetch_url(url)
-        if downloaded is None:
-            return f"Error: Could not fetch URL {url}"
-
-        # Use include_formatting=True and include_tables=True
-        # This helps Trafilatura preserve <pre> and <code> blocks.
-        result = trafilatura.extract(
-            downloaded,
-            include_comments=False,
-            include_tables=True,
-            include_formatting=True,  # Added to preserve code structure
-            output_format="markdown"
-        )
-
-        if not result:
-            return f"Error: No main content found at {url}"
-
-        return result
+      resp = requests.get(raw_url)
+      resp.raise_for_status()
+      # Return raw markdown which Gemini handles better than mangled HTML
+      return resp.text
     except Exception as e:
-        return f"Error: Unable to process explainer: {e}"
+      raise utils.PipelineError(f"Error fetching GitHub Raw Explainer: {e}") from e
+
+  # 2. Standard Webpage Extraction
+  try:
+    downloaded = trafilatura.fetch_url(url)
+    if downloaded is None:
+      raise utils.PipelineError(f"Error: Could not fetch URL {url}")
+
+    # Use include_formatting=True and include_tables=True
+    # This helps Trafilatura preserve <pre> and <code> blocks.
+    result = trafilatura.extract(
+      downloaded,
+      include_comments=False,
+      include_tables=True,
+      include_formatting=True,  # Added to preserve code structure
+      output_format="markdown"
+    )
+
+    if not result:
+      raise utils.PipelineError(f"Error: No main content found at {url}")
+
+    return result
+  except Exception as e:
+    if isinstance(e, utils.PipelineError):
+      raise
+    raise utils.PipelineError(f"Error: Unable to process explainer: {e}") from e
 
 def _get_explainer_content(explainer_links: list[str]) -> str:
   """
@@ -105,12 +107,11 @@ def _get_explainer_content(explainer_links: list[str]) -> str:
       url = url_match.group(0)
       try:
         content = _fetch_explainer_content(url)
+        if content:
+          contents.append(f"## Explainer Link: {url}\n{content}")
       except Exception as e:
         logging.warning(f'Failed to fetch explainer content for {url}: {e}')
         continue
-
-      if content and not content.startswith("Error:"):
-        contents.append(f"## Explainer Link: {url}\n{content}")
 
   return "\n\n".join(contents)
 
