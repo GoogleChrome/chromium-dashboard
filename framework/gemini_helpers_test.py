@@ -182,6 +182,16 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
       self.assertEqual(result, fake_content)
       mock_get.assert_called_once_with(expected_raw_url)
 
+  def test_fetch_explainer_content__github_blob_failure(self):
+    """GitHub Raw fetch failure for explainers should raise PipelineError."""
+    url = 'https://github.com/WICG/explainer/blob/main/README.md'
+
+    with mock.patch('framework.gemini_helpers.requests.get') as mock_get:
+      mock_get.side_effect = requests.exceptions.RequestException("404")
+
+      with self.assertRaisesRegex(utils.PipelineError, "Error fetching GitHub Raw Explainer"):
+        gemini_helpers._fetch_explainer_content(url)
+
   def test_fetch_explainer_content__web_success(self):
     """Standard web URLs should use trafilatura with formatting preserved."""
     url = 'https://explainer.example.com'
@@ -203,14 +213,31 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
           output_format="markdown"
       )
 
+  def test_fetch_explainer_content__web_fetch_failure(self):
+    """If trafilatura fails to download explainer, raise PipelineError."""
+    url = 'https://example.com/bad'
+    with mock.patch('framework.gemini_helpers.trafilatura') as mock_traf:
+      mock_traf.fetch_url.return_value = None
+      with self.assertRaisesRegex(utils.PipelineError, "Could not fetch URL"):
+        gemini_helpers._fetch_explainer_content(url)
+
+  def test_fetch_explainer_content__web_extract_failure(self):
+    """If trafilatura returns None during explainer extraction, raise PipelineError."""
+    url = 'https://example.com/empty'
+    with mock.patch('framework.gemini_helpers.trafilatura') as mock_traf:
+      mock_traf.fetch_url.return_value = '<html></html>'
+      mock_traf.extract.return_value = None
+      with self.assertRaisesRegex(utils.PipelineError, "No main content found"):
+        gemini_helpers._fetch_explainer_content(url)
+
   @mock.patch('framework.gemini_helpers._fetch_explainer_content')
-  def test_fetch_explainer_content__empty(self, mock_fetch):
+  def test_get_explainer_content__empty(self, mock_fetch):
     """Empty explainer links should return empty string."""
     self.assertEqual(gemini_helpers._get_explainer_content([]), "")
     mock_fetch.assert_not_called()
 
   @mock.patch('framework.gemini_helpers._fetch_explainer_content')
-  def test_fetch_explainer_content__valid_url(self, mock_fetch):
+  def test_get_explainer_content__valid_url(self, mock_fetch):
     """A single valid URL should be fetched and formatted."""
     mock_fetch.return_value = "Mocked content"
     links = ["https://example.com/explainer"]
@@ -222,10 +249,10 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
     mock_fetch.assert_called_once_with("https://example.com/explainer")
 
   @mock.patch('framework.gemini_helpers._fetch_explainer_content')
-  def test_fetch_explainer_content__mixed_and_errors(self, mock_fetch):
+  def test_get_explainer_content__mixed_and_errors(self, mock_fetch):
     """Mixed content and fetch errors should be handled gracefully."""
-    # First URL succeeds, second returns an error string (which should be skipped)
-    mock_fetch.side_effect = ["Good content", "Error: failed to fetch"]
+    # First URL succeeds, second raises PipelineError (which should be skipped)
+    mock_fetch.side_effect = ["Good content", utils.PipelineError("failed to fetch")]
 
     links = [
         "we have https://good.com/explainer",
@@ -240,10 +267,10 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
     self.assertEqual(result, expected)
 
   @mock.patch('framework.gemini_helpers._fetch_explainer_content')
-  def test_fetch_explainer_content__all_invalid_or_errors(self, mock_fetch):
+  def test_get_explainer_content__all_invalid_or_errors(self, mock_fetch):
     """Mixed content and fetch errors should be handled gracefully."""
     # First URL succeeds, second returns an error string (which should be skipped)
-    mock_fetch.side_effect = ["Error: failed to fetch"]
+    mock_fetch.side_effect = utils.PipelineError("failed to fetch")
 
     links = [
         "https://bad.com/explainer",
