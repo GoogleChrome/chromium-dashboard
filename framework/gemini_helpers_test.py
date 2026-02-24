@@ -726,6 +726,7 @@ class GenerateWPTCoverageEvalReportHandlerTest(testing_config.CustomTestCase):
 
     self.handler.require_task_header = mock.Mock()
     self.handler.get_int_param = mock.Mock(return_value=self.feature_id)
+    self.handler.get_bool_param = mock.Mock(return_value=False)
     self.handler.get_validated_entity = mock.Mock(return_value=self.feature)
 
     self.mock_pipeline = mock.patch(
@@ -745,11 +746,12 @@ class GenerateWPTCoverageEvalReportHandlerTest(testing_config.CustomTestCase):
     # Verify inputs were retrieved
     self.handler.require_task_header.assert_called_once()
     self.handler.get_int_param.assert_called_with('feature_id')
+    self.handler.get_bool_param.assert_called_with('include_explainer', False)
     self.handler.get_validated_entity.assert_called_with(
       self.feature_id, FeatureEntry)
 
     # Verify pipeline was called
-    self.mock_pipeline.assert_awaited_once_with(self.feature)
+    self.mock_pipeline.assert_awaited_once_with(self.feature, False)
 
     # Verify feature state was updated correctly
     updated_feature = FeatureEntry.get_by_id(self.feature_id)

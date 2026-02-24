@@ -426,12 +426,13 @@ class GenerateWPTCoverageEvalReportHandler(basehandlers.FlaskHandler):
     self.require_task_header()
 
     feature_id = self.get_int_param('feature_id')
+    include_explainer = self.get_bool_param('include_explainer', False)
     feature = self.get_validated_entity(feature_id, FeatureEntry)
 
     logging.info(f'Starting WPT coverage analysis pipeline for feature {feature_id}')
 
     try:
-      result_status = asyncio.run(run_wpt_test_eval_pipeline(feature))
+      result_status = asyncio.run(run_wpt_test_eval_pipeline(feature, include_explainer))
     except Exception as e:
       feature.ai_test_eval_run_status = core_enums.AITestEvaluationStatus.FAILED
       feature.ai_test_eval_status_timestamp = datetime.now()

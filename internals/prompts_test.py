@@ -62,6 +62,7 @@ class TestAIPromptTemplatesHandler(unittest.TestCase):
     data = {
       'spec_url': 'https://example.com/spec',
       'spec_content': 'Some content.',
+      'explainer_content': 'Some explainer content.',
       'feature_name': 'Feature One',
       'feature_summary': 'A generic feature',
       'test_files': [
@@ -85,6 +86,7 @@ class TestAIPromptTemplatesHandler(unittest.TestCase):
     data = {
       'spec_url': 'https://example.com/spec',
       'spec_content': 'The contents of the specification document.',
+      'explainer_content': 'Some explainer content.',
       'feature_definition': 'The name and description of the feature.',
     }
 
