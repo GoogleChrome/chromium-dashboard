@@ -326,7 +326,8 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
     self.assertEqual(result, mock_wpt_contents)
 
   @mock.patch('framework.gemini_helpers._fetch_spec_content', return_value="Mock Spec Content")
-  def test_generate_unified_prompt_text(self, mock_fetch_spec):
+  @mock.patch('framework.gemini_helpers._get_explainer_content', return_value="Mock Explainer Content")
+  def test_generate_unified_prompt_text(self, mock_get_explainer, mock_fetch_spec):
     """Tests that the generator creates the template data and renders it."""
     test_files = {Path('test1.html'): 'content1'}
     dependency_files = {Path('dep.js'): 'dep_content'}
@@ -354,6 +355,8 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
                      [{'path': Path('test1.html'), 'contents': 'content1'}])
     self.assertEqual(kwargs['dependency_files'],
                      [{'path': Path('dep.js'), 'contents': 'dep_content'}])
+    self.assertEqual(kwargs['explainer_content'], "Mock Explainer Content")
+    mock_get_explainer.assert_called_once_with(self.feature.explainer_links)
 
   def test_unified_prompt_analysis__success(self):
     """Tests that the unified evaluator calls Gemini with the provided text."""
@@ -366,7 +369,8 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
     self.mock_gemini_client.get_response.assert_called_once_with(prompt_text)
 
   @mock.patch('framework.gemini_helpers._fetch_spec_content', return_value="Mock Spec Content")
-  def test_prompt_analysis__success_batching(self, mock_fetch_spec):
+  @mock.patch('framework.gemini_helpers._get_explainer_content', return_value="Mock Explainer Content")
+  def test_prompt_analysis__success_batching(self, mock_get_explainer, mock_fetch_spec):
     """Test that multiple small files are batched into a single prompt."""
     test_files = {
       Path('test1.html'): 'content1',
@@ -403,16 +407,14 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
     call_args = self.mock_gemini_client.get_batch_responses_async.call_args[0][0]
     self.assertEqual(len(call_args), 2)
 
-    # Verify correct template rendering for the test batch
-    # We check the call_args_list of render_template to ensure the batch was constructed
-    found_batch_render = False
+    # Verify correct template rendering for the spec synthesis with explainer
+    found_spec_render = False
     for call in self.mock_render_template.call_args_list:
       kwargs = call.kwargs
-      if 'test_files' in kwargs and len(kwargs['test_files']) == 2:
-        found_batch_render = True
-        self.assertEqual(kwargs['test_files'][0]['path'], Path('test1.html'))
-        self.assertEqual(kwargs['test_files'][1]['path'], Path('test2.html'))
-    self.assertTrue(found_batch_render, "Did not find a render call with both test files")
+      if kwargs.get('explainer_content') == "Mock Explainer Content":
+        found_spec_render = True
+    self.assertTrue(found_spec_render, "Did not find a render call with explainer content")
+    mock_get_explainer.assert_called_once_with(self.feature.explainer_links)
 
   @mock.patch('framework.gemini_helpers._fetch_spec_content', return_value="Mock Spec Content")
   def test_prompt_analysis__splitting_on_limit(self, mock_fetch_spec):

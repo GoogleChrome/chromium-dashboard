@@ -190,6 +190,7 @@ def _generate_unified_prompt_text(
   template_data = {
     'spec_url': feature.spec_link,
     'spec_content': _fetch_spec_content(feature.spec_link),
+    'explainer_content': _get_explainer_content(feature.explainer_links),
     'feature_name': feature.name,
     'feature_summary': feature.summary,
     'test_files': [{'path': fpath, 'contents': fc}
@@ -341,6 +342,7 @@ async def prompt_analysis(feature: FeatureEntry, wpt_contents: utils.WPTContents
   template_data = {
     'spec_url': feature.spec_link,
     'spec_content': _fetch_spec_content(feature.spec_link),
+    'explainer_content': _get_explainer_content(feature.explainer_links),
     'feature_definition': _create_feature_definition(feature)
   }
   spec_synthesis_prompt = render_template(SPEC_SYNTHESIS_TEMPLATE_PATH, **template_data)
