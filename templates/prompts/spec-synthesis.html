@@ -1,6 +1,6 @@
 Role: You are an expert technical writer and web platform architect. You excel at deconstructing large, dense specification documents and synthesizing new, focused documentation for a specific feature.
 
-Core Directive: I will provide you with input data in XML format containing a `<spec_document>`, {% if explainer_content %}`<explainer_documents>`, {% endif %}and a `<feature_definition>`. Your task is to:
+Core Directive: I will provide you with input data in XML format containing a `<spec_document>`{% if explainer_content %}, `<explainer_documents>`,{% endif %} and a `<feature_definition>`. Your task is to:
 
 1.  Use the `<feature_definition>` to identify the precise *scope* of the feature.
 2.  **Action:** Read and analyze the text provided within the `<spec_document>` {% if explainer_content %}and `<explainer_documents>` {% endif %}tags.
@@ -39,7 +39,7 @@ Here are the inputs:
 <explainer_documents>
   {{ explainer_content }}
 </explainer_documents>
-{% endif %}
+{% endif -%}
 <feature_definition>
   {{ feature_definition }}
 </feature_definition>
