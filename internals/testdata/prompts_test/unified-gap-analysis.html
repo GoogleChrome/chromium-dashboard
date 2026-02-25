@@ -2,11 +2,11 @@
 
 **Objective:** Perform a rigorous "Gap Analysis" by comparing a specific feature's specification against its actual test implementation. You must identify exactly which requirements are tested and which are missing.
 
-**Core Directive:** I will provide you with three inputs:
+**Core Directive:** I will provide you with the following inputs:
 
-1.  `<spec_document>`: The technical specification text (this may contain the full spec, a large section of the spec, or a pull request diff highlighting the changes to the spec to include the new feature).
-2.  `<feature_definition>`: The Name and Description of the specific feature you are auditing. **You must use this to define the scope of your analysis.**
-3.  `<test_suite>`: One or more raw test files (including dependencies) written to test this feature.
+*   `<spec_document>`: The technical specification text (this may contain the full spec, a large section of the spec, or a pull request diff highlighting the changes to the spec to include the new feature).
+*   `<feature_definition>`: The Name and Description of the specific feature you are auditing. **You must use this to define the scope of your analysis.**
+*   `<test_suite>`: One or more raw test files (including dependencies) written to test this feature.
 
 Your task is to act as an auditor. You must compare the `<test_suite>` against the *scoped requirements* found in the `<spec_document>` to determine if a "minimum satisfactory level of test coverage" has been met.
 

@@ -185,11 +185,15 @@ async def _get_test_file_contents(test_locations: list[str]) -> utils.WPTContent
 def _generate_unified_prompt_text(
   feature: FeatureEntry,
   wpt_contents: utils.WPTContents,
+  include_explainer: bool = False,
 ) -> str:
   """Generates the text for the unified gap analysis prompt."""
+  explainer_content = _get_explainer_content(feature.explainer_links) if include_explainer else None
+
   template_data = {
     'spec_url': feature.spec_link,
     'spec_content': _fetch_spec_content(feature.spec_link),
+    'explainer_content': explainer_content,
     'feature_name': feature.name,
     'feature_summary': feature.summary,
     'test_files': [{'path': fpath, 'contents': fc}
@@ -220,7 +224,11 @@ def unified_prompt_analysis(prompt_text: str) -> str:
   return gap_analysis_response
 
 
-async def prompt_analysis(feature: FeatureEntry, wpt_contents: utils.WPTContents) -> str:
+async def prompt_analysis(
+    feature: FeatureEntry,
+    wpt_contents: utils.WPTContents,
+    include_explainer: bool = False,
+) -> str:
   """Evaluates WPT coverage using a multi-stage prompt flow.
 
   This method is used when the number of test files is too large for a single
@@ -338,9 +346,12 @@ async def prompt_analysis(feature: FeatureEntry, wpt_contents: utils.WPTContents
         )
     )
 
+  explainer_content = _get_explainer_content(feature.explainer_links) if include_explainer else None
+
   template_data = {
     'spec_url': feature.spec_link,
     'spec_content': _fetch_spec_content(feature.spec_link),
+    'explainer_content': explainer_content,
     'feature_definition': _create_feature_definition(feature)
   }
   spec_synthesis_prompt = render_template(SPEC_SYNTHESIS_TEMPLATE_PATH, **template_data)
@@ -374,7 +385,10 @@ async def prompt_analysis(feature: FeatureEntry, wpt_contents: utils.WPTContents
   return gap_analysis_response
 
 
-async def run_wpt_test_eval_pipeline(feature: FeatureEntry) -> core_enums.AITestEvaluationStatus:
+async def run_wpt_test_eval_pipeline(
+    feature: FeatureEntry,
+    include_explainer: bool = False,
+) -> core_enums.AITestEvaluationStatus:
   """Execute the AI pipeline for WPT coverage analysis.
 
   The final report is saved to `feature.ai_test_eval_report`.
@@ -395,7 +409,7 @@ async def run_wpt_test_eval_pipeline(feature: FeatureEntry) -> core_enums.AITest
       raise utils.PipelineError('No valid wpt.fyi results URLs found in WPT description.')
 
     wpt_contents = await _get_test_file_contents(test_locations)
-    prompt_text = _generate_unified_prompt_text(feature, wpt_contents)
+    prompt_text = _generate_unified_prompt_text(feature, wpt_contents, include_explainer)
 
     gemini_client = GeminiClient()
     # Don't use the single prompt if it will overload the context.
@@ -404,7 +418,7 @@ async def run_wpt_test_eval_pipeline(feature: FeatureEntry) -> core_enums.AITest
         'The unified gap analysis prompt is too large. '
         'Using the 3-prompt flow instead.'
       )
-      gap_analysis_response = await prompt_analysis(feature, wpt_contents)
+      gap_analysis_response = await prompt_analysis(feature, wpt_contents, include_explainer)
     else:
       gap_analysis_response = unified_prompt_analysis(prompt_text)
 
@@ -424,12 +438,13 @@ class GenerateWPTCoverageEvalReportHandler(basehandlers.FlaskHandler):
     self.require_task_header()
 
     feature_id = self.get_int_param('feature_id')
+    include_explainer = self.get_bool_param('include_explainer', False)
     feature = self.get_validated_entity(feature_id, FeatureEntry)
 
     logging.info(f'Starting WPT coverage analysis pipeline for feature {feature_id}')
 
     try:
-      result_status = asyncio.run(run_wpt_test_eval_pipeline(feature))
+      result_status = asyncio.run(run_wpt_test_eval_pipeline(feature, include_explainer))
     except Exception as e:
       feature.ai_test_eval_run_status = core_enums.AITestEvaluationStatus.FAILED
       feature.ai_test_eval_status_timestamp = datetime.now()

@@ -70,7 +70,7 @@ class WPTCoverageAPITest(testing_config.CustomTestCase):
     # Verify Cloud Task was enqueued with correct parameters.
     mock_enqueue.assert_called_once_with(
         '/tasks/generate-wpt-coverage-analysis',
-        {'feature_id': 123456}
+        {'feature_id': 123456, 'include_explainer': False}
     )
 
     updated_feature = FeatureEntry.get_by_id(123456)

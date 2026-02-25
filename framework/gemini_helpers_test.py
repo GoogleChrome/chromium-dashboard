@@ -326,7 +326,8 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
     self.assertEqual(result, mock_wpt_contents)
 
   @mock.patch('framework.gemini_helpers._fetch_spec_content', return_value="Mock Spec Content")
-  def test_generate_unified_prompt_text(self, mock_fetch_spec):
+  @mock.patch('framework.gemini_helpers._get_explainer_content', return_value="Mock Explainer Content")
+  def test_generate_unified_prompt_text(self, mock_get_explainer, mock_fetch_spec):
     """Tests that the generator creates the template data and renders it."""
     test_files = {Path('test1.html'): 'content1'}
     dependency_files = {Path('dep.js'): 'dep_content'}
@@ -341,7 +342,7 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
     self.mock_render_template.return_value = "Rendered Prompt"
 
     result = gemini_helpers._generate_unified_prompt_text(
-        self.feature, wpt_contents
+        self.feature, wpt_contents, include_explainer=True
     )
 
     self.assertEqual(result, "Rendered Prompt")
@@ -354,6 +355,8 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
                      [{'path': Path('test1.html'), 'contents': 'content1'}])
     self.assertEqual(kwargs['dependency_files'],
                      [{'path': Path('dep.js'), 'contents': 'dep_content'}])
+    self.assertEqual(kwargs['explainer_content'], "Mock Explainer Content")
+    mock_get_explainer.assert_called_once_with(self.feature.explainer_links)
 
   def test_unified_prompt_analysis__success(self):
     """Tests that the unified evaluator calls Gemini with the provided text."""
@@ -366,7 +369,8 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
     self.mock_gemini_client.get_response.assert_called_once_with(prompt_text)
 
   @mock.patch('framework.gemini_helpers._fetch_spec_content', return_value="Mock Spec Content")
-  def test_prompt_analysis__success_batching(self, mock_fetch_spec):
+  @mock.patch('framework.gemini_helpers._get_explainer_content', return_value="Mock Explainer Content")
+  def test_prompt_analysis__success_batching(self, mock_get_explainer, mock_fetch_spec):
     """Test that multiple small files are batched into a single prompt."""
     test_files = {
       Path('test1.html'): 'content1',
@@ -393,7 +397,7 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
         return_value='Final Gap Analysis Report'
     )
 
-    result = asyncio.run(gemini_helpers.prompt_analysis(self.feature, wpt_contents))
+    result = asyncio.run(gemini_helpers.prompt_analysis(self.feature, wpt_contents, include_explainer=True))
 
     self.assertEqual(result, 'Final Gap Analysis Report')
 
@@ -403,16 +407,14 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
     call_args = self.mock_gemini_client.get_batch_responses_async.call_args[0][0]
     self.assertEqual(len(call_args), 2)
 
-    # Verify correct template rendering for the test batch
-    # We check the call_args_list of render_template to ensure the batch was constructed
-    found_batch_render = False
+    # Verify correct template rendering for the spec synthesis with explainer
+    found_spec_render = False
     for call in self.mock_render_template.call_args_list:
       kwargs = call.kwargs
-      if 'test_files' in kwargs and len(kwargs['test_files']) == 2:
-        found_batch_render = True
-        self.assertEqual(kwargs['test_files'][0]['path'], Path('test1.html'))
-        self.assertEqual(kwargs['test_files'][1]['path'], Path('test2.html'))
-    self.assertTrue(found_batch_render, "Did not find a render call with both test files")
+      if kwargs.get('explainer_content') == "Mock Explainer Content":
+        found_spec_render = True
+    self.assertTrue(found_spec_render, "Did not find a render call with explainer content")
+    mock_get_explainer.assert_called_once_with(self.feature.explainer_links)
 
   @mock.patch('framework.gemini_helpers._fetch_spec_content', return_value="Mock Spec Content")
   def test_prompt_analysis__splitting_on_limit(self, mock_fetch_spec):
@@ -610,7 +612,7 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
       result = asyncio.run(gemini_helpers.run_wpt_test_eval_pipeline(self.feature))
 
       # Verify Generator Called
-      mock_gen_prompt.assert_called_once_with(self.feature, wpt_contents)
+      mock_gen_prompt.assert_called_once_with(self.feature, wpt_contents, False)
 
       # Verify Token Count Checked
       self.mock_gemini_client.prompt_exceeds_input_token_limit.assert_called_once_with(
@@ -660,7 +662,7 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
         "Generated Huge Prompt")
 
       # Verify Multi Called
-      mock_multi.assert_awaited_once_with(self.feature, wpt_contents)
+      mock_multi.assert_awaited_once_with(self.feature, wpt_contents, False)
 
       # Verify Unified NOT Called
       mock_unified.assert_not_called()
@@ -724,6 +726,7 @@ class GenerateWPTCoverageEvalReportHandlerTest(testing_config.CustomTestCase):
 
     self.handler.require_task_header = mock.Mock()
     self.handler.get_int_param = mock.Mock(return_value=self.feature_id)
+    self.handler.get_bool_param = mock.Mock(return_value=False)
     self.handler.get_validated_entity = mock.Mock(return_value=self.feature)
 
     self.mock_pipeline = mock.patch(
@@ -743,11 +746,12 @@ class GenerateWPTCoverageEvalReportHandlerTest(testing_config.CustomTestCase):
     # Verify inputs were retrieved
     self.handler.require_task_header.assert_called_once()
     self.handler.get_int_param.assert_called_with('feature_id')
+    self.handler.get_bool_param.assert_called_with('include_explainer', False)
     self.handler.get_validated_entity.assert_called_with(
       self.feature_id, FeatureEntry)
 
     # Verify pipeline was called
-    self.mock_pipeline.assert_awaited_once_with(self.feature)
+    self.mock_pipeline.assert_awaited_once_with(self.feature, False)
 
     # Verify feature state was updated correctly
     updated_feature = FeatureEntry.get_by_id(self.feature_id)

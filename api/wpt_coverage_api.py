@@ -94,8 +94,9 @@ class WPTCoverageAPI(basehandlers.EntitiesAPIHandler):
     feature.ai_test_eval_run_status = core_enums.AITestEvaluationStatus.IN_PROGRESS.value
     feature.ai_test_eval_status_timestamp = datetime.now()
     feature.put()
+    include_explainer = self.get_bool_param('include_explainer', False)
     cloud_tasks_helpers.enqueue_task('/tasks/generate-wpt-coverage-analysis',
-                                     { 'feature_id': feature_id })
+                                     { 'feature_id': feature_id, 'include_explainer': include_explainer })
 
     return {'message': 'Task enqueued'}
 
