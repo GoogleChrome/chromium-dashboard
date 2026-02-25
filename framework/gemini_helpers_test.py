@@ -342,7 +342,7 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
     self.mock_render_template.return_value = "Rendered Prompt"
 
     result = gemini_helpers._generate_unified_prompt_text(
-        self.feature, wpt_contents
+        self.feature, wpt_contents, include_explainer=True
     )
 
     self.assertEqual(result, "Rendered Prompt")
@@ -397,7 +397,7 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
         return_value='Final Gap Analysis Report'
     )
 
-    result = asyncio.run(gemini_helpers.prompt_analysis(self.feature, wpt_contents))
+    result = asyncio.run(gemini_helpers.prompt_analysis(self.feature, wpt_contents, include_explainer=True))
 
     self.assertEqual(result, 'Final Gap Analysis Report')
 
@@ -612,7 +612,7 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
       result = asyncio.run(gemini_helpers.run_wpt_test_eval_pipeline(self.feature))
 
       # Verify Generator Called
-      mock_gen_prompt.assert_called_once_with(self.feature, wpt_contents)
+      mock_gen_prompt.assert_called_once_with(self.feature, wpt_contents, False)
 
       # Verify Token Count Checked
       self.mock_gemini_client.prompt_exceeds_input_token_limit.assert_called_once_with(
@@ -662,7 +662,7 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
         "Generated Huge Prompt")
 
       # Verify Multi Called
-      mock_multi.assert_awaited_once_with(self.feature, wpt_contents)
+      mock_multi.assert_awaited_once_with(self.feature, wpt_contents, False)
 
       # Verify Unified NOT Called
       mock_unified.assert_not_called()
