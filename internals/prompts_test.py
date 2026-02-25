@@ -58,7 +58,30 @@ class TestAIPromptTemplatesHandler(unittest.TestCase):
     assert_matches_golden(self, rendered_body, golden_name)
 
   def test_prompt__unified_gap_analysis(self):
-    """Ensure unified-gap-analysis renders correctly."""
+    """Ensure unified-gap-analysis renders correctly without explainer."""
+    data = {
+      'spec_url': 'https://example.com/spec',
+      'spec_content': 'Some content.',
+      'feature_name': 'Feature One',
+      'feature_summary': 'A generic feature',
+      'test_files': [
+        {'path': 'css/a.html', 'contents': 'contents of file a.html'},
+        {'path': 'css/b.html', 'contents': 'contents of file b.html'},
+      ],
+      'dependency_files': [
+        {'path': 'css/c.html', 'contents': 'contents of file c.html'},
+        {'path': 'css/d.html', 'contents': 'contents of file d.html'},
+        {'path': 'css/e.html', 'contents': 'contents of file e.html'},
+      ],
+    }
+    self.render_and_verify(
+      'prompts/unified-gap-analysis.html',
+      data,
+      'unified-gap-analysis.html'
+    )
+
+  def test_prompt__unified_gap_analysis_with_explainer(self):
+    """Ensure unified-gap-analysis renders correctly with explainer."""
     data = {
       'spec_url': 'https://example.com/spec',
       'spec_content': 'Some content.',
@@ -78,11 +101,25 @@ class TestAIPromptTemplatesHandler(unittest.TestCase):
     self.render_and_verify(
       'prompts/unified-gap-analysis.html',
       data,
-      'unified-gap-analysis.html'
+      'unified-gap-analysis-with-explainer.html'
     )
 
   def test_prompt__spec_synthesis(self):
-    """Ensure spec-synthesis renders correctly."""
+    """Ensure spec-synthesis renders correctly without explainer."""
+    data = {
+      'spec_url': 'https://example.com/spec',
+      'spec_content': 'The contents of the specification document.',
+      'feature_definition': 'The name and description of the feature.',
+    }
+
+    self.render_and_verify(
+      'prompts/spec-synthesis.html',
+      data,
+      'spec-synthesis.html'
+    )
+
+  def test_prompt__spec_synthesis_with_explainer(self):
+    """Ensure spec-synthesis renders correctly with explainer."""
     data = {
       'spec_url': 'https://example.com/spec',
       'spec_content': 'The contents of the specification document.',
@@ -93,7 +130,7 @@ class TestAIPromptTemplatesHandler(unittest.TestCase):
     self.render_and_verify(
       'prompts/spec-synthesis.html',
       data,
-      'spec-synthesis.html'
+      'spec-synthesis-with-explainer.html'
     )
 
   def test_prompt__test_analysis(self):

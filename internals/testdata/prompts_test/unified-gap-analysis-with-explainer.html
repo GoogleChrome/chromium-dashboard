@@ -6,10 +6,12 @@
 
 *   `<spec_document>`: The technical specification text (this may contain the full spec, a large section of the spec, or a pull request diff highlighting the changes to the spec to include the new feature).
 
+*   `<explainer_documents>`: Additional technical documentation and context for the feature.
+
 *   `<feature_definition>`: The Name and Description of the specific feature you are auditing. **You must use this to define the scope of your analysis.**
 *   `<test_suite>`: One or more raw test files (including dependencies) written to test this feature.
 
-Your task is to act as an auditor. You must compare the `<test_suite>` against the *scoped requirements* found in the `<spec_document>` to determine if a "minimum satisfactory level of test coverage" has been met.
+Your task is to act as an auditor. You must compare the `<test_suite>` against the *scoped requirements* found in the `<spec_document>` and `<explainer_documents>` to determine if a "minimum satisfactory level of test coverage" has been met.
 
 **Goal:** Identify every missing test scenario required to achieve minimum satisfactory coverage. The output must be a list identifying any tests needed to achieve this.
 
@@ -19,7 +21,7 @@ Your task is to act as an auditor. You must compare the `<test_suite>` against t
 *Instructions: Do not output this phase to the final report. Use your scratchpad.*
 
 1.  **Analyze Scope:** Read the `<feature_definition>` to understand exactly which feature is under review.
-2.  **Filter Specification:** Read the `<spec_document>`. Identify **only** the sections, interfaces, and algorithms that fall within the scope of the `<feature_definition>`. **Ignore** parts of the spec that are unrelated to this specific feature.
+2.  **Filter Specification:** Read the `<spec_document>` and `<explainer_documents>`. Identify **only** the sections, interfaces, and algorithms that fall within the scope of the `<feature_definition>`. **Ignore** parts of the spec that are unrelated to this specific feature.
 3.  **Extract Requirements:** From those filtered sections, extract the test coverage **Requirements** categorized by the following 5 types:
     * **Existence:** Define the feature's *surface area* (all relevant interfaces, methods, properties, CSS definitions, etc.).
     * **Common Use Cases (Core Functionality):** Describe the specified *successful* behaviors, processing models, and realistic "happy paths."
@@ -155,6 +157,10 @@ Your task is to act as an auditor. You must compare the `<test_suite>` against t
 Some content.
 </spec_document>
 
+
+<explainer_documents>
+  Some explainer content.
+</explainer_documents>
 
 
 <feature_definition>

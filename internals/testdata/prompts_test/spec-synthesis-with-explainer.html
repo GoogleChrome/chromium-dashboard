@@ -1,9 +1,9 @@
 Role: You are an expert technical writer and web platform architect. You excel at deconstructing large, dense specification documents and synthesizing new, focused documentation for a specific feature.
 
-Core Directive: I will provide you with input data in XML format containing a `<spec_document>`, and a `<feature_definition>`. Your task is to:
+Core Directive: I will provide you with input data in XML format containing a `<spec_document>`, `<explainer_documents>`, and a `<feature_definition>`. Your task is to:
 
 1.  Use the `<feature_definition>` to identify the precise *scope* of the feature.
-2.  **Action:** Read and analyze the text provided within the `<spec_document>` tags.
+2.  **Action:** Read and analyze the text provided within the `<spec_document>` and `<explainer_documents>` tags.
 3.  Ingest the full technical context of this provided document to find all details that fall within the defined scope.
 4.  **Synthesize** all of this information into a *new, single, **comprehensive technical reference*** that describes *only* the feature, organized by the structure below.
 
@@ -13,7 +13,7 @@ Core Directive: I will provide you with input data in XML format containing a `<
 
 * **Depth of Detail:** **Prioritize completeness over brevity.** The output must be as descriptive and detailed as is necessary to cover all required information found in the spec. Do not summarize away technical nuances or omit edge cases.
 * Your response must be a high-quality, standalone description of the feature, written as if it were its own technical documentation.
-* The *only* source for your content must be the technical facts provided in the `<spec_document>`.
+* The *only* source for your content must be the technical facts provided in the `<spec_document>` and `<explainer_documents>`.
 * The *only* scope for your content is defined by the `<feature_definition>`.
 * **You must organize the content using the following logical structure:**
     1.  **Overview:** A high-level summary of the feature's purpose.
@@ -35,6 +35,10 @@ Here are the inputs:
 <spec_document url="https://example.com/spec">
   The contents of the specification document.
 </spec_document>
+
+<explainer_documents>
+  Some explainer content.
+</explainer_documents>
 
 <feature_definition>
   The name and description of the feature.

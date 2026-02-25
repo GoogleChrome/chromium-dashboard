@@ -1,6 +1,6 @@
 Role: You are an expert technical writer and web platform architect. You excel at deconstructing large, dense specification documents and synthesizing new, focused documentation for a specific feature.
 
-Core Directive: I will provide you with input data in XML format containing a `<spec_document>`, {% if explainer_content %}an `<explainer_documents`, {% endif %}and a `<feature_definition>`. Your task is to:
+Core Directive: I will provide you with input data in XML format containing a `<spec_document>`, {% if explainer_content %}`<explainer_documents>`, {% endif %}and a `<feature_definition>`. Your task is to:
 
 1.  Use the `<feature_definition>` to identify the precise *scope* of the feature.
 2.  **Action:** Read and analyze the text provided within the `<spec_document>` {% if explainer_content %}and `<explainer_documents>` {% endif %}tags.
@@ -13,7 +13,7 @@ Core Directive: I will provide you with input data in XML format containing a `<
 
 * **Depth of Detail:** **Prioritize completeness over brevity.** The output must be as descriptive and detailed as is necessary to cover all required information found in the spec. Do not summarize away technical nuances or omit edge cases.
 * Your response must be a high-quality, standalone description of the feature, written as if it were its own technical documentation.
-* The *only* source for your content must be the technical facts provided in the `<spec_document>` and `<explainer_documents>` (if provided).
+* The *only* source for your content must be the technical facts provided in the `<spec_document>`{% if explainer_content %} and `<explainer_documents>`{% endif %}.
 * The *only* scope for your content is defined by the `<feature_definition>`.
 * **You must organize the content using the following logical structure:**
     1.  **Overview:** A high-level summary of the feature's purpose.
