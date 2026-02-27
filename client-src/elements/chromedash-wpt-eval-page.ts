@@ -145,6 +145,10 @@ export class ChromedashWPTEvalPage extends LitElement {
           text-decoration: underline;
         }
 
+        .url-list-container sl-checkbox {
+          margin-top: 8px;
+        }
+
         .action-section {
           display: flex;
           flex-direction: column;
@@ -300,6 +304,9 @@ export class ChromedashWPTEvalPage extends LitElement {
 
   @state()
   isRequirementsFulfilled = false;
+
+  @state()
+  includeExplainer = false;
 
   @state()
   completedInThisSession = false;
@@ -464,7 +471,10 @@ export class ChromedashWPTEvalPage extends LitElement {
       this.completedInThisSession = false; // Reset if user tries to regenerate.
       this.managePolling();
 
-      await window.csClient.generateWPTCoverageEvaluation(this.featureId);
+      await window.csClient.generateWPTCoverageEvaluation(
+        this.featureId,
+        this.includeExplainer
+      );
     } catch (e) {
       showToastMessage('Failed to generate report. Please try again later.');
       this.fetchData();
@@ -569,6 +579,8 @@ export class ChromedashWPTEvalPage extends LitElement {
     }
 
     const hasSpecLink = !!this.feature.spec_link;
+    const hasExplainerLink =
+      this.feature.explainer_links && this.feature.explainer_links.length > 0;
     const hasWptDescr = !!this.feature.wpt_descr;
     const wptUrls =
       (this.feature.wpt_descr || '').match(WPT_RESULTS_REGEX) || [];
@@ -598,6 +610,31 @@ export class ChromedashWPTEvalPage extends LitElement {
                       >${this.feature.spec_link}</a
                     >
                   </div>
+                </div>
+              `
+            : nothing}
+          ${this.renderRequirementItem(
+            hasExplainerLink,
+            'Explainer URL',
+            'id_explainer_links'
+          )}
+          ${hasExplainerLink
+            ? html`
+                <div class="url-list-container">
+                  <ul class="url-list">
+                    ${this.feature.explainer_links.map(
+                      url => html`
+                        <li><a href="${url}" target="_blank">${url}</a></li>
+                      `
+                    )}
+                  </ul>
+                  <sl-checkbox
+                    ?checked=${this.includeExplainer}
+                    @sl-change=${(e: any) =>
+                      (this.includeExplainer = e.target.checked)}
+                  >
+                    Include explainer in analysis
+                  </sl-checkbox>
                 </div>
               `
             : nothing}
