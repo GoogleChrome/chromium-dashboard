@@ -102,7 +102,7 @@ The system is tuned to balance App Engine limits against LLM generation time.
 These constants are defined in `framework/gemini_client.py`.
 
 ### Gemini Model
-* **Model:** `gemini-3-pro-preview` (Hardcoded as `GEMINI_MODEL`).
+* **Model:** `gemini-3.1-pro-preview` (Hardcoded as `GEMINI_MODEL`).
 
 ### Timeout Strategy
 To prevent "Task Deadline Exceeded" errors in Cloud Tasks, the system uses a
