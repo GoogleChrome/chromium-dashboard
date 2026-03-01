@@ -2,6 +2,7 @@ import {SlDetails, SlIconButton, SlInput} from '@shoelace-style/shoelace';
 import {LitElement, TemplateResult, css, html, nothing} from 'lit';
 import {customElement, property, state} from 'lit/decorators.js';
 import {ref} from 'lit/directives/ref.js';
+import {repeat} from 'lit/directives/repeat.js';
 
 import {ChromedashApp} from './chromedash-app';
 import './chromedash-attachments';
@@ -19,6 +20,7 @@ import {
 import {Feature, StageDict} from '../js-src/cs-client';
 import {FormattedFeature} from './form-definition';
 import {ALL_INTENT_USAGE_BY_FEATURE_TYPE, UsageType} from './form-field-enums';
+import {WEB_FEATURES_MANIFEST} from './WEB_FEATURES_MANIFEST';
 
 interface getFieldValue {
   (fieldName: string, stageOrId: any): any;
@@ -29,6 +31,12 @@ interface UsageTypeDetail {
   abbreviation: string;
   className: string;
   title: string;
+}
+
+interface NaryTreeNode {
+  name: string;
+  value: string;
+  children: NaryTreeNode[];
 }
 
 // Helper map to store details for each intent type.
@@ -145,6 +153,15 @@ export class ChromedashFormField extends LitElement {
         window.csClient.getBlinkComponents(),
         'Error fetching Blink Components. Please refresh the page or try again later.'
       );
+    } else if (this.name === 'wpt_tests' || this.name === 'wpt_tree') {
+      console.log(this.feature.web_feature);
+      console.log(WEB_FEATURES_MANIFEST.data[this.feature.web_feature]);
+      const possible = WEB_FEATURES_MANIFEST.data[this.feature.web_feature] || [];
+      const choices = {};
+      for (let p of possible) {
+        choices[p] = [p, p];
+      }
+      this.fetchedChoices = choices;
     } else if (this.name === 'web_feature') {
       this.fetchChoices(
         window.csClient.getWebFeatureIDs().then((feature_ids: string[]) => {
@@ -339,6 +356,66 @@ export class ChromedashFormField extends LitElement {
     }
   }
 
+  addMultidatalistItem(valueToAdd: string) {
+    console.log('add');
+    const fieldValue = this.getValue();
+    const valueArray: string[] = fieldValue.split(',').filter(v => v.length > 0);
+    if (!valueArray.includes(valueToAdd)) {
+      valueArray.push(valueToAdd);
+      valueArray.sort();
+      this.value = valueArray.join(',');
+    }
+  }
+
+  multidatalistChanged() {
+    console.log('changed');
+    const input = this.renderRoot.querySelector<HTMLInputElement>('#id_' + this.name);
+    if (!input) {console.log('renderRoot'); return;}
+    const valueToAdd = (input.value || '').trim();
+    console.log(valueToAdd);
+    if (valueToAdd == '') {console.log('empty'); return;}
+    if (Object.keys(this.fetchedChoices).includes(valueToAdd)) {
+      this.addMultidatalistItem(valueToAdd);
+      input.value = '';
+    }
+  }
+
+  removeMultidatalistItem(valueToRemove: string) {
+    console.log('remove ' + valueToRemove);
+    const fieldValue = this.getValue();
+    const valueArray: string[] = fieldValue.split(',');
+    const index = valueArray.indexOf(valueToRemove);
+    if (index > -1) { // Only splice if the value is found
+      valueArray.splice(index, 1);
+    }
+    this.value = valueArray.join(',');
+    console.log(this.value);
+  }
+
+  accumulateDecendents(tree: NaryTreeNode, result: string[]) {
+    result.push(tree.value);
+    for (const c of tree.children) {
+      this.accumulateDecendents(c, result);
+    }
+  }
+
+  setValueItem(value: string, tree: NaryTreeNode, add: boolean) {
+    console.log((add ? 'add ' : 'remove ') + value);
+    const fieldValue = this.getValue();
+    let valueArray: string[] = fieldValue.split(',').filter(v => v.length > 0);
+    if (add) {
+      const decendents: string[] = [];
+      this.accumulateDecendents(tree, decendents);
+      valueArray.push(...decendents);
+    } else {
+      valueArray = valueArray.filter((v) => !v.startsWith(value));
+      valueArray = valueArray.filter((v) => !value.startsWith(v));
+    }
+    // When removing, what about siblings?
+    this.value = valueArray.join(',');
+    console.log(this.value);
+  }
+
   renderWidget() {
     const type = this.fieldProps.type;
     const fieldDisabled = this.fieldProps.disabled;
@@ -509,10 +586,116 @@ export class ChromedashFormField extends LitElement {
           )}
         </datalist>
       `;
+    } else if (type === 'multidatalist') {
+      const valueArray: string[] = fieldValue.length ? fieldValue.split(',') : [];
+      fieldHTML = html`
+      <div class="hbox" style="nowrap" data-testid="${this.name}_wrapper">
+          <input
+            ${ref(this.updateAttributes)}
+            name="${fieldName}"
+            placeholder="Type here and select to add a test path"
+            id="id_${this.name}"
+            value=""
+            class="datalist-input"
+            style="flex-grow:1;"
+            type="search"
+            list="${this.name}_list"
+            ?required=${isRequired}
+            @keyup=${e => this.multidatalistChanged()}
+            @click=${e => this.multidatalistChanged()}
+            />
+        </div>
+        <datalist id="${this.name}_list">
+          ${Object.values(choices)
+          .filter(([value]) => !valueArray.includes(value))
+          .map(
+            ([value]) => html` <option value="${value}"></option> `
+          )}
+          </datalist>
+          <div>
+          ${valueArray.length ?
+            repeat(
+              valueArray, (v) => v, (v) =>
+                html`<div style="margin-bottom: 4px;"><sl-checkbox checked @sl-change=${e => this.removeMultidatalistItem(v)}>${v}</sl-checkbox></div>`) :
+            ''}
+          </div>
+      `;
+    } else if (type === 'tree') {
+      const valueArray: string[] = fieldValue.length ? fieldValue.split(',') : [];
+      const paths: string[] = Object.values(choices).map(([value]) => value);
+      const forest = this.organizeTree(paths);
+      forest.forEach((t) => this.simplifyTree(t));
+      fieldHTML = this.renderTree(forest, valueArray);
     } else {
       console.error(`unknown form field type: ${type}`);
     }
     return fieldHTML;
+  }
+
+
+  organizeTree(paths: string[]): NaryTreeNode[] {
+    const forest: NaryTreeNode[] = [];
+    console.log({paths});
+
+    for (const path of paths) {
+      const segments = path.split('/').filter(s => s !== '');
+      let currentLevel = forest;
+      let subPathValue = '/';
+
+      console.log({segments});
+      for (let i = 0; i < segments.length; i++) {
+        const isLastSegment = i === segments.length - 1;
+        const segmentName = segments[i] + (isLastSegment ? '' : '/');
+        subPathValue = subPathValue + segmentName;
+
+        let existingNode = currentLevel.find(node => node.name === segmentName);
+        if (existingNode) {
+          currentLevel = existingNode.children;
+        } else {
+          const newNode: NaryTreeNode = {
+            name: segmentName,
+            value: subPathValue,
+            children: []
+          };
+          currentLevel.push(newNode);
+          currentLevel = newNode.children;
+        }
+      }
+    }
+    console.log({forest});
+    return forest;
+  }
+
+  simplifyTree(tree: NaryTreeNode) {
+    while (tree.children.length == 1) {
+      tree.name = tree.name + tree.children[0].name;
+      tree.value = tree.children[0].value;
+      tree.children = tree.children[0].children;
+    }
+    tree.children.forEach((c) => this.simplifyTree(c));
+  }
+
+  renderTreeNode(tree: NaryTreeNode, valueArray: string[]) {
+    const checked = valueArray.includes(tree.value);
+    // xxx valueArray.some((v) => tree.value.startsWith(v));
+    return html`
+      <sl-tree-item>
+    <sl-checkbox ?checked=${checked}
+    @sl-change=${e => this.setValueItem(tree.value, tree, !checked)}
+    >${tree.name}</sl-checkbox>
+        ${tree.children.map(t => this.renderTreeNode(t, valueArray))}
+      </sl-tree-item>
+    `;
+  }
+
+  renderTree(forest: NaryTreeNode[], valueArray: string[]) {
+    return html`
+    <sl-tree style="--indent-guide-width: 4px;">
+     <sl-icon name="plus-square" slot="expand-icon"></sl-icon>
+     <sl-icon name="dash-square" slot="collapse-icon"></sl-icon>
+     ${forest.map(t => this.renderTreeNode(t, valueArray))}
+    </sl-tree>
+    `;
   }
 
   /**
