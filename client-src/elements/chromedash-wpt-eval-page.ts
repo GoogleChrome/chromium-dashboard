@@ -95,7 +95,7 @@ export class ChromedashWPTEvalPage extends LitElement {
         }
 
         .requirement-item sl-icon {
-          font-size: 1.4em;
+          font-size: 20px;
           flex-shrink: 0;
         }
         .requirement-item .success {
@@ -306,6 +306,9 @@ export class ChromedashWPTEvalPage extends LitElement {
 
   // Milliseconds remaining before another run can be requested
   @state()
+  includeExplainer = true;
+
+  @state()
   private _cooldownRemaining = 0;
 
   @state()
@@ -464,7 +467,10 @@ export class ChromedashWPTEvalPage extends LitElement {
       this.completedInThisSession = false; // Reset if user tries to regenerate.
       this.managePolling();
 
-      await window.csClient.generateWPTCoverageEvaluation(this.featureId);
+      await window.csClient.generateWPTCoverageEvaluation(
+        this.featureId,
+        this.includeExplainer
+      );
     } catch (e) {
       showToastMessage('Failed to generate report. Please try again later.');
       this.fetchData();
@@ -516,7 +522,11 @@ export class ChromedashWPTEvalPage extends LitElement {
           library="material"
           name="check_circle_20px"
         ></sl-icon>`
-      : html`<sl-icon name="x-circle-fill" class="danger"></sl-icon>`;
+      : html`<sl-icon
+          name="x-circle-fill"
+          class="danger"
+          style="font-size: 20px"
+        ></sl-icon>`;
 
     const text = isFulfilled ? `${label} provided` : `Missing ${label}`;
 
@@ -637,6 +647,59 @@ export class ChromedashWPTEvalPage extends LitElement {
                         </li>
                       `;
                     })}
+                  </ul>
+                </div>
+              `
+            : nothing}
+          <div class="requirement-item">
+            ${!this.includeExplainer
+              ? html`<sl-icon
+                  name="info-circle"
+                  style="color: var(--sl-color-neutral-600); font-size: 20px"
+                ></sl-icon>`
+              : this.feature.explainer_links?.length
+                ? html`<sl-icon
+                    class="success"
+                    library="material"
+                    name="check_circle_20px"
+                  ></sl-icon>`
+                : html`<sl-icon
+                    name="x-circle-fill"
+                    class="danger"
+                    style="font-size: 20px"
+                  ></sl-icon>`}
+            <sl-checkbox
+              ?checked=${this.includeExplainer}
+              @sl-change=${(e: any) =>
+                (this.includeExplainer = e.target.checked)}
+            >
+              Include feature explainers
+              ${!this.feature.explainer_links?.length
+                ? html`<sl-badge variant="neutral" size="small"
+                    >Optional</sl-badge
+                  >`
+                : nothing}
+            </sl-checkbox>
+            <a
+              class="edit-link"
+              href="/guide/editall/${this.featureId}#id_explainer_links"
+            >
+              Edit
+            </a>
+          </div>
+          ${this.includeExplainer
+            ? html`
+                <div class="url-list-container">
+                  <ul class="url-list">
+                    ${this.feature.explainer_links?.length
+                      ? this.feature.explainer_links.map(
+                          url => html`
+                            <li>
+                              <a href="${url}" target="_blank">${url}</a>
+                            </li>
+                          `
+                        )
+                      : html`<li>(no value)</li>`}
                   </ul>
                 </div>
               `
@@ -882,6 +945,12 @@ export class ChromedashWPTEvalPage extends LitElement {
               <strong>Metadata:</strong> Ensure the feature name and summary are
               accurate. These will be used to narrow the scope of the test
               coverage requirements.
+            </li>
+            <li>
+              <strong>Explainers (Optional):</strong> You can optionally include
+              explainer links to provide more context to Gemini. This helps
+              Gemini understand the intent and design of your feature, which can
+              lead to more accurate coverage analysis.
             </li>
             <li>
               <strong>Test Results:</strong> Add relevant

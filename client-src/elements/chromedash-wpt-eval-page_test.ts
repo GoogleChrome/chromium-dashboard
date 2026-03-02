@@ -51,6 +51,9 @@ describe('chromedash-wpt-eval-page', () => {
     expect(el.shadowRoot!.querySelector('.experimental-tag')).to.exist;
     expect(el.shadowRoot!.querySelector('sl-alert')).to.exist;
     expect(el.shadowRoot!.querySelector('.description')).to.exist;
+    expect(el.shadowRoot!.querySelector('.description')!.textContent).to.contain(
+      'Explainers (Optional)'
+    );
   });
 
   it('shows skeletons while loading data', async () => {
@@ -267,6 +270,89 @@ describe('chromedash-wpt-eval-page', () => {
       // Verify Valid URLs (Index 4)
       expect(dataContainers[4].querySelector('ul')).to.exist;
     });
+
+    it('renders explainer links row correctly when links are present', async () => {
+      const explainerLinks = ['https://example.com/explainer.md'];
+      csClientStub.getFeature.resolves({
+        ...mockFeatureV1,
+        explainer_links: explainerLinks,
+      });
+
+      const el = await fixture<ChromedashWPTEvalPage>(
+        html`<chromedash-wpt-eval-page .featureId=${1}></chromedash-wpt-eval-page>`
+      );
+      await el.updateComplete;
+
+      const items = el.shadowRoot!.querySelectorAll('.requirement-item');
+      // Total 6 now: Name, Summary, Spec, Descr, Valid URLs, Explainers
+      expect(items.length).to.equal(6);
+
+      const explainerItem = items[5];
+      expect(explainerItem.querySelector('.success')).to.exist;
+      expect(explainerItem.querySelector('sl-checkbox')).to.exist;
+      expect(explainerItem.querySelector('sl-checkbox')!.textContent).to.contain(
+        'Include feature explainers'
+      );
+      expect(explainerItem.querySelector('sl-badge')).to.not.exist;
+
+      const urlList = el.shadowRoot!.querySelectorAll('.url-list');
+      // Index 4 is WPT URLs, Index 5 is Explainer URLs
+      expect(urlList[5].textContent).to.contain(explainerLinks[0]);
+    });
+
+    it('renders explainer links row correctly with Optional badge and danger icon when links are missing and checked', async () => {
+      csClientStub.getFeature.resolves({
+        ...mockFeatureV1,
+        explainer_links: [],
+      });
+
+      const el = await fixture<ChromedashWPTEvalPage>(
+        html`<chromedash-wpt-eval-page .featureId=${1}></chromedash-wpt-eval-page>`
+      );
+      await el.updateComplete;
+
+      const items = el.shadowRoot!.querySelectorAll('.requirement-item');
+      expect(items.length).to.equal(6);
+
+      const explainerItem = items[5];
+      // includeExplainer defaults to true, so it should show danger icon if missing
+      expect(explainerItem.querySelector('.success')).to.not.exist;
+      expect(explainerItem.querySelector('sl-icon[name="x-circle-fill"].danger'))
+        .to.exist;
+      expect(explainerItem.querySelector('sl-badge[variant="neutral"]')).to.exist;
+      expect(explainerItem.querySelector('sl-badge')!.textContent).to.contain(
+        'Optional'
+      );
+
+      // Should show "(no value)"
+      const urlList = el.shadowRoot!.querySelectorAll('.url-list');
+      expect(urlList[5].textContent).to.contain('(no value)');
+    });
+
+    it('toggling the includeExplainer checkbox updates state and icons', async () => {
+      csClientStub.getFeature.resolves({
+        ...mockFeatureV1,
+        explainer_links: [],
+      });
+      const el = await fixture<ChromedashWPTEvalPage>(
+        html`<chromedash-wpt-eval-page .featureId=${1}></chromedash-wpt-eval-page>`
+      );
+      await el.updateComplete;
+
+      expect(el.includeExplainer).to.be.true;
+      const items = el.shadowRoot!.querySelectorAll('.requirement-item');
+      expect(items[5].querySelector('sl-icon[name="x-circle-fill"].danger')).to
+        .exist;
+
+      const checkbox = el.shadowRoot!.querySelector('sl-checkbox') as any;
+      checkbox.click();
+      await el.updateComplete;
+
+      expect(el.includeExplainer).to.be.false;
+      expect(el.shadowRoot!.querySelectorAll('.requirement-item')[5].querySelector('sl-icon[name="info-circle"]'))
+        .to.exist;
+    });
+
     it('annotates directory WPT URLs but not individual test file URLs', async () => {
       const dirUrl = 'https://wpt.fyi/results/css';
       const fileUrl = 'https://wpt.fyi/results/dom/historical.html';
@@ -448,7 +534,7 @@ describe('chromedash-wpt-eval-page', () => {
       // API called
       expect(
         csClientStub.generateWPTCoverageEvaluation
-      ).to.have.been.calledWith(99);
+      ).to.have.been.calledWith(99, true); // Default is true
 
       // UI entered IN_PROGRESS state immediately (optimistic update)
       expect(el.feature?.ai_test_eval_run_status).to.equal(
@@ -459,6 +545,33 @@ describe('chromedash-wpt-eval-page', () => {
 
       // Polling started
       expect(setIntervalSpy).to.have.been.called;
+    });
+
+    it('passes includeExplainer=false to API when checkbox is unchecked', async () => {
+      csClientStub.getFeature.resolves(mockFeatureV1);
+      csClientStub.generateWPTCoverageEvaluation.resolves({});
+
+      const el = await fixture<ChromedashWPTEvalPage>(
+        html`<chromedash-wpt-eval-page
+          .featureId=${99}
+        ></chromedash-wpt-eval-page>`
+      );
+      await el.updateComplete;
+
+      // Uncheck the checkbox
+      const checkbox = el.shadowRoot!.querySelector('sl-checkbox') as any;
+      checkbox.click();
+      await el.updateComplete;
+
+      const button = el.shadowRoot!.querySelector(
+        '.generate-button'
+      ) as HTMLElement;
+      button.click();
+      await el.updateComplete;
+
+      expect(
+        csClientStub.generateWPTCoverageEvaluation
+      ).to.have.been.calledWith(99, false);
     });
 
     it('renders IN_PROGRESS state when loaded from server', async () => {
