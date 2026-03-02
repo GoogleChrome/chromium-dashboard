@@ -366,3 +366,13 @@ export async function gotoNewFeatureList(page) {
   const pagiation = page.locator('chromedash-feature-pagination');
   await expect(pagiation).toBeVisible();
 }
+
+
+/**
+ * Check a screenshot with some default options that reduce
+ * flakiness.
+ */
+export async function expectScreenshot(page, name, options) {
+  options = {...options, timeout: 10000};
+  await expect(page).toHaveScreenshot(`${name}.png`, options);
+}

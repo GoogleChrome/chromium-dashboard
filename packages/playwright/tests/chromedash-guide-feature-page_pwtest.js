@@ -5,6 +5,7 @@ import {
   login,
   logout,
   createNewFeature,
+  expectScreenshot,
 } from './test_utils';
 
 test.beforeEach(async ({page}, testInfo) => {
@@ -42,7 +43,7 @@ test('add an origin trial stage', async ({page}) => {
   await originTrialStageOption.hover();
 
   // Screenshot of this dialog.
-  await expect(page).toHaveScreenshot('create-origin-trial-stage-dialog.png', {
+  await expectScreenshot(page, 'create-origin-trial-stage-dialog', {
     mask: [page.locator('section[id="history"]')],
   });
 
@@ -81,7 +82,7 @@ test('add an origin trial stage', async ({page}) => {
   const prepareToShipPanel = page.getByText('Prepare to ship');
   await prepareToShipPanel.scrollIntoViewIfNeeded();
 
-  await expect(page).toHaveScreenshot('origin-trial-panels.png', {
+  await expectScreenshot(page, 'origin-trial-panels', {
     mask: [page.locator('section[id="history"]')],
   });
 });

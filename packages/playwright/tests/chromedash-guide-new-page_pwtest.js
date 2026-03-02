@@ -8,6 +8,7 @@ import {
   enterBlinkComponent,
   createNewFeature,
   enterWebFeatureId,
+  expectScreenshot,
 } from './test_utils';
 
 test.beforeEach(async ({page}, testInfo) => {
@@ -34,7 +35,7 @@ test('navigate to create feature page', async ({page}) => {
   await expect(menuButton.locator('sl-icon svg')).toBeVisible({timeout: 10000});
 
   // Take a screenshot of the content area.
-  await expect(page).toHaveScreenshot('new-feature-page.png');
+  await expectScreenshot(page, 'new-feature-page');
 });
 
 test('enter feature name', async ({page}) => {
@@ -61,7 +62,7 @@ test('enter feature name', async ({page}) => {
   // Verify the input has the value before screenshotting (implicitly waits for fill to complete)
   await expect(featureNameInput).toHaveValue('Test feature name');
 
-  await expect(page).toHaveScreenshot('feature-name.png');
+  await expectScreenshot(page, 'feature-name');
 });
 
 test('test semantic checks', async ({page}) => {
@@ -90,11 +91,11 @@ test('test semantic checks', async ({page}) => {
   await expect(helpIcon.locator('sl-icon svg')).toBeVisible({timeout: 10000});
 
   // Screenshot of warnings about feature name summary length
-  await expect(page).toHaveScreenshot(
-    'warning-feature-name-and-summary-length.png',
-    {
-      mask: [page.locator('section[id="history"]')],
-    }
+  await expectScreenshot(
+      page, 'warning-feature-name-and-summary-length',
+      {
+        mask: [page.locator('section[id="history"]')],
+      }
   );
 
   // Fix cause of the error
@@ -119,7 +120,7 @@ test('enter blink component', async ({page}) => {
 
   await enterBlinkComponent(page);
 
-  await expect(page).toHaveScreenshot('blink-components.png');
+  await expectScreenshot(page, 'blink-components');
 });
 
 test('enter web feature id', async ({page}) => {
@@ -134,7 +135,7 @@ test('enter web feature id', async ({page}) => {
 
   await enterWebFeatureId(page);
 
-  await expect(page).toHaveScreenshot('feature-id.png');
+  await expectScreenshot(page, 'feature-id');
 });
 
 test('create new feature', async ({page}) => {
@@ -142,7 +143,7 @@ test('create new feature', async ({page}) => {
 
   // Screenshot of this new feature.
   // The mask handles the dynamic history section.
-  await expect(page).toHaveScreenshot('new-feature-created.png', {
+  await expectScreenshot(page, 'new-feature-created', {
     mask: [page.locator('section[id="history"]')],
   });
 });
