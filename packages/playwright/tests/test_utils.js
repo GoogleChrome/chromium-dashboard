@@ -367,7 +367,6 @@ export async function gotoNewFeatureList(page) {
   await expect(pagiation).toBeVisible();
 }
 
-
 /**
  * Check a screenshot with some default options that reduce
  * flakiness.

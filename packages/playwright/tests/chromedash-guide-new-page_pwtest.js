@@ -91,12 +91,9 @@ test('test semantic checks', async ({page}) => {
   await expect(helpIcon.locator('sl-icon svg')).toBeVisible({timeout: 10000});
 
   // Screenshot of warnings about feature name summary length
-  await expectScreenshot(
-      page, 'warning-feature-name-and-summary-length',
-      {
-        mask: [page.locator('section[id="history"]')],
-      }
-  );
+  await expectScreenshot(page, 'warning-feature-name-and-summary-length', {
+    mask: [page.locator('section[id="history"]')],
+  });
 
   // Fix cause of the error
   await summaryInput.fill(
