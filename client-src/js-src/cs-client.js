@@ -775,8 +775,10 @@ export class ChromeStatusClient {
   }
 
   // WPT Coverage API
-  async generateWPTCoverageEvaluation(featureId) {
-    return this.doPost(`/features/${featureId}/wpt-coverage-analysis`);
+  async generateWPTCoverageEvaluation(featureId, includeExplainer = false) {
+    return this.doPost(`/features/${featureId}/wpt-coverage-analysis`, {
+      include_explainer: includeExplainer,
+    });
   }
 
   // Delete WPT Coverage Report
