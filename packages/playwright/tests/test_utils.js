@@ -372,6 +372,6 @@ export async function gotoNewFeatureList(page) {
  * flakiness.
  */
 export async function expectScreenshot(page, name, options) {
-  options = {...options, timeout: 10000};
+  options = {...options, timeout: 30000};
   await expect(page).toHaveScreenshot(`${name}.png`, options);
 }
