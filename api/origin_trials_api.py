@@ -19,6 +19,7 @@ import json5
 import re
 import requests
 import validators
+from typing import Any
 
 from chromestatus_openapi.models import (CreateOriginTrialRequest, GetOriginTrialsResponse, SuccessMessage)
 
@@ -130,6 +131,10 @@ class OriginTrialsAPI(basehandlers.EntitiesAPIHandler):
       'origin_trials': trials_list
     })
 
+  def _is_in_file(self, file_content: str | None, substring: str) -> bool:
+    """Check if a substring is in the file content, bypassing if empty."""
+    return not file_content or substring in file_content
+
   def _validate_creation_args(
       self, body: dict, chromium_files: dict) -> dict[str, str]:
     """Check that all provided OT creation arguments are valid."""
@@ -151,11 +156,14 @@ class OriginTrialsAPI(basehandlers.EntitiesAPIHandler):
       validation_errors['ot_chromium_trial_name'] = (
           'Chromium trial name is already used by another origin trial')
 
-    enabled_features_json = json5.loads(chromium_files['enabled_features_text'])
-    if (not any(feature.get('origin_trial_feature_name') == chromium_trial_name
-                for feature in enabled_features_json['data'])):
-      validation_errors['ot_chromium_trial_name'] = (
-          'Origin trial feature name not found in file')
+    enabled_features_text = chromium_files.get('enabled_features_text', '')
+    enabled_features_json: dict[str, Any] = {'data': []}
+    if enabled_features_text:
+      enabled_features_json = json5.loads(enabled_features_text)
+      if (not any(feature.get('origin_trial_feature_name') == chromium_trial_name
+                  for feature in enabled_features_json.get('data', []))):
+        validation_errors['ot_chromium_trial_name'] = (
+            'Origin trial feature name not found in file')
 
     is_dep_trial = (body['ot_is_deprecation_trial']
                     and body['ot_is_deprecation_trial']['value'])
@@ -170,7 +178,8 @@ class OriginTrialsAPI(basehandlers.EntitiesAPIHandler):
         validation_errors['ot_webfeature_use_counter'] = (
             'No UseCounter specified for non-deprecation trial.')
       elif (uc_type == BlinkHistogramID.web_feature and
-            f'{webfeature_use_counter} =' not in chromium_files['webfeature_file']):
+            not self._is_in_file(chromium_files.get('webfeature_file'),
+                                f'{webfeature_use_counter} =')):
         validation_errors['ot_webfeature_use_counter'] = (
               'UseCounter not landed in web_feature.mojom')
       # Check for valid WebDXFeature use counter specifications.
@@ -179,8 +188,8 @@ class OriginTrialsAPI(basehandlers.EntitiesAPIHandler):
         if not formatted_use_counter:
           validation_errors['ot_webfeature_use_counter'] = (
               'No WebDXFeature use counter provided.')
-        elif (f'{formatted_use_counter} ='
-              not in chromium_files['webdxfeature_file']):
+        elif not self._is_in_file(chromium_files.get('webdxfeature_file'),
+                                  f'{formatted_use_counter} ='):
           validation_errors['ot_webfeature_use_counter'] = (
               'UseCounter not landed in webdx_feature.mojom')
       # CSSSampleId validation.
@@ -189,8 +198,8 @@ class OriginTrialsAPI(basehandlers.EntitiesAPIHandler):
         if not formatted_use_counter:
           validation_errors['ot_webfeature_use_counter'] = (
               'No CSSSampleId use counter provided.')
-        elif (f'{formatted_use_counter} = '
-              not in chromium_files['css_property_id_file']):
+        elif not self._is_in_file(chromium_files.get('css_property_id_file'),
+                                  f'{formatted_use_counter} = '):
           validation_errors['ot_webfeature_use_counter'] = (
               'UseCounter not landed in css_property_id.mojom')
 
@@ -208,8 +217,9 @@ class OriginTrialsAPI(basehandlers.EntitiesAPIHandler):
     is_critical_trial = (body['ot_is_critical_trial']['value']
                          if body['ot_is_critical_trial'] else None)
     if is_critical_trial:
-      if (f'blink::mojom::OriginTrialFeature::k{chromium_trial_name}'
-          not in chromium_files['grace_period_file']):
+      if not self._is_in_file(
+          chromium_files.get('grace_period_file'),
+          f'blink::mojom::OriginTrialFeature::k{chromium_trial_name}'):
         validation_errors['ot_is_critical_trial'] = (
             'Use counter has not landed in grace period array '
             'for critical trial')

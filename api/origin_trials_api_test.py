@@ -711,6 +711,46 @@ bool FeatureHasExpiryGracePeriod(blink::mojom::OriginTrialFeature feature) {
         'Use counter has not landed in grace period array for critical trial')}
     self.assertEqual(expected, result)
 
+  @mock.patch('framework.origin_trials_client.get_trials_list')
+  def test_validate_creation_args__empty_files_bypass(
+      self, mock_get_trials_list):
+    """If chromium files are empty, validation checks are bypassed."""
+    mock_get_trials_list.return_value = self.mock_trials_list
+    body = {
+      'ot_chromium_trial_name': {
+        'form_field_name': 'ot_chromium_trial_name',
+        'value': 'SomeNewTrial',
+      },
+      'ot_webfeature_use_counter': {
+        'form_field_name': 'ot_webfeature_use_counter',
+        'value': 'kSomeNewUseCounter',
+      },
+      'ot_is_critical_trial': {
+        'form_field_name': 'ot_is_critical_trial',
+        'value': True,
+      },
+      'ot_is_deprecation_trial': {
+        'form_field_name': 'ot_is_deprecation_trial',
+        'value': False,
+      },
+      'ot_has_third_party_support': {
+        'form_field_name': 'ot_has_third_party_support',
+        'value': True,
+      },
+    }
+    empty_chromium_files = {
+      'webfeature_file': '',
+      'webdxfeature_file': '',
+      'css_property_id_file': '',
+      'enabled_features_text': '',
+      'grace_period_file': '',
+    }
+    with test_app.test_request_context(self.request_path):
+      result = self.handler._validate_creation_args(
+          body, empty_chromium_files)
+    # All checks should be bypassed, so no errors returned.
+    self.assertEqual({}, result)
+
   def test_validate_extension_args__valid(self):
     # No exception should be raised.
     with test_app.test_request_context(self.request_path):
