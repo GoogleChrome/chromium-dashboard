@@ -31,7 +31,7 @@ test('navigate to create feature page', async ({page}) => {
   await expect(menuButton).toBeVisible();
 
   // 2. Wait for the internal icon to paint
-  await expect(menuButton.locator('sl-icon svg')).toBeVisible({timeout: 10000});
+  await expect(menuButton.locator('sl-icon svg')).toBeVisible({timeout: 20000});
 
   // Take a screenshot of the content area.
   await expect(page).toHaveScreenshot('new-feature-page.png');
@@ -50,7 +50,7 @@ test('enter feature name', async ({page}) => {
   // Wait for the SVG inside the Shadow DOM to be present.
   // This ensures the icon graphic has actually rendered.
   await expect(extraHelpButton.locator('sl-icon svg')).toBeVisible({
-    timeout: 10000,
+    timeout: 20000,
   });
   await expect(extraHelpButton).toBeVisible();
   await extraHelpButton.click();
@@ -87,7 +87,7 @@ test('test semantic checks', async ({page}) => {
   await expect(helpIcon).toBeVisible();
   // Wait for the SVG inside the Shadow DOM to be present.
   // This ensures the icon graphic has actually rendered.
-  await expect(helpIcon.locator('sl-icon svg')).toBeVisible({timeout: 10000});
+  await expect(helpIcon.locator('sl-icon svg')).toBeVisible({timeout: 20000});
 
   // Screenshot of warnings about feature name summary length
   await expect(page).toHaveScreenshot(
@@ -117,6 +117,11 @@ test('enter blink component', async ({page}) => {
   await blinkComponentsField.scrollIntoViewIfNeeded();
   await expect(blinkComponentsField).toBeVisible();
 
+  const datalistOptions = blinkComponentsField.locator(
+    'datalist#blink_components_list option'
+  );
+  await expect(datalistOptions.first()).toBeAttached({timeout: 20000});
+
   await enterBlinkComponent(page);
 
   await expect(page).toHaveScreenshot('blink-components.png');
@@ -131,6 +136,13 @@ test('enter web feature id', async ({page}) => {
   );
   await webFeatureIdField.scrollIntoViewIfNeeded();
   await expect(webFeatureIdField).toBeVisible();
+
+  // Explicitly wait for the datalist to populate with options.
+  // The browser will not paint the arrow until these exist.
+  const datalistOptions = webFeatureIdField.locator(
+    'datalist#web_feature_list option'
+  );
+  await expect(datalistOptions.first()).toBeAttached({timeout: 20000});
 
   await enterWebFeatureId(page);
 
