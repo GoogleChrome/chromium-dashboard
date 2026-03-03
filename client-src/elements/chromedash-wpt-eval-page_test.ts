@@ -32,6 +32,8 @@ describe('chromedash-wpt-eval-page', () => {
       deleteWPTCoverageEvaluation: sinon.stub(),
     };
     (window as any).csClient = csClientStub;
+    sinon.stub(ChromedashWPTEvalPage.prototype, 'managePolling');
+    sinon.stub(ChromedashWPTEvalPage.prototype, 'updateCooldown');
   });
 
   afterEach(() => {
@@ -161,6 +163,8 @@ describe('chromedash-wpt-eval-page', () => {
       });
 
       mockWriteText.reset();
+      sinon.stub(ChromedashWPTEvalPage.prototype, 'managePolling');
+      sinon.stub(ChromedashWPTEvalPage.prototype, 'updateCooldown');
     });
 
     it('renders the copy button with correct text', async () => {
@@ -911,6 +915,8 @@ describe('chromedash-wpt-eval-page', () => {
 
     beforeEach(() => {
       confirmStub = sinon.stub(window, 'confirm');
+      sinon.stub(ChromedashWPTEvalPage.prototype, 'managePolling');
+      sinon.stub(ChromedashWPTEvalPage.prototype, 'updateCooldown');
     });
 
     it('renders the delete button when a report is present', async () => {

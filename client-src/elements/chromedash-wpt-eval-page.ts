@@ -324,7 +324,6 @@ export class ChromedashWPTEvalPage extends LitElement {
     }
     try {
       this.feature = await window.csClient.getFeature(this.featureId);
-      if (!this.isConnected) return;
       this.checkRequirements();
       this.managePolling();
       this.updateCooldown();
