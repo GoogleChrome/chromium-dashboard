@@ -756,12 +756,15 @@ class BackfillShippingYearTest(testing_config.CustomTestCase):
     actual = self.handler.calc_all_shipping_years()
     self.assertEqual({}, actual)
 
+  @mock.patch('internals.fetchchannels.fetch_chrome_release_info')
   @mock.patch('internals.stage_helpers.get_all_shipping_stages_with_milestones')
-  def test_calc_all_shipping_years__some(self, mock_gasswm: mock.MagicMock):
+  def test_calc_all_shipping_years__some(
+      self, mock_gasswm: mock.MagicMock, mock_fcri: mock.MagicMock):
     """We can calculate a dict of earliest milestones for a set of stages."""
     mock_gasswm.return_value = [
         self.stage_1_1, self.stage_2_1, self.stage_2_2, self.stage_3_1,
         self.stage_4_1]
+    mock_fcri.return_value = {'final_beta': '2030-01-01T00:00:00'}
     actual = self.handler.calc_all_shipping_years()
     expected = {22222: 2023, 33333: 2024, 44444: 2030}
     self.assertEqual(expected, actual)

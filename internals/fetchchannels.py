@@ -87,9 +87,9 @@ def fetch_chrome_release_info(version):
         result_json = json.loads(result.content)
         if 'mstones' in result_json:
           data = result_json['mstones'][0]
-          del data['owners']
-          del data['feature_freeze']
-          del data['ldaps']
+          data.pop('owners', None)
+          data.pop('feature_freeze', None)
+          data.pop('ldaps', None)
           rediscache.set(key, data, time=SCHEDULE_CACHE_TIME)
       except ValueError:
         pass  # Handled by next statement
