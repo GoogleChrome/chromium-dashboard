@@ -523,7 +523,8 @@ export class ChromedashWPTEvalPage extends LitElement {
           name="check_circle_20px"
         ></sl-icon>`
       : html`<sl-icon
-          name="x-circle-fill"
+          library="material"
+          name="cancel_20px"
           class="danger"
           style="font-size: 20px"
         ></sl-icon>`;
@@ -654,7 +655,8 @@ export class ChromedashWPTEvalPage extends LitElement {
           <div class="requirement-item">
             ${!this.includeExplainer
               ? html`<sl-icon
-                  name="info-circle"
+                  library="material"
+                  name="info_20px"
                   style="color: var(--sl-color-neutral-600); font-size: 20px"
                 ></sl-icon>`
               : this.feature.explainer_links?.length
@@ -664,7 +666,8 @@ export class ChromedashWPTEvalPage extends LitElement {
                     name="check_circle_20px"
                   ></sl-icon>`
                 : html`<sl-icon
-                    name="x-circle-fill"
+                    library="material"
+          name="cancel_20px"
                     class="danger"
                     style="font-size: 20px"
                   ></sl-icon>`}
@@ -699,7 +702,7 @@ export class ChromedashWPTEvalPage extends LitElement {
                             </li>
                           `
                         )
-                      : html`<li>(no value)</li>`}
+                      : html`<li>None provided. Use the "Edit" link above to add one.</li>`}
                   </ul>
                 </div>
               `
@@ -911,7 +914,7 @@ export class ChromedashWPTEvalPage extends LitElement {
         </h1>
 
         <sl-alert variant="primary" open>
-          <sl-icon slot="icon" name="info-circle"></sl-icon>
+          <sl-icon slot="icon" library="material" name="info_20px"></sl-icon>
           This feature is experimental and reports may be inaccurate. Please
           <a
             href="https://github.com/GoogleChrome/chromium-dashboard/issues/new?labels=Feedback,WPT-AI"

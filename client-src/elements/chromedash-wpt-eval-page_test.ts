@@ -317,16 +317,16 @@ describe('chromedash-wpt-eval-page', () => {
       const explainerItem = items[5];
       // includeExplainer defaults to true, so it should show danger icon if missing
       expect(explainerItem.querySelector('.success')).to.not.exist;
-      expect(explainerItem.querySelector('sl-icon[name="x-circle-fill"].danger'))
+      expect(explainerItem.querySelector('sl-icon[name="cancel_20px"].danger'))
         .to.exist;
       expect(explainerItem.querySelector('sl-badge[variant="neutral"]')).to.exist;
       expect(explainerItem.querySelector('sl-badge')!.textContent).to.contain(
         'Optional'
       );
 
-      // Should show "(no value)"
+      // Should show the descriptive "None provided" message
       const urlList = el.shadowRoot!.querySelectorAll('.url-list');
-      expect(urlList[5].textContent).to.contain('(no value)');
+      expect(urlList[5].textContent).to.contain('None provided');
     });
 
     it('toggling the includeExplainer checkbox updates state and icons', async () => {
@@ -349,7 +349,7 @@ describe('chromedash-wpt-eval-page', () => {
       await el.updateComplete;
 
       expect(el.includeExplainer).to.be.false;
-      expect(el.shadowRoot!.querySelectorAll('.requirement-item')[5].querySelector('sl-icon[name="info-circle"]'))
+      expect(el.shadowRoot!.querySelectorAll('.requirement-item')[5].querySelector('sl-icon[name="info_20px"]'))
         .to.exist;
     });
 
