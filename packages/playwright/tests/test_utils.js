@@ -372,6 +372,9 @@ export async function gotoNewFeatureList(page) {
  * flakiness.
  */
 export async function expectScreenshot(page, name, options) {
+  // TODO(jrobbins): This is where we would add logic for testing dark mode.
   options = {...options, timeout: 30000};
+  await page.mouse.move(0, 0);
+  await page.waitForTimeout(100);
   await expect(page).toHaveScreenshot(`${name}.png`, options);
 }
