@@ -358,6 +358,7 @@ describe('chromedash-wpt-eval-page', () => {
       const checkbox = el.shadowRoot!.querySelector('sl-checkbox') as any;
       checkbox.click();
       await el.updateComplete;
+      await new Promise(resolve => setTimeout(resolve, 0));
 
       expect(el.includeExplainer).to.be.false;
       expect(
