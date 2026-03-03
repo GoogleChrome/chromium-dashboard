@@ -190,6 +190,7 @@ def get_current_milestone_info(anchor_channel: str):
   return mstone_info['mstones'][0]
 
 
+@retry(3, delay=1, backoff=2)
 def get_chromium_file(url: str) -> str:
   """Fetches a file from Chromium source, caching the result for 1 hour."""
   content = rediscache.get(url)
