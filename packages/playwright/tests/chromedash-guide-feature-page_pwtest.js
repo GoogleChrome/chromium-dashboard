@@ -37,17 +37,17 @@ test('add an origin trial stage', async ({page}) => {
   const originTrialStageOption = page.locator(
     'sl-select sl-option[value="150"]'
   );
-  // Screenshot of this dialog, while hovering over originTrialStageOption.
+  // Screenshot of this dialog.
   await expectScreenshot(
     page,
     'create-origin-trial-stage-dialog',
     {
       mask: [page.locator('section[id="history"]')],
-    },
-    originTrialStageOption
-  );
+    });
 
   // Click the origin trial stage option to prepare to create stage.
+  await expect(originTrialStageOption).toBeVisible();
+  await originTrialStageOption.hover();
   await originTrialStageOption.click();
 
   // Click the Create stage button to finally create the stage.

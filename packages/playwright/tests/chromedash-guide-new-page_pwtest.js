@@ -116,6 +116,7 @@ test('enter blink component', async ({page}) => {
   await expect(blinkComponentsField).toBeVisible();
 
   await enterBlinkComponent(page);
+  await blinkComponentsField.click();
 
   await expectScreenshot(page, 'blink-components');
 });
@@ -131,6 +132,7 @@ test('enter web feature id', async ({page}) => {
   await expect(webFeatureIdField).toBeVisible();
 
   await enterWebFeatureId(page);
+  await webFeatureIdField.click();
 
   await expectScreenshot(page, 'feature-id');
 });
