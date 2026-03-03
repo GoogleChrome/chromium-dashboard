@@ -667,7 +667,7 @@ export class ChromedashWPTEvalPage extends LitElement {
                   ></sl-icon>`
                 : html`<sl-icon
                     library="material"
-          name="cancel_20px"
+                    name="cancel_20px"
                     class="danger"
                     style="font-size: 20px"
                   ></sl-icon>`}
@@ -702,7 +702,9 @@ export class ChromedashWPTEvalPage extends LitElement {
                             </li>
                           `
                         )
-                      : html`<li>None provided. Use the "Edit" link above to add one.</li>`}
+                      : html`<li>
+                          None provided. Use the "Edit" link above to add one.
+                        </li>`}
                   </ul>
                 </div>
               `

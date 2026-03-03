@@ -51,9 +51,9 @@ describe('chromedash-wpt-eval-page', () => {
     expect(el.shadowRoot!.querySelector('.experimental-tag')).to.exist;
     expect(el.shadowRoot!.querySelector('sl-alert')).to.exist;
     expect(el.shadowRoot!.querySelector('.description')).to.exist;
-    expect(el.shadowRoot!.querySelector('.description')!.textContent).to.contain(
-      'Explainers (Optional)'
-    );
+    expect(
+      el.shadowRoot!.querySelector('.description')!.textContent
+    ).to.contain('Explainers (Optional)');
   });
 
   it('shows skeletons while loading data', async () => {
@@ -279,7 +279,9 @@ describe('chromedash-wpt-eval-page', () => {
       });
 
       const el = await fixture<ChromedashWPTEvalPage>(
-        html`<chromedash-wpt-eval-page .featureId=${1}></chromedash-wpt-eval-page>`
+        html`<chromedash-wpt-eval-page
+          .featureId=${1}
+        ></chromedash-wpt-eval-page>`
       );
       await el.updateComplete;
 
@@ -290,9 +292,9 @@ describe('chromedash-wpt-eval-page', () => {
       const explainerItem = items[5];
       expect(explainerItem.querySelector('.success')).to.exist;
       expect(explainerItem.querySelector('sl-checkbox')).to.exist;
-      expect(explainerItem.querySelector('sl-checkbox')!.textContent).to.contain(
-        'Include feature explainers'
-      );
+      expect(
+        explainerItem.querySelector('sl-checkbox')!.textContent
+      ).to.contain('Include feature explainers');
       expect(explainerItem.querySelector('sl-badge')).to.not.exist;
 
       const urlList = el.shadowRoot!.querySelectorAll('.url-list');
@@ -307,7 +309,9 @@ describe('chromedash-wpt-eval-page', () => {
       });
 
       const el = await fixture<ChromedashWPTEvalPage>(
-        html`<chromedash-wpt-eval-page .featureId=${1}></chromedash-wpt-eval-page>`
+        html`<chromedash-wpt-eval-page
+          .featureId=${1}
+        ></chromedash-wpt-eval-page>`
       );
       await el.updateComplete;
 
@@ -319,7 +323,8 @@ describe('chromedash-wpt-eval-page', () => {
       expect(explainerItem.querySelector('.success')).to.not.exist;
       expect(explainerItem.querySelector('sl-icon[name="cancel_20px"].danger'))
         .to.exist;
-      expect(explainerItem.querySelector('sl-badge[variant="neutral"]')).to.exist;
+      expect(explainerItem.querySelector('sl-badge[variant="neutral"]')).to
+        .exist;
       expect(explainerItem.querySelector('sl-badge')!.textContent).to.contain(
         'Optional'
       );
@@ -335,7 +340,9 @@ describe('chromedash-wpt-eval-page', () => {
         explainer_links: [],
       });
       const el = await fixture<ChromedashWPTEvalPage>(
-        html`<chromedash-wpt-eval-page .featureId=${1}></chromedash-wpt-eval-page>`
+        html`<chromedash-wpt-eval-page
+          .featureId=${1}
+        ></chromedash-wpt-eval-page>`
       );
       await el.updateComplete;
 
@@ -349,8 +356,11 @@ describe('chromedash-wpt-eval-page', () => {
       await el.updateComplete;
 
       expect(el.includeExplainer).to.be.false;
-      expect(el.shadowRoot!.querySelectorAll('.requirement-item')[5].querySelector('sl-icon[name="info_20px"]'))
-        .to.exist;
+      expect(
+        el
+          .shadowRoot!.querySelectorAll('.requirement-item')[5]
+          .querySelector('sl-icon[name="info_20px"]')
+      ).to.exist;
     });
 
     it('annotates directory WPT URLs but not individual test file URLs', async () => {
