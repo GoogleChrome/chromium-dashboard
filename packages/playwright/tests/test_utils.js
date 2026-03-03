@@ -371,10 +371,13 @@ export async function gotoNewFeatureList(page) {
  * Check a screenshot with some default options that reduce
  * flakiness.
  */
-export async function expectScreenshot(page, name, options, isHovering) {
+export async function expectScreenshot(page, name, options, hoverElement) {
   // TODO(jrobbins): This is where we would add logic for testing dark mode.
   options = {...options, timeout: 30000};
-  if (!isHovering) {
+  if (hoverElement) {
+    await expect(hoverElement).toBeVisible();
+    await hoverElement.hover();
+  } else {
     await page.mouse.move(0, 0);
   }
   await page.waitForTimeout(100);
