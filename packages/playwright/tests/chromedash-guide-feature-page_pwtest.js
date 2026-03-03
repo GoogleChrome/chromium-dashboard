@@ -43,9 +43,14 @@ test('add an origin trial stage', async ({page}) => {
   await originTrialStageOption.hover();
 
   // Screenshot of this dialog.
-  await expectScreenshot(page, 'create-origin-trial-stage-dialog', {
-    mask: [page.locator('section[id="history"]')],
-  });
+  await expectScreenshot(
+    page,
+    'create-origin-trial-stage-dialog',
+    {
+      mask: [page.locator('section[id="history"]')],
+    },
+    true
+  );
 
   // Click the origin trial stage option to prepare to create stage.
   await originTrialStageOption.click();
