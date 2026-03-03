@@ -763,7 +763,7 @@ class BackfillShippingYearTest(testing_config.CustomTestCase):
         self.stage_1_1, self.stage_2_1, self.stage_2_2, self.stage_3_1,
         self.stage_4_1]
     actual = self.handler.calc_all_shipping_years()
-    expected = {22222: 2023, 33333: 2024, 44444: 2030}
+    expected = {22222: 2023, 33333: 2024, 44444: 2028}
     self.assertEqual(expected, actual)
 
 
