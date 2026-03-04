@@ -60,7 +60,7 @@ describe('chromedash-wpt-eval-page', () => {
 
   it('shows skeletons while loading data', async () => {
     // Return a promise that doesn't resolve immediately to test loading state
-    csClientStub.getFeature.returns(new Promise(() => {}));
+    csClientStub.getFeature.returns(new Promise(resolve => setTimeout(resolve, 100)));
     const el = await fixture<ChromedashWPTEvalPage>(
       html`<chromedash-wpt-eval-page
         .featureId=${123}
@@ -306,7 +306,7 @@ describe('chromedash-wpt-eval-page', () => {
       expect(urlList[5].textContent).to.contain(explainerLinks[0]);
     });
 
-    it('renders explainer links row correctly with Optional badge and danger icon when links are missing and checked', async () => {
+    it('renders explainer links row correctly with Optional badge and info icon when links are missing and unchecked', async () => {
       csClientStub.getFeature.resolves({
         ...mockFeatureV1,
         explainer_links: [],
@@ -323,19 +323,19 @@ describe('chromedash-wpt-eval-page', () => {
       expect(items.length).to.equal(6);
 
       const explainerItem = items[5];
-      // includeExplainer defaults to true, so it should show danger icon if missing
+      // includeExplainer defaults to false, so it should show info icon if missing
       expect(explainerItem.querySelector('.success')).to.not.exist;
-      expect(explainerItem.querySelector('sl-icon[name="cancel_20px"].danger'))
-        .to.exist;
+      expect(explainerItem.querySelector('sl-icon[name="info_20px"]')).to.exist;
       expect(explainerItem.querySelector('sl-badge[variant="neutral"]')).to
         .exist;
       expect(explainerItem.querySelector('sl-badge')!.textContent).to.contain(
         'Optional'
       );
 
-      // Should show the descriptive "None provided" message
+      // Since includeExplainer is false, the list should not be rendered
       const urlList = el.shadowRoot!.querySelectorAll('.url-list');
-      expect(urlList[5].textContent).to.contain('None provided');
+      // Index 4 is WPT URLs. Index 5 (Explainers) should not exist.
+      expect(urlList.length).to.equal(5);
     });
 
     it('toggling the includeExplainer checkbox updates state and icons', async () => {
@@ -350,21 +350,20 @@ describe('chromedash-wpt-eval-page', () => {
       );
       await el.updateComplete;
 
-      expect(el.includeExplainer).to.be.true;
+      expect(el.includeExplainer).to.be.false;
       const items = el.shadowRoot!.querySelectorAll('.requirement-item');
-      expect(items[5].querySelector('sl-icon[name="x-circle-fill"].danger')).to
-        .exist;
+      expect(items[5].querySelector('sl-icon[name="info_20px"]')).to.exist;
 
       const checkbox = el.shadowRoot!.querySelector('sl-checkbox') as any;
       checkbox.click();
       await el.updateComplete;
       await new Promise(resolve => setTimeout(resolve, 0));
 
-      expect(el.includeExplainer).to.be.false;
+      expect(el.includeExplainer).to.be.true;
       expect(
         el
           .shadowRoot!.querySelectorAll('.requirement-item')[5]
-          .querySelector('sl-icon[name="info_20px"]')
+          .querySelector('sl-icon[name="cancel_20px"].danger')
       ).to.exist;
     });
 
@@ -549,7 +548,7 @@ describe('chromedash-wpt-eval-page', () => {
       // API called
       expect(
         csClientStub.generateWPTCoverageEvaluation
-      ).to.have.been.calledWith(99, true); // Default is true
+      ).to.have.been.calledWith(99, false); // Default is false
 
       // UI entered IN_PROGRESS state immediately (optimistic update)
       expect(el.feature?.ai_test_eval_run_status).to.equal(
@@ -562,7 +561,7 @@ describe('chromedash-wpt-eval-page', () => {
       expect(setIntervalSpy).to.have.been.called;
     });
 
-    it('passes includeExplainer=false to API when checkbox is unchecked', async () => {
+    it('passes includeExplainer=true to API when checkbox is checked', async () => {
       csClientStub.getFeature.resolves(mockFeatureV1);
       csClientStub.generateWPTCoverageEvaluation.resolves({});
 
@@ -573,7 +572,7 @@ describe('chromedash-wpt-eval-page', () => {
       );
       await el.updateComplete;
 
-      // Uncheck the checkbox
+      // Check the checkbox
       const checkbox = el.shadowRoot!.querySelector('sl-checkbox') as any;
       checkbox.click();
       await el.updateComplete;
@@ -586,7 +585,7 @@ describe('chromedash-wpt-eval-page', () => {
 
       expect(
         csClientStub.generateWPTCoverageEvaluation
-      ).to.have.been.calledWith(99, false);
+      ).to.have.been.calledWith(99, true);
     });
 
     it('renders IN_PROGRESS state when loaded from server', async () => {

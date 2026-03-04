@@ -306,7 +306,7 @@ export class ChromedashWPTEvalPage extends LitElement {
 
   // Milliseconds remaining before another run can be requested
   @state()
-  includeExplainer = true;
+  includeExplainer = false;
 
   @state()
   private _cooldownRemaining = 0;
