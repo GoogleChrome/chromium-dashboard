@@ -60,7 +60,9 @@ describe('chromedash-wpt-eval-page', () => {
 
   it('shows skeletons while loading data', async () => {
     // Return a promise that doesn't resolve immediately to test loading state
-    csClientStub.getFeature.returns(new Promise(resolve => setTimeout(resolve, 100)));
+    csClientStub.getFeature.returns(
+      new Promise(resolve => setTimeout(resolve, 100))
+    );
     const el = await fixture<ChromedashWPTEvalPage>(
       html`<chromedash-wpt-eval-page
         .featureId=${123}
