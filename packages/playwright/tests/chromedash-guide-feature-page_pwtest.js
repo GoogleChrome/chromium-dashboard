@@ -92,14 +92,7 @@ test('add an origin trial stage', async ({page}) => {
   const prepareToShipPanel = page.getByText('Prepare to ship');
   await prepareToShipPanel.scrollIntoViewIfNeeded();
 
-<<<<<<< HEAD
   await expectScreenshot(page, 'origin-trial-panels', {
-=======
-  // Move the mouse out of the way to prevent accidental hover states.
-  await page.mouse.move(0, 0);
-
-  await expect(page).toHaveScreenshot('origin-trial-panels.png', {
->>>>>>> main
     mask: [page.locator('section[id="history"]')],
   });
 });
