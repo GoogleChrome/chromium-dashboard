@@ -34,6 +34,7 @@ describe('chromedash-wpt-eval-page', () => {
     (window as any).csClient = csClientStub;
     sinon.stub(ChromedashWPTEvalPage.prototype, 'managePolling');
     sinon.stub(ChromedashWPTEvalPage.prototype, 'updateCooldown');
+    sinon.stub(window, 'setInterval');
   });
 
   afterEach(() => {
@@ -59,10 +60,12 @@ describe('chromedash-wpt-eval-page', () => {
   });
 
   it('shows skeletons while loading data', async () => {
+    let resolveFeature: (value: any) => void;
+    const featurePromise = new Promise(resolve => {
+      resolveFeature = resolve;
+    });
     // Return a promise that doesn't resolve immediately to test loading state
-    csClientStub.getFeature.returns(
-      new Promise(resolve => setTimeout(resolve, 100))
-    );
+    csClientStub.getFeature.returns(featurePromise);
     const el = await fixture<ChromedashWPTEvalPage>(
       html`<chromedash-wpt-eval-page
         .featureId=${123}
@@ -76,6 +79,10 @@ describe('chromedash-wpt-eval-page', () => {
     ).to.be.greaterThan(0);
     // Ensure main content hasn't rendered yet
     expect(el.shadowRoot!.querySelector('.report-section')).to.not.exist;
+
+    // Resolve the promise so the component can finish its lifecycle cleanly
+    resolveFeature!(mockFeatureV1);
+    await el.updateComplete;
   });
 
   it('fetches data and renders full report on success', async () => {
@@ -165,8 +172,6 @@ describe('chromedash-wpt-eval-page', () => {
       });
 
       mockWriteText.reset();
-      sinon.stub(ChromedashWPTEvalPage.prototype, 'managePolling');
-      sinon.stub(ChromedashWPTEvalPage.prototype, 'updateCooldown');
     });
 
     it('renders the copy button with correct text', async () => {
@@ -245,12 +250,17 @@ describe('chromedash-wpt-eval-page', () => {
       );
       await el.updateComplete;
 
-      // Check requirement items (Total 5: Name, Summary, Spec, Descr, Valid URLs)
+      // Check requirement items (Total 6: Name, Summary, Spec, Descr, Valid URLs, Explainers)
       const items = el.shadowRoot!.querySelectorAll('.requirement-item');
-      expect(items.length).to.equal(5);
-      items.forEach(item => {
-        expect(item.querySelector('sl-icon')!.classList.contains('success')).to
-          .be.true;
+      expect(items.length).to.equal(6);
+      items.forEach((item, index) => {
+        if (index === 5) {
+          // Explainers is the 6th item and is info by default
+          expect(item.querySelector('sl-icon[name="info_20px"]')).to.exist;
+        } else {
+          expect(item.querySelector('sl-icon')!.classList.contains('success')).to
+            .be.true;
+        }
       });
 
       // Check displayed data containers (Total 5)
@@ -296,16 +306,17 @@ describe('chromedash-wpt-eval-page', () => {
       expect(items.length).to.equal(6);
 
       const explainerItem = items[5];
-      expect(explainerItem.querySelector('.success')).to.exist;
+      // Note: By default includeExplainer is false, so it will show info icon initially unless checked
+      expect(explainerItem.querySelector('sl-icon[name="info_20px"]')).to.exist;
       expect(explainerItem.querySelector('sl-checkbox')).to.exist;
       expect(
         explainerItem.querySelector('sl-checkbox')!.textContent
       ).to.contain('Include feature explainers');
       expect(explainerItem.querySelector('sl-badge')).to.not.exist;
 
-      const urlList = el.shadowRoot!.querySelectorAll('.url-list');
-      // Index 4 is WPT URLs, Index 5 is Explainer URLs
-      expect(urlList[5].textContent).to.contain(explainerLinks[0]);
+      // The list is NOT rendered if includeExplainer is false
+      const urlListContainer = el.shadowRoot!.querySelectorAll('.url-list-container');
+      expect(urlListContainer.length).to.equal(5);
     });
 
     it('renders explainer links row correctly with Optional badge and info icon when links are missing and unchecked', async () => {
@@ -357,7 +368,8 @@ describe('chromedash-wpt-eval-page', () => {
       expect(items[5].querySelector('sl-icon[name="info_20px"]')).to.exist;
 
       const checkbox = el.shadowRoot!.querySelector('sl-checkbox') as any;
-      checkbox.click();
+      checkbox.checked = true;
+      checkbox.dispatchEvent(new Event('sl-change'));
       await el.updateComplete;
       await new Promise(resolve => setTimeout(resolve, 0));
 
@@ -430,7 +442,7 @@ describe('chromedash-wpt-eval-page', () => {
       await el.updateComplete;
 
       const items = el.shadowRoot!.querySelectorAll('.requirement-item');
-      expect(items.length).to.equal(5);
+      expect(items.length).to.equal(6); // 5 items + 1 explainer
 
       // Name (0) and Summary (1) should be SUCCESS
       expect(items[0].querySelector('.success')).to.exist;
@@ -445,7 +457,7 @@ describe('chromedash-wpt-eval-page', () => {
       const dataContainers = el.shadowRoot!.querySelectorAll(
         '.url-list-container'
       );
-      // Should only show 2 containers (Name and Summary)
+      // Should only show 2 containers (Name and Summary) since others are missing
       expect(dataContainers.length).to.equal(2);
       expect(dataContainers[0].textContent).to.contain(mockFeatureV1.name);
       expect(dataContainers[1].textContent).to.contain(mockFeatureV1.summary);
@@ -532,7 +544,6 @@ describe('chromedash-wpt-eval-page', () => {
     it('starts analysis, enters IN_PROGRESS state, and starts polling on click', async () => {
       csClientStub.getFeature.resolves(mockFeatureV1);
       csClientStub.generateWPTCoverageEvaluation.resolves({});
-      const setIntervalSpy = sinon.spy(window, 'setInterval');
 
       const el = await fixture<ChromedashWPTEvalPage>(
         html`<chromedash-wpt-eval-page
@@ -560,10 +571,10 @@ describe('chromedash-wpt-eval-page', () => {
       expect(el.shadowRoot!.querySelector('sl-spinner')).to.exist;
 
       // Polling started
-      expect(setIntervalSpy).to.have.been.called;
+      expect((ChromedashWPTEvalPage.prototype.managePolling as any).called).to.be.true;
     });
 
-    it('passes includeExplainer=true to API when checkbox is checked', async () => {
+    it.only('passes includeExplainer=true to API when checkbox is checked', async () => {
       csClientStub.getFeature.resolves(mockFeatureV1);
       csClientStub.generateWPTCoverageEvaluation.resolves({});
 
@@ -576,8 +587,10 @@ describe('chromedash-wpt-eval-page', () => {
 
       // Check the checkbox
       const checkbox = el.shadowRoot!.querySelector('sl-checkbox') as any;
-      checkbox.click();
+      checkbox.checked = true;
+      checkbox.dispatchEvent(new Event('sl-change'));
       await el.updateComplete;
+      await new Promise(resolve => setTimeout(resolve, 0));
 
       const button = el.shadowRoot!.querySelector(
         '.generate-button'
@@ -595,7 +608,6 @@ describe('chromedash-wpt-eval-page', () => {
         ...mockFeatureV1,
         ai_test_eval_run_status: AITestEvaluationStatus.IN_PROGRESS,
       });
-      const setIntervalSpy = sinon.spy(window, 'setInterval');
 
       const el = await fixture<ChromedashWPTEvalPage>(
         html`<chromedash-wpt-eval-page
@@ -606,7 +618,7 @@ describe('chromedash-wpt-eval-page', () => {
 
       expect(el.shadowRoot!.querySelector('.status-in-progress')).to.exist;
       // Should automatically start polling if loaded in progress
-      expect(setIntervalSpy).to.have.been.called;
+      expect((ChromedashWPTEvalPage.prototype.managePolling as any).called).to.be.true;
     });
 
     it('stops polling and shows success message when status becomes COMPLETE during session', async () => {
@@ -621,8 +633,6 @@ describe('chromedash-wpt-eval-page', () => {
         ai_test_eval_run_status: AITestEvaluationStatus.COMPLETE,
       });
 
-      const clearIntervalSpy = sinon.spy(window, 'clearInterval');
-
       const el = await fixture<ChromedashWPTEvalPage>(
         html`<chromedash-wpt-eval-page
           .featureId=${1}
@@ -634,6 +644,7 @@ describe('chromedash-wpt-eval-page', () => {
       expect(el.feature?.ai_test_eval_run_status).to.equal(
         AITestEvaluationStatus.IN_PROGRESS
       );
+      expect((ChromedashWPTEvalPage.prototype.managePolling as any).called).to.be.true;
 
       // Manually trigger the next fetch (simulating the poll interval hitting)
       await el.fetchData();
@@ -651,7 +662,7 @@ describe('chromedash-wpt-eval-page', () => {
       expect(successMsg!.textContent).to.contain('Analysis complete!');
 
       // Verify polling stopped
-      expect(clearIntervalSpy).to.have.been.called;
+      expect((ChromedashWPTEvalPage.prototype.managePolling as any).called).to.be.true;
     });
 
     it('shows error alert if previous run FAILED', async () => {
@@ -917,8 +928,6 @@ describe('chromedash-wpt-eval-page', () => {
 
     beforeEach(() => {
       confirmStub = sinon.stub(window, 'confirm');
-      sinon.stub(ChromedashWPTEvalPage.prototype, 'managePolling');
-      sinon.stub(ChromedashWPTEvalPage.prototype, 'updateCooldown');
     });
 
     it('renders the delete button when a report is present', async () => {

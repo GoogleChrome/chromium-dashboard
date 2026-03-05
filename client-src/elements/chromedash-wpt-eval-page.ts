@@ -323,35 +323,27 @@ export class ChromedashWPTEvalPage extends LitElement {
       this.loading = true;
     }
     try {
-      this.feature = await window.csClient.getFeature(this.featureId);
+      const feature = await window.csClient.getFeature(this.featureId);
+      if (!this.isConnected) return;
+      this.feature = feature;
       this.checkRequirements();
       this.managePolling();
       this.updateCooldown();
     } catch (error) {
+      if (!this.isConnected) return;
       showToastMessage(
         'Some errors occurred. Please refresh the page or try again later.'
       );
     } finally {
-      this.loading = false;
+      if (this.isConnected) {
+        this.loading = false;
+      }
     }
   }
 
   updated(changedProperties: Map<string | symbol, unknown>) {
     if (changedProperties.has('feature') && this.feature) {
       const currentReport = this.feature.ai_test_eval_report || null;
-
-      // Check if report changed AND we aren't already in the middle of the "changed" state
-      if (
-        currentReport &&
-        currentReport !== this._previousReportContent &&
-        !this._reportContentChanged
-      ) {
-        this._reportContentChanged = true;
-
-        setTimeout(() => {
-          this._reportContentChanged = false;
-        }, 100); // Small delay to allow CSS to register the class removal
-      }
       this._previousReportContent = currentReport;
     }
   }
@@ -476,7 +468,9 @@ export class ChromedashWPTEvalPage extends LitElement {
         this.featureId,
         this.includeExplainer
       );
+      if (!this.isConnected) return;
     } catch (e) {
+      if (!this.isConnected) return;
       showToastMessage('Failed to generate report. Please try again later.');
       this.fetchData();
     }
