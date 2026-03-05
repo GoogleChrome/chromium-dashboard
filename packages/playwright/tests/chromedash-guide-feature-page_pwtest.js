@@ -5,6 +5,7 @@ import {
   login,
   logout,
   createNewFeature,
+  expectScreenshot,
 } from './test_utils';
 
 test.beforeEach(async ({page}, testInfo) => {
@@ -48,12 +49,15 @@ test('add an origin trial stage', async ({page}) => {
   const originTrialStageOption = page.locator(
     'sl-select sl-option[value="150"]'
   );
-  await expect(originTrialStageOption).toBeVisible();
 
-  // Hover Origin trial stage option.
-  await originTrialStageOption.hover();
+  // Screenshot of this dialog.
+  await expectScreenshot(page, 'create-origin-trial-stage-dialog', {
+    mask: [page.locator('section[id="history"]')],
+  });
 
   // Click the origin trial stage option to prepare to create stage.
+  await expect(originTrialStageOption).toBeVisible();
+  await originTrialStageOption.hover();
   await originTrialStageOption.click();
 
   // Click the Create stage button to finally create the stage.
@@ -88,10 +92,7 @@ test('add an origin trial stage', async ({page}) => {
   const prepareToShipPanel = page.getByText('Prepare to ship');
   await prepareToShipPanel.scrollIntoViewIfNeeded();
 
-  // Move the mouse out of the way to prevent accidental hover states.
-  await page.mouse.move(0, 0);
-
-  await expect(page).toHaveScreenshot('origin-trial-panels.png', {
+  await expectScreenshot(page, 'origin-trial-panels', {
     mask: [page.locator('section[id="history"]')],
   });
 });
