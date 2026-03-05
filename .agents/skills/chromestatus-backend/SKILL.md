@@ -1,5 +1,5 @@
 ---
-name: backend
+name: chromestatus-backend
 description: Guidance for working on the Flask-based backend, NDB Datastore, and OpenAPI integrations in chromium-dashboard.
 ---
 
@@ -16,13 +16,13 @@ This skill provides context and guidelines for developing the backend of the `ch
 - `api/`: Contains Flask request handlers for various API endpoints.
 - `framework/`: Core infrastructure, including `basehandlers.py` and utility functions.
 - `internals/`: Business logic, search filters, and data processing.
-- `pages/`: Handlers for main application pages.
+- `pages/`: (LEGACY) Handlers for main application pages. Do not add new code here.
 - `openapi/`: OpenAPI specification file (`api.yaml`).
 - `gen/py/chromestatus_openapi/`: Auto-generated Python models from OpenAPI.
 
 ## Guidelines
 - **API Development**: Prefer adding new APIs via OpenAPI in `openapi/api.yaml`. Use `npm run openapi-backend` to regenerate models.
-- **Handlers**: Extend `basehandlers.py` classes for consistent permission checking and response handling.
+- **Handlers**: Extend `basehandlers.py` classes for consistent permission checking and response handling. Do not add new handlers to the legacy `pages/` directory.
 - **Datastore**: Use NDB models defined in `internals/models.py`. Ensure queries are optimized and use proper indexing (see `index.yaml`).
 - **Testing**: Python unit tests are located alongside the code (e.g., `*_test.py`). Run them using `npm test`.
 

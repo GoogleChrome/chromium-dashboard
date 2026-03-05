@@ -1,5 +1,5 @@
 ---
-name: frontend
+name: chromestatus-frontend
 description: Guidance for working on the Lit-based frontend, Shoelace widgets, and client-side routing in chromium-dashboard.
 ---
 
@@ -25,6 +25,7 @@ This skill provides context and guidelines for developing the frontend of the `c
 - **Icons**: Prefer Material Icons. If using Bootstrap icons via Shoelace, ensure they are copied to `static/shoelace/assets/icons`.
 - **API Interaction**: Use the client wrapper in `cs-client.js` or the OpenAPI context consumer for making server requests.
 - **Styling**: Use Lit's `css` tagged templates for component styles. Leverage variables from the design system where possible.
+- **Legacy Code**: Do not add new code or components to the legacy `pages/` directory on the backend, even if it contains old templates. All newer frontend logic should reside in `client-src/`.
 
 ## Common Tasks
 - **Adding a New Page**: Register the route in `chromedash-app.js` (within `setUpRoutes`) and create the corresponding Lit component.

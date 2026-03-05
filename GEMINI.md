@@ -25,12 +25,19 @@ The architecture consists of:
 - **Linting**: `npm run lint` runs Prettier, ESLint, and Lit-analyzer.
 - **OpenAPI**: `npm run openapi` generates frontend and backend code from `openapi/api.yaml`.
 
-## 3. Specialized Skills
+## 3. Project Rules
+
+- **Legacy Code**: Do not add new features or logic to the legacy `pages/` directory. This directory is deprecated and only maintained for existing functionality. Use `api/` for new backend endpoints and `client-src/elements/` for new frontend components.
+
+## 4. Specialized Skills
 
 Detailed architectural guidance and "how-to" guides for specific domains are available as **Gemini Skills**:
 
-- `backend`: Flask handlers, NDB interactions, and OpenAPI integration.
-- `frontend`: Lit web components, Shoelace widgets, and routing.
+- `chromestatus-adding-a-field`: How to add a new field to a feature across the entire stack (Data, API, and Frontend).
+- `chromestatus-backend`: Flask handlers, NDB interactions, and OpenAPI integration.
+- `chromestatus-frontend`: Lit web components, Shoelace widgets, and routing.
+- `chromestatus-ci-verification`: Local commands for linting, type checking, and testing to match CI.
+- `chromestatus-playwright-testing`: Guidance for running and updating Playwright end-to-end tests.
 
 ## 4. Updating the Knowledge Base
 
