@@ -3,7 +3,7 @@ Chrome Platform Status
 
 ### Mission
 
-[chromestatus.com](https://chromestatus.com/) is the official tool used for for tracking feature launches in Blink (the browser engine that powers Chrome and many other web browsers).  This tool guides feature owners through our [launch process](https://www.chromium.org/blink/launching-features/) and serves as a primary source for developer information that then ripples throughout the web developer ecosystem.
+[chromestatus.com](https://chromestatus.com/) is the official tool used for for tracking feature launches in Blink (the browser engine that powers Chrome and many other web browsers). This tool guides feature owners through our [launch process](https://www.chromium.org/blink/launching-features/) and serves as a primary source for developer information that then ripples throughout the web developer ecosystem.
 
 ### Get the code
 
@@ -100,6 +100,12 @@ the error log, but if the problem is a difference in some of the images, you
 should probably download the artifact `.zip` file containing all the differences.
 
 There is some additional information for developers in developer-documentation.md.
+
+### Gemini Code Assist
+
+This project is optimized for Gemini Code Assist. For detailed architectural context, local development tips, and specialized AI skills, please refer to:
+- [GEMINI.md](./GEMINI.md)
+- [AI Skills](./.agents/skills/)
 
 ### Origin Trials
 To test the functionality of this application locally that interacts with data from the Origin Trials API, an API key will need to be acquired. To do this, run the following command:
