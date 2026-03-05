@@ -258,8 +258,8 @@ describe('chromedash-wpt-eval-page', () => {
           // Explainers is the 6th item and is info by default
           expect(item.querySelector('sl-icon[name="info_20px"]')).to.exist;
         } else {
-          expect(item.querySelector('sl-icon')!.classList.contains('success')).to
-            .be.true;
+          expect(item.querySelector('sl-icon')!.classList.contains('success'))
+            .to.be.true;
         }
       });
 
@@ -315,7 +315,9 @@ describe('chromedash-wpt-eval-page', () => {
       expect(explainerItem.querySelector('sl-badge')).to.not.exist;
 
       // The list is NOT rendered if includeExplainer is false
-      const urlListContainer = el.shadowRoot!.querySelectorAll('.url-list-container');
+      const urlListContainer = el.shadowRoot!.querySelectorAll(
+        '.url-list-container'
+      );
       expect(urlListContainer.length).to.equal(5);
     });
 
@@ -571,7 +573,8 @@ describe('chromedash-wpt-eval-page', () => {
       expect(el.shadowRoot!.querySelector('sl-spinner')).to.exist;
 
       // Polling started
-      expect((ChromedashWPTEvalPage.prototype.managePolling as any).called).to.be.true;
+      expect((ChromedashWPTEvalPage.prototype.managePolling as any).called).to
+        .be.true;
     });
 
     it.only('passes includeExplainer=true to API when checkbox is checked', async () => {
@@ -618,7 +621,8 @@ describe('chromedash-wpt-eval-page', () => {
 
       expect(el.shadowRoot!.querySelector('.status-in-progress')).to.exist;
       // Should automatically start polling if loaded in progress
-      expect((ChromedashWPTEvalPage.prototype.managePolling as any).called).to.be.true;
+      expect((ChromedashWPTEvalPage.prototype.managePolling as any).called).to
+        .be.true;
     });
 
     it('stops polling and shows success message when status becomes COMPLETE during session', async () => {
@@ -644,7 +648,8 @@ describe('chromedash-wpt-eval-page', () => {
       expect(el.feature?.ai_test_eval_run_status).to.equal(
         AITestEvaluationStatus.IN_PROGRESS
       );
-      expect((ChromedashWPTEvalPage.prototype.managePolling as any).called).to.be.true;
+      expect((ChromedashWPTEvalPage.prototype.managePolling as any).called).to
+        .be.true;
 
       // Manually trigger the next fetch (simulating the poll interval hitting)
       await el.fetchData();
@@ -662,7 +667,8 @@ describe('chromedash-wpt-eval-page', () => {
       expect(successMsg!.textContent).to.contain('Analysis complete!');
 
       // Verify polling stopped
-      expect((ChromedashWPTEvalPage.prototype.managePolling as any).called).to.be.true;
+      expect((ChromedashWPTEvalPage.prototype.managePolling as any).called).to
+        .be.true;
     });
 
     it('shows error alert if previous run FAILED', async () => {
