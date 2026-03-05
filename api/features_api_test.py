@@ -22,6 +22,7 @@ import werkzeug.exceptions  # Flask HTTP stuff.
 from api import features_api
 from internals import core_enums
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
+from internals.data_types import CHANGED_FIELDS_LIST_TYPE
 from internals.review_models import Gate, Activity
 from internals import user_models
 from framework import rediscache
@@ -132,6 +133,16 @@ class FeaturesAPITestDelete(testing_config.CustomTestCase):
 
     revised_feature = FeatureEntry.get_by_id(self.feature_id)
     self.assertFalse(revised_feature.deleted)
+
+  def test_delete__clears_ai_content(self):
+    """Deleting a feature should clear any AI-generated content."""
+    self.feature_1.ai_test_eval_report = 'Some AI content'
+    self.feature_1.put()
+
+    self.check_delete_is_valid('admin@example.com')
+
+    revised_feature = FeatureEntry.get_by_id(self.feature_id)
+    self.assertIsNone(revised_feature.ai_test_eval_report)
 
 
 class FeaturesAPITest(testing_config.CustomTestCase):
@@ -511,6 +522,43 @@ class FeaturesAPITest(testing_config.CustomTestCase):
     with test_app.test_request_context(request_path):
       actual = self.handler.do_get(feature_id=self.feature_1_id)
     self.assertEqual('feature one', actual['name'])
+
+  @mock.patch('internals.notifier.notify_releasenotes_reviewers')
+  def test_maybe_reset_releasenotes_flags__reviewer(self, mock_notify):
+    """When a release notes reviewer edits a feature, we do not reset."""
+    self.feature_1.is_releasenotes_content_reviewed = True
+    changed_fields: CHANGED_FIELDS_LIST_TYPE = []
+    testing_config.sign_in('admin@example.com', 123567890)
+    self.handler._maybe_reset_releasenotes_flags(
+        self.feature_1, changed_fields)
+    self.assertEqual(changed_fields, [])
+    self.assertTrue(self.feature_1.is_releasenotes_content_reviewed)
+    mock_notify.assert_not_called()
+
+  @mock.patch('internals.notifier.notify_releasenotes_reviewers')
+  def test_maybe_reset_releasenotes_flags__unneeded(self, mock_notify):
+    """When a feature was not already reviewed, we do not reset."""
+    self.feature_1.is_releasenotes_content_reviewed = False
+    changed_fields: CHANGED_FIELDS_LIST_TYPE = []
+    testing_config.sign_out()
+    self.handler._maybe_reset_releasenotes_flags(
+        self.feature_1, changed_fields)
+    self.assertEqual(changed_fields, [])
+    self.assertFalse(self.feature_1.is_releasenotes_content_reviewed)
+    mock_notify.assert_not_called()
+
+  @mock.patch('internals.notifier.notify_releasenotes_reviewers')
+  def test_maybe_reset_releasenotes_flags__needed(self, mock_notify):
+    """When a feature was already reviewed, we reset and notify."""
+    self.feature_1.is_releasenotes_content_reviewed = True
+    changed_fields: CHANGED_FIELDS_LIST_TYPE = []
+    testing_config.sign_out()
+    self.handler._maybe_reset_releasenotes_flags(
+        self.feature_1, changed_fields)
+    self.assertEqual(
+        changed_fields, [('is_releasenotes_content_reviewed', True, False)])
+    self.assertFalse(self.feature_1.is_releasenotes_content_reviewed)
+    mock_notify.assert_called_once()
 
   def test_patch__valid(self):
     """PATCH request successful with valid input from user with permissions."""

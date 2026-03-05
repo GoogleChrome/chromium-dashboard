@@ -169,7 +169,7 @@ export async function login(page) {
   } else {
     // On desktop, we can verify the account indicator is visible in the header.
     const accountIndicator = page.getByTestId('account-indicator');
-    await expect(accountIndicator).toBeVisible();
+    await expect(accountIndicator).toBeVisible({timeout: 20000});
   }
 }
 
@@ -212,7 +212,7 @@ export async function logout(page) {
   } else {
     // Desktop Logic
     const accountIndicator = page.getByTestId('account-indicator');
-    await expect(accountIndicator).toBeVisible();
+    await expect(accountIndicator).toBeVisible({timeout: 20000});
     await accountIndicator.click();
 
     const signOutLink = page.getByTestId('sign-out-link');

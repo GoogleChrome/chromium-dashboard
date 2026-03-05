@@ -30,7 +30,7 @@ class GeminiClient:
   handling API key configuration and simplifying content generation requests.
   """
 
-  GEMINI_MODEL = 'gemini-3-pro-preview'
+  GEMINI_MODEL = 'gemini-3.1-pro-preview'
 
   # Retry configuration.
   MAX_RETRIES = 3
@@ -66,6 +66,26 @@ class GeminiClient:
     """Closes the client connection upon object deletion."""
     if hasattr(self, 'client') and self.client:
       self.client.close()
+
+  @utils.retry(MAX_RETRIES, delay=RETRY_BACKOFF_SECONDS)
+  def prompt_exceeds_input_token_limit(self, prompt: str) -> bool:
+    """Checks the token size of a prompt and checks if it exceeds the input
+       limit of the Gemini model.
+
+    Args:
+      prompt: The input prompt string.
+
+    Returns:
+      Boolean value of whether the input token limit is exceedded.
+    """
+    response = self.client.models.count_tokens(
+      model=GeminiClient.GEMINI_MODEL,
+      contents=prompt
+    )
+    model_info = self.client.models.get(model=self.GEMINI_MODEL)
+    logging.info(f'Prompt token count: {response.total_tokens}')
+    logging.info(f'Model\'s context limit token count: {model_info.input_token_limit}')
+    return response.total_tokens > model_info.input_token_limit
 
   @utils.retry(MAX_RETRIES, delay=RETRY_BACKOFF_SECONDS)
   def get_response(self, prompt: str) -> str:

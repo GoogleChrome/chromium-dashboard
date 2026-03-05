@@ -131,9 +131,22 @@ class LinkTest(testing_config.CustomTestCase):
         },
     )
 
-  def test_feature_changed_add_and_remove_url(self):
+  @mock.patch('internals.link_helpers.Link.parse', autospec=True)
+  def test_feature_changed_add_and_remove_url(self, mock_parse):
     url = "https://github.com/GoogleChrome/chromium-dashboard/issues/999"
     query = FeatureLinks.query(FeatureLinks.url == url)
+
+    # Define behavior for the mock
+    def side_effect(link_instance):
+      link_instance.information = {
+          "title": "Comments field is incorrectly escaped",
+          "labels": []
+      }
+      link_instance.type = LINK_TYPE_GITHUB_ISSUE
+      link_instance.is_error = False
+      link_instance.http_error_code = None
+
+    mock_parse.side_effect = side_effect
 
     changed_fields = [
         ('bug_url', None, url),
@@ -142,6 +155,10 @@ class LinkTest(testing_config.CustomTestCase):
 
     # add two same links in a feature fields
     self.mock_user_change_fields(changed_fields)
+
+    # Assert that parse was actually called
+    self.assertTrue(mock_parse.called)
+
     link = query.get()
     self.assertEqual(link.url, url)
     self.assertIn(self.feature_id, link.feature_ids)
@@ -165,12 +182,21 @@ class LinkTest(testing_config.CustomTestCase):
     self.assertIsNone(link)
 
   @mock.patch('logging.error')
-  def test_feature_changed_invalid_url(self, mock_error):
+  @mock.patch('internals.link_helpers.Link.parse', autospec=True)
+  def test_feature_changed_invalid_url(self, mock_parse, mock_error):
     url = "https://github.com/GoogleChrome/chromium-dashboard/issues/10000000"
     query = FeatureLinks.query(FeatureLinks.url == url)
     changed_fields = [
         ('bug_url', None, url),
     ]
+
+    # Define behavior for the mock to simulate an error
+    def side_effect(link_instance):
+      link_instance.is_error = True
+      link_instance.http_error_code = 404
+      link_instance.information = None
+
+    mock_parse.side_effect = side_effect
 
     # add invalid url to feature
     self.mock_user_change_fields(changed_fields)
@@ -304,9 +330,18 @@ class LinkTest(testing_config.CustomTestCase):
       FeatureEntry.get_by_id(self.feature_id).ff_views_link_result, None
     )
 
-  def test_features_with_same_link(self):
+  @mock.patch('internals.link_helpers.Link.parse', autospec=True)
+  def test_features_with_same_link(self, mock_parse):
     url = "https://github.com/GoogleChrome/chromium-dashboard/issues/999"
     query = FeatureLinks.query(FeatureLinks.url == url)
+
+    # Simple success mock
+    def side_effect(link_instance):
+      link_instance.information = {"title": "Mock Title"}
+      link_instance.type = LINK_TYPE_GITHUB_ISSUE
+      link_instance.is_error = False
+    mock_parse.side_effect = side_effect
+
     changed_fields = [
         ('bug_url', None, url),
     ]
@@ -326,7 +361,23 @@ class LinkTest(testing_config.CustomTestCase):
     self.assertNotIn(self.feature_id, link.feature_ids)
     self.assertIn(self.feature2_id, link.feature_ids)
 
-  def test_update_all_feature_links(self):
+  @mock.patch('internals.link_helpers.Link.parse', autospec=True)
+  def test_update_all_feature_links(self, mock_parse):
+    def side_effect(link_instance):
+      if 'issues/999' in link_instance.url:
+        link_instance.type = LINK_TYPE_WEB
+        link_instance.information = {'title': 'Changed Type'}
+        link_instance.is_error = False
+      elif 'error' in link_instance.url or 'xxx' in link_instance.url:
+        link_instance.is_error = True
+        link_instance.http_error_code = 404
+      else:
+        link_instance.type = LINK_TYPE_WEB
+        link_instance.information = {'title': 'Web Page'}
+        link_instance.is_error = False
+
+    mock_parse.side_effect = side_effect
+
     feature_links = [
         # not stale feature link
         FeatureLinks(

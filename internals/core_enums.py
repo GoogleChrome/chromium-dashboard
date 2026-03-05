@@ -28,6 +28,12 @@ ENABLED_FEATURES_FILE_URL = 'https://chromium.googlesource.com/chromium/src/+/ma
 GRACE_PERIOD_FILE = 'https://chromium.googlesource.com/chromium/src/+/main/third_party/blink/common/origin_trials/manual_completion_origin_trial_features.cc?format=TEXT'
 CONTENT_FEATURES_FILE = 'https://chromium.googlesource.com/chromium/src/+/main/content/public/common/content_features.cc?format=TEXT'
 
+# Email contacts
+BLINK_DEV_EMAIL = 'blink-dev@chromium.org'
+CBE_ESCLATION_EMAIL = 'cbe-releasenotes@google.com'
+OT_SUPPORT_EMAIL = 'origin-trials-support@google.com'
+STAGING_EMAIL = 'jrobbins-test@googlegroups.com'
+WEBSTATUS_EMAIL = 'webstatus@google.com'
 
 # NOTE: The enum mapping in this file needs to be consistent with
 # chromium-dashboard/client-src/elements/form-field-enums.js.
@@ -824,6 +830,7 @@ class AITestEvaluationStatus(int, Enum):
   COMPLETE = 1
   IN_PROGRESS = 2
   FAILED = 3
+  DELETED = 4
 
 
 def convert_enum_int_to_string(property_name, value):

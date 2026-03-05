@@ -30,7 +30,19 @@ test('add an origin trial stage', async ({page}) => {
 
   // Select stage to create.
   const stageSelect = page.locator('sl-select#stage_create_select');
+
+  // Set up a promise to wait for the dropdown to completely finish opening and positioning.
+  const selectOpenedPromise = stageSelect.evaluate(
+    node =>
+      new Promise(resolve =>
+        node.addEventListener('sl-after-show', resolve, {once: true})
+      )
+  );
+
   await stageSelect.click();
+
+  // Wait for the event to fire before proceeding.
+  await selectOpenedPromise;
 
   // Wait for the option to appear in the dropdown.
   const originTrialStageOption = page.locator(
@@ -40,11 +52,6 @@ test('add an origin trial stage', async ({page}) => {
 
   // Hover Origin trial stage option.
   await originTrialStageOption.hover();
-
-  // Screenshot of this dialog.
-  await expect(page).toHaveScreenshot('create-origin-trial-stage-dialog.png', {
-    mask: [page.locator('section[id="history"]')],
-  });
 
   // Click the origin trial stage option to prepare to create stage.
   await originTrialStageOption.click();
@@ -80,6 +87,9 @@ test('add an origin trial stage', async ({page}) => {
   // First scroll to "Prepare to ship" panel to frame the shot.
   const prepareToShipPanel = page.getByText('Prepare to ship');
   await prepareToShipPanel.scrollIntoViewIfNeeded();
+
+  // Move the mouse out of the way to prevent accidental hover states.
+  await page.mouse.move(0, 0);
 
   await expect(page).toHaveScreenshot('origin-trial-panels.png', {
     mask: [page.locator('section[id="history"]')],

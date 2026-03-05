@@ -156,7 +156,15 @@ api_routes: list[Route] = [
           intents_api.IntentsAPI),
     Route(f'{API_BASE}/features/<int:feature_id>/<int:stage_id>/<int:gate_id>/intent',
           intents_api.IntentsAPI),
-    Route(f'{API_BASE}/features/generate-wpt-coverage-evaluation',
+    Route(f'{API_BASE}/features/<int:feature_id>/wpt-coverage-analysis',
+          wpt_coverage_api.WPTCoverageAPI),
+    # TODO(suzyliu): Remove the "delete" route after the
+    # unified route had landed.
+    Route(f'{API_BASE}/features/wpt-coverage-analysis/<int:feature_id>/delete',
+          wpt_coverage_api.WPTCoverageAPI),
+    # TODO(suzyliu): Remove the "generate-wpt-coverage-analysis" route after the
+    # unified route had landed.
+    Route(f'{API_BASE}/features/generate-wpt-coverage-analysis',
           wpt_coverage_api.WPTCoverageAPI),
     Route(f'{API_BASE}/features/shipping',
           shipping_features_api.ShippingFeaturesAPI),
@@ -218,7 +226,12 @@ spa_page_routes = [
   Route('/newfeatures'),
   Route('/feature/<int:feature_id>'),
   Route('/feature/<int:feature_id>/activity'),
-  Route('/feature/<int:feature_id>/ai-coverage-evaluation'),
+  Route('/feature/<int:feature_id>/ai-coverage-analysis',
+        defaults={'require_edit_feature': True}),
+  # TODO(DanielRyanSmith): Remove the "-evaluation" route after the
+  # "-analysis" route had landed.
+  Route('/feature/<int:feature_id>/ai-coverage-evaluation',
+        defaults={'require_edit_feature': True}),
   Route('/guide/new', guide.FeatureCreateHandler,
       defaults={'require_create_feature': True}),
   Route('/guide/enterprise/new', guide.EnterpriseFeatureCreateHandler,
@@ -325,6 +338,8 @@ internals_routes: list[Route] = [
         maintenance_scripts.GenerateShippingFeaturesFile),
   Route('/cron/reset_stale_shipping_milestones',
         maintenance_scripts.ResetStaleShippingMilestones),
+  Route('/cron/delete_old_wpt_coverage_report',
+        maintenance_scripts.DeleteWPTCoverageReport),
 
   Route('/admin/find_stop_words', search_fulltext.FindStopWords),
 
@@ -350,7 +365,7 @@ internals_routes: list[Route] = [
   Route('/tasks/email-intent-to-blink-dev', notifier.IntentToBlinkDevHandler),
   Route('/tasks/email-reset-shipping-milestones',
         notifier.ResetShippingMilestonesEmailHandler),
-  Route('/tasks/generate-wpt-coverage-evaluation',
+  Route('/tasks/generate-wpt-coverage-analysis',
         gemini_helpers.GenerateWPTCoverageEvalReportHandler),
 
   # OT process reminder emails

@@ -1,4 +1,4 @@
-import {html, fixture, expect, nextFrame, oneEvent} from '@open-wc/testing';
+import {html, fixture, expect, nextFrame} from '@open-wc/testing';
 import sinon from 'sinon';
 import './chromedash-wpt-eval-page.js';
 import {ChromedashWPTEvalPage} from './chromedash-wpt-eval-page.js';
@@ -9,6 +9,7 @@ describe('chromedash-wpt-eval-page', () => {
   let csClientStub: {
     getFeature: sinon.SinonStub;
     generateWPTCoverageEvaluation: sinon.SinonStub;
+    deleteWPTCoverageEvaluation: sinon.SinonStub;
   };
 
   // Sample feature data for testing
@@ -20,6 +21,7 @@ describe('chromedash-wpt-eval-page', () => {
     wpt_descr: 'Tests are here: https://wpt.fyi/results/feature/test.html',
     ai_test_eval_report: '# Report Title\n\nReport content goes here.',
     ai_test_eval_run_status: null,
+    confidential: false,
   };
 
   beforeEach(() => {
@@ -27,6 +29,7 @@ describe('chromedash-wpt-eval-page', () => {
     csClientStub = {
       getFeature: sinon.stub(),
       generateWPTCoverageEvaluation: sinon.stub(),
+      deleteWPTCoverageEvaluation: sinon.stub(),
     };
     (window as any).csClient = csClientStub;
   });
@@ -43,7 +46,7 @@ describe('chromedash-wpt-eval-page', () => {
 
     expect(el.shadowRoot!.querySelector('h1')).to.exist;
     expect(el.shadowRoot!.textContent).to.contain(
-      'AI-powered WPT coverage evaluation'
+      'AI-powered WPT coverage analysis'
     );
     expect(el.shadowRoot!.querySelector('.experimental-tag')).to.exist;
     expect(el.shadowRoot!.querySelector('sl-alert')).to.exist;
@@ -86,9 +89,130 @@ describe('chromedash-wpt-eval-page', () => {
     // Check Report Rendering
     const reportSection = el.shadowRoot!.querySelector('.report-section');
     expect(reportSection).to.exist;
-    expect(reportSection!.querySelector('h1')!.textContent).to.equal(
-      'Report Title'
+
+    // Check Header Structure
+    const header = reportSection!.querySelector('.report-header');
+    expect(header).to.exist;
+    expect(header!.querySelector('h2')!.textContent).to.equal(
+      'Analysis Results'
     );
+
+    // Check Content
+    const content = reportSection!.querySelector('.report-content');
+    expect(content!.querySelector('h1')!.textContent).to.equal('Report Title');
+  });
+
+  it('sanitizes HTML in the report to prevent XSS', async () => {
+    const maliciousContent = `# Safe Title
+     <script>window.alert("XSS")</script>
+     <img src="x" onerror="window.alert('img XSS')">
+     <a href="javascript:alert('link XSS')">Bad Link</a>
+    `;
+
+    csClientStub.getFeature.resolves({
+      ...mockFeatureV1,
+      ai_test_eval_report: maliciousContent,
+    });
+
+    const el = await fixture<ChromedashWPTEvalPage>(
+      html`<chromedash-wpt-eval-page
+        .featureId=${123}
+      ></chromedash-wpt-eval-page>`
+    );
+    await el.updateComplete;
+
+    const content = el.shadowRoot!.querySelector('.report-content');
+    expect(content).to.exist;
+
+    // The title should still exist
+    expect(content!.querySelector('h1')!.textContent).to.equal('Safe Title');
+
+    // The script tag should be completely removed
+    expect(content!.querySelector('script')).to.not.exist;
+
+    // The img tag might exist (depending on config), but the onerror attribute must be gone
+    const img = content!.querySelector('img');
+    if (img) {
+      expect(img.hasAttribute('onerror')).to.be.false;
+    }
+
+    // The link should not have a javascript: href
+    const link = content!.querySelector('a');
+    if (link) {
+      expect(link.href).to.not.contain('javascript:');
+    }
+  });
+
+  describe('Report Copy Functionality', () => {
+    // Mock the clipboard API
+    const mockWriteText = sinon.stub();
+
+    beforeEach(() => {
+      // Define a mock clipboard on the navigator instance
+      Object.defineProperty(navigator, 'clipboard', {
+        value: {
+          writeText: mockWriteText,
+        },
+        configurable: true,
+        writable: true,
+      });
+
+      mockWriteText.reset();
+    });
+
+    it('renders the copy button with correct text', async () => {
+      csClientStub.getFeature.resolves(mockFeatureV1);
+      const el = await fixture<ChromedashWPTEvalPage>(
+        html`<chromedash-wpt-eval-page
+          .featureId=${1}
+        ></chromedash-wpt-eval-page>`
+      );
+      await el.updateComplete;
+
+      const copyButton = el.shadowRoot!.querySelector(
+        'sl-button[title="Copy report to clipboard"]'
+      );
+      expect(copyButton).to.exist;
+      expect(copyButton!.textContent).to.contain('Copy Report');
+      expect(copyButton!.getAttribute('title')).to.equal(
+        'Copy report to clipboard'
+      );
+    });
+
+    it('copies report content to clipboard when clicked', async () => {
+      csClientStub.getFeature.resolves(mockFeatureV1);
+      const el = await fixture<ChromedashWPTEvalPage>(
+        html`<chromedash-wpt-eval-page
+          .featureId=${1}
+        ></chromedash-wpt-eval-page>`
+      );
+      await el.updateComplete;
+
+      const copyButton = el.shadowRoot!.querySelector(
+        'sl-button[title="Copy report to clipboard"]'
+      ) as HTMLElement;
+      copyButton.click();
+
+      expect(mockWriteText).to.have.been.calledWith(
+        mockFeatureV1.ai_test_eval_report
+      );
+    });
+
+    it('does not render copy button if no report exists', async () => {
+      csClientStub.getFeature.resolves({
+        ...mockFeatureV1,
+        ai_test_eval_report: null,
+      });
+      const el = await fixture<ChromedashWPTEvalPage>(
+        html`<chromedash-wpt-eval-page
+          .featureId=${1}
+        ></chromedash-wpt-eval-page>`
+      );
+      await el.updateComplete;
+
+      const reportSection = el.shadowRoot!.querySelector('.report-section');
+      expect(reportSection).to.not.exist;
+    });
   });
 
   describe('Prerequisites Checklist', () => {
@@ -142,6 +266,51 @@ describe('chromedash-wpt-eval-page', () => {
 
       // Verify Valid URLs (Index 4)
       expect(dataContainers[4].querySelector('ul')).to.exist;
+    });
+    it('annotates directory WPT URLs but not individual test file URLs', async () => {
+      const dirUrl = 'https://wpt.fyi/results/css';
+      const fileUrl = 'https://wpt.fyi/results/dom/historical.html';
+
+      csClientStub.getFeature.resolves({
+        ...mockFeatureV1,
+        wpt_descr: `Relevant tests:\n${dirUrl}\n${fileUrl}`,
+      });
+
+      const el = await fixture<ChromedashWPTEvalPage>(
+        html`<chromedash-wpt-eval-page
+          .featureId=${1}
+        ></chromedash-wpt-eval-page>`
+      );
+
+      await el.updateComplete;
+
+      // Get all URL list items
+      const listItems = Array.from(
+        el.shadowRoot!.querySelectorAll<HTMLLIElement>(
+          '.url-list-container ul.url-list li'
+        )
+      );
+
+      // Find the list items by URL text
+      const dirItem = listItems.find(li => li.textContent?.includes(dirUrl));
+      const fileItem = listItems.find(li => li.textContent?.includes(fileUrl));
+
+      expect(dirItem, 'directory URL item should exist').to.exist;
+      expect(fileItem, 'file URL item should exist').to.exist;
+
+      // Directory URL should be annotated
+      expect(
+        dirItem!.querySelector('.dir-note'),
+        'directory URL should show annotation'
+      ).to.exist;
+      expect(dirItem!.textContent).to.contain('(all tests in directory)');
+
+      // File URL should NOT be annotated
+      expect(
+        fileItem!.querySelector('.dir-note'),
+        'file URL should not show annotation'
+      ).to.not.exist;
+      expect(fileItem!.textContent).to.not.contain('(all tests in directory)');
     });
 
     it('shows Name/Summary as success, but other checks as danger when optional data is missing', async () => {
@@ -258,7 +427,7 @@ describe('chromedash-wpt-eval-page', () => {
       );
     });
 
-    it('starts evaluation, enters IN_PROGRESS state, and starts polling on click', async () => {
+    it('starts analysis, enters IN_PROGRESS state, and starts polling on click', async () => {
       csClientStub.getFeature.resolves(mockFeatureV1);
       csClientStub.generateWPTCoverageEvaluation.resolves({});
       const setIntervalSpy = sinon.spy(window, 'setInterval');
@@ -350,7 +519,7 @@ describe('chromedash-wpt-eval-page', () => {
       // Check UI for success message
       const successMsg = el.shadowRoot!.querySelector('.status-complete');
       expect(successMsg).to.exist;
-      expect(successMsg!.textContent).to.contain('Evaluation complete!');
+      expect(successMsg!.textContent).to.contain('Analysis complete!');
 
       // Verify polling stopped
       expect(clearIntervalSpy).to.have.been.called;
@@ -371,7 +540,7 @@ describe('chromedash-wpt-eval-page', () => {
 
       const alert = el.shadowRoot!.querySelector('sl-alert[variant="danger"]');
       expect(alert).to.exist;
-      expect(alert!.textContent).to.contain('previous evaluation run failed');
+      expect(alert!.textContent).to.contain('previous analysis run failed');
 
       // Button should still be visible to try again
       expect(el.shadowRoot!.querySelector('.generate-button')).to.exist;
@@ -405,7 +574,7 @@ describe('chromedash-wpt-eval-page', () => {
       expect(button).to.exist;
       expect(button).to.not.have.attribute('disabled');
       expect(button!.textContent?.trim()).to.equal(
-        'Retry evaluation (Process timed out)'
+        'Retry analysis (Process timed out)'
       );
 
       // Help text should exist
@@ -522,6 +691,167 @@ describe('chromedash-wpt-eval-page', () => {
       expect(button).to.exist;
       expect(button).to.not.have.attribute('disabled');
       expect(message).to.not.exist;
+    });
+
+    it('persists cooldown even after deleting a report within the cooldown window', async () => {
+      const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+      const featureInCooldown = {
+        ...mockFeatureV1,
+        ai_test_eval_run_status: AITestEvaluationStatus.COMPLETE,
+        ai_test_eval_status_timestamp: fiveMinutesAgo,
+      };
+
+      // 1. Initial load is in cooldown.
+      csClientStub.getFeature.resolves(featureInCooldown);
+      const el = await fixture<ChromedashWPTEvalPage>(
+        html`<chromedash-wpt-eval-page
+          .featureId=${1}
+        ></chromedash-wpt-eval-page>`
+      );
+      await el.updateComplete;
+
+      // Verify cooldown is active.
+      let button = el.shadowRoot!.querySelector('.generate-button');
+      let message = el.shadowRoot!.querySelector('.cooldown-message');
+      expect(button, 'Button should initially be disabled').to.have.attribute(
+        'disabled'
+      );
+      expect(message, 'Cooldown message should initially be visible').to.exist;
+
+      // 2. User deletes the report.
+      const confirmStub = sinon.stub(window, 'confirm').returns(true);
+      csClientStub.deleteWPTCoverageEvaluation.resolves({});
+      // Subsequent fetchData call will get the same data, but we'll pretend the report is gone.
+      csClientStub.getFeature.resolves({
+        ...featureInCooldown,
+        ai_test_eval_report: null,
+      });
+
+      const deleteButton = el.shadowRoot!.querySelector(
+        'sl-button[title="Delete report"]'
+      ) as HTMLElement;
+      deleteButton.click();
+      await nextFrame(); // Let delete operation process
+      await el.updateComplete; // Let UI update after fetchData
+
+      // 3. Verify cooldown is STILL active.
+      button = el.shadowRoot!.querySelector('.generate-button');
+      message = el.shadowRoot!.querySelector('.cooldown-message');
+      expect(
+        button,
+        'Button should still be disabled after deletion'
+      ).to.have.attribute('disabled');
+      expect(message, 'Cooldown message should still be visible after deletion')
+        .to.exist;
+      expect(message!.textContent).to.contain('Available in');
+
+      confirmStub.restore();
+    });
+  });
+
+  describe('Confidentiality Logic', () => {
+    it('disables button and shows specific message if feature is confidential', async () => {
+      csClientStub.getFeature.resolves({
+        ...mockFeatureV1,
+        confidential: true,
+      });
+
+      const el = await fixture<ChromedashWPTEvalPage>(
+        html`<chromedash-wpt-eval-page
+          .featureId=${1}
+        ></chromedash-wpt-eval-page>`
+      );
+      await el.updateComplete;
+
+      const button = el.shadowRoot!.querySelector('.generate-button');
+      const helpText = el.shadowRoot!.querySelector('.help-text');
+      const cooldownMsg = el.shadowRoot!.querySelector('.cooldown-message');
+
+      expect(button).to.exist;
+      expect(button).to.have.attribute('disabled');
+
+      expect(helpText).to.exist;
+      expect(helpText!.textContent).to.contain(
+        'This feature is set to "confidential"'
+      );
+      expect(helpText!.textContent).to.contain(
+        'cannot be sent to Gemini for evaluation'
+      );
+
+      // Cooldown message should NOT be shown even if no cooldown exists.
+      expect(cooldownMsg).to.not.exist;
+    });
+  });
+
+  describe('Report Deletion Functionality', () => {
+    let confirmStub: sinon.SinonStub;
+
+    beforeEach(() => {
+      confirmStub = sinon.stub(window, 'confirm');
+    });
+
+    it('renders the delete button when a report is present', async () => {
+      csClientStub.getFeature.resolves(mockFeatureV1); // Has a report by default.
+      const el = await fixture<ChromedashWPTEvalPage>(
+        html`<chromedash-wpt-eval-page
+          .featureId=${1}
+        ></chromedash-wpt-eval-page>`
+      );
+      await el.updateComplete;
+
+      const deleteButton = el.shadowRoot!.querySelector(
+        'sl-button[title="Delete report"]'
+      );
+      expect(deleteButton).to.exist;
+      expect(deleteButton!.textContent).to.contain('Delete Report');
+    });
+
+    it('does not render the delete button if no report exists', async () => {
+      csClientStub.getFeature.resolves({
+        ...mockFeatureV1,
+        ai_test_eval_report: null,
+      });
+      const el = await fixture<ChromedashWPTEvalPage>(
+        html`<chromedash-wpt-eval-page
+          .featureId=${1}
+        ></chromedash-wpt-eval-page>`
+      );
+      await el.updateComplete;
+
+      const deleteButton = el.shadowRoot!.querySelector(
+        'sl-button[title="Delete report"]'
+      );
+      expect(deleteButton).to.not.exist;
+    });
+
+    it('calls delete API and refetches data when user confirms', async () => {
+      csClientStub.getFeature.resolves(mockFeatureV1);
+      csClientStub.deleteWPTCoverageEvaluation.resolves({});
+      confirmStub.returns(true); // User clicks "OK"
+
+      const el = await fixture<ChromedashWPTEvalPage>(
+        html`<chromedash-wpt-eval-page
+          .featureId=${12345}
+        ></chromedash-wpt-eval-page>`
+      );
+      await el.updateComplete;
+
+      const deleteButton = el.shadowRoot!.querySelector(
+        'sl-button[title="Delete report"]'
+      ) as HTMLElement;
+      deleteButton.click();
+
+      // Give time for the async operation to complete.
+      await nextFrame();
+
+      expect(confirmStub).to.have.been.calledOnce;
+      expect(csClientStub.deleteWPTCoverageEvaluation).to.have.been.calledWith(
+        12345
+      );
+
+      // It should call getFeature again to refresh the data.
+      // Called once on load, and a second time after deletion.
+      expect(csClientStub.getFeature).to.have.been.calledTwice;
     });
   });
 });

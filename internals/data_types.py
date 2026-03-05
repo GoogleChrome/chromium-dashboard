@@ -289,7 +289,7 @@ class VerboseFeatureDict(TypedDict):
   resources: FeatureDictInnerResourceInfo
   comments: str | None  # feature_notes
 
-  # AI evaluation fields
+  # AI WPT analysis fields
   ai_test_eval_report: str | None
   ai_test_eval_run_status: int | None
   ai_test_eval_status_timestamp: str | None

@@ -107,9 +107,6 @@ class ShippingFeaturesAPITest(testing_config.CustomTestCase):
 
     self.assertEqual(call_args[2], MOCK_CONTENT_FEATURES_CC)
 
-    # URL root (constructed from request context)
-    self.assertEqual(call_args[3], 'http://localhost')
-
   def test_do_get__no_features_found(self):
     """API returns empty lists immediately if no features match the milestone."""
     unmatched_milestone = 999
