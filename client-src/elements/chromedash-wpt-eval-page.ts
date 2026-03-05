@@ -339,10 +339,15 @@ export class ChromedashWPTEvalPage extends LitElement {
   updated(changedProperties: Map<string | symbol, unknown>) {
     if (changedProperties.has('feature') && this.feature) {
       const currentReport = this.feature.ai_test_eval_report || null;
-      // Check if report content has actually changed
-      if (currentReport && currentReport !== this._previousReportContent) {
+
+      // Check if report changed AND we aren't already in the middle of the "changed" state
+      if (
+        currentReport &&
+        currentReport !== this._previousReportContent &&
+        !this._reportContentChanged
+      ) {
         this._reportContentChanged = true;
-        // Reset the animation trigger after a short delay
+
         setTimeout(() => {
           this._reportContentChanged = false;
         }, 100); // Small delay to allow CSS to register the class removal
