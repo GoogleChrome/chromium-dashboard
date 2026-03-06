@@ -344,6 +344,18 @@ export class ChromedashWPTEvalPage extends LitElement {
   updated(changedProperties: Map<string | symbol, unknown>) {
     if (changedProperties.has('feature') && this.feature) {
       const currentReport = this.feature.ai_test_eval_report || null;
+
+      // 1. Detect if the content actually changed
+      if (currentReport && currentReport !== this._previousReportContent) {
+        this._reportContentChanged = true;
+
+        // 2. Schedule the reset.2
+        // This is safe because it happens in a macro-task (setTimeout),
+        // after the current render is finished.
+        setTimeout(() => {
+          this._reportContentChanged = false;
+        }, 100);
+      }
       this._previousReportContent = currentReport;
     }
   }
