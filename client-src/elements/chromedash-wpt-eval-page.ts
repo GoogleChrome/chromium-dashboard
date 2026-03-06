@@ -341,7 +341,7 @@ export class ChromedashWPTEvalPage extends LitElement {
     }
   }
 
-  willUpdate(changedProperties: Map<string | symbol, unknown>) {
+  updated(changedProperties: Map<string | symbol, unknown>) {
     if (changedProperties.has('feature') && this.feature) {
       const currentReport = this.feature.ai_test_eval_report || null;
 
