@@ -172,7 +172,7 @@ export class ChromedashGuideEditallPage extends LitElement {
   }
 
   handleCancelClick() {
-    window.location.href = `/feature/${this.featureId}`;
+    window.location.href = this.getNextPage();
   }
 
   renderSkeletons() {
@@ -201,6 +201,10 @@ export class ChromedashGuideEditallPage extends LitElement {
   }
 
   getNextPage() {
+    const params = new URLSearchParams(window.location.search);
+    if (params.has("next")) {
+      return params.get("next");
+    }
     return `/feature/${this.featureId}`;
   }
 
