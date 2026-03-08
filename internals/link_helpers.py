@@ -138,6 +138,7 @@ class Link():
     self.type = Link.get_type(url)
     self.is_parsed = False
     self.is_error = False
+    self.error = None
     self.http_error_code: Optional[int] = None
     self.information = None
     logging.info(f'Constructed Link for {url} with type {self.type}')
