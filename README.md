@@ -27,8 +27,8 @@ For a one-click setup that leverages devcontainers, check out the devcontainer
     1. Use `node -v` to check the default node version
     2. `nvm use 24` to switch to node 24
 1. `cd chromium-dashboard`
-1. Install JS an python dependencies: `npm run setup`
-    1. Note: Whenever we make changes to package.json or requirements.txt, you will need to run `npm run clean-setup`.
+1. Install JS an python dependencies: `make setup`
+    1. Note: Whenever we make changes to package.json or requirements.txt, you will need to run `make clean-setup`.
 
 
 If you encounter any error during the installation process, the section **Notes** (later in this README.md) may help.
@@ -38,26 +38,26 @@ If you encounter any error during the installation process, the section **Notes*
 To start the main server and the notifier backend, run:
 
 ```bash
-npm start
+make start
 ```
 Then visit `http://localhost:7777/`.
 
 To start front end code watching (sass, js lint check, babel, minify files), run
 
 ```bash
-npm run watch
+make watch
 ```
 
 To run lint & lit-analyzer:
 
 ```bash
-npm run lint
+make lint
 ```
 
 To run unit tests:
 
 ```bash
-npm test
+make test
 ```
 
 This will start a local datastore emulator, run unit tests, and then shut down the emulator.
@@ -74,7 +74,7 @@ your change of the test files.
 
 To run the Playwright visual tests (aka end-to-end tests), the command to use is:
 ```bash
-npm run pwtests
+make pwtests
 ```
 
 If there are errors, they will be displayed in the console.
@@ -82,7 +82,7 @@ If you need to update any of the screenshot images, you will see differences in
 the `packages/playwright/test-results` directory, and if they look correct,
 then you can update _all_ images for all tests with:
 ```bash
-npm run pwtests-update
+make pwtests-update
 ```
 
 The updated images are also added to the __screenshots__ directory.  Images that
@@ -111,7 +111,7 @@ This project is optimized for Gemini Code Assist. For detailed architectural con
 To test the functionality of this application locally that interacts with data from the Origin Trials API, an API key will need to be acquired. To do this, run the following command:
 
 ```bash
-npm run dev-ot-key
+make dev-ot-key
 ```
 
 Note: *Only developers with access to the cr-status-staging GCP project will be able to successfully run this command. If you need to test this and you don't have access, open an issue.*
@@ -122,11 +122,11 @@ Note: *Only developers with access to the cr-status-staging GCP project will be 
 
 - When installing the GAE SDK, make sure to get the version for python 3.
 
-- If you run the server locally, and then you are disconnected from your terminial window, the jobs might remain running which will prevent you from starting the server again.  To work around this, use `npm run stop-emulator; npm stop`.  Or, use `ps aux | grep gunicorn` and/or `ps aux | grep emulator`, then use the unix `kill -9` command to terminate those jobs.
+- If you run the server locally, and then you are disconnected from your terminial window, the jobs might remain running which will prevent you from starting the server again.  To work around this, use `make stop-emulator; make stop`.  Or, use `ps aux | grep gunicorn` and/or `ps aux | grep emulator`, then use the unix `kill -9` command to terminate those jobs.
 
-- If you need to test or debug anything to do with dependencies, you can get a clean start by running `npm run clean-setup`.
+- If you need to test or debug anything to do with dependencies, you can get a clean start by running `make clean-setup`.
 
-- Occasionally, the Google Cloud CLI will requires an update, which will cause a failure when trying to run the development server with `npm start`. An unrelated error message `Failed to connect to localhost port 15606 after 0 ms: Connection refused` will appear. Running the `gcloud components update` command will update as needed and resolve this issue.
+- Occasionally, the Google Cloud CLI will requires an update, which will cause a failure when trying to run the development server with `make start`. An unrelated error message `Failed to connect to localhost port 15606 after 0 ms: Connection refused` will appear. Running the `gcloud components update` command will update as needed and resolve this issue.
 
 ### WPT Coverage Evaluation using Gemini
 
@@ -154,19 +154,19 @@ It is OK to test on staging with tainted versions, but everything should be comm
 **Note** you need to have admin privileges on the `cr-status-staging` and `cr-status`
 cloud projects to be able to deploy the site.
 
-Run the npm target:
+Run the make target:
 
-    npm run staging
+    make staging
 
 Open the [Google Developer
 Console for the staging site](https://console.cloud.google.com/appengine/versions?project=cr-status-staging)
 and flip to the new version by selecting from the list and clicking *MIGRATE TRAFFIC*. Make sure to do this for both the 'default' service as well as for the 'notifier' service.
 
-Alternatively, run `npm run staging-rc` to  upload the same code to a version named `rc` for "Release candidate".  This is the only version that you can test using Google Sign-In at `https://rc-dot-cr-status-staging.appspot.com`.
+Alternatively, run `make staging-rc` to  upload the same code to a version named `rc` for "Release candidate".  This is the only version that you can test using Google Sign-In at `https://rc-dot-cr-status-staging.appspot.com`.
 
 If manual testing on the staging server looks good, then repeat the same steps to deploy to prod:
 
-    npm run deploy
+    make deploy
 
 Open the [Google Developer
 Console for the production site](https://console.cloud.google.com/appengine/versions?project=cr-status)
