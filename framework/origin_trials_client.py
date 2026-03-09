@@ -128,10 +128,10 @@ def _get_trial_end_time(end_milestone: int) -> int:
   # Raise error if the response is not in the expected format.
   if ('mstones' not in mstone_info
       or len(mstone_info['mstones']) == 0
-      or 'late_stable_date' not in mstone_info['mstones'][0]):
+      or 'stable_date' not in mstone_info['mstones'][0]):
     raise KeyError('Chromium schedule response not in expected format.')
   date = datetime.strptime(
-      mstone_info['mstones'][0]['late_stable_date'],
+      mstone_info['mstones'][0]['stable_date'],
       utils.CHROMIUM_SCHEDULE_DATE_FORMAT)
   return int(date.replace(tzinfo=timezone.utc).timestamp())
 
