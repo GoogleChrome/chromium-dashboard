@@ -524,7 +524,10 @@ export class ChromedashWPTEvalPage extends LitElement {
       <div class="requirement-item">
         ${icon}
         <span>${text}</span>
-        <a class="edit-link" href="/guide/editall/${this.featureId}#${urlHash}">
+        <a
+          class="edit-link"
+          href="/guide/editall/${this.featureId}?intent=wpt_eval#${urlHash}"
+        >
           Edit
         </a>
       </div>

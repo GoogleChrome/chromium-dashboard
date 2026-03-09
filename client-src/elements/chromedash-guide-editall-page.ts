@@ -171,8 +171,17 @@ export class ChromedashGuideEditallPage extends LitElement {
     this.fieldValues[index].value = value;
   }
 
+  getNextPage() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const intent = urlParams.get('intent');
+    if (intent === 'wpt_eval') {
+      return `/feature/${this.featureId}/ai-coverage-analysis`;
+    }
+    return `/feature/${this.featureId}`;
+  }
+
   handleCancelClick() {
-    window.location.href = `/feature/${this.featureId}`;
+    window.location.href = this.getNextPage();
   }
 
   renderSkeletons() {
@@ -198,10 +207,6 @@ export class ChromedashGuideEditallPage extends LitElement {
         </p>
       </section>
     `;
-  }
-
-  getNextPage() {
-    return `/feature/${this.featureId}`;
   }
 
   renderSubheader() {
