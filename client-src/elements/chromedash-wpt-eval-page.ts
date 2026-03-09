@@ -349,7 +349,7 @@ export class ChromedashWPTEvalPage extends LitElement {
       if (currentReport && currentReport !== this._previousReportContent) {
         this._reportContentChanged = true;
 
-        // 2. Schedule the reset.2
+        // 2. Schedule the reset.
         // This is safe because it happens in a macro-task (setTimeout),
         // after the current render is finished.
         setTimeout(() => {
