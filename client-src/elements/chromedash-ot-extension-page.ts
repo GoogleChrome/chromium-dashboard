@@ -124,8 +124,7 @@ export class ChromedashOTExtensionPage extends LitElement {
       );
       const respJson = await resp.json();
       // Keep a reference of milestone dates to avoid extra requests.
-      this.endMilestoneDateValues[milestone] =
-        respJson.mstones[0].late_stable_date;
+      this.endMilestoneDateValues[milestone] = respJson.mstones[0].stable_date;
     }
     this.updateMilestoneDate(milestone);
   }
