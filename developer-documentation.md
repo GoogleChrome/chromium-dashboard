@@ -79,7 +79,7 @@ address of any Google account that you own, such as an `@gmail.com` account.
 ## Local Development
 
 - When run locally, Datastore Emulator is used for storing all the entries. To reset local database, remove the local directory for storing data/config for the emulator. The default directory is `<USER_CONFIG_DIR>/emulators/datastore`. The value of `<USER_CONFIG_DIR>` can be found by running: `$ gcloud info --format='get(config.paths.global_config_dir)'` in the terminal. To learn more about using the Datastore Emulator CLI, execute `$ gcloud beta emulators datastore --help`.
-- Executing `npm start` or `npm test` automatically starts the Datastore Emulator and shuts it down afterwards.
+- Executing `make start` or `make test` automatically starts the Datastore Emulator and shuts it down afterwards.
 
 ## Adding a new API
 
@@ -281,10 +281,10 @@ Operations = HTTP verbs. (e.g. GET, POST, PUT, etc)
 ### Step 5: Generate the Code
 
 Validate that the linked schema objects are valid. There should be zero errors and zero warnings:
-- `npm run openapi-validate`
+- `make openapi-validate`
 
 Generate the code:
-- `npm run openapi`
+- `make openapi`
 
 
 ### Step 6: Incorporate Into Backend
