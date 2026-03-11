@@ -380,6 +380,6 @@ export async function expectScreenshot(page, name, options, hoverElement) {
     await expect(hoverElement).toBeVisible();
     await hoverElement.hover();
   }
-  await page.waitForTimeout(100);
+  await page.waitForTimeout(250 + 100); // Some shoelace animations take 250ms.
   await expect(page).toHaveScreenshot(`${name}.png`, options);
 }
