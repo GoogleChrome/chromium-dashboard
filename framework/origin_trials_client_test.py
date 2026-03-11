@@ -171,7 +171,7 @@ class OriginTrialsClientTest(testing_config.CustomTestCase):
         status_code=200,
         json=lambda : {
           'mstones': [
-            {'late_stable_date': '2023-04-30T00:00:00'}
+            {'stable_date': '2023-04-30T00:00:00'}
           ]
         })
 

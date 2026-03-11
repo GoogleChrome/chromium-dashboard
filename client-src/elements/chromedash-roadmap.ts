@@ -14,7 +14,6 @@ interface MilestoneDetails {
   feature_freeze: string;
   final_beta: string;
   final_beta_cut: string;
-  late_stable_date: string;
   latest_beta: string;
   ldaps: Record<string, string>;
   ltc_date: string;

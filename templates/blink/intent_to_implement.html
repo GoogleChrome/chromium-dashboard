@@ -112,6 +112,10 @@
 <div><b>Origin Trial Name</b></div>
     {{stage.ot_display_name}}
   {%- endif -%}
+<br>
+<br>
+<div><b>Goals for experimentation</b></div>
+    {{stage.experiment_goals}}
   {%- if stage.ot_chromium_trial_name -%}
 <br>
 <br>
@@ -216,12 +220,7 @@
 </div> <!-- end risks -->
 {%- endif -%}
 {%- if intent_type in ['experiment', 'extend_experiment'] -%}
-<br>
-<br>
-<div><b>Goals for experimentation</b></div>
-  {{ urlize_with_default(feature.experiment_goals) }}
-
-  {%- if feature.experiment_timeline -%}
+{%- if feature.experiment_timeline -%}
 <br>
 <br>
 <div><b>Experimental timeline</b></div>

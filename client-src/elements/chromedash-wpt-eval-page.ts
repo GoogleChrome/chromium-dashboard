@@ -95,7 +95,7 @@ export class ChromedashWPTEvalPage extends LitElement {
         }
 
         .requirement-item sl-icon {
-          font-size: 1.4em;
+          font-size: 20px;
           flex-shrink: 0;
         }
         .requirement-item .success {
@@ -306,6 +306,9 @@ export class ChromedashWPTEvalPage extends LitElement {
 
   // Milliseconds remaining before another run can be requested
   @state()
+  includeExplainer = false;
+
+  @state()
   private _cooldownRemaining = 0;
 
   @state()
@@ -320,29 +323,38 @@ export class ChromedashWPTEvalPage extends LitElement {
       this.loading = true;
     }
     try {
-      this.feature = await window.csClient.getFeature(this.featureId);
+      const feature = await window.csClient.getFeature(this.featureId);
+      if (!this.isConnected) return;
+      this.feature = feature;
       this.checkRequirements();
       this.managePolling();
       this.updateCooldown();
     } catch (error) {
+      if (!this.isConnected) return;
       showToastMessage(
         'Some errors occurred. Please refresh the page or try again later.'
       );
     } finally {
-      this.loading = false;
+      if (this.isConnected) {
+        this.loading = false;
+      }
     }
   }
 
   updated(changedProperties: Map<string | symbol, unknown>) {
     if (changedProperties.has('feature') && this.feature) {
       const currentReport = this.feature.ai_test_eval_report || null;
-      // Check if report content has actually changed
+
+      // 1. Detect if the content actually changed
       if (currentReport && currentReport !== this._previousReportContent) {
         this._reportContentChanged = true;
-        // Reset the animation trigger after a short delay
+
+        // 2. Schedule the reset.
+        // This is safe because it happens in a macro-task (setTimeout),
+        // after the current render is finished.
         setTimeout(() => {
           this._reportContentChanged = false;
-        }, 100); // Small delay to allow CSS to register the class removal
+        }, 100);
       }
       this._previousReportContent = currentReport;
     }
@@ -464,8 +476,13 @@ export class ChromedashWPTEvalPage extends LitElement {
       this.completedInThisSession = false; // Reset if user tries to regenerate.
       this.managePolling();
 
-      await window.csClient.generateWPTCoverageEvaluation(this.featureId);
+      await window.csClient.generateWPTCoverageEvaluation(
+        this.featureId,
+        this.includeExplainer
+      );
+      if (!this.isConnected) return;
     } catch (e) {
+      if (!this.isConnected) return;
       showToastMessage('Failed to generate report. Please try again later.');
       this.fetchData();
     }
@@ -516,7 +533,12 @@ export class ChromedashWPTEvalPage extends LitElement {
           library="material"
           name="check_circle_20px"
         ></sl-icon>`
-      : html`<sl-icon name="x-circle-fill" class="danger"></sl-icon>`;
+      : html`<sl-icon
+          library="material"
+          name="cancel_20px"
+          class="danger"
+          style="font-size: 20px"
+        ></sl-icon>`;
 
     const text = isFulfilled ? `${label} provided` : `Missing ${label}`;
 
@@ -524,7 +546,10 @@ export class ChromedashWPTEvalPage extends LitElement {
       <div class="requirement-item">
         ${icon}
         <span>${text}</span>
-        <a class="edit-link" href="/guide/editall/${this.featureId}#${urlHash}">
+        <a
+          class="edit-link"
+          href="/guide/editall/${this.featureId}?intent=wpt_eval#${urlHash}"
+        >
           Edit
         </a>
       </div>
@@ -637,6 +662,63 @@ export class ChromedashWPTEvalPage extends LitElement {
                         </li>
                       `;
                     })}
+                  </ul>
+                </div>
+              `
+            : nothing}
+          <div class="requirement-item">
+            ${!this.includeExplainer
+              ? html`<sl-icon
+                  library="material"
+                  name="info_20px"
+                  style="color: var(--sl-color-neutral-600); font-size: 20px"
+                ></sl-icon>`
+              : this.feature.explainer_links?.length
+                ? html`<sl-icon
+                    class="success"
+                    library="material"
+                    name="check_circle_20px"
+                  ></sl-icon>`
+                : html`<sl-icon
+                    library="material"
+                    name="cancel_20px"
+                    class="danger"
+                    style="font-size: 20px"
+                  ></sl-icon>`}
+            <sl-checkbox
+              ?checked=${this.includeExplainer}
+              @sl-change=${(e: any) =>
+                (this.includeExplainer = e.target.checked)}
+            >
+              Include feature explainers
+              ${!this.feature.explainer_links?.length
+                ? html`<sl-badge variant="neutral" size="small"
+                    >Optional</sl-badge
+                  >`
+                : nothing}
+            </sl-checkbox>
+            <a
+              class="edit-link"
+              href="/guide/editall/${this.featureId}#id_explainer_links"
+            >
+              Edit
+            </a>
+          </div>
+          ${this.includeExplainer
+            ? html`
+                <div class="url-list-container">
+                  <ul class="url-list">
+                    ${this.feature.explainer_links?.length
+                      ? this.feature.explainer_links.map(
+                          url => html`
+                            <li>
+                              <a href="${url}" target="_blank">${url}</a>
+                            </li>
+                          `
+                        )
+                      : html`<li>
+                          None provided. Use the "Edit" link above to add one.
+                        </li>`}
                   </ul>
                 </div>
               `
@@ -848,7 +930,7 @@ export class ChromedashWPTEvalPage extends LitElement {
         </h1>
 
         <sl-alert variant="primary" open>
-          <sl-icon slot="icon" name="info-circle"></sl-icon>
+          <sl-icon slot="icon" library="material" name="info_20px"></sl-icon>
           This feature is experimental and reports may be inaccurate. Please
           <a
             href="https://github.com/GoogleChrome/chromium-dashboard/issues/new?labels=Feedback,WPT-AI"
@@ -882,6 +964,12 @@ export class ChromedashWPTEvalPage extends LitElement {
               <strong>Metadata:</strong> Ensure the feature name and summary are
               accurate. These will be used to narrow the scope of the test
               coverage requirements.
+            </li>
+            <li>
+              <strong>Explainers (Optional):</strong> You can optionally include
+              explainer links to provide more context to Gemini. This helps
+              Gemini understand the intent and design of your feature, which can
+              lead to more accurate coverage analysis.
             </li>
             <li>
               <strong>Test Results:</strong> Add relevant
