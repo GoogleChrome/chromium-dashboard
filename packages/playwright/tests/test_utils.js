@@ -366,3 +366,20 @@ export async function gotoNewFeatureList(page) {
   const pagiation = page.locator('chromedash-feature-pagination');
   await expect(pagiation).toBeVisible();
 }
+
+/**
+ * Check a screenshot with some default options that reduce
+ * flakiness.
+ */
+export async function expectScreenshot(page, name, options, hoverElement) {
+  // TODO(jrobbins): This is where we would add logic for testing dark mode.
+  options = {...options, timeout: 30000};
+  await page.mouse.move(0, 0);
+  if (hoverElement) {
+    // Always approach the element from (0, 0).
+    await expect(hoverElement).toBeVisible();
+    await hoverElement.hover();
+  }
+  await page.waitForTimeout(250 + 100); // Some shoelace animations take 250ms.
+  await expect(page).toHaveScreenshot(`${name}.png`, options);
+}
