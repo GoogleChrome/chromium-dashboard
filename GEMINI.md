@@ -16,14 +16,14 @@ The architecture consists of:
 
 ## 2. Local Development Workflow
 
-- **Setup**: `npm run setup` initializes the environment (Node.js and Python venv).
+- **Setup**: `make setup` initializes the environment (Node.js and Python venv).
 - **Starting**: `npm start` runs the Datastore emulator and the Flask server.
 - **Testing**:
     - `npm test`: Runs Python unit tests with the Datastore emulator.
-    - `npm run webtest`: Runs Lit component tests using Playwright.
-    - `npm run pwtests`: Runs end-to-end Playwright visual tests.
-- **Linting**: `npm run lint` runs Prettier, ESLint, and Lit-analyzer.
-- **OpenAPI**: `npm run openapi` generates frontend and backend code from `openapi/api.yaml`.
+    - `make webtest`: Runs Lit component tests using Playwright.
+    - `make pwtests`: Runs end-to-end Playwright visual tests.
+- **Linting**: `make lint` runs Prettier, ESLint, and Lit-analyzer.
+- **OpenAPI**: `make openapi` generates frontend and backend code from `openapi/api.yaml`.
 
 ## 3. Project Rules
 

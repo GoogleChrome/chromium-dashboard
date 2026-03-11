@@ -29,4 +29,4 @@ This skill provides context and guidelines for developing the frontend of the `c
 
 ## Common Tasks
 - **Adding a New Page**: Register the route in `chromedash-app.js` (within `setUpRoutes`) and create the corresponding Lit component.
-- **Building assets**: Use `npm run watch` during development for live-reloading or `npm run build` for a final build.
+- **Building assets**: Use `make watch` during development for live-reloading or `make build` for a final build.

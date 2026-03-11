@@ -14,19 +14,19 @@ Before submitting a pull request, ensure all the following checks pass.
 ### 1. Setup Environment
 Ensure your local environment is correctly set up.
 ```bash
-npm run setup
+make setup
 ```
 
 ### 2. Linting
 Runs Prettier, ESLint, and Lit-analyzer to check code style and common issues.
 ```bash
-npm run lint
+make lint
 ```
 
 ### 3. Type Checking (Python)
 Runs `mypy` for static type analysis of Python code.
 ```bash
-npm run mypy
+make mypy
 ```
 
 ### 4. Backend Tests (Python)
@@ -38,21 +38,21 @@ npm test
 ### 5. Frontend Tests (Lit/Playwright)
 Runs web component tests using Playwright.
 ```bash
-npm run webtest
+make webtest
 ```
 
 ### 6. Build Assets
 Verifies that all assets (JS, CSS, etc.) build correctly.
 ```bash
-npm run build
+make build
 ```
 
 ## Summary Command
 To run the most critical local checks (test, webtest, lint, mypy) in one go:
 ```bash
-npm run presubmit
+make presubmit
 ```
 
 ## Reference
-- **GitHub Workflow**: [.github/workflows/ci.yml](file:///usr/local/google/home/suzyliu/Documents/chromium-dashboard/.github/workflows/ci.yml)
-- **Task Scripts**: Defined in [package.json](file:///usr/local/google/home/suzyliu/Documents/chromium-dashboard/package.json)
+- **Build Targets**: @Makefile
+- **Task Scripts**: Defined in @package.json.
