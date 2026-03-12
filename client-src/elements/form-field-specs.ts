@@ -171,6 +171,23 @@ const TEXT_FIELD_ATTRS: FieldAttrs = {
   type: 'text',
 };
 
+const LIMTED_TEXTAREA_ATTRS: FieldAttrs = {
+  // This is the longest string that a cloud ndb StringProperty seems to accept.
+  maxlength: 1400,
+};
+
+function limited_textarea_warning(value) {
+  if (value && typeof value === 'string' && value.length > 0) {
+    const len = value.length;
+    if (len > 1000) {
+      return {
+        warning: `Length ${len} / 1400`,
+      };
+    }
+  }
+  return undefined;
+}
+
 const MILESTONE_NUMBER_FIELD_ATTRS: FieldAttrs = {
   type: 'number',
   placeholder: 'Milestone number',
@@ -1043,7 +1060,7 @@ export const ALL_FIELDS: Record<string, Field> = {
 
   tag_review: {
     type: 'textarea',
-    attrs: {rows: 2},
+    attrs: {...LIMTED_TEXTAREA_ATTRS, rows: 2},
     required: false,
     label: 'TAG specification review',
     usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
@@ -1093,6 +1110,7 @@ export const ALL_FIELDS: Record<string, Field> = {
         as long as you've made a reasonable effort to obtain their review with
         enough time for them to give feedback.
       </p>`,
+    check: limited_textarea_warning,
   },
 
   tag_review_status: {
@@ -1385,7 +1403,7 @@ export const ALL_FIELDS: Record<string, Field> = {
 
   ff_views_notes: {
     type: 'textarea',
-    attrs: {rows: 2, placeholder: 'Notes'},
+    attrs: {...LIMTED_TEXTAREA_ATTRS, rows: 2, placeholder: 'Notes'},
     required: false,
     label: '',
     displayLabel: 'Firefox views notes',
@@ -1411,6 +1429,7 @@ export const ALL_FIELDS: Record<string, Field> = {
       ]),
     },
     help_text: '',
+    check: limited_textarea_warning,
   },
 
   web_dev_views: {
