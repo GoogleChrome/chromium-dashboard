@@ -20,6 +20,9 @@ export default {
       format: {
         comments: false,
       },
+      ecma: 2020,
+      module: true,
+      warnings: true,
       mangle: false,
     }),
   ],
