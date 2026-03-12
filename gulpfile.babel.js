@@ -5,7 +5,7 @@ import {deleteAsync} from 'del';
 import gulp from 'gulp';
 import concat from 'gulp-concat';
 import {rollup} from 'rollup';
-import rollupMinify from 'rollup-plugin-babel-minify';
+import terser from '@rollup/plugin-terser';
 
 function rollupIgnoreUndefinedWarning(warning, warn) {
   // There is currently a warning when using the es6 module from openapi.
@@ -36,7 +36,12 @@ gulp.task('rollup', () => {
     ],
     plugins: [
       rollupResolve(),
-      rollupMinify({mangle: false, comments: false}),
+      terser({
+        format: {
+          comments: false,
+        },
+        mangle: false,
+      }),
     ],
     onwarn: rollupIgnoreUndefinedWarning,
   }).then(bundle => {
