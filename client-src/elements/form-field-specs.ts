@@ -181,14 +181,12 @@ function limited_textarea_warning(value) {
     const len = value.length;
     if (len > 1000) {
       return {
-        warning:
-              `Length ${len} / 1400`,
+        warning: `Length ${len} / 1400`,
       };
     }
   }
   return undefined;
 }
-
 
 const MILESTONE_NUMBER_FIELD_ATTRS: FieldAttrs = {
   type: 'number',
