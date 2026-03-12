@@ -26,11 +26,6 @@ export class ChromedashTextarea extends SlTextarea {
   alwaysMarkdown = false;
   @property({type: Number}) // Represents which field this is on the form.
   index = -1;
-  // This is the longest string that a cloud ndb StringProperty seems to accept.
-  // Fields that accept a URL list can be longer, provided that each individual
-  // URL is no more than this length.
-  @property({type: Number})
-  maxlength = 1400;
   @state()
   showPreview = false;
 
