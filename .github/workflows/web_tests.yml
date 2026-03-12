@@ -43,9 +43,7 @@ jobs:
 
       - name: installation
         run: |
-          npm install -g gulp
-
-      - run: npm config set script-shell bash --global
+          npm config set script-shell bash --global
       - run: make setup
       - name: Install playwright browsers
         run: npx playwright install --with-deps
