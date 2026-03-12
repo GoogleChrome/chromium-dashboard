@@ -21,7 +21,6 @@ For a one-click setup that leverages devcontainers, check out the devcontainer
     1. `gcloud components install beta`
 1. Install other developer tools commands
     1. node and npm.
-    1. Gulp: `npm install --global gulp-cli`
     1. Python virtual environment: `sudo apt install python3.11-venv`
 1. We recommend using node version 24
     1. Use `node -v` to check the default node version
@@ -42,7 +41,7 @@ make start
 ```
 Then visit `http://localhost:7777/`.
 
-To start front end code watching (sass, js lint check, babel, minify files), run
+To start front end code watching (TypeScript, JavaScript bundling and minification), run
 
 ```bash
 make watch
