@@ -70,7 +70,7 @@ export const ROLLOUT_STAGE_PLAN_CATEGORIES: Record<string, [number, string]> = {
   ROLLOUT_STAGE_PLAN_SLOW: [0, 'Feature rolls out gradually'],
   ROLLOUT_STAGE_PLAN_TRUSTED_TESTERS: [
     1,
-    'Early preview available to Chrome Enterprise Truster Testers',
+    'Early preview available to Chrome Enterprise Trusted Tester',
   ],
   ROLLOUT_STAGE_PLAN_CUSTOM: [
     2,
@@ -81,7 +81,7 @@ export const ROLLOUT_STAGE_PLAN_CATEGORIES: Record<string, [number, string]> = {
 
 export const ROLLOUT_STAGE_PLAN_DISPLAYNAME: Record<number, string> = {
   0: 'Feature rolls out gradually',
-  1: 'Early preview available to Chrome Enterprise Truster Testers',
+  1: 'Early preview available to Chrome Enterprise Trusted Tester',
   2: 'Custom rollout (explain in Rollout details field)',
   // When null, the standard "No information provided yet" will be shown.
 };
