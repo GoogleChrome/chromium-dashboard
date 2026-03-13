@@ -2,7 +2,11 @@ import {LitElement, css, html} from 'lit';
 import {property} from 'lit/decorators.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import './chromedash-stack-rank';
-import {showToastMessage, METRICS_TYPE_AND_VIEW_TO_SUBTITLE} from './utils';
+import {
+  showToastMessage,
+  METRICS_TYPE_AND_VIEW_TO_SUBTITLE,
+  METRICS_TYPE_AND_VIEW_TO_DESCRIPTION,
+} from './utils';
 
 export class ChromedashStackRankPage extends LitElement {
   static get styles() {
@@ -125,21 +129,17 @@ export class ChromedashStackRankPage extends LitElement {
   }
 
   renderDataPanel() {
+    const listDescription =
+      METRICS_TYPE_AND_VIEW_TO_DESCRIPTION[this.type + this.view];
     return html`
-      <h3>Data from last 24 hours</h3>
+      <h3>Recent usage data</h3>
       <p class="description">
-        The percentage numbers indicate the
+        ${listDescription} The percentage numbers indicate the
         <span id="highlighted-text"
           >percentage of Chrome page loads (across all channels and platforms)
           that use the ${this.type == 'css' ? 'property' : 'feature'} at least
           once</span
-        >. Data is collected via Chrome's
-        <a
-          href="https://cs.chromium.org/chromium/src/tools/metrics/histograms/enums.xml"
-          target="_blank"
-          rel="noopener"
-          >anonymous usage statistics</a
-        >.
+        >. Data is collected via Chrome's anonymous usage statistics.
       </p>
       <chromedash-stack-rank
         .type=${this.type}
