@@ -770,6 +770,25 @@ export const METRICS_TYPE_AND_VIEW_TO_SUBTITLE = {
   webfeaturepopularity: 'Web features usage metrics > all features',
 };
 
+const USE_COUNTERS_LINK = html`<a
+  href="https://chromium.googlesource.com/chromium/src/+/HEAD/docs/use_counter_wiki.md"
+  target="_blank"
+  >UseCounters</a
+>`;
+
+export const METRICS_TYPE_AND_VIEW_TO_DESCRIPTION = {
+  csspopularity: html`This list shows ${USE_COUNTERS_LINK} for CSS properties
+  regardless of animiation.`,
+  cssanimated: html`This list shows ${USE_COUNTERS_LINK} for CSS properities in
+  combination with animation.`,
+  featurepopularity: html`This list shows ${USE_COUNTERS_LINK} for certain
+  Javascript and HTML features.`,
+  webfeaturepopularity: html`This list shows ${USE_COUNTERS_LINK} for
+    <a href="https://github.com/web-platform-dx/web-features" target="_blank"
+      >Web Features</a
+    >.`,
+};
+
 /**
  * A feature is outdated if it has shipped, and its
  * accurate_as_of is before its latest shipping date before today.
