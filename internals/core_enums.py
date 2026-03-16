@@ -184,7 +184,7 @@ ROLLOUT_STAGE_PLAN_TRUSTED_TESTERS = 1
 ROLLOUT_STAGE_PLAN_CUSTOM = 2
 
 ROLLOUT_STAGE_PLAN_DISPLAYNAMES = {
-  ROLLOUT_STAGE_PLAN_TRUSTED_TESTERS: 'Early preview available to Chrome Enterprise Truster Testers',
+  ROLLOUT_STAGE_PLAN_TRUSTED_TESTERS: 'Early preview available to Chrome Enterprise Trusted Tester',
   ROLLOUT_STAGE_PLAN_SLOW: 'Feature rolls out gradually',
   ROLLOUT_STAGE_PLAN_CUSTOM: 'Custom rollout (explain in Rollout details field)',
 }
