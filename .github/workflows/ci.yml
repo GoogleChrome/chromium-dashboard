@@ -41,7 +41,6 @@ jobs:
 
       - name: installation
         run: |
-          npm install -g gulp
           npm config set script-shell bash --global
           make setup
 

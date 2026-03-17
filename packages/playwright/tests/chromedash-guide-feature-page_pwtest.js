@@ -5,6 +5,7 @@ import {
   login,
   logout,
   createNewFeature,
+  expectScreenshot,
 } from './test_utils';
 
 test.beforeEach(async ({page}, testInfo) => {
@@ -88,10 +89,7 @@ test('add an origin trial stage', async ({page}) => {
   const prepareToShipPanel = page.getByText('Prepare to ship');
   await prepareToShipPanel.scrollIntoViewIfNeeded();
 
-  // Move the mouse out of the way to prevent accidental hover states.
-  await page.mouse.move(0, 0);
-
-  await expect(page).toHaveScreenshot('origin-trial-panels.png', {
+  await expectScreenshot(page, 'origin-trial-panels', {
     mask: [page.locator('section[id="history"]')],
   });
 });

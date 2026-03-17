@@ -5,6 +5,7 @@ import {
   login,
   logout,
   createNewFeature,
+  expectScreenshot,
 } from './test_utils';
 
 /**
@@ -39,7 +40,7 @@ test('editall page', async ({page}) => {
   await createNewFeature(page);
   await gotoEditAllPage(page);
 
-  await expect(page).toHaveScreenshot('edit-all-fields.png');
+  await expectScreenshot(page, 'edit-all-fields');
 });
 
 test('test semantic checks', async ({page}) => {
@@ -79,7 +80,7 @@ test('test semantic checks', async ({page}) => {
     const nextField = page.locator('input[name="shipped_android_milestone"]');
     await nextField.scrollIntoViewIfNeeded();
 
-    await expect(page).toHaveScreenshot('shipped-desktop-error.png');
+    await expectScreenshot(page, 'shipped-desktop-error');
   });
 
   await test.step('Resolve Conflict', async () => {

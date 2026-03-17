@@ -37,13 +37,16 @@ stop-emulator:
 
 build: tsc-clean
 	npx tsc
-	npx gulp
+	mkdir -p static/css
+	cp node_modules/@shoelace-style/shoelace/dist/themes/light.css static/css/base.css
+	npx rollup -c rollup.config.js
 
 tsc-clean:
 	npx tsc --build --clean
+	rm -rf static/dist
 
 watch: build
-	npx concurrently "tsc --watch" "gulp watch"
+	npx concurrently "tsc --watch" "rollup -c rollup.config.js --watch"
 
 start-app: build
 	curl --retry 4 http://$${DATASTORE_EMULATOR_HOST:-localhost:15606}/ --retry-connrefused

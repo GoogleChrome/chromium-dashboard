@@ -140,6 +140,7 @@ class FeatureEntry(ndb.Model):
   prefixed = ndb.BooleanProperty()
   all_platforms = ndb.BooleanProperty()
   all_platforms_descr = ndb.TextProperty()
+  # TODO(jrobbins): This should be a TextProperty to avoid the 1400 limit.
   tag_review = ndb.StringProperty()
   tag_review_status = ndb.IntegerProperty(default=REVIEW_PENDING)
   tag_review_resolution: Optional[ReviewResultProperty] = ReviewResultProperty()
@@ -154,6 +155,7 @@ class FeatureEntry(ndb.Model):
   safari_views_link = ndb.StringProperty()
   safari_views_link_result: Optional[ReviewResultProperty] = ReviewResultProperty()
   web_dev_views_link = ndb.StringProperty()
+  # TODO(jrobbins): This should be a TextProperty to avoid the 1400 limit.
   ff_views_notes = ndb.StringProperty()
   safari_views_notes = ndb.TextProperty()
   web_dev_views_notes = ndb.TextProperty()
