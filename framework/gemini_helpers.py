@@ -220,7 +220,7 @@ def unified_prompt_analysis(prompt_text: str) -> str:
     A string containing the generated coverage report.
   """
   gemini_client = GeminiClient()
-  gap_analysis_response = gemini_client.get_response(prompt_text)
+  gap_analysis_response = gemini_client.get_response(prompt_text, temperature=0.0)
   return gap_analysis_response
 
 
@@ -358,7 +358,7 @@ async def prompt_analysis(
   # Add the spec synthesis prompt to the end for batch processing.
   prompts.append(spec_synthesis_prompt)
 
-  all_responses = await gemini_client.get_batch_responses_async(prompts)
+  all_responses = await gemini_client.get_batch_responses_async(prompts, temperature=0.0)
 
   spec_synthesis_response = all_responses.pop()
   if not isinstance(spec_synthesis_response, str):
@@ -381,7 +381,7 @@ async def prompt_analysis(
   gap_analysis_prompt = render_template(GAP_ANALYSIS_TEMPLATE_PATH, **template_data)
 
   # Use the async version of get_response to keep the whole pipeline non-blocking.
-  gap_analysis_response = await gemini_client.get_response_async(gap_analysis_prompt)
+  gap_analysis_response = await gemini_client.get_response_async(gap_analysis_prompt, temperature=0.0)
   return gap_analysis_response
 
 
