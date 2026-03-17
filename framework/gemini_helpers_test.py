@@ -366,7 +366,7 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
     result = gemini_helpers.unified_prompt_analysis(prompt_text)
 
     self.assertEqual(result, 'Unified Report')
-    self.mock_gemini_client.get_response.assert_called_once_with(prompt_text)
+    self.mock_gemini_client.get_response.assert_called_once_with(prompt_text, temperature=0.0)
 
   @mock.patch('framework.gemini_helpers._fetch_spec_content', return_value="Mock Spec Content")
   @mock.patch('framework.gemini_helpers._get_explainer_content', return_value="Mock Explainer Content")
