@@ -925,8 +925,14 @@ class FeaturesAPITest(testing_config.CustomTestCase):
   @mock.patch('api.channels_api.construct_specified_milestones_details')
   def test_patch__enterprise_first_notice_enterprise_feature(self, mock_call):
     """PATCH request successful with provided first_enterprise_notification_milestone."""
-    stable_date = _datetime_to_str(datetime.now().replace(year=datetime.now().year + 1, day=1))
-    mock_call.return_value = { 100: { 'version': 100, 'stable_date': stable_date } }
+    stable_date = _datetime_to_str(datetime.now().replace(
+        year=datetime.now().year, day=1))
+    next_stable_date = _datetime_to_str(datetime.now().replace(
+        year=datetime.now().year + 1, day=1))
+    mock_call.return_value = {
+        100: { 'version': 100, 'stable_date': stable_date },
+        101: { 'version': 101, 'stable_date': next_stable_date },
+    }
 
     # Signed-in user with permissions.
     testing_config.sign_in('admin@example.com', 123567890)
@@ -957,8 +963,14 @@ class FeaturesAPITest(testing_config.CustomTestCase):
   @mock.patch('api.channels_api.construct_specified_milestones_details')
   def test_patch__enterprise_first_notice_newly_breaking_feature(self, mock_call):
     """PATCH request successful with provided first_enterprise_notification_milestone."""
-    stable_date = _datetime_to_str(datetime.now().replace(year=datetime.now().year + 1, day=1))
-    mock_call.return_value = { 100: { 'version': 100, 'stable_date': stable_date } }
+    stable_date = _datetime_to_str(datetime.now().replace(
+        year=datetime.now().year, day=1))
+    next_stable_date = _datetime_to_str(datetime.now().replace(
+        year=datetime.now().year + 1, day=1))
+    mock_call.return_value = {
+        100: { 'version': 100, 'stable_date': stable_date },
+        101: { 'version': 101, 'stable_date': next_stable_date },
+    }
 
     # Signed-in user with permissions.
     testing_config.sign_in('admin@example.com', 123567890)

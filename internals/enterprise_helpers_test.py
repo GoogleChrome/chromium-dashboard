@@ -53,12 +53,12 @@ class EnterpriseHelpersTest(testing_config.CustomTestCase):
   @mock.patch('api.channels_api.construct_specified_milestones_details')
   def test__needs_default_first_notification_milestone__new_feature(self, mock_specified_milestones):
     mock_specified_milestones.return_value = {
-        99: { 
-          'version': 99, 
+        99: {
+          'version': 99,
           'stable_date': self.now.replace(year=self.now.year - 1, day=1).strftime(DATETIME_FORMAT)
         },
-        100: { 
-          'version': 100, 
+        100: {
+          'version': 100,
           'stable_date': self.now.replace(year=self.now.year + 1, day=1).strftime(DATETIME_FORMAT)
         },
     }
@@ -124,7 +124,7 @@ class EnterpriseHelpersTest(testing_config.CustomTestCase):
 
   @mock.patch('api.channels_api.construct_specified_milestones_details')
   def test__needs_default_first_notification_milestone__update(self, mock_specified_milestones):
-    
+
     mock_specified_milestones.return_value =  {
         99: {
           'version': 99,
@@ -187,7 +187,7 @@ class EnterpriseHelpersTest(testing_config.CustomTestCase):
     self.assertFalse(needs_default_first_notification_milestone(
       self.normal_feature,
       { 'enterprise_impact': ENTERPRISE_IMPACT_LOW, 'first_enterprise_notification_milestone': 100}))
-  
+
     # Breaking feature becoming normal feature missing the milestone
     self.assertFalse(needs_default_first_notification_milestone(
       self.breaking_feature, { 'enterprise_impact': ENTERPRISE_IMPACT_NONE}))
@@ -223,19 +223,23 @@ class EnterpriseHelpersTest(testing_config.CustomTestCase):
           'version': 99,
           'stable_date': self.now.replace(year=self.now.year - 1, day=1).strftime(DATETIME_FORMAT)
         },
-        100: {
+        100: {  # Current milestone on stable channel
           'version': 100,
-          'stable_date': self.now.replace(year=self.now.year + 1, day=1).strftime(DATETIME_FORMAT)
+          'stable_date': self.now.replace(year=self.now.year, day=1).strftime(DATETIME_FORMAT)
         },
         101: {
           'version': 101,
+          'stable_date': self.now.replace(year=self.now.year + 1, day=1).strftime(DATETIME_FORMAT)
+        },
+        102: {
+          'version': 102,
           'stable_date': self.now.replace(year=self.now.year + 2, day=1).strftime(DATETIME_FORMAT)
         },
     }
     mock_channel_details.return_value = {
       'beta': {
         'version': 100,
-        'stable_date': self.now.replace(year=self.now.year + 1, day=1).strftime(DATETIME_FORMAT)
+        'stable_date': self.now.replace(year=self.now.year, day=1).strftime(DATETIME_FORMAT)
       }
     }
 
@@ -289,7 +293,7 @@ class EnterpriseHelpersTest(testing_config.CustomTestCase):
     self.assertTrue(is_update_first_notification_milestone(
       self.normal_feature,
       { 'enterprise_impact': ENTERPRISE_IMPACT_LOW, 'first_enterprise_notification_milestone': 100}))
-  
+
     # Breaking feature becoming normal feature missing the milestone
     self.assertFalse(is_update_first_notification_milestone(
       self.breaking_feature, { 'enterprise_impact': ENTERPRISE_IMPACT_NONE}))
@@ -368,7 +372,7 @@ class EnterpriseHelpersTest(testing_config.CustomTestCase):
           'stable_date': now.replace(year=now.year + 2, day=1).strftime(DATETIME_FORMAT)
         },
     }
-    
+
     # Enterprise feature with no changes and no existing milestone
     self.assertFalse(should_remove_first_notice_milestone(self.enterprise_feature, {}))
 

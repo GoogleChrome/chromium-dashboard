@@ -88,11 +88,12 @@ class GeminiClient:
     return response.total_tokens > model_info.input_token_limit
 
   @utils.retry(MAX_RETRIES, delay=RETRY_BACKOFF_SECONDS)
-  def get_response(self, prompt: str) -> str:
+  def get_response(self, prompt: str, temperature: float | None = None) -> str:
     """Sends a prompt to the Gemini model and returns the text response.
 
     Args:
       prompt: The input prompt string to send to the model.
+      temperature: Controls the randomness of the output.
 
     Returns:
       The text response from the model.
@@ -108,6 +109,7 @@ class GeminiClient:
       model=GeminiClient.GEMINI_MODEL,
       contents=prompt,
       config=types.GenerateContentConfig(
+        temperature=temperature,
         # timeout is passed to the config using milliseconds.
         http_options=types.HttpOptions(timeout=GeminiClient.API_TIMEOUT_SECONDS * 1000)
       )
@@ -125,7 +127,7 @@ class GeminiClient:
 
     return response.text
 
-  async def get_response_async(self, prompt: str) -> str:
+  async def get_response_async(self, prompt: str, temperature: float | None = None) -> str:
     """Asynchronously sends a prompt to the Gemini model.
 
     Wraps the synchronous `get_response` method in a thread, inheriting
@@ -133,6 +135,7 @@ class GeminiClient:
 
     Args:
       prompt: The input prompt string.
+      temperature: Controls the randomness of the output.
 
     Returns:
       The text response from the model.
@@ -143,18 +146,19 @@ class GeminiClient:
     """
     try:
       return await asyncio.wait_for(
-        asyncio.to_thread(self.get_response, prompt),
+        asyncio.to_thread(self.get_response, prompt, temperature),
         timeout=GeminiClient.ASYNC_TIMEOUT_SECONDS
       )
     except asyncio.TimeoutError:
       logging.error(f'Gemini request timed out after {GeminiClient.ASYNC_TIMEOUT_SECONDS} seconds.')
       raise TimeoutError(f'Gemini request timed out after {GeminiClient.ASYNC_TIMEOUT_SECONDS}s')
 
-  async def get_batch_responses_async(self, prompts: list[str]) -> list[str|BaseException]:
+  async def get_batch_responses_async(self, prompts: list[str], temperature: float | None = None) -> list[str|BaseException]:
     """Concurrently sends a list of prompts to the Gemini API.
 
     Args:
       prompts: A list of prompt strings to send.
+      temperature: Controls the randomness of the output.
 
     Returns:
       A list containing either the string response or an Exception object
@@ -163,7 +167,7 @@ class GeminiClient:
     logging.info(f'Starting batch processing for {len(prompts)} prompts...')
 
     # Create a list of coroutine objects
-    tasks = [self.get_response_async(prompt) for prompt in prompts]
+    tasks = [self.get_response_async(prompt, temperature) for prompt in prompts]
 
     # asyncio.gather runs them concurrently.
     # return_exceptions=True ensures one failure doesn't crash the entire batch.
