@@ -269,6 +269,7 @@ const FLAT_PROTOTYPE_FIELDS: MetadataFields = {
       name: 'Prototype a solution',
       fields: [
         'motivation',
+        'explainer_links',
         'spec_link',
         'standard_maturity',
         'api_spec',
@@ -463,7 +464,12 @@ const PSA_IMPLEMENT_FIELDS: MetadataFields = {
     // Standardization
     {
       name: 'Start prototyping',
-      fields: ['motivation', 'spec_link', 'standard_maturity'],
+      fields: [
+        'motivation',
+        'explainer_links',
+        'spec_link',
+        'standard_maturity',
+      ],
     },
   ],
 };
@@ -495,7 +501,7 @@ const DEPRECATION_PLAN_FIELDS: MetadataFields = {
   sections: [
     {
       name: 'Write up deprecation plan',
-      fields: ['deprecation_motivation', 'spec_link'],
+      fields: ['deprecation_motivation', 'explainer_links', 'spec_link'],
     },
   ],
 };
