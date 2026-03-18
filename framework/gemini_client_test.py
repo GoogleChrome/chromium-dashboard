@@ -314,7 +314,7 @@ class GeminiClientTest(testing_config.CustomTestCase):
       result = asyncio.run(client.get_response_async(prompt))
 
       self.assertEqual(result, expected_response)
-      mock_sync_get.assert_called_once_with(prompt)
+      mock_sync_get.assert_called_once_with(prompt, None)
 
   def test_get_response_async__timeout(self):
     """Test that the outer async timeout works correctly."""
@@ -362,7 +362,7 @@ class GeminiClientTest(testing_config.CustomTestCase):
 
     # Mock the single async method to isolate batch logic.
     # We define an async function to use as a side_effect.
-    async def mock_async_response(prompt):
+    async def mock_async_response(prompt, temperature=None):
       return f'Response for {prompt}'
 
     with mock.patch.object(
@@ -384,7 +384,7 @@ class GeminiClientTest(testing_config.CustomTestCase):
     prompts = ['success1', 'fail', 'success2']
     error_msg = 'Task failed'
 
-    async def mixed_side_effect(prompt):
+    async def mixed_side_effect(prompt, temperature=None):
       if prompt == 'fail':
         raise RuntimeError(error_msg)
       return f'Response for {prompt}'
