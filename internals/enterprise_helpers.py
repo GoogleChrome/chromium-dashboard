@@ -85,19 +85,22 @@ def is_update_first_notification_milestone(feature: FeatureEntry, new_fields: di
     return False
   milestone = int(milestone)
 
-  # We cannot set a milestone that has already been released
-  milestone_details = channels_api.construct_specified_milestones_details(milestone, milestone)
-  if (milestone not in milestone_details or
-      _str_to_datetime(milestone_details[milestone]['stable_date']) <= datetime.now()):
+  # We don't allow setting an old milestone, but allow current and future.
+  next_milestone = milestone + 1
+  next_milestone_details = channels_api.construct_specified_milestones_details(
+      next_milestone, next_milestone)
+  if (next_milestone not in next_milestone_details or
+      _str_to_datetime(next_milestone_details[next_milestone]['stable_date']) <= datetime.now()):
     return False
 
-  # We cannot update the milestone of a feature that has already been announced
+  # We don't allow changing the existing milestone value if it was in old release notes.
   if feature.first_enterprise_notification_milestone != None:
-    milestone = feature.first_enterprise_notification_milestone
-    previous_milestone_details = channels_api.construct_specified_milestones_details(milestone,
-                                                                                     milestone)
-    if (milestone in previous_milestone_details and
-        _str_to_datetime(previous_milestone_details[milestone]['stable_date']) <= datetime.now()):
+    existing_milestone = feature.first_enterprise_notification_milestone
+    existing_next = existing_milestone + 1
+    existing_next_details = channels_api.construct_specified_milestones_details(
+        existing_next, existing_next)
+    if (existing_next in existing_next_details and
+        _str_to_datetime(existing_next_details[existing_next]['stable_date']) <= datetime.now()):
       return False
 
   if feature.feature_type == FEATURE_TYPE_ENTERPRISE_ID:
