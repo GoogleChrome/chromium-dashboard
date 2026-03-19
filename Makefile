@@ -9,8 +9,11 @@ setup:
 	python3.13 -m venv cs-env
 	$(MAKE) deps
 
+clean:
+	rm -rf node_modules cs-env static/dist build
+
 clean-setup:
-	rm -rf node_modules cs-env
+	$(MAKE) clean
 	$(MAKE) setup
 
 deps:
@@ -38,7 +41,6 @@ stop-emulator:
 build: tsc-clean
 	npx tsc
 	mkdir -p static/css
-	cp node_modules/@shoelace-style/shoelace/dist/themes/light.css static/css/base.css
 	npx rollup -c rollup.config.js
 
 tsc-clean:

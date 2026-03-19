@@ -89,6 +89,7 @@
     "prettier": "^3.8.1",
     "regenerator-runtime": "^0.14.1",
     "rollup": "^4.59.0",
+    "rollup-plugin-css-only": "^4.5.5",
     "sinon": "^21.0.3",
     "tar": ">=7.5.11",
     "trim-newlines": ">=5.0.0",
