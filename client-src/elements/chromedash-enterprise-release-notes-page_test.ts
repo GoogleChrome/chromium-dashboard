@@ -210,6 +210,7 @@ describe('chromedash-enterprise-release-notes-page', () => {
             when: '2000-03-04 22:33:44',
             by: 'updater6',
           },
+          accurate_as_of: '2026-03-20 18:00:00',
           screenshot_links: [],
         },
         {
@@ -530,7 +531,7 @@ describe('chromedash-enterprise-release-notes-page', () => {
         assert.equal(
           '< To remove - Feature details - ' +
             'Owners: owner - Editors: editor1, editor2 - Enterprise impact: Medium - First notice: n_milestone_feat_6 - ' +
-            'Last updated: ( ) by updater6 >',
+          'Last updated: ( ) by updater6 - Accurate as of: 2026-03-20 >',
           normalizedTextContent(features[0].querySelector('.toremove')));
         assert.equal(
           'feature 6 summary',
@@ -568,7 +569,7 @@ describe('chromedash-enterprise-release-notes-page', () => {
         assert.equal(
           '< To remove - Feature details - ' +
             'Owners: owner - Editors: editor1, editor2 - Enterprise impact: Medium - First notice: n_milestone_feat_8 - ' +
-            'Last updated: by updater8 >',
+          'Last updated: by updater8 - Accurate as of: Unknown >',
           normalizedTextContent(features[0].querySelector('.toremove')));
         assert.equal(
           'future premium feature summary',
