@@ -25,7 +25,16 @@ if [ -z "$PREVIOUS_SHORT_SHA" ]; then
   echo "Could not determine the previous release SHA. Using last 10 commits for changelog."
   CHANGELOG=$(git log --oneline -10 --format="- %C(auto) %h %s")
 else
-  CHANGELOG=$(git log --oneline "$PREVIOUS_SHORT_SHA..HEAD" --format="- %C(auto) %h %s")
+  if ! CHANGELOG=$(git log --oneline "$PREVIOUS_SHORT_SHA..HEAD" --format="- %C(auto) %h %s" 2>/dev/null); then
+    echo "Could not fetch a list of changes from the previous commit ($PREVIOUS_SHORT_SHA) to HEAD."
+    read -p "The previous deployment might have been from a tainted branch. Do you want to create a deployment issue with the last 40 commits (HEAD~40)? (y/n) " -n 1 -r
+    echo
+    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+      echo "Deployment aborted."
+      exit 1
+    fi
+    CHANGELOG=$(git log --oneline -40 --format="- %C(auto) %h %s")
+  fi
 fi
 
 NEW_SHA=$(git rev-parse --short HEAD)
