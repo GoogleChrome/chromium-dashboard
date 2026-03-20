@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import logging
 import testing_config  # Must be imported before the module under test.
 
 import asyncio
@@ -26,6 +27,7 @@ class GeminiClientTest(testing_config.CustomTestCase):
 
   def setUp(self):
     """Set up shared mocks for all tests in this class."""
+    logging.disable(logging.CRITICAL)
     # Patch settings for all tests
     self.mock_settings = mock.patch('framework.gemini_client.settings').start()
 
@@ -51,6 +53,7 @@ class GeminiClientTest(testing_config.CustomTestCase):
     self.addCleanup(mock.patch.stopall)
 
   def tearDown(self):
+    logging.disable(logging.NOTSET)
     settings.GEMINI_API_KEY = self.original_gemini_api_key
 
   def test_init__success(self):

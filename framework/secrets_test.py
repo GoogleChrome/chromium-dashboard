@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import logging
 import testing_config  # Must be imported before the module under test.
 
 from unittest import mock
@@ -24,6 +25,7 @@ class SecretsFunctionsTest(testing_config.CustomTestCase):
   """Set of unit tests for accessing server-side secret values."""
 
   def setUp(self):
+    logging.disable(logging.CRITICAL)
     # Store original values to restore them after each test
     self.original_github_token = secrets.settings.GITHUB_TOKEN
     self.original_gemini_api_key = secrets.settings.GEMINI_API_KEY
@@ -39,6 +41,7 @@ class SecretsFunctionsTest(testing_config.CustomTestCase):
     secrets.settings.DEV_MODE = False
 
   def tearDown(self):
+    logging.disable(logging.NOTSET)
     # Restore original settings
     secrets.settings.GITHUB_TOKEN = self.original_github_token
     secrets.settings.GEMINI_API_KEY = self.original_gemini_api_key

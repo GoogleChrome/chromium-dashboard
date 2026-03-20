@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import csv
+import logging
 import testing_config  # Must be imported before the module under test.
 from google.cloud import ndb
 
@@ -871,11 +872,13 @@ class BackfillGateDatesTest(testing_config.CustomTestCase):
 class FetchWebdxFeatureIdTest(testing_config.CustomTestCase):
 
    def setUp(self):
+     logging.disable(logging.CRITICAL)
      self.handler = maintenance_scripts.FetchWebdxFeatureId()
      self.webdx_features = WebdxFeatures(feature_ids = ['test1'])
      self.webdx_features.put()
 
    def tearDown(self):
+     logging.disable(logging.NOTSET)
      for entity in WebdxFeatures.query():
        entity.key.delete()
 

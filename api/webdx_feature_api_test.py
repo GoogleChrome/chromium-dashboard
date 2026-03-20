@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import logging
 import testing_config
 from collections import OrderedDict
 
@@ -57,6 +58,7 @@ class WebFeatureIDsAPITest(testing_config.CustomTestCase):
 class WebdxFeatureAPITest(testing_config.CustomTestCase):
 
   def setUp(self):
+    logging.disable(logging.CRITICAL)
     self.webdx_observer = WebDXFeatureObserver(bucket_id=3, property_name='css')
     self.webdx_observer.put()
 
@@ -64,6 +66,7 @@ class WebdxFeatureAPITest(testing_config.CustomTestCase):
     self.request_path = '/api/v0/webdxfeatures'
 
   def tearDown(self):
+    logging.disable(logging.NOTSET)
     for entity in WebDXFeatureObserver.query():
       entity.key.delete()
 
