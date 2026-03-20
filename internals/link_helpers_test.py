@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import logging
 import testing_config
 from unittest import mock
 from unittest import skip
@@ -31,6 +32,13 @@ from internals.link_helpers import (
 
 
 class LinkHelperTest(testing_config.CustomTestCase):
+
+  def setUp(self):
+    logging.disable(logging.CRITICAL)
+
+  def tearDown(self):
+    logging.disable(logging.NOTSET)
+
   def test_specs_url(self):
     urls = [
       "https://w3c.github.io/presentation-api/",

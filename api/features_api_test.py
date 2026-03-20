@@ -13,6 +13,7 @@
 # limitations under the License.
 
 from datetime import datetime
+import logging
 import testing_config  # Must be imported before the module under test.
 
 import flask
@@ -38,6 +39,7 @@ def _datetime_to_str(dt):
 class FeaturesAPITestDelete(testing_config.CustomTestCase):
 
   def setUp(self):
+    logging.disable(logging.CRITICAL)
     self.feature_1 = FeatureEntry(
         name='feature one', summary='sum', category=1,
         intent_stage=core_enums.INTENT_IMPLEMENT,
@@ -58,6 +60,7 @@ class FeaturesAPITestDelete(testing_config.CustomTestCase):
     self.random_user.put()
 
   def tearDown(self):
+    logging.disable(logging.NOTSET)
     cache_key = '%s|%s' % (
         FeatureEntry.DEFAULT_CACHE_KEY, self.feature_1.key.integer_id())
     for kind in [Activity, user_models.AppUser, FeatureEntry, Stage]:
@@ -148,6 +151,7 @@ class FeaturesAPITestDelete(testing_config.CustomTestCase):
 class FeaturesAPITest(testing_config.CustomTestCase):
 
   def setUp(self):
+    logging.disable(logging.CRITICAL)
     self.feature_1 = FeatureEntry(
         name='feature one', summary='sum Z', feature_type=0,
         owner_emails=['feature_owner@example.com'], category=1,
@@ -204,6 +208,7 @@ class FeaturesAPITest(testing_config.CustomTestCase):
     self.app_admin.put()
 
   def tearDown(self):
+    logging.disable(logging.NOTSET)
     for kind in [FeatureEntry, Gate, Stage, user_models.AppUser]:
       for entity in kind.query():
         entity.key.delete()

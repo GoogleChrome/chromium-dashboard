@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import logging
 import testing_config  # Must be imported before the module under test.
 from unittest import mock
 
@@ -21,6 +22,7 @@ from internals.core_models import FeatureEntry, Stage
 
 class OTProcessRemindersTest(testing_config.CustomTestCase):
   def setUp(self):
+    logging.disable(logging.CRITICAL)
     self.feature_1 = FeatureEntry(
         feature_type=1, name='feature one', summary='sum', category=1)
     self.feature_1.put()
@@ -107,6 +109,7 @@ class OTProcessRemindersTest(testing_config.CustomTestCase):
     ]
 
   def tearDown(self):
+    logging.disable(logging.NOTSET)
     for kind in [FeatureEntry, Stage]:
       for entity in kind.query():
         entity.key.delete()
