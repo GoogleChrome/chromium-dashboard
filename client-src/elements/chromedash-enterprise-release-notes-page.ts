@@ -732,7 +732,9 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
         >
           ${renderRelativeDate(f.updated.when)}
         </a>
-        by ${f.updated.by}
+        by ${f.updated.by} -
+        <b>Accurate as of:</b>
+        ${f.accurate_as_of ? f.accurate_as_of.split(' ')[0] : 'Unknown'}
         <b>></b>
       </p>
     `;
