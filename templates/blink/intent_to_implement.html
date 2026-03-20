@@ -314,7 +314,7 @@
 <br>
 {%- if feature.feature_type_int != 2 %}
 <div><b>Requires code in //chrome?</b></div>
-{{feature.requires_embedder_support}}
+{{ show_value(feature.requires_embedder_support) }}
 {%- endif -%}
 
 {%- if feature.browsers.chrome.bug -%}
