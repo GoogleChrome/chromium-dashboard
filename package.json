@@ -100,7 +100,7 @@
     "@lit/task": "^1.0.3",
     "@types/google.accounts": "^0.0.18",
     "@types/google.visualization": "^0.0.74",
-    "csv-parse": "^6.1.0",
+    "csv-parse": "^6.2.1",
     "dompurify": "^3.3.3",
     "lit": "^3",
     "marked": "^17.0.4",
