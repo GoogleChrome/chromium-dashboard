@@ -88,7 +88,7 @@
     "path-parse": ">=1.0.7",
     "prettier": "^3.8.1",
     "regenerator-runtime": "^0.14.1",
-    "rollup": "^4.59.0",
+    "rollup": "^4.60.0",
     "rollup-plugin-css-only": "^4.5.5",
     "sinon": "^21.0.3",
     "tar": ">=7.5.11",
