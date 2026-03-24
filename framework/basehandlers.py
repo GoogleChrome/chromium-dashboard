@@ -95,6 +95,12 @@ class BaseHandler(flask.views.MethodView):
     else:
       logging.info('Abort %r' % status)
 
+    if isinstance(msg, dict):
+      resp = flask.make_response(flask.jsonify(msg), status)
+      for k, v in headers.items():
+        resp.headers[k] = v
+      flask.abort(resp)
+
     try:
       if msg:
         flask.abort(status, description=msg, **kwargs)
