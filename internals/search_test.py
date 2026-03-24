@@ -473,25 +473,35 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
     self.assertFalse(search.is_cacheable('starred-by:me', True))
     self.assertFalse(search.is_cacheable('owner:me', True))
     self.assertFalse(search.is_cacheable('pending-approval-by:me', True))
+    self.assertFalse(search.is_cacheable('pending-review-by:me', True))
+    self.assertFalse(search.is_cacheable('awaiting-review-by:me', True))
     self.assertFalse(search.is_cacheable('is:recently-reviewed', True))
     self.assertFalse(search.is_cacheable('created.when<now', True))
     self.assertFalse(search.is_cacheable('shipping>current_stable', True))
     self.assertFalse(search.is_cacheable('canvas', False))
 
   @mock.patch('internals.search.process_pending_approval_me_query')
+  @mock.patch('internals.search.process_pending_review_me_query')
   @mock.patch('internals.search.process_starred_me_query')
   @mock.patch('internals.search_queries.handle_me_query_async')
   @mock.patch('internals.search.process_recent_reviews_query')
   def test_process_query__predefined(
-      self, mock_recent, mock_own_me, mock_star_me, mock_pend_me):
+      self, mock_recent, mock_own_me, mock_star_me, mock_pend_rev_me, mock_pend_me):
     """We can match predefined queries."""
     mock_recent.return_value = [self.featureentry_1.key.integer_id()]
     mock_own_me.return_value = [self.featureentry_2.key.integer_id()]
     mock_star_me.return_value = [self.featureentry_1.key.integer_id()]
     mock_pend_me.return_value = [self.featureentry_2.key.integer_id()]
+    mock_pend_rev_me.return_value = [self.featureentry_2.key.integer_id()]
 
     actual_pending, tc = search.process_query('pending-approval-by:me')
     self.assertEqual(actual_pending[0]['name'], 'feature 2')
+
+    actual_pending_rev, tc = search.process_query('pending-review-by:me')
+    self.assertEqual(actual_pending_rev[0]['name'], 'feature 2')
+
+    actual_awaiting_rev, tc = search.process_query('awaiting-review-by:me')
+    self.assertEqual(actual_awaiting_rev[0]['name'], 'feature 2')
 
     actual_star_me, tc = search.process_query('starred-by:me')
     self.assertEqual(actual_star_me[0]['name'], 'feature 1')
@@ -503,19 +513,27 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
     self.assertEqual(actual_recent[0]['name'],'feature 1')
 
   @mock.patch('internals.search.process_pending_approval_me_query')
+  @mock.patch('internals.search.process_pending_review_me_query')
   @mock.patch('internals.search.process_starred_me_query')
   @mock.patch('internals.search_queries.handle_me_query_async')
   @mock.patch('internals.search.process_recent_reviews_query')
   def test_process_query__negated_predefined(
-      self, mock_recent, mock_own_me, mock_star_me, mock_pend_me):
+      self, mock_recent, mock_own_me, mock_star_me, mock_pend_rev_me, mock_pend_me):
     """We can match predefined queries."""
     mock_recent.return_value = [self.featureentry_1.key.integer_id()]
     mock_own_me.return_value = [self.featureentry_2.key.integer_id()]
     mock_star_me.return_value = [self.featureentry_1.key.integer_id()]
     mock_pend_me.return_value = [self.featureentry_2.key.integer_id()]
+    mock_pend_rev_me.return_value = [self.featureentry_2.key.integer_id()]
 
     actual_pending, tc = search.process_query('-pending-approval-by:me')
     self.assertEqual(actual_pending[0]['name'], 'feature 1')
+
+    actual_pending_rev, tc = search.process_query('-pending-review-by:me')
+    self.assertEqual(actual_pending_rev[0]['name'], 'feature 1')
+
+    actual_awaiting_rev, tc = search.process_query('-awaiting-review-by:me')
+    self.assertEqual(actual_awaiting_rev[0]['name'], 'feature 1')
 
     actual_star_me, tc = search.process_query('-starred-by:me')
     self.assertEqual(actual_star_me[0]['name'], 'feature 2')
