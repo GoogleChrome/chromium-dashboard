@@ -766,44 +766,65 @@ class SPAHandler(FlaskHandler):
 
 def get_spa_template_data(handler_obj, defaults):
   """Check permissions then let spa.html do its thing."""
+  # Determine if this route requires a signed-in user.
+  requires_signin = (
+      defaults.get('require_signin') or
+      defaults.get('require_create_feature') or
+      defaults.get('require_edit_feature') or
+      defaults.get('require_admin_site') or
+      defaults.get('is_enterprise_page')
+  )
+
   # Check if the page requires user to sign in
-  if defaults.get('require_signin') and not handler_obj.get_current_user():
+  if requires_signin and not handler_obj.get_current_user():
     common_data = handler_obj.get_common_data()
     if 'loginStatus=False' in common_data['current_path']:
       return {}
     return flask.redirect(settings.LOGIN_PAGE_URL), handler_obj.get_headers()
 
-  # Check if the page requires create feature permission
-  if defaults.get('require_create_feature'):
-    redirect_resp = permissions.validate_feature_create_permission(handler_obj)
-    if redirect_resp:
-      return redirect_resp
+  try:
+    # Check if the page requires create feature permission
+    if defaults.get('require_create_feature'):
+      redirect_resp = permissions.validate_feature_create_permission(handler_obj)
+      if redirect_resp:
+        return redirect_resp
 
-  # Validate the user has edit permissions and redirect if needed.
-  if defaults.get('require_edit_feature'):
-    feature_id = defaults.get('feature_id')
-    if not feature_id:
-      handler_obj.abort(500, msg='Cannot get feature ID from the URL')
-    redirect_resp = permissions.validate_feature_edit_permission(
-        handler_obj, feature_id)
-    if redirect_resp:
-      return redirect_resp
+    # Validate the user has edit permissions and redirect if needed.
+    if defaults.get('require_edit_feature'):
+      feature_id = defaults.get('feature_id')
+      if not feature_id:
+        handler_obj.abort(500, msg='Cannot get feature ID from the URL')
+      redirect_resp = permissions.validate_feature_edit_permission(
+          handler_obj, feature_id)
+      if redirect_resp:
+        return redirect_resp
 
-  # Validate the user has admin permissions and redirect if needed.
-  if defaults.get('require_admin_site'):
-    user = handler_obj.get_current_user()
-    # Should have already done the require_signin check.
-    # If for reason, we don't let's treat it as the main 403 case.
-    if not user or not permissions.can_admin_site(user):
-      handler_obj.abort(403, msg='Cannot perform admin actions')
+    # Validate the user has admin permissions and redirect if needed.
+    if defaults.get('require_admin_site'):
+      user = handler_obj.get_current_user()
+      # Should have already done the require_signin check.
+      # If for reason, we don't let's treat it as the main 403 case.
+      if not user or not permissions.can_admin_site(user):
+        handler_obj.abort(403, msg='Cannot perform admin actions')
 
-  # Validate the user has a google or chromium account and redirect if needed.
-  if defaults.get('is_enterprise_page'):
-    user = handler_obj.get_current_user()
-    # Should have already done the require_signin check.
-    # If for reason, we don't let's treat it as the main 403 case.
-    if not user or not permissions.is_google_or_chromium_account(user):
-      handler_obj.abort(403, msg='You cannot access this page')
+    # Validate the user has a google or chromium account and redirect if needed.
+    if defaults.get('is_enterprise_page'):
+      user = handler_obj.get_current_user()
+      # Should have already done the require_signin check.
+      # If for reason, we don't let's treat it as the main 403 case.
+      if not user or not permissions.is_google_or_chromium_account(user):
+        handler_obj.abort(403, msg='You cannot access this page')
+
+  except werkzeug.exceptions.Forbidden:
+    # If the user is logged in but lacks permission, redirect them to a safe page
+    # instead of showing a generic white 403 error page.
+    if defaults.get('require_edit_feature') and defaults.get('feature_id'):
+      try:
+        safe_feature_id = int(defaults.get('feature_id'))
+        return flask.redirect(f"/feature/{safe_feature_id}?error=403"), handler_obj.get_headers()
+      except (ValueError, TypeError):
+        pass
+    return flask.redirect('/features?error=403'), handler_obj.get_headers()
 
   return {} # no handler_data needed to be returned
 

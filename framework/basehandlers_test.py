@@ -1279,7 +1279,7 @@ class GetSPATemplateDataTests(testing_config.CustomTestCase):
     testing_config.sign_out()
     with test_app.test_request_context('/must_have_create'):
       defaults = {'require_create_feature': True}
-      actual_redirect = basehandlers.get_spa_template_data(
+      actual_redirect, actual_headers = basehandlers.get_spa_template_data(
           self.handler, defaults)
 
     self.assertEqual(302, actual_redirect.status_code)
@@ -1291,9 +1291,11 @@ class GetSPATemplateDataTests(testing_config.CustomTestCase):
     testing_config.sign_in('user@example.com', 111)
     with test_app.test_request_context('/must_have_create'):
       defaults = {'require_create_feature': True}
-      with self.assertRaises(werkzeug.exceptions.Forbidden):
-        basehandlers.get_spa_template_data(
-            self.handler, defaults)
+      actual_redirect, actual_headers = basehandlers.get_spa_template_data(
+          self.handler, defaults)
+
+    self.assertEqual(302, actual_redirect.status_code)
+    self.assertEqual('/features?error=403', actual_redirect.headers['location'])
 
   def test_get_spa_template_data__create_perm_ok(self):
     """This page requires permission to create, and user has it."""
@@ -1324,7 +1326,7 @@ class GetSPATemplateDataTests(testing_config.CustomTestCase):
       defaults = {
           'require_edit_feature': True,
           'feature_id': self.fe_1.key.integer_id()}
-      actual_redirect = basehandlers.get_spa_template_data(
+      actual_redirect, actual_headers = basehandlers.get_spa_template_data(
           self.handler, defaults)
 
     self.assertEqual(302, actual_redirect.status_code)
@@ -1338,8 +1340,11 @@ class GetSPATemplateDataTests(testing_config.CustomTestCase):
       defaults = {
           'require_edit_feature': True,
           'feature_id': self.fe_1.key.integer_id()}
-      with self.assertRaises(werkzeug.exceptions.Forbidden):
-        basehandlers.get_spa_template_data(self.handler, defaults)
+      actual_redirect, actual_headers = basehandlers.get_spa_template_data(
+          self.handler, defaults)
+
+    self.assertEqual(302, actual_redirect.status_code)
+    self.assertEqual(f"/feature/{self.fe_1.key.integer_id()}?error=403", actual_redirect.headers['location'])
 
   def test_get_spa_template_data__edit_perm_ok(self):
     """This page requires editing a feature, and user has it."""
@@ -1357,16 +1362,23 @@ class GetSPATemplateDataTests(testing_config.CustomTestCase):
     testing_config.sign_out()
     with test_app.test_request_context('/must_have_admin'):
       defaults = {'require_admin_site': True}
-      with self.assertRaises(werkzeug.exceptions.Forbidden):
-        basehandlers.get_spa_template_data(self.handler, defaults)
+      actual_redirect, actual_headers = basehandlers.get_spa_template_data(
+          self.handler, defaults)
+
+    self.assertEqual(302, actual_redirect.status_code)
+    self.assertEqual(
+        settings.LOGIN_PAGE_URL, actual_redirect.headers['location'])
 
   def test_get_spa_template_data__admin_perm_no_permission(self):
     """This page requires admin perms, but user lacks it."""
     testing_config.sign_in('user@example.com', 111)
     with test_app.test_request_context('/must_have_admin'):
       defaults = {'require_admin_site': True}
-      with self.assertRaises(werkzeug.exceptions.Forbidden):
-        basehandlers.get_spa_template_data(self.handler, defaults)
+      actual_redirect, actual_headers = basehandlers.get_spa_template_data(
+          self.handler, defaults)
+
+    self.assertEqual(302, actual_redirect.status_code)
+    self.assertEqual('/features?error=403', actual_redirect.headers['location'])
 
   def test_get_spa_template_data__admin_perm_ok(self):
     """This page requires admin perms, and user has it."""
