@@ -85,6 +85,28 @@ class BaseHandler(flask.views.MethodView):
       logging.info('Abort %r' % status)
       flask.abort(status, **kwargs)
 
+  def abort_with_headers(self, status, headers, msg=None, **kwargs) -> NoReturn:
+    """Support webapp2-style with custom headers."""
+    if msg:
+      if status == 500:
+        logging.error('ISE: %s' % msg)
+      else:
+        logging.info('Abort %r: %s' % (status, msg))
+    else:
+      logging.info('Abort %r' % status)
+
+    try:
+      if msg:
+        flask.abort(status, description=msg, **kwargs)
+      else:
+        flask.abort(status, **kwargs)
+    except werkzeug.exceptions.HTTPException as e:
+      response = e.get_response()
+      for k, v in headers.items():
+        response.headers[k] = v
+      flask.abort(response)
+
+
   def redirect(self, url):
     """Support webapp2-style, e.g., return self.redirect(url)."""
     return flask.redirect(url)
