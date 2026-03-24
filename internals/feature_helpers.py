@@ -266,6 +266,7 @@ def get_in_milestone(milestone: int,
     # Shipping stages with a matching desktop milestone.
     # Note: Enterprise features use STAGE_ENT_ROLLOUT and are NOT included.
     q = Stage.query(Stage.milestones.desktop_first == milestone,
+        Stage.archived == False,
         ndb.OR(Stage.stage_type == STAGE_BLINK_SHIPPING,
             Stage.stage_type == STAGE_PSA_SHIPPING,
             Stage.stage_type == STAGE_FAST_SHIPPING,
@@ -277,12 +278,14 @@ def get_in_milestone(milestone: int,
     # but no desktop milestone.
     q = Stage.query(Stage.milestones.android_first == milestone,
         Stage.milestones.desktop_first == None,
+        Stage.archived == False,
         Stage.stage_type.IN((STAGE_BLINK_SHIPPING, STAGE_PSA_SHIPPING,
             STAGE_FAST_SHIPPING, STAGE_DEP_SHIPPING)))
     android_only_shipping_future = q.fetch_async()
 
     # Origin trial stages (Desktop) in this milestone.
     q = Stage.query(Stage.milestones.desktop_first == milestone,
+        Stage.archived == False,
         Stage.stage_type.IN((STAGE_BLINK_ORIGIN_TRIAL, STAGE_FAST_ORIGIN_TRIAL,
             STAGE_DEP_DEPRECATION_TRIAL)))
     desktop_origin_trial_future = q.fetch_async()
@@ -290,6 +293,7 @@ def get_in_milestone(milestone: int,
     # Origin trial stages (Android) in this milestone.
     q = Stage.query(Stage.milestones.android_first == milestone,
         Stage.milestones.desktop_first == None,
+        Stage.archived == False,
         Stage.stage_type.IN((STAGE_BLINK_ORIGIN_TRIAL, STAGE_FAST_ORIGIN_TRIAL,
             STAGE_DEP_DEPRECATION_TRIAL)))
     android_origin_trial_future = q.fetch_async()
@@ -297,12 +301,14 @@ def get_in_milestone(milestone: int,
     # Origin trial stages (Webview) in this milestone.
     q = Stage.query(Stage.milestones.webview_first == milestone,
         Stage.milestones.desktop_first == None,
+        Stage.archived == False,
         Stage.stage_type.IN((STAGE_BLINK_ORIGIN_TRIAL, STAGE_FAST_ORIGIN_TRIAL,
             STAGE_DEP_DEPRECATION_TRIAL)))
     webview_origin_trial_future = q.fetch_async()
 
     # Dev trial stages (Desktop) in this milestone.
     q = Stage.query(Stage.milestones.desktop_first == milestone,
+        Stage.archived == False,
         Stage.stage_type.IN((STAGE_BLINK_DEV_TRIAL, STAGE_PSA_DEV_TRIAL,
             STAGE_FAST_DEV_TRIAL, STAGE_DEP_DEV_TRIAL)))
     desktop_dev_trial_future = q.fetch_async()
@@ -310,6 +316,7 @@ def get_in_milestone(milestone: int,
     # Dev trial stages (Android) in this milestone.
     q = Stage.query(Stage.milestones.android_first == milestone,
         Stage.milestones.desktop_first == None,
+        Stage.archived == False,
         Stage.stage_type.IN((STAGE_BLINK_DEV_TRIAL, STAGE_PSA_DEV_TRIAL,
             STAGE_FAST_DEV_TRIAL, STAGE_DEP_DEV_TRIAL)))
     android_dev_trial_future = q.fetch_async()
@@ -318,6 +325,7 @@ def get_in_milestone(milestone: int,
     # web platform features may add them.  Enterprise features are
     # filtered out below.
     q = Stage.query(Stage.rollout_milestone == milestone,
+        Stage.archived == False,
         Stage.stage_type == STAGE_ENT_ROLLOUT)
     q = q.filter()
     rollout_future = q.fetch_async()
