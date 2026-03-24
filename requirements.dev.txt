@@ -13,3 +13,6 @@ types-redis
 types-requests
 types-setuptools
 types-pytz
+pytest==8.3.4
+pytest-xdist==3.6.1
+requests==2.32.3
