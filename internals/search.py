@@ -77,6 +77,23 @@ def process_pending_approval_me_query() -> list[int] | Future:
   return future_feature_ids
 
 
+def process_pending_review_me_query() -> list[int] | Future:
+  """Return a list of features needing review by current user (excludes NEEDS_WORK)."""
+  user = users.get_current_user()
+  if not user:
+    return []
+
+  approvable_gate_types = approval_defs.fields_approvable_by(user)
+  if not approvable_gate_types:
+    logging.info('User has no approvable_gate_types')
+    return []
+  query = Gate.query(
+      Gate.state.IN(Gate.REVIEW_STATES),
+      Gate.gate_type.IN(approvable_gate_types))
+  future_feature_ids = query.fetch_async(projection=['feature_id'])
+  return future_feature_ids
+
+
 def process_starred_me_query() -> list[int]:
   """Return a list of features starred by the current user."""
   user = users.get_current_user()
@@ -217,7 +234,8 @@ TERM_RE = re.compile(
 SIMPLE_QUERY_TERMS = [
     'deleted_unlisted=false', 'deleted_unlisted_enterprise=false',
     'pending-approval-by:me', 'starred-by:me',
-    'is:recently-reviewed', 'owner:me', 'editor:me', 'can_edit:me', 'cc:me']
+    'is:recently-reviewed', 'owner:me', 'editor:me', 'can_edit:me', 'cc:me',
+    'pending-review-by:me']
 
 
 def process_query_term(
@@ -249,6 +267,10 @@ def process_predefined_query_term(
     return process_exclude_deleted_unlisted_query()
 
   if query_term == 'pending-approval-by:me':
+    return process_pending_approval_me_query()
+  if query_term == 'pending-review-by:me':
+    return process_pending_review_me_query()
+  if query_term == 'awaiting-review-by:me':
     return process_pending_approval_me_query()
   if query_term == 'starred-by:me':
     return process_starred_me_query()

@@ -60,7 +60,7 @@ describe('chromedash-myfeatures-page', () => {
         featureICanEdit = item;
       if (itemHTML.includes('summary="Features I starred"'))
         featureIStarred = item;
-      if (itemHTML.includes('summary="Features pending my approval"'))
+      if (itemHTML.includes('summary="Features pending my review"'))
         pendingReview = item;
       if (itemHTML.includes('summary="Recently reviewed features"'))
         recentReview = item;
@@ -108,18 +108,18 @@ describe('chromedash-myfeatures-page', () => {
         featureICanEdit = item;
       if (itemHTML.includes('summary="Features I starred"'))
         featureIStarred = item;
-      if (itemHTML.includes('summary="Features pending my approval"'))
+      if (itemHTML.includes('summary="Features pending my review"'))
         pendingReview = item;
       if (itemHTML.includes('summary="Recently reviewed features"'))
         recentReview = item;
     });
 
-    // "Recently reviewed features" exists and has a correct query
+    // "Features pending my review" exists and has a correct query
     assert.exists(pendingReview);
-    assert.include(pendingReview.innerHTML, 'query="pending-approval-by:me"');
+    assert.include(pendingReview.innerHTML, 'query="pending-review-by:me"');
     assert.include(pendingReview.innerHTML, 'showenterprise');
 
-    // "Features pending my approval" exists and has a correct query
+    // "Recently reviewed features" exists and has a correct query
     assert.exists(recentReview);
     assert.include(recentReview.innerHTML, 'query="is:recently-reviewed"');
     assert.include(recentReview.innerHTML, 'showenterprise');

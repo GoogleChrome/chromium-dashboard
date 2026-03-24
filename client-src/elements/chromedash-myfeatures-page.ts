@@ -104,8 +104,8 @@ export class ChromedashMyFeaturesPage extends LitElement {
       : nothing;
 
     const pendingBox = this.renderBox(
-      'Features pending my approval',
-      'pending-approval-by:me',
+      'Features pending my review',
+      'pending-review-by:me',
       'approvals',
       'gate.requested_on'
     );
