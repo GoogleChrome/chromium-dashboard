@@ -235,7 +235,7 @@ SIMPLE_QUERY_TERMS = [
     'deleted_unlisted=false', 'deleted_unlisted_enterprise=false',
     'pending-approval-by:me', 'starred-by:me',
     'is:recently-reviewed', 'owner:me', 'editor:me', 'can_edit:me', 'cc:me',
-    'pending-review-by:me', 'awaiting-review-by:me']
+    'pending-review-by:me']
 
 
 def process_query_term(

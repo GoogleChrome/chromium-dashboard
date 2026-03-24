@@ -500,9 +500,6 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
     actual_pending_rev, tc = search.process_query('pending-review-by:me')
     self.assertEqual(actual_pending_rev[0]['name'], 'feature 2')
 
-    actual_awaiting_rev, tc = search.process_query('awaiting-review-by:me')
-    self.assertEqual(actual_awaiting_rev[0]['name'], 'feature 2')
-
     actual_star_me, tc = search.process_query('starred-by:me')
     self.assertEqual(actual_star_me[0]['name'], 'feature 1')
 
@@ -531,9 +528,6 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
 
     actual_pending_rev, tc = search.process_query('-pending-review-by:me')
     self.assertEqual(actual_pending_rev[0]['name'], 'feature 1')
-
-    actual_awaiting_rev, tc = search.process_query('-awaiting-review-by:me')
-    self.assertEqual(actual_awaiting_rev[0]['name'], 'feature 1')
 
     actual_star_me, tc = search.process_query('-starred-by:me')
     self.assertEqual(actual_star_me[0]['name'], 'feature 2')
@@ -722,4 +716,5 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
     self.assertEqual(
         search.process_query('any:thing e=lse'),
         ([], 0))
+    self.assertEqual(2, len(mock_warn.mock_calls))
     self.assertEqual(2, len(mock_warn.mock_calls))
