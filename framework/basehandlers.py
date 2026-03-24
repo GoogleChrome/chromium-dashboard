@@ -73,27 +73,27 @@ class BaseHandler(flask.views.MethodView):
   def request(self):
     return flask.request
 
-  def abort(self, status, msg=None, **kwargs) -> NoReturn:
+  def abort(self, status: int, msg: Optional[str|dict]=None, **kwargs) -> NoReturn:
     """Support webapp2-style, e.g., self.abort(400)."""
     if msg:
       if status == 500:
-        logging.error('ISE: %s' % msg)
+        logging.error(f'ISE: {msg}')
       else:
-        logging.info('Abort %r: %s' % (status, msg))
+        logging.info(f'Abort {status}: {msg}')
       flask.abort(status, description=msg, **kwargs)
     else:
-      logging.info('Abort %r' % status)
+      logging.info(f'Abort {status}')
       flask.abort(status, **kwargs)
 
-  def abort_with_headers(self, status, headers, msg=None, **kwargs) -> NoReturn:
+  def abort_with_headers(self, status: int, headers: dict[str, str], msg: Optional[str|dict]=None, **kwargs) -> NoReturn:
     """Support webapp2-style with custom headers."""
     if msg:
       if status == 500:
-        logging.error('ISE: %s' % msg)
+        logging.error(f'ISE: {msg}')
       else:
-        logging.info('Abort %r: %s' % (status, msg))
+        logging.info(f'Abort {status}: {msg}')
     else:
-      logging.info('Abort %r' % status)
+      logging.info(f'Abort {status}')
 
     if isinstance(msg, dict):
       resp = flask.make_response(flask.jsonify(msg), status)

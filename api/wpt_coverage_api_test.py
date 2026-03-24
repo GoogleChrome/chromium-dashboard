@@ -161,8 +161,6 @@ class WPTCoverageAPITest(testing_config.CustomTestCase):
         self.handler.do_post(feature_id=feature_id)
 
       # Verify the status code inside the exception.
-
-
       self.assertEqual(cm.exception.response.status_code, 409)
       self.assertIn('Retry-After', cm.exception.response.headers)
       self.assertIn('Retry-After', cm.exception.response.headers)
