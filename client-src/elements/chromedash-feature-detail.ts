@@ -1,21 +1,21 @@
 import {LitElement, TemplateResult, css, html, nothing} from 'lit';
-import {openAddStageDialog} from './chromedash-add-stage-dialog';
+import {openAddStageDialog} from './chromedash-add-stage-dialog.js';
 import {
   dialogTypes,
   openFinalizeExtensionDialog,
   openPrereqsDialog,
-} from './chromedash-ot-prereqs-dialog';
+} from './chromedash-ot-prereqs-dialog.js';
 import {
   openPreflightDialog,
   somePendingGates,
   somePendingPrereqs,
-} from './chromedash-preflight-dialog';
+} from './chromedash-preflight-dialog.js';
 import {
   FLAT_ENTERPRISE_METADATA_FIELDS,
   FLAT_METADATA_FIELDS,
   FLAT_TRIAL_EXTENSION_FIELDS,
   FORMS_BY_STAGE_TYPE,
-} from './form-definition';
+} from './form-definition.js';
 import {
   FEATURE_TYPES,
   FEATURE_TYPES_WITHOUT_ENTERPRISE,
@@ -23,19 +23,23 @@ import {
   OT_SETUP_STATUS_OPTIONS,
   STAGE_SHORT_NAMES,
   STAGE_TYPES_ORIGIN_TRIAL,
-} from './form-field-enums';
-import {makeDisplaySpecs} from './form-field-specs';
-import {getFieldValueFromFeature, hasFieldValue, isDefinedValue} from './utils';
+} from './form-field-enums.js';
+import {makeDisplaySpecs} from './form-field-specs.js';
+import {
+  getFieldValueFromFeature,
+  hasFieldValue,
+  isDefinedValue,
+} from './utils.js';
 
 import {property, state} from 'lit/decorators.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
-import {Feature, FeatureLink, StageDict, User} from '../js-src/cs-client';
-import './chromedash-activity-log';
-import './chromedash-callout';
-import './chromedash-gate-chip';
-import './chromedash-wpt-eval-button';
-import {GateDict} from './chromedash-gate-chip';
-import {Process, ProgressItem} from './chromedash-gate-column';
+import {Feature, FeatureLink, StageDict, User} from '../js-src/cs-client.js';
+import './chromedash-activity-log.js';
+import './chromedash-callout.js';
+import './chromedash-gate-chip.js';
+import './chromedash-wpt-eval-button.js';
+import {GateDict} from './chromedash-gate-chip.js';
+import {Process, ProgressItem} from './chromedash-gate-column.js';
 import {
   GATE_ACTIVE_REVIEW_STATES,
   GATE_FINISHED_REVIEW_STATES,
@@ -43,7 +47,7 @@ import {
   GATE_TEAM_ORDER,
   GATE_TYPES,
   STAGE_PSA_SHIPPING,
-} from './form-field-enums';
+} from './form-field-enums.js';
 import {
   autolink,
   findProcessStage,

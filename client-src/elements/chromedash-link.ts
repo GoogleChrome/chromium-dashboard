@@ -4,9 +4,9 @@ import {SlBadge} from '@shoelace-style/shoelace';
 import {css, html, LitElement, TemplateResult} from 'lit';
 import {customElement, property, state} from 'lit/decorators.js';
 import {ifDefined} from 'lit/directives/if-defined.js';
-import {SHARED_STYLES} from '../css/shared-css';
-import {FeatureLink} from '../js-src/cs-client';
-import {ExternalReviewer} from './external-reviewers';
+import {SHARED_STYLES} from '../css/shared-css.js';
+import {FeatureLink} from '../js-src/cs-client.js';
+import {ExternalReviewer} from './external-reviewers.js';
 
 // LINK_TYPES should be consistent with the server link_helpers.py
 const LINK_TYPE_CHROMIUM_BUG = 'chromium_bug';

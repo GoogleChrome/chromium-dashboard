@@ -1,6 +1,6 @@
 import {expect, fixture} from '@open-wc/testing';
 import {html} from 'lit';
-import './chromedash-vendor-views';
+import './chromedash-vendor-views.js';
 
 it('shows content if no link', async () => {
   const el = await fixture(

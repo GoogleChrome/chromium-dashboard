@@ -1,7 +1,7 @@
 import {html} from 'lit';
 import SlCheckbox from '@shoelace-style/shoelace/dist/components/checkbox/checkbox.js';
 import {assert, fixture} from '@open-wc/testing';
-import {ChromedashTextarea} from './chromedash-textarea';
+import {ChromedashTextarea} from './chromedash-textarea.js';
 
 describe('chromedash-textarea', () => {
   it('renders with no data', async () => {

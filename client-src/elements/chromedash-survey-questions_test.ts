@@ -1,9 +1,9 @@
 import {html} from 'lit';
 import {assert, fixture} from '@open-wc/testing';
 import {SlCheckbox} from '@shoelace-style/shoelace';
-import {ChromedashSurveyQuestions} from './chromedash-survey-questions';
-import {ChromeStatusClient} from '../js-src/cs-client';
-import {GATE_TYPES} from './form-field-enums';
+import {ChromedashSurveyQuestions} from './chromedash-survey-questions.js';
+import {ChromeStatusClient} from '../js-src/cs-client.js';
+import {GATE_TYPES} from './form-field-enums.js';
 
 describe('chromedash-survey-questions', () => {
   const featureOwner = {

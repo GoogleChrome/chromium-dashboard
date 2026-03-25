@@ -3,7 +3,7 @@ import {LitElement, TemplateResult, css, html, nothing} from 'lit';
 import {customElement, property, state} from 'lit/decorators.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {User} from '../js-src/cs-client.js';
-import {IS_MOBILE, showToastMessage} from './utils';
+import {IS_MOBILE, showToastMessage} from './utils.js';
 
 export const DRAWER_WIDTH_PX = 200;
 

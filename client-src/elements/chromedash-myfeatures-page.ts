@@ -1,9 +1,9 @@
 import {LitElement, css, html, nothing} from 'lit';
 import {customElement, property, state} from 'lit/decorators.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
-import {User} from '../js-src/cs-client';
-import './chromedash-feature-table';
-import {ChromedashFeatureTable} from './chromedash-feature-table';
+import {User} from '../js-src/cs-client.js';
+import './chromedash-feature-table.js';
+import {ChromedashFeatureTable} from './chromedash-feature-table.js';
 import {showToastMessage} from './utils.js';
 
 @customElement('chromedash-myfeatures-page')
@@ -104,8 +104,8 @@ export class ChromedashMyFeaturesPage extends LitElement {
       : nothing;
 
     const pendingBox = this.renderBox(
-      'Features pending my review',
-      'pending-review-by:me',
+      'Features pending my approval',
+      'pending-approval-by:me',
       'approvals',
       'gate.requested_on'
     );

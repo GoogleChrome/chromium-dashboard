@@ -2,8 +2,8 @@ import {css, html, LitElement, nothing} from 'lit';
 import {customElement, property, state} from 'lit/decorators.js';
 import {createRef, ref, Ref} from 'lit/directives/ref.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
-import {User} from '../js-src/cs-client';
-import './chromedash-activity-log';
+import {User} from '../js-src/cs-client.js';
+import './chromedash-activity-log.js';
 import {showToastMessage} from './utils.js';
 
 @customElement('chromedash-activity-page')

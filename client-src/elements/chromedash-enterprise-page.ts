@@ -1,5 +1,5 @@
 import {html} from 'lit';
-import {ChromedashAllFeaturesPage} from './chromedash-all-features-page';
+import {ChromedashAllFeaturesPage} from './chromedash-all-features-page.js';
 import {customElement} from 'lit/decorators.js';
 
 @customElement('chromedash-enterprise-page')

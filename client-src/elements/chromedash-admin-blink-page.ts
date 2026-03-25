@@ -4,7 +4,7 @@ import {SHARED_STYLES} from '../css/shared-css.js';
 import {VARS} from '../css/_vars-css.js';
 import {LAYOUT_CSS} from '../css/_layout-css.js';
 import {customElement, property, state} from 'lit/decorators.js';
-import './chromedash-admin-blink-component-listing';
+import './chromedash-admin-blink-component-listing.js';
 import {
   DefaultApiInterface,
   OwnersAndSubscribersOfComponent,

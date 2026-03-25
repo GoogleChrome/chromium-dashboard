@@ -1,9 +1,9 @@
 import {assert, fixture} from '@open-wc/testing';
 import {html} from 'lit';
 import sinon from 'sinon';
-import {ChromeStatusClient} from '../js-src/cs-client';
-import {ChromedashGuideEditallPage} from './chromedash-guide-editall-page';
-import './chromedash-toast';
+import {ChromeStatusClient} from '../js-src/cs-client.js';
+import {ChromedashGuideEditallPage} from './chromedash-guide-editall-page.js';
+import './chromedash-toast.js';
 
 describe('chromedash-guide-editall-page', () => {
   const validFeaturePromise = Promise.resolve({

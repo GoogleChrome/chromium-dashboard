@@ -2,7 +2,7 @@
 
 import {LitElement, html} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
-import {FeatureLink} from '../js-src/cs-client';
+import {FeatureLink} from '../js-src/cs-client.js';
 
 /**
  * Use like `<chromedash-vendor-views href="https://evidence/for/the/view"

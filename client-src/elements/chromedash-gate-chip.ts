@@ -1,6 +1,6 @@
 import {LitElement, css, html, nothing} from 'lit';
 import {SHARED_STYLES} from '../css/shared-css.js';
-import {updateURLParams} from './utils';
+import {updateURLParams} from './utils.js';
 import {customElement, property} from 'lit/decorators.js';
 import {Feature, StageDict} from '../js-src/cs-client.js';
 

@@ -1,7 +1,7 @@
 import {expect, fixture} from '@open-wc/testing';
 import {html} from 'lit';
-import './chromedash-link';
-import {_dateTimeFormat} from './chromedash-link';
+import './chromedash-link.js';
+import {_dateTimeFormat} from './chromedash-link.js';
 
 const DAY = 24 * 60 * 60 * 1000;
 

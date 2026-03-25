@@ -1,8 +1,8 @@
 import {html} from 'lit';
 import {assert, fixture} from '@open-wc/testing';
-import {ChromedashMyFeaturesPage} from './chromedash-myfeatures-page';
-import './chromedash-toast';
-import {ChromeStatusClient} from '../js-src/cs-client';
+import {ChromedashMyFeaturesPage} from './chromedash-myfeatures-page.js';
+import './chromedash-toast.js';
+import {ChromeStatusClient} from '../js-src/cs-client.js';
 import sinon from 'sinon';
 
 describe('chromedash-myfeatures-page', () => {
@@ -60,7 +60,7 @@ describe('chromedash-myfeatures-page', () => {
         featureICanEdit = item;
       if (itemHTML.includes('summary="Features I starred"'))
         featureIStarred = item;
-      if (itemHTML.includes('summary="Features pending my review"'))
+      if (itemHTML.includes('summary="Features pending my approval"'))
         pendingReview = item;
       if (itemHTML.includes('summary="Recently reviewed features"'))
         recentReview = item;
@@ -108,18 +108,18 @@ describe('chromedash-myfeatures-page', () => {
         featureICanEdit = item;
       if (itemHTML.includes('summary="Features I starred"'))
         featureIStarred = item;
-      if (itemHTML.includes('summary="Features pending my review"'))
+      if (itemHTML.includes('summary="Features pending my approval"'))
         pendingReview = item;
       if (itemHTML.includes('summary="Recently reviewed features"'))
         recentReview = item;
     });
 
-    // "Features pending my review" exists and has a correct query
+    // "Recently reviewed features" exists and has a correct query
     assert.exists(pendingReview);
-    assert.include(pendingReview.innerHTML, 'query="pending-review-by:me"');
+    assert.include(pendingReview.innerHTML, 'query="pending-approval-by:me"');
     assert.include(pendingReview.innerHTML, 'showenterprise');
 
-    // "Recently reviewed features" exists and has a correct query
+    // "Features pending my approval" exists and has a correct query
     assert.exists(recentReview);
     assert.include(recentReview.innerHTML, 'query="is:recently-reviewed"');
     assert.include(recentReview.innerHTML, 'showenterprise');

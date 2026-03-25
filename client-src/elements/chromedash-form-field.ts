@@ -3,22 +3,25 @@ import {LitElement, TemplateResult, css, html, nothing} from 'lit';
 import {customElement, property, state} from 'lit/decorators.js';
 import {ref} from 'lit/directives/ref.js';
 
-import {ChromedashApp} from './chromedash-app';
-import './chromedash-attachments';
-import './chromedash-textarea';
+import {ChromedashApp} from './chromedash-app.js';
+import './chromedash-attachments.js';
+import './chromedash-textarea.js';
 import {
   ALL_FIELDS,
   FieldUsage,
   resolveFieldForFeature,
-} from './form-field-specs';
+} from './form-field-specs.js';
 import {
   FieldInfo,
   getFieldValueFromFeature,
   showToastMessage,
 } from './utils.js';
-import {Feature, StageDict} from '../js-src/cs-client';
-import {FormattedFeature} from './form-definition';
-import {ALL_INTENT_USAGE_BY_FEATURE_TYPE, UsageType} from './form-field-enums';
+import {Feature, StageDict} from '../js-src/cs-client.js';
+import {FormattedFeature} from './form-definition.js';
+import {
+  ALL_INTENT_USAGE_BY_FEATURE_TYPE,
+  UsageType,
+} from './form-field-enums.js';
 
 interface getFieldValue {
   (fieldName: string, stageOrId: any): any;

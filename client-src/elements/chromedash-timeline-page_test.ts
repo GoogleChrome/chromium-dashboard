@@ -1,8 +1,8 @@
 import {assert, fixture} from '@open-wc/testing';
 import {html} from 'lit';
 import sinon from 'sinon';
-import {ChromedashTimelinePage} from './chromedash-timeline-page';
-import './chromedash-toast';
+import {ChromedashTimelinePage} from './chromedash-timeline-page.js';
+import './chromedash-toast.js';
 
 describe('chromedash-timeline-page', () => {
   /* <chromedash-toast> are initialized at spa.html

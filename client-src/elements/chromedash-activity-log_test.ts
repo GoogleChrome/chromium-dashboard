@@ -3,8 +3,8 @@ import {assert, fixture} from '@open-wc/testing';
 import {
   ChromedashActivity,
   ChromedashActivityLog,
-} from './chromedash-activity-log';
-import {ChromeStatusClient} from '../js-src/cs-client';
+} from './chromedash-activity-log.js';
+import {ChromeStatusClient} from '../js-src/cs-client.js';
 import sinon from 'sinon';
 
 const nonAdminUser = {

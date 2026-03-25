@@ -1,10 +1,10 @@
 import {LitElement, css, html, nothing} from 'lit';
 import {SHARED_STYLES} from '../css/shared-css.js';
-import {findPendingGates} from './chromedash-preflight-dialog';
-import {GATE_TYPES, VOTE_OPTIONS} from './form-field-enums';
+import {findPendingGates} from './chromedash-preflight-dialog.js';
+import {GATE_TYPES, VOTE_OPTIONS} from './form-field-enums.js';
 import {customElement, property} from 'lit/decorators.js';
 import {GateDict} from './chromedash-gate-chip.js';
-import {Feature, StageDict} from '../js-src/cs-client';
+import {Feature, StageDict} from '../js-src/cs-client.js';
 
 let prevoteDialogEl;
 

@@ -29,8 +29,8 @@ import {
   VENDOR_VIEWS_GECKO,
   WEB_DEV_VIEWS,
   WEBFEATURE_USE_COUNTER_TYPES,
-} from './form-field-enums';
-import {unambiguousStageName} from './utils';
+} from './form-field-enums.js';
+import {unambiguousStageName} from './utils.js';
 
 interface FieldAttrs {
   title?: string;

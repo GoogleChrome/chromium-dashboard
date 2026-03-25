@@ -1,11 +1,11 @@
 import {html} from 'lit';
 import {assert, fixture, nextFrame} from '@open-wc/testing';
 import {SlButton} from '@shoelace-style/shoelace';
-import {ChromedashEnterpriseReleaseNotesPage} from './chromedash-enterprise-release-notes-page';
+import {ChromedashEnterpriseReleaseNotesPage} from './chromedash-enterprise-release-notes-page.js';
 import {ENTERPRISE_IMPACT} from './form-field-enums.js';
 import {parseRawQuery, clearURLParams} from './utils.js';
-import './chromedash-toast';
-import {ChromeStatusClient} from '../js-src/cs-client';
+import './chromedash-toast.js';
+import {ChromeStatusClient} from '../js-src/cs-client.js';
 import sinon from 'sinon';
 
 function normalizedTextContent(element) {

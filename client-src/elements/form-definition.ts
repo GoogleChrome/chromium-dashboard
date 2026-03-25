@@ -1,6 +1,6 @@
 import {html, TemplateResult} from 'lit';
-import {Feature, StageDict} from '../js-src/cs-client';
-import * as enums from './form-field-enums';
+import {Feature, StageDict} from '../js-src/cs-client.js';
+import * as enums from './form-field-enums.js';
 
 export interface FormattedFeature {
   category: number;

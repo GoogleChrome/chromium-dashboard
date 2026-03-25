@@ -1,7 +1,7 @@
 import {LitElement, css, html, nothing} from 'lit';
 import {customElement, property, state} from 'lit/decorators.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
-import './chromedash-x-meter';
+import './chromedash-x-meter.js';
 
 interface StackRankItem {
   property_name: string;

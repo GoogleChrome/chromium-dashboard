@@ -1,14 +1,14 @@
 import {html} from 'lit';
 import {assert, fixture} from '@open-wc/testing';
-import {ChromedashReviewStatusIcon} from './chromedash-review-status-icon';
-import {ChromeStatusClient} from '../js-src/cs-client';
+import {ChromedashReviewStatusIcon} from './chromedash-review-status-icon.js';
+import {ChromeStatusClient} from '../js-src/cs-client.js';
 import sinon from 'sinon';
 import {
   GATE_PREPARING,
   VOTE_OPTIONS,
   VOTE_NA_SELF,
   FEATURE_TYPES,
-} from './form-field-enums';
+} from './form-field-enums.js';
 
 const FEATURE = {
   id: 5347893,

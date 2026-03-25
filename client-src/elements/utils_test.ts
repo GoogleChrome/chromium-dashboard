@@ -8,10 +8,10 @@ import {
   getFeatureOutdatedBanner,
   isVerifiedWithinGracePeriod,
   parseRawTimestamp,
-} from './utils';
+} from './utils.js';
 import {assert} from '@open-wc/testing';
-import {OT_SETUP_STATUS_OPTIONS} from './form-field-enums';
-import {Channels, Feature} from '../js-src/cs-client';
+import {OT_SETUP_STATUS_OPTIONS} from './form-field-enums.js';
+import {Channels, Feature} from '../js-src/cs-client.js';
 
 const compareAutolinkResult = (result, expected) => {
   assert.equal(result.length, expected.length);

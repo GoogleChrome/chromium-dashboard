@@ -16,7 +16,7 @@
 
 import {assert, fixture} from '@open-wc/testing';
 
-import {ChromedashFeaturePagination} from './chromedash-feature-pagination';
+import {ChromedashFeaturePagination} from './chromedash-feature-pagination.js';
 
 describe('chromedash-feature-pagination', () => {
   let el: ChromedashFeaturePagination;

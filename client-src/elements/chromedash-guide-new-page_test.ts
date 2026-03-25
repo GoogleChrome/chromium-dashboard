@@ -1,7 +1,7 @@
 import {html} from 'lit';
 import {assert, fixture} from '@open-wc/testing';
-import {ChromedashGuideNewPage} from './chromedash-guide-new-page';
-import {ChromeStatusClient} from '../js-src/cs-client';
+import {ChromedashGuideNewPage} from './chromedash-guide-new-page.js';
+import {ChromeStatusClient} from '../js-src/cs-client.js';
 import sinon from 'sinon';
 
 describe('chromedash-guide-new-page', () => {

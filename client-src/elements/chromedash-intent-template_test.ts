@@ -1,6 +1,6 @@
 import {html} from 'lit';
 import {assert, fixture} from '@open-wc/testing';
-import {ChromedashIntentContent} from './chromedash-intent-content';
+import {ChromedashIntentContent} from './chromedash-intent-content.js';
 
 describe('chromedash-intent-content', () => {
   it('renders with fake data', async () => {

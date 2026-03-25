@@ -1,8 +1,8 @@
 import {assert} from '@open-wc/testing';
-import {Feature, StageDict} from '../js-src/cs-client';
-import {VOTE_OPTIONS} from './form-field-enums';
+import {Feature, StageDict} from '../js-src/cs-client.js';
+import {VOTE_OPTIONS} from './form-field-enums.js';
 import {GateDict} from './chromedash-gate-chip.js';
-import {findPendingGates} from './chromedash-preflight-dialog';
+import {findPendingGates} from './chromedash-preflight-dialog.js';
 
 describe('preflight functions', () => {
   describe('findPendingGates', () => {

@@ -1,7 +1,7 @@
 import {html} from 'lit';
 import {assert, fixture} from '@open-wc/testing';
-import {ChromedashStackRankPage} from './chromedash-stack-rank-page';
-import './chromedash-toast';
+import {ChromedashStackRankPage} from './chromedash-stack-rank-page.js';
+import './chromedash-toast.js';
 import sinon from 'sinon';
 
 describe('chromedash-stack-rank-page', () => {
