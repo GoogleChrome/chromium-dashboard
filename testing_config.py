@@ -24,9 +24,9 @@ os.environ['CURRENT_VERSION_ID'] = 'test.123'
 os.environ['APPLICATION_ID'] = 'testing'
 # Envs for datastore-emulator, same as running `gcloud beta emulators datastore env-init`.
 os.environ['DATASTORE_DATASET'] = 'cr-status-staging'
-os.environ['DATASTORE_EMULATOR_HOST'] = 'localhost:15606'
-os.environ['DATASTORE_EMULATOR_HOST_PATH'] = 'localhost:15606/datastore'
-os.environ['DATASTORE_HOST'] = 'http//localhost:15606'
+os.environ.setdefault('DATASTORE_EMULATOR_HOST', 'localhost:15606')
+os.environ.setdefault('DATASTORE_EMULATOR_HOST_PATH', 'localhost:15606/datastore')
+os.environ.setdefault('DATASTORE_HOST', 'http://localhost:15606')
 os.environ['DATASTORE_PROJECT_ID'] = 'cr-status-staging'
 
 
@@ -85,6 +85,10 @@ def sign_in(user_email, user_id):
 class CustomTestCase(unittest.TestCase):
 
   def run(self, result=None):
+    from framework import rediscache
+    if rediscache.redis_client:
+        rediscache.redis_client.flushall()
+    sign_out()
     client = ndb.Client()
     with client.context():
       super(CustomTestCase, self).run(result=result)

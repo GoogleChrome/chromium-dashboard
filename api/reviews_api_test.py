@@ -150,6 +150,7 @@ class VotesAPITest(testing_config.CustomTestCase):
 
   def test_post__bad_state(self):
     """Handler rejects requests that don't specify a state correctly."""
+    testing_config.sign_in('user@example.com', 12345)
     params = {'state': 'not an int'}
     with test_app.test_request_context(self.request_path, json=params):
       with self.assertRaises(werkzeug.exceptions.BadRequest):

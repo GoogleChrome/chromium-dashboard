@@ -26,7 +26,12 @@ dev-ot-key:
 	gcloud secrets versions access latest --secret=DEV_OT_API_KEY --out-file=ot_api_key.txt --project=cr-status-staging
 
 do-tests:
-	. cs-env/bin/activate && curl -X POST 'http://localhost:15606/reset' && python3.13 -m unittest discover -p '*_test.py' -b
+	. cs-env/bin/activate && curl -X POST 'http://localhost:15606/reset' && \
+	if command -v pytest >/dev/null 2>&1; then \
+		pytest -n auto -q *_test.py api/*_test.py internals/*_test.py framework/*_test.py pages/*_test.py; \
+	else \
+		python3.13 -m unittest discover -p '*_test.py' -b; \
+	fi
 
 start-emulator-persist:
 	gcloud beta emulators datastore start --project=cr-status-staging --host-port=:15606 --use-firestore-in-datastore-mode
