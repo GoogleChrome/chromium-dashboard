@@ -43,11 +43,6 @@ class AccountsAPITest(testing_config.CustomTestCase):
     self.request_path = '/api/v0/accounts/%d' % self.appuser_id
     self.handler = accounts_api.AccountsAPI()
 
-  def tearDown(self):
-    self.appuser_1.key.delete()
-    self.app_admin.key.delete()
-    self.app_editor.key.delete()
-
   def test_create__normal_valid(self):
     """Admin wants to register a normal account."""
     testing_config.sign_in('admin@example.com', 123567890)

@@ -22,9 +22,6 @@ class WebdxFeaturesTest(testing_config.CustomTestCase):
     self.webdx = WebdxFeatures(feature_ids=['abc'])
     self.webdx.put()
 
-  def tearDown(self):
-    self.webdx.key.delete()
-
   def test_get_webdx_feature_id_list(self):
     result = WebdxFeatures.get_webdx_feature_id_list()
 

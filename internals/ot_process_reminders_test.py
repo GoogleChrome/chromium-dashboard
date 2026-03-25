@@ -110,9 +110,6 @@ class OTProcessRemindersTest(testing_config.CustomTestCase):
 
   def tearDown(self):
     logging.disable(logging.NOTSET)
-    for kind in [FeatureEntry, Stage]:
-      for entity in kind.query():
-        entity.key.delete()
 
   def test_build_trials__normal(self):
     """Test that trial data is formatted correctly."""

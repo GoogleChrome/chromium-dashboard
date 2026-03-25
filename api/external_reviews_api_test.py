@@ -103,12 +103,6 @@ class ExternalReviewsAPITest(testing_config.CustomTestCase):
     self.request_path = '/api/v0/external_reviews'
     self.maxDiff = None
 
-  def tearDown(self):
-    kinds: list[ndb.Model] = [FeatureEntry, FeatureLinks, Stage, Gate]
-    for kind in kinds:
-      for entity in kind.query():
-        entity.key.delete()
-
   def test_no_reviews(self):
     """When no reviews have been started, the result is empty."""
     make_feature('Feature one', STAGE_BLINK_PROTOTYPE)

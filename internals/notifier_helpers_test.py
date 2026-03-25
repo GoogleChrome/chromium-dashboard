@@ -43,14 +43,6 @@ class ActivityTest(testing_config.CustomTestCase):
 
     testing_config.sign_in('one@example.com', 123567890)
 
-  def tearDown(self):
-    for activity in Activity.query():
-      activity.key.delete()
-    self.feature_1.key.delete()
-    self.gate_1.key.delete()
-    self.stage.key.delete()
-    testing_config.sign_out()
-
   def test_activities__created(self):
     changed_fields_1: CHANGED_FIELDS_LIST_TYPE = [
         ('name', 'feature a', 'feature Z'),
@@ -176,11 +168,6 @@ class NotifierHelpersTest(testing_config.CustomTestCase):
         gate_type=3, state=Vote.APPROVED)
     self.gate_3.put()
 
-  def tearDown(self):
-    for kind in [FeatureEntry, Stage, Gate]:
-      for entity in kind.query():
-        entity.key.delete()
-  
   @mock.patch(
       'internals.notifier_helpers.send_trial_creation_approved_notification')
   def test_notify_approvals__creation(self, mock_sender):

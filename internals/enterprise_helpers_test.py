@@ -45,11 +45,6 @@ class EnterpriseHelpersTest(testing_config.CustomTestCase):
     self.normal_feature.put()
     self.now = datetime.now()
 
-  def tearDown(self):
-    self.enterprise_feature.key.delete()
-    self.breaking_feature.key.delete()
-    self.normal_feature.key.delete()
-
   @mock.patch('api.channels_api.construct_specified_milestones_details')
   def test__needs_default_first_notification_milestone__new_feature(self, mock_specified_milestones):
     mock_specified_milestones.return_value = {

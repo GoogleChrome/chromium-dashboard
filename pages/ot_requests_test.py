@@ -94,12 +94,6 @@ class OriginTrialsRequestsTest(testing_config.CustomTestCase):
     self.app_admin.is_admin = True
     self.app_admin.put()
 
-  def tearDown(self):
-    for kind in [AppUser, FeatureEntry, Stage, Gate]:
-      for entity in kind.query():
-        entity.key.delete()
-    testing_config.sign_out()
-
   def test_get__anon(self):
     """Anon user is redirected to the login page."""
     testing_config.sign_out()

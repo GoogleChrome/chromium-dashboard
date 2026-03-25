@@ -62,15 +62,6 @@ class ComponentsUsersAPITest(testing_config.CustomTestCase):
 
     self.request_path = '/api/v0/componentsusers'
 
-  def tearDown(self):
-    self.no_body.key.delete()
-    self.watcher_1.key.delete()
-    self.component_owner_1.key.delete()
-    self.component_1.key.delete()
-    self.component_2.key.delete()
-    testing_config.sign_out()
-    self.app_admin.key.delete()
-
   def test_do_get(self):
     testing_config.sign_in('admin@example.com', 123567890)
     with test_app.test_request_context(self.request_path):

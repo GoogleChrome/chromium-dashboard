@@ -196,11 +196,6 @@ class IntentEmailPreviewTemplateTest(testing_config.CustomTestCase):
 
     self.maxDiff = None
 
-  def tearDown(self):
-    for kind in [FeatureEntry, Gate, Stage]:
-      for entity in kind.query():
-        entity.key.delete()
-
   def test_template_rendering_prototype(self):
     """We can render the prototype template with valid html."""
     with test_app.test_request_context(self.request_path):

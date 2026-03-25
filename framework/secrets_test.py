@@ -386,10 +386,6 @@ class SecretsTest(testing_config.CustomTestCase):
 
 class ApiCredentialTest(testing_config.CustomTestCase):
 
-  def tearDown(self):
-    for old_entity in secrets.ApiCredential.query():
-      old_entity.key.delete()
-
   def test_select_token_for_api__first_use(self):
     """When there are no credientials for an API, it makes one."""
     actual = secrets.ApiCredential.select_token_for_api('foo')

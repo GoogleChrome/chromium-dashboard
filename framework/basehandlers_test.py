@@ -116,11 +116,6 @@ class BaseHandlerTests(testing_config.CustomTestCase):
     self.stage_1.put()
 
 
-  def tearDown(self):
-    for kind in [FeatureEntry, Stage]:
-      for entity in kind.query():
-        entity.key.delete()
-
   @mock.patch('flask.request', 'fake request')
   def test_request(self):
     """We can get the flask request."""
@@ -452,9 +447,6 @@ class APIHandlerTests(testing_config.CustomTestCase):
     self.appuser = AppUser(email='user@example.com')
     self.appuser.put()
 
-  def tearDown(self):
-    self.appuser.key.delete()
-
   def test_get_headers(self):
     """We always use some standard headers."""
     with test_app.test_request_context('/path'):
@@ -668,9 +660,6 @@ class FlaskHandlerTests(testing_config.CustomTestCase):
     self.user_1 = AppUser(email='registered@example.com')
     self.user_1.put()
     self.handler = TestableFlaskHandler()
-
-  def tearDown(self):
-    self.user_1.key.delete()
 
   def test_get_cache_headers__disabled(self):
     """Most handlers return content that should not be cached."""
@@ -1239,10 +1228,6 @@ class GetSPATemplateDataTests(testing_config.CustomTestCase):
     self.fe_1.put()
     self.appuser = AppUser(email='appuser@example.com')
     self.appuser.put()
-
-  def tearDown(self):
-    self.fe_1.key.delete()
-    self.appuser.key.delete()
 
   def test_get_spa_template_data__signin_missing(self):
     """This page requires sign in, but user is anon."""

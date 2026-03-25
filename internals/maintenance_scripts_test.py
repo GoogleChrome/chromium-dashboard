@@ -262,12 +262,6 @@ class AssociateOTsTest(testing_config.CustomTestCase):
 
     testing_config.sign_in('one@example.com', 123567890)
 
-  def tearDown(self):
-    for kind in [FeatureEntry, Stage]:
-      for entity in kind.query():
-        entity.key.delete()
-    testing_config.sign_out()
-
   @mock.patch('framework.origin_trials_client.get_trials_list')
   def test_associate_ots(self, mock_ot_client):
     mock_ot_client.return_value = self.trials_list_return_value
@@ -363,9 +357,6 @@ class CreateOriginTrialsTest(testing_config.CustomTestCase):
     settings.AUTOMATED_OT_CREATION = True
 
   def tearDown(self):
-    for kind in [FeatureEntry, Stage]:
-      for entity in kind.query():
-        entity.key.delete()
     settings.AUTOMATED_OT_CREATION = False
 
   @mock.patch('framework.cloud_tasks_helpers.enqueue_task')
@@ -589,9 +580,6 @@ class ActivateOriginTrialsTest(testing_config.CustomTestCase):
     settings.AUTOMATED_OT_CREATION = True
 
   def tearDown(self):
-    for kind in [FeatureEntry, Stage]:
-      for entity in kind.query():
-        entity.key.delete()
     settings.AUTOMATED_OT_CREATION = False
 
   @mock.patch('framework.cloud_tasks_helpers.enqueue_task')
@@ -706,11 +694,6 @@ class DeleteEmptyExtensionStagesTest(testing_config.CustomTestCase):
         state=Vote.NA)
     self.gate_5.put()
     self.handler = maintenance_scripts.DeleteEmptyExtensionStages()
-
-  def tearDown(self):
-    for kind in [Gate, Stage]:
-      for entity in kind.query():
-        entity.key.delete()
 
   def test_delete_empty_extensions(self):
     """Only extension stages with no information should be deleted."""
@@ -879,8 +862,6 @@ class FetchWebdxFeatureIdTest(testing_config.CustomTestCase):
 
    def tearDown(self):
      logging.disable(logging.NOTSET)
-     for entity in WebdxFeatures.query():
-       entity.key.delete()
 
    @mock.patch('webstatus_openapi.DefaultApi.list_features')
    def test_fetch_webdx_feature_ids__success(self, mock_list_features):
@@ -962,11 +943,6 @@ class SendManualOTCreatedEmailTest(testing_config.CustomTestCase):
     self.non_ot_stage = Stage(id=222, feature_id=1, stage_type=120)
     self.non_ot_stage.put()
 
-  def tearDown(self):
-    for kind in [Stage, FeatureEntry]:
-      for entity in kind.query():
-        entity.key.delete()
-
   @mock.patch('framework.cloud_tasks_helpers.enqueue_task')
   def test_send__valid(self, mock_enqueue):
     """An email is sent if the stage meets all requirements."""
@@ -1033,11 +1009,6 @@ class SendManualOTActivatedEmailTest(testing_config.CustomTestCase):
     self.ot_stage_id=self.ot_stage.key.integer_id()
     self.non_ot_stage = Stage(id=222, feature_id=1, stage_type=120)
     self.non_ot_stage.put()
-
-  def tearDown(self):
-    for kind in [Stage, FeatureEntry]:
-      for entity in kind.query():
-        entity.key.delete()
 
   @mock.patch('framework.cloud_tasks_helpers.enqueue_task')
   def test_send__valid(self, mock_enqueue):
@@ -1171,11 +1142,6 @@ class GenerateReviewActivityFileTest(testing_config.CustomTestCase):
     self.activity_11 = Activity(feature_id=2, gate_id=13, author='user4@example.com',
       created=datetime(2020, 1, 14, 8), content='test comment 5', amendments=[])
     self.activity_11.put()
-
-  def tearDown(self):
-    for kind in [Activity]:
-      for entity in kind.query():
-        entity.key.delete()
 
   @mock.patch('logging.warning')
   def test_generate_new_activities__all(self, mock_warning):
@@ -1406,11 +1372,6 @@ class GenerateStaleFeaturesFileTest(testing_config.CustomTestCase):
         milestones=MilestoneSet(ios_first=self.current_milestone))
     self.stage_7.put()
 
-  def tearDown(self):
-    for kind in [FeatureEntry, Stage]:
-      for entity in kind.query():
-        entity.key.delete()
-
   @mock.patch('internals.maintenance_scripts.datetime')
   def test_gather_stale_features(self, mock_datetime):
     """Should return only stale features with a current shipping milestone."""
@@ -1630,11 +1591,6 @@ class GenerateShippingFeaturesFileTest(testing_config.CustomTestCase):
         milestones=MilestoneSet(desktop_first=self.current_milestone))
     self.stage_4.put()
 
-  def tearDown(self):
-    for kind in [FeatureEntry, Stage]:
-      for entity in kind.query():
-        entity.key.delete()
-
   def test_get_shipping_stages(self):
     """Only stages matching the milestone and shipping type are returned."""
     stages = self.handler._get_shipping_stages(self.current_milestone)
@@ -1784,11 +1740,6 @@ class ResetOutstandingNotificationsTest(testing_config.CustomTestCase):
         outstanding_notifications=None)
     self.feature_to_ignore_none.put()
 
-  def tearDown(self):
-    """Clean up test data after each test."""
-    for entity in FeatureEntry.query():
-      entity.key.delete()
-
   @mock.patch('framework.basehandlers.FlaskHandler.require_cron_header')
   def test_get_template_data__resets_counters_and_ignores_others(
       self, mock_require_cron):
@@ -1923,11 +1874,6 @@ class ResetStaleShippingMilestonesTest(testing_config.CustomTestCase):
         self.feature_above_range, self.stage_above_range,
         self.feature_mixed_range, self.stage_mixed_range
     ])
-
-  def tearDown(self):
-    for kind in [Stage, FeatureEntry, Activity]:
-      for entity in kind.query():
-        entity.key.delete()
 
   @mock.patch('internals.maintenance_scripts.utils.get_current_milestone_info')
   @mock.patch('internals.maintenance_scripts.cloud_tasks_helpers.enqueue_task')
@@ -2076,11 +2022,6 @@ class DeleteWPTCoverageReportTest(testing_config.CustomTestCase):
         ai_test_eval_status_timestamp=boundary_timestamp)
     self.feature_boundary.put()
 
-
-  def tearDown(self):
-    for kind in (FeatureEntry, Activity):
-      for entity in kind.query():
-        entity.key.delete()
 
   @mock.patch('internals.maintenance_scripts.datetime')
   def test_get_template_data__deletes_old_reports(self, mock_datetime):

@@ -32,11 +32,6 @@ class StarsAPITest(testing_config.CustomTestCase):
     self.handler = stars_api.StarsAPI()
     self.request_path = '/api/v0/currentuser/stars'
 
-  def tearDown(self):
-    self.fe_1.key.delete()
-    for star in notifier.FeatureStar.query():
-      star.key.delete()
-
   def test_get__anon(self):
     """Anon should always have an empty list of stars."""
     testing_config.sign_out()

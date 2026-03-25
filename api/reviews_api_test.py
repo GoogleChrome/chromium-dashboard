@@ -86,13 +86,6 @@ class VotesAPITest(testing_config.CustomTestCase):
         'state': Vote.NEEDS_WORK,
         }
 
-  def tearDown(self):
-    self.feature_1.key.delete()
-    kinds: list[ndb.Model] = [Gate, Vote]
-    for kind in kinds:
-      for entity in kind.query():
-        entity.key.delete()
-
   def test_get__feature_empty(self):
     """We can get all votes for a given feature, even if there none."""
     testing_config.sign_out()
@@ -380,13 +373,6 @@ class GatesAPITest(testing_config.CustomTestCase):
     self.handler = reviews_api.GatesAPI()
     self.request_path = '/api/v0/features/%d/gates' % self.feature_id
 
-  def tearDown(self):
-    self.feature_1.key.delete()
-    kinds: list[ndb.Model] = [Gate, Vote]
-    for kind in kinds:
-      for entity in kind.query():
-        entity.key.delete()
-
   @mock.patch('internals.approval_defs.get_approvers')
   def test_do_get__success(self, mock_get_approvers):
     """Handler retrieves all gates associated with a given feature."""
@@ -494,13 +480,6 @@ class XfnGatesAPITest(testing_config.CustomTestCase):
     self.handler = reviews_api.XfnGatesAPI()
     self.request_path = '/api/v0/features/%d/stages/%d/addXfnGates' % (
         self.feature_id, self.stage_id)
-
-  def tearDown(self):
-    self.feature_1.key.delete()
-    kinds: list[ndb.Model] = [Gate, Vote]
-    for kind in kinds:
-      for entity in kind.query():
-        entity.key.delete()
 
   def test_get(self):
     """We reject all GETs to this endpoint."""

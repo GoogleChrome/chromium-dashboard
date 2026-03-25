@@ -63,10 +63,6 @@ class FeaturesAPITestDelete(testing_config.CustomTestCase):
     logging.disable(logging.NOTSET)
     cache_key = '%s|%s' % (
         FeatureEntry.DEFAULT_CACHE_KEY, self.feature_1.key.integer_id())
-    for kind in [Activity, user_models.AppUser, FeatureEntry, Stage]:
-      for entity in kind.query():
-        entity.key.delete()
-    testing_config.sign_out()
     rediscache.delete(cache_key)
 
   def check_delete_is_valid(self, email):
@@ -209,11 +205,7 @@ class FeaturesAPITest(testing_config.CustomTestCase):
 
   def tearDown(self):
     logging.disable(logging.NOTSET)
-    for kind in [FeatureEntry, Gate, Stage, user_models.AppUser]:
-      for entity in kind.query():
-        entity.key.delete()
 
-    testing_config.sign_out()
     rediscache.delete_keys_with_prefix('features')
     rediscache.delete_keys_with_prefix('FeatureEntries')
     rediscache.delete_keys_with_prefix('FeatureNames')

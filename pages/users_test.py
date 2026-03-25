@@ -51,10 +51,6 @@ class UsersListTemplateTest(testing_config.CustomTestCase):
     self.full_template_path = self.handler.get_template_path(self.template_data)
     self.maxDiff = None
 
-  def tearDown(self):
-    self.app_admin.key.delete()
-    testing_config.sign_out()
-
   def test_html_rendering(self):
     """We can render the template with valid html."""
     with test_app.app_context():

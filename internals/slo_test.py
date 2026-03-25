@@ -333,11 +333,6 @@ class SLOReportingTests(testing_config.CustomTestCase):
     self.gate_3.requested_on = datetime.datetime(2023, 6, 9, 12, 30, 0)  # Fri
     self.gate_3.put()
 
-  def tearDown(self):
-    self.gate_1.key.delete()
-    self.gate_2.key.delete()
-    self.gate_3.key.delete()
-
   def test_get_active_gates(self):
     """We can get a list of active gates that might be overdue."""
     actual = slo.get_active_gates()

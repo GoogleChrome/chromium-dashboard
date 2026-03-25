@@ -260,13 +260,6 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
     notifier.FeatureStar.set_star(
         'starrer@example.com', self.featureentry_1.key.integer_id(),
         starred=False)
-    self.featureentry_1.key.delete()
-    self.featureentry_2.key.delete()
-    self.featureentry_3.key.delete()
-    self.featureentry_4.key.delete()
-    for kind in [Gate, FeatureEntry]:
-      for entity in kind.query():
-        entity.key.delete()
 
   @mock.patch('internals.approval_defs.fields_approvable_by')
   def test_process_pending_approval_me_query__none(

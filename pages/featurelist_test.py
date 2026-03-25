@@ -57,13 +57,6 @@ class TestWithFeature(testing_config.CustomTestCase):
     if self.HANDLER_CLASS:
       self.handler = self.HANDLER_CLASS()
 
-  def tearDown(self):
-    self.fe_1.key.delete()
-    self.app_user.delete()
-    self.app_admin.delete()
-    rediscache.flushall()
-
-
 class FeaturesJsonHandlerTest(TestWithFeature):
 
   REQUEST_PATH_FORMAT = '/features.json'

@@ -30,10 +30,6 @@ class UserPrefTest(testing_config.CustomTestCase):
     self.user_pref_2 = user_models.UserPref(email='two@example.com')
     self.user_pref_2.put()
 
-  def tearDown(self):
-    self.user_pref_1.key.delete()
-    self.user_pref_2.key.delete()
-
   @mock.patch('framework.users.get_current_user')
   def test_get_signed_in_user_pref__anon(self, mock_get_current_user):
     mock_get_current_user.return_value = None

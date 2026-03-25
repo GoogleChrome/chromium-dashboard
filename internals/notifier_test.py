@@ -115,12 +115,6 @@ class EmailFormattingTest(testing_config.CustomTestCase):
 
     self.maxDiff = None
 
-  def tearDown(self):
-    kinds = [FeatureEntry, Stage, FeatureOwner, BlinkComponent, Gate, UserPref]
-    for kind in kinds:
-      for entity in kind.query():
-        entity.key.delete()
-
   def test_highlight_diff__simple(self):
     """It produces a simple diff for adding and removing words."""
     old = 'start remove middle end'
@@ -570,12 +564,6 @@ class FeatureCommentHandlerTest(testing_config.CustomTestCase):
         }
 
 
-  def tearDown(self):
-    kinds = [FeatureEntry, Stage, FeatureOwner, BlinkComponent, Gate]
-    for kind in kinds:
-      for entity in kind.query():
-        entity.key.delete()
-
   @mock.patch('internals.notifier.format_email_body')
   @mock.patch('internals.approval_defs.get_approvers')
   def test_make_new_comments_email__unassigned(
@@ -682,12 +670,6 @@ class FeatureReviewHandlerTest(testing_config.CustomTestCase):
     }]
     self.handler = notifier.FeatureReviewHandler()
 
-  def tearDown(self):
-    kinds = [FeatureEntry, Stage, FeatureOwner, BlinkComponent, Gate]
-    for kind in kinds:
-      for entity in kind.query():
-        entity.key.delete()
-
   @mock.patch('internals.notifier.format_email_body')
   @mock.patch('internals.approval_defs.get_approvers')
   def test_make_review_requests_email__unassigned(
@@ -774,12 +756,6 @@ class ReviewAssignementHandlerTest(testing_config.CustomTestCase):
 
     self.handler = notifier.ReviewAssignmentHandler()
 
-  def tearDown(self):
-    kinds = [FeatureEntry, Stage, FeatureOwner, BlinkComponent, Gate]
-    for kind in kinds:
-      for entity in kind.query():
-        entity.key.delete()
-
   @mock.patch('internals.notifier.format_email_body')
   def test_make_review_assignment_email(self, mock_f_e_b):
     """We send email to the assigned reviewers."""
@@ -838,11 +814,6 @@ class FeatureStarTest(testing_config.CustomTestCase):
     self.fe_3 = FeatureEntry(
         name='feature three', summary='sum', category=1)
     self.fe_3.put()
-
-  def tearDown(self):
-    self.fe_1.key.delete()
-    self.fe_2.key.delete()
-    self.fe_3.key.delete()
 
   def test_get_star__no_existing(self):
     """User has never starred the given feature."""
@@ -978,10 +949,6 @@ class NotifyInactiveUsersHandlerTest(testing_config.CustomTestCase):
       email="inactive_site_editor@example.com", is_admin=False,
       is_site_editor=True, last_visit=datetime(2023, 2, 9))
     inactive_site_editor.put()
-
-  def tearDown(self):
-    for user in AppUser.query():
-      user.key.delete()
 
   def test_determine_users_to_notify(self):
     with test_app.app_context():
@@ -1199,10 +1166,6 @@ class OTActivatedHandlerTest(testing_config.CustomTestCase):
         ot_is_deprecation_trial=True)
     self.ot_stage.put()
 
-  def tearDown(self):
-    self.feature_1.key.delete()
-    self.ot_stage.key.delete()
-
   def test_make_activated_email(self):
     with test_app.app_context():
       handler = notifier.OTActivatedHandler()
@@ -1223,9 +1186,6 @@ class OTCreationApprovedHandlerTest(testing_config.CustomTestCase):
     self.feature_1 = FeatureEntry(
         id=1, name='feature one', summary='sum', category=1, feature_type=0)
     self.feature_1.put()
-
-  def tearDown(self):
-    self.feature_1.key.delete()
 
   def test_make_creation_processed_email(self):
     with test_app.app_context():
@@ -1261,10 +1221,6 @@ class OTCreationProcessedHandlerTest(testing_config.CustomTestCase):
         ot_is_deprecation_trial=True)
     self.ot_stage.put()
 
-  def tearDown(self):
-    self.feature_1.key.delete()
-    self.ot_stage.key.delete()
-
   def test_make_creation_processed_email(self):
     with test_app.app_context():
       handler = notifier.OTCreationProcessedHandler()
@@ -1295,10 +1251,6 @@ class OTCreationRequestFailedHandlerTest(testing_config.CustomTestCase):
         ot_activation_date=date(2030, 1, 1),
         ot_is_deprecation_trial=True, origin_trial_id='-1239058')
     self.ot_stage.put()
-
-  def tearDown(self):
-    self.feature_1.key.delete()
-    self.ot_stage.key.delete()
 
   def test_make_creation_request_failed_email(self):
     with test_app.app_context():
@@ -1332,10 +1284,6 @@ class OTActivationFailedHandlerTest(testing_config.CustomTestCase):
         ot_is_deprecation_trial=True)
     self.ot_stage.put()
 
-  def tearDown(self):
-    self.feature_1.key.delete()
-    self.ot_stage.key.delete()
-
   def test_make_activation_failed_email(self):
     with test_app.app_context():
       handler = notifier.OTActivationFailedHandler()
@@ -1365,11 +1313,6 @@ class IntentToBlinkDevHandlerTest(testing_config.CustomTestCase):
                 gate_type=2, state=Vote.APPROVED)
     self.ot_gate_1.put()
     self.contacts = ['example_user@example.com', 'another_user@exmaple.com']
-
-  def tearDown(self):
-    for kind in [FeatureEntry, Stage, Gate]:
-      for entity in kind.query():
-        entity.key.delete()
 
   def test_make_intent_post_email(self):
     json_data = {

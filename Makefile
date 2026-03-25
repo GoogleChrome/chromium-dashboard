@@ -73,8 +73,8 @@ stop: pwtests-shutdown
 
 test:
 	($(MAKE) start-emulator > /dev/null 2>&1 &)
-	sleep 6
-	curl --retry 4 http://localhost:15606/ --retry-connrefused
+	
+	curl --retry 10 --retry-all-errors --retry-delay 1 http://localhost:15606/
 	$(MAKE) do-tests; status=$$?; $(MAKE) stop-emulator; exit $$status
 
 webtest: build
@@ -98,7 +98,7 @@ do-coverage:
 coverage:
 	($(MAKE) start-emulator > /dev/null 2>&1 &)
 	sleep 3
-	curl --retry 4 http://localhost:15606/ --retry-connrefused
+	curl --retry 10 --retry-all-errors --retry-delay 1 http://localhost:15606/
 	$(MAKE) do-coverage; status=$$?; $(MAKE) stop-emulator; exit $$status
 
 view-coverage:

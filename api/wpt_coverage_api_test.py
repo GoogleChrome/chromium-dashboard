@@ -41,11 +41,6 @@ class WPTCoverageAPITest(testing_config.CustomTestCase):
     )
     self.feature_1.put()
 
-  def tearDown(self):
-    """Tear down test data."""
-    for entity in FeatureEntry.query():
-      entity.key.delete()
-
   @mock.patch('framework.permissions.is_google_or_chromium_account')
   @mock.patch('framework.cloud_tasks_helpers.enqueue_task')
   @mock.patch('framework.permissions.can_edit_feature')

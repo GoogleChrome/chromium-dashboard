@@ -52,12 +52,6 @@ class ActivityTest(testing_config.CustomTestCase):
     self.feature_2.put()
     self.feature_2_id = self.feature_2.key.integer_id()
 
-  def tearDown(self):
-    self.feature_1.key.delete()
-    self.feature_2.key.delete()
-    for activity in Activity.query().fetch(None):
-      activity.key.delete()
-
   def test_get_activities__none(self):
     """We get [] if feature has no review comments."""
     actual = Activity.get_activities(self.feature_2_id, comments_only=True)
@@ -107,10 +101,6 @@ class OwnersFileTest(testing_config.CustomTestCase):
     expired = now - datetime.timedelta(hours=3)
     self.owner_file_2 = OwnersFile(url='def', raw_content='bar', created_on=expired)
     self.owner_file_2.add_owner_file()
-
-  def tearDown(self):
-    self.owner_file_1.key.delete()
-    self.owner_file_2.key.delete()
 
   def test_get_raw_owner_file(self):
     owners_file = OwnersFile.get_raw_owner_file('abc')

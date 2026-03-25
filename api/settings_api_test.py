@@ -35,10 +35,6 @@ class SettingsAPITest(testing_config.CustomTestCase):
     self.request_path = '/api/v0/currentuser/settings'
     self.handler = settings_api.SettingsAPI()
 
-  def tearDown(self):
-    self.user_pref_1.key.delete()
-    testing_config.sign_out()
-
   def test_post__valid(self):
     """User wants to set a valid setting."""
     testing_config.sign_in('one@example.com', 123567890)

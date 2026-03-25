@@ -324,12 +324,6 @@ class FeatureAccuracyHandlerTest(testing_config.CustomTestCase):
         notify_as_starrer=False)
     self.owner_user_pref_2.put()
 
-  def tearDown(self):
-    for kind in [FeatureEntry, Stage, UserPref]:
-      for entity in kind.query():
-        entity.key.delete()
-
-
   @mock.patch('requests.get')
   def test_determine_features_to_notify__no_features(self, mock_get):
     mock_return = MockResponse(
