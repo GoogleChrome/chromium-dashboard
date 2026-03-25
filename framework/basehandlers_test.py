@@ -151,12 +151,12 @@ class BaseHandlerTests(testing_config.CustomTestCase):
 
 
   @mock.patch('logging.info')
-  def test_abort_with_headers__no_msg(self, mock_info):
+  def test_abort__with_headers__no_msg(self, mock_info):
     """We can abort request handling with custom headers."""
     app = flask.Flask(__name__)
     with app.test_request_context('/'):
       try:
-        self.handler.abort_with_headers(401, {'X-Test': '123'})
+        self.handler.abort(401, headers={'X-Test': '123'})
         self.fail("Should have raised HTTPException")
       except werkzeug.exceptions.HTTPException as e:
         self.assertEqual(401, e.response.status_code)
@@ -164,12 +164,12 @@ class BaseHandlerTests(testing_config.CustomTestCase):
       mock_info.assert_called_once()
 
   @mock.patch('logging.info')
-  def test_abort_with_headers__with_msg(self, mock_info):
+  def test_abort__with_headers__with_msg(self, mock_info):
     """We can abort request handling with custom headers and msg."""
     app = flask.Flask(__name__)
     with app.test_request_context('/'):
       try:
-        self.handler.abort_with_headers(401, {'X-Test': '123'}, msg='You messed up')
+        self.handler.abort(401, msg='You messed up', headers={'X-Test': '123'})
         self.fail("Should have raised HTTPException")
       except werkzeug.exceptions.HTTPException as e:
         self.assertEqual(401, e.response.status_code)
@@ -177,12 +177,12 @@ class BaseHandlerTests(testing_config.CustomTestCase):
       mock_info.assert_called_once()
 
   @mock.patch('logging.error')
-  def test_abort_with_headers__with_500_msg(self, mock_error):
+  def test_abort__with_headers__with_500_msg(self, mock_error):
     """We can abort 500 request handling with custom headers and msg."""
     app = flask.Flask(__name__)
     with app.test_request_context('/'):
       try:
-        self.handler.abort_with_headers(500, {'X-Test': '123'}, msg='We messed up')
+        self.handler.abort(500, msg='We messed up', headers={'X-Test': '123'})
         self.fail("Should have raised HTTPException")
       except werkzeug.exceptions.HTTPException as e:
         self.assertEqual(500, e.response.status_code)

@@ -73,44 +73,34 @@ class BaseHandler(flask.views.MethodView):
   def request(self):
     return flask.request
 
-  def abort(self, status: int, msg: Optional[str|dict]=None, **kwargs) -> NoReturn:
+  def abort(
+      self, status: int, msg: str | None=None,
+      headers: dict[str, str] | None=None, **kwargs) -> NoReturn:
     """Support webapp2-style, e.g., self.abort(400)."""
     if msg:
       if status == 500:
         logging.error(f'ISE: {msg}')
       else:
         logging.info(f'Abort {status}: {msg}')
-      flask.abort(status, description=msg, **kwargs)
-    else:
-      logging.info(f'Abort {status}')
-      flask.abort(status, **kwargs)
-
-  def abort_with_headers(self, status: int, headers: dict[str, str], msg: Optional[str|dict]=None, **kwargs) -> NoReturn:
-    """Support webapp2-style with custom headers."""
-    if msg:
-      if status == 500:
-        logging.error(f'ISE: {msg}')
-      else:
-        logging.info(f'Abort {status}: {msg}')
     else:
       logging.info(f'Abort {status}')
 
-    if isinstance(msg, dict):
-      resp = flask.make_response(flask.jsonify(msg), status)
-      for k, v in headers.items():
-        resp.headers[k] = v
-      flask.abort(resp)
-
-    try:
+    if headers is not None:
+      try:
+        if msg:
+          flask.abort(status, description=msg, **kwargs)
+        else:
+          flask.abort(status, **kwargs)
+      except werkzeug.exceptions.HTTPException as e:
+        response = e.get_response()
+        for k, v in headers.items():
+          response.headers[k] = v
+        flask.abort(response)
+    else:
       if msg:
         flask.abort(status, description=msg, **kwargs)
       else:
         flask.abort(status, **kwargs)
-    except werkzeug.exceptions.HTTPException as e:
-      response = e.get_response()
-      for k, v in headers.items():
-        response.headers[k] = v
-      flask.abort(response)
 
 
   def redirect(self, url):
