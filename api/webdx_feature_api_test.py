@@ -67,8 +67,6 @@ class WebdxFeatureAPITest(testing_config.CustomTestCase):
 
   def tearDown(self):
     logging.disable(logging.NOTSET)
-    for entity in WebDXFeatureObserver.query():
-      entity.key.delete()
 
   def test_do_get__success(self):
     testing_config.sign_out()

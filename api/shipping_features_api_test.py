@@ -53,10 +53,6 @@ class ShippingFeaturesAPITest(testing_config.CustomTestCase):
         milestones=MilestoneSet(desktop_first=self.milestone))
     self.stage_4.put()
 
-  def tearDown(self):
-    for entity in Stage.query():
-      entity.key.delete()
-
   def test_get_shipping_stages__success(self):
     """Should retrieve only stages with the correct milestone and type."""
     shipping_stages = self.handler._get_shipping_stages(self.milestone)

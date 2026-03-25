@@ -41,11 +41,6 @@ class CuesAPITest(testing_config.CustomTestCase):
     self.request_path = '/api/v0/currentuser/cues'
     self.handler = cues_api.CuesAPI()
 
-  def tearDown(self):
-    self.user_pref_1.key.delete()
-    self.user_pref_2.key.delete()
-    testing_config.sign_out()
-
   def test_post__valid(self):
     """User wants to dismiss a valid cue card ID."""
     testing_config.sign_in('one@example.com', 123567890)

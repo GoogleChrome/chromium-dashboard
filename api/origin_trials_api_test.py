@@ -175,11 +175,6 @@ bool FeatureHasExpiryGracePeriod(blink::mojom::OriginTrialFeature feature) {
       'enabled_features_text': self.mock_features_file,
       'grace_period_file': self.mock_grace_period_file,
     }
-  def tearDown(self):
-    for kind in [AppUser, FeatureEntry, Gate, Stage]:
-      for entity in kind.query():
-        entity.key.delete()
-
   @mock.patch('framework.origin_trials_client.get_trials_list')
   def test_get__valid(self, mock_get_trials_list):
     """A list of public trials is returned."""

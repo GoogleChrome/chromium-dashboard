@@ -68,14 +68,6 @@ class FeatureLatencyAPITest(testing_config.CustomTestCase):
     self.fe_5, self.fe_5_id = make_feature(
         'launched after end', (2023, 9, 29), ENABLED_BY_DEFAULT, 125)
 
-  def tearDown(self):
-    testing_config.sign_out()
-    self.app_admin.key.delete()
-    kinds: list[ndb.Model] = [FeatureEntry, Stage]
-    for kind in kinds:
-      for entity in kind.query():
-        entity.key.delete()
-
   def test_get_date_range__unspecified(self):
     """If query string params were not set, it rejects."""
     with test_app.test_request_context(self.request_path):

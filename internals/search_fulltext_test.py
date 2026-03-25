@@ -251,10 +251,6 @@ class FindStopWordsTest(testing_config.CustomTestCase):
     self.handler = search_fulltext.FindStopWords()
     self.request_path = '/admin/find_stop_words'
 
-  def tearDown(self):
-    self.fe_1.key.delete()
-    self.fe_2.key.delete()
-
   def test_get_template_date(self):
     with test_app.test_request_context(self.request_path):
       actual = self.handler.get_template_data()

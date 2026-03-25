@@ -45,13 +45,6 @@ class AttachmentsAPITest(testing_config.CustomTestCase):
     self.handler = attachments_api.AttachmentsAPI()
     self.content = b'hello attachments!'
 
-  def tearDown(self):
-    testing_config.sign_out()
-    kinds: list[ndb.Model] = [FeatureEntry, attachments.Attachment]
-    for kind in kinds:
-      for entity in kind.query():
-        entity.key.delete()
-
   def test_do_post__anon(self):
     """Anon users cannot add attachments."""
     testing_config.sign_out()
@@ -124,13 +117,6 @@ class AttachmentServingTest(testing_config.CustomTestCase):
         f'/feature/{self.feature_id}/attachment/{self.attachment_id}')
     self.handler = attachments_api.AttachmentServing()
 
-  def tearDown(self):
-    testing_config.sign_out()
-    kinds: list[ndb.Model] = [FeatureEntry, attachments.Attachment]
-    for kind in kinds:
-      for entity in kind.query():
-        entity.key.delete()
-
   def test_maybe_redirect__expected_url(self):
     """Requesting an attachment from the canonical URL returns None."""
     # self.request_path is the same as the canonical URL.
@@ -188,13 +174,6 @@ class RoundTripTest(testing_config.CustomTestCase):
     self.api_request_path = f'/api/v0/features/{self.feature_id}/attachments'
     self.api_handler = attachments_api.AttachmentsAPI()
     self.serving_handler = attachments_api.AttachmentServing()
-
-  def tearDown(self):
-    testing_config.sign_out()
-    kinds: list[ndb.Model] = [FeatureEntry, attachments.Attachment]
-    for kind in kinds:
-      for entity in kind.query():
-        entity.key.delete()
 
   def testRoundTrip(self):
     """We can upload an attachment and then download it."""

@@ -54,11 +54,6 @@ class FunctionTest(testing_config.CustomTestCase):
         set_on=datetime.datetime.now(), set_by="some_user@example.com")
     self.vote_1.put()
 
-  def tearDown(self):
-    for kind in [FeatureEntry, Stage, Gate, Vote]:
-      for entity in kind.query():
-        entity.key.delete()
-
   def test_detect_gate_info(self):
     """We can detect intent thread type by subject line."""
     test_data = {
@@ -520,11 +515,6 @@ class IntentEmailHandlerTest(testing_config.CustomTestCase):
         'body': 'LGTM. ' + self.footer,
         }
     self.handler = detect_intent.IntentEmailHandler()
-
-  def tearDown(self):
-    for kind in [FeatureEntry, Gate, Stage, Vote]:
-      for entity in kind.query():
-        entity.key.delete()
 
   def test_process_post_data__new_thread(self):
     """When we detect a new thread, we record it as the intent thread."""

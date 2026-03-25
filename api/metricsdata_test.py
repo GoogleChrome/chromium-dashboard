@@ -85,9 +85,6 @@ class PopularityTimelineHandlerTests(testing_config.CustomTestCase):
         bucket_id=1, property_name='prop')
     self.datapoint.put()
 
-  def tearDown(self):
-    self.datapoint.key.delete()
-
   def test_make_query(self):
     actual_query = self.handler.make_query(1)
     self.assertEqual(actual_query.kind, metrics_models.StableInstance._get_kind())
@@ -134,14 +131,6 @@ class CSSPopularityHandlerTests(testing_config.CustomTestCase):
     self.prop_4 = metrics_models.FeatureObserverHistogram(
         bucket_id=4, property_name='a feat')
     self.prop_4.put()
-
-  def tearDown(self):
-    self.datapoint.key.delete()
-    self.prop_1.key.delete()
-    self.prop_2.key.delete()
-    self.prop_3.key.delete()
-    self.prop_4.key.delete()
-    rediscache.flushall()
 
   def test_get_top_num_cache_key(self):
     actual = self.handler.get_top_num_cache_key(30)
@@ -201,14 +190,6 @@ class FeatureBucketsHandlerTest(testing_config.CustomTestCase):
     self.prop_6 = metrics_models.WebDXFeatureObserver(
         bucket_id=6, property_name='HTTP/3')
     self.prop_6.put()
-
-  def tearDown(self):
-    self.prop_1.key.delete()
-    self.prop_2.key.delete()
-    self.prop_3.key.delete()
-    self.prop_4.key.delete()
-    self.prop_5.key.delete()
-    self.prop_6.key.delete()
 
   def test_get_template_data__css(self):
     with test_app.test_request_context('/data/blink/cssprops'):

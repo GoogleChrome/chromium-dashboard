@@ -66,11 +66,6 @@ class IntentsAPITest(testing_config.CustomTestCase):
 
     self.handler = intents_api.IntentsAPI()
 
-  def tearDown(self):
-    for kind in [AppUser, FeatureEntry, Gate, Stage]:
-      for entity in kind.query():
-        entity.key.delete()
-
   def test_get__valid(self):
     """A valid request returns intent draft info."""
     testing_config.sign_in('owner@example.com', 1234567890)

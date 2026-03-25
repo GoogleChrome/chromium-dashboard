@@ -70,10 +70,6 @@ class RemoveInactiveUsersHandlerTest(testing_config.CustomTestCase):
       is_site_editor=True, last_visit=datetime(2023, 2, 9))
     inactive_site_editor.put()
 
-  def tearDown(self):
-    for user in AppUser.query():
-      user.key.delete()
-
   def test_remove_inactive_users(self):
     inactive_remover = RemoveInactiveUsersHandler()
     result = inactive_remover.get_template_data(now=datetime(2023, 9, 1))

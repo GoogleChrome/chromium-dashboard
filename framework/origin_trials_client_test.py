@@ -86,8 +86,6 @@ class OriginTrialsClientTest(testing_config.CustomTestCase):
 
   def tearDown(self):
     settings.OT_API_KEY = self.original_ot_api_key
-    for entity in Stage.query():
-      entity.key.delete()
 
   @mock.patch('requests.get')
   def test_get_trials_list__no_api_key(

@@ -28,9 +28,6 @@ class PermissionsAPITest(testing_config.CustomTestCase):
     self.handler = permissions_api.PermissionsAPI()
     self.request_path = '/api/v0/currentuser/permissions'
 
-  def tearDown(self):
-    testing_config.sign_out()
-
   def test_get__anon(self):
     """Returns no user object if not signed in"""
     testing_config.sign_out()

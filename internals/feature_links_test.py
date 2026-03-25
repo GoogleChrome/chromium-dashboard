@@ -53,13 +53,6 @@ class LinkTest(testing_config.CustomTestCase):
     self.feature2.put()
     self.feature2_id = self.feature2.key.integer_id()
 
-  def tearDown(self):
-    for feature_links in FeatureLinks.query():
-      feature_links.key.delete()
-    self.feature.key.delete()
-    self.feature2.key.delete()
-    pass
-
   def mock_user_change_fields(self, changed_fields, target_feature=None):
     if not target_feature:
       target_feature = self.feature

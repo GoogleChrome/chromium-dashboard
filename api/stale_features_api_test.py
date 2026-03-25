@@ -61,11 +61,6 @@ class StaleFeaturesAPITest(testing_config.CustomTestCase):
         (self.feature_2, 121, 'shipped_android_milestone')
     ]
 
-  def tearDown(self):
-    """Tear down test data."""
-    for entity in FeatureEntry.query():
-      entity.key.delete()
-
   @mock.patch('internals.feature_helpers.get_stale_features')
   def test_do_get__success(self, mock_get_stale_features):
     """The API should return a formatted list of stale features."""

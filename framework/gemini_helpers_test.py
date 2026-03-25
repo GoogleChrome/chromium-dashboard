@@ -52,10 +52,6 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
 
     self.addCleanup(mock.patch.stopall)
 
-  def tearDown(self):
-    for f in FeatureEntry.query():
-      f.key.delete()
-
   def test_fetch_spec_content__github_pull_request_success(self):
     """GitHub PR URLs should be converted to .diff URLs and fetched."""
     url = 'https://github.com/w3c/fedid/pull/123'
@@ -735,7 +731,6 @@ class GenerateWPTCoverageEvalReportHandlerTest(testing_config.CustomTestCase):
 
   def tearDown(self):
     mock.patch.stopall()
-    self.feature.key.delete()
 
   def test_process_post_data__success(self):
     """Tests that a successful pipeline run updates status to COMPLETE."""

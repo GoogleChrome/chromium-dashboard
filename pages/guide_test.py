@@ -42,10 +42,6 @@ class TestWithFeature(testing_config.CustomTestCase):
     self.handler = self.HANDLER_CLASS()
     self.now = datetime.now()
 
-  def tearDown(self):
-    rediscache.flushall()
-
-
 class FeatureCreateTest(testing_config.CustomTestCase):
 
   def setUp(self):

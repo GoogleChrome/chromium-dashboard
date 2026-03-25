@@ -180,13 +180,6 @@ class StagesAPITest(testing_config.CustomTestCase):
 
     self.maxDiff = None
 
-  def tearDown(self):
-    testing_config.sign_out()
-    kinds: list[ndb.Model] = [AppUser, FeatureEntry, Gate, MilestoneSet, Stage]
-    for kind in kinds:
-      for entity in kind.query():
-        entity.key.delete()
-
   @mock.patch('flask.abort')
   def test_get__bad_id(self, mock_abort):
     """Raises 404 if stage ID does not match any stage."""

@@ -35,11 +35,6 @@ class StageHelpersTest(testing_config.CustomTestCase):
       stage = Stage(feature_id=self.feature_id, stage_type=stage_type)
       stage.put()
 
-  def tearDown(self):
-    self.feature_entry_1.key.delete()
-    for stage in Stage.query().fetch():
-      stage.key.delete()
-
   def test_get_feature_stages(self):
     """A dictionary with stages relevant to the feature should be present."""
     stage_dict = stage_helpers.get_feature_stages(self.feature_id)
@@ -95,10 +90,6 @@ class StageHelpers_Milestones_Test(testing_config.CustomTestCase):
         feature_id=22222,
         milestones=MilestoneSet(desktop_first=121, android_first=120))
     self.stage_2_3 = Stage(feature_id=22222)
-
-  def tearDown(self):
-    for stage in Stage.query().fetch():
-      stage.key.delete()
 
   def test_look_up_year__historic(self):
     """We can look up the year in which a milestone shippped."""

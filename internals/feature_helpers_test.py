@@ -130,13 +130,6 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
     self.app_admin.is_admin = True
     self.app_admin.put()
 
-  def tearDown(self):
-    for kind in [FeatureEntry, Stage, Gate, AppUser]:
-      for entity in kind.query():
-        entity.key.delete()
-
-    rediscache.flushall()
-
   def test_get_by_participant(self):
     """The people who are involve in a feature can edit it, others can't."""
     self.feature_2.cc_emails = ['cc@example.com']
@@ -1076,11 +1069,6 @@ class FeatureHelpersFilteringTest(testing_config.CustomTestCase):
         self.formatted_unlisted_hidden,
     ]
 
-  def tearDown(self):
-    for entity in FeatureEntry.query():
-      entity.key.delete()
-    testing_config.sign_out()
-
   def _get_names(self, feature_list):
     """Helper to get a list of names from FeatureEntry or dict lists."""
     if not feature_list:
@@ -1364,11 +1352,6 @@ class ShippingFeatureHelpersTest(testing_config.CustomTestCase):
     self.stage_11.put()
     Gate(id=1011, feature_id=11, stage_id=111, gate_type=GATE_API_SHIP,
          state=Vote.APPROVED).put()
-
-  def tearDown(self):
-    for kind in [FeatureEntry, Gate, Stage, Vote]:
-      for entity in kind.query():
-        entity.key.delete()
 
   def test_validate_feature_in_chromium(self):
     """Tests parsing logic for JSON and C++ mock data."""

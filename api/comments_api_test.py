@@ -127,11 +127,6 @@ class CommentsAPITest(testing_config.CustomTestCase):
         'amendments': [],
         }
 
-  def tearDown(self):
-    self.feature_1.key.delete()
-    for activity in Activity.query():
-      activity.key.delete()
-
   def test_get__empty(self):
     """We can get comments for a given approval, even if there none."""
     testing_config.sign_out()

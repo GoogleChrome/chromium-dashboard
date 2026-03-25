@@ -61,14 +61,6 @@ class ReviewLatencyAPITest(testing_config.CustomTestCase):
     self.yesterday = datetime(2024, 3, 21)
     self.last_week = datetime(2024, 3, 15)
 
-  def tearDown(self):
-    testing_config.sign_out()
-    self.app_admin.key.delete()
-    kinds: list[ndb.Model] = [FeatureEntry, Gate]
-    for kind in kinds:
-      for entity in kind.query():
-        entity.key.delete()
-
   def test_do_get__nothing_requested(self):
     """When no reviews have been started, the result is empty."""
     testing_config.sign_in('admin@example.com', 123567890)

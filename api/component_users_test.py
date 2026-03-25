@@ -69,16 +69,6 @@ class ComponentUsersAPITest(testing_config.CustomTestCase):
     self.no_body.put()
     
 
-  def tearDown(self):
-    self.no_body.key.delete()
-    self.watcher_1.key.delete()
-    self.component_owner_1.key.delete()
-    self.component_owner_2.key.delete()
-    self.component_1.key.delete()
-    self.component_2.key.delete()
-    testing_config.sign_out()
-    self.app_admin.key.delete()
-
   def test_do_put(self):
     request_path = f'/api/v0/components/{self.component_2.key.integer_id()}/users/{self.no_body.key.integer_id()}'
     user = user_models.FeatureOwner.get_by_id(self.no_body.key.integer_id())
