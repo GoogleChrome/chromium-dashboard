@@ -73,17 +73,35 @@ class BaseHandler(flask.views.MethodView):
   def request(self):
     return flask.request
 
-  def abort(self, status, msg=None, **kwargs) -> NoReturn:
+  def abort(
+      self, status: int, msg: str | None=None,
+      headers: dict[str, str] | None=None, **kwargs) -> NoReturn:
     """Support webapp2-style, e.g., self.abort(400)."""
     if msg:
       if status == 500:
-        logging.error('ISE: %s' % msg)
+        logging.error(f'ISE: {msg}')
       else:
-        logging.info('Abort %r: %s' % (status, msg))
-      flask.abort(status, description=msg, **kwargs)
+        logging.info(f'Abort {status}: {msg}')
     else:
-      logging.info('Abort %r' % status)
-      flask.abort(status, **kwargs)
+      logging.info(f'Abort {status}')
+
+    if headers is not None:
+      try:
+        if msg:
+          flask.abort(status, description=msg, **kwargs)
+        else:
+          flask.abort(status, **kwargs)
+      except werkzeug.exceptions.HTTPException as e:
+        response = e.get_response()
+        for k, v in headers.items():
+          response.headers[k] = v
+        flask.abort(response)
+    else:
+      if msg:
+        flask.abort(status, description=msg, **kwargs)
+      else:
+        flask.abort(status, **kwargs)
+
 
   def redirect(self, url):
     """Support webapp2-style, e.g., return self.redirect(url)."""
