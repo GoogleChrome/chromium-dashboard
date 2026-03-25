@@ -371,6 +371,31 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
     cached_result = rediscache.get(cache_key)
     self.assertEqual(cached_result, actual)
 
+  def test_get_in_milestone__archived(self):
+    """Archived stages should not be included."""
+    self.feature_1.impl_status_chrome = 5
+    # Set shipping milestone to 1.
+    self.fe_1_stages_dict[160][0].milestones = MilestoneSet(desktop_first=1)
+    self.fe_1_stages_dict[160][0].archived = True
+    self.feature_1.put()
+    self.fe_1_stages_dict[160][0].put()
+
+    self.feature_2.impl_status_chrome = 7
+    # Set shipping milestone to 1.
+    self.fe_2_stages_dict[260][0].milestones = MilestoneSet(desktop_first=1)
+    self.feature_2.put()
+    self.fe_2_stages_dict[260][0].put()
+
+    actual = feature_helpers.get_in_milestone(milestone=1)
+    removed = [f['name'] for f in actual['Removed']]
+    enabled_by_default = [f['name'] for f in actual['Enabled by default']]
+    self.assertEqual(
+        ['feature b'],
+        removed)
+    self.assertEqual(
+        [],
+        enabled_by_default)
+
   def test_get_in_milestone__unlisted(self):
     """Unlisted features should not be listed for users who can't edit."""
     self.feature_1.impl_status_chrome = 5
