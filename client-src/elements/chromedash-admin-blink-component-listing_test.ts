@@ -1,4 +1,4 @@
-import {ChromedashAdminBlinkComponentListing} from './chromedash-admin-blink-component-listing';
+import {ChromedashAdminBlinkComponentListing} from './chromedash-admin-blink-component-listing.js';
 import {html} from 'lit';
 import {assert, expect, fixture, oneEvent} from '@open-wc/testing';
 import sinon from 'sinon';

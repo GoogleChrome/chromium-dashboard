@@ -8,8 +8,8 @@ import {
   FeatureNotFoundError,
   User,
 } from '../js-src/cs-client.js';
-import './chromedash-feature-detail';
-import {DETAILS_STYLES} from './chromedash-feature-detail';
+import './chromedash-feature-detail.js';
+import {DETAILS_STYLES} from './chromedash-feature-detail.js';
 import './chromedash-feature-highlights.js';
 import {GateDict} from './chromedash-gate-chip.js';
 import {Process, ProgressItem} from './chromedash-gate-column.js';
@@ -20,7 +20,7 @@ import {
   closestShippingDateInfo,
   userCanEdit,
 } from './utils.js';
-import {IMPLEMENTATION_STATUS} from './form-field-enums';
+import {IMPLEMENTATION_STATUS} from './form-field-enums.js';
 
 const INACTIVE_STATES = ['No longer pursuing', 'Deprecated', 'Removed'];
 declare var ga: Function;

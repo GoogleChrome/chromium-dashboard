@@ -4,15 +4,15 @@ import {html, render} from 'lit';
 import {
   ChromedashFormField,
   enumLabelToFeatureKey,
-} from './chromedash-form-field';
+} from './chromedash-form-field.js';
 import {
   ALL_INTENT_USAGE_BY_FEATURE_TYPE,
   UsageType,
   STAGE_BLINK_INCUBATE,
   STAGE_BLINK_ORIGIN_TRIAL,
   STAGE_BLINK_SHIPPING,
-} from './form-field-enums';
-import {ChromeStatusClient} from '../js-src/cs-client';
+} from './form-field-enums.js';
+import {ChromeStatusClient} from '../js-src/cs-client.js';
 import sinon from 'sinon';
 
 describe('chromedash-form-field', () => {

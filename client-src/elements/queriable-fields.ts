@@ -12,7 +12,7 @@ import {
   VENDOR_VIEWS_COMMON,
   VENDOR_VIEWS_GECKO,
   WEB_DEV_VIEWS,
-} from './form-field-enums';
+} from './form-field-enums.js';
 
 export const TEXT_KIND = 'text';
 export const NUM_KIND = 'number';

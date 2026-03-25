@@ -2,7 +2,7 @@ import {LitElement, css, html} from 'lit';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {customElement, property} from 'lit/decorators.js';
 import {GateDict} from './chromedash-gate-chip.js';
-import {VOTE_OPTIONS} from './form-field-enums';
+import {VOTE_OPTIONS} from './form-field-enums.js';
 
 let certifyDialogEl;
 

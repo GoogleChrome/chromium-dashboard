@@ -1,11 +1,11 @@
 import {assert} from '@open-wc/testing';
-import {Feature, StageDict} from '../js-src/cs-client';
-import {GATE_TYPES, VOTE_OPTIONS} from './form-field-enums';
+import {Feature, StageDict} from '../js-src/cs-client.js';
+import {GATE_TYPES, VOTE_OPTIONS} from './form-field-enums.js';
 import {GateDict} from './chromedash-gate-chip.js';
 import {
   findMissingFields,
   shouldShowPrevoteDialog,
-} from './chromedash-prevote-dialog';
+} from './chromedash-prevote-dialog.js';
 
 describe('prevote functions', () => {
   describe('findMissingFields', () => {

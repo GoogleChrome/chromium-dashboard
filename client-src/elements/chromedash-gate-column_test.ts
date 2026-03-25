@@ -1,7 +1,7 @@
 import {html} from 'lit';
 import {assert, fixture} from '@open-wc/testing';
-import {ChromedashGateColumn} from './chromedash-gate-column';
-import {ChromeStatusClient} from '../js-src/cs-client';
+import {ChromedashGateColumn} from './chromedash-gate-column.js';
+import {ChromeStatusClient} from '../js-src/cs-client.js';
 import sinon from 'sinon';
 
 describe('chromedash-settings-page', () => {

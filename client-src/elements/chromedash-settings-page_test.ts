@@ -1,8 +1,8 @@
 import {html} from 'lit';
 import {assert, fixture} from '@open-wc/testing';
-import {ChromedashSettingsPage} from './chromedash-settings-page';
-import './chromedash-toast';
-import {ChromeStatusClient} from '../js-src/cs-client';
+import {ChromedashSettingsPage} from './chromedash-settings-page.js';
+import './chromedash-toast.js';
+import {ChromeStatusClient} from '../js-src/cs-client.js';
 import sinon from 'sinon';
 
 describe('chromedash-settings-page', () => {

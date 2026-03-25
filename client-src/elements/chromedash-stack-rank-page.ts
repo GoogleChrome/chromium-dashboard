@@ -1,12 +1,12 @@
 import {LitElement, css, html} from 'lit';
 import {property} from 'lit/decorators.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
-import './chromedash-stack-rank';
+import './chromedash-stack-rank.js';
 import {
   showToastMessage,
   METRICS_TYPE_AND_VIEW_TO_SUBTITLE,
   METRICS_TYPE_AND_VIEW_TO_DESCRIPTION,
-} from './utils';
+} from './utils.js';
 
 export class ChromedashStackRankPage extends LitElement {
   static get styles() {

@@ -1,6 +1,6 @@
 import {LitElement, css, html, nothing} from 'lit';
 import {showToastMessage} from './utils.js';
-import './chromedash-feature-table';
+import './chromedash-feature-table.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {customElement, property, queryAll, state} from 'lit/decorators.js';
 import {User} from '../js-src/cs-client.js';

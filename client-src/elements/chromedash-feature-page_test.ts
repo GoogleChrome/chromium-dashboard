@@ -1,12 +1,12 @@
 import {assert, fixture} from '@open-wc/testing';
 import {html} from 'lit';
 import sinon from 'sinon';
-import {ChromeStatusClient, FeatureNotFoundError} from '../js-src/cs-client';
-import {ChromedashFeaturePage} from './chromedash-feature-page';
-import {ChromedashLink} from './chromedash-link';
-import './chromedash-toast';
-import {ChromedashVendorViews} from './chromedash-vendor-views';
-import {findClosestShippingDate} from './utils';
+import {ChromeStatusClient, FeatureNotFoundError} from '../js-src/cs-client.js';
+import {ChromedashFeaturePage} from './chromedash-feature-page.js';
+import {ChromedashLink} from './chromedash-link.js';
+import './chromedash-toast.js';
+import {ChromedashVendorViews} from './chromedash-vendor-views.js';
+import {findClosestShippingDate} from './utils.js';
 
 describe('chromedash-feature-page', () => {
   const user = {

@@ -6,7 +6,7 @@ import {
   GATE_ACTIVE_REVIEW_STATES,
   GATE_TEAM_ORDER,
   STAGE_SHORT_NAMES,
-} from './form-field-enums';
+} from './form-field-enums.js';
 import {GateDict} from './chromedash-gate-chip.js';
 
 interface ActiveStagesAndGates {

@@ -14,7 +14,7 @@ import {
   parseRawQuery,
   showToastMessage,
   updateURLParams,
-} from './utils';
+} from './utils.js';
 
 @customElement('chromedash-app')
 export class ChromedashApp extends LitElement {

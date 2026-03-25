@@ -1,8 +1,8 @@
 import {LitElement, html, css, nothing} from 'lit';
-import {showToastMessage, IS_MOBILE, redirectToCurrentPage} from './utils';
+import {showToastMessage, IS_MOBILE, redirectToCurrentPage} from './utils.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {customElement, property, state} from 'lit/decorators.js';
-import {User} from '../js-src/cs-client';
+import {User} from '../js-src/cs-client.js';
 
 @customElement('chromedash-header')
 export class ChromedashHeader extends LitElement {

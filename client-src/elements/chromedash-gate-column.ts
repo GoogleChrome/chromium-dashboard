@@ -1,16 +1,16 @@
 import {LitElement, TemplateResult, css, html, nothing} from 'lit';
 import {createRef, ref} from 'lit/directives/ref.js';
-import './chromedash-activity-log';
-import './chromedash-survey-questions';
-import {openNaRationaleDialog} from './chromedash-na-rationale-dialog';
-import {maybeOpenCertifyDialog} from './chromedash-self-certify-dialog';
-import {maybeOpenSecondarySurveyDialog} from './chromedash-secondary-survey-dialog';
+import './chromedash-activity-log.js';
+import './chromedash-survey-questions.js';
+import {openNaRationaleDialog} from './chromedash-na-rationale-dialog.js';
+import {maybeOpenCertifyDialog} from './chromedash-self-certify-dialog.js';
+import {maybeOpenSecondarySurveyDialog} from './chromedash-secondary-survey-dialog.js';
 import {
   openPreflightDialog,
   somePendingGates,
   somePendingPrereqs,
-} from './chromedash-preflight-dialog';
-import {maybeOpenPrevoteDialog} from './chromedash-prevote-dialog';
+} from './chromedash-preflight-dialog.js';
+import {maybeOpenPrevoteDialog} from './chromedash-prevote-dialog.js';
 import {GATE_RATIONALE} from './gate-details.js';
 import {
   GATE_NA_REQUESTED,
@@ -19,7 +19,7 @@ import {
   VOTE_OPTIONS,
   VOTE_NA_SELF,
   VOTE_NA_VERIFIED,
-} from './form-field-enums';
+} from './form-field-enums.js';
 import {
   autolink,
   findProcessStage,
@@ -30,8 +30,8 @@ import {
 
 import {customElement, property, state} from 'lit/decorators.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
-import {Feature, StageDict, User} from '../js-src/cs-client';
-import {GateDict} from './chromedash-gate-chip';
+import {Feature, StageDict, User} from '../js-src/cs-client.js';
+import {GateDict} from './chromedash-gate-chip.js';
 
 interface Vote {
   feature_id: number;

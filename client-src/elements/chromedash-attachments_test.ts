@@ -1,6 +1,6 @@
 import {html} from 'lit';
 import {assert, fixture} from '@open-wc/testing';
-import {ChromedashAttachments} from './chromedash-attachments';
+import {ChromedashAttachments} from './chromedash-attachments.js';
 import {ChromedashTextarea} from './chromedash-textarea.js';
 
 describe('chromedash-attachments', () => {

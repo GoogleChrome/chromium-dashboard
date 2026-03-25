@@ -12,7 +12,7 @@ import {
   ChromedashTypeahead,
   ChromedashTypeaheadDropdown,
   ChromedashTypeaheadItem,
-} from './chromedash-typeahead';
+} from './chromedash-typeahead.js';
 
 describe('chromedash-typeahead', () => {
   it('reflects the value of the sl-input as its own value', async () => {

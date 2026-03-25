@@ -1,7 +1,7 @@
 import {fixture, html, assert, elementUpdated} from '@open-wc/testing';
 import sinon from 'sinon';
-import {ChromedashStaleFeaturesPage} from './chromedash-stale-features-page';
-import './chromedash-stale-features-page';
+import {ChromedashStaleFeaturesPage} from './chromedash-stale-features-page.js';
+import './chromedash-stale-features-page.js';
 
 const csClient = {
   getStaleFeatures: sinon.stub(),

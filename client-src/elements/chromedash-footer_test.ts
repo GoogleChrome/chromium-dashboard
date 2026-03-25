@@ -1,6 +1,6 @@
 import {html} from 'lit';
 import {assert, fixture} from '@open-wc/testing';
-import {ChromedashFooter} from './chromedash-footer';
+import {ChromedashFooter} from './chromedash-footer.js';
 
 describe('chromedash-footer', () => {
   it('renders with no data', async () => {

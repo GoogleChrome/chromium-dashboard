@@ -10,16 +10,16 @@ import {
   setupScrollToHash,
   shouldShowDisplayNameField,
 } from './utils.js';
-import './chromedash-form-table';
-import './chromedash-form-field';
+import './chromedash-form-table.js';
+import './chromedash-form-field.js';
 import {
   FLAT_TRIAL_EXTENSION_FIELDS,
   formatFeatureForEdit,
   FORMS_BY_STAGE_TYPE,
   MetadataFields,
-} from './form-definition';
-import {STAGE_SPECIFIC_FIELDS} from './form-field-enums';
-import {ALL_FIELDS} from './form-field-specs';
+} from './form-definition.js';
+import {STAGE_SPECIFIC_FIELDS} from './form-field-enums.js';
+import {ALL_FIELDS} from './form-field-specs.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {FORM_STYLES} from '../css/forms-css.js';
 import {customElement, property, state} from 'lit/decorators.js';

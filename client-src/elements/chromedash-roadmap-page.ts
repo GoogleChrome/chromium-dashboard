@@ -2,10 +2,10 @@ import {LitElement, css, html} from 'lit';
 import {customElement, property, state} from 'lit/decorators.js';
 import {createRef, ref} from 'lit/directives/ref.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
-import {User} from '../js-src/cs-client';
-import './chromedash-roadmap';
-import {ChromedashRoadmap} from './chromedash-roadmap';
-import {openRoadmapHelpDialog} from './chromedash-roadmap-help-dialog';
+import {User} from '../js-src/cs-client.js';
+import './chromedash-roadmap.js';
+import {ChromedashRoadmap} from './chromedash-roadmap.js';
+import {openRoadmapHelpDialog} from './chromedash-roadmap-help-dialog.js';
 import {SlDialog} from '@shoelace-style/shoelace';
 
 @customElement('chromedash-roadmap-page')

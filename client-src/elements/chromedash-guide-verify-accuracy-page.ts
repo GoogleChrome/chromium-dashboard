@@ -8,16 +8,16 @@ import {
   showToastMessage,
   FieldInfo,
 } from './utils.js';
-import './chromedash-form-field';
-import './chromedash-form-table';
+import './chromedash-form-field.js';
+import './chromedash-form-table.js';
 import {
   formatFeatureForEdit,
   VERIFY_ACCURACY_CONFIRMATION_FIELD,
   VERIFY_ACCURACY_FORMS_BY_STAGE_TYPE,
   VERIFY_ACCURACY_METADATA_FIELDS,
-} from './form-definition';
+} from './form-definition.js';
 import {STAGE_SHORT_NAMES, STAGE_SPECIFIC_FIELDS} from './form-field-enums.js';
-import {ALL_FIELDS} from './form-field-specs';
+import {ALL_FIELDS} from './form-field-specs.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {FORM_STYLES} from '../css/forms-css.js';
 import {property, state} from 'lit/decorators.js';

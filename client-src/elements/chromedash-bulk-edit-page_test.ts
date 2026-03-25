@@ -1,6 +1,6 @@
 import {assert, fixture} from '@open-wc/testing';
 import {html} from 'lit';
-import {ChromedashBulkEditPage} from './chromedash-bulk-edit-page';
+import {ChromedashBulkEditPage} from './chromedash-bulk-edit-page.js';
 
 const CSV_FILE: string = `web-features,chromestatus
 accent-color,https://chromestatus.com/feature/4752739957473280

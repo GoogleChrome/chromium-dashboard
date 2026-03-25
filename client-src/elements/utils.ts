@@ -27,7 +27,7 @@ import {
   STAGE_SPECIFIC_FIELDS,
   STAGE_TYPES_ORIGIN_TRIAL,
   STAGE_TYPES_SHIPPING,
-} from './form-field-enums';
+} from './form-field-enums.js';
 
 let toastEl;
 

@@ -3,7 +3,7 @@
 // See: https://chromium.googlesource.com/infra/infra/+/refs/heads/main/appengine/monorail/static_src/autolink.js
 
 import {TemplateResult, html} from 'lit';
-import {FeatureLink} from '../js-src/cs-client';
+import {FeatureLink} from '../js-src/cs-client.js';
 import {enhanceAutolink} from './chromedash-link.js';
 
 interface TextRun {
