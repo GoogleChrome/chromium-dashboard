@@ -85,11 +85,11 @@ def needs_default_first_notification_milestone(
 
 def is_update_first_notification_milestone(
     feature: FeatureEntry, new_fields: dict
-) -> bool:  # noqa: D417, E501
+) -> bool:  # noqa: E501
     """Returns whether the milestone can be used to update first_enterprise_notification_milestone.
 
     Args:
-      existing_feature: FeatureEntry feature that needs to be updated.
+      feature: FeatureEntry feature that needs to be updated.
       new_fields: dict Fields that will be used to update or create the feature.
     """  # noqa: E501
     milestone = new_fields.get('first_enterprise_notification_milestone')
