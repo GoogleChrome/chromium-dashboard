@@ -16,47 +16,50 @@ import logging
 from collections import OrderedDict
 
 from framework import basehandlers
-from internals.webdx_feature_models import WebdxFeatures
 from internals.metrics_models import WebDXFeatureObserver
+from internals.webdx_feature_models import WebdxFeatures
 
 
 class WebFeatureIDsAPI(basehandlers.APIHandler):
-  """The web feature IDs that populates a datalist menu for web_feature."""
+    """The web feature IDs that populates a datalist menu for web_feature."""
 
-  def do_get(self, **kwargs):
-    """Returns a sorted list of WebDX feature IDs."""
-    singleton: WebdxFeatures | None = WebdxFeatures.get_webdx_feature_id_list()
-    web_feature_ids = sorted(singleton.feature_ids if singleton else [])
-    return web_feature_ids
+    def do_get(self, **kwargs):
+        """Returns a sorted list of WebDX feature IDs."""
+        singleton: WebdxFeatures | None = (
+            WebdxFeatures.get_webdx_feature_id_list()
+        )
+        web_feature_ids = sorted(singleton.feature_ids if singleton else [])
+        return web_feature_ids
 
 
 # TODO(jrobbins): Move the ot_webfeature_use_counter form field to a shipping
 # stage and change it to use a datalist populated by this API.
 class WebdxFeatureAPI(basehandlers.APIHandler):
-  """The webdx feature UseCounter enums that populates a datalist menu."""
+    """The webdx feature UseCounter enums that populates a datalist menu."""
 
-  def do_get(self, **kwargs):
-    """Returns an ordered dict with the following structure,
-    {Webdx feature name: [Webdx feature name, usecounter enum], ...}"""
-    webdx_features_mapping = sorted(
-      WebDXFeatureObserver.get_all().items(), key=lambda item: item
-    )
-    if len(webdx_features_mapping) == 0:
-      logging.error('Webdx feature mapping is empty.')
-      return {}
+    def do_get(self, **kwargs):
+        """Returns an ordered dict with the following structure,
+        {Webdx feature name: [Webdx feature name, usecounter enum], ...}
+        """  # noqa: D205, D415
+        webdx_features_mapping = sorted(
+            WebDXFeatureObserver.get_all().items(), key=lambda item: item
+        )
+        if len(webdx_features_mapping) == 0:
+            logging.error('Webdx feature mapping is empty.')
+            return {}
 
-    web_features_dict = OrderedDict()
-    # The first key, value pair is the id when features are missing from the list.
-    web_features_dict[WebDXFeatureObserver.MISSING_FEATURE_ID] = [
-      WebDXFeatureObserver.MISSING_FEATURE_ID,
-      WebDXFeatureObserver.MISSING_FEATURE_ID,
-    ]
-    web_features_dict[WebDXFeatureObserver.TBD_FEATURE_ID] = [
-      WebDXFeatureObserver.TBD_FEATURE_ID,
-      WebDXFeatureObserver.TBD_FEATURE_ID,
-    ]
+        web_features_dict = OrderedDict()
+        # The first key, value pair is the id when features are missing from the list.  # noqa: E501
+        web_features_dict[WebDXFeatureObserver.MISSING_FEATURE_ID] = [
+            WebDXFeatureObserver.MISSING_FEATURE_ID,
+            WebDXFeatureObserver.MISSING_FEATURE_ID,
+        ]
+        web_features_dict[WebDXFeatureObserver.TBD_FEATURE_ID] = [
+            WebDXFeatureObserver.TBD_FEATURE_ID,
+            WebDXFeatureObserver.TBD_FEATURE_ID,
+        ]
 
-    for entry in webdx_features_mapping:
-      web_features_dict[entry[1]] = [entry[1], str(entry[0])]
+        for entry in webdx_features_mapping:
+            web_features_dict[entry[1]] = [entry[1], str(entry[0])]
 
-    return web_features_dict
+        return web_features_dict

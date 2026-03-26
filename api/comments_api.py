@@ -59,7 +59,8 @@ def activity_to_OAM(comment: Activity) -> ActivityModel:
 
 class CommentsAPI(basehandlers.APIHandler):
   """Users may see the list of comments on one of the approvals of a feature,
-   and add their own, if allowed."""
+  and add their own, if allowed.
+  """
 
   def _should_show_comment(
       self, comment: Activity, email: str | None, is_admin: bool) -> bool:

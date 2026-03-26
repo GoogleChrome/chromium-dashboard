@@ -13,11 +13,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from datetime import datetime
 import logging
+from datetime import datetime
 from typing import Any, Tuple
 
-from chromestatus_openapi.models import (GetVotesResponse, GetGateResponse, PatchGateRequest, SuccessMessage)
+from chromestatus_openapi.models import (
+  GetGateResponse,
+  GetVotesResponse,
+  PatchGateRequest,
+  SuccessMessage,
+)
 from google.cloud import ndb
 from google.cloud.ndb.tasklets import Future  # for type checking only
 
@@ -27,7 +32,7 @@ from framework.users import User
 from internals import approval_defs, notifier_helpers, self_certify
 from internals.core_enums import *
 from internals.core_models import FeatureEntry, Stage
-from internals.review_models import Gate, Vote, Amendment, Activity
+from internals.review_models import Activity, Amendment, Gate, Vote
 
 
 def get_user_feature_and_gate(handler, kwargs) -> Tuple[
@@ -49,7 +54,8 @@ def get_user_feature_and_gate(handler, kwargs) -> Tuple[
 
 class VotesAPI(basehandlers.APIHandler):
   """Users may see the set of votes on a feature, and add their own,
-  if allowed."""
+  if allowed.
+  """
 
   def do_get(self, **kwargs) -> dict[str, list[dict[str, Any]]]:
     """Return a list of all vote values for a given feature."""

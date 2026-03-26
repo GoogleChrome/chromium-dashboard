@@ -15,11 +15,12 @@
 # Import needed to reference a class within its own class method.
 # https://stackoverflow.com/a/33533514
 from __future__ import annotations
-import collections
 
+import collections
 import datetime
 import logging
 from typing import Optional
+
 from google.cloud import ndb  # type: ignore
 
 

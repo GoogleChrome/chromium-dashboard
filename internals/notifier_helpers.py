@@ -15,13 +15,14 @@
 
 import logging
 from typing import TYPE_CHECKING
+
 import settings
 from api import converters
 from framework import cloud_tasks_helpers, users
-from internals import core_enums, approval_defs, core_models
-from internals.data_types import CHANGED_FIELDS_LIST_TYPE
-from internals.review_models import Gate, Amendment, Activity, Vote
+from internals import approval_defs, core_enums, core_models
 from internals.core_models import Stage
+from internals.data_types import CHANGED_FIELDS_LIST_TYPE
+from internals.review_models import Activity, Amendment, Gate, Vote
 
 if TYPE_CHECKING:
   from internals.core_models import FeatureEntry
@@ -47,7 +48,7 @@ def notify_feature_subscribers_of_changes(
     fe: 'FeatureEntry', amendments: list[Amendment],
     is_update: bool=True) -> None:
   """Async notifies subscribers of new features and property changes to
-      features by posting to a task queue.
+  features by posting to a task queue.
   """
   changed_props = [{
       'prop_name': a.field_name,

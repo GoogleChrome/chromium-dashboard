@@ -18,8 +18,10 @@ from unittest import mock
 import flask
 import werkzeug.exceptions  # Flask HTTP stuff.
 from chromestatus_openapi.models import (
-  Amendment as AmendmentModel,
   Activity as ActivityModel,
+)
+from chromestatus_openapi.models import (
+  Amendment as AmendmentModel,
 )
 
 import testing_config  # Must be imported before the module under test.

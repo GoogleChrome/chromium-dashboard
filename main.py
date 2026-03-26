@@ -62,8 +62,9 @@ from internals import (
   reminders,
   search_fulltext,
 )
+
 # TODO(jrobbins): Remove guide routes after a few weeks.
-from pages import featurelist, guide, intentpreview, metrics, ot_requests, users
+from pages import featurelist, guide, metrics, ot_requests, users
 
 # Patch treading library to work-around bug with Google Cloud Logging.
 original_delete = threading.Thread._delete  # type: ignore

@@ -13,78 +13,81 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import testing_config  # Must be imported before the module under test.
-
 import flask
 
+import testing_config  # Must be imported before the module under test.
 from api import permissions_api
 
 test_app = flask.Flask(__name__)
 
 
 class PermissionsAPITest(testing_config.CustomTestCase):
+    def setUp(self):
+        self.handler = permissions_api.PermissionsAPI()
+        self.request_path = '/api/v0/currentuser/permissions'
 
-  def setUp(self):
-    self.handler = permissions_api.PermissionsAPI()
-    self.request_path = '/api/v0/currentuser/permissions'
+    def test_get__anon(self):
+        """Returns no user object if not signed in"""  # noqa: D415
+        testing_config.sign_out()
+        with test_app.test_request_context(self.request_path):
+            actual = self.handler.do_get()
+        self.assertEqual({'user': None}, actual)
 
-  def test_get__anon(self):
-    """Returns no user object if not signed in"""
-    testing_config.sign_out()
-    with test_app.test_request_context(self.request_path):
-      actual = self.handler.do_get()
-    self.assertEqual({'user': None}, actual)
+    def test_get__non_googler(self):
+        """Non-googlers have no permissions by default"""  # noqa: D415
+        testing_config.sign_in('one@example.com', 12345)
+        with test_app.test_request_context(self.request_path):
+            actual = self.handler.do_get()
+        expected = {
+            'user': {
+                'can_create_feature': False,
+                'approvable_gate_types': [],
+                'can_comment': False,
+                'can_edit_all': False,
+                'can_review_release_notes': False,
+                'is_admin': False,
+                'email': 'one@example.com',
+                'editable_features': [],
+            }
+        }
+        self.assertEqual(expected, actual)
 
-  def test_get__non_googler(self):
-    """Non-googlers have no permissions by default"""
-    testing_config.sign_in('one@example.com', 12345)
-    with test_app.test_request_context(self.request_path):
-      actual = self.handler.do_get()
-    expected = {
-      'user': {
-        'can_create_feature': False,
-        'approvable_gate_types': [],
-        'can_comment': False,
-        'can_edit_all': False,
-        'can_review_release_notes': False,
-        'is_admin': False,
-        'email': 'one@example.com',
-        'editable_features': []
-        }}
-    self.assertEqual(expected, actual)
+    def test_get__googler(self):
+        """Googlers have default permissions to create features."""
+        testing_config.sign_in('one@google.com', 67890)
+        with test_app.test_request_context(self.request_path):
+            actual = self.handler.do_get()
+        expected = {
+            'user': {
+                'can_create_feature': True,
+                'approvable_gate_types': [],
+                'can_comment': True,
+                'can_edit_all': False,
+                'can_review_release_notes': False,
+                'is_admin': False,
+                'email': 'one@google.com',
+                'editable_features': [],
+            }
+        }
+        self.assertEqual(expected, actual)
 
-  def test_get__googler(self):
-    """Googlers have default permissions to create features."""
-    testing_config.sign_in('one@google.com', 67890)
-    with test_app.test_request_context(self.request_path):
-      actual = self.handler.do_get()
-    expected = {
-      'user': {
-        'can_create_feature': True,
-        'approvable_gate_types': [],
-        'can_comment': True,
-        'can_edit_all': False,
-        'can_review_release_notes': False,
-        'is_admin': False,
-        'email': 'one@google.com',
-        'editable_features': [],
-        }}
-    self.assertEqual(expected, actual)
-
-  def test_get__googler_paired_user(self):
-    """Googlers have default permissions to create features."""
-    testing_config.sign_in('one@google.com', 67890)
-    with test_app.test_request_context(self.request_path + '?returnPairedUser'):
-      actual = self.handler.do_get()
-    expected = {
-      'user': {
-          'can_create_feature': True,
-          'approvable_gate_types': [],
-          'can_comment': True,
-          'can_edit_all': False,
-          'can_review_release_notes': False,
-          'is_admin': False,
-          'email': 'one@chromium.org',
-          'editable_features': []
-      }}
-    self.assertEqual(expected, actual)
+    def test_get__googler_paired_user(self):
+        """Googlers have default permissions to create features."""
+        testing_config.sign_in('one@google.com', 67890)
+        with test_app.test_request_context(
+            self.request_path + '?returnPairedUser'
+        ):
+            actual = self.handler.do_get()
+        expected = {
+            'user': {
+                'can_create_feature': True,
+                'approvable_gate_types': [],
+                'can_comment': True,
+                'can_edit_all': False,
+                'can_review_release_notes': False,
+                'is_admin': False,
+                'email': 'one@chromium.org',
+                'editable_features': [],
+            }
+        }
+        self.assertEqual(expected, actual)

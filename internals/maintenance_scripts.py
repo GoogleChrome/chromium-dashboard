@@ -14,29 +14,33 @@
 
 import collections
 import csv
+import logging
 from datetime import date, datetime, timedelta
 from io import StringIO
-import logging
 from typing import Any
-from google.cloud import ndb, storage  # type: ignore
+
 import json5
 import requests
+from google.cloud import ndb, storage  # type: ignore
+from webstatus_openapi import (
+  ApiClient,
+  ApiException,
+  Configuration,
+  DefaultApi,
+  Feature,
+)
 
-from api import converters, channels_api
-from framework.basehandlers import FlaskHandler
-from framework import cloud_tasks_helpers
-from framework import origin_trials_client
-from framework import utils
-from internals import approval_defs
-from internals import feature_helpers
-from internals.core_models import FeatureEntry, MilestoneSet, Stage
-from internals.review_models import Amendment, Gate, Vote, Activity
-from internals.core_enums import *
-from internals.feature_links import batch_index_feature_entries
-from internals import stage_helpers
-from internals.webdx_feature_models import WebdxFeatures
-from webstatus_openapi import ApiClient, DefaultApi, Configuration, ApiException, Feature
 import settings
+from api import converters
+from framework import cloud_tasks_helpers, origin_trials_client, utils
+from framework.basehandlers import FlaskHandler
+from internals import approval_defs, feature_helpers, stage_helpers
+from internals.core_enums import *
+from internals.core_models import FeatureEntry, MilestoneSet, Stage
+from internals.feature_links import batch_index_feature_entries
+from internals.review_models import Activity, Amendment, Gate, Vote
+from internals.webdx_feature_models import WebdxFeatures
+
 
 class EvaluateGateStatus(FlaskHandler):
 
@@ -803,7 +807,8 @@ class FetchWebdxFeatureId(FlaskHandler):
 
 class SendManualOTCreatedEmail(FlaskHandler):
   """Manually send an email to origin trial contacts that an origin trial has
-  been created but not yet activated."""
+  been created but not yet activated.
+  """
 
   def get_template_data(self, **kwargs):
     self.require_cron_header()
@@ -829,7 +834,8 @@ class SendManualOTCreatedEmail(FlaskHandler):
 
 class SendManualOTActivatedEmail(FlaskHandler):
   """Manually send an email to origin trial contacts that an origin trial has
-  been created and also activated."""
+  been created and also activated.
+  """
 
   def get_template_data(self, **kwargs):
     self.require_cron_header()
@@ -967,7 +973,8 @@ class GenerateReviewActivityFile(FlaskHandler):
 
   def _get_last_run_timestamp(self, bucket):
     """Get the timestamp for the starting interval of querying for new
-    activities."""
+    activities.
+    """
     blob = bucket.blob('review-activity-last-timestamp.txt')
     if blob.exists():
       with blob.open('r') as f:
@@ -978,7 +985,8 @@ class GenerateReviewActivityFile(FlaskHandler):
 
   def _write_csv(self, bucket, csv_io: StringIO) -> None:
     """Append the rows to the review activity CSV, or create a new CSV if it
-    does not exist."""
+    does not exist.
+    """
     blob = bucket.blob('chromestatus-review-activity.csv')
     blob.upload_from_string(csv_io.getvalue())
 
@@ -1236,7 +1244,6 @@ class GenerateShippingFeaturesFile(FlaskHandler):
     missing_criteria_csv_rows: list[list[str]],
   ) -> None:
     """Write shipping features CSV, owners CSV, and missing criteria CSV to the GCP bucket."""
-
     self._upload_csv(
         bucket,
         self.FILENAME_FEATURES,

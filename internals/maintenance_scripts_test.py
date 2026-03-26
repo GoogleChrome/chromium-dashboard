@@ -14,23 +14,22 @@
 
 import csv
 import logging
-import testing_config  # Must be imported before the module under test.
-from google.cloud import ndb
-
-from io import StringIO
-import requests
 from datetime import date, datetime, timedelta
+from io import StringIO
 from unittest import mock
 
-from api import converters
-from internals import maintenance_scripts
-from internals import core_enums
-from internals.core_models import FeatureEntry, Stage, MilestoneSet
-from internals.review_models import Activity, Amendment, Gate, Vote
-from internals import stage_helpers
-from internals.webdx_feature_models import WebdxFeatures
-from webstatus_openapi import FeaturePage, ApiException
+import requests
+from google.cloud import ndb
+from webstatus_openapi import ApiException, FeaturePage
+
 import settings
+import testing_config  # Must be imported before the module under test.
+from api import converters
+from internals import core_enums, maintenance_scripts
+from internals.core_models import FeatureEntry, MilestoneSet, Stage
+from internals.review_models import Activity, Amendment, Gate, Vote
+from internals.webdx_feature_models import WebdxFeatures
+
 
 class EvaluateGateStatusTest(testing_config.CustomTestCase):
 
@@ -372,7 +371,6 @@ class CreateOriginTrialsTest(testing_config.CustomTestCase):
       mock_today,
       mock_enqueue_task):
     """Origin trials are created and activated if it is after branch point."""
-
     mock_today.return_value = date(2020, 6, 1)  # 2020-06-01
     mock_get_chromium_milestone_info.side_effect = mock_mstone_return_value_generator
     mock_create_origin_trial.side_effect = [
@@ -588,7 +586,6 @@ class ActivateOriginTrialsTest(testing_config.CustomTestCase):
   def test_activate_trials(
       self, mock_activate_origin_trial, mock_today, mock_enqueue_task):
     """Origin trials are activated if it is on or after the activation date."""
-
     mock_today.return_value = date(2020, 6, 1)  # 2020-06-01
 
     result = self.handler.get_template_data()
@@ -616,7 +613,6 @@ class ActivateOriginTrialsTest(testing_config.CustomTestCase):
   def test_activate_trials__failed(
       self, mock_activate_origin_trial, mock_today, mock_enqueue_task):
     """Proper notifications are sent if activation fails."""
-
     mock_today.return_value = date(2020, 6, 1)  # 2020-06-01
     # Activate trial request is failing.
     mock_activate_origin_trial.side_effect = requests.RequestException(
@@ -987,7 +983,8 @@ class SendManualOTCreatedEmailTest(testing_config.CustomTestCase):
   @mock.patch('framework.cloud_tasks_helpers.enqueue_task')
   def test_send__no_activation_date(self, mock_enqueue):
     """No email is sent if the stage does not have a scheduled activation
-    date."""
+    date.
+    """
     self.ot_stage.ot_activation_date = None
     self.ot_stage.put()
     result = self.handler.get_template_data(stage_id=self.ot_stage_id)
@@ -1602,7 +1599,6 @@ class GenerateShippingFeaturesFileTest(testing_config.CustomTestCase):
   @mock.patch('internals.maintenance_scripts.GenerateShippingFeaturesFile._get_feature_info')
   def test_generate_rows(self, mock_get_feature_info):
     """Rows are generated correctly for complete and incomplete features."""
-
     # Mock the return value of _get_feature_info
     mock_complete = [
         {

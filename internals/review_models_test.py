@@ -12,12 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import testing_config  # Must be imported before the module under test.
-
 import datetime
 
+import testing_config  # Must be imported before the module under test.
 from internals.core_models import FeatureEntry
-from internals.review_models import Activity, Gate, OwnersFile, Vote
+from internals.review_models import Activity, OwnersFile
 
 
 class ActivityTest(testing_config.CustomTestCase):

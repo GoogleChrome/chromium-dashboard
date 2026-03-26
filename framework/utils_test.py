@@ -12,792 +12,894 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import unittest
-import testing_config  # Must be imported before the module under test.
-
-from unittest import mock
-import werkzeug.exceptions  # Flask HTTP stuff.
-
-from framework import utils
 import base64
+import unittest
 import urllib
-import requests  # Added for requests.exceptions.RequestException
-import settings
 from pathlib import Path
+from unittest import mock
+
+import requests  # Added for requests.exceptions.RequestException
+
+import settings
+from framework import utils
 
 
 class MockHandler(object):
+    def __init__(self, path):
+        self.handler_called_with = None
+        self.redirected_to = None
+        self.request = self
+        self.path = path
 
-  def __init__(self, path):
-    self.handler_called_with = None
-    self.redirected_to = None
-    self.request = self
-    self.path = path
+    @utils.strip_trailing_slash
+    def handlerMethod(self, *args):
+        self.handler_called_with = args
 
-  @utils.strip_trailing_slash
-  def handlerMethod(self, *args):
-    self.handler_called_with = args
-
-  def redirect(self, new_path):
-    self.redirected_to = new_path
+    def redirect(self, new_path):
+        self.redirected_to = new_path
 
 
 class UtilsFunctionTests(unittest.TestCase):
+    def setUp(self):
+        self.url = 'https://example.com/file.txt'
+        self.content = 'This is the file content.'
+        # Encode content into bytes, then base64 encode it.
+        self.encoded_content = base64.b64encode(self.content.encode('utf-8'))
 
-  def setUp(self):
-    self.url = 'https://example.com/file.txt'
-    self.content = 'This is the file content.'
-    # Encode content into bytes, then base64 encode it.
-    self.encoded_content = base64.b64encode(self.content.encode('utf-8'))
+    def test_normalized_name(self):
+        self.assertEqual('', utils.normalized_name(''))
+        self.assertEqual('abc', utils.normalized_name('abc'))
+        self.assertEqual('abc', utils.normalized_name('Abc'))
+        self.assertEqual('abc', utils.normalized_name('ABC'))
+        self.assertEqual('abc', utils.normalized_name('A BC'))
+        self.assertEqual('abc', utils.normalized_name('A B/C'))
+        self.assertEqual('abc', utils.normalized_name(' /A B/C /'))
 
-  def test_normalized_name(self):
-    self.assertEqual('', utils.normalized_name(''))
-    self.assertEqual('abc', utils.normalized_name('abc'))
-    self.assertEqual('abc', utils.normalized_name('Abc'))
-    self.assertEqual('abc', utils.normalized_name('ABC'))
-    self.assertEqual('abc', utils.normalized_name('A BC'))
-    self.assertEqual('abc', utils.normalized_name('A B/C'))
-    self.assertEqual('abc', utils.normalized_name(' /A B/C /'))
+    def test_format_feature_url(self):
+        self.assertEqual('/feature/123', utils.format_feature_url(123))
 
-  def test_format_feature_url(self):
-    self.assertEqual(
-        '/feature/123',
-        utils.format_feature_url(123))
+    @mock.patch('logging.error')
+    @mock.patch('logging.warning')
+    @mock.patch('time.sleep')  # Run test full speed.
+    def testRetryDecorator_ExceedFailures(
+        self, mock_sleep, mock_warn, mock_err
+    ):
+        class Tracker(object):
+            func_called = 0
 
-  @mock.patch('logging.error')
-  @mock.patch('logging.warning')
-  @mock.patch('time.sleep')  # Run test full speed.
-  def testRetryDecorator_ExceedFailures(
-      self, mock_sleep, mock_warn, mock_err):
-    class Tracker(object):
-      func_called = 0
-    tracker = Tracker()
+        tracker = Tracker()
 
-    # Use a function that always fails.
-    @utils.retry(2, delay=1, backoff=2)
-    def testFunc(tracker):
-      tracker.func_called += 1
-      raise Exception('Failed')
+        # Use a function that always fails.
+        @utils.retry(2, delay=1, backoff=2)
+        def testFunc(tracker):
+            tracker.func_called += 1
+            raise Exception('Failed')
 
-    with self.assertRaises(Exception):
-      testFunc(tracker)
-    self.assertEqual(3, tracker.func_called)
-    self.assertEqual(2, len(mock_sleep.mock_calls))
-    self.assertEqual(2, len(mock_warn.mock_calls))
-    self.assertEqual(1, len(mock_err.mock_calls))
+        with self.assertRaises(Exception):
+            testFunc(tracker)
+        self.assertEqual(3, tracker.func_called)
+        self.assertEqual(2, len(mock_sleep.mock_calls))
+        self.assertEqual(2, len(mock_warn.mock_calls))
+        self.assertEqual(1, len(mock_err.mock_calls))
 
-  @mock.patch('logging.warning')
-  @mock.patch('time.sleep')  # Run test full speed.
-  def testRetryDecorator_EventuallySucceed(self, mock_sleep, mock_warn):
-    class Tracker(object):
-      func_called = 0
-    tracker = Tracker()
+    @mock.patch('logging.warning')
+    @mock.patch('time.sleep')  # Run test full speed.
+    def testRetryDecorator_EventuallySucceed(self, mock_sleep, mock_warn):
+        class Tracker(object):
+            func_called = 0
 
-    # Use a function that succeeds on the 2nd attempt.
-    @utils.retry(2, delay=1, backoff=2)
-    def testFunc(tracker):
-      tracker.func_called += 1
-      if tracker.func_called < 2:
-        raise Exception('Failed')
+        tracker = Tracker()
 
-    testFunc(tracker)
-    self.assertEqual(2, tracker.func_called)
-    self.assertEqual(1, len(mock_sleep.mock_calls))
-    self.assertEqual(1, len(mock_warn.mock_calls))
+        # Use a function that succeeds on the 2nd attempt.
+        @utils.retry(2, delay=1, backoff=2)
+        def testFunc(tracker):
+            tracker.func_called += 1
+            if tracker.func_called < 2:
+                raise Exception('Failed')
 
-  def test_strip_trailing_slash(self):
-    handlerInstance = MockHandler('/request/path')
-    handlerInstance.handlerMethod('/request/path')
-    self.assertEqual(('/request/path',), handlerInstance.handler_called_with)
-    self.assertIsNone(handlerInstance.redirected_to)
+        testFunc(tracker)
+        self.assertEqual(2, tracker.func_called)
+        self.assertEqual(1, len(mock_sleep.mock_calls))
+        self.assertEqual(1, len(mock_warn.mock_calls))
 
-    handlerInstance = MockHandler('/request/path/')
-    handlerInstance.handlerMethod('/request/path/')
-    self.assertIsNone(handlerInstance.handler_called_with)
-    self.assertEqual('/request/path', handlerInstance.redirected_to)
+    def test_strip_trailing_slash(self):
+        handlerInstance = MockHandler('/request/path')
+        handlerInstance.handlerMethod('/request/path')
+        self.assertEqual(
+            ('/request/path',), handlerInstance.handler_called_with
+        )
+        self.assertIsNone(handlerInstance.redirected_to)
 
-  def test_get_banner_time__None(self):
-    """If no time specified, it returns None."""
-    self.assertIsNone(utils.get_banner_time(None))
+        handlerInstance = MockHandler('/request/path/')
+        handlerInstance.handlerMethod('/request/path/')
+        self.assertIsNone(handlerInstance.handler_called_with)
+        self.assertEqual('/request/path', handlerInstance.redirected_to)
 
-  def test_get_banner_time__tuple(self):
-    """If a time tuple is specified, it returns a timestamp."""
-    time_tuple = (2019, 6, 13, 18, 30)
-    actual = utils.get_banner_time(time_tuple)
-    self.assertEqual(1560450600, actual)
+    def test_get_banner_time__None(self):
+        """If no time specified, it returns None."""
+        self.assertIsNone(utils.get_banner_time(None))
 
-  @mock.patch('framework.utils.rediscache')
-  @mock.patch('urllib.request.urlopen')
-  def test_get_chromium_file__cache_hit(self, mock_urlopen, mock_rediscache):
-    """When the content is cached, it is returned directly."""
-    mock_rediscache.get.return_value = self.content
+    def test_get_banner_time__tuple(self):
+        """If a time tuple is specified, it returns a timestamp."""
+        time_tuple = (2019, 6, 13, 18, 30)
+        actual = utils.get_banner_time(time_tuple)
+        self.assertEqual(1560450600, actual)
 
-    result = utils.get_chromium_file(self.url)
+    @mock.patch('framework.utils.rediscache')
+    @mock.patch('urllib.request.urlopen')
+    def test_get_chromium_file__cache_hit(self, mock_urlopen, mock_rediscache):
+        """When the content is cached, it is returned directly."""
+        mock_rediscache.get.return_value = self.content
 
-    self.assertEqual(result, self.content)
-    mock_rediscache.get.assert_called_once_with(self.url)
-    mock_urlopen.assert_not_called()
-    mock_rediscache.set.assert_not_called()
+        result = utils.get_chromium_file(self.url)
 
-  @mock.patch('logging.info')
-  @mock.patch('framework.utils.rediscache')
-  @mock.patch('urllib.request.urlopen')
-  def test_get_chromium_file__cache_miss_success(
-      self, mock_urlopen, mock_rediscache, mock_logging_info):
-    """When not cached, the file is fetched, decoded, cached, and returned."""
-    mock_rediscache.get.return_value = None
-    mock_conn = mock.MagicMock()
-    mock_conn.read.return_value = self.encoded_content
-    # Mock the context manager
-    mock_urlopen.return_value.__enter__.return_value = mock_conn
+        self.assertEqual(result, self.content)
+        mock_rediscache.get.assert_called_once_with(self.url)
+        mock_urlopen.assert_not_called()
+        mock_rediscache.set.assert_not_called()
 
-    result = utils.get_chromium_file(self.url)
+    @mock.patch('logging.info')
+    @mock.patch('framework.utils.rediscache')
+    @mock.patch('urllib.request.urlopen')
+    def test_get_chromium_file__cache_miss_success(
+        self, mock_urlopen, mock_rediscache, mock_logging_info
+    ):
+        """When not cached, the file is fetched, decoded, cached, and returned."""
+        mock_rediscache.get.return_value = None
+        mock_conn = mock.MagicMock()
+        mock_conn.read.return_value = self.encoded_content
+        # Mock the context manager
+        mock_urlopen.return_value.__enter__.return_value = mock_conn
 
-    self.assertEqual(result, self.content)
-    mock_rediscache.get.assert_called_once_with(self.url)
-    mock_logging_info.assert_called_once_with(f'Fetching and caching file: {self.url}')
-    mock_urlopen.assert_called_once_with(self.url, timeout=60)
-    mock_rediscache.set.assert_called_once_with(self.url, self.content, time=1800)
+        result = utils.get_chromium_file(self.url)
 
-  @mock.patch('logging.error')
-  @mock.patch('framework.utils.rediscache')
-  @mock.patch('urllib.request.urlopen')
-  def test_get_chromium_file__fetch_error(
-      self, mock_urlopen, mock_rediscache, mock_logging_error):
-    """If fetching fails with a URLError, return an empty string."""
-    mock_rediscache.get.return_value = None
-    mock_urlopen.side_effect = urllib.error.URLError('test error')
+        self.assertEqual(result, self.content)
+        mock_rediscache.get.assert_called_once_with(self.url)
+        mock_logging_info.assert_called_once_with(
+            f'Fetching and caching file: {self.url}'
+        )  # noqa: E501
+        mock_urlopen.assert_called_once_with(self.url, timeout=60)
+        mock_rediscache.set.assert_called_once_with(
+            self.url, self.content, time=1800
+        )  # noqa: E501
 
-    result = utils.get_chromium_file(self.url)
+    @mock.patch('logging.error')
+    @mock.patch('framework.utils.rediscache')
+    @mock.patch('urllib.request.urlopen')
+    def test_get_chromium_file__fetch_error(
+        self, mock_urlopen, mock_rediscache, mock_logging_error
+    ):
+        """If fetching fails with a URLError, return an empty string."""
+        mock_rediscache.get.return_value = None
+        mock_urlopen.side_effect = urllib.error.URLError('test error')
 
-    self.assertEqual(result, "")
-    mock_rediscache.get.assert_called_once_with(self.url)
-    mock_urlopen.assert_called_once_with(self.url, timeout=60)
-    mock_logging_error.assert_called_once()
-    mock_rediscache.set.assert_not_called()
+        result = utils.get_chromium_file(self.url)
 
-  @mock.patch('logging.error')
-  @mock.patch('framework.utils.rediscache')
-  @mock.patch('urllib.request.urlopen')
-  def test_get_chromium_file__parsing_error(
-      self, mock_urlopen, mock_rediscache, mock_logging_error):
-    """If decoding the fetched content fails, return an empty string."""
-    mock_rediscache.get.return_value = None
-    mock_conn = mock.MagicMock()
-    # Provide content that is not valid base64, causing a ValueError on decode.
-    mock_conn.read.return_value = b'this is not valid base64'
-    mock_urlopen.return_value.__enter__.return_value = mock_conn
+        self.assertEqual(result, '')
+        mock_rediscache.get.assert_called_once_with(self.url)
+        mock_urlopen.assert_called_once_with(self.url, timeout=60)
+        mock_logging_error.assert_called_once()
+        mock_rediscache.set.assert_not_called()
 
-    result = utils.get_chromium_file(self.url)
+    @mock.patch('logging.error')
+    @mock.patch('framework.utils.rediscache')
+    @mock.patch('urllib.request.urlopen')
+    def test_get_chromium_file__parsing_error(
+        self, mock_urlopen, mock_rediscache, mock_logging_error
+    ):
+        """If decoding the fetched content fails, return an empty string."""
+        mock_rediscache.get.return_value = None
+        mock_conn = mock.MagicMock()
+        # Provide content that is not valid base64, causing a ValueError on decode.
+        mock_conn.read.return_value = b'this is not valid base64'
+        mock_urlopen.return_value.__enter__.return_value = mock_conn
 
-    self.assertEqual(result, "")
-    mock_rediscache.get.assert_called_once_with(self.url)
-    mock_urlopen.assert_called_once_with(self.url, timeout=60)
-    mock_logging_error.assert_called_once()
-    mock_rediscache.set.assert_not_called()
+        result = utils.get_chromium_file(self.url)
 
-  def test_extract_wpt_fyi_results_urls(self):
-    """Tests the regex for finding wpt.fyi/results URLs."""
-    test_cases = {
-      # Input string (key): expected list of URLs (value)
-      'Example string with no URLs': [],
-      'Empty string': [],
-      'Invalid domain: https://google.com/results/foo': [],
-      'Invalid path: https://wpt.fyi/wrong/path/foo': [],
-      'Protocol relative: //wpt.fyi/results/foo': [],
-      'Malformed: https:wpt.fyi/results/foo': [],
-      'Path-less URL: https://wpt.fyi/results': [],
+        self.assertEqual(result, '')
+        mock_rediscache.get.assert_called_once_with(self.url)
+        mock_urlopen.assert_called_once_with(self.url, timeout=60)
+        mock_logging_error.assert_called_once()
+        mock_rediscache.set.assert_not_called()
 
-      # Case: One URL with query
-      'https://wpt.fyi/results/fedcm/fedcm-error-attribute?label=experimental':
-        ['https://wpt.fyi/results/fedcm/fedcm-error-attribute'],
+    def test_extract_wpt_fyi_results_urls(self):
+        """Tests the regex for finding wpt.fyi/results URLs."""
+        test_cases = {
+            # Input string (key): expected list of URLs (value)
+            'Example string with no URLs': [],
+            'Empty string': [],
+            'Invalid domain: https://google.com/results/foo': [],
+            'Invalid path: https://wpt.fyi/wrong/path/foo': [],
+            'Protocol relative: //wpt.fyi/results/foo': [],
+            'Malformed: https:wpt.fyi/results/foo': [],
+            'Path-less URL: https://wpt.fyi/results': [],
+            # Case: One URL with query
+            'https://wpt.fyi/results/fedcm/fedcm-error-attribute?label=experimental': [
+                'https://wpt.fyi/results/fedcm/fedcm-error-attribute'
+            ],
+            # Case: One URL, no query, embedded
+            'Random characters https://wpt.fyi/results/dom/historical.html other': [
+                'https://wpt.fyi/results/dom/historical.html'
+            ],
+            # Case: Two URLs, mixed http/https, one with query string
+            'https://wpt.fyi/results/a?q=1 and http://wpt.fyi/results/b': [
+                'https://wpt.fyi/results/a',
+                'http://wpt.fyi/results/b',
+            ],
+            # Case: URL at end of string
+            'Here is the URL: http://wpt.fyi/results/css/foo.css': [
+                'http://wpt.fyi/results/css/foo.css'
+            ],
+            # Case: URL with hash fragment
+            'Check https://wpt.fyi/results/css/bar.html#section1 for details': [
+                'https://wpt.fyi/results/css/bar.html#section1'
+            ],
+            # Case: Multiple URLs complex
+            (
+                'See https://wpt.fyi/results/a?q=1 http://wpt.fyi/results/b and '
+                "'https://wpt.fyi/results/c.html?foo=bar#hash for info."
+            ): [
+                'https://wpt.fyi/results/a',
+                'http://wpt.fyi/results/b',
+                'https://wpt.fyi/results/c.html',
+            ],
+        }
 
-      # Case: One URL, no query, embedded
-      'Random characters https://wpt.fyi/results/dom/historical.html other':
-        ['https://wpt.fyi/results/dom/historical.html'],
+        for input_str, expected in test_cases.items():
+            with self.subTest(input=input_str):
+                actual = utils.extract_wpt_fyi_results_urls(input_str)
+                self.assertEqual(expected, actual)
 
-      # Case: Two URLs, mixed http/https, one with query string
-      'https://wpt.fyi/results/a?q=1 and http://wpt.fyi/results/b':
-        ['https://wpt.fyi/results/a', 'http://wpt.fyi/results/b'],
+    def test_reformat_wpt_fyi_url(self):
+        """Ensure .any.js variant URLs are correctly reformatted to their source."""
+        # Case: Standard URL that should not change.
+        self.assertEqual(
+            'https://wpt.fyi/results/dom/nodes/Element-firstElementChild.html',
+            utils.reformat_wpt_fyi_url(
+                'https://wpt.fyi/results/dom/nodes/Element-firstElementChild.html'
+            ),
+        )
 
-      # Case: URL at end of string
-      'Here is the URL: http://wpt.fyi/results/css/foo.css':
-        ['http://wpt.fyi/results/css/foo.css'],
+        # Case: A standard .any.html file.
+        self.assertEqual(
+            'https://wpt.fyi/results/dpub-aam/doc-afterword.any.js',
+            utils.reformat_wpt_fyi_url(
+                'https://wpt.fyi/results/dpub-aam/doc-afterword.any.html'
+            ),
+        )
 
-      # Case: URL with hash fragment
-      'Check https://wpt.fyi/results/css/bar.html#section1 for details':
-        ['https://wpt.fyi/results/css/bar.html#section1'],
+        # Case: A worker variant of an .any.js test.
+        self.assertEqual(
+            'https://wpt.fyi/results/content-security-policy/reporting/report-only-in-worker.any.js',
+            utils.reformat_wpt_fyi_url(
+                'https://wpt.fyi/results/content-security-policy/reporting/report-only-in-worker.any.worker.html'
+            ),
+        )
 
-      # Case: Multiple URLs complex
-      ('See https://wpt.fyi/results/a?q=1 http://wpt.fyi/results/b and '
-       "'https://wpt.fyi/results/c.html?foo=bar#hash for info."):
-        ['https://wpt.fyi/results/a',
-         'http://wpt.fyi/results/b',
-         'https://wpt.fyi/results/c.html'],
-    }
+        # Case: A sharedworker variant.
+        self.assertEqual(
+            'https://wpt.fyi/results/fs/FileSystemFileHandle-sync-access-handle-lock-modes.any.js',
+            utils.reformat_wpt_fyi_url(
+                'https://wpt.fyi/results/fs/FileSystemFileHandle-sync-access-handle-lock-modes.any.sharedworker.html'
+            ),
+        )
 
-    for input_str, expected in test_cases.items():
-      with self.subTest(input=input_str):
-        actual = utils.extract_wpt_fyi_results_urls(input_str)
-        self.assertEqual(expected, actual)
-
-  def test_reformat_wpt_fyi_url(self):
-    """Ensure .any.js variant URLs are correctly reformatted to their source."""
-    # Case: Standard URL that should not change.
-    self.assertEqual(
-      'https://wpt.fyi/results/dom/nodes/Element-firstElementChild.html',
-      utils.reformat_wpt_fyi_url(
-        'https://wpt.fyi/results/dom/nodes/Element-firstElementChild.html'))
-
-    # Case: A standard .any.html file.
-    self.assertEqual(
-      'https://wpt.fyi/results/dpub-aam/doc-afterword.any.js',
-      utils.reformat_wpt_fyi_url(
-        'https://wpt.fyi/results/dpub-aam/doc-afterword.any.html'))
-
-    # Case: A worker variant of an .any.js test.
-    self.assertEqual(
-      'https://wpt.fyi/results/content-security-policy/reporting/report-only-in-worker.any.js',
-      utils.reformat_wpt_fyi_url(
-        'https://wpt.fyi/results/content-security-policy/reporting/report-only-in-worker.any.worker.html'))
-
-    # Case: A sharedworker variant.
-    self.assertEqual(
-      'https://wpt.fyi/results/fs/FileSystemFileHandle-sync-access-handle-lock-modes.any.js',
-      utils.reformat_wpt_fyi_url(
-        'https://wpt.fyi/results/fs/FileSystemFileHandle-sync-access-handle-lock-modes.any.sharedworker.html'))
-
-    # Case: Edge case to ensure it strictly matches '.any.' and not just '.any'.
-    self.assertEqual(
-      'https://wpt.fyi/results/foo/bar.anything.html',
-      utils.reformat_wpt_fyi_url('https://wpt.fyi/results/foo/bar.anything.html'))
+        # Case: Edge case to ensure it strictly matches '.any.' and not just '.any'.
+        self.assertEqual(
+            'https://wpt.fyi/results/foo/bar.anything.html',
+            utils.reformat_wpt_fyi_url(
+                'https://wpt.fyi/results/foo/bar.anything.html'
+            ),
+        )
 
 
 class UtilsGitHubTests(unittest.TestCase):
-  """Tests for the GitHub fetching utility functions (synchronous helpers)."""
+    """Tests for the GitHub fetching utility functions (synchronous helpers)."""
 
-  def setUp(self):
-    self.original_github_token = settings.GITHUB_TOKEN
-    self.mock_headers = {'Authorization': 'Bearer test_token'}
-    # Mock successful file API response
-    self.mock_file_api_response = {
-      'type': 'file',
-      'download_url': 'https://raw.github.com/some/file.html',
-      'name': 'file.html',
-      'path': 'some/file.html'
-    }
-    # Mock successful directory API response
-    self.mock_dir_api_response = [
-      {
-        'type': 'file',
-        'name': 'file1.html',
-        'download_url': 'https://raw.github.com/some/file1.html',
-        'path': 'file1.html'
-      },
-      {
-        'type': 'dir',
-        'name': 'subdir',
-        'download_url': None,
-        'path': 'subdir'
-      },
-      {
-        'type': 'file',
-        'name': 'file2.js',
-        'download_url': 'https://raw.github.com/some/file2.js',
-        'path': 'file2.js'
-      }
-    ]
+    def setUp(self):
+        self.original_github_token = settings.GITHUB_TOKEN
+        self.mock_headers = {'Authorization': 'Bearer test_token'}
+        # Mock successful file API response
+        self.mock_file_api_response = {
+            'type': 'file',
+            'download_url': 'https://raw.github.com/some/file.html',
+            'name': 'file.html',
+            'path': 'some/file.html',
+        }
+        # Mock successful directory API response
+        self.mock_dir_api_response = [
+            {
+                'type': 'file',
+                'name': 'file1.html',
+                'download_url': 'https://raw.github.com/some/file1.html',
+                'path': 'file1.html',
+            },
+            {
+                'type': 'dir',
+                'name': 'subdir',
+                'download_url': None,
+                'path': 'subdir',
+            },
+            {
+                'type': 'file',
+                'name': 'file2.js',
+                'download_url': 'https://raw.github.com/some/file2.js',
+                'path': 'file2.js',
+            },
+        ]
 
-  def tearDown(self):
-    settings.GITHUB_TOKEN = self.original_github_token
+    def tearDown(self):
+        settings.GITHUB_TOKEN = self.original_github_token
 
-  def test_get_github_headers__with_token(self):
-    """Headers should include Authorization when a token is provided."""
-    headers = utils._get_github_headers('test_token')
-    self.assertIn('Authorization', headers)
-    self.assertEqual(headers['Authorization'], 'Bearer test_token')
-    self.assertIn('Accept', headers)
-    self.assertIn('X-GitHub-Api-Version', headers)
+    def test_get_github_headers__with_token(self):
+        """Headers should include Authorization when a token is provided."""
+        headers = utils._get_github_headers('test_token')
+        self.assertIn('Authorization', headers)
+        self.assertEqual(headers['Authorization'], 'Bearer test_token')
+        self.assertIn('Accept', headers)
+        self.assertIn('X-GitHub-Api-Version', headers)
 
-  def test_get_github_headers__no_token(self):
-    """Headers should not include Authorization when token is None AND secrets returns None."""
-    # Simulate that the secret lookup fails/returns nothing
-    settings.GITHUB_TOKEN = None
+    def test_get_github_headers__no_token(self):
+        """Headers should not include Authorization when token is None AND secrets returns None."""  # noqa: E501
+        # Simulate that the secret lookup fails/returns nothing
+        settings.GITHUB_TOKEN = None
 
-    headers = utils._get_github_headers(None)
+        headers = utils._get_github_headers(None)
 
-    # Verify header is missing
-    self.assertNotIn('Authorization', headers)
-    self.assertIn('Accept', headers)
-    self.assertIn('X-GitHub-Api-Version', headers)
+        # Verify header is missing
+        self.assertNotIn('Authorization', headers)
+        self.assertIn('Accept', headers)
+        self.assertIn('X-GitHub-Api-Version', headers)
 
-  def test_get_github_headers__fetches_token_from_secrets(self):
-    """Headers should include Authorization when token arg is None but secrets returns one."""
-    # Simulate that secrets has a token
-    settings.GITHUB_TOKEN = 'secret_token'
+    def test_get_github_headers__fetches_token_from_secrets(self):
+        """Headers should include Authorization when token arg is None but secrets returns one."""  # noqa: E501
+        # Simulate that secrets has a token
+        settings.GITHUB_TOKEN = 'secret_token'
 
-    headers = utils._get_github_headers(None)
+        headers = utils._get_github_headers(None)
 
-    # Verify header uses the secret token
-    self.assertIn('Authorization', headers)
-    self.assertEqual(headers['Authorization'], 'Bearer secret_token')
+        # Verify header uses the secret token
+        self.assertIn('Authorization', headers)
+        self.assertEqual(headers['Authorization'], 'Bearer secret_token')
 
-  def test_parse_wpt_fyi_url__valid_cases(self):
-    """Should correctly parse valid wpt.fyi URLs."""
-    urls = {
-      'https://wpt.fyi/results/dom/historical.html': 'dom/historical.html',
-      'http://wpt.fyi/results/dom/events': 'dom/events',
-      'https://wpt.fyi/results/dom/events?label=master': 'dom/events',
-      'https://wpt.fyi/results/dom/events/': 'dom/events',
-    }
-    for url, expected_path in urls.items():
-      with self.subTest(url=url):
-        self.assertEqual(Path(expected_path), utils._parse_wpt_fyi_url(url))
+    def test_parse_wpt_fyi_url__valid_cases(self):
+        """Should correctly parse valid wpt.fyi URLs."""
+        urls = {
+            'https://wpt.fyi/results/dom/historical.html': 'dom/historical.html',
+            'http://wpt.fyi/results/dom/events': 'dom/events',
+            'https://wpt.fyi/results/dom/events?label=master': 'dom/events',
+            'https://wpt.fyi/results/dom/events/': 'dom/events',
+        }
+        for url, expected_path in urls.items():
+            with self.subTest(url=url):
+                self.assertEqual(
+                    Path(expected_path), utils._parse_wpt_fyi_url(url)
+                )
 
-  def test_parse_wpt_fyi_url__invalid_cases(self):
-    """Should raise ValueError for invalid URLs."""
-    invalid_urls = [
-      'https://google.com/results/dom/events',  # Invalid domain
-      'https://wpt.fyi/something/dom/events',  # Invalid prefix
-      'https://wpt.fyi/results/',  # Empty path
-      'https://wpt.fyi/results',  # Empty path
-    ]
-    for url in invalid_urls:
-      with self.subTest(url=url):
-        with self.assertRaises(ValueError):
-          utils._parse_wpt_fyi_url(url)
+    def test_parse_wpt_fyi_url__invalid_cases(self):
+        """Should raise ValueError for invalid URLs."""
+        invalid_urls = [
+            'https://google.com/results/dom/events',  # Invalid domain
+            'https://wpt.fyi/something/dom/events',  # Invalid prefix
+            'https://wpt.fyi/results/',  # Empty path
+            'https://wpt.fyi/results',  # Empty path
+        ]
+        for url in invalid_urls:
+            with self.subTest(url=url):
+                with self.assertRaises(ValueError):
+                    utils._parse_wpt_fyi_url(url)
 
-  @mock.patch('framework.utils.requests.get')
-  @mock.patch('framework.utils.logging.error')
-  def test_fetch_file_content__success(self, mock_logging, mock_requests_get):
-    """Should return file text on successful download."""
-    mock_response = mock.Mock()
-    mock_response.text = 'file content'
-    mock_response.raise_for_status.return_value = None
-    mock_requests_get.return_value = mock_response
-
-    content = utils._fetch_file_content('http://example.com/file.txt')
-
-    self.assertEqual(content, 'file content')
-    mock_requests_get.assert_called_once_with('http://example.com/file.txt')
-    mock_logging.assert_not_called()
-
-  @mock.patch('framework.utils.requests.get')
-  @mock.patch('framework.utils.logging.error')
-  def test_fetch_file_content__failure(self, mock_logging, mock_requests_get):
-    """Should return None and log an error on download failure for non-.html URL."""
-    # Ensure this test still uses a URL that does NOT trigger the fallback
-    mock_requests_get.side_effect = requests.exceptions.RequestException('Failed')
-
-    content = utils._fetch_file_content('http://example.com/file.txt')
-
-    self.assertIsNone(content)
-    mock_requests_get.assert_called_once_with('http://example.com/file.txt')
-    mock_logging.assert_called_once()
-
-  @mock.patch('framework.utils.requests.get')
-  @mock.patch('framework.utils.logging.error')
-  @mock.patch('framework.utils.logging.info')
-  def test_fetch_file_content__fallback_success(
-      self, mock_info, mock_error, mock_requests_get):
-    """Tests the fallback logic: initial .html fails, subsequent .js succeeds."""
-    html_url = 'http://example.com/test.html'
-    js_url = 'http://example.com/test.js'
-    js_content = 'JS file content'
-
-    # Define a side effect function to control responses for each URL
-    def mock_get_side_effect(url):
-      if url == html_url:
-        # First request (html) fails, raising an exception
-        raise requests.exceptions.RequestException('HTML URL failed (e.g. 404)')
-      if url == js_url:
-        # Second request (js) succeeds
+    @mock.patch('framework.utils.requests.get')
+    @mock.patch('framework.utils.logging.error')
+    def test_fetch_file_content__success(self, mock_logging, mock_requests_get):
+        """Should return file text on successful download."""
         mock_response = mock.Mock()
-        mock_response.text = js_content
+        mock_response.text = 'file content'
         mock_response.raise_for_status.return_value = None
-        return mock_response
-      # Should not happen
-      raise Exception('Unexpected URL')
+        mock_requests_get.return_value = mock_response
 
-    mock_requests_get.side_effect = mock_get_side_effect
+        content = utils._fetch_file_content('http://example.com/file.txt')
 
-    content = utils._fetch_file_content(html_url)
+        self.assertEqual(content, 'file content')
+        mock_requests_get.assert_called_once_with('http://example.com/file.txt')
+        mock_logging.assert_not_called()
 
-    self.assertEqual(content, js_content)
+    @mock.patch('framework.utils.requests.get')
+    @mock.patch('framework.utils.logging.error')
+    def test_fetch_file_content__failure(self, mock_logging, mock_requests_get):
+        """Should return None and log an error on download failure for non-.html URL."""  # noqa: E501
+        # Ensure this test still uses a URL that does NOT trigger the fallback
+        mock_requests_get.side_effect = requests.exceptions.RequestException(
+            'Failed'
+        )  # noqa: E501
 
-    # Should have been called twice (once for .html, once for .js)
-    self.assertEqual(mock_requests_get.call_count, 2)
-    mock_requests_get.assert_any_call(html_url)
-    mock_requests_get.assert_any_call(js_url)
+        content = utils._fetch_file_content('http://example.com/file.txt')
 
-    # Should log the initial warning and the info for the fallback attempt
-    self.assertEqual(mock_error.call_count, 1)
-    mock_info.assert_called_once()
+        self.assertIsNone(content)
+        mock_requests_get.assert_called_once_with('http://example.com/file.txt')
+        mock_logging.assert_called_once()
 
-  @mock.patch('framework.utils.requests.get')
-  @mock.patch('framework.utils._parse_wpt_fyi_url')
-  def test_fetch_dir_listing__success(self, mock_parse_url, mock_requests_get):
-    """Should return a list of (name, url) tuples for files only."""
-    mock_parse_url.return_value = Path('dom/events')
-    mock_response = mock.Mock()
-    mock_response.json.return_value = self.mock_dir_api_response
-    mock_response.raise_for_status.return_value = None
-    mock_requests_get.return_value = mock_response
+    @mock.patch('framework.utils.requests.get')
+    @mock.patch('framework.utils.logging.error')
+    @mock.patch('framework.utils.logging.info')
+    def test_fetch_file_content__fallback_success(
+        self, mock_info, mock_error, mock_requests_get
+    ):
+        """Tests the fallback logic: initial .html fails, subsequent .js succeeds."""  # noqa: E501
+        html_url = 'http://example.com/test.html'
+        js_url = 'http://example.com/test.js'
+        js_content = 'JS file content'
 
-    result = utils._fetch_dir_listing('https://wpt.fyi/results/dom/events', self.mock_headers)
+        # Define a side effect function to control responses for each URL
+        def mock_get_side_effect(url):
+            if url == html_url:
+                # First request (html) fails, raising an exception
+                raise requests.exceptions.RequestException(
+                    'HTML URL failed (e.g. 404)'
+                )
+            if url == js_url:
+                # Second request (js) succeeds
+                mock_response = mock.Mock()
+                mock_response.text = js_content
+                mock_response.raise_for_status.return_value = None
+                return mock_response
+            # Should not happen
+            raise Exception('Unexpected URL')
 
-    expected = [
-      (Path('file1.html'), 'https://raw.github.com/some/file1.html'),
-      (Path('file2.js'), 'https://raw.github.com/some/file2.js')
-    ]
-    self.assertEqual(result, expected)
-    mock_requests_get.assert_called_once()
+        mock_requests_get.side_effect = mock_get_side_effect
 
-  @mock.patch('framework.utils.requests.get')
-  @mock.patch('framework.utils.logging.error')
-  def test_fetch_dir_listing__failure(self, mock_logging, mock_requests_get):
-    """Should return an empty list and log error on failure."""
-    mock_requests_get.side_effect = Exception('API Error')
-    result = utils._fetch_dir_listing('https://bad.url', self.mock_headers)
-    self.assertEqual(result, [])
-    mock_logging.assert_called_once()
+        content = utils._fetch_file_content(html_url)
 
-  @mock.patch('framework.utils.requests.get')
-  def test_fetch_dir_listing__not_a_list(self, mock_requests_get):
-    """Should return empty list if response is not a list (e.g. it's a file)."""
-    mock_response = mock.Mock()
-    mock_response.json.return_value = {'type': 'file'}  # Not a list
-    mock_requests_get.return_value = mock_response
+        self.assertEqual(content, js_content)
 
-    result = utils._fetch_dir_listing('https://wpt.fyi/results/somefile', self.mock_headers)
-    self.assertEqual(result, [])
+        # Should have been called twice (once for .html, once for .js)
+        self.assertEqual(mock_requests_get.call_count, 2)
+        mock_requests_get.assert_any_call(html_url)
+        mock_requests_get.assert_any_call(js_url)
 
-  @mock.patch('framework.utils.requests.get')
-  @mock.patch('framework.utils._parse_wpt_fyi_url')
-  def test_fetch_dir_listing__ignores_yaml(self, mock_parse_url, mock_requests_get):
-    """Should specifically ignore .yaml and .yml files in listings."""
-    mock_parse_url.return_value = Path('css/css-grid')
+        # Should log the initial warning and the info for the fallback attempt
+        self.assertEqual(mock_error.call_count, 1)
+        mock_info.assert_called_once()
 
-    # Mock a response containing mixed content including YAML files
-    mixed_response = [
-      {'type': 'file', 'name': 'grid-basic.html', 'download_url': 'http://dl/grid-basic.html', 'path': 'grid-basic.html'},
-      {'type': 'file', 'name': 'META.yml', 'download_url': 'http://dl/META.yml', 'path': 'META.yml'},
-      {'type': 'file', 'name': 'config.yaml', 'download_url': 'http://dl/config.yaml', 'path': 'config.yaml'},
-      {'type': 'dir', 'name': 'subtests', 'download_url': None, 'path': 'subtests'},
-      {'type': 'file', 'name': 'grid-api.js', 'download_url': 'http://dl/grid-api.js', 'path': 'grid-api.js'},
-    ]
+    @mock.patch('framework.utils.requests.get')
+    @mock.patch('framework.utils._parse_wpt_fyi_url')
+    def test_fetch_dir_listing__success(
+        self, mock_parse_url, mock_requests_get
+    ):
+        """Should return a list of (name, url) tuples for files only."""
+        mock_parse_url.return_value = Path('dom/events')
+        mock_response = mock.Mock()
+        mock_response.json.return_value = self.mock_dir_api_response
+        mock_response.raise_for_status.return_value = None
+        mock_requests_get.return_value = mock_response
 
-    mock_response = mock.Mock()
-    mock_response.json.return_value = mixed_response
-    mock_response.raise_for_status.return_value = None
-    mock_requests_get.return_value = mock_response
+        result = utils._fetch_dir_listing(
+            'https://wpt.fyi/results/dom/events', self.mock_headers
+        )  # noqa: E501
 
-    result = utils._fetch_dir_listing('https://wpt.fyi/results/css/css-grid', self.mock_headers)
+        expected = [
+            (Path('file1.html'), 'https://raw.github.com/some/file1.html'),
+            (Path('file2.js'), 'https://raw.github.com/some/file2.js'),
+        ]
+        self.assertEqual(result, expected)
+        mock_requests_get.assert_called_once()
 
-    # Assert only non-YAML files are returned
-    expected = [
-      (Path('grid-basic.html'), 'http://dl/grid-basic.html'),
-      (Path('grid-api.js'), 'http://dl/grid-api.js')
-    ]
-    self.assertEqual(result, expected)
+    @mock.patch('framework.utils.requests.get')
+    @mock.patch('framework.utils.logging.error')
+    def test_fetch_dir_listing__failure(self, mock_logging, mock_requests_get):
+        """Should return an empty list and log error on failure."""
+        mock_requests_get.side_effect = Exception('API Error')
+        result = utils._fetch_dir_listing('https://bad.url', self.mock_headers)
+        self.assertEqual(result, [])
+        mock_logging.assert_called_once()
+
+    @mock.patch('framework.utils.requests.get')
+    def test_fetch_dir_listing__not_a_list(self, mock_requests_get):
+        """Should return empty list if response is not a list (e.g. it's a file)."""
+        mock_response = mock.Mock()
+        mock_response.json.return_value = {'type': 'file'}  # Not a list
+        mock_requests_get.return_value = mock_response
+
+        result = utils._fetch_dir_listing(
+            'https://wpt.fyi/results/somefile', self.mock_headers
+        )  # noqa: E501
+        self.assertEqual(result, [])
+
+    @mock.patch('framework.utils.requests.get')
+    @mock.patch('framework.utils._parse_wpt_fyi_url')
+    def test_fetch_dir_listing__ignores_yaml(
+        self, mock_parse_url, mock_requests_get
+    ):  # noqa: E501
+        """Should specifically ignore .yaml and .yml files in listings."""
+        mock_parse_url.return_value = Path('css/css-grid')
+
+        # Mock a response containing mixed content including YAML files
+        mixed_response = [
+            {
+                'type': 'file',
+                'name': 'grid-basic.html',
+                'download_url': 'http://dl/grid-basic.html',
+                'path': 'grid-basic.html',
+            },  # noqa: E501
+            {
+                'type': 'file',
+                'name': 'META.yml',
+                'download_url': 'http://dl/META.yml',
+                'path': 'META.yml',
+            },  # noqa: E501
+            {
+                'type': 'file',
+                'name': 'config.yaml',
+                'download_url': 'http://dl/config.yaml',
+                'path': 'config.yaml',
+            },  # noqa: E501
+            {
+                'type': 'dir',
+                'name': 'subtests',
+                'download_url': None,
+                'path': 'subtests',
+            },  # noqa: E501
+            {
+                'type': 'file',
+                'name': 'grid-api.js',
+                'download_url': 'http://dl/grid-api.js',
+                'path': 'grid-api.js',
+            },  # noqa: E501
+        ]
+
+        mock_response = mock.Mock()
+        mock_response.json.return_value = mixed_response
+        mock_response.raise_for_status.return_value = None
+        mock_requests_get.return_value = mock_response
+
+        result = utils._fetch_dir_listing(
+            'https://wpt.fyi/results/css/css-grid', self.mock_headers
+        )  # noqa: E501
+
+        # Assert only non-YAML files are returned
+        expected = [
+            (Path('grid-basic.html'), 'http://dl/grid-basic.html'),
+            (Path('grid-api.js'), 'http://dl/grid-api.js'),
+        ]
+        self.assertEqual(result, expected)
 
 
 class UtilsDependencyTests(unittest.TestCase):
-  """Tests for dependency extraction and path resolution."""
+    """Tests for dependency extraction and path resolution."""
 
-  def test_extract_dependencies__scripts(self):
-    """Should extract script src attributes."""
-    content = """
+    def test_extract_dependencies__scripts(self):
+        """Should extract script src attributes."""
+        content = """
     <!doctype html>
     <script src="/resources/testharness.js"></script>
     <script src='../support/helper.js'></script>
     <script>console.log('inline');</script>
     """
-    deps = utils.extract_dependencies(content)
-    self.assertIn('/resources/testharness.js', deps)
-    self.assertIn('../support/helper.js', deps)
-    self.assertEqual(len(deps), 2)
+        deps = utils.extract_dependencies(content)
+        self.assertIn('/resources/testharness.js', deps)
+        self.assertIn('../support/helper.js', deps)
+        self.assertEqual(len(deps), 2)
 
-  def test_extract_dependencies__imports(self):
-    """Should extract JS import paths."""
-    content = """
+    def test_extract_dependencies__imports(self):
+        """Should extract JS import paths."""
+        content = """
     import {foo} from "./utils.js";
     import bar from '../common.js';
     import "side-effect.js";
     export * from "./exports.js";
     """
-    deps = utils.extract_dependencies(content)
-    self.assertIn('./utils.js', deps)
-    self.assertIn('../common.js', deps)
-    self.assertIn('side-effect.js', deps)
-    self.assertIn('./exports.js', deps)
-    self.assertEqual(len(deps), 4)
+        deps = utils.extract_dependencies(content)
+        self.assertIn('./utils.js', deps)
+        self.assertIn('../common.js', deps)
+        self.assertIn('side-effect.js', deps)
+        self.assertIn('./exports.js', deps)
+        self.assertEqual(len(deps), 4)
 
-  def test_resolve_dependency_path__relative(self):
-    """Should resolve relative paths."""
-    base = Path('fedcm/test.html')
-    # Same directory
-    self.assertEqual(
-        Path('fedcm/helper.js'),
-        utils.resolve_dependency_path(base, 'helper.js'))
-    self.assertEqual(
-        Path('fedcm/helper.js'),
-        utils.resolve_dependency_path(base, './helper.js'))
+    def test_resolve_dependency_path__relative(self):
+        """Should resolve relative paths."""
+        base = Path('fedcm/test.html')
+        # Same directory
+        self.assertEqual(
+            Path('fedcm/helper.js'),
+            utils.resolve_dependency_path(base, 'helper.js'),
+        )
+        self.assertEqual(
+            Path('fedcm/helper.js'),
+            utils.resolve_dependency_path(base, './helper.js'),
+        )
 
-  def test_resolve_dependency_path__parent(self):
-    """Should resolve parent directory paths."""
-    base = Path('fedcm/sub/test.html')
-    self.assertEqual(
-        Path('fedcm/helper.js'),
-        utils.resolve_dependency_path(base, '../helper.js'))
+    def test_resolve_dependency_path__parent(self):
+        """Should resolve parent directory paths."""
+        base = Path('fedcm/sub/test.html')
+        self.assertEqual(
+            Path('fedcm/helper.js'),
+            utils.resolve_dependency_path(base, '../helper.js'),
+        )
 
-  def test_resolve_dependency_path__root_absolute(self):
-    """Should resolve root-absolute paths (starting with /)."""
-    base = Path('fedcm/test.html')
-    # /resources/testharness.js -> resources/testharness.js
-    self.assertEqual(
-        Path('resources/testharness.js'),
-        utils.resolve_dependency_path(base, '/resources/testharness.js'))
+    def test_resolve_dependency_path__root_absolute(self):
+        """Should resolve root-absolute paths (starting with /)."""
+        base = Path('fedcm/test.html')
+        # /resources/testharness.js -> resources/testharness.js
+        self.assertEqual(
+            Path('resources/testharness.js'),
+            utils.resolve_dependency_path(base, '/resources/testharness.js'),
+        )
 
-  def test_resolve_dependency_path__external(self):
-    """Should return None for external URLs."""
-    base = Path('test.html')
-    self.assertIsNone(utils.resolve_dependency_path(base, 'https://example.com/lib.js'))
-    self.assertIsNone(utils.resolve_dependency_path(base, '//example.com/lib.js'))
+    def test_resolve_dependency_path__external(self):
+        """Should return None for external URLs."""
+        base = Path('test.html')
+        self.assertIsNone(
+            utils.resolve_dependency_path(base, 'https://example.com/lib.js')
+        )
+        self.assertIsNone(
+            utils.resolve_dependency_path(base, '//example.com/lib.js')
+        )  # noqa: E501
 
 
 class AsyncUtilsGitHubTests(unittest.IsolatedAsyncioTestCase):
-  """Tests for the async GitHub orchestration functions."""
+    """Tests for the async GitHub orchestration functions."""
 
-  def setUp(self):
-    self.previous_max = utils.MAXIMUM_FETCHED_DEPENDENCIES
+    def setUp(self):
+        self.previous_max = utils.MAXIMUM_FETCHED_DEPENDENCIES
 
-  def tearDown(self):
-    utils.MAXIMUM_FETCHED_DEPENDENCIES = self.previous_max
+    def tearDown(self):
+        utils.MAXIMUM_FETCHED_DEPENDENCIES = self.previous_max
 
-  async def test_fetch_and_pair(self):
-    """Should pair filename with fetched content asynchronously."""
-    fname = Path('test.html')
-    furl = 'http://example.com/test.html'
-    expected_content = '<html>content</html>'
+    async def test_fetch_and_pair(self):
+        """Should pair filename with fetched content asynchronously."""
+        fname = Path('test.html')
+        furl = 'http://example.com/test.html'
+        expected_content = '<html>content</html>'
 
-    # We use a patch on the sync function it wraps with to_thread
-    with mock.patch('framework.utils._fetch_file_content', return_value=expected_content) as mock_fetch:
-      result = await utils._fetch_and_pair(fname, furl)
-      self.assertEqual(result, (fname, expected_content))
-      mock_fetch.assert_called_once_with(furl)
+        # We use a patch on the sync function it wraps with to_thread
+        with mock.patch(
+            'framework.utils._fetch_file_content', return_value=expected_content
+        ) as mock_fetch:  # noqa: E501
+            result = await utils._fetch_and_pair(fname, furl)
+            self.assertEqual(result, (fname, expected_content))
+            mock_fetch.assert_called_once_with(furl)
 
-  @mock.patch('framework.utils._fetch_dir_listing')
-  @mock.patch('framework.utils._fetch_file_content')
-  async def test_get_mixed_wpt_contents_async__recursive_success(
-      self, mock_fetch_content, mock_fetch_dir):
-    """Test full orchestration with recursive dependency fetching."""
-    # Setup Inputs
-    dir_urls = ['https://wpt.fyi/results/dir1']
-    file_urls = ['https://wpt.fyi/results/test.js']
-    settings.GITHUB_TOKEN = 'token'
+    @mock.patch('framework.utils._fetch_dir_listing')
+    @mock.patch('framework.utils._fetch_file_content')
+    async def test_get_mixed_wpt_contents_async__recursive_success(
+        self, mock_fetch_content, mock_fetch_dir
+    ):
+        """Test full orchestration with recursive dependency fetching."""
+        # Setup Inputs
+        dir_urls = ['https://wpt.fyi/results/dir1']
+        file_urls = ['https://wpt.fyi/results/test.js']
+        settings.GITHUB_TOKEN = 'token'
 
-    # Mock Directory Listing: dir1 contains 'a.html'
-    mock_fetch_dir.return_value = [
-      (Path('a.html'), 'http://dl/a.html'),
-    ]
+        # Mock Directory Listing: dir1 contains 'a.html'
+        mock_fetch_dir.return_value = [
+            (Path('a.html'), 'http://dl/a.html'),
+        ]
 
-    # Mock Content Fetching with recursion
-    # 1. a.html has no dependencies.
-    # 2. test.js imports 'dep.js'.
-    # 3. dep.js imports '/resources/common.js'.
-    # 4. common.js has no dependencies.
-    def side_effect(url):
-      if url == 'http://dl/a.html':
-        return 'content of a'
-      if url.endswith('test.js'):
-        return 'import "./dep.js";'
-      if url.endswith('dep.js'):
-        return 'import "/resources/common.js";'
-      if url.endswith('common.js'):
-        return 'console.log("common");'
-      return ''
+        # Mock Content Fetching with recursion
+        # 1. a.html has no dependencies.
+        # 2. test.js imports 'dep.js'.
+        # 3. dep.js imports '/resources/common.js'.
+        # 4. common.js has no dependencies.
+        def side_effect(url):
+            if url == 'http://dl/a.html':
+                return 'content of a'
+            if url.endswith('test.js'):
+                return 'import "./dep.js";'
+            if url.endswith('dep.js'):
+                return 'import "/resources/common.js";'
+            if url.endswith('common.js'):
+                return 'console.log("common");'
+            return ''
 
-    mock_fetch_content.side_effect = side_effect
+        mock_fetch_content.side_effect = side_effect
 
-    result = await utils.get_mixed_wpt_contents_async(dir_urls, file_urls)
+        result = await utils.get_mixed_wpt_contents_async(dir_urls, file_urls)
 
-    # Test Files (explicitly requested or from dir)
-    self.assertIn(Path('a.html'), result.test_contents)
-    self.assertIn(Path('test.js'), result.test_contents)
-    self.assertEqual(len(result.test_contents), 2)
+        # Test Files (explicitly requested or from dir)
+        self.assertIn(Path('a.html'), result.test_contents)
+        self.assertIn(Path('test.js'), result.test_contents)
+        self.assertEqual(len(result.test_contents), 2)
 
-    # Dependency Files (discovered recursively)
-    # dep.js (relative to test.js) -> dep.js
-    # common.js -> resources/common.js
-    self.assertIn(Path('dep.js'), result.dependency_contents)
-    self.assertIn(Path('resources/common.js'), result.dependency_contents)
-    self.assertEqual(len(result.dependency_contents), 2)
+        # Dependency Files (discovered recursively)
+        # dep.js (relative to test.js) -> dep.js
+        # common.js -> resources/common.js
+        self.assertIn(Path('dep.js'), result.dependency_contents)
+        self.assertIn(Path('resources/common.js'), result.dependency_contents)
+        self.assertEqual(len(result.dependency_contents), 2)
 
-    # Test Dependency Mapping
-    self.assertEqual(result.test_to_dependencies_map[Path('test.js')],
-                     {Path('dep.js'), Path('resources/common.js')})
-    # a.html has no dependencies
-    self.assertEqual(result.test_to_dependencies_map[Path('a.html')], set())
+        # Test Dependency Mapping
+        self.assertEqual(
+            result.test_to_dependencies_map[Path('test.js')],
+            {Path('dep.js'), Path('resources/common.js')},
+        )
+        # a.html has no dependencies
+        self.assertEqual(result.test_to_dependencies_map[Path('a.html')], set())
 
-    # Test Dependency Mapping
-    self.assertEqual(
-      result.test_to_dependencies_map[Path('test.js')],
-      {Path('dep.js'), Path('resources/common.js')}
-    )
-    # a.html has no dependencies
-    self.assertEqual(result.test_to_dependencies_map[Path('a.html')], set())
+        # Test Dependency Mapping
+        self.assertEqual(
+            result.test_to_dependencies_map[Path('test.js')],
+            {Path('dep.js'), Path('resources/common.js')},
+        )
+        # a.html has no dependencies
+        self.assertEqual(result.test_to_dependencies_map[Path('a.html')], set())
 
-    self.assertEqual(mock_fetch_content.call_count, 4)
+        self.assertEqual(mock_fetch_content.call_count, 4)
 
-  @mock.patch('framework.utils.MAXIMUM_FETCHED_DEPENDENCIES', 2)
-  @mock.patch('framework.utils._fetch_dir_listing')
-  @mock.patch('framework.utils._fetch_file_content')
-  async def test_get_mixed_wpt_contents_async__dependency_limit(
-      self, mock_fetch_content, mock_fetch_dir):
-    """Should stop fetching dependencies when limit is reached."""
-    # We set MAX limit to 2.
-    # 1 Test File -> Dep 1 -> Dep 2 -> Dep 3 (should be ignored)
-    utils.MAXIMUM_FETCHED_DEPENDENCIES = 2
+    @mock.patch('framework.utils.MAXIMUM_FETCHED_DEPENDENCIES', 2)
+    @mock.patch('framework.utils._fetch_dir_listing')
+    @mock.patch('framework.utils._fetch_file_content')
+    async def test_get_mixed_wpt_contents_async__dependency_limit(
+        self, mock_fetch_content, mock_fetch_dir
+    ):
+        """Should stop fetching dependencies when limit is reached."""
+        # We set MAX limit to 2.
+        # 1 Test File -> Dep 1 -> Dep 2 -> Dep 3 (should be ignored)
+        utils.MAXIMUM_FETCHED_DEPENDENCIES = 2
 
-    dir_urls = []
-    file_urls = ['https://wpt.fyi/results/test.js']
-    settings.GITHUB_TOKEN = 'token'
+        dir_urls = []
+        file_urls = ['https://wpt.fyi/results/test.js']
+        settings.GITHUB_TOKEN = 'token'
 
-    mock_fetch_dir.return_value = []
+        mock_fetch_dir.return_value = []
 
-    def side_effect(url):
-      if url.endswith('test.js'):
-        return 'import "./dep1.js";'
-      if url.endswith('dep1.js'):
-        return 'import "./dep2.js";'
-      if url.endswith('dep2.js'):
-        return 'import "./dep3.js";'
-      if url.endswith('dep3.js'):
-        return 'console.log("Too deep");'
-      return ''
+        def side_effect(url):
+            if url.endswith('test.js'):
+                return 'import "./dep1.js";'
+            if url.endswith('dep1.js'):
+                return 'import "./dep2.js";'
+            if url.endswith('dep2.js'):
+                return 'import "./dep3.js";'
+            if url.endswith('dep3.js'):
+                return 'console.log("Too deep");'
+            return ''
 
-    mock_fetch_content.side_effect = side_effect
+        mock_fetch_content.side_effect = side_effect
 
-    # Execute
-    result = await utils.get_mixed_wpt_contents_async(dir_urls, file_urls)
+        # Execute
+        result = await utils.get_mixed_wpt_contents_async(dir_urls, file_urls)
 
-    # 1. Start: 1 Test file (test.js). Visited count = 1.
-    # 2. Fetch test.js. Find dep1. Visited count = 2. (2 <= 2) -> Queue dep1.
-    # 3. Fetch dep1. Find dep2. Visited count = 3. (3 <= 2) -> False. Do NOT queue dep2.
+        # 1. Start: 1 Test file (test.js). Visited count = 1.
+        # 2. Fetch test.js. Find dep1. Visited count = 2. (2 <= 2) -> Queue dep1.
+        # 3. Fetch dep1. Find dep2. Visited count = 3. (3 <= 2) -> False. Do NOT queue dep2.  # noqa: E501
 
-    # Assertions
-    self.assertIn(Path('test.js'), result.test_contents)
-    self.assertIn(Path('dep1.js'), result.dependency_contents)
+        # Assertions
+        self.assertIn(Path('test.js'), result.test_contents)
+        self.assertIn(Path('dep1.js'), result.dependency_contents)
 
-    # Dep 2 should NOT be in the fetched content because we exceeded limit before queuing it
-    self.assertNotIn(Path('dep2.js'), result.dependency_contents)
+        # Dep 2 should NOT be in the fetched content because we exceeded limit before queuing it  # noqa: E501
+        self.assertNotIn(Path('dep2.js'), result.dependency_contents)
 
-    # Mapping should reflect only what was fetched
-    self.assertIn(Path('dep1.js'), result.test_to_dependencies_map[Path('test.js')])
-    self.assertNotIn(Path('dep2.js'), result.test_to_dependencies_map[Path('test.js')])
+        # Mapping should reflect only what was fetched
+        self.assertIn(
+            Path('dep1.js'), result.test_to_dependencies_map[Path('test.js')]
+        )  # noqa: E501
+        self.assertNotIn(
+            Path('dep2.js'), result.test_to_dependencies_map[Path('test.js')]
+        )  # noqa: E501
 
-  @mock.patch('framework.utils._fetch_dir_listing')
-  @mock.patch('framework.utils._fetch_file_content')
-  async def test_get_mixed_wpt_contents_async__deduplication(
-      self, mock_fetch_content, mock_fetch_dir):
-    """If the same file is in a dir and explicitly listed, fetch only once."""
-    dir_urls = ['https://wpt.fyi/results/dir1']
+    @mock.patch('framework.utils._fetch_dir_listing')
+    @mock.patch('framework.utils._fetch_file_content')
+    async def test_get_mixed_wpt_contents_async__deduplication(
+        self, mock_fetch_content, mock_fetch_dir
+    ):
+        """If the same file is in a dir and explicitly listed, fetch only once."""
+        dir_urls = ['https://wpt.fyi/results/dir1']
 
-    # We assume the user lists a file that is also inside dir1.
-    file_urls = ['https://wpt.fyi/results/dir1/a.html']
+        # We assume the user lists a file that is also inside dir1.
+        file_urls = ['https://wpt.fyi/results/dir1/a.html']
 
-    settings.GITHUB_TOKEN = 'token'
+        settings.GITHUB_TOKEN = 'token'
 
-    # Calculate the expected raw URL the code will generate
-    raw_base = utils.WPT_GITHUB_RAW_CONTENTS_URL
-    expected_url = f'{raw_base}dir1/a.html'
+        # Calculate the expected raw URL the code will generate
+        raw_base = utils.WPT_GITHUB_RAW_CONTENTS_URL
+        expected_url = f'{raw_base}dir1/a.html'
 
-    # The directory listing MUST return the same URL for deduplication to work.
-    mock_fetch_dir.return_value = [(Path('dir1/a.html'), expected_url)]
+        # The directory listing MUST return the same URL for deduplication to work.
+        mock_fetch_dir.return_value = [(Path('dir1/a.html'), expected_url)]
 
-    mock_fetch_content.return_value = 'content'
+        mock_fetch_content.return_value = 'content'
 
-    result = await utils.get_mixed_wpt_contents_async(dir_urls, file_urls)
+        result = await utils.get_mixed_wpt_contents_async(dir_urls, file_urls)
 
-    # It should be in tests, not deps
-    self.assertEqual(len(result.test_contents), 1)
-    self.assertEqual(result.test_contents[Path('dir1/a.html')], 'content')
-    self.assertEqual(len(result.dependency_contents), 0)
-    self.assertEqual(result.test_to_dependencies_map[Path('dir1/a.html')], set())
+        # It should be in tests, not deps
+        self.assertEqual(len(result.test_contents), 1)
+        self.assertEqual(result.test_contents[Path('dir1/a.html')], 'content')
+        self.assertEqual(len(result.dependency_contents), 0)
+        self.assertEqual(
+            result.test_to_dependencies_map[Path('dir1/a.html')], set()
+        )  # noqa: E501
 
-    # Crucial: content fetch should only happen once
-    mock_fetch_content.assert_called_once_with(expected_url)
+        # Crucial: content fetch should only happen once
+        mock_fetch_content.assert_called_once_with(expected_url)
 
-  @mock.patch('framework.utils._fetch_dir_listing')
-  @mock.patch('framework.utils._fetch_file_content')
-  async def test_get_mixed_wpt_contents_async__partial_failures(
-      self, mock_fetch_content, mock_fetch_dir):
-    """Should gracefully handle failures in resolution or fetching phases."""
-    dir_urls = ['https://wpt.fyi/results/dir1', 'https://wpt.fyi/results/fail_dir']
-    file_urls = []
-    settings.GITHUB_TOKEN = 'token'
+    @mock.patch('framework.utils._fetch_dir_listing')
+    @mock.patch('framework.utils._fetch_file_content')
+    async def test_get_mixed_wpt_contents_async__partial_failures(
+        self, mock_fetch_content, mock_fetch_dir
+    ):
+        """Should gracefully handle failures in resolution or fetching phases."""
+        dir_urls = [
+            'https://wpt.fyi/results/dir1',
+            'https://wpt.fyi/results/fail_dir',
+        ]
+        file_urls = []
+        settings.GITHUB_TOKEN = 'token'
 
-    # One dir fails (returns empty list), one succeeds
-    mock_fetch_dir.side_effect = [[(Path('a.html'), 'http://dl/a.html')], []]
+        # One dir fails (returns empty list), one succeeds
+        mock_fetch_dir.side_effect = [
+            [(Path('a.html'), 'http://dl/a.html')],
+            [],
+        ]
 
-    # Content fetch succeeds for the one valid file
-    mock_fetch_content.return_value = 'content_a'
+        # Content fetch succeeds for the one valid file
+        mock_fetch_content.return_value = 'content_a'
 
-    result = await utils.get_mixed_wpt_contents_async(dir_urls, file_urls)
+        result = await utils.get_mixed_wpt_contents_async(dir_urls, file_urls)
 
-    self.assertEqual(result.test_contents, {Path('a.html'): 'content_a'})
-    self.assertEqual(result.dependency_contents, {})
-    self.assertEqual(result.test_to_dependencies_map, {Path('a.html'): set()})
+        self.assertEqual(result.test_contents, {Path('a.html'): 'content_a'})
+        self.assertEqual(result.dependency_contents, {})
+        self.assertEqual(
+            result.test_to_dependencies_map, {Path('a.html'): set()}
+        )
 
-  @mock.patch('framework.utils.MAXIMUM_TEST_SUITE_SIZE', 5)
-  @mock.patch('framework.utils._fetch_dir_listing')
-  async def test_get_mixed_wpt_contents_async__exceeds_suite_size(
-      self, mock_fetch_dir):
-    """Should raise PipelineError if too many test files are requested."""
-    dir_urls = ['https://wpt.fyi/results/dir1']
-    file_urls = []
-    settings.GITHUB_TOKEN = 'token'
+    @mock.patch('framework.utils.MAXIMUM_TEST_SUITE_SIZE', 5)
+    @mock.patch('framework.utils._fetch_dir_listing')
+    async def test_get_mixed_wpt_contents_async__exceeds_suite_size(
+        self, mock_fetch_dir
+    ):
+        """Should raise PipelineError if too many test files are requested."""
+        dir_urls = ['https://wpt.fyi/results/dir1']
+        file_urls = []
+        settings.GITHUB_TOKEN = 'token'
 
-    # Mock returning 6 files, which exceeds the patched limit of 5.
-    mock_files = [(Path(f'test{i}.html'), f'http://dl/test{i}.html') for i in range(6)]
-    mock_fetch_dir.return_value = mock_files
+        # Mock returning 6 files, which exceeds the patched limit of 5.
+        mock_files = [
+            (Path(f'test{i}.html'), f'http://dl/test{i}.html') for i in range(6)
+        ]  # noqa: E501
+        mock_fetch_dir.return_value = mock_files
 
-    with self.assertRaises(utils.PipelineError) as cm:
-      await utils.get_mixed_wpt_contents_async(dir_urls, file_urls)
+        with self.assertRaises(utils.PipelineError) as cm:
+            await utils.get_mixed_wpt_contents_async(dir_urls, file_urls)
 
-    # We verify the error message contains the number of files found.
-    self.assertIn('6', str(cm.exception))
-    self.assertIn('too large', str(cm.exception))
+        # We verify the error message contains the number of files found.
+        self.assertIn('6', str(cm.exception))
+        self.assertIn('too large', str(cm.exception))
 
-  @mock.patch('framework.utils._fetch_dir_listing')
-  @mock.patch('framework.utils._fetch_file_content')
-  async def test_get_mixed_wpt_contents_async__shared_dependencies(
-      self, mock_fetch_content, mock_fetch_dir):
-    """Verify mapping works when two tests share the same dependency."""
-    dir_urls = []
-    file_urls = [
-      'https://wpt.fyi/results/test_a.js',
-      'https://wpt.fyi/results/test_b.js'
-    ]
-    settings.GITHUB_TOKEN = 'token'
-    mock_fetch_dir.return_value = []
+    @mock.patch('framework.utils._fetch_dir_listing')
+    @mock.patch('framework.utils._fetch_file_content')
+    async def test_get_mixed_wpt_contents_async__shared_dependencies(
+        self, mock_fetch_content, mock_fetch_dir
+    ):
+        """Verify mapping works when two tests share the same dependency."""
+        dir_urls = []
+        file_urls = [
+            'https://wpt.fyi/results/test_a.js',
+            'https://wpt.fyi/results/test_b.js',
+        ]
+        settings.GITHUB_TOKEN = 'token'
+        mock_fetch_dir.return_value = []
 
-    def side_effect(url):
-      if url.endswith('test_a.js'):
-        return 'import "./shared.js";'
-      if url.endswith('test_b.js'):
-        return 'import "./shared.js";'
-      if url.endswith('shared.js'):
-        return 'console.log("shared helper");'
-      return ''
+        def side_effect(url):
+            if url.endswith('test_a.js'):
+                return 'import "./shared.js";'
+            if url.endswith('test_b.js'):
+                return 'import "./shared.js";'
+            if url.endswith('shared.js'):
+                return 'console.log("shared helper");'
+            return ''
 
-    mock_fetch_content.side_effect = side_effect
+        mock_fetch_content.side_effect = side_effect
 
-    result = await utils.get_mixed_wpt_contents_async(dir_urls, file_urls)
+        result = await utils.get_mixed_wpt_contents_async(dir_urls, file_urls)
 
-    self.assertIn(Path('shared.js'), result.dependency_contents)
+        self.assertIn(Path('shared.js'), result.dependency_contents)
 
-    # Both tests should map to the same shared file
-    self.assertEqual(result.test_to_dependencies_map[Path('test_a.js')], {Path('shared.js')})
-    self.assertEqual(result.test_to_dependencies_map[Path('test_b.js')], {Path('shared.js')})
+        # Both tests should map to the same shared file
+        self.assertEqual(
+            result.test_to_dependencies_map[Path('test_a.js')],
+            {Path('shared.js')},
+        )  # noqa: E501
+        self.assertEqual(
+            result.test_to_dependencies_map[Path('test_b.js')],
+            {Path('shared.js')},
+        )  # noqa: E501

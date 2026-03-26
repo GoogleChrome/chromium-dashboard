@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import logging
 
 from flask import session
 
@@ -21,12 +20,12 @@ from framework import basehandlers
 
 
 class LogoutAPI(basehandlers.APIHandler):
-  """Clear the session when the user signs out."""
+    """Clear the session when the user signs out."""
 
-  def do_get(self, **kwargs):
-    """Reject unneeded GET requests without triggering Error Reporting."""
-    self.abort(405, valid_methods=['POST'])
+    def do_get(self, **kwargs):
+        """Reject unneeded GET requests without triggering Error Reporting."""
+        self.abort(405, valid_methods=['POST'])
 
-  def do_post(self, **kwargs):
-    session.clear()
-    return {'message': 'Done'}
+    def do_post(self, **kwargs):
+        session.clear()
+        return {'message': 'Done'}

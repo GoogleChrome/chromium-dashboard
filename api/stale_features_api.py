@@ -20,37 +20,38 @@ from internals import feature_helpers
 
 
 class StaleFeatureInfo(TypedDict):
-  id: int
-  name: str
-  owner_emails: list[str]
-  milestone: int
-  milestone_field: str
-  outstanding_notifications: int
-  accurate_as_of: str
+    id: int
+    name: str
+    owner_emails: list[str]
+    milestone: int
+    milestone_field: str
+    outstanding_notifications: int
+    accurate_as_of: str
 
 
 class GetStaleFeaturesResponse(TypedDict):
-  stale_features: list[StaleFeatureInfo]
+    stale_features: list[StaleFeatureInfo]
 
 
 class StaleFeaturesAPI(basehandlers.EntitiesAPIHandler):
-  """Endpoint for obtaining information on stale features."""
+    """Endpoint for obtaining information on stale features."""
 
-  def do_get(self, **kwargs) -> GetStaleFeaturesResponse:
-    """Get all stale features."""
-    stale_features = feature_helpers.get_stale_features()
-    stale_features_info: list[StaleFeatureInfo] = []
-    for feature, mstone, mstone_field in stale_features:
-      stale_features_info.append({
-        'id': feature.key.integer_id(),
-        'name': feature.name,
-        'owner_emails': feature.owner_emails,
-        'milestone': mstone,
-        'milestone_field': mstone_field,
-        'outstanding_notifications': feature.outstanding_notifications,
-        'accurate_as_of': datetime.strftime(feature.accurate_as_of,
-                                            '%Y-%m-%dT%H:%M:%S')
-      })
-    return {
-        'stale_features': stale_features_info
-    }
+    def do_get(self, **kwargs) -> GetStaleFeaturesResponse:
+        """Get all stale features."""
+        stale_features = feature_helpers.get_stale_features()
+        stale_features_info: list[StaleFeatureInfo] = []
+        for feature, mstone, mstone_field in stale_features:
+            stale_features_info.append(
+                {
+                    'id': feature.key.integer_id(),
+                    'name': feature.name,
+                    'owner_emails': feature.owner_emails,
+                    'milestone': mstone,
+                    'milestone_field': mstone_field,
+                    'outstanding_notifications': feature.outstanding_notifications,
+                    'accurate_as_of': datetime.strftime(
+                        feature.accurate_as_of, '%Y-%m-%dT%H:%M:%S'
+                    ),
+                }
+            )
+        return {'stale_features': stale_features_info}

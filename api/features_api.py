@@ -13,35 +13,32 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import flask
-from datetime import datetime
 import re
+from datetime import datetime
 from typing import Any
+
+import flask
 from google.cloud import ndb
 
-from api import api_specs
-from api import converters
-from framework import basehandlers
-from framework import permissions
-from framework import rediscache
-from framework import users
-from internals import attachments
-from internals.enterprise_helpers import *
+import settings
+from api import api_specs, converters
+from framework import basehandlers, permissions, rediscache, users
+from internals import (
+  attachments,
+  feature_helpers,
+  feature_links,
+  notifier,
+  notifier_helpers,
+  processes,
+  search,
+  search_fulltext,
+  stage_helpers,
+)
 from internals.core_enums import *
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
-from internals.data_types import CHANGED_FIELDS_LIST_TYPE
-from internals import feature_links
-from internals import notifier, notifier_helpers
-from internals.review_models import Gate, Activity
-from internals.data_types import VerboseFeatureDict
-from internals import feature_helpers
-from internals import processes
-from internals import search
-from internals import search_fulltext
-from internals import stage_helpers
-from internals.user_models import AppUser
-import settings
-
+from internals.data_types import CHANGED_FIELDS_LIST_TYPE, VerboseFeatureDict
+from internals.enterprise_helpers import *
+from internals.review_models import Activity, Gate
 
 # See https://www.regextester.com/93901 for url regex
 SCHEME_PATTERN = r'((?P<scheme>[a-z]+):(\/\/)?)?'
