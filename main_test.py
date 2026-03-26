@@ -16,8 +16,9 @@
 import flask
 import html5lib
 
-import main
 import testing_config  # Must be imported before the module under test.
+
+import main
 from framework import basehandlers
 
 test_app = flask.Flask(__name__)

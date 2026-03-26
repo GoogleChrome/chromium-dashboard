@@ -61,7 +61,7 @@ class LinkHelperTest(testing_config.CustomTestCase):
         link.parse()
         self.assertEqual(link.type, LINK_TYPE_MOZILLA_BUG)
         self.assertTrue(link.is_parsed)
-        self.assertFalse(link.is_error)
+        self.assertFalse(link.is_error, msg=f"Error parsing mozilla bug: {getattr(link, 'error', None)}")
         self.assertIsNotNone(link.information.get('title'))
         self.assertIsNotNone(link.information.get('description'))
 
