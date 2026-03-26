@@ -64,6 +64,7 @@ class LocalCloudTasksClient(object):
         )
         logging.info('Task handler status: %d', handler_response.status_code)
 
+
 def _get_client():
     """Returns a cloud tasks client."""
     global _client
