@@ -54,7 +54,6 @@ class LocalCloudTasksClient(object):
         uri = task.get('app_engine_http_request').get('relative_uri')
         target_url = 'http://localhost:7777' + uri
         body = task.get('app_engine_http_request').get('body')
-        logging.info('Making request to %r', target_url)
         handler_response = requests.request(
             'POST',
             target_url,
@@ -64,11 +63,6 @@ class LocalCloudTasksClient(object):
             headers={'X-AppEngine-QueueName': 'default'},
         )
         logging.info('Task handler status: %d', handler_response.status_code)
-        logging.info(
-            'Task handler text: %r',
-            handler_response.content[: settings.MAX_LOG_LINE],
-        )
-
 
 def _get_client():
     """Returns a cloud tasks client."""
@@ -112,8 +106,7 @@ def enqueue_task(handler_path, task_params, queue='default', **kwargs):
         settings.APP_ID, settings.CLOUD_TASKS_REGION, queue
     )
 
-    target = task.get('app_engine_http_request').get('relative_uri')
-    logging.info('Enqueueing %s task to %s', target, parent)
+    logging.info('Enqueueing task to %s', parent)
 
     kwargs.setdefault('retry', _DEFAULT_RETRY)
     return client.create_task(parent=parent, task=task, **kwargs)

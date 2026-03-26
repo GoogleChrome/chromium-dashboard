@@ -70,6 +70,7 @@ def generate_token(user_email, token_time=None):
     """
     token_time = token_time or int(time.time())
     token_time = str(token_time).encode()
+    # codeql[py/weak-sensitive-data-hashing] XSRF tokens are not passwords.
     digester = hmac.new(
         secrets.get_xsrf_secret().encode(), digestmod=hashlib.sha256
     )
