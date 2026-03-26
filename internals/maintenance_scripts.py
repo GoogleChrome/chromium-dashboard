@@ -538,8 +538,9 @@ class BackfillFeatureEnterpriseImpact(FlaskHandler):
         features_by_id = {}
 
         stages: ndb.Query = Stage.query(
-            Stage.stage_type == STAGE_ENT_ROLLOUT, Stage.archived == False
-        )  # noqa: E501, E712, F405
+            Stage.stage_type == STAGE_ENT_ROLLOUT,
+            Stage.archived == False,  # noqa: E501, E712, F405
+        )
         for stage in stages:
             if stage.feature_id in features_by_id:
                 continue
@@ -562,9 +563,9 @@ class BackfillFeatureEnterpriseImpact(FlaskHandler):
             FeatureEntry.enterprise_impact == ENTERPRISE_IMPACT_NONE,  # noqa: F405
             ndb.OR(
                 FeatureEntry.feature_type == FEATURE_TYPE_ENTERPRISE_ID,
-                FeatureEntry.breaking_change == True,
+                FeatureEntry.breaking_change == True,  # noqa: E501, E712, F405
             ),
-        )  # noqa: E501, E712, F405
+        )
         for feature_entry in features:
             if feature_entry.key.id() in updated_feature_ids:
                 continue

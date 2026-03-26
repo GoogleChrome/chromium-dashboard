@@ -66,6 +66,7 @@ class UmaQuery(object):
     """Reads and stores stats from UMA."""
 
     def __init__(self, query_name, model_class, property_map_class):
+        """Initialize the metric fetcher."""
         self.query_name = query_name
         self.model_class = model_class
         self.property_map_class = property_map_class

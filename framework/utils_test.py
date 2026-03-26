@@ -26,6 +26,7 @@ from framework import utils
 
 class MockHandler(object):
     def __init__(self, path):
+        """Initialize the mock handler."""
         self.handler_called_with = None
         self.redirected_to = None
         self.request = self

@@ -16,9 +16,6 @@ ignore = [
     "D102",
     "D103",
     "D104",
-    "D105",
-    "D106",
-    "D107",
 
     # Infeasible: Conflicts with Ruff's default Google style docstring rules (D211, D212).
     "D203",
@@ -30,9 +27,6 @@ ignore = [
     # Infeasible: Legacy tests heavily rely on wildcard imports (e.g., from internals.core_enums import *).
     "F403",
     "F405",
-
-    # Infeasible: Google Cloud NDB ORM overloads equality operators (== True/False) for query construction.
-    "E712",
 ]
 
 [tool.ruff.lint.pydocstyle]

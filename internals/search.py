@@ -45,8 +45,8 @@ def process_exclude_deleted_unlisted_query() -> Future:
     """Return a future for all features, minus deleted and unlisted."""
     query = FeatureEntry.query(
         FeatureEntry.deleted == False,  # noqa: E712
-        FeatureEntry.unlisted == False,
-    )  # noqa: E712
+        FeatureEntry.unlisted == False,  # noqa: E712
+    )
     future_feature_ids = query.fetch_async(keys_only=True)
     return future_feature_ids
 

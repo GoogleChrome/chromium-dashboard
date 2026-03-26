@@ -158,6 +158,7 @@ class Link:
         return None
 
     def __init__(self, url: str):
+        """Initialize the link object."""
         self.url = url
         self.type = Link.get_type(url)
         self.is_parsed = False
