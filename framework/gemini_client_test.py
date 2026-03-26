@@ -31,11 +31,6 @@ class GeminiClientTest(testing_config.CustomTestCase):
         self.mock_settings = mock.patch(
             'framework.gemini_client.settings'
         ).start()
-
-        # Patch secrets to control the API key retrieval.
-        self.mock_secrets = mock.patch(
-            'framework.gemini_client.secrets'
-        ).start()
         self.original_gemini_api_key = settings.GEMINI_API_KEY
 
         # Patch genai.Client class
@@ -53,9 +48,6 @@ class GeminiClientTest(testing_config.CustomTestCase):
         ).start()
 
         # Patch time.sleep to avoid slow tests during retries.
-        self.mock_sleep = mock.patch(
-            'framework.gemini_client.time.sleep'
-        ).start()
         self.mock_utils_sleep = mock.patch('framework.utils.time.sleep').start()
 
         # Add cleanup to stop all patches
@@ -203,7 +195,6 @@ class GeminiClientTest(testing_config.CustomTestCase):
         )
 
         self.mock_logging.error.assert_not_called()
-        self.mock_sleep.assert_not_called()
         self.mock_utils_sleep.assert_not_called()
 
     def test_get_response__retry_success(self):
