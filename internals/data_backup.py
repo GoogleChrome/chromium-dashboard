@@ -16,9 +16,10 @@ from typing import Any
 
 from googleapiclient.discovery import build
 from googleapiclient.discovery_cache.base import Cache
-import settings
 
+import settings
 from framework import basehandlers
+
 
 class MemoryCache(Cache):
     _CACHE: dict[Any, Any] = {}
@@ -31,22 +32,22 @@ class MemoryCache(Cache):
 
 
 class BackupExportHandler(basehandlers.FlaskHandler):
-  """Triggers a new Datastore export."""
+    """Triggers a new Datastore export."""
 
-  def get_template_data(self, **kwargs):
-    self.require_cron_header()
-    bucket = f'gs://{settings.BACKUP_BUCKET}'
-    # The default cache (file_cache) is unavailable when using oauth2client >= 4.0.0 or google-auth,
-    # and it will log worrisome messages unless given another interface to use.
-    datastore = build('datastore', 'v1', cache=MemoryCache())
-    project_id = settings.APP_ID
+    def get_template_data(self, **kwargs):
+        self.require_cron_header()
+        bucket = f'gs://{settings.BACKUP_BUCKET}'
+        # The default cache (file_cache) is unavailable when using oauth2client >= 4.0.0 or google-auth,  # noqa: E501
+        # and it will log worrisome messages unless given another interface to use.
+        datastore = build('datastore', 'v1', cache=MemoryCache())
+        project_id = settings.APP_ID
 
-    # No entity filters are used to back up all entities.
-    request_body = {'outputUrlPrefix': bucket, 'entityFilter': {}}
+        # No entity filters are used to back up all entities.
+        request_body = {'outputUrlPrefix': bucket, 'entityFilter': {}}
 
-    export_request = datastore.projects().export(
-      projectId=project_id, body=request_body
-    )
-    response = export_request.execute()
-    logging.info(str(response))
-    return 'Success'
+        export_request = datastore.projects().export(
+            projectId=project_id, body=request_body
+        )
+        response = export_request.execute()
+        logging.info(str(response))
+        return 'Success'

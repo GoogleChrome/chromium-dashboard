@@ -13,53 +13,62 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from chromestatus_openapi.models import (Process)
 import dataclasses
+
+from chromestatus_openapi.models import Process
+
 from framework import basehandlers
-from internals import core_models
-from internals import core_enums
-from internals import processes
-from internals import stage_helpers
+from internals import core_enums, core_models, processes, stage_helpers
 
 
 class ProcessesAPI(basehandlers.APIHandler):
-  """Processes contain details about the feature status"""
+    """Processes contain details about the feature status"""  # noqa: D415
 
-  def do_get(self, **kwargs):
-    """Return the process of the feature."""
-    # Load feature directly from NDB so as to never get a stale cached copy.
-    feature_id = kwargs['feature_id']
-    f = core_models.FeatureEntry.get_by_id(feature_id)
-    if f is None:
-      self.abort(404, msg=f'Feature {feature_id} not found')
+    def do_get(self, **kwargs):
+        """Return the process of the feature."""
+        # Load feature directly from NDB so as to never get a stale cached copy.
+        feature_id = kwargs['feature_id']
+        f = core_models.FeatureEntry.get_by_id(feature_id)
+        if f is None:
+            self.abort(404, msg=f'Feature {feature_id} not found')
 
-    feature_process = processes.ALL_PROCESSES.get(
-      f.feature_type, processes.BLINK_LAUNCH_PROCESS)
-    process_model = Process.from_dict(processes.process_to_dict(feature_process))
-    result = process_model.to_dict()
-    if (f.feature_type != core_enums.FEATURE_TYPE_ENTERPRISE_ID and
-        f.enterprise_impact > core_enums.ENTERPRISE_IMPACT_NONE):
-      result['stages'].insert(-1, dataclasses.asdict(processes.FEATURE_ROLLOUT_STAGE))
-      result['stages'][-1]['incoming_stage'] = core_enums.INTENT_ROLLOUT
+        feature_process = processes.ALL_PROCESSES.get(
+            f.feature_type, processes.BLINK_LAUNCH_PROCESS
+        )
+        process_model = Process.from_dict(
+            processes.process_to_dict(feature_process)
+        )  # noqa: E501
+        result = process_model.to_dict()
+        if (
+            f.feature_type != core_enums.FEATURE_TYPE_ENTERPRISE_ID
+            and f.enterprise_impact > core_enums.ENTERPRISE_IMPACT_NONE
+        ):
+            result['stages'].insert(
+                -1, dataclasses.asdict(processes.FEATURE_ROLLOUT_STAGE)
+            )  # noqa: E501
+            result['stages'][-1]['incoming_stage'] = core_enums.INTENT_ROLLOUT
 
-    return result
+        return result
 
 
 class ProgressAPI(basehandlers.APIHandler):
-  """Progress is either a boolean value when the checkmark should be shown,
-  or a string that starts with "http:" or "https:" that contain details about
-  the progress of a feature so far"""
+    """Progress is either a boolean value when the checkmark should be shown,
+    or a string that starts with "http:" or "https:" that contain details about
+    the progress of a feature so far
+    """  # noqa: D205, D415
 
-  def do_get(self, **kwargs):
-    """Return the progress of the feature."""
-    feature_id = kwargs['feature_id']
-    fe = core_models.FeatureEntry.get_by_id(feature_id)
-    if fe is None:
-      self.abort(404, msg=f'Feature {feature_id} not found')
-    stages = stage_helpers.get_feature_stages(fe.key.integer_id())
-    progress_so_far = {}
-    for progress_item, detector in list(processes.PROGRESS_DETECTORS.items()):
-      detected = detector(fe, stages)
-      if detected:
-        progress_so_far[progress_item] = str(detected)
-    return progress_so_far
+    def do_get(self, **kwargs):
+        """Return the progress of the feature."""
+        feature_id = kwargs['feature_id']
+        fe = core_models.FeatureEntry.get_by_id(feature_id)
+        if fe is None:
+            self.abort(404, msg=f'Feature {feature_id} not found')
+        stages = stage_helpers.get_feature_stages(fe.key.integer_id())
+        progress_so_far = {}
+        for progress_item, detector in list(
+            processes.PROGRESS_DETECTORS.items()
+        ):
+            detected = detector(fe, stages)
+            if detected:
+                progress_so_far[progress_item] = str(detected)
+        return progress_so_far

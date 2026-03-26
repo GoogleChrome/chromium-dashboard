@@ -13,10 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import testing_config  # Must be imported before the module under test.
-
 import flask
 
+import testing_config  # Must be imported before the module under test.
 from api import blink_components_api
 from internals import user_models
 
@@ -24,21 +23,24 @@ test_app = flask.Flask(__name__)
 
 
 class BlinkComponentsAPITest(testing_config.CustomTestCase):
+    def setUp(self):
+        self.handler = blink_components_api.BlinkComponentsAPI()
+        self.request_path = '/api/v0/blinkcomponents'
 
-  def setUp(self):
-    self.handler = blink_components_api.BlinkComponentsAPI()
-    self.request_path = '/api/v0/blinkcomponents'
+    def test_get__anon(self):
+        """We can get blink components as an anonymous."""
+        testing_config.sign_out()
+        with test_app.test_request_context(self.request_path):
+            actual = self.handler.do_get()
+        self.assertEqual(
+            user_models.BlinkComponent.fetch_all_components(), list(actual)
+        )  # noqa: E501
 
-  def test_get__anon(self):
-    """We can get blink components as an anonymous."""
-    testing_config.sign_out()
-    with test_app.test_request_context(self.request_path):
-      actual = self.handler.do_get()
-    self.assertEqual(user_models.BlinkComponent.fetch_all_components(), list(actual))
-
-  def test_get__signed_in(self):
-    """We can get blink components as a signed-in user."""
-    testing_config.sign_in('one@example.com', 123567890)
-    with test_app.test_request_context(self.request_path):
-      actual = self.handler.do_get()
-    self.assertEqual(user_models.BlinkComponent.fetch_all_components(), list(actual))
+    def test_get__signed_in(self):
+        """We can get blink components as a signed-in user."""
+        testing_config.sign_in('one@example.com', 123567890)
+        with test_app.test_request_context(self.request_path):
+            actual = self.handler.do_get()
+        self.assertEqual(
+            user_models.BlinkComponent.fetch_all_components(), list(actual)
+        )  # noqa: E501

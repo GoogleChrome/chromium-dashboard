@@ -16,3 +16,4 @@ types-pytz
 pytest==8.3.4
 pytest-xdist==3.6.1
 requests==2.33.0
+ruff

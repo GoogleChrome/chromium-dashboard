@@ -19,67 +19,73 @@ from typing import Any, Type
 
 import settings
 from api import (
-  accounts_api,
-  attachments_api,
-  blink_components_api,
-  channels_api,
-  comments_api,
-  component_users,
-  components_users,
-  cues_api,
-  external_reviews_api,
-  feature_latency_api,
-  feature_links_api,
-  features_api,
-  intents_api,
-  login_api,
-  logout_api,
-  metricsdata,
-  origin_trials_api,
-  permissions_api,
-  processes_api,
-  review_latency_api,
-  reviews_api,
-  settings_api,
-  shipping_features_api,
-  spec_mentors_api,
-  stages_api,
-  stale_features_api,
-  stars_api,
-  token_refresh_api,
-  webdx_feature_api,
-  wpt_coverage_api,
+    accounts_api,
+    attachments_api,
+    blink_components_api,
+    channels_api,
+    comments_api,
+    component_users,
+    components_users,
+    cues_api,
+    external_reviews_api,
+    feature_latency_api,
+    feature_links_api,
+    features_api,
+    intents_api,
+    login_api,
+    logout_api,
+    metricsdata,
+    origin_trials_api,
+    permissions_api,
+    processes_api,
+    review_latency_api,
+    reviews_api,
+    settings_api,
+    shipping_features_api,
+    spec_mentors_api,
+    stages_api,
+    stale_features_api,
+    stars_api,
+    token_refresh_api,
+    webdx_feature_api,
+    wpt_coverage_api,
 )
 from framework import basehandlers, csp, gemini_helpers, secrets, sendemail
 from internals import (
-  data_backup,
-  detect_intent,
-  feature_links,
-  fetchmetrics,
-  inactive_users,
-  maintenance_scripts,
-  notifier,
-  reminders,
-  search_fulltext,
+    data_backup,
+    detect_intent,
+    feature_links,
+    fetchmetrics,
+    inactive_users,
+    maintenance_scripts,
+    notifier,
+    reminders,
+    search_fulltext,
 )
+
 # TODO(jrobbins): Remove guide routes after a few weeks.
-from pages import featurelist, guide, intentpreview, metrics, ot_requests, users
+from pages import featurelist, guide, metrics, ot_requests, users
 
 # Patch treading library to work-around bug with Google Cloud Logging.
 original_delete = threading.Thread._delete  # type: ignore
+
+
 def safe_delete(self):
-  try:
-    original_delete(self)
-  except KeyError:
-    pass
+    try:
+        original_delete(self)
+    except KeyError:
+        pass
+
+
 threading.Thread._delete = safe_delete  # type: ignore
 
 
 # Sets up Cloud Logging client library.
 if not settings.UNIT_TEST_MODE and not settings.DEV_MODE:
-  import google.cloud.logging
-  client = google.cloud.logging.Client()
-  client.setup_logging()
+    import google.cloud.logging
+
+    client = google.cloud.logging.Client()
+    client.setup_logging()
 
 # Load in app secrets.
 secrets.load_gemini_api_key()
@@ -93,26 +99,35 @@ secrets.load_ot_api_key()
 # handler might be used for multiple routes that have the field
 # or not.
 
+
 @dataclass
 class Route:
-  path: str
-  handler_class: Type[basehandlers.BaseHandler] = basehandlers.SPAHandler
-  defaults: dict[str, Any] = field(default_factory=dict)
+    path: str
+    handler_class: Type[basehandlers.BaseHandler] = basehandlers.SPAHandler
+    defaults: dict[str, Any] = field(default_factory=dict)
 
 
 metrics_chart_routes: list[Route] = [
     Route('/data/timeline/cssanimated', metricsdata.AnimatedTimelineHandler),
-    Route('/data/timeline/csspopularity', metricsdata.PopularityTimelineHandler),
-    Route('/data/timeline/featurepopularity',
-        metricsdata.FeatureObserverTimelineHandler),
-    Route('/data/timeline/webfeaturepopularity',
-        metricsdata.WebFeatureTimelineHandler),
+    Route(
+        '/data/timeline/csspopularity', metricsdata.PopularityTimelineHandler
+    ),  # noqa: E501
+    Route(
+        '/data/timeline/featurepopularity',
+        metricsdata.FeatureObserverTimelineHandler,
+    ),
+    Route(
+        '/data/timeline/webfeaturepopularity',
+        metricsdata.WebFeatureTimelineHandler,
+    ),
     Route('/data/csspopularity', metricsdata.CSSPopularityHandler),
     Route('/data/cssanimated', metricsdata.CSSAnimatedHandler),
-    Route('/data/featurepopularity',
-        metricsdata.FeatureObserverPopularityHandler),
-    Route('/data/webfeaturepopularity',
-        metricsdata.WebFeaturePopularityHandler),
+    Route(
+        '/data/featurepopularity', metricsdata.FeatureObserverPopularityHandler
+    ),
+    Route(
+        '/data/webfeaturepopularity', metricsdata.WebFeaturePopularityHandler
+    ),
     Route('/data/blink/<string:prop_type>', metricsdata.FeatureBucketsHandler),
 ]
 
@@ -123,88 +138,124 @@ api_routes: list[Route] = [
     Route(f'{API_BASE}/features/<int:feature_id>', features_api.FeaturesAPI),
     Route(f'{API_BASE}/features/create', features_api.FeaturesAPI),
     Route(f'{API_BASE}/feature_links', feature_links_api.FeatureLinksAPI),
-    Route(f'{API_BASE}/feature_links_summary', feature_links_api.FeatureLinksSummaryAPI),
-    Route(f'{API_BASE}/feature_links_samples', feature_links_api.FeatureLinksSamplesAPI),
-    Route(f'{API_BASE}/features/<int:feature_id>/votes',
-        reviews_api.VotesAPI),
-    Route(f'{API_BASE}/features/<int:feature_id>/votes/<int:gate_id>',
-        reviews_api.VotesAPI),
-    Route(f'{API_BASE}/features/<int:feature_id>/gates',
-        reviews_api.GatesAPI),
-    Route(f'{API_BASE}/features/<int:feature_id>/gates/<int:gate_id>',
-        reviews_api.GatesAPI),
-    Route(f'{API_BASE}/gates/pending',
-        reviews_api.PendingGatesAPI),
-    Route(f'{API_BASE}/features/<int:feature_id>/approvals/comments',
-        comments_api.CommentsAPI),
-    Route(f'{API_BASE}/features/<int:feature_id>/approvals/<int:gate_id>/comments',
-        comments_api.CommentsAPI),
-    Route(f'{API_BASE}/features/<int:feature_id>/attachments',
-        attachments_api.AttachmentsAPI),
-    Route(f'{API_BASE}/features/<int:feature_id>/process',
-        processes_api.ProcessesAPI),
-    Route(f'{API_BASE}/features/<int:feature_id>/progress',
-        processes_api.ProgressAPI),
-    Route(f'{API_BASE}/features/<int:feature_id>/stages',
-            stages_api.StagesAPI),
-    Route(f'{API_BASE}/features/<int:feature_id>/stages/<int:stage_id>',
-            stages_api.StagesAPI),
+    Route(
+        f'{API_BASE}/feature_links_summary',
+        feature_links_api.FeatureLinksSummaryAPI,
+    ),  # noqa: E501
+    Route(
+        f'{API_BASE}/feature_links_samples',
+        feature_links_api.FeatureLinksSamplesAPI,
+    ),  # noqa: E501
+    Route(f'{API_BASE}/features/<int:feature_id>/votes', reviews_api.VotesAPI),
+    Route(
+        f'{API_BASE}/features/<int:feature_id>/votes/<int:gate_id>',
+        reviews_api.VotesAPI,
+    ),
+    Route(f'{API_BASE}/features/<int:feature_id>/gates', reviews_api.GatesAPI),
+    Route(
+        f'{API_BASE}/features/<int:feature_id>/gates/<int:gate_id>',
+        reviews_api.GatesAPI,
+    ),
+    Route(f'{API_BASE}/gates/pending', reviews_api.PendingGatesAPI),
+    Route(
+        f'{API_BASE}/features/<int:feature_id>/approvals/comments',
+        comments_api.CommentsAPI,
+    ),
+    Route(
+        f'{API_BASE}/features/<int:feature_id>/approvals/<int:gate_id>/comments',
+        comments_api.CommentsAPI,
+    ),
+    Route(
+        f'{API_BASE}/features/<int:feature_id>/attachments',
+        attachments_api.AttachmentsAPI,
+    ),
+    Route(
+        f'{API_BASE}/features/<int:feature_id>/process',
+        processes_api.ProcessesAPI,
+    ),
+    Route(
+        f'{API_BASE}/features/<int:feature_id>/progress',
+        processes_api.ProgressAPI,
+    ),
+    Route(f'{API_BASE}/features/<int:feature_id>/stages', stages_api.StagesAPI),
+    Route(
+        f'{API_BASE}/features/<int:feature_id>/stages/<int:stage_id>',
+        stages_api.StagesAPI,
+    ),
     Route(
         f'{API_BASE}/features/<int:feature_id>/stages/<int:stage_id>/addXfnGates',
-        reviews_api.XfnGatesAPI),
-    Route(f'{API_BASE}/features/<int:feature_id>/<int:stage_id>/intent',
-          intents_api.IntentsAPI),
-    Route(f'{API_BASE}/features/<int:feature_id>/<int:stage_id>/<int:gate_id>/intent',
-          intents_api.IntentsAPI),
-    Route(f'{API_BASE}/features/<int:feature_id>/wpt-coverage-analysis',
-          wpt_coverage_api.WPTCoverageAPI),
+        reviews_api.XfnGatesAPI,
+    ),
+    Route(
+        f'{API_BASE}/features/<int:feature_id>/<int:stage_id>/intent',
+        intents_api.IntentsAPI,
+    ),
+    Route(
+        f'{API_BASE}/features/<int:feature_id>/<int:stage_id>/<int:gate_id>/intent',
+        intents_api.IntentsAPI,
+    ),
+    Route(
+        f'{API_BASE}/features/<int:feature_id>/wpt-coverage-analysis',
+        wpt_coverage_api.WPTCoverageAPI,
+    ),
     # TODO(suzyliu): Remove the "delete" route after the
     # unified route had landed.
-    Route(f'{API_BASE}/features/wpt-coverage-analysis/<int:feature_id>/delete',
-          wpt_coverage_api.WPTCoverageAPI),
+    Route(
+        f'{API_BASE}/features/wpt-coverage-analysis/<int:feature_id>/delete',
+        wpt_coverage_api.WPTCoverageAPI,
+    ),
     # TODO(suzyliu): Remove the "generate-wpt-coverage-analysis" route after the
     # unified route had landed.
-    Route(f'{API_BASE}/features/generate-wpt-coverage-analysis',
-          wpt_coverage_api.WPTCoverageAPI),
-    Route(f'{API_BASE}/features/shipping',
-          shipping_features_api.ShippingFeaturesAPI),
-    Route(f'{API_BASE}/features/stale',
-          stale_features_api.StaleFeaturesAPI),
-    Route(f'{API_BASE}/blinkcomponents',
-        blink_components_api.BlinkComponentsAPI),
-    Route(f'{API_BASE}/componentsusers',
-        components_users.ComponentsUsersAPI),
-    Route(f'{API_BASE}/components/<int:component_id>/users/<int:user_id>',
-        component_users.ComponentUsersAPI),
-
-    Route(f'{API_BASE}/external_reviews/<string:review_group>', external_reviews_api.ExternalReviewsAPI),
+    Route(
+        f'{API_BASE}/features/generate-wpt-coverage-analysis',
+        wpt_coverage_api.WPTCoverageAPI,
+    ),
+    Route(
+        f'{API_BASE}/features/shipping',
+        shipping_features_api.ShippingFeaturesAPI,
+    ),
+    Route(f'{API_BASE}/features/stale', stale_features_api.StaleFeaturesAPI),
+    Route(
+        f'{API_BASE}/blinkcomponents', blink_components_api.BlinkComponentsAPI
+    ),
+    Route(f'{API_BASE}/componentsusers', components_users.ComponentsUsersAPI),
+    Route(
+        f'{API_BASE}/components/<int:component_id>/users/<int:user_id>',
+        component_users.ComponentUsersAPI,
+    ),
+    Route(
+        f'{API_BASE}/external_reviews/<string:review_group>',
+        external_reviews_api.ExternalReviewsAPI,
+    ),  # noqa: E501
     Route(f'{API_BASE}/spec_mentors', spec_mentors_api.SpecMentorsAPI),
     Route(f'{API_BASE}/feature-latency', feature_latency_api.FeatureLatencyAPI),
     Route(f'{API_BASE}/review-latency', review_latency_api.ReviewLatencyAPI),
-
     Route(f'{API_BASE}/login', login_api.LoginAPI),
     Route(f'{API_BASE}/logout', logout_api.LogoutAPI),
-    Route(f'{API_BASE}/currentuser/permissions', permissions_api.PermissionsAPI),
+    Route(
+        f'{API_BASE}/currentuser/permissions', permissions_api.PermissionsAPI
+    ),  # noqa: E501
     Route(f'{API_BASE}/currentuser/settings', settings_api.SettingsAPI),
     Route(f'{API_BASE}/currentuser/stars', stars_api.StarsAPI),
     Route(f'{API_BASE}/currentuser/cues', cues_api.CuesAPI),
     Route(f'{API_BASE}/currentuser/token', token_refresh_api.TokenRefreshAPI),
     # (f'{API_BASE}/currentuser/autosaves', TODO),
-
     # Admin operations for user accounts
     Route(f'{API_BASE}/accounts', accounts_api.AccountsAPI),
     Route(f'{API_BASE}/accounts/<int:account_id>', accounts_api.AccountsAPI),
-
     Route(f'{API_BASE}/channels', channels_api.ChannelsAPI),  # omaha data
     # (f'{API_BASE}/schedule', TODO),  # chromiumdash data
     # (f'{API_BASE}/metrics/<str:kind>', TODO),  # uma-export data
     # (f'{API_BASE}/metrics/<str:kind>/<int:bucket_id>', TODO),
     Route(f'{API_BASE}/origintrials', origin_trials_api.OriginTrialsAPI),
-    Route(f'{API_BASE}/origintrials/<int:feature_id>/<int:stage_id>/create',
-          origin_trials_api.OriginTrialsAPI),
-    Route(f'{API_BASE}/origintrials/<int:feature_id>/<int:extension_stage_id>/extend',
-          origin_trials_api.OriginTrialsAPI),
-
+    Route(
+        f'{API_BASE}/origintrials/<int:feature_id>/<int:stage_id>/create',
+        origin_trials_api.OriginTrialsAPI,
+    ),
+    Route(
+        f'{API_BASE}/origintrials/<int:feature_id>/<int:extension_stage_id>/extend',
+        origin_trials_api.OriginTrialsAPI,
+    ),
     # This is for the menu of web feature IDs.
     Route(f'{API_BASE}/web_feature_ids', webdx_feature_api.WebFeatureIDsAPI),
     # This is for the menu of webdx use counters.
@@ -214,218 +265,341 @@ api_routes: list[Route] = [
 # The Routes below that have no handler specified use SPAHandler.
 # The guide.* handlers each call get_spa_template_data().
 spa_page_routes = [
-  Route('/'),
-  Route('/roadmap'),
-  # TODO(jrobbins): remove '/myfeatures' after a while.
-  Route('/myfeatures', defaults={'require_signin': True}),
-  Route('/myfeatures/review', defaults={'require_signin': True}),
-  Route('/myfeatures/starred', defaults={'require_signin': True}),
-  Route('/myfeatures/editable', defaults={'require_signin': True}),
-  Route('/features'),
-  Route('/features/stale'),
-  Route('/newfeatures'),
-  Route('/feature/<int:feature_id>'),
-  Route('/feature/<int:feature_id>/activity'),
-  Route('/feature/<int:feature_id>/ai-coverage-analysis',
-        defaults={'require_edit_feature': True}),
-  # TODO(DanielRyanSmith): Remove the "-evaluation" route after the
-  # "-analysis" route had landed.
-  Route('/feature/<int:feature_id>/ai-coverage-evaluation',
-        defaults={'require_edit_feature': True}),
-  Route('/guide/new', guide.FeatureCreateHandler,
-      defaults={'require_create_feature': True}),
-  Route('/guide/enterprise/new', guide.EnterpriseFeatureCreateHandler,
-      defaults={'require_signin': True, 'require_create_feature': True, 'is_enterprise_page': True}),
-  Route('/guide/stage/<int:feature_id>/<int:intent_stage>/<int:stage_id>',
-      defaults={'require_edit_feature': True}),
-  Route('/guide/stage/<int:feature_id>/<int:stage_id>',
-      defaults={'require_edit_feature': True}),
-  Route('/guide/edit/<int:feature_id>/<int:stage_id>',
-      defaults={'require_edit_feature': True}),
-  Route('/guide/editall/<int:feature_id>',
-      defaults={'require_edit_feature': True}),
-  Route('/guide/verify_accuracy/<int:feature_id>',
-      defaults={'require_edit_feature': True}),
-  Route('/guide/stage/<int:feature_id>/metadata',
-      defaults={'require_edit_feature': True}),
-  Route('/feature/<int:feature_id>/gate/<int:gate_id>/intent',
-        defaults={'require_edit_feature': True}),
-  Route('/feature/<int:feature_id>/stage/<int:stage_id>/intent',
-        defaults={'require_edit_feature': True}),
-  Route('/ot_creation_request/<int:feature_id>/<int:stage_id>',
-        defaults={'require_signin': True}),
-  Route('/ot_extension_request/<int:feature_id>/<int:stage_id>',
-        defaults={'require_signin': True}),
-  Route('/metrics'),
-  Route('/metrics/css'),
-  Route('/metrics/css/popularity'),
-  Route('/metrics/css/animated'),
-  Route('/metrics/css/timeline/popularity'),
-  Route('/metrics/css/timeline/popularity/<int:bucket_id>'),
-  Route('/metrics/css/timeline/animated'),
-  Route('/metrics/css/timeline/animated/<int:bucket_id>'),
-  Route('/metrics/feature/popularity'),
-  Route('/metrics/feature/timeline/popularity'),
-  Route('/metrics/feature/timeline/popularity/<int:bucket_id>'),
-  Route('/metrics/webfeature/popularity'),
-  Route('/metrics/webfeature/timeline/popularity'),
-  Route('/metrics/webfeature/timeline/popularity/<int:bucket_id>'),
-  Route('/reports/external_reviews'),
-  Route('/reports/external_reviews/<reviewer>'),
-  Route('/reports/spec_mentors'),
-  Route('/reports/feature-latency'),
-  Route('/reports/review-latency'),
-  Route('/settings', defaults={'require_signin': True}),
-  Route('/enterprise'),
-  Route(
-    '/enterprise/releasenotes',
-    defaults={'require_signin': True, 'is_enterprise_page': True}),
-  # Admin pages
-  Route('/admin/blink', defaults={'require_admin_site': True, 'require_signin': True}),
-  Route('/admin/feature_links', defaults={'require_admin_site': True, 'require_signin': True}),
-  Route('/admin/slo_report', reminders.SLOReportHandler),
-  Route('/admin/bulk_edit', defaults={'require_admin_site': True, 'require_signin': True}),
+    Route('/'),
+    Route('/roadmap'),
+    # TODO(jrobbins): remove '/myfeatures' after a while.
+    Route('/myfeatures', defaults={'require_signin': True}),
+    Route('/myfeatures/review', defaults={'require_signin': True}),
+    Route('/myfeatures/starred', defaults={'require_signin': True}),
+    Route('/myfeatures/editable', defaults={'require_signin': True}),
+    Route('/features'),
+    Route('/features/stale'),
+    Route('/newfeatures'),
+    Route('/feature/<int:feature_id>'),
+    Route('/feature/<int:feature_id>/activity'),
+    Route(
+        '/feature/<int:feature_id>/ai-coverage-analysis',
+        defaults={'require_edit_feature': True},
+    ),
+    # TODO(DanielRyanSmith): Remove the "-evaluation" route after the
+    # "-analysis" route had landed.
+    Route(
+        '/feature/<int:feature_id>/ai-coverage-evaluation',
+        defaults={'require_edit_feature': True},
+    ),
+    Route(
+        '/guide/new',
+        guide.FeatureCreateHandler,
+        defaults={'require_create_feature': True},
+    ),
+    Route(
+        '/guide/enterprise/new',
+        guide.EnterpriseFeatureCreateHandler,
+        defaults={
+            'require_signin': True,
+            'require_create_feature': True,
+            'is_enterprise_page': True,
+        },
+    ),  # noqa: E501
+    Route(
+        '/guide/stage/<int:feature_id>/<int:intent_stage>/<int:stage_id>',
+        defaults={'require_edit_feature': True},
+    ),
+    Route(
+        '/guide/stage/<int:feature_id>/<int:stage_id>',
+        defaults={'require_edit_feature': True},
+    ),
+    Route(
+        '/guide/edit/<int:feature_id>/<int:stage_id>',
+        defaults={'require_edit_feature': True},
+    ),
+    Route(
+        '/guide/editall/<int:feature_id>',
+        defaults={'require_edit_feature': True},
+    ),
+    Route(
+        '/guide/verify_accuracy/<int:feature_id>',
+        defaults={'require_edit_feature': True},
+    ),
+    Route(
+        '/guide/stage/<int:feature_id>/metadata',
+        defaults={'require_edit_feature': True},
+    ),
+    Route(
+        '/feature/<int:feature_id>/gate/<int:gate_id>/intent',
+        defaults={'require_edit_feature': True},
+    ),
+    Route(
+        '/feature/<int:feature_id>/stage/<int:stage_id>/intent',
+        defaults={'require_edit_feature': True},
+    ),
+    Route(
+        '/ot_creation_request/<int:feature_id>/<int:stage_id>',
+        defaults={'require_signin': True},
+    ),
+    Route(
+        '/ot_extension_request/<int:feature_id>/<int:stage_id>',
+        defaults={'require_signin': True},
+    ),
+    Route('/metrics'),
+    Route('/metrics/css'),
+    Route('/metrics/css/popularity'),
+    Route('/metrics/css/animated'),
+    Route('/metrics/css/timeline/popularity'),
+    Route('/metrics/css/timeline/popularity/<int:bucket_id>'),
+    Route('/metrics/css/timeline/animated'),
+    Route('/metrics/css/timeline/animated/<int:bucket_id>'),
+    Route('/metrics/feature/popularity'),
+    Route('/metrics/feature/timeline/popularity'),
+    Route('/metrics/feature/timeline/popularity/<int:bucket_id>'),
+    Route('/metrics/webfeature/popularity'),
+    Route('/metrics/webfeature/timeline/popularity'),
+    Route('/metrics/webfeature/timeline/popularity/<int:bucket_id>'),
+    Route('/reports/external_reviews'),
+    Route('/reports/external_reviews/<reviewer>'),
+    Route('/reports/spec_mentors'),
+    Route('/reports/feature-latency'),
+    Route('/reports/review-latency'),
+    Route('/settings', defaults={'require_signin': True}),
+    Route('/enterprise'),
+    Route(
+        '/enterprise/releasenotes',
+        defaults={'require_signin': True, 'is_enterprise_page': True},
+    ),
+    # Admin pages
+    Route(
+        '/admin/blink',
+        defaults={'require_admin_site': True, 'require_signin': True},
+    ),  # noqa: E501
+    Route(
+        '/admin/feature_links',
+        defaults={'require_admin_site': True, 'require_signin': True},
+    ),  # noqa: E501
+    Route('/admin/slo_report', reminders.SLOReportHandler),
+    Route(
+        '/admin/bulk_edit',
+        defaults={'require_admin_site': True, 'require_signin': True},
+    ),  # noqa: E501
 ]
 
 mpa_page_routes: list[Route] = [
     Route('/admin/users/new', users.UserListHandler),
     Route('/admin/ot_requests', ot_requests.OriginTrialsRequests),
-
     # Note: The only requests being made now hit /features.json and
     # /features_v2.json, but both of those cause version == 2.
     # There was logic to accept another version value, but it it was not used.
     Route(r'/features.json', featurelist.FeaturesJsonHandler),
     Route(r'/features_v2.json', featurelist.FeaturesJsonHandler),
-
-    Route('/features.xml', basehandlers.ConstHandler,
-        defaults={'template_path': 'farewell-rss.xml'}),
-    Route('/samples', basehandlers.ConstHandler,
-        defaults={'template_path': 'farewell-samples.html'}),
-
+    Route(
+        '/features.xml',
+        basehandlers.ConstHandler,
+        defaults={'template_path': 'farewell-rss.xml'},
+    ),
+    Route(
+        '/samples',
+        basehandlers.ConstHandler,
+        defaults={'template_path': 'farewell-samples.html'},
+    ),
     Route('/omaha_data', metrics.OmahaDataHandler),
-    Route('/feature/<int:feature_id>/attachment/<int:attachment_id>',
-          attachments_api.AttachmentServing),
-    Route('/feature/<int:feature_id>/attachment/<int:attachment_id>/thumbnail',
-          attachments_api.AttachmentServing,
-          defaults={'thumbnail': True}),
+    Route(
+        '/feature/<int:feature_id>/attachment/<int:attachment_id>',
+        attachments_api.AttachmentServing,
+    ),
+    Route(
+        '/feature/<int:feature_id>/attachment/<int:attachment_id>/thumbnail',
+        attachments_api.AttachmentServing,
+        defaults={'thumbnail': True},
+    ),
 ]
 
 internals_routes: list[Route] = [
-  Route('/cron/metrics', fetchmetrics.YesterdayHandler),
-  Route('/cron/histograms', fetchmetrics.HistogramsHandler),
-  Route('/cron/update_blink_components', fetchmetrics.BlinkComponentHandler),
-  Route('/cron/export_backup', data_backup.BackupExportHandler),
-  Route('/cron/send_accuracy_notifications', reminders.FeatureAccuracyHandler),
-  Route('/cron/send_prepublication', reminders.PrepublicationHandler),
-  Route('/cron/send_overdue_reviews', reminders.SLOOverdueHandler),
-  Route('/cron/warn_inactive_users', notifier.NotifyInactiveUsersHandler),
-  Route('/cron/remove_inactive_users',
-      inactive_users.RemoveInactiveUsersHandler),
-  Route('/cron/reindex_all', search_fulltext.ReindexAllFeatures),
-  Route('/cron/update_all_feature_links', feature_links.UpdateAllFeatureLinksHandlers),
-  Route('/cron/associate_origin_trials', maintenance_scripts.AssociateOTs),
-  Route('/cron/send-ot-process-reminders',
-        reminders.SendOTReminderEmailsHandler),
-  Route('/cron/create_origin_trials', maintenance_scripts.CreateOriginTrials),
-  Route('/cron/activate_origin_trials',
-        maintenance_scripts.ActivateOriginTrials),
-  Route('/cron/fetch_webdx_feature_ids', maintenance_scripts.FetchWebdxFeatureId),
-  Route('/cron/generate_review_activities',
-        maintenance_scripts.GenerateReviewActivityFile),
-  Route('/cron/generate_stale_features',
-        maintenance_scripts.GenerateStaleFeaturesFile),
-  Route('/cron/generate_shipping_features',
-        maintenance_scripts.GenerateShippingFeaturesFile),
-  Route('/cron/reset_stale_shipping_milestones',
-        maintenance_scripts.ResetStaleShippingMilestones),
-  Route('/cron/delete_old_wpt_coverage_report',
-        maintenance_scripts.DeleteWPTCoverageReport),
-
-  Route('/admin/find_stop_words', search_fulltext.FindStopWords),
-
-  Route('/tasks/email-subscribers', notifier.FeatureChangeHandler),
-  Route('/tasks/detect-intent', detect_intent.IntentEmailHandler),
-  Route('/tasks/email-reviewers', notifier.FeatureReviewHandler),
-  Route('/tasks/email-assigned', notifier.ReviewAssignmentHandler),
-  Route('/tasks/email-comments', notifier.FeatureCommentHandler),
-  Route('/tasks/update-feature-links', feature_links.FeatureLinksUpdateHandler),
-  Route('/tasks/email-ot-activated', notifier.OTActivatedHandler),
-  Route('/tasks/email-ot-creation-processed',
-        notifier.OTCreationProcessedHandler),
-  Route('/tasks/email-ot-creation-request-failed',
-        notifier.OTCreationRequestFailedHandler),
-  Route('/tasks/email-ot-activation-failed',
-        notifier.OTActivationFailedHandler),
-  Route('/tasks/email-ot-creation-request', notifier.OTCreationRequestHandler),
-  Route('/tasks/email-ot-creation-approved',
-        notifier.OTCreationApprovedHandler),
-  Route('/tasks/email-ot-extended', notifier.OTExtendedHandler),
-  Route('/tasks/email-ot-extension-approved',
-        notifier.OTExtensionApprovedHandler),
-  Route('/tasks/email-intent-to-blink-dev', notifier.IntentToBlinkDevHandler),
-  Route('/tasks/email-reset-shipping-milestones',
-        notifier.ResetShippingMilestonesEmailHandler),
-  Route('/tasks/generate-wpt-coverage-analysis',
-        gemini_helpers.GenerateWPTCoverageEvalReportHandler),
-
-  # OT process reminder emails
-  Route('/tasks/email-ot-first-branch', notifier.OTFirstBranchReminderHandler),
-  Route('/tasks/email-ot-last-branch', notifier.OTLastBranchReminderHandler),
-  Route('/tasks/email-ot-ending-next-release',
-        notifier.OTEndingNextReleaseReminderHandler),
-  Route('/tasks/email-ot-ending-this-release',
-        notifier.OTEndingThisReleaseReminderHandler),
-  Route('/tasks/email-ot-beta-availability',
-        notifier.OTBetaAvailabilityReminderHandler),
-  Route('/tasks/email-ot-automated-process',
-        notifier.OTAutomatedProcessEmailHandler),
-
-  # Maintenance scripts.
-  Route('/scripts/evaluate_gate_status',
-        maintenance_scripts.EvaluateGateStatus),
-  Route('/scripts/write_missing_gates',
-        maintenance_scripts.WriteMissingGates),
-  Route('/scripts/backfill_responded_on',
-        maintenance_scripts.BackfillRespondedOn),
-  Route('/scripts/backfill_stage_created',
-        maintenance_scripts.BackfillStageCreated),
-  Route('/scripts/backfill_feature_links',
-        maintenance_scripts.BackfillFeatureLinks),
-  Route('/scripts/backfill_enterprise_impact',
-        maintenance_scripts.BackfillFeatureEnterpriseImpact),
-  Route('/scripts/delete_empty_extension_stages',
-        maintenance_scripts.DeleteEmptyExtensionStages),
-  Route('/scripts/backfill_shipping_year',
-        maintenance_scripts.BackfillShippingYear),
-  Route('/scripts/backfill_activity_log_type',
-        maintenance_scripts.BackfillActivityLogType),
-  Route('/scripts/backfill_gate_dates',
-        maintenance_scripts.BackfillGateDates),
-  Route('/scripts/send_ot_creation_email/<int:stage_id>',
-        maintenance_scripts.SendManualOTCreatedEmail),
-  Route('/scripts/send_ot_activation_email/<int:stage_id>',
-        maintenance_scripts.SendManualOTActivatedEmail),
-  Route('/scripts/migrate_rollout_milestones',
-        maintenance_scripts.MigrateRolloutMilestones),
-  Route('/scripts/reset_outstanding_notifications',
-        maintenance_scripts.ResetOutstandingNotifications),
+    Route('/cron/metrics', fetchmetrics.YesterdayHandler),
+    Route('/cron/histograms', fetchmetrics.HistogramsHandler),
+    Route('/cron/update_blink_components', fetchmetrics.BlinkComponentHandler),
+    Route('/cron/export_backup', data_backup.BackupExportHandler),
+    Route(
+        '/cron/send_accuracy_notifications', reminders.FeatureAccuracyHandler
+    ),
+    Route('/cron/send_prepublication', reminders.PrepublicationHandler),
+    Route('/cron/send_overdue_reviews', reminders.SLOOverdueHandler),
+    Route('/cron/warn_inactive_users', notifier.NotifyInactiveUsersHandler),
+    Route(
+        '/cron/remove_inactive_users', inactive_users.RemoveInactiveUsersHandler
+    ),
+    Route('/cron/reindex_all', search_fulltext.ReindexAllFeatures),
+    Route(
+        '/cron/update_all_feature_links',
+        feature_links.UpdateAllFeatureLinksHandlers,
+    ),  # noqa: E501
+    Route('/cron/associate_origin_trials', maintenance_scripts.AssociateOTs),
+    Route(
+        '/cron/send-ot-process-reminders', reminders.SendOTReminderEmailsHandler
+    ),
+    Route('/cron/create_origin_trials', maintenance_scripts.CreateOriginTrials),
+    Route(
+        '/cron/activate_origin_trials', maintenance_scripts.ActivateOriginTrials
+    ),
+    Route(
+        '/cron/fetch_webdx_feature_ids', maintenance_scripts.FetchWebdxFeatureId
+    ),  # noqa: E501
+    Route(
+        '/cron/generate_review_activities',
+        maintenance_scripts.GenerateReviewActivityFile,
+    ),
+    Route(
+        '/cron/generate_stale_features',
+        maintenance_scripts.GenerateStaleFeaturesFile,
+    ),
+    Route(
+        '/cron/generate_shipping_features',
+        maintenance_scripts.GenerateShippingFeaturesFile,
+    ),
+    Route(
+        '/cron/reset_stale_shipping_milestones',
+        maintenance_scripts.ResetStaleShippingMilestones,
+    ),
+    Route(
+        '/cron/delete_old_wpt_coverage_report',
+        maintenance_scripts.DeleteWPTCoverageReport,
+    ),
+    Route('/admin/find_stop_words', search_fulltext.FindStopWords),
+    Route('/tasks/email-subscribers', notifier.FeatureChangeHandler),
+    Route('/tasks/detect-intent', detect_intent.IntentEmailHandler),
+    Route('/tasks/email-reviewers', notifier.FeatureReviewHandler),
+    Route('/tasks/email-assigned', notifier.ReviewAssignmentHandler),
+    Route('/tasks/email-comments', notifier.FeatureCommentHandler),
+    Route(
+        '/tasks/update-feature-links', feature_links.FeatureLinksUpdateHandler
+    ),
+    Route('/tasks/email-ot-activated', notifier.OTActivatedHandler),
+    Route(
+        '/tasks/email-ot-creation-processed',
+        notifier.OTCreationProcessedHandler,
+    ),
+    Route(
+        '/tasks/email-ot-creation-request-failed',
+        notifier.OTCreationRequestFailedHandler,
+    ),
+    Route(
+        '/tasks/email-ot-activation-failed', notifier.OTActivationFailedHandler
+    ),
+    Route(
+        '/tasks/email-ot-creation-request', notifier.OTCreationRequestHandler
+    ),
+    Route(
+        '/tasks/email-ot-creation-approved', notifier.OTCreationApprovedHandler
+    ),
+    Route('/tasks/email-ot-extended', notifier.OTExtendedHandler),
+    Route(
+        '/tasks/email-ot-extension-approved',
+        notifier.OTExtensionApprovedHandler,
+    ),
+    Route('/tasks/email-intent-to-blink-dev', notifier.IntentToBlinkDevHandler),
+    Route(
+        '/tasks/email-reset-shipping-milestones',
+        notifier.ResetShippingMilestonesEmailHandler,
+    ),
+    Route(
+        '/tasks/generate-wpt-coverage-analysis',
+        gemini_helpers.GenerateWPTCoverageEvalReportHandler,
+    ),
+    # OT process reminder emails
+    Route(
+        '/tasks/email-ot-first-branch', notifier.OTFirstBranchReminderHandler
+    ),
+    Route('/tasks/email-ot-last-branch', notifier.OTLastBranchReminderHandler),
+    Route(
+        '/tasks/email-ot-ending-next-release',
+        notifier.OTEndingNextReleaseReminderHandler,
+    ),
+    Route(
+        '/tasks/email-ot-ending-this-release',
+        notifier.OTEndingThisReleaseReminderHandler,
+    ),
+    Route(
+        '/tasks/email-ot-beta-availability',
+        notifier.OTBetaAvailabilityReminderHandler,
+    ),
+    Route(
+        '/tasks/email-ot-automated-process',
+        notifier.OTAutomatedProcessEmailHandler,
+    ),
+    # Maintenance scripts.
+    Route(
+        '/scripts/evaluate_gate_status', maintenance_scripts.EvaluateGateStatus
+    ),
+    Route(
+        '/scripts/write_missing_gates', maintenance_scripts.WriteMissingGates
+    ),
+    Route(
+        '/scripts/backfill_responded_on',
+        maintenance_scripts.BackfillRespondedOn,
+    ),
+    Route(
+        '/scripts/backfill_stage_created',
+        maintenance_scripts.BackfillStageCreated,
+    ),
+    Route(
+        '/scripts/backfill_feature_links',
+        maintenance_scripts.BackfillFeatureLinks,
+    ),
+    Route(
+        '/scripts/backfill_enterprise_impact',
+        maintenance_scripts.BackfillFeatureEnterpriseImpact,
+    ),
+    Route(
+        '/scripts/delete_empty_extension_stages',
+        maintenance_scripts.DeleteEmptyExtensionStages,
+    ),
+    Route(
+        '/scripts/backfill_shipping_year',
+        maintenance_scripts.BackfillShippingYear,
+    ),
+    Route(
+        '/scripts/backfill_activity_log_type',
+        maintenance_scripts.BackfillActivityLogType,
+    ),
+    Route(
+        '/scripts/backfill_gate_dates', maintenance_scripts.BackfillGateDates
+    ),
+    Route(
+        '/scripts/send_ot_creation_email/<int:stage_id>',
+        maintenance_scripts.SendManualOTCreatedEmail,
+    ),
+    Route(
+        '/scripts/send_ot_activation_email/<int:stage_id>',
+        maintenance_scripts.SendManualOTActivatedEmail,
+    ),
+    Route(
+        '/scripts/migrate_rollout_milestones',
+        maintenance_scripts.MigrateRolloutMilestones,
+    ),
+    Route(
+        '/scripts/reset_outstanding_notifications',
+        maintenance_scripts.ResetOutstandingNotifications,
+    ),
 ]
 
 dev_routes: list[Route] = []
 if settings.DEV_MODE:
-  dev_routes = [
-    Route('/dev/mock_login', login_api.MockLogin),
-  ]
+    dev_routes = [
+        Route('/dev/mock_login', login_api.MockLogin),
+    ]
 # All requests to the app-py3 GAE service are handled by this Flask app.
 app = basehandlers.FlaskApplication(
     __name__,
-    (metrics_chart_routes + api_routes + mpa_page_routes + spa_page_routes +
-     internals_routes + dev_routes))
+    (
+        metrics_chart_routes
+        + api_routes
+        + mpa_page_routes
+        + spa_page_routes
+        + internals_routes
+        + dev_routes
+    ),
+)
 
 # TODO(jrobbins): Make the CSP handler be a class like our others.
-app.add_url_rule(
-    '/csp', view_func=csp.report_handler,
-     methods=['POST'])
+app.add_url_rule('/csp', view_func=csp.report_handler, methods=['POST'])
 
 sendemail.add_routes(app)
 

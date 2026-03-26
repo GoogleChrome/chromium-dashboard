@@ -14,9 +14,6 @@
 # limitations under the License.
 
 
-
-
-
 # Number of seconds in various periods.
 SECS_PER_MINUTE = 60
 SECS_PER_HOUR = SECS_PER_MINUTE * 60

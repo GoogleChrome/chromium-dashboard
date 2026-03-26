@@ -112,15 +112,21 @@ lint:
 	npx eslint "client-src/js-src/**/*.{js,ts}" "packages/playwright/tests/*.{js,ts}"
 	npx tsc -p tsconfig.json
 	npx lit-analyzer "client-src/elements/chromedash-*.{js,ts}" "packages/playwright/tests/*.{js,ts}"
+	$(MAKE) pylint
+	. cs-env/bin/activate && ruff format --check .
 
 lint-fix:
 	npx prettier client-src/js-src client-src/elements packages/playwright/tests --write
 	npx eslint "client-src/js-src/**/*.{js,ts}" "packages/playwright/tests/*.{js,ts}" --fix
+	$(MAKE) format
+
+format:
+	. cs-env/bin/activate && ruff check --fix . && ruff format .
 
 presubmit: test webtest lint mypy
 
 pylint:
-	npx pylint --output-format=parseable *py api/*py framework/*py internals/*py pages/*py
+	. cs-env/bin/activate && ruff check .
 
 openapi: openapi-backend openapi-frontend
 
