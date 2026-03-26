@@ -426,7 +426,7 @@ class AssociateOTs(FlaskHandler):
     ) -> int:
         """Clear any trial extension requests if they have been processed."""
         extension_stages: list[Stage] = Stage.query(
-            Stage.ot_action_requested == True,
+            Stage.ot_action_requested == True,  # noqa: E712
             Stage.ot_stage_id == ot_stage.key.integer_id(),
         ).fetch()
         if len(extension_stages) == 0:
@@ -539,7 +539,8 @@ class BackfillFeatureEnterpriseImpact(FlaskHandler):
         features_by_id = {}
 
         stages: ndb.Query = Stage.query(
-            Stage.stage_type == STAGE_ENT_ROLLOUT, Stage.archived == False
+            Stage.stage_type == STAGE_ENT_ROLLOUT,
+            Stage.archived == False,  # noqa: E501, E712, F405
         )
         for stage in stages:
             if stage.feature_id in features_by_id:
@@ -563,7 +564,7 @@ class BackfillFeatureEnterpriseImpact(FlaskHandler):
             FeatureEntry.enterprise_impact == ENTERPRISE_IMPACT_NONE,
             ndb.OR(
                 FeatureEntry.feature_type == FEATURE_TYPE_ENTERPRISE_ID,
-                FeatureEntry.breaking_change == True,
+                FeatureEntry.breaking_change == True,  # noqa: E501, E712, F405
             ),
         )
         for feature_entry in features:

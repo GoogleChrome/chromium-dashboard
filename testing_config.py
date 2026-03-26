@@ -63,12 +63,15 @@ class Blank(object):
     """  # noqa: D205
 
     def __init__(self, **kwargs):
+        """Initialize."""
         vars(self).update(kwargs)
 
     def __repr__(self):
+        """Return a string representation of the object."""
         return '%s(%s)' % (self.__class__.__name__, str(vars(self)))
 
     def __eq__(self, other):
+        """Check if this object is equal to another."""
         if other is None:
             return False
         return vars(self) == vars(other)
@@ -133,4 +136,5 @@ class Testdata(object):
             f.write(raw_data)
 
     def __getitem__(self, key):
+        """Get a test data item by key."""
         return self.testdata[key]

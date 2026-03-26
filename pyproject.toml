@@ -10,29 +10,21 @@ docstring-code-format = true
 [tool.ruff.lint]
 select = ["E", "F", "I", "D"]
 ignore = [
-    # Infeasible: Legacy codebase lacks hundreds of module/class/function docstrings; writing them all at once is infeasible.
-    "D100",
-    "D101",
-    "D102",
-    "D103",
-    "D104",
-    "D105",
-    "D106",
-    "D107",
+    "D100", # undocumented-public-module: The codebase lacks hundreds of module docstrings.
+    "D101", # undocumented-public-class: The codebase lacks hundreds of class docstrings.
+    "D102", # undocumented-public-method: The codebase lacks hundreds of method docstrings.
+    "D103", # undocumented-public-function: The codebase lacks hundreds of function docstrings.
+    "D104", # undocumented-public-package: The codebase lacks hundreds of package docstrings.
 
     # Infeasible: Conflicts with Ruff's default Google style docstring rules (D211, D212).
-    "D203",
-    "D213",
+    "D203", # one-blank-line-before-class: Incompatible with Google style (D211).
+    "D213", # multi-line-summary-second-line: Incompatible with Google style (D212).
 
-    # Infeasible: Legacy codebase has many long strings/comments; fixing all manually is infeasible.
-    "E501",
+    "E501", # line-too-long: The codebase has many long strings/comments; fixing all manually is infeasible.
 
-    # Infeasible: Legacy tests heavily rely on wildcard imports (e.g., from internals.core_enums import *).
-    "F403",
-    "F405",
-
-    # Infeasible: Google Cloud NDB ORM overloads equality operators (== True/False) for query construction.
-    "E712",
+    # Infeasible: Tests heavily rely on wildcard imports (e.g., from internals.core_enums import *).
+    "F403", # undefined-local-with-import-star: Tests rely heavily on wildcard imports.
+    "F405", # undefined-local-with-import-star-usage: Tests rely heavily on wildcard imports.
 ]
 
 [tool.ruff.lint.pydocstyle]

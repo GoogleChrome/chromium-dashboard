@@ -326,6 +326,8 @@ class ExternalReviewsAPITest(testing_config.CustomTestCase):
         self.assertEqual(0, len(result['reviews']))
 
     class FeatureDict(TypedDict):
+        """A dictionary representation of a feature for testing."""
+
         name: str
         summary: NotRequired[str]
         blink_components: NotRequired[str]
