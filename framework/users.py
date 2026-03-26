@@ -139,18 +139,32 @@ class User(object):
         else:
             return hash((self.__email, self.__auth_domain))
 
-    def __cmp__(self, other):
+    def __eq__(self, other):
         if not isinstance(other, User):
             return NotImplemented
         if self.__federated_identity:
-            return cmp(
-                (self.__federated_identity, self.__auth_domain),  # noqa: F821
-                (other.__federated_identity, other.__auth_domain),
+            return (self.__federated_identity, self.__auth_domain) == (
+                other.__federated_identity,
+                other.__auth_domain,
             )
         else:
-            return cmp(
-                (self.__email, self.__auth_domain),  # noqa: F821
-                (other.__email, other.__auth_domain),
+            return (self.__email, self.__auth_domain) == (
+                other.__email,
+                other.__auth_domain,
+            )
+
+    def __lt__(self, other):
+        if not isinstance(other, User):
+            return NotImplemented
+        if self.__federated_identity:
+            return (self.__federated_identity, self.__auth_domain) < (
+                other.__federated_identity,
+                other.__auth_domain,
+            )
+        else:
+            return (self.__email, self.__auth_domain) < (
+                other.__email,
+                other.__auth_domain,
             )
 
     def get_current_user(self):
