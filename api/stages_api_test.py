@@ -502,8 +502,9 @@ class StagesAPITest(testing_config.CustomTestCase):
     gates: list[Gate] = Gate.query(Gate.stage_id == stage_id).fetch()
     self.assertTrue(len(gates) == 0)
 
+  @mock.patch('framework.rediscache.delete_keys_with_prefix')
   @mock.patch('flask.abort')
-  def test_patch__not_allowed(self, mock_abort):
+  def test_patch__not_allowed(self, mock_abort, mock_dkwp):
     """Raises 403 if user does not have edit access to the stage."""
     testing_config.sign_in('basic_user@example.com', 123)
     json = {'intent_thread_url': 'https://example.com/different'}
@@ -515,9 +516,11 @@ class StagesAPITest(testing_config.CustomTestCase):
         self.handler.do_patch(feature_id=1, stage_id=10)
     mock_abort.assert_called_once_with(
         403, description='User cannot edit feature 1')
+    mock_dkwp.assert_not_called()
 
+  @mock.patch('framework.rediscache.delete_keys_with_prefix')
   @mock.patch('flask.abort')
-  def test_patch__bad_id(self, mock_abort):
+  def test_patch__bad_id(self, mock_abort, mock_dkwp):
     """Raises 404 if ID does not match any stage."""
     testing_config.sign_in('feature_owner@example.com', 123)
     json = {'intent_thread_url': 'https://example.com/different'}
@@ -529,9 +532,11 @@ class StagesAPITest(testing_config.CustomTestCase):
         self.handler.do_patch(feature_id=1, stage_id=3001)
     mock_abort.assert_called_once_with(
         404, description=f'Stage 3001 not found.')
+    mock_dkwp.assert_not_called()
 
+  @mock.patch('framework.rediscache.delete_keys_with_prefix')
   @mock.patch('flask.abort')
-  def test_patch__no_id(self, mock_abort):
+  def test_patch__no_id(self, mock_abort, mock_dkwp):
     """Raises 404 if no stage ID was given."""
     testing_config.sign_in('feature_owner@example.com', 123)
     json = {'intent_thread_url': 'https://example.com/different'}
@@ -542,9 +547,11 @@ class StagesAPITest(testing_config.CustomTestCase):
       with self.assertRaises(werkzeug.exceptions.BadRequest):
         self.handler.do_patch(feature_id=1)
     mock_abort.assert_called_once_with(400, description='No Stage ID specified.')
+    mock_dkwp.assert_not_called()
 
+  @mock.patch('framework.rediscache.delete_keys_with_prefix')
   @mock.patch('flask.abort')
-  def test_patch__no_feature(self, mock_abort):
+  def test_patch__no_feature(self, mock_abort, mock_dkwp):
     """Raises 404 if no feature was found."""
     testing_config.sign_in('feature_owner@example.com', 123)
     json = {
@@ -558,9 +565,11 @@ class StagesAPITest(testing_config.CustomTestCase):
 
     description = 'FeatureEntry 99 not found.'
     mock_abort.assert_called_once_with(404, description=description)
+    mock_dkwp.assert_not_called()
 
+  @mock.patch('framework.rediscache.delete_keys_with_prefix')
   @mock.patch('framework.permissions.validate_feature_edit_permission')
-  def test_patch__Redirect(self, permission_call):
+  def test_patch__Redirect(self, permission_call, mock_dkwp):
     """Lack of permission in Patch and redirect users."""
     permission_call.return_value = 'fake response'
     testing_config.sign_in('feature_owner@example.com', 123)
@@ -570,9 +579,11 @@ class StagesAPITest(testing_config.CustomTestCase):
       actual = self.handler.do_patch(stage_id=10)
 
     self.assertEqual(actual, 'fake response')
+    mock_dkwp.assert_not_called()
 
+  @mock.patch('framework.rediscache.delete_keys_with_prefix')
   @mock.patch('flask.abort')
-  def test_patch__ot_milestones_during_creation(self, mock_abort):
+  def test_patch__ot_milestones_during_creation(self, mock_abort, mock_dkwp):
     """Raises 400 if OT start milestone is updated during OT creation process.
     """
     testing_config.sign_in('feature_owner@example.com', 123)
@@ -595,9 +606,11 @@ class StagesAPITest(testing_config.CustomTestCase):
     mock_abort.assert_called_once_with(
         400,
         description='Cannot edit OT milestones while creation is in progress.')
+    mock_dkwp.assert_not_called()
 
+  @mock.patch('framework.rediscache.delete_keys_with_prefix')
   @mock.patch('flask.abort')
-  def test_patch__ot_end_milestone_during_creation(self, mock_abort):
+  def test_patch__ot_end_milestone_during_creation(self, mock_abort, mock_dkwp):
     """Raises 400 if OT end milestone is updated during OT creation process."""
     testing_config.sign_in('feature_owner@example.com', 123)
     json = {
@@ -619,8 +632,17 @@ class StagesAPITest(testing_config.CustomTestCase):
     mock_abort.assert_called_once_with(
         400,
         description='Cannot edit OT milestones while creation is in progress.')
+    mock_dkwp.assert_not_called()
 
-  def test_patch__valid(self):
+  def assert_cache_was_flushed(self, mock_dkwp):
+    """Check that the appropriate caches were flushed."""
+    expected_calls = [
+        mock.call(FeatureEntry.DEFAULT_CACHE_KEY),
+        mock.call(FeatureEntry.SEARCH_CACHE_KEY)]
+    mock_dkwp.assert_has_calls(expected_calls)
+
+  @mock.patch('framework.rediscache.delete_keys_with_prefix')
+  def test_patch__valid(self, mock_dkwp):
     """A valid PATCH request should update an existing stage."""
     testing_config.sign_in('feature_owner@example.com', 123)
     json = {
@@ -649,8 +671,10 @@ class StagesAPITest(testing_config.CustomTestCase):
     self.assertIsNone(stage.display_name)
     # Existing fields not specified should not be changed.
     self.assertEqual(stage.experiment_goals, 'To be the very best.')
+    self.assert_cache_was_flushed(mock_dkwp)
 
-  def test_patch__valid_rollout_milestone(self):
+  @mock.patch('framework.rediscache.delete_keys_with_prefix')
+  def test_patch__valid_rollout_milestone(self, mock_dkwp):
     """A valid PATCH request should update an existing stage with the rollout_milestone."""
     testing_config.sign_in('feature_owner@example.com', 123)
     json = {
@@ -669,8 +693,9 @@ class StagesAPITest(testing_config.CustomTestCase):
     self.assertEqual(stage.rollout_milestone, 105)
     self.assertEqual(stage.milestones.desktop_first, 105)
 
+  @mock.patch('framework.rediscache.delete_keys_with_prefix')
   @mock.patch('internals.notifier_helpers.send_ot_creation_notification')
-  def test_patch__ot_creation(self, mock_send_ot_creation_notification):
+  def test_patch__ot_creation(self, mock_send_ot_creation_notification, mock_dkwp):
     """A valid PATCH request should update an existing stage."""
     testing_config.sign_in('feature_owner@example.com', 123)
     mock_send_ot_creation_notification.return_value = None
@@ -697,9 +722,11 @@ class StagesAPITest(testing_config.CustomTestCase):
     self.assertEqual(stage.experiment_goals, 'To be the very best.')
     # OT creation request notification should be sent.
     mock_send_ot_creation_notification.assert_called_once()
+    self.assert_cache_was_flushed(mock_dkwp)
 
+  @mock.patch('framework.rediscache.delete_keys_with_prefix')
   @mock.patch('internals.notifier_helpers.send_ot_creation_notification')
-  def test_patch__ot_extension(self, mock_send_ot_creation_notification):
+  def test_patch__ot_extension(self, mock_send_ot_creation_notification, mock_dkwp):
     """A valid PATCH request should update an existing stage."""
     testing_config.sign_in('feature_owner@example.com', 123)
     # extension stage type.
@@ -729,8 +756,10 @@ class StagesAPITest(testing_config.CustomTestCase):
     self.assertEqual(stage.experiment_goals, 'To be the very best.')
     # OT extension request should NOT send a notification.
     mock_send_ot_creation_notification.assert_not_called()
+    self.assert_cache_was_flushed(mock_dkwp)
 
-  def test_patch__ot_request_googler(self):
+  @mock.patch('framework.rediscache.delete_keys_with_prefix')
+  def test_patch__ot_request_googler(self, mock_dkwp):
     """A valid OT creation request from a googler should update stage."""
     testing_config.sign_in('a_googler@google.com', 123)
     json = {
@@ -758,8 +787,10 @@ class StagesAPITest(testing_config.CustomTestCase):
     self.assertEqual(stage.ot_display_name, 'OT name')
     # Existing fields not specified should not be changed.
     self.assertEqual(stage.experiment_goals, 'To be the very best.')
+    self.assert_cache_was_flushed(mock_dkwp)
 
-  def test_patch__ot_request_chromium(self):
+  @mock.patch('framework.rediscache.delete_keys_with_prefix')
+  def test_patch__ot_request_chromium(self, mock_dkwp):
     """A valid OT creation request from a Chromium user should update stage."""
     testing_config.sign_in('chromium_user@chromium.org', 123)
     json = {
@@ -787,6 +818,7 @@ class StagesAPITest(testing_config.CustomTestCase):
     self.assertEqual(stage.ot_display_name, 'OT name')
     # Existing fields not specified should not be changed.
     self.assertEqual(stage.experiment_goals, 'To be the very best.')
+    self.assert_cache_was_flushed(mock_dkwp)
 
   def test_patch__ot_request_unauthorized(self):
     """An OT creation request from an unauthorized is not processed."""
@@ -811,8 +843,9 @@ class StagesAPITest(testing_config.CustomTestCase):
       with self.assertRaises(werkzeug.exceptions.Forbidden):
         self.handler.do_patch(feature_id=1, stage_id=10)
 
+  @mock.patch('framework.rediscache.delete_keys_with_prefix')
   @mock.patch('flask.abort')
-  def test_delete__not_allowed(self, mock_abort):
+  def test_delete__not_allowed(self, mock_abort, mock_dkwp):
     """Raises 403 if user does not have edit access to the stage."""
     testing_config.sign_in('basic_user@example.com', 123)
     mock_abort.side_effect = werkzeug.exceptions.Forbidden
@@ -821,6 +854,7 @@ class StagesAPITest(testing_config.CustomTestCase):
         self.handler.do_delete(stage_id=10)
     mock_abort.assert_called_once_with(
         403, description='User cannot edit feature 1')
+    mock_dkwp.assert_not_called()
 
   @mock.patch('flask.abort')
   def test_delete__no_id(self, mock_abort):

@@ -121,10 +121,9 @@ class StagesAPI(basehandlers.EntitiesAPIHandler):
 
     notifier_helpers.notify_subscribers_and_save_amendments(
         feature, changed_fields, notify=True)
-    # Changing stage values means the cached feature should be invalidated.
-    lookup_key = FeatureEntry.feature_cache_key(
-        FeatureEntry.DEFAULT_CACHE_KEY, feature_id)
-    rediscache.delete(lookup_key)
+    # Remove all feature-related cache.
+    rediscache.delete_keys_with_prefix(FeatureEntry.DEFAULT_CACHE_KEY)
+    rediscache.delete_keys_with_prefix(FeatureEntry.SEARCH_CACHE_KEY)
 
     return {'message': 'Stage values updated.'}
 
@@ -141,5 +140,9 @@ class StagesAPI(basehandlers.EntitiesAPIHandler):
 
     stage.archived = True
     stage.put()
+
+    # Remove all feature-related cache.
+    rediscache.delete_keys_with_prefix(FeatureEntry.DEFAULT_CACHE_KEY)
+    rediscache.delete_keys_with_prefix(FeatureEntry.SEARCH_CACHE_KEY)
 
     return {'message': 'Stage archived.'}
