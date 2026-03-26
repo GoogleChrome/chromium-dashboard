@@ -63,7 +63,7 @@ SUPPORTED_MIME_TYPES = RESIZABLE_MIME_TYPES + ['text/plain']
 def store_attachment(
     feature_id: int, content: bytes, mime_type: str
 ) -> Attachment:
-    """ "Store some data for an attachment.  Return its URI."""
+    """Store some data for an attachment.  Return its URI."""
     check_attachment_size(content)
     check_attachment_type(mime_type)
     logging.info('Storing attachment with %r bytes', len(content))
