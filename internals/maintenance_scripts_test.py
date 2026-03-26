@@ -1296,6 +1296,7 @@ class GenerateReviewActivityFileTest(testing_config.CustomTestCase):
         self.gate_2.put()
 
         self.activity_1 = Activity(
+            log_type=Activity.USER_COMMENT,
             feature_id=1,
             gate_id=11,
             author='user1@example.com',
@@ -1306,6 +1307,7 @@ class GenerateReviewActivityFileTest(testing_config.CustomTestCase):
         self.activity_1.put()
 
         self.activity_2 = Activity(
+            log_type=Activity.USER_CHANGE,
             feature_id=1,
             gate_id=11,
             created=datetime(2020, 1, 2, 9),
@@ -1322,6 +1324,7 @@ class GenerateReviewActivityFileTest(testing_config.CustomTestCase):
         self.activity_2.put()
 
         self.activity_3 = Activity(
+            log_type=Activity.USER_COMMENT,
             feature_id=1,
             gate_id=11,
             author='user2@example.com',
@@ -1332,6 +1335,7 @@ class GenerateReviewActivityFileTest(testing_config.CustomTestCase):
         self.activity_3.put()
 
         self.activity_4 = Activity(
+            log_type=Activity.USER_CHANGE,
             feature_id=1,
             gate_id=11,
             created=datetime(2020, 1, 4, 12),
@@ -1349,6 +1353,7 @@ class GenerateReviewActivityFileTest(testing_config.CustomTestCase):
 
         # Deleted comment.
         self.activity_5 = Activity(
+            log_type=Activity.USER_COMMENT,
             feature_id=1,
             gate_id=11,
             author='user2@example.com',
@@ -1360,6 +1365,7 @@ class GenerateReviewActivityFileTest(testing_config.CustomTestCase):
         self.activity_5.put()
 
         self.activity_6 = Activity(
+            log_type=Activity.USER_CHANGE,
             feature_id=1,
             gate_id=11,
             created=datetime(2020, 1, 6, 12),
@@ -1377,6 +1383,7 @@ class GenerateReviewActivityFileTest(testing_config.CustomTestCase):
 
         # Comment with no gate ID.
         self.activity_7 = Activity(
+            log_type=Activity.USER_COMMENT,
             feature_id=2,
             gate_id=None,
             author='user3@example.com',
@@ -1387,6 +1394,7 @@ class GenerateReviewActivityFileTest(testing_config.CustomTestCase):
         self.activity_7.put()
 
         self.activity_8 = Activity(
+            log_type=Activity.USER_CHANGE,
             feature_id=2,
             gate_id=12,
             author='user3@example.com',
@@ -1403,6 +1411,7 @@ class GenerateReviewActivityFileTest(testing_config.CustomTestCase):
         self.activity_8.put()
 
         self.activity_9 = Activity(
+            log_type=Activity.USER_CHANGE,
             feature_id=2,
             gate_id=12,
             author='user4@example.com',
@@ -1419,6 +1428,7 @@ class GenerateReviewActivityFileTest(testing_config.CustomTestCase):
         self.activity_9.put()
 
         self.activity_10 = Activity(
+            log_type=Activity.USER_COMMENT,
             feature_id=2,
             gate_id=12,
             author='user3@example.com',
@@ -1430,6 +1440,7 @@ class GenerateReviewActivityFileTest(testing_config.CustomTestCase):
 
         # Activity whose gate doesn't exist.
         self.activity_11 = Activity(
+            log_type=Activity.USER_COMMENT,
             feature_id=2,
             gate_id=13,
             author='user4@example.com',

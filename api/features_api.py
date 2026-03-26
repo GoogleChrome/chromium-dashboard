@@ -589,6 +589,7 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
         user = users.get_current_user()
         email = user.email() if user else None
         activity = Activity(
+            log_type=Activity.USER_COMMENT,
             feature_id=feature_id,
             author=email,
             content=f'Feature "{feature.name}" was archived.',
