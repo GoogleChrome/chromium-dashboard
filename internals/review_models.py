@@ -234,8 +234,16 @@ class Amendment(ndb.Model):
 
 class Activity(ndb.Model):
   """An activity log entry (comment + amendments) on a gate or feature."""
+  
+  # Log types
+  USER_CHANGE = 1
+  MILESTONE_RESET = 2
+  USER_COMMENT = 3
+  SYSTEM_CHANGE = 4
+
   feature_id = ndb.IntegerProperty(required=True)
   gate_id = ndb.IntegerProperty()  # The gate commented on, or general comment.
+  log_type = ndb.IntegerProperty()
   created = ndb.DateTimeProperty(auto_now_add=True)
   author = ndb.StringProperty()
   content = ndb.TextProperty()

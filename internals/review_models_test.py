@@ -29,17 +29,17 @@ class ActivityTest(testing_config.CustomTestCase):
         category=1, impl_status_chrome=3)
     self.feature_1.put()
     self.feature_1_id = self.feature_1.key.integer_id()
-    self.act_1_1 = Activity(
+    self.act_1_1 = Activity(log_type=Activity.USER_COMMENT, 
         feature_id=self.feature_1_id, gate_id=1,
         author='one@example.com',
         content='some text')
     self.act_1_1.put()
-    self.act_1_2 = Activity(
+    self.act_1_2 = Activity(log_type=Activity.USER_COMMENT, 
         feature_id=self.feature_1_id, gate_id=2,
         author='one@example.com',
         content='some other text')
     self.act_1_2.put()
-    self.act_1_3 = Activity(
+    self.act_1_3 = Activity(log_type=Activity.USER_COMMENT, 
         feature_id=self.feature_1_id,
         author='one@example.com',
         content='random')

@@ -508,6 +508,7 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
     email = user.email() if user else None
     activity = Activity(
         feature_id=feature_id,
+        log_type=Activity.USER_CHANGE,
         author=email,
         content=f'Feature "{feature.name}" was archived.')
     activity.put()

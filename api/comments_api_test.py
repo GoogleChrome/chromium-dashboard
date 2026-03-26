@@ -74,7 +74,7 @@ class CommentsConvertersTest(testing_config.CustomTestCase):
     amnd_2 = Amendment(
         field_name='owner_emails', old_value='None', new_value='[]')
     created = datetime.datetime(2022, 10, 28, 0, 0, 0)
-    act = Activity(
+    act = Activity(log_type=Activity.USER_COMMENT, 
         id=1, feature_id=123, gate_id=456, created=created,
         author='author@example.com', content='hello',
         amendments=[amnd_1, amnd_2])
@@ -114,7 +114,7 @@ class CommentsAPITest(testing_config.CustomTestCase):
     self.request_path = ('/api/v0/features/%d/approvals/%d/comments' %
                          (self.feature_id, self.gate_1_id))
 
-    self.act_1_1 = Activity(
+    self.act_1_1 = Activity(log_type=Activity.USER_COMMENT, 
       feature_id=self.feature_id, gate_id=self.gate_1_id,
       author='owner1@example.com', created=NOW, content='Good job')
 
@@ -142,7 +142,7 @@ class CommentsAPITest(testing_config.CustomTestCase):
     testing_config.sign_out()
     testing_config.sign_in('user7@example.com', 123567890)
 
-    legacy_comment = Activity(
+    legacy_comment = Activity(log_type=Activity.USER_COMMENT, 
       feature_id=self.feature_id, author='owner1@example.com',
       created=NOW, content='nothing')  # no gate_id
     legacy_comment.put()
@@ -159,7 +159,7 @@ class CommentsAPITest(testing_config.CustomTestCase):
     testing_config.sign_in('user7@example.com', 123567890)
     self.act_1_1.put()
 
-    random_activity = Activity(
+    random_activity = Activity(log_type=Activity.USER_COMMENT, 
       feature_id=self.feature_id, gate_id=99,
       author='owner1@example.com', created=NOW, content='nothing')
     random_activity.put()

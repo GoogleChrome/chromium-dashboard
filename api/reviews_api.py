@@ -96,6 +96,7 @@ class VotesAPI(basehandlers.APIHandler):
             new_value=', '.join(new_assignees))
         activity = Activity(
             feature_id=fe.key.integer_id(), gate_id=gate_id,
+            log_type=Activity.USER_CHANGE,
             author=user.email(), amendments=[amendment])
         activity.put()
         # Note: We don't notify assignee about autoassignment, because they

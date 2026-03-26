@@ -1067,12 +1067,12 @@ class GenerateReviewActivityFileTest(testing_config.CustomTestCase):
                        state=Vote.NA)
     self.gate_2.put()
 
-    self.activity_1 = Activity(
+    self.activity_1 = Activity(log_type=Activity.USER_COMMENT, 
       feature_id=1, gate_id=11, author='user1@example.com',
       created=datetime(2020, 1, 1, 11), content='test comment', amendments=[])
     self.activity_1.put()
 
-    self.activity_2 = Activity(
+    self.activity_2 = Activity(log_type=Activity.USER_CHANGE, 
       feature_id=1, gate_id=11, created=datetime(2020, 1, 2, 9),
       author='user1@example.com', content=None,
       amendments=[Amendment(
@@ -1080,12 +1080,12 @@ class GenerateReviewActivityFileTest(testing_config.CustomTestCase):
       ])
     self.activity_2.put()
 
-    self.activity_3 = Activity(
+    self.activity_3 = Activity(log_type=Activity.USER_COMMENT, 
       feature_id=1, gate_id=11, author='user2@example.com',
       created=datetime(2020, 1, 3, 8), content='test "comment" 2', amendments=[])
     self.activity_3.put()
 
-    self.activity_4 = Activity(
+    self.activity_4 = Activity(log_type=Activity.USER_CHANGE, 
       feature_id=1, gate_id=11, created=datetime(2020, 1, 4, 12),
       author='user1@example.com', content=None,
       amendments=[Amendment(
@@ -1094,13 +1094,13 @@ class GenerateReviewActivityFileTest(testing_config.CustomTestCase):
     self.activity_4.put()
 
     # Deleted comment.
-    self.activity_5 = Activity(
+    self.activity_5 = Activity(log_type=Activity.USER_COMMENT, 
       feature_id=1, gate_id=11, author='user2@example.com',
       created=datetime(2020, 1, 11, 8), content='test comment 3', amendments=[],
       deleted_by='user2@example.com')
     self.activity_5.put()
 
-    self.activity_6 = Activity(
+    self.activity_6 = Activity(log_type=Activity.USER_CHANGE, 
       feature_id=1, gate_id=11, created=datetime(2020, 1, 6, 12),
       author='user2@example.com', content=None,
       amendments=[Amendment(
@@ -1110,12 +1110,12 @@ class GenerateReviewActivityFileTest(testing_config.CustomTestCase):
     self.activity_6.put()
 
     # Comment with no gate ID.
-    self.activity_7 = Activity(
+    self.activity_7 = Activity(log_type=Activity.USER_COMMENT, 
       feature_id=2, gate_id=None, author='user3@example.com',
       created=datetime(2020, 1, 10, 8), content='test comment 4', amendments=[])
     self.activity_7.put()
 
-    self.activity_8 = Activity(
+    self.activity_8 = Activity(log_type=Activity.USER_CHANGE, 
       feature_id=2, gate_id=12, author='user3@example.com',
       created=datetime(2020, 1, 11, 9), content=None,
       amendments=[Amendment(
@@ -1124,7 +1124,7 @@ class GenerateReviewActivityFileTest(testing_config.CustomTestCase):
       ])
     self.activity_8.put()
 
-    self.activity_9 = Activity(
+    self.activity_9 = Activity(log_type=Activity.USER_CHANGE, 
       feature_id=2, gate_id=12, author='user4@example.com',
       created=datetime(2020, 1, 12, 10), content=None,
       amendments=[Amendment(
@@ -1133,13 +1133,13 @@ class GenerateReviewActivityFileTest(testing_config.CustomTestCase):
       ])
     self.activity_9.put()
 
-    self.activity_10 = Activity(
+    self.activity_10 = Activity(log_type=Activity.USER_COMMENT, 
       feature_id=2, gate_id=12, author='user3@example.com',
       created=datetime(2020, 1, 15, 8), content='test comment 5', amendments=[])
     self.activity_10.put()
 
     # Activity whose gate doesn't exist.
-    self.activity_11 = Activity(feature_id=2, gate_id=13, author='user4@example.com',
+    self.activity_11 = Activity(log_type=Activity.USER_COMMENT, feature_id=2, gate_id=13, author='user4@example.com',
       created=datetime(2020, 1, 14, 8), content='test comment 5', amendments=[])
     self.activity_11.put()
 
