@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-  # noqa: D100
 # Copyright 2022 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
@@ -286,7 +286,7 @@ def send_trial_extension_approved_notification(
 ) -> None:
     """Notify that a trial extension is ready to be finalized."""
     # If we don't have an OT owner email or stage ID, don't send the email out.
-    # These should always be set, and are collected during the extension request.
+    # These should always be set, and are collected during the extension request.  # noqa: E501
     if not stage.ot_owner_email or not stage.ot_stage_id:
         return
 

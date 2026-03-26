@@ -1,4 +1,4 @@
-# Copyright 2025 Google Inc.
+# Copyright 2025 Google Inc.  # noqa: D100
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
 # you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ class WebdxFeatures(ndb.Model):
     feature_ids = ndb.StringProperty(repeated=True)
 
     @classmethod
-    def get_webdx_feature_id_list(cls):
+    def get_webdx_feature_id_list(cls):  # noqa: D102
         fetch_results = cls.query().fetch(1)
         if not fetch_results:
             return None
@@ -29,7 +29,7 @@ class WebdxFeatures(ndb.Model):
         return fetch_results[0]
 
     @classmethod
-    def store_webdx_feature_id_list(cls, new_list: list[str]):
+    def store_webdx_feature_id_list(cls, new_list: list[str]):  # noqa: D102
         webdx_features = WebdxFeatures.get_webdx_feature_id_list()
         if not webdx_features:
             webdx_features = WebdxFeatures(feature_ids=new_list)

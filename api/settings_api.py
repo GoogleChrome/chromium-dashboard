@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-  # noqa: D100
 # Copyright 2022 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
@@ -38,7 +38,7 @@ class SettingsAPI(basehandlers.APIHandler):
 
         if not isinstance(new_notify, bool):
             raise werkzeug.exceptions.BadRequest(
-                f"Expected boolean for 'notify', got {type(new_notify).__name__}"
+                f"Expected boolean for 'notify', got {type(new_notify).__name__}"  # noqa: E501
             )
 
         settings_request = PostSettingsRequest.from_dict(raw_data)

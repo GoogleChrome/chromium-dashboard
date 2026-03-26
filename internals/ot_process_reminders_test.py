@@ -1,4 +1,4 @@
-# Copyright 2024 Google Inc.
+# Copyright 2024 Google Inc.  # noqa: D100
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
 # you may not use this file except in compliance with the License.
@@ -20,8 +20,8 @@ from internals import ot_process_reminders
 from internals.core_models import FeatureEntry, Stage
 
 
-class OTProcessRemindersTest(testing_config.CustomTestCase):
-    def setUp(self):
+class OTProcessRemindersTest(testing_config.CustomTestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         logging.disable(logging.CRITICAL)
         self.feature_1 = FeatureEntry(
             feature_type=1, name='feature one', summary='sum', category=1
@@ -115,7 +115,7 @@ class OTProcessRemindersTest(testing_config.CustomTestCase):
             },
         ]
 
-    def tearDown(self):
+    def tearDown(self):  # noqa: D102
         logging.disable(logging.NOTSET)
 
     def test_build_trials__normal(self):
@@ -176,7 +176,7 @@ class OTProcessRemindersTest(testing_config.CustomTestCase):
         )
 
     @mock.patch('framework.origin_trials_client.get_trials_list')
-    def test_get_trials(self, mock_get_trials_list):
+    def test_get_trials(self, mock_get_trials_list):  # noqa: D102
         mock_get_trials_list.return_value = (
             self.mock_get_trials_list_return_value
         )
@@ -236,7 +236,7 @@ class OTProcessRemindersTest(testing_config.CustomTestCase):
     def test_get_trials__null_ot_owner(
         self, mock_get_trials_list, mock_logging
     ):
-        """If OT owner is not set, any other contacts should still be notified."""
+        """If OT owner is not set, any other contacts should still be notified."""  # noqa: E501
         # OT owner email is not set.
         self.stage_2.ot_owner_email = None
         self.stage_2.put()

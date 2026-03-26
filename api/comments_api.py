@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-  # noqa: D100
 # Copyright 2021 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
@@ -33,7 +33,7 @@ from internals import approval_defs, notifier, notifier_helpers, slo
 from internals.review_models import Activity, Amendment, Gate
 
 
-def amendment_to_OAM(amendment: Amendment) -> AmendmentModel:
+def amendment_to_OAM(amendment: Amendment) -> AmendmentModel:  # noqa: D103
     return AmendmentModel(
         field_name=amendment.field_name,
         old_value=(amendment.old_value or '').strip('[]'),
@@ -41,7 +41,7 @@ def amendment_to_OAM(amendment: Amendment) -> AmendmentModel:
     )
 
 
-def activity_to_OAM(comment: Activity) -> ActivityModel:
+def activity_to_OAM(comment: Activity) -> ActivityModel:  # noqa: D103
     amendments_json = [
         amendment_to_OAM(amnd)
         for amnd in comment.amendments
@@ -150,7 +150,7 @@ class CommentsAPI(basehandlers.APIHandler):
         # Callers don't use the JSON response for this API call.
         return SuccessMessage(message='Done').to_dict()
 
-    def do_patch(self, **kwargs) -> dict[str, str]:
+    def do_patch(self, **kwargs) -> dict[str, str]:  # noqa: D102
         patch_request = PatchCommentRequest.from_dict(self.request.json)
         comment: Activity = Activity.get_by_id(patch_request.comment_id)
 

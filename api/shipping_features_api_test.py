@@ -1,4 +1,4 @@
-# Copyright 2025 Google Inc.
+# Copyright 2025 Google Inc.  # noqa: D100
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
 # you may not use this file except in compliance with the License.
@@ -29,8 +29,8 @@ MOCK_ENABLED_FEATURES_JSON5 = '{ "data": [] }'
 MOCK_CONTENT_FEATURES_CC = 'BASE_FEATURE...'
 
 
-class ShippingFeaturesAPITest(testing_config.CustomTestCase):
-    def setUp(self):
+class ShippingFeaturesAPITest(testing_config.CustomTestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         self.handler = shipping_features_api.ShippingFeaturesAPI()
         self.milestone = 120
 
@@ -81,7 +81,7 @@ class ShippingFeaturesAPITest(testing_config.CustomTestCase):
     @mock.patch('internals.feature_helpers.aggregate_shipping_features')
     @mock.patch('api.shipping_features_api.utils.get_chromium_file')
     def test_do_get__success(self, mock_get_chromium_file, mock_aggregate):
-        """Handler should fetch files and delegate logic to the helper function."""
+        """Handler should fetch files and delegate logic to the helper function."""  # noqa: E501
 
         def mock_get_file(url):
             if url == core_enums.ENABLED_FEATURES_FILE_URL:

@@ -1,4 +1,4 @@
-# Copyright 2020 Google Inc.
+# Copyright 2020 Google Inc.  # noqa: D100
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
 # you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ KEY_6 = 'cache_key|6'
 KEY_7 = 'cache_key|7'
 
 
-class RedisCacheFunctionTests(testing_config.CustomTestCase):
+class RedisCacheFunctionTests(testing_config.CustomTestCase):  # noqa: D101
     def test_set_and_get(self):
         """We can cache a value and retrieve it from the cache."""
         self.assertEqual(None, rediscache.get(KEY_1))
@@ -62,13 +62,13 @@ class RedisCacheFunctionTests(testing_config.CustomTestCase):
         rediscache.set_multi({KEY_5: '222'}, 3600)
         self.assertEqual({KEY_5: '222'}, rediscache.get_multi([KEY_5]))
 
-    def test_delete(self):
+    def test_delete(self):  # noqa: D102
         rediscache.set(KEY_6, '606')
         self.assertEqual('606', rediscache.get(KEY_6))
         rediscache.delete(KEY_6)
         self.assertEqual(None, rediscache.get(KEY_6))
 
-    def test_delete_keys_with_prefix(self):
+    def test_delete_keys_with_prefix(self):  # noqa: D102
         for x in range(17):
             key = PREFIX + str(x)
             rediscache.set(key, str(x))

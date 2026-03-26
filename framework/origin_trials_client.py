@@ -1,4 +1,4 @@
-# Copyright 2023 Google Inc.
+# Copyright 2023 Google Inc.  # noqa: D100
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
 # you may not use this file except in compliance with the License.
@@ -28,12 +28,12 @@ from internals.core_models import Stage
 from internals.data_types import OriginTrialInfo
 
 
-class UseCounterConfig(TypedDict):
+class UseCounterConfig(TypedDict):  # noqa: D101
     bucket_number: int
     histogram_id: str
 
 
-class RequestTrial(TypedDict):
+class RequestTrial(TypedDict):  # noqa: D101
     id: NotRequired[int]
     display_name: str
     start_milestone: str
@@ -50,7 +50,7 @@ class RequestTrial(TypedDict):
     blink_use_counter_config: NotRequired[UseCounterConfig]
 
 
-class InternalRegistrationConfig(TypedDict):
+class InternalRegistrationConfig(TypedDict):  # noqa: D101
     allow_public_suffix_subdomains: NotRequired[bool]
     approval_type: NotRequired[str]
     approval_buganizer_component_id: NotRequired[int]
@@ -59,12 +59,12 @@ class InternalRegistrationConfig(TypedDict):
     approval_group_email: NotRequired[str]
 
 
-class CreateOriginTrialRequest(TypedDict):
+class CreateOriginTrialRequest(TypedDict):  # noqa: D101
     trial: RequestTrial
     registration_config: InternalRegistrationConfig
 
 
-class SetUpTrialRequest(TypedDict):
+class SetUpTrialRequest(TypedDict):  # noqa: D101
     trial_id: int
     data_access_admin_group_name: str
     announcement_groups_owners: list[str]
@@ -126,7 +126,7 @@ def _get_trial_end_time(end_milestone: int) -> int:
         the HTTP status code is not successful.
       KeyError: If the response from Chromium schedule API is not in the expected
         format.
-    """
+    """  # noqa: E501
     milestone_plus_two = int(end_milestone) + 2
     mstone_info = utils.get_chromium_milestone_info(milestone_plus_two)
 
@@ -168,7 +168,7 @@ def _send_create_trial_request(
     Returns:
       Newly created origin trial ID if trial was created, any error text if there
       was an issue during the creation process.
-    """
+    """  # noqa: E501
     json: CreateOriginTrialRequest = {
         'trial': {
             'display_name': ot_stage.ot_display_name,
@@ -181,7 +181,7 @@ def _send_create_trial_request(
             'documentation_url': ot_stage.ot_documentation_url,
             'feedback_url': ot_stage.ot_feedback_submission_url,
             'intent_to_experiment_url': ot_stage.intent_thread_url,
-            'chromestatus_url': f'{settings.SITE_URL}feature/{ot_stage.feature_id}',
+            'chromestatus_url': f'{settings.SITE_URL}feature/{ot_stage.feature_id}',  # noqa: E501
             'allow_third_party_origins': ot_stage.ot_has_third_party_support,
             'type': (
                 'DEPRECATION'
@@ -294,7 +294,7 @@ def create_origin_trial(ot_stage: Stage) -> tuple[str | None, str | None]:
     Returns:
       Newly created origin trial ID if trial was created, any error text if there
       was an issue during the creation process.
-    """
+    """  # noqa: E501
     if settings.DEV_MODE:
         logging.info(
             'Creation request will not be sent to origin trials API in '

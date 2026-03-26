@@ -1,4 +1,4 @@
-# Copyright 2021 Google Inc.
+# Copyright 2021 Google Inc.  # noqa: D100
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
 # you may not use this file except in compliance with the License.
@@ -90,7 +90,7 @@ class XsrfTest(testing_config.CustomTestCase):
 
         xsrf.validate_token(token, 'user1@example.com')
 
-        # The clock of the GAE instance doing the checking might be slightly slow.
+        # The clock of the GAE instance doing the checking might be slightly slow.  # noqa: E501
         mock_time.return_value = test_time - 1
         xsrf.validate_token(token, 'user1@example.com')
 

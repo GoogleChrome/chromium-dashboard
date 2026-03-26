@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-  # noqa: D100
 # Copyright 2022 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
@@ -22,8 +22,8 @@ from internals import user_models
 test_app = flask.Flask(__name__)
 
 
-class BlinkComponentsAPITest(testing_config.CustomTestCase):
-    def setUp(self):
+class BlinkComponentsAPITest(testing_config.CustomTestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         self.handler = blink_components_api.BlinkComponentsAPI()
         self.request_path = '/api/v0/blinkcomponents'
 

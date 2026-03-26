@@ -1,4 +1,4 @@
-# Copyright 2026 Google Inc.
+# Copyright 2026 Google Inc.  # noqa: D100
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
 # you may not use this file except in compliance with the License.
@@ -42,8 +42,8 @@ def assert_matches_golden(
     test_case.assertMultiLineEqual(TESTDATA[golden_name], actual_output)
 
 
-class TestAIPromptTemplatesHandler(unittest.TestCase):
-    def setUp(self):
+class TestAIPromptTemplatesHandler(unittest.TestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         self.maxDiff = None
         return super().setUp()
 

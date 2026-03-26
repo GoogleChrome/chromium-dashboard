@@ -1,4 +1,4 @@
-# Copyright 2022 Google Inc.
+# Copyright 2022 Google Inc.  # noqa: D100
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
 # you may not use this file except in compliance with the License.
@@ -348,7 +348,7 @@ STAGE_TYPES_BY_INTENT_STAGE = {
 
 
 # The different types of intents used to dictate fields in the intent templates.
-class IntentDraftType(str, Enum):
+class IntentDraftType(str, Enum):  # noqa: D101
     PROTOTYPE = 'prototype'
     DEVELOPER_TESTING = 'developer_testing'
     EXPERIMENT = 'experiment'
@@ -634,14 +634,14 @@ OT_ACTIVATED = 6
 
 
 # Histogram IDs used for identifying origin trial use counters.
-class BlinkHistogramID(str, Enum):
+class BlinkHistogramID(str, Enum):  # noqa: D101
     web_feature = 'WEB_FEATURE'
     webdx_feature = 'WEBDX_FEATURE'
     css_property_id = 'CSS_PROPERTY_ID'
 
 
 # Statuses used for go/skyhook-dash
-class SkyhookDashStatus(str, Enum):
+class SkyhookDashStatus(str, Enum):  # noqa: D101
     FYI = 'FYI'
     APPROVED = 'APPROVED'
     DENIED = 'DENIED'
@@ -829,7 +829,7 @@ STANDARD_STD = 5
 STANDARD_MATURITY_CHOICES = {
     # No text for UNSET_STD.  One of the values below will be set on first edit.
     UNKNOWN_STD: 'Unknown standards status - check spec link for status',
-    PROPOSAL_STD: 'Proposal in a personal repository, no adoption from community',
+    PROPOSAL_STD: 'Proposal in a personal repository, no adoption from community',  # noqa: E501
     INCUBATION_STD: 'Specification being incubated in a Community Group',
     WORKINGDRAFT_STD: (
         'Specification currently under development in a Working Group'
@@ -903,7 +903,7 @@ PROPERTY_NAMES_TO_ENUM_DICTS = {
 
 
 # Valid values for FeatureEntry.ai_test_eval_run_status
-class AITestEvaluationStatus(int, Enum):
+class AITestEvaluationStatus(int, Enum):  # noqa: D101
     COMPLETE = 1
     IN_PROGRESS = 2
     FAILED = 3
@@ -947,5 +947,5 @@ def convert_enum_string_to_int(property_name, value):
     return -1
 
 
-def is_enum_field(property_name):
+def is_enum_field(property_name):  # noqa: D103
     return property_name in PROPERTY_NAMES_TO_ENUM_DICTS

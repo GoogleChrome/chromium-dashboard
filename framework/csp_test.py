@@ -1,4 +1,4 @@
-# Copyright 2020 Google Inc.
+# Copyright 2020 Google Inc.  # noqa: D100
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
 # you may not use this file except in compliance with the License.
@@ -22,8 +22,8 @@ from framework import csp
 test_app = flask.Flask(__name__)
 
 
-class CspTest(unittest.TestCase):
-    def setUp(self):
+class CspTest(unittest.TestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         csp.ENABLED = True
         csp.REPORT_ONLY = False
         csp.REPORT_URI = 'test'
@@ -95,7 +95,7 @@ class CspTest(unittest.TestCase):
         self.assertIn('12345', actual[csp.HEADER_KEY_REPORT_ONLY])
 
 
-class CspReporttest(unittest.TestCase):
+class CspReporttest(unittest.TestCase):  # noqa: D101
     @mock.patch('logging.error')
     def test_report_handler(self, mock_error):
         """The report handler logs something for each request."""

@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-  # noqa: D100
 # Copyright 2022 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
@@ -22,7 +22,7 @@ from internals.data_types import CHANGED_FIELDS_LIST_TYPE
 from internals.review_models import Gate
 
 
-class StagesAPI(basehandlers.EntitiesAPIHandler):
+class StagesAPI(basehandlers.EntitiesAPIHandler):  # noqa: D101
     def _create_gate_for_stage(
         self, feature_id: int, stage_id: int, gate_type: int
     ) -> None:

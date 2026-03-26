@@ -1,4 +1,4 @@
-# Copyright 2024 Google LLC
+# Copyright 2024 Google LLC  # noqa: D100
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -42,8 +42,8 @@ BASE_FEATURE_CREATE_BODY = {
 }
 
 
-class SpecMentorsAPITest(testing_config.CustomTestCase):
-    def setUp(self):
+class SpecMentorsAPITest(testing_config.CustomTestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         self.api_base = '/api/v0'
         self.request_path = f'{self.api_base}/spec_mentors'
         self.spec_mentors_handler = spec_mentors_api.SpecMentorsAPI()
@@ -56,7 +56,7 @@ class SpecMentorsAPITest(testing_config.CustomTestCase):
 
         self.created_features = []
 
-    def tearDown(self):
+    def tearDown(self):  # noqa: D102
         for feature in self.created_features:
             feature.key.delete()
         self.app_admin.key.delete()
@@ -65,7 +65,7 @@ class SpecMentorsAPITest(testing_config.CustomTestCase):
         rediscache.delete_keys_with_prefix('features')
         rediscache.delete_keys_with_prefix('FeatureEntries')
 
-    def createFeature(self, params) -> FeatureEntry:
+    def createFeature(self, params) -> FeatureEntry:  # noqa: D102
         with test_app.test_request_context(
             f'{self.api_base}/features/create',
             json=BASE_FEATURE_CREATE_BODY | params,
@@ -163,7 +163,7 @@ class SpecMentorsAPITest(testing_config.CustomTestCase):
                 self.spec_mentors_handler.do_get()
             self.assertEqual(cm.exception.code, 400)
 
-    def test_sorts_mentors_alphabetically(self):
+    def test_sorts_mentors_alphabetically(self):  # noqa: D102
         # Create a feature using the admin user.
         testing_config.sign_in(self.app_admin.email, 123567890)
 
@@ -196,7 +196,7 @@ class SpecMentorsAPITest(testing_config.CustomTestCase):
             ],
         )
 
-    def test_sorts_features_by_updated_date_recent_first(self):
+    def test_sorts_features_by_updated_date_recent_first(self):  # noqa: D102
         # Create a feature using the admin user.
         testing_config.sign_in(self.app_admin.email, 123567890)
 
@@ -245,7 +245,7 @@ class SpecMentorsAPITest(testing_config.CustomTestCase):
             ],
         )
 
-    def test_organizes_features_by_mentor(self):
+    def test_organizes_features_by_mentor(self):  # noqa: D102
         # Create a feature using the admin user.
         testing_config.sign_in(self.app_admin.email, 123567890)
 
@@ -266,7 +266,7 @@ class SpecMentorsAPITest(testing_config.CustomTestCase):
 
         # Unlike the other test expectations in this file, this one is saved to a JSON file so the  # noqa: E501
         # Playwright tests can use it as a mock API response. Because the real feature IDs are  # noqa: E501
-        # dynamically generated, we have to slot them into the right places here.
+        # dynamically generated, we have to slot them into the right places here.  # noqa: E501
         with open(
             os.path.join(
                 os.path.dirname(__file__),

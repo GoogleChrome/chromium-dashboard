@@ -1,4 +1,4 @@
-# Copyright 2024 Google LLC
+# Copyright 2024 Google LLC  # noqa: D100
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ from internals.core_models import FeatureEntry, MilestoneSet, Stage
 test_app = flask.Flask(__name__)
 
 
-def make_feature(name, created_tuple, status, shipped):
+def make_feature(name, created_tuple, status, shipped):  # noqa: D103
     fe = FeatureEntry(
         name=name,
         summary='sum',
@@ -46,8 +46,8 @@ def make_feature(name, created_tuple, status, shipped):
     return fe, fe.key.integer_id()
 
 
-class FeatureLatencyAPITest(testing_config.CustomTestCase):
-    def setUp(self):
+class FeatureLatencyAPITest(testing_config.CustomTestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         self.app_admin = user_models.AppUser(email='admin@example.com')
         self.app_admin.is_admin = True
         self.app_admin.put()
@@ -56,24 +56,42 @@ class FeatureLatencyAPITest(testing_config.CustomTestCase):
         self.request_path = '/api/v0/feature-latency'
 
         self.fe_1a, self.fe_1a_id = make_feature(
-            'has no milestone', (2023, 2, 18), ENABLED_BY_DEFAULT, None
+            'has no milestone',
+            (2023, 2, 18),
+            ENABLED_BY_DEFAULT,  # noqa: F405
+            None,  # noqa: F405
         )  # noqa: F405
         self.fe_1b, self.fe_1b_id = make_feature(
-            'not a launch status', (2023, 2, 18), NO_ACTIVE_DEV, 119
+            'not a launch status',
+            (2023, 2, 18),
+            NO_ACTIVE_DEV,  # noqa: F405
+            119,  # noqa: F405
         )  # noqa: F405
         self.fe_2, self.fe_2_id = make_feature(
-            'launched before start', (2022, 8, 19), ENABLED_BY_DEFAULT, 108
+            'launched before start',
+            (2022, 8, 19),
+            ENABLED_BY_DEFAULT,  # noqa: F405
+            108,  # noqa: F405
         )  # noqa: F405
         self.fe_3, self.fe_3_id = make_feature(
-            'launched in timeframe', (2023, 2, 18), ENABLED_BY_DEFAULT, 119
+            'launched in timeframe',
+            (2023, 2, 18),
+            ENABLED_BY_DEFAULT,  # noqa: F405
+            119,  # noqa: F405
         )  # noqa: F405
         self.fe_4, self.fe_4_id = make_feature(
-            'deleted feature', (2023, 2, 18), ENABLED_BY_DEFAULT, 119
+            'deleted feature',
+            (2023, 2, 18),
+            ENABLED_BY_DEFAULT,  # noqa: F405
+            119,  # noqa: F405
         )  # noqa: F405
         self.fe_4.deleted = True
         self.fe_4.put()
         self.fe_5, self.fe_5_id = make_feature(
-            'launched after end', (2023, 9, 29), ENABLED_BY_DEFAULT, 125
+            'launched after end',
+            (2023, 9, 29),
+            ENABLED_BY_DEFAULT,  # noqa: F405
+            125,  # noqa: F405
         )  # noqa: F405
 
     def test_get_date_range__unspecified(self):

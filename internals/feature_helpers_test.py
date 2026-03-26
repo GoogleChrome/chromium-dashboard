@@ -1,4 +1,4 @@
-# Copyright 2020 Google Inc.
+# Copyright 2020 Google Inc.  # noqa: D100
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
 # you may not use this file except in compliance with the License.
@@ -60,8 +60,8 @@ BASE_FEATURE(kFeature9Disabled, base::FEATURE_DISABLED_BY_DEFAULT);
 """
 
 
-class FeatureHelpersTest(testing_config.CustomTestCase):
-    def setUp(self):
+class FeatureHelpersTest(testing_config.CustomTestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         self.feature_2 = FeatureEntry(
             name='feature b',
             summary='sum',
@@ -80,7 +80,7 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
             owner_emails=['feature_owner@example.com'],
             category=1,
             updated=datetime(2020, 3, 1),
-            feature_type=FEATURE_TYPE_INCUBATE_ID,
+            feature_type=FEATURE_TYPE_INCUBATE_ID,  # noqa: F405
         )  # noqa: F405
         self.feature_1.put()
 
@@ -91,7 +91,7 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
             impl_status_chrome=2,
             owner_emails=['feature_owner@example.com'],
             updated=datetime(2020, 1, 1),
-            feature_type=FEATURE_TYPE_CODE_CHANGE_ID,
+            feature_type=FEATURE_TYPE_CODE_CHANGE_ID,  # noqa: F405
         )  # noqa: F405
         self.feature_3.put()
 
@@ -102,7 +102,7 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
             impl_status_chrome=2,
             owner_emails=['feature_owner@example.com'],
             updated=datetime(2020, 2, 1),
-            feature_type=FEATURE_TYPE_DEPRECATION_ID,
+            feature_type=FEATURE_TYPE_DEPRECATION_ID,  # noqa: F405
         )  # noqa: F405
         self.feature_4.put()
 
@@ -241,7 +241,7 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
         # Cache one to try to trigger the bug.
         feature_helpers.get_by_ids([self.feature_2.key.integer_id()])
 
-        # Now do the lookup, but it would cache feature_2 at the key for feature_3.
+        # Now do the lookup, but it would cache feature_2 at the key for feature_3.  # noqa: E501
         feature_helpers.get_by_ids(
             [
                 self.feature_4.key.integer_id(),
@@ -273,7 +273,7 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
         self.assertEqual([], actual)
 
     def test_get_feature_names_by_ids__cache_miss(self):
-        """We can load feature names from datastore, and cache them for later."""
+        """We can load feature names from datastore, and cache them for later."""  # noqa: E501
         actual = feature_helpers.get_feature_names_by_ids(
             [self.feature_1.key.integer_id(), self.feature_2.key.integer_id()]
         )
@@ -344,7 +344,7 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
             [self.feature_2.key.integer_id()]
         )
 
-        # Now do the lookup, but it would cache feature_2 at the key for feature_3.
+        # Now do the lookup, but it would cache feature_2 at the key for feature_3.  # noqa: E501
         feature_helpers.get_feature_names_by_ids(
             [
                 self.feature_4.key.integer_id(),
@@ -633,7 +633,7 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
         self.assertEqual(2, len(features))
 
     def test_get_features_in_release_notes__wp_need_enterprise_approval(self):
-        """We include WP features only if enterprise shipping gate is approved."""
+        """We include WP features only if enterprise shipping gate is approved."""  # noqa: E501
         self._create_wp_stages_and_gates()
         cache_key = '%s|%s|%s' % (
             FeatureEntry.SEARCH_CACHE_KEY,
@@ -848,13 +848,13 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
     def test_should_appear_on_roadmap__no_inactive(self):
         """The roadmap does not include inactive feature entries."""
         for status in [
-            PROPOSED,
-            IN_DEVELOPMENT,
-            BEHIND_A_FLAG,
+            PROPOSED,  # noqa: F405
+            IN_DEVELOPMENT,  # noqa: F405
+            BEHIND_A_FLAG,  # noqa: F405
             ENABLED_BY_DEFAULT,  # noqa: F405
-            DEPRECATED,
-            REMOVED,
-            ORIGIN_TRIAL,
+            DEPRECATED,  # noqa: F405
+            REMOVED,  # noqa: F405
+            ORIGIN_TRIAL,  # noqa: F405
         ]:  # noqa: F405
             self.assertTrue(
                 feature_helpers._should_appear_on_roadmap(
@@ -873,25 +873,25 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
         """The roadmap does not include enterprise features."""
         self.assertTrue(
             feature_helpers._should_appear_on_roadmap(
-                FeatureEntry(feature_type=FEATURE_TYPE_INCUBATE_ID)
+                FeatureEntry(feature_type=FEATURE_TYPE_INCUBATE_ID)  # noqa: F405
             )
         )  # noqa: F405
 
         self.assertTrue(
             feature_helpers._should_appear_on_roadmap(
-                FeatureEntry(feature_type=FEATURE_TYPE_EXISTING_ID)
+                FeatureEntry(feature_type=FEATURE_TYPE_EXISTING_ID)  # noqa: F405
             )
         )  # noqa: F405
 
         self.assertTrue(
             feature_helpers._should_appear_on_roadmap(
-                FeatureEntry(feature_type=FEATURE_TYPE_DEPRECATION_ID)
+                FeatureEntry(feature_type=FEATURE_TYPE_DEPRECATION_ID)  # noqa: F405
             )
         )  # noqa: F405
 
         self.assertFalse(
             feature_helpers._should_appear_on_roadmap(
-                FeatureEntry(feature_type=FEATURE_TYPE_ENTERPRISE_ID)
+                FeatureEntry(feature_type=FEATURE_TYPE_ENTERPRISE_ID)  # noqa: F405
             )
         )  # noqa: F405
 
@@ -924,7 +924,7 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
     @mock.patch('internals.feature_helpers.get_current_milestone_info')
     @mock.patch('internals.feature_helpers.datetime')
     def test_get_stale_features__none_stale(self, mock_dt, mock_mstone_info):
-        """No features are stale, so the function should return an empty list."""
+        """No features are stale, so the function should return an empty list."""  # noqa: E501
         mock_dt.now.return_value = datetime(2023, 1, 1)
         mock_mstone_info.return_value = {'mstone': '100'}
 
@@ -944,7 +944,7 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
     def test_get_stale_features__stale_but_no_relevant_milestone(
         self, mock_dt, mock_mstone_info
     ):
-        """Stale features with no milestones in the upcoming window are ignored."""
+        """Stale features with no milestones in the upcoming window are ignored."""  # noqa: E501
         mock_dt.now.return_value = datetime(2023, 1, 1)
         mock_mstone_info.return_value = {'mstone': '100'}
 
@@ -1131,8 +1131,8 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
         self.assertEqual('shipped_milestone', field)
 
 
-class FeatureHelpersFilteringTest(testing_config.CustomTestCase):
-    def setUp(self):
+class FeatureHelpersFilteringTest(testing_config.CustomTestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         self.owner_email = 'owner@example.com'
         self.editor_email = 'editor@example.com'
         self.creator_email = 'creator@example.com'
@@ -1220,7 +1220,7 @@ class FeatureHelpersFilteringTest(testing_config.CustomTestCase):
         self.assertEqual(['Public feature'], self._get_names(actual))
 
     def test_filter_unlisted__user_with_no_access(self):
-        """A logged-in user should not see unlisted features they don't own/edit."""
+        """A logged-in user should not see unlisted features they don't own/edit."""  # noqa: E501
         testing_config.sign_in(self.other_user_email, 1)
         actual = feature_helpers.filter_unlisted(self.all_feature_entries)
         self.assertEqual(1, len(actual))
@@ -1272,7 +1272,7 @@ class FeatureHelpersFilteringTest(testing_config.CustomTestCase):
         self.assertEqual(['Public feature'], self._get_names(actual))
 
     def test_filter_unlisted_formatted__user_is_owner(self):
-        """A logged-in user should see unlisted features they own (formatted)."""
+        """A logged-in user should see unlisted features they own (formatted)."""  # noqa: E501
         testing_config.sign_in(self.owner_email, 1)
         actual = feature_helpers.filter_unlisted_formatted(
             self.all_formatted_features
@@ -1321,7 +1321,7 @@ class FeatureHelpersFilteringTest(testing_config.CustomTestCase):
     @mock.patch('internals.feature_helpers.permissions.can_view_feature')
     def test_filter_confidential__some_visible(self, mock_can_view):
         """Returns a subset of features that the user can view."""
-        # The mock will return True for the first and third features in the list.
+        # The mock will return True for the first and third features in the list.  # noqa: E501
         mock_can_view.side_effect = [True, False, True]
         actual = feature_helpers.filter_confidential(self.all_feature_entries)
         self.assertEqual(2, len(actual))
@@ -1366,8 +1366,8 @@ class FeatureHelpersFilteringTest(testing_config.CustomTestCase):
         )
 
 
-class ShippingFeatureHelpersTest(testing_config.CustomTestCase):
-    def setUp(self):
+class ShippingFeatureHelpersTest(testing_config.CustomTestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         self.milestone = 120
 
         # Feature 1: Complete.
@@ -1484,7 +1484,7 @@ class ShippingFeatureHelpersTest(testing_config.CustomTestCase):
             name='Feature 5 (PSA)',
             summary='sum',
             category=1,
-            feature_type=FEATURE_TYPE_CODE_CHANGE_ID,
+            feature_type=FEATURE_TYPE_CODE_CHANGE_ID,  # noqa: F405
         )  # noqa: F405
         self.feature_5.put()
         self.stage_5 = Stage(

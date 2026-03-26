@@ -1,4 +1,4 @@
-import os
+import os  # noqa: D100
 
 from flask import session
 
@@ -203,7 +203,7 @@ class User(object):
         return (os.environ.get('USER_IS_ADMIN', '0')) == '1'
 
 
-def get_current_user():
+def get_current_user():  # noqa: D103
     if settings.UNIT_TEST_MODE:
         user_via_env = None
         if os.environ.get('USER_EMAIL', '') != '':
@@ -229,7 +229,7 @@ def get_current_user():
     return None  # User is not signed in.
 
 
-def is_current_user_admin():
+def is_current_user_admin():  # noqa: D103
     return False
 
 

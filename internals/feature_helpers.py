@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-  # noqa: D100
 # Copyright 2022 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
@@ -30,7 +30,7 @@ from internals.review_models import Gate, Vote
 from internals.stage_helpers import organize_all_stages_by_feature
 
 
-class ShippingFeatureInfo(TypedDict):
+class ShippingFeatureInfo(TypedDict):  # noqa: D101
     name: str
     id: int
     chromestatus_url: str
@@ -43,7 +43,7 @@ class ShippingFeatureInfo(TypedDict):
 
 
 # Enum representing the criteria that is missing for a feature that is shipping.
-class Criteria(str, Enum):  # noqa: F405
+class Criteria(str, Enum):  # noqa: D101, F405
     # Intent to Ship thread URL is missing.
     INTENT_TO_SHIP_MISSING = 'i2s'
     # API Owner approvals have not been obtained on the ship gate.
@@ -113,7 +113,7 @@ def filter_confidential_formatted(feature_list: list[dict]) -> list[dict]:
 
 
 def filter_unpublished_formatted(feature_list: list[dict]) -> list[dict]:
-    """Filters a feature list to display only features marked ready to publish."""
+    """Filters a feature list to display only features marked ready to publish."""  # noqa: E501
     user = users.get_current_user()
     if permissions.is_google_or_chromium_account(
         user
@@ -133,7 +133,7 @@ def filter_confidential(feature_list: list[FeatureEntry]) -> list[FeatureEntry]:
     return [f for f in feature_list if permissions.can_view_feature(user, f)]
 
 
-def get_entries_by_id_async(ids) -> Future | None:
+def get_entries_by_id_async(ids) -> Future | None:  # noqa: D103
     if ids:
         q = FeatureEntry.query(
             FeatureEntry.key.IN([ndb.Key('FeatureEntry', id) for id in ids])
@@ -143,7 +143,7 @@ def get_entries_by_id_async(ids) -> Future | None:
     return None
 
 
-def get_future_results(async_features: Future | None) -> list[FeatureEntry]:
+def get_future_results(async_features: Future | None) -> list[FeatureEntry]:  # noqa: D103
     if async_features is None:
         return []
     return async_features.result()
@@ -188,7 +188,7 @@ def _filter_out_wp_features_lacking_enterprise_approval(
     return result
 
 
-def get_features_in_release_notes(milestone: int):
+def get_features_in_release_notes(milestone: int):  # noqa: D103
     cache_key = '%s|%s|%s' % (
         FeatureEntry.SEARCH_CACHE_KEY,
         'release_notes_milestone',
@@ -206,18 +206,18 @@ def get_features_in_release_notes(milestone: int):
         FeatureEntry.deleted == False,  # noqa: E712
         ndb.OR(
             FeatureEntry.enterprise_impact > ENTERPRISE_IMPACT_NONE,  # noqa: F405
-            FeatureEntry.feature_type == FEATURE_TYPE_ENTERPRISE_ID,
+            FeatureEntry.feature_type == FEATURE_TYPE_ENTERPRISE_ID,  # noqa: F405
         ),  # noqa: F405
     ).fetch_async(keys_only=True)
     stages = Stage.query(
         Stage.archived == False,  # noqa: E712
         Stage.stage_type.IN(
             [
-                STAGE_BLINK_SHIPPING,
+                STAGE_BLINK_SHIPPING,  # noqa: F405
                 STAGE_PSA_SHIPPING,  # noqa: F405
-                STAGE_FAST_SHIPPING,
-                STAGE_DEP_SHIPPING,
-                STAGE_ENT_ROLLOUT,
+                STAGE_FAST_SHIPPING,  # noqa: F405
+                STAGE_DEP_SHIPPING,  # noqa: F405
+                STAGE_ENT_ROLLOUT,  # noqa: F405
             ]
         ),  # noqa: F405
         ndb.OR(
@@ -323,7 +323,7 @@ def get_in_milestone(
                 Stage.stage_type == STAGE_BLINK_SHIPPING,  # noqa: F405
                 Stage.stage_type == STAGE_PSA_SHIPPING,  # noqa: F405
                 Stage.stage_type == STAGE_FAST_SHIPPING,  # noqa: F405
-                Stage.stage_type == STAGE_DEP_SHIPPING,
+                Stage.stage_type == STAGE_DEP_SHIPPING,  # noqa: F405
             ),
         )  # noqa: F405
         q = q.filter()
@@ -337,10 +337,10 @@ def get_in_milestone(
             Stage.archived == False,  # noqa: E712
             Stage.stage_type.IN(
                 (
-                    STAGE_BLINK_SHIPPING,
+                    STAGE_BLINK_SHIPPING,  # noqa: F405
                     STAGE_PSA_SHIPPING,  # noqa: F405
-                    STAGE_FAST_SHIPPING,
-                    STAGE_DEP_SHIPPING,
+                    STAGE_FAST_SHIPPING,  # noqa: F405
+                    STAGE_DEP_SHIPPING,  # noqa: F405
                 )
             ),
         )  # noqa: F405
@@ -352,9 +352,9 @@ def get_in_milestone(
             Stage.archived == False,  # noqa: E712
             Stage.stage_type.IN(
                 (
-                    STAGE_BLINK_ORIGIN_TRIAL,
+                    STAGE_BLINK_ORIGIN_TRIAL,  # noqa: F405
                     STAGE_FAST_ORIGIN_TRIAL,  # noqa: F405
-                    STAGE_DEP_DEPRECATION_TRIAL,
+                    STAGE_DEP_DEPRECATION_TRIAL,  # noqa: F405
                 )
             ),
         )  # noqa: F405
@@ -367,9 +367,9 @@ def get_in_milestone(
             Stage.archived == False,  # noqa: E712
             Stage.stage_type.IN(
                 (
-                    STAGE_BLINK_ORIGIN_TRIAL,
+                    STAGE_BLINK_ORIGIN_TRIAL,  # noqa: F405
                     STAGE_FAST_ORIGIN_TRIAL,  # noqa: F405
-                    STAGE_DEP_DEPRECATION_TRIAL,
+                    STAGE_DEP_DEPRECATION_TRIAL,  # noqa: F405
                 )
             ),
         )  # noqa: F405
@@ -382,9 +382,9 @@ def get_in_milestone(
             Stage.archived == False,  # noqa: E712
             Stage.stage_type.IN(
                 (
-                    STAGE_BLINK_ORIGIN_TRIAL,
+                    STAGE_BLINK_ORIGIN_TRIAL,  # noqa: F405
                     STAGE_FAST_ORIGIN_TRIAL,  # noqa: F405
-                    STAGE_DEP_DEPRECATION_TRIAL,
+                    STAGE_DEP_DEPRECATION_TRIAL,  # noqa: F405
                 )
             ),
         )  # noqa: F405
@@ -396,10 +396,10 @@ def get_in_milestone(
             Stage.archived == False,  # noqa: E712
             Stage.stage_type.IN(
                 (
-                    STAGE_BLINK_DEV_TRIAL,
+                    STAGE_BLINK_DEV_TRIAL,  # noqa: F405
                     STAGE_PSA_DEV_TRIAL,  # noqa: F405
-                    STAGE_FAST_DEV_TRIAL,
-                    STAGE_DEP_DEV_TRIAL,
+                    STAGE_FAST_DEV_TRIAL,  # noqa: F405
+                    STAGE_DEP_DEV_TRIAL,  # noqa: F405
                 )
             ),
         )  # noqa: F405
@@ -412,10 +412,10 @@ def get_in_milestone(
             Stage.archived == False,  # noqa: E712
             Stage.stage_type.IN(
                 (
-                    STAGE_BLINK_DEV_TRIAL,
+                    STAGE_BLINK_DEV_TRIAL,  # noqa: F405
                     STAGE_PSA_DEV_TRIAL,  # noqa: F405
-                    STAGE_FAST_DEV_TRIAL,
-                    STAGE_DEP_DEV_TRIAL,
+                    STAGE_FAST_DEV_TRIAL,  # noqa: F405
+                    STAGE_DEP_DEV_TRIAL,  # noqa: F405
                 )
             ),
         )  # noqa: F405
@@ -427,7 +427,7 @@ def get_in_milestone(
         q = Stage.query(
             Stage.rollout_milestone == milestone,
             Stage.archived == False,  # noqa: E712
-            Stage.stage_type == STAGE_ENT_ROLLOUT,
+            Stage.stage_type == STAGE_ENT_ROLLOUT,  # noqa: F405
         )  # noqa: F405
         q = q.filter()
         rollout_future = q.fetch_async()
@@ -556,7 +556,7 @@ def _should_appear_on_roadmap(fe: FeatureEntry) -> bool:
     return (
         not fe.deleted
         and fe.impl_status_chrome not in INACTIVE_IMPL_STATUSES  # noqa: F405
-        and fe.feature_type in ROADMAP_FEATURE_TYPES
+        and fe.feature_type in ROADMAP_FEATURE_TYPES  # noqa: F405
     )  # noqa: F405
 
 
@@ -791,7 +791,7 @@ def get_features_by_impl_status(
                 section = [
                     f
                     for f in section
-                    if f.feature_type != FEATURE_TYPE_ENTERPRISE_ID
+                    if f.feature_type != FEATURE_TYPE_ENTERPRISE_ID  # noqa: F405
                 ]  # noqa: E501, F405
                 section = [
                     converters.feature_entry_to_json_basic(
@@ -841,7 +841,7 @@ def _map_relevant_milestones(
             )
 
 
-def get_stale_features() -> list[tuple[FeatureEntry, int, str]]:
+def get_stale_features() -> list[tuple[FeatureEntry, int, str]]:  # noqa: D103
     current_milestone_info = get_current_milestone_info('current')
 
     min_mstone = int(current_milestone_info['mstone'])
@@ -1001,7 +1001,8 @@ def validate_shipping_criteria(
 
     # Check API Owner Gate
     api_owner_gate: Gate | None = Gate.query(
-        Gate.stage_id == stage.key.integer_id(), Gate.gate_type == GATE_API_SHIP
+        Gate.stage_id == stage.key.integer_id(),
+        Gate.gate_type == GATE_API_SHIP,  # noqa: F405
     ).get()  # noqa: F405
 
     if api_owner_gate is None or api_owner_gate.state != Vote.APPROVED:

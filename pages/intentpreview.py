@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-  # noqa: D100
 # Copyright 2021 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
@@ -28,11 +28,11 @@ VIEW_FEATURE_URL = '/feature'
 
 
 class IntentEmailPreviewHandler(basehandlers.FlaskHandler):
-    """Show a preview of an intent email. Used for testing the intent template."""
+    """Show a preview of an intent email. Used for testing the intent template."""  # noqa: E501
 
     TEMPLATE_PATH = 'blink/intent_to_implement.html'
 
-    def get_template_data(self, **kwargs):
+    def get_template_data(self, **kwargs):  # noqa: D102
         f = self.get_validated_entity(kwargs.get('feature_id'), FeatureEntry)
         s = self.get_validated_entity(kwargs.get('stage_id'), Stage)
         intent_type = INTENT_DRAFT_TYPES_BY_STAGE_TYPE[s.stage_type]

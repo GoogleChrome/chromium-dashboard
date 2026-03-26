@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-  # noqa: D100
 # Copyright 2021 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
@@ -59,9 +59,9 @@ ALLOWED_SCHEMES = [None, 'http', 'https']
 M = TypeVar('M', bound=ndb.Model)
 
 
-class BaseHandler(flask.views.MethodView):
+class BaseHandler(flask.views.MethodView):  # noqa: D101
     @property
-    def request(self):
+    def request(self):  # noqa: D102
         return flask.request
 
     def abort(
@@ -101,7 +101,7 @@ class BaseHandler(flask.views.MethodView):
         """Support webapp2-style, e.g., return self.redirect(url)."""
         return flask.redirect(url)
 
-    def get_current_user(self, required=False):
+    def get_current_user(self, required=False):  # noqa: D102
         # TODO(jrobbins): oauth support
         current_user = users.get_current_user()
 
@@ -228,19 +228,19 @@ class BaseHandler(flask.views.MethodView):
         return entity
 
 
-class APIHandler(BaseHandler):
+class APIHandler(BaseHandler):  # noqa: D101
     def get_headers(self):
         """Add CORS and Chrome Frame to all responses."""
         session.permanent = True
         headers = {
-            'Strict-Transport-Security': 'max-age=63072000; includeSubDomains; preload',
+            'Strict-Transport-Security': 'max-age=63072000; includeSubDomains; preload',  # noqa: E501
             'X-UA-Compatible': 'IE=Edge,chrome=1',
             'X-Frame-Options': 'DENY',
         }
         return headers
 
     def defensive_jsonify(self, handler_data):
-        """Return a Flask Response object with a JSON string prefixed with junk."""
+        """Return a Flask Response object with a JSON string prefixed with junk."""  # noqa: E501
         body = json.dumps(handler_data, default=str)
         return flask.current_app.response_class(
             XSSI_PREFIX + body, mimetype=flask.current_app.json.mimetype
@@ -338,7 +338,7 @@ class APIHandler(BaseHandler):
         self.abort(405, valid_methods=self._get_valid_methods())
 
     def do_delete(self, **kwargs):
-        """Subclasses should implement this method to handle a DELETE request."""
+        """Subclasses should implement this method to handle a DELETE request."""  # noqa: E501
         self.abort(405, valid_methods=self._get_valid_methods())
 
     def validate_token(self, token, email):
@@ -347,7 +347,7 @@ class APIHandler(BaseHandler):
         xsrf.validate_token(token, email)
 
     def require_signed_in_and_xsrf_token(self):
-        """Every API POST, PUT, or DELETE must be signed in with an XSRF token."""
+        """Every API POST, PUT, or DELETE must be signed in with an XSRF token."""  # noqa: E501
         user = self.get_current_user(required=True)
         token = self.request.headers.get('X-Xsrf-Token')
         if not token:
@@ -375,7 +375,7 @@ class EntitiesAPIHandler(APIHandler):
             msg=(f'Bad value for field {field} of type {field_type}: {value}'),
         )
 
-    def extract_link(self, s):
+    def extract_link(self, s):  # noqa: D102
         if s:
             match_obj = URL_RE.search(str(s))
             if match_obj and match_obj.group('scheme') in ALLOWED_SCHEMES:
@@ -385,7 +385,7 @@ class EntitiesAPIHandler(APIHandler):
                 return link
         return None
 
-    def split_list_input(
+    def split_list_input(  # noqa: D102
         self,
         field: str,
         field_type: str,
@@ -400,7 +400,7 @@ class EntitiesAPIHandler(APIHandler):
             self.abort_invalid_data_type(field, field_type, value)
         return formatted_list
 
-    def update_field_value(
+    def update_field_value(  # noqa: D102
         self,
         entity: FeatureEntry | MilestoneSet | Stage,
         field: str,
@@ -513,7 +513,7 @@ class EntitiesAPIHandler(APIHandler):
             # Filter out any URLs that do not conform to the proper pattern.
             return [self.extract_link(link) for link in list_val if link]
         elif field_type == 'int':
-            # Int fields can be unset by giving null or nothing in the input field.
+            # Int fields can be unset by giving null or nothing in the input field.  # noqa: E501
             if value == '' or value is None:
                 return None
             try:
@@ -525,7 +525,7 @@ class EntitiesAPIHandler(APIHandler):
         return str(value)
 
 
-class FlaskHandler(BaseHandler):
+class FlaskHandler(BaseHandler):  # noqa: D101
     TEMPLATE_PATH: Optional[str] = None  # Subclasses should define this.
     HTTP_CACHE_TYPE: Optional[str] = (
         None  # Subclasses can use 'public' or 'private'  # noqa: E501
@@ -548,7 +548,7 @@ class FlaskHandler(BaseHandler):
         """Add CORS and Chrome Frame to all responses."""
         session.permanent = True
         headers = {
-            'Strict-Transport-Security': 'max-age=63072000; includeSubDomains; preload',
+            'Strict-Transport-Security': 'max-age=63072000; includeSubDomains; preload',  # noqa: E501
             'X-UA-Compatible': 'IE=Edge,chrome=1',
             'X-Frame-Options': 'DENY',
         }
@@ -614,7 +614,7 @@ class FlaskHandler(BaseHandler):
             common_data['xsrf_token_expires'] = 0
         return common_data
 
-    def render(self, template_data, template_path):
+    def render(self, template_data, template_path):  # noqa: D102
         return render_template(template_path, **template_data)
 
     def get(self, *args, **kwargs):
@@ -725,7 +725,7 @@ class FlaskHandler(BaseHandler):
         return [x.strip() for x in re.split(delim, input_text) if x.strip()]
 
     def split_emails(self, param_name):
-        """Split one input field and construct objects for ndb.StringProperty()."""
+        """Split one input field and construct objects for ndb.StringProperty()."""  # noqa: E501
         addr_strs = self.split_input(param_name, delim=',')
         emails = [str(addr) for addr in addr_strs]
         return emails
@@ -741,17 +741,17 @@ class FlaskHandler(BaseHandler):
 
         return None
 
-    def parse_link(self, param_name):
+    def parse_link(self, param_name):  # noqa: D102
         s = flask.request.form.get(param_name) or None
         return self._extract_link(s)
 
-    def parse_links(self, param_name):
+    def parse_links(self, param_name):  # noqa: D102
         strings = self.split_input(param_name)
         links = [self._extract_link(s) for s in strings]
         links = [link for link in links if link]  # Drop any bad ones.
         return links
 
-    def parse_int(self, param_name):
+    def parse_int(self, param_name):  # noqa: D102
         param = flask.request.form.get(param_name) or None
         if param:
             param = int(param)
@@ -764,7 +764,7 @@ class Redirector(FlaskHandler):
     {'location': '/path/to/page'}.
     """  # noqa: D205
 
-    def get_template_data(self, **kwargs):
+    def get_template_data(self, **kwargs):  # noqa: D102
         location = kwargs['location'] if 'location' in kwargs else '/'
         return flask.redirect(location), self.get_headers()
 
@@ -809,7 +809,7 @@ class SPAHandler(FlaskHandler):
 
     TEMPLATE_PATH = 'spa.html'
 
-    def get_template_data(self, **defaults):
+    def get_template_data(self, **defaults):  # noqa: D102
         return get_spa_template_data(self, defaults)
 
 
@@ -861,7 +861,7 @@ def get_spa_template_data(handler_obj, defaults):
             if not user or not permissions.can_admin_site(user):
                 handler_obj.abort(403, msg='Cannot perform admin actions')
 
-        # Validate the user has a google or chromium account and redirect if needed.
+        # Validate the user has a google or chromium account and redirect if needed.  # noqa: E501
         if defaults.get('is_enterprise_page'):
             user = handler_obj.get_current_user()
             # Should have already done the require_signin check.
@@ -903,7 +903,7 @@ def FlaskApplication(import_name, routes, pattern_base='', debug=False):
         classname = route.handler_class.__name__
         app.add_url_rule(
             pattern_base + route.path,
-            endpoint=f'{classname}{i}',  # We don't use it, but it must be unique.
+            endpoint=f'{classname}{i}',  # We don't use it, but it must be unique.  # noqa: E501
             view_func=route.handler_class.as_view(classname),
             defaults=route.defaults,
         )

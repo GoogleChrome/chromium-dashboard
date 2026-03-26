@@ -1,4 +1,4 @@
-# Copyright 2024 Google Inc.
+# Copyright 2024 Google Inc.  # noqa: D100
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
 # you may not use this file except in compliance with the License.
@@ -102,7 +102,7 @@ class ReviewLatencyAPI(basehandlers.APIHandler):
         return features
 
     def earliest_request(self, feature_gates: list[Gate]) -> datetime:
-        """Return the time of the earliest reivew request among the given gates."""
+        """Return the time of the earliest reivew request among the given gates."""  # noqa: E501
         if not feature_gates:
             raise ValueError('There should be some gates for every feature')
         request_dates = [
@@ -136,7 +136,7 @@ class ReviewLatencyAPI(basehandlers.APIHandler):
         pairs = sorted(pairs)  # Sort by gate_type for non-flaky testing.
         return pairs
 
-    def convert_to_result_format(
+    def convert_to_result_format(  # noqa: D102
         self,
         latencies_by_fid: dict[int, list[tuple[int, int]]],
         sorted_features: list[FeatureEntry],

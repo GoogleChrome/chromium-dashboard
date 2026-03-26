@@ -1,4 +1,4 @@
-# Copyright 2022 Google LLC All Rights Reserved.
+# Copyright 2022 Google LLC All Rights Reserved.  # noqa: D100
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,24 +21,24 @@ import settings
 from framework import basehandlers
 
 
-class MemoryCache(Cache):
+class MemoryCache(Cache):  # noqa: D101
     _CACHE: dict[Any, Any] = {}
 
-    def get(self, url):
+    def get(self, url):  # noqa: D102
         return MemoryCache._CACHE.get(url)
 
-    def set(self, url, content):
+    def set(self, url, content):  # noqa: D102
         MemoryCache._CACHE[url] = content
 
 
 class BackupExportHandler(basehandlers.FlaskHandler):
     """Triggers a new Datastore export."""
 
-    def get_template_data(self, **kwargs):
+    def get_template_data(self, **kwargs):  # noqa: D102
         self.require_cron_header()
         bucket = f'gs://{settings.BACKUP_BUCKET}'
         # The default cache (file_cache) is unavailable when using oauth2client >= 4.0.0 or google-auth,  # noqa: E501
-        # and it will log worrisome messages unless given another interface to use.
+        # and it will log worrisome messages unless given another interface to use.  # noqa: E501
         datastore = build('datastore', 'v1', cache=MemoryCache())
         project_id = settings.APP_ID
 

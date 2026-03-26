@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-  # noqa: D100
 # Copyright 2023 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
@@ -25,8 +25,8 @@ from internals import user_models
 test_app = flask.Flask(__name__)
 
 
-class ComponentsUsersAPITest(testing_config.CustomTestCase):
-    def setUp(self):
+class ComponentsUsersAPITest(testing_config.CustomTestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         self.handler = components_users.ComponentsUsersAPI()
         self.app_admin = user_models.AppUser(email='admin@example.com')
         self.app_admin.is_admin = True
@@ -74,7 +74,7 @@ class ComponentsUsersAPITest(testing_config.CustomTestCase):
 
         self.request_path = '/api/v0/componentsusers'
 
-    def test_do_get(self):
+    def test_do_get(self):  # noqa: D102
         testing_config.sign_in('admin@example.com', 123567890)
         with test_app.test_request_context(self.request_path):
             response = self.handler.do_get()

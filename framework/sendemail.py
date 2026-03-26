@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-  # noqa: D100
 # Copyright 2021 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
@@ -148,7 +148,7 @@ def handle_bounce():
     return {'message': 'Done'}
 
 
-def receive(bounce_message):
+def receive(bounce_message):  # noqa: D103
     email_addr = bounce_message.original.get('to')
     subject = 'Mail to %r bounced' % email_addr
     logging.info(subject)

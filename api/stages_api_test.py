@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-  # noqa: D100
 # Copyright 2022 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
@@ -29,8 +29,8 @@ from internals.user_models import AppUser
 test_app = flask.Flask(__name__)
 
 
-class StagesAPITest(testing_config.CustomTestCase):
-    def setUp(self):
+class StagesAPITest(testing_config.CustomTestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         self.now = datetime.now()
         self.feature_owner = AppUser(email='feature_owner@example.com')
         self.feature_owner.put()
@@ -617,7 +617,7 @@ class StagesAPITest(testing_config.CustomTestCase):
 
     @mock.patch('flask.abort')
     def test_patch__ot_milestones_during_creation(self, mock_abort):
-        """Raises 400 if OT start milestone is updated during OT creation process."""  # noqa: D200
+        """Raises 400 if OT start milestone is updated during OT creation process."""  # noqa: D200, E501
         testing_config.sign_in('feature_owner@example.com', 123)
         json = {
             'id': 10,
@@ -638,12 +638,12 @@ class StagesAPITest(testing_config.CustomTestCase):
                 self.handler.do_patch(feature_id=1, stage_id=10)
         mock_abort.assert_called_once_with(
             400,
-            description='Cannot edit OT milestones while creation is in progress.',
+            description='Cannot edit OT milestones while creation is in progress.',  # noqa: E501
         )
 
     @mock.patch('flask.abort')
     def test_patch__ot_end_milestone_during_creation(self, mock_abort):
-        """Raises 400 if OT end milestone is updated during OT creation process."""
+        """Raises 400 if OT end milestone is updated during OT creation process."""  # noqa: E501
         testing_config.sign_in('feature_owner@example.com', 123)
         json = {
             'id': 10,
@@ -664,7 +664,7 @@ class StagesAPITest(testing_config.CustomTestCase):
                 self.handler.do_patch(feature_id=1, stage_id=10)
         mock_abort.assert_called_once_with(
             400,
-            description='Cannot edit OT milestones while creation is in progress.',
+            description='Cannot edit OT milestones while creation is in progress.',  # noqa: E501
         )
 
     def test_patch__valid(self):
@@ -814,7 +814,7 @@ class StagesAPITest(testing_config.CustomTestCase):
         self.assertEqual(stage.experiment_goals, 'To be the very best.')
 
     def test_patch__ot_request_chromium(self):
-        """A valid OT creation request from a Chromium user should update stage."""
+        """A valid OT creation request from a Chromium user should update stage."""  # noqa: E501
         testing_config.sign_in('chromium_user@chromium.org', 123)
         json = {
             'ot_action_requested': {

@@ -1,4 +1,4 @@
-# Copyright 2025 Google Inc.
+# Copyright 2025 Google Inc.  # noqa: D100
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
 # you may not use this file except in compliance with the License.
@@ -26,8 +26,8 @@ from internals.webdx_feature_models import WebdxFeatures
 test_app = flask.Flask(__name__)
 
 
-class WebFeatureIDsAPITest(testing_config.CustomTestCase):
-    def setUp(self):
+class WebFeatureIDsAPITest(testing_config.CustomTestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         self.handler = WebFeatureIDsAPI()
         self.request_path = '/api/v0/web_feature_ids'
 
@@ -58,8 +58,8 @@ class WebFeatureIDsAPITest(testing_config.CustomTestCase):
         self.assertEqual(actual, [])
 
 
-class WebdxFeatureAPITest(testing_config.CustomTestCase):
-    def setUp(self):
+class WebdxFeatureAPITest(testing_config.CustomTestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         logging.disable(logging.CRITICAL)
         self.webdx_observer = WebDXFeatureObserver(
             bucket_id=3, property_name='css'
@@ -69,10 +69,10 @@ class WebdxFeatureAPITest(testing_config.CustomTestCase):
         self.handler = WebdxFeatureAPI()
         self.request_path = '/api/v0/webdxfeatures'
 
-    def tearDown(self):
+    def tearDown(self):  # noqa: D102
         logging.disable(logging.NOTSET)
 
-    def test_do_get__success(self):
+    def test_do_get__success(self):  # noqa: D102
         testing_config.sign_out()
 
         with test_app.test_request_context(self.request_path):
@@ -87,7 +87,7 @@ class WebdxFeatureAPITest(testing_config.CustomTestCase):
         )
         self.assertEqual(actual, expected)
 
-    def test_do_get__empty_data(self):
+    def test_do_get__empty_data(self):  # noqa: D102
         testing_config.sign_out()
         self.webdx_observer.key.delete()
 

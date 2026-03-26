@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-  # noqa: D100
 # Copyright 2021 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
@@ -19,11 +19,11 @@ from framework import basehandlers, permissions, users
 from internals import feature_helpers
 
 
-class FeaturesJsonHandler(basehandlers.FlaskHandler):
+class FeaturesJsonHandler(basehandlers.FlaskHandler):  # noqa: D101
     HTTP_CACHE_TYPE = 'private'
     JSONIFY = True
 
-    def get_template_data(self, **kwargs):
+    def get_template_data(self, **kwargs):  # noqa: D102
         user = users.get_current_user()
         feature_list = feature_helpers.get_features_by_impl_status(
             show_unlisted=permissions.can_edit_any_feature(user)

@@ -1,4 +1,4 @@
-# Copyright 2020 Google Inc.
+# Copyright 2020 Google Inc.  # noqa: D100
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
 # you may not use this file except in compliance with the License.
@@ -21,8 +21,8 @@ from internals.core_models import FeatureEntry, MilestoneSet, Stage
 from internals.review_models import Gate, Vote
 
 
-class SearchFeaturesTest(testing_config.CustomTestCase):
-    def setUp(self):
+class SearchFeaturesTest(testing_config.CustomTestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         self.feature_1 = FeatureEntry(
             name='feature a', summary='sum', category=1, impl_status_chrome=3
         )
@@ -131,7 +131,7 @@ class SearchFeaturesTest(testing_config.CustomTestCase):
         )
         self.vote_2_2.put()
 
-    def tearDown(self):
+    def tearDown(self):  # noqa: D102
         for kind in [
             FeatureEntry,
             search_fulltext.FeatureWords,
@@ -195,7 +195,7 @@ class SearchFeaturesTest(testing_config.CustomTestCase):
             [self.feature_3_id], [key.integer_id() for key in actual]
         )  # noqa: E501
 
-    def test_single_field_query_async__any_start_milestone(self):
+    def test_single_field_query_async__any_start_milestone(self):  # noqa: D102
         actual = search_queries.single_field_query_async(
             'any_start_milestone', '=', [100]
         ).get_result()
@@ -223,7 +223,7 @@ class SearchFeaturesTest(testing_config.CustomTestCase):
             'Intervals are constrained to a single milestone.',
         )
 
-    def check_wrong_type(self, field_name, bad_values):
+    def check_wrong_type(self, field_name, bad_values):  # noqa: D102
         with self.assertRaises(ValueError) as cm:
             search_queries.single_field_query_async(field_name, '=', bad_values)
         self.assertEqual(
@@ -395,7 +395,7 @@ class SearchFeaturesTest(testing_config.CustomTestCase):
         self.assertEqual([self.feature_1_id, self.feature_2_id], actual)
 
     def test_stage_fields_have_join_conditions(self):
-        """Every STAGE_QUERIABLE_FIELDS has a STAGE_TYPES_BY_QUERY_FIELD entry."""
+        """Every STAGE_QUERIABLE_FIELDS has a STAGE_TYPES_BY_QUERY_FIELD entry."""  # noqa: E501
         self.assertCountEqual(
             search_queries.STAGE_QUERIABLE_FIELDS.keys(),
             search_queries.STAGE_TYPES_BY_QUERY_FIELD.keys(),

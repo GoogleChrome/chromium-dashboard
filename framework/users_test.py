@@ -1,4 +1,4 @@
-# Copyright 2022 Google Inc.
+# Copyright 2022 Google Inc.  # noqa: D100
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
 # you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ test_app = flask.Flask(__name__)
 test_app.secret_key = 'testing secret'
 
 
-class UsersTest(testing_config.CustomTestCase):
+class UsersTest(testing_config.CustomTestCase):  # noqa: D101
     def test_get_current_user__unittest_signed_in(self):
         """For unit tests, we know when the user is signed in."""
         testing_config.sign_in('user_111@example.com', 111)
@@ -65,7 +65,7 @@ class UsersTest(testing_config.CustomTestCase):
 
     @mock.patch('settings.UNIT_TEST_MODE', False)
     def test_get_current_user__signed_out(self):
-        """When there is no jwt or user info in the session, user is signed out."""
+        """When there is no jwt or user info in the session, user is signed out."""  # noqa: E501
         with test_app.test_request_context('/any-path'):
             session.clear()
             actual_user = users.get_current_user()

@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-  # noqa: D100
 # Copyright 2022 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
@@ -24,8 +24,8 @@ from internals import core_enums, core_models, processes
 test_app = flask.Flask(__name__)
 
 
-class ProcessesAPITest(testing_config.CustomTestCase):
-    def setUp(self):
+class ProcessesAPITest(testing_config.CustomTestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         self.feature_1 = core_models.FeatureEntry(
             name='feature one', summary='sum', category=1, feature_type=0
         )
@@ -42,7 +42,7 @@ class ProcessesAPITest(testing_config.CustomTestCase):
         self.handler = processes_api.ProcessesAPI()
         self.request_path = f'/api/v0/features/{self.feature_id}/process'
 
-    def tearDown(self):
+    def tearDown(self):  # noqa: D102
         for stage in self.stages:
             stage.key.delete()
         self.feature_1.key.delete()
@@ -158,8 +158,8 @@ class ProcessesAPITest(testing_config.CustomTestCase):
         self.assertEqual(expected, actual)
 
 
-class ProgressAPITest(testing_config.CustomTestCase):
-    def setUp(self):
+class ProgressAPITest(testing_config.CustomTestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         self.feature_1 = core_models.FeatureEntry(
             name='feature one',
             summary='sum Z',
@@ -198,7 +198,7 @@ class ProgressAPITest(testing_config.CustomTestCase):
         self.handler = processes_api.ProgressAPI()
         self.request_path = f'/api/v0/features/{self.feature_id}/progress'
 
-    def tearDown(self):
+    def tearDown(self):  # noqa: D102
         self.feature_1.key.delete()
 
     def test_get___feature_progress(self):

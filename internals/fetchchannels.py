@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-  # noqa: D100
 # Copyright 2021 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
@@ -54,7 +54,7 @@ def get_channel_version(channel):
     return version
 
 
-def get_omaha_data():
+def get_omaha_data():  # noqa: D103
     omaha_data = rediscache.get('omaha_data')
 
     if omaha_data is None:
@@ -73,7 +73,7 @@ def get_omaha_data():
 SCHEDULE_CACHE_TIME = 60 * 60  # 1 hour
 
 
-def fetch_chrome_release_info(version):
+def fetch_chrome_release_info(version):  # noqa: D103
     key = 'chromerelease|%s' % version
 
     data = rediscache.get(key)

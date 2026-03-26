@@ -1,4 +1,4 @@
-# Copyright 2024 Google Inc.
+# Copyright 2024 Google Inc.  # noqa: D100
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
 # you may not use this file except in compliance with the License.
@@ -140,7 +140,7 @@ def is_update_first_notification_milestone(
     return new_impact > ENTERPRISE_IMPACT_NONE  # noqa: F405
 
 
-def get_default_first_notice_milestone_for_feature() -> int:
+def get_default_first_notice_milestone_for_feature() -> int:  # noqa: D103
     next_stable_version = channels_api.construct_chrome_channels_details()[
         'beta'
     ]['version']  # noqa: E501

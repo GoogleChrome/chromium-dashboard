@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-  # noqa: D100
 # Copyright 2021 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
@@ -46,7 +46,7 @@ def _FetchMetrics(url):
     if settings.PROD or settings.STAGING:
         # follow_redirects=False according to
         # https://cloud.google.com/appengine/docs/python/appidentity/#asserting_identity_to_other_app_engine_apps
-        # GAE request limit is 60s, but it could go longer due to start-up latency.
+        # GAE request limit is 60s, but it could go longer due to start-up latency.  # noqa: E501
         logging.info('Requesting metrics from: %r', url)
         token = google.oauth2.id_token.fetch_id_token(reqs.Request(), url)
         logging.info('token is %r', token)
@@ -142,7 +142,7 @@ class UmaQuery(object):
                 continue
 
             # If the id is not in the map, use 'ERROR' for the name.
-            # TODO(ericbidelman): Non-matched bucket ids are likely new properties
+            # TODO(ericbidelman): Non-matched bucket ids are likely new properties  # noqa: E501
             # that have been added and will be updated in cron/histograms.
             property_name = property_map.get(bucket_id, 'ERROR')
 
@@ -161,7 +161,7 @@ class UmaQuery(object):
 
         self._SetCapstone(date)
 
-    def FetchAndSaveData(self, date):
+    def FetchAndSaveData(self, date):  # noqa: D102
         if self._HasCapstone(date):
             return 200
         data, response_code = self._FetchData(date)
@@ -234,7 +234,7 @@ class YesterdayHandler(basehandlers.FlaskHandler):
                     )
                     if i > 2:
                         logging.error(
-                            'WebStatusAlert-1: Failed to get metrics even after 2 days'
+                            'WebStatusAlert-1: Failed to get metrics even after 2 days'  # noqa: E501
                         )
                     return error_message, 500
 
@@ -248,7 +248,7 @@ class YesterdayHandler(basehandlers.FlaskHandler):
         return 'Success'
 
 
-class HistogramsHandler(basehandlers.FlaskHandler):
+class HistogramsHandler(basehandlers.FlaskHandler):  # noqa: D101
     # Maps enum names to the historgram entity class that we use to store them.
     MODEL_CLASS = {
         'FeatureObserver': metrics_models.FeatureObserverHistogram,
@@ -257,9 +257,9 @@ class HistogramsHandler(basehandlers.FlaskHandler):
     }
 
     def _SaveData(self, bucket_id, property_name, model_class, all_existing):
-        """Save one entity for the given bucket_id, and delete any duplicates."""
+        """Save one entity for the given bucket_id, and delete any duplicates."""  # noqa: E501
         logging.info('Saving %r %r', bucket_id, property_name)
-        # Bucket ID 1 is reserved for number of CSS Pages Visited. So don't add it.
+        # Bucket ID 1 is reserved for number of CSS Pages Visited. So don't add it.  # noqa: E501
         if (
             model_class == metrics_models.CssPropertyHistogram
             and bucket_id == 1
@@ -283,7 +283,7 @@ class HistogramsHandler(basehandlers.FlaskHandler):
             )
             new_entity.put()
 
-    def get_template_data(self, **kwargs):
+    def get_template_data(self, **kwargs):  # noqa: D102
         self.require_cron_header()
         # Attempt to fetch enums mapping file.
         response = requests.get(HISTOGRAMS_URL, timeout=60)
@@ -333,7 +333,7 @@ class HistogramsHandler(basehandlers.FlaskHandler):
 class BlinkComponentHandler(basehandlers.FlaskHandler):
     """Updates the list of Blink components in the db."""
 
-    def get_template_data(self, **kwargs):
+    def get_template_data(self, **kwargs):  # noqa: D102
         self.require_cron_header()
         user_models.BlinkComponent.update_db()
         return 'Blink components updated'

@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-  # noqa: D100
 # Copyright 2021 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
@@ -19,7 +19,7 @@ from framework import basehandlers, permissions
 from internals import user_models
 
 
-def user_to_json_dict(user):
+def user_to_json_dict(user):  # noqa: D103
     return {
         'is_admin': user.is_admin,
         'is_site_editor': user.is_site_editor,

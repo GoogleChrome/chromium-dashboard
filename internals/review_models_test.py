@@ -1,4 +1,4 @@
-# Copyright 2020 Google Inc.
+# Copyright 2020 Google Inc.  # noqa: D100
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
 # you may not use this file except in compliance with the License.
@@ -19,8 +19,8 @@ from internals.core_models import FeatureEntry
 from internals.review_models import Activity, OwnersFile
 
 
-class ActivityTest(testing_config.CustomTestCase):
-    def setUp(self):
+class ActivityTest(testing_config.CustomTestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         self.feature_1 = FeatureEntry(
             name='feature a',
             summary='sum',
@@ -98,13 +98,13 @@ class ActivityTest(testing_config.CustomTestCase):
         self.assertEqual([], actual_3)
 
 
-class GateTest(testing_config.CustomTestCase):
+class GateTest(testing_config.CustomTestCase):  # noqa: D101
     # TODO(jrobbins): Add tests for get_feature_gates.
     pass
 
 
-class OwnersFileTest(testing_config.CustomTestCase):
-    def setUp(self):
+class OwnersFileTest(testing_config.CustomTestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         now = datetime.datetime.now()
         self.owner_file_1 = OwnersFile(
             url='abc', raw_content='foo', created_on=now
@@ -117,7 +117,7 @@ class OwnersFileTest(testing_config.CustomTestCase):
         )  # noqa: E501
         self.owner_file_2.add_owner_file()
 
-    def test_get_raw_owner_file(self):
+    def test_get_raw_owner_file(self):  # noqa: D102
         owners_file = OwnersFile.get_raw_owner_file('abc')
         self.assertEqual('foo', owners_file.raw_content)
         self.assertTrue(owners_file.is_fresh())

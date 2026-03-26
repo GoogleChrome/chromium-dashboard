@@ -1,4 +1,4 @@
-# Copyright 2025 Google Inc.
+# Copyright 2025 Google Inc.  # noqa: D100
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
 # you may not use this file except in compliance with the License.
@@ -30,8 +30,8 @@ test_app = flask.Flask(
 )
 
 
-class OriginTrialsRequestsTest(testing_config.CustomTestCase):
-    def setUp(self):
+class OriginTrialsRequestsTest(testing_config.CustomTestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         self.feature_1 = FeatureEntry(
             name='feature one', summary='sum', category=1
         )
@@ -52,7 +52,7 @@ class OriginTrialsRequestsTest(testing_config.CustomTestCase):
         )
         self.ready_for_creation_stage.put()
 
-        # 3. An extension stage request needs an original OT stage and a valid Gate.
+        # 3. An extension stage request needs an original OT stage and a valid Gate.  # noqa: E501
         self.ot_stage_for_extension = Stage(
             feature_id=self.feature_id, stage_type=150
         )

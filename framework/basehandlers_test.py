@@ -1,4 +1,4 @@
-# Copyright 2020 Google Inc.
+# Copyright 2020 Google Inc.  # noqa: D100
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
 # you may not use this file except in compliance with the License.
@@ -32,30 +32,30 @@ from internals.user_models import AppUser
 from main import Route
 
 
-class TestableAPIHandler(basehandlers.APIHandler):
-    def require_signed_in_and_xsrf_token(self):
+class TestableAPIHandler(basehandlers.APIHandler):  # noqa: D101
+    def require_signed_in_and_xsrf_token(self):  # noqa: D102
         pass
 
-    def do_get(self):
+    def do_get(self):  # noqa: D102
         return {'message': 'done get'}
 
-    def do_post(self):
+    def do_post(self):  # noqa: D102
         return {'message': 'done post'}
 
-    def do_put(self):
+    def do_put(self):  # noqa: D102
         return {'message': 'done put'}
 
-    def do_patch(self):
+    def do_patch(self):  # noqa: D102
         return {'message': 'done patch'}
 
-    def do_delete(self):
+    def do_delete(self):  # noqa: D102
         return {'message': 'done delete'}
 
 
-class TestableFlaskHandler(basehandlers.FlaskHandler):
+class TestableFlaskHandler(basehandlers.FlaskHandler):  # noqa: D101
     TEMPLATE_PATH = 'test_template.html'
 
-    def get_template_data(
+    def get_template_data(  # noqa: D102
         self, special_status=None, redirect_to=None, item_list=None
     ):
         if redirect_to:
@@ -68,7 +68,7 @@ class TestableFlaskHandler(basehandlers.FlaskHandler):
             template_data['status'] = special_status
         return template_data
 
-    def process_post_data(self, **kwargs):
+    def process_post_data(self, **kwargs):  # noqa: D102
         redirect_to = kwargs.get('redirect_to', None)
         if redirect_to:
             return flask.redirect(redirect_to)
@@ -112,8 +112,8 @@ test_app = basehandlers.FlaskApplication(
 )
 
 
-class BaseHandlerTests(testing_config.CustomTestCase):
-    def setUp(self):
+class BaseHandlerTests(testing_config.CustomTestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         self.handler = basehandlers.BaseHandler()
         self.fe_1 = FeatureEntry(
             id=1,
@@ -453,7 +453,7 @@ class BaseHandlerTests(testing_config.CustomTestCase):
             self.assertFalse(self.handler.get_bool_arg('maybe'))
 
     @mock.patch('framework.basehandlers.BaseHandler.abort')
-    def test_get_int_arg__bad(self, mock_abort):
+    def test_get_int_arg__bad(self, mock_abort):  # noqa: D102
         mock_abort.side_effect = werkzeug.exceptions.BadRequest
 
         with test_app.test_request_context('/test?num=abc'):
@@ -463,7 +463,7 @@ class BaseHandlerTests(testing_config.CustomTestCase):
                 400, msg="Request parameter 'num' was not an int"
             )
 
-    def test_get_int_arg(self):
+    def test_get_int_arg(self):  # noqa: D102
         with test_app.test_request_context('/test?num=1'):
             actual = self.handler.get_int_arg('num')
             self.assertEqual(1, actual)
@@ -524,8 +524,8 @@ class BaseHandlerTests(testing_config.CustomTestCase):
         )
 
 
-class APIHandlerTests(testing_config.CustomTestCase):
-    def setUp(self):
+class APIHandlerTests(testing_config.CustomTestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         self.handler = basehandlers.APIHandler()
 
         self.appuser = AppUser(email='user@example.com')
@@ -537,7 +537,7 @@ class APIHandlerTests(testing_config.CustomTestCase):
             actual = self.handler.get_headers()
         self.assertEqual(
             {
-                'Strict-Transport-Security': 'max-age=63072000; includeSubDomains; preload',
+                'Strict-Transport-Security': 'max-age=63072000; includeSubDomains; preload',  # noqa: E501
                 'X-UA-Compatible': 'IE=Edge,chrome=1',
                 'X-Frame-Options': 'DENY',
             },
@@ -554,7 +554,7 @@ class APIHandlerTests(testing_config.CustomTestCase):
         self.assertTrue(actual_sent_text.startswith(basehandlers.XSSI_PREFIX))
         self.assertIn(json.dumps(handler_data), actual_sent_text)
 
-    def check_http_method_handler(self, handler_method, expected_message):
+    def check_http_method_handler(self, handler_method, expected_message):  # noqa: D102
         with test_app.test_request_context('/path'):
             actual = handler_method()
             response, headers = actual
@@ -588,7 +588,7 @@ class APIHandlerTests(testing_config.CustomTestCase):
     def test_get__openapi_model(self, mock_do_get):
         """get() should return a JSON response if the do_get() return value is an
         OpenAPI model.
-        """  # noqa: D205
+        """  # noqa: D205, E501
         mock_do_get.return_value = FeatureLinksResponse(
             data='data', has_stale_links=True
         )
@@ -611,12 +611,12 @@ class APIHandlerTests(testing_config.CustomTestCase):
         self.check_http_method_handler(self.handler.put, 'done put')
 
     def test_patch(self):
-        """If a subclass has do_patch(), patch() should return a JSON response."""
+        """If a subclass has do_patch(), patch() should return a JSON response."""  # noqa: E501
         self.handler = TestableAPIHandler()
         self.check_http_method_handler(self.handler.patch, 'done patch')
 
     def test_delete(self):
-        """If a subclass has do_delete(), delete() should return a JSON response."""
+        """If a subclass has do_delete(), delete() should return a JSON response."""  # noqa: E501
         self.handler = TestableAPIHandler()
         self.check_http_method_handler(self.handler.delete, 'done delete')
 
@@ -632,7 +632,7 @@ class APIHandlerTests(testing_config.CustomTestCase):
         self.assertEqual(actual, ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'])
 
     @mock.patch('flask.abort')
-    def check_bad_HTTP_method(self, handler_method, mock_abort):
+    def check_bad_HTTP_method(self, handler_method, mock_abort):  # noqa: D102
         mock_abort.side_effect = werkzeug.exceptions.MethodNotAllowed
 
         with self.assertRaises(mock_abort.side_effect):
@@ -644,7 +644,7 @@ class APIHandlerTests(testing_config.CustomTestCase):
             handler_method(feature_id=1234)
 
     def test_do_get__unimplemented(self):
-        """If a subclass does not implement do_get(), raise NotImplementedError."""
+        """If a subclass does not implement do_get(), raise NotImplementedError."""  # noqa: E501
         with self.assertRaises(NotImplementedError):
             self.handler.do_get()
 
@@ -760,8 +760,8 @@ class APIHandlerTests(testing_config.CustomTestCase):
         self.assertFalse(updated_invalid_user)
 
 
-class FlaskHandlerTests(testing_config.CustomTestCase):
-    def setUp(self):
+class FlaskHandlerTests(testing_config.CustomTestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         self.user_1 = AppUser(email='registered@example.com')
         self.user_1.put()
         self.handler = TestableFlaskHandler()
@@ -801,7 +801,7 @@ class FlaskHandlerTests(testing_config.CustomTestCase):
             actual = self.handler.get_headers()
         self.assertEqual(
             {
-                'Strict-Transport-Security': 'max-age=63072000; includeSubDomains; preload',
+                'Strict-Transport-Security': 'max-age=63072000; includeSubDomains; preload',  # noqa: E501
                 'X-UA-Compatible': 'IE=Edge,chrome=1',
                 'X-Frame-Options': 'DENY',
             },
@@ -935,7 +935,7 @@ class FlaskHandlerTests(testing_config.CustomTestCase):
         self.assertNotIn('Access-Control-Allow-Origin', actual_headers)
 
     def test_post__jsonify(self):
-        """When JSONIFY == True, dicts and lists are converted to json strings."""
+        """When JSONIFY == True, dicts and lists are converted to json strings."""  # noqa: E501
         self.handler.JSONIFY = True
         testing_config.sign_in('user@example.com', 111)
         with test_app.test_request_context('/test'):
@@ -1270,7 +1270,7 @@ class FlaskHandlerTests(testing_config.CustomTestCase):
             )
 
 
-class RedirectorTests(testing_config.CustomTestCase):
+class RedirectorTests(testing_config.CustomTestCase):  # noqa: D101
     def test_redirector(self):
         """If the user hits a redirector, they get a redirect response."""
         with test_app.test_request_context('/old_path'):
@@ -1280,7 +1280,7 @@ class RedirectorTests(testing_config.CustomTestCase):
         self.assertEqual('/new_path', actual_redirect.headers['location'])
 
 
-class ConstHandlerTests(testing_config.CustomTestCase):
+class ConstHandlerTests(testing_config.CustomTestCase):  # noqa: D101
     def test_template_found(self):
         """We can run a template that requires no handler logic."""
         with test_app.test_request_context('/just_a_template'):
@@ -1341,7 +1341,7 @@ class ConstHandlerTests(testing_config.CustomTestCase):
         )
 
 
-class SPAHandlerTests(testing_config.CustomTestCase):
+class SPAHandlerTests(testing_config.CustomTestCase):  # noqa: D101
     @mock.patch('framework.basehandlers.get_spa_template_data')
     def test_get_template_data(self, mock_get_spa):
         """It simply calls get_spa_template_data."""
@@ -1353,8 +1353,8 @@ class SPAHandlerTests(testing_config.CustomTestCase):
         mock_get_spa.assert_called_once_with(handler, {'x': 1, 'y': 2})
 
 
-class GetSPATemplateDataTests(testing_config.CustomTestCase):
-    def setUp(self):
+class GetSPATemplateDataTests(testing_config.CustomTestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         self.handler = basehandlers.SPAHandler()
         self.fe_1 = FeatureEntry(
             name='feature one',
@@ -1404,7 +1404,7 @@ class GetSPATemplateDataTests(testing_config.CustomTestCase):
         self.assertEqual({}, actual)
 
     def test_get_spa_template_data__create_perm_anon(self):
-        """This page requires create permission, but user has not signed in yet."""
+        """This page requires create permission, but user has not signed in yet."""  # noqa: E501
         testing_config.sign_out()
         with test_app.test_request_context('/must_have_create'):
             defaults = {'require_create_feature': True}
@@ -1456,7 +1456,7 @@ class GetSPATemplateDataTests(testing_config.CustomTestCase):
         )
 
     def test_get_spa_template_data__edit_perm_anon(self):
-        """This page requires editing a feature, but user has not signed in yet."""
+        """This page requires editing a feature, but user has not signed in yet."""  # noqa: E501
         testing_config.sign_out()
         with test_app.test_request_context('/must_have_edit'):
             defaults = {
@@ -1550,7 +1550,7 @@ class GetSPATemplateDataTests(testing_config.CustomTestCase):
         self.assertEqual({}, actual)
 
 
-class FlaskApplicationTests(testing_config.CustomTestCase):
+class FlaskApplicationTests(testing_config.CustomTestCase):  # noqa: D101
     def test_cors_with_allow_origin(self):
         """If the request hits a /data path, they get '*'."""
         with test_app.test_request_context('/data/test'):
@@ -1561,7 +1561,7 @@ class FlaskApplicationTests(testing_config.CustomTestCase):
         )
 
     def test_cors_with_api(self):
-        """If the request hits a /api/v0/features path, they get a CORS header."""
+        """If the request hits a /api/v0/features path, they get a CORS header."""  # noqa: E501
         with test_app.test_request_context('/api/v0/features'):
             actual_response = test_app.full_dispatch_request()
 

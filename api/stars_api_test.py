@@ -1,4 +1,4 @@
-# Copyright 2020 Google Inc.
+# Copyright 2020 Google Inc.  # noqa: D100
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
 # you may not use this file except in compliance with the License.
@@ -23,8 +23,8 @@ from internals.core_models import FeatureEntry
 test_app = flask.Flask(__name__)
 
 
-class StarsAPITest(testing_config.CustomTestCase):
-    def setUp(self):
+class StarsAPITest(testing_config.CustomTestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         self.fe_1 = FeatureEntry(name='feature one', summary='sum', category=1)
         self.fe_1.put()
         self.handler = stars_api.StarsAPI()

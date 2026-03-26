@@ -9,25 +9,6 @@ docstring-code-format = true
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "D"]
-ignore = [
-    # Infeasible: Legacy codebase lacks hundreds of module/class/function docstrings; writing them all at once is infeasible.
-    "D100",
-    "D101",
-    "D102",
-    "D103",
-    "D104",
-
-    # Infeasible: Conflicts with Ruff's default Google style docstring rules (D211, D212).
-    "D203",
-    "D213",
-
-    # Infeasible: Legacy codebase has many long strings/comments; fixing all manually is infeasible.
-    "E501",
-
-    # Infeasible: Legacy tests heavily rely on wildcard imports (e.g., from internals.core_enums import *).
-    "F403",
-    "F405",
-]
 
 [tool.ruff.lint.pydocstyle]
 convention = "google"

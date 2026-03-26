@@ -1,4 +1,4 @@
-# Copyright 2021 Google Inc.
+# Copyright 2021 Google Inc.  # noqa: D100
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
 # you may not use this file except in compliance with the License.
@@ -32,8 +32,8 @@ class MainTest(testing_config.CustomTestCase):
         self.assertIsNotNone(main.app)
 
 
-class ConstTemplateTest(testing_config.CustomTestCase):
-    def check_template(self, route):
+class ConstTemplateTest(testing_config.CustomTestCase):  # noqa: D101
+    def check_template(self, route):  # noqa: D102
         handler = route.handler_class()
 
         with test_app.test_request_context(route.path):

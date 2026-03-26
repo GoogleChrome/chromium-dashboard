@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-  # noqa: D100
 # Copyright 2017 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
@@ -71,7 +71,7 @@ def _determine_milestone_string(ship_stages: list[Stage]) -> str:
     return milestone_str
 
 
-def highlight_diff(old_text, new_text, highlight_type):
+def highlight_diff(old_text, new_text, highlight_type):  # noqa: D103
     differ = difflib.ndiff(
         re.split(r'(\W)', old_text), re.split(r'(\W)', new_text)
     )
@@ -160,7 +160,7 @@ def accumulate_reasons(
 def convert_reasons_to_task(
     addr, reasons, email_html, subject, triggering_user_email
 ):
-    """Add a task dict to task_list for each user who has not already got one."""
+    """Add a task dict to task_list for each user who has not already got one."""  # noqa: E501
     assert reasons, 'We are emailing someone without any reason'
     footer_lines = ['<p>You are receiving this email because:</p>', '<ul>']
     for reason in sorted(set(reasons)):
@@ -227,7 +227,7 @@ def apply_subscription_rules(
     return results
 
 
-def add_core_receivers(fe: FeatureEntry, addr_reasons: dict[str, list[str]]):
+def add_core_receivers(fe: FeatureEntry, addr_reasons: dict[str, list[str]]):  # noqa: D103
     accumulate_reasons(
         addr_reasons,
         fe.owner_emails,
@@ -377,7 +377,7 @@ class FeatureStar(ndb.Model):
 
     @classmethod
     def get_user_stars(self, email):
-        """Return a list of feature_ids of all features that the user starred."""
+        """Return a list of feature_ids of all features that the user starred."""  # noqa: E501
         q = FeatureStar.query()
         q = q.filter(FeatureStar.email == email)
         q = q.filter(FeatureStar.starred == True)  # noqa: E712
@@ -389,7 +389,7 @@ class FeatureStar(ndb.Model):
 
     @classmethod
     def get_feature_starrers(self, feature_id: int) -> list[UserPref]:
-        """Return list of UserPref objects for starrers that want notifications."""
+        """Return list of UserPref objects for starrers that want notifications."""  # noqa: E501
         q = FeatureStar.query()
         q = q.filter(FeatureStar.feature_id == feature_id)
         q = q.filter(FeatureStar.starred == True)  # noqa: E712
@@ -402,7 +402,7 @@ class FeatureStar(ndb.Model):
         return user_prefs
 
 
-class NotifyInactiveUsersHandler(basehandlers.FlaskHandler):
+class NotifyInactiveUsersHandler(basehandlers.FlaskHandler):  # noqa: D101
     JSONIFY = True
     DEFAULT_LAST_VISIT = datetime(2022, 8, 1)  # 2022-08-01
     INACTIVE_WARN_DAYS = 180
@@ -440,17 +440,17 @@ class NotifyInactiveUsersHandler(basehandlers.FlaskHandler):
 
         for user in users:
             # Site admins and editors aren't warned due to inactivity.
-            # Also, users that have been previously notified are not notified again.
+            # Also, users that have been previously notified are not notified again.  # noqa: E501
             if user.is_admin or user.is_site_editor or user.notified_inactive:
                 continue
 
-            # If the user does not have a last visit, it is assumed the last visit
+            # If the user does not have a last visit, it is assumed the last visit  # noqa: E501
             # is either the account's creation date or the date the last_visit
             # field was created on the model - whatever is latest.
             last_visit = user.last_visit or self.DEFAULT_LAST_VISIT
             if user.created > last_visit:
                 last_visit = user.created
-            # Notify the user of inactivity if they haven't already been notified.
+            # Notify the user of inactivity if they haven't already been notified.  # noqa: E501
             if last_visit < inactive_cutoff:
                 inactive_users.append(user.email)
                 user.notified_inactive = True
@@ -479,7 +479,7 @@ class FeatureChangeHandler(basehandlers.FlaskHandler):
 
     IS_INTERNAL_HANDLER = True
 
-    def process_post_data(self, **kwargs):
+    def process_post_data(self, **kwargs):  # noqa: D102
         self.require_task_header()
 
         feature = self.get_param('feature')
@@ -516,7 +516,7 @@ class FeatureReviewHandler(basehandlers.FlaskHandler):
     IS_INTERNAL_HANDLER = True
     EMAIL_TEMPLATE_PATH = 'review-request-email.html'
 
-    def process_post_data(self, **kwargs):
+    def process_post_data(self, **kwargs):  # noqa: D102
         self.require_task_header()
 
         feature = self.get_param('feature')
@@ -566,7 +566,7 @@ class FeatureReviewHandler(basehandlers.FlaskHandler):
         gate_type: int,
         additional_template_data: dict[str, str],
     ):
-        """Return a list of task dicts to notify approvers of review requests."""
+        """Return a list of task dicts to notify approvers of review requests."""  # noqa: E501
         email_html = format_email_body(
             self.EMAIL_TEMPLATE_PATH,
             fe,
@@ -592,7 +592,7 @@ class ReviewAssignmentHandler(basehandlers.FlaskHandler):
     IS_INTERNAL_HANDLER = True
     EMAIL_TEMPLATE_PATH = 'review-assigned-email.html'
 
-    def process_post_data(self, **kwargs):
+    def process_post_data(self, **kwargs):  # noqa: D102
         self.require_task_header()
 
         feature = self.get_param('feature')
@@ -678,7 +678,7 @@ class FeatureCommentHandler(basehandlers.FlaskHandler):
     IS_INTERNAL_HANDLER = True
     EMAIL_TEMPLATE_PATH = 'review-comment-notification-email.html'
 
-    def process_post_data(self, **kwargs):
+    def process_post_data(self, **kwargs):  # noqa: D102
         self.require_task_header()
 
         feature = self.get_param('feature')
@@ -742,7 +742,7 @@ class OTActivatedHandler(basehandlers.FlaskHandler):
     IS_INTERNAL_HANDLER = True
     EMAIL_TEMPLATE_PATH = 'origintrials/ot-activated-email.html'
 
-    def process_post_data(self, **kwargs):
+    def process_post_data(self, **kwargs):  # noqa: D102
         self.require_task_header()
         stage = self.get_param('stage', required=True)
         contacts = stage['ot_emails'] or []
@@ -750,10 +750,10 @@ class OTActivatedHandler(basehandlers.FlaskHandler):
         send_emails([self.build_email(stage, contacts)])
         return {'message': 'OK'}
 
-    def build_email(self, stage: StageDict, contacts: list[str]) -> dict:
+    def build_email(self, stage: StageDict, contacts: list[str]) -> dict:  # noqa: D102
         body_data = {
             'stage': stage,
-            'ot_url': f'{settings.OT_URL}#/view_trial/{stage["origin_trial_id"]}',
+            'ot_url': f'{settings.OT_URL}#/view_trial/{stage["origin_trial_id"]}',  # noqa: E501
             'chromestatus_url': (
                 f'https://chromestatus.com/feature/{stage["feature_id"]}'
             ),
@@ -762,7 +762,7 @@ class OTActivatedHandler(basehandlers.FlaskHandler):
         return {
             'to': contacts,
             'cc': [core_enums.OT_SUPPORT_EMAIL],
-            'subject': f'{stage["ot_display_name"]} origin trial is now available',
+            'subject': f'{stage["ot_display_name"]} origin trial is now available',  # noqa: E501
             'reply_to': None,
             'html': body,
         }
@@ -776,7 +776,7 @@ class OTCreationApprovedHandler(basehandlers.FlaskHandler):
     IS_INTERNAL_HANDLER = True
     EMAIL_TEMPLATE_PATH = 'origintrials/ot-creation-approved-email.html'
 
-    def process_post_data(self, **kwargs):
+    def process_post_data(self, **kwargs):  # noqa: D102
         self.require_task_header()
         feature = self.get_param('feature', required=True)
         contacts = feature['owner_emails'] or []
@@ -786,7 +786,7 @@ class OTCreationApprovedHandler(basehandlers.FlaskHandler):
         send_emails([self.build_email(feature, contacts)])
         return {'message': 'OK'}
 
-    def build_email(self, feature: dict[str, Any], contacts: list[str]) -> dict:
+    def build_email(self, feature: dict[str, Any], contacts: list[str]) -> dict:  # noqa: D102
         body_data = {
             'chromestatus_url': f'https://chromestatus.com/feature/{feature["id"]}'
         }
@@ -807,7 +807,7 @@ class OTCreationProcessedHandler(basehandlers.FlaskHandler):
     IS_INTERNAL_HANDLER = True
     EMAIL_TEMPLATE_PATH = 'origintrials/ot-creation-processed-email.html'
 
-    def process_post_data(self, **kwargs):
+    def process_post_data(self, **kwargs):  # noqa: D102
         self.require_task_header()
         stage = self.get_param('stage', required=True)
         contacts = stage['ot_emails'] or []
@@ -815,7 +815,7 @@ class OTCreationProcessedHandler(basehandlers.FlaskHandler):
         send_emails([self.build_email(stage, contacts)])
         return {'message': 'OK'}
 
-    def build_email(self, stage: dict[str, Any], contacts: list[str]) -> dict:
+    def build_email(self, stage: dict[str, Any], contacts: list[str]) -> dict:  # noqa: D102
         body_data = {
             'stage': stage,
             'ot_url': settings.OT_URL,
@@ -837,19 +837,19 @@ class OTCreationProcessedHandler(basehandlers.FlaskHandler):
 
 
 class OTCreationRequestFailedHandler(basehandlers.FlaskHandler):
-    """Notify about an origin trial creation request failing automated request."""
+    """Notify about an origin trial creation request failing automated request."""  # noqa: E501
 
     IS_INTERNAL_HANDLER = True
     EMAIL_TEMPLATE_PATH = 'origintrials/ot-creation-request-failed-email.html'
 
-    def process_post_data(self, **kwargs):
+    def process_post_data(self, **kwargs):  # noqa: D102
         self.require_task_header()
         stage = self.get_param('stage', required=True)
         error_text = self.get_param('error_text')
         send_emails([self.build_email(stage, error_text)])
         return {'message': 'OK'}
 
-    def build_email(self, stage: StageDict, error_text: str | None) -> dict:
+    def build_email(self, stage: StageDict, error_text: str | None) -> dict:  # noqa: D102
         body_data = {
             'stage': stage,
             'error_text': error_text,
@@ -875,13 +875,13 @@ class OTActivationFailedHandler(basehandlers.FlaskHandler):
     IS_INTERNAL_HANDLER = True
     EMAIL_TEMPLATE_PATH = 'origintrials/ot-activation-failed-email.html'
 
-    def process_post_data(self, **kwargs):
+    def process_post_data(self, **kwargs):  # noqa: D102
         self.require_task_header()
         stage = self.get_param('stage', required=True)
         send_emails([self.build_email(stage)])
         return {'message': 'OK'}
 
-    def build_email(self, stage: StageDict) -> dict:
+    def build_email(self, stage: StageDict) -> dict:  # noqa: D102
         body_data = {
             'stage': stage,
             'chromestatus_url': (
@@ -905,7 +905,7 @@ class OTCreationRequestHandler(basehandlers.FlaskHandler):
 
     IS_INTERNAL_HANDLER = True
 
-    def process_post_data(self, **kwargs):
+    def process_post_data(self, **kwargs):  # noqa: D102
         self.require_task_header()
         stage = self.get_param('stage')
         logging.info('Starting to notify about origin trial creation request.')
@@ -916,7 +916,7 @@ class OTCreationRequestHandler(basehandlers.FlaskHandler):
     def _yes_or_no(self, value: bool):
         return 'Yes' if value else 'No'
 
-    def make_creation_request_email(self, stage):
+    def make_creation_request_email(self, stage):  # noqa: D102
         chromestatus_url = (
             f'https://chromestatus.com/feature/{stage["feature_id"]}'
         )
@@ -961,7 +961,7 @@ class OTCreationRequestHandler(basehandlers.FlaskHandler):
 
         return {
             'to': core_enums.OT_SUPPORT_EMAIL,
-            'subject': f'New Trial Creation Request for {stage["ot_display_name"]}',
+            'subject': f'New Trial Creation Request for {stage["ot_display_name"]}',  # noqa: E501
             'reply_to': None,
             'html': email_body,
         }
@@ -975,7 +975,7 @@ class OTExtensionApprovedHandler(basehandlers.FlaskHandler):
     IS_INTERNAL_HANDLER = True
     EMAIL_TEMPLATE_PATH = 'origintrials/ot-extension-approved-email.html'
 
-    def process_post_data(self, **kwargs):
+    def process_post_data(self, **kwargs):  # noqa: D102
         self.require_task_header()
         feature = self.get_param('feature')
         gate_id = self.get_param('gate_id')
@@ -994,7 +994,7 @@ class OTExtensionApprovedHandler(basehandlers.FlaskHandler):
 
         return {'message': 'OK'}
 
-    def build_email(
+    def build_email(  # noqa: D102
         self,
         feature: FeatureEntry,
         requester_email: str,
@@ -1027,7 +1027,7 @@ class IntentToBlinkDevHandler(basehandlers.FlaskHandler):
     IS_INTERNAL_HANDLER = True
     EMAIL_TEMPLATE_PATH = 'blink/intent_to_implement.html'
 
-    def process_post_data(self, **kwargs):
+    def process_post_data(self, **kwargs):  # noqa: D102
         self.require_task_header()
         feature_id = self.get_param('feature_id', required=True)
         feature = FeatureEntry.get_by_id(feature_id)
@@ -1044,7 +1044,7 @@ class IntentToBlinkDevHandler(basehandlers.FlaskHandler):
         send_emails([email_data])
         return {'message': 'OK'}
 
-    def build_email(self, feature: FeatureEntry, json_data: dict):
+    def build_email(self, feature: FeatureEntry, json_data: dict):  # noqa: D102
         stage_info = stage_helpers.get_stage_info_for_templates(feature)
         template_data = {
             'feature': converters.feature_entry_to_json_verbose(feature),
@@ -1080,7 +1080,7 @@ class OTEndingNextReleaseReminderHandler(basehandlers.FlaskHandler):
     IS_INTERNAL_HANDLER = True
     EMAIL_TEMPLATE_PATH = 'origintrials/ot-ending-next-release-email.html'
 
-    def process_post_data(self, **kwargs):
+    def process_post_data(self, **kwargs):  # noqa: D102
         self.require_task_header()
         contacts = self.get_param('contacts')
         body_data = {
@@ -1092,12 +1092,12 @@ class OTEndingNextReleaseReminderHandler(basehandlers.FlaskHandler):
         send_emails([self.build_email(body_data, contacts)])
         return {'message': 'OK'}
 
-    def build_email(self, body_data: dict[str, Any], contacts: list[str]):
+    def build_email(self, body_data: dict[str, Any], contacts: list[str]):  # noqa: D102
         body = render_template(self.EMAIL_TEMPLATE_PATH, **body_data)
         return {
             'to': contacts,
             'cc': GLOBAL_OT_PROCESS_REMINDER_CC_LIST,
-            'subject': f'{body_data["name"]} origin trial ship decision approaching',
+            'subject': f'{body_data["name"]} origin trial ship decision approaching',  # noqa: E501
             'reply_to': None,
             'html': body,
         }
@@ -1109,7 +1109,7 @@ class OTEndingThisReleaseReminderHandler(basehandlers.FlaskHandler):
     IS_INTERNAL_HANDLER = True
     EMAIL_TEMPLATE_PATH = 'origintrials/ot-ending-this-release-email.html'
 
-    def process_post_data(self, **kwargs):
+    def process_post_data(self, **kwargs):  # noqa: D102
         self.require_task_header()
         name = self.get_param('name')
         release_milestone = self.get_param('release_milestone')
@@ -1123,12 +1123,12 @@ class OTEndingThisReleaseReminderHandler(basehandlers.FlaskHandler):
         send_emails([self.build_email(body_data, contacts)])
         return {'message': 'OK'}
 
-    def build_email(self, body_data: dict[str, Any], contacts: list[str]):
+    def build_email(self, body_data: dict[str, Any], contacts: list[str]):  # noqa: D102
         body = render_template(self.EMAIL_TEMPLATE_PATH, **body_data)
         return {
             'to': contacts,
             'cc': GLOBAL_OT_PROCESS_REMINDER_CC_LIST,
-            'subject': f'{body_data["name"]} origin trial needs blink-dev update',
+            'subject': f'{body_data["name"]} origin trial needs blink-dev update',  # noqa: E501
             'reply_to': None,
             'html': body,
         }
@@ -1140,7 +1140,7 @@ class OTBetaAvailabilityReminderHandler(basehandlers.FlaskHandler):
     IS_INTERNAL_HANDLER = True
     EMAIL_TEMPLATE_PATH = 'origintrials/ot-beta-availability-email.html'
 
-    def process_post_data(self, **kwargs):
+    def process_post_data(self, **kwargs):  # noqa: D102
         self.require_task_header()
         contacts = self.get_param('contacts')
         body_data = {
@@ -1150,7 +1150,7 @@ class OTBetaAvailabilityReminderHandler(basehandlers.FlaskHandler):
         send_emails([self.build_email(body_data, contacts)])
         return {'message': 'OK'}
 
-    def build_email(self, body_data: dict[str, Any], contacts: list[str]):
+    def build_email(self, body_data: dict[str, Any], contacts: list[str]):  # noqa: D102
         body = render_template(self.EMAIL_TEMPLATE_PATH, **body_data)
         return {
             'to': contacts,
@@ -1167,7 +1167,7 @@ class OTFirstBranchReminderHandler(basehandlers.FlaskHandler):
     IS_INTERNAL_HANDLER = True
     EMAIL_TEMPLATE_PATH = 'origintrials/ot-first-branch-email.html'
 
-    def process_post_data(self, **kwargs):
+    def process_post_data(self, **kwargs):  # noqa: D102
         self.require_task_header()
         contacts = self.get_param('contacts')
         body_data = {
@@ -1178,7 +1178,7 @@ class OTFirstBranchReminderHandler(basehandlers.FlaskHandler):
         send_emails([self.build_email(body_data, contacts)])
         return {'message': 'OK'}
 
-    def build_email(self, body_data: dict[str, Any], contacts: list[str]):
+    def build_email(self, body_data: dict[str, Any], contacts: list[str]):  # noqa: D102
         body = render_template(self.EMAIL_TEMPLATE_PATH, **body_data)
         return {
             'to': contacts,
@@ -1195,7 +1195,7 @@ class OTLastBranchReminderHandler(basehandlers.FlaskHandler):
     IS_INTERNAL_HANDLER = True
     EMAIL_TEMPLATE_PATH = 'origintrials/ot-last-branch-email.html'
 
-    def process_post_data(self, **kwargs):
+    def process_post_data(self, **kwargs):  # noqa: D102
         self.require_task_header()
         contacts = self.get_param('contacts')
         body_data = {
@@ -1206,7 +1206,7 @@ class OTLastBranchReminderHandler(basehandlers.FlaskHandler):
         send_emails([self.build_email(body_data, contacts)])
         return {'message': 'OK'}
 
-    def build_email(self, body_data: dict[str, Any], contacts: list[str]):
+    def build_email(self, body_data: dict[str, Any], contacts: list[str]):  # noqa: D102
         body = render_template(self.EMAIL_TEMPLATE_PATH, **body_data)
         return {
             'to': contacts,
@@ -1226,7 +1226,7 @@ class OTAutomatedProcessEmailHandler(basehandlers.FlaskHandler):
     IS_INTERNAL_HANDLER = True
     EMAIL_TEMPLATE_PATH = 'origintrials/ot-automated-process-email.html'
 
-    def process_post_data(self, **kwargs):
+    def process_post_data(self, **kwargs):  # noqa: D102
         self.require_task_header()
         now_date = datetime.now().strftime('%d %B, %Y')
         body_data = {
@@ -1240,7 +1240,7 @@ class OTAutomatedProcessEmailHandler(basehandlers.FlaskHandler):
         send_emails([self.build_email(body_data)])
         return {'message': 'OK'}
 
-    def build_email(self, body_data: dict[str, Any]):
+    def build_email(self, body_data: dict[str, Any]):  # noqa: D102
         body = render_template(self.EMAIL_TEMPLATE_PATH, **body_data)
         return {
             'to': core_enums.OT_SUPPORT_EMAIL,
@@ -1256,7 +1256,7 @@ class OTExtendedHandler(basehandlers.FlaskHandler):
     IS_INTERNAL_HANDLER = True
     EMAIL_TEMPLATE_PATH = 'origintrials/ot-extended-email.html'
 
-    def process_post_data(self, **kwargs):
+    def process_post_data(self, **kwargs):  # noqa: D102
         self.require_task_header()
         extension_stage = self.get_param('stage')
         ot_stage = self.get_param('ot_stage')
@@ -1267,7 +1267,7 @@ class OTExtendedHandler(basehandlers.FlaskHandler):
 
         return {'message': 'OK'}
 
-    def build_email(self, extension_stage, ot_stage):
+    def build_email(self, extension_stage, ot_stage):  # noqa: D102
         body_data = {'extension_stage': extension_stage, 'ot_stage': ot_stage}
         body = render_template(self.EMAIL_TEMPLATE_PATH, **body_data)
 
@@ -1430,7 +1430,7 @@ class ResetShippingMilestonesEmailHandler(basehandlers.FlaskHandler):
     IS_INTERNAL_HANDLER = True
     EMAIL_TEMPLATE_PATH = 'reset-shipping-milestones-email.html'
 
-    def process_post_data(self, **kwargs):
+    def process_post_data(self, **kwargs):  # noqa: D102
         self.require_task_header()
         feature_id = self.get_param('feature_id')
         f = self.get_validated_entity(feature_id, FeatureEntry)
@@ -1441,7 +1441,7 @@ class ResetShippingMilestonesEmailHandler(basehandlers.FlaskHandler):
 
         return {'message': 'OK'}
 
-    def build_email(self, feature_id, feature_name, owner_emails):
+    def build_email(self, feature_id, feature_name, owner_emails):  # noqa: D102
         body_data = {
             'chromestatus_url': (
                 f'https://chromestatus.com/feature/{feature_id}'

@@ -1,4 +1,4 @@
-# Copyright 2025 Google Inc.
+# Copyright 2025 Google Inc.  # noqa: D100
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
 # you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ from internals.core_enums import *  # noqa: F403
 from internals.review_models import Gate, SurveyAnswers
 
 
-class SelfCertifyFunctionTest(testing_config.CustomTestCase):
+class SelfCertifyFunctionTest(testing_config.CustomTestCase):  # noqa: D101
     def test_update_survey_answers__no_existing_answers(self):
         """If a gate has no existing answers, we create a blank set."""
         gate = Gate()

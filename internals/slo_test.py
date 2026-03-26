@@ -1,4 +1,4 @@
-# Copyright 2023 Google Inc.
+# Copyright 2023 Google Inc.  # noqa: D100
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
 # you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ from internals import approval_defs, slo
 from internals.review_models import Gate, Vote
 
 
-class SLOFunctionTests(testing_config.CustomTestCase):
+class SLOFunctionTests(testing_config.CustomTestCase):  # noqa: D101
     def test_is_weekday(self):
         """We can tell if a day is a weekday or weekend."""
         self.assertFalse(slo.is_weekday(datetime.datetime(2023, 6, 4)))  # Sun
@@ -127,8 +127,8 @@ class SLOFunctionTests(testing_config.CustomTestCase):
         self.assertEqual(2, actual)
 
 
-class SLORecordingTests(testing_config.CustomTestCase):
-    def setUp(self):
+class SLORecordingTests(testing_config.CustomTestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         self.gate = Gate(
             feature_id=1, stage_id=2, gate_type=34, state=Gate.PREPARING
         )
@@ -183,7 +183,7 @@ class SLORecordingTests(testing_config.CustomTestCase):
         self.a_date = datetime.datetime(2023, 6, 17, 1, 2, 3)
 
     def test_record_vote__not_started(self):
-        """If this somehow gets called before the review starts, it's a no-op."""
+        """If this somehow gets called before the review starts, it's a no-op."""  # noqa: E501
         self.assertFalse(slo.record_vote(self.gate, [], Gate.PREPARING))
         self.assertFalse(
             slo.record_vote(self.gate, [self.vote_no_response], Gate.PREPARING)
@@ -402,8 +402,8 @@ APPR_FIELDS = approval_defs.APPROVAL_FIELDS_BY_ID
 DEFAULT_SLO_LIMIT = approval_defs.DEFAULT_SLO_LIMIT
 
 
-class SLOReportingTests(testing_config.CustomTestCase):
-    def setUp(self):
+class SLOReportingTests(testing_config.CustomTestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         self.gate_1 = Gate(feature_id=1, stage_id=2, gate_type=34, state=4)
         self.gate_1.requested_on = datetime.datetime(
             2023, 6, 7, 12, 30, 0

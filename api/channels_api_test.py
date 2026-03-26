@@ -1,4 +1,4 @@
-# Copyright 2020 Google Inc.
+# Copyright 2020 Google Inc.  # noqa: D100
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
 # you may not use this file except in compliance with the License.
@@ -22,14 +22,14 @@ from api import channels_api
 test_app = flask.Flask(__name__)
 
 
-class ChannelsAPITest(testing_config.CustomTestCase):
-    def setUp(self):
+class ChannelsAPITest(testing_config.CustomTestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         self.handler = channels_api.ChannelsAPI()
         self.request_path = '/api/v0/channels'
 
     @mock.patch('internals.fetchchannels.fetch_chrome_release_info')
     @mock.patch('internals.fetchchannels.get_omaha_data')
-    def test_construct_chrome_channels_details(
+    def test_construct_chrome_channels_details(  # noqa: D102
         self, mock_get_omaha_data, mock_fetch_chrome_release_info
     ):
         win_data = {
@@ -108,7 +108,7 @@ class ChannelsAPITest(testing_config.CustomTestCase):
 
     @mock.patch('internals.fetchchannels.fetch_chrome_release_info')
     @mock.patch('internals.fetchchannels.get_omaha_data')
-    def test_construct_chrome_channels_details__beta_promotion(
+    def test_construct_chrome_channels_details__beta_promotion(  # noqa: D102
         self, mock_get_omaha_data, mock_fetch_chrome_release_info
     ):
         win_data = {
@@ -167,7 +167,7 @@ class ChannelsAPITest(testing_config.CustomTestCase):
 
     @mock.patch('internals.fetchchannels.fetch_chrome_release_info')
     @mock.patch('internals.fetchchannels.get_omaha_data')
-    def test_construct_chrome_channels_details__dev_promotion(
+    def test_construct_chrome_channels_details__dev_promotion(  # noqa: D102
         self, mock_get_omaha_data, mock_fetch_chrome_release_info
     ):
         win_data = {
@@ -225,7 +225,7 @@ class ChannelsAPITest(testing_config.CustomTestCase):
         self.assertEqual(expected, actual)
 
     @mock.patch('internals.fetchchannels.fetch_chrome_release_info')
-    def test_construct_specified_milestones_details(
+    def test_construct_specified_milestones_details(  # noqa: D102
         self, mock_fetch_chrome_release_info
     ):
         mstone_data = {
@@ -262,13 +262,13 @@ class ChannelsAPITest(testing_config.CustomTestCase):
         self.maxDiff = None
         self.assertEqual(expected, actual)
 
-    def test_do_get__simple(self):
+    def test_do_get__simple(self):  # noqa: D102
         with test_app.test_request_context(self.request_path):
             actual_response = self.handler.do_get()
 
         self.assertEqual(channels_api.TEST_CHANNEL_DATA, actual_response)
 
-    def test_do_get__error(self):
+    def test_do_get__error(self):  # noqa: D102
         with test_app.test_request_context(
             self.request_path + '?start=2&end=1'
         ):
@@ -276,7 +276,7 @@ class ChannelsAPITest(testing_config.CustomTestCase):
                 self.handler.do_get()
 
     @mock.patch('api.channels_api.construct_specified_milestones_details')
-    def test_do_get__start_and_end(self, mock_call):
+    def test_do_get__start_and_end(self, mock_call):  # noqa: D102
         expected = {
             1: '123',
         }

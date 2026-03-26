@@ -1,4 +1,4 @@
-# Copyright 2022 Google Inc.
+# Copyright 2022 Google Inc.  # noqa: D100
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
 # you may not use this file except in compliance with the License.
@@ -70,7 +70,7 @@ def choose_email_recipients(
     return list(all_notified_users)
 
 
-def build_email_tasks(
+def build_email_tasks(  # noqa: D103
     features_to_notify: list[tuple[FeatureEntry, int]],
     subject_format: str,
     body_template_path: str,
@@ -124,7 +124,7 @@ def build_email_tasks(
     return email_tasks
 
 
-class AbstractReminderHandler(basehandlers.FlaskHandler):
+class AbstractReminderHandler(basehandlers.FlaskHandler):  # noqa: D101
     JSONIFY = True
     SUBJECT_FORMAT: str | None = '%s'
     EMAIL_TEMPLATE_PATH: str | None = None  # Subclasses must override
@@ -133,7 +133,7 @@ class AbstractReminderHandler(basehandlers.FlaskHandler):
     MILESTONE_FIELDS: list[str] = list()  # Subclasses must override
 
     def get_template_data(self, **kwargs):
-        """Sends notifications to users requesting feature updates for accuracy."""
+        """Sends notifications to users requesting feature updates for accuracy."""  # noqa: E501
         self.require_cron_header()
         current_milestone_info = get_current_milestone_info(self.ANCHOR_CHANNEL)
         features_to_notify = self.determine_features_to_notify(
@@ -181,7 +181,7 @@ class AbstractReminderHandler(basehandlers.FlaskHandler):
     def filter_by_milestones(
         self, current_milestone_info: dict, features: list[FeatureEntry]
     ) -> list[tuple[FeatureEntry, int]]:
-        """Return [(feature, milestone)] for features with a milestone in range."""
+        """Return [(feature, milestone)] for features with a milestone in range."""  # noqa: E501
         # 'current' milestone is the next stable milestone that hasn't landed.
         # We send notifications to any feature planned for beta or stable launch
         # in the next 4 * FUTURE_MILESTONES_TO_CONSIDER weeks.
@@ -227,7 +227,7 @@ class AbstractReminderHandler(basehandlers.FlaskHandler):
     def determine_features_to_notify(
         self, current_milestone_info: dict
     ) -> list[tuple[FeatureEntry, int]]:
-        """Get all features filter them by class-specific and milestone criteria."""
+        """Get all features filter them by class-specific and milestone criteria."""  # noqa: E501
         features = FeatureEntry.query(FeatureEntry.deleted == False).fetch()  # noqa: E712
         prefiltered_features = self.prefilter_features(
             current_milestone_info, features
@@ -243,11 +243,11 @@ class AbstractReminderHandler(basehandlers.FlaskHandler):
         return False
 
     # Subclasses should override if needed.
-    def is_accuracy_email(self) -> bool:
+    def is_accuracy_email(self) -> bool:  # noqa: D102
         return False
 
-    # Subclasses should override if processing is needed after notifications sent.
-    def changes_after_sending_notifications(
+    # Subclasses should override if processing is needed after notifications sent.  # noqa: E501
+    def changes_after_sending_notifications(  # noqa: D102
         self, features_notified: list[tuple[FeatureEntry, int]]
     ) -> None:
         pass
@@ -273,7 +273,7 @@ class FeatureAccuracyHandler(AbstractReminderHandler):
         'rollout_milestone',
     ]
 
-    def prefilter_features(
+    def prefilter_features(  # noqa: D102
         self, current_milestone_info: dict, features: list[FeatureEntry]
     ) -> list[FeatureEntry]:
         now = datetime.now()
@@ -292,7 +292,7 @@ class FeatureAccuracyHandler(AbstractReminderHandler):
         """Escalate notification if 2 previous emails have had no response."""
         return feature.outstanding_notifications >= 2
 
-    def is_accuracy_email(self) -> bool:
+    def is_accuracy_email(self) -> bool:  # noqa: D102
         return True
 
     def changes_after_sending_notifications(
@@ -323,7 +323,7 @@ class PrepublicationHandler(AbstractReminderHandler):
     REMINDER_WINDOW = timedelta(weeks=1)
     ANCHOR_CHANNEL = 'beta'
 
-    def prefilter_features(self, current_milestone_info, features, now=None):
+    def prefilter_features(self, current_milestone_info, features, now=None):  # noqa: D102
         earliest_beta = datetime.fromisoformat(
             current_milestone_info['earliest_beta']
         )
@@ -342,7 +342,7 @@ class PrepublicationHandler(AbstractReminderHandler):
             return []
 
 
-class SLOReportHandler(basehandlers.FlaskHandler):
+class SLOReportHandler(basehandlers.FlaskHandler):  # noqa: D101
     JSONIFY = True
     # For now, this just returns a JSON report to help me evaluate if we
     # are ready to start sending SLO reminder emails without sending too
@@ -363,7 +363,7 @@ class SLOReportHandler(basehandlers.FlaskHandler):
         return {'message': 'OK', 'gates_by_reviewer': gates_by_reviewer}
 
 
-class SLOOverdueHandler(basehandlers.FlaskHandler):
+class SLOOverdueHandler(basehandlers.FlaskHandler):  # noqa: D101
     JSONIFY = True
     SUBJECT_FORMAT = 'Review due for: %s'
     BODY_TEMPLATE_PATH = 'slo_overdue_email.html'
@@ -417,7 +417,7 @@ class SLOOverdueHandler(basehandlers.FlaskHandler):
         return {'message': message}
 
     def get_overdue_gates_and_features(self):
-        """Return lists of newly and long overdue review gates, and their FEs."""
+        """Return lists of newly and long overdue review gates, and their FEs."""  # noqa: E501
         active_gates: list[Gate] = slo.get_active_gates()
         newly_overdue_initial_response: list[Gate] = []
         long_overdue_initial_response: list[Gate] = []
@@ -451,7 +451,7 @@ class SLOOverdueHandler(basehandlers.FlaskHandler):
                     long_overdue_initial_response.append(g)
                     relevant_feature_ids.add(g.feature_id)
 
-            # A review can be overdue for resolution regardless of initial response.
+            # A review can be overdue for resolution regardless of initial response.  # noqa: E501
             if resolve_remaining == -1:
                 newly_overdue_resolve.append(g)
                 relevant_feature_ids.add(g.feature_id)
@@ -471,7 +471,7 @@ class SLOOverdueHandler(basehandlers.FlaskHandler):
             relevant_features,
         )
 
-    def build_gate_email_tasks(
+    def build_gate_email_tasks(  # noqa: D102
         self,
         gates_to_notify: list[Gate],
         relevant_features: dict[int, FeatureEntry],
@@ -532,7 +532,7 @@ class SLOOverdueHandler(basehandlers.FlaskHandler):
         return sorted(set(assignees + review_team))
 
 
-class SendOTReminderEmailsHandler(basehandlers.FlaskHandler):
+class SendOTReminderEmailsHandler(basehandlers.FlaskHandler):  # noqa: D101
     def get_template_data(self, **kwargs):
         """Send any time-based origin trials reminder emails."""
         self.require_cron_header()

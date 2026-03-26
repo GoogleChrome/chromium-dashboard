@@ -1,4 +1,4 @@
-# Copyright 2024 Google Inc.
+# Copyright 2024 Google Inc.  # noqa: D100
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
 # you may not use this file except in compliance with the License.
@@ -28,8 +28,8 @@ from internals.user_models import AppUser
 test_app = flask.Flask(__name__)
 
 
-class OriginTrialsAPITest(testing_config.CustomTestCase):
-    def setUp(self):
+class OriginTrialsAPITest(testing_config.CustomTestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         self.feature_1 = FeatureEntry(
             feature_type=1,
             name='feature one',
@@ -480,7 +480,7 @@ bool FeatureHasExpiryGracePeriod(blink::mojom::OriginTrialFeature feature) {
                 body, self.mock_chromium_files_dict
             )
         expected = {
-            'ot_webfeature_use_counter': 'UseCounter not landed in web_feature.mojom'
+            'ot_webfeature_use_counter': 'UseCounter not landed in web_feature.mojom'  # noqa: E501
         }
         self.assertEqual(expected, result)
 
@@ -488,7 +488,7 @@ bool FeatureHasExpiryGracePeriod(blink::mojom::OriginTrialFeature feature) {
     def test_validate_creation_args__invalid_webdxfeature_use_counter(
         self, mock_get_trials_list
     ):
-        """Error message returned if WebDXFeature UseCounter not found in file."""
+        """Error message returned if WebDXFeature UseCounter not found in file."""  # noqa: E501
         mock_get_trials_list.return_value = self.mock_trials_list
         body = {
             'ot_chromium_trial_name': {
@@ -517,7 +517,7 @@ bool FeatureHasExpiryGracePeriod(blink::mojom::OriginTrialFeature feature) {
                 body, self.mock_chromium_files_dict
             )
         expected = {
-            'ot_webfeature_use_counter': 'UseCounter not landed in webdx_feature.mojom'
+            'ot_webfeature_use_counter': 'UseCounter not landed in webdx_feature.mojom'  # noqa: E501
         }  # noqa: E501
         self.assertEqual(expected, result)
 
@@ -525,7 +525,7 @@ bool FeatureHasExpiryGracePeriod(blink::mojom::OriginTrialFeature feature) {
     def test_validate_creation_args__missing_webdxfeature_use_counter(
         self, mock_get_trials_list
     ):
-        """Error message returned if WebDXFeature UseCounter not found in file."""
+        """Error message returned if WebDXFeature UseCounter not found in file."""  # noqa: E501
         mock_get_trials_list.return_value = self.mock_trials_list
         body = {
             'ot_chromium_trial_name': {
@@ -601,7 +601,7 @@ bool FeatureHasExpiryGracePeriod(blink::mojom::OriginTrialFeature feature) {
     def test_validate_creation_args__missing_webfeature_use_counter_deprecation(
         self, mock_get_trials_list
     ):
-        """No error message returned for missing UseCounter if deprecation trial."""
+        """No error message returned for missing UseCounter if deprecation trial."""  # noqa: E501
         mock_get_trials_list.return_value = self.mock_trials_list
         body = {
             'ot_chromium_trial_name': {
@@ -774,7 +774,7 @@ bool FeatureHasExpiryGracePeriod(blink::mojom::OriginTrialFeature feature) {
             )
         expected = {
             'ot_is_critical_trial': (
-                'Use counter has not landed in grace period array for critical trial'
+                'Use counter has not landed in grace period array for critical trial'  # noqa: E501
             )
         }
         self.assertEqual(expected, result)
@@ -821,14 +821,14 @@ bool FeatureHasExpiryGracePeriod(blink::mojom::OriginTrialFeature feature) {
         # All checks should be bypassed, so no errors returned.
         self.assertEqual({}, result)
 
-    def test_validate_extension_args__valid(self):
+    def test_validate_extension_args__valid(self):  # noqa: D102
         # No exception should be raised.
         with test_app.test_request_context(self.request_path):
             self.handler._validate_extension_args(
                 self.feature_1_id, self.ot_stage_1, self.extension_stage_1
             )
 
-    def test_validate_extension_args__missing_ot_id(self):
+    def test_validate_extension_args__missing_ot_id(self):  # noqa: D102
         self.ot_stage_1.origin_trial_id = None
         self.ot_stage_1.put()
         with test_app.test_request_context(self.request_path):
@@ -837,7 +837,7 @@ bool FeatureHasExpiryGracePeriod(blink::mojom::OriginTrialFeature feature) {
                     self.feature_1_id, self.ot_stage_1, self.extension_stage_1
                 )
 
-    def test_validate_extension_args__missing_end_milestone(self):
+    def test_validate_extension_args__missing_end_milestone(self):  # noqa: D102
         self.extension_stage_1.milestones.desktop_last = None
         self.extension_stage_1.put()
         with test_app.test_request_context(self.request_path):
@@ -846,7 +846,7 @@ bool FeatureHasExpiryGracePeriod(blink::mojom::OriginTrialFeature feature) {
                     self.feature_1_id, self.ot_stage_1, self.extension_stage_1
                 )
 
-    def test_validate_extension_args__invalid_intent_url(self):
+    def test_validate_extension_args__invalid_intent_url(self):  # noqa: D102
         self.extension_stage_1.intent_thread_url = "This can't be right."
         self.extension_stage_1.put()
         with test_app.test_request_context(self.request_path):
@@ -855,7 +855,7 @@ bool FeatureHasExpiryGracePeriod(blink::mojom::OriginTrialFeature feature) {
                     self.feature_1_id, self.ot_stage_1, self.extension_stage_1
                 )
 
-    def test_validate_extension_args__missing_intent_url(self):
+    def test_validate_extension_args__missing_intent_url(self):  # noqa: D102
         self.extension_stage_1.intent_thread_url = None
         self.extension_stage_1.put()
         with test_app.test_request_context(self.request_path):

@@ -1,4 +1,4 @@
-# Copyright 2022 Google Inc.
+# Copyright 2022 Google Inc.  # noqa: D100
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
 # you may not use this file except in compliance with the License.
@@ -23,8 +23,8 @@ from internals.core_models import FeatureEntry, MilestoneSet, Stage
 from internals.review_models import Gate, SurveyAnswers, Vote
 
 
-class DelNoneTest(testing_config.CustomTestCase):
-    def test_del_none(self):
+class DelNoneTest(testing_config.CustomTestCase):  # noqa: D101
+    def test_del_none(self):  # noqa: D102
         d = {}
         self.assertEqual({}, converters.del_none(d))
 
@@ -32,8 +32,8 @@ class DelNoneTest(testing_config.CustomTestCase):
         self.assertEqual({1: 'one', 3: {}, 4: {44: 44}}, converters.del_none(d))
 
 
-class FeatureConvertersTest(testing_config.CustomTestCase):
-    def setUp(self):
+class FeatureConvertersTest(testing_config.CustomTestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         self.date = datetime.now()
         self.fe_1 = FeatureEntry(
             id=123,
@@ -94,7 +94,7 @@ class FeatureConvertersTest(testing_config.CustomTestCase):
                 intent_thread_url=f'https://example.com/{s_type}',
             )
             # Add stage-specific fields based on the stage ID.
-            # 150 is the ID associated with the origin trial stage for feature type 0.
+            # 150 is the ID associated with the origin trial stage for feature type 0.  # noqa: E501
             if s_type == 150:
                 s.experiment_goals = 'goals'
                 s.experiment_risks = 'risks'
@@ -108,7 +108,7 @@ class FeatureConvertersTest(testing_config.CustomTestCase):
             s.put()
         self.maxDiff = None
 
-    def tearDown(self) -> None:
+    def tearDown(self) -> None:  # noqa: D102
         self.fe_1.key.delete()
         for s in Stage.query():
             s.key.delete()
@@ -144,7 +144,7 @@ class FeatureConvertersTest(testing_config.CustomTestCase):
             'standards': {
                 'spec': 'https://example.com/spec',
                 'maturity': {
-                    'text': 'Unknown standards status - check spec link for status',
+                    'text': 'Unknown standards status - check spec link for status',  # noqa: E501
                     'short_text': 'Unknown status',
                     'val': 1,
                 },
@@ -233,7 +233,7 @@ class FeatureConvertersTest(testing_config.CustomTestCase):
             'standards': {
                 'spec': 'https://example.com/spec',
                 'maturity': {
-                    'text': 'Unknown standards status - check spec link for status',
+                    'text': 'Unknown standards status - check spec link for status',  # noqa: E501
                     'short_text': 'Unknown status',
                     'val': 1,
                 },
@@ -350,7 +350,7 @@ class FeatureConvertersTest(testing_config.CustomTestCase):
             'standards': {
                 'spec': 'https://example.com/spec',
                 'maturity': {
-                    'text': 'Unknown standards status - check spec link for status',
+                    'text': 'Unknown standards status - check spec link for status',  # noqa: E501
                     'short_text': 'Unknown status',
                     'val': 1,
                 },
@@ -508,7 +508,7 @@ class FeatureConvertersTest(testing_config.CustomTestCase):
             converters.feature_entry_to_json_verbose(empty_fe)
 
 
-class VoteConvertersTest(testing_config.CustomTestCase):
+class VoteConvertersTest(testing_config.CustomTestCase):  # noqa: D101
     def test_conversion(self):
         """We can convert a Vote entity to JSON."""
         vote = Vote(
@@ -531,8 +531,8 @@ class VoteConvertersTest(testing_config.CustomTestCase):
         self.assertEqual(expected, actual)
 
 
-class GateConvertersTest(testing_config.CustomTestCase):
-    def tearDown(self) -> None:
+class GateConvertersTest(testing_config.CustomTestCase):  # noqa: D101
+    def tearDown(self) -> None:  # noqa: D102
         for g in Gate.query():
             g.key.delete()
 
@@ -575,7 +575,7 @@ class GateConvertersTest(testing_config.CustomTestCase):
         gate = Gate(
             feature_id=1,
             stage_id=2,
-            gate_type=GATE_PRIVACY_ORIGIN_TRIAL,
+            gate_type=GATE_PRIVACY_ORIGIN_TRIAL,  # noqa: F405
             state=4,  # noqa: F405
             requested_on=datetime(2022, 12, 14, 1, 2, 3),  # Wednesday
             assignee_emails=['appr1@example.com', 'appr2@example.com'],
@@ -635,7 +635,7 @@ class GateConvertersTest(testing_config.CustomTestCase):
         self.assertEqual(expected, actual)
 
     def test_slo_complete_review(self):
-        """If a Gate review was completed, response includes the number of days."""
+        """If a Gate review was completed, response includes the number of days."""  # noqa: E501
         gate = Gate(
             feature_id=1,
             stage_id=2,

@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-  # noqa: D100
 # Copyright 2021 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
@@ -119,7 +119,7 @@ def process_recent_reviews_query() -> list[int] | Future:
 
 
 @dataclasses.dataclass
-class QueryContext:
+class QueryContext:  # noqa: D101
     now: datetime.datetime
     current_stable_milestone: int
 
@@ -406,7 +406,7 @@ def make_cache_key(
 
 
 def is_cacheable(user_query: str, name_only: bool):
-    """Return True if this user query can be stored and viewed by other users."""
+    """Return True if this user query can be stored and viewed by other users."""  # noqa: E501
     if not name_only:
         logging.info('Search query not cached: could be large')
         return False
@@ -477,7 +477,7 @@ def process_query_using_cache(
     return computed_result
 
 
-def process_query(
+def process_query(  # noqa: D103
     user_query: str,
     sort_spec: str | None = None,
     show_unlisted=False,

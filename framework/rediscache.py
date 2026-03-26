@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-  # noqa: D100
 # Copyright 2020 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
@@ -148,7 +148,7 @@ def flushall():
     redis_client.flushall()
 
 
-def add_gae_prefix(key):
+def add_gae_prefix(key):  # noqa: D103
     if gae_version is None:
         return key
 

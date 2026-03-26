@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-  # noqa: D100
 # Copyright 2021 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
@@ -102,7 +102,7 @@ class ApiCredential(ndb.Model):
 
     @classmethod
     def select_token_for_api(cls, api_name: str) -> 'ApiCredential':
-        """Return one of our credientials for the requested API or make a blank."""
+        """Return one of our credientials for the requested API or make a blank."""  # noqa: E501
         query = ApiCredential.query(ApiCredential.api_name == api_name)
         all_for_api = query.fetch(None)
         if not all_for_api:

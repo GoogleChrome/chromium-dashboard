@@ -1,4 +1,4 @@
-# Copyright 2020 Google Inc.
+# Copyright 2020 Google Inc.  # noqa: D100
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
 # you may not use this file except in compliance with the License.
@@ -55,8 +55,8 @@ STAGE_BAKE_DOUGH = 110
 STAGE_BAKE_BAKE = 120
 
 
-class HelperFunctionsTest(testing_config.CustomTestCase):
-    def test_process_to_dict(self):
+class HelperFunctionsTest(testing_config.CustomTestCase):  # noqa: D101
+    def test_process_to_dict(self):  # noqa: D102
         process = processes.Process(
             'Baking',
             'This is how you make bread',
@@ -150,7 +150,7 @@ class HelperFunctionsTest(testing_config.CustomTestCase):
 class ProcessesWellFormedTest(testing_config.CustomTestCase):
     """Verify that our processes have no undefined references."""
 
-    def verify_references_to_prerequisites(self, process):
+    def verify_references_to_prerequisites(self, process):  # noqa: D102
         progress_items_so_far = {}
         for stage in process.stages:
             progress_items_so_far.update(
@@ -166,7 +166,7 @@ class ProcessesWellFormedTest(testing_config.CustomTestCase):
         self.verify_references_to_prerequisites(processes.BLINK_LAUNCH_PROCESS)
 
     def test_BLINK_FAST_TRACK_PROCESS(self):
-        """Prerequisites in BLINK_FAST_TRACK_PROCESS are defined and actionable."""
+        """Prerequisites in BLINK_FAST_TRACK_PROCESS are defined and actionable."""  # noqa: E501
         self.verify_references_to_prerequisites(
             processes.BLINK_FAST_TRACK_PROCESS
         )
@@ -184,8 +184,8 @@ class ProcessesWellFormedTest(testing_config.CustomTestCase):
         self.verify_references_to_prerequisites(processes.ENTERPRISE_PROCESS)
 
 
-class ProgressDetectorsTest(testing_config.CustomTestCase):
-    def setUp(self):
+class ProgressDetectorsTest(testing_config.CustomTestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         self.feature_1 = core_models.FeatureEntry(
             name='feature one',
             summary='sum',
@@ -206,24 +206,24 @@ class ProgressDetectorsTest(testing_config.CustomTestCase):
             self.feature_1.key.integer_id()
         )
 
-    def tearDown(self):
+    def tearDown(self):  # noqa: D102
         self.feature_1.key.delete()
         for stage in self.stages:
             stage.key.delete()
 
-    def test_initial_public_proposal_url(self):
+    def test_initial_public_proposal_url(self):  # noqa: D102
         detector = processes.PROGRESS_DETECTORS['Initial public proposal']
         self.assertFalse(detector(self.feature_1, self.stages_dict))
         self.feature_1.initial_public_proposal_url = 'http://example.com'
         self.assertTrue(detector(self.feature_1, self.stages_dict))
 
-    def test_explainer(self):
+    def test_explainer(self):  # noqa: D102
         detector = processes.PROGRESS_DETECTORS['Explainer']
         self.assertFalse(detector(self.feature_1, self.stages_dict))
         self.feature_1.explainer_links = ['http://example.com']
         self.assertTrue(detector(self.feature_1, self.stages_dict))
 
-    def test_web__faeture(self):
+    def test_web__faeture(self):  # noqa: D102
         detector = processes.PROGRESS_DETECTORS['Web feature']
         self.assertFalse(detector(self.feature_1, self.stages_dict))
         self.feature_1.web_feature = WebDXFeatureObserver.MISSING_FEATURE_ID
@@ -231,7 +231,7 @@ class ProgressDetectorsTest(testing_config.CustomTestCase):
         self.feature_1.web_feature = 'array'
         self.assertTrue(detector(self.feature_1, self.stages_dict))
 
-    def test_security_review_completed(self):
+    def test_security_review_completed(self):  # noqa: D102
         detector = processes.PROGRESS_DETECTORS[
             'Security review issues addressed'
         ]
@@ -241,7 +241,7 @@ class ProgressDetectorsTest(testing_config.CustomTestCase):
         )
         self.assertTrue(detector(self.feature_1, self.stages_dict))
 
-    def test_privacy_review_completed(self):
+    def test_privacy_review_completed(self):  # noqa: D102
         detector = processes.PROGRESS_DETECTORS[
             'Privacy review issues addressed'
         ]
@@ -251,7 +251,7 @@ class ProgressDetectorsTest(testing_config.CustomTestCase):
         )
         self.assertTrue(detector(self.feature_1, self.stages_dict))
 
-    def test_intent_to_prototype_email(self):
+    def test_intent_to_prototype_email(self):  # noqa: D102
         detector = processes.PROGRESS_DETECTORS['Intent to Prototype email']
         self.assertFalse(detector(self.feature_1, self.stages_dict))
         self.stages_dict[120][
@@ -259,13 +259,13 @@ class ProgressDetectorsTest(testing_config.CustomTestCase):
         ].intent_thread_url = 'http://example.com/prototype'
         self.assertTrue(detector(self.feature_1, self.stages_dict))
 
-    def test_intent_to_ship_email(self):
+    def test_intent_to_ship_email(self):  # noqa: D102
         detector = processes.PROGRESS_DETECTORS['Intent to Ship email']
         self.assertFalse(detector(self.feature_1, self.stages_dict))
         self.stages_dict[160][0].intent_thread_url = 'http://example.com/ship'
         self.assertTrue(detector(self.feature_1, self.stages_dict))
 
-    def test_ready_for_trial_email(self):
+    def test_ready_for_trial_email(self):  # noqa: D102
         detector = processes.PROGRESS_DETECTORS[
             'Ready for Developer Testing email'
         ]
@@ -275,105 +275,105 @@ class ProgressDetectorsTest(testing_config.CustomTestCase):
         ].announcement_url = 'http://example.com/trial_ready'
         self.assertTrue(detector(self.feature_1, self.stages_dict))
 
-    def test_intent_to_experiment_email(self):
+    def test_intent_to_experiment_email(self):  # noqa: D102
         detector = processes.PROGRESS_DETECTORS['Intent to Experiment email']
         self.assertFalse(detector(self.feature_1, self.stages_dict))
         self.stages_dict[150][0].intent_thread_url = 'http://example.com/ot'
         self.assertTrue(detector(self.feature_1, self.stages_dict))
 
-    def test_samples(self):
+    def test_samples(self):  # noqa: D102
         detector = processes.PROGRESS_DETECTORS['Samples']
         self.assertFalse(detector(self.feature_1, self.stages_dict))
         self.feature_1.sample_links = ['http://example.com']
         self.assertTrue(detector(self.feature_1, self.stages_dict))
 
-    def test_doc_links(self):
+    def test_doc_links(self):  # noqa: D102
         detector = processes.PROGRESS_DETECTORS['Doc links']
         self.assertFalse(detector(self.feature_1, self.stages_dict))
         self.feature_1.doc_links = ['http://example.com']
         self.assertTrue(detector(self.feature_1, self.stages_dict))
 
-    def test_tag_review_requested(self):
+    def test_tag_review_requested(self):  # noqa: D102
         detector = processes.PROGRESS_DETECTORS['TAG review requested']
         self.assertFalse(detector(self.feature_1, self.stages_dict))
         self.feature_1.tag_review = 'http://example.com'
         self.assertTrue(detector(self.feature_1, self.stages_dict))
 
-    def test_tag_review_completed(self):
+    def test_tag_review_completed(self):  # noqa: D102
         detector = processes.PROGRESS_DETECTORS['TAG review issues addressed']
         self.assertFalse(detector(self.feature_1, self.stages_dict))
         self.feature_1.tag_review_status = core_enums.REVIEW_ISSUES_ADDRESSED
         self.assertTrue(detector(self.feature_1, self.stages_dict))
 
-    def test_web_dev_signals(self):
+    def test_web_dev_signals(self):  # noqa: D102
         detector = processes.PROGRESS_DETECTORS['Web developer signals']
         self.assertFalse(detector(self.feature_1, self.stages_dict))
         self.feature_1.web_dev_views = core_enums.PUBLIC_SUPPORT
         self.assertTrue(detector(self.feature_1, self.stages_dict))
 
-    def test_vendor_signals(self):
+    def test_vendor_signals(self):  # noqa: D102
         detector = processes.PROGRESS_DETECTORS['Vendor signals']
         self.assertFalse(detector(self.feature_1, self.stages_dict))
         self.feature_1.ff_views = core_enums.PUBLIC_SUPPORT
         self.assertTrue(detector(self.feature_1, self.stages_dict))
 
-    def test_estimated_target_milestone(self):
+    def test_estimated_target_milestone(self):  # noqa: D102
         detector = processes.PROGRESS_DETECTORS['Estimated target milestone']
         self.stages_dict[160][0].milestones = core_models.MilestoneSet()
         self.assertFalse(detector(self.feature_1, self.stages_dict))
         self.stages_dict[160][0].milestones.desktop_first = 99
         self.assertTrue(detector(self.feature_1, self.stages_dict))
 
-    def test_code_in_chromium(self):
+    def test_code_in_chromium(self):  # noqa: D102
         detector = processes.PROGRESS_DETECTORS['Code in Chromium']
         self.assertFalse(detector(self.feature_1, self.stages_dict))
         self.feature_1.impl_status_chrome = core_enums.ENABLED_BY_DEFAULT
         self.assertTrue(detector(self.feature_1, self.stages_dict))
 
-    def test_motivation(self):
+    def test_motivation(self):  # noqa: D102
         detector = processes.PROGRESS_DETECTORS['Motivation']
         self.assertFalse(detector(self.feature_1, self.stages_dict))
         self.feature_1.motivation = 'test motivation'
         self.assertTrue(detector(self.feature_1, self.stages_dict))
 
-    def test_code_removed(self):
+    def test_code_removed(self):  # noqa: D102
         detector = processes.PROGRESS_DETECTORS['Code removed']
         self.assertFalse(detector(self.feature_1, self.stages_dict))
         self.feature_1.impl_status_chrome = core_enums.REMOVED
         self.assertTrue(detector(self.feature_1, self.stages_dict))
 
-    def test_rollout_impact(self):
+    def test_rollout_impact(self):  # noqa: D102
         detector = processes.PROGRESS_DETECTORS['Rollout impact']
         # There is always a value for this
         self.assertTrue(detector(self.feature_1, self.stages_dict))
         self.stages_dict[1061][0].rollout_impact = 1
         self.assertTrue(detector(self.feature_1, self.stages_dict))
 
-    def test_rollout_milestone(self):
+    def test_rollout_milestone(self):  # noqa: D102
         detector = processes.PROGRESS_DETECTORS['Rollout milestone']
         self.assertFalse(detector(self.feature_1, self.stages_dict))
         self.stages_dict[1061][0].rollout_milestone = 99
         self.assertTrue(detector(self.feature_1, self.stages_dict))
 
-    def test_rollout_platforms(self):
+    def test_rollout_platforms(self):  # noqa: D102
         detector = processes.PROGRESS_DETECTORS['Rollout platforms']
         self.assertFalse(detector(self.feature_1, self.stages_dict))
         self.stages_dict[1061][0].rollout_platforms = ['iOS', 'Android']
         self.assertTrue(detector(self.feature_1, self.stages_dict))
 
-    def test_rollout_stage_plan(self):
+    def test_rollout_stage_plan(self):  # noqa: D102
         detector = processes.PROGRESS_DETECTORS['Rollout stage plan']
         self.assertFalse(detector(self.feature_1, self.stages_dict))
         self.stages_dict[1061][0].rollout_stage_plan = 1
         self.assertTrue(detector(self.feature_1, self.stages_dict))
 
-    def test_rollout_details(self):
+    def test_rollout_details(self):  # noqa: D102
         detector = processes.PROGRESS_DETECTORS['Rollout details']
         self.assertFalse(detector(self.feature_1, self.stages_dict))
         self.stages_dict[1061][0].rollout_details = 'Details'
         self.assertTrue(detector(self.feature_1, self.stages_dict))
 
-    def test_enterprise_policies(self):
+    def test_enterprise_policies(self):  # noqa: D102
         detector = processes.PROGRESS_DETECTORS['Enterprise policies']
         self.assertFalse(detector(self.feature_1, self.stages_dict))
         self.stages_dict[1061][0].enterprise_policies = ['Policy1', 'Policy2']

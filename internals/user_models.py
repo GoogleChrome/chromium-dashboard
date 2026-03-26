@@ -1,4 +1,4 @@
-# Copyright 2022 Google Inc.
+# Copyright 2022 Google Inc.  # noqa: D100
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
 # you may not use this file except in compliance with the License.
@@ -90,7 +90,7 @@ class UserPref(ndb.Model):
             result.extend(chunk_prefs)
             found_set = set(up.email for up in chunk_prefs)
 
-            # Make default prefs for any user that does not already have an entity.
+            # Make default prefs for any user that does not already have an entity.  # noqa: E501
             new_prefs = [
                 UserPref(email=e) for e in chunk_emails if e not in found_set
             ]
@@ -141,11 +141,11 @@ class AppUser(ndb.Model):
         return found_app_user
 
 
-def list_with_component(l, component):  # noqa: E741
+def list_with_component(l, component):  # noqa: D103, E741
     return [x for x in l if x.id() == component.key.integer_id()]
 
 
-def list_without_component(l, component):  # noqa: E741
+def list_without_component(l, component):  # noqa: D103, E741
     return [x for x in l if x.id() != component.key.integer_id()]
 
 
@@ -197,7 +197,7 @@ class FeatureOwner(ndb.Model):
         """Adds the user as the Blink component owner."""
         c = BlinkComponent.get_by_id(component_id)
         if c:
-            # Update both the primary list and blink components subscribers if the
+            # Update both the primary list and blink components subscribers if the  # noqa: E501
             # user is not already in them.
             self.add_to_component_subscribers(component_id)
             if not len(list_with_component(self.primary_blink_components, c)):
@@ -205,25 +205,25 @@ class FeatureOwner(ndb.Model):
             return self.put()
         return None
 
-    def remove_as_component_owner(self, component_id):
+    def remove_as_component_owner(self, component_id):  # noqa: D102
         return self.remove_from_component_subscribers(
             component_id, remove_as_owner=True
         )
 
 
-class BlinkComponent(ndb.Model):
+class BlinkComponent(ndb.Model):  # noqa: D101
     name = ndb.StringProperty(required=True, default=settings.DEFAULT_COMPONENT)
     created = ndb.DateTimeProperty(auto_now_add=True)
     updated = ndb.DateTimeProperty(auto_now=True)
 
     @property
-    def subscribers(self):
+    def subscribers(self):  # noqa: D102
         q = FeatureOwner.query(FeatureOwner.blink_components == self.key)
         q = q.order(FeatureOwner.name)
         return q.fetch(None)
 
     @property
-    def owners(self):
+    def owners(self):  # noqa: D102
         q = FeatureOwner.query(
             FeatureOwner.primary_blink_components == self.key
         )

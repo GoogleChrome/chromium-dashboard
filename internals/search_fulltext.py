@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-  # noqa: D100
 # Copyright 2022 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
@@ -220,7 +220,7 @@ def search_fulltext(
         return feature_ids
 
 
-class ReindexAllFeatures(FlaskHandler):
+class ReindexAllFeatures(FlaskHandler):  # noqa: D101
     def get_template_data(self, **kwargs) -> str:
         """Updates the fulltext index for all features."""
         self.require_cron_header()
@@ -236,7 +236,7 @@ class ReindexAllFeatures(FlaskHandler):
         return msg
 
 
-class FindStopWords(FlaskHandler):
+class FindStopWords(FlaskHandler):  # noqa: D101
     JSONIFY = True
 
     def get_template_data(self, **kwargs) -> list[tuple[str, int]]:

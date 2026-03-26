@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-  # noqa: D100
 # Copyright 2021 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
@@ -84,7 +84,7 @@ class PipelineError(Exception):
     pass
 
 
-def normalized_name(val):
+def normalized_name(val):  # noqa: D103
     return val.lower().replace(' ', '').replace('/', '')
 
 
@@ -194,7 +194,7 @@ def dedupe(list_with_duplicates):
     return list(dict.fromkeys(list_with_duplicates))
 
 
-def get_chromium_milestone_info(milestone: int) -> dict:
+def get_chromium_milestone_info(milestone: int) -> dict:  # noqa: D103
     try:
         response = requests.get(
             'https://chromiumdash.appspot.com/fetch_milestone_schedule'
@@ -208,7 +208,7 @@ def get_chromium_milestone_info(milestone: int) -> dict:
 
 
 def get_current_milestone_info(anchor_channel: str):
-    """Return a dict of info about the next milestone reaching anchor_channel."""
+    """Return a dict of info about the next milestone reaching anchor_channel."""  # noqa: E501
     try:
         resp = requests.get(
             f'{CHROME_RELEASE_SCHEDULE_URL}?mstone={anchor_channel}'
@@ -279,7 +279,7 @@ def reformat_wpt_fyi_url(url: str) -> str:
 
     Returns:
       The URL normalized to the source file (e.g., '.../test.any.js').
-    """  # noqa: D205
+    """  # noqa: D205, E501
     substring = '.any.'
     if substring in url:
         # Find the index where ".any." ends
@@ -452,7 +452,7 @@ async def get_mixed_wpt_contents_async(
     # Adjacency list to track the dependency graph: Parent -> Set of Children
     dependency_graph: dict[Path, set[Path]] = {}
 
-    # Set of paths we have already queued or fetched to prevent infinite recursion
+    # Set of paths we have already queued or fetched to prevent infinite recursion  # noqa: E501
     visited_paths: set[Path] = set()
 
     # Set of paths that are explicitly requested (Test Files)
@@ -535,8 +535,8 @@ async def get_mixed_wpt_contents_async(
 
                 # If valid path
                 if resolved_path:
-                    # Always record the edge in the graph, even if we've seen the file.
-                    # This ensures shared dependencies are mapped to all their parents.
+                    # Always record the edge in the graph, even if we've seen the file.  # noqa: E501
+                    # This ensures shared dependencies are mapped to all their parents.  # noqa: E501
                     if fpath not in dependency_graph:
                         dependency_graph[fpath] = set()
                     dependency_graph[fpath].add(resolved_path)
@@ -567,7 +567,7 @@ async def get_mixed_wpt_contents_async(
         while stack:
             current_path = stack.pop()
 
-            # If the current node is a dependency (and not the start node), record it.
+            # If the current node is a dependency (and not the start node), record it.  # noqa: E501
             # We check 'in dependency_contents' to ensure we only return files
             # that were actually fetched and categorized as dependencies.
             if current_path != test_path:

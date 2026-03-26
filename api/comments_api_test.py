@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-  # noqa: D100
 # Copyright 2021 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
@@ -34,7 +34,7 @@ test_app = flask.Flask(__name__)
 NOW = datetime.datetime.now()
 
 
-class CommentsConvertersTest(testing_config.CustomTestCase):
+class CommentsConvertersTest(testing_config.CustomTestCase):  # noqa: D101
     def test_amendment_to_OAM__normal(self):
         """We can convert a NDB Amendment to a Open API Amendment."""
         amend = Amendment(
@@ -53,7 +53,7 @@ class CommentsConvertersTest(testing_config.CustomTestCase):
         self.assertEqual(oam.old_value, 'old')
         self.assertEqual(oam.new_value, '')
 
-    def test_amendment_to_json_dict(self):
+    def test_amendment_to_json_dict(self):  # noqa: D102
         amnd = Amendment(field_name='summary', old_value='foo', new_value='bar')
         expected = AmendmentModel(
             field_name='summary', old_value='foo', new_value='bar'
@@ -72,7 +72,7 @@ class CommentsConvertersTest(testing_config.CustomTestCase):
         actual = comments_api.amendment_to_OAM(amnd)
         self.assertEqual(expected, actual)
 
-    def test_activity_to_json_dict(self):
+    def test_activity_to_json_dict(self):  # noqa: D102
         amnd_1 = Amendment(
             field_name='summary', old_value='foo', new_value='bar'
         )
@@ -111,8 +111,8 @@ class CommentsConvertersTest(testing_config.CustomTestCase):
         self.assertEqual(expected, actual)
 
 
-class CommentsAPITest(testing_config.CustomTestCase):
-    def setUp(self):
+class CommentsAPITest(testing_config.CustomTestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         self.feature_1 = FeatureEntry(
             name='feature one', summary='sum', category=1
         )
@@ -161,7 +161,7 @@ class CommentsAPITest(testing_config.CustomTestCase):
         self.assertEqual({'comments': []}, actual_response)
 
     def test_get__legacy_comments(self):
-        """We no longer return legacy gate comments when gate_id is specified."""
+        """We no longer return legacy gate comments when gate_id is specified."""  # noqa: E501
         testing_config.sign_out()
         testing_config.sign_in('user7@example.com', 123567890)
 
@@ -246,7 +246,7 @@ class CommentsAPITest(testing_config.CustomTestCase):
                 self.handler.do_post(feature_id=12345, gate_id=self.gate_1_id)
 
     def test_patch__forbidden(self):
-        """Handler rejects requests from users who can't edit the given comment."""
+        """Handler rejects requests from users who can't edit the given comment."""  # noqa: E501
         self.act_1_1.put()
         params = {'commentId': self.act_1_1.key.id(), 'isUndelete': False}
 
@@ -261,7 +261,7 @@ class CommentsAPITest(testing_config.CustomTestCase):
                 self.handler.do_patch(feature_id=self.feature_id)
 
     def test_patch__delete_comment(self):
-        """Handler marks a comment as deleted as requested by authorized user."""
+        """Handler marks a comment as deleted as requested by authorized user."""  # noqa: E501
         self.act_1_1.put()
 
         user_email = 'owner1@example.com'
@@ -282,7 +282,7 @@ class CommentsAPITest(testing_config.CustomTestCase):
         self.assertEqual(activity.deleted_by, user_email)
 
     def test_patch__undelete_comment(self):
-        """Handler unmarks a comment as deleted as requested by authorized user."""
+        """Handler unmarks a comment as deleted as requested by authorized user."""  # noqa: E501
         user_email = 'owner1@example.com'
         self.act_1_1.deleted_by = user_email
         self.act_1_1.put()

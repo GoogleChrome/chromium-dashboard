@@ -1,4 +1,4 @@
-# Copyright 2020 Google Inc.
+# Copyright 2020 Google Inc.  # noqa: D100
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
 # you may not use this file except in compliance with the License.
@@ -18,8 +18,8 @@ import testing_config  # Must be imported before the module under test.
 from internals import user_models
 
 
-class UserPrefTest(testing_config.CustomTestCase):
-    def setUp(self):
+class UserPrefTest(testing_config.CustomTestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         self.user_pref_1 = user_models.UserPref(email='one@example.com')
         self.user_pref_1.notify_as_starrer = False
         self.user_pref_1.put()
@@ -28,13 +28,13 @@ class UserPrefTest(testing_config.CustomTestCase):
         self.user_pref_2.put()
 
     @mock.patch('framework.users.get_current_user')
-    def test_get_signed_in_user_pref__anon(self, mock_get_current_user):
+    def test_get_signed_in_user_pref__anon(self, mock_get_current_user):  # noqa: D102
         mock_get_current_user.return_value = None
         actual = user_models.UserPref.get_signed_in_user_pref()
         self.assertIsNone(actual)
 
     @mock.patch('framework.users.get_current_user')
-    def test_get_signed_in_user_pref__first_time(self, mock_get_current_user):
+    def test_get_signed_in_user_pref__first_time(self, mock_get_current_user):  # noqa: D102
         mock_get_current_user.return_value = testing_config.Blank(
             email=lambda: 'user1@example.com'
         )
@@ -46,7 +46,7 @@ class UserPrefTest(testing_config.CustomTestCase):
         self.assertEqual(False, actual.bounced)
 
     @mock.patch('framework.users.get_current_user')
-    def test_get_signed_in_user_pref__had_pref(self, mock_get_current_user):
+    def test_get_signed_in_user_pref__had_pref(self, mock_get_current_user):  # noqa: D102
         mock_get_current_user.return_value = testing_config.Blank(
             email=lambda: 'user2@example.com'
         )
@@ -88,7 +88,7 @@ class UserPrefTest(testing_config.CustomTestCase):
         self.assertEqual('one@example.com', revised_user_pref.email)
         self.assertEqual(['welcome-message'], revised_user_pref.dismissed_cues)
 
-    def test_get_prefs_for_emails__some_found(self):
+    def test_get_prefs_for_emails__some_found(self):  # noqa: D102
         emails = ['one@example.com', 'two@example.com', 'huh@example.com']
         user_prefs = user_models.UserPref.get_prefs_for_emails(emails)
         self.assertEqual(3, len(user_prefs))
@@ -101,7 +101,7 @@ class UserPrefTest(testing_config.CustomTestCase):
         self.assertEqual('huh@example.com', huh.email)
         self.assertTrue(huh.notify_as_starrer)
 
-    def test_get_prefs_for_emails__long_list(self):
+    def test_get_prefs_for_emails__long_list(self):  # noqa: D102
         emails = ['user_%d@example.com' % i for i in range(100)]
         user_prefs = user_models.UserPref.get_prefs_for_emails(emails)
         self.assertEqual(100, len(user_prefs))

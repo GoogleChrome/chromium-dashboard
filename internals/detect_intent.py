@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-  # noqa: D100
 # Copyright 2021 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
@@ -191,7 +191,7 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
 
     IS_INTERNAL_HANDLER = True
 
-    def process_post_data(self, **kwargs):
+    def process_post_data(self, **kwargs):  # noqa: D102
         self.require_task_header()
 
         from_addr = self.get_param('from_addr')
@@ -292,7 +292,7 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
 
         return FeatureEntry.get_by_id(fe_ids[0]), None
 
-    def get_gate_and_stage(
+    def get_gate_and_stage(  # noqa: D102
         self,
         feature: FeatureEntry,
         gate_info: approval_defs.GateInfo,
@@ -375,7 +375,7 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
             )
             return matching_stage
 
-        # TODO(DanielRyanSmith): This logic could still fail in some circumstances.
+        # TODO(DanielRyanSmith): This logic could still fail in some circumstances.  # noqa: E501
         # Move to a guaranteed gate ID detection method, or post intent threads
         # on behalf of the user with a unique identifier.
         # If only 1 stage exists without a set intent URL, we can assume that
@@ -393,7 +393,7 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
             return None
         return stages_with_no_intent_thread_url[0]
 
-    def set_intent_thread_url(
+    def set_intent_thread_url(  # noqa: D102
         self, stage: Stage, thread_url: str | None, subject: str | None
     ) -> None:
         if stage.intent_thread_url and stage.intent_subject_line:
@@ -426,7 +426,7 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
         # the approval rule (1 or 3 LTGMs) is satisfied.
         if detect_lgtm(body) and is_lgtm_allowed(from_addr, feature, gate_info):
             logging.info('found LGTM')
-            # Avoid a race condition when blink-dev is in both To: and Cc: lines.
+            # Avoid a race condition when blink-dev is in both To: and Cc: lines.  # noqa: E501
             time.sleep(random.uniform(0, 5))
             gate = Gate.get_by_id(gate.key.integer_id())  # Reload after sleep
             old_gate_state = gate.state

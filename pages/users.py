@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-  # noqa: D100
 # Copyright 2013 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
@@ -24,11 +24,11 @@ from framework import basehandlers, permissions
 from internals import user_models
 
 
-class UserListHandler(basehandlers.FlaskHandler):
+class UserListHandler(basehandlers.FlaskHandler):  # noqa: D101
     TEMPLATE_PATH = 'admin/users/new.html'
 
     @permissions.require_admin_site
-    def get_template_data(self, **kwargs):
+    def get_template_data(self, **kwargs):  # noqa: D102
         users = user_models.AppUser.query().fetch(None)
         user_list = [accounts_api.user_to_json_dict(user) for user in users]
 

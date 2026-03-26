@@ -1,4 +1,4 @@
-# Copyright 2021 Google Inc.
+# Copyright 2021 Google Inc.  # noqa: D100
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
 # you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@ from internals.user_models import UserPref
 test_app = flask.Flask(__name__)
 
 
-class FunctionTests(testing_config.CustomTestCase):
+class FunctionTests(testing_config.CustomTestCase):  # noqa: D101
     def test_get_param__simple(self):
         """We can simply get a JSON parameter, with defaults."""
         with test_app.test_request_context('/test', json={'x': 1}):
@@ -49,8 +49,8 @@ class FunctionTests(testing_config.CustomTestCase):
         )
 
 
-class OutboundEmailHandlerTest(testing_config.CustomTestCase):
-    def setUp(self):
+class OutboundEmailHandlerTest(testing_config.CustomTestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         self.request_path = '/tasks/outbound-email'
 
         self.to = 'user@example.com'
@@ -146,15 +146,15 @@ class OutboundEmailHandlerTest(testing_config.CustomTestCase):
         self.assertEqual({'message': 'Done'}, actual_response)
 
 
-class BouncedEmailHandlerTest(testing_config.CustomTestCase):
-    def setUp(self):
+class BouncedEmailHandlerTest(testing_config.CustomTestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         self.sender = (
             'Chromestatus <admin@%s.appspotmail.com>' % settings.APP_ID
         )
         self.expected_to = settings.BOUNCE_ESCALATION_ADDR
 
     @mock.patch('framework.sendemail.receive')
-    def test_process_post_data(self, mock_receive):
+    def test_process_post_data(self, mock_receive):  # noqa: D102
         with test_app.test_request_context('/_ah/bounce'):
             actual_json = sendemail.handle_bounce()
 
@@ -234,7 +234,7 @@ class BouncedEmailHandlerTest(testing_config.CustomTestCase):
         mock_message.send.assert_called()
 
 
-class FunctionTest(testing_config.CustomTestCase):
+class FunctionTest(testing_config.CustomTestCase):  # noqa: D101
     def test_extract_addrs(self):
         """We can parse email From: lines."""
         header_val = ''
@@ -270,7 +270,7 @@ HEADER_LINES = [
 ]
 
 
-class InboundEmailHandlerTest(testing_config.CustomTestCase):
+class InboundEmailHandlerTest(testing_config.CustomTestCase):  # noqa: D101
     def test_handle_incoming_mail__wrong_to_addr(self):
         """Reject the email if the app was not on the To: line."""
         with test_app.test_request_context('/_ah/mail/other@example.com'):
@@ -353,7 +353,7 @@ class InboundEmailHandlerTest(testing_config.CustomTestCase):
     def test_handle_incoming_mail__fallback_to_mailing_list(
         self, mock_get_incoming_message, mock_enqueue_task
     ):
-        """If there is no personal X-Original-From, use the mailing list From:."""
+        """If there is no personal X-Original-From, use the mailing list From:."""  # noqa: E501
         msg = MakeMessage(HEADER_LINES, 'Please review')
         del msg['X-Original-From']
         mock_get_incoming_message.return_value = msg

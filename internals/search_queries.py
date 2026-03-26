@@ -1,4 +1,4 @@
-# Copyright 2022 Google Inc.
+# Copyright 2022 Google Inc.  # noqa: D100
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
 # you may not use this file except in compliance with the License.
@@ -121,7 +121,7 @@ def single_field_query_async(
         query = FeatureEntry.query()
         field = QUERIABLE_FIELDS[field_name]
         if core_enums.is_enum_field(field_name):
-            # Intervals of enums aren't supported for now because the integer values
+            # Intervals of enums aren't supported for now because the integer values  # noqa: E501
             # aren't in a logical order.
             enum_val_list = []
             for val in val_list:
@@ -293,7 +293,7 @@ QUERIABLE_FIELDS: dict[str, Property] = {
     'browsers.chrome.status': FeatureEntry.impl_status_chrome,
     'browsers.chrome.flag_name': FeatureEntry.flag_name,
     'browsers.chrome.finch_name': FeatureEntry.finch_name,
-    'browsers.chrome.non_finch_justification': FeatureEntry.non_finch_justification,
+    'browsers.chrome.non_finch_justification': FeatureEntry.non_finch_justification,  # noqa: E501
     'ongoing_constraints': FeatureEntry.ongoing_constraints,
     'motivation': FeatureEntry.motivation,
     'devtrial_instructions': FeatureEntry.devtrial_instructions,

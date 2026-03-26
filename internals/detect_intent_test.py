@@ -1,4 +1,4 @@
-# Copyright 2021 Google Inc.
+# Copyright 2021 Google Inc.  # noqa: D100
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
 # you may not use this file except in compliance with the License.
@@ -30,8 +30,8 @@ from internals.review_models import Gate, Vote
 test_app = flask.Flask(__name__)
 
 
-class FunctionTest(testing_config.CustomTestCase):
-    def setUp(self):
+class FunctionTest(testing_config.CustomTestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         self.feature_1 = FeatureEntry(
             id=1,
             name='feature one',
@@ -297,7 +297,7 @@ class FunctionTest(testing_config.CustomTestCase):
     def test_detect_thread_url(self):
         """We can parse the thread archive link from the body footer."""
         footer = (
-            'You received this message because you are subscribed to the Google '
+            'You received this message because you are subscribed to the Google '  # noqa: E501
             'Groups "blink-dev" group.\n'
             'To unsubscribe from this group and stop receiving emails from it,'
             'send an email to blink-dev+unsubscribe@chromium.org.\n'
@@ -321,7 +321,7 @@ class FunctionTest(testing_config.CustomTestCase):
             '>'
             '>  [SNIP]'
             '> --\n'
-            '> You received this message because you are subscribed to the Google\n'
+            '> You received this message because you are subscribed to the Google\n'  # noqa: E501
             '> Groups "blink-dev" group.\n'
             '> To unsubscribe from this group and stop receiving emails from it, send\n'  # noqa: E501
             '> an email to blink-dev+unsubscribe@chromium.org.\n'
@@ -375,7 +375,7 @@ class FunctionTest(testing_config.CustomTestCase):
     def test_detect_thread_url__staging(self):
         """We can parse the staging thread archive link from the body footer."""
         footer = (
-            'You received this message because you are subscribed to the Google '
+            'You received this message because you are subscribed to the Google '  # noqa: E501
             'Groups "jrobbins-test" group.\n'
             'To unsubscribe from this group and stop receiving emails from it,'
             'send an email to jrobbins-test+unsubscribe@googlegroups.com.\n'
@@ -491,7 +491,7 @@ class FunctionTest(testing_config.CustomTestCase):
         )
 
     def test_detect_new_thread__gate_was_updated(self):
-        """Existing thread is detected when its gate has already changed state."""
+        """Existing thread is detected when its gate has already changed state."""  # noqa: E501
         self.assertFalse(
             detect_intent.detect_new_thread(
                 Gate(
@@ -516,8 +516,8 @@ class FunctionTest(testing_config.CustomTestCase):
         )
 
 
-class IntentEmailHandlerTest(testing_config.CustomTestCase):
-    def setUp(self):
+class IntentEmailHandlerTest(testing_config.CustomTestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         self.feature_1 = FeatureEntry(
             name='feature one',
             summary='detailed sum',
@@ -727,7 +727,7 @@ class IntentEmailHandlerTest(testing_config.CustomTestCase):
 
     @mock.patch('logging.info')
     def test_process_post_data__incorrect_gate_type(self, mock_info):
-        """Intent will not be processed if gate type does not match intent type"""  # noqa: D415
+        """Intent will not be processed if gate type does not match intent type"""  # noqa: D415, E501
         extend_json_data = {
             'from_addr': 'user@example.com',
             'subject': 'Intent to Extend Experiment: Featurename',
@@ -756,7 +756,7 @@ class IntentEmailHandlerTest(testing_config.CustomTestCase):
         )
 
     def test_process_post_data__new_thread_already_empty_str(self):
-        """We still set intent_thread_url if it was previously an empty string."""
+        """We still set intent_thread_url if it was previously an empty string."""  # noqa: E501
         self.stages_dict[160][0].intent_thread_url = ''
         self.stages_dict[160][0].put()
         self.test_process_post_data__new_thread()
@@ -780,7 +780,7 @@ class IntentEmailHandlerTest(testing_config.CustomTestCase):
 
     @mock.patch('internals.detect_intent.is_lgtm_allowed')
     def test_process_post_data__lgtm(self, mock_is_lgtm_allowed):
-        """If we get an LGTM, we store the approval value and update the feature."""
+        """If we get an LGTM, we store the approval value and update the feature."""  # noqa: E501
         mock_is_lgtm_allowed.return_value = True
         self.stages_dict[160][0].intent_thread_url = self.thread_url
         self.stages_dict[160][0].put()

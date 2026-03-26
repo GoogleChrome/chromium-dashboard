@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-  # noqa: D100
 # Copyright 2021 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
@@ -39,7 +39,7 @@ class TokenRefreshAPI(basehandlers.APIHandler):
 
     # Note: we use only POST instead of GET to avoid attacks that use GETs.
     def do_post(self, **kwargs):
-        """Refresh the session and return a new XSRF token for the current user."""
+        """Refresh the session and return a new XSRF token for the current user."""  # noqa: E501
         user = self.get_current_user()
         users.refresh_user_session()
         result = TokenRefreshResponse.from_dict(

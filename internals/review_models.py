@@ -1,4 +1,4 @@
-# Copyright 2020 Google Inc.
+# Copyright 2020 Google Inc.  # noqa: D100
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
 # you may not use this file except in compliance with the License.
@@ -41,7 +41,7 @@ class OwnersFile(ndb.Model):
 
     @classmethod
     def get_raw_owner_file(cls, url) -> OwnersFile | None:
-        """Retrieve raw the owner file's content, if it is created with an hour."""
+        """Retrieve raw the owner file's content, if it is created with an hour."""  # noqa: E501
         q = cls.query()
         q = q.filter(cls.url == url)
         owners_file_list = q.fetch(1)

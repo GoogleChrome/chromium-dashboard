@@ -1,4 +1,4 @@
-# Copyright 2024 Google LLC
+# Copyright 2024 Google LLC  # noqa: D100
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -52,7 +52,7 @@ from internals.user_models import AppUser
 test_app = flask.Flask(__name__)
 
 
-def make_feature(
+def make_feature(  # noqa: D103
     name: str,
     active_stage: int,
     tag: str | None = None,
@@ -106,8 +106,8 @@ def make_feature(
     return fe
 
 
-class ExternalReviewsAPITest(testing_config.CustomTestCase):
-    def setUp(self):
+class ExternalReviewsAPITest(testing_config.CustomTestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         self.handler = external_reviews_api.ExternalReviewsAPI()
         self.request_path = '/api/v0/external_reviews'
         self.maxDiff = None
@@ -154,7 +154,7 @@ class ExternalReviewsAPITest(testing_config.CustomTestCase):
             result,
         )
 
-    def test_one_unfinished_webkit_review(self):
+    def test_one_unfinished_webkit_review(self):  # noqa: D102
         tag = 'https://github.com/w3ctag/design-reviews/issues/1'
         webkit = 'https://github.com/WebKit/standards-positions/issues/3'
         fe = make_feature(
@@ -188,7 +188,7 @@ class ExternalReviewsAPITest(testing_config.CustomTestCase):
             result,
         )
 
-    def test_one_unfinished_gecko_review(self):
+    def test_one_unfinished_gecko_review(self):  # noqa: D102
         gecko = 'https://github.com/mozilla/standards-positions/issues/2'
         webkit = 'https://github.com/WebKit/standards-positions/issues/3'
         fe = make_feature(
@@ -289,7 +289,7 @@ class ExternalReviewsAPITest(testing_config.CustomTestCase):
         result = self.handler.do_get(review_group='webkit')
         self.assertEqual(0, len(result['reviews']))
 
-    def test_finished_review_isnt_shown(self):
+    def test_finished_review_isnt_shown(self):  # noqa: D102
         tag = 'https://github.com/w3ctag/design-reviews/issues/1'
         webkit = 'https://github.com/WebKit/standards-positions/issues/3'
         fe = make_feature(
@@ -310,7 +310,7 @@ class ExternalReviewsAPITest(testing_config.CustomTestCase):
             result,
         )
 
-    def test_feature_without_a_crawled_link_isnt_shown(self):
+    def test_feature_without_a_crawled_link_isnt_shown(self):  # noqa: D102
         tag = 'https://github.com/w3ctag/design-reviews/issues/1'
         fe = make_feature(
             'Feature one',
@@ -599,7 +599,7 @@ class ExternalReviewsAPITest(testing_config.CustomTestCase):
 
         # This test expectation is saved to a JSON file so the
         # Playwright tests can use it as a mock API response. Because the real feature IDs are  # noqa: E501
-        # dynamically generated, we have to slot them into the right places here.
+        # dynamically generated, we have to slot them into the right places here.  # noqa: E501
         with open(
             os.path.join(
                 os.path.dirname(__file__),

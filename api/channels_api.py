@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-  # noqa: D100
 # Copyright 2021 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
@@ -75,7 +75,7 @@ TEST_CHANNEL_DATA = {
 }
 
 
-def construct_chrome_channels_details():
+def construct_chrome_channels_details():  # noqa: D103
     omaha_data = fetchchannels.get_omaha_data()
     channels = {}
     win_versions = omaha_data[0]['versions']
@@ -88,7 +88,7 @@ def construct_chrome_channels_details():
         )
         channels[channel]['version'] = major_version
 
-    # Adjust for the brief period after next miletone gets promted to stable/beta
+    # Adjust for the brief period after next miletone gets promted to stable/beta  # noqa: E501
     # channel and their major versions are the same.
     if channels['stable']['version'] == channels['beta']['version']:
         new_beta_version = channels['stable']['version'] + 1
@@ -115,7 +115,7 @@ def construct_chrome_channels_details():
     return channels
 
 
-def construct_specified_milestones_details(start, end):
+def construct_specified_milestones_details(start, end):  # noqa: D103
     channels = {}
     win_versions = list(range(start, end + 1))
 
@@ -128,7 +128,7 @@ def construct_specified_milestones_details(start, end):
 class ChannelsAPI(basehandlers.APIHandler):
     """Channels are the Chrome Versions across platforms."""
 
-    def do_get(self, **kwargs):
+    def do_get(self, **kwargs):  # noqa: D102
         # Query-string parameters 'start' and 'end' are provided
         start = self.get_int_arg('start')
         end = self.get_int_arg('end')

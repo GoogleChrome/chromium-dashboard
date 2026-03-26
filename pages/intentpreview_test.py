@@ -1,4 +1,4 @@
-# Copyright 2020 Google Inc.
+# Copyright 2020 Google Inc.  # noqa: D100
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
 # you may not use this file except in compliance with the License.
@@ -139,10 +139,10 @@ def _create_complete_feature():
     )
 
 
-class IntentEmailPreviewTemplateTest(testing_config.CustomTestCase):
+class IntentEmailPreviewTemplateTest(testing_config.CustomTestCase):  # noqa: D101
     HANDLER_CLASS = intentpreview.IntentEmailPreviewHandler
 
-    def setUp(self):
+    def setUp(self):  # noqa: D102
         super(IntentEmailPreviewTemplateTest, self).setUp()
         self.complete_feature = _create_complete_feature()
         self.complete_feature.put()

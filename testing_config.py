@@ -1,4 +1,4 @@
-# Copyright 2020 Google Inc.
+# Copyright 2020 Google Inc.  # noqa: D100
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
 # you may not use this file except in compliance with the License.
@@ -40,7 +40,7 @@ class FakeCloudTasksClient(object):
 
     def queue_path(self, project, location, queue):
         """Return a fully-qualified queue string."""
-        # This is value is not actually used, but it might be good for debugging.
+        # This is value is not actually used, but it might be good for debugging.  # noqa: E501
         return 'projects/{project}/locations/{location}/queues/{queue}'.format(
             project=project, location=location, queue=queue
         )
@@ -93,8 +93,8 @@ def sign_in(user_email, user_id):
     os.environ['AUTH_DOMAIN'] = '0'
 
 
-class CustomTestCase(unittest.TestCase):
-    def run(self, result=None):
+class CustomTestCase(unittest.TestCase):  # noqa: D101
+    def run(self, result=None):  # noqa: D102
         from framework import rediscache
 
         if rediscache.redis_client:
@@ -105,7 +105,7 @@ class CustomTestCase(unittest.TestCase):
             super(CustomTestCase, self).run(result=result)
 
 
-class Testdata(object):
+class Testdata(object):  # noqa: D101
     def __init__(self, test_file_path: str):
         """Helper class to load testdata
         Common pattern to place the testdata in the following format:

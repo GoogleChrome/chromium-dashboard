@@ -1,4 +1,4 @@
-# Copyright 2022 Google Inc.
+# Copyright 2022 Google Inc.  # noqa: D100
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
 # you may not use this file except in compliance with the License.
@@ -42,7 +42,7 @@ class MockResponse:
         self.text = text
 
 
-def make_test_features():
+def make_test_features():  # noqa: D103
     feature_1 = FeatureEntry(
         id=1,
         name='feature one',
@@ -105,8 +105,8 @@ def make_test_features():
     return feature_1, feature_2, feature_3
 
 
-class FunctionTest(testing_config.CustomTestCase):
-    def setUp(self):
+class FunctionTest(testing_config.CustomTestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         self.current_milestone_info = {
             'earliest_beta': '2022-09-21T12:34:56',
         }
@@ -154,7 +154,7 @@ class FunctionTest(testing_config.CustomTestCase):
 
         self.maxDiff = None
 
-    def tearDown(self) -> None:
+    def tearDown(self) -> None:  # noqa: D102
         kinds: list[ndb.Model] = [FeatureEntry, Stage, UserPref]
         for kind in kinds:
             for entity in kind.query():
@@ -257,7 +257,7 @@ class FunctionTest(testing_config.CustomTestCase):
         self.assertEqual(len(actual), len(expected))
         self.assertEqual(set(actual), set(expected))
 
-    def test_build_email_tasks_feature_accuracy(self):
+    def test_build_email_tasks_feature_accuracy(self):  # noqa: D102
         with test_app.app_context():
             handler = reminders.FeatureAccuracyHandler()
             actual = reminders.build_email_tasks(
@@ -283,7 +283,7 @@ class FunctionTest(testing_config.CustomTestCase):
             task['html'],
         )
 
-    def test_build_email_tasks_feature_accuracy__enterprise(self):
+    def test_build_email_tasks_feature_accuracy__enterprise(self):  # noqa: D102
         with test_app.app_context():
             handler = reminders.FeatureAccuracyHandler()
             actual = reminders.build_email_tasks(
@@ -309,7 +309,7 @@ class FunctionTest(testing_config.CustomTestCase):
             task['html'],
         )
 
-    def test_build_email_tasks_feature_accuracy__escalated(self):
+    def test_build_email_tasks_feature_accuracy__escalated(self):  # noqa: D102
         # Set feature to have outstanding notifications to cause escalation.
         self.feature_template.outstanding_notifications = 2
 
@@ -337,7 +337,7 @@ class FunctionTest(testing_config.CustomTestCase):
             task['html'],
         )  # noqa: E501
 
-    def test_build_email_tasks_prepublication(self):
+    def test_build_email_tasks_prepublication(self):  # noqa: D102
         with test_app.app_context():
             handler = reminders.PrepublicationHandler()
             actual = reminders.build_email_tasks(
@@ -362,8 +362,8 @@ class FunctionTest(testing_config.CustomTestCase):
         )
 
 
-class FeatureAccuracyHandlerTest(testing_config.CustomTestCase):
-    def setUp(self):
+class FeatureAccuracyHandlerTest(testing_config.CustomTestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         self.feature_1, self.feature_2, self.feature_3 = make_test_features()
         self.handler = reminders.FeatureAccuracyHandler()
         self.owner_user_pref_1 = UserPref(
@@ -376,7 +376,7 @@ class FeatureAccuracyHandlerTest(testing_config.CustomTestCase):
         self.owner_user_pref_2.put()
 
     @mock.patch('requests.get')
-    def test_determine_features_to_notify__no_features(self, mock_get):
+    def test_determine_features_to_notify__no_features(self, mock_get):  # noqa: D102
         mock_return = MockResponse(
             text=(
                 '{"mstones":[{"mstone": "40", '
@@ -389,7 +389,7 @@ class FeatureAccuracyHandlerTest(testing_config.CustomTestCase):
         self.assertEqual(result, expected)
 
     @mock.patch('requests.get')
-    def test_determine_features_to_notify__valid_features(self, mock_get):
+    def test_determine_features_to_notify__valid_features(self, mock_get):  # noqa: D102
         mock_return = MockResponse(
             text=(
                 '{"mstones":[{"mstone": "150", '
@@ -411,7 +411,7 @@ class FeatureAccuracyHandlerTest(testing_config.CustomTestCase):
         self.assertEqual(result, expected)
 
     @mock.patch('requests.get')
-    def test_determine_features_to_notify__multiple_owners(self, mock_get):
+    def test_determine_features_to_notify__multiple_owners(self, mock_get):  # noqa: D102
         mock_return = MockResponse(
             text=(
                 '{"mstones":[{"mstone": "148", '
@@ -432,7 +432,7 @@ class FeatureAccuracyHandlerTest(testing_config.CustomTestCase):
         self.assertEqual(result, expected)
 
     @mock.patch('requests.get')
-    def test_determine_features_to_notify__escalated(self, mock_get):
+    def test_determine_features_to_notify__escalated(self, mock_get):  # noqa: D102
         self.feature_1.outstanding_notifications = 1
         self.feature_2.outstanding_notifications = 2
 
@@ -461,7 +461,7 @@ class FeatureAccuracyHandlerTest(testing_config.CustomTestCase):
         self.assertEqual(self.feature_2.outstanding_notifications, 3)
 
     @mock.patch('requests.get')
-    def test_determine_features_to_notify__escalated_not_outstanding(
+    def test_determine_features_to_notify__escalated_not_outstanding(  # noqa: D102
         self, mock_get
     ):
         self.feature_1.outstanding_notifications = 2
@@ -491,8 +491,8 @@ class FeatureAccuracyHandlerTest(testing_config.CustomTestCase):
         self.assertEqual(self.feature_2.outstanding_notifications, 2)
 
 
-class PrepublicationHandlerTest(testing_config.CustomTestCase):
-    def setUp(self):
+class PrepublicationHandlerTest(testing_config.CustomTestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         self.current_milestone_info = {
             'earliest_beta': '2022-09-21T12:34:56',
         }
@@ -524,8 +524,8 @@ class PrepublicationHandlerTest(testing_config.CustomTestCase):
         self.assertEqual(['mock feature'], actual)
 
 
-class SLOOverdueHandlerTest(testing_config.CustomTestCase):
-    def setUp(self):
+class SLOOverdueHandlerTest(testing_config.CustomTestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         self.feature_1, self.feature_2, self.feature_3 = make_test_features()
         self.gate_1 = Gate(
             id=11,
@@ -550,7 +550,7 @@ class SLOOverdueHandlerTest(testing_config.CustomTestCase):
         )  # Later Fri: Resol overdue
         self.day_22 = datetime(2023, 8, 9, 12, 30, 0)  # Later Tue
 
-    def tearDown(self) -> None:
+    def tearDown(self) -> None:  # noqa: D102
         kinds: list[ndb.Model] = [FeatureEntry, Stage, Gate]
         for kind in kinds:
             for entity in kind.query():

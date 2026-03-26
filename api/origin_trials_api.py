@@ -1,4 +1,4 @@
-# Copyright 2023 Google Inc.
+# Copyright 2023 Google Inc.  # noqa: D100
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
 # you may not use this file except in compliance with the License.
@@ -133,7 +133,7 @@ def find_use_counter_value(
     return None
 
 
-class OriginTrialsAPI(basehandlers.EntitiesAPIHandler):
+class OriginTrialsAPI(basehandlers.EntitiesAPIHandler):  # noqa: D101
     def do_get(self, **kwargs):
         """Get a list of all origin trials.
 
@@ -294,7 +294,7 @@ class OriginTrialsAPI(basehandlers.EntitiesAPIHandler):
         )
         return redirect_resp
 
-    def do_post(self, **kwargs):
+    def do_post(self, **kwargs):  # noqa: D102
         feature_id = int(kwargs['feature_id'])
         # Check that feature ID is valid.
         if not feature_id:
@@ -338,7 +338,7 @@ class OriginTrialsAPI(basehandlers.EntitiesAPIHandler):
             self.abort(
                 500, f'Error obtaining Chromium file for validation: {str(exc)}'
             )
-        # Chromium file checks can be bypassed, but only in non-prod environments.
+        # Chromium file checks can be bypassed, but only in non-prod environments.  # noqa: E501
         if (
             settings.PROD
             or not body['ot_creation__bypass_file_checks']
@@ -367,7 +367,7 @@ class OriginTrialsAPI(basehandlers.EntitiesAPIHandler):
     def _validate_extension_args(
         self, feature_id: int, ot_stage: Stage, extension_stage: Stage
     ) -> None:
-        """Abort if any arguments used for origin trial extension are invalid."""
+        """Abort if any arguments used for origin trial extension are invalid."""  # noqa: E501
         # The stage should belong to the feature.
         if feature_id != extension_stage.feature_id:
             self.abort(

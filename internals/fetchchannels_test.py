@@ -1,4 +1,4 @@
-# Copyright 2024 Google Inc.
+# Copyright 2024 Google Inc.  # noqa: D100
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
 # you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ import testing_config  # Must be imported first
 from internals import fetchchannels
 
 
-class ChannelsAPITest(testing_config.CustomTestCase):
+class ChannelsAPITest(testing_config.CustomTestCase):  # noqa: D101
     @mock.patch('requests.get')
     def test_fetch_chrome_release_info__found(self, mock_requests_get):
         """We can get channel data from the chromiumdash app."""

@@ -1,4 +1,4 @@
-#
+#  # noqa: D100
 # Licensed under the Apache License, Version 2.0 (the "License")
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -26,11 +26,11 @@ test_app = flask.Flask(
 )
 
 
-class TestWithFeature(testing_config.CustomTestCase):
+class TestWithFeature(testing_config.CustomTestCase):  # noqa: D101
     REQUEST_PATH_FORMAT: Optional[str] = None
     HANDLER_CLASS: Optional[object] = None
 
-    def setUp(self):
+    def setUp(self):  # noqa: D102
         self.app_user = user_models.AppUser(email='registered@example.com')
         self.app_user.put()
 
@@ -57,7 +57,7 @@ class TestWithFeature(testing_config.CustomTestCase):
             self.handler = self.HANDLER_CLASS()
 
 
-class FeaturesJsonHandlerTest(TestWithFeature):
+class FeaturesJsonHandlerTest(TestWithFeature):  # noqa: D101
     REQUEST_PATH_FORMAT = '/features.json'
     HANDLER_CLASS = featurelist.FeaturesJsonHandler
 
@@ -71,7 +71,7 @@ class FeaturesJsonHandlerTest(TestWithFeature):
         self.assertEqual('feature one', json_data[0]['name'])
 
     def test_get_template_data__unlisted_no_perms(self):
-        """JSON feed does not include unlisted features for users who can't edit."""
+        """JSON feed does not include unlisted features for users who can't edit."""  # noqa: E501
         self.fe_1.unlisted = True
         self.fe_1.put()
 

@@ -1,4 +1,4 @@
-# Copyright 2020 Google Inc.
+# Copyright 2020 Google Inc.  # noqa: D100
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
 # you may not use this file except in compliance with the License.
@@ -40,8 +40,8 @@ test_app = flask.Flask(
 TESTDATA = testing_config.Testdata(__file__)
 
 
-class EmailFormattingTest(testing_config.CustomTestCase):
-    def setUp(self):
+class EmailFormattingTest(testing_config.CustomTestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         self.fe_1 = FeatureEntry(
             name='feature one',
             summary='sum',
@@ -273,7 +273,7 @@ class EmailFormattingTest(testing_config.CustomTestCase):
         )
 
     def test_accumulate_reasons(self):
-        """We can accumulate lists of reasons why we sent a message to a user."""
+        """We can accumulate lists of reasons why we sent a message to a user."""  # noqa: E501
         addr_reasons = collections.defaultdict(list)
 
         # Adding an empty list of users
@@ -312,13 +312,13 @@ class EmailFormattingTest(testing_config.CustomTestCase):
             addr_reasons,
         )
 
-    def test_convert_reasons_to_task__no_reasons(self):
+    def test_convert_reasons_to_task__no_reasons(self):  # noqa: D102
         with self.assertRaises(AssertionError):
             notifier.convert_reasons_to_task(
                 'addr', [], 'html', 'subject', 'triggerer'
             )
 
-    def test_convert_reasons_to_task__normal(self):
+    def test_convert_reasons_to_task__normal(self):  # noqa: D102
         actual = notifier.convert_reasons_to_task(
             'addr',
             ['reason 1', 'reason 2'],
@@ -400,7 +400,7 @@ class EmailFormattingTest(testing_config.CustomTestCase):
 
     @mock.patch('internals.notifier.format_email_body')
     def test_make_feature_changes_email__new(self, mock_f_e_b):
-        """We send email to component owners and subscribers for new features."""
+        """We send email to component owners and subscribers for new features."""  # noqa: E501
         mock_f_e_b.return_value = 'mock body html'
         actual_tasks = notifier.make_feature_changes_email(
             self.fe_1, is_update=False, changes=[]
@@ -715,8 +715,8 @@ class EmailFormattingTest(testing_config.CustomTestCase):
         )
 
 
-class FeatureCommentHandlerTest(testing_config.CustomTestCase):
-    def setUp(self):
+class FeatureCommentHandlerTest(testing_config.CustomTestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         self.fe_1 = FeatureEntry(
             name='feature one',
             summary='sum',
@@ -842,7 +842,7 @@ class FeatureCommentHandlerTest(testing_config.CustomTestCase):
 
     @mock.patch('internals.notifier.format_email_body')
     def test_make_new_comments_email__assigned(self, mock_f_e_b):
-        """We notify only assigned reviewers of new comments, not all reviewers."""
+        """We notify only assigned reviewers of new comments, not all reviewers."""  # noqa: E501
         mock_f_e_b.return_value = 'mock body html'
         gate_1 = Gate(
             feature_id=self.fe_1.key.integer_id(),
@@ -869,8 +869,8 @@ class FeatureCommentHandlerTest(testing_config.CustomTestCase):
         self.assertEqual('approver3@example.com', review_task_1['to'])
 
 
-class FeatureReviewHandlerTest(testing_config.CustomTestCase):
-    def setUp(self):
+class FeatureReviewHandlerTest(testing_config.CustomTestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         self.fe_1 = FeatureEntry(
             name='feature one',
             summary='sum',
@@ -990,8 +990,8 @@ class FeatureReviewHandlerTest(testing_config.CustomTestCase):
         self.assertEqual('approver3@example.com', review_task_1['to'])
 
 
-class ReviewAssignementHandlerTest(testing_config.CustomTestCase):
-    def setUp(self):
+class ReviewAssignementHandlerTest(testing_config.CustomTestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         self.fe_1 = FeatureEntry(
             name='feature one',
             summary='sum',
@@ -1068,8 +1068,8 @@ class ReviewAssignementHandlerTest(testing_config.CustomTestCase):
         )
 
 
-class FeatureStarTest(testing_config.CustomTestCase):
-    def setUp(self):
+class FeatureStarTest(testing_config.CustomTestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         self.fe_1 = FeatureEntry(name='feature one', summary='sum', category=1)
         self.fe_1.put()
         self.fe_2 = FeatureEntry(name='feature two', summary='sum', category=1)
@@ -1157,8 +1157,8 @@ class FeatureStarTest(testing_config.CustomTestCase):
         )
 
 
-class NotifyInactiveUsersHandlerTest(testing_config.CustomTestCase):
-    def setUp(self):
+class NotifyInactiveUsersHandlerTest(testing_config.CustomTestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         active_user = AppUser(
             created=datetime(2020, 10, 1),
             email='active_user@example.com',
@@ -1179,7 +1179,7 @@ class NotifyInactiveUsersHandlerTest(testing_config.CustomTestCase):
         self.inactive_user = inactive_user
 
         # User who has recently been given access by an admin,
-        # but has not yet visited the site. They should not be considered inactive.
+        # but has not yet visited the site. They should not be considered inactive.  # noqa: E501
         newly_created_user = AppUser(
             created=datetime(2023, 8, 1),
             email='new_user@example.com',
@@ -1236,7 +1236,7 @@ class NotifyInactiveUsersHandlerTest(testing_config.CustomTestCase):
         )
         inactive_site_editor.put()
 
-    def test_determine_users_to_notify(self):
+    def test_determine_users_to_notify(self):  # noqa: D102
         with test_app.app_context():
             inactive_notifier = notifier.NotifyInactiveUsersHandler()
             result = inactive_notifier.get_template_data(
@@ -1251,8 +1251,8 @@ class NotifyInactiveUsersHandlerTest(testing_config.CustomTestCase):
         self.assertTrue(self.inactive_user.notified_inactive)
 
 
-class OTCreationRequestHandlerTest(testing_config.CustomTestCase):
-    def setUp(self):
+class OTCreationRequestHandlerTest(testing_config.CustomTestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         self.feature = FeatureEntry(
             id=1, name='A feature', summary='summary', category=1
         )
@@ -1280,13 +1280,13 @@ class OTCreationRequestHandlerTest(testing_config.CustomTestCase):
         self.feature.put()
         self.ot_stage.put()
 
-    def tearDown(self) -> None:
+    def tearDown(self) -> None:  # noqa: D102
         kinds: list[ndb.Model] = [FeatureEntry, Stage]
         for kind in kinds:
             for entity in kind.query():
                 entity.key.delete()
 
-    def test_make_creation_request_email(self):
+    def test_make_creation_request_email(self):  # noqa: D102
         stage_dict = converters.stage_to_json_dict(self.ot_stage)
         stage_dict['ot_request_note'] = self.ot_stage.ot_request_note
         handler = notifier.OTCreationRequestHandler()
@@ -1340,8 +1340,8 @@ class OTCreationRequestHandlerTest(testing_config.CustomTestCase):
         self.assertEqual(email_task, expected)
 
 
-class OTExtendedHandlerTest(testing_config.CustomTestCase):
-    def setUp(self):
+class OTExtendedHandlerTest(testing_config.CustomTestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         self.feature = FeatureEntry(
             id=1, name='A feature', summary='summary', category=1
         )
@@ -1379,13 +1379,13 @@ class OTExtendedHandlerTest(testing_config.CustomTestCase):
         self.ot_stage.put()
         self.extension_stage.put()
 
-    def tearDown(self) -> None:
+    def tearDown(self) -> None:  # noqa: D102
         kinds: list[ndb.Model] = [FeatureEntry, Stage]
         for kind in kinds:
             for entity in kind.query():
                 entity.key.delete()
 
-    def test_make_extended_request_email(self):
+    def test_make_extended_request_email(self):  # noqa: D102
         ot_stage_dict = converters.stage_to_json_dict(self.ot_stage)
         extension_stage_dict = converters.stage_to_json_dict(
             self.extension_stage
@@ -1402,8 +1402,8 @@ class OTExtendedHandlerTest(testing_config.CustomTestCase):
             )
 
 
-class OTExtensionApprovedHandlerTest(testing_config.CustomTestCase):
-    def setUp(self):
+class OTExtensionApprovedHandlerTest(testing_config.CustomTestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         self.feature = FeatureEntry(
             id=1, name='A feature', summary='summary', category=1
         )
@@ -1429,13 +1429,13 @@ class OTExtensionApprovedHandlerTest(testing_config.CustomTestCase):
         self.ot_stage.put()
         self.extension_stage.put()
 
-    def tearDown(self) -> None:
+    def tearDown(self) -> None:  # noqa: D102
         kinds: list[ndb.Model] = [FeatureEntry, Gate, Stage]
         for kind in kinds:
             for entity in kind.query():
                 entity.key.delete()
 
-    def test_make_extension_approved_email(self):
+    def test_make_extension_approved_email(self):  # noqa: D102
         feature_dict = converters.feature_entry_to_json_verbose(self.feature)
         with test_app.app_context():
             handler = notifier.OTExtensionApprovedHandler()
@@ -1449,7 +1449,7 @@ class OTExtensionApprovedHandlerTest(testing_config.CustomTestCase):
             self.assertEqual(
                 email_task['subject'],
                 (
-                    '[Action Required] Initiate your origin trial extension for '
+                    '[Action Required] Initiate your origin trial extension for '  # noqa: E501
                     'OT Display Name'
                 ),
             )
@@ -1459,8 +1459,8 @@ class OTExtensionApprovedHandlerTest(testing_config.CustomTestCase):
             )
 
 
-class OTActivatedHandlerTest(testing_config.CustomTestCase):
-    def setUp(self):
+class OTActivatedHandlerTest(testing_config.CustomTestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         self.contacts = [
             'ot_owner1@google.com',
             'contact1@google.com',
@@ -1487,7 +1487,7 @@ class OTActivatedHandlerTest(testing_config.CustomTestCase):
         )
         self.ot_stage.put()
 
-    def test_make_activated_email(self):
+    def test_make_activated_email(self):  # noqa: D102
         with test_app.app_context():
             handler = notifier.OTActivatedHandler()
             stage_dict = converters.stage_to_json_dict(self.ot_stage)
@@ -1502,8 +1502,8 @@ class OTActivatedHandlerTest(testing_config.CustomTestCase):
             )
 
 
-class OTCreationApprovedHandlerTest(testing_config.CustomTestCase):
-    def setUp(self):
+class OTCreationApprovedHandlerTest(testing_config.CustomTestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         self.contacts = [
             'owner1@example.com',
             'contact1@example.com',
@@ -1514,7 +1514,7 @@ class OTCreationApprovedHandlerTest(testing_config.CustomTestCase):
         )
         self.feature_1.put()
 
-    def test_make_creation_processed_email(self):
+    def test_make_creation_processed_email(self):  # noqa: D102
         with test_app.app_context():
             handler = notifier.OTCreationApprovedHandler()
             fe_dict = converters.feature_entry_to_json_verbose(self.feature_1)
@@ -1530,8 +1530,8 @@ class OTCreationApprovedHandlerTest(testing_config.CustomTestCase):
             )
 
 
-class OTCreationProcessedHandlerTest(testing_config.CustomTestCase):
-    def setUp(self):
+class OTCreationProcessedHandlerTest(testing_config.CustomTestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         self.contacts = [
             'owner1@example.com',
             'contact1@example.com',
@@ -1558,7 +1558,7 @@ class OTCreationProcessedHandlerTest(testing_config.CustomTestCase):
         )
         self.ot_stage.put()
 
-    def test_make_creation_processed_email(self):
+    def test_make_creation_processed_email(self):  # noqa: D102
         with test_app.app_context():
             handler = notifier.OTCreationProcessedHandler()
             stage_dict = converters.stage_to_json_dict(self.ot_stage)
@@ -1566,7 +1566,7 @@ class OTCreationProcessedHandlerTest(testing_config.CustomTestCase):
             # TESTDATA.make_golden(email_task['html'], 'test_make_creation_processed_email.html')  # noqa: E501
             self.assertEqual(
                 email_task['subject'],
-                'Example Trial origin trial has been created and will begin 2030-01-01',
+                'Example Trial origin trial has been created and will begin 2030-01-01',  # noqa: E501
             )
             self.assertEqual(
                 email_task['html'],
@@ -1574,8 +1574,8 @@ class OTCreationProcessedHandlerTest(testing_config.CustomTestCase):
             )
 
 
-class OTCreationRequestFailedHandlerTest(testing_config.CustomTestCase):
-    def setUp(self):
+class OTCreationRequestFailedHandlerTest(testing_config.CustomTestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         self.feature_1 = FeatureEntry(
             id=1, name='feature one', summary='sum', category=1, feature_type=0
         )
@@ -1599,7 +1599,7 @@ class OTCreationRequestFailedHandlerTest(testing_config.CustomTestCase):
         )
         self.ot_stage.put()
 
-    def test_make_creation_request_failed_email(self):
+    def test_make_creation_request_failed_email(self):  # noqa: D102
         with test_app.app_context():
             handler = notifier.OTCreationRequestFailedHandler()
             stage_dict = converters.stage_to_json_dict(self.ot_stage)
@@ -1616,8 +1616,8 @@ class OTCreationRequestFailedHandlerTest(testing_config.CustomTestCase):
             )
 
 
-class OTActivationFailedHandlerTest(testing_config.CustomTestCase):
-    def setUp(self):
+class OTActivationFailedHandlerTest(testing_config.CustomTestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         self.feature_1 = FeatureEntry(
             id=1, name='feature one', summary='sum', category=1, feature_type=0
         )
@@ -1640,7 +1640,7 @@ class OTActivationFailedHandlerTest(testing_config.CustomTestCase):
         )
         self.ot_stage.put()
 
-    def test_make_activation_failed_email(self):
+    def test_make_activation_failed_email(self):  # noqa: D102
         with test_app.app_context():
             handler = notifier.OTActivationFailedHandler()
             stage_dict = converters.stage_to_json_dict(self.ot_stage)
@@ -1656,8 +1656,8 @@ class OTActivationFailedHandlerTest(testing_config.CustomTestCase):
             )
 
 
-class IntentToBlinkDevHandlerTest(testing_config.CustomTestCase):
-    def setUp(self):
+class IntentToBlinkDevHandlerTest(testing_config.CustomTestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         self.feature_1 = FeatureEntry(
             id=1,
             feature_type=1,
@@ -1684,7 +1684,7 @@ class IntentToBlinkDevHandlerTest(testing_config.CustomTestCase):
         self.ot_gate_1.put()
         self.contacts = ['example_user@example.com', 'another_user@exmaple.com']
 
-    def test_make_intent_post_email(self):
+    def test_make_intent_post_email(self):  # noqa: D102
         json_data = {
             'subject': 'Intent to Experiment: feature one',
             'feature_id': self.feature_1_id,
@@ -1698,7 +1698,7 @@ class IntentToBlinkDevHandlerTest(testing_config.CustomTestCase):
         with test_app.app_context():
             handler = notifier.IntentToBlinkDevHandler()
             email_task = handler.build_email(self.feature_1, json_data)
-            # TESTDATA.make_golden(email_task['html'], 'test_make_intent_email.html')
+            # TESTDATA.make_golden(email_task['html'], 'test_make_intent_email.html')  # noqa: E501
             self.assertEqual(email_task['to'], 'blink-dev@chromium.org')
             self.assertEqual(
                 email_task['cc'], ['cc1@example.com', 'owner@example.com']
@@ -1711,11 +1711,11 @@ class IntentToBlinkDevHandlerTest(testing_config.CustomTestCase):
             )
 
 
-class OTEndingNextReleaseReminderHandlerTest(testing_config.CustomTestCase):
-    def setUp(self):
+class OTEndingNextReleaseReminderHandlerTest(testing_config.CustomTestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         self.contacts = ['example_user@example.com', 'another_user@exmaple.com']
 
-    def test_make_ending_next_release_email(self):
+    def test_make_ending_next_release_email(self):  # noqa: D102
         body_data = {
             'name': 'Some feature',
             'release_milestone': '126',
@@ -1736,11 +1736,11 @@ class OTEndingNextReleaseReminderHandlerTest(testing_config.CustomTestCase):
             )
 
 
-class OTEndingThisReleaseReminderHandlerTest(testing_config.CustomTestCase):
-    def setUp(self):
+class OTEndingThisReleaseReminderHandlerTest(testing_config.CustomTestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         self.contacts = ['example_user@example.com', 'another_user@exmaple.com']
 
-    def test_make_ending_this_release_email(self):
+    def test_make_ending_this_release_email(self):  # noqa: D102
         body_data = {
             'name': 'Some feature',
             'release_milestone': '126',
@@ -1760,11 +1760,11 @@ class OTEndingThisReleaseReminderHandlerTest(testing_config.CustomTestCase):
             )
 
 
-class OTBetaAvailabilityReminderHandlerTest(testing_config.CustomTestCase):
-    def setUp(self):
+class OTBetaAvailabilityReminderHandlerTest(testing_config.CustomTestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         self.contacts = ['example_user@example.com', 'another_user@exmaple.com']
 
-    def test_make_beta_availability_email(self):
+    def test_make_beta_availability_email(self):  # noqa: D102
         body_data = {
             'name': 'Some feature',
             'release_milestone': '126',
@@ -1783,11 +1783,11 @@ class OTBetaAvailabilityReminderHandlerTest(testing_config.CustomTestCase):
             )
 
 
-class OTFirstBranchReminderHandlerTest(testing_config.CustomTestCase):
-    def setUp(self):
+class OTFirstBranchReminderHandlerTest(testing_config.CustomTestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         self.contacts = ['example_user@example.com', 'another_user@exmaple.com']
 
-    def test_make_first_branch_email(self):
+    def test_make_first_branch_email(self):  # noqa: D102
         body_data = {
             'name': 'Some feature',
             'release_milestone': '126',
@@ -1806,11 +1806,11 @@ class OTFirstBranchReminderHandlerTest(testing_config.CustomTestCase):
             )
 
 
-class OTLastBranchReminderHandlerTest(testing_config.CustomTestCase):
-    def setUp(self):
+class OTLastBranchReminderHandlerTest(testing_config.CustomTestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         self.contacts = ['example_user@example.com', 'another_user@exmaple.com']
 
-    def test_make_last_branch_email(self):
+    def test_make_last_branch_email(self):  # noqa: D102
         body_data = {
             'name': 'Some feature',
             'release_milestone': '126',
@@ -1829,8 +1829,8 @@ class OTLastBranchReminderHandlerTest(testing_config.CustomTestCase):
             )
 
 
-class OTAutomatedProcessEmailHandlerTest(testing_config.CustomTestCase):
-    def test_make_ot_process_email(self):
+class OTAutomatedProcessEmailHandlerTest(testing_config.CustomTestCase):  # noqa: D101
+    def test_make_ot_process_email(self):  # noqa: D102
         body_data = {
             'email_date': '2030-01-01',
             'send_count': 100,
@@ -1852,8 +1852,8 @@ class OTAutomatedProcessEmailHandlerTest(testing_config.CustomTestCase):
             )
 
 
-class ResetShippingMilestonesEmailHandlerTest(testing_config.CustomTestCase):
-    def test_make_ot_process_email(self):
+class ResetShippingMilestonesEmailHandlerTest(testing_config.CustomTestCase):  # noqa: D101
+    def test_make_ot_process_email(self):  # noqa: D102
         body_data = {  # noqa: F841
             'chromestatus_url': 'https://chromestatus.com/feature/123',
             'APP_TITLE': 'Chrome Status Dev',
@@ -1868,7 +1868,7 @@ class ResetShippingMilestonesEmailHandlerTest(testing_config.CustomTestCase):
             # TESTDATA.make_golden(email_task['html'], 'test_reset_shipping_milestones_email.html')  # noqa: E501
             self.assertEqual(
                 email_task['subject'],
-                'Shipping and Rollout milestones reset for ChromeStatus feature (Feature Name)',
+                'Shipping and Rollout milestones reset for ChromeStatus feature (Feature Name)',  # noqa: E501
             )  # noqa: E501
             self.assertEqual(
                 email_task['html'],
@@ -1876,8 +1876,8 @@ class ResetShippingMilestonesEmailHandlerTest(testing_config.CustomTestCase):
             )
 
 
-class FunctionsTest(testing_config.CustomTestCase):
-    def setUp(self):
+class FunctionsTest(testing_config.CustomTestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         quoted_msg_id = 'xxx%3Dyyy%40mail.gmail.com'
         impl_url = notifier.BLINK_DEV_ARCHIVE_URL_PREFIX + '123' + quoted_msg_id
         expr_url = notifier.TEST_ARCHIVE_URL_PREFIX + '456' + quoted_msg_id
@@ -1910,7 +1910,7 @@ class FunctionsTest(testing_config.CustomTestCase):
         stages.append(self.ship_stage)
         ndb.put_multi(stages)
 
-    def tearDown(self) -> None:
+    def tearDown(self) -> None:  # noqa: D102
         kinds: list[ndb.Model] = [FeatureEntry, Stage]
         for kind in kinds:
             for entity in kind.query():

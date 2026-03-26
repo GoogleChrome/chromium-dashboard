@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-  # noqa: D100
 # Copyright 2022 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
@@ -115,7 +115,7 @@ class VotesAPI(basehandlers.APIHandler):
                     amendments=[amendment],
                 )
                 activity.put()
-                # Note: We don't notify assignee about autoassignment, because they
+                # Note: We don't notify assignee about autoassignment, because they  # noqa: E501
                 # will get a notification of review state change anyway.
 
             notifier_helpers.notify_approvers_of_reviews(
@@ -167,7 +167,7 @@ class VotesAPI(basehandlers.APIHandler):
             if not existing_na_votes:
                 self.abort(
                     400,
-                    msg='User may not verify when gate has no self-certifications',
+                    msg='User may not verify when gate has no self-certifications',  # noqa: E501
                 )
 
 
@@ -197,7 +197,7 @@ class GatesAPI(basehandlers.APIHandler):
         ).to_dict()
 
     # TODO(jrobbins): phase out do_post here because it should have been patch.
-    def do_post(self, **kwargs) -> dict[str, str]:
+    def do_post(self, **kwargs) -> dict[str, str]:  # noqa: D102
         return self.do_patch(**kwargs)
 
     def do_patch(self, **kwargs) -> dict[str, str]:
@@ -256,7 +256,7 @@ class GatesAPI(basehandlers.APIHandler):
                 self.abort(400, 'Assignee is not a reviewer')
 
 
-class PendingGatesAPI(basehandlers.APIHandler):
+class PendingGatesAPI(basehandlers.APIHandler):  # noqa: D101
     def get_stage_ids_of_gates_pending_my_approval(self) -> list[int] | Future:
         """Return a list of stage_id needing approval by current user."""
         user = self.get_current_user()
@@ -303,7 +303,7 @@ class PendingGatesAPI(basehandlers.APIHandler):
         return GetGateResponse.from_dict({'gates': dicts}).to_dict()
 
 
-class XfnGatesAPI(basehandlers.APIHandler):
+class XfnGatesAPI(basehandlers.APIHandler):  # noqa: D101
     def do_get(self, **kwargs):
         """Reject unneeded GET requests without triggering Error Reporting."""
         self.abort(405, valid_methods=['POST'])
@@ -335,7 +335,7 @@ class XfnGatesAPI(basehandlers.APIHandler):
     def get_needed_gate_types(self) -> list[int]:
         """Return a list of gate types normally used to ship a new feature."""
         needed_gate_tuples = STAGES_AND_GATES_BY_FEATURE_TYPE[  # noqa: F405
-            FEATURE_TYPE_INCUBATE_ID
+            FEATURE_TYPE_INCUBATE_ID  # noqa: F405
         ]  # noqa: F405
         for stage_type, gate_types in needed_gate_tuples:
             if stage_type == STAGE_BLINK_SHIPPING:  # noqa: F405

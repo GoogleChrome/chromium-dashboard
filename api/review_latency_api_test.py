@@ -1,4 +1,4 @@
-# Copyright 2024 Google LLC
+# Copyright 2024 Google LLC  # noqa: D100
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ from internals.review_models import Gate
 test_app = flask.Flask(__name__)
 
 
-def make_feature_and_gates(name):
+def make_feature_and_gates(name):  # noqa: D103
     fe = FeatureEntry(name=name, summary='sum', category=1)
     fe.put()
     fe_id = fe.key.integer_id()
@@ -41,8 +41,8 @@ def make_feature_and_gates(name):
     return fe, fe_id, g_1, g_2, g_3
 
 
-class ReviewLatencyAPITest(testing_config.CustomTestCase):
-    def setUp(self):
+class ReviewLatencyAPITest(testing_config.CustomTestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         self.app_admin = user_models.AppUser(email='admin@example.com')
         self.app_admin.is_admin = True
         self.app_admin.put()

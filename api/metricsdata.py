@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-  # noqa: D100
 # Copyright 2013 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
@@ -51,17 +51,17 @@ def _datapoints_to_json_dicts(datapoints):
     return json_dicts
 
 
-class TimelineHandler(basehandlers.FlaskHandler):
+class TimelineHandler(basehandlers.FlaskHandler):  # noqa: D101
     HTTP_CACHE_TYPE = 'private'
     JSONIFY = True
     CACHE_PREFIX = 'metrics|'
 
-    def make_query(self, bucket_id):
+    def make_query(self, bucket_id):  # noqa: D102
         query = self.MODEL_CLASS.query()
         query = query.filter(self.MODEL_CLASS.bucket_id == bucket_id)
         # The switch to new UMA data changed the semantics of the CSS animated
         # properties. Since showing the historical data alongside the new data
-        # does not make sense, filter out everything before the 2017-10-26 switch.
+        # does not make sense, filter out everything before the 2017-10-26 switch.  # noqa: E501
         # See https://github.com/GoogleChrome/chromium-dashboard/issues/414
         if self.MODEL_CLASS == metrics_models.AnimatedProperty:
             query = query.filter(
@@ -69,7 +69,7 @@ class TimelineHandler(basehandlers.FlaskHandler):
             )
         return query
 
-    def get_template_data(self, **kwargs):
+    def get_template_data(self, **kwargs):  # noqa: D102
         bucket_id = self.get_int_arg('bucket_id')
         if bucket_id is None:
             # TODO(jrobbins): Why return [] instead of 400?
@@ -85,45 +85,45 @@ class TimelineHandler(basehandlers.FlaskHandler):
             datapoints = query.fetch(None)  # All matching results.
 
             # Remove outliers if percentage is not between 0-1.
-            # datapoints = filter(lambda x: 0 <= x.day_percentage <= 1, datapoints)
+            # datapoints = filter(lambda x: 0 <= x.day_percentage <= 1, datapoints)  # noqa: E501
             rediscache.set(cache_key, datapoints, time=CACHE_AGE)
 
         return _datapoints_to_json_dicts(datapoints)
 
 
-class PopularityTimelineHandler(TimelineHandler):
+class PopularityTimelineHandler(TimelineHandler):  # noqa: D101
     CACHE_KEY = TimelineHandler.CACHE_PREFIX + 'css_pop_timeline'
     MODEL_CLASS = metrics_models.StableInstance
 
-    def get_template_data(self, **kwargs):
+    def get_template_data(self, **kwargs):  # noqa: D102
         return super(PopularityTimelineHandler, self).get_template_data()
 
 
-class AnimatedTimelineHandler(TimelineHandler):
+class AnimatedTimelineHandler(TimelineHandler):  # noqa: D101
     CACHE_KEY = TimelineHandler.CACHE_PREFIX + 'css_animated_timeline'
     MODEL_CLASS = metrics_models.AnimatedProperty
 
-    def get_template_data(self, **kwargs):
+    def get_template_data(self, **kwargs):  # noqa: D102
         return super(AnimatedTimelineHandler, self).get_template_data()
 
 
-class FeatureObserverTimelineHandler(TimelineHandler):
+class FeatureObserverTimelineHandler(TimelineHandler):  # noqa: D101
     CACHE_KEY = TimelineHandler.CACHE_PREFIX + 'featureob_timeline'
     MODEL_CLASS = metrics_models.FeatureObserver
 
-    def get_template_data(self, **kwargs):
+    def get_template_data(self, **kwargs):  # noqa: D102
         return super(FeatureObserverTimelineHandler, self).get_template_data()
 
 
-class WebFeatureTimelineHandler(TimelineHandler):
+class WebFeatureTimelineHandler(TimelineHandler):  # noqa: D101
     CACHE_KEY = TimelineHandler.CACHE_PREFIX + 'webfeature_timeline'
     MODEL_CLASS = metrics_models.WebDXFeature
 
-    def get_template_data(self, **kwargs):
+    def get_template_data(self, **kwargs):  # noqa: D102
         return super(WebFeatureTimelineHandler, self).get_template_data()
 
 
-class FeatureHandler(basehandlers.FlaskHandler):
+class FeatureHandler(basehandlers.FlaskHandler):  # noqa: D101
     HTTP_CACHE_TYPE = 'private'
     JSONIFY = True
     CACHE_PREFIX = 'metrics|'
@@ -174,7 +174,7 @@ class FeatureHandler(basehandlers.FlaskHandler):
         datapoints.sort(key=lambda x: x.day_percentage, reverse=True)
         return datapoints
 
-    def get_template_data(self, **kwargs):
+    def get_template_data(self, **kwargs):  # noqa: D102
         num = self.get_int_arg('num')
         if num and not self.should_refresh():
             feature_observer_key = self.get_top_num_cache_key(num)
@@ -192,10 +192,10 @@ class FeatureHandler(basehandlers.FlaskHandler):
             rediscache.set(feature_observer_key, properties, time=CACHE_AGE)
         return _datapoints_to_json_dicts(properties)
 
-    def get_top_num_cache_key(self, num):
+    def get_top_num_cache_key(self, num):  # noqa: D102
         return self.CACHE_KEY + '_' + str(num)
 
-    def fetch_all_datapoints(self):
+    def fetch_all_datapoints(self):  # noqa: D102
         properties = rediscache.get(self.CACHE_KEY)
         logging.info(
             'looked at cache %r and found %s',
@@ -213,50 +213,50 @@ class FeatureHandler(basehandlers.FlaskHandler):
         )
         return properties
 
-    def should_refresh(self):
+    def should_refresh(self):  # noqa: D102
         return (
             self.MODEL_CLASS == metrics_models.FeatureObserver
             and self.request.args.get('refresh')
         )
 
 
-class CSSPopularityHandler(FeatureHandler):
+class CSSPopularityHandler(FeatureHandler):  # noqa: D101
     CACHE_KEY = FeatureHandler.CACHE_PREFIX + 'css_popularity'
     MODEL_CLASS = metrics_models.StableInstance
     PROPERTY_CLASS = metrics_models.CssPropertyHistogram
 
-    def get_template_data(self, **kwargs):
+    def get_template_data(self, **kwargs):  # noqa: D102
         return super(CSSPopularityHandler, self).get_template_data()
 
 
-class CSSAnimatedHandler(FeatureHandler):
+class CSSAnimatedHandler(FeatureHandler):  # noqa: D101
     CACHE_KEY = FeatureHandler.CACHE_PREFIX + 'css_animated'
     MODEL_CLASS = metrics_models.AnimatedProperty
     PROPERTY_CLASS = metrics_models.CssPropertyHistogram
 
-    def get_template_data(self, **kwargs):
+    def get_template_data(self, **kwargs):  # noqa: D102
         return super(CSSAnimatedHandler, self).get_template_data()
 
 
-class FeatureObserverPopularityHandler(FeatureHandler):
+class FeatureObserverPopularityHandler(FeatureHandler):  # noqa: D101
     CACHE_KEY = FeatureHandler.CACHE_PREFIX + 'featureob_popularity'
     MODEL_CLASS = metrics_models.FeatureObserver
     PROPERTY_CLASS = metrics_models.FeatureObserverHistogram
 
-    def get_template_data(self, **kwargs):
+    def get_template_data(self, **kwargs):  # noqa: D102
         return super(FeatureObserverPopularityHandler, self).get_template_data()
 
 
-class WebFeaturePopularityHandler(FeatureHandler):
+class WebFeaturePopularityHandler(FeatureHandler):  # noqa: D101
     CACHE_KEY = FeatureHandler.CACHE_PREFIX + 'webfeature_popularity'
     MODEL_CLASS = metrics_models.WebDXFeature
     PROPERTY_CLASS = metrics_models.WebDXFeatureObserver
 
-    def get_template_data(self, **kwargs):
+    def get_template_data(self, **kwargs):  # noqa: D102
         return super(WebFeaturePopularityHandler, self).get_template_data()
 
 
-class FeatureBucketsHandler(basehandlers.FlaskHandler):
+class FeatureBucketsHandler(basehandlers.FlaskHandler):  # noqa: D101
     HTTP_CACHE_TYPE = 'private'
     JSONIFY = True
 
@@ -266,7 +266,7 @@ class FeatureBucketsHandler(basehandlers.FlaskHandler):
         'webfeatureprops': metrics_models.WebDXFeatureObserver,
     }
 
-    def get_template_data(self, **kwargs):
+    def get_template_data(self, **kwargs):  # noqa: D102
         properties = []
         prop_type = kwargs.get('prop_type', None)
         histogram_class = self.TYPE_TO_HISTOGRAM_CLASS.get(prop_type)

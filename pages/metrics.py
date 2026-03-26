@@ -1,4 +1,4 @@
-# Copyright 2021 Google Inc.
+# Copyright 2021 Google Inc.  # noqa: D100
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
 # you may not use this file except in compliance with the License.
@@ -17,9 +17,9 @@ from framework import basehandlers
 from internals import fetchchannels
 
 
-class OmahaDataHandler(basehandlers.FlaskHandler):
+class OmahaDataHandler(basehandlers.FlaskHandler):  # noqa: D101
     JSONIFY = True
 
-    def get_template_data(self, **kwargs):
+    def get_template_data(self, **kwargs):  # noqa: D102
         omaha_data = fetchchannels.get_omaha_data()
         return omaha_data

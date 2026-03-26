@@ -1,4 +1,4 @@
-# Copyright 2025 Google Inc.
+# Copyright 2025 Google Inc.  # noqa: D100
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
 # you may not use this file except in compliance with the License.
@@ -24,8 +24,8 @@ from internals import core_enums
 from internals.core_models import FeatureEntry
 
 
-class GeminiHelpersTest(testing_config.CustomTestCase):
-    def setUp(self):
+class GeminiHelpersTest(testing_config.CustomTestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         self.feature = FeatureEntry(
             name='Test Feature',
             summary='A test feature summary',
@@ -137,7 +137,7 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
             )
 
     def test_fetch_spec_content__web_spec_fetch_failure(self):
-        """If trafilatura fails to download (returns None), raise PipelineError."""
+        """If trafilatura fails to download (returns None), raise PipelineError."""  # noqa: E501
         url = 'https://example.com/bad-url'
 
         with mock.patch('framework.gemini_helpers.trafilatura') as mock_traf:
@@ -151,7 +151,7 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
             mock_traf.extract.assert_not_called()
 
     def test_fetch_spec_content__web_spec_extract_failure(self):
-        """If trafilatura returns None during extraction, raise PipelineError."""
+        """If trafilatura returns None during extraction, raise PipelineError."""  # noqa: E501
         url = 'https://example.com/empty-page'
 
         with mock.patch('framework.gemini_helpers.trafilatura') as mock_traf:
@@ -200,7 +200,7 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
             mock_get.assert_called_once_with(expected_raw_url)
 
     def test_fetch_explainer_content__github_blob_failure(self):
-        """GitHub Raw fetch failure for explainers should raise PipelineError."""
+        """GitHub Raw fetch failure for explainers should raise PipelineError."""  # noqa: E501
         url = 'https://github.com/WICG/explainer/blob/main/README.md'
 
         with mock.patch('framework.gemini_helpers.requests.get') as mock_get:
@@ -212,7 +212,7 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
                 gemini_helpers._fetch_explainer_content(url)
 
     def test_fetch_explainer_content__web_success(self):
-        """Standard web URLs should use trafilatura with formatting preserved."""
+        """Standard web URLs should use trafilatura with formatting preserved."""  # noqa: E501
         url = 'https://explainer.example.com'
         fake_download = '<html>...</html>'
         fake_markdown = '# Explainer\n\n```js\nconst x = 1;\n```'
@@ -276,7 +276,7 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
     @mock.patch('framework.gemini_helpers._fetch_explainer_content')
     def test_get_explainer_content__mixed_and_errors(self, mock_fetch):
         """Mixed content and fetch errors should be handled gracefully."""
-        # First URL succeeds, second raises PipelineError (which should be skipped)
+        # First URL succeeds, second raises PipelineError (which should be skipped)  # noqa: E501
         mock_fetch.side_effect = [
             'Good content',
             utils.PipelineError('failed to fetch'),
@@ -397,7 +397,7 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
         mock_get_explainer.assert_called_once_with(self.feature.explainer_links)
 
     def test_unified_prompt_analysis__success(self):
-        """Tests that the unified evaluator calls Gemini with the provided text."""
+        """Tests that the unified evaluator calls Gemini with the provided text."""  # noqa: E501
         prompt_text = 'The full unified prompt text'
         self.mock_gemini_client.get_response.return_value = 'Unified Report'
 
@@ -461,7 +461,7 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
         ][0]  # noqa: E501
         self.assertEqual(len(call_args), 2)
 
-        # Verify correct template rendering for the spec synthesis with explainer
+        # Verify correct template rendering for the spec synthesis with explainer  # noqa: E501
         found_spec_render = False
         for call in self.mock_render_template.call_args_list:
             kwargs = call.kwargs
@@ -483,7 +483,7 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
             Path('small.html'): 'small_content',
             Path('large.html'): 'large_content',
         }
-        # Force sorted order for deterministic test execution if dict is unordered
+        # Force sorted order for deterministic test execution if dict is unordered  # noqa: E501
         # (Note: Python 3.7+ preserves insertion order, but explicit key usage in loop ensures sequence)  # noqa: E501
         wpt_contents = utils.WPTContents(
             test_contents=test_files,
@@ -535,7 +535,7 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
         # Mock token limit:
         # 1. 'huge.html' + deps (Candidate) -> True (Exceeds)
         # 2. 'huge.html' + deps (Single check) -> True (Still Exceeds)
-        self.mock_gemini_client.prompt_exceeds_input_token_limit.return_value = True
+        self.mock_gemini_client.prompt_exceeds_input_token_limit.return_value = True  # noqa: E501
 
         self.mock_gemini_client.get_batch_responses_async = mock.AsyncMock(
             return_value=['Analysis Huge', 'Spec Summary']
@@ -551,7 +551,7 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
             'Test file huge.html with dependencies exceeds token limit. Generating prompt without dependencies.'  # noqa: E501
         )
 
-        # Verify render_template was eventually called with empty dependencies list
+        # Verify render_template was eventually called with empty dependencies list  # noqa: E501
         # Look for the specific call that commits the single file
         found_empty_deps = False
         for call in self.mock_render_template.call_args_list:
@@ -755,7 +755,7 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
 
         self.mock_utils.extract_wpt_fyi_results_urls.return_value = ['url1']
 
-        self.mock_gemini_client.prompt_exceeds_input_token_limit.return_value = True
+        self.mock_gemini_client.prompt_exceeds_input_token_limit.return_value = True  # noqa: E501
 
         with (
             mock.patch(
@@ -826,7 +826,7 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
         self.mock_gemini_client_cls.assert_not_called()
 
     def test_run_pipeline__content_fetch_failure(self):
-        """Pipeline should return FAILED status if test content fetching fails."""
+        """Pipeline should return FAILED status if test content fetching fails."""  # noqa: E501
         self.feature.spec_link = 'https://spec.example.com'
         self.feature.wpt_descr = 'https://wpt.fyi/results/test'
         self.mock_utils.extract_wpt_fyi_results_urls.return_value = ['url1']
@@ -846,8 +846,8 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
             self.assertEqual(self.feature.ai_test_eval_report, error_msg)
 
 
-class GenerateWPTCoverageEvalReportHandlerTest(testing_config.CustomTestCase):
-    def setUp(self):
+class GenerateWPTCoverageEvalReportHandlerTest(testing_config.CustomTestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         super(GenerateWPTCoverageEvalReportHandlerTest, self).setUp()
         self.feature = FeatureEntry(
             name='Test Feature',
@@ -873,7 +873,7 @@ class GenerateWPTCoverageEvalReportHandlerTest(testing_config.CustomTestCase):
             new_callable=mock.AsyncMock,
         ).start()
 
-    def tearDown(self):
+    def tearDown(self):  # noqa: D102
         mock.patch.stopall()
 
     def test_process_post_data__success(self):

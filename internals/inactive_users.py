@@ -1,4 +1,4 @@
-# Copyright 2022 Google Inc.
+# Copyright 2022 Google Inc.  # noqa: D100
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
 # you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ from framework.basehandlers import FlaskHandler
 from internals.user_models import AppUser
 
 
-class RemoveInactiveUsersHandler(FlaskHandler):
+class RemoveInactiveUsersHandler(FlaskHandler):  # noqa: D101
     DEFAULT_LAST_VISIT = datetime(2022, 8, 1)  # 2022-08-01
     INACTIVE_REMOVE_DAYS = 270
 
@@ -37,7 +37,7 @@ class RemoveInactiveUsersHandler(FlaskHandler):
             if user.is_admin or user.is_site_editor:
                 continue
 
-            # If the user does not have a last visit, it is assumed the last visit
+            # If the user does not have a last visit, it is assumed the last visit  # noqa: E501
             # is either the account's creation date or the date the last_visit
             # field was created on the model - whatever is latest.
             last_visit = user.last_visit or self.DEFAULT_LAST_VISIT

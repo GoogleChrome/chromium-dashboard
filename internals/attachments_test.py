@@ -1,4 +1,4 @@
-# Copyright 2024 Google Inc.
+# Copyright 2024 Google Inc.  # noqa: D100
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
 # you may not use this file except in compliance with the License.
@@ -18,8 +18,8 @@ import testing_config  # Must be imported before the module under test.
 from internals import attachments
 
 
-class AttachmentsTests(testing_config.CustomTestCase):
-    def setUp(self):
+class AttachmentsTests(testing_config.CustomTestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         self.feature_id = 12345678
 
     def test_store_attachment(self):
@@ -55,7 +55,7 @@ class AttachmentsTests(testing_config.CustomTestCase):
             attachments.check_attachment_type('video/mpeg')
 
     def test_get_attachment__found(self):
-        """We can retrive an attachment, with checking for the proper feature."""
+        """We can retrive an attachment, with checking for the proper feature."""  # noqa: E501
         stored = attachments.store_attachment(
             self.feature_id, b'test content', 'text/plain'
         )
@@ -141,7 +141,7 @@ class AttachmentsTests(testing_config.CustomTestCase):
         attachments.delete_orphan_attachments(self.feature_id, '')
 
     def test_delete_orphan_attachments__maintained(self):
-        """A feature has an attachment and the links field keeps it: it stays."""
+        """A feature has an attachment and the links field keeps it: it stays."""  # noqa: E501
         feature_id = self.feature_id
         stored = attachments.store_attachment(
             feature_id, b'test content', 'text/plain'

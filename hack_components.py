@@ -1,4 +1,4 @@
-HACK_BLINK_COMPONENTS = [
+HACK_BLINK_COMPONENTS = [  # noqa: D100
     'A-N/A',
     'Blink',
     'Blink>Accessibility',

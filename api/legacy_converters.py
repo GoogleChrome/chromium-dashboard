@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-  # noqa: D100
 # Copyright 2023 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
@@ -21,7 +21,7 @@ from api.converters import del_none, to_dict
 from internals.core_enums import *  # noqa: F403
 
 
-def feature_to_legacy_json(f: Feature) -> dict[str, Any]:
+def feature_to_legacy_json(f: Feature) -> dict[str, Any]:  # noqa: D103
     d: dict[str, Any] = to_dict(f)
     is_released = f.impl_status_chrome in RELEASE_IMPL_STATES  # noqa: F405
     d['is_released'] = is_released
@@ -39,7 +39,7 @@ def feature_to_legacy_json(f: Feature) -> dict[str, Any]:
         d['feature_type'] = FEATURE_TYPES[f.feature_type]  # noqa: F405
         d['feature_type_int'] = f.feature_type
         d['is_enterprise_feature'] = (
-            f.feature_type == FEATURE_TYPE_ENTERPRISE_ID
+            f.feature_type == FEATURE_TYPE_ENTERPRISE_ID  # noqa: F405
         )  # noqa: F405
     if f.intent_stage is not None:
         d['intent_stage'] = INTENT_STAGES[f.intent_stage]  # noqa: F405
@@ -109,12 +109,12 @@ def feature_to_legacy_json(f: Feature) -> dict[str, Any]:
         },
         'ff': {
             'view': {
-                'text': VENDOR_VIEWS.get(
+                'text': VENDOR_VIEWS.get(  # noqa: F405
                     ff_views,  # noqa: F405
-                    VENDOR_VIEWS_COMMON[NO_PUBLIC_SIGNALS],
+                    VENDOR_VIEWS_COMMON[NO_PUBLIC_SIGNALS],  # noqa: F405
                 ),  # noqa: F405
                 'val': ff_views
-                if ff_views in VENDOR_VIEWS
+                if ff_views in VENDOR_VIEWS  # noqa: F405
                 else NO_PUBLIC_SIGNALS,  # noqa: F405
                 'url': d.pop('ff_views_link', None),
                 'notes': d.pop('ff_views_notes', None),
@@ -122,12 +122,12 @@ def feature_to_legacy_json(f: Feature) -> dict[str, Any]:
         },
         'edge': {  # Deprecated
             'view': {
-                'text': VENDOR_VIEWS.get(
+                'text': VENDOR_VIEWS.get(  # noqa: F405
                     ie_views,  # noqa: F405
-                    VENDOR_VIEWS_COMMON[NO_PUBLIC_SIGNALS],
+                    VENDOR_VIEWS_COMMON[NO_PUBLIC_SIGNALS],  # noqa: F405
                 ),  # noqa: F405
                 'val': ie_views
-                if ie_views in VENDOR_VIEWS
+                if ie_views in VENDOR_VIEWS  # noqa: F405
                 else NO_PUBLIC_SIGNALS,  # noqa: F405
                 'url': d.pop('ie_views_link', None),
                 'notes': d.pop('ie_views_notes', None),
@@ -135,14 +135,14 @@ def feature_to_legacy_json(f: Feature) -> dict[str, Any]:
         },
         'safari': {
             'view': {
-                'text': VENDOR_VIEWS.get(
+                'text': VENDOR_VIEWS.get(  # noqa: F405
                     safari_views,  # noqa: F405
-                    VENDOR_VIEWS_COMMON[NO_PUBLIC_SIGNALS],
+                    VENDOR_VIEWS_COMMON[NO_PUBLIC_SIGNALS],  # noqa: F405
                 ),  # noqa: F405
                 'val': (
                     safari_views
                     if safari_views in VENDOR_VIEWS  # noqa: F405
-                    else NO_PUBLIC_SIGNALS
+                    else NO_PUBLIC_SIGNALS  # noqa: F405
                 ),  # noqa: F405
                 'url': d.pop('safari_views_link', None),
                 'notes': d.pop('safari_views_notes', None),
@@ -150,14 +150,14 @@ def feature_to_legacy_json(f: Feature) -> dict[str, Any]:
         },
         'webdev': {
             'view': {
-                'text': WEB_DEV_VIEWS.get(
+                'text': WEB_DEV_VIEWS.get(  # noqa: F405
                     f.web_dev_views,  # noqa: F405
-                    WEB_DEV_VIEWS[DEV_NO_SIGNALS],
+                    WEB_DEV_VIEWS[DEV_NO_SIGNALS],  # noqa: F405
                 ),  # noqa: F405
                 'val': (
                     web_dev_views
                     if web_dev_views in WEB_DEV_VIEWS  # noqa: F405
-                    else DEV_NO_SIGNALS
+                    else DEV_NO_SIGNALS  # noqa: F405
                 ),  # noqa: F405
                 'url': d.pop('web_dev_views_link', None),
                 'notes': d.pop('web_dev_views_notes', None),

@@ -22,19 +22,19 @@ allCssPropertyHistograms = metrics_models.CssPropertyHistogram.get_all()
 allFeatureObserverHistograms = metrics_models.FeatureObserverHistogram.get_all()
 
 
-def CorrectCSSPropertyName(bucket_id):
+def CorrectCSSPropertyName(bucket_id):  # noqa: D103
     if bucket_id in allCssPropertyHistograms:
         return allCssPropertyHistograms[bucket_id]
     return None
 
 
-def CorrectFeaturePropertyName(bucket_id):
+def CorrectFeaturePropertyName(bucket_id):  # noqa: D103
     if bucket_id in allFeatureObserverHistograms:
         return allFeatureObserverHistograms[bucket_id]
     return None
 
 
-def FetchAllCSSPropertiesWithError(bucket_id=None):
+def FetchAllCSSPropertiesWithError(bucket_id=None):  # noqa: D103
     q = metrics_models.StableInstance.query()
     if bucket_id:
         q = q.filter(metrics_models.StableInstance.bucket_id == bucket_id)
@@ -48,7 +48,7 @@ def FetchAllCSSPropertiesWithError(bucket_id=None):
     return props
 
 
-def FetchAllFeaturesWithError(bucket_id=None):
+def FetchAllFeaturesWithError(bucket_id=None):  # noqa: D103
     q = metrics_models.FeatureObserver.query()
     if bucket_id:
         q = q.filter(metrics_models.FeatureObserver.bucket_id == bucket_id)
@@ -56,7 +56,7 @@ def FetchAllFeaturesWithError(bucket_id=None):
     return q.fetch(None)
 
 
-def fix_up(props, corrector_func):
+def fix_up(props, corrector_func):  # noqa: D103
 
     need_correcting = {}
     for p in props:

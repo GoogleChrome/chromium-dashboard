@@ -1,4 +1,4 @@
-# Copyright 2025 Google Inc.
+# Copyright 2025 Google Inc.  # noqa: D100
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
 # you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ import testing_config  # Must be imported before the module under test.
 from framework import gemini_client
 
 
-class GeminiClientTest(testing_config.CustomTestCase):
+class GeminiClientTest(testing_config.CustomTestCase):  # noqa: D101
     def setUp(self):
         """Set up shared mocks for all tests in this class."""
         logging.disable(logging.CRITICAL)
@@ -53,7 +53,7 @@ class GeminiClientTest(testing_config.CustomTestCase):
         # Add cleanup to stop all patches
         self.addCleanup(mock.patch.stopall)
 
-    def tearDown(self):
+    def tearDown(self):  # noqa: D102
         logging.disable(logging.NOTSET)
         settings.GEMINI_API_KEY = self.original_gemini_api_key
 
@@ -114,7 +114,7 @@ class GeminiClientTest(testing_config.CustomTestCase):
 
         # Verify logging
         self.mock_logging.error.assert_called_once_with(
-            f'An unexpected error occurred during client initialization: {init_error}'
+            f'An unexpected error occurred during client initialization: {init_error}'  # noqa: E501
         )
 
     def test_prompt_exceeds_input_token_limit(self):
@@ -130,7 +130,7 @@ class GeminiClientTest(testing_config.CustomTestCase):
             mock_count_response  # noqa: E501
         )
 
-        # Configure the mock response for client.models.get (to fetch model info)
+        # Configure the mock response for client.models.get (to fetch model info)  # noqa: E501
         mock_model_info = mock.MagicMock()
         mock_model_info.input_token_limit = token_limit
         self.mock_client_instance.models.get.return_value = mock_model_info
@@ -152,7 +152,7 @@ class GeminiClientTest(testing_config.CustomTestCase):
         )
 
     def test_get_response__success(self):
-        """The client returns a valid text response with correct timeout config."""
+        """The client returns a valid text response with correct timeout config."""  # noqa: E501
         prompt = 'Hello Gemini'
         expected_response = 'Hello there!'
 
@@ -266,7 +266,7 @@ class GeminiClientTest(testing_config.CustomTestCase):
 
         client = gemini_client.GeminiClient()
 
-        # The utils.retry decorator allows the underlying exception to bubble up.
+        # The utils.retry decorator allows the underlying exception to bubble up.  # noqa: E501
         with self.assertRaisesRegex(Exception, 'API rate limit exceeded'):
             client.get_response(prompt)
 
@@ -317,17 +317,17 @@ class GeminiClientTest(testing_config.CustomTestCase):
         mock_internal_client.close.assert_called_once()
 
     def test_get_response_async__success(self):
-        """Test that get_response_async correctly wraps the synchronous method."""
+        """Test that get_response_async correctly wraps the synchronous method."""  # noqa: E501
         client = gemini_client.GeminiClient()
         expected_response = 'Async response'
         prompt = 'Async prompt'
 
-        # We mock the synchronous get_response method to verify the async wrapper
-        # calls it correctly without actually hitting the API or spawning threads.
+        # We mock the synchronous get_response method to verify the async wrapper  # noqa: E501
+        # calls it correctly without actually hitting the API or spawning threads.  # noqa: E501
         with mock.patch.object(
             client, 'get_response', return_value=expected_response
         ) as mock_sync_get:
-            # Use asyncio.run to execute the coroutine in a synchronous test method
+            # Use asyncio.run to execute the coroutine in a synchronous test method  # noqa: E501
             result = asyncio.run(client.get_response_async(prompt))
 
             self.assertEqual(result, expected_response)
@@ -349,7 +349,7 @@ class GeminiClientTest(testing_config.CustomTestCase):
             return 'Should not be reached'
 
         try:
-            # Patch asyncio.to_thread specifically within the gemini_client module
+            # Patch asyncio.to_thread specifically within the gemini_client module  # noqa: E501
             with mock.patch(
                 'framework.gemini_client.asyncio.to_thread',
                 side_effect=mock_slow_to_thread,
@@ -378,7 +378,7 @@ class GeminiClientTest(testing_config.CustomTestCase):
                 asyncio.run(client.get_response_async('fail'))
 
     def test_get_batch_responses_async__success(self):
-        """Test that batch processing correctly gathers multiple async results."""
+        """Test that batch processing correctly gathers multiple async results."""  # noqa: E501
         client = gemini_client.GeminiClient()
         prompts = ['p1', 'p2', 'p3']
 

@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-  # noqa: D100
 # Copyright 2023 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
@@ -102,7 +102,7 @@ URL_REGEX = re.compile(r'(https?://\S+)')
 TIMEOUT = 30  # We wait at most 30 seconds for each web page request.
 
 
-def valid_url(url):
+def valid_url(url):  # noqa: D103
     try:
         return validators.url(url)
     except:  # noqa: E722
@@ -127,7 +127,7 @@ def rotate_github_client():
     github_api_client = None  # A new one will be selected on when needed.
 
 
-class Link:
+class Link:  # noqa: D101
     @classmethod
     def extract_urls_from_value(cls, value: Any) -> list[str]:
         """Extract the urls from the given value."""
@@ -151,7 +151,7 @@ class Link:
 
     @classmethod
     def get_type(cls, link: str) -> str | None:
-        """Return Link_Type if the given link is valid. Otherwise, return None."""
+        """Return Link_Type if the given link is valid. Otherwise, return None."""  # noqa: E501
         for link_type, regex in LINK_TYPES_REGEX.items():
             if regex.match(link):
                 return link_type
@@ -174,7 +174,7 @@ class Link:
         """Get a file from GitHub."""
         client = get_github_api_client()
         try:
-            # try to get the branch information, if it exists, update branch name
+            # try to get the branch information, if it exists, update branch name  # noqa: E501
             # this handles the case where the branch is renamed.
             branch_information = client.repos.get_branch(
                 owner=owner, repo=repo, branch=ref
@@ -324,7 +324,7 @@ class Link:
         html_str = html.unescape(response.text)
 
         title = re.search(r'<title>(.*?)</title>', html_str)
-        # use \s+ instead of whitespace, to match multiple whitespaces or newlines
+        # use \s+ instead of whitespace, to match multiple whitespaces or newlines  # noqa: E501
         title_og = re.search(
             r'<meta property="og:title"\s+content="(.*?)"', html_str
         )  # noqa: E501
@@ -359,7 +359,7 @@ class Link:
 
     def parse(self):
         """Parse the link and store the information."""
-        # Flush logs because GAE instances killed for exceeding request time limit
+        # Flush logs because GAE instances killed for exceeding request time limit  # noqa: E501
         # may lose logging output that has not been flushed.
         logging.getLogger().handlers[0].flush()
 
@@ -376,8 +376,8 @@ class Link:
             if self.type == LINK_TYPE_GITHUB_ISSUE:
                 self.information = self._parse_github_issue()
             elif self.type == LINK_TYPE_GITHUB_PULL_REQUEST:
-                # we can also use github issue api to get pull request information
-                # pull request api can get more information but we don't need it for now
+                # we can also use github issue api to get pull request information  # noqa: E501
+                # pull request api can get more information but we don't need it for now  # noqa: E501
                 self.information = self._parse_github_issue()
             elif self.type == LINK_TYPE_GITHUB_MARKDOWN:
                 self.information = self._parse_github_markdown()

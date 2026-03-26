@@ -1,4 +1,4 @@
-# Copyright 2020 Google Inc.
+# Copyright 2020 Google Inc.  # noqa: D100
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
 # you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ from internals import approval_defs, core_enums
 from internals.review_models import Gate, GateDef, OwnersFile, Vote
 
 
-class FetchOwnersTest(testing_config.CustomTestCase):
+class FetchOwnersTest(testing_config.CustomTestCase):  # noqa: D101
     FILE_CONTENTS = (
         '# Blink API owners are responsible for ...\n'
         '#\n'
@@ -33,7 +33,7 @@ class FetchOwnersTest(testing_config.CustomTestCase):
         '\n'
     )
 
-    def setUp(self):
+    def setUp(self):  # noqa: D102
         for owners_file in OwnersFile.query():
             owners_file.key.delete()
 
@@ -59,7 +59,7 @@ class FetchOwnersTest(testing_config.CustomTestCase):
     @mock.patch('logging.error')
     @mock.patch('requests.get')
     def test__error__use_ndb(self, mock_get, mock_err):
-        """If NDB is old and we can't read the OWNERS file, use old value anyway."""
+        """If NDB is old and we can't read the OWNERS file, use old value anyway."""  # noqa: E501
         encoded = base64.b64encode(self.FILE_CONTENTS.encode())
         OwnersFile(
             url='https://example.com',
@@ -85,8 +85,8 @@ class FetchOwnersTest(testing_config.CustomTestCase):
         self.assertEqual(actual, [])
 
 
-class AutoAssignmentTest(testing_config.CustomTestCase):
-    def setUp(self):
+class AutoAssignmentTest(testing_config.CustomTestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         self.feature_id = 123456789
         self.gate_1 = Gate(
             feature_id=self.feature_id,
@@ -168,16 +168,16 @@ MOCK_APPROVALS_BY_ID = {
 }
 
 
-class GetApproversTest(testing_config.CustomTestCase):
-    def setUp(self):
+class GetApproversTest(testing_config.CustomTestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         self.clearCache()
 
-    def tearDown(self):
+    def tearDown(self):  # noqa: D102
         self.clearCache()
         for gate_def in GateDef.query():
             gate_def.key.delete()
 
-    def clearCache(self):
+    def clearCache(self):  # noqa: D102
         for gate_type in approval_defs.APPROVAL_FIELDS_BY_ID:
             cache_key = '%s|%s' % (approval_defs.APPROVERS_CACHE_KEY, gate_type)
             rediscache.delete(cache_key)
@@ -234,7 +234,7 @@ class GetApproversTest(testing_config.CustomTestCase):
         self.assertEqual(['a', 'b'], existing_gate_defs[0].approvers)
 
 
-class IsValidGateTypeTest(testing_config.CustomTestCase):
+class IsValidGateTypeTest(testing_config.CustomTestCase):  # noqa: D101
     @mock.patch(
         'internals.approval_defs.APPROVAL_FIELDS_BY_ID', MOCK_APPROVALS_BY_ID
     )
@@ -245,8 +245,8 @@ class IsValidGateTypeTest(testing_config.CustomTestCase):
         self.assertFalse(approval_defs.is_valid_gate_type(99))
 
 
-class IsApprovedTest(testing_config.CustomTestCase):
-    def setUp(self):
+class IsApprovedTest(testing_config.CustomTestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         feature_1_id = 123456
         self.appr_nr = Vote(
             feature_id=feature_1_id,
@@ -292,8 +292,8 @@ GATE_VALUES = Vote.VOTE_VALUES.copy()
 GATE_VALUES.update({Gate.PREPARING: 'preparing'})
 
 
-class CalcGateStateTest(testing_config.CustomTestCase):
-    def do_calc(self, *vote_states):
+class CalcGateStateTest(testing_config.CustomTestCase):  # noqa: D101
+    def do_calc(self, *vote_states):  # noqa: D102
         votes = [  # set_on dates are in the order of the given list.
             Vote(state=state, set_on=datetime.datetime(2022, 1, i + 1))
             for i, state in enumerate(vote_states)
@@ -319,7 +319,7 @@ class CalcGateStateTest(testing_config.CustomTestCase):
         self.assertEqual(('approved', 'review_requested'), self.do_calc(RR, AP))
 
     def test_request_one_approved__no_request(self):
-        """An API Owner gave LGTM1 Approval on an intent that was not detected."""
+        """An API Owner gave LGTM1 Approval on an intent that was not detected."""  # noqa: E501
         self.assertEqual(('approved', 'review_requested'), self.do_calc(AP))
 
     def test_request_three_approved(self):
@@ -433,8 +433,8 @@ class CalcGateStateTest(testing_config.CustomTestCase):
         )
 
 
-class UpdateTest(testing_config.CustomTestCase):
-    def setUp(self):
+class UpdateTest(testing_config.CustomTestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         self.gate_1 = Gate(
             id=1001, feature_id=1, stage_id=1, gate_type=2, state=Gate.PREPARING
         )
@@ -599,7 +599,7 @@ class UpdateTest(testing_config.CustomTestCase):
         for vote in self.votes:
             vote.put()
 
-    def tearDown(self):
+    def tearDown(self):  # noqa: D102
         self.gate_1.key.delete()
         self.gate_2.key.delete()
         for vote in self.votes:

@@ -1,4 +1,4 @@
-# Copyright 2024 Google Inc.
+# Copyright 2024 Google Inc.  # noqa: D100
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
 # you may not use this file except in compliance with the License.
@@ -57,7 +57,7 @@ def compute_subject_prefix(feature_type: int, intent_type: IntentDraftType):
 
 
 # Format for Google Cloud Task body passed to cloud_tasks_helpers.enqueue_task
-class IntentGenerationOptions(TypedDict):
+class IntentGenerationOptions(TypedDict):  # noqa: D101
     subject: str
     feature_id: int
     intent_type: str
@@ -65,7 +65,7 @@ class IntentGenerationOptions(TypedDict):
     intent_cc_emails: list[str]
 
 
-class IntentsAPI(basehandlers.APIHandler):
+class IntentsAPI(basehandlers.APIHandler):  # noqa: D101
     def do_get(self, **kwargs) -> Response | dict | str:
         """Get the body of a draft intent."""
         feature_id = int(kwargs['feature_id'])
@@ -88,7 +88,7 @@ class IntentsAPI(basehandlers.APIHandler):
         if intent_type is None:
             self.abort(
                 400,
-                msg=f'Stage type {stage.stage_type} does not support intent drafting',
+                msg=f'Stage type {stage.stage_type} does not support intent drafting',  # noqa: E501
             )
 
         gate_id = int(kwargs.get('gate_id', 0))
@@ -156,7 +156,7 @@ class IntentsAPI(basehandlers.APIHandler):
         if intent_type is None:
             self.abort(
                 400,
-                msg=f'Stage type {stage.stage_type} does not support intent drafting',
+                msg=f'Stage type {stage.stage_type} does not support intent drafting',  # noqa: E501
             )
 
         # Check that the user has feature edit permissions.

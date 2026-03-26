@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-  # noqa: D100
 # Copyright 2022 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
@@ -39,7 +39,9 @@ from internals.review_models import Gate, Vote
 SIMPLE_TYPES = frozenset((int, float, bool, dict, str, list))
 
 
-def to_dict(entity: ndb.Model) -> dict[str, Any]:  # pragma: no cover
+def to_dict(  # noqa: D103
+    entity: ndb.Model,
+) -> dict[str, Any]:  # pragma: no cover  # noqa: D103, E501
     output = {}
     for key, prop in entity._properties.items():
         # Skip obsolete values that are still in our datastore
@@ -101,7 +103,7 @@ def _get_milestone_attr(stage: Stage | None, field: str) -> int | None:
 
 
 # Return type for _prep_stage_info function.
-class StagePrepResponse(TypedDict):
+class StagePrepResponse(TypedDict):  # noqa: D101
     proto: Stage | None
     dev_trial: Stage | None
     ot: Stage | None
@@ -169,7 +171,7 @@ def _prep_stage_info(
         stage_info['all_stages'].append(stage_dict)
 
     for extension in extension_stages:
-        # Trial extensions are kept as a list on the associated trial stage dict.
+        # Trial extensions are kept as a list on the associated trial stage dict.  # noqa: E501
         ot_id = extension['ot_stage_id']
         if ot_id and ot_id in ot_stage_indexes:
             (
@@ -201,7 +203,8 @@ def stage_to_json_dict(
         'stage_type': stage.stage_type,
         'display_name': stage.display_name,
         'intent_stage': INTENT_STAGES_BY_STAGE_TYPE.get(  # noqa: F405
-            stage.stage_type, INTENT_NONE
+            stage.stage_type,
+            INTENT_NONE,  # noqa: F405
         ),  # noqa: F405
         'pm_emails': stage.pm_emails,
         'tl_emails': stage.tl_emails,
@@ -214,7 +217,7 @@ def stage_to_json_dict(
         'origin_trial_id': stage.origin_trial_id,
         'origin_trial_feedback_url': stage.origin_trial_feedback_url,
         'ot_action_requested': stage.ot_action_requested,
-        'ot_approval_buganizer_component': stage.ot_approval_buganizer_component,
+        'ot_approval_buganizer_component': stage.ot_approval_buganizer_component,  # noqa: E501
         'ot_approval_buganizer_custom_field_id': (
             stage.ot_approval_buganizer_custom_field_id
         ),
@@ -289,7 +292,7 @@ def _format_new_crbug_url(
         PROPOSED,  # noqa: F405
         IN_DEVELOPMENT,  # noqa: F405
         BEHIND_A_FLAG,  # noqa: F405
-        ORIGIN_TRIAL,
+        ORIGIN_TRIAL,  # noqa: F405
     ):  # noqa: F405
         params.append('blocking=' + crbug_number)
     if owner_emails:
@@ -337,7 +340,7 @@ def _compute_vendor_views(
             VENDOR_VIEWS_COMMON[NO_PUBLIC_SIGNALS],  # noqa: F405
         )
         result['val'] = (
-            form_views if form_views in VENDOR_VIEWS else NO_PUBLIC_SIGNALS
+            form_views if form_views in VENDOR_VIEWS else NO_PUBLIC_SIGNALS  # noqa: F405
         )  # noqa: E501, F405
     return result
 
@@ -406,8 +409,9 @@ def feature_entry_to_json_verbose(
         'creator': fe.creator_email,
         'feature_type': FEATURE_TYPES[fe.feature_type],  # noqa: F405
         'feature_type_int': fe.feature_type,
-        'intent_stage': INTENT_STAGES.get(
-            fe.intent_stage, INTENT_STAGES[INTENT_NONE]
+        'intent_stage': INTENT_STAGES.get(  # noqa: F405
+            fe.intent_stage,
+            INTENT_STAGES[INTENT_NONE],  # noqa: F405
         ),  # noqa: E501, F405
         'intent_stage_int': fe.intent_stage,
         'active_stage_id': fe.active_stage_id,
@@ -496,7 +500,7 @@ def feature_entry_to_json_verbose(
                     'val': fe.impl_status_chrome,
                     'milestone_str': None,
                 },
-                # TODO(danielrsmith): Find out if these are used and delete if not.
+                # TODO(danielrsmith): Find out if these are used and delete if not.  # noqa: E501
                 'desktop': _get_milestone_attr(
                     stage_info['ship'], 'desktop_first'
                 ),
@@ -526,12 +530,13 @@ def feature_entry_to_json_verbose(
             },
             'webdev': {
                 'view': {
-                    'text': WEB_DEV_VIEWS.get(
-                        fe.web_dev_views, WEB_DEV_VIEWS[DEV_NO_SIGNALS]
+                    'text': WEB_DEV_VIEWS.get(  # noqa: F405
+                        fe.web_dev_views,
+                        WEB_DEV_VIEWS[DEV_NO_SIGNALS],  # noqa: F405
                     ),  # noqa: E501, F405
                     'val': (
                         fe.web_dev_views
-                        if fe.web_dev_views in WEB_DEV_VIEWS
+                        if fe.web_dev_views in WEB_DEV_VIEWS  # noqa: F405
                         else DEV_NO_SIGNALS  # noqa: E501, F405
                     ),
                     'url': fe.web_dev_views_link,
@@ -654,12 +659,13 @@ def feature_entry_to_json_basic(
             },
             'webdev': {
                 'view': {
-                    'text': WEB_DEV_VIEWS.get(
-                        fe.web_dev_views, WEB_DEV_VIEWS[DEV_NO_SIGNALS]
+                    'text': WEB_DEV_VIEWS.get(  # noqa: F405
+                        fe.web_dev_views,
+                        WEB_DEV_VIEWS[DEV_NO_SIGNALS],  # noqa: F405
                     ),  # noqa: E501, F405
                     'val': (
                         fe.web_dev_views
-                        if fe.web_dev_views in WEB_DEV_VIEWS
+                        if fe.web_dev_views in WEB_DEV_VIEWS  # noqa: F405
                         else DEV_NO_SIGNALS  # noqa: E501, F405
                     ),
                     'url': fe.web_dev_views_link,
@@ -711,7 +717,7 @@ def feature_entry_to_json_tiny(fe: FeatureEntry) -> dict[str, Any]:
     }
 
 
-def vote_value_to_json_dict(vote: Vote) -> dict[str, Any]:
+def vote_value_to_json_dict(vote: Vote) -> dict[str, Any]:  # noqa: D103
 
     return {
         'feature_id': vote.feature_id,
@@ -723,7 +729,7 @@ def vote_value_to_json_dict(vote: Vote) -> dict[str, Any]:
     }
 
 
-def gate_value_to_json_dict(gate: Gate) -> dict[str, Any]:
+def gate_value_to_json_dict(gate: Gate) -> dict[str, Any]:  # noqa: D103
     next_action = str(gate.next_action) if gate.next_action else None
     requested_on = str(gate.requested_on) if gate.requested_on else None
     responded_on = str(gate.responded_on) if gate.responded_on else None

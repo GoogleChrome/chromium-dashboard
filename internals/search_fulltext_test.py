@@ -1,4 +1,4 @@
-# Copyright 2022 Google Inc.
+# Copyright 2022 Google Inc.  # noqa: D100
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
 # you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ test_app = flask.Flask(
 )
 
 
-class SearchFulltextRegexTest(testing_config.CustomTestCase):
+class SearchFulltextRegexTest(testing_config.CustomTestCase):  # noqa: D101
     def test_WORD_RE(self):
         """Our RE finds words of three letters or more."""
         actual = search_fulltext.WORD_RE.findall('')
@@ -52,8 +52,8 @@ class SearchFulltextRegexTest(testing_config.CustomTestCase):
         )
 
 
-class SearchFulltextFunctionsTest(testing_config.CustomTestCase):
-    def setUp(self):
+class SearchFulltextFunctionsTest(testing_config.CustomTestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         self.fe = core_models.FeatureEntry(
             id=123,
             creator_email='creator@example.com',
@@ -192,7 +192,7 @@ class SearchFulltextFunctionsTest(testing_config.CustomTestCase):
         )
 
     def test_post_process_phrase__no_candidates(self):
-        """If there were no word-bag results then they can be no phrase results."""
+        """If there were no word-bag results then they can be no phrase results."""  # noqa: E501
         word_bag_feature_ids = []
         actual = search_fulltext.post_process_phrase(
             'hello', word_bag_feature_ids
@@ -200,7 +200,7 @@ class SearchFulltextFunctionsTest(testing_config.CustomTestCase):
         self.assertEqual([], actual)
 
     def test_post_process_phrase__phrase_detection(self):
-        """It returns feature_ids for only features with the words in the phrase."""
+        """It returns feature_ids for only features with the words in the phrase."""  # noqa: E501
         fe = core_models.FeatureEntry(
             creator_email='creator@example.com',
             name='Once upon a time',
@@ -264,8 +264,8 @@ class SearchFulltextFunctionsTest(testing_config.CustomTestCase):
     # TODO(jrobbins): Unit test for ReindexAllFeatures.
 
 
-class FindStopWordsTest(testing_config.CustomTestCase):
-    def setUp(self):
+class FindStopWordsTest(testing_config.CustomTestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         self.fe_1 = core_models.FeatureEntry(
             creator_email='creator@example.com',
             updater_email='updater@example.com',
@@ -291,7 +291,7 @@ class FindStopWordsTest(testing_config.CustomTestCase):
         self.handler = search_fulltext.FindStopWords()
         self.request_path = '/admin/find_stop_words'
 
-    def test_get_template_date(self):
+    def test_get_template_date(self):  # noqa: D102
         with test_app.test_request_context(self.request_path):
             actual = self.handler.get_template_data()
 
@@ -309,5 +309,5 @@ class FindStopWordsTest(testing_config.CustomTestCase):
             ('someone', 1),
             ('updater', 1),
         ]
-        # We don't care about the exact order of the ones that have the same count.
+        # We don't care about the exact order of the ones that have the same count.  # noqa: E501
         self.assertCountEqual(expected, actual)

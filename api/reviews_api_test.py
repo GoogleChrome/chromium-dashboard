@@ -1,4 +1,4 @@
-# Copyright 2023 Google Inc.
+# Copyright 2023 Google Inc.  # noqa: D100
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
 # you may not use this file except in compliance with the License.
@@ -29,17 +29,17 @@ test_app = flask.Flask(__name__)
 NOW = datetime.datetime.now()
 
 ALL_SHIPPING_GATE_TYPES = [
-    GATE_PRIVACY_SHIP,
-    GATE_SECURITY_SHIP,
+    GATE_PRIVACY_SHIP,  # noqa: F405
+    GATE_SECURITY_SHIP,  # noqa: F405
     GATE_ENTERPRISE_SHIP,  # noqa: F405
-    GATE_DEBUGGABILITY_SHIP,
-    GATE_TESTING_SHIP,
-    GATE_API_SHIP,
+    GATE_DEBUGGABILITY_SHIP,  # noqa: F405
+    GATE_TESTING_SHIP,  # noqa: F405
+    GATE_API_SHIP,  # noqa: F405
 ]  # noqa: F405
 
 
-class VotesAPITest(testing_config.CustomTestCase):
-    def setUp(self):
+class VotesAPITest(testing_config.CustomTestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         self.feature_1 = core_models.FeatureEntry(
             name='feature one',
             summary='sum',
@@ -411,8 +411,8 @@ class VotesAPITest(testing_config.CustomTestCase):
         self.handler.check_voting_rules(self.gate_1, Vote.NA_VERIFIED)
 
 
-class GatesAPITest(testing_config.CustomTestCase):
-    def setUp(self):
+class GatesAPITest(testing_config.CustomTestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         self.feature_1 = core_models.FeatureEntry(
             name='feature one',
             summary='sum',
@@ -524,8 +524,8 @@ class GatesAPITest(testing_config.CustomTestCase):
         self.assertEqual(1, len(actual['gates']))
 
 
-class XfnGatesAPITest(testing_config.CustomTestCase):
-    def setUp(self):
+class XfnGatesAPITest(testing_config.CustomTestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         self.feature_1 = core_models.FeatureEntry(
             name='feature one',
             summary='sum',
@@ -536,7 +536,8 @@ class XfnGatesAPITest(testing_config.CustomTestCase):
         self.feature_id = self.feature_1.key.integer_id()
 
         self.stage_1 = core_models.Stage(
-            feature_id=self.feature_id, stage_type=STAGE_BLINK_SHIPPING
+            feature_id=self.feature_id,
+            stage_type=STAGE_BLINK_SHIPPING,  # noqa: F405
         )  # noqa: F405
         self.stage_1.put()
         self.stage_id = self.stage_1.key.integer_id()
@@ -545,7 +546,7 @@ class XfnGatesAPITest(testing_config.CustomTestCase):
             id=1,
             feature_id=self.feature_id,
             stage_id=self.stage_id,
-            gate_type=GATE_API_SHIP,
+            gate_type=GATE_API_SHIP,  # noqa: F405
             state=Vote.NA,
         )  # noqa: F405
         self.gate_1.put()

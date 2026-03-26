@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-  # noqa: D100
 # Copyright 2020 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
@@ -20,14 +20,14 @@ from internals.metrics_models import WebDXFeatureObserver
 
 
 @dataclass
-class Action:
+class Action:  # noqa: D101
     name: str
     url: str
     prerequisites: list[str]
 
 
 @dataclass
-class ProgressItem:
+class ProgressItem:  # noqa: D101
     name: str
     field: str | None = None
 
@@ -37,7 +37,7 @@ class ProgressItem:
 # a specific process when the user clicks a "Start" button and submits
 # a form that sets intent_stage.
 @dataclass
-class ProcessStage:
+class ProcessStage:  # noqa: D101
     name: str
     description: str
     progress_items: list[ProgressItem]
@@ -49,7 +49,7 @@ class ProcessStage:
 
 
 @dataclass
-class Process:
+class Process:  # noqa: D101
     name: str
     description: str
     applicability: str
@@ -840,7 +840,7 @@ def initial_tag_review_status(feature_type):
     return core_enums.REVIEW_NA
 
 
-def review_is_done(status):
+def review_is_done(status):  # noqa: D103
     return status in (core_enums.REVIEW_ISSUES_ADDRESSED, core_enums.REVIEW_NA)
 
 

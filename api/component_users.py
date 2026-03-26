@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-  # noqa: D100
 # Copyright 2023 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
@@ -19,7 +19,7 @@ from framework import basehandlers, permissions
 from internals import user_models
 
 
-class ComponentUsersAPI(basehandlers.APIHandler):
+class ComponentUsersAPI(basehandlers.APIHandler):  # noqa: D101
     def __update_subscribers_list(
         self, add=True, user_id=None, blink_component_id=None, primary=False
     ):
@@ -48,7 +48,7 @@ class ComponentUsersAPI(basehandlers.APIHandler):
         self.abort(405, valid_methods=['PUT', 'DELETE'])
 
     @permissions.require_admin_site
-    def do_put(self, **kwargs) -> tuple[dict, int]:
+    def do_put(self, **kwargs) -> tuple[dict, int]:  # noqa: D102
         component_users_request = ComponentUsersRequest.from_dict(
             self.request.get_json(force=True)
         )  # noqa: E501
@@ -61,7 +61,7 @@ class ComponentUsersAPI(basehandlers.APIHandler):
         return {}, 200
 
     @permissions.require_admin_site
-    def do_delete(self, **kwargs) -> tuple[dict, int]:
+    def do_delete(self, **kwargs) -> tuple[dict, int]:  # noqa: D102
         params = self.request.get_json(force=True)
         component_users_request = ComponentUsersRequest.from_dict(params)
         self.__update_subscribers_list(

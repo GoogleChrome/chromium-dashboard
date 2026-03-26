@@ -1,4 +1,4 @@
-# Copyright 2020 Google Inc.
+# Copyright 2020 Google Inc.  # noqa: D100
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
 # you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ import settings
 from framework import utils
 
 
-class MockHandler(object):
+class MockHandler(object):  # noqa: D101
     def __init__(self, path):
         """Initialize the mock handler."""
         self.handler_called_with = None
@@ -33,21 +33,21 @@ class MockHandler(object):
         self.path = path
 
     @utils.strip_trailing_slash
-    def handlerMethod(self, *args):
+    def handlerMethod(self, *args):  # noqa: D102
         self.handler_called_with = args
 
-    def redirect(self, new_path):
+    def redirect(self, new_path):  # noqa: D102
         self.redirected_to = new_path
 
 
-class UtilsFunctionTests(unittest.TestCase):
-    def setUp(self):
+class UtilsFunctionTests(unittest.TestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         self.url = 'https://example.com/file.txt'
         self.content = 'This is the file content.'
         # Encode content into bytes, then base64 encode it.
         self.encoded_content = base64.b64encode(self.content.encode('utf-8'))
 
-    def test_normalized_name(self):
+    def test_normalized_name(self):  # noqa: D102
         self.assertEqual('', utils.normalized_name(''))
         self.assertEqual('abc', utils.normalized_name('abc'))
         self.assertEqual('abc', utils.normalized_name('Abc'))
@@ -56,13 +56,13 @@ class UtilsFunctionTests(unittest.TestCase):
         self.assertEqual('abc', utils.normalized_name('A B/C'))
         self.assertEqual('abc', utils.normalized_name(' /A B/C /'))
 
-    def test_format_feature_url(self):
+    def test_format_feature_url(self):  # noqa: D102
         self.assertEqual('/feature/123', utils.format_feature_url(123))
 
     @mock.patch('logging.error')
     @mock.patch('logging.warning')
     @mock.patch('time.sleep')  # Run test full speed.
-    def testRetryDecorator_ExceedFailures(
+    def testRetryDecorator_ExceedFailures(  # noqa: D102
         self, mock_sleep, mock_warn, mock_err
     ):
         class Tracker(object):
@@ -85,7 +85,7 @@ class UtilsFunctionTests(unittest.TestCase):
 
     @mock.patch('logging.warning')
     @mock.patch('time.sleep')  # Run test full speed.
-    def testRetryDecorator_EventuallySucceed(self, mock_sleep, mock_warn):
+    def testRetryDecorator_EventuallySucceed(self, mock_sleep, mock_warn):  # noqa: D102
         class Tracker(object):
             func_called = 0
 
@@ -103,7 +103,7 @@ class UtilsFunctionTests(unittest.TestCase):
         self.assertEqual(1, len(mock_sleep.mock_calls))
         self.assertEqual(1, len(mock_warn.mock_calls))
 
-    def test_strip_trailing_slash(self):
+    def test_strip_trailing_slash(self):  # noqa: D102
         handlerInstance = MockHandler('/request/path')
         handlerInstance.handlerMethod('/request/path')
         self.assertEqual(
@@ -145,7 +145,7 @@ class UtilsFunctionTests(unittest.TestCase):
     def test_get_chromium_file__cache_miss_success(
         self, mock_urlopen, mock_rediscache, mock_logging_info
     ):
-        """When not cached, the file is fetched, decoded, cached, and returned."""
+        """When not cached, the file is fetched, decoded, cached, and returned."""  # noqa: E501
         mock_rediscache.get.return_value = None
         mock_conn = mock.MagicMock()
         mock_conn.read.return_value = self.encoded_content
@@ -191,7 +191,7 @@ class UtilsFunctionTests(unittest.TestCase):
         """If decoding the fetched content fails, return an empty string."""
         mock_rediscache.get.return_value = None
         mock_conn = mock.MagicMock()
-        # Provide content that is not valid base64, causing a ValueError on decode.
+        # Provide content that is not valid base64, causing a ValueError on decode.  # noqa: E501
         mock_conn.read.return_value = b'this is not valid base64'
         mock_urlopen.return_value.__enter__.return_value = mock_conn
 
@@ -215,11 +215,11 @@ class UtilsFunctionTests(unittest.TestCase):
             'Malformed: https:wpt.fyi/results/foo': [],
             'Path-less URL: https://wpt.fyi/results': [],
             # Case: One URL with query
-            'https://wpt.fyi/results/fedcm/fedcm-error-attribute?label=experimental': [
+            'https://wpt.fyi/results/fedcm/fedcm-error-attribute?label=experimental': [  # noqa: E501
                 'https://wpt.fyi/results/fedcm/fedcm-error-attribute'
             ],
             # Case: One URL, no query, embedded
-            'Random characters https://wpt.fyi/results/dom/historical.html other': [
+            'Random characters https://wpt.fyi/results/dom/historical.html other': [  # noqa: E501
                 'https://wpt.fyi/results/dom/historical.html'
             ],
             # Case: Two URLs, mixed http/https, one with query string
@@ -237,7 +237,7 @@ class UtilsFunctionTests(unittest.TestCase):
             ],
             # Case: Multiple URLs complex
             (
-                'See https://wpt.fyi/results/a?q=1 http://wpt.fyi/results/b and '
+                'See https://wpt.fyi/results/a?q=1 http://wpt.fyi/results/b and '  # noqa: E501
                 "'https://wpt.fyi/results/c.html?foo=bar#hash for info."
             ): [
                 'https://wpt.fyi/results/a',
@@ -252,7 +252,7 @@ class UtilsFunctionTests(unittest.TestCase):
                 self.assertEqual(expected, actual)
 
     def test_reformat_wpt_fyi_url(self):
-        """Ensure .any.js variant URLs are correctly reformatted to their source."""
+        """Ensure .any.js variant URLs are correctly reformatted to their source."""  # noqa: E501
         # Case: Standard URL that should not change.
         self.assertEqual(
             'https://wpt.fyi/results/dom/nodes/Element-firstElementChild.html',
@@ -285,7 +285,7 @@ class UtilsFunctionTests(unittest.TestCase):
             ),
         )
 
-        # Case: Edge case to ensure it strictly matches '.any.' and not just '.any'.
+        # Case: Edge case to ensure it strictly matches '.any.' and not just '.any'.  # noqa: E501
         self.assertEqual(
             'https://wpt.fyi/results/foo/bar.anything.html',
             utils.reformat_wpt_fyi_url(
@@ -297,7 +297,7 @@ class UtilsFunctionTests(unittest.TestCase):
 class UtilsGitHubTests(unittest.TestCase):
     """Tests for the GitHub fetching utility functions (synchronous helpers)."""
 
-    def setUp(self):
+    def setUp(self):  # noqa: D102
         self.original_github_token = settings.GITHUB_TOKEN
         self.mock_headers = {'Authorization': 'Bearer test_token'}
         # Mock successful file API response
@@ -329,7 +329,7 @@ class UtilsGitHubTests(unittest.TestCase):
             },
         ]
 
-    def tearDown(self):
+    def tearDown(self):  # noqa: D102
         settings.GITHUB_TOKEN = self.original_github_token
 
     def test_get_github_headers__with_token(self):
@@ -366,7 +366,7 @@ class UtilsGitHubTests(unittest.TestCase):
     def test_parse_wpt_fyi_url__valid_cases(self):
         """Should correctly parse valid wpt.fyi URLs."""
         urls = {
-            'https://wpt.fyi/results/dom/historical.html': 'dom/historical.html',
+            'https://wpt.fyi/results/dom/historical.html': 'dom/historical.html',  # noqa: E501
             'http://wpt.fyi/results/dom/events': 'dom/events',
             'https://wpt.fyi/results/dom/events?label=master': 'dom/events',
             'https://wpt.fyi/results/dom/events/': 'dom/events',
@@ -496,7 +496,7 @@ class UtilsGitHubTests(unittest.TestCase):
 
     @mock.patch('framework.utils.requests.get')
     def test_fetch_dir_listing__not_a_list(self, mock_requests_get):
-        """Should return empty list if response is not a list (e.g. it's a file)."""
+        """Should return empty list if response is not a list (e.g. it's a file)."""  # noqa: E501
         mock_response = mock.Mock()
         mock_response.json.return_value = {'type': 'file'}  # Not a list
         mock_requests_get.return_value = mock_response
@@ -640,10 +640,10 @@ class UtilsDependencyTests(unittest.TestCase):
 class AsyncUtilsGitHubTests(unittest.IsolatedAsyncioTestCase):
     """Tests for the async GitHub orchestration functions."""
 
-    def setUp(self):
+    def setUp(self):  # noqa: D102
         self.previous_max = utils.MAXIMUM_FETCHED_DEPENDENCIES
 
-    def tearDown(self):
+    def tearDown(self):  # noqa: D102
         utils.MAXIMUM_FETCHED_DEPENDENCIES = self.previous_max
 
     async def test_fetch_and_pair(self):
@@ -760,7 +760,7 @@ class AsyncUtilsGitHubTests(unittest.IsolatedAsyncioTestCase):
         result = await utils.get_mixed_wpt_contents_async(dir_urls, file_urls)
 
         # 1. Start: 1 Test file (test.js). Visited count = 1.
-        # 2. Fetch test.js. Find dep1. Visited count = 2. (2 <= 2) -> Queue dep1.
+        # 2. Fetch test.js. Find dep1. Visited count = 2. (2 <= 2) -> Queue dep1.  # noqa: E501
         # 3. Fetch dep1. Find dep2. Visited count = 3. (3 <= 2) -> False. Do NOT queue dep2.  # noqa: E501
 
         # Assertions
@@ -783,7 +783,7 @@ class AsyncUtilsGitHubTests(unittest.IsolatedAsyncioTestCase):
     async def test_get_mixed_wpt_contents_async__deduplication(
         self, mock_fetch_content, mock_fetch_dir
     ):
-        """If the same file is in a dir and explicitly listed, fetch only once."""
+        """If the same file is in a dir and explicitly listed, fetch only once."""  # noqa: E501
         dir_urls = ['https://wpt.fyi/results/dir1']
 
         # We assume the user lists a file that is also inside dir1.
@@ -795,7 +795,7 @@ class AsyncUtilsGitHubTests(unittest.IsolatedAsyncioTestCase):
         raw_base = utils.WPT_GITHUB_RAW_CONTENTS_URL
         expected_url = f'{raw_base}dir1/a.html'
 
-        # The directory listing MUST return the same URL for deduplication to work.
+        # The directory listing MUST return the same URL for deduplication to work.  # noqa: E501
         mock_fetch_dir.return_value = [(Path('dir1/a.html'), expected_url)]
 
         mock_fetch_content.return_value = 'content'
@@ -818,7 +818,7 @@ class AsyncUtilsGitHubTests(unittest.IsolatedAsyncioTestCase):
     async def test_get_mixed_wpt_contents_async__partial_failures(
         self, mock_fetch_content, mock_fetch_dir
     ):
-        """Should gracefully handle failures in resolution or fetching phases."""
+        """Should gracefully handle failures in resolution or fetching phases."""  # noqa: E501
         dir_urls = [
             'https://wpt.fyi/results/dir1',
             'https://wpt.fyi/results/fail_dir',

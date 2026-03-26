@@ -1,4 +1,4 @@
-# Copyright 2025 Google Inc.
+# Copyright 2025 Google Inc.  # noqa: D100
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
 # you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ from framework import basehandlers
 from internals import feature_helpers
 
 
-class StaleFeatureInfo(TypedDict):
+class StaleFeatureInfo(TypedDict):  # noqa: D101
     id: int
     name: str
     owner_emails: list[str]
@@ -29,7 +29,7 @@ class StaleFeatureInfo(TypedDict):
     accurate_as_of: str
 
 
-class GetStaleFeaturesResponse(TypedDict):
+class GetStaleFeaturesResponse(TypedDict):  # noqa: D101
     stale_features: list[StaleFeatureInfo]
 
 
@@ -48,7 +48,7 @@ class StaleFeaturesAPI(basehandlers.EntitiesAPIHandler):
                     'owner_emails': feature.owner_emails,
                     'milestone': mstone,
                     'milestone_field': mstone_field,
-                    'outstanding_notifications': feature.outstanding_notifications,
+                    'outstanding_notifications': feature.outstanding_notifications,  # noqa: E501
                     'accurate_as_of': datetime.strftime(
                         feature.accurate_as_of, '%Y-%m-%dT%H:%M:%S'
                     ),

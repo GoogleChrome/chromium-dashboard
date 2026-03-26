@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-  # noqa: D100
 # Copyright 2022 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
@@ -21,8 +21,8 @@ from api import permissions_api
 test_app = flask.Flask(__name__)
 
 
-class PermissionsAPITest(testing_config.CustomTestCase):
-    def setUp(self):
+class PermissionsAPITest(testing_config.CustomTestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         self.handler = permissions_api.PermissionsAPI()
         self.request_path = '/api/v0/currentuser/permissions'
 

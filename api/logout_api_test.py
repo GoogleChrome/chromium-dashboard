@@ -1,4 +1,4 @@
-# Copyright 2022 Google Inc.
+# Copyright 2022 Google Inc.  # noqa: D100
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
 # you may not use this file except in compliance with the License.
@@ -24,8 +24,8 @@ test_app = flask.Flask(__name__)
 test_app.secret_key = 'testing secret'
 
 
-class LogoutAPITest(testing_config.CustomTestCase):
-    def setUp(self):
+class LogoutAPITest(testing_config.CustomTestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         self.handler = logout_api.LogoutAPI()
         self.request_path = '/api/v0/logout'
 

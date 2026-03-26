@@ -1,4 +1,4 @@
-# Copyright 2021 Google Inc.
+# Copyright 2021 Google Inc.  # noqa: D100
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
 # you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ from framework import secrets
 class SecretsFunctionsTest(testing_config.CustomTestCase):
     """Set of unit tests for accessing server-side secret values."""
 
-    def setUp(self):
+    def setUp(self):  # noqa: D102
         logging.disable(logging.CRITICAL)
         # Store original values to restore them after each test
         self.original_github_token = secrets.settings.GITHUB_TOKEN
@@ -38,7 +38,7 @@ class SecretsFunctionsTest(testing_config.CustomTestCase):
         secrets.settings.UNIT_TEST_MODE = False
         secrets.settings.DEV_MODE = False
 
-    def tearDown(self):
+    def tearDown(self):  # noqa: D102
         logging.disable(logging.NOTSET)
         # Restore original settings
         secrets.settings.GITHUB_TOKEN = self.original_github_token
@@ -324,7 +324,7 @@ class SecretsFunctionsTest(testing_config.CustomTestCase):
     def test_load_gemini_api_key__unit_test_mode_file_not_found(
         self, mock_open
     ):
-        """In test mode, it sets the API key to None if the file is not found."""
+        """In test mode, it sets the API key to None if the file is not found."""  # noqa: E501
         secrets.settings.UNIT_TEST_MODE = True
         mock_open.side_effect = FileNotFoundError
 
@@ -362,7 +362,7 @@ class SecretsFunctionsTest(testing_config.CustomTestCase):
         )
         mock_client.access_secret_version.assert_called_once_with(
             request={
-                'name': 'projects/test-app/secrets/GEMINI_API_KEY/versions/latest'
+                'name': 'projects/test-app/secrets/GEMINI_API_KEY/versions/latest'  # noqa: E501
             }
         )  # noqa: E501
 
@@ -412,16 +412,16 @@ class SecretsFunctionsTest(testing_config.CustomTestCase):
 
 
 class SecretsTest(testing_config.CustomTestCase):
-    """Set of unit tests for generating and storing server-side secret values."""
+    """Set of unit tests for generating and storing server-side secret values."""  # noqa: E501
 
-    def delete_all(self):
+    def delete_all(self):  # noqa: D102
         for old_entity in secrets.Secrets.query():
             old_entity.key.delete()
 
-    def setUp(self):
+    def setUp(self):  # noqa: D102
         self.delete_all()
 
-    def tearDown(self):
+    def tearDown(self):  # noqa: D102
         self.delete_all()
 
     def test_create_and_persist(self):
@@ -446,7 +446,7 @@ class SecretsTest(testing_config.CustomTestCase):
         self.assertEqual(singleton2.session_secret, 'fake new random')
 
 
-class ApiCredentialTest(testing_config.CustomTestCase):
+class ApiCredentialTest(testing_config.CustomTestCase):  # noqa: D101
     def test_select_token_for_api__first_use(self):
         """When there are no credientials for an API, it makes one."""
         actual = secrets.ApiCredential.select_token_for_api('foo')

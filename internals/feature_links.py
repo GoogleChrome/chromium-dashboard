@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-  # noqa: D100
 # Copyright 2023 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
@@ -283,7 +283,7 @@ def get_by_feature_ids(
 
     if has_stale_links and update_stale_links:
         logging.info(
-            f'Found {len(stale_feature_links)} stale links for feature_ids {feature_ids}, send links to cloud task'
+            f'Found {len(stale_feature_links)} stale links for feature_ids {feature_ids}, send links to cloud task'  # noqa: E501
         )  # noqa: E501
 
         feature_link_ids = [link.key.id() for link in stale_feature_links]
@@ -305,7 +305,7 @@ class FeatureLinksUpdateHandler(FlaskHandler):
 
     IS_INTERNAL_HANDLER = True
 
-    def process_post_data(self, **kwargs):
+    def process_post_data(self, **kwargs):  # noqa: D102
         self.require_task_header()
 
         logging.info('Starting indexing feature links')
@@ -334,13 +334,13 @@ def _index_feature_links_by_ids(
             link.parse()
             if link.is_error:
                 if not feature_link.is_error and should_notify_on_error:
-                    # TODO: if feature_link turns from no-error to error, notify users
+                    # TODO: if feature_link turns from no-error to error, notify users  # noqa: E501
                     pass
                 if link.http_error_code:
                     feature_link.http_error_code = link.http_error_code
                 feature_link.is_error = link.is_error
                 logging.info(
-                    f'Update indexed link {feature_link_id} {feature_link.url} encountered error'
+                    f'Update indexed link {feature_link_id} {feature_link.url} encountered error'  # noqa: E501
                 )  # noqa: E501
             else:
                 # update the information if it is not an error
@@ -348,7 +348,7 @@ def _index_feature_links_by_ids(
                 feature_link.is_error = False
                 feature_link.http_error_code = None
                 logging.info(
-                    f'Update indexed link {feature_link_id} {feature_link.url} successfully'
+                    f'Update indexed link {feature_link_id} {feature_link.url} successfully'  # noqa: E501
                 )  # noqa: E501
                 _denormalize_feature_link_into_entries(feature_link)
 
@@ -403,7 +403,7 @@ def batch_index_feature_entries(
     return link_count
 
 
-def get_domain_with_scheme(url):
+def get_domain_with_scheme(url):  # noqa: D103
     try:
         parse_result = urlparse(url)
         scheme = parse_result.scheme
@@ -506,7 +506,7 @@ def get_feature_links_samples(
     return flattened_feature_links
 
 
-class UpdateAllFeatureLinksHandlers(FlaskHandler):
+class UpdateAllFeatureLinksHandlers(FlaskHandler):  # noqa: D101
     def get_template_data(self, **kwargs) -> str:
         """Retrieves feature links from a database, identifies which links need to be updated based on certain conditions,
         and enqueues tasks to update those links in batches.

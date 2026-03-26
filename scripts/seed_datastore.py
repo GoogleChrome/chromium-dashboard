@@ -48,7 +48,7 @@ from pages.guide import FeatureCreateHandler
 
 
 def add_features(server: str, after: datetime, detailsAfter: datetime):
-    """Fetches features from `server` and inserts them into the dev datastore."""
+    """Fetches features from `server` and inserts them into the dev datastore."""  # noqa: E501
     target = urljoin(server, 'features.json')
     logging.info('Fetching features from %s.', target)
     features = requests.get(target, timeout=120)
@@ -280,13 +280,13 @@ parser.add_argument(
 parser.add_argument(
     '--after',
     type=datetime.fromisoformat,
-    help='only add features that have been updated since AFTER (in ISO date format)',
+    help='only add features that have been updated since AFTER (in ISO date format)',  # noqa: E501
     default='0001-01-01',
 )
 parser.add_argument(
     '--details-after',
     type=datetime.fromisoformat,
-    help='fetch more details for each feature that was updated since DETAILS-AFTER',
+    help='fetch more details for each feature that was updated since DETAILS-AFTER',  # noqa: E501
     default='9999-01-01',
 )
 

@@ -1,4 +1,4 @@
-# Copyright 2020 Google Inc.
+# Copyright 2020 Google Inc.  # noqa: D100
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
 # you may not use this file except in compliance with the License.
@@ -37,8 +37,8 @@ def _datetime_to_str(dt):
     return datetime.strftime(dt, CHANNEL_DATETIME_FORMAT)
 
 
-class FeaturesAPITestDelete(testing_config.CustomTestCase):
-    def setUp(self):
+class FeaturesAPITestDelete(testing_config.CustomTestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         logging.disable(logging.CRITICAL)
         self.feature_1 = FeatureEntry(
             name='feature one',
@@ -62,7 +62,7 @@ class FeaturesAPITestDelete(testing_config.CustomTestCase):
         self.random_user = user_models.AppUser(email='someuser@example.com')
         self.random_user.put()
 
-    def tearDown(self):
+    def tearDown(self):  # noqa: D102
         logging.disable(logging.NOTSET)
         cache_key = '%s|%s' % (
             FeatureEntry.DEFAULT_CACHE_KEY,
@@ -70,7 +70,7 @@ class FeaturesAPITestDelete(testing_config.CustomTestCase):
         )
         rediscache.delete(cache_key)
 
-    def check_delete_is_valid(self, email):
+    def check_delete_is_valid(self, email):  # noqa: D102
         testing_config.sign_in(email, 123567890)
 
         with test_app.test_request_context(self.request_path):
@@ -151,8 +151,8 @@ class FeaturesAPITestDelete(testing_config.CustomTestCase):
         self.assertIsNone(revised_feature.ai_test_eval_report)
 
 
-class FeaturesAPITest(testing_config.CustomTestCase):
-    def setUp(self):
+class FeaturesAPITest(testing_config.CustomTestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         logging.disable(logging.CRITICAL)
         self.feature_1 = FeatureEntry(
             name='feature one',
@@ -239,7 +239,7 @@ class FeaturesAPITest(testing_config.CustomTestCase):
         self.app_admin.is_admin = True
         self.app_admin.put()
 
-    def tearDown(self):
+    def tearDown(self):  # noqa: D102
         logging.disable(logging.NOTSET)
 
         rediscache.delete_keys_with_prefix('features')
@@ -380,7 +380,7 @@ class FeaturesAPITest(testing_config.CustomTestCase):
                 self.handler.do_get()
 
     def test_get__all_unlisted_no_perms(self):
-        """JSON feed does not include unlisted features for users who can't edit."""
+        """JSON feed does not include unlisted features for users who can't edit."""  # noqa: E501
         self.feature_1.unlisted = True
         self.feature_1.put()
 
@@ -477,7 +477,7 @@ class FeaturesAPITest(testing_config.CustomTestCase):
         )
 
     def test_get__in_milestone_unlisted_no_perms(self):
-        """JSON feed does not include unlisted features for users who can't edit."""
+        """JSON feed does not include unlisted features for users who can't edit."""  # noqa: E501
         self.feature_1.unlisted = True
         self.feature_1.put()
 
@@ -612,7 +612,7 @@ class FeaturesAPITest(testing_config.CustomTestCase):
         mock_notify.assert_called_once()
 
     def test_patch__valid(self):
-        """PATCH request successful with valid input from user with permissions."""
+        """PATCH request successful with valid input from user with permissions."""  # noqa: E501
         # Signed-in user with permissions.
         testing_config.sign_in('admin@example.com', 123567890)
 
@@ -749,7 +749,7 @@ class FeaturesAPITest(testing_config.CustomTestCase):
         self.assertEqual(self.enterprise_stage.milestones.desktop_first, 105)
 
     def test_patch__milestone_changes_null(self):
-        """Valid PATCH updates milestone fields when milestones object is null."""
+        """Valid PATCH updates milestone fields when milestones object is null."""  # noqa: E501
         self.ship_stage_1.milestones = None
         self.ship_stage_1.put()
 
@@ -944,7 +944,7 @@ class FeaturesAPITest(testing_config.CustomTestCase):
     def test_patch__reset_notifications_on_shipped_android_milestone_change(
         self,
     ):
-        """Notifications are reset when 'shipped_android_milestone' is changed."""
+        """Notifications are reset when 'shipped_android_milestone' is changed."""  # noqa: E501
         self._run_notification_test(
             'shipped_android_milestone', 103, 0, milestone_key='android_first'
         )
@@ -958,7 +958,7 @@ class FeaturesAPITest(testing_config.CustomTestCase):
     def test_patch__reset_notifications_on_shipped_webview_milestone_change(
         self,
     ):
-        """Notifications are reset when 'shipped_webview_milestone' is changed."""
+        """Notifications are reset when 'shipped_webview_milestone' is changed."""  # noqa: E501
         self._run_notification_test(
             'shipped_webview_milestone', 105, 0, milestone_key='webview_first'
         )
@@ -1308,7 +1308,7 @@ class FeaturesAPITest(testing_config.CustomTestCase):
         self.assertIsNotNone(self.feature_1.updated)
         self.assertIsNone(self.feature_1.updater_email)
 
-    def test_shared_update_special_fields__no_markdown_changes(self):
+    def test_shared_update_special_fields__no_markdown_changes(self):  # noqa: D102
         feature_changes = {'some_other_field': 'some value'}
         self.handler._shared_update_special_fields(
             self.feature_1, feature_changes
@@ -1321,7 +1321,7 @@ class FeaturesAPITest(testing_config.CustomTestCase):
         )
         self.assertEqual(['summary'], self.feature_1.markdown_fields)
 
-    def test_shared_update_special_fields__add_markdown(self):
+    def test_shared_update_special_fields__add_markdown(self):  # noqa: D102
         feature_changes = {'summary_is_markdown': True}
         self.handler._shared_update_special_fields(
             self.feature_1, feature_changes
@@ -1336,7 +1336,7 @@ class FeaturesAPITest(testing_config.CustomTestCase):
             ['summary', 'motivation'], self.feature_1.markdown_fields
         )
 
-    def test_shared_update_special_fields__remove_markdown(self):
+    def test_shared_update_special_fields__remove_markdown(self):  # noqa: D102
         self.feature_1.markdown_fields = ['summary', 'motivation']
         feature_changes = {'summary_is_markdown': False}
         self.handler._shared_update_special_fields(
@@ -1351,7 +1351,7 @@ class FeaturesAPITest(testing_config.CustomTestCase):
         self.assertEqual([], self.feature_1.markdown_fields)
 
     def test_post__valid(self):
-        """POST request successful with valid input from user with permissions."""
+        """POST request successful with valid input from user with permissions."""  # noqa: E501
         # Signed-in user with permissions.
         testing_config.sign_in('admin@example.com', 123567890)
 
@@ -1397,7 +1397,7 @@ class FeaturesAPITest(testing_config.CustomTestCase):
         self.assertEqual(new_feature.creator_email, 'admin@example.com')
 
     def test_post__valid_stage_and_gate_creation(self):
-        """POST request successful with valid input from user with permissions."""
+        """POST request successful with valid input from user with permissions."""  # noqa: E501
         # Signed-in user with permissions.
         testing_config.sign_in('admin@example.com', 123567890)
 
@@ -1477,7 +1477,7 @@ class FeaturesAPITest(testing_config.CustomTestCase):
         )
         self.assertIsNotNone(new_feature)
 
-        # New feature's values should match fields in JSON body (except bad param).
+        # New feature's values should match fields in JSON body (except bad param).  # noqa: E501
         for field, value in request_body.items():
             # Invalid fields are ignored and not updated.
             if field == 'bad_param':
@@ -1663,7 +1663,7 @@ class FeaturesAPITest(testing_config.CustomTestCase):
         )
 
     @mock.patch('api.channels_api.construct_chrome_channels_details')
-    def test_post__first_enterprise_notification_milestone_missing_impact_enterprise(
+    def test_post__first_enterprise_notification_milestone_missing_impact_enterprise(  # noqa: E501
         self, mock_call
     ):  # noqa: E501
         """POST request successful with default first_enterprise_notification_milestone."""  # noqa: E501

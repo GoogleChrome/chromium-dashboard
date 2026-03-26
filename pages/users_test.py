@@ -1,4 +1,4 @@
-# Copyright 2020 Google Inc.
+# Copyright 2020 Google Inc.  # noqa: D100
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
 # you may not use this file except in compliance with the License.
@@ -31,8 +31,8 @@ test_app = flask.Flask(
 TESTDATA = testing_config.Testdata(__file__)
 
 
-class UsersListTemplateTest(testing_config.CustomTestCase):
-    def setUp(self):
+class UsersListTemplateTest(testing_config.CustomTestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         self.handler = users.UserListHandler()
 
         self.app_admin = user_models.AppUser(email='admin@example.com')

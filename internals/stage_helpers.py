@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-  # noqa: D100
 # Copyright 2022 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
@@ -41,7 +41,7 @@ from internals.review_models import Gate
 
 
 # Type return value of get_stage_info_for_templates()
-class StageTemplateInfo(TypedDict):
+class StageTemplateInfo(TypedDict):  # noqa: D101
     proto_stages: list[Stage]
     dt_stages: list[Stage]
     ot_stages: list[Stage]
@@ -52,7 +52,7 @@ class StageTemplateInfo(TypedDict):
     should_render_intents: bool
 
 
-def create_feature_stage(
+def create_feature_stage(  # noqa: D103
     feature_id: int, feature_type: int, stage_type: int
 ) -> Stage:  # noqa: E501
     # Create the stage.
@@ -74,7 +74,7 @@ def create_feature_stage(
     return stage
 
 
-def get_gate_for_stage(feature_type, s_type) -> int | None:
+def get_gate_for_stage(feature_type, s_type) -> int | None:  # noqa: D103
     # Update type-specific fields.
     if s_type == STAGE_TYPES_DEV_TRIAL[feature_type]:  # pragma: no cover
         return GATE_API_PROTOTYPE
@@ -135,14 +135,14 @@ def get_feature_stage_ids_list(feature_id: int) -> list[dict[str, int]]:
 
 
 def get_ot_stage_extensions(ot_stage_id: int):
-    """Return a list of extension stages associated with a stage in JSON format"""  # noqa: D415
+    """Return a list of extension stages associated with a stage in JSON format"""  # noqa: D415, E501
     q = Stage.query(Stage.ot_stage_id == ot_stage_id)
     extension_stages = [converters.stage_to_json_dict(stage) for stage in q]
     return sorted(extension_stages, key=lambda s: s['created'])
 
 
 def get_stage_info_for_templates(fe: FeatureEntry) -> StageTemplateInfo:
-    """Gather the information needed to display the estimated milestones table."""
+    """Gather the information needed to display the estimated milestones table."""  # noqa: E501
     # Only milestones from DevTrial, OT, or shipping stages are displayed.
     id = fe.key.integer_id()
     f_type = fe.feature_type or 0
@@ -160,7 +160,7 @@ def get_stage_info_for_templates(fe: FeatureEntry) -> StageTemplateInfo:
         'extension_stages': [],
         'ship_stages': [],
         'enterprise_stages': [],
-        # Note if any milestones that can be displayed are seen while organizing.
+        # Note if any milestones that can be displayed are seen while organizing.  # noqa: E501
         # This is used to check if rendering the milestone table is needed.
         'should_render_mstone_table': False,
         # Note if any intent URLs are seen while organizing.
@@ -195,7 +195,7 @@ def get_stage_info_for_templates(fe: FeatureEntry) -> StageTemplateInfo:
 
         m: MilestoneSet = s.milestones
         if s.stage_type == dt_stage_type:
-            # Dev trial's announcement URL is rendered in templates like an intent.
+            # Dev trial's announcement URL is rendered in templates like an intent.  # noqa: E501
             if s.announcement_url is not None:
                 stage_info['should_render_intents'] = True
             stage_info['dt_stages'].append(s)

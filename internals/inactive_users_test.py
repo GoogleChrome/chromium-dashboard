@@ -1,4 +1,4 @@
-# Copyright 2022 Google Inc.
+# Copyright 2022 Google Inc.  # noqa: D100
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
 # you may not use this file except in compliance with the License.
@@ -19,8 +19,8 @@ from internals.inactive_users import RemoveInactiveUsersHandler
 from internals.user_models import AppUser
 
 
-class RemoveInactiveUsersHandlerTest(testing_config.CustomTestCase):
-    def setUp(self):
+class RemoveInactiveUsersHandlerTest(testing_config.CustomTestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         active_user = AppUser(
             created=datetime(2020, 10, 1),
             email='active_user@example.com',
@@ -40,7 +40,7 @@ class RemoveInactiveUsersHandlerTest(testing_config.CustomTestCase):
         inactive_user.put()
 
         # User who has recently been given access by an admin,
-        # but has not yet visited the site. They should not be considered inactive.
+        # but has not yet visited the site. They should not be considered inactive.  # noqa: E501
         newly_created_user = AppUser(
             created=datetime(2023, 8, 1),
             email='new_user@example.com',
@@ -94,7 +94,7 @@ class RemoveInactiveUsersHandlerTest(testing_config.CustomTestCase):
         )
         inactive_site_editor.put()
 
-    def test_remove_inactive_users(self):
+    def test_remove_inactive_users(self):  # noqa: D102
         inactive_remover = RemoveInactiveUsersHandler()
         result = inactive_remover.get_template_data(now=datetime(2023, 9, 1))
         expected = 'Success\nRemoved users:\nreally_inactive_user@example.com'

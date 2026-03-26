@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-  # noqa: D100
 # Copyright 2021 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
@@ -68,7 +68,7 @@ DEFAULT_SLO_RESOLVE_LIMIT = 10  # Ten weekdays in the Pacific timezone.
 
 
 @dataclass(eq=True, frozen=True)
-class GateInfo:
+class GateInfo:  # noqa: D101
     name: str
     description: str
     gate_type: int
@@ -291,7 +291,7 @@ def fetch_owners(url) -> list[str]:
     return decode_raw_owner_content(content)
 
 
-def decode_raw_owner_content(raw_content) -> list[str]:
+def decode_raw_owner_content(raw_content) -> list[str]:  # noqa: D103
     owners = []
     decoded = base64.b64decode(raw_content).decode()
     for line in decoded.split('\n'):
@@ -531,7 +531,7 @@ def _calc_gate_state(votes: list[Vote], rule: str) -> int:
 
 
 def update_gate_approval_state(gate: Gate, votes: list[Vote]) -> bool:
-    """Change the Gate state in RAM based on its votes. Return True if changed."""
+    """Change the Gate state in RAM based on its votes. Return True if changed."""  # noqa: E501
     afd = APPROVAL_FIELDS_BY_ID.get(gate.gate_type)
     # Assume any gate of a type that is not currently supported is ONE_LGTM.
     rule = afd.rule if afd else ONE_LGTM

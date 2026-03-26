@@ -1,4 +1,4 @@
-# Copyright 2024 Google Inc.
+# Copyright 2024 Google Inc.  # noqa: D100
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
 # you may not use this file except in compliance with the License.
@@ -49,11 +49,11 @@ class Thumbnail(ndb.Model):
     thumb_content = ndb.BlobProperty()
 
 
-class UnsupportedMimeType(Exception):
+class UnsupportedMimeType(Exception):  # noqa: D101
     pass
 
 
-class AttachmentTooLarge(Exception):
+class AttachmentTooLarge(Exception):  # noqa: D101
     pass
 
 

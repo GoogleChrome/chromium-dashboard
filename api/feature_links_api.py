@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-  # noqa: D100
 # Copyright 2023 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
@@ -30,15 +30,15 @@ from internals.feature_links import (
 
 
 class FeatureLinksAPI(basehandlers.APIHandler):
-    """FeatureLinksAPI will return the links and its information to the client."""
+    """FeatureLinksAPI will return the links and its information to the client."""  # noqa: E501
 
-    def get_feature_links(self, feature_id: int, update_stale_links: bool):
+    def get_feature_links(self, feature_id: int, update_stale_links: bool):  # noqa: D102
         feature = FeatureEntry.get_by_id(feature_id)
         if not feature:
             self.abort(404, msg='Feature not found')
         return get_by_feature_id(feature_id, update_stale_links)
 
-    def do_get(self, **kwargs):
+    def do_get(self, **kwargs):  # noqa: D102
 
         feature_id = self.get_int_arg('feature_id', None)
         update_stale_links = self.get_bool_arg('update_stale_links', True)
@@ -57,7 +57,7 @@ class FeatureLinksSummaryAPI(basehandlers.APIHandler):
     """FeatureLinksSummaryAPI will return summary of links to the client."""
 
     @permissions.require_admin_site
-    def do_get(self, **kwargs):
+    def do_get(self, **kwargs):  # noqa: D102
         return FeatureLinksSummaryResponse.from_dict(
             get_feature_links_summary()
         )
@@ -67,7 +67,7 @@ class FeatureLinksSamplesAPI(basehandlers.APIHandler):
     """FeatureLinksSamplesAPI will return sample links to the client."""
 
     @permissions.require_admin_site
-    def do_get(self, **kwargs):
+    def do_get(self, **kwargs):  # noqa: D102
         domain = self.request.args.get('domain', None)
         type = self.request.args.get('type', None)
         is_error = self.get_bool_arg('is_error', None)

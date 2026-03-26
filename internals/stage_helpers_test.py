@@ -1,4 +1,4 @@
-# Copyright 2022 Google Inc.
+# Copyright 2022 Google Inc.  # noqa: D100
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
 # you may not use this file except in compliance with the License.
@@ -17,8 +17,8 @@ from internals import core_enums, stage_helpers
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
 
 
-class StageHelpersTest(testing_config.CustomTestCase):
-    def setUp(self):
+class StageHelpersTest(testing_config.CustomTestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         self.feature_entry_1 = FeatureEntry(
             id=1,
             name='fe one',
@@ -44,7 +44,7 @@ class StageHelpersTest(testing_config.CustomTestCase):
             stage.put()
 
     def test_get_feature_stages(self):
-        """A dictionary with stages relevant to the feature should be present."""
+        """A dictionary with stages relevant to the feature should be present."""  # noqa: E501
         stage_dict = stage_helpers.get_feature_stages(self.feature_id)
         list_stages = stage_dict.items()
         expected_stage_types = {410, 430, 450, 460, 470}
@@ -57,7 +57,7 @@ class StageHelpersTest(testing_config.CustomTestCase):
             expected_stage_types.remove(stage_type)
 
     def test_create_feature_stage(self):
-        """A dictionary with stages relevant to the feature should be present."""
+        """A dictionary with stages relevant to the feature should be present."""  # noqa: E501
         stage_dict = stage_helpers.get_feature_stages(self.feature_id)
         list_stages = stage_dict.items()
         expected_stage_types = {410, 430, 450, 460, 470}
@@ -83,8 +83,8 @@ class StageHelpersTest(testing_config.CustomTestCase):
             expected_stage_types.remove(stage_type)
 
 
-class StageHelpers_Milestones_Test(testing_config.CustomTestCase):
-    def setUp(self):
+class StageHelpers_Milestones_Test(testing_config.CustomTestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         self.stage_1_1 = Stage(feature_id=11111, milestones=MilestoneSet())
         self.stage_2_1 = Stage(
             feature_id=22222, milestones=MilestoneSet(desktop_first=123)

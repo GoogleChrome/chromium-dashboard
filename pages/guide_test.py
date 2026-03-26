@@ -1,4 +1,4 @@
-# Copyright 2020 Google Inc.
+# Copyright 2020 Google Inc.  # noqa: D100
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
 # you may not use this file except in compliance with the License.
@@ -29,22 +29,22 @@ DATE_FORMAT = '%Y-%m-%dT%H:%M:%S'
 test_app = flask.Flask(__name__)
 
 
-class TestWithFeature(testing_config.CustomTestCase):
+class TestWithFeature(testing_config.CustomTestCase):  # noqa: D101
     REQUEST_PATH_FORMAT = 'subclasses fill this in'
     HANDLER_CLASS = 'subclasses fill this in'
 
-    def setUp(self):
+    def setUp(self):  # noqa: D102
         self.request_path = self.REQUEST_PATH_FORMAT
         self.handler = self.HANDLER_CLASS()
         self.now = datetime.now()
 
 
-class FeatureCreateTest(testing_config.CustomTestCase):
-    def setUp(self):
+class FeatureCreateTest(testing_config.CustomTestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         self.handler = guide.FeatureCreateHandler()
         self.now = datetime.now()
 
-    def tearDown(self) -> None:
+    def tearDown(self) -> None:  # noqa: D102
         kinds: list[ndb.Model] = [FeatureEntry, Stage, Gate]
         for kind in kinds:
             entities = kind.query().fetch()
@@ -114,7 +114,7 @@ class FeatureCreateTest(testing_config.CustomTestCase):
     def test_post__feature_impact_missing_first_notice(
         self, mock_channel_details
     ):  # noqa: E501
-        """Create a feature, first_enterprise_notification_milestone not added."""
+        """Create a feature, first_enterprise_notification_milestone not added."""  # noqa: E501
         stable_date = self.now.replace(year=self.now.year + 1, day=1).strftime(
             DATE_FORMAT
         )  # noqa: E501
@@ -156,7 +156,7 @@ class FeatureCreateTest(testing_config.CustomTestCase):
     def test_post__enterprise_impact_missing_first_notice(
         self, mock_channel_details
     ):  # noqa: E501
-        """Create a feature, first_enterprise_notification_milestone not added."""
+        """Create a feature, first_enterprise_notification_milestone not added."""  # noqa: E501
         stable_date = self.now.replace(year=self.now.year + 1, day=1).strftime(
             DATE_FORMAT
         )  # noqa: E501

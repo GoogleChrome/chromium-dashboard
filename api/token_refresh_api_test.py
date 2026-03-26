@@ -1,4 +1,4 @@
-# Copyright 2020 Google Inc.
+# Copyright 2020 Google Inc.  # noqa: D100
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
 # you may not use this file except in compliance with the License.
@@ -26,8 +26,8 @@ test_app = flask.Flask(__name__)
 test_app.secret_key = 'testing secret'
 
 
-class TokenRefreshAPITest(testing_config.CustomTestCase):
-    def setUp(self):
+class TokenRefreshAPITest(testing_config.CustomTestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         self.handler = token_refresh_api.TokenRefreshAPI()
         self.request_path = '/api/v0/currentuser/token'
 

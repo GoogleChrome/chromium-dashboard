@@ -1,4 +1,4 @@
-# Copyright 2023 Google Inc.
+# Copyright 2023 Google Inc.  # noqa: D100
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
 # you may not use this file except in compliance with the License.
@@ -42,7 +42,7 @@ from internals.review_models import Activity, Amendment, Gate, Vote
 from internals.webdx_feature_models import WebdxFeatures
 
 
-class EvaluateGateStatus(FlaskHandler):
+class EvaluateGateStatus(FlaskHandler):  # noqa: D101
     def get_template_data(self, **kwargs) -> str:
         """Evaluate all existing Gate entities and set correct state."""
         self.require_cron_header()
@@ -67,12 +67,12 @@ class EvaluateGateStatus(FlaskHandler):
         return f'{count} Gate entities updated.'
 
 
-class WriteMissingGates(FlaskHandler):
+class WriteMissingGates(FlaskHandler):  # noqa: D101
     GATES_TO_CREATE_PER_RUN = 5000
 
     GATE_RULES: dict[int, dict[int, list[int]]] = {
         fe_type: dict(stages_and_gates)
-        for fe_type, stages_and_gates in STAGES_AND_GATES_BY_FEATURE_TYPE.items()  # noqa: F405
+        for fe_type, stages_and_gates in STAGES_AND_GATES_BY_FEATURE_TYPE.items()  # noqa: E501, F405
     }
 
     def make_needed_gates(self, fe, stage, existing_gates) -> list[Gate]:
@@ -128,7 +128,7 @@ class WriteMissingGates(FlaskHandler):
         return f'{len(gates_to_write)} missing gates created for stages.'
 
 
-class BackfillRespondedOn(FlaskHandler):
+class BackfillRespondedOn(FlaskHandler):  # noqa: D101
     def update_responded_on(self, gate) -> bool:
         """Update gate.responded_on and return True if an update was needed."""
         gate_id = gate.key.integer_id()
@@ -184,7 +184,7 @@ class BackfillRespondedOn(FlaskHandler):
         return f'{count} Gates entities updated.'
 
 
-class BackfillStageCreated(FlaskHandler):
+class BackfillStageCreated(FlaskHandler):  # noqa: D101
     def get_template_data(self, **kwargs) -> str:
         """Backfill created dates for existing stages."""
         self.require_cron_header()
@@ -208,7 +208,7 @@ class BackfillStageCreated(FlaskHandler):
         return f'{count} Stages entities updated of {stages.count()} available stages.'  # noqa: E501
 
 
-class BackfillFeatureLinks(FlaskHandler):
+class BackfillFeatureLinks(FlaskHandler):  # noqa: D101
     def get_template_data(self, **kwargs) -> str:
         """Backfill feature links for existing feature entries."""
         self.require_cron_header()
@@ -217,7 +217,7 @@ class BackfillFeatureLinks(FlaskHandler):
         return f'{len(all_feature_entries)} FeatureEntry entities backfilled of {count} feature links.'  # noqa: E501
 
 
-class AssociateOTs(FlaskHandler):
+class AssociateOTs(FlaskHandler):  # noqa: D101
     def write_field(
         self,
         trial_stage: Stage,
@@ -229,7 +229,7 @@ class AssociateOTs(FlaskHandler):
 
         Returns:
           boolean value of whether or not the value was changed on the stage.
-        """
+        """  # noqa: E501
         if (
             not getattr(trial_stage, stage_field_name)
             and trial_data[trial_field_name]
@@ -371,7 +371,7 @@ class AssociateOTs(FlaskHandler):
 
         return stage_changed
 
-    def parse_feature_id(self, chromestatus_url: str | None) -> int | None:
+    def parse_feature_id(self, chromestatus_url: str | None) -> int | None:  # noqa: D102
         if chromestatus_url is None:
             return None
         # The ChromeStatus feature ID is pulled out of the ChromeStatus URL.
@@ -391,7 +391,7 @@ class AssociateOTs(FlaskHandler):
             return None
         return chromestatus_id
 
-    def find_unassociated_trial_stage(self, feature_id: int) -> Stage | None:
+    def find_unassociated_trial_stage(self, feature_id: int) -> Stage | None:  # noqa: D102
         fe: FeatureEntry | None = FeatureEntry.get_by_id(feature_id)
         if fe is None:
             logging.info(f'No feature found for ChromeStatus ID: {feature_id}')
@@ -432,7 +432,7 @@ class AssociateOTs(FlaskHandler):
             return 0
         extension_stages_to_update = []
         for extension_stage in extension_stages:
-            # skip the stage if it doesn't have an end milestone explicitly defined.
+            # skip the stage if it doesn't have an end milestone explicitly defined.  # noqa: E501
             if (
                 extension_stage.milestones is None
                 or not extension_stage.milestones.desktop_last
@@ -508,7 +508,7 @@ class AssociateOTs(FlaskHandler):
                 unique_entities_to_write.add(ot_stage_id)
                 entities_to_write.append(ot_stage)
 
-        # List any origin trials that did not get associated with a feature entry.
+        # List any origin trials that did not get associated with a feature entry.  # noqa: E501
         if len(trials_with_no_feature) > 0:
             logging.info('Trials not associated with a ChromeStatus feature:')
         else:
@@ -527,7 +527,7 @@ class AssociateOTs(FlaskHandler):
         )
 
 
-class BackfillFeatureEnterpriseImpact(FlaskHandler):
+class BackfillFeatureEnterpriseImpact(FlaskHandler):  # noqa: D101
     def get_template_data(self, **kwargs) -> str:
         """Backfill enterprise_impact firld for all features."""
         self.require_cron_header()
@@ -538,7 +538,7 @@ class BackfillFeatureEnterpriseImpact(FlaskHandler):
         features_by_id = {}
 
         stages: ndb.Query = Stage.query(
-            Stage.stage_type == STAGE_ENT_ROLLOUT,
+            Stage.stage_type == STAGE_ENT_ROLLOUT,  # noqa: F405
             Stage.archived == False,  # noqa: E501, E712, F405
         )
         for stage in stages:
@@ -562,7 +562,7 @@ class BackfillFeatureEnterpriseImpact(FlaskHandler):
         features: ndb.Query = FeatureEntry.query(
             FeatureEntry.enterprise_impact == ENTERPRISE_IMPACT_NONE,  # noqa: F405
             ndb.OR(
-                FeatureEntry.feature_type == FEATURE_TYPE_ENTERPRISE_ID,
+                FeatureEntry.feature_type == FEATURE_TYPE_ENTERPRISE_ID,  # noqa: F405
                 FeatureEntry.breaking_change == True,  # noqa: E501, E712, F405
             ),
         )
@@ -588,7 +588,7 @@ class BackfillFeatureEnterpriseImpact(FlaskHandler):
         return f'{count} Feature entities updated of {len(features_by_id)} available features.'  # noqa: E501
 
 
-class CreateOriginTrials(FlaskHandler):
+class CreateOriginTrials(FlaskHandler):  # noqa: D101
     def _send_creation_result_notification(
         self, task_path: str, stage: Stage, params: dict | None = None
     ) -> None:
@@ -679,7 +679,7 @@ class CreateOriginTrials(FlaskHandler):
 
         # OT stages that are flagged to process a trial creation.
         ot_stages: list[Stage] = Stage.query(
-            Stage.ot_setup_status == OT_READY_FOR_CREATION
+            Stage.ot_setup_status == OT_READY_FOR_CREATION  # noqa: F405
         ).fetch()  # noqa: F405
         for stage in ot_stages:
             stage.ot_action_requested = False
@@ -691,14 +691,14 @@ class CreateOriginTrials(FlaskHandler):
         return f'{len(ot_stages)} trial creation request(s) processed.'
 
 
-class ActivateOriginTrials(FlaskHandler):
+class ActivateOriginTrials(FlaskHandler):  # noqa: D101
     def _get_today(self) -> date:
         return date.today()
 
     def get_template_data(self, **kwargs) -> str:
         """Check for origin trials that are scheduled for activation and activate
         them.
-        """  # noqa: D205
+        """  # noqa: D205, E501
         self.require_cron_header()
         if not settings.AUTOMATED_OT_CREATION:
             return 'Automated OT creation process is not active.'
@@ -708,13 +708,13 @@ class ActivateOriginTrials(FlaskHandler):
         # Get all OT stages.
         ot_stages: list[Stage] = Stage.query(
             Stage.stage_type.IN(ALL_ORIGIN_TRIAL_STAGE_TYPES),  # noqa: F405
-            Stage.ot_setup_status == OT_CREATED,
+            Stage.ot_setup_status == OT_CREATED,  # noqa: F405
         ).fetch()  # noqa: F405
         for stage in ot_stages:
             # Only process stages with a delayed activation date set.
             if stage.ot_activation_date is None:
                 continue
-            # A stage with an activation date but no origin trial ID shouldn't be
+            # A stage with an activation date but no origin trial ID shouldn't be  # noqa: E501
             # possible.
             if stage.origin_trial_id is None:
                 logging.exception(
@@ -755,7 +755,7 @@ class ActivateOriginTrials(FlaskHandler):
 class DeleteEmptyExtensionStages(FlaskHandler):
     """Delete any extension stages that have no information filled out."""
 
-    def get_template_data(self, **kwargs) -> str:
+    def get_template_data(self, **kwargs) -> str:  # noqa: D102
         self.require_cron_header()
 
         # Fetch all extension stages.
@@ -764,7 +764,7 @@ class DeleteEmptyExtensionStages(FlaskHandler):
                 [
                     STAGE_BLINK_EXTEND_ORIGIN_TRIAL,  # noqa: F405
                     STAGE_FAST_EXTEND_ORIGIN_TRIAL,  # noqa: F405
-                    STAGE_DEP_EXTEND_DEPRECATION_TRIAL,
+                    STAGE_DEP_EXTEND_DEPRECATION_TRIAL,  # noqa: F405
                 ]  # noqa: F405
             )
         ).fetch()
@@ -782,7 +782,7 @@ class DeleteEmptyExtensionStages(FlaskHandler):
             ):
                 counter += 1
                 keys_to_delete.append(es.key)
-                # Query for the gate associated with the extension and delete that too.
+                # Query for the gate associated with the extension and delete that too.  # noqa: E501
                 gate = Gate.query(Gate.stage_id == es.key.integer_id()).get()
                 if gate:
                     keys_to_delete.append(gate.key)
@@ -799,7 +799,7 @@ class DeleteEmptyExtensionStages(FlaskHandler):
         return f'{counter} empty extension stages deleted.'
 
 
-class BackfillShippingYear(FlaskHandler):
+class BackfillShippingYear(FlaskHandler):  # noqa: D101
     def calc_all_shipping_years(self) -> dict[int, int]:
         """Load all shipping stages and record their earliest milestone."""
         shipping_stages = (
@@ -844,7 +844,7 @@ class BackfillShippingYear(FlaskHandler):
         return f'{count} Features entities updated.'
 
 
-class BackfillActivityLogType(FlaskHandler):
+class BackfillActivityLogType(FlaskHandler):  # noqa: D101
     def get_template_data(self, **kwargs) -> str:
         """Backfill log_type for all Activity entities."""
         self.require_cron_header()
@@ -884,7 +884,7 @@ class BackfillActivityLogType(FlaskHandler):
         return f'{count} Activity entities updated.'
 
 
-class BackfillGateDates(FlaskHandler):
+class BackfillGateDates(FlaskHandler):  # noqa: D101
     def get_template_data(self, **kwargs) -> str:
         """Backfill resolved_on and needs_work_started_on for all Gates."""
         self.require_cron_header()
@@ -942,7 +942,7 @@ class BackfillGateDates(FlaskHandler):
         return max(v.set_on for v in votes if v.state == Vote.NEEDS_WORK)
 
 
-class FetchWebdxFeatureId(FlaskHandler):
+class FetchWebdxFeatureId(FlaskHandler):  # noqa: D101
     def get_template_data(self, **kwargs) -> str:
         """Fetch the complete list of Webdx feature ID available from
         webstatus.dev APIs and store them in datastore.
@@ -985,7 +985,7 @@ class SendManualOTCreatedEmail(FlaskHandler):
     been created but not yet activated.
     """  # noqa: D205
 
-    def get_template_data(self, **kwargs):
+    def get_template_data(self, **kwargs):  # noqa: D102
         self.require_cron_header()
 
         stage_id = kwargs.get('stage_id')
@@ -1013,7 +1013,7 @@ class SendManualOTActivatedEmail(FlaskHandler):
     been created and also activated.
     """  # noqa: D205
 
-    def get_template_data(self, **kwargs):
+    def get_template_data(self, **kwargs):  # noqa: D102
         self.require_cron_header()
 
         stage_id = kwargs.get('stage_id')
@@ -1079,7 +1079,7 @@ class GenerateReviewActivityFile(FlaskHandler):
 
         # Filter deleted activities the user can't see, and activities that have
         # no gate ID, meaning they do not represent review activity.
-        # TODO(DanielRyanSmith): Confirm if deleted features should deleted features
+        # TODO(DanielRyanSmith): Confirm if deleted features should deleted features  # noqa: E501
         # should have existing activity filtered and handle accordingly.
         activities = list(
             filter(
@@ -1187,7 +1187,7 @@ class GenerateReviewActivityFile(FlaskHandler):
         blob = bucket.blob('review-activity-last-timestamp.txt')
         blob.upload_from_string(timestamp.strftime(self.DATE_FORMAT))
 
-    def get_template_data(self, **kwargs):
+    def get_template_data(self, **kwargs):  # noqa: D102
         self.require_cron_header()
 
         storage_client = storage.Client()
@@ -1219,7 +1219,7 @@ class GenerateStaleFeaturesFile(FlaskHandler):
         self, current_milestone: int
     ) -> list[FeatureEntry]:
         """Generate a list of stale features that have an upcoming shipping milestone."""  # noqa: E501
-        # Get all features that have not been verified for accuracy in over a month.
+        # Get all features that have not been verified for accuracy in over a month.  # noqa: E501
         now = datetime.now()
         one_month_ago = now - timedelta(weeks=4)
         stale_features: list[FeatureEntry] = FeatureEntry.query(
@@ -1252,7 +1252,7 @@ class GenerateStaleFeaturesFile(FlaskHandler):
             if upcoming_ship_stages:
                 stale_features_with_upcoming_ship_stages.append(f)
         logging.info(
-            f'{len(stale_features_with_upcoming_ship_stages)} stale features found.'
+            f'{len(stale_features_with_upcoming_ship_stages)} stale features found.'  # noqa: E501
         )  # noqa: E501
 
         return stale_features_with_upcoming_ship_stages
@@ -1261,7 +1261,7 @@ class GenerateStaleFeaturesFile(FlaskHandler):
         self, features: list[FeatureEntry], current_milestone: int
     ) -> tuple[list[list[str]], list[list[str]]]:
         """Generate rows for the two tables representing stale features."""
-        # We generate a table for the stale features, and another for the owners of
+        # We generate a table for the stale features, and another for the owners of  # noqa: E501
         # those stale features.
         feature_csv_rows: list[list[str]] = []
         owner_csv_rows: list[list[str]] = []
@@ -1321,7 +1321,7 @@ class GenerateStaleFeaturesFile(FlaskHandler):
         blob = bucket.blob('chromestatus-stale-feature-owners.csv')
         blob.upload_from_string(csv_io.getvalue())
 
-    def get_template_data(self, **kwargs) -> str:
+    def get_template_data(self, **kwargs) -> str:  # noqa: D102
         self.require_cron_header()
 
         current_milestone_info = utils.get_current_milestone_info('current')
@@ -1349,7 +1349,9 @@ class GenerateShippingFeaturesFile(FlaskHandler):
 
     def _get_shipping_stages(self, milestone: int) -> list[Stage]:
         shipping_stage_types = [
-            st for st in STAGE_TYPES_SHIPPING.values() if st
+            st
+            for st in STAGE_TYPES_SHIPPING.values()  # noqa: F405
+            if st  # noqa: F405
         ]  # noqa: F405
 
         return Stage.query(
@@ -1371,7 +1373,7 @@ class GenerateShippingFeaturesFile(FlaskHandler):
     ]:
 
         enabled_features_file = utils.get_chromium_file(
-            ENABLED_FEATURES_FILE_URL
+            ENABLED_FEATURES_FILE_URL  # noqa: F405
         )  # noqa: F405
         enabled_features_json = json5.loads(enabled_features_file)
         content_features_file = utils.get_chromium_file(CONTENT_FEATURES_FILE)  # noqa: F405
@@ -1384,8 +1386,8 @@ class GenerateShippingFeaturesFile(FlaskHandler):
         self, shipping_stages: list[Stage], current_milestone: int
     ) -> tuple[list[list[str]], list[list[str]], list[list[str]]]:
         """Generate rows for the two tables representing shipping features."""
-        # We generate a table for the shipping features, another for the owners of
-        # those shipping features, and a final one for the missing criteria of each
+        # We generate a table for the shipping features, another for the owners of  # noqa: E501
+        # those shipping features, and a final one for the missing criteria of each  # noqa: E501
         # shipping feature.
 
         complete_features, incomplete_features = self._get_feature_info(
@@ -1464,7 +1466,7 @@ class GenerateShippingFeaturesFile(FlaskHandler):
             missing_criteria_csv_rows,
         )
 
-    def get_template_data(self, **kwargs) -> str:
+    def get_template_data(self, **kwargs) -> str:  # noqa: D102
         self.require_cron_header()
 
         current_milestone_info = utils.get_current_milestone_info('current')
@@ -1487,10 +1489,10 @@ class GenerateShippingFeaturesFile(FlaskHandler):
 class MigrateRolloutMilestones(FlaskHandler):
     """Migrate the rollout milestone field to be stored in the 'milestones' field."""  # noqa: E501
 
-    def get_template_data(self, **kwargs):
+    def get_template_data(self, **kwargs):  # noqa: D102
         self.require_cron_header()
         stages: list[Stage] = Stage.query(
-            Stage.stage_type == STAGE_ENT_ROLLOUT
+            Stage.stage_type == STAGE_ENT_ROLLOUT  # noqa: F405
         ).fetch()  # noqa: E501, F405
         changed_stages: list[Stage] = []
         count = 0
@@ -1516,7 +1518,7 @@ class MigrateRolloutMilestones(FlaskHandler):
 class ResetOutstandingNotifications(FlaskHandler):
     """Reset the FeatureEntry.outstanding_notifications counter for all features"""  # noqa: D415, E501
 
-    def get_template_data(self, **kwargs) -> str:
+    def get_template_data(self, **kwargs) -> str:  # noqa: D102
         self.require_cron_header()
         notified_features: list[FeatureEntry] = FeatureEntry.query(
             FeatureEntry.outstanding_notifications > 0
@@ -1559,7 +1561,7 @@ class ResetStaleShippingMilestones(FlaskHandler):
             )
             setattr(stage.milestones, field, None)
 
-    def get_template_data(self, **kwargs) -> str:
+    def get_template_data(self, **kwargs) -> str:  # noqa: D102
         self.require_cron_header()
 
         num_features_reset = 0
@@ -1585,7 +1587,7 @@ class ResetStaleShippingMilestones(FlaskHandler):
                     feature_id=f.key.integer_id(),
                     log_type=Activity.MILESTONE_RESET,
                     amendments=[],
-                    content='Shipping/Rollout milestones were unset due to failure to verify accuracy.',
+                    content='Shipping/Rollout milestones were unset due to failure to verify accuracy.',  # noqa: E501
                 )  # noqa: E501
                 if s.milestones:
                     self._reset_milestone(
@@ -1621,7 +1623,7 @@ class ResetStaleShippingMilestones(FlaskHandler):
         return f'{num_features_reset} features with shipping milestones reset.'
 
 
-class DeleteWPTCoverageReport(FlaskHandler):
+class DeleteWPTCoverageReport(FlaskHandler):  # noqa: D101
     BATCH_SIZE = 100
     RETENTION_DAYS = 180
 

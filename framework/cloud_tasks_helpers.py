@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-  # noqa: D100
 # Copyright 2020 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
@@ -40,11 +40,11 @@ if not settings.UNIT_TEST_MODE:
 
 
 class LocalCloudTasksClient(object):
-    """We have no GCT server running locally, so hit the target synchronously."""
+    """We have no GCT server running locally, so hit the target synchronously."""  # noqa: E501
 
     def queue_path(self, project, location, queue):
         """Return a fully-qualified queue string."""
-        # This is value is not actually used, but it might be good for debugging.
+        # This is value is not actually used, but it might be good for debugging.  # noqa: E501
         return 'projects/{project}/locations/{location}/queues/{queue}'.format(
             project=project, location=location, queue=queue
         )

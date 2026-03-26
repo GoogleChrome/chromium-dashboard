@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-  # noqa: D100
 # Copyright 2021 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
@@ -38,7 +38,7 @@ class StarsAPI(basehandlers.APIHandler):
                 'feature_ids': feature_ids,
             }
         ).to_dict()
-        # TODO(markxiong0122): delete this backward compatibility code after 30 days
+        # TODO(markxiong0122): delete this backward compatibility code after 30 days  # noqa: E501
         result['featureIds'] = result['feature_ids']
 
         return result

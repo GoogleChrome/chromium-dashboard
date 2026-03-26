@@ -1,4 +1,4 @@
-# Copyright 2022 Google Inc.
+# Copyright 2022 Google Inc.  # noqa: D100
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
 # you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ from google.cloud import ndb  # type: ignore
 
 
 # UMA metrics.
-class StableInstance(ndb.Model):
+class StableInstance(ndb.Model):  # noqa: D101
     created = ndb.DateTimeProperty(auto_now_add=True)
     updated = ndb.DateTimeProperty(auto_now=True)
 
@@ -30,15 +30,15 @@ class StableInstance(ndb.Model):
     rolling_percentage = ndb.FloatProperty()
 
 
-class AnimatedProperty(StableInstance):
+class AnimatedProperty(StableInstance):  # noqa: D101
     pass
 
 
-class FeatureObserver(StableInstance):
+class FeatureObserver(StableInstance):  # noqa: D101
     pass
 
 
-class WebDXFeature(StableInstance):
+class WebDXFeature(StableInstance):  # noqa: D101
     pass
 
 
@@ -49,7 +49,7 @@ class HistogramModel(ndb.Model):
     property_name = ndb.StringProperty(required=True)
 
     @classmethod
-    def get_all(cls):
+    def get_all(cls):  # noqa: D102
         output = {}
         buckets = cls.query().fetch(None)
         for bucket in buckets:
@@ -57,21 +57,21 @@ class HistogramModel(ndb.Model):
         return output
 
 
-class CssPropertyHistogram(HistogramModel):
+class CssPropertyHistogram(HistogramModel):  # noqa: D101
     pass
 
 
-class FeatureObserverHistogram(HistogramModel):
+class FeatureObserverHistogram(HistogramModel):  # noqa: D101
     pass
 
 
 # TODO(jrobbins): This should be WebDXFeatureHistogram
-class WebDXFeatureObserver(HistogramModel):
+class WebDXFeatureObserver(HistogramModel):  # noqa: D101
     MISSING_FEATURE_ID = 'Missing feature'
     TBD_FEATURE_ID = 'TBD'
 
     @classmethod
-    def get_enum_by_web_feature(cls, web_feature) -> str:
+    def get_enum_by_web_feature(cls, web_feature) -> str:  # noqa: D102
         if (
             web_feature == cls.MISSING_FEATURE_ID
             or web_feature == cls.TBD_FEATURE_ID

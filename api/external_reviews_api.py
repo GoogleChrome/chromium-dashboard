@@ -1,4 +1,4 @@
-# Copyright 2024 Google Inc.
+# Copyright 2024 Google Inc.  # noqa: D100
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
 # you may not use this file except in compliance with the License.
@@ -64,7 +64,7 @@ from internals.link_helpers import (
 )
 
 
-class StageType(StrEnum):
+class StageType(StrEnum):  # noqa: D101
     INCUBATING = 'incubating'
     PROTOTYPING = 'prototyping'
     DEV_TRIAL = 'dev-trial'
@@ -101,7 +101,7 @@ STAGE_TYPES: dict[int, StageType] = {
 }
 
 
-def stage_type(feature: FeatureEntry, stage: Stage | None) -> StageType:
+def stage_type(feature: FeatureEntry, stage: Stage | None) -> StageType:  # noqa: D103
     if stage is None:
         return StageType.INCUBATING
 
@@ -114,21 +114,21 @@ def stage_type(feature: FeatureEntry, stage: Stage | None) -> StageType:
     return tentative_type
 
 
-def min_of_present(*args):
+def min_of_present(*args):  # noqa: D103
     present_args = [arg for arg in args if arg is not None]
     if len(present_args) == 0:
         return None
     return min(present_args)
 
 
-def max_of_present(*args):
+def max_of_present(*args):  # noqa: D103
     present_args = [arg for arg in args if arg is not None]
     if len(present_args) == 0:
         return None
     return max(present_args)
 
 
-class ExternalReviewerInfo:
+class ExternalReviewerInfo:  # noqa: D101
     unreviewed_features_query: ndb.Query
     """Fetch this to get features for which this group has been asked for a review, and they haven't
   finished it yet."""  # noqa: E501

@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-  # noqa: D100
 # Copyright 2021 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
@@ -70,7 +70,7 @@ from pages import featurelist, guide, metrics, ot_requests, users
 original_delete = threading.Thread._delete  # type: ignore
 
 
-def safe_delete(self):
+def safe_delete(self):  # noqa: D103
     try:
         original_delete(self)
     except KeyError:
@@ -101,7 +101,7 @@ secrets.load_ot_api_key()
 
 
 @dataclass
-class Route:
+class Route:  # noqa: D101
     path: str
     handler_class: Type[basehandlers.BaseHandler] = basehandlers.SPAHandler
     defaults: dict[str, Any] = field(default_factory=dict)

@@ -1,4 +1,4 @@
-# Copyright 2020 Google Inc.
+# Copyright 2020 Google Inc.  # noqa: D100
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
 # you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ from internals import fetchmetrics, metrics_models
 test_app = flask.Flask(__name__)
 
 
-class FetchMetricsTest(testing_config.CustomTestCase):
+class FetchMetricsTest(testing_config.CustomTestCase):  # noqa: D101
     @mock.patch('settings.PROD', True)
     @mock.patch('google.oauth2.id_token.fetch_id_token')
     @mock.patch('requests.request')
@@ -73,8 +73,8 @@ class FetchMetricsTest(testing_config.CustomTestCase):
         mock_fetch.assert_not_called()
 
 
-class UmaQueryTest(testing_config.CustomTestCase):
-    def setUp(self):
+class UmaQueryTest(testing_config.CustomTestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         self.uma_query = fetchmetrics.UmaQuery(
             query_name='usecounter.features',
             model_class=metrics_models.FeatureObserver,
@@ -134,7 +134,7 @@ class UmaQueryTest(testing_config.CustomTestCase):
     @mock.patch('logging.error')
     @mock.patch('internals.fetchmetrics._FetchMetrics')
     def test_FetchData__error_msg(self, mock_fetch_metrics, mock_logging_error):
-        """When uma-export gives any error message, we treat that as not ready."""
+        """When uma-export gives any error message, we treat that as not ready."""  # noqa: E501
         r = {'123': 'anything'}
         e = 'mock uma error message'
         XSSI_PROTECTION = ")]}' // XSSI prefix (go/xssi)."
@@ -169,8 +169,8 @@ class UmaQueryTest(testing_config.CustomTestCase):
         self.assertEqual(500, actual_status)
 
 
-class YesterdayHandlerTest(testing_config.CustomTestCase):
-    def setUp(self):
+class YesterdayHandlerTest(testing_config.CustomTestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         self.request_path = '/cron/metrics'
         self.handler = fetchmetrics.YesterdayHandler()
 
@@ -210,7 +210,7 @@ class YesterdayHandlerTest(testing_config.CustomTestCase):
         mock_FetchAndSaveData.assert_has_calls(expected_calls)
 
 
-class HistogramsHandlerTest(testing_config.CustomTestCase):
+class HistogramsHandlerTest(testing_config.CustomTestCase):  # noqa: D101
     ENUMS_TEXT = """
      <histogram-configuration>
 
@@ -254,11 +254,11 @@ class HistogramsHandlerTest(testing_config.CustomTestCase):
      </histogram-configuration>
      """
 
-    def setUp(self):
+    def setUp(self):  # noqa: D102
         self.request_path = '/cron/histograms'
         self.handler = fetchmetrics.HistogramsHandler()
 
-    def tearDown(self):
+    def tearDown(self):  # noqa: D102
         for model_class in fetchmetrics.HistogramsHandler.MODEL_CLASS.values():
             for histo in model_class.query():
                 histo.key.delete()
@@ -330,7 +330,7 @@ class HistogramsHandlerTest(testing_config.CustomTestCase):
         self.assertEqual('RenamedUseCounter', all_histos[0].property_name)
 
     def test_save_data__clean_up_dups(self):
-        """Our DB already has some duplicate entities that should be deleted.."""
+        """Our DB already has some duplicate entities that should be deleted.."""  # noqa: E501
         ex_1 = metrics_models.FeatureObserverHistogram(
             bucket_id=123, property_name='UseCounter'
         )

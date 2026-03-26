@@ -1,4 +1,4 @@
-# Copyright 2023 Google Inc.
+# Copyright 2023 Google Inc.  # noqa: D100
 #
 # Licensed under the Apache License, Version 2.0 (the 'License')
 # you may not use this file except in compliance with the License.
@@ -31,15 +31,15 @@ from internals.review_models import Activity, Amendment, Gate, Vote
 from internals.webdx_feature_models import WebdxFeatures
 
 
-class EvaluateGateStatusTest(testing_config.CustomTestCase):
-    def setUp(self):
+class EvaluateGateStatusTest(testing_config.CustomTestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         self.delete_gates_and_votes()
         self.handler = maintenance_scripts.EvaluateGateStatus()
 
-    def tearDown(self):
+    def tearDown(self):  # noqa: D102
         self.delete_gates_and_votes()
 
-    def delete_gates_and_votes(self):
+    def delete_gates_and_votes(self):  # noqa: D102
         for kind in [Gate, Vote]:
             for entity in kind.query():
                 entity.key.delete()
@@ -119,8 +119,8 @@ class EvaluateGateStatusTest(testing_config.CustomTestCase):
         self.assertEqual(revised_gate_1.state, Vote.APPROVED)
 
 
-class AssociateOTsTest(testing_config.CustomTestCase):
-    def setUp(self):
+class AssociateOTsTest(testing_config.CustomTestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         self.feature_1 = FeatureEntry(
             id=123,
             name='feature a',
@@ -292,7 +292,7 @@ class AssociateOTsTest(testing_config.CustomTestCase):
         testing_config.sign_in('one@example.com', 123567890)
 
     @mock.patch('framework.origin_trials_client.get_trials_list')
-    def test_associate_ots(self, mock_ot_client):
+    def test_associate_ots(self, mock_ot_client):  # noqa: D102
         mock_ot_client.return_value = self.trials_list_return_value
 
         handler = maintenance_scripts.AssociateOTs()
@@ -338,8 +338,8 @@ def mock_mstone_return_value_generator(*args, **kwargs):
         return {'mstones': [{'branch_point': '2025-01-01T00:00:00'}]}
 
 
-class CreateOriginTrialsTest(testing_config.CustomTestCase):
-    def setUp(self):
+class CreateOriginTrialsTest(testing_config.CustomTestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         self.feature_1 = FeatureEntry(
             id=1, name='feature one', summary='sum', category=1, feature_type=0
         )
@@ -406,7 +406,7 @@ class CreateOriginTrialsTest(testing_config.CustomTestCase):
         # Needs to be set in order to test any functionality here.
         settings.AUTOMATED_OT_CREATION = True
 
-    def tearDown(self):
+    def tearDown(self):  # noqa: D102
         settings.AUTOMATED_OT_CREATION = False
 
     @mock.patch('framework.cloud_tasks_helpers.enqueue_task')
@@ -422,7 +422,7 @@ class CreateOriginTrialsTest(testing_config.CustomTestCase):
         mock_today,
         mock_enqueue_task,
     ):
-        """Origin trials are created and activated if it is after branch point."""
+        """Origin trials are created and activated if it is after branch point."""  # noqa: E501
         mock_today.return_value = date(2020, 6, 1)  # 2020-06-01
         mock_get_chromium_milestone_info.side_effect = (
             mock_mstone_return_value_generator  # noqa: E501
@@ -448,7 +448,7 @@ class CreateOriginTrialsTest(testing_config.CustomTestCase):
             ],
             any_order=True,
         )
-        # Activation was handled, so a delayed activation date should not be set.
+        # Activation was handled, so a delayed activation date should not be set.  # noqa: E501
         self.assertIsNone(self.ot_stage_1.ot_activation_date)
         # OT 2 should have delayed activation date set.
         self.assertEqual(date(2030, 1, 1), self.ot_stage_2.ot_activation_date)
@@ -469,7 +469,7 @@ class CreateOriginTrialsTest(testing_config.CustomTestCase):
     @mock.patch('framework.utils.get_chromium_milestone_info')
     @mock.patch('framework.origin_trials_client.activate_origin_trial')
     @mock.patch('framework.origin_trials_client.create_origin_trial')
-    def test_create_trials__failed(
+    def test_create_trials__failed(  # noqa: D102
         self,
         mock_create_origin_trial,
         mock_activate_origin_trial,
@@ -509,7 +509,7 @@ class CreateOriginTrialsTest(testing_config.CustomTestCase):
                     '/tasks/email-ot-creation-request-failed',
                     {
                         'stage': converters.stage_to_json_dict(self.ot_stage_2),
-                        'error_text': '500, Problems happened after trial was created',
+                        'error_text': '500, Problems happened after trial was created',  # noqa: E501
                     },
                 ),
             ],
@@ -613,8 +613,8 @@ class CreateOriginTrialsTest(testing_config.CustomTestCase):
         self.assertEqual('Automated OT creation process is not active.', result)
 
 
-class ActivateOriginTrialsTest(testing_config.CustomTestCase):
-    def setUp(self):
+class ActivateOriginTrialsTest(testing_config.CustomTestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         self.feature_1 = FeatureEntry(
             id=1, name='feature one', summary='sum', category=1, feature_type=0
         )
@@ -686,7 +686,7 @@ class ActivateOriginTrialsTest(testing_config.CustomTestCase):
         # Needs to be set in order to test any functionality here.
         settings.AUTOMATED_OT_CREATION = True
 
-    def tearDown(self):
+    def tearDown(self):  # noqa: D102
         settings.AUTOMATED_OT_CREATION = False
 
     @mock.patch('framework.cloud_tasks_helpers.enqueue_task')
@@ -695,7 +695,7 @@ class ActivateOriginTrialsTest(testing_config.CustomTestCase):
     def test_activate_trials(
         self, mock_activate_origin_trial, mock_today, mock_enqueue_task
     ):
-        """Origin trials are activated if it is on or after the activation date."""
+        """Origin trials are activated if it is on or after the activation date."""  # noqa: E501
         mock_today.return_value = date(2020, 6, 1)  # 2020-06-01
 
         result = self.handler.get_template_data()
@@ -726,7 +726,7 @@ class ActivateOriginTrialsTest(testing_config.CustomTestCase):
             ],
             any_order=True,
         )
-        # Activation was handled, so a delayed activation date should not be set.
+        # Activation was handled, so a delayed activation date should not be set.  # noqa: E501
         self.assertIsNone(self.ot_stage_1.ot_activation_date)
         self.assertIsNone(self.ot_stage_2.ot_activation_date)
         # OT 3 should still have delayed activation date set in the future.
@@ -787,8 +787,8 @@ class ActivateOriginTrialsTest(testing_config.CustomTestCase):
         self.assertEqual('Automated OT creation process is not active.', result)
 
 
-class DeleteEmptyExtensionStagesTest(testing_config.CustomTestCase):
-    def setUp(self):
+class DeleteEmptyExtensionStagesTest(testing_config.CustomTestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         for kind in [Gate, Stage]:
             for entity in kind.query():
                 entity.key.delete()
@@ -863,8 +863,8 @@ class DeleteEmptyExtensionStagesTest(testing_config.CustomTestCase):
         self.assertEqual(len(gates), 1)
 
 
-class BackfillShippingYearTest(testing_config.CustomTestCase):
-    def setUp(self):
+class BackfillShippingYearTest(testing_config.CustomTestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         self.stage_1_1 = Stage(feature_id=11111, milestones=MilestoneSet())
         self.stage_2_1 = Stage(
             feature_id=22222, milestones=MilestoneSet(desktop_first=123)
@@ -894,7 +894,7 @@ class BackfillShippingYearTest(testing_config.CustomTestCase):
         'internals.stage_helpers.get_all_shipping_stages_with_milestones'
     )
     def test_calc_all_shipping_years__some(self, mock_gasswm: mock.MagicMock):
-        """We can calculate a dict of earliest milestones for a set of stages."""
+        """We can calculate a dict of earliest milestones for a set of stages."""  # noqa: E501
         mock_gasswm.return_value = [
             self.stage_1_1,
             self.stage_2_1,
@@ -907,18 +907,18 @@ class BackfillShippingYearTest(testing_config.CustomTestCase):
         self.assertEqual(expected, actual)
 
 
-class BackfillActivityLogTypeTest(testing_config.CustomTestCase):
-    def setUp(self):
+class BackfillActivityLogTypeTest(testing_config.CustomTestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         self.handler = maintenance_scripts.BackfillActivityLogType()
 
         # 1. content is None -> USER_CHANGE
         self.act_user_change = Activity(feature_id=1, content=None)
         self.act_user_change.put()
 
-        # 2. Starts with "Shipping/Rollout milestones were unset" -> MILESTONE_RESET
+        # 2. Starts with "Shipping/Rollout milestones were unset" -> MILESTONE_RESET  # noqa: E501
         self.act_milestone_reset = Activity(
             feature_id=2,
-            content='Shipping/Rollout milestones were unset due to failure to verify accuracy.',
+            content='Shipping/Rollout milestones were unset due to failure to verify accuracy.',  # noqa: E501
         )  # noqa: E501
         self.act_milestone_reset.put()
 
@@ -947,7 +947,7 @@ class BackfillActivityLogTypeTest(testing_config.CustomTestCase):
         self.act_already_set.put()
 
     @mock.patch('framework.basehandlers.FlaskHandler.require_cron_header')
-    def test_get_template_data(self, mock_require_cron):
+    def test_get_template_data(self, mock_require_cron):  # noqa: D102
         result = self.handler.get_template_data()
         mock_require_cron.assert_called_once()
 
@@ -980,8 +980,8 @@ class BackfillActivityLogTypeTest(testing_config.CustomTestCase):
         self.assertEqual(act_already_set.log_type, Activity.MILESTONE_RESET)
 
 
-class BackfillGateDatesTest(testing_config.CustomTestCase):
-    def setUp(self):
+class BackfillGateDatesTest(testing_config.CustomTestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         self.gate = Gate(
             feature_id=1,
             stage_id=2,
@@ -1047,7 +1047,7 @@ class BackfillGateDatesTest(testing_config.CustomTestCase):
         )
 
     def test_calc_needs_work_started_on__not_needed(self):
-        """If a gate is not NEEDS_WORK, don't set a needs_work_started_on date."""
+        """If a gate is not NEEDS_WORK, don't set a needs_work_started_on date."""  # noqa: E501
         self.assertIsNone(
             self.handler.calc_needs_work_started_on(self.gate, [])
         )
@@ -1115,18 +1115,18 @@ class BackfillGateDatesTest(testing_config.CustomTestCase):
         )
 
 
-class FetchWebdxFeatureIdTest(testing_config.CustomTestCase):
-    def setUp(self):
+class FetchWebdxFeatureIdTest(testing_config.CustomTestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         logging.disable(logging.CRITICAL)
         self.handler = maintenance_scripts.FetchWebdxFeatureId()
         self.webdx_features = WebdxFeatures(feature_ids=['test1'])
         self.webdx_features.put()
 
-    def tearDown(self):
+    def tearDown(self):  # noqa: D102
         logging.disable(logging.NOTSET)
 
     @mock.patch('webstatus_openapi.DefaultApi.list_features')
-    def test_fetch_webdx_feature_ids__success(self, mock_list_features):
+    def test_fetch_webdx_feature_ids__success(self, mock_list_features):  # noqa: D102
         feature_page_dict = {
             'data': [
                 {
@@ -1196,7 +1196,7 @@ class FetchWebdxFeatureIdTest(testing_config.CustomTestCase):
         self.assertEqual(expected.feature_ids[1], 'bar')
 
     @mock.patch('webstatus_openapi.DefaultApi.list_features')
-    def test_fetch_webdx_feature_ids__exceptions(self, mock_list_features):
+    def test_fetch_webdx_feature_ids__exceptions(self, mock_list_features):  # noqa: D102
         mock_list_features.side_effect = ApiException(status=503)
 
         result = self.handler.get_template_data()
@@ -1204,8 +1204,8 @@ class FetchWebdxFeatureIdTest(testing_config.CustomTestCase):
         self.assertEqual('Running FetchWebdxFeatureId() job failed.', result)
 
 
-class SendManualOTCreatedEmailTest(testing_config.CustomTestCase):
-    def setUp(self):
+class SendManualOTCreatedEmailTest(testing_config.CustomTestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         self.handler = maintenance_scripts.SendManualOTCreatedEmail()
         self.feature_1 = FeatureEntry(
             id=1, name='feature a', summary='sum', category=1
@@ -1281,8 +1281,8 @@ class SendManualOTCreatedEmailTest(testing_config.CustomTestCase):
         mock_enqueue.assert_not_called()
 
 
-class SendManualOTActivatedEmailTest(testing_config.CustomTestCase):
-    def setUp(self):
+class SendManualOTActivatedEmailTest(testing_config.CustomTestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         self.handler = maintenance_scripts.SendManualOTActivatedEmail()
         self.feature_1 = FeatureEntry(
             id=1, name='feature a', summary='sum', category=1
@@ -1344,8 +1344,8 @@ class SendManualOTActivatedEmailTest(testing_config.CustomTestCase):
         mock_enqueue.assert_not_called()
 
 
-class GenerateReviewActivityFileTest(testing_config.CustomTestCase):
-    def setUp(self):
+class GenerateReviewActivityFileTest(testing_config.CustomTestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         self.maxDiff = None
         self.handler = maintenance_scripts.GenerateReviewActivityFile()
 
@@ -1655,7 +1655,7 @@ class GenerateReviewActivityFileTest(testing_config.CustomTestCase):
 class GenerateStaleFeaturesFileTest(testing_config.CustomTestCase):
     """Tests for the GenerateStaleFeaturesFile handler."""
 
-    def setUp(self):
+    def setUp(self):  # noqa: D102
         self.maxDiff = None
         self.handler = maintenance_scripts.GenerateStaleFeaturesFile()
         self.current_milestone = 125
@@ -1787,7 +1787,7 @@ class GenerateStaleFeaturesFileTest(testing_config.CustomTestCase):
         )
         self.stage_6.put()
 
-        # Feature 7: Stale (None 'accurate_as_of') AND notifications = 1 (boundary).
+        # Feature 7: Stale (None 'accurate_as_of') AND notifications = 1 (boundary).  # noqa: E501
         # Has matching shipping milestone.
         # Should be INCLUDED.
         self.feature_7 = FeatureEntry(
@@ -1811,7 +1811,7 @@ class GenerateStaleFeaturesFileTest(testing_config.CustomTestCase):
 
     @mock.patch('internals.maintenance_scripts.datetime')
     def test_gather_stale_features(self, mock_datetime):
-        """Should return only stale features with a current shipping milestone."""
+        """Should return only stale features with a current shipping milestone."""  # noqa: E501
         # Freeze time to make the "one month ago" calculation deterministic.
         mock_datetime.now.return_value = datetime.now()
         mock_datetime.side_effect = lambda *args, **kw: datetime(*args, **kw)
@@ -1831,7 +1831,7 @@ class GenerateStaleFeaturesFileTest(testing_config.CustomTestCase):
         self.assertEqual(feature_ids, expected_ids)
 
     def test_generate_rows(self):
-        """Should format feature data into correct feature and owner CSV rows."""
+        """Should format feature data into correct feature and owner CSV rows."""  # noqa: E501
         features_to_process = [self.feature_1, self.feature_7, self.feature_2]
         feature_rows, owner_rows = self.handler._generate_rows(
             features_to_process, self.current_milestone
@@ -2031,8 +2031,8 @@ class GenerateStaleFeaturesFileTest(testing_config.CustomTestCase):
         )
 
 
-class GenerateShippingFeaturesFileTest(testing_config.CustomTestCase):
-    def setUp(self):
+class GenerateShippingFeaturesFileTest(testing_config.CustomTestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         self.handler = maintenance_scripts.GenerateShippingFeaturesFile()
         self.current_milestone = 120
 
@@ -2253,7 +2253,7 @@ class ResetOutstandingNotificationsTest(testing_config.CustomTestCase):
         )
         self.feature_to_reset.put()
 
-        # Feature 2: Has exactly one outstanding notification (boundary condition).
+        # Feature 2: Has exactly one outstanding notification (boundary condition).  # noqa: E501
         # Should be RESET to 0.
         self.feature_at_boundary = FeatureEntry(
             id=102,
@@ -2290,7 +2290,7 @@ class ResetOutstandingNotificationsTest(testing_config.CustomTestCase):
     def test_get_template_data__resets_counters_and_ignores_others(
         self, mock_require_cron
     ):
-        """Should reset counters >= 1, ignore others, and return correct summary."""
+        """Should reset counters >= 1, ignore others, and return correct summary."""  # noqa: E501
         result = self.handler.get_template_data()
 
         mock_require_cron.assert_called_once()
@@ -2318,7 +2318,7 @@ class ResetStaleShippingMilestonesTest(testing_config.CustomTestCase):
     # Assumes current milestone will be 100. Reset range: [100, 101, 102]
     CURRENT_MILESTONE = 100
 
-    def setUp(self):
+    def setUp(self):  # noqa: D102
         self.handler = maintenance_scripts.ResetStaleShippingMilestones()
         # Valid reset range will be [100, 101, 102].
 
@@ -2337,7 +2337,7 @@ class ResetStaleShippingMilestonesTest(testing_config.CustomTestCase):
             id=301, feature_id=201, stage_type=160, milestones=self.milestones_1
         )
 
-        # 2. Stale feature (notifications=4) with shipping milestone AT BOUNDARY.
+        # 2. Stale feature (notifications=4) with shipping milestone AT BOUNDARY.  # noqa: E501
         #    EXPECTED: Feature notifications reset. Stage milestone reset. Activity created.  # noqa: E501
         self.feature_boundary_reset = FeatureEntry(
             id=202,
@@ -2352,7 +2352,7 @@ class ResetStaleShippingMilestonesTest(testing_config.CustomTestCase):
             id=302, feature_id=202, stage_type=160, milestones=self.milestones_2
         )
 
-        # 3. Stale feature (notifications=5) with NO milestones (milestones=None).
+        # 3. Stale feature (notifications=5) with NO milestones (milestones=None).  # noqa: E501
         #    EXPECTED: Feature notifications reset. Stage untouched. No Activity created.  # noqa: E501
         self.feature_stale_no_milestones = FeatureEntry(
             id=203,
@@ -2396,7 +2396,7 @@ class ResetStaleShippingMilestonesTest(testing_config.CustomTestCase):
             id=305, feature_id=205, stage_type=460, milestones=self.milestones_4
         )
 
-        # 6. Stale feature (notifications=5) with STAGE_ENT_ROLLOUT type IN RANGE.
+        # 6. Stale feature (notifications=5) with STAGE_ENT_ROLLOUT type IN RANGE.  # noqa: E501
         #    EXPECTED: Feature notifications reset. Stage milestone reset. Activity created.  # noqa: E501
         self.feature_ent_rollout = FeatureEntry(
             id=207,
@@ -2616,8 +2616,8 @@ class ResetStaleShippingMilestonesTest(testing_config.CustomTestCase):
         self.assertEqual('101', act_210.amendments[0].old_value)
 
 
-class DeleteWPTCoverageReportTest(testing_config.CustomTestCase):
-    def setUp(self):
+class DeleteWPTCoverageReportTest(testing_config.CustomTestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         for kind in [Gate, Stage, Activity]:
             for entity in kind.query():
                 entity.key.delete()

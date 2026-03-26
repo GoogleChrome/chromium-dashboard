@@ -1,4 +1,4 @@
-# Copyright 2021 Google Inc.
+# Copyright 2021 Google Inc.  # noqa: D100
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
 # you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ from internals.review_models import Gate, Vote
 from internals.search_queries import Interval
 
 
-class SearchRETest(testing_config.CustomTestCase):
+class SearchRETest(testing_config.CustomTestCase):  # noqa: D101
     # Note: User queries will always have a space appended before parsing.
 
     def test_empty_query(self):
@@ -93,7 +93,7 @@ class SearchRETest(testing_config.CustomTestCase):
         )
 
     def test_structured_query_terms__interval(self):
-        """We can parse queries that use interval syntax for paired inequalities."""
+        """We can parse queries that use interval syntax for paired inequalities."""  # noqa: E501
         self.assertEqual(
             [('', 'field', '=', '1..7', '')],
             search.TERM_RE.findall('field=1..7 '),
@@ -151,8 +151,8 @@ class SearchRETest(testing_config.CustomTestCase):
         )
 
 
-class SearchParsingTest(testing_config.CustomTestCase):
-    def test_parse_query_value__dates(self):
+class SearchParsingTest(testing_config.CustomTestCase):  # noqa: D101
+    def test_parse_query_value__dates(self):  # noqa: D102
         d = datetime.datetime
         context = search.QueryContext(
             now=d(2024, 5, 15), current_stable_milestone=0
@@ -202,7 +202,7 @@ class SearchParsingTest(testing_config.CustomTestCase):
             '2023/07/08', search.parse_query_value('2023/07/08', context)
         )  # noqa: E501
 
-    def test_parse_query_value__milestones(self):
+    def test_parse_query_value__milestones(self):  # noqa: D102
         context = search.QueryContext(
             now=datetime.datetime(1, 1, 1), current_stable_milestone=123
         )
@@ -226,7 +226,7 @@ class SearchParsingTest(testing_config.CustomTestCase):
             search.parse_query_value('current_stable+2m', context),  # noqa: E501
         )
 
-    def test_parse_query_value__intervals(self):
+    def test_parse_query_value__intervals(self):  # noqa: D102
         context = search.QueryContext(
             now=datetime.datetime(2024, 5, 15), current_stable_milestone=0
         )
@@ -254,8 +254,8 @@ class SearchParsingTest(testing_config.CustomTestCase):
         )
 
 
-class SearchFunctionsTest(testing_config.CustomTestCase):
-    def setUp(self):
+class SearchFunctionsTest(testing_config.CustomTestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         self.featureentry_1 = FeatureEntry(
             created=datetime.datetime(2024, 4, 4),
             name='feature 1',
@@ -317,7 +317,7 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
         self.featureentry_4.owner_emails = ['owner@example.com']
         self.featureentry_4.put()
 
-    def tearDown(self):
+    def tearDown(self):  # noqa: D102
         notifier.FeatureStar.set_star(
             'starrer@example.com',
             self.featureentry_1.key.integer_id(),

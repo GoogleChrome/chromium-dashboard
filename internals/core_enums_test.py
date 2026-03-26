@@ -1,4 +1,4 @@
-# Copyright 2020 Google Inc.
+# Copyright 2020 Google Inc.  # noqa: D100
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
 # you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ import testing_config  # Must be imported before the module under test.
 from internals import core_enums
 
 
-class EnumsFunctionsTest(testing_config.CustomTestCase):
+class EnumsFunctionsTest(testing_config.CustomTestCase):  # noqa: D101
     def test_convert_enum_int_to_string__not_an_enum(self):
         """If the property is not an enum, just use the property value."""
         actual = core_enums.convert_enum_int_to_string('name', 'not an int')

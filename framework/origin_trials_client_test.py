@@ -1,4 +1,4 @@
-# Copyright 2023 Google Inc.
+# Copyright 2023 Google Inc.  # noqa: D100
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
 # you may not use this file except in compliance with the License.
@@ -24,8 +24,8 @@ from internals.core_models import MilestoneSet, Stage
 test_app = flask.Flask(__name__)
 
 
-class OriginTrialsClientTest(testing_config.CustomTestCase):
-    def setUp(self):
+class OriginTrialsClientTest(testing_config.CustomTestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         self.original_ot_api_key = settings.OT_API_KEY
         self.ot_stage = Stage(
             feature_id=1,
@@ -91,7 +91,7 @@ class OriginTrialsClientTest(testing_config.CustomTestCase):
             ]
         }
 
-    def tearDown(self):
+    def tearDown(self):  # noqa: D102
         settings.OT_API_KEY = self.original_ot_api_key
 
     @mock.patch('requests.get')
@@ -215,7 +215,7 @@ class OriginTrialsClientTest(testing_config.CustomTestCase):
         mock_get_ot_access_token,
         mock_get_admin_group,
     ):
-        """If an API key is available, POST should create trial and return true."""
+        """If an API key is available, POST should create trial and return true."""  # noqa: E501
         mock_requests_post.return_value = mock.MagicMock(
             status_code=200, json=lambda: ({'trial': {'id': -1234567890}})
         )

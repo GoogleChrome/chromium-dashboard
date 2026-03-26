@@ -1,4 +1,4 @@
-# Copyright 2023 Google Inc.
+# Copyright 2023 Google Inc.  # noqa: D100
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
 # you may not use this file except in compliance with the License.
@@ -36,7 +36,7 @@ class OriginTrialsRequests(basehandlers.FlaskHandler):
     TEMPLATE_PATH = 'admin/features/ot_requests.html'
 
     @permissions.require_admin_site
-    def get_template_data(self, **kwargs):
+    def get_template_data(self, **kwargs):  # noqa: D102
         stages_with_requests = Stage.query(
             ndb.OR(
                 Stage.ot_action_requested == True,  # noqa: E712
@@ -65,7 +65,7 @@ class OriginTrialsRequests(basehandlers.FlaskHandler):
                     if ot_stage is None:
                         logging.warning(
                             f'Extension stage {stage_dict["id"]} '
-                            f'found with invalid OT stage ID {stage_dict["ot_stage_id"]}.'
+                            f'found with invalid OT stage ID {stage_dict["ot_stage_id"]}.'  # noqa: E501
                         )
                         continue
                     ot_stage_dict = stage_to_json_dict(ot_stage)

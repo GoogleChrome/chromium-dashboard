@@ -1,4 +1,4 @@
-# Copyright 2020 Google Inc.
+# Copyright 2020 Google Inc.  # noqa: D100
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
 # you may not use this file except in compliance with the License.
@@ -23,22 +23,22 @@ from internals import core_models, user_models
 from main import Route
 
 
-class MockHandler(basehandlers.BaseHandler):
+class MockHandler(basehandlers.BaseHandler):  # noqa: D101
     def __init__(self):
         """Initialize the mock handler."""
         self.called_with = None
         self.common_data = {}
 
-    def get_common_data(self):
+    def get_common_data(self):  # noqa: D102
         return self.common_data
 
     @permissions.require_admin_site
-    def do_get(self, *args):
+    def do_get(self, *args):  # noqa: D102
         self.called_with = args
         return {'message': 'did get'}
 
     @permissions.require_admin_site
-    def do_post(self, *args):
+    def do_post(self, *args):  # noqa: D102
         self.called_with = args
         return {'message': 'did post'}
 
@@ -52,8 +52,8 @@ test_app = basehandlers.FlaskApplication(
 )
 
 
-class PermissionFunctionTests(testing_config.CustomTestCase):
-    def setUp(self):
+class PermissionFunctionTests(testing_config.CustomTestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         self.users = []
         self.app_user = user_models.AppUser(email='registered@example.com')
         self.app_user.put()
@@ -114,7 +114,7 @@ class PermissionFunctionTests(testing_config.CustomTestCase):
             self.feature_confidential.key.integer_id()
         )
 
-    def tearDown(self):
+    def tearDown(self):  # noqa: D102
         for user in self.users:
             user.delete()
         self.feature_1.key.delete()
@@ -220,7 +220,7 @@ class PermissionFunctionTests(testing_config.CustomTestCase):
         user = users.get_current_user()
         self.assertEqual(spec_mentor, func(user, *additional_args))
 
-    def test_can_admin_site(self):
+    def test_can_admin_site(self):  # noqa: D102
         self.check_function_results(
             permissions.can_admin_site,
             tuple(),
@@ -232,7 +232,7 @@ class PermissionFunctionTests(testing_config.CustomTestCase):
             anon=False,
         )
 
-    def test_can_view_feature(self):
+    def test_can_view_feature(self):  # noqa: D102
         self.check_function_results(
             permissions.can_view_feature,
             (None,),
@@ -270,7 +270,7 @@ class PermissionFunctionTests(testing_config.CustomTestCase):
             spec_mentor=False,
         )
 
-    def test_can_create_feature(self):
+    def test_can_create_feature(self):  # noqa: D102
         self.check_function_results(
             permissions.can_create_feature,
             tuple(),
@@ -282,7 +282,7 @@ class PermissionFunctionTests(testing_config.CustomTestCase):
             anon=False,
         )
 
-    def test_can_edit_any_feature(self):
+    def test_can_edit_any_feature(self):  # noqa: D102
         self.check_function_results(
             permissions.can_edit_any_feature,
             tuple(),
@@ -294,7 +294,7 @@ class PermissionFunctionTests(testing_config.CustomTestCase):
             anon=False,
         )
 
-    def test_can_review_release_notes__anon_other_site_admin(self):
+    def test_can_review_release_notes__anon_other_site_admin(self):  # noqa: D102
         self.check_function_results(
             permissions.can_review_release_notes,
             tuple(),
@@ -306,12 +306,12 @@ class PermissionFunctionTests(testing_config.CustomTestCase):
             anon=False,
         )
 
-    def test_can_review_release_notes__allow_list(self):
+    def test_can_review_release_notes__allow_list(self):  # noqa: D102
         testing_config.sign_in(permissions.RELEASE_NOTE_REVIEWERS[0], 123)
         user = users.get_current_user()
         self.assertTrue(permissions.can_review_release_notes(user))
 
-    def test_can_edit_feature(self):
+    def test_can_edit_feature(self):  # noqa: D102
         self.check_function_results(
             permissions.can_edit_feature,
             (None,),
@@ -337,7 +337,7 @@ class PermissionFunctionTests(testing_config.CustomTestCase):
             spec_mentor=True,
         )
 
-    def test_can_review_gate(self):
+    def test_can_review_gate(self):  # noqa: D102
         approvers = []
         self.check_function_results(
             permissions.can_review_gate,
@@ -362,7 +362,7 @@ class PermissionFunctionTests(testing_config.CustomTestCase):
             anon=False,
         )
 
-    def test_can_view_enterprise_release_notes(self):
+    def test_can_view_enterprise_release_notes(self):  # noqa: D102
         # Test non google or chromium user
         testing_config.sign_in('user@example.com', 123)
         self.assertEqual(
@@ -385,8 +385,8 @@ class PermissionFunctionTests(testing_config.CustomTestCase):
         )  # noqa: E501
 
 
-class RequireAdminSiteTests(testing_config.CustomTestCase):
-    def setUp(self):
+class RequireAdminSiteTests(testing_config.CustomTestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         self.app_user = user_models.AppUser(email='registered@example.com')
         self.app_user.put()
 
@@ -398,7 +398,7 @@ class RequireAdminSiteTests(testing_config.CustomTestCase):
         self.app_admin.is_admin = True
         self.app_admin.put()
 
-    def tearDown(self):
+    def tearDown(self):  # noqa: D102
         self.app_user.delete()
         self.app_editor.delete()
         self.app_admin.delete()

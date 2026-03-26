@@ -1,4 +1,4 @@
-# Copyright 2025 Google Inc.
+# Copyright 2025 Google Inc.  # noqa: D100
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
 # you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ from internals.core_models import FeatureEntry
 test_app = flask.Flask(__name__)
 
 
-class StaleFeaturesAPITest(testing_config.CustomTestCase):
+class StaleFeaturesAPITest(testing_config.CustomTestCase):  # noqa: D101
     def setUp(self):
         """Set up test data for the API handler."""
         self.handler = stale_features_api.StaleFeaturesAPI()

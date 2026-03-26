@@ -1,4 +1,4 @@
-# Copyright 2024 Google Inc.
+# Copyright 2024 Google Inc.  # noqa: D100
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
 # you may not use this file except in compliance with the License.
@@ -28,14 +28,14 @@ test_app = flask.Flask(__name__)
 test_app.secret_key = 'test'
 
 
-class AttachmentsAPITest(testing_config.CustomTestCase):
-    def setUp(self):
+class AttachmentsAPITest(testing_config.CustomTestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         self.feature = FeatureEntry(
             name='feat',
             summary='sum',
             category=1,
             owner_emails=['owner@chromium.org'],
-            impl_status_chrome=ENABLED_BY_DEFAULT,
+            impl_status_chrome=ENABLED_BY_DEFAULT,  # noqa: F405
         )  # noqa: F405
         self.feature.put()
 
@@ -59,7 +59,7 @@ class AttachmentsAPITest(testing_config.CustomTestCase):
                 self.handler.do_post(feature_id=self.feature_id)
 
     def test_do_post__noneditor(self):
-        """Users who cannot edit this particular feature cannot add attachments."""
+        """Users who cannot edit this particular feature cannot add attachments."""  # noqa: E501
         testing_config.sign_in('someone@example.com', 111)
         with test_app.test_request_context(self.request_path):
             with self.assertRaises(werkzeug.exceptions.Forbidden):
@@ -95,14 +95,14 @@ class AttachmentsAPITest(testing_config.CustomTestCase):
         self.assertEqual(actual['attachment_url'], expected_url)
 
 
-class AttachmentServingTest(testing_config.CustomTestCase):
-    def setUp(self):
+class AttachmentServingTest(testing_config.CustomTestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         self.feature = FeatureEntry(
             name='feat',
             summary='sum',
             category=1,
             owner_emails=['owner@chromium.org'],
-            impl_status_chrome=ENABLED_BY_DEFAULT,
+            impl_status_chrome=ENABLED_BY_DEFAULT,  # noqa: F405
         )  # noqa: F405
         self.feature.put()
         self.feature_id = self.feature.key.integer_id()
@@ -173,14 +173,14 @@ class AttachmentServingTest(testing_config.CustomTestCase):
         self.assertEqual(headers['Content-Type'], 'text/plain')
 
 
-class RoundTripTest(testing_config.CustomTestCase):
-    def setUp(self):
+class RoundTripTest(testing_config.CustomTestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         self.feature = FeatureEntry(
             name='feat',
             summary='sum',
             category=1,
             owner_emails=['owner@chromium.org'],
-            impl_status_chrome=ENABLED_BY_DEFAULT,
+            impl_status_chrome=ENABLED_BY_DEFAULT,  # noqa: F405
         )  # noqa: F405
         self.feature.put()
         self.feature_id = self.feature.key.integer_id()

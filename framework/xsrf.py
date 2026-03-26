@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-  # noqa: D100
 # Copyright 2021 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
@@ -67,7 +67,7 @@ def generate_token(user_email, token_time=None):
 
     Raises:
       ValueError: if the XSRF secret was not configured.
-    """
+    """  # noqa: E501
     token_time = token_time or int(time.time())
     token_time = str(token_time).encode()
     # codeql[py/weak-sensitive-data-hashing] XSRF tokens are not passwords.
@@ -136,7 +136,7 @@ def validate_token(token, user_email, timeout=TOKEN_TIMEOUT_SEC):
 
 
 def token_expires_sec():
-    """Return timestamp when current tokens will expire, minus a safety margin."""
+    """Return timestamp when current tokens will expire, minus a safety margin."""  # noqa: E501
     now = int(time.time())
     return now + TOKEN_TIMEOUT_SEC - TOKEN_TIMEOUT_MARGIN_SEC
 

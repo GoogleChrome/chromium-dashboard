@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-  # noqa: D100
 # Copyright 2020 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
@@ -40,14 +40,14 @@ DEVREL_EMAIL = 'devrel-chromestatus-all@google.com'
 # chromestatus that will still POST to this handler.
 
 
-class FeatureCreateHandler(basehandlers.FlaskHandler):
+class FeatureCreateHandler(basehandlers.FlaskHandler):  # noqa: D101
     TEMPLATE_PATH = 'spa.html'
 
-    def get_template_data(self, **defaults):
+    def get_template_data(self, **defaults):  # noqa: D102
         return basehandlers.get_spa_template_data(self, defaults)
 
     @permissions.require_create_feature
-    def process_post_data(self, **kwargs):
+    def process_post_data(self, **kwargs):  # noqa: D102
         owners = self.split_emails('owner_emails')
         editors = self.split_emails('editor_emails')
         cc_emails = self.split_emails('cc_emails')
@@ -63,7 +63,7 @@ class FeatureCreateHandler(basehandlers.FlaskHandler):
 
         has_enterprise_impact = (
             int(self.form.get('enterprise_impact', '1'))
-            > ENTERPRISE_IMPACT_NONE
+            > ENTERPRISE_IMPACT_NONE  # noqa: F405
         )  # noqa: E501, F405
         enterprise_notification_milestone = self.form.get(
             'first_enterprise_notification_milestone'
@@ -72,7 +72,7 @@ class FeatureCreateHandler(basehandlers.FlaskHandler):
             enterprise_notification_milestone = int(
                 enterprise_notification_milestone
             )
-        if has_enterprise_impact and needs_default_first_notification_milestone(
+        if has_enterprise_impact and needs_default_first_notification_milestone(  # noqa: F405
             new_fields={  # noqa: E501, F405
                 'feature_type': feature_type,
                 'enterprise_impact': int(self.form.get('enterprise_impact')),
@@ -80,7 +80,7 @@ class FeatureCreateHandler(basehandlers.FlaskHandler):
             }
         ):
             enterprise_notification_milestone = (
-                get_default_first_notice_milestone_for_feature()
+                get_default_first_notice_milestone_for_feature()  # noqa: F405
             )  # noqa: E501, F405
 
         web_feature = self.form.get('web_feature', '')
@@ -155,14 +155,14 @@ class FeatureCreateHandler(basehandlers.FlaskHandler):
                 gate.put()
 
 
-class EnterpriseFeatureCreateHandler(FeatureCreateHandler):
+class EnterpriseFeatureCreateHandler(FeatureCreateHandler):  # noqa: D101
     TEMPLATE_PATH = 'spa.html'
 
-    def get_template_data(self, **defaults):
+    def get_template_data(self, **defaults):  # noqa: D102
         return basehandlers.get_spa_template_data(self, defaults)
 
     @permissions.require_create_feature
-    def process_post_data(self, **kwargs):
+    def process_post_data(self, **kwargs):  # noqa: D102
         owners = self.split_emails('owner_emails')
         editors = self.split_emails('editor_emails')
 
@@ -178,14 +178,14 @@ class EnterpriseFeatureCreateHandler(FeatureCreateHandler):
             enterprise_notification_milestone = int(
                 enterprise_notification_milestone
             )
-        if needs_default_first_notification_milestone(
+        if needs_default_first_notification_milestone(  # noqa: F405
             new_fields={  # noqa: F405
                 'feature_type': feature_type,
-                'first_enterprise_notification_milestone': enterprise_notification_milestone,
+                'first_enterprise_notification_milestone': enterprise_notification_milestone,  # noqa: E501
             }
         ):  # noqa: E501
             enterprise_notification_milestone = (
-                get_default_first_notice_milestone_for_feature()
+                get_default_first_notice_milestone_for_feature()  # noqa: F405
             )  # noqa: E501, F405
 
         # Write for new FeatureEntry entity.

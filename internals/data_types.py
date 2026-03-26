@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-  # noqa: D100
 # Copyright 2023 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
@@ -26,7 +26,7 @@ CHANGED_FIELDS_LIST_TYPE = list[tuple[str, Any, Any]]
 
 
 # JSON representation of Stage entity data.
-class StageDict(TypedDict):
+class StageDict(TypedDict):  # noqa: D101
     id: int
     created: str
     feature_id: int
@@ -102,36 +102,36 @@ class StageDict(TypedDict):
 ## FeatureDict definitions ##
 #############################
 # Nested JSON type definitions.
-class FeatureDictInnerResourceInfo(TypedDict):
+class FeatureDictInnerResourceInfo(TypedDict):  # noqa: D101
     samples: list[str]
     docs: list[str]
 
 
-class FeatureDictInnerStandardsInfo(TypedDict):
+class FeatureDictInnerStandardsInfo(TypedDict):  # noqa: D101
     spec: str | None
     maturity: FeatureDictInnerMaturityInfo
 
 
-class FeatureDictInnerMaturityInfo(TypedDict):
+class FeatureDictInnerMaturityInfo(TypedDict):  # noqa: D101
     text: str | None
     short_text: str | None
     val: int
 
 
-class FeatureDictInnerBrowserStatus(TypedDict):
+class FeatureDictInnerBrowserStatus(TypedDict):  # noqa: D101
     text: str | None
     val: str | None
     milestone_str: str | None
 
 
-class FeatureDictInnerViewInfo(TypedDict):
+class FeatureDictInnerViewInfo(TypedDict):  # noqa: D101
     text: str | None
     val: int | None
     url: str | None
     notes: str | None
 
 
-class FeatureDictInnerChromeBrowserInfo(TypedDict):
+class FeatureDictInnerChromeBrowserInfo(TypedDict):  # noqa: D101
     bug: str | None
     blink_components: list[str] | None
     devrel: list[str] | None
@@ -149,11 +149,11 @@ class FeatureDictInnerChromeBrowserInfo(TypedDict):
     ios: int | None
 
 
-class FeatureDictInnerSingleBrowserInfo(TypedDict):
+class FeatureDictInnerSingleBrowserInfo(TypedDict):  # noqa: D101
     view: FeatureDictInnerViewInfo | None
 
 
-class FeatureBrowsersInfo(TypedDict):
+class FeatureBrowsersInfo(TypedDict):  # noqa: D101
     chrome: FeatureDictInnerChromeBrowserInfo
     ff: FeatureDictInnerSingleBrowserInfo
     safari: FeatureDictInnerSingleBrowserInfo
@@ -163,14 +163,14 @@ class FeatureBrowsersInfo(TypedDict):
 
 # Basic user info displayed for create/update attributes in
 # FeatureEntry edit information.
-class FeatureDictInnerUserEditInfo(TypedDict):
+class FeatureDictInnerUserEditInfo(TypedDict):  # noqa: D101
     by: str | None
     when: str | None
 
 
 # JSON representation of FeatureEntry entity. Created from
 # converters.feature_entry_to_json_verbose().
-class VerboseFeatureDict(TypedDict):
+class VerboseFeatureDict(TypedDict):  # noqa: D101
     # Metadata: Creation and updates.
     id: int
     created: FeatureDictInnerUserEditInfo
@@ -308,7 +308,7 @@ class VerboseFeatureDict(TypedDict):
 
 
 @dataclass
-class OriginTrialInfo:
+class OriginTrialInfo:  # noqa: D101
     def __init__(self, api_trial):
         """Initialize the origin trial info."""
         self.id = api_trial.get('id', None)

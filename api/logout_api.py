@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-  # noqa: D100
 # Copyright 2021 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
@@ -26,6 +26,6 @@ class LogoutAPI(basehandlers.APIHandler):
         """Reject unneeded GET requests without triggering Error Reporting."""
         self.abort(405, valid_methods=['POST'])
 
-    def do_post(self, **kwargs):
+    def do_post(self, **kwargs):  # noqa: D102
         session.clear()
         return {'message': 'Done'}

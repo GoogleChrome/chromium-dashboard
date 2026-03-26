@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-  # noqa: D100
 # Copyright 2021 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
@@ -56,7 +56,7 @@ DEVREL_EMAIL = 'devrel-chromestatus-all@google.com'
 class FeaturesAPI(basehandlers.EntitiesAPIHandler):
     """Features are the the main records that we track."""
 
-    def get_one_feature(self, feature_id: int) -> VerboseFeatureDict:
+    def get_one_feature(self, feature_id: int) -> VerboseFeatureDict:  # noqa: D102
         feature = FeatureEntry.get_by_id(feature_id)
         if not feature:
             self.abort(404, msg='Feature %r not found' % feature_id)
@@ -70,7 +70,7 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
 
         return converters.feature_entry_to_json_verbose(feature)
 
-    def do_search(self):
+    def do_search(self):  # noqa: D102
         user = users.get_current_user()
         # Show unlisted features to site editors or admins.
         show_unlisted_features = permissions.can_edit_any_feature(user)
@@ -145,7 +145,7 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
         feature: FeatureEntry,
         feature_changes: dict[str, Any],
     ) -> bool:
-        """Handle any special FeatureEntry fields common to creating or updating."""
+        """Handle any special FeatureEntry fields common to creating or updating."""  # noqa: E501
         has_updated = False
         # Handle "Use Markdown" checkboxes.
         for field, field_type in api_specs.FEATURE_FIELD_DATA_TYPES:
@@ -176,11 +176,11 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
                 feature_changes['first_enterprise_notification_milestone']
             )  # noqa: E501
             has_updated = True  # noqa: F841
-        elif needs_default_first_notification_milestone(
+        elif needs_default_first_notification_milestone(  # noqa: F405
             new_fields=feature_changes
         ):  # noqa: F405
             feature.first_enterprise_notification_milestone = (
-                get_default_first_notice_milestone_for_feature()
+                get_default_first_notice_milestone_for_feature()  # noqa: F405
             )  # noqa: E501, F405
 
         if feature.feature_type == FEATURE_TYPE_ENTERPRISE_ID:  # noqa: F405
@@ -292,7 +292,7 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
                 old_value = getattr(stage, field)
                 new_value = change_info[field]['value']
                 self.update_field_value(stage, field, field_type, new_value)
-                # The OT additional details does not need to be sent to subscribers.
+                # The OT additional details does not need to be sent to subscribers.  # noqa: E501
                 if form_field_name != 'ot_request_note':
                     changed_fields.append(
                         (form_field_name, old_value, new_value)
@@ -309,10 +309,10 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
                 form_field_name = change_info[field]['form_field_name']
                 old_value = getattr(milestones, field)
                 new_value = change_info[field]['value']
-                # desktop_first will be the new default field for "start" milestone,
+                # desktop_first will be the new default field for "start" milestone,  # noqa: E501
                 # like rollout_milestone.
 
-                # If this is the rollout milestone, also save it to the old field.
+                # If this is the rollout milestone, also save it to the old field.  # noqa: E501
                 # TODO(DanielRyanSmith): Remove this double-storage once the
                 # rollout_milestone field is deprecated.
                 if form_field_name == 'rollout_milestone':
@@ -320,7 +320,7 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
                         stage, 'rollout_milestone', 'int', new_value
                     )
 
-                # Track if any shipping milestones were updated so we know to reset
+                # Track if any shipping milestones were updated so we know to reset  # noqa: E501
                 # outstanding notifications if so.
                 if (
                     form_field_name == 'rollout_milestone'
@@ -412,11 +412,11 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
                 feature_changes['first_enterprise_notification_milestone']
             )  # noqa: E501
             has_updated = True
-        elif needs_default_first_notification_milestone(
+        elif needs_default_first_notification_milestone(  # noqa: F405
             feature, feature_changes
         ):  # noqa: F405
             feature.first_enterprise_notification_milestone = (
-                get_default_first_notice_milestone_for_feature()
+                get_default_first_notice_milestone_for_feature()  # noqa: F405
             )  # noqa: E501, F405
             has_updated = True
         if should_remove_first_notice_milestone(feature, feature_changes):  # noqa: F405
@@ -426,7 +426,7 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
         updated_shipping_stages = [
             us
             for us in updated_stages
-            if us.stage_type in STAGE_TYPES_SHIPPING.values()
+            if us.stage_type in STAGE_TYPES_SHIPPING.values()  # noqa: F405
         ]  # noqa: F405
         if updated_shipping_stages:
             existing_shipping_stages = (

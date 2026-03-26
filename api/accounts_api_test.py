@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-  # noqa: D100
 # Copyright 2021 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
@@ -24,8 +24,8 @@ from internals import user_models
 test_app = flask.Flask(__name__)
 
 
-class AccountsAPITest(testing_config.CustomTestCase):
-    def setUp(self):
+class AccountsAPITest(testing_config.CustomTestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         self.app_admin = user_models.AppUser(email='admin@example.com')
         self.app_admin.is_admin = True
         self.app_admin.put()

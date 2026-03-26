@@ -1,4 +1,4 @@
-# Copyright 2024 Google Inc.
+# Copyright 2024 Google Inc.  # noqa: D100
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
 # you may not use this file except in compliance with the License.
@@ -32,8 +32,8 @@ test_app = flask.Flask(
 )
 
 
-class IntentsAPITest(testing_config.CustomTestCase):
-    def setUp(self):
+class IntentsAPITest(testing_config.CustomTestCase):  # noqa: D101
+    def setUp(self):  # noqa: D102
         self.feature_1 = FeatureEntry(
             feature_type=1,
             name='feature one',
@@ -206,7 +206,7 @@ class IntentsAPITest(testing_config.CustomTestCase):
 
     @mock.patch('framework.cloud_tasks_helpers.enqueue_task')
     def test_post__valid_no_gate_id(self, mock_enqueue_cloud_task):
-        """A request with no gate_id will still show intent draft for devtrial."""
+        """A request with no gate_id will still show intent draft for devtrial."""  # noqa: E501
         testing_config.sign_in('owner@example.com', 1234567890)
 
         body = {

@@ -1,4 +1,4 @@
-# Copyright 2025 Google Inc.
+# Copyright 2025 Google Inc.  # noqa: D100
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
 # you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ from internals.core_enums import (
 from internals.core_models import Stage
 
 
-class GetShippingFeaturesResponse(TypedDict):
+class GetShippingFeaturesResponse(TypedDict):  # noqa: D101
     complete_features: list[feature_helpers.ShippingFeatureInfo]
     incomplete_features: list[
         tuple[feature_helpers.ShippingFeatureInfo, list[str]]

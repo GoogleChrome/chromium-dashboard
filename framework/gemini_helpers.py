@@ -1,4 +1,4 @@
-# Copyright 2025 Google Inc.
+# Copyright 2025 Google Inc.  # noqa: D100
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
 # you may not use this file except in compliance with the License.
@@ -342,7 +342,7 @@ async def prompt_analysis(  # noqa: D417
             if gemini_client.prompt_exceeds_input_token_limit(
                 single_prompt_with_deps
             ):  # noqa: E501
-                # Edge Case: The file + deps is too large. (this should be very rare).
+                # Edge Case: The file + deps is too large. (this should be very rare).  # noqa: E501
                 # Create a prompt with ONLY the test file (omit dependencies) and commit immediately.  # noqa: E501
                 logging.warning(
                     f'Test file {fpath} with dependencies exceeds token limit. '
@@ -491,7 +491,7 @@ class GenerateWPTCoverageEvalReportHandler(basehandlers.FlaskHandler):
 
     IS_INTERNAL_HANDLER = True
 
-    def process_post_data(self, **kwargs):
+    def process_post_data(self, **kwargs):  # noqa: D102
         self.require_task_header()
 
         feature_id = self.get_int_param('feature_id')
@@ -512,7 +512,7 @@ class GenerateWPTCoverageEvalReportHandler(basehandlers.FlaskHandler):
             )
             feature.ai_test_eval_status_timestamp = datetime.now()
             feature.ai_test_eval_report = (
-                'Web Platform Tests coverage analysis report failed to generate. '
+                'Web Platform Tests coverage analysis report failed to generate. '  # noqa: E501
                 'Try again later.'
             )
             feature.put()

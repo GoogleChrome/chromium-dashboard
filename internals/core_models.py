@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-  # noqa: D100
 # Copyright 2020 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
@@ -92,7 +92,7 @@ class FeatureEntry(ndb.Model):
     category = ndb.IntegerProperty(required=True)
     enterprise_product_category = ndb.IntegerProperty(
         required=False,
-        default=ENTERPRISE_PRODUCT_CATEGORY_CHROME_BROWSER_UPDATE,
+        default=ENTERPRISE_PRODUCT_CATEGORY_CHROME_BROWSER_UPDATE,  # noqa: F405
     )  # noqa: E501, F405
     enterprise_feature_categories = ndb.StringProperty(repeated=True)
     blink_components = ndb.StringProperty(repeated=True)
@@ -104,7 +104,8 @@ class FeatureEntry(ndb.Model):
 
     # Metadata: Process information
     feature_type = ndb.IntegerProperty(
-        required=True, default=FEATURE_TYPE_INCUBATE_ID
+        required=True,
+        default=FEATURE_TYPE_INCUBATE_ID,  # noqa: F405
     )  # noqa: E501, F405
     intent_stage = ndb.IntegerProperty(default=INTENT_NONE)  # noqa: F405
     active_stage_id = ndb.IntegerProperty()
@@ -182,13 +183,13 @@ class FeatureEntry(ndb.Model):
     ai_test_eval_status_timestamp = ndb.DateTimeProperty()
 
     @ndb.ComputedProperty
-    def has_open_tag_review(self):
+    def has_open_tag_review(self):  # noqa: D102
         return (
             self.tag_review is not None and self.tag_review_resolution is None
         )
 
     @ndb.ComputedProperty
-    def has_open_ff_review(self):
+    def has_open_ff_review(self):  # noqa: D102
         return (
             self.ff_views not in [IN_DEV, SHIPPED, SIGNALS_NA]  # noqa: F405
             and self.ff_views_link is not None
@@ -196,7 +197,7 @@ class FeatureEntry(ndb.Model):
         )
 
     @ndb.ComputedProperty
-    def has_open_safari_review(self):
+    def has_open_safari_review(self):  # noqa: D102
         return (
             self.safari_views not in [IN_DEV, SHIPPED, SIGNALS_NA]  # noqa: F405
             and self.safari_views_link is not None
@@ -247,10 +248,10 @@ class FeatureEntry(ndb.Model):
         super(FeatureEntry, self).__init__(*args, **kwargs)
 
     @classmethod
-    def feature_cache_key(cls, cache_key, feature_id):
+    def feature_cache_key(cls, cache_key, feature_id):  # noqa: D102
         return '%s|%s' % (cache_key, feature_id)
 
-    def put(self, **kwargs) -> Any:
+    def put(self, **kwargs) -> Any:  # noqa: D102
         key = super(FeatureEntry, self).put(**kwargs)
         # Invalidate rediscache for the individual feature view.
         cache_key = FeatureEntry.feature_cache_key(

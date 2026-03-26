@@ -1,4 +1,4 @@
-# Copyright 2025 Google Inc.
+# Copyright 2025 Google Inc.  # noqa: D100
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
 # you may not use this file except in compliance with the License.
@@ -31,7 +31,7 @@ class WPTCoverageAPI(basehandlers.EntitiesAPIHandler):
     """Accepts requests related to WPT AI coverage analyses."""
 
     def do_post(self, **kwargs):
-        """Enqueue a Cloud Task for generating a WPT coverage analysis report."""
+        """Enqueue a Cloud Task for generating a WPT coverage analysis report."""  # noqa: E501
         feature_id = kwargs.get('feature_id')
         feature = self.get_validated_entity(feature_id, FeatureEntry)
 
@@ -67,7 +67,7 @@ class WPTCoverageAPI(basehandlers.EntitiesAPIHandler):
             feature.ai_test_eval_run_status
             == core_enums.AITestEvaluationStatus.IN_PROGRESS  # noqa: E501
             and last_status_time
-            # Assume that a request that is in progress for over an hour is hanging.
+            # Assume that a request that is in progress for over an hour is hanging.  # noqa: E501
             and last_status_time + HANGING_TIMEOUT_THRESHOLD > datetime.now()
         )
 
@@ -86,7 +86,7 @@ class WPTCoverageAPI(basehandlers.EntitiesAPIHandler):
             msg = (
                 'The WPT coverage pipeline is already running for this feature.'
                 if request_in_progress
-                else 'Requests to the pipeline are on cooldown for this feature.'
+                else 'Requests to the pipeline are on cooldown for this feature.'  # noqa: E501
             )
             retry_after = (
                 (last_status_time + HANGING_TIMEOUT_THRESHOLD) - datetime.now()  # noqa: E501

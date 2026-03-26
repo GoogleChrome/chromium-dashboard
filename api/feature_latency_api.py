@@ -1,4 +1,4 @@
-# Copyright 2024 Google Inc.
+# Copyright 2024 Google Inc.  # noqa: D100
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
 # you may not use this file except in compliance with the License.
@@ -94,7 +94,7 @@ class FeatureLatencyAPI(basehandlers.APIHandler):
             if (
                 not fe.deleted
                 and fe.impl_status_chrome
-                in [ENABLED_BY_DEFAULT, DEPRECATED, REMOVED]
+                in [ENABLED_BY_DEFAULT, DEPRECATED, REMOVED]  # noqa: F405
             )
         ]  # noqa: F405
         return features
@@ -112,11 +112,11 @@ class FeatureLatencyAPI(basehandlers.APIHandler):
         stage_query = stage_query.filter(
             Stage.stage_type.IN(
                 [
-                    STAGE_BLINK_SHIPPING,
+                    STAGE_BLINK_SHIPPING,  # noqa: F405
                     STAGE_PSA_SHIPPING,  # noqa: F405
-                    STAGE_FAST_SHIPPING,
-                    STAGE_DEP_SHIPPING,
-                    STAGE_ENT_ROLLOUT,
+                    STAGE_FAST_SHIPPING,  # noqa: F405
+                    STAGE_DEP_SHIPPING,  # noqa: F405
+                    STAGE_ENT_ROLLOUT,  # noqa: F405
                 ]
             )
         )  # noqa: F405
