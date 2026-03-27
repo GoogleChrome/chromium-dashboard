@@ -477,7 +477,7 @@ export class ChromedashGuideEditallPage extends LitElement {
   }
 
   deleteStage(stage) {
-    if (!confirm('Delete feature?')) return;
+    if (!confirm('Delete stage?')) return;
 
     window.csClient
       .deleteStage(this.featureId, stage.id)
