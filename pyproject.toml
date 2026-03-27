@@ -1,5 +1,15 @@
 [tool.ruff]
-indent-width = 2
+indent-width = 4
+line-length = 80
+exclude = ["gen", "cs-env", "node_modules", "static", "build", "htmlcov"]
 
 [tool.ruff.format]
 quote-style = "single"
+docstring-code-format = true
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "D"]
+ignore = ["D100", "D101", "D102", "D103", "D104", "D105", "D106", "D107", "D203", "D213", "E501", "F403", "F405", "E712", "F841", "F601", "F821", "D210", "D417"] # Ignore missing docstrings temporarily, conflicting rules, and unfixable legacy errors.
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"

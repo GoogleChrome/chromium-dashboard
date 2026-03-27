@@ -12,16 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import logging
 
 from framework import basehandlers
 from internals import fetchchannels
 
 
 class OmahaDataHandler(basehandlers.FlaskHandler):
+    JSONIFY = True
 
-  JSONIFY = True
-
-  def get_template_data(self, **kwargs):
-    omaha_data = fetchchannels.get_omaha_data()
-    return omaha_data
+    def get_template_data(self, **kwargs):
+        omaha_data = fetchchannels.get_omaha_data()
+        return omaha_data

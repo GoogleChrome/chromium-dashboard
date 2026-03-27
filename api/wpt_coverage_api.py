@@ -12,11 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import flask
 from datetime import datetime, timedelta
-from framework import basehandlers
-from framework import cloud_tasks_helpers
-from framework import permissions
+
+from framework import basehandlers, cloud_tasks_helpers, permissions
 from internals import core_enums
 from internals.core_models import FeatureEntry
 
@@ -28,86 +26,111 @@ COOLDOWN_THRESHOLD = timedelta(minutes=29)
 # 59 minute timeout to allow retrying if the process hangs.
 HANGING_TIMEOUT_THRESHOLD = timedelta(minutes=59)
 
+
 class WPTCoverageAPI(basehandlers.EntitiesAPIHandler):
-  """Accepts requests related to WPT AI coverage analyses."""
+    """Accepts requests related to WPT AI coverage analyses."""
 
-  def do_post(self, **kwargs):
-    """Enqueue a Cloud Task for generating a WPT coverage analysis report."""
-    feature_id = kwargs.get('feature_id')
-    feature = self.get_validated_entity(feature_id, FeatureEntry)
+    def do_post(self, **kwargs):
+        """Enqueue a Cloud Task for generating a WPT coverage analysis report."""
+        feature_id = kwargs.get('feature_id')
+        feature = self.get_validated_entity(feature_id, FeatureEntry)
 
-    # Validate the user has edit permissions.
-    can_edit = permissions.can_edit_feature(
-      self.get_current_user(), feature_id)
-    if not can_edit:
-      self.abort(403, f'User does not have dit access to feature {feature_id}')
-
-    if not permissions.is_google_or_chromium_account(self.get_current_user()):
-      self.abort(
-        403,
-        'This feature is currently only available to Google or Chromium accounts.'
-      )
-
-    if feature.confidential:
-      self.abort(
-        400, (
-          'Confidential feature information cannot be used to '
-          'generate WTP coverage reports.'
+        # Validate the user has edit permissions.
+        can_edit = permissions.can_edit_feature(
+            self.get_current_user(), feature_id
         )
-      )
+        if not can_edit:
+            self.abort(
+                403, f'User does not have dit access to feature {feature_id}'
+            )
 
-    last_status_time = feature.ai_test_eval_status_timestamp
+        if not permissions.is_google_or_chromium_account(
+            self.get_current_user()
+        ):
+            self.abort(
+                403,
+                'This feature is currently only available to Google or Chromium accounts.',  # noqa: E501
+            )
 
-    request_in_progress = (
-      feature.ai_test_eval_run_status == core_enums.AITestEvaluationStatus.IN_PROGRESS
-      and last_status_time
-      # Assume that a request that is in progress for over an hour is hanging.
-      and last_status_time + HANGING_TIMEOUT_THRESHOLD > datetime.now())
+        if feature.confidential:
+            self.abort(
+                400,
+                (
+                    'Confidential feature information cannot be used to '
+                    'generate WTP coverage reports.'
+                ),
+            )
 
-    on_cooldown = (
-      (
-        feature.ai_test_eval_run_status == core_enums.AITestEvaluationStatus.COMPLETE
-        or feature.ai_test_eval_run_status == core_enums.AITestEvaluationStatus.DELETED
-      )
-      and last_status_time
-      and last_status_time + COOLDOWN_THRESHOLD > datetime.now()
-    )
+        last_status_time = feature.ai_test_eval_status_timestamp
 
-    if request_in_progress or on_cooldown:
-      msg = (
-        'The WPT coverage pipeline is already running for this feature.'
-        if request_in_progress
-        else 'Requests to the pipeline are on cooldown for this feature.')
-      retry_after = ((last_status_time + HANGING_TIMEOUT_THRESHOLD) - datetime.now()
-                     if request_in_progress
-                     else (last_status_time + COOLDOWN_THRESHOLD) - datetime.now())
-      # Safety check: Ensure we never send a negative Retry-After
-      # (which can happen if the condition evaluated true milliseconds ago but time passed)
-      retry_after_seconds = int(max(0, retry_after.total_seconds()))
-      self.abort(409, msg, headers={'Retry-After': str(retry_after_seconds)})
+        request_in_progress = (
+            feature.ai_test_eval_run_status
+            == core_enums.AITestEvaluationStatus.IN_PROGRESS  # noqa: E501
+            and last_status_time
+            # Assume that a request that is in progress for over an hour is hanging.
+            and last_status_time + HANGING_TIMEOUT_THRESHOLD > datetime.now()
+        )
 
-    feature.ai_test_eval_run_status = core_enums.AITestEvaluationStatus.IN_PROGRESS.value
-    feature.ai_test_eval_status_timestamp = datetime.now()
-    feature.put()
-    include_explainer = self.get_bool_param('include_explainer', False)
-    cloud_tasks_helpers.enqueue_task('/tasks/generate-wpt-coverage-analysis',
-                                     { 'feature_id': feature_id, 'include_explainer': include_explainer })
+        on_cooldown = (
+            (
+                feature.ai_test_eval_run_status
+                == core_enums.AITestEvaluationStatus.COMPLETE  # noqa: E501
+                or feature.ai_test_eval_run_status
+                == core_enums.AITestEvaluationStatus.DELETED  # noqa: E501
+            )
+            and last_status_time
+            and last_status_time + COOLDOWN_THRESHOLD > datetime.now()
+        )
 
-    return {'message': 'Task enqueued'}
+        if request_in_progress or on_cooldown:
+            msg = (
+                'The WPT coverage pipeline is already running for this feature.'
+                if request_in_progress
+                else 'Requests to the pipeline are on cooldown for this feature.'
+            )
+            retry_after = (
+                (last_status_time + HANGING_TIMEOUT_THRESHOLD) - datetime.now()  # noqa: E501
+                if request_in_progress
+                else (last_status_time + COOLDOWN_THRESHOLD) - datetime.now()
+            )  # noqa: E501
+            # Safety check: Ensure we never send a negative Retry-After
+            # (which can happen if the condition evaluated true milliseconds ago but time passed)  # noqa: E501
+            retry_after_seconds = int(max(0, retry_after.total_seconds()))
+            self.abort(
+                409, msg, headers={'Retry-After': str(retry_after_seconds)}
+            )
 
-  def do_delete(self, **kwargs):
-    """Delete the generated WPT coverage analysis report."""
-    feature_id = kwargs.get('feature_id')
-    feature = self.get_validated_entity(feature_id, FeatureEntry)
+        feature.ai_test_eval_run_status = (
+            core_enums.AITestEvaluationStatus.IN_PROGRESS.value
+        )  # noqa: E501
+        feature.ai_test_eval_status_timestamp = datetime.now()
+        feature.put()
+        include_explainer = self.get_bool_param('include_explainer', False)
+        cloud_tasks_helpers.enqueue_task(
+            '/tasks/generate-wpt-coverage-analysis',
+            {'feature_id': feature_id, 'include_explainer': include_explainer},
+        )  # noqa: E501
 
-    # Validate the user has edit permissions.
-    can_edit = permissions.can_edit_feature(
-      self.get_current_user(), feature_id)
-    if not can_edit:
-      self.abort(403, f'User does not have edit access to feature {feature_id}')
+        return {'message': 'Task enqueued'}
 
-    feature.ai_test_eval_report = None
-    feature.ai_test_eval_run_status = core_enums.AITestEvaluationStatus.DELETED.value
-    feature.put()
+    def do_delete(self, **kwargs):
+        """Delete the generated WPT coverage analysis report."""
+        feature_id = kwargs.get('feature_id')
+        feature = self.get_validated_entity(feature_id, FeatureEntry)
 
-    return {'message': 'WPT coverage analysis report deleted.'}
+        # Validate the user has edit permissions.
+        can_edit = permissions.can_edit_feature(
+            self.get_current_user(), feature_id
+        )
+        if not can_edit:
+            self.abort(
+                403, f'User does not have edit access to feature {feature_id}'
+            )
+
+        feature.ai_test_eval_report = None
+        feature.ai_test_eval_run_status = (
+            core_enums.AITestEvaluationStatus.DELETED.value
+        )  # noqa: E501
+        feature.put()
+
+        return {'message': 'WPT coverage analysis report deleted.'}

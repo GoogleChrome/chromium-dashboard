@@ -1,6 +1,3 @@
-
-
-
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 #
@@ -17,58 +14,63 @@ How to use:
 Copy and paste this script into the interactive GAE console. If there are
 deadline errors, run it a few times until there's no more.
 
-"""
+"""  # noqa: D205
 
 from internals import metrics_models
 
 allCssPropertyHistograms = metrics_models.CssPropertyHistogram.get_all()
 allFeatureObserverHistograms = metrics_models.FeatureObserverHistogram.get_all()
 
+
 def CorrectCSSPropertyName(bucket_id):
-  if bucket_id in allCssPropertyHistograms:
-    return allCssPropertyHistograms[bucket_id]
-  return None
+    if bucket_id in allCssPropertyHistograms:
+        return allCssPropertyHistograms[bucket_id]
+    return None
+
 
 def CorrectFeaturePropertyName(bucket_id):
-  if bucket_id in allFeatureObserverHistograms:
-    return allFeatureObserverHistograms[bucket_id]
-  return None
+    if bucket_id in allFeatureObserverHistograms:
+        return allFeatureObserverHistograms[bucket_id]
+    return None
 
 
 def FetchAllCSSPropertiesWithError(bucket_id=None):
-  q = metrics_models.StableInstance.query()
-  if bucket_id:
-    q = q.filter(metrics_models.StableInstance.bucket_id == bucket_id)
-  q = q.filter(metrics_models.StableInstance.property_name == 'ERROR')
+    q = metrics_models.StableInstance.query()
+    if bucket_id:
+        q = q.filter(metrics_models.StableInstance.bucket_id == bucket_id)
+    q = q.filter(metrics_models.StableInstance.property_name == 'ERROR')
 
-  props = q.fetch(None)
+    props = q.fetch(None)
 
-  # Bucket 1 for CSS properties is total pages visited
-  props = [p for p in props if p.bucket_id > 1]
+    # Bucket 1 for CSS properties is total pages visited
+    props = [p for p in props if p.bucket_id > 1]
 
-  return props
+    return props
+
 
 def FetchAllFeaturesWithError(bucket_id=None):
-  q = metrics_models.FeatureObserver.query()
-  if bucket_id:
-    q = q.filter(metrics_models.FeatureObserver.bucket_id == bucket_id)
-  q = q.filter(metrics_models.FeatureObserver.property_name == 'ERROR')
-  return q.fetch(None)
+    q = metrics_models.FeatureObserver.query()
+    if bucket_id:
+        q = q.filter(metrics_models.FeatureObserver.bucket_id == bucket_id)
+    q = q.filter(metrics_models.FeatureObserver.property_name == 'ERROR')
+    return q.fetch(None)
+
 
 def fix_up(props, corrector_func):
 
-  need_correcting = {}
-  for p in props:
-    correct_name = corrector_func(p.bucket_id)
-    if correct_name is not None:
-      need_correcting[p.bucket_id] = correct_name
+    need_correcting = {}
+    for p in props:
+        correct_name = corrector_func(p.bucket_id)
+        if correct_name is not None:
+            need_correcting[p.bucket_id] = correct_name
 
-  for p in props:
-    if p.bucket_id in need_correcting:
-      new_name = need_correcting[p.bucket_id]
-      print(p.bucket_id, p.property_name, '->', new_name)
-      p.property_name = new_name
-      #p.put() # uncomment commit to the db changes.
+    for p in props:
+        if p.bucket_id in need_correcting:
+            new_name = need_correcting[p.bucket_id]
+            print(p.bucket_id, p.property_name, '->', new_name)
+            p.property_name = new_name
+            # p.put() # uncomment commit to the db changes.
+
 
 props = FetchAllFeaturesWithError()
 print('Found', str(len(props)), 'properties tagged "ERROR"')

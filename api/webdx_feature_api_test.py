@@ -13,81 +13,85 @@
 # limitations under the License.
 
 import logging
-import testing_config
 from collections import OrderedDict
-
-import flask
 from unittest import mock
 
-from api.webdx_feature_api import WebFeatureIDsAPI, WebdxFeatureAPI
-from internals.webdx_feature_models import WebdxFeatures
+import flask
+
+import testing_config
+from api.webdx_feature_api import WebdxFeatureAPI, WebFeatureIDsAPI
 from internals.metrics_models import WebDXFeatureObserver
+from internals.webdx_feature_models import WebdxFeatures
 
 test_app = flask.Flask(__name__)
 
 
 class WebFeatureIDsAPITest(testing_config.CustomTestCase):
+    def setUp(self):
+        self.handler = WebFeatureIDsAPI()
+        self.request_path = '/api/v0/web_feature_ids'
 
-  def setUp(self):
-    self.handler = WebFeatureIDsAPI()
-    self.request_path = '/api/v0/web_feature_ids'
+    @mock.patch(
+        'internals.webdx_feature_models.WebdxFeatures.get_webdx_feature_id_list'
+    )
+    def test_do_get__success(self, mock_call):
+        """If we previously got some feature IDs, return them sorted."""
+        mock_call.return_value = WebdxFeatures(
+            feature_ids=['code', 'article', 'details', 'blockquote']
+        )
 
-  @mock.patch('internals.webdx_feature_models.WebdxFeatures.get_webdx_feature_id_list')
-  def test_do_get__success(self, mock_call):
-    """If we previously got some feature IDs, return them sorted."""
-    mock_call.return_value = WebdxFeatures(
-        feature_ids=['code', 'article', 'details', 'blockquote'])
+        with test_app.test_request_context(self.request_path):
+            actual = self.handler.do_get()
 
-    with test_app.test_request_context(self.request_path):
-      actual = self.handler.do_get()
+        self.assertEqual(actual, ['article', 'blockquote', 'code', 'details'])
 
-    self.assertEqual(actual, ['article', 'blockquote', 'code', 'details'])
+    @mock.patch(
+        'internals.webdx_feature_models.WebdxFeatures.get_webdx_feature_id_list'
+    )
+    def test_do_get__no_known_ids(self, mock_call):
+        """If the cron never ran, we return an empty list."""
+        mock_call.return_value = None
 
-  @mock.patch('internals.webdx_feature_models.WebdxFeatures.get_webdx_feature_id_list')
-  def test_do_get__no_known_ids(self, mock_call):
-    """If the cron never ran, we return an empty list."""
-    mock_call.return_value = None
+        with test_app.test_request_context(self.request_path):
+            actual = self.handler.do_get()
 
-    with test_app.test_request_context(self.request_path):
-      actual = self.handler.do_get()
-
-    self.assertEqual(actual, [])
-
+        self.assertEqual(actual, [])
 
 
 class WebdxFeatureAPITest(testing_config.CustomTestCase):
+    def setUp(self):
+        logging.disable(logging.CRITICAL)
+        self.webdx_observer = WebDXFeatureObserver(
+            bucket_id=3, property_name='css'
+        )
+        self.webdx_observer.put()
 
-  def setUp(self):
-    logging.disable(logging.CRITICAL)
-    self.webdx_observer = WebDXFeatureObserver(bucket_id=3, property_name='css')
-    self.webdx_observer.put()
+        self.handler = WebdxFeatureAPI()
+        self.request_path = '/api/v0/webdxfeatures'
 
-    self.handler = WebdxFeatureAPI()
-    self.request_path = '/api/v0/webdxfeatures'
+    def tearDown(self):
+        logging.disable(logging.NOTSET)
 
-  def tearDown(self):
-    logging.disable(logging.NOTSET)
+    def test_do_get__success(self):
+        testing_config.sign_out()
 
-  def test_do_get__success(self):
-    testing_config.sign_out()
+        with test_app.test_request_context(self.request_path):
+            actual = self.handler.do_get()
 
-    with test_app.test_request_context(self.request_path):
-      actual = self.handler.do_get()
+        expected = OrderedDict(
+            [
+                ('Missing feature', ['Missing feature', 'Missing feature']),
+                ('TBD', ['TBD', 'TBD']),
+                ('css', ['css', '3']),
+            ]
+        )
+        self.assertEqual(actual, expected)
 
-    expected = OrderedDict(
-      [
-        ('Missing feature', ['Missing feature', 'Missing feature']),
-        ('TBD', ['TBD', 'TBD']),
-        ('css', ['css', '3']),
-      ]
-    )
-    self.assertEqual(actual, expected)
+    def test_do_get__empty_data(self):
+        testing_config.sign_out()
+        self.webdx_observer.key.delete()
 
-  def test_do_get__empty_data(self):
-    testing_config.sign_out()
-    self.webdx_observer.key.delete()
+        with test_app.test_request_context(self.request_path):
+            actual = self.handler.do_get()
 
-    with test_app.test_request_context(self.request_path):
-      actual = self.handler.do_get()
-
-    self.assertEqual(actual, {})
+        self.assertEqual(actual, {})

@@ -3,19 +3,22 @@ import os
 
 ROOT_DIR = os.path.abspath(os.path.dirname(__file__))
 
+
 def get_flask_template_path() -> str:
-  """Returns a path to the templates.
-  """
-  return os.path.join(ROOT_DIR, 'templates')
+    """Returns a path to the templates."""  # noqa: D200
+    return os.path.join(ROOT_DIR, 'templates')
+
 
 # By default, send all email to an archive for debugging.
 # For the live cr-status server, this setting is None.
-SEND_ALL_EMAIL_TO: str|None = (
-    'cr-status-staging-emails+%(user)s+%(domain)s@google.com')
+SEND_ALL_EMAIL_TO: str | None = (
+    'cr-status-staging-emails+%(user)s+%(domain)s@google.com'
+)
 # Any emails with Cc addresses will instead be sent this group
 # for non-prod environments.
-CC_ALL_EMAIL_TO: str|None = (
-    'cr-status-staging-cc-emails+%(user)s+%(domain)s@google.com')
+CC_ALL_EMAIL_TO: str | None = (
+    'cr-status-staging-cc-emails+%(user)s+%(domain)s@google.com'
+)
 
 BOUNCE_ESCALATION_ADDR = 'cr-status-bounces@google.com'
 
@@ -45,28 +48,29 @@ PROD = False
 STAGING = False
 DEBUG = True
 SEND_EMAIL = False  # Just log email
-DEV_MODE = (os.environ['SERVER_SOFTWARE'].startswith('Development') or
-            os.environ.get('GAE_ENV', '').startswith('localdev'))
+DEV_MODE = os.environ['SERVER_SOFTWARE'].startswith(
+    'Development'
+) or os.environ.get('GAE_ENV', '').startswith('localdev')
 UNIT_TEST_MODE = os.environ['SERVER_SOFTWARE'].startswith('test')
 PLAYWRIGHT_MODE = os.environ.get('PLAYWRIGHT_MODE') == 'true'
 
 if not UNIT_TEST_MODE:
-  # Py3 defaults to level WARN.
-  logging.basicConfig(level=logging.INFO)
+    # Py3 defaults to level WARN.
+    logging.basicConfig(level=logging.INFO)
 
 
-#setting GOOGLE_CLOUD_PROJECT manually in dev mode
+# setting GOOGLE_CLOUD_PROJECT manually in dev mode
 if DEV_MODE or UNIT_TEST_MODE:
-  APP_ID = os.environ.get('GOOGLE_CLOUD_PROJECT', 'dev')
+    APP_ID = os.environ.get('GOOGLE_CLOUD_PROJECT', 'dev')
 else:
-  APP_ID = os.environ['GOOGLE_CLOUD_PROJECT']
+    APP_ID = os.environ['GOOGLE_CLOUD_PROJECT']
 
 SITE_URL = 'https://%s.appspot.com/' % APP_ID
 CLOUD_TASKS_REGION = 'us-central1'
 
 GOOGLE_SIGN_IN_CLIENT_ID = (
-    '914217904764-enfcea61q4hqe7ak8kkuteglrbhk8el1.'
-    'apps.googleusercontent.com')
+    '914217904764-enfcea61q4hqe7ak8kkuteglrbhk8el1.apps.googleusercontent.com'
+)
 
 # This is where the an anon user is redirected if they try to access a
 # page that requires being signed in.
@@ -91,10 +95,10 @@ OT_URL = 'https://origintrials-staging.corp.google.com/origintrials/'
 OT_API_URL = 'https://staging-chromeorigintrials-pa.sandbox.googleapis.com'
 
 # Values are set later when request is needed.
-OT_API_KEY: str|None = None
-GITHUB_TOKEN: str|None = None
-GEMINI_API_KEY: str|None = None
-OT_DATA_ACCESS_ADMIN_GROUP_NAME: str|None = None
+OT_API_KEY: str | None = None
+GITHUB_TOKEN: str | None = None
+GEMINI_API_KEY: str | None = None
+OT_DATA_ACCESS_ADMIN_GROUP_NAME: str | None = None
 
 # Dummy data for local OT support emails.
 DEV_MODE_OT_SUPPORT_EMAILS = 'user1@gmail.com,user2@gmail.com'
@@ -106,46 +110,47 @@ API_WEBSTATUS_DEV_URL = 'https://api.webstatus.dev'
 FILES_BUCKET = 'cr-status-staging'
 
 if UNIT_TEST_MODE:
-  APP_TITLE = 'Local testing'
-  SITE_URL = 'http://127.0.0.1:7777/'
-  API_WEBSTATUS_DEV_URL = 'https://api.server.test'
+    APP_TITLE = 'Local testing'
+    SITE_URL = 'http://127.0.0.1:7777/'
+    API_WEBSTATUS_DEV_URL = 'https://api.server.test'
 elif DEV_MODE:
-  PROD = False
-  APP_TITLE = 'Chrome Status Dev'
-  SITE_URL = 'http://127.0.0.1:7777/'
+    PROD = False
+    APP_TITLE = 'Chrome Status Dev'
+    SITE_URL = 'http://127.0.0.1:7777/'
 elif APP_ID == 'cr-status':
-  PROD = True
-  DEBUG = False
-  APP_TITLE = 'Chrome Platform Status'
-  SEND_EMAIL = True
-  SEND_ALL_EMAIL_TO = None  # Deliver it to the intended users
-  CC_ALL_EMAIL_TO = None
-  SITE_URL = 'https://chromestatus.com/'
-  OT_URL = 'https://developer.chrome.com/origintrials/'
-  OT_API_URL = 'https://chromeorigintrials-pa.googleapis.com'
-  GOOGLE_SIGN_IN_CLIENT_ID = (
-      '999517574127-7ueh2a17bv1ave9thlgtap19pt5qjp4g.'
-      'apps.googleusercontent.com')
-  INBOUND_EMAIL_ADDR = 'chromestatus@cr-status.appspotmail.com'
-  REVIEW_COMMENT_MAILING_LIST = 'blink-dev@chromium.org'
-  BACKUP_BUCKET = 'cr-status-backups'
-  FILES_BUCKET = 'cr-status'
+    PROD = True
+    DEBUG = False
+    APP_TITLE = 'Chrome Platform Status'
+    SEND_EMAIL = True
+    SEND_ALL_EMAIL_TO = None  # Deliver it to the intended users
+    CC_ALL_EMAIL_TO = None
+    SITE_URL = 'https://chromestatus.com/'
+    OT_URL = 'https://developer.chrome.com/origintrials/'
+    OT_API_URL = 'https://chromeorigintrials-pa.googleapis.com'
+    GOOGLE_SIGN_IN_CLIENT_ID = (
+        '999517574127-7ueh2a17bv1ave9thlgtap19pt5qjp4g.'
+        'apps.googleusercontent.com'
+    )
+    INBOUND_EMAIL_ADDR = 'chromestatus@cr-status.appspotmail.com'
+    REVIEW_COMMENT_MAILING_LIST = 'blink-dev@chromium.org'
+    BACKUP_BUCKET = 'cr-status-backups'
+    FILES_BUCKET = 'cr-status'
 elif APP_ID == 'cr-status-staging':
-  STAGING = True
-  SEND_EMAIL = True
-  APP_TITLE = 'Chrome Platform Status Staging'
-  BACKUP_BUCKET = 'cr-staging-backups'
+    STAGING = True
+    SEND_EMAIL = True
+    APP_TITLE = 'Chrome Platform Status Staging'
+    BACKUP_BUCKET = 'cr-staging-backups'
 else:
-  logging.error('Unexpected app ID %r, please configure settings.py.', APP_ID)
+    logging.error('Unexpected app ID %r, please configure settings.py.', APP_ID)
 
 RSS_FEED_LIMIT = 15
 
-DEFAULT_CACHE_TIME = 3600 # seconds
+DEFAULT_CACHE_TIME = 3600  # seconds
 
 USE_I18N = False
 
 TEMPLATE_DEBUG = DEBUG
 if DEBUG:
-  TEMPLATE_CACHE_TIME = 0
+    TEMPLATE_CACHE_TIME = 0
 else:
-  TEMPLATE_CACHE_TIME = 600 # seconds
+    TEMPLATE_CACHE_TIME = 600  # seconds

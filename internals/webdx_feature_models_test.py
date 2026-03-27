@@ -13,36 +13,35 @@
 # limitations under the License.
 
 import testing_config
-
 from internals.webdx_feature_models import WebdxFeatures
 
 
 class WebdxFeaturesTest(testing_config.CustomTestCase):
-  def setUp(self):
-    self.webdx = WebdxFeatures(feature_ids=['abc'])
-    self.webdx.put()
+    def setUp(self):
+        self.webdx = WebdxFeatures(feature_ids=['abc'])
+        self.webdx.put()
 
-  def test_get_webdx_feature_id_list(self):
-    result = WebdxFeatures.get_webdx_feature_id_list()
+    def test_get_webdx_feature_id_list(self):
+        result = WebdxFeatures.get_webdx_feature_id_list()
 
-    self.assertIsNotNone(result)
-    self.assertEqual(len(result.feature_ids), 1)
-    self.assertEqual(result.feature_ids[0], 'abc')
+        self.assertIsNotNone(result)
+        self.assertEqual(len(result.feature_ids), 1)
+        self.assertEqual(result.feature_ids[0], 'abc')
 
-  def test_store_webdx_feature_id_list__success(self):
-    WebdxFeatures.store_webdx_feature_id_list(['foo'])
+    def test_store_webdx_feature_id_list__success(self):
+        WebdxFeatures.store_webdx_feature_id_list(['foo'])
 
-    result = WebdxFeatures.query().fetch()
-    self.assertIsNotNone(result)
-    self.assertEqual(len(result), 1)
-    self.assertEqual(result[0].feature_ids[0], 'foo')
+        result = WebdxFeatures.query().fetch()
+        self.assertIsNotNone(result)
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0].feature_ids[0], 'foo')
 
-  def test_store_webdx_feature_id_list__success_from_empty(self):
-    self.webdx.key.delete()
+    def test_store_webdx_feature_id_list__success_from_empty(self):
+        self.webdx.key.delete()
 
-    WebdxFeatures.store_webdx_feature_id_list(['foo'])
+        WebdxFeatures.store_webdx_feature_id_list(['foo'])
 
-    result = WebdxFeatures.query().fetch()
-    self.assertIsNotNone(result)
-    self.assertEqual(len(result), 1)
-    self.assertEqual(result[0].feature_ids[0], 'foo')
+        result = WebdxFeatures.query().fetch()
+        self.assertIsNotNone(result)
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0].feature_ids[0], 'foo')

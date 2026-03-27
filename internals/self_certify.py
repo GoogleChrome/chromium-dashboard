@@ -15,77 +15,85 @@
 from chromestatus_openapi.models import SurveyAnswers as OASurveyAnswers
 
 from internals.core_enums import (
-    GATE_PRIVACY_ORIGIN_TRIAL, GATE_PRIVACY_SHIP,
-    GATE_TESTING_PLAN, GATE_TESTING_SHIP)
+    GATE_PRIVACY_ORIGIN_TRIAL,
+    GATE_PRIVACY_SHIP,
+    GATE_TESTING_PLAN,
+    GATE_TESTING_SHIP,
+)
 from internals.review_models import Gate, SurveyAnswers
 
-
 CERTIFIABLE_GATE_TYPES = [
-    GATE_PRIVACY_ORIGIN_TRIAL, GATE_PRIVACY_SHIP,
-    GATE_TESTING_PLAN, GATE_TESTING_SHIP]
+    GATE_PRIVACY_ORIGIN_TRIAL,
+    GATE_PRIVACY_SHIP,
+    GATE_TESTING_PLAN,
+    GATE_TESTING_SHIP,
+]
 
 
 def update_survey_answers(gate: Gate, new_answers: OASurveyAnswers):
-  """Modify the given SurveyAnswers with user-requested changes."""
-  if gate.survey_answers is None:
-    gate.survey_answers = SurveyAnswers()
-  answers = gate.survey_answers
+    """Modify the given SurveyAnswers with user-requested changes."""
+    if gate.survey_answers is None:
+        gate.survey_answers = SurveyAnswers()
+    answers = gate.survey_answers
 
-  if new_answers.is_language_polyfill is not None:
-    answers.is_language_polyfill = new_answers.is_language_polyfill
-  if new_answers.is_api_polyfill is not None:
-    answers.is_api_polyfill = new_answers.is_api_polyfill
-  if new_answers.is_same_origin_css is not None:
-    answers.is_same_origin_css = new_answers.is_same_origin_css
+    if new_answers.is_language_polyfill is not None:
+        answers.is_language_polyfill = new_answers.is_language_polyfill
+    if new_answers.is_api_polyfill is not None:
+        answers.is_api_polyfill = new_answers.is_api_polyfill
+    if new_answers.is_same_origin_css is not None:
+        answers.is_same_origin_css = new_answers.is_same_origin_css
 
-  if new_answers.covers_existence is not None:
-    answers.covers_existence = new_answers.covers_existence
-  if new_answers.covers_common_cases is not None:
-    answers.covers_common_cases = new_answers.covers_common_cases
-  if new_answers.covers_errors is not None:
-    answers.covers_errors = new_answers.covers_errors
-  if new_answers.covers_invalidation is not None:
-    answers.covers_invalidation = new_answers.covers_invalidation
-  if new_answers.covers_integration is not None:
-    answers.covers_integration = new_answers.covers_integration
+    if new_answers.covers_existence is not None:
+        answers.covers_existence = new_answers.covers_existence
+    if new_answers.covers_common_cases is not None:
+        answers.covers_common_cases = new_answers.covers_common_cases
+    if new_answers.covers_errors is not None:
+        answers.covers_errors = new_answers.covers_errors
+    if new_answers.covers_invalidation is not None:
+        answers.covers_invalidation = new_answers.covers_invalidation
+    if new_answers.covers_integration is not None:
+        answers.covers_integration = new_answers.covers_integration
 
-  if new_answers.launch_or_contact is not None:
-    answers.launch_or_contact = new_answers.launch_or_contact
-  if new_answers.explanation is not None:
-    answers.explanation = new_answers.explanation
+    if new_answers.launch_or_contact is not None:
+        answers.launch_or_contact = new_answers.launch_or_contact
+    if new_answers.explanation is not None:
+        answers.explanation = new_answers.explanation
 
 
 def is_privacy_eligible(answers: SurveyAnswers) -> bool:
-  """Return True if the answers allow self-certify for the Privacy gate."""
-  return answers.explanation and (
-      answers.is_language_polyfill or
-      answers.is_api_polyfill or
-      answers.is_same_origin_css)
+    """Return True if the answers allow self-certify for the Privacy gate."""
+    return answers.explanation and (
+        answers.is_language_polyfill
+        or answers.is_api_polyfill
+        or answers.is_same_origin_css
+    )
+
 
 def is_testing_eligible(answers: SurveyAnswers) -> bool:
-  """Return True if the answers allow self-certify for the Testing gate."""
-  return (
-      answers.covers_existence and
-      answers.covers_common_cases and
-      answers.covers_errors and
-      answers.covers_invalidation and
-      answers.covers_integration)
+    """Return True if the answers allow self-certify for the Testing gate."""
+    return (
+        answers.covers_existence
+        and answers.covers_common_cases
+        and answers.covers_errors
+        and answers.covers_invalidation
+        and answers.covers_integration
+    )
 
 
 def is_eligible(gate: Gate) -> bool:
-  """Return True if the feature owner can self-certify the gate now."""
-  answers = gate.survey_answers
-  if answers is None:
+    """Return True if the feature owner can self-certify the gate now."""
+    answers = gate.survey_answers
+    if answers is None:
+        return False
+
+    if gate.gate_type in [GATE_PRIVACY_ORIGIN_TRIAL, GATE_PRIVACY_SHIP]:
+        return is_privacy_eligible(answers)
+    if gate.gate_type in [GATE_TESTING_PLAN, GATE_TESTING_SHIP]:
+        return is_testing_eligible(answers)
+
     return False
-
-  if gate.gate_type in [GATE_PRIVACY_ORIGIN_TRIAL, GATE_PRIVACY_SHIP]:
-    return is_privacy_eligible(answers)
-  if gate.gate_type in [GATE_TESTING_PLAN, GATE_TESTING_SHIP]:
-    return is_testing_eligible(answers)
-
-  return False
 
 
 def is_possible(gate: Gate) -> bool:
-  """Return True if the feature owner can ever self-certify this gate."""
-  return gate.gate_type in CERTIFIABLE_GATE_TYPES
+    """Return True if the feature owner can ever self-certify this gate."""
+    return gate.gate_type in CERTIFIABLE_GATE_TYPES
