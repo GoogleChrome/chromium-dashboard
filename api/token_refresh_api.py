@@ -14,6 +14,8 @@
 # limitations under the License.
 
 
+"""API endpoint for refreshing user session tokens to prevent expiration."""
+
 from chromestatus_openapi.models import TokenRefreshResponse
 
 from framework import basehandlers, users, xsrf

@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""API endpoints for identifying and retrieving information about stale features."""
+
 from datetime import datetime
 from typing import TypedDict
 

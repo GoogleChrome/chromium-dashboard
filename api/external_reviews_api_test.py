@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for the external_reviews_api module, verifying external review status and link parsing."""
+
 import testing_config  # isort: split
 
 import json

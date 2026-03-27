@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for the converters module, verifying correct transformation of data models to dictionaries."""
+
 from datetime import datetime
 from unittest import mock
 

@@ -14,6 +14,8 @@
 
 # Import needed to reference a class within its own class method.
 # https://stackoverflow.com/a/33533514
+"""NDB models for feature review gates, votes, activities, and API owners."""
+
 from __future__ import annotations
 
 import collections

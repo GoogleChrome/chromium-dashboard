@@ -14,6 +14,8 @@
 
 # Import needed to reference a class within its own class method.
 # https://stackoverflow.com/a/33533514
+"""Defines NDB models for user preferences and application state."""
+
 from __future__ import annotations
 
 import logging

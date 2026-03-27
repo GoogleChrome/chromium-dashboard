@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for the shipping_features_api module, verifying milestone matching and feature aggregation."""
+
 from unittest import mock
 
 import flask

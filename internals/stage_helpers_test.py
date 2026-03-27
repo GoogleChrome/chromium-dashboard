@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for the FeatureEntry stage helper functions."""
+
 import testing_config  # Must be imported before the module under test.
 from internals import core_enums, stage_helpers
 from internals.core_models import FeatureEntry, MilestoneSet, Stage

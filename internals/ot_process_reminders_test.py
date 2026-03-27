@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for the ot_process_reminders module, verifying the formatting and logic of origin trial reminder emails."""
+
 import logging
 from unittest import mock
 

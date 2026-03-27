@@ -13,6 +13,12 @@
 # limitations under the License.
 
 
+"""System-wide enumerations and constant mappings.
+
+Defines the core enumerations used across the application, including
+feature categories, platforms, standardization statuses, and gate types.
+"""
+
 import collections
 import re
 from enum import Enum

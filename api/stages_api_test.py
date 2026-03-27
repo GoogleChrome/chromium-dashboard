@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for the stages_api module, verifying the management and permissions of feature stages."""
+
 from datetime import datetime
 from unittest import mock
 

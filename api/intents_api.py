@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""API handlers for generating Intent to Ship/Prototype/Experiment email drafts."""
+
 from typing import TypedDict
 
 from chromestatus_openapi.models import (

@@ -13,6 +13,8 @@
 # limitations under the License.
 
 
+"""Tests for the logout_api module, verifying session clearing during logout."""
+
 import flask
 import werkzeug.exceptions  # Flask HTTP stuff.
 from flask import session

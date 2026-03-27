@@ -13,6 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Redis-based caching wrapper.
+
+Provides a simplified interface for storing and retrieving values in Redis,
+with fallback support for a fake Redis implementation during testing.
+"""
+
 import os
 import pickle
 from typing import Optional

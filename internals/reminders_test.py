@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for the reminders module, verifying reminder email generation and filtering logic."""
+
 from datetime import datetime
 from unittest import mock
 

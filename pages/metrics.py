@@ -13,6 +13,8 @@
 # limitations under the License.
 
 
+"""Provides handlers for metrics data, such as Omaha release data."""
+
 from framework import basehandlers
 from internals import fetchchannels
 

@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Cron handler to identify and remove user accounts that have been inactive for an extended period."""
+
 import logging
 from datetime import datetime, timedelta
 

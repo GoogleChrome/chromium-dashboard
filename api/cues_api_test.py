@@ -13,6 +13,8 @@
 # limitations under the License.
 
 
+"""Tests for the cues_api module, verifying user cue dismissal operations."""
+
 import flask
 import werkzeug.exceptions  # Flask HTTP stuff.
 

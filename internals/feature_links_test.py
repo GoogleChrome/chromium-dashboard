@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for the feature_links module, verifying link extraction, updating, and indexing logic."""
+
 from unittest import mock
 
 import flask

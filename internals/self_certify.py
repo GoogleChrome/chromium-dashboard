@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Provides logic for checking if a feature owner can self-certify a review gate."""
+
 from chromestatus_openapi.models import SurveyAnswers as OASurveyAnswers
 
 from internals.core_enums import (

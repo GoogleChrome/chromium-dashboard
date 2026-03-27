@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for the blink_components_api module, verifying Blink component retrieval."""
+
 import flask
 
 import testing_config  # Must be imported before the module under test.

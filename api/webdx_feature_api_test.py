@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for the webdx_feature_api module, verifying the retrieval and formatting of WebDX feature lists."""
+
 import logging
 from collections import OrderedDict
 from unittest import mock

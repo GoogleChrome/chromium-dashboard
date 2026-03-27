@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Handles the creation of new features via the guide form (deprecated)."""
+
 from datetime import datetime
 
 from google.cloud import ndb

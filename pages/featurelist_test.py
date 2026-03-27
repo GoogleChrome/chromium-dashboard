@@ -11,6 +11,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for the features list JSON feed handler."""
+
 from typing import Optional
 
 import flask

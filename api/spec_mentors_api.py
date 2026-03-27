@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""API endpoints for retrieving spec mentors and their associated mentored features."""
+
 from datetime import datetime
 
 from chromestatus_openapi.models.feature_link import FeatureLink

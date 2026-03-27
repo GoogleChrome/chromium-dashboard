@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""API endpoints for managing user stars on features to subscribe to notifications."""
+
 from chromestatus_openapi.models import GetStarsResponse, SuccessMessage
 
 from framework import basehandlers

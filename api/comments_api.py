@@ -14,6 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""API handlers for fetching, creating, and modifying review comments and activities."""
+
 from typing import Any
 
 from chromestatus_openapi.models import (

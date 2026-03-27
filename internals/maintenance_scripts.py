@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Cron handlers for background maintenance tasks like updating gate statuses and backfilling entities."""
+
 import collections
 import csv
 import logging

@@ -12,6 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Unit tests for the secrets module.
+
+Tests the generation of random keys, retrieval of cached secrets,
+and interactions with Google Cloud Secret Manager.
+"""
+
 import logging
 from unittest import mock
 

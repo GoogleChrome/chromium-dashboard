@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""API handlers for retrieving the lists of owners and subscribers across all Blink components."""
+
 from chromestatus_openapi.models import (
     ComponentsUser,
     ComponentsUsersResponse,

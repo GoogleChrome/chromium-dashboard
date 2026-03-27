@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Provides the admin page handler for viewing and managing users."""
+
 __author__ = 'ericbidelman@chromium.org (Eric Bidelman)'
 
 

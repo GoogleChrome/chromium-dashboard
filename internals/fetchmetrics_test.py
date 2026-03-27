@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for the fetchmetrics module, verifying the retrieval and parsing of UMA metrics."""
+
 import base64
 import datetime
 import json

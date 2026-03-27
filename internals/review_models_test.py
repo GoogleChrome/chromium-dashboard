@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for the review_models module, verifying activity retrieval and owners file freshness logic."""
+
 import datetime
 
 import testing_config  # Must be imported before the module under test.

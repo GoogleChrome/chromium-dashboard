@@ -12,6 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Helper functions for interacting with Gemini AI models.
+
+Provides utilities to fetch and parse external content (like GitHub PRs,
+blobs, and web specs) and to synthesize data for Gemini prompts.
+"""
+
 import asyncio
 import logging
 import re

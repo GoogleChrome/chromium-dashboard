@@ -14,6 +14,12 @@
 # limitations under the License.
 
 
+"""Cross-Site Request Forgery (XSRF) protection.
+
+Provides functions to generate and validate time-limited, user-specific
+XSRF tokens to secure form submissions and API requests.
+"""
+
 import base64
 import functools
 import hashlib

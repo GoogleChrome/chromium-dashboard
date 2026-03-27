@@ -12,6 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Client for interacting with the Google Chrome Origin Trials API.
+
+Provides functions to fetch lists of origin trials, extend existing trials,
+and create new origin trial configurations based on Chromium milestones.
+"""
+
 import logging
 from dataclasses import asdict
 from datetime import datetime, timezone

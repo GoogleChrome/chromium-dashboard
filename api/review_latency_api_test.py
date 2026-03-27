@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for the review_latency_api module, verifying the calculation and sorting of review latencies."""
+
 import testing_config  # isort: split
 
 from datetime import datetime
