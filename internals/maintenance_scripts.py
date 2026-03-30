@@ -1542,6 +1542,7 @@ class ResetStaleShippingMilestones(FlaskHandler):
             for s in stages:
                 # Create an activity that shows all the shipping milestones have been set to null.
                 activity = Activity(
+                    log_type=Activity.MILESTONE_RESET,
                     feature_id=f.key.integer_id(),
                     amendments=[],
                     content='Shipping/Rollout milestones were unset due to failure to verify accuracy.',
@@ -1603,6 +1604,7 @@ class DeleteWPTCoverageReport(FlaskHandler):
             # because the `ai_test_eval_report` field is not indexed.
             if feature.ai_test_eval_report:
                 activity = Activity(
+                    log_type=Activity.SYSTEM_CHANGE,
                     feature_id=feature.key.integer_id(),
                     content=(
                         f'WPT coverage report was deleted due to {self.RETENTION_DAYS}-day '

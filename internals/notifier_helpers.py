@@ -92,7 +92,10 @@ def notify_subscribers_and_save_amendments(
         user = users.get_current_user()
         email = user.email() if user else None
         activity = Activity(
-            feature_id=fe.key.integer_id(), author=email, content=''
+            log_type=Activity.USER_CHANGE,
+            feature_id=fe.key.integer_id(),
+            author=email,
+            content='',
         )
         activity.amendments = amendments
         activity.put()
@@ -124,6 +127,7 @@ def notify_approvers_of_reviews(
     )
     gate_id = gate.key.integer_id()
     activity = Activity(
+        log_type=Activity.USER_CHANGE,
         feature_id=fe.key.integer_id(),
         gate_id=gate_id,
         author=email,
@@ -167,6 +171,7 @@ def notify_subscribers_of_vote_changes(
     )
     gate_id = gate.key.integer_id()
     activity = Activity(
+        log_type=Activity.USER_CHANGE,
         feature_id=fe.key.integer_id(),
         gate_id=gate_id,
         author=email,
@@ -226,6 +231,7 @@ def notify_assignees(
     )
     gate_id = gate.key.integer_id()
     activity = Activity(
+        log_type=Activity.USER_CHANGE,
         feature_id=fe.key.integer_id(),
         gate_id=gate_id,
         author=triggering_user_email,
