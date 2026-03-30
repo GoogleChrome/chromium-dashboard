@@ -12,7 +12,7 @@ insert_final_newline = true
 ; Python
 [*.py]
 indent_style = space
-indent_size = 2
+indent_size = 4
 
 ; YAML
 [*.{yaml,yml}]
