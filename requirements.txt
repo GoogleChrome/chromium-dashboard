@@ -14,7 +14,7 @@ trafilatura==2.0.0
 # See https://github.com/GoogleCloudPlatform/cloud-debug-python/issues/33
 
 google-cloud-tasks==2.21.0
-google-cloud-ndb==2.4.0
+google-cloud-ndb==2.4.1
 google-cloud-logging==3.14.0
 google-cloud-secret-manager==2.26.0
 google-cloud-storage==3.10.1
