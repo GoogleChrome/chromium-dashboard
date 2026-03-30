@@ -20,7 +20,7 @@ from typing import TYPE_CHECKING
 import settings
 from api import converters
 from framework import cloud_tasks_helpers, users
-from internals import approval_defs, core_enums, core_models
+from internals import approval_defs, core_enums
 from internals.core_models import Stage
 from internals.data_types import CHANGED_FIELDS_LIST_TYPE
 from internals.review_models import Activity, Amendment, Gate, Vote
@@ -153,16 +153,10 @@ def notify_subscribers_of_vote_changes(
     fe: 'FeatureEntry', gate: Gate, email: str, new_state: int, old_state: int
 ) -> None:
     """Notify subscribers of a vote change and save amendments."""
-    stage = core_models.Stage.get_by_id(gate.stage_id)
-    stage_enum = core_enums.INTENT_STAGES_BY_STAGE_TYPE.get(
-        stage.stage_type, core_enums.INTENT_NONE
-    )
-    stage_name = core_enums.INTENT_STAGES[stage_enum]
     state_name = Vote.VOTE_VALUES[new_state]
     old_state_name = Vote.VOTE_VALUES.get(old_state, str(old_state))
 
     appr_def = approval_defs.APPROVAL_FIELDS_BY_ID[gate.gate_type]
-    gate_name = appr_def.name
 
     amendment = Amendment(
         field_name='review_status',

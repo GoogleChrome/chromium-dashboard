@@ -175,7 +175,6 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
             feature.first_enterprise_notification_milestone = int(
                 feature_changes['first_enterprise_notification_milestone']
             )
-            has_updated = True
         elif needs_default_first_notification_milestone(
             new_fields=feature_changes
         ):

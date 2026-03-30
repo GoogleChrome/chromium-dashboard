@@ -546,9 +546,6 @@ def feature_entry_to_json_verbose(
                 },
             },
         },
-        'enterprise_feature_categories': fe.enterprise_feature_categories or [],  # noqa: F601
-        'enterprise_product_category': fe.enterprise_product_category
-        or ENTERPRISE_PRODUCT_CATEGORY_CHROME_BROWSER_UPDATE,  # noqa: E501, F405, F601
         'standards': {
             'spec': fe.spec_link,
             'maturity': {
