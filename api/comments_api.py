@@ -115,6 +115,7 @@ class CommentsAPI(basehandlers.APIHandler):
                 self.abort(403, msg='User is not allowed to comment')
 
             comment_activity = Activity(
+                log_type=Activity.USER_COMMENT,
                 feature_id=feature_id,
                 gate_id=gate_id,
                 author=user.email(),
