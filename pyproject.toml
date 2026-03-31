@@ -10,7 +10,6 @@ docstring-code-format = true
 [tool.ruff.lint]
 select = ["E", "F", "I", "D"]
 ignore = [
-    "D100",
     "D102", # undocumented-public-method: The codebase lacks hundreds of method docstrings.
     "D103", # undocumented-public-function: The codebase lacks hundreds of function docstrings.
     "D104", # undocumented-public-package: The codebase lacks hundreds of package docstrings.
