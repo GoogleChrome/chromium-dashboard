@@ -25,6 +25,7 @@ from main import Route
 
 class MockHandler(basehandlers.BaseHandler):
     def __init__(self):
+        """Initialize the mock handler."""
         self.called_with = None
         self.common_data = {}
 

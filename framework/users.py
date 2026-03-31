@@ -118,12 +118,15 @@ class User(object):
         return self.__federated_provider
 
     def __unicode__(self):
+        """Return a string representation of the user."""
         return six_subset.text_type(self.nickname())  # noqa: F821
 
     def __str__(self):
+        """Return a string representation of the user."""
         return str(self.nickname())
 
     def __repr__(self):
+        """Return a string representation of the user object."""
         values = []
         if self.__email:
             values.append("email='%s'" % self.__email)
@@ -134,12 +137,14 @@ class User(object):
         return 'users.User(%s)' % ','.join(values)
 
     def __hash__(self):
+        """Return a hash for the user."""
         if self.__federated_identity:
             return hash((self.__federated_identity, self.__auth_domain))
         else:
             return hash((self.__email, self.__auth_domain))
 
     def __eq__(self, other):
+        """Check if this user is equal to another."""
         if not isinstance(other, User):
             return NotImplemented
         if self.__federated_identity:
@@ -154,6 +159,7 @@ class User(object):
             )
 
     def __lt__(self, other):
+        """Check if this user is less than another."""
         if not isinstance(other, User):
             return NotImplemented
         if self.__federated_identity:

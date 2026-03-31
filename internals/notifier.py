@@ -258,8 +258,8 @@ def make_feature_changes_email(
     if changes is None:
         changes = []
     watchers: list[FeatureOwner] = FeatureOwner.query(
-        FeatureOwner.watching_all_features == True
-    ).fetch(None)  # noqa: E712
+        FeatureOwner.watching_all_features == True  # noqa: E712
+    ).fetch(None)
     watcher_emails: list[str] = [watcher.email for watcher in watchers]
 
     if is_update:
