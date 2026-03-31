@@ -217,12 +217,19 @@ def get_chromium_milestone_info(milestone: int) -> dict:
 def get_current_milestone_info(anchor_channel: str):
     """Return a dict of info about the next milestone reaching anchor_channel."""
     try:
-        resp = requests.get(
-            f'{CHROME_RELEASE_SCHEDULE_URL}?mstone={anchor_channel}'
-        )  # noqa: E501
+        url = f'{CHROME_RELEASE_SCHEDULE_URL}?mstone={anchor_channel}'
+        logging.info('fetching ' + url)
+        resp = requests.get(url)
+        logging.info(
+            'resp.text is:\n%s',
+            resp.text[: settings.MAX_LOG_LINE],
+        )
     except requests.RequestException as e:
         raise e
     mstone_info = json.loads(resp.text)
+    logging.info(
+        'mstone_info is:\n%s', mstone_info
+    )
     return mstone_info['mstones'][0]
 
 
