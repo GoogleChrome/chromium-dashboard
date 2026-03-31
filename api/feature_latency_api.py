@@ -11,9 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""API handlers for calculating and retrieving feature shipping.
-
-Latency metrics.
+"""API handlers for calculating and retrieving feature shipping latency
+metrics.
 """
 
 import logging
@@ -59,10 +58,8 @@ class FeatureLatencyAPI(basehandlers.APIHandler):
 
     @permissions.require_create_feature
     def do_get(self, **kwargs):
-        """Calculate feature latency for features in a date range.
-
-        Returns:
-          A list of FeatureLatency objects for each matching feature.
+        """Calculate feature latency for features in a date range returns:
+        A list of FeatureLatency objects for each matching feature.
         """
         start_date, end_date = self.get_date_range(self.request.args)
         logging.info('range %r %r', start_date, end_date)
@@ -106,9 +103,8 @@ class FeatureLatencyAPI(basehandlers.APIHandler):
     def get_shipped_milestones(
         self, features: list[FeatureEntry]
     ) -> dict[int, int]:
-        """Get all the ship Stages for those features to find shipping.
-
-        Milestones.
+        """Get all the ship Stages for those features to find shipping
+        milestones.
         """
         feature_ids = {fe.key.integer_id() for fe in features}
         logging.info('feature_ids %r', feature_ids)

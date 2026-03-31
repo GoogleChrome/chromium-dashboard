@@ -11,10 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Helper functions for interacting with Gemini AI models.
-
-Provides utilities to fetch and parse external content (like GitHub PRs, blobs,
-and web specs) and to synthesize data for Gemini prompts.
+"""Helper functions for interacting with Gemini AI models provides utilities to
+fetch and parse external content (like GitHub PRs, blobs, and web specs) and
+to synthesize data for Gemini prompts.
 """
 
 import asyncio
@@ -52,9 +51,8 @@ def _create_feature_definition(feature: FeatureEntry) -> str:
 
 
 def _fetch_explainer_content(url: str) -> str:
-    """Fetches explainer content with specialized handling for technical data.
-
-    Prioritizes raw formats for GitHub to preserve code blocks.
+    """Fetches explainer content with specialized handling for technical data
+    prioritizes raw formats for GitHub to preserve code blocks.
     """  # noqa: D205
     parsed = urlparse(url)
 
@@ -236,16 +234,12 @@ def _generate_unified_prompt_text(
 
 
 def unified_prompt_analysis(prompt_text: str) -> str:
-    """Evaluates WPT coverage using a single, unified prompt.
-
-    This method is used when the number of test files and the total token count
-    are small enough to fit within the context window of a single prompt.
-
-    Args:
-      prompt_text: The complete text of the unified prompt to be sent to Gemini.
-
-    Returns:
-      A string containing the generated coverage report.
+    """Evaluates WPT coverage using a single, unified prompt this method is
+    used when the number of test files and the total token count     are
+    small enough to fit within the context window of a single prompt.
+    Args:       prompt_text: The complete text of the unified prompt to be
+    sent to Gemini.      Returns:       A string containing the generated
+    coverage report.
     """
     gemini_client = GeminiClient()
     gap_analysis_response = gemini_client.get_response(
@@ -259,25 +253,18 @@ async def prompt_analysis(  # noqa: D417
     wpt_contents: utils.WPTContents,
     include_explainer: bool = False,
 ) -> str:
-    """Evaluates WPT coverage using a multi-stage prompt flow.
-
-    This method is used when the number of test files is too large for a single
-    prompt. It breaks the analysis into three distinct stages:
-    1. Spec Synthesis: Summarizes the spec into a concise reference.
-    2. Test Analysis: Analyzes test files in packed batches to maximize context
-       usage.
-    3. Gap Analysis: Compares the spec synthesis with the aggregated test
-       summaries to identify gaps.
-
-    Args:
-      feature: The feature entry containing metadata and the spec URL.
-      wpt_contents: The contents of the test files and dependencies.
-
-    Returns:
-      A string containing the generated coverage report.
-
-    Raises:
-      PipelineError: If any critical stage of the prompt pipeline fails.
+    """Evaluates WPT coverage using a multi-stage prompt flow this method is
+    used when the number of test files is too large for a single     prompt.
+    It breaks the analysis into three distinct stages:     1. Spec
+    Synthesis: Summarizes the spec into a concise reference.     2. Test
+    Analysis: Analyzes test files in packed batches to maximize context
+    usage.     3. Gap Analysis: Compares the spec synthesis with the
+    aggregated test        summaries to identify gaps.      Args:
+    feature: The feature entry containing metadata and the spec URL.
+    wpt_contents: The contents of the test files and dependencies.
+    Returns:       A string containing the generated coverage report.
+    Raises:       PipelineError: If any critical stage of the prompt
+    pipeline fails.
     """
     gemini_client = GeminiClient()
     prompts = []
@@ -454,16 +441,11 @@ async def run_wpt_test_eval_pipeline(  # noqa: D417
     feature: FeatureEntry,
     include_explainer: bool = False,
 ) -> core_enums.AITestEvaluationStatus:
-    """Execute the AI pipeline for WPT coverage analysis.
-
-    The final report is saved to `feature.ai_test_eval_report`.
-
-    Args:
-      feature: The FeatureEntry model containing spec links and WPT descriptions
-        needed for the analysis.
-
-    Returns:
-      AITestEvaluationStatus indicating success or failure.
+    """Execute the AI pipeline for WPT coverage analysis the final report is
+    saved to `feature.ai_test_eval_report`.      Args:       feature: The
+    FeatureEntry model containing spec links and WPT descriptions
+    needed for the analysis.      Returns:       AITestEvaluationStatus
+    indicating success or failure.
     """
     try:
         if not feature.spec_link:

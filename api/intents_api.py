@@ -11,9 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""API handlers for generating Intent to.
-
-Ship/Prototype/Experiment email drafts.
+"""API handlers for generating Intent to ship/Prototype/Experiment email
+drafts.
 """
 
 from typing import TypedDict
@@ -49,9 +48,8 @@ SUBJECT_PREFIXES = {
 
 
 def compute_subject_prefix(feature_type: int, intent_type: IntentDraftType):
-    """Compute the subject line prefix for an intent email based on.
-
-    The feature and intent type.
+    """Compute the subject line prefix for an intent email based on the feature
+    and intent type.
     """
     # Deprecation-specific intent names.
     if feature_type == FEATURE_TYPE_DEPRECATION_ID:

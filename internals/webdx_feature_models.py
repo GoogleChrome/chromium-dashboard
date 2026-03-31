@@ -32,9 +32,8 @@ class WebdxFeatures(ndb.Model):
 
     @classmethod
     def store_webdx_feature_id_list(cls, new_list: list[str]):
-        """Stores a new list of Webdx feature IDs.
-
-        This updates or creates the list as needed.
+        """Stores a new list of Webdx feature IDs this updates or creates the
+        list as needed.
         """
         webdx_features = WebdxFeatures.get_webdx_feature_id_list()
         if not webdx_features:

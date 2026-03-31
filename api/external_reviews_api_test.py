@@ -11,9 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Tests for the external_reviews_api module.
-
-Verifying external review status and link parsing.
+"""Tests for the external_reviews_api module verifying external review status
+and link parsing.
 """
 
 import testing_config  # isort: split
@@ -230,11 +229,10 @@ class ExternalReviewsAPITest(testing_config.CustomTestCase):
         )
 
     def test_milestones_summarize(self):
-        """We take the earliest start milestone and the latest end milestone.
-
-        This isn't quite right for sorting urgency, since a later start
-        milestone for some platforms probably indicates that the feature will
-        ship later, but it makes more sense in the UI.
+        """We take the earliest start milestone and the latest end milestone
+        this isn't quite right for sorting urgency, since a later start
+        milestone for some platforms probably indicates that the feature
+        will         ship later, but it makes more sense in the UI.
         """
         tag = 'https://github.com/w3ctag/design-reviews/issues/1'
         webkit = 'https://github.com/WebKit/standards-positions/issues/3'
@@ -287,9 +285,8 @@ class ExternalReviewsAPITest(testing_config.CustomTestCase):
             self.assertEqual(0, len(result['reviews']))
 
     def test_omit_review_links_to_non_review_repo(self):
-        """Links that aren't to the reviewer's positions repository.
-
-        Shouldn't be returned.
+        """Links that aren't to the reviewer's positions repository shouldn't
+        be returned.
         """
         webkit = 'https://github.com/WebKit/standards-positions/issues/3'
         fe = make_feature('Feature one', STAGE_BLINK_PROTOTYPE, webkit=webkit)
@@ -361,10 +358,9 @@ class ExternalReviewsAPITest(testing_config.CustomTestCase):
         active_stage_type: int,
         milestones: MilestoneSet | None = None,
     ) -> FeatureEntry:
-        """Uses the same path as the web UI to create a feature.
-
-        This is slower than directly .put()ing FeatureEntries, but ensures at
-        least 1 test makes no assumptions about what the UI actually does.
+        """Uses the same path as the web UI to create a feature this is slower
+        than directly .put()ing FeatureEntries, but ensures at         least
+        1 test makes no assumptions about what the UI actually does.
         """
         name = fe['name']
         patch_update: dict[str, object] = dict(fe)
@@ -436,13 +432,13 @@ class ExternalReviewsAPITest(testing_config.CustomTestCase):
         self, mockParse: mock.MagicMock
     ):
         """This one test goes through the same path as the UI to create
-        features, to catch if other tests have made incorrect assumptions about
-        how that flow works. This is slower, so it shouldn't be used to test
-        every part of the feature.
-
-        This test also checks that a JSON file used by the Playwright tests is
+        features, to catch if other tests have made incorrect assumptions
+        about         how that flow works. This is slower, so it shouldn't
+        be used to test         every part of the feature this test also
+        checks that a JSON file used by the Playwright tests is
         actually the output format for this API, which allows a test on the
-        Playwright side to also check its assumptions about the output format.
+        Playwright side to also check its assumptions about the output
+        format.
         """  # noqa: D205
         # Create a feature using the admin user.
         app_admin = AppUser(email='admin@example.com')

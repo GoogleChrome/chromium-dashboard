@@ -11,9 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""API endpoints for interacting.
-
-With and managing origin trials and their extensions.
+"""API endpoints for interacting with and managing origin trials and their
+extensions.
 """
 
 import concurrent.futures
@@ -139,10 +138,8 @@ def find_use_counter_value(
 
 class OriginTrialsAPI(basehandlers.EntitiesAPIHandler):
     def do_get(self, **kwargs):
-        """Get a list of all origin trials.
-
-        Returns:
-          A list of data on all public origin trials.
+        """Get a list of all origin trials returns:           A list of data on
+        all public origin trials.
         """
         try:
             trials_list = origin_trials_client.get_trials_list()
@@ -373,9 +370,7 @@ class OriginTrialsAPI(basehandlers.EntitiesAPIHandler):
     def _validate_extension_args(
         self, feature_id: int, ot_stage: Stage, extension_stage: Stage
     ) -> None:
-        """Abort if any arguments used for origin trial extension are.
-
-        Invalid.
+        """Abort if any arguments used for origin trial extension are invalid.
         """
         # The stage should belong to the feature.
         if feature_id != extension_stage.feature_id:

@@ -21,14 +21,13 @@ from framework import basehandlers, users, xsrf
 
 class TokenRefreshAPI(basehandlers.APIHandler):
     """We allow a user to request a new XSRF token so that users may have
-    editing sessions much longer than the token expiration time.
-
-    An attacker cannot use this feature to obtain an XSRF token because   (1) we
+    editing sessions much longer than the token expiration time an attacker
+    cannot use this feature to obtain an XSRF token because   (1) we
     check that the incoming request has a token that is valid       for the
-    current user, even if it may be expired,   (2) CORS prevents the response
-    from being accessed,   (2) this handler has no side-effects, so an attacker
-    who makes these       requests without being able to read the response
-    achieves nothing.
+    current user, even if it may be expired,   (2) CORS prevents the
+    response     from being accessed,   (2) this handler has no side-
+    effects, so an attacker     who makes these       requests without being
+    able to read the response     achieves nothing.
     """  # noqa: D205
 
     def validate_token(self, token, email):
@@ -40,9 +39,8 @@ class TokenRefreshAPI(basehandlers.APIHandler):
 
     # Note: we use only POST instead of GET to avoid attacks that use GETs.
     def do_post(self, **kwargs):
-        """Refresh the session and return a new XSRF token for the.
-
-        Current user.
+        """Refresh the session and return a new XSRF token for the current
+        user.
         """
         user = self.get_current_user()
         users.refresh_user_session()

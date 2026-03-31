@@ -238,10 +238,8 @@ class AssociateOTs(FlaskHandler):
         trial_field_name: str,
     ) -> bool:
         """Set the OT stage value to the value from the OT console if it is
-        unset.
-
-        Returns:
-          boolean value of whether or not the value was changed on the stage.
+        unset returns:           boolean value of whether or not the value
+        was changed on the stage.
         """
         if (
             not getattr(trial_stage, stage_field_name)
@@ -259,10 +257,8 @@ class AssociateOTs(FlaskHandler):
         trial_field_name: str,
     ) -> bool:
         """Set an OT milestone value to the value from the OT console if it is
-        unset.
-
-        Returns:
-          boolean value of whether or not the value was changed on the stage.
+        unset returns:           boolean value of whether or not the value
+        was changed on the stage.
         """
         if trial_stage.milestones is None:
             trial_stage.milestones = MilestoneSet()

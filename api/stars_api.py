@@ -12,9 +12,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""API endpoints for managing user stars on features to.
-
-Subscribe to notifications.
+"""API endpoints for managing user stars on features to subscribe to
+notifications.
 """
 
 from chromestatus_openapi.models import GetStarsResponse, SuccessMessage
@@ -24,11 +23,9 @@ from internals import notifier
 
 
 class StarsAPI(basehandlers.APIHandler):
-    """Users can star a feature by clicking a star icon.
-
-    The client-side has logic to toggle the star icon.  When a user has starred
-    a feature, they will be sent notification emails about changes to that
-    feature.
+    """Users can star a feature by clicking a star icon the client-side has
+    logic to toggle the star icon.  When a user has starred     a feature,
+    they will be sent notification emails about changes to that     feature.
     """  # noqa: D205
 
     def do_get(self, **kwargs):

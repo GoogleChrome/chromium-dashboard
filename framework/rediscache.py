@@ -12,10 +12,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Redis-based caching wrapper.
-
-Provides a simplified interface for storing and retrieving values in Redis, with
-fallback support for a fake Redis implementation during testing.
+"""Redis-based caching wrapper provides a simplified interface for storing and
+retrieving values in Redis, with fallback support for a fake Redis
+implementation during testing.
 """
 
 import os
@@ -73,9 +72,7 @@ def set(key, value, time=86400):
 
 
 def get(key):
-    """Redis GET gets the value of key.
-
-    Return None if ``key`` does not
+    """Redis GET gets the value of key return None if ``key`` does not
     exist; return an error if the value returned is not a str/binary.
     """  # noqa: D205
     if redis_client is None:

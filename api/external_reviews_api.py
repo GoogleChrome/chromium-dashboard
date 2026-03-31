@@ -11,9 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""API handlers for retrieving the status of external feature reviews (e.g..
-
-TAG, Gecko, WebKit).
+"""API handlers for retrieving the status of external feature reviews (e.g.
+tAG, Gecko, WebKit).
 """
 
 import math
@@ -179,10 +178,8 @@ class ExternalReviewsAPI(basehandlers.APIHandler):
     """Implements the OpenAPI /external_reviews path."""
 
     def do_get(self, **kwargs):
-        """Get a list of features.
-
-        With outstanding external reviews from a particular review body.  #
-        noqa: D200
+        """Get a list of features with outstanding external reviews from a
+        particular review body.  #         noqa: D200.
         """
         review_group: str | None = kwargs.get('review_group', None)
         if review_group not in ['tag', 'gecko', 'webkit']:

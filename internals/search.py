@@ -85,9 +85,8 @@ def process_pending_approval_me_query() -> list[int] | Future:
 
 
 def process_pending_review_me_query() -> list[int] | Future:
-    """Return a list of features needing review by current user (excludes.
-
-    NEEDS_WORK).
+    """Return a list of features needing review by current user (excludes
+    nEEDS_WORK).
     """
     user = users.get_current_user()
     if not user:
@@ -365,11 +364,10 @@ def _resolve_promise_to_id_list(
 def _sort_by_total_order(
     result_id_list: list[int], total_order_ids: list[int]
 ) -> list[int]:
-    """Sort the result_ids according to their position in the total order.
-
-    If some result ID is not present in the total order, use the feature ID
-    value itself as the sorting value, which will effectively put those features
-    at the end of the list in order of creation.
+    """Sort the result_ids according to their position in the total order if
+    some result ID is not present in the total order, use the feature ID
+    value itself as the sorting value, which will effectively put those
+    features     at the end of the list in order of creation.
     """
     total_order_dict = {}
     # For each feature entry ID in the total-order list, record the index of
@@ -594,10 +592,7 @@ def process_query(
 
 
 def create_future_operations_from_queries(terms, context: QueryContext):
-    """Create parallel queries for each term.
-
-    Each yields a future operation
-    """  # noqa: D415
+    """Create parallel queries for each term each yields a future operation."""  # noqa: D415
     feature_id_future_ops = []
     for logical_op, field_name, op_str, vals_str, textterm in terms:
         is_negation = logical_op.strip() == '-'

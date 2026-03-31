@@ -12,10 +12,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Management of application secrets and API credentials.
-
-Handles the creation and retrieval of internal secrets (like XSRF and session
-keys) and external API credentials (like GitHub tokens) from the Datastore.
+"""Management of application secrets and API credentials handles the creation
+and retrieval of internal secrets (like XSRF and session keys) and external
+API credentials (like GitHub tokens) from the Datastore.
 """
 
 import logging

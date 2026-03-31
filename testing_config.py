@@ -61,9 +61,8 @@ cloud_tasks_helpers._client = FakeCloudTasksClient()
 
 
 class Blank(object):
-    """Simple class that assigns all named args to attributes.
-
-    Tip: supply a lambda to define a method.
+    """Simple class that assigns all named args to attributes tip: supply a
+    lambda to define a method.
     """  # noqa: D205
 
     def __init__(self, **kwargs):
@@ -112,13 +111,11 @@ class CustomTestCase(unittest.TestCase):
 
 class Testdata(object):
     def __init__(self, test_file_path: str):
-        """Helper class to load testdata
-        Common pattern to place the testdata in the following format:
-
-        Given a test file, atest_test.py, and it is located at
-        /some/module/atest_test.py.
-
-        The testdata should be located at /some/module/testdata/atest_test/
+        """Helper class to load testdata         Common pattern to place the
+        testdata in the following format:          Given a test file,
+        atest_test.py, and it is located at
+        /some/module/atest_test.py the testdata should be located at
+        /some/module/testdata/atest_test/.
         """  # noqa: D205, D415
         self.testdata = {}
         test_file_name = Path(test_file_path).stem

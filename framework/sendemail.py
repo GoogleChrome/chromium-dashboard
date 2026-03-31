@@ -12,10 +12,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Email formatting and sending utilities.
-
-Handles the formatting, routing, and sending of outbound emails, including
-special handling for staging environments and Cloud Tasks integration.
+"""Email formatting and sending utilities handles the formatting, routing, and
+sending of outbound emails, including special handling for staging
+environments and Cloud Tasks integration.
 """
 
 import logging
@@ -207,11 +206,11 @@ def get_incoming_message():
 
 
 def handle_incoming_mail(addr=None):
-    """Handle an incoming email by making a task to examine it.
-
-    This code checks some basic properties of the incoming message to make sure
-    that it is worth examining.  Then it puts all the relevent fields into a
-    dict and makes a new Cloud Task which is futher processed in python 3 code.
+    """Handle an incoming email by making a task to examine it this code checks
+    some basic properties of the incoming message to make sure     that it
+    is worth examining.  Then it puts all the relevent fields into a
+    dict and makes a new Cloud Task which is futher processed in python 3
+    code.
     """
     logging.info('Request Headers: %r', flask.request.headers)
 

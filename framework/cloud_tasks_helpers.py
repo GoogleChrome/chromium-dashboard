@@ -15,9 +15,8 @@
 
 # This code is based on a file from Monorail:
 # https://chromium.googlesource.com/infra/infra/+/master/appengine/monorail/framework/cloud_tasks_helpers.py
-"""Helper functions for enqueueing tasks to Google Cloud Tasks.
-
-Provides functions to create and enqueue background tasks, with local stubbing
+"""Helper functions for enqueueing tasks to Google Cloud Tasks provides
+functions to create and enqueue background tasks, with local stubbing
 support for development and testing environments.
 """
 
@@ -99,16 +98,12 @@ def _make_task(handler_path, task_params):
 
 
 def enqueue_task(handler_path, task_params, queue='default', **kwargs):
-    """Enqueue a JSON task item for Google Cloud Tasks.
-
-    Args:
-      handler_path: Rooted path of the task handler.
-      task_params: Task parameters dict.
-      queue: A string indicating name of the queue to add task to.
-      kwargs: Additional arguments to pass to cloud task client's create_task
-
-    Returns:
-      Successfully created Task object.
+    """Enqueue a JSON task item for Google Cloud Tasks args:
+    handler_path: Rooted path of the task handler.       task_params: Task
+    parameters dict.       queue: A string indicating name of the queue to
+    add task to.       kwargs: Additional arguments to pass to cloud task
+    client's create_task      Returns:       Successfully created Task
+    object.
     """
     task = _make_task(handler_path, task_params)
     client = _get_client()

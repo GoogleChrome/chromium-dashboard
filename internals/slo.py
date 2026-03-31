@@ -73,10 +73,7 @@ def remaining_days(requested_on: datetime.datetime, slo_limit: int) -> int:
 
 
 def record_vote(gate: Gate, votes: list[Vote], old_gate_state: int) -> bool:
-    """Record a Gate SLO response time if needed.
-
-    Return True if changed.
-    """
+    """Record a Gate SLO response time if needed return True if changed."""
     if not votes:
         return False
     latest_vote = sorted(votes, key=lambda v: v.set_on)[-1]
@@ -149,10 +146,7 @@ def record_vote(gate: Gate, votes: list[Vote], old_gate_state: int) -> bool:
 def record_comment(
     feature: FeatureEntry, gate: Gate, user: User, approvers: list[str]
 ) -> bool:
-    """Record Gate SLO response time if needed.
-
-    Return True if changed.
-    """
+    """Record Gate SLO response time if needed return True if changed."""
     if gate.requested_on is None:
         return False  # Review has not been requested yet.
     elif gate.responded_on is not None:

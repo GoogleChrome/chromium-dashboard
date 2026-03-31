@@ -11,12 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Pytest configuration file.
-
-This file sets up isolated test environments when running tests in parallel
-using pytest-xdist. For every parallel worker thread that pytest spawns, this
-script starts a dedicated, in-memory Google Cloud Datastore emulator. This
-prevents race conditions and data corruption between parallel tests.
+"""Pytest configuration file this file sets up isolated test environments when
+running tests in parallel using pytest-xdist. For every parallel worker
+thread that pytest spawns, this script starts a dedicated, in-memory Google
+Cloud Datastore emulator. This prevents race conditions and data corruption
+between parallel tests.
 """
 
 import os
@@ -29,16 +28,12 @@ import requests
 
 def pytest_configure(config):
     """Pytest hook that runs exactly once per worker process before any tests.
-
-    start.
-
-    If tests are being run in parallel (via pytest-xdist), this function will:
-    1. Identify which worker process this is (e.g., gw0, gw1).
-    2. Assign a unique port for its Datastore emulator.
-    3. Override the environment variables so Google Cloud SDK uses this local
-       port.
-    4. Boot up the gcloud datastore emulator as a background process.
-    5. Block until the emulator is fully responsive.
+    start if tests are being run in parallel (via pytest-xdist), this
+    function will:     1. Identify which worker process this is (e.g., gw0,
+    gw1).     2. Assign a unique port for its Datastore emulator.     3.
+    Override the environment variables so Google Cloud SDK uses this local
+    port.     4. Boot up the gcloud datastore emulator as a background
+    process.     5. Block until the emulator is fully responsive.
     """
     # PYTEST_XDIST_WORKER is set by the pytest-xdist plugin (e.g., "gw0", "gw1")
     worker_id = os.environ.get('PYTEST_XDIST_WORKER')
@@ -93,11 +88,9 @@ def pytest_configure(config):
 
 def pytest_unconfigure(config):
     """Pytest hook that runs exactly once per worker process after all tests.
-
-    finish.
-
-    This ensures that the Java Datastore emulator processes are safely
-    terminated and don't remain running as orphaned background processes.
+    finish this ensures that the Java Datastore emulator processes are
+    safely     terminated and don't remain running as orphaned background
+    processes.
     """
     proc = getattr(config, 'worker_emulator_proc', None)
     if proc:
@@ -108,12 +101,9 @@ def pytest_unconfigure(config):
 @pytest.fixture(autouse=True)
 def reset_datastore_emulator():
     """A pytest fixture that automatically runs BEFORE every single test.
-
-    function.
-
-    This guarantees strict test isolation by wiping the Datastore emulator clean
-    before a test executes. It prevents residual data from previous tests from
-    causing false positives or failures.
+    function this guarantees strict test isolation by wiping the Datastore
+    emulator clean     before a test executes. It prevents residual data
+    from previous tests from     causing false positives or failures.
     """
     worker_id = os.environ.get('PYTEST_XDIST_WORKER')
 

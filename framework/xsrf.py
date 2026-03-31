@@ -12,10 +12,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Cross-Site Request Forgery (XSRF) protection.
-
-Provides functions to generate and validate time-limited, user-specific XSRF
-tokens to secure form submissions and API requests.
+"""Cross-Site Request Forgery (XSRF) protection provides functions to generate
+and validate time-limited, user-specific XSRF tokens to secure form
+submissions and API requests.
 """
 
 import base64
@@ -57,21 +56,14 @@ TOKEN_TIME_CACHE_MAX_SIZE = 1000
 
 
 def generate_token(user_email, token_time=None):
-    """Return a security token specifically for the given user.
-
-    Args:
-      user_email: email addr of the user viewing an HTML form.  This can
-          be None for anon vistors.
-      token_time: Time at which the token is generated in seconds since the
-          epoch.
-
-    Returns:
-      A url-safe security token.  The token is a string with the digest
-      the email and time, followed by plain-text copy of the time that is
-      used in validation.
-
-    Raises:
-      ValueError: if the XSRF secret was not configured.
+    """Return a security token specifically for the given user args:
+    user_email: email addr of the user viewing an HTML form.  This can
+    be None for anon vistors.       token_time: Time at which the token is
+    generated in seconds since the           epoch.      Returns:       A
+    url-safe security token.  The token is a string with the digest
+    the email and time, followed by plain-text copy of the time that is
+    used in validation.      Raises:       ValueError: if the XSRF secret
+    was not configured.
     """
     token_time = token_time or int(time.time())
     token_time = str(token_time).encode()
@@ -90,10 +82,7 @@ def generate_token(user_email, token_time=None):
 
 @functools.lru_cache(maxsize=TOKEN_TIME_CACHE_MAX_SIZE)
 def _validate_and_get_token_time(token, user_email):
-    """If token content is valid, return token_time.
-
-    Otherwise, raise.
-    """
+    """If token content is valid, return token_time otherwise, raise."""
     if not token:
         raise TokenIncorrect('missing token')
     try:
@@ -121,15 +110,10 @@ def _validate_and_get_token_time(token, user_email):
 
 
 def validate_token(token, user_email, timeout=TOKEN_TIMEOUT_SEC):
-    """Return True if the given token is valid for the given scope.
-
-    Args:
-      token: String token that was presented by the user.
-      user_email: user email addr.
-      timeout: int max token age in seconds.
-
-    Raises:
-      TokenIncorrect: if the token is missing or invalid.
+    """Return True if the given token is valid for the given scope args:
+    token: String token that was presented by the user.       user_email:
+    user email addr.       timeout: int max token age in seconds.
+    Raises:       TokenIncorrect: if the token is missing or invalid.
     """
     token_time = _validate_and_get_token_time(token, user_email)
     now = int(time.time())

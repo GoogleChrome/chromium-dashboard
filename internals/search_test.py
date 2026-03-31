@@ -544,9 +544,7 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
 
     def test_sort_by_total_order__multiple_items(self):
         """If the sort order is done via join, the total_order could have
-        multiple copies of the same feature IDs.
-
-        We use the earliest.
+        multiple copies of the same feature IDs we use the earliest.
         """  # noqa: D205
         feature_ids = [10, 1, 9, 4]
         total_order_ids = [

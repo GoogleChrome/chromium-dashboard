@@ -11,10 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Handling of file attachments and thumbnails.
-
-Provides functions and datastore models to store, validate, resize, and retrieve
-file attachments (like screenshots) associated with features.
+"""Handling of file attachments and thumbnails provides functions and datastore
+models to store, validate, resize, and retrieve file attachments (like
+screenshots) associated with features.
 """
 
 import io
@@ -68,10 +67,7 @@ SUPPORTED_MIME_TYPES = RESIZABLE_MIME_TYPES + ['text/plain']
 def store_attachment(
     feature_id: int, content: bytes, mime_type: str
 ) -> Attachment:
-    """Store some data for an attachment.
-
-    Return its URI.
-    """
+    """Store some data for an attachment return its URI."""
     check_attachment_size(content)
     check_attachment_type(mime_type)
     logging.info('Storing attachment with %r bytes', len(content))

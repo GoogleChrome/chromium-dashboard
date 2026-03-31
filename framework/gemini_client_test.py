@@ -11,10 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Unit tests for the gemini_client module.
-
-Tests the initialization, token counting, and API interaction of the
-GeminiClient, including error handling and retries.
+"""Unit tests for the gemini_client module tests the initialization, token
+counting, and API interaction of the GeminiClient, including error handling
+and retries.
 """
 
 import asyncio

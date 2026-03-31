@@ -11,9 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Tests for the ot_process_reminders module.
-
-Verifies the formatting and logic of origin trial reminder emails.
+"""Tests for the ot_process_reminders module verifies the formatting and logic
+of origin trial reminder emails.
 """
 
 import logging

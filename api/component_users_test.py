@@ -12,9 +12,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Tests for the component_users module.
-
-Verifying component owner and subscriber modifications.
+"""Tests for the component_users module verifying component owner and
+subscriber modifications.
 """
 
 import datetime

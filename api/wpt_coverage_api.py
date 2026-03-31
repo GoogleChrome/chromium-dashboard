@@ -11,9 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""API endpoints for triggering and managing AI-generated WPT.
-
-Coverage analysis reports.
+"""API endpoints for triggering and managing AI-generated WPT coverage analysis
+reports.
 """
 
 from datetime import datetime, timedelta
@@ -35,9 +34,7 @@ class WPTCoverageAPI(basehandlers.EntitiesAPIHandler):
     """Accepts requests related to WPT AI coverage analyses."""
 
     def do_post(self, **kwargs):
-        """Enqueue a Cloud Task for generating a WPT coverage analysis.
-
-        Report.
+        """Enqueue a Cloud Task for generating a WPT coverage analysis report.
         """
         feature_id = kwargs.get('feature_id')
         feature = self.get_validated_entity(feature_id, FeatureEntry)

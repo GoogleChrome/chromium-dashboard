@@ -12,9 +12,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Functions for converting between internal datastore models.
-
-And external API dictionary representations.
+"""Functions for converting between internal datastore models and external API
+dictionary representations.
 """
 
 import datetime

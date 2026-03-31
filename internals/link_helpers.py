@@ -12,9 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Helper functions and classes for validating, parsing, and classifying.
-
-URLs.
+"""Helper functions and classes for validating, parsing, and classifying uRLs.
 """
 
 import base64
@@ -156,9 +154,7 @@ class Link:
 
     @classmethod
     def get_type(cls, link: str) -> str | None:
-        """Return Link_Type if the given link is valid.
-
-        Otherwise, return None.
+        """Return Link_Type if the given link is valid otherwise, return None.
         """
         for link_type, regex in LINK_TYPES_REGEX.items():
             if regex.match(link):
@@ -360,12 +356,11 @@ class Link:
 
     def _validate_url(self) -> bool:
         """The `_validate_url` method is used to validate the URL associated
-        with the Link object.
-
-        It sends a GET request to the URL and checks the response status code.
-        If the status code is not 200 (OK), it sets the `is_error` flag to
-        True and stores the HTTP error code. This method is used to
-        determine if the URL is accessible and valid.
+        with the Link object it sends a GET request to the URL and checks
+        the response status code.         If the status code is not 200
+        (OK), it sets the `is_error` flag to         True and stores the
+        HTTP error code. This method is used to         determine if the URL
+        is accessible and valid.
         """  # noqa: D205
         res = requests.get(self.url, allow_redirects=True, timeout=TIMEOUT)
         if res.status_code != 200:

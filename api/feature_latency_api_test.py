@@ -11,9 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Tests for the feature_latency_api module.
-
-Verifying shipping latency calculations.
+"""Tests for the feature_latency_api module verifying shipping latency
+calculations.
 """
 
 import testing_config  # isort: split

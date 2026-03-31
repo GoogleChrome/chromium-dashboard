@@ -12,11 +12,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""General utility functions and helpers.
-
-Provides common utilities for URL formatting, string normalization, retry logic,
-text extraction, and interactions with external services like GitHub and the
-Chromium release schedule.
+"""General utility functions and helpers provides common utilities for URL
+formatting, string normalization, retry logic, text extraction, and
+interactions with external services like GitHub and the Chromium release
+schedule.
 """
 
 import asyncio
@@ -102,15 +101,11 @@ def format_feature_url(feature_id):
 
 
 def retry(tries, delay=1, backoff=2):
-    """A retry decorator with exponential backoff.
-
-    Functions are retried when Exceptions occur.
-
-    Args:
-      tries: int Number of times to retry, set to 0 to disable retry.
-      delay: float Initial sleep time in seconds.
-      backoff: float Must be greater than 1, further failures would sleep
-                delay*=backoff seconds.
+    """A retry decorator with exponential backoff functions are retried when
+    Exceptions occur.      Args:       tries: int Number of times to retry,
+    set to 0 to disable retry.       delay: float Initial sleep time in
+    seconds.       backoff: float Must be greater than 1, further failures
+    would sleep                 delay*=backoff seconds.
     """
     if backoff <= 1:
         raise ValueError('backoff must be greater than 1')
@@ -182,14 +177,11 @@ _UTC = _UTCTimeZone()
 
 
 def get_banner_time(timestamp):
-    """Converts a timestamp into data so it can appear in the banner.
-
-    Args:
-      timestamp: timestamp expressed in the following format:
-            [year,month,day,hour,minute,second]
-            e.g. [2009,3,20,21,45,50] represents March 20 2009 9:45:50 PM
-    Returns:
-      EZT-ready data used to display the time inside the banner message.
+    """Converts a timestamp into data so it can appear in the banner args:
+    timestamp: timestamp expressed in the following format:
+    [year,month,day,hour,minute,second]             e.g.
+    [2009,3,20,21,45,50] represents March 20 2009 9:45:50 PM     Returns:
+    EZT-ready data used to display the time inside the banner message.
     """
     if timestamp is None:
         return None
@@ -254,13 +246,8 @@ def get_chromium_file(url: str) -> str:
 
 def extract_wpt_fyi_results_urls(text: str) -> list[str]:
     """Finds all 'wpt.fyi/results' URLs within a given string and returns them
-    without any query parameters.
-
-    Args:
-        text: The input string to search for URLs.
-
-    Returns:
-        A list of matching URL strings.
+    without any query parameters args:         text: The input string to
+    search for URLs.      Returns:         A list of matching URL strings.
     """  # noqa: D205
     pattern = r'(https?://wpt\.fyi/results[^\s?]+)'
     urls = re.findall(pattern, text)
@@ -284,17 +271,12 @@ def _get_github_headers(token: str | None = None) -> dict[str, str]:
 
 def reformat_wpt_fyi_url(url: str) -> str:
     """Normalizes a WPT URL by converting multi-global test variants back to
-    their source ".any.js" file.
-
-    If the URL does not contain ".any.", it is returned unchanged.
-
-    See documentation: https://web-platform-tests.org/writing-tests/testharness.html#tests-for-other-or-multiple-globals-any-js
-
-    Args:
-      url: The full wpt.fyi URL (e.g., '.../test.any.worker.html').
-
-    Returns:
-      The URL normalized to the source file (e.g., '.../test.any.js').
+    their source ".any.js" file if the URL does not contain ".any.", it is
+    returned unchanged.      See documentation: https://web-platform-
+    tests.org/writing-tests/testharness.html#tests-for-other-or-multiple-
+    globals-any-js      Args:       url: The full wpt.fyi URL (e.g.,
+    '.../test.any.worker.html').      Returns:       The URL normalized to
+    the source file (e.g., '.../test.any.js').
     """  # noqa: D205
     substring = '.any.'
     if substring in url:
@@ -306,14 +288,9 @@ def reformat_wpt_fyi_url(url: str) -> str:
 
 
 def _parse_wpt_fyi_url(url: str) -> Path:
-    """Parses a wpt.fyi URL to map it to a GitHub repo path.
-
-    Assumes all wpt.fyi URLs map to:
-    - owner: 'web-platform-tests'
-    - repo: 'wpt'
-    - ref: 'master'
-
-    Expected URL format:
+    """Parses a wpt.fyi URL to map it to a GitHub repo path assumes all wpt.fyi
+    URLs map to:     - owner: 'web-platform-tests'     - repo: 'wpt'     -
+    ref: 'master'      Expected URL format:
     [http|https]://wpt.fyi/results/<path>...
     """
     url = reformat_wpt_fyi_url(url)
@@ -363,9 +340,8 @@ def _fetch_file_content(url: str) -> str | None:
 def _fetch_dir_listing(
     url: str, headers: dict[str, str]
 ) -> list[tuple[Path, str]]:
-    """Fetches a GitHub directory listing and extracts all valid file entries.
-
-    Intended to be run in a thread pool.
+    """Fetches a GitHub directory listing and extracts all valid file entries
+    intended to be run in a thread pool.
     """  # noqa: D205
     try:
         path = _parse_wpt_fyi_url(url)
@@ -398,13 +374,9 @@ async def _fetch_and_pair(fpath: Path, furl: str) -> tuple[Path, str | None]:
 
 
 def extract_dependencies(content: str) -> list[str]:
-    """Scans file content for references to other files.
-
-    Looks for:
-      - <script src="...">
-      - import ... from "..."
-      - export ... from "..."
-      - import "..." (side-effect import)
+    """Scans file content for references to other files looks for:       -
+    <script src="...">       - import ... from "..."       - export ... from
+    "..."       - import "..." (side-effect import).
     """  # noqa: D205, D415
     dependencies = set()
 
@@ -418,13 +390,10 @@ def extract_dependencies(content: str) -> list[str]:
 def resolve_dependency_path(
     current_file_path: Path, dep_ref: str
 ) -> Path | None:
-    """Resolves a dependency reference to a concrete WPT repository path.
-
-    Args:
-        current_file_path: The Path of the file containing the reference (e.g.
-            'fedcm/test.html')
-        dep_ref: The string reference found in the file (e.g.
-            '../support/helper.js')
+    """Resolves a dependency reference to a concrete WPT repository path args:
+    current_file_path: The Path of the file containing the reference (e.g.
+    'fedcm/test.html')         dep_ref: The string reference found in the
+    file (e.g.             '../support/helper.js').
     """
     # Ignore absolute URLs (external dependencies)
     if dep_ref.startswith('http') or dep_ref.startswith('//'):
@@ -448,25 +417,17 @@ async def get_mixed_wpt_contents_async(
     dir_urls: list[str], additional_file_urls: list[str]
 ) -> WPTContents:
     """Orchestrates concurrent fetching of WPT files and recursively fetches.
-
-    their dependencies.
-
-    Args:
-      dir_urls: List of WPT directory URLs to scan.
-      additional_file_urls: list of individual WPT file URLs.
-
-    Returns:
-      A WPTContents object containing:
-      1. test_contents: {filename: content} for files explicitly requested (or
-         in requested dirs).
-      2. dependency_contents: {filename: content} for files found recursively
-         via imports/scripts.
-      3. test_to_dependencies_map: {test_filename: set(dependency_filenames)}
-          mapping each test file to all its recursive dependency files.
-
-    Raises:
-      PipelineError: If the test suite contains over the maximum number of test
-        files to analyze (not including dependency files).
+    their dependencies args:       dir_urls: List of WPT directory URLs to
+    scan.       additional_file_urls: list of individual WPT file URLs.
+    Returns:       A WPTContents object containing:       1. test_contents:
+    {filename: content} for files explicitly requested (or          in
+    requested dirs).       2. dependency_contents: {filename: content} for
+    files found recursively          via imports/scripts.       3.
+    test_to_dependencies_map: {test_filename: set(dependency_filenames)}
+    mapping each test file to all its recursive dependency files.
+    Raises:       PipelineError: If the test suite contains over the maximum
+    number of test         files to analyze (not including dependency
+    files).
     """
     headers = _get_github_headers(settings.GITHUB_TOKEN)
 

@@ -168,9 +168,8 @@ def get_future_results(async_features: Future | None) -> list[FeatureEntry]:
 def _filter_out_wp_features_lacking_enterprise_approval(
     features: list[FeatureEntry],
 ) -> list[FeatureEntry]:
-    """Take out any WP features that did not yet earn enterprise approval.
-
-    But, leave in any deprecation-type features.
+    """Take out any WP features that did not yet earn enterprise approval but,
+    leave in any deprecation-type features.
     """  # noqa: D205
     FEATURE_TYPES_TO_FILTER = [
         FEATURE_TYPE_INCUBATE_ID,  # noqa: F405
@@ -309,11 +308,10 @@ def get_in_milestone(
     milestone: int, show_unlisted: bool = False
 ) -> dict[str, list[dict[str, Any]]]:
     """Return {reason: [feature_dict]} with all the reasons a feature can be
-    part of a milestone.
-
-    Because the cache may rarely have stale data, this should only be used for
-    displaying data read-only, not for populating forms or procesing a POST to
-    edit data.  For editing use case, load the data from NDB directly.
+    part of a milestone because the cache may rarely have stale data, this
+    should only be used for     displaying data read-only, not for
+    populating forms or procesing a POST to     edit data.  For editing use
+    case, load the data from NDB directly.
     """  # noqa: D205
     features_by_type = {}
     cache_key = '%s|%s|%s' % (
@@ -672,11 +670,10 @@ def get_feature_names_by_ids(
 def get_by_ids(
     feature_ids: list[int], update_cache: bool = True
 ) -> list[dict[str, Any]]:
-    """Return a list of JSON dicts for the specified features.
-
-    Because the cache may rarely have stale data, this should only be used for
-    displaying data read-only, not for populating forms or procesing a POST to
-    edit data.  For editing use case, load the data from NDB directly.
+    """Return a list of JSON dicts for the specified features because the cache
+    may rarely have stale data, this should only be used for     displaying
+    data read-only, not for populating forms or procesing a POST to     edit
+    data.  For editing use case, load the data from NDB directly.
     """
     result_dict = {}
 
@@ -762,11 +759,11 @@ def get_features_by_impl_status(
     update_cache: bool = False,
     show_unlisted: bool = False,
 ) -> list[dict]:
-    """Return a list of JSON dicts for features, ordered by chrome_impl_status.
-
-    Because the cache may rarely have stale data, this should only be used for
-    displaying data read-only, not for populating forms or procesing a POST to
-    edit data.  For editing use case, load the data from NDB directly.
+    """Return a list of JSON dicts for features, ordered by chrome_impl_status
+    because the cache may rarely have stale data, this should only be used
+    for     displaying data read-only, not for populating forms or procesing
+    a POST to     edit data.  For editing use case, load the data from NDB
+    directly.
     """
     cache_key = '%s|%s|%s|%s' % (
         FeatureEntry.DEFAULT_CACHE_KEY,
@@ -930,9 +927,8 @@ def get_stale_features() -> list[tuple[FeatureEntry, int, str]]:
 def validate_feature_in_chromium(
     name: str, enabled_features_json: dict, content_features_file: str
 ) -> list[Criteria]:
-    """Verify required info exists in Chromium files.
-
-    Return a list of missing criteria.
+    """Verify required info exists in Chromium files return a list of missing
+    criteria.
     """
     criteria_missing = []
     feature_found = False
@@ -1002,9 +998,8 @@ def validate_shipping_criteria(
     enabled_features_json: dict,
     content_features_file: str,
 ) -> list[Criteria]:
-    """Checks a feature against shipping requirements (Gates, Intents, Finch,.
-
-    Code).
+    """Checks a feature against shipping requirements (Gates, Intents, Finch,
+    code).
     """
     criteria_missing: list[Criteria] = []
 

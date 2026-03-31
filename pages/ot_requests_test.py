@@ -186,9 +186,8 @@ class OriginTrialsRequestsTest(testing_config.CustomTestCase):
     def test_get_template_data__extension_with_bad_ot_stage_id(
         self, mock_logging_warning
     ):
-        """Handles bad ot_stage_id.
-
-        An extension stage with a bad ot_stage_id is skipped and logs a warning.
+        """Handles bad ot_stage_id an extension stage with a bad ot_stage_id is
+        skipped and logs a warning.
         """
         # Set the ot_stage_id to a non-existent ID
         self.extension_stage.ot_stage_id = 99999

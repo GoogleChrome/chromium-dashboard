@@ -12,10 +12,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Definitions and configuration for feature review gates.
-
-Defines the various types of approval gates (e.g., Intent to Ship, Privacy
-Review), their rules, required approvers, and Service Level Objectives (SLOs).
+"""Definitions and configuration for feature review gates defines the various
+types of approval gates (e.g., Intent to Ship, Privacy Review), their rules,
+required approvers, and Service Level Objectives (SLOs).
 """
 
 import base64
@@ -310,9 +309,8 @@ def decode_raw_owner_content(raw_content) -> list[str]:
 
 
 def auto_assign_reviewer(gate):
-    """If a previous review was assigned, use the same reviewer.
-
-    If this gate has a reviewer rotation, use the current on-call user.
+    """If a previous review was assigned, use the same reviewer if this gate
+    has a reviewer rotation, use the current on-call user.
     """  # noqa: D205
     afd = APPROVAL_FIELDS_BY_ID[gate.gate_type]
 
@@ -537,9 +535,7 @@ def _calc_gate_state(votes: list[Vote], rule: str) -> int:
 
 
 def update_gate_approval_state(gate: Gate, votes: list[Vote]) -> bool:
-    """Change the Gate state in RAM based on its votes.
-
-    Return True if changed.
+    """Change the Gate state in RAM based on its votes return True if changed.
     """
     afd = APPROVAL_FIELDS_BY_ID.get(gate.gate_type)
     # Assume any gate of a type that is not currently supported is ONE_LGTM.

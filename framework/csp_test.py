@@ -11,10 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Unit tests for the csp module.
-
-Tests the generation of nonces, construction of CSP directives, and the handling
-of CSP violation reports.
+"""Unit tests for the csp module tests the generation of nonces, construction
+of CSP directives, and the handling of CSP violation reports.
 """
 
 import unittest

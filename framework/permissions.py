@@ -12,10 +12,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Role-based access control and permissions checking.
-
-Provides functions to verify if users have the necessary privileges to view,
-edit, or administer features and other resources.
+"""Role-based access control and permissions checking provides functions to
+verify if users have the necessary privileges to view, edit, or administer
+features and other resources.
 """
 
 from typing import Optional
@@ -62,10 +61,8 @@ def can_view_feature_formatted(user: User, feature: dict) -> bool:
 
 def _can_view_confidential_feature_formatted(user: User, feature: dict):
     """Check if the user is an owner, editor, spec mentor, or creator for this
-    feature or has a google.com or chromium.org account.
-
-    If yes, they feature can be viewed, otherwise they cannot view confidential
-    features.
+    feature or has a google.com or chromium.org account if yes, they feature
+    can be viewed, otherwise they cannot view confidential     features.
     """  # noqa: D205
     if not user:
         return False
@@ -103,10 +100,8 @@ def can_view_feature(user: User, feature: FeatureEntry) -> bool:
 
 def _can_view_confidential_feature(user: User, feature: FeatureEntry):
     """Check if the user is an owner, editor, spec mentor, or creator for this
-    feature or has a google.com or chromium.org account.
-
-    If yes, they feature can be viewed, otherwise they cannot view confidential
-    features.
+    feature or has a google.com or chromium.org account if yes, they feature
+    can be viewed, otherwise they cannot view confidential     features.
     """  # noqa: D205
     if not user or not feature:
         return False

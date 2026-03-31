@@ -206,11 +206,9 @@ class YesterdayHandler(basehandlers.FlaskHandler):
     """Loads yesterday's UMA data."""
 
     def get_template_data(self, **kwargs):  # noqa: D417
-        """Loads the data file located at |filename|.
-
-        Args:
-          filename: The filename for the data file to be loaded.
-          today: date passed in for testing, defaults to today.
+        """Loads the data file located at |filename| args:           filename:
+        The filename for the data file to be loaded.           today: date
+        passed in for testing, defaults to today.
         """
         self.require_cron_header()
         days = []

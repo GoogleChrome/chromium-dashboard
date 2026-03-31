@@ -11,10 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Unit tests for the sendemail module.
-
-Tests parameter parsing and the construction and sending of emails across
-different environments (local, staging, prod).
+"""Unit tests for the sendemail module tests parameter parsing and the
+construction and sending of emails across different environments (local,
+staging, prod).
 """
 
 import email
@@ -361,9 +360,7 @@ class InboundEmailHandlerTest(testing_config.CustomTestCase):
     def test_handle_incoming_mail__fallback_to_mailing_list(
         self, mock_get_incoming_message, mock_enqueue_task
     ):
-        """If there is no personal X-Original-From, use the mailing list.
-
-        From:.
+        """If there is no personal X-Original-From, use the mailing list from:.
         """
         msg = MakeMessage(HEADER_LINES, 'Please review')
         del msg['X-Original-From']

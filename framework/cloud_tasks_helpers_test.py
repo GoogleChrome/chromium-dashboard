@@ -11,10 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Unit tests for the cloud_tasks_helpers module.
-
-Tests the creation of task representations and the enqueueing process, including
-the behavior of the local development stub.
+"""Unit tests for the cloud_tasks_helpers module tests the creation of task
+representations and the enqueueing process, including the behavior of the
+local development stub.
 """
 
 import datetime

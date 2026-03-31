@@ -11,10 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Datastore backup and export utilities.
-
-Provides an automated scheduled handler to trigger full exports of the Datastore
-to a designated Google Cloud Storage bucket for disaster recovery.
+"""Datastore backup and export utilities provides an automated scheduled
+handler to trigger full exports of the Datastore to a designated Google
+Cloud Storage bucket for disaster recovery.
 """
 
 import logging

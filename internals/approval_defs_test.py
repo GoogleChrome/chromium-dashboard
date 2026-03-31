@@ -11,10 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Unit tests for the approval_defs module.
-
-Verifies the fetching of OWNERS files, auto-assignment of reviewers based on
-gate definitions, and handling of missing or cached data.
+"""Unit tests for the approval_defs module verifies the fetching of OWNERS
+files, auto-assignment of reviewers based on gate definitions, and handling
+of missing or cached data.
 """
 
 import base64
@@ -45,10 +44,7 @@ class FetchOwnersTest(testing_config.CustomTestCase):
 
     @mock.patch('requests.get')
     def test__normal(self, mock_get):
-        """We can fetch and parse an OWNERS file.
-
-        And reuse cached value.
-        """
+        """We can fetch and parse an OWNERS file and reuse cached value."""
         encoded = base64.b64encode(self.FILE_CONTENTS.encode())
         mock_get.return_value = testing_config.Blank(
             status_code=200, content=encoded

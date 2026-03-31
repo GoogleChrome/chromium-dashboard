@@ -14,6 +14,9 @@ ignore = [
     "D103", # undocumented-public-function: The codebase lacks hundreds of function docstrings.
     "D104", # undocumented-public-package: The codebase lacks hundreds of package docstrings.
 
+    "D200", # One-line docstring should fit on one line
+    "D205", # 1 blank line required between summary line and description
+
     # Infeasible: Conflicts with Ruff's default Google style docstring rules (D211, D212).
     "D203", # one-blank-line-before-class: Incompatible with Google style (D211).
     "D213", # multi-line-summary-second-line: Incompatible with Google style (D212).
@@ -25,6 +28,11 @@ ignore = [
 
 [tool.ruff.lint.pydocstyle]
 convention = "google"
+
+[[tool.mypy.overrides]]
+module = "google.*"
+follow_imports = "skip"
+ignore_errors = true
 
 [[tool.mypy.overrides]]
 module = "google.*"

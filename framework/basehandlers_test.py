@@ -672,9 +672,8 @@ class APIHandlerTests(testing_config.CustomTestCase):
             handler_method(feature_id=1234)
 
     def test_do_get__unimplemented(self):
-        """If a subclass does not implement do_get(), raise.
-
-        NotImplementedError.
+        """If a subclass does not implement do_get(), raise
+        notImplementedError.
         """
         with self.assertRaises(NotImplementedError):
             self.handler.do_get()

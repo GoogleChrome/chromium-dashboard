@@ -11,9 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Client for interacting with the Google Chrome Origin Trials API.
-
-Provides functions to fetch lists of origin trials, extend existing trials, and
+"""Client for interacting with the Google Chrome Origin Trials API provides
+functions to fetch lists of origin trials, extend existing trials, and
 create new origin trial configurations based on Chromium milestones.
 """
 
@@ -85,15 +84,11 @@ class VerificationResult(TypedDict, total=False):
 
 
 def get_trials_list() -> list[dict[str, Any]]:
-    """Get a list of all origin trials.
-
-    Returns:
-      A list of data on all public origin trials.
-
-    Raises:
-      requests.exceptions.RequestException: If the request fails to connect or
-        the HTTP status code is not successful.
-      KeyError: If the response from the OT API is not in the expected format.
+    """Get a list of all origin trials returns:       A list of data on all
+    public origin trials.      Raises:
+    requests.exceptions.RequestException: If the request fails to connect or
+    the HTTP status code is not successful.       KeyError: If the response
+    from the OT API is not in the expected format.
     """
     key = settings.OT_API_KEY
     # Return an empty list if no API key is found.
@@ -121,16 +116,12 @@ def get_trials_list() -> list[dict[str, Any]]:
 
 
 def _get_trial_end_time(end_milestone: int) -> int:
-    """Get the end time of the origin trial based on end milestone.
-
-    Returns:
-      The end time of the origin trial, represented in seconds since epoch.
-
-    Raises:
-      requests.exceptions.RequestException: If the request fails to connect or
-        the HTTP status code is not successful.
-      KeyError: If the response from Chromium schedule API is not in the
-        expected format.
+    """Get the end time of the origin trial based on end milestone returns:
+    The end time of the origin trial, represented in seconds since epoch.
+    Raises:       requests.exceptions.RequestException: If the request fails
+    to connect or         the HTTP status code is not successful.
+    KeyError: If the response from Chromium schedule API is not in the
+    expected format.
     """
     milestone_plus_two = int(end_milestone) + 2
     mstone_info = utils.get_chromium_milestone_info(milestone_plus_two)
@@ -151,10 +142,8 @@ def _get_trial_end_time(end_milestone: int) -> int:
 
 def _get_ot_access_token() -> str:
     """Obtain the service account credentials to be used in the request using
-    the origin trials auth scope.
-
-    Returns:
-      The access token to be used for origin trials requests.
+    the origin trials auth scope returns:       The access token to be used
+    for origin trials requests.
     """  # noqa: D205, D415
     credentials, _ = google.auth.default(
         scopes=['https://www.googleapis.com/auth/chromeorigintrials']
@@ -168,11 +157,9 @@ def _get_ot_access_token() -> str:
 def _send_create_trial_request(
     ot_stage: Stage, api_key: str, access_token: str
 ) -> tuple[int | None, str | None]:
-    """Send an origin trial creation request to the origin trials API.
-
-    Returns:
-      Newly created origin trial ID if trial was created, any error text if
-      there was an issue during the creation process.
+    """Send an origin trial creation request to the origin trials API returns:
+    Newly created origin trial ID if trial was created, any error text if
+    there was an issue during the creation process.
     """
     json: CreateOriginTrialRequest = {
         'trial': {
@@ -259,10 +246,8 @@ def _send_set_up_trial_request(
     api_key: str,
     access_token: str,
 ) -> str | None:
-    """Send an origin trial setup request to the origin trials API.
-
-    Returns:
-      Any error text if there was an issue during the setup process.
+    """Send an origin trial setup request to the origin trials API returns:
+    Any error text if there was an issue during the setup process.
     """
     data_access_admin_group = secrets.get_ot_data_access_admin_group()
     # Return some error text about the data access group if not found.
@@ -296,15 +281,11 @@ def _send_set_up_trial_request(
 
 
 def create_origin_trial(ot_stage: Stage) -> tuple[str | None, str | None]:
-    """Send an origin trial creation request to the origin trials API.
-
-    Raises:
-      requests.exceptions.RequestException: If the request fails to connect or
-        the HTTP status code is not successful.
-
-    Returns:
-      Newly created origin trial ID if trial was created, any error text if
-      there was an issue during the creation process.
+    """Send an origin trial creation request to the origin trials API raises:
+    requests.exceptions.RequestException: If the request fails to connect or
+    the HTTP status code is not successful.      Returns:       Newly
+    created origin trial ID if trial was created, any error text if
+    there was an issue during the creation process.
     """
     if settings.DEV_MODE:
         logging.info(
@@ -352,11 +333,9 @@ def create_origin_trial(ot_stage: Stage) -> tuple[str | None, str | None]:
 
 
 def activate_origin_trial(origin_trial_id: str) -> None:
-    """Activate an existing origin trial.
-
-    Raises:
-      requests.exceptions.RequestException: If the request fails to connect or
-        the HTTP status code is not successful.
+    """Activate an existing origin trial raises:
+    requests.exceptions.RequestException: If the request fails to connect or
+    the HTTP status code is not successful.
     """
     if settings.DEV_MODE:
         logging.info(
@@ -386,11 +365,9 @@ def activate_origin_trial(origin_trial_id: str) -> None:
 
 
 def extend_origin_trial(trial_id: str, end_milestone: int, intent_url: str):
-    """Extend an existing origin trial.
-
-    Raises:
-      requests.exceptions.RequestException: If the request fails to connect or
-        the HTTP status code is not successful.
+    """Extend an existing origin trial raises:
+    requests.exceptions.RequestException: If the request fails to connect or
+    the HTTP status code is not successful.
     """
     if settings.DEV_MODE:
         logging.info(

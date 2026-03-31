@@ -12,9 +12,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Tests for the blink_components_api module.
-
-Verifying Blink component retrieval.
+"""Tests for the blink_components_api module verifying Blink component
+retrieval.
 """
 
 import flask

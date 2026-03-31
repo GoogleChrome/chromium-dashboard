@@ -204,17 +204,11 @@ class BaseHandler(flask.views.MethodView):
         entity_id: int | str | None,
         entity_model: Type[M],
     ) -> M:
-        """Fetches and validates a database entity by its ID.
-
-        Args:
-          entity_id: The ID of the entity to fetch.
-          entity_model: The NDB model class of the entity.
-
-        Returns:
-          The fetched entity instance.
-
-        Raises:
-          Aborts the request with a 400 or 404 error if validation fails.
+        """Fetches and validates a database entity by its ID args:
+        entity_id: The ID of the entity to fetch.           entity_model:
+        The NDB model class of the entity.          Returns:           The
+        fetched entity instance.          Raises:           Aborts the
+        request with a 400 or 404 error if validation fails.
         """
         entity_name = entity_model.__name__
         if entity_id is None:
@@ -786,10 +780,8 @@ class FlaskHandler(BaseHandler):
 
 
 class Redirector(FlaskHandler):
-    """Reusable handler that always redirects.
-
-    Specify the location in the third part of a routing rule using:
-    {'location': '/path/to/page'}.
+    """Reusable handler that always redirects specify the location in the third
+    part of a routing rule using:     {'location': '/path/to/page'}.
     """  # noqa: D205
 
     def get_template_data(self, **kwargs):
@@ -799,9 +791,8 @@ class Redirector(FlaskHandler):
 
 
 class ConstHandler(FlaskHandler):
-    """Reusable handler for templates that require no page-specific logic.
-
-    Specify the location in the third part of a routing rule using:
+    """Reusable handler for templates that require no page-specific logic
+    specify the location in the third part of a routing rule using:
     {'template_path': 'path/to/template.html'}.
     """  # noqa: D205
 

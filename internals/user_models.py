@@ -223,9 +223,8 @@ class BlinkComponent(ndb.Model):
 
     @property
     def subscribers(self):
-        """Returns a list of FeatureOwner objects.
-
-        This list includes users who subscribe to this component.
+        """Returns a list of FeatureOwner objects this list includes users who
+        subscribe to this component.
         """
         q = FeatureOwner.query(FeatureOwner.blink_components == self.key)
         q = q.order(FeatureOwner.name)

@@ -41,10 +41,9 @@ CRON_JOB_LINK_STALE_DAYS = 8
 
 
 class FeatureLinks(ndb.Model):
-    """Links that occur in the fields of the feature.
-
-    This helps show a preview of information of linked pages, saving users the
-    trouble of clicking.
+    """Links that occur in the fields of the feature this helps show a preview
+    of information of linked pages, saving users the     trouble of
+    clicking.
     """  # noqa: D205
 
     created = ndb.DateTimeProperty(auto_now_add=True)
@@ -112,9 +111,7 @@ def _get_index_link(
     link: Link, fe: FeatureEntry, should_parse_new_link: bool = False
 ) -> FeatureLinks | None:
     """Indexes a given link for a specific feature by creating or updating a
-    `FeatureLinks` object.
-
-    Returns the `FeatureLinks` object or None.
+    `FeatureLinks` object returns the `FeatureLinks` object or None.
     """  # noqa: D205
     feature_id = fe.key.integer_id()
     feature_links: list[FeatureLinks] = FeatureLinks.query(
@@ -169,11 +166,9 @@ def _remove_link(link: Link, fe: FeatureEntry) -> None:
 def _get_review_result_from_feature_link(
     feature_link: FeatureLinks, position_prefix: str
 ) -> Optional[str]:
-    """Returns the external reviewer's views expressed in feature_link.
-
-    Params:
-      position_prefix: The lowercase prefix this organization uses for their
-        opinion labels.
+    """Returns the external reviewer's views expressed in feature_link params:
+    position_prefix: The lowercase prefix this organization uses for their
+    opinion labels.
     """
     if feature_link.information is None:
         return None
@@ -203,13 +198,10 @@ def _denormalize_feature_link_into_entries(
     feature_link: FeatureLinks,
     possible_entries: list[FeatureEntry] | None = None,
 ) -> None:
-    """Fills information from feature_link into relevant fields in the.
-
-    FeatureEntries it appears in.
-
-    Params:
-      possible_entries: If the caller knows which FeatureEntries might need
-        updating, pass that list here.
+    """Fills information from feature_link into relevant fields in the
+    featureEntries it appears in.      Params:       possible_entries: If
+    the caller knows which FeatureEntries might need         updating, pass
+    that list here.
     """
     if feature_link.type == LINK_TYPE_GITHUB_ISSUE:
         if possible_entries is None:
@@ -271,11 +263,10 @@ def get_by_feature_id(
     feature_id: int, update_stale_links: bool
 ) -> tuple[list[dict], bool]:
     """Return a list of dicts of FeatureLinks for a given feature id The
-    returned dicts only include the url, type, and information fields.
-
-    This is used by the api to return json to the client.
-    update_stale_links: if True, then trigger a background task to update
-        the information of the links.
+    returned dicts only include the url, type, and information fields this
+    is used by the api to return json to the client.     update_stale_links:
+    if True, then trigger a background task to update         the
+    information of the links.
     """  # noqa: D205
     return get_by_feature_ids([feature_id], update_stale_links)
 
@@ -284,11 +275,10 @@ def get_by_feature_ids(
     feature_ids: list[int], update_stale_links: bool
 ) -> tuple[list[dict], bool]:
     """Return a list of dicts of FeatureLinks for the given feature ids The
-    returned dicts only include the url, type, and information fields.
-
-    This is used by the api to return json to the client.
-    update_stale_links: if True, then trigger a background task to update
-        the information of the links.
+    returned dicts only include the url, type, and information fields this
+    is used by the api to return json to the client.     update_stale_links:
+    if True, then trigger a background task to update         the
+    information of the links.
     """  # noqa: D205
     feature_links = _get_feature_links(feature_ids)
     stale_time = datetime.datetime.now(

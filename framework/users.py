@@ -1,7 +1,6 @@
-"""User authentication and representation.
-
-Provides the User class for representing authenticated users and functions to
-determine the current logged-in user from the session.
+"""User authentication and representation provides the User class for
+representing authenticated users and functions to determine the current
+logged-in user from the session.
 """
 
 import os
@@ -13,19 +12,13 @@ from framework import xsrf
 
 
 class User(object):
-    """Provides the email address, nickname, and ID for a user.
-
-    A nickname is a human-readable string that uniquely identifies a
-    Google user, akin to a username. For some users, this nickname is
-    an email address, but for other users, a different nickname is
-    used.
-
-    A user is a Google Accounts user.
-
-    `federated_identity` and `federated_provider` are decommissioned
-    and should not be used.
-
-    This class is based on google.appengine.api.users.User class
+    """Provides the email address, nickname, and ID for a user a nickname is a
+    human-readable string that uniquely identifies a     Google user, akin
+    to a username. For some users, this nickname is     an email address,
+    but for other users, a different nickname is     used.      A user is a
+    Google Accounts user.      `federated_identity` and `federated_provider`
+    are decommissioned     and should not be used.      This class is based
+    on google.appengine.api.users.User class.
     """
 
     __user_id = None
@@ -41,17 +34,12 @@ class User(object):
         federated_provider=None,
         _strict_mode=True,
     ):
-        """Constructor.
-
-        Args:
-        email: An optional string of the user's email address. It defaults to
-            the current user's email address.
-        federated_identity: Decommissioned, don't use.
-        federated_provider: Decommissioned, don't use.
-
-        Raises:
+        """Constructor args:         email: An optional string of the user's
+        email address. It defaults to             the current user's email
+        address.         federated_identity: Decommissioned, don't use.
+        federated_provider: Decommissioned, don't use.          Raises:
         UserNotFoundError: If the user is not logged in and both `email` and
-            `federated_identity` are empty.
+        `federated_identity` are empty.
         """
         self.__email = email
         self.__federated_identity = federated_identity
@@ -60,14 +48,10 @@ class User(object):
         self.__user_id = _user_id or None
 
     def nickname(self):
-        """Returns the user's nickname.
-
-        The nickname will be a unique, human readable identifier for
-        this user with respect to this application. It will be an
-        email address for some users, and part of the email address
-        for some users.
-
-        Returns:
+        """Returns the user's nickname the nickname will be a unique, human
+        readable identifier for         this user with respect to this
+        application. It will be an         email address for some users, and
+        part of the email address         for some users.          Returns:
         The nickname of the user as a string.
         """
         if (
@@ -87,38 +71,30 @@ class User(object):
         return self.__email
 
     def user_id(self):
-        """Obtains the user ID of the user.
-
-        Returns:
-        A permanent unique identifying string or `None`. If the email
-        address was set explicity, this will return `None`.
+        """Obtains the user ID of the user returns:         A permanent unique
+        identifying string or `None`. If the email         address was set
+        explicity, this will return `None`.
         """
         return self.__user_id
 
     def auth_domain(self):
-        """Obtains the user's authentication domain.
-
-        Returns:
-        A string containing the authentication domain. This method is
+        """Obtains the user's authentication domain returns:         A string
+        containing the authentication domain. This method is
         internal and should not be used by client applications.
         """
         return self.__auth_domain
 
     def federated_identity(self):
-        """Decommissioned, don't use.
-
-        Returns:
-        A string containing the federated identity of the user. If the
-        user is not a federated user, `None` is returned.
+        """Decommissioned, don't use returns:         A string containing the
+        federated identity of the user. If the         user is not a
+        federated user, `None` is returned.
         """
         return self.__federated_identity
 
     def federated_provider(self):
-        """Decommissioned, don't use.
-
-        Returns:
-        A string containing the federated provider. If the user is not
-        a federated user, `None` is returned.
+        """Decommissioned, don't use returns:         A string containing the
+        federated provider. If the user is not         a federated user,
+        `None` is returned.
         """
         return self.__federated_provider
 
@@ -179,9 +155,7 @@ class User(object):
             )
 
     def get_current_user(self):
-        """Retrieves information associated with the requesting user.
-
-        Returns:
+        """Retrieves information associated with the requesting user returns:
         The current user object.
         """
         try:
@@ -190,16 +164,13 @@ class User(object):
             return None
 
     def is_current_user_admin(self):
-        """Specifies whether the user making a request is an application admin.
-
-        Because administrator status is not persisted in the
+        """Specifies whether the user making a request is an application admin
+        because administrator status is not persisted in the
         datastore, `is_current_user_admin()` is a separate function
         rather than a member function of the `User` class. The status
         only exists for the user making the current request.
-
-        Returns:
-        `True` if the user is an administrator; all other user types
-        return `False`.
+        Returns:         `True` if the user is an administrator; all other
+        user types         return `False`.
         """
         # This env variable was set by GAE based on a GAE session cookie.
         # Using Sign-In With Google, it will probably never be present.

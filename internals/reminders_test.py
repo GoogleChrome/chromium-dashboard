@@ -700,10 +700,7 @@ class SLOOverdueHandlerTest(testing_config.CustomTestCase):
 
     @mock.patch('internals.slo.now_utc')
     def test_get_template_data__initial_overdue_unassigned(self, mock_now_utc):
-        """Overdue for initial response.
-
-        Notify all reviewers.
-        """
+        """Overdue for initial response notify all reviewers."""
         self.gate_1.state = Vote.REVIEW_REQUESTED
         self.gate_1.requested_on = self.request_date
         self.gate_1.put()
@@ -732,10 +729,7 @@ class SLOOverdueHandlerTest(testing_config.CustomTestCase):
 
     @mock.patch('internals.slo.now_utc')
     def test_get_template_data__initial_overdue_assigned(self, mock_now_utc):
-        """Overdue for initial response.
-
-        Notify assigned and others.
-        """
+        """Overdue for initial response notify assigned and others."""
         self.gate_1.state = Vote.REVIEW_REQUESTED
         self.gate_1.assignee_emails = [
             'mhoste@google.com',
@@ -769,10 +763,7 @@ class SLOOverdueHandlerTest(testing_config.CustomTestCase):
 
     @mock.patch('internals.slo.now_utc')
     def test_get_template_data__due_resolve_unassigned(self, mock_now_utc):
-        """Due for resolution.
-
-        Notify all reviewers.
-        """
+        """Due for resolution notify all reviewers."""
         self.gate_1.state = Vote.REVIEW_REQUESTED
         self.gate_1.requested_on = self.request_date
         self.gate_1.put()
@@ -801,10 +792,7 @@ class SLOOverdueHandlerTest(testing_config.CustomTestCase):
 
     @mock.patch('internals.slo.now_utc')
     def test_get_template_data__resolve_overdue_unassigned(self, mock_now_utc):
-        """Overdue for resolution.
-
-        Notify all reviewers.
-        """
+        """Overdue for resolution notify all reviewers."""
         self.gate_1.state = Vote.REVIEW_REQUESTED
         self.gate_1.requested_on = self.request_date
         self.gate_1.put()
@@ -833,10 +821,7 @@ class SLOOverdueHandlerTest(testing_config.CustomTestCase):
 
     @mock.patch('internals.slo.now_utc')
     def test_get_template_data__old_reviews(self, mock_now_utc):
-        """More time has passed.
-
-        We don't keep reminding.
-        """
+        """More time has passed we don't keep reminding."""
         self.gate_1.state = Vote.REVIEW_REQUESTED
         self.gate_1.requested_on = self.request_date
         self.gate_1.put()

@@ -14,10 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Fetches features from the staging or live dashboard site, and inserts them
-into the development datastore.
-
-This script can also set a user as admin, to facilitate testing those parts of
-the site.
+into the development datastore this script can also set a user as admin, to
+facilitate testing those parts of the site.
 """  # noqa: D205
 
 import argparse
@@ -48,9 +46,8 @@ from pages.guide import FeatureCreateHandler
 
 
 def add_features(server: str, after: datetime, detailsAfter: datetime):
-    """Fetches features and inserts them into the dev datastore.
-
-    Data is fetched from the specified `server`.
+    """Fetches features and inserts them into the dev datastore data is fetched
+    from the specified `server`.
     """
     target = urljoin(server, 'features.json')
     logging.info('Fetching features from %s.', target)

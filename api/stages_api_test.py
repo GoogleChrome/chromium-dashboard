@@ -12,9 +12,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Tests for the stages_api module.
-
-Verifying the management and permissions of feature stages.
+"""Tests for the stages_api module verifying the management and permissions of
+feature stages.
 """
 
 from datetime import datetime
@@ -633,9 +632,8 @@ class StagesAPITest(testing_config.CustomTestCase):
     @mock.patch('framework.rediscache.delete_keys_with_prefix')
     @mock.patch('flask.abort')
     def test_patch__ot_milestones_during_creation(self, mock_abort, mock_dkwp):
-        """Raises 400 if OT start milestone is updated during OT.
-
-        Creation process.
+        """Raises 400 if OT start milestone is updated during OT creation
+        process.
         """
         testing_config.sign_in('feature_owner@example.com', 123)
         json = {
@@ -668,9 +666,8 @@ class StagesAPITest(testing_config.CustomTestCase):
     def test_patch__ot_end_milestone_during_creation(
         self, mock_abort, mock_dkwp
     ):
-        """Raises 400 if OT end milestone is updated during OT creation.
-
-        Process.
+        """Raises 400 if OT end milestone is updated during OT creation
+        process.
         """
         testing_config.sign_in('feature_owner@example.com', 123)
         json = {
@@ -743,9 +740,8 @@ class StagesAPITest(testing_config.CustomTestCase):
 
     @mock.patch('framework.rediscache.delete_keys_with_prefix')
     def test_patch__valid_rollout_milestone(self, mock_dkwp):
-        """A valid PATCH request should update an existing stage.
-
-        With the rollout_milestone.
+        """A valid PATCH request should update an existing stage with the
+        rollout_milestone.
         """
         testing_config.sign_in('feature_owner@example.com', 123)
         json = {
@@ -871,9 +867,8 @@ class StagesAPITest(testing_config.CustomTestCase):
 
     @mock.patch('framework.rediscache.delete_keys_with_prefix')
     def test_patch__ot_request_chromium(self, mock_dkwp):
-        """A valid OT creation request from a Chromium user should.
-
-        Update stage.
+        """A valid OT creation request from a Chromium user should update
+        stage.
         """
         testing_config.sign_in('chromium_user@chromium.org', 123)
         json = {

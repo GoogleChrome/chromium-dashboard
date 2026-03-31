@@ -24,12 +24,10 @@ ALLOWED_CUES = ['progress-checkmarks']
 
 
 class CuesAPI(basehandlers.APIHandler):
-    """Cues are UI tips that pop up to teach users about some functionality when
-    they first encounter it.
-
-    Users can dismiss a cue card by clicking an X icon.  We store a list of
-    dismissed cues for each user so that we do not show the same cue again to
-    that user.
+    """Cues are UI tips that pop up to teach users about some functionality
+    when     they first encounter it users can dismiss a cue card by
+    clicking an X icon.  We store a list of     dismissed cues for each user
+    so that we do not show the same cue again to     that user.
     """  # noqa: D205
 
     # Note: there is no do_get yet because we decide to show cues

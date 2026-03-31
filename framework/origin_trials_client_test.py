@@ -11,10 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Unit tests for the origin_trials_client module.
-
-Tests the interaction with the Origin Trials API, including fetching trials,
-extending trials, and handling API key presence/absence.
+"""Unit tests for the origin_trials_client module tests the interaction with
+the Origin Trials API, including fetching trials, extending trials, and
+handling API key presence/absence.
 """
 
 from unittest import mock

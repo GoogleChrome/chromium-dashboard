@@ -58,9 +58,8 @@ EXTEND_RE = re.compile('%s %s' % (INTEND_PATTERN, EXTEND_PATTERN))
 
 
 def detect_gate_info(subject: str) -> approval_defs.GateInfo | None:
-    """Look for key words in the subject line that indicate intent type.
-
-    These should detect recent actual intent threads as seen in the blink-dev
+    """Look for key words in the subject line that indicate intent type these
+    should detect recent actual intent threads as seen in the blink-dev
     archive: https://groups.google.com/a/chromium.org/g/blink-dev.
     """
     subject = subject.lower().strip()
@@ -271,9 +270,8 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
     def load_detected_feature(
         self, feature_id: Optional[int], thread_url: Optional[str]
     ) -> tuple[Optional[FeatureEntry], Optional[str]]:
-        """Find the feature being referenced by this email message.
-
-        Returns a pair with the feature and an error message, either of which
+        """Find the feature being referenced by this email message returns a
+        pair with the feature and an error message, either of which
         can be None.
         """
         # If the message had a link to a chromestatus entry, use its ID.

@@ -12,9 +12,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""API handlers for managing owners and subscribers of.
-
-Individual Blink components.
+"""API handlers for managing owners and subscribers of individual Blink
+components.
 """
 
 from chromestatus_openapi.models import ComponentUsersRequest

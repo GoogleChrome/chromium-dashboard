@@ -11,10 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Unit tests for the utils module.
-
-Verifies the behavior of string normalization, retry decorators, URL formatting,
-and external fetching logic.
+"""Unit tests for the utils module verifies the behavior of string
+normalization, retry decorators, URL formatting, and external fetching
+logic.
 """
 
 import base64

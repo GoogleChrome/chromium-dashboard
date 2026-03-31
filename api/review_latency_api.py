@@ -11,9 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""API endpoints for retrieving and calculating review latency.
-
-Metrics for feature gates.
+"""API endpoints for retrieving and calculating review latency metrics for
+feature gates.
 """
 
 import collections
@@ -44,10 +43,8 @@ class ReviewLatencyAPI(basehandlers.APIHandler):
 
     @permissions.require_create_feature
     def do_get(self, **kwargs):
-        """Get a list of matching spec mentors.
-
-        Returns:
-          A list of data on all public origin trials.
+        """Get a list of matching spec mentors returns:           A list of
+        data on all public origin trials.
         """
         today = kwargs.get('today')
         gates = self.get_recently_reviewed_gates(
@@ -106,9 +103,8 @@ class ReviewLatencyAPI(basehandlers.APIHandler):
         return features
 
     def earliest_request(self, feature_gates: list[Gate]) -> datetime:
-        """Return the time of the earliest reivew request among the.
-
-        Given gates.
+        """Return the time of the earliest reivew request among the given
+        gates.
         """
         if not feature_gates:
             raise ValueError('There should be some gates for every feature')
@@ -118,9 +114,8 @@ class ReviewLatencyAPI(basehandlers.APIHandler):
         return min(request_dates, default=datetime(2000, 1, 1))
 
     def sort_features_by_request(self, features, gates_by_fid):
-        """Return the same features sorted by the earliest review.
-
-        Request of each.
+        """Return the same features sorted by the earliest review request of
+        each.
         """
         sorted_features = sorted(
             features,

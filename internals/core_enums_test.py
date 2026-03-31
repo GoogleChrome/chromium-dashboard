@@ -11,10 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Unit tests for the core_enums module.
-
-Tests the mapping and conversion functions between enum integers and their
-corresponding human-readable or normalized string representations.
+"""Unit tests for the core_enums module tests the mapping and conversion
+functions between enum integers and their corresponding human-readable or
+normalized string representations.
 """
 
 import testing_config  # Must be imported before the module under test.

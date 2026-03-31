@@ -11,9 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Cron handlers and helpers for sending automated feature reminder emails.
-
-Updates, approvals, and stale features.
+"""Cron handlers and helpers for sending automated feature reminder emails
+updates, approvals, and stale features.
 """
 
 import logging
@@ -438,9 +437,7 @@ class SLOOverdueHandler(basehandlers.FlaskHandler):
         return {'message': message}
 
     def get_overdue_gates_and_features(self):
-        """Return lists of newly and long overdue review gates, and their.
-
-        FEs.
+        """Return lists of newly and long overdue review gates, and their fEs.
         """
         active_gates: list[Gate] = slo.get_active_gates()
         newly_overdue_initial_response: list[Gate] = []

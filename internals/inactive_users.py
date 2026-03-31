@@ -11,9 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Cron handler to identify and remove inactive user accounts.
-
-Inactive for an extended period.
+"""Cron handler to identify and remove inactive user accounts inactive for an
+extended period.
 """
 
 import logging

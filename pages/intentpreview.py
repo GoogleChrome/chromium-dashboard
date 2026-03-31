@@ -29,9 +29,7 @@ VIEW_FEATURE_URL = '/feature'
 
 
 class IntentEmailPreviewHandler(basehandlers.FlaskHandler):
-    """Show a preview of an intent email.
-
-    Used for testing the intent template.
+    """Show a preview of an intent email used for testing the intent template.
     """
 
     TEMPLATE_PATH = 'blink/intent_to_implement.html'

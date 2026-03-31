@@ -11,9 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""API endpoints for retrieving spec mentors and their.
-
-Associated mentored features.
+"""API endpoints for retrieving spec mentors and their associated mentored
+features.
 """
 
 from datetime import datetime
@@ -29,10 +28,8 @@ class SpecMentorsAPI(basehandlers.APIHandler):
     """Implements the OpenAPI /spec_mentors path."""
 
     def do_get(self, **kwargs):
-        """Get a list of matching spec mentors.
-
-        Returns:
-          A list of data on all public origin trials.
+        """Get a list of matching spec mentors returns:           A list of
+        data on all public origin trials.
         """
         after_param: str | None = self.request.args.get('after', None)
         after: datetime | None = None

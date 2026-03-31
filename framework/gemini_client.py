@@ -11,12 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Client module for interacting with the Google GenAI API.
-
-This module provides the `GeminiClient` class, which serves as a wrapper
-around the `google.genai` SDK. It handles API key configuration, retry logic
-for transient errors, asynchronous batch processing of prompts, and token
-limit validation.
+"""Client module for interacting with the Google GenAI API this module provides
+the `GeminiClient` class, which serves as a wrapper around the
+`google.genai` SDK. It handles API key configuration, retry logic for
+transient errors, asynchronous batch processing of prompts, and token limit
+validation.
 """
 
 import asyncio
@@ -30,10 +29,9 @@ from framework import utils
 
 
 class GeminiClient:
-    """Manages client initialization and communication with the Gemini API.
-
-    This class serves as a wrapper for the `google.genai` client,
-    handling API key configuration and simplifying content generation requests.
+    """Manages client initialization and communication with the Gemini API this
+    class serves as a wrapper for the `google.genai` client,     handling
+    API key configuration and simplifying content generation requests.
     """
 
     GEMINI_MODEL = 'gemini-3.1-pro-preview'
@@ -49,11 +47,9 @@ class GeminiClient:
     ASYNC_TIMEOUT_SECONDS = 540
 
     def __init__(self):
-        """Initializes the Gemini client with the API key from settings.
-
-        Raises:
-          RuntimeError: If the client could not be initialized due to an
-            API key issue or other unexpected error.
+        """Initializes the Gemini client with the API key from settings raises:
+        RuntimeError: If the client could not be initialized due to an
+        API key issue or other unexpected error.
         """
         api_key = settings.GEMINI_API_KEY
         # This error should only be raised locally. The application will already
@@ -79,13 +75,9 @@ class GeminiClient:
     @utils.retry(MAX_RETRIES, delay=RETRY_BACKOFF_SECONDS)
     def prompt_exceeds_input_token_limit(self, prompt: str) -> bool:
         """Checks the token size of a prompt and checks if it exceeds the input
-        limit of the Gemini model.
-
-        Args:
-          prompt: The input prompt string.
-
-        Returns:
-          Boolean value of whether the input token limit is exceedded.
+        limit of the Gemini model args:           prompt: The input prompt
+        string.          Returns:           Boolean value of whether the
+        input token limit is exceedded.
         """  # noqa: D205
         response = self.client.models.count_tokens(
             model=GeminiClient.GEMINI_MODEL, contents=prompt
@@ -101,17 +93,12 @@ class GeminiClient:
     def get_response(
         self, prompt: str, temperature: float | None = None
     ) -> str:
-        """Sends a prompt to the Gemini model and returns the text response.
-
-        Args:
-          prompt: The input prompt string to send to the model.
-          temperature: Controls the randomness of the output.
-
-        Returns:
-          The text response from the model.
-
-        Raises:
-          RuntimeError: If a valid response is not received after all retries.
+        """Sends a prompt to the Gemini model and returns the text response
+        args:           prompt: The input prompt string to send to the
+        model.           temperature: Controls the randomness of the output.
+        Returns:           The text response from the model.
+        Raises:           RuntimeError: If a valid response is not received
+        after all retries.
         """
         logging.info(
             '--- Sending Prompt to Gemini --- \n'
@@ -147,21 +134,14 @@ class GeminiClient:
     async def get_response_async(
         self, prompt: str, temperature: float | None = None
     ) -> str:
-        """Asynchronously sends a prompt to the Gemini model.
-
-        Wraps the synchronous `get_response` method in a thread, inheriting
-        its retry logic.
-
-        Args:
-          prompt: The input prompt string.
-          temperature: Controls the randomness of the output.
-
-        Returns:
-          The text response from the model.
-
-        Raises:
-          TimeoutError: If the total execution time (including retries)
-            exceeds ASYNC_TIMEOUT_SECONDS.
+        """Asynchronously sends a prompt to the Gemini model wraps the
+        synchronous `get_response` method in a thread, inheriting
+        its retry logic.          Args:           prompt: The input prompt
+        string.           temperature: Controls the randomness of the
+        output.          Returns:           The text response from the
+        model.          Raises:           TimeoutError: If the total
+        execution time (including retries)             exceeds
+        ASYNC_TIMEOUT_SECONDS.
         """
         try:
             return await asyncio.wait_for(
@@ -181,15 +161,11 @@ class GeminiClient:
     async def get_batch_responses_async(
         self, prompts: list[str], temperature: float | None = None
     ) -> list[str | BaseException]:
-        """Concurrently sends a list of prompts to the Gemini API.
-
-        Args:
-          prompts: A list of prompt strings to send.
-          temperature: Controls the randomness of the output.
-
-        Returns:
-          A list containing either the string response or an Exception object
-          for each prompt, in the same order as the input list.
+        """Concurrently sends a list of prompts to the Gemini API args:
+        prompts: A list of prompt strings to send.           temperature:
+        Controls the randomness of the output.          Returns:           A
+        list containing either the string response or an Exception object
+        for each prompt, in the same order as the input list.
         """
         logging.info(f'Starting batch processing for {len(prompts)} prompts...')
 

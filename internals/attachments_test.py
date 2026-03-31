@@ -11,10 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Unit tests for the attachments module.
-
-Tests the storage, retrieval, validation (size and mime type), and deletion of
-feature attachments and thumbnails.
+"""Unit tests for the attachments module tests the storage, retrieval,
+validation (size and mime type), and deletion of feature attachments and
+thumbnails.
 """
 
 from unittest import mock

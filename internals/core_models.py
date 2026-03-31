@@ -15,11 +15,10 @@
 
 # Import needed to reference a class within its own class method.
 # https://stackoverflow.com/a/33533514
-"""Core Datastore models for the chromium-dashboard application.
-
-Defines the central `FeatureEntry` model which represents a web platform
-feature, tracking its metadata, implementation status, descriptive fields,
-and relationships to other data entities.
+"""Core Datastore models for the chromium-dashboard application defines the
+central `FeatureEntry` model which represents a web platform feature,
+tracking its metadata, implementation status, descriptive fields, and
+relationships to other data entities.
 """
 
 from __future__ import annotations
@@ -34,14 +33,13 @@ from internals.core_enums import *  # noqa: F403
 
 
 class ReviewResultProperty(ndb.StringProperty):
-    """A StringProperty representing the result of an external review.
-
-    These are the values after the `:` in
-    https://github.com/mozilla/standards-positions/labels?q=position%3A,
-     https://github.com/WebKit/standards-positions/labels?q=position%3A, and
+    """A StringProperty representing the result of an external review these are
+    the values after the `:` in     https://github.com/mozilla/standards-
+    positions/labels?q=position%3A,
+    https://github.com/WebKit/standards-positions/labels?q=position%3A, and
     https://github.com/w3ctag/design-reviews/labels?q=resolution%3A,
-    plus the special value "closed"
-    to represent a review that was closed without a position.
+    plus the special value "closed"     to represent a review that was
+    closed without a position.
     """
 
     CLOSED_WITHOUT_POSITION = 'closed'

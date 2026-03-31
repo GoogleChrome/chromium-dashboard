@@ -11,10 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Unit tests for the gemini_helpers module.
-
-Tests the fetching and parsing of external URLs, handling of GitHub links, and
-processing of Markdown content for use with Gemini models.
+"""Unit tests for the gemini_helpers module tests the fetching and parsing of
+external URLs, handling of GitHub links, and processing of Markdown content
+for use with Gemini models.
 """
 
 import asyncio
@@ -143,9 +142,8 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
             )
 
     def test_fetch_spec_content__web_spec_fetch_failure(self):
-        """If trafilatura fails to download (returns None), raise.
-
-        PipelineError.
+        """If trafilatura fails to download (returns None), raise
+        pipelineError.
         """
         url = 'https://example.com/bad-url'
 
@@ -160,9 +158,7 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
             mock_traf.extract.assert_not_called()
 
     def test_fetch_spec_content__web_spec_extract_failure(self):
-        """If trafilatura returns None during extraction, raise.
-
-        PipelineError.
+        """If trafilatura returns None during extraction, raise pipelineError.
         """
         url = 'https://example.com/empty-page'
 
@@ -176,9 +172,8 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
                 gemini_helpers._fetch_spec_content(url)
 
     def test_fetch_spec_content__web_spec_exception(self):
-        """General exceptions during trafilatura processing should raise.
-
-        PipelineError.
+        """General exceptions during trafilatura processing should raise
+        pipelineError.
         """
         url = 'https://example.com/crash'
 
@@ -218,9 +213,7 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
             mock_get.assert_called_once_with(expected_raw_url)
 
     def test_fetch_explainer_content__github_blob_failure(self):
-        """GitHub Raw fetch failure for explainers should raise.
-
-        PipelineError.
+        """GitHub Raw fetch failure for explainers should raise pipelineError.
         """
         url = 'https://github.com/WICG/explainer/blob/main/README.md'
 
@@ -267,9 +260,8 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
                 gemini_helpers._fetch_explainer_content(url)
 
     def test_fetch_explainer_content__web_extract_failure(self):
-        """If trafilatura returns None during explainer extraction, raise.
-
-        PipelineError.
+        """If trafilatura returns None during explainer extraction, raise
+        pipelineError.
         """
         url = 'https://example.com/empty'
         with mock.patch('framework.gemini_helpers.trafilatura') as mock_traf:

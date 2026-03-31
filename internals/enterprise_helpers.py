@@ -33,15 +33,12 @@ def needs_default_first_notification_milestone(
     existing_feature: FeatureEntry | None = None, new_fields: dict = {}
 ) -> bool:
     """Returns whether we should create a default value for.
-
-    first_enterprise_notification_milestone.
-
-    If a feature required a first_enterprise_notification_milestone field
-    and a valid value is not available, we generate a deafult one.
-
-    Args:
-      existing_feature: FeatureEntry Optional feature that needs to be updated.
-      new_fields: dict Fields that will be used to update or create the feature.
+    first_enterprise_notification_milestone if a feature required a
+    first_enterprise_notification_milestone field     and a valid value is
+    not available, we generate a deafult one.      Args:
+    existing_feature: FeatureEntry Optional feature that needs to be
+    updated.       new_fields: dict Fields that will be used to update or
+    create the feature.
     """
     milestone = None
     has_valid_milestone_in_new_fields = False
@@ -93,12 +90,9 @@ def is_update_first_notification_milestone(
     feature: FeatureEntry, new_fields: dict
 ) -> bool:
     """Returns whether the milestone can be used to update.
-
-    first_enterprise_notification_milestone.
-
-    Args:
-      feature: FeatureEntry feature that needs to be updated.
-      new_fields: dict Fields that will be used to update or create the feature.
+    first_enterprise_notification_milestone args:       feature:
+    FeatureEntry feature that needs to be updated.       new_fields: dict
+    Fields that will be used to update or create the feature.
     """
     milestone = new_fields.get('first_enterprise_notification_milestone')
     if not milestone:
@@ -157,16 +151,12 @@ def get_default_first_notice_milestone_for_feature() -> int:
 
 
 def should_remove_first_notice_milestone(feature, new_fields):  # noqa: D417
-    """Returns whether we remove first_enterprise_notification_milestone from a.
-
+    """Returns whether we remove first_enterprise_notification_milestone from
+    a.      feature an unannounced feature that does not require to be
+    announced should     removed the notice milestone.      Args:
+    existing_feature: FeatureEntry feature that needs to be updated.
+    new_fields: dict Fields that will be used to update or create the
     feature.
-
-    An unannounced feature that does not require to be announced should
-    removed the notice milestone.
-
-    Args:
-      existing_feature: FeatureEntry feature that needs to be updated.
-      new_fields: dict Fields that will be used to update or create the feature.
     """
     if feature.first_enterprise_notification_milestone == None:  # noqa: E711
         return False
