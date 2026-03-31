@@ -11,7 +11,6 @@ docstring-code-format = true
 select = ["E", "F", "I", "D"]
 ignore = [
     "D103", # undocumented-public-function: The codebase lacks hundreds of function docstrings.
-    "D104", # undocumented-public-package: The codebase lacks hundreds of package docstrings.
 
     # Infeasible: Conflicts with Ruff's default Google style docstring rules (D211, D212).
     "D203", # one-blank-line-before-class: Incompatible with Google style (D211).
