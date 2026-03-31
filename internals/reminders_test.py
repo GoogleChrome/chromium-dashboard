@@ -37,6 +37,7 @@ class MockResponse:
     """Creates a fake response object for testing."""
 
     def __init__(self, status_code=200, text='{}'):
+        """Initialize the mock response."""
         self.status_code = status_code
         self.text = text
 

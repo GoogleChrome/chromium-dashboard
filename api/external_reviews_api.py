@@ -147,6 +147,7 @@ class ExternalReviewerInfo:
     """The name used for this group inside Chrome Status."""
 
     def __init__(self, group_name: Literal['tag', 'gecko', 'webkit']):
+        """Initialize the external review mapper."""
         self.group_name = group_name
         if group_name == 'tag':
             self.unreviewed_features_query = FeatureEntry.query(

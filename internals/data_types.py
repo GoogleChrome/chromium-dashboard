@@ -334,6 +334,7 @@ class OriginTrialInfo:
     """Dataclass for origin trial info."""
 
     def __init__(self, api_trial):
+        """Initialize the origin trial info."""
         self.id = api_trial.get('id', None)
         self.display_name = api_trial.get('displayName', None)
         self.description = api_trial.get('description', None)

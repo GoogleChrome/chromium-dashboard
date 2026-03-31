@@ -27,6 +27,7 @@ class MockHandler(basehandlers.BaseHandler):
     """A mock handler used for testing permissions logic."""
 
     def __init__(self):
+        """Initialize the mock handler."""
         self.called_with = None
         self.common_data = {}
 

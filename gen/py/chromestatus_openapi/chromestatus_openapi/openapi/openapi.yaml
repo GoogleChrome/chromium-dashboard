@@ -2184,6 +2184,9 @@ components:
         ot_feedback_submission_url:
           form_field_name: form_field_name
           value: "{}"
+        rollout_stage_plan:
+          form_field_name: form_field_name
+          value: "{}"
         desktop_last:
           form_field_name: form_field_name
           value: "{}"
@@ -2390,6 +2393,8 @@ components:
         rollout_platforms:
           $ref: '#/components/schemas/FieldInfo'
         rollout_details:
+          $ref: '#/components/schemas/FieldInfo'
+        rollout_stage_plan:
           $ref: '#/components/schemas/FieldInfo'
       title: StageField
       type: object

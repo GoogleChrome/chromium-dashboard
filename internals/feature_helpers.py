@@ -255,8 +255,9 @@ def get_features_in_release_notes(milestone: int):
     prefetched_stages: list[Stage] = []
     if feature_ids:
         prefetched_stages = Stage.query(
-            Stage.feature_id.IN(feature_ids), Stage.archived == False
-        ).fetch()  # noqa: E712
+            Stage.feature_id.IN(feature_ids),
+            Stage.archived == False,  # noqa: E712
+        ).fetch()
     prefetched_stages_dict = organize_all_stages_by_feature(prefetched_stages)
     logging.info(
         'prefetched %r stages for %r features',

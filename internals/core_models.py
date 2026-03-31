@@ -235,6 +235,7 @@ class FeatureEntry(ndb.Model):
     SEARCH_CACHE_KEY = 'FeatureSearch'
 
     def __init__(self, *args, **kwargs):
+        """Initialize the Feature model."""
         # Initialise Feature.blink_components with a default value.  If
         # name is present in kwargs then it would mean constructor is
         # being called for creating a new feature rather than for fetching
