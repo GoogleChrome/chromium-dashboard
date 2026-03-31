@@ -297,6 +297,7 @@ class OriginTrialsAPI(basehandlers.EntitiesAPIHandler):
         return redirect_resp
 
     def do_post(self, **kwargs):
+        """Handle POST requests."""
         feature_id = int(kwargs['feature_id'])
         # Check that feature ID is valid.
         if not feature_id:

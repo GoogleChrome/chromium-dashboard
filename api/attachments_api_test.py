@@ -32,6 +32,7 @@ test_app.secret_key = 'test'
 
 class AttachmentsAPITest(testing_config.CustomTestCase):
     def setUp(self):
+        """Set up the test."""
         self.feature = FeatureEntry(
             name='feat',
             summary='sum',
@@ -99,6 +100,7 @@ class AttachmentsAPITest(testing_config.CustomTestCase):
 
 class AttachmentServingTest(testing_config.CustomTestCase):
     def setUp(self):
+        """Set up the test."""
         self.feature = FeatureEntry(
             name='feat',
             summary='sum',
@@ -177,6 +179,7 @@ class AttachmentServingTest(testing_config.CustomTestCase):
 
 class RoundTripTest(testing_config.CustomTestCase):
     def setUp(self):
+        """Set up the test."""
         self.feature = FeatureEntry(
             name='feat',
             summary='sum',

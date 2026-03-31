@@ -60,6 +60,7 @@ class GeminiClientTest(testing_config.CustomTestCase):
         self.addCleanup(mock.patch.stopall)
 
     def tearDown(self):
+        """Clean up the test environment."""
         logging.disable(logging.NOTSET)
         settings.GEMINI_API_KEY = self.original_gemini_api_key
 

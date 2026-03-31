@@ -498,6 +498,7 @@ class GenerateWPTCoverageEvalReportHandler(basehandlers.FlaskHandler):
     IS_INTERNAL_HANDLER = True
 
     def process_post_data(self, **kwargs):
+        """Process POST data for the handler."""
         self.require_task_header()
 
         feature_id = self.get_int_param('feature_id')

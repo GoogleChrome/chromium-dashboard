@@ -80,6 +80,7 @@ def build_email_tasks(
     escalation_check: Callable,
     is_accuracy_email: Callable,
 ) -> list[dict[str, Any]]:
+    """Build email tasks."""
     email_tasks: list[dict[str, Any]] = []
     beta_date = datetime.fromisoformat(current_milestone_info['earliest_beta'])
     beta_date_str = beta_date.strftime('%Y-%m-%d')
@@ -246,12 +247,14 @@ class AbstractReminderHandler(basehandlers.FlaskHandler):
 
     # Subclasses should override if needed.
     def is_accuracy_email(self) -> bool:
+        """Is accuracy email."""
         return False
 
     # Subclasses should override if processing is needed after notifications sent.
     def changes_after_sending_notifications(
         self, features_notified: list[tuple[FeatureEntry, int]]
     ) -> None:
+        """Changes after sending notifications."""
         pass
 
 
@@ -278,6 +281,7 @@ class FeatureAccuracyHandler(AbstractReminderHandler):
     def prefilter_features(
         self, current_milestone_info: dict, features: list[FeatureEntry]
     ) -> list[FeatureEntry]:
+        """Prefilter features."""
         now = datetime.now()
         prefiltered_features = [
             feature
@@ -295,6 +299,7 @@ class FeatureAccuracyHandler(AbstractReminderHandler):
         return feature.outstanding_notifications >= 2
 
     def is_accuracy_email(self) -> bool:
+        """Is accuracy email."""
         return True
 
     def changes_after_sending_notifications(
@@ -326,6 +331,7 @@ class PrepublicationHandler(AbstractReminderHandler):
     ANCHOR_CHANNEL = 'beta'
 
     def prefilter_features(self, current_milestone_info, features, now=None):
+        """Prefilter features."""
         earliest_beta = datetime.fromisoformat(
             current_milestone_info['earliest_beta']
         )
@@ -480,6 +486,7 @@ class SLOOverdueHandler(basehandlers.FlaskHandler):
         is_escalated: bool,
         is_initial_response: bool,
     ) -> list[dict[str, Any]]:
+        """Build gate email tasks."""
         email_tasks: list[dict[str, Any]] = []
         for gate in gates_to_notify:
             gate_id = gate.key.integer_id()

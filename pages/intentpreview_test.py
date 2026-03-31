@@ -145,6 +145,7 @@ class IntentEmailPreviewTemplateTest(testing_config.CustomTestCase):
     HANDLER_CLASS = intentpreview.IntentEmailPreviewHandler
 
     def setUp(self):
+        """Sets up test data for the intent email preview tests."""
         super(IntentEmailPreviewTemplateTest, self).setUp()
         self.complete_feature = _create_complete_feature()
         self.complete_feature.put()

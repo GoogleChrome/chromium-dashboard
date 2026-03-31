@@ -21,6 +21,7 @@ from internals.core_models import FeatureEntry, MilestoneSet, Stage
 
 class StageHelpersTest(testing_config.CustomTestCase):
     def setUp(self):
+        """Set up test data."""
         self.feature_entry_1 = FeatureEntry(
             id=1,
             name='fe one',
@@ -87,6 +88,7 @@ class StageHelpersTest(testing_config.CustomTestCase):
 
 class StageHelpers_Milestones_Test(testing_config.CustomTestCase):
     def setUp(self):
+        """Sets up test data for milestone-specific stage helper tests."""
         self.stage_1_1 = Stage(feature_id=11111, milestones=MilestoneSet())
         self.stage_2_1 = Stage(
             feature_id=22222, milestones=MilestoneSet(desktop_first=123)

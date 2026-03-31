@@ -22,6 +22,7 @@ from internals import user_models
 
 class UserPrefTest(testing_config.CustomTestCase):
     def setUp(self):
+        """Set up test data."""
         self.user_pref_1 = user_models.UserPref(email='one@example.com')
         self.user_pref_1.notify_as_starrer = False
         self.user_pref_1.put()
@@ -31,12 +32,14 @@ class UserPrefTest(testing_config.CustomTestCase):
 
     @mock.patch('framework.users.get_current_user')
     def test_get_signed_in_user_pref__anon(self, mock_get_current_user):
+        """Tests getting the signed-in user pref for an anonymous user."""
         mock_get_current_user.return_value = None
         actual = user_models.UserPref.get_signed_in_user_pref()
         self.assertIsNone(actual)
 
     @mock.patch('framework.users.get_current_user')
     def test_get_signed_in_user_pref__first_time(self, mock_get_current_user):
+        """Tests getting the signed-in user pref for a first-time user."""
         mock_get_current_user.return_value = testing_config.Blank(
             email=lambda: 'user1@example.com'
         )
@@ -49,6 +52,7 @@ class UserPrefTest(testing_config.CustomTestCase):
 
     @mock.patch('framework.users.get_current_user')
     def test_get_signed_in_user_pref__had_pref(self, mock_get_current_user):
+        """Tests getting the signed-in user pref for a user who already has one."""
         mock_get_current_user.return_value = testing_config.Blank(
             email=lambda: 'user2@example.com'
         )
@@ -91,6 +95,7 @@ class UserPrefTest(testing_config.CustomTestCase):
         self.assertEqual(['welcome-message'], revised_user_pref.dismissed_cues)
 
     def test_get_prefs_for_emails__some_found(self):
+        """Tests getting user preferences for a list of emails with mixed existence."""
         emails = ['one@example.com', 'two@example.com', 'huh@example.com']
         user_prefs = user_models.UserPref.get_prefs_for_emails(emails)
         self.assertEqual(3, len(user_prefs))
@@ -104,6 +109,7 @@ class UserPrefTest(testing_config.CustomTestCase):
         self.assertTrue(huh.notify_as_starrer)
 
     def test_get_prefs_for_emails__long_list(self):
+        """Tests getting user preferences for a large list of emails."""
         emails = ['user_%d@example.com' % i for i in range(100)]
         user_prefs = user_models.UserPref.get_prefs_for_emails(emails)
         self.assertEqual(100, len(user_prefs))

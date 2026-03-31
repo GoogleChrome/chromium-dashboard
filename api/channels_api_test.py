@@ -26,6 +26,7 @@ test_app = flask.Flask(__name__)
 
 class ChannelsAPITest(testing_config.CustomTestCase):
     def setUp(self):
+        """Set up the test."""
         self.handler = channels_api.ChannelsAPI()
         self.request_path = '/api/v0/channels'
 
@@ -34,6 +35,7 @@ class ChannelsAPITest(testing_config.CustomTestCase):
     def test_construct_chrome_channels_details(
         self, mock_get_omaha_data, mock_fetch_chrome_release_info
     ):
+        """Test construct_chrome_channels_details."""
         win_data = {
             'os': 'win',
             'versions': [
@@ -113,6 +115,7 @@ class ChannelsAPITest(testing_config.CustomTestCase):
     def test_construct_chrome_channels_details__beta_promotion(
         self, mock_get_omaha_data, mock_fetch_chrome_release_info
     ):
+        """Test construct_chrome_channels_details for beta promotion."""
         win_data = {
             'os': 'win',
             'versions': [
@@ -172,6 +175,7 @@ class ChannelsAPITest(testing_config.CustomTestCase):
     def test_construct_chrome_channels_details__dev_promotion(
         self, mock_get_omaha_data, mock_fetch_chrome_release_info
     ):
+        """Test construct_chrome_channels_details for dev promotion."""
         win_data = {
             'os': 'win',
             'versions': [
@@ -230,6 +234,7 @@ class ChannelsAPITest(testing_config.CustomTestCase):
     def test_construct_specified_milestones_details(
         self, mock_fetch_chrome_release_info
     ):
+        """Test construct_specified_milestones_details."""
         mstone_data = {
             'earliest_beta': '2020-02-13T00:00:00',
             'mstone': 'fake milestone number',
@@ -265,12 +270,14 @@ class ChannelsAPITest(testing_config.CustomTestCase):
         self.assertEqual(expected, actual)
 
     def test_do_get__simple(self):
+        """Test do_get with simple request."""
         with test_app.test_request_context(self.request_path):
             actual_response = self.handler.do_get()
 
         self.assertEqual(channels_api.TEST_CHANNEL_DATA, actual_response)
 
     def test_do_get__error(self):
+        """Test do_get with error."""
         with test_app.test_request_context(
             self.request_path + '?start=2&end=1'
         ):
@@ -279,6 +286,7 @@ class ChannelsAPITest(testing_config.CustomTestCase):
 
     @mock.patch('api.channels_api.construct_specified_milestones_details')
     def test_do_get__start_and_end(self, mock_call):
+        """Test do_get with start and end parameters."""
         expected = {
             1: '123',
         }

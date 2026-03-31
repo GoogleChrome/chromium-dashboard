@@ -57,6 +57,7 @@ class FunctionTests(testing_config.CustomTestCase):
 
 class OutboundEmailHandlerTest(testing_config.CustomTestCase):
     def setUp(self):
+        """Set up the test environment."""
         self.request_path = '/tasks/outbound-email'
 
         self.to = 'user@example.com'
@@ -154,6 +155,7 @@ class OutboundEmailHandlerTest(testing_config.CustomTestCase):
 
 class BouncedEmailHandlerTest(testing_config.CustomTestCase):
     def setUp(self):
+        """Set up the test environment."""
         self.sender = (
             'Chromestatus <admin@%s.appspotmail.com>' % settings.APP_ID
         )
@@ -161,6 +163,7 @@ class BouncedEmailHandlerTest(testing_config.CustomTestCase):
 
     @mock.patch('framework.sendemail.receive')
     def test_process_post_data(self, mock_receive):
+        """Test process post data."""
         with test_app.test_request_context('/_ah/bounce'):
             actual_json = sendemail.handle_bounce()
 

@@ -36,6 +36,7 @@ class MainTest(testing_config.CustomTestCase):
 
 class ConstTemplateTest(testing_config.CustomTestCase):
     def check_template(self, route):
+        """Checks if a template renders correctly for a given route."""
         handler = route.handler_class()
 
         with test_app.test_request_context(route.path):

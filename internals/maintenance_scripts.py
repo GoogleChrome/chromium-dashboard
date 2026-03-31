@@ -375,6 +375,7 @@ class AssociateOTs(FlaskHandler):
         return stage_changed
 
     def parse_feature_id(self, chromestatus_url: str | None) -> int | None:
+        """Parse feature id."""
         if chromestatus_url is None:
             return None
         # The ChromeStatus feature ID is pulled out of the ChromeStatus URL.
@@ -395,6 +396,7 @@ class AssociateOTs(FlaskHandler):
         return chromestatus_id
 
     def find_unassociated_trial_stage(self, feature_id: int) -> Stage | None:
+        """Find unassociated trial stage."""
         fe: FeatureEntry | None = FeatureEntry.get_by_id(feature_id)
         if fe is None:
             logging.info(f'No feature found for ChromeStatus ID: {feature_id}')
@@ -759,6 +761,7 @@ class DeleteEmptyExtensionStages(FlaskHandler):
     """Delete any extension stages that have no information filled out."""
 
     def get_template_data(self, **kwargs) -> str:
+        """Get template data."""
         self.require_cron_header()
 
         # Fetch all extension stages.
@@ -989,6 +992,7 @@ class SendManualOTCreatedEmail(FlaskHandler):
     """
 
     def get_template_data(self, **kwargs):
+        """Get template data."""
         self.require_cron_header()
 
         stage_id = kwargs.get('stage_id')
@@ -1017,6 +1021,7 @@ class SendManualOTActivatedEmail(FlaskHandler):
     """
 
     def get_template_data(self, **kwargs):
+        """Get template data."""
         self.require_cron_header()
 
         stage_id = kwargs.get('stage_id')
@@ -1191,6 +1196,7 @@ class GenerateReviewActivityFile(FlaskHandler):
         blob.upload_from_string(timestamp.strftime(self.DATE_FORMAT))
 
     def get_template_data(self, **kwargs):
+        """Get template data."""
         self.require_cron_header()
 
         storage_client = storage.Client()
@@ -1325,6 +1331,7 @@ class GenerateStaleFeaturesFile(FlaskHandler):
         blob.upload_from_string(csv_io.getvalue())
 
     def get_template_data(self, **kwargs) -> str:
+        """Get template data."""
         self.require_cron_header()
 
         current_milestone_info = utils.get_current_milestone_info('current')
@@ -1468,6 +1475,7 @@ class GenerateShippingFeaturesFile(FlaskHandler):
         )
 
     def get_template_data(self, **kwargs) -> str:
+        """Get template data."""
         self.require_cron_header()
 
         current_milestone_info = utils.get_current_milestone_info('current')
@@ -1491,6 +1499,7 @@ class MigrateRolloutMilestones(FlaskHandler):
     """Migrate the rollout milestone field to be stored in the 'milestones' field."""
 
     def get_template_data(self, **kwargs):
+        """Get template data."""
         self.require_cron_header()
         stages: list[Stage] = Stage.query(
             Stage.stage_type == STAGE_ENT_ROLLOUT
@@ -1520,6 +1529,7 @@ class ResetOutstandingNotifications(FlaskHandler):
     """Reset the FeatureEntry.outstanding_notifications counter for all features."""
 
     def get_template_data(self, **kwargs) -> str:
+        """Get template data."""
         self.require_cron_header()
         notified_features: list[FeatureEntry] = FeatureEntry.query(
             FeatureEntry.outstanding_notifications > 0
@@ -1563,6 +1573,7 @@ class ResetStaleShippingMilestones(FlaskHandler):
             setattr(stage.milestones, field, None)
 
     def get_template_data(self, **kwargs) -> str:
+        """Get template data."""
         self.require_cron_header()
 
         num_features_reset = 0

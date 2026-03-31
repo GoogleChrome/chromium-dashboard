@@ -32,6 +32,7 @@ class LoginAPI(basehandlers.APIHandler):
         self.abort(405, valid_methods=['POST'])
 
     def do_post(self, **kwargs):
+        """Sign in the user."""
         try:
             request = SignInRequest.from_dict(self.request.json)
             token = request.credential
@@ -64,6 +65,7 @@ class MockLogin(basehandlers.APIHandler):
     """Create a session using a testing account."""
 
     def do_post(self, **kwargs):
+        """Mock sign in."""
         if not settings.DEV_MODE and not settings.UNIT_TEST_MODE:
             self.abort(
                 status=403,

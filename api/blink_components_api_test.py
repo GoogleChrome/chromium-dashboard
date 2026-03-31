@@ -26,6 +26,7 @@ test_app = flask.Flask(__name__)
 
 class BlinkComponentsAPITest(testing_config.CustomTestCase):
     def setUp(self):
+        """Set up the test."""
         self.handler = blink_components_api.BlinkComponentsAPI()
         self.request_path = '/api/v0/blinkcomponents'
 

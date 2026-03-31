@@ -23,6 +23,7 @@ from internals.review_models import Activity, OwnersFile
 
 class ActivityTest(testing_config.CustomTestCase):
     def setUp(self):
+        """Set up the test environment."""
         self.feature_1 = FeatureEntry(
             name='feature a',
             summary='sum',
@@ -107,6 +108,7 @@ class GateTest(testing_config.CustomTestCase):
 
 class OwnersFileTest(testing_config.CustomTestCase):
     def setUp(self):
+        """Set up the test environment."""
         now = datetime.datetime.now()
         self.owner_file_1 = OwnersFile(
             url='abc', raw_content='foo', created_on=now
@@ -120,6 +122,7 @@ class OwnersFileTest(testing_config.CustomTestCase):
         self.owner_file_2.add_owner_file()
 
     def test_get_raw_owner_file(self):
+        """Test get raw owner file."""
         owners_file = OwnersFile.get_raw_owner_file('abc')
         self.assertEqual('foo', owners_file.raw_content)
         self.assertTrue(owners_file.is_fresh())

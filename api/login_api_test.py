@@ -29,6 +29,7 @@ test_app.secret_key = 'testing secret'
 
 class LoginAPITest(testing_config.CustomTestCase):
     def setUp(self):
+        """Set up the test."""
         self.handler = login_api.LoginAPI()
         self.request_path = '/api/v0/login'
 

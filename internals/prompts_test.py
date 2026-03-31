@@ -46,6 +46,7 @@ def assert_matches_golden(
 
 class TestAIPromptTemplatesHandler(unittest.TestCase):
     def setUp(self):
+        """Set up the test environment."""
         self.maxDiff = None
         return super().setUp()
 

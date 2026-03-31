@@ -32,6 +32,7 @@ test_app = flask.Flask(__name__)
 
 class OriginTrialsClientTest(testing_config.CustomTestCase):
     def setUp(self):
+        """Set up the test environment."""
         self.original_ot_api_key = settings.OT_API_KEY
         self.ot_stage = Stage(
             feature_id=1,
@@ -98,6 +99,7 @@ class OriginTrialsClientTest(testing_config.CustomTestCase):
         }
 
     def tearDown(self):
+        """Clean up the test environment."""
         settings.OT_API_KEY = self.original_ot_api_key
 
     @mock.patch('requests.get')

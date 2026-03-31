@@ -42,6 +42,7 @@ test_app = flask.Flask(__name__)
 
 class LinkTest(testing_config.CustomTestCase):
     def setUp(self):
+        """Set up the test environment."""
         self.feature = FeatureEntry(
             name='feature a',
             summary='sum',
@@ -60,6 +61,7 @@ class LinkTest(testing_config.CustomTestCase):
         self.feature2_id = self.feature2.key.integer_id()
 
     def mock_user_change_fields(self, changed_fields, target_feature=None):
+        """Mock user change fields."""
         if not target_feature:
             target_feature = self.feature
         for field_name, old_val, new_val in changed_fields:
@@ -69,6 +71,7 @@ class LinkTest(testing_config.CustomTestCase):
         update_feature_links(target_feature, changed_fields)
 
     def test_get_domain_and_scheme__valid(self):
+        """Test get domain and scheme  valid."""
         self.assertEqual(
             'https://example.com', get_domain_with_scheme('https://example.com')
         )
@@ -97,6 +100,7 @@ class LinkTest(testing_config.CustomTestCase):
         )
 
     def test_get_domain_and_scheme__invalid(self):
+        """Test get domain and scheme  invalid."""
         self.assertEqual(
             'Invalid: https://[2a01:5cc0:1:2:$::4]/s',
             get_domain_with_scheme('https://[2a01:5cc0:1:2:$::4]/something'),
@@ -107,6 +111,7 @@ class LinkTest(testing_config.CustomTestCase):
         )
 
     def test_get_feature_links_summary(self):
+        """Test get feature links summary."""
         links = [
             FeatureLinks(
                 url='https://bugs.chromium.org/p/chromium/issues/detail?id=100000',
@@ -147,11 +152,13 @@ class LinkTest(testing_config.CustomTestCase):
 
     @mock.patch('internals.link_helpers.Link.parse', autospec=True)
     def test_feature_changed_add_and_remove_url(self, mock_parse):
+        """Test feature changed add and remove url."""
         url = 'https://github.com/GoogleChrome/chromium-dashboard/issues/999'
         query = FeatureLinks.query(FeatureLinks.url == url)
 
         # Define behavior for the mock
         def side_effect(link_instance):
+            """Side effect."""
             link_instance.information = {
                 'title': 'Comments field is incorrectly escaped',
                 'labels': [],
@@ -198,6 +205,7 @@ class LinkTest(testing_config.CustomTestCase):
     @mock.patch('logging.error')
     @mock.patch('internals.link_helpers.Link.parse', autospec=True)
     def test_feature_changed_invalid_url(self, mock_parse, mock_error):
+        """Test feature changed invalid url."""
         url = (
             'https://github.com/GoogleChrome/chromium-dashboard/issues/10000000'
         )
@@ -208,6 +216,7 @@ class LinkTest(testing_config.CustomTestCase):
 
         # Define behavior for the mock to simulate an error
         def side_effect(link_instance):
+            """Side effect."""
             link_instance.is_error = True
             link_instance.http_error_code = 404
             link_instance.information = None
@@ -223,6 +232,7 @@ class LinkTest(testing_config.CustomTestCase):
     def test_webkit_review_saves_position_in_feature(
         self, mockParse: mock.MagicMock
     ):  # noqa: E501
+        """Test webkit review saves position in feature."""
         mockParse.return_value = {'labels': ['position: support']}
 
         url = 'https://github.com/WebKit/standards-positions/issues/247'
@@ -241,6 +251,7 @@ class LinkTest(testing_config.CustomTestCase):
     def test_mozilla_review_saves_position_in_feature(
         self, mockParse: mock.MagicMock
     ):  # noqa: E501
+        """Test mozilla review saves position in feature."""
         mockParse.return_value = {'labels': ['position: defer']}
 
         url = 'https://github.com/mozilla/standards-positions/issues/247'
@@ -259,6 +270,7 @@ class LinkTest(testing_config.CustomTestCase):
     def test_tag_review_saves_position_in_feature(
         self, mockParse: mock.MagicMock
     ):  # noqa: E501
+        """Test tag review saves position in feature."""
         mockParse.return_value = {'labels': ['Resolution: satisfied']}
 
         url = 'https://github.com/w3ctag/design-reviews/issues/928'
@@ -277,6 +289,7 @@ class LinkTest(testing_config.CustomTestCase):
     def test_removing_mozilla_review_removes_saved_position(
         self, mockParse: mock.MagicMock
     ):
+        """Test removing mozilla review removes saved position."""
         self.feature.ff_views_link_result = 'garbage'
         self.feature.put()
 
@@ -293,6 +306,7 @@ class LinkTest(testing_config.CustomTestCase):
     def test_updating_links_updates_cached_position(
         self, mockParse: mock.MagicMock
     ):  # noqa: E501
+        """Test updating links updates cached position."""
         mockParse.return_value = {'labels': ['position: defer']}
 
         url = 'https://github.com/mozilla/standards-positions/issues/247'
@@ -324,6 +338,7 @@ class LinkTest(testing_config.CustomTestCase):
     def test_adding_link_to_second_feature_saves_position_in_second_feature(
         self, mockParse: mock.MagicMock
     ):
+        """Test adding link to second feature saves position in second feature."""
         mockParse.return_value = {'labels': ['position: defer']}
 
         url = 'https://github.com/mozilla/standards-positions/issues/247'
@@ -352,6 +367,7 @@ class LinkTest(testing_config.CustomTestCase):
     def test_denormalizing_github_link_without_information_doesnt_crash(
         self, mockParse: mock.MagicMock
     ):
+        """Test denormalizing github link without information doesnt crash."""
         mockParse.return_value = {'labels': ['position: defer']}
 
         url = 'https://github.com/mozilla/standards-positions/issues/247'
@@ -372,11 +388,13 @@ class LinkTest(testing_config.CustomTestCase):
 
     @mock.patch('internals.link_helpers.Link.parse', autospec=True)
     def test_features_with_same_link(self, mock_parse):
+        """Test features with same link."""
         url = 'https://github.com/GoogleChrome/chromium-dashboard/issues/999'
         query = FeatureLinks.query(FeatureLinks.url == url)
 
         # Simple success mock
         def side_effect(link_instance):
+            """Side effect."""
             link_instance.information = {'title': 'Mock Title'}
             link_instance.type = LINK_TYPE_GITHUB_ISSUE
             link_instance.is_error = False
@@ -403,7 +421,10 @@ class LinkTest(testing_config.CustomTestCase):
 
     @mock.patch('internals.link_helpers.Link.parse', autospec=True)
     def test_update_all_feature_links(self, mock_parse):
+        """Test update all feature links."""
+
         def side_effect(link_instance):
+            """Side effect."""
             if 'issues/999' in link_instance.url:
                 link_instance.type = LINK_TYPE_WEB
                 link_instance.information = {'title': 'Changed Type'}

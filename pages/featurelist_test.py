@@ -33,6 +33,7 @@ class TestWithFeature(testing_config.CustomTestCase):
     HANDLER_CLASS: Optional[object] = None
 
     def setUp(self):
+        """Sets up common user and feature entries for tests."""
         self.app_user = user_models.AppUser(email='registered@example.com')
         self.app_user.put()
 

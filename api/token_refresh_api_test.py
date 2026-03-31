@@ -30,6 +30,7 @@ test_app.secret_key = 'testing secret'
 
 class TokenRefreshAPITest(testing_config.CustomTestCase):
     def setUp(self):
+        """Set up the test environment."""
         self.handler = token_refresh_api.TokenRefreshAPI()
         self.request_path = '/api/v0/currentuser/token'
 
