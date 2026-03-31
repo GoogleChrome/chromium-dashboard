@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Main application entry point, routing configuration, and Flask app setup."""
+
 import threading
 from dataclasses import dataclass, field
 from typing import Any, Type
@@ -103,6 +105,8 @@ secrets.load_ot_api_key()
 
 @dataclass
 class Route:
+    """Represents a routing configuration for the application."""
+
     path: str
     handler_class: Type[basehandlers.BaseHandler] = basehandlers.SPAHandler
     defaults: dict[str, Any] = field(default_factory=dict)

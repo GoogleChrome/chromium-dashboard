@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Model and functions for extracting, indexing, and updating URLs linked within feature fields."""
+
 import datetime
 import logging
 from collections import Counter
@@ -306,6 +308,7 @@ class FeatureLinksUpdateHandler(FlaskHandler):
     IS_INTERNAL_HANDLER = True
 
     def process_post_data(self, **kwargs):
+        """Process post data."""
         self.require_task_header()
 
         logging.info('Starting indexing feature links')
@@ -508,6 +511,8 @@ def get_feature_links_samples(
 
 
 class UpdateAllFeatureLinksHandlers(FlaskHandler):
+    """Handler to update all feature links."""
+
     def get_template_data(self, **kwargs) -> str:
         """Retrieves feature links from a database, identifies which links need to be updated based on certain conditions,
         and enqueues tasks to update those links in batches.

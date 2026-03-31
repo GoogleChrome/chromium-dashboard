@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Helper functions for managing enterprise features and first notification milestones."""
+
 from datetime import datetime
 
 from api import channels_api

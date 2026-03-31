@@ -13,6 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""General utility functions and helpers.
+
+Provides common utilities for URL formatting, string normalization,
+retry logic, text extraction, and interactions with external services
+like GitHub and the Chromium release schedule.
+"""
+
 import asyncio
 import calendar
 import datetime
@@ -212,12 +219,17 @@ def get_chromium_milestone_info(milestone: int) -> dict:
 def get_current_milestone_info(anchor_channel: str):
     """Return a dict of info about the next milestone reaching anchor_channel."""
     try:
-        resp = requests.get(
-            f'{CHROME_RELEASE_SCHEDULE_URL}?mstone={anchor_channel}'
-        )  # noqa: E501
+        url = f'{CHROME_RELEASE_SCHEDULE_URL}?mstone={anchor_channel}'
+        logging.info('fetching ' + url)
+        resp = requests.get(url)
+        logging.info(
+            'resp.text is:\n%s',
+            resp.text[: settings.MAX_LOG_LINE],
+        )
     except requests.RequestException as e:
         raise e
     mstone_info = json.loads(resp.text)
+    logging.info('mstone_info is:\n%s', mstone_info)
     return mstone_info['mstones'][0]
 
 

@@ -13,6 +13,8 @@
 # limitations under the License.
 
 
+"""Tests for the users admin page handler."""
+
 import flask
 import html5lib
 from google.cloud import ndb  # type: ignore
@@ -32,7 +34,10 @@ TESTDATA = testing_config.Testdata(__file__)
 
 
 class UsersListTemplateTest(testing_config.CustomTestCase):
+    """Tests for the users list template rendering."""
+
     def setUp(self):
+        """Sets up the test user and handler for the users list."""
         self.handler = users.UserListHandler()
 
         self.app_admin = user_models.AppUser(email='admin@example.com')

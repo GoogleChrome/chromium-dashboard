@@ -12,6 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Unit tests for the origin_trials_client module.
+
+Tests the interaction with the Origin Trials API, including fetching
+trials, extending trials, and handling API key presence/absence.
+"""
+
 from unittest import mock
 
 import flask
@@ -25,7 +31,10 @@ test_app = flask.Flask(__name__)
 
 
 class OriginTrialsClientTest(testing_config.CustomTestCase):
+    """Tests for the origin_trials_client functions."""
+
     def setUp(self):
+        """Set up the test environment."""
         self.original_ot_api_key = settings.OT_API_KEY
         self.ot_stage = Stage(
             feature_id=1,
@@ -92,6 +101,7 @@ class OriginTrialsClientTest(testing_config.CustomTestCase):
         }
 
     def tearDown(self):
+        """Clean up the test environment."""
         settings.OT_API_KEY = self.original_ot_api_key
 
     @mock.patch('requests.get')

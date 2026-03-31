@@ -10,9 +10,6 @@ docstring-code-format = true
 [tool.ruff.lint]
 select = ["E", "F", "I", "D"]
 ignore = [
-    "D100", # undocumented-public-module: The codebase lacks hundreds of module docstrings.
-    "D101", # undocumented-public-class: The codebase lacks hundreds of class docstrings.
-    "D102", # undocumented-public-method: The codebase lacks hundreds of method docstrings.
     "D104", # undocumented-public-package: The codebase lacks hundreds of package docstrings.
 
     # Infeasible: Conflicts with Ruff's default Google style docstring rules (D211, D212).

@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Provides helper functions for managing and retrieving FeatureEntry stages."""
+
 from collections import defaultdict
 from datetime import datetime
 from typing import TypedDict
@@ -42,6 +44,8 @@ from internals.review_models import Gate
 
 # Type return value of get_stage_info_for_templates()
 class StageTemplateInfo(TypedDict):
+    """Type alias for stage information used in templates."""
+
     proto_stages: list[Stage]
     dt_stages: list[Stage]
     ot_stages: list[Stage]

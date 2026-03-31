@@ -12,6 +12,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""Tests for the comments_api module, verifying review comment operations and activity logging."""
+
 import datetime
 from unittest import mock
 
@@ -35,6 +37,8 @@ NOW = datetime.datetime.now()
 
 
 class CommentsConvertersTest(testing_config.CustomTestCase):
+    """Tests for comment converters."""
+
     def test_amendment_to_OAM__normal(self):
         """We can convert a NDB Amendment to a Open API Amendment."""
         amend = Amendment(
@@ -54,6 +58,7 @@ class CommentsConvertersTest(testing_config.CustomTestCase):
         self.assertEqual(oam.new_value, '')
 
     def test_amendment_to_json_dict(self):
+        """Test amendment to json dict."""
         amnd = Amendment(field_name='summary', old_value='foo', new_value='bar')
         expected = AmendmentModel(
             field_name='summary', old_value='foo', new_value='bar'
@@ -73,6 +78,7 @@ class CommentsConvertersTest(testing_config.CustomTestCase):
         self.assertEqual(expected, actual)
 
     def test_activity_to_json_dict(self):
+        """Test activity to json dict."""
         amnd_1 = Amendment(
             field_name='summary', old_value='foo', new_value='bar'
         )
@@ -112,7 +118,10 @@ class CommentsConvertersTest(testing_config.CustomTestCase):
 
 
 class CommentsAPITest(testing_config.CustomTestCase):
+    """Tests for the Comments API."""
+
     def setUp(self):
+        """Set up the test."""
         self.feature_1 = FeatureEntry(
             name='feature one', summary='sum', category=1
         )

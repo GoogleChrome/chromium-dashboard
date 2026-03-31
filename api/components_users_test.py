@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for the components_users module, verifying retrieval of all Blink component users."""
+
 import datetime
 
 import flask
@@ -26,7 +28,10 @@ test_app = flask.Flask(__name__)
 
 
 class ComponentsUsersAPITest(testing_config.CustomTestCase):
+    """Tests for the Components Users API."""
+
     def setUp(self):
+        """Set up the test."""
         self.handler = components_users.ComponentsUsersAPI()
         self.app_admin = user_models.AppUser(email='admin@example.com')
         self.app_admin.is_admin = True
@@ -75,6 +80,7 @@ class ComponentsUsersAPITest(testing_config.CustomTestCase):
         self.request_path = '/api/v0/componentsusers'
 
     def test_do_get(self):
+        """Test do_get."""
         testing_config.sign_in('admin@example.com', 123567890)
         with test_app.test_request_context(self.request_path):
             response = self.handler.do_get()

@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for the intent email preview handler."""
+
 import datetime
 import os
 
@@ -140,9 +142,12 @@ def _create_complete_feature():
 
 
 class IntentEmailPreviewTemplateTest(testing_config.CustomTestCase):
+    """Tests for the intent email preview template."""
+
     HANDLER_CLASS = intentpreview.IntentEmailPreviewHandler
 
     def setUp(self):
+        """Sets up test data for the intent email preview tests."""
         super(IntentEmailPreviewTemplateTest, self).setUp()
         self.complete_feature = _create_complete_feature()
         self.complete_feature.put()

@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""API handlers for creating, retrieving, updating, and deleting feature entries."""
+
 import re
 from datetime import datetime
 from typing import Any
@@ -57,6 +59,7 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
     """Features are the the main records that we track."""
 
     def get_one_feature(self, feature_id: int) -> VerboseFeatureDict:
+        """Get a single feature by ID."""
         feature = FeatureEntry.get_by_id(feature_id)
         if not feature:
             self.abort(404, msg='Feature %r not found' % feature_id)
@@ -71,6 +74,7 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
         return converters.feature_entry_to_json_verbose(feature)
 
     def do_search(self):
+        """Search for features."""
         user = users.get_current_user()
         # Show unlisted features to site editors or admins.
         show_unlisted_features = permissions.can_edit_any_feature(user)

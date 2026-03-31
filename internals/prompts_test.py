@@ -13,6 +13,8 @@
 # limitations under the License.
 
 
+"""Tests for AI prompt templates, verifying correct rendering of gap analysis and spec synthesis templates."""
+
 import unittest
 
 from flask import Flask, render_template
@@ -43,7 +45,10 @@ def assert_matches_golden(
 
 
 class TestAIPromptTemplatesHandler(unittest.TestCase):
+    """Tests for AIPromptTemplatesHandler."""
+
     def setUp(self):
+        """Set up the test environment."""
         self.maxDiff = None
         return super().setUp()
 

@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""API handlers for managing owners and subscribers of individual Blink components."""
+
 from chromestatus_openapi.models import ComponentUsersRequest
 
 from framework import basehandlers, permissions
@@ -20,6 +22,8 @@ from internals import user_models
 
 
 class ComponentUsersAPI(basehandlers.APIHandler):
+    """API handler for component users."""
+
     def __update_subscribers_list(
         self, add=True, user_id=None, blink_component_id=None, primary=False
     ):
@@ -49,6 +53,7 @@ class ComponentUsersAPI(basehandlers.APIHandler):
 
     @permissions.require_admin_site
     def do_put(self, **kwargs) -> tuple[dict, int]:
+        """Update component subscribers."""
         component_users_request = ComponentUsersRequest.from_dict(
             self.request.get_json(force=True)
         )  # noqa: E501
@@ -62,6 +67,7 @@ class ComponentUsersAPI(basehandlers.APIHandler):
 
     @permissions.require_admin_site
     def do_delete(self, **kwargs) -> tuple[dict, int]:
+        """Remove component subscribers."""
         params = self.request.get_json(force=True)
         component_users_request = ComponentUsersRequest.from_dict(params)
         self.__update_subscribers_list(

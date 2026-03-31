@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for the stale_features_api module, verifying the accurate retrieval of stale feature data."""
+
 from datetime import datetime
 from unittest import mock
 
@@ -25,6 +27,8 @@ test_app = flask.Flask(__name__)
 
 
 class StaleFeaturesAPITest(testing_config.CustomTestCase):
+    """Tests for the Stale Features API handler."""
+
     def setUp(self):
         """Set up test data for the API handler."""
         self.handler = stale_features_api.StaleFeaturesAPI()

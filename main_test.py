@@ -13,6 +13,8 @@
 # limitations under the License.
 
 
+"""Tests for the main application entry point and routing configuration."""
+
 import testing_config  # isort: split
 
 import flask
@@ -33,7 +35,10 @@ class MainTest(testing_config.CustomTestCase):
 
 
 class ConstTemplateTest(testing_config.CustomTestCase):
+    """Tests for constant template rendering."""
+
     def check_template(self, route):
+        """Checks if a template renders correctly for a given route."""
         handler = route.handler_class()
 
         with test_app.test_request_context(route.path):

@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for the review_latency_api module, verifying the calculation and sorting of review latencies."""
+
 import testing_config  # isort: split
 
 from datetime import datetime
@@ -43,7 +45,10 @@ def make_feature_and_gates(name):
 
 
 class ReviewLatencyAPITest(testing_config.CustomTestCase):
+    """Tests for ReviewLatencyAPI."""
+
     def setUp(self):
+        """Set up the test environment."""
         self.app_admin = user_models.AppUser(email='admin@example.com')
         self.app_admin.is_admin = True
         self.app_admin.put()

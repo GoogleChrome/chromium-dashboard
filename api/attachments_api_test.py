@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for the attachments_api module, verifying attachment upload permissions and serving."""
+
 import io
 
 import flask
@@ -29,7 +31,10 @@ test_app.secret_key = 'test'
 
 
 class AttachmentsAPITest(testing_config.CustomTestCase):
+    """Tests for the Attachments API."""
+
     def setUp(self):
+        """Set up the test."""
         self.feature = FeatureEntry(
             name='feat',
             summary='sum',
@@ -96,7 +101,10 @@ class AttachmentsAPITest(testing_config.CustomTestCase):
 
 
 class AttachmentServingTest(testing_config.CustomTestCase):
+    """Tests for serving attachments."""
+
     def setUp(self):
+        """Set up the test."""
         self.feature = FeatureEntry(
             name='feat',
             summary='sum',
@@ -174,7 +182,10 @@ class AttachmentServingTest(testing_config.CustomTestCase):
 
 
 class RoundTripTest(testing_config.CustomTestCase):
+    """Tests for attachment round trips."""
+
     def setUp(self):
+        """Set up the test."""
         self.feature = FeatureEntry(
             name='feat',
             summary='sum',

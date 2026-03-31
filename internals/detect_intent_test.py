@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for the detect_intent module, verifying intent detection and URL parsing from text."""
+
 import datetime
 from unittest import mock
 
@@ -31,7 +33,10 @@ test_app = flask.Flask(__name__)
 
 
 class FunctionTest(testing_config.CustomTestCase):
+    """Tests for intent detection functions."""
+
     def setUp(self):
+        """Set up the test environment."""
         self.feature_1 = FeatureEntry(
             id=1,
             name='feature one',
@@ -517,7 +522,10 @@ class FunctionTest(testing_config.CustomTestCase):
 
 
 class IntentEmailHandlerTest(testing_config.CustomTestCase):
+    """Tests for intent email handler."""
+
     def setUp(self):
+        """Set up the test environment."""
         self.feature_1 = FeatureEntry(
             name='feature one',
             summary='detailed sum',

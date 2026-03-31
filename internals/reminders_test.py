@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for the reminders module, verifying reminder email generation and filtering logic."""
+
 from datetime import datetime
 from unittest import mock
 
@@ -111,7 +113,10 @@ def make_test_features():
 
 
 class FunctionTest(testing_config.CustomTestCase):
+    """Tests for Function."""
+
     def setUp(self):
+        """Set up the test environment."""
         self.current_milestone_info = {
             'earliest_beta': '2022-09-21T12:34:56',
         }
@@ -160,6 +165,7 @@ class FunctionTest(testing_config.CustomTestCase):
         self.maxDiff = None
 
     def tearDown(self) -> None:
+        """Clean up the test environment."""
         kinds: list[ndb.Model] = [FeatureEntry, Stage, UserPref]
         for kind in kinds:
             for entity in kind.query():
@@ -263,6 +269,7 @@ class FunctionTest(testing_config.CustomTestCase):
         self.assertEqual(set(actual), set(expected))
 
     def test_build_email_tasks_feature_accuracy(self):
+        """Test build email tasks feature accuracy."""
         with test_app.app_context():
             handler = reminders.FeatureAccuracyHandler()
             actual = reminders.build_email_tasks(
@@ -289,6 +296,7 @@ class FunctionTest(testing_config.CustomTestCase):
         )
 
     def test_build_email_tasks_feature_accuracy__enterprise(self):
+        """Test build email tasks feature accuracy  enterprise."""
         with test_app.app_context():
             handler = reminders.FeatureAccuracyHandler()
             actual = reminders.build_email_tasks(
@@ -316,6 +324,7 @@ class FunctionTest(testing_config.CustomTestCase):
 
     def test_build_email_tasks_feature_accuracy__escalated(self):
         # Set feature to have outstanding notifications to cause escalation.
+        """Test build email tasks feature accuracy  escalated."""
         self.feature_template.outstanding_notifications = 2
 
         with test_app.app_context():
@@ -343,6 +352,7 @@ class FunctionTest(testing_config.CustomTestCase):
         )  # noqa: E501
 
     def test_build_email_tasks_prepublication(self):
+        """Test build email tasks prepublication."""
         with test_app.app_context():
             handler = reminders.PrepublicationHandler()
             actual = reminders.build_email_tasks(
@@ -368,7 +378,10 @@ class FunctionTest(testing_config.CustomTestCase):
 
 
 class FeatureAccuracyHandlerTest(testing_config.CustomTestCase):
+    """Tests for FeatureAccuracyHandler."""
+
     def setUp(self):
+        """Set up the test environment."""
         self.feature_1, self.feature_2, self.feature_3 = make_test_features()
         self.handler = reminders.FeatureAccuracyHandler()
         self.owner_user_pref_1 = UserPref(
@@ -382,6 +395,7 @@ class FeatureAccuracyHandlerTest(testing_config.CustomTestCase):
 
     @mock.patch('requests.get')
     def test_determine_features_to_notify__no_features(self, mock_get):
+        """Test determine features to notify  no features."""
         mock_return = MockResponse(
             text=(
                 '{"mstones":[{"mstone": "40", '
@@ -395,6 +409,7 @@ class FeatureAccuracyHandlerTest(testing_config.CustomTestCase):
 
     @mock.patch('requests.get')
     def test_determine_features_to_notify__valid_features(self, mock_get):
+        """Test determine features to notify  valid features."""
         mock_return = MockResponse(
             text=(
                 '{"mstones":[{"mstone": "150", '
@@ -417,6 +432,7 @@ class FeatureAccuracyHandlerTest(testing_config.CustomTestCase):
 
     @mock.patch('requests.get')
     def test_determine_features_to_notify__multiple_owners(self, mock_get):
+        """Test determine features to notify  multiple owners."""
         mock_return = MockResponse(
             text=(
                 '{"mstones":[{"mstone": "148", '
@@ -438,6 +454,7 @@ class FeatureAccuracyHandlerTest(testing_config.CustomTestCase):
 
     @mock.patch('requests.get')
     def test_determine_features_to_notify__escalated(self, mock_get):
+        """Test determine features to notify  escalated."""
         self.feature_1.outstanding_notifications = 1
         self.feature_2.outstanding_notifications = 2
 
@@ -469,6 +486,7 @@ class FeatureAccuracyHandlerTest(testing_config.CustomTestCase):
     def test_determine_features_to_notify__escalated_not_outstanding(
         self, mock_get
     ):
+        """Test determine features to notify  escalated not outstanding."""
         self.feature_1.outstanding_notifications = 2
         self.feature_2.outstanding_notifications = 1
 
@@ -497,7 +515,10 @@ class FeatureAccuracyHandlerTest(testing_config.CustomTestCase):
 
 
 class PrepublicationHandlerTest(testing_config.CustomTestCase):
+    """Tests for PrepublicationHandler."""
+
     def setUp(self):
+        """Set up the test environment."""
         self.current_milestone_info = {
             'earliest_beta': '2022-09-21T12:34:56',
         }
@@ -530,7 +551,10 @@ class PrepublicationHandlerTest(testing_config.CustomTestCase):
 
 
 class SLOOverdueHandlerTest(testing_config.CustomTestCase):
+    """Tests for SLOOverdueHandler."""
+
     def setUp(self):
+        """Set up the test environment."""
         self.feature_1, self.feature_2, self.feature_3 = make_test_features()
         self.gate_1 = Gate(
             id=11,
@@ -556,6 +580,7 @@ class SLOOverdueHandlerTest(testing_config.CustomTestCase):
         self.day_22 = datetime(2023, 8, 9, 12, 30, 0)  # Later Tue
 
     def tearDown(self) -> None:
+        """Clean up the test environment."""
         kinds: list[ndb.Model] = [FeatureEntry, Stage, Gate]
         for kind in kinds:
             for entity in kind.query():

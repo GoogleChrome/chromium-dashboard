@@ -16,6 +16,12 @@
 # This code is based on a file from Monorail:
 # https://chromium.googlesource.com/infra/infra/+/master/appengine/monorail/framework/cloud_tasks_helpers.py
 
+"""Helper functions for enqueueing tasks to Google Cloud Tasks.
+
+Provides functions to create and enqueue background tasks, with local stubbing
+support for development and testing environments.
+"""
+
 import json
 import logging
 

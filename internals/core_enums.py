@@ -13,6 +13,12 @@
 # limitations under the License.
 
 
+"""System-wide enumerations and constant mappings.
+
+Defines the core enumerations used across the application, including
+feature categories, platforms, standardization statuses, and gate types.
+"""
+
 import collections
 import re
 from enum import Enum
@@ -349,6 +355,8 @@ STAGE_TYPES_BY_INTENT_STAGE = {
 
 # The different types of intents used to dictate fields in the intent templates.
 class IntentDraftType(str, Enum):
+    """Enum for intent draft types."""
+
     PROTOTYPE = 'prototype'
     DEVELOPER_TESTING = 'developer_testing'
     EXPERIMENT = 'experiment'
@@ -635,6 +643,8 @@ OT_ACTIVATED = 6
 
 # Histogram IDs used for identifying origin trial use counters.
 class BlinkHistogramID(str, Enum):
+    """Enum for blink histogram ID."""
+
     web_feature = 'WEB_FEATURE'
     webdx_feature = 'WEBDX_FEATURE'
     css_property_id = 'CSS_PROPERTY_ID'
@@ -642,6 +652,8 @@ class BlinkHistogramID(str, Enum):
 
 # Statuses used for go/skyhook-dash
 class SkyhookDashStatus(str, Enum):
+    """Enum for skyhook dash status."""
+
     FYI = 'FYI'
     APPROVED = 'APPROVED'
     DENIED = 'DENIED'
@@ -904,6 +916,8 @@ PROPERTY_NAMES_TO_ENUM_DICTS = {
 
 # Valid values for FeatureEntry.ai_test_eval_run_status
 class AITestEvaluationStatus(int, Enum):
+    """Enum for AI test evaluation status."""
+
     COMPLETE = 1
     IN_PROGRESS = 2
     FAILED = 3

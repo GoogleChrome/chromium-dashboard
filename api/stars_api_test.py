@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for the stars_api module, verifying user starring and unstarring behavior."""
+
 import flask
 import werkzeug.exceptions  # Flask HTTP stuff.
 
@@ -24,7 +26,10 @@ test_app = flask.Flask(__name__)
 
 
 class StarsAPITest(testing_config.CustomTestCase):
+    """Tests for the Stars API handler."""
+
     def setUp(self):
+        """Set up the test environment."""
         self.fe_1 = FeatureEntry(name='feature one', summary='sum', category=1)
         self.fe_1.put()
         self.handler = stars_api.StarsAPI()

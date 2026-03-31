@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for the shipping_features_api module, verifying milestone matching and feature aggregation."""
+
 from unittest import mock
 
 import flask
@@ -30,7 +32,10 @@ MOCK_CONTENT_FEATURES_CC = 'BASE_FEATURE...'
 
 
 class ShippingFeaturesAPITest(testing_config.CustomTestCase):
+    """Tests for ShippingFeaturesAPI."""
+
     def setUp(self):
+        """Set up the test environment."""
         self.handler = shipping_features_api.ShippingFeaturesAPI()
         self.milestone = 120
 

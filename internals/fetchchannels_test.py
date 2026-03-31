@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for the fetchchannels module, verifying the fetching of Chrome release info."""
+
 import json
 from unittest import mock
 
@@ -20,6 +22,8 @@ from internals import fetchchannels
 
 
 class ChannelsAPITest(testing_config.CustomTestCase):
+    """Tests for the channels API."""
+
     @mock.patch('requests.get')
     def test_fetch_chrome_release_info__found(self, mock_requests_get):
         """We can get channel data from the chromiumdash app."""

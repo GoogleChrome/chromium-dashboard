@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""API endpoints for creating, retrieving, updating, and deleting feature stages."""
 
 from api import converters
 from framework import basehandlers, permissions, rediscache
@@ -23,6 +24,8 @@ from internals.review_models import Gate
 
 
 class StagesAPI(basehandlers.EntitiesAPIHandler):
+    """API for managing stages."""
+
     def _create_gate_for_stage(
         self, feature_id: int, stage_id: int, gate_type: int
     ) -> None:

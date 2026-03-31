@@ -12,6 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Handling of file attachments and thumbnails.
+
+Provides functions and datastore models to store, validate, resize, and
+retrieve file attachments (like screenshots) associated with features.
+"""
+
 import io
 import logging
 
@@ -50,10 +56,14 @@ class Thumbnail(ndb.Model):
 
 
 class UnsupportedMimeType(Exception):
+    """Exception raised for unsupported mime types."""
+
     pass
 
 
 class AttachmentTooLarge(Exception):
+    """Exception raised for attachments that are too large."""
+
     pass
 
 

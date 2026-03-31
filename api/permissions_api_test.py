@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for the permissions_api module, verifying permission rules for different user types."""
+
 import flask
 
 import testing_config  # Must be imported before the module under test.
@@ -22,7 +24,10 @@ test_app = flask.Flask(__name__)
 
 
 class PermissionsAPITest(testing_config.CustomTestCase):
+    """Tests for PermissionsAPI."""
+
     def setUp(self):
+        """Set up the test environment."""
         self.handler = permissions_api.PermissionsAPI()
         self.request_path = '/api/v0/currentuser/permissions'
 

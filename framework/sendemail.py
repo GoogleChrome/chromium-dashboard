@@ -13,6 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Email formatting and sending utilities.
+
+Handles the formatting, routing, and sending of outbound emails, including
+special handling for staging environments and Cloud Tasks integration.
+"""
+
 import logging
 import re
 import urllib

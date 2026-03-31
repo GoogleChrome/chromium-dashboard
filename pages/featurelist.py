@@ -15,15 +15,20 @@
 
 
 # from google.appengine.api import users
+"""Provides the JSON feed handler for the features list page."""
+
 from framework import basehandlers, permissions, users
 from internals import feature_helpers
 
 
 class FeaturesJsonHandler(basehandlers.FlaskHandler):
+    """Handler for returning features list in JSON format."""
+
     HTTP_CACHE_TYPE = 'private'
     JSONIFY = True
 
     def get_template_data(self, **kwargs):
+        """Returns feature data in JSON format."""
         user = users.get_current_user()
         feature_list = feature_helpers.get_features_by_impl_status(
             show_unlisted=permissions.can_edit_any_feature(user)

@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for the login_api module, verifying token validation and login flow."""
+
 from unittest import mock
 
 import flask
@@ -26,7 +28,10 @@ test_app.secret_key = 'testing secret'
 
 
 class LoginAPITest(testing_config.CustomTestCase):
+    """Tests for LoginAPI."""
+
     def setUp(self):
+        """Set up the test."""
         self.handler = login_api.LoginAPI()
         self.request_path = '/api/v0/login'
 

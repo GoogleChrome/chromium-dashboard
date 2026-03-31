@@ -12,6 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Unit tests for the rediscache module.
+
+Tests basic caching operations (set, get, multi-get, delete) using
+the fake Redis client.
+"""
+
 import testing_config  # Must be imported before the module under test.
 from framework import rediscache
 
@@ -26,6 +32,8 @@ KEY_7 = 'cache_key|7'
 
 
 class RedisCacheFunctionTests(testing_config.CustomTestCase):
+    """Tests for rediscache functions."""
+
     def test_set_and_get(self):
         """We can cache a value and retrieve it from the cache."""
         self.assertEqual(None, rediscache.get(KEY_1))
@@ -63,12 +71,14 @@ class RedisCacheFunctionTests(testing_config.CustomTestCase):
         self.assertEqual({KEY_5: '222'}, rediscache.get_multi([KEY_5]))
 
     def test_delete(self):
+        """Test delete."""
         rediscache.set(KEY_6, '606')
         self.assertEqual('606', rediscache.get(KEY_6))
         rediscache.delete(KEY_6)
         self.assertEqual(None, rediscache.get(KEY_6))
 
     def test_delete_keys_with_prefix(self):
+        """Test delete keys with prefix."""
         for x in range(17):
             key = PREFIX + str(x)
             rediscache.set(key, str(x))

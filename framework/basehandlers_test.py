@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for the basehandlers module, verifying request handling, permissions, and responses."""
+
 import json
 from unittest import mock
 
@@ -33,31 +35,42 @@ from main import Route
 
 
 class TestableAPIHandler(basehandlers.APIHandler):
+    """Test stub for APIHandler."""
+
     def require_signed_in_and_xsrf_token(self):
+        """Require the user to be signed in and have an XSRF token."""
         pass
 
     def do_get(self):
+        """Handle GET requests."""
         return {'message': 'done get'}
 
     def do_post(self):
+        """Handle POST requests."""
         return {'message': 'done post'}
 
     def do_put(self):
+        """Handle PUT requests."""
         return {'message': 'done put'}
 
     def do_patch(self):
+        """Handle PATCH requests."""
         return {'message': 'done patch'}
 
     def do_delete(self):
+        """Handle DELETE requests."""
         return {'message': 'done delete'}
 
 
 class TestableFlaskHandler(basehandlers.FlaskHandler):
+    """Test stub for FlaskHandler."""
+
     TEMPLATE_PATH = 'test_template.html'
 
     def get_template_data(
         self, special_status=None, redirect_to=None, item_list=None
     ):
+        """Get template data for the handler."""
         if redirect_to:
             return flask.redirect(redirect_to)
         if item_list:
@@ -69,6 +82,7 @@ class TestableFlaskHandler(basehandlers.FlaskHandler):
         return template_data
 
     def process_post_data(self, **kwargs):
+        """Process POST data for the handler."""
         redirect_to = kwargs.get('redirect_to', None)
         if redirect_to:
             return flask.redirect(redirect_to)
@@ -113,7 +127,10 @@ test_app = basehandlers.FlaskApplication(
 
 
 class BaseHandlerTests(testing_config.CustomTestCase):
+    """Tests for BaseHandler."""
+
     def setUp(self):
+        """Set up the test environment."""
         self.handler = basehandlers.BaseHandler()
         self.fe_1 = FeatureEntry(
             id=1,
@@ -454,6 +471,7 @@ class BaseHandlerTests(testing_config.CustomTestCase):
 
     @mock.patch('framework.basehandlers.BaseHandler.abort')
     def test_get_int_arg__bad(self, mock_abort):
+        """Test get int arg with bad."""
         mock_abort.side_effect = werkzeug.exceptions.BadRequest
 
         with test_app.test_request_context('/test?num=abc'):
@@ -464,6 +482,7 @@ class BaseHandlerTests(testing_config.CustomTestCase):
             )
 
     def test_get_int_arg(self):
+        """Test get int arg."""
         with test_app.test_request_context('/test?num=1'):
             actual = self.handler.get_int_arg('num')
             self.assertEqual(1, actual)
@@ -525,7 +544,10 @@ class BaseHandlerTests(testing_config.CustomTestCase):
 
 
 class APIHandlerTests(testing_config.CustomTestCase):
+    """Tests for APIHandler."""
+
     def setUp(self):
+        """Set up the test environment."""
         self.handler = basehandlers.APIHandler()
 
         self.appuser = AppUser(email='user@example.com')
@@ -555,6 +577,7 @@ class APIHandlerTests(testing_config.CustomTestCase):
         self.assertIn(json.dumps(handler_data), actual_sent_text)
 
     def check_http_method_handler(self, handler_method, expected_message):
+        """Check http method handler."""
         with test_app.test_request_context('/path'):
             actual = handler_method()
             response, headers = actual
@@ -633,6 +656,7 @@ class APIHandlerTests(testing_config.CustomTestCase):
 
     @mock.patch('flask.abort')
     def check_bad_HTTP_method(self, handler_method, mock_abort):
+        """Check bad http method."""
         mock_abort.side_effect = werkzeug.exceptions.MethodNotAllowed
 
         with self.assertRaises(mock_abort.side_effect):
@@ -761,7 +785,10 @@ class APIHandlerTests(testing_config.CustomTestCase):
 
 
 class FlaskHandlerTests(testing_config.CustomTestCase):
+    """Tests for FlaskHandler."""
+
     def setUp(self):
+        """Set up the test environment."""
         self.user_1 = AppUser(email='registered@example.com')
         self.user_1.put()
         self.handler = TestableFlaskHandler()
@@ -1271,6 +1298,8 @@ class FlaskHandlerTests(testing_config.CustomTestCase):
 
 
 class RedirectorTests(testing_config.CustomTestCase):
+    """Tests for simple redirector handlers."""
+
     def test_redirector(self):
         """If the user hits a redirector, they get a redirect response."""
         with test_app.test_request_context('/old_path'):
@@ -1281,6 +1310,8 @@ class RedirectorTests(testing_config.CustomTestCase):
 
 
 class ConstHandlerTests(testing_config.CustomTestCase):
+    """Tests for simple constant template handlers."""
+
     def test_template_found(self):
         """We can run a template that requires no handler logic."""
         with test_app.test_request_context('/just_a_template'):
@@ -1342,6 +1373,8 @@ class ConstHandlerTests(testing_config.CustomTestCase):
 
 
 class SPAHandlerTests(testing_config.CustomTestCase):
+    """Tests for SPAHandler."""
+
     @mock.patch('framework.basehandlers.get_spa_template_data')
     def test_get_template_data(self, mock_get_spa):
         """It simply calls get_spa_template_data."""
@@ -1354,7 +1387,10 @@ class SPAHandlerTests(testing_config.CustomTestCase):
 
 
 class GetSPATemplateDataTests(testing_config.CustomTestCase):
+    """Tests for get_spa_template_data."""
+
     def setUp(self):
+        """Set up the test environment."""
         self.handler = basehandlers.SPAHandler()
         self.fe_1 = FeatureEntry(
             name='feature one',
@@ -1551,6 +1587,8 @@ class GetSPATemplateDataTests(testing_config.CustomTestCase):
 
 
 class FlaskApplicationTests(testing_config.CustomTestCase):
+    """Tests for the Flask application configuration."""
+
     def test_cors_with_allow_origin(self):
         """If the request hits a /data path, they get '*'."""
         with test_app.test_request_context('/data/test'):

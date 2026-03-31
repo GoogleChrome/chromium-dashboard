@@ -14,6 +14,8 @@
 # limitations under the License.
 
 
+"""Tests for the accounts_api module, verifying account creation and permission handling."""
+
 import flask
 import werkzeug.exceptions  # Flask HTTP stuff.
 
@@ -25,7 +27,10 @@ test_app = flask.Flask(__name__)
 
 
 class AccountsAPITest(testing_config.CustomTestCase):
+    """Tests for the Accounts API."""
+
     def setUp(self):
+        """Set up the test."""
         self.app_admin = user_models.AppUser(email='admin@example.com')
         self.app_admin.is_admin = True
         self.app_admin.put()

@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for the metricsdata API module, verifying timeline data retrieval and formatting."""
+
 import datetime
 from unittest import mock
 
@@ -29,7 +31,10 @@ test_app = flask.Flask(__name__)
 
 
 class MetricsFunctionTests(testing_config.CustomTestCase):
+    """Tests for generic metrics functions."""
+
     def setUp(self):
+        """Set up the test environment."""
         self.datapoint = metrics_models.StableInstance(
             day_percentage=0.0123456789,
             date=datetime.date.today(),
@@ -38,21 +43,25 @@ class MetricsFunctionTests(testing_config.CustomTestCase):
         )
 
     def test_is_googler__anon(self):
+        """Test is googler anon."""
         testing_config.sign_out()
         user = users.get_current_user()
         self.assertFalse(metricsdata._is_googler(user))
 
     def test_is_googler__nongoogler(self):
+        """Test is googler nongoogler."""
         testing_config.sign_in('test@example.com', 111)
         user = users.get_current_user()
         self.assertFalse(metricsdata._is_googler(user))
 
     def test_is_googler__googler(self):
+        """Test is googler googler."""
         testing_config.sign_in('test@google.com', 111)
         user = users.get_current_user()
         self.assertTrue(metricsdata._is_googler(user))
 
     def test_datapoints_to_json_dicts__googler(self):
+        """Test datapoints to json dicts googler."""
         testing_config.sign_in('test@google.com', 111)
         datapoints = [self.datapoint]
         actual = metricsdata._datapoints_to_json_dicts(datapoints)
@@ -67,6 +76,7 @@ class MetricsFunctionTests(testing_config.CustomTestCase):
         self.assertEqual(expected, actual)
 
     def test_datapoints_to_json_dicts__nongoogler(self):
+        """Test datapoints to json dicts nongoogler."""
         testing_config.sign_in('test@example.com', 222)
         datapoints = [self.datapoint]
         actual = metricsdata._datapoints_to_json_dicts(datapoints)
@@ -82,7 +92,10 @@ class MetricsFunctionTests(testing_config.CustomTestCase):
 
 
 class PopularityTimelineHandlerTests(testing_config.CustomTestCase):
+    """Tests for PopularityTimelineHandler."""
+
     def setUp(self):
+        """Set up the test environment."""
         self.handler = metricsdata.PopularityTimelineHandler()
         self.datapoint = metrics_models.StableInstance(
             day_percentage=0.0123456789,
@@ -93,6 +106,7 @@ class PopularityTimelineHandlerTests(testing_config.CustomTestCase):
         self.datapoint.put()
 
     def test_make_query(self):
+        """Test make query."""
         actual_query = self.handler.make_query(1)
         self.assertEqual(
             actual_query.kind, metrics_models.StableInstance._get_kind()
@@ -100,6 +114,7 @@ class PopularityTimelineHandlerTests(testing_config.CustomTestCase):
 
     @mock.patch('flask.abort')
     def test_get_template_data__bad_bucket(self, mock_abort):
+        """Test get template data bad bucket."""
         url = '/data/timeline/csspopularity?bucket_id=not-a-number'
         mock_abort.side_effect = werkzeug.exceptions.BadRequest
 
@@ -111,6 +126,7 @@ class PopularityTimelineHandlerTests(testing_config.CustomTestCase):
             )
 
     def test_get_template_data__normal(self):
+        """Test get template data normal."""
         testing_config.sign_out()
         url = '/data/timeline/csspopularity?bucket_id=1'
         with test_app.test_request_context(url):
@@ -120,7 +136,10 @@ class PopularityTimelineHandlerTests(testing_config.CustomTestCase):
 
 
 class CSSPopularityHandlerTests(testing_config.CustomTestCase):
+    """Tests for CSSPopularityHandler."""
+
     def setUp(self):
+        """Set up the test environment."""
         self.handler = metricsdata.CSSPopularityHandler()
         # Set up StableInstance data.
         self.datapoint = metrics_models.StableInstance(
@@ -149,10 +168,12 @@ class CSSPopularityHandlerTests(testing_config.CustomTestCase):
         self.prop_4.put()
 
     def test_get_top_num_cache_key(self):
+        """Test get top num cache key."""
         actual = self.handler.get_top_num_cache_key(30)
         self.assertEqual('metrics|css_popularity_30', actual)
 
     def test_get_template_data(self):
+        """Test get template data."""
         url = '/data/csspopularity'
         with test_app.test_request_context(url):
             actual_datapoints = self.handler.get_template_data()
@@ -160,6 +181,7 @@ class CSSPopularityHandlerTests(testing_config.CustomTestCase):
         self.assertEqual(0.01234568, actual_datapoints[0]['day_percentage'])
 
     def test_get_template_data_from_cache(self):
+        """Test get template data from cache."""
         url = '/data/csspopularity'
         with test_app.test_request_context(url):
             self.handler.get_template_data()
@@ -169,11 +191,13 @@ class CSSPopularityHandlerTests(testing_config.CustomTestCase):
         self.assertEqual(0.0123456789, actual_datapoints[0].day_percentage)
 
     def test_should_refresh(self):
+        """Test should refresh."""
         url = '/data/csspopularity?'
         with test_app.test_request_context(url):
             self.assertEqual(False, self.handler.should_refresh())
 
     def test_get_template_data_with_num(self):
+        """Test get template data with num."""
         self.assertEqual(None, rediscache.get('metrics|css_popularity_30'))
         url = '/data/csspopularity?num=30'
         with test_app.test_request_context(url):
@@ -185,7 +209,10 @@ class CSSPopularityHandlerTests(testing_config.CustomTestCase):
 
 
 class FeatureBucketsHandlerTest(testing_config.CustomTestCase):
+    """Tests for FeatureBucketsHandler."""
+
     def setUp(self):
+        """Set up the test environment."""
         self.handler = metricsdata.FeatureBucketsHandler()
         self.prop_1 = metrics_models.CssPropertyHistogram(
             bucket_id=1, property_name='b prop'
@@ -213,6 +240,7 @@ class FeatureBucketsHandlerTest(testing_config.CustomTestCase):
         self.prop_6.put()
 
     def test_get_template_data__css(self):
+        """Test get template data css."""
         with test_app.test_request_context('/data/blink/cssprops'):
             actual_buckets = self.handler.get_template_data(
                 prop_type='cssprops'
@@ -220,6 +248,7 @@ class FeatureBucketsHandlerTest(testing_config.CustomTestCase):
         self.assertEqual([(2, 'a prop'), (1, 'b prop')], actual_buckets)
 
     def test_get_template_data__js(self):
+        """Test get template data js."""
         with test_app.test_request_context('/data/blink/features'):
             actual_buckets = self.handler.get_template_data(
                 prop_type='featureprops'
@@ -227,6 +256,7 @@ class FeatureBucketsHandlerTest(testing_config.CustomTestCase):
         self.assertEqual([(4, 'a feat'), (3, 'b feat')], actual_buckets)
 
     def test_get_template_data__webfeatures(self):
+        """Test get template data webfeatures."""
         with test_app.test_request_context('/data/blink/features'):
             actual_buckets = self.handler.get_template_data(
                 prop_type='webfeatureprops'

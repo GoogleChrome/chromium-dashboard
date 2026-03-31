@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for the Origin Trial requests admin page handler."""
+
 from unittest import mock
 
 import flask
@@ -31,7 +33,10 @@ test_app = flask.Flask(
 
 
 class OriginTrialsRequestsTest(testing_config.CustomTestCase):
+    """Tests for origin trial request operations."""
+
     def setUp(self):
+        """Sets up feature and stage entities for the OT requests tests."""
         self.feature_1 = FeatureEntry(
             name='feature one', summary='sum', category=1
         )

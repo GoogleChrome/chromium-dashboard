@@ -12,6 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Unit tests for the gemini_helpers module.
+
+Tests the fetching and parsing of external URLs, handling of GitHub links,
+and processing of Markdown content for use with Gemini models.
+"""
+
 import asyncio
 from pathlib import Path
 from unittest import mock
@@ -25,7 +31,10 @@ from internals.core_models import FeatureEntry
 
 
 class GeminiHelpersTest(testing_config.CustomTestCase):
+    """Tests for the gemini_helpers module."""
+
     def setUp(self):
+        """Set up the test environment."""
         self.feature = FeatureEntry(
             name='Test Feature',
             summary='A test feature summary',
@@ -847,7 +856,10 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
 
 
 class GenerateWPTCoverageEvalReportHandlerTest(testing_config.CustomTestCase):
+    """Tests for the GenerateWPTCoverageEvalReportHandler class."""
+
     def setUp(self):
+        """Set up the test environment."""
         super(GenerateWPTCoverageEvalReportHandlerTest, self).setUp()
         self.feature = FeatureEntry(
             name='Test Feature',
@@ -874,6 +886,7 @@ class GenerateWPTCoverageEvalReportHandlerTest(testing_config.CustomTestCase):
         ).start()
 
     def tearDown(self):
+        """Clean up the test environment."""
         mock.patch.stopall()
 
     def test_process_post_data__success(self):

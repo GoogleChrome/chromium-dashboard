@@ -14,6 +14,8 @@
 
 # Import needed to reference a class within its own class method.
 # https://stackoverflow.com/a/33533514
+"""Defines NDB models for user preferences and application state."""
+
 from __future__ import annotations
 
 import logging
@@ -208,24 +210,29 @@ class FeatureOwner(ndb.Model):
         return None
 
     def remove_as_component_owner(self, component_id):
+        """Removes the user as an owner of the given component."""
         return self.remove_from_component_subscribers(
             component_id, remove_as_owner=True
         )
 
 
 class BlinkComponent(ndb.Model):
+    """A Blink component tracked in the issue tracker."""
+
     name = ndb.StringProperty(required=True, default=settings.DEFAULT_COMPONENT)
     created = ndb.DateTimeProperty(auto_now_add=True)
     updated = ndb.DateTimeProperty(auto_now=True)
 
     @property
     def subscribers(self):
+        """Returns a list of FeatureOwner objects who subscribe to this component."""
         q = FeatureOwner.query(FeatureOwner.blink_components == self.key)
         q = q.order(FeatureOwner.name)
         return q.fetch(None)
 
     @property
     def owners(self):
+        """Returns a list of FeatureOwner objects who own this component."""
         q = FeatureOwner.query(
             FeatureOwner.primary_blink_components == self.key
         )

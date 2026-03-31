@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for the wpt_coverage_api module, verifying the creation, permissions, and deletion of WPT coverage reports."""
+
 from datetime import datetime
 from unittest import mock
 
@@ -27,6 +29,8 @@ test_app = flask.Flask(__name__)
 
 
 class WPTCoverageAPITest(testing_config.CustomTestCase):
+    """Tests for the WPT Coverage API handler."""
+
     def setUp(self):
         """Set up test data for the API handler."""
         self.handler = wpt_coverage_api.WPTCoverageAPI()

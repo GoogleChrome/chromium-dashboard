@@ -13,6 +13,12 @@
 # limitations under the License.
 
 
+"""Unit tests for the permissions module.
+
+Verifies the access control logic across different user roles
+(admin, editor, owner, etc.) and feature visibility states.
+"""
+
 import werkzeug.exceptions  # Flask HTTP stuff.
 
 import testing_config  # Must be imported before the module under test.
@@ -24,21 +30,26 @@ from main import Route
 
 
 class MockHandler(basehandlers.BaseHandler):
+    """A mock handler used for testing permissions logic."""
+
     def __init__(self):
         """Initialize the mock handler."""
         self.called_with = None
         self.common_data = {}
 
     def get_common_data(self):
+        """Get common data."""
         return self.common_data
 
     @permissions.require_admin_site
     def do_get(self, *args):
+        """Handle GET requests."""
         self.called_with = args
         return {'message': 'did get'}
 
     @permissions.require_admin_site
     def do_post(self, *args):
+        """Handle POST requests."""
         self.called_with = args
         return {'message': 'did post'}
 
@@ -53,7 +64,10 @@ test_app = basehandlers.FlaskApplication(
 
 
 class PermissionFunctionTests(testing_config.CustomTestCase):
+    """Tests for standalone permission functions."""
+
     def setUp(self):
+        """Set up the test environment."""
         self.users = []
         self.app_user = user_models.AppUser(email='registered@example.com')
         self.app_user.put()
@@ -115,6 +129,7 @@ class PermissionFunctionTests(testing_config.CustomTestCase):
         )
 
     def tearDown(self):
+        """Clean up the test environment."""
         for user in self.users:
             user.delete()
         self.feature_1.key.delete()
@@ -221,6 +236,7 @@ class PermissionFunctionTests(testing_config.CustomTestCase):
         self.assertEqual(spec_mentor, func(user, *additional_args))
 
     def test_can_admin_site(self):
+        """Test can admin site."""
         self.check_function_results(
             permissions.can_admin_site,
             tuple(),
@@ -233,6 +249,7 @@ class PermissionFunctionTests(testing_config.CustomTestCase):
         )
 
     def test_can_view_feature(self):
+        """Test can view feature."""
         self.check_function_results(
             permissions.can_view_feature,
             (None,),
@@ -271,6 +288,7 @@ class PermissionFunctionTests(testing_config.CustomTestCase):
         )
 
     def test_can_create_feature(self):
+        """Test can create feature."""
         self.check_function_results(
             permissions.can_create_feature,
             tuple(),
@@ -283,6 +301,7 @@ class PermissionFunctionTests(testing_config.CustomTestCase):
         )
 
     def test_can_edit_any_feature(self):
+        """Test can edit any feature."""
         self.check_function_results(
             permissions.can_edit_any_feature,
             tuple(),
@@ -295,6 +314,7 @@ class PermissionFunctionTests(testing_config.CustomTestCase):
         )
 
     def test_can_review_release_notes__anon_other_site_admin(self):
+        """Test can review release notes with anon other site admin."""
         self.check_function_results(
             permissions.can_review_release_notes,
             tuple(),
@@ -307,11 +327,13 @@ class PermissionFunctionTests(testing_config.CustomTestCase):
         )
 
     def test_can_review_release_notes__allow_list(self):
+        """Test can review release notes with allow list."""
         testing_config.sign_in(permissions.RELEASE_NOTE_REVIEWERS[0], 123)
         user = users.get_current_user()
         self.assertTrue(permissions.can_review_release_notes(user))
 
     def test_can_edit_feature(self):
+        """Test can edit feature."""
         self.check_function_results(
             permissions.can_edit_feature,
             (None,),
@@ -338,6 +360,7 @@ class PermissionFunctionTests(testing_config.CustomTestCase):
         )
 
     def test_can_review_gate(self):
+        """Test can review gate."""
         approvers = []
         self.check_function_results(
             permissions.can_review_gate,
@@ -364,6 +387,7 @@ class PermissionFunctionTests(testing_config.CustomTestCase):
 
     def test_can_view_enterprise_release_notes(self):
         # Test non google or chromium user
+        """Test can view enterprise release notes."""
         testing_config.sign_in('user@example.com', 123)
         self.assertEqual(
             False,
@@ -386,7 +410,10 @@ class PermissionFunctionTests(testing_config.CustomTestCase):
 
 
 class RequireAdminSiteTests(testing_config.CustomTestCase):
+    """Tests for the require_admin_site decorator."""
+
     def setUp(self):
+        """Set up the test environment."""
         self.app_user = user_models.AppUser(email='registered@example.com')
         self.app_user.put()
 
@@ -399,6 +426,7 @@ class RequireAdminSiteTests(testing_config.CustomTestCase):
         self.app_admin.put()
 
     def tearDown(self):
+        """Clean up the test environment."""
         self.app_user.delete()
         self.app_editor.delete()
         self.app_admin.delete()

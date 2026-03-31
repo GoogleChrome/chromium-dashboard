@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Defines the core search functionality, query parsing, and caching for features."""
+
 import dataclasses
 import datetime
 import logging
@@ -120,6 +122,8 @@ def process_recent_reviews_query() -> list[int] | Future:
 
 @dataclasses.dataclass
 class QueryContext:
+    """Context for parsing and executing search queries."""
+
     now: datetime.datetime
     current_stable_milestone: int
 

@@ -12,6 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Unit tests for the utils module.
+
+Verifies the behavior of string normalization, retry decorators,
+URL formatting, and external fetching logic.
+"""
+
 import base64
 import unittest
 import urllib
@@ -25,6 +31,8 @@ from framework import utils
 
 
 class MockHandler(object):
+    """A mock handler for testing utils decorators."""
+
     def __init__(self, path):
         """Initialize the mock handler."""
         self.handler_called_with = None
@@ -34,20 +42,26 @@ class MockHandler(object):
 
     @utils.strip_trailing_slash
     def handlerMethod(self, *args):
+        """Handlermethod."""
         self.handler_called_with = args
 
     def redirect(self, new_path):
+        """Redirect."""
         self.redirected_to = new_path
 
 
 class UtilsFunctionTests(unittest.TestCase):
+    """Tests for utility functions in the utils module."""
+
     def setUp(self):
+        """Set up the test environment."""
         self.url = 'https://example.com/file.txt'
         self.content = 'This is the file content.'
         # Encode content into bytes, then base64 encode it.
         self.encoded_content = base64.b64encode(self.content.encode('utf-8'))
 
     def test_normalized_name(self):
+        """Test normalized name."""
         self.assertEqual('', utils.normalized_name(''))
         self.assertEqual('abc', utils.normalized_name('abc'))
         self.assertEqual('abc', utils.normalized_name('Abc'))
@@ -57,6 +71,7 @@ class UtilsFunctionTests(unittest.TestCase):
         self.assertEqual('abc', utils.normalized_name(' /A B/C /'))
 
     def test_format_feature_url(self):
+        """Test format feature url."""
         self.assertEqual('/feature/123', utils.format_feature_url(123))
 
     @mock.patch('logging.error')
@@ -65,6 +80,8 @@ class UtilsFunctionTests(unittest.TestCase):
     def testRetryDecorator_ExceedFailures(
         self, mock_sleep, mock_warn, mock_err
     ):
+        """Testretrydecorator exceedfailures."""
+
         class Tracker(object):
             func_called = 0
 
@@ -86,6 +103,8 @@ class UtilsFunctionTests(unittest.TestCase):
     @mock.patch('logging.warning')
     @mock.patch('time.sleep')  # Run test full speed.
     def testRetryDecorator_EventuallySucceed(self, mock_sleep, mock_warn):
+        """Testretrydecorator eventuallysucceed."""
+
         class Tracker(object):
             func_called = 0
 
@@ -104,6 +123,7 @@ class UtilsFunctionTests(unittest.TestCase):
         self.assertEqual(1, len(mock_warn.mock_calls))
 
     def test_strip_trailing_slash(self):
+        """Test strip trailing slash."""
         handlerInstance = MockHandler('/request/path')
         handlerInstance.handlerMethod('/request/path')
         self.assertEqual(
@@ -298,6 +318,7 @@ class UtilsGitHubTests(unittest.TestCase):
     """Tests for the GitHub fetching utility functions (synchronous helpers)."""
 
     def setUp(self):
+        """Set up the test environment."""
         self.original_github_token = settings.GITHUB_TOKEN
         self.mock_headers = {'Authorization': 'Bearer test_token'}
         # Mock successful file API response
@@ -330,6 +351,7 @@ class UtilsGitHubTests(unittest.TestCase):
         ]
 
     def tearDown(self):
+        """Clean up the test environment."""
         settings.GITHUB_TOKEN = self.original_github_token
 
     def test_get_github_headers__with_token(self):
@@ -641,9 +663,11 @@ class AsyncUtilsGitHubTests(unittest.IsolatedAsyncioTestCase):
     """Tests for the async GitHub orchestration functions."""
 
     def setUp(self):
+        """Set up the test environment."""
         self.previous_max = utils.MAXIMUM_FETCHED_DEPENDENCIES
 
     def tearDown(self):
+        """Clean up the test environment."""
         utils.MAXIMUM_FETCHED_DEPENDENCIES = self.previous_max
 
     async def test_fetch_and_pair(self):

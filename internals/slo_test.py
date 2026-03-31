@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for the Service Level Objective (SLO) metrics calculation functions."""
+
 import datetime
 from unittest import mock
 
@@ -21,6 +23,8 @@ from internals.review_models import Gate, Vote
 
 
 class SLOFunctionTests(testing_config.CustomTestCase):
+    """Tests for basic SLO helper functions."""
+
     def test_is_weekday(self):
         """We can tell if a day is a weekday or weekend."""
         self.assertFalse(slo.is_weekday(datetime.datetime(2023, 6, 4)))  # Sun
@@ -128,7 +132,10 @@ class SLOFunctionTests(testing_config.CustomTestCase):
 
 
 class SLORecordingTests(testing_config.CustomTestCase):
+    """Tests for SLO recording logic."""
+
     def setUp(self):
+        """Set up test data."""
         self.gate = Gate(
             feature_id=1, stage_id=2, gate_type=34, state=Gate.PREPARING
         )
@@ -403,7 +410,10 @@ DEFAULT_SLO_LIMIT = approval_defs.DEFAULT_SLO_LIMIT
 
 
 class SLOReportingTests(testing_config.CustomTestCase):
+    """Tests for SLO reporting logic."""
+
     def setUp(self):
+        """Sets up test data for SLO reporting tests."""
         self.gate_1 = Gate(feature_id=1, stage_id=2, gate_type=34, state=4)
         self.gate_1.requested_on = datetime.datetime(
             2023, 6, 7, 12, 30, 0

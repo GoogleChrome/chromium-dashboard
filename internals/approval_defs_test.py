@@ -12,6 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Unit tests for the approval_defs module.
+
+Verifies the fetching of OWNERS files, auto-assignment of reviewers
+based on gate definitions, and handling of missing or cached data.
+"""
+
 import base64
 import datetime
 from unittest import mock
@@ -23,6 +29,8 @@ from internals.review_models import Gate, GateDef, OwnersFile, Vote
 
 
 class FetchOwnersTest(testing_config.CustomTestCase):
+    """Tests for FetchOwnersTest."""
+
     FILE_CONTENTS = (
         '# Blink API owners are responsible for ...\n'
         '#\n'
@@ -34,6 +42,7 @@ class FetchOwnersTest(testing_config.CustomTestCase):
     )
 
     def setUp(self):
+        """Set up the test environment."""
         for owners_file in OwnersFile.query():
             owners_file.key.delete()
 
@@ -86,7 +95,10 @@ class FetchOwnersTest(testing_config.CustomTestCase):
 
 
 class AutoAssignmentTest(testing_config.CustomTestCase):
+    """Tests for AutoAssignment."""
+
     def setUp(self):
+        """Set up the test environment."""
         self.feature_id = 123456789
         self.gate_1 = Gate(
             feature_id=self.feature_id,
@@ -169,15 +181,20 @@ MOCK_APPROVALS_BY_ID = {
 
 
 class GetApproversTest(testing_config.CustomTestCase):
+    """Tests for GetApprovers."""
+
     def setUp(self):
+        """Set up the test environment."""
         self.clearCache()
 
     def tearDown(self):
+        """Clean up the test environment."""
         self.clearCache()
         for gate_def in GateDef.query():
             gate_def.key.delete()
 
     def clearCache(self):
+        """Clearcache."""
         for gate_type in approval_defs.APPROVAL_FIELDS_BY_ID:
             cache_key = '%s|%s' % (approval_defs.APPROVERS_CACHE_KEY, gate_type)
             rediscache.delete(cache_key)
@@ -235,6 +252,8 @@ class GetApproversTest(testing_config.CustomTestCase):
 
 
 class IsValidGateTypeTest(testing_config.CustomTestCase):
+    """Tests for gate type validation."""
+
     @mock.patch(
         'internals.approval_defs.APPROVAL_FIELDS_BY_ID', MOCK_APPROVALS_BY_ID
     )
@@ -246,7 +265,10 @@ class IsValidGateTypeTest(testing_config.CustomTestCase):
 
 
 class IsApprovedTest(testing_config.CustomTestCase):
+    """Tests for approved status."""
+
     def setUp(self):
+        """Set up the test environment."""
         feature_1_id = 123456
         self.appr_nr = Vote(
             feature_id=feature_1_id,
@@ -293,7 +315,10 @@ GATE_VALUES.update({Gate.PREPARING: 'preparing'})
 
 
 class CalcGateStateTest(testing_config.CustomTestCase):
+    """Tests for calculating gate state."""
+
     def do_calc(self, *vote_states):
+        """Handle CALC requests."""
         votes = [  # set_on dates are in the order of the given list.
             Vote(state=state, set_on=datetime.datetime(2022, 1, i + 1))
             for i, state in enumerate(vote_states)
@@ -434,7 +459,10 @@ class CalcGateStateTest(testing_config.CustomTestCase):
 
 
 class UpdateTest(testing_config.CustomTestCase):
+    """Tests for updating gate approval state."""
+
     def setUp(self):
+        """Set up the test environment."""
         self.gate_1 = Gate(
             id=1001, feature_id=1, stage_id=1, gate_type=2, state=Gate.PREPARING
         )
@@ -600,6 +628,7 @@ class UpdateTest(testing_config.CustomTestCase):
             vote.put()
 
     def tearDown(self):
+        """Clean up the test environment."""
         self.gate_1.key.delete()
         self.gate_2.key.delete()
         for vote in self.votes:

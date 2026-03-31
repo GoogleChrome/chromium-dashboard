@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for the features_api module, verifying feature CRUD operations and permissions."""
+
 import logging
 from datetime import datetime
 from unittest import mock
@@ -38,7 +40,10 @@ def _datetime_to_str(dt):
 
 
 class FeaturesAPITestDelete(testing_config.CustomTestCase):
+    """Tests for deleting features via FeaturesAPI."""
+
     def setUp(self):
+        """Set up the test."""
         logging.disable(logging.CRITICAL)
         self.feature_1 = FeatureEntry(
             name='feature one',
@@ -63,6 +68,7 @@ class FeaturesAPITestDelete(testing_config.CustomTestCase):
         self.random_user.put()
 
     def tearDown(self):
+        """Tear down the test."""
         logging.disable(logging.NOTSET)
         cache_key = '%s|%s' % (
             FeatureEntry.DEFAULT_CACHE_KEY,
@@ -71,6 +77,7 @@ class FeaturesAPITestDelete(testing_config.CustomTestCase):
         rediscache.delete(cache_key)
 
     def check_delete_is_valid(self, email):
+        """Check that deleting a feature is valid."""
         testing_config.sign_in(email, 123567890)
 
         with test_app.test_request_context(self.request_path):
@@ -152,7 +159,10 @@ class FeaturesAPITestDelete(testing_config.CustomTestCase):
 
 
 class FeaturesAPITest(testing_config.CustomTestCase):
+    """Tests for FeaturesAPI."""
+
     def setUp(self):
+        """Set up the test."""
         logging.disable(logging.CRITICAL)
         self.feature_1 = FeatureEntry(
             name='feature one',
@@ -240,6 +250,7 @@ class FeaturesAPITest(testing_config.CustomTestCase):
         self.app_admin.put()
 
     def tearDown(self):
+        """Tear down the test."""
         logging.disable(logging.NOTSET)
 
         rediscache.delete_keys_with_prefix('features')
@@ -1309,6 +1320,7 @@ class FeaturesAPITest(testing_config.CustomTestCase):
         self.assertIsNone(self.feature_1.updater_email)
 
     def test_shared_update_special_fields__no_markdown_changes(self):
+        """Test updating special fields without markdown changes."""
         feature_changes = {'some_other_field': 'some value'}
         self.handler._shared_update_special_fields(
             self.feature_1, feature_changes
@@ -1322,6 +1334,7 @@ class FeaturesAPITest(testing_config.CustomTestCase):
         self.assertEqual(['summary'], self.feature_1.markdown_fields)
 
     def test_shared_update_special_fields__add_markdown(self):
+        """Test updating special fields with added markdown."""
         feature_changes = {'summary_is_markdown': True}
         self.handler._shared_update_special_fields(
             self.feature_1, feature_changes
@@ -1337,6 +1350,7 @@ class FeaturesAPITest(testing_config.CustomTestCase):
         )
 
     def test_shared_update_special_fields__remove_markdown(self):
+        """Test updating special fields with removed markdown."""
         self.feature_1.markdown_fields = ['summary', 'motivation']
         feature_changes = {'summary_is_markdown': False}
         self.handler._shared_update_special_fields(

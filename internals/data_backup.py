@@ -11,6 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""Datastore backup and export utilities.
+
+Provides an automated scheduled handler to trigger full exports of the
+Datastore to a designated Google Cloud Storage bucket for disaster recovery.
+"""
+
 import logging
 from typing import Any
 
@@ -22,12 +28,16 @@ from framework import basehandlers
 
 
 class MemoryCache(Cache):
+    """In-memory cache for backup export."""
+
     _CACHE: dict[Any, Any] = {}
 
     def get(self, url):
+        """Get the entity."""
         return MemoryCache._CACHE.get(url)
 
     def set(self, url, content):
+        """Set the entity."""
         MemoryCache._CACHE[url] = content
 
 
@@ -35,6 +45,7 @@ class BackupExportHandler(basehandlers.FlaskHandler):
     """Triggers a new Datastore export."""
 
     def get_template_data(self, **kwargs):
+        """Get template data for the handler."""
         self.require_cron_header()
         bucket = f'gs://{settings.BACKUP_BUCKET}'
         # The default cache (file_cache) is unavailable when using oauth2client >= 4.0.0 or google-auth,  # noqa: E501

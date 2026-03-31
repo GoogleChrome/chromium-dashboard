@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for the feature_latency_api module, verifying shipping latency calculations."""
+
 import testing_config  # isort: split
 
 from datetime import datetime
@@ -48,7 +50,10 @@ def make_feature(name, created_tuple, status, shipped):
 
 
 class FeatureLatencyAPITest(testing_config.CustomTestCase):
+    """Tests for FeatureLatencyAPI."""
+
     def setUp(self):
+        """Set up the test."""
         self.app_admin = user_models.AppUser(email='admin@example.com')
         self.app_admin.is_admin = True
         self.app_admin.put()

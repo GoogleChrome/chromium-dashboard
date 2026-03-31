@@ -14,6 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""API endpoints for managing review votes and gates for feature approvals."""
+
 import logging
 from datetime import datetime
 from typing import Any, Tuple
@@ -199,6 +201,7 @@ class GatesAPI(basehandlers.APIHandler):
 
     # TODO(jrobbins): phase out do_post here because it should have been patch.
     def do_post(self, **kwargs) -> dict[str, str]:
+        """Handle POST requests."""
         return self.do_patch(**kwargs)
 
     def do_patch(self, **kwargs) -> dict[str, str]:
@@ -258,6 +261,8 @@ class GatesAPI(basehandlers.APIHandler):
 
 
 class PendingGatesAPI(basehandlers.APIHandler):
+    """API for fetching gates pending the current user's approval."""
+
     def get_stage_ids_of_gates_pending_my_approval(self) -> list[int] | Future:
         """Return a list of stage_id needing approval by current user."""
         user = self.get_current_user()
@@ -305,6 +310,8 @@ class PendingGatesAPI(basehandlers.APIHandler):
 
 
 class XfnGatesAPI(basehandlers.APIHandler):
+    """API for managing cross-functional gates."""
+
     def do_get(self, **kwargs):
         """Reject unneeded GET requests without triggering Error Reporting."""
         self.abort(405, valid_methods=['POST'])

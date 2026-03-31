@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Cron handlers for background maintenance tasks like updating gate statuses and backfilling entities."""
+
 import collections
 import csv
 import logging
@@ -44,6 +46,8 @@ from internals.webdx_feature_models import WebdxFeatures
 
 
 class EvaluateGateStatus(FlaskHandler):
+    """Handler to evaluate and set gate status."""
+
     def get_template_data(self, **kwargs) -> str:
         """Evaluate all existing Gate entities and set correct state."""
         self.require_cron_header()
@@ -69,6 +73,8 @@ class EvaluateGateStatus(FlaskHandler):
 
 
 class WriteMissingGates(FlaskHandler):
+    """Handler to write missing gates for features."""
+
     GATES_TO_CREATE_PER_RUN = 5000
 
     GATE_RULES: dict[int, dict[int, list[int]]] = {
@@ -130,6 +136,8 @@ class WriteMissingGates(FlaskHandler):
 
 
 class BackfillRespondedOn(FlaskHandler):
+    """Handler to backfill the responded_on field for gates."""
+
     def update_responded_on(self, gate) -> bool:
         """Update gate.responded_on and return True if an update was needed."""
         gate_id = gate.key.integer_id()
@@ -186,6 +194,8 @@ class BackfillRespondedOn(FlaskHandler):
 
 
 class BackfillStageCreated(FlaskHandler):
+    """Handler to backfill the created date for stages."""
+
     def get_template_data(self, **kwargs) -> str:
         """Backfill created dates for existing stages."""
         self.require_cron_header()
@@ -210,6 +220,8 @@ class BackfillStageCreated(FlaskHandler):
 
 
 class BackfillFeatureLinks(FlaskHandler):
+    """Handler to backfill feature links."""
+
     def get_template_data(self, **kwargs) -> str:
         """Backfill feature links for existing feature entries."""
         self.require_cron_header()
@@ -219,6 +231,8 @@ class BackfillFeatureLinks(FlaskHandler):
 
 
 class AssociateOTs(FlaskHandler):
+    """Handler to associate Origin Trials with features."""
+
     def write_field(
         self,
         trial_stage: Stage,
@@ -373,6 +387,7 @@ class AssociateOTs(FlaskHandler):
         return stage_changed
 
     def parse_feature_id(self, chromestatus_url: str | None) -> int | None:
+        """Parse feature id."""
         if chromestatus_url is None:
             return None
         # The ChromeStatus feature ID is pulled out of the ChromeStatus URL.
@@ -393,6 +408,7 @@ class AssociateOTs(FlaskHandler):
         return chromestatus_id
 
     def find_unassociated_trial_stage(self, feature_id: int) -> Stage | None:
+        """Find unassociated trial stage."""
         fe: FeatureEntry | None = FeatureEntry.get_by_id(feature_id)
         if fe is None:
             logging.info(f'No feature found for ChromeStatus ID: {feature_id}')
@@ -529,6 +545,8 @@ class AssociateOTs(FlaskHandler):
 
 
 class BackfillFeatureEnterpriseImpact(FlaskHandler):
+    """Handler to backfill the enterprise_impact field for features."""
+
     def get_template_data(self, **kwargs) -> str:
         """Backfill enterprise_impact firld for all features."""
         self.require_cron_header()
@@ -590,6 +608,8 @@ class BackfillFeatureEnterpriseImpact(FlaskHandler):
 
 
 class CreateOriginTrials(FlaskHandler):
+    """Handler to create Origin Trials."""
+
     def _send_creation_result_notification(
         self, task_path: str, stage: Stage, params: dict | None = None
     ) -> None:
@@ -693,6 +713,8 @@ class CreateOriginTrials(FlaskHandler):
 
 
 class ActivateOriginTrials(FlaskHandler):
+    """Handler to activate Origin Trials."""
+
     def _get_today(self) -> date:
         return date.today()
 
@@ -757,6 +779,7 @@ class DeleteEmptyExtensionStages(FlaskHandler):
     """Delete any extension stages that have no information filled out."""
 
     def get_template_data(self, **kwargs) -> str:
+        """Get template data."""
         self.require_cron_header()
 
         # Fetch all extension stages.
@@ -801,6 +824,8 @@ class DeleteEmptyExtensionStages(FlaskHandler):
 
 
 class BackfillShippingYear(FlaskHandler):
+    """Handler to backfill shipping year for features."""
+
     def calc_all_shipping_years(self) -> dict[int, int]:
         """Load all shipping stages and record their earliest milestone."""
         shipping_stages = (
@@ -846,6 +871,8 @@ class BackfillShippingYear(FlaskHandler):
 
 
 class BackfillActivityLogType(FlaskHandler):
+    """Handler to backfill activity log types."""
+
     def get_template_data(self, **kwargs) -> str:
         """Backfill log_type for all Activity entities."""
         self.require_cron_header()
@@ -886,6 +913,8 @@ class BackfillActivityLogType(FlaskHandler):
 
 
 class BackfillGateDates(FlaskHandler):
+    """Handler to backfill dates for gates."""
+
     def get_template_data(self, **kwargs) -> str:
         """Backfill resolved_on and needs_work_started_on for all Gates."""
         self.require_cron_header()
@@ -944,6 +973,8 @@ class BackfillGateDates(FlaskHandler):
 
 
 class FetchWebdxFeatureId(FlaskHandler):
+    """Handler to fetch WebDX feature IDs."""
+
     def get_template_data(self, **kwargs) -> str:
         """Fetch the complete list of Webdx feature ID available from
         webstatus.dev APIs and store them in datastore.
@@ -987,6 +1018,7 @@ class SendManualOTCreatedEmail(FlaskHandler):
     """
 
     def get_template_data(self, **kwargs):
+        """Get template data."""
         self.require_cron_header()
 
         stage_id = kwargs.get('stage_id')
@@ -1015,6 +1047,7 @@ class SendManualOTActivatedEmail(FlaskHandler):
     """
 
     def get_template_data(self, **kwargs):
+        """Get template data."""
         self.require_cron_header()
 
         stage_id = kwargs.get('stage_id')
@@ -1189,6 +1222,7 @@ class GenerateReviewActivityFile(FlaskHandler):
         blob.upload_from_string(timestamp.strftime(self.DATE_FORMAT))
 
     def get_template_data(self, **kwargs):
+        """Get template data."""
         self.require_cron_header()
 
         storage_client = storage.Client()
@@ -1323,6 +1357,7 @@ class GenerateStaleFeaturesFile(FlaskHandler):
         blob.upload_from_string(csv_io.getvalue())
 
     def get_template_data(self, **kwargs) -> str:
+        """Get template data."""
         self.require_cron_header()
 
         current_milestone_info = utils.get_current_milestone_info('current')
@@ -1466,6 +1501,7 @@ class GenerateShippingFeaturesFile(FlaskHandler):
         )
 
     def get_template_data(self, **kwargs) -> str:
+        """Get template data."""
         self.require_cron_header()
 
         current_milestone_info = utils.get_current_milestone_info('current')
@@ -1489,6 +1525,7 @@ class MigrateRolloutMilestones(FlaskHandler):
     """Migrate the rollout milestone field to be stored in the 'milestones' field."""
 
     def get_template_data(self, **kwargs):
+        """Get template data."""
         self.require_cron_header()
         stages: list[Stage] = Stage.query(
             Stage.stage_type == STAGE_ENT_ROLLOUT
@@ -1518,6 +1555,7 @@ class ResetOutstandingNotifications(FlaskHandler):
     """Reset the FeatureEntry.outstanding_notifications counter for all features."""
 
     def get_template_data(self, **kwargs) -> str:
+        """Get template data."""
         self.require_cron_header()
         notified_features: list[FeatureEntry] = FeatureEntry.query(
             FeatureEntry.outstanding_notifications > 0
@@ -1561,6 +1599,7 @@ class ResetStaleShippingMilestones(FlaskHandler):
             setattr(stage.milestones, field, None)
 
     def get_template_data(self, **kwargs) -> str:
+        """Get template data."""
         self.require_cron_header()
 
         num_features_reset = 0
@@ -1623,6 +1662,8 @@ class ResetStaleShippingMilestones(FlaskHandler):
 
 
 class DeleteWPTCoverageReport(FlaskHandler):
+    """Handler to delete old WPT coverage reports."""
+
     BATCH_SIZE = 100
     RETENTION_DAYS = 180
 

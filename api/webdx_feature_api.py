@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""API endpoints for retrieving lists of WebDX features and their mappings."""
+
 import logging
 from collections import OrderedDict
 

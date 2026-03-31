@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Helper functions and classes for validating, parsing, and classifying URLs."""
+
 import base64
 import html
 import json
@@ -136,6 +138,8 @@ def rotate_github_client():
 
 
 class Link:
+    """Helper class for links."""
+
     @classmethod
     def extract_urls_from_value(cls, value: Any) -> list[str]:
         """Extract the urls from the given value."""

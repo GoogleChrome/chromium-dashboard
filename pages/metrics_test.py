@@ -13,6 +13,8 @@
 # limitations under the License.
 
 
+"""Tests for the metrics data handlers."""
+
 import flask
 
 test_app = flask.Flask(__name__)

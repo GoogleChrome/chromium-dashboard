@@ -14,6 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""API handlers for fetching, creating, and modifying review comments and activities."""
+
 from typing import Any
 
 from chromestatus_openapi.models import (
@@ -154,6 +156,7 @@ class CommentsAPI(basehandlers.APIHandler):
         return SuccessMessage(message='Done').to_dict()
 
     def do_patch(self, **kwargs) -> dict[str, str]:
+        """Patch a comment."""
         patch_request = PatchCommentRequest.from_dict(self.request.json)
         comment: Activity = Activity.get_by_id(patch_request.comment_id)
 

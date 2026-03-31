@@ -13,6 +13,8 @@
 # limitations under the License.
 
 
+"""Provides the admin page handler for viewing Origin Trial requests."""
+
 import logging
 
 from google.cloud import ndb
@@ -37,6 +39,7 @@ class OriginTrialsRequests(basehandlers.FlaskHandler):
 
     @permissions.require_admin_site
     def get_template_data(self, **kwargs):
+        """Retrieves and formats origin trial requests data for the admin view."""
         stages_with_requests = Stage.query(
             ndb.OR(
                 Stage.ot_action_requested == True,  # noqa: E712

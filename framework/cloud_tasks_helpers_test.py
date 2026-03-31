@@ -12,6 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Unit tests for the cloud_tasks_helpers module.
+
+Tests the creation of task representations and the enqueueing process,
+including the behavior of the local development stub.
+"""
+
 import datetime
 import unittest
 from unittest import mock
@@ -23,7 +29,10 @@ from framework import cloud_tasks_helpers
 
 
 class LocalCloudTasksClientTest(unittest.TestCase):
+    """Tests for LocalCloudTasksClient."""
+
     def setUp(self):
+        """Set up the test environment."""
         self.client = cloud_tasks_helpers.LocalCloudTasksClient()
 
     def test_queue_path(self):
@@ -53,6 +62,8 @@ class LocalCloudTasksClientTest(unittest.TestCase):
 
 
 class CloudTasksHelpersTest(unittest.TestCase):
+    """Tests for cloud tasks helpers."""
+
     def test_get_client__unit_tests(self):
         """During unit testing, we are using a fake object."""
         actual = cloud_tasks_helpers._get_client()

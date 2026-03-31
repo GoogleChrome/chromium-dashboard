@@ -12,6 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Unit tests for the csp module.
+
+Tests the generation of nonces, construction of CSP directives, and
+the handling of CSP violation reports.
+"""
+
 import unittest
 from unittest import mock
 
@@ -23,7 +29,10 @@ test_app = flask.Flask(__name__)
 
 
 class CspTest(unittest.TestCase):
+    """Tests for CSP headers."""
+
     def setUp(self):
+        """Set up the test environment."""
         csp.ENABLED = True
         csp.REPORT_ONLY = False
         csp.REPORT_URI = 'test'
@@ -96,6 +105,8 @@ class CspTest(unittest.TestCase):
 
 
 class CspReporttest(unittest.TestCase):
+    """Tests for CSP report handler."""
+
     @mock.patch('logging.error')
     def test_report_handler(self, mock_error):
         """The report handler logs something for each request."""

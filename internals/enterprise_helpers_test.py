@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for the enterprise_helpers module, verifying enterprise notification milestone logic."""
+
 from datetime import datetime
 from unittest import mock
 
@@ -24,7 +26,10 @@ DATETIME_FORMAT = '%Y-%m-%dT%H:%M:%S'
 
 
 class EnterpriseHelpersTest(testing_config.CustomTestCase):
+    """Tests for enterprise helpers."""
+
     def setUp(self):
+        """Set up the test environment."""
         self.no_feature = None
         self.enterprise_feature = FeatureEntry(
             name='feature b',
@@ -64,6 +69,7 @@ class EnterpriseHelpersTest(testing_config.CustomTestCase):
     def test__needs_default_first_notification_milestone__new_feature(
         self, mock_specified_milestones
     ):  # noqa: E501
+        """Test  needs default first notification milestone with new feature."""
         mock_specified_milestones.return_value = {
             99: {
                 'version': 99,
@@ -241,7 +247,7 @@ class EnterpriseHelpersTest(testing_config.CustomTestCase):
     def test__needs_default_first_notification_milestone__update(
         self, mock_specified_milestones
     ):  # noqa: E501
-
+        """Test  needs default first notification milestone with update."""
         mock_specified_milestones.return_value = {
             99: {
                 'version': 99,
@@ -431,6 +437,7 @@ class EnterpriseHelpersTest(testing_config.CustomTestCase):
     def test__is_update_first_notification_milestone(
         self, mock_specified_milestones, mock_channel_details
     ):
+        """Test  is update first notification milestone."""
         mock_specified_milestones.return_value = {
             99: {
                 'version': 99,
@@ -688,6 +695,7 @@ class EnterpriseHelpersTest(testing_config.CustomTestCase):
     def test__get_default_first_notice_milestone_for_feature(
         self, mock_channel_details
     ):  # noqa: E501
+        """Test  get default first notice milestone for feature."""
         now = datetime.now()
         mock_channel_details.return_value = {
             'beta': {
@@ -703,6 +711,7 @@ class EnterpriseHelpersTest(testing_config.CustomTestCase):
     def test__should_remove_first_notice_milestone(
         self, mock_specified_milestones
     ):  # noqa: E501
+        """Test  should remove first notice milestone."""
         now = datetime.now()
         mock_specified_milestones.return_value = {
             99: {

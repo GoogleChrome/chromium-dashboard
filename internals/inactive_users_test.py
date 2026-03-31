@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for the inactive_users module, verifying the cron handler correctly removes inactive accounts."""
+
 from datetime import datetime
 
 import testing_config  # Must be imported before the module under test.
@@ -20,7 +22,10 @@ from internals.user_models import AppUser
 
 
 class RemoveInactiveUsersHandlerTest(testing_config.CustomTestCase):
+    """Tests for RemoveInactiveUsersHandler."""
+
     def setUp(self):
+        """Set up the test environment."""
         active_user = AppUser(
             created=datetime(2020, 10, 1),
             email='active_user@example.com',
@@ -95,6 +100,7 @@ class RemoveInactiveUsersHandlerTest(testing_config.CustomTestCase):
         inactive_site_editor.put()
 
     def test_remove_inactive_users(self):
+        """Test remove inactive users."""
         inactive_remover = RemoveInactiveUsersHandler()
         result = inactive_remover.get_template_data(now=datetime(2023, 9, 1))
         expected = 'Success\nRemoved users:\nreally_inactive_user@example.com'

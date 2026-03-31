@@ -11,6 +11,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for the features list JSON feed handler."""
+
 from typing import Optional
 
 import flask
@@ -27,10 +29,13 @@ test_app = flask.Flask(
 
 
 class TestWithFeature(testing_config.CustomTestCase):
+    """Base test class providing common feature setup."""
+
     REQUEST_PATH_FORMAT: Optional[str] = None
     HANDLER_CLASS: Optional[object] = None
 
     def setUp(self):
+        """Sets up common user and feature entries for tests."""
         self.app_user = user_models.AppUser(email='registered@example.com')
         self.app_user.put()
 
@@ -58,6 +63,8 @@ class TestWithFeature(testing_config.CustomTestCase):
 
 
 class FeaturesJsonHandlerTest(TestWithFeature):
+    """Tests for the FeaturesJsonHandler."""
+
     REQUEST_PATH_FORMAT = '/features.json'
     HANDLER_CLASS = featurelist.FeaturesJsonHandler
 

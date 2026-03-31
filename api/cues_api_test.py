@@ -13,6 +13,8 @@
 # limitations under the License.
 
 
+"""Tests for the cues_api module, verifying user cue dismissal operations."""
+
 import flask
 import werkzeug.exceptions  # Flask HTTP stuff.
 
@@ -24,7 +26,10 @@ test_app = flask.Flask(__name__)
 
 
 class CuesAPITest(testing_config.CustomTestCase):
+    """Tests for the Cues API."""
+
     def setUp(self):
+        """Set up the test."""
         self.user_pref_1 = user_models.UserPref(
             email='one@example.com', notify_as_starrer=False
         )

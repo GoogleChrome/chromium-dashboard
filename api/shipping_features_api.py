@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""API endpoints for tracking and aggregating shipping feature data for specific milestones."""
+
 from typing import TypedDict
 
 import json5
@@ -28,6 +30,8 @@ from internals.core_models import Stage
 
 
 class GetShippingFeaturesResponse(TypedDict):
+    """Response type for shipping features."""
+
     complete_features: list[feature_helpers.ShippingFeatureInfo]
     incomplete_features: list[
         tuple[feature_helpers.ShippingFeatureInfo, list[str]]

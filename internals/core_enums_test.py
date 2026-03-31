@@ -13,11 +13,19 @@
 # limitations under the License.
 
 
+"""Unit tests for the core_enums module.
+
+Tests the mapping and conversion functions between enum integers
+and their corresponding human-readable or normalized string representations.
+"""
+
 import testing_config  # Must be imported before the module under test.
 from internals import core_enums
 
 
 class EnumsFunctionsTest(testing_config.CustomTestCase):
+    """Tests for enum functions."""
+
     def test_convert_enum_int_to_string__not_an_enum(self):
         """If the property is not an enum, just use the property value."""
         actual = core_enums.convert_enum_int_to_string('name', 'not an int')

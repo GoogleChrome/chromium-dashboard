@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for the fetchmetrics module, verifying the retrieval and parsing of UMA metrics."""
+
 import base64
 import datetime
 import json
@@ -26,6 +28,8 @@ test_app = flask.Flask(__name__)
 
 
 class FetchMetricsTest(testing_config.CustomTestCase):
+    """Tests for fetching metrics."""
+
     @mock.patch('settings.PROD', True)
     @mock.patch('google.oauth2.id_token.fetch_id_token')
     @mock.patch('requests.request')
@@ -74,7 +78,10 @@ class FetchMetricsTest(testing_config.CustomTestCase):
 
 
 class UmaQueryTest(testing_config.CustomTestCase):
+    """Tests for UMA query functionality."""
+
     def setUp(self):
+        """Set up the test environment."""
         self.uma_query = fetchmetrics.UmaQuery(
             query_name='usecounter.features',
             model_class=metrics_models.FeatureObserver,
@@ -170,7 +177,10 @@ class UmaQueryTest(testing_config.CustomTestCase):
 
 
 class YesterdayHandlerTest(testing_config.CustomTestCase):
+    """Tests for the YesterdayHandler."""
+
     def setUp(self):
+        """Set up the test environment."""
         self.request_path = '/cron/metrics'
         self.handler = fetchmetrics.YesterdayHandler()
 
@@ -211,6 +221,8 @@ class YesterdayHandlerTest(testing_config.CustomTestCase):
 
 
 class HistogramsHandlerTest(testing_config.CustomTestCase):
+    """Tests for the HistogramsHandler."""
+
     ENUMS_TEXT = """
      <histogram-configuration>
 
@@ -255,10 +267,12 @@ class HistogramsHandlerTest(testing_config.CustomTestCase):
      """
 
     def setUp(self):
+        """Set up the test environment."""
         self.request_path = '/cron/histograms'
         self.handler = fetchmetrics.HistogramsHandler()
 
     def tearDown(self):
+        """Clean up the test environment."""
         for model_class in fetchmetrics.HistogramsHandler.MODEL_CLASS.values():
             for histo in model_class.query():
                 histo.key.delete()

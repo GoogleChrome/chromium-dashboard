@@ -12,13 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for the FeatureEntry stage helper functions."""
+
 import testing_config  # Must be imported before the module under test.
 from internals import core_enums, stage_helpers
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
 
 
 class StageHelpersTest(testing_config.CustomTestCase):
+    """Tests for stage helper functions."""
+
     def setUp(self):
+        """Set up test data."""
         self.feature_entry_1 = FeatureEntry(
             id=1,
             name='fe one',
@@ -84,7 +89,10 @@ class StageHelpersTest(testing_config.CustomTestCase):
 
 
 class StageHelpers_Milestones_Test(testing_config.CustomTestCase):
+    """Tests for milestone-specific stage helper functions."""
+
     def setUp(self):
+        """Sets up test data for milestone-specific stage helper tests."""
         self.stage_1_1 = Stage(feature_id=11111, milestones=MilestoneSet())
         self.stage_2_1 = Stage(
             feature_id=22222, milestones=MilestoneSet(desktop_first=123)

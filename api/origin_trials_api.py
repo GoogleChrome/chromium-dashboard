@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""API endpoints for interacting with and managing origin trials and their extensions."""
+
 import concurrent.futures
 import re
 from typing import Any
@@ -134,6 +136,8 @@ def find_use_counter_value(
 
 
 class OriginTrialsAPI(basehandlers.EntitiesAPIHandler):
+    """API for managing origin trials."""
+
     def do_get(self, **kwargs):
         """Get a list of all origin trials.
 
@@ -295,6 +299,7 @@ class OriginTrialsAPI(basehandlers.EntitiesAPIHandler):
         return redirect_resp
 
     def do_post(self, **kwargs):
+        """Handle POST requests."""
         feature_id = int(kwargs['feature_id'])
         # Check that feature ID is valid.
         if not feature_id:

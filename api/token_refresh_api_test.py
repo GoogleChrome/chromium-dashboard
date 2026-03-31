@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for the token_refresh_api module, verifying the secure generation of new session tokens."""
+
 from unittest import mock
 
 import flask
@@ -27,7 +29,10 @@ test_app.secret_key = 'testing secret'
 
 
 class TokenRefreshAPITest(testing_config.CustomTestCase):
+    """Tests for the Token Refresh API handler."""
+
     def setUp(self):
+        """Set up the test environment."""
         self.handler = token_refresh_api.TokenRefreshAPI()
         self.request_path = '/api/v0/currentuser/token'
 

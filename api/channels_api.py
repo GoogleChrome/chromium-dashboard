@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""API handlers for retrieving Chrome channel release schedules and milestones."""
+
 import settings
 from framework import basehandlers
 from internals import fetchchannels
@@ -131,6 +133,7 @@ class ChannelsAPI(basehandlers.APIHandler):
     """Channels are the Chrome Versions across platforms."""
 
     def do_get(self, **kwargs):
+        """Get channel release information."""
         # Query-string parameters 'start' and 'end' are provided
         start = self.get_int_arg('start')
         end = self.get_int_arg('end')

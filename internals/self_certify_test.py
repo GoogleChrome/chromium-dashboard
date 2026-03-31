@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for the review gate self-certification logic."""
+
 import testing_config  # isort: split
 
 from chromestatus_openapi.models import SurveyAnswers as OASurveyAnswers
@@ -22,6 +24,8 @@ from internals.review_models import Gate, SurveyAnswers
 
 
 class SelfCertifyFunctionTest(testing_config.CustomTestCase):
+    """Tests for self-certification functions."""
+
     def test_update_survey_answers__no_existing_answers(self):
         """If a gate has no existing answers, we create a blank set."""
         gate = Gate()

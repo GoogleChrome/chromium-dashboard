@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for the settings_api module, verifying the storage and retrieval of user preferences."""
+
 import flask
 import werkzeug.exceptions
 
@@ -23,7 +25,10 @@ test_app = flask.Flask(__name__)
 
 
 class SettingsAPITest(testing_config.CustomTestCase):
+    """Tests for SettingsAPI."""
+
     def setUp(self):
+        """Set up the test environment."""
         self.user_pref_1 = user_models.UserPref(
             email='one@example.com',
             notify_as_starrer=False,

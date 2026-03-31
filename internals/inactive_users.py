@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Cron handler to identify and remove user accounts that have been inactive for an extended period."""
+
 import logging
 from datetime import datetime, timedelta
 
@@ -20,6 +22,8 @@ from internals.user_models import AppUser
 
 
 class RemoveInactiveUsersHandler(FlaskHandler):
+    """Handler to remove inactive users."""
+
     DEFAULT_LAST_VISIT = datetime(2022, 8, 1)  # 2022-08-01
     INACTIVE_REMOVE_DAYS = 270
 

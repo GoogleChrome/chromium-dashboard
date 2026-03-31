@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""API endpoints for retrieving and calculating review latency metrics for feature gates."""
+
 import collections
 import logging
 from datetime import datetime, timedelta
@@ -141,6 +143,7 @@ class ReviewLatencyAPI(basehandlers.APIHandler):
         latencies_by_fid: dict[int, list[tuple[int, int]]],
         sorted_features: list[FeatureEntry],
     ) -> list[dict[str, Any]]:
+        """Convert latencies to the expected result format."""
         result: list[dict[str, Any]] = []
         for fe in sorted_features:
             latencies = latencies_by_fid[fe.key.integer_id()]

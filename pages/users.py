@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Provides the admin page handler for viewing and managing users."""
+
 __author__ = 'ericbidelman@chromium.org (Eric Bidelman)'
 
 
@@ -25,10 +27,13 @@ from internals import user_models
 
 
 class UserListHandler(basehandlers.FlaskHandler):
+    """Handler for listing application users."""
+
     TEMPLATE_PATH = 'admin/users/new.html'
 
     @permissions.require_admin_site
     def get_template_data(self, **kwargs):
+        """Retrieves a list of users for the admin dashboard."""
         users = user_models.AppUser.query().fetch(None)
         user_list = [accounts_api.user_to_json_dict(user) for user in users]
 

@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Cron handler for assembling and enqueuing automated origin trial process reminder emails."""
+
 import logging
 import time
 from datetime import date, datetime

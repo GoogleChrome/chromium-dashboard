@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Cron handlers and helpers for sending automated reminder emails about feature updates, approvals, and stale features."""
+
 import logging
 from collections import defaultdict
 from datetime import datetime, timedelta
@@ -138,6 +140,8 @@ def build_email_tasks(
 
 
 class AbstractReminderHandler(basehandlers.FlaskHandler):
+    """Handler for AbstractReminder requests."""
+
     JSONIFY = True
     SUBJECT_FORMAT: str | None = '%s'
     EMAIL_TEMPLATE_PATH: str | None = None  # Subclasses must override
@@ -257,12 +261,14 @@ class AbstractReminderHandler(basehandlers.FlaskHandler):
 
     # Subclasses should override if needed.
     def is_accuracy_email(self) -> bool:
+        """Is accuracy email."""
         return False
 
     # Subclasses should override if processing is needed after notifications sent.
     def changes_after_sending_notifications(
         self, features_notified: list[tuple[FeatureEntry, int]]
     ) -> None:
+        """Changes after sending notifications."""
         pass
 
 
@@ -289,6 +295,7 @@ class FeatureAccuracyHandler(AbstractReminderHandler):
     def prefilter_features(
         self, current_milestone_info: dict, features: list[FeatureEntry]
     ) -> list[FeatureEntry]:
+        """Prefilter features."""
         now = datetime.now()
         prefiltered_features = [
             feature
@@ -306,6 +313,7 @@ class FeatureAccuracyHandler(AbstractReminderHandler):
         return feature.outstanding_notifications >= 2
 
     def is_accuracy_email(self) -> bool:
+        """Is accuracy email."""
         return True
 
     def changes_after_sending_notifications(
@@ -334,9 +342,10 @@ class PrepublicationHandler(AbstractReminderHandler):
     PUBLICATION_LEAD_TIME = timedelta(weeks=1)
     # We remind owners 1 week before that.
     REMINDER_WINDOW = timedelta(weeks=1)
-    ANCHOR_CHANNEL = 'beta'
+    ANCHOR_CHANNEL = 'next'
 
     def prefilter_features(self, current_milestone_info, features, now=None):
+        """Prefilter features."""
         earliest_beta = datetime.fromisoformat(
             current_milestone_info['earliest_beta']
         )
@@ -356,6 +365,8 @@ class PrepublicationHandler(AbstractReminderHandler):
 
 
 class SLOReportHandler(basehandlers.FlaskHandler):
+    """Handler for SLOReport requests."""
+
     JSONIFY = True
     # For now, this just returns a JSON report to help me evaluate if we
     # are ready to start sending SLO reminder emails without sending too
@@ -377,6 +388,8 @@ class SLOReportHandler(basehandlers.FlaskHandler):
 
 
 class SLOOverdueHandler(basehandlers.FlaskHandler):
+    """Handler for SLOOverdue requests."""
+
     JSONIFY = True
     SUBJECT_FORMAT = 'Review due for: %s'
     BODY_TEMPLATE_PATH = 'slo_overdue_email.html'
@@ -491,6 +504,7 @@ class SLOOverdueHandler(basehandlers.FlaskHandler):
         is_escalated: bool,
         is_initial_response: bool,
     ) -> list[dict[str, Any]]:
+        """Build gate email tasks."""
         email_tasks: list[dict[str, Any]] = []
         for gate in gates_to_notify:
             gate_id = gate.key.integer_id()
@@ -546,6 +560,8 @@ class SLOOverdueHandler(basehandlers.FlaskHandler):
 
 
 class SendOTReminderEmailsHandler(basehandlers.FlaskHandler):
+    """Handler for SendOTReminderEmails requests."""
+
     def get_template_data(self, **kwargs):
         """Send any time-based origin trials reminder emails."""
         self.require_cron_header()

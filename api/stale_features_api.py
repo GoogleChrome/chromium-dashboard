@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""API endpoints for identifying and retrieving information about stale features."""
+
 from datetime import datetime
 from typing import TypedDict
 
@@ -20,6 +22,8 @@ from internals import feature_helpers
 
 
 class StaleFeatureInfo(TypedDict):
+    """Type dictionary for stale feature information."""
+
     id: int
     name: str
     owner_emails: list[str]
@@ -30,6 +34,8 @@ class StaleFeatureInfo(TypedDict):
 
 
 class GetStaleFeaturesResponse(TypedDict):
+    """Response type for getting stale features."""
+
     stale_features: list[StaleFeatureInfo]
 
 

@@ -12,6 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Unit tests for the gemini_client module.
+
+Tests the initialization, token counting, and API interaction of the
+GeminiClient, including error handling and retries.
+"""
+
 import asyncio
 import logging
 from unittest import mock
@@ -24,6 +30,8 @@ from framework import gemini_client
 
 
 class GeminiClientTest(testing_config.CustomTestCase):
+    """Tests for the GeminiClient class."""
+
     def setUp(self):
         """Set up shared mocks for all tests in this class."""
         logging.disable(logging.CRITICAL)
@@ -54,6 +62,7 @@ class GeminiClientTest(testing_config.CustomTestCase):
         self.addCleanup(mock.patch.stopall)
 
     def tearDown(self):
+        """Clean up the test environment."""
         logging.disable(logging.NOTSET)
         settings.GEMINI_API_KEY = self.original_gemini_api_key
 

@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for the reviews_api module, verifying vote recording, gate status updates, and notifications."""
+
 import datetime
 from unittest import mock
 
@@ -39,7 +41,10 @@ ALL_SHIPPING_GATE_TYPES = [
 
 
 class VotesAPITest(testing_config.CustomTestCase):
+    """Tests for VotesAPI."""
+
     def setUp(self):
+        """Set up the test environment."""
         self.feature_1 = core_models.FeatureEntry(
             name='feature one',
             summary='sum',
@@ -412,7 +417,10 @@ class VotesAPITest(testing_config.CustomTestCase):
 
 
 class GatesAPITest(testing_config.CustomTestCase):
+    """Tests for GatesAPI."""
+
     def setUp(self):
+        """Set up the test environment."""
         self.feature_1 = core_models.FeatureEntry(
             name='feature one',
             summary='sum',
@@ -525,7 +533,10 @@ class GatesAPITest(testing_config.CustomTestCase):
 
 
 class XfnGatesAPITest(testing_config.CustomTestCase):
+    """Tests for XfnGatesAPI."""
+
     def setUp(self):
+        """Set up the test environment."""
         self.feature_1 = core_models.FeatureEntry(
             name='feature one',
             summary='sum',

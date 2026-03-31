@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for the component_users module, verifying component owner and subscriber modifications."""
+
 import datetime
 
 import flask
@@ -27,7 +29,10 @@ test_app = flask.Flask(__name__)
 
 
 class ComponentUsersAPITest(testing_config.CustomTestCase):
+    """Tests for the Component Users API."""
+
     def setUp(self):
+        """Set up the test."""
         self.handler = component_users.ComponentUsersAPI()
         self.app_admin = user_models.AppUser(email='admin@example.com')
         self.app_admin.is_admin = True
@@ -85,6 +90,7 @@ class ComponentUsersAPITest(testing_config.CustomTestCase):
         self.no_body.put()
 
     def test_do_put(self):
+        """Test do_put."""
         request_path = f'/api/v0/components/{self.component_2.key.integer_id()}/users/{self.no_body.key.integer_id()}'  # noqa: E501
         user = user_models.FeatureOwner.get_by_id(self.no_body.key.integer_id())
         self.assertEqual(user.blink_components, [])
@@ -117,6 +123,7 @@ class ComponentUsersAPITest(testing_config.CustomTestCase):
         self.assertEqual(user.primary_blink_components, [self.component_2.key])
 
     def test_do_delete(self):
+        """Test do_delete."""
         request_path = f'/api/v0/components/{self.component_2.key.integer_id()}/users/{self.watcher_1.key.integer_id()}'  # noqa: E501
         user = user_models.FeatureOwner.get_by_id(
             self.watcher_1.key.integer_id()

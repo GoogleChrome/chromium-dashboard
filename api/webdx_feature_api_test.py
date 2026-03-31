@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for the webdx_feature_api module, verifying the retrieval and formatting of WebDX feature lists."""
+
 import logging
 from collections import OrderedDict
 from unittest import mock
@@ -27,7 +29,10 @@ test_app = flask.Flask(__name__)
 
 
 class WebFeatureIDsAPITest(testing_config.CustomTestCase):
+    """Tests for WebFeatureIDsAPI."""
+
     def setUp(self):
+        """Set up the test environment."""
         self.handler = WebFeatureIDsAPI()
         self.request_path = '/api/v0/web_feature_ids'
 
@@ -59,7 +64,10 @@ class WebFeatureIDsAPITest(testing_config.CustomTestCase):
 
 
 class WebdxFeatureAPITest(testing_config.CustomTestCase):
+    """Tests for the Webdx Feature API handler."""
+
     def setUp(self):
+        """Set up the test environment."""
         logging.disable(logging.CRITICAL)
         self.webdx_observer = WebDXFeatureObserver(
             bucket_id=3, property_name='css'
@@ -70,9 +78,11 @@ class WebdxFeatureAPITest(testing_config.CustomTestCase):
         self.request_path = '/api/v0/webdxfeatures'
 
     def tearDown(self):
+        """Clean up the test environment."""
         logging.disable(logging.NOTSET)
 
     def test_do_get__success(self):
+        """Test do get success."""
         testing_config.sign_out()
 
         with test_app.test_request_context(self.request_path):
@@ -88,6 +98,7 @@ class WebdxFeatureAPITest(testing_config.CustomTestCase):
         self.assertEqual(actual, expected)
 
     def test_do_get__empty_data(self):
+        """Test do get empty data."""
         testing_config.sign_out()
         self.webdx_observer.key.delete()
 

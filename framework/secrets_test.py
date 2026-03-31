@@ -12,6 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Unit tests for the secrets module.
+
+Tests the generation of random keys, retrieval of cached secrets,
+and interactions with Google Cloud Secret Manager.
+"""
+
 import logging
 from unittest import mock
 
@@ -23,6 +29,7 @@ class SecretsFunctionsTest(testing_config.CustomTestCase):
     """Set of unit tests for accessing server-side secret values."""
 
     def setUp(self):
+        """Set up the test environment."""
         logging.disable(logging.CRITICAL)
         # Store original values to restore them after each test
         self.original_github_token = secrets.settings.GITHUB_TOKEN
@@ -39,6 +46,7 @@ class SecretsFunctionsTest(testing_config.CustomTestCase):
         secrets.settings.DEV_MODE = False
 
     def tearDown(self):
+        """Clean up the test environment."""
         logging.disable(logging.NOTSET)
         # Restore original settings
         secrets.settings.GITHUB_TOKEN = self.original_github_token
@@ -415,13 +423,16 @@ class SecretsTest(testing_config.CustomTestCase):
     """Set of unit tests for generating and storing server-side secret values."""
 
     def delete_all(self):
+        """Delete all entities."""
         for old_entity in secrets.Secrets.query():
             old_entity.key.delete()
 
     def setUp(self):
+        """Set up the test environment."""
         self.delete_all()
 
     def tearDown(self):
+        """Clean up the test environment."""
         self.delete_all()
 
     def test_create_and_persist(self):
@@ -447,6 +458,8 @@ class SecretsTest(testing_config.CustomTestCase):
 
 
 class ApiCredentialTest(testing_config.CustomTestCase):
+    """Tests for the ApiCredential model and related logic."""
+
     def test_select_token_for_api__first_use(self):
         """When there are no credientials for an API, it makes one."""
         actual = secrets.ApiCredential.select_token_for_api('foo')

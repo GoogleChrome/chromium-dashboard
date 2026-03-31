@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Detects intent thread types and parses URLs from mailing list subjects and bodies."""
+
 import logging
 import random
 import re
@@ -192,6 +194,7 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
     IS_INTERNAL_HANDLER = True
 
     def process_post_data(self, **kwargs):
+        """Process POST data for the handler."""
         self.require_task_header()
 
         from_addr = self.get_param('from_addr')
@@ -300,6 +303,7 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
         thread_url: str,
     ) -> tuple[Gate | None, Stage | None]:
         # If a gate ID is detected, query for the gate.
+        """Get gate and stage."""
         if gate_id:
             logging.info(f'Using detected gate ID {gate_id}')
             gate = Gate.get_by_id(gate_id)
@@ -396,6 +400,7 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
     def set_intent_thread_url(
         self, stage: Stage, thread_url: str | None, subject: str | None
     ) -> None:
+        """Set intent thread url."""
         if stage.intent_thread_url and stage.intent_subject_line:
             logging.info('Not setting intent_thread_url or intent_subject_line')
             return

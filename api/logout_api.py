@@ -14,6 +14,8 @@
 # limitations under the License.
 
 
+"""API handlers for user logout and session termination."""
+
 from flask import session
 
 from framework import basehandlers
@@ -27,5 +29,6 @@ class LogoutAPI(basehandlers.APIHandler):
         self.abort(405, valid_methods=['POST'])
 
     def do_post(self, **kwargs):
+        """Handle POST requests."""
         session.clear()
         return {'message': 'Done'}

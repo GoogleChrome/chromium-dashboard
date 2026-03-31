@@ -13,6 +13,8 @@
 # limitations under the License.
 
 
+"""Tests for the intents_api module, verifying intent email draft generation."""
+
 from unittest import mock
 
 import flask
@@ -33,7 +35,10 @@ test_app = flask.Flask(
 
 
 class IntentsAPITest(testing_config.CustomTestCase):
+    """Tests for IntentsAPI."""
+
     def setUp(self):
+        """Set up the test."""
         self.feature_1 = FeatureEntry(
             feature_type=1,
             name='feature one',

@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Base classes for Flask-based API and web request handlers."""
+
 import json
 import logging
 import os
@@ -60,8 +62,11 @@ M = TypeVar('M', bound=ndb.Model)
 
 
 class BaseHandler(flask.views.MethodView):
+    """Base handler class for requests."""
+
     @property
     def request(self):
+        """Get the current request."""
         return flask.request
 
     def abort(
@@ -102,6 +107,7 @@ class BaseHandler(flask.views.MethodView):
         return flask.redirect(url)
 
     def get_current_user(self, required=False):
+        """Get the current user."""
         # TODO(jrobbins): oauth support
         current_user = users.get_current_user()
 
@@ -229,6 +235,8 @@ class BaseHandler(flask.views.MethodView):
 
 
 class APIHandler(BaseHandler):
+    """Base class for all API endpoints."""
+
     def get_headers(self):
         """Add CORS and Chrome Frame to all responses."""
         session.permanent = True
@@ -376,6 +384,7 @@ class EntitiesAPIHandler(APIHandler):
         )
 
     def extract_link(self, s):
+        """Extract a link from a string."""
         if s:
             match_obj = URL_RE.search(str(s))
             if match_obj and match_obj.group('scheme') in ALLOWED_SCHEMES:
@@ -392,6 +401,7 @@ class EntitiesAPIHandler(APIHandler):
         value: str,
         delimiter: str = '\\r?\\n',
     ) -> list[str]:
+        """Split a list input."""
         try:
             formatted_list = [
                 x.strip() for x in re.split(delimiter, value) if x.strip()
@@ -407,6 +417,7 @@ class EntitiesAPIHandler(APIHandler):
         field_type: str,
         value: Any,
     ) -> None:
+        """Update a field value."""
         new_value = self.format_field_val(field, field_type, value)
         setattr(entity, field, new_value)
 
@@ -526,6 +537,8 @@ class EntitiesAPIHandler(APIHandler):
 
 
 class FlaskHandler(BaseHandler):
+    """Base class for HTML page handlers."""
+
     TEMPLATE_PATH: Optional[str] = None  # Subclasses should define this.
     HTTP_CACHE_TYPE: Optional[str] = (
         None  # Subclasses can use 'public' or 'private'  # noqa: E501
@@ -615,6 +628,7 @@ class FlaskHandler(BaseHandler):
         return common_data
 
     def render(self, template_data, template_path):
+        """Render a template."""
         return render_template(template_path, **template_data)
 
     def get(self, *args, **kwargs):
@@ -742,16 +756,19 @@ class FlaskHandler(BaseHandler):
         return None
 
     def parse_link(self, param_name):
+        """Parse a link from a parameter."""
         s = flask.request.form.get(param_name) or None
         return self._extract_link(s)
 
     def parse_links(self, param_name):
+        """Parse multiple links from a parameter."""
         strings = self.split_input(param_name)
         links = [self._extract_link(s) for s in strings]
         links = [link for link in links if link]  # Drop any bad ones.
         return links
 
     def parse_int(self, param_name):
+        """Parse an integer from a parameter."""
         param = flask.request.form.get(param_name) or None
         if param:
             param = int(param)
@@ -765,6 +782,7 @@ class Redirector(FlaskHandler):
     """  # noqa: D205
 
     def get_template_data(self, **kwargs):
+        """Get template data for rendering."""
         location = kwargs['location'] if 'location' in kwargs else '/'
         return flask.redirect(location), self.get_headers()
 
@@ -810,6 +828,7 @@ class SPAHandler(FlaskHandler):
     TEMPLATE_PATH = 'spa.html'
 
     def get_template_data(self, **defaults):
+        """Get template data for rendering."""
         return get_spa_template_data(self, defaults)
 
 

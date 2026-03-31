@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Fetches and caches Chrome release channel versions and milestone schedules from external APIs."""
+
 import json
 import logging
 

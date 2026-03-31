@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Defines NDB models for storing and retrieving Webdx feature IDs."""
+
 from google.cloud import ndb  # type: ignore
 
 
@@ -22,6 +24,7 @@ class WebdxFeatures(ndb.Model):
 
     @classmethod
     def get_webdx_feature_id_list(cls):
+        """Retrieves the list of stored Webdx feature IDs."""
         fetch_results = cls.query().fetch(1)
         if not fetch_results:
             return None
@@ -30,6 +33,7 @@ class WebdxFeatures(ndb.Model):
 
     @classmethod
     def store_webdx_feature_id_list(cls, new_list: list[str]):
+        """Stores a new list of Webdx feature IDs, updating or creating as needed."""
         webdx_features = WebdxFeatures.get_webdx_feature_id_list()
         if not webdx_features:
             webdx_features = WebdxFeatures(feature_ids=new_list)

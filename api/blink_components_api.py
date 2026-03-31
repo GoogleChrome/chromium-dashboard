@@ -14,6 +14,8 @@
 # limitations under the License.
 
 
+"""API handlers for retrieving the list of valid Blink components."""
+
 from framework import basehandlers
 from internals import user_models
 

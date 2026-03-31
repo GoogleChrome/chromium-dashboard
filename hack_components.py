@@ -1,3 +1,9 @@
+"""Hardcoded list of Blink components.
+
+Provides a static list of valid Blink component strings used for feature
+classification and Buganizer integration.
+"""
+
 HACK_BLINK_COMPONENTS = [
     'A-N/A',
     'Blink',

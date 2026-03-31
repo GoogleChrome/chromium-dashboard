@@ -12,6 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Client module for interacting with the Google GenAI API.
+
+This module provides the `GeminiClient` class, which serves as a wrapper
+around the `google.genai` SDK. It handles API key configuration, retry logic
+for transient errors, asynchronous batch processing of prompts, and token
+limit validation.
+"""
+
 import asyncio
 import logging
 

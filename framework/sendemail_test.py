@@ -12,6 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Unit tests for the sendemail module.
+
+Tests parameter parsing and the construction and sending of emails
+across different environments (local, staging, prod).
+"""
+
 import email
 from unittest import mock
 
@@ -27,6 +33,8 @@ test_app = flask.Flask(__name__)
 
 
 class FunctionTests(testing_config.CustomTestCase):
+    """Tests for standalone functions in sendemail module."""
+
     def test_get_param__simple(self):
         """We can simply get a JSON parameter, with defaults."""
         with test_app.test_request_context('/test', json={'x': 1}):
@@ -50,7 +58,10 @@ class FunctionTests(testing_config.CustomTestCase):
 
 
 class OutboundEmailHandlerTest(testing_config.CustomTestCase):
+    """Tests for the OutboundEmailHandler class."""
+
     def setUp(self):
+        """Set up the test environment."""
         self.request_path = '/tasks/outbound-email'
 
         self.to = 'user@example.com'
@@ -147,7 +158,10 @@ class OutboundEmailHandlerTest(testing_config.CustomTestCase):
 
 
 class BouncedEmailHandlerTest(testing_config.CustomTestCase):
+    """Tests for handling bounced emails."""
+
     def setUp(self):
+        """Set up the test environment."""
         self.sender = (
             'Chromestatus <admin@%s.appspotmail.com>' % settings.APP_ID
         )
@@ -155,6 +169,7 @@ class BouncedEmailHandlerTest(testing_config.CustomTestCase):
 
     @mock.patch('framework.sendemail.receive')
     def test_process_post_data(self, mock_receive):
+        """Test process post data."""
         with test_app.test_request_context('/_ah/bounce'):
             actual_json = sendemail.handle_bounce()
 
@@ -235,6 +250,8 @@ class BouncedEmailHandlerTest(testing_config.CustomTestCase):
 
 
 class FunctionTest(testing_config.CustomTestCase):
+    """Tests for general email parsing functions."""
+
     def test_extract_addrs(self):
         """We can parse email From: lines."""
         header_val = ''
@@ -271,6 +288,8 @@ HEADER_LINES = [
 
 
 class InboundEmailHandlerTest(testing_config.CustomTestCase):
+    """Tests for handling inbound emails."""
+
     def test_handle_incoming_mail__wrong_to_addr(self):
         """Reject the email if the app was not on the To: line."""
         with test_app.test_request_context('/_ah/mail/other@example.com'):
