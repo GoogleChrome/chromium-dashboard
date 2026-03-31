@@ -45,7 +45,11 @@ class MockResponse:
 
 
 def make_test_features():
-    """Make test features."""
+    """Create and return mock FeatureEntry and Stage objects for testing.
+
+    Returns:
+        A tuple of three FeatureEntry objects.
+    """
     feature_1 = FeatureEntry(
         id=1,
         name='feature one',

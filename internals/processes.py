@@ -851,6 +851,14 @@ def initial_tag_review_status(feature_type):
 
 
 def review_is_done(status):
+    """Determine if a review status indicates the review is complete.
+
+    Args:
+        status: The review status code to check.
+
+    Returns:
+        True if the review is done or not applicable, False otherwise.
+    """
     return status in (core_enums.REVIEW_ISSUES_ADDRESSED, core_enums.REVIEW_NA)
 
 

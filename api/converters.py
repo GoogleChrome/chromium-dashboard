@@ -42,6 +42,7 @@ SIMPLE_TYPES = frozenset((int, float, bool, dict, str, list))
 
 
 def to_dict(entity: ndb.Model) -> dict[str, Any]:  # pragma: no cover
+    """Convert an NDB model entity into a dict."""
     output = {}
     for key, prop in entity._properties.items():
         # Skip obsolete values that are still in our datastore
@@ -716,7 +717,7 @@ def feature_entry_to_json_tiny(fe: FeatureEntry) -> dict[str, Any]:
 
 
 def vote_value_to_json_dict(vote: Vote) -> dict[str, Any]:
-
+    """Convert a Vote entity into a dict."""
     return {
         'feature_id': vote.feature_id,
         'gate_id': vote.gate_id,
@@ -728,6 +729,7 @@ def vote_value_to_json_dict(vote: Vote) -> dict[str, Any]:
 
 
 def gate_value_to_json_dict(gate: Gate) -> dict[str, Any]:
+    """Convert a Gate entity into a dict."""
     next_action = str(gate.next_action) if gate.next_action else None
     requested_on = str(gate.requested_on) if gate.requested_on else None
     responded_on = str(gate.responded_on) if gate.responded_on else None

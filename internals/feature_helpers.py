@@ -140,6 +140,7 @@ def filter_confidential(feature_list: list[FeatureEntry]) -> list[FeatureEntry]:
 
 
 def get_entries_by_id_async(ids) -> Future | None:
+    """Asynchronously fetches FeatureEntry objects by their IDs."""
     if ids:
         q = FeatureEntry.query(
             FeatureEntry.key.IN([ndb.Key('FeatureEntry', id) for id in ids])
@@ -150,6 +151,7 @@ def get_entries_by_id_async(ids) -> Future | None:
 
 
 def get_future_results(async_features: Future | None) -> list[FeatureEntry]:
+    """Retrieve the results from a Future containing a list of FeatureEntries."""
     if async_features is None:
         return []
     return async_features.result()
@@ -195,6 +197,7 @@ def _filter_out_wp_features_lacking_enterprise_approval(
 
 
 def get_features_in_release_notes(milestone: int):
+    """Fetches features slated for release notes in the specified milestone."""
     cache_key = '%s|%s|%s' % (
         FeatureEntry.SEARCH_CACHE_KEY,
         'release_notes_milestone',
@@ -848,6 +851,7 @@ def _map_relevant_milestones(
 
 
 def get_stale_features() -> list[tuple[FeatureEntry, int, str]]:
+    """Retrieves features that are stale based on their milestone timeline."""
     current_milestone_info = get_current_milestone_info('current')
 
     min_mstone = int(current_milestone_info['mstone'])

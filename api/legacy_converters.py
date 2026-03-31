@@ -24,6 +24,7 @@ from internals.core_enums import *  # noqa: F403
 
 
 def feature_to_legacy_json(f: Feature) -> dict[str, Any]:
+    """Convert a Feature model instance into its legacy JSON dictionary representation."""
     d: dict[str, Any] = to_dict(f)
     is_released = f.impl_status_chrome in RELEASE_IMPL_STATES  # noqa: F405
     d['is_released'] = is_released

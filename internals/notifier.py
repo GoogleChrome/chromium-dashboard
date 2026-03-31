@@ -74,7 +74,16 @@ def _determine_milestone_string(ship_stages: list[Stage]) -> str:
 
 
 def highlight_diff(old_text, new_text, highlight_type):
-    """Highlight diff."""
+    """Highlight the differences between two strings.
+
+    Args:
+        old_text: The original text string.
+        new_text: The updated text string.
+        highlight_type: The type of highlight to apply ('deletion' or 'addition').
+
+    Returns:
+        An HTML string with the differences highlighted.
+    """
     differ = difflib.ndiff(
         re.split(r'(\W)', old_text), re.split(r'(\W)', new_text)
     )
@@ -231,7 +240,7 @@ def apply_subscription_rules(
 
 
 def add_core_receivers(fe: FeatureEntry, addr_reasons: dict[str, list[str]]):
-    """Add core receivers."""
+    """Accumulates email addresses and reasons for core feature owners."""
     accumulate_reasons(
         addr_reasons,
         fe.owner_emails,

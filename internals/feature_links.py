@@ -407,7 +407,7 @@ def batch_index_feature_entries(
 
 
 def get_domain_with_scheme(url):
-    """Get domain with scheme."""
+    """Parse the given URL and return its scheme and netloc as a combined domain string."""
     try:
         parse_result = urlparse(url)
         scheme = parse_result.scheme

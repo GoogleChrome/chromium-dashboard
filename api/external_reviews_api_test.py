@@ -62,6 +62,7 @@ def make_feature(
     gecko: str | None = None,
     milestones: MilestoneSet = MilestoneSet(),
 ) -> FeatureEntry:
+    """Create a new FeatureEntry and Stage for testing."""
     fe = FeatureEntry(
         name=name,
         category=1,

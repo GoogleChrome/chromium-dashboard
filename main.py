@@ -73,6 +73,7 @@ original_delete = threading.Thread._delete  # type: ignore
 
 
 def safe_delete(self):
+    """Safely delete the thread without raising a KeyError."""
     try:
         original_delete(self)
     except KeyError:

@@ -59,6 +59,7 @@ class StageTemplateInfo(TypedDict):
 def create_feature_stage(
     feature_id: int, feature_type: int, stage_type: int
 ) -> Stage:  # noqa: E501
+    """Create a new Stage and its corresponding Gate if needed."""
     # Create the stage.
     stage = Stage(feature_id=feature_id, stage_type=stage_type)
     stage.put()
@@ -79,6 +80,7 @@ def create_feature_stage(
 
 
 def get_gate_for_stage(feature_type, s_type) -> int | None:
+    """Gets the appropriate gate type ID for a given feature and stage type."""
     # Update type-specific fields.
     if s_type == STAGE_TYPES_DEV_TRIAL[feature_type]:  # pragma: no cover
         return GATE_API_PROTOTYPE

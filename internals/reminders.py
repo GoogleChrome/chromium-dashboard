@@ -80,7 +80,19 @@ def build_email_tasks(
     escalation_check: Callable,
     is_accuracy_email: Callable,
 ) -> list[dict[str, Any]]:
-    """Build email tasks."""
+    """Build a list of email tasks to be sent as notifications.
+
+    Args:
+        features_to_notify: A list of tuples containing FeatureEntry objects and milestones.
+        subject_format: The format string for the email subject.
+        body_template_path: The path to the email body HTML template.
+        current_milestone_info: A dictionary containing current milestone information.
+        escalation_check: A function to determine if a notification should be escalated.
+        is_accuracy_email: A function returning True if this is an accuracy email.
+
+    Returns:
+        A list of dictionaries representing the email tasks to send.
+    """
     email_tasks: list[dict[str, Any]] = []
     beta_date = datetime.fromisoformat(current_milestone_info['earliest_beta'])
     beta_date_str = beta_date.strftime('%Y-%m-%d')
