@@ -48,6 +48,7 @@ class SpecMentorsAPITest(testing_config.CustomTestCase):
     """Tests for SpecMentorsAPI."""
 
     def setUp(self):
+        """Set up the test environment."""
         self.api_base = '/api/v0'
         self.request_path = f'{self.api_base}/spec_mentors'
         self.spec_mentors_handler = spec_mentors_api.SpecMentorsAPI()
@@ -61,6 +62,7 @@ class SpecMentorsAPITest(testing_config.CustomTestCase):
         self.created_features = []
 
     def tearDown(self):
+        """Clean up the test environment."""
         for feature in self.created_features:
             feature.key.delete()
         self.app_admin.key.delete()
@@ -70,6 +72,7 @@ class SpecMentorsAPITest(testing_config.CustomTestCase):
         rediscache.delete_keys_with_prefix('FeatureEntries')
 
     def createFeature(self, params) -> FeatureEntry:
+        """Create a new feature for testing."""
         with test_app.test_request_context(
             f'{self.api_base}/features/create',
             json=BASE_FEATURE_CREATE_BODY | params,
@@ -168,6 +171,7 @@ class SpecMentorsAPITest(testing_config.CustomTestCase):
             self.assertEqual(cm.exception.code, 400)
 
     def test_sorts_mentors_alphabetically(self):
+        """Test sorts mentors alphabetically."""
         # Create a feature using the admin user.
         testing_config.sign_in(self.app_admin.email, 123567890)
 
@@ -201,6 +205,7 @@ class SpecMentorsAPITest(testing_config.CustomTestCase):
         )
 
     def test_sorts_features_by_updated_date_recent_first(self):
+        """Test sorts features by updated date recent first."""
         # Create a feature using the admin user.
         testing_config.sign_in(self.app_admin.email, 123567890)
 
@@ -250,6 +255,7 @@ class SpecMentorsAPITest(testing_config.CustomTestCase):
         )
 
     def test_organizes_features_by_mentor(self):
+        """Test organizes features by mentor."""
         # Create a feature using the admin user.
         testing_config.sign_in(self.app_admin.email, 123567890)
 

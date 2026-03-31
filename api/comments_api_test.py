@@ -58,6 +58,7 @@ class CommentsConvertersTest(testing_config.CustomTestCase):
         self.assertEqual(oam.new_value, '')
 
     def test_amendment_to_json_dict(self):
+        """Test amendment to json dict."""
         amnd = Amendment(field_name='summary', old_value='foo', new_value='bar')
         expected = AmendmentModel(
             field_name='summary', old_value='foo', new_value='bar'
@@ -77,6 +78,7 @@ class CommentsConvertersTest(testing_config.CustomTestCase):
         self.assertEqual(expected, actual)
 
     def test_activity_to_json_dict(self):
+        """Test activity to json dict."""
         amnd_1 = Amendment(
             field_name='summary', old_value='foo', new_value='bar'
         )
@@ -119,6 +121,7 @@ class CommentsAPITest(testing_config.CustomTestCase):
     """Tests for the Comments API."""
 
     def setUp(self):
+        """Set up the test."""
         self.feature_1 = FeatureEntry(
             name='feature one', summary='sum', category=1
         )

@@ -25,5 +25,6 @@ class OmahaDataHandler(basehandlers.FlaskHandler):
     JSONIFY = True
 
     def get_template_data(self, **kwargs):
+        """Returns Omaha data metrics as JSON."""
         omaha_data = fetchchannels.get_omaha_data()
         return omaha_data

@@ -23,6 +23,7 @@ class StageHelpersTest(testing_config.CustomTestCase):
     """Tests for stage helper functions."""
 
     def setUp(self):
+        """Set up test data."""
         self.feature_entry_1 = FeatureEntry(
             id=1,
             name='fe one',
@@ -91,6 +92,7 @@ class StageHelpers_Milestones_Test(testing_config.CustomTestCase):
     """Tests for milestone-specific stage helper functions."""
 
     def setUp(self):
+        """Sets up test data for milestone-specific stage helper tests."""
         self.stage_1_1 = Stage(feature_id=11111, milestones=MilestoneSet())
         self.stage_2_1 = Stage(
             feature_id=22222, milestones=MilestoneSet(desktop_first=123)

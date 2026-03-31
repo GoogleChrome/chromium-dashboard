@@ -53,6 +53,7 @@ class ComponentUsersAPI(basehandlers.APIHandler):
 
     @permissions.require_admin_site
     def do_put(self, **kwargs) -> tuple[dict, int]:
+        """Update component subscribers."""
         component_users_request = ComponentUsersRequest.from_dict(
             self.request.get_json(force=True)
         )  # noqa: E501
@@ -66,6 +67,7 @@ class ComponentUsersAPI(basehandlers.APIHandler):
 
     @permissions.require_admin_site
     def do_delete(self, **kwargs) -> tuple[dict, int]:
+        """Remove component subscribers."""
         params = self.request.get_json(force=True)
         component_users_request = ComponentUsersRequest.from_dict(params)
         self.__update_subscribers_list(

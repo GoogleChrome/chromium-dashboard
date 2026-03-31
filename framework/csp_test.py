@@ -32,6 +32,7 @@ class CspTest(unittest.TestCase):
     """Tests for CSP headers."""
 
     def setUp(self):
+        """Set up the test environment."""
         csp.ENABLED = True
         csp.REPORT_ONLY = False
         csp.REPORT_URI = 'test'

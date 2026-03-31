@@ -31,6 +31,7 @@ class LoginAPITest(testing_config.CustomTestCase):
     """Tests for LoginAPI."""
 
     def setUp(self):
+        """Set up the test."""
         self.handler = login_api.LoginAPI()
         self.request_path = '/api/v0/login'
 

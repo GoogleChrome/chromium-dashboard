@@ -81,6 +81,7 @@ class UmaQueryTest(testing_config.CustomTestCase):
     """Tests for UMA query functionality."""
 
     def setUp(self):
+        """Set up the test environment."""
         self.uma_query = fetchmetrics.UmaQuery(
             query_name='usecounter.features',
             model_class=metrics_models.FeatureObserver,
@@ -179,6 +180,7 @@ class YesterdayHandlerTest(testing_config.CustomTestCase):
     """Tests for the YesterdayHandler."""
 
     def setUp(self):
+        """Set up the test environment."""
         self.request_path = '/cron/metrics'
         self.handler = fetchmetrics.YesterdayHandler()
 
@@ -265,10 +267,12 @@ class HistogramsHandlerTest(testing_config.CustomTestCase):
      """
 
     def setUp(self):
+        """Set up the test environment."""
         self.request_path = '/cron/histograms'
         self.handler = fetchmetrics.HistogramsHandler()
 
     def tearDown(self):
+        """Clean up the test environment."""
         for model_class in fetchmetrics.HistogramsHandler.MODEL_CLASS.values():
             for histo in model_class.query():
                 histo.key.delete()

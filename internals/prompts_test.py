@@ -48,6 +48,7 @@ class TestAIPromptTemplatesHandler(unittest.TestCase):
     """Tests for AIPromptTemplatesHandler."""
 
     def setUp(self):
+        """Set up the test environment."""
         self.maxDiff = None
         return super().setUp()
 

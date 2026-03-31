@@ -47,6 +47,7 @@ class ReviewLatencyAPITest(testing_config.CustomTestCase):
     """Tests for ReviewLatencyAPI."""
 
     def setUp(self):
+        """Set up the test environment."""
         self.app_admin = user_models.AppUser(email='admin@example.com')
         self.app_admin.is_admin = True
         self.app_admin.put()

@@ -27,6 +27,7 @@ class PermissionsAPITest(testing_config.CustomTestCase):
     """Tests for PermissionsAPI."""
 
     def setUp(self):
+        """Set up the test environment."""
         self.handler = permissions_api.PermissionsAPI()
         self.request_path = '/api/v0/currentuser/permissions'
 

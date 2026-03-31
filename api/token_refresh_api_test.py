@@ -32,6 +32,7 @@ class TokenRefreshAPITest(testing_config.CustomTestCase):
     """Tests for the Token Refresh API handler."""
 
     def setUp(self):
+        """Set up the test environment."""
         self.handler = token_refresh_api.TokenRefreshAPI()
         self.request_path = '/api/v0/currentuser/token'
 

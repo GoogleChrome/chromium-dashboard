@@ -60,6 +60,7 @@ class HistogramModel(ndb.Model):
 
     @classmethod
     def get_all(cls):
+        """Get all."""
         output = {}
         buckets = cls.query().fetch(None)
         for bucket in buckets:
@@ -88,6 +89,7 @@ class WebDXFeatureObserver(HistogramModel):
 
     @classmethod
     def get_enum_by_web_feature(cls, web_feature) -> str:
+        """Get enum by web feature."""
         if (
             web_feature == cls.MISSING_FEATURE_ID
             or web_feature == cls.TBD_FEATURE_ID

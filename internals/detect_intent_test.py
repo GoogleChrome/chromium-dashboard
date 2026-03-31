@@ -36,6 +36,7 @@ class FunctionTest(testing_config.CustomTestCase):
     """Tests for intent detection functions."""
 
     def setUp(self):
+        """Set up the test environment."""
         self.feature_1 = FeatureEntry(
             id=1,
             name='feature one',
@@ -524,6 +525,7 @@ class IntentEmailHandlerTest(testing_config.CustomTestCase):
     """Tests for intent email handler."""
 
     def setUp(self):
+        """Set up the test environment."""
         self.feature_1 = FeatureEntry(
             name='feature one',
             summary='detailed sum',

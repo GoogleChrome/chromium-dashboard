@@ -25,6 +25,7 @@ class RemoveInactiveUsersHandlerTest(testing_config.CustomTestCase):
     """Tests for RemoveInactiveUsersHandler."""
 
     def setUp(self):
+        """Set up the test environment."""
         active_user = AppUser(
             created=datetime(2020, 10, 1),
             email='active_user@example.com',
@@ -99,6 +100,7 @@ class RemoveInactiveUsersHandlerTest(testing_config.CustomTestCase):
         inactive_site_editor.put()
 
     def test_remove_inactive_users(self):
+        """Test remove inactive users."""
         inactive_remover = RemoveInactiveUsersHandler()
         result = inactive_remover.get_template_data(now=datetime(2023, 9, 1))
         expected = 'Success\nRemoved users:\nreally_inactive_user@example.com'

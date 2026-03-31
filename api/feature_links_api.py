@@ -35,13 +35,14 @@ class FeatureLinksAPI(basehandlers.APIHandler):
     """FeatureLinksAPI will return the links and its information to the client."""
 
     def get_feature_links(self, feature_id: int, update_stale_links: bool):
+        """Get links for a feature."""
         feature = FeatureEntry.get_by_id(feature_id)
         if not feature:
             self.abort(404, msg='Feature not found')
         return get_by_feature_id(feature_id, update_stale_links)
 
     def do_get(self, **kwargs):
-
+        """Get links for a feature."""
         feature_id = self.get_int_arg('feature_id', None)
         update_stale_links = self.get_bool_arg('update_stale_links', True)
         if feature_id:
@@ -60,6 +61,7 @@ class FeatureLinksSummaryAPI(basehandlers.APIHandler):
 
     @permissions.require_admin_site
     def do_get(self, **kwargs):
+        """Get summary of feature links."""
         return FeatureLinksSummaryResponse.from_dict(
             get_feature_links_summary()
         )
@@ -70,6 +72,7 @@ class FeatureLinksSamplesAPI(basehandlers.APIHandler):
 
     @permissions.require_admin_site
     def do_get(self, **kwargs):
+        """Get sample feature links."""
         domain = self.request.args.get('domain', None)
         type = self.request.args.get('type', None)
         is_error = self.get_bool_arg('is_error', None)

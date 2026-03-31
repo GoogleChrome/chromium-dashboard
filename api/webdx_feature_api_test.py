@@ -32,6 +32,7 @@ class WebFeatureIDsAPITest(testing_config.CustomTestCase):
     """Tests for WebFeatureIDsAPI."""
 
     def setUp(self):
+        """Set up the test environment."""
         self.handler = WebFeatureIDsAPI()
         self.request_path = '/api/v0/web_feature_ids'
 
@@ -66,6 +67,7 @@ class WebdxFeatureAPITest(testing_config.CustomTestCase):
     """Tests for the Webdx Feature API handler."""
 
     def setUp(self):
+        """Set up the test environment."""
         logging.disable(logging.CRITICAL)
         self.webdx_observer = WebDXFeatureObserver(
             bucket_id=3, property_name='css'
@@ -76,9 +78,11 @@ class WebdxFeatureAPITest(testing_config.CustomTestCase):
         self.request_path = '/api/v0/webdxfeatures'
 
     def tearDown(self):
+        """Clean up the test environment."""
         logging.disable(logging.NOTSET)
 
     def test_do_get__success(self):
+        """Test do get success."""
         testing_config.sign_out()
 
         with test_app.test_request_context(self.request_path):
@@ -94,6 +98,7 @@ class WebdxFeatureAPITest(testing_config.CustomTestCase):
         self.assertEqual(actual, expected)
 
     def test_do_get__empty_data(self):
+        """Test do get empty data."""
         testing_config.sign_out()
         self.webdx_observer.key.delete()
 

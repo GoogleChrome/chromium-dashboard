@@ -34,6 +34,7 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
     """Tests for the gemini_helpers module."""
 
     def setUp(self):
+        """Set up the test environment."""
         self.feature = FeatureEntry(
             name='Test Feature',
             summary='A test feature summary',
@@ -858,6 +859,7 @@ class GenerateWPTCoverageEvalReportHandlerTest(testing_config.CustomTestCase):
     """Tests for the GenerateWPTCoverageEvalReportHandler class."""
 
     def setUp(self):
+        """Set up the test environment."""
         super(GenerateWPTCoverageEvalReportHandlerTest, self).setUp()
         self.feature = FeatureEntry(
             name='Test Feature',
@@ -884,6 +886,7 @@ class GenerateWPTCoverageEvalReportHandlerTest(testing_config.CustomTestCase):
         ).start()
 
     def tearDown(self):
+        """Clean up the test environment."""
         mock.patch.stopall()
 
     def test_process_post_data__success(self):

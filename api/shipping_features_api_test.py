@@ -35,6 +35,7 @@ class ShippingFeaturesAPITest(testing_config.CustomTestCase):
     """Tests for ShippingFeaturesAPI."""
 
     def setUp(self):
+        """Set up the test environment."""
         self.handler = shipping_features_api.ShippingFeaturesAPI()
         self.milestone = 120
 

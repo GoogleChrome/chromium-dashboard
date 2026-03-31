@@ -99,6 +99,7 @@ class CustomTestCase(unittest.TestCase):
     """Custom base test case with database and cache clearing."""
 
     def run(self, result=None):
+        """Runs the test case, managing the context for NDB and clearing caches."""
         from framework import rediscache
 
         if rediscache.redis_client:

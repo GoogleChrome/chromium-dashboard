@@ -37,6 +37,7 @@ class UsersListTemplateTest(testing_config.CustomTestCase):
     """Tests for the users list template rendering."""
 
     def setUp(self):
+        """Sets up the test user and handler for the users list."""
         self.handler = users.UserListHandler()
 
         self.app_admin = user_models.AppUser(email='admin@example.com')

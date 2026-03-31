@@ -30,6 +30,7 @@ class LogoutAPITest(testing_config.CustomTestCase):
     """Tests for LogoutAPI."""
 
     def setUp(self):
+        """Set up the test environment."""
         self.handler = logout_api.LogoutAPI()
         self.request_path = '/api/v0/logout'
 

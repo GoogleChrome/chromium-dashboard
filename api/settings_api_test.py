@@ -28,6 +28,7 @@ class SettingsAPITest(testing_config.CustomTestCase):
     """Tests for SettingsAPI."""
 
     def setUp(self):
+        """Set up the test environment."""
         self.user_pref_1 = user_models.UserPref(
             email='one@example.com',
             notify_as_starrer=False,

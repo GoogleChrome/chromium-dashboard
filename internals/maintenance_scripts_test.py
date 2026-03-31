@@ -38,13 +38,16 @@ class EvaluateGateStatusTest(testing_config.CustomTestCase):
     """Tests for the EvaluateGateStatus handler."""
 
     def setUp(self):
+        """Set up the test environment."""
         self.delete_gates_and_votes()
         self.handler = maintenance_scripts.EvaluateGateStatus()
 
     def tearDown(self):
+        """Clean up the test environment."""
         self.delete_gates_and_votes()
 
     def delete_gates_and_votes(self):
+        """Delete gates and votes."""
         for kind in [Gate, Vote]:
             for entity in kind.query():
                 entity.key.delete()
@@ -128,6 +131,7 @@ class AssociateOTsTest(testing_config.CustomTestCase):
     """Tests for the AssociateOTs handler."""
 
     def setUp(self):
+        """Set up the test environment."""
         self.feature_1 = FeatureEntry(
             id=123,
             name='feature a',
@@ -300,6 +304,7 @@ class AssociateOTsTest(testing_config.CustomTestCase):
 
     @mock.patch('framework.origin_trials_client.get_trials_list')
     def test_associate_ots(self, mock_ot_client):
+        """Test associate ots."""
         mock_ot_client.return_value = self.trials_list_return_value
 
         handler = maintenance_scripts.AssociateOTs()
@@ -349,6 +354,7 @@ class CreateOriginTrialsTest(testing_config.CustomTestCase):
     """Tests for the CreateOriginTrials handler."""
 
     def setUp(self):
+        """Set up the test environment."""
         self.feature_1 = FeatureEntry(
             id=1, name='feature one', summary='sum', category=1, feature_type=0
         )
@@ -416,6 +422,7 @@ class CreateOriginTrialsTest(testing_config.CustomTestCase):
         settings.AUTOMATED_OT_CREATION = True
 
     def tearDown(self):
+        """Clean up the test environment."""
         settings.AUTOMATED_OT_CREATION = False
 
     @mock.patch('framework.cloud_tasks_helpers.enqueue_task')
@@ -487,6 +494,7 @@ class CreateOriginTrialsTest(testing_config.CustomTestCase):
         mock_enqueue_task,
         mock_logging,
     ):
+        """Test create trials  failed."""
         self.ot_stage_1.ot_action_requested = True
         self.ot_stage_1.put()
         self.ot_stage_2.ot_action_requested = True
@@ -626,6 +634,7 @@ class ActivateOriginTrialsTest(testing_config.CustomTestCase):
     """Tests for the ActivateOriginTrials handler."""
 
     def setUp(self):
+        """Set up the test environment."""
         self.feature_1 = FeatureEntry(
             id=1, name='feature one', summary='sum', category=1, feature_type=0
         )
@@ -698,6 +707,7 @@ class ActivateOriginTrialsTest(testing_config.CustomTestCase):
         settings.AUTOMATED_OT_CREATION = True
 
     def tearDown(self):
+        """Clean up the test environment."""
         settings.AUTOMATED_OT_CREATION = False
 
     @mock.patch('framework.cloud_tasks_helpers.enqueue_task')
@@ -802,6 +812,7 @@ class DeleteEmptyExtensionStagesTest(testing_config.CustomTestCase):
     """Tests for deleting empty extension stages."""
 
     def setUp(self):
+        """Set up the test environment."""
         for kind in [Gate, Stage]:
             for entity in kind.query():
                 entity.key.delete()
@@ -880,6 +891,7 @@ class BackfillShippingYearTest(testing_config.CustomTestCase):
     """Tests for the BackfillShippingYear handler."""
 
     def setUp(self):
+        """Set up the test environment."""
         self.stage_1_1 = Stage(feature_id=11111, milestones=MilestoneSet())
         self.stage_2_1 = Stage(
             feature_id=22222, milestones=MilestoneSet(desktop_first=123)
@@ -926,6 +938,7 @@ class BackfillActivityLogTypeTest(testing_config.CustomTestCase):
     """Tests for the BackfillActivityLogType handler."""
 
     def setUp(self):
+        """Set up the test environment."""
         self.handler = maintenance_scripts.BackfillActivityLogType()
 
         # 1. content is None -> USER_CHANGE
@@ -965,6 +978,7 @@ class BackfillActivityLogTypeTest(testing_config.CustomTestCase):
 
     @mock.patch('framework.basehandlers.FlaskHandler.require_cron_header')
     def test_get_template_data(self, mock_require_cron):
+        """Test get template data."""
         result = self.handler.get_template_data()
         mock_require_cron.assert_called_once()
 
@@ -1001,6 +1015,7 @@ class BackfillGateDatesTest(testing_config.CustomTestCase):
     """Tests for the BackfillGateDates handler."""
 
     def setUp(self):
+        """Set up the test environment."""
         self.gate = Gate(
             feature_id=1,
             stage_id=2,
@@ -1138,16 +1153,19 @@ class FetchWebdxFeatureIdTest(testing_config.CustomTestCase):
     """Tests for the FetchWebdxFeatureId handler."""
 
     def setUp(self):
+        """Set up the test environment."""
         logging.disable(logging.CRITICAL)
         self.handler = maintenance_scripts.FetchWebdxFeatureId()
         self.webdx_features = WebdxFeatures(feature_ids=['test1'])
         self.webdx_features.put()
 
     def tearDown(self):
+        """Clean up the test environment."""
         logging.disable(logging.NOTSET)
 
     @mock.patch('webstatus_openapi.DefaultApi.list_features')
     def test_fetch_webdx_feature_ids__success(self, mock_list_features):
+        """Test fetch webdx feature ids  success."""
         feature_page_dict = {
             'data': [
                 {
@@ -1218,6 +1236,7 @@ class FetchWebdxFeatureIdTest(testing_config.CustomTestCase):
 
     @mock.patch('webstatus_openapi.DefaultApi.list_features')
     def test_fetch_webdx_feature_ids__exceptions(self, mock_list_features):
+        """Test fetch webdx feature ids  exceptions."""
         mock_list_features.side_effect = ApiException(status=503)
 
         result = self.handler.get_template_data()
@@ -1229,6 +1248,7 @@ class SendManualOTCreatedEmailTest(testing_config.CustomTestCase):
     """Tests for the SendManualOTCreatedEmail handler."""
 
     def setUp(self):
+        """Set up the test environment."""
         self.handler = maintenance_scripts.SendManualOTCreatedEmail()
         self.feature_1 = FeatureEntry(
             id=1, name='feature a', summary='sum', category=1
@@ -1308,6 +1328,7 @@ class SendManualOTActivatedEmailTest(testing_config.CustomTestCase):
     """Tests for the SendManualOTActivatedEmail handler."""
 
     def setUp(self):
+        """Set up the test environment."""
         self.handler = maintenance_scripts.SendManualOTActivatedEmail()
         self.feature_1 = FeatureEntry(
             id=1, name='feature a', summary='sum', category=1
@@ -1373,6 +1394,7 @@ class GenerateReviewActivityFileTest(testing_config.CustomTestCase):
     """Tests for the GenerateReviewActivityFile handler."""
 
     def setUp(self):
+        """Set up the test environment."""
         self.maxDiff = None
         self.handler = maintenance_scripts.GenerateReviewActivityFile()
 
@@ -1683,6 +1705,7 @@ class GenerateStaleFeaturesFileTest(testing_config.CustomTestCase):
     """Tests for the GenerateStaleFeaturesFile handler."""
 
     def setUp(self):
+        """Set up the test environment."""
         self.maxDiff = None
         self.handler = maintenance_scripts.GenerateStaleFeaturesFile()
         self.current_milestone = 125
@@ -1908,6 +1931,7 @@ class GenerateStaleFeaturesFileTest(testing_config.CustomTestCase):
 
         # Use side_effect to return the correct blob mock based on the filename
         def blob_switcher(blob_name):
+            """Blob switcher."""
             if blob_name == 'chromestatus-stale-features.csv':
                 return mock_feature_blob
             if blob_name == 'chromestatus-stale-feature-owners.csv':
@@ -2062,6 +2086,7 @@ class GenerateShippingFeaturesFileTest(testing_config.CustomTestCase):
     """Tests for the GenerateShippingFeaturesFile handler."""
 
     def setUp(self):
+        """Set up the test environment."""
         self.handler = maintenance_scripts.GenerateShippingFeaturesFile()
         self.current_milestone = 120
 
@@ -2188,6 +2213,7 @@ class GenerateShippingFeaturesFileTest(testing_config.CustomTestCase):
         mock_blob_missing = mock.MagicMock()
 
         def blob_side_effect(filename):
+            """Blob side effect."""
             if 'features.csv' in filename:
                 return mock_blob_features
             if 'owners.csv' in filename:
@@ -2348,6 +2374,7 @@ class ResetStaleShippingMilestonesTest(testing_config.CustomTestCase):
     CURRENT_MILESTONE = 100
 
     def setUp(self):
+        """Set up the test environment."""
         self.handler = maintenance_scripts.ResetStaleShippingMilestones()
         # Valid reset range will be [100, 101, 102].
 
@@ -2649,6 +2676,7 @@ class DeleteWPTCoverageReportTest(testing_config.CustomTestCase):
     """Tests for the DeleteWPTCoverageReport handler."""
 
     def setUp(self):
+        """Set up the test environment."""
         for kind in [Gate, Stage, Activity]:
             for entity in kind.query():
                 entity.key.delete()

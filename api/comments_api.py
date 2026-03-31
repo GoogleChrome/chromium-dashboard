@@ -154,6 +154,7 @@ class CommentsAPI(basehandlers.APIHandler):
         return SuccessMessage(message='Done').to_dict()
 
     def do_patch(self, **kwargs) -> dict[str, str]:
+        """Patch a comment."""
         patch_request = PatchCommentRequest.from_dict(self.request.json)
         comment: Activity = Activity.get_by_id(patch_request.comment_id)
 

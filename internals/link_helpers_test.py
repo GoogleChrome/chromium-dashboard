@@ -37,12 +37,15 @@ class LinkHelperTest(testing_config.CustomTestCase):
     """Tests for the Link helper class."""
 
     def setUp(self):
+        """Set up the test environment."""
         logging.disable(logging.CRITICAL)
 
     def tearDown(self):
+        """Clean up the test environment."""
         logging.disable(logging.NOTSET)
 
     def test_specs_url(self):
+        """Test specs url."""
         urls = [
             'https://w3c.github.io/presentation-api/',
             'https://www.w3.org/TR/css-pseudo-4/#highlight-pseudos',
@@ -61,6 +64,7 @@ class LinkHelperTest(testing_config.CustomTestCase):
                 self.assertEqual(link.url, url)
 
     def test_mozilla_bug(self):
+        """Test mozilla bug."""
         link = Link('https://bugzilla.mozilla.org/show_bug.cgi?id=1314686')
         link.parse()
         self.assertEqual(link.type, LINK_TYPE_MOZILLA_BUG)
@@ -73,6 +77,7 @@ class LinkHelperTest(testing_config.CustomTestCase):
         self.assertIsNotNone(link.information.get('description'))
 
     def test_google_docs_url(self):
+        """Test google docs url."""
         link = Link(
             'https://docs.google.com/document/d/1-M_o-il38aW64Gyk4R23Yaxy1p2Uy7D0i6J5qTWzypU'
         )
@@ -83,6 +88,7 @@ class LinkHelperTest(testing_config.CustomTestCase):
         self.assertIsNotNone(link.information.get('title'))
 
     def test_mdn_docs_url(self):
+        """Test mdn docs url."""
         link = Link('https://developer.mozilla.org/en-US/docs/Web/HTML')
         link.parse()
         self.assertEqual(link.type, LINK_TYPE_MDN_DOCS)
@@ -95,6 +101,7 @@ class LinkHelperTest(testing_config.CustomTestCase):
         self.assertIsNotNone(link.information.get('description'))
 
     def test_valid_url(self):
+        """Test valid url."""
         invalid_urls = [
             'http://',
             'http://.',
@@ -115,6 +122,7 @@ class LinkHelperTest(testing_config.CustomTestCase):
 
     @mock.patch('requests.get')
     def test_mock_not_found_url(self, mock_requests_get):
+        """Test mock not found url."""
         mock_requests_get.return_value = testing_config.Blank(
             status_code=404, content=''
         )
@@ -126,6 +134,7 @@ class LinkHelperTest(testing_config.CustomTestCase):
         self.assertEqual(link.http_error_code, 404)
 
     def test_extract_urls_from_value(self):
+        """Test extract urls from value."""
         field_value = 'https://www.chromestatus.com/feature/1234'
         urls = Link.extract_urls_from_value(field_value)
         self.assertEqual(urls, [field_value])
@@ -153,6 +162,7 @@ class LinkHelperTest(testing_config.CustomTestCase):
         self.assertEqual(urls, ['https://www.chromestatus.com/feature/1234'])
 
     def test_link_github_markdown(self):
+        """Test link github markdown."""
         urls_to_test = [
             'https://github.com/w3c/reporting/blob/master/EXPLAINER.md#crashes',
             'https://github.com/tc39/proposal-logical-assignment/blob/master/README.md',
@@ -164,6 +174,7 @@ class LinkHelperTest(testing_config.CustomTestCase):
 
     def test_link_parse_github_markdown_with_renamed_branch(self):
         # master branch is renamed to main
+        """Test link parse github markdown with renamed branch."""
         link = Link('https://github.com/w3c/reporting/blob/master/EXPLAINER.md')
         link.parse()
         if link.is_error and link.http_error_code == 429:
@@ -175,6 +186,7 @@ class LinkHelperTest(testing_config.CustomTestCase):
         print(info)
 
     def test_link_parse_github_markdown_with_hash(self):
+        """Test link parse github markdown with hash."""
         link = Link(
             'https://github.com/vmpstr/web-proposals/blob/b146b4447b3746669000f1abbb5a19d32f508540/explainers/cv-auto-event.md'
         )
@@ -189,6 +201,7 @@ class LinkHelperTest(testing_config.CustomTestCase):
         )
 
     def test_link_github_issue(self):
+        """Test link github issue."""
         urls_to_test = [
             'https://github.com/GoogleChrome/chromium-dashboard/issues/999',
             'https://www.github.com/GoogleChrome/chromium-dashboard/issues/999',
@@ -199,6 +212,7 @@ class LinkHelperTest(testing_config.CustomTestCase):
             self.assertEqual(link.type, LINK_TYPE_GITHUB_ISSUE)
 
     def test_link_non_github_issue(self):
+        """Test link non github issue."""
         urls_to_test = [
             'https://fakegithub.com/GoogleChrome/chromium-dashboard/issues/999',
             'https://www.github.com/GoogleChrome/chromium-dashboard/issues/',
@@ -208,6 +222,7 @@ class LinkHelperTest(testing_config.CustomTestCase):
             self.assertNotEqual(link, LINK_TYPE_GITHUB_ISSUE)
 
     def test_parse_github_issue(self):
+        """Test parse github issue."""
         link = Link(
             'https://www.github.com/GoogleChrome/chromium-dashboard/issues/999?params=1#issuecomment-688970447'
         )
@@ -228,6 +243,7 @@ class LinkHelperTest(testing_config.CustomTestCase):
     def test_parse_github_issue_fail_wrong_id_or_no_permission(
         self, mock_error
     ):
+        """Test parse github issue fail wrong id or no permission."""
         link = Link(
             'https://www.github.com/GoogleChrome/chromium-dashboard/issues/100000000000000'
         )
@@ -238,22 +254,26 @@ class LinkHelperTest(testing_config.CustomTestCase):
         self.assertEqual(link.http_error_code, 404)
 
     def test_link_code_google(self):
+        """Test link code google."""
         link = Link(
             'https://code.google.com/p/chromium/issues/detail?id=515786'
         )
         self.assertEqual(link.type, LINK_TYPE_CHROMIUM_BUG)
 
     def test_link_crbug(self):
+        """Test link crbug."""
         link = Link('https://crbug.com/1352598')
         self.assertEqual(link.type, LINK_TYPE_CHROMIUM_BUG)
 
     def test_link_chromium(self):
+        """Test link chromium."""
         link = Link(
             'https://bugs.chromium.org/p/chromium/issues/detail?id=100000'
         )
         self.assertEqual(link.type, LINK_TYPE_CHROMIUM_BUG)
 
     def test_link_non_chromium(self):
+        """Test link non chromium."""
         link = Link(
             'https://bugs0chromium.org/p/chromium/issues/detail?id=100000'
         )
@@ -261,6 +281,7 @@ class LinkHelperTest(testing_config.CustomTestCase):
 
     @skip('Until issues.chromium.org has an API')
     def test_parse_chromium_tracker(self):
+        """Test parse chromium tracker."""
         link = Link(
             'https://bugs.chromium.org/p/chromium/issues/detail?id=100000'
         )
@@ -277,6 +298,7 @@ class LinkHelperTest(testing_config.CustomTestCase):
     @skip('Until issues.chromium.org has an API')
     @mock.patch('logging.error')
     def test_parse_chromium_tracker_fail_wrong_id(self, mock_error):
+        """Test parse chromium tracker fail wrong id."""
         link = Link(
             'https://bugs.chromium.org/p/chromium/issues/detail?id=100000000000000'
         )
@@ -289,6 +311,7 @@ class LinkHelperTest(testing_config.CustomTestCase):
     @skip('Until issues.chromium.org has an API')
     @mock.patch('logging.error')
     def test_parse_chromium_tracker_fail_no_permission(self, mock_error):
+        """Test parse chromium tracker fail no permission."""
         link = Link('https://bugs.chromium.org/p/chromium/issues/detail?id=1')
         link.parse()
         self.assertEqual(link.type, LINK_TYPE_CHROMIUM_BUG)
@@ -297,5 +320,6 @@ class LinkHelperTest(testing_config.CustomTestCase):
         self.assertEqual(link.information, None)
 
     def test_extract_invalid_url(self):
+        """Test extract invalid url."""
         urls = Link.extract_urls_from_value('Some kind of https://... link.')
         self.assertEqual(len(urls), 0)

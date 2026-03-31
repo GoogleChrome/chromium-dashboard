@@ -44,6 +44,7 @@ class VotesAPITest(testing_config.CustomTestCase):
     """Tests for VotesAPI."""
 
     def setUp(self):
+        """Set up the test environment."""
         self.feature_1 = core_models.FeatureEntry(
             name='feature one',
             summary='sum',
@@ -419,6 +420,7 @@ class GatesAPITest(testing_config.CustomTestCase):
     """Tests for GatesAPI."""
 
     def setUp(self):
+        """Set up the test environment."""
         self.feature_1 = core_models.FeatureEntry(
             name='feature one',
             summary='sum',
@@ -534,6 +536,7 @@ class XfnGatesAPITest(testing_config.CustomTestCase):
     """Tests for XfnGatesAPI."""
 
     def setUp(self):
+        """Set up the test environment."""
         self.feature_1 = core_models.FeatureEntry(
             name='feature one',
             summary='sum',

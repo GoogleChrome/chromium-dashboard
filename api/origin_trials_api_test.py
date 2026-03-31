@@ -34,6 +34,7 @@ class OriginTrialsAPITest(testing_config.CustomTestCase):
     """Tests for OriginTrialsAPI."""
 
     def setUp(self):
+        """Set up the test environment."""
         self.feature_1 = FeatureEntry(
             feature_type=1,
             name='feature one',
@@ -826,6 +827,7 @@ bool FeatureHasExpiryGracePeriod(blink::mojom::OriginTrialFeature feature) {
         self.assertEqual({}, result)
 
     def test_validate_extension_args__valid(self):
+        """Test validate extension args valid."""
         # No exception should be raised.
         with test_app.test_request_context(self.request_path):
             self.handler._validate_extension_args(
@@ -833,6 +835,7 @@ bool FeatureHasExpiryGracePeriod(blink::mojom::OriginTrialFeature feature) {
             )
 
     def test_validate_extension_args__missing_ot_id(self):
+        """Test validate extension args missing ot id."""
         self.ot_stage_1.origin_trial_id = None
         self.ot_stage_1.put()
         with test_app.test_request_context(self.request_path):
@@ -842,6 +845,7 @@ bool FeatureHasExpiryGracePeriod(blink::mojom::OriginTrialFeature feature) {
                 )
 
     def test_validate_extension_args__missing_end_milestone(self):
+        """Test validate extension args missing end milestone."""
         self.extension_stage_1.milestones.desktop_last = None
         self.extension_stage_1.put()
         with test_app.test_request_context(self.request_path):
@@ -851,6 +855,7 @@ bool FeatureHasExpiryGracePeriod(blink::mojom::OriginTrialFeature feature) {
                 )
 
     def test_validate_extension_args__invalid_intent_url(self):
+        """Test validate extension args invalid intent url."""
         self.extension_stage_1.intent_thread_url = "This can't be right."
         self.extension_stage_1.put()
         with test_app.test_request_context(self.request_path):
@@ -860,6 +865,7 @@ bool FeatureHasExpiryGracePeriod(blink::mojom::OriginTrialFeature feature) {
                 )
 
     def test_validate_extension_args__missing_intent_url(self):
+        """Test validate extension args missing intent url."""
         self.extension_stage_1.intent_thread_url = None
         self.extension_stage_1.put()
         with test_app.test_request_context(self.request_path):

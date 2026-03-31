@@ -29,6 +29,7 @@ class StarsAPITest(testing_config.CustomTestCase):
     """Tests for the Stars API handler."""
 
     def setUp(self):
+        """Set up the test environment."""
         self.fe_1 = FeatureEntry(name='feature one', summary='sum', category=1)
         self.fe_1.put()
         self.handler = stars_api.StarsAPI()

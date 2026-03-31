@@ -60,6 +60,7 @@ class SearchFulltextFunctionsTest(testing_config.CustomTestCase):
     """Tests for fulltext search functions."""
 
     def setUp(self):
+        """Set up the test environment."""
         self.fe = core_models.FeatureEntry(
             id=123,
             creator_email='creator@example.com',
@@ -220,12 +221,14 @@ class SearchFulltextFunctionsTest(testing_config.CustomTestCase):
         word_bag_feature_ids = [fe_id]
 
         def assert_found(s, field_name=None):
+            """Assert found."""
             actual = search_fulltext.post_process_phrase(
                 s, word_bag_feature_ids, field_name=field_name
             )
             self.assertEqual([fe_id], actual)
 
         def assert_not_found(s, field_name=None):
+            """Assert not found."""
             actual = search_fulltext.post_process_phrase(
                 s, word_bag_feature_ids, field_name=field_name
             )
@@ -274,6 +277,7 @@ class FindStopWordsTest(testing_config.CustomTestCase):
     """Tests for finding stop words in the search corpus."""
 
     def setUp(self):
+        """Set up the test environment."""
         self.fe_1 = core_models.FeatureEntry(
             creator_email='creator@example.com',
             updater_email='updater@example.com',
@@ -300,6 +304,7 @@ class FindStopWordsTest(testing_config.CustomTestCase):
         self.request_path = '/admin/find_stop_words'
 
     def test_get_template_date(self):
+        """Test get template date."""
         with test_app.test_request_context(self.request_path):
             actual = self.handler.get_template_data()
 

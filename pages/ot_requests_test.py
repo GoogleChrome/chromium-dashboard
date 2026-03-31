@@ -36,6 +36,7 @@ class OriginTrialsRequestsTest(testing_config.CustomTestCase):
     """Tests for origin trial request operations."""
 
     def setUp(self):
+        """Sets up feature and stage entities for the OT requests tests."""
         self.feature_1 = FeatureEntry(
             name='feature one', summary='sum', category=1
         )

@@ -35,6 +35,7 @@ class IntentEmailPreviewHandler(basehandlers.FlaskHandler):
     TEMPLATE_PATH = 'blink/intent_to_implement.html'
 
     def get_template_data(self, **kwargs):
+        """Returns template data for the intent email preview page."""
         f = self.get_validated_entity(kwargs.get('feature_id'), FeatureEntry)
         s = self.get_validated_entity(kwargs.get('stage_id'), Stage)
         intent_type = INTENT_DRAFT_TYPES_BY_STAGE_TYPE[s.stage_type]

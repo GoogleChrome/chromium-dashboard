@@ -66,6 +66,7 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
     """Tests for feature helpers."""
 
     def setUp(self):
+        """Set up the test environment."""
         self.feature_2 = FeatureEntry(
             name='feature b',
             summary='sum',
@@ -1139,6 +1140,7 @@ class FeatureHelpersFilteringTest(testing_config.CustomTestCase):
     """Tests for feature helpers filtering."""
 
     def setUp(self):
+        """Set up the test environment."""
         self.owner_email = 'owner@example.com'
         self.editor_email = 'editor@example.com'
         self.creator_email = 'creator@example.com'
@@ -1376,6 +1378,7 @@ class ShippingFeatureHelpersTest(testing_config.CustomTestCase):
     """Tests for shipping feature helpers."""
 
     def setUp(self):
+        """Set up the test environment."""
         self.milestone = 120
 
         # Feature 1: Complete.

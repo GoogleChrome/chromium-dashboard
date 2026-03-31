@@ -35,6 +35,7 @@ class StagesAPITest(testing_config.CustomTestCase):
     """Tests for the Stages API handler."""
 
     def setUp(self):
+        """Set up the test environment."""
         self.now = datetime.now()
         self.feature_owner = AppUser(email='feature_owner@example.com')
         self.feature_owner.put()

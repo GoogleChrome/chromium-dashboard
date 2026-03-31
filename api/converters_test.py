@@ -29,6 +29,7 @@ class DelNoneTest(testing_config.CustomTestCase):
     """Tests for del_none function."""
 
     def test_del_none(self):
+        """Test del_none."""
         d = {}
         self.assertEqual({}, converters.del_none(d))
 
@@ -40,6 +41,7 @@ class FeatureConvertersTest(testing_config.CustomTestCase):
     """Tests for feature converters."""
 
     def setUp(self):
+        """Set up the test."""
         self.date = datetime.now()
         self.fe_1 = FeatureEntry(
             id=123,
@@ -115,6 +117,7 @@ class FeatureConvertersTest(testing_config.CustomTestCase):
         self.maxDiff = None
 
     def tearDown(self) -> None:
+        """Tear down the test."""
         self.fe_1.key.delete()
         for s in Stage.query():
             s.key.delete()
@@ -543,6 +546,7 @@ class GateConvertersTest(testing_config.CustomTestCase):
     """Tests for gate converters."""
 
     def tearDown(self) -> None:
+        """Tear down the test."""
         for g in Gate.query():
             g.key.delete()
 

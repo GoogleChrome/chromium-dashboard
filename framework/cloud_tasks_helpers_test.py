@@ -32,6 +32,7 @@ class LocalCloudTasksClientTest(unittest.TestCase):
     """Tests for LocalCloudTasksClient."""
 
     def setUp(self):
+        """Set up the test environment."""
         self.client = cloud_tasks_helpers.LocalCloudTasksClient()
 
     def test_queue_path(self):
