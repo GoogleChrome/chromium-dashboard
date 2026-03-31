@@ -41,7 +41,6 @@ class FeatureLinksAPI(basehandlers.APIHandler):
 
     def do_get(self, **kwargs):
         """Get links for a feature."""
-
         feature_id = self.get_int_arg('feature_id', None)
         update_stale_links = self.get_bool_arg('update_stale_links', True)
         if feature_id:

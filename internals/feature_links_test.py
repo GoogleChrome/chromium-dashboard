@@ -420,6 +420,7 @@ class LinkTest(testing_config.CustomTestCase):
     @mock.patch('internals.link_helpers.Link.parse', autospec=True)
     def test_update_all_feature_links(self, mock_parse):
         """Test update all feature links."""
+
         def side_effect(link_instance):
             """Side effect."""
             if 'issues/999' in link_instance.url:

@@ -271,4 +271,3 @@ class BlinkComponent(ndb.Model):
             logging.error('%s is an unknown BlinkComponent.' % (component_name))
             return None
         return component[0]
-nt[0]

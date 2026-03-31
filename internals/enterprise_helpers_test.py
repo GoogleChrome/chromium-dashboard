@@ -243,7 +243,6 @@ class EnterpriseHelpersTest(testing_config.CustomTestCase):
     def test__needs_default_first_notification_milestone__update(
         self, mock_specified_milestones
     ):  # noqa: E501
-
         """Test  needs default first notification milestone with update."""
         mock_specified_milestones.return_value = {
             99: {

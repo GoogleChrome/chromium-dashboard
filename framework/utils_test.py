@@ -71,6 +71,7 @@ class UtilsFunctionTests(unittest.TestCase):
         self, mock_sleep, mock_warn, mock_err
     ):
         """Testretrydecorator exceedfailures."""
+
         class Tracker(object):
             func_called = 0
 
@@ -93,6 +94,7 @@ class UtilsFunctionTests(unittest.TestCase):
     @mock.patch('time.sleep')  # Run test full speed.
     def testRetryDecorator_EventuallySucceed(self, mock_sleep, mock_warn):
         """Testretrydecorator eventuallysucceed."""
+
         class Tracker(object):
             func_called = 0
 
