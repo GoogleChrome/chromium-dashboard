@@ -12,6 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Unit tests for the csp module.
+
+Tests the generation of nonces, construction of CSP directives, and
+the handling of CSP violation reports.
+"""
+
 import unittest
 from unittest import mock
 

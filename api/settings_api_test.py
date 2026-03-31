@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for the settings_api module, verifying the storage and retrieval of user preferences."""
+
 import flask
 import werkzeug.exceptions
 

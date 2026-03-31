@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Provides NDB query building and filtering logic for feature search."""
+
 import datetime
 import logging
 from dataclasses import dataclass

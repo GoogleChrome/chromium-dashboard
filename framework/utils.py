@@ -13,6 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""General utility functions and helpers.
+
+Provides common utilities for URL formatting, string normalization,
+retry logic, text extraction, and interactions with external services
+like GitHub and the Chromium release schedule.
+"""
+
 import asyncio
 import calendar
 import datetime

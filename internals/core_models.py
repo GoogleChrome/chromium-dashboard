@@ -15,6 +15,13 @@
 
 # Import needed to reference a class within its own class method.
 # https://stackoverflow.com/a/33533514
+"""Core Datastore models for the chromium-dashboard application.
+
+Defines the central `FeatureEntry` model which represents a web platform
+feature, tracking its metadata, implementation status, descriptive fields,
+and relationships to other data entities.
+"""
+
 from __future__ import annotations
 
 from typing import Any, Optional

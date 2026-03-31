@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Cron handlers and helpers for sending automated reminder emails about feature updates, approvals, and stale features."""
+
 import logging
 from collections import defaultdict
 from datetime import datetime, timedelta

@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Model and functions for extracting, indexing, and updating URLs linked within feature fields."""
+
 import datetime
 import logging
 from collections import Counter

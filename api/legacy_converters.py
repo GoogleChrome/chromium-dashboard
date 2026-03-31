@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Functions for converting between legacy datastore models and external API dictionary representations."""
+
 from typing import Any
 
 from internals.legacy_models import Feature

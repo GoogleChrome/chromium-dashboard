@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Main application entry point, routing configuration, and Flask app setup."""
+
 import threading
 from dataclasses import dataclass, field
 from typing import Any, Type

@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for the origin_trials_api module, verifying the retrieval and extension of origin trials."""
+
 from unittest import mock
 
 import flask

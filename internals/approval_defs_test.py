@@ -12,6 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Unit tests for the approval_defs module.
+
+Verifies the fetching of OWNERS files, auto-assignment of reviewers
+based on gate definitions, and handling of missing or cached data.
+"""
+
 import base64
 import datetime
 from unittest import mock

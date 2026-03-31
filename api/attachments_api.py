@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""API handlers for uploading and serving feature attachments (e.g., screenshots)."""
+
 import logging
 
 from chromestatus_openapi.models import AddAttachmentResponse

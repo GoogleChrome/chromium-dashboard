@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Defines the feature launch processes, stages, progress items, and rules for required approvals and fields."""
+
 from dataclasses import asdict, dataclass
 
 from internals import approval_defs, core_enums

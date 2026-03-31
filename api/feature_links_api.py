@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""API handlers for retrieving and summarizing links associated with features."""
+
 from chromestatus_openapi.models import (
     FeatureLinksResponse,
     FeatureLinksSample,

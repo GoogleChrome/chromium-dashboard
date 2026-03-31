@@ -12,6 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Unit tests for the xsrf module.
+
+Tests the generation of XSRF tokens, proper validation of valid and
+malformed tokens, and token expiration logic.
+"""
+
 from unittest import mock
 
 import testing_config  # Must be imported before the module under test.

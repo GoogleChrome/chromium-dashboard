@@ -14,6 +14,8 @@
 # limitations under the License.
 
 
+"""API handlers for retrieving and dismissing user-specific UI tutorial cues."""
+
 from chromestatus_openapi.models import DismissCueRequest
 
 from framework import basehandlers

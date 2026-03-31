@@ -13,6 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Content Security Policy (CSP) generation and handling.
+
+Provides functions to generate nonces, build CSP headers, and handle
+CSP violation reports to secure the application against code injection attacks.
+"""
+
 import base64
 import copy
 import logging

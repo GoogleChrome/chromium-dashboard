@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for the components_users module, verifying retrieval of all Blink component users."""
+
 import datetime
 
 import flask

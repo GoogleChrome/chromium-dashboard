@@ -1,3 +1,9 @@
+"""User authentication and representation.
+
+Provides the User class for representing authenticated users and functions
+to determine the current logged-in user from the session.
+"""
+
 import os
 
 from flask import session

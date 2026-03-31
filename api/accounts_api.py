@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""API handlers for creating and managing AppUser accounts."""
+
 from chromestatus_openapi.models import AccountResponse
 
 from framework import basehandlers, permissions

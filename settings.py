@@ -1,3 +1,5 @@
+"""Application-wide configuration settings and environment constants."""
+
 import logging
 import os
 
