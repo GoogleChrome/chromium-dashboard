@@ -27,6 +27,7 @@ test_app = flask.Flask(__name__)
 
 
 class WebFeatureIDsAPITest(testing_config.CustomTestCase):
+    """Tests for WebFeatureIDsAPI."""
     def setUp(self):
         self.handler = WebFeatureIDsAPI()
         self.request_path = '/api/v0/web_feature_ids'
@@ -59,6 +60,7 @@ class WebFeatureIDsAPITest(testing_config.CustomTestCase):
 
 
 class WebdxFeatureAPITest(testing_config.CustomTestCase):
+    """Tests for the Webdx Feature API handler."""
     def setUp(self):
         logging.disable(logging.CRITICAL)
         self.webdx_observer = WebDXFeatureObserver(

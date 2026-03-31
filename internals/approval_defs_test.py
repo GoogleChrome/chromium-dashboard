@@ -23,6 +23,7 @@ from internals.review_models import Gate, GateDef, OwnersFile, Vote
 
 
 class FetchOwnersTest(testing_config.CustomTestCase):
+    """Tests for FetchOwnersTest."""
     FILE_CONTENTS = (
         '# Blink API owners are responsible for ...\n'
         '#\n'
@@ -86,6 +87,7 @@ class FetchOwnersTest(testing_config.CustomTestCase):
 
 
 class AutoAssignmentTest(testing_config.CustomTestCase):
+    """Tests for AutoAssignment."""
     def setUp(self):
         self.feature_id = 123456789
         self.gate_1 = Gate(
@@ -169,6 +171,7 @@ MOCK_APPROVALS_BY_ID = {
 
 
 class GetApproversTest(testing_config.CustomTestCase):
+    """Tests for GetApprovers."""
     def setUp(self):
         self.clearCache()
 
@@ -235,6 +238,7 @@ class GetApproversTest(testing_config.CustomTestCase):
 
 
 class IsValidGateTypeTest(testing_config.CustomTestCase):
+    """Tests for gate type validation."""
     @mock.patch(
         'internals.approval_defs.APPROVAL_FIELDS_BY_ID', MOCK_APPROVALS_BY_ID
     )
@@ -246,6 +250,7 @@ class IsValidGateTypeTest(testing_config.CustomTestCase):
 
 
 class IsApprovedTest(testing_config.CustomTestCase):
+    """Tests for approved status."""
     def setUp(self):
         feature_1_id = 123456
         self.appr_nr = Vote(
@@ -293,6 +298,7 @@ GATE_VALUES.update({Gate.PREPARING: 'preparing'})
 
 
 class CalcGateStateTest(testing_config.CustomTestCase):
+    """Tests for calculating gate state."""
     def do_calc(self, *vote_states):
         votes = [  # set_on dates are in the order of the given list.
             Vote(state=state, set_on=datetime.datetime(2022, 1, i + 1))
@@ -434,6 +440,7 @@ class CalcGateStateTest(testing_config.CustomTestCase):
 
 
 class UpdateTest(testing_config.CustomTestCase):
+    """Tests for updating gate approval state."""
     def setUp(self):
         self.gate_1 = Gate(
             id=1001, feature_id=1, stage_id=1, gate_type=2, state=Gate.PREPARING

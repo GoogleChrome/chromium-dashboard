@@ -17,6 +17,7 @@ from internals.webdx_feature_models import WebdxFeatures
 
 
 class WebdxFeaturesTest(testing_config.CustomTestCase):
+    """Tests for the WebdxFeatures model."""
     def setUp(self):
         self.webdx = WebdxFeatures(feature_ids=['abc'])
         self.webdx.put()

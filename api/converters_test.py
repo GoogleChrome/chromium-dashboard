@@ -24,6 +24,7 @@ from internals.review_models import Gate, SurveyAnswers, Vote
 
 
 class DelNoneTest(testing_config.CustomTestCase):
+    """Tests for del_none function."""
     def test_del_none(self):
         d = {}
         self.assertEqual({}, converters.del_none(d))
@@ -33,6 +34,7 @@ class DelNoneTest(testing_config.CustomTestCase):
 
 
 class FeatureConvertersTest(testing_config.CustomTestCase):
+    """Tests for feature converters."""
     def setUp(self):
         self.date = datetime.now()
         self.fe_1 = FeatureEntry(
@@ -509,6 +511,7 @@ class FeatureConvertersTest(testing_config.CustomTestCase):
 
 
 class VoteConvertersTest(testing_config.CustomTestCase):
+    """Tests for vote converters."""
     def test_conversion(self):
         """We can convert a Vote entity to JSON."""
         vote = Vote(
@@ -532,6 +535,7 @@ class VoteConvertersTest(testing_config.CustomTestCase):
 
 
 class GateConvertersTest(testing_config.CustomTestCase):
+    """Tests for gate converters."""
     def tearDown(self) -> None:
         for g in Gate.query():
             g.key.delete()
@@ -652,3 +656,4 @@ class GateConvertersTest(testing_config.CustomTestCase):
 
         self.assertEqual(4, actual['slo_initial_response_took'])
         self.assertEqual(None, actual['slo_initial_response_remaining'])
+

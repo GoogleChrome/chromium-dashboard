@@ -22,6 +22,7 @@ from internals.review_models import Gate, Vote
 
 
 class SearchFeaturesTest(testing_config.CustomTestCase):
+    """Tests for searching feature entries."""
     def setUp(self):
         self.feature_1 = FeatureEntry(
             name='feature a', summary='sum', category=1, impl_status_chrome=3

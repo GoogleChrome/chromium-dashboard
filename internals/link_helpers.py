@@ -128,6 +128,7 @@ def rotate_github_client():
 
 
 class Link:
+    """Helper class for links."""
     @classmethod
     def extract_urls_from_value(cls, value: Any) -> list[str]:
         """Extract the urls from the given value."""

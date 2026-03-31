@@ -25,6 +25,8 @@ test_app.secret_key = 'testing secret'
 
 
 class UsersTest(testing_config.CustomTestCase):
+    """Tests for user management logic."""
+
     def test_get_current_user__unittest_signed_in(self):
         """For unit tests, we know when the user is signed in."""
         testing_config.sign_in('user_111@example.com', 111)

@@ -60,6 +60,7 @@ M = TypeVar('M', bound=ndb.Model)
 
 
 class BaseHandler(flask.views.MethodView):
+    """Base handler class for requests."""
     @property
     def request(self):
         return flask.request
@@ -229,6 +230,7 @@ class BaseHandler(flask.views.MethodView):
 
 
 class APIHandler(BaseHandler):
+    """Base class for all API endpoints."""
     def get_headers(self):
         """Add CORS and Chrome Frame to all responses."""
         session.permanent = True
@@ -526,6 +528,7 @@ class EntitiesAPIHandler(APIHandler):
 
 
 class FlaskHandler(BaseHandler):
+    """Base class for HTML page handlers."""
     TEMPLATE_PATH: Optional[str] = None  # Subclasses should define this.
     HTTP_CACHE_TYPE: Optional[str] = (
         None  # Subclasses can use 'public' or 'private'  # noqa: E501

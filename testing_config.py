@@ -91,6 +91,7 @@ def sign_in(user_email, user_id):
 
 
 class CustomTestCase(unittest.TestCase):
+    """Custom base test case with database and cache clearing."""
     def run(self, result=None):
         from framework import rediscache
 
@@ -103,6 +104,7 @@ class CustomTestCase(unittest.TestCase):
 
 
 class Testdata(object):
+    """Utility class to manage and load testdata files."""
     def __init__(self, test_file_path: str):
         """Helper class to load testdata
         Common pattern to place the testdata in the following format:

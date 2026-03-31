@@ -24,6 +24,8 @@ from framework import gemini_client
 
 
 class GeminiClientTest(testing_config.CustomTestCase):
+    """Tests for the GeminiClient class."""
+
     def setUp(self):
         """Set up shared mocks for all tests in this class."""
         logging.disable(logging.CRITICAL)

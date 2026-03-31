@@ -20,6 +20,7 @@ from internals import feature_helpers
 
 
 class StaleFeatureInfo(TypedDict):
+    """Type dictionary for stale feature information."""
     id: int
     name: str
     owner_emails: list[str]
@@ -30,6 +31,7 @@ class StaleFeatureInfo(TypedDict):
 
 
 class GetStaleFeaturesResponse(TypedDict):
+    """Response type for getting stale features."""
     stale_features: list[StaleFeatureInfo]
 
 

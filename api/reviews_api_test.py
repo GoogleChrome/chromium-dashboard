@@ -39,6 +39,8 @@ ALL_SHIPPING_GATE_TYPES = [
 
 
 class VotesAPITest(testing_config.CustomTestCase):
+    """Tests for VotesAPI."""
+
     def setUp(self):
         self.feature_1 = core_models.FeatureEntry(
             name='feature one',
@@ -412,6 +414,8 @@ class VotesAPITest(testing_config.CustomTestCase):
 
 
 class GatesAPITest(testing_config.CustomTestCase):
+    """Tests for GatesAPI."""
+
     def setUp(self):
         self.feature_1 = core_models.FeatureEntry(
             name='feature one',
@@ -525,6 +529,8 @@ class GatesAPITest(testing_config.CustomTestCase):
 
 
 class XfnGatesAPITest(testing_config.CustomTestCase):
+    """Tests for XfnGatesAPI."""
+
     def setUp(self):
         self.feature_1 = core_models.FeatureEntry(
             name='feature one',

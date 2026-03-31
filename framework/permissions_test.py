@@ -24,6 +24,8 @@ from main import Route
 
 
 class MockHandler(basehandlers.BaseHandler):
+    """A mock handler used for testing permissions logic."""
+
     def __init__(self):
         self.called_with = None
         self.common_data = {}
@@ -52,6 +54,8 @@ test_app = basehandlers.FlaskApplication(
 
 
 class PermissionFunctionTests(testing_config.CustomTestCase):
+    """Tests for standalone permission functions."""
+
     def setUp(self):
         self.users = []
         self.app_user = user_models.AppUser(email='registered@example.com')
@@ -385,6 +389,7 @@ class PermissionFunctionTests(testing_config.CustomTestCase):
 
 
 class RequireAdminSiteTests(testing_config.CustomTestCase):
+    """Tests for the require_admin_site decorator."""
     def setUp(self):
         self.app_user = user_models.AppUser(email='registered@example.com')
         self.app_user.put()

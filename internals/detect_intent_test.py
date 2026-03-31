@@ -31,6 +31,7 @@ test_app = flask.Flask(__name__)
 
 
 class FunctionTest(testing_config.CustomTestCase):
+    """Tests for intent detection functions."""
     def setUp(self):
         self.feature_1 = FeatureEntry(
             id=1,
@@ -517,6 +518,7 @@ class FunctionTest(testing_config.CustomTestCase):
 
 
 class IntentEmailHandlerTest(testing_config.CustomTestCase):
+    """Tests for intent email handler."""
     def setUp(self):
         self.feature_1 = FeatureEntry(
             name='feature one',

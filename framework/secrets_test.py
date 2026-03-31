@@ -447,6 +447,8 @@ class SecretsTest(testing_config.CustomTestCase):
 
 
 class ApiCredentialTest(testing_config.CustomTestCase):
+    """Tests for the ApiCredential model and related logic."""
+
     def test_select_token_for_api__first_use(self):
         """When there are no credientials for an API, it makes one."""
         actual = secrets.ApiCredential.select_token_for_api('foo')

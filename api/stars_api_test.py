@@ -24,6 +24,7 @@ test_app = flask.Flask(__name__)
 
 
 class StarsAPITest(testing_config.CustomTestCase):
+    """Tests for the Stars API handler."""
     def setUp(self):
         self.fe_1 = FeatureEntry(name='feature one', summary='sum', category=1)
         self.fe_1.put()

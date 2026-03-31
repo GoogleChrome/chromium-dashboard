@@ -102,6 +102,7 @@ secrets.load_ot_api_key()
 
 @dataclass
 class Route:
+    """Represents a routing configuration for the application."""
     path: str
     handler_class: Type[basehandlers.BaseHandler] = basehandlers.SPAHandler
     defaults: dict[str, Any] = field(default_factory=dict)

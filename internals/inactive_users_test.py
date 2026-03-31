@@ -20,6 +20,7 @@ from internals.user_models import AppUser
 
 
 class RemoveInactiveUsersHandlerTest(testing_config.CustomTestCase):
+    """Tests for RemoveInactiveUsersHandler."""
     def setUp(self):
         active_user = AppUser(
             created=datetime(2020, 10, 1),

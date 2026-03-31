@@ -33,6 +33,7 @@ class MainTest(testing_config.CustomTestCase):
 
 
 class ConstTemplateTest(testing_config.CustomTestCase):
+    """Tests for constant template rendering."""
     def check_template(self, route):
         handler = route.handler_class()
 

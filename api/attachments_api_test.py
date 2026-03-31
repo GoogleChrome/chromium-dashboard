@@ -29,6 +29,7 @@ test_app.secret_key = 'test'
 
 
 class AttachmentsAPITest(testing_config.CustomTestCase):
+    """Tests for the Attachments API."""
     def setUp(self):
         self.feature = FeatureEntry(
             name='feat',
@@ -96,6 +97,7 @@ class AttachmentsAPITest(testing_config.CustomTestCase):
 
 
 class AttachmentServingTest(testing_config.CustomTestCase):
+    """Tests for serving attachments."""
     def setUp(self):
         self.feature = FeatureEntry(
             name='feat',
@@ -174,6 +176,7 @@ class AttachmentServingTest(testing_config.CustomTestCase):
 
 
 class RoundTripTest(testing_config.CustomTestCase):
+    """Tests for attachment round trips."""
     def setUp(self):
         self.feature = FeatureEntry(
             name='feat',

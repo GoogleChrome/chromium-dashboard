@@ -30,6 +30,7 @@ test_app = flask.Flask(__name__)
 
 
 class StagesAPITest(testing_config.CustomTestCase):
+    """Tests for the Stages API handler."""
     def setUp(self):
         self.now = datetime.now()
         self.feature_owner = AppUser(email='feature_owner@example.com')

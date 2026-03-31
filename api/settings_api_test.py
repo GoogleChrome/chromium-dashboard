@@ -23,6 +23,8 @@ test_app = flask.Flask(__name__)
 
 
 class SettingsAPITest(testing_config.CustomTestCase):
+    """Tests for SettingsAPI."""
+
     def setUp(self):
         self.user_pref_1 = user_models.UserPref(
             email='one@example.com',

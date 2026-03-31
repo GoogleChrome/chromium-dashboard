@@ -27,6 +27,7 @@ test_app = flask.Flask(
 
 
 class TestWithFeature(testing_config.CustomTestCase):
+    """Base test class providing common feature setup."""
     REQUEST_PATH_FORMAT: Optional[str] = None
     HANDLER_CLASS: Optional[object] = None
 
@@ -58,6 +59,7 @@ class TestWithFeature(testing_config.CustomTestCase):
 
 
 class FeaturesJsonHandlerTest(TestWithFeature):
+    """Tests for the FeaturesJsonHandler."""
     REQUEST_PATH_FORMAT = '/features.json'
     HANDLER_CLASS = featurelist.FeaturesJsonHandler
 

@@ -25,6 +25,8 @@ from internals.core_models import FeatureEntry
 
 
 class GeminiHelpersTest(testing_config.CustomTestCase):
+    """Tests for the gemini_helpers module."""
+
     def setUp(self):
         self.feature = FeatureEntry(
             name='Test Feature',
@@ -847,6 +849,8 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
 
 
 class GenerateWPTCoverageEvalReportHandlerTest(testing_config.CustomTestCase):
+    """Tests for the GenerateWPTCoverageEvalReportHandler class."""
+
     def setUp(self):
         super(GenerateWPTCoverageEvalReportHandlerTest, self).setUp()
         self.feature = FeatureEntry(

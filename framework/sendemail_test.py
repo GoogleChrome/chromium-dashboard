@@ -27,6 +27,8 @@ test_app = flask.Flask(__name__)
 
 
 class FunctionTests(testing_config.CustomTestCase):
+    """Tests for standalone functions in sendemail module."""
+
     def test_get_param__simple(self):
         """We can simply get a JSON parameter, with defaults."""
         with test_app.test_request_context('/test', json={'x': 1}):
@@ -50,6 +52,8 @@ class FunctionTests(testing_config.CustomTestCase):
 
 
 class OutboundEmailHandlerTest(testing_config.CustomTestCase):
+    """Tests for the OutboundEmailHandler class."""
+
     def setUp(self):
         self.request_path = '/tasks/outbound-email'
 
@@ -147,6 +151,8 @@ class OutboundEmailHandlerTest(testing_config.CustomTestCase):
 
 
 class BouncedEmailHandlerTest(testing_config.CustomTestCase):
+    """Tests for handling bounced emails."""
+
     def setUp(self):
         self.sender = (
             'Chromestatus <admin@%s.appspotmail.com>' % settings.APP_ID
@@ -235,6 +241,7 @@ class BouncedEmailHandlerTest(testing_config.CustomTestCase):
 
 
 class FunctionTest(testing_config.CustomTestCase):
+    """Tests for general email parsing functions."""
     def test_extract_addrs(self):
         """We can parse email From: lines."""
         header_val = ''
@@ -271,6 +278,7 @@ HEADER_LINES = [
 
 
 class InboundEmailHandlerTest(testing_config.CustomTestCase):
+    """Tests for handling inbound emails."""
     def test_handle_incoming_mail__wrong_to_addr(self):
         """Reject the email if the app was not on the To: line."""
         with test_app.test_request_context('/_ah/mail/other@example.com'):

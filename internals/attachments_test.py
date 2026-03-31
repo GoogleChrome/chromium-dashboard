@@ -19,6 +19,7 @@ from internals import attachments
 
 
 class AttachmentsTests(testing_config.CustomTestCase):
+    """Tests for attachments."""
     def setUp(self):
         self.feature_id = 12345678
 

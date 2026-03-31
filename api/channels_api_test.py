@@ -23,6 +23,7 @@ test_app = flask.Flask(__name__)
 
 
 class ChannelsAPITest(testing_config.CustomTestCase):
+    """Tests for the Channels API."""
     def setUp(self):
         self.handler = channels_api.ChannelsAPI()
         self.request_path = '/api/v0/channels'

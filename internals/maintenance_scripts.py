@@ -44,6 +44,7 @@ from internals.webdx_feature_models import WebdxFeatures
 
 
 class EvaluateGateStatus(FlaskHandler):
+    """Handler to evaluate and set gate status."""
     def get_template_data(self, **kwargs) -> str:
         """Evaluate all existing Gate entities and set correct state."""
         self.require_cron_header()
@@ -69,6 +70,7 @@ class EvaluateGateStatus(FlaskHandler):
 
 
 class WriteMissingGates(FlaskHandler):
+    """Handler to write missing gates for features."""
     GATES_TO_CREATE_PER_RUN = 5000
 
     GATE_RULES: dict[int, dict[int, list[int]]] = {
@@ -130,6 +132,7 @@ class WriteMissingGates(FlaskHandler):
 
 
 class BackfillRespondedOn(FlaskHandler):
+    """Handler to backfill the responded_on field for gates."""
     def update_responded_on(self, gate) -> bool:
         """Update gate.responded_on and return True if an update was needed."""
         gate_id = gate.key.integer_id()
@@ -186,6 +189,7 @@ class BackfillRespondedOn(FlaskHandler):
 
 
 class BackfillStageCreated(FlaskHandler):
+    """Handler to backfill the created date for stages."""
     def get_template_data(self, **kwargs) -> str:
         """Backfill created dates for existing stages."""
         self.require_cron_header()
@@ -210,6 +214,7 @@ class BackfillStageCreated(FlaskHandler):
 
 
 class BackfillFeatureLinks(FlaskHandler):
+    """Handler to backfill feature links."""
     def get_template_data(self, **kwargs) -> str:
         """Backfill feature links for existing feature entries."""
         self.require_cron_header()
@@ -219,6 +224,7 @@ class BackfillFeatureLinks(FlaskHandler):
 
 
 class AssociateOTs(FlaskHandler):
+    """Handler to associate Origin Trials with features."""
     def write_field(
         self,
         trial_stage: Stage,
@@ -529,6 +535,7 @@ class AssociateOTs(FlaskHandler):
 
 
 class BackfillFeatureEnterpriseImpact(FlaskHandler):
+    """Handler to backfill the enterprise_impact field for features."""
     def get_template_data(self, **kwargs) -> str:
         """Backfill enterprise_impact firld for all features."""
         self.require_cron_header()
@@ -589,6 +596,7 @@ class BackfillFeatureEnterpriseImpact(FlaskHandler):
 
 
 class CreateOriginTrials(FlaskHandler):
+    """Handler to create Origin Trials."""
     def _send_creation_result_notification(
         self, task_path: str, stage: Stage, params: dict | None = None
     ) -> None:
@@ -692,6 +700,7 @@ class CreateOriginTrials(FlaskHandler):
 
 
 class ActivateOriginTrials(FlaskHandler):
+    """Handler to activate Origin Trials."""
     def _get_today(self) -> date:
         return date.today()
 
@@ -800,6 +809,7 @@ class DeleteEmptyExtensionStages(FlaskHandler):
 
 
 class BackfillShippingYear(FlaskHandler):
+    """Handler to backfill shipping year for features."""
     def calc_all_shipping_years(self) -> dict[int, int]:
         """Load all shipping stages and record their earliest milestone."""
         shipping_stages = (
@@ -845,6 +855,7 @@ class BackfillShippingYear(FlaskHandler):
 
 
 class BackfillActivityLogType(FlaskHandler):
+    """Handler to backfill activity log types."""
     def get_template_data(self, **kwargs) -> str:
         """Backfill log_type for all Activity entities."""
         self.require_cron_header()
@@ -885,6 +896,7 @@ class BackfillActivityLogType(FlaskHandler):
 
 
 class BackfillGateDates(FlaskHandler):
+    """Handler to backfill dates for gates."""
     def get_template_data(self, **kwargs) -> str:
         """Backfill resolved_on and needs_work_started_on for all Gates."""
         self.require_cron_header()
@@ -943,6 +955,7 @@ class BackfillGateDates(FlaskHandler):
 
 
 class FetchWebdxFeatureId(FlaskHandler):
+    """Handler to fetch WebDX feature IDs."""
     def get_template_data(self, **kwargs) -> str:
         """Fetch the complete list of Webdx feature ID available from
         webstatus.dev APIs and store them in datastore.
@@ -1622,6 +1635,7 @@ class ResetStaleShippingMilestones(FlaskHandler):
 
 
 class DeleteWPTCoverageReport(FlaskHandler):
+    """Handler to delete old WPT coverage reports."""
     BATCH_SIZE = 100
     RETENTION_DAYS = 180
 

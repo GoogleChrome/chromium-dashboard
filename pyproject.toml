@@ -12,7 +12,6 @@ select = ["E", "F", "I", "D"]
 ignore = [
     # Infeasible: Legacy codebase lacks hundreds of module/class/function docstrings; writing them all at once is infeasible.
     "D100",
-    "D101",
     "D102",
     "D103",
     "D104",

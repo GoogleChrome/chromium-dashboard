@@ -105,6 +105,7 @@ def make_test_features():
 
 
 class FunctionTest(testing_config.CustomTestCase):
+    """Tests for Function."""
     def setUp(self):
         self.current_milestone_info = {
             'earliest_beta': '2022-09-21T12:34:56',
@@ -362,6 +363,7 @@ class FunctionTest(testing_config.CustomTestCase):
 
 
 class FeatureAccuracyHandlerTest(testing_config.CustomTestCase):
+    """Tests for FeatureAccuracyHandler."""
     def setUp(self):
         self.feature_1, self.feature_2, self.feature_3 = make_test_features()
         self.handler = reminders.FeatureAccuracyHandler()
@@ -491,6 +493,7 @@ class FeatureAccuracyHandlerTest(testing_config.CustomTestCase):
 
 
 class PrepublicationHandlerTest(testing_config.CustomTestCase):
+    """Tests for PrepublicationHandler."""
     def setUp(self):
         self.current_milestone_info = {
             'earliest_beta': '2022-09-21T12:34:56',
@@ -524,6 +527,7 @@ class PrepublicationHandlerTest(testing_config.CustomTestCase):
 
 
 class SLOOverdueHandlerTest(testing_config.CustomTestCase):
+    """Tests for SLOOverdueHandler."""
     def setUp(self):
         self.feature_1, self.feature_2, self.feature_3 = make_test_features()
         self.gate_1 = Gate(

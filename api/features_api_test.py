@@ -38,6 +38,7 @@ def _datetime_to_str(dt):
 
 
 class FeaturesAPITestDelete(testing_config.CustomTestCase):
+    """Tests for deleting features via FeaturesAPI."""
     def setUp(self):
         logging.disable(logging.CRITICAL)
         self.feature_1 = FeatureEntry(
@@ -152,6 +153,7 @@ class FeaturesAPITestDelete(testing_config.CustomTestCase):
 
 
 class FeaturesAPITest(testing_config.CustomTestCase):
+    """Tests for FeaturesAPI."""
     def setUp(self):
         logging.disable(logging.CRITICAL)
         self.feature_1 = FeatureEntry(

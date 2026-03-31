@@ -25,6 +25,8 @@ test_app = flask.Flask(__name__)
 
 
 class OriginTrialsClientTest(testing_config.CustomTestCase):
+    """Tests for the origin_trials_client functions."""
+
     def setUp(self):
         self.original_ot_api_key = settings.OT_API_KEY
         self.ot_stage = Stage(

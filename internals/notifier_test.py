@@ -41,6 +41,7 @@ TESTDATA = testing_config.Testdata(__file__)
 
 
 class EmailFormattingTest(testing_config.CustomTestCase):
+    """Tests for EmailFormatting."""
     def setUp(self):
         self.fe_1 = FeatureEntry(
             name='feature one',
@@ -716,6 +717,7 @@ class EmailFormattingTest(testing_config.CustomTestCase):
 
 
 class FeatureCommentHandlerTest(testing_config.CustomTestCase):
+    """Tests for FeatureCommentHandler."""
     def setUp(self):
         self.fe_1 = FeatureEntry(
             name='feature one',
@@ -870,6 +872,7 @@ class FeatureCommentHandlerTest(testing_config.CustomTestCase):
 
 
 class FeatureReviewHandlerTest(testing_config.CustomTestCase):
+    """Tests for FeatureReviewHandler."""
     def setUp(self):
         self.fe_1 = FeatureEntry(
             name='feature one',
@@ -991,6 +994,7 @@ class FeatureReviewHandlerTest(testing_config.CustomTestCase):
 
 
 class ReviewAssignementHandlerTest(testing_config.CustomTestCase):
+    """Tests for ReviewAssignementHandler."""
     def setUp(self):
         self.fe_1 = FeatureEntry(
             name='feature one',
@@ -1069,6 +1073,7 @@ class ReviewAssignementHandlerTest(testing_config.CustomTestCase):
 
 
 class FeatureStarTest(testing_config.CustomTestCase):
+    """Tests for FeatureStar."""
     def setUp(self):
         self.fe_1 = FeatureEntry(name='feature one', summary='sum', category=1)
         self.fe_1.put()
@@ -1158,6 +1163,7 @@ class FeatureStarTest(testing_config.CustomTestCase):
 
 
 class NotifyInactiveUsersHandlerTest(testing_config.CustomTestCase):
+    """Tests for NotifyInactiveUsersHandler."""
     def setUp(self):
         active_user = AppUser(
             created=datetime(2020, 10, 1),
@@ -1252,6 +1258,7 @@ class NotifyInactiveUsersHandlerTest(testing_config.CustomTestCase):
 
 
 class OTCreationRequestHandlerTest(testing_config.CustomTestCase):
+    """Tests for OTCreationRequestHandler."""
     def setUp(self):
         self.feature = FeatureEntry(
             id=1, name='A feature', summary='summary', category=1
@@ -1341,6 +1348,7 @@ class OTCreationRequestHandlerTest(testing_config.CustomTestCase):
 
 
 class OTExtendedHandlerTest(testing_config.CustomTestCase):
+    """Tests for OTExtendedHandler."""
     def setUp(self):
         self.feature = FeatureEntry(
             id=1, name='A feature', summary='summary', category=1
@@ -1403,6 +1411,7 @@ class OTExtendedHandlerTest(testing_config.CustomTestCase):
 
 
 class OTExtensionApprovedHandlerTest(testing_config.CustomTestCase):
+    """Tests for OTExtensionApprovedHandler."""
     def setUp(self):
         self.feature = FeatureEntry(
             id=1, name='A feature', summary='summary', category=1
@@ -1460,6 +1469,7 @@ class OTExtensionApprovedHandlerTest(testing_config.CustomTestCase):
 
 
 class OTActivatedHandlerTest(testing_config.CustomTestCase):
+    """Tests for OTActivatedHandler."""
     def setUp(self):
         self.contacts = [
             'ot_owner1@google.com',
@@ -1503,6 +1513,7 @@ class OTActivatedHandlerTest(testing_config.CustomTestCase):
 
 
 class OTCreationApprovedHandlerTest(testing_config.CustomTestCase):
+    """Tests for OTCreationApprovedHandler."""
     def setUp(self):
         self.contacts = [
             'owner1@example.com',
@@ -1531,6 +1542,7 @@ class OTCreationApprovedHandlerTest(testing_config.CustomTestCase):
 
 
 class OTCreationProcessedHandlerTest(testing_config.CustomTestCase):
+    """Tests for OTCreationProcessedHandler."""
     def setUp(self):
         self.contacts = [
             'owner1@example.com',
@@ -1575,6 +1587,7 @@ class OTCreationProcessedHandlerTest(testing_config.CustomTestCase):
 
 
 class OTCreationRequestFailedHandlerTest(testing_config.CustomTestCase):
+    """Tests for OTCreationRequestFailedHandler."""
     def setUp(self):
         self.feature_1 = FeatureEntry(
             id=1, name='feature one', summary='sum', category=1, feature_type=0
@@ -1617,6 +1630,7 @@ class OTCreationRequestFailedHandlerTest(testing_config.CustomTestCase):
 
 
 class OTActivationFailedHandlerTest(testing_config.CustomTestCase):
+    """Tests for OTActivationFailedHandler."""
     def setUp(self):
         self.feature_1 = FeatureEntry(
             id=1, name='feature one', summary='sum', category=1, feature_type=0
@@ -1657,6 +1671,7 @@ class OTActivationFailedHandlerTest(testing_config.CustomTestCase):
 
 
 class IntentToBlinkDevHandlerTest(testing_config.CustomTestCase):
+    """Tests for IntentToBlinkDevHandler."""
     def setUp(self):
         self.feature_1 = FeatureEntry(
             id=1,
@@ -1712,6 +1727,7 @@ class IntentToBlinkDevHandlerTest(testing_config.CustomTestCase):
 
 
 class OTEndingNextReleaseReminderHandlerTest(testing_config.CustomTestCase):
+    """Tests for OTEndingNextReleaseReminderHandler."""
     def setUp(self):
         self.contacts = ['example_user@example.com', 'another_user@exmaple.com']
 
@@ -1737,6 +1753,7 @@ class OTEndingNextReleaseReminderHandlerTest(testing_config.CustomTestCase):
 
 
 class OTEndingThisReleaseReminderHandlerTest(testing_config.CustomTestCase):
+    """Tests for OTEndingThisReleaseReminderHandler."""
     def setUp(self):
         self.contacts = ['example_user@example.com', 'another_user@exmaple.com']
 
@@ -1761,6 +1778,7 @@ class OTEndingThisReleaseReminderHandlerTest(testing_config.CustomTestCase):
 
 
 class OTBetaAvailabilityReminderHandlerTest(testing_config.CustomTestCase):
+    """Tests for OTBetaAvailabilityReminderHandler."""
     def setUp(self):
         self.contacts = ['example_user@example.com', 'another_user@exmaple.com']
 
@@ -1784,6 +1802,7 @@ class OTBetaAvailabilityReminderHandlerTest(testing_config.CustomTestCase):
 
 
 class OTFirstBranchReminderHandlerTest(testing_config.CustomTestCase):
+    """Tests for OTFirstBranchReminderHandler."""
     def setUp(self):
         self.contacts = ['example_user@example.com', 'another_user@exmaple.com']
 
@@ -1807,6 +1826,7 @@ class OTFirstBranchReminderHandlerTest(testing_config.CustomTestCase):
 
 
 class OTLastBranchReminderHandlerTest(testing_config.CustomTestCase):
+    """Tests for OTLastBranchReminderHandler."""
     def setUp(self):
         self.contacts = ['example_user@example.com', 'another_user@exmaple.com']
 
@@ -1830,6 +1850,7 @@ class OTLastBranchReminderHandlerTest(testing_config.CustomTestCase):
 
 
 class OTAutomatedProcessEmailHandlerTest(testing_config.CustomTestCase):
+    """Tests for OTAutomatedProcessEmailHandler."""
     def test_make_ot_process_email(self):
         body_data = {
             'email_date': '2030-01-01',
@@ -1853,6 +1874,7 @@ class OTAutomatedProcessEmailHandlerTest(testing_config.CustomTestCase):
 
 
 class ResetShippingMilestonesEmailHandlerTest(testing_config.CustomTestCase):
+    """Tests for ResetShippingMilestonesEmailHandler."""
     def test_make_ot_process_email(self):
         body_data = {  # noqa: F841
             'chromestatus_url': 'https://chromestatus.com/feature/123',
@@ -1877,6 +1899,7 @@ class ResetShippingMilestonesEmailHandlerTest(testing_config.CustomTestCase):
 
 
 class FunctionsTest(testing_config.CustomTestCase):
+    """Tests for Functions."""
     def setUp(self):
         quoted_msg_id = 'xxx%3Dyyy%40mail.gmail.com'
         impl_url = notifier.BLINK_DEV_ARCHIVE_URL_PREFIX + '123' + quoted_msg_id

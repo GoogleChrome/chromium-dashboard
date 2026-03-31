@@ -25,6 +25,7 @@ test_app = flask.Flask(__name__)
 
 
 class StaleFeaturesAPITest(testing_config.CustomTestCase):
+    """Tests for the Stale Features API handler."""
     def setUp(self):
         """Set up test data for the API handler."""
         self.handler = stale_features_api.StaleFeaturesAPI()

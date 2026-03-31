@@ -22,6 +22,7 @@ from internals.review_models import Gate, SurveyAnswers
 
 
 class SelfCertifyFunctionTest(testing_config.CustomTestCase):
+    """Tests for self-certification functions."""
     def test_update_survey_answers__no_existing_answers(self):
         """If a gate has no existing answers, we create a blank set."""
         gate = Gate()

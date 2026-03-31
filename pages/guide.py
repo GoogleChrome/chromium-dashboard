@@ -41,6 +41,7 @@ DEVREL_EMAIL = 'devrel-chromestatus-all@google.com'
 
 
 class FeatureCreateHandler(basehandlers.FlaskHandler):
+    """Handler for the feature creation process."""
     TEMPLATE_PATH = 'spa.html'
 
     def get_template_data(self, **defaults):
@@ -156,6 +157,7 @@ class FeatureCreateHandler(basehandlers.FlaskHandler):
 
 
 class EnterpriseFeatureCreateHandler(FeatureCreateHandler):
+    """Handler for enterprise feature creation."""
     TEMPLATE_PATH = 'spa.html'
 
     def get_template_data(self, **defaults):
