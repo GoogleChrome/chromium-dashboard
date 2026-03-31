@@ -22,6 +22,7 @@ from internals.core_models import FeatureEntry, Stage
 
 class OTProcessRemindersTest(testing_config.CustomTestCase):
     def setUp(self):
+        """Set up the test environment."""
         logging.disable(logging.CRITICAL)
         self.feature_1 = FeatureEntry(
             feature_type=1, name='feature one', summary='sum', category=1
@@ -116,6 +117,7 @@ class OTProcessRemindersTest(testing_config.CustomTestCase):
         ]
 
     def tearDown(self):
+        """Clean up the test environment."""
         logging.disable(logging.NOTSET)
 
     def test_build_trials__normal(self):
@@ -177,6 +179,7 @@ class OTProcessRemindersTest(testing_config.CustomTestCase):
 
     @mock.patch('framework.origin_trials_client.get_trials_list')
     def test_get_trials(self, mock_get_trials_list):
+        """Test get trials."""
         mock_get_trials_list.return_value = (
             self.mock_get_trials_list_return_value
         )

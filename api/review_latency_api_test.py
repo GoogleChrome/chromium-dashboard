@@ -43,6 +43,7 @@ def make_feature_and_gates(name):
 
 class ReviewLatencyAPITest(testing_config.CustomTestCase):
     def setUp(self):
+        """Set up the test environment."""
         self.app_admin = user_models.AppUser(email='admin@example.com')
         self.app_admin.is_admin = True
         self.app_admin.put()

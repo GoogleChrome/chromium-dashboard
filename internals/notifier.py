@@ -72,6 +72,7 @@ def _determine_milestone_string(ship_stages: list[Stage]) -> str:
 
 
 def highlight_diff(old_text, new_text, highlight_type):
+    """Highlight diff."""
     differ = difflib.ndiff(
         re.split(r'(\W)', old_text), re.split(r'(\W)', new_text)
     )
@@ -228,6 +229,7 @@ def apply_subscription_rules(
 
 
 def add_core_receivers(fe: FeatureEntry, addr_reasons: dict[str, list[str]]):
+    """Add core receivers."""
     accumulate_reasons(
         addr_reasons,
         fe.owner_emails,
@@ -480,6 +482,7 @@ class FeatureChangeHandler(basehandlers.FlaskHandler):
     IS_INTERNAL_HANDLER = True
 
     def process_post_data(self, **kwargs):
+        """Process post data."""
         self.require_task_header()
 
         feature = self.get_param('feature')
@@ -517,6 +520,7 @@ class FeatureReviewHandler(basehandlers.FlaskHandler):
     EMAIL_TEMPLATE_PATH = 'review-request-email.html'
 
     def process_post_data(self, **kwargs):
+        """Process post data."""
         self.require_task_header()
 
         feature = self.get_param('feature')
@@ -593,6 +597,7 @@ class ReviewAssignmentHandler(basehandlers.FlaskHandler):
     EMAIL_TEMPLATE_PATH = 'review-assigned-email.html'
 
     def process_post_data(self, **kwargs):
+        """Process post data."""
         self.require_task_header()
 
         feature = self.get_param('feature')
@@ -679,6 +684,7 @@ class FeatureCommentHandler(basehandlers.FlaskHandler):
     EMAIL_TEMPLATE_PATH = 'review-comment-notification-email.html'
 
     def process_post_data(self, **kwargs):
+        """Process post data."""
         self.require_task_header()
 
         feature = self.get_param('feature')
@@ -743,6 +749,7 @@ class OTActivatedHandler(basehandlers.FlaskHandler):
     EMAIL_TEMPLATE_PATH = 'origintrials/ot-activated-email.html'
 
     def process_post_data(self, **kwargs):
+        """Process post data."""
         self.require_task_header()
         stage = self.get_param('stage', required=True)
         contacts = stage['ot_emails'] or []
@@ -751,6 +758,7 @@ class OTActivatedHandler(basehandlers.FlaskHandler):
         return {'message': 'OK'}
 
     def build_email(self, stage: StageDict, contacts: list[str]) -> dict:
+        """Build email."""
         body_data = {
             'stage': stage,
             'ot_url': f'{settings.OT_URL}#/view_trial/{stage["origin_trial_id"]}',
@@ -777,6 +785,7 @@ class OTCreationApprovedHandler(basehandlers.FlaskHandler):
     EMAIL_TEMPLATE_PATH = 'origintrials/ot-creation-approved-email.html'
 
     def process_post_data(self, **kwargs):
+        """Process post data."""
         self.require_task_header()
         feature = self.get_param('feature', required=True)
         contacts = feature['owner_emails'] or []
@@ -787,6 +796,7 @@ class OTCreationApprovedHandler(basehandlers.FlaskHandler):
         return {'message': 'OK'}
 
     def build_email(self, feature: dict[str, Any], contacts: list[str]) -> dict:
+        """Build email."""
         body_data = {
             'chromestatus_url': f'https://chromestatus.com/feature/{feature["id"]}'
         }
@@ -808,6 +818,7 @@ class OTCreationProcessedHandler(basehandlers.FlaskHandler):
     EMAIL_TEMPLATE_PATH = 'origintrials/ot-creation-processed-email.html'
 
     def process_post_data(self, **kwargs):
+        """Process post data."""
         self.require_task_header()
         stage = self.get_param('stage', required=True)
         contacts = stage['ot_emails'] or []
@@ -816,6 +827,7 @@ class OTCreationProcessedHandler(basehandlers.FlaskHandler):
         return {'message': 'OK'}
 
     def build_email(self, stage: dict[str, Any], contacts: list[str]) -> dict:
+        """Build email."""
         body_data = {
             'stage': stage,
             'ot_url': settings.OT_URL,
@@ -843,6 +855,7 @@ class OTCreationRequestFailedHandler(basehandlers.FlaskHandler):
     EMAIL_TEMPLATE_PATH = 'origintrials/ot-creation-request-failed-email.html'
 
     def process_post_data(self, **kwargs):
+        """Process post data."""
         self.require_task_header()
         stage = self.get_param('stage', required=True)
         error_text = self.get_param('error_text')
@@ -850,6 +863,7 @@ class OTCreationRequestFailedHandler(basehandlers.FlaskHandler):
         return {'message': 'OK'}
 
     def build_email(self, stage: StageDict, error_text: str | None) -> dict:
+        """Build email."""
         body_data = {
             'stage': stage,
             'error_text': error_text,
@@ -876,12 +890,14 @@ class OTActivationFailedHandler(basehandlers.FlaskHandler):
     EMAIL_TEMPLATE_PATH = 'origintrials/ot-activation-failed-email.html'
 
     def process_post_data(self, **kwargs):
+        """Process post data."""
         self.require_task_header()
         stage = self.get_param('stage', required=True)
         send_emails([self.build_email(stage)])
         return {'message': 'OK'}
 
     def build_email(self, stage: StageDict) -> dict:
+        """Build email."""
         body_data = {
             'stage': stage,
             'chromestatus_url': (
@@ -906,6 +922,7 @@ class OTCreationRequestHandler(basehandlers.FlaskHandler):
     IS_INTERNAL_HANDLER = True
 
     def process_post_data(self, **kwargs):
+        """Process post data."""
         self.require_task_header()
         stage = self.get_param('stage')
         logging.info('Starting to notify about origin trial creation request.')
@@ -917,6 +934,7 @@ class OTCreationRequestHandler(basehandlers.FlaskHandler):
         return 'Yes' if value else 'No'
 
     def make_creation_request_email(self, stage):
+        """Make creation request email."""
         chromestatus_url = (
             f'https://chromestatus.com/feature/{stage["feature_id"]}'
         )
@@ -976,6 +994,7 @@ class OTExtensionApprovedHandler(basehandlers.FlaskHandler):
     EMAIL_TEMPLATE_PATH = 'origintrials/ot-extension-approved-email.html'
 
     def process_post_data(self, **kwargs):
+        """Process post data."""
         self.require_task_header()
         feature = self.get_param('feature')
         gate_id = self.get_param('gate_id')
@@ -1001,6 +1020,7 @@ class OTExtensionApprovedHandler(basehandlers.FlaskHandler):
         gate_id: int,
         ot_display_name: str,
     ):
+        """Build email."""
         body_data = {
             'feature': feature,
             'id': feature['id'],
@@ -1028,6 +1048,7 @@ class IntentToBlinkDevHandler(basehandlers.FlaskHandler):
     EMAIL_TEMPLATE_PATH = 'blink/intent_to_implement.html'
 
     def process_post_data(self, **kwargs):
+        """Process post data."""
         self.require_task_header()
         feature_id = self.get_param('feature_id', required=True)
         feature = FeatureEntry.get_by_id(feature_id)
@@ -1045,6 +1066,7 @@ class IntentToBlinkDevHandler(basehandlers.FlaskHandler):
         return {'message': 'OK'}
 
     def build_email(self, feature: FeatureEntry, json_data: dict):
+        """Build email."""
         stage_info = stage_helpers.get_stage_info_for_templates(feature)
         template_data = {
             'feature': converters.feature_entry_to_json_verbose(feature),
@@ -1081,6 +1103,7 @@ class OTEndingNextReleaseReminderHandler(basehandlers.FlaskHandler):
     EMAIL_TEMPLATE_PATH = 'origintrials/ot-ending-next-release-email.html'
 
     def process_post_data(self, **kwargs):
+        """Process post data."""
         self.require_task_header()
         contacts = self.get_param('contacts')
         body_data = {
@@ -1093,6 +1116,7 @@ class OTEndingNextReleaseReminderHandler(basehandlers.FlaskHandler):
         return {'message': 'OK'}
 
     def build_email(self, body_data: dict[str, Any], contacts: list[str]):
+        """Build email."""
         body = render_template(self.EMAIL_TEMPLATE_PATH, **body_data)
         return {
             'to': contacts,
@@ -1110,6 +1134,7 @@ class OTEndingThisReleaseReminderHandler(basehandlers.FlaskHandler):
     EMAIL_TEMPLATE_PATH = 'origintrials/ot-ending-this-release-email.html'
 
     def process_post_data(self, **kwargs):
+        """Process post data."""
         self.require_task_header()
         name = self.get_param('name')
         release_milestone = self.get_param('release_milestone')
@@ -1124,6 +1149,7 @@ class OTEndingThisReleaseReminderHandler(basehandlers.FlaskHandler):
         return {'message': 'OK'}
 
     def build_email(self, body_data: dict[str, Any], contacts: list[str]):
+        """Build email."""
         body = render_template(self.EMAIL_TEMPLATE_PATH, **body_data)
         return {
             'to': contacts,
@@ -1141,6 +1167,7 @@ class OTBetaAvailabilityReminderHandler(basehandlers.FlaskHandler):
     EMAIL_TEMPLATE_PATH = 'origintrials/ot-beta-availability-email.html'
 
     def process_post_data(self, **kwargs):
+        """Process post data."""
         self.require_task_header()
         contacts = self.get_param('contacts')
         body_data = {
@@ -1151,6 +1178,7 @@ class OTBetaAvailabilityReminderHandler(basehandlers.FlaskHandler):
         return {'message': 'OK'}
 
     def build_email(self, body_data: dict[str, Any], contacts: list[str]):
+        """Build email."""
         body = render_template(self.EMAIL_TEMPLATE_PATH, **body_data)
         return {
             'to': contacts,
@@ -1168,6 +1196,7 @@ class OTFirstBranchReminderHandler(basehandlers.FlaskHandler):
     EMAIL_TEMPLATE_PATH = 'origintrials/ot-first-branch-email.html'
 
     def process_post_data(self, **kwargs):
+        """Process post data."""
         self.require_task_header()
         contacts = self.get_param('contacts')
         body_data = {
@@ -1179,6 +1208,7 @@ class OTFirstBranchReminderHandler(basehandlers.FlaskHandler):
         return {'message': 'OK'}
 
     def build_email(self, body_data: dict[str, Any], contacts: list[str]):
+        """Build email."""
         body = render_template(self.EMAIL_TEMPLATE_PATH, **body_data)
         return {
             'to': contacts,
@@ -1196,6 +1226,7 @@ class OTLastBranchReminderHandler(basehandlers.FlaskHandler):
     EMAIL_TEMPLATE_PATH = 'origintrials/ot-last-branch-email.html'
 
     def process_post_data(self, **kwargs):
+        """Process post data."""
         self.require_task_header()
         contacts = self.get_param('contacts')
         body_data = {
@@ -1207,6 +1238,7 @@ class OTLastBranchReminderHandler(basehandlers.FlaskHandler):
         return {'message': 'OK'}
 
     def build_email(self, body_data: dict[str, Any], contacts: list[str]):
+        """Build email."""
         body = render_template(self.EMAIL_TEMPLATE_PATH, **body_data)
         return {
             'to': contacts,
@@ -1227,6 +1259,7 @@ class OTAutomatedProcessEmailHandler(basehandlers.FlaskHandler):
     EMAIL_TEMPLATE_PATH = 'origintrials/ot-automated-process-email.html'
 
     def process_post_data(self, **kwargs):
+        """Process post data."""
         self.require_task_header()
         now_date = datetime.now().strftime('%d %B, %Y')
         body_data = {
@@ -1241,6 +1274,7 @@ class OTAutomatedProcessEmailHandler(basehandlers.FlaskHandler):
         return {'message': 'OK'}
 
     def build_email(self, body_data: dict[str, Any]):
+        """Build email."""
         body = render_template(self.EMAIL_TEMPLATE_PATH, **body_data)
         return {
             'to': core_enums.OT_SUPPORT_EMAIL,
@@ -1257,6 +1291,7 @@ class OTExtendedHandler(basehandlers.FlaskHandler):
     EMAIL_TEMPLATE_PATH = 'origintrials/ot-extended-email.html'
 
     def process_post_data(self, **kwargs):
+        """Process post data."""
         self.require_task_header()
         extension_stage = self.get_param('stage')
         ot_stage = self.get_param('ot_stage')
@@ -1268,6 +1303,7 @@ class OTExtendedHandler(basehandlers.FlaskHandler):
         return {'message': 'OK'}
 
     def build_email(self, extension_stage, ot_stage):
+        """Build email."""
         body_data = {'extension_stage': extension_stage, 'ot_stage': ot_stage}
         body = render_template(self.EMAIL_TEMPLATE_PATH, **body_data)
 
@@ -1431,6 +1467,7 @@ class ResetShippingMilestonesEmailHandler(basehandlers.FlaskHandler):
     EMAIL_TEMPLATE_PATH = 'reset-shipping-milestones-email.html'
 
     def process_post_data(self, **kwargs):
+        """Process post data."""
         self.require_task_header()
         feature_id = self.get_param('feature_id')
         f = self.get_validated_entity(feature_id, FeatureEntry)
@@ -1442,6 +1479,7 @@ class ResetShippingMilestonesEmailHandler(basehandlers.FlaskHandler):
         return {'message': 'OK'}
 
     def build_email(self, feature_id, feature_name, owner_emails):
+        """Build email."""
         body_data = {
             'chromestatus_url': (
                 f'https://chromestatus.com/feature/{feature_id}'

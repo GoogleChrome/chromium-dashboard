@@ -44,10 +44,12 @@ class FeatureCreateHandler(basehandlers.FlaskHandler):
     TEMPLATE_PATH = 'spa.html'
 
     def get_template_data(self, **defaults):
+        """Returns template data for the feature creation page."""
         return basehandlers.get_spa_template_data(self, defaults)
 
     @permissions.require_create_feature
     def process_post_data(self, **kwargs):
+        """Processes submitted form data to create a new feature."""
         owners = self.split_emails('owner_emails')
         editors = self.split_emails('editor_emails')
         cc_emails = self.split_emails('cc_emails')
@@ -159,10 +161,12 @@ class EnterpriseFeatureCreateHandler(FeatureCreateHandler):
     TEMPLATE_PATH = 'spa.html'
 
     def get_template_data(self, **defaults):
+        """Returns the data for rendering the enterprise feature create page."""
         return basehandlers.get_spa_template_data(self, defaults)
 
     @permissions.require_create_feature
     def process_post_data(self, **kwargs):
+        """Handles POST requests to create an enterprise feature."""
         owners = self.split_emails('owner_emails')
         editors = self.split_emails('editor_emails')
 
@@ -223,3 +227,4 @@ class EnterpriseFeatureCreateHandler(FeatureCreateHandler):
 
         redirect_url = '/guide/editall/' + str(key.integer_id()) + '#rollout1'
         return self.redirect(redirect_url)
+edirect(redirect_url)

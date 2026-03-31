@@ -34,6 +34,7 @@ test_app = flask.Flask(
 
 class IntentsAPITest(testing_config.CustomTestCase):
     def setUp(self):
+        """Set up the test."""
         self.feature_1 = FeatureEntry(
             feature_type=1,
             name='feature one',

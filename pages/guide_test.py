@@ -34,6 +34,7 @@ class TestWithFeature(testing_config.CustomTestCase):
     HANDLER_CLASS = 'subclasses fill this in'
 
     def setUp(self):
+        """Sets up the test request path and handler."""
         self.request_path = self.REQUEST_PATH_FORMAT
         self.handler = self.HANDLER_CLASS()
         self.now = datetime.now()
@@ -41,10 +42,12 @@ class TestWithFeature(testing_config.CustomTestCase):
 
 class FeatureCreateTest(testing_config.CustomTestCase):
     def setUp(self):
+        """Sets up the handler and current time for tests."""
         self.handler = guide.FeatureCreateHandler()
         self.now = datetime.now()
 
     def tearDown(self) -> None:
+        """Cleans up created entities after tests run."""
         kinds: list[ndb.Model] = [FeatureEntry, Stage, Gate]
         for kind in kinds:
             entities = kind.query().fetch()

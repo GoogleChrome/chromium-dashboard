@@ -42,6 +42,7 @@ TESTDATA = testing_config.Testdata(__file__)
 
 class EmailFormattingTest(testing_config.CustomTestCase):
     def setUp(self):
+        """Set up the test environment."""
         self.fe_1 = FeatureEntry(
             name='feature one',
             summary='sum',
@@ -313,12 +314,14 @@ class EmailFormattingTest(testing_config.CustomTestCase):
         )
 
     def test_convert_reasons_to_task__no_reasons(self):
+        """Test convert reasons to task  no reasons."""
         with self.assertRaises(AssertionError):
             notifier.convert_reasons_to_task(
                 'addr', [], 'html', 'subject', 'triggerer'
             )
 
     def test_convert_reasons_to_task__normal(self):
+        """Test convert reasons to task  normal."""
         actual = notifier.convert_reasons_to_task(
             'addr',
             ['reason 1', 'reason 2'],
@@ -717,6 +720,7 @@ class EmailFormattingTest(testing_config.CustomTestCase):
 
 class FeatureCommentHandlerTest(testing_config.CustomTestCase):
     def setUp(self):
+        """Set up the test environment."""
         self.fe_1 = FeatureEntry(
             name='feature one',
             summary='sum',
@@ -871,6 +875,7 @@ class FeatureCommentHandlerTest(testing_config.CustomTestCase):
 
 class FeatureReviewHandlerTest(testing_config.CustomTestCase):
     def setUp(self):
+        """Set up the test environment."""
         self.fe_1 = FeatureEntry(
             name='feature one',
             summary='sum',
@@ -992,6 +997,7 @@ class FeatureReviewHandlerTest(testing_config.CustomTestCase):
 
 class ReviewAssignementHandlerTest(testing_config.CustomTestCase):
     def setUp(self):
+        """Set up the test environment."""
         self.fe_1 = FeatureEntry(
             name='feature one',
             summary='sum',
@@ -1070,6 +1076,7 @@ class ReviewAssignementHandlerTest(testing_config.CustomTestCase):
 
 class FeatureStarTest(testing_config.CustomTestCase):
     def setUp(self):
+        """Set up the test environment."""
         self.fe_1 = FeatureEntry(name='feature one', summary='sum', category=1)
         self.fe_1.put()
         self.fe_2 = FeatureEntry(name='feature two', summary='sum', category=1)
@@ -1159,6 +1166,7 @@ class FeatureStarTest(testing_config.CustomTestCase):
 
 class NotifyInactiveUsersHandlerTest(testing_config.CustomTestCase):
     def setUp(self):
+        """Set up the test environment."""
         active_user = AppUser(
             created=datetime(2020, 10, 1),
             email='active_user@example.com',
@@ -1237,6 +1245,7 @@ class NotifyInactiveUsersHandlerTest(testing_config.CustomTestCase):
         inactive_site_editor.put()
 
     def test_determine_users_to_notify(self):
+        """Test determine users to notify."""
         with test_app.app_context():
             inactive_notifier = notifier.NotifyInactiveUsersHandler()
             result = inactive_notifier.get_template_data(
@@ -1253,6 +1262,7 @@ class NotifyInactiveUsersHandlerTest(testing_config.CustomTestCase):
 
 class OTCreationRequestHandlerTest(testing_config.CustomTestCase):
     def setUp(self):
+        """Set up the test environment."""
         self.feature = FeatureEntry(
             id=1, name='A feature', summary='summary', category=1
         )
@@ -1281,12 +1291,14 @@ class OTCreationRequestHandlerTest(testing_config.CustomTestCase):
         self.ot_stage.put()
 
     def tearDown(self) -> None:
+        """Clean up the test environment."""
         kinds: list[ndb.Model] = [FeatureEntry, Stage]
         for kind in kinds:
             for entity in kind.query():
                 entity.key.delete()
 
     def test_make_creation_request_email(self):
+        """Test make creation request email."""
         stage_dict = converters.stage_to_json_dict(self.ot_stage)
         stage_dict['ot_request_note'] = self.ot_stage.ot_request_note
         handler = notifier.OTCreationRequestHandler()
@@ -1342,6 +1354,7 @@ class OTCreationRequestHandlerTest(testing_config.CustomTestCase):
 
 class OTExtendedHandlerTest(testing_config.CustomTestCase):
     def setUp(self):
+        """Set up the test environment."""
         self.feature = FeatureEntry(
             id=1, name='A feature', summary='summary', category=1
         )
@@ -1380,12 +1393,14 @@ class OTExtendedHandlerTest(testing_config.CustomTestCase):
         self.extension_stage.put()
 
     def tearDown(self) -> None:
+        """Clean up the test environment."""
         kinds: list[ndb.Model] = [FeatureEntry, Stage]
         for kind in kinds:
             for entity in kind.query():
                 entity.key.delete()
 
     def test_make_extended_request_email(self):
+        """Test make extended request email."""
         ot_stage_dict = converters.stage_to_json_dict(self.ot_stage)
         extension_stage_dict = converters.stage_to_json_dict(
             self.extension_stage
@@ -1404,6 +1419,7 @@ class OTExtendedHandlerTest(testing_config.CustomTestCase):
 
 class OTExtensionApprovedHandlerTest(testing_config.CustomTestCase):
     def setUp(self):
+        """Set up the test environment."""
         self.feature = FeatureEntry(
             id=1, name='A feature', summary='summary', category=1
         )
@@ -1430,12 +1446,14 @@ class OTExtensionApprovedHandlerTest(testing_config.CustomTestCase):
         self.extension_stage.put()
 
     def tearDown(self) -> None:
+        """Clean up the test environment."""
         kinds: list[ndb.Model] = [FeatureEntry, Gate, Stage]
         for kind in kinds:
             for entity in kind.query():
                 entity.key.delete()
 
     def test_make_extension_approved_email(self):
+        """Test make extension approved email."""
         feature_dict = converters.feature_entry_to_json_verbose(self.feature)
         with test_app.app_context():
             handler = notifier.OTExtensionApprovedHandler()
@@ -1461,6 +1479,7 @@ class OTExtensionApprovedHandlerTest(testing_config.CustomTestCase):
 
 class OTActivatedHandlerTest(testing_config.CustomTestCase):
     def setUp(self):
+        """Set up the test environment."""
         self.contacts = [
             'ot_owner1@google.com',
             'contact1@google.com',
@@ -1488,6 +1507,7 @@ class OTActivatedHandlerTest(testing_config.CustomTestCase):
         self.ot_stage.put()
 
     def test_make_activated_email(self):
+        """Test make activated email."""
         with test_app.app_context():
             handler = notifier.OTActivatedHandler()
             stage_dict = converters.stage_to_json_dict(self.ot_stage)
@@ -1504,6 +1524,7 @@ class OTActivatedHandlerTest(testing_config.CustomTestCase):
 
 class OTCreationApprovedHandlerTest(testing_config.CustomTestCase):
     def setUp(self):
+        """Set up the test environment."""
         self.contacts = [
             'owner1@example.com',
             'contact1@example.com',
@@ -1515,6 +1536,7 @@ class OTCreationApprovedHandlerTest(testing_config.CustomTestCase):
         self.feature_1.put()
 
     def test_make_creation_processed_email(self):
+        """Test make creation processed email."""
         with test_app.app_context():
             handler = notifier.OTCreationApprovedHandler()
             fe_dict = converters.feature_entry_to_json_verbose(self.feature_1)
@@ -1532,6 +1554,7 @@ class OTCreationApprovedHandlerTest(testing_config.CustomTestCase):
 
 class OTCreationProcessedHandlerTest(testing_config.CustomTestCase):
     def setUp(self):
+        """Set up the test environment."""
         self.contacts = [
             'owner1@example.com',
             'contact1@example.com',
@@ -1559,6 +1582,7 @@ class OTCreationProcessedHandlerTest(testing_config.CustomTestCase):
         self.ot_stage.put()
 
     def test_make_creation_processed_email(self):
+        """Test make creation processed email."""
         with test_app.app_context():
             handler = notifier.OTCreationProcessedHandler()
             stage_dict = converters.stage_to_json_dict(self.ot_stage)
@@ -1576,6 +1600,7 @@ class OTCreationProcessedHandlerTest(testing_config.CustomTestCase):
 
 class OTCreationRequestFailedHandlerTest(testing_config.CustomTestCase):
     def setUp(self):
+        """Set up the test environment."""
         self.feature_1 = FeatureEntry(
             id=1, name='feature one', summary='sum', category=1, feature_type=0
         )
@@ -1600,6 +1625,7 @@ class OTCreationRequestFailedHandlerTest(testing_config.CustomTestCase):
         self.ot_stage.put()
 
     def test_make_creation_request_failed_email(self):
+        """Test make creation request failed email."""
         with test_app.app_context():
             handler = notifier.OTCreationRequestFailedHandler()
             stage_dict = converters.stage_to_json_dict(self.ot_stage)
@@ -1618,6 +1644,7 @@ class OTCreationRequestFailedHandlerTest(testing_config.CustomTestCase):
 
 class OTActivationFailedHandlerTest(testing_config.CustomTestCase):
     def setUp(self):
+        """Set up the test environment."""
         self.feature_1 = FeatureEntry(
             id=1, name='feature one', summary='sum', category=1, feature_type=0
         )
@@ -1641,6 +1668,7 @@ class OTActivationFailedHandlerTest(testing_config.CustomTestCase):
         self.ot_stage.put()
 
     def test_make_activation_failed_email(self):
+        """Test make activation failed email."""
         with test_app.app_context():
             handler = notifier.OTActivationFailedHandler()
             stage_dict = converters.stage_to_json_dict(self.ot_stage)
@@ -1658,6 +1686,7 @@ class OTActivationFailedHandlerTest(testing_config.CustomTestCase):
 
 class IntentToBlinkDevHandlerTest(testing_config.CustomTestCase):
     def setUp(self):
+        """Set up the test environment."""
         self.feature_1 = FeatureEntry(
             id=1,
             feature_type=1,
@@ -1685,6 +1714,7 @@ class IntentToBlinkDevHandlerTest(testing_config.CustomTestCase):
         self.contacts = ['example_user@example.com', 'another_user@exmaple.com']
 
     def test_make_intent_post_email(self):
+        """Test make intent post email."""
         json_data = {
             'subject': 'Intent to Experiment: feature one',
             'feature_id': self.feature_1_id,
@@ -1713,9 +1743,11 @@ class IntentToBlinkDevHandlerTest(testing_config.CustomTestCase):
 
 class OTEndingNextReleaseReminderHandlerTest(testing_config.CustomTestCase):
     def setUp(self):
+        """Set up the test environment."""
         self.contacts = ['example_user@example.com', 'another_user@exmaple.com']
 
     def test_make_ending_next_release_email(self):
+        """Test make ending next release email."""
         body_data = {
             'name': 'Some feature',
             'release_milestone': '126',
@@ -1738,9 +1770,11 @@ class OTEndingNextReleaseReminderHandlerTest(testing_config.CustomTestCase):
 
 class OTEndingThisReleaseReminderHandlerTest(testing_config.CustomTestCase):
     def setUp(self):
+        """Set up the test environment."""
         self.contacts = ['example_user@example.com', 'another_user@exmaple.com']
 
     def test_make_ending_this_release_email(self):
+        """Test make ending this release email."""
         body_data = {
             'name': 'Some feature',
             'release_milestone': '126',
@@ -1762,9 +1796,11 @@ class OTEndingThisReleaseReminderHandlerTest(testing_config.CustomTestCase):
 
 class OTBetaAvailabilityReminderHandlerTest(testing_config.CustomTestCase):
     def setUp(self):
+        """Set up the test environment."""
         self.contacts = ['example_user@example.com', 'another_user@exmaple.com']
 
     def test_make_beta_availability_email(self):
+        """Test make beta availability email."""
         body_data = {
             'name': 'Some feature',
             'release_milestone': '126',
@@ -1785,9 +1821,11 @@ class OTBetaAvailabilityReminderHandlerTest(testing_config.CustomTestCase):
 
 class OTFirstBranchReminderHandlerTest(testing_config.CustomTestCase):
     def setUp(self):
+        """Set up the test environment."""
         self.contacts = ['example_user@example.com', 'another_user@exmaple.com']
 
     def test_make_first_branch_email(self):
+        """Test make first branch email."""
         body_data = {
             'name': 'Some feature',
             'release_milestone': '126',
@@ -1808,9 +1846,11 @@ class OTFirstBranchReminderHandlerTest(testing_config.CustomTestCase):
 
 class OTLastBranchReminderHandlerTest(testing_config.CustomTestCase):
     def setUp(self):
+        """Set up the test environment."""
         self.contacts = ['example_user@example.com', 'another_user@exmaple.com']
 
     def test_make_last_branch_email(self):
+        """Test make last branch email."""
         body_data = {
             'name': 'Some feature',
             'release_milestone': '126',
@@ -1831,6 +1871,7 @@ class OTLastBranchReminderHandlerTest(testing_config.CustomTestCase):
 
 class OTAutomatedProcessEmailHandlerTest(testing_config.CustomTestCase):
     def test_make_ot_process_email(self):
+        """Test make ot process email."""
         body_data = {
             'email_date': '2030-01-01',
             'send_count': 100,
@@ -1854,6 +1895,7 @@ class OTAutomatedProcessEmailHandlerTest(testing_config.CustomTestCase):
 
 class ResetShippingMilestonesEmailHandlerTest(testing_config.CustomTestCase):
     def test_make_ot_process_email(self):
+        """Test make ot process email."""
         body_data = {  # noqa: F841
             'chromestatus_url': 'https://chromestatus.com/feature/123',
             'APP_TITLE': 'Chrome Status Dev',
@@ -1878,6 +1920,7 @@ class ResetShippingMilestonesEmailHandlerTest(testing_config.CustomTestCase):
 
 class FunctionsTest(testing_config.CustomTestCase):
     def setUp(self):
+        """Set up the test environment."""
         quoted_msg_id = 'xxx%3Dyyy%40mail.gmail.com'
         impl_url = notifier.BLINK_DEV_ARCHIVE_URL_PREFIX + '123' + quoted_msg_id
         expr_url = notifier.TEST_ARCHIVE_URL_PREFIX + '456' + quoted_msg_id
@@ -1911,6 +1954,7 @@ class FunctionsTest(testing_config.CustomTestCase):
         ndb.put_multi(stages)
 
     def tearDown(self) -> None:
+        """Clean up the test environment."""
         kinds: list[ndb.Model] = [FeatureEntry, Stage]
         for kind in kinds:
             for entity in kind.query():

@@ -199,6 +199,7 @@ class GatesAPI(basehandlers.APIHandler):
 
     # TODO(jrobbins): phase out do_post here because it should have been patch.
     def do_post(self, **kwargs) -> dict[str, str]:
+        """Handle POST requests."""
         return self.do_patch(**kwargs)
 
     def do_patch(self, **kwargs) -> dict[str, str]:

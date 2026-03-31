@@ -24,6 +24,7 @@ test_app = flask.Flask(__name__)
 
 class CspTest(unittest.TestCase):
     def setUp(self):
+        """Set up the test environment."""
         csp.ENABLED = True
         csp.REPORT_ONLY = False
         csp.REPORT_URI = 'test'

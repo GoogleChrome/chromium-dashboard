@@ -26,6 +26,7 @@ test_app.secret_key = 'testing secret'
 
 class LogoutAPITest(testing_config.CustomTestCase):
     def setUp(self):
+        """Set up the test environment."""
         self.handler = logout_api.LogoutAPI()
         self.request_path = '/api/v0/logout'
 

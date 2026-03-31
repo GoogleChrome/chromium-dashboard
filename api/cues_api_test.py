@@ -25,6 +25,7 @@ test_app = flask.Flask(__name__)
 
 class CuesAPITest(testing_config.CustomTestCase):
     def setUp(self):
+        """Set up the test."""
         self.user_pref_1 = user_models.UserPref(
             email='one@example.com', notify_as_starrer=False
         )

@@ -29,6 +29,7 @@ class UserListHandler(basehandlers.FlaskHandler):
 
     @permissions.require_admin_site
     def get_template_data(self, **kwargs):
+        """Retrieves a list of users for the admin dashboard."""
         users = user_models.AppUser.query().fetch(None)
         user_list = [accounts_api.user_to_json_dict(user) for user in users]
 

@@ -63,12 +63,14 @@ class RedisCacheFunctionTests(testing_config.CustomTestCase):
         self.assertEqual({KEY_5: '222'}, rediscache.get_multi([KEY_5]))
 
     def test_delete(self):
+        """Test delete."""
         rediscache.set(KEY_6, '606')
         self.assertEqual('606', rediscache.get(KEY_6))
         rediscache.delete(KEY_6)
         self.assertEqual(None, rediscache.get(KEY_6))
 
     def test_delete_keys_with_prefix(self):
+        """Test delete keys with prefix."""
         for x in range(17):
             key = PREFIX + str(x)
             rediscache.set(key, str(x))

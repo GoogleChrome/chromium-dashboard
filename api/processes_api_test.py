@@ -26,6 +26,7 @@ test_app = flask.Flask(__name__)
 
 class ProcessesAPITest(testing_config.CustomTestCase):
     def setUp(self):
+        """Set up the test environment."""
         self.feature_1 = core_models.FeatureEntry(
             name='feature one', summary='sum', category=1, feature_type=0
         )
@@ -43,6 +44,7 @@ class ProcessesAPITest(testing_config.CustomTestCase):
         self.request_path = f'/api/v0/features/{self.feature_id}/process'
 
     def tearDown(self):
+        """Clean up the test environment."""
         for stage in self.stages:
             stage.key.delete()
         self.feature_1.key.delete()
@@ -160,6 +162,7 @@ class ProcessesAPITest(testing_config.CustomTestCase):
 
 class ProgressAPITest(testing_config.CustomTestCase):
     def setUp(self):
+        """Set up the test environment."""
         self.feature_1 = core_models.FeatureEntry(
             name='feature one',
             summary='sum Z',
@@ -199,6 +202,7 @@ class ProgressAPITest(testing_config.CustomTestCase):
         self.request_path = f'/api/v0/features/{self.feature_id}/progress'
 
     def tearDown(self):
+        """Clean up the test environment."""
         self.feature_1.key.delete()
 
     def test_get___feature_progress(self):

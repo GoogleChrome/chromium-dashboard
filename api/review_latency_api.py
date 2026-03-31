@@ -141,6 +141,7 @@ class ReviewLatencyAPI(basehandlers.APIHandler):
         latencies_by_fid: dict[int, list[tuple[int, int]]],
         sorted_features: list[FeatureEntry],
     ) -> list[dict[str, Any]]:
+        """Convert latencies to the expected result format."""
         result: list[dict[str, Any]] = []
         for fe in sorted_features:
             latencies = latencies_by_fid[fe.key.integer_id()]

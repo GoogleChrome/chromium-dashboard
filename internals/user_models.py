@@ -206,6 +206,7 @@ class FeatureOwner(ndb.Model):
         return None
 
     def remove_as_component_owner(self, component_id):
+        """Removes the user as an owner of the given component."""
         return self.remove_from_component_subscribers(
             component_id, remove_as_owner=True
         )
@@ -218,12 +219,14 @@ class BlinkComponent(ndb.Model):
 
     @property
     def subscribers(self):
+        """Returns a list of FeatureOwner objects who subscribe to this component."""
         q = FeatureOwner.query(FeatureOwner.blink_components == self.key)
         q = q.order(FeatureOwner.name)
         return q.fetch(None)
 
     @property
     def owners(self):
+        """Returns a list of FeatureOwner objects who own this component."""
         q = FeatureOwner.query(
             FeatureOwner.primary_blink_components == self.key
         )
@@ -268,3 +271,4 @@ class BlinkComponent(ndb.Model):
             logging.error('%s is an unknown BlinkComponent.' % (component_name))
             return None
         return component[0]
+nt[0]

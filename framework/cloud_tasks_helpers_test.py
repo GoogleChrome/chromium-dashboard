@@ -24,6 +24,7 @@ from framework import cloud_tasks_helpers
 
 class LocalCloudTasksClientTest(unittest.TestCase):
     def setUp(self):
+        """Set up the test environment."""
         self.client = cloud_tasks_helpers.LocalCloudTasksClient()
 
     def test_queue_path(self):

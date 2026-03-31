@@ -32,6 +32,7 @@ test_app = flask.Flask(__name__)
 
 class FunctionTest(testing_config.CustomTestCase):
     def setUp(self):
+        """Set up the test environment."""
         self.feature_1 = FeatureEntry(
             id=1,
             name='feature one',
@@ -518,6 +519,7 @@ class FunctionTest(testing_config.CustomTestCase):
 
 class IntentEmailHandlerTest(testing_config.CustomTestCase):
     def setUp(self):
+        """Set up the test environment."""
         self.feature_1 = FeatureEntry(
             name='feature one',
             summary='detailed sum',

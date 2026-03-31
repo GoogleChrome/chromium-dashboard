@@ -108,6 +108,7 @@ def make_feature(
 
 class ExternalReviewsAPITest(testing_config.CustomTestCase):
     def setUp(self):
+        """Set up the test."""
         self.handler = external_reviews_api.ExternalReviewsAPI()
         self.request_path = '/api/v0/external_reviews'
         self.maxDiff = None
@@ -155,6 +156,7 @@ class ExternalReviewsAPITest(testing_config.CustomTestCase):
         )
 
     def test_one_unfinished_webkit_review(self):
+        """Test one unfinished WebKit review."""
         tag = 'https://github.com/w3ctag/design-reviews/issues/1'
         webkit = 'https://github.com/WebKit/standards-positions/issues/3'
         fe = make_feature(
@@ -189,6 +191,7 @@ class ExternalReviewsAPITest(testing_config.CustomTestCase):
         )
 
     def test_one_unfinished_gecko_review(self):
+        """Test one unfinished Gecko review."""
         gecko = 'https://github.com/mozilla/standards-positions/issues/2'
         webkit = 'https://github.com/WebKit/standards-positions/issues/3'
         fe = make_feature(
@@ -290,6 +293,7 @@ class ExternalReviewsAPITest(testing_config.CustomTestCase):
         self.assertEqual(0, len(result['reviews']))
 
     def test_finished_review_isnt_shown(self):
+        """Test finished review isn't shown."""
         tag = 'https://github.com/w3ctag/design-reviews/issues/1'
         webkit = 'https://github.com/WebKit/standards-positions/issues/3'
         fe = make_feature(
@@ -311,6 +315,7 @@ class ExternalReviewsAPITest(testing_config.CustomTestCase):
         )
 
     def test_feature_without_a_crawled_link_isnt_shown(self):
+        """Test feature without a crawled link isn't shown."""
         tag = 'https://github.com/w3ctag/design-reviews/issues/1'
         fe = make_feature(
             'Feature one',

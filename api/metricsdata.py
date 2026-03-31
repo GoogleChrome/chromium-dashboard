@@ -57,6 +57,7 @@ class TimelineHandler(basehandlers.FlaskHandler):
     CACHE_PREFIX = 'metrics|'
 
     def make_query(self, bucket_id):
+        """Create a datastore query."""
         query = self.MODEL_CLASS.query()
         query = query.filter(self.MODEL_CLASS.bucket_id == bucket_id)
         # The switch to new UMA data changed the semantics of the CSS animated
@@ -70,6 +71,7 @@ class TimelineHandler(basehandlers.FlaskHandler):
         return query
 
     def get_template_data(self, **kwargs):
+        """Get template data for rendering."""
         bucket_id = self.get_int_arg('bucket_id')
         if bucket_id is None:
             # TODO(jrobbins): Why return [] instead of 400?
@@ -96,6 +98,7 @@ class PopularityTimelineHandler(TimelineHandler):
     MODEL_CLASS = metrics_models.StableInstance
 
     def get_template_data(self, **kwargs):
+        """Get template data for rendering."""
         return super(PopularityTimelineHandler, self).get_template_data()
 
 
@@ -104,6 +107,7 @@ class AnimatedTimelineHandler(TimelineHandler):
     MODEL_CLASS = metrics_models.AnimatedProperty
 
     def get_template_data(self, **kwargs):
+        """Get template data for rendering."""
         return super(AnimatedTimelineHandler, self).get_template_data()
 
 
@@ -112,6 +116,7 @@ class FeatureObserverTimelineHandler(TimelineHandler):
     MODEL_CLASS = metrics_models.FeatureObserver
 
     def get_template_data(self, **kwargs):
+        """Get template data for rendering."""
         return super(FeatureObserverTimelineHandler, self).get_template_data()
 
 
@@ -120,6 +125,7 @@ class WebFeatureTimelineHandler(TimelineHandler):
     MODEL_CLASS = metrics_models.WebDXFeature
 
     def get_template_data(self, **kwargs):
+        """Get template data for rendering."""
         return super(WebFeatureTimelineHandler, self).get_template_data()
 
 
@@ -175,6 +181,7 @@ class FeatureHandler(basehandlers.FlaskHandler):
         return datapoints
 
     def get_template_data(self, **kwargs):
+        """Get template data for rendering."""
         num = self.get_int_arg('num')
         if num and not self.should_refresh():
             feature_observer_key = self.get_top_num_cache_key(num)
@@ -193,9 +200,11 @@ class FeatureHandler(basehandlers.FlaskHandler):
         return _datapoints_to_json_dicts(properties)
 
     def get_top_num_cache_key(self, num):
+        """Get the cache key for top num properties."""
         return self.CACHE_KEY + '_' + str(num)
 
     def fetch_all_datapoints(self):
+        """Fetch all datapoints."""
         properties = rediscache.get(self.CACHE_KEY)
         logging.info(
             'looked at cache %r and found %s',
@@ -214,6 +223,7 @@ class FeatureHandler(basehandlers.FlaskHandler):
         return properties
 
     def should_refresh(self):
+        """Check if data should be refreshed."""
         return (
             self.MODEL_CLASS == metrics_models.FeatureObserver
             and self.request.args.get('refresh')
@@ -226,6 +236,7 @@ class CSSPopularityHandler(FeatureHandler):
     PROPERTY_CLASS = metrics_models.CssPropertyHistogram
 
     def get_template_data(self, **kwargs):
+        """Get template data for rendering."""
         return super(CSSPopularityHandler, self).get_template_data()
 
 
@@ -235,6 +246,7 @@ class CSSAnimatedHandler(FeatureHandler):
     PROPERTY_CLASS = metrics_models.CssPropertyHistogram
 
     def get_template_data(self, **kwargs):
+        """Get template data for rendering."""
         return super(CSSAnimatedHandler, self).get_template_data()
 
 
@@ -244,6 +256,7 @@ class FeatureObserverPopularityHandler(FeatureHandler):
     PROPERTY_CLASS = metrics_models.FeatureObserverHistogram
 
     def get_template_data(self, **kwargs):
+        """Get template data for rendering."""
         return super(FeatureObserverPopularityHandler, self).get_template_data()
 
 
@@ -253,6 +266,7 @@ class WebFeaturePopularityHandler(FeatureHandler):
     PROPERTY_CLASS = metrics_models.WebDXFeatureObserver
 
     def get_template_data(self, **kwargs):
+        """Get template data for rendering."""
         return super(WebFeaturePopularityHandler, self).get_template_data()
 
 
@@ -267,6 +281,7 @@ class FeatureBucketsHandler(basehandlers.FlaskHandler):
     }
 
     def get_template_data(self, **kwargs):
+        """Get template data for rendering."""
         properties = []
         prop_type = kwargs.get('prop_type', None)
         histogram_class = self.TYPE_TO_HISTOGRAM_CLASS.get(prop_type)

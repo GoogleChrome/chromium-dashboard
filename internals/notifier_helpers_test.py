@@ -23,6 +23,7 @@ from internals.review_models import Activity, Gate, Vote
 
 class ActivityTest(testing_config.CustomTestCase):
     def setUp(self):
+        """Set up the test environment."""
         self.feature_1 = FeatureEntry(
             id=111,
             name='feature a',
@@ -54,6 +55,7 @@ class ActivityTest(testing_config.CustomTestCase):
         testing_config.sign_in('one@example.com', 123567890)
 
     def test_activities__created(self):
+        """Test activities  created."""
         changed_fields_1: CHANGED_FIELDS_LIST_TYPE = [
             ('name', 'feature a', 'feature Z'),
             ('summary', 'sum', 'A new and more accurate summary.'),
@@ -102,6 +104,7 @@ class ActivityTest(testing_config.CustomTestCase):
 
     @mock.patch('framework.cloud_tasks_helpers.enqueue_task')
     def test_vote_changes_activities__created(self, mock_task_helpers):
+        """Test vote changes activities  created."""
         notifier_helpers.notify_subscribers_of_vote_changes(
             self.feature_1, self.gate_1, 'abc@example.com', Vote.DENIED, Vote.NA
         )
@@ -149,6 +152,7 @@ class ActivityTest(testing_config.CustomTestCase):
 
     @mock.patch('framework.cloud_tasks_helpers.enqueue_task')
     def test_notify_subscribers_of_new_comments(self, mock_task_helpers):
+        """Test notify subscribers of new comments."""
         notifier_helpers.notify_subscribers_of_new_comments(
             self.feature_1, self.gate_1, 'abc@example.com', 'fake comments'
         )
@@ -158,6 +162,7 @@ class ActivityTest(testing_config.CustomTestCase):
 
 class NotifierHelpersTest(testing_config.CustomTestCase):
     def setUp(self):
+        """Set up the test environment."""
         self.feature_1 = FeatureEntry(
             name='feature a',
             summary='sum',

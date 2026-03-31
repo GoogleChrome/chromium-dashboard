@@ -18,10 +18,12 @@ from internals.webdx_feature_models import WebdxFeatures
 
 class WebdxFeaturesTest(testing_config.CustomTestCase):
     def setUp(self):
+        """Sets up test data for the WebdxFeatures model."""
         self.webdx = WebdxFeatures(feature_ids=['abc'])
         self.webdx.put()
 
     def test_get_webdx_feature_id_list(self):
+        """Tests that get_webdx_feature_id_list retrieves the feature IDs."""
         result = WebdxFeatures.get_webdx_feature_id_list()
 
         self.assertIsNotNone(result)
@@ -29,6 +31,7 @@ class WebdxFeaturesTest(testing_config.CustomTestCase):
         self.assertEqual(result.feature_ids[0], 'abc')
 
     def test_store_webdx_feature_id_list__success(self):
+        """Tests storing a new list of Webdx feature IDs successfully."""
         WebdxFeatures.store_webdx_feature_id_list(['foo'])
 
         result = WebdxFeatures.query().fetch()
@@ -37,6 +40,7 @@ class WebdxFeaturesTest(testing_config.CustomTestCase):
         self.assertEqual(result[0].feature_ids[0], 'foo')
 
     def test_store_webdx_feature_id_list__success_from_empty(self):
+        """Tests storing a new list when no feature IDs exist."""
         self.webdx.key.delete()
 
         WebdxFeatures.store_webdx_feature_id_list(['foo'])

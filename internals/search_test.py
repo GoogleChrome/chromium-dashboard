@@ -153,6 +153,7 @@ class SearchRETest(testing_config.CustomTestCase):
 
 class SearchParsingTest(testing_config.CustomTestCase):
     def test_parse_query_value__dates(self):
+        """Tests parsing of query values that represent dates."""
         d = datetime.datetime
         context = search.QueryContext(
             now=d(2024, 5, 15), current_stable_milestone=0
@@ -203,6 +204,7 @@ class SearchParsingTest(testing_config.CustomTestCase):
         )  # noqa: E501
 
     def test_parse_query_value__milestones(self):
+        """Tests parsing of query values that represent milestones."""
         context = search.QueryContext(
             now=datetime.datetime(1, 1, 1), current_stable_milestone=123
         )
@@ -227,6 +229,7 @@ class SearchParsingTest(testing_config.CustomTestCase):
         )
 
     def test_parse_query_value__intervals(self):
+        """Tests parsing interval values."""
         context = search.QueryContext(
             now=datetime.datetime(2024, 5, 15), current_stable_milestone=0
         )
@@ -256,6 +259,7 @@ class SearchParsingTest(testing_config.CustomTestCase):
 
 class SearchFunctionsTest(testing_config.CustomTestCase):
     def setUp(self):
+        """Set up test data for search execution tests."""
         self.featureentry_1 = FeatureEntry(
             created=datetime.datetime(2024, 4, 4),
             name='feature 1',
@@ -318,6 +322,7 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
         self.featureentry_4.put()
 
     def tearDown(self):
+        """Tear down test data."""
         notifier.FeatureStar.set_star(
             'starrer@example.com',
             self.featureentry_1.key.integer_id(),
@@ -857,5 +862,4 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
     def test_process_query__bad(self, mock_warn):
         """Query terms that are not valid, give warnings."""
         self.assertEqual(search.process_query('any:thing e=lse'), ([], 0))
-        self.assertEqual(2, len(mock_warn.mock_calls))
         self.assertEqual(2, len(mock_warn.mock_calls))

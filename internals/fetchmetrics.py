@@ -162,6 +162,7 @@ class UmaQuery(object):
         self._SetCapstone(date)
 
     def FetchAndSaveData(self, date):
+        """Fetchandsavedata."""
         if self._HasCapstone(date):
             return 200
         data, response_code = self._FetchData(date)
@@ -284,6 +285,7 @@ class HistogramsHandler(basehandlers.FlaskHandler):
             new_entity.put()
 
     def get_template_data(self, **kwargs):
+        """Get template data."""
         self.require_cron_header()
         # Attempt to fetch enums mapping file.
         response = requests.get(HISTOGRAMS_URL, timeout=60)
@@ -334,6 +336,7 @@ class BlinkComponentHandler(basehandlers.FlaskHandler):
     """Updates the list of Blink components in the db."""
 
     def get_template_data(self, **kwargs):
+        """Get template data."""
         self.require_cron_header()
         user_models.BlinkComponent.update_db()
         return 'Blink components updated'

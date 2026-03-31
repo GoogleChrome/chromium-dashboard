@@ -25,9 +25,11 @@ class MemoryCache(Cache):
     _CACHE: dict[Any, Any] = {}
 
     def get(self, url):
+        """Get the entity."""
         return MemoryCache._CACHE.get(url)
 
     def set(self, url, content):
+        """Set the entity."""
         MemoryCache._CACHE[url] = content
 
 
@@ -35,6 +37,7 @@ class BackupExportHandler(basehandlers.FlaskHandler):
     """Triggers a new Datastore export."""
 
     def get_template_data(self, **kwargs):
+        """Get template data for the handler."""
         self.require_cron_header()
         bucket = f'gs://{settings.BACKUP_BUCKET}'
         # The default cache (file_cache) is unavailable when using oauth2client >= 4.0.0 or google-auth,  # noqa: E501

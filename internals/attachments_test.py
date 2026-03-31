@@ -20,6 +20,7 @@ from internals import attachments
 
 class AttachmentsTests(testing_config.CustomTestCase):
     def setUp(self):
+        """Set up the test environment."""
         self.feature_id = 12345678
 
     def test_store_attachment(self):

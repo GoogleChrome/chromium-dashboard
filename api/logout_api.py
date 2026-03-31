@@ -27,5 +27,6 @@ class LogoutAPI(basehandlers.APIHandler):
         self.abort(405, valid_methods=['POST'])
 
     def do_post(self, **kwargs):
+        """Handle POST requests."""
         session.clear()
         return {'message': 'Done'}

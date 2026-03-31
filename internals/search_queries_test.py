@@ -23,6 +23,7 @@ from internals.review_models import Gate, Vote
 
 class SearchFeaturesTest(testing_config.CustomTestCase):
     def setUp(self):
+        """Set up the test environment."""
         self.feature_1 = FeatureEntry(
             name='feature a', summary='sum', category=1, impl_status_chrome=3
         )
@@ -132,6 +133,7 @@ class SearchFeaturesTest(testing_config.CustomTestCase):
         self.vote_2_2.put()
 
     def tearDown(self):
+        """Clean up the test environment."""
         for kind in [
             FeatureEntry,
             search_fulltext.FeatureWords,
@@ -196,6 +198,7 @@ class SearchFeaturesTest(testing_config.CustomTestCase):
         )  # noqa: E501
 
     def test_single_field_query_async__any_start_milestone(self):
+        """Test single field query async  any start milestone."""
         actual = search_queries.single_field_query_async(
             'any_start_milestone', '=', [100]
         ).get_result()
@@ -224,6 +227,7 @@ class SearchFeaturesTest(testing_config.CustomTestCase):
         )
 
     def check_wrong_type(self, field_name, bad_values):
+        """Check wrong type."""
         with self.assertRaises(ValueError) as cm:
             search_queries.single_field_query_async(field_name, '=', bad_values)
         self.assertEqual(

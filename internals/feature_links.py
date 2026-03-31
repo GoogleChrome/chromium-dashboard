@@ -306,6 +306,7 @@ class FeatureLinksUpdateHandler(FlaskHandler):
     IS_INTERNAL_HANDLER = True
 
     def process_post_data(self, **kwargs):
+        """Process post data."""
         self.require_task_header()
 
         logging.info('Starting indexing feature links')
@@ -404,6 +405,7 @@ def batch_index_feature_entries(
 
 
 def get_domain_with_scheme(url):
+    """Get domain with scheme."""
     try:
         parse_result = urlparse(url)
         scheme = parse_result.scheme

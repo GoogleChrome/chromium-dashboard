@@ -183,12 +183,14 @@ class FeatureEntry(ndb.Model):
 
     @ndb.ComputedProperty
     def has_open_tag_review(self):
+        """Has open tag review."""
         return (
             self.tag_review is not None and self.tag_review_resolution is None
         )
 
     @ndb.ComputedProperty
     def has_open_ff_review(self):
+        """Has open ff review."""
         return (
             self.ff_views not in [IN_DEV, SHIPPED, SIGNALS_NA]  # noqa: F405
             and self.ff_views_link is not None
@@ -197,6 +199,7 @@ class FeatureEntry(ndb.Model):
 
     @ndb.ComputedProperty
     def has_open_safari_review(self):
+        """Has open safari review."""
         return (
             self.safari_views not in [IN_DEV, SHIPPED, SIGNALS_NA]  # noqa: F405
             and self.safari_views_link is not None
@@ -248,9 +251,11 @@ class FeatureEntry(ndb.Model):
 
     @classmethod
     def feature_cache_key(cls, cache_key, feature_id):
+        """Feature cache key."""
         return '%s|%s' % (cache_key, feature_id)
 
     def put(self, **kwargs) -> Any:
+        """Save the entity."""
         key = super(FeatureEntry, self).put(**kwargs)
         # Invalidate rediscache for the individual feature view.
         cache_key = FeatureEntry.feature_cache_key(
