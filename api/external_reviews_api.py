@@ -102,6 +102,7 @@ STAGE_TYPES: dict[int, StageType] = {
 
 
 def stage_type(feature: FeatureEntry, stage: Stage | None) -> StageType:
+    """Determine the stage type for a given feature and stage."""
     if stage is None:
         return StageType.INCUBATING
 
@@ -115,6 +116,7 @@ def stage_type(feature: FeatureEntry, stage: Stage | None) -> StageType:
 
 
 def min_of_present(*args):
+    """Return the minimum of the given arguments, ignoring None values."""
     present_args = [arg for arg in args if arg is not None]
     if len(present_args) == 0:
         return None
@@ -122,6 +124,7 @@ def min_of_present(*args):
 
 
 def max_of_present(*args):
+    """Return the maximum of the given arguments, ignoring None values."""
     present_args = [arg for arg in args if arg is not None]
     if len(present_args) == 0:
         return None

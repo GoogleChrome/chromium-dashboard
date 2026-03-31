@@ -85,6 +85,7 @@ class PipelineError(Exception):
 
 
 def normalized_name(val):
+    """Return a normalized string by converting to lowercase and removing spaces and slashes."""
     return val.lower().replace(' ', '').replace('/', '')
 
 
@@ -195,6 +196,7 @@ def dedupe(list_with_duplicates):
 
 
 def get_chromium_milestone_info(milestone: int) -> dict:
+    """Fetches the Chromium milestone schedule info for a given milestone."""
     try:
         response = requests.get(
             'https://chromiumdash.appspot.com/fetch_milestone_schedule'

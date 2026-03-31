@@ -76,6 +76,7 @@ TEST_CHANNEL_DATA = {
 
 
 def construct_chrome_channels_details():
+    """Construct details for all Chrome channels."""
     omaha_data = fetchchannels.get_omaha_data()
     channels = {}
     win_versions = omaha_data[0]['versions']
@@ -116,6 +117,7 @@ def construct_chrome_channels_details():
 
 
 def construct_specified_milestones_details(start, end):
+    """Construct details for a specific range of milestones."""
     channels = {}
     win_versions = list(range(start, end + 1))
 

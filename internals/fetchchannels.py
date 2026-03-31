@@ -55,6 +55,11 @@ def get_channel_version(channel):
 
 
 def get_omaha_data():
+    """Fetch and return the Omaha data, caching it in Redis.
+
+    Returns:
+        A list of dictionaries containing channel and version information.
+    """
     omaha_data = rediscache.get('omaha_data')
 
     if omaha_data is None:
@@ -74,6 +79,7 @@ SCHEDULE_CACHE_TIME = 60 * 60  # 1 hour
 
 
 def fetch_chrome_release_info(version):
+    """Fetches release information for a specific Chrome version from Omaha."""
     key = 'chromerelease|%s' % version
 
     data = rediscache.get(key)

@@ -28,6 +28,7 @@ test_app = flask.Flask(__name__)
 
 
 def make_feature(name, created_tuple, status, shipped):
+    """Create a test feature with a specific creation date, status, and shipping milestone."""
     fe = FeatureEntry(
         name=name,
         summary='sum',

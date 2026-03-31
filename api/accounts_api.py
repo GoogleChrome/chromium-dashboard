@@ -20,6 +20,7 @@ from internals import user_models
 
 
 def user_to_json_dict(user):
+    """Convert a user entity to a JSON dictionary."""
     return {
         'is_admin': user.is_admin,
         'is_site_editor': user.is_site_editor,

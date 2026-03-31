@@ -292,6 +292,7 @@ def fetch_owners(url) -> list[str]:
 
 
 def decode_raw_owner_content(raw_content) -> list[str]:
+    """Decode base64 encoded OWNERS file content and return a list of email addresses."""
     owners = []
     decoded = base64.b64decode(raw_content).decode()
     for line in decoded.split('\n'):

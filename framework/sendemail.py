@@ -149,6 +149,7 @@ def handle_bounce():
 
 
 def receive(bounce_message):
+    """Process a bounced email message and notify the appropriate parties."""
     email_addr = bounce_message.original.get('to')
     subject = 'Mail to %r bounced' % email_addr
     logging.info(subject)

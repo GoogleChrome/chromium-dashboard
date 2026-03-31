@@ -149,6 +149,7 @@ def flushall():
 
 
 def add_gae_prefix(key):
+    """Prefix the cache key with the current App Engine version."""
     if gae_version is None:
         return key
 

@@ -103,6 +103,14 @@ TIMEOUT = 30  # We wait at most 30 seconds for each web page request.
 
 
 def valid_url(url):
+    """Check if the given URL is valid.
+
+    Args:
+        url: The URL string to validate.
+
+    Returns:
+        True if the URL is valid, False otherwise.
+    """
     try:
         return validators.url(url)
     except:  # noqa: E722
