@@ -12,8 +12,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-"""API handlers for creating, retrieving, updating, and deleting feature entries."""
+"""API handlers for creating, retrieving, updating, and deleting feature
+entries."""
 
 import re
 from datetime import datetime
@@ -149,7 +149,8 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
         feature: FeatureEntry,
         feature_changes: dict[str, Any],
     ) -> bool:
-        """Handle any special FeatureEntry fields common to creating or updating."""
+        """Handle any special FeatureEntry fields common to creating or
+        updating."""
         has_updated = False
         # Handle "Use Markdown" checkboxes.
         for field, field_type in api_specs.FEATURE_FIELD_DATA_TYPES:

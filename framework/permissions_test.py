@@ -11,12 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-
 """Unit tests for the permissions module.
 
-Verifies the access control logic across different user roles
-(admin, editor, owner, etc.) and feature visibility states.
+Verifies the access control logic across different user roles (admin, editor,
+owner, etc.) and feature visibility states.
 """
 
 import werkzeug.exceptions  # Flask HTTP stuff.
@@ -87,7 +85,7 @@ class PermissionFunctionTests(testing_config.CustomTestCase):
 
         self.feature_editor = user_models.AppUser(
             email='feature_editor@example.com'
-        )  # noqa: E501
+        )
         self.feature_editor.put()
         self.users.append(self.feature_editor)
 
@@ -388,21 +386,21 @@ class PermissionFunctionTests(testing_config.CustomTestCase):
         self.assertEqual(
             False,
             permissions.is_google_or_chromium_account(users.get_current_user()),
-        )  # noqa: E501
+        )
 
         # Test google user
         testing_config.sign_in('user@google.com', 123)
         self.assertEqual(
             True,
             permissions.is_google_or_chromium_account(users.get_current_user()),
-        )  # noqa: E501
+        )
 
         # Test chromium user
         testing_config.sign_in('user@chromium.org', 123)
         self.assertEqual(
             True,
             permissions.is_google_or_chromium_account(users.get_current_user()),
-        )  # noqa: E501
+        )
 
 
 class RequireAdminSiteTests(testing_config.CustomTestCase):

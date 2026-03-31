@@ -12,8 +12,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-"""Tests for the processes_api module, verifying the retrieval of process stages and feature progress."""
+"""Tests for the processes_api module, verifying the retrieval of process stages
+and feature progress."""
 
 from dataclasses import asdict
 
@@ -52,14 +52,16 @@ class ProcessesAPITest(testing_config.CustomTestCase):
         self.feature_1.key.delete()
 
     def test_get__default_feature_type(self):
-        """We can get process for features with the default feature type (New feature incubation)."""  # noqa: E501
+        """We can get process for features with the default feature type (New
+        feature incubation)."""
         with test_app.test_request_context(self.request_path):
             actual = self.handler.do_get(feature_id=self.feature_id)
         expected = processes.process_to_dict(processes.BLINK_LAUNCH_PROCESS)
         self.assertEqual(expected, actual)
 
     def test_get__feature_type_0(self):
-        """We can get process for features with feature type 0 (New feature incubation)."""  # noqa: E501
+        """We can get process for features with feature type 0 (New feature
+        incubation)."""
         self.feature_1.feature_type = core_enums.FEATURE_TYPE_INCUBATE_ID
         with test_app.test_request_context(self.request_path):
             actual = self.handler.do_get(feature_id=self.feature_id)
@@ -67,7 +69,8 @@ class ProcessesAPITest(testing_config.CustomTestCase):
         self.assertEqual(expected, actual)
 
     def test_get__feature_type_0_impact_enterprise(self):
-        """We can get process for breaking features with feature type 0 (New feature incubation)."""  # noqa: E501
+        """We can get process for breaking features with feature type 0 (New
+        feature incubation)."""
         self.feature_1.feature_type = core_enums.FEATURE_TYPE_INCUBATE_ID
         self.feature_1.enterprise_impact = core_enums.ENTERPRISE_IMPACT_LOW
         self.feature_1.put()
@@ -80,7 +83,8 @@ class ProcessesAPITest(testing_config.CustomTestCase):
         self.assertEqual(expected, actual)
 
     def test_get__feature_type_1(self):
-        """We can get process for features with feature type 1 (Existing feature implementation)."""  # noqa: E501
+        """We can get process for features with feature type 1 (Existing feature
+        implementation)."""
         self.feature_1.feature_type = core_enums.FEATURE_TYPE_EXISTING_ID
         with test_app.test_request_context(self.request_path):
             actual = self.handler.do_get(feature_id=self.feature_id)
@@ -88,7 +92,8 @@ class ProcessesAPITest(testing_config.CustomTestCase):
         self.assertEqual(expected, actual)
 
     def test_get__feature_type_1_impact_enterprise(self):
-        """We can get process for breaking features with feature type 1 (Existing feature implementation)."""  # noqa: E501
+        """We can get process for breaking features with feature type 1
+        (Existing feature implementation)."""
         self.feature_1.feature_type = core_enums.FEATURE_TYPE_EXISTING_ID
         self.feature_1.enterprise_impact = core_enums.ENTERPRISE_IMPACT_MEDIUM
         self.feature_1.put()
@@ -101,7 +106,8 @@ class ProcessesAPITest(testing_config.CustomTestCase):
         self.assertEqual(expected, actual)
 
     def test_get__feature_type_2(self):
-        """We can get process for features with feature type 2 (Web developer facing change to existing code)."""  # noqa: E501
+        """We can get process for features with feature type 2 (Web developer
+        facing change to existing code)."""
         self.feature_1.feature_type = core_enums.FEATURE_TYPE_CODE_CHANGE_ID
         with test_app.test_request_context(self.request_path):
             actual = self.handler.do_get(feature_id=self.feature_id)
@@ -109,7 +115,8 @@ class ProcessesAPITest(testing_config.CustomTestCase):
         self.assertEqual(expected, actual)
 
     def test_get__feature_type_2_impact_enterprise(self):
-        """We can get process for breaking features with feature type 2 (Web developer facing change to existing code)."""  # noqa: E501
+        """We can get process for breaking features with feature type 2 (Web
+        developer facing change to existing code)."""
         self.feature_1.feature_type = core_enums.FEATURE_TYPE_CODE_CHANGE_ID
         self.feature_1.enterprise_impact = core_enums.ENTERPRISE_IMPACT_HIGH
         self.feature_1.put()
@@ -122,7 +129,8 @@ class ProcessesAPITest(testing_config.CustomTestCase):
         self.assertEqual(expected, actual)
 
     def test_get__feature_type_3(self):
-        """We can get process for features with feature type 3 (Feature deprecation)."""  # noqa: E501
+        """We can get process for features with feature type 3 (Feature
+        deprecation)."""
         self.feature_1.feature_type = core_enums.FEATURE_TYPE_DEPRECATION_ID
         with test_app.test_request_context(self.request_path):
             actual = self.handler.do_get(feature_id=self.feature_id)
@@ -130,7 +138,8 @@ class ProcessesAPITest(testing_config.CustomTestCase):
         self.assertEqual(expected, actual)
 
     def test_get__feature_type_3_impact_enterprise(self):
-        """We can get process for breaking features with feature type 3 (Feature deprecation)."""  # noqa: E501
+        """We can get process for breaking features with feature type 3 (Feature
+        deprecation)."""
         self.feature_1.feature_type = core_enums.FEATURE_TYPE_DEPRECATION_ID
         self.feature_1.enterprise_impact = core_enums.ENTERPRISE_IMPACT_LOW
         self.feature_1.put()
@@ -143,7 +152,8 @@ class ProcessesAPITest(testing_config.CustomTestCase):
         self.assertEqual(expected, actual)
 
     def test_get__feature_type_4(self):
-        """We can get process for features with feature type 4 (Enterprise feature)."""  # noqa: E501
+        """We can get process for features with feature type 4 (Enterprise
+        feature)."""
         self.feature_1.feature_type = core_enums.FEATURE_TYPE_ENTERPRISE_ID
         with test_app.test_request_context(self.request_path):
             actual = self.handler.do_get(feature_id=self.feature_id)
@@ -151,7 +161,8 @@ class ProcessesAPITest(testing_config.CustomTestCase):
         self.assertEqual(expected, actual)
 
     def test_get__feature_type_4_impact_enterprise(self):
-        """We can get process for breaking features with feature type 4 (Enterprise feature)."""  # noqa: E501
+        """We can get process for breaking features with feature type 4
+        (Enterprise feature)."""
         self.feature_1.feature_type = core_enums.FEATURE_TYPE_ENTERPRISE_ID
         self.feature_1.enterprise_impact = core_enums.ENTERPRISE_IMPACT_LOW
         self.feature_1.put()
@@ -220,7 +231,9 @@ class ProgressAPITest(testing_config.CustomTestCase):
                 'Final target milestone': 'True',
                 'Intent to Prototype email': 'https://example.com/prototype',
                 'Intent to Experiment email': 'https://example.com/ot',
-                'Ready for Developer Testing email': 'https://example.com/ready_for_trial',
+                'Ready for Developer Testing email': (
+                    'https://example.com/ready_for_trial'
+                ),
                 'Intent to Ship email': 'https://example.com/ship',
                 'Spec link': 'fake spec link',
                 'Updated target milestone': 'True',

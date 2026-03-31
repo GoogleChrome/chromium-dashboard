@@ -12,8 +12,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-"""Cron handlers for background maintenance tasks like updating gate statuses and backfilling entities."""
+"""Cron handlers for background maintenance tasks like updating gate statuses
+and backfilling entities."""
 
 import collections
 import csv
@@ -75,7 +75,9 @@ class WriteMissingGates(FlaskHandler):
 
     GATE_RULES: dict[int, dict[int, list[int]]] = {
         fe_type: dict(stages_and_gates)
-        for fe_type, stages_and_gates in STAGES_AND_GATES_BY_FEATURE_TYPE.items()
+        for fe_type, stages_and_gates in (
+            STAGES_AND_GATES_BY_FEATURE_TYPE.items()
+        )
     }
 
     def make_needed_gates(self, fe, stage, existing_gates) -> list[Gate]:
@@ -228,7 +230,8 @@ class AssociateOTs(FlaskHandler):
         stage_field_name: str,
         trial_field_name: str,
     ) -> bool:
-        """Set the OT stage value to the value from the OT console if it is unset.
+        """Set the OT stage value to the value from the OT console if it is
+        unset.
 
         Returns:
           boolean value of whether or not the value was changed on the stage.
@@ -248,8 +251,8 @@ class AssociateOTs(FlaskHandler):
         stage_field_name: str,
         trial_field_name: str,
     ) -> bool:
-        """Set an OT milestone value to the value from the OT console
-        if it is unset.
+        """Set an OT milestone value to the value from the OT console if it is
+        unset.
 
         Returns:
           boolean value of whether or not the value was changed on the stage.
@@ -271,9 +274,8 @@ class AssociateOTs(FlaskHandler):
     def write_fields_for_trial_stage(
         self, trial_stage: Stage, trial_data: dict[str, Any]
     ) -> bool:
-        """Check if any OT stage fields are unfilled and populate them with
-        the matching trial data.
-        """
+        """Check if any OT stage fields are unfilled and populate them with the
+        matching trial data."""
         stage_changed = False
         stage_changed = (
             self.write_field(trial_stage, trial_data, 'origin_trial_id', 'id')
@@ -544,7 +546,7 @@ class BackfillFeatureEnterpriseImpact(FlaskHandler):
 
         stages: ndb.Query = Stage.query(
             Stage.stage_type == STAGE_ENT_ROLLOUT,
-            Stage.archived == False,  # noqa: E501, E712, F405
+            Stage.archived == False,  # noqa: E712, F405
         )
         for stage in stages:
             if stage.feature_id in features_by_id:
@@ -568,7 +570,7 @@ class BackfillFeatureEnterpriseImpact(FlaskHandler):
             FeatureEntry.enterprise_impact == ENTERPRISE_IMPACT_NONE,
             ndb.OR(
                 FeatureEntry.feature_type == FEATURE_TYPE_ENTERPRISE_ID,
-                FeatureEntry.breaking_change == True,  # noqa: E501, E712, F405
+                FeatureEntry.breaking_change == True,  # noqa: E712, F405
             ),
         )
         for feature_entry in features:
@@ -606,8 +608,7 @@ class CreateOriginTrials(FlaskHandler):
 
     def handle_creation(self, stage: Stage) -> bool:
         """Send a flagged creation request for processing to the Origin Trials
-        API.
-        """
+        API."""
         origin_trial_id, error_text = origin_trials_client.create_origin_trial(
             stage
         )
@@ -701,9 +702,8 @@ class ActivateOriginTrials(FlaskHandler):
         return date.today()
 
     def get_template_data(self, **kwargs) -> str:
-        """Check for origin trials that are scheduled for activation and activate
-        them.
-        """
+        """Check for origin trials that are scheduled for activation and
+        activate them."""
         self.require_cron_header()
         if not settings.AUTOMATED_OT_CREATION:
             return 'Automated OT creation process is not active.'
@@ -951,8 +951,7 @@ class BackfillGateDates(FlaskHandler):
 class FetchWebdxFeatureId(FlaskHandler):
     def get_template_data(self, **kwargs) -> str:
         """Fetch the complete list of Webdx feature ID available from
-        webstatus.dev APIs and store them in datastore.
-        """
+        webstatus.dev APIs and store them in datastore."""
         self.require_cron_header()
 
         client = DefaultApi(
@@ -988,8 +987,7 @@ class FetchWebdxFeatureId(FlaskHandler):
 
 class SendManualOTCreatedEmail(FlaskHandler):
     """Manually send an email to origin trial contacts that an origin trial has
-    been created but not yet activated.
-    """
+    been created but not yet activated."""
 
     def get_template_data(self, **kwargs):
         """Get template data."""
@@ -1017,8 +1015,7 @@ class SendManualOTCreatedEmail(FlaskHandler):
 
 class SendManualOTActivatedEmail(FlaskHandler):
     """Manually send an email to origin trial contacts that an origin trial has
-    been created and also activated.
-    """
+    been created and also activated."""
 
     def get_template_data(self, **kwargs):
         """Get template data."""
@@ -1127,9 +1124,11 @@ class GenerateReviewActivityFile(FlaskHandler):
                     approval_defs.APPROVAL_FIELDS_BY_ID[
                         gate.gate_type
                     ].team_name,
-                    a.amendments[0].field_name
-                    if len(a.amendments)
-                    else 'comment',
+                    (
+                        a.amendments[0].field_name
+                        if len(a.amendments)
+                        else 'comment'
+                    ),
                     str(datetime.strftime(a.created, self.DATE_FORMAT)),
                     review_status,
                     review_assignee,
@@ -1173,8 +1172,7 @@ class GenerateReviewActivityFile(FlaskHandler):
 
     def _get_last_run_timestamp(self, bucket):
         """Get the timestamp for the starting interval of querying for new
-        activities.
-        """
+        activities."""
         blob = bucket.blob('review-activity-last-timestamp.txt')
         if blob.exists():
             with blob.open('r') as f:
@@ -1185,8 +1183,7 @@ class GenerateReviewActivityFile(FlaskHandler):
 
     def _write_csv(self, bucket, csv_io: StringIO) -> None:
         """Append the rows to the review activity CSV, or create a new CSV if it
-        does not exist.
-        """
+        does not exist."""
         blob = bucket.blob('chromestatus-review-activity.csv')
         blob.upload_from_string(csv_io.getvalue())
 
@@ -1220,14 +1217,16 @@ class GenerateReviewActivityFile(FlaskHandler):
 
 
 class GenerateStaleFeaturesFile(FlaskHandler):
-    """Generate a CSV file with all stale features that have upcoming shipping milestones."""
+    """Generate a CSV file with all stale features that have upcoming shipping
+    milestones."""
 
     DATE_FORMAT = '%Y-%m-%dT%H:%M:%S'
 
     def _gather_stale_features(
         self, current_milestone: int
     ) -> list[FeatureEntry]:
-        """Generate a list of stale features that have an upcoming shipping milestone."""
+        """Generate a list of stale features that have an upcoming shipping
+        milestone."""
         # Get all features that have not been verified for accuracy in over a month.
         now = datetime.now()
         one_month_ago = now - timedelta(weeks=4)
@@ -1349,7 +1348,8 @@ class GenerateStaleFeaturesFile(FlaskHandler):
 
 
 class GenerateShippingFeaturesFile(FlaskHandler):
-    """Generate a CSV file with all shipping features and information about their missing fields."""
+    """Generate a CSV file with all shipping features and information about
+    their missing fields."""
 
     DATE_FORMAT = '%Y-%m-%dT%H:%M:%S'
 
@@ -1455,7 +1455,8 @@ class GenerateShippingFeaturesFile(FlaskHandler):
         owner_csv_rows: list[list[str]],
         missing_criteria_csv_rows: list[list[str]],
     ) -> None:
-        """Write shipping features CSV, owners CSV, and missing criteria CSV to the GCP bucket."""
+        """Write shipping features CSV, owners CSV, and missing criteria CSV to
+        the GCP bucket."""
         self._upload_csv(
             bucket,
             self.FILENAME_FEATURES,
@@ -1486,7 +1487,7 @@ class GenerateShippingFeaturesFile(FlaskHandler):
 
         shipping_stages = self._get_shipping_stages(current_milestone)
 
-        (feature_rows, owner_rows, missing_rows) = self._generate_rows(
+        feature_rows, owner_rows, missing_rows = self._generate_rows(
             shipping_stages, current_milestone
         )
 
@@ -1496,7 +1497,8 @@ class GenerateShippingFeaturesFile(FlaskHandler):
 
 
 class MigrateRolloutMilestones(FlaskHandler):
-    """Migrate the rollout milestone field to be stored in the 'milestones' field."""
+    """Migrate the rollout milestone field to be stored in the 'milestones'
+    field."""
 
     def get_template_data(self, **kwargs):
         """Get template data."""
@@ -1526,7 +1528,8 @@ class MigrateRolloutMilestones(FlaskHandler):
 
 
 class ResetOutstandingNotifications(FlaskHandler):
-    """Reset the FeatureEntry.outstanding_notifications counter for all features."""
+    """Reset the FeatureEntry.outstanding_notifications counter for all
+    features."""
 
     def get_template_data(self, **kwargs) -> str:
         """Get template data."""
@@ -1547,7 +1550,8 @@ class ResetOutstandingNotifications(FlaskHandler):
 
 
 class ResetStaleShippingMilestones(FlaskHandler):
-    """Reset the shipping milestones of features have not been verified after 4+ notifications."""
+    """Reset the shipping milestones of features have not been verified after 4+
+    notifications."""
 
     def _reset_milestone(
         self,

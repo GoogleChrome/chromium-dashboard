@@ -12,7 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Provides helper functions for managing and retrieving FeatureEntry stages."""
 
 from collections import defaultdict
@@ -56,7 +55,7 @@ class StageTemplateInfo(TypedDict):
 
 def create_feature_stage(
     feature_id: int, feature_type: int, stage_type: int
-) -> Stage:  # noqa: E501
+) -> Stage:
     # Create the stage.
     stage = Stage(feature_id=feature_id, stage_type=stage_type)
     stage.put()
@@ -68,7 +67,7 @@ def create_feature_stage(
         gate = Gate(
             feature_id=feature_id,
             stage_id=stage.key.id(),
-            gate_type=gate_type,  # noqa: E501
+            gate_type=gate_type,
             state=Gate.PREPARING,
         )
         gate.put()
@@ -112,7 +111,7 @@ def get_feature_stage_ids(feature_id: int) -> dict[int, list[int]]:
 
 def organize_all_stages_by_feature(
     stages: list[Stage],
-) -> dict[int, list[Stage]]:  # noqa: E501
+) -> dict[int, list[Stage]]:
     """Return a dict with feature IDs as keys and feature's stages as values."""
     stages_by_feature = defaultdict(list)
     for stage in stages:
@@ -137,14 +136,16 @@ def get_feature_stage_ids_list(feature_id: int) -> list[dict[str, int]]:
 
 
 def get_ot_stage_extensions(ot_stage_id: int):
-    """Return a list of extension stages associated with a stage in JSON format"""  # noqa: D415
+    """Return a list of extension stages associated with a stage in JSON
+    format."""  # noqa: D415
     q = Stage.query(Stage.ot_stage_id == ot_stage_id)
     extension_stages = [converters.stage_to_json_dict(stage) for stage in q]
     return sorted(extension_stages, key=lambda s: s['created'])
 
 
 def get_stage_info_for_templates(fe: FeatureEntry) -> StageTemplateInfo:
-    """Gather the information needed to display the estimated milestones table."""
+    """Gather the information needed to display the estimated milestones
+    table."""
     # Only milestones from DevTrial, OT, or shipping stages are displayed.
     id = fe.key.integer_id()
     f_type = fe.feature_type or 0

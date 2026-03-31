@@ -11,8 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-"""Provides logic for checking if a feature owner can self-certify a review gate."""
+"""Provides logic for checking if a feature owner can self-certify a review
+gate."""
 
 from chromestatus_openapi.models import SurveyAnswers as OASurveyAnswers
 

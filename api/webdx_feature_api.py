@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """API endpoints for retrieving lists of WebDX features and their mappings."""
 
 import logging
@@ -40,9 +39,8 @@ class WebdxFeatureAPI(basehandlers.APIHandler):
     """The webdx feature UseCounter enums that populates a datalist menu."""
 
     def do_get(self, **kwargs):
-        """Returns an ordered dict with the following structure,
-        {Webdx feature name: [Webdx feature name, usecounter enum], ...}
-        """  # noqa: D205, D415
+        """Returns an ordered dict with the following structure, {Webdx feature
+        name: [Webdx feature name, usecounter enum], ...}"""  # noqa: D205, D415
         webdx_features_mapping = sorted(
             WebDXFeatureObserver.get_all().items(), key=lambda item: item
         )
@@ -51,7 +49,7 @@ class WebdxFeatureAPI(basehandlers.APIHandler):
             return {}
 
         web_features_dict = OrderedDict()
-        # The first key, value pair is the id when features are missing from the list.  # noqa: E501
+        # The first key, value pair is the id when features are missing from the list.
         web_features_dict[WebDXFeatureObserver.MISSING_FEATURE_ID] = [
             WebDXFeatureObserver.MISSING_FEATURE_ID,
             WebDXFeatureObserver.MISSING_FEATURE_ID,

@@ -11,11 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Unit tests for the utils module.
 
-Verifies the behavior of string normalization, retry decorators,
-URL formatting, and external fetching logic.
+Verifies the behavior of string normalization, retry decorators, URL formatting,
+and external fetching logic.
 """
 
 import base64
@@ -161,7 +160,8 @@ class UtilsFunctionTests(unittest.TestCase):
     def test_get_chromium_file__cache_miss_success(
         self, mock_urlopen, mock_rediscache, mock_logging_info
     ):
-        """When not cached, the file is fetched, decoded, cached, and returned."""
+        """When not cached, the file is fetched, decoded, cached, and
+        returned."""
         mock_rediscache.get.return_value = None
         mock_conn = mock.MagicMock()
         mock_conn.read.return_value = self.encoded_content
@@ -174,11 +174,11 @@ class UtilsFunctionTests(unittest.TestCase):
         mock_rediscache.get.assert_called_once_with(self.url)
         mock_logging_info.assert_called_once_with(
             f'Fetching and caching file: {self.url}'
-        )  # noqa: E501
+        )
         mock_urlopen.assert_called_once_with(self.url, timeout=60)
         mock_rediscache.set.assert_called_once_with(
             self.url, self.content, time=1800
-        )  # noqa: E501
+        )
 
     @mock.patch('logging.error')
     @mock.patch('framework.utils.rediscache')
@@ -268,7 +268,8 @@ class UtilsFunctionTests(unittest.TestCase):
                 self.assertEqual(expected, actual)
 
     def test_reformat_wpt_fyi_url(self):
-        """Ensure .any.js variant URLs are correctly reformatted to their source."""
+        """Ensure .any.js variant URLs are correctly reformatted to their
+        source."""
         # Case: Standard URL that should not change.
         self.assertEqual(
             'https://wpt.fyi/results/dom/nodes/Element-firstElementChild.html',
@@ -359,7 +360,8 @@ class UtilsGitHubTests(unittest.TestCase):
         self.assertIn('X-GitHub-Api-Version', headers)
 
     def test_get_github_headers__no_token(self):
-        """Headers should not include Authorization when token is None AND secrets returns None."""  # noqa: E501
+        """Headers should not include Authorization when token is None AND
+        secrets returns None."""
         # Simulate that the secret lookup fails/returns nothing
         settings.GITHUB_TOKEN = None
 
@@ -371,7 +373,8 @@ class UtilsGitHubTests(unittest.TestCase):
         self.assertIn('X-GitHub-Api-Version', headers)
 
     def test_get_github_headers__fetches_token_from_secrets(self):
-        """Headers should include Authorization when token arg is None but secrets returns one."""  # noqa: E501
+        """Headers should include Authorization when token arg is None but
+        secrets returns one."""
         # Simulate that secrets has a token
         settings.GITHUB_TOKEN = 'secret_token'
 
@@ -384,7 +387,9 @@ class UtilsGitHubTests(unittest.TestCase):
     def test_parse_wpt_fyi_url__valid_cases(self):
         """Should correctly parse valid wpt.fyi URLs."""
         urls = {
-            'https://wpt.fyi/results/dom/historical.html': 'dom/historical.html',
+            'https://wpt.fyi/results/dom/historical.html': (
+                'dom/historical.html'
+            ),
             'http://wpt.fyi/results/dom/events': 'dom/events',
             'https://wpt.fyi/results/dom/events?label=master': 'dom/events',
             'https://wpt.fyi/results/dom/events/': 'dom/events',
@@ -426,11 +431,12 @@ class UtilsGitHubTests(unittest.TestCase):
     @mock.patch('framework.utils.requests.get')
     @mock.patch('framework.utils.logging.error')
     def test_fetch_file_content__failure(self, mock_logging, mock_requests_get):
-        """Should return None and log an error on download failure for non-.html URL."""  # noqa: E501
+        """Should return None and log an error on download failure for non-.html
+        URL."""
         # Ensure this test still uses a URL that does NOT trigger the fallback
         mock_requests_get.side_effect = requests.exceptions.RequestException(
             'Failed'
-        )  # noqa: E501
+        )
 
         content = utils._fetch_file_content('http://example.com/file.txt')
 
@@ -444,7 +450,7 @@ class UtilsGitHubTests(unittest.TestCase):
     def test_fetch_file_content__fallback_success(
         self, mock_info, mock_error, mock_requests_get
     ):
-        """Tests the fallback logic: initial .html fails, subsequent .js succeeds."""  # noqa: E501
+        """Tests the fallback logic: initial .html fails, subsequent .js succeeds."""
         html_url = 'http://example.com/test.html'
         js_url = 'http://example.com/test.js'
         js_content = 'JS file content'
@@ -494,7 +500,7 @@ class UtilsGitHubTests(unittest.TestCase):
 
         result = utils._fetch_dir_listing(
             'https://wpt.fyi/results/dom/events', self.mock_headers
-        )  # noqa: E501
+        )
 
         expected = [
             (Path('file1.html'), 'https://raw.github.com/some/file1.html'),
@@ -514,21 +520,22 @@ class UtilsGitHubTests(unittest.TestCase):
 
     @mock.patch('framework.utils.requests.get')
     def test_fetch_dir_listing__not_a_list(self, mock_requests_get):
-        """Should return empty list if response is not a list (e.g. it's a file)."""
+        """Should return empty list if response is not a list (e.g. it's a
+        file)."""
         mock_response = mock.Mock()
         mock_response.json.return_value = {'type': 'file'}  # Not a list
         mock_requests_get.return_value = mock_response
 
         result = utils._fetch_dir_listing(
             'https://wpt.fyi/results/somefile', self.mock_headers
-        )  # noqa: E501
+        )
         self.assertEqual(result, [])
 
     @mock.patch('framework.utils.requests.get')
     @mock.patch('framework.utils._parse_wpt_fyi_url')
     def test_fetch_dir_listing__ignores_yaml(
         self, mock_parse_url, mock_requests_get
-    ):  # noqa: E501
+    ):
         """Should specifically ignore .yaml and .yml files in listings."""
         mock_parse_url.return_value = Path('css/css-grid')
 
@@ -539,31 +546,31 @@ class UtilsGitHubTests(unittest.TestCase):
                 'name': 'grid-basic.html',
                 'download_url': 'http://dl/grid-basic.html',
                 'path': 'grid-basic.html',
-            },  # noqa: E501
+            },
             {
                 'type': 'file',
                 'name': 'META.yml',
                 'download_url': 'http://dl/META.yml',
                 'path': 'META.yml',
-            },  # noqa: E501
+            },
             {
                 'type': 'file',
                 'name': 'config.yaml',
                 'download_url': 'http://dl/config.yaml',
                 'path': 'config.yaml',
-            },  # noqa: E501
+            },
             {
                 'type': 'dir',
                 'name': 'subtests',
                 'download_url': None,
                 'path': 'subtests',
-            },  # noqa: E501
+            },
             {
                 'type': 'file',
                 'name': 'grid-api.js',
                 'download_url': 'http://dl/grid-api.js',
                 'path': 'grid-api.js',
-            },  # noqa: E501
+            },
         ]
 
         mock_response = mock.Mock()
@@ -573,7 +580,7 @@ class UtilsGitHubTests(unittest.TestCase):
 
         result = utils._fetch_dir_listing(
             'https://wpt.fyi/results/css/css-grid', self.mock_headers
-        )  # noqa: E501
+        )
 
         # Assert only non-YAML files are returned
         expected = [
@@ -652,7 +659,7 @@ class UtilsDependencyTests(unittest.TestCase):
         )
         self.assertIsNone(
             utils.resolve_dependency_path(base, '//example.com/lib.js')
-        )  # noqa: E501
+        )
 
 
 class AsyncUtilsGitHubTests(unittest.IsolatedAsyncioTestCase):
@@ -675,7 +682,7 @@ class AsyncUtilsGitHubTests(unittest.IsolatedAsyncioTestCase):
         # We use a patch on the sync function it wraps with to_thread
         with mock.patch(
             'framework.utils._fetch_file_content', return_value=expected_content
-        ) as mock_fetch:  # noqa: E501
+        ) as mock_fetch:
             result = await utils._fetch_and_pair(fname, furl)
             self.assertEqual(result, (fname, expected_content))
             mock_fetch.assert_called_once_with(furl)
@@ -781,29 +788,30 @@ class AsyncUtilsGitHubTests(unittest.IsolatedAsyncioTestCase):
 
         # 1. Start: 1 Test file (test.js). Visited count = 1.
         # 2. Fetch test.js. Find dep1. Visited count = 2. (2 <= 2) -> Queue dep1.
-        # 3. Fetch dep1. Find dep2. Visited count = 3. (3 <= 2) -> False. Do NOT queue dep2.  # noqa: E501
+        # 3. Fetch dep1. Find dep2. Visited count = 3. (3 <= 2) -> False. Do NOT queue dep2.
 
         # Assertions
         self.assertIn(Path('test.js'), result.test_contents)
         self.assertIn(Path('dep1.js'), result.dependency_contents)
 
-        # Dep 2 should NOT be in the fetched content because we exceeded limit before queuing it  # noqa: E501
+        # Dep 2 should NOT be in the fetched content because we exceeded limit before queuing it
         self.assertNotIn(Path('dep2.js'), result.dependency_contents)
 
         # Mapping should reflect only what was fetched
         self.assertIn(
             Path('dep1.js'), result.test_to_dependencies_map[Path('test.js')]
-        )  # noqa: E501
+        )
         self.assertNotIn(
             Path('dep2.js'), result.test_to_dependencies_map[Path('test.js')]
-        )  # noqa: E501
+        )
 
     @mock.patch('framework.utils._fetch_dir_listing')
     @mock.patch('framework.utils._fetch_file_content')
     async def test_get_mixed_wpt_contents_async__deduplication(
         self, mock_fetch_content, mock_fetch_dir
     ):
-        """If the same file is in a dir and explicitly listed, fetch only once."""
+        """If the same file is in a dir and explicitly listed, fetch only
+        once."""
         dir_urls = ['https://wpt.fyi/results/dir1']
 
         # We assume the user lists a file that is also inside dir1.
@@ -828,7 +836,7 @@ class AsyncUtilsGitHubTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(len(result.dependency_contents), 0)
         self.assertEqual(
             result.test_to_dependencies_map[Path('dir1/a.html')], set()
-        )  # noqa: E501
+        )
 
         # Crucial: content fetch should only happen once
         mock_fetch_content.assert_called_once_with(expected_url)
@@ -838,7 +846,8 @@ class AsyncUtilsGitHubTests(unittest.IsolatedAsyncioTestCase):
     async def test_get_mixed_wpt_contents_async__partial_failures(
         self, mock_fetch_content, mock_fetch_dir
     ):
-        """Should gracefully handle failures in resolution or fetching phases."""
+        """Should gracefully handle failures in resolution or fetching
+        phases."""
         dir_urls = [
             'https://wpt.fyi/results/dir1',
             'https://wpt.fyi/results/fail_dir',
@@ -876,7 +885,7 @@ class AsyncUtilsGitHubTests(unittest.IsolatedAsyncioTestCase):
         # Mock returning 6 files, which exceeds the patched limit of 5.
         mock_files = [
             (Path(f'test{i}.html'), f'http://dl/test{i}.html') for i in range(6)
-        ]  # noqa: E501
+        ]
         mock_fetch_dir.return_value = mock_files
 
         with self.assertRaises(utils.PipelineError) as cm:
@@ -919,8 +928,8 @@ class AsyncUtilsGitHubTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(
             result.test_to_dependencies_map[Path('test_a.js')],
             {Path('shared.js')},
-        )  # noqa: E501
+        )
         self.assertEqual(
             result.test_to_dependencies_map[Path('test_b.js')],
             {Path('shared.js')},
-        )  # noqa: E501
+        )

@@ -11,8 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-"""Tests for the processes module, verifying process dictionaries and review completion logic."""
+"""Tests for the processes module, verifying process dictionaries and review
+completion logic."""
 
 import collections
 
@@ -170,7 +170,8 @@ class ProcessesWellFormedTest(testing_config.CustomTestCase):
         self.verify_references_to_prerequisites(processes.BLINK_LAUNCH_PROCESS)
 
     def test_BLINK_FAST_TRACK_PROCESS(self):
-        """Prerequisites in BLINK_FAST_TRACK_PROCESS are defined and actionable."""
+        """Prerequisites in BLINK_FAST_TRACK_PROCESS are defined and
+        actionable."""
         self.verify_references_to_prerequisites(
             processes.BLINK_FAST_TRACK_PROCESS
         )

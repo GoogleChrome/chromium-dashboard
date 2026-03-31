@@ -11,14 +11,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Defines NDB models for storing and retrieving Webdx feature IDs."""
 
 from google.cloud import ndb  # type: ignore
 
 
 class WebdxFeatures(ndb.Model):
-    """A singleton model to store Webdx feature IDs"""  # noqa: D415
+    """A singleton model to store Webdx feature IDs."""  # noqa: D415
 
     feature_ids = ndb.StringProperty(repeated=True)
 

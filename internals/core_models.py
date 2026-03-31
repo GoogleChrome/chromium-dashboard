@@ -38,10 +38,11 @@ class ReviewResultProperty(ndb.StringProperty):
 
     These are the values after the `:` in
     https://github.com/mozilla/standards-positions/labels?q=position%3A,
-    https://github.com/WebKit/standards-positions/labels?q=position%3A, and
-    https://github.com/w3ctag/design-reviews/labels?q=resolution%3A, plus the special value "closed"
+     https://github.com/WebKit/standards-positions/labels?q=position%3A, and
+    https://github.com/w3ctag/design-reviews/labels?q=resolution%3A,
+    plus the special value "closed"
     to represent a review that was closed without a position.
-    """  # noqa: E501
+    """
 
     CLOSED_WITHOUT_POSITION = 'closed'
 
@@ -100,7 +101,7 @@ class FeatureEntry(ndb.Model):
     enterprise_product_category = ndb.IntegerProperty(
         required=False,
         default=ENTERPRISE_PRODUCT_CATEGORY_CHROME_BROWSER_UPDATE,
-    )  # noqa: E501, F405
+    )  # noqa: F405
     enterprise_feature_categories = ndb.StringProperty(repeated=True)
     blink_components = ndb.StringProperty(repeated=True)
     star_count = ndb.IntegerProperty(default=0)
@@ -112,7 +113,7 @@ class FeatureEntry(ndb.Model):
     # Metadata: Process information
     feature_type = ndb.IntegerProperty(
         required=True, default=FEATURE_TYPE_INCUBATE_ID
-    )  # noqa: E501, F405
+    )  # noqa: F405
     intent_stage = ndb.IntegerProperty(default=INTENT_NONE)  # noqa: F405
     active_stage_id = ndb.IntegerProperty()
     bug_url = ndb.StringProperty()  # Tracking bug
@@ -175,7 +176,7 @@ class FeatureEntry(ndb.Model):
     safari_views_link = ndb.StringProperty()
     safari_views_link_result: Optional[ReviewResultProperty] = (
         ReviewResultProperty()
-    )  # noqa: E501
+    )
     web_dev_views_link = ndb.StringProperty()
     # TODO(jrobbins): This should be a TextProperty to avoid the 1400 limit.
     ff_views_notes = ndb.StringProperty()

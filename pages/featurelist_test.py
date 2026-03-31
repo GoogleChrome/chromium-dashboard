@@ -10,7 +10,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Tests for the features list JSON feed handler."""
 
 from typing import Optional
@@ -74,7 +73,8 @@ class FeaturesJsonHandlerTest(TestWithFeature):
         self.assertEqual('feature one', json_data[0]['name'])
 
     def test_get_template_data__unlisted_no_perms(self):
-        """JSON feed does not include unlisted features for users who can't edit."""
+        """JSON feed does not include unlisted features for users who can't
+        edit."""
         self.fe_1.unlisted = True
         self.fe_1.put()
 

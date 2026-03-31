@@ -11,8 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-"""Tests for the wpt_coverage_api module, verifying the creation, permissions, and deletion of WPT coverage reports."""
+"""Tests for the wpt_coverage_api module, verifying the creation, permissions,
+and deletion of WPT coverage reports."""
 
 from datetime import datetime
 from unittest import mock
@@ -110,7 +110,7 @@ class WPTCoverageAPITest(testing_config.CustomTestCase):
     @mock.patch('framework.permissions.can_edit_feature')
     def test_do_post__not_google_or_chromium_account(
         self, mock_can_edit, mock_enqueue, mock_is_google
-    ):  # noqa: E501
+    ):
         """Ensure requests from non-Google/Chromium accounts abort with 403."""
         mock_can_edit.return_value = True
         mock_is_google.return_value = False
@@ -125,7 +125,7 @@ class WPTCoverageAPITest(testing_config.CustomTestCase):
 
             self.assertEqual(
                 cm.exception.description,
-                'This feature is currently only available to Google or Chromium accounts.',  # noqa: E501
+                'This feature is currently only available to Google or Chromium accounts.',
             )
 
         # Verify no task was enqueued.
@@ -227,7 +227,7 @@ class WPTCoverageAPITest(testing_config.CustomTestCase):
         )
         self.feature_1.ai_test_eval_status_timestamp = datetime(
             2024, 5, 20, 15, 30, 0
-        )  # noqa: E501
+        )
         self.feature_1.put()
 
         feature_id = 123456

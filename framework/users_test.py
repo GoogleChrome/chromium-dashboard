@@ -11,11 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Unit tests for the users module.
 
-Tests the retrieval of the current user, session management, and handling
-of mock authentication states during testing.
+Tests the retrieval of the current user, session management, and handling of
+mock authentication states during testing.
 """
 
 from unittest import mock
@@ -71,7 +70,8 @@ class UsersTest(testing_config.CustomTestCase):
 
     @mock.patch('settings.UNIT_TEST_MODE', False)
     def test_get_current_user__signed_out(self):
-        """When there is no jwt or user info in the session, user is signed out."""
+        """When there is no jwt or user info in the session, user is signed
+        out."""
         with test_app.test_request_context('/any-path'):
             session.clear()
             actual_user = users.get_current_user()

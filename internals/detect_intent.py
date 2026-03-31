@@ -12,8 +12,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-"""Detects intent thread types and parses URLs from mailing list subjects and bodies."""
+"""Detects intent thread types and parses URLs from mailing list subjects and
+bodies."""
 
 import logging
 import random
@@ -268,11 +268,11 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
 
     def load_detected_feature(
         self, feature_id: Optional[int], thread_url: Optional[str]
-    ) -> tuple[Optional[FeatureEntry], Optional[str]]:  # noqa: E501
+    ) -> tuple[Optional[FeatureEntry], Optional[str]]:
         """Find the feature being referenced by this email message.
 
-        Returns a pair with the feature and an error message, either of
-        which can be None.
+        Returns a pair with the feature and an error message, either of which
+        can be None.
         """
         # If the message had a link to a chromestatus entry, use its ID.
         if feature_id:

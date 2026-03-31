@@ -1,7 +1,7 @@
 """User authentication and representation.
 
-Provides the User class for representing authenticated users and functions
-to determine the current logged-in user from the session.
+Provides the User class for representing authenticated users and functions to
+determine the current logged-in user from the session.
 """
 
 import os
@@ -26,7 +26,6 @@ class User(object):
     and should not be used.
 
     This class is based on google.appengine.api.users.User class
-
     """
 
     __user_id = None

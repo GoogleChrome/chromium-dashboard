@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Provides NDB query building and filtering logic for feature search."""
 
 import datetime
@@ -45,7 +44,8 @@ class Interval(Generic[T]):
 def validate_values(
     field: ndb.Property, val_list: list[QueryValue | Interval[QueryValue]]
 ):
-    """Checks that all of the values in val_list can be compared to the field's values."""  # noqa: E501
+    """Checks that all of the values in val_list can be compared to the field's
+    values."""
     for val in val_list:
         try:
             # If the field can be set to val, then it can be compared to val.
@@ -62,9 +62,10 @@ def validate_values(
 def build_filter(
     field: ndb.Property,
     operator: str,
-    val_list: list[QueryValue | Interval[QueryValue]],  # noqa: E501
+    val_list: list[QueryValue | Interval[QueryValue]],
 ) -> ndb.Node:
-    """Returns an NDB filter node representing the operator applied to the field and val_list."""  # noqa: E501
+    """Returns an NDB filter node representing the operator applied to the field
+    and val_list."""
     validate_values(field, val_list)
 
     if len(val_list) > 1:
@@ -81,7 +82,7 @@ def build_filter(
         else:
             raise ValueError(
                 'Interval queries are not supported for operator: %r' % operator
-            )  # noqa: E501
+            )
     else:
         val = val_list[0]
         if operator == '=':
@@ -107,7 +108,8 @@ def single_field_query_async(
     val_list: list[QueryValue | Interval[QueryValue]],
     limit: int | None = None,
 ) -> list[int] | Future:
-    """Create a query for one FeatureEntry field and run it, returning a promise."""  # noqa: E501
+    """Create a query for one FeatureEntry field and run it, returning a
+    promise."""
     if not val_list or val_list == ['']:
         logging.warning('No values were provided when searching %r', field_name)
         return []
@@ -289,13 +291,17 @@ QUERIABLE_FIELDS: dict[str, Property] = {
     'confidential': FeatureEntry.confidential,
     'enterprise_impact': FeatureEntry.enterprise_impact,
     'enterprise_product_category': FeatureEntry.enterprise_product_category,
-    'is_releasenotes_content_reviewed': FeatureEntry.is_releasenotes_content_reviewed,  # noqa: E501
+    'is_releasenotes_content_reviewed': (
+        FeatureEntry.is_releasenotes_content_reviewed
+    ),
     'is_releasenotes_publish_ready': FeatureEntry.is_releasenotes_publish_ready,
     'shipping_year': FeatureEntry.shipping_year,
     'browsers.chrome.status': FeatureEntry.impl_status_chrome,
     'browsers.chrome.flag_name': FeatureEntry.flag_name,
     'browsers.chrome.finch_name': FeatureEntry.finch_name,
-    'browsers.chrome.non_finch_justification': FeatureEntry.non_finch_justification,
+    'browsers.chrome.non_finch_justification': (
+        FeatureEntry.non_finch_justification
+    ),
     'ongoing_constraints': FeatureEntry.ongoing_constraints,
     'motivation': FeatureEntry.motivation,
     'devtrial_instructions': FeatureEntry.devtrial_instructions,
@@ -401,7 +407,9 @@ STAGE_TYPES_BY_QUERY_FIELD: dict[str, dict[int, Optional[int]]] = {
     'experiment_risks': core_enums.STAGE_TYPES_ORIGIN_TRIAL,
     'finch_url': core_enums.STAGE_TYPES_SHIPPING,
     'intent_to_experiment_url': core_enums.STAGE_TYPES_ORIGIN_TRIAL,
-    'intent_to_extend_experiment_url': core_enums.STAGE_TYPES_EXTEND_ORIGIN_TRIAL,  # noqa: E501
+    'intent_to_extend_experiment_url': (
+        core_enums.STAGE_TYPES_EXTEND_ORIGIN_TRIAL
+    ),
     'intent_to_implement_url': core_enums.STAGE_TYPES_PROTOTYPE,
     'intent_to_ship_url': core_enums.STAGE_TYPES_SHIPPING,
     'announcement_url': core_enums.STAGE_TYPES_PROTOTYPE,
@@ -422,7 +430,8 @@ def query_any_start_milestone(
     val_list: list[QueryValue | Interval[QueryValue]],
     limit: int | None = None,
 ) -> Future:
-    """Finds features shipping at any stage to any platform in milestones matching the val_list."""  # noqa: E501
+    """Finds features shipping at any stage to any platform in milestones
+    matching the val_list."""
     disjunction = []
     for field_name in [
         'browsers.chrome.android',
@@ -442,7 +451,7 @@ def query_any_start_milestone(
         stage_types = [
             st
             for st in STAGE_TYPES_BY_QUERY_FIELD[field_name].values()
-            if st is not None  # noqa: E501
+            if st is not None
         ]
         disjunction.append(
             ndb.AND(
@@ -461,7 +470,7 @@ COMPLEX_FIELDS: dict[
     str,
     Callable[
         [str, list[QueryValue | Interval[QueryValue]], int | None], Future
-    ],  # noqa: E501
+    ],
 ] = {
     'any_start_milestone': query_any_start_milestone,
 }

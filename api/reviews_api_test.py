@@ -11,8 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-"""Tests for the reviews_api module, verifying vote recording, gate status updates, and notifications."""
+"""Tests for the reviews_api module, verifying vote recording, gate status
+updates, and notifications."""
 
 import datetime
 from unittest import mock
@@ -625,7 +625,8 @@ class XfnGatesAPITest(testing_config.CustomTestCase):
         self.assertEqual(actual, {'message': 'Created 222 gates'})
 
     def test_get_needed_gate_types(self):
-        """We always assume that we are adding all gates for STAGE_BLINK_SHIPPING."""  # noqa: E501
+        """We always assume that we are adding all gates for
+        STAGE_BLINK_SHIPPING."""
         actual = self.handler.get_needed_gate_types()
         self.assertEqual(actual, ALL_SHIPPING_GATE_TYPES)
 

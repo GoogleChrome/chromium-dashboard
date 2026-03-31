@@ -12,12 +12,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Management of application secrets and API credentials.
 
-Handles the creation and retrieval of internal secrets (like XSRF and
-session keys) and external API credentials (like GitHub tokens) from
-the Datastore.
+Handles the creation and retrieval of internal secrets (like XSRF and session
+keys) and external API credentials (like GitHub tokens) from the Datastore.
 """
 
 import logging
@@ -109,7 +107,8 @@ class ApiCredential(ndb.Model):
 
     @classmethod
     def select_token_for_api(cls, api_name: str) -> 'ApiCredential':
-        """Return one of our credientials for the requested API or make a blank."""
+        """Return one of our credientials for the requested API or make a
+        blank."""
         query = ApiCredential.query(ApiCredential.api_name == api_name)
         all_for_api = query.fetch(None)
         if not all_for_api:
@@ -168,7 +167,7 @@ def load_ot_api_key():
         else:
             raise RuntimeError(
                 'Failed to obtain the origin trials API key from secrets.'
-            )  # noqa: E501
+            )
 
 
 @utils.retry(SECRETS_MAX_RETRIES, delay=SECRETS_RETRY_BACKOFF_SECONDS)

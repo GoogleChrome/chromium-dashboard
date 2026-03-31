@@ -12,8 +12,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-"""Helper functions and filters for querying and formatting feature and stage models."""
+"""Helper functions and filters for querying and formatting feature and stage
+models."""
 
 import logging
 from asyncio import Future
@@ -52,7 +52,7 @@ class Criteria(str, Enum):  # noqa: F405
     API_OWNER_LGTMS_MISSING = 'lgtms'
     # Both the finch name and the non-finch justification fields are missing.
     FINCH_NAME_MISSING = 'finch_name'
-    # The feature exists in runtime_enabled_features.json5, but is not marked as 'status: "stable"'.  # noqa: E501
+    # The feature exists in runtime_enabled_features.json5, but is not marked as 'status: "stable"'.
     RUNTIME_FEATURE_NOT_STABLE = 'runtime_feature_not_stable'
     # The feature exists in content_features.cc, but is not marked as enabled.
     CONTENT_FEATURE_NOT_ENABLED = 'content_feature_not_enabled'
@@ -65,7 +65,8 @@ BLINK_COMPONENTS_SKIP_CHROMIUM_CHECKS = ['Blink>WebGPU']
 
 
 def filter_unlisted(feature_list: list[FeatureEntry]) -> list[FeatureEntry]:
-    """Filters a FeatureEntry list to display only features the user should see."""  # noqa: E501
+    """Filters a FeatureEntry list to display only features the user should
+    see."""
     user = users.get_current_user()
     email = None
     if user:
@@ -75,7 +76,7 @@ def filter_unlisted(feature_list: list[FeatureEntry]) -> list[FeatureEntry]:
         for f in feature_list
         if (
             not f.unlisted
-            # Owners and editors of a feature should still be able to see their features.  # noqa: E501
+            # Owners and editors of a feature should still be able to see their features.
             or email in f.owner_emails
             or email in f.editor_emails
             or (email is not None and f.creator_email == email)
@@ -91,7 +92,7 @@ def filter_unlisted_formatted(feature_list: list[dict]) -> list[dict]:
         email = user.email()
     listed_features = []
     for f in feature_list:
-        # Owners and editors of a feature should still be able to see their features.  # noqa: E501
+        # Owners and editors of a feature should still be able to see their features.
         if (
             (not f.get('unlisted', False))
             or ('browsers' in f and email in f['browsers']['chrome']['owners'])
@@ -115,7 +116,8 @@ def filter_confidential_formatted(feature_list: list[dict]) -> list[dict]:
 
 
 def filter_unpublished_formatted(feature_list: list[dict]) -> list[dict]:
-    """Filters a feature list to display only features marked ready to publish."""
+    """Filters a feature list to display only features marked ready to
+    publish."""
     user = users.get_current_user()
     if permissions.is_google_or_chromium_account(
         user
@@ -130,7 +132,8 @@ def filter_unpublished_formatted(feature_list: list[dict]) -> list[dict]:
 
 
 def filter_confidential(feature_list: list[FeatureEntry]) -> list[FeatureEntry]:
-    """Filters a FeatureEntry list to display only features the user should see."""  # noqa: E501
+    """Filters a FeatureEntry list to display only features the user should
+    see."""
     user = users.get_current_user()
     return [f for f in feature_list if permissions.can_view_feature(user, f)]
 
@@ -155,6 +158,7 @@ def _filter_out_wp_features_lacking_enterprise_approval(
     features: list[FeatureEntry],
 ) -> list[FeatureEntry]:
     """Take out any WP features that did not yet earn enterprise approval.
+
     But, leave in any deprecation-type features.
     """  # noqa: D205
     FEATURE_TYPES_TO_FILTER = [
@@ -293,13 +297,12 @@ def get_features_in_release_notes(milestone: int):
 def get_in_milestone(
     milestone: int, show_unlisted: bool = False
 ) -> dict[str, list[dict[str, Any]]]:
-    """Return {reason: [feature_dict]} with all the reasons a feature can
-    be part of a milestone.
+    """Return {reason: [feature_dict]} with all the reasons a feature can be
+    part of a milestone.
 
-    Because the cache may rarely have stale data, this should only be
-    used for displaying data read-only, not for populating forms or
-    procesing a POST to edit data.  For editing use case, load the
-    data from NDB directly.
+    Because the cache may rarely have stale data, this should only be used for
+    displaying data read-only, not for populating forms or procesing a POST to
+    edit data.  For editing use case, load the data from NDB directly.
     """  # noqa: D205
     features_by_type = {}
     cache_key = '%s|%s|%s' % (
@@ -572,7 +575,7 @@ def _set_feature_fields_for_roadmap(
         feature_trigger_stages = triggering_stages_by_fid.get(ff['id'], [])
         ff['roadmap_stage_ids'] = [
             s.key.integer_id() for s in feature_trigger_stages
-        ]  # noqa: E501
+        ]
         ff['feature_type_int'] = ff['feature_type_int']
         ff['finch_urls'] = [
             s.finch_url for s in feature_trigger_stages if s.finch_url
@@ -660,10 +663,9 @@ def get_by_ids(
 ) -> list[dict[str, Any]]:
     """Return a list of JSON dicts for the specified features.
 
-    Because the cache may rarely have stale data, this should only be
-    used for displaying data read-only, not for populating forms or
-    procesing a POST to edit data.  For editing use case, load the
-    data from NDB directly.
+    Because the cache may rarely have stale data, this should only be used for
+    displaying data read-only, not for populating forms or procesing a POST to
+    edit data.  For editing use case, load the data from NDB directly.
     """
     result_dict = {}
 
@@ -691,7 +693,7 @@ def get_by_ids(
         # Get all features and stages asynchronously.
         unformatted_features_future: list[ndb.Future] = ndb.get_multi_async(
             needed_keys
-        )  # noqa: E501
+        )
         stages_futures: list[ndb.Future] = []
         for f_id in needed_ids:
             stages_futures.append(
@@ -708,7 +710,7 @@ def get_by_ids(
 
         unformatted_features = [
             uf.get_result() for uf in unformatted_features_future
-        ]  # noqa: E501
+        ]
         for unformatted_feature in unformatted_features:
             if unformatted_feature and not unformatted_feature.deleted:
                 feature_id = unformatted_feature.key.integer_id()
@@ -746,15 +748,14 @@ def get_by_ids(
 
 def get_features_by_impl_status(
     limit: int | None = None,
-    update_cache: bool = False,  # noqa: E501
+    update_cache: bool = False,
     show_unlisted: bool = False,
 ) -> list[dict]:
     """Return a list of JSON dicts for features, ordered by chrome_impl_status.
 
-    Because the cache may rarely have stale data, this should only be
-    used for displaying data read-only, not for populating forms or
-    procesing a POST to edit data.  For editing use case, load the
-    data from NDB directly.
+    Because the cache may rarely have stale data, this should only be used for
+    displaying data read-only, not for populating forms or procesing a POST to
+    edit data.  For editing use case, load the data from NDB directly.
     """
     cache_key = '%s|%s|%s|%s' % (
         FeatureEntry.DEFAULT_CACHE_KEY,
@@ -794,7 +795,7 @@ def get_features_by_impl_status(
                     f
                     for f in section
                     if f.feature_type != FEATURE_TYPE_ENTERPRISE_ID
-                ]  # noqa: E501, F405
+                ]  # noqa: F405
                 section = [
                     converters.feature_entry_to_json_basic(
                         f, all_stages[f.key.integer_id()]
@@ -865,7 +866,7 @@ def get_stale_features() -> list[tuple[FeatureEntry, int, str]]:
     relevant_ship_stages: list[Stage] = relevant_ship_stages_future.get_result()
     relevant_ent_stages: list[Stage] = (
         relevant_enterprise_stages_future.get_result()
-    )  # noqa: E501
+    )
 
     ship_milestone_fields = [
         'shipped_android_milestone',
@@ -918,7 +919,10 @@ def get_stale_features() -> list[tuple[FeatureEntry, int, str]]:
 def validate_feature_in_chromium(
     name: str, enabled_features_json: dict, content_features_file: str
 ) -> list[Criteria]:
-    """Verify required info exists in Chromium files. Return a list of missing criteria."""  # noqa: E501
+    """Verify required info exists in Chromium files.
+
+    Return a list of missing criteria.
+    """
     criteria_missing = []
     feature_found = False
 
@@ -965,7 +969,7 @@ def validate_feature_in_chromium(
 
 def build_feature_info(
     feature: FeatureEntry, stage: Stage
-) -> ShippingFeatureInfo:  # noqa: E501
+) -> ShippingFeatureInfo:
     """Constructs the dictionary representation of a shipping feature."""
     chromestatus_url = f'{settings.SITE_URL}feature/{feature.key.integer_id()}'
     return {
@@ -987,7 +991,8 @@ def validate_shipping_criteria(
     enabled_features_json: dict,
     content_features_file: str,
 ) -> list[Criteria]:
-    """Checks a feature against shipping requirements (Gates, Intents, Finch, Code)."""  # noqa: E501
+    """Checks a feature against shipping requirements (Gates, Intents, Finch,
+    Code)."""
     criteria_missing: list[Criteria] = []
 
     # Skip the Chromium code checks if it is associated with any of the Blink
@@ -1030,8 +1035,9 @@ def aggregate_shipping_features(
     content_features_file: str,
 ) -> tuple[
     list[ShippingFeatureInfo], list[tuple[ShippingFeatureInfo, list[str]]]
-]:  # noqa: E501
-    """Aggregates and validates features based on shipping stages and chromium files."""  # noqa: E501
+]:
+    """Aggregates and validates features based on shipping stages and chromium
+    files."""
     complete_features: list[ShippingFeatureInfo] = []
     incomplete_features: list[tuple[ShippingFeatureInfo, list[str]]] = []
 
@@ -1056,7 +1062,7 @@ def aggregate_shipping_features(
         if criteria_missing:
             incomplete_features.append(
                 (feature_info, [c.value for c in criteria_missing])
-            )  # noqa: E501
+            )
         else:
             complete_features.append(feature_info)
 

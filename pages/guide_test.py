@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Tests for the feature creation guide form handler."""
 
 from datetime import datetime
@@ -104,7 +103,7 @@ class FeatureCreateTest(testing_config.CustomTestCase):
         )
         self.assertEqual(
             None, feature_entry.first_enterprise_notification_milestone
-        )  # noqa: E501
+        )
 
         # Ensure Stage and Gate entities were created.
         stages = Stage.query().fetch()
@@ -118,14 +117,15 @@ class FeatureCreateTest(testing_config.CustomTestCase):
     @mock.patch('api.channels_api.construct_chrome_channels_details')
     def test_post__feature_impact_missing_first_notice(
         self, mock_channel_details
-    ):  # noqa: E501
-        """Create a feature, first_enterprise_notification_milestone not added."""
+    ):
+        """Create a feature, first_enterprise_notification_milestone not
+        added."""
         stable_date = self.now.replace(year=self.now.year + 1, day=1).strftime(
             DATE_FORMAT
-        )  # noqa: E501
+        )
         mock_channel_details.return_value = {
             'beta': {'version': 120, 'stable_date': stable_date}
-        }  # noqa: E501
+        }
 
         testing_config.sign_in('user1@google.com', 1234567890)
         with test_app.test_request_context(
@@ -160,14 +160,15 @@ class FeatureCreateTest(testing_config.CustomTestCase):
     @mock.patch('api.channels_api.construct_chrome_channels_details')
     def test_post__enterprise_impact_missing_first_notice(
         self, mock_channel_details
-    ):  # noqa: E501
-        """Create a feature, first_enterprise_notification_milestone not added."""
+    ):
+        """Create a feature, first_enterprise_notification_milestone not
+        added."""
         stable_date = self.now.replace(year=self.now.year + 1, day=1).strftime(
             DATE_FORMAT
-        )  # noqa: E501
+        )
         mock_channel_details.return_value = {
             'beta': {'version': 120, 'stable_date': stable_date}
-        }  # noqa: E501
+        }
 
         testing_config.sign_in('user1@google.com', 1234567890)
         with test_app.test_request_context(
@@ -202,20 +203,25 @@ class FeatureCreateTest(testing_config.CustomTestCase):
     @mock.patch('api.channels_api.construct_specified_milestones_details')
     def test_post__enterprise_impact_with_first_notice(
         self, mock_specified_milestones
-    ):  # noqa: E501
-        """Create a feature, first_enterprise_notification_milestone set to provided value."""  # noqa: E501
+    ):
+        """Create a feature, first_enterprise_notification_milestone set to
+        provided value."""
         mock_specified_milestones.return_value = {
             99: {
                 'version': 99,
-                'stable_date': self.now.replace(
-                    year=self.now.year - 1, day=1
-                ).strftime(DATE_FORMAT),  # noqa: E501
+                'stable_date': (
+                    self.now.replace(year=self.now.year - 1, day=1).strftime(
+                        DATE_FORMAT
+                    )
+                ),
             },
             100: {
                 'version': 100,
-                'stable_date': self.now.replace(
-                    year=self.now.year + 1, day=1
-                ).strftime(DATE_FORMAT),  # noqa: E501
+                'stable_date': (
+                    self.now.replace(year=self.now.year + 1, day=1).strftime(
+                        DATE_FORMAT
+                    )
+                ),
             },
         }
 
@@ -254,28 +260,35 @@ class FeatureCreateTest(testing_config.CustomTestCase):
     @mock.patch('api.channels_api.construct_specified_milestones_details')
     def test_post__enterprise_impact_with_old_first_notice(
         self, mock_specified_milestones, mock_channel_details
-    ):  # noqa: E501
-        """Create a feature, first_enterprise_notification_milestone set to default newer value."""  # noqa: E501
+    ):
+        """Create a feature, first_enterprise_notification_milestone set to
+        default newer value."""
         mock_specified_milestones.return_value = {
             99: {
                 'version': 99,
-                'stable_date': self.now.replace(
-                    year=self.now.year - 1, day=1
-                ).strftime(DATE_FORMAT),  # noqa: E501
+                'stable_date': (
+                    self.now.replace(year=self.now.year - 1, day=1).strftime(
+                        DATE_FORMAT
+                    )
+                ),
             },
             100: {
                 'version': 100,
-                'stable_date': self.now.replace(
-                    year=self.now.year + 1, day=1
-                ).strftime(DATE_FORMAT),  # noqa: E501
+                'stable_date': (
+                    self.now.replace(year=self.now.year + 1, day=1).strftime(
+                        DATE_FORMAT
+                    )
+                ),
             },
         }
         mock_channel_details.return_value = {
             'beta': {
                 'version': 101,
-                'stable_date': self.now.replace(
-                    year=self.now.year + 1, day=2
-                ).strftime(DATE_FORMAT),  # noqa: E501
+                'stable_date': (
+                    self.now.replace(year=self.now.year + 1, day=2).strftime(
+                        DATE_FORMAT
+                    )
+                ),
             }
         }
 
@@ -311,14 +324,15 @@ class FeatureCreateTest(testing_config.CustomTestCase):
 
     @mock.patch('api.channels_api.construct_chrome_channels_details')
     def test_post__enterprise_missing_first_notice(self, mock_channel_details):
-        """Create a feature, first_enterprise_notification_milestone set to default value."""  # noqa: E501
+        """Create a feature, first_enterprise_notification_milestone set to
+        default value."""
         self.handler = guide.EnterpriseFeatureCreateHandler()
         stable_date = self.now.replace(year=self.now.year + 1, day=2).strftime(
             DATE_FORMAT
-        )  # noqa: E501
+        )
         mock_channel_details.return_value = {
             'beta': {'version': 120, 'stable_date': stable_date}
-        }  # noqa: E501
+        }
 
         testing_config.sign_in('user1@google.com', 1234567890)
         with test_app.test_request_context(
@@ -353,20 +367,25 @@ class FeatureCreateTest(testing_config.CustomTestCase):
     def test_post__enterprise_with_first_notice(
         self, mock_specified_milestones
     ):
-        """Create a feature, first_enterprise_notification_milestone set to provided value."""  # noqa: E501
+        """Create a feature, first_enterprise_notification_milestone set to
+        provided value."""
         self.handler = guide.EnterpriseFeatureCreateHandler()
         mock_specified_milestones.return_value = {
             99: {
                 'version': 99,
-                'stable_date': self.now.replace(
-                    year=self.now.year - 1, day=1
-                ).strftime(DATE_FORMAT),  # noqa: E501
+                'stable_date': (
+                    self.now.replace(year=self.now.year - 1, day=1).strftime(
+                        DATE_FORMAT
+                    )
+                ),
             },
             100: {
                 'version': 100,
-                'stable_date': self.now.replace(
-                    year=self.now.year + 1, day=1
-                ).strftime(DATE_FORMAT),  # noqa: E501
+                'stable_date': (
+                    self.now.replace(year=self.now.year + 1, day=1).strftime(
+                        DATE_FORMAT
+                    )
+                ),
             },
         }
 
@@ -404,29 +423,36 @@ class FeatureCreateTest(testing_config.CustomTestCase):
     @mock.patch('api.channels_api.construct_specified_milestones_details')
     def test_post__enterprise_with_old_first_notice(
         self, mock_specified_milestones, mock_channel_details
-    ):  # noqa: E501
-        """Create a feature, first_enterprise_notification_milestone set to default newer value."""  # noqa: E501
+    ):
+        """Create a feature, first_enterprise_notification_milestone set to
+        default newer value."""
         self.handler = guide.EnterpriseFeatureCreateHandler()
         mock_specified_milestones.return_value = {
             99: {
                 'version': 99,
-                'stable_date': self.now.replace(
-                    year=self.now.year - 1, day=1
-                ).strftime(DATE_FORMAT),  # noqa: E501
+                'stable_date': (
+                    self.now.replace(year=self.now.year - 1, day=1).strftime(
+                        DATE_FORMAT
+                    )
+                ),
             },
             100: {
                 'version': 100,
-                'stable_date': self.now.replace(
-                    year=self.now.year + 1, day=1
-                ).strftime(DATE_FORMAT),  # noqa: E501
+                'stable_date': (
+                    self.now.replace(year=self.now.year + 1, day=1).strftime(
+                        DATE_FORMAT
+                    )
+                ),
             },
         }
         mock_channel_details.return_value = {
             'beta': {
                 'version': 101,
-                'stable_date': self.now.replace(
-                    year=self.now.year + 1, day=2
-                ).strftime(DATE_FORMAT),  # noqa: E501
+                'stable_date': (
+                    self.now.replace(year=self.now.year + 1, day=2).strftime(
+                        DATE_FORMAT
+                    )
+                ),
             }
         }
 

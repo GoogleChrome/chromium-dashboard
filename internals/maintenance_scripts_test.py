@@ -12,8 +12,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-"""Tests for the maintenance_scripts module, verifying the logic of background maintenance tasks."""
+"""Tests for the maintenance_scripts module, verifying the logic of background
+maintenance tasks."""
 
 import csv
 import logging
@@ -432,7 +432,8 @@ class CreateOriginTrialsTest(testing_config.CustomTestCase):
         mock_today,
         mock_enqueue_task,
     ):
-        """Origin trials are created and activated if it is after branch point."""
+        """Origin trials are created and activated if it is after branch
+        point."""
         mock_today.return_value = date(2020, 6, 1)  # 2020-06-01
         mock_get_chromium_milestone_info.side_effect = (
             mock_mstone_return_value_generator
@@ -520,7 +521,9 @@ class CreateOriginTrialsTest(testing_config.CustomTestCase):
                     '/tasks/email-ot-creation-request-failed',
                     {
                         'stage': converters.stage_to_json_dict(self.ot_stage_2),
-                        'error_text': '500, Problems happened after trial was created',
+                        'error_text': (
+                            '500, Problems happened after trial was created'
+                        ),
                     },
                 ),
             ],
@@ -563,8 +566,7 @@ class CreateOriginTrialsTest(testing_config.CustomTestCase):
         mock_enqueue_task,
     ):
         """Proper notifications are sent when trials are created but activation
-        fails.
-        """
+        fails."""
         self.ot_stage_1.ot_action_requested = True
         self.ot_stage_1.put()
         self.ot_stage_2.ot_action_requested = True
@@ -708,7 +710,8 @@ class ActivateOriginTrialsTest(testing_config.CustomTestCase):
     def test_activate_trials(
         self, mock_activate_origin_trial, mock_today, mock_enqueue_task
     ):
-        """Origin trials are activated if it is on or after the activation date."""
+        """Origin trials are activated if it is on or after the activation
+        date."""
         mock_today.return_value = date(2020, 6, 1)  # 2020-06-01
 
         result = self.handler.get_template_data()
@@ -909,7 +912,8 @@ class BackfillShippingYearTest(testing_config.CustomTestCase):
         'internals.stage_helpers.get_all_shipping_stages_with_milestones'
     )
     def test_calc_all_shipping_years__some(self, mock_gasswm: mock.MagicMock):
-        """We can calculate a dict of earliest milestones for a set of stages."""
+        """We can calculate a dict of earliest milestones for a set of
+        stages."""
         mock_gasswm.return_value = [
             self.stage_1_1,
             self.stage_2_1,
@@ -1065,7 +1069,8 @@ class BackfillGateDatesTest(testing_config.CustomTestCase):
         )
 
     def test_calc_needs_work_started_on__not_needed(self):
-        """If a gate is not NEEDS_WORK, don't set a needs_work_started_on date."""
+        """If a gate is not NEEDS_WORK, don't set a needs_work_started_on
+        date."""
         self.assertIsNone(
             self.handler.calc_needs_work_started_on(self.gate, [])
         )
@@ -1179,7 +1184,9 @@ class FetchWebdxFeatureIdTest(testing_config.CustomTestCase):
                     'spec': {
                         'links': [
                             {
-                                'link': 'https://drafts.csswg.org/css-fonts-5/#font-size-adjust-prop'
+                                'link': (
+                                    'https://drafts.csswg.org/css-fonts-5/#font-size-adjust-prop'
+                                )
                             }
                         ]
                     },
@@ -1293,8 +1300,7 @@ class SendManualOTCreatedEmailTest(testing_config.CustomTestCase):
     @mock.patch('framework.cloud_tasks_helpers.enqueue_task')
     def test_send__no_activation_date(self, mock_enqueue):
         """No email is sent if the stage does not have a scheduled activation
-        date.
-        """
+        date."""
         self.ot_stage.ot_activation_date = None
         self.ot_stage.put()
         result = self.handler.get_template_data(stage_id=self.ot_stage_id)
@@ -1837,7 +1843,8 @@ class GenerateStaleFeaturesFileTest(testing_config.CustomTestCase):
 
     @mock.patch('internals.maintenance_scripts.datetime')
     def test_gather_stale_features(self, mock_datetime):
-        """Should return only stale features with a current shipping milestone."""
+        """Should return only stale features with a current shipping
+        milestone."""
         # Freeze time to make the "one month ago" calculation deterministic.
         mock_datetime.now.return_value = datetime.now()
         mock_datetime.side_effect = lambda *args, **kw: datetime(*args, **kw)
@@ -1857,7 +1864,8 @@ class GenerateStaleFeaturesFileTest(testing_config.CustomTestCase):
         self.assertEqual(feature_ids, expected_ids)
 
     def test_generate_rows(self):
-        """Should format feature data into correct feature and owner CSV rows."""
+        """Should format feature data into correct feature and owner CSV
+        rows."""
         features_to_process = [self.feature_1, self.feature_7, self.feature_2]
         feature_rows, owner_rows = self.handler._generate_rows(
             features_to_process, self.current_milestone
@@ -1977,7 +1985,8 @@ class GenerateStaleFeaturesFileTest(testing_config.CustomTestCase):
         mock_storage_client,
         mock_get_milestone,
     ):
-        """Should correctly orchestrate the entire file generation process for both files."""
+        """Should correctly orchestrate the entire file generation process for
+        both files."""
         mock_datetime.now.return_value = datetime.now()
         mock_datetime.side_effect = lambda *args, **kw: datetime(*args, **kw)
         mock_get_milestone.return_value = {
@@ -2319,7 +2328,8 @@ class ResetOutstandingNotificationsTest(testing_config.CustomTestCase):
     def test_get_template_data__resets_counters_and_ignores_others(
         self, mock_require_cron
     ):
-        """Should reset counters >= 1, ignore others, and return correct summary."""
+        """Should reset counters >= 1, ignore others, and return correct
+        summary."""
         result = self.handler.get_template_data()
 
         mock_require_cron.assert_called_once()

@@ -12,11 +12,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Redis-based caching wrapper.
 
-Provides a simplified interface for storing and retrieving values in Redis,
-with fallback support for a fake Redis implementation during testing.
+Provides a simplified interface for storing and retrieving values in Redis, with
+fallback support for a fake Redis implementation during testing.
 """
 
 import os
@@ -41,11 +40,11 @@ elif settings.STAGING or settings.PROD:
     redis_client = redis.Redis(
         host=redis_host,
         port=redis_port,
-        health_check_interval=30,  # noqa: E501
+        health_check_interval=30,
         socket_keepalive=True,
         retry_on_timeout=True,
         retry=Retry(ExponentialBackoff(cap=5, base=1), 5),
-    )  # noqa: E501
+    )
 
 gae_version = None
 if settings.UNIT_TEST_MODE:
@@ -60,7 +59,7 @@ def set(key, value, time=86400):
     ``key`` already holds a value, it is overwritten.
 
     ``time`` sets the expire time for this key, in seconds.
-    """  # noqa: D205, E501
+    """  # noqa: D205
     if redis_client is None:
         return
 
@@ -72,7 +71,9 @@ def set(key, value, time=86400):
 
 
 def get(key):
-    """Redis GET gets the value of key. Return None if ``key`` does not
+    """Redis GET gets the value of key.
+
+    Return None if ``key`` does not
     exist; return an error if the value returned is not a str/binary.
     """  # noqa: D205
     if redis_client is None:

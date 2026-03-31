@@ -12,8 +12,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-"""Functions for converting between internal datastore models and external API dictionary representations."""
+"""Functions for converting between internal datastore models and external API
+dictionary representations."""
 
 import datetime
 import re
@@ -130,7 +130,7 @@ def _prep_stage_info(
     else:
         stages = Stage.query(
             Stage.feature_id == fe.key.integer_id(),
-            Stage.archived == False,  # noqa: E501, E712
+            Stage.archived == False,  # noqa: E712
         )
     stage_info: StagePrepResponse = {
         'proto': None,
@@ -216,7 +216,9 @@ def stage_to_json_dict(
         'origin_trial_id': stage.origin_trial_id,
         'origin_trial_feedback_url': stage.origin_trial_feedback_url,
         'ot_action_requested': stage.ot_action_requested,
-        'ot_approval_buganizer_component': stage.ot_approval_buganizer_component,
+        'ot_approval_buganizer_component': (
+            stage.ot_approval_buganizer_component
+        ),
         'ot_approval_buganizer_custom_field_id': (
             stage.ot_approval_buganizer_custom_field_id
         ),
@@ -300,7 +302,7 @@ def _format_new_crbug_url(
 
 
 _COMPUTED_VIEWS_TO_ENUM = {
-    ReviewResultProperty.CLOSED_WITHOUT_POSITION: NO_PUBLIC_SIGNALS,  # noqa: F405
+    ReviewResultProperty.CLOSED_WITHOUT_POSITION: (NO_PUBLIC_SIGNALS),  # noqa: F405
     'defer': GECKO_DEFER,  # noqa: F405
     'negative': OPPOSED,  # noqa: F405
     'neutral': NEUTRAL,  # noqa: F405
@@ -331,7 +333,7 @@ def _compute_vendor_views(
         )
         result['val'] = _COMPUTED_VIEWS_TO_ENUM.get(
             computed_views,
-            form_views if form_views in VENDOR_VIEWS else NO_PUBLIC_SIGNALS,  # noqa: E501, F405
+            (form_views if form_views in VENDOR_VIEWS else NO_PUBLIC_SIGNALS),  # noqa: F405
         )
     else:
         result['text'] = VENDOR_VIEWS.get(  # noqa: F405
@@ -340,7 +342,7 @@ def _compute_vendor_views(
         )
         result['val'] = (
             form_views if form_views in VENDOR_VIEWS else NO_PUBLIC_SIGNALS
-        )  # noqa: E501, F405
+        )  # noqa: F405
     return result
 
 
@@ -385,11 +387,13 @@ def feature_entry_to_json_verbose(
         'is_official_web_feature': (
             fe.web_feature
             and fe.web_feature != WebDXFeatureObserver.MISSING_FEATURE_ID
-        ),  # noqa: E501
+        ),
         'webdx_usecounter_enum': fe.webdx_usecounter_enum,
         'enterprise_feature_categories': fe.enterprise_feature_categories or [],
-        'enterprise_product_category': fe.enterprise_product_category
-        or ENTERPRISE_PRODUCT_CATEGORY_CHROME_BROWSER_UPDATE,  # noqa: E501, F405
+        'enterprise_product_category': (
+            fe.enterprise_product_category
+            or ENTERPRISE_PRODUCT_CATEGORY_CHROME_BROWSER_UPDATE
+        ),  # noqa: F405
         'is_releasenotes_content_reviewed': fe.is_releasenotes_content_reviewed,
         'is_releasenotes_publish_ready': fe.is_releasenotes_publish_ready,
         'stages': stage_info['all_stages'],
@@ -410,14 +414,16 @@ def feature_entry_to_json_verbose(
         'feature_type_int': fe.feature_type,
         'intent_stage': INTENT_STAGES.get(
             fe.intent_stage, INTENT_STAGES[INTENT_NONE]
-        ),  # noqa: E501, F405
+        ),  # noqa: F405
         'intent_stage_int': fe.intent_stage,
         'active_stage_id': fe.active_stage_id,
         'bug_url': fe.bug_url,
         'launch_bug_url': fe.launch_bug_url,
         'new_crbug_url': new_crbug_url,
         'screenshot_links': fe.screenshot_links or [],
-        'first_enterprise_notification_milestone': fe.first_enterprise_notification_milestone,  # noqa: E501
+        'first_enterprise_notification_milestone': (
+            fe.first_enterprise_notification_milestone
+        ),
         'enterprise_impact': fe.enterprise_impact,
         'breaking_change': fe.breaking_change,
         'confidential': fe.confidential,
@@ -490,7 +496,7 @@ def feature_entry_to_json_verbose(
                 'blink_components': fe.blink_components or [],
                 'devrel': fe.devrel_emails or [],
                 'owners': fe.owner_emails or [],
-                'origintrial': fe.impl_status_chrome == ORIGIN_TRIAL,  # noqa: F405
+                'origintrial': (fe.impl_status_chrome == ORIGIN_TRIAL),  # noqa: F405
                 'prefixed': fe.prefixed,
                 'flag': fe.impl_status_chrome == BEHIND_A_FLAG,  # noqa: F405
                 'status': {
@@ -515,7 +521,7 @@ def feature_entry_to_json_verbose(
                     fe.ff_views_link,
                     fe.ff_views_link_result,
                     fe.ff_views,
-                    fe.ff_views_notes,  # noqa: E501
+                    fe.ff_views_notes,
                 ),
             },
             'safari': {
@@ -530,11 +536,11 @@ def feature_entry_to_json_verbose(
                 'view': {
                     'text': WEB_DEV_VIEWS.get(
                         fe.web_dev_views, WEB_DEV_VIEWS[DEV_NO_SIGNALS]
-                    ),  # noqa: E501, F405
+                    ),  # noqa: F405
                     'val': (
                         fe.web_dev_views
                         if fe.web_dev_views in WEB_DEV_VIEWS
-                        else DEV_NO_SIGNALS  # noqa: E501, F405
+                        else DEV_NO_SIGNALS  # noqa: F405
                     ),
                     'url': fe.web_dev_views_link,
                     'notes': fe.web_dev_views_notes,
@@ -557,8 +563,10 @@ def feature_entry_to_json_verbose(
                 'val': fe.standard_maturity,
             },
         },
-        'is_released': fe.impl_status_chrome in RELEASE_IMPL_STATES,  # noqa: F405
-        'is_enterprise_feature': fe.feature_type == FEATURE_TYPE_ENTERPRISE_ID,  # noqa: F405
+        'is_released': (fe.impl_status_chrome in RELEASE_IMPL_STATES),  # noqa: F405
+        'is_enterprise_feature': (
+            fe.feature_type == FEATURE_TYPE_ENTERPRISE_ID
+        ),  # noqa: F405
         'experiment_timeline': fe.experiment_timeline,
         'ai_test_eval_report': fe.ai_test_eval_report,
         'ai_test_eval_run_status': fe.ai_test_eval_run_status,
@@ -600,11 +608,15 @@ def feature_entry_to_json_basic(
         'feature_type_int': fe.feature_type,
         'unlisted': fe.unlisted,
         'enterprise_impact': fe.enterprise_impact,
-        'enterprise_product_category': fe.enterprise_product_category
-        or ENTERPRISE_PRODUCT_CATEGORY_CHROME_BROWSER_UPDATE,  # noqa: E501, F405
+        'enterprise_product_category': (
+            fe.enterprise_product_category
+            or ENTERPRISE_PRODUCT_CATEGORY_CHROME_BROWSER_UPDATE
+        ),  # noqa: F405
         'breaking_change': fe.breaking_change,
         'confidential': fe.confidential,
-        'first_enterprise_notification_milestone': fe.first_enterprise_notification_milestone,  # noqa: E501
+        'first_enterprise_notification_milestone': (
+            fe.first_enterprise_notification_milestone
+        ),
         'blink_components': fe.blink_components or [],
         'resources': {
             'samples': fe.sample_links or [],
@@ -630,7 +642,7 @@ def feature_entry_to_json_basic(
                 'blink_components': fe.blink_components or [],
                 'devrel': fe.devrel_emails or [],
                 'owners': fe.owner_emails or [],
-                'origintrial': fe.impl_status_chrome == ORIGIN_TRIAL,  # noqa: F405
+                'origintrial': (fe.impl_status_chrome == ORIGIN_TRIAL),  # noqa: F405
                 'prefixed': fe.prefixed,
                 'flag': fe.impl_status_chrome == BEHIND_A_FLAG,  # noqa: F405
                 'status': {
@@ -643,7 +655,7 @@ def feature_entry_to_json_basic(
                     fe.ff_views_link,
                     fe.ff_views_link_result,
                     fe.ff_views,
-                    fe.ff_views_notes,  # noqa: E501
+                    fe.ff_views_notes,
                 ),
             },
             'safari': {
@@ -658,11 +670,11 @@ def feature_entry_to_json_basic(
                 'view': {
                     'text': WEB_DEV_VIEWS.get(
                         fe.web_dev_views, WEB_DEV_VIEWS[DEV_NO_SIGNALS]
-                    ),  # noqa: E501, F405
+                    ),  # noqa: F405
                     'val': (
                         fe.web_dev_views
                         if fe.web_dev_views in WEB_DEV_VIEWS
-                        else DEV_NO_SIGNALS  # noqa: E501, F405
+                        else DEV_NO_SIGNALS  # noqa: F405
                     ),
                     'url': fe.web_dev_views_link,
                     'notes': fe.web_dev_views_notes,

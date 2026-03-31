@@ -11,8 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-"""API endpoints for triggering and managing AI-generated WPT coverage analysis reports."""
+"""API endpoints for triggering and managing AI-generated WPT coverage analysis
+reports."""
 
 from datetime import datetime, timedelta
 
@@ -33,7 +33,8 @@ class WPTCoverageAPI(basehandlers.EntitiesAPIHandler):
     """Accepts requests related to WPT AI coverage analyses."""
 
     def do_post(self, **kwargs):
-        """Enqueue a Cloud Task for generating a WPT coverage analysis report."""
+        """Enqueue a Cloud Task for generating a WPT coverage analysis
+        report."""
         feature_id = kwargs.get('feature_id')
         feature = self.get_validated_entity(feature_id, FeatureEntry)
 
@@ -51,7 +52,7 @@ class WPTCoverageAPI(basehandlers.EntitiesAPIHandler):
         ):
             self.abort(
                 403,
-                'This feature is currently only available to Google or Chromium accounts.',  # noqa: E501
+                'This feature is currently only available to Google or Chromium accounts.',
             )
 
         if feature.confidential:
@@ -67,7 +68,7 @@ class WPTCoverageAPI(basehandlers.EntitiesAPIHandler):
 
         request_in_progress = (
             feature.ai_test_eval_run_status
-            == core_enums.AITestEvaluationStatus.IN_PROGRESS  # noqa: E501
+            == core_enums.AITestEvaluationStatus.IN_PROGRESS
             and last_status_time
             # Assume that a request that is in progress for over an hour is hanging.
             and last_status_time + HANGING_TIMEOUT_THRESHOLD > datetime.now()
@@ -76,9 +77,9 @@ class WPTCoverageAPI(basehandlers.EntitiesAPIHandler):
         on_cooldown = (
             (
                 feature.ai_test_eval_run_status
-                == core_enums.AITestEvaluationStatus.COMPLETE  # noqa: E501
+                == core_enums.AITestEvaluationStatus.COMPLETE
                 or feature.ai_test_eval_run_status
-                == core_enums.AITestEvaluationStatus.DELETED  # noqa: E501
+                == core_enums.AITestEvaluationStatus.DELETED
             )
             and last_status_time
             and last_status_time + COOLDOWN_THRESHOLD > datetime.now()
@@ -91,12 +92,12 @@ class WPTCoverageAPI(basehandlers.EntitiesAPIHandler):
                 else 'Requests to the pipeline are on cooldown for this feature.'
             )
             retry_after = (
-                (last_status_time + HANGING_TIMEOUT_THRESHOLD) - datetime.now()  # noqa: E501
+                (last_status_time + HANGING_TIMEOUT_THRESHOLD) - datetime.now()
                 if request_in_progress
                 else (last_status_time + COOLDOWN_THRESHOLD) - datetime.now()
-            )  # noqa: E501
+            )
             # Safety check: Ensure we never send a negative Retry-After
-            # (which can happen if the condition evaluated true milliseconds ago but time passed)  # noqa: E501
+            # (which can happen if the condition evaluated true milliseconds ago but time passed)
             retry_after_seconds = int(max(0, retry_after.total_seconds()))
             self.abort(
                 409, msg, headers={'Retry-After': str(retry_after_seconds)}
@@ -104,14 +105,14 @@ class WPTCoverageAPI(basehandlers.EntitiesAPIHandler):
 
         feature.ai_test_eval_run_status = (
             core_enums.AITestEvaluationStatus.IN_PROGRESS.value
-        )  # noqa: E501
+        )
         feature.ai_test_eval_status_timestamp = datetime.now()
         feature.put()
         include_explainer = self.get_bool_param('include_explainer', False)
         cloud_tasks_helpers.enqueue_task(
             '/tasks/generate-wpt-coverage-analysis',
             {'feature_id': feature_id, 'include_explainer': include_explainer},
-        )  # noqa: E501
+        )
 
         return {'message': 'Task enqueued'}
 
@@ -132,7 +133,7 @@ class WPTCoverageAPI(basehandlers.EntitiesAPIHandler):
         feature.ai_test_eval_report = None
         feature.ai_test_eval_run_status = (
             core_enums.AITestEvaluationStatus.DELETED.value
-        )  # noqa: E501
+        )
         feature.put()
 
         return {'message': 'WPT coverage analysis report deleted.'}

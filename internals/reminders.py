@@ -11,8 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-"""Cron handlers and helpers for sending automated reminder emails about feature updates, approvals, and stale features."""
+"""Cron handlers and helpers for sending automated reminder emails about feature
+updates, approvals, and stale features."""
 
 import logging
 from collections import defaultdict
@@ -48,7 +48,7 @@ ESCALATION_SUBJECT_PREFIX = '[Escalated Request]'
 
 def choose_email_recipients(
     feature: FeatureEntry, is_escalated: bool, is_accuracy_email: bool
-) -> list[str]:  # noqa: E501
+) -> list[str]:
     """Choose which recipients will receive the email notification."""
     ws_group_emails = []
     if settings.PROD:
@@ -56,7 +56,7 @@ def choose_email_recipients(
     else:
         ws_group_emails = [STAGING_EMAIL]
 
-    # Only feature owners are notified for accuracy or non-escalated notification emails, if not bounced.  # noqa: E501
+    # Only feature owners are notified for accuracy or non-escalated notification emails, if not bounced.
     if is_accuracy_email or not is_escalated:
         user_prefs = UserPref.get_prefs_for_emails(feature.owner_emails)
         receivers = list(set([up.email for up in user_prefs if not up.bounced]))
@@ -109,7 +109,7 @@ def build_email_tasks(
             if EMAIL_SUBJECT_PREFIX in subject:
                 subject = subject.replace(
                     EMAIL_SUBJECT_PREFIX, ESCALATION_SUBJECT_PREFIX
-                )  # noqa: E501
+                )
             else:
                 subject = f'ESCALATED: {subject}'
         recipients = choose_email_recipients(
@@ -136,7 +136,8 @@ class AbstractReminderHandler(basehandlers.FlaskHandler):
     MILESTONE_FIELDS: list[str] = list()  # Subclasses must override
 
     def get_template_data(self, **kwargs):
-        """Sends notifications to users requesting feature updates for accuracy."""
+        """Sends notifications to users requesting feature updates for
+        accuracy."""
         self.require_cron_header()
         current_milestone_info = get_current_milestone_info(self.ANCHOR_CHANNEL)
         features_to_notify = self.determine_features_to_notify(
@@ -184,7 +185,8 @@ class AbstractReminderHandler(basehandlers.FlaskHandler):
     def filter_by_milestones(
         self, current_milestone_info: dict, features: list[FeatureEntry]
     ) -> list[tuple[FeatureEntry, int]]:
-        """Return [(feature, milestone)] for features with a milestone in range."""
+        """Return [(feature, milestone)] for features with a milestone in
+        range."""
         # 'current' milestone is the next stable milestone that hasn't landed.
         # We send notifications to any feature planned for beta or stable launch
         # in the next 4 * FUTURE_MILESTONES_TO_CONSIDER weeks.
@@ -230,7 +232,8 @@ class AbstractReminderHandler(basehandlers.FlaskHandler):
     def determine_features_to_notify(
         self, current_milestone_info: dict
     ) -> list[tuple[FeatureEntry, int]]:
-        """Get all features filter them by class-specific and milestone criteria."""
+        """Get all features filter them by class-specific and milestone
+        criteria."""
         features = FeatureEntry.query(FeatureEntry.deleted == False).fetch()  # noqa: E712
         prefiltered_features = self.prefilter_features(
             current_milestone_info, features
@@ -267,7 +270,7 @@ class FeatureAccuracyHandler(AbstractReminderHandler):
     SUBJECT_FORMAT = (
         EMAIL_SUBJECT_PREFIX
         + ' Verify important information about your shipping feature (%s)'
-    )  # noqa: E501
+    )
     EMAIL_TEMPLATE_PATH = 'accuracy_notice_email.html'
     FUTURE_MILESTONES_TO_CONSIDER = 2
     MILESTONE_FIELDS = [
@@ -425,7 +428,8 @@ class SLOOverdueHandler(basehandlers.FlaskHandler):
         return {'message': message}
 
     def get_overdue_gates_and_features(self):
-        """Return lists of newly and long overdue review gates, and their FEs."""
+        """Return lists of newly and long overdue review gates, and their
+        FEs."""
         active_gates: list[Gate] = slo.get_active_gates()
         newly_overdue_initial_response: list[Gate] = []
         long_overdue_initial_response: list[Gate] = []

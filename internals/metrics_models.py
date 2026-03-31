@@ -11,9 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-
-"""NDB models for storing UMA metrics, histograms, and feature usage statistics."""
+"""NDB models for storing UMA metrics, histograms, and feature usage
+statistics."""
 
 from google.cloud import ndb  # type: ignore
 
@@ -79,7 +78,7 @@ class WebDXFeatureObserver(HistogramModel):
         if (
             web_feature == cls.MISSING_FEATURE_ID
             or web_feature == cls.TBD_FEATURE_ID
-        ):  # noqa: E501
+        ):
             return web_feature
 
         observers = cls.query(cls.property_name == web_feature).fetch()

@@ -11,8 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-"""API endpoints for tracking and aggregating shipping feature data for specific milestones."""
+"""API endpoints for tracking and aggregating shipping feature data for specific
+milestones."""
 
 from typing import TypedDict
 
@@ -33,7 +33,7 @@ class GetShippingFeaturesResponse(TypedDict):
     complete_features: list[feature_helpers.ShippingFeatureInfo]
     incomplete_features: list[
         tuple[feature_helpers.ShippingFeatureInfo, list[str]]
-    ]  # noqa: E501
+    ]
 
 
 class ShippingFeaturesAPI(basehandlers.EntitiesAPIHandler):
@@ -56,7 +56,8 @@ class ShippingFeaturesAPI(basehandlers.EntitiesAPIHandler):
         return shipping_stages
 
     def do_get(self, **kwargs) -> GetShippingFeaturesResponse:
-        """Get all features that have met all conditions to ship for a given milestone"""  # noqa: D415, E501
+        """Get all features that have met all conditions to ship for a given
+        milestone."""  # noqa: D415
         milestone = self.get_int_arg('mstone')
 
         if milestone is None:

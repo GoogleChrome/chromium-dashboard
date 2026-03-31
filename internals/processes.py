@@ -12,8 +12,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-"""Defines the feature launch processes, stages, progress items, and rules for required approvals and fields."""
+"""Defines the feature launch processes, stages, progress items, and rules for
+required approvals and fields."""
 
 from dataclasses import asdict, dataclass
 
@@ -177,7 +177,7 @@ PI_ROLLOUT_DETAILS = ProgressItem('Rollout details', 'rollout_details')
 PI_ROLLOUT_STAGE_PLAN = ProgressItem('Rollout stage plan', 'rollout_stage_plan')
 PI_ENTERPRISE_POLICIES = ProgressItem(
     'Enterprise policies', 'enterprise_policies'
-)  # noqa: E501
+)
 
 
 # This is a stage that can be inserted in the stages of any non-enterprise
@@ -266,7 +266,7 @@ BLINK_PROCESS_STAGES = [
         [
             Action(
                 'Draft Ready for Developer Testing email',
-                INTENT_EMAIL_URL_NO_APPROVALS,  # noqa: E501
+                INTENT_EMAIL_URL_NO_APPROVALS,
                 [
                     PI_TRACKING_BUG.name,
                     PI_INITIAL_PUBLIC_PROPOSAL.name,
@@ -441,7 +441,7 @@ BLINK_FAST_TRACK_STAGES = [
         [
             Action(
                 'Draft Ready for Developer Testing email',
-                INTENT_EMAIL_URL_NO_APPROVALS,  # noqa: E501
+                INTENT_EMAIL_URL_NO_APPROVALS,
                 [
                     PI_TRACKING_BUG.name,
                     PI_SPEC_LINK.name,
@@ -573,7 +573,7 @@ PSA_ONLY_STAGES = [
         [
             Action(
                 'Draft Ready for Developer Testing email',
-                INTENT_EMAIL_URL_NO_APPROVALS,  # noqa: E501
+                INTENT_EMAIL_URL_NO_APPROVALS,
                 [
                     PI_TRACKING_BUG.name,
                     PI_SPEC_LINK.name,
@@ -597,7 +597,7 @@ PSA_ONLY_STAGES = [
         [
             Action(
                 'Draft Web-Facing Change PSA email',
-                INTENT_EMAIL_URL_NO_APPROVALS,  # noqa: E501
+                INTENT_EMAIL_URL_NO_APPROVALS,
                 [
                     PI_TRACKING_BUG.name,
                     PI_SPEC_LINK.name,
@@ -677,7 +677,7 @@ DEPRECATION_STAGES = [
         [
             Action(
                 'Draft Ready for Developer Testing email',
-                INTENT_EMAIL_URL_NO_APPROVALS,  # noqa: E501
+                INTENT_EMAIL_URL_NO_APPROVALS,
                 [
                     PI_TRACKING_BUG.name,
                     PI_MOTIVATION.name,
@@ -855,7 +855,7 @@ PROGRESS_DETECTORS = {
     'Web feature': lambda f, _: (
         f.web_feature
         and f.web_feature != WebDXFeatureObserver.MISSING_FEATURE_ID
-    ),  # noqa: E501
+    ),
     'Tracking bug URL': lambda f, _: f.bug_url,
     'Security review issues addressed': lambda f, _: review_is_done(
         f.security_review_status
@@ -916,7 +916,7 @@ PROGRESS_DETECTORS = {
         core_enums.STAGE_TYPES_SHIPPING[f.feature_type]
         and stages[core_enums.STAGE_TYPES_SHIPPING[f.feature_type]][
             0
-        ].milestones  # noqa: E501
+        ].milestones
         and stages[core_enums.STAGE_TYPES_SHIPPING[f.feature_type]][
             0
         ].milestones.desktop_first
@@ -925,7 +925,7 @@ PROGRESS_DETECTORS = {
         core_enums.STAGE_TYPES_SHIPPING[f.feature_type]
         and stages[core_enums.STAGE_TYPES_SHIPPING[f.feature_type]][
             0
-        ].milestones  # noqa: E501
+        ].milestones
         and stages[core_enums.STAGE_TYPES_SHIPPING[f.feature_type]][
             0
         ].milestones.desktop_first
@@ -934,7 +934,7 @@ PROGRESS_DETECTORS = {
         core_enums.STAGE_TYPES_SHIPPING[f.feature_type]
         and stages[core_enums.STAGE_TYPES_SHIPPING[f.feature_type]][
             0
-        ].milestones  # noqa: E501
+        ].milestones
         and stages[core_enums.STAGE_TYPES_SHIPPING[f.feature_type]][
             0
         ].milestones.desktop_first

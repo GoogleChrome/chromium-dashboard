@@ -11,8 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-"""Tests for the metricsdata API module, verifying timeline data retrieval and formatting."""
+"""Tests for the metricsdata API module, verifying timeline data retrieval and
+formatting."""
 
 import datetime
 from unittest import mock
@@ -106,7 +106,7 @@ class PopularityTimelineHandlerTests(testing_config.CustomTestCase):
         actual_query = self.handler.make_query(1)
         self.assertEqual(
             actual_query.kind, metrics_models.StableInstance._get_kind()
-        )  # noqa: E501
+        )
 
     @mock.patch('flask.abort')
     def test_get_template_data__bad_bucket(self, mock_abort):

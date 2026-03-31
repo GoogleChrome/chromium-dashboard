@@ -14,7 +14,8 @@
 # limitations under the License.
 
 # Data type for lists defining field data type information.
-"""Definitions of feature field data types and specifications for API validation."""
+"""Definitions of feature field data types and specifications for API
+validation."""
 
 FIELD_INFO_DATA_TYPE = list[tuple[str, str]]
 

@@ -11,8 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-"""Tests for the enterprise_helpers module, verifying enterprise notification milestone logic."""
+"""Tests for the enterprise_helpers module, verifying enterprise notification
+milestone logic."""
 
 from datetime import datetime
 from unittest import mock
@@ -48,7 +48,7 @@ class EnterpriseHelpersTest(testing_config.CustomTestCase):
             updated=datetime(2020, 3, 1),
             feature_type=1,
             enterprise_impact=ENTERPRISE_IMPACT_LOW,
-        )  # noqa: E501, F405
+        )  # noqa: F405
         self.breaking_feature.put()
 
         self.normal_feature = FeatureEntry(
@@ -66,20 +66,24 @@ class EnterpriseHelpersTest(testing_config.CustomTestCase):
     @mock.patch('api.channels_api.construct_specified_milestones_details')
     def test__needs_default_first_notification_milestone__new_feature(
         self, mock_specified_milestones
-    ):  # noqa: E501
+    ):
         """Test  needs default first notification milestone with new feature."""
         mock_specified_milestones.return_value = {
             99: {
                 'version': 99,
-                'stable_date': self.now.replace(
-                    year=self.now.year - 1, day=1
-                ).strftime(DATETIME_FORMAT),  # noqa: E501
+                'stable_date': (
+                    self.now.replace(year=self.now.year - 1, day=1).strftime(
+                        DATETIME_FORMAT
+                    )
+                ),
             },
             100: {
                 'version': 100,
-                'stable_date': self.now.replace(
-                    year=self.now.year + 1, day=1
-                ).strftime(DATETIME_FORMAT),  # noqa: E501
+                'stable_date': (
+                    self.now.replace(year=self.now.year + 1, day=1).strftime(
+                        DATETIME_FORMAT
+                    )
+                ),
             },
         }
         # Enterprise feature missing the milestone
@@ -97,7 +101,7 @@ class EnterpriseHelpersTest(testing_config.CustomTestCase):
                     'first_enterprise_notification_milestone': 1,
                 },
             )
-        )  # noqa: E501
+        )
         # Enterprise feature with older milestone
         self.assertTrue(
             needs_default_first_notification_milestone(  # noqa: F405
@@ -107,7 +111,7 @@ class EnterpriseHelpersTest(testing_config.CustomTestCase):
                     'first_enterprise_notification_milestone': 99,
                 },
             )
-        )  # noqa: E501
+        )
         # Enterprise feature with valid milestone
         self.assertFalse(
             needs_default_first_notification_milestone(  # noqa: F405
@@ -117,7 +121,7 @@ class EnterpriseHelpersTest(testing_config.CustomTestCase):
                     'first_enterprise_notification_milestone': 100,
                 },
             )
-        )  # noqa: E501
+        )
 
         # Breaking change missing the milestone
         self.assertTrue(
@@ -125,7 +129,7 @@ class EnterpriseHelpersTest(testing_config.CustomTestCase):
                 self.no_feature,
                 {'feature_type': 1, 'enterprise_impact': ENTERPRISE_IMPACT_LOW},
             )
-        )  # noqa: E501, F405
+        )  # noqa: F405
         # Breaking change with invalid milestone
         self.assertTrue(
             needs_default_first_notification_milestone(  # noqa: F405
@@ -136,7 +140,7 @@ class EnterpriseHelpersTest(testing_config.CustomTestCase):
                     'first_enterprise_notification_milestone': 1,
                 },
             )
-        )  # noqa: E501, F405
+        )  # noqa: F405
         # Breaking change with older milestone
         self.assertTrue(
             needs_default_first_notification_milestone(  # noqa: F405
@@ -147,7 +151,7 @@ class EnterpriseHelpersTest(testing_config.CustomTestCase):
                     'first_enterprise_notification_milestone': 99,
                 },
             )
-        )  # noqa: E501, F405
+        )  # noqa: F405
         # Breaking change with valid milestone
         self.assertFalse(
             needs_default_first_notification_milestone(  # noqa: F405
@@ -158,7 +162,7 @@ class EnterpriseHelpersTest(testing_config.CustomTestCase):
                     'first_enterprise_notification_milestone': 100,
                 },
             )
-        )  # noqa: E501, F405
+        )  # noqa: F405
 
         # Normal feature missing the milestone
         self.assertFalse(
@@ -175,7 +179,7 @@ class EnterpriseHelpersTest(testing_config.CustomTestCase):
                     'first_enterprise_notification_milestone': 1,
                 },
             )
-        )  # noqa: E501
+        )
         # Normal feature with older milestone
         self.assertFalse(
             needs_default_first_notification_milestone(  # noqa: F405
@@ -185,7 +189,7 @@ class EnterpriseHelpersTest(testing_config.CustomTestCase):
                     'first_enterprise_notification_milestone': 99,
                 },
             )
-        )  # noqa: E501
+        )
         # Normal feature with valid milestone
         self.assertFalse(
             needs_default_first_notification_milestone(  # noqa: F405
@@ -195,7 +199,7 @@ class EnterpriseHelpersTest(testing_config.CustomTestCase):
                     'first_enterprise_notification_milestone': 100,
                 },
             )
-        )  # noqa: E501
+        )
 
         # Non-breaking Normal feature missing the milestone
         self.assertFalse(
@@ -206,7 +210,7 @@ class EnterpriseHelpersTest(testing_config.CustomTestCase):
                     'enterprise_impact': ENTERPRISE_IMPACT_NONE,
                 },
             )
-        )  # noqa: E501, F405
+        )  # noqa: F405
         # Non-breaking Normal feature with invalid milestone
         self.assertFalse(
             needs_default_first_notification_milestone(  # noqa: F405
@@ -217,7 +221,7 @@ class EnterpriseHelpersTest(testing_config.CustomTestCase):
                     'first_enterprise_notification_milestone': 1,
                 },
             )
-        )  # noqa: E501, F405
+        )  # noqa: F405
         # Non-breaking Normal feature with older milestone
         self.assertFalse(
             needs_default_first_notification_milestone(  # noqa: F405
@@ -228,7 +232,7 @@ class EnterpriseHelpersTest(testing_config.CustomTestCase):
                     'first_enterprise_notification_milestone': 99,
                 },
             )
-        )  # noqa: E501, F405
+        )  # noqa: F405
         # Non-breaking Normal feature with valid milestone
         self.assertFalse(
             needs_default_first_notification_milestone(  # noqa: F405
@@ -244,20 +248,24 @@ class EnterpriseHelpersTest(testing_config.CustomTestCase):
     @mock.patch('api.channels_api.construct_specified_milestones_details')
     def test__needs_default_first_notification_milestone__update(
         self, mock_specified_milestones
-    ):  # noqa: E501
+    ):
         """Test  needs default first notification milestone with update."""
         mock_specified_milestones.return_value = {
             99: {
                 'version': 99,
-                'stable_date': self.now.replace(
-                    year=self.now.year - 1, day=1
-                ).strftime(DATETIME_FORMAT),  # noqa: E501
+                'stable_date': (
+                    self.now.replace(year=self.now.year - 1, day=1).strftime(
+                        DATETIME_FORMAT
+                    )
+                ),
             },
             100: {
                 'version': 100,
-                'stable_date': self.now.replace(
-                    year=self.now.year + 1, day=1
-                ).strftime(DATETIME_FORMAT),  # noqa: E501
+                'stable_date': (
+                    self.now.replace(year=self.now.year + 1, day=1).strftime(
+                        DATETIME_FORMAT
+                    )
+                ),
             },
         }
         # Enterprise feature missing the milestone
@@ -265,7 +273,7 @@ class EnterpriseHelpersTest(testing_config.CustomTestCase):
             needs_default_first_notification_milestone(
                 self.enterprise_feature, {}
             )
-        )  # noqa: E501, F405
+        )  # noqa: F405
         # Enterprise feature with invalid milestone
         self.assertTrue(
             needs_default_first_notification_milestone(  # noqa: F405
@@ -286,14 +294,14 @@ class EnterpriseHelpersTest(testing_config.CustomTestCase):
                 self.enterprise_feature,
                 {'first_enterprise_notification_milestone': 100},
             )
-        )  # noqa: E501
+        )
 
         # Breaking change missing the milestone
         self.assertTrue(
             needs_default_first_notification_milestone(
                 self.breaking_feature, {}
             )
-        )  # noqa: E501, F405
+        )  # noqa: F405
         # Breaking change with invalid milestone
         self.assertTrue(
             needs_default_first_notification_milestone(  # noqa: F405
@@ -319,7 +327,7 @@ class EnterpriseHelpersTest(testing_config.CustomTestCase):
         # Normal feature missing the milestone
         self.assertFalse(
             needs_default_first_notification_milestone(self.normal_feature, {})
-        )  # noqa: E501, F405
+        )  # noqa: F405
         # Normal feature with invalid milestone
         self.assertFalse(
             needs_default_first_notification_milestone(  # noqa: F405
@@ -358,7 +366,7 @@ class EnterpriseHelpersTest(testing_config.CustomTestCase):
                     'first_enterprise_notification_milestone': 1,
                 },
             )
-        )  # noqa: E501, F405
+        )  # noqa: F405
         # Normal feature becoming breaking with older milestone
         self.assertTrue(
             needs_default_first_notification_milestone(  # noqa: F405
@@ -368,7 +376,7 @@ class EnterpriseHelpersTest(testing_config.CustomTestCase):
                     'first_enterprise_notification_milestone': 99,
                 },
             )
-        )  # noqa: E501, F405
+        )  # noqa: F405
         # Normal feature becoming breaking with valid milestone
         self.assertFalse(
             needs_default_first_notification_milestone(  # noqa: F405
@@ -378,7 +386,7 @@ class EnterpriseHelpersTest(testing_config.CustomTestCase):
                     'first_enterprise_notification_milestone': 100,
                 },
             )
-        )  # noqa: E501, F405
+        )  # noqa: F405
 
         # Breaking feature becoming normal feature missing the milestone
         self.assertFalse(
@@ -396,7 +404,7 @@ class EnterpriseHelpersTest(testing_config.CustomTestCase):
                     'first_enterprise_notification_milestone': 1,
                 },
             )
-        )  # noqa: E501, F405
+        )  # noqa: F405
         # Breaking feature becoming normal feature with older milestone
         self.assertFalse(
             needs_default_first_notification_milestone(  # noqa: F405
@@ -406,7 +414,7 @@ class EnterpriseHelpersTest(testing_config.CustomTestCase):
                     'first_enterprise_notification_milestone': 99,
                 },
             )
-        )  # noqa: E501, F405
+        )  # noqa: F405
         # Breaking feature becoming normal feature with valid milestone
         self.assertFalse(
             needs_default_first_notification_milestone(  # noqa: F405
@@ -416,7 +424,7 @@ class EnterpriseHelpersTest(testing_config.CustomTestCase):
                     'first_enterprise_notification_milestone': 100,
                 },
             )
-        )  # noqa: E501, F405
+        )  # noqa: F405
 
         # Feature already has a milestone
         self.breaking_feature.first_enterprise_notification_milestone = 100
@@ -439,42 +447,52 @@ class EnterpriseHelpersTest(testing_config.CustomTestCase):
         mock_specified_milestones.return_value = {
             99: {
                 'version': 99,
-                'stable_date': self.now.replace(
-                    year=self.now.year - 1, day=1
-                ).strftime(DATETIME_FORMAT),  # noqa: E501
+                'stable_date': (
+                    self.now.replace(year=self.now.year - 1, day=1).strftime(
+                        DATETIME_FORMAT
+                    )
+                ),
             },
             100: {  # Current milestone on stable channel
                 'version': 100,
-                'stable_date': self.now.replace(
-                    year=self.now.year, day=1
-                ).strftime(DATETIME_FORMAT),  # noqa: E501
+                'stable_date': (
+                    self.now.replace(year=self.now.year, day=1).strftime(
+                        DATETIME_FORMAT
+                    )
+                ),
             },
             101: {
                 'version': 101,
-                'stable_date': self.now.replace(
-                    year=self.now.year + 1, day=1
-                ).strftime(DATETIME_FORMAT),  # noqa: E501
+                'stable_date': (
+                    self.now.replace(year=self.now.year + 1, day=1).strftime(
+                        DATETIME_FORMAT
+                    )
+                ),
             },
             102: {
                 'version': 102,
-                'stable_date': self.now.replace(
-                    year=self.now.year + 2, day=1
-                ).strftime(DATETIME_FORMAT),  # noqa: E501
+                'stable_date': (
+                    self.now.replace(year=self.now.year + 2, day=1).strftime(
+                        DATETIME_FORMAT
+                    )
+                ),
             },
         }
         mock_channel_details.return_value = {
             'beta': {
                 'version': 100,
-                'stable_date': self.now.replace(
-                    year=self.now.year, day=1
-                ).strftime(DATETIME_FORMAT),  # noqa: E501
+                'stable_date': (
+                    self.now.replace(year=self.now.year, day=1).strftime(
+                        DATETIME_FORMAT
+                    )
+                ),
             }
         }
 
         # Enterprise feature missing the milestone
         self.assertFalse(
             is_update_first_notification_milestone(self.enterprise_feature, {})
-        )  # noqa: E501, F405
+        )  # noqa: F405
         # Enterprise feature with invalid milestone
         self.assertFalse(
             is_update_first_notification_milestone(  # noqa: F405
@@ -495,12 +513,12 @@ class EnterpriseHelpersTest(testing_config.CustomTestCase):
                 self.enterprise_feature,
                 {'first_enterprise_notification_milestone': 100},
             )
-        )  # noqa: E501
+        )
 
         # Breaking change missing the milestone
         self.assertFalse(
             is_update_first_notification_milestone(self.breaking_feature, {})
-        )  # noqa: E501, F405
+        )  # noqa: F405
         # Breaking change with invalid milestone
         self.assertFalse(
             is_update_first_notification_milestone(  # noqa: F405
@@ -526,7 +544,7 @@ class EnterpriseHelpersTest(testing_config.CustomTestCase):
         # Normal feature missing the milestone
         self.assertFalse(
             is_update_first_notification_milestone(self.normal_feature, {})
-        )  # noqa: E501, F405
+        )  # noqa: F405
         # Normal feature with invalid milestone
         self.assertFalse(
             is_update_first_notification_milestone(  # noqa: F405
@@ -565,7 +583,7 @@ class EnterpriseHelpersTest(testing_config.CustomTestCase):
                     'first_enterprise_notification_milestone': 1,
                 },
             )
-        )  # noqa: E501, F405
+        )  # noqa: F405
         # Normal feature becoming breaking with older milestone
         self.assertFalse(
             is_update_first_notification_milestone(  # noqa: F405
@@ -575,7 +593,7 @@ class EnterpriseHelpersTest(testing_config.CustomTestCase):
                     'first_enterprise_notification_milestone': 99,
                 },
             )
-        )  # noqa: E501, F405
+        )  # noqa: F405
         # Normal feature becoming breaking with valid milestone
         self.assertTrue(
             is_update_first_notification_milestone(  # noqa: F405
@@ -585,7 +603,7 @@ class EnterpriseHelpersTest(testing_config.CustomTestCase):
                     'first_enterprise_notification_milestone': 100,
                 },
             )
-        )  # noqa: E501, F405
+        )  # noqa: F405
 
         # Breaking feature becoming normal feature missing the milestone
         self.assertFalse(
@@ -603,7 +621,7 @@ class EnterpriseHelpersTest(testing_config.CustomTestCase):
                     'first_enterprise_notification_milestone': 1,
                 },
             )
-        )  # noqa: E501, F405
+        )  # noqa: F405
         # Breaking feature becoming normal feature with older milestone
         self.assertFalse(
             is_update_first_notification_milestone(  # noqa: F405
@@ -613,7 +631,7 @@ class EnterpriseHelpersTest(testing_config.CustomTestCase):
                     'first_enterprise_notification_milestone': 99,
                 },
             )
-        )  # noqa: E501, F405
+        )  # noqa: F405
         # Breaking feature becoming normal feature with valid milestone
         self.assertFalse(
             is_update_first_notification_milestone(  # noqa: F405
@@ -623,7 +641,7 @@ class EnterpriseHelpersTest(testing_config.CustomTestCase):
                     'first_enterprise_notification_milestone': 100,
                 },
             )
-        )  # noqa: E501, F405
+        )  # noqa: F405
 
         # Feature already has a milestone that was already released
         self.breaking_feature.first_enterprise_notification_milestone = 99
@@ -631,7 +649,7 @@ class EnterpriseHelpersTest(testing_config.CustomTestCase):
         # Breaking feature becoming normal feature missing the milestone
         self.assertFalse(
             is_update_first_notification_milestone(self.breaking_feature, {})
-        )  # noqa: E501, F405
+        )  # noqa: F405
         # Breaking feature becoming normal feature with invalid milestone
         self.assertFalse(
             is_update_first_notification_milestone(  # noqa: F405
@@ -660,7 +678,7 @@ class EnterpriseHelpersTest(testing_config.CustomTestCase):
         # Enterprise feature missing the milestone
         self.assertFalse(
             is_update_first_notification_milestone(self.enterprise_feature, {})
-        )  # noqa: E501, F405
+        )  # noqa: F405
         # Enterprise feature with invalid milestone
         self.assertFalse(
             is_update_first_notification_milestone(  # noqa: F405
@@ -681,26 +699,28 @@ class EnterpriseHelpersTest(testing_config.CustomTestCase):
                 self.enterprise_feature,
                 {'first_enterprise_notification_milestone': 100},
             )
-        )  # noqa: E501
+        )
         self.assertTrue(
             is_update_first_notification_milestone(  # noqa: F405
                 self.enterprise_feature,
                 {'first_enterprise_notification_milestone': 101},
             )
-        )  # noqa: E501
+        )
 
     @mock.patch('api.channels_api.construct_chrome_channels_details')
     def test__get_default_first_notice_milestone_for_feature(
         self, mock_channel_details
-    ):  # noqa: E501
+    ):
         """Test  get default first notice milestone for feature."""
         now = datetime.now()
         mock_channel_details.return_value = {
             'beta': {
                 'version': 120,
-                'stable_date': now.replace(year=now.year + 1, day=2).strftime(
-                    DATETIME_FORMAT
-                ),  # noqa: E501
+                'stable_date': (
+                    now.replace(year=now.year + 1, day=2).strftime(
+                        DATETIME_FORMAT
+                    )
+                ),
             }
         }
         self.assertEqual(get_default_first_notice_milestone_for_feature(), 120)  # noqa: F405
@@ -708,53 +728,59 @@ class EnterpriseHelpersTest(testing_config.CustomTestCase):
     @mock.patch('api.channels_api.construct_specified_milestones_details')
     def test__should_remove_first_notice_milestone(
         self, mock_specified_milestones
-    ):  # noqa: E501
+    ):
         """Test  should remove first notice milestone."""
         now = datetime.now()
         mock_specified_milestones.return_value = {
             99: {
                 'version': 99,
-                'stable_date': now.replace(year=now.year - 1, day=1).strftime(
-                    DATETIME_FORMAT
-                ),  # noqa: E501
+                'stable_date': (
+                    now.replace(year=now.year - 1, day=1).strftime(
+                        DATETIME_FORMAT
+                    )
+                ),
             },
             100: {
                 'version': 100,
-                'stable_date': now.replace(year=now.year + 1, day=1).strftime(
-                    DATETIME_FORMAT
-                ),  # noqa: E501
+                'stable_date': (
+                    now.replace(year=now.year + 1, day=1).strftime(
+                        DATETIME_FORMAT
+                    )
+                ),
             },
             101: {
                 'version': 101,
-                'stable_date': now.replace(year=now.year + 2, day=1).strftime(
-                    DATETIME_FORMAT
-                ),  # noqa: E501
+                'stable_date': (
+                    now.replace(year=now.year + 2, day=1).strftime(
+                        DATETIME_FORMAT
+                    )
+                ),
             },
         }
 
         # Enterprise feature with no changes and no existing milestone
         self.assertFalse(
             should_remove_first_notice_milestone(self.enterprise_feature, {})
-        )  # noqa: E501, F405
+        )  # noqa: F405
 
         # Enterprise feature with no changes and existing milestone
         self.enterprise_feature.first_enterprise_notification_milestone = 100
         self.enterprise_feature.put()
         self.assertFalse(
             should_remove_first_notice_milestone(self.enterprise_feature, {})
-        )  # noqa: E501, F405
+        )  # noqa: F405
 
         # Breaking change with no changes and no existing milestone
         self.assertFalse(
             should_remove_first_notice_milestone(self.breaking_feature, {})
-        )  # noqa: E501, F405
+        )  # noqa: F405
 
         # Breaking change with no changes and existing milestone
         self.breaking_feature.first_enterprise_notification_milestone = 100
         self.breaking_feature.put()
         self.assertFalse(
             should_remove_first_notice_milestone(self.breaking_feature, {})
-        )  # noqa: E501, F405
+        )  # noqa: F405
 
         # Breaking change becoming non-breaking and existing milestone
         self.breaking_feature.first_enterprise_notification_milestone = 100
@@ -766,7 +792,7 @@ class EnterpriseHelpersTest(testing_config.CustomTestCase):
             )
         )  # noqa: F405
 
-        # Breaking change becoming non-breaking and existing milestone already released  # noqa: E501
+        # Breaking change becoming non-breaking and existing milestone already released
         self.breaking_feature.first_enterprise_notification_milestone = 99
         self.breaking_feature.put()
         self.assertFalse(

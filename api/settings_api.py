@@ -27,8 +27,7 @@ from internals import user_models
 
 class SettingsAPI(basehandlers.APIHandler):
     """Users can store their settings preferences such as whether to get
-    notification from the features they starred.
-    """  # noqa: D205
+    notification from the features they starred."""  # noqa: D205
 
     def do_post(self, **kwargs):
         """Set the user settings (currently only the notify_as_starrer)"""  # noqa: D415
@@ -57,6 +56,6 @@ class SettingsAPI(basehandlers.APIHandler):
 
         response = GetSettingsResponse.from_dict(
             {'notify_as_starrer': user_pref.notify_as_starrer}
-        )  # noqa: E501
+        )
 
         return response.to_dict()

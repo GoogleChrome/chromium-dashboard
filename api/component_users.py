@@ -12,8 +12,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-"""API handlers for managing owners and subscribers of individual Blink components."""
+"""API handlers for managing owners and subscribers of individual Blink
+components."""
 
 from chromestatus_openapi.models import ComponentUsersRequest
 
@@ -54,11 +54,11 @@ class ComponentUsersAPI(basehandlers.APIHandler):
         """Update component subscribers."""
         component_users_request = ComponentUsersRequest.from_dict(
             self.request.get_json(force=True)
-        )  # noqa: E501
+        )
         self.__update_subscribers_list(
             True,
             user_id=kwargs.get('user_id', None),
-            blink_component_id=kwargs.get('component_id', None),  # noqa: E501
+            blink_component_id=kwargs.get('component_id', None),
             primary=component_users_request.owner,
         )
         return {}, 200
@@ -71,7 +71,7 @@ class ComponentUsersAPI(basehandlers.APIHandler):
         self.__update_subscribers_list(
             False,
             user_id=kwargs.get('user_id', None),
-            blink_component_id=kwargs.get('component_id', None),  # noqa: E501
+            blink_component_id=kwargs.get('component_id', None),
             primary=component_users_request.owner,
         )
         return {}, 200

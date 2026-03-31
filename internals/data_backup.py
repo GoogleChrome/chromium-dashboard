@@ -13,8 +13,8 @@
 # limitations under the License.
 """Datastore backup and export utilities.
 
-Provides an automated scheduled handler to trigger full exports of the
-Datastore to a designated Google Cloud Storage bucket for disaster recovery.
+Provides an automated scheduled handler to trigger full exports of the Datastore
+to a designated Google Cloud Storage bucket for disaster recovery.
 """
 
 import logging
@@ -46,7 +46,7 @@ class BackupExportHandler(basehandlers.FlaskHandler):
         """Get template data for the handler."""
         self.require_cron_header()
         bucket = f'gs://{settings.BACKUP_BUCKET}'
-        # The default cache (file_cache) is unavailable when using oauth2client >= 4.0.0 or google-auth,  # noqa: E501
+        # The default cache (file_cache) is unavailable when using oauth2client >= 4.0.0 or google-auth,
         # and it will log worrisome messages unless given another interface to use.
         datastore = build('datastore', 'v1', cache=MemoryCache())
         project_id = settings.APP_ID

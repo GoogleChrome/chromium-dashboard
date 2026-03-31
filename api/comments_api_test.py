@@ -12,7 +12,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Tests for the comments_api module, verifying review comment operations and activity logging."""
+"""Tests for the comments_api module, verifying review comment operations and
+activity logging."""
 
 import datetime
 from unittest import mock
@@ -166,7 +167,8 @@ class CommentsAPITest(testing_config.CustomTestCase):
         self.assertEqual({'comments': []}, actual_response)
 
     def test_get__legacy_comments(self):
-        """We no longer return legacy gate comments when gate_id is specified."""
+        """We no longer return legacy gate comments when gate_id is
+        specified."""
         testing_config.sign_out()
         testing_config.sign_in('user7@example.com', 123567890)
 
@@ -251,7 +253,8 @@ class CommentsAPITest(testing_config.CustomTestCase):
                 self.handler.do_post(feature_id=12345, gate_id=self.gate_1_id)
 
     def test_patch__forbidden(self):
-        """Handler rejects requests from users who can't edit the given comment."""
+        """Handler rejects requests from users who can't edit the given
+        comment."""
         self.act_1_1.put()
         params = {'commentId': self.act_1_1.key.id(), 'isUndelete': False}
 
@@ -266,7 +269,8 @@ class CommentsAPITest(testing_config.CustomTestCase):
                 self.handler.do_patch(feature_id=self.feature_id)
 
     def test_patch__delete_comment(self):
-        """Handler marks a comment as deleted as requested by authorized user."""
+        """Handler marks a comment as deleted as requested by authorized
+        user."""
         self.act_1_1.put()
 
         user_email = 'owner1@example.com'
@@ -287,7 +291,8 @@ class CommentsAPITest(testing_config.CustomTestCase):
         self.assertEqual(activity.deleted_by, user_email)
 
     def test_patch__undelete_comment(self):
-        """Handler unmarks a comment as deleted as requested by authorized user."""
+        """Handler unmarks a comment as deleted as requested by authorized
+        user."""
         user_email = 'owner1@example.com'
         self.act_1_1.deleted_by = user_email
         self.act_1_1.put()

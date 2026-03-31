@@ -11,8 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-"""Tests for the shipping_features_api module, verifying milestone matching and feature aggregation."""
+"""Tests for the shipping_features_api module, verifying milestone matching and
+feature aggregation."""
 
 from unittest import mock
 
@@ -84,7 +84,8 @@ class ShippingFeaturesAPITest(testing_config.CustomTestCase):
     @mock.patch('internals.feature_helpers.aggregate_shipping_features')
     @mock.patch('api.shipping_features_api.utils.get_chromium_file')
     def test_do_get__success(self, mock_get_chromium_file, mock_aggregate):
-        """Handler should fetch files and delegate logic to the helper function."""
+        """Handler should fetch files and delegate logic to the helper
+        function."""
 
         def mock_get_file(url):
             if url == core_enums.ENABLED_FEATURES_FILE_URL:
@@ -112,7 +113,7 @@ class ShippingFeaturesAPITest(testing_config.CustomTestCase):
 
         self.assertEqual(response, mock_response_data)
 
-        # Ensure the helper was called with the stages found in DB and the files fetched  # noqa: E501
+        # Ensure the helper was called with the stages found in DB and the files fetched
         mock_aggregate.assert_called_once()
         call_args = mock_aggregate.call_args[0]
 
@@ -126,7 +127,8 @@ class ShippingFeaturesAPITest(testing_config.CustomTestCase):
         self.assertEqual(call_args[2], MOCK_CONTENT_FEATURES_CC)
 
     def test_do_get__no_features_found(self):
-        """API returns empty lists immediately if no features match the milestone."""  # noqa: E501
+        """API returns empty lists immediately if no features match the
+        milestone."""
         unmatched_milestone = 999
         with test_app.test_request_context(
             f'/api/v0/features/shipping?mstone={unmatched_milestone}'

@@ -11,8 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-"""Tests for the external_reviews_api module, verifying external review status and link parsing."""
+"""Tests for the external_reviews_api module, verifying external review status
+and link parsing."""
 
 import testing_config  # isort: split
 
@@ -77,7 +77,7 @@ def make_feature(
     fe_id = fe.key.integer_id()
     stage = Stage(
         feature_id=fe_id, stage_type=active_stage, milestones=milestones
-    )  # noqa: E501
+    )
     stage.put()
     fe.active_stage_id = stage.key.id()
     fe.put()
@@ -94,7 +94,7 @@ def make_feature(
             feature_ids=[fe_id],
             url=webkit,
             type=LINK_TYPE_GITHUB_ISSUE,
-            information={},  # noqa: E501
+            information={},
         )
         fl.put()
     if gecko:
@@ -102,7 +102,7 @@ def make_feature(
             feature_ids=[fe_id],
             url=gecko,
             type=LINK_TYPE_GITHUB_ISSUE,
-            information={},  # noqa: E501
+            information={},
         )
         fl.put()
     return fe
@@ -150,7 +150,7 @@ class ExternalReviewsAPITest(testing_config.CustomTestCase):
                         url=tag,
                         type=LINK_TYPE_GITHUB_ISSUE,
                         information={},
-                        http_error_code=None,  # noqa: E501
+                        http_error_code=None,
                     )
                 ],
             },
@@ -185,7 +185,7 @@ class ExternalReviewsAPITest(testing_config.CustomTestCase):
                         url=webkit,
                         type=LINK_TYPE_GITHUB_ISSUE,
                         information={},
-                        http_error_code=None,  # noqa: E501
+                        http_error_code=None,
                     )
                 ],
             },
@@ -220,7 +220,7 @@ class ExternalReviewsAPITest(testing_config.CustomTestCase):
                         url=gecko,
                         type=LINK_TYPE_GITHUB_ISSUE,
                         information={},
-                        http_error_code=None,  # noqa: E501
+                        http_error_code=None,
                     )
                 ],
             },
@@ -230,9 +230,10 @@ class ExternalReviewsAPITest(testing_config.CustomTestCase):
     def test_milestones_summarize(self):
         """We take the earliest start milestone and the latest end milestone.
 
-        This isn't quite right for sorting urgency, since a later start milestone for some platforms
-        probably indicates that the feature will ship later, but it makes more sense in the UI.
-        """  # noqa: E501
+        This isn't quite right for sorting urgency, since a later start
+        milestone for some platforms probably indicates that the feature will
+        ship later, but it makes more sense in the UI.
+        """
         tag = 'https://github.com/w3ctag/design-reviews/issues/1'
         webkit = 'https://github.com/WebKit/standards-positions/issues/3'
         fe = make_feature(
@@ -262,7 +263,7 @@ class ExternalReviewsAPITest(testing_config.CustomTestCase):
                         url=tag,
                         type=LINK_TYPE_GITHUB_ISSUE,
                         information={},
-                        http_error_code=None,  # noqa: E501
+                        http_error_code=None,
                     )
                 ],
             },
@@ -270,9 +271,8 @@ class ExternalReviewsAPITest(testing_config.CustomTestCase):
         )
 
     def test_omit_non_review_links(self):
-        """Vendor positions of 'shipping', 'in development', and 'na' shouldn't be returned, even if
-        they link to a standards-positions repository.
-        """  # noqa: D205, E501
+        """Vendor positions of 'shipping', 'in development', and 'na' shouldn't
+        be returned, even if they link to a standards-positions repository."""  # noqa: D205
         webkit = 'https://github.com/WebKit/standards-positions/issues/3'
         fe = make_feature('Feature one', STAGE_BLINK_PROTOTYPE, webkit=webkit)
         result = self.handler.do_get(review_group='webkit')
@@ -284,7 +284,8 @@ class ExternalReviewsAPITest(testing_config.CustomTestCase):
             self.assertEqual(0, len(result['reviews']))
 
     def test_omit_review_links_to_non_review_repo(self):
-        """Links that aren't to the reviewer's positions repository shouldn't be returned."""  # noqa: E501
+        """Links that aren't to the reviewer's positions repository shouldn't be
+        returned."""
         webkit = 'https://github.com/WebKit/standards-positions/issues/3'
         fe = make_feature('Feature one', STAGE_BLINK_PROTOTYPE, webkit=webkit)
         result = self.handler.do_get(review_group='webkit')
@@ -357,12 +358,12 @@ class ExternalReviewsAPITest(testing_config.CustomTestCase):
     ) -> FeatureEntry:
         """Uses the same path as the web UI to create a feature.
 
-        This is slower than directly .put()ing FeatureEntries, but ensures at least 1 test makes no
-        assumptions about what the UI actually does.
-        """  # noqa: E501
+        This is slower than directly .put()ing FeatureEntries, but ensures at
+        least 1 test makes no assumptions about what the UI actually does.
+        """
         name = fe['name']
         patch_update: dict[str, object] = dict(fe)
-        # Only set the minimum set of fields in the initial POST. The FeaturesAPI expects to handle  # noqa: E501
+        # Only set the minimum set of fields in the initial POST. The FeaturesAPI expects to handle
         # most updates in the later PATCH call.
         initial_fields = dict(
             blink_components=patch_update.pop('blink_components', 'Blink'),
@@ -391,7 +392,7 @@ class ExternalReviewsAPITest(testing_config.CustomTestCase):
         self.assertIsNotNone(new_feature)
         feature_id = new_feature.key.id()
 
-        # Now that the feature and its stages are created, update the rest of the fields, and the active  # noqa: E501
+        # Now that the feature and its stages are created, update the rest of the fields, and the active
         # stage, using a PATCH.
         active_stage = Stage.query(
             Stage.feature_id == feature_id,
@@ -417,7 +418,7 @@ class ExternalReviewsAPITest(testing_config.CustomTestCase):
 
         with test_app.test_request_context(
             f'/api/v0/features/{feature_id}', json=update
-        ):  # noqa: E501
+        ):
             response = FeaturesAPI().do_patch()
         assert isinstance(response, dict)
         self.assertEqual(f'Feature {feature_id} updated.', response['message'])
@@ -427,15 +428,16 @@ class ExternalReviewsAPITest(testing_config.CustomTestCase):
     @mock.patch.object(Link, '_parse_github_issue', autospec=True)
     def test_e2e_features_that_need_review_are_included(
         self, mockParse: mock.MagicMock
-    ):  # noqa: E501
-        """This one test goes through the same path as the UI to create features, to catch if other
-        tests have made incorrect assumptions about how that flow works. This is slower, so it shouldn't
-        be used to test every part of the feature.
+    ):
+        """This one test goes through the same path as the UI to create
+        features, to catch if other tests have made incorrect assumptions about
+        how that flow works. This is slower, so it shouldn't be used to test
+        every part of the feature.
 
-        This test also checks that a JSON file used by the Playwright tests is actually the output
-        format for this API, which allows a test on the Playwright side to also check its assumptions
-        about the output format.
-        """  # noqa: D205, E501
+        This test also checks that a JSON file used by the Playwright tests is
+        actually the output format for this API, which allows a test on the
+        Playwright side to also check its assumptions about the output format.
+        """  # noqa: D205
         # Create a feature using the admin user.
         app_admin = AppUser(email='admin@example.com')
         app_admin.is_admin = True
@@ -466,7 +468,7 @@ class ExternalReviewsAPITest(testing_config.CustomTestCase):
                 result.update(
                     number=1,
                     labels=['position: oppose'],
-                    title="Opposed review isn't shown",  # noqa: E501
+                    title="Opposed review isn't shown",
                 )
             elif (
                 link.url
@@ -605,7 +607,7 @@ class ExternalReviewsAPITest(testing_config.CustomTestCase):
         result = self.handler.do_get(review_group='gecko')
 
         # This test expectation is saved to a JSON file so the
-        # Playwright tests can use it as a mock API response. Because the real feature IDs are  # noqa: E501
+        # Playwright tests can use it as a mock API response. Because the real feature IDs are
         # dynamically generated, we have to slot them into the right places here.
         with open(
             os.path.join(

@@ -17,7 +17,8 @@
 # Number of seconds in various periods.
 """System-wide constants used across the chromium-dashboard framework.
 
-Defines common constant values such as time periods (seconds in a minute, hour, day).
+Defines common constant values such as time periods (seconds in a minute, hour,
+day).
 """
 
 SECS_PER_MINUTE = 60

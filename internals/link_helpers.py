@@ -12,8 +12,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-"""Helper functions and classes for validating, parsing, and classifying URLs."""
+"""Helper functions and classes for validating, parsing, and classifying
+URLs."""
 
 import base64
 import html
@@ -91,7 +91,7 @@ LINK_TYPES_REGEX = {
 
 TAG_REVIEW_URL_PATTERN = re.compile(
     r'github.com/w3ctag/design-reviews/', re.IGNORECASE
-)  # noqa: E501
+)
 GECKO_REVIEW_URL_PATTERN = re.compile(
     r'github.com/mozilla/standards-positions/', re.IGNORECASE
 )
@@ -137,7 +137,7 @@ class Link:
             urls = URL_REGEX.findall(value)
 
             # remove trailing punctuation
-            # punctuation similar to string.punctuation except that it does not include "/"  # noqa: E501
+            # punctuation similar to string.punctuation except that it does not include "/"
             # this keep url ending with "/"
             punctuation = r"""!"#$%&'()*+,-.:;<=>?@[\]^_`{|}~"""
             urls = [url.rstrip(punctuation) for url in urls]
@@ -146,14 +146,17 @@ class Link:
                 url
                 for url in value
                 if isinstance(url, str) and URL_REGEX.match(url)
-            ]  # noqa: E501
+            ]
         else:
             urls = []
         return [url for url in urls if valid_url(url)]
 
     @classmethod
     def get_type(cls, link: str) -> str | None:
-        """Return Link_Type if the given link is valid. Otherwise, return None."""
+        """Return Link_Type if the given link is valid.
+
+        Otherwise, return None.
+        """
         for link_type, regex in LINK_TYPES_REGEX.items():
             if regex.match(link):
                 return link_type
@@ -282,7 +285,7 @@ class Link:
         elif parsed_url.netloc == 'code.google.com':
             issue_id = parsed_url.query.split('id=')[-1].split('&')[0]
 
-        # csrf token is required, its expiration is about 2 hours according to the tokenExpiresSec field  # noqa: E501
+        # csrf token is required, its expiration is about 2 hours according to the tokenExpiresSec field
         # technically, we could cache the csrf token and reuse it for 2 hours
         # TODO: consider using a monorail API client with OAuth
 
@@ -293,7 +296,7 @@ class Link:
         csrf_tokens_list = re.findall("'token': '(.*?)'", csrf_response.text)
         csrf_token_str: str | None = (
             str(csrf_tokens_list[0]) if csrf_tokens_list else None
-        )  # noqa: E501
+        )
 
         if csrf_token_str is None:
             raise Exception('Could not find bugs.chromium.org CSRF token')
@@ -329,29 +332,36 @@ class Link:
         # use \s+ instead of whitespace, to match multiple whitespaces or newlines
         title_og = re.search(
             r'<meta property="og:title"\s+content="(.*?)"', html_str
-        )  # noqa: E501
+        )
         description = re.search(
             r'<meta name="description"\s+content="(.*?)"', html_str
-        )  # noqa: E501
+        )
         description_og = re.search(
             r'<meta property="og:description"\s+content="(.*?)"', html_str
-        )  # noqa: E501
+        )
 
         return {
-            'title': title_og.group(1)
-            if title_og
-            else (title.group(1) if title else None),  # noqa: E501
-            'description': description_og.group(1)
-            if description_og
-            else (description.group(1) if description else None),  # noqa: E501
+            'title': (
+                title_og.group(1)
+                if title_og
+                else (title.group(1) if title else None)
+            ),
+            'description': (
+                description_og.group(1)
+                if description_og
+                else (description.group(1) if description else None)
+            ),
         }
 
     def _validate_url(self) -> bool:
-        """The `_validate_url` method is used to validate the URL associated with the Link object. It
+        """The `_validate_url` method is used to validate the URL associated
+        with the Link object.
+
+        It
         sends a GET request to the URL and checks the response status code. If the status code is not
         200 (OK), it sets the `is_error` flag to True and stores the HTTP error code. This method is
         used to determine if the URL is accessible and valid.
-        """  # noqa: D205, E501
+        """  # noqa: D205
         res = requests.get(self.url, allow_redirects=True, timeout=TIMEOUT)
         if res.status_code != 200:
             self.is_error = True

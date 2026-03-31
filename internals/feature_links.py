@@ -12,8 +12,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-"""Model and functions for extracting, indexing, and updating URLs linked within feature fields."""
+"""Model and functions for extracting, indexing, and updating URLs linked within
+feature fields."""
 
 import datetime
 import logging
@@ -40,8 +40,10 @@ CRON_JOB_LINK_STALE_DAYS = 8
 
 class FeatureLinks(ndb.Model):
     """Links that occur in the fields of the feature.
-    This helps show a preview of information of linked pages, saving users the trouble of clicking.
-    """  # noqa: D205, E501
+
+    This helps show a preview of information of linked pages, saving users the
+    trouble of clicking.
+    """  # noqa: D205
 
     created = ndb.DateTimeProperty(auto_now_add=True)
     updated = ndb.DateTimeProperty(auto_now=True)
@@ -55,14 +57,14 @@ class FeatureLinks(ndb.Model):
 
 def update_feature_links(
     fe: FeatureEntry, changed_fields: list[tuple[str, Any, Any]]
-) -> None:  # noqa: E501
+) -> None:
     """Update the links in the given feature entry."""
     for field, old_val, new_val in changed_fields:
         if new_val != old_val:
             if old_val is None and not bool(new_val):
                 continue
 
-            # Clear the denormalized fields that get filled from feature links; they'll get updated below  # noqa: E501
+            # Clear the denormalized fields that get filled from feature links; they'll get updated below
             # with their new values.
             if field == 'safari_views_link':
                 fe.safari_views_link_result = None
@@ -81,11 +83,11 @@ def update_feature_links(
                 all_urls = [
                     url
                     for value in fe_values
-                    for url in Link.extract_urls_from_value(value)  # noqa: E501
+                    for url in Link.extract_urls_from_value(value)
                 ]
                 for url in urls_to_remove:
                     if url not in all_urls:
-                        # if the url is not in any other field in this feature, then remove it from the index  # noqa: E501
+                        # if the url is not in any other field in this feature, then remove it from the index
                         link = Link(url)
                         _remove_link(link, fe)
                 for url in urls_to_add:
@@ -97,23 +99,25 @@ def update_feature_links(
                         if feature_link:
                             feature_link.put()
                             logging.info(
-                                f'Indexed feature_link {feature_link.url} to {feature_link.key.integer_id()} for feature {fe.key.integer_id()}'  # noqa: E501
+                                f'Indexed feature_link {feature_link.url} to {feature_link.key.integer_id()} for feature {fe.key.integer_id()}'
                             )
 
 
 def _get_index_link(
     link: Link, fe: FeatureEntry, should_parse_new_link: bool = False
-) -> FeatureLinks | None:  # noqa: E501
-    """Indexes a given link for a specific feature by creating or updating a `FeatureLinks` object.
+) -> FeatureLinks | None:
+    """Indexes a given link for a specific feature by creating or updating a
+    `FeatureLinks` object.
+
     Returns the `FeatureLinks` object or None.
-    """  # noqa: D205, E501
+    """  # noqa: D205
     feature_id = fe.key.integer_id()
     feature_links: list[FeatureLinks] = FeatureLinks.query(
         FeatureLinks.url == link.url
-    ).fetch(None)  # noqa: E501
+    ).fetch(None)
     feature_link: FeatureLinks | None = (
         feature_links[0] if feature_links else None
-    )  # noqa: E501
+    )
     if feature_link and hasattr(feature_link, 'feature_ids'):
         if feature_id not in feature_link.feature_ids:
             feature_link.feature_ids.append(feature_id)
@@ -141,10 +145,10 @@ def _remove_link(link: Link, fe: FeatureEntry) -> None:
     feature_id = fe.key.integer_id()
     feature_links: list[FeatureLinks] = FeatureLinks.query(
         FeatureLinks.url == link.url
-    ).fetch(None)  # noqa: E501
+    ).fetch(None)
     feature_link: FeatureLinks | None = (
         feature_links[0] if feature_links else None
-    )  # noqa: E501
+    )
     if feature_link and hasattr(feature_link, 'feature_ids'):
         if feature_id in feature_link.feature_ids:
             feature_link.feature_ids.remove(feature_id)
@@ -164,7 +168,7 @@ def _get_review_result_from_feature_link(
 
     Params:
       position_prefix: The lowercase prefix this organization uses for their opinion labels.
-    """  # noqa: E501
+    """
     if feature_link.information is None:
         return None
     for label in feature_link.information.get('labels', []):
@@ -184,7 +188,7 @@ def _put_if_changed(model: ndb.Model, field: str, new_val) -> None:
             field,
             new_val,
             model.key.kind(),
-            model.key.id(),  # noqa: E501
+            model.key.id(),
         )
         model.put()
 
@@ -193,11 +197,12 @@ def _denormalize_feature_link_into_entries(
     feature_link: FeatureLinks,
     possible_entries: list[FeatureEntry] | None = None,
 ) -> None:
-    """Fills information from feature_link into relevant fields in the FeatureEntries it appears in.
+    """Fills information from feature_link into relevant fields in the
+    FeatureEntries it appears in.
 
     Params:
       possible_entries: If the caller knows which FeatureEntries might need updating, pass that list here.
-    """  # noqa: E501
+    """
     if feature_link.type == LINK_TYPE_GITHUB_ISSUE:
         if possible_entries is None:
             possible_entries = ndb.get_multi(
@@ -245,34 +250,36 @@ def _denormalize_feature_link_into_entries(
 
 
 def _get_feature_links(feature_ids: list[int]) -> list[FeatureLinks]:
-    """Return a list of FeatureLinks for the given feature ids"""  # noqa: D415
+    """Return a list of FeatureLinks for the given feature ids."""  # noqa: D415
     feature_links = (
         FeatureLinks.query(FeatureLinks.feature_ids.IN(feature_ids)).fetch(None)
         if feature_ids
         else []
-    )  # noqa: E501
+    )
     return feature_links if feature_links else []
 
 
 def get_by_feature_id(
     feature_id: int, update_stale_links: bool
-) -> tuple[list[dict], bool]:  # noqa: E501
-    """Return a list of dicts of FeatureLinks for a given feature id
-    The returned dicts only include the url, type, and information fields.
+) -> tuple[list[dict], bool]:
+    """Return a list of dicts of FeatureLinks for a given feature id The
+    returned dicts only include the url, type, and information fields.
+
     This is used by the api to return json to the client.
     update_stale_links: if True, then trigger a background task to update the information of the links.
-    """  # noqa: D205, E501
+    """  # noqa: D205
     return get_by_feature_ids([feature_id], update_stale_links)
 
 
 def get_by_feature_ids(
     feature_ids: list[int], update_stale_links: bool
 ) -> tuple[list[dict], bool]:
-    """Return a list of dicts of FeatureLinks for the given feature ids
-    The returned dicts only include the url, type, and information fields.
+    """Return a list of dicts of FeatureLinks for the given feature ids The
+    returned dicts only include the url, type, and information fields.
+
     This is used by the api to return json to the client.
     update_stale_links: if True, then trigger a background task to update the information of the links.
-    """  # noqa: D205, E501
+    """  # noqa: D205
     feature_links = _get_feature_links(feature_ids)
     stale_time = datetime.datetime.now(
         tz=datetime.timezone.utc
@@ -286,7 +293,7 @@ def get_by_feature_ids(
     if has_stale_links and update_stale_links:
         logging.info(
             f'Found {len(stale_feature_links)} stale links for feature_ids {feature_ids}, send links to cloud task'
-        )  # noqa: E501
+        )
 
         feature_link_ids = [link.key.id() for link in stale_feature_links]
         cloud_tasks_helpers.enqueue_task(
@@ -299,7 +306,7 @@ def get_by_feature_ids(
     return [
         link.to_dict(include=['url', 'type', 'information', 'http_error_code'])
         for link in feature_links
-    ], has_stale_links  # noqa: E501
+    ], has_stale_links
 
 
 class FeatureLinksUpdateHandler(FlaskHandler):
@@ -316,11 +323,11 @@ class FeatureLinksUpdateHandler(FlaskHandler):
         feature_link_ids = self.get_param('feature_link_ids')
         should_notify_on_error = self.get_bool_param(
             'should_notify_on_error', False
-        )  # noqa: E501
+        )
 
         _index_feature_links_by_ids(
             feature_link_ids, should_notify_on_error=should_notify_on_error
-        )  # noqa: E501
+        )
         logging.info('Finished indexing feature links')
         return {'message': 'Done'}
 
@@ -328,7 +335,7 @@ class FeatureLinksUpdateHandler(FlaskHandler):
 def _index_feature_links_by_ids(
     feature_link_ids: list[Any], should_notify_on_error: bool
 ) -> None:
-    """Index the links in the given feature links ids"""  # noqa: D415
+    """Index the links in the given feature links ids."""  # noqa: D415
     for feature_link_id in feature_link_ids:
         feature_link: FeatureLinks = FeatureLinks.get_by_id(feature_link_id)
         if feature_link:
@@ -344,7 +351,7 @@ def _index_feature_links_by_ids(
                 feature_link.is_error = link.is_error
                 logging.info(
                     f'Update indexed link {feature_link_id} {feature_link.url} encountered error'
-                )  # noqa: E501
+                )
             else:
                 # update the information if it is not an error
                 feature_link.information = link.information
@@ -352,7 +359,7 @@ def _index_feature_links_by_ids(
                 feature_link.http_error_code = None
                 logging.info(
                     f'Update indexed link {feature_link_id} {feature_link.url} successfully'
-                )  # noqa: E501
+                )
                 _denormalize_feature_link_into_entries(feature_link)
 
             feature_link.type = link.type
@@ -365,21 +372,21 @@ def _extract_feature_urls(fe: FeatureEntry) -> list[str]:
         url
         for value in fe_values
         for url in Link.extract_urls_from_value(value)
-    ]  # noqa: E501
+    ]
     return list(set(all_urls))
 
 
 def batch_index_feature_entries(
     fes: list[FeatureEntry], skip_existing: bool
-) -> int:  # noqa: E501
-    """The function `batch_index_feature_entries` takes a list of `FeatureEntry` objects, generates feature
-    links for each entry, and stores them in batches in the database, skipping existing entries if
-    specified.
+) -> int:
+    """The function `batch_index_feature_entries` takes a list of `FeatureEntry`
+    objects, generates feature links for each entry, and stores them in batches
+    in the database, skipping existing entries if specified.
 
     :param fes: fes is a list of FeatureEntry
-    :param skip_existing: A boolean value indicating whether to skip feature entries that already have
-    existing feature links
-    """  # noqa: D205, E501
+    :param skip_existing: A boolean value indicating whether to skip feature
+        entries that already have existing feature links
+    """  # noqa: D205
     link_count = 0
 
     for fe in fes:
@@ -401,7 +408,7 @@ def batch_index_feature_entries(
         link_count += len(feature_links)
         logging.info(
             f'Feature {fe.key.integer_id()} indexed {len(feature_links)} urls'
-        )  # noqa: E501
+        )
 
     return link_count
 
@@ -418,9 +425,9 @@ def get_domain_with_scheme(url):
 
 
 def get_feature_links_summary():
-    """The function `get_feature_links_summary` retrieves feature links from a database, groups them by
-    type and uncovered domains, and returns a summary of the counts and types of links.
-    """  # noqa: D205, E501
+    """The function `get_feature_links_summary` retrieves feature links from a
+    database, groups them by type and uncovered domains, and returns a summary
+    of the counts and types of links."""  # noqa: D205
     MAX_RESULTS = 100
 
     feature_links = FeatureLinks.query().fetch(
@@ -440,23 +447,23 @@ def get_feature_links_summary():
     link_types_counter = Counter(item['type'] for item in links)
     uncovered_link_domains_counter = Counter(
         get_domain_with_scheme(item['url']) for item in uncovered_links
-    )  # noqa: E501
+    )
     error_link_domains_counter = Counter(
         get_domain_with_scheme(item['url']) for item in error_links
-    )  # noqa: E501
+    )
 
     link_types = [
         {'key': k, 'count': c}
         for (k, c) in link_types_counter.most_common(MAX_RESULTS)
-    ]  # noqa: E501
+    ]
     uncovered_link_domains = [
         {'key': k, 'count': c}
         for (k, c) in uncovered_link_domains_counter.most_common(MAX_RESULTS)
-    ]  # noqa: E501
+    ]
     error_link_domains = [
         {'key': k, 'count': c}
         for (k, c) in error_link_domains_counter.most_common(MAX_RESULTS)
-    ]  # noqa: E501
+    ]
 
     return {
         'total_count': len(links),
@@ -472,8 +479,9 @@ def get_feature_links_summary():
 
 def get_feature_links_samples(
     domain: str, type: str | None, is_error: bool | None
-):  # noqa: E501
-    """Retrieves a list of feature links based on the specified domain, type, and error status."""  # noqa: E501
+):
+    """Retrieves a list of feature links based on the specified domain, type,
+    and error status."""
     MAX_SAMPLES = 100
     filters = [
         FeatureLinks.url >= domain,
@@ -484,7 +492,7 @@ def get_feature_links_samples(
         filters.append(FeatureLinks.is_error == is_error)
     feature_links = FeatureLinks.query(*filters).fetch(MAX_SAMPLES)
 
-    # filter out links that do not start with the specified domain and convert to dict  # noqa: E501
+    # filter out links that do not start with the specified domain and convert to dict
     feature_links = [
         fl.to_dict(
             include=[
@@ -494,7 +502,7 @@ def get_feature_links_samples(
                 'is_error',
                 'http_error_code',
             ]
-        )  # noqa: E501
+        )
         for fl in feature_links
         if fl.url.startswith(domain)
     ]
@@ -512,9 +520,9 @@ def get_feature_links_samples(
 
 class UpdateAllFeatureLinksHandlers(FlaskHandler):
     def get_template_data(self, **kwargs) -> str:
-        """Retrieves feature links from a database, identifies which links need to be updated based on certain conditions,
-        and enqueues tasks to update those links in batches.
-        """  # noqa: D205, E501
+        """Retrieves feature links from a database, identifies which links need
+        to be updated based on certain conditions, and enqueues tasks to update
+        those links in batches."""  # noqa: D205
         self.require_cron_header()
 
         should_notify_on_error = self.get_bool_arg(
@@ -540,7 +548,7 @@ class UpdateAllFeatureLinksHandlers(FlaskHandler):
         else:
             stale_time = datetime.datetime.now(
                 tz=datetime.timezone.utc
-            ) - datetime.timedelta(days=CRON_JOB_LINK_STALE_DAYS)  # noqa: E501
+            ) - datetime.timedelta(days=CRON_JOB_LINK_STALE_DAYS)
             stale_time = stale_time.replace(tzinfo=None)
             for fe in feature_links:
                 # if stale
@@ -557,7 +565,7 @@ class UpdateAllFeatureLinksHandlers(FlaskHandler):
         batch_update_ids = [
             ids_to_update[i : i + BATCH_SIZE]
             for i in range(0, len(ids_to_update), BATCH_SIZE)
-        ]  # noqa: E501
+        ]
 
         for batch in batch_update_ids:
             cloud_tasks_helpers.enqueue_task(
@@ -568,6 +576,6 @@ class UpdateAllFeatureLinksHandlers(FlaskHandler):
                 },
             )
 
-        msg = f'Started updating {len(ids_to_update)} Feature Links in {len(batch_update_ids)} batches'  # noqa: E501
+        msg = f'Started updating {len(ids_to_update)} Feature Links in {len(batch_update_ids)} batches'
         logging.info(msg)
         return msg

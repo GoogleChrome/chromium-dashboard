@@ -11,8 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-"""API endpoints for identifying and retrieving information about stale features."""
+"""API endpoints for identifying and retrieving information about stale
+features."""
 
 from datetime import datetime
 from typing import TypedDict
@@ -50,7 +50,9 @@ class StaleFeaturesAPI(basehandlers.EntitiesAPIHandler):
                     'owner_emails': feature.owner_emails,
                     'milestone': mstone,
                     'milestone_field': mstone_field,
-                    'outstanding_notifications': feature.outstanding_notifications,
+                    'outstanding_notifications': (
+                        feature.outstanding_notifications
+                    ),
                     'accurate_as_of': datetime.strftime(
                         feature.accurate_as_of, '%Y-%m-%dT%H:%M:%S'
                     ),

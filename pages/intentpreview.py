@@ -12,7 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Provides a handler to preview intent-to-implement/ship emails."""
 
 from api.converters import feature_entry_to_json_verbose
@@ -30,7 +29,10 @@ VIEW_FEATURE_URL = '/feature'
 
 
 class IntentEmailPreviewHandler(basehandlers.FlaskHandler):
-    """Show a preview of an intent email. Used for testing the intent template."""
+    """Show a preview of an intent email.
+
+    Used for testing the intent template.
+    """
 
     TEMPLATE_PATH = 'blink/intent_to_implement.html'
 

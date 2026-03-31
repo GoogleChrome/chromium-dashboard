@@ -11,8 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-"""Tests for the features_api module, verifying feature CRUD operations and permissions."""
+"""Tests for the features_api module, verifying feature CRUD operations and
+permissions."""
 
 import logging
 from datetime import datetime
@@ -89,7 +89,7 @@ class FeaturesAPITestDelete(testing_config.CustomTestCase):
         activities = Activity.get_activities(self.feature_id)
         archive_activities = [
             a for a in activities if 'archived' in a.content.lower()
-        ]  # noqa: E501
+        ]
         self.assertEqual(1, len(archive_activities))
         archive_activity = archive_activities[0]
         self.assertEqual(email, archive_activity.author)
@@ -387,7 +387,8 @@ class FeaturesAPITest(testing_config.CustomTestCase):
                 self.handler.do_get()
 
     def test_get__all_unlisted_no_perms(self):
-        """JSON feed does not include unlisted features for users who can't edit."""
+        """JSON feed does not include unlisted features for users who can't
+        edit."""
         self.feature_1.unlisted = True
         self.feature_1.put()
 
@@ -484,7 +485,8 @@ class FeaturesAPITest(testing_config.CustomTestCase):
         )
 
     def test_get__in_milestone_unlisted_no_perms(self):
-        """JSON feed does not include unlisted features for users who can't edit."""
+        """JSON feed does not include unlisted features for users who can't
+        edit."""
         self.feature_1.unlisted = True
         self.feature_1.put()
 
@@ -619,7 +621,8 @@ class FeaturesAPITest(testing_config.CustomTestCase):
         mock_notify.assert_called_once()
 
     def test_patch__valid(self):
-        """PATCH request successful with valid input from user with permissions."""
+        """PATCH request successful with valid input from user with
+        permissions."""
         # Signed-in user with permissions.
         testing_config.sign_in('admin@example.com', 123567890)
 
@@ -662,7 +665,7 @@ class FeaturesAPITest(testing_config.CustomTestCase):
         # Success response should be returned.
         self.assertEqual(
             {'message': f'Feature {self.feature_1_id} updated.'}, response
-        )  # noqa: E501
+        )
         # Assert that changes were made.
         for field, expected_value in expected_changes:
             self.assertEqual(getattr(self.feature_1, field), expected_value)
@@ -751,12 +754,13 @@ class FeaturesAPITest(testing_config.CustomTestCase):
         # Updater email field should be changed.
         self.assertIsNotNone(self.feature_1.updated)
         self.assertEqual(self.feature_1.updater_email, 'admin@example.com')
-        # The rollout milestone should be set in the milestones field and the rollout_milestone field.  # noqa: E501
+        # The rollout milestone should be set in the milestones field and the rollout_milestone field.
         self.assertEqual(self.enterprise_stage.rollout_milestone, 105)
         self.assertEqual(self.enterprise_stage.milestones.desktop_first, 105)
 
     def test_patch__milestone_changes_null(self):
-        """Valid PATCH updates milestone fields when milestones object is null."""
+        """Valid PATCH updates milestone fields when milestones object is
+        null."""
         self.ship_stage_1.milestones = None
         self.ship_stage_1.put()
 
@@ -874,7 +878,7 @@ class FeaturesAPITest(testing_config.CustomTestCase):
         # Ensure that the accuracy verification was captured as an activity.
         activities: list[Activity] = Activity.query(
             Activity.feature_id == self.feature_1_id
-        ).fetch()  # noqa: E501
+        ).fetch()
         accuracy_activity = next(
             (
                 a
@@ -951,7 +955,8 @@ class FeaturesAPITest(testing_config.CustomTestCase):
     def test_patch__reset_notifications_on_shipped_android_milestone_change(
         self,
     ):
-        """Notifications are reset when 'shipped_android_milestone' is changed."""
+        """Notifications are reset when 'shipped_android_milestone' is
+        changed."""
         self._run_notification_test(
             'shipped_android_milestone', 103, 0, milestone_key='android_first'
         )
@@ -965,7 +970,8 @@ class FeaturesAPITest(testing_config.CustomTestCase):
     def test_patch__reset_notifications_on_shipped_webview_milestone_change(
         self,
     ):
-        """Notifications are reset when 'shipped_webview_milestone' is changed."""
+        """Notifications are reset when 'shipped_webview_milestone' is
+        changed."""
         self._run_notification_test(
             'shipped_webview_milestone', 105, 0, milestone_key='webview_first'
         )
@@ -1001,14 +1007,15 @@ class FeaturesAPITest(testing_config.CustomTestCase):
     @mock.patch('api.channels_api.construct_specified_milestones_details')
     def test_patch__enterprise_first_notice_wrong_non_enterprise_feature(
         self, mock_call
-    ):  # noqa: E501
-        """PATCH request successful with no changes to first_enterprise_notification_milestone."""  # noqa: E501
+    ):
+        """PATCH request successful with no changes to
+        first_enterprise_notification_milestone."""
         stable_date = _datetime_to_str(
             datetime.now().replace(year=datetime.now().year + 1, day=1)
-        )  # noqa: E501
+        )
         mock_call.return_value = {
             100: {'version': 100, 'stable_date': stable_date}
-        }  # noqa: E501
+        }
 
         # Signed-in user with permissions.
         testing_config.sign_in('admin@example.com', 123567890)
@@ -1029,19 +1036,20 @@ class FeaturesAPITest(testing_config.CustomTestCase):
         # Success response should be returned.
         self.assertEqual(
             {'message': f'Feature {self.feature_1_id} updated.'}, response
-        )  # noqa: E501
+        )
         # Assert that changes were made.
         self.assertEqual(
             getattr(self.feature_1, 'first_enterprise_notification_milestone'),
             None,
-        )  # noqa: E501
+        )
         # Updater email field should be changed.
         self.assertIsNotNone(self.feature_1.updated)
         self.assertIsNone(self.feature_1.updater_email)
 
     @mock.patch('api.channels_api.construct_specified_milestones_details')
     def test_patch__enterprise_first_notice_enterprise_feature(self, mock_call):
-        """PATCH request successful with provided first_enterprise_notification_milestone."""  # noqa: E501
+        """PATCH request successful with provided
+        first_enterprise_notification_milestone."""
         stable_date = _datetime_to_str(
             datetime.now().replace(year=datetime.now().year, day=1)
         )
@@ -1074,12 +1082,12 @@ class FeaturesAPITest(testing_config.CustomTestCase):
         # Success response should be returned.
         self.assertEqual(
             {'message': f'Feature {self.feature_1_id} updated.'}, response
-        )  # noqa: E501
+        )
         # Assert that changes were made.
         self.assertEqual(
             getattr(self.feature_1, 'first_enterprise_notification_milestone'),
             100,
-        )  # noqa: E501
+        )
         # Updater email field should be changed.
         self.assertIsNotNone(self.feature_1.updated)
         self.assertEqual(self.feature_1.updater_email, 'admin@example.com')
@@ -1087,8 +1095,9 @@ class FeaturesAPITest(testing_config.CustomTestCase):
     @mock.patch('api.channels_api.construct_specified_milestones_details')
     def test_patch__enterprise_first_notice_newly_breaking_feature(
         self, mock_call
-    ):  # noqa: E501
-        """PATCH request successful with provided first_enterprise_notification_milestone."""  # noqa: E501
+    ):
+        """PATCH request successful with provided
+        first_enterprise_notification_milestone."""
         stable_date = _datetime_to_str(
             datetime.now().replace(year=datetime.now().year, day=1)
         )
@@ -1120,12 +1129,12 @@ class FeaturesAPITest(testing_config.CustomTestCase):
         # Success response should be returned.
         self.assertEqual(
             {'message': f'Feature {self.feature_1_id} updated.'}, response
-        )  # noqa: E501
+        )
         # Assert that changes were made.
         self.assertEqual(
             getattr(self.feature_1, 'first_enterprise_notification_milestone'),
             100,
-        )  # noqa: E501
+        )
         # Updater email field should be changed.
         self.assertIsNotNone(self.feature_1.updated)
         self.assertEqual(self.feature_1.updater_email, 'admin@example.com')
@@ -1133,14 +1142,15 @@ class FeaturesAPITest(testing_config.CustomTestCase):
     @mock.patch('api.channels_api.construct_specified_milestones_details')
     def test_patch__enterprise_first_notice_becomes_not_breaking_feature(
         self, mock_call
-    ):  # noqa: E501
-        """PATCH request successful with first_enterprise_notification_milestone deleted."""  # noqa: E501
+    ):
+        """PATCH request successful with first_enterprise_notification_milestone
+        deleted."""
         stable_date = _datetime_to_str(
             datetime.now().replace(year=datetime.now().year + 1, day=1)
-        )  # noqa: E501
+        )
         mock_call.return_value = {
             100: {'version': 100, 'stable_date': stable_date}
-        }  # noqa: E501
+        }
 
         self.feature_1.enterprise_impact = core_enums.ENTERPRISE_IMPACT_MEDIUM
         self.feature_1.first_enterprise_notification_milestone = 100
@@ -1165,12 +1175,12 @@ class FeaturesAPITest(testing_config.CustomTestCase):
         # Success response should be returned.
         self.assertEqual(
             {'message': f'Feature {self.feature_1_id} updated.'}, response
-        )  # noqa: E501
+        )
         # Assert that changes were made.
         self.assertEqual(
             getattr(self.feature_1, 'first_enterprise_notification_milestone'),
             None,
-        )  # noqa: E501
+        )
         # Updater email field should be changed.
         self.assertIsNotNone(self.feature_1.updated)
         self.assertEqual(self.feature_1.updater_email, 'admin@example.com')
@@ -1178,14 +1188,15 @@ class FeaturesAPITest(testing_config.CustomTestCase):
     @mock.patch('api.channels_api.construct_specified_milestones_details')
     def test_patch__first_notice_becomes_not_breaking_feature_already_published(
         self, mock_call
-    ):  # noqa: E501
-        """PATCH request successful with first_enterprise_notification_milestone not deleted."""  # noqa: E501
+    ):
+        """PATCH request successful with first_enterprise_notification_milestone
+        not deleted."""
         stable_date = _datetime_to_str(
             datetime.now().replace(year=datetime.now().year - 1, day=1)
-        )  # noqa: E501
+        )
         mock_call.return_value = {
             100: {'version': 100, 'stable_date': stable_date}
-        }  # noqa: E501
+        }
 
         self.feature_1.enterprise_impact = core_enums.ENTERPRISE_IMPACT_MEDIUM
         self.feature_1.first_enterprise_notification_milestone = 100
@@ -1210,12 +1221,12 @@ class FeaturesAPITest(testing_config.CustomTestCase):
         # Success response should be returned.
         self.assertEqual(
             {'message': f'Feature {self.feature_1_id} updated.'}, response
-        )  # noqa: E501
+        )
         # Assert that changes were made.
         self.assertEqual(
             getattr(self.feature_1, 'first_enterprise_notification_milestone'),
             100,
-        )  # noqa: E501
+        )
         # Updater email field should be changed.
         self.assertIsNotNone(self.feature_1.updated)
         self.assertEqual(self.feature_1.updater_email, 'admin@example.com')
@@ -1224,14 +1235,15 @@ class FeaturesAPITest(testing_config.CustomTestCase):
     @mock.patch('api.channels_api.construct_specified_milestones_details')
     def test_patch__enterprise_first_notice_in_the_past(
         self, specified_mock, chrome_mock
-    ):  # noqa: E501
-        """PATCH request successful with newer default first_enterprise_notification_milestone."""  # noqa: E501
+    ):
+        """PATCH request successful with newer default
+        first_enterprise_notification_milestone."""
         stable_date = _datetime_to_str(
             datetime.now().replace(year=datetime.now().year - 2, day=1)
-        )  # noqa: E501
+        )
         specified_mock.return_value = {
             100: {'version': 100, 'stable_date': stable_date}
-        }  # noqa: E501
+        }
         chrome_mock.return_value = {'beta': {'version': 420}}
 
         # Signed-in user with permissions.
@@ -1255,19 +1267,20 @@ class FeaturesAPITest(testing_config.CustomTestCase):
         # Success response should be returned.
         self.assertEqual(
             {'message': f'Feature {self.feature_1_id} updated.'}, response
-        )  # noqa: E501
+        )
         # Assert that changes were made.
         self.assertEqual(
             getattr(self.feature_1, 'first_enterprise_notification_milestone'),
             420,
-        )  # noqa: E501
+        )
         # Updater email field should be changed.
         self.assertIsNotNone(self.feature_1.updated)
         self.assertEqual(self.feature_1.updater_email, 'admin@example.com')
 
     @mock.patch('api.channels_api.construct_specified_milestones_details')
     def test_patch__enterprise_first_notice_already_published(self, mock_call):
-        """PATCH request successful with no changes to first_enterprise_notification_milestone."""  # noqa: E501
+        """PATCH request successful with no changes to
+        first_enterprise_notification_milestone."""
         now = datetime.now()
         mock_call.return_value = {
             100: {
@@ -1305,12 +1318,12 @@ class FeaturesAPITest(testing_config.CustomTestCase):
         # Success response should be returned.
         self.assertEqual(
             {'message': f'Feature {self.feature_1_id} updated.'}, response
-        )  # noqa: E501
+        )
         # Assert that changes were made.
         self.assertEqual(
             getattr(self.feature_1, 'first_enterprise_notification_milestone'),
             100,
-        )  # noqa: E501
+        )
         # Updater email field should be changed.
         self.assertIsNotNone(self.feature_1.updated)
         self.assertIsNone(self.feature_1.updater_email)
@@ -1361,7 +1374,8 @@ class FeaturesAPITest(testing_config.CustomTestCase):
         self.assertEqual([], self.feature_1.markdown_fields)
 
     def test_post__valid(self):
-        """POST request successful with valid input from user with permissions."""
+        """POST request successful with valid input from user with
+        permissions."""
         # Signed-in user with permissions.
         testing_config.sign_in('admin@example.com', 123567890)
 
@@ -1400,14 +1414,15 @@ class FeaturesAPITest(testing_config.CustomTestCase):
                 self.assertEqual(
                     new_feature.owner_emails,
                     ['user@example.com', 'user2@example.com'],
-                )  # noqa: E501
+                )
             else:
                 self.assertEqual(getattr(new_feature, field), value)
         # User's email should match creator_email field.
         self.assertEqual(new_feature.creator_email, 'admin@example.com')
 
     def test_post__valid_stage_and_gate_creation(self):
-        """POST request successful with valid input from user with permissions."""
+        """POST request successful with valid input from user with
+        permissions."""
         # Signed-in user with permissions.
         testing_config.sign_in('admin@example.com', 123567890)
 
@@ -1497,7 +1512,7 @@ class FeaturesAPITest(testing_config.CustomTestCase):
                 self.assertEqual(
                     new_feature.owner_emails,
                     ['user@example.com', 'user2@example.com'],
-                )  # noqa: E501
+                )
             else:
                 self.assertEqual(getattr(new_feature, field), value)
 
@@ -1622,8 +1637,9 @@ class FeaturesAPITest(testing_config.CustomTestCase):
     @mock.patch('api.channels_api.construct_chrome_channels_details')
     def test_post__first_enterprise_notification_milestone_missing_enterprise(
         self, mock_call
-    ):  # noqa: E501
-        """POST request successful with default first_enterprise_notification_milestone."""  # noqa: E501
+    ):
+        """POST request successful with default
+        first_enterprise_notification_milestone."""
         expected = {'beta': {'version': 420}}
         mock_call.return_value = expected
 
@@ -1663,7 +1679,7 @@ class FeaturesAPITest(testing_config.CustomTestCase):
                 self.assertEqual(
                     new_feature.owner_emails,
                     ['user@example.com', 'user2@example.com'],
-                )  # noqa: E501
+                )
             else:
                 self.assertEqual(getattr(new_feature, field), value)
 
@@ -1675,8 +1691,9 @@ class FeaturesAPITest(testing_config.CustomTestCase):
     @mock.patch('api.channels_api.construct_chrome_channels_details')
     def test_post__first_enterprise_notification_milestone_missing_impact_enterprise(
         self, mock_call
-    ):  # noqa: E501
-        """POST request successful with default first_enterprise_notification_milestone."""  # noqa: E501
+    ):
+        """POST request successful with default
+        first_enterprise_notification_milestone."""
         expected = {'beta': {'version': 420}}
         mock_call.return_value = expected
 
@@ -1717,7 +1734,7 @@ class FeaturesAPITest(testing_config.CustomTestCase):
                 self.assertEqual(
                     new_feature.owner_emails,
                     ['user@example.com', 'user2@example.com'],
-                )  # noqa: E501
+                )
             else:
                 self.assertEqual(getattr(new_feature, field), value)
 
@@ -1728,7 +1745,8 @@ class FeaturesAPITest(testing_config.CustomTestCase):
 
     @mock.patch('api.channels_api.construct_chrome_channels_details')
     def test_post__first_enterprise_notification_milestone_set(self, mock_call):
-        """POST request successful with provided first_enterprise_notification_milestone."""  # noqa: E501
+        """POST request successful with provided
+        first_enterprise_notification_milestone."""
         expected = {'beta': {'version': 420}}
         mock_call.return_value = expected
 
@@ -1770,7 +1788,7 @@ class FeaturesAPITest(testing_config.CustomTestCase):
                 self.assertEqual(
                     new_feature.owner_emails,
                     ['user@example.com', 'user2@example.com'],
-                )  # noqa: E501
+                )
             else:
                 self.assertEqual(getattr(new_feature, field), value)
 

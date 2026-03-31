@@ -11,8 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-"""Cron handler for assembling and enqueuing automated origin trial process reminder emails."""
+"""Cron handler for assembling and enqueuing automated origin trial process
+reminder emails."""
 
 import logging
 import time
@@ -70,8 +70,9 @@ def build_trial_data(trial_data: dict[str, Any]) -> dict[str, Any] | None:
 
 def get_trials(
     release: int,
-) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:  # noqa: E501
-    """Assemble information about trials that are starting or ending this release."""  # noqa: E501
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    """Assemble information about trials that are starting or ending this
+    release."""
     trials_list = origin_trials_client.get_trials_list()
     starting_trials = []
     ending_trials = []
@@ -105,7 +106,7 @@ def send_email_reminders() -> str:
     current_stable_release = get_current_stable_release(today)
     next_stable_release = get_release(
         get_next_release_number(get_milestone(current_stable_release))
-    )  # noqa: E501
+    )
 
     send_count = 0
 
@@ -115,21 +116,21 @@ def send_email_reminders() -> str:
     if time_to_next_branch == 0:  # The next version is branching
         send_count += send_branch_emails(
             get_milestone(next_branch_release), next_branch_date
-        )  # noqa: E501
+        )
 
     time_to_next_beta = diff_weeks(get_beta_date(next_stable_release), today)
     if time_to_next_beta == 0:
         send_count += send_beta_availability_emails(
             get_milestone(next_stable_release)
-        )  # noqa: E501
+        )
 
     time_since_last_stable = diff_weeks(
         today, get_stable_date(current_stable_release)
-    )  # noqa: E501
+    )
     if time_since_last_stable == 1:
         send_count += send_stable_update_emails(
             get_milestone(current_stable_release)
-        )  # noqa: E501
+        )
 
     params = {
         'branch_date': format_date_for_email(today),
@@ -148,11 +149,12 @@ def send_email_reminders() -> str:
 
 
 def send_branch_emails(release: int, next_branch_date: date) -> int:
-    """Send reminders about trials that are first branching or are in their last milestone"""  # noqa: D415, E501
+    """Send reminders about trials that are first branching or are in their last
+    milestone."""  # noqa: D415
     starting_trials, ending_trials = get_trials(release)
     formatted_branch_date = (
         format_date_for_email(next_branch_date) if next_branch_date else 'soon'
-    )  # noqa: E501
+    )
     num_branching_trials = len(starting_trials)
 
     logging.info(f'Currently branching - {num_branching_trials} emails to send')
@@ -208,7 +210,7 @@ def send_stable_update_emails(release):
         format_date_for_email(after_end_branch_date)
         if after_end_branch_date
         else 'in 4-6 weeks'
-    )  # noqa: E501
+    )
 
     _, trials_ending_in_next_release = get_trials(trial_end_release)
     for trial in trials_ending_in_next_release:

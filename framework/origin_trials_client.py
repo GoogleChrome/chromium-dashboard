@@ -11,11 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Client for interacting with the Google Chrome Origin Trials API.
 
-Provides functions to fetch lists of origin trials, extend existing trials,
-and create new origin trial configurations based on Chromium milestones.
+Provides functions to fetch lists of origin trials, extend existing trials, and
+create new origin trial configurations based on Chromium milestones.
 """
 
 import logging
@@ -151,8 +150,8 @@ def _get_trial_end_time(end_milestone: int) -> int:
 
 
 def _get_ot_access_token() -> str:
-    """Obtain the service account credentials to be used in the request
-    using the origin trials auth scope
+    """Obtain the service account credentials to be used in the request using
+    the origin trials auth scope.
 
     Returns:
       The access token to be used for origin trials requests.
@@ -187,7 +186,9 @@ def _send_create_trial_request(
             'documentation_url': ot_stage.ot_documentation_url,
             'feedback_url': ot_stage.ot_feedback_submission_url,
             'intent_to_experiment_url': ot_stage.intent_thread_url,
-            'chromestatus_url': f'{settings.SITE_URL}feature/{ot_stage.feature_id}',
+            'chromestatus_url': (
+                f'{settings.SITE_URL}feature/{ot_stage.feature_id}'
+            ),
             'allow_third_party_origins': ot_stage.ot_has_third_party_support,
             'type': (
                 'DEPRECATION'
@@ -200,10 +201,14 @@ def _send_create_trial_request(
     if ot_stage.ot_require_approvals:
         json['registration_config'] = {
             'approval_type': 'CUSTOM',
-            'approval_buganizer_component_id': ot_stage.ot_approval_buganizer_component,  # noqa: E501
+            'approval_buganizer_component_id': (
+                ot_stage.ot_approval_buganizer_component
+            ),
             'approval_criteria_url': ot_stage.ot_approval_criteria_url,
             'approval_group_email': ot_stage.ot_approval_group_email,
-            'approval_buganizer_custom_field_id': ot_stage.ot_approval_buganizer_custom_field_id,  # noqa: E501
+            'approval_buganizer_custom_field_id': (
+                ot_stage.ot_approval_buganizer_custom_field_id
+            ),
         }
     if ot_stage.ot_chromium_trial_name:
         json['trial']['origin_trial_feature_name'] = (

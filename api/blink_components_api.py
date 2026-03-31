@@ -12,8 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-
 """API handlers for retrieving the list of valid Blink components."""
 
 from framework import basehandlers
@@ -22,11 +20,10 @@ from internals import user_models
 
 class BlinkComponentsAPI(basehandlers.APIHandler):
     """The list of blink components populates the "Blink component" select field
-    in the guide form
-    """  # noqa: D205, D415
+    in the guide form."""  # noqa: D205, D415
 
     def do_get(self, **kwargs):
         """Returns a dict with blink components as both keys and values."""
         return {
             x: [x, x] for x in user_models.BlinkComponent.fetch_all_components()
-        }  # noqa: E501
+        }

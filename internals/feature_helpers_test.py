@@ -11,8 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-"""Tests for the feature_helpers module, verifying feature filtering and stage logic."""
+"""Tests for the feature_helpers module, verifying feature filtering and stage
+logic."""
 
 from datetime import datetime
 from unittest import mock
@@ -276,7 +276,8 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
         self.assertEqual([], actual)
 
     def test_get_feature_names_by_ids__cache_miss(self):
-        """We can load feature names from datastore, and cache them for later."""
+        """We can load feature names from datastore, and cache them for
+        later."""
         actual = feature_helpers.get_feature_names_by_ids(
             [self.feature_1.key.integer_id(), self.feature_2.key.integer_id()]
         )
@@ -316,7 +317,7 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
 
         actual = feature_helpers.get_feature_names_by_ids(
             [self.feature_1.key.integer_id()]
-        )  # noqa: E501
+        )
 
         self.assertEqual(1, len(actual))
         self.assertEqual(6, len(actual[0]))
@@ -543,7 +544,7 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
                     'confidential': False,
                 }
             ]
-        }  # noqa: E501
+        }
         rediscache.set(cache_key, cached_test_feature)
 
         actual = feature_helpers.get_in_milestone(milestone=1)
@@ -636,7 +637,8 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
         self.assertEqual(2, len(features))
 
     def test_get_features_in_release_notes__wp_need_enterprise_approval(self):
-        """We include WP features only if enterprise shipping gate is approved."""
+        """We include WP features only if enterprise shipping gate is
+        approved."""
         self._create_wp_stages_and_gates()
         cache_key = '%s|%s|%s' % (
             FeatureEntry.SEARCH_CACHE_KEY,
@@ -865,7 +867,11 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
                 )
             )
 
-        for status in [NO_ACTIVE_DEV, ON_HOLD, NO_LONGER_PURSUING]:  # noqa: F405
+        for status in [
+            NO_ACTIVE_DEV,
+            ON_HOLD,
+            NO_LONGER_PURSUING,
+        ]:  # noqa: F405
             self.assertFalse(
                 feature_helpers._should_appear_on_roadmap(
                     FeatureEntry(impl_status_chrome=status)
@@ -927,7 +933,8 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
     @mock.patch('internals.feature_helpers.get_current_milestone_info')
     @mock.patch('internals.feature_helpers.datetime')
     def test_get_stale_features__none_stale(self, mock_dt, mock_mstone_info):
-        """No features are stale, so the function should return an empty list."""
+        """No features are stale, so the function should return an empty
+        list."""
         mock_dt.now.return_value = datetime(2023, 1, 1)
         mock_mstone_info.return_value = {'mstone': '100'}
 
@@ -947,7 +954,8 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
     def test_get_stale_features__stale_but_no_relevant_milestone(
         self, mock_dt, mock_mstone_info
     ):
-        """Stale features with no milestones in the upcoming window are ignored."""
+        """Stale features with no milestones in the upcoming window are
+        ignored."""
         mock_dt.now.return_value = datetime(2023, 1, 1)
         mock_mstone_info.return_value = {'mstone': '100'}
 
@@ -959,7 +967,7 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
         shipping_stage_1.milestones = MilestoneSet(desktop_first=99)
         shipping_stage_1.put()
 
-        # feature_2 is stale, but its milestone is too far in the future (after 102).  # noqa: E501
+        # feature_2 is stale, but its milestone is too far in the future (after 102).
         self.feature_2.accurate_as_of = None
         self.feature_2.outstanding_notifications = 1
         self.feature_2.put()
@@ -1224,7 +1232,8 @@ class FeatureHelpersFilteringTest(testing_config.CustomTestCase):
         self.assertEqual(['Public feature'], self._get_names(actual))
 
     def test_filter_unlisted__user_with_no_access(self):
-        """A logged-in user should not see unlisted features they don't own/edit."""
+        """A logged-in user should not see unlisted features they don't
+        own/edit."""
         testing_config.sign_in(self.other_user_email, 1)
         actual = feature_helpers.filter_unlisted(self.all_feature_entries)
         self.assertEqual(1, len(actual))
@@ -1267,7 +1276,8 @@ class FeatureHelpersFilteringTest(testing_config.CustomTestCase):
         self.assertEqual(['Public feature'], self._get_names(actual))
 
     def test_filter_unlisted_formatted__user_with_no_access(self):
-        """A logged-in user should not see unlisted features they don't own/edit (formatted)."""  # noqa: E501
+        """A logged-in user should not see unlisted features they don't own/edit
+        (formatted)."""
         testing_config.sign_in(self.other_user_email, 1)
         actual = feature_helpers.filter_unlisted_formatted(
             self.all_formatted_features
@@ -1276,7 +1286,8 @@ class FeatureHelpersFilteringTest(testing_config.CustomTestCase):
         self.assertEqual(['Public feature'], self._get_names(actual))
 
     def test_filter_unlisted_formatted__user_is_owner(self):
-        """A logged-in user should see unlisted features they own (formatted)."""
+        """A logged-in user should see unlisted features they own
+        (formatted)."""
         testing_config.sign_in(self.owner_email, 1)
         actual = feature_helpers.filter_unlisted_formatted(
             self.all_formatted_features
@@ -1287,7 +1298,8 @@ class FeatureHelpersFilteringTest(testing_config.CustomTestCase):
         self.assertEqual(2, len(actual))
 
     def test_filter_unlisted_formatted__user_is_editor(self):
-        """A logged-in user should see unlisted features they can edit (formatted)."""  # noqa: E501
+        """A logged-in user should see unlisted features they can edit
+        (formatted)."""
         testing_config.sign_in(self.editor_email, 1)
         actual = feature_helpers.filter_unlisted_formatted(
             self.all_formatted_features
@@ -1298,7 +1310,8 @@ class FeatureHelpersFilteringTest(testing_config.CustomTestCase):
         self.assertEqual(2, len(actual))
 
     def test_filter_unlisted_formatted__user_is_creator(self):
-        """A logged-in user should see unlisted features they created (formatted)."""  # noqa: E501
+        """A logged-in user should see unlisted features they created
+        (formatted)."""
         testing_config.sign_in(self.creator_email, 1)
         actual = feature_helpers.filter_unlisted_formatted(
             self.all_formatted_features
@@ -1646,7 +1659,7 @@ class ShippingFeatureHelpersTest(testing_config.CustomTestCase):
             'feature7-unstable',
             MOCK_ENABLED_FEATURES_JSON,
             MOCK_CONTENT_FEATURES_CC,
-        )  # noqa: E501
+        )
         self.assertEqual(
             result, [feature_helpers.Criteria.RUNTIME_FEATURE_NOT_STABLE]
         )
@@ -1664,7 +1677,7 @@ class ShippingFeatureHelpersTest(testing_config.CustomTestCase):
             'Feature9Disabled',
             MOCK_ENABLED_FEATURES_JSON,
             MOCK_CONTENT_FEATURES_CC,
-        )  # noqa: E501
+        )
         self.assertEqual(
             result, [feature_helpers.Criteria.CONTENT_FEATURE_NOT_ENABLED]
         )
@@ -1674,7 +1687,7 @@ class ShippingFeatureHelpersTest(testing_config.CustomTestCase):
             'not-a-real-feature',
             MOCK_ENABLED_FEATURES_JSON,
             MOCK_CONTENT_FEATURES_CC,
-        )  # noqa: E501
+        )
         self.assertEqual(
             result, [feature_helpers.Criteria.CHROMIUM_FEATURE_NOT_FOUND]
         )
@@ -1684,7 +1697,7 @@ class ShippingFeatureHelpersTest(testing_config.CustomTestCase):
             'FeatureDictStable',
             MOCK_ENABLED_FEATURES_JSON,
             MOCK_CONTENT_FEATURES_CC,
-        )  # noqa: E501
+        )
         self.assertEqual(result, [])
 
         # Case 7: Found in JSON, status is dict, no platforms are "stable".
@@ -1692,7 +1705,7 @@ class ShippingFeatureHelpersTest(testing_config.CustomTestCase):
             'FeatureDictUnstable',
             MOCK_ENABLED_FEATURES_JSON,
             MOCK_CONTENT_FEATURES_CC,
-        )  # noqa: E501
+        )
         self.assertEqual(
             result, [feature_helpers.Criteria.RUNTIME_FEATURE_NOT_STABLE]
         )
@@ -1795,10 +1808,10 @@ class ShippingFeatureHelpersTest(testing_config.CustomTestCase):
         self.assertIn('F7 Unstable', incomplete_map)
         self.assertEqual(
             incomplete_map['F7 Unstable'], ['runtime_feature_not_stable']
-        )  # noqa: E501
+        )
 
         # Feature 9: Disabled in CC
         self.assertIn('F9 Disabled', incomplete_map)
         self.assertEqual(
             incomplete_map['F9 Disabled'], ['content_feature_not_enabled']
-        )  # noqa: E501
+        )

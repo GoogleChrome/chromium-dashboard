@@ -43,7 +43,8 @@ class OwnersFile(ndb.Model):
 
     @classmethod
     def get_raw_owner_file(cls, url) -> OwnersFile | None:
-        """Retrieve raw the owner file's content, if it is created with an hour."""
+        """Retrieve raw the owner file's content, if it is created with an
+        hour."""
         q = cls.query()
         q = q.filter(cls.url == url)
         owners_file_list = q.fetch(1)

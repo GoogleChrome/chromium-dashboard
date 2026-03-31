@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Tests for the FeatureEntry stage helper functions."""
 
 import testing_config  # Must be imported before the module under test.
@@ -47,7 +46,8 @@ class StageHelpersTest(testing_config.CustomTestCase):
             stage.put()
 
     def test_get_feature_stages(self):
-        """A dictionary with stages relevant to the feature should be present."""
+        """A dictionary with stages relevant to the feature should be
+        present."""
         stage_dict = stage_helpers.get_feature_stages(self.feature_id)
         list_stages = stage_dict.items()
         expected_stage_types = {410, 430, 450, 460, 470}
@@ -60,7 +60,8 @@ class StageHelpersTest(testing_config.CustomTestCase):
             expected_stage_types.remove(stage_type)
 
     def test_create_feature_stage(self):
-        """A dictionary with stages relevant to the feature should be present."""
+        """A dictionary with stages relevant to the feature should be
+        present."""
         stage_dict = stage_helpers.get_feature_stages(self.feature_id)
         list_stages = stage_dict.items()
         expected_stage_types = {410, 430, 450, 460, 470}

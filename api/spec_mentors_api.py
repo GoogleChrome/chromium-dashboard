@@ -11,8 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-"""API endpoints for retrieving spec mentors and their associated mentored features."""
+"""API endpoints for retrieving spec mentors and their associated mentored
+features."""
 
 from datetime import datetime
 
@@ -40,13 +40,13 @@ class SpecMentorsAPI(basehandlers.APIHandler):
             except ValueError:
                 self.abort(400, f'invalid ?after parameter {after_param}')
 
-        # Every non-empty string is greater than '', so this will find all entries with any spec mentors  # noqa: E501
+        # Every non-empty string is greater than '', so this will find all entries with any spec mentors
         # set. (!= is interpreted as "less or greater".)
-        # We can't have NDB sort the results because it can only sort by the inequality condition.  # noqa: E501
+        # We can't have NDB sort the results because it can only sort by the inequality condition.
         query = FeatureEntry.query(FeatureEntry.spec_mentor_emails > '')
         features: list[FeatureEntry] = query.fetch()
         if after is not None:
-            # Do this in Python rather than the NDB query because NDB queries only support one inequality.  # noqa: E501
+            # Do this in Python rather than the NDB query because NDB queries only support one inequality.
             features = [
                 feature for feature in features if feature.updated > after
             ]
@@ -55,12 +55,12 @@ class SpecMentorsAPI(basehandlers.APIHandler):
         mentors: dict[str, list[FeatureLink]] = {}
         for feature in features:
             if feature.unlisted:
-                # TODO: Consider showing these when the caller is logged in and has the right to see them.  # noqa: E501
+                # TODO: Consider showing these when the caller is logged in and has the right to see them.
                 continue
             for mentor in feature.spec_mentor_emails:
                 mentors.setdefault(mentor, []).append(
                     FeatureLink(id=feature.key.integer_id(), name=feature.name)
-                )  # noqa: E501
+                )
 
         return [
             SpecMentor(email, features).to_dict()

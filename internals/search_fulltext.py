@@ -12,7 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Manages full-text search indexing and retrieval for FeatureEntry models."""
 
 import collections
@@ -184,6 +183,7 @@ def post_process_phrase(
     phrase: str, feature_ids: list[int], field_name: str | None = None
 ) -> list[int]:
     """Fetch the given features and check if they really have the phrase.
+
     if field_name is specified, check only within that field.
     """  # noqa: D205
     features = get_future_results(get_entries_by_id_async(feature_ids))
@@ -203,6 +203,7 @@ def search_fulltext(
     textterm: str, field_name: str | None = None
 ) -> Optional[list[int]]:
     """Return IDs of features that contain word(s) from textterm.
+
     if field_name is specified, check only within that field.
     """  # noqa: D205
     word_set, num_words = parse_words([textterm])

@@ -12,7 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Handles the creation of new features via the guide form (deprecated)."""
 
 from datetime import datetime
@@ -68,24 +67,26 @@ class FeatureCreateHandler(basehandlers.FlaskHandler):
         has_enterprise_impact = (
             int(self.form.get('enterprise_impact', '1'))
             > ENTERPRISE_IMPACT_NONE
-        )  # noqa: E501, F405
+        )  # noqa: F405
         enterprise_notification_milestone = self.form.get(
             'first_enterprise_notification_milestone'
-        )  # noqa: E501
+        )
         if enterprise_notification_milestone:
             enterprise_notification_milestone = int(
                 enterprise_notification_milestone
             )
         if has_enterprise_impact and needs_default_first_notification_milestone(
-            new_fields={  # noqa: E501, F405
+            new_fields={  # noqa: F405
                 'feature_type': feature_type,
                 'enterprise_impact': int(self.form.get('enterprise_impact')),
-                'first_enterprise_notification_milestone': enterprise_notification_milestone,  # noqa: E501
+                'first_enterprise_notification_milestone': (
+                    enterprise_notification_milestone
+                ),
             }
         ):
             enterprise_notification_milestone = (
                 get_default_first_notice_milestone_for_feature()
-            )  # noqa: E501, F405
+            )  # noqa: F405
 
         web_feature = self.form.get('web_feature', '')
 
@@ -179,7 +180,7 @@ class EnterpriseFeatureCreateHandler(FeatureCreateHandler):
 
         enterprise_notification_milestone = self.form.get(
             'first_enterprise_notification_milestone'
-        )  # noqa: E501
+        )
         if enterprise_notification_milestone:
             enterprise_notification_milestone = int(
                 enterprise_notification_milestone
@@ -187,12 +188,14 @@ class EnterpriseFeatureCreateHandler(FeatureCreateHandler):
         if needs_default_first_notification_milestone(
             new_fields={  # noqa: F405
                 'feature_type': feature_type,
-                'first_enterprise_notification_milestone': enterprise_notification_milestone,
+                'first_enterprise_notification_milestone': (
+                    enterprise_notification_milestone
+                ),
             }
-        ):  # noqa: E501
+        ):
             enterprise_notification_milestone = (
                 get_default_first_notice_milestone_for_feature()
-            )  # noqa: E501, F405
+            )  # noqa: F405
 
         # Write for new FeatureEntry entity.
         feature_entry = FeatureEntry(
@@ -214,7 +217,7 @@ class EnterpriseFeatureCreateHandler(FeatureCreateHandler):
             confidential=self.form.get('confidential') == 'on',
             enterprise_product_category=int(
                 self.form.get('enterprise_product_category', '0')
-            ),  # noqa: E501
+            ),
             enterprise_impact=int(self.form.get('enterprise_impact', '1')),
             tag_review_status=core_enums.REVIEW_NA,
         )

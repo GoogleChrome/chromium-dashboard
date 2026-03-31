@@ -13,7 +13,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """API endpoints for managing review votes and gates for feature approvals."""
 
 import logging
@@ -57,9 +56,8 @@ def get_user_feature_and_gate(
 
 
 class VotesAPI(basehandlers.APIHandler):
-    """Users may see the set of votes on a feature, and add their own,
-    if allowed.
-    """
+    """Users may see the set of votes on a feature, and add their own, if
+    allowed."""
 
     def do_get(self, **kwargs) -> dict[str, list[dict[str, Any]]]:
         """Return a list of all vote values for a given feature."""

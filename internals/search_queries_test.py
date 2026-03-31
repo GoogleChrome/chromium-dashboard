@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Tests for the NDB query building and filtering logic module."""
 
 import datetime
@@ -59,7 +58,7 @@ class SearchFeaturesTest(testing_config.CustomTestCase):
             stage_type=core_enums.STAGE_BLINK_ORIGIN_TRIAL,
             milestones=MilestoneSet(
                 desktop_first=89, desktop_last=95, webview_first=100
-            ),  # noqa: E501
+            ),
         )
         self.stage_2_ot.put()
 
@@ -188,7 +187,7 @@ class SearchFeaturesTest(testing_config.CustomTestCase):
         actual = actual_promise.get_result()
         self.assertCountEqual(
             [self.feature_1_id, self.feature_2_id],
-            [key.integer_id() for key in actual],  # noqa: E501
+            [key.integer_id() for key in actual],
         )
 
         actual_promise = search_queries.single_field_query_async(
@@ -197,7 +196,7 @@ class SearchFeaturesTest(testing_config.CustomTestCase):
         actual = actual_promise.get_result()
         self.assertCountEqual(
             [self.feature_3_id], [key.integer_id() for key in actual]
-        )  # noqa: E501
+        )
 
     def test_single_field_query_async__any_start_milestone(self):
         """Test single field query async  any start milestone."""
@@ -216,7 +215,7 @@ class SearchFeaturesTest(testing_config.CustomTestCase):
         self.assertEqual(
             set(),
             set(proj.feature_id for proj in actual),
-            'Does not find "last" milestones.',  # noqa: E501
+            'Does not find "last" milestones.',
         )
 
         actual = search_queries.single_field_query_async(
@@ -401,14 +400,15 @@ class SearchFeaturesTest(testing_config.CustomTestCase):
         self.assertEqual([self.feature_1_id, self.feature_2_id], actual)
 
     def test_stage_fields_have_join_conditions(self):
-        """Every STAGE_QUERIABLE_FIELDS has a STAGE_TYPES_BY_QUERY_FIELD entry."""
+        """Every STAGE_QUERIABLE_FIELDS has a STAGE_TYPES_BY_QUERY_FIELD
+        entry."""
         self.assertCountEqual(
             search_queries.STAGE_QUERIABLE_FIELDS.keys(),
             search_queries.STAGE_TYPES_BY_QUERY_FIELD.keys(),
         )
 
     def test_negate_operator(self):
-        """We can get correct negated operators"""  # noqa: D415
+        """We can get correct negated operators."""  # noqa: D415
         actual = search_queries.negate_operator('=')
         self.assertEqual('!=', actual)
 

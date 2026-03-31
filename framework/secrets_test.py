@@ -11,11 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Unit tests for the secrets module.
 
-Tests the generation of random keys, retrieval of cached secrets,
-and interactions with Google Cloud Secret Manager.
+Tests the generation of random keys, retrieval of cached secrets, and
+interactions with Google Cloud Secret Manager.
 """
 
 import logging
@@ -98,7 +97,7 @@ class SecretsFunctionsTest(testing_config.CustomTestCase):
         'builtins.open',
         new_callable=mock.mock_open,
         read_data='ot_file_key\n  ',
-    )  # noqa: E501
+    )
     def test_load_ot_api_key__unit_test_mode_file_exists(self, mock_file):
         """In test mode, it reads the key from a local file."""
         secrets.settings.UNIT_TEST_MODE = True
@@ -130,7 +129,7 @@ class SecretsFunctionsTest(testing_config.CustomTestCase):
         mock_client = mock.Mock()
         mock_sm_client_class.return_value = mock_client
         mock_client.secret_path.return_value = (
-            'projects/test-app/secrets/OT_API_KEY'  # noqa: E501
+            'projects/test-app/secrets/OT_API_KEY'
         )
 
         mock_response = mock.Mock()
@@ -148,17 +147,18 @@ class SecretsFunctionsTest(testing_config.CustomTestCase):
             request={
                 'name': 'projects/test-app/secrets/OT_API_KEY/versions/latest'
             }
-        )  # noqa: E501
+        )
 
     @mock.patch('google.cloud.secretmanager.SecretManagerServiceClient')
     def test_load_ot_api_key__prod_mode_secret_fails_raises_runtimeerror(
         self, mock_sm_client_class
-    ):  # noqa: E501
-        """In prod mode, it raises a RuntimeError if Secret Manager gives no response."""  # noqa: E501
+    ):
+        """In prod mode, it raises a RuntimeError if Secret Manager gives no
+        response."""
         mock_client = mock.Mock()
         mock_sm_client_class.return_value = mock_client
         mock_client.secret_path.return_value = (
-            'projects/test-app/secrets/OT_API_KEY'  # noqa: E501
+            'projects/test-app/secrets/OT_API_KEY'
         )
 
         # Mock a "falsy" response (e.g., None).
@@ -191,7 +191,7 @@ class SecretsFunctionsTest(testing_config.CustomTestCase):
         'builtins.open',
         new_callable=mock.mock_open,
         read_data='test_file_token\n  ',
-    )  # noqa: E501
+    )
     def test_load_github_token__unit_test_mode_file_exists(self, mock_file):
         """In test mode, it reads the token from a local file."""
         secrets.settings.UNIT_TEST_MODE = True
@@ -220,13 +220,13 @@ class SecretsFunctionsTest(testing_config.CustomTestCase):
     @mock.patch('google.cloud.secretmanager.SecretManagerServiceClient')
     def test_load_github_token__prod_mode_secret_exists(
         self, mock_sm_client_class
-    ):  # noqa: E501
+    ):
         """In prod mode, it fetches the token from Secret Manager."""
         # Mock the client and its response.
         mock_client = mock.Mock()
         mock_sm_client_class.return_value = mock_client
         mock_client.secret_path.return_value = (
-            'projects/test-app/secrets/GITHUB_TOKEN'  # noqa: E501
+            'projects/test-app/secrets/GITHUB_TOKEN'
         )
 
         # Mock the response object structure.
@@ -248,17 +248,18 @@ class SecretsFunctionsTest(testing_config.CustomTestCase):
             request={
                 'name': 'projects/test-app/secrets/GITHUB_TOKEN/versions/latest'
             }
-        )  # noqa: E501
+        )
 
     @mock.patch('google.cloud.secretmanager.SecretManagerServiceClient')
     def test_load_github_token__prod_mode_secret_fails_raises_runtimeerror(
         self, mock_sm_client_class
-    ):  # noqa: E501
-        """In prod mode, it raises a RuntimeError if Secret Manager gives no response."""  # noqa: E501
+    ):
+        """In prod mode, it raises a RuntimeError if Secret Manager gives no
+        response."""
         mock_client = mock.Mock()
         mock_sm_client_class.return_value = mock_client
         mock_client.secret_path.return_value = (
-            'projects/test-app/secrets/GITHUB_TOKEN'  # noqa: E501
+            'projects/test-app/secrets/GITHUB_TOKEN'
         )
 
         # Mock a "falsy" response (e.g., None).
@@ -274,20 +275,20 @@ class SecretsFunctionsTest(testing_config.CustomTestCase):
     @mock.patch('google.cloud.secretmanager.SecretManagerServiceClient')
     def test_load_github_token__prod_mode_secret_exception(
         self, mock_sm_client_class
-    ):  # noqa: E501
+    ):
         """In prod mode, it raises an exception if Secret Manager does."""
         mock_client = mock.Mock()
         mock_sm_client_class.return_value = mock_client
         mock_client.secret_path.return_value = (
-            'projects/test-app/secrets/GITHUB_TOKEN'  # noqa: E501
+            'projects/test-app/secrets/GITHUB_TOKEN'
         )
 
         # Mock an exception (e.g., permissions error).
         mock_client.access_secret_version.side_effect = Exception(
             'Permission denied'
-        )  # noqa: E501
+        )
 
-        # The function does not catch exceptions in prod mode, so it should propagate.  # noqa: E501
+        # The function does not catch exceptions in prod mode, so it should propagate.
         with self.assertRaises(Exception, msg='Permission denied'):
             secrets.load_github_token()
 
@@ -313,7 +314,7 @@ class SecretsFunctionsTest(testing_config.CustomTestCase):
         'builtins.open',
         new_callable=mock.mock_open,
         read_data='test_file_api_key\n  ',
-    )  # noqa: E501
+    )
     def test_load_gemini_api_key__unit_test_mode_file_exists(self, mock_file):
         """In test mode, it reads the API key from a local file."""
         secrets.settings.UNIT_TEST_MODE = True
@@ -332,7 +333,8 @@ class SecretsFunctionsTest(testing_config.CustomTestCase):
     def test_load_gemini_api_key__unit_test_mode_file_not_found(
         self, mock_open
     ):
-        """In test mode, it sets the API key to None if the file is not found."""
+        """In test mode, it sets the API key to None if the file is not
+        found."""
         secrets.settings.UNIT_TEST_MODE = True
         mock_open.side_effect = FileNotFoundError
 
@@ -344,13 +346,13 @@ class SecretsFunctionsTest(testing_config.CustomTestCase):
     @mock.patch('google.cloud.secretmanager.SecretManagerServiceClient')
     def test_load_gemini_api_key__prod_mode_secret_exists(
         self, mock_sm_client_class
-    ):  # noqa: E501
+    ):
         """In prod mode, it fetches the API key from Secret Manager."""
         # Mock the client and its response.
         mock_client = mock.Mock()
         mock_sm_client_class.return_value = mock_client
         mock_client.secret_path.return_value = (
-            'projects/test-app/secrets/GEMINI_API_KEY'  # noqa: E501
+            'projects/test-app/secrets/GEMINI_API_KEY'
         )
 
         # Mock the response object structure.
@@ -370,19 +372,22 @@ class SecretsFunctionsTest(testing_config.CustomTestCase):
         )
         mock_client.access_secret_version.assert_called_once_with(
             request={
-                'name': 'projects/test-app/secrets/GEMINI_API_KEY/versions/latest'
+                'name': (
+                    'projects/test-app/secrets/GEMINI_API_KEY/versions/latest'
+                )
             }
-        )  # noqa: E501
+        )
 
     @mock.patch('google.cloud.secretmanager.SecretManagerServiceClient')
     def test_load_gemini_api_key__prod_mode_secret_fails_raises_runtimeerror(
         self, mock_sm_client_class
-    ):  # noqa: E501
-        """In prod mode, it raises a RuntimeError if Secret Manager gives no response."""  # noqa: E501
+    ):
+        """In prod mode, it raises a RuntimeError if Secret Manager gives no
+        response."""
         mock_client = mock.Mock()
         mock_sm_client_class.return_value = mock_client
         mock_client.secret_path.return_value = (
-            'projects/test-app/secrets/GEMINI_API_KEY'  # noqa: E501
+            'projects/test-app/secrets/GEMINI_API_KEY'
         )
 
         # Mock a "falsy" response (e.g., None).
@@ -398,20 +403,20 @@ class SecretsFunctionsTest(testing_config.CustomTestCase):
     @mock.patch('google.cloud.secretmanager.SecretManagerServiceClient')
     def test_load_gemini_api_key__prod_mode_secret_exception(
         self, mock_sm_client_class
-    ):  # noqa: E501
+    ):
         """In prod mode, it raises an exception if Secret Manager does."""
         mock_client = mock.Mock()
         mock_sm_client_class.return_value = mock_client
         mock_client.secret_path.return_value = (
-            'projects/test-app/secrets/GEMINI_API_KEY'  # noqa: E501
+            'projects/test-app/secrets/GEMINI_API_KEY'
         )
 
         # Mock an exception (e.g., permissions error).
         mock_client.access_secret_version.side_effect = Exception(
             'Permission denied'
-        )  # noqa: E501
+        )
 
-        # The function does not catch exceptions in prod mode, so it should propagate.  # noqa: E501
+        # The function does not catch exceptions in prod mode, so it should propagate.
         with self.assertRaises(Exception, msg='Permission denied'):
             secrets.load_gemini_api_key()
 
@@ -420,7 +425,8 @@ class SecretsFunctionsTest(testing_config.CustomTestCase):
 
 
 class SecretsTest(testing_config.CustomTestCase):
-    """Set of unit tests for generating and storing server-side secret values."""
+    """Set of unit tests for generating and storing server-side secret
+    values."""
 
     def delete_all(self):
         """Delete all entities."""

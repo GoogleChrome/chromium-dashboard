@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Unit tests for the gemini_client module.
 
 Tests the initialization, token counting, and API interaction of the
@@ -42,9 +41,9 @@ class GeminiClientTest(testing_config.CustomTestCase):
         # Patch genai.Client class
         self.mock_genai_client_class = mock.patch(
             'framework.gemini_client.genai.Client'
-        ).start()  # noqa: E501
+        ).start()
 
-        # This is the mock *instance* that will be created and assigned to self.client  # noqa: E501
+        # This is the mock *instance* that will be created and assigned to self.client
         self.mock_client_instance = mock.MagicMock()
         self.mock_genai_client_class.return_value = self.mock_client_instance
 
@@ -72,7 +71,7 @@ class GeminiClientTest(testing_config.CustomTestCase):
         # Start a new, fresh patch just for this test
         mock_genai_client = mock.patch(
             'framework.gemini_client.genai.Client'
-        ).start()  # noqa: E501
+        ).start()
         mock_client_instance = mock.MagicMock()
         mock_genai_client.return_value = mock_client_instance
 
@@ -105,7 +104,7 @@ class GeminiClientTest(testing_config.CustomTestCase):
         # Configure a new patch to raise an exception
         mock_genai_client = mock.patch(
             'framework.gemini_client.genai.Client'
-        ).start()  # noqa: E501
+        ).start()
         init_error = Exception('Authentication failed')
         mock_genai_client.side_effect = init_error
 
@@ -134,7 +133,7 @@ class GeminiClientTest(testing_config.CustomTestCase):
         mock_count_response = mock.MagicMock()
         mock_count_response.total_tokens = current_tokens
         self.mock_client_instance.models.count_tokens.return_value = (
-            mock_count_response  # noqa: E501
+            mock_count_response
         )
 
         # Configure the mock response for client.models.get (to fetch model info)
@@ -159,7 +158,8 @@ class GeminiClientTest(testing_config.CustomTestCase):
         )
 
     def test_get_response__success(self):
-        """The client returns a valid text response with correct timeout config."""
+        """The client returns a valid text response with correct timeout
+        config."""
         prompt = 'Hello Gemini'
         expected_response = 'Hello there!'
 
@@ -167,7 +167,7 @@ class GeminiClientTest(testing_config.CustomTestCase):
         mock_api_response = mock.MagicMock()
         mock_api_response.text = expected_response
         self.mock_client_instance.models.generate_content.return_value = (
-            mock_api_response  # noqa: E501
+            mock_api_response
         )
 
         # Create the client (uses the mocks from setUp)
@@ -227,7 +227,7 @@ class GeminiClientTest(testing_config.CustomTestCase):
         # Should have called the API 3 times total
         self.assertEqual(
             self.mock_client_instance.models.generate_content.call_count, 3
-        )  # noqa: E501
+        )
 
         # Should have slept twice.
         self.assertEqual(self.mock_utils_sleep.call_count, 2)
@@ -243,12 +243,12 @@ class GeminiClientTest(testing_config.CustomTestCase):
         mock_api_response.text = None  # or ""
         # Fail all 4 times with empty response
         self.mock_client_instance.models.generate_content.return_value = (
-            mock_api_response  # noqa: E501
+            mock_api_response
         )
 
         client = gemini_client.GeminiClient()
 
-        # Call the method, expecting it to raise the *final* RuntimeError after retries.  # noqa: E501
+        # Call the method, expecting it to raise the *final* RuntimeError after retries.
         with self.assertRaisesRegex(
             RuntimeError, 'No text response received from the API.'
         ):
@@ -259,7 +259,7 @@ class GeminiClientTest(testing_config.CustomTestCase):
         # Expect 4 calls (1 initial + 3 retries)
         self.assertEqual(
             self.mock_client_instance.models.generate_content.call_count, 4
-        )  # noqa: E501
+        )
 
     def test_get_response__api_exception(self):
         """The API client raises an exception during all retry attempts."""
@@ -288,7 +288,7 @@ class GeminiClientTest(testing_config.CustomTestCase):
 
         # Fail all 4 times with the sentinel
         self.mock_client_instance.models.generate_content.return_value = (
-            mock_fail_response  # noqa: E501
+            mock_fail_response
         )
 
         client = gemini_client.GeminiClient()
@@ -303,7 +303,7 @@ class GeminiClientTest(testing_config.CustomTestCase):
         # Expect 4 calls (1 initial + 3 retries)
         self.assertEqual(
             self.mock_client_instance.models.generate_content.call_count, 4
-        )  # noqa: E501
+        )
 
         # Verify it logged warnings for the sentinel
         self.assertEqual(self.mock_logging.warning.call_count, 4)
@@ -324,7 +324,8 @@ class GeminiClientTest(testing_config.CustomTestCase):
         mock_internal_client.close.assert_called_once()
 
     def test_get_response_async__success(self):
-        """Test that get_response_async correctly wraps the synchronous method."""
+        """Test that get_response_async correctly wraps the synchronous
+        method."""
         client = gemini_client.GeminiClient()
         expected_response = 'Async response'
         prompt = 'Async prompt'
@@ -360,10 +361,10 @@ class GeminiClientTest(testing_config.CustomTestCase):
             with mock.patch(
                 'framework.gemini_client.asyncio.to_thread',
                 side_effect=mock_slow_to_thread,
-            ):  # noqa: E501
+            ):
                 with self.assertRaisesRegex(
                     TimeoutError, 'Gemini request timed out after 0.1s'
-                ):  # noqa: E501
+                ):
                     asyncio.run(client.get_response_async('test'))
 
             self.mock_logging.error.assert_called_with(
@@ -374,7 +375,8 @@ class GeminiClientTest(testing_config.CustomTestCase):
             gemini_client.GeminiClient.ASYNC_TIMEOUT_SECONDS = original_timeout
 
     def test_get_response_async__propagates_exception(self):
-        """Test that exceptions from the synchronous method propagate asynchronously."""  # noqa: E501
+        """Test that exceptions from the synchronous method propagate
+        asynchronously."""
         client = gemini_client.GeminiClient()
         error_msg = 'Sync failure'
 
@@ -385,7 +387,8 @@ class GeminiClientTest(testing_config.CustomTestCase):
                 asyncio.run(client.get_response_async('fail'))
 
     def test_get_batch_responses_async__success(self):
-        """Test that batch processing correctly gathers multiple async results."""
+        """Test that batch processing correctly gathers multiple async
+        results."""
         client = gemini_client.GeminiClient()
         prompts = ['p1', 'p2', 'p3']
 
@@ -403,20 +406,21 @@ class GeminiClientTest(testing_config.CustomTestCase):
                 'Response for p1',
                 'Response for p2',
                 'Response for p3',
-            ]  # noqa: E501
+            ]
             self.assertEqual(results, expected_results)
             self.assertEqual(mock_single.call_count, 3)
 
             # Verify batch logging
             self.mock_logging.info.assert_any_call(
                 'Starting batch processing for 3 prompts...'
-            )  # noqa: E501
+            )
             self.mock_logging.info.assert_any_call(
                 'Batch processing complete for 3 prompts.'
-            )  # noqa: E501
+            )
 
     def test_get_batch_responses_async__mixed_results(self):
-        """Test that batch processing handles mixed success and failure (return_exceptions=True)."""  # noqa: E501
+        """Test that batch processing handles mixed success and failure
+        (return_exceptions=True)."""
         client = gemini_client.GeminiClient()
         prompts = ['success1', 'fail', 'success2']
         error_msg = 'Task failed'
@@ -445,4 +449,4 @@ class GeminiClientTest(testing_config.CustomTestCase):
         self.assertEqual(results, [])
         self.mock_logging.info.assert_any_call(
             'Starting batch processing for 0 prompts...'
-        )  # noqa: E501
+        )

@@ -12,8 +12,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-"""Defines the core search functionality, query parsing, and caching for features."""
+"""Defines the core search functionality, query parsing, and caching for
+features."""
 
 import dataclasses
 import datetime
@@ -83,7 +83,8 @@ def process_pending_approval_me_query() -> list[int] | Future:
 
 
 def process_pending_review_me_query() -> list[int] | Future:
-    """Return a list of features needing review by current user (excludes NEEDS_WORK)."""  # noqa: E501
+    """Return a list of features needing review by current user (excludes
+    NEEDS_WORK)."""
     user = users.get_current_user()
     if not user:
         return []
@@ -136,7 +137,7 @@ class QueryContext:
         assert current_stable is not None
         return cls(
             now=datetime.datetime.now(), current_stable_milestone=current_stable
-        )  # noqa: E501
+        )
 
 
 NOW_RELATIVE_DATE = re.compile(r'now(?:(?P<offset>[+-]\d+)(?P<unit>[dw]))?')
@@ -145,7 +146,7 @@ MILESTONE_RELATIVE_TO_STABLE = re.compile(r'current_stable(?P<offset>[+-]\d+)?')
 
 def parse_query_value(
     val_str: str, context: QueryContext
-) -> search_queries.QueryValue:  # noqa: E501
+) -> search_queries.QueryValue:
     """Return a python object that can be used as a value in an NDB query."""
     if val_str.startswith('"') and val_str.endswith('"'):
         val_str = val_str[1:-1]
@@ -200,7 +201,7 @@ def parse_query_value_interval(
 ) -> (
     search_queries.QueryValue
     | search_queries.Interval[search_queries.QueryValue]
-):  # noqa: E501
+):
     """Return a value or interval of values that can be used in an NDB query."""
     try_interval = val_str.split('..')
     if len(try_interval) == 2:
@@ -221,7 +222,7 @@ def parse_query_value_list(
     return [
         parse_query_value_interval(part, context)
         for part in vals_str.split(',')
-    ]  # noqa: E501
+    ]
 
 
 # A full-text query term consisting of a single word or quoted string.
@@ -246,7 +247,7 @@ LOGICAL_OPERATORS_PATTERN = r'OR\s+|-'
 # Full-text terms look like: SINGLE_WORD, or like: "QUOTED STRING".
 TERM_RE = re.compile(
     r'(?P<logical>%s)?(?:(?P<field>%s)(?P<op>%s)(?P<val>%s)|(?P<textterm>%s))\s+'
-    % (  # noqa: E501
+    % (
         LOGICAL_OPERATORS_PATTERN,
         FIELD_NAME_PATTERN,
         OPERATORS_PATTERN,
@@ -275,7 +276,7 @@ def process_query_term(
     field_name: str,
     op_str: str,
     vals_str: str,
-    context: QueryContext,  # noqa: E501
+    context: QueryContext,
 ) -> Future:
     """Parse and run a user-supplied query, if we can handle it."""
     val_list = parse_query_value_list(vals_str, context)
@@ -363,8 +364,8 @@ def _sort_by_total_order(
     """Sort the result_ids according to their position in the total order.
 
     If some result ID is not present in the total order, use the feature ID
-    value itself as the sorting value, which will effectively put those
-    features at the end of the list in order of creation.
+    value itself as the sorting value, which will effectively put those features
+    at the end of the list in order of creation.
     """
     total_order_dict = {}
     # For each feature entry ID in the total-order list, record the index of
@@ -408,7 +409,8 @@ def make_cache_key(
 
 
 def is_cacheable(user_query: str, name_only: bool):
-    """Return True if this user query can be stored and viewed by other users."""
+    """Return True if this user query can be stored and viewed by other
+    users."""
     if not name_only:
         logging.info('Search query not cached: could be large')
         return False
@@ -508,7 +510,7 @@ def process_query(
     else:
         if not show_deleted:
             permission_terms.append(('', 'deleted', '=', 'false', None))
-        # TODO(jrobbins): include unlisted features that the user is allowed to view.  # noqa: E501
+        # TODO(jrobbins): include unlisted features that the user is allowed to view.
         # However, that would greatly complicate the search cache.
         if not show_unlisted:
             permission_terms.append(('', 'unlisted', '=', 'false', None))
@@ -574,7 +576,7 @@ def process_query(
     if name_only:
         features_on_page = feature_helpers.get_feature_names_by_ids(
             paginated_id_list
-        )  # noqa: E501
+        )
     else:
         features_on_page = feature_helpers.get_by_ids(paginated_id_list)
 
@@ -585,7 +587,10 @@ def process_query(
 
 
 def create_future_operations_from_queries(terms, context: QueryContext):
-    """Create parallel queries for each term. Each yields a future operation"""  # noqa: D415
+    """Create parallel queries for each term.
+
+    Each yields a future operation
+    """  # noqa: D415
     feature_id_future_ops = []
     for logical_op, field_name, op_str, vals_str, textterm in terms:
         is_negation = logical_op.strip() == '-'
@@ -603,7 +608,7 @@ def create_future_operations_from_queries(terms, context: QueryContext):
         else:
             future = process_query_term(
                 is_negation, field_name, op_str, vals_str, context
-            )  # noqa: E501
+            )
             is_normal_query = True
 
         if future is None:

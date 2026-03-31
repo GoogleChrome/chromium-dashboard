@@ -11,11 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Unit tests for the rediscache module.
 
-Tests basic caching operations (set, get, multi-get, delete) using
-the fake Redis client.
+Tests basic caching operations (set, get, multi-get, delete) using the fake
+Redis client.
 """
 
 import testing_config  # Must be imported before the module under test.

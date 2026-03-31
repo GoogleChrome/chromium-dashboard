@@ -15,7 +15,6 @@
 
 # This code is based on a file from Monorail:
 # https://chromium.googlesource.com/infra/infra/+/master/appengine/monorail/framework/cloud_tasks_helpers.py
-
 """Helper functions for enqueueing tasks to Google Cloud Tasks.
 
 Provides functions to create and enqueue background tasks, with local stubbing
@@ -46,7 +45,8 @@ if not settings.UNIT_TEST_MODE:
 
 
 class LocalCloudTasksClient(object):
-    """We have no GCT server running locally, so hit the target synchronously."""
+    """We have no GCT server running locally, so hit the target
+    synchronously."""
 
     def queue_path(self, project, location, queue):
         """Return a fully-qualified queue string."""

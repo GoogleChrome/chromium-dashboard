@@ -11,8 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-"""Tests for the stale_features_api module, verifying the accurate retrieval of stale feature data."""
+"""Tests for the stale_features_api module, verifying the accurate retrieval of
+stale feature data."""
 
 from datetime import datetime
 from unittest import mock
@@ -85,7 +85,7 @@ class StaleFeaturesAPITest(testing_config.CustomTestCase):
         self.assertEqual(feature_1_info['name'], self.feature_1.name)
         self.assertEqual(
             feature_1_info['owner_emails'], self.feature_1.owner_emails
-        )  # noqa: E501
+        )
         self.assertEqual(feature_1_info['milestone'], 120)
         self.assertEqual(feature_1_info['milestone_field'], 'shipped_milestone')
         self.assertEqual(
@@ -102,11 +102,11 @@ class StaleFeaturesAPITest(testing_config.CustomTestCase):
         self.assertEqual(feature_2_info['name'], self.feature_2.name)
         self.assertEqual(
             feature_2_info['owner_emails'], self.feature_2.owner_emails
-        )  # noqa: E501
+        )
         self.assertEqual(feature_2_info['milestone'], 121)
         self.assertEqual(
             feature_2_info['milestone_field'], 'shipped_android_milestone'
-        )  # noqa: E501
+        )
         self.assertEqual(
             feature_2_info['outstanding_notifications'],
             self.feature_2.outstanding_notifications,

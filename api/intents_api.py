@@ -11,8 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-"""API handlers for generating Intent to Ship/Prototype/Experiment email drafts."""
+"""API handlers for generating Intent to Ship/Prototype/Experiment email
+drafts."""
 
 from typing import TypedDict
 
@@ -47,7 +47,8 @@ SUBJECT_PREFIXES = {
 
 
 def compute_subject_prefix(feature_type: int, intent_type: IntentDraftType):
-    """Compute the subject line prefix for an intent email based on the feature and intent type."""  # noqa: E501
+    """Compute the subject line prefix for an intent email based on the feature
+    and intent type."""
     # Deprecation-specific intent names.
     if feature_type == FEATURE_TYPE_DEPRECATION_ID:
         if intent_type == IntentDraftType.EXPERIMENT:
@@ -180,7 +181,7 @@ class IntentsAPI(basehandlers.APIHandler):
         if gate:
             default_url += f'?gate={parsed_args.gate_id}'
 
-        subject = f'{compute_subject_prefix(feature.feature_type, intent_type)}: {feature.name}'  # noqa: E501
+        subject = f'{compute_subject_prefix(feature.feature_type, intent_type)}: {feature.name}'
         cc_emails = parsed_args.intent_cc_emails or []
         # Make sure emails are not empty and are unique.
         cc_emails = sorted(list(set([email for email in cc_emails if email])))

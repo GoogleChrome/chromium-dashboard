@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Tests for the core search functionality and query parsing module."""
 
 import testing_config  # isort: split
@@ -95,7 +94,8 @@ class SearchRETest(testing_config.CustomTestCase):
         )
 
     def test_structured_query_terms__interval(self):
-        """We can parse queries that use interval syntax for paired inequalities."""
+        """We can parse queries that use interval syntax for paired
+        inequalities."""
         self.assertEqual(
             [('', 'field', '=', '1..7', '')],
             search.TERM_RE.findall('field=1..7 '),
@@ -159,19 +159,19 @@ class SearchParsingTest(testing_config.CustomTestCase):
         d = datetime.datetime
         context = search.QueryContext(
             now=d(2024, 5, 15), current_stable_milestone=0
-        )  # noqa: E501
+        )
         self.assertEqual(
             d(2024, 5, 15), search.parse_query_value('now', context)
         )
         self.assertEqual(
             d(2024, 5, 13), search.parse_query_value('now-2d', context)
-        )  # noqa: E501
+        )
         self.assertEqual(
             d(2024, 5, 18), search.parse_query_value('now+3d', context)
-        )  # noqa: E501
+        )
         self.assertEqual(
             d(2024, 4, 10), search.parse_query_value('now-5w', context)
-        )  # noqa: E501
+        )
         self.assertEqual(
             d(2024, 6, 5), search.parse_query_value('now+3w', context)
         )
@@ -182,28 +182,28 @@ class SearchParsingTest(testing_config.CustomTestCase):
         )
         self.assertEqual(
             d(2023, 7, 8), search.parse_query_value('2023-07-08', context)
-        )  # noqa: E501
+        )
         self.assertEqual(
             d(2023, 7, 8), search.parse_query_value('2023-7-8', context)
-        )  # noqa: E501
+        )
 
         # And some cases that shouldn't parse:
         self.assertEqual('nows', search.parse_query_value('nows', context))
         self.assertEqual(
             'now-2days', search.parse_query_value('now-2days', context)
-        )  # noqa: E501
+        )
         self.assertEqual(
             'now + 2d', search.parse_query_value('now + 2d', context)
         )
         self.assertEqual(
             'now-5weeks', search.parse_query_value('now-5weeks', context)
-        )  # noqa: E501
+        )
         self.assertEqual(
             '2023-13-8', search.parse_query_value('2023-13-8', context)
-        )  # noqa: E501
+        )
         self.assertEqual(
             '2023/07/08', search.parse_query_value('2023/07/08', context)
-        )  # noqa: E501
+        )
 
     def test_parse_query_value__milestones(self):
         """Tests parsing of query values that represent milestones."""
@@ -227,7 +227,7 @@ class SearchParsingTest(testing_config.CustomTestCase):
         )
         self.assertEqual(
             'current_stable+2m',
-            search.parse_query_value('current_stable+2m', context),  # noqa: E501
+            search.parse_query_value('current_stable+2m', context),
         )
 
     def test_parse_query_value__intervals(self):
@@ -237,7 +237,7 @@ class SearchParsingTest(testing_config.CustomTestCase):
         )
         self.assertEqual(
             [Interval(1, 5)], search.parse_query_value_list('1..5', context)
-        )  # noqa: E501
+        )
         self.assertEqual(
             [
                 Interval(
@@ -246,7 +246,7 @@ class SearchParsingTest(testing_config.CustomTestCase):
             ],
             search.parse_query_value_list('2023-01-01..2024-01-01', context),
         )
-        # This parses, but it's excluded by the regex and isn't converted into an efficient query.  # noqa: E501
+        # This parses, but it's excluded by the regex and isn't converted into an efficient query.
         self.assertEqual(
             [1, Interval(2, 3)],
             search.parse_query_value_list('1,2..3', context),
@@ -283,7 +283,7 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
         self.featureentry_1_shipping_stage.put()
         self.featureentry_1.active_stage_id = (
             self.featureentry_1_shipping_stage.key.id()
-        )  # noqa: E501
+        )
         self.featureentry_1.put()
 
         self.featureentry_2 = FeatureEntry(
@@ -534,9 +534,8 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
         self.assertEqual([10, 9, 4, 1], actual)
 
     def test_sort_by_total_order__unordered_at_end(self):
-        """If the results include features not present in the total order,
-        they are put at the end of the list in ID order.
-        """  # noqa: D205
+        """If the results include features not present in the total order, they
+        are put at the end of the list in ID order."""  # noqa: D205
         feature_ids = [999, 10, 998, 1, 9, 997, 4]
         total_order_ids = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
         actual = search._sort_by_total_order(feature_ids, total_order_ids)
@@ -544,7 +543,9 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
 
     def test_sort_by_total_order__multiple_items(self):
         """If the sort order is done via join, the total_order could have
-        multiple copies of the same feature IDs.  We use the earliest.
+        multiple copies of the same feature IDs.
+
+        We use the earliest.
         """  # noqa: D205
         feature_ids = [10, 1, 9, 4]
         total_order_ids = [
@@ -619,7 +620,7 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
         mock_star_me,
         mock_pend_rev_me,
         mock_pend_me,
-    ):  # noqa: E501
+    ):
         """We can match predefined queries."""
         mock_recent.return_value = [self.featureentry_1.key.integer_id()]
         mock_own_me.return_value = [self.featureentry_2.key.integer_id()]
@@ -654,7 +655,7 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
         mock_star_me,
         mock_pend_rev_me,
         mock_pend_me,
-    ):  # noqa: E501
+    ):
         """We can match predefined queries."""
         mock_recent.return_value = [self.featureentry_1.key.integer_id()]
         mock_own_me.return_value = [self.featureentry_2.key.integer_id()]
@@ -703,7 +704,7 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
 
         actual, tc = search.process_query(
             'browsers.webdev.view="Strongly positive"'
-        )  # noqa: E501
+        )
         self.assertEqual(2, len(actual))
         self.assertCountEqual(
             [f['name'] for f in actual], ['feature 1', 'feature 2']
@@ -731,13 +732,13 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
     def test_process_query__interval(self):
         """We can run interval queries."""
         self.featureentry_3.unlisted = (
-            False  # Increase the set of possible results.  # noqa: E501
+            False  # Increase the set of possible results.
         )
         self.featureentry_3.put()
         actual, tc = search.process_query('created.when=2024-02-02..2024-04-01')
         self.assertCountEqual(
             [f['name'] for f in actual], ['feature 2', 'feature 3']
-        )  # noqa: E501
+        )
 
     def test_process_query__show_deleted_unlisted(self):
         """We can run queries without deleted/unlisted features."""
@@ -814,7 +815,7 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
 
         actual, tc = search.process_query(
             '-browsers.webdev.view="Strongly positive"'
-        )  # noqa: E501
+        )
         self.assertEqual(0, len(actual))
 
     def test_process_query__multiple_fields(self):

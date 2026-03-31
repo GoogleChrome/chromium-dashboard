@@ -12,8 +12,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-"""Functions for converting between legacy datastore models and external API dictionary representations."""
+"""Functions for converting between legacy datastore models and external API
+dictionary representations."""
 
 from typing import Any
 
@@ -115,9 +115,9 @@ def feature_to_legacy_json(f: Feature) -> dict[str, Any]:
                     ff_views,  # noqa: F405
                     VENDOR_VIEWS_COMMON[NO_PUBLIC_SIGNALS],
                 ),  # noqa: F405
-                'val': ff_views
-                if ff_views in VENDOR_VIEWS
-                else NO_PUBLIC_SIGNALS,  # noqa: F405
+                'val': (
+                    ff_views if ff_views in VENDOR_VIEWS else NO_PUBLIC_SIGNALS
+                ),  # noqa: F405
                 'url': d.pop('ff_views_link', None),
                 'notes': d.pop('ff_views_notes', None),
             }
@@ -128,9 +128,9 @@ def feature_to_legacy_json(f: Feature) -> dict[str, Any]:
                     ie_views,  # noqa: F405
                     VENDOR_VIEWS_COMMON[NO_PUBLIC_SIGNALS],
                 ),  # noqa: F405
-                'val': ie_views
-                if ie_views in VENDOR_VIEWS
-                else NO_PUBLIC_SIGNALS,  # noqa: F405
+                'val': (
+                    ie_views if ie_views in VENDOR_VIEWS else NO_PUBLIC_SIGNALS
+                ),  # noqa: F405
                 'url': d.pop('ie_views_link', None),
                 'notes': d.pop('ie_views_notes', None),
             }
@@ -177,11 +177,11 @@ def feature_to_legacy_json(f: Feature) -> dict[str, Any]:
     elif is_released and f.shipped_android_milestone:
         d['browsers']['chrome']['status']['milestone_str'] = (
             f.shipped_android_milestone
-        )  # noqa: E501
+        )
     else:
         d['browsers']['chrome']['status']['milestone_str'] = d['browsers'][
             'chrome'
-        ]['status']['text']  # noqa: E501
+        ]['status']['text']
 
     del_none(d)  # Further prune response by removing null/[] values.
     return d

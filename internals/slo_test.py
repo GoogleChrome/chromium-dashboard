@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Tests for the Service Level Objective (SLO) metrics calculation functions."""
 
 import datetime
@@ -186,7 +185,8 @@ class SLORecordingTests(testing_config.CustomTestCase):
         self.a_date = datetime.datetime(2023, 6, 17, 1, 2, 3)
 
     def test_record_vote__not_started(self):
-        """If this somehow gets called before the review starts, it's a no-op."""
+        """If this somehow gets called before the review starts, it's a no-
+        op."""
         self.assertFalse(slo.record_vote(self.gate, [], Gate.PREPARING))
         self.assertFalse(
             slo.record_vote(self.gate, [self.vote_no_response], Gate.PREPARING)
@@ -212,7 +212,8 @@ class SLORecordingTests(testing_config.CustomTestCase):
         self.assertIsNone(self.gate.needs_work_started_on)
 
     def test_record_vote__reviewer_starting(self):
-        """When a reviewer starts the review, we set both requested_on and responded_on."""  # noqa: E501
+        """When a reviewer starts the review, we set both requested_on and
+        responded_on."""
         self.gate.state = Vote.REVIEW_STARTED
         self.assertTrue(
             slo.record_vote(self.gate, [self.vote_started], Gate.PREPARING)
@@ -294,7 +295,8 @@ class SLORecordingTests(testing_config.CustomTestCase):
         self.assertIsNone(self.gate.needs_work_started_on)
 
     def test_record_vote__already_responded(self):
-        """Votes that don't change state, after the initial response, it's a no-op."""  # noqa: E501
+        """Votes that don't change state, after the initial response, it's a no-
+        op."""
         self.gate.requested_on = self.a_date
         self.gate.responded_on = self.a_date
         self.gate.state = Vote.REVIEW_REQUESTED
@@ -336,7 +338,7 @@ class SLORecordingTests(testing_config.CustomTestCase):
                     self.vote_review_requested,
                     self.vote_approved,
                     vote_approved_again,
-                ],  # noqa: E501
+                ],
                 Vote.APPROVED,
             )
         )

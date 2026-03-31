@@ -11,8 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-"""Tests for the converters module, verifying correct transformation of data models to dictionaries."""
+"""Tests for the converters module, verifying correct transformation of data
+models to dictionaries."""
 
 from datetime import datetime
 from unittest import mock
@@ -149,7 +149,9 @@ class FeatureConvertersTest(testing_config.CustomTestCase):
             'standards': {
                 'spec': 'https://example.com/spec',
                 'maturity': {
-                    'text': 'Unknown standards status - check spec link for status',
+                    'text': (
+                        'Unknown standards status - check spec link for status'
+                    ),
                     'short_text': 'Unknown status',
                     'val': 1,
                 },
@@ -208,7 +210,7 @@ class FeatureConvertersTest(testing_config.CustomTestCase):
                     desktop_first=1, android_first=1, desktop_last=2
                 ),
             )
-        ]  # noqa: E501
+        ]
         result = converters.feature_entry_to_json_basic(self.fe_1, stages)
         expected_date = str(self.date)
         expected = {
@@ -238,7 +240,9 @@ class FeatureConvertersTest(testing_config.CustomTestCase):
             'standards': {
                 'spec': 'https://example.com/spec',
                 'maturity': {
-                    'text': 'Unknown standards status - check spec link for status',
+                    'text': (
+                        'Unknown standards status - check spec link for status'
+                    ),
                     'short_text': 'Unknown status',
                     'val': 1,
                 },
@@ -355,7 +359,9 @@ class FeatureConvertersTest(testing_config.CustomTestCase):
             'standards': {
                 'spec': 'https://example.com/spec',
                 'maturity': {
-                    'text': 'Unknown standards status - check spec link for status',
+                    'text': (
+                        'Unknown standards status - check spec link for status'
+                    ),
                     'short_text': 'Unknown status',
                     'val': 1,
                 },
@@ -396,7 +402,9 @@ class FeatureConvertersTest(testing_config.CustomTestCase):
             'interop_compat_risks': None,
             'measurement': None,
             'motivation': None,
-            'new_crbug_url': 'https://bugs.chromium.org/p/chromium/issues/entry?components=Blink&cc=feature_owner@example.com',
+            'new_crbug_url': (
+                'https://bugs.chromium.org/p/chromium/issues/entry?components=Blink&cc=feature_owner@example.com'
+            ),
             'non_oss_deps': None,
             'ongoing_constraints': None,
             'rollout_plan': ROLLOUT_100,  # noqa: F405
@@ -641,7 +649,8 @@ class GateConvertersTest(testing_config.CustomTestCase):
         self.assertEqual(expected, actual)
 
     def test_slo_complete_review(self):
-        """If a Gate review was completed, response includes the number of days."""
+        """If a Gate review was completed, response includes the number of
+        days."""
         gate = Gate(
             feature_id=1,
             stage_id=2,

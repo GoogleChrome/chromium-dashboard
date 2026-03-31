@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Configuration, mocks, and helper functions for running automated tests."""
 
 import logging
@@ -24,12 +23,12 @@ from google.cloud import ndb  # type: ignore
 os.environ['SERVER_SOFTWARE'] = 'test ' + os.environ.get('SERVER_SOFTWARE', '')
 os.environ['CURRENT_VERSION_ID'] = 'test.123'
 os.environ['APPLICATION_ID'] = 'testing'
-# Envs for datastore-emulator, same as running `gcloud beta emulators datastore env-init`.  # noqa: E501
+# Envs for datastore-emulator, same as running `gcloud beta emulators datastore env-init`.
 os.environ['DATASTORE_DATASET'] = 'cr-status-staging'
 os.environ.setdefault('DATASTORE_EMULATOR_HOST', 'localhost:15606')
 os.environ.setdefault(
     'DATASTORE_EMULATOR_HOST_PATH', 'localhost:15606/datastore'
-)  # noqa: E501
+)
 os.environ.setdefault('DATASTORE_HOST', 'http://localhost:15606')
 os.environ['DATASTORE_PROJECT_ID'] = 'cr-status-staging'
 
@@ -61,6 +60,7 @@ cloud_tasks_helpers._client = FakeCloudTasksClient()
 
 class Blank(object):
     """Simple class that assigns all named args to attributes.
+
     Tip: supply a lambda to define a method.
     """  # noqa: D205
 
@@ -131,7 +131,7 @@ class Testdata(object):
                 self.testdata[filename] = f.read()
 
     def make_golden(self, raw_data, test_data_file_name):
-        """Helper function to make golden file"""  # noqa: D200, D415
+        """Helper function to make golden file."""  # noqa: D200, D415
         test_data_file_path = os.path.join(
             self.testdata_dir, test_data_file_name
         )

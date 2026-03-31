@@ -12,8 +12,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-"""Tests for the feature_links module, verifying link extraction, updating, and indexing logic."""
+"""Tests for the feature_links module, verifying link extraction, updating, and
+indexing logic."""
 
 from unittest import mock
 
@@ -116,14 +116,14 @@ class LinkTest(testing_config.CustomTestCase):
             FeatureLinks(
                 url='https://bugs.chromium.org/p/chromium/issues/detail?id=100000',
                 type=LINK_TYPE_CHROMIUM_BUG,
-            ),  # noqa: E501
+            ),
             FeatureLinks(
                 url='https://docs.google.com/document/d/xxx', type=LINK_TYPE_WEB
-            ),  # noqa: E501
+            ),
             FeatureLinks(
                 url='https://docs.google.com/spreadsheets/d/xxx',
                 type=LINK_TYPE_WEB,
-            ),  # noqa: E501
+            ),
             FeatureLinks(url='https://www.google.com', type=LINK_TYPE_WEB),
         ]
         for link in links:
@@ -231,7 +231,7 @@ class LinkTest(testing_config.CustomTestCase):
     @mock.patch.object(Link, '_parse_github_issue')
     def test_webkit_review_saves_position_in_feature(
         self, mockParse: mock.MagicMock
-    ):  # noqa: E501
+    ):
         """Test webkit review saves position in feature."""
         mockParse.return_value = {'labels': ['position: support']}
 
@@ -244,13 +244,13 @@ class LinkTest(testing_config.CustomTestCase):
         self.assertEqual(link.information['labels'], ['position: support'])
         self.assertEqual(
             FeatureEntry.get_by_id(self.feature_id).safari_views_link_result,
-            'support',  # noqa: E501
+            'support',
         )
 
     @mock.patch.object(Link, '_parse_github_issue')
     def test_mozilla_review_saves_position_in_feature(
         self, mockParse: mock.MagicMock
-    ):  # noqa: E501
+    ):
         """Test mozilla review saves position in feature."""
         mockParse.return_value = {'labels': ['position: defer']}
 
@@ -264,12 +264,12 @@ class LinkTest(testing_config.CustomTestCase):
         self.assertEqual(
             FeatureEntry.get_by_id(self.feature_id).ff_views_link_result,
             'defer',
-        )  # noqa: E501
+        )
 
     @mock.patch.object(Link, '_parse_github_issue')
     def test_tag_review_saves_position_in_feature(
         self, mockParse: mock.MagicMock
-    ):  # noqa: E501
+    ):
         """Test tag review saves position in feature."""
         mockParse.return_value = {'labels': ['Resolution: satisfied']}
 
@@ -305,7 +305,7 @@ class LinkTest(testing_config.CustomTestCase):
     @mock.patch.object(Link, '_parse_github_issue')
     def test_updating_links_updates_cached_position(
         self, mockParse: mock.MagicMock
-    ):  # noqa: E501
+    ):
         """Test updating links updates cached position."""
         mockParse.return_value = {'labels': ['position: defer']}
 
@@ -316,7 +316,7 @@ class LinkTest(testing_config.CustomTestCase):
         self.assertEqual(
             FeatureEntry.get_by_id(self.feature_id).ff_views_link_result,
             'defer',
-        )  # noqa: E501
+        )
 
         # The review has an updated position!
         mockParse.return_value = {'labels': ['position: positive']}
@@ -356,7 +356,7 @@ class LinkTest(testing_config.CustomTestCase):
         self.assertEqual(
             1,
             mockParse.call_count,
-            'Should re-use the link created for the first feature.',  # noqa: E501
+            'Should re-use the link created for the first feature.',
         )
         self.assertEqual(
             FeatureEntry.get_by_id(self.feature2_id).ff_views_link_result,
@@ -463,7 +463,7 @@ class LinkTest(testing_config.CustomTestCase):
         with test_app.test_request_context(
             '/cron/update_all_feature_links',
             query_string={'should_notify_on_error': False},
-        ):  # noqa: E501
+        ):
             result = update_all_feature_links.get_template_data()
         expected = 'Started updating 2 Feature Links in 1 batches'
 

@@ -12,11 +12,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Content Security Policy (CSP) generation and handling.
 
-Provides functions to generate nonces, build CSP headers, and handle
-CSP violation reports to secure the application against code injection attacks.
+Provides functions to generate nonces, build CSP headers, and handle CSP
+violation reports to secure the application against code injection attacks.
 """
 
 import base64
@@ -46,16 +45,18 @@ DEFAULT_POLICY = {
     'object-src': ["'none'"],
     # Strict CSP with fallbacks for browsers not supporting CSP v3.
     # Nonces or hashes must be enabled in order for this CSP to be effective.
-    'script-src': [
-        # Propagate trust to dynamically created scripts.
-        "'strict-dynamic'",
-        # Fallback. Ignored in presence of a nonce
-        "'unsafe-inline'",
-        # Fallback. Ignored in presence of strict-dynamic.
-        'https:',
-        'http:',
-    ]
-    + HOST_SOURCES,
+    'script-src': (
+        [
+            # Propagate trust to dynamically created scripts.
+            "'strict-dynamic'",
+            # Fallback. Ignored in presence of a nonce
+            "'unsafe-inline'",
+            # Fallback. Ignored in presence of strict-dynamic.
+            'https:',
+            'http:',
+        ]
+        + HOST_SOURCES
+    ),
 }
 
 # This is a stricter version of the DEFAULT_POLICY.
@@ -66,11 +67,13 @@ NONCE_ONLY_POLICY = {
     'object-src': ["'none'"],
     # Strict CSP with fallbacks for browsers not supporting CSP v3.
     # Nonces or hashes must be enabled in order for this CSP to be effective.
-    'script-src': [
-        # Fallback. Ignored in presence of a nonce (which is added below).
-        "'unsafe-inline'"
-    ]
-    + HOST_SOURCES,
+    'script-src': (
+        [
+            # Fallback. Ignored in presence of a nonce (which is added below).
+            "'unsafe-inline'"
+        ]
+        + HOST_SOURCES
+    ),
 }
 
 HEADER_KEY_ENFORCE = 'Content-Security-Policy'

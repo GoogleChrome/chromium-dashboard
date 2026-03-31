@@ -11,8 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-
 """Tests for the intents_api module, verifying intent email draft generation."""
 
 from unittest import mock
@@ -173,8 +171,7 @@ class IntentsAPITest(testing_config.CustomTestCase):
     @mock.patch('framework.cloud_tasks_helpers.enqueue_task')
     def test_post__valid_ot(self, mock_enqueue_cloud_task):
         """A valid POST request will create a new notification task for OT
-        stages.
-        """  # noqa: D205
+        stages."""  # noqa: D205
         testing_config.sign_in('owner@example.com', 1234567890)
 
         body = {
@@ -209,7 +206,8 @@ class IntentsAPITest(testing_config.CustomTestCase):
 
     @mock.patch('framework.cloud_tasks_helpers.enqueue_task')
     def test_post__valid_no_gate_id(self, mock_enqueue_cloud_task):
-        """A request with no gate_id will still show intent draft for devtrial."""
+        """A request with no gate_id will still show intent draft for
+        devtrial."""
         testing_config.sign_in('owner@example.com', 1234567890)
 
         body = {
@@ -309,7 +307,7 @@ class IntentsAPITest(testing_config.CustomTestCase):
                 self.feature_1.feature_type,
                 core_enums.IntentDraftType.DEVELOPER_TESTING,
             ),
-        )  # noqa: E501
+        )
 
         self.assertEqual(
             'Intent to Experiment',
@@ -325,7 +323,7 @@ class IntentsAPITest(testing_config.CustomTestCase):
                 self.feature_1.feature_type,
                 core_enums.IntentDraftType.EXTEND_EXPERIMENT,
             ),
-        )  # noqa: E501
+        )
 
         self.assertEqual(
             'Intent to Ship',
@@ -371,4 +369,4 @@ class IntentsAPITest(testing_config.CustomTestCase):
                 core_enums.FEATURE_TYPE_CODE_CHANGE_ID,
                 core_enums.IntentDraftType.PSA,
             ),
-        )  # noqa: E501
+        )

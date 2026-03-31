@@ -11,8 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-"""Tests for the spec_mentors_api module, verifying the retrieval and filtering of mentored features."""
+"""Tests for the spec_mentors_api module, verifying the retrieval and filtering
+of mentored features."""
 
 import testing_config  # isort: split
 
@@ -100,7 +100,7 @@ class SpecMentorsAPITest(testing_config.CustomTestCase):
                     'email': 'mentor@example.org',
                     'mentored_features': [
                         {'id': feature.key.id(), 'name': 'The feature'}
-                    ],  # noqa: E501
+                    ],
                 }
             ],
         )
@@ -154,7 +154,7 @@ class SpecMentorsAPITest(testing_config.CustomTestCase):
                     'email': 'mentor@example.org',
                     'mentored_features': [
                         {'id': feature.key.id(), 'name': 'The feature'}
-                    ],  # noqa: E501
+                    ],
                 }
             ],
         )
@@ -163,7 +163,7 @@ class SpecMentorsAPITest(testing_config.CustomTestCase):
         """An ?after value that isn't a date returns a 400 error."""
         with test_app.test_request_context(
             f'{self.request_path}?after=arglebargle'
-        ):  # noqa: E501
+        ):
             with self.assertRaises(HTTPException) as cm:
                 self.spec_mentors_handler.do_get()
             self.assertEqual(cm.exception.code, 400)
@@ -191,13 +191,13 @@ class SpecMentorsAPITest(testing_config.CustomTestCase):
                     'email': 'amentor@example.org',
                     'mentored_features': [
                         {'id': feature.key.id(), 'name': 'The feature'}
-                    ],  # noqa: E501
+                    ],
                 },
                 {
                     'email': 'bmentor@example.org',
                     'mentored_features': [
                         {'id': feature.key.id(), 'name': 'The feature'}
-                    ],  # noqa: E501
+                    ],
                 },
             ],
         )
@@ -272,8 +272,8 @@ class SpecMentorsAPITest(testing_config.CustomTestCase):
         with test_app.test_request_context(self.request_path):
             response = self.spec_mentors_handler.do_get()
 
-        # Unlike the other test expectations in this file, this one is saved to a JSON file so the  # noqa: E501
-        # Playwright tests can use it as a mock API response. Because the real feature IDs are  # noqa: E501
+        # Unlike the other test expectations in this file, this one is saved to a JSON file so the
+        # Playwright tests can use it as a mock API response. Because the real feature IDs are
         # dynamically generated, we have to slot them into the right places here.
         with open(
             os.path.join(

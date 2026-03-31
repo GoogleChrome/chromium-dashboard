@@ -12,8 +12,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-"""Fetches and stores UMA metrics data from the Chromium metrics export server."""
+"""Fetches and stores UMA metrics data from the Chromium metrics export
+server."""
 
 import base64
 import datetime
@@ -242,10 +242,10 @@ class YesterdayHandler(basehandlers.FlaskHandler):
                     return error_message, 500
 
         # The code above calls FetchAndSaveData() which calls _SaveData(),
-        # which calls put() a bunch of times to add a new entity for each metrics datapoint.  # noqa: E501
-        # Separately, when a request comes in get get metrics data, the file api/metricsdata.py  # noqa: E501
-        # does a query on those datapoints and caches the result. If we don't invalidate when  # noqa: E501
-        # we add datapoints, the cached query result will be lacking the new datapoints.  # noqa: E501
+        # which calls put() a bunch of times to add a new entity for each metrics datapoint.
+        # Separately, when a request comes in get get metrics data, the file api/metricsdata.py
+        # does a query on those datapoints and caches the result. If we don't invalidate when
+        # we add datapoints, the cached query result will be lacking the new datapoints.
         # This is run once every 6 hours.
         rediscache.delete_keys_with_prefix('metrics')
         return 'Success'
@@ -260,7 +260,8 @@ class HistogramsHandler(basehandlers.FlaskHandler):
     }
 
     def _SaveData(self, bucket_id, property_name, model_class, all_existing):
-        """Save one entity for the given bucket_id, and delete any duplicates."""
+        """Save one entity for the given bucket_id, and delete any
+        duplicates."""
         logging.info('Saving %r %r', bucket_id, property_name)
         # Bucket ID 1 is reserved for number of CSS Pages Visited. So don't add it.
         if (

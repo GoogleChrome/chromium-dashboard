@@ -12,7 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Formats and sends email notifications for feature changes and updates."""
 
 __author__ = 'ericbidelman@chromium.org (Eric Bidelman)'
@@ -163,7 +162,8 @@ def accumulate_reasons(
 def convert_reasons_to_task(
     addr, reasons, email_html, subject, triggering_user_email
 ):
-    """Add a task dict to task_list for each user who has not already got one."""
+    """Add a task dict to task_list for each user who has not already got
+    one."""
     assert reasons, 'We are emailing someone without any reason'
     footer_lines = ['<p>You are receiving this email because:</p>', '<ul>']
     for reason in sorted(set(reasons)):
@@ -381,7 +381,8 @@ class FeatureStar(ndb.Model):
 
     @classmethod
     def get_user_stars(self, email):
-        """Return a list of feature_ids of all features that the user starred."""
+        """Return a list of feature_ids of all features that the user
+        starred."""
         q = FeatureStar.query()
         q = q.filter(FeatureStar.email == email)
         q = q.filter(FeatureStar.starred == True)  # noqa: E712
@@ -393,7 +394,8 @@ class FeatureStar(ndb.Model):
 
     @classmethod
     def get_feature_starrers(self, feature_id: int) -> list[UserPref]:
-        """Return list of UserPref objects for starrers that want notifications."""
+        """Return list of UserPref objects for starrers that want
+        notifications."""
         q = FeatureStar.query()
         q = q.filter(FeatureStar.feature_id == feature_id)
         q = q.filter(FeatureStar.starred == True)  # noqa: E712
@@ -572,7 +574,8 @@ class FeatureReviewHandler(basehandlers.FlaskHandler):
         gate_type: int,
         additional_template_data: dict[str, str],
     ):
-        """Return a list of task dicts to notify approvers of review requests."""
+        """Return a list of task dicts to notify approvers of review
+        requests."""
         email_html = format_email_body(
             self.EMAIL_TEMPLATE_PATH,
             fe,
@@ -763,7 +766,9 @@ class OTActivatedHandler(basehandlers.FlaskHandler):
         """Build email."""
         body_data = {
             'stage': stage,
-            'ot_url': f'{settings.OT_URL}#/view_trial/{stage["origin_trial_id"]}',
+            'ot_url': (
+                f'{settings.OT_URL}#/view_trial/{stage["origin_trial_id"]}'
+            ),
             'chromestatus_url': (
                 f'https://chromestatus.com/feature/{stage["feature_id"]}'
             ),
@@ -772,16 +777,17 @@ class OTActivatedHandler(basehandlers.FlaskHandler):
         return {
             'to': contacts,
             'cc': [core_enums.OT_SUPPORT_EMAIL],
-            'subject': f'{stage["ot_display_name"]} origin trial is now available',
+            'subject': (
+                f'{stage["ot_display_name"]} origin trial is now available'
+            ),
             'reply_to': None,
             'html': body,
         }
 
 
 class OTCreationApprovedHandler(basehandlers.FlaskHandler):
-    """Notify about an origin trial having received reviews and approvals and being
-    ready for the user to request creation.
-    """  # noqa: D205, E501
+    """Notify about an origin trial having received reviews and approvals and
+    being ready for the user to request creation."""  # noqa: D205
 
     IS_INTERNAL_HANDLER = True
     EMAIL_TEMPLATE_PATH = 'origintrials/ot-creation-approved-email.html'
@@ -800,7 +806,9 @@ class OTCreationApprovedHandler(basehandlers.FlaskHandler):
     def build_email(self, feature: dict[str, Any], contacts: list[str]) -> dict:
         """Build email."""
         body_data = {
-            'chromestatus_url': f'https://chromestatus.com/feature/{feature["id"]}'
+            'chromestatus_url': (
+                f'https://chromestatus.com/feature/{feature["id"]}'
+            )
         }
         body = render_template(self.EMAIL_TEMPLATE_PATH, **body_data)
         return {
@@ -812,9 +820,8 @@ class OTCreationApprovedHandler(basehandlers.FlaskHandler):
 
 
 class OTCreationProcessedHandler(basehandlers.FlaskHandler):
-    """Notify about an origin trial creation request being processed,
-    but activation is at a later date.
-    """  # noqa: D205
+    """Notify about an origin trial creation request being processed, but
+    activation is at a later date."""  # noqa: D205
 
     IS_INTERNAL_HANDLER = True
     EMAIL_TEMPLATE_PATH = 'origintrials/ot-creation-processed-email.html'
@@ -851,7 +858,8 @@ class OTCreationProcessedHandler(basehandlers.FlaskHandler):
 
 
 class OTCreationRequestFailedHandler(basehandlers.FlaskHandler):
-    """Notify about an origin trial creation request failing automated request."""
+    """Notify about an origin trial creation request failing automated
+    request."""
 
     IS_INTERNAL_HANDLER = True
     EMAIL_TEMPLATE_PATH = 'origintrials/ot-creation-request-failed-email.html'
@@ -977,11 +985,13 @@ class OTCreationRequestHandler(basehandlers.FlaskHandler):
   <br>
   Instructions for handling this request can be found at: https://g3doc.corp.google.com/chrome/origin_trials/g3doc/trial_admin.md?cl=head#setup-a-new-trial
 </p>
-"""  # noqa: E501
+"""
 
         return {
             'to': core_enums.OT_SUPPORT_EMAIL,
-            'subject': f'New Trial Creation Request for {stage["ot_display_name"]}',
+            'subject': (
+                f'New Trial Creation Request for {stage["ot_display_name"]}'
+            ),
             'reply_to': None,
             'html': email_body,
         }
@@ -989,8 +999,7 @@ class OTCreationRequestHandler(basehandlers.FlaskHandler):
 
 class OTExtensionApprovedHandler(basehandlers.FlaskHandler):
     """Notify about an origin trial extension that is approved and needs
-    finalized.
-    """  # noqa: D205
+    finalized."""  # noqa: D205
 
     IS_INTERNAL_HANDLER = True
     EMAIL_TEMPLATE_PATH = 'origintrials/ot-extension-approved-email.html'
@@ -1123,7 +1132,9 @@ class OTEndingNextReleaseReminderHandler(basehandlers.FlaskHandler):
         return {
             'to': contacts,
             'cc': GLOBAL_OT_PROCESS_REMINDER_CC_LIST,
-            'subject': f'{body_data["name"]} origin trial ship decision approaching',
+            'subject': (
+                f'{body_data["name"]} origin trial ship decision approaching'
+            ),
             'reply_to': None,
             'html': body,
         }
@@ -1156,7 +1167,9 @@ class OTEndingThisReleaseReminderHandler(basehandlers.FlaskHandler):
         return {
             'to': contacts,
             'cc': GLOBAL_OT_PROCESS_REMINDER_CC_LIST,
-            'subject': f'{body_data["name"]} origin trial needs blink-dev update',
+            'subject': (
+                f'{body_data["name"]} origin trial needs blink-dev update'
+            ),
             'reply_to': None,
             'html': body,
         }
@@ -1494,7 +1507,7 @@ class ResetShippingMilestonesEmailHandler(basehandlers.FlaskHandler):
             'to': owner_emails,
             'cc': core_enums.WEBSTATUS_EMAIL,
             'subject': (
-                'Shipping and Rollout milestones reset for ChromeStatus feature '  # noqa: E501
+                'Shipping and Rollout milestones reset for ChromeStatus feature '
                 f'({feature_name})'
             ),
             'reply_to': None,

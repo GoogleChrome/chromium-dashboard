@@ -12,12 +12,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """General utility functions and helpers.
 
-Provides common utilities for URL formatting, string normalization,
-retry logic, text extraction, and interactions with external services
-like GitHub and the Chromium release schedule.
+Provides common utilities for URL formatting, string normalization, retry logic,
+text extraction, and interactions with external services like GitHub and the
+Chromium release schedule.
 """
 
 import asyncio
@@ -55,12 +54,12 @@ WPT_GITHUB_RAW_CONTENTS_URL = (
 SCRIPT_DEPENDENCY_REGEX = re.compile(r'<script\s+[^>]*src=["\']([^"\']+)["\']')
 
 # Match import/export ... from "..." or import "..."
-# Matches: import { x } from './foo.js' | import './bar.js' | export * from './baz.js'  # noqa: E501
+# Matches: import { x } from './foo.js' | import './bar.js' | export * from './baz.js'
 IMPORT_DEPENDENCY_REGEX = re.compile(
     r'(?:import|export)\s+(?:[^"\']+\s+from\s+)?["\']([^"\']+)["\']'
 )
 
-# The maximum number of dependency files that will be fetched for coverage evalution.  # noqa: E501
+# The maximum number of dependency files that will be fetched for coverage evalution.
 MAXIMUM_FETCHED_DEPENDENCIES = 100
 
 # The maximum number of test files that can be analyzed in a single test suite.
@@ -165,7 +164,7 @@ _ZERO = datetime.timedelta(0)
 
 
 class _UTCTimeZone(datetime.tzinfo):
-    """UTC"""  # noqa: D415
+    """UTC."""  # noqa: D415
 
     def utcoffset(self, _dt):
         return _ZERO
@@ -215,7 +214,8 @@ def get_chromium_milestone_info(milestone: int) -> dict:
 
 
 def get_current_milestone_info(anchor_channel: str):
-    """Return a dict of info about the next milestone reaching anchor_channel."""
+    """Return a dict of info about the next milestone reaching
+    anchor_channel."""
     try:
         url = f'{CHROME_RELEASE_SCHEDULE_URL}?mstone={anchor_channel}'
         logging.info('fetching ' + url)
@@ -249,8 +249,8 @@ def get_chromium_file(url: str) -> str:
 
 
 def extract_wpt_fyi_results_urls(text: str) -> list[str]:
-    """Finds all 'wpt.fyi/results' URLs within a given string and returns
-    them without any query parameters.
+    """Finds all 'wpt.fyi/results' URLs within a given string and returns them
+    without any query parameters.
 
     Args:
         text: The input string to search for URLs.
@@ -279,8 +279,8 @@ def _get_github_headers(token: str | None = None) -> dict[str, str]:
 
 
 def reformat_wpt_fyi_url(url: str) -> str:
-    """Normalizes a WPT URL by converting multi-global test variants back to their
-    source ".any.js" file.
+    """Normalizes a WPT URL by converting multi-global test variants back to
+    their source ".any.js" file.
 
     If the URL does not contain ".any.", it is returned unchanged.
 
@@ -322,7 +322,7 @@ def _parse_wpt_fyi_url(url: str) -> Path:
     if not parsed_url.path.startswith(path_prefix):
         raise ValueError(
             f"Invalid URL path: Expected to start with '{path_prefix}'."
-        )  # noqa: E501
+        )
 
     # Extract the file/dir path after '/results/'
     path = parsed_url.path[len(path_prefix) :].strip('/')
@@ -358,8 +358,9 @@ def _fetch_file_content(url: str) -> str | None:
 
 def _fetch_dir_listing(
     url: str, headers: dict[str, str]
-) -> list[tuple[Path, str]]:  # noqa: E501
+) -> list[tuple[Path, str]]:
     """Fetches a GitHub directory listing and extracts all valid file entries.
+
     Intended to be run in a thread pool.
     """  # noqa: D205
     try:
@@ -394,6 +395,7 @@ async def _fetch_and_pair(fpath: Path, furl: str) -> tuple[Path, str | None]:
 
 def extract_dependencies(content: str) -> list[str]:
     """Scans file content for references to other files.
+
     Looks for:
       - <script src="...">
       - import ... from "..."
@@ -411,13 +413,13 @@ def extract_dependencies(content: str) -> list[str]:
 
 def resolve_dependency_path(
     current_file_path: Path, dep_ref: str
-) -> Path | None:  # noqa: E501
+) -> Path | None:
     """Resolves a dependency reference to a concrete WPT repository path.
 
     Args:
         current_file_path: The Path of the file containing the reference (e.g. 'fedcm/test.html')
         dep_ref: The string reference found in the file (e.g. '../support/helper.js')
-    """  # noqa: E501
+    """
     # Ignore absolute URLs (external dependencies)
     if dep_ref.startswith('http') or dep_ref.startswith('//'):
         return None
@@ -439,7 +441,8 @@ def resolve_dependency_path(
 async def get_mixed_wpt_contents_async(
     dir_urls: list[str], additional_file_urls: list[str]
 ) -> WPTContents:
-    """Orchestrates concurrent fetching of WPT files and recursively fetches their dependencies.
+    """Orchestrates concurrent fetching of WPT files and recursively fetches
+    their dependencies.
 
     Args:
       dir_urls: List of WPT directory URLs to scan.
@@ -455,7 +458,7 @@ async def get_mixed_wpt_contents_async(
     Raises:
       PipelineError: If the test suite contains over the maximum number of test
         files to analyze (not including dependency files).
-    """  # noqa: E501
+    """
     headers = _get_github_headers(settings.GITHUB_TOKEN)
 
     test_contents: dict[Path, str] = {}
@@ -572,7 +575,7 @@ async def get_mixed_wpt_contents_async(
     for test_path in test_contents:
         relevant_deps = set()
 
-        # Perform a traversal (DFS) to find all reachable dependencies for this test file.  # noqa: E501
+        # Perform a traversal (DFS) to find all reachable dependencies for this test file.
         stack = [test_path]
         seen_in_traversal = {test_path}
 

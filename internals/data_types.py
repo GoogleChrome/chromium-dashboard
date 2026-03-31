@@ -15,7 +15,8 @@
 
 # Import needed to reference a class within its own class method.
 # https://stackoverflow.com/a/33533514
-"""Data types, typed dictionaries, and constants for features, stages, and activities."""
+"""Data types, typed dictionaries, and constants for features, stages, and
+activities."""
 
 from __future__ import annotations
 
@@ -318,7 +319,7 @@ class OriginTrialInfo:
         self.description = api_trial.get('description', None)
         self.origin_trial_feature_name = api_trial.get(
             'originTrialFeatureName', None
-        )  # noqa: E501
+        )
         self.enabled = api_trial.get('enabled', False)
         self.status = api_trial.get('status', None)
         self.chromestatus_url = api_trial.get('chromestatusUrl', None)
@@ -337,7 +338,7 @@ class OriginTrialInfo:
         self.type = api_trial.get('type', None)
         self.allow_third_party_origins = api_trial.get(
             'allowThirdPartyOrigins', False
-        )  # noqa: E501
+        )
 
     id: str | None
     display_name: str | None

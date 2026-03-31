@@ -12,7 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Base classes for Flask-based API and web request handlers."""
 
 import json
@@ -237,14 +236,17 @@ class APIHandler(BaseHandler):
         """Add CORS and Chrome Frame to all responses."""
         session.permanent = True
         headers = {
-            'Strict-Transport-Security': 'max-age=63072000; includeSubDomains; preload',
+            'Strict-Transport-Security': (
+                'max-age=63072000; includeSubDomains; preload'
+            ),
             'X-UA-Compatible': 'IE=Edge,chrome=1',
             'X-Frame-Options': 'DENY',
         }
         return headers
 
     def defensive_jsonify(self, handler_data):
-        """Return a Flask Response object with a JSON string prefixed with junk."""
+        """Return a Flask Response object with a JSON string prefixed with
+        junk."""
         body = json.dumps(handler_data, default=str)
         return flask.current_app.response_class(
             XSSI_PREFIX + body, mimetype=flask.current_app.json.mimetype
@@ -312,7 +314,7 @@ class APIHandler(BaseHandler):
         return valid_methods
 
     def _update_last_visit_field(self, email):
-        """Updates the AppUser last_visit field to log the user's last visit"""  # noqa: D415
+        """Updates the AppUser last_visit field to log the user's last visit."""  # noqa: D415
         app_user = user_models.AppUser.get_app_user(email)
         if not app_user:
             return False
@@ -342,7 +344,8 @@ class APIHandler(BaseHandler):
         self.abort(405, valid_methods=self._get_valid_methods())
 
     def do_delete(self, **kwargs):
-        """Subclasses should implement this method to handle a DELETE request."""
+        """Subclasses should implement this method to handle a DELETE
+        request."""
         self.abort(405, valid_methods=self._get_valid_methods())
 
     def validate_token(self, token, email):
@@ -351,7 +354,8 @@ class APIHandler(BaseHandler):
         xsrf.validate_token(token, email)
 
     def require_signed_in_and_xsrf_token(self):
-        """Every API POST, PUT, or DELETE must be signed in with an XSRF token."""
+        """Every API POST, PUT, or DELETE must be signed in with an XSRF
+        token."""
         user = self.get_current_user(required=True)
         token = self.request.headers.get('X-Xsrf-Token')
         if not token:
@@ -535,7 +539,7 @@ class EntitiesAPIHandler(APIHandler):
 class FlaskHandler(BaseHandler):
     TEMPLATE_PATH: Optional[str] = None  # Subclasses should define this.
     HTTP_CACHE_TYPE: Optional[str] = (
-        None  # Subclasses can use 'public' or 'private'  # noqa: E501
+        None  # Subclasses can use 'public' or 'private'
     )
     JSONIFY = False  # Set to True for JSON feeds.
     IS_INTERNAL_HANDLER = False  # Subclasses can skip XSRF check.
@@ -555,7 +559,9 @@ class FlaskHandler(BaseHandler):
         """Add CORS and Chrome Frame to all responses."""
         session.permanent = True
         headers = {
-            'Strict-Transport-Security': 'max-age=63072000; includeSubDomains; preload',
+            'Strict-Transport-Security': (
+                'max-age=63072000; includeSubDomains; preload'
+            ),
             'X-UA-Compatible': 'IE=Edge,chrome=1',
             'X-Frame-Options': 'DENY',
         }
@@ -733,7 +739,8 @@ class FlaskHandler(BaseHandler):
         return [x.strip() for x in re.split(delim, input_text) if x.strip()]
 
     def split_emails(self, param_name):
-        """Split one input field and construct objects for ndb.StringProperty()."""
+        """Split one input field and construct objects for
+        ndb.StringProperty()."""
         addr_strs = self.split_input(param_name, delim=',')
         emails = [str(addr) for addr in addr_strs]
         return emails
@@ -771,6 +778,7 @@ class FlaskHandler(BaseHandler):
 
 class Redirector(FlaskHandler):
     """Reusable handler that always redirects.
+
     Specify the location in the third part of a routing rule using:
     {'location': '/path/to/page'}.
     """  # noqa: D205
@@ -783,6 +791,7 @@ class Redirector(FlaskHandler):
 
 class ConstHandler(FlaskHandler):
     """Reusable handler for templates that require no page-specific logic.
+
     Specify the location in the third part of a routing rule using:
     {'template_path': 'path/to/template.html'}.
     """  # noqa: D205
@@ -806,7 +815,7 @@ class ConstHandler(FlaskHandler):
 
 
 def ndb_wsgi_middleware(wsgi_app):
-    """Create a new runtime context for cloud ndb for every request"""  # noqa: D415
+    """Create a new runtime context for cloud ndb for every request."""  # noqa: D415
     client = ndb.Client()
 
     def middleware(environ, start_response):
@@ -817,7 +826,7 @@ def ndb_wsgi_middleware(wsgi_app):
 
 
 class SPAHandler(FlaskHandler):
-    """Single-page app handler"""  # noqa: D415
+    """Single-page app handler."""  # noqa: D415
 
     TEMPLATE_PATH = 'spa.html'
 
@@ -842,16 +851,17 @@ def get_spa_template_data(handler_obj, defaults):
         common_data = handler_obj.get_common_data()
         if 'loginStatus=False' in common_data['current_path']:
             return {}
-        return flask.redirect(
-            settings.LOGIN_PAGE_URL
-        ), handler_obj.get_headers()
+        return (
+            flask.redirect(settings.LOGIN_PAGE_URL),
+            handler_obj.get_headers(),
+        )
 
     try:
         # Check if the page requires create feature permission
         if defaults.get('require_create_feature'):
             redirect_resp = permissions.validate_feature_create_permission(
                 handler_obj
-            )  # noqa: E501
+            )
             if redirect_resp:
                 return redirect_resp
 
@@ -883,14 +893,15 @@ def get_spa_template_data(handler_obj, defaults):
                 handler_obj.abort(403, msg='You cannot access this page')
 
     except werkzeug.exceptions.Forbidden:
-        # If the user is logged in but lacks permission, redirect them to a safe page  # noqa: E501
+        # If the user is logged in but lacks permission, redirect them to a safe page
         # instead of showing a generic white 403 error page.
         if defaults.get('require_edit_feature') and defaults.get('feature_id'):
             try:
                 safe_feature_id = int(defaults.get('feature_id'))
-                return flask.redirect(
-                    f'/feature/{safe_feature_id}?error=403'
-                ), handler_obj.get_headers()  # noqa: E501
+                return (
+                    flask.redirect(f'/feature/{safe_feature_id}?error=403'),
+                    handler_obj.get_headers(),
+                )
             except (ValueError, TypeError):
                 pass
         return flask.redirect('/features?error=403'), handler_obj.get_headers()

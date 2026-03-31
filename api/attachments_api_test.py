@@ -11,8 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-"""Tests for the attachments_api module, verifying attachment upload permissions and serving."""
+"""Tests for the attachments_api module, verifying attachment upload permissions
+and serving."""
 
 import io
 
@@ -62,7 +62,8 @@ class AttachmentsAPITest(testing_config.CustomTestCase):
                 self.handler.do_post(feature_id=self.feature_id)
 
     def test_do_post__noneditor(self):
-        """Users who cannot edit this particular feature cannot add attachments."""
+        """Users who cannot edit this particular feature cannot add
+        attachments."""
         testing_config.sign_in('someone@example.com', 111)
         with test_app.test_request_context(self.request_path):
             with self.assertRaises(werkzeug.exceptions.Forbidden):

@@ -11,7 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Tests for the notifier_helpers module, verifying activity logging and notification queuing."""
+"""Tests for the notifier_helpers module, verifying activity logging and
+notification queuing."""
 
 from unittest import mock
 
@@ -94,7 +95,8 @@ class ActivityTest(testing_config.CustomTestCase):
         self.assertEqual(len(activities), 0)
 
     def test_activities_created__empty_list_not_created(self):
-        """No amendment should be logged if the value moved from None to empty list."""  # noqa: E501
+        """No amendment should be logged if the value moved from None to empty
+        list."""
         changed_fields: CHANGED_FIELDS_LIST_TYPE = [('editor_emails', None, [])]
         notifier_helpers.notify_subscribers_and_save_amendments(
             self.feature_1, changed_fields
@@ -137,10 +139,14 @@ class ActivityTest(testing_config.CustomTestCase):
         )
 
         prop_change = {
-            'prop_name': 'API Owners review status http://127.0.0.1:7777/feature/111?gate=123',
+            'prop_name': (
+                'API Owners review status http://127.0.0.1:7777/feature/111?gate=123'
+            ),
             'old_val': 'na',
             'new_val': 'needs_work',
-            'note': 'Feature owners must press the "Re-request review" button after requested changes have been completed.',  # noqa: E501
+            'note': (
+                'Feature owners must press the "Re-request review" button after requested changes have been completed.'
+            ),
         }
         expected_params = {
             'changes': [prop_change],
@@ -215,7 +221,8 @@ class NotifierHelpersTest(testing_config.CustomTestCase):
         'internals.notifier_helpers.send_trial_creation_approved_notification'
     )
     def test_notify_approvals__creation(self, mock_sender):
-        """OT creation approval notification is sent when all gates are approved."""
+        """OT creation approval notification is sent when all gates are
+        approved."""
         notifier_helpers.notify_approvals(
             self.feature_1, self.ot_stage, self.gate_1
         )
@@ -226,8 +233,7 @@ class NotifierHelpersTest(testing_config.CustomTestCase):
     )
     def test_notify_approvals__creation_gates_unapproved(self, mock_sender):
         """OT creation approval notification is only sent if all gates are
-        approved.
-        """  # noqa: D205
+        approved."""  # noqa: D205
         # A separate gate related to the OT stage is not approved.
         self.gate_2.state = Vote.DENIED
         self.gate_2.put()

@@ -11,11 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Unit tests for the origin_trials_client module.
 
-Tests the interaction with the Origin Trials API, including fetching
-trials, extending trials, and handling API key presence/absence.
+Tests the interaction with the Origin Trials API, including fetching trials,
+extending trials, and handling API key presence/absence.
 """
 
 from unittest import mock
@@ -223,7 +222,8 @@ class OriginTrialsClientTest(testing_config.CustomTestCase):
         mock_get_ot_access_token,
         mock_get_admin_group,
     ):
-        """If an API key is available, POST should create trial and return true."""
+        """If an API key is available, POST should create trial and return
+        true."""
         mock_requests_post.return_value = mock.MagicMock(
             status_code=200, json=lambda: ({'trial': {'id': -1234567890}})
         )

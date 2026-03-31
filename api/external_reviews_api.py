@@ -11,9 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-
-"""API handlers for retrieving the status of external feature reviews (e.g., TAG, Gecko, WebKit)."""
+"""API handlers for retrieving the status of external feature reviews (e.g.,
+TAG, Gecko, WebKit)."""
 
 import math
 import re
@@ -132,11 +131,12 @@ def max_of_present(*args):
 
 class ExternalReviewerInfo:
     unreviewed_features_query: ndb.Query
-    """Fetch this to get features for which this group has been asked for a review, and they haven't
-  finished it yet."""  # noqa: E501
+    """Fetch this to get features for which this group has been asked for a
+    review, and they haven't finished it yet."""
 
     _review_link: str
-    """The name of the field in FeatureEntry that holds the review link for review_group."""  # noqa: E501
+    """The name of the field in FeatureEntry that holds the review link for
+    review_group."""
 
     review_pattern: re.Pattern
     """Matches URLs in the reviewer's review repository."""
@@ -177,7 +177,8 @@ class ExternalReviewsAPI(basehandlers.APIHandler):
     """Implements the OpenAPI /external_reviews path."""
 
     def do_get(self, **kwargs):
-        """Get a list of features with outstanding external reviews from a particular review body."""  # noqa: D200, E501
+        """Get a list of features with outstanding external reviews from a
+        particular review body."""  # noqa: D200
         review_group: str | None = kwargs.get('review_group', None)
         if review_group not in ['tag', 'gecko', 'webkit']:
             self.abort(404, f'invalid review group {review_group}')
@@ -185,7 +186,7 @@ class ExternalReviewsAPI(basehandlers.APIHandler):
         reviewer_info = ExternalReviewerInfo(review_group)
         unreviewed_features = reviewer_info.unreviewed_features_query.fetch()
 
-        # Remove features for which the review link isn't a request for the review group to review the  # noqa: E501
+        # Remove features for which the review link isn't a request for the review group to review the
         # feature.
         unreviewed_features = [
             feature
@@ -211,7 +212,7 @@ class ExternalReviewsAPI(basehandlers.APIHandler):
         # Filter to reviews for which we could fetch a preview.
         feature_links, _has_stale_links = get_feature_links_by_feature_ids(
             [feature.key.id() for feature in unreviewed_features],
-            update_stale_links=True,  # noqa: E501
+            update_stale_links=True,
         )
         review_links = {
             reviewer_info.review_link(feature)
@@ -225,22 +226,26 @@ class ExternalReviewsAPI(basehandlers.APIHandler):
                 review_link=reviewer_info.review_link(feature),
                 feature=FeatureLink(id=feature.key.id(), name=feature.name),
                 current_stage=stage_type(feature, stage),
-                estimated_start_milestone=min_of_present(
-                    stage.milestones.desktop_first,
-                    stage.milestones.android_first,
-                    stage.milestones.ios_first,
-                    stage.milestones.webview_first,
-                )
-                if stage and stage.milestones
-                else None,
-                estimated_end_milestone=max_of_present(
-                    stage.milestones.desktop_last,
-                    stage.milestones.android_last,
-                    stage.milestones.ios_last,
-                    stage.milestones.webview_last,
-                )
-                if stage and stage.milestones
-                else None,
+                estimated_start_milestone=(
+                    min_of_present(
+                        stage.milestones.desktop_first,
+                        stage.milestones.android_first,
+                        stage.milestones.ios_first,
+                        stage.milestones.webview_first,
+                    )
+                    if stage and stage.milestones
+                    else None
+                ),
+                estimated_end_milestone=(
+                    max_of_present(
+                        stage.milestones.desktop_last,
+                        stage.milestones.android_last,
+                        stage.milestones.ios_last,
+                        stage.milestones.webview_last,
+                    )
+                    if stage and stage.milestones
+                    else None
+                ),
             )
             for feature in unreviewed_features
             for stage in [active_stage.get(feature.key.id(), None)]
@@ -249,12 +254,16 @@ class ExternalReviewsAPI(basehandlers.APIHandler):
         reviews.sort(
             key=lambda review: (
                 review.current_stage,
-                review.estimated_end_milestone
-                if review.estimated_end_milestone is not None
-                else math.inf,
-                review.estimated_start_milestone
-                if review.estimated_start_milestone is not None
-                else math.inf,
+                (
+                    review.estimated_end_milestone
+                    if review.estimated_end_milestone is not None
+                    else math.inf
+                ),
+                (
+                    review.estimated_start_milestone
+                    if review.estimated_start_milestone is not None
+                    else math.inf
+                ),
                 review.review_link,
             )
         )
@@ -273,5 +282,5 @@ class ExternalReviewsAPI(basehandlers.APIHandler):
 
         result = ExternalReviewsResponse(
             reviews=reviews, link_previews=link_previews
-        )  # noqa: E501
+        )
         return result.to_dict()

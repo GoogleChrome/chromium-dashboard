@@ -177,8 +177,7 @@ class FeatureOwner(ndb.Model):
         self, component_id, remove_as_owner=False
     ):
         """Removes the user from the list of Blink component subscribers or as
-        the owner of the component.
-        """  # noqa: D205
+        the owner of the component."""  # noqa: D205
         c = BlinkComponent.get_by_id(component_id)
         if c:
             if remove_as_owner:
@@ -254,7 +253,7 @@ class BlinkComponent(ndb.Model):
 
     @classmethod
     def update_db(self):
-        """Updates the db with new Blink components from the json endpoint"""  # noqa: D415
+        """Updates the db with new Blink components from the json endpoint."""  # noqa: D415
         new_components = self.fetch_all_components(update_cache=True)
         existing_comps = self.query().fetch(None)
         for name in new_components:

@@ -12,8 +12,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-"""Tests for the component_users module, verifying component owner and subscriber modifications."""
+"""Tests for the component_users module, verifying component owner and
+subscriber modifications."""
 
 import datetime
 
@@ -40,12 +40,12 @@ class ComponentUsersAPITest(testing_config.CustomTestCase):
 
         self.component_1 = user_models.BlinkComponent(
             name='Blink', created=created, updated=created
-        )  # noqa: E501
+        )
         self.component_1.key = ndb.Key('BlinkComponent', 123)
         self.component_1.put()
         self.component_2 = user_models.BlinkComponent(
             name='Blink>Accessibility', created=created, updated=created
-        )  # noqa: E501
+        )
         self.component_2.key = ndb.Key('BlinkComponent', 234)
         self.component_2.put()
         self.component_owner_1 = user_models.FeatureOwner(
@@ -89,7 +89,7 @@ class ComponentUsersAPITest(testing_config.CustomTestCase):
 
     def test_do_put(self):
         """Test do_put."""
-        request_path = f'/api/v0/components/{self.component_2.key.integer_id()}/users/{self.no_body.key.integer_id()}'  # noqa: E501
+        request_path = f'/api/v0/components/{self.component_2.key.integer_id()}/users/{self.no_body.key.integer_id()}'
         user = user_models.FeatureOwner.get_by_id(self.no_body.key.integer_id())
         self.assertEqual(user.blink_components, [])
         self.assertEqual(user.primary_blink_components, [])
@@ -97,7 +97,7 @@ class ComponentUsersAPITest(testing_config.CustomTestCase):
         testing_config.sign_in('admin@example.com', 123567890)
         with test_app.test_request_context(
             request_path, json=ComponentUsersRequest().to_dict()
-        ):  # noqa: E501
+        ):
             response = self.handler.do_put(
                 component_id=self.component_2.key.integer_id(),
                 user_id=self.no_body.key.integer_id(),
@@ -110,7 +110,7 @@ class ComponentUsersAPITest(testing_config.CustomTestCase):
         # Add owner to an existing component user
         with test_app.test_request_context(
             request_path, json=ComponentUsersRequest(owner=True).to_dict()
-        ):  # noqa: E501
+        ):
             response = self.handler.do_put(
                 component_id=self.component_2.key.integer_id(),
                 user_id=self.no_body.key.integer_id(),
@@ -122,19 +122,19 @@ class ComponentUsersAPITest(testing_config.CustomTestCase):
 
     def test_do_delete(self):
         """Test do_delete."""
-        request_path = f'/api/v0/components/{self.component_2.key.integer_id()}/users/{self.watcher_1.key.integer_id()}'  # noqa: E501
+        request_path = f'/api/v0/components/{self.component_2.key.integer_id()}/users/{self.watcher_1.key.integer_id()}'
         user = user_models.FeatureOwner.get_by_id(
             self.watcher_1.key.integer_id()
         )
         self.assertEqual(
             user.blink_components, [self.component_1.key, self.component_2.key]
-        )  # noqa: E501
+        )
         self.assertEqual(user.primary_blink_components, [])
         # Remove user from component
         testing_config.sign_in('admin@example.com', 123567890)
         with test_app.test_request_context(
             request_path, json=ComponentUsersRequest().to_dict()
-        ):  # noqa: E501
+        ):
             response = self.handler.do_delete(
                 component_id=self.component_2.key.integer_id(),
                 user_id=self.watcher_1.key.integer_id(),
@@ -146,22 +146,22 @@ class ComponentUsersAPITest(testing_config.CustomTestCase):
         self.assertEqual(user.blink_components, [self.component_1.key])
         self.assertEqual(user.primary_blink_components, [])
 
-        request_path = f'/api/v0/components/{self.component_2.key.integer_id()}/users/{self.component_owner_1.key.integer_id()}'  # noqa: E501
+        request_path = f'/api/v0/components/{self.component_2.key.integer_id()}/users/{self.component_owner_1.key.integer_id()}'
         user = user_models.FeatureOwner.get_by_id(
             self.component_owner_1.key.integer_id()
-        )  # noqa: E501
+        )
         self.assertEqual(
             user.blink_components, [self.component_1.key, self.component_2.key]
-        )  # noqa: E501
+        )
         self.assertEqual(
             user.primary_blink_components,
             [self.component_1.key, self.component_2.key],
-        )  # noqa: E501
+        )
         # Remove only the owner from component but keep it as a subscriber
         testing_config.sign_in('admin@example.com', 123567890)
         with test_app.test_request_context(
             request_path, json=ComponentUsersRequest(owner=True).to_dict()
-        ):  # noqa: E501
+        ):
             response = self.handler.do_delete(
                 component_id=self.component_2.key.integer_id(),
                 user_id=self.component_owner_1.key.integer_id(),
@@ -169,28 +169,28 @@ class ComponentUsersAPITest(testing_config.CustomTestCase):
         self.assertEqual(({}, 200), response)
         user = user_models.FeatureOwner.get_by_id(
             self.component_owner_1.key.integer_id()
-        )  # noqa: E501
+        )
         self.assertEqual(
             user.blink_components, [self.component_1.key, self.component_2.key]
-        )  # noqa: E501
+        )
         self.assertEqual(user.primary_blink_components, [self.component_1.key])
 
-        request_path = f'/api/v0/components/{self.component_2.key.integer_id()}/users/{self.component_owner_2.key.integer_id()}'  # noqa: E501
+        request_path = f'/api/v0/components/{self.component_2.key.integer_id()}/users/{self.component_owner_2.key.integer_id()}'
         user = user_models.FeatureOwner.get_by_id(
             self.component_owner_2.key.integer_id()
-        )  # noqa: E501
+        )
         self.assertEqual(
             user.blink_components, [self.component_1.key, self.component_2.key]
-        )  # noqa: E501
+        )
         self.assertEqual(
             user.primary_blink_components,
             [self.component_1.key, self.component_2.key],
-        )  # noqa: E501
+        )
         # Remove the user as both and owner and a user from component
         testing_config.sign_in('admin@example.com', 123567890)
         with test_app.test_request_context(
             request_path, json=ComponentUsersRequest().to_dict()
-        ):  # noqa: E501
+        ):
             response = self.handler.do_delete(
                 component_id=self.component_2.key.integer_id(),
                 user_id=self.component_owner_2.key.integer_id(),
@@ -198,6 +198,6 @@ class ComponentUsersAPITest(testing_config.CustomTestCase):
         self.assertEqual(({}, 200), response)
         user = user_models.FeatureOwner.get_by_id(
             self.component_owner_2.key.integer_id()
-        )  # noqa: E501
+        )
         self.assertEqual(user.blink_components, [self.component_1.key])
         self.assertEqual(user.primary_blink_components, [self.component_1.key])

@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Tests for the Origin Trial requests admin page handler."""
 
 from unittest import mock
@@ -186,7 +185,8 @@ class OriginTrialsRequestsTest(testing_config.CustomTestCase):
     def test_get_template_data__extension_with_bad_ot_stage_id(
         self, mock_logging_warning
     ):
-        """An extension stage with a bad ot_stage_id is skipped and logs a warning."""  # noqa: E501
+        """An extension stage with a bad ot_stage_id is skipped and logs a
+        warning."""
         # Set the ot_stage_id to a non-existent ID
         self.extension_stage.ot_stage_id = 99999
         self.extension_stage.put()

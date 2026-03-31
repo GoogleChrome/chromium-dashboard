@@ -11,8 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-"""API handlers for calculating and retrieving feature shipping latency metrics."""
+"""API handlers for calculating and retrieving feature shipping latency
+metrics."""
 
 import logging
 from datetime import datetime, timedelta
@@ -104,7 +104,8 @@ class FeatureLatencyAPI(basehandlers.APIHandler):
     def get_shipped_milestones(
         self, features: list[FeatureEntry]
     ) -> dict[int, int]:
-        """Get all the ship Stages for those features to find shipping milestones."""  # noqa: E501
+        """Get all the ship Stages for those features to find shipping
+        milestones."""
         feature_ids = {fe.key.integer_id() for fe in features}
         logging.info('feature_ids %r', feature_ids)
         if not feature_ids:
@@ -175,9 +176,8 @@ class FeatureLatencyAPI(basehandlers.APIHandler):
         end_date: datetime,
         milestone_details: dict[int, dict[str, Any]],
     ) -> list[FeatureEntry]:
-        """Return only features that shipped in milestones that branched
-        between start_date and end_date.
-        """  # noqa: D205
+        """Return only features that shipped in milestones that branched between
+        start_date and end_date."""  # noqa: D205
         if not milestone_details:
             return []
         start_date_iso = start_date.isoformat()

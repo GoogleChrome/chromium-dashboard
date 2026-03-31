@@ -12,8 +12,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-"""Tests for the components_users module, verifying retrieval of all Blink component users."""
+"""Tests for the components_users module, verifying retrieval of all Blink
+component users."""
 
 import datetime
 
@@ -39,12 +39,12 @@ class ComponentsUsersAPITest(testing_config.CustomTestCase):
 
         self.component_1 = user_models.BlinkComponent(
             name='Blink', created=created, updated=created
-        )  # noqa: E501
+        )
         self.component_1.key = ndb.Key('BlinkComponent', 123)
         self.component_1.put()
         self.component_2 = user_models.BlinkComponent(
             name='Blink>Accessibility', created=created, updated=created
-        )  # noqa: E501
+        )
         self.component_2.key = ndb.Key('BlinkComponent', 234)
         self.component_2.put()
         self.component_owner_1 = user_models.FeatureOwner(
@@ -91,7 +91,7 @@ class ComponentsUsersAPITest(testing_config.CustomTestCase):
                     'owner_ids': [111],
                     'subscriber_ids': [111, 222],
                 }
-            ],  # noqa: E501
+            ],
             'users': [
                 {'email': 'no_body@example.com', 'id': 444, 'name': 'no_body'},
                 {'email': 'owner_1@example.com', 'id': 111, 'name': 'owner_1'},

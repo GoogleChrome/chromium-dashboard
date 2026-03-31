@@ -12,7 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """API handlers for creating and managing AppUser accounts."""
 
 from chromestatus_openapi.models import AccountResponse
@@ -47,7 +46,7 @@ class AccountsAPI(basehandlers.APIHandler):
             is_site_editor=user.is_site_editor,
             email=user.email,
             id=user.key.integer_id(),
-        ).to_dict()  # noqa: E501
+        ).to_dict()
         return response_json
 
     def create_account(self, email, is_admin, is_site_editor):

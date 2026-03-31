@@ -11,8 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-"""API endpoints for interacting with and managing origin trials and their extensions."""
+"""API endpoints for interacting with and managing origin trials and their
+extensions."""
 
 import concurrent.futures
 import re
@@ -39,7 +39,7 @@ CHROMIUM_SRC_FILES = [
     {
         'name': 'enabled_features_text',
         'url': core_enums.ENABLED_FEATURES_FILE_URL,
-    },  # noqa: E501
+    },
     {'name': 'grace_period_file', 'url': core_enums.GRACE_PERIOD_FILE},
 ]
 CHROMIUM_USE_COUNTER_FILES_MAP = {
@@ -54,14 +54,14 @@ CHROMIUM_USE_COUNTER_FILES_MAP = {
     BlinkHistogramID.css_property_id: {
         'name': 'css_property_id_file',
         'url': core_enums.CSS_PROPERTY_ID_FILE_URL,
-    },  # noqa: E501
+    },
 }
 
 
 def get_chromium_files_for_validation(
     uc_type: BlinkHistogramID | None,
-) -> dict[str, str]:  # noqa: E501
-    """Get all chromium file contents stored in a dictionary"""  # noqa: D415
+) -> dict[str, str]:
+    """Get all chromium file contents stored in a dictionary."""  # noqa: D415
     chromium_files = {}  # Chromium source file contents.
     files_to_fetch = []
     # Only obtain the relevant use counter file.
@@ -71,7 +71,7 @@ def get_chromium_files_for_validation(
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
         future_to_name = {
-            executor.submit(utils.get_chromium_file, f['url']): f['name']  # noqa: E501
+            executor.submit(utils.get_chromium_file, f['url']): f['name']
             for f in files_to_fetch
         }
         for future in concurrent.futures.as_completed(future_to_name):
@@ -187,7 +187,7 @@ class OriginTrialsAPI(basehandlers.EntitiesAPIHandler):
         if enabled_features_text:
             enabled_features_json = json5.loads(enabled_features_text)
             if not any(
-                feature.get('origin_trial_feature_name') == chromium_trial_name  # noqa: E501
+                feature.get('origin_trial_feature_name') == chromium_trial_name
                 for feature in enabled_features_json.get('data', [])
             ):
                 validation_errors['ot_chromium_trial_name'] = (
@@ -328,7 +328,7 @@ class OriginTrialsAPI(basehandlers.EntitiesAPIHandler):
         # TODO(markxiong0122): remove to_dict() when PR#4213 is merged
         body = CreateOriginTrialRequest.from_dict(
             self.get_json_param_dict()
-        ).to_dict()  # noqa: E501
+        ).to_dict()
         use_counter = (
             body['ot_webfeature_use_counter']['value']
             if body['ot_webfeature_use_counter']
@@ -349,7 +349,7 @@ class OriginTrialsAPI(basehandlers.EntitiesAPIHandler):
         ):
             validation_errors = self._validate_creation_args(
                 body, chromium_files_dict
-            )  # noqa: E501
+            )
             if validation_errors:
                 return {
                     'message': 'Errors found when validating arguments',
@@ -358,19 +358,20 @@ class OriginTrialsAPI(basehandlers.EntitiesAPIHandler):
         self.update_stage(ot_stage, body, [])
         ot_stage.ot_use_counter_bucket_number = find_use_counter_value(
             body, chromium_files_dict
-        )  # noqa: E501
+        )
 
         # Flag OT stage as ready to be created.
         ot_stage.ot_setup_status = OT_READY_FOR_CREATION
         ot_stage.put()
         return SuccessMessage(
             message='Origin trial creation request submitted.'
-        ).to_dict()  # noqa: E501
+        ).to_dict()
 
     def _validate_extension_args(
         self, feature_id: int, ot_stage: Stage, extension_stage: Stage
     ) -> None:
-        """Abort if any arguments used for origin trial extension are invalid."""
+        """Abort if any arguments used for origin trial extension are
+        invalid."""
         # The stage should belong to the feature.
         if feature_id != extension_stage.feature_id:
             self.abort(
@@ -405,7 +406,7 @@ class OriginTrialsAPI(basehandlers.EntitiesAPIHandler):
             )
 
     def do_patch(self, **kwargs):
-        """Extends an existing origin trial"""  # noqa: D415
+        """Extends an existing origin trial."""  # noqa: D415
         feature_id = int(kwargs['feature_id'])
         extension_stage_id = int(kwargs['extension_stage_id'])
         # Check that feature ID is valid.
@@ -465,4 +466,4 @@ class OriginTrialsAPI(basehandlers.EntitiesAPIHandler):
         )
         return SuccessMessage(
             message='Origin trial extended successfully.'
-        ).to_dict()  # noqa: E501
+        ).to_dict()

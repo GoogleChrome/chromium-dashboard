@@ -11,8 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-"""Helper functions for managing enterprise features and first notification milestones."""
+"""Helper functions for managing enterprise features and first notification
+milestones."""
 
 from datetime import datetime
 
@@ -30,7 +30,8 @@ def _str_to_datetime(dt):
 def needs_default_first_notification_milestone(
     existing_feature: FeatureEntry | None = None, new_fields: dict = {}
 ) -> bool:
-    """Returns whether we should create a default value for first_enterprise_notification_milestone.
+    """Returns whether we should create a default value for
+    first_enterprise_notification_milestone.
 
     If a feature required a first_enterprise_notification_milestone field and a valid value is not
     available, we generate a deafult one.
@@ -38,25 +39,25 @@ def needs_default_first_notification_milestone(
     Args:
       existing_feature: FeatureEntry Optional feature that needs to be updated.
       new_fields: dict Fields that will be used to update or create the feature.
-    """  # noqa: E501
+    """
     milestone = None
     has_valid_milestone_in_new_fields = False
     if new_fields.get('first_enterprise_notification_milestone'):
         milestone = int(new_fields['first_enterprise_notification_milestone'])
         channel_details = channels_api.construct_specified_milestones_details(
             milestone, milestone
-        )  # noqa: E501
+        )
         has_valid_milestone_in_new_fields = (
             milestone in channel_details
             and _str_to_datetime(channel_details[milestone]['stable_date'])
             > datetime.now()
-        )  # noqa: E501
+        )
 
     existing_impact = ENTERPRISE_IMPACT_NONE  # noqa: F405
     if (
         existing_feature is not None
         and existing_feature.enterprise_impact is not None
-    ):  # noqa: E501
+    ):
         existing_impact = existing_feature.enterprise_impact
     new_impact = int(new_fields.get('enterprise_impact', existing_impact))
 
@@ -87,13 +88,14 @@ def needs_default_first_notification_milestone(
 
 def is_update_first_notification_milestone(
     feature: FeatureEntry, new_fields: dict
-) -> bool:  # noqa: E501
-    """Returns whether the milestone can be used to update first_enterprise_notification_milestone.
+) -> bool:
+    """Returns whether the milestone can be used to update
+    first_enterprise_notification_milestone.
 
     Args:
       feature: FeatureEntry feature that needs to be updated.
       new_fields: dict Fields that will be used to update or create the feature.
-    """  # noqa: E501
+    """
     milestone = new_fields.get('first_enterprise_notification_milestone')
     if not milestone:
         return False
@@ -112,10 +114,10 @@ def is_update_first_notification_milestone(
             next_milestone_details[next_milestone]['stable_date']
         )
         <= datetime.now()
-    ):  # noqa: E501
+    ):
         return False
 
-    # We don't allow changing the existing milestone value if it was in old release notes.  # noqa: E501
+    # We don't allow changing the existing milestone value if it was in old release notes.
     if feature.first_enterprise_notification_milestone != None:  # noqa: E711
         existing_milestone = feature.first_enterprise_notification_milestone
         existing_next = existing_milestone + 1
@@ -130,7 +132,7 @@ def is_update_first_notification_milestone(
                 existing_next_details[existing_next]['stable_date']
             )
             <= datetime.now()
-        ):  # noqa: E501
+        ):
             return False
 
     if feature.feature_type == FEATURE_TYPE_ENTERPRISE_ID:  # noqa: F405
@@ -145,19 +147,20 @@ def is_update_first_notification_milestone(
 def get_default_first_notice_milestone_for_feature() -> int:
     next_stable_version = channels_api.construct_chrome_channels_details()[
         'beta'
-    ]['version']  # noqa: E501
+    ]['version']
     return next_stable_version
 
 
 def should_remove_first_notice_milestone(feature, new_fields):  # noqa: D417
-    """Returns whether we remove first_enterprise_notification_milestone from a feature.
+    """Returns whether we remove first_enterprise_notification_milestone from a
+    feature.
 
     An unannounced feature that does not require to be announced should removed the notice milestone.
 
     Args:
       existing_feature: FeatureEntry feature that needs to be updated.
       new_fields: dict Fields that will be used to update or create the feature.
-    """  # noqa: E501
+    """
     if feature.first_enterprise_notification_milestone == None:  # noqa: E711
         return False
 
@@ -172,12 +175,12 @@ def should_remove_first_notice_milestone(feature, new_fields):  # noqa: D417
     milestone = feature.first_enterprise_notification_milestone
     milestone_details = channels_api.construct_specified_milestones_details(
         milestone, milestone
-    )  # noqa: E501
+    )
     if (
         milestone in milestone_details
         and _str_to_datetime(milestone_details[milestone]['stable_date'])
         > datetime.now()
-    ):  # noqa: E501
+    ):
         return True
 
     return False

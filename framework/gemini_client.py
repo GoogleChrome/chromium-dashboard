@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Client module for interacting with the Google GenAI API.
 
 This module provides the `GeminiClient` class, which serves as a wrapper
@@ -68,7 +67,7 @@ class GeminiClient:
         except Exception as e:
             logging.error(
                 f'An unexpected error occurred during client initialization: {e}'
-            )  # noqa: E501
+            )
             raise RuntimeError(f'Could not initialize API client: {e}') from e
 
     def __del__(self):
@@ -79,7 +78,7 @@ class GeminiClient:
     @utils.retry(MAX_RETRIES, delay=RETRY_BACKOFF_SECONDS)
     def prompt_exceeds_input_token_limit(self, prompt: str) -> bool:
         """Checks the token size of a prompt and checks if it exceeds the input
-           limit of the Gemini model.
+        limit of the Gemini model.
 
         Args:
           prompt: The input prompt string.
@@ -94,7 +93,7 @@ class GeminiClient:
         logging.info(f'Prompt token count: {response.total_tokens}')
         logging.info(
             f"Model's context limit token count: {model_info.input_token_limit}"
-        )  # noqa: E501
+        )
         return response.total_tokens > model_info.input_token_limit
 
     @utils.retry(MAX_RETRIES, delay=RETRY_BACKOFF_SECONDS)
@@ -127,7 +126,7 @@ class GeminiClient:
                 # timeout is passed to the config using milliseconds.
                 http_options=types.HttpOptions(
                     timeout=GeminiClient.API_TIMEOUT_SECONDS * 1000
-                ),  # noqa: E501
+                ),
             ),
         )
 
@@ -145,7 +144,7 @@ class GeminiClient:
 
     async def get_response_async(
         self, prompt: str, temperature: float | None = None
-    ) -> str:  # noqa: E501
+    ) -> str:
         """Asynchronously sends a prompt to the Gemini model.
 
         Wraps the synchronous `get_response` method in a thread, inheriting
@@ -170,14 +169,14 @@ class GeminiClient:
         except asyncio.TimeoutError:
             logging.error(
                 f'Gemini request timed out after {GeminiClient.ASYNC_TIMEOUT_SECONDS} seconds.'
-            )  # noqa: E501
+            )
             raise TimeoutError(
                 f'Gemini request timed out after {GeminiClient.ASYNC_TIMEOUT_SECONDS}s'
-            )  # noqa: E501
+            )
 
     async def get_batch_responses_async(
         self, prompts: list[str], temperature: float | None = None
-    ) -> list[str | BaseException]:  # noqa: E501
+    ) -> list[str | BaseException]:
         """Concurrently sends a list of prompts to the Gemini API.
 
         Args:

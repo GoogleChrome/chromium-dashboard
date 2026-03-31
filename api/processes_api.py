@@ -12,8 +12,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-"""API endpoints for retrieving the status and progress of feature implementation processes."""
+"""API endpoints for retrieving the status and progress of feature
+implementation processes."""
 
 import dataclasses
 
@@ -24,7 +24,7 @@ from internals import core_enums, core_models, processes, stage_helpers
 
 
 class ProcessesAPI(basehandlers.APIHandler):
-    """Processes contain details about the feature status"""  # noqa: D415
+    """Processes contain details about the feature status."""  # noqa: D415
 
     def do_get(self, **kwargs):
         """Return the process of the feature."""
@@ -39,7 +39,7 @@ class ProcessesAPI(basehandlers.APIHandler):
         )
         process_model = Process.from_dict(
             processes.process_to_dict(feature_process)
-        )  # noqa: E501
+        )
         result = process_model.to_dict()
         if (
             f.feature_type != core_enums.FEATURE_TYPE_ENTERPRISE_ID
@@ -47,7 +47,7 @@ class ProcessesAPI(basehandlers.APIHandler):
         ):
             result['stages'].insert(
                 -1, dataclasses.asdict(processes.FEATURE_ROLLOUT_STAGE)
-            )  # noqa: E501
+            )
             result['stages'][-1]['incoming_stage'] = core_enums.INTENT_ROLLOUT
 
         return result

@@ -11,11 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Unit tests for the attachments module.
 
-Tests the storage, retrieval, validation (size and mime type), and
-deletion of feature attachments and thumbnails.
+Tests the storage, retrieval, validation (size and mime type), and deletion of
+feature attachments and thumbnails.
 """
 
 from unittest import mock
@@ -62,7 +61,8 @@ class AttachmentsTests(testing_config.CustomTestCase):
             attachments.check_attachment_type('video/mpeg')
 
     def test_get_attachment__found(self):
-        """We can retrive an attachment, with checking for the proper feature."""
+        """We can retrive an attachment, with checking for the proper
+        feature."""
         stored = attachments.store_attachment(
             self.feature_id, b'test content', 'text/plain'
         )

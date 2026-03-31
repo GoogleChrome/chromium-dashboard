@@ -12,12 +12,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-
 """Cross-Site Request Forgery (XSRF) protection.
 
-Provides functions to generate and validate time-limited, user-specific
-XSRF tokens to secure form submissions and API requests.
+Provides functions to generate and validate time-limited, user-specific XSRF
+tokens to secure form submissions and API requests.
 """
 
 import base64
@@ -91,7 +89,10 @@ def generate_token(user_email, token_time=None):
 
 @functools.lru_cache(maxsize=TOKEN_TIME_CACHE_MAX_SIZE)
 def _validate_and_get_token_time(token, user_email):
-    """If token content is valid, return token_time.  Otherwise, raise."""
+    """If token content is valid, return token_time.
+
+    Otherwise, raise.
+    """
     if not token:
         raise TokenIncorrect('missing token')
     try:
@@ -142,7 +143,8 @@ def validate_token(token, user_email, timeout=TOKEN_TIMEOUT_SEC):
 
 
 def token_expires_sec():
-    """Return timestamp when current tokens will expire, minus a safety margin."""
+    """Return timestamp when current tokens will expire, minus a safety
+    margin."""
     now = int(time.time())
     return now + TOKEN_TIMEOUT_SEC - TOKEN_TIMEOUT_MARGIN_SEC
 

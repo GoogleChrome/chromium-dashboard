@@ -11,12 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-
 """System-wide enumerations and constant mappings.
 
-Defines the core enumerations used across the application, including
-feature categories, platforms, standardization statuses, and gate types.
+Defines the core enumerations used across the application, including feature
+categories, platforms, standardization statuses, and gate types.
 """
 
 import collections
@@ -208,9 +206,13 @@ ROLLOUT_STAGE_PLAN_TRUSTED_TESTERS = 1
 ROLLOUT_STAGE_PLAN_CUSTOM = 2
 
 ROLLOUT_STAGE_PLAN_DISPLAYNAMES = {
-    ROLLOUT_STAGE_PLAN_TRUSTED_TESTERS: 'Early preview available to Chrome Enterprise Trusted Tester',  # noqa: E501
+    ROLLOUT_STAGE_PLAN_TRUSTED_TESTERS: (
+        'Early preview available to Chrome Enterprise Trusted Tester'
+    ),
     ROLLOUT_STAGE_PLAN_SLOW: 'Feature rolls out gradually',
-    ROLLOUT_STAGE_PLAN_CUSTOM: 'Custom rollout (explain in Rollout details field)',  # noqa: E501
+    ROLLOUT_STAGE_PLAN_CUSTOM: (
+        'Custom rollout (explain in Rollout details field)'
+    ),
 }
 
 # Intent stages and mapping from stage to stage name.
@@ -835,7 +837,9 @@ STANDARD_STD = 5
 STANDARD_MATURITY_CHOICES = {
     # No text for UNSET_STD.  One of the values below will be set on first edit.
     UNKNOWN_STD: 'Unknown standards status - check spec link for status',
-    PROPOSAL_STD: 'Proposal in a personal repository, no adoption from community',
+    PROPOSAL_STD: (
+        'Proposal in a personal repository, no adoption from community'
+    ),
     INCUBATION_STD: 'Specification being incubated in a Community Group',
     WORKINGDRAFT_STD: (
         'Specification currently under development in a Working Group'

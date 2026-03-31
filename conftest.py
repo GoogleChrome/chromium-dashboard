@@ -11,13 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Pytest configuration file.
 
 This file sets up isolated test environments when running tests in parallel
-using pytest-xdist. For every parallel worker thread that pytest spawns,
-this script starts a dedicated, in-memory Google Cloud Datastore emulator.
-This prevents race conditions and data corruption between parallel tests.
+using pytest-xdist. For every parallel worker thread that pytest spawns, this
+script starts a dedicated, in-memory Google Cloud Datastore emulator. This
+prevents race conditions and data corruption between parallel tests.
 """
 
 import os
@@ -29,7 +28,8 @@ import requests
 
 
 def pytest_configure(config):
-    """Pytest hook that runs exactly once per worker process before any tests start.
+    """Pytest hook that runs exactly once per worker process before any tests
+    start.
 
     If tests are being run in parallel (via pytest-xdist), this function will:
     1. Identify which worker process this is (e.g., gw0, gw1).
@@ -37,7 +37,7 @@ def pytest_configure(config):
     3. Override the environment variables so Google Cloud SDK uses this local port.
     4. Boot up the gcloud datastore emulator as a background process.
     5. Block until the emulator is fully responsive.
-    """  # noqa: E501
+    """
     # PYTEST_XDIST_WORKER is set by the pytest-xdist plugin (e.g., "gw0", "gw1")
     worker_id = os.environ.get('PYTEST_XDIST_WORKER')
 
@@ -50,7 +50,7 @@ def pytest_configure(config):
         # traffic from this worker to its dedicated local emulator.
         os.environ['DATASTORE_EMULATOR_HOST'] = f'localhost:{port}'
         os.environ['DATASTORE_EMULATOR_HOST_PATH'] = (
-            f'localhost:{port}/datastore'  # noqa: E501
+            f'localhost:{port}/datastore'
         )
         os.environ['DATASTORE_HOST'] = f'http://localhost:{port}'
 
@@ -63,19 +63,19 @@ def pytest_configure(config):
             'start',
             '--project=cr-status-staging',
             f'--host-port=:{port}',
-            '--no-store-on-disk',  # Ensures data never writes to your actual hard drive  # noqa: E501
+            '--no-store-on-disk',  # Ensures data never writes to your actual hard drive
             '--use-firestore-in-datastore-mode',
         ]
 
         # Start the emulator process in the background, suppressing its logs
         proc = subprocess.Popen(
             cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
-        )  # noqa: E501
+        )
 
-        # Store the process reference in the pytest config so we can kill it later  # noqa: E501
+        # Store the process reference in the pytest config so we can kill it later
         config.worker_emulator_proc = proc
 
-        # Poll the emulator until it returns a 200 OK, indicating it is ready to accept traffic  # noqa: E501
+        # Poll the emulator until it returns a 200 OK, indicating it is ready to accept traffic
         for _ in range(30):
             try:
                 r = requests.get(f'http://localhost:{port}/')
@@ -87,11 +87,12 @@ def pytest_configure(config):
 
 
 def pytest_unconfigure(config):
-    """Pytest hook that runs exactly once per worker process after all tests finish.
+    """Pytest hook that runs exactly once per worker process after all tests
+    finish.
 
     This ensures that the Java Datastore emulator processes are safely
     terminated and don't remain running as orphaned background processes.
-    """  # noqa: E501
+    """
     proc = getattr(config, 'worker_emulator_proc', None)
     if proc:
         proc.terminate()
@@ -100,12 +101,13 @@ def pytest_unconfigure(config):
 
 @pytest.fixture(autouse=True)
 def reset_datastore_emulator():
-    """A pytest fixture that automatically runs BEFORE every single test function.
+    """A pytest fixture that automatically runs BEFORE every single test
+    function.
 
     This guarantees strict test isolation by wiping the Datastore emulator clean
     before a test executes. It prevents residual data from previous tests from
     causing false positives or failures.
-    """  # noqa: E501
+    """
     worker_id = os.environ.get('PYTEST_XDIST_WORKER')
 
     if worker_id is not None:
@@ -116,7 +118,7 @@ def reset_datastore_emulator():
         except Exception:
             pass
     else:
-        # We are running sequentially (single process mode), wipe the default emulator  # noqa: E501
+        # We are running sequentially (single process mode), wipe the default emulator
         host = os.environ.get('DATASTORE_EMULATOR_HOST', 'localhost:15606')
         try:
             requests.post(f'http://{host}/reset', timeout=2)

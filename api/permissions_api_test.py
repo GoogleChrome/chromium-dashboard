@@ -12,8 +12,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-"""Tests for the permissions_api module, verifying permission rules for different user types."""
+"""Tests for the permissions_api module, verifying permission rules for
+different user types."""
 
 import flask
 
@@ -30,14 +30,14 @@ class PermissionsAPITest(testing_config.CustomTestCase):
         self.request_path = '/api/v0/currentuser/permissions'
 
     def test_get__anon(self):
-        """Returns no user object if not signed in"""  # noqa: D415
+        """Returns no user object if not signed in."""  # noqa: D415
         testing_config.sign_out()
         with test_app.test_request_context(self.request_path):
             actual = self.handler.do_get()
         self.assertEqual({'user': None}, actual)
 
     def test_get__non_googler(self):
-        """Non-googlers have no permissions by default"""  # noqa: D415
+        """Non-googlers have no permissions by default."""  # noqa: D415
         testing_config.sign_in('one@example.com', 12345)
         with test_app.test_request_context(self.request_path):
             actual = self.handler.do_get()

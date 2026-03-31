@@ -11,8 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-"""Tests for the reminders module, verifying reminder email generation and filtering logic."""
+"""Tests for the reminders module, verifying reminder email generation and
+filtering logic."""
 
 from datetime import datetime
 from unittest import mock
@@ -178,9 +178,8 @@ class FunctionTest(testing_config.CustomTestCase):
         self.assertEqual(set(actual), set(expected))
 
     def test_choose_email_recipients__owners_bounced(self):
-        """Normal reminders go to feature participants when owners' emails
-        are bounced.
-        """  # noqa: D205
+        """Normal reminders go to feature participants when owners' emails are
+        bounced."""  # noqa: D205
         self.owner_user_pref.bounced = True
         self.owner_user_pref.put()
 
@@ -228,10 +227,9 @@ class FunctionTest(testing_config.CustomTestCase):
 
     def test_choose_email_recipients__normal_accuracy_email_when_owners_bounced(
         self,
-    ):  # noqa: E501
+    ):
         """Normal accuracy emails go to feature participants when owners' emails
-        are bounced.
-        """  # noqa: D205
+        are bounced."""  # noqa: D205
         self.owner_user_pref.bounced = True
         self.owner_user_pref.put()
 
@@ -268,7 +266,7 @@ class FunctionTest(testing_config.CustomTestCase):
             handler = reminders.FeatureAccuracyHandler()
             actual = reminders.build_email_tasks(
                 [(self.feature_template, 100)],
-                '[Action Required] Verify important information about your shipping feature  (%s)',  # noqa: E501
+                '[Action Required] Verify important information about your shipping feature  (%s)',
                 handler.EMAIL_TEMPLATE_PATH,
                 self.current_milestone_info,
                 handler.should_escalate_notification,
@@ -279,11 +277,11 @@ class FunctionTest(testing_config.CustomTestCase):
         task = actual[0]
         self.assertEqual('feature_owner@example.com', task['to'])
         self.assertEqual(
-            '[Action Required] Verify important information about your shipping feature  (feature one)',  # noqa: E501
+            '[Action Required] Verify important information about your shipping feature  (feature one)',
             task['subject'],
         )
         self.assertEqual(None, task['reply_to'])
-        # TESTDATA.make_golden(task['html'], 'test_build_email_tasks_feature_accuracy.html')  # noqa: E501
+        # TESTDATA.make_golden(task['html'], 'test_build_email_tasks_feature_accuracy.html')
         self.assertMultiLineEqual(
             TESTDATA['test_build_email_tasks_feature_accuracy.html'],
             task['html'],
@@ -295,7 +293,7 @@ class FunctionTest(testing_config.CustomTestCase):
             handler = reminders.FeatureAccuracyHandler()
             actual = reminders.build_email_tasks(
                 [(self.feature_template, 110)],
-                '[Action Required] Verify important information about your shipping feature (%s)',  # noqa: E501
+                '[Action Required] Verify important information about your shipping feature (%s)',
                 handler.EMAIL_TEMPLATE_PATH,
                 self.current_milestone_info,
                 handler.should_escalate_notification,
@@ -306,11 +304,11 @@ class FunctionTest(testing_config.CustomTestCase):
         task = actual[0]
         self.assertEqual('feature_owner@example.com', task['to'])
         self.assertEqual(
-            '[Action Required] Verify important information about your shipping feature (feature one)',  # noqa: E501
+            '[Action Required] Verify important information about your shipping feature (feature one)',
             task['subject'],
         )
         self.assertEqual(None, task['reply_to'])
-        # TESTDATA.make_golden(task['html'], 'test_build_email_tasks_feature_accuracy_enterprise.html')  # noqa: E501
+        # TESTDATA.make_golden(task['html'], 'test_build_email_tasks_feature_accuracy_enterprise.html')
         self.assertMultiLineEqual(
             TESTDATA['test_build_email_tasks_feature_accuracy_enterprise.html'],
             task['html'],
@@ -325,7 +323,7 @@ class FunctionTest(testing_config.CustomTestCase):
             handler = reminders.FeatureAccuracyHandler()
             actual = reminders.build_email_tasks(
                 [(self.feature_template, 100)],
-                '[Action Required] Verify important information about your shipping feature (%s)',  # noqa: E501
+                '[Action Required] Verify important information about your shipping feature (%s)',
                 handler.EMAIL_TEMPLATE_PATH,
                 self.current_milestone_info,
                 handler.should_escalate_notification,
@@ -335,15 +333,15 @@ class FunctionTest(testing_config.CustomTestCase):
         self.assertEqual(2, len(actual))
         task = actual[0]
         self.assertEqual(
-            'ESCALATED: [Action Required] Verify important information about your shipping feature (feature one)',  # noqa: E501
+            'ESCALATED: [Action Required] Verify important information about your shipping feature (feature one)',
             task['subject'],
         )
         self.assertEqual(None, task['reply_to'])
-        # TESTDATA.make_golden(task['html'], 'test_build_email_tasks_escalated_feature_accuracy.html')  # noqa: E501
+        # TESTDATA.make_golden(task['html'], 'test_build_email_tasks_escalated_feature_accuracy.html')
         self.assertMultiLineEqual(
             TESTDATA['test_build_email_tasks_escalated_feature_accuracy.html'],
             task['html'],
-        )  # noqa: E501
+        )
 
     def test_build_email_tasks_prepublication(self):
         """Test build email tasks prepublication."""
@@ -351,7 +349,7 @@ class FunctionTest(testing_config.CustomTestCase):
             handler = reminders.PrepublicationHandler()
             actual = reminders.build_email_tasks(
                 [(self.feature_template, 100)],
-                '[Action Required] Verify important information about your shipping feature (%s)',  # noqa: E501
+                '[Action Required] Verify important information about your shipping feature (%s)',
                 handler.EMAIL_TEMPLATE_PATH,
                 self.current_milestone_info,
                 handler.should_escalate_notification,
@@ -361,11 +359,11 @@ class FunctionTest(testing_config.CustomTestCase):
         task = actual[0]
         self.assertEqual('feature_owner@example.com', task['to'])
         self.assertEqual(
-            '[Action Required] Verify important information about your shipping feature (feature one)',  # noqa: E501
+            '[Action Required] Verify important information about your shipping feature (feature one)',
             task['subject'],
         )
         self.assertEqual(None, task['reply_to'])
-        # TESTDATA.make_golden(task['html'], 'test_build_email_tasks_prepublication.html')  # noqa: E501
+        # TESTDATA.make_golden(task['html'], 'test_build_email_tasks_prepublication.html')
         self.assertMultiLineEqual(
             TESTDATA['test_build_email_tasks_prepublication.html'], task['html']
         )
@@ -557,7 +555,7 @@ class SLOOverdueHandlerTest(testing_config.CustomTestCase):
         self.day_1 = datetime(2023, 7, 10, 12, 30, 0)  # This Mon
         self.day_6 = datetime(
             2023, 7, 17, 12, 30, 0
-        )  # Next Mon: Initial response due  # noqa: E501
+        )  # Next Mon: Initial response due
         self.day_10 = datetime(
             2023, 7, 21, 12, 30, 0
         )  # Next Fri: Initial overdue
@@ -680,7 +678,10 @@ class SLOOverdueHandlerTest(testing_config.CustomTestCase):
 
     @mock.patch('internals.slo.now_utc')
     def test_get_template_data__initial_overdue_unassigned(self, mock_now_utc):
-        """Overdue for initial response. Notify all reviewers."""
+        """Overdue for initial response.
+
+        Notify all reviewers.
+        """
         self.gate_1.state = Vote.REVIEW_REQUESTED
         self.gate_1.requested_on = self.request_date
         self.gate_1.put()
@@ -709,7 +710,10 @@ class SLOOverdueHandlerTest(testing_config.CustomTestCase):
 
     @mock.patch('internals.slo.now_utc')
     def test_get_template_data__initial_overdue_assigned(self, mock_now_utc):
-        """Overdue for initial response. Notify assigned and others."""
+        """Overdue for initial response.
+
+        Notify assigned and others.
+        """
         self.gate_1.state = Vote.REVIEW_REQUESTED
         self.gate_1.assignee_emails = [
             'mhoste@google.com',
@@ -743,7 +747,10 @@ class SLOOverdueHandlerTest(testing_config.CustomTestCase):
 
     @mock.patch('internals.slo.now_utc')
     def test_get_template_data__due_resolve_unassigned(self, mock_now_utc):
-        """Due for resolution. Notify all reviewers."""
+        """Due for resolution.
+
+        Notify all reviewers.
+        """
         self.gate_1.state = Vote.REVIEW_REQUESTED
         self.gate_1.requested_on = self.request_date
         self.gate_1.put()
@@ -772,7 +779,10 @@ class SLOOverdueHandlerTest(testing_config.CustomTestCase):
 
     @mock.patch('internals.slo.now_utc')
     def test_get_template_data__resolve_overdue_unassigned(self, mock_now_utc):
-        """Overdue for resolution. Notify all reviewers."""
+        """Overdue for resolution.
+
+        Notify all reviewers.
+        """
         self.gate_1.state = Vote.REVIEW_REQUESTED
         self.gate_1.requested_on = self.request_date
         self.gate_1.put()
@@ -801,7 +811,10 @@ class SLOOverdueHandlerTest(testing_config.CustomTestCase):
 
     @mock.patch('internals.slo.now_utc')
     def test_get_template_data__old_reviews(self, mock_now_utc):
-        """More time has passed.  We don't keep reminding."""
+        """More time has passed.
+
+        We don't keep reminding.
+        """
         self.gate_1.state = Vote.REVIEW_REQUESTED
         self.gate_1.requested_on = self.request_date
         self.gate_1.put()
@@ -833,7 +846,7 @@ class SLOOverdueHandlerTest(testing_config.CustomTestCase):
         self.assertEqual('b_assignee@example.com', task['to'])
         self.assertEqual('Review due for: feature one', task['subject'])
         self.assertEqual(None, task['reply_to'])
-        # TESTDATA.make_golden(task['html'], 'test_build_gate_email_tasks__initial_due.html')  # noqa: E501
+        # TESTDATA.make_golden(task['html'], 'test_build_gate_email_tasks__initial_due.html')
         self.assertEqual(
             TESTDATA['test_build_gate_email_tasks__initial_due.html'],
             task['html'],
@@ -877,11 +890,11 @@ class SLOOverdueHandlerTest(testing_config.CustomTestCase):
             'ESCALATED: Review due for: feature one', task['subject']
         )
         self.assertEqual(None, task['reply_to'])
-        # TESTDATA.make_golden(task['html'], 'test_build_gate_email_tasks__initial_overdue.html')  # noqa: E501
+        # TESTDATA.make_golden(task['html'], 'test_build_gate_email_tasks__initial_overdue.html')
         self.assertEqual(
             TESTDATA['test_build_gate_email_tasks__initial_overdue.html'],
             task['html'],
-        )  # noqa: E501
+        )
 
     def test_build_gate_email_tasks__resolution_due(self):
         """Check the email sent when a resolution is due."""
@@ -902,11 +915,11 @@ class SLOOverdueHandlerTest(testing_config.CustomTestCase):
         self.assertEqual('b_assignee@example.com', task['to'])
         self.assertEqual('Review due for: feature one', task['subject'])
         self.assertEqual(None, task['reply_to'])
-        # TESTDATA.make_golden(task['html'], 'test_build_gate_email_tasks__resolution_due.html')  # noqa: E501
+        # TESTDATA.make_golden(task['html'], 'test_build_gate_email_tasks__resolution_due.html')
         self.assertEqual(
             TESTDATA['test_build_gate_email_tasks__resolution_due.html'],
             task['html'],
-        )  # noqa: E501
+        )
 
     def test_build_gate_email_tasks__resolution_overdue(self):
         """Check the email sent when a a resolution is overdue."""
@@ -929,8 +942,8 @@ class SLOOverdueHandlerTest(testing_config.CustomTestCase):
             'ESCALATED: Review due for: feature one', task['subject']
         )
         self.assertEqual(None, task['reply_to'])
-        # TESTDATA.make_golden(task['html'], 'test_build_gate_email_tasks__resolution_overdue.html')  # noqa: E501
+        # TESTDATA.make_golden(task['html'], 'test_build_gate_email_tasks__resolution_overdue.html')
         self.assertEqual(
             TESTDATA['test_build_gate_email_tasks__resolution_overdue.html'],
             task['html'],
-        )  # noqa: E501
+        )

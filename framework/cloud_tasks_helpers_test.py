@@ -11,11 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Unit tests for the cloud_tasks_helpers module.
 
-Tests the creation of task representations and the enqueueing process,
-including the behavior of the local development stub.
+Tests the creation of task representations and the enqueueing process, including
+the behavior of the local development stub.
 """
 
 import datetime
@@ -40,7 +39,8 @@ class LocalCloudTasksClientTest(unittest.TestCase):
 
     @mock.patch('requests.request')
     def test_create_task(self, mock_fetch):
-        """The local stub makes a synchronous HTTP request to the task handler."""
+        """The local stub makes a synchronous HTTP request to the task
+        handler."""
         parent = 'parent'
         task = cloud_tasks_helpers._make_task('/handler', {'a': 1})
         mock_fetch.return_value = testing_config.Blank(
@@ -93,7 +93,9 @@ class CloudTasksHelpersTest(unittest.TestCase):
             {
                 'app_engine_http_request': {
                     'relative_uri': '/handler',
-                    'body': b'{"a": 1, "when": "2025-12-01 02:03:04", "missing": null}',
+                    'body': (
+                        b'{"a": 1, "when": "2025-12-01 02:03:04", "missing": null}'
+                    ),
                 }
             },
             actual,

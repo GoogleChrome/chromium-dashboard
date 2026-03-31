@@ -11,8 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-"""Tests for the fetchmetrics module, verifying the retrieval and parsing of UMA metrics."""
+"""Tests for the fetchmetrics module, verifying the retrieval and parsing of UMA
+metrics."""
 
 import base64
 import datetime
@@ -137,13 +137,14 @@ class UmaQueryTest(testing_config.CustomTestCase):
     @mock.patch('logging.error')
     @mock.patch('internals.fetchmetrics._FetchMetrics')
     def test_FetchData__error_msg(self, mock_fetch_metrics, mock_logging_error):
-        """When uma-export gives any error message, we treat that as not ready."""
+        """When uma-export gives any error message, we treat that as not
+        ready."""
         r = {'123': 'anything'}
         e = 'mock uma error message'
         XSSI_PROTECTION = ")]}' // XSSI prefix (go/xssi)."
         response_content = '\n'.join(
             [XSSI_PROTECTION, json.dumps({'r': r, 'e': e})]
-        )  # noqa: E501
+        )
         mock_fetch_metrics.return_value = testing_config.Blank(
             status_code=200, content=response_content.encode()
         )
@@ -158,7 +159,7 @@ class UmaQueryTest(testing_config.CustomTestCase):
     @mock.patch('internals.fetchmetrics._FetchMetrics')
     def test_FetchData__error_status(
         self, mock_fetch_metrics, mock_logging_error
-    ):  # noqa: E501
+    ):
         """When uma-export gives a non-200, we treat that as not ready."""
         response_content = 'Error!!!!1'
         mock_fetch_metrics.return_value = testing_config.Blank(
@@ -336,7 +337,8 @@ class HistogramsHandlerTest(testing_config.CustomTestCase):
         self.assertEqual('RenamedUseCounter', all_histos[0].property_name)
 
     def test_save_data__clean_up_dups(self):
-        """Our DB already has some duplicate entities that should be deleted.."""
+        """Our DB already has some duplicate entities that should be
+        deleted.."""
         ex_1 = metrics_models.FeatureObserverHistogram(
             bucket_id=123, property_name='UseCounter'
         )

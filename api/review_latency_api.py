@@ -11,8 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-"""API endpoints for retrieving and calculating review latency metrics for feature gates."""
+"""API endpoints for retrieving and calculating review latency metrics for
+feature gates."""
 
 import collections
 import logging
@@ -104,7 +104,8 @@ class ReviewLatencyAPI(basehandlers.APIHandler):
         return features
 
     def earliest_request(self, feature_gates: list[Gate]) -> datetime:
-        """Return the time of the earliest reivew request among the given gates."""
+        """Return the time of the earliest reivew request among the given
+        gates."""
         if not feature_gates:
             raise ValueError('There should be some gates for every feature')
         request_dates = [
@@ -113,7 +114,8 @@ class ReviewLatencyAPI(basehandlers.APIHandler):
         return min(request_dates, default=datetime(2000, 1, 1))
 
     def sort_features_by_request(self, features, gates_by_fid):
-        """Return the same features sorted by the earliest review request of each."""  # noqa: E501
+        """Return the same features sorted by the earliest review request of
+        each."""
         sorted_features = sorted(
             features,
             key=lambda fe: self.earliest_request(

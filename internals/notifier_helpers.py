@@ -13,8 +13,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-"""Helper functions for tracking feature property changes and enqueuing notification tasks."""
+"""Helper functions for tracking feature property changes and enqueuing
+notification tasks."""
 
 import logging
 from typing import TYPE_CHECKING
@@ -56,8 +56,7 @@ def notify_feature_subscribers_of_changes(
     fe: 'FeatureEntry', amendments: list[Amendment], is_update: bool = True
 ) -> None:
     """Async notifies subscribers of new features and property changes to
-    features by posting to a task queue.
-    """
+    features by posting to a task queue."""
     changed_props = [
         {
             'prop_name': a.field_name,
