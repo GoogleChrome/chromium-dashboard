@@ -32,6 +32,7 @@ test_app = flask.Flask(
 
 class OriginTrialsRequestsTest(testing_config.CustomTestCase):
     """Tests for origin trial request operations."""
+
     def setUp(self):
         self.feature_1 = FeatureEntry(
             name='feature one', summary='sum', category=1

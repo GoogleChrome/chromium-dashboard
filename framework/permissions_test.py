@@ -390,6 +390,7 @@ class PermissionFunctionTests(testing_config.CustomTestCase):
 
 class RequireAdminSiteTests(testing_config.CustomTestCase):
     """Tests for the require_admin_site decorator."""
+
     def setUp(self):
         self.app_user = user_models.AppUser(email='registered@example.com')
         self.app_user.put()

@@ -66,6 +66,7 @@ from internals.link_helpers import (
 
 class StageType(StrEnum):
     """Enumeration of feature stage types."""
+
     INCUBATING = 'incubating'
     PROTOTYPING = 'prototyping'
     DEV_TRIAL = 'dev-trial'
@@ -131,6 +132,7 @@ def max_of_present(*args):
 
 class ExternalReviewerInfo:
     """Information about an external reviewer group."""
+
     unreviewed_features_query: ndb.Query
     """Fetch this to get features for which this group has been asked for a review, and they haven't
   finished it yet."""  # noqa: E501

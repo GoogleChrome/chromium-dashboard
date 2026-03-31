@@ -48,6 +48,7 @@ def make_feature(name, created_tuple, status, shipped):
 
 class FeatureLatencyAPITest(testing_config.CustomTestCase):
     """Tests for FeatureLatencyAPI."""
+
     def setUp(self):
         self.app_admin = user_models.AppUser(email='admin@example.com')
         self.app_admin.is_admin = True

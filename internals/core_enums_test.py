@@ -19,6 +19,7 @@ from internals import core_enums
 
 class EnumsFunctionsTest(testing_config.CustomTestCase):
     """Tests for enum functions."""
+
     def test_convert_enum_int_to_string__not_an_enum(self):
         """If the property is not an enum, just use the property value."""
         actual = core_enums.convert_enum_int_to_string('name', 'not an int')

@@ -108,6 +108,7 @@ def make_feature(
 
 class ExternalReviewsAPITest(testing_config.CustomTestCase):
     """Tests for ExternalReviewsAPI."""
+
     def setUp(self):
         self.handler = external_reviews_api.ExternalReviewsAPI()
         self.request_path = '/api/v0/external_reviews'

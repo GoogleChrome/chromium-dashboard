@@ -40,6 +40,7 @@ test_app = flask.Flask(__name__)
 
 class LinkTest(testing_config.CustomTestCase):
     """Tests for feature link classes."""
+
     def setUp(self):
         self.feature = FeatureEntry(
             name='feature a',

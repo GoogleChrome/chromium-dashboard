@@ -242,6 +242,7 @@ class BouncedEmailHandlerTest(testing_config.CustomTestCase):
 
 class FunctionTest(testing_config.CustomTestCase):
     """Tests for general email parsing functions."""
+
     def test_extract_addrs(self):
         """We can parse email From: lines."""
         header_val = ''
@@ -279,6 +280,7 @@ HEADER_LINES = [
 
 class InboundEmailHandlerTest(testing_config.CustomTestCase):
     """Tests for handling inbound emails."""
+
     def test_handle_incoming_mail__wrong_to_addr(self):
         """Reject the email if the app was not on the To: line."""
         with test_app.test_request_context('/_ah/mail/other@example.com'):

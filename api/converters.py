@@ -103,6 +103,7 @@ def _get_milestone_attr(stage: Stage | None, field: str) -> int | None:
 # Return type for _prep_stage_info function.
 class StagePrepResponse(TypedDict):
     """Response type for _prep_stage_info."""
+
     proto: Stage | None
     dev_trial: Stage | None
     ot: Stage | None

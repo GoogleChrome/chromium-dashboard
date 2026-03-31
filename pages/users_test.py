@@ -33,6 +33,7 @@ TESTDATA = testing_config.Testdata(__file__)
 
 class UsersListTemplateTest(testing_config.CustomTestCase):
     """Tests for the users list template rendering."""
+
     def setUp(self):
         self.handler = users.UserListHandler()
 

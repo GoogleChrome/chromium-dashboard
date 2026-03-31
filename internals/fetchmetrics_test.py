@@ -27,6 +27,7 @@ test_app = flask.Flask(__name__)
 
 class FetchMetricsTest(testing_config.CustomTestCase):
     """Tests for fetching metrics."""
+
     @mock.patch('settings.PROD', True)
     @mock.patch('google.oauth2.id_token.fetch_id_token')
     @mock.patch('requests.request')
@@ -76,6 +77,7 @@ class FetchMetricsTest(testing_config.CustomTestCase):
 
 class UmaQueryTest(testing_config.CustomTestCase):
     """Tests for UMA query functionality."""
+
     def setUp(self):
         self.uma_query = fetchmetrics.UmaQuery(
             query_name='usecounter.features',
@@ -173,6 +175,7 @@ class UmaQueryTest(testing_config.CustomTestCase):
 
 class YesterdayHandlerTest(testing_config.CustomTestCase):
     """Tests for the YesterdayHandler."""
+
     def setUp(self):
         self.request_path = '/cron/metrics'
         self.handler = fetchmetrics.YesterdayHandler()
@@ -215,6 +218,7 @@ class YesterdayHandlerTest(testing_config.CustomTestCase):
 
 class HistogramsHandlerTest(testing_config.CustomTestCase):
     """Tests for the HistogramsHandler."""
+
     ENUMS_TEXT = """
      <histogram-configuration>
 

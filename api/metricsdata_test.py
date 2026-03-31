@@ -30,6 +30,7 @@ test_app = flask.Flask(__name__)
 
 class MetricsFunctionTests(testing_config.CustomTestCase):
     """Tests for generic metrics functions."""
+
     def setUp(self):
         self.datapoint = metrics_models.StableInstance(
             day_percentage=0.0123456789,
@@ -84,6 +85,7 @@ class MetricsFunctionTests(testing_config.CustomTestCase):
 
 class PopularityTimelineHandlerTests(testing_config.CustomTestCase):
     """Tests for PopularityTimelineHandler."""
+
     def setUp(self):
         self.handler = metricsdata.PopularityTimelineHandler()
         self.datapoint = metrics_models.StableInstance(
@@ -123,6 +125,7 @@ class PopularityTimelineHandlerTests(testing_config.CustomTestCase):
 
 class CSSPopularityHandlerTests(testing_config.CustomTestCase):
     """Tests for CSSPopularityHandler."""
+
     def setUp(self):
         self.handler = metricsdata.CSSPopularityHandler()
         # Set up StableInstance data.
@@ -189,6 +192,7 @@ class CSSPopularityHandlerTests(testing_config.CustomTestCase):
 
 class FeatureBucketsHandlerTest(testing_config.CustomTestCase):
     """Tests for FeatureBucketsHandler."""
+
     def setUp(self):
         self.handler = metricsdata.FeatureBucketsHandler()
         self.prop_1 = metrics_models.CssPropertyHistogram(

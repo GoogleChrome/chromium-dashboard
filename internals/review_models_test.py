@@ -21,6 +21,7 @@ from internals.review_models import Activity, OwnersFile
 
 class ActivityTest(testing_config.CustomTestCase):
     """Tests for Activity."""
+
     def setUp(self):
         self.feature_1 = FeatureEntry(
             name='feature a',
@@ -101,12 +102,14 @@ class ActivityTest(testing_config.CustomTestCase):
 
 class GateTest(testing_config.CustomTestCase):
     """Tests for Gate."""
+
     # TODO(jrobbins): Add tests for get_feature_gates.
     pass
 
 
 class OwnersFileTest(testing_config.CustomTestCase):
     """Tests for OwnersFile."""
+
     def setUp(self):
         now = datetime.datetime.now()
         self.owner_file_1 = OwnersFile(

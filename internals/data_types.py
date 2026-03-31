@@ -28,6 +28,7 @@ CHANGED_FIELDS_LIST_TYPE = list[tuple[str, Any, Any]]
 # JSON representation of Stage entity data.
 class StageDict(TypedDict):
     """Type dictionary for a stage."""
+
     id: int
     created: str
     feature_id: int
@@ -105,18 +106,21 @@ class StageDict(TypedDict):
 # Nested JSON type definitions.
 class FeatureDictInnerResourceInfo(TypedDict):
     """Type dictionary for feature dict inner resource info."""
+
     samples: list[str]
     docs: list[str]
 
 
 class FeatureDictInnerStandardsInfo(TypedDict):
     """Type dictionary for standards info."""
+
     spec: str | None
     maturity: FeatureDictInnerMaturityInfo
 
 
 class FeatureDictInnerMaturityInfo(TypedDict):
     """Type dictionary for maturity info."""
+
     text: str | None
     short_text: str | None
     val: int
@@ -124,6 +128,7 @@ class FeatureDictInnerMaturityInfo(TypedDict):
 
 class FeatureDictInnerBrowserStatus(TypedDict):
     """Type dictionary for browser status."""
+
     text: str | None
     val: str | None
     milestone_str: str | None
@@ -131,6 +136,7 @@ class FeatureDictInnerBrowserStatus(TypedDict):
 
 class FeatureDictInnerViewInfo(TypedDict):
     """Type dictionary for view info."""
+
     text: str | None
     val: int | None
     url: str | None
@@ -139,6 +145,7 @@ class FeatureDictInnerViewInfo(TypedDict):
 
 class FeatureDictInnerChromeBrowserInfo(TypedDict):
     """Type dictionary for Chrome browser info."""
+
     bug: str | None
     blink_components: list[str] | None
     devrel: list[str] | None
@@ -158,11 +165,13 @@ class FeatureDictInnerChromeBrowserInfo(TypedDict):
 
 class FeatureDictInnerSingleBrowserInfo(TypedDict):
     """Type dictionary for single browser info."""
+
     view: FeatureDictInnerViewInfo | None
 
 
 class FeatureBrowsersInfo(TypedDict):
     """Type dictionary for feature browsers info."""
+
     chrome: FeatureDictInnerChromeBrowserInfo
     ff: FeatureDictInnerSingleBrowserInfo
     safari: FeatureDictInnerSingleBrowserInfo
@@ -174,6 +183,7 @@ class FeatureBrowsersInfo(TypedDict):
 # FeatureEntry edit information.
 class FeatureDictInnerUserEditInfo(TypedDict):
     """Type dictionary for user edit info."""
+
     by: str | None
     when: str | None
 
@@ -182,6 +192,7 @@ class FeatureDictInnerUserEditInfo(TypedDict):
 # converters.feature_entry_to_json_verbose().
 class VerboseFeatureDict(TypedDict):
     """Type dictionary for verbose feature dict."""
+
     # Metadata: Creation and updates.
     id: int
     created: FeatureDictInnerUserEditInfo
@@ -321,6 +332,7 @@ class VerboseFeatureDict(TypedDict):
 @dataclass
 class OriginTrialInfo:
     """Dataclass for origin trial info."""
+
     def __init__(self, api_trial):
         self.id = api_trial.get('id', None)
         self.display_name = api_trial.get('displayName', None)

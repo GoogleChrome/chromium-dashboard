@@ -121,6 +121,7 @@ def process_recent_reviews_query() -> list[int] | Future:
 @dataclasses.dataclass
 class QueryContext:
     """Context for parsing and executing search queries."""
+
     now: datetime.datetime
     current_stable_milestone: int
 

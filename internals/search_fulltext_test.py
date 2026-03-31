@@ -26,6 +26,7 @@ test_app = flask.Flask(
 
 class SearchFulltextRegexTest(testing_config.CustomTestCase):
     """Tests for fulltext search regular expressions."""
+
     def test_WORD_RE(self):
         """Our RE finds words of three letters or more."""
         actual = search_fulltext.WORD_RE.findall('')
@@ -55,6 +56,7 @@ class SearchFulltextRegexTest(testing_config.CustomTestCase):
 
 class SearchFulltextFunctionsTest(testing_config.CustomTestCase):
     """Tests for fulltext search functions."""
+
     def setUp(self):
         self.fe = core_models.FeatureEntry(
             id=123,
@@ -268,6 +270,7 @@ class SearchFulltextFunctionsTest(testing_config.CustomTestCase):
 
 class FindStopWordsTest(testing_config.CustomTestCase):
     """Tests for finding stop words in the search corpus."""
+
     def setUp(self):
         self.fe_1 = core_models.FeatureEntry(
             creator_email='creator@example.com',

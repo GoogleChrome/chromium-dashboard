@@ -23,6 +23,7 @@ from framework import basehandlers
 
 class MemoryCache(Cache):
     """In-memory cache for backup export."""
+
     _CACHE: dict[Any, Any] = {}
 
     def get(self, url):

@@ -19,6 +19,7 @@ from internals import fetchchannels
 
 class OmahaDataHandler(basehandlers.FlaskHandler):
     """Handler for retrieving Omaha data metrics."""
+
     JSONIFY = True
 
     def get_template_data(self, **kwargs):

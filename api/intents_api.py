@@ -59,6 +59,7 @@ def compute_subject_prefix(feature_type: int, intent_type: IntentDraftType):
 # Format for Google Cloud Task body passed to cloud_tasks_helpers.enqueue_task
 class IntentGenerationOptions(TypedDict):
     """Options for generating an intent."""
+
     subject: str
     feature_id: int
     intent_type: str
@@ -68,6 +69,7 @@ class IntentGenerationOptions(TypedDict):
 
 class IntentsAPI(basehandlers.APIHandler):
     """API to manage intents for features."""
+
     def do_get(self, **kwargs) -> Response | dict | str:
         """Get the body of a draft intent."""
         feature_id = int(kwargs['feature_id'])

@@ -23,6 +23,7 @@ from internals.review_models import Activity, Gate, Vote
 
 class ActivityTest(testing_config.CustomTestCase):
     """Tests for Activity."""
+
     def setUp(self):
         self.feature_1 = FeatureEntry(
             id=111,
@@ -159,6 +160,7 @@ class ActivityTest(testing_config.CustomTestCase):
 
 class NotifierHelpersTest(testing_config.CustomTestCase):
     """Tests for NotifierHelpers."""
+
     def setUp(self):
         self.feature_1 = FeatureEntry(
             name='feature a',

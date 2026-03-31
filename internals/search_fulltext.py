@@ -222,6 +222,7 @@ def search_fulltext(
 
 class ReindexAllFeatures(FlaskHandler):
     """Handler for triggering fulltext reindexing of all features."""
+
     def get_template_data(self, **kwargs) -> str:
         """Updates the fulltext index for all features."""
         self.require_cron_header()
@@ -239,6 +240,7 @@ class ReindexAllFeatures(FlaskHandler):
 
 class FindStopWords(FlaskHandler):
     """Handler for analyzing corpus to find common stop words."""
+
     JSONIFY = True
 
     def get_template_data(self, **kwargs) -> list[tuple[str, int]]:

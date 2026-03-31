@@ -51,11 +51,13 @@ class Thumbnail(ndb.Model):
 
 class UnsupportedMimeType(Exception):
     """Exception raised for unsupported mime types."""
+
     pass
 
 
 class AttachmentTooLarge(Exception):
     """Exception raised for attachments that are too large."""
+
     pass
 
 

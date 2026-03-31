@@ -56,6 +56,7 @@ class RequestTrial(TypedDict):
 
 class InternalRegistrationConfig(TypedDict):
     """Configuration options for origin trial registration."""
+
     allow_public_suffix_subdomains: NotRequired[bool]
     approval_type: NotRequired[str]
     approval_buganizer_component_id: NotRequired[int]
@@ -66,12 +67,14 @@ class InternalRegistrationConfig(TypedDict):
 
 class CreateOriginTrialRequest(TypedDict):
     """Request format for creating an origin trial."""
+
     trial: RequestTrial
     registration_config: InternalRegistrationConfig
 
 
 class SetUpTrialRequest(TypedDict):
     """Request format for setting up an origin trial."""
+
     trial_id: int
     data_access_admin_group_name: str
     announcement_groups_owners: list[str]

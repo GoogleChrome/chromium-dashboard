@@ -21,6 +21,7 @@ from internals.user_models import AppUser
 
 class RemoveInactiveUsersHandler(FlaskHandler):
     """Handler to remove inactive users."""
+
     DEFAULT_LAST_VISIT = datetime(2022, 8, 1)  # 2022-08-01
     INACTIVE_REMOVE_DAYS = 270
 

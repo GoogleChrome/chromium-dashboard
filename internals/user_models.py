@@ -213,6 +213,7 @@ class FeatureOwner(ndb.Model):
 
 class BlinkComponent(ndb.Model):
     """A Blink component tracked in the issue tracker."""
+
     name = ndb.StringProperty(required=True, default=settings.DEFAULT_COMPONENT)
     created = ndb.DateTimeProperty(auto_now_add=True)
     updated = ndb.DateTimeProperty(auto_now=True)

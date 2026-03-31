@@ -32,6 +32,7 @@ from internals.stage_helpers import organize_all_stages_by_feature
 
 class ShippingFeatureInfo(TypedDict):
     """Type dictionary for shipping feature info."""
+
     name: str
     id: int
     chromestatus_url: str
@@ -46,6 +47,7 @@ class ShippingFeatureInfo(TypedDict):
 # Enum representing the criteria that is missing for a feature that is shipping.
 class Criteria(str, Enum):  # noqa: F405
     """Enum for shipping criteria."""
+
     # Intent to Ship thread URL is missing.
     INTENT_TO_SHIP_MISSING = 'i2s'
     # API Owner approvals have not been obtained on the ship gate.

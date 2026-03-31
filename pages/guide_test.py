@@ -31,6 +31,7 @@ test_app = flask.Flask(__name__)
 
 class TestWithFeature(testing_config.CustomTestCase):
     """Base test class providing common feature setup for guide tests."""
+
     REQUEST_PATH_FORMAT = 'subclasses fill this in'
     HANDLER_CLASS = 'subclasses fill this in'
 
@@ -42,6 +43,7 @@ class TestWithFeature(testing_config.CustomTestCase):
 
 class FeatureCreateTest(testing_config.CustomTestCase):
     """Tests for the FeatureCreateHandler."""
+
     def setUp(self):
         self.handler = guide.FeatureCreateHandler()
         self.now = datetime.now()

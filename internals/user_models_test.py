@@ -20,6 +20,7 @@ from internals import user_models
 
 class UserPrefTest(testing_config.CustomTestCase):
     """Tests for the UserPref model."""
+
     def setUp(self):
         self.user_pref_1 = user_models.UserPref(email='one@example.com')
         self.user_pref_1.notify_as_starrer = False

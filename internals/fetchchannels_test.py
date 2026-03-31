@@ -21,6 +21,7 @@ from internals import fetchchannels
 
 class ChannelsAPITest(testing_config.CustomTestCase):
     """Tests for the channels API."""
+
     @mock.patch('requests.get')
     def test_fetch_chrome_release_info__found(self, mock_requests_get):
         """We can get channel data from the chromiumdash app."""

@@ -21,6 +21,7 @@ from internals import user_models
 
 class ComponentUsersAPI(basehandlers.APIHandler):
     """API handler for component users."""
+
     def __update_subscribers_list(
         self, add=True, user_id=None, blink_component_id=None, primary=False
     ):
