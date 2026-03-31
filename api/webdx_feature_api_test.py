@@ -29,6 +29,8 @@ test_app = flask.Flask(__name__)
 
 
 class WebFeatureIDsAPITest(testing_config.CustomTestCase):
+    """Tests for WebFeatureIDsAPI."""
+
     def setUp(self):
         """Set up the test environment."""
         self.handler = WebFeatureIDsAPI()
@@ -62,6 +64,8 @@ class WebFeatureIDsAPITest(testing_config.CustomTestCase):
 
 
 class WebdxFeatureAPITest(testing_config.CustomTestCase):
+    """Tests for the Webdx Feature API handler."""
+
     def setUp(self):
         """Set up the test environment."""
         logging.disable(logging.CRITICAL)

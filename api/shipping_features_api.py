@@ -30,6 +30,8 @@ from internals.core_models import Stage
 
 
 class GetShippingFeaturesResponse(TypedDict):
+    """Response type for shipping features."""
+
     complete_features: list[feature_helpers.ShippingFeatureInfo]
     incomplete_features: list[
         tuple[feature_helpers.ShippingFeatureInfo, list[str]]

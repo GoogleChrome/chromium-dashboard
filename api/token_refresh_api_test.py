@@ -29,6 +29,8 @@ test_app.secret_key = 'testing secret'
 
 
 class TokenRefreshAPITest(testing_config.CustomTestCase):
+    """Tests for the Token Refresh API handler."""
+
     def setUp(self):
         """Set up the test environment."""
         self.handler = token_refresh_api.TokenRefreshAPI()

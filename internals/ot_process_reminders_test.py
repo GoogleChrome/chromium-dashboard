@@ -23,6 +23,8 @@ from internals.core_models import FeatureEntry, Stage
 
 
 class OTProcessRemindersTest(testing_config.CustomTestCase):
+    """Tests for OTProcessReminders."""
+
     def setUp(self):
         """Set up the test environment."""
         logging.disable(logging.CRITICAL)

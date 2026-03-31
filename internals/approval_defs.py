@@ -75,6 +75,8 @@ DEFAULT_SLO_RESOLVE_LIMIT = 10  # Ten weekdays in the Pacific timezone.
 
 @dataclass(eq=True, frozen=True)
 class GateInfo:
+    """Information defining a specific gate/approval type."""
+
     name: str
     description: str
     gate_type: int

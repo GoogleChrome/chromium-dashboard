@@ -31,6 +31,8 @@ test_app = flask.Flask(__name__)
 
 
 class OriginTrialsAPITest(testing_config.CustomTestCase):
+    """Tests for OriginTrialsAPI."""
+
     def setUp(self):
         """Set up the test environment."""
         self.feature_1 = FeatureEntry(

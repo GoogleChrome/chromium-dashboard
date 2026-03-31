@@ -25,6 +25,8 @@ test_app = flask.Flask(__name__)
 
 
 class ChannelsAPITest(testing_config.CustomTestCase):
+    """Tests for the Channels API."""
+
     def setUp(self):
         """Set up the test."""
         self.handler = channels_api.ChannelsAPI()

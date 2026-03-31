@@ -27,6 +27,8 @@ test_app = flask.Flask(__name__)
 
 
 class ProcessesAPITest(testing_config.CustomTestCase):
+    """Tests for ProcessesAPI."""
+
     def setUp(self):
         """Set up the test environment."""
         self.feature_1 = core_models.FeatureEntry(
@@ -163,6 +165,8 @@ class ProcessesAPITest(testing_config.CustomTestCase):
 
 
 class ProgressAPITest(testing_config.CustomTestCase):
+    """Tests for ProgressAPI."""
+
     def setUp(self):
         """Set up the test environment."""
         self.feature_1 = core_models.FeatureEntry(

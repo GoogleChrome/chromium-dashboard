@@ -37,6 +37,8 @@ NOW = datetime.datetime.now()
 
 
 class CommentsConvertersTest(testing_config.CustomTestCase):
+    """Tests for comment converters."""
+
     def test_amendment_to_OAM__normal(self):
         """We can convert a NDB Amendment to a Open API Amendment."""
         amend = Amendment(
@@ -116,6 +118,8 @@ class CommentsConvertersTest(testing_config.CustomTestCase):
 
 
 class CommentsAPITest(testing_config.CustomTestCase):
+    """Tests for the Comments API."""
+
     def setUp(self):
         """Set up the test."""
         self.feature_1 = FeatureEntry(

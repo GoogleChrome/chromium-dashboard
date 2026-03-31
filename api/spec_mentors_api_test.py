@@ -45,6 +45,8 @@ BASE_FEATURE_CREATE_BODY = {
 
 
 class SpecMentorsAPITest(testing_config.CustomTestCase):
+    """Tests for SpecMentorsAPI."""
+
     def setUp(self):
         """Set up the test environment."""
         self.api_base = '/api/v0'

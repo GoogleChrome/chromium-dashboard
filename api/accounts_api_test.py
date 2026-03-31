@@ -27,6 +27,8 @@ test_app = flask.Flask(__name__)
 
 
 class AccountsAPITest(testing_config.CustomTestCase):
+    """Tests for the Accounts API."""
+
     def setUp(self):
         """Set up the test."""
         self.app_admin = user_models.AppUser(email='admin@example.com')

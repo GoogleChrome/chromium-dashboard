@@ -63,6 +63,8 @@ BASE_FEATURE(kFeature9Disabled, base::FEATURE_DISABLED_BY_DEFAULT);
 
 
 class FeatureHelpersTest(testing_config.CustomTestCase):
+    """Tests for feature helpers."""
+
     def setUp(self):
         """Set up the test environment."""
         self.feature_2 = FeatureEntry(
@@ -1135,6 +1137,8 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
 
 
 class FeatureHelpersFilteringTest(testing_config.CustomTestCase):
+    """Tests for feature helpers filtering."""
+
     def setUp(self):
         """Set up the test environment."""
         self.owner_email = 'owner@example.com'
@@ -1371,6 +1375,8 @@ class FeatureHelpersFilteringTest(testing_config.CustomTestCase):
 
 
 class ShippingFeatureHelpersTest(testing_config.CustomTestCase):
+    """Tests for shipping feature helpers."""
+
     def setUp(self):
         """Set up the test environment."""
         self.milestone = 120

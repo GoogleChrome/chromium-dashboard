@@ -32,6 +32,8 @@ test_app = flask.Flask(__name__)
 
 
 class StagesAPITest(testing_config.CustomTestCase):
+    """Tests for the Stages API handler."""
+
     def setUp(self):
         """Set up the test environment."""
         self.now = datetime.now()

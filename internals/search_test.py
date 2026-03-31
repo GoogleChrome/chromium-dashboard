@@ -26,6 +26,8 @@ from internals.search_queries import Interval
 
 
 class SearchRETest(testing_config.CustomTestCase):
+    """Tests for search regular expressions."""
+
     # Note: User queries will always have a space appended before parsing.
 
     def test_empty_query(self):
@@ -154,6 +156,8 @@ class SearchRETest(testing_config.CustomTestCase):
 
 
 class SearchParsingTest(testing_config.CustomTestCase):
+    """Tests for parsing search queries."""
+
     def test_parse_query_value__dates(self):
         """Tests parsing of query values that represent dates."""
         d = datetime.datetime
@@ -260,6 +264,8 @@ class SearchParsingTest(testing_config.CustomTestCase):
 
 
 class SearchFunctionsTest(testing_config.CustomTestCase):
+    """Tests for search execution functions."""
+
     def setUp(self):
         """Set up test data for search execution tests."""
         self.featureentry_1 = FeatureEntry(

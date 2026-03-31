@@ -128,6 +128,8 @@ def build_email_tasks(
 
 
 class AbstractReminderHandler(basehandlers.FlaskHandler):
+    """Handler for AbstractReminder requests."""
+
     JSONIFY = True
     SUBJECT_FORMAT: str | None = '%s'
     EMAIL_TEMPLATE_PATH: str | None = None  # Subclasses must override
@@ -351,6 +353,8 @@ class PrepublicationHandler(AbstractReminderHandler):
 
 
 class SLOReportHandler(basehandlers.FlaskHandler):
+    """Handler for SLOReport requests."""
+
     JSONIFY = True
     # For now, this just returns a JSON report to help me evaluate if we
     # are ready to start sending SLO reminder emails without sending too
@@ -372,6 +376,8 @@ class SLOReportHandler(basehandlers.FlaskHandler):
 
 
 class SLOOverdueHandler(basehandlers.FlaskHandler):
+    """Handler for SLOOverdue requests."""
+
     JSONIFY = True
     SUBJECT_FORMAT = 'Review due for: %s'
     BODY_TEMPLATE_PATH = 'slo_overdue_email.html'
@@ -542,6 +548,8 @@ class SLOOverdueHandler(basehandlers.FlaskHandler):
 
 
 class SendOTReminderEmailsHandler(basehandlers.FlaskHandler):
+    """Handler for SendOTReminderEmails requests."""
+
     def get_template_data(self, **kwargs):
         """Send any time-based origin trials reminder emails."""
         self.require_cron_header()

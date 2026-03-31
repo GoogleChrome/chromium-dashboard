@@ -22,6 +22,8 @@ from internals import feature_helpers
 
 
 class FeaturesJsonHandler(basehandlers.FlaskHandler):
+    """Handler for returning features list in JSON format."""
+
     HTTP_CACHE_TYPE = 'private'
     JSONIFY = True
 

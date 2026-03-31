@@ -29,6 +29,8 @@ test_app = flask.Flask(__name__)
 
 
 class CspTest(unittest.TestCase):
+    """Tests for CSP headers."""
+
     def setUp(self):
         """Set up the test environment."""
         csp.ENABLED = True
@@ -103,6 +105,8 @@ class CspTest(unittest.TestCase):
 
 
 class CspReporttest(unittest.TestCase):
+    """Tests for CSP report handler."""
+
     @mock.patch('logging.error')
     def test_report_handler(self, mock_error):
         """The report handler logs something for each request."""

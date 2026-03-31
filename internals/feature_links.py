@@ -511,6 +511,8 @@ def get_feature_links_samples(
 
 
 class UpdateAllFeatureLinksHandlers(FlaskHandler):
+    """Handler to update all feature links."""
+
     def get_template_data(self, **kwargs) -> str:
         """Retrieves feature links from a database, identifies which links need to be updated based on certain conditions,
         and enqueues tasks to update those links in batches.

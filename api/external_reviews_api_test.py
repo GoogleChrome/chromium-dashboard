@@ -109,6 +109,8 @@ def make_feature(
 
 
 class ExternalReviewsAPITest(testing_config.CustomTestCase):
+    """Tests for ExternalReviewsAPI."""
+
     def setUp(self):
         """Set up the test."""
         self.handler = external_reviews_api.ExternalReviewsAPI()

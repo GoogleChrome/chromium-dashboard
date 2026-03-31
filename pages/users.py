@@ -27,6 +27,8 @@ from internals import user_models
 
 
 class UserListHandler(basehandlers.FlaskHandler):
+    """Handler for listing application users."""
+
     TEMPLATE_PATH = 'admin/users/new.html'
 
     @permissions.require_admin_site

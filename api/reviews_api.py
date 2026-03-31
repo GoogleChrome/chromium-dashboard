@@ -261,6 +261,8 @@ class GatesAPI(basehandlers.APIHandler):
 
 
 class PendingGatesAPI(basehandlers.APIHandler):
+    """API for fetching gates pending the current user's approval."""
+
     def get_stage_ids_of_gates_pending_my_approval(self) -> list[int] | Future:
         """Return a list of stage_id needing approval by current user."""
         user = self.get_current_user()
@@ -308,6 +310,8 @@ class PendingGatesAPI(basehandlers.APIHandler):
 
 
 class XfnGatesAPI(basehandlers.APIHandler):
+    """API for managing cross-functional gates."""
+
     def do_get(self, **kwargs):
         """Reject unneeded GET requests without triggering Error Reporting."""
         self.abort(405, valid_methods=['POST'])

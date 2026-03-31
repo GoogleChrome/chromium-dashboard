@@ -29,6 +29,8 @@ test_app = flask.Flask(__name__)
 
 
 class WPTCoverageAPITest(testing_config.CustomTestCase):
+    """Tests for the WPT Coverage API handler."""
+
     def setUp(self):
         """Set up test data for the API handler."""
         self.handler = wpt_coverage_api.WPTCoverageAPI()

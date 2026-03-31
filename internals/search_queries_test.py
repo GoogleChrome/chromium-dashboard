@@ -24,6 +24,8 @@ from internals.review_models import Gate, Vote
 
 
 class SearchFeaturesTest(testing_config.CustomTestCase):
+    """Tests for searching feature entries."""
+
     def setUp(self):
         """Set up the test environment."""
         self.feature_1 = FeatureEntry(

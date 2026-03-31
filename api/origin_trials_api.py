@@ -136,6 +136,8 @@ def find_use_counter_value(
 
 
 class OriginTrialsAPI(basehandlers.EntitiesAPIHandler):
+    """API for managing origin trials."""
+
     def do_get(self, **kwargs):
         """Get a list of all origin trials.
 

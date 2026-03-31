@@ -31,6 +31,8 @@ test_app = flask.Flask(__name__)
 
 
 class MetricsFunctionTests(testing_config.CustomTestCase):
+    """Tests for generic metrics functions."""
+
     def setUp(self):
         """Set up the test environment."""
         self.datapoint = metrics_models.StableInstance(
@@ -90,6 +92,8 @@ class MetricsFunctionTests(testing_config.CustomTestCase):
 
 
 class PopularityTimelineHandlerTests(testing_config.CustomTestCase):
+    """Tests for PopularityTimelineHandler."""
+
     def setUp(self):
         """Set up the test environment."""
         self.handler = metricsdata.PopularityTimelineHandler()
@@ -132,6 +136,8 @@ class PopularityTimelineHandlerTests(testing_config.CustomTestCase):
 
 
 class CSSPopularityHandlerTests(testing_config.CustomTestCase):
+    """Tests for CSSPopularityHandler."""
+
     def setUp(self):
         """Set up the test environment."""
         self.handler = metricsdata.CSSPopularityHandler()
@@ -203,6 +209,8 @@ class CSSPopularityHandlerTests(testing_config.CustomTestCase):
 
 
 class FeatureBucketsHandlerTest(testing_config.CustomTestCase):
+    """Tests for FeatureBucketsHandler."""
+
     def setUp(self):
         """Set up the test environment."""
         self.handler = metricsdata.FeatureBucketsHandler()

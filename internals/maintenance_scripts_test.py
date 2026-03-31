@@ -35,6 +35,8 @@ from internals.webdx_feature_models import WebdxFeatures
 
 
 class EvaluateGateStatusTest(testing_config.CustomTestCase):
+    """Tests for the EvaluateGateStatus handler."""
+
     def setUp(self):
         """Set up the test environment."""
         self.delete_gates_and_votes()
@@ -126,6 +128,8 @@ class EvaluateGateStatusTest(testing_config.CustomTestCase):
 
 
 class AssociateOTsTest(testing_config.CustomTestCase):
+    """Tests for the AssociateOTs handler."""
+
     def setUp(self):
         """Set up the test environment."""
         self.feature_1 = FeatureEntry(
@@ -347,6 +351,8 @@ def mock_mstone_return_value_generator(*args, **kwargs):
 
 
 class CreateOriginTrialsTest(testing_config.CustomTestCase):
+    """Tests for the CreateOriginTrials handler."""
+
     def setUp(self):
         """Set up the test environment."""
         self.feature_1 = FeatureEntry(
@@ -625,6 +631,8 @@ class CreateOriginTrialsTest(testing_config.CustomTestCase):
 
 
 class ActivateOriginTrialsTest(testing_config.CustomTestCase):
+    """Tests for the ActivateOriginTrials handler."""
+
     def setUp(self):
         """Set up the test environment."""
         self.feature_1 = FeatureEntry(
@@ -801,6 +809,8 @@ class ActivateOriginTrialsTest(testing_config.CustomTestCase):
 
 
 class DeleteEmptyExtensionStagesTest(testing_config.CustomTestCase):
+    """Tests for deleting empty extension stages."""
+
     def setUp(self):
         """Set up the test environment."""
         for kind in [Gate, Stage]:
@@ -878,6 +888,8 @@ class DeleteEmptyExtensionStagesTest(testing_config.CustomTestCase):
 
 
 class BackfillShippingYearTest(testing_config.CustomTestCase):
+    """Tests for the BackfillShippingYear handler."""
+
     def setUp(self):
         """Set up the test environment."""
         self.stage_1_1 = Stage(feature_id=11111, milestones=MilestoneSet())
@@ -923,6 +935,8 @@ class BackfillShippingYearTest(testing_config.CustomTestCase):
 
 
 class BackfillActivityLogTypeTest(testing_config.CustomTestCase):
+    """Tests for the BackfillActivityLogType handler."""
+
     def setUp(self):
         """Set up the test environment."""
         self.handler = maintenance_scripts.BackfillActivityLogType()
@@ -998,6 +1012,8 @@ class BackfillActivityLogTypeTest(testing_config.CustomTestCase):
 
 
 class BackfillGateDatesTest(testing_config.CustomTestCase):
+    """Tests for the BackfillGateDates handler."""
+
     def setUp(self):
         """Set up the test environment."""
         self.gate = Gate(
@@ -1134,6 +1150,8 @@ class BackfillGateDatesTest(testing_config.CustomTestCase):
 
 
 class FetchWebdxFeatureIdTest(testing_config.CustomTestCase):
+    """Tests for the FetchWebdxFeatureId handler."""
+
     def setUp(self):
         """Set up the test environment."""
         logging.disable(logging.CRITICAL)
@@ -1227,6 +1245,8 @@ class FetchWebdxFeatureIdTest(testing_config.CustomTestCase):
 
 
 class SendManualOTCreatedEmailTest(testing_config.CustomTestCase):
+    """Tests for the SendManualOTCreatedEmail handler."""
+
     def setUp(self):
         """Set up the test environment."""
         self.handler = maintenance_scripts.SendManualOTCreatedEmail()
@@ -1305,6 +1325,8 @@ class SendManualOTCreatedEmailTest(testing_config.CustomTestCase):
 
 
 class SendManualOTActivatedEmailTest(testing_config.CustomTestCase):
+    """Tests for the SendManualOTActivatedEmail handler."""
+
     def setUp(self):
         """Set up the test environment."""
         self.handler = maintenance_scripts.SendManualOTActivatedEmail()
@@ -1369,6 +1391,8 @@ class SendManualOTActivatedEmailTest(testing_config.CustomTestCase):
 
 
 class GenerateReviewActivityFileTest(testing_config.CustomTestCase):
+    """Tests for the GenerateReviewActivityFile handler."""
+
     def setUp(self):
         """Set up the test environment."""
         self.maxDiff = None
@@ -2059,6 +2083,8 @@ class GenerateStaleFeaturesFileTest(testing_config.CustomTestCase):
 
 
 class GenerateShippingFeaturesFileTest(testing_config.CustomTestCase):
+    """Tests for the GenerateShippingFeaturesFile handler."""
+
     def setUp(self):
         """Set up the test environment."""
         self.handler = maintenance_scripts.GenerateShippingFeaturesFile()
@@ -2647,6 +2673,8 @@ class ResetStaleShippingMilestonesTest(testing_config.CustomTestCase):
 
 
 class DeleteWPTCoverageReportTest(testing_config.CustomTestCase):
+    """Tests for the DeleteWPTCoverageReport handler."""
+
     def setUp(self):
         """Set up the test environment."""
         for kind in [Gate, Stage, Activity]:

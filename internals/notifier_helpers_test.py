@@ -24,6 +24,8 @@ from internals.review_models import Activity, Gate, Vote
 
 
 class ActivityTest(testing_config.CustomTestCase):
+    """Tests for Activity."""
+
     def setUp(self):
         """Set up the test environment."""
         self.feature_1 = FeatureEntry(
@@ -163,6 +165,8 @@ class ActivityTest(testing_config.CustomTestCase):
 
 
 class NotifierHelpersTest(testing_config.CustomTestCase):
+    """Tests for NotifierHelpers."""
+
     def setUp(self):
         """Set up the test environment."""
         self.feature_1 = FeatureEntry(

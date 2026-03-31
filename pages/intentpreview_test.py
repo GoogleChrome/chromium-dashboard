@@ -142,6 +142,8 @@ def _create_complete_feature():
 
 
 class IntentEmailPreviewTemplateTest(testing_config.CustomTestCase):
+    """Tests for the intent email preview template."""
+
     HANDLER_CLASS = intentpreview.IntentEmailPreviewHandler
 
     def setUp(self):

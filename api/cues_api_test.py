@@ -26,6 +26,8 @@ test_app = flask.Flask(__name__)
 
 
 class CuesAPITest(testing_config.CustomTestCase):
+    """Tests for the Cues API."""
+
     def setUp(self):
         """Set up the test."""
         self.user_pref_1 = user_models.UserPref(

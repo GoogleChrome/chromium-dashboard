@@ -109,6 +109,8 @@ def make_test_features():
 
 
 class FunctionTest(testing_config.CustomTestCase):
+    """Tests for Function."""
+
     def setUp(self):
         """Set up the test environment."""
         self.current_milestone_info = {
@@ -372,6 +374,8 @@ class FunctionTest(testing_config.CustomTestCase):
 
 
 class FeatureAccuracyHandlerTest(testing_config.CustomTestCase):
+    """Tests for FeatureAccuracyHandler."""
+
     def setUp(self):
         """Set up the test environment."""
         self.feature_1, self.feature_2, self.feature_3 = make_test_features()
@@ -507,6 +511,8 @@ class FeatureAccuracyHandlerTest(testing_config.CustomTestCase):
 
 
 class PrepublicationHandlerTest(testing_config.CustomTestCase):
+    """Tests for PrepublicationHandler."""
+
     def setUp(self):
         """Set up the test environment."""
         self.current_milestone_info = {
@@ -541,6 +547,8 @@ class PrepublicationHandlerTest(testing_config.CustomTestCase):
 
 
 class SLOOverdueHandlerTest(testing_config.CustomTestCase):
+    """Tests for SLOOverdueHandler."""
+
     def setUp(self):
         """Set up the test environment."""
         self.feature_1, self.feature_2, self.feature_3 = make_test_features()

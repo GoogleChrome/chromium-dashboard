@@ -54,6 +54,8 @@ def _datapoints_to_json_dicts(datapoints):
 
 
 class TimelineHandler(basehandlers.FlaskHandler):
+    """Handler for returning timeline data for a given bucket."""
+
     HTTP_CACHE_TYPE = 'private'
     JSONIFY = True
     CACHE_PREFIX = 'metrics|'
@@ -96,6 +98,8 @@ class TimelineHandler(basehandlers.FlaskHandler):
 
 
 class PopularityTimelineHandler(TimelineHandler):
+    """Handler for CSS property popularity timeline."""
+
     CACHE_KEY = TimelineHandler.CACHE_PREFIX + 'css_pop_timeline'
     MODEL_CLASS = metrics_models.StableInstance
 
@@ -105,6 +109,8 @@ class PopularityTimelineHandler(TimelineHandler):
 
 
 class AnimatedTimelineHandler(TimelineHandler):
+    """Handler for CSS animated property timeline."""
+
     CACHE_KEY = TimelineHandler.CACHE_PREFIX + 'css_animated_timeline'
     MODEL_CLASS = metrics_models.AnimatedProperty
 
@@ -114,6 +120,8 @@ class AnimatedTimelineHandler(TimelineHandler):
 
 
 class FeatureObserverTimelineHandler(TimelineHandler):
+    """Handler for JS feature timeline."""
+
     CACHE_KEY = TimelineHandler.CACHE_PREFIX + 'featureob_timeline'
     MODEL_CLASS = metrics_models.FeatureObserver
 
@@ -123,6 +131,8 @@ class FeatureObserverTimelineHandler(TimelineHandler):
 
 
 class WebFeatureTimelineHandler(TimelineHandler):
+    """Handler for WebDX feature timeline."""
+
     CACHE_KEY = TimelineHandler.CACHE_PREFIX + 'webfeature_timeline'
     MODEL_CLASS = metrics_models.WebDXFeature
 
@@ -132,6 +142,8 @@ class WebFeatureTimelineHandler(TimelineHandler):
 
 
 class FeatureHandler(basehandlers.FlaskHandler):
+    """Handler for returning feature metrics data."""
+
     HTTP_CACHE_TYPE = 'private'
     JSONIFY = True
     CACHE_PREFIX = 'metrics|'
@@ -233,6 +245,8 @@ class FeatureHandler(basehandlers.FlaskHandler):
 
 
 class CSSPopularityHandler(FeatureHandler):
+    """Handler for CSS property popularity data."""
+
     CACHE_KEY = FeatureHandler.CACHE_PREFIX + 'css_popularity'
     MODEL_CLASS = metrics_models.StableInstance
     PROPERTY_CLASS = metrics_models.CssPropertyHistogram
@@ -243,6 +257,8 @@ class CSSPopularityHandler(FeatureHandler):
 
 
 class CSSAnimatedHandler(FeatureHandler):
+    """Handler for CSS animated property data."""
+
     CACHE_KEY = FeatureHandler.CACHE_PREFIX + 'css_animated'
     MODEL_CLASS = metrics_models.AnimatedProperty
     PROPERTY_CLASS = metrics_models.CssPropertyHistogram
@@ -253,6 +269,8 @@ class CSSAnimatedHandler(FeatureHandler):
 
 
 class FeatureObserverPopularityHandler(FeatureHandler):
+    """Handler for JS feature popularity data."""
+
     CACHE_KEY = FeatureHandler.CACHE_PREFIX + 'featureob_popularity'
     MODEL_CLASS = metrics_models.FeatureObserver
     PROPERTY_CLASS = metrics_models.FeatureObserverHistogram
@@ -263,6 +281,8 @@ class FeatureObserverPopularityHandler(FeatureHandler):
 
 
 class WebFeaturePopularityHandler(FeatureHandler):
+    """Handler for WebDX feature popularity data."""
+
     CACHE_KEY = FeatureHandler.CACHE_PREFIX + 'webfeature_popularity'
     MODEL_CLASS = metrics_models.WebDXFeature
     PROPERTY_CLASS = metrics_models.WebDXFeatureObserver
@@ -273,6 +293,8 @@ class WebFeaturePopularityHandler(FeatureHandler):
 
 
 class FeatureBucketsHandler(basehandlers.FlaskHandler):
+    """Handler for returning mapping of metric properties to bucket IDs."""
+
     HTTP_CACHE_TYPE = 'private'
     JSONIFY = True
 

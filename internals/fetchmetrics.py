@@ -252,6 +252,8 @@ class YesterdayHandler(basehandlers.FlaskHandler):
 
 
 class HistogramsHandler(basehandlers.FlaskHandler):
+    """Handler for fetching and updating histogram data."""
+
     # Maps enum names to the historgram entity class that we use to store them.
     MODEL_CLASS = {
         'FeatureObserver': metrics_models.FeatureObserverHistogram,

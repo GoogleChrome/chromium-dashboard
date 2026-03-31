@@ -26,6 +26,8 @@ DATETIME_FORMAT = '%Y-%m-%dT%H:%M:%S'
 
 
 class EnterpriseHelpersTest(testing_config.CustomTestCase):
+    """Tests for enterprise helpers."""
+
     def setUp(self):
         """Set up the test environment."""
         self.no_feature = None

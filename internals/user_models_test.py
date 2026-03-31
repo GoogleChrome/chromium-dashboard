@@ -21,6 +21,8 @@ from internals import user_models
 
 
 class UserPrefTest(testing_config.CustomTestCase):
+    """Tests for the UserPref model."""
+
     def setUp(self):
         """Set up test data."""
         self.user_pref_1 = user_models.UserPref(email='one@example.com')

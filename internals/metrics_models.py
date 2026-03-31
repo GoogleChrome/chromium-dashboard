@@ -20,6 +20,8 @@ from google.cloud import ndb  # type: ignore
 
 # UMA metrics.
 class StableInstance(ndb.Model):
+    """Model for StableInstance."""
+
     created = ndb.DateTimeProperty(auto_now_add=True)
     updated = ndb.DateTimeProperty(auto_now=True)
 
@@ -33,14 +35,20 @@ class StableInstance(ndb.Model):
 
 
 class AnimatedProperty(StableInstance):
+    """Model for AnimatedProperty."""
+
     pass
 
 
 class FeatureObserver(StableInstance):
+    """Model for FeatureObserver."""
+
     pass
 
 
 class WebDXFeature(StableInstance):
+    """Model for WebDXFeature."""
+
     pass
 
 
@@ -61,15 +69,21 @@ class HistogramModel(ndb.Model):
 
 
 class CssPropertyHistogram(HistogramModel):
+    """Model for CssPropertyHistogram."""
+
     pass
 
 
 class FeatureObserverHistogram(HistogramModel):
+    """Model for FeatureObserverHistogram."""
+
     pass
 
 
 # TODO(jrobbins): This should be WebDXFeatureHistogram
 class WebDXFeatureObserver(HistogramModel):
+    """Model for WebDXFeatureObserver."""
+
     MISSING_FEATURE_ID = 'Missing feature'
     TBD_FEATURE_ID = 'TBD'
 

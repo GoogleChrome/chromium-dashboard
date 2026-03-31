@@ -29,6 +29,8 @@ test_app = flask.Flask(__name__)
 
 
 class ComponentUsersAPITest(testing_config.CustomTestCase):
+    """Tests for the Component Users API."""
+
     def setUp(self):
         """Set up the test."""
         self.handler = component_users.ComponentUsersAPI()

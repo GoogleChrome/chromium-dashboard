@@ -31,6 +31,8 @@ from framework import utils
 
 
 class MockHandler(object):
+    """A mock handler for testing utils decorators."""
+
     def __init__(self, path):
         """Initialize the mock handler."""
         self.handler_called_with = None
@@ -49,6 +51,8 @@ class MockHandler(object):
 
 
 class UtilsFunctionTests(unittest.TestCase):
+    """Tests for utility functions in the utils module."""
+
     def setUp(self):
         """Set up the test environment."""
         self.url = 'https://example.com/file.txt'

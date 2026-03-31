@@ -29,6 +29,8 @@ from framework import cloud_tasks_helpers
 
 
 class LocalCloudTasksClientTest(unittest.TestCase):
+    """Tests for LocalCloudTasksClient."""
+
     def setUp(self):
         """Set up the test environment."""
         self.client = cloud_tasks_helpers.LocalCloudTasksClient()
@@ -60,6 +62,8 @@ class LocalCloudTasksClientTest(unittest.TestCase):
 
 
 class CloudTasksHelpersTest(unittest.TestCase):
+    """Tests for cloud tasks helpers."""
+
     def test_get_client__unit_tests(self):
         """During unit testing, we are using a fake object."""
         actual = cloud_tasks_helpers._get_client()

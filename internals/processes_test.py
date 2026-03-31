@@ -58,6 +58,8 @@ STAGE_BAKE_BAKE = 120
 
 
 class HelperFunctionsTest(testing_config.CustomTestCase):
+    """Tests for HelperFunctions."""
+
     def test_process_to_dict(self):
         """Test process to dict."""
         process = processes.Process(
@@ -189,6 +191,8 @@ class ProcessesWellFormedTest(testing_config.CustomTestCase):
 
 
 class ProgressDetectorsTest(testing_config.CustomTestCase):
+    """Tests for ProgressDetectors."""
+
     def setUp(self):
         """Set up the test environment."""
         self.feature_1 = core_models.FeatureEntry(

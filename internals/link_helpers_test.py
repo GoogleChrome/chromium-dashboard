@@ -34,6 +34,8 @@ from internals.link_helpers import (
 
 
 class LinkHelperTest(testing_config.CustomTestCase):
+    """Tests for the Link helper class."""
+
     def setUp(self):
         """Set up the test environment."""
         logging.disable(logging.CRITICAL)

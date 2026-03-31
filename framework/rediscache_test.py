@@ -32,6 +32,8 @@ KEY_7 = 'cache_key|7'
 
 
 class RedisCacheFunctionTests(testing_config.CustomTestCase):
+    """Tests for rediscache functions."""
+
     def test_set_and_get(self):
         """We can cache a value and retrieve it from the cache."""
         self.assertEqual(None, rediscache.get(KEY_1))

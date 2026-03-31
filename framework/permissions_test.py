@@ -30,6 +30,8 @@ from main import Route
 
 
 class MockHandler(basehandlers.BaseHandler):
+    """A mock handler used for testing permissions logic."""
+
     def __init__(self):
         """Initialize the mock handler."""
         self.called_with = None
@@ -62,6 +64,8 @@ test_app = basehandlers.FlaskApplication(
 
 
 class PermissionFunctionTests(testing_config.CustomTestCase):
+    """Tests for standalone permission functions."""
+
     def setUp(self):
         """Set up the test environment."""
         self.users = []
@@ -406,6 +410,8 @@ class PermissionFunctionTests(testing_config.CustomTestCase):
 
 
 class RequireAdminSiteTests(testing_config.CustomTestCase):
+    """Tests for the require_admin_site decorator."""
+
     def setUp(self):
         """Set up the test environment."""
         self.app_user = user_models.AppUser(email='registered@example.com')

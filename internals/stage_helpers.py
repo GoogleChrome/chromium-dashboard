@@ -44,6 +44,8 @@ from internals.review_models import Gate
 
 # Type return value of get_stage_info_for_templates()
 class StageTemplateInfo(TypedDict):
+    """Type alias for stage information used in templates."""
+
     proto_stages: list[Stage]
     dt_stages: list[Stage]
     ot_stages: list[Stage]

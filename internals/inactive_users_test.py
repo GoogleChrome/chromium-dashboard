@@ -22,6 +22,8 @@ from internals.user_models import AppUser
 
 
 class RemoveInactiveUsersHandlerTest(testing_config.CustomTestCase):
+    """Tests for RemoveInactiveUsersHandler."""
+
     def setUp(self):
         """Set up the test environment."""
         active_user = AppUser(

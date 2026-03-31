@@ -24,6 +24,8 @@ test_app = flask.Flask(__name__)
 
 
 class PermissionsAPITest(testing_config.CustomTestCase):
+    """Tests for PermissionsAPI."""
+
     def setUp(self):
         """Set up the test environment."""
         self.handler = permissions_api.PermissionsAPI()

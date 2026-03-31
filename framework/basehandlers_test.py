@@ -35,6 +35,8 @@ from main import Route
 
 
 class TestableAPIHandler(basehandlers.APIHandler):
+    """Test stub for APIHandler."""
+
     def require_signed_in_and_xsrf_token(self):
         """Require the user to be signed in and have an XSRF token."""
         pass
@@ -61,6 +63,8 @@ class TestableAPIHandler(basehandlers.APIHandler):
 
 
 class TestableFlaskHandler(basehandlers.FlaskHandler):
+    """Test stub for FlaskHandler."""
+
     TEMPLATE_PATH = 'test_template.html'
 
     def get_template_data(
@@ -123,6 +127,8 @@ test_app = basehandlers.FlaskApplication(
 
 
 class BaseHandlerTests(testing_config.CustomTestCase):
+    """Tests for BaseHandler."""
+
     def setUp(self):
         """Set up the test environment."""
         self.handler = basehandlers.BaseHandler()
@@ -538,6 +544,8 @@ class BaseHandlerTests(testing_config.CustomTestCase):
 
 
 class APIHandlerTests(testing_config.CustomTestCase):
+    """Tests for APIHandler."""
+
     def setUp(self):
         """Set up the test environment."""
         self.handler = basehandlers.APIHandler()
@@ -777,6 +785,8 @@ class APIHandlerTests(testing_config.CustomTestCase):
 
 
 class FlaskHandlerTests(testing_config.CustomTestCase):
+    """Tests for FlaskHandler."""
+
     def setUp(self):
         """Set up the test environment."""
         self.user_1 = AppUser(email='registered@example.com')
@@ -1288,6 +1298,8 @@ class FlaskHandlerTests(testing_config.CustomTestCase):
 
 
 class RedirectorTests(testing_config.CustomTestCase):
+    """Tests for simple redirector handlers."""
+
     def test_redirector(self):
         """If the user hits a redirector, they get a redirect response."""
         with test_app.test_request_context('/old_path'):
@@ -1298,6 +1310,8 @@ class RedirectorTests(testing_config.CustomTestCase):
 
 
 class ConstHandlerTests(testing_config.CustomTestCase):
+    """Tests for simple constant template handlers."""
+
     def test_template_found(self):
         """We can run a template that requires no handler logic."""
         with test_app.test_request_context('/just_a_template'):
@@ -1359,6 +1373,8 @@ class ConstHandlerTests(testing_config.CustomTestCase):
 
 
 class SPAHandlerTests(testing_config.CustomTestCase):
+    """Tests for SPAHandler."""
+
     @mock.patch('framework.basehandlers.get_spa_template_data')
     def test_get_template_data(self, mock_get_spa):
         """It simply calls get_spa_template_data."""
@@ -1371,6 +1387,8 @@ class SPAHandlerTests(testing_config.CustomTestCase):
 
 
 class GetSPATemplateDataTests(testing_config.CustomTestCase):
+    """Tests for get_spa_template_data."""
+
     def setUp(self):
         """Set up the test environment."""
         self.handler = basehandlers.SPAHandler()
@@ -1569,6 +1587,8 @@ class GetSPATemplateDataTests(testing_config.CustomTestCase):
 
 
 class FlaskApplicationTests(testing_config.CustomTestCase):
+    """Tests for the Flask application configuration."""
+
     def test_cors_with_allow_origin(self):
         """If the request hits a /data path, they get '*'."""
         with test_app.test_request_context('/data/test'):

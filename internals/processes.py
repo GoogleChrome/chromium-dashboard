@@ -23,6 +23,8 @@ from internals.metrics_models import WebDXFeatureObserver
 
 @dataclass
 class Action:
+    """Dataclass for Action."""
+
     name: str
     url: str
     prerequisites: list[str]
@@ -30,6 +32,8 @@ class Action:
 
 @dataclass
 class ProgressItem:
+    """Dataclass for ProgressItem."""
+
     name: str
     field: str | None = None
 
@@ -40,6 +44,8 @@ class ProgressItem:
 # a form that sets intent_stage.
 @dataclass
 class ProcessStage:
+    """Dataclass for ProcessStage."""
+
     name: str
     description: str
     progress_items: list[ProgressItem]
@@ -52,6 +58,8 @@ class ProcessStage:
 
 @dataclass
 class Process:
+    """Dataclass for Process."""
+
     name: str
     description: str
     applicability: str
