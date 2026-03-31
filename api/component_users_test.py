@@ -12,8 +12,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Tests for the component_users module, verifying component owner and
-subscriber modifications."""
+"""Tests for the component_users module.
+
+Verifying component owner and subscriber modifications.
+"""
 
 import datetime
 
@@ -89,7 +91,10 @@ class ComponentUsersAPITest(testing_config.CustomTestCase):
 
     def test_do_put(self):
         """Test do_put."""
-        request_path = f'/api/v0/components/{self.component_2.key.integer_id()}/users/{self.no_body.key.integer_id()}'
+        request_path = (
+            f'/api/v0/components/{self.component_2.key.integer_id()}'
+            f'/users/{self.no_body.key.integer_id()}'
+        )
         user = user_models.FeatureOwner.get_by_id(self.no_body.key.integer_id())
         self.assertEqual(user.blink_components, [])
         self.assertEqual(user.primary_blink_components, [])
@@ -122,7 +127,10 @@ class ComponentUsersAPITest(testing_config.CustomTestCase):
 
     def test_do_delete(self):
         """Test do_delete."""
-        request_path = f'/api/v0/components/{self.component_2.key.integer_id()}/users/{self.watcher_1.key.integer_id()}'
+        request_path = (
+            f'/api/v0/components/{self.component_2.key.integer_id()}'
+            f'/users/{self.watcher_1.key.integer_id()}'
+        )
         user = user_models.FeatureOwner.get_by_id(
             self.watcher_1.key.integer_id()
         )
@@ -146,7 +154,10 @@ class ComponentUsersAPITest(testing_config.CustomTestCase):
         self.assertEqual(user.blink_components, [self.component_1.key])
         self.assertEqual(user.primary_blink_components, [])
 
-        request_path = f'/api/v0/components/{self.component_2.key.integer_id()}/users/{self.component_owner_1.key.integer_id()}'
+        request_path = (
+            f'/api/v0/components/{self.component_2.key.integer_id()}'
+            f'/users/{self.component_owner_1.key.integer_id()}'
+        )
         user = user_models.FeatureOwner.get_by_id(
             self.component_owner_1.key.integer_id()
         )
@@ -175,7 +186,10 @@ class ComponentUsersAPITest(testing_config.CustomTestCase):
         )
         self.assertEqual(user.primary_blink_components, [self.component_1.key])
 
-        request_path = f'/api/v0/components/{self.component_2.key.integer_id()}/users/{self.component_owner_2.key.integer_id()}'
+        request_path = (
+            f'/api/v0/components/{self.component_2.key.integer_id()}'
+            f'/users/{self.component_owner_2.key.integer_id()}'
+        )
         user = user_models.FeatureOwner.get_by_id(
             self.component_owner_2.key.integer_id()
         )

@@ -129,8 +129,8 @@ def _get_trial_end_time(end_milestone: int) -> int:
     Raises:
       requests.exceptions.RequestException: If the request fails to connect or
         the HTTP status code is not successful.
-      KeyError: If the response from Chromium schedule API is not in the expected
-        format.
+      KeyError: If the response from Chromium schedule API is not in the
+        expected format.
     """
     milestone_plus_two = int(end_milestone) + 2
     mstone_info = utils.get_chromium_milestone_info(milestone_plus_two)
@@ -171,8 +171,8 @@ def _send_create_trial_request(
     """Send an origin trial creation request to the origin trials API.
 
     Returns:
-      Newly created origin trial ID if trial was created, any error text if there
-      was an issue during the creation process.
+      Newly created origin trial ID if trial was created, any error text if
+      there was an issue during the creation process.
     """
     json: CreateOriginTrialRequest = {
         'trial': {
@@ -303,8 +303,8 @@ def create_origin_trial(ot_stage: Stage) -> tuple[str | None, str | None]:
         the HTTP status code is not successful.
 
     Returns:
-      Newly created origin trial ID if trial was created, any error text if there
-      was an issue during the creation process.
+      Newly created origin trial ID if trial was created, any error text if
+      there was an issue during the creation process.
     """
     if settings.DEV_MODE:
         logging.info(

@@ -15,8 +15,10 @@
 
 # Import needed to reference a class within its own class method.
 # https://stackoverflow.com/a/33533514
-"""Data types, typed dictionaries, and constants for features, stages, and
-activities."""
+"""Data types, typed dictionaries, and constants for features, stages, and.
+
+activities.
+"""
 
 from __future__ import annotations
 

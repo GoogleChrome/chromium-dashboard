@@ -11,8 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Tests for the external_reviews_api module, verifying external review status
-and link parsing."""
+"""Tests for the external_reviews_api module.
+
+Verifying external review status and link parsing.
+"""
 
 import testing_config  # isort: split
 
@@ -272,7 +274,8 @@ class ExternalReviewsAPITest(testing_config.CustomTestCase):
 
     def test_omit_non_review_links(self):
         """Vendor positions of 'shipping', 'in development', and 'na' shouldn't
-        be returned, even if they link to a standards-positions repository."""  # noqa: D205
+        be returned, even if they link to a standards-positions repository.
+        """  # noqa: D205
         webkit = 'https://github.com/WebKit/standards-positions/issues/3'
         fe = make_feature('Feature one', STAGE_BLINK_PROTOTYPE, webkit=webkit)
         result = self.handler.do_get(review_group='webkit')
@@ -284,8 +287,10 @@ class ExternalReviewsAPITest(testing_config.CustomTestCase):
             self.assertEqual(0, len(result['reviews']))
 
     def test_omit_review_links_to_non_review_repo(self):
-        """Links that aren't to the reviewer's positions repository shouldn't be
-        returned."""
+        """Links that aren't to the reviewer's positions repository.
+
+        Shouldn't be returned.
+        """
         webkit = 'https://github.com/WebKit/standards-positions/issues/3'
         fe = make_feature('Feature one', STAGE_BLINK_PROTOTYPE, webkit=webkit)
         result = self.handler.do_get(review_group='webkit')
@@ -363,8 +368,9 @@ class ExternalReviewsAPITest(testing_config.CustomTestCase):
         """
         name = fe['name']
         patch_update: dict[str, object] = dict(fe)
-        # Only set the minimum set of fields in the initial POST. The FeaturesAPI expects to handle
-        # most updates in the later PATCH call.
+        # Only set the minimum set of fields in the initial POST.
+        # The FeaturesAPI expects to handle most updates in the later PATCH
+        # call.
         initial_fields = dict(
             blink_components=patch_update.pop('blink_components', 'Blink'),
             category=patch_update.pop('category', MISC),
@@ -392,8 +398,8 @@ class ExternalReviewsAPITest(testing_config.CustomTestCase):
         self.assertIsNotNone(new_feature)
         feature_id = new_feature.key.id()
 
-        # Now that the feature and its stages are created, update the rest of the fields, and the active
-        # stage, using a PATCH.
+        # Now that the feature and its stages are created, update the rest of
+        # the fields, and the active stage, using a PATCH.
         active_stage = Stage.query(
             Stage.feature_id == feature_id,
             Stage.stage_type == active_stage_type,
@@ -607,8 +613,9 @@ class ExternalReviewsAPITest(testing_config.CustomTestCase):
         result = self.handler.do_get(review_group='gecko')
 
         # This test expectation is saved to a JSON file so the
-        # Playwright tests can use it as a mock API response. Because the real feature IDs are
-        # dynamically generated, we have to slot them into the right places here.
+        # Playwright tests can use it as a mock API response. Because the real
+        # feature IDs are dynamically generated, we have to slot them into the
+        # right places here.
         with open(
             os.path.join(
                 os.path.dirname(__file__),

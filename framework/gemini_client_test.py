@@ -43,7 +43,8 @@ class GeminiClientTest(testing_config.CustomTestCase):
             'framework.gemini_client.genai.Client'
         ).start()
 
-        # This is the mock *instance* that will be created and assigned to self.client
+        # This is the mock *instance* that will be created and assigned to
+        # self.client
         self.mock_client_instance = mock.MagicMock()
         self.mock_genai_client_class.return_value = self.mock_client_instance
 
@@ -120,7 +121,8 @@ class GeminiClientTest(testing_config.CustomTestCase):
 
         # Verify logging
         self.mock_logging.error.assert_called_once_with(
-            f'An unexpected error occurred during client initialization: {init_error}'
+            'An unexpected error occurred during client '
+            f'initialization: {init_error}'
         )
 
     def test_prompt_exceeds_input_token_limit(self):
@@ -136,7 +138,8 @@ class GeminiClientTest(testing_config.CustomTestCase):
             mock_count_response
         )
 
-        # Configure the mock response for client.models.get (to fetch model info)
+        # Configure the mock response for client.models.get (to fetch model
+        # info)
         mock_model_info = mock.MagicMock()
         mock_model_info.input_token_limit = token_limit
         self.mock_client_instance.models.get.return_value = mock_model_info
@@ -158,8 +161,10 @@ class GeminiClientTest(testing_config.CustomTestCase):
         )
 
     def test_get_response__success(self):
-        """The client returns a valid text response with correct timeout
-        config."""
+        """The client returns a valid text response with correct timeout.
+
+        config.
+        """
         prompt = 'Hello Gemini'
         expected_response = 'Hello there!'
 
@@ -248,7 +253,8 @@ class GeminiClientTest(testing_config.CustomTestCase):
 
         client = gemini_client.GeminiClient()
 
-        # Call the method, expecting it to raise the *final* RuntimeError after retries.
+        # Call the method, expecting it to raise the *final* RuntimeError
+        # after retries.
         with self.assertRaisesRegex(
             RuntimeError, 'No text response received from the API.'
         ):
@@ -273,7 +279,8 @@ class GeminiClientTest(testing_config.CustomTestCase):
 
         client = gemini_client.GeminiClient()
 
-        # The utils.retry decorator allows the underlying exception to bubble up.
+        # The utils.retry decorator allows the underlying exception to bubble
+        # up.
         with self.assertRaisesRegex(Exception, 'API rate limit exceeded'):
             client.get_response(prompt)
 
@@ -324,18 +331,23 @@ class GeminiClientTest(testing_config.CustomTestCase):
         mock_internal_client.close.assert_called_once()
 
     def test_get_response_async__success(self):
-        """Test that get_response_async correctly wraps the synchronous
-        method."""
+        """Test that get_response_async correctly wraps the synchronous.
+
+        method.
+        """
         client = gemini_client.GeminiClient()
         expected_response = 'Async response'
         prompt = 'Async prompt'
 
-        # We mock the synchronous get_response method to verify the async wrapper
-        # calls it correctly without actually hitting the API or spawning threads.
+        # We mock the synchronous get_response method to verify the async
+        # wrapper
+        # calls it correctly without actually hitting the API or spawning
+        # threads.
         with mock.patch.object(
             client, 'get_response', return_value=expected_response
         ) as mock_sync_get:
-            # Use asyncio.run to execute the coroutine in a synchronous test method
+            # Use asyncio.run to execute the coroutine in a synchronous test
+            # method
             result = asyncio.run(client.get_response_async(prompt))
 
             self.assertEqual(result, expected_response)
@@ -357,7 +369,8 @@ class GeminiClientTest(testing_config.CustomTestCase):
             return 'Should not be reached'
 
         try:
-            # Patch asyncio.to_thread specifically within the gemini_client module
+            # Patch asyncio.to_thread specifically within the gemini_client
+            # module
             with mock.patch(
                 'framework.gemini_client.asyncio.to_thread',
                 side_effect=mock_slow_to_thread,
@@ -375,8 +388,10 @@ class GeminiClientTest(testing_config.CustomTestCase):
             gemini_client.GeminiClient.ASYNC_TIMEOUT_SECONDS = original_timeout
 
     def test_get_response_async__propagates_exception(self):
-        """Test that exceptions from the synchronous method propagate
-        asynchronously."""
+        """Test that exceptions from the synchronous method propagate.
+
+        asynchronously.
+        """
         client = gemini_client.GeminiClient()
         error_msg = 'Sync failure'
 
@@ -387,8 +402,10 @@ class GeminiClientTest(testing_config.CustomTestCase):
                 asyncio.run(client.get_response_async('fail'))
 
     def test_get_batch_responses_async__success(self):
-        """Test that batch processing correctly gathers multiple async
-        results."""
+        """Test that batch processing correctly gathers multiple async.
+
+        results.
+        """
         client = gemini_client.GeminiClient()
         prompts = ['p1', 'p2', 'p3']
 
@@ -419,8 +436,10 @@ class GeminiClientTest(testing_config.CustomTestCase):
             )
 
     def test_get_batch_responses_async__mixed_results(self):
-        """Test that batch processing handles mixed success and failure
-        (return_exceptions=True)."""
+        """Test that batch processing handles mixed success and failure.
+
+        (return_exceptions=True).
+        """
         client = gemini_client.GeminiClient()
         prompts = ['success1', 'fail', 'success2']
         error_msg = 'Task failed'

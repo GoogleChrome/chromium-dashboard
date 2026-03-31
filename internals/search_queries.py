@@ -44,8 +44,10 @@ class Interval(Generic[T]):
 def validate_values(
     field: ndb.Property, val_list: list[QueryValue | Interval[QueryValue]]
 ):
-    """Checks that all of the values in val_list can be compared to the field's
-    values."""
+    """Checks that all of the values in val_list can be compared to the field's.
+
+    values.
+    """
     for val in val_list:
         try:
             # If the field can be set to val, then it can be compared to val.
@@ -64,8 +66,10 @@ def build_filter(
     operator: str,
     val_list: list[QueryValue | Interval[QueryValue]],
 ) -> ndb.Node:
-    """Returns an NDB filter node representing the operator applied to the field
-    and val_list."""
+    """Returns an NDB filter node for the operator applied to the field.
+
+    and val_list.
+    """
     validate_values(field, val_list)
 
     if len(val_list) > 1:
@@ -108,8 +112,10 @@ def single_field_query_async(
     val_list: list[QueryValue | Interval[QueryValue]],
     limit: int | None = None,
 ) -> list[int] | Future:
-    """Create a query for one FeatureEntry field and run it, returning a
-    promise."""
+    """Create a query for one FeatureEntry field and run it, returning a.
+
+    promise.
+    """
     if not val_list or val_list == ['']:
         logging.warning('No values were provided when searching %r', field_name)
         return []
@@ -125,7 +131,8 @@ def single_field_query_async(
         query = FeatureEntry.query()
         field = QUERIABLE_FIELDS[field_name]
         if core_enums.is_enum_field(field_name):
-            # Intervals of enums aren't supported for now because the integer values
+            # Intervals of enums aren't supported for now because the integer
+            # values
             # aren't in a logical order.
             enum_val_list = []
             for val in val_list:
@@ -430,8 +437,10 @@ def query_any_start_milestone(
     val_list: list[QueryValue | Interval[QueryValue]],
     limit: int | None = None,
 ) -> Future:
-    """Finds features shipping at any stage to any platform in milestones
-    matching the val_list."""
+    """Finds features shipping at any stage to any platform in milestones.
+
+    matching the val_list.
+    """
     disjunction = []
     for field_name in [
         'browsers.chrome.android',

@@ -25,3 +25,8 @@ ignore = [
 
 [tool.ruff.lint.pydocstyle]
 convention = "google"
+
+[[tool.mypy.overrides]]
+module = "google.*"
+follow_imports = "skip"
+ignore_errors = true

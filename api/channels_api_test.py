@@ -11,8 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Tests for the channels_api module, verifying Chrome release channel data
-retrieval."""
+"""Tests for the channels_api module.
+
+Verifying Chrome release channel data retrieval.
+"""
 
 from unittest import mock
 

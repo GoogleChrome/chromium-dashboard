@@ -11,8 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""API endpoints for interacting with and managing origin trials and their
-extensions."""
+"""API endpoints for interacting.
+
+With and managing origin trials and their extensions.
+"""
 
 import concurrent.futures
 import re
@@ -341,7 +343,8 @@ class OriginTrialsAPI(basehandlers.EntitiesAPIHandler):
             self.abort(
                 500, f'Error obtaining Chromium file for validation: {str(exc)}'
             )
-        # Chromium file checks can be bypassed, but only in non-prod environments.
+        # Chromium file checks can be bypassed, but only in non-prod
+        # environments.
         if (
             settings.PROD
             or not body['ot_creation__bypass_file_checks']
@@ -370,8 +373,10 @@ class OriginTrialsAPI(basehandlers.EntitiesAPIHandler):
     def _validate_extension_args(
         self, feature_id: int, ot_stage: Stage, extension_stage: Stage
     ) -> None:
-        """Abort if any arguments used for origin trial extension are
-        invalid."""
+        """Abort if any arguments used for origin trial extension are.
+
+        Invalid.
+        """
         # The stage should belong to the feature.
         if feature_id != extension_stage.feature_id:
             self.abort(

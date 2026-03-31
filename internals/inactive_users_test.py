@@ -11,8 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Tests for the inactive_users module, verifying the cron handler correctly
-removes inactive accounts."""
+"""Tests for the inactive_users module, verifying the cron handler correctly.
+
+removes inactive accounts.
+"""
 
 from datetime import datetime
 
@@ -43,7 +45,8 @@ class RemoveInactiveUsersHandlerTest(testing_config.CustomTestCase):
         inactive_user.put()
 
         # User who has recently been given access by an admin,
-        # but has not yet visited the site. They should not be considered inactive.
+        # but has not yet visited the site. They should not be considered
+        # inactive.
         newly_created_user = AppUser(
             created=datetime(2023, 8, 1),
             email='new_user@example.com',

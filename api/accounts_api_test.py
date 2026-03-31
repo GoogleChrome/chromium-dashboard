@@ -12,8 +12,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Tests for the accounts_api module, verifying account creation and permission
-handling."""
+"""Tests for the accounts_api module.
+
+Verifying account creation and permission handling.
+"""
 
 import flask
 import werkzeug.exceptions  # Flask HTTP stuff.

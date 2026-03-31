@@ -54,7 +54,8 @@ class OriginTrialsRequestsTest(testing_config.CustomTestCase):
         )
         self.ready_for_creation_stage.put()
 
-        # 3. An extension stage request needs an original OT stage and a valid Gate.
+        # 3. An extension stage request needs an original OT stage and a valid
+        # Gate.
         self.ot_stage_for_extension = Stage(
             feature_id=self.feature_id, stage_type=150
         )
@@ -185,8 +186,10 @@ class OriginTrialsRequestsTest(testing_config.CustomTestCase):
     def test_get_template_data__extension_with_bad_ot_stage_id(
         self, mock_logging_warning
     ):
-        """An extension stage with a bad ot_stage_id is skipped and logs a
-        warning."""
+        """Handles bad ot_stage_id.
+
+        An extension stage with a bad ot_stage_id is skipped and logs a warning.
+        """
         # Set the ot_stage_id to a non-existent ID
         self.extension_stage.ot_stage_id = 99999
         self.extension_stage.put()

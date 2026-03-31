@@ -27,7 +27,8 @@ from internals import user_models
 
 class SettingsAPI(basehandlers.APIHandler):
     """Users can store their settings preferences such as whether to get
-    notification from the features they starred."""  # noqa: D205
+    notification from the features they starred.
+    """  # noqa: D205
 
     def do_post(self, **kwargs):
         """Set the user settings (currently only the notify_as_starrer)"""  # noqa: D415
@@ -39,7 +40,8 @@ class SettingsAPI(basehandlers.APIHandler):
 
         if not isinstance(new_notify, bool):
             raise werkzeug.exceptions.BadRequest(
-                f"Expected boolean for 'notify', got {type(new_notify).__name__}"
+                f"Expected boolean for 'notify', got "
+                f'{type(new_notify).__name__}'
             )
 
         settings_request = PostSettingsRequest.from_dict(raw_data)

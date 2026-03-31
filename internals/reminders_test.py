@@ -11,8 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Tests for the reminders module, verifying reminder email generation and
-filtering logic."""
+"""Tests for the reminders module, verifying reminder email generation and.
+
+filtering logic.
+"""
 
 from datetime import datetime
 from unittest import mock
@@ -179,7 +181,8 @@ class FunctionTest(testing_config.CustomTestCase):
 
     def test_choose_email_recipients__owners_bounced(self):
         """Normal reminders go to feature participants when owners' emails are
-        bounced."""  # noqa: D205
+        bounced.
+        """  # noqa: D205
         self.owner_user_pref.bounced = True
         self.owner_user_pref.put()
 
@@ -229,7 +232,8 @@ class FunctionTest(testing_config.CustomTestCase):
         self,
     ):
         """Normal accuracy emails go to feature participants when owners' emails
-        are bounced."""  # noqa: D205
+        are bounced.
+        """  # noqa: D205
         self.owner_user_pref.bounced = True
         self.owner_user_pref.put()
 
@@ -266,7 +270,8 @@ class FunctionTest(testing_config.CustomTestCase):
             handler = reminders.FeatureAccuracyHandler()
             actual = reminders.build_email_tasks(
                 [(self.feature_template, 100)],
-                '[Action Required] Verify important information about your shipping feature  (%s)',
+                '[Action Required] Verify important information about '
+                'your shipping feature  (%s)',
                 handler.EMAIL_TEMPLATE_PATH,
                 self.current_milestone_info,
                 handler.should_escalate_notification,
@@ -277,11 +282,14 @@ class FunctionTest(testing_config.CustomTestCase):
         task = actual[0]
         self.assertEqual('feature_owner@example.com', task['to'])
         self.assertEqual(
-            '[Action Required] Verify important information about your shipping feature  (feature one)',
+            '[Action Required] Verify important information about '
+            'your shipping feature  (feature one)',
             task['subject'],
         )
         self.assertEqual(None, task['reply_to'])
-        # TESTDATA.make_golden(task['html'], 'test_build_email_tasks_feature_accuracy.html')
+        # TESTDATA.make_golden(
+        #     task['html'], 'test_build_email_tasks_feature_accuracy.html'
+        # )
         self.assertMultiLineEqual(
             TESTDATA['test_build_email_tasks_feature_accuracy.html'],
             task['html'],
@@ -293,7 +301,8 @@ class FunctionTest(testing_config.CustomTestCase):
             handler = reminders.FeatureAccuracyHandler()
             actual = reminders.build_email_tasks(
                 [(self.feature_template, 110)],
-                '[Action Required] Verify important information about your shipping feature (%s)',
+                '[Action Required] Verify important information about '
+                'your shipping feature (%s)',
                 handler.EMAIL_TEMPLATE_PATH,
                 self.current_milestone_info,
                 handler.should_escalate_notification,
@@ -304,11 +313,15 @@ class FunctionTest(testing_config.CustomTestCase):
         task = actual[0]
         self.assertEqual('feature_owner@example.com', task['to'])
         self.assertEqual(
-            '[Action Required] Verify important information about your shipping feature (feature one)',
+            '[Action Required] Verify important information about '
+            'your shipping feature (feature one)',
             task['subject'],
         )
         self.assertEqual(None, task['reply_to'])
-        # TESTDATA.make_golden(task['html'], 'test_build_email_tasks_feature_accuracy_enterprise.html')
+        # TESTDATA.make_golden(
+        #     task['html'],
+        #     'test_build_email_tasks_feature_accuracy_enterprise.html'
+        # )
         self.assertMultiLineEqual(
             TESTDATA['test_build_email_tasks_feature_accuracy_enterprise.html'],
             task['html'],
@@ -323,7 +336,8 @@ class FunctionTest(testing_config.CustomTestCase):
             handler = reminders.FeatureAccuracyHandler()
             actual = reminders.build_email_tasks(
                 [(self.feature_template, 100)],
-                '[Action Required] Verify important information about your shipping feature (%s)',
+                '[Action Required] Verify important information about '
+                'your shipping feature (%s)',
                 handler.EMAIL_TEMPLATE_PATH,
                 self.current_milestone_info,
                 handler.should_escalate_notification,
@@ -333,11 +347,15 @@ class FunctionTest(testing_config.CustomTestCase):
         self.assertEqual(2, len(actual))
         task = actual[0]
         self.assertEqual(
-            'ESCALATED: [Action Required] Verify important information about your shipping feature (feature one)',
+            'ESCALATED: [Action Required] Verify important information '
+            'about your shipping feature (feature one)',
             task['subject'],
         )
         self.assertEqual(None, task['reply_to'])
-        # TESTDATA.make_golden(task['html'], 'test_build_email_tasks_escalated_feature_accuracy.html')
+        # TESTDATA.make_golden(
+        #     task['html'],
+        #     'test_build_email_tasks_escalated_feature_accuracy.html'
+        # )
         self.assertMultiLineEqual(
             TESTDATA['test_build_email_tasks_escalated_feature_accuracy.html'],
             task['html'],
@@ -349,7 +367,8 @@ class FunctionTest(testing_config.CustomTestCase):
             handler = reminders.PrepublicationHandler()
             actual = reminders.build_email_tasks(
                 [(self.feature_template, 100)],
-                '[Action Required] Verify important information about your shipping feature (%s)',
+                '[Action Required] Verify important information about '
+                'your shipping feature (%s)',
                 handler.EMAIL_TEMPLATE_PATH,
                 self.current_milestone_info,
                 handler.should_escalate_notification,
@@ -359,11 +378,14 @@ class FunctionTest(testing_config.CustomTestCase):
         task = actual[0]
         self.assertEqual('feature_owner@example.com', task['to'])
         self.assertEqual(
-            '[Action Required] Verify important information about your shipping feature (feature one)',
+            '[Action Required] Verify important information about '
+            'your shipping feature (feature one)',
             task['subject'],
         )
         self.assertEqual(None, task['reply_to'])
-        # TESTDATA.make_golden(task['html'], 'test_build_email_tasks_prepublication.html')
+        # TESTDATA.make_golden(
+        #     task['html'], 'test_build_email_tasks_prepublication.html'
+        # )
         self.assertMultiLineEqual(
             TESTDATA['test_build_email_tasks_prepublication.html'], task['html']
         )
@@ -846,7 +868,9 @@ class SLOOverdueHandlerTest(testing_config.CustomTestCase):
         self.assertEqual('b_assignee@example.com', task['to'])
         self.assertEqual('Review due for: feature one', task['subject'])
         self.assertEqual(None, task['reply_to'])
-        # TESTDATA.make_golden(task['html'], 'test_build_gate_email_tasks__initial_due.html')
+        # TESTDATA.make_golden(
+        #     task['html'], 'test_build_gate_email_tasks__initial_due.html'
+        # )
         self.assertEqual(
             TESTDATA['test_build_gate_email_tasks__initial_due.html'],
             task['html'],
@@ -890,7 +914,9 @@ class SLOOverdueHandlerTest(testing_config.CustomTestCase):
             'ESCALATED: Review due for: feature one', task['subject']
         )
         self.assertEqual(None, task['reply_to'])
-        # TESTDATA.make_golden(task['html'], 'test_build_gate_email_tasks__initial_overdue.html')
+        # TESTDATA.make_golden(
+        #     task['html'], 'test_build_gate_email_tasks__initial_overdue.html'
+        # )
         self.assertEqual(
             TESTDATA['test_build_gate_email_tasks__initial_overdue.html'],
             task['html'],
@@ -915,7 +941,9 @@ class SLOOverdueHandlerTest(testing_config.CustomTestCase):
         self.assertEqual('b_assignee@example.com', task['to'])
         self.assertEqual('Review due for: feature one', task['subject'])
         self.assertEqual(None, task['reply_to'])
-        # TESTDATA.make_golden(task['html'], 'test_build_gate_email_tasks__resolution_due.html')
+        # TESTDATA.make_golden(
+        #     task['html'], 'test_build_gate_email_tasks__resolution_due.html'
+        # )
         self.assertEqual(
             TESTDATA['test_build_gate_email_tasks__resolution_due.html'],
             task['html'],
@@ -942,7 +970,10 @@ class SLOOverdueHandlerTest(testing_config.CustomTestCase):
             'ESCALATED: Review due for: feature one', task['subject']
         )
         self.assertEqual(None, task['reply_to'])
-        # TESTDATA.make_golden(task['html'], 'test_build_gate_email_tasks__resolution_overdue.html')
+        # TESTDATA.make_golden(
+        #     task['html'],
+        #     'test_build_gate_email_tasks__resolution_overdue.html'
+        # )
         self.assertEqual(
             TESTDATA['test_build_gate_email_tasks__resolution_overdue.html'],
             task['html'],

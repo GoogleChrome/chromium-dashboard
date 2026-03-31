@@ -23,7 +23,8 @@ from google.cloud import ndb  # type: ignore
 os.environ['SERVER_SOFTWARE'] = 'test ' + os.environ.get('SERVER_SOFTWARE', '')
 os.environ['CURRENT_VERSION_ID'] = 'test.123'
 os.environ['APPLICATION_ID'] = 'testing'
-# Envs for datastore-emulator, same as running `gcloud beta emulators datastore env-init`.
+# Envs for datastore-emulator, same as running
+# `gcloud beta emulators datastore env-init`.
 os.environ['DATASTORE_DATASET'] = 'cr-status-staging'
 os.environ.setdefault('DATASTORE_EMULATOR_HOST', 'localhost:15606')
 os.environ.setdefault(
@@ -41,7 +42,8 @@ class FakeCloudTasksClient(object):
 
     def queue_path(self, project, location, queue):
         """Return a fully-qualified queue string."""
-        # This is value is not actually used, but it might be good for debugging.
+        # This is value is not actually used, but it might be good for
+        # debugging.
         return 'projects/{project}/locations/{location}/queues/{queue}'.format(
             project=project, location=location, queue=queue
         )
@@ -97,7 +99,7 @@ def sign_in(user_email, user_id):
 
 class CustomTestCase(unittest.TestCase):
     def run(self, result=None):
-        """Runs the test case, managing the context for NDB and clearing caches."""
+        """Runs test case, managing context for NDB and clearing caches."""
         from framework import rediscache
 
         if rediscache.redis_client:

@@ -118,8 +118,10 @@ class FeatureCreateTest(testing_config.CustomTestCase):
     def test_post__feature_impact_missing_first_notice(
         self, mock_channel_details
     ):
-        """Create a feature, first_enterprise_notification_milestone not
-        added."""
+        """Create a feature.
+
+        first_enterprise_notification_milestone not added.
+        """
         stable_date = self.now.replace(year=self.now.year + 1, day=1).strftime(
             DATE_FORMAT
         )
@@ -161,8 +163,10 @@ class FeatureCreateTest(testing_config.CustomTestCase):
     def test_post__enterprise_impact_missing_first_notice(
         self, mock_channel_details
     ):
-        """Create a feature, first_enterprise_notification_milestone not
-        added."""
+        """Create a feature.
+
+        first_enterprise_notification_milestone is not added.
+        """
         stable_date = self.now.replace(year=self.now.year + 1, day=1).strftime(
             DATE_FORMAT
         )
@@ -204,8 +208,10 @@ class FeatureCreateTest(testing_config.CustomTestCase):
     def test_post__enterprise_impact_with_first_notice(
         self, mock_specified_milestones
     ):
-        """Create a feature, first_enterprise_notification_milestone set to
-        provided value."""
+        """Create a feature.
+
+        first_enterprise_notification_milestone set to provided value.
+        """
         mock_specified_milestones.return_value = {
             99: {
                 'version': 99,
@@ -261,8 +267,10 @@ class FeatureCreateTest(testing_config.CustomTestCase):
     def test_post__enterprise_impact_with_old_first_notice(
         self, mock_specified_milestones, mock_channel_details
     ):
-        """Create a feature, first_enterprise_notification_milestone set to
-        default newer value."""
+        """Create a feature.
+
+        first_enterprise_notification_milestone set to default newer value.
+        """
         mock_specified_milestones.return_value = {
             99: {
                 'version': 99,
@@ -324,8 +332,10 @@ class FeatureCreateTest(testing_config.CustomTestCase):
 
     @mock.patch('api.channels_api.construct_chrome_channels_details')
     def test_post__enterprise_missing_first_notice(self, mock_channel_details):
-        """Create a feature, first_enterprise_notification_milestone set to
-        default value."""
+        """Create a feature.
+
+        first_enterprise_notification_milestone set to default value.
+        """
         self.handler = guide.EnterpriseFeatureCreateHandler()
         stable_date = self.now.replace(year=self.now.year + 1, day=2).strftime(
             DATE_FORMAT
@@ -367,8 +377,10 @@ class FeatureCreateTest(testing_config.CustomTestCase):
     def test_post__enterprise_with_first_notice(
         self, mock_specified_milestones
     ):
-        """Create a feature, first_enterprise_notification_milestone set to
-        provided value."""
+        """Create a feature.
+
+        first_enterprise_notification_milestone set to provided value.
+        """
         self.handler = guide.EnterpriseFeatureCreateHandler()
         mock_specified_milestones.return_value = {
             99: {
@@ -424,8 +436,10 @@ class FeatureCreateTest(testing_config.CustomTestCase):
     def test_post__enterprise_with_old_first_notice(
         self, mock_specified_milestones, mock_channel_details
     ):
-        """Create a feature, first_enterprise_notification_milestone set to
-        default newer value."""
+        """Create a feature.
+
+        first_enterprise_notification_milestone set to default newer value.
+        """
         self.handler = guide.EnterpriseFeatureCreateHandler()
         mock_specified_milestones.return_value = {
             99: {

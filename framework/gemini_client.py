@@ -66,7 +66,8 @@ class GeminiClient:
             self.client = genai.Client(api_key=api_key)
         except Exception as e:
             logging.error(
-                f'An unexpected error occurred during client initialization: {e}'
+                'An unexpected error occurred during client '
+                f'initialization: {e}'
             )
             raise RuntimeError(f'Could not initialize API client: {e}') from e
 
@@ -134,7 +135,8 @@ class GeminiClient:
             raise RuntimeError('No text response received from the API.')
 
         # Check for the specific failure sentinel in the response.
-        # Using lstrip().upper() for robustness against minor formatting variations.
+        # Using lstrip().upper() for robustness against minor formatting
+        # variations.
         if response.text.lstrip().upper().startswith('RESPONSE FAILED'):
             # Log the specific failure reason returned by the model
             logging.warning(f'Model returned failure sentinel: {response.text}')
@@ -168,10 +170,12 @@ class GeminiClient:
             )
         except asyncio.TimeoutError:
             logging.error(
-                f'Gemini request timed out after {GeminiClient.ASYNC_TIMEOUT_SECONDS} seconds.'
+                f'Gemini request timed out after '
+                f'{GeminiClient.ASYNC_TIMEOUT_SECONDS} seconds.'
             )
             raise TimeoutError(
-                f'Gemini request timed out after {GeminiClient.ASYNC_TIMEOUT_SECONDS}s'
+                f'Gemini request timed out after '
+                f'{GeminiClient.ASYNC_TIMEOUT_SECONDS}s'
             )
 
     async def get_batch_responses_async(
@@ -195,7 +199,8 @@ class GeminiClient:
         ]
 
         # asyncio.gather runs them concurrently.
-        # return_exceptions=True ensures one failure doesn't crash the entire batch.
+        # return_exceptions=True ensures one failure doesn't crash the entire
+        # batch.
         results = await asyncio.gather(*tasks, return_exceptions=True)
 
         logging.info(f'Batch processing complete for {len(prompts)} prompts.')

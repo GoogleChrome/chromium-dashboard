@@ -63,7 +63,8 @@ class TimelineHandler(basehandlers.FlaskHandler):
         query = query.filter(self.MODEL_CLASS.bucket_id == bucket_id)
         # The switch to new UMA data changed the semantics of the CSS animated
         # properties. Since showing the historical data alongside the new data
-        # does not make sense, filter out everything before the 2017-10-26 switch.
+        # does not make sense, filter out everything before the 2017-10-26
+        # switch.
         # See https://github.com/GoogleChrome/chromium-dashboard/issues/414
         if self.MODEL_CLASS == metrics_models.AnimatedProperty:
             query = query.filter(
@@ -88,7 +89,8 @@ class TimelineHandler(basehandlers.FlaskHandler):
             datapoints = query.fetch(None)  # All matching results.
 
             # Remove outliers if percentage is not between 0-1.
-            # datapoints = filter(lambda x: 0 <= x.day_percentage <= 1, datapoints)
+            # datapoints = filter(
+            #     lambda x: 0 <= x.day_percentage <= 1, datapoints)
             rediscache.set(cache_key, datapoints, time=CACHE_AGE)
 
         return _datapoints_to_json_dicts(datapoints)

@@ -222,8 +222,10 @@ class OriginTrialsClientTest(testing_config.CustomTestCase):
         mock_get_ot_access_token,
         mock_get_admin_group,
     ):
-        """If an API key is available, POST should create trial and return
-        true."""
+        """If an API key is available, POST should create trial and return.
+
+        true.
+        """
         mock_requests_post.return_value = mock.MagicMock(
             status_code=200, json=lambda: ({'trial': {'id': -1234567890}})
         )

@@ -40,7 +40,8 @@ class WebdxFeatureAPI(basehandlers.APIHandler):
 
     def do_get(self, **kwargs):
         """Returns an ordered dict with the following structure, {Webdx feature
-        name: [Webdx feature name, usecounter enum], ...}"""  # noqa: D205, D415
+        name: [Webdx feature name, usecounter enum], ...}
+        """  # noqa: D205, D415
         webdx_features_mapping = sorted(
             WebDXFeatureObserver.get_all().items(), key=lambda item: item
         )
@@ -49,7 +50,8 @@ class WebdxFeatureAPI(basehandlers.APIHandler):
             return {}
 
         web_features_dict = OrderedDict()
-        # The first key, value pair is the id when features are missing from the list.
+        # The first key, value pair is the id when features are missing from
+        # the list.
         web_features_dict[WebDXFeatureObserver.MISSING_FEATURE_ID] = [
             WebDXFeatureObserver.MISSING_FEATURE_ID,
             WebDXFeatureObserver.MISSING_FEATURE_ID,

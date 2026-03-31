@@ -13,7 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Cron handlers for background maintenance tasks like updating gate statuses
-and backfilling entities."""
+and backfilling entities.
+"""
 
 import collections
 import csv
@@ -210,7 +211,10 @@ class BackfillStageCreated(FlaskHandler):
                 batch = []
 
         ndb.put_multi(batch)
-        return f'{count} Stages entities updated of {stages.count()} available stages.'
+        return (
+            f'{count} Stages entities updated of '
+            f'{stages.count()} available stages.'
+        )
 
 
 class BackfillFeatureLinks(FlaskHandler):
@@ -219,7 +223,10 @@ class BackfillFeatureLinks(FlaskHandler):
         self.require_cron_header()
         all_feature_entries = FeatureEntry.query().fetch()
         count = batch_index_feature_entries(all_feature_entries, True)
-        return f'{len(all_feature_entries)} FeatureEntry entities backfilled of {count} feature links.'
+        return (
+            f'{len(all_feature_entries)} FeatureEntry entities backfilled '
+            f'of {count} feature links.'
+        )
 
 
 class AssociateOTs(FlaskHandler):
@@ -275,7 +282,8 @@ class AssociateOTs(FlaskHandler):
         self, trial_stage: Stage, trial_data: dict[str, Any]
     ) -> bool:
         """Check if any OT stage fields are unfilled and populate them with the
-        matching trial data."""
+        matching trial data.
+        """
         stage_changed = False
         stage_changed = (
             self.write_field(trial_stage, trial_data, 'origin_trial_id', 'id')
@@ -439,7 +447,8 @@ class AssociateOTs(FlaskHandler):
             return 0
         extension_stages_to_update = []
         for extension_stage in extension_stages:
-            # skip the stage if it doesn't have an end milestone explicitly defined.
+            # skip the stage if it doesn't have an end milestone explicitly
+            # defined.
             if (
                 extension_stage.milestones is None
                 or not extension_stage.milestones.desktop_last
@@ -515,7 +524,8 @@ class AssociateOTs(FlaskHandler):
                 unique_entities_to_write.add(ot_stage_id)
                 entities_to_write.append(ot_stage)
 
-        # List any origin trials that did not get associated with a feature entry.
+        # List any origin trials that did not get associated with a feature
+        # entry.
         if len(trials_with_no_feature) > 0:
             logging.info('Trials not associated with a ChromeStatus feature:')
         else:
@@ -554,7 +564,8 @@ class BackfillFeatureEnterpriseImpact(FlaskHandler):
             features_by_id[stage.feature_id] = FeatureEntry.get_by_id(
                 stage.feature_id
             )
-        # Update enterprise_impact to be the highest impact set on any of the rollout steps.
+        # Update enterprise_impact to be the highest impact set on any of the
+        # rollout steps.
         for stage in stages:
             feature_entry = features_by_id[stage.feature_id]
             if feature_entry is None:
@@ -565,7 +576,8 @@ class BackfillFeatureEnterpriseImpact(FlaskHandler):
             feature_entry.enterprise_impact = new_impact
             updated_feature_ids.add(stage.feature_id)
 
-        # Set all enterprise features and former breaking changes to have a low impact if no rollout step was step.
+        # Set all enterprise features and former breaking changes to have a low
+        # impact if no rollout step was step.
         features: ndb.Query = FeatureEntry.query(
             FeatureEntry.enterprise_impact == ENTERPRISE_IMPACT_NONE,
             ndb.OR(
@@ -592,7 +604,10 @@ class BackfillFeatureEnterpriseImpact(FlaskHandler):
 
         ndb.put_multi(batch)
 
-        return f'{count} Feature entities updated of {len(features_by_id)} available features.'
+        return (
+            f'{count} Feature entities updated of '
+            f'{len(features_by_id)} available features.'
+        )
 
 
 class CreateOriginTrials(FlaskHandler):
@@ -608,7 +623,8 @@ class CreateOriginTrials(FlaskHandler):
 
     def handle_creation(self, stage: Stage) -> bool:
         """Send a flagged creation request for processing to the Origin Trials
-        API."""
+        API.
+        """
         origin_trial_id, error_text = origin_trials_client.create_origin_trial(
             stage
         )
@@ -703,7 +719,8 @@ class ActivateOriginTrials(FlaskHandler):
 
     def get_template_data(self, **kwargs) -> str:
         """Check for origin trials that are scheduled for activation and
-        activate them."""
+        activate them.
+        """
         self.require_cron_header()
         if not settings.AUTOMATED_OT_CREATION:
             return 'Automated OT creation process is not active.'
@@ -719,8 +736,8 @@ class ActivateOriginTrials(FlaskHandler):
             # Only process stages with a delayed activation date set.
             if stage.ot_activation_date is None:
                 continue
-            # A stage with an activation date but no origin trial ID shouldn't be
-            # possible.
+            # A stage with an activation date but no origin trial ID
+            # shouldn't be possible.
             if stage.origin_trial_id is None:
                 logging.exception(
                     'Stage has a set activation date with no set origin '
@@ -788,7 +805,8 @@ class DeleteEmptyExtensionStages(FlaskHandler):
             ):
                 counter += 1
                 keys_to_delete.append(es.key)
-                # Query for the gate associated with the extension and delete that too.
+                # Query for the gate associated with the extension and delete
+                # that too.
                 gate = Gate.query(Gate.stage_id == es.key.integer_id()).get()
                 if gate:
                     keys_to_delete.append(gate.key)
@@ -860,18 +878,23 @@ class BackfillActivityLogType(FlaskHandler):
         BATCH_SIZE = 100
 
         for activity in Activity.query(Activity.log_type == None):  # noqa: E711
-            # 1. If the content field is null, the log_type field should be USER_CHANGE.
+            # 1. If the content field is null, the log_type field should be
+            # USER_CHANGE.
             if not activity.content:
                 activity.log_type = Activity.USER_CHANGE
-            # 2. If the content field is not null and the string starts with "Shipping/Rollout milestones were unset", the log_type field should be MILESTONE_RESET.
+            # 2. If the content field is not null and the string starts with
+            # "Shipping/Rollout milestones were unset", the log_type field
+            # should be MILESTONE_RESET.
             elif activity.content.startswith(
                 'Shipping/Rollout milestones were unset'
             ):
                 activity.log_type = Activity.MILESTONE_RESET
-            # 3. If the content field is not null and the amendments field is not empty, the log_type field should be SYSTEM_CHANGE.
+            # 3. If the content field is not null and the amendments field is
+            # not empty, the log_type field should be SYSTEM_CHANGE.
             elif activity.content and activity.amendments:
                 activity.log_type = Activity.SYSTEM_CHANGE
-            # 4. If the content field is not null and the amendments field is empty, the log_type field should be USER_COMMENT.
+            # 4. If the content field is not null and the amendments field is
+            # empty, the log_type field should be USER_COMMENT.
             elif activity.content and not activity.amendments:
                 activity.log_type = Activity.USER_COMMENT
             # 5. The fallback type should be USER_CHANGE.
@@ -951,7 +974,8 @@ class BackfillGateDates(FlaskHandler):
 class FetchWebdxFeatureId(FlaskHandler):
     def get_template_data(self, **kwargs) -> str:
         """Fetch the complete list of Webdx feature ID available from
-        webstatus.dev APIs and store them in datastore."""
+        webstatus.dev APIs and store them in datastore.
+        """
         self.require_cron_header()
 
         client = DefaultApi(
@@ -987,7 +1011,8 @@ class FetchWebdxFeatureId(FlaskHandler):
 
 class SendManualOTCreatedEmail(FlaskHandler):
     """Manually send an email to origin trial contacts that an origin trial has
-    been created but not yet activated."""
+    been created but not yet activated.
+    """
 
     def get_template_data(self, **kwargs):
         """Get template data."""
@@ -1015,7 +1040,8 @@ class SendManualOTCreatedEmail(FlaskHandler):
 
 class SendManualOTActivatedEmail(FlaskHandler):
     """Manually send an email to origin trial contacts that an origin trial has
-    been created and also activated."""
+    been created and also activated.
+    """
 
     def get_template_data(self, **kwargs):
         """Get template data."""
@@ -1084,8 +1110,9 @@ class GenerateReviewActivityFile(FlaskHandler):
 
         # Filter deleted activities the user can't see, and activities that have
         # no gate ID, meaning they do not represent review activity.
-        # TODO(DanielRyanSmith): Confirm if deleted features should deleted features
-        # should have existing activity filtered and handle accordingly.
+        # TODO(DanielRyanSmith): Confirm if deleted features should deleted
+        # features should have existing activity filtered and handle
+        # accordingly.
         activities = list(
             filter(
                 lambda a: a.deleted_by is None and a.gate_id is not None,
@@ -1172,7 +1199,8 @@ class GenerateReviewActivityFile(FlaskHandler):
 
     def _get_last_run_timestamp(self, bucket):
         """Get the timestamp for the starting interval of querying for new
-        activities."""
+        activities.
+        """
         blob = bucket.blob('review-activity-last-timestamp.txt')
         if blob.exists():
             with blob.open('r') as f:
@@ -1183,7 +1211,8 @@ class GenerateReviewActivityFile(FlaskHandler):
 
     def _write_csv(self, bucket, csv_io: StringIO) -> None:
         """Append the rows to the review activity CSV, or create a new CSV if it
-        does not exist."""
+        does not exist.
+        """
         blob = bucket.blob('chromestatus-review-activity.csv')
         blob.upload_from_string(csv_io.getvalue())
 
@@ -1218,7 +1247,8 @@ class GenerateReviewActivityFile(FlaskHandler):
 
 class GenerateStaleFeaturesFile(FlaskHandler):
     """Generate a CSV file with all stale features that have upcoming shipping
-    milestones."""
+    milestones.
+    """
 
     DATE_FORMAT = '%Y-%m-%dT%H:%M:%S'
 
@@ -1226,8 +1256,10 @@ class GenerateStaleFeaturesFile(FlaskHandler):
         self, current_milestone: int
     ) -> list[FeatureEntry]:
         """Generate a list of stale features that have an upcoming shipping
-        milestone."""
-        # Get all features that have not been verified for accuracy in over a month.
+        milestone.
+        """
+        # Get all features that have not been verified for accuracy in over
+        # a month.
         now = datetime.now()
         one_month_ago = now - timedelta(weeks=4)
         stale_features: list[FeatureEntry] = FeatureEntry.query(
@@ -1240,7 +1272,8 @@ class GenerateStaleFeaturesFile(FlaskHandler):
         stale_features_with_upcoming_ship_stages: list[FeatureEntry] = []
         for f in stale_features:
             # We should only surface features we have sent notifications about.
-            # (This cannot be added to the query, since only 1 inequality is allowed per query.)
+            # (This cannot be added to the query, since only 1 inequality is
+            # allowed per query.)
             if f.outstanding_notifications == 0:
                 continue
             shipping_stage_type = STAGE_TYPES_SHIPPING[f.feature_type]
@@ -1260,7 +1293,8 @@ class GenerateStaleFeaturesFile(FlaskHandler):
             if upcoming_ship_stages:
                 stale_features_with_upcoming_ship_stages.append(f)
         logging.info(
-            f'{len(stale_features_with_upcoming_ship_stages)} stale features found.'
+            f'{len(stale_features_with_upcoming_ship_stages)} stale features '
+            'found.'
         )
 
         return stale_features_with_upcoming_ship_stages
@@ -1269,8 +1303,8 @@ class GenerateStaleFeaturesFile(FlaskHandler):
         self, features: list[FeatureEntry], current_milestone: int
     ) -> tuple[list[list[str]], list[list[str]]]:
         """Generate rows for the two tables representing stale features."""
-        # We generate a table for the stale features, and another for the owners of
-        # those stale features.
+        # We generate a table for the stale features, and another for the
+        # owners of those stale features.
         feature_csv_rows: list[list[str]] = []
         owner_csv_rows: list[list[str]] = []
         for f in features:
@@ -1344,12 +1378,16 @@ class GenerateStaleFeaturesFile(FlaskHandler):
         )
         self._write_csv(bucket, feature_csv_rows, owner_csv_rows)
 
-        return f'{len(feature_csv_rows)} rows added to chromestatus-stale-features.csv'
+        return (
+            f'{len(feature_csv_rows)} rows added to '
+            'chromestatus-stale-features.csv'
+        )
 
 
 class GenerateShippingFeaturesFile(FlaskHandler):
     """Generate a CSV file with all shipping features and information about
-    their missing fields."""
+    their missing fields.
+    """
 
     DATE_FORMAT = '%Y-%m-%dT%H:%M:%S'
 
@@ -1394,9 +1432,9 @@ class GenerateShippingFeaturesFile(FlaskHandler):
         self, shipping_stages: list[Stage], current_milestone: int
     ) -> tuple[list[list[str]], list[list[str]], list[list[str]]]:
         """Generate rows for the two tables representing shipping features."""
-        # We generate a table for the shipping features, another for the owners of
-        # those shipping features, and a final one for the missing criteria of each
-        # shipping feature.
+        # We generate a table for the shipping features, another for the
+        # owners of those shipping features, and a final one for the missing
+        # criteria of each shipping feature.
 
         complete_features, incomplete_features = self._get_feature_info(
             shipping_stages
@@ -1456,7 +1494,8 @@ class GenerateShippingFeaturesFile(FlaskHandler):
         missing_criteria_csv_rows: list[list[str]],
     ) -> None:
         """Write shipping features CSV, owners CSV, and missing criteria CSV to
-        the GCP bucket."""
+        the GCP bucket.
+        """
         self._upload_csv(
             bucket,
             self.FILENAME_FEATURES,
@@ -1498,7 +1537,8 @@ class GenerateShippingFeaturesFile(FlaskHandler):
 
 class MigrateRolloutMilestones(FlaskHandler):
     """Migrate the rollout milestone field to be stored in the 'milestones'
-    field."""
+    field.
+    """
 
     def get_template_data(self, **kwargs):
         """Get template data."""
@@ -1529,7 +1569,8 @@ class MigrateRolloutMilestones(FlaskHandler):
 
 class ResetOutstandingNotifications(FlaskHandler):
     """Reset the FeatureEntry.outstanding_notifications counter for all
-    features."""
+    features.
+    """
 
     def get_template_data(self, **kwargs) -> str:
         """Get template data."""
@@ -1539,7 +1580,8 @@ class ResetOutstandingNotifications(FlaskHandler):
         ).fetch()
         for f in notified_features:
             logging.info(
-                f'Setting outstanding notifications for feature {f.key.integer_id()} '
+                'Setting outstanding notifications for feature '
+                f'{f.key.integer_id()} '
                 f'from {f.outstanding_notifications} to 0.'
             )
             f.outstanding_notifications = 0
@@ -1551,7 +1593,8 @@ class ResetOutstandingNotifications(FlaskHandler):
 
 class ResetStaleShippingMilestones(FlaskHandler):
     """Reset the shipping milestones of features have not been verified after 4+
-    notifications."""
+    notifications.
+    """
 
     def _reset_milestone(
         self,
@@ -1598,12 +1641,16 @@ class ResetStaleShippingMilestones(FlaskHandler):
                 ),
             ).fetch()
             for s in stages:
-                # Create an activity that shows all the shipping milestones have been set to null.
+                # Create an activity that shows all the shipping milestones
+                # have been set to null.
                 activity = Activity(
                     log_type=Activity.MILESTONE_RESET,
                     feature_id=f.key.integer_id(),
                     amendments=[],
-                    content='Shipping/Rollout milestones were unset due to failure to verify accuracy.',
+                    content=(
+                        'Shipping/Rollout milestones were unset due to '
+                        'failure to verify accuracy.'
+                    ),
                 )
                 if s.milestones:
                     self._reset_milestone(
@@ -1621,7 +1668,8 @@ class ResetStaleShippingMilestones(FlaskHandler):
                     self._reset_milestone(
                         s, 'webview_first', current_milestone, activity
                     )
-                    # Only update the stage and save the activity if some milestones were unset.
+                    # Only update the stage and save the activity if some
+                    # milestones were unset.
                     if activity.amendments:
                         entities_to_update.append(s)
                         entities_to_update.append(activity)
@@ -1652,7 +1700,8 @@ class DeleteWPTCoverageReport(FlaskHandler):
         # Calculate the date threshold
         date_threshold = datetime.now() - timedelta(days=self.RETENTION_DAYS)
 
-        # Query for features with a WPT evaluation timestamp older than the threshold.
+        # Query for features with a WPT evaluation timestamp older than the
+        # threshold.
         query = FeatureEntry.query(
             FeatureEntry.ai_test_eval_status_timestamp <= date_threshold
         )
@@ -1665,8 +1714,8 @@ class DeleteWPTCoverageReport(FlaskHandler):
                     log_type=Activity.SYSTEM_CHANGE,
                     feature_id=feature.key.integer_id(),
                     content=(
-                        f'WPT coverage report was deleted due to {self.RETENTION_DAYS}-day '
-                        'retention policy.'
+                        'WPT coverage report was deleted due to '
+                        f'{self.RETENTION_DAYS}-day retention policy.'
                     ),
                     amendments=[],
                 )

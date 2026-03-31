@@ -14,7 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Helper functions for tracking feature property changes and enqueuing
-notification tasks."""
+notification tasks.
+"""
 
 import logging
 from typing import TYPE_CHECKING
@@ -56,7 +57,8 @@ def notify_feature_subscribers_of_changes(
     fe: 'FeatureEntry', amendments: list[Amendment], is_update: bool = True
 ) -> None:
     """Async notifies subscribers of new features and property changes to
-    features by posting to a task queue."""
+    features by posting to a task queue.
+    """
     changed_props = [
         {
             'prop_name': a.field_name,
@@ -282,7 +284,8 @@ def send_trial_extension_approved_notification(
 ) -> None:
     """Notify that a trial extension is ready to be finalized."""
     # If we don't have an OT owner email or stage ID, don't send the email out.
-    # These should always be set, and are collected during the extension request.
+    # These should always be set, and are collected during the extension
+    # request.
     if not stage.ot_owner_email or not stage.ot_stage_id:
         return
 

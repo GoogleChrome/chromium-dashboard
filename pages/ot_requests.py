@@ -37,7 +37,7 @@ class OriginTrialsRequests(basehandlers.FlaskHandler):
 
     @permissions.require_admin_site
     def get_template_data(self, **kwargs):
-        """Retrieves and formats origin trial requests data for the admin view."""
+        """Retrieves and formats origin trial requests data for admin view."""
         stages_with_requests = Stage.query(
             ndb.OR(
                 Stage.ot_action_requested == True,  # noqa: E712
@@ -66,7 +66,8 @@ class OriginTrialsRequests(basehandlers.FlaskHandler):
                     if ot_stage is None:
                         logging.warning(
                             f'Extension stage {stage_dict["id"]} '
-                            f'found with invalid OT stage ID {stage_dict["ot_stage_id"]}.'
+                            f'found with invalid OT stage ID '
+                            f'{stage_dict["ot_stage_id"]}.'
                         )
                         continue
                     ot_stage_dict = stage_to_json_dict(ot_stage)

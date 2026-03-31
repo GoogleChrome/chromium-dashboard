@@ -12,8 +12,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Fetches and stores UMA metrics data from the Chromium metrics export
-server."""
+"""Fetches and stores UMA metrics data from the Chromium metrics export.
+
+server.
+"""
 
 import base64
 import datetime
@@ -48,7 +50,8 @@ def _FetchMetrics(url):
     if settings.PROD or settings.STAGING:
         # follow_redirects=False according to
         # https://cloud.google.com/appengine/docs/python/appidentity/#asserting_identity_to_other_app_engine_apps
-        # GAE request limit is 60s, but it could go longer due to start-up latency.
+        # GAE request limit is 60s, but it could go longer due to start-up
+        # latency.
         logging.info('Requesting metrics from: %r', url)
         token = google.oauth2.id_token.fetch_id_token(reqs.Request(), url)
         logging.info('token is %r', token)
@@ -144,8 +147,9 @@ class UmaQuery(object):
                 continue
 
             # If the id is not in the map, use 'ERROR' for the name.
-            # TODO(ericbidelman): Non-matched bucket ids are likely new properties
-            # that have been added and will be updated in cron/histograms.
+            # TODO(ericbidelman): Non-matched bucket ids are likely new
+            # properties that have been added and will be updated in
+            # cron/histograms.
             property_name = property_map.get(bucket_id, 'ERROR')
 
             entity = self.model_class(
@@ -237,15 +241,18 @@ class YesterdayHandler(basehandlers.FlaskHandler):
                     )
                     if i > 2:
                         logging.error(
-                            'WebStatusAlert-1: Failed to get metrics even after 2 days'
+                            'WebStatusAlert-1: Failed to get metrics even '
+                            'after 2 days'
                         )
                     return error_message, 500
 
         # The code above calls FetchAndSaveData() which calls _SaveData(),
-        # which calls put() a bunch of times to add a new entity for each metrics datapoint.
-        # Separately, when a request comes in get get metrics data, the file api/metricsdata.py
-        # does a query on those datapoints and caches the result. If we don't invalidate when
-        # we add datapoints, the cached query result will be lacking the new datapoints.
+        # which calls put() a bunch of times to add a new entity for each
+        # metrics datapoint.
+        # Separately, when a request comes in get get metrics data, the file
+        # api/metricsdata.py does a query on those datapoints and caches the
+        # result. If we don't invalidate when we add datapoints, the cached
+        # query result will be lacking the new datapoints.
         # This is run once every 6 hours.
         rediscache.delete_keys_with_prefix('metrics')
         return 'Success'
@@ -260,10 +267,13 @@ class HistogramsHandler(basehandlers.FlaskHandler):
     }
 
     def _SaveData(self, bucket_id, property_name, model_class, all_existing):
-        """Save one entity for the given bucket_id, and delete any
-        duplicates."""
+        """Save one entity for the given bucket_id, and delete any.
+
+        duplicates.
+        """
         logging.info('Saving %r %r', bucket_id, property_name)
-        # Bucket ID 1 is reserved for number of CSS Pages Visited. So don't add it.
+        # Bucket ID 1 is reserved for number of CSS Pages Visited.
+        # So don't add it.
         if (
             model_class == metrics_models.CssPropertyHistogram
             and bucket_id == 1

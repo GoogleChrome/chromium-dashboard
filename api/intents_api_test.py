@@ -171,7 +171,8 @@ class IntentsAPITest(testing_config.CustomTestCase):
     @mock.patch('framework.cloud_tasks_helpers.enqueue_task')
     def test_post__valid_ot(self, mock_enqueue_cloud_task):
         """A valid POST request will create a new notification task for OT
-        stages."""  # noqa: D205
+        stages.
+        """  # noqa: D205
         testing_config.sign_in('owner@example.com', 1234567890)
 
         body = {
@@ -206,8 +207,10 @@ class IntentsAPITest(testing_config.CustomTestCase):
 
     @mock.patch('framework.cloud_tasks_helpers.enqueue_task')
     def test_post__valid_no_gate_id(self, mock_enqueue_cloud_task):
-        """A request with no gate_id will still show intent draft for
-        devtrial."""
+        """A request.
+
+        With no gate_id will still show intent draft for devtrial.
+        """
         testing_config.sign_in('owner@example.com', 1234567890)
 
         body = {

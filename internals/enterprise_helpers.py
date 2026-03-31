@@ -11,8 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Helper functions for managing enterprise features and first notification
-milestones."""
+"""Helper functions for managing enterprise features and first notification.
+
+milestones.
+"""
 
 from datetime import datetime
 
@@ -30,11 +32,12 @@ def _str_to_datetime(dt):
 def needs_default_first_notification_milestone(
     existing_feature: FeatureEntry | None = None, new_fields: dict = {}
 ) -> bool:
-    """Returns whether we should create a default value for
+    """Returns whether we should create a default value for.
+
     first_enterprise_notification_milestone.
 
-    If a feature required a first_enterprise_notification_milestone field and a valid value is not
-    available, we generate a deafult one.
+    If a feature required a first_enterprise_notification_milestone field
+    and a valid value is not available, we generate a deafult one.
 
     Args:
       existing_feature: FeatureEntry Optional feature that needs to be updated.
@@ -89,7 +92,8 @@ def needs_default_first_notification_milestone(
 def is_update_first_notification_milestone(
     feature: FeatureEntry, new_fields: dict
 ) -> bool:
-    """Returns whether the milestone can be used to update
+    """Returns whether the milestone can be used to update.
+
     first_enterprise_notification_milestone.
 
     Args:
@@ -117,7 +121,8 @@ def is_update_first_notification_milestone(
     ):
         return False
 
-    # We don't allow changing the existing milestone value if it was in old release notes.
+    # We don't allow changing the existing milestone value if it was in old
+    # release notes.
     if feature.first_enterprise_notification_milestone != None:  # noqa: E711
         existing_milestone = feature.first_enterprise_notification_milestone
         existing_next = existing_milestone + 1
@@ -152,10 +157,12 @@ def get_default_first_notice_milestone_for_feature() -> int:
 
 
 def should_remove_first_notice_milestone(feature, new_fields):  # noqa: D417
-    """Returns whether we remove first_enterprise_notification_milestone from a
+    """Returns whether we remove first_enterprise_notification_milestone from a.
+
     feature.
 
-    An unannounced feature that does not require to be announced should removed the notice milestone.
+    An unannounced feature that does not require to be announced should
+    removed the notice milestone.
 
     Args:
       existing_feature: FeatureEntry feature that needs to be updated.

@@ -12,8 +12,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Defines the core search functionality, query parsing, and caching for
-features."""
+"""Defines the core search functionality, query parsing, and caching for.
+
+features.
+"""
 
 import dataclasses
 import datetime
@@ -83,8 +85,10 @@ def process_pending_approval_me_query() -> list[int] | Future:
 
 
 def process_pending_review_me_query() -> list[int] | Future:
-    """Return a list of features needing review by current user (excludes
-    NEEDS_WORK)."""
+    """Return a list of features needing review by current user (excludes.
+
+    NEEDS_WORK).
+    """
     user = users.get_current_user()
     if not user:
         return []
@@ -409,8 +413,10 @@ def make_cache_key(
 
 
 def is_cacheable(user_query: str, name_only: bool):
-    """Return True if this user query can be stored and viewed by other
-    users."""
+    """Return True if this user query can be stored and viewed by other.
+
+    users.
+    """
     if not name_only:
         logging.info('Search query not cached: could be large')
         return False
@@ -510,7 +516,8 @@ def process_query(
     else:
         if not show_deleted:
             permission_terms.append(('', 'deleted', '=', 'false', None))
-        # TODO(jrobbins): include unlisted features that the user is allowed to view.
+        # TODO(jrobbins): include unlisted features that the user is allowed
+        # to view.
         # However, that would greatly complicate the search cache.
         if not show_unlisted:
             permission_terms.append(('', 'unlisted', '=', 'false', None))

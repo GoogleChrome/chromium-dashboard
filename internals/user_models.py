@@ -92,7 +92,8 @@ class UserPref(ndb.Model):
             result.extend(chunk_prefs)
             found_set = set(up.email for up in chunk_prefs)
 
-            # Make default prefs for any user that does not already have an entity.
+            # Make default prefs for any user that does not already have an
+            # entity.
             new_prefs = [
                 UserPref(email=e) for e in chunk_emails if e not in found_set
             ]
@@ -177,7 +178,8 @@ class FeatureOwner(ndb.Model):
         self, component_id, remove_as_owner=False
     ):
         """Removes the user from the list of Blink component subscribers or as
-        the owner of the component."""  # noqa: D205
+        the owner of the component.
+        """  # noqa: D205
         c = BlinkComponent.get_by_id(component_id)
         if c:
             if remove_as_owner:
@@ -198,7 +200,8 @@ class FeatureOwner(ndb.Model):
         """Adds the user as the Blink component owner."""
         c = BlinkComponent.get_by_id(component_id)
         if c:
-            # Update both the primary list and blink components subscribers if the
+            # Update both the primary list and blink components subscribers if
+            # the
             # user is not already in them.
             self.add_to_component_subscribers(component_id)
             if not len(list_with_component(self.primary_blink_components, c)):
@@ -220,7 +223,10 @@ class BlinkComponent(ndb.Model):
 
     @property
     def subscribers(self):
-        """Returns a list of FeatureOwner objects who subscribe to this component."""
+        """Returns a list of FeatureOwner objects.
+
+        This list includes users who subscribe to this component.
+        """
         q = FeatureOwner.query(FeatureOwner.blink_components == self.key)
         q = q.order(FeatureOwner.name)
         return q.fetch(None)

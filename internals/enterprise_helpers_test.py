@@ -11,8 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Tests for the enterprise_helpers module, verifying enterprise notification
-milestone logic."""
+"""Tests for the enterprise_helpers module, verifying enterprise notification.
+
+milestone logic.
+"""
 
 from datetime import datetime
 from unittest import mock
@@ -792,7 +794,8 @@ class EnterpriseHelpersTest(testing_config.CustomTestCase):
             )
         )  # noqa: F405
 
-        # Breaking change becoming non-breaking and existing milestone already released
+        # Breaking change becoming non-breaking and existing milestone
+        # already released
         self.breaking_feature.first_enterprise_notification_milestone = 99
         self.breaking_feature.put()
         self.assertFalse(

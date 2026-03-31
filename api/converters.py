@@ -12,8 +12,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Functions for converting between internal datastore models and external API
-dictionary representations."""
+"""Functions for converting between internal datastore models.
+
+And external API dictionary representations.
+"""
 
 import datetime
 import re
@@ -171,7 +173,8 @@ def _prep_stage_info(
         stage_info['all_stages'].append(stage_dict)
 
     for extension in extension_stages:
-        # Trial extensions are kept as a list on the associated trial stage dict.
+        # Trial extensions are kept as a list on the associated trial stage
+        # dict.
         ot_id = extension['ot_stage_id']
         if ot_id and ot_id in ot_stage_indexes:
             (
@@ -504,7 +507,8 @@ def feature_entry_to_json_verbose(
                     'val': fe.impl_status_chrome,
                     'milestone_str': None,
                 },
-                # TODO(danielrsmith): Find out if these are used and delete if not.
+                # TODO(danielrsmith): Find out if these are used and delete
+                # if not.
                 'desktop': _get_milestone_attr(
                     stage_info['ship'], 'desktop_first'
                 ),

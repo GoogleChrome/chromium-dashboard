@@ -12,8 +12,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Detects intent thread types and parses URLs from mailing list subjects and
-bodies."""
+"""Detects intent thread types and parses URLs from mailing list subjects and.
+
+bodies.
+"""
 
 import logging
 import random
@@ -379,9 +381,9 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
             )
             return matching_stage
 
-        # TODO(DanielRyanSmith): This logic could still fail in some circumstances.
-        # Move to a guaranteed gate ID detection method, or post intent threads
-        # on behalf of the user with a unique identifier.
+        # TODO(DanielRyanSmith): This logic could still fail in some
+        # circumstances. Move to a guaranteed gate ID detection method, or post
+        # intent threads on behalf of the user with a unique identifier.
         # If only 1 stage exists without a set intent URL, we can assume that
         # this thread is associated with that stage.
         stages_with_no_intent_thread_url = list(
@@ -431,7 +433,8 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
         # the approval rule (1 or 3 LTGMs) is satisfied.
         if detect_lgtm(body) and is_lgtm_allowed(from_addr, feature, gate_info):
             logging.info('found LGTM')
-            # Avoid a race condition when blink-dev is in both To: and Cc: lines.
+            # Avoid a race condition when blink-dev is in both To: and Cc:
+            # lines.
             time.sleep(random.uniform(0, 5))
             gate = Gate.get_by_id(gate.key.integer_id())  # Reload after sleep
             old_gate_state = gate.state

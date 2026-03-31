@@ -12,8 +12,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""API handlers for retrieving the lists of owners and subscribers across all
-Blink components."""
+"""API handlers for retrieving the lists of owners and.
+
+Subscribers across all Blink components.
+"""
 
 from chromestatus_openapi.models import (
     ComponentsUser,
@@ -31,8 +33,10 @@ class ComponentsUsersAPI(basehandlers.APIHandler):
 
     @permissions.require_admin_site
     def do_get(self, **kwargs) -> dict:
-        """Returns a dict with 1) subscribers for each component and 2) each
-        component."""
+        """Returns a dict.
+
+        With 1) subscribers for each component and 2) each component.
+        """
         components: list[user_models.BlinkComponent] = (
             user_models.BlinkComponent.query()
             .order(user_models.BlinkComponent.name)

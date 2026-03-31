@@ -12,8 +12,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Model and functions for extracting, indexing, and updating URLs linked within
-feature fields."""
+"""Model and functions for extracting, indexing, and updating URLs linked.
+
+within feature fields.
+"""
 
 import datetime
 import logging
@@ -64,8 +66,8 @@ def update_feature_links(
             if old_val is None and not bool(new_val):
                 continue
 
-            # Clear the denormalized fields that get filled from feature links; they'll get updated below
-            # with their new values.
+            # Clear the denormalized fields that get filled from feature links;
+            # they'll get updated below with their new values.
             if field == 'safari_views_link':
                 fe.safari_views_link_result = None
             if field == 'ff_views_link':
@@ -87,7 +89,8 @@ def update_feature_links(
                 ]
                 for url in urls_to_remove:
                     if url not in all_urls:
-                        # if the url is not in any other field in this feature, then remove it from the index
+                        # if the url is not in any other field in this feature,
+                        # then remove it from the index
                         link = Link(url)
                         _remove_link(link, fe)
                 for url in urls_to_add:
@@ -99,7 +102,9 @@ def update_feature_links(
                         if feature_link:
                             feature_link.put()
                             logging.info(
-                                f'Indexed feature_link {feature_link.url} to {feature_link.key.integer_id()} for feature {fe.key.integer_id()}'
+                                f'Indexed feature_link {feature_link.url} to '
+                                f'{feature_link.key.integer_id()} for feature '
+                                f'{fe.key.integer_id()}'
                             )
 
 
@@ -167,7 +172,8 @@ def _get_review_result_from_feature_link(
     """Returns the external reviewer's views expressed in feature_link.
 
     Params:
-      position_prefix: The lowercase prefix this organization uses for their opinion labels.
+      position_prefix: The lowercase prefix this organization uses for their
+        opinion labels.
     """
     if feature_link.information is None:
         return None
@@ -197,11 +203,13 @@ def _denormalize_feature_link_into_entries(
     feature_link: FeatureLinks,
     possible_entries: list[FeatureEntry] | None = None,
 ) -> None:
-    """Fills information from feature_link into relevant fields in the
+    """Fills information from feature_link into relevant fields in the.
+
     FeatureEntries it appears in.
 
     Params:
-      possible_entries: If the caller knows which FeatureEntries might need updating, pass that list here.
+      possible_entries: If the caller knows which FeatureEntries might need
+        updating, pass that list here.
     """
     if feature_link.type == LINK_TYPE_GITHUB_ISSUE:
         if possible_entries is None:
@@ -266,7 +274,8 @@ def get_by_feature_id(
     returned dicts only include the url, type, and information fields.
 
     This is used by the api to return json to the client.
-    update_stale_links: if True, then trigger a background task to update the information of the links.
+    update_stale_links: if True, then trigger a background task to update
+        the information of the links.
     """  # noqa: D205
     return get_by_feature_ids([feature_id], update_stale_links)
 
@@ -278,7 +287,8 @@ def get_by_feature_ids(
     returned dicts only include the url, type, and information fields.
 
     This is used by the api to return json to the client.
-    update_stale_links: if True, then trigger a background task to update the information of the links.
+    update_stale_links: if True, then trigger a background task to update
+        the information of the links.
     """  # noqa: D205
     feature_links = _get_feature_links(feature_ids)
     stale_time = datetime.datetime.now(
@@ -292,7 +302,8 @@ def get_by_feature_ids(
 
     if has_stale_links and update_stale_links:
         logging.info(
-            f'Found {len(stale_feature_links)} stale links for feature_ids {feature_ids}, send links to cloud task'
+            f'Found {len(stale_feature_links)} stale links for feature_ids '
+            f'{feature_ids}, send links to cloud task'
         )
 
         feature_link_ids = [link.key.id() for link in stale_feature_links]
@@ -344,13 +355,15 @@ def _index_feature_links_by_ids(
             link.parse()
             if link.is_error:
                 if not feature_link.is_error and should_notify_on_error:
-                    # TODO: if feature_link turns from no-error to error, notify users
+                    # TODO: if feature_link turns from no-error to error,
+                    # notify users
                     pass
                 if link.http_error_code:
                     feature_link.http_error_code = link.http_error_code
                 feature_link.is_error = link.is_error
                 logging.info(
-                    f'Update indexed link {feature_link_id} {feature_link.url} encountered error'
+                    f'Update indexed link {feature_link_id} {feature_link.url} '
+                    'encountered error'
                 )
             else:
                 # update the information if it is not an error
@@ -358,7 +371,8 @@ def _index_feature_links_by_ids(
                 feature_link.is_error = False
                 feature_link.http_error_code = None
                 logging.info(
-                    f'Update indexed link {feature_link_id} {feature_link.url} successfully'
+                    f'Update indexed link {feature_link_id} {feature_link.url} '
+                    'successfully'
                 )
                 _denormalize_feature_link_into_entries(feature_link)
 
@@ -427,7 +441,8 @@ def get_domain_with_scheme(url):
 def get_feature_links_summary():
     """The function `get_feature_links_summary` retrieves feature links from a
     database, groups them by type and uncovered domains, and returns a summary
-    of the counts and types of links."""  # noqa: D205
+    of the counts and types of links.
+    """  # noqa: D205
     MAX_RESULTS = 100
 
     feature_links = FeatureLinks.query().fetch(
@@ -480,8 +495,10 @@ def get_feature_links_summary():
 def get_feature_links_samples(
     domain: str, type: str | None, is_error: bool | None
 ):
-    """Retrieves a list of feature links based on the specified domain, type,
-    and error status."""
+    """Retrieves a list of feature links based on the specified domain, type,.
+
+    and error status.
+    """
     MAX_SAMPLES = 100
     filters = [
         FeatureLinks.url >= domain,
@@ -492,7 +509,8 @@ def get_feature_links_samples(
         filters.append(FeatureLinks.is_error == is_error)
     feature_links = FeatureLinks.query(*filters).fetch(MAX_SAMPLES)
 
-    # filter out links that do not start with the specified domain and convert to dict
+    # filter out links that do not start with the specified domain and
+    # convert to dict
     feature_links = [
         fl.to_dict(
             include=[
@@ -522,7 +540,8 @@ class UpdateAllFeatureLinksHandlers(FlaskHandler):
     def get_template_data(self, **kwargs) -> str:
         """Retrieves feature links from a database, identifies which links need
         to be updated based on certain conditions, and enqueues tasks to update
-        those links in batches."""  # noqa: D205
+        those links in batches.
+        """  # noqa: D205
         self.require_cron_header()
 
         should_notify_on_error = self.get_bool_arg(
@@ -576,6 +595,9 @@ class UpdateAllFeatureLinksHandlers(FlaskHandler):
                 },
             )
 
-        msg = f'Started updating {len(ids_to_update)} Feature Links in {len(batch_update_ids)} batches'
+        msg = (
+            f'Started updating {len(ids_to_update)} Feature Links in '
+            f'{len(batch_update_ids)} batches'
+        )
         logging.info(msg)
         return msg

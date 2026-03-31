@@ -12,8 +12,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Tests for the link_helpers module, verifying URL validation, classification,
-and extraction logic."""
+"""Tests for the link_helpers module, verifying URL validation, classification,.
+
+and extraction logic.
+"""
 
 import logging
 from unittest import mock, skip
@@ -141,7 +143,10 @@ class LinkHelperTest(testing_config.CustomTestCase):
         urls = Link.extract_urls_from_value(field_value)
         self.assertEqual(urls, [field_value])
 
-        field_value = "leadinghttps:https://www.chromestatus.com/feature/1234');, https://www.chromestatus.com/feature/5678 is valid"
+        field_value = (
+            "leadinghttps:https://www.chromestatus.com/feature/1234');, "
+            'https://www.chromestatus.com/feature/5678 is valid'
+        )
         urls = Link.extract_urls_from_value(field_value)
         self.assertEqual(
             urls,

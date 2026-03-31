@@ -94,8 +94,7 @@ class SearchRETest(testing_config.CustomTestCase):
         )
 
     def test_structured_query_terms__interval(self):
-        """We can parse queries that use interval syntax for paired
-        inequalities."""
+        """We can parse queries that use interval syntax."""
         self.assertEqual(
             [('', 'field', '=', '1..7', '')],
             search.TERM_RE.findall('field=1..7 '),
@@ -246,7 +245,8 @@ class SearchParsingTest(testing_config.CustomTestCase):
             ],
             search.parse_query_value_list('2023-01-01..2024-01-01', context),
         )
-        # This parses, but it's excluded by the regex and isn't converted into an efficient query.
+        # This parses, but it's excluded by the regex and isn't converted into
+        # an efficient query.
         self.assertEqual(
             [1, Interval(2, 3)],
             search.parse_query_value_list('1,2..3', context),
@@ -535,7 +535,8 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
 
     def test_sort_by_total_order__unordered_at_end(self):
         """If the results include features not present in the total order, they
-        are put at the end of the list in ID order."""  # noqa: D205
+        are put at the end of the list in ID order.
+        """  # noqa: D205
         feature_ids = [999, 10, 998, 1, 9, 997, 4]
         total_order_ids = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
         actual = search._sort_by_total_order(feature_ids, total_order_ids)

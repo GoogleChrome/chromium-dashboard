@@ -11,8 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""API handlers for retrieving the status of external feature reviews (e.g.,
-TAG, Gecko, WebKit)."""
+"""API handlers for retrieving the status of external feature reviews (e.g..
+
+TAG, Gecko, WebKit).
+"""
 
 import math
 import re
@@ -177,8 +179,11 @@ class ExternalReviewsAPI(basehandlers.APIHandler):
     """Implements the OpenAPI /external_reviews path."""
 
     def do_get(self, **kwargs):
-        """Get a list of features with outstanding external reviews from a
-        particular review body."""  # noqa: D200
+        """Get a list of features.
+
+        With outstanding external reviews from a particular review body.  #
+        noqa: D200
+        """
         review_group: str | None = kwargs.get('review_group', None)
         if review_group not in ['tag', 'gecko', 'webkit']:
             self.abort(404, f'invalid review group {review_group}')
@@ -186,8 +191,8 @@ class ExternalReviewsAPI(basehandlers.APIHandler):
         reviewer_info = ExternalReviewerInfo(review_group)
         unreviewed_features = reviewer_info.unreviewed_features_query.fetch()
 
-        # Remove features for which the review link isn't a request for the review group to review the
-        # feature.
+        # Remove features for which the review link isn't a request for the
+        # review group to review the feature.
         unreviewed_features = [
             feature
             for feature in unreviewed_features

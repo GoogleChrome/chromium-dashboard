@@ -11,8 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Tests for the fetchmetrics module, verifying the retrieval and parsing of UMA
-metrics."""
+"""Tests for the fetchmetrics module, verifying UMA metric retrieval and.
+
+parsing.
+"""
 
 import base64
 import datetime
@@ -137,8 +139,10 @@ class UmaQueryTest(testing_config.CustomTestCase):
     @mock.patch('logging.error')
     @mock.patch('internals.fetchmetrics._FetchMetrics')
     def test_FetchData__error_msg(self, mock_fetch_metrics, mock_logging_error):
-        """When uma-export gives any error message, we treat that as not
-        ready."""
+        """When uma-export gives any error message, we treat that as not.
+
+        ready.
+        """
         r = {'123': 'anything'}
         e = 'mock uma error message'
         XSSI_PROTECTION = ")]}' // XSSI prefix (go/xssi)."
@@ -337,8 +341,10 @@ class HistogramsHandlerTest(testing_config.CustomTestCase):
         self.assertEqual('RenamedUseCounter', all_histos[0].property_name)
 
     def test_save_data__clean_up_dups(self):
-        """Our DB already has some duplicate entities that should be
-        deleted.."""
+        """Our DB already has some duplicate entities that should be.
+
+        deleted..
+        """
         ex_1 = metrics_models.FeatureObserverHistogram(
             bucket_id=123, property_name='UseCounter'
         )

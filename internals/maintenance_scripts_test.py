@@ -13,7 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Tests for the maintenance_scripts module, verifying the logic of background
-maintenance tasks."""
+maintenance tasks.
+"""
 
 import csv
 import logging
@@ -433,7 +434,8 @@ class CreateOriginTrialsTest(testing_config.CustomTestCase):
         mock_enqueue_task,
     ):
         """Origin trials are created and activated if it is after branch
-        point."""
+        point.
+        """
         mock_today.return_value = date(2020, 6, 1)  # 2020-06-01
         mock_get_chromium_milestone_info.side_effect = (
             mock_mstone_return_value_generator
@@ -459,7 +461,8 @@ class CreateOriginTrialsTest(testing_config.CustomTestCase):
             ],
             any_order=True,
         )
-        # Activation was handled, so a delayed activation date should not be set.
+        # Activation was handled, so a delayed activation date should not be
+        # set.
         self.assertIsNone(self.ot_stage_1.ot_activation_date)
         # OT 2 should have delayed activation date set.
         self.assertEqual(date(2030, 1, 1), self.ot_stage_2.ot_activation_date)
@@ -566,7 +569,8 @@ class CreateOriginTrialsTest(testing_config.CustomTestCase):
         mock_enqueue_task,
     ):
         """Proper notifications are sent when trials are created but activation
-        fails."""
+        fails.
+        """
         self.ot_stage_1.ot_action_requested = True
         self.ot_stage_1.put()
         self.ot_stage_2.ot_action_requested = True
@@ -711,7 +715,8 @@ class ActivateOriginTrialsTest(testing_config.CustomTestCase):
         self, mock_activate_origin_trial, mock_today, mock_enqueue_task
     ):
         """Origin trials are activated if it is on or after the activation
-        date."""
+        date.
+        """
         mock_today.return_value = date(2020, 6, 1)  # 2020-06-01
 
         result = self.handler.get_template_data()
@@ -742,7 +747,8 @@ class ActivateOriginTrialsTest(testing_config.CustomTestCase):
             ],
             any_order=True,
         )
-        # Activation was handled, so a delayed activation date should not be set.
+        # Activation was handled, so a delayed activation date should not be
+        # set.
         self.assertIsNone(self.ot_stage_1.ot_activation_date)
         self.assertIsNone(self.ot_stage_2.ot_activation_date)
         # OT 3 should still have delayed activation date set in the future.
@@ -913,7 +919,8 @@ class BackfillShippingYearTest(testing_config.CustomTestCase):
     )
     def test_calc_all_shipping_years__some(self, mock_gasswm: mock.MagicMock):
         """We can calculate a dict of earliest milestones for a set of
-        stages."""
+        stages.
+        """
         mock_gasswm.return_value = [
             self.stage_1_1,
             self.stage_2_1,
@@ -935,10 +942,14 @@ class BackfillActivityLogTypeTest(testing_config.CustomTestCase):
         self.act_user_change = Activity(feature_id=1, content=None)
         self.act_user_change.put()
 
-        # 2. Starts with "Shipping/Rollout milestones were unset" -> MILESTONE_RESET
+        # 2. Starts with "Shipping/Rollout milestones were unset" ->
+        # MILESTONE_RESET
         self.act_milestone_reset = Activity(
             feature_id=2,
-            content='Shipping/Rollout milestones were unset due to failure to verify accuracy.',
+            content=(
+                'Shipping/Rollout milestones were unset due to failure '
+                'to verify accuracy.'
+            ),
         )
         self.act_milestone_reset.put()
 
@@ -1070,7 +1081,8 @@ class BackfillGateDatesTest(testing_config.CustomTestCase):
 
     def test_calc_needs_work_started_on__not_needed(self):
         """If a gate is not NEEDS_WORK, don't set a needs_work_started_on
-        date."""
+        date.
+        """
         self.assertIsNone(
             self.handler.calc_needs_work_started_on(self.gate, [])
         )
@@ -1300,7 +1312,8 @@ class SendManualOTCreatedEmailTest(testing_config.CustomTestCase):
     @mock.patch('framework.cloud_tasks_helpers.enqueue_task')
     def test_send__no_activation_date(self, mock_enqueue):
         """No email is sent if the stage does not have a scheduled activation
-        date."""
+        date.
+        """
         self.ot_stage.ot_activation_date = None
         self.ot_stage.put()
         result = self.handler.get_template_data(stage_id=self.ot_stage_id)
@@ -1819,7 +1832,8 @@ class GenerateStaleFeaturesFileTest(testing_config.CustomTestCase):
         )
         self.stage_6.put()
 
-        # Feature 7: Stale (None 'accurate_as_of') AND notifications = 1 (boundary).
+        # Feature 7: Stale (None 'accurate_as_of') AND notifications = 1
+        # (boundary).
         # Has matching shipping milestone.
         # Should be INCLUDED.
         self.feature_7 = FeatureEntry(
@@ -1844,7 +1858,8 @@ class GenerateStaleFeaturesFileTest(testing_config.CustomTestCase):
     @mock.patch('internals.maintenance_scripts.datetime')
     def test_gather_stale_features(self, mock_datetime):
         """Should return only stale features with a current shipping
-        milestone."""
+        milestone.
+        """
         # Freeze time to make the "one month ago" calculation deterministic.
         mock_datetime.now.return_value = datetime.now()
         mock_datetime.side_effect = lambda *args, **kw: datetime(*args, **kw)
@@ -1865,7 +1880,8 @@ class GenerateStaleFeaturesFileTest(testing_config.CustomTestCase):
 
     def test_generate_rows(self):
         """Should format feature data into correct feature and owner CSV
-        rows."""
+        rows.
+        """
         features_to_process = [self.feature_1, self.feature_7, self.feature_2]
         feature_rows, owner_rows = self.handler._generate_rows(
             features_to_process, self.current_milestone
@@ -1986,7 +2002,8 @@ class GenerateStaleFeaturesFileTest(testing_config.CustomTestCase):
         mock_get_milestone,
     ):
         """Should correctly orchestrate the entire file generation process for
-        both files."""
+        both files.
+        """
         mock_datetime.now.return_value = datetime.now()
         mock_datetime.side_effect = lambda *args, **kw: datetime(*args, **kw)
         mock_get_milestone.return_value = {
@@ -2291,7 +2308,8 @@ class ResetOutstandingNotificationsTest(testing_config.CustomTestCase):
         )
         self.feature_to_reset.put()
 
-        # Feature 2: Has exactly one outstanding notification (boundary condition).
+        # Feature 2: Has exactly one outstanding notification (boundary
+        # condition).
         # Should be RESET to 0.
         self.feature_at_boundary = FeatureEntry(
             id=102,
@@ -2329,7 +2347,8 @@ class ResetOutstandingNotificationsTest(testing_config.CustomTestCase):
         self, mock_require_cron
     ):
         """Should reset counters >= 1, ignore others, and return correct
-        summary."""
+        summary.
+        """
         result = self.handler.get_template_data()
 
         mock_require_cron.assert_called_once()
@@ -2345,7 +2364,8 @@ class ResetOutstandingNotificationsTest(testing_config.CustomTestCase):
         ignored_feature_1 = self.feature_to_ignore_zero.key.get()
         self.assertEqual(0, ignored_feature_1.outstanding_notifications)
 
-        # This feature should have been untouched and its counter should still be None.
+        # This feature should have been untouched and its counter should still
+        # be None.
         ignored_feature_2 = self.feature_to_ignore_none.key.get()
         self.assertIsNone(ignored_feature_2.outstanding_notifications)
 
@@ -2363,7 +2383,8 @@ class ResetStaleShippingMilestonesTest(testing_config.CustomTestCase):
         # Valid reset range will be [100, 101, 102].
 
         # 1. Stale feature (notifications=5) with shipping milestones IN RANGE.
-        #    EXPECTED: Feature notifications reset. Stage milestones reset. Activity created.
+        #    EXPECTED: Feature notifications reset. Stage milestones reset.
+        #    Activity created.
         self.feature_stale_reset = FeatureEntry(
             id=201,
             name='Stale w/ Milestones',
@@ -2377,8 +2398,10 @@ class ResetStaleShippingMilestonesTest(testing_config.CustomTestCase):
             id=301, feature_id=201, stage_type=160, milestones=self.milestones_1
         )
 
-        # 2. Stale feature (notifications=4) with shipping milestone AT BOUNDARY.
-        #    EXPECTED: Feature notifications reset. Stage milestone reset. Activity created.
+        # 2. Stale feature (notifications=4) with shipping milestone AT
+        #    BOUNDARY.
+        #    EXPECTED: Feature notifications reset. Stage milestone reset.
+        #    Activity created.
         self.feature_boundary_reset = FeatureEntry(
             id=202,
             name='Stale Boundary w/ Milestones',
@@ -2392,8 +2415,10 @@ class ResetStaleShippingMilestonesTest(testing_config.CustomTestCase):
             id=302, feature_id=202, stage_type=160, milestones=self.milestones_2
         )
 
-        # 3. Stale feature (notifications=5) with NO milestones (milestones=None).
-        #    EXPECTED: Feature notifications reset. Stage untouched. No Activity created.
+        # 3. Stale feature (notifications=5) with NO milestones
+        #    (milestones=None).
+        #    EXPECTED: Feature notifications reset. Stage untouched.
+        #    No Activity created.
         self.feature_stale_no_milestones = FeatureEntry(
             id=203,
             name='Stale w/ No Milestones',
@@ -2407,7 +2432,8 @@ class ResetStaleShippingMilestonesTest(testing_config.CustomTestCase):
         )
 
         # 4. Stale feature (notifications=5) with *non-shipping/rollout* stage.
-        #    EXPECTED: Feature notifications reset. Stage untouched. No Activity created.
+        #    EXPECTED: Feature notifications reset. Stage untouched.
+        #    No Activity created.
         self.feature_stale_wrong_stage = FeatureEntry(
             id=204,
             name='Stale w/ Wrong Stage Type',
@@ -2436,8 +2462,10 @@ class ResetStaleShippingMilestonesTest(testing_config.CustomTestCase):
             id=305, feature_id=205, stage_type=460, milestones=self.milestones_4
         )
 
-        # 6. Stale feature (notifications=5) with STAGE_ENT_ROLLOUT type IN RANGE.
-        #    EXPECTED: Feature notifications reset. Stage milestone reset. Activity created.
+        # 6. Stale feature (notifications=5) with STAGE_ENT_ROLLOUT type IN
+        #    RANGE.
+        #    EXPECTED: Feature notifications reset. Stage milestone reset.
+        #    Activity created.
         self.feature_ent_rollout = FeatureEntry(
             id=207,
             name='Stale ENT_ROLLOUT',
@@ -2455,7 +2483,8 @@ class ResetStaleShippingMilestonesTest(testing_config.CustomTestCase):
         )
 
         # 7. Stale feature (notifications=5) with milestone BELOW range.
-        #    EXPECTED: Feature notifications reset. Stage milestone NOT reset. No Activity.
+        #    EXPECTED: Feature notifications reset. Stage milestone NOT reset.
+        #    No Activity.
         self.feature_below_range = FeatureEntry(
             id=208,
             name='Stale Below Range',
@@ -2470,7 +2499,8 @@ class ResetStaleShippingMilestonesTest(testing_config.CustomTestCase):
         )
 
         # 8. Stale feature (notifications=5) with milestone ABOVE range.
-        #    EXPECTED: Feature notifications reset. Stage milestone NOT reset. No Activity.
+        #    EXPECTED: Feature notifications reset. Stage milestone NOT reset.
+        #    No Activity.
         self.feature_above_range = FeatureEntry(
             id=209,
             name='Stale Above Range',
@@ -2484,8 +2514,10 @@ class ResetStaleShippingMilestonesTest(testing_config.CustomTestCase):
             id=309, feature_id=209, stage_type=160, milestones=self.milestones_9
         )
 
-        # 9. Stale feature (notifications=5) with MIXED milestones (in and out of range).
-        #    EXPECTED: Feature notifications reset. One milestone reset. Activity created.
+        # 9. Stale feature (notifications=5) with MIXED milestones (in and out
+        #    of range).
+        #    EXPECTED: Feature notifications reset. One milestone reset.
+        #    Activity created.
         self.feature_mixed_range = FeatureEntry(
             id=210,
             name='Stale Mixed Range',
@@ -2624,7 +2656,8 @@ class ResetStaleShippingMilestonesTest(testing_config.CustomTestCase):
         act_201 = Activity.query(Activity.feature_id == 201).get()
         self.assertIsNotNone(act_201)
         self.assertEqual(
-            'Shipping/Rollout milestones were unset due to failure to verify accuracy.',
+            'Shipping/Rollout milestones were unset due to failure to verify '
+            'accuracy.',
             act_201.content,
         )
         amends_201 = sorted(act_201.amendments, key=lambda a: a.field_name)

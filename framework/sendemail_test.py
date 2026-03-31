@@ -361,8 +361,10 @@ class InboundEmailHandlerTest(testing_config.CustomTestCase):
     def test_handle_incoming_mail__fallback_to_mailing_list(
         self, mock_get_incoming_message, mock_enqueue_task
     ):
-        """If there is no personal X-Original-From, use the mailing list
-        From:."""
+        """If there is no personal X-Original-From, use the mailing list.
+
+        From:.
+        """
         msg = MakeMessage(HEADER_LINES, 'Please review')
         del msg['X-Original-From']
         mock_get_incoming_message.return_value = msg

@@ -414,7 +414,8 @@ def set_vote(
     gate_id: int | None = None,
 ) -> int | None:
     """Add or update an approval value and return new approval state if
-    changed."""  # noqa: D205
+    changed.
+    """  # noqa: D205
     gate: Optional[Gate] = None
     if gate_id is None and gate_type is not None:
         gate = get_gate_by_type(feature_id, gate_type)

@@ -12,8 +12,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""API handlers for creating, retrieving, updating, and deleting feature
-entries."""
+"""API handlers for creating.
+
+Retrieving, updating, and deleting feature entries.
+"""
 
 import re
 from datetime import datetime
@@ -149,8 +151,10 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
         feature: FeatureEntry,
         feature_changes: dict[str, Any],
     ) -> bool:
-        """Handle any special FeatureEntry fields common to creating or
-        updating."""
+        """Handle any special FeatureEntry fields common to creating or.
+
+        Updating.
+        """
         has_updated = False
         # Handle "Use Markdown" checkboxes.
         for field, field_type in api_specs.FEATURE_FIELD_DATA_TYPES:
@@ -274,7 +278,8 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
     ) -> tuple[list[Stage], bool]:
         """Update stage fields with changes provided in the PATCH request."""
         # TODO(DanielRyanSmith): This method should be updated to use the logic
-        # for basehandlers.update_stage(). This logic is mostly duplicated otherwise.
+        # for basehandlers.update_stage(). This logic is mostly duplicated
+        # otherwise.
         stages_to_store: list[Stage] = []
         ship_milestones_were_updated = False
         for change_info in stage_changes_list:
@@ -296,7 +301,8 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
                 old_value = getattr(stage, field)
                 new_value = change_info[field]['value']
                 self.update_field_value(stage, field, field_type, new_value)
-                # The OT additional details does not need to be sent to subscribers.
+                # The OT additional details does not need to be sent to
+                # subscribers.
                 if form_field_name != 'ot_request_note':
                     changed_fields.append(
                         (form_field_name, old_value, new_value)
@@ -313,10 +319,11 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
                 form_field_name = change_info[field]['form_field_name']
                 old_value = getattr(milestones, field)
                 new_value = change_info[field]['value']
-                # desktop_first will be the new default field for "start" milestone,
-                # like rollout_milestone.
+                # desktop_first will be the new default field for "start"
+                # milestone, like rollout_milestone.
 
-                # If this is the rollout milestone, also save it to the old field.
+                # If this is the rollout milestone, also save it to the old
+                # field.
                 # TODO(DanielRyanSmith): Remove this double-storage once the
                 # rollout_milestone field is deprecated.
                 if form_field_name == 'rollout_milestone':
@@ -324,8 +331,8 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
                         stage, 'rollout_milestone', 'int', new_value
                     )
 
-                # Track if any shipping milestones were updated so we know to reset
-                # outstanding notifications if so.
+                # Track if any shipping milestones were updated so we know to
+                # reset outstanding notifications if so.
                 if (
                     form_field_name == 'rollout_milestone'
                     or form_field_name == 'shipped_milestone'
@@ -541,7 +548,8 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
         updated_stages, ship_milestones_were_updated = (
             self._patch_update_stages(body['stages'], changed_fields)
         )
-        # Reset outstanding notifications if the user updated any ship/rollout milestones.
+        # Reset outstanding notifications if the user updated any ship/rollout
+        # milestones.
         if ship_milestones_were_updated:
             feature.outstanding_notifications = 0
             self._maybe_reset_releasenotes_flags(feature, changed_fields)

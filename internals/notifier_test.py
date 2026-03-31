@@ -11,8 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Tests for the notifier module, verifying email formatting and template
-rendering."""
+"""Tests for the notifier module, verifying email formatting and template.
+
+rendering.
+"""
 
 import collections
 from datetime import date, datetime
@@ -224,7 +226,9 @@ class EmailFormattingTest(testing_config.CustomTestCase):
             body_html = notifier.format_email_body(
                 'new-feature-email.html', self.template_fe, []
             )
-        # TESTDATA.make_golden(body_html, 'test_format_email_body__new.html')
+        # TESTDATA.make_golden(
+        #     body_html, 'test_format_email_body__new.html'
+        # )
         self.assertEqual(
             body_html, TESTDATA['test_format_email_body__new.html']
         )
@@ -235,7 +239,9 @@ class EmailFormattingTest(testing_config.CustomTestCase):
             body_html = notifier.format_email_body(
                 'update-feature-email.html', self.template_fe, []
             )
-        # TESTDATA.make_golden(body_html, 'test_format_email_body__update_no_changes.html')
+        # TESTDATA.make_golden(
+        #     body_html, 'test_format_email_body__update_no_changes.html'
+        # )
         self.assertEqual(
             body_html,
             TESTDATA['test_format_email_body__update_no_changes.html'],
@@ -247,7 +253,9 @@ class EmailFormattingTest(testing_config.CustomTestCase):
             body_html = notifier.format_email_body(
                 'update-feature-email.html', self.template_fe, self.changes
             )
-        # TESTDATA.make_golden(body_html, 'test_format_email_body__update_with_changes.html')
+        # TESTDATA.make_golden(
+        #     body_html, 'test_format_email_body__update_with_changes.html'
+        # )
         self.assertEqual(
             body_html,
             TESTDATA['test_format_email_body__update_with_changes.html'],
@@ -267,7 +275,10 @@ class EmailFormattingTest(testing_config.CustomTestCase):
             body_html = notifier.format_email_body(
                 'update-feature-email.html', self.template_fe, self.changes
             )
-        # TESTDATA.make_golden(body_html, 'test_format_email_body__update_with_changes_and_note.html')
+        # TESTDATA.make_golden(
+        #     body_html,
+        #     'test_format_email_body__update_with_changes_and_note.html'
+        # )
         self.assertEqual(
             body_html,
             TESTDATA[
@@ -276,8 +287,10 @@ class EmailFormattingTest(testing_config.CustomTestCase):
         )
 
     def test_accumulate_reasons(self):
-        """We can accumulate lists of reasons why we sent a message to a
-        user."""
+        """We can accumulate lists of reasons why we sent a message to a.
+
+        user.
+        """
         addr_reasons = collections.defaultdict(list)
 
         # Adding an empty list of users
@@ -406,8 +419,10 @@ class EmailFormattingTest(testing_config.CustomTestCase):
 
     @mock.patch('internals.notifier.format_email_body')
     def test_make_feature_changes_email__new(self, mock_f_e_b):
-        """We send email to component owners and subscribers for new
-        features."""
+        """We send email to component owners and subscribers for new.
+
+        features.
+        """
         mock_f_e_b.return_value = 'mock body html'
         actual_tasks = notifier.make_feature_changes_email(
             self.fe_1, is_update=False, changes=[]
@@ -850,8 +865,10 @@ class FeatureCommentHandlerTest(testing_config.CustomTestCase):
 
     @mock.patch('internals.notifier.format_email_body')
     def test_make_new_comments_email__assigned(self, mock_f_e_b):
-        """We notify only assigned reviewers of new comments, not all
-        reviewers."""
+        """We notify only assigned reviewers of new comments, not all.
+
+        reviewers.
+        """
         mock_f_e_b.return_value = 'mock body html'
         gate_1 = Gate(
             feature_id=self.fe_1.key.integer_id(),
@@ -1192,7 +1209,8 @@ class NotifyInactiveUsersHandlerTest(testing_config.CustomTestCase):
         self.inactive_user = inactive_user
 
         # User who has recently been given access by an admin,
-        # but has not yet visited the site. They should not be considered inactive.
+        # but has not yet visited the site. They should not be considered
+        # inactive.
         newly_created_user = AppUser(
             created=datetime(2023, 8, 1),
             email='new_user@example.com',
@@ -1415,7 +1433,9 @@ class OTExtendedHandlerTest(testing_config.CustomTestCase):
             email_task = handler.build_email(
                 extension_stage_dict, ot_stage_dict
             )
-            # TESTDATA.make_golden(email_task['html'], 'test_make_extended_request_email.html')
+            # TESTDATA.make_golden(
+            #     email_task['html'], 'test_make_extended_request_email.html'
+            # )
             self.assertEqual(
                 email_task['html'],
                 TESTDATA['test_make_extended_request_email.html'],
@@ -1468,12 +1488,14 @@ class OTExtensionApprovedHandlerTest(testing_config.CustomTestCase):
                 self.extension_gate.key.integer_id(),
                 self.ot_stage.ot_display_name,
             )
-            # TESTDATA.make_golden(email_task['html'], 'test_make_extension_approved_email.html')
+            # TESTDATA.make_golden(
+            #     email_task['html'], 'test_make_extension_approved_email.html'
+            # )
             self.assertEqual(
                 email_task['subject'],
                 (
-                    '[Action Required] Initiate your origin trial extension for '
-                    'OT Display Name'
+                    '[Action Required] Initiate your origin trial extension '
+                    'for OT Display Name'
                 ),
             )
             self.assertEqual(
@@ -1517,7 +1539,9 @@ class OTActivatedHandlerTest(testing_config.CustomTestCase):
             handler = notifier.OTActivatedHandler()
             stage_dict = converters.stage_to_json_dict(self.ot_stage)
             email_task = handler.build_email(stage_dict, self.contacts)
-            # TESTDATA.make_golden(email_task['html'], 'test_make_activated_email.html')
+            # TESTDATA.make_golden(
+            #     email_task['html'], 'test_make_activated_email.html'
+            # )
             self.assertEqual(
                 email_task['subject'],
                 'Example Trial origin trial is now available',
@@ -1546,7 +1570,9 @@ class OTCreationApprovedHandlerTest(testing_config.CustomTestCase):
             handler = notifier.OTCreationApprovedHandler()
             fe_dict = converters.feature_entry_to_json_verbose(self.feature_1)
             email_task = handler.build_email(fe_dict, self.contacts)
-            # TESTDATA.make_golden(email_task['html'], 'test_make_creation_approved_email.html')
+            # TESTDATA.make_golden(
+            #     email_task['html'], 'test_make_creation_approved_email.html'
+            # )
             self.assertEqual(
                 email_task['subject'],
                 'You can now submit your origin trial creation request',
@@ -1592,10 +1618,13 @@ class OTCreationProcessedHandlerTest(testing_config.CustomTestCase):
             handler = notifier.OTCreationProcessedHandler()
             stage_dict = converters.stage_to_json_dict(self.ot_stage)
             email_task = handler.build_email(stage_dict, self.contacts)
-            # TESTDATA.make_golden(email_task['html'], 'test_make_creation_processed_email.html')
+            # TESTDATA.make_golden(
+            #     email_task['html'], 'test_make_creation_processed_email.html'
+            # )
             self.assertEqual(
                 email_task['subject'],
-                'Example Trial origin trial has been created and will begin 2030-01-01',
+                'Example Trial origin trial has been created and will '
+                'begin 2030-01-01',
             )
             self.assertEqual(
                 email_task['html'],
@@ -1636,7 +1665,10 @@ class OTCreationRequestFailedHandlerTest(testing_config.CustomTestCase):
             stage_dict = converters.stage_to_json_dict(self.ot_stage)
             error_text = 'Something went pretty wrong'
             email_task = handler.build_email(stage_dict, error_text)
-            # TESTDATA.make_golden(email_task['html'], 'test_make_creation_request_failed_email.html')
+            # TESTDATA.make_golden(
+            #     email_task['html'],
+            #     'test_make_creation_request_failed_email.html'
+            # )
             self.assertEqual(
                 email_task['subject'],
                 'Automated trial creation request failed for Example Trial',
@@ -1678,7 +1710,9 @@ class OTActivationFailedHandlerTest(testing_config.CustomTestCase):
             handler = notifier.OTActivationFailedHandler()
             stage_dict = converters.stage_to_json_dict(self.ot_stage)
             email_task = handler.build_email(stage_dict)
-            # TESTDATA.make_golden(email_task['html'], 'test_make_activation_failed_email.html')
+            # TESTDATA.make_golden(
+            #     email_task['html'], 'test_make_activation_failed_email.html'
+            # )
             self.assertEqual(
                 email_task['subject'],
                 'Automated trial activation request failed for Example Trial',
@@ -1733,7 +1767,9 @@ class IntentToBlinkDevHandlerTest(testing_config.CustomTestCase):
         with test_app.app_context():
             handler = notifier.IntentToBlinkDevHandler()
             email_task = handler.build_email(self.feature_1, json_data)
-            # TESTDATA.make_golden(email_task['html'], 'test_make_intent_email.html')
+            # TESTDATA.make_golden(
+            #     email_task['html'], 'test_make_intent_email.html'
+            # )
             self.assertEqual(email_task['to'], 'blink-dev@chromium.org')
             self.assertEqual(
                 email_task['cc'], ['cc1@example.com', 'owner@example.com']
@@ -1762,7 +1798,9 @@ class OTEndingNextReleaseReminderHandlerTest(testing_config.CustomTestCase):
         with test_app.app_context():
             handler = notifier.OTEndingNextReleaseReminderHandler()
             email_task = handler.build_email(body_data, self.contacts)
-            # TESTDATA.make_golden(email_task['html'], 'test_make_ending_next_release_email.html')
+            # TESTDATA.make_golden(
+            #     email_task['html'], 'test_make_ending_next_release_email.html'
+            # )
             self.assertEqual(
                 email_task['subject'],
                 'Some feature origin trial ship decision approaching',
@@ -1788,7 +1826,9 @@ class OTEndingThisReleaseReminderHandlerTest(testing_config.CustomTestCase):
         with test_app.app_context():
             handler = notifier.OTEndingThisReleaseReminderHandler()
             email_task = handler.build_email(body_data, self.contacts)
-            # TESTDATA.make_golden(email_task['html'], 'test_make_ending_this_release_email.html')
+            # TESTDATA.make_golden(
+            #     email_task['html'], 'test_make_ending_this_release_email.html'
+            # )
             self.assertEqual(
                 email_task['subject'],
                 'Some feature origin trial needs blink-dev update',
@@ -1813,7 +1853,9 @@ class OTBetaAvailabilityReminderHandlerTest(testing_config.CustomTestCase):
         with test_app.app_context():
             handler = notifier.OTBetaAvailabilityReminderHandler()
             email_task = handler.build_email(body_data, self.contacts)
-            # TESTDATA.make_golden(email_task['html'], 'test_make_beta_availability_email.html')
+            # TESTDATA.make_golden(
+            #     email_task['html'], 'test_make_beta_availability_email.html'
+            # )
             self.assertEqual(
                 email_task['subject'],
                 'Some feature origin trial is entering beta',
@@ -1839,7 +1881,9 @@ class OTFirstBranchReminderHandlerTest(testing_config.CustomTestCase):
         with test_app.app_context():
             handler = notifier.OTFirstBranchReminderHandler()
             email_task = handler.build_email(body_data, self.contacts)
-            # TESTDATA.make_golden(email_task['html'], 'test_make_first_branch_email.html')
+            # TESTDATA.make_golden(
+            #     email_task['html'], 'test_make_first_branch_email.html'
+            # )
             self.assertEqual(
                 email_task['subject'], 'Some feature origin trial is branching'
             )
@@ -1864,7 +1908,9 @@ class OTLastBranchReminderHandlerTest(testing_config.CustomTestCase):
         with test_app.app_context():
             handler = notifier.OTLastBranchReminderHandler()
             email_task = handler.build_email(body_data, self.contacts)
-            # TESTDATA.make_golden(email_task['html'], 'test_make_last_branch_email.html')
+            # TESTDATA.make_golden(
+            #     email_task['html'], 'test_make_last_branch_email.html'
+            # )
             self.assertEqual(
                 email_task['subject'],
                 'Some feature origin trial has branched for its last release',
@@ -1888,7 +1934,9 @@ class OTAutomatedProcessEmailHandlerTest(testing_config.CustomTestCase):
         with test_app.app_context():
             handler = notifier.OTAutomatedProcessEmailHandler()
             email_task = handler.build_email(body_data)
-            # TESTDATA.make_golden(email_task['html'], 'test_make_ot_process_email.html')
+            # TESTDATA.make_golden(
+            #     email_task['html'], 'test_make_ot_process_email.html'
+            # )
             self.assertEqual(
                 email_task['subject'],
                 'Origin trials automated process reminder just ran',
@@ -1912,10 +1960,14 @@ class ResetShippingMilestonesEmailHandlerTest(testing_config.CustomTestCase):
                 'Feature Name',
                 ['owner1@example.com', 'owner2@example.com'],
             )
-            # TESTDATA.make_golden(email_task['html'], 'test_reset_shipping_milestones_email.html')
+            # TESTDATA.make_golden(
+            #     email_task['html'],
+            #     'test_reset_shipping_milestones_email.html'
+            # )
             self.assertEqual(
                 email_task['subject'],
-                'Shipping and Rollout milestones reset for ChromeStatus feature (Feature Name)',
+                'Shipping and Rollout milestones reset for ChromeStatus '
+                'feature (Feature Name)',
             )
             self.assertEqual(
                 email_task['html'],

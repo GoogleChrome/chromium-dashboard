@@ -73,8 +73,7 @@ class FeaturesJsonHandlerTest(TestWithFeature):
         self.assertEqual('feature one', json_data[0]['name'])
 
     def test_get_template_data__unlisted_no_perms(self):
-        """JSON feed does not include unlisted features for users who can't
-        edit."""
+        """JSON feed hides unlisted features for users who can't edit."""
         self.fe_1.unlisted = True
         self.fe_1.put()
 

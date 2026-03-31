@@ -11,8 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Tests for the detect_intent module, verifying intent detection and URL
-parsing from text."""
+"""Tests for the detect_intent module, verifying intent detection and URL.
+
+parsing from text.
+"""
 
 import datetime
 from unittest import mock
@@ -300,8 +302,8 @@ class FunctionTest(testing_config.CustomTestCase):
     def test_detect_thread_url(self):
         """We can parse the thread archive link from the body footer."""
         footer = (
-            'You received this message because you are subscribed to the Google '
-            'Groups "blink-dev" group.\n'
+            'You received this message because you are subscribed to the '
+            'Google Groups "blink-dev" group.\n'
             'To unsubscribe from this group and stop receiving emails from it,'
             'send an email to blink-dev+unsubscribe@chromium.org.\n'
             'To view this discussion visit https://groups.google.com'
@@ -324,9 +326,11 @@ class FunctionTest(testing_config.CustomTestCase):
             '>'
             '>  [SNIP]'
             '> --\n'
-            '> You received this message because you are subscribed to the Google\n'
+            '> You received this message because you are subscribed to the '
+            '> Google\n'
             '> Groups "blink-dev" group.\n'
-            '> To unsubscribe from this group and stop receiving emails from it, send\n'
+            '> To unsubscribe from this group and stop receiving emails '
+            '> from it, send\n'
             '> an email to blink-dev+unsubscribe@chromium.org.\n'
             '> To view this discussion visit\n'
             '> https://groups.google.com/a/chromium.org/d/msgid/blink-dev/CAL5BFfULP5d3fNCAqeO2gLP56R3HCytmaNk%2B9kpYsC2dj4%3DqoQ%40mail.gmail.com\n'
@@ -334,9 +338,12 @@ class FunctionTest(testing_config.CustomTestCase):
             'ter>.\n'
             '\n'
             '--\n'
-            'You received this message because you are subscribed to the Google Groups "blink-dev" group.\n'
-            'To unsubscribe from this group and stop receiving emails from it, send an email to blink-dev+unsubscribe@chromium.org.\n'
-            'To view this discussion visit https://groups.google.com/a/chromium.org/d/msgid/blink-dev/7c94d7c3-212a-62de-dfa4-76bbd25990c9%40chromium.org.'
+            'You received this message because you are subscribed to the '
+            'Google Groups "blink-dev" group.\n'
+            'To unsubscribe from this group and stop receiving emails from '
+            'it, send an email to blink-dev+unsubscribe@chromium.org.\n'
+            'To view this discussion visit https://groups.google.com/a/'
+            'chromium.org/d/msgid/blink-dev/7c94d7c3-212a-62de-dfa4-76bbd25990c9%40chromium.org.'
         )
         self.assertEqual(
             (
@@ -353,9 +360,11 @@ class FunctionTest(testing_config.CustomTestCase):
             '>'
             '>  [SNIP]'
             '> --\r\n'
-            '> You received this message because you are subscribed to the Google\r\n'
+            '> You received this message because you are subscribed to the '
+            '> Google\r\n'
             '> Groups "blink-dev" group.\r\n'
-            '> To unsubscribe from this group and stop receiving emails from it, send\r\n'
+            '> To unsubscribe from this group and stop receiving emails '
+            '> from it, send\r\n'
             '> an email to blink-dev+unsubscribe@chromium.org.\r\n'
             '> To view this discussion visit\r\n'
             '> https://groups.google.com/a/chromium.org/d/msgid/blink-dev/CAL5BFfULP5d3fNCAqeO2gLP56R3HCytmaNk%2B9kpYsC2dj4%3DqoQ%40mail.gmail.com\r\n'
@@ -363,9 +372,12 @@ class FunctionTest(testing_config.CustomTestCase):
             'ter>.\r\n'
             '\r\n'
             '--\r\n'
-            'You received this message because you are subscribed to the Google Groups "blink-dev" group.\r\n'
-            'To unsubscribe from this group and stop receiving emails from it, send an email to blink-dev+unsubscribe@chromium.org.\r\n'
-            'To view this discussion visit https://groups.google.com/a/chromium.org/d/msgid/blink-dev/7c94d7c3-212a-62de-dfa4-76bbd25990c9%40chromium.org\r\n.'
+            'You received this message because you are subscribed to the '
+            'Google Groups "blink-dev" group.\r\n'
+            'To unsubscribe from this group and stop receiving emails from '
+            'it, send an email to blink-dev+unsubscribe@chromium.org.\r\n'
+            'To view this discussion visit https://groups.google.com/a/'
+            'chromium.org/d/msgid/blink-dev/7c94d7c3-212a-62de-dfa4-76bbd25990c9%40chromium.org\r\n.'
         )
         self.assertEqual(
             (
@@ -378,8 +390,8 @@ class FunctionTest(testing_config.CustomTestCase):
     def test_detect_thread_url__staging(self):
         """We can parse the staging thread archive link from the body footer."""
         footer = (
-            'You received this message because you are subscribed to the Google '
-            'Groups "jrobbins-test" group.\n'
+            'You received this message because you are subscribed to the '
+            'Google Groups "jrobbins-test" group.\n'
             'To unsubscribe from this group and stop receiving emails from it,'
             'send an email to jrobbins-test+unsubscribe@googlegroups.com.\n'
             'To view this discussion visit https://groups.google.com'
@@ -494,8 +506,10 @@ class FunctionTest(testing_config.CustomTestCase):
         )
 
     def test_detect_new_thread__gate_was_updated(self):
-        """Existing thread is detected when its gate has already changed
-        state."""
+        """Existing thread is detected when its gate has already changed.
+
+        state.
+        """
         self.assertFalse(
             detect_intent.detect_new_thread(
                 Gate(
@@ -733,7 +747,9 @@ class IntentEmailHandlerTest(testing_config.CustomTestCase):
     @mock.patch('logging.info')
     def test_process_post_data__incorrect_gate_type(self, mock_info):
         """Intent will not be processed if gate type does not match intent
-        type."""  # noqa: D415
+
+        type.
+        """  # noqa: D415
         extend_json_data = {
             'from_addr': 'user@example.com',
             'subject': 'Intent to Extend Experiment: Featurename',
@@ -762,8 +778,10 @@ class IntentEmailHandlerTest(testing_config.CustomTestCase):
         )
 
     def test_process_post_data__new_thread_already_empty_str(self):
-        """We still set intent_thread_url if it was previously an empty
-        string."""
+        """We still set intent_thread_url if it was previously an empty.
+
+        string.
+        """
         self.stages_dict[160][0].intent_thread_url = ''
         self.stages_dict[160][0].put()
         self.test_process_post_data__new_thread()
@@ -787,8 +805,10 @@ class IntentEmailHandlerTest(testing_config.CustomTestCase):
 
     @mock.patch('internals.detect_intent.is_lgtm_allowed')
     def test_process_post_data__lgtm(self, mock_is_lgtm_allowed):
-        """If we get an LGTM, we store the approval value and update the
-        feature."""
+        """If we get an LGTM, we store the approval value and update the.
+
+        feature.
+        """
         mock_is_lgtm_allowed.return_value = True
         self.stages_dict[160][0].intent_thread_url = self.thread_url
         self.stages_dict[160][0].put()

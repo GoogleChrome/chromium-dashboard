@@ -11,8 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Tests for the webdx_feature_api module, verifying the retrieval and
-formatting of WebDX feature lists."""
+"""Tests for the webdx_feature_api module.
+
+Verifying the retrieval and formatting of WebDX feature lists.
+"""
 
 import logging
 from collections import OrderedDict

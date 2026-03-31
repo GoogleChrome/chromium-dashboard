@@ -153,8 +153,10 @@ class SecretsFunctionsTest(testing_config.CustomTestCase):
     def test_load_ot_api_key__prod_mode_secret_fails_raises_runtimeerror(
         self, mock_sm_client_class
     ):
-        """In prod mode, it raises a RuntimeError if Secret Manager gives no
-        response."""
+        """In prod mode, it raises a RuntimeError if Secret Manager gives no.
+
+        response.
+        """
         mock_client = mock.Mock()
         mock_sm_client_class.return_value = mock_client
         mock_client.secret_path.return_value = (
@@ -254,8 +256,10 @@ class SecretsFunctionsTest(testing_config.CustomTestCase):
     def test_load_github_token__prod_mode_secret_fails_raises_runtimeerror(
         self, mock_sm_client_class
     ):
-        """In prod mode, it raises a RuntimeError if Secret Manager gives no
-        response."""
+        """In prod mode, it raises a RuntimeError if Secret Manager gives no.
+
+        response.
+        """
         mock_client = mock.Mock()
         mock_sm_client_class.return_value = mock_client
         mock_client.secret_path.return_value = (
@@ -288,7 +292,8 @@ class SecretsFunctionsTest(testing_config.CustomTestCase):
             'Permission denied'
         )
 
-        # The function does not catch exceptions in prod mode, so it should propagate.
+        # The function does not catch exceptions in prod mode, so it should
+        # propagate.
         with self.assertRaises(Exception, msg='Permission denied'):
             secrets.load_github_token()
 
@@ -333,8 +338,10 @@ class SecretsFunctionsTest(testing_config.CustomTestCase):
     def test_load_gemini_api_key__unit_test_mode_file_not_found(
         self, mock_open
     ):
-        """In test mode, it sets the API key to None if the file is not
-        found."""
+        """In test mode, it sets the API key to None if the file is not.
+
+        found.
+        """
         secrets.settings.UNIT_TEST_MODE = True
         mock_open.side_effect = FileNotFoundError
 
@@ -382,8 +389,10 @@ class SecretsFunctionsTest(testing_config.CustomTestCase):
     def test_load_gemini_api_key__prod_mode_secret_fails_raises_runtimeerror(
         self, mock_sm_client_class
     ):
-        """In prod mode, it raises a RuntimeError if Secret Manager gives no
-        response."""
+        """In prod mode, it raises a RuntimeError if Secret Manager gives no.
+
+        response.
+        """
         mock_client = mock.Mock()
         mock_sm_client_class.return_value = mock_client
         mock_client.secret_path.return_value = (
@@ -416,7 +425,8 @@ class SecretsFunctionsTest(testing_config.CustomTestCase):
             'Permission denied'
         )
 
-        # The function does not catch exceptions in prod mode, so it should propagate.
+        # The function does not catch exceptions in prod mode, so it should
+        # propagate.
         with self.assertRaises(Exception, msg='Permission denied'):
             secrets.load_gemini_api_key()
 
@@ -425,8 +435,10 @@ class SecretsFunctionsTest(testing_config.CustomTestCase):
 
 
 class SecretsTest(testing_config.CustomTestCase):
-    """Set of unit tests for generating and storing server-side secret
-    values."""
+    """Set of unit tests for generating and storing server-side secret.
+
+    values.
+    """
 
     def delete_all(self):
         """Delete all entities."""

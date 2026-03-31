@@ -61,8 +61,10 @@ class AttachmentsTests(testing_config.CustomTestCase):
             attachments.check_attachment_type('video/mpeg')
 
     def test_get_attachment__found(self):
-        """We can retrive an attachment, with checking for the proper
-        feature."""
+        """We can retrive an attachment, with checking for the proper.
+
+        feature.
+        """
         stored = attachments.store_attachment(
             self.feature_id, b'test content', 'text/plain'
         )
@@ -148,7 +150,10 @@ class AttachmentsTests(testing_config.CustomTestCase):
         attachments.delete_orphan_attachments(self.feature_id, '')
 
     def test_delete_orphan_attachments__maintained(self):
-        """A feature has an attachment and the links field keeps it: it stays."""
+        """A feature has an attachment and the links field keeps it: it.
+
+        stays.
+        """
         feature_id = self.feature_id
         stored = attachments.store_attachment(
             feature_id, b'test content', 'text/plain'

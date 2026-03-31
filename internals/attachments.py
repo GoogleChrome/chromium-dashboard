@@ -123,8 +123,10 @@ def check_attachment_type(mime_type: str):
 
 
 def get_attachment(feature_id: int, attachment_id: int) -> Attachment | None:
-    """Return attachment, if feature_id  matches, and attachment is not
-    deleted."""
+    """Return attachment, if feature_id  matches, and attachment is not.
+
+    deleted.
+    """
     attachment = Attachment.get_by_id(attachment_id)
     if (
         attachment

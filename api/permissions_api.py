@@ -12,8 +12,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""API endpoints for checking the current user's permissions and
-capabilities."""
+"""API endpoints for checking the current user's permissions.
+
+And capabilities.
+"""
 
 import logging
 
@@ -26,7 +28,8 @@ from internals import approval_defs
 
 class PermissionsAPI(basehandlers.APIHandler):
     """Permissions determine whether a user can create, approve, or edit any
-    feature, or admin the site."""  # noqa: D205, D415
+    feature, or admin the site.
+    """  # noqa: D205, D415
 
     def do_get(self, **kwargs):
         """Return the permissions and the email of the user."""

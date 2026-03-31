@@ -245,8 +245,10 @@ class APIHandler(BaseHandler):
         return headers
 
     def defensive_jsonify(self, handler_data):
-        """Return a Flask Response object with a JSON string prefixed with
-        junk."""
+        """Return a Flask Response object with a JSON string prefixed with.
+
+        junk.
+        """
         body = json.dumps(handler_data, default=str)
         return flask.current_app.response_class(
             XSSI_PREFIX + body, mimetype=flask.current_app.json.mimetype
@@ -344,8 +346,10 @@ class APIHandler(BaseHandler):
         self.abort(405, valid_methods=self._get_valid_methods())
 
     def do_delete(self, **kwargs):
-        """Subclasses should implement this method to handle a DELETE
-        request."""
+        """Subclasses should implement this method to handle a DELETE.
+
+        request.
+        """
         self.abort(405, valid_methods=self._get_valid_methods())
 
     def validate_token(self, token, email):
@@ -354,8 +358,10 @@ class APIHandler(BaseHandler):
         xsrf.validate_token(token, email)
 
     def require_signed_in_and_xsrf_token(self):
-        """Every API POST, PUT, or DELETE must be signed in with an XSRF
-        token."""
+        """Every API POST, PUT, or DELETE must be signed in with an XSRF.
+
+        token.
+        """
         user = self.get_current_user(required=True)
         token = self.request.headers.get('X-Xsrf-Token')
         if not token:
@@ -524,7 +530,8 @@ class EntitiesAPIHandler(APIHandler):
             # Filter out any URLs that do not conform to the proper pattern.
             return [self.extract_link(link) for link in list_val if link]
         elif field_type == 'int':
-            # Int fields can be unset by giving null or nothing in the input field.
+            # Int fields can be unset by giving null or nothing in the input
+            # field.
             if value == '' or value is None:
                 return None
             try:
@@ -739,8 +746,10 @@ class FlaskHandler(BaseHandler):
         return [x.strip() for x in re.split(delim, input_text) if x.strip()]
 
     def split_emails(self, param_name):
-        """Split one input field and construct objects for
-        ndb.StringProperty()."""
+        """Split one input field and construct objects for.
+
+        ndb.StringProperty().
+        """
         addr_strs = self.split_input(param_name, delim=',')
         emails = [str(addr) for addr in addr_strs]
         return emails
@@ -884,7 +893,8 @@ def get_spa_template_data(handler_obj, defaults):
             if not user or not permissions.can_admin_site(user):
                 handler_obj.abort(403, msg='Cannot perform admin actions')
 
-        # Validate the user has a google or chromium account and redirect if needed.
+        # Validate the user has a google or chromium account and redirect if
+        # needed.
         if defaults.get('is_enterprise_page'):
             user = handler_obj.get_current_user()
             # Should have already done the require_signin check.
@@ -893,7 +903,8 @@ def get_spa_template_data(handler_obj, defaults):
                 handler_obj.abort(403, msg='You cannot access this page')
 
     except werkzeug.exceptions.Forbidden:
-        # If the user is logged in but lacks permission, redirect them to a safe page
+        # If the user is logged in but lacks permission, redirect them to a safe
+        # page
         # instead of showing a generic white 403 error page.
         if defaults.get('require_edit_feature') and defaults.get('feature_id'):
             try:
@@ -927,7 +938,8 @@ def FlaskApplication(import_name, routes, pattern_base='', debug=False):
         classname = route.handler_class.__name__
         app.add_url_rule(
             pattern_base + route.path,
-            endpoint=f'{classname}{i}',  # We don't use it, but it must be unique.
+            endpoint=f'{classname}{i}',  # We don't use it, but it must be
+            # unique.
             view_func=route.handler_class.as_view(classname),
             defaults=route.defaults,
         )

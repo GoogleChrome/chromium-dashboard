@@ -51,7 +51,7 @@ class UserPrefTest(testing_config.CustomTestCase):
 
     @mock.patch('framework.users.get_current_user')
     def test_get_signed_in_user_pref__had_pref(self, mock_get_current_user):
-        """Tests getting the signed-in user pref for a user who already has one."""
+        """Tests getting the signed-in user pref for an existing user."""
         mock_get_current_user.return_value = testing_config.Blank(
             email=lambda: 'user2@example.com'
         )
@@ -94,7 +94,7 @@ class UserPrefTest(testing_config.CustomTestCase):
         self.assertEqual(['welcome-message'], revised_user_pref.dismissed_cues)
 
     def test_get_prefs_for_emails__some_found(self):
-        """Tests getting user preferences for a list of emails with mixed existence."""
+        """Tests getting user preferences for emails with mixed existence."""
         emails = ['one@example.com', 'two@example.com', 'huh@example.com']
         user_prefs = user_models.UserPref.get_prefs_for_emails(emails)
         self.assertEqual(3, len(user_prefs))

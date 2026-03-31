@@ -45,12 +45,15 @@ if not settings.UNIT_TEST_MODE:
 
 
 class LocalCloudTasksClient(object):
-    """We have no GCT server running locally, so hit the target
-    synchronously."""
+    """We have no GCT server running locally, so hit the target.
+
+    synchronously.
+    """
 
     def queue_path(self, project, location, queue):
         """Return a fully-qualified queue string."""
-        # This is value is not actually used, but it might be good for debugging.
+        # This is value is not actually used, but it might be good for
+        # debugging.
         return 'projects/{project}/locations/{location}/queues/{queue}'.format(
             project=project, location=location, queue=queue
         )

@@ -11,8 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Tests for the origin_trials_api module, verifying the retrieval and extension
-of origin trials."""
+"""Tests for the origin_trials_api module.
+
+Verifying retrieval and extension of origin trials.
+"""
 
 from unittest import mock
 
@@ -220,8 +222,10 @@ bool FeatureHasExpiryGracePeriod(blink::mojom::OriginTrialFeature feature) {
     def test_get__invalid(
         self, mock_get_trials_list, mock_log_error, mock_log_exception
     ):
-        """A request error from the origin trials API raises the correct
-        exception."""
+        """A request error from the origin trials API raises the.
+
+        Correct exception.
+        """
         testing_config.sign_in('owner@example.com', 1234567890)
         mock_get_trials_list.side_effect = requests.exceptions.RequestException
         with test_app.test_request_context(
@@ -305,7 +309,8 @@ bool FeatureHasExpiryGracePeriod(blink::mojom::OriginTrialFeature feature) {
         self, mock_get_trials_list
     ):
         """No error messages should be returned if all args are valid using a
-        WebFeature use counter."""  # noqa: D205
+        WebFeature use counter.
+        """  # noqa: D205
         mock_get_trials_list.return_value = self.mock_trials_list
         body = {
             'ot_chromium_trial_name': {
@@ -342,7 +347,8 @@ bool FeatureHasExpiryGracePeriod(blink::mojom::OriginTrialFeature feature) {
         self, mock_get_trials_list
     ):
         """No error messages should be returned if all args are valid for a
-        deprecation trial."""  # noqa: D205
+        deprecation trial.
+        """  # noqa: D205
         mock_get_trials_list.return_value = self.mock_trials_list
         body = {
             'ot_chromium_trial_name': {
@@ -376,7 +382,8 @@ bool FeatureHasExpiryGracePeriod(blink::mojom::OriginTrialFeature feature) {
         self, mock_get_trials_list
     ):
         """No error messages should be returned if all args are valid using a
-        WebDXFeature use counter."""  # noqa: D205
+        WebDXFeature use counter.
+        """  # noqa: D205
         mock_get_trials_list.return_value = self.mock_trials_list
 
         body = {
@@ -414,7 +421,8 @@ bool FeatureHasExpiryGracePeriod(blink::mojom::OriginTrialFeature feature) {
         self, mock_get_trials_list
     ):
         """No error messages should be returned if all args are valid using a
-        CSSSampleId use counter."""  # noqa: D205
+        CSSSampleId use counter.
+        """  # noqa: D205
         mock_get_trials_list.return_value = self.mock_trials_list
 
         body = {
@@ -490,8 +498,10 @@ bool FeatureHasExpiryGracePeriod(blink::mojom::OriginTrialFeature feature) {
     def test_validate_creation_args__invalid_webdxfeature_use_counter(
         self, mock_get_trials_list
     ):
-        """Error message returned if WebDXFeature UseCounter not found in
-        file."""
+        """Error message returned if WebDXFeature UseCounter not found.
+
+        In file.
+        """
         mock_get_trials_list.return_value = self.mock_trials_list
         body = {
             'ot_chromium_trial_name': {
@@ -530,8 +540,10 @@ bool FeatureHasExpiryGracePeriod(blink::mojom::OriginTrialFeature feature) {
     def test_validate_creation_args__missing_webdxfeature_use_counter(
         self, mock_get_trials_list
     ):
-        """Error message returned if WebDXFeature UseCounter not found in
-        file."""
+        """Error message returned if WebDXFeature UseCounter not found.
+
+        In file.
+        """
         mock_get_trials_list.return_value = self.mock_trials_list
         body = {
             'ot_chromium_trial_name': {
@@ -569,7 +581,8 @@ bool FeatureHasExpiryGracePeriod(blink::mojom::OriginTrialFeature feature) {
         self, mock_get_trials_list
     ):
         """Error message returned if both UseCounter types are missing for a
-        non-deprecation trial."""  # noqa: D205
+        non-deprecation trial.
+        """  # noqa: D205
         mock_get_trials_list.return_value = self.mock_trials_list
         body = {
             'ot_chromium_trial_name': {
@@ -606,8 +619,10 @@ bool FeatureHasExpiryGracePeriod(blink::mojom::OriginTrialFeature feature) {
     def test_validate_creation_args__missing_webfeature_use_counter_deprecation(
         self, mock_get_trials_list
     ):
-        """No error message returned for missing UseCounter if deprecation
-        trial."""
+        """No error message returned for missing UseCounter if.
+
+        Deprecation trial.
+        """
         mock_get_trials_list.return_value = self.mock_trials_list
         body = {
             'ot_chromium_trial_name': {
@@ -780,7 +795,8 @@ bool FeatureHasExpiryGracePeriod(blink::mojom::OriginTrialFeature feature) {
             )
         expected = {
             'ot_is_critical_trial': (
-                'Use counter has not landed in grace period array for critical trial'
+                'Use counter has not landed in grace period array for '
+                'critical trial'
             )
         }
         self.assertEqual(expected, result)

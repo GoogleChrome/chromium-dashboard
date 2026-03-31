@@ -193,8 +193,10 @@ class SearchFulltextFunctionsTest(testing_config.CustomTestCase):
         )
 
     def test_post_process_phrase__no_candidates(self):
-        """If there were no word-bag results then they can be no phrase
-        results."""
+        """If there were no word-bag results then they can be no phrase.
+
+        results.
+        """
         word_bag_feature_ids = []
         actual = search_fulltext.post_process_phrase(
             'hello', word_bag_feature_ids
@@ -202,8 +204,10 @@ class SearchFulltextFunctionsTest(testing_config.CustomTestCase):
         self.assertEqual([], actual)
 
     def test_post_process_phrase__phrase_detection(self):
-        """It returns feature_ids for only features with the words in the
-        phrase."""
+        """It returns feature_ids for only features with the words in the.
+
+        phrase.
+        """
         fe = core_models.FeatureEntry(
             creator_email='creator@example.com',
             name='Once upon a time',
@@ -316,5 +320,6 @@ class FindStopWordsTest(testing_config.CustomTestCase):
             ('someone', 1),
             ('updater', 1),
         ]
-        # We don't care about the exact order of the ones that have the same count.
+        # We don't care about the exact order of the ones that have the same
+        # count.
         self.assertCountEqual(expected, actual)

@@ -40,8 +40,10 @@ class TokenRefreshAPI(basehandlers.APIHandler):
 
     # Note: we use only POST instead of GET to avoid attacks that use GETs.
     def do_post(self, **kwargs):
-        """Refresh the session and return a new XSRF token for the current
-        user."""
+        """Refresh the session and return a new XSRF token for the.
+
+        Current user.
+        """
         user = self.get_current_user()
         users.refresh_user_session()
         result = TokenRefreshResponse.from_dict(

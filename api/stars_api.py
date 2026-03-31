@@ -12,8 +12,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""API endpoints for managing user stars on features to subscribe to
-notifications."""
+"""API endpoints for managing user stars on features to.
+
+Subscribe to notifications.
+"""
 
 from chromestatus_openapi.models import GetStarsResponse, SuccessMessage
 
@@ -42,7 +44,8 @@ class StarsAPI(basehandlers.APIHandler):
                 'feature_ids': feature_ids,
             }
         ).to_dict()
-        # TODO(markxiong0122): delete this backward compatibility code after 30 days
+        # TODO(markxiong0122): delete this backward compatibility code after 30
+        # days
         result['featureIds'] = result['feature_ids']
 
         return result

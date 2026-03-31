@@ -164,7 +164,8 @@ def _fetch_spec_content(url: str) -> str:
 
         # Extract content to Markdown.
         # include_comments=False skips comments.
-        # include_tables=True is critical for Specs which often use tables for definitions.
+        # include_tables=True is critical for Specs which often use tables
+        # for definitions.
         result = trafilatura.extract(
             downloaded,
             include_comments=False,
@@ -186,8 +187,10 @@ def _fetch_spec_content(url: str) -> str:
 async def _get_test_file_contents(
     test_locations: list[str],
 ) -> utils.WPTContents:
-    """Obtain the contents of test files, as well as the contents of their
-    dependencies."""
+    """Obtain the contents of test files, as well as the contents of their.
+
+    dependencies.
+    """
     test_urls = []
     test_directories = []
     for test_loc in test_locations:
@@ -261,7 +264,8 @@ async def prompt_analysis(  # noqa: D417
     This method is used when the number of test files is too large for a single
     prompt. It breaks the analysis into three distinct stages:
     1. Spec Synthesis: Summarizes the spec into a concise reference.
-    2. Test Analysis: Analyzes test files in packed batches to maximize context usage.
+    2. Test Analysis: Analyzes test files in packed batches to maximize context
+       usage.
     3. Gap Analysis: Compares the spec synthesis with the aggregated test
        summaries to identify gaps.
 
@@ -349,8 +353,10 @@ async def prompt_analysis(  # noqa: D417
             if gemini_client.prompt_exceeds_input_token_limit(
                 single_prompt_with_deps
             ):
-                # Edge Case: The file + deps is too large. (this should be very rare).
-                # Create a prompt with ONLY the test file (omit dependencies) and commit immediately.
+                # Edge Case: The file + deps is too large. (this should be very
+                # rare).
+                # Create a prompt with ONLY the test file (omit dependencies)
+                # and commit immediately.
                 logging.warning(
                     f'Test file {fpath} with dependencies exceeds token limit. '
                     'Generating prompt without dependencies.'
@@ -436,7 +442,8 @@ async def prompt_analysis(  # noqa: D417
         GAP_ANALYSIS_TEMPLATE_PATH, **template_data
     )
 
-    # Use the async version of get_response to keep the whole pipeline non-blocking.
+    # Use the async version of get_response to keep the whole pipeline
+    # non-blocking.
     gap_analysis_response = await gemini_client.get_response_async(
         gap_analysis_prompt, temperature=0.0
     )
@@ -520,7 +527,8 @@ class GenerateWPTCoverageEvalReportHandler(basehandlers.FlaskHandler):
             )
             feature.ai_test_eval_status_timestamp = datetime.now()
             feature.ai_test_eval_report = (
-                'Web Platform Tests coverage analysis report failed to generate. '
+                'Web Platform Tests coverage analysis report failed to '
+                'generate. '
                 'Try again later.'
             )
             feature.put()

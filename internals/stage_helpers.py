@@ -137,15 +137,19 @@ def get_feature_stage_ids_list(feature_id: int) -> list[dict[str, int]]:
 
 def get_ot_stage_extensions(ot_stage_id: int):
     """Return a list of extension stages associated with a stage in JSON
-    format."""  # noqa: D415
+
+    format.
+    """  # noqa: D415
     q = Stage.query(Stage.ot_stage_id == ot_stage_id)
     extension_stages = [converters.stage_to_json_dict(stage) for stage in q]
     return sorted(extension_stages, key=lambda s: s['created'])
 
 
 def get_stage_info_for_templates(fe: FeatureEntry) -> StageTemplateInfo:
-    """Gather the information needed to display the estimated milestones
-    table."""
+    """Gather the information needed to display the estimated milestones.
+
+    table.
+    """
     # Only milestones from DevTrial, OT, or shipping stages are displayed.
     id = fe.key.integer_id()
     f_type = fe.feature_type or 0
@@ -163,7 +167,8 @@ def get_stage_info_for_templates(fe: FeatureEntry) -> StageTemplateInfo:
         'extension_stages': [],
         'ship_stages': [],
         'enterprise_stages': [],
-        # Note if any milestones that can be displayed are seen while organizing.
+        # Note if any milestones that can be displayed are seen while
+        # organizing.
         # This is used to check if rendering the milestone table is needed.
         'should_render_mstone_table': False,
         # Note if any intent URLs are seen while organizing.
@@ -198,7 +203,8 @@ def get_stage_info_for_templates(fe: FeatureEntry) -> StageTemplateInfo:
 
         m: MilestoneSet = s.milestones
         if s.stage_type == dt_stage_type:
-            # Dev trial's announcement URL is rendered in templates like an intent.
+            # Dev trial's announcement URL is rendered in templates like an
+            # intent.
             if s.announcement_url is not None:
                 stage_info['should_render_intents'] = True
             stage_info['dt_stages'].append(s)

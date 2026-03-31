@@ -11,8 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Tests for the converters module, verifying correct transformation of data
-models to dictionaries."""
+"""Tests for the converters module.
+
+Verifying correct transformation of data models to dictionaries.
+"""
 
 from datetime import datetime
 from unittest import mock
@@ -98,7 +100,8 @@ class FeatureConvertersTest(testing_config.CustomTestCase):
                 intent_thread_url=f'https://example.com/{s_type}',
             )
             # Add stage-specific fields based on the stage ID.
-            # 150 is the ID associated with the origin trial stage for feature type 0.
+            # 150 is the ID associated with the origin trial stage for feature
+            # type 0.
             if s_type == 150:
                 s.experiment_goals = 'goals'
                 s.experiment_risks = 'risks'
@@ -649,8 +652,10 @@ class GateConvertersTest(testing_config.CustomTestCase):
         self.assertEqual(expected, actual)
 
     def test_slo_complete_review(self):
-        """If a Gate review was completed, response includes the number of
-        days."""
+        """If a Gate review was completed.
+
+        Response includes the number of days.
+        """
         gate = Gate(
             feature_id=1,
             stage_id=2,

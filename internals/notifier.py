@@ -162,8 +162,10 @@ def accumulate_reasons(
 def convert_reasons_to_task(
     addr, reasons, email_html, subject, triggering_user_email
 ):
-    """Add a task dict to task_list for each user who has not already got
-    one."""
+    """Add a task dict to task_list for each user who has not already got.
+
+    one.
+    """
     assert reasons, 'We are emailing someone without any reason'
     footer_lines = ['<p>You are receiving this email because:</p>', '<ul>']
     for reason in sorted(set(reasons)):
@@ -381,8 +383,10 @@ class FeatureStar(ndb.Model):
 
     @classmethod
     def get_user_stars(self, email):
-        """Return a list of feature_ids of all features that the user
-        starred."""
+        """Return a list of feature_ids of all features that the user.
+
+        starred.
+        """
         q = FeatureStar.query()
         q = q.filter(FeatureStar.email == email)
         q = q.filter(FeatureStar.starred == True)  # noqa: E712
@@ -394,8 +398,10 @@ class FeatureStar(ndb.Model):
 
     @classmethod
     def get_feature_starrers(self, feature_id: int) -> list[UserPref]:
-        """Return list of UserPref objects for starrers that want
-        notifications."""
+        """Return list of UserPref objects for starrers that want.
+
+        notifications.
+        """
         q = FeatureStar.query()
         q = q.filter(FeatureStar.feature_id == feature_id)
         q = q.filter(FeatureStar.starred == True)  # noqa: E712
@@ -446,17 +452,20 @@ class NotifyInactiveUsersHandler(basehandlers.FlaskHandler):
 
         for user in users:
             # Site admins and editors aren't warned due to inactivity.
-            # Also, users that have been previously notified are not notified again.
+            # Also, users that have been previously notified are not
+            # notified again.
             if user.is_admin or user.is_site_editor or user.notified_inactive:
                 continue
 
-            # If the user does not have a last visit, it is assumed the last visit
-            # is either the account's creation date or the date the last_visit
+            # If the user does not have a last visit, it is assumed the
+            # last visit is either the account's creation date or the date
+            # the last_visit
             # field was created on the model - whatever is latest.
             last_visit = user.last_visit or self.DEFAULT_LAST_VISIT
             if user.created > last_visit:
                 last_visit = user.created
-            # Notify the user of inactivity if they haven't already been notified.
+            # Notify the user of inactivity if they haven't already been
+            # notified.
             if last_visit < inactive_cutoff:
                 inactive_users.append(user.email)
                 user.notified_inactive = True
@@ -574,8 +583,10 @@ class FeatureReviewHandler(basehandlers.FlaskHandler):
         gate_type: int,
         additional_template_data: dict[str, str],
     ):
-        """Return a list of task dicts to notify approvers of review
-        requests."""
+        """Return a list of task dicts to notify approvers of review.
+
+        requests.
+        """
         email_html = format_email_body(
             self.EMAIL_TEMPLATE_PATH,
             fe,
@@ -787,7 +798,8 @@ class OTActivatedHandler(basehandlers.FlaskHandler):
 
 class OTCreationApprovedHandler(basehandlers.FlaskHandler):
     """Notify about an origin trial having received reviews and approvals and
-    being ready for the user to request creation."""  # noqa: D205
+    being ready for the user to request creation.
+    """  # noqa: D205
 
     IS_INTERNAL_HANDLER = True
     EMAIL_TEMPLATE_PATH = 'origintrials/ot-creation-approved-email.html'
@@ -821,7 +833,8 @@ class OTCreationApprovedHandler(basehandlers.FlaskHandler):
 
 class OTCreationProcessedHandler(basehandlers.FlaskHandler):
     """Notify about an origin trial creation request being processed, but
-    activation is at a later date."""  # noqa: D205
+    activation is at a later date.
+    """  # noqa: D205
 
     IS_INTERNAL_HANDLER = True
     EMAIL_TEMPLATE_PATH = 'origintrials/ot-creation-processed-email.html'
@@ -858,8 +871,10 @@ class OTCreationProcessedHandler(basehandlers.FlaskHandler):
 
 
 class OTCreationRequestFailedHandler(basehandlers.FlaskHandler):
-    """Notify about an origin trial creation request failing automated
-    request."""
+    """Notify about an origin trial creation request failing automated.
+
+    request.
+    """
 
     IS_INTERNAL_HANDLER = True
     EMAIL_TEMPLATE_PATH = 'origintrials/ot-creation-request-failed-email.html'
@@ -948,6 +963,12 @@ class OTCreationRequestHandler(basehandlers.FlaskHandler):
         chromestatus_url = (
             f'https://chromestatus.com/feature/{stage["feature_id"]}'
         )
+        is_deprecation = self._yes_or_no(
+            stage.get('ot_is_deprecation_trial', False)
+        )
+        has_3p = self._yes_or_no(stage.get('ot_has_third_party_support', False))
+        is_critical = self._yes_or_no(stage.get('ot_is_critical_trial', False))
+
         email_body = f"""
 <p>
   Requested by: {stage['ot_owner_email']}
@@ -964,9 +985,9 @@ class OTCreationRequestHandler(basehandlers.FlaskHandler):
   <br>
   Chromium trial name: {stage['ot_chromium_trial_name']}
   <br>
-  Is this a deprecation trial?: {self._yes_or_no(stage['ot_is_deprecation_trial'])}
+  Is this a deprecation trial?: {is_deprecation}
   <br>
-  Third party origin support: {self._yes_or_no(stage['ot_has_third_party_support'])}
+  Third party origin support: {has_3p}
   <br>
   WebFeature UseCounter value: {stage['ot_webfeature_use_counter']}
   <br>
@@ -978,7 +999,7 @@ class OTCreationRequestHandler(basehandlers.FlaskHandler):
   <br>
   Intent to Experiment link: {stage['intent_thread_url']}
   <br>
-  Is this a critical trial?: {self._yes_or_no(stage['ot_is_critical_trial'])}
+  Is this a critical trial?: {is_critical}
   <br>
   Anything else?: {stage['ot_request_note']}
   <br>
@@ -999,7 +1020,8 @@ class OTCreationRequestHandler(basehandlers.FlaskHandler):
 
 class OTExtensionApprovedHandler(basehandlers.FlaskHandler):
     """Notify about an origin trial extension that is approved and needs
-    finalized."""  # noqa: D205
+    finalized.
+    """  # noqa: D205
 
     IS_INTERNAL_HANDLER = True
     EMAIL_TEMPLATE_PATH = 'origintrials/ot-extension-approved-email.html'
@@ -1507,8 +1529,8 @@ class ResetShippingMilestonesEmailHandler(basehandlers.FlaskHandler):
             'to': owner_emails,
             'cc': core_enums.WEBSTATUS_EMAIL,
             'subject': (
-                'Shipping and Rollout milestones reset for ChromeStatus feature '
-                f'({feature_name})'
+                'Shipping and Rollout milestones reset for ChromeStatus '
+                f'feature ({feature_name})'
             ),
             'reply_to': None,
             'html': body,

@@ -54,12 +54,14 @@ WPT_GITHUB_RAW_CONTENTS_URL = (
 SCRIPT_DEPENDENCY_REGEX = re.compile(r'<script\s+[^>]*src=["\']([^"\']+)["\']')
 
 # Match import/export ... from "..." or import "..."
-# Matches: import { x } from './foo.js' | import './bar.js' | export * from './baz.js'
+# Matches: import { x } from './foo.js' | import './bar.js' |
+#          export * from './baz.js'
 IMPORT_DEPENDENCY_REGEX = re.compile(
     r'(?:import|export)\s+(?:[^"\']+\s+from\s+)?["\']([^"\']+)["\']'
 )
 
-# The maximum number of dependency files that will be fetched for coverage evalution.
+# The maximum number of dependency files that will be fetched for coverage
+# evalution.
 MAXIMUM_FETCHED_DEPENDENCIES = 100
 
 # The maximum number of test files that can be analyzed in a single test suite.
@@ -214,8 +216,10 @@ def get_chromium_milestone_info(milestone: int) -> dict:
 
 
 def get_current_milestone_info(anchor_channel: str):
-    """Return a dict of info about the next milestone reaching
-    anchor_channel."""
+    """Return a dict of info about the next milestone reaching.
+
+    anchor_channel.
+    """
     try:
         url = f'{CHROME_RELEASE_SCHEDULE_URL}?mstone={anchor_channel}'
         logging.info('fetching ' + url)
@@ -417,8 +421,10 @@ def resolve_dependency_path(
     """Resolves a dependency reference to a concrete WPT repository path.
 
     Args:
-        current_file_path: The Path of the file containing the reference (e.g. 'fedcm/test.html')
-        dep_ref: The string reference found in the file (e.g. '../support/helper.js')
+        current_file_path: The Path of the file containing the reference (e.g.
+            'fedcm/test.html')
+        dep_ref: The string reference found in the file (e.g.
+            '../support/helper.js')
     """
     # Ignore absolute URLs (external dependencies)
     if dep_ref.startswith('http') or dep_ref.startswith('//'):
@@ -441,7 +447,8 @@ def resolve_dependency_path(
 async def get_mixed_wpt_contents_async(
     dir_urls: list[str], additional_file_urls: list[str]
 ) -> WPTContents:
-    """Orchestrates concurrent fetching of WPT files and recursively fetches
+    """Orchestrates concurrent fetching of WPT files and recursively fetches.
+
     their dependencies.
 
     Args:
@@ -450,8 +457,10 @@ async def get_mixed_wpt_contents_async(
 
     Returns:
       A WPTContents object containing:
-      1. test_contents: {filename: content} for files explicitly requested (or in requested dirs).
-      2. dependency_contents: {filename: content} for files found recursively via imports/scripts.
+      1. test_contents: {filename: content} for files explicitly requested (or
+         in requested dirs).
+      2. dependency_contents: {filename: content} for files found recursively
+         via imports/scripts.
       3. test_to_dependencies_map: {test_filename: set(dependency_filenames)}
           mapping each test file to all its recursive dependency files.
 
@@ -467,7 +476,8 @@ async def get_mixed_wpt_contents_async(
     # Adjacency list to track the dependency graph: Parent -> Set of Children
     dependency_graph: dict[Path, set[Path]] = {}
 
-    # Set of paths we have already queued or fetched to prevent infinite recursion
+    # Set of paths we have already queued or fetched to prevent infinite
+    # recursion
     visited_paths: set[Path] = set()
 
     # Set of paths that are explicitly requested (Test Files)
@@ -550,8 +560,10 @@ async def get_mixed_wpt_contents_async(
 
                 # If valid path
                 if resolved_path:
-                    # Always record the edge in the graph, even if we've seen the file.
-                    # This ensures shared dependencies are mapped to all their parents.
+                    # Always record the edge in the graph, even if we've seen
+                    # the file.
+                    # This ensures shared dependencies are mapped to all their
+                    # parents.
                     if fpath not in dependency_graph:
                         dependency_graph[fpath] = set()
                     dependency_graph[fpath].add(resolved_path)
@@ -575,14 +587,16 @@ async def get_mixed_wpt_contents_async(
     for test_path in test_contents:
         relevant_deps = set()
 
-        # Perform a traversal (DFS) to find all reachable dependencies for this test file.
+        # Perform a traversal (DFS) to find all reachable dependencies for this
+        # test file.
         stack = [test_path]
         seen_in_traversal = {test_path}
 
         while stack:
             current_path = stack.pop()
 
-            # If the current node is a dependency (and not the start node), record it.
+            # If the current node is a dependency (and not the start node),
+            # record it.
             # We check 'in dependency_contents' to ensure we only return files
             # that were actually fetched and categorized as dependencies.
             if current_path != test_path:

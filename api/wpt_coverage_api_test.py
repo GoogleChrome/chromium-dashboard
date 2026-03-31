@@ -11,8 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Tests for the wpt_coverage_api module, verifying the creation, permissions,
-and deletion of WPT coverage reports."""
+"""Tests for the wpt_coverage_api module.
+
+Verifying the creation, permissions, and deletion of WPT coverage reports.
+"""
 
 from datetime import datetime
 from unittest import mock
@@ -125,7 +127,8 @@ class WPTCoverageAPITest(testing_config.CustomTestCase):
 
             self.assertEqual(
                 cm.exception.description,
-                'This feature is currently only available to Google or Chromium accounts.',
+                'This feature is currently only available to Google or '
+                'Chromium accounts.',
             )
 
         # Verify no task was enqueued.

@@ -11,8 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Tests for the spec_mentors_api module, verifying the retrieval and filtering
-of mentored features."""
+"""Tests for the spec_mentors_api module.
+
+Verifying the retrieval and filtering of mentored features.
+"""
 
 import testing_config  # isort: split
 
@@ -272,9 +274,10 @@ class SpecMentorsAPITest(testing_config.CustomTestCase):
         with test_app.test_request_context(self.request_path):
             response = self.spec_mentors_handler.do_get()
 
-        # Unlike the other test expectations in this file, this one is saved to a JSON file so the
-        # Playwright tests can use it as a mock API response. Because the real feature IDs are
-        # dynamically generated, we have to slot them into the right places here.
+        # Unlike the other test expectations in this file, this one is saved to
+        # a JSON file so the Playwright tests can use it as a mock API
+        # response. Because the real feature IDs are dynamically generated, we
+        # have to slot them into the right places here.
         with open(
             os.path.join(
                 os.path.dirname(__file__),

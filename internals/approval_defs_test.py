@@ -68,8 +68,10 @@ class FetchOwnersTest(testing_config.CustomTestCase):
     @mock.patch('logging.error')
     @mock.patch('requests.get')
     def test__error__use_ndb(self, mock_get, mock_err):
-        """If NDB is old and we can't read the OWNERS file, use old value
-        anyway."""
+        """If NDB is old and we can't read the OWNERS file, use old value.
+
+        anyway.
+        """
         encoded = base64.b64encode(self.FILE_CONTENTS.encode())
         OwnersFile(
             url='https://example.com',
@@ -335,8 +337,10 @@ class CalcGateStateTest(testing_config.CustomTestCase):
         self.assertEqual(('approved', 'review_requested'), self.do_calc(RR, AP))
 
     def test_request_one_approved__no_request(self):
-        """An API Owner gave LGTM1 Approval on an intent that was not
-        detected."""
+        """An API Owner gave LGTM1 Approval on an intent that was not.
+
+        detected.
+        """
         self.assertEqual(('approved', 'review_requested'), self.do_calc(AP))
 
     def test_request_three_approved(self):

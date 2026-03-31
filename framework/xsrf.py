@@ -62,7 +62,8 @@ def generate_token(user_email, token_time=None):
     Args:
       user_email: email addr of the user viewing an HTML form.  This can
           be None for anon vistors.
-      token_time: Time at which the token is generated in seconds since the epoch.
+      token_time: Time at which the token is generated in seconds since the
+          epoch.
 
     Returns:
       A url-safe security token.  The token is a string with the digest
@@ -143,8 +144,10 @@ def validate_token(token, user_email, timeout=TOKEN_TIMEOUT_SEC):
 
 
 def token_expires_sec():
-    """Return timestamp when current tokens will expire, minus a safety
-    margin."""
+    """Return timestamp when current tokens will expire, minus a safety.
+
+    margin.
+    """
     now = int(time.time())
     return now + TOKEN_TIMEOUT_SEC - TOKEN_TIMEOUT_MARGIN_SEC
 

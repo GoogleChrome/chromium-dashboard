@@ -185,8 +185,10 @@ class SLORecordingTests(testing_config.CustomTestCase):
         self.a_date = datetime.datetime(2023, 6, 17, 1, 2, 3)
 
     def test_record_vote__not_started(self):
-        """If this somehow gets called before the review starts, it's a no-
-        op."""
+        """If this somehow gets called before the review starts, it's a no-.
+
+        op.
+        """
         self.assertFalse(slo.record_vote(self.gate, [], Gate.PREPARING))
         self.assertFalse(
             slo.record_vote(self.gate, [self.vote_no_response], Gate.PREPARING)
@@ -212,8 +214,10 @@ class SLORecordingTests(testing_config.CustomTestCase):
         self.assertIsNone(self.gate.needs_work_started_on)
 
     def test_record_vote__reviewer_starting(self):
-        """When a reviewer starts the review, we set both requested_on and
-        responded_on."""
+        """When a reviewer starts the review, we set both requested_on and.
+
+        responded_on.
+        """
         self.gate.state = Vote.REVIEW_STARTED
         self.assertTrue(
             slo.record_vote(self.gate, [self.vote_started], Gate.PREPARING)
@@ -295,8 +299,7 @@ class SLORecordingTests(testing_config.CustomTestCase):
         self.assertIsNone(self.gate.needs_work_started_on)
 
     def test_record_vote__already_responded(self):
-        """Votes that don't change state, after the initial response, it's a no-
-        op."""
+        """Votes that don't change state after initial response are a no-op."""
         self.gate.requested_on = self.a_date
         self.gate.responded_on = self.a_date
         self.gate.state = Vote.REVIEW_REQUESTED

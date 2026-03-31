@@ -12,8 +12,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""API handlers for retrieving Chrome channel release schedules and
-milestones."""
+"""API handlers for retrieving Chrome channel release schedules.
+
+And milestones.
+"""
 
 import settings
 from framework import basehandlers
@@ -90,8 +92,8 @@ def construct_chrome_channels_details():
         )
         channels[channel]['version'] = major_version
 
-    # Adjust for the brief period after next miletone gets promted to stable/beta
-    # channel and their major versions are the same.
+    # Adjust for the brief period after next miletone gets promted to
+    # stable/beta channel and their major versions are the same.
     if channels['stable']['version'] == channels['beta']['version']:
         new_beta_version = channels['stable']['version'] + 1
         channels['beta'] = fetchchannels.fetch_chrome_release_info(

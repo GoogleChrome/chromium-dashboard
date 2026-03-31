@@ -12,8 +12,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Tests for the feature_links module, verifying link extraction, updating, and
-indexing logic."""
+"""Tests for the feature_links module, verifying link extraction, updating, and.
+
+indexing logic.
+"""
 
 from unittest import mock
 
@@ -338,7 +340,7 @@ class LinkTest(testing_config.CustomTestCase):
     def test_adding_link_to_second_feature_saves_position_in_second_feature(
         self, mockParse: mock.MagicMock
     ):
-        """Test adding link to second feature saves position in second feature."""
+        """Test adding link to 2nd feature saves position in 2nd feature."""
         mockParse.return_value = {'labels': ['position: defer']}
 
         url = 'https://github.com/mozilla/standards-positions/issues/247'

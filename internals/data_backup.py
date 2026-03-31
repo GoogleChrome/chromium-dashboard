@@ -46,8 +46,9 @@ class BackupExportHandler(basehandlers.FlaskHandler):
         """Get template data for the handler."""
         self.require_cron_header()
         bucket = f'gs://{settings.BACKUP_BUCKET}'
-        # The default cache (file_cache) is unavailable when using oauth2client >= 4.0.0 or google-auth,
-        # and it will log worrisome messages unless given another interface to use.
+        # The default cache (file_cache) is unavailable when using oauth2client
+        # >= 4.0.0 or google-auth, and it will log worrisome messages unless
+        # given another interface to use.
         datastore = build('datastore', 'v1', cache=MemoryCache())
         project_id = settings.APP_ID
 

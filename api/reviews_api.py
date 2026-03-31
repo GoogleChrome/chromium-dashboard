@@ -57,7 +57,8 @@ def get_user_feature_and_gate(
 
 class VotesAPI(basehandlers.APIHandler):
     """Users may see the set of votes on a feature, and add their own, if
-    allowed."""
+    allowed.
+    """
 
     def do_get(self, **kwargs) -> dict[str, list[dict[str, Any]]]:
         """Return a list of all vote values for a given feature."""
@@ -116,8 +117,8 @@ class VotesAPI(basehandlers.APIHandler):
                     amendments=[amendment],
                 )
                 activity.put()
-                # Note: We don't notify assignee about autoassignment, because they
-                # will get a notification of review state change anyway.
+                # Note: We don't notify assignee about autoassignment, because
+                # they will get a notification of review state change anyway.
 
             notifier_helpers.notify_approvers_of_reviews(
                 fe, gate, new_state, user.email()
@@ -168,7 +169,10 @@ class VotesAPI(basehandlers.APIHandler):
             if not existing_na_votes:
                 self.abort(
                     400,
-                    msg='User may not verify when gate has no self-certifications',
+                    msg=(
+                        'User may not verify when gate has no '
+                        'self-certifications'
+                    ),
                 )
 
 

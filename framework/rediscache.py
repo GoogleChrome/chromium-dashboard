@@ -55,8 +55,10 @@ elif settings.STAGING or settings.PROD:
 
 
 def set(key, value, time=86400):
-    """Redis SET sets the str/binary key, value pair, https://redis.io/commands/set/; if
-    ``key`` already holds a value, it is overwritten.
+    """Redis SET sets the str/binary key, value pair.
+
+    https://redis.io/commands/set/; if ``key`` already holds a value, it is
+    overwritten.
 
     ``time`` sets the expire time for this key, in seconds.
     """  # noqa: D205

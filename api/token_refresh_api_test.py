@@ -11,8 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Tests for the token_refresh_api module, verifying the secure generation of
-new session tokens."""
+"""Tests for the token_refresh_api module.
+
+Verifying the secure generation of new session tokens.
+"""
 
 from unittest import mock
 

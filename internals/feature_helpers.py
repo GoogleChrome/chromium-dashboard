@@ -12,8 +12,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Helper functions and filters for querying and formatting feature and stage
-models."""
+"""Helper functions and filters for querying and formatting feature and stage.
+
+models.
+"""
 
 import logging
 from asyncio import Future
@@ -52,7 +54,8 @@ class Criteria(str, Enum):  # noqa: F405
     API_OWNER_LGTMS_MISSING = 'lgtms'
     # Both the finch name and the non-finch justification fields are missing.
     FINCH_NAME_MISSING = 'finch_name'
-    # The feature exists in runtime_enabled_features.json5, but is not marked as 'status: "stable"'.
+    # The feature exists in runtime_enabled_features.json5, but is not marked
+    # as 'status: "stable"'.
     RUNTIME_FEATURE_NOT_STABLE = 'runtime_feature_not_stable'
     # The feature exists in content_features.cc, but is not marked as enabled.
     CONTENT_FEATURE_NOT_ENABLED = 'content_feature_not_enabled'
@@ -65,8 +68,10 @@ BLINK_COMPONENTS_SKIP_CHROMIUM_CHECKS = ['Blink>WebGPU']
 
 
 def filter_unlisted(feature_list: list[FeatureEntry]) -> list[FeatureEntry]:
-    """Filters a FeatureEntry list to display only features the user should
-    see."""
+    """Filters a FeatureEntry list to display only features the user should.
+
+    see.
+    """
     user = users.get_current_user()
     email = None
     if user:
@@ -76,7 +81,8 @@ def filter_unlisted(feature_list: list[FeatureEntry]) -> list[FeatureEntry]:
         for f in feature_list
         if (
             not f.unlisted
-            # Owners and editors of a feature should still be able to see their features.
+            # Owners and editors of a feature should still be able to see
+            # their features.
             or email in f.owner_emails
             or email in f.editor_emails
             or (email is not None and f.creator_email == email)
@@ -92,7 +98,8 @@ def filter_unlisted_formatted(feature_list: list[dict]) -> list[dict]:
         email = user.email()
     listed_features = []
     for f in feature_list:
-        # Owners and editors of a feature should still be able to see their features.
+        # Owners and editors of a feature should still be able to see
+        # their features.
         if (
             (not f.get('unlisted', False))
             or ('browsers' in f and email in f['browsers']['chrome']['owners'])
@@ -116,8 +123,10 @@ def filter_confidential_formatted(feature_list: list[dict]) -> list[dict]:
 
 
 def filter_unpublished_formatted(feature_list: list[dict]) -> list[dict]:
-    """Filters a feature list to display only features marked ready to
-    publish."""
+    """Filters a feature list to display only features marked ready to.
+
+    publish.
+    """
     user = users.get_current_user()
     if permissions.is_google_or_chromium_account(
         user
@@ -132,8 +141,10 @@ def filter_unpublished_formatted(feature_list: list[dict]) -> list[dict]:
 
 
 def filter_confidential(feature_list: list[FeatureEntry]) -> list[FeatureEntry]:
-    """Filters a FeatureEntry list to display only features the user should
-    see."""
+    """Filters a FeatureEntry list to display only features the user should.
+
+    see.
+    """
     user = users.get_current_user()
     return [f for f in feature_list if permissions.can_view_feature(user, f)]
 
@@ -991,8 +1002,10 @@ def validate_shipping_criteria(
     enabled_features_json: dict,
     content_features_file: str,
 ) -> list[Criteria]:
-    """Checks a feature against shipping requirements (Gates, Intents, Finch,
-    Code)."""
+    """Checks a feature against shipping requirements (Gates, Intents, Finch,.
+
+    Code).
+    """
     criteria_missing: list[Criteria] = []
 
     # Skip the Chromium code checks if it is associated with any of the Blink
@@ -1036,8 +1049,10 @@ def aggregate_shipping_features(
 ) -> tuple[
     list[ShippingFeatureInfo], list[tuple[ShippingFeatureInfo, list[str]]]
 ]:
-    """Aggregates and validates features based on shipping stages and chromium
-    files."""
+    """Aggregates and validates features based on shipping stages and chromium.
+
+    files.
+    """
     complete_features: list[ShippingFeatureInfo] = []
     incomplete_features: list[tuple[ShippingFeatureInfo, list[str]]] = []
 

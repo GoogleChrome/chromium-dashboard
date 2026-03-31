@@ -160,8 +160,10 @@ class UtilsFunctionTests(unittest.TestCase):
     def test_get_chromium_file__cache_miss_success(
         self, mock_urlopen, mock_rediscache, mock_logging_info
     ):
-        """When not cached, the file is fetched, decoded, cached, and
-        returned."""
+        """When not cached, the file is fetched, decoded, cached, and.
+
+        returned.
+        """
         mock_rediscache.get.return_value = None
         mock_conn = mock.MagicMock()
         mock_conn.read.return_value = self.encoded_content
@@ -207,7 +209,8 @@ class UtilsFunctionTests(unittest.TestCase):
         """If decoding the fetched content fails, return an empty string."""
         mock_rediscache.get.return_value = None
         mock_conn = mock.MagicMock()
-        # Provide content that is not valid base64, causing a ValueError on decode.
+        # Provide content that is not valid base64, causing a ValueError
+        # on decode.
         mock_conn.read.return_value = b'this is not valid base64'
         mock_urlopen.return_value.__enter__.return_value = mock_conn
 
@@ -231,13 +234,15 @@ class UtilsFunctionTests(unittest.TestCase):
             'Malformed: https:wpt.fyi/results/foo': [],
             'Path-less URL: https://wpt.fyi/results': [],
             # Case: One URL with query
-            'https://wpt.fyi/results/fedcm/fedcm-error-attribute?label=experimental': [
+            (
                 'https://wpt.fyi/results/fedcm/fedcm-error-attribute'
-            ],
+                '?label=experimental'
+            ): ['https://wpt.fyi/results/fedcm/fedcm-error-attribute'],
             # Case: One URL, no query, embedded
-            'Random characters https://wpt.fyi/results/dom/historical.html other': [
-                'https://wpt.fyi/results/dom/historical.html'
-            ],
+            (
+                'Random characters https://wpt.fyi/results/dom/'
+                'historical.html other'
+            ): ['https://wpt.fyi/results/dom/historical.html'],
             # Case: Two URLs, mixed http/https, one with query string
             'https://wpt.fyi/results/a?q=1 and http://wpt.fyi/results/b': [
                 'https://wpt.fyi/results/a',
@@ -253,7 +258,8 @@ class UtilsFunctionTests(unittest.TestCase):
             ],
             # Case: Multiple URLs complex
             (
-                'See https://wpt.fyi/results/a?q=1 http://wpt.fyi/results/b and '
+                'See https://wpt.fyi/results/a?q=1 '
+                'http://wpt.fyi/results/b and '
                 "'https://wpt.fyi/results/c.html?foo=bar#hash for info."
             ): [
                 'https://wpt.fyi/results/a',
@@ -268,8 +274,10 @@ class UtilsFunctionTests(unittest.TestCase):
                 self.assertEqual(expected, actual)
 
     def test_reformat_wpt_fyi_url(self):
-        """Ensure .any.js variant URLs are correctly reformatted to their
-        source."""
+        """Ensure .any.js variant URLs are correctly reformatted to their.
+
+        source.
+        """
         # Case: Standard URL that should not change.
         self.assertEqual(
             'https://wpt.fyi/results/dom/nodes/Element-firstElementChild.html',
@@ -302,7 +310,8 @@ class UtilsFunctionTests(unittest.TestCase):
             ),
         )
 
-        # Case: Edge case to ensure it strictly matches '.any.' and not just '.any'.
+        # Case: Edge case to ensure it strictly matches '.any.' and not just
+        # '.any'.
         self.assertEqual(
             'https://wpt.fyi/results/foo/bar.anything.html',
             utils.reformat_wpt_fyi_url(
@@ -360,8 +369,10 @@ class UtilsGitHubTests(unittest.TestCase):
         self.assertIn('X-GitHub-Api-Version', headers)
 
     def test_get_github_headers__no_token(self):
-        """Headers should not include Authorization when token is None AND
-        secrets returns None."""
+        """Headers should not include Authorization when token is None AND.
+
+        secrets returns None.
+        """
         # Simulate that the secret lookup fails/returns nothing
         settings.GITHUB_TOKEN = None
 
@@ -373,8 +384,10 @@ class UtilsGitHubTests(unittest.TestCase):
         self.assertIn('X-GitHub-Api-Version', headers)
 
     def test_get_github_headers__fetches_token_from_secrets(self):
-        """Headers should include Authorization when token arg is None but
-        secrets returns one."""
+        """Headers should include Authorization when token arg is None but.
+
+        secrets returns one.
+        """
         # Simulate that secrets has a token
         settings.GITHUB_TOKEN = 'secret_token'
 
@@ -431,8 +444,7 @@ class UtilsGitHubTests(unittest.TestCase):
     @mock.patch('framework.utils.requests.get')
     @mock.patch('framework.utils.logging.error')
     def test_fetch_file_content__failure(self, mock_logging, mock_requests_get):
-        """Should return None and log an error on download failure for non-.html
-        URL."""
+        """Should return None on download failure for non-.html URL."""
         # Ensure this test still uses a URL that does NOT trigger the fallback
         mock_requests_get.side_effect = requests.exceptions.RequestException(
             'Failed'
@@ -450,7 +462,10 @@ class UtilsGitHubTests(unittest.TestCase):
     def test_fetch_file_content__fallback_success(
         self, mock_info, mock_error, mock_requests_get
     ):
-        """Tests the fallback logic: initial .html fails, subsequent .js succeeds."""
+        """Tests the fallback logic: initial .html fails, subsequent .js.
+
+        succeeds.
+        """
         html_url = 'http://example.com/test.html'
         js_url = 'http://example.com/test.js'
         js_content = 'JS file content'
@@ -520,8 +535,10 @@ class UtilsGitHubTests(unittest.TestCase):
 
     @mock.patch('framework.utils.requests.get')
     def test_fetch_dir_listing__not_a_list(self, mock_requests_get):
-        """Should return empty list if response is not a list (e.g. it's a
-        file)."""
+        """Should return empty list if response is not a list (e.g. it's a.
+
+        file).
+        """
         mock_response = mock.Mock()
         mock_response.json.return_value = {'type': 'file'}  # Not a list
         mock_requests_get.return_value = mock_response
@@ -787,14 +804,17 @@ class AsyncUtilsGitHubTests(unittest.IsolatedAsyncioTestCase):
         result = await utils.get_mixed_wpt_contents_async(dir_urls, file_urls)
 
         # 1. Start: 1 Test file (test.js). Visited count = 1.
-        # 2. Fetch test.js. Find dep1. Visited count = 2. (2 <= 2) -> Queue dep1.
-        # 3. Fetch dep1. Find dep2. Visited count = 3. (3 <= 2) -> False. Do NOT queue dep2.
+        # 2. Fetch test.js. Find dep1. Visited count = 2. (2 <= 2) -> Queue
+        # dep1.
+        # 3. Fetch dep1. Find dep2. Visited count = 3. (3 <= 2) -> False.
+        # Do NOT queue dep2.
 
         # Assertions
         self.assertIn(Path('test.js'), result.test_contents)
         self.assertIn(Path('dep1.js'), result.dependency_contents)
 
-        # Dep 2 should NOT be in the fetched content because we exceeded limit before queuing it
+        # Dep 2 should NOT be in the fetched content because we exceeded limit
+        # before queuing it
         self.assertNotIn(Path('dep2.js'), result.dependency_contents)
 
         # Mapping should reflect only what was fetched
@@ -810,8 +830,10 @@ class AsyncUtilsGitHubTests(unittest.IsolatedAsyncioTestCase):
     async def test_get_mixed_wpt_contents_async__deduplication(
         self, mock_fetch_content, mock_fetch_dir
     ):
-        """If the same file is in a dir and explicitly listed, fetch only
-        once."""
+        """If the same file is in a dir and explicitly listed, fetch only.
+
+        once.
+        """
         dir_urls = ['https://wpt.fyi/results/dir1']
 
         # We assume the user lists a file that is also inside dir1.
@@ -823,7 +845,8 @@ class AsyncUtilsGitHubTests(unittest.IsolatedAsyncioTestCase):
         raw_base = utils.WPT_GITHUB_RAW_CONTENTS_URL
         expected_url = f'{raw_base}dir1/a.html'
 
-        # The directory listing MUST return the same URL for deduplication to work.
+        # The directory listing MUST return the same URL for deduplication to
+        # work.
         mock_fetch_dir.return_value = [(Path('dir1/a.html'), expected_url)]
 
         mock_fetch_content.return_value = 'content'
@@ -846,8 +869,10 @@ class AsyncUtilsGitHubTests(unittest.IsolatedAsyncioTestCase):
     async def test_get_mixed_wpt_contents_async__partial_failures(
         self, mock_fetch_content, mock_fetch_dir
     ):
-        """Should gracefully handle failures in resolution or fetching
-        phases."""
+        """Should gracefully handle failures in resolution or fetching.
+
+        phases.
+        """
         dir_urls = [
             'https://wpt.fyi/results/dir1',
             'https://wpt.fyi/results/fail_dir',

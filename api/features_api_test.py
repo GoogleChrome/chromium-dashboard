@@ -11,8 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Tests for the features_api module, verifying feature CRUD operations and
-permissions."""
+"""Tests for the features_api module.
+
+Verifying feature CRUD operations and permissions.
+"""
 
 import logging
 from datetime import datetime
@@ -387,8 +389,10 @@ class FeaturesAPITest(testing_config.CustomTestCase):
                 self.handler.do_get()
 
     def test_get__all_unlisted_no_perms(self):
-        """JSON feed does not include unlisted features for users who can't
-        edit."""
+        """JSON feed does not include unlisted features for users who.
+
+        Can't edit.
+        """
         self.feature_1.unlisted = True
         self.feature_1.put()
 
@@ -485,8 +489,10 @@ class FeaturesAPITest(testing_config.CustomTestCase):
         )
 
     def test_get__in_milestone_unlisted_no_perms(self):
-        """JSON feed does not include unlisted features for users who can't
-        edit."""
+        """JSON feed does not include unlisted features for users who.
+
+        Can't edit.
+        """
         self.feature_1.unlisted = True
         self.feature_1.put()
 
@@ -621,8 +627,10 @@ class FeaturesAPITest(testing_config.CustomTestCase):
         mock_notify.assert_called_once()
 
     def test_patch__valid(self):
-        """PATCH request successful with valid input from user with
-        permissions."""
+        """PATCH request successful.
+
+        With valid input from user with permissions.
+        """
         # Signed-in user with permissions.
         testing_config.sign_in('admin@example.com', 123567890)
 
@@ -754,13 +762,16 @@ class FeaturesAPITest(testing_config.CustomTestCase):
         # Updater email field should be changed.
         self.assertIsNotNone(self.feature_1.updated)
         self.assertEqual(self.feature_1.updater_email, 'admin@example.com')
-        # The rollout milestone should be set in the milestones field and the rollout_milestone field.
+        # The rollout milestone should be set in the milestones field and the
+        # rollout_milestone field.
         self.assertEqual(self.enterprise_stage.rollout_milestone, 105)
         self.assertEqual(self.enterprise_stage.milestones.desktop_first, 105)
 
     def test_patch__milestone_changes_null(self):
-        """Valid PATCH updates milestone fields when milestones object is
-        null."""
+        """Valid PATCH updates milestone fields when milestones object.
+
+        Is null.
+        """
         self.ship_stage_1.milestones = None
         self.ship_stage_1.put()
 
@@ -955,8 +966,10 @@ class FeaturesAPITest(testing_config.CustomTestCase):
     def test_patch__reset_notifications_on_shipped_android_milestone_change(
         self,
     ):
-        """Notifications are reset when 'shipped_android_milestone' is
-        changed."""
+        """Notifications are reset when 'shipped_android_milestone' is.
+
+        Changed.
+        """
         self._run_notification_test(
             'shipped_android_milestone', 103, 0, milestone_key='android_first'
         )
@@ -970,8 +983,10 @@ class FeaturesAPITest(testing_config.CustomTestCase):
     def test_patch__reset_notifications_on_shipped_webview_milestone_change(
         self,
     ):
-        """Notifications are reset when 'shipped_webview_milestone' is
-        changed."""
+        """Notifications are reset when 'shipped_webview_milestone' is.
+
+        Changed.
+        """
         self._run_notification_test(
             'shipped_webview_milestone', 105, 0, milestone_key='webview_first'
         )
@@ -1008,8 +1023,10 @@ class FeaturesAPITest(testing_config.CustomTestCase):
     def test_patch__enterprise_first_notice_wrong_non_enterprise_feature(
         self, mock_call
     ):
-        """PATCH request successful with no changes to
-        first_enterprise_notification_milestone."""
+        """PATCH request successful.
+
+        With no changes to first_enterprise_notification_milestone.
+        """
         stable_date = _datetime_to_str(
             datetime.now().replace(year=datetime.now().year + 1, day=1)
         )
@@ -1048,8 +1065,10 @@ class FeaturesAPITest(testing_config.CustomTestCase):
 
     @mock.patch('api.channels_api.construct_specified_milestones_details')
     def test_patch__enterprise_first_notice_enterprise_feature(self, mock_call):
-        """PATCH request successful with provided
-        first_enterprise_notification_milestone."""
+        """PATCH request successful.
+
+        With provided first_enterprise_notification_milestone.
+        """
         stable_date = _datetime_to_str(
             datetime.now().replace(year=datetime.now().year, day=1)
         )
@@ -1096,8 +1115,10 @@ class FeaturesAPITest(testing_config.CustomTestCase):
     def test_patch__enterprise_first_notice_newly_breaking_feature(
         self, mock_call
     ):
-        """PATCH request successful with provided
-        first_enterprise_notification_milestone."""
+        """PATCH request successful.
+
+        With provided first_enterprise_notification_milestone.
+        """
         stable_date = _datetime_to_str(
             datetime.now().replace(year=datetime.now().year, day=1)
         )
@@ -1143,8 +1164,10 @@ class FeaturesAPITest(testing_config.CustomTestCase):
     def test_patch__enterprise_first_notice_becomes_not_breaking_feature(
         self, mock_call
     ):
-        """PATCH request successful with first_enterprise_notification_milestone
-        deleted."""
+        """PATCH request successful.
+
+        With first_enterprise_notification_milestone deleted.
+        """
         stable_date = _datetime_to_str(
             datetime.now().replace(year=datetime.now().year + 1, day=1)
         )
@@ -1189,8 +1212,10 @@ class FeaturesAPITest(testing_config.CustomTestCase):
     def test_patch__first_notice_becomes_not_breaking_feature_already_published(
         self, mock_call
     ):
-        """PATCH request successful with first_enterprise_notification_milestone
-        not deleted."""
+        """PATCH request successful.
+
+        With first_enterprise_notification_milestone not deleted.
+        """
         stable_date = _datetime_to_str(
             datetime.now().replace(year=datetime.now().year - 1, day=1)
         )
@@ -1236,8 +1261,10 @@ class FeaturesAPITest(testing_config.CustomTestCase):
     def test_patch__enterprise_first_notice_in_the_past(
         self, specified_mock, chrome_mock
     ):
-        """PATCH request successful with newer default
-        first_enterprise_notification_milestone."""
+        """PATCH request successful.
+
+        With newer default first_enterprise_notification_milestone.
+        """
         stable_date = _datetime_to_str(
             datetime.now().replace(year=datetime.now().year - 2, day=1)
         )
@@ -1279,8 +1306,10 @@ class FeaturesAPITest(testing_config.CustomTestCase):
 
     @mock.patch('api.channels_api.construct_specified_milestones_details')
     def test_patch__enterprise_first_notice_already_published(self, mock_call):
-        """PATCH request successful with no changes to
-        first_enterprise_notification_milestone."""
+        """PATCH request successful.
+
+        With no changes to first_enterprise_notification_milestone.
+        """
         now = datetime.now()
         mock_call.return_value = {
             100: {
@@ -1374,8 +1403,10 @@ class FeaturesAPITest(testing_config.CustomTestCase):
         self.assertEqual([], self.feature_1.markdown_fields)
 
     def test_post__valid(self):
-        """POST request successful with valid input from user with
-        permissions."""
+        """POST request successful.
+
+        With valid input from user with permissions.
+        """
         # Signed-in user with permissions.
         testing_config.sign_in('admin@example.com', 123567890)
 
@@ -1421,8 +1452,10 @@ class FeaturesAPITest(testing_config.CustomTestCase):
         self.assertEqual(new_feature.creator_email, 'admin@example.com')
 
     def test_post__valid_stage_and_gate_creation(self):
-        """POST request successful with valid input from user with
-        permissions."""
+        """POST request successful.
+
+        With valid input from user with permissions.
+        """
         # Signed-in user with permissions.
         testing_config.sign_in('admin@example.com', 123567890)
 
@@ -1502,7 +1535,8 @@ class FeaturesAPITest(testing_config.CustomTestCase):
         )
         self.assertIsNotNone(new_feature)
 
-        # New feature's values should match fields in JSON body (except bad param).
+        # New feature's values should match fields in JSON body
+        # (except bad param).
         for field, value in request_body.items():
             # Invalid fields are ignored and not updated.
             if field == 'bad_param':
@@ -1638,8 +1672,10 @@ class FeaturesAPITest(testing_config.CustomTestCase):
     def test_post__first_enterprise_notification_milestone_missing_enterprise(
         self, mock_call
     ):
-        """POST request successful with default
-        first_enterprise_notification_milestone."""
+        """POST request successful.
+
+        With default first_enterprise_notification_milestone.
+        """
         expected = {'beta': {'version': 420}}
         mock_call.return_value = expected
 
@@ -1689,11 +1725,13 @@ class FeaturesAPITest(testing_config.CustomTestCase):
         )
 
     @mock.patch('api.channels_api.construct_chrome_channels_details')
-    def test_post__first_enterprise_notification_milestone_missing_impact_enterprise(
+    def test_post__first_enterprise_notification_milestone_missing_impact_ent(
         self, mock_call
     ):
-        """POST request successful with default
-        first_enterprise_notification_milestone."""
+        """POST request successful.
+
+        With default first_enterprise_notification_milestone.
+        """
         expected = {'beta': {'version': 420}}
         mock_call.return_value = expected
 
@@ -1745,8 +1783,10 @@ class FeaturesAPITest(testing_config.CustomTestCase):
 
     @mock.patch('api.channels_api.construct_chrome_channels_details')
     def test_post__first_enterprise_notification_milestone_set(self, mock_call):
-        """POST request successful with provided
-        first_enterprise_notification_milestone."""
+        """POST request successful.
+
+        With provided first_enterprise_notification_milestone.
+        """
         expected = {'beta': {'version': 420}}
         mock_call.return_value = expected
 

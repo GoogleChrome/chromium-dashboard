@@ -11,8 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Cron handler for assembling and enqueuing automated origin trial process
-reminder emails."""
+"""Cron handler for assembling and enqueuing automated origin trial process.
+
+reminder emails.
+"""
 
 import logging
 import time
@@ -71,8 +73,10 @@ def build_trial_data(trial_data: dict[str, Any]) -> dict[str, Any] | None:
 def get_trials(
     release: int,
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
-    """Assemble information about trials that are starting or ending this
-    release."""
+    """Assemble information about trials that are starting or ending this.
+
+    release.
+    """
     trials_list = origin_trials_client.get_trials_list()
     starting_trials = []
     ending_trials = []
@@ -150,7 +154,9 @@ def send_email_reminders() -> str:
 
 def send_branch_emails(release: int, next_branch_date: date) -> int:
     """Send reminders about trials that are first branching or are in their last
-    milestone."""  # noqa: D415
+
+    milestone.
+    """  # noqa: D415
     starting_trials, ending_trials = get_trials(release)
     formatted_branch_date = (
         format_date_for_email(next_branch_date) if next_branch_date else 'soon'

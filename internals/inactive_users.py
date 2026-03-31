@@ -11,8 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Cron handler to identify and remove user accounts that have been inactive for
-an extended period."""
+"""Cron handler to identify and remove inactive user accounts.
+
+Inactive for an extended period.
+"""
 
 import logging
 from datetime import datetime, timedelta
@@ -39,8 +41,9 @@ class RemoveInactiveUsersHandler(FlaskHandler):
             if user.is_admin or user.is_site_editor:
                 continue
 
-            # If the user does not have a last visit, it is assumed the last visit
-            # is either the account's creation date or the date the last_visit
+            # If the user does not have a last visit, it is assumed the last
+            # visit is either the account's creation date or the date the
+            # last_visit
             # field was created on the model - whatever is latest.
             last_visit = user.last_visit or self.DEFAULT_LAST_VISIT
             if user.created > last_visit:

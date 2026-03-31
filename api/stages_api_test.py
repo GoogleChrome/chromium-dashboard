@@ -12,8 +12,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Tests for the stages_api module, verifying the management and permissions of
-feature stages."""
+"""Tests for the stages_api module.
+
+Verifying the management and permissions of feature stages.
+"""
 
 from datetime import datetime
 from unittest import mock
@@ -631,8 +633,10 @@ class StagesAPITest(testing_config.CustomTestCase):
     @mock.patch('framework.rediscache.delete_keys_with_prefix')
     @mock.patch('flask.abort')
     def test_patch__ot_milestones_during_creation(self, mock_abort, mock_dkwp):
-        """Raises 400 if OT start milestone is updated during OT creation
-        process."""
+        """Raises 400 if OT start milestone is updated during OT.
+
+        Creation process.
+        """
         testing_config.sign_in('feature_owner@example.com', 123)
         json = {
             'id': 10,
@@ -653,7 +657,9 @@ class StagesAPITest(testing_config.CustomTestCase):
                 self.handler.do_patch(feature_id=1, stage_id=10)
         mock_abort.assert_called_once_with(
             400,
-            description='Cannot edit OT milestones while creation is in progress.',
+            description=(
+                'Cannot edit OT milestones while creation is in progress.'
+            ),
         )
         mock_dkwp.assert_not_called()
 
@@ -662,8 +668,10 @@ class StagesAPITest(testing_config.CustomTestCase):
     def test_patch__ot_end_milestone_during_creation(
         self, mock_abort, mock_dkwp
     ):
-        """Raises 400 if OT end milestone is updated during OT creation
-        process."""
+        """Raises 400 if OT end milestone is updated during OT creation.
+
+        Process.
+        """
         testing_config.sign_in('feature_owner@example.com', 123)
         json = {
             'id': 10,
@@ -684,7 +692,9 @@ class StagesAPITest(testing_config.CustomTestCase):
                 self.handler.do_patch(feature_id=1, stage_id=10)
         mock_abort.assert_called_once_with(
             400,
-            description='Cannot edit OT milestones while creation is in progress.',
+            description=(
+                'Cannot edit OT milestones while creation is in progress.'
+            ),
         )
         mock_dkwp.assert_not_called()
 
@@ -733,8 +743,10 @@ class StagesAPITest(testing_config.CustomTestCase):
 
     @mock.patch('framework.rediscache.delete_keys_with_prefix')
     def test_patch__valid_rollout_milestone(self, mock_dkwp):
-        """A valid PATCH request should update an existing stage with the
-        rollout_milestone."""
+        """A valid PATCH request should update an existing stage.
+
+        With the rollout_milestone.
+        """
         testing_config.sign_in('feature_owner@example.com', 123)
         json = {
             'desktop_first': {
@@ -749,7 +761,8 @@ class StagesAPITest(testing_config.CustomTestCase):
             actual = self.handler.do_patch(feature_id=1, stage_id=60)
         self.assertEqual(actual['message'], 'Stage values updated.')
         stage = self.stage_6
-        # The rollout milestone should be set in the milestones field and the rollout_milestone field.
+        # The rollout milestone should be set in the milestones field and the
+        # rollout_milestone field.
         self.assertEqual(stage.rollout_milestone, 105)
         self.assertEqual(stage.milestones.desktop_first, 105)
 
@@ -858,8 +871,10 @@ class StagesAPITest(testing_config.CustomTestCase):
 
     @mock.patch('framework.rediscache.delete_keys_with_prefix')
     def test_patch__ot_request_chromium(self, mock_dkwp):
-        """A valid OT creation request from a Chromium user should update
-        stage."""
+        """A valid OT creation request from a Chromium user should.
+
+        Update stage.
+        """
         testing_config.sign_in('chromium_user@chromium.org', 123)
         json = {
             'ot_action_requested': {

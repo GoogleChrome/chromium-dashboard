@@ -12,8 +12,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""API handlers for retrieving and summarizing links associated with
-features."""
+"""API handlers for retrieving and summarizing links associated.
+
+With features.
+"""
 
 from chromestatus_openapi.models import (
     FeatureLinksResponse,
@@ -32,8 +34,10 @@ from internals.feature_links import (
 
 
 class FeatureLinksAPI(basehandlers.APIHandler):
-    """FeatureLinksAPI will return the links and its information to the
-    client."""
+    """FeatureLinksAPI will return the links and its information to.
+
+    The client.
+    """
 
     def get_feature_links(self, feature_id: int, update_stale_links: bool):
         """Get links for a feature."""

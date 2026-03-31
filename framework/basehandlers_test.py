@@ -11,8 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Tests for the basehandlers module, verifying request handling, permissions,
-and responses."""
+"""Tests for the basehandlers module, verifying request handling, permissions,.
+
+and responses.
+"""
 
 import json
 from unittest import mock
@@ -26,12 +28,14 @@ import testing_config  # Must be imported before the module under test.
 
 # from google.appengine.api import users
 from framework import basehandlers, users, xsrf
-from gen.py.chromestatus_openapi.chromestatus_openapi.models.feature_links_response import (
-    FeatureLinksResponse,
+from gen.py.chromestatus_openapi.chromestatus_openapi.models import (
+    feature_links_response,
 )
 from internals.core_models import FeatureEntry, Stage
 from internals.user_models import AppUser
 from main import Route
+
+FeatureLinksResponse = feature_links_response.FeatureLinksResponse
 
 
 class TestableAPIHandler(basehandlers.APIHandler):
@@ -399,7 +403,8 @@ class BaseHandlerTests(testing_config.CustomTestCase):
 
     def test_get_specified_stage__valid(self):
         """Return a given stage if a valid stage ID is passed as a JSON dict
-        property."""  # noqa: D205
+        property.
+        """  # noqa: D205
         stage_id = self.stage_1.key.integer_id()
         with test_app.test_request_context(
             '/test', json={'stage_id': stage_id}
@@ -590,7 +595,8 @@ class APIHandlerTests(testing_config.CustomTestCase):
     @mock.patch('framework.basehandlers.APIHandler.do_get')
     def test_get__dict(self, mock_do_get):
         """Get() should return a JSON response if the do_get() return value is a
-        dict."""  # noqa: D205
+        dict.
+        """  # noqa: D205
         mock_do_get.return_value = {'key': 'value'}
         with test_app.test_request_context('/path'):
             response, _ = self.handler.get()
@@ -602,7 +608,8 @@ class APIHandlerTests(testing_config.CustomTestCase):
     @mock.patch('framework.basehandlers.APIHandler.do_get')
     def test_get__openapi_model(self, mock_do_get):
         """Get() should return a JSON response if the do_get() return value is
-        an OpenAPI model."""  # noqa: D205
+        an OpenAPI model.
+        """  # noqa: D205
         mock_do_get.return_value = FeatureLinksResponse(
             data='data', has_stale_links=True
         )
@@ -625,14 +632,18 @@ class APIHandlerTests(testing_config.CustomTestCase):
         self.check_http_method_handler(self.handler.put, 'done put')
 
     def test_patch(self):
-        """If a subclass has do_patch(), patch() should return a JSON
-        response."""
+        """If a subclass has do_patch(), patch() should return a JSON.
+
+        response.
+        """
         self.handler = TestableAPIHandler()
         self.check_http_method_handler(self.handler.patch, 'done patch')
 
     def test_delete(self):
-        """If a subclass has do_delete(), delete() should return a JSON
-        response."""
+        """If a subclass has do_delete(), delete() should return a JSON.
+
+        response.
+        """
         self.handler = TestableAPIHandler()
         self.check_http_method_handler(self.handler.delete, 'done delete')
 
@@ -661,8 +672,10 @@ class APIHandlerTests(testing_config.CustomTestCase):
             handler_method(feature_id=1234)
 
     def test_do_get__unimplemented(self):
-        """If a subclass does not implement do_get(), raise
-        NotImplementedError."""
+        """If a subclass does not implement do_get(), raise.
+
+        NotImplementedError.
+        """
         with self.assertRaises(NotImplementedError):
             self.handler.do_get()
 
@@ -958,8 +971,10 @@ class FlaskHandlerTests(testing_config.CustomTestCase):
         self.assertNotIn('Access-Control-Allow-Origin', actual_headers)
 
     def test_post__jsonify(self):
-        """When JSONIFY == True, dicts and lists are converted to json
-        strings."""
+        """When JSONIFY == True, dicts and lists are converted to json.
+
+        strings.
+        """
         self.handler.JSONIFY = True
         testing_config.sign_in('user@example.com', 111)
         with test_app.test_request_context('/test'):
@@ -1429,8 +1444,10 @@ class GetSPATemplateDataTests(testing_config.CustomTestCase):
         self.assertEqual({}, actual)
 
     def test_get_spa_template_data__create_perm_anon(self):
-        """This page requires create permission, but user has not signed in
-        yet."""
+        """This page requires create permission, but user has not signed in.
+
+        yet.
+        """
         testing_config.sign_out()
         with test_app.test_request_context('/must_have_create'):
             defaults = {'require_create_feature': True}
@@ -1482,8 +1499,10 @@ class GetSPATemplateDataTests(testing_config.CustomTestCase):
         )
 
     def test_get_spa_template_data__edit_perm_anon(self):
-        """This page requires editing a feature, but user has not signed in
-        yet."""
+        """This page requires editing a feature, but user has not signed in.
+
+        yet.
+        """
         testing_config.sign_out()
         with test_app.test_request_context('/must_have_edit'):
             defaults = {
@@ -1588,8 +1607,10 @@ class FlaskApplicationTests(testing_config.CustomTestCase):
         )
 
     def test_cors_with_api(self):
-        """If the request hits a /api/v0/features path, they get a CORS
-        header."""
+        """If the request hits a /api/v0/features path, they get a CORS.
+
+        header.
+        """
         with test_app.test_request_context('/api/v0/features'):
             actual_response = test_app.full_dispatch_request()
 

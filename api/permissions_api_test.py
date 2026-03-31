@@ -12,8 +12,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Tests for the permissions_api module, verifying permission rules for
-different user types."""
+"""Tests for the permissions_api module.
+
+Verifying permission rules for different user types.
+"""
 
 import flask
 

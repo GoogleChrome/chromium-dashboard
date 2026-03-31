@@ -95,7 +95,8 @@ class XsrfTest(testing_config.CustomTestCase):
 
         xsrf.validate_token(token, 'user1@example.com')
 
-        # The clock of the GAE instance doing the checking might be slightly slow.
+        # The clock of the GAE instance doing the checking might be slightly
+        # slow.
         mock_time.return_value = test_time - 1
         xsrf.validate_token(token, 'user1@example.com')
 

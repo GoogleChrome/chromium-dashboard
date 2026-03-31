@@ -12,8 +12,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Helper functions and classes for validating, parsing, and classifying
-URLs."""
+"""Helper functions and classes for validating, parsing, and classifying.
+
+URLs.
+"""
 
 import base64
 import html
@@ -137,7 +139,8 @@ class Link:
             urls = URL_REGEX.findall(value)
 
             # remove trailing punctuation
-            # punctuation similar to string.punctuation except that it does not include "/"
+            # punctuation similar to string.punctuation except that it does
+            # not include "/"
             # this keep url ending with "/"
             punctuation = r"""!"#$%&'()*+,-.:;<=>?@[\]^_`{|}~"""
             urls = [url.rstrip(punctuation) for url in urls]
@@ -179,8 +182,8 @@ class Link:
         """Get a file from GitHub."""
         client = get_github_api_client()
         try:
-            # try to get the branch information, if it exists, update branch name
-            # this handles the case where the branch is renamed.
+            # try to get the branch information, if it exists, update branch
+            # name. this handles the case where the branch is renamed.
             branch_information = client.repos.get_branch(
                 owner=owner, repo=repo, branch=ref
             )
@@ -285,8 +288,9 @@ class Link:
         elif parsed_url.netloc == 'code.google.com':
             issue_id = parsed_url.query.split('id=')[-1].split('&')[0]
 
-        # csrf token is required, its expiration is about 2 hours according to the tokenExpiresSec field
-        # technically, we could cache the csrf token and reuse it for 2 hours
+        # csrf token is required, its expiration is about 2 hours according
+        # to the tokenExpiresSec field. technically, we could cache the csrf
+        # token and reuse it for 2 hours.
         # TODO: consider using a monorail API client with OAuth
 
         csrf_response = requests.get(
@@ -329,7 +333,8 @@ class Link:
         html_str = html.unescape(response.text)
 
         title = re.search(r'<title>(.*?)</title>', html_str)
-        # use \s+ instead of whitespace, to match multiple whitespaces or newlines
+        # use \s+ instead of whitespace, to match multiple whitespaces or
+        # newlines
         title_og = re.search(
             r'<meta property="og:title"\s+content="(.*?)"', html_str
         )
@@ -357,10 +362,10 @@ class Link:
         """The `_validate_url` method is used to validate the URL associated
         with the Link object.
 
-        It
-        sends a GET request to the URL and checks the response status code. If the status code is not
-        200 (OK), it sets the `is_error` flag to True and stores the HTTP error code. This method is
-        used to determine if the URL is accessible and valid.
+        It sends a GET request to the URL and checks the response status code.
+        If the status code is not 200 (OK), it sets the `is_error` flag to
+        True and stores the HTTP error code. This method is used to
+        determine if the URL is accessible and valid.
         """  # noqa: D205
         res = requests.get(self.url, allow_redirects=True, timeout=TIMEOUT)
         if res.status_code != 200:
@@ -371,8 +376,8 @@ class Link:
 
     def parse(self):
         """Parse the link and store the information."""
-        # Flush logs because GAE instances killed for exceeding request time limit
-        # may lose logging output that has not been flushed.
+        # Flush logs because GAE instances killed for exceeding request time
+        # limit may lose logging output that has not been flushed.
         logging.getLogger().handlers[0].flush()
 
         try:
@@ -388,8 +393,9 @@ class Link:
             if self.type == LINK_TYPE_GITHUB_ISSUE:
                 self.information = self._parse_github_issue()
             elif self.type == LINK_TYPE_GITHUB_PULL_REQUEST:
-                # we can also use github issue api to get pull request information
-                # pull request api can get more information but we don't need it for now
+                # we can also use github issue api to get pull request
+                # information. pull request api can get more information but
+                # we don't need it for now
                 self.information = self._parse_github_issue()
             elif self.type == LINK_TYPE_GITHUB_MARKDOWN:
                 self.information = self._parse_github_markdown()

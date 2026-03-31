@@ -11,8 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Tests for the stale_features_api module, verifying the accurate retrieval of
-stale feature data."""
+"""Tests for the stale_features_api module.
+
+Verifying the accurate retrieval of stale feature data.
+"""
 
 from datetime import datetime
 from unittest import mock

@@ -11,8 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Tests for the ot_process_reminders module, verifying the formatting and logic
-of origin trial reminder emails."""
+"""Tests for the ot_process_reminders module.
+
+Verifies the formatting and logic of origin trial reminder emails.
+"""
 
 import logging
 from unittest import mock
@@ -241,8 +243,10 @@ class OTProcessRemindersTest(testing_config.CustomTestCase):
     def test_get_trials__null_ot_owner(
         self, mock_get_trials_list, mock_logging
     ):
-        """If OT owner is not set, any other contacts should still be
-        notified."""
+        """If OT owner is not set, any other contacts should still be.
+
+        notified.
+        """
         # OT owner email is not set.
         self.stage_2.ot_owner_email = None
         self.stage_2.put()

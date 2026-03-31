@@ -39,8 +39,10 @@ class LocalCloudTasksClientTest(unittest.TestCase):
 
     @mock.patch('requests.request')
     def test_create_task(self, mock_fetch):
-        """The local stub makes a synchronous HTTP request to the task
-        handler."""
+        """The local stub makes a synchronous HTTP request to the task.
+
+        handler.
+        """
         parent = 'parent'
         task = cloud_tasks_helpers._make_task('/handler', {'a': 1})
         mock_fetch.return_value = testing_config.Blank(
@@ -94,7 +96,8 @@ class CloudTasksHelpersTest(unittest.TestCase):
                 'app_engine_http_request': {
                     'relative_uri': '/handler',
                     'body': (
-                        b'{"a": 1, "when": "2025-12-01 02:03:04", "missing": null}'
+                        b'{"a": 1, "when": "2025-12-01 02:03:04", '
+                        b'"missing": null}'
                     ),
                 }
             },
