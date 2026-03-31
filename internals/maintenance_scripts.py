@@ -881,7 +881,9 @@ class BackfillActivityLogType(FlaskHandler):
         batch: list[Activity] = []
         BATCH_SIZE = 100
 
-        for activity in Activity.query(Activity.log_type == None):  # noqa: E711
+        for activity in Activity.query():
+            if activity.log_type is not None:
+                continue
             # 1. If the content field is null, the log_type field should be USER_CHANGE.
             if not activity.content:
                 activity.log_type = Activity.USER_CHANGE
