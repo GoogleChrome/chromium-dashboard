@@ -328,7 +328,7 @@ class PrepublicationHandler(AbstractReminderHandler):
     PUBLICATION_LEAD_TIME = timedelta(weeks=1)
     # We remind owners 1 week before that.
     REMINDER_WINDOW = timedelta(weeks=1)
-    ANCHOR_CHANNEL = 'beta'
+    ANCHOR_CHANNEL = 'next'
 
     def prefilter_features(self, current_milestone_info, features, now=None):
         """Prefilter features."""
