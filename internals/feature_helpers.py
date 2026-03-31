@@ -1063,5 +1063,3 @@ def aggregate_shipping_features(
             complete_features.append(feature_info)
 
     return complete_features, incomplete_features
-omplete_features
-es

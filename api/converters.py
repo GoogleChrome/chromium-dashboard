@@ -714,7 +714,6 @@ def feature_entry_to_json_tiny(fe: FeatureEntry) -> dict[str, Any]:
 
 def vote_value_to_json_dict(vote: Vote) -> dict[str, Any]:
     """Convert a Vote entity into a dict."""
-
     return {
         'feature_id': vote.feature_id,
         'gate_id': vote.gate_id,

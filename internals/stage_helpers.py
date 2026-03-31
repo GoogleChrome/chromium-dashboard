@@ -321,4 +321,3 @@ def get_all_shipping_stages_with_milestones(
         )
     ]
     return shipping_stages_with_milestones
-s
