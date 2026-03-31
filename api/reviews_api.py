@@ -111,6 +111,7 @@ class VotesAPI(basehandlers.APIHandler):
                     new_value=', '.join(new_assignees),
                 )
                 activity = Activity(
+                    log_type=Activity.USER_CHANGE,
                     feature_id=fe.key.integer_id(),
                     gate_id=gate_id,
                     author=user.email(),

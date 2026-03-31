@@ -241,6 +241,12 @@ export interface CreateOriginTrialRequest {
      * @type {FieldInfo}
      * @memberof CreateOriginTrialRequest
      */
+    rollout_stage_plan?: FieldInfo;
+    /**
+     * 
+     * @type {FieldInfo}
+     * @memberof CreateOriginTrialRequest
+     */
     desktop_first?: FieldInfo;
     /**
      * 
@@ -338,6 +344,7 @@ export function CreateOriginTrialRequestFromJSONTyped(json: any, ignoreDiscrimin
         'rollout_milestone': json['rollout_milestone'] == null ? undefined : FieldInfoFromJSON(json['rollout_milestone']),
         'rollout_platforms': json['rollout_platforms'] == null ? undefined : FieldInfoFromJSON(json['rollout_platforms']),
         'rollout_details': json['rollout_details'] == null ? undefined : FieldInfoFromJSON(json['rollout_details']),
+        'rollout_stage_plan': json['rollout_stage_plan'] == null ? undefined : FieldInfoFromJSON(json['rollout_stage_plan']),
         'desktop_first': json['desktop_first'] == null ? undefined : FieldInfoFromJSON(json['desktop_first']),
         'desktop_last': json['desktop_last'] == null ? undefined : FieldInfoFromJSON(json['desktop_last']),
         'android_first': json['android_first'] == null ? undefined : FieldInfoFromJSON(json['android_first']),
@@ -390,6 +397,7 @@ export function CreateOriginTrialRequestToJSON(value?: CreateOriginTrialRequest 
         'rollout_milestone': FieldInfoToJSON(value['rollout_milestone']),
         'rollout_platforms': FieldInfoToJSON(value['rollout_platforms']),
         'rollout_details': FieldInfoToJSON(value['rollout_details']),
+        'rollout_stage_plan': FieldInfoToJSON(value['rollout_stage_plan']),
         'desktop_first': FieldInfoToJSON(value['desktop_first']),
         'desktop_last': FieldInfoToJSON(value['desktop_last']),
         'android_first': FieldInfoToJSON(value['android_first']),

@@ -83,6 +83,7 @@ class CommentsConvertersTest(testing_config.CustomTestCase):
         )
         created = datetime.datetime(2022, 10, 28, 0, 0, 0)
         act = Activity(
+            log_type=Activity.USER_COMMENT,
             id=1,
             feature_id=123,
             gate_id=456,
@@ -133,6 +134,7 @@ class CommentsAPITest(testing_config.CustomTestCase):
         )
 
         self.act_1_1 = Activity(
+            log_type=Activity.USER_COMMENT,
             feature_id=self.feature_id,
             gate_id=self.gate_1_id,
             author='owner1@example.com',
@@ -166,6 +168,7 @@ class CommentsAPITest(testing_config.CustomTestCase):
         testing_config.sign_in('user7@example.com', 123567890)
 
         legacy_comment = Activity(
+            log_type=Activity.USER_COMMENT,
             feature_id=self.feature_id,
             author='owner1@example.com',
             created=NOW,
@@ -187,6 +190,7 @@ class CommentsAPITest(testing_config.CustomTestCase):
         self.act_1_1.put()
 
         random_activity = Activity(
+            log_type=Activity.USER_COMMENT,
             feature_id=self.feature_id,
             gate_id=99,
             author='owner1@example.com',

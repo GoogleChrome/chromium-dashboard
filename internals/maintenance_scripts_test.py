@@ -910,6 +910,79 @@ class BackfillShippingYearTest(testing_config.CustomTestCase):
         self.assertEqual(expected, actual)
 
 
+class BackfillActivityLogTypeTest(testing_config.CustomTestCase):
+    def setUp(self):
+        self.handler = maintenance_scripts.BackfillActivityLogType()
+
+        # 1. content is None -> USER_CHANGE
+        self.act_user_change = Activity(feature_id=1, content=None)
+        self.act_user_change.put()
+
+        # 2. Starts with "Shipping/Rollout milestones were unset" -> MILESTONE_RESET
+        self.act_milestone_reset = Activity(
+            feature_id=2,
+            content='Shipping/Rollout milestones were unset due to failure to verify accuracy.',
+        )
+        self.act_milestone_reset.put()
+
+        # 3. content is not null, amendments not empty -> SYSTEM_CHANGE
+        self.act_system_change = Activity(
+            feature_id=3,
+            content='Some system change happened',
+            amendments=[
+                Amendment(field_name='test', old_value='a', new_value='b')
+            ],
+        )
+        self.act_system_change.put()
+
+        # 4. content is not null, amendments empty -> USER_COMMENT
+        self.act_user_comment = Activity(
+            feature_id=4, content='A normal user comment'
+        )
+        self.act_user_comment.put()
+
+        # Activity already has a log type, should not be updated
+        self.act_already_set = Activity(
+            feature_id=5,
+            content='Already set',
+            log_type=Activity.MILESTONE_RESET,
+        )
+        self.act_already_set.put()
+
+    @mock.patch('framework.basehandlers.FlaskHandler.require_cron_header')
+    def test_get_template_data(self, mock_require_cron):
+        result = self.handler.get_template_data()
+        mock_require_cron.assert_called_once()
+
+        self.assertEqual(result, '4 Activity entities updated.')
+
+        act_user_change = Activity.get_by_id(
+            self.act_user_change.key.integer_id()
+        )
+        self.assertEqual(act_user_change.log_type, Activity.USER_CHANGE)
+
+        act_milestone_reset = Activity.get_by_id(
+            self.act_milestone_reset.key.integer_id()
+        )
+        self.assertEqual(act_milestone_reset.log_type, Activity.MILESTONE_RESET)
+
+        act_system_change = Activity.get_by_id(
+            self.act_system_change.key.integer_id()
+        )
+        self.assertEqual(act_system_change.log_type, Activity.SYSTEM_CHANGE)
+
+        act_user_comment = Activity.get_by_id(
+            self.act_user_comment.key.integer_id()
+        )
+        self.assertEqual(act_user_comment.log_type, Activity.USER_COMMENT)
+
+        # Ensure the already-set one didn't get overridden to USER_COMMENT
+        act_already_set = Activity.get_by_id(
+            self.act_already_set.key.integer_id()
+        )
+        self.assertEqual(act_already_set.log_type, Activity.MILESTONE_RESET)
+
+
 class BackfillGateDatesTest(testing_config.CustomTestCase):
     def setUp(self):
         self.gate = Gate(
@@ -1298,6 +1371,7 @@ class GenerateReviewActivityFileTest(testing_config.CustomTestCase):
         self.gate_2.put()
 
         self.activity_1 = Activity(
+            log_type=Activity.USER_COMMENT,
             feature_id=1,
             gate_id=11,
             author='user1@example.com',
@@ -1308,6 +1382,7 @@ class GenerateReviewActivityFileTest(testing_config.CustomTestCase):
         self.activity_1.put()
 
         self.activity_2 = Activity(
+            log_type=Activity.USER_CHANGE,
             feature_id=1,
             gate_id=11,
             created=datetime(2020, 1, 2, 9),
@@ -1324,6 +1399,7 @@ class GenerateReviewActivityFileTest(testing_config.CustomTestCase):
         self.activity_2.put()
 
         self.activity_3 = Activity(
+            log_type=Activity.USER_COMMENT,
             feature_id=1,
             gate_id=11,
             author='user2@example.com',
@@ -1334,6 +1410,7 @@ class GenerateReviewActivityFileTest(testing_config.CustomTestCase):
         self.activity_3.put()
 
         self.activity_4 = Activity(
+            log_type=Activity.USER_CHANGE,
             feature_id=1,
             gate_id=11,
             created=datetime(2020, 1, 4, 12),
@@ -1351,6 +1428,7 @@ class GenerateReviewActivityFileTest(testing_config.CustomTestCase):
 
         # Deleted comment.
         self.activity_5 = Activity(
+            log_type=Activity.USER_COMMENT,
             feature_id=1,
             gate_id=11,
             author='user2@example.com',
@@ -1362,6 +1440,7 @@ class GenerateReviewActivityFileTest(testing_config.CustomTestCase):
         self.activity_5.put()
 
         self.activity_6 = Activity(
+            log_type=Activity.USER_CHANGE,
             feature_id=1,
             gate_id=11,
             created=datetime(2020, 1, 6, 12),
@@ -1379,6 +1458,7 @@ class GenerateReviewActivityFileTest(testing_config.CustomTestCase):
 
         # Comment with no gate ID.
         self.activity_7 = Activity(
+            log_type=Activity.USER_COMMENT,
             feature_id=2,
             gate_id=None,
             author='user3@example.com',
@@ -1389,6 +1469,7 @@ class GenerateReviewActivityFileTest(testing_config.CustomTestCase):
         self.activity_7.put()
 
         self.activity_8 = Activity(
+            log_type=Activity.USER_CHANGE,
             feature_id=2,
             gate_id=12,
             author='user3@example.com',
@@ -1405,6 +1486,7 @@ class GenerateReviewActivityFileTest(testing_config.CustomTestCase):
         self.activity_8.put()
 
         self.activity_9 = Activity(
+            log_type=Activity.USER_CHANGE,
             feature_id=2,
             gate_id=12,
             author='user4@example.com',
@@ -1421,6 +1503,7 @@ class GenerateReviewActivityFileTest(testing_config.CustomTestCase):
         self.activity_9.put()
 
         self.activity_10 = Activity(
+            log_type=Activity.USER_COMMENT,
             feature_id=2,
             gate_id=12,
             author='user3@example.com',
@@ -1432,6 +1515,7 @@ class GenerateReviewActivityFileTest(testing_config.CustomTestCase):
 
         # Activity whose gate doesn't exist.
         self.activity_11 = Activity(
+            log_type=Activity.USER_COMMENT,
             feature_id=2,
             gate_id=13,
             author='user4@example.com',

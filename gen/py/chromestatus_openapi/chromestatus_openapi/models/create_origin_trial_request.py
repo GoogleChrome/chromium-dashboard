@@ -14,7 +14,7 @@ class CreateOriginTrialRequest(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, announcement_url=None, browser=None, ot_description=None, display_name=None, enterprise_policies=None, finch_url=None, experiment_goals=None, experiment_risks=None, experiment_extension_reason=None, intent_thread_url=None, origin_trial_feedback_url=None, origin_trial_id=None, ot_approval_buganizer_component=None, ot_approval_buganizer_custom_field_id=None, ot_approval_criteria_url=None, ot_approval_group_email=None, ot_chromium_trial_name=None, ot_display_name=None, ot_action_requested=None, ot_creation__bypass_file_checks=None, ot_documentation_url=None, ot_emails=None, ot_feedback_submission_url=None, ot_has_third_party_support=None, ot_is_critical_trial=None, ot_is_deprecation_trial=None, ot_owner_email=None, ot_request_note=None, ot_require_approvals=None, ot_stage_id=None, ot_webfeature_use_counter=None, rollout_impact=None, rollout_milestone=None, rollout_platforms=None, rollout_details=None, desktop_first=None, desktop_last=None, android_first=None, android_last=None, ios_first=None, ios_last=None, webview_first=None, webview_last=None):  # noqa: E501
+    def __init__(self, announcement_url=None, browser=None, ot_description=None, display_name=None, enterprise_policies=None, finch_url=None, experiment_goals=None, experiment_risks=None, experiment_extension_reason=None, intent_thread_url=None, origin_trial_feedback_url=None, origin_trial_id=None, ot_approval_buganizer_component=None, ot_approval_buganizer_custom_field_id=None, ot_approval_criteria_url=None, ot_approval_group_email=None, ot_chromium_trial_name=None, ot_display_name=None, ot_action_requested=None, ot_creation__bypass_file_checks=None, ot_documentation_url=None, ot_emails=None, ot_feedback_submission_url=None, ot_has_third_party_support=None, ot_is_critical_trial=None, ot_is_deprecation_trial=None, ot_owner_email=None, ot_request_note=None, ot_require_approvals=None, ot_stage_id=None, ot_webfeature_use_counter=None, rollout_impact=None, rollout_milestone=None, rollout_platforms=None, rollout_details=None, rollout_stage_plan=None, desktop_first=None, desktop_last=None, android_first=None, android_last=None, ios_first=None, ios_last=None, webview_first=None, webview_last=None):  # noqa: E501
         """CreateOriginTrialRequest - a model defined in OpenAPI
 
         :param announcement_url: The announcement_url of this CreateOriginTrialRequest.  # noqa: E501
@@ -87,6 +87,8 @@ class CreateOriginTrialRequest(Model):
         :type rollout_platforms: FieldInfo
         :param rollout_details: The rollout_details of this CreateOriginTrialRequest.  # noqa: E501
         :type rollout_details: FieldInfo
+        :param rollout_stage_plan: The rollout_stage_plan of this CreateOriginTrialRequest.  # noqa: E501
+        :type rollout_stage_plan: FieldInfo
         :param desktop_first: The desktop_first of this CreateOriginTrialRequest.  # noqa: E501
         :type desktop_first: FieldInfo
         :param desktop_last: The desktop_last of this CreateOriginTrialRequest.  # noqa: E501
@@ -140,6 +142,7 @@ class CreateOriginTrialRequest(Model):
             'rollout_milestone': FieldInfo,
             'rollout_platforms': FieldInfo,
             'rollout_details': FieldInfo,
+            'rollout_stage_plan': FieldInfo,
             'desktop_first': FieldInfo,
             'desktop_last': FieldInfo,
             'android_first': FieldInfo,
@@ -186,6 +189,7 @@ class CreateOriginTrialRequest(Model):
             'rollout_milestone': 'rollout_milestone',
             'rollout_platforms': 'rollout_platforms',
             'rollout_details': 'rollout_details',
+            'rollout_stage_plan': 'rollout_stage_plan',
             'desktop_first': 'desktop_first',
             'desktop_last': 'desktop_last',
             'android_first': 'android_first',
@@ -231,6 +235,7 @@ class CreateOriginTrialRequest(Model):
         self._rollout_milestone = rollout_milestone
         self._rollout_platforms = rollout_platforms
         self._rollout_details = rollout_details
+        self._rollout_stage_plan = rollout_stage_plan
         self._desktop_first = desktop_first
         self._desktop_last = desktop_last
         self._android_first = android_first
@@ -985,6 +990,27 @@ class CreateOriginTrialRequest(Model):
         """
 
         self._rollout_details = rollout_details
+
+    @property
+    def rollout_stage_plan(self) -> FieldInfo:
+        """Gets the rollout_stage_plan of this CreateOriginTrialRequest.
+
+
+        :return: The rollout_stage_plan of this CreateOriginTrialRequest.
+        :rtype: FieldInfo
+        """
+        return self._rollout_stage_plan
+
+    @rollout_stage_plan.setter
+    def rollout_stage_plan(self, rollout_stage_plan: FieldInfo):
+        """Sets the rollout_stage_plan of this CreateOriginTrialRequest.
+
+
+        :param rollout_stage_plan: The rollout_stage_plan of this CreateOriginTrialRequest.
+        :type rollout_stage_plan: FieldInfo
+        """
+
+        self._rollout_stage_plan = rollout_stage_plan
 
     @property
     def desktop_first(self) -> FieldInfo:

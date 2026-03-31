@@ -13,10 +13,10 @@ trafilatura==2.0.0
 # google-python-cloud-debugger==2.18
 # See https://github.com/GoogleCloudPlatform/cloud-debug-python/issues/33
 
-google-cloud-tasks==2.21.0
-google-cloud-ndb==2.4.0
+google-cloud-tasks==2.22.0
+google-cloud-ndb==2.4.1
 google-cloud-logging==3.14.0
-google-cloud-secret-manager==2.26.0
+google-cloud-secret-manager==2.27.0
 google-cloud-storage==3.10.1
 google-auth==2.49.1
 google-genai==1.68.0
@@ -29,7 +29,7 @@ funcsigs==1.0.2
 Jinja2==3.1.6
 json5==0.13.0
 MarkupSafe==3.0.3
-Werkzeug==3.1.6
+Werkzeug==3.1.7
 click==8.3.1
 itsdangerous==2.2.0
 ghapi==1.0.13

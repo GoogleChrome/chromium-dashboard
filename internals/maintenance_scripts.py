@@ -847,6 +847,46 @@ class BackfillShippingYear(FlaskHandler):
         return f'{count} Features entities updated.'
 
 
+class BackfillActivityLogType(FlaskHandler):
+    def get_template_data(self, **kwargs) -> str:
+        """Backfill log_type for all Activity entities."""
+        self.require_cron_header()
+
+        count = 0
+        batch: list[Activity] = []
+        BATCH_SIZE = 100
+
+        for activity in Activity.query(Activity.log_type == None):  # noqa: E711
+            # 1. If the content field is null, the log_type field should be USER_CHANGE.
+            if not activity.content:
+                activity.log_type = Activity.USER_CHANGE
+            # 2. If the content field is not null and the string starts with "Shipping/Rollout milestones were unset", the log_type field should be MILESTONE_RESET.
+            elif activity.content.startswith(
+                'Shipping/Rollout milestones were unset'
+            ):
+                activity.log_type = Activity.MILESTONE_RESET
+            # 3. If the content field is not null and the amendments field is not empty, the log_type field should be SYSTEM_CHANGE.
+            elif activity.content and activity.amendments:
+                activity.log_type = Activity.SYSTEM_CHANGE
+            # 4. If the content field is not null and the amendments field is empty, the log_type field should be USER_COMMENT.
+            elif activity.content and not activity.amendments:
+                activity.log_type = Activity.USER_COMMENT
+            # 5. The fallback type should be USER_CHANGE.
+            else:
+                activity.log_type = Activity.USER_CHANGE
+
+            batch.append(activity)
+            count += 1
+            if len(batch) >= BATCH_SIZE:
+                ndb.put_multi(batch)
+                batch = []
+
+        if batch:
+            ndb.put_multi(batch)
+
+        return f'{count} Activity entities updated.'
+
+
 class BackfillGateDates(FlaskHandler):
     def get_template_data(self, **kwargs) -> str:
         """Backfill resolved_on and needs_work_started_on for all Gates."""
@@ -1545,6 +1585,7 @@ class ResetStaleShippingMilestones(FlaskHandler):
             for s in stages:
                 # Create an activity that shows all the shipping milestones have been set to null.
                 activity = Activity(
+                    log_type=Activity.MILESTONE_RESET,
                     feature_id=f.key.integer_id(),
                     amendments=[],
                     content='Shipping/Rollout milestones were unset due to failure to verify accuracy.',
@@ -1606,6 +1647,7 @@ class DeleteWPTCoverageReport(FlaskHandler):
             # because the `ai_test_eval_report` field is not indexed.
             if feature.ai_test_eval_report:
                 activity = Activity(
+                    log_type=Activity.SYSTEM_CHANGE,
                     feature_id=feature.key.integer_id(),
                     content=(
                         f'WPT coverage report was deleted due to {self.RETENTION_DAYS}-day '
