@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Provides a handler to preview intent-to-implement/ship emails."""
+
 from api.converters import feature_entry_to_json_verbose
 from api.intents_api import compute_subject_prefix
 from framework import basehandlers

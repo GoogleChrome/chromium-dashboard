@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for the user preferences NDB models."""
+
 from unittest import mock
 
 import testing_config  # Must be imported before the module under test.

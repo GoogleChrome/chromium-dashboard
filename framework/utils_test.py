@@ -12,6 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Unit tests for the utils module.
+
+Verifies the behavior of string normalization, retry decorators,
+URL formatting, and external fetching logic.
+"""
+
 import base64
 import unittest
 import urllib

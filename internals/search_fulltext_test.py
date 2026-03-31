@@ -13,6 +13,8 @@
 # limitations under the License.
 
 
+"""Tests for the full-text search indexing and retrieval module."""
+
 import flask
 
 import settings

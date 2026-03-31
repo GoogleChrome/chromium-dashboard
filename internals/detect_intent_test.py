@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for the detect_intent module, verifying intent detection and URL parsing from text."""
+
 import datetime
 from unittest import mock
 

@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for the component_users module, verifying component owner and subscriber modifications."""
+
 import datetime
 
 import flask

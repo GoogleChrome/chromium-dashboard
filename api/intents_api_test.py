@@ -13,6 +13,8 @@
 # limitations under the License.
 
 
+"""Tests for the intents_api module, verifying intent email draft generation."""
+
 from unittest import mock
 
 import flask

@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""API handlers for managing owners and subscribers of individual Blink components."""
+
 from chromestatus_openapi.models import ComponentUsersRequest
 
 from framework import basehandlers, permissions

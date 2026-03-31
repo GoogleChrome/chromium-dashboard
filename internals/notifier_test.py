@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for the notifier module, verifying email formatting and template rendering."""
+
 import collections
 from datetime import date, datetime
 from unittest import mock

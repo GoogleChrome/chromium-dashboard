@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Formats and sends email notifications for feature changes and updates."""
+
 __author__ = 'ericbidelman@chromium.org (Eric Bidelman)'
 
 import collections

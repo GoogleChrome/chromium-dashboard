@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for the enterprise_helpers module, verifying enterprise notification milestone logic."""
+
 from datetime import datetime
 from unittest import mock
 

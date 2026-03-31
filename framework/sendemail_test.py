@@ -12,6 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Unit tests for the sendemail module.
+
+Tests parameter parsing and the construction and sending of emails
+across different environments (local, staging, prod).
+"""
+
 import email
 from unittest import mock
 

@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Detects intent thread types and parses URLs from mailing list subjects and bodies."""
+
 import logging
 import random
 import re

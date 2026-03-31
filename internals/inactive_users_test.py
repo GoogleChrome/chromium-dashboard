@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for the inactive_users module, verifying the cron handler correctly removes inactive accounts."""
+
 from datetime import datetime
 
 import testing_config  # Must be imported before the module under test.

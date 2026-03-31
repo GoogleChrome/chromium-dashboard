@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Configuration, mocks, and helper functions for running automated tests."""
+
 import logging
 import os
 import unittest

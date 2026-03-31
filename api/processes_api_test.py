@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for the processes_api module, verifying the retrieval of process stages and feature progress."""
+
 from dataclasses import asdict
 
 import flask

@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for the core search functionality and query parsing module."""
+
 import testing_config  # isort: split
 
 import datetime

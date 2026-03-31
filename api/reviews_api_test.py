@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for the reviews_api module, verifying vote recording, gate status updates, and notifications."""
+
 import datetime
 from unittest import mock
 

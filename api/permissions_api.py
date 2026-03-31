@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""API endpoints for checking the current user's permissions and capabilities."""
+
 import logging
 
 from chromestatus_openapi.models import PermissionsResponse, UserPermissions

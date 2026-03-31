@@ -11,6 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""Tests for the notifier_helpers module, verifying activity logging and notification queuing."""
+
 from unittest import mock
 
 import testing_config  # Must be imported before the module under test.

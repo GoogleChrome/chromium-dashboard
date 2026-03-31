@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Provides helper functions for managing and retrieving FeatureEntry stages."""
+
 from collections import defaultdict
 from datetime import datetime
 from typing import TypedDict

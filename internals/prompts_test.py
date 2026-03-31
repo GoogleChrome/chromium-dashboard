@@ -13,6 +13,8 @@
 # limitations under the License.
 
 
+"""Tests for AI prompt templates, verifying correct rendering of gap analysis and spec synthesis templates."""
+
 import unittest
 
 from flask import Flask, render_template

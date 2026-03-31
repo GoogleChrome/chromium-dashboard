@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""API handlers for user authentication and session creation via Google Sign-In."""
+
 import google.oauth2.id_token
 import werkzeug.exceptions
 from chromestatus_openapi.models import SignInRequest

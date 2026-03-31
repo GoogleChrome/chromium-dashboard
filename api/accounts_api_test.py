@@ -14,6 +14,8 @@
 # limitations under the License.
 
 
+"""Tests for the accounts_api module, verifying account creation and permission handling."""
+
 import flask
 import werkzeug.exceptions  # Flask HTTP stuff.
 

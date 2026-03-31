@@ -14,6 +14,12 @@
 # limitations under the License.
 
 
+"""Role-based access control and permissions checking.
+
+Provides functions to verify if users have the necessary privileges to
+view, edit, or administer features and other resources.
+"""
+
 from typing import Optional
 
 import flask

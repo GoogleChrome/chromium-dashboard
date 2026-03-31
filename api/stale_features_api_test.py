@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for the stale_features_api module, verifying the accurate retrieval of stale feature data."""
+
 from datetime import datetime
 from unittest import mock
 

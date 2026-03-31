@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""API endpoints for interacting with and managing origin trials and their extensions."""
+
 import concurrent.futures
 import re
 from typing import Any

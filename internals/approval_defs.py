@@ -13,6 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Definitions and configuration for feature review gates.
+
+Defines the various types of approval gates (e.g., Intent to Ship, Privacy Review),
+their rules, required approvers, and Service Level Objectives (SLOs).
+"""
+
 import base64
 import collections
 import datetime

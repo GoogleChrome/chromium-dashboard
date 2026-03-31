@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""API endpoints for triggering and managing AI-generated WPT coverage analysis reports."""
+
 from datetime import datetime, timedelta
 
 from framework import basehandlers, cloud_tasks_helpers, permissions

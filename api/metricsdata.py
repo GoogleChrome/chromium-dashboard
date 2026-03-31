@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""API endpoints for serving feature metrics and timeline data."""
+
 __author__ = 'ericbidelman@chromium.org (Eric Bidelman)'
 
 import datetime

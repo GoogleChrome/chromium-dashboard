@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for the token_refresh_api module, verifying the secure generation of new session tokens."""
+
 from unittest import mock
 
 import flask

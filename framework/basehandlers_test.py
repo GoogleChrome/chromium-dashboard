@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for the basehandlers module, verifying request handling, permissions, and responses."""
+
 import json
 from unittest import mock
 

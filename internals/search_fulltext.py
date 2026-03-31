@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Manages full-text search indexing and retrieval for FeatureEntry models."""
+
 import collections
 import logging
 import re

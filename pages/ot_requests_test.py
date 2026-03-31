@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for the Origin Trial requests admin page handler."""
+
 from unittest import mock
 
 import flask

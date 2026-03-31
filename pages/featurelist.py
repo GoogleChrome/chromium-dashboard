@@ -15,6 +15,8 @@
 
 
 # from google.appengine.api import users
+"""Provides the JSON feed handler for the features list page."""
+
 from framework import basehandlers, permissions, users
 from internals import feature_helpers
 

@@ -14,6 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""API endpoints for managing review votes and gates for feature approvals."""
+
 import logging
 from datetime import datetime
 from typing import Any, Tuple

@@ -14,6 +14,8 @@
 # limitations under the License.
 
 
+"""API handlers for user logout and session termination."""
+
 from flask import session
 
 from framework import basehandlers

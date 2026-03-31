@@ -13,6 +13,8 @@
 # limitations under the License.
 
 
+"""Tests for the users admin page handler."""
+
 import flask
 import html5lib
 from google.cloud import ndb  # type: ignore

@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Functions for converting between internal datastore models and external API dictionary representations."""
+
 import datetime
 import re
 from typing import Any, Optional, TypedDict

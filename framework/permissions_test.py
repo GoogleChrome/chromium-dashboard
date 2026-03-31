@@ -13,6 +13,12 @@
 # limitations under the License.
 
 
+"""Unit tests for the permissions module.
+
+Verifies the access control logic across different user roles
+(admin, editor, owner, etc.) and feature visibility states.
+"""
+
 import werkzeug.exceptions  # Flask HTTP stuff.
 
 import testing_config  # Must be imported before the module under test.

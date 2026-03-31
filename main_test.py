@@ -13,6 +13,8 @@
 # limitations under the License.
 
 
+"""Tests for the main application entry point and routing configuration."""
+
 import testing_config  # isort: split
 
 import flask

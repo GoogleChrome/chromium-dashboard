@@ -12,6 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Unit tests for the gemini_client module.
+
+Tests the initialization, token counting, and API interaction of the
+GeminiClient, including error handling and retries.
+"""
+
 import asyncio
 import logging
 from unittest import mock

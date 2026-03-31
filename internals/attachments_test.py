@@ -12,6 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Unit tests for the attachments module.
+
+Tests the storage, retrieval, validation (size and mime type), and
+deletion of feature attachments and thumbnails.
+"""
+
 from unittest import mock
 
 import testing_config  # Must be imported before the module under test.

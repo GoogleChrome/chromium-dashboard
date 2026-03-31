@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""API endpoints for retrieving and calculating review latency metrics for feature gates."""
+
 import collections
 import logging
 from datetime import datetime, timedelta

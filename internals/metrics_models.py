@@ -13,6 +13,8 @@
 # limitations under the License.
 
 
+"""NDB models for storing UMA metrics, histograms, and feature usage statistics."""
+
 from google.cloud import ndb  # type: ignore
 
 

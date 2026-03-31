@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for the stars_api module, verifying user starring and unstarring behavior."""
+
 import flask
 import werkzeug.exceptions  # Flask HTTP stuff.
 

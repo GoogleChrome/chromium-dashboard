@@ -13,6 +13,8 @@
 # limitations under the License.
 
 
+"""Provides the admin page handler for viewing Origin Trial requests."""
+
 import logging
 
 from google.cloud import ndb
