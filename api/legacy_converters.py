@@ -24,20 +24,21 @@ from internals.core_enums import (
     BEHIND_A_FLAG,
     DEV_NO_SIGNALS,
     FEATURE_CATEGORIES,
-    FEATURE_TYPES,
     FEATURE_TYPE_ENTERPRISE_ID,
+    FEATURE_TYPES,
     IMPLEMENTATION_STATUS,
     INTENT_STAGES,
     NO_PUBLIC_SIGNALS,
     ORIGIN_TRIAL,
     RELEASE_IMPL_STATES,
     REVIEW_STATUS_CHOICES,
-    STANDARDIZATION,
     STANDARD_MATURITY_CHOICES,
     STANDARD_MATURITY_SHORT,
+    STANDARDIZATION,
     VENDOR_VIEWS,
     VENDOR_VIEWS_COMMON,
-    WEB_DEV_VIEWS)
+    WEB_DEV_VIEWS,
+)
 
 
 def feature_to_legacy_json(f: Feature) -> dict[str, Any]:
@@ -92,9 +93,7 @@ def feature_to_legacy_json(f: Feature) -> dict[str, Any]:
         f.security_review_status
     ]
     d['security_review_status_int'] = f.security_review_status
-    d['privacy_review_status'] = REVIEW_STATUS_CHOICES[
-        f.privacy_review_status
-    ]
+    d['privacy_review_status'] = REVIEW_STATUS_CHOICES[f.privacy_review_status]
     d['privacy_review_status_int'] = f.privacy_review_status
     d['resources'] = {
         'samples': d.pop('sample_links', []),

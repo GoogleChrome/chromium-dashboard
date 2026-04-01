@@ -36,14 +36,22 @@ from internals import (
     search_fulltext,
     stage_helpers,
 )
-from internals.core_enums import FEATURE_TYPE_ENTERPRISE_ID, MISC, REVIEW_NA
+from internals.core_enums import (
+    FEATURE_TYPE_ENTERPRISE_ID,
+    MISC,
+    REVIEW_NA,
+    STAGE_TYPES_EXTEND_ORIGIN_TRIAL,
+    STAGE_TYPES_SHIPPING,
+    STAGES_AND_GATES_BY_FEATURE_TYPE,
+)
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
 from internals.data_types import CHANGED_FIELDS_LIST_TYPE, VerboseFeatureDict
 from internals.enterprise_helpers import (
     get_default_first_notice_milestone_for_feature,
     is_update_first_notification_milestone,
     needs_default_first_notification_milestone,
-    should_remove_first_notice_milestone)
+    should_remove_first_notice_milestone,
+)
 from internals.review_models import Activity, Gate
 
 # See https://www.regextester.com/93901 for url regex

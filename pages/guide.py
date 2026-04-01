@@ -29,10 +29,12 @@ from internals import (
     processes,
     search_fulltext,
 )
+from internals.core_enums import ENTERPRISE_IMPACT_NONE
 from internals.core_models import FeatureEntry, Stage
 from internals.enterprise_helpers import (
     get_default_first_notice_milestone_for_feature,
-    needs_default_first_notification_milestone)
+    needs_default_first_notification_milestone,
+)
 from internals.review_models import Gate
 
 # Internal DevRel mailing list for ChromeStatus.

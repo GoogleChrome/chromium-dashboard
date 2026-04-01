@@ -24,7 +24,8 @@ from internals.core_enums import (
     ENTERPRISE_IMPACT_NONE,
     GATE_PRIVACY_ORIGIN_TRIAL,
     ROLLOUT_100,
-    ROLLOUT_PLAN_DISPLAYNAMES)
+    ROLLOUT_PLAN_DISPLAYNAMES,
+)
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
 from internals.review_models import Gate, SurveyAnswers, Vote
 

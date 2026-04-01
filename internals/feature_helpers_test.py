@@ -44,7 +44,8 @@ from internals.core_enums import (
     ORIGIN_TRIAL,
     PROPOSED,
     REMOVED,
-    STAGE_ENT_ROLLOUT)
+    STAGE_ENT_ROLLOUT,
+)
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
 from internals.review_models import Gate, Vote
 from internals.user_models import AppUser

@@ -32,7 +32,8 @@ from internals.core_enums import (
     STAGE_DEP_SHIPPING,
     STAGE_ENT_ROLLOUT,
     STAGE_FAST_SHIPPING,
-    STAGE_PSA_SHIPPING)
+    STAGE_PSA_SHIPPING,
+)
 from internals.core_models import FeatureEntry, Stage
 
 

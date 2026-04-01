@@ -23,7 +23,11 @@ import werkzeug.exceptions  # Flask HTTP stuff.
 
 from api import feature_latency_api
 from internals import user_models
-from internals.core_enums import ENABLED_BY_DEFAULT, NO_ACTIVE_DEV, STAGE_BLINK_SHIPPING
+from internals.core_enums import (
+    ENABLED_BY_DEFAULT,
+    NO_ACTIVE_DEV,
+    STAGE_BLINK_SHIPPING,
+)
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
 
 test_app = flask.Flask(__name__)

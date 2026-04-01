@@ -24,7 +24,8 @@ from internals.enterprise_helpers import (
     get_default_first_notice_milestone_for_feature,
     is_update_first_notification_milestone,
     needs_default_first_notification_milestone,
-    should_remove_first_notice_milestone)
+    should_remove_first_notice_milestone,
+)
 
 DATETIME_FORMAT = '%Y-%m-%dT%H:%M:%S'
 

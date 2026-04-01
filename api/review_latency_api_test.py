@@ -23,7 +23,6 @@ import werkzeug.exceptions  # Flask HTTP stuff.
 
 from api import review_latency_api
 from internals import user_models
-
 from internals.core_models import FeatureEntry
 from internals.review_models import Gate
 

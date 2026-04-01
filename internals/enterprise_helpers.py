@@ -17,7 +17,10 @@
 from datetime import datetime
 
 from api import channels_api
-from internals.core_enums import ENTERPRISE_IMPACT_NONE, FEATURE_TYPE_ENTERPRISE_ID
+from internals.core_enums import (
+    ENTERPRISE_IMPACT_NONE,
+    FEATURE_TYPE_ENTERPRISE_ID,
+)
 from internals.core_models import FeatureEntry
 
 CHANNEL_DATETIME_FORMAT = '%Y-%m-%dT%H:%M:%S'

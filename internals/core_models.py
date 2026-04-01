@@ -35,15 +35,16 @@ from internals.core_enums import (
     ENTERPRISE_IMPACT_NONE,
     ENTERPRISE_PRODUCT_CATEGORY_CHROME_BROWSER_UPDATE,
     FEATURE_TYPE_INCUBATE_ID,
-    INTENT_NONE,
     IN_DEV,
+    INTENT_NONE,
     NO_PUBLIC_SIGNALS,
     PROPOSED,
     REVIEW_PENDING,
     ROLLOUT_100,
     SHIPPED,
     SIGNALS_NA,
-    UNSET_STD)
+    UNSET_STD,
+)
 
 
 class ReviewResultProperty(ndb.StringProperty):

@@ -30,7 +30,8 @@ from internals.core_enums import (
     GATE_PRIVACY_SHIP,
     GATE_SECURITY_SHIP,
     GATE_TESTING_SHIP,
-    STAGE_BLINK_SHIPPING)
+    STAGE_BLINK_SHIPPING,
+)
 from internals.review_models import Gate, SurveyAnswers, Vote
 
 test_app = flask.Flask(__name__)
