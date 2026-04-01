@@ -20,32 +20,49 @@ from typing import Any
 from internals.legacy_models import Feature
 
 from api.converters import del_none, to_dict
-from internals.core_enums import *  # noqa: F403
+from internals.core_enums import (
+    BEHIND_A_FLAG,
+    DEV_NO_SIGNALS,
+    FEATURE_CATEGORIES,
+    FEATURE_TYPES,
+    FEATURE_TYPE_ENTERPRISE_ID,
+    IMPLEMENTATION_STATUS,
+    INTENT_STAGES,
+    NO_PUBLIC_SIGNALS,
+    ORIGIN_TRIAL,
+    RELEASE_IMPL_STATES,
+    REVIEW_STATUS_CHOICES,
+    STANDARDIZATION,
+    STANDARD_MATURITY_CHOICES,
+    STANDARD_MATURITY_SHORT,
+    VENDOR_VIEWS,
+    VENDOR_VIEWS_COMMON,
+    WEB_DEV_VIEWS)
 
 
 def feature_to_legacy_json(f: Feature) -> dict[str, Any]:
     """Convert a Feature model instance into its legacy JSON dictionary representation."""
     d: dict[str, Any] = to_dict(f)
-    is_released = f.impl_status_chrome in RELEASE_IMPL_STATES  # noqa: F405
+    is_released = f.impl_status_chrome in RELEASE_IMPL_STATES
     d['is_released'] = is_released
 
     if f.is_saved():
         d['id'] = f.key.integer_id()
     else:
         d['id'] = None
-    d['category'] = FEATURE_CATEGORIES[f.category]  # noqa: F405
+    d['category'] = FEATURE_CATEGORIES[f.category]
     d['enterprise_feature_categories'] = f.enterprise_feature_categories
     d['enterprise_product_category'] = f.enterprise_product_category
     d['confidential'] = f.confidential
     d['category_int'] = f.category
     if f.feature_type is not None:
-        d['feature_type'] = FEATURE_TYPES[f.feature_type]  # noqa: F405
+        d['feature_type'] = FEATURE_TYPES[f.feature_type]
         d['feature_type_int'] = f.feature_type
         d['is_enterprise_feature'] = (
             f.feature_type == FEATURE_TYPE_ENTERPRISE_ID
-        )  # noqa: F405
+        )
     if f.intent_stage is not None:
-        d['intent_stage'] = INTENT_STAGES[f.intent_stage]  # noqa: F405
+        d['intent_stage'] = INTENT_STAGES[f.intent_stage]
         d['intent_stage_int'] = f.intent_stage
     d['created'] = {
         'by': d.pop('created_by', None),
@@ -59,23 +76,23 @@ def feature_to_legacy_json(f: Feature) -> dict[str, Any]:
     d['standards'] = {
         'spec': d.pop('spec_link', None),
         'status': {
-            'text': STANDARDIZATION[f.standardization],  # noqa: F405
+            'text': STANDARDIZATION[f.standardization],
             'val': d.pop('standardization', None),
         },
         'maturity': {
-            'text': STANDARD_MATURITY_CHOICES.get(f.standard_maturity),  # noqa: F405
-            'short_text': STANDARD_MATURITY_SHORT.get(f.standard_maturity),  # noqa: F405
+            'text': STANDARD_MATURITY_CHOICES.get(f.standard_maturity),
+            'short_text': STANDARD_MATURITY_SHORT.get(f.standard_maturity),
             'val': f.standard_maturity,
         },
     }
     del d['standard_maturity']
-    d['tag_review_status'] = REVIEW_STATUS_CHOICES[f.tag_review_status]  # noqa: F405
+    d['tag_review_status'] = REVIEW_STATUS_CHOICES[f.tag_review_status]
     d['tag_review_status_int'] = f.tag_review_status
-    d['security_review_status'] = REVIEW_STATUS_CHOICES[  # noqa: F405
+    d['security_review_status'] = REVIEW_STATUS_CHOICES[
         f.security_review_status
     ]
     d['security_review_status_int'] = f.security_review_status
-    d['privacy_review_status'] = REVIEW_STATUS_CHOICES[  # noqa: F405
+    d['privacy_review_status'] = REVIEW_STATUS_CHOICES[
         f.privacy_review_status
     ]
     d['privacy_review_status_int'] = f.privacy_review_status
@@ -88,21 +105,21 @@ def feature_to_legacy_json(f: Feature) -> dict[str, Any]:
     d['cc_recipients'] = d.pop('cc_recipients', [])
     d['creator'] = d.pop('creator', None)
 
-    ff_views = d.pop('ff_views', NO_PUBLIC_SIGNALS)  # noqa: F405
-    ie_views = d.pop('ie_views', NO_PUBLIC_SIGNALS)  # noqa: F405
-    safari_views = d.pop('safari_views', NO_PUBLIC_SIGNALS)  # noqa: F405
-    web_dev_views = d.pop('web_dev_views', DEV_NO_SIGNALS)  # noqa: F405
+    ff_views = d.pop('ff_views', NO_PUBLIC_SIGNALS)
+    ie_views = d.pop('ie_views', NO_PUBLIC_SIGNALS)
+    safari_views = d.pop('safari_views', NO_PUBLIC_SIGNALS)
+    web_dev_views = d.pop('web_dev_views', DEV_NO_SIGNALS)
     d['browsers'] = {
         'chrome': {
             'bug': d.pop('bug_url', None),
             'blink_components': d.pop('blink_components', []),
             'devrel': d.pop('devrel', []),
             'owners': d.pop('owner', []),
-            'origintrial': f.impl_status_chrome == ORIGIN_TRIAL,  # noqa: F405
+            'origintrial': f.impl_status_chrome == ORIGIN_TRIAL,
             'prefixed': d.pop('prefixed', False),
-            'flag': f.impl_status_chrome == BEHIND_A_FLAG,  # noqa: F405
+            'flag': f.impl_status_chrome == BEHIND_A_FLAG,
             'status': {
-                'text': IMPLEMENTATION_STATUS[f.impl_status_chrome],  # noqa: F405
+                'text': IMPLEMENTATION_STATUS[f.impl_status_chrome],
                 'val': d.pop('impl_status_chrome', None),
             },
             'desktop': d.pop('shipped_milestone', None),
@@ -113,12 +130,12 @@ def feature_to_legacy_json(f: Feature) -> dict[str, Any]:
         'ff': {
             'view': {
                 'text': VENDOR_VIEWS.get(
-                    ff_views,  # noqa: F405
+                    ff_views,
                     VENDOR_VIEWS_COMMON[NO_PUBLIC_SIGNALS],
-                ),  # noqa: F405
+                ),
                 'val': ff_views
                 if ff_views in VENDOR_VIEWS
-                else NO_PUBLIC_SIGNALS,  # noqa: F405
+                else NO_PUBLIC_SIGNALS,
                 'url': d.pop('ff_views_link', None),
                 'notes': d.pop('ff_views_notes', None),
             }
@@ -126,12 +143,12 @@ def feature_to_legacy_json(f: Feature) -> dict[str, Any]:
         'edge': {  # Deprecated
             'view': {
                 'text': VENDOR_VIEWS.get(
-                    ie_views,  # noqa: F405
+                    ie_views,
                     VENDOR_VIEWS_COMMON[NO_PUBLIC_SIGNALS],
-                ),  # noqa: F405
+                ),
                 'val': ie_views
                 if ie_views in VENDOR_VIEWS
-                else NO_PUBLIC_SIGNALS,  # noqa: F405
+                else NO_PUBLIC_SIGNALS,
                 'url': d.pop('ie_views_link', None),
                 'notes': d.pop('ie_views_notes', None),
             }
@@ -139,14 +156,14 @@ def feature_to_legacy_json(f: Feature) -> dict[str, Any]:
         'safari': {
             'view': {
                 'text': VENDOR_VIEWS.get(
-                    safari_views,  # noqa: F405
+                    safari_views,
                     VENDOR_VIEWS_COMMON[NO_PUBLIC_SIGNALS],
-                ),  # noqa: F405
+                ),
                 'val': (
                     safari_views
-                    if safari_views in VENDOR_VIEWS  # noqa: F405
+                    if safari_views in VENDOR_VIEWS
                     else NO_PUBLIC_SIGNALS
-                ),  # noqa: F405
+                ),
                 'url': d.pop('safari_views_link', None),
                 'notes': d.pop('safari_views_notes', None),
             }
@@ -154,14 +171,14 @@ def feature_to_legacy_json(f: Feature) -> dict[str, Any]:
         'webdev': {
             'view': {
                 'text': WEB_DEV_VIEWS.get(
-                    f.web_dev_views,  # noqa: F405
+                    f.web_dev_views,
                     WEB_DEV_VIEWS[DEV_NO_SIGNALS],
-                ),  # noqa: F405
+                ),
                 'val': (
                     web_dev_views
-                    if web_dev_views in WEB_DEV_VIEWS  # noqa: F405
+                    if web_dev_views in WEB_DEV_VIEWS
                     else DEV_NO_SIGNALS
-                ),  # noqa: F405
+                ),
                 'url': d.pop('web_dev_views_link', None),
                 'notes': d.pop('web_dev_views_notes', None),
             }

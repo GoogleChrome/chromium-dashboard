@@ -21,7 +21,30 @@ import testing_config  # Must be imported before the module under test.
 from api import converters
 from framework import rediscache
 from internals import feature_helpers, stage_helpers
-from internals.core_enums import *  # noqa: F403
+from internals.core_enums import (
+    BEHIND_A_FLAG,
+    DEPRECATED,
+    ENABLED_BY_DEFAULT,
+    ENTERPRISE_IMPACT_HIGH,
+    ENTERPRISE_IMPACT_LOW,
+    ENTERPRISE_IMPACT_MEDIUM,
+    ENTERPRISE_IMPACT_NONE,
+    FEATURE_TYPE_CODE_CHANGE_ID,
+    FEATURE_TYPE_DEPRECATION_ID,
+    FEATURE_TYPE_ENTERPRISE_ID,
+    FEATURE_TYPE_EXISTING_ID,
+    FEATURE_TYPE_INCUBATE_ID,
+    GATE_API_SHIP,
+    GATE_ENTERPRISE_PLAN,
+    GATE_ENTERPRISE_SHIP,
+    IN_DEVELOPMENT,
+    NO_ACTIVE_DEV,
+    NO_LONGER_PURSUING,
+    ON_HOLD,
+    ORIGIN_TRIAL,
+    PROPOSED,
+    REMOVED,
+    STAGE_ENT_ROLLOUT)
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
 from internals.review_models import Gate, Vote
 from internals.user_models import AppUser
@@ -73,7 +96,7 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
             owner_emails=['feature_owner@example.com'],
             category=1,
             updated=datetime(2020, 4, 1),
-            feature_type=FEATURE_TYPE_EXISTING_ID,  # noqa: F405
+            feature_type=FEATURE_TYPE_EXISTING_ID,
             impl_status_chrome=1,
         )
         self.feature_2.put()
@@ -86,7 +109,7 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
             category=1,
             updated=datetime(2020, 3, 1),
             feature_type=FEATURE_TYPE_INCUBATE_ID,
-        )  # noqa: F405
+        )
         self.feature_1.put()
 
         self.feature_3 = FeatureEntry(
@@ -97,7 +120,7 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
             owner_emails=['feature_owner@example.com'],
             updated=datetime(2020, 1, 1),
             feature_type=FEATURE_TYPE_CODE_CHANGE_ID,
-        )  # noqa: F405
+        )
         self.feature_3.put()
 
         self.feature_4 = FeatureEntry(
@@ -108,7 +131,7 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
             owner_emails=['feature_owner@example.com'],
             updated=datetime(2020, 2, 1),
             feature_type=FEATURE_TYPE_DEPRECATION_ID,
-        )  # noqa: F405
+        )
         self.feature_4.put()
 
         fe_1_stage_types = [110, 120, 130, 140, 150, 151, 160]
@@ -495,11 +518,11 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
     def test_get_in_milestone__no_enterprise(self):
         """Enterprise features are not shown in the roadmap."""
         # This is not included because of feature_type.
-        self.feature_1.feature_type = FEATURE_TYPE_ENTERPRISE_ID  # noqa: F405
-        self.feature_1.impl_status_chrome = ENABLED_BY_DEFAULT  # noqa: F405
+        self.feature_1.feature_type = FEATURE_TYPE_ENTERPRISE_ID
+        self.feature_1.impl_status_chrome = ENABLED_BY_DEFAULT
         rollout_stage = Stage(
             feature_id=self.feature_1.key.integer_id(),
-            stage_type=STAGE_ENT_ROLLOUT,  # noqa: F405
+            stage_type=STAGE_ENT_ROLLOUT,
             milestones=MilestoneSet(desktop_first=1),
             rollout_milestone=1,
         )
@@ -507,7 +530,7 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
         rollout_stage.put()
 
         # This one is included because it uses a stage that is considered.
-        self.feature_2.impl_status_chrome = REMOVED  # noqa: F405
+        self.feature_2.impl_status_chrome = REMOVED
         self.fe_2_stages_dict[260][0].milestones = MilestoneSet(desktop_first=1)
         self.fe_2_stages_dict[260][0].finch_url = 'https://example.com/finch'
         self.feature_2.put()
@@ -557,7 +580,7 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
         self.g1 = Gate(
             feature_id=self.feature_1.key.integer_id(),
             stage_id=self.fe_1_stages_dict[160][0].key.integer_id(),
-            gate_type=GATE_ENTERPRISE_SHIP,  # noqa: F405
+            gate_type=GATE_ENTERPRISE_SHIP,
             state=Vote.APPROVED,
         )
         self.g1.put()
@@ -566,7 +589,7 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
         self.g2 = Gate(
             feature_id=self.feature_2.key.integer_id(),
             stage_id=self.fe_2_stages_dict[260][0].key.integer_id(),
-            gate_type=GATE_ENTERPRISE_SHIP,  # noqa: F405
+            gate_type=GATE_ENTERPRISE_SHIP,
             state=Vote.APPROVED,
         )
         self.g2.put()
@@ -575,7 +598,7 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
         self.g3 = Gate(
             feature_id=self.feature_3.key.integer_id(),
             stage_id=self.fe_3_stages_dict[360][0].key.integer_id(),
-            gate_type=GATE_ENTERPRISE_SHIP,  # noqa: F405
+            gate_type=GATE_ENTERPRISE_SHIP,
             state=Vote.APPROVED,
         )
         self.g3.put()
@@ -584,7 +607,7 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
         self.g4 = Gate(
             feature_id=self.feature_4.key.integer_id(),
             stage_id=self.fe_4_stages_dict[460][0].key.integer_id(),
-            gate_type=GATE_ENTERPRISE_SHIP,  # noqa: F405
+            gate_type=GATE_ENTERPRISE_SHIP,
             state=Vote.APPROVED,
         )
         self.g4.put()
@@ -598,9 +621,9 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
         )
         self._create_wp_stages_and_gates()
 
-        self.feature_1.enterprise_impact = ENTERPRISE_IMPACT_LOW  # noqa: F405
+        self.feature_1.enterprise_impact = ENTERPRISE_IMPACT_LOW
         self.feature_1.put()
-        self.feature_2.feature_type = FEATURE_TYPE_ENTERPRISE_ID  # noqa: F405
+        self.feature_2.feature_type = FEATURE_TYPE_ENTERPRISE_ID
         self.feature_2.put()
         features = feature_helpers.get_features_in_release_notes(milestone=1)
         # Nothing is ready to publish yet, and user is not an admin.
@@ -620,9 +643,9 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
         )
         self._create_wp_stages_and_gates()
 
-        self.feature_1.enterprise_impact = ENTERPRISE_IMPACT_LOW  # noqa: F405
+        self.feature_1.enterprise_impact = ENTERPRISE_IMPACT_LOW
         self.feature_1.put()
-        self.feature_2.feature_type = FEATURE_TYPE_ENTERPRISE_ID  # noqa: F405
+        self.feature_2.feature_type = FEATURE_TYPE_ENTERPRISE_ID
         self.feature_2.put()
         features = feature_helpers.get_features_in_release_notes(milestone=1)
         # Nothing is ready to publish yet.
@@ -645,16 +668,16 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
             'release_notes_milestone',
             1,
         )
-        self.feature_1.enterprise_impact = ENTERPRISE_IMPACT_LOW  # noqa: F405
+        self.feature_1.enterprise_impact = ENTERPRISE_IMPACT_LOW
         self.feature_1.is_releasenotes_publish_ready = True
         self.feature_1.put()
-        self.feature_2.enterprise_impact = ENTERPRISE_IMPACT_MEDIUM  # noqa: F405
+        self.feature_2.enterprise_impact = ENTERPRISE_IMPACT_MEDIUM
         self.feature_2.is_releasenotes_publish_ready = True
         self.feature_2.put()
-        self.feature_3.enterprise_impact = ENTERPRISE_IMPACT_HIGH  # noqa: F405
+        self.feature_3.enterprise_impact = ENTERPRISE_IMPACT_HIGH
         self.feature_3.is_releasenotes_publish_ready = True
         self.feature_3.put()
-        self.feature_4.enterprise_impact = ENTERPRISE_IMPACT_LOW  # noqa: F405
+        self.feature_4.enterprise_impact = ENTERPRISE_IMPACT_LOW
         self.feature_4.is_releasenotes_publish_ready = True
         self.feature_4.put()
 
@@ -666,9 +689,9 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
         self.g1.put()
         self.g2.state = Vote.NEEDS_WORK
         self.g2.put()
-        self.g3.gate_type = GATE_API_SHIP  # noqa: F405
+        self.g3.gate_type = GATE_API_SHIP
         self.g3.put()
-        self.g4.gate_type = GATE_ENTERPRISE_PLAN  # noqa: F405
+        self.g4.gate_type = GATE_ENTERPRISE_PLAN
         self.g4.put()
 
         features = feature_helpers.get_features_in_release_notes(milestone=1)
@@ -693,16 +716,16 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
         self.assertEqual(cached_result, features)
 
         # Features 1, 2, 3 and 4 are breaking changes
-        self.feature_1.enterprise_impact = ENTERPRISE_IMPACT_LOW  # noqa: F405
+        self.feature_1.enterprise_impact = ENTERPRISE_IMPACT_LOW
         self.feature_1.is_releasenotes_publish_ready = True
         self.feature_1.put()
-        self.feature_2.enterprise_impact = ENTERPRISE_IMPACT_MEDIUM  # noqa: F405
+        self.feature_2.enterprise_impact = ENTERPRISE_IMPACT_MEDIUM
         self.feature_2.is_releasenotes_publish_ready = True
         self.feature_2.put()
-        self.feature_3.enterprise_impact = ENTERPRISE_IMPACT_HIGH  # noqa: F405
+        self.feature_3.enterprise_impact = ENTERPRISE_IMPACT_HIGH
         self.feature_3.is_releasenotes_publish_ready = True
         self.feature_3.put()
-        self.feature_4.enterprise_impact = ENTERPRISE_IMPACT_LOW  # noqa: F405
+        self.feature_4.enterprise_impact = ENTERPRISE_IMPACT_LOW
         self.feature_4.is_releasenotes_publish_ready = True
         self.feature_4.put()
 
@@ -732,7 +755,7 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
 
         # Features 1, 2, 3 are breaking changes
         # only feature 1, 2 and 4 are planned to be released
-        self.feature_4.enterprise_impact = ENTERPRISE_IMPACT_NONE  # noqa: F405
+        self.feature_4.enterprise_impact = ENTERPRISE_IMPACT_NONE
         self.feature_4.put()
         self.fe_3_stages_dict[360][0].milestones = MilestoneSet()
         self.fe_3_stages_dict[360][0].put()
@@ -760,7 +783,7 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
         # Enterprise features are included
         rollout_stage = Stage(
             feature_id=self.feature_4.key.integer_id(),
-            stage_type=STAGE_ENT_ROLLOUT,  # noqa: F405
+            stage_type=STAGE_ENT_ROLLOUT,
             rollout_milestone=1,
         )
         rollout_stage.put()
@@ -804,13 +827,13 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
 
     def test_group_by_roadmap_section__removed(self):
         """A shipping feature with impl_status_chrome=REMOVED is here."""
-        fe = FeatureEntry(impl_status_chrome=REMOVED)  # noqa: F405
+        fe = FeatureEntry(impl_status_chrome=REMOVED)
         actual = feature_helpers._group_by_roadmap_section([fe], [], [], [])
         self.assertEqual(actual['Removed'], [fe])
 
     def test_group_by_roadmap_section__deprecated(self):
         """A shipping deprecation entry is here."""
-        fe = FeatureEntry(feature_type=FEATURE_TYPE_DEPRECATION_ID)  # noqa: F405
+        fe = FeatureEntry(feature_type=FEATURE_TYPE_DEPRECATION_ID)
         actual = feature_helpers._group_by_roadmap_section([fe], [], [], [])
         self.assertEqual(actual['Deprecated'], [fe])
 
@@ -856,18 +879,18 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
             PROPOSED,
             IN_DEVELOPMENT,
             BEHIND_A_FLAG,
-            ENABLED_BY_DEFAULT,  # noqa: F405
+            ENABLED_BY_DEFAULT,
             DEPRECATED,
             REMOVED,
             ORIGIN_TRIAL,
-        ]:  # noqa: F405
+        ]:
             self.assertTrue(
                 feature_helpers._should_appear_on_roadmap(
                     FeatureEntry(impl_status_chrome=status)
                 )
             )
 
-        for status in [NO_ACTIVE_DEV, ON_HOLD, NO_LONGER_PURSUING]:  # noqa: F405
+        for status in [NO_ACTIVE_DEV, ON_HOLD, NO_LONGER_PURSUING]:
             self.assertFalse(
                 feature_helpers._should_appear_on_roadmap(
                     FeatureEntry(impl_status_chrome=status)
@@ -880,25 +903,25 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
             feature_helpers._should_appear_on_roadmap(
                 FeatureEntry(feature_type=FEATURE_TYPE_INCUBATE_ID)
             )
-        )  # noqa: F405
+        )
 
         self.assertTrue(
             feature_helpers._should_appear_on_roadmap(
                 FeatureEntry(feature_type=FEATURE_TYPE_EXISTING_ID)
             )
-        )  # noqa: F405
+        )
 
         self.assertTrue(
             feature_helpers._should_appear_on_roadmap(
                 FeatureEntry(feature_type=FEATURE_TYPE_DEPRECATION_ID)
             )
-        )  # noqa: F405
+        )
 
         self.assertFalse(
             feature_helpers._should_appear_on_roadmap(
                 FeatureEntry(feature_type=FEATURE_TYPE_ENTERPRISE_ID)
             )
-        )  # noqa: F405
+        )
 
     def test_get_features_by_impl_status__normal(self):
         """We can get JSON dicts for /features_v2.json."""
@@ -1387,7 +1410,7 @@ class ShippingFeatureHelpersTest(testing_config.CustomTestCase):
             name='Feature 1 (Complete)',
             summary='sum',
             category=1,
-            feature_type=FEATURE_TYPE_INCUBATE_ID,  # noqa: F405
+            feature_type=FEATURE_TYPE_INCUBATE_ID,
             finch_name='featureOneFinch',
             owner_emails=['owner@example.com'],
             bug_url='https://example.com/bug1',
@@ -1406,7 +1429,7 @@ class ShippingFeatureHelpersTest(testing_config.CustomTestCase):
             id=1001,
             feature_id=1,
             stage_id=101,
-            gate_type=GATE_API_SHIP,  # noqa: F405
+            gate_type=GATE_API_SHIP,
             state=Vote.APPROVED,
         ).put()
 
@@ -1416,7 +1439,7 @@ class ShippingFeatureHelpersTest(testing_config.CustomTestCase):
             name='Feature 2 (No LGTM)',
             summary='sum',
             category=1,
-            feature_type=FEATURE_TYPE_INCUBATE_ID,  # noqa: F405
+            feature_type=FEATURE_TYPE_INCUBATE_ID,
             finch_name='feature2-finch',
         )
         self.feature_2.put()
@@ -1432,7 +1455,7 @@ class ShippingFeatureHelpersTest(testing_config.CustomTestCase):
             id=1002,
             feature_id=2,
             stage_id=102,
-            gate_type=GATE_API_SHIP,  # noqa: F405
+            gate_type=GATE_API_SHIP,
             state=Vote.NA,
         ).put()
 
@@ -1442,7 +1465,7 @@ class ShippingFeatureHelpersTest(testing_config.CustomTestCase):
             name='Feature 3 (No I2S)',
             summary='sum',
             category=1,
-            feature_type=FEATURE_TYPE_INCUBATE_ID,  # noqa: F405
+            feature_type=FEATURE_TYPE_INCUBATE_ID,
             finch_name='feature3-finch',
         )
         self.feature_3.put()
@@ -1458,7 +1481,7 @@ class ShippingFeatureHelpersTest(testing_config.CustomTestCase):
             id=1003,
             feature_id=3,
             stage_id=103,
-            gate_type=GATE_API_SHIP,  # noqa: F405
+            gate_type=GATE_API_SHIP,
             state=Vote.APPROVED,
         ).put()
 
@@ -1468,7 +1491,7 @@ class ShippingFeatureHelpersTest(testing_config.CustomTestCase):
             name='Feature 4 (No Finch)',
             summary='sum',
             category=1,
-            feature_type=FEATURE_TYPE_INCUBATE_ID,  # noqa: F405
+            feature_type=FEATURE_TYPE_INCUBATE_ID,
             finch_name=None,
             non_finch_justification=None,
         )
@@ -1485,7 +1508,7 @@ class ShippingFeatureHelpersTest(testing_config.CustomTestCase):
             id=1004,
             feature_id=4,
             stage_id=104,
-            gate_type=GATE_API_SHIP,  # noqa: F405
+            gate_type=GATE_API_SHIP,
             state=Vote.APPROVED,
         ).put()
 
@@ -1496,7 +1519,7 @@ class ShippingFeatureHelpersTest(testing_config.CustomTestCase):
             summary='sum',
             category=1,
             feature_type=FEATURE_TYPE_CODE_CHANGE_ID,
-        )  # noqa: F405
+        )
         self.feature_5.put()
         self.stage_5 = Stage(
             id=105,
@@ -1512,7 +1535,7 @@ class ShippingFeatureHelpersTest(testing_config.CustomTestCase):
             name='F7 Unstable',
             summary='sum',
             category=1,
-            feature_type=FEATURE_TYPE_INCUBATE_ID,  # noqa: F405
+            feature_type=FEATURE_TYPE_INCUBATE_ID,
             finch_name='feature7-unstable',
         )
         self.feature_7.put()
@@ -1528,7 +1551,7 @@ class ShippingFeatureHelpersTest(testing_config.CustomTestCase):
             id=1007,
             feature_id=7,
             stage_id=107,
-            gate_type=GATE_API_SHIP,  # noqa: F405
+            gate_type=GATE_API_SHIP,
             state=Vote.APPROVED,
         ).put()
 
@@ -1538,7 +1561,7 @@ class ShippingFeatureHelpersTest(testing_config.CustomTestCase):
             name='F8 Enabled',
             summary='sum',
             category=1,
-            feature_type=FEATURE_TYPE_INCUBATE_ID,  # noqa: F405
+            feature_type=FEATURE_TYPE_INCUBATE_ID,
             finch_name='Feature8Enabled',
         )
         self.feature_8.put()
@@ -1554,7 +1577,7 @@ class ShippingFeatureHelpersTest(testing_config.CustomTestCase):
             id=1008,
             feature_id=8,
             stage_id=108,
-            gate_type=GATE_API_SHIP,  # noqa: F405
+            gate_type=GATE_API_SHIP,
             state=Vote.APPROVED,
         ).put()
 
@@ -1564,7 +1587,7 @@ class ShippingFeatureHelpersTest(testing_config.CustomTestCase):
             name='F9 Disabled',
             summary='sum',
             category=1,
-            feature_type=FEATURE_TYPE_INCUBATE_ID,  # noqa: F405
+            feature_type=FEATURE_TYPE_INCUBATE_ID,
             finch_name='Feature9Disabled',
         )
         self.feature_9.put()
@@ -1580,7 +1603,7 @@ class ShippingFeatureHelpersTest(testing_config.CustomTestCase):
             id=1009,
             feature_id=9,
             stage_id=109,
-            gate_type=GATE_API_SHIP,  # noqa: F405
+            gate_type=GATE_API_SHIP,
             state=Vote.APPROVED,
         ).put()
 
@@ -1590,7 +1613,7 @@ class ShippingFeatureHelpersTest(testing_config.CustomTestCase):
             name='F10 Not Found',
             summary='sum',
             category=1,
-            feature_type=FEATURE_TYPE_INCUBATE_ID,  # noqa: F405
+            feature_type=FEATURE_TYPE_INCUBATE_ID,
             finch_name='non-existent-feature',
         )
         self.feature_10.put()
@@ -1606,7 +1629,7 @@ class ShippingFeatureHelpersTest(testing_config.CustomTestCase):
             id=1010,
             feature_id=10,
             stage_id=110,
-            gate_type=GATE_API_SHIP,  # noqa: F405
+            gate_type=GATE_API_SHIP,
             state=Vote.APPROVED,
         ).put()
 
@@ -1616,7 +1639,7 @@ class ShippingFeatureHelpersTest(testing_config.CustomTestCase):
             name='F11 WebGPU',
             summary='sum',
             category=1,
-            feature_type=FEATURE_TYPE_INCUBATE_ID,  # noqa: F405
+            feature_type=FEATURE_TYPE_INCUBATE_ID,
             finch_name='WebGPUFeature',
             blink_components=['Blink>WebGPU'],
         )
@@ -1633,7 +1656,7 @@ class ShippingFeatureHelpersTest(testing_config.CustomTestCase):
             id=1011,
             feature_id=11,
             stage_id=111,
-            gate_type=GATE_API_SHIP,  # noqa: F405
+            gate_type=GATE_API_SHIP,
             state=Vote.APPROVED,
         ).put()
 

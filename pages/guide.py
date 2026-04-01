@@ -30,7 +30,9 @@ from internals import (
     search_fulltext,
 )
 from internals.core_models import FeatureEntry, Stage
-from internals.enterprise_helpers import *  # noqa: F403
+from internals.enterprise_helpers import (
+    get_default_first_notice_milestone_for_feature,
+    needs_default_first_notification_milestone)
 from internals.review_models import Gate
 
 # Internal DevRel mailing list for ChromeStatus.
@@ -189,7 +191,7 @@ class EnterpriseFeatureCreateHandler(FeatureCreateHandler):
                 enterprise_notification_milestone
             )
         if needs_default_first_notification_milestone(
-            new_fields={  # noqa: F405
+            new_fields={
                 'feature_type': feature_type,
                 'first_enterprise_notification_milestone': enterprise_notification_milestone,
             }

@@ -30,7 +30,20 @@ from google.cloud import ndb  # type: ignore
 
 import settings
 from framework import rediscache
-from internals.core_enums import *  # noqa: F403
+from internals.core_enums import (
+    DEV_NO_SIGNALS,
+    ENTERPRISE_IMPACT_NONE,
+    ENTERPRISE_PRODUCT_CATEGORY_CHROME_BROWSER_UPDATE,
+    FEATURE_TYPE_INCUBATE_ID,
+    INTENT_NONE,
+    IN_DEV,
+    NO_PUBLIC_SIGNALS,
+    PROPOSED,
+    REVIEW_PENDING,
+    ROLLOUT_100,
+    SHIPPED,
+    SIGNALS_NA,
+    UNSET_STD)
 
 
 class ReviewResultProperty(ndb.StringProperty):
@@ -113,13 +126,13 @@ class FeatureEntry(ndb.Model):
     feature_type = ndb.IntegerProperty(
         required=True, default=FEATURE_TYPE_INCUBATE_ID
     )  # noqa: E501, F405
-    intent_stage = ndb.IntegerProperty(default=INTENT_NONE)  # noqa: F405
+    intent_stage = ndb.IntegerProperty(default=INTENT_NONE)
     active_stage_id = ndb.IntegerProperty()
     bug_url = ndb.StringProperty()  # Tracking bug
     launch_bug_url = ndb.StringProperty()  # FLT or go/launch
     screenshot_links = ndb.StringProperty(repeated=True)
     first_enterprise_notification_milestone = ndb.IntegerProperty()
-    enterprise_impact = ndb.IntegerProperty(default=ENTERPRISE_IMPACT_NONE)  # noqa: F405
+    enterprise_impact = ndb.IntegerProperty(default=ENTERPRISE_IMPACT_NONE)
     is_releasenotes_content_reviewed = ndb.BooleanProperty(default=False)
     is_releasenotes_publish_ready = ndb.BooleanProperty(default=False)
     breaking_change = ndb.BooleanProperty(default=False)
@@ -127,12 +140,12 @@ class FeatureEntry(ndb.Model):
     shipping_year = ndb.IntegerProperty()
 
     # Implementation in Chrome
-    impl_status_chrome = ndb.IntegerProperty(required=True, default=PROPOSED)  # noqa: F405
+    impl_status_chrome = ndb.IntegerProperty(required=True, default=PROPOSED)
     flag_name = ndb.StringProperty()
     finch_name = ndb.StringProperty()
     non_finch_justification = ndb.TextProperty()
     ongoing_constraints = ndb.TextProperty()
-    rollout_plan = ndb.IntegerProperty(required=True, default=ROLLOUT_100)  # noqa: F405
+    rollout_plan = ndb.IntegerProperty(required=True, default=ROLLOUT_100)
 
     # Topic: Adoption (reviewed by API Owners.  Auto-approved gate later?)
     motivation = ndb.TextProperty()
@@ -147,7 +160,7 @@ class FeatureEntry(ndb.Model):
     initial_public_proposal_url = ndb.StringProperty()
     explainer_links = ndb.StringProperty(repeated=True)
     requires_embedder_support = ndb.BooleanProperty(default=False)
-    standard_maturity = ndb.IntegerProperty(required=True, default=UNSET_STD)  # noqa: F405
+    standard_maturity = ndb.IntegerProperty(required=True, default=UNSET_STD)
     spec_link = ndb.StringProperty()
     api_spec = ndb.BooleanProperty(default=False)
     automation_spec = ndb.BooleanProperty(default=False)
@@ -158,16 +171,16 @@ class FeatureEntry(ndb.Model):
     all_platforms_descr = ndb.TextProperty()
     # TODO(jrobbins): This should be a TextProperty to avoid the 1400 limit.
     tag_review = ndb.StringProperty()
-    tag_review_status = ndb.IntegerProperty(default=REVIEW_PENDING)  # noqa: F405
+    tag_review_status = ndb.IntegerProperty(default=REVIEW_PENDING)
     tag_review_resolution: Optional[ReviewResultProperty] = (
         ReviewResultProperty()
     )
     non_oss_deps = ndb.TextProperty()
     anticipated_spec_changes = ndb.TextProperty()
 
-    ff_views = ndb.IntegerProperty(required=True, default=NO_PUBLIC_SIGNALS)  # noqa: F405
-    safari_views = ndb.IntegerProperty(required=True, default=NO_PUBLIC_SIGNALS)  # noqa: F405
-    web_dev_views = ndb.IntegerProperty(required=True, default=DEV_NO_SIGNALS)  # noqa: F405
+    ff_views = ndb.IntegerProperty(required=True, default=NO_PUBLIC_SIGNALS)
+    safari_views = ndb.IntegerProperty(required=True, default=NO_PUBLIC_SIGNALS)
+    web_dev_views = ndb.IntegerProperty(required=True, default=DEV_NO_SIGNALS)
     ff_views_link = ndb.StringProperty()
     ff_views_link_result: Optional[ReviewResultProperty] = (
         ReviewResultProperty()
@@ -199,7 +212,7 @@ class FeatureEntry(ndb.Model):
     def has_open_ff_review(self):
         """Has open ff review."""
         return (
-            self.ff_views not in [IN_DEV, SHIPPED, SIGNALS_NA]  # noqa: F405
+            self.ff_views not in [IN_DEV, SHIPPED, SIGNALS_NA]
             and self.ff_views_link is not None
             and self.ff_views_link_result is None
         )
@@ -208,15 +221,15 @@ class FeatureEntry(ndb.Model):
     def has_open_safari_review(self):
         """Has open safari review."""
         return (
-            self.safari_views not in [IN_DEV, SHIPPED, SIGNALS_NA]  # noqa: F405
+            self.safari_views not in [IN_DEV, SHIPPED, SIGNALS_NA]
             and self.safari_views_link is not None
             and self.safari_views_link_result is None
         )
 
     # Gate: Security & Privacy
     security_risks = ndb.TextProperty()
-    security_review_status = ndb.IntegerProperty(default=REVIEW_PENDING)  # noqa: F405
-    privacy_review_status = ndb.IntegerProperty(default=REVIEW_PENDING)  # noqa: F405
+    security_review_status = ndb.IntegerProperty(default=REVIEW_PENDING)
+    privacy_review_status = ndb.IntegerProperty(default=REVIEW_PENDING)
     security_continuity_id = ndb.IntegerProperty()
     security_launch_issue_id = ndb.IntegerProperty()
 

@@ -24,7 +24,15 @@ from chromestatus_openapi.models.feature_link import FeatureLink
 from api import channels_api
 from framework import basehandlers, permissions
 from internals import stage_helpers
-from internals.core_enums import *  # noqa: F403
+from internals.core_enums import (
+    DEPRECATED,
+    ENABLED_BY_DEFAULT,
+    REMOVED,
+    STAGE_BLINK_SHIPPING,
+    STAGE_DEP_SHIPPING,
+    STAGE_ENT_ROLLOUT,
+    STAGE_FAST_SHIPPING,
+    STAGE_PSA_SHIPPING)
 from internals.core_models import FeatureEntry, Stage
 
 
@@ -98,7 +106,7 @@ class FeatureLatencyAPI(basehandlers.APIHandler):
                 and fe.impl_status_chrome
                 in [ENABLED_BY_DEFAULT, DEPRECATED, REMOVED]
             )
-        ]  # noqa: F405
+        ]
         return features
 
     def get_shipped_milestones(
@@ -115,13 +123,13 @@ class FeatureLatencyAPI(basehandlers.APIHandler):
             Stage.stage_type.IN(
                 [
                     STAGE_BLINK_SHIPPING,
-                    STAGE_PSA_SHIPPING,  # noqa: F405
+                    STAGE_PSA_SHIPPING,
                     STAGE_FAST_SHIPPING,
                     STAGE_DEP_SHIPPING,
                     STAGE_ENT_ROLLOUT,
                 ]
             )
-        )  # noqa: F405
+        )
         stages = stage_query.fetch(None)
         stages = [s for s in stages if not s.archived]
         if not stages:

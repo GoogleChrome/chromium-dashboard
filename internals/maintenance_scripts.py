@@ -38,7 +38,23 @@ from api import converters
 from framework import cloud_tasks_helpers, origin_trials_client, utils
 from framework.basehandlers import FlaskHandler
 from internals import approval_defs, feature_helpers, stage_helpers
-from internals.core_enums import *
+from internals.core_enums import (
+    AITestEvaluationStatus,
+    CONTENT_FEATURES_FILE,
+    ENABLED_FEATURES_FILE_URL,
+    ENTERPRISE_IMPACT_MEDIUM,
+    ENTERPRISE_IMPACT_NONE,
+    FEATURE_TYPE_ENTERPRISE_ID,
+    OT_ACTIVATED,
+    OT_ACTIVATION_FAILED,
+    OT_CREATED,
+    OT_CREATION_FAILED,
+    OT_READY_FOR_CREATION,
+    STAGE_BLINK_EXTEND_ORIGIN_TRIAL,
+    STAGE_DEP_EXTEND_DEPRECATION_TRIAL,
+    STAGE_ENT_ROLLOUT,
+    STAGE_FAST_EXTEND_ORIGIN_TRIAL,
+    SkyhookDashStatus)
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
 from internals.feature_links import batch_index_feature_entries
 from internals.review_models import Activity, Amendment, Gate, Vote

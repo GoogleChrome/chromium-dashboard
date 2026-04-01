@@ -33,7 +33,7 @@ from api import converters
 from framework import basehandlers, permissions
 from framework.users import User
 from internals import approval_defs, notifier_helpers, self_certify
-from internals.core_enums import *
+from internals.core_enums import FEATURE_TYPE_INCUBATE_ID, STAGE_BLINK_SHIPPING
 from internals.core_models import FeatureEntry, Stage
 from internals.review_models import Activity, Amendment, Gate, Vote
 

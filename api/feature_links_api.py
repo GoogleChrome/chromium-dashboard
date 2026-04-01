@@ -22,7 +22,7 @@ from chromestatus_openapi.models import (
 )
 
 from framework import basehandlers, permissions
-from internals.core_enums import *  # noqa: F403
+
 from internals.core_models import FeatureEntry
 from internals.feature_links import (
     get_by_feature_id,

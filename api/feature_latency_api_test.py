@@ -23,7 +23,7 @@ import werkzeug.exceptions  # Flask HTTP stuff.
 
 from api import feature_latency_api
 from internals import user_models
-from internals.core_enums import *  # noqa: F403
+from internals.core_enums import ENABLED_BY_DEFAULT, NO_ACTIVE_DEV, STAGE_BLINK_SHIPPING
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
 
 test_app = flask.Flask(__name__)
@@ -42,7 +42,7 @@ def make_feature(name, created_tuple, status, shipped):
     if shipped:
         s = Stage(
             feature_id=fe.key.integer_id(),
-            stage_type=STAGE_BLINK_SHIPPING,  # noqa: F405
+            stage_type=STAGE_BLINK_SHIPPING,
             milestones=MilestoneSet(desktop_first=shipped),
         )
         s.put()
@@ -63,24 +63,24 @@ class FeatureLatencyAPITest(testing_config.CustomTestCase):
 
         self.fe_1a, self.fe_1a_id = make_feature(
             'has no milestone', (2023, 2, 18), ENABLED_BY_DEFAULT, None
-        )  # noqa: F405
+        )
         self.fe_1b, self.fe_1b_id = make_feature(
             'not a launch status', (2023, 2, 18), NO_ACTIVE_DEV, 119
-        )  # noqa: F405
+        )
         self.fe_2, self.fe_2_id = make_feature(
             'launched before start', (2022, 8, 19), ENABLED_BY_DEFAULT, 108
-        )  # noqa: F405
+        )
         self.fe_3, self.fe_3_id = make_feature(
             'launched in timeframe', (2023, 2, 18), ENABLED_BY_DEFAULT, 119
-        )  # noqa: F405
+        )
         self.fe_4, self.fe_4_id = make_feature(
             'deleted feature', (2023, 2, 18), ENABLED_BY_DEFAULT, 119
-        )  # noqa: F405
+        )
         self.fe_4.deleted = True
         self.fe_4.put()
         self.fe_5, self.fe_5_id = make_feature(
             'launched after end', (2023, 9, 29), ENABLED_BY_DEFAULT, 125
-        )  # noqa: F405
+        )
 
     def test_get_date_range__unspecified(self):
         """If query string params were not set, it rejects."""

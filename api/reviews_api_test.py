@@ -23,7 +23,14 @@ import werkzeug.exceptions  # Flask HTTP stuff.
 import testing_config  # Must be imported before the module under test.
 from api import reviews_api
 from internals import approval_defs, core_models
-from internals.core_enums import *  # noqa: F403
+from internals.core_enums import (
+    GATE_API_SHIP,
+    GATE_DEBUGGABILITY_SHIP,
+    GATE_ENTERPRISE_SHIP,
+    GATE_PRIVACY_SHIP,
+    GATE_SECURITY_SHIP,
+    GATE_TESTING_SHIP,
+    STAGE_BLINK_SHIPPING)
 from internals.review_models import Gate, SurveyAnswers, Vote
 
 test_app = flask.Flask(__name__)
@@ -33,11 +40,11 @@ NOW = datetime.datetime.now()
 ALL_SHIPPING_GATE_TYPES = [
     GATE_PRIVACY_SHIP,
     GATE_SECURITY_SHIP,
-    GATE_ENTERPRISE_SHIP,  # noqa: F405
+    GATE_ENTERPRISE_SHIP,
     GATE_DEBUGGABILITY_SHIP,
     GATE_TESTING_SHIP,
     GATE_API_SHIP,
-]  # noqa: F405
+]
 
 
 class VotesAPITest(testing_config.CustomTestCase):
@@ -350,7 +357,7 @@ class VotesAPITest(testing_config.CustomTestCase):
         """Handler allows a feature owner to self-approve if eligible."""
         mock_get_approvers.return_value = ['reviewer1@example.com']
         testing_config.sign_in('owner1@example.com', 123567890)
-        self.gate_1.gate_type = GATE_PRIVACY_SHIP  # noqa: F405
+        self.gate_1.gate_type = GATE_PRIVACY_SHIP
         # No survey answers filled in.
         self.gate_1.put()
 
@@ -367,7 +374,7 @@ class VotesAPITest(testing_config.CustomTestCase):
         """Handler allows a feature owner to self-approve if eligible."""
         mock_get_approvers.return_value = ['reviewer1@example.com']
         testing_config.sign_in('owner1@example.com', 123567890)
-        self.gate_1.gate_type = GATE_PRIVACY_SHIP  # noqa: F405
+        self.gate_1.gate_type = GATE_PRIVACY_SHIP
         self.gate_1.survey_answers = SurveyAnswers(
             is_language_polyfill=True, explanation='something'
         )
@@ -548,7 +555,7 @@ class XfnGatesAPITest(testing_config.CustomTestCase):
 
         self.stage_1 = core_models.Stage(
             feature_id=self.feature_id, stage_type=STAGE_BLINK_SHIPPING
-        )  # noqa: F405
+        )
         self.stage_1.put()
         self.stage_id = self.stage_1.key.integer_id()
 
@@ -558,7 +565,7 @@ class XfnGatesAPITest(testing_config.CustomTestCase):
             stage_id=self.stage_id,
             gate_type=GATE_API_SHIP,
             state=Vote.NA,
-        )  # noqa: F405
+        )
         self.gate_1.put()
         self.gate_1_id = self.gate_1.key.integer_id()
 
