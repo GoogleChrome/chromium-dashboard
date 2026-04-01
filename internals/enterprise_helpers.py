@@ -143,6 +143,7 @@ def is_update_first_notification_milestone(
 
 
 def get_default_first_notice_milestone_for_feature() -> int:
+    """Return the default first notice milestone, which is the next beta milestone."""
     next_stable_version = channels_api.construct_chrome_channels_details()[
         'beta'
     ]['version']  # noqa: E501

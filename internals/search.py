@@ -442,7 +442,7 @@ def process_query_using_cache(
     context: Optional[QueryContext] = None,
     name_only=False,
 ) -> tuple[list[dict[str, Any]], int]:
-    """"""  # noqa: D419
+    """Process a user query, utilizing Redis cache if possible."""
     num = min(num, MAX_RESULTS_PER_PAGE)
     cache_key = make_cache_key(
         user_query,
@@ -492,10 +492,10 @@ def process_query(
     context: Optional[QueryContext] = None,
     name_only=False,
 ) -> tuple[list[dict[str, Any]], int]:
+    """Parse the user's query, run it, and return a list of features."""
     if context is None:
         context = QueryContext.current()
 
-    """Parse the user's query, run it, and return a list of features."""
     # 1a. Parse the user query into terms.
     terms = TERM_RE.findall(user_query + ' ')[:MAX_TERMS] or []
 

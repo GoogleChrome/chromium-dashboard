@@ -976,39 +976,47 @@ class BackfillActivityLogTypeTest(testing_config.CustomTestCase):
         )
         self.act_already_set.put()
 
+    @mock.patch('google.cloud.ndb.put_multi')
     @mock.patch('framework.basehandlers.FlaskHandler.require_cron_header')
-    def test_get_template_data(self, mock_require_cron):
+    def test_get_template_data(self, mock_require_cron, mock_put_multi):
         """Test get template data."""
         result = self.handler.get_template_data()
         mock_require_cron.assert_called_once()
 
         self.assertEqual(result, '4 Activity entities updated.')
 
-        act_user_change = Activity.get_by_id(
+        # Verify put_multi was called with exactly 4 entities
+        self.assertEqual(mock_put_multi.call_count, 1)
+        put_entities = mock_put_multi.call_args[0][0]
+        self.assertEqual(len(put_entities), 4)
+
+        # Verify the already-set entity was not passed to put_multi
+        put_ids = [e.key.integer_id() for e in put_entities]
+        self.assertNotIn(self.act_already_set.key.integer_id(), put_ids)
+
+        # We can no longer fetch from DB to check new values because put_multi is mocked.
+        # So we check the updated objects directly from the put_entities list.
+        put_entities_by_id = {e.key.integer_id(): e for e in put_entities}
+
+        act_user_change = put_entities_by_id[
             self.act_user_change.key.integer_id()
-        )
+        ]
         self.assertEqual(act_user_change.log_type, Activity.USER_CHANGE)
 
-        act_milestone_reset = Activity.get_by_id(
+        act_milestone_reset = put_entities_by_id[
             self.act_milestone_reset.key.integer_id()
-        )
+        ]
         self.assertEqual(act_milestone_reset.log_type, Activity.MILESTONE_RESET)
 
-        act_system_change = Activity.get_by_id(
+        act_system_change = put_entities_by_id[
             self.act_system_change.key.integer_id()
-        )
+        ]
         self.assertEqual(act_system_change.log_type, Activity.SYSTEM_CHANGE)
 
-        act_user_comment = Activity.get_by_id(
+        act_user_comment = put_entities_by_id[
             self.act_user_comment.key.integer_id()
-        )
+        ]
         self.assertEqual(act_user_comment.log_type, Activity.USER_COMMENT)
-
-        # Ensure the already-set one didn't get overridden to USER_COMMENT
-        act_already_set = Activity.get_by_id(
-            self.act_already_set.key.integer_id()
-        )
-        self.assertEqual(act_already_set.log_type, Activity.MILESTONE_RESET)
 
 
 class BackfillGateDatesTest(testing_config.CustomTestCase):

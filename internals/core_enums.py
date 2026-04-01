@@ -962,4 +962,5 @@ def convert_enum_string_to_int(property_name, value):
 
 
 def is_enum_field(property_name):
+    """Return True if the given property name maps to an enum."""
     return property_name in PROPERTY_NAMES_TO_ENUM_DICTS

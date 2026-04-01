@@ -210,6 +210,7 @@ class User(object):
 
 
 def get_current_user():
+    """Gets the current user based on the environment or test mode."""
     if settings.UNIT_TEST_MODE:
         user_via_env = None
         if os.environ.get('USER_EMAIL', '') != '':
@@ -236,6 +237,7 @@ def get_current_user():
 
 
 def is_current_user_admin():
+    """Return whether the current user has administrative privileges."""
     return False
 
 

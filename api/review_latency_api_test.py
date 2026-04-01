@@ -31,6 +31,7 @@ test_app = flask.Flask(__name__)
 
 
 def make_feature_and_gates(name):
+    """Create a test feature along with its corresponding gates."""
     fe = FeatureEntry(name=name, summary='sum', category=1)
     fe.put()
     fe_id = fe.key.integer_id()

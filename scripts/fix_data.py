@@ -23,18 +23,21 @@ allFeatureObserverHistograms = metrics_models.FeatureObserverHistogram.get_all()
 
 
 def CorrectCSSPropertyName(bucket_id):
+    """Returns the correct CSS property name for a given bucket ID."""
     if bucket_id in allCssPropertyHistograms:
         return allCssPropertyHistograms[bucket_id]
     return None
 
 
 def CorrectFeaturePropertyName(bucket_id):
+    """Returns the correct feature property name for a given bucket ID."""
     if bucket_id in allFeatureObserverHistograms:
         return allFeatureObserverHistograms[bucket_id]
     return None
 
 
 def FetchAllCSSPropertiesWithError(bucket_id=None):
+    """Fetches all StableInstance records with an ERROR property for CSS."""
     q = metrics_models.StableInstance.query()
     if bucket_id:
         q = q.filter(metrics_models.StableInstance.bucket_id == bucket_id)
@@ -49,6 +52,7 @@ def FetchAllCSSPropertiesWithError(bucket_id=None):
 
 
 def FetchAllFeaturesWithError(bucket_id=None):
+    """Fetch all FeatureObserver entities with a property_name of 'ERROR'."""
     q = metrics_models.FeatureObserver.query()
     if bucket_id:
         q = q.filter(metrics_models.FeatureObserver.bucket_id == bucket_id)
@@ -57,7 +61,7 @@ def FetchAllFeaturesWithError(bucket_id=None):
 
 
 def fix_up(props, corrector_func):
-
+    """Correct the property names for a list of metrics entities."""
     need_correcting = {}
     for p in props:
         correct_name = corrector_func(p.bucket_id)

@@ -37,6 +37,7 @@ from internals.review_models import Activity, Amendment, Gate
 
 
 def amendment_to_OAM(amendment: Amendment) -> AmendmentModel:
+    """Convert an Amendment entity to an OpenAPI AmendmentModel."""
     return AmendmentModel(
         field_name=amendment.field_name,
         old_value=(amendment.old_value or '').strip('[]'),
@@ -45,6 +46,7 @@ def amendment_to_OAM(amendment: Amendment) -> AmendmentModel:
 
 
 def activity_to_OAM(comment: Activity) -> ActivityModel:
+    """Convert an Activity entity to an OpenAPI ActivityModel."""
     amendments_json = [
         amendment_to_OAM(amnd)
         for amnd in comment.amendments
