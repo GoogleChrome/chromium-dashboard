@@ -28,24 +28,7 @@ import flask
 from api import external_reviews_api
 from api.api_specs import MILESTONESET_FIELD_DATA_TYPES
 from api.features_api import FeaturesAPI
-from internals.core_enums import (
-    ENABLED_BY_DEFAULT,
-    FEATURE_TYPE_EXISTING_ID,
-    FEATURE_TYPE_INCUBATE_ID,
-    IN_DEV,
-    IN_DEVELOPMENT,
-    MISC,
-    NEUTRAL,
-    NO_PUBLIC_SIGNALS,
-    PROPOSED,
-    SHIPPED,
-    SIGNALS_NA,
-    STAGE_BLINK_DEV_TRIAL,
-    STAGE_BLINK_ORIGIN_TRIAL,
-    STAGE_BLINK_PROTOTYPE,
-    STAGE_FAST_SHIPPING,
-    UNSET_STD,
-)
+from internals import core_enums
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
 from internals.feature_links import FeatureLinks
 from internals.link_helpers import LINK_TYPE_GITHUB_ISSUE, Link
@@ -120,7 +103,7 @@ class ExternalReviewsAPITest(testing_config.CustomTestCase):
 
     def test_no_reviews(self):
         """When no reviews have been started, the result is empty."""
-        make_feature('Feature one', STAGE_BLINK_PROTOTYPE)
+        make_feature('Feature one', core_enums.STAGE_BLINK_PROTOTYPE)
 
         actual = self.handler.do_get(review_group='tag')
         self.assertEqual({'reviews': [], 'link_previews': []}, actual)
@@ -131,7 +114,7 @@ class ExternalReviewsAPITest(testing_config.CustomTestCase):
         webkit = 'https://github.com/WebKit/standards-positions/issues/3'
         fe = make_feature(
             'Feature one',
-            STAGE_BLINK_PROTOTYPE,
+            core_enums.STAGE_BLINK_PROTOTYPE,
             tag=tag,
             webkit=webkit,
         )
@@ -166,7 +149,7 @@ class ExternalReviewsAPITest(testing_config.CustomTestCase):
         webkit = 'https://github.com/WebKit/standards-positions/issues/3'
         fe = make_feature(
             'Feature one',
-            STAGE_BLINK_PROTOTYPE,
+            core_enums.STAGE_BLINK_PROTOTYPE,
             tag=tag,
             webkit=webkit,
         )
@@ -201,7 +184,7 @@ class ExternalReviewsAPITest(testing_config.CustomTestCase):
         webkit = 'https://github.com/WebKit/standards-positions/issues/3'
         fe = make_feature(
             'Feature one',
-            STAGE_BLINK_PROTOTYPE,
+            core_enums.STAGE_BLINK_PROTOTYPE,
             gecko=gecko,
             webkit=webkit,
         )
@@ -240,7 +223,7 @@ class ExternalReviewsAPITest(testing_config.CustomTestCase):
         webkit = 'https://github.com/WebKit/standards-positions/issues/3'
         fe = make_feature(
             'Feature one',
-            STAGE_BLINK_PROTOTYPE,
+            core_enums.STAGE_BLINK_PROTOTYPE,
             tag=tag,
             webkit=webkit,
             milestones=MilestoneSet(
@@ -277,10 +260,16 @@ class ExternalReviewsAPITest(testing_config.CustomTestCase):
         they link to a standards-positions repository.
         """  # noqa: D205, E501
         webkit = 'https://github.com/WebKit/standards-positions/issues/3'
-        fe = make_feature('Feature one', STAGE_BLINK_PROTOTYPE, webkit=webkit)
+        fe = make_feature(
+            'Feature one', core_enums.STAGE_BLINK_PROTOTYPE, webkit=webkit
+        )
         result = self.handler.do_get(review_group='webkit')
         self.assertEqual(1, len(result['reviews']))
-        for view in [SHIPPED, IN_DEV, SIGNALS_NA]:
+        for view in [
+            core_enums.SHIPPED,
+            core_enums.IN_DEV,
+            core_enums.SIGNALS_NA,
+        ]:
             fe.safari_views = view
             fe.put()
             result = self.handler.do_get(review_group='webkit')
@@ -289,7 +278,9 @@ class ExternalReviewsAPITest(testing_config.CustomTestCase):
     def test_omit_review_links_to_non_review_repo(self):
         """Links that aren't to the reviewer's positions repository shouldn't be returned."""  # noqa: E501
         webkit = 'https://github.com/WebKit/standards-positions/issues/3'
-        fe = make_feature('Feature one', STAGE_BLINK_PROTOTYPE, webkit=webkit)
+        fe = make_feature(
+            'Feature one', core_enums.STAGE_BLINK_PROTOTYPE, webkit=webkit
+        )
         result = self.handler.do_get(review_group='webkit')
         self.assertEqual(1, len(result['reviews']))
         fe.safari_views_link = 'https://github.com/whatwg/html/pull/10139#pullrequestreview-1966263347'
@@ -303,7 +294,7 @@ class ExternalReviewsAPITest(testing_config.CustomTestCase):
         webkit = 'https://github.com/WebKit/standards-positions/issues/3'
         fe = make_feature(
             'Feature one',
-            STAGE_BLINK_PROTOTYPE,
+            core_enums.STAGE_BLINK_PROTOTYPE,
             tag=tag,
             webkit=webkit,
         )
@@ -324,7 +315,7 @@ class ExternalReviewsAPITest(testing_config.CustomTestCase):
         tag = 'https://github.com/w3ctag/design-reviews/issues/1'
         fe = make_feature(
             'Feature one',
-            STAGE_BLINK_PROTOTYPE,
+            core_enums.STAGE_BLINK_PROTOTYPE,
             tag=tag,
         )
 
@@ -369,18 +360,24 @@ class ExternalReviewsAPITest(testing_config.CustomTestCase):
         # most updates in the later PATCH call.
         initial_fields = dict(
             blink_components=patch_update.pop('blink_components', 'Blink'),
-            category=patch_update.pop('category', MISC),
+            category=patch_update.pop('category', core_enums.MISC),
             feature_type=patch_update.pop(
-                'feature_type', FEATURE_TYPE_INCUBATE_ID
+                'feature_type', core_enums.FEATURE_TYPE_INCUBATE_ID
             ),
             owner_emails='',
             ff_views=patch_update.pop('ff_views'),
             impl_status_chrome=patch_update.pop('impl_status_chrome'),
             name=patch_update.pop('name'),
-            safari_views=patch_update.pop('safari_views', NO_PUBLIC_SIGNALS),
-            standard_maturity=patch_update.pop('standard_maturity', UNSET_STD),
+            safari_views=patch_update.pop(
+                'safari_views', core_enums.NO_PUBLIC_SIGNALS
+            ),
+            standard_maturity=patch_update.pop(
+                'standard_maturity', core_enums.UNSET_STD
+            ),
             summary=patch_update.pop('summary', f'Summary for {name}'),
-            web_dev_views=patch_update.pop('web_dev_views', NO_PUBLIC_SIGNALS),
+            web_dev_views=patch_update.pop(
+                'web_dev_views', core_enums.NO_PUBLIC_SIGNALS
+            ),
         )
         with test_app.test_request_context(
             '/api/v0/features', json=initial_fields
@@ -517,90 +514,90 @@ class ExternalReviewsAPITest(testing_config.CustomTestCase):
         _f1 = self._use_ui_to_create_feature(
             dict(
                 name='Feature 1',
-                impl_status_chrome=IN_DEVELOPMENT,
-                ff_views=NEUTRAL,
+                impl_status_chrome=core_enums.IN_DEVELOPMENT,
+                ff_views=core_enums.NEUTRAL,
                 ff_views_link='https://github.com/mozilla/standards-positions/issues/1',
             ),
-            active_stage_type=STAGE_BLINK_DEV_TRIAL,
+            active_stage_type=core_enums.STAGE_BLINK_DEV_TRIAL,
         )
         f2 = self._use_ui_to_create_feature(
             dict(
                 name='Feature 2',
-                feature_type=FEATURE_TYPE_EXISTING_ID,
-                impl_status_chrome=ENABLED_BY_DEFAULT,
-                ff_views=NEUTRAL,
+                feature_type=core_enums.FEATURE_TYPE_EXISTING_ID,
+                impl_status_chrome=core_enums.ENABLED_BY_DEFAULT,
+                ff_views=core_enums.NEUTRAL,
                 ff_views_link='https://github.com/mozilla/standards-positions/issues/2',
             ),
-            active_stage_type=STAGE_FAST_SHIPPING,
+            active_stage_type=core_enums.STAGE_FAST_SHIPPING,
         )
         f3 = self._use_ui_to_create_feature(
             dict(
                 name='Feature 3',
-                impl_status_chrome=PROPOSED,
-                ff_views=NO_PUBLIC_SIGNALS,
+                impl_status_chrome=core_enums.PROPOSED,
+                ff_views=core_enums.NO_PUBLIC_SIGNALS,
                 ff_views_link='https://github.com/mozilla/standards-positions/issues/3',
             ),
-            active_stage_type=STAGE_BLINK_PROTOTYPE,
+            active_stage_type=core_enums.STAGE_BLINK_PROTOTYPE,
             milestones=MilestoneSet(desktop_first=101, desktop_last=103),
         )
         f4 = self._use_ui_to_create_feature(
             dict(
                 name='Feature 4',
-                impl_status_chrome=ENABLED_BY_DEFAULT,
-                ff_views=NO_PUBLIC_SIGNALS,
+                impl_status_chrome=core_enums.ENABLED_BY_DEFAULT,
+                ff_views=core_enums.NO_PUBLIC_SIGNALS,
                 ff_views_link='https://github.com/mozilla/standards-positions/issues/4',
             ),
-            active_stage_type=STAGE_BLINK_PROTOTYPE,
+            active_stage_type=core_enums.STAGE_BLINK_PROTOTYPE,
         )
         f5 = self._use_ui_to_create_feature(
             dict(
                 name='Feature 5',
-                impl_status_chrome=PROPOSED,
-                ff_views=NO_PUBLIC_SIGNALS,
+                impl_status_chrome=core_enums.PROPOSED,
+                ff_views=core_enums.NO_PUBLIC_SIGNALS,
                 ff_views_link='https://github.com/mozilla/standards-positions/issues/5',
             ),
-            active_stage_type=STAGE_BLINK_PROTOTYPE,
+            active_stage_type=core_enums.STAGE_BLINK_PROTOTYPE,
             milestones=MilestoneSet(desktop_first=100, desktop_last=104),
         )
         _f6 = self._use_ui_to_create_feature(
             dict(
                 name='Feature 6',
-                impl_status_chrome=PROPOSED,
-                ff_views=SHIPPED,
+                impl_status_chrome=core_enums.PROPOSED,
+                ff_views=core_enums.SHIPPED,
                 ff_views_link=None,
                 # Not a Firefox view, so this won't be included in the results.
                 safari_views_link='https://github.com/WebKit/standards-positions/issues/6',
             ),
-            active_stage_type=STAGE_BLINK_DEV_TRIAL,
+            active_stage_type=core_enums.STAGE_BLINK_DEV_TRIAL,
         )
         f7 = self._use_ui_to_create_feature(
             dict(
                 name='Feature 7 shares a review with Feature 5',
-                impl_status_chrome=PROPOSED,
-                ff_views=NO_PUBLIC_SIGNALS,
+                impl_status_chrome=core_enums.PROPOSED,
+                ff_views=core_enums.NO_PUBLIC_SIGNALS,
                 ff_views_link='https://github.com/mozilla/standards-positions/issues/5',
             ),
-            active_stage_type=STAGE_BLINK_ORIGIN_TRIAL,
+            active_stage_type=core_enums.STAGE_BLINK_ORIGIN_TRIAL,
             milestones=MilestoneSet(desktop_first=100, desktop_last=104),
         )
         with self.assertLogs(level=logging.ERROR):  # So the log doesn't echo.
             _f8 = self._use_ui_to_create_feature(
                 dict(
                     name='Feature 8 has a nonexistent standards-position link',
-                    impl_status_chrome=PROPOSED,
-                    ff_views=NO_PUBLIC_SIGNALS,
+                    impl_status_chrome=core_enums.PROPOSED,
+                    ff_views=core_enums.NO_PUBLIC_SIGNALS,
                     ff_views_link='https://github.com/mozilla/standards-positions/issues/8',
                 ),
-                active_stage_type=STAGE_BLINK_PROTOTYPE,
+                active_stage_type=core_enums.STAGE_BLINK_PROTOTYPE,
             )
         _f9 = self._use_ui_to_create_feature(
             dict(
                 name='Feature 9 is closed without a position',
-                impl_status_chrome=PROPOSED,
-                ff_views=NO_PUBLIC_SIGNALS,
+                impl_status_chrome=core_enums.PROPOSED,
+                ff_views=core_enums.NO_PUBLIC_SIGNALS,
                 ff_views_link='https://github.com/mozilla/standards-positions/issues/9',
             ),
-            active_stage_type=STAGE_BLINK_PROTOTYPE,
+            active_stage_type=core_enums.STAGE_BLINK_PROTOTYPE,
         )
 
         testing_config.sign_out()

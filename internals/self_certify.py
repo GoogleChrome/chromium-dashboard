@@ -16,19 +16,14 @@
 
 from chromestatus_openapi.models import SurveyAnswers as OASurveyAnswers
 
-from internals.core_enums import (
-    GATE_PRIVACY_ORIGIN_TRIAL,
-    GATE_PRIVACY_SHIP,
-    GATE_TESTING_PLAN,
-    GATE_TESTING_SHIP,
-)
+from internals import core_enums
 from internals.review_models import Gate, SurveyAnswers
 
 CERTIFIABLE_GATE_TYPES = [
-    GATE_PRIVACY_ORIGIN_TRIAL,
-    GATE_PRIVACY_SHIP,
-    GATE_TESTING_PLAN,
-    GATE_TESTING_SHIP,
+    core_enums.GATE_PRIVACY_ORIGIN_TRIAL,
+    core_enums.GATE_PRIVACY_SHIP,
+    core_enums.GATE_TESTING_PLAN,
+    core_enums.GATE_TESTING_SHIP,
 ]
 
 
@@ -88,9 +83,15 @@ def is_eligible(gate: Gate) -> bool:
     if answers is None:
         return False
 
-    if gate.gate_type in [GATE_PRIVACY_ORIGIN_TRIAL, GATE_PRIVACY_SHIP]:
+    if gate.gate_type in [
+        core_enums.GATE_PRIVACY_ORIGIN_TRIAL,
+        core_enums.GATE_PRIVACY_SHIP,
+    ]:
         return is_privacy_eligible(answers)
-    if gate.gate_type in [GATE_TESTING_PLAN, GATE_TESTING_SHIP]:
+    if gate.gate_type in [
+        core_enums.GATE_TESTING_PLAN,
+        core_enums.GATE_TESTING_SHIP,
+    ]:
         return is_testing_eligible(answers)
 
     return False

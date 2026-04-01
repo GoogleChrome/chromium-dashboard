@@ -20,12 +20,7 @@ import json5
 from google.cloud import ndb
 
 from framework import basehandlers, utils
-from internals import feature_helpers
-from internals.core_enums import (
-    CONTENT_FEATURES_FILE,
-    ENABLED_FEATURES_FILE_URL,
-    STAGE_TYPES_SHIPPING,
-)
+from internals import core_enums, feature_helpers
 from internals.core_models import Stage
 
 
@@ -43,7 +38,7 @@ class ShippingFeaturesAPI(basehandlers.EntitiesAPIHandler):
 
     def _get_shipping_stages(self, milestone: int) -> list[Stage]:
         shipping_stage_types = [
-            st for st in STAGE_TYPES_SHIPPING.values() if st
+            st for st in core_enums.STAGE_TYPES_SHIPPING.values() if st
         ]
         shipping_stages: list[Stage] = Stage.query(
             Stage.stage_type.IN(shipping_stage_types),
@@ -73,10 +68,12 @@ class ShippingFeaturesAPI(basehandlers.EntitiesAPIHandler):
             }
 
         enabled_features_file = utils.get_chromium_file(
-            ENABLED_FEATURES_FILE_URL
+            core_enums.ENABLED_FEATURES_FILE_URL
         )
         enabled_features_json = json5.loads(enabled_features_file)
-        content_features_file = utils.get_chromium_file(CONTENT_FEATURES_FILE)
+        content_features_file = utils.get_chromium_file(
+            core_enums.CONTENT_FEATURES_FILE
+        )
 
         url_root = f'{self.request.scheme}://{self.request.host}'  # noqa: F841
 

@@ -31,7 +31,6 @@ from chromestatus_openapi.models import (
 import settings
 from framework import basehandlers, origin_trials_client, permissions, utils
 from internals import core_enums, notifier_helpers
-from internals.core_enums import OT_READY_FOR_CREATION, BlinkHistogramID
 from internals.core_models import FeatureEntry, Stage
 from internals.review_models import Gate
 
@@ -43,15 +42,15 @@ CHROMIUM_SRC_FILES = [
     {'name': 'grace_period_file', 'url': core_enums.GRACE_PERIOD_FILE},
 ]
 CHROMIUM_USE_COUNTER_FILES_MAP = {
-    BlinkHistogramID.web_feature: {
+    core_enums.BlinkHistogramID.web_feature: {
         'name': 'webfeature_file',
         'url': core_enums.WEBFEATURE_FILE_URL,
     },
-    BlinkHistogramID.webdx_feature: {
+    core_enums.BlinkHistogramID.webdx_feature: {
         'name': 'webdxfeature_file',
         'url': core_enums.WEBDXFEATURE_FILE_URL,
     },
-    BlinkHistogramID.css_property_id: {
+    core_enums.BlinkHistogramID.css_property_id: {
         'name': 'css_property_id_file',
         'url': core_enums.CSS_PROPERTY_ID_FILE_URL,
     },  # noqa: E501
@@ -59,7 +58,7 @@ CHROMIUM_USE_COUNTER_FILES_MAP = {
 
 
 def get_chromium_files_for_validation(
-    uc_type: BlinkHistogramID | None,
+    uc_type: core_enums.BlinkHistogramID | None,
 ) -> dict[str, str]:  # noqa: E501
     """Get all chromium file contents stored in a dictionary"""  # noqa: D415
     chromium_files = {}  # Chromium source file contents.
@@ -83,15 +82,15 @@ def get_chromium_files_for_validation(
     return chromium_files
 
 
-def _get_use_counter_type(uc: str | None) -> BlinkHistogramID | None:
+def _get_use_counter_type(uc: str | None) -> core_enums.BlinkHistogramID | None:
     """Discern the use counter type based on the prefix."""
     if not uc:
         return None
     if uc.startswith('WebDXFeature::'):
-        return BlinkHistogramID.webdx_feature
+        return core_enums.BlinkHistogramID.webdx_feature
     if uc.startswith('CSSSampleId::'):
-        return BlinkHistogramID.css_property_id
-    return BlinkHistogramID.web_feature
+        return core_enums.BlinkHistogramID.css_property_id
+    return core_enums.BlinkHistogramID.web_feature
 
 
 def find_use_counter_value(
@@ -118,14 +117,14 @@ def find_use_counter_value(
     expression = ''
     file = ''
     # Defaults for WebFeature use counter.
-    if uc_type == BlinkHistogramID.web_feature:
+    if uc_type == core_enums.BlinkHistogramID.web_feature:
         expression = f'(?<={use_counter_name} = )[0-9]+'
         file = chromium_files_dict.get('webfeature_file', '')
-    if uc_type == BlinkHistogramID.webdx_feature:
+    if uc_type == core_enums.BlinkHistogramID.webdx_feature:
         # Remove "WebDXFeature::" prefix.
         expression = f'(?<={use_counter_name[14:]} = )[0-9]+'
         file = chromium_files_dict.get('webdxfeature_file', '')
-    if uc_type == BlinkHistogramID.css_property_id:
+    if uc_type == core_enums.BlinkHistogramID.css_property_id:
         # Remove "CSSSampleId::" prefix.
         expression = f'(?<={use_counter_name[13:]} = )[0-9]+'
         file = chromium_files_dict.get('css_property_id_file', '')
@@ -215,7 +214,7 @@ class OriginTrialsAPI(basehandlers.EntitiesAPIHandler):
                     'No UseCounter specified for non-deprecation trial.'
                 )
             elif (
-                uc_type == BlinkHistogramID.web_feature
+                uc_type == core_enums.BlinkHistogramID.web_feature
                 and not self._is_in_file(
                     chromium_files.get('webfeature_file'),
                     f'{webfeature_use_counter} =',
@@ -225,7 +224,7 @@ class OriginTrialsAPI(basehandlers.EntitiesAPIHandler):
                     'UseCounter not landed in web_feature.mojom'
                 )
             # Check for valid WebDXFeature use counter specifications.
-            elif uc_type == BlinkHistogramID.webdx_feature:
+            elif uc_type == core_enums.BlinkHistogramID.webdx_feature:
                 formatted_use_counter = webfeature_use_counter[14:]
                 if not formatted_use_counter:
                     validation_errors['ot_webfeature_use_counter'] = (
@@ -239,7 +238,7 @@ class OriginTrialsAPI(basehandlers.EntitiesAPIHandler):
                         'UseCounter not landed in webdx_feature.mojom'
                     )
             # CSSSampleId validation.
-            elif uc_type == BlinkHistogramID.css_property_id:
+            elif uc_type == core_enums.BlinkHistogramID.css_property_id:
                 formatted_use_counter = webfeature_use_counter[13:]
                 if not formatted_use_counter:
                     validation_errors['ot_webfeature_use_counter'] = (
@@ -363,7 +362,7 @@ class OriginTrialsAPI(basehandlers.EntitiesAPIHandler):
         )  # noqa: E501
 
         # Flag OT stage as ready to be created.
-        ot_stage.ot_setup_status = OT_READY_FOR_CREATION
+        ot_stage.ot_setup_status = core_enums.OT_READY_FOR_CREATION
         ot_stage.put()
         return SuccessMessage(
             message='Origin trial creation request submitted.'

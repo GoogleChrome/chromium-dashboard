@@ -24,7 +24,6 @@ import settings
 import testing_config  # Must be imported before the module under test.
 from api import intents_api
 from internals import core_enums
-from internals.core_enums import IntentDraftType
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
 from internals.review_models import Gate, Vote
 from internals.user_models import AppUser
@@ -161,7 +160,7 @@ class IntentsAPITest(testing_config.CustomTestCase):
         expected_task_params: intents_api.IntentGenerationOptions = {
             'subject': 'Intent to Extend Experiment: feature one',
             'feature_id': self.feature_1_id,
-            'intent_type': IntentDraftType.EXTEND_EXPERIMENT,
+            'intent_type': core_enums.IntentDraftType.EXTEND_EXPERIMENT,
             'default_url': (
                 f'http://localhost/feature/{self.feature_1_id}'
                 f'?gate={self.extension_gate_1.key.integer_id()}'
@@ -198,7 +197,7 @@ class IntentsAPITest(testing_config.CustomTestCase):
         expected_task_params: intents_api.IntentGenerationOptions = {
             'subject': 'Intent to Experiment: feature one',
             'feature_id': self.feature_1_id,
-            'intent_type': IntentDraftType.EXPERIMENT,
+            'intent_type': core_enums.IntentDraftType.EXPERIMENT,
             'default_url': (
                 f'http://localhost/feature/{self.feature_1_id}'
                 f'?gate={self.ot_gate_1.key.integer_id()}'
@@ -233,7 +232,7 @@ class IntentsAPITest(testing_config.CustomTestCase):
         expected_task_params: intents_api.IntentGenerationOptions = {
             'subject': 'Ready for Developer Testing: feature one',
             'feature_id': self.feature_1_id,
-            'intent_type': IntentDraftType.DEVELOPER_TESTING,
+            'intent_type': core_enums.IntentDraftType.DEVELOPER_TESTING,
             'default_url': f'http://localhost/feature/{self.feature_1_id}',
             'intent_cc_emails': ['cc1@example.com', 'owner@example.com'],
         }
@@ -332,7 +331,8 @@ class IntentsAPITest(testing_config.CustomTestCase):
         self.assertEqual(
             'Intent to Ship',
             intents_api.compute_subject_prefix(
-                self.feature_1.feature_type, core_enums.IntentDraftType.SHIP
+                self.feature_1.feature_type,
+                core_enums.IntentDraftType.SHIP,
             ),
         )
 

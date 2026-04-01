@@ -18,11 +18,7 @@
 from api.converters import feature_entry_to_json_verbose
 from api.intents_api import compute_subject_prefix
 from framework import basehandlers
-from internals import stage_helpers
-from internals.core_enums import (
-    INTENT_DRAFT_TYPES_BY_STAGE_TYPE,
-    IntentDraftType,
-)
+from internals import core_enums, stage_helpers
 from internals.core_models import FeatureEntry, Stage
 from internals.review_models import Gate
 
@@ -38,7 +34,7 @@ class IntentEmailPreviewHandler(basehandlers.FlaskHandler):
         """Returns template data for the intent email preview page."""
         f = self.get_validated_entity(kwargs.get('feature_id'), FeatureEntry)
         s = self.get_validated_entity(kwargs.get('stage_id'), Stage)
-        intent_type = INTENT_DRAFT_TYPES_BY_STAGE_TYPE[s.stage_type]
+        intent_type = core_enums.INTENT_DRAFT_TYPES_BY_STAGE_TYPE[s.stage_type]
 
         gate_id = kwargs.get('gate_id', None)
         gate = None
@@ -54,7 +50,7 @@ class IntentEmailPreviewHandler(basehandlers.FlaskHandler):
     def get_page_data(
         self,
         f: FeatureEntry,
-        intent_type: IntentDraftType,
+        intent_type: core_enums.IntentDraftType,
         gate: Gate | None = None,
     ):
         """Return a dictionary of data used to render the intent template."""

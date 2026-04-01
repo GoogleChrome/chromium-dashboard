@@ -21,3 +21,11 @@ ignore = [
 
 [tool.ruff.lint.pydocstyle]
 convention = "google"
+
+[tool.mypy]
+
+[[tool.mypy.overrides]]
+module = [
+    "google.cloud.*",
+]
+follow_imports = "skip"

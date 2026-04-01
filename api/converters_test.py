@@ -19,13 +19,7 @@ from unittest import mock
 
 import testing_config  # Must be imported before the module under test.
 from api import converters
-from internals import approval_defs
-from internals.core_enums import (
-    ENTERPRISE_IMPACT_NONE,
-    GATE_PRIVACY_ORIGIN_TRIAL,
-    ROLLOUT_100,
-    ROLLOUT_PLAN_DISPLAYNAMES,
-)
+from internals import approval_defs, core_enums
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
 from internals.review_models import Gate, SurveyAnswers, Vote
 
@@ -139,7 +133,7 @@ class FeatureConvertersTest(testing_config.CustomTestCase):
             'unlisted': False,
             'blink_components': ['Blink'],
             'first_enterprise_notification_milestone': 100,
-            'enterprise_impact': ENTERPRISE_IMPACT_NONE,
+            'enterprise_impact': core_enums.ENTERPRISE_IMPACT_NONE,
             'enterprise_product_category': 0,
             'breaking_change': False,
             'is_released': True,
@@ -228,7 +222,7 @@ class FeatureConvertersTest(testing_config.CustomTestCase):
             'unlisted': False,
             'blink_components': ['Blink'],
             'first_enterprise_notification_milestone': 100,
-            'enterprise_impact': ENTERPRISE_IMPACT_NONE,
+            'enterprise_impact': core_enums.ENTERPRISE_IMPACT_NONE,
             'enterprise_product_category': 0,
             'breaking_change': False,
             'is_released': True,
@@ -328,7 +322,7 @@ class FeatureConvertersTest(testing_config.CustomTestCase):
             'unlisted': False,
             'api_spec': False,
             'automation_spec': False,
-            'enterprise_impact': ENTERPRISE_IMPACT_NONE,
+            'enterprise_impact': core_enums.ENTERPRISE_IMPACT_NONE,
             'enterprise_product_category': 0,
             'is_releasenotes_content_reviewed': False,
             'is_releasenotes_publish_ready': False,
@@ -408,8 +402,10 @@ class FeatureConvertersTest(testing_config.CustomTestCase):
             'new_crbug_url': 'https://bugs.chromium.org/p/chromium/issues/entry?components=Blink&cc=feature_owner@example.com',
             'non_oss_deps': None,
             'ongoing_constraints': None,
-            'rollout_plan': ROLLOUT_100,
-            'rollout_plan_displayname': ROLLOUT_PLAN_DISPLAYNAMES[ROLLOUT_100],
+            'rollout_plan': core_enums.ROLLOUT_100,
+            'rollout_plan_displayname': core_enums.ROLLOUT_PLAN_DISPLAYNAMES[
+                core_enums.ROLLOUT_100
+            ],
             'owner_emails': ['feature_owner@example.com'],
             'safari_views': 1,
             'search_tags': [],
@@ -594,7 +590,7 @@ class GateConvertersTest(testing_config.CustomTestCase):
         gate = Gate(
             feature_id=1,
             stage_id=2,
-            gate_type=GATE_PRIVACY_ORIGIN_TRIAL,
+            gate_type=core_enums.GATE_PRIVACY_ORIGIN_TRIAL,
             state=4,
             requested_on=datetime(2022, 12, 14, 1, 2, 3),  # Wednesday
             assignee_emails=['appr1@example.com', 'appr2@example.com'],
@@ -618,7 +614,7 @@ class GateConvertersTest(testing_config.CustomTestCase):
             'id': gate.key.integer_id(),
             'feature_id': 1,
             'stage_id': 2,
-            'gate_type': GATE_PRIVACY_ORIGIN_TRIAL,
+            'gate_type': core_enums.GATE_PRIVACY_ORIGIN_TRIAL,
             'team_name': appr_def.team_name,
             'gate_name': appr_def.name,
             'escalation_email': 'chrome-privacy-owp-rotation@google.com',

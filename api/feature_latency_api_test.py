@@ -22,12 +22,7 @@ import flask
 import werkzeug.exceptions  # Flask HTTP stuff.
 
 from api import feature_latency_api
-from internals import user_models
-from internals.core_enums import (
-    ENABLED_BY_DEFAULT,
-    NO_ACTIVE_DEV,
-    STAGE_BLINK_SHIPPING,
-)
+from internals import core_enums, user_models
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
 
 test_app = flask.Flask(__name__)
@@ -46,7 +41,7 @@ def make_feature(name, created_tuple, status, shipped):
     if shipped:
         s = Stage(
             feature_id=fe.key.integer_id(),
-            stage_type=STAGE_BLINK_SHIPPING,
+            stage_type=core_enums.STAGE_BLINK_SHIPPING,
             milestones=MilestoneSet(desktop_first=shipped),
         )
         s.put()
@@ -66,24 +61,36 @@ class FeatureLatencyAPITest(testing_config.CustomTestCase):
         self.request_path = '/api/v0/feature-latency'
 
         self.fe_1a, self.fe_1a_id = make_feature(
-            'has no milestone', (2023, 2, 18), ENABLED_BY_DEFAULT, None
+            'has no milestone',
+            (2023, 2, 18),
+            core_enums.ENABLED_BY_DEFAULT,
+            None,
         )
         self.fe_1b, self.fe_1b_id = make_feature(
-            'not a launch status', (2023, 2, 18), NO_ACTIVE_DEV, 119
+            'not a launch status', (2023, 2, 18), core_enums.NO_ACTIVE_DEV, 119
         )
         self.fe_2, self.fe_2_id = make_feature(
-            'launched before start', (2022, 8, 19), ENABLED_BY_DEFAULT, 108
+            'launched before start',
+            (2022, 8, 19),
+            core_enums.ENABLED_BY_DEFAULT,
+            108,
         )
         self.fe_3, self.fe_3_id = make_feature(
-            'launched in timeframe', (2023, 2, 18), ENABLED_BY_DEFAULT, 119
+            'launched in timeframe',
+            (2023, 2, 18),
+            core_enums.ENABLED_BY_DEFAULT,
+            119,
         )
         self.fe_4, self.fe_4_id = make_feature(
-            'deleted feature', (2023, 2, 18), ENABLED_BY_DEFAULT, 119
+            'deleted feature', (2023, 2, 18), core_enums.ENABLED_BY_DEFAULT, 119
         )
         self.fe_4.deleted = True
         self.fe_4.put()
         self.fe_5, self.fe_5_id = make_feature(
-            'launched after end', (2023, 9, 29), ENABLED_BY_DEFAULT, 125
+            'launched after end',
+            (2023, 9, 29),
+            core_enums.ENABLED_BY_DEFAULT,
+            125,
         )
 
     def test_get_date_range__unspecified(self):

@@ -27,6 +27,7 @@ from api import api_specs, converters
 from framework import basehandlers, permissions, rediscache, users
 from internals import (
     attachments,
+    core_enums,
     feature_helpers,
     feature_links,
     notifier,
@@ -35,14 +36,6 @@ from internals import (
     search,
     search_fulltext,
     stage_helpers,
-)
-from internals.core_enums import (
-    FEATURE_TYPE_ENTERPRISE_ID,
-    MISC,
-    REVIEW_NA,
-    STAGE_TYPES_EXTEND_ORIGIN_TRIAL,
-    STAGE_TYPES_SHIPPING,
-    STAGES_AND_GATES_BY_FEATURE_TYPE,
 )
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
 from internals.data_types import CHANGED_FIELDS_LIST_TYPE, VerboseFeatureDict
@@ -198,9 +191,9 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
                 get_default_first_notice_milestone_for_feature()
             )
 
-        if feature.feature_type == FEATURE_TYPE_ENTERPRISE_ID:
+        if feature.feature_type == core_enums.FEATURE_TYPE_ENTERPRISE_ID:
             feature.blink_components = [settings.DEFAULT_ENTERPRISE_COMPONENT]
-            feature.tag_review_status = REVIEW_NA
+            feature.tag_review_status = core_enums.REVIEW_NA
         else:
             feature.tag_review_status = processes.initial_tag_review_status(
                 feature.feature_type
@@ -223,7 +216,7 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
         fields_dict = {
             'owner_emails': [self.get_current_user().email()],
             'devrel_emails': [DEVREL_EMAIL],
-            'category': int(MISC),
+            'category': int(core_enums.MISC),
             'blink_components': [settings.DEFAULT_COMPONENT],
         }
         for field, field_type in api_specs.FEATURE_FIELD_DATA_TYPES:
@@ -255,11 +248,14 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
     ) -> None:
         """Write each Stage and Gate entity for newly created feature."""
         # Obtain a list of stages and gates for the given feature type.
-        stages_gates = STAGES_AND_GATES_BY_FEATURE_TYPE[feature_type]
+        stages_gates = core_enums.STAGES_AND_GATES_BY_FEATURE_TYPE[feature_type]
 
         for stage_type, gate_types in stages_gates:
             # Don't create a trial extension stage pre-emptively.
-            if stage_type == STAGE_TYPES_EXTEND_ORIGIN_TRIAL[feature_type]:
+            if (
+                stage_type
+                == core_enums.STAGE_TYPES_EXTEND_ORIGIN_TRIAL[feature_type]
+            ):
                 continue
 
             stage = Stage(feature_id=feature_id, stage_type=stage_type)
@@ -441,7 +437,7 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
         updated_shipping_stages = [
             us
             for us in updated_stages
-            if us.stage_type in STAGE_TYPES_SHIPPING.values()
+            if us.stage_type in core_enums.STAGE_TYPES_SHIPPING.values()
         ]
         if updated_shipping_stages:
             existing_shipping_stages = (

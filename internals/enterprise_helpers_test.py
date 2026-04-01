@@ -18,7 +18,7 @@ from datetime import datetime
 from unittest import mock
 
 import testing_config  # Must be imported before the module under test.
-from internals.core_enums import ENTERPRISE_IMPACT_LOW, ENTERPRISE_IMPACT_NONE
+from internals import core_enums
 from internals.core_models import FeatureEntry
 from internals.enterprise_helpers import (
     get_default_first_notice_milestone_for_feature,
@@ -54,7 +54,7 @@ class EnterpriseHelpersTest(testing_config.CustomTestCase):
             category=1,
             updated=datetime(2020, 3, 1),
             feature_type=1,
-            enterprise_impact=ENTERPRISE_IMPACT_LOW,
+            enterprise_impact=core_enums.ENTERPRISE_IMPACT_LOW,
         )  # noqa: E501, F405
         self.breaking_feature.put()
 
@@ -130,7 +130,10 @@ class EnterpriseHelpersTest(testing_config.CustomTestCase):
         self.assertTrue(
             needs_default_first_notification_milestone(
                 self.no_feature,
-                {'feature_type': 1, 'enterprise_impact': ENTERPRISE_IMPACT_LOW},
+                {
+                    'feature_type': 1,
+                    'enterprise_impact': core_enums.ENTERPRISE_IMPACT_LOW,
+                },
             )
         )  # noqa: E501, F405
         # Breaking change with invalid milestone
@@ -139,7 +142,7 @@ class EnterpriseHelpersTest(testing_config.CustomTestCase):
                 self.no_feature,
                 {
                     'feature_type': 1,
-                    'enterprise_impact': ENTERPRISE_IMPACT_LOW,
+                    'enterprise_impact': core_enums.ENTERPRISE_IMPACT_LOW,
                     'first_enterprise_notification_milestone': 1,
                 },
             )
@@ -150,7 +153,7 @@ class EnterpriseHelpersTest(testing_config.CustomTestCase):
                 self.no_feature,
                 {
                     'feature_type': 1,
-                    'enterprise_impact': ENTERPRISE_IMPACT_LOW,
+                    'enterprise_impact': core_enums.ENTERPRISE_IMPACT_LOW,
                     'first_enterprise_notification_milestone': 99,
                 },
             )
@@ -161,7 +164,7 @@ class EnterpriseHelpersTest(testing_config.CustomTestCase):
                 self.no_feature,
                 {
                     'feature_type': 1,
-                    'enterprise_impact': ENTERPRISE_IMPACT_LOW,
+                    'enterprise_impact': core_enums.ENTERPRISE_IMPACT_LOW,
                     'first_enterprise_notification_milestone': 100,
                 },
             )
@@ -210,7 +213,7 @@ class EnterpriseHelpersTest(testing_config.CustomTestCase):
                 self.no_feature,
                 {
                     'feature_type': 1,
-                    'enterprise_impact': ENTERPRISE_IMPACT_NONE,
+                    'enterprise_impact': core_enums.ENTERPRISE_IMPACT_NONE,
                 },
             )
         )  # noqa: E501, F405
@@ -220,7 +223,7 @@ class EnterpriseHelpersTest(testing_config.CustomTestCase):
                 self.no_feature,
                 {
                     'feature_type': 1,
-                    'enterprise_impact': ENTERPRISE_IMPACT_NONE,
+                    'enterprise_impact': core_enums.ENTERPRISE_IMPACT_NONE,
                     'first_enterprise_notification_milestone': 1,
                 },
             )
@@ -231,7 +234,7 @@ class EnterpriseHelpersTest(testing_config.CustomTestCase):
                 self.no_feature,
                 {
                     'feature_type': 1,
-                    'enterprise_impact': ENTERPRISE_IMPACT_NONE,
+                    'enterprise_impact': core_enums.ENTERPRISE_IMPACT_NONE,
                     'first_enterprise_notification_milestone': 99,
                 },
             )
@@ -242,7 +245,7 @@ class EnterpriseHelpersTest(testing_config.CustomTestCase):
                 self.no_feature,
                 {
                     'feature_type': 1,
-                    'enterprise_impact': ENTERPRISE_IMPACT_NONE,
+                    'enterprise_impact': core_enums.ENTERPRISE_IMPACT_NONE,
                     'first_enterprise_notification_milestone': 100,
                 },
             )
@@ -353,7 +356,7 @@ class EnterpriseHelpersTest(testing_config.CustomTestCase):
         self.assertTrue(
             needs_default_first_notification_milestone(
                 self.normal_feature,
-                {'enterprise_impact': ENTERPRISE_IMPACT_LOW},
+                {'enterprise_impact': core_enums.ENTERPRISE_IMPACT_LOW},
             )
         )
         # Normal feature becoming breaking with invalid milestone
@@ -361,7 +364,7 @@ class EnterpriseHelpersTest(testing_config.CustomTestCase):
             needs_default_first_notification_milestone(
                 self.normal_feature,
                 {
-                    'enterprise_impact': ENTERPRISE_IMPACT_LOW,
+                    'enterprise_impact': core_enums.ENTERPRISE_IMPACT_LOW,
                     'first_enterprise_notification_milestone': 1,
                 },
             )
@@ -371,7 +374,7 @@ class EnterpriseHelpersTest(testing_config.CustomTestCase):
             needs_default_first_notification_milestone(
                 self.normal_feature,
                 {
-                    'enterprise_impact': ENTERPRISE_IMPACT_LOW,
+                    'enterprise_impact': core_enums.ENTERPRISE_IMPACT_LOW,
                     'first_enterprise_notification_milestone': 99,
                 },
             )
@@ -381,7 +384,7 @@ class EnterpriseHelpersTest(testing_config.CustomTestCase):
             needs_default_first_notification_milestone(
                 self.normal_feature,
                 {
-                    'enterprise_impact': ENTERPRISE_IMPACT_LOW,
+                    'enterprise_impact': core_enums.ENTERPRISE_IMPACT_LOW,
                     'first_enterprise_notification_milestone': 100,
                 },
             )
@@ -391,7 +394,7 @@ class EnterpriseHelpersTest(testing_config.CustomTestCase):
         self.assertFalse(
             needs_default_first_notification_milestone(
                 self.breaking_feature,
-                {'enterprise_impact': ENTERPRISE_IMPACT_NONE},
+                {'enterprise_impact': core_enums.ENTERPRISE_IMPACT_NONE},
             )
         )
         # Breaking feature becoming normal feature with invalid milestone
@@ -399,7 +402,7 @@ class EnterpriseHelpersTest(testing_config.CustomTestCase):
             needs_default_first_notification_milestone(
                 self.breaking_feature,
                 {
-                    'enterprise_impact': ENTERPRISE_IMPACT_NONE,
+                    'enterprise_impact': core_enums.ENTERPRISE_IMPACT_NONE,
                     'first_enterprise_notification_milestone': 1,
                 },
             )
@@ -409,7 +412,7 @@ class EnterpriseHelpersTest(testing_config.CustomTestCase):
             needs_default_first_notification_milestone(
                 self.breaking_feature,
                 {
-                    'enterprise_impact': ENTERPRISE_IMPACT_NONE,
+                    'enterprise_impact': core_enums.ENTERPRISE_IMPACT_NONE,
                     'first_enterprise_notification_milestone': 99,
                 },
             )
@@ -419,7 +422,7 @@ class EnterpriseHelpersTest(testing_config.CustomTestCase):
             needs_default_first_notification_milestone(
                 self.breaking_feature,
                 {
-                    'enterprise_impact': ENTERPRISE_IMPACT_NONE,
+                    'enterprise_impact': core_enums.ENTERPRISE_IMPACT_NONE,
                     'first_enterprise_notification_milestone': 100,
                 },
             )
@@ -560,7 +563,7 @@ class EnterpriseHelpersTest(testing_config.CustomTestCase):
         self.assertFalse(
             is_update_first_notification_milestone(
                 self.normal_feature,
-                {'enterprise_impact': ENTERPRISE_IMPACT_LOW},
+                {'enterprise_impact': core_enums.ENTERPRISE_IMPACT_LOW},
             )
         )
         # Normal feature becoming breaking with invalid milestone
@@ -568,7 +571,7 @@ class EnterpriseHelpersTest(testing_config.CustomTestCase):
             is_update_first_notification_milestone(
                 self.normal_feature,
                 {
-                    'enterprise_impact': ENTERPRISE_IMPACT_LOW,
+                    'enterprise_impact': core_enums.ENTERPRISE_IMPACT_LOW,
                     'first_enterprise_notification_milestone': 1,
                 },
             )
@@ -578,7 +581,7 @@ class EnterpriseHelpersTest(testing_config.CustomTestCase):
             is_update_first_notification_milestone(
                 self.normal_feature,
                 {
-                    'enterprise_impact': ENTERPRISE_IMPACT_LOW,
+                    'enterprise_impact': core_enums.ENTERPRISE_IMPACT_LOW,
                     'first_enterprise_notification_milestone': 99,
                 },
             )
@@ -588,7 +591,7 @@ class EnterpriseHelpersTest(testing_config.CustomTestCase):
             is_update_first_notification_milestone(
                 self.normal_feature,
                 {
-                    'enterprise_impact': ENTERPRISE_IMPACT_LOW,
+                    'enterprise_impact': core_enums.ENTERPRISE_IMPACT_LOW,
                     'first_enterprise_notification_milestone': 100,
                 },
             )
@@ -598,7 +601,7 @@ class EnterpriseHelpersTest(testing_config.CustomTestCase):
         self.assertFalse(
             is_update_first_notification_milestone(
                 self.breaking_feature,
-                {'enterprise_impact': ENTERPRISE_IMPACT_NONE},
+                {'enterprise_impact': core_enums.ENTERPRISE_IMPACT_NONE},
             )
         )
         # Breaking feature becoming normal feature with invalid milestone
@@ -606,7 +609,7 @@ class EnterpriseHelpersTest(testing_config.CustomTestCase):
             is_update_first_notification_milestone(
                 self.breaking_feature,
                 {
-                    'enterprise_impact': ENTERPRISE_IMPACT_NONE,
+                    'enterprise_impact': core_enums.ENTERPRISE_IMPACT_NONE,
                     'first_enterprise_notification_milestone': 1,
                 },
             )
@@ -616,7 +619,7 @@ class EnterpriseHelpersTest(testing_config.CustomTestCase):
             is_update_first_notification_milestone(
                 self.breaking_feature,
                 {
-                    'enterprise_impact': ENTERPRISE_IMPACT_NONE,
+                    'enterprise_impact': core_enums.ENTERPRISE_IMPACT_NONE,
                     'first_enterprise_notification_milestone': 99,
                 },
             )
@@ -626,7 +629,7 @@ class EnterpriseHelpersTest(testing_config.CustomTestCase):
             is_update_first_notification_milestone(
                 self.breaking_feature,
                 {
-                    'enterprise_impact': ENTERPRISE_IMPACT_NONE,
+                    'enterprise_impact': core_enums.ENTERPRISE_IMPACT_NONE,
                     'first_enterprise_notification_milestone': 100,
                 },
             )
@@ -769,7 +772,7 @@ class EnterpriseHelpersTest(testing_config.CustomTestCase):
         self.assertTrue(
             should_remove_first_notice_milestone(
                 self.breaking_feature,
-                {'enterprise_impact': ENTERPRISE_IMPACT_NONE},
+                {'enterprise_impact': core_enums.ENTERPRISE_IMPACT_NONE},
             )
         )
 
@@ -779,6 +782,6 @@ class EnterpriseHelpersTest(testing_config.CustomTestCase):
         self.assertFalse(
             should_remove_first_notice_milestone(
                 self.breaking_feature,
-                {'enterprise_impact': ENTERPRISE_IMPACT_NONE},
+                {'enterprise_impact': core_enums.ENTERPRISE_IMPACT_NONE},
             )
         )

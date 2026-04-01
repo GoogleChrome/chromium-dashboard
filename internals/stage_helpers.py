@@ -23,21 +23,7 @@ from google.cloud import ndb  # type: ignore
 
 from api import converters
 from framework import utils
-from internals import fetchchannels
-from internals.core_enums import (
-    GATE_API_EXTEND_ORIGIN_TRIAL,
-    GATE_API_ORIGIN_TRIAL,
-    GATE_API_PROTOTYPE,
-    GATE_API_SHIP,
-    INTENT_NONE,
-    INTENT_STAGES_BY_STAGE_TYPE,
-    STAGE_ENT_ROLLOUT,
-    STAGE_TYPES_DEV_TRIAL,
-    STAGE_TYPES_EXTEND_ORIGIN_TRIAL,
-    STAGE_TYPES_ORIGIN_TRIAL,
-    STAGE_TYPES_PROTOTYPE,
-    STAGE_TYPES_SHIPPING,
-)
+from internals import core_enums, fetchchannels
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
 from internals.review_models import Gate
 
@@ -82,17 +68,21 @@ def create_feature_stage(
 def get_gate_for_stage(feature_type, s_type) -> int | None:
     """Gets the appropriate gate type ID for a given feature and stage type."""
     # Update type-specific fields.
-    if s_type == STAGE_TYPES_DEV_TRIAL[feature_type]:  # pragma: no cover
-        return GATE_API_PROTOTYPE
+    if (
+        s_type == core_enums.STAGE_TYPES_DEV_TRIAL[feature_type]
+    ):  # pragma: no cover
+        return core_enums.GATE_API_PROTOTYPE
 
-    if s_type == STAGE_TYPES_ORIGIN_TRIAL[feature_type]:
-        return GATE_API_ORIGIN_TRIAL
+    if s_type == core_enums.STAGE_TYPES_ORIGIN_TRIAL[feature_type]:
+        return core_enums.GATE_API_ORIGIN_TRIAL
 
-    if s_type == STAGE_TYPES_EXTEND_ORIGIN_TRIAL[feature_type]:
-        return GATE_API_EXTEND_ORIGIN_TRIAL
+    if s_type == core_enums.STAGE_TYPES_EXTEND_ORIGIN_TRIAL[feature_type]:
+        return core_enums.GATE_API_EXTEND_ORIGIN_TRIAL
 
-    if s_type == STAGE_TYPES_SHIPPING[feature_type]:  # pragma: no cover
-        return GATE_API_SHIP
+    if (
+        s_type == core_enums.STAGE_TYPES_SHIPPING[feature_type]
+    ):  # pragma: no cover
+        return core_enums.GATE_API_SHIP
     return None
 
 
@@ -132,8 +122,8 @@ def get_feature_stage_ids_list(feature_id: int) -> list[dict[str, int]]:
         {
             'stage_id': s.key.integer_id(),
             'stage_type': s.stage_type,
-            'intent_stage': INTENT_STAGES_BY_STAGE_TYPE.get(
-                s.stage_type, INTENT_NONE
+            'intent_stage': core_enums.INTENT_STAGES_BY_STAGE_TYPE.get(
+                s.stage_type, core_enums.INTENT_NONE
             ),
         }
         for s in q
@@ -152,12 +142,12 @@ def get_stage_info_for_templates(fe: FeatureEntry) -> StageTemplateInfo:
     # Only milestones from DevTrial, OT, or shipping stages are displayed.
     id = fe.key.integer_id()
     f_type = fe.feature_type or 0
-    proto_stage_type = STAGE_TYPES_PROTOTYPE[f_type]
-    dt_stage_type = STAGE_TYPES_DEV_TRIAL[f_type]
-    ot_stage_type = STAGE_TYPES_ORIGIN_TRIAL[f_type]
-    extension_stage_type = STAGE_TYPES_EXTEND_ORIGIN_TRIAL[f_type]
-    ship_stage_type = STAGE_TYPES_SHIPPING[f_type]
-    enterprise_stage_type = STAGE_ENT_ROLLOUT
+    proto_stage_type = core_enums.STAGE_TYPES_PROTOTYPE[f_type]
+    dt_stage_type = core_enums.STAGE_TYPES_DEV_TRIAL[f_type]
+    ot_stage_type = core_enums.STAGE_TYPES_ORIGIN_TRIAL[f_type]
+    extension_stage_type = core_enums.STAGE_TYPES_EXTEND_ORIGIN_TRIAL[f_type]
+    ship_stage_type = core_enums.STAGE_TYPES_SHIPPING[f_type]
+    enterprise_stage_type = core_enums.STAGE_ENT_ROLLOUT
 
     stage_info: StageTemplateInfo = {
         'proto_stages': [],
@@ -304,7 +294,9 @@ def get_all_shipping_stages_with_milestones(
     feature_id: int | None = None,
 ) -> list[Stage]:
     """Return shipping stages for the specified feature or all features."""
-    shipping_stage_types = [st for st in STAGE_TYPES_SHIPPING.values() if st]
+    shipping_stage_types = [
+        st for st in core_enums.STAGE_TYPES_SHIPPING.values() if st
+    ]
     shipping_query: ndb.Query = Stage.query(
         Stage.stage_type.IN(shipping_stage_types)
     )

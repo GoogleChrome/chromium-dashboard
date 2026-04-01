@@ -22,16 +22,7 @@ import werkzeug.exceptions  # Flask HTTP stuff.
 
 import testing_config  # Must be imported before the module under test.
 from api import reviews_api
-from internals import approval_defs, core_models
-from internals.core_enums import (
-    GATE_API_SHIP,
-    GATE_DEBUGGABILITY_SHIP,
-    GATE_ENTERPRISE_SHIP,
-    GATE_PRIVACY_SHIP,
-    GATE_SECURITY_SHIP,
-    GATE_TESTING_SHIP,
-    STAGE_BLINK_SHIPPING,
-)
+from internals import approval_defs, core_enums, core_models
 from internals.review_models import Gate, SurveyAnswers, Vote
 
 test_app = flask.Flask(__name__)
@@ -39,12 +30,12 @@ test_app = flask.Flask(__name__)
 NOW = datetime.datetime.now()
 
 ALL_SHIPPING_GATE_TYPES = [
-    GATE_PRIVACY_SHIP,
-    GATE_SECURITY_SHIP,
-    GATE_ENTERPRISE_SHIP,
-    GATE_DEBUGGABILITY_SHIP,
-    GATE_TESTING_SHIP,
-    GATE_API_SHIP,
+    core_enums.GATE_PRIVACY_SHIP,
+    core_enums.GATE_SECURITY_SHIP,
+    core_enums.GATE_ENTERPRISE_SHIP,
+    core_enums.GATE_DEBUGGABILITY_SHIP,
+    core_enums.GATE_TESTING_SHIP,
+    core_enums.GATE_API_SHIP,
 ]
 
 
@@ -358,7 +349,7 @@ class VotesAPITest(testing_config.CustomTestCase):
         """Handler allows a feature owner to self-approve if eligible."""
         mock_get_approvers.return_value = ['reviewer1@example.com']
         testing_config.sign_in('owner1@example.com', 123567890)
-        self.gate_1.gate_type = GATE_PRIVACY_SHIP
+        self.gate_1.gate_type = core_enums.GATE_PRIVACY_SHIP
         # No survey answers filled in.
         self.gate_1.put()
 
@@ -375,7 +366,7 @@ class VotesAPITest(testing_config.CustomTestCase):
         """Handler allows a feature owner to self-approve if eligible."""
         mock_get_approvers.return_value = ['reviewer1@example.com']
         testing_config.sign_in('owner1@example.com', 123567890)
-        self.gate_1.gate_type = GATE_PRIVACY_SHIP
+        self.gate_1.gate_type = core_enums.GATE_PRIVACY_SHIP
         self.gate_1.survey_answers = SurveyAnswers(
             is_language_polyfill=True, explanation='something'
         )
@@ -555,7 +546,8 @@ class XfnGatesAPITest(testing_config.CustomTestCase):
         self.feature_id = self.feature_1.key.integer_id()
 
         self.stage_1 = core_models.Stage(
-            feature_id=self.feature_id, stage_type=STAGE_BLINK_SHIPPING
+            feature_id=self.feature_id,
+            stage_type=core_enums.STAGE_BLINK_SHIPPING,
         )
         self.stage_1.put()
         self.stage_id = self.stage_1.key.integer_id()
@@ -564,7 +556,7 @@ class XfnGatesAPITest(testing_config.CustomTestCase):
             id=1,
             feature_id=self.feature_id,
             stage_id=self.stage_id,
-            gate_type=GATE_API_SHIP,
+            gate_type=core_enums.GATE_API_SHIP,
             state=Vote.NA,
         )
         self.gate_1.put()
@@ -639,12 +631,12 @@ class XfnGatesAPITest(testing_config.CustomTestCase):
         self.assertEqual(actual, {'message': 'Created 222 gates'})
 
     def test_get_needed_gate_types(self):
-        """We always assume that we are adding all gates for STAGE_BLINK_SHIPPING."""  # noqa: E501
+        """We always assume that we are adding all gates for core_enums.STAGE_BLINK_SHIPPING."""  # noqa: E501
         actual = self.handler.get_needed_gate_types()
         self.assertEqual(actual, ALL_SHIPPING_GATE_TYPES)
 
     def test_create_xfn_gates__normal(self):
-        """We can create the missing gates from STAGE_BLINK_SHIPPING."""
+        """We can create the missing gates from core_enums.STAGE_BLINK_SHIPPING."""
         actual = self.handler.create_xfn_gates(self.feature_id, self.stage_id)
 
         self.assertEqual(actual, 5)

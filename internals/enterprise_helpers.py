@@ -17,10 +17,7 @@
 from datetime import datetime
 
 from api import channels_api
-from internals.core_enums import (
-    ENTERPRISE_IMPACT_NONE,
-    FEATURE_TYPE_ENTERPRISE_ID,
-)
+from internals import core_enums
 from internals.core_models import FeatureEntry
 
 CHANNEL_DATETIME_FORMAT = '%Y-%m-%dT%H:%M:%S'
@@ -55,7 +52,7 @@ def needs_default_first_notification_milestone(
             > datetime.now()
         )  # noqa: E501
 
-    existing_impact = ENTERPRISE_IMPACT_NONE
+    existing_impact = core_enums.ENTERPRISE_IMPACT_NONE
     if (
         existing_feature is not None
         and existing_feature.enterprise_impact is not None
@@ -66,10 +63,10 @@ def needs_default_first_notification_milestone(
     # We are creating a new feature
     if existing_feature is None:
         # All enterprise features need this
-        if new_fields['feature_type'] == FEATURE_TYPE_ENTERPRISE_ID:
+        if new_fields['feature_type'] == core_enums.FEATURE_TYPE_ENTERPRISE_ID:
             return not has_valid_milestone_in_new_fields
         # All breaking changes need this
-        if new_impact > ENTERPRISE_IMPACT_NONE:
+        if new_impact > core_enums.ENTERPRISE_IMPACT_NONE:
             return not has_valid_milestone_in_new_fields
         return False
 
@@ -78,11 +75,11 @@ def needs_default_first_notification_milestone(
         return False
 
     # The enterprise feature we are updating does not have the field
-    if existing_feature.feature_type == FEATURE_TYPE_ENTERPRISE_ID:
+    if existing_feature.feature_type == core_enums.FEATURE_TYPE_ENTERPRISE_ID:
         return not has_valid_milestone_in_new_fields
 
     # The breaking change stays a breaking change
-    if new_impact > ENTERPRISE_IMPACT_NONE:
+    if new_impact > core_enums.ENTERPRISE_IMPACT_NONE:
         return not has_valid_milestone_in_new_fields
 
     return False
@@ -136,13 +133,15 @@ def is_update_first_notification_milestone(
         ):  # noqa: E501
             return False
 
-    if feature.feature_type == FEATURE_TYPE_ENTERPRISE_ID:
+    if feature.feature_type == core_enums.FEATURE_TYPE_ENTERPRISE_ID:
         return True
 
     # The breaking change stays a breaking change or becomes a breaking change
-    existing_impact = feature.enterprise_impact or ENTERPRISE_IMPACT_NONE
+    existing_impact = (
+        feature.enterprise_impact or core_enums.ENTERPRISE_IMPACT_NONE
+    )
     new_impact = int(new_fields.get('enterprise_impact', existing_impact))
-    return new_impact > ENTERPRISE_IMPACT_NONE
+    return new_impact > core_enums.ENTERPRISE_IMPACT_NONE
 
 
 def get_default_first_notice_milestone_for_feature() -> int:
@@ -165,12 +164,14 @@ def should_remove_first_notice_milestone(feature, new_fields):  # noqa: D417
     if feature.first_enterprise_notification_milestone == None:  # noqa: E711
         return False
 
-    if feature.feature_type == FEATURE_TYPE_ENTERPRISE_ID:
+    if feature.feature_type == core_enums.FEATURE_TYPE_ENTERPRISE_ID:
         return False
 
-    existing_impact = feature.enterprise_impact or ENTERPRISE_IMPACT_NONE
+    existing_impact = (
+        feature.enterprise_impact or core_enums.ENTERPRISE_IMPACT_NONE
+    )
     new_impact = int(new_fields.get('enterprise_impact', existing_impact))
-    if new_impact > ENTERPRISE_IMPACT_NONE:
+    if new_impact > core_enums.ENTERPRISE_IMPACT_NONE:
         return False
 
     milestone = feature.first_enterprise_notification_milestone

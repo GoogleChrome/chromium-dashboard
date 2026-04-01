@@ -29,7 +29,6 @@ from internals import (
     processes,
     search_fulltext,
 )
-from internals.core_enums import ENTERPRISE_IMPACT_NONE
 from internals.core_models import FeatureEntry, Stage
 from internals.enterprise_helpers import (
     get_default_first_notice_milestone_for_feature,
@@ -73,7 +72,7 @@ class FeatureCreateHandler(basehandlers.FlaskHandler):
 
         has_enterprise_impact = (
             int(self.form.get('enterprise_impact', '1'))
-            > ENTERPRISE_IMPACT_NONE
+            > core_enums.ENTERPRISE_IMPACT_NONE
         )  # noqa: E501, F405
         enterprise_notification_milestone = self.form.get(
             'first_enterprise_notification_milestone'

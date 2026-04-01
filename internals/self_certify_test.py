@@ -18,8 +18,7 @@ import testing_config  # isort: split
 
 from chromestatus_openapi.models import SurveyAnswers as OASurveyAnswers
 
-from internals import self_certify
-from internals.core_enums import GATE_ENTERPRISE_SHIP, GATE_PRIVACY_ORIGIN_TRIAL
+from internals import core_enums, self_certify
 from internals.review_models import Gate, SurveyAnswers
 
 
@@ -138,7 +137,7 @@ class SelfCertifyFunctionTest(testing_config.CustomTestCase):
         self.assertFalse(
             self_certify.is_eligible(
                 Gate(
-                    gate_type=GATE_PRIVACY_ORIGIN_TRIAL,
+                    gate_type=core_enums.GATE_PRIVACY_ORIGIN_TRIAL,
                     survey_answers=SurveyAnswers(is_language_polyfill=True),
                 )
             )
@@ -147,7 +146,7 @@ class SelfCertifyFunctionTest(testing_config.CustomTestCase):
         self.assertTrue(
             self_certify.is_eligible(
                 Gate(
-                    gate_type=GATE_PRIVACY_ORIGIN_TRIAL,
+                    gate_type=core_enums.GATE_PRIVACY_ORIGIN_TRIAL,
                     survey_answers=SurveyAnswers(
                         is_language_polyfill=True, explanation='something'
                     ),
@@ -158,7 +157,7 @@ class SelfCertifyFunctionTest(testing_config.CustomTestCase):
         self.assertFalse(
             self_certify.is_eligible(
                 Gate(
-                    gate_type=GATE_PRIVACY_ORIGIN_TRIAL,
+                    gate_type=core_enums.GATE_PRIVACY_ORIGIN_TRIAL,
                     survey_answers=SurveyAnswers(),
                 )
             )
@@ -167,7 +166,7 @@ class SelfCertifyFunctionTest(testing_config.CustomTestCase):
         self.assertFalse(
             self_certify.is_eligible(
                 Gate(
-                    gate_type=GATE_PRIVACY_ORIGIN_TRIAL,
+                    gate_type=core_enums.GATE_PRIVACY_ORIGIN_TRIAL,
                     survey_answers=SurveyAnswers(
                         explanation='Nothing was checked off'
                     ),
@@ -178,7 +177,7 @@ class SelfCertifyFunctionTest(testing_config.CustomTestCase):
         self.assertFalse(
             self_certify.is_eligible(
                 Gate(
-                    gate_type=GATE_ENTERPRISE_SHIP,
+                    gate_type=core_enums.GATE_ENTERPRISE_SHIP,
                     survey_answers=SurveyAnswers(
                         is_language_polyfill=True, explanation='something'
                     ),

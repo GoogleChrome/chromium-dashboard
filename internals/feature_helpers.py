@@ -28,38 +28,7 @@ import settings
 from api import converters
 from framework import permissions, rediscache, users
 from framework.utils import get_current_milestone_info
-from internals.core_enums import (
-    BEHIND_A_FLAG,
-    DEPRECATED,
-    ENABLED_BY_DEFAULT,
-    ENTERPRISE_IMPACT_NONE,
-    FEATURE_TYPE_CODE_CHANGE_ID,
-    FEATURE_TYPE_DEPRECATION_ID,
-    FEATURE_TYPE_ENTERPRISE_ID,
-    FEATURE_TYPE_EXISTING_ID,
-    FEATURE_TYPE_INCUBATE_ID,
-    GATE_API_SHIP,
-    GATE_ENTERPRISE_SHIP,
-    IMPLEMENTATION_STATUS,
-    INACTIVE_IMPL_STATUSES,
-    ORIGIN_TRIAL,
-    REMOVED,
-    ROADMAP_FEATURE_TYPES,
-    ROLLOUT_SECTION,
-    STAGE_BLINK_DEV_TRIAL,
-    STAGE_BLINK_ORIGIN_TRIAL,
-    STAGE_BLINK_SHIPPING,
-    STAGE_DEP_DEPRECATION_TRIAL,
-    STAGE_DEP_DEV_TRIAL,
-    STAGE_DEP_SHIPPING,
-    STAGE_ENT_ROLLOUT,
-    STAGE_FAST_DEV_TRIAL,
-    STAGE_FAST_ORIGIN_TRIAL,
-    STAGE_FAST_SHIPPING,
-    STAGE_PSA_DEV_TRIAL,
-    STAGE_PSA_SHIPPING,
-    STAGE_TYPES_SHIPPING,
-)
+from internals import core_enums
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
 from internals.review_models import Gate, Vote
 from internals.stage_helpers import organize_all_stages_by_feature
@@ -197,9 +166,9 @@ def _filter_out_wp_features_lacking_enterprise_approval(
     But, leave in any deprecation-type features.
     """  # noqa: D205
     FEATURE_TYPES_TO_FILTER = [
-        FEATURE_TYPE_INCUBATE_ID,
-        FEATURE_TYPE_EXISTING_ID,
-        FEATURE_TYPE_CODE_CHANGE_ID,
+        core_enums.FEATURE_TYPE_INCUBATE_ID,
+        core_enums.FEATURE_TYPE_EXISTING_ID,
+        core_enums.FEATURE_TYPE_CODE_CHANGE_ID,
         # Not enterprise- or deprecation-type features.
     ]
     wp_feature_ids = {
@@ -214,7 +183,7 @@ def _filter_out_wp_features_lacking_enterprise_approval(
             # extra Gates, but that doesn't matter.
             Gate.feature_id >= min(wp_feature_ids),
             Gate.feature_id <= max(wp_feature_ids),
-            Gate.gate_type == GATE_ENTERPRISE_SHIP,
+            Gate.gate_type == core_enums.GATE_ENTERPRISE_SHIP,
             Gate.state.IN(Gate.APPROVED_STATES),
         ).fetch()
     approved_wp_feature_ids = {g.feature_id for g in approved_enterprise_gates}
@@ -247,19 +216,19 @@ def get_features_in_release_notes(milestone: int):
     all_enterprise_feature_keys_future = FeatureEntry.query(
         FeatureEntry.deleted == False,  # noqa: E712
         ndb.OR(
-            FeatureEntry.enterprise_impact > ENTERPRISE_IMPACT_NONE,
-            FeatureEntry.feature_type == FEATURE_TYPE_ENTERPRISE_ID,
+            FeatureEntry.enterprise_impact > core_enums.ENTERPRISE_IMPACT_NONE,
+            FeatureEntry.feature_type == core_enums.FEATURE_TYPE_ENTERPRISE_ID,
         ),
     ).fetch_async(keys_only=True)
     stages = Stage.query(
         Stage.archived == False,  # noqa: E712
         Stage.stage_type.IN(
             [
-                STAGE_BLINK_SHIPPING,
-                STAGE_PSA_SHIPPING,
-                STAGE_FAST_SHIPPING,
-                STAGE_DEP_SHIPPING,
-                STAGE_ENT_ROLLOUT,
+                core_enums.STAGE_BLINK_SHIPPING,
+                core_enums.STAGE_PSA_SHIPPING,
+                core_enums.STAGE_FAST_SHIPPING,
+                core_enums.STAGE_DEP_SHIPPING,
+                core_enums.STAGE_ENT_ROLLOUT,
             ]
         ),
         ndb.OR(
@@ -357,15 +326,15 @@ def get_in_milestone(
         # Start each query asynchronously in parallel.
 
         # Shipping stages with a matching desktop milestone.
-        # Note: Enterprise features use STAGE_ENT_ROLLOUT and are NOT included.
+        # Note: Enterprise features use core_enums.STAGE_ENT_ROLLOUT and are NOT included.
         q = Stage.query(
             Stage.milestones.desktop_first == milestone,
             Stage.archived == False,  # noqa: E712
             ndb.OR(
-                Stage.stage_type == STAGE_BLINK_SHIPPING,
-                Stage.stage_type == STAGE_PSA_SHIPPING,
-                Stage.stage_type == STAGE_FAST_SHIPPING,
-                Stage.stage_type == STAGE_DEP_SHIPPING,
+                Stage.stage_type == core_enums.STAGE_BLINK_SHIPPING,
+                Stage.stage_type == core_enums.STAGE_PSA_SHIPPING,
+                Stage.stage_type == core_enums.STAGE_FAST_SHIPPING,
+                Stage.stage_type == core_enums.STAGE_DEP_SHIPPING,
             ),
         )
         q = q.filter()
@@ -379,10 +348,10 @@ def get_in_milestone(
             Stage.archived == False,  # noqa: E712
             Stage.stage_type.IN(
                 (
-                    STAGE_BLINK_SHIPPING,
-                    STAGE_PSA_SHIPPING,
-                    STAGE_FAST_SHIPPING,
-                    STAGE_DEP_SHIPPING,
+                    core_enums.STAGE_BLINK_SHIPPING,
+                    core_enums.STAGE_PSA_SHIPPING,
+                    core_enums.STAGE_FAST_SHIPPING,
+                    core_enums.STAGE_DEP_SHIPPING,
                 )
             ),
         )
@@ -394,9 +363,9 @@ def get_in_milestone(
             Stage.archived == False,  # noqa: E712
             Stage.stage_type.IN(
                 (
-                    STAGE_BLINK_ORIGIN_TRIAL,
-                    STAGE_FAST_ORIGIN_TRIAL,
-                    STAGE_DEP_DEPRECATION_TRIAL,
+                    core_enums.STAGE_BLINK_ORIGIN_TRIAL,
+                    core_enums.STAGE_FAST_ORIGIN_TRIAL,
+                    core_enums.STAGE_DEP_DEPRECATION_TRIAL,
                 )
             ),
         )
@@ -409,9 +378,9 @@ def get_in_milestone(
             Stage.archived == False,  # noqa: E712
             Stage.stage_type.IN(
                 (
-                    STAGE_BLINK_ORIGIN_TRIAL,
-                    STAGE_FAST_ORIGIN_TRIAL,
-                    STAGE_DEP_DEPRECATION_TRIAL,
+                    core_enums.STAGE_BLINK_ORIGIN_TRIAL,
+                    core_enums.STAGE_FAST_ORIGIN_TRIAL,
+                    core_enums.STAGE_DEP_DEPRECATION_TRIAL,
                 )
             ),
         )
@@ -424,9 +393,9 @@ def get_in_milestone(
             Stage.archived == False,  # noqa: E712
             Stage.stage_type.IN(
                 (
-                    STAGE_BLINK_ORIGIN_TRIAL,
-                    STAGE_FAST_ORIGIN_TRIAL,
-                    STAGE_DEP_DEPRECATION_TRIAL,
+                    core_enums.STAGE_BLINK_ORIGIN_TRIAL,
+                    core_enums.STAGE_FAST_ORIGIN_TRIAL,
+                    core_enums.STAGE_DEP_DEPRECATION_TRIAL,
                 )
             ),
         )
@@ -438,10 +407,10 @@ def get_in_milestone(
             Stage.archived == False,  # noqa: E712
             Stage.stage_type.IN(
                 (
-                    STAGE_BLINK_DEV_TRIAL,
-                    STAGE_PSA_DEV_TRIAL,
-                    STAGE_FAST_DEV_TRIAL,
-                    STAGE_DEP_DEV_TRIAL,
+                    core_enums.STAGE_BLINK_DEV_TRIAL,
+                    core_enums.STAGE_PSA_DEV_TRIAL,
+                    core_enums.STAGE_FAST_DEV_TRIAL,
+                    core_enums.STAGE_DEP_DEV_TRIAL,
                 )
             ),
         )
@@ -454,10 +423,10 @@ def get_in_milestone(
             Stage.archived == False,  # noqa: E712
             Stage.stage_type.IN(
                 (
-                    STAGE_BLINK_DEV_TRIAL,
-                    STAGE_PSA_DEV_TRIAL,
-                    STAGE_FAST_DEV_TRIAL,
-                    STAGE_DEP_DEV_TRIAL,
+                    core_enums.STAGE_BLINK_DEV_TRIAL,
+                    core_enums.STAGE_PSA_DEV_TRIAL,
+                    core_enums.STAGE_FAST_DEV_TRIAL,
+                    core_enums.STAGE_DEP_DEV_TRIAL,
                 )
             ),
         )
@@ -469,7 +438,7 @@ def get_in_milestone(
         q = Stage.query(
             Stage.rollout_milestone == milestone,
             Stage.archived == False,  # noqa: E712
-            Stage.stage_type == STAGE_ENT_ROLLOUT,
+            Stage.stage_type == core_enums.STAGE_ENT_ROLLOUT,
         )
         q = q.filter()
         rollout_future = q.fetch_async()
@@ -531,19 +500,29 @@ def get_in_milestone(
         # Fill in the IDs of the stages that caused each feature to appear,
         # and any finch URLs.
         _set_feature_fields_for_roadmap(
-            features_by_type[IMPLEMENTATION_STATUS[ENABLED_BY_DEFAULT]]
-            + features_by_type[IMPLEMENTATION_STATUS[DEPRECATED]]
-            + features_by_type[IMPLEMENTATION_STATUS[REMOVED]],
+            features_by_type[
+                core_enums.IMPLEMENTATION_STATUS[core_enums.ENABLED_BY_DEFAULT]
+            ]
+            + features_by_type[
+                core_enums.IMPLEMENTATION_STATUS[core_enums.DEPRECATED]
+            ]
+            + features_by_type[
+                core_enums.IMPLEMENTATION_STATUS[core_enums.REMOVED]
+            ],
             shipping_stages_by_fid,
         )
 
         _set_feature_fields_for_roadmap(
-            features_by_type[IMPLEMENTATION_STATUS[ORIGIN_TRIAL]],
+            features_by_type[
+                core_enums.IMPLEMENTATION_STATUS[core_enums.ORIGIN_TRIAL]
+            ],
             origin_trial_stages_by_fid,
         )
 
         _set_feature_fields_for_roadmap(
-            features_by_type[IMPLEMENTATION_STATUS[BEHIND_A_FLAG]],
+            features_by_type[
+                core_enums.IMPLEMENTATION_STATUS[core_enums.BEHIND_A_FLAG]
+            ],
             dev_trial_stages_by_fid,
         )
 
@@ -575,20 +554,28 @@ def _group_by_roadmap_section(
     # Push features to lists corresponding to the appropriate section
     # of the milestone card.
     for fe in shipping_features:
-        if fe.impl_status_chrome == REMOVED:
+        if fe.impl_status_chrome == core_enums.REMOVED:
             removed_features.append(fe)
-        elif fe.feature_type == FEATURE_TYPE_DEPRECATION_ID:
+        elif fe.feature_type == core_enums.FEATURE_TYPE_DEPRECATION_ID:
             deprecated_features.append(fe)
         else:
             enabled_features.append(fe)
 
     all_features: dict[str, list[FeatureEntry]] = {
-        IMPLEMENTATION_STATUS[ENABLED_BY_DEFAULT]: enabled_features,
-        IMPLEMENTATION_STATUS[DEPRECATED]: deprecated_features,
-        IMPLEMENTATION_STATUS[REMOVED]: removed_features,
-        ROLLOUT_SECTION: rollout_features,
-        IMPLEMENTATION_STATUS[ORIGIN_TRIAL]: origin_trial_features,
-        IMPLEMENTATION_STATUS[BEHIND_A_FLAG]: dev_trial_features,
+        core_enums.IMPLEMENTATION_STATUS[
+            core_enums.ENABLED_BY_DEFAULT
+        ]: enabled_features,
+        core_enums.IMPLEMENTATION_STATUS[
+            core_enums.DEPRECATED
+        ]: deprecated_features,
+        core_enums.IMPLEMENTATION_STATUS[core_enums.REMOVED]: removed_features,
+        core_enums.ROLLOUT_SECTION: rollout_features,
+        core_enums.IMPLEMENTATION_STATUS[
+            core_enums.ORIGIN_TRIAL
+        ]: origin_trial_features,
+        core_enums.IMPLEMENTATION_STATUS[
+            core_enums.BEHIND_A_FLAG
+        ]: dev_trial_features,
     }
     return all_features
 
@@ -597,8 +584,8 @@ def _should_appear_on_roadmap(fe: FeatureEntry) -> bool:
     """Return True for features that should appear on the roadmap."""
     return (
         not fe.deleted
-        and fe.impl_status_chrome not in INACTIVE_IMPL_STATUSES
-        and fe.feature_type in ROADMAP_FEATURE_TYPES
+        and fe.impl_status_chrome not in core_enums.INACTIVE_IMPL_STATUSES
+        and fe.feature_type in core_enums.ROADMAP_FEATURE_TYPES
     )
 
 
@@ -812,7 +799,7 @@ def get_features_by_impl_status(
         # Get features by implementation status.
         futures: list[Future] = []
         stages_future = Stage.query(Stage.archived == False).fetch_async()  # noqa: E712
-        for impl_status in IMPLEMENTATION_STATUS.keys():
+        for impl_status in core_enums.IMPLEMENTATION_STATUS.keys():
             q = FeatureEntry.query(
                 FeatureEntry.impl_status_chrome == impl_status
             )
@@ -833,7 +820,7 @@ def get_features_by_impl_status(
                 section = [
                     f
                     for f in section
-                    if f.feature_type != FEATURE_TYPE_ENTERPRISE_ID
+                    if f.feature_type != core_enums.FEATURE_TYPE_ENTERPRISE_ID
                 ]  # noqa: E501, F405
                 section = [
                     converters.feature_entry_to_json_basic(
@@ -890,7 +877,9 @@ def get_stale_features() -> list[tuple[FeatureEntry, int, str]]:
     min_mstone = int(current_milestone_info['mstone'])
     mstone_range = (min_mstone, min_mstone + 1, min_mstone + 2)
     relevant_ship_stages_future = Stage.query(
-        Stage.stage_type.IN([st for st in STAGE_TYPES_SHIPPING.values() if st]),
+        Stage.stage_type.IN(
+            [st for st in core_enums.STAGE_TYPES_SHIPPING.values() if st]
+        ),
         ndb.OR(
             Stage.milestones.desktop_first.IN(mstone_range),
             Stage.milestones.android_first.IN(mstone_range),
@@ -899,7 +888,7 @@ def get_stale_features() -> list[tuple[FeatureEntry, int, str]]:
         ),
     ).fetch_async()
     relevant_enterprise_stages_future = Stage.query(
-        Stage.stage_type == STAGE_ENT_ROLLOUT,
+        Stage.stage_type == core_enums.STAGE_ENT_ROLLOUT,
         Stage.milestones.desktop_first.IN(mstone_range),
     ).fetch_async()
 
@@ -1044,7 +1033,8 @@ def validate_shipping_criteria(
 
     # Check API Owner Gate
     api_owner_gate: Gate | None = Gate.query(
-        Gate.stage_id == stage.key.integer_id(), Gate.gate_type == GATE_API_SHIP
+        Gate.stage_id == stage.key.integer_id(),
+        Gate.gate_type == core_enums.GATE_API_SHIP,
     ).get()
 
     if api_owner_gate is None or api_owner_gate.state != Vote.APPROVED:
@@ -1085,7 +1075,7 @@ def aggregate_shipping_features(
         feature_info = build_feature_info(feature, stage)
 
         # PSA features do not require strict validation
-        if feature.feature_type == FEATURE_TYPE_CODE_CHANGE_ID:
+        if feature.feature_type == core_enums.FEATURE_TYPE_CODE_CHANGE_ID:
             complete_features.append(feature_info)
             continue
 

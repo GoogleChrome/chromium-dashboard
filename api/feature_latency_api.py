@@ -23,17 +23,7 @@ from chromestatus_openapi.models.feature_link import FeatureLink
 
 from api import channels_api
 from framework import basehandlers, permissions
-from internals import stage_helpers
-from internals.core_enums import (
-    DEPRECATED,
-    ENABLED_BY_DEFAULT,
-    REMOVED,
-    STAGE_BLINK_SHIPPING,
-    STAGE_DEP_SHIPPING,
-    STAGE_ENT_ROLLOUT,
-    STAGE_FAST_SHIPPING,
-    STAGE_PSA_SHIPPING,
-)
+from internals import core_enums, stage_helpers
 from internals.core_models import FeatureEntry, Stage
 
 
@@ -105,7 +95,11 @@ class FeatureLatencyAPI(basehandlers.APIHandler):
             if (
                 not fe.deleted
                 and fe.impl_status_chrome
-                in [ENABLED_BY_DEFAULT, DEPRECATED, REMOVED]
+                in [
+                    core_enums.ENABLED_BY_DEFAULT,
+                    core_enums.DEPRECATED,
+                    core_enums.REMOVED,
+                ]
             )
         ]
         return features
@@ -123,11 +117,11 @@ class FeatureLatencyAPI(basehandlers.APIHandler):
         stage_query = stage_query.filter(
             Stage.stage_type.IN(
                 [
-                    STAGE_BLINK_SHIPPING,
-                    STAGE_PSA_SHIPPING,
-                    STAGE_FAST_SHIPPING,
-                    STAGE_DEP_SHIPPING,
-                    STAGE_ENT_ROLLOUT,
+                    core_enums.STAGE_BLINK_SHIPPING,
+                    core_enums.STAGE_PSA_SHIPPING,
+                    core_enums.STAGE_FAST_SHIPPING,
+                    core_enums.STAGE_DEP_SHIPPING,
+                    core_enums.STAGE_ENT_ROLLOUT,
                 ]
             )
         )

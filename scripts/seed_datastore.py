@@ -41,7 +41,7 @@ os.environ.setdefault('SERVER_SOFTWARE', 'gunicorn')
 
 # pylint: disable=wrong-import-position
 # ruff: noqa: E402
-from internals.core_enums import MISC
+from internals import core_enums
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
 from internals.user_models import AppUser
 from pages.guide import FeatureCreateHandler
@@ -74,7 +74,7 @@ def add_features(server: str, after: datetime, detailsAfter: datetime):
         )
         fe.name = f['name']
         fe.summary = f['summary']
-        fe.category = MISC
+        fe.category = core_enums.MISC
         fe.breaking_change = f['breaking_change']
         fe.confidential = f['confidential']
         fe.first_enterprise_notification_milestone = f[

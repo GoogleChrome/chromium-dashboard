@@ -22,8 +22,7 @@ import werkzeug.exceptions
 import settings
 import testing_config  # Must be imported before the module under test.
 from api import attachments_api
-from internals import attachments
-from internals.core_enums import ENABLED_BY_DEFAULT
+from internals import attachments, core_enums
 from internals.core_models import FeatureEntry
 
 test_app = flask.Flask(__name__)
@@ -40,7 +39,7 @@ class AttachmentsAPITest(testing_config.CustomTestCase):
             summary='sum',
             category=1,
             owner_emails=['owner@chromium.org'],
-            impl_status_chrome=ENABLED_BY_DEFAULT,
+            impl_status_chrome=core_enums.ENABLED_BY_DEFAULT,
         )
         self.feature.put()
 
@@ -110,7 +109,7 @@ class AttachmentServingTest(testing_config.CustomTestCase):
             summary='sum',
             category=1,
             owner_emails=['owner@chromium.org'],
-            impl_status_chrome=ENABLED_BY_DEFAULT,
+            impl_status_chrome=core_enums.ENABLED_BY_DEFAULT,
         )
         self.feature.put()
         self.feature_id = self.feature.key.integer_id()
@@ -191,7 +190,7 @@ class RoundTripTest(testing_config.CustomTestCase):
             summary='sum',
             category=1,
             owner_emails=['owner@chromium.org'],
-            impl_status_chrome=ENABLED_BY_DEFAULT,
+            impl_status_chrome=core_enums.ENABLED_BY_DEFAULT,
         )
         self.feature.put()
         self.feature_id = self.feature.key.integer_id()

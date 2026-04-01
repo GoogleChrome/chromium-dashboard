@@ -37,29 +37,7 @@ import settings
 from api import converters
 from framework import cloud_tasks_helpers, origin_trials_client, utils
 from framework.basehandlers import FlaskHandler
-from internals import approval_defs, feature_helpers, stage_helpers
-from internals.core_enums import (
-    ALL_ORIGIN_TRIAL_STAGE_TYPES,
-    CONTENT_FEATURES_FILE,
-    ENABLED_FEATURES_FILE_URL,
-    ENTERPRISE_IMPACT_MEDIUM,
-    ENTERPRISE_IMPACT_NONE,
-    FEATURE_TYPE_ENTERPRISE_ID,
-    OT_ACTIVATED,
-    OT_ACTIVATION_FAILED,
-    OT_CREATED,
-    OT_CREATION_FAILED,
-    OT_READY_FOR_CREATION,
-    STAGE_BLINK_EXTEND_ORIGIN_TRIAL,
-    STAGE_DEP_EXTEND_DEPRECATION_TRIAL,
-    STAGE_ENT_ROLLOUT,
-    STAGE_FAST_EXTEND_ORIGIN_TRIAL,
-    STAGE_TYPES_ORIGIN_TRIAL,
-    STAGE_TYPES_SHIPPING,
-    STAGES_AND_GATES_BY_FEATURE_TYPE,
-    AITestEvaluationStatus,
-    SkyhookDashStatus,
-)
+from internals import approval_defs, core_enums, feature_helpers, stage_helpers
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
 from internals.feature_links import batch_index_feature_entries
 from internals.review_models import Activity, Amendment, Gate, Vote
@@ -100,7 +78,7 @@ class WriteMissingGates(FlaskHandler):
 
     GATE_RULES: dict[int, dict[int, list[int]]] = {
         fe_type: dict(stages_and_gates)
-        for fe_type, stages_and_gates in STAGES_AND_GATES_BY_FEATURE_TYPE.items()
+        for fe_type, stages_and_gates in core_enums.STAGES_AND_GATES_BY_FEATURE_TYPE.items()
     }
 
     def make_needed_gates(self, fe, stage, existing_gates) -> list[Gate]:
@@ -401,8 +379,11 @@ class AssociateOTs(FlaskHandler):
             trial_data['status'] == 'ACTIVE'
             or trial_data['status'] == 'COMPLETE'
         )
-        if trial_stage.ot_setup_status != OT_ACTIVATED and trial_activated:
-            trial_stage.ot_setup_status = OT_ACTIVATED
+        if (
+            trial_stage.ot_setup_status != core_enums.OT_ACTIVATED
+            and trial_activated
+        ):
+            trial_stage.ot_setup_status = core_enums.OT_ACTIVATED
             stage_changed = True
 
         return stage_changed
@@ -435,7 +416,7 @@ class AssociateOTs(FlaskHandler):
             logging.info(f'No feature found for ChromeStatus ID: {feature_id}')
             return None
 
-        trial_stage_type = STAGE_TYPES_ORIGIN_TRIAL[fe.feature_type]
+        trial_stage_type = core_enums.STAGE_TYPES_ORIGIN_TRIAL[fe.feature_type]
         trial_stages: list[Stage] = Stage.query(
             Stage.stage_type == trial_stage_type, Stage.feature_id == feature_id
         ).fetch()
@@ -578,7 +559,7 @@ class BackfillFeatureEnterpriseImpact(FlaskHandler):
         features_by_id = {}
 
         stages: ndb.Query = Stage.query(
-            Stage.stage_type == STAGE_ENT_ROLLOUT,
+            Stage.stage_type == core_enums.STAGE_ENT_ROLLOUT,
             Stage.archived == False,  # noqa: E501, E712, F405
         )
         for stage in stages:
@@ -600,9 +581,10 @@ class BackfillFeatureEnterpriseImpact(FlaskHandler):
 
         # Set all enterprise features and former breaking changes to have a low impact if no rollout step was step.
         features: ndb.Query = FeatureEntry.query(
-            FeatureEntry.enterprise_impact == ENTERPRISE_IMPACT_NONE,
+            FeatureEntry.enterprise_impact == core_enums.ENTERPRISE_IMPACT_NONE,
             ndb.OR(
-                FeatureEntry.feature_type == FEATURE_TYPE_ENTERPRISE_ID,
+                FeatureEntry.feature_type
+                == core_enums.FEATURE_TYPE_ENTERPRISE_ID,
                 FeatureEntry.breaking_change == True,  # noqa: E501, E712, F405
             ),
         )
@@ -611,7 +593,9 @@ class BackfillFeatureEnterpriseImpact(FlaskHandler):
                 continue
             features_by_id[feature_entry.key.id()] = feature_entry
             updated_feature_ids.add(feature_entry.key.id())
-            feature_entry.enterprise_impact = ENTERPRISE_IMPACT_MEDIUM
+            feature_entry.enterprise_impact = (
+                core_enums.ENTERPRISE_IMPACT_MEDIUM
+            )
 
         for feature_id in updated_feature_ids:
             batch.append(features_by_id[feature_id])
@@ -655,7 +639,7 @@ class CreateOriginTrials(FlaskHandler):
                 'Origin trial could not be created for stage '
                 f'{stage.key.integer_id()}'
             )
-            stage.ot_setup_status = OT_CREATION_FAILED
+            stage.ot_setup_status = core_enums.OT_CREATION_FAILED
             self._send_creation_result_notification(
                 '/tasks/email-ot-creation-request-failed',
                 stage,
@@ -663,7 +647,7 @@ class CreateOriginTrials(FlaskHandler):
             )
             return False
         else:
-            stage.ot_setup_status = OT_CREATED
+            stage.ot_setup_status = core_enums.OT_CREATED
             logging.info(
                 f'Origin trial created for stage {stage.key.integer_id()}'
             )
@@ -673,7 +657,7 @@ class CreateOriginTrials(FlaskHandler):
         """Send trial activation request."""
         try:
             origin_trials_client.activate_origin_trial(stage.origin_trial_id)
-            stage.ot_setup_status = OT_ACTIVATED
+            stage.ot_setup_status = core_enums.OT_ACTIVATED
             self._send_creation_result_notification(
                 '/tasks/email-ot-activated', stage
             )
@@ -681,7 +665,7 @@ class CreateOriginTrials(FlaskHandler):
             # The activation still needs to occur,
             # so the activation date is set for current date.
             stage.ot_activation_date = date.today()
-            stage.ot_setup_status = OT_ACTIVATION_FAILED
+            stage.ot_setup_status = core_enums.OT_ACTIVATION_FAILED
             self._send_creation_result_notification(
                 '/tasks/email-ot-activation-failed', stage
             )
@@ -708,7 +692,7 @@ class CreateOriginTrials(FlaskHandler):
             self.handle_activation(stage)
         else:
             stage.ot_activation_date = date
-            stage.ot_setup_status = OT_CREATED
+            stage.ot_setup_status = core_enums.OT_CREATED
             self._send_creation_result_notification(
                 '/tasks/email-ot-creation-processed', stage
             )
@@ -721,7 +705,7 @@ class CreateOriginTrials(FlaskHandler):
 
         # OT stages that are flagged to process a trial creation.
         ot_stages: list[Stage] = Stage.query(
-            Stage.ot_setup_status == OT_READY_FOR_CREATION
+            Stage.ot_setup_status == core_enums.OT_READY_FOR_CREATION
         ).fetch()
         for stage in ot_stages:
             stage.ot_action_requested = False
@@ -751,8 +735,8 @@ class ActivateOriginTrials(FlaskHandler):
         today = self._get_today()
         # Get all OT stages.
         ot_stages: list[Stage] = Stage.query(
-            Stage.stage_type.IN(ALL_ORIGIN_TRIAL_STAGE_TYPES),
-            Stage.ot_setup_status == OT_CREATED,
+            Stage.stage_type.IN(core_enums.ALL_ORIGIN_TRIAL_STAGE_TYPES),
+            Stage.ot_setup_status == core_enums.OT_CREATED,
         ).fetch()
         for stage in ot_stages:
             # Only process stages with a delayed activation date set.
@@ -777,7 +761,7 @@ class ActivateOriginTrials(FlaskHandler):
                         '/tasks/email-ot-activation-failed',
                         {'stage': converters.stage_to_json_dict(stage)},
                     )
-                    stage.ot_setup_status = OT_ACTIVATION_FAILED
+                    stage.ot_setup_status = core_enums.OT_ACTIVATION_FAILED
                     stage.put()
                     fail_count += 1
                 else:
@@ -786,7 +770,7 @@ class ActivateOriginTrials(FlaskHandler):
                         {'stage': converters.stage_to_json_dict(stage)},
                     )
                     stage.ot_activation_date = None
-                    stage.ot_setup_status = OT_ACTIVATED
+                    stage.ot_setup_status = core_enums.OT_ACTIVATED
                     stage.put()
                     success_count += 1
 
@@ -807,9 +791,9 @@ class DeleteEmptyExtensionStages(FlaskHandler):
         extension_stages: list[Stage] = Stage.query(
             Stage.stage_type.IN(
                 [
-                    STAGE_BLINK_EXTEND_ORIGIN_TRIAL,
-                    STAGE_FAST_EXTEND_ORIGIN_TRIAL,
-                    STAGE_DEP_EXTEND_DEPRECATION_TRIAL,
+                    core_enums.STAGE_BLINK_EXTEND_ORIGIN_TRIAL,
+                    core_enums.STAGE_FAST_EXTEND_ORIGIN_TRIAL,
+                    core_enums.STAGE_DEP_EXTEND_DEPRECATION_TRIAL,
                 ]
             )
         ).fetch()
@@ -1048,7 +1032,7 @@ class SendManualOTCreatedEmail(FlaskHandler):
         stage: Stage | None = Stage.get_by_id(stage_id)
         if not stage:
             return f'Stage {stage_id} not found'
-        if stage.stage_type not in ALL_ORIGIN_TRIAL_STAGE_TYPES:
+        if stage.stage_type not in core_enums.ALL_ORIGIN_TRIAL_STAGE_TYPES:
             return f'Stage {stage_id} is not an origin trial stage'
         if not stage.ot_owner_email and not stage.ot_emails:
             return f'Stage {stage_id} has no OT contacts set'
@@ -1077,7 +1061,7 @@ class SendManualOTActivatedEmail(FlaskHandler):
         stage: Stage | None = Stage.get_by_id(stage_id)
         if not stage:
             return f'Stage {stage_id} not found'
-        if stage.stage_type not in ALL_ORIGIN_TRIAL_STAGE_TYPES:
+        if stage.stage_type not in core_enums.ALL_ORIGIN_TRIAL_STAGE_TYPES:
             return f'Stage {stage_id} is not an origin trial stage'
         if not stage.ot_owner_email and not stage.ot_emails:
             return f'Stage {stage_id} has no OT contacts set'
@@ -1095,18 +1079,18 @@ class GenerateReviewActivityFile(FlaskHandler):
     """Generate a CSV file with all review activity in ChromeStatus."""
 
     DATE_FORMAT = '%Y-%m-%dT%H:%M:%S'
-    VOTE_VALUE_MAPPING: dict[str, SkyhookDashStatus] = {
-        'na': SkyhookDashStatus.FYI,
-        'review_requested': SkyhookDashStatus.PENDING_REVIEW,
-        'review_started': SkyhookDashStatus.PENDING_REVIEW,
-        'needs_work': SkyhookDashStatus.NEEDS_WORK,
-        'approved': SkyhookDashStatus.APPROVED,
-        'denied': SkyhookDashStatus.DENIED,
-        'internal_review': SkyhookDashStatus.PENDING_REVIEW,
-        'na (self-certified)': SkyhookDashStatus.FYI,
-        'na_requested': SkyhookDashStatus.PENDING_REVIEW,
-        'na (verified)': SkyhookDashStatus.FYI,
-        'no_response': SkyhookDashStatus.PENDING_REVIEW,
+    VOTE_VALUE_MAPPING: dict[str, core_enums.SkyhookDashStatus] = {
+        'na': core_enums.SkyhookDashStatus.FYI,
+        'review_requested': core_enums.SkyhookDashStatus.PENDING_REVIEW,
+        'review_started': core_enums.SkyhookDashStatus.PENDING_REVIEW,
+        'needs_work': core_enums.SkyhookDashStatus.NEEDS_WORK,
+        'approved': core_enums.SkyhookDashStatus.APPROVED,
+        'denied': core_enums.SkyhookDashStatus.DENIED,
+        'internal_review': core_enums.SkyhookDashStatus.PENDING_REVIEW,
+        'na (self-certified)': core_enums.SkyhookDashStatus.FYI,
+        'na_requested': core_enums.SkyhookDashStatus.PENDING_REVIEW,
+        'na (verified)': core_enums.SkyhookDashStatus.FYI,
+        'no_response': core_enums.SkyhookDashStatus.PENDING_REVIEW,
     }
 
     def _get_skyhook_status(self, review_status: str | None) -> str:
@@ -1293,11 +1277,13 @@ class GenerateStaleFeaturesFile(FlaskHandler):
             # (This cannot be added to the query, since only 1 inequality is allowed per query.)
             if f.outstanding_notifications == 0:
                 continue
-            shipping_stage_type = STAGE_TYPES_SHIPPING[f.feature_type]
+            shipping_stage_type = core_enums.STAGE_TYPES_SHIPPING[
+                f.feature_type
+            ]
             upcoming_ship_stages = Stage.query(
                 Stage.feature_id == f.key.integer_id(),
                 ndb.OR(
-                    Stage.stage_type == STAGE_ENT_ROLLOUT,
+                    Stage.stage_type == core_enums.STAGE_ENT_ROLLOUT,
                     Stage.stage_type == shipping_stage_type,
                 ),
                 ndb.OR(
@@ -1408,7 +1394,7 @@ class GenerateShippingFeaturesFile(FlaskHandler):
 
     def _get_shipping_stages(self, milestone: int) -> list[Stage]:
         shipping_stage_types = [
-            st for st in STAGE_TYPES_SHIPPING.values() if st
+            st for st in core_enums.STAGE_TYPES_SHIPPING.values() if st
         ]
 
         return Stage.query(
@@ -1430,10 +1416,12 @@ class GenerateShippingFeaturesFile(FlaskHandler):
     ]:
 
         enabled_features_file = utils.get_chromium_file(
-            ENABLED_FEATURES_FILE_URL
+            core_enums.ENABLED_FEATURES_FILE_URL
         )
         enabled_features_json = json5.loads(enabled_features_file)
-        content_features_file = utils.get_chromium_file(CONTENT_FEATURES_FILE)
+        content_features_file = utils.get_chromium_file(
+            core_enums.CONTENT_FEATURES_FILE
+        )
 
         return feature_helpers.aggregate_shipping_features(
             shipping_stages, enabled_features_json, content_features_file
@@ -1551,7 +1539,7 @@ class MigrateRolloutMilestones(FlaskHandler):
         """Get template data."""
         self.require_cron_header()
         stages: list[Stage] = Stage.query(
-            Stage.stage_type == STAGE_ENT_ROLLOUT
+            Stage.stage_type == core_enums.STAGE_ENT_ROLLOUT
         ).fetch()
         changed_stages: list[Stage] = []
         count = 0
@@ -1638,8 +1626,9 @@ class ResetStaleShippingMilestones(FlaskHandler):
             stages: list[Stage] = Stage.query(
                 Stage.feature_id == f.key.integer_id(),
                 ndb.OR(
-                    Stage.stage_type == STAGE_TYPES_SHIPPING[f.feature_type],
-                    Stage.stage_type == STAGE_ENT_ROLLOUT,
+                    Stage.stage_type
+                    == core_enums.STAGE_TYPES_SHIPPING[f.feature_type],
+                    Stage.stage_type == core_enums.STAGE_ENT_ROLLOUT,
                 ),
             ).fetch()
             for s in stages:
@@ -1719,7 +1708,9 @@ class DeleteWPTCoverageReport(FlaskHandler):
                 )
                 batch.append(activity)
                 feature.ai_test_eval_report = None
-                feature.ai_test_eval_run_status = AITestEvaluationStatus.DELETED
+                feature.ai_test_eval_run_status = (
+                    core_enums.AITestEvaluationStatus.DELETED
+                )
                 # Update the timestamp to reflect when this cron job ran.
                 feature.ai_test_eval_status_timestamp = datetime.now()
                 batch.append(feature)
