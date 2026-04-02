@@ -32,8 +32,7 @@ from google.cloud.ndb.tasklets import Future  # for type checking only
 from api import converters
 from framework import basehandlers, permissions
 from framework.users import User
-from internals import approval_defs, notifier_helpers, self_certify
-from internals.core_enums import *
+from internals import approval_defs, core_enums, notifier_helpers, self_certify
 from internals.core_models import FeatureEntry, Stage
 from internals.review_models import Activity, Amendment, Gate, Vote
 
@@ -342,11 +341,11 @@ class XfnGatesAPI(basehandlers.APIHandler):
 
     def get_needed_gate_types(self) -> list[int]:
         """Return a list of gate types normally used to ship a new feature."""
-        needed_gate_tuples = STAGES_AND_GATES_BY_FEATURE_TYPE[
-            FEATURE_TYPE_INCUBATE_ID
+        needed_gate_tuples = core_enums.STAGES_AND_GATES_BY_FEATURE_TYPE[
+            core_enums.FEATURE_TYPE_INCUBATE_ID
         ]
         for stage_type, gate_types in needed_gate_tuples:
-            if stage_type == STAGE_BLINK_SHIPPING:
+            if stage_type == core_enums.STAGE_BLINK_SHIPPING:
                 return gate_types
         raise ValueError('Could not find expected list of gate types')
 

@@ -27,16 +27,11 @@ from framework import basehandlers
 from framework.utils import get_current_milestone_info
 from internals import (
     approval_defs,
+    core_enums,
     notifier,
     ot_process_reminders,
     slo,
     stage_helpers,
-)
-from internals.core_enums import (
-    CBE_ESCLATION_EMAIL,
-    STAGE_TYPES_BY_FIELD_MAPPING,
-    STAGING_EMAIL,
-    WEBSTATUS_EMAIL,
 )
 from internals.core_models import FeatureEntry, MilestoneSet
 from internals.review_models import Gate
@@ -52,9 +47,12 @@ def choose_email_recipients(
     """Choose which recipients will receive the email notification."""
     ws_group_emails = []
     if settings.PROD:
-        ws_group_emails = [WEBSTATUS_EMAIL, CBE_ESCLATION_EMAIL]
+        ws_group_emails = [
+            core_enums.WEBSTATUS_EMAIL,
+            core_enums.CBE_ESCLATION_EMAIL,
+        ]
     else:
-        ws_group_emails = [STAGING_EMAIL]
+        ws_group_emails = [core_enums.STAGING_EMAIL]
 
     # Only feature owners are notified for accuracy or non-escalated notification emails, if not bounced.  # noqa: E501
     if is_accuracy_email or not is_escalated:
@@ -213,7 +211,9 @@ class AbstractReminderHandler(basehandlers.FlaskHandler):
                 # Get fields that are relevant to the milestones field specified
                 # (e.g. 'shipped_milestone' implies shipping stages)
                 relevant_stages = stages.get(
-                    STAGE_TYPES_BY_FIELD_MAPPING[field][feature.feature_type]
+                    core_enums.STAGE_TYPES_BY_FIELD_MAPPING[field][
+                        feature.feature_type
+                    ]
                     or -1,
                     [],
                 )

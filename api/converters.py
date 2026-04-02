@@ -22,8 +22,7 @@ from typing import Any, Optional, TypedDict
 from google.cloud import ndb  # type: ignore
 
 import settings
-from internals import approval_defs, self_certify, slo
-from internals.core_enums import *  # noqa: F403
+from internals import approval_defs, core_enums, self_certify, slo
 from internals.core_models import (
     FeatureEntry,
     MilestoneSet,
@@ -120,12 +119,12 @@ def _prep_stage_info(
     fe: FeatureEntry, prefetched_stages: list[Stage] | None = None
 ) -> StagePrepResponse:
     """Prepares stage info of a feature to help create JSON dictionaries."""
-    proto_type = STAGE_TYPES_PROTOTYPE[fe.feature_type]  # noqa: F405
-    dev_trial_type = STAGE_TYPES_DEV_TRIAL[fe.feature_type]  # noqa: F405
-    ot_type = STAGE_TYPES_ORIGIN_TRIAL[fe.feature_type]  # noqa: F405
-    extend_type = STAGE_TYPES_EXTEND_ORIGIN_TRIAL[fe.feature_type]  # noqa: F405
-    ship_type = STAGE_TYPES_SHIPPING[fe.feature_type]  # noqa: F405
-    rollout_type = STAGE_TYPES_ROLLOUT[fe.feature_type]  # noqa: F405
+    proto_type = core_enums.STAGE_TYPES_PROTOTYPE[fe.feature_type]
+    dev_trial_type = core_enums.STAGE_TYPES_DEV_TRIAL[fe.feature_type]
+    ot_type = core_enums.STAGE_TYPES_ORIGIN_TRIAL[fe.feature_type]
+    extend_type = core_enums.STAGE_TYPES_EXTEND_ORIGIN_TRIAL[fe.feature_type]
+    ship_type = core_enums.STAGE_TYPES_SHIPPING[fe.feature_type]
+    rollout_type = core_enums.STAGE_TYPES_ROLLOUT[fe.feature_type]
 
     # Get all stages associated with the feature, sorted by stage type.
     if prefetched_stages is not None:
@@ -205,9 +204,9 @@ def stage_to_json_dict(
         'feature_id': stage.feature_id,
         'stage_type': stage.stage_type,
         'display_name': stage.display_name,
-        'intent_stage': INTENT_STAGES_BY_STAGE_TYPE.get(  # noqa: F405
-            stage.stage_type, INTENT_NONE
-        ),  # noqa: F405
+        'intent_stage': core_enums.INTENT_STAGES_BY_STAGE_TYPE.get(
+            stage.stage_type, core_enums.INTENT_NONE
+        ),
         'pm_emails': stage.pm_emails,
         'tl_emails': stage.tl_emails,
         'ux_emails': stage.ux_emails,
@@ -290,12 +289,12 @@ def _format_new_crbug_url(
         params = ['components=' + settings.DEFAULT_COMPONENT]
     crbug_number = _parse_crbug_number(bug_url)
     if crbug_number and impl_status_chrome in (
-        NO_ACTIVE_DEV,  # noqa: F405
-        PROPOSED,  # noqa: F405
-        IN_DEVELOPMENT,  # noqa: F405
-        BEHIND_A_FLAG,  # noqa: F405
-        ORIGIN_TRIAL,
-    ):  # noqa: F405
+        core_enums.NO_ACTIVE_DEV,
+        core_enums.PROPOSED,
+        core_enums.IN_DEVELOPMENT,
+        core_enums.BEHIND_A_FLAG,
+        core_enums.ORIGIN_TRIAL,
+    ):
         params.append('blocking=' + crbug_number)
     if owner_emails:
         params.append('cc=' + ','.join(owner_emails))
@@ -303,14 +302,14 @@ def _format_new_crbug_url(
 
 
 _COMPUTED_VIEWS_TO_ENUM = {
-    ReviewResultProperty.CLOSED_WITHOUT_POSITION: NO_PUBLIC_SIGNALS,  # noqa: F405
-    'defer': GECKO_DEFER,  # noqa: F405
-    'negative': OPPOSED,  # noqa: F405
-    'neutral': NEUTRAL,  # noqa: F405
-    'oppose': OPPOSED,  # noqa: F405
-    'positive': PUBLIC_SUPPORT,  # noqa: F405
-    'support': PUBLIC_SUPPORT,  # noqa: F405
-    'under consideration': GECKO_UNDER_CONSIDERATION,  # noqa: F405
+    ReviewResultProperty.CLOSED_WITHOUT_POSITION: core_enums.NO_PUBLIC_SIGNALS,
+    'defer': core_enums.GECKO_DEFER,
+    'negative': core_enums.OPPOSED,
+    'neutral': core_enums.NEUTRAL,
+    'oppose': core_enums.OPPOSED,
+    'positive': core_enums.PUBLIC_SUPPORT,
+    'support': core_enums.PUBLIC_SUPPORT,
+    'under consideration': core_enums.GECKO_UNDER_CONSIDERATION,
 }
 
 
@@ -324,9 +323,12 @@ def _compute_vendor_views(
         'url': url,
         'notes': notes,
         'text': None,
-        'val': NO_PUBLIC_SIGNALS,  # noqa: F405
+        'val': core_enums.NO_PUBLIC_SIGNALS,
     }
-    if computed_views and form_views not in [SHIPPED, IN_DEV]:  # noqa: F405
+    if computed_views and form_views not in [
+        core_enums.SHIPPED,
+        core_enums.IN_DEV,
+    ]:
         result['text'] = (
             'Closed Without a Position'
             if computed_views == ReviewResultProperty.CLOSED_WITHOUT_POSITION
@@ -334,15 +336,19 @@ def _compute_vendor_views(
         )
         result['val'] = _COMPUTED_VIEWS_TO_ENUM.get(
             computed_views,
-            form_views if form_views in VENDOR_VIEWS else NO_PUBLIC_SIGNALS,  # noqa: E501, F405
+            form_views
+            if form_views in core_enums.VENDOR_VIEWS
+            else core_enums.NO_PUBLIC_SIGNALS,  # noqa: E501, F405
         )
     else:
-        result['text'] = VENDOR_VIEWS.get(  # noqa: F405
+        result['text'] = core_enums.VENDOR_VIEWS.get(
             form_views,
-            VENDOR_VIEWS_COMMON[NO_PUBLIC_SIGNALS],  # noqa: F405
+            core_enums.VENDOR_VIEWS_COMMON[core_enums.NO_PUBLIC_SIGNALS],
         )
         result['val'] = (
-            form_views if form_views in VENDOR_VIEWS else NO_PUBLIC_SIGNALS
+            form_views
+            if form_views in core_enums.VENDOR_VIEWS
+            else core_enums.NO_PUBLIC_SIGNALS
         )  # noqa: E501, F405
     return result
 
@@ -380,7 +386,7 @@ def feature_entry_to_json_verbose(
             'by': fe.updater_email,
             'when': _date_to_str(fe.updated),
         },
-        'category': FEATURE_CATEGORIES[fe.category],  # noqa: F405
+        'category': core_enums.FEATURE_CATEGORIES[fe.category],
         'category_int': fe.category,
         'feature_notes': fe.feature_notes,
         'web_feature': fe.web_feature,
@@ -392,7 +398,7 @@ def feature_entry_to_json_verbose(
         'webdx_usecounter_enum': fe.webdx_usecounter_enum,
         'enterprise_feature_categories': fe.enterprise_feature_categories or [],
         'enterprise_product_category': fe.enterprise_product_category
-        or ENTERPRISE_PRODUCT_CATEGORY_CHROME_BROWSER_UPDATE,  # noqa: E501, F405
+        or core_enums.ENTERPRISE_PRODUCT_CATEGORY_CHROME_BROWSER_UPDATE,  # noqa: E501, F405
         'is_releasenotes_content_reviewed': fe.is_releasenotes_content_reviewed,
         'is_releasenotes_publish_ready': fe.is_releasenotes_publish_ready,
         'stages': stage_info['all_stages'],
@@ -409,10 +415,10 @@ def feature_entry_to_json_verbose(
         'cc_recipients': fe.cc_emails or [],
         'spec_mentors': fe.spec_mentor_emails or [],
         'creator': fe.creator_email,
-        'feature_type': FEATURE_TYPES[fe.feature_type],  # noqa: F405
+        'feature_type': core_enums.FEATURE_TYPES[fe.feature_type],
         'feature_type_int': fe.feature_type,
-        'intent_stage': INTENT_STAGES.get(
-            fe.intent_stage, INTENT_STAGES[INTENT_NONE]
+        'intent_stage': core_enums.INTENT_STAGES.get(
+            fe.intent_stage, core_enums.INTENT_STAGES[core_enums.INTENT_NONE]
         ),  # noqa: E501, F405
         'intent_stage_int': fe.intent_stage,
         'active_stage_id': fe.active_stage_id,
@@ -430,7 +436,9 @@ def feature_entry_to_json_verbose(
         'non_finch_justification': fe.non_finch_justification,
         'ongoing_constraints': fe.ongoing_constraints,
         'rollout_plan': fe.rollout_plan,
-        'rollout_plan_displayname': ROLLOUT_PLAN_DISPLAYNAMES[fe.rollout_plan],  # noqa: F405
+        'rollout_plan_displayname': core_enums.ROLLOUT_PLAN_DISPLAYNAMES[
+            fe.rollout_plan
+        ],
         'motivation': fe.motivation,
         'devtrial_instructions': fe.devtrial_instructions,
         'activation_risks': fe.activation_risks,
@@ -461,19 +469,19 @@ def feature_entry_to_json_verbose(
         'prefixed': fe.prefixed,
         'tags': fe.search_tags,
         'tag_review': fe.tag_review,
-        'tag_review_status': REVIEW_STATUS_CHOICES.get(  # noqa: F405
+        'tag_review_status': core_enums.REVIEW_STATUS_CHOICES.get(
             fe.tag_review_status,
-            REVIEW_STATUS_CHOICES[REVIEW_PENDING],  # noqa: F405
+            core_enums.REVIEW_STATUS_CHOICES[core_enums.REVIEW_PENDING],
         ),
         'tag_review_status_int': fe.tag_review_status,
-        'security_review_status': REVIEW_STATUS_CHOICES.get(  # noqa: F405
+        'security_review_status': core_enums.REVIEW_STATUS_CHOICES.get(
             fe.security_review_status,
-            REVIEW_STATUS_CHOICES[REVIEW_PENDING],  # noqa: F405
+            core_enums.REVIEW_STATUS_CHOICES[core_enums.REVIEW_PENDING],
         ),
         'security_review_status_int': fe.security_review_status,
-        'privacy_review_status': REVIEW_STATUS_CHOICES.get(  # noqa: F405
+        'privacy_review_status': core_enums.REVIEW_STATUS_CHOICES.get(
             fe.privacy_review_status,
-            REVIEW_STATUS_CHOICES[REVIEW_PENDING],  # noqa: F405
+            core_enums.REVIEW_STATUS_CHOICES[core_enums.REVIEW_PENDING],
         ),
         'privacy_review_status_int': fe.privacy_review_status,
         'security_continuity_id': fe.security_continuity_id,
@@ -484,20 +492,22 @@ def feature_entry_to_json_verbose(
             'docs': fe.doc_links or [],
         },
         'comments': fe.feature_notes,
-        'ff_views': fe.ff_views or NO_PUBLIC_SIGNALS,  # noqa: F405
-        'safari_views': fe.safari_views or NO_PUBLIC_SIGNALS,  # noqa: F405
-        'web_dev_views': fe.web_dev_views or DEV_NO_SIGNALS,  # noqa: F405
+        'ff_views': fe.ff_views or core_enums.NO_PUBLIC_SIGNALS,
+        'safari_views': fe.safari_views or core_enums.NO_PUBLIC_SIGNALS,
+        'web_dev_views': fe.web_dev_views or core_enums.DEV_NO_SIGNALS,
         'browsers': {
             'chrome': {
                 'bug': fe.bug_url,
                 'blink_components': fe.blink_components or [],
                 'devrel': fe.devrel_emails or [],
                 'owners': fe.owner_emails or [],
-                'origintrial': fe.impl_status_chrome == ORIGIN_TRIAL,  # noqa: F405
+                'origintrial': fe.impl_status_chrome == core_enums.ORIGIN_TRIAL,
                 'prefixed': fe.prefixed,
-                'flag': fe.impl_status_chrome == BEHIND_A_FLAG,  # noqa: F405
+                'flag': fe.impl_status_chrome == core_enums.BEHIND_A_FLAG,
                 'status': {
-                    'text': IMPLEMENTATION_STATUS[fe.impl_status_chrome],  # noqa: F405
+                    'text': core_enums.IMPLEMENTATION_STATUS[
+                        fe.impl_status_chrome
+                    ],
                     'val': fe.impl_status_chrome,
                     'milestone_str': None,
                 },
@@ -531,13 +541,14 @@ def feature_entry_to_json_verbose(
             },
             'webdev': {
                 'view': {
-                    'text': WEB_DEV_VIEWS.get(
-                        fe.web_dev_views, WEB_DEV_VIEWS[DEV_NO_SIGNALS]
+                    'text': core_enums.WEB_DEV_VIEWS.get(
+                        fe.web_dev_views,
+                        core_enums.WEB_DEV_VIEWS[core_enums.DEV_NO_SIGNALS],
                     ),  # noqa: E501, F405
                     'val': (
                         fe.web_dev_views
-                        if fe.web_dev_views in WEB_DEV_VIEWS
-                        else DEV_NO_SIGNALS  # noqa: E501, F405
+                        if fe.web_dev_views in core_enums.WEB_DEV_VIEWS
+                        else core_enums.DEV_NO_SIGNALS  # noqa: E501, F405
                     ),
                     'url': fe.web_dev_views_link,
                     'notes': fe.web_dev_views_notes,
@@ -555,13 +566,18 @@ def feature_entry_to_json_verbose(
         'standards': {
             'spec': fe.spec_link,
             'maturity': {
-                'text': STANDARD_MATURITY_CHOICES.get(fe.standard_maturity),  # noqa: F405
-                'short_text': STANDARD_MATURITY_SHORT.get(fe.standard_maturity),  # noqa: F405
+                'text': core_enums.STANDARD_MATURITY_CHOICES.get(
+                    fe.standard_maturity
+                ),
+                'short_text': core_enums.STANDARD_MATURITY_SHORT.get(
+                    fe.standard_maturity
+                ),
                 'val': fe.standard_maturity,
             },
         },
-        'is_released': fe.impl_status_chrome in RELEASE_IMPL_STATES,  # noqa: F405
-        'is_enterprise_feature': fe.feature_type == FEATURE_TYPE_ENTERPRISE_ID,  # noqa: F405
+        'is_released': fe.impl_status_chrome in core_enums.RELEASE_IMPL_STATES,
+        'is_enterprise_feature': fe.feature_type
+        == core_enums.FEATURE_TYPE_ENTERPRISE_ID,
         'experiment_timeline': fe.experiment_timeline,
         'ai_test_eval_report': fe.ai_test_eval_report,
         'ai_test_eval_run_status': fe.ai_test_eval_run_status,
@@ -604,7 +620,7 @@ def feature_entry_to_json_basic(
         'unlisted': fe.unlisted,
         'enterprise_impact': fe.enterprise_impact,
         'enterprise_product_category': fe.enterprise_product_category
-        or ENTERPRISE_PRODUCT_CATEGORY_CHROME_BROWSER_UPDATE,  # noqa: E501, F405
+        or core_enums.ENTERPRISE_PRODUCT_CATEGORY_CHROME_BROWSER_UPDATE,  # noqa: E501, F405
         'breaking_change': fe.breaking_change,
         'confidential': fe.confidential,
         'first_enterprise_notification_milestone': fe.first_enterprise_notification_milestone,  # noqa: E501
@@ -622,8 +638,12 @@ def feature_entry_to_json_basic(
         'standards': {
             'spec': fe.spec_link,
             'maturity': {
-                'text': STANDARD_MATURITY_CHOICES.get(fe.standard_maturity),  # noqa: F405
-                'short_text': STANDARD_MATURITY_SHORT.get(fe.standard_maturity),  # noqa: F405
+                'text': core_enums.STANDARD_MATURITY_CHOICES.get(
+                    fe.standard_maturity
+                ),
+                'short_text': core_enums.STANDARD_MATURITY_SHORT.get(
+                    fe.standard_maturity
+                ),
                 'val': fe.standard_maturity,
             },
         },
@@ -633,11 +653,13 @@ def feature_entry_to_json_basic(
                 'blink_components': fe.blink_components or [],
                 'devrel': fe.devrel_emails or [],
                 'owners': fe.owner_emails or [],
-                'origintrial': fe.impl_status_chrome == ORIGIN_TRIAL,  # noqa: F405
+                'origintrial': fe.impl_status_chrome == core_enums.ORIGIN_TRIAL,
                 'prefixed': fe.prefixed,
-                'flag': fe.impl_status_chrome == BEHIND_A_FLAG,  # noqa: F405
+                'flag': fe.impl_status_chrome == core_enums.BEHIND_A_FLAG,
                 'status': {
-                    'text': IMPLEMENTATION_STATUS[fe.impl_status_chrome],  # noqa: F405
+                    'text': core_enums.IMPLEMENTATION_STATUS[
+                        fe.impl_status_chrome
+                    ],
                     'val': fe.impl_status_chrome,
                 },
             },
@@ -659,13 +681,14 @@ def feature_entry_to_json_basic(
             },
             'webdev': {
                 'view': {
-                    'text': WEB_DEV_VIEWS.get(
-                        fe.web_dev_views, WEB_DEV_VIEWS[DEV_NO_SIGNALS]
+                    'text': core_enums.WEB_DEV_VIEWS.get(
+                        fe.web_dev_views,
+                        core_enums.WEB_DEV_VIEWS[core_enums.DEV_NO_SIGNALS],
                     ),  # noqa: E501, F405
                     'val': (
                         fe.web_dev_views
-                        if fe.web_dev_views in WEB_DEV_VIEWS
-                        else DEV_NO_SIGNALS  # noqa: E501, F405
+                        if fe.web_dev_views in core_enums.WEB_DEV_VIEWS
+                        else core_enums.DEV_NO_SIGNALS  # noqa: E501, F405
                     ),
                     'url': fe.web_dev_views_link,
                     'notes': fe.web_dev_views_notes,
@@ -679,7 +702,7 @@ def feature_entry_to_json_basic(
         },
     }
 
-    is_released = fe.impl_status_chrome in RELEASE_IMPL_STATES  # noqa: F405
+    is_released = fe.impl_status_chrome in core_enums.RELEASE_IMPL_STATES
     d['is_released'] = is_released
 
     # This key is used for filtering on the featurelist page.
@@ -690,7 +713,7 @@ def feature_entry_to_json_basic(
     if stages and d['is_released']:
         for s in stages:
             if (
-                s.stage_type == STAGE_TYPES_SHIPPING[fe.feature_type]  # noqa: F405
+                s.stage_type == core_enums.STAGE_TYPES_SHIPPING[fe.feature_type]
                 and s.milestones is not None
             ):
                 milestone = (

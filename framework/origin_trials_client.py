@@ -29,7 +29,7 @@ from google.auth.transport.requests import Request
 
 import settings
 from framework import secrets, utils
-from internals.core_enums import BlinkHistogramID
+from internals import core_enums
 from internals.core_models import Stage
 from internals.data_types import OriginTrialInfo
 
@@ -224,18 +224,22 @@ def _send_create_trial_request(
     if ot_stage.ot_use_counter_bucket_number:
         config: UseCounterConfig = {
             'bucket_number': ot_stage.ot_use_counter_bucket_number,
-            'histogram_id': BlinkHistogramID.web_feature.value,
+            'histogram_id': core_enums.BlinkHistogramID.web_feature.value,
         }
         if (
             ot_stage.ot_webfeature_use_counter
             and ot_stage.ot_webfeature_use_counter.startswith('WebDXFeature::')
         ):
-            config['histogram_id'] = BlinkHistogramID.webdx_feature.value
+            config['histogram_id'] = (
+                core_enums.BlinkHistogramID.webdx_feature.value
+            )
         if (
             ot_stage.ot_webfeature_use_counter
             and ot_stage.ot_webfeature_use_counter.startswith('CSSSampleId::')
         ):
-            config['histogram_id'] = BlinkHistogramID.css_property_id.value
+            config['histogram_id'] = (
+                core_enums.BlinkHistogramID.css_property_id.value
+            )
         json['trial']['blink_use_counter_config'] = config
 
     headers = {'Authorization': f'Bearer {access_token}'}

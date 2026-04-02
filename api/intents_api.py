@@ -26,33 +26,30 @@ from flask import Response, render_template
 import settings
 from api import converters
 from framework import basehandlers, cloud_tasks_helpers, permissions
-from internals import stage_helpers
-from internals.core_enums import (
-    FEATURE_TYPE_DEPRECATION_ID,
-    INTENT_DRAFT_TYPES_BY_STAGE_TYPE,
-    IntentDraftType,
-)
+from internals import core_enums, stage_helpers
 from internals.core_models import FeatureEntry
 from internals.review_models import Gate
 
 SUBJECT_PREFIXES = {
-    IntentDraftType.PROTOTYPE: 'Intent to Prototype',
-    IntentDraftType.DEVELOPER_TESTING: 'Ready for Developer Testing',
-    IntentDraftType.EXPERIMENT: 'Intent to Experiment',
-    IntentDraftType.EXTEND_EXPERIMENT: 'Intent to Extend Experiment',
-    IntentDraftType.PSA: 'Web-Facing Change PSA',
-    IntentDraftType.DEPRECATE: 'Intent to Deprecate and Remove',
-    IntentDraftType.SHIP: 'Intent to Ship',
+    core_enums.IntentDraftType.PROTOTYPE: 'Intent to Prototype',
+    core_enums.IntentDraftType.DEVELOPER_TESTING: 'Ready for Developer Testing',
+    core_enums.IntentDraftType.EXPERIMENT: 'Intent to Experiment',
+    core_enums.IntentDraftType.EXTEND_EXPERIMENT: 'Intent to Extend Experiment',
+    core_enums.IntentDraftType.PSA: 'Web-Facing Change PSA',
+    core_enums.IntentDraftType.DEPRECATE: 'Intent to Deprecate and Remove',
+    core_enums.IntentDraftType.SHIP: 'Intent to Ship',
 }
 
 
-def compute_subject_prefix(feature_type: int, intent_type: IntentDraftType):
+def compute_subject_prefix(
+    feature_type: int, intent_type: core_enums.IntentDraftType
+):
     """Compute the subject line prefix for an intent email based on the feature and intent type."""  # noqa: E501
     # Deprecation-specific intent names.
-    if feature_type == FEATURE_TYPE_DEPRECATION_ID:
-        if intent_type == IntentDraftType.EXPERIMENT:
+    if feature_type == core_enums.FEATURE_TYPE_DEPRECATION_ID:
+        if intent_type == core_enums.IntentDraftType.EXPERIMENT:
             return 'Request for Deprecation Trial'
-        if intent_type == IntentDraftType.EXTEND_EXPERIMENT:
+        if intent_type == core_enums.IntentDraftType.EXTEND_EXPERIMENT:
             return 'Intent to Extend Deprecation Trial'
 
     return SUBJECT_PREFIXES.get(intent_type, 'Unknown Intent Type')
@@ -89,8 +86,10 @@ class IntentsAPI(basehandlers.APIHandler):
             self.abort(400, msg='Stage does not belong to given feature')
 
         intent_type = None
-        if stage.stage_type in INTENT_DRAFT_TYPES_BY_STAGE_TYPE:
-            intent_type = INTENT_DRAFT_TYPES_BY_STAGE_TYPE[stage.stage_type]
+        if stage.stage_type in core_enums.INTENT_DRAFT_TYPES_BY_STAGE_TYPE:
+            intent_type = core_enums.INTENT_DRAFT_TYPES_BY_STAGE_TYPE[
+                stage.stage_type
+            ]
         if intent_type is None:
             self.abort(
                 400,
@@ -157,8 +156,10 @@ class IntentsAPI(basehandlers.APIHandler):
             self.abort(400, msg='Stage does not belong to given feature')
 
         intent_type = None
-        if stage.stage_type in INTENT_DRAFT_TYPES_BY_STAGE_TYPE:
-            intent_type = INTENT_DRAFT_TYPES_BY_STAGE_TYPE[stage.stage_type]
+        if stage.stage_type in core_enums.INTENT_DRAFT_TYPES_BY_STAGE_TYPE:
+            intent_type = core_enums.INTENT_DRAFT_TYPES_BY_STAGE_TYPE[
+                stage.stage_type
+            ]
         if intent_type is None:
             self.abort(
                 400,

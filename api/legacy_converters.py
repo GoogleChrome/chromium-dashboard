@@ -20,32 +20,32 @@ from typing import Any
 from internals.legacy_models import Feature
 
 from api.converters import del_none, to_dict
-from internals.core_enums import *  # noqa: F403
+from internals import core_enums
 
 
 def feature_to_legacy_json(f: Feature) -> dict[str, Any]:
     """Convert a Feature model instance into its legacy JSON dictionary representation."""
     d: dict[str, Any] = to_dict(f)
-    is_released = f.impl_status_chrome in RELEASE_IMPL_STATES  # noqa: F405
+    is_released = f.impl_status_chrome in core_enums.RELEASE_IMPL_STATES
     d['is_released'] = is_released
 
     if f.is_saved():
         d['id'] = f.key.integer_id()
     else:
         d['id'] = None
-    d['category'] = FEATURE_CATEGORIES[f.category]  # noqa: F405
+    d['category'] = core_enums.FEATURE_CATEGORIES[f.category]
     d['enterprise_feature_categories'] = f.enterprise_feature_categories
     d['enterprise_product_category'] = f.enterprise_product_category
     d['confidential'] = f.confidential
     d['category_int'] = f.category
     if f.feature_type is not None:
-        d['feature_type'] = FEATURE_TYPES[f.feature_type]  # noqa: F405
+        d['feature_type'] = core_enums.FEATURE_TYPES[f.feature_type]
         d['feature_type_int'] = f.feature_type
         d['is_enterprise_feature'] = (
-            f.feature_type == FEATURE_TYPE_ENTERPRISE_ID
-        )  # noqa: F405
+            f.feature_type == core_enums.FEATURE_TYPE_ENTERPRISE_ID
+        )
     if f.intent_stage is not None:
-        d['intent_stage'] = INTENT_STAGES[f.intent_stage]  # noqa: F405
+        d['intent_stage'] = core_enums.INTENT_STAGES[f.intent_stage]
         d['intent_stage_int'] = f.intent_stage
     d['created'] = {
         'by': d.pop('created_by', None),
@@ -59,23 +59,29 @@ def feature_to_legacy_json(f: Feature) -> dict[str, Any]:
     d['standards'] = {
         'spec': d.pop('spec_link', None),
         'status': {
-            'text': STANDARDIZATION[f.standardization],  # noqa: F405
+            'text': core_enums.STANDARDIZATION[f.standardization],
             'val': d.pop('standardization', None),
         },
         'maturity': {
-            'text': STANDARD_MATURITY_CHOICES.get(f.standard_maturity),  # noqa: F405
-            'short_text': STANDARD_MATURITY_SHORT.get(f.standard_maturity),  # noqa: F405
+            'text': core_enums.STANDARD_MATURITY_CHOICES.get(
+                f.standard_maturity
+            ),
+            'short_text': core_enums.STANDARD_MATURITY_SHORT.get(
+                f.standard_maturity
+            ),
             'val': f.standard_maturity,
         },
     }
     del d['standard_maturity']
-    d['tag_review_status'] = REVIEW_STATUS_CHOICES[f.tag_review_status]  # noqa: F405
+    d['tag_review_status'] = core_enums.REVIEW_STATUS_CHOICES[
+        f.tag_review_status
+    ]
     d['tag_review_status_int'] = f.tag_review_status
-    d['security_review_status'] = REVIEW_STATUS_CHOICES[  # noqa: F405
+    d['security_review_status'] = core_enums.REVIEW_STATUS_CHOICES[
         f.security_review_status
     ]
     d['security_review_status_int'] = f.security_review_status
-    d['privacy_review_status'] = REVIEW_STATUS_CHOICES[  # noqa: F405
+    d['privacy_review_status'] = core_enums.REVIEW_STATUS_CHOICES[
         f.privacy_review_status
     ]
     d['privacy_review_status_int'] = f.privacy_review_status
@@ -88,21 +94,21 @@ def feature_to_legacy_json(f: Feature) -> dict[str, Any]:
     d['cc_recipients'] = d.pop('cc_recipients', [])
     d['creator'] = d.pop('creator', None)
 
-    ff_views = d.pop('ff_views', NO_PUBLIC_SIGNALS)  # noqa: F405
-    ie_views = d.pop('ie_views', NO_PUBLIC_SIGNALS)  # noqa: F405
-    safari_views = d.pop('safari_views', NO_PUBLIC_SIGNALS)  # noqa: F405
-    web_dev_views = d.pop('web_dev_views', DEV_NO_SIGNALS)  # noqa: F405
+    ff_views = d.pop('ff_views', core_enums.NO_PUBLIC_SIGNALS)
+    ie_views = d.pop('ie_views', core_enums.NO_PUBLIC_SIGNALS)
+    safari_views = d.pop('safari_views', core_enums.NO_PUBLIC_SIGNALS)
+    web_dev_views = d.pop('web_dev_views', core_enums.DEV_NO_SIGNALS)
     d['browsers'] = {
         'chrome': {
             'bug': d.pop('bug_url', None),
             'blink_components': d.pop('blink_components', []),
             'devrel': d.pop('devrel', []),
             'owners': d.pop('owner', []),
-            'origintrial': f.impl_status_chrome == ORIGIN_TRIAL,  # noqa: F405
+            'origintrial': f.impl_status_chrome == core_enums.ORIGIN_TRIAL,
             'prefixed': d.pop('prefixed', False),
-            'flag': f.impl_status_chrome == BEHIND_A_FLAG,  # noqa: F405
+            'flag': f.impl_status_chrome == core_enums.BEHIND_A_FLAG,
             'status': {
-                'text': IMPLEMENTATION_STATUS[f.impl_status_chrome],  # noqa: F405
+                'text': core_enums.IMPLEMENTATION_STATUS[f.impl_status_chrome],
                 'val': d.pop('impl_status_chrome', None),
             },
             'desktop': d.pop('shipped_milestone', None),
@@ -112,56 +118,62 @@ def feature_to_legacy_json(f: Feature) -> dict[str, Any]:
         },
         'ff': {
             'view': {
-                'text': VENDOR_VIEWS.get(
-                    ff_views,  # noqa: F405
-                    VENDOR_VIEWS_COMMON[NO_PUBLIC_SIGNALS],
-                ),  # noqa: F405
+                'text': core_enums.VENDOR_VIEWS.get(
+                    ff_views,
+                    core_enums.VENDOR_VIEWS_COMMON[
+                        core_enums.NO_PUBLIC_SIGNALS
+                    ],
+                ),
                 'val': ff_views
-                if ff_views in VENDOR_VIEWS
-                else NO_PUBLIC_SIGNALS,  # noqa: F405
+                if ff_views in core_enums.VENDOR_VIEWS
+                else core_enums.NO_PUBLIC_SIGNALS,
                 'url': d.pop('ff_views_link', None),
                 'notes': d.pop('ff_views_notes', None),
             }
         },
         'edge': {  # Deprecated
             'view': {
-                'text': VENDOR_VIEWS.get(
-                    ie_views,  # noqa: F405
-                    VENDOR_VIEWS_COMMON[NO_PUBLIC_SIGNALS],
-                ),  # noqa: F405
+                'text': core_enums.VENDOR_VIEWS.get(
+                    ie_views,
+                    core_enums.VENDOR_VIEWS_COMMON[
+                        core_enums.NO_PUBLIC_SIGNALS
+                    ],
+                ),
                 'val': ie_views
-                if ie_views in VENDOR_VIEWS
-                else NO_PUBLIC_SIGNALS,  # noqa: F405
+                if ie_views in core_enums.VENDOR_VIEWS
+                else core_enums.NO_PUBLIC_SIGNALS,
                 'url': d.pop('ie_views_link', None),
                 'notes': d.pop('ie_views_notes', None),
             }
         },
         'safari': {
             'view': {
-                'text': VENDOR_VIEWS.get(
-                    safari_views,  # noqa: F405
-                    VENDOR_VIEWS_COMMON[NO_PUBLIC_SIGNALS],
-                ),  # noqa: F405
+                'text': core_enums.VENDOR_VIEWS.get(
+                    safari_views,
+                    core_enums.VENDOR_VIEWS_COMMON[
+                        core_enums.NO_PUBLIC_SIGNALS
+                    ],
+                ),
                 'val': (
                     safari_views
-                    if safari_views in VENDOR_VIEWS  # noqa: F405
-                    else NO_PUBLIC_SIGNALS
-                ),  # noqa: F405
+                    if safari_views in core_enums.VENDOR_VIEWS
+                    else core_enums.NO_PUBLIC_SIGNALS
+                ),
                 'url': d.pop('safari_views_link', None),
                 'notes': d.pop('safari_views_notes', None),
             }
         },
         'webdev': {
             'view': {
-                'text': WEB_DEV_VIEWS.get(
-                    f.web_dev_views,  # noqa: F405
-                    WEB_DEV_VIEWS[DEV_NO_SIGNALS],
-                ),  # noqa: F405
+                'text': core_enums.WEB_DEV_VIEWS.get(
+                    f.web_dev_views,
+                    core_enums.WEB_DEV_VIEWS[core_enums.DEV_NO_SIGNALS],
+                ),
                 'val': (
                     web_dev_views
-                    if web_dev_views in WEB_DEV_VIEWS  # noqa: F405
-                    else DEV_NO_SIGNALS
-                ),  # noqa: F405
+                    if web_dev_views in core_enums.WEB_DEV_VIEWS
+                    else core_enums.DEV_NO_SIGNALS
+                ),
                 'url': d.pop('web_dev_views_link', None),
                 'notes': d.pop('web_dev_views_notes', None),
             }

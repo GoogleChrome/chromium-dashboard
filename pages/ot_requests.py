@@ -21,13 +21,7 @@ from google.cloud import ndb
 
 from api.converters import stage_to_json_dict
 from framework import basehandlers, permissions
-from internals.core_enums import (
-    OT_ACTIVATION_FAILED,
-    OT_CREATED,
-    OT_CREATION_FAILED,
-    OT_EXTENSION_STAGE_TYPES,
-    OT_READY_FOR_CREATION,
-)
+from internals import core_enums
 from internals.core_models import Stage
 from internals.review_models import Gate, Vote
 
@@ -43,24 +37,24 @@ class OriginTrialsRequests(basehandlers.FlaskHandler):
         stages_with_requests = Stage.query(
             ndb.OR(
                 Stage.ot_action_requested == True,  # noqa: E712
-                Stage.ot_setup_status == OT_READY_FOR_CREATION,
+                Stage.ot_setup_status == core_enums.OT_READY_FOR_CREATION,
             )
         ).fetch()
         stages_with_failures = Stage.query(
             ndb.OR(
-                Stage.ot_setup_status == OT_ACTIVATION_FAILED,
-                Stage.ot_setup_status == OT_CREATION_FAILED,
+                Stage.ot_setup_status == core_enums.OT_ACTIVATION_FAILED,
+                Stage.ot_setup_status == core_enums.OT_CREATION_FAILED,
             )
         ).fetch()
         stages_awaiting_activation = Stage.query(
-            Stage.ot_setup_status == OT_CREATED
+            Stage.ot_setup_status == core_enums.OT_CREATED
         ).fetch()
         creation_stages = []
         extension_stages = []
         for stage in stages_with_requests:
             stage_dict = stage_to_json_dict(stage)
             # Group up creation and extension requests.
-            if stage_dict['stage_type'] in OT_EXTENSION_STAGE_TYPES:
+            if stage_dict['stage_type'] in core_enums.OT_EXTENSION_STAGE_TYPES:
                 gate: Gate = Gate.query(Gate.stage_id == stage_dict['id']).get()
                 if gate and gate.state in (Vote.NA, Vote.APPROVED):
                     # Information will be needed from the original OT stage.

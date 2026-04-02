@@ -29,32 +29,7 @@ from chromestatus_openapi.models.outstanding_review import OutstandingReview
 from google.cloud import ndb  # type: ignore
 
 from framework import basehandlers
-from internals.core_enums import (
-    ENABLED_BY_DEFAULT,
-    STAGE_BLINK_DEV_TRIAL,
-    STAGE_BLINK_EVAL_READINESS,
-    STAGE_BLINK_EXTEND_ORIGIN_TRIAL,
-    STAGE_BLINK_INCUBATE,
-    STAGE_BLINK_ORIGIN_TRIAL,
-    STAGE_BLINK_PROTOTYPE,
-    STAGE_BLINK_SHIPPING,
-    STAGE_DEP_DEPRECATION_TRIAL,
-    STAGE_DEP_DEV_TRIAL,
-    STAGE_DEP_EXTEND_DEPRECATION_TRIAL,
-    STAGE_DEP_PLAN,
-    STAGE_DEP_REMOVE_CODE,
-    STAGE_DEP_SHIPPING,
-    STAGE_ENT_ROLLOUT,
-    STAGE_ENT_SHIPPED,
-    STAGE_FAST_DEV_TRIAL,
-    STAGE_FAST_EXTEND_ORIGIN_TRIAL,
-    STAGE_FAST_ORIGIN_TRIAL,
-    STAGE_FAST_PROTOTYPE,
-    STAGE_FAST_SHIPPING,
-    STAGE_PSA_DEV_TRIAL,
-    STAGE_PSA_IMPLEMENT,
-    STAGE_PSA_SHIPPING,
-)
+from internals import core_enums
 from internals.core_models import FeatureEntry, Stage
 from internals.feature_links import (
     get_by_feature_ids as get_feature_links_by_feature_ids,
@@ -79,29 +54,29 @@ class StageType(StrEnum):
 
 
 STAGE_TYPES: dict[int, StageType] = {
-    STAGE_BLINK_INCUBATE: StageType.INCUBATING,
-    STAGE_BLINK_PROTOTYPE: StageType.PROTOTYPING,
-    STAGE_BLINK_DEV_TRIAL: StageType.DEV_TRIAL,
-    STAGE_BLINK_EVAL_READINESS: StageType.WIDE_REVIEW,
-    STAGE_BLINK_ORIGIN_TRIAL: StageType.ORIGIN_TRIAL,
-    STAGE_BLINK_EXTEND_ORIGIN_TRIAL: StageType.ORIGIN_TRIAL,
-    STAGE_BLINK_SHIPPING: StageType.SHIPPING,
-    STAGE_FAST_PROTOTYPE: StageType.PROTOTYPING,
-    STAGE_FAST_DEV_TRIAL: StageType.DEV_TRIAL,
-    STAGE_FAST_ORIGIN_TRIAL: StageType.ORIGIN_TRIAL,
-    STAGE_FAST_EXTEND_ORIGIN_TRIAL: StageType.ORIGIN_TRIAL,
-    STAGE_FAST_SHIPPING: StageType.SHIPPING,
-    STAGE_PSA_IMPLEMENT: StageType.WIDE_REVIEW,
-    STAGE_PSA_DEV_TRIAL: StageType.DEV_TRIAL,
-    STAGE_PSA_SHIPPING: StageType.SHIPPING,
-    STAGE_DEP_PLAN: StageType.INCUBATING,
-    STAGE_DEP_DEV_TRIAL: StageType.DEV_TRIAL,
-    STAGE_DEP_SHIPPING: StageType.SHIPPING,
-    STAGE_DEP_DEPRECATION_TRIAL: StageType.SHIPPED,
-    STAGE_DEP_EXTEND_DEPRECATION_TRIAL: StageType.SHIPPED,
-    STAGE_DEP_REMOVE_CODE: StageType.SHIPPED,
-    STAGE_ENT_ROLLOUT: StageType.SHIPPED,
-    STAGE_ENT_SHIPPED: StageType.SHIPPED,
+    core_enums.STAGE_BLINK_INCUBATE: StageType.INCUBATING,
+    core_enums.STAGE_BLINK_PROTOTYPE: StageType.PROTOTYPING,
+    core_enums.STAGE_BLINK_DEV_TRIAL: StageType.DEV_TRIAL,
+    core_enums.STAGE_BLINK_EVAL_READINESS: StageType.WIDE_REVIEW,
+    core_enums.STAGE_BLINK_ORIGIN_TRIAL: StageType.ORIGIN_TRIAL,
+    core_enums.STAGE_BLINK_EXTEND_ORIGIN_TRIAL: StageType.ORIGIN_TRIAL,
+    core_enums.STAGE_BLINK_SHIPPING: StageType.SHIPPING,
+    core_enums.STAGE_FAST_PROTOTYPE: StageType.PROTOTYPING,
+    core_enums.STAGE_FAST_DEV_TRIAL: StageType.DEV_TRIAL,
+    core_enums.STAGE_FAST_ORIGIN_TRIAL: StageType.ORIGIN_TRIAL,
+    core_enums.STAGE_FAST_EXTEND_ORIGIN_TRIAL: StageType.ORIGIN_TRIAL,
+    core_enums.STAGE_FAST_SHIPPING: StageType.SHIPPING,
+    core_enums.STAGE_PSA_IMPLEMENT: StageType.WIDE_REVIEW,
+    core_enums.STAGE_PSA_DEV_TRIAL: StageType.DEV_TRIAL,
+    core_enums.STAGE_PSA_SHIPPING: StageType.SHIPPING,
+    core_enums.STAGE_DEP_PLAN: StageType.INCUBATING,
+    core_enums.STAGE_DEP_DEV_TRIAL: StageType.DEV_TRIAL,
+    core_enums.STAGE_DEP_SHIPPING: StageType.SHIPPING,
+    core_enums.STAGE_DEP_DEPRECATION_TRIAL: StageType.SHIPPED,
+    core_enums.STAGE_DEP_EXTEND_DEPRECATION_TRIAL: StageType.SHIPPED,
+    core_enums.STAGE_DEP_REMOVE_CODE: StageType.SHIPPED,
+    core_enums.STAGE_ENT_ROLLOUT: StageType.SHIPPED,
+    core_enums.STAGE_ENT_SHIPPED: StageType.SHIPPED,
 }
 
 
@@ -113,7 +88,7 @@ def stage_type(feature: FeatureEntry, stage: Stage | None) -> StageType:
     tentative_type = STAGE_TYPES[stage.stage_type]
     if (
         tentative_type == StageType.SHIPPING
-        and feature.impl_status_chrome == ENABLED_BY_DEFAULT
+        and feature.impl_status_chrome == core_enums.ENABLED_BY_DEFAULT
     ):
         return StageType.SHIPPED
     return tentative_type

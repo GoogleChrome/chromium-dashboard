@@ -23,7 +23,7 @@ import werkzeug.exceptions
 
 import testing_config  # Must be imported before the module under test.
 from api import stages_api
-from internals.core_enums import OT_READY_FOR_CREATION
+from internals import core_enums
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
 from internals.review_models import Gate
 from internals.user_models import AppUser
@@ -644,7 +644,7 @@ class StagesAPITest(testing_config.CustomTestCase):
         }
 
         # OT is flagged for automated creation process.
-        self.stage_1.ot_setup_status = OT_READY_FOR_CREATION
+        self.stage_1.ot_setup_status = core_enums.OT_READY_FOR_CREATION
         self.stage_1.put()
         mock_abort.side_effect = werkzeug.exceptions.BadRequest
         with test_app.test_request_context(
@@ -674,7 +674,7 @@ class StagesAPITest(testing_config.CustomTestCase):
         }
 
         # OT is flagged for automated creation process.
-        self.stage_1.ot_setup_status = OT_READY_FOR_CREATION
+        self.stage_1.ot_setup_status = core_enums.OT_READY_FOR_CREATION
         self.stage_1.put()
         mock_abort.side_effect = werkzeug.exceptions.BadRequest
         with test_app.test_request_context(

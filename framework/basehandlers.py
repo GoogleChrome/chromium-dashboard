@@ -33,13 +33,7 @@ from google.cloud import ndb  # type: ignore
 import settings
 from api import api_specs
 from framework import csp, permissions, secrets, users, utils, xsrf
-from internals import approval_defs, notifier_helpers, user_models
-from internals.core_enums import (
-    ALL_ORIGIN_TRIAL_STAGE_TYPES,
-    OT_ACTIVATION_FAILED,
-    OT_CREATION_FAILED,
-    OT_READY_FOR_CREATION,
-)
+from internals import approval_defs, core_enums, notifier_helpers, user_models
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
 from internals.data_types import CHANGED_FIELDS_LIST_TYPE
 
@@ -440,9 +434,9 @@ class EntitiesAPIHandler(APIHandler):
             for v in change_info.values()
         )
         ot_creation_in_progress = (
-            stage.ot_setup_status == OT_READY_FOR_CREATION
-            or stage.ot_setup_status == OT_CREATION_FAILED
-            or stage.ot_setup_status == OT_ACTIVATION_FAILED
+            stage.ot_setup_status == core_enums.OT_READY_FOR_CREATION
+            or stage.ot_setup_status == core_enums.OT_CREATION_FAILED
+            or stage.ot_setup_status == core_enums.OT_ACTIVATION_FAILED
         )
         if mutating_ot_milestones and ot_creation_in_progress:
             self.abort(
@@ -494,7 +488,7 @@ class EntitiesAPIHandler(APIHandler):
         # This notification is for non-automated OT creation only.
         if (
             ot_action_requested
-            and stage.stage_type in ALL_ORIGIN_TRIAL_STAGE_TYPES
+            and stage.stage_type in core_enums.ALL_ORIGIN_TRIAL_STAGE_TYPES
         ):
             notifier_helpers.send_ot_creation_notification(stage)
 

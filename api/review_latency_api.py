@@ -26,7 +26,6 @@ from google.cloud import ndb  # type: ignore
 
 from framework import basehandlers, permissions
 from internals import slo
-from internals.core_enums import *  # noqa: F403
 from internals.core_models import FeatureEntry
 from internals.review_models import Gate
 
