@@ -12,43 +12,48 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Cron handler to identify and remove user accounts that have been inactive for an extended period."""
+
 import logging
 from datetime import datetime, timedelta
 
 from framework.basehandlers import FlaskHandler
 from internals.user_models import AppUser
 
+
 class RemoveInactiveUsersHandler(FlaskHandler):
-  DEFAULT_LAST_VISIT = datetime(2022, 8, 1)  # 2022-08-01
-  INACTIVE_REMOVE_DAYS = 270
+    """Handler to remove inactive users."""
 
-  def get_template_data(self, **kwargs):
-    """Removes any users that have been inactive for 9 months."""
-    self.require_cron_header()
-    now = kwargs.get('now', datetime.now())
+    DEFAULT_LAST_VISIT = datetime(2022, 8, 1)  # 2022-08-01
+    INACTIVE_REMOVE_DAYS = 270
 
-    q = AppUser.query()
-    users: list[AppUser] = q.fetch()
-    removed_users = []
-    inactive_cutoff = now - timedelta(days=self.INACTIVE_REMOVE_DAYS)
-    for user in users:
-      # Site admins and editors are not removed for inactivity.
-      if user.is_admin or user.is_site_editor:
-        continue
+    def get_template_data(self, **kwargs):
+        """Removes any users that have been inactive for 9 months."""
+        self.require_cron_header()
+        now = kwargs.get('now', datetime.now())
 
-      # If the user does not have a last visit, it is assumed the last visit
-      # is either the account's creation date or the date the last_visit
-      # field was created on the model - whatever is latest.
-      last_visit = user.last_visit or self.DEFAULT_LAST_VISIT
-      if user.created > last_visit:
-        last_visit = user.created
-      if last_visit < inactive_cutoff:
-        removed_users.append(user.email)
-        logging.info(f'User removed: {user.email}')
-        user.delete()
+        q = AppUser.query()
+        users: list[AppUser] = q.fetch()
+        removed_users = []
+        inactive_cutoff = now - timedelta(days=self.INACTIVE_REMOVE_DAYS)
+        for user in users:
+            # Site admins and editors are not removed for inactivity.
+            if user.is_admin or user.is_site_editor:
+                continue
 
-    logging.info(f'{len(removed_users)} inactive users removed.')
-    removed_users_output = ['Success', 'Removed users:']
-    for user in removed_users:
-      removed_users_output.append(user)
-    return '\n'.join(removed_users_output)
+            # If the user does not have a last visit, it is assumed the last visit
+            # is either the account's creation date or the date the last_visit
+            # field was created on the model - whatever is latest.
+            last_visit = user.last_visit or self.DEFAULT_LAST_VISIT
+            if user.created > last_visit:
+                last_visit = user.created
+            if last_visit < inactive_cutoff:
+                removed_users.append(user.email)
+                logging.info(f'User removed: {user.email}')
+                user.delete()
+
+        logging.info(f'{len(removed_users)} inactive users removed.')
+        removed_users_output = ['Success', 'Removed users:']
+        for user in removed_users:
+            removed_users_output.append(user)
+        return '\n'.join(removed_users_output)

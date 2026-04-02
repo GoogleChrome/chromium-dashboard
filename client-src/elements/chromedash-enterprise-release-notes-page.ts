@@ -17,13 +17,14 @@ import {
   PLATFORMS_DISPLAYNAME,
   STAGE_ENT_ROLLOUT,
   STAGE_TYPES_SHIPPING,
+  ROLLOUT_STAGE_PLAN_CATEGORIES,
+  ROLLOUT_STAGE_PLAN_DISPLAYNAME,
 } from './form-field-enums.js';
 import {
   autolink,
   FieldInfo,
   formatFeatureChanges,
   parseRawQuery,
-  renderHTMLIf,
   renderRelativeDate,
   showToastMessage,
   updateURLParams,
@@ -69,7 +70,7 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
   @state()
   editingFeatureIds = new Set<number>();
   @state()
-  previewingFeatureIds = new Set<number>();
+  previewingIds = new Set<number>();
 
   static get styles() {
     return [
@@ -79,6 +80,9 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
           margin: 2rem 0;
         }
 
+        *[hidden] {
+          display: none;
+        }
         h1 {
           font-size: 2rem;
           line-height: 2.5rem;
@@ -130,8 +134,8 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
           padding-inline-start: 1rem;
         }
 
-        .stages li {
-          margin-block-end: 16px;
+        .stage {
+          margin-top: 16px;
         }
 
         .feature {
@@ -143,7 +147,7 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
           padding: var(--content-padding);
         }
 
-        .feature p {
+        .toremove {
           margin: 1rem 0;
         }
 
@@ -275,6 +279,9 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
         stage_type: STAGE_ENT_ROLLOUT,
         rollout_milestone: Number(milestone),
         rollout_platforms: Array.from(platforms).map(String),
+        rollout_stage_plan:
+          ROLLOUT_STAGE_PLAN_CATEGORIES.ROLLOUT_STAGE_PLAN_CUSTOM[0],
+        rollout_details: 'No rollout step',
       })
     );
   }
@@ -559,9 +566,15 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
     ) {
       return `Chrome ${stage.rollout_milestone}`;
     }
+    const rollout_staqe_plan_display =
+      stage.rollout_stage_plan !==
+      ROLLOUT_STAGE_PLAN_CATEGORIES.ROLLOUT_STAGE_PLAN_CUSTOM[0]
+        ? ROLLOUT_STAGE_PLAN_DISPLAYNAME[stage.rollout_stage_plan]
+        : '';
     return (
       `Chrome ${stage.rollout_milestone} on ` +
-      `${stage.rollout_platforms.map(p => PLATFORMS_DISPLAYNAME[p]).join(', ')}`
+      `${stage.rollout_platforms.map(p => PLATFORMS_DISPLAYNAME[p]).join(', ')}` +
+      ` ${rollout_staqe_plan_display ? '- ' + rollout_staqe_plan_display : ''}`
     );
   }
 
@@ -664,6 +677,15 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
           '#edit-rollout-platforms-' + s.id
         )!;
         addFieldValue('rollout_platforms', platformsEl, s.rollout_platforms, s);
+        const rolloutStagePlanEl = this.shadowRoot?.querySelector<SlSelect>(
+          '#edit-rollout-stage-plan-' + s.id
+        )!;
+        addFieldValue(
+          'rollout_stage_plan',
+          rolloutStagePlanEl,
+          s.rollout_stage_plan,
+          s
+        );
         const detailsEl = this.shadowRoot?.querySelector<SlInput>(
           '#edit-rollout-details-' + s.id
         )!;
@@ -710,7 +732,9 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
         >
           ${renderRelativeDate(f.updated.when)}
         </a>
-        by ${f.updated.by}
+        by ${f.updated.by} -
+        <b>Accurate as of:</b>
+        ${f.accurate_as_of ? f.accurate_as_of.split(' ')[0] : 'Unknown'}
         <b>></b>
       </p>
     `;
@@ -829,20 +853,21 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
     }
   }
 
-  handlePreviewChecked(e, featureId) {
-    const newPreviewing = new Set(this.previewingFeatureIds);
+  handlePreviewChecked(e, featureOrStageId) {
+    const newPreviewing = new Set(this.previewingIds);
     if (e.target.checked) {
-      newPreviewing.add(featureId);
+      newPreviewing.add(featureOrStageId);
     } else {
-      newPreviewing.delete(featureId);
+      newPreviewing.delete(featureOrStageId);
     }
-    this.previewingFeatureIds = newPreviewing;
+    this.previewingIds = newPreviewing;
   }
 
   renderEditableFeatureSummary(f: Feature): TemplateResult {
     const isMarkdown = (f.markdown_fields || []).includes('summary');
-    const isPreviewing = this.previewingFeatureIds.has(f.id);
+    const isPreviewing = this.previewingIds.has(f.id);
     const editor = html` <sl-textarea
+      ?hidden=${isPreviewing}
       class="feature-summary"
       id="edit-summary-${f.id}"
       value=${f.summary}
@@ -850,12 +875,19 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
       resize="auto"
     >
     </sl-textarea>`;
+    const previewText =
+      this.shadowRoot?.querySelector<SlTextarea>('#edit-summary-' + f.id)
+        ?.value ?? f.summary;
+    const markdownChecked =
+      this.shadowRoot?.querySelector<SlCheckbox>('#summary-is-markdown-' + f.id)
+        ?.checked ?? isMarkdown;
     const preview = html`
       <div
         id="preview"
+        ?hidden=${!isPreviewing}
         style="border:var(--card-border); padding:0 var(--content-padding); min-height:14em; background:var(--table-alternate-background)"
       >
-        ${autolink(f.summary, [], true)}
+        ${autolink(previewText, [], markdownChecked)}
       </div>
     `;
     const controls = html`
@@ -882,7 +914,7 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
         Preview
       </sl-checkbox>
     `;
-    return html` ${isPreviewing ? preview : editor} ${controls} `;
+    return html` ${preview} ${editor} ${controls} `;
   }
 
   renderEditableStageItem(
@@ -890,15 +922,59 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
     s,
     shouldDisplayStageTitleInBold
   ): TemplateResult {
-    // TODO(jrobbins): Implement editing widgets in the next CL.
     const platforms: string[] = s.rollout_platforms;
     const choices = PLATFORM_CATEGORIES;
     const availableOptions = Object.values(choices).filter(
       ([value, label, obsolete]) => !obsolete || platforms.includes('' + value)
     );
 
+    const isPreviewing = this.previewingIds.has(s.id);
+    const editor = html` <sl-textarea
+      ?hidden=${isPreviewing}
+      class="rollout-details"
+      id="edit-rollout-details-${s.id}"
+      value=${s.rollout_details}
+      size="small"
+      rows="1"
+      resize="auto"
+    >
+    </sl-textarea>`;
+    const previewText =
+      this.shadowRoot?.querySelector<SlTextarea>(
+        '#edit-rollout-details-' + s.id
+      )?.value ?? s.rollout_details;
+    const preview = html`
+      <div
+        ?hidden=${!isPreviewing}
+        id="preview"
+        style="border:var(--card-border); padding:0 var(--content-padding); min-height:14em; background:var(--table-alternate-background)"
+      >
+        ${autolink(previewText, [], true)}
+      </div>
+    `;
+    const controls = html`
+      <sl-checkbox class="markdown-checkbox" size="small" checked disabled
+        >Use markdown</sl-checkbox
+      >
+      <sl-icon-button
+        name="info-circle"
+        id="info-button"
+        title="GitHub flavored markdown docs"
+        href="https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax"
+        target="_blank"
+      ></sl-icon-button>
+      <sl-checkbox
+        id="show-preview-${s.id}"
+        size="small"
+        ?checked=${isPreviewing}
+        @sl-change=${e => this.handlePreviewChecked(e, s.id)}
+      >
+        Preview
+      </sl-checkbox>
+    `;
+
     return html`
-      <li>
+      <li class="stage">
         <div class="hbox">
           <sl-input
             class="rollout-milestone"
@@ -921,11 +997,17 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
             )}
           </sl-select>
         </div>
-        <sl-input
-          class="rollout-details"
-          id="edit-rollout-details-${s.id}"
-          value=${s.rollout_details}
-        ></sl-input>
+        <sl-select
+          class="rollout-stage-plan"
+          id="edit-rollout-stage-plan-${s.id}"
+          value=${s.rollout_stage_plan}
+        >
+          ${Object.values(ROLLOUT_STAGE_PLAN_CATEGORIES).map(
+            ([value, label]) =>
+              html`<sl-option value=${value}>${label}</sl-option>`
+          )}
+        </sl-select>
+        ${preview} ${editor} ${controls}
       </li>
     `;
   }
@@ -935,8 +1017,14 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
     s,
     shouldDisplayStageTitleInBold
   ): TemplateResult {
+    let details: TemplateResult = html``;
+    if (s.rollout_details) {
+      const markup = autolink(s.rollout_details, [], true);
+      details = html`${markup}`;
+    }
+
     return html`
-      <li>
+      <li class="stage">
         <span
           class="${shouldDisplayStageTitleInBold(
             s.rollout_milestone,
@@ -947,10 +1035,7 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
         >
           ${this.getStageTitle(s)}
         </span>
-        ${renderHTMLIf(
-          s.rollout_details,
-          html`<br /><span class="preformatted">${s.rollout_details}</span>`
-        )}
+        ${details}
       </li>
     `;
   }

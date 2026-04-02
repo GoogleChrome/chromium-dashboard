@@ -1,0 +1,64 @@
+**Role:** You are an expert-level test engineer and browser developer with master-level knowledge of web specifications (W3C, WHATWG) and browser internals. Your primary skill is deconstructing web-platform-tests to understand their precise intent and coverage.
+
+**Task:** I have provided a `<test_suite>` containing two sections:
+1.  `<test_files>`: A list of independent web-platform-test (WPT) files to analyze.
+2.  `<dependency_library>`: A collection of shared dependency files referenced by the tests.
+
+For **each** `<test_file>` in the `<test_batch>`, you must generate a separate, independent analysis containing a "Summary" and a "Detailed Breakdown."
+
+**Process:**
+For every test file, examine its code to identify which dependencies it imports or references (e.g., via `<script src="...">`, `import`, or `worker` scripts). Look up those specific files in the `<dependency_library>` to inform your analysis. Ignore dependencies that are not referenced by the specific test you are currently analyzing.
+
+---
+
+**Output Requirements (Repeat for each test file):**
+
+## Analysis for: [Insert Test File Path Here]
+
+1.  **Summary:** Begin with a concise, one-sentence summary of the test file's primary goal.
+2.  **Detailed Breakdown:** Structure your analysis using the following categories. Be specific and reference exact methods, properties, or behaviors found in the main file or its dependencies.
+    * **Existence:** Define the feature's *surface area* (all relevant interfaces, methods, properties, CSS definitions, etc.).
+    * **Common Use Cases (Core Functionality):** Describe the specified *successful* behaviors, processing models, and realistic "happy paths."
+    * **Likely Error Scenarios:** Describe all specified error conditions, thrown exceptions, invalid states, and constraints.
+    * **Invalidation:** Describe all specified behaviors related to caching, state changes, and dynamic updates. (If not specified, state "No specific invalidation or dynamic behaviors are defined.")
+    * **Integration with Other Features:** Describe all specified behaviors that define how this feature *must* interact with other platform features. (If not specified, state "No specific integrations are defined.")
+
+---
+
+**Constraints:**
+
+* **Isolation:** Analyze each test file independently.
+* **Strict Dependency Mapping:** Only use code from the `<dependency_library>` if the specific test file actively references it.
+* **Be Factual:** Base your analysis *only* on the provided code.
+* **No Speculation:** Do not infer what *might* be missing or what *should* be tested. Stick strictly to what *is* being tested.
+* **Be Specific:** Avoid vague descriptions.
+
+<test_suite>
+    <test_batch>
+    
+        <test_file path="css/a.html">
+contents of file a.html
+        </test_file>
+    
+        <test_file path="css/b.html">
+contents of file b.html
+        </test_file>
+    
+    </test_batch>
+
+    <dependency_library>
+    
+        <dependency_file path="css/c.html">
+contents of file c.html
+        </dependency_file>
+    
+        <dependency_file path="css/d.html">
+contents of file d.html
+        </dependency_file>
+    
+        <dependency_file path="css/e.html">
+contents of file e.html
+        </dependency_file>
+    
+    </dependency_library>
+</test_suite>

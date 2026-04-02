@@ -3,9 +3,9 @@ import {customElement, property, state} from 'lit/decorators.js';
 import {ifDefined} from 'lit/directives/if-defined.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {Feature} from '../js-src/cs-client.js';
-import './chromedash-feature-filter';
-import './chromedash-feature-pagination';
-import './chromedash-feature-row';
+import './chromedash-feature-filter.js';
+import './chromedash-feature-pagination.js';
+import './chromedash-feature-row.js';
 import {clamp, showToastMessage, formatUrlForRelativeOffset} from './utils.js';
 import {GateDict} from './chromedash-gate-chip.js';
 

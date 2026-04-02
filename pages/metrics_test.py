@@ -12,16 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import testing_config  # Must be imported before the module under test.
 
-from unittest import mock
+"""Tests for the metrics data handlers."""
 
-import os
 import flask
-import werkzeug
-import html5lib
-
-from pages import metrics
 
 test_app = flask.Flask(__name__)
 

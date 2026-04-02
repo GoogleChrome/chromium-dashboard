@@ -1,11 +1,11 @@
 import {assert, fixture} from '@open-wc/testing';
 import {html} from 'lit';
-import {ReleaseInfo, Feature} from '../js-src/cs-client';
+import {ReleaseInfo, Feature} from '../js-src/cs-client.js';
 import {
   ChromedashRoadmapMilestoneCard,
   TemplateContent,
-} from './chromedash-roadmap-milestone-card';
-import {FEATURE_TYPES} from './form-field-enums';
+} from './chromedash-roadmap-milestone-card.js';
+import {FEATURE_TYPES} from './form-field-enums.js';
 
 describe('chromedash-roadmap-milestone-card', () => {
   const baseFeature = {
@@ -152,6 +152,7 @@ describe('chromedash-roadmap-milestone-card', () => {
         rollout_details: 'Rolling out to 1% of users.',
         rollout_milestone: 124,
         rollout_platforms: ['Desktop', 'Android'],
+        rollout_stage_plan: 1,
         enterprise_policies: ['TestFeatureEnabled', 'LegacyFeatureDisabled'],
         pm_emails: ['pm@example.com'],
         tl_emails: ['tl@example.com'],

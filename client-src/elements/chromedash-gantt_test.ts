@@ -1,6 +1,6 @@
 import {assert, fixture} from '@open-wc/testing';
 import {html} from 'lit';
-import {ChromedashGantt} from './chromedash-gantt';
+import {ChromedashGantt} from './chromedash-gantt.js';
 
 describe('chromedash-gantt', () => {
   const validFeature = {

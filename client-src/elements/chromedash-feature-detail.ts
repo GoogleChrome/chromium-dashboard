@@ -1,21 +1,21 @@
 import {LitElement, TemplateResult, css, html, nothing} from 'lit';
-import {openAddStageDialog} from './chromedash-add-stage-dialog';
+import {openAddStageDialog} from './chromedash-add-stage-dialog.js';
 import {
   dialogTypes,
   openFinalizeExtensionDialog,
   openPrereqsDialog,
-} from './chromedash-ot-prereqs-dialog';
+} from './chromedash-ot-prereqs-dialog.js';
 import {
   openPreflightDialog,
   somePendingGates,
   somePendingPrereqs,
-} from './chromedash-preflight-dialog';
+} from './chromedash-preflight-dialog.js';
 import {
   FLAT_ENTERPRISE_METADATA_FIELDS,
   FLAT_METADATA_FIELDS,
   FLAT_TRIAL_EXTENSION_FIELDS,
   FORMS_BY_STAGE_TYPE,
-} from './form-definition';
+} from './form-definition.js';
 import {
   FEATURE_TYPES,
   FEATURE_TYPES_WITHOUT_ENTERPRISE,
@@ -23,19 +23,23 @@ import {
   OT_SETUP_STATUS_OPTIONS,
   STAGE_SHORT_NAMES,
   STAGE_TYPES_ORIGIN_TRIAL,
-} from './form-field-enums';
-import {makeDisplaySpecs} from './form-field-specs';
-import {getFieldValueFromFeature, hasFieldValue, isDefinedValue} from './utils';
+} from './form-field-enums.js';
+import {makeDisplaySpecs} from './form-field-specs.js';
+import {
+  getFieldValueFromFeature,
+  hasFieldValue,
+  isDefinedValue,
+} from './utils.js';
 
 import {property, state} from 'lit/decorators.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
-import {Feature, FeatureLink, StageDict, User} from '../js-src/cs-client';
-import './chromedash-activity-log';
-import './chromedash-callout';
-import './chromedash-gate-chip';
-import './chromedash-wpt-eval-button';
-import {GateDict} from './chromedash-gate-chip';
-import {Process, ProgressItem} from './chromedash-gate-column';
+import {Feature, FeatureLink, StageDict, User} from '../js-src/cs-client.js';
+import './chromedash-activity-log.js';
+import './chromedash-callout.js';
+import './chromedash-gate-chip.js';
+import './chromedash-wpt-eval-button.js';
+import {GateDict} from './chromedash-gate-chip.js';
+import {Process, ProgressItem} from './chromedash-gate-column.js';
 import {
   GATE_ACTIVE_REVIEW_STATES,
   GATE_FINISHED_REVIEW_STATES,
@@ -43,7 +47,7 @@ import {
   GATE_TEAM_ORDER,
   GATE_TYPES,
   STAGE_PSA_SHIPPING,
-} from './form-field-enums';
+} from './form-field-enums.js';
 import {
   autolink,
   findProcessStage,
@@ -149,15 +153,6 @@ export class ChromedashFeatureDetail extends LitElement {
         sl-details sl-button[variant='default']::part(base) {
           color: var(--sl-color-primary-600);
           border: 1px solid var(--sl-color-primary-600);
-        }
-
-        ol {
-          list-style: none;
-          padding: 0;
-        }
-
-        ol li {
-          margin-top: 0.5em;
         }
 
         dl {
@@ -331,20 +326,26 @@ export class ChromedashFeatureDetail extends LitElement {
         Edit all fields
       </sl-button>
     `;
-    // TODO(DanielRyanSmith): Add this to the main view when all aspects of
-    // the WPT coverage evaluation pipeline have been implemented
-    // const wptEvalButton = html` <chromedash-wpt-eval-button
-    //   .featureId=${this.feature.id}
-    // ></chromedash-wpt-eval-button>`;
+    let wptEvalButton = html`${nothing}`;
+    // For now, the WPT coverage evaluation page is only visible to Googlers and Chromium users.
+    if (
+      this.user?.email?.endsWith('@google.com') ||
+      this.user?.email?.endsWith('@chromium.org')
+    ) {
+      if (
+        this.canEdit &&
+        // Enterprise features don't provide spec URLs or Web Platform Tests info.
+        this.feature.feature_type_int !==
+          FEATURE_TYPES.FEATURE_TYPE_ENTERPRISE_ID[0]
+      ) {
+        wptEvalButton = html` <chromedash-wpt-eval-button
+          .featureId=${this.feature.id}
+        ></chromedash-wpt-eval-button>`;
+      }
+    }
     const toggleLabel = this.anyCollapsed ? 'Expand all' : 'Collapse all';
     return html`
-      <!-- Enterprise features don't provide spec URLs or Web Platform Tests info. -->
-      ${this.canEdit &&
-      this.feature.feature_type_int !==
-        FEATURE_TYPES.FEATURE_TYPE_ENTERPRISE_ID[0]
-        ? nothing // Add wptEvalButton here.
-        : nothing}
-      ${this.canEdit ? editAllButton : nothing}
+      ${wptEvalButton} ${this.canEdit ? editAllButton : nothing}
       <sl-button
         variant="text"
         title="Expand or collapse all sections"
@@ -398,13 +399,15 @@ export class ChromedashFeatureDetail extends LitElement {
   }
 
   renderField(fieldDef, feStage) {
-    const [fieldId, fieldDisplayName, fieldType, deprecated] = fieldDef;
+    const [fieldId, fieldDisplayName, fieldType, deprecated, alwaysMarkdown] =
+      fieldDef;
     const value = getFieldValueFromFeature(fieldId, feStage, this.feature);
     const isDefined = isDefinedValue(value);
     if (!isDefined && deprecated) {
       return nothing;
     }
-    const isMarkdown = (this.feature.markdown_fields || []).includes(fieldId);
+    const isMarkdown =
+      (this.feature.markdown_fields || []).includes(fieldId) || alwaysMarkdown;
 
     const icon = isDefined
       ? html`<sl-icon library="material" name="check_circle_20px"></sl-icon>`

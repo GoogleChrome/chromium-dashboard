@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""API endpoints for retrieving spec mentors and their associated mentored features."""
+
 from datetime import datetime
 
 from chromestatus_openapi.models.feature_link import FeatureLink
@@ -22,42 +24,45 @@ from internals.core_models import FeatureEntry
 
 
 class SpecMentorsAPI(basehandlers.APIHandler):
-  """Implements the OpenAPI /spec_mentors path."""
+    """Implements the OpenAPI /spec_mentors path."""
 
-  def do_get(self, **kwargs):
-    """Get a list of matching spec mentors.
+    def do_get(self, **kwargs):
+        """Get a list of matching spec mentors.
 
-    Returns:
-      A list of data on all public origin trials.
-    """
-    after_param: str | None = self.request.args.get('after', None)
-    after: datetime | None = None
-    if after_param is not None:
-      try:
-        after = datetime.fromisoformat(after_param)
-      except ValueError:
-        self.abort(400, f'invalid ?after parameter {after_param}')
+        Returns:
+          A list of data on all public origin trials.
+        """
+        after_param: str | None = self.request.args.get('after', None)
+        after: datetime | None = None
+        if after_param is not None:
+            try:
+                after = datetime.fromisoformat(after_param)
+            except ValueError:
+                self.abort(400, f'invalid ?after parameter {after_param}')
 
-    # Every non-empty string is greater than '', so this will find all entries with any spec mentors
-    # set. (!= is interpreted as "less or greater".)
-    # We can't have NDB sort the results because it can only sort by the inequality condition.
-    query = FeatureEntry.query(FeatureEntry.spec_mentor_emails > '')
-    features: list[FeatureEntry] = query.fetch()
-    if after is not None:
-      # Do this in Python rather than the NDB query because NDB queries only support one inequality.
-      features = [feature for feature in features if feature.updated > after]
-    features.sort(key=lambda f: f.updated, reverse=True)
+        # Every non-empty string is greater than '', so this will find all entries with any spec mentors  # noqa: E501
+        # set. (!= is interpreted as "less or greater".)
+        # We can't have NDB sort the results because it can only sort by the inequality condition.  # noqa: E501
+        query = FeatureEntry.query(FeatureEntry.spec_mentor_emails > '')
+        features: list[FeatureEntry] = query.fetch()
+        if after is not None:
+            # Do this in Python rather than the NDB query because NDB queries only support one inequality.  # noqa: E501
+            features = [
+                feature for feature in features if feature.updated > after
+            ]
+        features.sort(key=lambda f: f.updated, reverse=True)
 
-    mentors: dict[str, list[FeatureLink]] = {}
-    for feature in features:
-      if feature.unlisted:
-        # TODO: Consider showing these when the caller is logged in and has the right to see them.
-        continue
-      for mentor in feature.spec_mentor_emails:
-        mentors.setdefault(mentor,
-                           []).append(FeatureLink(id=feature.key.integer_id(), name=feature.name))
+        mentors: dict[str, list[FeatureLink]] = {}
+        for feature in features:
+            if feature.unlisted:
+                # TODO: Consider showing these when the caller is logged in and has the right to see them.  # noqa: E501
+                continue
+            for mentor in feature.spec_mentor_emails:
+                mentors.setdefault(mentor, []).append(
+                    FeatureLink(id=feature.key.integer_id(), name=feature.name)
+                )  # noqa: E501
 
-    return [
-        SpecMentor(email, features).to_dict()
-        for email, features in sorted(mentors.items())
-    ]
+        return [
+            SpecMentor(email, features).to_dict()
+            for email, features in sorted(mentors.items())
+        ]

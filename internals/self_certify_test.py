@@ -12,108 +12,176 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for the review gate self-certification logic."""
+
 import testing_config  # isort: split
 
 from chromestatus_openapi.models import SurveyAnswers as OASurveyAnswers
 
 from internals import self_certify
-from internals.core_enums import *
+from internals.core_enums import *  # noqa: F403
 from internals.review_models import Gate, SurveyAnswers
 
 
 class SelfCertifyFunctionTest(testing_config.CustomTestCase):
+    """Tests for self-certification functions."""
 
-  def test_update_survey_answers__no_existing_answers(self):
-    """If a gate has no existing answers, we create a blank set."""
-    gate = Gate()
-    self.assertIsNone(gate.survey_answers)
+    def test_update_survey_answers__no_existing_answers(self):
+        """If a gate has no existing answers, we create a blank set."""
+        gate = Gate()
+        self.assertIsNone(gate.survey_answers)
 
-    self_certify.update_survey_answers(
-        gate, OASurveyAnswers(
-            is_language_polyfill=True, is_api_polyfill=None,
-            is_same_origin_css=None, launch_or_contact=None))
-
-    self.assertIsNotNone(gate.survey_answers)
-    self.assertTrue(gate.survey_answers.is_language_polyfill)
-    self.assertFalse(gate.survey_answers.is_api_polyfill)
-    self.assertFalse(gate.survey_answers.is_same_origin_css)
-    self.assertIsNone(gate.survey_answers.launch_or_contact)
-
-  def test_update_survey_answers__has_existing_answers(self):
-    """If a gate has existing answers, we just update it."""
-    gate = Gate(survey_answers=SurveyAnswers(is_language_polyfill=True))
-
-    self_certify.update_survey_answers(
-        gate, OASurveyAnswers(
-            is_language_polyfill=None, is_api_polyfill=False,
-            is_same_origin_css=None, launch_or_contact=None))
-
-    self.assertIsNotNone(gate.survey_answers)
-    self.assertTrue(gate.survey_answers.is_language_polyfill)
-    self.assertFalse(gate.survey_answers.is_api_polyfill)
-    self.assertFalse(gate.survey_answers.is_same_origin_css)
-    self.assertIsNone(gate.survey_answers.launch_or_contact)
-
-  def test_is_privacy_eligible(self):
-    """Privacy is eligible if any of the booleans is True."""
-    self.assertFalse(self_certify.is_privacy_eligible(
-        SurveyAnswers()))
-    self.assertFalse(self_certify.is_privacy_eligible(
-        SurveyAnswers(is_language_polyfill=False)))
-    self.assertFalse(self_certify.is_privacy_eligible(
-        SurveyAnswers(is_api_polyfill=False)))
-    self.assertFalse(self_certify.is_privacy_eligible(
-        SurveyAnswers(is_same_origin_css=False)))
-    self.assertFalse(self_certify.is_privacy_eligible(
-        SurveyAnswers(
-            is_language_polyfill=False,
-            is_api_polyfill=False,
-            is_same_origin_css=False)))
-    self.assertFalse(self_certify.is_privacy_eligible(
-        SurveyAnswers(is_language_polyfill=True)))  # No explanation
-    self.assertFalse(self_certify.is_privacy_eligible(
-        SurveyAnswers(explanation='Nothing was checked off.')))
-
-    self.assertTrue(self_certify.is_privacy_eligible(
-        SurveyAnswers(is_language_polyfill=True, explanation='something')))
-    self.assertTrue(self_certify.is_privacy_eligible(
-        SurveyAnswers(is_api_polyfill=True, explanation='something')))
-    self.assertTrue(self_certify.is_privacy_eligible(
-        SurveyAnswers(is_same_origin_css=True, explanation='something')))
-    self.assertTrue(self_certify.is_privacy_eligible(
-        SurveyAnswers(
-            is_language_polyfill=False, is_api_polyfill=False,
-            is_same_origin_css=True, explanation='something')))
-
-  def test_is_eligible(self):
-    """Privacy gates are the only eligible type."""
-    self.assertFalse(self_certify.is_eligible(
-        Gate(
-            gate_type=GATE_PRIVACY_ORIGIN_TRIAL,
-            survey_answers=SurveyAnswers(
-                is_language_polyfill=True))))
-
-    self.assertTrue(self_certify.is_eligible(
-        Gate(
-            gate_type=GATE_PRIVACY_ORIGIN_TRIAL,
-            survey_answers=SurveyAnswers(
+        self_certify.update_survey_answers(
+            gate,
+            OASurveyAnswers(
                 is_language_polyfill=True,
-                explanation='something'))))
+                is_api_polyfill=None,
+                is_same_origin_css=None,
+                launch_or_contact=None,
+            ),
+        )
 
-    self.assertFalse(self_certify.is_eligible(
-        Gate(
-            gate_type=GATE_PRIVACY_ORIGIN_TRIAL,
-            survey_answers=SurveyAnswers())))
+        self.assertIsNotNone(gate.survey_answers)
+        self.assertTrue(gate.survey_answers.is_language_polyfill)
+        self.assertFalse(gate.survey_answers.is_api_polyfill)
+        self.assertFalse(gate.survey_answers.is_same_origin_css)
+        self.assertIsNone(gate.survey_answers.launch_or_contact)
 
-    self.assertFalse(self_certify.is_eligible(
-        Gate(
-            gate_type=GATE_PRIVACY_ORIGIN_TRIAL,
-            survey_answers=SurveyAnswers(
-                explanation='Nothing was checked off'))))
+    def test_update_survey_answers__has_existing_answers(self):
+        """If a gate has existing answers, we just update it."""
+        gate = Gate(survey_answers=SurveyAnswers(is_language_polyfill=True))
 
-    self.assertFalse(self_certify.is_eligible(
-        Gate(
-            gate_type=GATE_ENTERPRISE_SHIP,
-            survey_answers=SurveyAnswers(
-                is_language_polyfill=True,
-                explanation='something'))))
+        self_certify.update_survey_answers(
+            gate,
+            OASurveyAnswers(
+                is_language_polyfill=None,
+                is_api_polyfill=False,
+                is_same_origin_css=None,
+                launch_or_contact=None,
+            ),
+        )
+
+        self.assertIsNotNone(gate.survey_answers)
+        self.assertTrue(gate.survey_answers.is_language_polyfill)
+        self.assertFalse(gate.survey_answers.is_api_polyfill)
+        self.assertFalse(gate.survey_answers.is_same_origin_css)
+        self.assertIsNone(gate.survey_answers.launch_or_contact)
+
+    def test_is_privacy_eligible(self):
+        """Privacy is eligible if any of the booleans is True."""
+        self.assertFalse(self_certify.is_privacy_eligible(SurveyAnswers()))
+        self.assertFalse(
+            self_certify.is_privacy_eligible(
+                SurveyAnswers(is_language_polyfill=False)
+            )
+        )
+        self.assertFalse(
+            self_certify.is_privacy_eligible(
+                SurveyAnswers(is_api_polyfill=False)
+            )
+        )
+        self.assertFalse(
+            self_certify.is_privacy_eligible(
+                SurveyAnswers(is_same_origin_css=False)
+            )
+        )
+        self.assertFalse(
+            self_certify.is_privacy_eligible(
+                SurveyAnswers(
+                    is_language_polyfill=False,
+                    is_api_polyfill=False,
+                    is_same_origin_css=False,
+                )
+            )
+        )
+        self.assertFalse(
+            self_certify.is_privacy_eligible(
+                SurveyAnswers(is_language_polyfill=True)
+            )
+        )  # No explanation
+        self.assertFalse(
+            self_certify.is_privacy_eligible(
+                SurveyAnswers(explanation='Nothing was checked off.')
+            )
+        )
+
+        self.assertTrue(
+            self_certify.is_privacy_eligible(
+                SurveyAnswers(
+                    is_language_polyfill=True, explanation='something'
+                )
+            )
+        )
+        self.assertTrue(
+            self_certify.is_privacy_eligible(
+                SurveyAnswers(is_api_polyfill=True, explanation='something')
+            )
+        )
+        self.assertTrue(
+            self_certify.is_privacy_eligible(
+                SurveyAnswers(is_same_origin_css=True, explanation='something')
+            )
+        )
+        self.assertTrue(
+            self_certify.is_privacy_eligible(
+                SurveyAnswers(
+                    is_language_polyfill=False,
+                    is_api_polyfill=False,
+                    is_same_origin_css=True,
+                    explanation='something',
+                )
+            )
+        )
+
+    def test_is_eligible(self):
+        """Privacy gates are the only eligible type."""
+        self.assertFalse(
+            self_certify.is_eligible(
+                Gate(
+                    gate_type=GATE_PRIVACY_ORIGIN_TRIAL,  # noqa: F405
+                    survey_answers=SurveyAnswers(is_language_polyfill=True),
+                )
+            )
+        )
+
+        self.assertTrue(
+            self_certify.is_eligible(
+                Gate(
+                    gate_type=GATE_PRIVACY_ORIGIN_TRIAL,  # noqa: F405
+                    survey_answers=SurveyAnswers(
+                        is_language_polyfill=True, explanation='something'
+                    ),
+                )
+            )
+        )
+
+        self.assertFalse(
+            self_certify.is_eligible(
+                Gate(
+                    gate_type=GATE_PRIVACY_ORIGIN_TRIAL,  # noqa: F405
+                    survey_answers=SurveyAnswers(),
+                )
+            )
+        )
+
+        self.assertFalse(
+            self_certify.is_eligible(
+                Gate(
+                    gate_type=GATE_PRIVACY_ORIGIN_TRIAL,  # noqa: F405
+                    survey_answers=SurveyAnswers(
+                        explanation='Nothing was checked off'
+                    ),
+                )
+            )
+        )
+
+        self.assertFalse(
+            self_certify.is_eligible(
+                Gate(
+                    gate_type=GATE_ENTERPRISE_SHIP,  # noqa: F405
+                    survey_answers=SurveyAnswers(
+                        is_language_polyfill=True, explanation='something'
+                    ),
+                )
+            )
+        )

@@ -14,7 +14,7 @@ import {
   parseRawQuery,
   showToastMessage,
   updateURLParams,
-} from './utils';
+} from './utils.js';
 
 @customElement('chromedash-app')
 export class ChromedashApp extends LitElement {
@@ -334,7 +334,7 @@ export class ChromedashApp extends LitElement {
       if (!this.setupNewPage(ctx, 'chromedash-all-features-page', true)) return;
       this.pageComponent.user = this.user;
       this.pageComponent.title = 'Features pending my review';
-      this.pageComponent.query = 'pending-approval-by:me';
+      this.pageComponent.query = 'pending-review-by:me';
       this.pageComponent.columns = 'approvals';
       this.pageComponent.sortSpec = 'gate.requested_on';
       this.pageComponent.showEnterprise = true;
@@ -388,6 +388,15 @@ export class ChromedashApp extends LitElement {
       this.pageComponent.featureId = parseInt(ctx.params.featureId);
       this.pageComponent.user = this.user;
     });
+    page('/feature/:featureId(\\d+)/ai-coverage-analysis', ctx => {
+      if (!this.setupNewPage(ctx, 'chromedash-wpt-eval-page', true, false))
+        return;
+      this.pageComponent.featureId = parseInt(ctx.params.featureId);
+      this.pageComponent.user = this.user;
+      this.pageComponent.appTitle = this.appTitle;
+    });
+    // TODO(DanielRyanSmith): Remove the "-evaluation" address after the
+    // "-analysis" address had landed.
     page('/feature/:featureId(\\d+)/ai-coverage-evaluation', ctx => {
       if (!this.setupNewPage(ctx, 'chromedash-wpt-eval-page', true, false))
         return;

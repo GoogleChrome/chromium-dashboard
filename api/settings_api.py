@@ -12,11 +12,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""API endpoints for managing user preferences and settings."""
+
 import werkzeug.exceptions
 from chromestatus_openapi.models import (
-  GetSettingsResponse,
-  PostSettingsRequest,
-  SuccessMessage,
+    GetSettingsResponse,
+    PostSettingsRequest,
+    SuccessMessage,
 )
 
 from framework import basehandlers
@@ -24,34 +26,37 @@ from internals import user_models
 
 
 class SettingsAPI(basehandlers.APIHandler):
-  """Users can store their settings preferences such as whether to get
-  notification from the features they starred."""
+    """Users can store their settings preferences such as whether to get
+    notification from the features they starred.
+    """  # noqa: D205
 
-  def do_post(self, **kwargs):
-    """Set the user settings (currently only the notify_as_starrer)"""
-    user_pref = user_models.UserPref.get_signed_in_user_pref()
-    if not user_pref:
-      self.abort(403, msg='User must be signed in')
-    raw_data = self.request.json
-    new_notify = raw_data.get('notify')
+    def do_post(self, **kwargs):
+        """Set the user settings (currently only the notify_as_starrer)"""  # noqa: D415
+        user_pref = user_models.UserPref.get_signed_in_user_pref()
+        if not user_pref:
+            self.abort(403, msg='User must be signed in')
+        raw_data = self.request.json
+        new_notify = raw_data.get('notify')
 
-    if not isinstance(new_notify, bool):
-        raise werkzeug.exceptions.BadRequest(
-            f"Expected boolean for 'notify', got {type(new_notify).__name__}"
-        )
+        if not isinstance(new_notify, bool):
+            raise werkzeug.exceptions.BadRequest(
+                f"Expected boolean for 'notify', got {type(new_notify).__name__}"
+            )
 
-    settings_request = PostSettingsRequest.from_dict(raw_data)
-    user_pref.notify_as_starrer = settings_request.notify
-    user_pref.put()
-    # Callers don't use the JSON response for this API call.
-    return SuccessMessage(message='Done').to_dict()
+        settings_request = PostSettingsRequest.from_dict(raw_data)
+        user_pref.notify_as_starrer = settings_request.notify
+        user_pref.put()
+        # Callers don't use the JSON response for this API call.
+        return SuccessMessage(message='Done').to_dict()
 
-  def do_get(self, **kwargs):
-    """Return the user settings (currently only the notify_as_starrer)"""
-    user_pref = user_models.UserPref.get_signed_in_user_pref()
-    if not user_pref:
-      self.abort(404, msg='User preference not found')
+    def do_get(self, **kwargs):
+        """Return the user settings (currently only the notify_as_starrer)"""  # noqa: D415
+        user_pref = user_models.UserPref.get_signed_in_user_pref()
+        if not user_pref:
+            self.abort(404, msg='User preference not found')
 
-    response = GetSettingsResponse.from_dict({'notify_as_starrer': user_pref.notify_as_starrer})
+        response = GetSettingsResponse.from_dict(
+            {'notify_as_starrer': user_pref.notify_as_starrer}
+        )  # noqa: E501
 
-    return response.to_dict()
+        return response.to_dict()

@@ -86,7 +86,7 @@
 		},
 		"ghcr.io/devcontainers/features/node:1": {
 			// Match the version on Cloudtops
-			"version": "20"
+			"version": "24"
 		},
 		"ghcr.io/devcontainers/features/python:1": {
 			// Match the version on Cloudtops

@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""API handlers for creating and managing AppUser accounts."""
+
 from chromestatus_openapi.models import AccountResponse
 
 from framework import basehandlers, permissions
@@ -20,60 +22,67 @@ from internals import user_models
 
 
 def user_to_json_dict(user):
-  return {
-      'is_admin': user.is_admin,
-      'is_site_editor': user.is_site_editor,
-      'email': user.email,
-      'id': user.key.integer_id(),
-  }
+    """Convert a user entity to a JSON dictionary."""
+    return {
+        'is_admin': user.is_admin,
+        'is_site_editor': user.is_site_editor,
+        'email': user.email,
+        'id': user.key.integer_id(),
+    }
 
 
 class AccountsAPI(basehandlers.APIHandler):
-  """User accounts store info on registered users."""
+    """User accounts store info on registered users."""
 
-  # TODO(jrobbins): do_get
+    # TODO(jrobbins): do_get
 
-  @permissions.require_admin_site
-  def do_post(self, **kwargs):
-    """Process a request to create an account."""
-    email = self.get_param('email', required=True)
-    is_admin = self.get_bool_param('isAdmin')
-    is_site_editor = self.get_bool_param('isSiteEditor')
-    user = self.create_account(email, is_admin, is_site_editor)
-    response_json = AccountResponse(is_admin=user.is_admin, is_site_editor=user.is_site_editor, email=user.email, id=user.key.integer_id()).to_dict()
-    return response_json
+    @permissions.require_admin_site
+    def do_post(self, **kwargs):
+        """Process a request to create an account."""
+        email = self.get_param('email', required=True)
+        is_admin = self.get_bool_param('isAdmin')
+        is_site_editor = self.get_bool_param('isSiteEditor')
+        user = self.create_account(email, is_admin, is_site_editor)
+        response_json = AccountResponse(
+            is_admin=user.is_admin,
+            is_site_editor=user.is_site_editor,
+            email=user.email,
+            id=user.key.integer_id(),
+        ).to_dict()  # noqa: E501
+        return response_json
 
-  def create_account(self, email, is_admin, is_site_editor):
-    """Create and store a new account entity."""
-    # Don't add a duplicate email address.
-    user = user_models.AppUser.query(
-        user_models.AppUser.email == email).get(keys_only=True)
-    if not user:
-      user = user_models.AppUser(email=str(email))
-      user.is_admin = is_admin
-      user.is_site_editor = is_site_editor
-      user.put()
-      return user
-    else:
-      self.abort(400, 'User already exists')
+    def create_account(self, email, is_admin, is_site_editor):
+        """Create and store a new account entity."""
+        # Don't add a duplicate email address.
+        user = user_models.AppUser.query(
+            user_models.AppUser.email == email
+        ).get(keys_only=True)
+        if not user:
+            user = user_models.AppUser(email=str(email))
+            user.is_admin = is_admin
+            user.is_site_editor = is_site_editor
+            user.put()
+            return user
+        else:
+            self.abort(400, 'User already exists')
 
-  # TODO(jrobbins): do_patch
+    # TODO(jrobbins): do_patch
 
-  @permissions.require_admin_site
-  def do_delete(self, **kwargs):
-    """Process a request to delete the specified account."""
-    account_id = kwargs.get('account_id', None)
-    if account_id:
-      self.delete_account(account_id)
-      return {'message': 'Done'}
-    else:
-      self.abort(400, msg='Account ID not specified')
+    @permissions.require_admin_site
+    def do_delete(self, **kwargs):
+        """Process a request to delete the specified account."""
+        account_id = kwargs.get('account_id', None)
+        if account_id:
+            self.delete_account(account_id)
+            return {'message': 'Done'}
+        else:
+            self.abort(400, msg='Account ID not specified')
 
-  def delete_account(self, account_id):
-    """Delete the specified account."""
-    if account_id:
-      found_user = user_models.AppUser.get_by_id(int(account_id))
-      if found_user:
-        found_user.delete()
-      else:
-        self.abort(404, msg='Specified account ID not found')
+    def delete_account(self, account_id):
+        """Delete the specified account."""
+        if account_id:
+            found_user = user_models.AppUser.get_by_id(int(account_id))
+            if found_user:
+                found_user.delete()
+            else:
+                self.abort(404, msg='Specified account ID not found')

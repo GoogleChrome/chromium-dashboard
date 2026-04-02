@@ -1,7 +1,7 @@
 {
     "compilerOptions": {
-      "module": "ES2022",
-      "moduleResolution": "bundler",
+      "module": "NodeNext",
+      "moduleResolution": "NodeNext",
       "plugins": [
         {
           "name": "ts-lit-plugin",
@@ -10,6 +10,7 @@
           }
         }
       ],
+      "types": ["jest", "node", "google.accounts", "google.visualization"],
       "strict": true,
       "noImplicitAny": false,
       "esModuleInterop": true,

@@ -12,7 +12,7 @@ import {
   VENDOR_VIEWS_COMMON,
   VENDOR_VIEWS_GECKO,
   WEB_DEV_VIEWS,
-} from './form-field-enums';
+} from './form-field-enums.js';
 
 export const TEXT_KIND = 'text';
 export const NUM_KIND = 'number';
@@ -179,6 +179,11 @@ export const QUERIABLE_FIELDS: QueryField[] = [
     name: 'rollout_milestone',
     kind: MILESTONE_KIND,
     doc: 'Stable rollout milestone',
+  },
+  {
+    name: 'rollout_stage_plan',
+    kind: ENUM_KIND,
+    doc: 'Stage rollout plan',
   },
   {
     name: 'any_start_milestone',

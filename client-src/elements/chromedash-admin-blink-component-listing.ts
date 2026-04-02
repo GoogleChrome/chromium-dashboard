@@ -3,7 +3,7 @@ import {SHARED_STYLES} from '../css/shared-css.js';
 import {VARS} from '../css/_vars-css.js';
 import {LAYOUT_CSS} from '../css/_layout-css.js';
 import {customElement, property, query} from 'lit/decorators.js';
-import '../js-src/openapi-client';
+import '../js-src/openapi-client.js';
 import {DefaultApiInterface, ComponentsUser} from 'chromestatus-openapi';
 import {get} from 'http';
 

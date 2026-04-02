@@ -16,15 +16,15 @@ import {
   getFeatureOutdatedBanner,
   userCanEdit,
 } from './utils.js';
-import './chromedash-form-table';
-import './chromedash-form-field';
+import './chromedash-form-table.js';
+import './chromedash-form-field.js';
 import {
   formatFeatureForEdit,
   FLAT_METADATA_FIELDS,
   FLAT_ENTERPRISE_METADATA_FIELDS,
   FORMS_BY_STAGE_TYPE,
   FLAT_TRIAL_EXTENSION_FIELDS,
-} from './form-definition';
+} from './form-definition.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {FORM_STYLES} from '../css/forms-css.js';
 import {
@@ -32,8 +32,8 @@ import {
   STAGE_SPECIFIC_FIELDS,
   STAGE_ENT_ROLLOUT,
 } from './form-field-enums.js';
-import {ALL_FIELDS} from './form-field-specs';
-import {openAddStageDialog} from './chromedash-add-stage-dialog';
+import {ALL_FIELDS} from './form-field-specs.js';
+import {openAddStageDialog} from './chromedash-add-stage-dialog.js';
 import {customElement, property, state} from 'lit/decorators.js';
 import {Feature, User} from '../js-src/cs-client.js';
 
@@ -171,8 +171,17 @@ export class ChromedashGuideEditallPage extends LitElement {
     this.fieldValues[index].value = value;
   }
 
+  getNextPage() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const intent = urlParams.get('intent');
+    if (intent === 'wpt_eval') {
+      return `/feature/${this.featureId}/ai-coverage-analysis`;
+    }
+    return `/feature/${this.featureId}`;
+  }
+
   handleCancelClick() {
-    window.location.href = `/feature/${this.featureId}`;
+    window.location.href = this.getNextPage();
   }
 
   renderSkeletons() {
@@ -198,10 +207,6 @@ export class ChromedashGuideEditallPage extends LitElement {
         </p>
       </section>
     `;
-  }
-
-  getNextPage() {
-    return `/feature/${this.featureId}`;
   }
 
   renderSubheader() {
@@ -472,7 +477,7 @@ export class ChromedashGuideEditallPage extends LitElement {
   }
 
   deleteStage(stage) {
-    if (!confirm('Delete feature?')) return;
+    if (!confirm('Delete stage?')) return;
 
     window.csClient
       .deleteStage(this.featureId, stage.id)

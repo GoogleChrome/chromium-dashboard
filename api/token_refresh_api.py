@@ -13,39 +13,42 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import logging
+
+"""API endpoint for refreshing user session tokens to prevent expiration."""
 
 from chromestatus_openapi.models import TokenRefreshResponse
 
-from framework import basehandlers
-from framework import xsrf
-from framework import users
+from framework import basehandlers, users, xsrf
 
 
 class TokenRefreshAPI(basehandlers.APIHandler):
-  """We allow a user to request a new XSRF token so that users may have
-     editing sessions much longer than the token expiration time.
-     An attacker cannot use this feature to obtain an XSRF token because
-       (1) we check that the incoming request has a token that is valid
-           for the current user, even if it may be expired,
-       (2) CORS prevents the response from being accessed,
-       (2) this handler has no side-effects, so an attacker who makes these
-           requests without being able to read the response achieves nothing.
-  """
+    """We allow a user to request a new XSRF token so that users may have
+    editing sessions much longer than the token expiration time.
+    An attacker cannot use this feature to obtain an XSRF token because
+      (1) we check that the incoming request has a token that is valid
+          for the current user, even if it may be expired,
+      (2) CORS prevents the response from being accessed,
+      (2) this handler has no side-effects, so an attacker who makes these
+          requests without being able to read the response achieves nothing.
+    """  # noqa: D205
 
-  def validate_token(self, token, email):
-    """If the token is not valid, raise an exception."""
-    # This is a separate method so that the refresh handler can override it.
-    xsrf.validate_token(token, email, timeout=xsrf.REFRESH_TOKEN_TIMEOUT_SEC)
+    def validate_token(self, token, email):
+        """If the token is not valid, raise an exception."""
+        # This is a separate method so that the refresh handler can override it.
+        xsrf.validate_token(
+            token, email, timeout=xsrf.REFRESH_TOKEN_TIMEOUT_SEC
+        )
 
-  # Note: we use only POST instead of GET to avoid attacks that use GETs.
-  def do_post(self, **kwargs):
-    """Refresh the session and return a new XSRF token for the current user."""
-    user = self.get_current_user()
-    users.refresh_user_session()
-    result = TokenRefreshResponse.from_dict({
-        'token': xsrf.generate_token(user.email()),
-        'token_expires_sec': xsrf.token_expires_sec(),
-        })
-    self._update_last_visit_field(user.email())
-    return result.to_dict()
+    # Note: we use only POST instead of GET to avoid attacks that use GETs.
+    def do_post(self, **kwargs):
+        """Refresh the session and return a new XSRF token for the current user."""
+        user = self.get_current_user()
+        users.refresh_user_session()
+        result = TokenRefreshResponse.from_dict(
+            {
+                'token': xsrf.generate_token(user.email()),
+                'token_expires_sec': xsrf.token_expires_sec(),
+            }
+        )
+        self._update_last_visit_field(user.email())
+        return result.to_dict()

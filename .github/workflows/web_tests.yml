@@ -11,7 +11,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [18.x]
+        node-version: [24.x]
         # TODO: Add 14.x, 16.x.
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
@@ -43,13 +43,11 @@ jobs:
 
       - name: installation
         run: |
-          npm install -g gulp
-
-      - run: npm config set script-shell bash --global
-      - run: npm run setup
+          npm config set script-shell bash --global
+      - run: make setup
       - name: Install playwright browsers
         run: npx playwright install --with-deps
-      - run: npm run build --if-present
+      - run: make build
 
       - name: Run web test runner
-        run: npm run webtest
+        run: make webtest

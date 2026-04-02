@@ -1,17 +1,20 @@
 import {LitElement, css, html, nothing} from 'lit';
-import './chromedash-callout';
-import {GATE_TEAM_ORDER, GATE_FINISHED_REVIEW_STATES} from './form-field-enums';
-import {findFirstFeatureStage} from './utils';
+import './chromedash-callout.js';
+import {
+  GATE_TEAM_ORDER,
+  GATE_FINISHED_REVIEW_STATES,
+} from './form-field-enums.js';
+import {findFirstFeatureStage} from './utils.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {customElement, state} from 'lit/decorators.js';
-import {Feature, StageDict} from '../js-src/cs-client';
-import {GateDict} from './chromedash-gate-chip';
+import {Feature, StageDict} from '../js-src/cs-client.js';
+import {GateDict} from './chromedash-gate-chip.js';
 import {
   Action,
   Process,
   ProcessStage,
   ProgressItem,
-} from './chromedash-gate-column';
+} from './chromedash-gate-column.js';
 
 let preflightDialogEl;
 

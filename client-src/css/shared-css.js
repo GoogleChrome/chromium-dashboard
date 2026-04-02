@@ -11,7 +11,7 @@ export const SHARED_STYLES = [
 
   * {
     box-sizing: border-box;
-     /* font: inherit; */
+    /* font: inherit; */
     text-decoration: inherit;
     -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
   }
@@ -70,6 +70,23 @@ export const SHARED_STYLES = [
     text-decoration: underline;
     color: var(--link-hover-color);
     cursor: pointer;
+  }
+
+
+  .roadmap-sidebar nav {
+    display: flex;
+    flex-direction: column;
+    gap: var(--content-padding-quarter);
+  }
+
+  .roadmap-sidebar nav a {
+    display: block;
+    line-height: 1.4;
+  }
+
+  .roadmap-sidebar nav a[aria-current="page"],
+  .roadmap-sidebar nav a.active {
+    margin-bottom: 0; /* spacing handled by gap */
   }
 
   input:not([type="submit"]),
@@ -139,7 +156,7 @@ export const SHARED_STYLES = [
   }
 
   code {
-   font-family: monospace;
+    font-family: monospace;
   }
 
   .description {
@@ -239,7 +256,7 @@ export const SHARED_STYLES = [
     background: var(--accordion-background);
     font-weight: 300;
     font-size: 20px;
-    padding: var(--content-padding-quarter) var(--content-padding-half)
+    padding: var(--content-padding-quarter) var(--content-padding-half);
   }
 
   sl-details::part(content) {
@@ -252,7 +269,7 @@ export const SHARED_STYLES = [
   }
 
   sl-relative-time {
-    margin: 0 -3px;  // Mitigate spacing from unknown cause.
+    margin: 0 -3px; /* Mitigate spacing from unknown cause. */
   }
 
   sl-relative-time.no-squeeze {

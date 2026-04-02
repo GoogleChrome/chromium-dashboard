@@ -1,6 +1,6 @@
 import {html, TemplateResult} from 'lit';
-import {Feature, StageDict} from '../js-src/cs-client';
-import * as enums from './form-field-enums';
+import {Feature, StageDict} from '../js-src/cs-client.js';
+import * as enums from './form-field-enums.js';
 
 export interface FormattedFeature {
   category: number;
@@ -269,6 +269,7 @@ const FLAT_PROTOTYPE_FIELDS: MetadataFields = {
       name: 'Prototype a solution',
       fields: [
         'motivation',
+        'explainer_links',
         'spec_link',
         'standard_maturity',
         'api_spec',
@@ -331,6 +332,12 @@ const FLAT_DEV_TRIAL_FIELDS: MetadataFields = {
     },
   ],
 };
+
+const FAST_DEV_TRIAL_FIELDS: MetadataFields = structuredClone(
+  FLAT_DEV_TRIAL_FIELDS
+);
+FAST_DEV_TRIAL_FIELDS.sections[0].fields.push('tag_review');
+
 // TODO(jrobbins): UA support signals section
 // TODO(jrobbins): api overview link
 
@@ -440,6 +447,7 @@ export const FLAT_ENTERPRISE_PREPARE_TO_SHIP_FIELDS: MetadataFields = {
         'rollout_milestone',
         'rollout_platforms',
         'rollout_details',
+        'rollout_stage_plan',
         'enterprise_policies',
       ],
     },
@@ -457,7 +465,12 @@ const PSA_IMPLEMENT_FIELDS: MetadataFields = {
     // Standardization
     {
       name: 'Start prototyping',
-      fields: ['motivation', 'spec_link', 'standard_maturity'],
+      fields: [
+        'motivation',
+        'explainer_links',
+        'spec_link',
+        'standard_maturity',
+      ],
     },
   ],
 };
@@ -489,7 +502,7 @@ const DEPRECATION_PLAN_FIELDS: MetadataFields = {
   sections: [
     {
       name: 'Write up deprecation plan',
-      fields: ['deprecation_motivation', 'spec_link'],
+      fields: ['deprecation_motivation', 'explainer_links', 'spec_link'],
     },
   ],
 };
@@ -683,6 +696,7 @@ const VERIFY_ACCURACY_ENTERPRISE_PREPARE_TO_SHIP_FIELDS: MetadataFields = {
         'rollout_milestone',
         'rollout_platforms',
         'rollout_details',
+        'rollout_stage_plan',
         'enterprise_policies',
       ],
     },
@@ -710,7 +724,7 @@ export const FORMS_BY_STAGE_TYPE: Record<number, MetadataFields> = {
   [enums.STAGE_BLINK_SHIPPING]: FLAT_PREPARE_TO_SHIP_FIELDS,
 
   [enums.STAGE_FAST_PROTOTYPE]: FLAT_PROTOTYPE_FIELDS,
-  [enums.STAGE_FAST_DEV_TRIAL]: FLAT_DEV_TRIAL_FIELDS,
+  [enums.STAGE_FAST_DEV_TRIAL]: FAST_DEV_TRIAL_FIELDS,
   [enums.STAGE_FAST_ORIGIN_TRIAL]: FLAT_ORIGIN_TRIAL_FIELDS,
   [enums.STAGE_FAST_EXTEND_ORIGIN_TRIAL]: FLAT_TRIAL_EXTENSION_FIELDS,
   [enums.STAGE_FAST_SHIPPING]: FLAT_PREPARE_TO_SHIP_FIELDS,

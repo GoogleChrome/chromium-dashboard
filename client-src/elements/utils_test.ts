@@ -7,10 +7,11 @@ import {
   getDisabledHelpText,
   getFeatureOutdatedBanner,
   isVerifiedWithinGracePeriod,
-} from './utils';
+  parseRawTimestamp,
+} from './utils.js';
 import {assert} from '@open-wc/testing';
-import {OT_SETUP_STATUS_OPTIONS} from './form-field-enums';
-import {Channels, Feature} from '../js-src/cs-client';
+import {OT_SETUP_STATUS_OPTIONS} from './form-field-enums.js';
+import {Channels, Feature} from '../js-src/cs-client.js';
 
 const compareAutolinkResult = (result, expected) => {
   assert.equal(result.length, expected.length);
@@ -498,6 +499,7 @@ describe('isVerifiedWithinGracePeriod', () => {
       rollout_details: 'Rolling out to 1% of users.',
       rollout_milestone: 124,
       rollout_platforms: ['Desktop', 'Android'],
+      rollout_stage_plan: 1,
       enterprise_policies: ['TestFeatureEnabled', 'LegacyFeatureDisabled'],
       pm_emails: ['pm@example.com'],
       tl_emails: ['tl@example.com'],
@@ -763,6 +765,7 @@ describe('isVerifiedWithinGracePeriod', () => {
           rollout_details: 'Rolling out to 1% of users.',
           rollout_milestone: 124,
           rollout_platforms: ['Desktop', 'Android'],
+          rollout_stage_plan: 1,
           enterprise_policies: ['TestFeatureEnabled', 'LegacyFeatureDisabled'],
           pm_emails: ['pm@example.com'],
           tl_emails: ['tl@example.com'],
@@ -1012,5 +1015,48 @@ describe('isVerifiedWithinGracePeriod', () => {
       // isShippedFeatureOutdated returns false if closestShippingDate is missing
       assert.isNull(result);
     });
+  });
+});
+
+describe('parseRawTimestamp', () => {
+  it('returns null for null, undefined, or empty inputs', () => {
+    assert.isNull(parseRawTimestamp(null));
+    assert.isNull(parseRawTimestamp(undefined));
+    assert.isNull(parseRawTimestamp(''));
+  });
+
+  it('treats naive timestamps (missing timezone) as UTC', () => {
+    // 12:00:00 Naive -> Should be interpreted as 12:00:00 UTC
+    const naiveInput = '2025-01-27T12:00:00';
+    const expectedTime = Date.UTC(2025, 0, 27, 12, 0, 0);
+
+    const result = parseRawTimestamp(naiveInput);
+    assert.equal(result, expectedTime);
+  });
+
+  it('respects existing "Z" (UTC) indicator', () => {
+    const utcInput = '2025-01-27T12:00:00Z';
+    const expectedTime = Date.UTC(2025, 0, 27, 12, 0, 0);
+
+    const result = parseRawTimestamp(utcInput);
+    assert.equal(result, expectedTime);
+  });
+
+  it('respects explicit positive timezone offsets', () => {
+    // 12:00 +02:00 -> should be 10:00 UTC
+    const offsetInput = '2025-01-27T12:00:00+02:00';
+    const expectedTime = Date.UTC(2025, 0, 27, 10, 0, 0);
+
+    const result = parseRawTimestamp(offsetInput);
+    assert.equal(result, expectedTime);
+  });
+
+  it('respects explicit negative timezone offsets', () => {
+    // 12:00 -05:00 -> should be 17:00 UTC
+    const offsetInput = '2025-01-27T12:00:00-05:00';
+    const expectedTime = Date.UTC(2025, 0, 27, 17, 0, 0);
+
+    const result = parseRawTimestamp(offsetInput);
+    assert.equal(result, expectedTime);
   });
 });

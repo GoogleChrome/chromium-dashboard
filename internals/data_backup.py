@@ -11,42 +11,54 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""Datastore backup and export utilities.
+
+Provides an automated scheduled handler to trigger full exports of the
+Datastore to a designated Google Cloud Storage bucket for disaster recovery.
+"""
+
 import logging
 from typing import Any
 
 from googleapiclient.discovery import build
 from googleapiclient.discovery_cache.base import Cache
-import settings
 
+import settings
 from framework import basehandlers
 
+
 class MemoryCache(Cache):
+    """In-memory cache for backup export."""
+
     _CACHE: dict[Any, Any] = {}
 
     def get(self, url):
+        """Get the entity."""
         return MemoryCache._CACHE.get(url)
 
     def set(self, url, content):
+        """Set the entity."""
         MemoryCache._CACHE[url] = content
 
 
 class BackupExportHandler(basehandlers.FlaskHandler):
-  """Triggers a new Datastore export."""
+    """Triggers a new Datastore export."""
 
-  def get_template_data(self, **kwargs):
-    self.require_cron_header()
-    bucket = f'gs://{settings.BACKUP_BUCKET}'
-    # The default cache (file_cache) is unavailable when using oauth2client >= 4.0.0 or google-auth,
-    # and it will log worrisome messages unless given another interface to use.
-    datastore = build('datastore', 'v1', cache=MemoryCache())
-    project_id = settings.APP_ID
+    def get_template_data(self, **kwargs):
+        """Get template data for the handler."""
+        self.require_cron_header()
+        bucket = f'gs://{settings.BACKUP_BUCKET}'
+        # The default cache (file_cache) is unavailable when using oauth2client >= 4.0.0 or google-auth,  # noqa: E501
+        # and it will log worrisome messages unless given another interface to use.
+        datastore = build('datastore', 'v1', cache=MemoryCache())
+        project_id = settings.APP_ID
 
-    # No entity filters are used to back up all entities.
-    request_body = {'outputUrlPrefix': bucket, 'entityFilter': {}}
+        # No entity filters are used to back up all entities.
+        request_body = {'outputUrlPrefix': bucket, 'entityFilter': {}}
 
-    export_request = datastore.projects().export(
-      projectId=project_id, body=request_body
-    )
-    response = export_request.execute()
-    logging.info(str(response))
-    return 'Success'
+        export_request = datastore.projects().export(
+            projectId=project_id, body=request_body
+        )
+        response = export_request.execute()
+        logging.info(str(response))
+        return 'Success'

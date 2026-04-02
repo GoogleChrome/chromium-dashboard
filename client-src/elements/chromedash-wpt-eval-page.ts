@@ -2,16 +2,21 @@ import {LitElement, TemplateResult, css, html, nothing} from 'lit';
 import {customElement, property, state} from 'lit/decorators.js';
 import {unsafeHTML} from 'lit/directives/unsafe-html.js';
 import {marked} from 'marked';
+import DOMPurify from 'dompurify';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {Feature} from '../js-src/cs-client.js';
-import {showToastMessage} from './utils.js';
+import {parseRawTimestamp, showToastMessage} from './utils.js';
 import {AITestEvaluationStatus} from './form-field-enums.js';
+import {ifDefined} from 'lit/directives/if-defined.js';
 
 // Matches http or https, followed by wpt.fyi/results, followed by any non-whitespace and non-question mark characters.
 const WPT_RESULTS_REGEX = /(https?:\/\/wpt\.fyi\/results[^\s?]+)/g;
 
-// 30 minute cooldown for regenerating the evaluation report.
+// 30 minute cooldown for regenerating the coverage report.
 const COOLDOWN_MS = 30 * 60 * 1000;
+
+// 1 hour timeout to allow retrying if the process hangs.
+const HANGING_TIMEOUT_MS = 60 * 60 * 1000;
 
 @customElement('chromedash-wpt-eval-page')
 export class ChromedashWPTEvalPage extends LitElement {
@@ -90,7 +95,7 @@ export class ChromedashWPTEvalPage extends LitElement {
         }
 
         .requirement-item sl-icon {
-          font-size: 1.4em;
+          font-size: 20px;
           flex-shrink: 0;
         }
         .requirement-item .success {
@@ -167,6 +172,14 @@ export class ChromedashWPTEvalPage extends LitElement {
           gap: 6px;
         }
 
+        .help-text {
+          margin-top: 8px;
+          color: var(--sl-color-neutral-600);
+          font-size: 0.9rem;
+          max-width: 400px;
+          line-height: 1.4;
+        }
+
         .status-in-progress,
         .status-complete {
           display: flex;
@@ -223,6 +236,10 @@ export class ChromedashWPTEvalPage extends LitElement {
           color: inherit;
         }
 
+        .prewrap {
+          white-space: pre-wrap;
+        }
+
         @keyframes fadeIn {
           from {
             opacity: 0;
@@ -247,6 +264,27 @@ export class ChromedashWPTEvalPage extends LitElement {
         sl-alert {
           margin-bottom: var(--sl-spacing-large);
         }
+
+        .report-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 1rem;
+        }
+        .report-header h2 {
+          margin: 0;
+        }
+
+        .dir-note {
+          margin-left: 6px;
+          opacity: 0.75;
+          font-style: italic;
+        }
+
+        .report-actions {
+          display: flex;
+          gap: 12px;
+        }
       `,
     ];
   }
@@ -268,6 +306,9 @@ export class ChromedashWPTEvalPage extends LitElement {
 
   // Milliseconds remaining before another run can be requested
   @state()
+  includeExplainer = false;
+
+  @state()
   private _cooldownRemaining = 0;
 
   @state()
@@ -282,29 +323,38 @@ export class ChromedashWPTEvalPage extends LitElement {
       this.loading = true;
     }
     try {
-      this.feature = await window.csClient.getFeature(this.featureId);
+      const feature = await window.csClient.getFeature(this.featureId);
+      if (!this.isConnected) return;
+      this.feature = feature;
       this.checkRequirements();
       this.managePolling();
       this.updateCooldown();
     } catch (error) {
+      if (!this.isConnected) return;
       showToastMessage(
         'Some errors occurred. Please refresh the page or try again later.'
       );
     } finally {
-      this.loading = false;
+      if (this.isConnected) {
+        this.loading = false;
+      }
     }
   }
 
   updated(changedProperties: Map<string | symbol, unknown>) {
     if (changedProperties.has('feature') && this.feature) {
       const currentReport = this.feature.ai_test_eval_report || null;
-      // Check if report content has actually changed
+
+      // 1. Detect if the content actually changed
       if (currentReport && currentReport !== this._previousReportContent) {
         this._reportContentChanged = true;
-        // Reset the animation trigger after a short delay
+
+        // 2. Schedule the reset.
+        // This is safe because it happens in a macro-task (setTimeout),
+        // after the current render is finished.
         setTimeout(() => {
           this._reportContentChanged = false;
-        }, 100); // Small delay to allow CSS to register the class removal
+        }, 100);
       }
       this._previousReportContent = currentReport;
     }
@@ -326,6 +376,8 @@ export class ChromedashWPTEvalPage extends LitElement {
       this.isRequirementsFulfilled = false;
       return;
     }
+    // Name and summary are required for all features,
+    // so they are assumed to exist.
     const hasSpecLink = !!this.feature.spec_link;
     const hasWptDescr = !!this.feature.wpt_descr;
     const hasValidUrls =
@@ -335,14 +387,22 @@ export class ChromedashWPTEvalPage extends LitElement {
   }
 
   updateCooldown() {
+    const status = this.feature?.ai_test_eval_run_status;
     if (
-      this.feature?.ai_test_eval_run_status ===
-        AITestEvaluationStatus.COMPLETE &&
-      this.feature.ai_test_eval_status_timestamp
+      (status !== AITestEvaluationStatus.COMPLETE &&
+        status !== AITestEvaluationStatus.DELETED) ||
+      !this.feature?.ai_test_eval_status_timestamp
     ) {
-      const completedAt = new Date(
-        this.feature.ai_test_eval_status_timestamp
-      ).getTime();
+      this._cooldownRemaining = 0;
+      this.stopCooldownTimer();
+      return;
+    }
+
+    const completedAt = parseRawTimestamp(
+      this.feature?.ai_test_eval_status_timestamp
+    );
+
+    if (completedAt) {
       const now = Date.now();
       const elapsed = now - completedAt;
 
@@ -353,9 +413,6 @@ export class ChromedashWPTEvalPage extends LitElement {
         this._cooldownRemaining = 0;
         this.stopCooldownTimer();
       }
-    } else {
-      this._cooldownRemaining = 0;
-      this.stopCooldownTimer();
     }
   }
 
@@ -414,14 +471,54 @@ export class ChromedashWPTEvalPage extends LitElement {
       this.feature = {
         ...this.feature,
         ai_test_eval_run_status: AITestEvaluationStatus.IN_PROGRESS,
+        ai_test_eval_status_timestamp: new Date().toISOString(),
       };
       this.completedInThisSession = false; // Reset if user tries to regenerate.
       this.managePolling();
 
-      await window.csClient.generateWPTCoverageEvaluation(this.featureId);
+      await window.csClient.generateWPTCoverageEvaluation(
+        this.featureId,
+        this.includeExplainer
+      );
+      if (!this.isConnected) return;
     } catch (e) {
-      showToastMessage('Failed to start evaluation. Please try again later.');
+      if (!this.isConnected) return;
+      showToastMessage('Failed to generate report. Please try again later.');
       this.fetchData();
+    }
+  }
+
+  async handleCopyReport() {
+    if (!this.feature?.ai_test_eval_report) return;
+
+    try {
+      await navigator.clipboard.writeText(this.feature.ai_test_eval_report);
+      showToastMessage('Report copied to clipboard.');
+    } catch (err) {
+      console.error('Failed to copy text: ', err);
+      showToastMessage('Failed to copy report.');
+    }
+  }
+
+  async handleDeleteReport() {
+    if (!this.feature?.ai_test_eval_report) return;
+
+    if (
+      !window.confirm(
+        'Delete this WPT coverage report? This action cannot be undone.'
+      )
+    ) {
+      return;
+    }
+
+    try {
+      await window.csClient.deleteWPTCoverageEvaluation(this.featureId);
+      showToastMessage('Report deleted successfully.');
+      // Refresh data to update the UI
+      this.fetchData();
+    } catch (err) {
+      console.error('Failed to delete report: ', err);
+      showToastMessage('Failed to delete report. Please try again later.');
     }
   }
 
@@ -436,7 +533,12 @@ export class ChromedashWPTEvalPage extends LitElement {
           library="material"
           name="check_circle_20px"
         ></sl-icon>`
-      : html`<sl-icon name="x-circle-fill" class="danger"></sl-icon>`;
+      : html`<sl-icon
+          library="material"
+          name="cancel_20px"
+          class="danger"
+          style="font-size: 20px"
+        ></sl-icon>`;
 
     const text = isFulfilled ? `${label} provided` : `Missing ${label}`;
 
@@ -444,11 +546,46 @@ export class ChromedashWPTEvalPage extends LitElement {
       <div class="requirement-item">
         ${icon}
         <span>${text}</span>
-        <a class="edit-link" href="/guide/editall/${this.featureId}#${urlHash}">
+        <a
+          class="edit-link"
+          href="/guide/editall/${this.featureId}?intent=wpt_eval#${urlHash}"
+        >
           Edit
         </a>
       </div>
     `;
+  }
+
+  /**
+   * Renders pre-formatted text within a div, applying `prettier-ignore`
+   * to prevent unwanted whitespace from being introduced by Prettier's
+   * formatting when `white-space: pre-wrap` is used.
+   * @param content The text content to render.
+   * @returns A TemplateResult containing the pre-formatted text, or nothing if content is undefined.
+   */
+  private _renderPreformattedText(
+    content: string | undefined
+  ): TemplateResult | typeof nothing {
+    if (!content) {
+      return nothing;
+    }
+    // prettier-ignore
+    return html`<div class="url-list prewrap">${content}</div>`;
+  }
+
+  /**
+   * Returns true if a WPT results URL represents a directory rather than a test file.
+   */
+  private _isDirectoryWptUrl(rawUrl: string): boolean {
+    // Strip query/hash (URLs regex already excludes '?', but safe anyway)
+    const noHash = rawUrl.split('#')[0];
+    const noQuery = noHash.split('?')[0];
+    // Last path segment
+    const parts = noQuery.split('/');
+    const last = parts[parts.length - 1] ?? '';
+    // If it ends with ".ext" (1-6 chars), treat as file
+    const looksLikeFile = /\.[a-z0-9]{1,6}$/i.test(last);
+    return !looksLikeFile;
   }
 
   renderRequirementsChecks(): TemplateResult {
@@ -466,12 +603,41 @@ export class ChromedashWPTEvalPage extends LitElement {
       <section class="card">
         <h2>Prerequisites Checklist</h2>
         <div class="requirements-list">
+          <!-- Name and summary are assumed to always be filled -->
+          ${this.renderRequirementItem(true, 'Feature name', 'id_name')}
+          <div class="url-list-container">
+            <div class="url-list">${this.feature.name}</div>
+          </div>
+          ${this.renderRequirementItem(true, 'Feature summary', 'id_summary')}
+          <div class="url-list-container">
+            ${this._renderPreformattedText(this.feature.summary)}
+          </div>
           ${this.renderRequirementItem(hasSpecLink, 'Spec URL', 'id_spec_link')}
+          ${hasSpecLink
+            ? html`
+                <div class="url-list-container">
+                  <div class="url-list">
+                    <a
+                      href="${ifDefined(this.feature.spec_link)}"
+                      target="_blank"
+                      >${this.feature.spec_link}</a
+                    >
+                  </div>
+                </div>
+              `
+            : nothing}
           ${this.renderRequirementItem(
             hasWptDescr,
             'WPT description',
             'id_wpt_descr'
           )}
+          ${hasWptDescr
+            ? html`
+                <div class="url-list-container">
+                  ${this._renderPreformattedText(this.feature.wpt_descr)}
+                </div>
+              `
+            : nothing}
           ${this.renderRequirementItem(
             hasValidUrls,
             'Valid wpt.fyi results URLs',
@@ -481,15 +647,78 @@ export class ChromedashWPTEvalPage extends LitElement {
             ? html`
                 <div class="url-list-container">
                   <ul class="url-list">
-                    ${wptUrls.map(
-                      url => html`
+                    ${wptUrls.map(url => {
+                      const isDir = this._isDirectoryWptUrl(url);
+                      return html`
                         <li>
                           <a href="${url}" target="_blank" title="${url}"
                             >${url}</a
                           >
+                          ${isDir
+                            ? html`<span class="dir-note"
+                                >(all tests in directory)</span
+                              >`
+                            : nothing}
                         </li>
-                      `
-                    )}
+                      `;
+                    })}
+                  </ul>
+                </div>
+              `
+            : nothing}
+          <div class="requirement-item">
+            ${!this.includeExplainer
+              ? html`<sl-icon
+                  library="material"
+                  name="info_20px"
+                  style="color: var(--sl-color-neutral-600); font-size: 20px"
+                ></sl-icon>`
+              : this.feature.explainer_links?.length
+                ? html`<sl-icon
+                    class="success"
+                    library="material"
+                    name="check_circle_20px"
+                  ></sl-icon>`
+                : html`<sl-icon
+                    library="material"
+                    name="cancel_20px"
+                    class="danger"
+                    style="font-size: 20px"
+                  ></sl-icon>`}
+            <sl-checkbox
+              ?checked=${this.includeExplainer}
+              @sl-change=${(e: any) =>
+                (this.includeExplainer = e.target.checked)}
+            >
+              Include feature explainers
+              ${!this.feature.explainer_links?.length
+                ? html`<sl-badge variant="neutral" size="small"
+                    >Optional</sl-badge
+                  >`
+                : nothing}
+            </sl-checkbox>
+            <a
+              class="edit-link"
+              href="/guide/editall/${this.featureId}#id_explainer_links"
+            >
+              Edit
+            </a>
+          </div>
+          ${this.includeExplainer
+            ? html`
+                <div class="url-list-container">
+                  <ul class="url-list">
+                    ${this.feature.explainer_links?.length
+                      ? this.feature.explainer_links.map(
+                          url => html`
+                            <li>
+                              <a href="${url}" target="_blank">${url}</a>
+                            </li>
+                          `
+                        )
+                      : html`<li>
+                          None provided. Use the "Edit" link above to add one.
+                        </li>`}
                   </ul>
                 </div>
               `
@@ -503,54 +732,114 @@ export class ChromedashWPTEvalPage extends LitElement {
     if (!this.feature) return html`${nothing}`;
 
     const status = this.feature.ai_test_eval_run_status;
+    let isHanging = false;
 
-    if (status === AITestEvaluationStatus.IN_PROGRESS) {
+    // Check if IN_PROGRESS but hanging (older than 1 hour).
+    if (
+      status === AITestEvaluationStatus.IN_PROGRESS &&
+      this.feature.ai_test_eval_status_timestamp
+    ) {
+      const startedAt = parseRawTimestamp(
+        this.feature.ai_test_eval_status_timestamp
+      );
+
+      if (startedAt) {
+        const now = Date.now();
+        if (now - startedAt > HANGING_TIMEOUT_MS) {
+          isHanging = true;
+        }
+      }
+    }
+
+    // Only show the spinner if it is in progress AND NOT hanging
+    if (status === AITestEvaluationStatus.IN_PROGRESS && !isHanging) {
       return html`
         <section class="card action-section">
           <div class="status-in-progress">
             <sl-spinner></sl-spinner>
-            <span>Evaluation in progress... This may take a few minutes.</span>
+            <span>Analysis in progress... This may take a few minutes.</span>
           </div>
         </section>
       `;
     }
 
     // Show success message if completed in this session.
-    if (this.completedInThisSession) {
+    if (
+      this.completedInThisSession &&
+      status !== AITestEvaluationStatus.IN_PROGRESS &&
+      status !== AITestEvaluationStatus.DELETED
+    ) {
       return html`
         <section class="card action-section">
           <div class="status-complete fade-in">
             <sl-icon library="material" name="check_circle_20px"></sl-icon>
-            <span>Evaluation complete! The report is available below.</span>
+            <span>Analysis complete! The report is available above.</span>
           </div>
         </section>
       `;
     }
-
+    if (
+      this.completedInThisSession &&
+      status === AITestEvaluationStatus.DELETED
+    ) {
+      return html`
+        <section class="card action-section">
+          <div class="status-complete fade-in">
+            <sl-icon library="material" name="check_circle_20px"></sl-icon>
+            <span>Report deleted.</span>
+          </div>
+        </section>
+      `;
+    }
     const isCooldownActive = this._cooldownRemaining > 0;
     const minutesRemaining = Math.ceil(this._cooldownRemaining / 60000);
+
+    let buttonLabel = 'Evaluate test coverage';
+    if (isHanging) {
+      buttonLabel = 'Retry analysis (Process timed out)';
+    } else if (this.feature.ai_test_eval_report) {
+      buttonLabel = 'Discard this report and reevaluate test coverage';
+    }
 
     return html`
       <section class="card action-section">
         ${status === AITestEvaluationStatus.FAILED
           ? html`
               <sl-alert variant="danger" open>
-                The previous evaluation run failed. Please try again.
+                The previous analysis run failed. Please try again.
               </sl-alert>
             `
           : nothing}
 
         <sl-button
-          variant="primary"
+          variant="${this.feature.ai_test_eval_report ? 'danger' : 'primary'}"
           size="large"
           class="generate-button"
-          ?disabled=${!this.isRequirementsFulfilled || isCooldownActive}
+          ?disabled=${!this.isRequirementsFulfilled ||
+          isCooldownActive ||
+          this.feature.confidential}
           @click=${this.handleGenerateClick}
         >
-          Evaluate test coverage
+          ${buttonLabel}
         </sl-button>
 
-        ${isCooldownActive
+        ${this.feature.confidential
+          ? html`
+              <div class="help-text">
+                This feature is set to "confidential". The feature's information
+                cannot be sent to Gemini for evaluation.
+              </div>
+            `
+          : nothing}
+        ${isHanging
+          ? html`
+              <div class="help-text">
+                The previous analysis seems to be stuck. You can try starting a
+                new one.
+              </div>
+            `
+          : nothing}
+        ${isCooldownActive && !this.feature.confidential
           ? html`
               <div class="cooldown-message">
                 <sl-icon name="hourglass-split"></sl-icon>
@@ -569,6 +858,8 @@ export class ChromedashWPTEvalPage extends LitElement {
     }
 
     const rawHtml = marked.parse(this.feature.ai_test_eval_report) as string;
+    const purify = DOMPurify(window);
+    const safeHtml = purify.sanitize(rawHtml);
 
     // Apply fade-in only if _reportContentChanged is true
     const titleClass = this._reportContentChanged ? 'fade-in delay-title' : '';
@@ -578,8 +869,33 @@ export class ChromedashWPTEvalPage extends LitElement {
 
     return html`
       <section class="card report-section">
-        <h2 class="${titleClass}">Evaluation Report</h2>
-        <div class="report-content ${contentClass}">${unsafeHTML(rawHtml)}</div>
+        <div class="report-header">
+          <h2 class="${titleClass}">Analysis Results</h2>
+          <div class="report-actions">
+            <sl-button
+              variant="danger"
+              outline
+              size="small"
+              @click=${this.handleDeleteReport}
+              title="Delete report"
+            >
+              <sl-icon slot="prefix" name="trash"></sl-icon>
+              Delete Report
+            </sl-button>
+            <sl-button
+              variant="default"
+              size="small"
+              @click=${this.handleCopyReport}
+              title="Copy report to clipboard"
+            >
+              <sl-icon slot="prefix" name="copy"></sl-icon>
+              Copy Report
+            </sl-button>
+          </div>
+        </div>
+        <div class="report-content ${contentClass}">
+          ${unsafeHTML(safeHtml)}
+        </div>
       </section>
     `;
   }
@@ -609,12 +925,12 @@ export class ChromedashWPTEvalPage extends LitElement {
     return html`
       <div>
         <h1>
-          AI-powered WPT coverage evaluation
+          AI-powered WPT coverage analysis
           <span class="experimental-tag">Experimental</span>
         </h1>
 
         <sl-alert variant="primary" open>
-          <sl-icon slot="icon" name="info-circle"></sl-icon>
+          <sl-icon slot="icon" library="material" name="info_20px"></sl-icon>
           This feature is experimental and reports may be inaccurate. Please
           <a
             href="https://github.com/GoogleChrome/chromium-dashboard/issues/new?labels=Feedback,WPT-AI"
@@ -629,8 +945,8 @@ export class ChromedashWPTEvalPage extends LitElement {
           <p>
             Here you can generate an AI-powered test coverage report for your
             feature using Gemini. Gemini will analyze your feature's details,
-            specification, and listed Web Platform Tests to evaluate if it meets
-            standard minimum test coverage criteria.
+            specification, and listed Web Platform Tests to analyze coverage and
+            suggest additional tests to increase test coverage.
           </p>
 
           <h3>Before you begin</h3>
@@ -640,11 +956,20 @@ export class ChromedashWPTEvalPage extends LitElement {
           </p>
           <ul>
             <li>
-              <strong>Metadata:</strong> Ensure the feature name and summary are
-              accurate.
+              <strong>Specification:</strong> A valid Spec URL must be provided.
+              Although not recommended, this can be provided as a GitHub pull
+              request URL.
             </li>
             <li>
-              <strong>Specification:</strong> A valid Spec URL must be provided.
+              <strong>Metadata:</strong> Ensure the feature name and summary are
+              accurate. These will be used to narrow the scope of the test
+              coverage requirements.
+            </li>
+            <li>
+              <strong>Explainers (Optional):</strong> You can optionally include
+              explainer links to provide more context to Gemini. This helps
+              Gemini understand the intent and design of your feature, which can
+              lead to more accurate coverage analysis.
             </li>
             <li>
               <strong>Test Results:</strong> Add relevant
@@ -666,7 +991,7 @@ export class ChromedashWPTEvalPage extends LitElement {
                   There is a limit of <strong>50 individual test files</strong>
                   In the Web Platform Tests repository. If more than 50 relevant
                   test files are found via the listed URLs, the test suite size
-                  is too big for automated test coverage evaluation.
+                  is too big for automated test coverage analysis.
                 </li>
                 <li>
                   <em
@@ -682,8 +1007,8 @@ export class ChromedashWPTEvalPage extends LitElement {
         ${this.loading
           ? this.renderSkeletons()
           : html`
-              ${this.renderRequirementsChecks()} ${this.renderActionSection()}
-              ${this.renderReport()}
+              ${this.renderRequirementsChecks()} ${this.renderReport()}
+              ${this.renderActionSection()}
             `}
       </div>
     `;

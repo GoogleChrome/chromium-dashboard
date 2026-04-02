@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for the spec_mentors_api module, verifying the retrieval and filtering of mentored features."""
+
 import testing_config  # isort: split
 
 import json
@@ -29,232 +31,261 @@ from internals.core_models import FeatureEntry
 test_app = flask.Flask(__name__)
 
 BASE_FEATURE_CREATE_BODY = {
-  'name': 'A name',
-  'summary': 'A summary',
-  'owner_emails': 'user@example.com',
-  'category': 2,
-  'feature_type': 1,
-  'impl_status_chrome': 3,
-  'standard_maturity': 2,
-  'ff_views': 1,
-  'safari_views': 1,
-  'web_dev_views': 1,
+    'name': 'A name',
+    'summary': 'A summary',
+    'owner_emails': 'user@example.com',
+    'category': 2,
+    'feature_type': 1,
+    'impl_status_chrome': 3,
+    'standard_maturity': 2,
+    'ff_views': 1,
+    'safari_views': 1,
+    'web_dev_views': 1,
 }
 
 
 class SpecMentorsAPITest(testing_config.CustomTestCase):
-  def setUp(self):
-    self.api_base = '/api/v0'
-    self.request_path = f'{self.api_base}/spec_mentors'
-    self.spec_mentors_handler = spec_mentors_api.SpecMentorsAPI()
+    """Tests for SpecMentorsAPI."""
 
-    self.feature_handler = features_api.FeaturesAPI()
+    def setUp(self):
+        """Set up the test environment."""
+        self.api_base = '/api/v0'
+        self.request_path = f'{self.api_base}/spec_mentors'
+        self.spec_mentors_handler = spec_mentors_api.SpecMentorsAPI()
 
-    self.app_admin = user_models.AppUser(email='admin@example.com')
-    self.app_admin.is_admin = True
-    self.app_admin.put()
+        self.feature_handler = features_api.FeaturesAPI()
 
-    self.created_features = []
+        self.app_admin = user_models.AppUser(email='admin@example.com')
+        self.app_admin.is_admin = True
+        self.app_admin.put()
 
-  def tearDown(self):
-    for feature in self.created_features:
-      feature.key.delete()
-    self.app_admin.key.delete()
-    testing_config.sign_out()
+        self.created_features = []
 
-    rediscache.delete_keys_with_prefix('features')
-    rediscache.delete_keys_with_prefix('FeatureEntries')
+    def tearDown(self):
+        """Clean up the test environment."""
+        for feature in self.created_features:
+            feature.key.delete()
+        self.app_admin.key.delete()
+        testing_config.sign_out()
 
-  def createFeature(self, params) -> FeatureEntry:
-    with test_app.test_request_context(
-      f'{self.api_base}/features/create', json=BASE_FEATURE_CREATE_BODY | params
-    ):
-      response = self.feature_handler.do_post()
-    feature = FeatureEntry.get_by_id(response['feature_id'])
-    self.created_features.append(feature)
-    return feature
+        rediscache.delete_keys_with_prefix('features')
+        rediscache.delete_keys_with_prefix('FeatureEntries')
 
-  def test_finds_one_mentored_feature(self):
-    """Returns the single feature that exists, which has a mentor."""
-    # Create a feature using the admin user.
-    testing_config.sign_in(self.app_admin.email, 123567890)
+    def createFeature(self, params) -> FeatureEntry:
+        """Create a new feature for testing."""
+        with test_app.test_request_context(
+            f'{self.api_base}/features/create',
+            json=BASE_FEATURE_CREATE_BODY | params,
+        ):
+            response = self.feature_handler.do_post()
+        feature = FeatureEntry.get_by_id(response['feature_id'])
+        self.created_features.append(feature)
+        return feature
 
-    feature = self.createFeature({'name': 'The feature'})
-    feature.spec_mentor_emails = ['mentor@example.org']
-    feature.put()
-    testing_config.sign_out()
+    def test_finds_one_mentored_feature(self):
+        """Returns the single feature that exists, which has a mentor."""
+        # Create a feature using the admin user.
+        testing_config.sign_in(self.app_admin.email, 123567890)
 
-    with test_app.test_request_context(self.request_path):
-      response = self.spec_mentors_handler.do_get()
+        feature = self.createFeature({'name': 'The feature'})
+        feature.spec_mentor_emails = ['mentor@example.org']
+        feature.put()
+        testing_config.sign_out()
 
-    self.assertEqual(
-      response,
-      [
-        {
-          'email': 'mentor@example.org',
-          'mentored_features': [{'id': feature.key.id(), 'name': 'The feature'}],
-        }
-      ],
-    )
+        with test_app.test_request_context(self.request_path):
+            response = self.spec_mentors_handler.do_get()
 
-  def test_omits_unlisted_feature(self):
-    """Does not return an unlisted feature that has a mentor."""
-    # Create a feature using the admin user.
-    testing_config.sign_in(self.app_admin.email, 123567890)
+        self.assertEqual(
+            response,
+            [
+                {
+                    'email': 'mentor@example.org',
+                    'mentored_features': [
+                        {'id': feature.key.id(), 'name': 'The feature'}
+                    ],  # noqa: E501
+                }
+            ],
+        )
 
-    feature = self.createFeature({'name': 'The feature'})
-    feature.spec_mentor_emails = ['mentor@example.org']
-    feature.unlisted = True
-    feature.put()
-    testing_config.sign_out()
+    def test_omits_unlisted_feature(self):
+        """Does not return an unlisted feature that has a mentor."""
+        # Create a feature using the admin user.
+        testing_config.sign_in(self.app_admin.email, 123567890)
 
-    with test_app.test_request_context(self.request_path):
-      response = self.spec_mentors_handler.do_get()
+        feature = self.createFeature({'name': 'The feature'})
+        feature.spec_mentor_emails = ['mentor@example.org']
+        feature.unlisted = True
+        feature.put()
+        testing_config.sign_out()
 
-    self.assertEqual(response, [])
+        with test_app.test_request_context(self.request_path):
+            response = self.spec_mentors_handler.do_get()
 
-  def test_obeys_after_param(self):
-    """The ?after URL parameter filters features."""
-    # Create a feature using the admin user.
-    testing_config.sign_in(self.app_admin.email, 123567890)
+        self.assertEqual(response, [])
 
-    feature = self.createFeature({'name': 'The feature'})
-    feature.spec_mentor_emails = ['mentor@example.org']
-    feature.updated = datetime.fromisoformat('2024-01-14')
-    feature.put()
-    testing_config.sign_out()
+    def test_obeys_after_param(self):
+        """The ?after URL parameter filters features."""
+        # Create a feature using the admin user.
+        testing_config.sign_in(self.app_admin.email, 123567890)
 
-    with test_app.test_request_context(f'{self.request_path}?after=2024-01-15'):
-      response = self.spec_mentors_handler.do_get()
+        feature = self.createFeature({'name': 'The feature'})
+        feature.spec_mentor_emails = ['mentor@example.org']
+        feature.updated = datetime.fromisoformat('2024-01-14')
+        feature.put()
+        testing_config.sign_out()
 
-    self.assertEqual(response, [])
+        with test_app.test_request_context(
+            f'{self.request_path}?after=2024-01-15'
+        ):
+            response = self.spec_mentors_handler.do_get()
 
-    # Now the feature was last updated after the 'after' param.
-    feature.updated = datetime.fromisoformat('2024-01-16')
-    feature.put()
+        self.assertEqual(response, [])
 
-    with test_app.test_request_context(f'{self.request_path}?after=2024-01-15'):
-      response = self.spec_mentors_handler.do_get()
-    self.assertEqual(
-      response,
-      [
-        {
-          'email': 'mentor@example.org',
-          'mentored_features': [{'id': feature.key.id(), 'name': 'The feature'}],
-        }
-      ],
-    )
+        # Now the feature was last updated after the 'after' param.
+        feature.updated = datetime.fromisoformat('2024-01-16')
+        feature.put()
 
-  def test_fails_on_malformed_after_param(self):
-    """An ?after value that isn't a date returns a 400 error."""
-    with test_app.test_request_context(f'{self.request_path}?after=arglebargle'):
-      with self.assertRaises(HTTPException) as cm:
-        self.spec_mentors_handler.do_get()
-      self.assertEqual(cm.exception.code, 400)
+        with test_app.test_request_context(
+            f'{self.request_path}?after=2024-01-15'
+        ):
+            response = self.spec_mentors_handler.do_get()
+        self.assertEqual(
+            response,
+            [
+                {
+                    'email': 'mentor@example.org',
+                    'mentored_features': [
+                        {'id': feature.key.id(), 'name': 'The feature'}
+                    ],  # noqa: E501
+                }
+            ],
+        )
 
-  def test_sorts_mentors_alphabetically(self):
-    # Create a feature using the admin user.
-    testing_config.sign_in(self.app_admin.email, 123567890)
+    def test_fails_on_malformed_after_param(self):
+        """An ?after value that isn't a date returns a 400 error."""
+        with test_app.test_request_context(
+            f'{self.request_path}?after=arglebargle'
+        ):  # noqa: E501
+            with self.assertRaises(HTTPException) as cm:
+                self.spec_mentors_handler.do_get()
+            self.assertEqual(cm.exception.code, 400)
 
-    feature = self.createFeature({'name': 'The feature'})
-    feature.spec_mentor_emails = ['bmentor@example.org', 'amentor@example.org']
-    feature.put()
-    testing_config.sign_out()
+    def test_sorts_mentors_alphabetically(self):
+        """Test sorts mentors alphabetically."""
+        # Create a feature using the admin user.
+        testing_config.sign_in(self.app_admin.email, 123567890)
 
-    with test_app.test_request_context(self.request_path):
-      response = self.spec_mentors_handler.do_get()
+        feature = self.createFeature({'name': 'The feature'})
+        feature.spec_mentor_emails = [
+            'bmentor@example.org',
+            'amentor@example.org',
+        ]
+        feature.put()
+        testing_config.sign_out()
 
-    self.assertEqual(
-      response,
-      [
-        {
-          'email': 'amentor@example.org',
-          'mentored_features': [{'id': feature.key.id(), 'name': 'The feature'}],
-        },
-        {
-          'email': 'bmentor@example.org',
-          'mentored_features': [{'id': feature.key.id(), 'name': 'The feature'}],
-        },
-      ],
-    )
+        with test_app.test_request_context(self.request_path):
+            response = self.spec_mentors_handler.do_get()
 
-  def test_sorts_features_by_updated_date_recent_first(self):
-    # Create a feature using the admin user.
-    testing_config.sign_in(self.app_admin.email, 123567890)
+        self.assertEqual(
+            response,
+            [
+                {
+                    'email': 'amentor@example.org',
+                    'mentored_features': [
+                        {'id': feature.key.id(), 'name': 'The feature'}
+                    ],  # noqa: E501
+                },
+                {
+                    'email': 'bmentor@example.org',
+                    'mentored_features': [
+                        {'id': feature.key.id(), 'name': 'The feature'}
+                    ],  # noqa: E501
+                },
+            ],
+        )
 
-    feature1 = self.createFeature({'name': 'First feature'})
-    feature1.spec_mentor_emails = ['mentor@example.org']
-    feature1.put()
+    def test_sorts_features_by_updated_date_recent_first(self):
+        """Test sorts features by updated date recent first."""
+        # Create a feature using the admin user.
+        testing_config.sign_in(self.app_admin.email, 123567890)
 
-    feature2 = self.createFeature({'name': 'Second feature'})
-    feature2.spec_mentor_emails = ['mentor@example.org']
-    feature2.put()
-    testing_config.sign_out()
+        feature1 = self.createFeature({'name': 'First feature'})
+        feature1.spec_mentor_emails = ['mentor@example.org']
+        feature1.put()
 
-    with test_app.test_request_context(self.request_path):
-      response = self.spec_mentors_handler.do_get()
-    self.assertEqual(
-      response,
-      [
-        {
-          'email': 'mentor@example.org',
-          'mentored_features': [
-            # The later-created feature is listed first.
-            {'id': feature2.key.id(), 'name': 'Second feature'},
-            {'id': feature1.key.id(), 'name': 'First feature'},
-          ],
-        }
-      ],
-    )
+        feature2 = self.createFeature({'name': 'Second feature'})
+        feature2.spec_mentor_emails = ['mentor@example.org']
+        feature2.put()
+        testing_config.sign_out()
 
-    # Make the first feature more-recently updated.
-    feature1.updated = datetime.now()
-    feature1.put()
+        with test_app.test_request_context(self.request_path):
+            response = self.spec_mentors_handler.do_get()
+        self.assertEqual(
+            response,
+            [
+                {
+                    'email': 'mentor@example.org',
+                    'mentored_features': [
+                        # The later-created feature is listed first.
+                        {'id': feature2.key.id(), 'name': 'Second feature'},
+                        {'id': feature1.key.id(), 'name': 'First feature'},
+                    ],
+                }
+            ],
+        )
 
-    with test_app.test_request_context(self.request_path):
-      response = self.spec_mentors_handler.do_get()
-    self.assertEqual(
-      response,
-      [
-        {
-          'email': 'mentor@example.org',
-          'mentored_features': [
-            # And the order switches.
-            {'id': feature1.key.id(), 'name': 'First feature'},
-            {'id': feature2.key.id(), 'name': 'Second feature'},
-          ],
-        }
-      ],
-    )
+        # Make the first feature more-recently updated.
+        feature1.updated = datetime.now()
+        feature1.put()
 
-  def test_organizes_features_by_mentor(self):
-    # Create a feature using the admin user.
-    testing_config.sign_in(self.app_admin.email, 123567890)
+        with test_app.test_request_context(self.request_path):
+            response = self.spec_mentors_handler.do_get()
+        self.assertEqual(
+            response,
+            [
+                {
+                    'email': 'mentor@example.org',
+                    'mentored_features': [
+                        # And the order switches.
+                        {'id': feature1.key.id(), 'name': 'First feature'},
+                        {'id': feature2.key.id(), 'name': 'Second feature'},
+                    ],
+                }
+            ],
+        )
 
-    feature1 = self.createFeature({'name': 'First feature'})
-    feature1.spec_mentor_emails = ['mentor@example.org', 'expert@example.com']
-    feature1.put()
+    def test_organizes_features_by_mentor(self):
+        """Test organizes features by mentor."""
+        # Create a feature using the admin user.
+        testing_config.sign_in(self.app_admin.email, 123567890)
 
-    feature2 = self.createFeature({'name': 'Second feature'})
-    feature2.spec_mentor_emails = ['mentor@example.org']
-    feature2.put()
-    testing_config.sign_out()
+        feature1 = self.createFeature({'name': 'First feature'})
+        feature1.spec_mentor_emails = [
+            'mentor@example.org',
+            'expert@example.com',
+        ]
+        feature1.put()
 
-    with test_app.test_request_context(self.request_path):
-      response = self.spec_mentors_handler.do_get()
+        feature2 = self.createFeature({'name': 'Second feature'})
+        feature2.spec_mentor_emails = ['mentor@example.org']
+        feature2.put()
+        testing_config.sign_out()
 
-    # Unlike the other test expectations in this file, this one is saved to a JSON file so the
-    # Playwright tests can use it as a mock API response. Because the real feature IDs are
-    # dynamically generated, we have to slot them into the right places here.
-    with open(
-      os.path.join(
-        os.path.dirname(__file__),
-        '../packages/playwright/tests/spec_mentor_api_result.json',
-      )
-    ) as f:
-      expected_response = json.load(f)
-    expected_response[0]['mentored_features'][0]['id'] = feature1.key.id()
-    expected_response[1]['mentored_features'][0]['id'] = feature2.key.id()
-    expected_response[1]['mentored_features'][1]['id'] = feature1.key.id()
+        with test_app.test_request_context(self.request_path):
+            response = self.spec_mentors_handler.do_get()
 
-    self.assertEqual(response, expected_response)
+        # Unlike the other test expectations in this file, this one is saved to a JSON file so the  # noqa: E501
+        # Playwright tests can use it as a mock API response. Because the real feature IDs are  # noqa: E501
+        # dynamically generated, we have to slot them into the right places here.
+        with open(
+            os.path.join(
+                os.path.dirname(__file__),
+                '../packages/playwright/tests/spec_mentor_api_result.json',
+            )
+        ) as f:
+            expected_response = json.load(f)
+        expected_response[0]['mentored_features'][0]['id'] = feature1.key.id()
+        expected_response[1]['mentored_features'][0]['id'] = feature2.key.id()
+        expected_response[1]['mentored_features'][1]['id'] = feature1.key.id()
+
+        self.assertEqual(response, expected_response)

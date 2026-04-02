@@ -4,22 +4,25 @@ import {customElement, property, state} from 'lit/decorators.js';
 import {ref} from 'lit/directives/ref.js';
 import {repeat} from 'lit/directives/repeat.js';
 
-import {ChromedashApp} from './chromedash-app';
-import './chromedash-attachments';
-import './chromedash-textarea';
+import {ChromedashApp} from './chromedash-app.js';
+import './chromedash-attachments.js';
+import './chromedash-textarea.js';
 import {
   ALL_FIELDS,
   FieldUsage,
   resolveFieldForFeature,
-} from './form-field-specs';
+} from './form-field-specs.js';
 import {
   FieldInfo,
   getFieldValueFromFeature,
   showToastMessage,
 } from './utils.js';
-import {Feature, StageDict} from '../js-src/cs-client';
-import {FormattedFeature} from './form-definition';
-import {ALL_INTENT_USAGE_BY_FEATURE_TYPE, UsageType} from './form-field-enums';
+import {Feature, StageDict} from '../js-src/cs-client.js';
+import {FormattedFeature} from './form-definition.js';
+import {
+  ALL_INTENT_USAGE_BY_FEATURE_TYPE,
+  UsageType,
+} from './form-field-enums.js';
 import {WEB_FEATURES_MANIFEST} from './WEB_FEATURES_MANIFEST';
 
 interface getFieldValue {
@@ -193,14 +196,11 @@ export class ChromedashFormField extends LitElement {
   firstUpdated() {
     this.initialValue = JSON.parse(JSON.stringify(this.value));
     // We need to wait until the entire page is rendered, so later dependents
-    // are available to do the semantic check, hence firstUpdated is too soon.
-    // Do first semantic check after the document is ready.
+    // are available to do the semantic check.
     if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', () =>
-        setTimeout(() => {
-          this.doSemanticCheck();
-        })
-      );
+      document.addEventListener('DOMContentLoaded', () => {
+        this.doSemanticCheck();
+      });
     } else {
       this.doSemanticCheck();
     }
@@ -531,6 +531,7 @@ export class ChromedashFormField extends LitElement {
           ?required=${isRequired}
           ?offerMarkdown=${offerMarkdown}
           ?isMarkdown=${isMarkdown}
+          ?alwaysMarkdown=${this.fieldProps.always_markdown}
           @sl-change="${this.handleFieldUpdated}"
         >
         </chromedash-textarea>

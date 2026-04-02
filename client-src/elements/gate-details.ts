@@ -1,5 +1,5 @@
 import {html, TemplateResult} from 'lit';
-import * as enums from './form-field-enums';
+import * as enums from './form-field-enums.js';
 
 const BLINK_GENERIC_QUESTIONNAIRE: TemplateResult = html` <p>
     To request a review, use the "Draft intent..." button above to generate an

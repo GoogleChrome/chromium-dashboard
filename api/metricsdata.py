@@ -13,265 +13,305 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""API endpoints for serving feature metrics and timeline data."""
+
 __author__ = 'ericbidelman@chromium.org (Eric Bidelman)'
 
 import datetime
-import json
 import logging
 
-from framework import users
-from framework import basehandlers
-from internals import metrics_models
-from framework import rediscache
 import settings
+from framework import basehandlers, rediscache, users
+from internals import metrics_models
 
-CACHE_AGE = 86400 # 24hrs
+CACHE_AGE = 86400  # 24hrs
 ROUNDING = 8  # 8 decimal places because all percents are < 1.0.
 
 
 def _is_googler(user):
-  return user and user.email().endswith('@google.com')
+    return user and user.email().endswith('@google.com')
 
 
 def _datapoints_to_json_dicts(datapoints):
-  user = users.get_current_user()
-  # Don't show raw percentages if user is not a googler.
-  full_precision = _is_googler(user)
+    user = users.get_current_user()
+    # Don't show raw percentages if user is not a googler.
+    full_precision = _is_googler(user)
 
-  json_dicts = [
-      {'bucket_id': dp.bucket_id,
-       'date': str(dp.date),  # YYYY-MM-DD
-       'day_percentage':
-         (dp.day_percentage if full_precision else
-          round(dp.day_percentage, ROUNDING)),
-       'property_name': dp.property_name,
-      }
-      for dp in datapoints]
-  return json_dicts
+    json_dicts = [
+        {
+            'bucket_id': dp.bucket_id,
+            'date': str(dp.date),  # YYYY-MM-DD
+            'day_percentage': (
+                dp.day_percentage
+                if full_precision
+                else round(dp.day_percentage, ROUNDING)
+            ),
+            'property_name': dp.property_name,
+        }
+        for dp in datapoints
+    ]
+    return json_dicts
 
 
 class TimelineHandler(basehandlers.FlaskHandler):
+    """Handler for returning timeline data for a given bucket."""
 
-  HTTP_CACHE_TYPE = 'private'
-  JSONIFY = True
-  CACHE_PREFIX = 'metrics|'
+    HTTP_CACHE_TYPE = 'private'
+    JSONIFY = True
+    CACHE_PREFIX = 'metrics|'
 
-  def make_query(self, bucket_id):
-    query = self.MODEL_CLASS.query()
-    query = query.filter(self.MODEL_CLASS.bucket_id == bucket_id)
-    # The switch to new UMA data changed the semantics of the CSS animated
-    # properties. Since showing the historical data alongside the new data
-    # does not make sense, filter out everything before the 2017-10-26 switch.
-    # See https://github.com/GoogleChrome/chromium-dashboard/issues/414
-    if self.MODEL_CLASS == metrics_models.AnimatedProperty:
-      query = query.filter(
-          self.MODEL_CLASS.date >= datetime.datetime(2017, 10, 26))
-    return query
+    def make_query(self, bucket_id):
+        """Create a datastore query."""
+        query = self.MODEL_CLASS.query()
+        query = query.filter(self.MODEL_CLASS.bucket_id == bucket_id)
+        # The switch to new UMA data changed the semantics of the CSS animated
+        # properties. Since showing the historical data alongside the new data
+        # does not make sense, filter out everything before the 2017-10-26 switch.
+        # See https://github.com/GoogleChrome/chromium-dashboard/issues/414
+        if self.MODEL_CLASS == metrics_models.AnimatedProperty:
+            query = query.filter(
+                self.MODEL_CLASS.date >= datetime.datetime(2017, 10, 26)
+            )
+        return query
 
-  def get_template_data(self, **kwargs):
-    bucket_id = self.get_int_arg('bucket_id')
-    if bucket_id is None:
-      # TODO(jrobbins): Why return [] instead of 400?
-      return []
+    def get_template_data(self, **kwargs):
+        """Get template data for rendering."""
+        bucket_id = self.get_int_arg('bucket_id')
+        if bucket_id is None:
+            # TODO(jrobbins): Why return [] instead of 400?
+            return []
 
-    cache_key = '%s|%s' % (self.CACHE_KEY, bucket_id)
+        cache_key = '%s|%s' % (self.CACHE_KEY, bucket_id)
 
-    datapoints = rediscache.get(cache_key)
+        datapoints = rediscache.get(cache_key)
 
-    if not datapoints:
-      query = self.make_query(bucket_id)
-      query = query.order(self.MODEL_CLASS.date)
-      datapoints = query.fetch(None) # All matching results.
+        if not datapoints:
+            query = self.make_query(bucket_id)
+            query = query.order(self.MODEL_CLASS.date)
+            datapoints = query.fetch(None)  # All matching results.
 
-      # Remove outliers if percentage is not between 0-1.
-      #datapoints = filter(lambda x: 0 <= x.day_percentage <= 1, datapoints)
-      rediscache.set(cache_key, datapoints, time=CACHE_AGE)
+            # Remove outliers if percentage is not between 0-1.
+            # datapoints = filter(lambda x: 0 <= x.day_percentage <= 1, datapoints)
+            rediscache.set(cache_key, datapoints, time=CACHE_AGE)
 
-    return _datapoints_to_json_dicts(datapoints)
+        return _datapoints_to_json_dicts(datapoints)
 
 
 class PopularityTimelineHandler(TimelineHandler):
+    """Handler for CSS property popularity timeline."""
 
-  CACHE_KEY = TimelineHandler.CACHE_PREFIX + 'css_pop_timeline'
-  MODEL_CLASS = metrics_models.StableInstance
+    CACHE_KEY = TimelineHandler.CACHE_PREFIX + 'css_pop_timeline'
+    MODEL_CLASS = metrics_models.StableInstance
 
-  def get_template_data(self, **kwargs):
-    return super(PopularityTimelineHandler, self).get_template_data()
+    def get_template_data(self, **kwargs):
+        """Get template data for rendering."""
+        return super(PopularityTimelineHandler, self).get_template_data()
 
 
 class AnimatedTimelineHandler(TimelineHandler):
+    """Handler for CSS animated property timeline."""
 
-  CACHE_KEY = TimelineHandler.CACHE_PREFIX + 'css_animated_timeline'
-  MODEL_CLASS = metrics_models.AnimatedProperty
+    CACHE_KEY = TimelineHandler.CACHE_PREFIX + 'css_animated_timeline'
+    MODEL_CLASS = metrics_models.AnimatedProperty
 
-  def get_template_data(self, **kwargs):
-    return super(AnimatedTimelineHandler, self).get_template_data()
+    def get_template_data(self, **kwargs):
+        """Get template data for rendering."""
+        return super(AnimatedTimelineHandler, self).get_template_data()
 
 
 class FeatureObserverTimelineHandler(TimelineHandler):
+    """Handler for JS feature timeline."""
 
-  CACHE_KEY = TimelineHandler.CACHE_PREFIX + 'featureob_timeline'
-  MODEL_CLASS = metrics_models.FeatureObserver
+    CACHE_KEY = TimelineHandler.CACHE_PREFIX + 'featureob_timeline'
+    MODEL_CLASS = metrics_models.FeatureObserver
 
-  def get_template_data(self, **kwargs):
-    return super(FeatureObserverTimelineHandler, self).get_template_data()
+    def get_template_data(self, **kwargs):
+        """Get template data for rendering."""
+        return super(FeatureObserverTimelineHandler, self).get_template_data()
 
 
 class WebFeatureTimelineHandler(TimelineHandler):
+    """Handler for WebDX feature timeline."""
 
-  CACHE_KEY = TimelineHandler.CACHE_PREFIX + 'webfeature_timeline'
-  MODEL_CLASS = metrics_models.WebDXFeature
+    CACHE_KEY = TimelineHandler.CACHE_PREFIX + 'webfeature_timeline'
+    MODEL_CLASS = metrics_models.WebDXFeature
 
-  def get_template_data(self, **kwargs):
-    return super(WebFeatureTimelineHandler, self).get_template_data()
+    def get_template_data(self, **kwargs):
+        """Get template data for rendering."""
+        return super(WebFeatureTimelineHandler, self).get_template_data()
 
 
 class FeatureHandler(basehandlers.FlaskHandler):
+    """Handler for returning feature metrics data."""
 
-  HTTP_CACHE_TYPE = 'private'
-  JSONIFY = True
-  CACHE_PREFIX = 'metrics|'
+    HTTP_CACHE_TYPE = 'private'
+    JSONIFY = True
+    CACHE_PREFIX = 'metrics|'
 
-  def __query_metrics_for_properties(self):
-    datapoints = []
+    def __query_metrics_for_properties(self):
+        datapoints = []
 
-    buckets_future = self.PROPERTY_CLASS.query().fetch_async(None)
+        buckets_future = self.PROPERTY_CLASS.query().fetch_async(None)
 
-    # First, grab a bunch of recent datapoints in a batch.
-    # That operation is fast and makes most of the iterations
-    # of the main loop become in-RAM operations.
-    batch_datapoints_query = self.MODEL_CLASS.query()
-    batch_datapoints_query = batch_datapoints_query.order(
-        -self.MODEL_CLASS.date)
-    batch_datapoints_list = batch_datapoints_query.fetch(5000)
-    logging.info('batch query found %r recent datapoints',
-                 len(batch_datapoints_list))
-    batch_datapoints_dict = {}
-    for dp in batch_datapoints_list:
-      if dp.bucket_id not in batch_datapoints_dict:
-        batch_datapoints_dict[dp.bucket_id] = dp
-    logging.info('batch query found datapoints for %r buckets',
-                 len(batch_datapoints_dict))
+        # First, grab a bunch of recent datapoints in a batch.
+        # That operation is fast and makes most of the iterations
+        # of the main loop become in-RAM operations.
+        batch_datapoints_query = self.MODEL_CLASS.query()
+        batch_datapoints_query = batch_datapoints_query.order(
+            -self.MODEL_CLASS.date
+        )
+        batch_datapoints_list = batch_datapoints_query.fetch(5000)
+        logging.info(
+            'batch query found %r recent datapoints', len(batch_datapoints_list)
+        )
+        batch_datapoints_dict = {}
+        for dp in batch_datapoints_list:
+            if dp.bucket_id not in batch_datapoints_dict:
+                batch_datapoints_dict[dp.bucket_id] = dp
+        logging.info(
+            'batch query found datapoints for %r buckets',
+            len(batch_datapoints_dict),
+        )
 
-    # For every css property, fetch latest day_percentage.
-    buckets = buckets_future.get_result()
-    futures = []
-    for b in buckets:
-      if b.bucket_id in batch_datapoints_dict:
-        datapoints.append(batch_datapoints_dict[b.bucket_id])
-      else:
-        query = self.MODEL_CLASS.query()
-        query = query.filter(self.MODEL_CLASS.bucket_id == b.bucket_id)
-        query = query.order(-self.MODEL_CLASS.date)
-        futures.append(query.get_async())
+        # For every css property, fetch latest day_percentage.
+        buckets = buckets_future.get_result()
+        futures = []
+        for b in buckets:
+            if b.bucket_id in batch_datapoints_dict:
+                datapoints.append(batch_datapoints_dict[b.bucket_id])
+            else:
+                query = self.MODEL_CLASS.query()
+                query = query.filter(self.MODEL_CLASS.bucket_id == b.bucket_id)
+                query = query.order(-self.MODEL_CLASS.date)
+                futures.append(query.get_async())
 
-    for f in futures:
-      last_result = f.result()
-      if last_result:
-        datapoints.append(last_result)
+        for f in futures:
+            last_result = f.result()
+            if last_result:
+                datapoints.append(last_result)
 
-    # Sort list by percentage. Highest first.
-    datapoints.sort(key=lambda x: x.day_percentage, reverse=True)
-    return datapoints
+        # Sort list by percentage. Highest first.
+        datapoints.sort(key=lambda x: x.day_percentage, reverse=True)
+        return datapoints
 
-  def get_template_data(self, **kwargs):
-    num = self.get_int_arg('num')
-    if num and not self.should_refresh():
-      feature_observer_key = self.get_top_num_cache_key(num)
-      properties = rediscache.get(feature_observer_key)
-      if properties is not None:
+    def get_template_data(self, **kwargs):
+        """Get template data for rendering."""
+        num = self.get_int_arg('num')
+        if num and not self.should_refresh():
+            feature_observer_key = self.get_top_num_cache_key(num)
+            properties = rediscache.get(feature_observer_key)
+            if properties is not None:
+                return _datapoints_to_json_dicts(properties)
+
+        # Get all datapoints in sorted order.
+        properties = self.fetch_all_datapoints()
+
+        if num:
+            feature_observer_key = self.get_top_num_cache_key(num)
+            # Cache top `num` properties.
+            properties = properties[:num]
+            rediscache.set(feature_observer_key, properties, time=CACHE_AGE)
         return _datapoints_to_json_dicts(properties)
 
-    # Get all datapoints in sorted order.
-    properties = self.fetch_all_datapoints()
+    def get_top_num_cache_key(self, num):
+        """Get the cache key for top num properties."""
+        return self.CACHE_KEY + '_' + str(num)
 
-    if num:
-      feature_observer_key = self.get_top_num_cache_key(num)
-      # Cache top `num` properties.
-      properties = properties[:num]
-      rediscache.set(feature_observer_key, properties, time=CACHE_AGE)
-    return _datapoints_to_json_dicts(properties)
+    def fetch_all_datapoints(self):
+        """Fetch all datapoints."""
+        properties = rediscache.get(self.CACHE_KEY)
+        logging.info(
+            'looked at cache %r and found %s',
+            self.CACHE_KEY,
+            repr(properties)[: settings.MAX_LOG_LINE],
+        )
 
-  def get_top_num_cache_key(self, num):
-    return self.CACHE_KEY + '_' + str(num)
+        if (properties is None) or self.should_refresh():
+            logging.info('Loading properties from datastore')
+            properties = self.__query_metrics_for_properties()
+            rediscache.set(self.CACHE_KEY, properties, time=CACHE_AGE)
 
-  def fetch_all_datapoints(self):
-    properties = rediscache.get(self.CACHE_KEY)
-    logging.info(
-        'looked at cache %r and found %s', self.CACHE_KEY,
-        repr(properties)[:settings.MAX_LOG_LINE])
+        logging.info(
+            'before filtering: %s', repr(properties)[: settings.MAX_LOG_LINE]
+        )
+        return properties
 
-    if (properties is None) or self.should_refresh():
-      logging.info('Loading properties from datastore')
-      properties = self.__query_metrics_for_properties()
-      rediscache.set(self.CACHE_KEY, properties, time=CACHE_AGE)
-
-    logging.info('before filtering: %s',
-                 repr(properties)[:settings.MAX_LOG_LINE])
-    return properties
-
-  def should_refresh(self):
-    return (self.MODEL_CLASS == metrics_models.FeatureObserver and
-        self.request.args.get('refresh'))
+    def should_refresh(self):
+        """Check if data should be refreshed."""
+        return (
+            self.MODEL_CLASS == metrics_models.FeatureObserver
+            and self.request.args.get('refresh')
+        )
 
 
 class CSSPopularityHandler(FeatureHandler):
+    """Handler for CSS property popularity data."""
 
-  CACHE_KEY = FeatureHandler.CACHE_PREFIX + 'css_popularity'
-  MODEL_CLASS = metrics_models.StableInstance
-  PROPERTY_CLASS = metrics_models.CssPropertyHistogram
+    CACHE_KEY = FeatureHandler.CACHE_PREFIX + 'css_popularity'
+    MODEL_CLASS = metrics_models.StableInstance
+    PROPERTY_CLASS = metrics_models.CssPropertyHistogram
 
-  def get_template_data(self, **kwargs):
-    return super(CSSPopularityHandler, self).get_template_data()
+    def get_template_data(self, **kwargs):
+        """Get template data for rendering."""
+        return super(CSSPopularityHandler, self).get_template_data()
 
 
 class CSSAnimatedHandler(FeatureHandler):
+    """Handler for CSS animated property data."""
 
-  CACHE_KEY = FeatureHandler.CACHE_PREFIX + 'css_animated'
-  MODEL_CLASS = metrics_models.AnimatedProperty
-  PROPERTY_CLASS = metrics_models.CssPropertyHistogram
+    CACHE_KEY = FeatureHandler.CACHE_PREFIX + 'css_animated'
+    MODEL_CLASS = metrics_models.AnimatedProperty
+    PROPERTY_CLASS = metrics_models.CssPropertyHistogram
 
-  def get_template_data(self, **kwargs):
-    return super(CSSAnimatedHandler, self).get_template_data()
+    def get_template_data(self, **kwargs):
+        """Get template data for rendering."""
+        return super(CSSAnimatedHandler, self).get_template_data()
 
 
 class FeatureObserverPopularityHandler(FeatureHandler):
+    """Handler for JS feature popularity data."""
 
-  CACHE_KEY = FeatureHandler.CACHE_PREFIX + 'featureob_popularity'
-  MODEL_CLASS = metrics_models.FeatureObserver
-  PROPERTY_CLASS = metrics_models.FeatureObserverHistogram
+    CACHE_KEY = FeatureHandler.CACHE_PREFIX + 'featureob_popularity'
+    MODEL_CLASS = metrics_models.FeatureObserver
+    PROPERTY_CLASS = metrics_models.FeatureObserverHistogram
 
-  def get_template_data(self, **kwargs):
-    return super(FeatureObserverPopularityHandler, self).get_template_data()
+    def get_template_data(self, **kwargs):
+        """Get template data for rendering."""
+        return super(FeatureObserverPopularityHandler, self).get_template_data()
 
 
 class WebFeaturePopularityHandler(FeatureHandler):
+    """Handler for WebDX feature popularity data."""
 
-  CACHE_KEY = FeatureHandler.CACHE_PREFIX + 'webfeature_popularity'
-  MODEL_CLASS = metrics_models.WebDXFeature
-  PROPERTY_CLASS = metrics_models.WebDXFeatureObserver
+    CACHE_KEY = FeatureHandler.CACHE_PREFIX + 'webfeature_popularity'
+    MODEL_CLASS = metrics_models.WebDXFeature
+    PROPERTY_CLASS = metrics_models.WebDXFeatureObserver
 
-  def get_template_data(self, **kwargs):
-    return super(WebFeaturePopularityHandler, self).get_template_data()
+    def get_template_data(self, **kwargs):
+        """Get template data for rendering."""
+        return super(WebFeaturePopularityHandler, self).get_template_data()
 
 
 class FeatureBucketsHandler(basehandlers.FlaskHandler):
-  HTTP_CACHE_TYPE = 'private'
-  JSONIFY = True
+    """Handler for returning mapping of metric properties to bucket IDs."""
 
-  TYPE_TO_HISTOGRAM_CLASS = {
-      'cssprops': metrics_models.CssPropertyHistogram,
-      'featureprops': metrics_models.FeatureObserverHistogram,
-      'webfeatureprops': metrics_models.WebDXFeatureObserver,
-      }
+    HTTP_CACHE_TYPE = 'private'
+    JSONIFY = True
 
-  def get_template_data(self, **kwargs):
-    properties = []
-    prop_type = kwargs.get('prop_type', None)
-    histogram_class = self.TYPE_TO_HISTOGRAM_CLASS.get(prop_type)
-    if histogram_class:
-      properties = sorted(
-          histogram_class.get_all().items(),
-          key=lambda x:x[1])
+    TYPE_TO_HISTOGRAM_CLASS = {
+        'cssprops': metrics_models.CssPropertyHistogram,
+        'featureprops': metrics_models.FeatureObserverHistogram,
+        'webfeatureprops': metrics_models.WebDXFeatureObserver,
+    }
 
-    return properties
+    def get_template_data(self, **kwargs):
+        """Get template data for rendering."""
+        properties = []
+        prop_type = kwargs.get('prop_type', None)
+        histogram_class = self.TYPE_TO_HISTOGRAM_CLASS.get(prop_type)
+        if histogram_class:
+            properties = sorted(
+                histogram_class.get_all().items(), key=lambda x: x[1]
+            )
+
+        return properties

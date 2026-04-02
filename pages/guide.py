@@ -13,29 +13,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Handles the creation of new features via the guide form (deprecated)."""
+
 from datetime import datetime
-import logging
-from typing import Any, Optional
+
 from google.cloud import ndb
-import flask
 
-# Appengine imports.
-from framework import rediscache
-
-from framework import basehandlers
-from framework import permissions
-from internals import core_enums, notifier_helpers
-from internals import stage_helpers
-from internals.core_models import FeatureEntry, MilestoneSet, Stage
-from internals.data_types import CHANGED_FIELDS_LIST_TYPE
-from internals.review_models import Gate
-from internals import processes
-from internals import search_fulltext
-from internals import feature_links
-from internals.enterprise_helpers import *
-from internals.metrics_models import WebDXFeatureObserver
 import settings
 
+# Appengine imports.
+from framework import basehandlers, permissions, rediscache
+from internals import (
+    core_enums,
+    notifier_helpers,
+    processes,
+    search_fulltext,
+)
+from internals.core_models import FeatureEntry, Stage
+from internals.enterprise_helpers import *  # noqa: F403
+from internals.review_models import Gate
 
 # Internal DevRel mailing list for ChromeStatus.
 DEVREL_EMAIL = 'devrel-chromestatus-all@google.com'
@@ -47,152 +43,193 @@ DEVREL_EMAIL = 'devrel-chromestatus-all@google.com'
 
 
 class FeatureCreateHandler(basehandlers.FlaskHandler):
+    """Handler for the feature creation process."""
 
-  TEMPLATE_PATH = 'spa.html'
+    TEMPLATE_PATH = 'spa.html'
 
-  def get_template_data(self, **defaults):
-    return basehandlers.get_spa_template_data(self, defaults)
+    def get_template_data(self, **defaults):
+        """Returns template data for the feature creation page."""
+        return basehandlers.get_spa_template_data(self, defaults)
 
-  @permissions.require_create_feature
-  def process_post_data(self, **kwargs):
-    owners = self.split_emails('owner_emails')
-    editors = self.split_emails('editor_emails')
-    cc_emails = self.split_emails('cc_emails')
+    @permissions.require_create_feature
+    def process_post_data(self, **kwargs):
+        """Processes submitted form data to create a new feature."""
+        owners = self.split_emails('owner_emails')
+        editors = self.split_emails('editor_emails')
+        cc_emails = self.split_emails('cc_emails')
 
-    blink_components = (
-        self.split_input('blink_components', delim=',') or
-        [settings.DEFAULT_COMPONENT])
+        blink_components = self.split_input('blink_components', delim=',') or [
+            settings.DEFAULT_COMPONENT
+        ]
 
-    # TODO(jrobbins): Validate input, even though it is done on client.
+        # TODO(jrobbins): Validate input, even though it is done on client.
 
-    feature_type = int(self.form.get('feature_type', 0))
-    shipping_year = int(self.form.get('shipping_year', 0))
+        feature_type = int(self.form.get('feature_type', 0))
+        shipping_year = int(self.form.get('shipping_year', 0))
 
-    has_enterprise_impact = int(self.form.get('enterprise_impact', '1')) > ENTERPRISE_IMPACT_NONE
-    enterprise_notification_milestone = self.form.get('first_enterprise_notification_milestone')
-    if enterprise_notification_milestone:
-      enterprise_notification_milestone = int(enterprise_notification_milestone)
-    if has_enterprise_impact and needs_default_first_notification_milestone(new_fields={
-      'feature_type': feature_type,
-      'enterprise_impact': int(self.form.get('enterprise_impact')),
-      'first_enterprise_notification_milestone': enterprise_notification_milestone
-      }):
-      enterprise_notification_milestone = get_default_first_notice_milestone_for_feature()
+        has_enterprise_impact = (
+            int(self.form.get('enterprise_impact', '1'))
+            > ENTERPRISE_IMPACT_NONE
+        )  # noqa: E501, F405
+        enterprise_notification_milestone = self.form.get(
+            'first_enterprise_notification_milestone'
+        )  # noqa: E501
+        if enterprise_notification_milestone:
+            enterprise_notification_milestone = int(
+                enterprise_notification_milestone
+            )
+        if has_enterprise_impact and needs_default_first_notification_milestone(
+            new_fields={  # noqa: E501, F405
+                'feature_type': feature_type,
+                'enterprise_impact': int(self.form.get('enterprise_impact')),
+                'first_enterprise_notification_milestone': enterprise_notification_milestone,  # noqa: E501
+            }
+        ):
+            enterprise_notification_milestone = (
+                get_default_first_notice_milestone_for_feature()
+            )  # noqa: E501, F405
 
-    web_feature = self.form.get('web_feature', '')
+        web_feature = self.form.get('web_feature', '')
 
-    # Write for new FeatureEntry entity.
-    feature_entry = FeatureEntry(
-        category=int(self.form.get('category')),
-        enterprise_feature_categories=self.form.getlist(
-            'enterprise_feature_categories'),
-        name=self.form.get('name'),
-        feature_type=feature_type,
-        summary=self.form.get('summary'),
-        owner_emails=owners,
-        editor_emails=editors,
-        cc_emails=cc_emails,
-        devrel_emails=[DEVREL_EMAIL],
-        creator_email=self.get_current_user().email(),
-        updater_email=self.get_current_user().email(),
-        accurate_as_of=datetime.now(),
-        unlisted=self.form.get('unlisted') == 'on',
-        enterprise_impact=int(self.form.get('enterprise_impact', '1')),
-        first_enterprise_notification_milestone=enterprise_notification_milestone,
-        blink_components=blink_components,
-        tag_review_status=processes.initial_tag_review_status(feature_type),
-        web_feature=web_feature)
-    if shipping_year:
-      feature_entry.shipping_year = shipping_year
-    key: ndb.Key = feature_entry.put()
-    search_fulltext.index_feature(feature_entry)
+        # Write for new FeatureEntry entity.
+        feature_entry = FeatureEntry(
+            category=int(self.form.get('category')),
+            enterprise_feature_categories=self.form.getlist(
+                'enterprise_feature_categories'
+            ),
+            name=self.form.get('name'),
+            feature_type=feature_type,
+            summary=self.form.get('summary'),
+            owner_emails=owners,
+            editor_emails=editors,
+            cc_emails=cc_emails,
+            devrel_emails=[DEVREL_EMAIL],
+            creator_email=self.get_current_user().email(),
+            updater_email=self.get_current_user().email(),
+            accurate_as_of=datetime.now(),
+            unlisted=self.form.get('unlisted') == 'on',
+            enterprise_impact=int(self.form.get('enterprise_impact', '1')),
+            first_enterprise_notification_milestone=enterprise_notification_milestone,
+            blink_components=blink_components,
+            tag_review_status=processes.initial_tag_review_status(feature_type),
+            web_feature=web_feature,
+        )
+        if shipping_year:
+            feature_entry.shipping_year = shipping_year
+        key: ndb.Key = feature_entry.put()
+        search_fulltext.index_feature(feature_entry)
 
-    # Write each Stage and Gate entity for the given feature.
-    self.write_gates_and_stages_for_feature(key.integer_id(), feature_type)
+        # Write each Stage and Gate entity for the given feature.
+        self.write_gates_and_stages_for_feature(key.integer_id(), feature_type)
 
-    notifier_helpers.notify_subscribers_and_save_amendments(
-        feature_entry, [], is_update=False)
+        notifier_helpers.notify_subscribers_and_save_amendments(
+            feature_entry, [], is_update=False
+        )
 
-    # Remove all feature-related cache.
-    rediscache.delete_keys_with_prefix(FeatureEntry.DEFAULT_CACHE_KEY)
-    rediscache.delete_keys_with_prefix(FeatureEntry.SEARCH_CACHE_KEY)
+        # Remove all feature-related cache.
+        rediscache.delete_keys_with_prefix(FeatureEntry.DEFAULT_CACHE_KEY)
+        rediscache.delete_keys_with_prefix(FeatureEntry.SEARCH_CACHE_KEY)
 
-    redirect_url = '/feature/' + str(key.integer_id())
-    return self.redirect(redirect_url)
+        redirect_url = '/feature/' + str(key.integer_id())
+        return self.redirect(redirect_url)
 
-  def write_gates_and_stages_for_feature(
-      self, feature_id: int, feature_type: int) -> None:
-    """Write each Stage and Gate entity for the given feature."""
-    # Obtain a list of stages and gates for the given feature type.
-    stages_gates = core_enums.STAGES_AND_GATES_BY_FEATURE_TYPE[feature_type]
+    def write_gates_and_stages_for_feature(
+        self, feature_id: int, feature_type: int
+    ) -> None:
+        """Write each Stage and Gate entity for the given feature."""
+        # Obtain a list of stages and gates for the given feature type.
+        stages_gates = core_enums.STAGES_AND_GATES_BY_FEATURE_TYPE[feature_type]
 
-    for stage_type, gate_types in stages_gates:
-      # Don't create a trial extension stage pre-emptively.
-      if stage_type == core_enums.STAGE_TYPES_EXTEND_ORIGIN_TRIAL[feature_type]:
-        continue
+        for stage_type, gate_types in stages_gates:
+            # Don't create a trial extension stage pre-emptively.
+            if (
+                stage_type
+                == core_enums.STAGE_TYPES_EXTEND_ORIGIN_TRIAL[feature_type]
+            ):
+                continue
 
-      stage = Stage(feature_id=feature_id, stage_type=stage_type)
-      stage.put()
-      # Stages can have zero or more gates.
-      for gate_type in gate_types:
-        gate = Gate(feature_id=feature_id, stage_id=stage.key.integer_id(),
-                    gate_type=gate_type, state=Gate.PREPARING)
-        gate.put()
+            stage = Stage(feature_id=feature_id, stage_type=stage_type)
+            stage.put()
+            # Stages can have zero or more gates.
+            for gate_type in gate_types:
+                gate = Gate(
+                    feature_id=feature_id,
+                    stage_id=stage.key.integer_id(),
+                    gate_type=gate_type,
+                    state=Gate.PREPARING,
+                )
+                gate.put()
 
 
 class EnterpriseFeatureCreateHandler(FeatureCreateHandler):
+    """Handler for enterprise feature creation."""
 
-  TEMPLATE_PATH = 'spa.html'
+    TEMPLATE_PATH = 'spa.html'
 
-  def get_template_data(self, **defaults):
-    return basehandlers.get_spa_template_data(self, defaults)
+    def get_template_data(self, **defaults):
+        """Returns the data for rendering the enterprise feature create page."""
+        return basehandlers.get_spa_template_data(self, defaults)
 
-  @permissions.require_create_feature
-  def process_post_data(self, **kwargs):
-    owners = self.split_emails('owner_emails')
-    editors = self.split_emails('editor_emails')
+    @permissions.require_create_feature
+    def process_post_data(self, **kwargs):
+        """Handles POST requests to create an enterprise feature."""
+        owners = self.split_emails('owner_emails')
+        editors = self.split_emails('editor_emails')
 
-    signed_in_user = ndb.User(
-        email=self.get_current_user().email(),
-        _auth_domain='gmail.com')
-    feature_type = core_enums.FEATURE_TYPE_ENTERPRISE_ID
+        signed_in_user = ndb.User(
+            email=self.get_current_user().email(), _auth_domain='gmail.com'
+        )
+        feature_type = core_enums.FEATURE_TYPE_ENTERPRISE_ID
 
-    enterprise_notification_milestone = self.form.get('first_enterprise_notification_milestone')
-    if enterprise_notification_milestone:
-      enterprise_notification_milestone = int(enterprise_notification_milestone)
-    if needs_default_first_notification_milestone(new_fields={
-      'feature_type': feature_type,
-      'first_enterprise_notification_milestone': enterprise_notification_milestone}):
-      enterprise_notification_milestone = get_default_first_notice_milestone_for_feature()
+        enterprise_notification_milestone = self.form.get(
+            'first_enterprise_notification_milestone'
+        )  # noqa: E501
+        if enterprise_notification_milestone:
+            enterprise_notification_milestone = int(
+                enterprise_notification_milestone
+            )
+        if needs_default_first_notification_milestone(
+            new_fields={  # noqa: F405
+                'feature_type': feature_type,
+                'first_enterprise_notification_milestone': enterprise_notification_milestone,
+            }
+        ):  # noqa: E501
+            enterprise_notification_milestone = (
+                get_default_first_notice_milestone_for_feature()
+            )  # noqa: E501, F405
 
-    # Write for new FeatureEntry entity.
-    feature_entry = FeatureEntry(
-        category=int(core_enums.MISC),
-        enterprise_feature_categories=self.form.getlist(
-            'enterprise_feature_categories'),
-        name=self.form.get('name'),
-        feature_type=feature_type,
-        summary=self.form.get('summary'),
-        owner_emails=owners,
-        editor_emails=editors,
-        creator_email=signed_in_user.email(),
-        updater_email=signed_in_user.email(),
-        accurate_as_of=datetime.now(),
-        screenshot_links=self.parse_links('screenshot_links'),
-        first_enterprise_notification_milestone=enterprise_notification_milestone,
-        blink_components=[settings.DEFAULT_ENTERPRISE_COMPONENT],
-        confidential=self.form.get('confidential') == 'on',
-        enterprise_product_category=int(self.form.get('enterprise_product_category', '0')),
-        enterprise_impact=int(self.form.get('enterprise_impact', '1')),
-        tag_review_status=core_enums.REVIEW_NA)
-    key: ndb.Key = feature_entry.put()
-    search_fulltext.index_feature(feature_entry)
+        # Write for new FeatureEntry entity.
+        feature_entry = FeatureEntry(
+            category=int(core_enums.MISC),
+            enterprise_feature_categories=self.form.getlist(
+                'enterprise_feature_categories'
+            ),
+            name=self.form.get('name'),
+            feature_type=feature_type,
+            summary=self.form.get('summary'),
+            owner_emails=owners,
+            editor_emails=editors,
+            creator_email=signed_in_user.email(),
+            updater_email=signed_in_user.email(),
+            accurate_as_of=datetime.now(),
+            screenshot_links=self.parse_links('screenshot_links'),
+            first_enterprise_notification_milestone=enterprise_notification_milestone,
+            blink_components=[settings.DEFAULT_ENTERPRISE_COMPONENT],
+            confidential=self.form.get('confidential') == 'on',
+            enterprise_product_category=int(
+                self.form.get('enterprise_product_category', '0')
+            ),  # noqa: E501
+            enterprise_impact=int(self.form.get('enterprise_impact', '1')),
+            tag_review_status=core_enums.REVIEW_NA,
+        )
+        key: ndb.Key = feature_entry.put()
+        search_fulltext.index_feature(feature_entry)
 
-    # Write each Stage and Gate entity for the given feature.
-    self.write_gates_and_stages_for_feature(key.integer_id(), feature_type)
+        # Write each Stage and Gate entity for the given feature.
+        self.write_gates_and_stages_for_feature(key.integer_id(), feature_type)
 
-    # Remove all feature-related cache.
-    rediscache.delete_keys_with_prefix(FeatureEntry.DEFAULT_CACHE_KEY)
+        # Remove all feature-related cache.
+        rediscache.delete_keys_with_prefix(FeatureEntry.DEFAULT_CACHE_KEY)
 
-    redirect_url = '/guide/editall/' + str(key.integer_id()) + '#rollout1'
-    return self.redirect(redirect_url)
+        redirect_url = '/guide/editall/' + str(key.integer_id()) + '#rollout1'
+        return self.redirect(redirect_url)

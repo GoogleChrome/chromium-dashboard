@@ -1,4 +1,4 @@
-import gts from 'gts/.prettierrc.json' assert { type: "json" };
+import gts from 'gts/.prettierrc.json' with { type: "json" };
 
 /** @type {import("prettier").Config} */
 export default {

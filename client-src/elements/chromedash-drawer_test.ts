@@ -1,8 +1,8 @@
 import {html} from 'lit';
 import {assert, fixture} from '@open-wc/testing';
-import {ChromedashDrawer} from './chromedash-drawer';
-import './chromedash-toast';
-import {ChromeStatusClient} from '../js-src/cs-client';
+import {ChromedashDrawer} from './chromedash-drawer.js';
+import './chromedash-toast.js';
+import {ChromeStatusClient} from '../js-src/cs-client.js';
 import sinon, {SinonStub} from 'sinon';
 
 describe('chromedash-drawer', () => {

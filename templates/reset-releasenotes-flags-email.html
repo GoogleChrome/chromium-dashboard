@@ -1,0 +1,40 @@
+{% import 'email-styles.html' as styles %}
+<div style="{{styles.body}}">
+<div style="{{styles.branding}}">{{APP_TITLE}}</div>
+
+<div style="{{styles.content}} {{styles.content_alert}}">
+
+<section id="details" style="{{styles.section}}">
+  <h3>What happened</h3>
+  <p>
+    The release notes review checkboxes for the ChromeStatus feature
+    "<a href="{{feature_url}}">{{feature.name}}</a>"
+    have been reset.
+  </p>
+
+  <h3>Reason for this change</h3>
+  <p>
+    This action was taken because someone edited the feature name, summary,
+    or milestones after its release notes review checkboxes were checked.
+  </p>
+</section>
+
+<section id="why-triggered" style="{{styles.section}}">
+  <h3>Next steps</h3>
+  <p>
+    Please review the changes and click the review checkboxes again:
+  </p>
+  <div style="display:flex">
+    <div style="{{styles.button_div}}">
+      <a href="{{feature_url}}/activity" style="{{styles.button_a}}"
+         >Feature activity</a>
+    </div>
+    <div style="{{styles.button_div}}">
+      <a href="{{releasenotes_url}}" style="{{styles.button_a}}"
+         >Current release notes</a>
+    </div>
+  </div>
+</section>
+
+</div>
+</div>

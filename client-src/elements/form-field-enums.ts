@@ -50,7 +50,7 @@ export const PLATFORM_CATEGORIES: Record<string, [number, string, boolean?]> = {
   PLATFORM_CHROMEOS: [3, 'ChromeOS'],
   PLATFORM_LACROS: [4, 'LaCrOS', true], // Obsolete. Cannot be added.
   PLATFORM_LINUX: [5, 'Linux'],
-  PLATFORM_MAC: [6, 'MacOS'],
+  PLATFORM_MAC: [6, 'macOS'],
   PLATFORM_WINDOWS: [7, 'Windows'],
   PLATFORM_FUCHSIA: [8, 'Fuchsia'],
 };
@@ -61,9 +61,29 @@ export const PLATFORMS_DISPLAYNAME: Record<number, string> = {
   3: 'ChromeOS', // PLATFORM_CHROMEOS
   4: 'LaCrOS', // PLATFORM_LACROS
   5: 'Linux', // PLATFORM_LINUX
-  6: 'MacOS', // PLATFORM_MAC
+  6: 'macOS', // PLATFORM_MAC
   7: 'Windows', // PLATFORM_WINDOWS
   8: 'Fuchsia', // PLATFORM_FUCHSIA
+};
+
+export const ROLLOUT_STAGE_PLAN_CATEGORIES: Record<string, [number, string]> = {
+  ROLLOUT_STAGE_PLAN_SLOW: [0, 'Feature rolls out gradually'],
+  ROLLOUT_STAGE_PLAN_TRUSTED_TESTERS: [
+    1,
+    'Early preview available to Chrome Enterprise Trusted Tester',
+  ],
+  ROLLOUT_STAGE_PLAN_CUSTOM: [
+    2,
+    'Custom rollout (explain in Rollout details field)',
+  ],
+  // When null, nothing menu item will be selected.
+};
+
+export const ROLLOUT_STAGE_PLAN_DISPLAYNAME: Record<number, string> = {
+  0: 'Feature rolls out gradually',
+  1: 'Early preview available to Chrome Enterprise Trusted Tester',
+  2: 'Custom rollout (explain in Rollout details field)',
+  // When null, the standard "No information provided yet" will be shown.
 };
 
 export const ENTERPRISE_IMPACT_DISPLAYNAME: Record<number, string> = {
@@ -145,6 +165,7 @@ export enum AITestEvaluationStatus {
   COMPLETE = 1,
   IN_PROGRESS = 2,
   FAILED = 3,
+  DELETED = 4,
 }
 
 // FEATURE_TYPES object is organized as [intValue, stringLabel, description],
@@ -497,6 +518,7 @@ export const STAGE_SPECIFIC_FIELDS = new Set<string>([
   'rollout_milestone',
   'rollout_platforms',
   'rollout_details',
+  'rollout_stage_plan',
   'enterprise_policies',
   'announcement_url',
 ]);

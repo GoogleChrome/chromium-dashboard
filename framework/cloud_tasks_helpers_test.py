@@ -12,91 +12,104 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from unittest import mock
+"""Unit tests for the cloud_tasks_helpers module.
+
+Tests the creation of task representations and the enqueueing process,
+including the behavior of the local development stub.
+"""
+
+import datetime
 import unittest
+from unittest import mock
+
 import testing_config  # Must be imported before the module under test.
-
-import requests
-
 from framework import cloud_tasks_helpers
+
 # Note that testing_config sets cloud_tasks_helpers._client to a fake.
 
 
 class LocalCloudTasksClientTest(unittest.TestCase):
+    """Tests for LocalCloudTasksClient."""
 
-  def setUp(self):
-    self.client = cloud_tasks_helpers.LocalCloudTasksClient()
+    def setUp(self):
+        """Set up the test environment."""
+        self.client = cloud_tasks_helpers.LocalCloudTasksClient()
 
-  def test_queue_path(self):
-    """We get back a string like the kind that GCT uses."""
-    actual = self.client.queue_path('P', 'L', 'Q')
-    self.assertEqual(
-        'projects/P/locations/L/queues/Q',
-        actual)
+    def test_queue_path(self):
+        """We get back a string like the kind that GCT uses."""
+        actual = self.client.queue_path('P', 'L', 'Q')
+        self.assertEqual('projects/P/locations/L/queues/Q', actual)
 
-  @mock.patch('requests.request')
-  def test_create_task(self, mock_fetch):
-    """The local stub makes a synchronous HTTP request to the task handler."""
-    parent = 'parent'
-    task = cloud_tasks_helpers._make_task('/handler', {'a': 1})
-    mock_fetch.return_value = testing_config.Blank(
-        status_code=200, content='content')
+    @mock.patch('requests.request')
+    def test_create_task(self, mock_fetch):
+        """The local stub makes a synchronous HTTP request to the task handler."""
+        parent = 'parent'
+        task = cloud_tasks_helpers._make_task('/handler', {'a': 1})
+        mock_fetch.return_value = testing_config.Blank(
+            status_code=200, content='content'
+        )
 
-    actual = self.client.create_task(parent, task)
+        actual = self.client.create_task(parent, task)
 
-    self.assertIsNone(actual)
-    mock_fetch.assert_called_once_with(
-      'POST',
-        'http://localhost:7777/handler',
-        data=b'{"a": 1}',
-        allow_redirects=False,
-        headers={'X-AppEngine-QueueName': 'default'})
+        self.assertIsNone(actual)
+        mock_fetch.assert_called_once_with(
+            'POST',
+            'http://localhost:7777/handler',
+            data=b'{"a": 1}',
+            allow_redirects=False,
+            headers={'X-AppEngine-QueueName': 'default'},
+        )
 
 
 class CloudTasksHelpersTest(unittest.TestCase):
+    """Tests for cloud tasks helpers."""
 
-  def test_get_client__unit_tests(self):
-    """During unit testing, we are using a fake object."""
-    actual = cloud_tasks_helpers._get_client()
-    self.assertEqual(
-        testing_config.FakeCloudTasksClient,
-        type(actual))
+    def test_get_client__unit_tests(self):
+        """During unit testing, we are using a fake object."""
+        actual = cloud_tasks_helpers._get_client()
+        self.assertEqual(testing_config.FakeCloudTasksClient, type(actual))
 
-  @mock.patch('settings.DEV_MODE', True)
-  def test_get_client__dev_mode(self):
-    """When running locally, we make a LocalCloudTasksClient."""
-    orig_client = cloud_tasks_helpers._client
-    try:
-      cloud_tasks_helpers._client = None
-      actual = cloud_tasks_helpers._get_client()
-      self.assertEqual(
-          cloud_tasks_helpers.LocalCloudTasksClient,
-          type(actual))
-    finally:
-      cloud_tasks_helpers._client = orig_client
+    @mock.patch('settings.DEV_MODE', True)
+    def test_get_client__dev_mode(self):
+        """When running locally, we make a LocalCloudTasksClient."""
+        orig_client = cloud_tasks_helpers._client
+        try:
+            cloud_tasks_helpers._client = None
+            actual = cloud_tasks_helpers._get_client()
+            self.assertEqual(
+                cloud_tasks_helpers.LocalCloudTasksClient, type(actual)
+            )
+        finally:
+            cloud_tasks_helpers._client = orig_client
 
-  def test_make_task(self):
-    """We can make a task info dict in the expected format."""
-    handler_path = '/handler'
-    task_params = {'a': 1}
+    def test_make_task(self):
+        """We can make a task info dict in the expected format."""
+        handler_path = '/handler'
+        task_params = {
+            'a': 1,
+            'when': datetime.datetime(2025, 12, 1, 2, 3, 4),
+            'missing': None,
+        }
 
-    actual = cloud_tasks_helpers._make_task(handler_path, task_params)
+        actual = cloud_tasks_helpers._make_task(handler_path, task_params)
 
-    self.assertEqual(
-        { 'app_engine_http_request': {
-            'relative_uri': '/handler',
-            'body': b'{"a": 1}',
-            }
-         },
-        actual)
+        self.assertEqual(
+            {
+                'app_engine_http_request': {
+                    'relative_uri': '/handler',
+                    'body': b'{"a": 1, "when": "2025-12-01 02:03:04", "missing": null}',
+                }
+            },
+            actual,
+        )
 
-  def test_enqueue_task(self):
-    """We can call the GCT client to enqueue a task."""
-    handler_path = '/handler'
-    task_params = {'a': 1}
+    def test_enqueue_task(self):
+        """We can call the GCT client to enqueue a task."""
+        handler_path = '/handler'
+        task_params = {'a': 1}
 
-    actual = cloud_tasks_helpers.enqueue_task(handler_path, task_params)
+        actual = cloud_tasks_helpers.enqueue_task(handler_path, task_params)
 
-    self.assertEqual('fake task', actual)
-    self.assertEqual('/handler', cloud_tasks_helpers._client.uri)
-    self.assertEqual(b'{"a": 1}', cloud_tasks_helpers._client.body)
+        self.assertEqual('fake task', actual)
+        self.assertEqual('/handler', cloud_tasks_helpers._client.uri)
+        self.assertEqual(b'{"a": 1}', cloud_tasks_helpers._client.body)

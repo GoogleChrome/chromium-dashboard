@@ -2,7 +2,7 @@ import {LitElement, css, html, nothing} from 'lit';
 import {customElement, state} from 'lit/decorators.js';
 import {FORM_STYLES} from '../css/forms-css.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
-import {handleSaveChangesResponse, showToastMessage} from './utils';
+import {handleSaveChangesResponse, showToastMessage} from './utils.js';
 
 @customElement('chromedash-settings-page')
 export class ChromedashSettingsPage extends LitElement {

@@ -26,14 +26,14 @@ export class ChromedashWPTEvalButton extends LitElement {
 
   render() {
     return html`
-      <sl-button href="/feature/${this.featureId}/ai-coverage-evaluation">
+      <sl-button href="/feature/${this.featureId}/ai-coverage-analysis">
         <img
           slot="prefix"
           class="gemini-icon"
           src="https://www.gstatic.com/images/branding/productlogos/gemini_2025/v1/192px.svg"
           alt="Gemini AI Logo"
         />
-        Evaluate test coverage
+        Analyze test coverage
       </sl-button>
     `;
   }

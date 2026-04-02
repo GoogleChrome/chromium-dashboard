@@ -6,10 +6,10 @@ import {SHARED_STYLES} from '../css/shared-css.js';
 import {Feature, StageDict} from '../js-src/cs-client.js';
 import './chromedash-form-field.js';
 import './chromedash-form-table.js';
-import {dialogTypes, openInfoDialog} from './chromedash-ot-prereqs-dialog';
+import {dialogTypes, openInfoDialog} from './chromedash-ot-prereqs-dialog.js';
 import {ORIGIN_TRIAL_EXTENSION_FIELDS} from './form-definition.js';
 import {OT_EXTENSION_STAGE_MAPPING} from './form-field-enums.js';
-import {ALL_FIELDS} from './form-field-specs';
+import {ALL_FIELDS} from './form-field-specs.js';
 import {
   FieldInfo,
   extensionMilestoneIsValid,
@@ -124,8 +124,7 @@ export class ChromedashOTExtensionPage extends LitElement {
       );
       const respJson = await resp.json();
       // Keep a reference of milestone dates to avoid extra requests.
-      this.endMilestoneDateValues[milestone] =
-        respJson.mstones[0].late_stable_date;
+      this.endMilestoneDateValues[milestone] = respJson.mstones[0].stable_date;
     }
     this.updateMilestoneDate(milestone);
   }

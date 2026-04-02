@@ -13,53 +13,67 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""API handlers for managing owners and subscribers of individual Blink components."""
+
 from chromestatus_openapi.models import ComponentUsersRequest
 
-from framework import basehandlers
-from framework import permissions
+from framework import basehandlers, permissions
 from internals import user_models
 
+
 class ComponentUsersAPI(basehandlers.APIHandler):
+    """API handler for component users."""
 
-  def __update_subscribers_list(
-      self, add=True, user_id=None, blink_component_id=None, primary=False):
-    if not user_id or not blink_component_id:
-      return False
+    def __update_subscribers_list(
+        self, add=True, user_id=None, blink_component_id=None, primary=False
+    ):
+        if not user_id or not blink_component_id:
+            return False
 
-    user = user_models.FeatureOwner.get_by_id(int(user_id))
-    if not user:
-      return True
+        user = user_models.FeatureOwner.get_by_id(int(user_id))
+        if not user:
+            return True
 
-    if primary:
-      if add:
-        user.add_as_component_owner(blink_component_id)
-      else:
-        user.remove_as_component_owner(blink_component_id)
-    else:
-      if add:
-        user.add_to_component_subscribers(blink_component_id)
-      else:
-        user.remove_from_component_subscribers(blink_component_id)
+        if primary:
+            if add:
+                user.add_as_component_owner(blink_component_id)
+            else:
+                user.remove_as_component_owner(blink_component_id)
+        else:
+            if add:
+                user.add_to_component_subscribers(blink_component_id)
+            else:
+                user.remove_from_component_subscribers(blink_component_id)
 
-    return True
+        return True
 
-  def do_get(self, **kwargs):
-    """In the future, this could be implemented."""
-    self.abort(405, valid_methods=['PUT', 'DELETE'])
+    def do_get(self, **kwargs):
+        """In the future, this could be implemented."""
+        self.abort(405, valid_methods=['PUT', 'DELETE'])
 
-  @permissions.require_admin_site
-  def do_put(self, **kwargs) -> tuple[dict, int]:
-    component_users_request = ComponentUsersRequest.from_dict(self.request.get_json(force=True))
-    self.__update_subscribers_list(True, user_id=kwargs.get('user_id', None),
-                                   blink_component_id=kwargs.get('component_id', None),
-                                   primary=component_users_request.owner)
-    return {}, 200
+    @permissions.require_admin_site
+    def do_put(self, **kwargs) -> tuple[dict, int]:
+        """Update component subscribers."""
+        component_users_request = ComponentUsersRequest.from_dict(
+            self.request.get_json(force=True)
+        )  # noqa: E501
+        self.__update_subscribers_list(
+            True,
+            user_id=kwargs.get('user_id', None),
+            blink_component_id=kwargs.get('component_id', None),  # noqa: E501
+            primary=component_users_request.owner,
+        )
+        return {}, 200
 
-  @permissions.require_admin_site
-  def do_delete(self, **kwargs) -> tuple[dict, int]:
-    params = self.request.get_json(force=True)
-    component_users_request = ComponentUsersRequest.from_dict(params)
-    self.__update_subscribers_list(False, user_id=kwargs.get('user_id', None),
-                                   blink_component_id=kwargs.get('component_id', None),
-                                   primary=component_users_request.owner)
-    return {}, 200
+    @permissions.require_admin_site
+    def do_delete(self, **kwargs) -> tuple[dict, int]:
+        """Remove component subscribers."""
+        params = self.request.get_json(force=True)
+        component_users_request = ComponentUsersRequest.from_dict(params)
+        self.__update_subscribers_list(
+            False,
+            user_id=kwargs.get('user_id', None),
+            blink_component_id=kwargs.get('component_id', None),  # noqa: E501
+            primary=component_users_request.owner,
+        )
+        return {}, 200

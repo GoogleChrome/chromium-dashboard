@@ -7,7 +7,7 @@ import {
   GATE_PREPARING,
   VOTE_OPTIONS,
   VOTE_NA_SELF,
-} from './form-field-enums';
+} from './form-field-enums.js';
 
 type statusEnum =
   | 'Not started'

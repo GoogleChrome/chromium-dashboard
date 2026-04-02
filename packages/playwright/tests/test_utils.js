@@ -1,14 +1,5 @@
 // @ts-check
-import { expect } from '@playwright/test';
-
-
-/**
- * @param {number | undefined} ms
- */
-export async function delay(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
+import {expect} from '@playwright/test';
 
 /**
  * Call this, say in your test.beforeEach() method, to capture all
@@ -40,9 +31,15 @@ export function captureConsoleMessages(page) {
         argString = arg.toString();
       }
       // Simplify tons of "SameSite" warnings.
-      if (argString.match(/does not have a proper “SameSite” attribute value/)) {
-        argString = argString.replace('JavaScript Warning: ', 'SameSite ')
-          .replace('does not have a proper “SameSite” attribute value. Soon, cookies without the “SameSite” attribute or with an invalid value will be treated as “Lax”. This means that the cookie will no longer be sent in third-party contexts. If your application depends on this cookie being available in such contexts, please add the “SameSite=None“ attribute to it. To know more about the “SameSite“ attribute, read https://developer.mozilla.org/docs/Web/HTTP/Headers/Set-Cookie/SameSite', '');
+      if (
+        argString.match(/does not have a proper “SameSite” attribute value/)
+      ) {
+        argString = argString
+          .replace('JavaScript Warning: ', 'SameSite ')
+          .replace(
+            'does not have a proper “SameSite” attribute value. Soon, cookies without the “SameSite” attribute or with an invalid value will be treated as “Lax”. This means that the cookie will no longer be sent in third-party contexts. If your application depends on this cookie being available in such contexts, please add the “SameSite=None“ attribute to it. To know more about the “SameSite“ attribute, read https://developer.mozilla.org/docs/Web/HTTP/Headers/Set-Cookie/SameSite',
+            ''
+          );
       }
       values.push(argString);
     }
@@ -55,15 +52,9 @@ export function captureConsoleMessages(page) {
  * @param {import("playwright-core").Page} page
  */
 export function capturePageEvents(page) {
-  // page.on('open', async () => {
-  //   console.log(`open: ${page.url()}`);
-  // });
   page.on('close', async () => {
     console.log(`close: ${page.url()}`);
   });
-  // page.on('requestfailed', request => {
-  //   console.log(`requestfailed: ${request.url()} with: ${request.failure().errorText}`);
-  // });
   page.on('pageerror', async (/** @type {Error} */ error) => {
     console.log(`pageerror: ${error}`);
   });
@@ -73,17 +64,6 @@ export function capturePageEvents(page) {
   page.on('domcontentloaded', async () => {
     console.log(`domcontentloaded: ${page.url()}`);
   });
-  // The following are often not useful, since there are so many
-  // requests and responses.  But you can look for particular urls.
-  // page.on('request', async (/** @type {Request} */ request) => {
-  //   console.log(`request: ${request.url()}`);
-  // });
-  // page.on('response', async (/** @type {Response} */ response) => {
-  //   console.log(`response: ${response.url()}`);
-  // });
-  // page.on('requestfinished', request => {
-  //   console.log(`requestfinished: ${request.url()}`);
-  // });
 }
 
 /**
@@ -91,7 +71,7 @@ export function capturePageEvents(page) {
  */
 export async function decodeCookies(page) {
   const cookies = await page.context().cookies();
-  cookies.forEach((cookie) => {
+  cookies.forEach(cookie => {
     console.log('Decoded Cookie:', cookie);
   });
 }
@@ -101,9 +81,8 @@ export async function decodeCookies(page) {
  */
 export async function isMobile(page) {
   const viewportSize = page.viewportSize();
-  return (viewportSize && viewportSize.width <= 700)
+  return viewportSize && viewportSize.width <= 700;
 }
-
 
 /**
  * Handle beforeunload by accepting it.
@@ -143,18 +122,10 @@ export function acceptAlertDialogs(page) {
   });
 }
 
-
-// Timeout for logging in, in milliseconds.
-// Initially set to longer timeout, in case server needs to warm up and
-// respond to the login.  Changed to shorter timeout after login is successful.
-// Not sure we need this yet.
-let loginTimeout = 20000;
-
 /**
  * @param {import("playwright-core").Page} page
  */
 export async function login(page) {
-
   page.exposeFunction('isPlaywright', () => {});
 
   // Always reset to the roadmap page.
@@ -162,53 +133,44 @@ export async function login(page) {
   // can occur in Chrome when not logged in.
   acceptAlertDialogs(page);
 
-  await page.pause();
-  // console.log('login: goto /');
   await page.goto('/', {timeout: 20000});
   await page.waitForURL('**/roadmap', {timeout: 20000});
 
-  await delay(1000);
   await expect(page).toHaveTitle(/Chrome Status/);
-  page.mouse.move(0, 0); // Move away from content on page.
-  await delay(1000);
 
   // Check whether we are already or still logged in.
-  let accountIndicator = page.getByTestId('account-indicator');
-  while (await accountIndicator.isVisible()) {
-    // console.log('Already (still) logged in. Need to logout.');
-    await accountIndicator.hover({timeout: 5000});
-    const signOutLink = page.getByTestId('sign-out-link');
-    await expect(signOutLink).toBeVisible();
-
-    await signOutLink.hover({timeout: 5000});
-    await signOutLink.click({timeout: 5000});
-
-    await delay(1000);
-    await page.waitForURL('**/roadmap');
-    await expect(page).toHaveTitle(/Chrome Status/);
-    page.mouse.move(0, 0); // Move away from content on page.
-    await delay(1000);
-
-    accountIndicator = page.getByTestId('account-indicator');
-  }
-  await delay(1000);
-
-  // Expect login button to be present.
-  // console.info('expect login button to be present and visible');
+  // We use the presence of the 'dev-mode-sign-in-button' as the definitive
+  // indicator of "Not Logged In" because the Account Indicator layout varies.
   const loginButton = page.getByTestId('dev-mode-sign-in-button');
-  await expect(loginButton).toBeVisible({timeout: loginTimeout});
 
-  await loginButton.click({timeout: 5000, delay: 1000});
-  await delay(loginTimeout / 3); // longer delay here, to allow for initial login.
+  if (await loginButton.isHidden()) {
+    // If the login button is hidden, we assume we are logged in.
+    return;
+  }
 
-  // Expect the title to contain a substring.
+  // Expect login button to be present now.
+  await expect(loginButton).toBeVisible();
+
+  // Click login and wait for the page reload that the button triggers.
+  // We cannot use waitForURL because the URL might be the same.
+  // Waiting for 'domcontentloaded' ensures the reload has actually happened.
+  await Promise.all([
+    page.waitForEvent('domcontentloaded'),
+    loginButton.click(),
+  ]);
+
+  // Validate successful login.
   await expect(page).toHaveTitle(/Chrome Status/);
-  page.mouse.move(0, 0); // Move away from content on page.
-  await delay(1000);
 
-  // After first login, reduce timeout/delay.
-  loginTimeout = 5000;
-  // console.log('login: done');
+  if (await isMobile(page)) {
+    // On mobile, the account indicator is hidden inside the drawer.
+    // Verifying that the login button is GONE is sufficient proof of login.
+    await expect(loginButton).not.toBeVisible();
+  } else {
+    // On desktop, we can verify the account indicator is visible in the header.
+    const accountIndicator = page.getByTestId('account-indicator');
+    await expect(accountIndicator).toBeVisible({timeout: 20000});
+  }
 }
 
 /**
@@ -222,50 +184,74 @@ export async function logout(page) {
   // accept leaving them unsaved.
   acceptBeforeUnloadDialogs(page);
 
-  // console.log('logout: goto /');
   await page.goto('/');
   await page.waitForURL('**/roadmap');
-  await delay(1000);
   await expect(page).toHaveTitle(/Chrome Status/);
 
-  page.mouse.move(0, 0); // Move away from content on page.
-  await delay(1000);
+  // If we are already logged out, return immediately.
+  // This avoids unnecessary menu clicking and flaky checks.
+  const loginButton = page.getByTestId('dev-mode-sign-in-button');
+  if (await loginButton.isVisible()) {
+    return;
+  }
+
+  // Variable to store the promise for the page reload
+  let reloadPromise = null;
 
   if (await isMobile(page)) {
     const menuButton = page.getByTestId('menu');
-    await expect(menuButton).toBeVisible();
+    // Force the menu to open, retrying if necessary
     await menuButton.click();
+
+    const signOutLink = page.getByTestId('sign-out-link');
+    await expect(signOutLink).toBeVisible();
+
+    // Setup the listener BEFORE the action
+    reloadPromise = page.waitForEvent('load');
+    await signOutLink.click();
   } else {
+    // Desktop Logic
     const accountIndicator = page.getByTestId('account-indicator');
-    await expect(accountIndicator).toBeVisible({ timeout: 20000 });
-    await accountIndicator.click({timeout: 5000});
+    await expect(accountIndicator).toBeVisible({timeout: 20000});
+    await accountIndicator.click();
+
+    const signOutLink = page.getByTestId('sign-out-link');
+    await expect(signOutLink).toBeVisible();
+
+    // Setup the listener BEFORE the action
+    reloadPromise = page.waitForEvent('load');
+    await signOutLink.click();
   }
-  await delay(1000);
 
-  // Need to hover to see the sign-out-link
-  const signOutLink = page.getByTestId('sign-out-link');
-  await expect(signOutLink).toBeVisible();
-  await signOutLink.click({ timeout: 5000 });
-  await delay(500);
+  // Await the reload only if we triggered it.
+  if (reloadPromise) {
+    await reloadPromise;
+  }
 
-  await page.waitForURL('**/roadmap');
-  await expect(page).toHaveTitle(/Chrome Status/);
+  // If the button is missing, it implies either:
+  //    a) The 'getPermissions' call failed on the new page (Limbo state)
+  //    b) The session wasn't cleared (Still logged in)
+  // We reload the page to fix (a) and recursively try logout to fix (b).
+  try {
+    // Give it a short time (5s) to appear normally
+    await expect(loginButton).toBeVisible({timeout: 5000});
+  } catch {
+    console.log('Login button not found after logout. Retrying...');
 
-  // Redundant? Go to roadmap page.
-  await page.goto('/');
-  await page.waitForURL('**/roadmap');
-  await delay(500);
+    // Reloading to avoid a "getPermissions failed" state.
+    await page.reload();
 
-  // console.log('logout: done');
+    // Recursively calling logout handles the "Still logged in" state.
+    // (The recursive call will hit step 1 and return immediately if successful)
+    await logout(page);
+  }
 }
-
 
 /**
  * From top-level page, after logging in, go to the New Feature page.
  * @param {import('@playwright/test').Page} page
  */
 export async function gotoNewFeaturePage(page) {
-  // console.log('navigate to create feature page');
   const mobile = await isMobile(page);
   const createFeatureButton = page.getByTestId('create-feature-button');
   const menuButton = page.getByTestId('menu');
@@ -273,21 +259,21 @@ export async function gotoNewFeaturePage(page) {
   // Navigate to the new feature page.
   await expect(menuButton).toBeVisible();
   if (mobile) {
-    await menuButton.click();  // To show menu.
+    await menuButton.click();
   }
+
+  await expect(createFeatureButton).toBeVisible();
   await createFeatureButton.click();
+
   if (mobile) {
-    await menuButton.click();  // To hide menu
-    await delay(500);
+    // To hide menu (Close Drawer).
+    await menuButton.click();
   }
 
   // Expect "Add a feature" header to be present.
   const addAFeatureHeader = page.getByTestId('add-a-feature');
-  await expect(addAFeatureHeader).toBeVisible({ timeout: 10000 });
-  // console.log('navigate to create feature page done');
-  await delay(500);
+  await expect(addAFeatureHeader).toBeVisible({timeout: 10000});
 }
-
 
 /**
  * Enters a blink component on the page.
@@ -296,16 +282,16 @@ export async function gotoNewFeaturePage(page) {
  * @return {Promise<void>} A promise that resolves once the blink component is entered.
  */
 export async function enterBlinkComponent(page) {
-  const blinkComponentsInputWrapper = page.getByTestId('blink_components_wrapper');
+  const blinkComponentsInputWrapper = page.getByTestId(
+    'blink_components_wrapper'
+  );
   await expect(blinkComponentsInputWrapper).toBeVisible();
-
-  // Trying to show options, doesn't work yet.
-  await blinkComponentsInputWrapper.focus();
-  await delay(500);
 
   const blinkComponentsInput = blinkComponentsInputWrapper.locator('input');
   await blinkComponentsInput.fill('blink');
-  await delay(500);
+
+  // If you need to verify the value "stuck"
+  await expect(blinkComponentsInput).toHaveValue('blink');
 }
 
 /**
@@ -318,13 +304,11 @@ export async function enterWebFeatureId(page) {
   const webFeatureIdInputWrapper = page.getByTestId('web_feature_wrapper');
   await expect(webFeatureIdInputWrapper).toBeVisible();
 
-  // Trying to show options, doesn't work yet.
-  await webFeatureIdInputWrapper.focus();
-  await delay(500);
-
   const webFeatureIdInput = webFeatureIdInputWrapper.locator('input');
   await webFeatureIdInput.fill('hwb');
-  await delay(500);
+
+  // Verify the value
+  await expect(webFeatureIdInput).toHaveValue('hwb');
 
   // TODO(kyleju): assert that the link to webstatus.dev is present.
   // It is missing in the current test setup.
@@ -348,7 +332,9 @@ export async function createNewFeature(page) {
   await enterWebFeatureId(page);
 
   // Select feature type.
-  const featureTypeRadioNew = page.locator('input[name="feature_type"][value="0"]');
+  const featureTypeRadioNew = page.locator(
+    'input[name="feature_type"][value="0"]'
+  );
   await featureTypeRadioNew.click();
 
   // Submit the form.
@@ -358,6 +344,16 @@ export async function createNewFeature(page) {
   // Wait until we are on the Feature page.
   await page.waitForURL('**/feature/*');
   const detail = page.locator('chromedash-feature-detail');
+
+  // If the feature detail doesn't appear within 5 seconds, it's likely a 404.
+  // Reload the page to try fetching the data again.
+  try {
+    await detail.waitFor({state: 'visible', timeout: 5000});
+  } catch {
+    console.log('Feature detail not found immediately. Reloading...');
+    await page.reload();
+  }
+
   await expect(detail).toBeVisible({timeout: 30000});
 }
 
@@ -366,7 +362,24 @@ export async function createNewFeature(page) {
  * @param {import("playwright-core").Page} page
  */
 export async function gotoNewFeatureList(page) {
-  await page.goto('/newfeatures');
+  await page.goto('/features');
   const pagiation = page.locator('chromedash-feature-pagination');
   await expect(pagiation).toBeVisible();
+}
+
+/**
+ * Check a screenshot with some default options that reduce
+ * flakiness.
+ */
+export async function expectScreenshot(page, name, options, hoverElement) {
+  // TODO(jrobbins): This is where we would add logic for testing dark mode.
+  options = {...options, timeout: 30000};
+  await page.mouse.move(0, 0);
+  if (hoverElement) {
+    // Always approach the element from (0, 0).
+    await expect(hoverElement).toBeVisible();
+    await hoverElement.hover();
+  }
+  await page.waitForTimeout(250 + 100); // Some shoelace animations take 250ms.
+  await expect(page).toHaveScreenshot(`${name}.png`, options);
 }

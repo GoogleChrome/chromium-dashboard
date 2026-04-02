@@ -1,8 +1,8 @@
 import {html} from 'lit';
 import {assert, fixture} from '@open-wc/testing';
-import {ChromedashAllFeaturesPage} from './chromedash-all-features-page';
-import './chromedash-toast';
-import {ChromeStatusClient} from '../js-src/cs-client';
+import {ChromedashAllFeaturesPage} from './chromedash-all-features-page.js';
+import './chromedash-toast.js';
+import {ChromeStatusClient} from '../js-src/cs-client.js';
 import sinon from 'sinon';
 
 window.csClient = new ChromeStatusClient('fake_token', 1);

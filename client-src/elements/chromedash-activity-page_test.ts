@@ -1,7 +1,7 @@
 import {assert, fixture} from '@open-wc/testing';
 import {html} from 'lit';
-import {ChromedashActivityPage} from './chromedash-activity-page';
-import {ChromeStatusClient} from '../js-src/cs-client';
+import {ChromedashActivityPage} from './chromedash-activity-page.js';
+import {ChromeStatusClient} from '../js-src/cs-client.js';
 import sinon from 'sinon';
 
 describe('chromedash-settings-page', () => {

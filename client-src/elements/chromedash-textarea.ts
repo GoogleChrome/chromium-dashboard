@@ -22,13 +22,10 @@ export class ChromedashTextarea extends SlTextarea {
   offerMarkdown = false;
   @property({type: Boolean})
   isMarkdown = false;
+  @property({type: Boolean})
+  alwaysMarkdown = false;
   @property({type: Number}) // Represents which field this is on the form.
   index = -1;
-  // This is the longest string that a cloud ndb StringProperty seems to accept.
-  // Fields that accept a URL list can be longer, provided that each individual
-  // URL is no more than this length.
-  @property({type: Number})
-  maxlength = 1400;
   @state()
   showPreview = false;
 
@@ -105,7 +102,7 @@ export class ChromedashTextarea extends SlTextarea {
 
   render() {
     const editor = super.render();
-    if (!this.offerMarkdown) {
+    if (!this.offerMarkdown && !this.alwaysMarkdown) {
       return editor;
     }
 
@@ -127,7 +124,8 @@ export class ChromedashTextarea extends SlTextarea {
       <sl-checkbox
         id="use-markdown"
         name="${this.name}_is_markdown"
-        ?checked=${this.isMarkdown}
+        ?checked=${this.isMarkdown || this.alwaysMarkdown}
+        ?disabled=${this.alwaysMarkdown}
         @sl-change=${this.handleMarkdownChecked}
       >
         Use markdown
@@ -139,7 +137,7 @@ export class ChromedashTextarea extends SlTextarea {
         href="https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax"
         target="_blank"
       ></sl-icon-button>
-      ${this.isMarkdown
+      ${this.isMarkdown || this.alwaysMarkdown
         ? html` <sl-checkbox
             id="show-preview"
             ?checked=${this.showPreview}

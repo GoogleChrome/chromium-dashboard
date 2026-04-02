@@ -13,11 +13,16 @@
 # limitations under the License.
 
 
+"""System-wide enumerations and constant mappings.
+
+Defines the core enumerations used across the application, including
+feature categories, platforms, standardization statuses, and gate types.
+"""
+
 import collections
 import re
 from enum import Enum
 from typing import Optional
-
 
 # URL constants.
 # Chromium code file references. All of these are base64 encoded.
@@ -28,6 +33,12 @@ ENABLED_FEATURES_FILE_URL = 'https://chromium.googlesource.com/chromium/src/+/ma
 GRACE_PERIOD_FILE = 'https://chromium.googlesource.com/chromium/src/+/main/third_party/blink/common/origin_trials/manual_completion_origin_trial_features.cc?format=TEXT'
 CONTENT_FEATURES_FILE = 'https://chromium.googlesource.com/chromium/src/+/main/content/public/common/content_features.cc?format=TEXT'
 
+# Email contacts
+BLINK_DEV_EMAIL = 'blink-dev@chromium.org'
+CBE_ESCLATION_EMAIL = 'cbe-releasenotes@google.com'
+OT_SUPPORT_EMAIL = 'origin-trials-support@google.com'
+STAGING_EMAIL = 'jrobbins-test@googlegroups.com'
+WEBSTATUS_EMAIL = 'webstatus@google.com'
 
 # NOTE: The enum mapping in this file needs to be consistent with
 # chromium-dashboard/client-src/elements/form-field-enums.js.
@@ -73,78 +84,97 @@ ENTERPRISE_IMPACT_LOW = 2
 ENTERPRISE_IMPACT_MEDIUM = 3
 ENTERPRISE_IMPACT_HIGH = 4
 
-ENTERPRISE_IMPACT_CATEGORIES = collections.OrderedDict([
-  (ENTERPRISE_IMPACT_NONE, 'None'),
-  (ENTERPRISE_IMPACT_LOW, 'Low'),
-  (ENTERPRISE_IMPACT_MEDIUM, 'Medium'),
-  (ENTERPRISE_IMPACT_HIGH, 'High'),
-])
+ENTERPRISE_IMPACT_CATEGORIES = collections.OrderedDict(
+    [
+        (ENTERPRISE_IMPACT_NONE, 'None'),
+        (ENTERPRISE_IMPACT_LOW, 'Low'),
+        (ENTERPRISE_IMPACT_MEDIUM, 'Medium'),
+        (ENTERPRISE_IMPACT_HIGH, 'High'),
+    ]
+)
 
 IMPACT_LOW = 1
 IMPACT_MEDIUM = 2
 IMPACT_HIGH = 3
 
-IMPACT_CATEGORIES = collections.OrderedDict([
-  (IMPACT_LOW, 'Low'),
-  (IMPACT_MEDIUM, 'Medium'),
-  (IMPACT_HIGH, 'High'),
-])
+IMPACT_CATEGORIES = collections.OrderedDict(
+    [
+        (IMPACT_LOW, 'Low'),
+        (IMPACT_MEDIUM, 'Medium'),
+        (IMPACT_HIGH, 'High'),
+    ]
+)
 
-PLATFORM_CATEGORIES = collections.OrderedDict([
-  (PLATFORM_ANDROID, 'Android'),
-  (PLATFORM_IOS, 'iOS'),
-  (PLATFORM_CHROMEOS, 'ChromeOS'),
-  (PLATFORM_LACROS, 'LaCROS'),
-  (PLATFORM_LINUX, 'Linux'),
-  (PLATFORM_MAC, 'MacOS'),
-  (PLATFORM_WINDOWS, 'Windows'),
-  (PLATFORM_FUCHSIA, 'Fuchsia'),
-])
+PLATFORM_CATEGORIES = collections.OrderedDict(
+    [
+        (PLATFORM_ANDROID, 'Android'),
+        (PLATFORM_IOS, 'iOS'),
+        (PLATFORM_CHROMEOS, 'ChromeOS'),
+        (PLATFORM_LACROS, 'LaCROS'),
+        (PLATFORM_LINUX, 'Linux'),
+        (PLATFORM_MAC, 'macOS'),
+        (PLATFORM_WINDOWS, 'Windows'),
+        (PLATFORM_FUCHSIA, 'Fuchsia'),
+    ]
+)
 
-ENTERPRISE_FEATURE_CATEGORIES = collections.OrderedDict([
-  (ENTERPRISE_FEATURE_SECURITYANDPRIVACY, 'Security / Privacy'),
-  (ENTERPRISE_FEATURE_USERPRODUCTIVITYANDAPPS, 'User Productivity / Apps'),
-  (ENTERPRISE_FEATURE_MANAGEMENT, 'Management'),
-])
+ENTERPRISE_FEATURE_CATEGORIES = collections.OrderedDict(
+    [
+        (ENTERPRISE_FEATURE_SECURITYANDPRIVACY, 'Security / Privacy'),
+        (
+            ENTERPRISE_FEATURE_USERPRODUCTIVITYANDAPPS,
+            'User Productivity / Apps',
+        ),
+        (ENTERPRISE_FEATURE_MANAGEMENT, 'Management'),
+    ]
+)
 
 FEATURE_CATEGORIES = {
-  CSS: 'CSS',
-  WEBCOMPONENTS: 'Web Components',
-  MISC: 'Miscellaneous',
-  SECURITY: 'Security',
-  MULTIMEDIA: 'Multimedia',
-  DOM: 'DOM',
-  FILE: 'File APIs',
-  OFFLINE: 'Offline / Storage',
-  DEVICE: 'Device',
-  COMMUNICATION: 'Realtime / Communication',
-  JAVASCRIPT: 'JavaScript',
-  NETWORKING: 'Network / Connectivity',
-  INPUT: 'User input',
-  PERFORMANCE: 'Performance',
-  GRAPHICS: 'Graphics',
-  HOUDINI: 'Houdini',
-  SERVICEWORKER: 'Service Worker',
-  WEBRTC: 'WebRTC',
-  LAYERED: 'Layered APIs',
-  WEBASSEMBLY: 'WebAssembly',
-  CAPABILITIES: 'Capabilities (Fugu)',
-  IWA: 'Isolated Web Apps-specific API',
-  }
+    CSS: 'CSS',
+    WEBCOMPONENTS: 'Web Components',
+    MISC: 'Miscellaneous',
+    SECURITY: 'Security',
+    MULTIMEDIA: 'Multimedia',
+    DOM: 'DOM',
+    FILE: 'File APIs',
+    OFFLINE: 'Offline / Storage',
+    DEVICE: 'Device',
+    COMMUNICATION: 'Realtime / Communication',
+    JAVASCRIPT: 'JavaScript',
+    NETWORKING: 'Network / Connectivity',
+    INPUT: 'User input',
+    PERFORMANCE: 'Performance',
+    GRAPHICS: 'Graphics',
+    HOUDINI: 'Houdini',
+    SERVICEWORKER: 'Service Worker',
+    WEBRTC: 'WebRTC',
+    LAYERED: 'Layered APIs',
+    WEBASSEMBLY: 'WebAssembly',
+    CAPABILITIES: 'Capabilities (Fugu)',
+    IWA: 'Isolated Web Apps-specific API',
+}
 
 
 ENTERPRISE_PRODUCT_CATEGORY_CHROME_BROWSER_UPDATE = 0
 ENTERPRISE_PRODUCT_CATEGORY_CHROME_ENTERPRISE_CORE = 1
 ENTERPRISE_PRODUCT_CATEGORY_CHROME_ENTERPRISE_PREMIUM = 2
 
-ENTERPRISE_PRODUCT_CATEGORIES = collections.OrderedDict([
-  (ENTERPRISE_PRODUCT_CATEGORY_CHROME_BROWSER_UPDATE,
-   'Chrome Browser update'),
-  (ENTERPRISE_PRODUCT_CATEGORY_CHROME_ENTERPRISE_CORE,
-   'Chrome Enterprise Core (CEC)'),
-  (ENTERPRISE_PRODUCT_CATEGORY_CHROME_ENTERPRISE_PREMIUM,
-   'Chrome Enterprise Premium (CEP, paid SKU)'),
-])
+ENTERPRISE_PRODUCT_CATEGORIES = collections.OrderedDict(
+    [
+        (
+            ENTERPRISE_PRODUCT_CATEGORY_CHROME_BROWSER_UPDATE,
+            'Chrome Browser update',
+        ),
+        (
+            ENTERPRISE_PRODUCT_CATEGORY_CHROME_ENTERPRISE_CORE,
+            'Chrome Enterprise Core (CEC)',
+        ),
+        (
+            ENTERPRISE_PRODUCT_CATEGORY_CHROME_ENTERPRISE_PREMIUM,
+            'Chrome Enterprise Premium (CEP, paid SKU)',
+        ),
+    ]
+)
 
 FEATURE_TYPE_INCUBATE_ID = 0
 FEATURE_TYPE_EXISTING_ID = 1
@@ -161,18 +191,27 @@ FEATURE_TYPES = {
 }
 
 # When this Web Platform feature ships, how will it be rolled out to users?
-ROLLOUT_100  = 0
+ROLLOUT_100 = 0
 ROLLOUT_0_THEN_100 = 1
 ROLLOUT_GRADUAL = 2
 ROLLOUT_OTHER = 3
 
 ROLLOUT_PLAN_DISPLAYNAMES = {
-  ROLLOUT_100: 'Will ship enabled for all users',
-  ROLLOUT_0_THEN_100: '(RARE) Ships disabled, then flips on for all users',
-  ROLLOUT_GRADUAL: '(RARE) Experiment users ramp up over time',
-  ROLLOUT_OTHER: "(RARE) It's complicated or unusual",
+    ROLLOUT_100: 'Will ship enabled for all users',
+    ROLLOUT_0_THEN_100: '(RARE) Ships disabled, then flips on for all users',
+    ROLLOUT_GRADUAL: '(RARE) Experiment users ramp up over time',
+    ROLLOUT_OTHER: "(RARE) It's complicated or unusual",
 }
 
+ROLLOUT_STAGE_PLAN_SLOW = (0,)
+ROLLOUT_STAGE_PLAN_TRUSTED_TESTERS = 1
+ROLLOUT_STAGE_PLAN_CUSTOM = 2
+
+ROLLOUT_STAGE_PLAN_DISPLAYNAMES = {
+    ROLLOUT_STAGE_PLAN_TRUSTED_TESTERS: 'Early preview available to Chrome Enterprise Trusted Tester',  # noqa: E501
+    ROLLOUT_STAGE_PLAN_SLOW: 'Feature rolls out gradually',
+    ROLLOUT_STAGE_PLAN_CUSTOM: 'Custom rollout (explain in Rollout details field)',  # noqa: E501
+}
 
 # Intent stages and mapping from stage to stage name.
 INTENT_NONE = 0
@@ -188,20 +227,22 @@ INTENT_SHIPPED = 8
 INTENT_PARKED = 9
 INTENT_ROLLOUT = 10
 
-INTENT_STAGES = collections.OrderedDict([
-  (INTENT_NONE, 'None'),
-  (INTENT_INCUBATE, 'Start incubating'),
-  (INTENT_IMPLEMENT, 'Start prototyping'),
-  (INTENT_EXPERIMENT, 'Dev trials'),
-  (INTENT_IMPLEMENT_SHIP, 'Evaluate readiness to ship'),
-  (INTENT_ORIGIN_TRIAL, 'Origin Trial'),
-  (INTENT_EXTEND_ORIGIN_TRIAL, 'Extend Origin Trial'),
-  (INTENT_SHIP, 'Prepare to ship'),
-  (INTENT_REMOVED, 'Removed'),
-  (INTENT_SHIPPED, 'Shipped'),
-  (INTENT_ROLLOUT, 'Rollout'),
-  (INTENT_PARKED, 'Parked'),
-])
+INTENT_STAGES = collections.OrderedDict(
+    [
+        (INTENT_NONE, 'None'),
+        (INTENT_INCUBATE, 'Start incubating'),
+        (INTENT_IMPLEMENT, 'Start prototyping'),
+        (INTENT_EXPERIMENT, 'Dev trials'),
+        (INTENT_IMPLEMENT_SHIP, 'Evaluate readiness to ship'),
+        (INTENT_ORIGIN_TRIAL, 'Origin Trial'),
+        (INTENT_EXTEND_ORIGIN_TRIAL, 'Extend Origin Trial'),
+        (INTENT_SHIP, 'Prepare to ship'),
+        (INTENT_REMOVED, 'Removed'),
+        (INTENT_SHIPPED, 'Shipped'),
+        (INTENT_ROLLOUT, 'Rollout'),
+        (INTENT_PARKED, 'Parked'),
+    ]
+)
 
 
 # Stage_type values for each process.  Even though some of the stages
@@ -255,97 +296,94 @@ INTENT_STAGES_BY_STAGE_TYPE = {
     STAGE_BLINK_ORIGIN_TRIAL: INTENT_ORIGIN_TRIAL,
     STAGE_BLINK_EXTEND_ORIGIN_TRIAL: INTENT_EXTEND_ORIGIN_TRIAL,
     STAGE_BLINK_SHIPPING: INTENT_SHIP,
-
     STAGE_FAST_PROTOTYPE: INTENT_IMPLEMENT,
     STAGE_FAST_DEV_TRIAL: INTENT_EXPERIMENT,
     STAGE_FAST_ORIGIN_TRIAL: INTENT_ORIGIN_TRIAL,
     STAGE_FAST_EXTEND_ORIGIN_TRIAL: INTENT_EXTEND_ORIGIN_TRIAL,
     STAGE_FAST_SHIPPING: INTENT_SHIP,
-
     STAGE_PSA_IMPLEMENT: INTENT_IMPLEMENT,
     STAGE_PSA_DEV_TRIAL: INTENT_EXPERIMENT,
     STAGE_PSA_SHIPPING: INTENT_SHIP,
-
     STAGE_DEP_PLAN: INTENT_IMPLEMENT,
     STAGE_DEP_DEV_TRIAL: INTENT_EXPERIMENT,
     STAGE_DEP_DEPRECATION_TRIAL: INTENT_ORIGIN_TRIAL,
     STAGE_DEP_EXTEND_DEPRECATION_TRIAL: INTENT_EXTEND_ORIGIN_TRIAL,
     STAGE_DEP_SHIPPING: INTENT_SHIP,
-
     STAGE_ENT_ROLLOUT: INTENT_ROLLOUT,
     STAGE_ENT_SHIPPED: INTENT_SHIPPED,
-  }
+}
 
 STAGE_TYPES_BY_INTENT_STAGE = {
-  FEATURE_TYPE_INCUBATE_ID: {
-    INTENT_INCUBATE: STAGE_BLINK_INCUBATE,
-    INTENT_IMPLEMENT: STAGE_BLINK_PROTOTYPE,
-    INTENT_EXPERIMENT: STAGE_BLINK_DEV_TRIAL,
-    INTENT_IMPLEMENT_SHIP: STAGE_BLINK_EVAL_READINESS,
-    INTENT_ORIGIN_TRIAL: STAGE_BLINK_ORIGIN_TRIAL,
-    INTENT_EXTEND_ORIGIN_TRIAL: STAGE_BLINK_EXTEND_ORIGIN_TRIAL,
-    INTENT_SHIP: STAGE_BLINK_SHIPPING,
-    INTENT_SHIPPED: STAGE_BLINK_SHIPPING,
-  },
-  FEATURE_TYPE_EXISTING_ID: {
-    INTENT_IMPLEMENT: STAGE_FAST_PROTOTYPE,
-    INTENT_EXPERIMENT: STAGE_FAST_DEV_TRIAL,
-    INTENT_ORIGIN_TRIAL: STAGE_FAST_ORIGIN_TRIAL,
-    INTENT_EXTEND_ORIGIN_TRIAL: STAGE_FAST_EXTEND_ORIGIN_TRIAL,
-    INTENT_SHIP: STAGE_FAST_SHIPPING,
-    INTENT_SHIPPED: STAGE_FAST_SHIPPING,
-  },
-  FEATURE_TYPE_CODE_CHANGE_ID: {
-    INTENT_IMPLEMENT: STAGE_PSA_IMPLEMENT,
-    INTENT_EXPERIMENT: STAGE_PSA_DEV_TRIAL,
-    INTENT_SHIP: STAGE_PSA_SHIPPING,
-    INTENT_SHIPPED: STAGE_PSA_SHIPPING,
-  },
-  FEATURE_TYPE_DEPRECATION_ID: {
-    INTENT_INCUBATE: STAGE_DEP_PLAN,
-    INTENT_EXPERIMENT: STAGE_DEP_DEV_TRIAL,
-    INTENT_ORIGIN_TRIAL: STAGE_DEP_DEPRECATION_TRIAL,
-    INTENT_EXTEND_ORIGIN_TRIAL: STAGE_DEP_EXTEND_DEPRECATION_TRIAL,
-    INTENT_SHIP: STAGE_DEP_SHIPPING,
-    INTENT_SHIPPED: STAGE_DEP_REMOVE_CODE,
-  },
-  FEATURE_TYPE_ENTERPRISE_ID: {
-    INTENT_ROLLOUT: STAGE_ENT_ROLLOUT,
-    INTENT_SHIPPED: STAGE_ENT_SHIPPED,
-  }
+    FEATURE_TYPE_INCUBATE_ID: {
+        INTENT_INCUBATE: STAGE_BLINK_INCUBATE,
+        INTENT_IMPLEMENT: STAGE_BLINK_PROTOTYPE,
+        INTENT_EXPERIMENT: STAGE_BLINK_DEV_TRIAL,
+        INTENT_IMPLEMENT_SHIP: STAGE_BLINK_EVAL_READINESS,
+        INTENT_ORIGIN_TRIAL: STAGE_BLINK_ORIGIN_TRIAL,
+        INTENT_EXTEND_ORIGIN_TRIAL: STAGE_BLINK_EXTEND_ORIGIN_TRIAL,
+        INTENT_SHIP: STAGE_BLINK_SHIPPING,
+        INTENT_SHIPPED: STAGE_BLINK_SHIPPING,
+    },
+    FEATURE_TYPE_EXISTING_ID: {
+        INTENT_IMPLEMENT: STAGE_FAST_PROTOTYPE,
+        INTENT_EXPERIMENT: STAGE_FAST_DEV_TRIAL,
+        INTENT_ORIGIN_TRIAL: STAGE_FAST_ORIGIN_TRIAL,
+        INTENT_EXTEND_ORIGIN_TRIAL: STAGE_FAST_EXTEND_ORIGIN_TRIAL,
+        INTENT_SHIP: STAGE_FAST_SHIPPING,
+        INTENT_SHIPPED: STAGE_FAST_SHIPPING,
+    },
+    FEATURE_TYPE_CODE_CHANGE_ID: {
+        INTENT_IMPLEMENT: STAGE_PSA_IMPLEMENT,
+        INTENT_EXPERIMENT: STAGE_PSA_DEV_TRIAL,
+        INTENT_SHIP: STAGE_PSA_SHIPPING,
+        INTENT_SHIPPED: STAGE_PSA_SHIPPING,
+    },
+    FEATURE_TYPE_DEPRECATION_ID: {
+        INTENT_INCUBATE: STAGE_DEP_PLAN,
+        INTENT_EXPERIMENT: STAGE_DEP_DEV_TRIAL,
+        INTENT_ORIGIN_TRIAL: STAGE_DEP_DEPRECATION_TRIAL,
+        INTENT_EXTEND_ORIGIN_TRIAL: STAGE_DEP_EXTEND_DEPRECATION_TRIAL,
+        INTENT_SHIP: STAGE_DEP_SHIPPING,
+        INTENT_SHIPPED: STAGE_DEP_REMOVE_CODE,
+    },
+    FEATURE_TYPE_ENTERPRISE_ID: {
+        INTENT_ROLLOUT: STAGE_ENT_ROLLOUT,
+        INTENT_SHIPPED: STAGE_ENT_SHIPPED,
+    },
 }
+
 
 # The different types of intents used to dictate fields in the intent templates.
 class IntentDraftType(str, Enum):
-  PROTOTYPE = 'prototype'
-  DEVELOPER_TESTING = 'developer_testing'
-  EXPERIMENT = 'experiment'
-  EXTEND_EXPERIMENT = 'extend_experiment'
-  SHIP = 'ship'
-  PSA = 'psa'
-  DEPRECATE = 'deprecate'
+    """Enum for intent draft types."""
+
+    PROTOTYPE = 'prototype'
+    DEVELOPER_TESTING = 'developer_testing'
+    EXPERIMENT = 'experiment'
+    EXTEND_EXPERIMENT = 'extend_experiment'
+    SHIP = 'ship'
+    PSA = 'psa'
+    DEPRECATE = 'deprecate'
+
 
 INTENT_DRAFT_TYPES_BY_STAGE_TYPE = {
-  STAGE_BLINK_PROTOTYPE: IntentDraftType.PROTOTYPE,
-  STAGE_BLINK_DEV_TRIAL: IntentDraftType.DEVELOPER_TESTING,
-  STAGE_BLINK_ORIGIN_TRIAL: IntentDraftType.EXPERIMENT,
-  STAGE_BLINK_EXTEND_ORIGIN_TRIAL: IntentDraftType.EXTEND_EXPERIMENT,
-  STAGE_BLINK_SHIPPING: IntentDraftType.SHIP,
-
-  STAGE_FAST_PROTOTYPE: IntentDraftType.PROTOTYPE,
-  STAGE_FAST_DEV_TRIAL: IntentDraftType.DEVELOPER_TESTING,
-  STAGE_FAST_ORIGIN_TRIAL: IntentDraftType.EXPERIMENT,
-  STAGE_FAST_EXTEND_ORIGIN_TRIAL: IntentDraftType.EXTEND_EXPERIMENT,
-  STAGE_FAST_SHIPPING: IntentDraftType.SHIP,
-
-  STAGE_PSA_DEV_TRIAL: IntentDraftType.DEVELOPER_TESTING,
-  STAGE_PSA_SHIPPING: IntentDraftType.PSA,
-
-  STAGE_DEP_PLAN: IntentDraftType.DEPRECATE,
-  STAGE_DEP_DEV_TRIAL: IntentDraftType.DEVELOPER_TESTING,
-  STAGE_DEP_DEPRECATION_TRIAL: IntentDraftType.EXPERIMENT,
-  STAGE_DEP_EXTEND_DEPRECATION_TRIAL: IntentDraftType.EXTEND_EXPERIMENT,
-  STAGE_DEP_SHIPPING: IntentDraftType.SHIP,
+    STAGE_BLINK_PROTOTYPE: IntentDraftType.PROTOTYPE,
+    STAGE_BLINK_DEV_TRIAL: IntentDraftType.DEVELOPER_TESTING,
+    STAGE_BLINK_ORIGIN_TRIAL: IntentDraftType.EXPERIMENT,
+    STAGE_BLINK_EXTEND_ORIGIN_TRIAL: IntentDraftType.EXTEND_EXPERIMENT,
+    STAGE_BLINK_SHIPPING: IntentDraftType.SHIP,
+    STAGE_FAST_PROTOTYPE: IntentDraftType.PROTOTYPE,
+    STAGE_FAST_DEV_TRIAL: IntentDraftType.DEVELOPER_TESTING,
+    STAGE_FAST_ORIGIN_TRIAL: IntentDraftType.EXPERIMENT,
+    STAGE_FAST_EXTEND_ORIGIN_TRIAL: IntentDraftType.EXTEND_EXPERIMENT,
+    STAGE_FAST_SHIPPING: IntentDraftType.SHIP,
+    STAGE_PSA_DEV_TRIAL: IntentDraftType.DEVELOPER_TESTING,
+    STAGE_PSA_SHIPPING: IntentDraftType.PSA,
+    STAGE_DEP_PLAN: IntentDraftType.DEPRECATE,
+    STAGE_DEP_DEV_TRIAL: IntentDraftType.DEVELOPER_TESTING,
+    STAGE_DEP_DEPRECATION_TRIAL: IntentDraftType.EXPERIMENT,
+    STAGE_DEP_EXTEND_DEPRECATION_TRIAL: IntentDraftType.EXTEND_EXPERIMENT,
+    STAGE_DEP_SHIPPING: IntentDraftType.SHIP,
 }
 
 # Gate types
@@ -375,62 +413,104 @@ STAGES_AND_GATES_BY_FEATURE_TYPE: dict[int, list[tuple[int, list[int]]]] = {
         (STAGE_BLINK_PROTOTYPE, [GATE_API_PROTOTYPE]),
         (STAGE_BLINK_DEV_TRIAL, []),
         (STAGE_BLINK_EVAL_READINESS, []),
-        (STAGE_BLINK_ORIGIN_TRIAL,
-         [GATE_PRIVACY_ORIGIN_TRIAL, GATE_SECURITY_ORIGIN_TRIAL,
-          GATE_DEBUGGABILITY_ORIGIN_TRIAL,
-          GATE_API_ORIGIN_TRIAL]),
+        (
+            STAGE_BLINK_ORIGIN_TRIAL,
+            [
+                GATE_PRIVACY_ORIGIN_TRIAL,
+                GATE_SECURITY_ORIGIN_TRIAL,
+                GATE_DEBUGGABILITY_ORIGIN_TRIAL,
+                GATE_API_ORIGIN_TRIAL,
+            ],
+        ),
         (STAGE_BLINK_EXTEND_ORIGIN_TRIAL, [GATE_API_EXTEND_ORIGIN_TRIAL]),
-        (STAGE_BLINK_SHIPPING,
-         [
-          GATE_PRIVACY_SHIP, GATE_SECURITY_SHIP,
-          GATE_ENTERPRISE_SHIP,
-          GATE_DEBUGGABILITY_SHIP, GATE_TESTING_SHIP,
-          GATE_API_SHIP])],
+        (
+            STAGE_BLINK_SHIPPING,
+            [
+                GATE_PRIVACY_SHIP,
+                GATE_SECURITY_SHIP,
+                GATE_ENTERPRISE_SHIP,
+                GATE_DEBUGGABILITY_SHIP,
+                GATE_TESTING_SHIP,
+                GATE_API_SHIP,
+            ],
+        ),
+    ],
     FEATURE_TYPE_EXISTING_ID: [
         (STAGE_FAST_PROTOTYPE, [GATE_API_PROTOTYPE]),
         (STAGE_FAST_DEV_TRIAL, []),
-        (STAGE_FAST_ORIGIN_TRIAL,
-         [GATE_PRIVACY_ORIGIN_TRIAL, GATE_SECURITY_ORIGIN_TRIAL,
-          GATE_DEBUGGABILITY_ORIGIN_TRIAL,
-          GATE_API_ORIGIN_TRIAL]),
+        (
+            STAGE_FAST_ORIGIN_TRIAL,
+            [
+                GATE_PRIVACY_ORIGIN_TRIAL,
+                GATE_SECURITY_ORIGIN_TRIAL,
+                GATE_DEBUGGABILITY_ORIGIN_TRIAL,
+                GATE_API_ORIGIN_TRIAL,
+            ],
+        ),
         (STAGE_FAST_EXTEND_ORIGIN_TRIAL, [GATE_API_EXTEND_ORIGIN_TRIAL]),
-        (STAGE_FAST_SHIPPING,
-         [
-          GATE_PRIVACY_SHIP, GATE_SECURITY_SHIP,
-          GATE_ENTERPRISE_SHIP,
-          GATE_DEBUGGABILITY_SHIP, GATE_TESTING_SHIP,
-          GATE_API_SHIP])],
+        (
+            STAGE_FAST_SHIPPING,
+            [
+                GATE_PRIVACY_SHIP,
+                GATE_SECURITY_SHIP,
+                GATE_ENTERPRISE_SHIP,
+                GATE_DEBUGGABILITY_SHIP,
+                GATE_TESTING_SHIP,
+                GATE_API_SHIP,
+            ],
+        ),
+    ],
     FEATURE_TYPE_CODE_CHANGE_ID: [
         (STAGE_PSA_IMPLEMENT, []),
         (STAGE_PSA_DEV_TRIAL, []),
-        (STAGE_PSA_SHIPPING,
-         [
-          GATE_PRIVACY_SHIP, GATE_SECURITY_SHIP,
-          GATE_ENTERPRISE_SHIP,
-          GATE_DEBUGGABILITY_SHIP, GATE_TESTING_SHIP,
-          GATE_API_SHIP])],
+        (
+            STAGE_PSA_SHIPPING,
+            [
+                GATE_PRIVACY_SHIP,
+                GATE_SECURITY_SHIP,
+                GATE_ENTERPRISE_SHIP,
+                GATE_DEBUGGABILITY_SHIP,
+                GATE_TESTING_SHIP,
+                GATE_API_SHIP,
+            ],
+        ),
+    ],
     FEATURE_TYPE_DEPRECATION_ID: [
-        (STAGE_DEP_PLAN,
-         [# Not needed: GATE_PRIVACY_PLAN, GATE_SECURITY_PLAN,
-          # Not needed: GATE_ENTERPRISE_PLAN,
-          GATE_DEBUGGABILITY_PLAN, GATE_TESTING_PLAN,
-          GATE_API_PLAN]),
+        (
+            STAGE_DEP_PLAN,
+            [  # Not needed: GATE_PRIVACY_PLAN, GATE_SECURITY_PLAN,
+                # Not needed: GATE_ENTERPRISE_PLAN,
+                GATE_DEBUGGABILITY_PLAN,
+                GATE_TESTING_PLAN,
+                GATE_API_PLAN,
+            ],
+        ),
         (STAGE_DEP_DEV_TRIAL, []),
-        (STAGE_DEP_DEPRECATION_TRIAL,
-         [GATE_PRIVACY_ORIGIN_TRIAL, GATE_SECURITY_ORIGIN_TRIAL,
-          GATE_DEBUGGABILITY_ORIGIN_TRIAL,
-          GATE_API_ORIGIN_TRIAL]),
+        (
+            STAGE_DEP_DEPRECATION_TRIAL,
+            [
+                GATE_PRIVACY_ORIGIN_TRIAL,
+                GATE_SECURITY_ORIGIN_TRIAL,
+                GATE_DEBUGGABILITY_ORIGIN_TRIAL,
+                GATE_API_ORIGIN_TRIAL,
+            ],
+        ),
         (STAGE_DEP_EXTEND_DEPRECATION_TRIAL, [GATE_API_EXTEND_ORIGIN_TRIAL]),
-        (STAGE_DEP_SHIPPING,
-         [
-          GATE_PRIVACY_SHIP, GATE_SECURITY_SHIP,
-          GATE_ENTERPRISE_SHIP,
-          GATE_DEBUGGABILITY_SHIP, GATE_TESTING_SHIP,
-          GATE_API_SHIP]),
-        (STAGE_DEP_REMOVE_CODE, [])],
-    FEATURE_TYPE_ENTERPRISE_ID: [
-        (STAGE_ENT_ROLLOUT, [])]
-  }
+        (
+            STAGE_DEP_SHIPPING,
+            [
+                GATE_PRIVACY_SHIP,
+                GATE_SECURITY_SHIP,
+                GATE_ENTERPRISE_SHIP,
+                GATE_DEBUGGABILITY_SHIP,
+                GATE_TESTING_SHIP,
+                GATE_API_SHIP,
+            ],
+        ),
+        (STAGE_DEP_REMOVE_CODE, []),
+    ],
+    FEATURE_TYPE_ENTERPRISE_ID: [(STAGE_ENT_ROLLOUT, [])],
+}
 
 # Plan stage types for every feature type that has plan.
 STAGE_TYPES_PLAN: dict[int, Optional[int]] = {
@@ -439,7 +519,7 @@ STAGE_TYPES_PLAN: dict[int, Optional[int]] = {
     FEATURE_TYPE_CODE_CHANGE_ID: None,
     FEATURE_TYPE_DEPRECATION_ID: STAGE_DEP_PLAN,
     FEATURE_TYPE_ENTERPRISE_ID: None,
-  }
+}
 # Prototype stage types for every feature type.
 STAGE_TYPES_PROTOTYPE: dict[int, Optional[int]] = {
     FEATURE_TYPE_INCUBATE_ID: STAGE_BLINK_PROTOTYPE,
@@ -447,7 +527,7 @@ STAGE_TYPES_PROTOTYPE: dict[int, Optional[int]] = {
     FEATURE_TYPE_CODE_CHANGE_ID: STAGE_PSA_IMPLEMENT,
     FEATURE_TYPE_DEPRECATION_ID: None,
     FEATURE_TYPE_ENTERPRISE_ID: None,
-  }
+}
 # Dev trial stage types for every feature type.
 STAGE_TYPES_DEV_TRIAL: dict[int, Optional[int]] = {
     FEATURE_TYPE_INCUBATE_ID: STAGE_BLINK_DEV_TRIAL,
@@ -455,7 +535,7 @@ STAGE_TYPES_DEV_TRIAL: dict[int, Optional[int]] = {
     FEATURE_TYPE_CODE_CHANGE_ID: STAGE_PSA_DEV_TRIAL,
     FEATURE_TYPE_DEPRECATION_ID: STAGE_DEP_DEV_TRIAL,
     FEATURE_TYPE_ENTERPRISE_ID: None,
-  }
+}
 # Origin trial stage types for every feature type.
 STAGE_TYPES_ORIGIN_TRIAL: dict[int, Optional[int]] = {
     FEATURE_TYPE_INCUBATE_ID: STAGE_BLINK_ORIGIN_TRIAL,
@@ -463,12 +543,12 @@ STAGE_TYPES_ORIGIN_TRIAL: dict[int, Optional[int]] = {
     FEATURE_TYPE_CODE_CHANGE_ID: None,
     FEATURE_TYPE_DEPRECATION_ID: STAGE_DEP_DEPRECATION_TRIAL,
     FEATURE_TYPE_ENTERPRISE_ID: None,
-  }
+}
 # Set of every origin trial stage type.
 ALL_ORIGIN_TRIAL_STAGE_TYPES: set[int] = {
-  STAGE_BLINK_ORIGIN_TRIAL,
-  STAGE_FAST_ORIGIN_TRIAL,
-  STAGE_DEP_DEPRECATION_TRIAL,
+    STAGE_BLINK_ORIGIN_TRIAL,
+    STAGE_FAST_ORIGIN_TRIAL,
+    STAGE_DEP_DEPRECATION_TRIAL,
 }
 # Origin trial extension stage types for every feature type.
 STAGE_TYPES_EXTEND_ORIGIN_TRIAL: dict[int, Optional[int]] = {
@@ -477,35 +557,35 @@ STAGE_TYPES_EXTEND_ORIGIN_TRIAL: dict[int, Optional[int]] = {
     FEATURE_TYPE_CODE_CHANGE_ID: None,
     FEATURE_TYPE_DEPRECATION_ID: STAGE_DEP_EXTEND_DEPRECATION_TRIAL,
     FEATURE_TYPE_ENTERPRISE_ID: None,
-  }
+}
 # Shipping stage types for every feature type.
 STAGE_TYPES_SHIPPING: dict[int, Optional[int]] = {
     FEATURE_TYPE_INCUBATE_ID: STAGE_BLINK_SHIPPING,
     FEATURE_TYPE_EXISTING_ID: STAGE_FAST_SHIPPING,
     FEATURE_TYPE_CODE_CHANGE_ID: STAGE_PSA_SHIPPING,
     FEATURE_TYPE_DEPRECATION_ID: STAGE_DEP_SHIPPING,
-    FEATURE_TYPE_ENTERPRISE_ID: None
-  }
+    FEATURE_TYPE_ENTERPRISE_ID: None,
+}
 # Rollout stage types for every feature type.
 STAGE_TYPES_ROLLOUT: dict[int, Optional[int]] = {
     FEATURE_TYPE_INCUBATE_ID: STAGE_ENT_ROLLOUT,
     FEATURE_TYPE_EXISTING_ID: STAGE_ENT_ROLLOUT,
     FEATURE_TYPE_CODE_CHANGE_ID: STAGE_ENT_ROLLOUT,
     FEATURE_TYPE_DEPRECATION_ID: STAGE_ENT_ROLLOUT,
-    FEATURE_TYPE_ENTERPRISE_ID: STAGE_ENT_ROLLOUT
-  }
+    FEATURE_TYPE_ENTERPRISE_ID: STAGE_ENT_ROLLOUT,
+}
 
 OT_EXTENSION_STAGE_TYPES: set[int] = {
     STAGE_BLINK_EXTEND_ORIGIN_TRIAL,
     STAGE_FAST_EXTEND_ORIGIN_TRIAL,
     STAGE_DEP_EXTEND_DEPRECATION_TRIAL,
-  }
+}
 
 # Origin trial stage types mapped to extension stage types.
 OT_EXTENSION_STAGE_TYPES_MAPPING: dict[int, int] = {
-  STAGE_BLINK_ORIGIN_TRIAL: STAGE_BLINK_EXTEND_ORIGIN_TRIAL,
-  STAGE_FAST_ORIGIN_TRIAL: STAGE_FAST_EXTEND_ORIGIN_TRIAL,
-  STAGE_DEP_DEPRECATION_TRIAL: STAGE_DEP_EXTEND_DEPRECATION_TRIAL,
+    STAGE_BLINK_ORIGIN_TRIAL: STAGE_BLINK_EXTEND_ORIGIN_TRIAL,
+    STAGE_FAST_ORIGIN_TRIAL: STAGE_FAST_EXTEND_ORIGIN_TRIAL,
+    STAGE_DEP_DEPRECATION_TRIAL: STAGE_DEP_EXTEND_DEPRECATION_TRIAL,
 }
 
 # Mapping of original field names to the new stage types the fields live on.
@@ -540,16 +620,16 @@ STAGE_TYPES_BY_FIELD_MAPPING: dict[str, dict[int, Optional[int]]] = {
     'rollout_impact': STAGE_TYPES_ROLLOUT,
     'rollout_milestone': STAGE_TYPES_ROLLOUT,
     'rollout_platforms': STAGE_TYPES_ROLLOUT,
-    'rollout_details': STAGE_TYPES_ROLLOUT
-  }
+    'rollout_details': STAGE_TYPES_ROLLOUT,
+}
 
 # Mapping of which stage types are associated with each gate type.
 STAGE_TYPES_BY_GATE_TYPE_MAPPING: dict[int, dict[int, Optional[int]]] = {
-  GATE_API_PLAN: STAGE_TYPES_PLAN,
-  GATE_API_PROTOTYPE: STAGE_TYPES_PROTOTYPE,
-  GATE_API_ORIGIN_TRIAL: STAGE_TYPES_ORIGIN_TRIAL,
-  GATE_API_EXTEND_ORIGIN_TRIAL: STAGE_TYPES_EXTEND_ORIGIN_TRIAL,
-  GATE_API_SHIP: STAGE_TYPES_SHIPPING
+    GATE_API_PLAN: STAGE_TYPES_PLAN,
+    GATE_API_PROTOTYPE: STAGE_TYPES_PROTOTYPE,
+    GATE_API_ORIGIN_TRIAL: STAGE_TYPES_ORIGIN_TRIAL,
+    GATE_API_EXTEND_ORIGIN_TRIAL: STAGE_TYPES_EXTEND_ORIGIN_TRIAL,
+    GATE_API_SHIP: STAGE_TYPES_SHIPPING,
 }
 
 # ot_setup_status values for denoting OT creation progress.
@@ -560,20 +640,27 @@ OT_ACTIVATION_FAILED = 4
 OT_CREATED = 5
 OT_ACTIVATED = 6
 
+
 # Histogram IDs used for identifying origin trial use counters.
 class BlinkHistogramID(str, Enum):
-  web_feature = 'WEB_FEATURE'
-  webdx_feature = 'WEBDX_FEATURE'
-  css_property_id = 'CSS_PROPERTY_ID'
+    """Enum for blink histogram ID."""
+
+    web_feature = 'WEB_FEATURE'
+    webdx_feature = 'WEBDX_FEATURE'
+    css_property_id = 'CSS_PROPERTY_ID'
+
 
 # Statuses used for go/skyhook-dash
 class SkyhookDashStatus(str, Enum):
-  FYI = 'FYI'
-  APPROVED = 'APPROVED'
-  DENIED = 'DENIED'
-  NEEDS_WORK = 'NEEDS_WORK'
-  PENDING_REVIEW = 'PENDING_REVIEW'
-  NOT_ASSIGNED_TO_LAUNCH_OWNER = 'NOT_ASSIGNED_TO_LAUNCH_OWNER'
+    """Enum for skyhook dash status."""
+
+    FYI = 'FYI'
+    APPROVED = 'APPROVED'
+    DENIED = 'DENIED'
+    NEEDS_WORK = 'NEEDS_WORK'
+    PENDING_REVIEW = 'PENDING_REVIEW'
+    NOT_ASSIGNED_TO_LAUNCH_OWNER = 'NOT_ASSIGNED_TO_LAUNCH_OWNER'
+
 
 NO_ACTIVE_DEV = 1
 PROPOSED = 2
@@ -585,16 +672,18 @@ REMOVED = 7
 ORIGIN_TRIAL = 8
 INTERVENTION = 9  # Deprecated: discouraged. https://github.com/GoogleChrome/chromium-dashboard/issues/3527
 ON_HOLD = 10
-NO_LONGER_PURSUING = 1000 # ensure it is at the bottom of the list
+NO_LONGER_PURSUING = 1000  # ensure it is at the bottom of the list
 
 RELEASE_IMPL_STATES = {
-    BEHIND_A_FLAG, ENABLED_BY_DEFAULT,
-    DEPRECATED, REMOVED, ORIGIN_TRIAL, INTERVENTION,
+    BEHIND_A_FLAG,
+    ENABLED_BY_DEFAULT,
+    DEPRECATED,
+    REMOVED,
+    ORIGIN_TRIAL,
+    INTERVENTION,
 }
 
-INACTIVE_IMPL_STATUSES = {
-    NO_ACTIVE_DEV, ON_HOLD, NO_LONGER_PURSUING
-}
+INACTIVE_IMPL_STATUSES = {NO_ACTIVE_DEV, ON_HOLD, NO_LONGER_PURSUING}
 
 # Ordered dictionary, make sure the order of this dictionary matches that of
 # the sorted list above!
@@ -615,8 +704,11 @@ IMPLEMENTATION_STATUS[NO_LONGER_PURSUING] = 'No longer pursuing'
 ROLLOUT_SECTION = 'Stepped rollout'
 
 ROADMAP_FEATURE_TYPES = {
-    FEATURE_TYPE_INCUBATE_ID, FEATURE_TYPE_EXISTING_ID,
-    FEATURE_TYPE_CODE_CHANGE_ID, FEATURE_TYPE_DEPRECATION_ID}
+    FEATURE_TYPE_INCUBATE_ID,
+    FEATURE_TYPE_EXISTING_ID,
+    FEATURE_TYPE_CODE_CHANGE_ID,
+    FEATURE_TYPE_DEPRECATION_ID,
+}
 
 MAJOR_NEW_API = 1
 MAJOR_MINOR_NEW_API = 2
@@ -635,24 +727,33 @@ REVIEW_STATUS_CHOICES = {
     REVIEW_ISSUES_OPEN: 'Issues open',
     REVIEW_ISSUES_ADDRESSED: 'Issues addressed',
     REVIEW_NA: 'Not applicable',
-    }
+}
 
 
 FOOTPRINT_CHOICES = {
-  MAJOR_NEW_API: ('A major new independent API (e.g. adding many '
-                  'independent concepts with many methods/properties/objects)'),
-  MAJOR_MINOR_NEW_API: ('Major changes to an existing API OR a minor new '
-                        'independent API (e.g. adding many new '
-                        'methods/properties or introducing new concepts to '
-                        'augment an existing API)'),
-  SUBSTANTIVE_CHANGES: ('Substantive changes to an existing API (e.g. small '
-                        'number of new methods/properties)'),
-  MINOR_EXISTING_CHANGES: (
-      'Minor changes to an existing API (e.g. adding a new keyword/allowed '
-      'argument to a property/method)'),
-  EXTREMELY_SMALL_CHANGE: ('Extremely small tweaks to an existing API (e.g. '
-                           'how existing keywords/arguments are interpreted)'),
-  }
+    MAJOR_NEW_API: (
+        'A major new independent API (e.g. adding many '
+        'independent concepts with many methods/properties/objects)'
+    ),
+    MAJOR_MINOR_NEW_API: (
+        'Major changes to an existing API OR a minor new '
+        'independent API (e.g. adding many new '
+        'methods/properties or introducing new concepts to '
+        'augment an existing API)'
+    ),
+    SUBSTANTIVE_CHANGES: (
+        'Substantive changes to an existing API (e.g. small '
+        'number of new methods/properties)'
+    ),
+    MINOR_EXISTING_CHANGES: (
+        'Minor changes to an existing API (e.g. adding a new keyword/allowed '
+        'argument to a property/method)'
+    ),
+    EXTREMELY_SMALL_CHANGE: (
+        'Extremely small tweaks to an existing API (e.g. '
+        'how existing keywords/arguments are interpreted)'
+    ),
+}
 
 MAINSTREAM_NEWS = 1
 WARRANTS_ARTICLE = 2
@@ -679,32 +780,31 @@ GECKO_HARMFUL = 15  # Deprecated
 
 
 VENDOR_VIEWS_COMMON = {
-  SHIPPED: 'Shipped/Shipping',
-  IN_DEV: 'In development',
-  PUBLIC_SUPPORT: 'Positive',
-  NO_PUBLIC_SIGNALS: 'No signal',
-  OPPOSED: 'Negative',
-  NEUTRAL: 'Neutral',
-  SIGNALS_NA: 'N/A',
-  }
+    SHIPPED: 'Shipped/Shipping',
+    IN_DEV: 'In development',
+    PUBLIC_SUPPORT: 'Positive',
+    NO_PUBLIC_SIGNALS: 'No signal',
+    OPPOSED: 'Negative',
+    NEUTRAL: 'Neutral',
+    SIGNALS_NA: 'N/A',
+}
 
 VENDOR_VIEWS_GECKO = {
-  NO_PUBLIC_SIGNALS: 'No signal',
-  SIGNALS_NA: 'N/A',
-  GECKO_UNDER_CONSIDERATION: 'Under consideration',
-  GECKO_DEFER: 'Defer',
-  PUBLIC_SUPPORT: 'Positive',
-  OPPOSED: 'Negative',
-  NEUTRAL: 'Neutral',
-  SHIPPED: 'Shipped/Shipping',
-
-  # TODO(jrobbins): Delete these lines after migration script has been
-  # run in prod.
-  GECKO_IMPORTANT: 'Important',
-  GECKO_WORTH_PROTOTYPING: 'Worth prototyping',
-  GECKO_NONHARMFUL: 'Non-harmful',
-  GECKO_HARMFUL: 'Harmful',
-  }
+    NO_PUBLIC_SIGNALS: 'No signal',
+    SIGNALS_NA: 'N/A',
+    GECKO_UNDER_CONSIDERATION: 'Under consideration',
+    GECKO_DEFER: 'Defer',
+    PUBLIC_SUPPORT: 'Positive',
+    OPPOSED: 'Negative',
+    NEUTRAL: 'Neutral',
+    SHIPPED: 'Shipped/Shipping',
+    # TODO(jrobbins): Delete these lines after migration script has been
+    # run in prod.
+    GECKO_IMPORTANT: 'Important',
+    GECKO_WORTH_PROTOTYPING: 'Worth prototyping',
+    GECKO_NONHARMFUL: 'Non-harmful',
+    GECKO_HARMFUL: 'Harmful',
+}
 
 # These vendors have no "custom" views values yet.
 VENDOR_VIEWS_EDGE = VENDOR_VIEWS_COMMON
@@ -723,13 +823,13 @@ PUBLIC_DISCUSSION = 5
 NO_STD_OR_DISCUSSION = 6
 
 STANDARDIZATION = {
-  DEFACTO_STD: 'De-facto standard',
-  ESTABLISHED_STD: 'Established standard',
-  WORKING_DRAFT: 'Working draft or equivalent',
-  EDITORS_DRAFT: "Editor's draft",
-  PUBLIC_DISCUSSION: 'Public discussion',
-  NO_STD_OR_DISCUSSION: 'No public standards discussion',
-  }
+    DEFACTO_STD: 'De-facto standard',
+    ESTABLISHED_STD: 'Established standard',
+    WORKING_DRAFT: 'Working draft or equivalent',
+    EDITORS_DRAFT: "Editor's draft",
+    PUBLIC_DISCUSSION: 'Public discussion',
+    NO_STD_OR_DISCUSSION: 'No public standards discussion',
+}
 
 UNSET_STD = 0
 UNKNOWN_STD = 1
@@ -739,23 +839,26 @@ WORKINGDRAFT_STD = 4
 STANDARD_STD = 5
 
 STANDARD_MATURITY_CHOICES = {
-  # No text for UNSET_STD.  One of the values below will be set on first edit.
-  UNKNOWN_STD: 'Unknown standards status - check spec link for status',
-  PROPOSAL_STD: 'Proposal in a personal repository, no adoption from community',
-  INCUBATION_STD: 'Specification being incubated in a Community Group',
-  WORKINGDRAFT_STD: ('Specification currently under development in a '
-                     'Working Group'),
-  STANDARD_STD: ('Final published standard: Recommendation, Living Standard, '
-                 'Candidate Recommendation, or similar final form'),
+    # No text for UNSET_STD.  One of the values below will be set on first edit.
+    UNKNOWN_STD: 'Unknown standards status - check spec link for status',
+    PROPOSAL_STD: 'Proposal in a personal repository, no adoption from community',
+    INCUBATION_STD: 'Specification being incubated in a Community Group',
+    WORKINGDRAFT_STD: (
+        'Specification currently under development in a Working Group'
+    ),
+    STANDARD_STD: (
+        'Final published standard: Recommendation, Living Standard, '
+        'Candidate Recommendation, or similar final form'
+    ),
 }
 
 STANDARD_MATURITY_SHORT = {
-  UNSET_STD: 'Unknown status',
-  UNKNOWN_STD: 'Unknown status',
-  PROPOSAL_STD: 'Pre-incubation',
-  INCUBATION_STD: 'Incubation',
-  WORKINGDRAFT_STD: 'Working draft',
-  STANDARD_STD: 'Published standard',
+    UNSET_STD: 'Unknown status',
+    UNKNOWN_STD: 'Unknown status',
+    PROPOSAL_STD: 'Pre-incubation',
+    INCUBATION_STD: 'Incubation',
+    WORKINGDRAFT_STD: 'Working draft',
+    STANDARD_STD: 'Published standard',
 }
 
 # For features that don't have a standard_maturity value set, but do have
@@ -777,13 +880,13 @@ DEV_NEGATIVE = 5
 DEV_STRONG_NEGATIVE = 6
 
 WEB_DEV_VIEWS = {
-  DEV_STRONG_POSITIVE: 'Strongly positive',
-  DEV_POSITIVE: 'Positive',
-  DEV_MIXED_SIGNALS: 'Mixed signals',
-  DEV_NO_SIGNALS: 'No signals',
-  DEV_NEGATIVE: 'Negative',
-  DEV_STRONG_NEGATIVE: 'Strongly negative',
-  }
+    DEV_STRONG_POSITIVE: 'Strongly positive',
+    DEV_POSITIVE: 'Positive',
+    DEV_MIXED_SIGNALS: 'Mixed signals',
+    DEV_NO_SIGNALS: 'No signals',
+    DEV_NEGATIVE: 'Negative',
+    DEV_STRONG_NEGATIVE: 'Strongly negative',
+}
 
 
 PROPERTY_NAMES_TO_ENUM_DICTS = {
@@ -806,50 +909,58 @@ PROPERTY_NAMES_TO_ENUM_DICTS = {
     'browsers.webdev.view': WEB_DEV_VIEWS,
     'rollout_impact': IMPACT_CATEGORIES,
     'rollout_platforms': PLATFORM_CATEGORIES,
+    'rollout_stage_plan': ROLLOUT_STAGE_PLAN_DISPLAYNAMES,
     'rollout_plan': ROLLOUT_PLAN_DISPLAYNAMES,
-  }
+}
+
 
 # Valid values for FeatureEntry.ai_test_eval_run_status
 class AITestEvaluationStatus(int, Enum):
-  COMPLETE = 1
-  IN_PROGRESS = 2
-  FAILED = 3
+    """Enum for AI test evaluation status."""
+
+    COMPLETE = 1
+    IN_PROGRESS = 2
+    FAILED = 3
+    DELETED = 4
 
 
 def convert_enum_int_to_string(property_name, value):
-  """If the property is an enum, return human-readable string, else value."""
-  # Check if the value is an int or can be converted to an int.
-  try:
-    int_val = int(value)
-  except Exception:
-    return value
-  enum_dict = PROPERTY_NAMES_TO_ENUM_DICTS.get(property_name, {})
-  converted_value = enum_dict.get(int_val, value)
-  return converted_value
+    """If the property is an enum, return human-readable string, else value."""
+    # Check if the value is an int or can be converted to an int.
+    try:
+        int_val = int(value)
+    except Exception:
+        return value
+    enum_dict = PROPERTY_NAMES_TO_ENUM_DICTS.get(property_name, {})
+    converted_value = enum_dict.get(int_val, value)
+    return converted_value
 
 
 WORD_RE = re.compile(r'[a-z0-9]+')
+
+
 def normalize_enum_string(value: str) -> str:
-  """Make enum name comparisons more convienent."""
-  words = WORD_RE.findall(value.lower())
-  normal = '_'.join(w for w in words if w)
-  return normal
+    """Make enum name comparisons more convienent."""
+    words = WORD_RE.findall(value.lower())
+    normal = '_'.join(w for w in words if w)
+    return normal
 
 
 def convert_enum_string_to_int(property_name, value):
-  """If the property is an enum, return its enum value, else -1."""
-  try:
-    return int(value)
-  except ValueError:
-    pass
+    """If the property is an enum, return its enum value, else -1."""
+    try:
+        return int(value)
+    except ValueError:
+        pass
 
-  normal_value = normalize_enum_string(value)
-  enum_dict = PROPERTY_NAMES_TO_ENUM_DICTS.get(property_name, {})
-  for index, enum_str in enum_dict.items():
-    if normalize_enum_string(enum_str) == normal_value:
-      return index
-  return -1
+    normal_value = normalize_enum_string(value)
+    enum_dict = PROPERTY_NAMES_TO_ENUM_DICTS.get(property_name, {})
+    for index, enum_str in enum_dict.items():
+        if normalize_enum_string(enum_str) == normal_value:
+            return index
+    return -1
 
 
 def is_enum_field(property_name):
-  return property_name in PROPERTY_NAMES_TO_ENUM_DICTS
+    """Return True if the given property name maps to an enum."""
+    return property_name in PROPERTY_NAMES_TO_ENUM_DICTS

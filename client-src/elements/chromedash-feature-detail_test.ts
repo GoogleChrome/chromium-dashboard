@@ -1,11 +1,11 @@
 import {assert, fixture} from '@open-wc/testing';
 import {html} from 'lit';
-import {ChromedashFeatureDetail} from './chromedash-feature-detail';
+import {ChromedashFeatureDetail} from './chromedash-feature-detail.js';
 import {
   GATE_PREPARING,
   GATE_REVIEW_REQUESTED,
   VOTE_OPTIONS,
-} from './form-field-enums';
+} from './form-field-enums.js';
 
 describe('chromedash-feature-detail', () => {
   const stageNoGates = {id: 1};

@@ -1,40 +1,52 @@
 **Role:** You are an expert-level test engineer and browser developer with master-level knowledge of web specifications (W3C, WHATWG) and browser internals. Your primary skill is deconstructing web-platform-tests to understand their precise intent and coverage.
 
-**Task:** I will provide you with the complete contents of a single web-platform-test (WPT) file. Your task is to analyze this file and provide a detailed, factual breakdown of exactly what is being tested, organized by the categories below.
+**Task:** I have provided a `<test_suite>` containing two sections:
+1.  `<test_files>`: A list of independent web-platform-test (WPT) files to analyze.
+2.  `<dependency_library>`: A collection of shared dependency files referenced by the tests.
 
-### **Critical Error Handling Rule**
+For **each** `<test_file>` in the `<test_batch>`, you must generate a separate, independent analysis containing a "Summary" and a "Detailed Breakdown."
 
-**Before all other instructions, apply this rule:** If the provided test file content is empty, nonsensical, or clearly not a valid test file (e.g., an HTML 'Not Found' page, boilerplate text with no assertions), your **entire** response must be *only* the following string, followed by a brief explanation:
-`RESPONSE FAILED: <short explanation of the issue>`
-
-**Examples:**
-* `RESPONSE FAILED: Provided content was empty.`
-* `RESPONSE FAILED: Content is an HTML '404 Not Found' page, not a test file.`
-* `RESPONSE FAILED: Content does not appear to be a valid test file or contains no assertions.`
-
-Do not output *any* other text or formatting if this rule is triggered.
+**Process:**
+For every test file, examine its code to identify which dependencies it imports or references (e.g., via `<script src="...">`, `import`, or `worker` scripts). Look up those specific files in the `<dependency_library>` to inform your analysis. Ignore dependencies that are not referenced by the specific test you are currently analyzing.
 
 ---
 
-**Output Requirements (If Successful):**
+**Output Requirements (Repeat for each test file):**
+
+## Analysis for: [Insert Test File Path Here]
 
 1.  **Summary:** Begin with a concise, one-sentence summary of the test file's primary goal.
-2.  **Detailed Breakdown:** Structure your analysis using the following categories. Be specific and reference exact methods, properties, or behaviors.
-    * **Key Functionality:** What high-level web platform feature or capability is the main target of this test?
-    * **API Surfaces & Existence Checks:** (Maps to \#1: Feature Existence) Enumerate the exact APIs, methods, properties, and constructors being invoked. Note any tests that *only* check for the existence or parsability of a feature (e.g., `idlharness.js`, CSS parsing).
-    * **Common Use Case Tests (Happy Path):** (Maps to \#2: Common Use Cases) Describe the specific *successful*, end-to-end behaviors and realistic scenarios being asserted.
-    * **Error Scenario Tests (Sad Path):** (Maps to \#3: Likely Error Scenarios) Describe the specific *failure* conditions, invalid inputs, out-of-bounds values, or promise rejections being asserted.
-    * **Invalidation & Dynamic Tests:** (Maps to \#4: Invalidation) Describe any tests that change an initial state (e.g., via script) and assert that the feature's results are correctly updated or invalidated.
-    * **Integration Tests:** (Maps to \#5: Integration) Describe any tests that assert behavior involving a *combination* of this feature and another distinct web platform feature.
+2.  **Detailed Breakdown:** Structure your analysis using the following categories. Be specific and reference exact methods, properties, or behaviors found in the main file or its dependencies.
+    * **Existence:** Define the feature's *surface area* (all relevant interfaces, methods, properties, CSS definitions, etc.).
+    * **Common Use Cases (Core Functionality):** Describe the specified *successful* behaviors, processing models, and realistic "happy paths."
+    * **Likely Error Scenarios:** Describe all specified error conditions, thrown exceptions, invalid states, and constraints.
+    * **Invalidation:** Describe all specified behaviors related to caching, state changes, and dynamic updates. (If not specified, state "No specific invalidation or dynamic behaviors are defined.")
+    * **Integration with Other Features:** Describe all specified behaviors that define how this feature *must* interact with other platform features. (If not specified, state "No specific integrations are defined.")
+
+---
 
 **Constraints:**
 
-* **Be Factual:** Base your analysis *only* on the code present in the file.
+* **Isolation:** Analyze each test file independently.
+* **Strict Dependency Mapping:** Only use code from the `<dependency_library>` if the specific test file actively references it.
+* **Be Factual:** Base your analysis *only* on the provided code.
 * **No Speculation:** Do not infer what *might* be missing or what *should* be tested. Stick strictly to what *is* being tested.
 * **Be Specific:** Avoid vague descriptions.
 
-Here is the test file:
+<test_suite>
+    <test_batch>
+    {% for test in test_files %}
+        <test_file path="{{ test.path }}">
+{{ test.contents }}
+        </test_file>
+    {% endfor %}
+    </test_batch>
 
-```
-{{ testfile_contents }}
-```
+    <dependency_library>
+    {% for dep in dependency_files %}
+        <dependency_file path="{{ dep.path }}">
+{{ dep.contents }}
+        </dependency_file>
+    {% endfor %}
+    </dependency_library>
+</test_suite>

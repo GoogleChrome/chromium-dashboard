@@ -21,12 +21,13 @@ import {
   OT_SETUP_STATUS_OPTIONS,
   PLATFORMS_DISPLAYNAME,
   ROLLOUT_PLAN_DISPLAYNAME,
+  ROLLOUT_STAGE_PLAN_DISPLAYNAME,
   STAGE_ENT_ROLLOUT,
   STAGE_FIELD_NAME_MAPPING,
   STAGE_SPECIFIC_FIELDS,
   STAGE_TYPES_ORIGIN_TRIAL,
   STAGE_TYPES_SHIPPING,
-} from './form-field-enums';
+} from './form-field-enums.js';
 
 let toastEl;
 
@@ -41,6 +42,8 @@ const ACCURACY_GRACE_PERIOD = 4 * 7 * 24 * 60 * 60 * 1000;
 // A 9-week grace period used to approximate 2 months for shipped features.
 const SHIPPED_FEATURE_OUTDATED_GRACE_PERIOD = 9 * 7 * 24 * 60 * 60 * 1000;
 
+const DATE_HAS_TIMEZONE_REGEX = /Z$|[+-]\d{2}:?\d{2}$/;
+
 export const IS_MOBILE = (() => {
   const width =
     window.innerWidth ||
@@ -53,10 +56,11 @@ export const IS_MOBILE = (() => {
  * where appropriate.
  */
 export function autolink(
-  s,
+  s: string | null | undefined,
   featureLinks: FeatureLink[] = [],
   isMarkdown: boolean = false
 ): TemplateResult[] {
+  s = s ?? '';
   if (isMarkdown) {
     const rendered: string = marked.parse(s) as string;
     const sanitized: string = DOMPurify.sanitize(rendered);
@@ -252,7 +256,11 @@ export function getFieldValueFromFeature(
     const value = getStageValue(feStage, fieldName);
     if (fieldName === 'rollout_platforms' && value) {
       return value.map(platformId => PLATFORMS_DISPLAYNAME[platformId]);
-    } else if (fieldName in OT_MILESTONE_END_FIELDS) {
+    }
+    if (fieldName === 'rollout_stage_plan') {
+      return ROLLOUT_STAGE_PLAN_DISPLAYNAME[value];
+    }
+    if (fieldName in OT_MILESTONE_END_FIELDS) {
       // If an origin trial end date is being displayed, handle extension milestones as well.
       return _getMilestoneExtensionValue(feStage, fieldName);
     }
@@ -762,6 +770,25 @@ export const METRICS_TYPE_AND_VIEW_TO_SUBTITLE = {
   webfeaturepopularity: 'Web features usage metrics > all features',
 };
 
+const USE_COUNTERS_LINK = html`<a
+  href="https://chromium.googlesource.com/chromium/src/+/HEAD/docs/use_counter_wiki.md"
+  target="_blank"
+  >UseCounters</a
+>`;
+
+export const METRICS_TYPE_AND_VIEW_TO_DESCRIPTION = {
+  csspopularity: html`This list shows ${USE_COUNTERS_LINK} for CSS properties
+  regardless of animiation.`,
+  cssanimated: html`This list shows ${USE_COUNTERS_LINK} for CSS properities in
+  combination with animation.`,
+  featurepopularity: html`This list shows ${USE_COUNTERS_LINK} for certain
+  Javascript and HTML features.`,
+  webfeaturepopularity: html`This list shows ${USE_COUNTERS_LINK} for
+    <a href="https://github.com/web-platform-dx/web-features" target="_blank"
+      >Web Features</a
+    >.`,
+};
+
 /**
  * A feature is outdated if it has shipped, and its
  * accurate_as_of is before its latest shipping date before today.
@@ -1067,4 +1094,30 @@ export function getFeatureOutdatedBanner(
   }
 
   return null;
+}
+
+/**
+ * Parses a timestamp string from the server.
+ * If the string is "naive" (has no timezone offset or Z), it appends 'Z'
+ * to force the browser to interpret it as UTC.
+ */
+export function parseRawTimestamp(
+  timestamp: string | undefined | null
+): number | null {
+  if (!timestamp) {
+    return null;
+  }
+
+  // Check if the timestamp already has timezone info.
+  // Matches "Z" at end, or "+HH:MM" / "-HH:MM"
+  const hasTimezone = DATE_HAS_TIMEZONE_REGEX.test(timestamp);
+
+  let safeTimestamp = timestamp;
+  if (!hasTimezone) {
+    // It's a naive string (e.g. "2020-01-01T20:00:00").
+    // We assume the server meant UTC.
+    safeTimestamp = `${timestamp}Z`;
+  }
+
+  return new Date(safeTimestamp).getTime();
 }

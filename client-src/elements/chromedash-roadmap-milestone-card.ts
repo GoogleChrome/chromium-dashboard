@@ -323,18 +323,6 @@ export class ChromedashRoadmapMilestoneCard extends LitElement {
                 </span>
               `
             : nothing}
-          ${ORIGIN_TRIAL.includes(shippingType)
-            ? html`
-                <span class="tooltip" title="Origin Trial">
-                  <sl-icon
-                    library="material"
-                    name="extension"
-                    class="experimental"
-                    data-tooltip
-                  ></sl-icon>
-                </span>
-              `
-            : nothing}
           ${DEPRECATION_TRIAL.includes(shippingType)
             ? html`
                 <span class="tooltip" title="Deprecation Trial">
@@ -353,17 +341,6 @@ export class ChromedashRoadmapMilestoneCard extends LitElement {
                   <sl-icon
                     name="x-circle-fill"
                     class="remove"
-                    data-tooltip
-                  ></sl-icon>
-                </span>
-              `
-            : nothing}
-          ${DEPRECATED_STATUS.includes(shippingType)
-            ? html`
-                <span class="tooltip" title="Deprecated">
-                  <sl-icon
-                    name="exclamation-triangle-fill"
-                    class="deprecated"
                     data-tooltip
                   ></sl-icon>
                 </span>

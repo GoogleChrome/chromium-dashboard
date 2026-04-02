@@ -236,6 +236,12 @@ export interface StageField {
      * @memberof StageField
      */
     rollout_details?: FieldInfo;
+    /**
+     * 
+     * @type {FieldInfo}
+     * @memberof StageField
+     */
+    rollout_stage_plan?: FieldInfo;
 }
 
 /**
@@ -290,6 +296,7 @@ export function StageFieldFromJSONTyped(json: any, ignoreDiscriminator: boolean)
         'rollout_milestone': json['rollout_milestone'] == null ? undefined : FieldInfoFromJSON(json['rollout_milestone']),
         'rollout_platforms': json['rollout_platforms'] == null ? undefined : FieldInfoFromJSON(json['rollout_platforms']),
         'rollout_details': json['rollout_details'] == null ? undefined : FieldInfoFromJSON(json['rollout_details']),
+        'rollout_stage_plan': json['rollout_stage_plan'] == null ? undefined : FieldInfoFromJSON(json['rollout_stage_plan']),
     };
 }
 
@@ -334,6 +341,7 @@ export function StageFieldToJSON(value?: StageField | null): any {
         'rollout_milestone': FieldInfoToJSON(value['rollout_milestone']),
         'rollout_platforms': FieldInfoToJSON(value['rollout_platforms']),
         'rollout_details': FieldInfoToJSON(value['rollout_details']),
+        'rollout_stage_plan': FieldInfoToJSON(value['rollout_stage_plan']),
     };
 }
 

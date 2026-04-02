@@ -82,6 +82,7 @@
  * @property {string} [rollout_details]
  * @property {number} [rollout_milestone]
  * @property {string[]} rollout_platforms
+ * @property {number} rollout_stage_plan
  * @property {string[]} enterprise_policies
  * @property {string[]} pm_emails
  * @property {string[]} tl_emails
@@ -267,7 +268,7 @@
  * @property {string} [experiment_timeline]
  * @property {FeatureDictInnerResourceInfo} resources
  * @property {string} [comments]
- * AI evaluation fields
+ * AI WPT analysis fields
  * @property {string} [ai_test_eval_report]
  * @property {number} [ai_test_eval_run_status]
  * @property {string} [ai_test_eval_status_timestamp]
@@ -774,10 +775,15 @@ export class ChromeStatusClient {
   }
 
   // WPT Coverage API
-  async generateWPTCoverageEvaluation(featureId) {
-    return this.doPost('/features/generate-wpt-coverage-evaluation', {
-      feature_id: featureId,
+  async generateWPTCoverageEvaluation(featureId, includeExplainer = false) {
+    return this.doPost(`/features/${featureId}/wpt-coverage-analysis`, {
+      include_explainer: includeExplainer,
     });
+  }
+
+  // Delete WPT Coverage Report
+  async deleteWPTCoverageEvaluation(featureId) {
+    return this.doDelete(`/features/${featureId}/wpt-coverage-analysis`);
   }
 
   async getSpecifiedChannels(start, end) {

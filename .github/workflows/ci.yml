@@ -14,7 +14,7 @@ jobs:
       - name: set up Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: '18.x'
+          node-version: '24.x'
 
       - name: set up Java JDK
         uses: actions/setup-java@v5
@@ -41,18 +41,17 @@ jobs:
 
       - name: installation
         run: |
-          npm install -g gulp
           npm config set script-shell bash --global
-          npm run setup
+          make setup
 
       - name: lint
-        run: npm run lint
+        run: make lint
 
       - name: mypy
-        run: npm run mypy
+        run: make mypy
 
       - name: test
         run: npm test
 
       - name: build
-        run: npm run build
+        run: make build

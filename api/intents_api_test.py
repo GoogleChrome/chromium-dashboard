@@ -13,281 +13,364 @@
 # limitations under the License.
 
 
-from internals import core_enums
-from internals.core_enums import IntentDraftType
-import testing_config  # Must be imported before the module under test.
-import werkzeug.exceptions
+"""Tests for the intents_api module, verifying intent email draft generation."""
 
-import flask
 from unittest import mock
 
+import flask
+import werkzeug.exceptions
+
+import settings
+import testing_config  # Must be imported before the module under test.
 from api import intents_api
+from internals import core_enums
+from internals.core_enums import IntentDraftType
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
 from internals.review_models import Gate, Vote
 from internals.user_models import AppUser
-import settings
 
-test_app = flask.Flask(__name__,
-  template_folder=settings.get_flask_template_path())
+test_app = flask.Flask(
+    __name__, template_folder=settings.get_flask_template_path()
+)
 
 
 class IntentsAPITest(testing_config.CustomTestCase):
+    """Tests for IntentsAPI."""
 
-  def setUp(self):
-    self.feature_1 = FeatureEntry(
-        feature_type=1, name='feature one', summary='sum', category=1,
-        owner_emails=['owner@example.com'])
-    self.feature_1.put()
-    self.feature_1_id = self.feature_1.key.integer_id()
-    self.ot_stage_1 = Stage(
-        feature_id=self.feature_1_id, stage_type=150,
-        origin_trial_id='-1234567890')
-    self.ot_stage_1.put()
-    self.ot_gate_1 = Gate(feature_id=self.feature_1_id,
-                stage_id=self.ot_stage_1.key.integer_id(),
-                gate_type=2, state=Vote.APPROVED)
-    self.ot_gate_1.put()
-    self.extension_stage_1 = Stage(
-        feature_id=self.feature_1_id, stage_type=151,
-        ot_stage_id=self.ot_stage_1.key.integer_id(),
-        milestones=MilestoneSet(desktop_last=153),
-        intent_thread_url='https://example.com/intent')
-    self.extension_stage_1.put()
-    self.extension_gate_1 = Gate(feature_id=self.feature_1_id,
+    def setUp(self):
+        """Set up the test."""
+        self.feature_1 = FeatureEntry(
+            feature_type=1,
+            name='feature one',
+            summary='sum',
+            category=1,
+            owner_emails=['owner@example.com'],
+        )
+        self.feature_1.put()
+        self.feature_1_id = self.feature_1.key.integer_id()
+        self.ot_stage_1 = Stage(
+            feature_id=self.feature_1_id,
+            stage_type=150,
+            origin_trial_id='-1234567890',
+        )
+        self.ot_stage_1.put()
+        self.ot_gate_1 = Gate(
+            feature_id=self.feature_1_id,
+            stage_id=self.ot_stage_1.key.integer_id(),
+            gate_type=2,
+            state=Vote.APPROVED,
+        )
+        self.ot_gate_1.put()
+        self.extension_stage_1 = Stage(
+            feature_id=self.feature_1_id,
+            stage_type=151,
+            ot_stage_id=self.ot_stage_1.key.integer_id(),
+            milestones=MilestoneSet(desktop_last=153),
+            intent_thread_url='https://example.com/intent',
+        )
+        self.extension_stage_1.put()
+        self.extension_gate_1 = Gate(
+            feature_id=self.feature_1_id,
+            stage_id=self.extension_stage_1.key.integer_id(),
+            gate_type=3,
+            state=Vote.APPROVED,
+        )
+        self.extension_gate_1.put()
+
+        self.devtrial_stage = Stage(
+            feature_id=self.feature_1_id, stage_type=130
+        )
+        self.devtrial_stage.put()
+
+        self.owner = AppUser(email='owner@example.com')
+        self.owner.put()
+
+        self.handler = intents_api.IntentsAPI()
+
+    def test_get__valid(self):
+        """A valid request returns intent draft info."""
+        testing_config.sign_in('owner@example.com', 1234567890)
+        request_path = (
+            f'features/{self.feature_1_id}/'
+            f'{self.extension_stage_1.key.integer_id()}/intent'
+        )
+        with test_app.test_request_context(request_path, method='GET'):
+            response = self.handler.do_get(
+                feature_id=self.feature_1_id,
                 stage_id=self.extension_stage_1.key.integer_id(),
-                gate_type=3, state=Vote.APPROVED)
-    self.extension_gate_1.put()
+            )
+        self.assertEqual(
+            'Intent to Extend Experiment: feature one', response['subject']
+        )
+        # The contents of email body are already tested in intentpreview_test.
+        self.assertTrue('email_body' in response)
 
-    self.devtrial_stage = Stage(feature_id=self.feature_1_id, stage_type=130)
-    self.devtrial_stage.put()
+    def test_get__no_edit_access(self):
+        """403 returned when user does not have edit access to feature."""
+        testing_config.sign_in('some_other_user@example.com', 1234567890)
+        request_path = (
+            f'features/{self.feature_1_id}/'
+            f'{self.ot_stage_1.key.integer_id()}/intent'
+        )
+        with test_app.test_request_context(request_path, method='GET'):
+            with self.assertRaises(werkzeug.exceptions.Forbidden):
+                self.handler.do_get(
+                    feature_id=self.feature_1_id,
+                    stage_id=self.ot_stage_1.key.integer_id(),
+                )
 
-    self.owner = AppUser(email='owner@example.com')
-    self.owner.put()
+    def test_get__bad_feature_id(self):
+        """404 returned when feature is not found."""
+        testing_config.sign_in('owner@example.com', 1234567890)
+        request_path = f'features/-1/{self.ot_stage_1.key.integer_id()}/intent'
+        with test_app.test_request_context(request_path, method='GET'):
+            with self.assertRaises(werkzeug.exceptions.NotFound):
+                self.handler.do_post(
+                    feature_id=-1, stage_id=self.ot_stage_1.key.integer_id()
+                )
 
-    self.handler = intents_api.IntentsAPI()
+    def test_get__bad_stage_id(self):
+        """404 returned when stage is not found."""
+        testing_config.sign_in('owner@example.com', 1234567890)
+        request_path = f'features/{self.feature_1_id}/-1/intent'
+        with test_app.test_request_context(request_path, method='GET'):
+            with self.assertRaises(werkzeug.exceptions.NotFound):
+                self.handler.do_post(feature_id=self.feature_1_id, stage_id=-1)
 
-  def tearDown(self):
-    for kind in [AppUser, FeatureEntry, Gate, Stage]:
-      for entity in kind.query():
-        entity.key.delete()
+    @mock.patch('framework.cloud_tasks_helpers.enqueue_task')
+    def test_post__valid(self, mock_enqueue_cloud_task):
+        """A valid POST request will create a new notification task."""
+        testing_config.sign_in('owner@example.com', 1234567890)
 
-  def test_get__valid(self):
-    """A valid request returns intent draft info."""
-    testing_config.sign_in('owner@example.com', 1234567890)
-    request_path = (f'features/{self.feature_1_id}/'
-                    f'{self.extension_stage_1.key.integer_id()}/intent')
-    with test_app.test_request_context(request_path, method='GET'):
-      response = self.handler.do_get(
-          feature_id=self.feature_1_id,
-          stage_id=self.extension_stage_1.key.integer_id())
-    self.assertEqual('Intent to Extend Experiment: feature one',
-                     response['subject'])
-    # The contents of email body are already tested in intentpreview_test.
-    self.assertTrue('email_body' in response)
+        body = {
+            'gate_id': self.extension_gate_1.key.integer_id(),
+            'intent_cc_emails': ['cc1@example.com', 'owner@example.com'],
+        }
+        request_path = (
+            f'features/{self.feature_1_id}/'
+            f'{self.extension_stage_1.key.integer_id()}/intent'
+        )
+        with test_app.test_request_context(request_path, json=body):
+            response = self.handler.do_post(
+                feature_id=self.feature_1_id,
+                stage_id=self.extension_stage_1.key.integer_id(),
+            )
+        self.assertEqual(
+            response, {'message': 'Email task submitted successfully.'}
+        )
+        expected_task_params: intents_api.IntentGenerationOptions = {
+            'subject': 'Intent to Extend Experiment: feature one',
+            'feature_id': self.feature_1_id,
+            'intent_type': IntentDraftType.EXTEND_EXPERIMENT,
+            'default_url': (
+                f'http://localhost/feature/{self.feature_1_id}'
+                f'?gate={self.extension_gate_1.key.integer_id()}'
+            ),
+            'intent_cc_emails': ['cc1@example.com', 'owner@example.com'],
+        }
+        mock_enqueue_cloud_task.assert_called_once_with(
+            '/tasks/email-intent-to-blink-dev', expected_task_params
+        )
 
-  def test_get__no_edit_access(self):
-    """403 returned when user does not have edit access to feature."""
-    testing_config.sign_in('some_other_user@example.com', 1234567890)
-    request_path = (f'features/{self.feature_1_id}/'
-                    f'{self.ot_stage_1.key.integer_id()}/intent')
-    with test_app.test_request_context(request_path, method='GET'):
-      with self.assertRaises(werkzeug.exceptions.Forbidden):
-        self.handler.do_get(feature_id=self.feature_1_id,
-                            stage_id=self.ot_stage_1.key.integer_id())
+    @mock.patch('framework.cloud_tasks_helpers.enqueue_task')
+    def test_post__valid_ot(self, mock_enqueue_cloud_task):
+        """A valid POST request will create a new notification task for OT
+        stages.
+        """  # noqa: D205
+        testing_config.sign_in('owner@example.com', 1234567890)
 
-  def test_get__bad_feature_id(self):
-    """404 returned when feature is not found."""
-    testing_config.sign_in('owner@example.com', 1234567890)
-    request_path = f'features/-1/{self.ot_stage_1.key.integer_id()}/intent'
-    with test_app.test_request_context(request_path, method='GET'):
-      with self.assertRaises(werkzeug.exceptions.NotFound):
-        self.handler.do_post(feature_id=-1,
-                            stage_id=self.ot_stage_1.key.integer_id())
+        body = {
+            'gate_id': self.ot_gate_1.key.integer_id(),
+            'intent_cc_emails': ['cc33@example.com', 'owner@example.com'],
+        }
+        request_path = (
+            f'features/{self.feature_1_id}/'
+            f'{self.ot_stage_1.key.integer_id()}/intent'
+        )
+        with test_app.test_request_context(request_path, json=body):
+            response = self.handler.do_post(
+                feature_id=self.feature_1_id,
+                stage_id=self.ot_stage_1.key.integer_id(),
+            )
+        self.assertEqual(
+            response, {'message': 'Email task submitted successfully.'}
+        )
+        expected_task_params: intents_api.IntentGenerationOptions = {
+            'subject': 'Intent to Experiment: feature one',
+            'feature_id': self.feature_1_id,
+            'intent_type': IntentDraftType.EXPERIMENT,
+            'default_url': (
+                f'http://localhost/feature/{self.feature_1_id}'
+                f'?gate={self.ot_gate_1.key.integer_id()}'
+            ),
+            'intent_cc_emails': ['cc33@example.com', 'owner@example.com'],
+        }
+        mock_enqueue_cloud_task.assert_called_once_with(
+            '/tasks/email-intent-to-blink-dev', expected_task_params
+        )
 
-  def test_get__bad_stage_id(self):
-    """404 returned when stage is not found."""
-    testing_config.sign_in('owner@example.com', 1234567890)
-    request_path = f'features/{self.feature_1_id}/-1/intent'
-    with test_app.test_request_context(request_path, method='GET'):
-      with self.assertRaises(werkzeug.exceptions.NotFound):
-        self.handler.do_post(feature_id=self.feature_1_id,
-                            stage_id=-1)
+    @mock.patch('framework.cloud_tasks_helpers.enqueue_task')
+    def test_post__valid_no_gate_id(self, mock_enqueue_cloud_task):
+        """A request with no gate_id will still show intent draft for devtrial."""
+        testing_config.sign_in('owner@example.com', 1234567890)
 
-  @mock.patch("framework.cloud_tasks_helpers.enqueue_task")
-  def test_post__valid(self, mock_enqueue_cloud_task):
-    """A valid POST request will create a new notification task."""
-    testing_config.sign_in('owner@example.com', 1234567890)
+        body = {
+            'gate_id': None,
+            'intent_cc_emails': ['cc1@example.com', 'owner@example.com'],
+        }
+        request_path = (
+            f'features/{self.feature_1_id}/'
+            f'{self.devtrial_stage.key.integer_id()}/intent'
+        )
+        with test_app.test_request_context(request_path, json=body):
+            response = self.handler.do_post(
+                feature_id=self.feature_1_id,
+                stage_id=self.devtrial_stage.key.integer_id(),
+            )
+        self.assertEqual(
+            response, {'message': 'Email task submitted successfully.'}
+        )
+        expected_task_params: intents_api.IntentGenerationOptions = {
+            'subject': 'Ready for Developer Testing: feature one',
+            'feature_id': self.feature_1_id,
+            'intent_type': IntentDraftType.DEVELOPER_TESTING,
+            'default_url': f'http://localhost/feature/{self.feature_1_id}',
+            'intent_cc_emails': ['cc1@example.com', 'owner@example.com'],
+        }
+        mock_enqueue_cloud_task.assert_called_once_with(
+            '/tasks/email-intent-to-blink-dev', expected_task_params
+        )
 
-    body = {
-      'gate_id': self.extension_gate_1.key.integer_id(),
-      'intent_cc_emails': ['cc1@example.com', 'owner@example.com']
-    }
-    request_path = (f'features/{self.feature_1_id}/'
-                    f'{self.extension_stage_1.key.integer_id()}/intent')
-    with test_app.test_request_context(request_path, json=body):
-      response = self.handler.do_post(
-          feature_id=self.feature_1_id,
-          stage_id=self.extension_stage_1.key.integer_id())
-    self.assertEqual(response,
-                     {'message': 'Email task submitted successfully.'})
-    expected_task_params: intents_api.IntentGenerationOptions = {
-      'subject': 'Intent to Extend Experiment: feature one',
-      'feature_id': self.feature_1_id,
-      'intent_type': IntentDraftType.EXTEND_EXPERIMENT,
-      'default_url': (f'http://localhost/feature/{self.feature_1_id}'
-                      f'?gate={self.extension_gate_1.key.integer_id()}'),
-      'intent_cc_emails': ['cc1@example.com', 'owner@example.com'],
-    }
-    mock_enqueue_cloud_task.assert_called_once_with(
-        '/tasks/email-intent-to-blink-dev', expected_task_params)
+    def test_post__anon(self):
+        """403 returned when user is not signed in."""
+        testing_config.sign_out()
+        request_path = (
+            f'features/{self.feature_1_id}/'
+            f'{self.ot_stage_1.key.integer_id()}/intent'
+        )
+        with test_app.test_request_context(
+            request_path, method='POST', json={}
+        ):
+            with self.assertRaises(werkzeug.exceptions.Forbidden):
+                self.handler.do_post(
+                    feature_id=self.feature_1_id,
+                    stage_id=self.ot_stage_1.key.integer_id(),
+                )
 
-  @mock.patch("framework.cloud_tasks_helpers.enqueue_task")
-  def test_post__valid_ot(self, mock_enqueue_cloud_task):
-    """A valid POST request will create a new notification task for OT
-    stages."""
-    testing_config.sign_in('owner@example.com', 1234567890)
+    def test_post__no_edit_access(self):
+        """403 returned when user does not have edit access to feature."""
+        testing_config.sign_in('some_other_user@example.com', 1234567890)
+        request_path = (
+            f'features/{self.feature_1_id}/'
+            f'{self.ot_stage_1.key.integer_id()}/intent'
+        )
+        with test_app.test_request_context(
+            request_path, method='POST', json={}
+        ):
+            with self.assertRaises(werkzeug.exceptions.Forbidden):
+                self.handler.do_post(
+                    feature_id=self.feature_1_id,
+                    stage_id=self.ot_stage_1.key.integer_id(),
+                )
 
-    body = {
-      'gate_id': self.ot_gate_1.key.integer_id(),
-      'intent_cc_emails': ['cc33@example.com', 'owner@example.com']
-    }
-    request_path = (f'features/{self.feature_1_id}/'
-                    f'{self.ot_stage_1.key.integer_id()}/intent')
-    with test_app.test_request_context(request_path, json=body):
-      response = self.handler.do_post(
-          feature_id=self.feature_1_id,
-          stage_id=self.ot_stage_1.key.integer_id())
-    self.assertEqual(response,
-                     {'message': 'Email task submitted successfully.'})
-    expected_task_params: intents_api.IntentGenerationOptions = {
-      'subject': 'Intent to Experiment: feature one',
-      'feature_id': self.feature_1_id,
-      'intent_type': IntentDraftType.EXPERIMENT,
-      'default_url': (f'http://localhost/feature/{self.feature_1_id}'
-                      f'?gate={self.ot_gate_1.key.integer_id()}'),
-      'intent_cc_emails': ['cc33@example.com', 'owner@example.com'],
-    }
-    mock_enqueue_cloud_task.assert_called_once_with(
-        '/tasks/email-intent-to-blink-dev', expected_task_params)
+    def test_post__bad_feature_id(self):
+        """404 returned when feature is not found."""
+        testing_config.sign_in('owner@example.com', 1234567890)
+        request_path = f'features/-1/{self.ot_stage_1.key.integer_id()}/intent'
+        with test_app.test_request_context(
+            request_path, method='POST', json={}
+        ):
+            with self.assertRaises(werkzeug.exceptions.NotFound):
+                self.handler.do_post(
+                    feature_id=-1, stage_id=self.ot_stage_1.key.integer_id()
+                )
 
-  @mock.patch("framework.cloud_tasks_helpers.enqueue_task")
-  def test_post__valid_no_gate_id(self, mock_enqueue_cloud_task):
-    """A request with no gate_id will still show intent draft for devtrial."""
-    testing_config.sign_in('owner@example.com', 1234567890)
+    def test_post__bad_stage_id(self):
+        """404 returned when stage is not found."""
+        testing_config.sign_in('owner@example.com', 1234567890)
+        request_path = f'features/{self.feature_1_id}/-1/intent'
+        with test_app.test_request_context(
+            request_path, method='POST', json={}
+        ):
+            with self.assertRaises(werkzeug.exceptions.NotFound):
+                self.handler.do_post(feature_id=self.feature_1_id, stage_id=-1)
 
-    body = {
-      'gate_id': None,
-      'intent_cc_emails': ['cc1@example.com', 'owner@example.com']
-    }
-    request_path = (f'features/{self.feature_1_id}/'
-                    f'{self.devtrial_stage.key.integer_id()}/intent')
-    with test_app.test_request_context(request_path, json=body):
-      response = self.handler.do_post(
-          feature_id=self.feature_1_id,
-          stage_id=self.devtrial_stage.key.integer_id())
-    self.assertEqual(response,
-                     {'message': 'Email task submitted successfully.'})
-    expected_task_params: intents_api.IntentGenerationOptions = {
-      'subject': 'Ready for Developer Testing: feature one',
-      'feature_id': self.feature_1_id,
-      'intent_type': IntentDraftType.DEVELOPER_TESTING,
-      'default_url': f'http://localhost/feature/{self.feature_1_id}',
-      'intent_cc_emails': ['cc1@example.com', 'owner@example.com'],
-    }
-    mock_enqueue_cloud_task.assert_called_once_with(
-        '/tasks/email-intent-to-blink-dev', expected_task_params)
+    def test_compute_subject_prefix__incubate_new_feature(self):
+        """We offer users the correct subject line for each intent stage."""
+        self.assertEqual(
+            'Intent to Prototype',
+            intents_api.compute_subject_prefix(
+                self.feature_1.feature_type,
+                core_enums.IntentDraftType.PROTOTYPE,
+            ),
+        )
 
-  def test_post__anon(self):
-    """403 returned when user is not signed in."""
-    testing_config.sign_out()
-    request_path = (f'features/{self.feature_1_id}/'
-                    f'{self.ot_stage_1.key.integer_id()}/intent')
-    with test_app.test_request_context(request_path, method='POST', json={}):
-      with self.assertRaises(werkzeug.exceptions.Forbidden):
-        self.handler.do_post(feature_id=self.feature_1_id,
-                            stage_id=self.ot_stage_1.key.integer_id())
+        self.assertEqual(
+            'Ready for Developer Testing',
+            intents_api.compute_subject_prefix(
+                self.feature_1.feature_type,
+                core_enums.IntentDraftType.DEVELOPER_TESTING,
+            ),
+        )  # noqa: E501
 
-  def test_post__no_edit_access(self):
-    """403 returned when user does not have edit access to feature."""
-    testing_config.sign_in('some_other_user@example.com', 1234567890)
-    request_path = (f'features/{self.feature_1_id}/'
-                    f'{self.ot_stage_1.key.integer_id()}/intent')
-    with test_app.test_request_context(request_path, method='POST', json={}):
-      with self.assertRaises(werkzeug.exceptions.Forbidden):
-        self.handler.do_post(feature_id=self.feature_1_id,
-                            stage_id=self.ot_stage_1.key.integer_id())
+        self.assertEqual(
+            'Intent to Experiment',
+            intents_api.compute_subject_prefix(
+                self.feature_1.feature_type,
+                core_enums.IntentDraftType.EXPERIMENT,
+            ),
+        )
 
-  def test_post__bad_feature_id(self):
-    """404 returned when feature is not found."""
-    testing_config.sign_in('owner@example.com', 1234567890)
-    request_path = f'features/-1/{self.ot_stage_1.key.integer_id()}/intent'
-    with test_app.test_request_context(request_path, method='POST', json={}):
-      with self.assertRaises(werkzeug.exceptions.NotFound):
-        self.handler.do_post(feature_id=-1,
-                            stage_id=self.ot_stage_1.key.integer_id())
+        self.assertEqual(
+            'Intent to Extend Experiment',
+            intents_api.compute_subject_prefix(
+                self.feature_1.feature_type,
+                core_enums.IntentDraftType.EXTEND_EXPERIMENT,
+            ),
+        )  # noqa: E501
 
-  def test_post__bad_stage_id(self):
-    """404 returned when stage is not found."""
-    testing_config.sign_in('owner@example.com', 1234567890)
-    request_path = f'features/{self.feature_1_id}/-1/intent'
-    with test_app.test_request_context(request_path, method='POST', json={}):
-      with self.assertRaises(werkzeug.exceptions.NotFound):
-        self.handler.do_post(feature_id=self.feature_1_id,
-                            stage_id=-1)
+        self.assertEqual(
+            'Intent to Ship',
+            intents_api.compute_subject_prefix(
+                self.feature_1.feature_type, core_enums.IntentDraftType.SHIP
+            ),
+        )
 
-  def test_compute_subject_prefix__incubate_new_feature(self):
-    """We offer users the correct subject line for each intent stage."""
-    self.assertEqual(
-        'Intent to Prototype',
-        intents_api.compute_subject_prefix(
-            self.feature_1.feature_type, core_enums.IntentDraftType.PROTOTYPE))
+    def test_compute_subject_prefix__deprecate_feature(self):
+        """We offer users the correct subject line for each intent stage."""
+        self.feature_1.feature_type = core_enums.FEATURE_TYPE_DEPRECATION_ID
 
-    self.assertEqual(
-        'Ready for Developer Testing',
-        intents_api.compute_subject_prefix(
-            self.feature_1.feature_type, core_enums.IntentDraftType.DEVELOPER_TESTING))
+        self.assertEqual(
+            'Intent to Deprecate and Remove',
+            intents_api.compute_subject_prefix(
+                core_enums.FEATURE_TYPE_DEPRECATION_ID,
+                core_enums.IntentDraftType.DEPRECATE,
+            ),
+        )
 
-    self.assertEqual(
-        'Intent to Experiment',
-        intents_api.compute_subject_prefix(
-            self.feature_1.feature_type, core_enums.IntentDraftType.EXPERIMENT))
+        self.assertEqual(
+            'Request for Deprecation Trial',
+            intents_api.compute_subject_prefix(
+                core_enums.FEATURE_TYPE_DEPRECATION_ID,
+                core_enums.IntentDraftType.EXPERIMENT,
+            ),
+        )
 
-    self.assertEqual(
-        'Intent to Extend Experiment',
-        intents_api.compute_subject_prefix(
-            self.feature_1.feature_type, core_enums.IntentDraftType.EXTEND_EXPERIMENT))
+        self.assertEqual(
+            'Intent to Extend Deprecation Trial',
+            intents_api.compute_subject_prefix(
+                core_enums.FEATURE_TYPE_DEPRECATION_ID,
+                core_enums.IntentDraftType.EXTEND_EXPERIMENT,
+            ),
+        )
 
-    self.assertEqual(
-        'Intent to Ship',
-        intents_api.compute_subject_prefix(
-            self.feature_1.feature_type, core_enums.IntentDraftType.SHIP))
-
-  def test_compute_subject_prefix__deprecate_feature(self):
-    """We offer users the correct subject line for each intent stage."""
-    self.feature_1.feature_type = core_enums.FEATURE_TYPE_DEPRECATION_ID
-
-    self.assertEqual(
-        'Intent to Deprecate and Remove',
-        intents_api.compute_subject_prefix(
-          core_enums.FEATURE_TYPE_DEPRECATION_ID,
-          core_enums.IntentDraftType.DEPRECATE))
-
-    self.assertEqual(
-        'Request for Deprecation Trial',
-        intents_api.compute_subject_prefix(
-          core_enums.FEATURE_TYPE_DEPRECATION_ID,
-          core_enums.IntentDraftType.EXPERIMENT))
-
-    self.assertEqual(
-        'Intent to Extend Deprecation Trial',
-        intents_api.compute_subject_prefix(
-          core_enums.FEATURE_TYPE_DEPRECATION_ID,
-          core_enums.IntentDraftType.EXTEND_EXPERIMENT))
-
-  def test_compute_subject_prefix__PSA_feature(self):
-    """We offer users the correct subject line for each intent stage."""
-    self.feature_1.feature_type = core_enums.FEATURE_TYPE_CODE_CHANGE_ID
-    self.assertEqual(
-        'Web-Facing Change PSA',
-        intents_api.compute_subject_prefix(
-            core_enums.FEATURE_TYPE_CODE_CHANGE_ID, core_enums.IntentDraftType.PSA))
+    def test_compute_subject_prefix__PSA_feature(self):
+        """We offer users the correct subject line for each intent stage."""
+        self.feature_1.feature_type = core_enums.FEATURE_TYPE_CODE_CHANGE_ID
+        self.assertEqual(
+            'Web-Facing Change PSA',
+            intents_api.compute_subject_prefix(
+                core_enums.FEATURE_TYPE_CODE_CHANGE_ID,
+                core_enums.IntentDraftType.PSA,
+            ),
+        )  # noqa: E501

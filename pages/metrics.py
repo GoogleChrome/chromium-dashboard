@@ -12,16 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import logging
+
+"""Provides handlers for metrics data, such as Omaha release data."""
 
 from framework import basehandlers
 from internals import fetchchannels
 
 
 class OmahaDataHandler(basehandlers.FlaskHandler):
+    """Handler for retrieving Omaha data metrics."""
 
-  JSONIFY = True
+    JSONIFY = True
 
-  def get_template_data(self, **kwargs):
-    omaha_data = fetchchannels.get_omaha_data()
-    return omaha_data
+    def get_template_data(self, **kwargs):
+        """Returns Omaha data metrics as JSON."""
+        omaha_data = fetchchannels.get_omaha_data()
+        return omaha_data

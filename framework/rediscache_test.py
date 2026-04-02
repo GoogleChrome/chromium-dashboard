@@ -12,10 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Unit tests for the rediscache module.
+
+Tests basic caching operations (set, get, multi-get, delete) using
+the fake Redis client.
+"""
+
 import testing_config  # Must be imported before the module under test.
-
 from framework import rediscache
-
 
 PREFIX = 'cache_key|'
 KEY_1 = 'cache_key|1'
@@ -28,60 +32,63 @@ KEY_7 = 'cache_key|7'
 
 
 class RedisCacheFunctionTests(testing_config.CustomTestCase):
-  def tearDown(self):
-    rediscache.flushall()
+    """Tests for rediscache functions."""
 
-  def test_set_and_get(self):
-    """We can cache a value and retrieve it from the cache."""
-    self.assertEqual(None, rediscache.get(KEY_1))
+    def test_set_and_get(self):
+        """We can cache a value and retrieve it from the cache."""
+        self.assertEqual(None, rediscache.get(KEY_1))
 
-    rediscache.set(KEY_1, '101')
-    self.assertEqual('101', rediscache.get(KEY_1))
+        rediscache.set(KEY_1, '101')
+        self.assertEqual('101', rediscache.get(KEY_1))
 
-    rediscache.set(KEY_4, 123)
-    self.assertEqual(123, rediscache.get(KEY_4))
+        rediscache.set(KEY_4, 123)
+        self.assertEqual(123, rediscache.get(KEY_4))
 
-    rediscache.set(KEY_4, '123', 3600)
-    self.assertEqual('123', rediscache.get(KEY_4))
+        rediscache.set(KEY_4, '123', 3600)
+        self.assertEqual('123', rediscache.get(KEY_4))
 
-  def test_set_and_get_multi(self):
-    """We can cache values and retrieve them from the cache."""
-    self.assertEqual({}, rediscache.get_multi([]))
+    def test_set_and_get_multi(self):
+        """We can cache values and retrieve them from the cache."""
+        self.assertEqual({}, rediscache.get_multi([]))
 
-    self.assertEqual({KEY_2: None, KEY_3: None},
-                     rediscache.get_multi([KEY_2, KEY_3]))
+        self.assertEqual(
+            {KEY_2: None, KEY_3: None}, rediscache.get_multi([KEY_2, KEY_3])
+        )
 
-    rediscache.set_multi({KEY_2: '202', KEY_3: '303'})
-    self.assertEqual(
-        {KEY_2: '202', KEY_3: '303'},
-        rediscache.get_multi([KEY_2, KEY_3]))
+        rediscache.set_multi({KEY_2: '202', KEY_3: '303'})
+        self.assertEqual(
+            {KEY_2: '202', KEY_3: '303'}, rediscache.get_multi([KEY_2, KEY_3])
+        )
 
-    # Ignore non-str types.
-    rediscache.set_multi({KEY_2: '202', KEY_3: '303', KEY_5: 111})
-    self.assertEqual(
-        {KEY_2: '202', KEY_3: '303', KEY_5: 111},
-        rediscache.get_multi([KEY_2, KEY_3, KEY_5]))
+        # Ignore non-str types.
+        rediscache.set_multi({KEY_2: '202', KEY_3: '303', KEY_5: 111})
+        self.assertEqual(
+            {KEY_2: '202', KEY_3: '303', KEY_5: 111},
+            rediscache.get_multi([KEY_2, KEY_3, KEY_5]),
+        )
 
-    rediscache.set_multi({KEY_5: '222'}, 3600)
-    self.assertEqual({KEY_5: '222'}, rediscache.get_multi([KEY_5]))
+        rediscache.set_multi({KEY_5: '222'}, 3600)
+        self.assertEqual({KEY_5: '222'}, rediscache.get_multi([KEY_5]))
 
-  def test_delete(self):
-    rediscache.set(KEY_6, '606')
-    self.assertEqual('606', rediscache.get(KEY_6))
-    rediscache.delete(KEY_6)
-    self.assertEqual(None, rediscache.get(KEY_6))
+    def test_delete(self):
+        """Test delete."""
+        rediscache.set(KEY_6, '606')
+        self.assertEqual('606', rediscache.get(KEY_6))
+        rediscache.delete(KEY_6)
+        self.assertEqual(None, rediscache.get(KEY_6))
 
-  def test_delete_keys_with_prefix(self):
-    for x in range(17):
-      key = PREFIX + str(x)
-      rediscache.set(key, str(x))
-    rediscache.set('random_key', '303')
-    rediscache.set('random_key1', '404')
-    self.assertEqual('1', rediscache.get(KEY_1))
+    def test_delete_keys_with_prefix(self):
+        """Test delete keys with prefix."""
+        for x in range(17):
+            key = PREFIX + str(x)
+            rediscache.set(key, str(x))
+        rediscache.set('random_key', '303')
+        rediscache.set('random_key1', '404')
+        self.assertEqual('1', rediscache.get(KEY_1))
 
-    rediscache.delete_keys_with_prefix('cache_key')
+        rediscache.delete_keys_with_prefix('cache_key')
 
-    self.assertEqual(None, rediscache.get(KEY_1))
-    self.assertEqual(None, rediscache.get(KEY_2))
-    self.assertEqual('303', rediscache.get('random_key'))
-    self.assertEqual('404', rediscache.get('random_key1'))
+        self.assertEqual(None, rediscache.get(KEY_1))
+        self.assertEqual(None, rediscache.get(KEY_2))
+        self.assertEqual('303', rediscache.get('random_key'))
+        self.assertEqual('404', rediscache.get('random_key1'))

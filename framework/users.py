@@ -1,11 +1,15 @@
-import logging
+"""User authentication and representation.
+
+Provides the User class for representing authenticated users and functions
+to determine the current logged-in user from the session.
+"""
+
 import os
 
 from flask import session
-from google.auth.transport import requests
 
-from framework import xsrf
 import settings
+from framework import xsrf
 
 
 class User(object):
@@ -25,17 +29,19 @@ class User(object):
 
     """
 
-
-
-
-
     __user_id = None
     __federated_identity = None
     __federated_provider = None
 
-    def __init__(self, email=None, _auth_domain=None,
-                _user_id=None, federated_identity=None, federated_provider=None,
-                _strict_mode=True):
+    def __init__(
+        self,
+        email=None,
+        _auth_domain=None,
+        _user_id=None,
+        federated_identity=None,
+        federated_provider=None,
+        _strict_mode=True,
+    ):
         """Constructor.
 
         Args:
@@ -48,13 +54,11 @@ class User(object):
         UserNotFoundError: If the user is not logged in and both `email` and
             `federated_identity` are empty.
         """
-
         self.__email = email
         self.__federated_identity = federated_identity
         self.__federated_provider = federated_provider
         self.__auth_domain = _auth_domain
         self.__user_id = _user_id or None
-
 
     def nickname(self):
         """Returns the user's nickname.
@@ -67,8 +71,11 @@ class User(object):
         Returns:
         The nickname of the user as a string.
         """
-        if (self.__email and self.__auth_domain and
-            self.__email.endswith('@' + self.__auth_domain)):
+        if (
+            self.__email
+            and self.__auth_domain
+            and self.__email.endswith('@' + self.__auth_domain)
+        ):
             suffix_len = len(self.__auth_domain) + 1
             return self.__email[:-suffix_len]
         elif self.__federated_identity:
@@ -76,11 +83,9 @@ class User(object):
         else:
             return self.__email
 
-
     def email(self):
         """Returns the user's email address."""
         return self.__email
-
 
     def user_id(self):
         """Obtains the user ID of the user.
@@ -91,7 +96,6 @@ class User(object):
         """
         return self.__user_id
 
-
     def auth_domain(self):
         """Obtains the user's authentication domain.
 
@@ -100,7 +104,6 @@ class User(object):
         internal and should not be used by client applications.
         """
         return self.__auth_domain
-
 
     def federated_identity(self):
         """Decommissioned, don't use.
@@ -111,7 +114,6 @@ class User(object):
         """
         return self.__federated_identity
 
-
     def federated_provider(self):
         """Decommissioned, don't use.
 
@@ -121,14 +123,16 @@ class User(object):
         """
         return self.__federated_provider
 
-
     def __unicode__(self):
-        return six_subset.text_type(self.nickname())
+        """Return a string representation of the user."""
+        return six_subset.text_type(self.nickname())  # noqa: F821
 
     def __str__(self):
+        """Return a string representation of the user."""
         return str(self.nickname())
 
     def __repr__(self):
+        """Return a string representation of the user object."""
         values = []
         if self.__email:
             values.append("email='%s'" % self.__email)
@@ -139,20 +143,41 @@ class User(object):
         return 'users.User(%s)' % ','.join(values)
 
     def __hash__(self):
+        """Return a hash for the user."""
         if self.__federated_identity:
             return hash((self.__federated_identity, self.__auth_domain))
         else:
             return hash((self.__email, self.__auth_domain))
 
-    def __cmp__(self, other):
+    def __eq__(self, other):
+        """Check if this user is equal to another."""
         if not isinstance(other, User):
             return NotImplemented
         if self.__federated_identity:
-            return cmp((self.__federated_identity, self.__auth_domain),
-                        (other.__federated_identity, other.__auth_domain))
+            return (self.__federated_identity, self.__auth_domain) == (
+                other.__federated_identity,
+                other.__auth_domain,
+            )
         else:
-            return cmp((self.__email, self.__auth_domain),
-                        (other.__email, other.__auth_domain))
+            return (self.__email, self.__auth_domain) == (
+                other.__email,
+                other.__auth_domain,
+            )
+
+    def __lt__(self, other):
+        """Check if this user is less than another."""
+        if not isinstance(other, User):
+            return NotImplemented
+        if self.__federated_identity:
+            return (self.__federated_identity, self.__auth_domain) < (
+                other.__federated_identity,
+                other.__auth_domain,
+            )
+        else:
+            return (self.__email, self.__auth_domain) < (
+                other.__email,
+                other.__auth_domain,
+            )
 
     def get_current_user(self):
         """Retrieves information associated with the requesting user.
@@ -162,9 +187,8 @@ class User(object):
         """
         try:
             return User()
-        except UserNotFoundError:
+        except UserNotFoundError:  # noqa: F821
             return None
-
 
     def is_current_user_admin(self):
         """Specifies whether the user making a request is an application admin.
@@ -178,7 +202,6 @@ class User(object):
         `True` if the user is an administrator; all other user types
         return `False`.
         """
-
         # This env variable was set by GAE based on a GAE session cookie.
         # Using Sign-In With Google, it will probably never be present.
         # Hence, currently is always False.
@@ -187,45 +210,48 @@ class User(object):
 
 
 def get_current_user():
+    """Gets the current user based on the environment or test mode."""
     if settings.UNIT_TEST_MODE:
-      user_via_env = None
-      if os.environ.get('USER_EMAIL', '') != '':
-        user_via_env = User(email=os.environ['USER_EMAIL'])
-      return user_via_env
+        user_via_env = None
+        if os.environ.get('USER_EMAIL', '') != '':
+            user_via_env = User(email=os.environ['USER_EMAIL'])
+        return user_via_env
 
     user_info, signature = session.get('signed_user_info', (None, None))
     if user_info:
-      try:
-        xsrf.validate_token(
-            signature,
-            str(user_info),
-            timeout=xsrf.REFRESH_TOKEN_TIMEOUT_SEC)
-        user_via_signed_user_info = User(email=user_info['email'])
-        return user_via_signed_user_info
+        try:
+            xsrf.validate_token(
+                signature,
+                str(user_info),
+                timeout=xsrf.REFRESH_TOKEN_TIMEOUT_SEC,
+            )
+            user_via_signed_user_info = User(email=user_info['email'])
+            return user_via_signed_user_info
 
-      except xsrf.TokenIncorrect:
-        # If anything is not right, give the user a fresh session.
-        session.clear()
-        pass
+        except xsrf.TokenIncorrect:
+            # If anything is not right, give the user a fresh session.
+            session.clear()
+            pass
 
     return None  # User is not signed in.
 
 
 def is_current_user_admin():
+    """Return whether the current user has administrative privileges."""
     return False
 
 
 def add_signed_user_info_to_session(email):
-  """Create and sign the user info in the Flask session."""
-  user_info = {
-      'email': email,
-  }
-  signature = xsrf.generate_token(str(user_info))
-  session['signed_user_info'] = user_info, signature
+    """Create and sign the user info in the Flask session."""
+    user_info = {
+        'email': email,
+    }
+    signature = xsrf.generate_token(str(user_info))
+    session['signed_user_info'] = user_info, signature
 
 
 def refresh_user_session():
-  """If the user is signed in, update the signed user info with a new date."""
-  user = get_current_user()
-  if user:
-    add_signed_user_info_to_session(user.email())
+    """If the user is signed in, update the signed user info with a new date."""
+    user = get_current_user()
+    if user:
+        add_signed_user_info_to_session(user.email())

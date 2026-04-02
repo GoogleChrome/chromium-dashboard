@@ -12,66 +12,77 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import testing_config  # Must be imported first
+"""Tests for the fetchchannels module, verifying the fetching of Chrome release info."""
+
 import json
 from unittest import mock
 
+import testing_config  # Must be imported first
 from internals import fetchchannels
 
 
 class ChannelsAPITest(testing_config.CustomTestCase):
+    """Tests for the channels API."""
 
-  @mock.patch('requests.get')
-  def test_fetch_chrome_release_info__found(self, mock_requests_get):
-    """We can get channel data from the chromiumdash app."""
-    mock_requests_get.return_value = testing_config.Blank(
-        status_code=200,
-        content=json.dumps({
-            'mstones': [{
-                'owners': 'ignored',
-                'feature_freeze': 'ignored',
-                'ldaps': 'ignored',
-                'everything else': 'kept',
-             }],
-        }))
+    @mock.patch('requests.get')
+    def test_fetch_chrome_release_info__found(self, mock_requests_get):
+        """We can get channel data from the chromiumdash app."""
+        mock_requests_get.return_value = testing_config.Blank(
+            status_code=200,
+            content=json.dumps(
+                {
+                    'mstones': [
+                        {
+                            'owners': 'ignored',
+                            'feature_freeze': 'ignored',
+                            'ldaps': 'ignored',
+                            'everything else': 'kept',
+                        }
+                    ],
+                }
+            ),
+        )
 
-    actual = fetchchannels.fetch_chrome_release_info(90)
+        actual = fetchchannels.fetch_chrome_release_info(90)
 
-    self.assertEqual(
-        {'everything else': 'kept'},
-        actual)
+        self.assertEqual({'everything else': 'kept'}, actual)
 
-  @mock.patch('requests.get')
-  def test_fetch_chrome_release_info__not_found(self, mock_requests_get):
-    """If chromiumdash app does not have the data, use a placeholder."""
-    mock_requests_get.return_value = testing_config.Blank(
-        status_code=404, content='')
+    @mock.patch('requests.get')
+    def test_fetch_chrome_release_info__not_found(self, mock_requests_get):
+        """If chromiumdash app does not have the data, use a placeholder."""
+        mock_requests_get.return_value = testing_config.Blank(
+            status_code=404, content=''
+        )
 
-    actual = fetchchannels.fetch_chrome_release_info(91)
+        actual = fetchchannels.fetch_chrome_release_info(91)
 
-    self.assertEqual(
-        {'stable_date': None,
-         'earliest_beta': None,
-         'latest_beta': None,
-         'mstone': 91,
-         'version': 91,
-         },
-        actual)
+        self.assertEqual(
+            {
+                'stable_date': None,
+                'earliest_beta': None,
+                'latest_beta': None,
+                'mstone': 91,
+                'version': 91,
+            },
+            actual,
+        )
 
-  @mock.patch('requests.get')
-  def test_fetch_chrome_release_info__error(self, mock_requests_get):
-    """We can get channel data from the chromiumdash app."""
-    mock_requests_get.return_value = testing_config.Blank(
-        status_code=200,
-        content='{')
+    @mock.patch('requests.get')
+    def test_fetch_chrome_release_info__error(self, mock_requests_get):
+        """We can get channel data from the chromiumdash app."""
+        mock_requests_get.return_value = testing_config.Blank(
+            status_code=200, content='{'
+        )
 
-    actual = fetchchannels.fetch_chrome_release_info(90)
+        actual = fetchchannels.fetch_chrome_release_info(90)
 
-    self.assertEqual(
-        {'stable_date': None,
-         'earliest_beta': None,
-         'latest_beta': None,
-         'mstone': 90,
-         'version': 90,
-         },
-        actual)
+        self.assertEqual(
+            {
+                'stable_date': None,
+                'earliest_beta': None,
+                'latest_beta': None,
+                'mstone': 90,
+                'version': 90,
+            },
+            actual,
+        )

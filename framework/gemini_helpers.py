@@ -12,10 +12,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Helper functions for interacting with Gemini AI models.
+
+Provides utilities to fetch and parse external content (like GitHub PRs,
+blobs, and web specs) and to synthesize data for Gemini prompts.
+"""
+
 import asyncio
-from datetime import datetime
 import logging
 import re
+from datetime import datetime
+from pathlib import Path
+from urllib.parse import urlparse
+
+import requests
+import trafilatura
 from flask import render_template
 
 from framework import basehandlers, utils
@@ -23,144 +34,503 @@ from framework.gemini_client import GeminiClient
 from internals import core_enums
 from internals.core_models import FeatureEntry
 
-
 SPEC_SYNTHESIS_TEMPLATE_PATH = 'prompts/spec-synthesis.html'
 TEST_ANALYSIS_TEMPLATE_PATH = 'prompts/test-analysis.html'
 GAP_ANALYSIS_TEMPLATE_PATH = 'prompts/gap-analysis.html'
+UNIFIED_GAP_ANALYSIS_TEMPLATE_PATH = 'prompts/unified-gap-analysis.html'
 # Regex to determine if the wpt.fyi URL is a test file link.
 # Otherwise, it's a directory.
-WPT_FILE_REGEX = re.compile(r"\/[^/]*\.[^/]*$")
+WPT_FILE_REGEX = re.compile(r'\/[^/]*\.[^/]*$')
 
 
-class PipelineError(Exception):
-  """Base exception for errors occurring during the AI evaluation pipeline."""
-  pass
+def _validate_github_domain(netloc: str) -> bool:
+    """Allow exact match OR valid subdomains for github.com."""
+    return netloc == 'github.com' or netloc.endswith('.github.com')
 
 
 def _create_feature_definition(feature: FeatureEntry) -> str:
-  return f'Name: {feature.name}\nDescription: {feature.summary}'
+    return f'Name: {feature.name}\nDescription: {feature.summary}'
 
 
-async def _get_test_analysis_prompts(test_locations: list[str]) -> dict[str, str]:
-  test_urls = []
-  test_directories = []
-  for test_loc in test_locations:
-    if WPT_FILE_REGEX.search(test_loc):
-      test_urls.append(test_loc)
-    else:
-      test_directories.append(test_loc)
+def _fetch_explainer_content(url: str) -> str:
+    """Fetches explainer content with specialized handling for technical data.
+    Prioritizes raw formats for GitHub to preserve code blocks.
+    """  # noqa: D205
+    parsed = urlparse(url)
 
-  all_file_contents = await utils.get_mixed_wpt_contents_async(
-    test_directories, test_urls
-  )
-  return all_file_contents
+    # 1. Specialized GitHub Handling (Best for code blocks)
+    # Convert blob links to raw links to get original Markdown source.
+    if _validate_github_domain(parsed.netloc) and '/blob/' in parsed.path:
+        raw_url = url.replace(
+            'github.com', 'raw.githubusercontent.com'
+        ).replace('/blob/', '/')  # noqa: E501
+        try:
+            resp = requests.get(raw_url)
+            resp.raise_for_status()
+            # Return raw markdown which Gemini handles better than mangled HTML
+            return resp.text
+        except Exception as e:
+            raise utils.PipelineError(
+                f'Error fetching GitHub Raw Explainer: {e}'
+            ) from e  # noqa: E501
+
+    # 2. Standard Webpage Extraction
+    try:
+        downloaded = trafilatura.fetch_url(url)
+        if downloaded is None:
+            raise utils.PipelineError(f'Error: Could not fetch URL {url}')
+
+        # Use include_formatting=True and include_tables=True
+        # This helps Trafilatura preserve <pre> and <code> blocks.
+        result = trafilatura.extract(
+            downloaded,
+            include_comments=False,
+            include_tables=True,
+            include_formatting=True,  # Added to preserve code structure
+            output_format='markdown',
+        )
+
+        if not result:
+            raise utils.PipelineError(f'Error: No main content found at {url}')
+
+        return result
+    except Exception as e:
+        if isinstance(e, utils.PipelineError):
+            raise
+        raise utils.PipelineError(
+            f'Error: Unable to process explainer: {e}'
+        ) from e
 
 
-async def run_wpt_test_eval_pipeline(feature: FeatureEntry) -> None:
-  """Execute the three-stage AI pipeline for WPT coverage evaluation.
+def _get_explainer_content(explainer_links: list[str]) -> str:
+    """Fetches and concatenates content from multiple explainer links."""  # noqa: D200
+    if not explainer_links:
+        return ''
 
-  This pipeline performs the following steps:
-  1. Spec Synthesis: Summarizes the relevant specifications for the feature.
-  2. Test Analysis: Analyzes existing WPT files for coverage concurrently.
-  3. Gap Analysis: Compares the spec synthesis with test analyses to identify
-     missing coverage.
+    contents = []
+    for item in explainer_links:
+        item = item.strip()
+        if not item:
+            continue
 
-  The final report is saved to `feature.ai_test_eval_report`.
+        url_match = re.search(r'https?://[^\s]+', item)
+        if url_match:
+            url = url_match.group(0)
+            try:
+                content = _fetch_explainer_content(url)
+                if content:
+                    contents.append(f'## Explainer Link: {url}\n{content}')
+            except Exception as e:
+                logging.warning(
+                    f'Failed to fetch explainer content for {url}: {e}'
+                )
+                continue
 
-  Args:
-    feature: The FeatureEntry model containing spec links and WPT descriptions
-      needed for the analysis.
+    return '\n\n'.join(contents)
 
-  Raises:
-    PipelineError: If the pipeline fails due to missing data (e.g., no spec URL)
-      or if critical AI generation steps fail.
-  """
-  if not feature.spec_link:
-    raise PipelineError('No spec URL provided.')
 
-  test_locations = utils.extract_wpt_fyi_results_urls(feature.wpt_descr)
-  if len(test_locations) == 0:
-    raise PipelineError('No valid wpt.fyi results URLs found in WPT description.')
+def _fetch_spec_content(url: str) -> str:
+    """Routes the URL to the correct extraction logic to return clean text."""  # noqa: D200
+    parsed = urlparse(url)
 
-  template_data = {
-    'spec_contents': feature.spec_link,
-    'feature_definition': _create_feature_definition(feature)
-  }
-  spec_synthesis_prompt = render_template(SPEC_SYNTHESIS_TEMPLATE_PATH, **template_data)
+    # URL type 1: GitHub pull requests
+    if _validate_github_domain(parsed.netloc) and '/pull/' in parsed.path:
+        diff_url = url.rstrip('/') + '.diff'
+        try:
+            resp = requests.get(diff_url)
+            resp.raise_for_status()
+            return resp.text
+        except Exception as e:
+            raise utils.PipelineError(f'Error fetching GitHub Diff: {e}') from e
 
-  test_analysis_file_contents = await _get_test_analysis_prompts(test_locations)
+    # URL type 2: GitHub file blobs
+    if _validate_github_domain(parsed.netloc) and '/blob/' in parsed.path:
+        raw_url = url.replace(
+            'github.com', 'raw.githubusercontent.com'
+        ).replace('/blob/', '/')  # noqa: E501
+        try:
+            resp = requests.get(raw_url)
+            resp.raise_for_status()
+            return resp.text
+        except Exception as e:
+            raise utils.PipelineError(f'Error fetching GitHub Raw: {e}') from e
 
-  file_names: list[str] = []
-  prompts = []
-  for fname, fc in test_analysis_file_contents.items():
-    prompts.append(
-      render_template(TEST_ANALYSIS_TEMPLATE_PATH, testfile_contents=fc)
+    # URL type 3: Standard W3C, Web specs, or other webpages
+    try:
+        downloaded = trafilatura.fetch_url(url)
+
+        if downloaded is None:
+            raise utils.PipelineError(f'Error: Could not fetch URL {url}')
+
+        # Extract content to Markdown.
+        # include_comments=False skips comments.
+        # include_tables=True is critical for Specs which often use tables for definitions.  # noqa: E501
+        result = trafilatura.extract(
+            downloaded,
+            include_comments=False,
+            include_tables=True,
+            output_format='markdown',
+        )
+
+        if not result:
+            raise utils.PipelineError(f'Error: No main content found at {url}')
+
+        return result
+
+    except Exception as e:
+        if isinstance(e, utils.PipelineError):
+            raise
+        raise utils.PipelineError(f'Error processing Web Spec: {e}') from e
+
+
+async def _get_test_file_contents(
+    test_locations: list[str],
+) -> utils.WPTContents:  # noqa: E501
+    """Obtain the contents of test files, as well as the contents of their dependencies."""  # noqa: E501
+    test_urls = []
+    test_directories = []
+    for test_loc in test_locations:
+        if WPT_FILE_REGEX.search(test_loc):
+            test_urls.append(test_loc)
+        else:
+            test_directories.append(test_loc)
+
+    return await utils.get_mixed_wpt_contents_async(test_directories, test_urls)
+
+
+def _generate_unified_prompt_text(
+    feature: FeatureEntry,
+    wpt_contents: utils.WPTContents,
+    include_explainer: bool = False,
+) -> str:
+    """Generates the text for the unified gap analysis prompt."""
+    explainer_content = (
+        _get_explainer_content(feature.explainer_links)
+        if include_explainer
+        else None
+    )  # noqa: E501
+
+    template_data = {
+        'spec_url': feature.spec_link,
+        'spec_content': _fetch_spec_content(feature.spec_link),
+        'explainer_content': explainer_content,
+        'feature_name': feature.name,
+        'feature_summary': feature.summary,
+        'test_files': [
+            {'path': fpath, 'contents': fc}
+            for fpath, fc in wpt_contents.test_contents.items()
+        ],
+        'dependency_files': [
+            {'path': fpath, 'contents': fc}
+            for fpath, fc in wpt_contents.dependency_contents.items()
+        ],  # noqa: E501
+    }
+    return render_template(
+        UNIFIED_GAP_ANALYSIS_TEMPLATE_PATH,
+        **template_data,
     )
-    file_names.append(fname)
-  # Add the spec synthesis prompt to the end for batch processing.
-  prompts.append(spec_synthesis_prompt)
 
-  gemini_client = GeminiClient()
 
-  all_responses = await gemini_client.get_batch_responses_async(prompts)
+def unified_prompt_analysis(prompt_text: str) -> str:
+    """Evaluates WPT coverage using a single, unified prompt.
 
-  spec_synthesis_response = all_responses.pop()
-  if not isinstance(spec_synthesis_response, str):
-    raise PipelineError(f'Spec synthesis prompt failure: {spec_synthesis_response}')
+    This method is used when the number of test files and the total token count
+    are small enough to fit within the context window of a single prompt.
 
-  test_analysis_responses_formatted: list[str] = []
-  for fname, resp in zip(file_names, all_responses):
-    if not isinstance(resp, str):
-      logging.error(f'Test analysis prompt failure: {resp}')
-      continue
-    test_analysis_responses_formatted.append(f'Test {fname} summary:\n')
-    test_analysis_responses_formatted.append(resp)
-    test_analysis_responses_formatted.append('\n\n')
+    Args:
+      prompt_text: The complete text of the unified prompt to be sent to Gemini.
 
-  if not test_analysis_responses_formatted:
-    raise PipelineError('No successful test analysis responses.')
+    Returns:
+      A string containing the generated coverage report.
+    """
+    gemini_client = GeminiClient()
+    gap_analysis_response = gemini_client.get_response(
+        prompt_text, temperature=0.0
+    )  # noqa: E501
+    return gap_analysis_response
 
-  template_data = {
-    'spec_synthesis': spec_synthesis_response,
-    'test_analysis': ''.join(test_analysis_responses_formatted)
-  }
-  gap_analysis_prompt = render_template(GAP_ANALYSIS_TEMPLATE_PATH, **template_data)
 
-  # Use the async version of get_response to keep the whole pipeline non-blocking.
-  gap_analysis_response = await gemini_client.get_response_async(gap_analysis_prompt)
+async def prompt_analysis(  # noqa: D417
+    feature: FeatureEntry,
+    wpt_contents: utils.WPTContents,
+    include_explainer: bool = False,
+) -> str:
+    """Evaluates WPT coverage using a multi-stage prompt flow.
 
-  feature.ai_test_eval_report = gap_analysis_response
+    This method is used when the number of test files is too large for a single
+    prompt. It breaks the analysis into three distinct stages:
+    1. Spec Synthesis: Summarizes the spec into a concise reference.
+    2. Test Analysis: Analyzes test files in packed batches to maximize context usage.
+    3. Gap Analysis: Compares the spec synthesis with the aggregated test
+       summaries to identify gaps.
+
+    Args:
+      feature: The feature entry containing metadata and the spec URL.
+      wpt_contents: The contents of the test files and dependencies.
+
+    Returns:
+      A string containing the generated coverage report.
+
+    Raises:
+      PipelineError: If any critical stage of the prompt pipeline fails.
+    """  # noqa: E501
+    gemini_client = GeminiClient()
+    prompts = []
+
+    test_contents = wpt_contents.test_contents
+    dependency_contents = wpt_contents.dependency_contents
+
+    current_test_files: list[dict[str, Path | str]] = []
+    current_dependencies: dict[Path, str] = {}
+
+    for fpath, fc in test_contents.items():
+        # 1. Identify dependencies for the current file
+        file_deps = {}
+        if fpath in wpt_contents.test_to_dependencies_map:
+            for dep_path in wpt_contents.test_to_dependencies_map[fpath]:
+                content = (
+                    dependency_contents[dep_path]
+                    if dep_path in dependency_contents
+                    else test_contents.get(dep_path)
+                )
+                if content:
+                    file_deps[dep_path] = content
+
+        # 2. Create candidate batch (current batch + new file)
+        candidate_test_files = current_test_files + [
+            {'path': fpath, 'contents': fc}
+        ]  # noqa: E501
+        candidate_dependencies = current_dependencies.copy()
+        candidate_dependencies.update(file_deps)
+
+        # Render candidate prompt to check token limits
+        # dependency_files arg: list of (Path, content) tuples
+        candidate_prompt = render_template(
+            TEST_ANALYSIS_TEMPLATE_PATH,
+            test_files=candidate_test_files,
+            dependency_files=[
+                {'path': fpath, 'contents': fc}
+                for fpath, fc in candidate_dependencies.items()
+            ],
+        )
+
+        # 3. Check token limit
+        if gemini_client.prompt_exceeds_input_token_limit(candidate_prompt):
+            # Commit the previous valid batch if it exists
+            if current_test_files:
+                prompts.append(
+                    render_template(
+                        TEST_ANALYSIS_TEMPLATE_PATH,
+                        test_files=current_test_files,
+                        dependency_files=[
+                            {'path': fpath, 'contents': fc}
+                            for fpath, fc in current_dependencies.items()
+                        ],
+                    )
+                )
+                # Reset the buffer; we will decide what to put in it next
+                current_test_files = []
+                current_dependencies = {}
+
+            # Check if the current file + its dependencies fit on their own
+            single_file_list: list[dict[str, Path | str]] = [
+                {'path': fpath, 'contents': fc}
+            ]  # noqa: E501
+
+            single_prompt_with_deps = render_template(
+                TEST_ANALYSIS_TEMPLATE_PATH,
+                test_files=single_file_list,
+                dependency_files=[
+                    {'path': fpath, 'contents': fc}
+                    for fpath, fc in file_deps.items()
+                ],
+            )
+            if gemini_client.prompt_exceeds_input_token_limit(
+                single_prompt_with_deps
+            ):  # noqa: E501
+                # Edge Case: The file + deps is too large. (this should be very rare).
+                # Create a prompt with ONLY the test file (omit dependencies) and commit immediately.  # noqa: E501
+                logging.warning(
+                    f'Test file {fpath} with dependencies exceeds token limit. '
+                    'Generating prompt without dependencies.'
+                )
+                prompts.append(
+                    render_template(
+                        TEST_ANALYSIS_TEMPLATE_PATH,
+                        test_files=single_file_list,
+                        dependency_files=[],
+                    )
+                )
+                # Buffer remains empty for the next iteration
+                current_test_files = []
+                current_dependencies = {}
+            else:
+                # Start the new batch.
+                current_test_files = single_file_list
+                current_dependencies = file_deps
+
+        else:
+            # It fits; update the current batch state
+            current_test_files = candidate_test_files
+            current_dependencies = candidate_dependencies
+
+    # 4. Commit any remaining tests in the buffer
+    if current_test_files:
+        prompts.append(
+            render_template(
+                TEST_ANALYSIS_TEMPLATE_PATH,
+                test_files=current_test_files,
+                dependency_files=[
+                    {'path': fpath, 'contents': fc}
+                    for fpath, fc in current_dependencies.items()
+                ],
+            )
+        )
+
+    explainer_content = (
+        _get_explainer_content(feature.explainer_links)
+        if include_explainer
+        else None
+    )  # noqa: E501
+
+    template_data = {
+        'spec_url': feature.spec_link,
+        'spec_content': _fetch_spec_content(feature.spec_link),
+        'explainer_content': explainer_content,
+        'feature_definition': _create_feature_definition(feature),
+    }
+    spec_synthesis_prompt = render_template(
+        SPEC_SYNTHESIS_TEMPLATE_PATH, **template_data
+    )  # noqa: E501
+    # Add the spec synthesis prompt to the end for batch processing.
+    prompts.append(spec_synthesis_prompt)
+
+    all_responses = await gemini_client.get_batch_responses_async(
+        prompts, temperature=0.0
+    )  # noqa: E501
+
+    spec_synthesis_response = all_responses.pop()
+    if not isinstance(spec_synthesis_response, str):
+        raise utils.PipelineError(
+            f'Spec synthesis prompt failure: {spec_synthesis_response}'
+        )  # noqa: E501
+
+    # Log if any test summary responses failed.
+    for resp in all_responses:
+        if not isinstance(resp, str):
+            logging.error(f'Test analysis prompt failure: {resp}')
+            continue
+    test_analysis_responses = [
+        resp for resp in all_responses if isinstance(resp, str)
+    ]  # noqa: E501
+
+    if not test_analysis_responses:
+        raise utils.PipelineError('No successful test analysis responses.')
+
+    template_data = {
+        'spec_synthesis': spec_synthesis_response,
+        'test_summaries': test_analysis_responses,
+    }
+    gap_analysis_prompt = render_template(
+        GAP_ANALYSIS_TEMPLATE_PATH, **template_data
+    )  # noqa: E501
+
+    # Use the async version of get_response to keep the whole pipeline non-blocking.  # noqa: E501
+    gap_analysis_response = await gemini_client.get_response_async(
+        gap_analysis_prompt, temperature=0.0
+    )  # noqa: E501
+    return gap_analysis_response
+
+
+async def run_wpt_test_eval_pipeline(  # noqa: D417
+    feature: FeatureEntry,
+    include_explainer: bool = False,
+) -> core_enums.AITestEvaluationStatus:
+    """Execute the AI pipeline for WPT coverage analysis.
+
+    The final report is saved to `feature.ai_test_eval_report`.
+
+    Args:
+      feature: The FeatureEntry model containing spec links and WPT descriptions
+        needed for the analysis.
+
+    Returns:
+      AITestEvaluationStatus indicating success or failure.
+    """
+    try:
+        if not feature.spec_link:
+            raise utils.PipelineError('No spec URL provided.')
+
+        test_locations = utils.extract_wpt_fyi_results_urls(feature.wpt_descr)
+        if len(test_locations) == 0:
+            raise utils.PipelineError(
+                'No valid wpt.fyi results URLs found in WPT description.'
+            )  # noqa: E501
+
+        wpt_contents = await _get_test_file_contents(test_locations)
+        prompt_text = _generate_unified_prompt_text(
+            feature, wpt_contents, include_explainer
+        )  # noqa: E501
+
+        gemini_client = GeminiClient()
+        # Don't use the single prompt if it will overload the context.
+        if gemini_client.prompt_exceeds_input_token_limit(prompt_text):
+            logging.warning(
+                'The unified gap analysis prompt is too large. '
+                'Using the 3-prompt flow instead.'
+            )
+            gap_analysis_response = await prompt_analysis(
+                feature, wpt_contents, include_explainer
+            )  # noqa: E501
+        else:
+            gap_analysis_response = unified_prompt_analysis(prompt_text)
+
+        feature.ai_test_eval_report = gap_analysis_response
+        return core_enums.AITestEvaluationStatus.COMPLETE
+    except utils.PipelineError as e:
+        feature.ai_test_eval_report = str(e)
+        return core_enums.AITestEvaluationStatus.FAILED
 
 
 class GenerateWPTCoverageEvalReportHandler(basehandlers.FlaskHandler):
-  """Cloud Task handler for running the AI-powered WPT coverage evaluation."""
+    """Cloud Task handler for running the AI-powered WPT coverage analysis."""
 
-  IS_INTERNAL_HANDLER = True
+    IS_INTERNAL_HANDLER = True
 
-  def process_post_data(self, **kwargs):
-    self.require_task_header()
+    def process_post_data(self, **kwargs):
+        """Process POST data for the handler."""
+        self.require_task_header()
 
-    feature_id = self.get_int_param('feature_id')
-    feature = self.get_validated_entity(feature_id, FeatureEntry)
+        feature_id = self.get_int_param('feature_id')
+        include_explainer = self.get_bool_param('include_explainer', False)
+        feature = self.get_validated_entity(feature_id, FeatureEntry)
 
-    logging.info(f'Starting WPT coverage evaluation pipeline for feature {feature_id}')
+        logging.info(
+            f'Starting WPT coverage analysis pipeline for feature {feature_id}'
+        )  # noqa: E501
 
-    try:
-      asyncio.run(run_wpt_test_eval_pipeline(feature))
-    except Exception as e:
-      feature.ai_test_eval_run_status = core_enums.AITestEvaluationStatus.FAILED
-      feature.ai_test_eval_status_timestamp = datetime.now()
-      feature.ai_test_eval_report = (
-        'Web Platform Tests coverage evaluation report failed to generate. '
-        'Try again later.'
-      )
-      feature.put()
-      error_message = ('WPT coverage evaluation report failure for feature '
-                       f'{feature_id}: {e}')
-      logging.error(error_message)
-      return {'message': error_message}
+        try:
+            result_status = asyncio.run(
+                run_wpt_test_eval_pipeline(feature, include_explainer)
+            )  # noqa: E501
+        except Exception as e:
+            feature.ai_test_eval_run_status = (
+                core_enums.AITestEvaluationStatus.FAILED
+            )
+            feature.ai_test_eval_status_timestamp = datetime.now()
+            feature.ai_test_eval_report = (
+                'Web Platform Tests coverage analysis report failed to generate. '
+                'Try again later.'
+            )
+            feature.put()
+            error_message = (
+                'WPT coverage analysis report failure for feature '
+                f'{feature_id}: {e}'
+            )
+            logging.error(error_message)
+            return {'message': error_message}
 
-    feature.ai_test_eval_run_status = core_enums.AITestEvaluationStatus.COMPLETE
-    feature.ai_test_eval_status_timestamp = datetime.now()
-    feature.put()
-    return {'message': 'WPT coverage evaluation report generated.'}
+        feature.ai_test_eval_run_status = result_status
+        feature.ai_test_eval_status_timestamp = datetime.now()
+        feature.put()
+        return {'message': 'WPT coverage analysis report generated.'}

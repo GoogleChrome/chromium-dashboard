@@ -1,8 +1,7 @@
 /** This is the entry file for rollup. It bundles all the web components:
     shoelace components and our own components */
 
-// Shoelace components
-// css is imported via _base.html in base.css, built by gulpfile.babel.js.
+// Shoelace components and CSS
 import '@shoelace-style/shoelace/dist/components/button/button.js';
 import '@shoelace-style/shoelace/dist/components/checkbox/checkbox.js';
 import '@shoelace-style/shoelace/dist/components/dialog/dialog.js';
@@ -17,6 +16,8 @@ import '@shoelace-style/shoelace/dist/components/menu-item/menu-item.js';
 import '@shoelace-style/shoelace/dist/components/option/option.js';
 import '@shoelace-style/shoelace/dist/components/popup/popup.js';
 import '@shoelace-style/shoelace/dist/components/progress-bar/progress-bar.js';
+import '@shoelace-style/shoelace/dist/components/radio-group/radio-group.js';
+import '@shoelace-style/shoelace/dist/components/radio/radio.js';
 import '@shoelace-style/shoelace/dist/components/relative-time/relative-time.js';
 import '@shoelace-style/shoelace/dist/components/skeleton/skeleton.js';
 import '@shoelace-style/shoelace/dist/components/select/select.js';
@@ -26,6 +27,7 @@ import '@shoelace-style/shoelace/dist/components/tag/tag.js';
 import '@shoelace-style/shoelace/dist/components/tooltip/tooltip.js';
 import '@shoelace-style/shoelace/dist/components/tree/tree.js';
 import '@shoelace-style/shoelace/dist/components/tree-item/tree-item.js';
+import '@shoelace-style/shoelace/dist/themes/light.css';
 import {setBasePath} from '@shoelace-style/shoelace/dist/utilities/base-path.js';
 
 // Set the base path to the folder you copied Shoelace's assets to
@@ -40,8 +42,7 @@ registerIconLibrary('material', {
   mutator: svg => svg.setAttribute('fill', 'currentColor'),
 });
 
-
-// chromedash components
+// Chromedash components and LitCSS
 import './elements/chromedash-admin-blink-component-listing';
 import './elements/chromedash-admin-blink-page';
 import './elements/chromedash-admin-feature-links-page';

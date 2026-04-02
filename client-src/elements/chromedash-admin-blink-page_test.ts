@@ -1,6 +1,6 @@
-import './chromedash-toast';
+import './chromedash-toast.js';
 import {html} from 'lit';
-import {ChromedashAdminBlinkPage} from './chromedash-admin-blink-page';
+import {ChromedashAdminBlinkPage} from './chromedash-admin-blink-page.js';
 import {assert, fixture} from '@open-wc/testing';
 import sinon, {SinonStubbedInstance} from 'sinon';
 import {ComponentsUsersResponse, DefaultApi} from 'chromestatus-openapi';
