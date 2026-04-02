@@ -7,7 +7,7 @@ ROOT_DIR = os.path.abspath(os.path.dirname(__file__))
 
 
 def get_flask_template_path() -> str:
-    """Returns a path to the templates."""  # noqa: D200
+    """Returns a path to the templates."""
     return os.path.join(ROOT_DIR, 'templates')
 
 

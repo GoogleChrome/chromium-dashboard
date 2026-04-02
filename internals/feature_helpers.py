@@ -284,7 +284,7 @@ def get_features_in_release_notes(milestone: int):
         f
         for f in filter_unlisted_formatted(formatted_features)
         if (
-            f['first_enterprise_notification_milestone'] == None  # noqa: E711
+            f['first_enterprise_notification_milestone'] is None
             or f['first_enterprise_notification_milestone'] <= milestone
         )
     ]

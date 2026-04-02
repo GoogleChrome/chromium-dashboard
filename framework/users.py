@@ -12,6 +12,12 @@ import settings
 from framework import xsrf
 
 
+class UserNotFoundError(Exception):
+    """Raised when a user is not found."""
+
+    pass
+
+
 class User(object):
     """Provides the email address, nickname, and ID for a user.
 
@@ -187,7 +193,7 @@ class User(object):
         """
         try:
             return User()
-        except UserNotFoundError:  # noqa: F821
+        except UserNotFoundError:
             return None
 
     def is_current_user_admin(self):

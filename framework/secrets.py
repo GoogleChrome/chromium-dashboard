@@ -182,7 +182,7 @@ def load_github_token():
         try:
             with open(f'{settings.ROOT_DIR}/github_token.txt', 'r') as f:
                 settings.GITHUB_TOKEN = f.read().strip()
-        except:  # noqa: E722
+        except Exception:
             logging.info('No key found locally for the GitHub API.')
     else:
         # If in staging or prod, pull the token from the project secrets.

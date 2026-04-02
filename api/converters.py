@@ -71,7 +71,7 @@ def to_dict(entity: ndb.Model) -> dict[str, Any]:  # pragma: no cover
 
 
 def del_none(d):
-    """Delete dict keys with None values, and empty lists, recursively."""  # noqa: D200
+    """Delete dict keys with None values, and empty lists, recursively."""
     for key, value in list(d.items()):
         if value is None or (isinstance(value, list) and len(value) == 0):
             del d[key]
