@@ -20,7 +20,7 @@ google-cloud-secret-manager==2.27.0
 google-cloud-storage==3.10.1
 google-auth==2.49.1
 google-genai==1.70.0
-requests==2.33.0
+requests==2.33.1
 redis==6.4.0
 fakeredis==2.34.1
 Flask==3.1.3
