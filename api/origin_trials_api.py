@@ -190,11 +190,14 @@ class OriginTrialsAPI(basehandlers.EntitiesAPIHandler):
             try:
                 enabled_features_json = json5.loads(enabled_features_text)
             except ValueError:
-                logging.error('Failed to parse runtime_enabled_features.json5 file')
-            
+                logging.error(
+                    'Failed to parse runtime_enabled_features.json5 file'
+                )
+
             if enabled_features_json is not None:
                 if not any(
-                    feature.get('origin_trial_feature_name') == chromium_trial_name  # noqa: E501
+                    feature.get('origin_trial_feature_name')
+                    == chromium_trial_name  # noqa: E501
                     for feature in enabled_features_json.get('data', [])
                 ):
                     validation_errors['ot_chromium_trial_name'] = (

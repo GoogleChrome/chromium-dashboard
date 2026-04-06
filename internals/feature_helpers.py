@@ -949,7 +949,7 @@ def validate_feature_in_chromium(
     name: str, enabled_features_json: dict | None, content_features_file: str
 ) -> list[Criteria]:
     """Verify required info exists in Chromium files. Return a list of missing criteria."""  # noqa: E501
-    criteria_missing = []
+    criteria_missing: list[Criteria] = []
     if enabled_features_json is None:
         return criteria_missing
 
