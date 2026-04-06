@@ -35,6 +35,7 @@ ALL_SHIPPING_GATE_TYPES = [
     core_enums.GATE_ENTERPRISE_SHIP,
     core_enums.GATE_DEBUGGABILITY_SHIP,
     core_enums.GATE_TESTING_SHIP,
+    core_enums.GATE_ADOPTION_SHIP,
     core_enums.GATE_API_SHIP,
 ]
 
@@ -639,6 +640,6 @@ class XfnGatesAPITest(testing_config.CustomTestCase):
         """We can create the missing gates from core_enums.STAGE_BLINK_SHIPPING."""
         actual = self.handler.create_xfn_gates(self.feature_id, self.stage_id)
 
-        self.assertEqual(actual, 5)
+        self.assertEqual(actual, 6)
         actual_gates_dict = Gate.get_feature_gates(self.feature_id)
         self.assertCountEqual(actual_gates_dict.keys(), ALL_SHIPPING_GATE_TYPES)
