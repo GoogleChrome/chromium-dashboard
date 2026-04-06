@@ -15,6 +15,7 @@
 """API endpoints for interacting with and managing origin trials and their extensions."""
 
 import concurrent.futures
+import logging
 import re
 from typing import Any
 
@@ -184,16 +185,21 @@ class OriginTrialsAPI(basehandlers.EntitiesAPIHandler):
             )
 
         enabled_features_text = chromium_files.get('enabled_features_text', '')
-        enabled_features_json: dict[str, Any] = {'data': []}
+        enabled_features_json: dict[str, Any] | None = None
         if enabled_features_text:
-            enabled_features_json = json5.loads(enabled_features_text)
-            if not any(
-                feature.get('origin_trial_feature_name') == chromium_trial_name  # noqa: E501
-                for feature in enabled_features_json.get('data', [])
-            ):
-                validation_errors['ot_chromium_trial_name'] = (
-                    'Origin trial feature name not found in file'
-                )
+            try:
+                enabled_features_json = json5.loads(enabled_features_text)
+            except ValueError:
+                logging.error('Failed to parse runtime_enabled_features.json5 file')
+            
+            if enabled_features_json is not None:
+                if not any(
+                    feature.get('origin_trial_feature_name') == chromium_trial_name  # noqa: E501
+                    for feature in enabled_features_json.get('data', [])
+                ):
+                    validation_errors['ot_chromium_trial_name'] = (
+                        'Origin trial feature name not found in file'
+                    )
 
         is_dep_trial = (
             body['ot_is_deprecation_trial']
@@ -257,8 +263,8 @@ class OriginTrialsAPI(basehandlers.EntitiesAPIHandler):
             if body['ot_has_third_party_support']
             else None
         )
-        if has_third_party_support:
-            for feature in enabled_features_json['data']:
+        if has_third_party_support and enabled_features_json is not None:
+            for feature in enabled_features_json.get('data', []):
                 if feature.get(
                     'origin_trial_feature_name'
                 ) == chromium_trial_name and not feature.get(
