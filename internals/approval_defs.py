@@ -256,14 +256,20 @@ TestingPlanApproval = GateInfo(
 AdoptionShipApproval = GateInfo(
     'Adoption Ship Review',
     'Adoption Ship Review',
-    core_enums.GATE_ADOPTION_SHIP, ONE_LGTM,
-    approvers=ADOPTION_APPROVERS, team_name='Adoption')
+    core_enums.GATE_ADOPTION_SHIP,
+    ONE_LGTM,
+    approvers=ADOPTION_APPROVERS,
+    team_name='Adoption',
+)
 
 AdoptionPlanApproval = GateInfo(
     'Adoption Deprecation Plan Review',
     'Adoption Deprecation Plan Review',
-    core_enums.GATE_ADOPTION_PLAN, ONE_LGTM,
-    approvers=ADOPTION_APPROVERS, team_name='Adoption')
+    core_enums.GATE_ADOPTION_PLAN,
+    ONE_LGTM,
+    approvers=ADOPTION_APPROVERS,
+    team_name='Adoption',
+)
 
 
 APPROVAL_FIELDS_BY_ID = {

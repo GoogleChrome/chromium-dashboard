@@ -54,7 +54,9 @@ def update_survey_answers(gate: Gate, new_answers: OASurveyAnswers):
         answers.covers_integration = new_answers.covers_integration
 
     if new_answers.adoption_fields_up_to_date is not None:
-        answers.adoption_fields_up_to_date = new_answers.adoption_fields_up_to_date
+        answers.adoption_fields_up_to_date = (
+            new_answers.adoption_fields_up_to_date
+        )
     if new_answers.adoption_style_aligned is not None:
         answers.adoption_style_aligned = new_answers.adoption_style_aligned
     if new_answers.adoption_lead_time is not None:
