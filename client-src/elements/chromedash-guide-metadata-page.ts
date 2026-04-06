@@ -82,8 +82,23 @@ export class ChromedashGuideMetadataPage extends LitElement {
 
   handleFormSubmit(e, hiddenTokenField) {
     e.preventDefault();
-    const submitBody = formatFeatureChanges(this.fieldValues, this.featureId);
+    const lateChange = true; // Calculate based on milestones and dates.
+    if (lateChange) {
+      let publicationDetailsEdited = false;
+      for (const fv of this.fieldValues) {
+        publicationDetailsEdited ||= (fv.touched &&
+          ['name', 'summary'].includes(fv.name as string));
+      }
+      if (publicationDetailsEdited) {
+        alert(`You are changing fields that may have already been
+included in an announcement.  Please follow up by coordinating with the docs team.`);
+      }
+    }
+    this.submitForm(hiddenTokenField);
+  }
 
+  submitForm(hiddenTokenField) {
+    const submitBody = formatFeatureChanges(this.fieldValues, this.featureId);
     // get the XSRF token and update it if it's expired before submission
     window.csClient
       .ensureTokenIsValid()
