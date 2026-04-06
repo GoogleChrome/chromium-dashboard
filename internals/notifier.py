@@ -203,6 +203,9 @@ WEBVIEW_RULE_REASON = (
 WEBVIEW_RULE_ADDRS = ['webview-leads-external@google.com']
 IWA_RULE_REASON = 'You are subscribed to all IWA features'
 IWA_RULE_ADDRS = ['iwa-dev@chromium.org']
+POST_BETA_RULE_REASON = (
+    'Published aspects of this feature entry changed after it started beta')
+POST_BETA_RULE_ADDRS = ['rachelandrew@google.com']
 
 
 def apply_subscription_rules(
@@ -235,6 +238,16 @@ def apply_subscription_rules(
         milestone_fields = ['shipped_android_milestone']
         if not changed_field_names.isdisjoint(milestone_fields):
             results[WEBVIEW_RULE_REASON] = WEBVIEW_RULE_ADDRS
+
+    # Rule 3: Check if published aspects changed after beta start.
+    recent_beta_milestone = 147
+    logging.info('changed_field_names %r' % changed_field_names)
+    if ('name' in changed_field_names or 'summary' in changed_field_names or
+        False): #@@@ any milestone
+      if (ship_milestones is not None and
+          ship_milestones.desktop_first <= recent_beta_milestone):
+          # @@@ old or new milestone value
+          results[POST_BETA_RULE_REASON] = POST_BETA_RULE_ADDRS
 
     return results
 
