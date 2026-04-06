@@ -189,6 +189,7 @@ class OriginTrialsClientTest(testing_config.CustomTestCase):
         mock_get_ot_access_token.assert_called_once()
         mock_requests_post.assert_called_once()
 
+    @mock.patch('settings.UNIT_TEST_MODE', False)
     @mock.patch('requests.get')
     def test_get_trial_end_time(self, mock_requests_get):
         """Should return an int value based on the date from the request."""

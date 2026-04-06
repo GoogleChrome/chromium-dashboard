@@ -146,6 +146,16 @@ class ChannelsAPI(basehandlers.APIHandler):
         if start > end:
             raise ValueError
 
+        if settings.UNIT_TEST_MODE or settings.PLAYWRIGHT_MODE:
+            return {
+                m: {
+                    'stable_date': f'2025-0{m % 9 + 1}-01T00:00:00',
+                    'mstone': m,
+                    'version': m,
+                }
+                for m in range(start, end + 1)
+            }
+
         return construct_specified_milestones_details(start, end)
 
     # TODO(jrobbins): do_post

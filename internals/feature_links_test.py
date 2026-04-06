@@ -62,6 +62,10 @@ class LinkTest(testing_config.CustomTestCase):
         self.feature2.put()
         self.feature2_id = self.feature2.key.integer_id()
 
+    def tearDown(self):
+        """Clean up the test environment."""
+        super().tearDown()
+
     def mock_user_change_fields(self, changed_fields, target_feature=None):
         """Mock user change fields."""
         if not target_feature:
@@ -230,12 +234,19 @@ class LinkTest(testing_config.CustomTestCase):
         link = query.get()
         self.assertIsNone(link)
 
-    @mock.patch.object(Link, '_parse_github_issue')
+    @mock.patch.object(Link, 'parse', autospec=True)
     def test_webkit_review_saves_position_in_feature(
         self, mockParse: mock.MagicMock
     ):  # noqa: E501
         """Test webkit review saves position in feature."""
-        mockParse.return_value = {'labels': ['position: support']}
+
+        def side_effect(self_link):
+            self_link.is_parsed = True
+            self_link.is_error = False
+            self_link.type = LINK_TYPE_GITHUB_ISSUE
+            self_link.information = {'labels': ['position: support']}
+
+        mockParse.side_effect = side_effect
 
         url = 'https://github.com/WebKit/standards-positions/issues/247'
         query = FeatureLinks.query(FeatureLinks.url == url)
@@ -249,12 +260,19 @@ class LinkTest(testing_config.CustomTestCase):
             'support',  # noqa: E501
         )
 
-    @mock.patch.object(Link, '_parse_github_issue')
+    @mock.patch.object(Link, 'parse', autospec=True)
     def test_mozilla_review_saves_position_in_feature(
         self, mockParse: mock.MagicMock
     ):  # noqa: E501
         """Test mozilla review saves position in feature."""
-        mockParse.return_value = {'labels': ['position: defer']}
+
+        def side_effect(self_link):
+            self_link.is_parsed = True
+            self_link.is_error = False
+            self_link.type = LINK_TYPE_GITHUB_ISSUE
+            self_link.information = {'labels': ['position: defer']}
+
+        mockParse.side_effect = side_effect
 
         url = 'https://github.com/mozilla/standards-positions/issues/247'
         query = FeatureLinks.query(FeatureLinks.url == url)
@@ -268,12 +286,19 @@ class LinkTest(testing_config.CustomTestCase):
             'defer',
         )  # noqa: E501
 
-    @mock.patch.object(Link, '_parse_github_issue')
+    @mock.patch.object(Link, 'parse', autospec=True)
     def test_tag_review_saves_position_in_feature(
         self, mockParse: mock.MagicMock
     ):  # noqa: E501
         """Test tag review saves position in feature."""
-        mockParse.return_value = {'labels': ['Resolution: satisfied']}
+
+        def side_effect(self_link):
+            self_link.is_parsed = True
+            self_link.is_error = False
+            self_link.type = LINK_TYPE_GITHUB_ISSUE
+            self_link.information = {'labels': ['Resolution: satisfied']}
+
+        mockParse.side_effect = side_effect
 
         url = 'https://github.com/w3ctag/design-reviews/issues/928'
         query = FeatureLinks.query(FeatureLinks.url == url)
@@ -304,12 +329,25 @@ class LinkTest(testing_config.CustomTestCase):
         )
         mockParse.assert_not_called()
 
-    @mock.patch.object(Link, '_parse_github_issue')
+    @mock.patch.object(Link, 'parse', autospec=True)
     def test_updating_links_updates_cached_position(
         self, mockParse: mock.MagicMock
     ):  # noqa: E501
         """Test updating links updates cached position."""
-        mockParse.return_value = {'labels': ['position: defer']}
+
+        def side_effect_1(self_link):
+            self_link.is_parsed = True
+            self_link.is_error = False
+            self_link.type = LINK_TYPE_GITHUB_ISSUE
+            self_link.information = {'labels': ['position: defer']}
+
+        def side_effect_2(self_link):
+            self_link.is_parsed = True
+            self_link.is_error = False
+            self_link.type = LINK_TYPE_GITHUB_ISSUE
+            self_link.information = {'labels': ['position: positive']}
+
+        mockParse.side_effect = side_effect_1
 
         url = 'https://github.com/mozilla/standards-positions/issues/247'
         changed_fields = [('ff_views_link', None, url)]
@@ -321,7 +359,7 @@ class LinkTest(testing_config.CustomTestCase):
         )  # noqa: E501
 
         # The review has an updated position!
-        mockParse.return_value = {'labels': ['position: positive']}
+        mockParse.side_effect = side_effect_2
 
         link = FeatureLinks.query(FeatureLinks.url == url).get()
         update_feature_links = FeatureLinksUpdateHandler()
@@ -336,12 +374,19 @@ class LinkTest(testing_config.CustomTestCase):
             'positive',
         )
 
-    @mock.patch.object(Link, '_parse_github_issue')
+    @mock.patch.object(Link, 'parse', autospec=True)
     def test_adding_link_to_second_feature_saves_position_in_second_feature(
         self, mockParse: mock.MagicMock
     ):
         """Test adding link to second feature saves position in second feature."""
-        mockParse.return_value = {'labels': ['position: defer']}
+
+        def side_effect(self_link):
+            self_link.is_parsed = True
+            self_link.is_error = False
+            self_link.type = LINK_TYPE_GITHUB_ISSUE
+            self_link.information = {'labels': ['position: defer']}
+
+        mockParse.side_effect = side_effect
 
         url = 'https://github.com/mozilla/standards-positions/issues/247'
         changed_fields = [('ff_views_link', None, url)]
@@ -427,6 +472,7 @@ class LinkTest(testing_config.CustomTestCase):
 
         def side_effect(link_instance):
             """Side effect."""
+            link_instance.is_parsed = True
             if 'issues/999' in link_instance.url:
                 link_instance.type = LINK_TYPE_WEB
                 link_instance.information = {'title': 'Changed Type'}

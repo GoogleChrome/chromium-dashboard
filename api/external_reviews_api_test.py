@@ -424,7 +424,7 @@ class ExternalReviewsAPITest(testing_config.CustomTestCase):
 
         return new_feature
 
-    @mock.patch.object(Link, '_parse_github_issue', autospec=True)
+    @mock.patch.object(Link, 'parse', autospec=True)
     def test_e2e_features_that_need_review_are_included(
         self, mockParse: mock.MagicMock
     ):  # noqa: E501
@@ -497,7 +497,12 @@ class ExternalReviewsAPITest(testing_config.CustomTestCase):
                 link.url
                 == 'https://github.com/mozilla/standards-positions/issues/8'
             ):
-                raise Exception(f'Expected fetch error for {link.url=}')
+                link.is_parsed = True
+                link.is_error = True
+                link.type = LINK_TYPE_GITHUB_ISSUE
+                link.information = None
+                logging.error(f'Error parsing {link.url}: expected error')
+                return
             elif (
                 link.url
                 == 'https://github.com/mozilla/standards-positions/issues/9'
@@ -507,7 +512,11 @@ class ExternalReviewsAPITest(testing_config.CustomTestCase):
                 )
             else:
                 unexpected_links.append(link.url)
-            return result
+
+            link.is_parsed = True
+            link.is_error = False
+            link.type = LINK_TYPE_GITHUB_ISSUE
+            link.information = result
 
         mockParse.side_effect = github_result
 
