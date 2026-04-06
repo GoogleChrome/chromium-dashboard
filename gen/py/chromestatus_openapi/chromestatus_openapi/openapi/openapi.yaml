@@ -1322,14 +1322,18 @@ components:
         slo_resolve_took: 2
         survey_answers:
           launch_or_contact: launch_or_contact
+          adoption_mdn_drafted: true
+          covers_existence: true
+          covers_integration: true
+          adoption_fields_up_to_date: true
+          explanation: explanation
           is_language_polyfill: true
           covers_errors: true
+          adoption_style_aligned: true
           is_api_polyfill: true
-          covers_existence: true
           covers_common_cases: true
-          covers_integration: true
+          adoption_lead_time: true
           is_same_origin_css: true
-          explanation: explanation
           covers_invalidation: true
         escalation_email: escalation_email
         assignee_emails:
@@ -1436,14 +1440,18 @@ components:
     SurveyAnswers:
       example:
         launch_or_contact: launch_or_contact
+        adoption_mdn_drafted: true
+        covers_existence: true
+        covers_integration: true
+        adoption_fields_up_to_date: true
+        explanation: explanation
         is_language_polyfill: true
         covers_errors: true
+        adoption_style_aligned: true
         is_api_polyfill: true
-        covers_existence: true
         covers_common_cases: true
-        covers_integration: true
+        adoption_lead_time: true
         is_same_origin_css: true
-        explanation: explanation
         covers_invalidation: true
       properties:
         is_language_polyfill:
@@ -1469,6 +1477,18 @@ components:
           type: boolean
         covers_integration:
           title: covers_integration
+          type: boolean
+        adoption_fields_up_to_date:
+          title: adoption_fields_up_to_date
+          type: boolean
+        adoption_style_aligned:
+          title: adoption_style_aligned
+          type: boolean
+        adoption_lead_time:
+          title: adoption_lead_time
+          type: boolean
+        adoption_mdn_drafted:
+          title: adoption_mdn_drafted
           type: boolean
         launch_or_contact:
           title: launch_or_contact
@@ -1497,14 +1517,18 @@ components:
           slo_resolve_took: 2
           survey_answers:
             launch_or_contact: launch_or_contact
+            adoption_mdn_drafted: true
+            covers_existence: true
+            covers_integration: true
+            adoption_fields_up_to_date: true
+            explanation: explanation
             is_language_polyfill: true
             covers_errors: true
+            adoption_style_aligned: true
             is_api_polyfill: true
-            covers_existence: true
             covers_common_cases: true
-            covers_integration: true
+            adoption_lead_time: true
             is_same_origin_css: true
-            explanation: explanation
             covers_invalidation: true
           escalation_email: escalation_email
           assignee_emails:
@@ -1535,14 +1559,18 @@ components:
           slo_resolve_took: 2
           survey_answers:
             launch_or_contact: launch_or_contact
+            adoption_mdn_drafted: true
+            covers_existence: true
+            covers_integration: true
+            adoption_fields_up_to_date: true
+            explanation: explanation
             is_language_polyfill: true
             covers_errors: true
+            adoption_style_aligned: true
             is_api_polyfill: true
-            covers_existence: true
             covers_common_cases: true
-            covers_integration: true
+            adoption_lead_time: true
             is_same_origin_css: true
-            explanation: explanation
             covers_invalidation: true
           escalation_email: escalation_email
           assignee_emails:
@@ -1572,14 +1600,18 @@ components:
         - assignees
         survey_answers:
           launch_or_contact: launch_or_contact
+          adoption_mdn_drafted: true
+          covers_existence: true
+          covers_integration: true
+          adoption_fields_up_to_date: true
+          explanation: explanation
           is_language_polyfill: true
           covers_errors: true
+          adoption_style_aligned: true
           is_api_polyfill: true
-          covers_existence: true
           covers_common_cases: true
-          covers_integration: true
+          adoption_lead_time: true
           is_same_origin_css: true
-          explanation: explanation
           covers_invalidation: true
       properties:
         assignees:

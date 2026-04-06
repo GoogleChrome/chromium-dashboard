@@ -298,6 +298,52 @@ export class ChromedashSurveyQuestions extends LitElement {
     `;
   }
 
+  renderAdoptionForm(): TemplateResult {
+    return html`
+      <div id="questionnaire">
+        Check the boxes below that are true for your feature, then use the
+        button at the top of this column to request a review.
+        <ol>
+          ${this.renderBooleanField(
+            'adoption_fields_up_to_date',
+            html`<b>Details are up-to-date</b>. Your team has reviewed and
+              updated the feature name, summary, and milestones to accurately
+              reflect the state of the feature as it will ship.`
+          )}
+          ${this.renderBooleanField(
+            'adoption_style_aligned',
+            html`<b>Style followed</b>. The feature name and summary follow all
+              the guidelines in the help text shown while editing those fields,
+              and they are compatible with the length, style, and tone of
+              previous
+              <a
+                href="https://developer.chrome.com/release-notes"
+                target="_blank"
+                >Chrome release notes</a
+              >.`
+          )}
+          ${this.renderBooleanField(
+            'adoption_lead_time',
+            html`<b>Announcement lead time</b>. This feature's name, summary,
+              and milestones have been unchanged for the past four weeks, or you
+              have coordinated with the docs team to ensure that the feature is
+              included in blog posts and other announcements.`
+          )}
+          ${this.renderBooleanField(
+            'adoption_mdn_drafted',
+            html`<b>MDN docs drafted</b>. Even though
+              <a href="https://github.com/mdn/content" target="_blank"
+                >MDN documentation</a
+              >
+              typically updates after a feature ships, your team has started
+              that process by drafting documentation updates and/or requesting
+              writing help.`
+          )}
+        </ol>
+      </div>
+    `;
+  }
+
   renderQuestionnaire(): TemplateResult {
     if (
       this.gate.gate_type === GATE_TYPES.PRIVACY_ORIGIN_TRIAL ||
@@ -310,6 +356,12 @@ export class ChromedashSurveyQuestions extends LitElement {
       this.gate.gate_type === GATE_TYPES.TESTING_SHIP
     ) {
       return this.renderTestingForm();
+    }
+    if (
+      this.gate.gate_type === GATE_TYPES.ADOPTION_PLAN ||
+      this.gate.gate_type === GATE_TYPES.ADOPTION_SHIP
+    ) {
+      return this.renderAdoptionForm();
     }
     const questionnaireText = GATE_QUESTIONNAIRES[this.gate.gate_type];
     if (!questionnaireText) return html`No questions`;

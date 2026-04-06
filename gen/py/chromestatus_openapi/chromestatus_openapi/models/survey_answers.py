@@ -12,7 +12,7 @@ class SurveyAnswers(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, is_language_polyfill=None, is_api_polyfill=None, is_same_origin_css=None, covers_existence=None, covers_common_cases=None, covers_errors=None, covers_invalidation=None, covers_integration=None, launch_or_contact=None, explanation=None):  # noqa: E501
+    def __init__(self, is_language_polyfill=None, is_api_polyfill=None, is_same_origin_css=None, covers_existence=None, covers_common_cases=None, covers_errors=None, covers_invalidation=None, covers_integration=None, adoption_fields_up_to_date=None, adoption_style_aligned=None, adoption_lead_time=None, adoption_mdn_drafted=None, launch_or_contact=None, explanation=None):  # noqa: E501
         """SurveyAnswers - a model defined in OpenAPI
 
         :param is_language_polyfill: The is_language_polyfill of this SurveyAnswers.  # noqa: E501
@@ -31,6 +31,14 @@ class SurveyAnswers(Model):
         :type covers_invalidation: bool
         :param covers_integration: The covers_integration of this SurveyAnswers.  # noqa: E501
         :type covers_integration: bool
+        :param adoption_fields_up_to_date: The adoption_fields_up_to_date of this SurveyAnswers.  # noqa: E501
+        :type adoption_fields_up_to_date: bool
+        :param adoption_style_aligned: The adoption_style_aligned of this SurveyAnswers.  # noqa: E501
+        :type adoption_style_aligned: bool
+        :param adoption_lead_time: The adoption_lead_time of this SurveyAnswers.  # noqa: E501
+        :type adoption_lead_time: bool
+        :param adoption_mdn_drafted: The adoption_mdn_drafted of this SurveyAnswers.  # noqa: E501
+        :type adoption_mdn_drafted: bool
         :param launch_or_contact: The launch_or_contact of this SurveyAnswers.  # noqa: E501
         :type launch_or_contact: str
         :param explanation: The explanation of this SurveyAnswers.  # noqa: E501
@@ -45,6 +53,10 @@ class SurveyAnswers(Model):
             'covers_errors': bool,
             'covers_invalidation': bool,
             'covers_integration': bool,
+            'adoption_fields_up_to_date': bool,
+            'adoption_style_aligned': bool,
+            'adoption_lead_time': bool,
+            'adoption_mdn_drafted': bool,
             'launch_or_contact': str,
             'explanation': str
         }
@@ -58,6 +70,10 @@ class SurveyAnswers(Model):
             'covers_errors': 'covers_errors',
             'covers_invalidation': 'covers_invalidation',
             'covers_integration': 'covers_integration',
+            'adoption_fields_up_to_date': 'adoption_fields_up_to_date',
+            'adoption_style_aligned': 'adoption_style_aligned',
+            'adoption_lead_time': 'adoption_lead_time',
+            'adoption_mdn_drafted': 'adoption_mdn_drafted',
             'launch_or_contact': 'launch_or_contact',
             'explanation': 'explanation'
         }
@@ -70,6 +86,10 @@ class SurveyAnswers(Model):
         self._covers_errors = covers_errors
         self._covers_invalidation = covers_invalidation
         self._covers_integration = covers_integration
+        self._adoption_fields_up_to_date = adoption_fields_up_to_date
+        self._adoption_style_aligned = adoption_style_aligned
+        self._adoption_lead_time = adoption_lead_time
+        self._adoption_mdn_drafted = adoption_mdn_drafted
         self._launch_or_contact = launch_or_contact
         self._explanation = explanation
 
@@ -251,6 +271,90 @@ class SurveyAnswers(Model):
         """
 
         self._covers_integration = covers_integration
+
+    @property
+    def adoption_fields_up_to_date(self) -> bool:
+        """Gets the adoption_fields_up_to_date of this SurveyAnswers.
+
+
+        :return: The adoption_fields_up_to_date of this SurveyAnswers.
+        :rtype: bool
+        """
+        return self._adoption_fields_up_to_date
+
+    @adoption_fields_up_to_date.setter
+    def adoption_fields_up_to_date(self, adoption_fields_up_to_date: bool):
+        """Sets the adoption_fields_up_to_date of this SurveyAnswers.
+
+
+        :param adoption_fields_up_to_date: The adoption_fields_up_to_date of this SurveyAnswers.
+        :type adoption_fields_up_to_date: bool
+        """
+
+        self._adoption_fields_up_to_date = adoption_fields_up_to_date
+
+    @property
+    def adoption_style_aligned(self) -> bool:
+        """Gets the adoption_style_aligned of this SurveyAnswers.
+
+
+        :return: The adoption_style_aligned of this SurveyAnswers.
+        :rtype: bool
+        """
+        return self._adoption_style_aligned
+
+    @adoption_style_aligned.setter
+    def adoption_style_aligned(self, adoption_style_aligned: bool):
+        """Sets the adoption_style_aligned of this SurveyAnswers.
+
+
+        :param adoption_style_aligned: The adoption_style_aligned of this SurveyAnswers.
+        :type adoption_style_aligned: bool
+        """
+
+        self._adoption_style_aligned = adoption_style_aligned
+
+    @property
+    def adoption_lead_time(self) -> bool:
+        """Gets the adoption_lead_time of this SurveyAnswers.
+
+
+        :return: The adoption_lead_time of this SurveyAnswers.
+        :rtype: bool
+        """
+        return self._adoption_lead_time
+
+    @adoption_lead_time.setter
+    def adoption_lead_time(self, adoption_lead_time: bool):
+        """Sets the adoption_lead_time of this SurveyAnswers.
+
+
+        :param adoption_lead_time: The adoption_lead_time of this SurveyAnswers.
+        :type adoption_lead_time: bool
+        """
+
+        self._adoption_lead_time = adoption_lead_time
+
+    @property
+    def adoption_mdn_drafted(self) -> bool:
+        """Gets the adoption_mdn_drafted of this SurveyAnswers.
+
+
+        :return: The adoption_mdn_drafted of this SurveyAnswers.
+        :rtype: bool
+        """
+        return self._adoption_mdn_drafted
+
+    @adoption_mdn_drafted.setter
+    def adoption_mdn_drafted(self, adoption_mdn_drafted: bool):
+        """Sets the adoption_mdn_drafted of this SurveyAnswers.
+
+
+        :param adoption_mdn_drafted: The adoption_mdn_drafted of this SurveyAnswers.
+        :type adoption_mdn_drafted: bool
+        """
+
+        self._adoption_mdn_drafted = adoption_mdn_drafted
 
     @property
     def launch_or_contact(self) -> str:

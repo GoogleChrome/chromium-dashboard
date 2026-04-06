@@ -1159,6 +1159,14 @@ components:
           type: boolean
         covers_integration:
           type: boolean
+        adoption_fields_up_to_date:
+          type: boolean
+        adoption_style_aligned:
+          type: boolean
+        adoption_lead_time:
+          type: boolean
+        adoption_mdn_drafted:
+          type: boolean
         launch_or_contact:
           type: string
         explanation:
