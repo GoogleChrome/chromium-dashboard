@@ -14,6 +14,7 @@
 
 """API endpoints for tracking and aggregating shipping feature data for specific milestones."""
 
+import logging
 from typing import TypedDict
 
 import json5
@@ -70,7 +71,12 @@ class ShippingFeaturesAPI(basehandlers.EntitiesAPIHandler):
         enabled_features_file = utils.get_chromium_file(
             core_enums.ENABLED_FEATURES_FILE_URL
         )
-        enabled_features_json = json5.loads(enabled_features_file)
+        try:
+            enabled_features_json = json5.loads(enabled_features_file)
+        except ValueError:
+            logging.error('Failed to parse runtime_enabled_features.json5 file')
+            enabled_features_json = None
+
         content_features_file = utils.get_chromium_file(
             core_enums.CONTENT_FEATURES_FILE
         )
