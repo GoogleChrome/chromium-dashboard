@@ -73,7 +73,6 @@ import './elements/chromedash-header';
 import './elements/chromedash-intent-content';
 import './elements/chromedash-intent-preview-page';
 import './elements/chromedash-login-required-page';
-import './elements/chromedash-myfeatures-page';
 import './elements/chromedash-ot-creation-page';
 import './elements/chromedash-ot-extension-page';
 import './elements/chromedash-preflight-dialog';
