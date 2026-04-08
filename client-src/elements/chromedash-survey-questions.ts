@@ -331,13 +331,20 @@ export class ChromedashSurveyQuestions extends LitElement {
           )}
           ${this.renderBooleanField(
             'adoption_mdn_drafted',
-            html`<b>MDN docs drafted</b>. Even though
-              <a href="https://github.com/mdn/content" target="_blank"
-                >MDN documentation</a
+            html`<b>MDN work tracked</b>. You have
+              <a
+                href="https://b.corp.google.com/issues/new?component=2087577"
+                target="_blank"
+                >created an issue</a
               >
-              typically updates after a feature ships, your team has started
-              that process by drafting documentation updates and/or requesting
-              writing help.`
+              in the
+              <a
+                href="https://b.corp.google.com/issues?q=componentid:2087577"
+                target="_blank"
+                >Chrome Documentation Requests tracker</a
+              >, providing information to technical writers who will document
+              this feature on
+              <a href="https://github.com/mdn/content" target="_blank">MDN</a>.`
           )}
         </ol>
       </div>
