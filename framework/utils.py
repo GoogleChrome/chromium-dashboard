@@ -243,7 +243,8 @@ def get_chromium_file(url: str) -> str:
             with urllib.request.urlopen(url, timeout=60) as conn:
                 content = b64decode(conn.read()).decode('utf-8')
                 # Cache page for 30 minutes.
-                rediscache.set(url, content, time=1800)
+                if content:
+                    rediscache.set(url, content, time=1800)
         except (urllib.error.URLError, TypeError, ValueError) as e:
             logging.error(f'Could not fetch or parse file at {url}: {e}')
             return ''

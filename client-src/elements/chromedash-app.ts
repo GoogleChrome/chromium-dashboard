@@ -324,17 +324,13 @@ export class ChromedashApp extends LitElement {
       if (!this.setupNewPage(ctx, 'chromedash-roadmap-page', true)) return;
       this.pageComponent.user = this.user;
     });
-    // TODO(jrobbins): After a while, redirect /myfeatures to /myfeatures/editable
-    page('/myfeatures', ctx => {
-      if (!this.setupNewPage(ctx, 'chromedash-myfeatures-page', true)) return;
-      this.pageComponent.user = this.user;
-      this.pageComponent.selectedGateId = this.selectedGateId;
-    });
+    page('/myfeatures', () => page.redirect('/myfeatures/editable'));
+    page('/myfeatures/', () => page.redirect('/myfeatures/editable'));
     page('/myfeatures/review', ctx => {
       if (!this.setupNewPage(ctx, 'chromedash-all-features-page', true)) return;
       this.pageComponent.user = this.user;
       this.pageComponent.title = 'Features pending my review';
-      this.pageComponent.query = 'pending-review-by:me';
+      this.pageComponent.query = 'pending-approval-by:me';
       this.pageComponent.columns = 'approvals';
       this.pageComponent.sortSpec = 'gate.requested_on';
       this.pageComponent.showEnterprise = true;
