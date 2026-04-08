@@ -149,7 +149,8 @@ class SelfCertifyFunctionTest(testing_config.CustomTestCase):
                     adoption_fields_up_to_date=True,
                     adoption_style_aligned=True,
                     adoption_lead_time=True,
-                    adoption_mdn_drafted=True)
+                    adoption_mdn_drafted=True,
+                )
             )
         )
 
