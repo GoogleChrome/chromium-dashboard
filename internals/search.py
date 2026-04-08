@@ -310,8 +310,6 @@ def process_predefined_query_term(
         return process_pending_approval_me_query()
     if query_term == 'pending-review-by:me':
         return process_pending_review_me_query()
-    if query_term == 'awaiting-review-by:me':
-        return process_pending_approval_me_query()
     if query_term == 'starred-by:me':
         return process_starred_me_query()
     if query_term == 'is:recently-reviewed':
