@@ -1121,3 +1121,57 @@ export function parseRawTimestamp(
 
   return new Date(safeTimestamp).getTime();
 }
+
+export async function fetchCurrentBetaMilestone(): Promise<number> {
+  const channels = await window.csClient.getChannels();
+  return Number(channels.beta.mstone);
+}
+
+function featureHasMilestoneLE(feature: Feature, mstone: number): boolean {
+  return (feature.stages || []).some(stage =>
+    [
+      stage.desktop_first,
+      stage.android_first,
+      stage.ios_first,
+      stage.webview_first,
+      stage.desktop_last,
+      stage.android_last,
+      stage.ios_last,
+      stage.webview_last,
+    ].some(ms => typeof ms === 'number' && ms <= mstone)
+  );
+}
+
+export function maybeAlertOnLateChange(
+  feature: Feature,
+  fieldValues: FieldInfo[],
+  currentBetaMilestone: number
+) {
+  const isLateChange: boolean = featureHasMilestoneLE(
+    feature,
+    currentBetaMilestone
+  );
+  if (isLateChange) {
+    const ANNOUNCEMENT_FIELDS = [
+      'name',
+      'summary',
+      'shipped_milestone',
+      'shipped_android_milestone',
+      'shipped_ios_milestone',
+      'shipped_webview_milestone',
+      'ot_milestone_desktop_start',
+      'ot_milestone_desktop_end',
+      'ot_milestone_android_start',
+      'ot_milestone_android_end',
+      'ot_milestone_webview_start',
+      'ot_milestone_webview_end',
+    ];
+    const editedAnnouncementField = fieldValues.some(
+      fv => fv.touched && ANNOUNCEMENT_FIELDS.includes(fv.name as string)
+    );
+    if (editedAnnouncementField) {
+      alert(`You are changing fields that may have already been
+included in an announcement.  Please follow up by coordinating with the docs team.`);
+    }
+  }
+}

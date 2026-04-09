@@ -15,6 +15,7 @@ import {
   findClosestShippingDate,
   getFeatureOutdatedBanner,
   userCanEdit,
+  maybeAlertOnLateChange,
 } from './utils.js';
 import './chromedash-form-table.js';
 import './chromedash-form-field.js';
@@ -84,6 +85,8 @@ export class ChromedashGuideEditallPage extends LitElement {
     hasShipped: false,
     isUpcoming: false,
   };
+  @state()
+  currentBetaMilestone = 0;
 
   connectedCallback() {
     super.connectedCallback();
@@ -98,6 +101,7 @@ export class ChromedashGuideEditallPage extends LitElement {
     ])
       .then(async ([feature, channels]) => {
         this.feature = feature;
+        this.currentBetaMilestone = Number(channels.beta.mstone);
         if (this.feature.name) {
           document.title = `${this.feature.name} - ${this.appTitle}`;
         }
@@ -137,6 +141,11 @@ export class ChromedashGuideEditallPage extends LitElement {
 
   handleFormSubmit(e, hiddenTokenField) {
     e.preventDefault();
+    maybeAlertOnLateChange(
+      this.feature,
+      this.fieldValues,
+      this.currentBetaMilestone
+    );
     this.submitting = true;
     const submitBody = formatFeatureChanges(this.fieldValues, this.featureId);
 
@@ -445,7 +454,7 @@ export class ChromedashGuideEditallPage extends LitElement {
   // render the button to add a new stage. Displays for enterprise features only.
   renderAddStageButton() {
     const clickHandler = () => {
-      openAddStageDialog(
+      void openAddStageDialog(
         this.feature.id,
         this.feature.feature_type_int,
         this.createNewStage.bind(this)

@@ -9,6 +9,8 @@ import {
   showToastMessage,
   setupScrollToHash,
   shouldShowDisplayNameField,
+  maybeAlertOnLateChange,
+  fetchCurrentBetaMilestone,
 } from './utils.js';
 import './chromedash-form-table.js';
 import './chromedash-form-field.js';
@@ -57,6 +59,8 @@ export class ChromedashGuideStagePage extends LitElement {
   fieldValues: FieldInfo[] & {feature?: Feature} = [];
   @state()
   gateId!: number;
+  @state()
+  currentBetaMilestone = 0;
 
   connectedCallback() {
     super.connectedCallback();
@@ -92,10 +96,12 @@ export class ChromedashGuideStagePage extends LitElement {
       window.csClient.getFeature(this.featureId),
       window.csClient.getStage(this.featureId, this.stageId),
       gatePromise,
+      fetchCurrentBetaMilestone(),
     ])
-      .then(([feature, stage, gates]) => {
+      .then(([feature, stage, gates, betaMilestone]) => {
         this.feature = feature;
         this.stage = stage;
+        this.currentBetaMilestone = betaMilestone;
 
         if (gates) {
           this.gateId = gates.gates.find(g => g.stage_id === this.stageId).id;
@@ -145,6 +151,11 @@ export class ChromedashGuideStagePage extends LitElement {
 
   handleFormSubmit(e, hiddenTokenField) {
     e.preventDefault();
+    maybeAlertOnLateChange(
+      this.feature,
+      this.fieldValues,
+      this.currentBetaMilestone
+    );
     const submitBody = formatFeatureChanges(
       this.fieldValues,
       this.featureId,

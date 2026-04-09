@@ -1,4 +1,5 @@
 import {html} from 'lit';
+import sinon from 'sinon';
 import {
   autolink,
   clamp,
@@ -8,6 +9,7 @@ import {
   getFeatureOutdatedBanner,
   isVerifiedWithinGracePeriod,
   parseRawTimestamp,
+  maybeAlertOnLateChange,
 } from './utils.js';
 import {assert} from '@open-wc/testing';
 import {OT_SETUP_STATUS_OPTIONS} from './form-field-enums.js';
@@ -1058,5 +1060,69 @@ describe('parseRawTimestamp', () => {
 
     const result = parseRawTimestamp(offsetInput);
     assert.equal(result, expectedTime);
+  });
+});
+
+describe('maybeAlertOnLateChange', () => {
+  let alertStub;
+
+  beforeEach(() => {
+    alertStub = sinon.stub(window, 'alert');
+  });
+
+  afterEach(() => {
+    alertStub.restore();
+  });
+
+  it('alerts if late feature name is edited', () => {
+    const feature = {
+      stages: [{desktop_first: 125}],
+    };
+    const fieldValues = [{name: 'name', touched: true, value: 'new name'}];
+    maybeAlertOnLateChange(feature as any, fieldValues as any, 126);
+    assert.isTrue(alertStub.calledOnce);
+  });
+
+  it('alerts if late feature summary is edited', () => {
+    const feature = {
+      stages: [{android_first: 126}],
+    };
+    const fieldValues = [
+      {name: 'summary', touched: true, value: 'new summary'},
+    ];
+    maybeAlertOnLateChange(feature as any, fieldValues as any, 126);
+    assert.isTrue(alertStub.calledOnce);
+  });
+
+  it('does not alert if not a late feature', () => {
+    const feature = {
+      stages: [{desktop_first: 127}],
+    };
+    const fieldValues = [{name: 'name', touched: true, value: 'new name'}];
+    maybeAlertOnLateChange(feature as any, fieldValues as any, 126);
+    assert.isFalse(alertStub.called);
+  });
+
+  it('does not alert if name/summary not touched', () => {
+    const feature = {
+      stages: [{desktop_first: 125}],
+    };
+    const fieldValues = [
+      {name: 'motivation', touched: true, value: 'new motivation'},
+      {name: 'name', touched: false, value: 'old name'},
+    ];
+    maybeAlertOnLateChange(feature as any, fieldValues as any, 126);
+    assert.isFalse(alertStub.called);
+  });
+
+  it('alerts if late feature milestone is edited', () => {
+    const feature = {
+      stages: [{desktop_first: 125}],
+    };
+    const fieldValues = [
+      {name: 'shipped_milestone', touched: true, value: 125},
+    ];
+    maybeAlertOnLateChange(feature as any, fieldValues as any, 126);
+    assert.isTrue(alertStub.calledOnce);
   });
 });
