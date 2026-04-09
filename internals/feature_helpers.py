@@ -946,10 +946,13 @@ def get_stale_features() -> list[tuple[FeatureEntry, int, str]]:
 
 
 def validate_feature_in_chromium(
-    name: str, enabled_features_json: dict, content_features_file: str
+    name: str, enabled_features_json: dict | None, content_features_file: str
 ) -> list[Criteria]:
     """Verify required info exists in Chromium files. Return a list of missing criteria."""  # noqa: E501
-    criteria_missing = []
+    criteria_missing: list[Criteria] = []
+    if enabled_features_json is None:
+        return criteria_missing
+
     feature_found = False
 
     # Check enabled_features_json
@@ -1014,7 +1017,7 @@ def build_feature_info(
 def validate_shipping_criteria(
     feature: FeatureEntry,
     stage: Stage,
-    enabled_features_json: dict,
+    enabled_features_json: dict | None,
     content_features_file: str,
 ) -> list[Criteria]:
     """Checks a feature against shipping requirements (Gates, Intents, Finch, Code)."""  # noqa: E501
@@ -1057,7 +1060,7 @@ def validate_shipping_criteria(
 
 def aggregate_shipping_features(
     shipping_stages: list[Stage],
-    enabled_features_json: dict,
+    enabled_features_json: dict | None,
     content_features_file: str,
 ) -> tuple[
     list[ShippingFeatureInfo], list[tuple[ShippingFeatureInfo, list[str]]]
