@@ -145,6 +145,9 @@ elif APP_ID == 'cr-status-staging':
 else:
     logging.error('Unexpected app ID %r, please configure settings.py.', APP_ID)
 
+if PLAYWRIGHT_MODE or UNIT_TEST_MODE:
+    SEND_EMAIL = False
+
 RSS_FEED_LIMIT = 15
 
 DEFAULT_CACHE_TIME = 3600  # seconds

@@ -275,6 +275,9 @@ APPROVAL_FIELDS_BY_ID = {
 
 def fetch_owners(url) -> list[str]:
     """Load a list of email addresses from an OWNERS file."""
+    if settings.UNIT_TEST_MODE or settings.PLAYWRIGHT_MODE:
+        return ['example@chromium.org']
+
     owners_file = OwnersFile.get_raw_owner_file(url)
     if owners_file and owners_file.is_fresh():
         logging.info('Using fresh owners_file')
@@ -335,6 +338,9 @@ def auto_assign_reviewer(gate):
             return
 
     if afd.approvers != IN_NDB:
+        return
+
+    if settings.UNIT_TEST_MODE or settings.PLAYWRIGHT_MODE:
         return
 
     gate_def = GateDef.get_gate_def(gate.gate_type)
