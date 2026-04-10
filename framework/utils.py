@@ -204,6 +204,16 @@ def dedupe(list_with_duplicates):
 
 def get_chromium_milestone_info(milestone: int) -> dict:
     """Fetches the Chromium milestone schedule info for a given milestone."""
+    if settings.UNIT_TEST_MODE or settings.PLAYWRIGHT_MODE:
+        return {
+            'mstones': [
+                {
+                    'branch_point': f'2025-0{milestone % 9 + 1}-01T00:00:00',
+                    'stable_date': f'2025-0{milestone % 9 + 1}-01T00:00:00',
+                    'mstone': milestone,
+                }
+            ]
+        }
     try:
         response = requests.get(
             'https://chromiumdash.appspot.com/fetch_milestone_schedule'

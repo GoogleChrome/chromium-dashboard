@@ -38,10 +38,13 @@ class LinkHelperTest(testing_config.CustomTestCase):
 
     def setUp(self):
         """Set up the test environment."""
+        self.mock_unit_test_mode = mock.patch('settings.UNIT_TEST_MODE', False)
+        self.mock_unit_test_mode.start()
         logging.disable(logging.CRITICAL)
 
     def tearDown(self):
         """Clean up the test environment."""
+        self.mock_unit_test_mode.stop()
         logging.disable(logging.NOTSET)
 
     def test_specs_url(self):

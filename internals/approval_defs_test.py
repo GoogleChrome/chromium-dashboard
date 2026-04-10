@@ -43,8 +43,15 @@ class FetchOwnersTest(testing_config.CustomTestCase):
 
     def setUp(self):
         """Set up the test environment."""
+        self.mock_unit_test_mode = mock.patch('settings.UNIT_TEST_MODE', False)
+        self.mock_unit_test_mode.start()
         for owners_file in OwnersFile.query():
             owners_file.key.delete()
+
+    def tearDown(self):
+        """Clean up the test environment."""
+        self.mock_unit_test_mode.stop()
+        super().tearDown()
 
     @mock.patch('requests.get')
     def test__normal(self, mock_get):

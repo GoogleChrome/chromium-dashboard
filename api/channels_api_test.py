@@ -286,6 +286,7 @@ class ChannelsAPITest(testing_config.CustomTestCase):
             with self.assertRaises(ValueError):
                 self.handler.do_get()
 
+    @mock.patch('settings.UNIT_TEST_MODE', False)
     @mock.patch('api.channels_api.construct_specified_milestones_details')
     def test_do_get__start_and_end(self, mock_call):
         """Test do_get with start and end parameters."""
