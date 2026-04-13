@@ -6,6 +6,8 @@ import {
   showToastMessage,
   setupScrollToHash,
   FieldInfo,
+  maybeAlertOnLateChange,
+  fetchCurrentBetaMilestone,
 } from './utils.js';
 import './chromedash-form-table.js';
 import './chromedash-form-field.js';
@@ -36,6 +38,8 @@ export class ChromedashGuideMetadataPage extends LitElement {
   loading = true;
   @state()
   fieldValues: FieldInfo[] & {feature?: Feature} = [];
+  @state()
+  currentBetaMilestone = 0;
 
   connectedCallback() {
     super.connectedCallback();
@@ -44,9 +48,13 @@ export class ChromedashGuideMetadataPage extends LitElement {
 
   fetchData() {
     this.loading = true;
-    Promise.resolve(window.csClient.getFeature(this.featureId))
-      .then(feature => {
+    Promise.all([
+      window.csClient.getFeature(this.featureId),
+      fetchCurrentBetaMilestone(),
+    ])
+      .then(([feature, betaMilestone]) => {
         this.feature = feature;
+        this.currentBetaMilestone = betaMilestone;
         if (this.feature.name) {
           document.title = `${this.feature.name} - ${this.appTitle}`;
         }
@@ -80,10 +88,18 @@ export class ChromedashGuideMetadataPage extends LitElement {
     setupScrollToHash(this);
   }
 
-  handleFormSubmit(e, hiddenTokenField) {
+  async handleFormSubmit(e, hiddenTokenField) {
     e.preventDefault();
-    const submitBody = formatFeatureChanges(this.fieldValues, this.featureId);
+    maybeAlertOnLateChange(
+      this.feature,
+      this.fieldValues,
+      this.currentBetaMilestone
+    );
+    this.submitForm(hiddenTokenField);
+  }
 
+  submitForm(hiddenTokenField) {
+    const submitBody = formatFeatureChanges(this.fieldValues, this.featureId);
     // get the XSRF token and update it if it's expired before submission
     window.csClient
       .ensureTokenIsValid()

@@ -28,6 +28,7 @@ import requests
 import validators
 from ghapi.core import GhApi
 
+import settings
 from framework import secrets
 
 github_crediential = None
@@ -371,6 +372,10 @@ class Link:
 
     def parse(self):
         """Parse the link and store the information."""
+        if settings.UNIT_TEST_MODE or settings.PLAYWRIGHT_MODE:
+            self.is_parsed = True
+            return
+
         # Flush logs because GAE instances killed for exceeding request time limit
         # may lose logging output that has not been flushed.
         logging.getLogger().handlers[0].flush()

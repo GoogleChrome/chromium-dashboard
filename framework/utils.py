@@ -204,6 +204,16 @@ def dedupe(list_with_duplicates):
 
 def get_chromium_milestone_info(milestone: int) -> dict:
     """Fetches the Chromium milestone schedule info for a given milestone."""
+    if settings.UNIT_TEST_MODE or settings.PLAYWRIGHT_MODE:
+        return {
+            'mstones': [
+                {
+                    'branch_point': f'2025-0{milestone % 9 + 1}-01T00:00:00',
+                    'stable_date': f'2025-0{milestone % 9 + 1}-01T00:00:00',
+                    'mstone': milestone,
+                }
+            ]
+        }
     try:
         response = requests.get(
             'https://chromiumdash.appspot.com/fetch_milestone_schedule'
@@ -243,7 +253,8 @@ def get_chromium_file(url: str) -> str:
             with urllib.request.urlopen(url, timeout=60) as conn:
                 content = b64decode(conn.read()).decode('utf-8')
                 # Cache page for 30 minutes.
-                rediscache.set(url, content, time=1800)
+                if content:
+                    rediscache.set(url, content, time=1800)
         except (urllib.error.URLError, TypeError, ValueError) as e:
             logging.error(f'Could not fetch or parse file at {url}: {e}')
             return ''

@@ -94,7 +94,7 @@ class ChromedashFeatureRow extends LitElement {
     const featureId = Number(iconEl.dataset.featureId);
     const newStarred = !this.starredFeatures.has(featureId);
 
-    // handled in chromedash-myfeatures-page.js
+    // handled in enclosing page.
     this._fireEvent('star-toggle-event', {
       featureId: featureId,
       doStar: newStarred,

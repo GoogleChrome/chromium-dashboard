@@ -84,6 +84,13 @@ describe('chromedash-guide-stage-page', () => {
     enterprise_policies: [],
   });
 
+  const validChannelsPromise = Promise.resolve({
+    stable: {mstone: 141},
+    beta: {mstone: 142},
+    dev: {mstone: 143},
+    canary: {mstone: 144},
+  });
+
   /* window.csClient and <chromedash-toast> are initialized at spa.html
    * which are not available here, so we initialize them before each test.
    * We also stub out the API calls here so that they return test data. */
@@ -92,14 +99,17 @@ describe('chromedash-guide-stage-page', () => {
     window.csClient = new ChromeStatusClient('fake_token', 1);
     sinon.stub(window.csClient, 'getFeature');
     sinon.stub(window.csClient, 'getStage');
+    sinon.stub(window.csClient, 'getChannels');
     sinon.stub(window.csClient, 'getBlinkComponents');
     window.csClient.getBlinkComponents.returns(Promise.resolve({}));
+    window.csClient.getChannels.returns(validChannelsPromise);
   });
 
   afterEach(() => {
     window.csClient.getFeature.restore();
     window.csClient.getBlinkComponents.restore();
     window.csClient.getStage.restore();
+    window.csClient.getChannels.restore();
   });
 
   it('renders with no data', async () => {

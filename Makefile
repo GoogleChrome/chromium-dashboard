@@ -1,7 +1,7 @@
 .PHONY: setup clean-setup deps dev-deps dev-ot-key do-tests start-emulator-persist start-emulator \
 	stop-emulator build tsc-clean watch start-app debug-app start stop test webtest webtest-watch \
 	webtestpuppeteer webtestpuppeteer-watch webtest-coverage do-coverage coverage view-coverage \
-	mypy lint lint-fix presubmit pylint openapi openapi-webstatus openapi-frontend openapi-backend \
+	mypy lint lint-frontend lint-backend lint-fix lint-fix-frontend lint-fix-backend presubmit pylint openapi openapi-webstatus openapi-frontend openapi-backend \
 	openapi-validate pwtests pwtests-update pwtests-report pwtests-ui pwtests-shell pwtests-debug pwtests-shutdown
 
 setup:
@@ -107,18 +107,26 @@ view-coverage:
 mypy:
 	. cs-env/bin/activate && mypy --ignore-missing-imports --exclude cs-env/ --exclude appengine_config.py --exclude gen/py/webstatus_openapi/build/ --exclude gen/py/webstatus_openapi/setup.py --exclude gen/py/webstatus_openapi/test/ --exclude gen/py/chromestatus_openapi/build/ --exclude gen/py/chromestatus_openapi/chromestatus_openapi/test --exclude appengine_config.py --no-namespace-packages --disable-error-code "annotation-unchecked" .
 
-lint:
+lint-frontend:
 	npx prettier client-src/js-src client-src/elements client-src/elements packages/playwright/tests --check
 	npx eslint "client-src/js-src/**/*.{js,ts}" "packages/playwright/tests/*.{js,ts}"
 	npx tsc -p tsconfig.json
 	npx lit-analyzer "client-src/elements/chromedash-*.{js,ts}" "packages/playwright/tests/*.{js,ts}"
+
+lint-backend:
 	$(MAKE) pylint
 	. cs-env/bin/activate && ruff format --check .
 
-lint-fix:
+lint: lint-frontend lint-backend
+
+lint-fix-frontend:
 	npx prettier client-src/js-src client-src/elements packages/playwright/tests --write
 	npx eslint "client-src/js-src/**/*.{js,ts}" "packages/playwright/tests/*.{js,ts}" --fix
+
+lint-fix-backend:
 	$(MAKE) format
+
+lint-fix: lint-fix-frontend lint-fix-backend
 
 format:
 	. cs-env/bin/activate && ruff check --fix . && ruff format .
