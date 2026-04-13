@@ -24,6 +24,8 @@ CERTIFIABLE_GATE_TYPES = [
     core_enums.GATE_PRIVACY_SHIP,
     core_enums.GATE_TESTING_PLAN,
     core_enums.GATE_TESTING_SHIP,
+    core_enums.GATE_ADOPTION_PLAN,
+    core_enums.GATE_ADOPTION_SHIP,
 ]
 
 
@@ -51,6 +53,17 @@ def update_survey_answers(gate: Gate, new_answers: OASurveyAnswers):
     if new_answers.covers_integration is not None:
         answers.covers_integration = new_answers.covers_integration
 
+    if new_answers.adoption_fields_up_to_date is not None:
+        answers.adoption_fields_up_to_date = (
+            new_answers.adoption_fields_up_to_date
+        )
+    if new_answers.adoption_style_aligned is not None:
+        answers.adoption_style_aligned = new_answers.adoption_style_aligned
+    if new_answers.adoption_lead_time is not None:
+        answers.adoption_lead_time = new_answers.adoption_lead_time
+    if new_answers.adoption_mdn_drafted is not None:
+        answers.adoption_mdn_drafted = new_answers.adoption_mdn_drafted
+
     if new_answers.launch_or_contact is not None:
         answers.launch_or_contact = new_answers.launch_or_contact
     if new_answers.explanation is not None:
@@ -77,6 +90,16 @@ def is_testing_eligible(answers: SurveyAnswers) -> bool:
     )
 
 
+def is_adoption_eligible(answers: SurveyAnswers) -> bool:
+    """Return True if the answers allow self-certify for the Adoption gate."""
+    return (
+        answers.adoption_fields_up_to_date
+        and answers.adoption_style_aligned
+        and answers.adoption_lead_time
+        and answers.adoption_mdn_drafted
+    )
+
+
 def is_eligible(gate: Gate) -> bool:
     """Return True if the feature owner can self-certify the gate now."""
     answers = gate.survey_answers
@@ -93,6 +116,11 @@ def is_eligible(gate: Gate) -> bool:
         core_enums.GATE_TESTING_SHIP,
     ]:
         return is_testing_eligible(answers)
+    if gate.gate_type in [
+        core_enums.GATE_ADOPTION_PLAN,
+        core_enums.GATE_ADOPTION_SHIP,
+    ]:
+        return is_adoption_eligible(answers)
 
     return False
 

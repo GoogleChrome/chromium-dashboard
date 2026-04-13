@@ -298,6 +298,59 @@ export class ChromedashSurveyQuestions extends LitElement {
     `;
   }
 
+  renderAdoptionForm(): TemplateResult {
+    return html`
+      <div id="questionnaire">
+        Check the boxes below that are true for your feature, then use the
+        button at the top of this column to request a review.
+        <ol>
+          ${this.renderBooleanField(
+            'adoption_fields_up_to_date',
+            html`<b>Details are up-to-date</b>. Your team has reviewed and
+              updated the feature name, summary, and milestones to accurately
+              reflect the state of the feature as it will ship.`
+          )}
+          ${this.renderBooleanField(
+            'adoption_style_aligned',
+            html`<b>Style followed</b>. The feature name and summary follow all
+              the guidelines in the help text shown while editing those fields,
+              and they are compatible with the length, style, and tone of
+              previous
+              <a
+                href="https://developer.chrome.com/release-notes"
+                target="_blank"
+                >Chrome release notes</a
+              >.`
+          )}
+          ${this.renderBooleanField(
+            'adoption_lead_time',
+            html`<b>Announcement lead time</b>. This feature's name, summary,
+              and milestones have been unchanged for the past four weeks, or you
+              have coordinated with the docs team to ensure that the feature is
+              included in blog posts and other announcements.`
+          )}
+          ${this.renderBooleanField(
+            'adoption_mdn_drafted',
+            html`<b>MDN work tracked</b>. You have
+              <a
+                href="https://b.corp.google.com/issues/new?component=2087577"
+                target="_blank"
+                >created an issue</a
+              >
+              in the
+              <a
+                href="https://b.corp.google.com/issues?q=componentid:2087577"
+                target="_blank"
+                >Chrome Documentation Requests tracker</a
+              >, providing information to technical writers who will document
+              this feature on
+              <a href="https://github.com/mdn/content" target="_blank">MDN</a>.`
+          )}
+        </ol>
+      </div>
+    `;
+  }
+
   renderQuestionnaire(): TemplateResult {
     if (
       this.gate.gate_type === GATE_TYPES.PRIVACY_ORIGIN_TRIAL ||
@@ -310,6 +363,12 @@ export class ChromedashSurveyQuestions extends LitElement {
       this.gate.gate_type === GATE_TYPES.TESTING_SHIP
     ) {
       return this.renderTestingForm();
+    }
+    if (
+      this.gate.gate_type === GATE_TYPES.ADOPTION_PLAN ||
+      this.gate.gate_type === GATE_TYPES.ADOPTION_SHIP
+    ) {
+      return this.renderAdoptionForm();
     }
     const questionnaireText = GATE_QUESTIONNAIRES[this.gate.gate_type];
     if (!questionnaireText) return html`No questions`;

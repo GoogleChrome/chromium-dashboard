@@ -69,6 +69,30 @@ export interface SurveyAnswers {
     covers_integration?: boolean;
     /**
      * 
+     * @type {boolean}
+     * @memberof SurveyAnswers
+     */
+    adoption_fields_up_to_date?: boolean;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof SurveyAnswers
+     */
+    adoption_style_aligned?: boolean;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof SurveyAnswers
+     */
+    adoption_lead_time?: boolean;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof SurveyAnswers
+     */
+    adoption_mdn_drafted?: boolean;
+    /**
+     * 
      * @type {string}
      * @memberof SurveyAnswers
      */
@@ -106,6 +130,10 @@ export function SurveyAnswersFromJSONTyped(json: any, ignoreDiscriminator: boole
         'covers_errors': json['covers_errors'] == null ? undefined : json['covers_errors'],
         'covers_invalidation': json['covers_invalidation'] == null ? undefined : json['covers_invalidation'],
         'covers_integration': json['covers_integration'] == null ? undefined : json['covers_integration'],
+        'adoption_fields_up_to_date': json['adoption_fields_up_to_date'] == null ? undefined : json['adoption_fields_up_to_date'],
+        'adoption_style_aligned': json['adoption_style_aligned'] == null ? undefined : json['adoption_style_aligned'],
+        'adoption_lead_time': json['adoption_lead_time'] == null ? undefined : json['adoption_lead_time'],
+        'adoption_mdn_drafted': json['adoption_mdn_drafted'] == null ? undefined : json['adoption_mdn_drafted'],
         'launch_or_contact': json['launch_or_contact'] == null ? undefined : json['launch_or_contact'],
         'explanation': json['explanation'] == null ? undefined : json['explanation'],
     };
@@ -125,6 +153,10 @@ export function SurveyAnswersToJSON(value?: SurveyAnswers | null): any {
         'covers_errors': value['covers_errors'],
         'covers_invalidation': value['covers_invalidation'],
         'covers_integration': value['covers_integration'],
+        'adoption_fields_up_to_date': value['adoption_fields_up_to_date'],
+        'adoption_style_aligned': value['adoption_style_aligned'],
+        'adoption_lead_time': value['adoption_lead_time'],
+        'adoption_mdn_drafted': value['adoption_mdn_drafted'],
         'launch_or_contact': value['launch_or_contact'],
         'explanation': value['explanation'],
     };
