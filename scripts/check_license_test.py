@@ -116,6 +116,20 @@ class CheckLicenseTest(unittest.TestCase):
         # The license should be injected immediately after
         self.assertIn('Copyright', lines[2])
 
+    def test_fix_respects_shebang_js(self):
+        """Verifies that licenses are injected after JS shebangs."""
+        js_file = os.path.join(self.test_dir, 'script.js')
+        with open(js_file, 'w', encoding='utf-8') as f:
+            f.write("#!/usr/bin/env node\nconsole.log('start');")
+
+        check_license(fix=True, directories=[self.test_dir], exit_on_fail=False)
+
+        with open(js_file, 'r', encoding='utf-8') as f:
+            lines = f.readlines()
+
+        self.assertTrue(lines[0].startswith('#!'))
+        self.assertIn('Copyright', ''.join(lines[1:]))
+
     def test_ignores_specified_directories(self):
         """Verifies that files in explicitly ignored directories are not checked."""
         # Create an ignored node_modules directory

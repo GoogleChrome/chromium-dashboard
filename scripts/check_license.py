@@ -119,17 +119,14 @@ def check_license(fix=False, directories=DIRECTORIES, exit_on_fail=True):
                 ext = os.path.splitext(file)[1]
                 if ext in EXTENSIONS:
                     filepath = os.path.join(root, file)
-                    try:
-                        with open(filepath, 'r', encoding='utf-8') as f:
-                            content = f.read()
+                    with open(filepath, 'r', encoding='utf-8') as f:
+                        content = f.read()
 
-                        if (
-                            'Licensed under the Apache License, Version 2.0'
-                            not in content
-                        ):
-                            missing_license.append(filepath)
-                    except Exception as e:
-                        print(f'Error reading {filepath}: {e}')
+                    if (
+                        'Licensed under the Apache License, Version 2.0'
+                        not in content
+                    ):
+                        missing_license.append(filepath)
 
     if not fix:
         if missing_license:
@@ -149,34 +146,27 @@ def check_license(fix=False, directories=DIRECTORIES, exit_on_fail=True):
                 ext = os.path.splitext(filepath)[1]
                 template = EXTENSIONS[ext]
 
-                try:
-                    with open(filepath, 'r', encoding='utf-8') as f:
-                        content = f.read()
+                with open(filepath, 'r', encoding='utf-8') as f:
+                    content = f.read()
 
-                    # Special handling for python scripts that might have a shebang or encoding comment
-                    if ext == '.py' and content.startswith('#'):
-                        lines = content.splitlines(keepends=True)
-                        insert_idx = 0
-                        for i, line in enumerate(lines):
-                            if line.startswith('#!') or line.startswith(
-                                '# -*-'
-                            ):
-                                insert_idx = i + 1
-                            else:
-                                break
-                        new_content = (
-                            ''.join(lines[:insert_idx])
-                            + template
-                            + '\n'
-                            + ''.join(lines[insert_idx:])
-                        )
+                # Special handling for scripts that might have a shebang or encoding comment
+                lines = content.splitlines(keepends=True)
+                insert_idx = 0
+                for i, line in enumerate(lines):
+                    if line.startswith('#!') or line.startswith('# -*-'):
+                        insert_idx = i + 1
                     else:
-                        new_content = template + '\n' + content
+                        break
 
-                    with open(filepath, 'w', encoding='utf-8') as f:
-                        f.write(new_content)
-                except Exception as e:
-                    print(f'Error processing {filepath}: {e}')
+                new_content = (
+                    ''.join(lines[:insert_idx])
+                    + template
+                    + '\n'
+                    + ''.join(lines[insert_idx:])
+                )
+
+                with open(filepath, 'w', encoding='utf-8') as f:
+                    f.write(new_content)
 
             print(f'Added license to {len(missing_license)} files.')
         else:
