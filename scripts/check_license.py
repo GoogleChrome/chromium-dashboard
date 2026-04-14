@@ -12,10 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Checks and enforces Apache 2.0 license headers across project files.
+
+This script scans specified directories for Python, JavaScript, TypeScript,
+and HTML files. It verifies that each file contains the Apache 2.0 license
+header. It can also automatically inject missing headers using the `--fix` flag.
+"""
+
+import argparse
+import datetime
 import os
 import sys
-import datetime
-import argparse
 
 YEAR = datetime.datetime.now().year
 
@@ -68,18 +75,37 @@ limitations under the License.
 -->
 """
 
-DIRECTORIES = ['api', 'client-src', 'internals', 'pages', 'framework', 'scripts']
+DIRECTORIES = [
+    'api',
+    'client-src',
+    'internals',
+    'pages',
+    'framework',
+    'scripts',
+]
 EXTENSIONS = {
     '.py': PY_LICENSE,
     '.js': JS_LICENSE,
     '.ts': JS_LICENSE,
-    '.html': HTML_LICENSE
+    '.html': HTML_LICENSE,
 }
 
 # Directories or files to explicitly ignore if necessary
 IGNORE_DIRS = ['node_modules', 'venv', 'cs-env', 'testdata', 'gen']
 
+
 def check_license(fix=False, directories=DIRECTORIES, exit_on_fail=True):
+    """Checks for and optionally fixes missing license headers in files.
+
+    Args:
+        fix: If True, injects the license header into files missing it.
+        directories: A list of directory paths to scan.
+        exit_on_fail: If True, calls sys.exit() with status code 1 when missing
+            licenses are found (and not fixed). Useful for CI/CD pipelines.
+
+    Returns:
+        A list of file paths that are missing the license header.
+    """
     missing_license = []
 
     for directory in directories:
@@ -96,22 +122,25 @@ def check_license(fix=False, directories=DIRECTORIES, exit_on_fail=True):
                     try:
                         with open(filepath, 'r', encoding='utf-8') as f:
                             content = f.read()
-                        
-                        if 'Licensed under the Apache License, Version 2.0' not in content:
+
+                        if (
+                            'Licensed under the Apache License, Version 2.0'
+                            not in content
+                        ):
                             missing_license.append(filepath)
                     except Exception as e:
-                        print(f"Error reading {filepath}: {e}")
+                        print(f'Error reading {filepath}: {e}')
 
     if not fix:
         if missing_license:
-            print("The following files are missing the Apache license:")
+            print('The following files are missing the Apache license:')
             for f in missing_license:
-                print(f"  {f}")
-            print("\nRun `make lint-fix` (or script with --fix) to add them.")
+                print(f'  {f}')
+            print('\nRun `make lint-fix` (or script with --fix) to add them.')
             if exit_on_fail:
                 sys.exit(1)
         else:
-            print("All files have the Apache license.")
+            print('All files have the Apache license.')
             if exit_on_fail:
                 sys.exit(0)
     else:
@@ -119,37 +148,49 @@ def check_license(fix=False, directories=DIRECTORIES, exit_on_fail=True):
             for filepath in missing_license:
                 ext = os.path.splitext(filepath)[1]
                 template = EXTENSIONS[ext]
-                
+
                 try:
                     with open(filepath, 'r', encoding='utf-8') as f:
                         content = f.read()
-                    
+
                     # Special handling for python scripts that might have a shebang or encoding comment
                     if ext == '.py' and content.startswith('#'):
                         lines = content.splitlines(keepends=True)
                         insert_idx = 0
                         for i, line in enumerate(lines):
-                            if line.startswith('#!') or line.startswith('# -*-'):
+                            if line.startswith('#!') or line.startswith(
+                                '# -*-'
+                            ):
                                 insert_idx = i + 1
                             else:
                                 break
-                        new_content = "".join(lines[:insert_idx]) + template + "\n" + "".join(lines[insert_idx:])
+                        new_content = (
+                            ''.join(lines[:insert_idx])
+                            + template
+                            + '\n'
+                            + ''.join(lines[insert_idx:])
+                        )
                     else:
-                        new_content = template + "\n" + content
-                    
+                        new_content = template + '\n' + content
+
                     with open(filepath, 'w', encoding='utf-8') as f:
                         f.write(new_content)
                 except Exception as e:
-                    print(f"Error processing {filepath}: {e}")
+                    print(f'Error processing {filepath}: {e}')
 
-            print(f"Added license to {len(missing_license)} files.")
+            print(f'Added license to {len(missing_license)} files.')
         else:
-            print("All files already have the Apache license.")
-            
+            print('All files already have the Apache license.')
+
     return missing_license
 
+
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description="Check or fix missing Apache license headers.")
-    parser.add_argument('--fix', action='store_true', help='Fix missing licenses')
+    parser = argparse.ArgumentParser(
+        description='Check or fix missing Apache license headers.'
+    )
+    parser.add_argument(
+        '--fix', action='store_true', help='Fix missing licenses'
+    )
     args = parser.parse_args()
     check_license(fix=args.fix)
