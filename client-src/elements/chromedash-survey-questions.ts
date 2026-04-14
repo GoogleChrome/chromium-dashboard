@@ -333,13 +333,13 @@ export class ChromedashSurveyQuestions extends LitElement {
             'adoption_mdn_drafted',
             html`<b>MDN work tracked</b>. You have
               <a
-                href="https://b.corp.google.com/issues/new?component=2087577"
+                href="https://issuetracker.google.com/issues/new?component=2087577"
                 target="_blank"
                 >created an issue</a
               >
               in the
               <a
-                href="https://b.corp.google.com/issues?q=componentid:2087577"
+                href="https://issuetracker.google.com/issues?q=componentid:2087577"
                 target="_blank"
                 >Chrome Documentation Requests tracker</a
               >, providing information to technical writers who will document
