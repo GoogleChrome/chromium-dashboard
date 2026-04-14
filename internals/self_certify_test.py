@@ -36,6 +36,7 @@ class SelfCertifyFunctionTest(testing_config.CustomTestCase):
                 is_language_polyfill=True,
                 is_api_polyfill=None,
                 is_same_origin_css=None,
+                adoption_fields_up_to_date=True,
                 launch_or_contact=None,
             ),
         )
@@ -44,6 +45,8 @@ class SelfCertifyFunctionTest(testing_config.CustomTestCase):
         self.assertTrue(gate.survey_answers.is_language_polyfill)
         self.assertFalse(gate.survey_answers.is_api_polyfill)
         self.assertFalse(gate.survey_answers.is_same_origin_css)
+        self.assertTrue(gate.survey_answers.adoption_fields_up_to_date)
+        self.assertFalse(gate.survey_answers.adoption_style_aligned)
         self.assertIsNone(gate.survey_answers.launch_or_contact)
 
     def test_update_survey_answers__has_existing_answers(self):
@@ -132,8 +135,27 @@ class SelfCertifyFunctionTest(testing_config.CustomTestCase):
             )
         )
 
+    def test_is_adoption_eligible(self):
+        """Adoption is eligible if all of the booleans is True."""
+        self.assertFalse(self_certify.is_adoption_eligible(SurveyAnswers()))
+        self.assertFalse(
+            self_certify.is_adoption_eligible(
+                SurveyAnswers(adoption_style_aligned=False)
+            )
+        )
+        self.assertTrue(
+            self_certify.is_adoption_eligible(
+                SurveyAnswers(
+                    adoption_fields_up_to_date=True,
+                    adoption_style_aligned=True,
+                    adoption_lead_time=True,
+                    adoption_mdn_drafted=True,
+                )
+            )
+        )
+
     def test_is_eligible(self):
-        """Privacy gates are the only eligible type."""
+        """Various gates are eligible if they have the right survey answers."""
         self.assertFalse(
             self_certify.is_eligible(
                 Gate(
@@ -149,6 +171,20 @@ class SelfCertifyFunctionTest(testing_config.CustomTestCase):
                     gate_type=core_enums.GATE_PRIVACY_ORIGIN_TRIAL,
                     survey_answers=SurveyAnswers(
                         is_language_polyfill=True, explanation='something'
+                    ),
+                )
+            )
+        )
+
+        self.assertTrue(
+            self_certify.is_eligible(
+                Gate(
+                    gate_type=core_enums.GATE_ADOPTION_SHIP,
+                    survey_answers=SurveyAnswers(
+                        adoption_fields_up_to_date=True,
+                        adoption_style_aligned=True,
+                        adoption_lead_time=True,
+                        adoption_mdn_drafted=True,
                     ),
                 )
             )

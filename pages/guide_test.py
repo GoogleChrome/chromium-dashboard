@@ -114,7 +114,7 @@ class FeatureCreateTest(testing_config.CustomTestCase):
         stages = Stage.query().fetch()
         gates = Gate.query().fetch()
         self.assertEqual(len(stages), 6)
-        self.assertEqual(len(gates), 11)
+        self.assertEqual(len(gates), 12)
 
         # Ensure notifications are sent.
         mock_notify.assert_called_once()

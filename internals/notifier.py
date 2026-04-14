@@ -91,7 +91,7 @@ def highlight_diff(old_text, new_text, highlight_type):
     for item in differ:
         text = escape(item[2:])
         if not text:
-            continue  # noqa: E701
+            continue
         if item.startswith('-') and highlight_type == 'deletion':
             highlighted_text.append(
                 f'<span style="background:#FDD">{text}</span>'
@@ -1497,7 +1497,7 @@ def send_emails(email_tasks):
         if settings.SEND_EMAIL:
             try:
                 cloud_tasks_helpers.enqueue_task('/tasks/outbound-email', task)
-            except:  # noqa: E722
+            except Exception:
                 logging.exception('could not enqueue.')
         else:
             logging.info('Not enqueued because of settings.SEND_EMAIL')

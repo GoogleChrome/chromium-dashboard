@@ -68,6 +68,9 @@ TESTING_APPROVERS = [
     'karala@google.com',
     'aichein@google.com',
 ]
+ADOPTION_APPROVERS = [
+    'rachelandrew@google.com',
+]
 
 DEFAULT_SLO_LIMIT = 5  # Five weekdays in the Pacific timezone.
 DEFAULT_SLO_RESOLVE_LIMIT = 10  # Ten weekdays in the Pacific timezone.
@@ -250,6 +253,25 @@ TestingPlanApproval = GateInfo(
     team_name='Testing',
 )
 
+AdoptionShipApproval = GateInfo(
+    'Adoption Ship Review',
+    'Adoption Ship Review',
+    core_enums.GATE_ADOPTION_SHIP,
+    ONE_LGTM,
+    approvers=ADOPTION_APPROVERS,
+    team_name='Adoption',
+)
+
+AdoptionPlanApproval = GateInfo(
+    'Adoption Deprecation Plan Review',
+    'Adoption Deprecation Plan Review',
+    core_enums.GATE_ADOPTION_PLAN,
+    ONE_LGTM,
+    approvers=ADOPTION_APPROVERS,
+    team_name='Adoption',
+)
+
+
 APPROVAL_FIELDS_BY_ID = {
     afd.gate_type: afd
     for afd in [
@@ -269,6 +291,8 @@ APPROVAL_FIELDS_BY_ID = {
         DebuggabilityPlanApproval,
         TestingShipApproval,
         TestingPlanApproval,
+        AdoptionShipApproval,
+        AdoptionPlanApproval,
     ]
 }
 

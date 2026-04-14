@@ -143,14 +143,14 @@ class AppUser(ndb.Model):
         return found_app_user
 
 
-def list_with_component(l, component):  # noqa: E741
+def list_with_component(items, component):
     """Return a list of keys that match the given component's ID."""
-    return [x for x in l if x.id() == component.key.integer_id()]
+    return [x for x in items if x.id() == component.key.integer_id()]
 
 
-def list_without_component(l, component):  # noqa: E741
+def list_without_component(items, component):
     """Return a list of keys that do not match the given component's ID."""
-    return [x for x in l if x.id() != component.key.integer_id()]
+    return [x for x in items if x.id() != component.key.integer_id()]
 
 
 class FeatureOwner(ndb.Model):

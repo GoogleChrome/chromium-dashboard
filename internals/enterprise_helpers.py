@@ -152,16 +152,16 @@ def get_default_first_notice_milestone_for_feature() -> int:
     return next_stable_version
 
 
-def should_remove_first_notice_milestone(feature, new_fields):  # noqa: D417
+def should_remove_first_notice_milestone(feature, new_fields):
     """Returns whether we remove first_enterprise_notification_milestone from a feature.
 
     An unannounced feature that does not require to be announced should removed the notice milestone.
 
     Args:
-      existing_feature: FeatureEntry feature that needs to be updated.
+      feature: FeatureEntry feature that needs to be updated.
       new_fields: dict Fields that will be used to update or create the feature.
     """  # noqa: E501
-    if feature.first_enterprise_notification_milestone == None:  # noqa: E711
+    if feature.first_enterprise_notification_milestone is None:
         return False
 
     if feature.feature_type == core_enums.FEATURE_TYPE_ENTERPRISE_ID:

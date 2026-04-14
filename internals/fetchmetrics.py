@@ -201,12 +201,11 @@ UMA_QUERIES = [
 class YesterdayHandler(basehandlers.FlaskHandler):
     """Loads yesterday's UMA data."""
 
-    def get_template_data(self, **kwargs):  # noqa: D417
+    def get_template_data(self, **kwargs):
         """Loads the data file located at |filename|.
 
         Args:
-          filename: The filename for the data file to be loaded.
-          today: date passed in for testing, defaults to today.
+          **kwargs: Keyword arguments containing 'filename' and optionally 'today'.
         """
         self.require_cron_header()
         days = []

@@ -218,7 +218,7 @@ class BaseHandler(flask.views.MethodView):
             self.abort(400, msg=f'No {entity_name} ID specified.')
         try:
             entity_id = int(entity_id)
-        except:  # noqa: E722
+        except Exception:
             self.abort(400, msg=f'Invalid {entity_name} ID: {entity_id}.')
 
         entity = entity_model.get_by_id(entity_id)

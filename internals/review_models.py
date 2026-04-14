@@ -191,6 +191,12 @@ class SurveyAnswers(ndb.Model):
     covers_invalidation = ndb.BooleanProperty(default=False)
     covers_integration = ndb.BooleanProperty(default=False)
 
+    # Questions from the adoption team.
+    adoption_fields_up_to_date = ndb.BooleanProperty(default=False)
+    adoption_style_aligned = ndb.BooleanProperty(default=False)
+    adoption_lead_time = ndb.BooleanProperty(default=False)
+    adoption_mdn_drafted = ndb.BooleanProperty(default=False)
+
     # Questions that are potentially useful to several teams.
     launch_or_contact = ndb.StringProperty()  # URL or email for more info.
     explanation = ndb.StringProperty()  # Explain why you chose those answers.

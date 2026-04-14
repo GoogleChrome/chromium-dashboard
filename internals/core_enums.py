@@ -405,6 +405,8 @@ GATE_DEBUGGABILITY_SHIP = 64
 GATE_DEBUGGABILITY_PLAN = 65
 GATE_TESTING_SHIP = 74
 GATE_TESTING_PLAN = 75
+GATE_ADOPTION_SHIP = 84
+GATE_ADOPTION_PLAN = 85
 
 # List of (stage type, gate type) for each feature type.
 STAGES_AND_GATES_BY_FEATURE_TYPE: dict[int, list[tuple[int, list[int]]]] = {
@@ -431,6 +433,7 @@ STAGES_AND_GATES_BY_FEATURE_TYPE: dict[int, list[tuple[int, list[int]]]] = {
                 GATE_ENTERPRISE_SHIP,
                 GATE_DEBUGGABILITY_SHIP,
                 GATE_TESTING_SHIP,
+                GATE_ADOPTION_SHIP,
                 GATE_API_SHIP,
             ],
         ),
@@ -456,6 +459,7 @@ STAGES_AND_GATES_BY_FEATURE_TYPE: dict[int, list[tuple[int, list[int]]]] = {
                 GATE_ENTERPRISE_SHIP,
                 GATE_DEBUGGABILITY_SHIP,
                 GATE_TESTING_SHIP,
+                GATE_ADOPTION_SHIP,
                 GATE_API_SHIP,
             ],
         ),
@@ -471,6 +475,7 @@ STAGES_AND_GATES_BY_FEATURE_TYPE: dict[int, list[tuple[int, list[int]]]] = {
                 GATE_ENTERPRISE_SHIP,
                 GATE_DEBUGGABILITY_SHIP,
                 GATE_TESTING_SHIP,
+                GATE_ADOPTION_SHIP,
                 GATE_API_SHIP,
             ],
         ),
@@ -482,6 +487,7 @@ STAGES_AND_GATES_BY_FEATURE_TYPE: dict[int, list[tuple[int, list[int]]]] = {
                 # Not needed: GATE_ENTERPRISE_PLAN,
                 GATE_DEBUGGABILITY_PLAN,
                 GATE_TESTING_PLAN,
+                GATE_ADOPTION_PLAN,
                 GATE_API_PLAN,
             ],
         ),
@@ -504,6 +510,7 @@ STAGES_AND_GATES_BY_FEATURE_TYPE: dict[int, list[tuple[int, list[int]]]] = {
                 GATE_ENTERPRISE_SHIP,
                 GATE_DEBUGGABILITY_SHIP,
                 GATE_TESTING_SHIP,
+                GATE_ADOPTION_SHIP,
                 GATE_API_SHIP,
             ],
         ),

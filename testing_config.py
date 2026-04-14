@@ -135,7 +135,7 @@ class Testdata(object):
                 self.testdata[filename] = f.read()
 
     def make_golden(self, raw_data, test_data_file_name):
-        """Helper function to make golden file"""  # noqa: D200, D415
+        """Helper function to make golden file"""  # noqa: D415
         test_data_file_path = os.path.join(
             self.testdata_dir, test_data_file_name
         )
