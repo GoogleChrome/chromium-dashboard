@@ -116,7 +116,7 @@ def valid_url(url):
     """
     try:
         return validators.url(url)
-    except:  # noqa: E722
+    except Exception:
         return False
 
 

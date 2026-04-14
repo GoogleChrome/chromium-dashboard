@@ -382,8 +382,6 @@ class FeatureConvertersTest(testing_config.CustomTestCase):
                 'owner_1@example.com',
             ],
             'enterprise_feature_categories': [],
-            'is_releasenotes_content_reviewed': False,  # noqa: F601
-            'is_releasenotes_publish_ready': False,  # noqa: F601
             'ergonomics_risks': None,
             'experiment_timeline': None,
             'explainer_links': [],

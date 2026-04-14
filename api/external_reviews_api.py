@@ -159,7 +159,7 @@ class ExternalReviewsAPI(basehandlers.APIHandler):
     """Implements the OpenAPI /external_reviews path."""
 
     def do_get(self, **kwargs):
-        """Get a list of features with outstanding external reviews from a particular review body."""  # noqa: D200, E501
+        """Get a list of features with outstanding external reviews from a particular review body."""  # noqa: E501
         review_group: str | None = kwargs.get('review_group', None)
         if review_group not in ['tag', 'gecko', 'webkit']:
             self.abort(404, f'invalid review group {review_group}')

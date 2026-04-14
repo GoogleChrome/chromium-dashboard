@@ -400,7 +400,7 @@ def _fetch_dir_listing(
 
 
 async def _fetch_and_pair(fpath: Path, furl: str) -> tuple[Path, str | None]:
-    """Async wrapper for the actual WPT content fetching phase."""  # noqa: D200
+    """Async wrapper for the actual WPT content fetching phase."""
     content = await asyncio.to_thread(_fetch_file_content, furl)
     return fpath, content
 

@@ -130,7 +130,7 @@ def _get_explainer_content(explainer_links: list[str]) -> str:
 
 
 def _fetch_spec_content(url: str) -> str:
-    """Routes the URL to the correct extraction logic to return clean text."""  # noqa: D200
+    """Routes the URL to the correct extraction logic to return clean text."""
     parsed = urlparse(url)
 
     # URL type 1: GitHub pull requests
@@ -442,7 +442,7 @@ async def prompt_analysis(  # noqa: D417
     return gap_analysis_response
 
 
-async def run_wpt_test_eval_pipeline(  # noqa: D417
+async def run_wpt_test_eval_pipeline(
     feature: FeatureEntry,
     include_explainer: bool = False,
 ) -> core_enums.AITestEvaluationStatus:
@@ -453,6 +453,7 @@ async def run_wpt_test_eval_pipeline(  # noqa: D417
     Args:
       feature: The FeatureEntry model containing spec links and WPT descriptions
         needed for the analysis.
+      include_explainer: Whether to include the explainer content in the prompt.
 
     Returns:
       AITestEvaluationStatus indicating success or failure.
