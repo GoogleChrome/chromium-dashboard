@@ -42,8 +42,16 @@ OMAHA_URL_TEMPLATE = (
 # We really only need the version string.
 
 
-def get_channel_version(channel):
+def get_channel_version(channel: str) -> str:
     """Return the version string that is live on the given channel."""
+    if settings.UNIT_TEST_MODE or settings.PLAYWRIGHT_MODE:
+        if channel == 'stable':
+            return '147.0.7727.56'
+        if channel == 'beta':
+            return '148.0.7778.5'
+        if channel == 'dev':
+            return '149.0.7779.3'
+
     url = OMAHA_URL_TEMPLATE % channel
     logging.info('fetching %s' % url)
     result = requests.get(url)

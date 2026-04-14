@@ -405,6 +405,62 @@ class EmailFormattingTest(testing_config.CustomTestCase):
         actual = notifier.apply_subscription_rules(self.fe_1, changes)
         self.assertEqual({}, actual)
 
+    def test_apply_subscription_rules__summary_after_beta(self):
+        """If summary changed after beta, notify docs team."""
+        changes = [{'prop_name': 'summary'}]
+
+        # No milestones of any kind set.
+        actual = notifier.apply_subscription_rules(self.fe_1, changes)
+        self.assertEqual({}, actual)
+
+        # Some milestone set, but it has not reached beta (148) yet.
+        self.ship_stage.milestones.android_first = 150
+        actual = notifier.apply_subscription_rules(self.fe_1, changes)
+        self.assertEqual({}, actual)
+
+        # Some milestone is post-beta.
+        self.ship_stage.milestones.android_first = 147
+        actual = notifier.apply_subscription_rules(self.fe_1, changes)
+        self.assertEqual(
+            {notifier.POST_BETA_RULE_REASON: notifier.POST_BETA_RULE_ADDRS},
+            actual,
+        )
+
+    def does_post_beta_rule_notify(self, old_val: str, new_val: str) -> bool:
+        """Return true if the docs team rule matches."""
+        changes = [
+            {
+                'prop_name': 'shipped_milestone',
+                'old_val': old_val,
+                'new_val': new_val,
+            }
+        ]
+        actual = notifier.apply_subscription_rules(self.fe_1, changes)
+        return notifier.POST_BETA_RULE_REASON in actual
+
+    def test_apply_subscription_rules__some_post_beta(self):
+        """If milestones change after beta, notify docs team."""
+        # Change from blank to pre-beta does nothing.
+        self.assertFalse(self.does_post_beta_rule_notify('None', '150'))
+
+        # Change from one pre-beta to another pre-beta does nothing.
+        self.assertFalse(self.does_post_beta_rule_notify('150', '152'))
+
+        # Change from blank to post-beta notifies.
+        self.assertTrue(self.does_post_beta_rule_notify('None', '147'))
+
+        # Change from post-beta to blank notifies.
+        self.assertTrue(self.does_post_beta_rule_notify('147', 'None'))
+
+        # Change from pre-beta to post-beta notifies.
+        self.assertTrue(self.does_post_beta_rule_notify('150', '147'))
+
+        # Change from post-beta to pre-beta notifies.
+        self.assertTrue(self.does_post_beta_rule_notify('147', '150'))
+
+        # Change from pre-beta to another pre-beta notifies.
+        self.assertTrue(self.does_post_beta_rule_notify('147', '146'))
+
     @mock.patch('internals.notifier.format_email_body')
     def test_make_feature_changes_email__new(self, mock_f_e_b):
         """We send email to component owners and subscribers for new features."""
