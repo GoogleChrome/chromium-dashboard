@@ -134,12 +134,16 @@ class WriteMissingGatesTest(testing_config.CustomTestCase):
         """Set up the test environment."""
         self.handler = maintenance_scripts.WriteMissingGates()
         self.fe = FeatureEntry(
-            name='feature one', summary='sum', category=1,
-            feature_type=core_enums.FEATURE_TYPE_INCUBATE_ID)
+            name='feature one',
+            summary='sum',
+            category=1,
+            feature_type=core_enums.FEATURE_TYPE_INCUBATE_ID,
+        )
         self.fe.put()
         self.stage = Stage(
             feature_id=self.fe.key.integer_id(),
-            stage_type=core_enums.STAGE_BLINK_SHIPPING)
+            stage_type=core_enums.STAGE_BLINK_SHIPPING,
+        )
         self.stage.put()
 
     def tearDown(self):
@@ -169,9 +173,11 @@ class WriteMissingGatesTest(testing_config.CustomTestCase):
         existing_gate = Gate(
             feature_id=self.fe.key.integer_id(),
             stage_id=self.stage.key.integer_id(),
-            gate_type=core_enums.GATE_API_SHIP)
+            gate_type=core_enums.GATE_API_SHIP,
+        )
         actual = self.handler.make_needed_gates(
-            self.fe, self.stage, [existing_gate])
+            self.fe, self.stage, [existing_gate]
+        )
         gate_types = [g.gate_type for g in actual]
         self.assertNotIn(core_enums.GATE_API_SHIP, gate_types)
 
