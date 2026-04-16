@@ -341,7 +341,7 @@ def _resolve_promise_to_id_list(
 ) -> list[int]:
     """Given an object that might be a future or an ID list, return IDs."""
     if type(list_or_future) == list:  # noqa: E721
-        logging.info('got list %r', list_or_future)
+        logging.info(f'got list of {len(list_or_future)} items')
         return list_or_future  # Which is actually an ID list.
     else:
         future: Future = list_or_future
@@ -350,10 +350,12 @@ def _resolve_promise_to_id_list(
             key_or_projection_list[0], Key
         ):
             id_list = [k.integer_id() for k in key_or_projection_list]
-            logging.info('got key future that yielded %r', id_list)
+            logging.info(f'got key future that yielded {len(id_list)} items')
         else:
             id_list = [proj.feature_id for proj in key_or_projection_list]
-            logging.info('got projection future that yielded %r', id_list)
+            logging.info(
+                f'got projection future that yielded {len(id_list)} items'
+            )
 
         return id_list
 
