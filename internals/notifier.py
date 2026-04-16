@@ -32,7 +32,7 @@ from markupsafe import escape
 import settings
 from api import converters
 from framework import basehandlers, cloud_tasks_helpers, permissions, users
-from internals import approval_defs, core_enums, stage_helpers
+from internals import approval_defs, core_enums, fetchchannels, stage_helpers
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
 from internals.data_types import StageDict
 from internals.review_models import Gate
@@ -203,6 +203,92 @@ WEBVIEW_RULE_REASON = (
 WEBVIEW_RULE_ADDRS = ['webview-leads-external@google.com']
 IWA_RULE_REASON = 'You are subscribed to all IWA features'
 IWA_RULE_ADDRS = ['iwa-dev@chromium.org']
+POST_BETA_RULE_REASON = (
+    'Published aspects of this feature entry changed after it started beta'
+)
+POST_BETA_RULE_ADDRS = ['rachelandrew@google.com']
+MILESTONE_FIELDS = {
+    'shipped_milestone',
+    'shipped_android_milestone',
+    'shipped_webview_milestone',
+    'shipped_ios_milestone',
+    'rollout_milestone',
+}
+
+
+def apply_subscription_rule_iwa(fe: FeatureEntry) -> dict[str, list[str]]:
+    """Every change to an IWA feature notifies the IWA team."""
+    rule_results: dict[str, list[str]] = {}
+    if fe.category == core_enums.IWA:
+        rule_results[IWA_RULE_REASON] = IWA_RULE_ADDRS
+    return rule_results
+
+
+def apply_subscription_rule_webview(
+    ship_stages: list[Stage], changed_field_names: set[str]
+) -> dict[str, list[str]]:
+    """Features lacking webview milestones notify webview team."""
+    rule_results: dict[str, list[str]] = {}
+    ship_milestones: MilestoneSet | None = (
+        ship_stages[0].milestones if len(ship_stages) > 0 else None
+    )
+    if (
+        ship_milestones is not None
+        and ship_milestones.android_first
+        and not ship_milestones.webview_first
+    ):
+        milestone_fields = ['shipped_android_milestone']
+        if not changed_field_names.isdisjoint(milestone_fields):
+            rule_results[WEBVIEW_RULE_REASON] = WEBVIEW_RULE_ADDRS
+
+    return rule_results
+
+
+def apply_subscription_rule_docs(
+    fe: FeatureEntry,
+    ship_stages: list[Stage],
+    changes: list,
+    changed_field_names: set[str],
+) -> dict[str, list[str]]:
+    """Every change to a post-beta feature notifies the docs team."""
+    rule_results: dict[str, list[str]] = {}
+    # Case A: name or summary changing while any milestone is post-beta.
+    omaha_data = fetchchannels.get_omaha_data()
+    beta_version = next(
+        (
+            v['version']
+            for v in omaha_data[0]['versions']
+            if v['channel'] == 'beta'
+        ),
+        '0.0',
+    )
+    current_beta_milestone = int(beta_version.split('.')[0])
+    if 'name' in changed_field_names or 'summary' in changed_field_names:
+        earliest_from_feature = stage_helpers.find_earliest_milestone(
+            ship_stages
+        )
+        if (
+            earliest_from_feature is not None
+            and earliest_from_feature <= current_beta_milestone
+        ):
+            rule_results[POST_BETA_RULE_REASON] = POST_BETA_RULE_ADDRS
+
+    # Case B: any milestone changed to or from a post-beta value.
+    changed_milestone_strs = []
+    for change in changes:
+        if change['prop_name'] in MILESTONE_FIELDS:
+            changed_milestone_strs.append(change.get('old_val'))
+            changed_milestone_strs.append(change.get('new_val'))
+    changed_milestone_ints = [
+        int(val) for val in changed_milestone_strs if val and val != 'None'
+    ]
+    if (
+        changed_milestone_ints
+        and min(changed_milestone_ints) <= current_beta_milestone
+    ):
+        rule_results[POST_BETA_RULE_REASON] = POST_BETA_RULE_ADDRS
+
+    return rule_results
 
 
 def apply_subscription_rules(
@@ -215,26 +301,24 @@ def apply_subscription_rules(
     results: dict[str, list[str]] = {}
 
     # Rule 1: Check for IWA features
-    if fe.category == core_enums.IWA:
-        results[IWA_RULE_REASON] = IWA_RULE_ADDRS
+    results.update(apply_subscription_rule_iwa(fe))
 
     # Find an existing shipping stage with milestone info.
     fe_stages = stage_helpers.get_feature_stages(fe.key.integer_id())
     stage_type = core_enums.STAGE_TYPES_SHIPPING[fe.feature_type] or 0
     ship_stages: list[Stage] = fe_stages.get(stage_type, [])
-    ship_milestones: MilestoneSet | None = (
-        ship_stages[0].milestones if len(ship_stages) > 0 else None
-    )
 
     # Rule 2: Check if feature has some other milestone set, but not webview.
-    if (
-        ship_milestones is not None
-        and ship_milestones.android_first
-        and not ship_milestones.webview_first
-    ):
-        milestone_fields = ['shipped_android_milestone']
-        if not changed_field_names.isdisjoint(milestone_fields):
-            results[WEBVIEW_RULE_REASON] = WEBVIEW_RULE_ADDRS
+    results.update(
+        apply_subscription_rule_webview(ship_stages, changed_field_names)
+    )
+
+    # Rule 3: Check if published aspects changed after beta start.
+    results.update(
+        apply_subscription_rule_docs(
+            fe, ship_stages, changes, changed_field_names
+        )
+    )
 
     return results
 
