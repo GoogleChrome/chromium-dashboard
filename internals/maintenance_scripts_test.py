@@ -127,6 +127,78 @@ class EvaluateGateStatusTest(testing_config.CustomTestCase):
         self.assertEqual(revised_gate_1.state, Vote.APPROVED)
 
 
+class WriteMissingGatesTest(testing_config.CustomTestCase):
+    """Tests for the WriteMissingGates handler."""
+
+    def setUp(self):
+        """Set up the test environment."""
+        self.handler = maintenance_scripts.WriteMissingGates()
+        self.fe = FeatureEntry(
+            name='feature one', summary='sum', category=1,
+            feature_type=core_enums.FEATURE_TYPE_INCUBATE_ID)
+        self.fe.put()
+        self.stage = Stage(
+            feature_id=self.fe.key.integer_id(),
+            stage_type=core_enums.STAGE_BLINK_SHIPPING)
+        self.stage.put()
+
+    def tearDown(self):
+        """Clean up the test environment."""
+        self.fe.key.delete()
+        self.stage.key.delete()
+
+    def test_make_needed_gates__no_fe(self):
+        """It handles a stage with no feature entry."""
+        actual = self.handler.make_needed_gates(None, self.stage, [])
+        self.assertEqual([], actual)
+
+    def test_make_needed_gates__bad_fe_type(self):
+        """It handles a feature with an invalid feature type."""
+        self.fe.feature_type = 999
+        actual = self.handler.make_needed_gates(self.fe, self.stage, [])
+        self.assertEqual([], actual)
+
+    def test_make_needed_gates__bad_stage_type(self):
+        """It handles a stage with an invalid stage type."""
+        self.stage.stage_type = 999
+        actual = self.handler.make_needed_gates(self.fe, self.stage, [])
+        self.assertEqual([], actual)
+
+    def test_make_needed_gates__already_exists(self):
+        """It skips gates that already exist."""
+        existing_gate = Gate(
+            feature_id=self.fe.key.integer_id(),
+            stage_id=self.stage.key.integer_id(),
+            gate_type=core_enums.GATE_API_SHIP)
+        actual = self.handler.make_needed_gates(
+            self.fe, self.stage, [existing_gate])
+        gate_types = [g.gate_type for g in actual]
+        self.assertNotIn(core_enums.GATE_API_SHIP, gate_types)
+
+    def test_make_needed_gates__phase_in_skipped(self):
+        """It skips phased-in gates if the milestone is too early."""
+        self.stage.milestones = MilestoneSet(desktop_first=149)
+        # GATE_ADOPTION_SHIP phase-in is 150.
+        actual = self.handler.make_needed_gates(self.fe, self.stage, [])
+        gate_types = [g.gate_type for g in actual]
+        self.assertNotIn(core_enums.GATE_ADOPTION_SHIP, gate_types)
+
+    def test_make_needed_gates__phase_in_not_skipped(self):
+        """It creates phased-in gates if the milestone is late enough."""
+        self.stage.milestones = MilestoneSet(desktop_first=150)
+        # GATE_ADOPTION_SHIP phase-in is 150.
+        actual = self.handler.make_needed_gates(self.fe, self.stage, [])
+        gate_types = [g.gate_type for g in actual]
+        self.assertIn(core_enums.GATE_ADOPTION_SHIP, gate_types)
+
+    def test_make_needed_gates__no_milestone(self):
+        """It creates phased-in gates if there is no milestone."""
+        self.stage.milestones = None
+        actual = self.handler.make_needed_gates(self.fe, self.stage, [])
+        gate_types = [g.gate_type for g in actual]
+        self.assertIn(core_enums.GATE_ADOPTION_SHIP, gate_types)
+
+
 class AssociateOTsTest(testing_config.CustomTestCase):
     """Tests for the AssociateOTs handler."""
 

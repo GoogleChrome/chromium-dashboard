@@ -519,6 +519,13 @@ STAGES_AND_GATES_BY_FEATURE_TYPE: dict[int, list[tuple[int, list[int]]]] = {
     FEATURE_TYPE_ENTERPRISE_ID: [(STAGE_ENT_ROLLOUT, [])],
 }
 
+# These gates are are not added to stages with any milestones before
+# the phase-in milestone.
+GATE_PHASE_IN: dict[int, int] = {
+    GATE_ADOPTION_SHIP: 150,
+    GATE_ADOPTION_PLAN: 150,
+}
+
 # Plan stage types for every feature type that has plan.
 STAGE_TYPES_PLAN: dict[int, Optional[int]] = {
     FEATURE_TYPE_INCUBATE_ID: None,
