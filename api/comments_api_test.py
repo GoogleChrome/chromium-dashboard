@@ -254,6 +254,22 @@ class CommentsAPITest(testing_config.CustomTestCase):
             with self.assertRaises(werkzeug.exceptions.NotFound):
                 self.handler.do_post(feature_id=12345, gate_id=self.gate_1_id)
 
+    def test_post__mismatched_gate_feature(self):
+        """Handler rejects requests where gate_id does not belong to feature_id."""
+        bad_path = f'/api/v0/features/{self.feature_id}/approvals/1/comments'
+        gate2 = Gate(
+            feature_id=999, stage_id=1, gate_type=1, state=Gate.PREPARING
+        )
+        gate2.put()
+        testing_config.sign_in('owner1@example.com', 123567890)
+        with test_app.test_request_context(
+            bad_path, json={'comment': 'test', 'postToThreadType': 1}
+        ):
+            with self.assertRaises(werkzeug.exceptions.Forbidden):
+                self.handler.do_post(
+                    feature_id=self.feature_id, gate_id=gate2.key.integer_id()
+                )
+
     def test_patch__forbidden(self):
         """Handler rejects requests from users who can't edit the given comment."""
         self.act_1_1.put()

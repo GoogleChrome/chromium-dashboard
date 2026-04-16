@@ -893,6 +893,18 @@ bool FeatureHasExpiryGracePeriod(blink::mojom::OriginTrialFeature feature) {
                     self.feature_1_id, self.ot_stage_1, self.extension_stage_1
                 )
 
+    def test_post__mismatched_stage_feature(self):
+        """Handler rejects requests where stage_id does not belong to feature_id."""
+        testing_config.sign_in('feature_owner@google.com', 1234567890)
+        stage2 = Stage(feature_id=999, stage_type=150)
+        stage2.put()
+        with test_app.test_request_context(self.request_path, json={}):
+            with self.assertRaises(werkzeug.exceptions.Forbidden):
+                self.handler.do_post(
+                    feature_id=self.feature_1_id,
+                    stage_id=stage2.key.integer_id(),
+                )
+
     @mock.patch('api.origin_trials_api.OriginTrialsAPI._validate_creation_args')
     @mock.patch('api.origin_trials_api.get_chromium_files_for_validation')
     def test_post__valid(self, mock_get_chromium_files, mock_validate_func):

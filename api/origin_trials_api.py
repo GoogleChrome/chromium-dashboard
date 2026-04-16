@@ -323,6 +323,11 @@ class OriginTrialsAPI(basehandlers.EntitiesAPIHandler):
         ot_stage: Stage | None = Stage.get_by_id(ot_stage_id)
         if ot_stage is None:
             self.abort(404, msg=f'Stage {ot_stage_id} not found')
+        if ot_stage.feature_id != feature_id:
+            self.abort(
+                403,
+                msg=f'Stage {ot_stage_id} does not belong to Feature {feature_id}',
+            )
 
         # Check that user has permission to edit the feature associated
         # with the origin trial, or has a @google or @chromium account.
