@@ -21,10 +21,11 @@ import logging
 import re
 from typing import Any, Optional, Self, Union
 
+from google.cloud import ndb
 from google.cloud.ndb import Key
 from google.cloud.ndb.tasklets import Future  # for type checking only
 
-from framework import rediscache, users
+from framework import permissions, rediscache, users
 from internals import (
     approval_defs,
     core_enums,
@@ -538,7 +539,13 @@ def process_query(
         permission_terms, context
     )
 
-    # 2c. Create a parallel query for total sort order.
+    # 2c. Create a parallel query for confidential features.
+    logging.info('creating parallel queries for confidential features')
+    confidential_future_ops = create_future_operations_from_queries(
+        [('', 'confidential', '=', 'true', None)], context
+    )
+
+    # 2d. Create a parallel query for total sort order.
     logging.info('creating total sort order for %r', sort_spec)
     total_order_promise = search_queries.total_order_query_async(sort_spec)
 
@@ -556,6 +563,27 @@ def process_query(
     permission_ids = process_or_operations(permission_clauses)
     result_id_set.intersection_update(permission_ids)
     logging.info('got %r result IDs with permissions', len(result_id_set))
+
+    # 3c. Filter out confidential features that the user cannot view.
+    confidential_clauses = process_and_operations(confidential_future_ops)
+    confidential_ids = process_or_operations(confidential_clauses)
+    confidential_results = result_id_set.intersection(confidential_ids)
+
+    if confidential_results:
+        user = users.get_current_user()
+        models = ndb.get_multi(
+            [ndb.Key(FeatureEntry, fid) for fid in confidential_results]
+        )
+        unviewable_ids = {
+            model.key.integer_id()
+            for model in models
+            if model and not permissions.can_view_feature(user, model)
+        }
+        result_id_set.difference_update(unviewable_ids)
+        logging.info(
+            'filtered out %r unviewable confidential features',
+            len(unviewable_ids),
+        )
 
     result_id_list = list(result_id_set)
     total_count = len(result_id_list)
