@@ -96,16 +96,23 @@ class WriteMissingGates(FlaskHandler):
         new_gates: list[Gate] = []
         needed_gates = self.GATE_RULES[fe.feature_type][stage.stage_type]
         for needed_gate_type in needed_gates:
-            if not any(
+            if any(
                 eg for eg in existing_gates if eg.gate_type == needed_gate_type
             ):
-                gate = Gate(
-                    feature_id=stage.feature_id,
-                    stage_id=stage.key.integer_id(),
-                    gate_type=needed_gate_type,
-                    state=Gate.PREPARING,
-                )
-                new_gates.append(gate)
+                continue
+            earliest = stage_helpers.find_earliest_milestone([stage])
+            phase_in_starting = core_enums.GATE_PHASE_IN.get(
+                needed_gate_type, 0
+            )
+            if earliest and earliest < phase_in_starting:
+                continue
+            gate = Gate(
+                feature_id=stage.feature_id,
+                stage_id=stage.key.integer_id(),
+                gate_type=needed_gate_type,
+                state=Gate.PREPARING,
+            )
+            new_gates.append(gate)
         return new_gates
 
     def get_template_data(self, **kwargs) -> str:
