@@ -14,7 +14,7 @@ class StageField(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, announcement_url=None, browser=None, ot_description=None, display_name=None, enterprise_policies=None, finch_url=None, experiment_goals=None, experiment_risks=None, experiment_extension_reason=None, intent_thread_url=None, origin_trial_feedback_url=None, origin_trial_id=None, ot_approval_buganizer_component=None, ot_approval_buganizer_custom_field_id=None, ot_approval_criteria_url=None, ot_approval_group_email=None, ot_chromium_trial_name=None, ot_display_name=None, ot_action_requested=None, ot_creation__bypass_file_checks=None, ot_documentation_url=None, ot_emails=None, ot_feedback_submission_url=None, ot_has_third_party_support=None, ot_is_critical_trial=None, ot_is_deprecation_trial=None, ot_owner_email=None, ot_request_note=None, ot_require_approvals=None, ot_stage_id=None, ot_webfeature_use_counter=None, rollout_impact=None, rollout_milestone=None, rollout_platforms=None, rollout_details=None, rollout_stage_plan=None):  # noqa: E501
+    def __init__(self, announcement_url=None, browser=None, ot_description=None, display_name=None, enterprise_policies=None, finch_url=None, experiment_goals=None, experiment_risks=None, experiment_extension_reason=None, intent_thread_url=None, origin_trial_feedback_url=None, origin_trial_id=None, ot_approval_buganizer_component=None, ot_approval_buganizer_custom_field_id=None, ot_approval_criteria_url=None, ot_approval_group_email=None, ot_chromium_trial_name=None, ot_display_name=None, ot_action_requested=None, ot_creation__bypass_file_checks=None, ot_documentation_url=None, ot_emails=None, ot_feedback_submission_url=None, ot_has_third_party_support=None, ot_is_critical_trial=None, ot_is_deprecation_trial=None, ot_owner_email=None, ot_requester_email=None, ot_request_note=None, ot_require_approvals=None, ot_stage_id=None, ot_webfeature_use_counter=None, rollout_impact=None, rollout_milestone=None, rollout_platforms=None, rollout_details=None, rollout_stage_plan=None):  # noqa: E501
         """StageField - a model defined in OpenAPI
 
         :param announcement_url: The announcement_url of this StageField.  # noqa: E501
@@ -71,6 +71,8 @@ class StageField(Model):
         :type ot_is_deprecation_trial: FieldInfo
         :param ot_owner_email: The ot_owner_email of this StageField.  # noqa: E501
         :type ot_owner_email: FieldInfo
+        :param ot_requester_email: The ot_requester_email of this StageField.  # noqa: E501
+        :type ot_requester_email: FieldInfo
         :param ot_request_note: The ot_request_note of this StageField.  # noqa: E501
         :type ot_request_note: FieldInfo
         :param ot_require_approvals: The ot_require_approvals of this StageField.  # noqa: E501
@@ -118,6 +120,7 @@ class StageField(Model):
             'ot_is_critical_trial': FieldInfo,
             'ot_is_deprecation_trial': FieldInfo,
             'ot_owner_email': FieldInfo,
+            'ot_requester_email': FieldInfo,
             'ot_request_note': FieldInfo,
             'ot_require_approvals': FieldInfo,
             'ot_stage_id': FieldInfo,
@@ -157,6 +160,7 @@ class StageField(Model):
             'ot_is_critical_trial': 'ot_is_critical_trial',
             'ot_is_deprecation_trial': 'ot_is_deprecation_trial',
             'ot_owner_email': 'ot_owner_email',
+            'ot_requester_email': 'ot_requester_email',
             'ot_request_note': 'ot_request_note',
             'ot_require_approvals': 'ot_require_approvals',
             'ot_stage_id': 'ot_stage_id',
@@ -195,6 +199,7 @@ class StageField(Model):
         self._ot_is_critical_trial = ot_is_critical_trial
         self._ot_is_deprecation_trial = ot_is_deprecation_trial
         self._ot_owner_email = ot_owner_email
+        self._ot_requester_email = ot_requester_email
         self._ot_request_note = ot_request_note
         self._ot_require_approvals = ot_require_approvals
         self._ot_stage_id = ot_stage_id
@@ -782,6 +787,27 @@ class StageField(Model):
         """
 
         self._ot_owner_email = ot_owner_email
+
+    @property
+    def ot_requester_email(self) -> FieldInfo:
+        """Gets the ot_requester_email of this StageField.
+
+
+        :return: The ot_requester_email of this StageField.
+        :rtype: FieldInfo
+        """
+        return self._ot_requester_email
+
+    @ot_requester_email.setter
+    def ot_requester_email(self, ot_requester_email: FieldInfo):
+        """Sets the ot_requester_email of this StageField.
+
+
+        :param ot_requester_email: The ot_requester_email of this StageField.
+        :type ot_requester_email: FieldInfo
+        """
+
+        self._ot_requester_email = ot_requester_email
 
     @property
     def ot_request_note(self) -> FieldInfo:

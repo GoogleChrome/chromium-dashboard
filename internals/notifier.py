@@ -1037,9 +1037,11 @@ class OTCreationRequestHandler(basehandlers.FlaskHandler):
         )
         email_body = f"""
 <p>
-  Requested by: {stage['ot_owner_email']}
+  Requested by: {stage.get('ot_requester_email')}
   <br>
-  Additional contacts for your team?: {','.join(stage['ot_emails'])}
+  Googler OT owner: {stage.get('ot_owner_email')}
+  <br>
+  Additional contacts for your team?: {','.join(stage.get('ot_emails', []))}
   <br>
   Feature name: {stage['ot_display_name']}
   <br>

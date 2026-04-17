@@ -481,6 +481,12 @@ class EntitiesAPIHandler(APIHandler):
             stage_was_updated = True
         stage.milestones = milestones
 
+        if ot_action_requested:
+            user = self.get_current_user()
+            if user:
+                stage.ot_requester_email = user.email()
+                stage_was_updated = True
+
         if stage_was_updated:
             stage.put()
 
