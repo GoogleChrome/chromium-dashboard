@@ -674,6 +674,30 @@ class FeaturesAPITest(testing_config.CustomTestCase):
         self.assertIsNotNone(self.feature_1.updated)
         self.assertEqual(self.feature_1.updater_email, 'admin@example.com')
 
+    def test_patch__mismatched_stage_feature(self):
+        """PATCH request fails if stage ID belongs to another feature."""
+        testing_config.sign_in('admin@example.com', 123567890)
+        stage2 = Stage(feature_id=999, stage_type=150)
+        stage2.put()
+        request_body = {
+            'feature_changes': {
+                'id': self.feature_1_id,
+            },
+            'stages': [
+                {
+                    'id': stage2.key.integer_id(),
+                    'intent_thread_url': {
+                        'form_field_name': 'shipped_milestone',
+                        'value': 'bad_url',
+                    },
+                },
+            ],
+        }
+        request_path = f'{self.request_path}/update'
+        with test_app.test_request_context(request_path, json=request_body):
+            with self.assertRaises(werkzeug.exceptions.Forbidden):
+                self.handler.do_patch()
+
     def test_patch__stage_changes(self):
         """Valid PATCH updates stage entities."""
         # Signed-in user with permissions.

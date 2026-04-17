@@ -133,6 +133,11 @@ class CommentsAPI(basehandlers.APIHandler):
             gate = Gate.get_by_id(gate_id)
             if not gate:
                 self.abort(404, msg='Gate not found; notifications abort.')
+            if gate.feature_id != feature_id:
+                self.abort(
+                    403,
+                    msg=f'Gate {gate_id} does not belong to Feature {feature_id}',
+                )
             notifier_helpers.notify_subscribers_of_new_comments(
                 feature, gate, user.email(), comment_content
             )

@@ -276,6 +276,7 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
 
     def _patch_update_stages(
         self,
+        feature_id: int,
         stage_changes_list: list[dict[str, Any]],
         changed_fields: CHANGED_FIELDS_LIST_TYPE,
     ) -> tuple[list[Stage], bool]:
@@ -293,6 +294,11 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
             stage = Stage.get_by_id(id)
             if not stage:
                 self.abort(400, msg=f'Stage not found for ID {id}')
+            if stage.feature_id != feature_id:
+                self.abort(
+                    403,
+                    msg=f'Stage {id} does not belong to Feature {feature_id}',
+                )
 
             # Update stage fields.
             for field, field_type in api_specs.STAGE_FIELD_DATA_TYPES:
@@ -546,7 +552,9 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
         changed_fields: CHANGED_FIELDS_LIST_TYPE = []
         stage_ids = [s['id'] for s in body['stages'] if 'id' in s]
         updated_stages, ship_milestones_were_updated = (
-            self._patch_update_stages(body['stages'], changed_fields)
+            self._patch_update_stages(
+                feature_id, body['stages'], changed_fields
+            )
         )
         # Reset outstanding notifications if the user updated any ship/rollout milestones.
         if ship_milestones_were_updated:
