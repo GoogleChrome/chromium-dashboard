@@ -21,7 +21,6 @@ import logging
 import re
 from typing import Any, Optional, Self, Union
 
-from google.cloud import ndb
 from google.cloud.ndb import Key
 from google.cloud.ndb.tasklets import Future  # for type checking only
 
@@ -395,6 +394,8 @@ def make_cache_key(
     name_only: bool,
 ) -> str:
     """Return a redis key string to store cached search results."""
+    user = users.get_current_user()
+    user_email = user.email() if user else 'anonymous'
     return '|'.join(
         [
             FeatureEntry.SEARCH_CACHE_KEY,
@@ -406,6 +407,7 @@ def make_cache_key(
             'start=' + str(start),
             'num=' + str(num),
             'name_only=' + str(name_only),
+            'user=' + user_email,
         ]
     )
 
@@ -573,19 +575,23 @@ def process_query(
 
     if confidential_results:
         user = users.get_current_user()
-        models = ndb.get_multi(
-            [ndb.Key(FeatureEntry, fid) for fid in confidential_results]
-        )
-        unviewable_ids = {
-            model.key.integer_id()
-            for model in models
-            if model and not permissions.can_view_feature(user, model)
-        }
-        result_id_set.difference_update(unviewable_ids)
-        logging.info(
-            'filtered out %r unviewable confidential features',
-            len(unviewable_ids),
-        )
+        if not user:
+            unviewable_ids = confidential_results
+        elif permissions.is_google_or_chromium_account(
+            user
+        ) or permissions.can_admin_site(user):
+            unviewable_ids = set()
+        else:
+            participant_keys = feature_helpers.get_by_participant(user.email())
+            viewable_ids = {k.integer_id() for k in participant_keys}
+            unviewable_ids = confidential_results.difference(viewable_ids)
+
+        if unviewable_ids:
+            result_id_set.difference_update(unviewable_ids)
+            logging.info(
+                'filtered out %r unviewable confidential features',
+                len(unviewable_ids),
+            )
 
     result_id_list = list(result_id_set)
     total_count = len(result_id_list)
