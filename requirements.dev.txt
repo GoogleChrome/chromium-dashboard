@@ -14,6 +14,6 @@ types-requests
 types-setuptools
 types-pytz
 pytest==9.0.3
-pytest-xdist==3.6.1
+pytest-xdist==3.8.0
 requests==2.33.1
 ruff
