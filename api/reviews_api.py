@@ -121,11 +121,18 @@ class VotesAPI(basehandlers.APIHandler):
                 # will get a notification of review state change anyway.
 
             notifier_helpers.notify_approvers_of_reviews(
-                fe, gate, new_state, user.email()
+                fe,
+                gate,
+                new_state,
+                user.email(),
             )
         else:
             notifier_helpers.notify_subscribers_of_vote_changes(
-                fe, gate, user.email(), new_state, old_state
+                fe,
+                gate,
+                user.email(),
+                new_state,
+                old_state,
             )
 
         # Callers don't use the JSON response for this API call.

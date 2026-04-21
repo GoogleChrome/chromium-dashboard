@@ -241,7 +241,10 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
         rediscache.delete_keys_with_prefix(FeatureEntry.DEFAULT_CACHE_KEY)
         rediscache.delete_keys_with_prefix(FeatureEntry.SEARCH_CACHE_KEY)
 
-        return {'message': f'Feature {id} created.', 'feature_id': id}
+        return {
+            'message': f'Feature {id} created.',
+            'feature_id': id,
+        }
 
     def _write_stages_and_gates_for_feature(
         self, feature_id: int, feature_type: int
@@ -580,7 +583,9 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
             search_fulltext.index_feature(feature)
             feature_links.update_feature_links(feature, changed_fields)
 
-        return {'message': f'Feature {feature_id} updated.'}
+        return {
+            'message': f'Feature {feature_id} updated.',
+        }
 
     def do_delete(self, **kwargs) -> flask.Response | dict[str, str]:
         """Delete the specified feature."""
