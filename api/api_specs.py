@@ -132,6 +132,7 @@ STAGE_FIELD_DATA_TYPES: FIELD_INFO_DATA_TYPE = [
     ('ot_is_critical_trial', 'bool'),
     ('ot_is_deprecation_trial', 'bool'),
     ('ot_owner_email', 'str'),
+    ('ot_requester_email', 'str'),
     ('ot_request_note', 'str'),
     ('ot_require_approvals', 'bool'),
     ('ot_stage_id', 'int'),

@@ -1489,6 +1489,8 @@ components:
           $ref: '#/components/schemas/FieldInfo'
         ot_owner_email:
           $ref: '#/components/schemas/FieldInfo'
+        ot_requester_email:
+          $ref: '#/components/schemas/FieldInfo'
         ot_request_note:
           $ref: '#/components/schemas/FieldInfo'
         ot_require_approvals:

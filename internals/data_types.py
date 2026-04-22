@@ -64,6 +64,7 @@ class StageDict(TypedDict):
     ot_is_critical_trial: bool
     ot_is_deprecation_trial: bool
     ot_owner_email: str | None
+    ot_requester_email: str | None
     ot_require_approvals: bool
     ot_setup_status: NotRequired[int]
     ot_use_counter_bucket_number: int | None

@@ -2309,6 +2309,9 @@ components:
         desktop_first:
           form_field_name: form_field_name
           value: "{}"
+        ot_requester_email:
+          form_field_name: form_field_name
+          value: "{}"
         experiment_risks:
           form_field_name: form_field_name
           value: "{}"
@@ -2409,6 +2412,8 @@ components:
         ot_is_deprecation_trial:
           $ref: '#/components/schemas/FieldInfo'
         ot_owner_email:
+          $ref: '#/components/schemas/FieldInfo'
+        ot_requester_email:
           $ref: '#/components/schemas/FieldInfo'
         ot_request_note:
           $ref: '#/components/schemas/FieldInfo'
