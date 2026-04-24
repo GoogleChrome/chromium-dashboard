@@ -193,6 +193,12 @@ export interface CreateOriginTrialRequest {
      * @type {FieldInfo}
      * @memberof CreateOriginTrialRequest
      */
+    ot_requester_email?: FieldInfo;
+    /**
+     * 
+     * @type {FieldInfo}
+     * @memberof CreateOriginTrialRequest
+     */
     ot_request_note?: FieldInfo;
     /**
      * 
@@ -336,6 +342,7 @@ export function CreateOriginTrialRequestFromJSONTyped(json: any, ignoreDiscrimin
         'ot_is_critical_trial': json['ot_is_critical_trial'] == null ? undefined : FieldInfoFromJSON(json['ot_is_critical_trial']),
         'ot_is_deprecation_trial': json['ot_is_deprecation_trial'] == null ? undefined : FieldInfoFromJSON(json['ot_is_deprecation_trial']),
         'ot_owner_email': json['ot_owner_email'] == null ? undefined : FieldInfoFromJSON(json['ot_owner_email']),
+        'ot_requester_email': json['ot_requester_email'] == null ? undefined : FieldInfoFromJSON(json['ot_requester_email']),
         'ot_request_note': json['ot_request_note'] == null ? undefined : FieldInfoFromJSON(json['ot_request_note']),
         'ot_require_approvals': json['ot_require_approvals'] == null ? undefined : FieldInfoFromJSON(json['ot_require_approvals']),
         'ot_stage_id': json['ot_stage_id'] == null ? undefined : FieldInfoFromJSON(json['ot_stage_id']),
@@ -389,6 +396,7 @@ export function CreateOriginTrialRequestToJSON(value?: CreateOriginTrialRequest 
         'ot_is_critical_trial': FieldInfoToJSON(value['ot_is_critical_trial']),
         'ot_is_deprecation_trial': FieldInfoToJSON(value['ot_is_deprecation_trial']),
         'ot_owner_email': FieldInfoToJSON(value['ot_owner_email']),
+        'ot_requester_email': FieldInfoToJSON(value['ot_requester_email']),
         'ot_request_note': FieldInfoToJSON(value['ot_request_note']),
         'ot_require_approvals': FieldInfoToJSON(value['ot_require_approvals']),
         'ot_stage_id': FieldInfoToJSON(value['ot_stage_id']),

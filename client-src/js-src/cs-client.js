@@ -72,6 +72,7 @@
  * @property {boolean} ot_is_critical_trial
  * @property {boolean} ot_is_deprecation_trial
  * @property {string} [ot_owner_email]
+ * @property {string} [ot_requester_email]
  * @property {boolean} ot_require_approvals
  * @property {number} [ot_setup_status]
  * @property {string} [ot_request_note]

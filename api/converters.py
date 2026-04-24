@@ -234,6 +234,7 @@ def stage_to_json_dict(
         'ot_is_critical_trial': stage.ot_is_critical_trial,
         'ot_is_deprecation_trial': stage.ot_is_deprecation_trial,
         'ot_owner_email': stage.ot_owner_email,
+        'ot_requester_email': stage.ot_requester_email,
         'ot_require_approvals': stage.ot_require_approvals,
         'ot_use_counter_bucket_number': stage.ot_use_counter_bucket_number,
         'ot_webfeature_use_counter': stage.ot_webfeature_use_counter,

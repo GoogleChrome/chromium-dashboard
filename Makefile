@@ -28,7 +28,7 @@ dev-ot-key:
 do-tests:
 	. cs-env/bin/activate && curl -X POST 'http://localhost:15606/reset' && \
 	if command -v pytest >/dev/null 2>&1; then \
-		pytest -n auto -q *_test.py api/*_test.py internals/*_test.py framework/*_test.py pages/*_test.py; \
+		pytest -n auto -q *_test.py api/*_test.py internals/*_test.py framework/*_test.py pages/*_test.py scripts/*_test.py; \
 	else \
 		python3.13 -m unittest discover -p '*_test.py' -b; \
 	fi
@@ -73,7 +73,7 @@ stop: pwtests-shutdown
 
 test:
 	($(MAKE) start-emulator > /dev/null 2>&1 &)
-	
+
 	curl --retry 10 --retry-all-errors --retry-delay 1 http://localhost:15606/
 	$(MAKE) do-tests; status=$$?; $(MAKE) stop-emulator; exit $$status
 
@@ -107,6 +107,12 @@ view-coverage:
 mypy:
 	. cs-env/bin/activate && mypy --ignore-missing-imports --exclude cs-env/ --exclude appengine_config.py --exclude gen/py/webstatus_openapi/build/ --exclude gen/py/webstatus_openapi/setup.py --exclude gen/py/webstatus_openapi/test/ --exclude gen/py/chromestatus_openapi/build/ --exclude gen/py/chromestatus_openapi/chromestatus_openapi/test --exclude appengine_config.py --no-namespace-packages --disable-error-code "annotation-unchecked" .
 
+check-license:
+	. cs-env/bin/activate && python3 scripts/check_license.py
+
+check-license-fix:
+	. cs-env/bin/activate && python3 scripts/check_license.py --fix
+
 lint-frontend:
 	npx prettier client-src/js-src client-src/elements client-src/elements packages/playwright/tests --check
 	npx eslint "client-src/js-src/**/*.{js,ts}" "packages/playwright/tests/*.{js,ts}"
@@ -116,6 +122,7 @@ lint-frontend:
 lint-backend:
 	$(MAKE) pylint
 	. cs-env/bin/activate && ruff format --check .
+	$(MAKE) check-license
 
 lint: lint-frontend lint-backend
 
@@ -125,6 +132,7 @@ lint-fix-frontend:
 
 lint-fix-backend:
 	$(MAKE) format
+	$(MAKE) check-license-fix
 
 lint-fix: lint-fix-frontend lint-fix-backend
 

@@ -36,6 +36,7 @@
           <div class="data-section">
             <h4>Key Information</h4>
             <div class="data-grid">
+              <div class="data-pair"><span class="label">Requester</span><span class="value">{{ stage.ot_requester_email or stage.ot_owner_email }}</span></div>
               <div class="data-pair"><span class="label">Owner</span><span class="value">{{ stage.ot_owner_email }}</span></div>
               <div class="data-pair"><span class="label">Contacts</span><span class="value">{{ stage.ot_emails | join(', ') }}</span></div>
               <div class="data-pair"><span class="label">Chromium Trial Name</span><span class="value">{{ stage.ot_chromium_trial_name or 'Not specified' }}</span></div>

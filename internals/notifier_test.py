@@ -1351,6 +1351,7 @@ class OTCreationRequestHandlerTest(testing_config.CustomTestCase):
             ot_is_deprecation_trial=True,
             ot_is_critical_trial=False,
             ot_owner_email='owner@example.com',
+            ot_requester_email='requester@example.com',
             ot_emails=['user1@example.com', 'user2@example.com'],
             ot_webfeature_use_counter='kWebFeature',
             ot_request_note='Additional information about the trial creation.',
@@ -1378,7 +1379,9 @@ class OTCreationRequestHandlerTest(testing_config.CustomTestCase):
 
         expected_body = """
 <p>
-  Requested by: owner@example.com
+  Requested by: requester@example.com
+  <br>
+  Googler OT owner: owner@example.com
   <br>
   Additional contacts for your team?: user1@example.com,user2@example.com
   <br>
@@ -1446,6 +1449,7 @@ class OTExtendedHandlerTest(testing_config.CustomTestCase):
             ot_is_deprecation_trial=True,
             ot_is_critical_trial=False,
             ot_owner_email='owner@example.com',
+            ot_requester_email='requester@example.com',
             ot_emails=['user1@example.com', 'user2@example.com'],
             ot_webfeature_use_counter='kWebFeature',
             ot_request_note='Additional information about the trial creation.',
@@ -1695,6 +1699,7 @@ class OTCreationRequestFailedHandlerTest(testing_config.CustomTestCase):
             stage_type=150,
             ot_display_name='Example Trial',
             ot_owner_email='feature_owner@google.com',
+            ot_requester_email='requester@example.com',
             ot_chromium_trial_name='ExampleTrial',
             milestones=MilestoneSet(desktop_first=100, desktop_last=106),
             ot_documentation_url='https://example.com/docs',
