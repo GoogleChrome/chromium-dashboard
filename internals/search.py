@@ -682,11 +682,11 @@ def process_and_operations(feature_id_future_ops):
             feature_ids = _resolve_promise_to_id_list(future)
 
         if current_result_set is None:
-            logging.info('first term yields %r', feature_ids)
+            logging.info('first term yields %d items', len(feature_ids))
             current_result_set = set(feature_ids)
             continue
 
-        logging.info('combining result so far with %r', feature_ids)
+        logging.info('combining result so far with %d items', len(feature_ids))
         current_result_set.intersection_update(feature_ids)
 
     if current_result_set is not None:
