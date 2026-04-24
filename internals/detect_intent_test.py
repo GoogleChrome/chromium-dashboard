@@ -27,7 +27,7 @@ from internals import (
     stage_helpers,
 )
 from internals.core_models import FeatureEntry, Stage
-from internals.review_models import Gate, Vote
+from internals.review_models import Activity, Gate, Vote
 
 test_app = flask.Flask(__name__)
 
@@ -679,6 +679,16 @@ class IntentEmailHandlerTest(testing_config.CustomTestCase):
         )
         self.assertEqual(
             self.stages_dict[151][1].intent_thread_url, self.thread_url
+        )
+
+        activities = Activity.get_activities(self.feature_id)
+        self.assertTrue(
+            any(
+                a.content
+                and 'Origin trial extension requested via email thread'
+                in a.content
+                for a in activities
+            )
         )
 
     @mock.patch('logging.info')

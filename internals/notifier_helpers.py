@@ -86,6 +86,7 @@ def notify_subscribers_and_save_amendments(
     changed_fields: CHANGED_FIELDS_LIST_TYPE,
     notify: bool = True,
     is_update: bool = True,
+    content: str = '',
 ) -> None:
     """Notify subscribers of changes to FeatureEntry and save amendments."""
     amendments = _get_changes_as_amendments(changed_fields)
@@ -97,7 +98,7 @@ def notify_subscribers_and_save_amendments(
             log_type=Activity.USER_CHANGE,
             feature_id=fe.key.integer_id(),
             author=email,
-            content='',
+            content=content,
         )
         activity.amendments = amendments
         activity.put()

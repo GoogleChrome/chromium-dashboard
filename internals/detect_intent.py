@@ -25,7 +25,7 @@ import settings
 from framework import basehandlers, permissions, users
 from internals import approval_defs, core_enums, notifier_helpers, slo
 from internals.core_models import FeatureEntry, Stage
-from internals.review_models import Gate, Vote
+from internals.review_models import Activity, Gate, Vote
 
 GATE_TYPES_REQUIRING_LGTMS = [
     approval_defs.PlanApproval.gate_type,
@@ -260,6 +260,19 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
         self.set_intent_thread_url(stage, thread_url, subject)
         gate_id = gate.key.integer_id()  # In case it was found by gate_type.
         is_new_thread = detect_new_thread(gate)
+
+        if (
+            gate_info == approval_defs.ExtendExperimentApproval
+            and is_new_thread
+        ):
+            activity = Activity(
+                log_type=Activity.USER_CHANGE,
+                feature_id=feature.key.integer_id(),
+                author=from_addr,
+                content=f'Origin trial extension requested via email thread: {thread_url}',
+            )
+            activity.put()
+
         self.create_approvals(
             feature, stage, gate, gate_info, from_addr, body, is_new_thread
         )

@@ -25,7 +25,7 @@ import testing_config  # Must be imported before the module under test.
 from api import stages_api
 from internals import core_enums
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
-from internals.review_models import Gate
+from internals.review_models import Activity, Gate
 from internals.user_models import AppUser
 
 test_app = flask.Flask(__name__)
@@ -826,6 +826,12 @@ class StagesAPITest(testing_config.CustomTestCase):
         # OT extension request should NOT send a notification.
         mock_send_ot_creation_notification.assert_not_called()
         self.assert_cache_was_flushed(mock_dkwp)
+
+        activities = Activity.get_activities(self.fe.key.integer_id())
+        self.assertEqual(len(activities), 1)
+        self.assertEqual(
+            activities[0].content, 'Origin trial extension requested via form.'
+        )
 
     @mock.patch('framework.rediscache.delete_keys_with_prefix')
     def test_patch__ot_request_googler(self, mock_dkwp):

@@ -17,7 +17,7 @@
 
 from api import converters
 from framework import basehandlers, permissions, rediscache
-from internals import notifier_helpers, stage_helpers
+from internals import core_enums, notifier_helpers, stage_helpers
 from internals.core_models import FeatureEntry, Stage
 from internals.data_types import CHANGED_FIELDS_LIST_TYPE
 from internals.review_models import Gate
@@ -131,8 +131,21 @@ class StagesAPI(basehandlers.EntitiesAPIHandler):
         # Update specified fields.
         self.update_stage(stage, body, changed_fields)
 
+        ot_requested = False
+        for field, old_val, new_val in changed_fields:
+            if field == 'ot_action_requested' and new_val is True:
+                ot_requested = True
+                break
+
+        content = ''
+        if (
+            ot_requested
+            and stage.stage_type in core_enums.OT_EXTENSION_STAGE_TYPES
+        ):
+            content = 'Origin trial extension requested via form.'
+
         notifier_helpers.notify_subscribers_and_save_amendments(
-            feature, changed_fields, notify=True
+            feature, changed_fields, notify=True, content=content
         )
         # Remove all feature-related cache.
         rediscache.delete_keys_with_prefix(FeatureEntry.DEFAULT_CACHE_KEY)
