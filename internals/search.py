@@ -544,10 +544,17 @@ def process_query(
     )
 
     # 2c. Create a parallel query for confidential features.
-    logging.info('creating parallel queries for confidential features')
-    confidential_future_ops = create_future_operations_from_queries(
-        [('', 'confidential', '=', 'true', None)], context
+    user = users.get_current_user()
+    can_view_all_confidential = user and (
+        permissions.is_google_or_chromium_account(user)
+        or permissions.can_admin_site(user)
     )
+
+    if not can_view_all_confidential:
+        logging.info('creating parallel queries for confidential features')
+        confidential_future_ops = create_future_operations_from_queries(
+            [('', 'confidential', '=', 'true', None)], context
+        )
 
     # 2d. Create a parallel query for total sort order.
     logging.info('creating total sort order for %r', sort_spec)
@@ -569,29 +576,27 @@ def process_query(
     logging.info('got %r result IDs with permissions', len(result_id_set))
 
     # 3c. Filter out confidential features that the user cannot view.
-    confidential_clauses = process_and_operations(confidential_future_ops)
-    confidential_ids = process_or_operations(confidential_clauses)
-    confidential_results = result_id_set.intersection(confidential_ids)
+    if not can_view_all_confidential:
+        confidential_clauses = process_and_operations(confidential_future_ops)
+        confidential_ids = process_or_operations(confidential_clauses)
+        confidential_results = result_id_set.intersection(confidential_ids)
 
-    if confidential_results:
-        user = users.get_current_user()
-        if not user:
-            unviewable_ids = confidential_results
-        elif permissions.is_google_or_chromium_account(
-            user
-        ) or permissions.can_admin_site(user):
-            unviewable_ids = set()
-        else:
-            participant_keys = feature_helpers.get_by_participant(user.email())
-            viewable_ids = {k.integer_id() for k in participant_keys}
-            unviewable_ids = confidential_results.difference(viewable_ids)
+        if confidential_results:
+            if not user:
+                unviewable_ids = confidential_results
+            else:
+                participant_keys = feature_helpers.get_by_participant(
+                    user.email()
+                )
+                viewable_ids = {k.integer_id() for k in participant_keys}
+                unviewable_ids = confidential_results.difference(viewable_ids)
 
-        if unviewable_ids:
-            result_id_set.difference_update(unviewable_ids)
-            logging.info(
-                'filtered out %r unviewable confidential features',
-                len(unviewable_ids),
-            )
+            if unviewable_ids:
+                result_id_set.difference_update(unviewable_ids)
+                logging.info(
+                    'filtered out %r unviewable confidential features',
+                    len(unviewable_ids),
+                )
 
     result_id_list = list(result_id_set)
     total_count = len(result_id_list)
