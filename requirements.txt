@@ -30,7 +30,7 @@ Jinja2==3.1.6
 json5==0.14.0
 MarkupSafe==3.0.3
 Werkzeug==3.1.7
-click==8.3.2
+click==8.3.3
 itsdangerous==2.2.0
 ghapi==1.0.13
 validators==0.35.0
