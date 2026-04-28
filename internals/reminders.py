@@ -45,7 +45,6 @@ def choose_email_recipients(
     feature: FeatureEntry, is_escalated: bool, is_accuracy_email: bool
 ) -> list[str]:  # noqa: E501
     """Choose which recipients will receive the email notification."""
-
     ws_group_emails = []
     if is_escalated:
         if settings.PROD:
