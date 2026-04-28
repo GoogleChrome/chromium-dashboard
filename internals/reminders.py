@@ -46,13 +46,14 @@ def choose_email_recipients(
 ) -> list[str]:  # noqa: E501
     """Choose which recipients will receive the email notification."""
     ws_group_emails = []
-    if settings.PROD:
-        ws_group_emails = [
-            core_enums.WEBSTATUS_EMAIL,
-            core_enums.CBE_ESCLATION_EMAIL,
-        ]
-    else:
-        ws_group_emails = [core_enums.STAGING_EMAIL]
+    if is_escalated:
+        if settings.PROD:
+            ws_group_emails = [
+                core_enums.WEBSTATUS_EMAIL,
+                core_enums.CBE_ESCLATION_EMAIL,
+            ]
+        else:
+            ws_group_emails = [core_enums.STAGING_EMAIL]
 
     # Only feature owners are notified for accuracy or non-escalated notification emails, if not bounced.  # noqa: E501
     if is_accuracy_email or not is_escalated:

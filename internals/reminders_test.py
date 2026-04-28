@@ -178,7 +178,6 @@ class FunctionTest(testing_config.CustomTestCase):
         )
         expected = [
             'feature_owner@example.com',
-            'jrobbins-test@googlegroups.com',
         ]
         self.assertEqual(len(actual), len(expected))
         self.assertEqual(set(actual), set(expected))
@@ -198,7 +197,6 @@ class FunctionTest(testing_config.CustomTestCase):
             'feature_editor@example.com',
             'feature_owner@example.com',
             'mentor@example.com',
-            'jrobbins-test@googlegroups.com',
         ]
         self.assertEqual(len(actual), len(expected))
         self.assertEqual(set(actual), set(expected))
@@ -227,7 +225,6 @@ class FunctionTest(testing_config.CustomTestCase):
         )
         expected = [
             'feature_owner@example.com',
-            'jrobbins-test@googlegroups.com',
         ]
         self.assertEqual(len(actual), len(expected))
         self.assertEqual(set(actual), set(expected))
@@ -249,7 +246,6 @@ class FunctionTest(testing_config.CustomTestCase):
             'feature_editor@example.com',
             'feature_owner@example.com',
             'mentor@example.com',
-            'jrobbins-test@googlegroups.com',
         ]
         self.assertEqual(len(actual), len(expected))
         self.assertEqual(set(actual), set(expected))
@@ -281,7 +277,7 @@ class FunctionTest(testing_config.CustomTestCase):
                 handler.is_accuracy_email,
             )
 
-        self.assertEqual(2, len(actual))
+        self.assertEqual(1, len(actual))
         task = actual[0]
         self.assertEqual('feature_owner@example.com', task['to'])
         self.assertEqual(
@@ -308,7 +304,7 @@ class FunctionTest(testing_config.CustomTestCase):
                 handler.is_accuracy_email,
             )
 
-        self.assertEqual(2, len(actual))
+        self.assertEqual(1, len(actual))
         task = actual[0]
         self.assertEqual('feature_owner@example.com', task['to'])
         self.assertEqual(
@@ -363,7 +359,7 @@ class FunctionTest(testing_config.CustomTestCase):
                 handler.should_escalate_notification,
                 handler.is_accuracy_email,
             )
-        self.assertEqual(2, len(actual))
+        self.assertEqual(1, len(actual))
         task = actual[0]
         self.assertEqual('feature_owner@example.com', task['to'])
         self.assertEqual(
@@ -421,9 +417,8 @@ class FeatureAccuracyHandlerTest(testing_config.CustomTestCase):
             result = self.handler.get_template_data()
 
         expected_message = (
-            '3 email(s) sent or logged.\n'
+            '2 email(s) sent or logged.\n'
             'Recipients:\n'
-            'jrobbins-test@googlegroups.com\n'
             'owner_1@example.com\n'
             'owner_2@example.com'
         )
@@ -443,9 +438,8 @@ class FeatureAccuracyHandlerTest(testing_config.CustomTestCase):
         with test_app.app_context():
             result = self.handler.get_template_data()
         expected_message = (
-            '3 email(s) sent or logged.\n'
+            '2 email(s) sent or logged.\n'
             'Recipients:\n'
-            'jrobbins-test@googlegroups.com\n'
             'owner_1@example.com\n'
             'owner_2@example.com'
         )
@@ -500,9 +494,8 @@ class FeatureAccuracyHandlerTest(testing_config.CustomTestCase):
         with test_app.app_context():
             result = self.handler.get_template_data()
         expected_message = (
-            '3 email(s) sent or logged.\n'
+            '2 email(s) sent or logged.\n'
             'Recipients:\n'
-            'jrobbins-test@googlegroups.com\n'
             'owner_1@example.com\n'
             'owner_2@example.com'
         )
