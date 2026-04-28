@@ -395,7 +395,23 @@ def make_cache_key(
 ) -> str:
     """Return a redis key string to store cached search results."""
     user = users.get_current_user()
-    user_email = user.email() if user else 'anonymous'
+    if not user:
+        access_level = 'no_access'
+    elif permissions.is_google_or_chromium_account(
+        user
+    ) or permissions.can_admin_site(user):
+        access_level = 'global_access'
+    else:
+        # Regular authenticated user.
+        user_email = user.email()
+        participant_keys = feature_helpers.get_by_participant(user_email)
+        if participant_keys:
+            # They might own a confidential feature, so they get their own cache partition.
+            access_level = user_email
+        else:
+            # They don't own any features, so they share the cache with unauthenticated users.
+            access_level = 'no_access'
+
     return '|'.join(
         [
             FeatureEntry.SEARCH_CACHE_KEY,
@@ -407,7 +423,7 @@ def make_cache_key(
             'start=' + str(start),
             'num=' + str(num),
             'name_only=' + str(name_only),
-            'user=' + user_email,
+            'user=' + access_level,
         ]
     )
 
