@@ -30,7 +30,7 @@ import trafilatura
 from flask import render_template
 
 from framework import basehandlers, utils
-from framework.gemini_client import GeminiClient
+from framework.gemini_client import get_client
 from internals import core_enums
 from internals.core_models import FeatureEntry
 
@@ -243,7 +243,7 @@ def unified_prompt_analysis(prompt_text: str) -> str:
     Returns:
       A string containing the generated coverage report.
     """
-    gemini_client = GeminiClient()
+    gemini_client = get_client()
     gap_analysis_response = gemini_client.get_response(
         prompt_text, temperature=0.0
     )  # noqa: E501
@@ -274,7 +274,7 @@ async def prompt_analysis(  # noqa: D417
     Raises:
       PipelineError: If any critical stage of the prompt pipeline fails.
     """  # noqa: E501
-    gemini_client = GeminiClient()
+    gemini_client = get_client()
     prompts = []
 
     test_contents = wpt_contents.test_contents
@@ -473,7 +473,7 @@ async def run_wpt_test_eval_pipeline(
             feature, wpt_contents, include_explainer
         )  # noqa: E501
 
-        gemini_client = GeminiClient()
+        gemini_client = get_client()
         # Don't use the single prompt if it will overload the context.
         if gemini_client.prompt_exceeds_input_token_limit(prompt_text):
             logging.warning(

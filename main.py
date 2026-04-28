@@ -52,7 +52,14 @@ from api import (
     webdx_feature_api,
     wpt_coverage_api,
 )
-from framework import basehandlers, csp, gemini_helpers, secrets, sendemail
+from framework import (
+    basehandlers,
+    csp,
+    gemini_client,
+    gemini_helpers,
+    secrets,
+    sendemail,
+)
 from internals import (
     data_backup,
     detect_intent,
@@ -94,6 +101,9 @@ if not settings.UNIT_TEST_MODE and not settings.DEV_MODE:
 secrets.load_gemini_api_key()
 secrets.load_github_token()
 secrets.load_ot_api_key()
+
+# Initialize API clients.
+gemini_client.initialize_client()
 
 
 # Note: In the URLs below, parameters like <int:feature_id> are

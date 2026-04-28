@@ -201,3 +201,74 @@ class GeminiClient:
 
         logging.info(f'Batch processing complete for {len(prompts)} prompts.')
         return results
+
+
+class DummyGeminiClient:
+    """A dummy client for local development without credentials."""
+
+    GEMINI_MODEL = 'gemini-3.1-pro-preview'
+
+    def __init__(self):
+        """Initializes the dummy Gemini client."""
+        logging.info('DummyGeminiClient initialized.')
+
+    def __del__(self):
+        """No-op cleanup for the dummy client."""
+        pass
+
+    def prompt_exceeds_input_token_limit(self, prompt: str) -> bool:
+        """Always returns False for the dummy client."""
+        logging.info('Dummy Gemini Client checking token limit.')
+        return False
+
+    def get_response(
+        self, prompt: str, temperature: float | None = None
+    ) -> str:
+        """Returns a fake string response."""
+        logging.info(
+            f'Dummy Gemini Client returning fake response for prompt of length {len(prompt)}.'
+        )
+        return 'This is a dummy response from DummyGeminiClient.'
+
+    async def get_response_async(
+        self, prompt: str, temperature: float | None = None
+    ) -> str:
+        """Returns a fake string response asynchronously."""
+        logging.info(
+            f'Dummy Gemini Client returning fake async response for prompt of length {len(prompt)}.'
+        )
+        return 'This is a dummy async response from DummyGeminiClient.'
+
+    async def get_batch_responses_async(
+        self, prompts: list[str], temperature: float | None = None
+    ) -> list[str | BaseException]:
+        """Returns a list of fake string responses asynchronously."""
+        logging.info(
+            f'Dummy Gemini Client returning fake batch responses for {len(prompts)} prompts.'
+        )
+        return [
+            'This is a dummy async batch response from DummyGeminiClient.'
+        ] * len(prompts)
+
+
+_client_instance: GeminiClient | DummyGeminiClient | None = None
+
+
+def initialize_client() -> None:
+    """Initializes the active Gemini client at startup."""
+    global _client_instance
+    if settings.GEMINI_API_KEY is None and settings.DEV_MODE:
+        logging.info('Using DummyGeminiClient for local development.')
+        _client_instance = DummyGeminiClient()
+    else:
+        _client_instance = GeminiClient()
+
+
+def get_client() -> GeminiClient | DummyGeminiClient:
+    """Returns the globally configured Gemini client."""
+    if _client_instance is None:
+        # Fallback if not initialized explicitly
+        initialize_client()
+    if _client_instance is None:  # This should not happen, but for type checker
+        raise RuntimeError('Gemini Client not initialized.')
+    return _client_instance

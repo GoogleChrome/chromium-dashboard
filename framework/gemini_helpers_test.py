@@ -56,9 +56,9 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
             'framework.gemini_helpers.logging'
         ).start()
 
-        # Mock GeminiClient and its instance
+        # Mock get_client and its instance
         self.mock_gemini_client_cls = mock.patch(
-            'framework.gemini_helpers.GeminiClient'
+            'framework.gemini_helpers.get_client'
         ).start()
         self.mock_gemini_client = self.mock_gemini_client_cls.return_value
 
