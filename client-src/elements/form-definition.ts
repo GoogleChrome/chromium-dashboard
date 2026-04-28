@@ -517,7 +517,12 @@ const DEPRECATION_PLAN_FIELDS: MetadataFields = {
   sections: [
     {
       name: 'Write up deprecation plan',
-      fields: ['deprecation_motivation', 'explainer_links', 'spec_link'],
+      fields: [
+        'deprecation_motivation',
+        'explainer_links',
+        'spec_link',
+        'intent_to_deprecate_url',
+      ],
     },
   ],
 };

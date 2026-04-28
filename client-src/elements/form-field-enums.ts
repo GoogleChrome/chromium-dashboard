@@ -570,6 +570,7 @@ export const STAGE_FIELD_NAME_MAPPING: Record<string, string> = {
   intent_to_ship_url: 'intent_thread_url',
   intent_to_experiment_url: 'intent_thread_url',
   intent_to_extend_experiment_url: 'intent_thread_url',
+  intent_to_deprecate_url: 'intent_thread_url',
   ot_creation__intent_to_experiment_url: 'intent_thread_url',
   ot_extension__intent_to_extend_experiment_url: 'intent_thread_url',
   r4dt_url: 'intent_thread_url',

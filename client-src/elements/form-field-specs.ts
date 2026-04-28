@@ -970,6 +970,16 @@ export const ALL_FIELDS: Record<string, Field> = {
     thread, link to it here.`,
   },
 
+  intent_to_deprecate_url: {
+    type: 'input',
+    attrs: URL_FIELD_ATTRS,
+    required: false,
+    label: 'Intent to Deprecate and Remove link',
+    usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
+    help_text: html` After you have started the "Intent to Deprecate and Remove"
+    discussion thread, link to it here.`,
+  },
+
   doc_links: {
     type: 'textarea',
     attrs: MULTI_URL_FIELD_ATTRS,
