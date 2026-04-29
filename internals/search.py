@@ -580,7 +580,6 @@ def process_query(
     logging.info('now waiting on futures')
 
     # 3a. Process user query: negation, AND, and OR.
-    feature_id_future_ops = process_negation_operations(feature_id_future_ops)
     query_clauses = process_and_operations(feature_id_future_ops)
     result_id_set = process_or_operations(query_clauses)
     logging.info('got %r result IDs w/o permissions', len(result_id_set))
@@ -689,11 +688,11 @@ def process_or_operations(or_clauses):
 def process_and_operations(feature_id_future_ops):
     """Process all AND operations in between OR clauses."""
     or_clauses = []
-
     current_result_set = None
+
     for logical_op, future in feature_id_future_ops:
         if logical_op == 'OR' and current_result_set is not None:
-            # Add the proceeding AND result
+            # Add the preceding AND result
             or_clauses.append(current_result_set)
             current_result_set = None
 
@@ -701,6 +700,14 @@ def process_and_operations(feature_id_future_ops):
             feature_ids = future
         else:
             feature_ids = _resolve_promise_to_id_list(future)
+
+        # Handle negation in-place using set difference
+        if logical_op == '-':
+            # If negation is the very first term, we MUST fetch all IDs to subtract from.
+            if current_result_set is None:
+                current_result_set = fetch_all_feature_ids_set()
+            current_result_set.difference_update(feature_ids)
+            continue
 
         if current_result_set is None:
             logging.info('first term yields %d items', len(feature_ids))
@@ -713,26 +720,6 @@ def process_and_operations(feature_id_future_ops):
     if current_result_set is not None:
         or_clauses.append(current_result_set)
     return or_clauses
-
-
-def process_negation_operations(feature_id_future_ops):
-    """Turn all negation operations into AND operations."""
-    new_future_ops = []
-    all_ids_set = None
-    for logical_op, future in feature_id_future_ops:
-        if logical_op != '-':
-            # Skip all non-negation operations.
-            new_future_ops.append((logical_op, future))
-            continue
-
-        if all_ids_set is None:
-            all_ids_set = fetch_all_feature_ids_set()
-
-        feature_ids = _resolve_promise_to_id_list(future)
-        result_set = all_ids_set.difference(feature_ids)
-        new_future_ops.append(('', result_set))
-
-    return new_future_ops
 
 
 def fetch_all_feature_ids_set():
