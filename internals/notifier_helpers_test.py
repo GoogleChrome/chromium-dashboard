@@ -84,6 +84,19 @@ class ActivityTest(testing_config.CustomTestCase):
             self.assertEqual(str(old_val), act_1.amendments[i].old_value)
             self.assertEqual(str(new_val), act_1.amendments[i].new_value)
 
+    def test_activities_created__with_content(self):
+        """Test activities created with content."""
+        changed_fields: CHANGED_FIELDS_LIST_TYPE = [
+            ('name', 'feature a', 'feature Z')
+        ]
+        notifier_helpers.notify_subscribers_and_save_amendments(
+            self.feature_1, changed_fields, content='Test content'
+        )
+        feature_id = self.feature_1.key.integer_id()
+        activities = Activity.get_activities(feature_id)
+        self.assertEqual(len(activities), 1)
+        self.assertEqual(activities[0].content, 'Test content')
+
     def test_activities_created__no_changes(self):
         """No Activity should be logged if submitted with no changes."""
         changed_fields: CHANGED_FIELDS_LIST_TYPE = []
