@@ -688,37 +688,55 @@ def process_or_operations(or_clauses):
 def process_and_operations(feature_id_future_ops):
     """Process all AND operations in between OR clauses."""
     or_clauses = []
-    current_result_set = None
 
+    # Split into groups separated by 'OR'.
+    groups = []
+    current_group = []
     for logical_op, future in feature_id_future_ops:
-        if logical_op == 'OR' and current_result_set is not None:
-            # Add the preceding AND result
-            or_clauses.append(current_result_set)
-            current_result_set = None
+        if logical_op == 'OR':
+            if current_group:
+                groups.append(current_group)
+                current_group = []
+            logical_op = ''  # Treat the first term of the new OR clause as a positive AND term
 
-        if type(future) == set:  # noqa: E721
-            feature_ids = future
-        else:
-            feature_ids = _resolve_promise_to_id_list(future)
+        current_group.append((logical_op, future))
 
-        # Handle negation in-place using set difference
-        if logical_op == '-':
-            # If negation is the very first term, we MUST fetch all IDs to subtract from.
+    if current_group:
+        groups.append(current_group)
+
+    for group in groups:
+        # Sort the group so that positive terms come before negative terms ('-').
+        # Using a boolean as a sort key: False (0) for positive, True (1) for negative.
+        group.sort(key=lambda op_and_future: op_and_future[0] == '-')
+
+        current_result_set = None
+        for logical_op, future in group:
+            if type(future) == set:  # noqa: E721
+                feature_ids = future
+            else:
+                feature_ids = _resolve_promise_to_id_list(future)
+
+            # Handle negation in-place using set difference
+            if logical_op == '-':
+                # If negation is the very first term, we MUST fetch all IDs to subtract from.
+                if current_result_set is None:
+                    current_result_set = fetch_all_feature_ids_set()
+                current_result_set.difference_update(feature_ids)
+                continue
+
             if current_result_set is None:
-                current_result_set = fetch_all_feature_ids_set()
-            current_result_set.difference_update(feature_ids)
-            continue
+                logging.info('first term yields %d items', len(feature_ids))
+                current_result_set = set(feature_ids)
+                continue
 
-        if current_result_set is None:
-            logging.info('first term yields %d items', len(feature_ids))
-            current_result_set = set(feature_ids)
-            continue
+            logging.info(
+                'combining result so far with %d items', len(feature_ids)
+            )
+            current_result_set.intersection_update(feature_ids)
 
-        logging.info('combining result so far with %d items', len(feature_ids))
-        current_result_set.intersection_update(feature_ids)
+        if current_result_set is not None:
+            or_clauses.append(current_result_set)
 
-    if current_result_set is not None:
-        or_clauses.append(current_result_set)
     return or_clauses
 
 
