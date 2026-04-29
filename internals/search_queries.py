@@ -366,6 +366,7 @@ STAGE_QUERIABLE_FIELDS: dict[str, Property] = {
     'experiment_goals': Stage.experiment_goals,
     'experiment_risks': Stage.experiment_risks,
     'finch_url': Stage.finch_url,
+    'intent_to_deprecate_url': Stage.intent_thread_url,
     'intent_to_experiment_url': Stage.intent_thread_url,
     'intent_to_extend_experiment_url': Stage.intent_thread_url,
     'intent_to_implement_url': Stage.intent_thread_url,
@@ -400,6 +401,7 @@ STAGE_TYPES_BY_QUERY_FIELD: dict[str, dict[int, Optional[int]]] = {
     'experiment_goals': core_enums.STAGE_TYPES_ORIGIN_TRIAL,
     'experiment_risks': core_enums.STAGE_TYPES_ORIGIN_TRIAL,
     'finch_url': core_enums.STAGE_TYPES_SHIPPING,
+    'intent_to_deprecate_url': core_enums.STAGE_TYPES_PLAN,
     'intent_to_experiment_url': core_enums.STAGE_TYPES_ORIGIN_TRIAL,
     'intent_to_extend_experiment_url': core_enums.STAGE_TYPES_EXTEND_ORIGIN_TRIAL,  # noqa: E501
     'intent_to_implement_url': core_enums.STAGE_TYPES_PROTOTYPE,
