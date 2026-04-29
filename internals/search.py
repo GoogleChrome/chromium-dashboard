@@ -582,13 +582,22 @@ def process_query(
     # 3a. Process user query: negation, AND, and OR.
     feature_id_future_ops = process_negation_operations(feature_id_future_ops)
     query_clauses = process_and_operations(feature_id_future_ops)
-    result_id_set = process_or_operations(query_clauses)
-    logging.info('got %r result IDs w/o permissions', len(result_id_set))
 
-    # 3b. Process all permission ops, then interesect to apply permisisons.
+    # 3b. Process all permission ops.
     permission_clauses = process_and_operations(permissions_future_ops)
-    permission_ids = process_or_operations(permission_clauses)
-    result_id_set.intersection_update(permission_ids)
+
+    # Apply permissions without unnecessarily fetching all keys
+    if not query_clauses and not permission_clauses:
+        result_id_set = fetch_all_feature_ids_set()
+    elif not query_clauses:
+        result_id_set = process_or_operations(permission_clauses)
+    elif not permission_clauses:
+        result_id_set = process_or_operations(query_clauses)
+    else:
+        result_id_set = process_or_operations(query_clauses)
+        permission_ids = process_or_operations(permission_clauses)
+        result_id_set.intersection_update(permission_ids)
+
     logging.info('got %r result IDs with permissions', len(result_id_set))
 
     # 3c. Filter out confidential features that the user cannot view.
