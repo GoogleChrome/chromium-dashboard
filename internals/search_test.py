@@ -582,7 +582,7 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
             (
                 'FeatureSearch||sort_spec=None|show_unlisted=True|'
                 'show_deleted=False|show_enterprise=False|'
-                'start=0|num=100|name_only=True'
+                'start=0|num=100|name_only=True|user=no_access'
             ),
             search.make_cache_key('', None, True, False, False, 0, 100, True),
         )
@@ -590,7 +590,7 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
             (
                 'FeatureSearch|canvas|sort_spec=created.when|show_unlisted=False|'
                 'show_deleted=True|show_enterprise=True|'
-                'start=1|num=20|name_only=False'
+                'start=1|num=20|name_only=False|user=no_access'
             ),
             search.make_cache_key(
                 'canvas', 'created.when', False, True, True, 1, 20, False
@@ -733,6 +733,37 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
             ),
         )
         self.assertCountEqual([f['name'] for f in actual], ['feature 1'])
+
+    def test_process_query__confidential_filtering(self):
+        """total_count does not leak confidential features."""
+        confidential_feature = FeatureEntry(
+            created=datetime.datetime(2024, 4, 4),
+            name='confidential feature',
+            summary='super secret thing',
+            category=1,
+            confidential=True,
+            owner_emails=['owner@example.com'],
+        )
+        confidential_feature.put()
+
+        # Search by keyword that only matches the confidential feature
+        # Sign in as a regular user with no access to the confidential feature
+        testing_config.sign_in('regular@example.com', 123456)
+        actual, total_count = search.process_query(
+            'name="confidential feature"'
+        )
+
+        self.assertEqual(len(actual), 0)
+        self.assertEqual(total_count, 0)
+
+        # Sign in as the owner
+        testing_config.sign_in('owner@example.com', 123456)
+        actual, total_count = search.process_query(
+            'name="confidential feature"'
+        )
+
+        self.assertEqual(len(actual), 1)
+        self.assertEqual(total_count, 1)
 
     def test_process_query__interval(self):
         """We can run interval queries."""

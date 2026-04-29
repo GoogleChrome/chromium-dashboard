@@ -24,7 +24,7 @@ from typing import Any, Optional, Self, Union
 from google.cloud.ndb import Key
 from google.cloud.ndb.tasklets import Future  # for type checking only
 
-from framework import rediscache, users
+from framework import permissions, rediscache, users
 from internals import (
     approval_defs,
     core_enums,
@@ -340,7 +340,7 @@ def _resolve_promise_to_id_list(
 ) -> list[int]:
     """Given an object that might be a future or an ID list, return IDs."""
     if type(list_or_future) == list:  # noqa: E721
-        logging.info('got list %r', list_or_future)
+        logging.info(f'got list of {len(list_or_future)} items')
         return list_or_future  # Which is actually an ID list.
     else:
         future: Future = list_or_future
@@ -349,10 +349,12 @@ def _resolve_promise_to_id_list(
             key_or_projection_list[0], Key
         ):
             id_list = [k.integer_id() for k in key_or_projection_list]
-            logging.info('got key future that yielded %r', id_list)
+            logging.info(f'got key future that yielded {len(id_list)} items')
         else:
             id_list = [proj.feature_id for proj in key_or_projection_list]
-            logging.info('got projection future that yielded %r', id_list)
+            logging.info(
+                f'got projection future that yielded {len(id_list)} items'
+            )
 
         return id_list
 
@@ -392,6 +394,24 @@ def make_cache_key(
     name_only: bool,
 ) -> str:
     """Return a redis key string to store cached search results."""
+    user = users.get_current_user()
+    if not user:
+        access_level = 'no_access'
+    elif permissions.is_google_or_chromium_account(
+        user
+    ) or permissions.can_admin_site(user):
+        access_level = 'global_access'
+    else:
+        # Regular authenticated user.
+        user_email = user.email()
+        participant_keys = feature_helpers.get_by_participant(user_email)
+        if participant_keys:
+            # They might own a confidential feature, so they get their own cache partition.
+            access_level = user_email
+        else:
+            # They don't own any features, so they share the cache with unauthenticated users.
+            access_level = 'no_access'
+
     return '|'.join(
         [
             FeatureEntry.SEARCH_CACHE_KEY,
@@ -403,6 +423,7 @@ def make_cache_key(
             'start=' + str(start),
             'num=' + str(num),
             'name_only=' + str(name_only),
+            'user=' + access_level,
         ]
     )
 
@@ -538,7 +559,20 @@ def process_query(
         permission_terms, context
     )
 
-    # 2c. Create a parallel query for total sort order.
+    # 2c. Create a parallel query for confidential features.
+    user = users.get_current_user()
+    can_view_all_confidential = user and (
+        permissions.is_google_or_chromium_account(user)
+        or permissions.can_admin_site(user)
+    )
+
+    if not can_view_all_confidential:
+        logging.info('creating parallel queries for confidential features')
+        confidential_future_ops = create_future_operations_from_queries(
+            [('', 'confidential', '=', 'true', None)], context
+        )
+
+    # 2d. Create a parallel query for total sort order.
     logging.info('creating total sort order for %r', sort_spec)
     total_order_promise = search_queries.total_order_query_async(sort_spec)
 
@@ -556,6 +590,29 @@ def process_query(
     permission_ids = process_or_operations(permission_clauses)
     result_id_set.intersection_update(permission_ids)
     logging.info('got %r result IDs with permissions', len(result_id_set))
+
+    # 3c. Filter out confidential features that the user cannot view.
+    if not can_view_all_confidential:
+        confidential_clauses = process_and_operations(confidential_future_ops)
+        confidential_ids = process_or_operations(confidential_clauses)
+        confidential_results = result_id_set.intersection(confidential_ids)
+
+        if confidential_results:
+            if not user:
+                unviewable_ids = confidential_results
+            else:
+                participant_keys = feature_helpers.get_by_participant(
+                    user.email()
+                )
+                viewable_ids = {k.integer_id() for k in participant_keys}
+                unviewable_ids = confidential_results.difference(viewable_ids)
+
+            if unviewable_ids:
+                result_id_set.difference_update(unviewable_ids)
+                logging.info(
+                    'filtered out %r unviewable confidential features',
+                    len(unviewable_ids),
+                )
 
     result_id_list = list(result_id_set)
     total_count = len(result_id_list)
@@ -646,11 +703,11 @@ def process_and_operations(feature_id_future_ops):
             feature_ids = _resolve_promise_to_id_list(future)
 
         if current_result_set is None:
-            logging.info('first term yields %r', feature_ids)
+            logging.info('first term yields %d items', len(feature_ids))
             current_result_set = set(feature_ids)
             continue
 
-        logging.info('combining result so far with %r', feature_ids)
+        logging.info('combining result so far with %d items', len(feature_ids))
         current_result_set.intersection_update(feature_ids)
 
     if current_result_set is not None:
