@@ -897,6 +897,26 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
         self.assertEqual(1, len(actual))
         self.assertEqual(actual[0]['name'], 'feature 1')
 
+    @mock.patch('internals.search.fetch_all_feature_ids_set')
+    def test_process_query__empty_query_optimization(self, mock_fetch_all):
+        """We do not fetch all feature IDs when the user query is empty."""
+        actual, tc = search.process_query('')
+        mock_fetch_all.assert_not_called()
+
+        # Conversely, if a query consists only of a negation term, it must fetch
+        # all IDs initially so it has a complete set to subtract the matches from.
+        mock_fetch_all.reset_mock()
+        mock_fetch_all.return_value = set(
+            [
+                self.featureentry_1.key.integer_id(),
+                self.featureentry_2.key.integer_id(),
+                self.featureentry_3.key.integer_id(),
+                self.featureentry_4.key.integer_id(),
+            ]
+        )
+        actual, tc = search.process_query('-owner:me')
+        mock_fetch_all.assert_called_once()
+
     @mock.patch('logging.warning')
     def test_process_query__bad(self, mock_warn):
         """Query terms that are not valid, give warnings."""
