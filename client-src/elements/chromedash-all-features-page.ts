@@ -131,18 +131,25 @@ export class ChromedashAllFeaturesPage extends LitElement {
     this.doneFeatureIds = newDoneFeatureIds;
     window.csClient
       .setSettings(undefined, Array.from(this.doneFeatureIds.values()))
+      .then(() => {
+        if (!this.showDone) {
+          this.refetch();
+        }
+      })
       .catch(() => {
         showToastMessage('Unable to save done state. Please try again.');
       });
   }
 
-  handleShowDoneToggle(e) {
+  async handleShowDoneToggle(e) {
     this.showDone = Boolean(e.detail?.showDone ?? e.target?.checked);
     if (this.showDone) {
       updateURLParams('showDone', 'true');
     } else {
       clearURLParams('showDone');
     }
+    await this.updateComplete;
+    this.refetch();
   }
 
   fetchData() {

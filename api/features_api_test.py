@@ -364,6 +364,41 @@ class FeaturesAPITest(testing_config.CustomTestCase):
         self.assertEqual(0, len(actual['features']))
         self.assertEqual(2, actual['total_count'])
 
+    @mock.patch('api.features_api.search.process_query_using_cache')
+    def test_get__all_listed__exclude_done_server_side(self, mock_search):
+        """Done IDs are loaded on server and passed to search."""
+        mock_search.return_value = ([], 0)
+
+        testing_config.sign_in('one@example.com', 123567890)
+        user_pref = user_models.UserPref.get_signed_in_user_pref()
+        user_pref.editable_done_feature_ids = [111, 222]
+        user_pref.put()
+
+        url = self.request_path + '?include_done=false'
+        with test_app.test_request_context(url):
+            self.handler.do_get()
+
+        self.assertEqual(1, mock_search.call_count)
+        _, kwargs = mock_search.call_args
+        self.assertEqual({111, 222}, kwargs['excluded_feature_ids'])
+
+    @mock.patch('api.features_api.search.process_query_using_cache')
+    def test_get__all_listed__include_done_default(self, mock_search):
+        """Done filtering is off unless include_done=false is requested."""
+        mock_search.return_value = ([], 0)
+
+        testing_config.sign_in('one@example.com', 123567890)
+        user_pref = user_models.UserPref.get_signed_in_user_pref()
+        user_pref.editable_done_feature_ids = [111, 222]
+        user_pref.put()
+
+        with test_app.test_request_context(self.request_path):
+            self.handler.do_get()
+
+        self.assertEqual(1, mock_search.call_count)
+        _, kwargs = mock_search.call_args
+        self.assertEqual(set(), kwargs['excluded_feature_ids'])
+
     def test_get__all_listed__bad_pagination(self):
         """Reject requests that have bad pagination params."""
         # Malformed start parameter

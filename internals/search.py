@@ -434,10 +434,16 @@ def make_cache_key(
     )
 
 
-def is_cacheable(user_query: str, name_only: bool):
+def is_cacheable(
+    user_query: str, name_only: bool, excluded_feature_ids: set[int]
+):
     """Return True if this user query can be stored and viewed by other users."""
     if not name_only:
         logging.info('Search query not cached: could be large')
+        return False
+
+    if excluded_feature_ids:
+        logging.info('Search query not cached: personalized done-filtering')
         return False
 
     if ':me' in user_query:
@@ -466,9 +472,11 @@ def process_query_using_cache(
     num=DEFAULT_RESULTS_PER_PAGE,
     context: Optional[QueryContext] = None,
     name_only=False,
+    excluded_feature_ids: Optional[set[int]] = None,
 ) -> tuple[list[dict[str, Any]], int]:
     """Process a user query, utilizing Redis cache if possible."""
     num = min(num, MAX_RESULTS_PER_PAGE)
+    excluded_feature_ids = excluded_feature_ids or set()
     cache_key = make_cache_key(
         user_query,
         sort_spec,
@@ -479,7 +487,7 @@ def process_query_using_cache(
         num,
         name_only,
     )
-    if is_cacheable(user_query, name_only):
+    if is_cacheable(user_query, name_only, excluded_feature_ids):
         logging.info('Checking cache at %r', cache_key)
         cached_result = rediscache.get(cache_key)
         if cached_result is not None:
@@ -497,9 +505,10 @@ def process_query_using_cache(
         num=num,
         context=context,
         name_only=name_only,
+        excluded_feature_ids=excluded_feature_ids,
     )
 
-    if is_cacheable(user_query, name_only):
+    if is_cacheable(user_query, name_only, excluded_feature_ids):
         logging.info('Storing search result in cache: %r', cache_key)
         rediscache.set(cache_key, computed_result, SEARCH_CACHE_TTL)
 
@@ -516,6 +525,7 @@ def process_query(
     num=DEFAULT_RESULTS_PER_PAGE,
     context: Optional[QueryContext] = None,
     name_only=False,
+    excluded_feature_ids: Optional[set[int]] = None,
 ) -> tuple[list[dict[str, Any]], int]:
     """Parse the user's query, run it, and return a list of features."""
     if context is None:
@@ -627,6 +637,14 @@ def process_query(
                     'filtered out %r unviewable confidential features',
                     len(unviewable_ids),
                 )
+
+    if excluded_feature_ids:
+        before_count = len(result_id_set)
+        result_id_set.difference_update(excluded_feature_ids)
+        logging.info(
+            'filtered out %r done features for current user',
+            before_count - len(result_id_set),
+        )
 
     total_count = len(result_id_set)
 

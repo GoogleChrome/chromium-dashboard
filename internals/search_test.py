@@ -599,19 +599,20 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
 
     def test_is_cacheable(self):
         """We can make a search cache key."""
-        self.assertTrue(search.is_cacheable('', True))
-        self.assertTrue(search.is_cacheable('canvas', True))
-        self.assertTrue(search.is_cacheable('feature_type=4', True))
+        self.assertTrue(search.is_cacheable('', True, set()))
+        self.assertTrue(search.is_cacheable('canvas', True, set()))
+        self.assertTrue(search.is_cacheable('feature_type=4', True, set()))
 
-        self.assertFalse(search.is_cacheable('starred-by:me', True))
-        self.assertFalse(search.is_cacheable('owner:me', True))
-        self.assertFalse(search.is_cacheable('pending-approval-by:me', True))
-        self.assertFalse(search.is_cacheable('pending-review-by:me', True))
-        self.assertFalse(search.is_cacheable('awaiting-review-by:me', True))
-        self.assertFalse(search.is_cacheable('is:recently-reviewed', True))
-        self.assertFalse(search.is_cacheable('created.when<now', True))
-        self.assertFalse(search.is_cacheable('shipping>current_stable', True))
-        self.assertFalse(search.is_cacheable('canvas', False))
+        self.assertFalse(search.is_cacheable('starred-by:me', True, set()))
+        self.assertFalse(search.is_cacheable('owner:me', True, set()))
+        self.assertFalse(search.is_cacheable('pending-approval-by:me', True, set()))
+        self.assertFalse(search.is_cacheable('pending-review-by:me', True, set()))
+        self.assertFalse(search.is_cacheable('awaiting-review-by:me', True, set()))
+        self.assertFalse(search.is_cacheable('is:recently-reviewed', True, set()))
+        self.assertFalse(search.is_cacheable('created.when<now', True, set()))
+        self.assertFalse(search.is_cacheable('shipping>current_stable', True, set()))
+        self.assertFalse(search.is_cacheable('canvas', False, set()))
+        self.assertFalse(search.is_cacheable('canvas', True, {123}))
 
     @mock.patch('internals.search.process_pending_approval_me_query')
     @mock.patch('internals.search.process_pending_review_me_query')

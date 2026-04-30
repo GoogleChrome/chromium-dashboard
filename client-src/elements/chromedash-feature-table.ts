@@ -89,7 +89,8 @@ export class ChromedashFeatureTable extends LitElement {
         this.sortSpec,
         this.start,
         this.num,
-        this.nameOnly
+        this.nameOnly,
+        !this.showDoneControls || this.showDone
       )
       .then(resp => {
         this.features = resp.features;
@@ -187,7 +188,7 @@ export class ChromedashFeatureTable extends LitElement {
   }
 
   renderMessages() {
-    if (this.loading) {
+    if (this.loading || this.reloading) {
       return html`
         <tr class="skel">
           <td>
@@ -212,9 +213,13 @@ export class ChromedashFeatureTable extends LitElement {
       `;
     }
     if (this.totalCount == 0) {
+      const noResultsMessage =
+        this.showDoneControls && !this.showDone
+          ? 'No results. Try enabling "Include done".'
+          : this.noResultsMessage;
       return html`
         <tr>
-          <td class="message">${this.noResultsMessage}</td>
+          <td class="message">${noResultsMessage}</td>
         </tr>
       `;
     }
@@ -251,7 +256,7 @@ export class ChromedashFeatureTable extends LitElement {
 
   renderLoadingStatusAndCount() {
     // Indexes of first and last items shown in one-based counting.
-    const firstShown = this.start + 1;
+    const firstShown = this.totalCount === 0 ? 0 : this.start + 1;
     const lastShown = this.start + this.features.length;
 
     const prevUrl = formatUrlForRelativeOffset(
@@ -283,20 +288,23 @@ export class ChromedashFeatureTable extends LitElement {
       }
     }
 
-    if (this.features.length === 0) {
+    if (this.features.length === 0 && !this.showDoneControls) {
       return nothing;
     }
 
     return html`
       <div class="status-and-count hbox">
-        <span>${this.reloading ? 'Reloading...' : nothing}</span>
+        <span>${nothing}</span>
         ${this.showDoneControls
           ? html`<sl-checkbox
               size="small"
               ?checked=${this.showDone}
               @sl-change=${e => {
+                const checkbox = e.currentTarget as HTMLInputElement & {
+                  checked?: boolean;
+                };
                 this._fireEvent('show-done-toggled', {
-                  showDone: Boolean(e.target?.checked),
+                  showDone: Boolean(checkbox?.checked),
                 });
               }}
               >Include done</sl-checkbox
@@ -372,36 +380,14 @@ export class ChromedashFeatureTable extends LitElement {
     `;
   }
 
-  getVisibleFeatures() {
-    if (!this.showDoneControls || this.showDone) {
-      return this.features;
-    }
-    return this.features.filter(feature => !this.doneFeatureIds.has(feature.id));
-  }
-
   render() {
-    const visibleFeatures = this.getVisibleFeatures();
-    const doneFilteredOutAll =
-      !this.loading &&
-      this.showDoneControls &&
-      !this.showDone &&
-      this.features.length > 0 &&
-      visibleFeatures.length === 0;
-
     return html`
       ${this.renderSearch()} ${this.renderLoadingStatusAndCount()}
       <table>
-        ${doneFilteredOutAll
-          ? html`<tr>
-              <td class="message">
-                All features on this page are marked done. Enable "Include
-                done" to see them.
-              </td>
-            </tr>`
-          : this.renderMessages() ||
-            visibleFeatures.map(feature => this.renderFeature(feature))}
+        ${this.renderMessages() ||
+        this.features.map(feature => this.renderFeature(feature))}
       </table>
-      ${this.renderPagination(visibleFeatures)}
+      ${this.renderPagination(this.features)}
     `;
   }
 }

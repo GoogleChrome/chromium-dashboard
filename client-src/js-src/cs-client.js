@@ -634,7 +634,8 @@ export class ChromeStatusClient {
     sortSpec,
     start,
     num,
-    nameOnly
+    nameOnly,
+    includeDone = true
   ) {
     const query = new URLSearchParams();
     query.set('q', userQuery);
@@ -652,6 +653,9 @@ export class ChromeStatusClient {
     }
     if (nameOnly) {
       query.set('name_only', nameOnly);
+    }
+    if (!includeDone) {
+      query.set('include_done', 'false');
     }
     return this.doGet(`/features?${query.toString()}`);
   }

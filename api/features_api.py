@@ -36,6 +36,7 @@ from internals import (
     search,
     search_fulltext,
     stage_helpers,
+    user_models,
 )
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
 from internals.data_types import CHANGED_FIELDS_LIST_TYPE, VerboseFeatureDict
@@ -117,6 +118,14 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
         num = self.get_int_arg('num', search.DEFAULT_RESULTS_PER_PAGE)
         start = self.get_int_arg('start', 0)
         name_only = self.get_bool_arg('name_only', False)
+        include_done = self.get_bool_arg('include_done', True)
+
+        excluded_feature_ids = set()
+        if not include_done:
+            user_pref = user_models.UserPref.get_signed_in_user_pref()
+            excluded_feature_ids = set(
+                user_pref.editable_done_feature_ids or []
+            ) if user_pref else set()
 
         show_enterprise = 'feature_type' in user_query or self.get_bool_arg(
             'showEnterprise'
@@ -130,6 +139,7 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
                 start=start,
                 num=num,
                 name_only=name_only,
+                excluded_feature_ids=excluded_feature_ids,
             )
         except ValueError as err:
             self.abort(400, msg=str(err))
