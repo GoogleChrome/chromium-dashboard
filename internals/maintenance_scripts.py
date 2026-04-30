@@ -22,6 +22,7 @@ from datetime import date, datetime, timedelta
 from io import StringIO
 from typing import Any
 
+import flask
 import json5
 import requests
 from google.cloud import ndb, storage  # type: ignore
@@ -35,7 +36,12 @@ from webstatus_openapi import (
 
 import settings
 from api import converters
-from framework import cloud_tasks_helpers, origin_trials_client, utils
+from framework import (
+    cloud_tasks_helpers,
+    origin_trials_client,
+    rediscache,
+    utils,
+)
 from framework.basehandlers import FlaskHandler
 from internals import approval_defs, core_enums, feature_helpers, stage_helpers
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
@@ -1736,3 +1742,60 @@ class DeleteWPTCoverageReport(FlaskHandler):
             f'Finished. Deleted a total of {count} old WPT coverage reports.'
         )
         return f'{count} WPT coverage reports deleted.'
+
+
+class RebuildRoadmapCache(FlaskHandler):
+    """Handler to rebuild the massive global JSON cache for the roadmap."""
+
+    def process_post_data(self, **kwargs) -> dict[str, str]:
+        """Trigger the roadmap cache rebuild."""
+        self.require_task_header()
+
+        post_data = flask.request.get_json(force=True, silent=True) or {}
+        lock_val = post_data.get('lock_val')
+
+        if rediscache.redis_client:
+            # 1. Clear the pending flag BEFORE starting the rebuild.
+            rediscache.redis_client.set(
+                rediscache.add_gae_prefix('RoadmapRebuildPending'),
+                core_enums.RoadmapCachePendingState.NOT_PENDING.value,
+            )
+
+        try:
+            # 2. Do the expensive work
+            feature_helpers.rebuild_roadmap_cache()
+        finally:
+            if rediscache.redis_client:
+                # 3. Release the debounce lock so new tasks can be enqueued
+                # Only delete the lock if it matches our lock_val to prevent wiping a new lock
+                lock_key_full = rediscache.add_gae_prefix('RoadmapRebuildLock')
+                if lock_val:
+                    lua_script = """
+                    if redis.call("get", KEYS[1]) == ARGV[1] then
+                        return redis.call("del", KEYS[1])
+                    else
+                        return 0
+                    end
+                    """
+                    rediscache.redis_client.eval(
+                        lua_script, 1, lock_key_full, lock_val
+                    )
+                else:
+                    # Fallback for old tasks that didn't provide a lock_val
+                    rediscache.redis_client.delete(lock_key_full)
+
+                # 4. Check if any updates came in while we were rebuilding.
+                pending = rediscache.redis_client.get(
+                    rediscache.add_gae_prefix('RoadmapRebuildPending')
+                )
+                if (
+                    pending
+                    and pending.decode('utf-8')
+                    == core_enums.RoadmapCachePendingState.PENDING.value
+                ):
+                    logging.info(
+                        'New updates detected during rebuild. Re-queueing.'
+                    )
+                    feature_helpers.enqueue_roadmap_rebuild_task()
+
+        return {'message': 'Done'}

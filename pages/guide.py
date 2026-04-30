@@ -25,6 +25,7 @@ import settings
 from framework import basehandlers, permissions, rediscache
 from internals import (
     core_enums,
+    feature_helpers,
     notifier_helpers,
     processes,
     search_fulltext,
@@ -128,6 +129,8 @@ class FeatureCreateHandler(basehandlers.FlaskHandler):
         notifier_helpers.notify_subscribers_and_save_amendments(
             feature_entry, [], is_update=False
         )
+
+        feature_helpers.trigger_roadmap_rebuild_if_needed('FeatureEntry')
 
         # Remove all feature-related cache.
         rediscache.delete_keys_with_prefix(FeatureEntry.DEFAULT_CACHE_KEY)
@@ -233,6 +236,7 @@ class EnterpriseFeatureCreateHandler(FeatureCreateHandler):
 
         # Remove all feature-related cache.
         rediscache.delete_keys_with_prefix(FeatureEntry.DEFAULT_CACHE_KEY)
+        feature_helpers.trigger_roadmap_rebuild_if_needed('FeatureEntry')
 
         redirect_url = '/guide/editall/' + str(key.integer_id()) + '#rollout1'
         return self.redirect(redirect_url)

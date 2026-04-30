@@ -929,6 +929,13 @@ PROPERTY_NAMES_TO_ENUM_DICTS = {
 }
 
 
+class RoadmapCachePendingState(str, Enum):
+    """Enum for roadmap cache pending state."""
+
+    PENDING = '1'
+    NOT_PENDING = '0'
+
+
 # Valid values for FeatureEntry.ai_test_eval_run_status
 class AITestEvaluationStatus(int, Enum):
     """Enum for AI test evaluation status."""

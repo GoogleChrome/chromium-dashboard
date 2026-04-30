@@ -21,6 +21,7 @@ from datetime import date, datetime, timedelta
 from io import StringIO
 from unittest import mock
 
+import flask
 import requests
 from google.cloud import ndb
 from webstatus_openapi import ApiException, FeaturePage
@@ -2877,3 +2878,25 @@ class DeleteWPTCoverageReportTest(testing_config.CustomTestCase):
         # Verify that activities were created for the deleted reports.
         activities = Activity.query().fetch()
         self.assertEqual(len(activities), 2)
+
+
+class RebuildRoadmapCacheTest(testing_config.CustomTestCase):
+    """Tests for the RebuildRoadmapCache handler."""
+
+    def setUp(self):
+        """Set up the test environment."""
+        self.handler = maintenance_scripts.RebuildRoadmapCache()
+
+    @mock.patch('framework.basehandlers.FlaskHandler.require_task_header')
+    @mock.patch('internals.feature_helpers.rebuild_roadmap_cache')
+    @mock.patch('framework.rediscache.redis_client.eval')
+    def test_process_post_data(self, mock_eval, mock_rebuild, mock_require):
+        """Handler should trigger cache rebuild."""
+        test_app = flask.Flask(__name__)
+        with test_app.test_request_context(
+            '/tasks/rebuild-roadmap-cache', json={'lock_val': 'test_val'}
+        ):
+            result = self.handler.process_post_data()
+        mock_require.assert_called_once()
+        mock_rebuild.assert_called_once()
+        self.assertEqual({'message': 'Done'}, result)

@@ -17,7 +17,12 @@
 
 from api import converters
 from framework import basehandlers, permissions, rediscache
-from internals import core_enums, notifier_helpers, stage_helpers
+from internals import (
+    core_enums,
+    feature_helpers,
+    notifier_helpers,
+    stage_helpers,
+)
 from internals.core_models import FeatureEntry, Stage
 from internals.data_types import CHANGED_FIELDS_LIST_TYPE
 from internals.review_models import Gate
@@ -113,6 +118,7 @@ class StagesAPI(basehandlers.EntitiesAPIHandler):
             FeatureEntry.DEFAULT_CACHE_KEY, feature_id
         )
         rediscache.delete(lookup_key)
+        feature_helpers.trigger_roadmap_rebuild_if_needed('Stage')
 
         # Return  the newly created stage ID.
         return {'message': 'Stage created.', 'stage_id': stage.key.integer_id()}
@@ -150,8 +156,20 @@ class StagesAPI(basehandlers.EntitiesAPIHandler):
         notifier_helpers.notify_subscribers_and_save_amendments(
             feature, changed_fields, notify=True, content=content
         )
-        # Remove all feature-related cache.
-        rediscache.delete_keys_with_prefix(FeatureEntry.DEFAULT_CACHE_KEY)
+
+        feature_helpers.trigger_roadmap_rebuild_if_needed('Stage')
+
+        # Remove individual feature cache.
+        lookup_key = FeatureEntry.feature_cache_key(
+            FeatureEntry.DEFAULT_CACHE_KEY, stage.feature_id
+        )
+        rediscache.delete(lookup_key)
+        rediscache.delete_keys_with_prefix(
+            f'{FeatureEntry.DEFAULT_CACHE_KEY}|participant'
+        )
+        rediscache.delete_keys_with_prefix(
+            f'{FeatureEntry.DEFAULT_CACHE_KEY}|impl_order'
+        )
         rediscache.delete_keys_with_prefix(FeatureEntry.SEARCH_CACHE_KEY)
 
         return {'message': 'Stage values updated.'}
@@ -171,8 +189,19 @@ class StagesAPI(basehandlers.EntitiesAPIHandler):
         stage.archived = True
         stage.put()
 
-        # Remove all feature-related cache.
-        rediscache.delete_keys_with_prefix(FeatureEntry.DEFAULT_CACHE_KEY)
+        feature_helpers.trigger_roadmap_rebuild_if_needed('Stage')
+
+        # Remove individual feature cache.
+        lookup_key = FeatureEntry.feature_cache_key(
+            FeatureEntry.DEFAULT_CACHE_KEY, stage.feature_id
+        )
+        rediscache.delete(lookup_key)
+        rediscache.delete_keys_with_prefix(
+            f'{FeatureEntry.DEFAULT_CACHE_KEY}|participant'
+        )
+        rediscache.delete_keys_with_prefix(
+            f'{FeatureEntry.DEFAULT_CACHE_KEY}|impl_order'
+        )
         rediscache.delete_keys_with_prefix(FeatureEntry.SEARCH_CACHE_KEY)
 
         return {'message': 'Stage archived.'}

@@ -409,7 +409,7 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
         self.assertEqual(6, len(actual))
 
         cache_key = '%s|%s|%s' % (
-            FeatureEntry.DEFAULT_CACHE_KEY,
+            FeatureEntry.ROADMAP_CACHE_KEY,
             'milestone',
             1,
         )
@@ -532,7 +532,7 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
     def test_get_in_milestone__cached(self):
         """If there is something in the cache, we use it."""
         cache_key = '%s|%s|%s' % (
-            FeatureEntry.DEFAULT_CACHE_KEY,
+            FeatureEntry.ROADMAP_CACHE_KEY,
             'milestone',
             1,
         )
@@ -907,6 +907,7 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
 
     def test_get_features_by_impl_status__normal(self):
         """We can get JSON dicts for /features_v2.json."""
+        feature_helpers.rebuild_roadmap_cache()
         features = feature_helpers.get_features_by_impl_status()
         self.assertEqual(4, len(features))
         self.assertEqual(
@@ -921,6 +922,7 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
         self.feature_3.deleted = True
         self.feature_3.put()
 
+        feature_helpers.rebuild_roadmap_cache()
         features = feature_helpers.get_features_by_impl_status()
 
         self.assertEqual(3, len(features))
@@ -1813,3 +1815,17 @@ class ShippingFeatureHelpersTest(testing_config.CustomTestCase):
         self.assertEqual(
             incomplete_map['F9 Disabled'], ['content_feature_not_enabled']
         )  # noqa: E501
+
+
+class RoadmapCacheTriggersTest(testing_config.CustomTestCase):
+    """Tests for roadmap cache triggers."""
+
+    @mock.patch('internals.feature_helpers.enqueue_roadmap_rebuild_task')
+    def test_trigger_roadmap_rebuild_if_needed(self, mock_enqueue):
+        """Test trigger_roadmap_rebuild_if_needed."""
+        feature_helpers.trigger_roadmap_rebuild_if_needed('FeatureEntry')
+        mock_enqueue.assert_called_once()
+        mock_enqueue.reset_mock()
+
+        feature_helpers.trigger_roadmap_rebuild_if_needed('Stage')
+        mock_enqueue.assert_called_once()

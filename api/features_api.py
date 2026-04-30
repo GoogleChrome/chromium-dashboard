@@ -237,6 +237,8 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
         search_fulltext.index_feature(feature)
         self._write_stages_and_gates_for_feature(id, feature.feature_type)
 
+        feature_helpers.trigger_roadmap_rebuild_if_needed('FeatureEntry')
+
         # Remove all feature-related cache.
         rediscache.delete_keys_with_prefix(FeatureEntry.DEFAULT_CACHE_KEY)
         rediscache.delete_keys_with_prefix(FeatureEntry.SEARCH_CACHE_KEY)
@@ -572,8 +574,20 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
         notifier_helpers.notify_subscribers_and_save_amendments(
             feature, changed_fields, notify=True
         )
-        # Remove all feature-related cache.
-        rediscache.delete_keys_with_prefix(FeatureEntry.DEFAULT_CACHE_KEY)
+
+        feature_helpers.trigger_roadmap_rebuild_if_needed('FeatureEntry')
+
+        # Remove individual feature cache.
+        lookup_key = FeatureEntry.feature_cache_key(
+            FeatureEntry.DEFAULT_CACHE_KEY, feature_id
+        )
+        rediscache.delete(lookup_key)
+        rediscache.delete_keys_with_prefix(
+            f'{FeatureEntry.DEFAULT_CACHE_KEY}|participant'
+        )
+        rediscache.delete_keys_with_prefix(
+            f'{FeatureEntry.DEFAULT_CACHE_KEY}|impl_order'
+        )
         rediscache.delete_keys_with_prefix(FeatureEntry.SEARCH_CACHE_KEY)
         # Update full-text index.
         if feature:
@@ -615,6 +629,9 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
         )
         activity.put()
 
+        feature_helpers.trigger_roadmap_rebuild_if_needed('FeatureEntry')
+
+        # Remove all feature-related cache.
         rediscache.delete_keys_with_prefix(FeatureEntry.DEFAULT_CACHE_KEY)
         rediscache.delete_keys_with_prefix(FeatureEntry.SEARCH_CACHE_KEY)
 

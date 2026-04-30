@@ -17,6 +17,7 @@
 
 import logging
 import re
+import uuid
 from asyncio import Future
 from datetime import datetime, timedelta
 from enum import Enum
@@ -26,7 +27,7 @@ from google.cloud import ndb  # type: ignore
 
 import settings
 from api import converters
-from framework import permissions, rediscache, users
+from framework import cloud_tasks_helpers, permissions, rediscache, users
 from framework.utils import get_current_milestone_info
 from internals import core_enums
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
@@ -300,7 +301,7 @@ def get_features_in_release_notes(milestone: int):
 
 
 def get_in_milestone(
-    milestone: int, show_unlisted: bool = False
+    milestone: int, show_unlisted: bool = False, update_cache: bool = False
 ) -> dict[str, list[dict[str, Any]]]:
     """Return {reason: [feature_dict]} with all the reasons a feature can
     be part of a milestone.
@@ -312,12 +313,12 @@ def get_in_milestone(
     """  # noqa: D205
     features_by_type = {}
     cache_key = '%s|%s|%s' % (
-        FeatureEntry.DEFAULT_CACHE_KEY,
+        FeatureEntry.ROADMAP_CACHE_KEY,
         'milestone',
         milestone,
     )
     cached_features_by_type = rediscache.get(cache_key)
-    if cached_features_by_type:
+    if cached_features_by_type and not update_cache:
         features_by_type = cached_features_by_type
     else:
         logging.info(
@@ -771,9 +772,50 @@ def get_by_ids(
     return filter_confidential_formatted(result_list)
 
 
+def rebuild_roadmap_cache() -> None:
+    """Rebuilds the massive global JSON cache for the roadmap in the background."""
+    logging.info('recomputing roadmap cache')
+
+    current_milestone_info = get_current_milestone_info('current')
+    if not current_milestone_info or 'mstone' not in current_milestone_info:
+        logging.error('Could not get current milestone info')
+        return
+
+    current_mstone = int(current_milestone_info['mstone'])
+
+    # The roadmap page fetches the previous milestone (stable - 1),
+    # the active milestones (stable, beta, dev), and a few future milestones (dev + 1 to dev + 3).
+    # This translates roughly to current_mstone - 1 through current_mstone + 7.
+    active_milestones = list(range(current_mstone - 1, current_mstone + 8))
+
+    for milestone in active_milestones:
+        get_in_milestone(milestone, update_cache=True)
+
+    # Clear any cached milestones outside the active window to prevent ghosting.
+    if rediscache.redis_client:
+        pattern = rediscache.add_gae_prefix(
+            f'{FeatureEntry.ROADMAP_CACHE_KEY}|*'
+        )
+        pos, keys = rediscache.redis_client.scan(cursor=0, match=pattern)
+        all_keys = set(keys)
+        while pos != 0:
+            pos, keys = rediscache.redis_client.scan(cursor=pos, match=pattern)
+            all_keys.update(keys)
+
+        active_keys = {
+            rediscache.add_gae_prefix(
+                f'{FeatureEntry.ROADMAP_CACHE_KEY}|milestone|{m}'
+            ).encode('utf-8')
+            for m in active_milestones
+        }
+
+        for key in all_keys - active_keys:
+            rediscache.redis_client.delete(key)
+
+
 def get_features_by_impl_status(
     limit: int | None = None,
-    update_cache: bool = False,  # noqa: E501
+    update_cache: bool = False,
     show_unlisted: bool = False,
 ) -> list[dict]:
     """Return a list of JSON dicts for features, ordered by chrome_impl_status.
@@ -1095,3 +1137,41 @@ def aggregate_shipping_features(
             complete_features.append(feature_info)
 
     return complete_features, incomplete_features
+
+
+def trigger_roadmap_rebuild_if_needed(entity_type: str | None = None) -> None:
+    """Enqueues the roadmap rebuild task unconditionally."""
+    logging.info(
+        f'Roadmap affecting change detected for {entity_type}. Enqueueing rebuild.'
+    )
+    enqueue_roadmap_rebuild_task()
+
+
+def enqueue_roadmap_rebuild_task() -> None:
+    """Enqueues the rebuild task, ensuring it is debounced to avoid task flooding."""
+    lock_key = 'RoadmapRebuildLock'
+    pending_key = 'RoadmapRebuildPending'
+    lock_val = str(uuid.uuid4())
+
+    if rediscache.redis_client:
+        # 1. ALWAYS register the intent to rebuild, regardless of locks.
+        rediscache.redis_client.set(
+            rediscache.add_gae_prefix(pending_key),
+            core_enums.RoadmapCachePendingState.PENDING.value,
+        )
+
+        # 2. Try to acquire the debounce lock.
+        # Check if a rebuild is already enqueued recently.
+        lock_acquired = rediscache.redis_client.set(
+            rediscache.add_gae_prefix(lock_key),
+            lock_val,
+            nx=True,
+            ex=600,  # Lock for 600 seconds (10 minutes)
+        )
+        if not lock_acquired:
+            logging.info('Roadmap cache rebuild already in progress. Skipping.')
+            return
+
+    cloud_tasks_helpers.enqueue_task(
+        '/tasks/rebuild-roadmap-cache', {'lock_val': lock_val}
+    )

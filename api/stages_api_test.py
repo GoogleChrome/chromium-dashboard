@@ -695,7 +695,6 @@ class StagesAPITest(testing_config.CustomTestCase):
     def assert_cache_was_flushed(self, mock_dkwp):
         """Check that the appropriate caches were flushed."""
         expected_calls = [
-            mock.call(FeatureEntry.DEFAULT_CACHE_KEY),
             mock.call(FeatureEntry.SEARCH_CACHE_KEY),
         ]
         mock_dkwp.assert_has_calls(expected_calls)

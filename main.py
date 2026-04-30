@@ -478,6 +478,9 @@ internals_routes: list[Route] = [
     ),
     Route('/tasks/email-ot-activated', notifier.OTActivatedHandler),
     Route(
+        '/tasks/rebuild-roadmap-cache', maintenance_scripts.RebuildRoadmapCache
+    ),
+    Route(
         '/tasks/email-ot-creation-processed',
         notifier.OTCreationProcessedHandler,
     ),

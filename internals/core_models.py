@@ -271,6 +271,8 @@ class FeatureEntry(ndb.Model):
     FEATURE_NAME_CACHE_KEY = 'FeatureNames'
     # The prefix used when cacheing entire search results.
     SEARCH_CACHE_KEY = 'FeatureSearch'
+    # The prefix used when cacheing the roadmap.
+    ROADMAP_CACHE_KEY = 'RoadmapCache'
 
     def __init__(self, *args, **kwargs):
         """Initialize the Feature model."""
