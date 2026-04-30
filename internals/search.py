@@ -580,7 +580,6 @@ def process_query(
     logging.info('now waiting on futures')
 
     # 3a. Process user query: negation, AND, and OR.
-    feature_id_future_ops = process_negation_operations(feature_id_future_ops)
     query_clauses = process_and_operations(feature_id_future_ops)
 
     # 3b. Process all permission ops.
@@ -699,49 +698,55 @@ def process_and_operations(feature_id_future_ops):
     """Process all AND operations in between OR clauses."""
     or_clauses = []
 
-    current_result_set = None
+    # Split into groups separated by 'OR'.
+    groups = []
+    current_group = []
     for logical_op, future in feature_id_future_ops:
-        if logical_op == 'OR' and current_result_set is not None:
-            # Add the proceeding AND result
+        if logical_op == 'OR':
+            if current_group:
+                groups.append(current_group)
+                current_group = []
+            logical_op = ''  # Treat the first term of the new OR clause as a positive AND term
+
+        current_group.append((logical_op, future))
+
+    if current_group:
+        groups.append(current_group)
+
+    for group in groups:
+        # Sort the group so that positive terms come before negative terms ('-').
+        # Using a boolean as a sort key: False (0) for positive, True (1) for negative.
+        group.sort(key=lambda op_and_future: op_and_future[0] == '-')
+
+        current_result_set = None
+        for logical_op, future in group:
+            if type(future) == set:  # noqa: E721
+                feature_ids = future
+            else:
+                feature_ids = _resolve_promise_to_id_list(future)
+
+            # Handle negation in-place using set difference
+            if logical_op == '-':
+                # If negation is the very first term, we MUST fetch all IDs to subtract from.
+                if current_result_set is None:
+                    current_result_set = fetch_all_feature_ids_set()
+                current_result_set.difference_update(feature_ids)
+                continue
+
+            if current_result_set is None:
+                logging.info('first term yields %d items', len(feature_ids))
+                current_result_set = set(feature_ids)
+                continue
+
+            logging.info(
+                'combining result so far with %d items', len(feature_ids)
+            )
+            current_result_set.intersection_update(feature_ids)
+
+        if current_result_set is not None:
             or_clauses.append(current_result_set)
-            current_result_set = None
 
-        if type(future) == set:  # noqa: E721
-            feature_ids = future
-        else:
-            feature_ids = _resolve_promise_to_id_list(future)
-
-        if current_result_set is None:
-            logging.info('first term yields %d items', len(feature_ids))
-            current_result_set = set(feature_ids)
-            continue
-
-        logging.info('combining result so far with %d items', len(feature_ids))
-        current_result_set.intersection_update(feature_ids)
-
-    if current_result_set is not None:
-        or_clauses.append(current_result_set)
     return or_clauses
-
-
-def process_negation_operations(feature_id_future_ops):
-    """Turn all negation operations into AND operations."""
-    new_future_ops = []
-    all_ids_set = None
-    for logical_op, future in feature_id_future_ops:
-        if logical_op != '-':
-            # Skip all non-negation operations.
-            new_future_ops.append((logical_op, future))
-            continue
-
-        if all_ids_set is None:
-            all_ids_set = fetch_all_feature_ids_set()
-
-        feature_ids = _resolve_promise_to_id_list(future)
-        result_set = all_ids_set.difference(feature_ids)
-        new_future_ops.append(('', result_set))
-
-    return new_future_ops
 
 
 def fetch_all_feature_ids_set():
