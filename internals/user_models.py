@@ -45,6 +45,9 @@ class UserPref(ndb.Model):
     # has dismissed (clicked "X" or "GOT IT").
     dismissed_cues = ndb.StringProperty(repeated=True)
 
+    # Feature IDs the user marked done in "Features I can edit".
+    editable_done_feature_ids = ndb.IntegerProperty(repeated=True)
+
     @classmethod
     def get_signed_in_user_pref(cls):
         """Return a UserPref for the signed in user or None if anon."""

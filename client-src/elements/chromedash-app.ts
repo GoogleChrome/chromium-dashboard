@@ -369,6 +369,7 @@ export class ChromedashApp extends LitElement {
       this.pageComponent.query = 'can_edit:me';
       this.pageComponent.showEnterprise = true;
       this.pageComponent.showQuery = false;
+      this.pageComponent.showDoneControls = true;
       this.pageComponent.rawQuery = parseRawQuery(ctx.querystring);
     });
     page('/features', ctx => {

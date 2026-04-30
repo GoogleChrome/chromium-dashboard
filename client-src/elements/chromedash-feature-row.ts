@@ -44,6 +44,10 @@ class ChromedashFeatureRow extends LitElement {
   starredFeatures = new Set<number>();
   @property({attribute: false})
   gates: Record<number, GateDict[]> = {};
+  @property({attribute: false})
+  doneFeatureIds = new Set<number>();
+  @property({type: Boolean})
+  showDoneControls = false;
   @property({type: Number})
   selectedGateId = 0;
 
@@ -131,9 +135,31 @@ class ChromedashFeatureRow extends LitElement {
     `;
   }
 
+  renderDoneIcon(feature) {
+    if (!this.showDoneControls) {
+      return nothing;
+    }
+    const isDone = this.doneFeatureIds.has(Number(feature.id));
+    return html`
+      <sl-icon-button
+        title=${isDone ? 'Marked done (click to unmark)' : 'Mark as done'}
+        library="material"
+        name=${isDone ? 'check_box' : 'check_box_outline_blank'}
+        @click=${() => {
+          this._fireEvent('feature-done-toggled', {
+            featureId: Number(feature.id),
+            isDone: !isDone,
+          });
+        }}
+      ></sl-icon-button>
+    `;
+  }
+
   renderIcons(feature) {
     if (this.signedIn) {
-      return html` ${this.renderStarIcon(feature)} `;
+      return html`${this.renderDoneIcon(feature)} ${this.renderStarIcon(
+        feature
+      )}`;
     } else {
       return nothing;
     }

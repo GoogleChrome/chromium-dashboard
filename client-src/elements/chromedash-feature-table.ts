@@ -67,6 +67,12 @@ export class ChromedashFeatureTable extends LitElement {
   signedIn!: boolean;
   @property({type: Boolean})
   nameOnly = false;
+  @property({type: Boolean})
+  showDone = false;
+  @property({type: Boolean})
+  showDoneControls = false;
+  @property({type: Object, attribute: false})
+  doneFeatureIds = new Set<number>();
 
   connectedCallback() {
     super.connectedCallback();
@@ -234,6 +240,15 @@ export class ChromedashFeatureTable extends LitElement {
     return nothing;
   }
 
+  _fireEvent(eventName, detail) {
+    const event = new CustomEvent(eventName, {
+      bubbles: true,
+      composed: true,
+      detail,
+    });
+    this.dispatchEvent(event);
+  }
+
   renderLoadingStatusAndCount() {
     // Indexes of first and last items shown in one-based counting.
     const firstShown = this.start + 1;
@@ -275,6 +290,18 @@ export class ChromedashFeatureTable extends LitElement {
     return html`
       <div class="status-and-count hbox">
         <span>${this.reloading ? 'Reloading...' : nothing}</span>
+        ${this.showDoneControls
+          ? html`<sl-checkbox
+              size="small"
+              ?checked=${this.showDone}
+              @sl-change=${e => {
+                this._fireEvent('show-done-toggled', {
+                  showDone: Boolean(e.target?.checked),
+                });
+              }}
+              >Include done</sl-checkbox
+            >`
+          : nothing}
         <div class="spacer"></div>
         <span>${firstShown} - ${lastShown} of ${this.totalCount}</span>
         <sl-icon-button
@@ -338,19 +365,43 @@ export class ChromedashFeatureTable extends LitElement {
         ?canEdit=${this.canEdit}
         .starredFeatures=${this.starredFeatures}
         .gates=${this.gates}
+        .doneFeatureIds=${this.doneFeatureIds}
+        ?showDoneControls=${this.showDoneControls}
         selectedGateId=${this.selectedGateId}
       ></chromedash-feature-row>
     `;
   }
 
+  getVisibleFeatures() {
+    if (!this.showDoneControls || this.showDone) {
+      return this.features;
+    }
+    return this.features.filter(feature => !this.doneFeatureIds.has(feature.id));
+  }
+
   render() {
+    const visibleFeatures = this.getVisibleFeatures();
+    const doneFilteredOutAll =
+      !this.loading &&
+      this.showDoneControls &&
+      !this.showDone &&
+      this.features.length > 0 &&
+      visibleFeatures.length === 0;
+
     return html`
       ${this.renderSearch()} ${this.renderLoadingStatusAndCount()}
       <table>
-        ${this.renderMessages() ||
-        this.features.map(feature => this.renderFeature(feature))}
+        ${doneFilteredOutAll
+          ? html`<tr>
+              <td class="message">
+                All features on this page are marked done. Enable "Include
+                done" to see them.
+              </td>
+            </tr>`
+          : this.renderMessages() ||
+            visibleFeatures.map(feature => this.renderFeature(feature))}
       </table>
-      ${this.renderPagination(this.features)}
+      ${this.renderPagination(visibleFeatures)}
     `;
   }
 }

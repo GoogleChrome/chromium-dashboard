@@ -70,8 +70,33 @@ class SettingsAPITest(testing_config.CustomTestCase):
                 self.handler.do_get()
 
     def test_get__signed_in(self):
-        """Signed-in user has a notify_as_starrer=False setting."""
+        """Signed-in user settings are returned."""
         testing_config.sign_in('one@example.com', 123567890)
         with test_app.test_request_context(self.request_path):
             actual = self.handler.do_get()
-        self.assertEqual({'notify_as_starrer': False}, actual)
+        self.assertEqual(
+            {'notify_as_starrer': False, 'editable_done_feature_ids': []}, actual
+        )
+
+    def test_post__editable_done_feature_ids_valid(self):
+        """User can store done feature IDs."""
+        testing_config.sign_in('one@example.com', 123567890)
+
+        with test_app.test_request_context(
+            '/settings', json={'editable_done_feature_ids': [1, 2, 999]}
+        ):
+            actual_json = self.handler.do_post()
+        self.assertEqual({'message': 'Done'}, actual_json)
+
+        revised_user_pref = user_models.UserPref.get_signed_in_user_pref()
+        self.assertEqual([1, 2, 999], revised_user_pref.editable_done_feature_ids)
+
+    def test_post__editable_done_feature_ids_invalid(self):
+        """Done feature IDs must be positive integers."""
+        testing_config.sign_in('one@example.com', 123567890)
+
+        with test_app.test_request_context(
+            '/settings', json={'editable_done_feature_ids': [1, '2', -1]}
+        ):
+            with self.assertRaises(werkzeug.exceptions.BadRequest):
+                self.handler.do_post()

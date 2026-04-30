@@ -31,32 +31,54 @@ class SettingsAPI(basehandlers.APIHandler):
     """  # noqa: D205
 
     def do_post(self, **kwargs):
-        """Set the user settings (currently only the notify_as_starrer)"""  # noqa: D415
+        """Set the user settings."""  # noqa: D415
         user_pref = user_models.UserPref.get_signed_in_user_pref()
         if not user_pref:
             self.abort(403, msg='User must be signed in')
         raw_data = self.request.json
-        new_notify = raw_data.get('notify')
 
-        if not isinstance(new_notify, bool):
+        has_notify = 'notify' in raw_data
+        has_done_ids = 'editable_done_feature_ids' in raw_data
+        if not has_notify and not has_done_ids:
             raise werkzeug.exceptions.BadRequest(
-                f"Expected boolean for 'notify', got {type(new_notify).__name__}"
+                "Expected 'notify' or 'editable_done_feature_ids'"
             )
 
-        settings_request = PostSettingsRequest.from_dict(raw_data)
-        user_pref.notify_as_starrer = settings_request.notify
+        if has_notify:
+            new_notify = raw_data.get('notify')
+            if not isinstance(new_notify, bool):
+                raise werkzeug.exceptions.BadRequest(
+                    f"Expected boolean for 'notify', got {type(new_notify).__name__}"
+                )
+            settings_request = PostSettingsRequest.from_dict({'notify': new_notify})
+            user_pref.notify_as_starrer = settings_request.notify
+
+        if has_done_ids:
+            done_ids = raw_data.get('editable_done_feature_ids')
+            if not isinstance(done_ids, list) or not all(
+                isinstance(x, int) and x > 0 for x in done_ids
+            ):
+                raise werkzeug.exceptions.BadRequest(
+                    "Expected 'editable_done_feature_ids' to be a list of positive integers"
+                )
+            user_pref.editable_done_feature_ids = done_ids
+
         user_pref.put()
         # Callers don't use the JSON response for this API call.
         return SuccessMessage(message='Done').to_dict()
 
     def do_get(self, **kwargs):
-        """Return the user settings (currently only the notify_as_starrer)"""  # noqa: D415
+        """Return the user settings."""  # noqa: D415
         user_pref = user_models.UserPref.get_signed_in_user_pref()
         if not user_pref:
             self.abort(404, msg='User preference not found')
 
         response = GetSettingsResponse.from_dict(
             {'notify_as_starrer': user_pref.notify_as_starrer}
-        )  # noqa: E501
+        )
+        response_dict = response.to_dict()
+        response_dict['editable_done_feature_ids'] = (
+            user_pref.editable_done_feature_ids or []
+        )
 
-        return response.to_dict()
+        return response_dict

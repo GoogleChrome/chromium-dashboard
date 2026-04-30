@@ -15,7 +15,7 @@
  */
 
 import {LitElement, css, html, nothing} from 'lit';
-import {showToastMessage} from './utils.js';
+import {clearURLParams, showToastMessage, updateURLParams} from './utils.js';
 import './chromedash-feature-table.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {customElement, property, queryAll, state} from 'lit/decorators.js';
@@ -45,6 +45,8 @@ export class ChromedashAllFeaturesPage extends LitElement {
   selectedGateId = 0;
   @property({type: Object})
   rawQuery: RawQuery | undefined = {};
+  @property({type: Boolean})
+  showDoneControls = false;
 
   @state()
   query = '';
@@ -64,6 +66,10 @@ export class ChromedashAllFeaturesPage extends LitElement {
   isNewfeaturesPage = false;
   @state()
   nameOnly = false;
+  @state()
+  showDone = false;
+  @state()
+  doneFeatureIds: Set<number> = new Set();
 
   @queryAll('chromedash-feature-table')
   chromedashFeatureTables;
@@ -104,8 +110,38 @@ export class ChromedashAllFeaturesPage extends LitElement {
       this.num = parseInt(this.rawQuery['num']);
       this.num = Math.max(1, Math.min(this.num, 1000));
     }
+    if (this.rawQuery.showDone === 'true') {
+      this.showDone = true;
+    }
     if (this.isNewfeaturesPage) {
       this.nameOnly = true;
+    }
+  }
+
+
+  handleDoneToggled(e) {
+    const featureId = Number(e.detail.featureId);
+    const isDone = Boolean(e.detail.isDone);
+    const newDoneFeatureIds = new Set(this.doneFeatureIds);
+    if (isDone) {
+      newDoneFeatureIds.add(featureId);
+    } else {
+      newDoneFeatureIds.delete(featureId);
+    }
+    this.doneFeatureIds = newDoneFeatureIds;
+    window.csClient
+      .setSettings(undefined, Array.from(this.doneFeatureIds.values()))
+      .catch(() => {
+        showToastMessage('Unable to save done state. Please try again.');
+      });
+  }
+
+  handleShowDoneToggle(e) {
+    this.showDone = Boolean(e.detail?.showDone ?? e.target?.checked);
+    if (this.showDone) {
+      updateURLParams('showDone', 'true');
+    } else {
+      clearURLParams('showDone');
     }
   }
 
@@ -120,6 +156,20 @@ export class ChromedashAllFeaturesPage extends LitElement {
           'Some errors occurred. Please refresh the page or try again later.'
         );
       });
+
+    if (this.showDoneControls) {
+      window.csClient
+        .getSettings()
+        .then(settings => {
+          const doneIds = settings.editable_done_feature_ids || [];
+          this.doneFeatureIds = new Set(doneIds);
+        })
+        .catch(() => {
+          showToastMessage(
+            'Some errors occurred. Please refresh the page or try again later.'
+          );
+        });
+    }
   }
 
   refetch() {
@@ -160,7 +210,12 @@ export class ChromedashAllFeaturesPage extends LitElement {
         ?signedIn=${Boolean(this.user)}
         ?canEdit=${this.user && this.user.can_edit_all}
         .starredFeatures=${this.starredFeatures}
+        .doneFeatureIds=${this.doneFeatureIds}
+        ?showDone=${this.showDone}
+        ?showDoneControls=${this.showDoneControls}
         @star-toggle-event=${this.handleStarToggle}
+        @feature-done-toggled=${this.handleDoneToggled}
+        @show-done-toggled=${this.handleShowDoneToggle}
         selectedGateId=${this.selectedGateId}
         alwaysOfferPagination
         columns=${this.columns}

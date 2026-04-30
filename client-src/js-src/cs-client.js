@@ -490,8 +490,15 @@ export class ChromeStatusClient {
     return this.doGet('/currentuser/settings');
   }
 
-  setSettings(notify) {
-    return this.doPost('/currentuser/settings', {notify: notify});
+  setSettings(notify, editableDoneFeatureIds) {
+    const payload = {};
+    if (typeof notify === 'boolean') {
+      payload.notify = notify;
+    }
+    if (Array.isArray(editableDoneFeatureIds)) {
+      payload.editable_done_feature_ids = editableDoneFeatureIds;
+    }
+    return this.doPost('/currentuser/settings', payload);
   }
 
   // Star API
