@@ -523,7 +523,7 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
 
     def test_sort_by_total_order__empty(self):
         """Sorting an empty list works."""
-        feature_ids = []
+        feature_ids = set()
         total_order_ids = []
         actual = search._sort_by_total_order(feature_ids, total_order_ids)
         self.assertEqual([], actual)
@@ -534,7 +534,7 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
 
     def test_sort_by_total_order__normal(self):
         """We can sort the results according to the total order."""
-        feature_ids = [10, 1, 9, 4]
+        feature_ids = {10, 1, 9, 4}
         total_order_ids = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
         actual = search._sort_by_total_order(feature_ids, total_order_ids)
         self.assertEqual([10, 9, 4, 1], actual)
@@ -543,7 +543,7 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
         """If the results include features not present in the total order,
         they are put at the end of the list in ID order.
         """  # noqa: D205
-        feature_ids = [999, 10, 998, 1, 9, 997, 4]
+        feature_ids = {999, 10, 998, 1, 9, 997, 4}
         total_order_ids = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
         actual = search._sort_by_total_order(feature_ids, total_order_ids)
         self.assertEqual([10, 9, 4, 1, 997, 998, 999], actual)
@@ -552,7 +552,7 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
         """If the sort order is done via join, the total_order could have
         multiple copies of the same feature IDs.  We use the earliest.
         """  # noqa: D205
-        feature_ids = [10, 1, 9, 4]
+        feature_ids = {10, 1, 9, 4}
         total_order_ids = [
             10,
             9,

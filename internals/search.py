@@ -360,13 +360,13 @@ def _resolve_promise_to_id_list(
 
 
 def _sort_by_total_order(
-    result_id_list: list[int], total_order_ids: list[int]
+    result_id_set: set[int], total_order_ids: list[int]
 ) -> list[int]:
     """Sort the result_ids according to their position in the total order.
 
     This extracts the matching IDs in their exact sorted sequence.
     """
-    result_id_set = set(result_id_list)
+    result_id_set = result_id_set.copy()
     sorted_id_list = []
 
     # Extract matching IDs in their exact sorted order.
@@ -620,14 +620,13 @@ def process_query(
                     len(unviewable_ids),
                 )
 
-    result_id_list = list(result_id_set)
-    total_count = len(result_id_list)
+    total_count = len(result_id_set)
 
     # 4. Finish getting the total sort order. Then, sort the IDs according
     # to their position in the complete sorted list.
     total_order_ids = _resolve_promise_to_id_list(total_order_promise)
     logging.info('sorting')
-    sorted_id_list = _sort_by_total_order(result_id_list, total_order_ids)
+    sorted_id_list = _sort_by_total_order(result_id_set, total_order_ids)
     logging.info('sorted %r result IDs', len(sorted_id_list))
 
     # 5. Paginate
