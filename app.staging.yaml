@@ -5,7 +5,7 @@ service: default
 instance_class: F4_1G
 
 automatic_scaling:
-  min_idle_instances: 1
+  min_idle_instances: 2
   max_pending_latency: 0.2s
 
 # Use a long HTTP cache expiration time for css and JS, but also

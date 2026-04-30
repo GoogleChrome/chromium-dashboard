@@ -523,7 +523,7 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
 
     def test_sort_by_total_order__empty(self):
         """Sorting an empty list works."""
-        feature_ids = []
+        feature_ids = set()
         total_order_ids = []
         actual = search._sort_by_total_order(feature_ids, total_order_ids)
         self.assertEqual([], actual)
@@ -534,7 +534,7 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
 
     def test_sort_by_total_order__normal(self):
         """We can sort the results according to the total order."""
-        feature_ids = [10, 1, 9, 4]
+        feature_ids = {10, 1, 9, 4}
         total_order_ids = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
         actual = search._sort_by_total_order(feature_ids, total_order_ids)
         self.assertEqual([10, 9, 4, 1], actual)
@@ -543,7 +543,7 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
         """If the results include features not present in the total order,
         they are put at the end of the list in ID order.
         """  # noqa: D205
-        feature_ids = [999, 10, 998, 1, 9, 997, 4]
+        feature_ids = {999, 10, 998, 1, 9, 997, 4}
         total_order_ids = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
         actual = search._sort_by_total_order(feature_ids, total_order_ids)
         self.assertEqual([10, 9, 4, 1, 997, 998, 999], actual)
@@ -552,7 +552,7 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
         """If the sort order is done via join, the total_order could have
         multiple copies of the same feature IDs.  We use the earliest.
         """  # noqa: D205
-        feature_ids = [10, 1, 9, 4]
+        feature_ids = {10, 1, 9, 4}
         total_order_ids = [
             10,
             9,
@@ -896,6 +896,26 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
         )
         self.assertEqual(1, len(actual))
         self.assertEqual(actual[0]['name'], 'feature 1')
+
+    @mock.patch('internals.search.fetch_all_feature_ids_set')
+    def test_process_query__empty_query_optimization(self, mock_fetch_all):
+        """We do not fetch all feature IDs when the user query is empty."""
+        actual, tc = search.process_query('')
+        mock_fetch_all.assert_not_called()
+
+        # Conversely, if a query consists only of a negation term, it must fetch
+        # all IDs initially so it has a complete set to subtract the matches from.
+        mock_fetch_all.reset_mock()
+        mock_fetch_all.return_value = set(
+            [
+                self.featureentry_1.key.integer_id(),
+                self.featureentry_2.key.integer_id(),
+                self.featureentry_3.key.integer_id(),
+                self.featureentry_4.key.integer_id(),
+            ]
+        )
+        actual, tc = search.process_query('-owner:me')
+        mock_fetch_all.assert_called_once()
 
     @mock.patch('logging.warning')
     def test_process_query__bad(self, mock_warn):

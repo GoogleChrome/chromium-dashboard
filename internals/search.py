@@ -360,26 +360,32 @@ def _resolve_promise_to_id_list(
 
 
 def _sort_by_total_order(
-    result_id_list: list[int], total_order_ids: list[int]
+    result_id_set: set[int], total_order_ids: list[int]
 ) -> list[int]:
     """Sort the result_ids according to their position in the total order.
 
-    If some result ID is not present in the total order, use the feature ID
-    value itself as the sorting value, which will effectively put those
-    features at the end of the list in order of creation.
+    This extracts the matching IDs in their exact sorted sequence.
     """
-    total_order_dict = {}
-    # For each feature entry ID in the total-order list, record the index of
-    # the first time that it occurs.  A feature could be in the list multiple
-    # times if it was produced via a join.  E.g., sorting by gate.requested_on
-    # would have total_order_ids items for every gate, not just one per feature.
-    for idx, f_id in enumerate(total_order_ids):
-        if f_id not in total_order_dict:
-            total_order_dict[f_id] = idx
+    result_id_set = result_id_set.copy()
+    sorted_id_list = []
 
-    sorted_id_list = sorted(
-        result_id_list, key=lambda f_id: total_order_dict.get(f_id, f_id)
-    )
+    # Extract matching IDs in their exact sorted order.
+    # We iterate through the pre-sorted massive list exactly once.
+    for f_id in total_order_ids:
+        if f_id in result_id_set:
+            sorted_id_list.append(f_id)
+            # Remove from set to handle the case where total_order_ids
+            # contains duplicates (e.g. from a join on a repeated property).
+            result_id_set.remove(f_id)
+            if not result_id_set:
+                break
+    # Any remaining IDs that were in the result list but somehow NOT present
+    # in the total order are appended to the very end.
+    # We sort them by the feature ID value itself, which effectively puts
+    # those features at the end of the list in order of creation.
+    if result_id_set:
+        sorted_id_list.extend(sorted(list(result_id_set)))
+
     return sorted_id_list
 
 
@@ -580,15 +586,23 @@ def process_query(
     logging.info('now waiting on futures')
 
     # 3a. Process user query: negation, AND, and OR.
-    feature_id_future_ops = process_negation_operations(feature_id_future_ops)
     query_clauses = process_and_operations(feature_id_future_ops)
-    result_id_set = process_or_operations(query_clauses)
-    logging.info('got %r result IDs w/o permissions', len(result_id_set))
 
-    # 3b. Process all permission ops, then interesect to apply permisisons.
+    # 3b. Process all permission ops.
     permission_clauses = process_and_operations(permissions_future_ops)
-    permission_ids = process_or_operations(permission_clauses)
-    result_id_set.intersection_update(permission_ids)
+
+    # Apply permissions without unnecessarily fetching all keys
+    if not query_clauses and not permission_clauses:
+        result_id_set = fetch_all_feature_ids_set()
+    elif not query_clauses:
+        result_id_set = process_or_operations(permission_clauses)
+    elif not permission_clauses:
+        result_id_set = process_or_operations(query_clauses)
+    else:
+        result_id_set = process_or_operations(query_clauses)
+        permission_ids = process_or_operations(permission_clauses)
+        result_id_set.intersection_update(permission_ids)
+
     logging.info('got %r result IDs with permissions', len(result_id_set))
 
     # 3c. Filter out confidential features that the user cannot view.
@@ -614,14 +628,13 @@ def process_query(
                     len(unviewable_ids),
                 )
 
-    result_id_list = list(result_id_set)
-    total_count = len(result_id_list)
+    total_count = len(result_id_set)
 
     # 4. Finish getting the total sort order. Then, sort the IDs according
     # to their position in the complete sorted list.
     total_order_ids = _resolve_promise_to_id_list(total_order_promise)
     logging.info('sorting')
-    sorted_id_list = _sort_by_total_order(result_id_list, total_order_ids)
+    sorted_id_list = _sort_by_total_order(result_id_set, total_order_ids)
     logging.info('sorted %r result IDs', len(sorted_id_list))
 
     # 5. Paginate
@@ -690,49 +703,55 @@ def process_and_operations(feature_id_future_ops):
     """Process all AND operations in between OR clauses."""
     or_clauses = []
 
-    current_result_set = None
+    # Split into groups separated by 'OR'.
+    groups = []
+    current_group = []
     for logical_op, future in feature_id_future_ops:
-        if logical_op == 'OR' and current_result_set is not None:
-            # Add the proceeding AND result
+        if logical_op == 'OR':
+            if current_group:
+                groups.append(current_group)
+                current_group = []
+            logical_op = ''  # Treat the first term of the new OR clause as a positive AND term
+
+        current_group.append((logical_op, future))
+
+    if current_group:
+        groups.append(current_group)
+
+    for group in groups:
+        # Sort the group so that positive terms come before negative terms ('-').
+        # Using a boolean as a sort key: False (0) for positive, True (1) for negative.
+        group.sort(key=lambda op_and_future: op_and_future[0] == '-')
+
+        current_result_set = None
+        for logical_op, future in group:
+            if type(future) == set:  # noqa: E721
+                feature_ids = future
+            else:
+                feature_ids = _resolve_promise_to_id_list(future)
+
+            # Handle negation in-place using set difference
+            if logical_op == '-':
+                # If negation is the very first term, we MUST fetch all IDs to subtract from.
+                if current_result_set is None:
+                    current_result_set = fetch_all_feature_ids_set()
+                current_result_set.difference_update(feature_ids)
+                continue
+
+            if current_result_set is None:
+                logging.info('first term yields %d items', len(feature_ids))
+                current_result_set = set(feature_ids)
+                continue
+
+            logging.info(
+                'combining result so far with %d items', len(feature_ids)
+            )
+            current_result_set.intersection_update(feature_ids)
+
+        if current_result_set is not None:
             or_clauses.append(current_result_set)
-            current_result_set = None
 
-        if type(future) == set:  # noqa: E721
-            feature_ids = future
-        else:
-            feature_ids = _resolve_promise_to_id_list(future)
-
-        if current_result_set is None:
-            logging.info('first term yields %d items', len(feature_ids))
-            current_result_set = set(feature_ids)
-            continue
-
-        logging.info('combining result so far with %d items', len(feature_ids))
-        current_result_set.intersection_update(feature_ids)
-
-    if current_result_set is not None:
-        or_clauses.append(current_result_set)
     return or_clauses
-
-
-def process_negation_operations(feature_id_future_ops):
-    """Turn all negation operations into AND operations."""
-    new_future_ops = []
-    all_ids_set = None
-    for logical_op, future in feature_id_future_ops:
-        if logical_op != '-':
-            # Skip all non-negation operations.
-            new_future_ops.append((logical_op, future))
-            continue
-
-        if all_ids_set is None:
-            all_ids_set = fetch_all_feature_ids_set()
-
-        feature_ids = _resolve_promise_to_id_list(future)
-        result_set = all_ids_set.difference(feature_ids)
-        new_future_ops.append(('', result_set))
-
-    return new_future_ops
 
 
 def fetch_all_feature_ids_set():
