@@ -141,7 +141,7 @@ export class ChromedashAllFeaturesPage extends LitElement {
       clearURLParams('showDone');
     }
     await this.updateComplete;
-    this.refetch();
+    this.reload();
   }
 
   fetchData() {
@@ -163,6 +163,13 @@ export class ChromedashAllFeaturesPage extends LitElement {
     const tables = this.chromedashFeatureTables;
     for (const table of tables) {
       table.refetch();
+    }
+  }
+
+  reload() {
+    const tables = this.chromedashFeatureTables;
+    for (const table of tables) {
+      table.fetchFeatures(true);
     }
   }
 
