@@ -144,6 +144,9 @@ class ChromedashFeatureRow extends LitElement {
         library="material"
         name=${isDone ? 'check_box' : 'check_box_outline_blank'}
         @click=${() => {
+          // Optimistic update: flip icon immediately.
+          feature.is_done = !isDone;
+          this.requestUpdate();
           this._fireEvent('feature-done-toggled', {
             featureId: Number(feature.id),
             isDone: !isDone,

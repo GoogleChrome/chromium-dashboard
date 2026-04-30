@@ -187,7 +187,7 @@ export class ChromedashFeatureTable extends LitElement {
   }
 
   renderMessages() {
-    if (this.loading || this.reloading) {
+    if (this.loading) {
       return html`
         <tr class="skel">
           <td>

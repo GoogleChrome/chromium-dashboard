@@ -123,7 +123,10 @@ export class ChromedashAllFeaturesPage extends LitElement {
     window.csClient
       .setDone(featureId, isDone)
       .then(() => {
-        this.refetch();
+        if (!this.showDone) {
+          // Row should disappear when "Include done" is off.
+          this.refetch();
+        }
       })
       .catch(() => {
         showToastMessage('Unable to save done state. Please try again.');
