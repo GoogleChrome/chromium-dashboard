@@ -160,17 +160,11 @@ export class ChromedashAllFeaturesPage extends LitElement {
   }
 
   refetch() {
-    const tables = this.chromedashFeatureTables;
-    for (const table of tables) {
-      table.refetch();
-    }
+    this.chromedashFeatureTables?.[0]?.refetch();
   }
 
   reload() {
-    const tables = this.chromedashFeatureTables;
-    for (const table of tables) {
-      table.fetchFeatures(true);
-    }
+    this.chromedashFeatureTables?.[0]?.fetchFeatures(true);
   }
 
   // Handles the Star-Toggle event fired by any one of the child components
