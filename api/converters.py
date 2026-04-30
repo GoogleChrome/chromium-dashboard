@@ -22,7 +22,13 @@ from typing import Any, Optional, TypedDict
 from google.cloud import ndb  # type: ignore
 
 import settings
-from internals import approval_defs, core_enums, self_certify, slo
+from internals import (
+    approval_defs,
+    core_enums,
+    self_certify,
+    slo,
+    stage_helpers,
+)
 from internals.core_models import (
     FeatureEntry,
     MilestoneSet,
@@ -113,6 +119,7 @@ class StagePrepResponse(TypedDict):
     ship: Stage | None
     rollout: Stage | None
     all_stages: list[StageDict]
+    raw_stages: list[Stage]
 
 
 def _prep_stage_info(
@@ -143,6 +150,7 @@ def _prep_stage_info(
         'rollout': None,
         # Write a list of all stages associated with the feature.
         'all_stages': [],
+        'raw_stages': [],
     }
 
     # Keep track of trial stage indexes so that we can add trial extension
@@ -171,6 +179,7 @@ def _prep_stage_info(
         elif s.stage_type == rollout_type:
             stage_info['rollout'] = s
         stage_info['all_stages'].append(stage_dict)
+        stage_info['raw_stages'].append(s)
 
     for extension in extension_stages:
         # Trial extensions are kept as a list on the associated trial stage dict.
@@ -366,6 +375,12 @@ def feature_entry_to_json_verbose(
 
     # Get stage info, returning it to be more explicitly added.
     stage_info = _prep_stage_info(fe, prefetched_stages=prefetched_stages)
+    shipping_stage_type = core_enums.STAGE_TYPES_SHIPPING[fe.feature_type] or 0
+    ship_stages = [
+        s
+        for s in stage_info['raw_stages']
+        if s.stage_type == shipping_stage_type
+    ]
 
     new_crbug_url = _format_new_crbug_url(
         fe.blink_components, fe.bug_url, fe.impl_status_chrome, fe.owner_emails
@@ -512,6 +527,7 @@ def feature_entry_to_json_verbose(
                     'val': fe.impl_status_chrome,
                     'milestone_str': None,
                 },
+                'announced': stage_helpers.is_announced(ship_stages),
                 # TODO(danielrsmith): Find out if these are used and delete if not.
                 'desktop': _get_milestone_attr(
                     stage_info['ship'], 'desktop_first'
@@ -613,6 +629,11 @@ def feature_entry_to_json_basic(
     if not fe.key:
         return {}
 
+    shipping_stage_type = core_enums.STAGE_TYPES_SHIPPING[fe.feature_type] or 0
+    ship_stages = [
+        s for s in (stages or []) if s.stage_type == shipping_stage_type
+    ]
+
     d: dict[str, Any] = {
         'id': fe.key.integer_id(),
         'name': fe.name,
@@ -663,6 +684,7 @@ def feature_entry_to_json_basic(
                     ],
                     'val': fe.impl_status_chrome,
                 },
+                'announced': stage_helpers.is_announced(ship_stages),
             },
             'ff': {
                 'view': _compute_vendor_views(

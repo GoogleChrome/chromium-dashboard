@@ -61,8 +61,11 @@ class StagesAPI(basehandlers.EntitiesAPIHandler):
         stage_dict = converters.stage_to_json_dict(stage)
         # Add extensions associated with the stage if they exist.
         extensions = stage_helpers.get_ot_stage_extensions(stage_dict['id'])
+        extensions_json = [
+            converters.stage_to_json_dict(es) for es in extensions
+        ]
         if extensions:
-            stage_dict['extensions'] = extensions
+            stage_dict['extensions'] = extensions_json
 
         return stage_dict
 
