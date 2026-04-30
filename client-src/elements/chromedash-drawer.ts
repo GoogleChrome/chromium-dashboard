@@ -22,6 +22,7 @@ import {User} from '../js-src/cs-client.js';
 import {IS_MOBILE, showToastMessage} from './utils.js';
 
 export const DRAWER_WIDTH_PX = 200;
+export const MOBILE_DRAWER_WIDTH_PX = 250;
 
 @customElement('chromedash-drawer')
 export class ChromedashDrawer extends LitElement {
@@ -292,7 +293,9 @@ export class ChromedashDrawer extends LitElement {
         label="Menu"
         placement="start"
         class="drawer-placement-start"
-        style="--size: ${DRAWER_WIDTH_PX}px;"
+        style="--size: ${IS_MOBILE
+          ? MOBILE_DRAWER_WIDTH_PX
+          : DRAWER_WIDTH_PX}px;"
         contained
         noHeader
         ?open=${!IS_MOBILE && this.defaultOpen}
@@ -317,7 +320,7 @@ export class ChromedashDrawer extends LitElement {
 
   renderAccountMenu() {
     if (!this.user) {
-      return nothing;
+      return html`<slot></slot>`;
     }
 
     return html`
