@@ -78,7 +78,7 @@ echo "---"
 echo "Press enter to create the issue, or Ctrl+C to cancel."
 read -r
 
-if ( ! gh issue create --title "$ISSUE_TITLE" --body "$ISSUE_BODY" --label "release" -R "$REPO"); then
+if ( ! gh issue create --title "$ISSUE_TITLE" --body "$ISSUE_BODY" --label "release" --assignee "@me" -R "$REPO"); then
   echo "GitHub issue creation failed."
   exit 1
 fi
