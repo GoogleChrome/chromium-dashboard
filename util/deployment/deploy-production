@@ -33,8 +33,34 @@ export NOTIFIER_YAML="notifier.yaml"
 
 "$DIR/deploy-env"
 
-echo "Remember to migrate the traffic to the latest version after validating it."
-echo "- 'default' service: https://console.cloud.google.com/appengine/versions?serviceId=default&project=cr-status"
-echo "- 'notifier' service https://console.cloud.google.com/appengine/versions?serviceId=notifier&project=cr-status"
-echo "Remember to close the GitHub release issue."
-echo "https://github.com/GoogleChrome/chromium-dashboard/issues?q=is%3Aissue+label%3Arelease+is%3Aopen"
+SERVICES="default notifier"
+VERSION_URL=$(gcloud app --project="$APP_NAME" versions list --sort-by=~last_deployed_time --filter='service=default' --limit=1 --format=json | jq -r '.[] | .version.versionUrl')
+LATEST_VERSION=$(gcloud app --project="$APP_NAME" versions list --sort-by=~last_deployed_time --filter='service=default' --limit=1 --format=json | jq -r '.[] | .id')
+
+echo -e "\nDeployment complete. Validating..."
+echo "Visit $VERSION_URL to confirm that everything works."
+read -p "Press 'y' to redirect traffic to version $LATEST_VERSION for all services. (y/n) " -n 1 -r
+echo
+
+if [[ $REPLY =~ ^[Yy]$ ]]; then
+  for SERVICE in $SERVICES
+  do
+    gcloud app --project="$APP_NAME" services set-traffic $SERVICE --splits $LATEST_VERSION=1 --quiet
+  done
+  echo "Traffic migrated."
+else
+  echo "Traffic migration skipped. Don't forget to migrate traffic manually:"
+  echo "- 'default' service: https://console.cloud.google.com/appengine/versions?serviceId=default&project=$APP_NAME"
+  echo "- 'notifier' service: https://console.cloud.google.com/appengine/versions?serviceId=notifier&project=$APP_NAME"
+fi
+
+# Update and close deployment bug.
+REPO="GoogleChrome/chromium-dashboard"
+LAST_DEPLOYMENT_ISSUE=$(gh issue list --state open --label "release" --repo "$REPO" --limit 1 --json number --jq '.[] | .number')
+
+if [ -n "$LAST_DEPLOYMENT_ISSUE" ]; then
+  gh issue close "$LAST_DEPLOYMENT_ISSUE" -c "Deployment is now complete." -R "$REPO"
+  echo "Closed GitHub release issue #$LAST_DEPLOYMENT_ISSUE."
+else
+  echo "Could not find an open release issue to close."
+fi
