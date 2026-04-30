@@ -50,5 +50,24 @@ tutorial-env
 # Testdata for Python tests
 testdata
 
+# Caches and local tools
+.mypy_cache/
+.ruff_cache/
+.github/
+.devcontainer/
+.agents/
+
+# Build artifacts
+build/
+gen/js/
+gen/py/chromestatus_openapi/build/
+gen/py/chromestatus_openapi/.openapi-generator/
+gen/py/chromestatus_openapi/docs/
+gen/py/chromestatus_openapi/test/
+gen/py/webstatus_openapi/build/
+gen/py/webstatus_openapi/.openapi-generator/
+gen/py/webstatus_openapi/docs/
+gen/py/webstatus_openapi/test/
+
 # API Key for local development
 ot_api_key.txt
