@@ -360,26 +360,32 @@ def _resolve_promise_to_id_list(
 
 
 def _sort_by_total_order(
-    result_id_list: list[int], total_order_ids: list[int]
+    result_id_set: set[int], total_order_ids: list[int]
 ) -> list[int]:
     """Sort the result_ids according to their position in the total order.
 
-    If some result ID is not present in the total order, use the feature ID
-    value itself as the sorting value, which will effectively put those
-    features at the end of the list in order of creation.
+    This extracts the matching IDs in their exact sorted sequence.
     """
-    total_order_dict = {}
-    # For each feature entry ID in the total-order list, record the index of
-    # the first time that it occurs.  A feature could be in the list multiple
-    # times if it was produced via a join.  E.g., sorting by gate.requested_on
-    # would have total_order_ids items for every gate, not just one per feature.
-    for idx, f_id in enumerate(total_order_ids):
-        if f_id not in total_order_dict:
-            total_order_dict[f_id] = idx
+    result_id_set = result_id_set.copy()
+    sorted_id_list = []
 
-    sorted_id_list = sorted(
-        result_id_list, key=lambda f_id: total_order_dict.get(f_id, f_id)
-    )
+    # Extract matching IDs in their exact sorted order.
+    # We iterate through the pre-sorted massive list exactly once.
+    for f_id in total_order_ids:
+        if f_id in result_id_set:
+            sorted_id_list.append(f_id)
+            # Remove from set to handle the case where total_order_ids
+            # contains duplicates (e.g. from a join on a repeated property).
+            result_id_set.remove(f_id)
+            if not result_id_set:
+                break
+    # Any remaining IDs that were in the result list but somehow NOT present
+    # in the total order are appended to the very end.
+    # We sort them by the feature ID value itself, which effectively puts
+    # those features at the end of the list in order of creation.
+    if result_id_set:
+        sorted_id_list.extend(sorted(list(result_id_set)))
+
     return sorted_id_list
 
 
@@ -622,14 +628,13 @@ def process_query(
                     len(unviewable_ids),
                 )
 
-    result_id_list = list(result_id_set)
-    total_count = len(result_id_list)
+    total_count = len(result_id_set)
 
     # 4. Finish getting the total sort order. Then, sort the IDs according
     # to their position in the complete sorted list.
     total_order_ids = _resolve_promise_to_id_list(total_order_promise)
     logging.info('sorting')
-    sorted_id_list = _sort_by_total_order(result_id_list, total_order_ids)
+    sorted_id_list = _sort_by_total_order(result_id_set, total_order_ids)
     logging.info('sorted %r result IDs', len(sorted_id_list))
 
     # 5. Paginate
