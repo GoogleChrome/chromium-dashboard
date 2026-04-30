@@ -18,6 +18,7 @@
 import json
 import logging
 
+import flask
 import requests
 
 # Note: this file cannot import core_models because it would be circular.
@@ -87,6 +88,9 @@ def get_omaha_data():
 
 def get_current_beta_milestone() -> int:
     """Return the milestone number that is current on the beta channel."""
+    if flask.has_app_context() and hasattr(flask.g, 'current_beta_milestone'):
+        return flask.g.current_beta_milestone
+
     omaha_data = get_omaha_data()
     beta_version = next(
         (
@@ -96,7 +100,12 @@ def get_current_beta_milestone() -> int:
         ),
         '0.0',
     )
-    return int(beta_version.split('.')[0])
+    milestone = int(beta_version.split('.')[0])
+
+    if flask.has_app_context():
+        flask.g.current_beta_milestone = milestone
+
+    return milestone
 
 
 SCHEDULE_CACHE_TIME = 60 * 60  # 1 hour
