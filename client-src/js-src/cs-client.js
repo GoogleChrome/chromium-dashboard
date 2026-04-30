@@ -280,6 +280,7 @@
  * @property {FeatureBrowsersInfo} browsers
  * @property {FeatureDictInnerStandardsInfo} standards
  * @property {boolean} is_released
+ * @property {boolean} [is_done]
  * @property {boolean} is_enterprise_feature
  * @property {string} [updated_display]
  * @property {string} [new_crbug_url]
@@ -490,15 +491,25 @@ export class ChromeStatusClient {
     return this.doGet('/currentuser/settings');
   }
 
-  setSettings(notify, editableDoneFeatureIds) {
+  setSettings(notify) {
     const payload = {};
     if (typeof notify === 'boolean') {
       payload.notify = notify;
     }
-    if (Array.isArray(editableDoneFeatureIds)) {
-      payload.editable_done_feature_ids = editableDoneFeatureIds;
-    }
     return this.doPost('/currentuser/settings', payload);
+  }
+
+  // Done API
+
+  getDoneFeatureIds() {
+    return this.doGet('/currentuser/done').then(res => res.feature_ids);
+  }
+
+  setDone(featureId, done) {
+    return this.doPost('/currentuser/done', {
+      featureId: featureId,
+      done: done,
+    });
   }
 
   // Star API

@@ -37,31 +37,16 @@ class SettingsAPI(basehandlers.APIHandler):
             self.abort(403, msg='User must be signed in')
         raw_data = self.request.json
 
-        has_notify = 'notify' in raw_data
-        has_done_ids = 'editable_done_feature_ids' in raw_data
-        if not has_notify and not has_done_ids:
+        if 'notify' not in raw_data:
+            raise werkzeug.exceptions.BadRequest("Expected 'notify'")
+
+        new_notify = raw_data.get('notify')
+        if not isinstance(new_notify, bool):
             raise werkzeug.exceptions.BadRequest(
-                "Expected 'notify' or 'editable_done_feature_ids'"
+                f"Expected boolean for 'notify', got {type(new_notify).__name__}"
             )
-
-        if has_notify:
-            new_notify = raw_data.get('notify')
-            if not isinstance(new_notify, bool):
-                raise werkzeug.exceptions.BadRequest(
-                    f"Expected boolean for 'notify', got {type(new_notify).__name__}"
-                )
-            settings_request = PostSettingsRequest.from_dict({'notify': new_notify})
-            user_pref.notify_as_starrer = settings_request.notify
-
-        if has_done_ids:
-            done_ids = raw_data.get('editable_done_feature_ids')
-            if not isinstance(done_ids, list) or not all(
-                isinstance(x, int) and x > 0 for x in done_ids
-            ):
-                raise werkzeug.exceptions.BadRequest(
-                    "Expected 'editable_done_feature_ids' to be a list of positive integers"
-                )
-            user_pref.editable_done_feature_ids = done_ids
+        settings_request = PostSettingsRequest.from_dict({'notify': new_notify})
+        user_pref.notify_as_starrer = settings_request.notify
 
         user_pref.put()
         # Callers don't use the JSON response for this API call.
@@ -76,9 +61,4 @@ class SettingsAPI(basehandlers.APIHandler):
         response = GetSettingsResponse.from_dict(
             {'notify_as_starrer': user_pref.notify_as_starrer}
         )
-        response_dict = response.to_dict()
-        response_dict['editable_done_feature_ids'] = (
-            user_pref.editable_done_feature_ids or []
-        )
-
-        return response_dict
+        return response.to_dict()

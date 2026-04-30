@@ -106,6 +106,42 @@ class UserPref(ndb.Model):
         return result
 
 
+class DoneFeature(ndb.Model):
+    """A DoneFeature represents one user marking one feature as done."""
+
+    email = ndb.StringProperty(required=True)
+    feature_id = ndb.IntegerProperty(required=True)
+    done = ndb.BooleanProperty(default=True)
+
+    @classmethod
+    def get_done(cls, email, feature_id):
+        """Return the DoneFeature entity for this user+feature, or None."""
+        q = cls.query()
+        q = q.filter(cls.email == email)
+        q = q.filter(cls.feature_id == feature_id)
+        return q.get()
+
+    @classmethod
+    def set_done(cls, email, feature_id, done=True):
+        """Set/clear done for the specified user and feature."""
+        df = cls.get_done(email, feature_id)
+        if not df and done:
+            df = DoneFeature(email=email, feature_id=feature_id)
+            df.put()
+        elif df and df.done != done:
+            df.done = done
+            df.put()
+
+    @classmethod
+    def get_user_done_ids(cls, email):
+        """Return a list of feature_ids the user marked as done."""
+        q = cls.query()
+        q = q.filter(cls.email == email)
+        q = q.filter(cls.done == True)  # noqa: E712
+        results = q.fetch(None)
+        return sorted([df.feature_id for df in results], reverse=True)
+
+
 class AppUser(ndb.Model):
     """Describes a user for permission checking."""
 

@@ -122,10 +122,11 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
 
         excluded_feature_ids = set()
         if not include_done:
-            user_pref = user_models.UserPref.get_signed_in_user_pref()
-            excluded_feature_ids = set(
-                user_pref.editable_done_feature_ids or []
-            ) if user_pref else set()
+            user = users.get_current_user()
+            if user:
+                excluded_feature_ids = set(
+                    user_models.DoneFeature.get_user_done_ids(user.email())
+                )
 
         show_enterprise = 'feature_type' in user_query or self.get_bool_arg(
             'showEnterprise'
@@ -143,6 +144,18 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
             )
         except ValueError as err:
             self.abort(400, msg=str(err))
+
+        # Annotate each feature with per-user done state.
+        user = users.get_current_user()
+        if user:
+            done_ids = set(
+                user_models.DoneFeature.get_user_done_ids(user.email())
+            )
+            for f in features_on_page:
+                f['is_done'] = f.get('id') in done_ids
+        else:
+            for f in features_on_page:
+                f['is_done'] = False
 
         return {
             'total_count': total_count,

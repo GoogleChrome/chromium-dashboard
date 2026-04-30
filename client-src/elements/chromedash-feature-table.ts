@@ -71,8 +71,7 @@ export class ChromedashFeatureTable extends LitElement {
   showDone = false;
   @property({type: Boolean})
   showDoneControls = false;
-  @property({type: Object, attribute: false})
-  doneFeatureIds = new Set<number>();
+
 
   connectedCallback() {
     super.connectedCallback();
@@ -373,7 +372,6 @@ export class ChromedashFeatureTable extends LitElement {
         ?canEdit=${this.canEdit}
         .starredFeatures=${this.starredFeatures}
         .gates=${this.gates}
-        .doneFeatureIds=${this.doneFeatureIds}
         ?showDoneControls=${this.showDoneControls}
         selectedGateId=${this.selectedGateId}
       ></chromedash-feature-row>

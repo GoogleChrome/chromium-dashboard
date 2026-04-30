@@ -68,8 +68,6 @@ export class ChromedashAllFeaturesPage extends LitElement {
   nameOnly = false;
   @state()
   showDone = false;
-  @state()
-  doneFeatureIds: Set<number> = new Set();
 
   @queryAll('chromedash-feature-table')
   chromedashFeatureTables;
@@ -122,19 +120,10 @@ export class ChromedashAllFeaturesPage extends LitElement {
   handleDoneToggled(e) {
     const featureId = Number(e.detail.featureId);
     const isDone = Boolean(e.detail.isDone);
-    const newDoneFeatureIds = new Set(this.doneFeatureIds);
-    if (isDone) {
-      newDoneFeatureIds.add(featureId);
-    } else {
-      newDoneFeatureIds.delete(featureId);
-    }
-    this.doneFeatureIds = newDoneFeatureIds;
     window.csClient
-      .setSettings(undefined, Array.from(this.doneFeatureIds.values()))
+      .setDone(featureId, isDone)
       .then(() => {
-        if (!this.showDone) {
-          this.refetch();
-        }
+        this.refetch();
       })
       .catch(() => {
         showToastMessage('Unable to save done state. Please try again.');
@@ -164,19 +153,7 @@ export class ChromedashAllFeaturesPage extends LitElement {
         );
       });
 
-    if (this.showDoneControls) {
-      window.csClient
-        .getSettings()
-        .then(settings => {
-          const doneIds = settings.editable_done_feature_ids || [];
-          this.doneFeatureIds = new Set(doneIds);
-        })
-        .catch(() => {
-          showToastMessage(
-            'Some errors occurred. Please refresh the page or try again later.'
-          );
-        });
-    }
+
   }
 
   refetch() {
@@ -217,7 +194,6 @@ export class ChromedashAllFeaturesPage extends LitElement {
         ?signedIn=${Boolean(this.user)}
         ?canEdit=${this.user && this.user.can_edit_all}
         .starredFeatures=${this.starredFeatures}
-        .doneFeatureIds=${this.doneFeatureIds}
         ?showDone=${this.showDone}
         ?showDoneControls=${this.showDoneControls}
         @star-toggle-event=${this.handleStarToggle}

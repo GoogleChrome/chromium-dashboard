@@ -44,8 +44,6 @@ class ChromedashFeatureRow extends LitElement {
   starredFeatures = new Set<number>();
   @property({attribute: false})
   gates: Record<number, GateDict[]> = {};
-  @property({attribute: false})
-  doneFeatureIds = new Set<number>();
   @property({type: Boolean})
   showDoneControls = false;
   @property({type: Number})
@@ -139,7 +137,7 @@ class ChromedashFeatureRow extends LitElement {
     if (!this.showDoneControls) {
       return nothing;
     }
-    const isDone = this.doneFeatureIds.has(Number(feature.id));
+    const isDone = Boolean(feature.is_done);
     return html`
       <sl-icon-button
         title=${isDone ? 'Marked done (click to unmark)' : 'Mark as done'}

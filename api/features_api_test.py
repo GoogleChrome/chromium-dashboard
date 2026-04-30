@@ -370,9 +370,8 @@ class FeaturesAPITest(testing_config.CustomTestCase):
         mock_search.return_value = ([], 0)
 
         testing_config.sign_in('one@example.com', 123567890)
-        user_pref = user_models.UserPref.get_signed_in_user_pref()
-        user_pref.editable_done_feature_ids = [111, 222]
-        user_pref.put()
+        user_models.DoneFeature.set_done('one@example.com', 111)
+        user_models.DoneFeature.set_done('one@example.com', 222)
 
         url = self.request_path + '?include_done=false'
         with test_app.test_request_context(url):
@@ -388,9 +387,8 @@ class FeaturesAPITest(testing_config.CustomTestCase):
         mock_search.return_value = ([], 0)
 
         testing_config.sign_in('one@example.com', 123567890)
-        user_pref = user_models.UserPref.get_signed_in_user_pref()
-        user_pref.editable_done_feature_ids = [111, 222]
-        user_pref.put()
+        user_models.DoneFeature.set_done('one@example.com', 111)
+        user_models.DoneFeature.set_done('one@example.com', 222)
 
         with test_app.test_request_context(self.request_path):
             self.handler.do_get()
