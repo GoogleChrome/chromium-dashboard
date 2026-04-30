@@ -21,7 +21,6 @@ from typing import TypedDict
 
 from google.cloud import ndb  # type: ignore
 
-from api import converters
 from framework import utils
 from internals import core_enums, fetchchannels
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
@@ -131,10 +130,11 @@ def get_feature_stage_ids_list(feature_id: int) -> list[dict[str, int]]:
 
 
 def get_ot_stage_extensions(ot_stage_id: int):
-    """Return a list of extension stages associated with a stage in JSON format"""  # noqa: D415
+    """Return a list of extension stages associated with a stage."""
     q = Stage.query(Stage.ot_stage_id == ot_stage_id)
-    extension_stages = [converters.stage_to_json_dict(stage) for stage in q]
-    return sorted(extension_stages, key=lambda s: s['created'])
+    extension_stages = q.fetch()
+    # extension_stages = [converters.stage_to_json_dict(stage) for stage in q]
+    return sorted(extension_stages, key=lambda s: s.created)
 
 
 def get_stage_info_for_templates(fe: FeatureEntry) -> StageTemplateInfo:
@@ -234,6 +234,16 @@ def get_stage_info_for_templates(fe: FeatureEntry) -> StageTemplateInfo:
     # a boolean value representing whether or not the estimated milestones
     # table will need to be rendered.
     return stage_info
+
+
+def is_announced(ship_stages: list[Stage]) -> bool:
+    """Return True if any milestone already went to the beta channel."""
+    current_beta_milestone = fetchchannels.get_current_beta_milestone()
+    earliest_from_feature = find_earliest_milestone(ship_stages)
+    return (
+        earliest_from_feature is not None
+        and earliest_from_feature <= current_beta_milestone
+    )
 
 
 LAST_MILESTONE_TO_YEAR: dict[int, int] = {

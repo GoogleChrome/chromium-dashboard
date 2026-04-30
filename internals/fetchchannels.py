@@ -85,6 +85,20 @@ def get_omaha_data():
     return json.loads(omaha_data)
 
 
+def get_current_beta_milestone() -> int:
+    """Return the milestone number that is current on the beta channel."""
+    omaha_data = get_omaha_data()
+    beta_version = next(
+        (
+            v['version']
+            for v in omaha_data[0]['versions']
+            if v['channel'] == 'beta'
+        ),
+        '0.0',
+    )
+    return int(beta_version.split('.')[0])
+
+
 SCHEDULE_CACHE_TIME = 60 * 60  # 1 hour
 
 

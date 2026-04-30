@@ -253,16 +253,7 @@ def apply_subscription_rule_docs(
     """Every change to a post-beta feature notifies the docs team."""
     rule_results: dict[str, list[str]] = {}
     # Case A: name or summary changing while any milestone is post-beta.
-    omaha_data = fetchchannels.get_omaha_data()
-    beta_version = next(
-        (
-            v['version']
-            for v in omaha_data[0]['versions']
-            if v['channel'] == 'beta'
-        ),
-        '0.0',
-    )
-    current_beta_milestone = int(beta_version.split('.')[0])
+    current_beta_milestone = fetchchannels.get_current_beta_milestone()
     if 'name' in changed_field_names or 'summary' in changed_field_names:
         earliest_from_feature = stage_helpers.find_earliest_milestone(
             ship_stages

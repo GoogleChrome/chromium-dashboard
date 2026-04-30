@@ -167,6 +167,7 @@ class FeatureConvertersTest(testing_config.CustomTestCase):
                     'prefixed': False,
                     'flag': False,
                     'status': {'text': 'Enabled by default', 'val': 5},
+                    'announced': False,
                 },
                 'ff': {
                     'view': {
@@ -256,6 +257,7 @@ class FeatureConvertersTest(testing_config.CustomTestCase):
                     'prefixed': False,
                     'flag': False,
                     'status': {'text': 'Enabled by default', 'val': 5},
+                    'announced': True,
                 },
                 'ff': {
                     'view': {
@@ -451,6 +453,7 @@ class FeatureConvertersTest(testing_config.CustomTestCase):
                         'text': 'Enabled by default',
                         'val': 5,
                     },
+                    'announced': True,
                 },
                 'ff': {
                     'view': {
