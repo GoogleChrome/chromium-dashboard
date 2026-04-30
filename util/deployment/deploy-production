@@ -39,7 +39,7 @@ LATEST_VERSION=$(gcloud app --project="$APP_NAME" versions list --sort-by=~last_
 
 echo -e "\nDeployment complete. Validating..."
 echo "Visit $VERSION_URL to confirm that everything works."
-read -p "Wait a few minutes, then press 'y' to redirect traffic to version $LATEST_VERSION for all services. (y/n) " -n 1 -r
+read -p "Press 'y' to redirect traffic to version $LATEST_VERSION for all services. (y/n) " -n 1 -r
 echo
 
 if [[ $REPLY =~ ^[Yy]$ ]]; then
