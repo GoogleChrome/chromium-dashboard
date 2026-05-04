@@ -39,7 +39,8 @@ client-src
 # OS files
 *.DS_Store
 
-# Test coverage tool
+# Test files and coverage
+*_test.py
 .coverage
 htmlcov
 
