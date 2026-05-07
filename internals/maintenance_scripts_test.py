@@ -1966,6 +1966,30 @@ class GenerateStaleFeaturesFileTest(testing_config.CustomTestCase):
         }
         self.assertEqual(feature_ids, expected_ids)
 
+    def test_gather_milestone_reset_features(self):
+        """Should return features that have had their milestones reset."""
+        feature_reset = FeatureEntry(
+            id=8,
+            name='Reset Feature',
+            summary='summary',
+            category=1,
+            feature_type=0,
+            owner_emails=['owner8@example.com'],
+        )
+        feature_reset.put()
+
+        activity = Activity(
+            feature_id=8,
+            log_type=Activity.MILESTONE_RESET,
+            author='admin@example.com',
+        )
+        activity.put()
+
+        reset_features = self.handler._gather_milestone_reset_features()
+
+        self.assertEqual(len(reset_features), 1)
+        self.assertEqual(reset_features[0].key.integer_id(), 8)
+
     def test_generate_rows(self):
         """Should format feature data into correct feature and owner CSV rows."""
         features_to_process = [self.feature_1, self.feature_7, self.feature_2]
@@ -2010,10 +2034,11 @@ class GenerateStaleFeaturesFileTest(testing_config.CustomTestCase):
         self.assertCountEqual(expected_owner_rows, owner_rows)
 
     def test_write_csv(self):
-        """Should write the correct headers and rows to two GCS blobs."""
+        """Should write the correct headers and rows to three GCS blobs."""
         mock_bucket = mock.MagicMock()
         mock_feature_blob = mock.MagicMock()
         mock_owner_blob = mock.MagicMock()
+        mock_reset_blob = mock.MagicMock()
 
         # Use side_effect to return the correct blob mock based on the filename
         def blob_switcher(blob_name):
@@ -2022,6 +2047,8 @@ class GenerateStaleFeaturesFileTest(testing_config.CustomTestCase):
                 return mock_feature_blob
             if blob_name == 'chromestatus-stale-feature-owners.csv':
                 return mock_owner_blob
+            if blob_name == 'chromestatus-milestone-reset-features.csv':
+                return mock_reset_blob
             return mock.MagicMock()
 
         mock_bucket.blob.side_effect = blob_switcher
@@ -2035,16 +2062,22 @@ class GenerateStaleFeaturesFileTest(testing_config.CustomTestCase):
             ['2', 'b@example.com'],
             ['2', 'b2@example.com'],
         ]
+        reset_feature_rows = [
+            ['Reset Feat', '8', f'{settings.SITE_URL}feature/8'],
+        ]
 
-        self.handler._write_csv(mock_bucket, feature_rows, owner_rows)
+        self.handler._write_csv(
+            mock_bucket, feature_rows, owner_rows, reset_feature_rows
+        )
 
-        # Check that .blob() was called for both files
+        # Check that .blob() was called for all files
         expected_calls = [
             mock.call('chromestatus-stale-features.csv'),
             mock.call('chromestatus-stale-feature-owners.csv'),
+            mock.call('chromestatus-milestone-reset-features.csv'),
         ]
         mock_bucket.blob.assert_has_calls(expected_calls)
-        self.assertEqual(mock_bucket.blob.call_count, 2)
+        self.assertEqual(mock_bucket.blob.call_count, 3)
 
         feature_upload_call = mock_feature_blob.upload_from_string.call_args
         self.assertIsNotNone(feature_upload_call)
@@ -2076,6 +2109,16 @@ class GenerateStaleFeaturesFileTest(testing_config.CustomTestCase):
         self.assertEqual(header, ['id', 'owner_email'])
         self.assertEqual(list(reader), owner_rows)
 
+        reset_upload_call = mock_reset_blob.upload_from_string.call_args
+        self.assertIsNotNone(reset_upload_call)
+        uploaded_string = reset_upload_call[0][0]
+        string_io = StringIO(uploaded_string)
+        reader = csv.reader(string_io, lineterminator='\n')
+
+        header = next(reader)
+        self.assertEqual(header, ['name', 'id', 'chromestatus_url'])
+        self.assertEqual(list(reader), reset_feature_rows)
+
     @mock.patch('framework.utils.get_current_milestone_info')
     @mock.patch('google.cloud.storage.Client')
     @mock.patch('framework.basehandlers.FlaskHandler.require_cron_header')
@@ -2087,7 +2130,7 @@ class GenerateStaleFeaturesFileTest(testing_config.CustomTestCase):
         mock_storage_client,
         mock_get_milestone,
     ):
-        """Should correctly orchestrate the entire file generation process for both files."""
+        """Should correctly orchestrate the entire file generation process for all files."""
         mock_datetime.now.return_value = datetime.now()
         mock_datetime.side_effect = lambda *args, **kw: datetime(*args, **kw)
         mock_get_milestone.return_value = {
@@ -2099,8 +2142,31 @@ class GenerateStaleFeaturesFileTest(testing_config.CustomTestCase):
 
         mock_feature_blob = mock.MagicMock()
         mock_owner_blob = mock.MagicMock()
+        mock_reset_blob = mock.MagicMock()
 
-        mock_bucket.blob.side_effect = [mock_feature_blob, mock_owner_blob]
+        mock_bucket.blob.side_effect = [
+            mock_feature_blob,
+            mock_owner_blob,
+            mock_reset_blob,
+        ]
+
+        # Create a feature that had milestones reset.
+        feature_reset = FeatureEntry(
+            id=8,
+            name='Reset Feature',
+            summary='summary',
+            category=1,
+            feature_type=0,
+            owner_emails=['owner8@example.com'],
+        )
+        feature_reset.put()
+
+        activity = Activity(
+            feature_id=8,
+            log_type=Activity.MILESTONE_RESET,
+            author='admin@example.com',
+        )
+        activity.put()
 
         result = self.handler.get_template_data()
 
@@ -2109,10 +2175,11 @@ class GenerateStaleFeaturesFileTest(testing_config.CustomTestCase):
             settings.FILES_BUCKET
         )
 
-        # Check that .blob() was called for both files in order
+        # Check that .blob() was called for all files in order
         expected_calls = [
             mock.call('chromestatus-stale-features.csv'),
             mock.call('chromestatus-stale-feature-owners.csv'),
+            mock.call('chromestatus-milestone-reset-features.csv'),
         ]
         mock_bucket.blob.assert_has_calls(expected_calls)
 
@@ -2145,7 +2212,7 @@ class GenerateStaleFeaturesFileTest(testing_config.CustomTestCase):
             csv.reader(StringIO(owner_upload_call), lineterminator='\n')
         )
 
-        self.assertEqual(len(owner_reader), 4)
+        self.assertEqual(len(owner_reader), 5)
         self.assertEqual(owner_reader[0], ['id', 'owner_email'])
         expected_owners = [
             [
@@ -2160,11 +2227,33 @@ class GenerateStaleFeaturesFileTest(testing_config.CustomTestCase):
                 str(self.feature_7.key.integer_id()),
                 self.feature_7.owner_emails[0],
             ],
+            [
+                '8',
+                'owner8@example.com',
+            ],
         ]
         self.assertCountEqual(owner_reader[1:], expected_owners)
 
+        # Verify Reset Feature CSV content
+        reset_upload_call = mock_reset_blob.upload_from_string.call_args[0][0]
+        reset_reader = list(
+            csv.reader(StringIO(reset_upload_call), lineterminator='\n')
+        )
+
+        self.assertEqual(len(reset_reader), 2)
+        self.assertEqual(reset_reader[0], ['name', 'id', 'chromestatus_url'])
         self.assertEqual(
-            result, '3 rows added to chromestatus-stale-features.csv'
+            reset_reader[1],
+            [
+                'Reset Feature',
+                '8',
+                f'{settings.SITE_URL}feature/8',
+            ],
+        )
+
+        self.assertEqual(
+            result,
+            '3 rows added to chromestatus-stale-features.csv and 1 rows added to chromestatus-milestone-reset-features.csv',
         )
 
 
