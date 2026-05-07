@@ -416,17 +416,14 @@ class AssociateOTs(FlaskHandler):
             return None
         return chromestatus_id
 
-    def find_unassociated_trial_stage(self, feature_id: int) -> Stage | None:
+    def find_unassociated_trial_stage(
+        self, feature_id: int, fe: FeatureEntry | None, trial_stages: list[Stage]
+    ) -> Stage | None:
         """Find unassociated trial stage."""
-        fe: FeatureEntry | None = FeatureEntry.get_by_id(feature_id)
         if fe is None:
             logging.info(f'No feature found for ChromeStatus ID: {feature_id}')
             return None
 
-        trial_stage_type = core_enums.STAGE_TYPES_ORIGIN_TRIAL[fe.feature_type]
-        trial_stages: list[Stage] = Stage.query(
-            Stage.stage_type == trial_stage_type, Stage.feature_id == feature_id
-        ).fetch()
         # Look for a stage that does not already have an origin trial associated
         # with it.
         unassociated_trial_stages = [
@@ -447,13 +444,9 @@ class AssociateOTs(FlaskHandler):
         return unassociated_trial_stages[0]
 
     def clear_extension_requests(
-        self, ot_stage: Stage, trial_data: dict
+        self, ot_stage: Stage, trial_data: dict, extension_stages: list[Stage]
     ) -> int:
         """Clear any trial extension requests if they have been processed."""
-        extension_stages: list[Stage] = Stage.query(
-            Stage.ot_action_requested == True,  # noqa: E712
-            Stage.ot_stage_id == ot_stage.key.integer_id(),
-        ).fetch()
         if len(extension_stages) == 0:
             return 0
         extension_stages_to_update = []
@@ -481,16 +474,57 @@ class AssociateOTs(FlaskHandler):
         self.require_cron_header()
 
         trials_list = origin_trials_client.get_trials_list()
+        
+        # Pre-fetch all OT stages to avoid N+1 queries in the loop.
+        all_ot_stages = Stage.query(
+            Stage.stage_type.IN(core_enums.ALL_ORIGIN_TRIAL_STAGE_TYPES)
+        ).fetch()
+        
+        stages_by_ot_id = {
+            s.origin_trial_id: s for s in all_ot_stages if s.origin_trial_id
+        }
+        
+        # Group by feature_id and stage_type for find_unassociated_trial_stage
+        ot_stages_by_feature_and_type = collections.defaultdict(list)
+        for s in all_ot_stages:
+            ot_stages_by_feature_and_type[(s.feature_id, s.stage_type)].append(s)
+            
+        # Pre-fetch all active extension requests
+        extension_stage_types = [
+            core_enums.STAGE_BLINK_EXTEND_ORIGIN_TRIAL,
+            core_enums.STAGE_FAST_EXTEND_ORIGIN_TRIAL,
+            core_enums.STAGE_DEP_EXTEND_DEPRECATION_TRIAL,
+        ]
+        active_extensions = Stage.query(
+            Stage.ot_action_requested == True,
+            Stage.stage_type.IN(extension_stage_types)
+        ).fetch()
+        
+        extensions_by_ot_stage_id = collections.defaultdict(list)
+        for es in active_extensions:
+            extensions_by_ot_stage_id[es.ot_stage_id].append(es)
+            
+        # Pre-fetch features
+        feature_ids = set()
+        for trial_data in trials_list:
+            fid = self.parse_feature_id(trial_data['chromestatus_url'])
+            if fid:
+                feature_ids.add(fid)
+        
+        features = ndb.get_multi([ndb.Key('FeatureEntry', fid) for fid in feature_ids])
+        features_by_id = {f.key.integer_id(): f for f in features if f}
+
         entities_to_write: list[Stage] = []
         extensions_cleared = 0
         # Keep track of stages we're writing to so we avoid trying to write
         # to the same Stage entity twice in the same batch.
         unique_entities_to_write: set[int] = set()
         trials_with_no_feature: list[dict[str, Any]] = []
+        
         for trial_data in trials_list:
-            stage: Stage | None = Stage.query(
-                Stage.origin_trial_id == trial_data['id']
-            ).get()
+            trial_id_str = str(trial_data['id'])
+            stage = stages_by_ot_id.get(trial_id_str)
+            
             if stage and stage.key.integer_id() in unique_entities_to_write:
                 logging.info(
                     f'Already writing to Stage entity {stage.key.integer_id()}'
@@ -507,8 +541,10 @@ class AssociateOTs(FlaskHandler):
                 if stage_changed:
                     unique_entities_to_write.add(stage.key.integer_id())
                     entities_to_write.append(stage)
+                
+                ext_stages = extensions_by_ot_stage_id.get(stage.key.integer_id(), [])
                 extensions_cleared += self.clear_extension_requests(
-                    stage, trial_data
+                    stage, trial_data, ext_stages
                 )
                 continue
 
@@ -517,7 +553,15 @@ class AssociateOTs(FlaskHandler):
                 trials_with_no_feature.append(trial_data)
                 continue
 
-            ot_stage = self.find_unassociated_trial_stage(feature_id)
+            fe = features_by_id.get(feature_id)
+            if fe is None:
+                 trials_with_no_feature.append(trial_data)
+                 continue
+                 
+            trial_stage_type = core_enums.STAGE_TYPES_ORIGIN_TRIAL[fe.feature_type]
+            candidate_stages = ot_stages_by_feature_and_type.get((feature_id, trial_stage_type), [])
+            
+            ot_stage = self.find_unassociated_trial_stage(feature_id, fe, candidate_stages)
             if ot_stage is None:
                 trials_with_no_feature.append(trial_data)
                 continue
