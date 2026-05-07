@@ -704,6 +704,17 @@ class CreateOriginTrials(FlaskHandler):
                 '/tasks/email-ot-creation-processed', stage
             )
 
+    @ndb.transactional()
+    def _claim_stage_for_creation(self, stage_id: int) -> Stage | None:
+        """Transactionally claim a stage for creation processing."""
+        stage: Stage | None = Stage.get_by_id(stage_id)
+        if stage and stage.ot_setup_status == core_enums.OT_READY_FOR_CREATION:
+            stage.ot_setup_status = core_enums.OT_CREATION_PROCESSING
+            stage.ot_action_requested = False
+            stage.put()
+            return stage
+        return None
+
     def get_template_data(self, **kwargs) -> str:
         """Create any origin trials that are flagged for creation."""
         self.require_cron_header()
@@ -711,17 +722,23 @@ class CreateOriginTrials(FlaskHandler):
             return 'Automated OT creation process is not active.'
 
         # OT stages that are flagged to process a trial creation.
-        ot_stages: list[Stage] = Stage.query(
+        ot_stage_keys: list[ndb.Key] = Stage.query(
             Stage.ot_setup_status == core_enums.OT_READY_FOR_CREATION
-        ).fetch()
-        for stage in ot_stages:
-            stage.ot_action_requested = False
+        ).fetch(keys_only=True)
+
+        count = 0
+        for key in ot_stage_keys:
+            stage = self._claim_stage_for_creation(key.integer_id())
+            if not stage:
+                continue
+
             creation_success = self.handle_creation(stage)
             if creation_success:
                 self.prepare_for_activation(stage)
             stage.put()
+            count += 1
 
-        return f'{len(ot_stages)} trial creation request(s) processed.'
+        return f'{count} trial creation request(s) processed.'
 
 
 class ActivateOriginTrials(FlaskHandler):

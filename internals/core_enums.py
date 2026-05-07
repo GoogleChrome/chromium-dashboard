@@ -654,6 +654,7 @@ OT_CREATION_FAILED = 3
 OT_ACTIVATION_FAILED = 4
 OT_CREATED = 5
 OT_ACTIVATED = 6
+OT_CREATION_PROCESSING = 7
 
 
 # Histogram IDs used for identifying origin trial use counters.

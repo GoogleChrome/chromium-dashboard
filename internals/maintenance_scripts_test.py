@@ -528,32 +528,37 @@ class CreateOriginTrialsTest(testing_config.CustomTestCase):
 
         result = self.handler.get_template_data()
         self.assertEqual('2 trial creation request(s) processed.', result)
+
+        # Reload stages from Datastore since the handler modifies them in a transaction
+        updated_stage_1 = Stage.get_by_id(self.ot_stage_1.key.integer_id())
+        updated_stage_2 = Stage.get_by_id(self.ot_stage_2.key.integer_id())
+
         # Check that different email notifications were sent.
         mock_enqueue_task.assert_has_calls(
             [
                 mock.call(
                     '/tasks/email-ot-activated',
-                    {'stage': converters.stage_to_json_dict(self.ot_stage_1)},
+                    {'stage': converters.stage_to_json_dict(updated_stage_1)},
                 ),
                 mock.call(
                     '/tasks/email-ot-creation-processed',
-                    {'stage': converters.stage_to_json_dict(self.ot_stage_2)},
+                    {'stage': converters.stage_to_json_dict(updated_stage_2)},
                 ),
             ],
             any_order=True,
         )
         # Activation was handled, so a delayed activation date should not be set.
-        self.assertIsNone(self.ot_stage_1.ot_activation_date)
+        self.assertIsNone(updated_stage_1.ot_activation_date)
         # OT 2 should have delayed activation date set.
-        self.assertEqual(date(2030, 1, 1), self.ot_stage_2.ot_activation_date)
+        self.assertEqual(date(2030, 1, 1), updated_stage_2.ot_activation_date)
         # Setup status should be verified.
         self.assertEqual(
-            self.ot_stage_1.ot_setup_status, core_enums.OT_ACTIVATED
+            updated_stage_1.ot_setup_status, core_enums.OT_ACTIVATED
         )
-        self.assertEqual(self.ot_stage_2.ot_setup_status, core_enums.OT_CREATED)
+        self.assertEqual(updated_stage_2.ot_setup_status, core_enums.OT_CREATED)
         # New origin trial ID should be associated with the stages.ss
-        self.assertIsNotNone(self.ot_stage_1.origin_trial_id)
-        self.assertIsNotNone(self.ot_stage_2.origin_trial_id)
+        self.assertIsNotNone(updated_stage_1.origin_trial_id)
+        self.assertIsNotNone(updated_stage_2.origin_trial_id)
         # OT 3 had no action request, so it should not have changed.
         self.assertIsNone(self.ot_stage_3.origin_trial_id)
 
@@ -590,20 +595,25 @@ class CreateOriginTrialsTest(testing_config.CustomTestCase):
 
         result = self.handler.get_template_data()
         self.assertEqual('2 trial creation request(s) processed.', result)
+
+        # Reload stages from Datastore
+        updated_stage_1 = Stage.get_by_id(self.ot_stage_1.key.integer_id())
+        updated_stage_2 = Stage.get_by_id(self.ot_stage_2.key.integer_id())
+
         # Failure notications should be sent to the OT support team.
         mock_enqueue_task.assert_has_calls(
             [
                 mock.call(
                     '/tasks/email-ot-creation-request-failed',
                     {
-                        'stage': converters.stage_to_json_dict(self.ot_stage_1),
+                        'stage': converters.stage_to_json_dict(updated_stage_1),
                         'error_text': '503, Unavailable',
                     },
                 ),
                 mock.call(
                     '/tasks/email-ot-creation-request-failed',
                     {
-                        'stage': converters.stage_to_json_dict(self.ot_stage_2),
+                        'stage': converters.stage_to_json_dict(updated_stage_2),
                         'error_text': '500, Problems happened after trial was created',
                     },
                 ),
@@ -618,20 +628,20 @@ class CreateOriginTrialsTest(testing_config.CustomTestCase):
             any_order=True,
         )
         # Creation wasn't handled, so activation dates shouldn't be set.
-        self.assertIsNone(self.ot_stage_1.ot_activation_date)
-        self.assertIsNone(self.ot_stage_2.ot_activation_date)
+        self.assertIsNone(updated_stage_1.ot_activation_date)
+        self.assertIsNone(updated_stage_2.ot_activation_date)
         # Setup status should be marked as "Failed".
         self.assertEqual(
-            self.ot_stage_1.ot_setup_status, core_enums.OT_CREATION_FAILED
+            updated_stage_1.ot_setup_status, core_enums.OT_CREATION_FAILED
         )
         self.assertEqual(
-            self.ot_stage_2.ot_setup_status, core_enums.OT_CREATION_FAILED
+            updated_stage_2.ot_setup_status, core_enums.OT_CREATION_FAILED
         )
         # No OT IDs should be added to stages that had no successful actions.
-        self.assertIsNone(self.ot_stage_1.origin_trial_id)
+        self.assertIsNone(updated_stage_1.origin_trial_id)
         self.assertIsNone(self.ot_stage_3.origin_trial_id)
         # OT stage 2 had an error, but a trial was successfully created.
-        self.assertEqual('1112223334', self.ot_stage_2.origin_trial_id)
+        self.assertEqual('1112223334', updated_stage_2.origin_trial_id)
 
     @mock.patch('framework.cloud_tasks_helpers.enqueue_task')
     @mock.patch('internals.maintenance_scripts.CreateOriginTrials._get_today')
@@ -669,34 +679,39 @@ class CreateOriginTrialsTest(testing_config.CustomTestCase):
 
         result = self.handler.get_template_data()
         self.assertEqual('2 trial creation request(s) processed.', result)
+
+        # Reload stages from Datastore
+        updated_stage_1 = Stage.get_by_id(self.ot_stage_1.key.integer_id())
+        updated_stage_2 = Stage.get_by_id(self.ot_stage_2.key.integer_id())
+
         # One trial activation should have failed, and one should be processed.
         mock_enqueue_task.assert_has_calls(
             [
                 mock.call(
                     '/tasks/email-ot-activation-failed',
-                    {'stage': converters.stage_to_json_dict(self.ot_stage_1)},
+                    {'stage': converters.stage_to_json_dict(updated_stage_1)},
                 ),
                 mock.call(
                     '/tasks/email-ot-creation-processed',
-                    {'stage': converters.stage_to_json_dict(self.ot_stage_2)},
+                    {'stage': converters.stage_to_json_dict(updated_stage_2)},
                 ),
             ],
             any_order=True,
         )
 
         # Activation failed, so an activation date should have been set.
-        self.assertEqual(self.ot_stage_1.ot_activation_date, date.today())
+        self.assertEqual(updated_stage_1.ot_activation_date, date.today())
         # OT 2 should have delayed activation date set.
-        self.assertEqual(date(2030, 1, 1), self.ot_stage_2.ot_activation_date)
+        self.assertEqual(date(2030, 1, 1), updated_stage_2.ot_activation_date)
         # OT 1 setup status should be verified, but activation failed.
         self.assertEqual(
-            self.ot_stage_1.ot_setup_status, core_enums.OT_ACTIVATION_FAILED
+            updated_stage_1.ot_setup_status, core_enums.OT_ACTIVATION_FAILED
         )
         # OT 2 should have been created but not yet activated.
-        self.assertEqual(self.ot_stage_2.ot_setup_status, core_enums.OT_CREATED)
+        self.assertEqual(updated_stage_2.ot_setup_status, core_enums.OT_CREATED)
         # New origin trial ID should be associated with the stages.
-        self.assertIsNotNone(self.ot_stage_1.origin_trial_id)
-        self.assertIsNotNone(self.ot_stage_2.origin_trial_id)
+        self.assertIsNotNone(updated_stage_1.origin_trial_id)
+        self.assertIsNotNone(updated_stage_2.origin_trial_id)
         # OT 3 had no action request, so it should not have changed.
         self.assertIsNone(self.ot_stage_3.origin_trial_id)
 
