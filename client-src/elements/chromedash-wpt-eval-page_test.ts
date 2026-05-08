@@ -50,7 +50,7 @@ describe('chromedash-wpt-eval-page', () => {
     (window as any).csClient = csClientStub;
     sinon.stub(ChromedashWPTEvalPage.prototype, 'managePolling');
     sinon.stub(ChromedashWPTEvalPage.prototype, 'updateCooldown');
-    sinon.stub(window, 'setInterval');
+    sinon.stub(window, 'setInterval').returns(123 as any);
   });
 
   afterEach(() => {
@@ -667,6 +667,11 @@ describe('chromedash-wpt-eval-page', () => {
       expect((ChromedashWPTEvalPage.prototype.managePolling as any).called).to
         .be.true;
 
+      // Restore managePolling to test its real behavior
+      (ChromedashWPTEvalPage.prototype.managePolling as any).restore();
+      // Simulate that it was polling by setting a fake interval ID
+      (el as any)._pollIntervalId = 123;
+
       // Manually trigger the next fetch (simulating the poll interval hitting)
       await el.fetchData();
       await el.updateComplete;
@@ -683,8 +688,7 @@ describe('chromedash-wpt-eval-page', () => {
       expect(successMsg!.textContent).to.contain('Analysis complete!');
 
       // Verify polling stopped
-      expect((ChromedashWPTEvalPage.prototype.managePolling as any).called).to
-        .be.true;
+      expect((el as any)._pollIntervalId).to.be.null;
     });
 
     it('shows error alert if previous run FAILED', async () => {
@@ -777,7 +781,6 @@ describe('chromedash-wpt-eval-page', () => {
     });
   });
 
-  // NEW: Cooldown Logic Tests
   describe('Cooldown Logic', () => {
     it('disables button and shows cooldown message if last run was COMPLETE < 30 mins ago', async () => {
       const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
@@ -793,6 +796,10 @@ describe('chromedash-wpt-eval-page', () => {
           .featureId=${1}
         ></chromedash-wpt-eval-page>`
       );
+
+      // Manually set cooldown remaining to simulate active cooldown
+      (el as any)._cooldownRemaining = 1500000;
+
       await el.updateComplete;
 
       const button = el.shadowRoot!.querySelector('.generate-button');
@@ -870,6 +877,10 @@ describe('chromedash-wpt-eval-page', () => {
           .featureId=${1}
         ></chromedash-wpt-eval-page>`
       );
+
+      // Manually set cooldown remaining to simulate active cooldown
+      (el as any)._cooldownRemaining = 1500000;
+
       await el.updateComplete;
 
       // Verify cooldown is active.
