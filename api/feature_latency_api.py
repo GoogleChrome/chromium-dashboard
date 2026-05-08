@@ -23,6 +23,7 @@ from chromestatus_openapi.models.feature_link import FeatureLink
 
 from api import channels_api
 from framework import basehandlers, permissions
+from framework.utils import chunk_list
 from internals import core_enums, stage_helpers
 from internals.core_models import FeatureEntry, Stage
 
@@ -112,20 +113,22 @@ class FeatureLatencyAPI(basehandlers.APIHandler):
         logging.info('feature_ids %r', feature_ids)
         if not feature_ids:
             return {}
-        stage_query = Stage.query()
-        stage_query = stage_query.filter(Stage.feature_id.IN(feature_ids))
-        stage_query = stage_query.filter(
-            Stage.stage_type.IN(
-                [
-                    core_enums.STAGE_BLINK_SHIPPING,
-                    core_enums.STAGE_PSA_SHIPPING,
-                    core_enums.STAGE_FAST_SHIPPING,
-                    core_enums.STAGE_DEP_SHIPPING,
-                    core_enums.STAGE_ENT_ROLLOUT,
-                ]
+        stages = []
+        for chunk in chunk_list(list(feature_ids), 30):
+            stage_query = Stage.query()
+            stage_query = stage_query.filter(Stage.feature_id.IN(chunk))
+            stage_query = stage_query.filter(
+                Stage.stage_type.IN(
+                    [
+                        core_enums.STAGE_BLINK_SHIPPING,
+                        core_enums.STAGE_PSA_SHIPPING,
+                        core_enums.STAGE_FAST_SHIPPING,
+                        core_enums.STAGE_DEP_SHIPPING,
+                        core_enums.STAGE_ENT_ROLLOUT,
+                    ]
+                )
             )
-        )
-        stages = stage_query.fetch(None)
+            stages.extend(stage_query.fetch(None))
         stages = [s for s in stages if not s.archived]
         if not stages:
             return {}

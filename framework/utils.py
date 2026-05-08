@@ -202,6 +202,12 @@ def dedupe(list_with_duplicates):
     return list(dict.fromkeys(list_with_duplicates))
 
 
+def chunk_list(lst, n):
+    """Yield successive n-sized chunks from lst."""
+    for i in range(0, len(lst), n):
+        yield lst[i : i + n]
+
+
 def get_chromium_milestone_info(milestone: int) -> dict:
     """Fetches the Chromium milestone schedule info for a given milestone."""
     if settings.UNIT_TEST_MODE or settings.PLAYWRIGHT_MODE:

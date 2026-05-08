@@ -24,7 +24,7 @@ from google.cloud import ndb  # type: ignore
 
 import settings
 from framework import basehandlers
-from framework.utils import get_current_milestone_info
+from framework.utils import chunk_list, get_current_milestone_info
 from internals import (
     approval_defs,
     core_enums,
@@ -33,7 +33,7 @@ from internals import (
     slo,
     stage_helpers,
 )
-from internals.core_models import FeatureEntry, MilestoneSet
+from internals.core_models import FeatureEntry, MilestoneSet, Stage
 from internals.review_models import Gate
 from internals.user_models import UserPref
 
@@ -204,14 +204,25 @@ class AbstractReminderHandler(basehandlers.FlaskHandler):
         min_mstone = int(current_milestone_info['mstone'])
         max_mstone = min_mstone + self.FUTURE_MILESTONES_TO_CONSIDER
 
+        feature_ids = [f.key.integer_id() for f in features]
+        stages = []
+        for chunk in chunk_list(feature_ids, 30):
+            stages.extend(Stage.query(Stage.feature_id.IN(chunk)).fetch())
+
+        stages_by_fid: defaultdict[int, defaultdict[int, list[Stage]]] = (
+            defaultdict(lambda: defaultdict(list))
+        )
+        for s in stages:
+            stages_by_fid[s.feature_id][s.stage_type].append(s)
+
         result = []
         for feature in features:
-            stages = stage_helpers.get_feature_stages(feature.key.integer_id())
+            feature_stages = stages_by_fid[feature.key.integer_id()]
             min_milestone = None
             for field in self.MILESTONE_FIELDS:
                 # Get fields that are relevant to the milestones field specified
                 # (e.g. 'shipped_milestone' implies shipping stages)
-                relevant_stages = stages.get(
+                relevant_stages = feature_stages.get(
                     core_enums.STAGE_TYPES_BY_FIELD_MAPPING[field][
                         feature.feature_type
                     ]
@@ -486,10 +497,11 @@ class SLOOverdueHandler(basehandlers.FlaskHandler):
                 long_overdue_resolve.append(g)
                 relevant_feature_ids.add(g.feature_id)
 
-        relevant_features = {
-            fe_id: FeatureEntry.get_by_id(fe_id)
-            for fe_id in relevant_feature_ids
-        }
+        feature_keys = [
+            ndb.Key(FeatureEntry, fe_id) for fe_id in relevant_feature_ids
+        ]
+        features = ndb.get_multi(feature_keys)
+        relevant_features = {fe.key.integer_id(): fe for fe in features if fe}
         return (
             newly_overdue_initial_response,
             long_overdue_initial_response,

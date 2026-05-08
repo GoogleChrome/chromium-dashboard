@@ -96,9 +96,9 @@ class UserPref(ndb.Model):
             new_prefs = [
                 UserPref(email=e) for e in chunk_emails if e not in found_set
             ]
-            for np in new_prefs:
-                np.put()
-                result.append(np)
+            if new_prefs:
+                ndb.put_multi(new_prefs)
+                result.extend(new_prefs)
 
         return result
 

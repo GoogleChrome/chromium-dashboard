@@ -229,13 +229,38 @@ class ReindexAllFeatures(FlaskHandler):
         """Updates the fulltext index for all features."""
         self.require_cron_header()
 
-        all_feature_entries = FeatureEntry.query().fetch()
-        all_feature_words = FeatureWords.query().fetch()
-        updated_fw_list = batch_index_features(
-            all_feature_entries, all_feature_words
-        )
-        ndb.put_multi(updated_fw_list)
-        msg = f'Added or updated {len(updated_fw_list)} FeatureWords'
+        from framework.utils import chunk_list
+
+        count = 0
+        cursor = None
+        while True:
+            feature_entries, cursor, more = FeatureEntry.query().fetch_page(
+                100, start_cursor=cursor
+            )
+            if not feature_entries:
+                break
+
+            feature_ids = [fe.key.integer_id() for fe in feature_entries]
+
+            # Fetch existing FeatureWords for these features, respecting IN limit.
+            existing_fw_list = []
+            for chunk in chunk_list(feature_ids, 30):
+                existing_fw_list.extend(
+                    FeatureWords.query(
+                        FeatureWords.feature_id.IN(chunk)
+                    ).fetch()
+                )
+
+            updated_fw_list = batch_index_features(
+                feature_entries, existing_fw_list
+            )
+            ndb.put_multi(updated_fw_list)
+            count += len(updated_fw_list)
+
+            if not more or not cursor:
+                break
+
+        msg = f'Added or updated {count} FeatureWords'
         logging.info(msg)
         return msg
 

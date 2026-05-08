@@ -150,14 +150,18 @@ class OTProcessRemindersTest(testing_config.CustomTestCase):
                 ],
             },
         ]
+        stage_map = {
+            self.stage_1.origin_trial_id: self.stage_1,
+            self.stage_2.origin_trial_id: self.stage_2,
+        }
         formatted_1 = ot_process_reminders.build_trial_data(
-            self.mock_get_trials_list_return_value[0]
+            self.mock_get_trials_list_return_value[0], stage_map
         )
         formatted_2 = ot_process_reminders.build_trial_data(
-            self.mock_get_trials_list_return_value[1]
+            self.mock_get_trials_list_return_value[1], stage_map
         )
         formatted_3 = ot_process_reminders.build_trial_data(
-            self.mock_get_trials_list_return_value[2]
+            self.mock_get_trials_list_return_value[2], stage_map
         )
         # 3rd trial does not have associated stage, so should return as None.
         self.assertIsNone(formatted_3)

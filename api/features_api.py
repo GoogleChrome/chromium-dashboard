@@ -250,18 +250,23 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
         # Obtain a list of stages and gates for the given feature type.
         stages_gates = core_enums.STAGES_AND_GATES_BY_FEATURE_TYPE[feature_type]
 
-        for stage_type, gate_types in stages_gates:
-            # Don't create a trial extension stage pre-emptively.
-            if (
-                stage_type
-                == core_enums.STAGE_TYPES_EXTEND_ORIGIN_TRIAL[feature_type]
-            ):
-                continue
+        # Filter out trial extension stages.
+        filtered_stages_gates = [
+            (st, gt)
+            for st, gt in stages_gates
+            if st != core_enums.STAGE_TYPES_EXTEND_ORIGIN_TRIAL[feature_type]
+        ]
 
-            stage = Stage(feature_id=feature_id, stage_type=stage_type)
-            stage.put()
-            new_gates: list[Gate] = []
-            # Stages can have zero or more gates.
+        # Create and put all stages in bulk to avoid N+1 puts.
+        stages = [
+            Stage(feature_id=feature_id, stage_type=st)
+            for st, _ in filtered_stages_gates
+        ]
+        ndb.put_multi(stages)
+
+        new_gates: list[Gate] = []
+        # Create gates referencing the saved stages.
+        for stage, (_, gate_types) in zip(stages, filtered_stages_gates):
             for gate_type in gate_types:
                 gate = Gate(
                     feature_id=feature_id,
@@ -271,8 +276,8 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
                 )
                 new_gates.append(gate)
 
-            if new_gates:
-                ndb.put_multi(new_gates)
+        if new_gates:
+            ndb.put_multi(new_gates)
 
     def _patch_update_stages(
         self,

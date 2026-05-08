@@ -22,6 +22,7 @@ from typing import Any
 import requests
 
 from framework import cloud_tasks_helpers, origin_trials_client
+from framework.utils import chunk_list
 from internals.core_models import Stage
 
 RELEASE_DATA_URL = (
@@ -34,14 +35,14 @@ release_cache: dict[str | int, dict[str, str]] = {}
 trials = None
 
 
-def build_trial_data(trial_data: dict[str, Any]) -> dict[str, Any] | None:
+def build_trial_data(
+    trial_data: dict[str, Any], stage_map: dict[str, Stage]
+) -> dict[str, Any] | None:
     """Find corresponding OT stage and assemble necessary info for reminders."""
     logging.info(f'Building trial data for {trial_data.get("id")}')
-    trial_stage: Stage | None = Stage.query(
-        Stage.origin_trial_id == trial_data['id']
-    ).get()
+    trial_stage = stage_map.get(trial_data['id'])
     if trial_stage is None:
-        logging.exception(f'No stage found for trial {trial_data["id"]}')
+        logging.warning(f'No stage found for trial {trial_data["id"]}')
         return None
     contact_list = trial_stage.ot_emails.copy()
     contact_list.append(trial_stage.ot_owner_email)
@@ -76,24 +77,38 @@ def get_trials(
     starting_trials = []
     ending_trials = []
 
+    # First pass: identify matching trials and collect IDs
+    matching_trials = []
+    matching_trial_ids = []
     for trial in trials_list:
+        start_milestone = int(trial['start_milestone'])
+        end_milestone = int(trial['end_milestone'])
+        if start_milestone == release or end_milestone == release:
+            matching_trials.append(trial)
+            matching_trial_ids.append(trial['id'])
+
+    # Bulk fetch stages
+    stages = []
+    for chunk in chunk_list(matching_trial_ids, 30):
+        stages.extend(Stage.query(Stage.origin_trial_id.IN(chunk)).fetch())
+    stage_map = {s.origin_trial_id: s for s in stages}
+
+    for trial in matching_trials:
         start_milestone = int(trial['start_milestone'])
         end_milestone = int(trial['end_milestone'])
 
         matches_start = start_milestone == release
         matches_end = end_milestone == release
-        trial_info = None
 
-        if matches_start or matches_end:
-            trial_info = build_trial_data(trial)
-            if not trial_info:
-                continue
+        trial_info = build_trial_data(trial, stage_map)
+        if not trial_info:
+            continue
 
-            if matches_start:
-                starting_trials.append(trial_info)
+        if matches_start:
+            starting_trials.append(trial_info)
 
-            if matches_end:
-                ending_trials.append(trial_info)
+        if matches_end:
+            ending_trials.append(trial_info)
 
     return starting_trials, ending_trials
 

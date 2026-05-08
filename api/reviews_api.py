@@ -32,6 +32,7 @@ from google.cloud.ndb.tasklets import Future  # for type checking only
 from api import converters
 from framework import basehandlers, permissions
 from framework.users import User
+from framework.utils import chunk_list
 from internals import approval_defs, core_enums, notifier_helpers, self_certify
 from internals.core_models import FeatureEntry, Stage
 from internals.review_models import Activity, Amendment, Gate, Vote
@@ -296,7 +297,9 @@ class PendingGatesAPI(basehandlers.APIHandler):
             return GetGateResponse.from_dict({'gates': []}).to_dict()
 
         # 2. Fetch all the gates on those stages.
-        gates: list[Gate] = Gate.query(Gate.stage_id.IN(stage_ids)).fetch()
+        gates: list[Gate] = []
+        for chunk in chunk_list(list(stage_ids), 30):
+            gates.extend(Gate.query(Gate.stage_id.IN(chunk)).fetch())
 
         # 3. Convert to dicts and add possible assignees.
         dicts = [converters.gate_value_to_json_dict(g) for g in gates]
