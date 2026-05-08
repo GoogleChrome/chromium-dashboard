@@ -43,7 +43,7 @@ class WPTCoverageAPI(basehandlers.EntitiesAPIHandler):
         )
         if not can_edit:
             self.abort(
-                403, f'User does not have dit access to feature {feature_id}'
+                403, f'User does not have edit access to feature {feature_id}'
             )
 
         if not permissions.is_google_or_chromium_account(

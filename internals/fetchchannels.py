@@ -55,7 +55,7 @@ def get_channel_version(channel: str) -> str:
 
     url = OMAHA_URL_TEMPLATE % channel
     logging.info('fetching %s' % url)
-    result = requests.get(url)
+    result = requests.get(url, timeout=60)
     if result.status_code != 200:
         logging.info('Could not fetch channel info for %s', channel)
         return '0.0'

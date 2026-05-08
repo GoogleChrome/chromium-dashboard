@@ -31,7 +31,7 @@ from ghapi.core import GhApi
 import settings
 from framework import secrets
 
-github_crediential = None
+github_credential = None
 github_api_client = None
 
 LINK_TYPE_CHROMIUM_BUG = 'chromium_bug'
