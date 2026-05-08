@@ -91,7 +91,7 @@ export class ChromedashRoadmapHelpDialog extends LitElement {
               name="check_circle_filled_20px"
             ></sl-icon>
             <span>Approved</span>
-            <td>Reviewers approved feature at this stage</td>
+            <span>Reviewers approved feature at this stage</span>
           </li>
           <li>
             <sl-icon
@@ -100,7 +100,7 @@ export class ChromedashRoadmapHelpDialog extends LitElement {
               name="arrow_circle_right_20px"
             ></sl-icon>
             <span>Not started</span>
-            <td>Feature owners have not requested reviews yet</td>
+            <span>Feature owners have not requested reviews yet</span>
           </li>
           <li>
             <sl-icon
@@ -109,7 +109,7 @@ export class ChromedashRoadmapHelpDialog extends LitElement {
               name="pending_20px"
             ></sl-icon>
             <span>In-progress</span>
-            <td>Not all reviews have finished</td>
+            <span>Not all reviews have finished</span>
           </li>
           <li>
             <sl-icon
@@ -118,7 +118,7 @@ export class ChromedashRoadmapHelpDialog extends LitElement {
               name="autorenew_20px"
             ></sl-icon>
             <span>Needs work</span>
-            <td>Reviewers have asked for changes</td>
+            <span>Reviewers have asked for changes</span>
           </li>
           <li>
             <sl-icon
@@ -127,7 +127,7 @@ export class ChromedashRoadmapHelpDialog extends LitElement {
               name="block_20px"
             ></sl-icon>
             <span>Denied</span>
-            <td>Reviewers suggested directional changes</td>
+            <span>Reviewers suggested directional changes</span>
           </li>
         </ul>
       </div>

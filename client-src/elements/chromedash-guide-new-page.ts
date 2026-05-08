@@ -268,9 +268,9 @@ export class ChromedashGuideNewPage extends LitElement {
           .fieldValues=${this.fieldValues}
           ?forEnterprise=${this.isEnterpriseFeature}
           @form-field-update="${this.handleFormFieldUpdate}"
-          class="${className || ''}"></chromedash-form-field>
-          </chromedash-form-field>
-          `;
+          class="${className || ''}"
+        ></chromedash-form-field>
+      `;
     };
 
     const submitLabel = this.submitting

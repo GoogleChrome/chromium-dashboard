@@ -123,7 +123,7 @@ export class ChromedashAttachments extends LitElement {
         type="file"
         name="screenshots"
         @change=${e => this.handleFileSelected(e)}
-        accept="image/png, image/jpeg, image/png, image/wepb, text/plain"
+        accept="image/png, image/jpeg, image/webp, text/plain"
         style="display:none"
       />
       <div style=${styleMap(buttonContainerStyles)}>

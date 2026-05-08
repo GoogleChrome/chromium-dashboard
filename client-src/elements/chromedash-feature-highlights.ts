@@ -432,7 +432,7 @@ export class ChromedashFeatureHighlights extends LitElement {
       <sl-details summary="Overview" ?open=${true}>
         <section class="card ${this.isSuspended() ? 'suspended' : ''}">
           ${this.renderDotDotDotMenu()}
-          ${this.feature.is_enterprise_featqcure
+          ${this.feature.is_enterprise_feature
             ? this.renderEnterpriseFeatureContent()
             : this.renderFeatureContent()}
           ${this.feature.is_enterprise_feature
