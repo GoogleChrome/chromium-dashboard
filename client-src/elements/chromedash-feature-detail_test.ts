@@ -24,11 +24,11 @@ import {
 } from './form-field-enums.js';
 
 describe('chromedash-feature-detail', () => {
-  const stageNoGates = {id: 1};
-  const stagePreparing = {id: 2};
-  const stageActive = {id: 3};
-  const stageMixed = {id: 4};
-  const stageResolved = {id: 5};
+  const stageNoGates = {id: 1} as any;
+  const stagePreparing = {id: 2} as any;
+  const stageActive = {id: 3} as any;
+  const stageMixed = {id: 4} as any;
+  const stageResolved = {id: 5} as any;
 
   const gates = [
     {stage_id: stagePreparing.id, state: GATE_PREPARING},
