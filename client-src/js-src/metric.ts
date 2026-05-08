@@ -14,13 +14,23 @@
  * limitations under the License.
  */
 
+declare global {
+  interface Window {
+    ga: (...args: unknown[]) => void;
+  }
+}
+
 export class Metric {
-  static get supportsPerfNow() {
-    return performance && performance.now;
+  name: string;
+  private _start?: number;
+  private _end?: number;
+
+  static get supportsPerfNow(): boolean {
+    return !!(performance && performance.now);
   }
 
-  static get supportsPerfMark() {
-    return performance && performance.mark;
+  static get supportsPerfMark(): boolean {
+    return !!(performance && performance.mark);
   }
 
   /**
@@ -28,8 +38,11 @@ export class Metric {
    * measurement made.
    * @readonly
    */
-  get duration() {
-    let duration = this._end - this._start;
+  get duration(): number {
+    let duration = -1;
+    if (this._start !== undefined && this._end !== undefined) {
+      duration = this._end - this._start;
+    }
 
     // Use User Timing API results if available, otherwise return
     // performance.now() fallback.
@@ -42,10 +55,10 @@ export class Metric {
       }
     }
 
-    return duration || -1;
+    return duration >= 0 ? duration : -1;
   }
 
-  constructor(name) {
+  constructor(name: string) {
     if (!name) {
       throw Error('Please provide a metric name');
     }
@@ -65,7 +78,7 @@ export class Metric {
    * Prints the metric's duration to the console.
    * @return {Metric} instance of this object.
    */
-  log() {
+  log(): Metric {
     console.info(this.name, this.duration, 'ms');
     return this;
   }
@@ -76,7 +89,7 @@ export class Metric {
    * @param {string=} name If provided, prints the stats of another metric.
    * @return {Metric} instance of this object.
    */
-  logAll(name = this.name) {
+  logAll(name = this.name): Metric {
     // Use User Timing API results if available, otherwise return
     // performance.now() fallback.
     if (Metric.supportsPerfNow) {
@@ -93,7 +106,7 @@ export class Metric {
    * Call to begin a measurement.
    * @return {Metric} instance of this object.
    */
-  start() {
+  start(): Metric {
     if (this._start) {
       console.warn('Recording already started.');
       return this;
@@ -113,7 +126,7 @@ export class Metric {
    * Call to end a measurement.
    * @return {Metric} instance of this object.
    */
-  end() {
+  end(): Metric {
     if (this._end) {
       console.warn('Recording already stopped.');
       return this;
@@ -142,11 +155,15 @@ export class Metric {
    *     optionally specify another value.
    * @return {Metric} instance of this object.
    */
-  sendToAnalytics(category, metric = this.name, duration = this.duration) {
+  sendToAnalytics(
+    category: string,
+    metric = this.name,
+    duration = this.duration
+  ): Metric {
     if (!window.ga) {
       console.warn('Google Analytics has not been loaded');
     } else if (duration >= 0) {
-      ga('send', 'timing', category, metric, duration);
+      window.ga('send', 'timing', category, metric, duration);
     }
     return this;
   }

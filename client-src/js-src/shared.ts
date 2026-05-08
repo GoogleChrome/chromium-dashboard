@@ -16,11 +16,17 @@
 
 'use strict';
 
+declare global {
+  interface Window {
+    dataLayer: unknown[];
+  }
+}
+
 // Google Analytics
 // Global site tag (gtag.js) - Google Analytics
 window.dataLayer = window.dataLayer || [];
-function gtag() {
-  dataLayer.push(arguments);
+function gtag(...args: unknown[]) {
+  window.dataLayer.push(args);
 }
 gtag('js', new Date());
 
