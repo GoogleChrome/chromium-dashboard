@@ -121,10 +121,6 @@ export class ChromedashFeatureDetail extends LitElement {
   anyCollapsed = true;
   @state()
   openStage = 0;
-  @state()
-  previousStageTypeRendered = 0;
-  @state()
-  sameTypeRendered = 0;
 
   static get styles() {
     const ICON_WIDTH = 18;
@@ -657,7 +653,7 @@ export class ChromedashFeatureDetail extends LitElement {
     `;
   }
 
-  renderProcessStage(feStage) {
+  renderProcessStage(feStage: StageDict, sameTypeCount: number) {
     const stageForm = this.getStageForm(feStage.stage_type);
     const fieldNames = stageForm === null ? [] : flattenSections(stageForm);
     if (fieldNames === undefined || fieldNames.length == 0) return nothing;
@@ -668,12 +664,8 @@ export class ChromedashFeatureDetail extends LitElement {
 
     // Add a number differentiation if this stage type is the same as another stage.
     let numberDifferentiation = '';
-    if (this.previousStageTypeRendered === feStage.stage_type) {
-      this.sameTypeRendered += 1;
-      numberDifferentiation = ` ${this.sameTypeRendered}`;
-    } else {
-      this.previousStageTypeRendered = feStage.stage_type;
-      this.sameTypeRendered = 1;
+    if (sameTypeCount > 1) {
+      numberDifferentiation = ` ${sameTypeCount}`;
     }
 
     let name = `${processStage.name}${numberDifferentiation}`;
@@ -991,10 +983,20 @@ export class ChromedashFeatureDetail extends LitElement {
   }
 
   render() {
+    let previousType = 0;
+    let sameTypeCount = 0;
     return html`
       ${this.renderMetadataSection()}
       <h2>${this.renderSectionHeader()} ${this.renderControls()}</h2>
-      ${this.feature.stages.map(feStage => this.renderProcessStage(feStage))}
+      ${this.feature.stages.map(feStage => {
+        if (previousType === feStage.stage_type) {
+          sameTypeCount++;
+        } else {
+          previousType = feStage.stage_type;
+          sameTypeCount = 1;
+        }
+        return this.renderProcessStage(feStage, sameTypeCount);
+      })}
       ${this.renderAddStageButton()} ${this.renderFootnote()}
     `;
   }
