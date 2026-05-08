@@ -593,7 +593,7 @@ describe('chromedash-wpt-eval-page', () => {
         .be.true;
     });
 
-    it.only('passes includeExplainer=true to API when checkbox is checked', async () => {
+    it('passes includeExplainer=true to API when checkbox is checked', async () => {
       csClientStub.getFeature.resolves(mockFeatureV1);
       csClientStub.generateWPTCoverageEvaluation.resolves({});
 
