@@ -77,10 +77,8 @@ export class ChromedashBulkEditPage extends LitElement {
     if (match) {
       return Number(match.groups?.id);
     }
-    try {
-      return Number(url);
-    } catch {}
-    return 0;
+    const num = Number(url);
+    return isNaN(num) ? 0 : num;
   }
 
   isFeatureIdHeader(header: string, index: number) {

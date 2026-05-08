@@ -151,12 +151,12 @@ export function formatFeatureForEdit(feature: Feature): FormattedFeature {
     other_views_notes: feature.browsers.other.view?.notes,
   };
 
-  COMMA_SEPARATED_FIELDS.map(field => {
+  COMMA_SEPARATED_FIELDS.forEach(field => {
     if (formattedFeature[field])
       formattedFeature[field] = formattedFeature[field].join(', ');
   });
 
-  LINE_SEPARATED_FIELDS.map(field => {
+  LINE_SEPARATED_FIELDS.forEach(field => {
     if (formattedFeature[field])
       formattedFeature[field] = formattedFeature[field].join('\r\n');
   });
