@@ -88,9 +88,15 @@ def get_trials(
             matching_trial_ids.append(trial['id'])
 
     # Bulk fetch stages
-    stages = []
+    futures = []
     for chunk in chunk_list(matching_trial_ids, 30):
-        stages.extend(Stage.query(Stage.origin_trial_id.IN(chunk)).fetch())
+        futures.append(
+            Stage.query(Stage.origin_trial_id.IN(chunk)).fetch_async()
+        )
+
+    stages = []
+    for f in futures:
+        stages.extend(f.get_result())
     stage_map = {s.origin_trial_id: s for s in stages}
 
     for trial in matching_trials:

@@ -756,13 +756,6 @@ def process_and_operations(feature_id_future_ops):
 
 def fetch_all_feature_ids_set():
     """Fetch all FeatureEntry ids."""
-    feature_ids_set = set()
-    cursor = None
-    while True:
-        keys, cursor, more = FeatureEntry.query().fetch_page(
-            1000, keys_only=True, start_cursor=cursor
-        )
-        feature_ids_set.update(key.integer_id() for key in keys)
-        if not more or not cursor:
-            break
+    all_feature_keys = FeatureEntry.query().fetch(keys_only=True)
+    feature_ids_set = set(key.integer_id() for key in all_feature_keys)
     return feature_ids_set

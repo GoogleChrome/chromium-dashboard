@@ -297,9 +297,13 @@ class PendingGatesAPI(basehandlers.APIHandler):
             return GetGateResponse.from_dict({'gates': []}).to_dict()
 
         # 2. Fetch all the gates on those stages.
-        gates: list[Gate] = []
+        futures = []
         for chunk in chunk_list(list(stage_ids), 30):
-            gates.extend(Gate.query(Gate.stage_id.IN(chunk)).fetch())
+            futures.append(Gate.query(Gate.stage_id.IN(chunk)).fetch_async())
+
+        gates: list[Gate] = []
+        for f in futures:
+            gates.extend(f.get_result())
 
         # 3. Convert to dicts and add possible assignees.
         dicts = [converters.gate_value_to_json_dict(g) for g in gates]

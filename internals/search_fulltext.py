@@ -243,13 +243,17 @@ class ReindexAllFeatures(FlaskHandler):
             feature_ids = [fe.key.integer_id() for fe in feature_entries]
 
             # Fetch existing FeatureWords for these features, respecting IN limit.
-            existing_fw_list = []
+            futures = []
             for chunk in chunk_list(feature_ids, 30):
-                existing_fw_list.extend(
+                futures.append(
                     FeatureWords.query(
                         FeatureWords.feature_id.IN(chunk)
-                    ).fetch()
+                    ).fetch_async()
                 )
+
+            existing_fw_list = []
+            for f in futures:
+                existing_fw_list.extend(f.get_result())
 
             updated_fw_list = batch_index_features(
                 feature_entries, existing_fw_list

@@ -113,7 +113,7 @@ class FeatureLatencyAPI(basehandlers.APIHandler):
         logging.info('feature_ids %r', feature_ids)
         if not feature_ids:
             return {}
-        stages = []
+        futures = []
         for chunk in chunk_list(list(feature_ids), 30):
             stage_query = Stage.query()
             stage_query = stage_query.filter(Stage.feature_id.IN(chunk))
@@ -128,7 +128,11 @@ class FeatureLatencyAPI(basehandlers.APIHandler):
                     ]
                 )
             )
-            stages.extend(stage_query.fetch(None))
+            futures.append(stage_query.fetch_async(None))
+
+        stages = []
+        for f in futures:
+            stages.extend(f.get_result())
         stages = [s for s in stages if not s.archived]
         if not stages:
             return {}

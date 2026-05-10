@@ -205,9 +205,15 @@ class AbstractReminderHandler(basehandlers.FlaskHandler):
         max_mstone = min_mstone + self.FUTURE_MILESTONES_TO_CONSIDER
 
         feature_ids = [f.key.integer_id() for f in features]
-        stages = []
+        futures = []
         for chunk in chunk_list(feature_ids, 30):
-            stages.extend(Stage.query(Stage.feature_id.IN(chunk)).fetch())
+            futures.append(
+                Stage.query(Stage.feature_id.IN(chunk)).fetch_async()
+            )
+
+        stages = []
+        for f in futures:
+            stages.extend(f.get_result())
 
         stages_by_fid: defaultdict[int, defaultdict[int, list[Stage]]] = (
             defaultdict(lambda: defaultdict(list))
