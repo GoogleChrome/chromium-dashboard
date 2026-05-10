@@ -246,7 +246,7 @@ export class ChromedashOTCreationPage extends LitElement {
 
     this.fieldValues = section.fields.map(field => {
       const featureJSONKey = ALL_FIELDS[field].name || field;
-      let value = getStageValue(this.stage, featureJSONKey);
+      let value = getStageValue(this.stage, featureJSONKey as string);
 
       // The requester's email should be a contact by default.
       if (featureJSONKey === 'ot_owner_email' && !value) {

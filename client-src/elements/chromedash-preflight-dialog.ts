@@ -173,7 +173,7 @@ export class ChromedashPreflightDialog extends LitElement {
 
   renderEditLink(
     stage: ProcessStage | null,
-    feStage: StageDict,
+    feStage: StageDict | null,
     pi: ProgressItem
   ) {
     // This function only renders links for progress items that have a field.
@@ -181,9 +181,8 @@ export class ChromedashPreflightDialog extends LitElement {
       return nothing;
     }
 
-    const pathSegment = stage
-      ? `${stage.outgoing_stage}/${feStage.id}`
-      : 'metadata';
+    const pathSegment =
+      stage && feStage ? `${stage.outgoing_stage}/${feStage.id}` : 'metadata';
 
     return html`
       <a
@@ -236,11 +235,13 @@ export class ChromedashPreflightDialog extends LitElement {
               ${item.stage?.name || 'Metadata'}: ${item.name}
               ${this.renderEditLink(
                 item.stage,
-                findFirstFeatureStage(
-                  item.stage?.outgoing_stage,
-                  this._stage,
-                  this._feature
-                ),
+                item.stage?.outgoing_stage !== undefined
+                  ? findFirstFeatureStage(
+                      item.stage.outgoing_stage,
+                      this._stage,
+                      this._feature
+                    )
+                  : null,
                 item
               )}
             </li>`

@@ -25,7 +25,7 @@ import {ChromedashDrawer, DRAWER_WIDTH_PX} from './chromedash-drawer.js';
 import {ChromedashGateColumn} from './chromedash-gate-column.js';
 import {
   clearURLParams,
-  IS_MOBILE,
+  isMobile,
   isoDateString,
   parseRawQuery,
   showToastMessage,
@@ -150,7 +150,7 @@ export class ChromedashApp extends LitElement {
   @state()
   beforeUnloadHandler: ((event: any) => void) | null = null;
   @state()
-  drawerOpen = !IS_MOBILE;
+  drawerOpen = !isMobile();
 
   firstUpdated() {
     const toastEl = document.createElement('chromedash-toast');
@@ -677,7 +677,7 @@ export class ChromedashApp extends LitElement {
 
   render() {
     let styleMargin = {'margin-left': '20px'};
-    if (!IS_MOBILE && this.drawerOpen) {
+    if (!isMobile() && this.drawerOpen) {
       styleMargin = {'margin-left': DRAWER_WIDTH_PX + 10 + 'px'};
     }
 

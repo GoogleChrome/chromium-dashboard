@@ -704,6 +704,17 @@ class CreateOriginTrials(FlaskHandler):
                 '/tasks/email-ot-creation-processed', stage
             )
 
+    @ndb.transactional()
+    def _claim_stage_for_creation(self, stage_id: int) -> Stage | None:
+        """Transactionally claim a stage for creation processing."""
+        stage: Stage | None = Stage.get_by_id(stage_id)
+        if stage and stage.ot_setup_status == core_enums.OT_READY_FOR_CREATION:
+            stage.ot_setup_status = core_enums.OT_CREATION_PROCESSING
+            stage.ot_action_requested = False
+            stage.put()
+            return stage
+        return None
+
     def get_template_data(self, **kwargs) -> str:
         """Create any origin trials that are flagged for creation."""
         self.require_cron_header()
@@ -711,17 +722,23 @@ class CreateOriginTrials(FlaskHandler):
             return 'Automated OT creation process is not active.'
 
         # OT stages that are flagged to process a trial creation.
-        ot_stages: list[Stage] = Stage.query(
+        ot_stage_keys: list[ndb.Key] = Stage.query(
             Stage.ot_setup_status == core_enums.OT_READY_FOR_CREATION
-        ).fetch()
-        for stage in ot_stages:
-            stage.ot_action_requested = False
+        ).fetch(keys_only=True)
+
+        count = 0
+        for key in ot_stage_keys:
+            stage = self._claim_stage_for_creation(key.integer_id())
+            if not stage:
+                continue
+
             creation_success = self.handle_creation(stage)
             if creation_success:
                 self.prepare_for_activation(stage)
             stage.put()
+            count += 1
 
-        return f'{len(ot_stages)} trial creation request(s) processed.'
+        return f'{count} trial creation request(s) processed.'
 
 
 class ActivateOriginTrials(FlaskHandler):
@@ -1308,6 +1325,17 @@ class GenerateStaleFeaturesFile(FlaskHandler):
 
         return stale_features_with_upcoming_ship_stages
 
+    def _gather_milestone_reset_features(self) -> list[FeatureEntry]:
+        """Generate a list of features that have had their milestones reset."""
+        activities = Activity.query(
+            Activity.log_type == Activity.MILESTONE_RESET
+        ).fetch()
+        feature_ids = list(set(a.feature_id for a in activities))
+        features = ndb.get_multi(
+            [ndb.Key('FeatureEntry', fid) for fid in feature_ids]
+        )
+        return [f for f in features if f]
+
     def _generate_rows(
         self, features: list[FeatureEntry], current_milestone: int
     ) -> tuple[list[list[str]], list[list[str]]]:
@@ -1342,6 +1370,7 @@ class GenerateStaleFeaturesFile(FlaskHandler):
         bucket,
         feature_csv_rows: list[list[str]],
         owner_csv_rows: list[list[str]],
+        reset_feature_csv_rows: list[list[str]],
     ) -> None:
         """Write stale features CSV and owners CSV to the GCP bucket."""
         csv_io = StringIO()
@@ -1372,6 +1401,15 @@ class GenerateStaleFeaturesFile(FlaskHandler):
         blob = bucket.blob('chromestatus-stale-feature-owners.csv')
         blob.upload_from_string(csv_io.getvalue())
 
+        # Do the same process for the milestone reset features file.
+        csv_io = StringIO()
+        writer = csv.writer(csv_io, lineterminator='\n')
+        writer.writerow(['name', 'id', 'chromestatus_url'])
+        for row in reset_feature_csv_rows:
+            writer.writerow(row)
+        blob = bucket.blob('chromestatus-milestone-reset-features.csv')
+        blob.upload_from_string(csv_io.getvalue())
+
     def get_template_data(self, **kwargs) -> str:
         """Get template data."""
         self.require_cron_header()
@@ -1385,9 +1423,30 @@ class GenerateStaleFeaturesFile(FlaskHandler):
         feature_csv_rows, owner_csv_rows = self._generate_rows(
             stale_features, current_milestone
         )
-        self._write_csv(bucket, feature_csv_rows, owner_csv_rows)
 
-        return f'{len(feature_csv_rows)} rows added to chromestatus-stale-features.csv'
+        reset_features = self._gather_milestone_reset_features()
+        reset_feature_csv_rows = []
+        for f in reset_features:
+            reset_feature_csv_rows.append(
+                [
+                    f.name,
+                    str(f.key.integer_id()),
+                    f'{settings.SITE_URL}feature/{f.key.integer_id()}',
+                ]
+            )
+            for email in f.owner_emails:
+                owner_csv_rows.append([str(f.key.integer_id()), email])
+
+        # Deduplicate owner rows to avoid duplicates if a feature is in both lists.
+        owner_csv_rows = [
+            list(r) for r in dict.fromkeys(tuple(row) for row in owner_csv_rows)
+        ]
+
+        self._write_csv(
+            bucket, feature_csv_rows, owner_csv_rows, reset_feature_csv_rows
+        )
+
+        return f'{len(feature_csv_rows)} rows added to chromestatus-stale-features.csv and {len(reset_feature_csv_rows)} rows added to chromestatus-milestone-reset-features.csv'
 
 
 class GenerateShippingFeaturesFile(FlaskHandler):

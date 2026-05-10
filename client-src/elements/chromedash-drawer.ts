@@ -19,7 +19,7 @@ import {LitElement, TemplateResult, css, html, nothing} from 'lit';
 import {customElement, property, state} from 'lit/decorators.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {User} from '../js-src/cs-client.js';
-import {IS_MOBILE, showToastMessage} from './utils.js';
+import {isMobile, showToastMessage} from './utils.js';
 
 export const DRAWER_WIDTH_PX = 200;
 export const MOBILE_DRAWER_WIDTH_PX = 250;
@@ -135,7 +135,7 @@ export class ChromedashDrawer extends LitElement {
         this.user = user;
         // If it is on mobile, log-in is intialized in this component.
         // Othewise, log-in is initialized in chromedash-header.
-        if (!this.user && IS_MOBILE) {
+        if (!this.user && isMobile()) {
           if (!window['isPlaywright']) {
             this.initializeGoogleSignIn();
           }
@@ -265,7 +265,7 @@ export class ChromedashDrawer extends LitElement {
 
   renderDrawer() {
     let accountMenu: typeof nothing | TemplateResult = nothing;
-    if (IS_MOBILE && !this.loading) {
+    if (isMobile() && !this.loading) {
       accountMenu = this.renderAccountMenu();
     }
 
@@ -293,12 +293,12 @@ export class ChromedashDrawer extends LitElement {
         label="Menu"
         placement="start"
         class="drawer-placement-start"
-        style="--size: ${IS_MOBILE
+        style="--size: ${isMobile()
           ? MOBILE_DRAWER_WIDTH_PX
           : DRAWER_WIDTH_PX}px;"
         contained
         noHeader
-        ?open=${!IS_MOBILE && this.defaultOpen}
+        ?open=${!isMobile() && this.defaultOpen}
       >
         ${accountMenu} ${this.renderNavItem('/roadmap', 'Roadmap')}
         ${this.renderNavItem('/features', 'All features')} ${shippingThisYear}

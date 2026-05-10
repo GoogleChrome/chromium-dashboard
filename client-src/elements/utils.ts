@@ -60,13 +60,13 @@ const SHIPPED_FEATURE_OUTDATED_GRACE_PERIOD = 9 * 7 * 24 * 60 * 60 * 1000;
 
 const DATE_HAS_TIMEZONE_REGEX = /Z$|[+-]\d{2}:?\d{2}$/;
 
-export const IS_MOBILE = (() => {
+export function isMobile(): boolean {
   const width =
     window.innerWidth ||
     document.documentElement.clientWidth ||
     document.body.clientWidth;
   return width <= NARROW_WINDOW_MAX_WIDTH;
-})();
+}
 
 /* Convert user-entered text into safe HTML with clickable links
  * where appropriate.
@@ -88,8 +88,9 @@ export function autolink(
   }
 }
 
-export function showToastMessage(msg) {
-  if (!toastEl) toastEl = document.querySelector('chromedash-toast');
+export function showToastMessage(msg: string): void {
+  if (!toastEl || !toastEl.isConnected)
+    toastEl = document.querySelector('chromedash-toast');
   if (toastEl?.showMessage) {
     toastEl.showMessage(msg);
   }
@@ -114,44 +115,38 @@ export function clamp(val, lowerBound, upperBound) {
 }
 
 /* Given a feature entry stage entity, look up the related process stage. */
-export function findProcessStage(feStage, process) {
-  for (const processStage of process.stages) {
-    if (feStage.stage_type == processStage.stage_type) {
-      return processStage;
-    }
-  }
-  return null;
+export function findProcessStage(
+  feStage: StageDict,
+  process: {stages: any[]}
+): any {
+  return (
+    process.stages.find(ps => ps.stage_type === feStage.stage_type) || null
+  );
 }
 
 /* Determine if the display name field should be displayed for a stage. */
-export function shouldShowDisplayNameField(feStages, stageType) {
+export function shouldShowDisplayNameField(
+  feStages: StageDict[],
+  stageType: number
+): boolean {
   // The display name field is only available to a feature's stages
   // that have more than 1 of the same stage type associated.
   // It is used to differentiate those stages.
-  let matchingStageCount = 0;
-  for (let i = 0; i < feStages.length; i++) {
-    if (feStages[i].stage_type === stageType) {
-      matchingStageCount++;
-      // If we find two of the same stage type, then display the display name field.
-      if (matchingStageCount > 1) {
-        return true;
-      }
-    }
-  }
-  return false;
+  return feStages.filter(s => s.stage_type === stageType).length > 1;
 }
 
 /* Given a process stage, find the first feature entry stage of the same type. */
-export function findFirstFeatureStage(intentStage, currentStage, fe) {
-  if (intentStage == currentStage.intent_stage) {
+export function findFirstFeatureStage(
+  intentStage: number,
+  currentStage: StageDict,
+  fe: Feature
+): StageDict | null {
+  if (intentStage === currentStage.intent_stage) {
     return currentStage;
   }
-  for (const feStage of fe.stages) {
-    if (intentStage == feStage.intent_stage) {
-      return feStage;
-    }
-  }
-  return null;
+  return (
+    fe.stages.find(feStage => intentStage === feStage.intent_stage) || null
+  );
 }
 
 /**
@@ -186,7 +181,10 @@ export function unambiguousStageName(
 }
 
 /* Get the value of a stage field using a form-specific name */
-export function getStageValue(stage, fieldName) {
+export function getStageValue(
+  stage: StageDict | undefined,
+  fieldName: string
+): any {
   if (!stage) return undefined;
   if (fieldName in STAGE_FIELD_NAME_MAPPING) {
     return stage[STAGE_FIELD_NAME_MAPPING[fieldName]];
@@ -197,7 +195,14 @@ export function getStageValue(stage, fieldName) {
 // Look at all extension milestones and calculate the highest milestone that an origin trial
 // is available. This is used to display the highest milestone available, but to preserve the
 // milestone that the trial was originally available for without extensions.
-function calcMaxMilestone(feStage, fieldName) {
+/**
+ * Caches the maximum milestone for an origin trial in the stage object.
+ * Note: This function modifies the feStage object in-place.
+ */
+function calcMaxMilestone(
+  feStage: StageDict | undefined,
+  fieldName: string
+): void {
   // If the max milestone has already been calculated, or no trial extensions exist, do nothing.
   if (!feStage) return;
   if (feStage[`max_${fieldName}`] || !feStage.extensions) {
@@ -244,8 +249,12 @@ function _getMilestoneExtensionValue(feStage, fieldName) {
  * @param {any} value - The value to be checked.
  * @return {boolean} Returns true if the value is defined and not empty, otherwise false.
  */
-export function isDefinedValue(value) {
-  return !(value === undefined || value === null || value.length == 0);
+export function isDefinedValue(value: any): boolean {
+  if (value === undefined || value === null) return false;
+  if (typeof value === 'string' || Array.isArray(value)) {
+    return value.length > 0;
+  }
+  return true;
 }
 
 export function hasFieldValue(fieldName, feStage, feature) {

@@ -217,7 +217,7 @@ export class ChromedashFeatureDetail extends LitElement {
     ];
   }
 
-  _fireEvent(eventName, detail) {
+  _fireEvent(eventName: string, detail: any) {
     const event = new CustomEvent(eventName, {
       bubbles: true,
       composed: true,
@@ -228,10 +228,10 @@ export class ChromedashFeatureDetail extends LitElement {
 
   connectedCallback() {
     super.connectedCallback();
-    this.intializeGateColumn();
+    this.initializeGateColumn();
   }
 
-  initializeExtensionDialog(rawQuery) {
+  initializeExtensionDialog(rawQuery: Record<string, string>) {
     if (!('initiateExtension' in rawQuery)) {
       return;
     }
@@ -266,7 +266,7 @@ export class ChromedashFeatureDetail extends LitElement {
     );
   }
 
-  intializeGateColumn() {
+  initializeGateColumn() {
     const rawQuery = parseRawQuery(window.location.search);
     if (!rawQuery.hasOwnProperty('gate')) {
       return;
@@ -320,7 +320,7 @@ export class ChromedashFeatureDetail extends LitElement {
     });
   }
 
-  handleAddXfnGates(feStage) {
+  handleAddXfnGates(feStage: StageDict) {
     const prompt =
       'Would you like to add gates for Privacy, Security, etc.? \n\n' +
       'This is needed if the API Owners ask you to add them, ' +
@@ -368,7 +368,7 @@ export class ChromedashFeatureDetail extends LitElement {
     `;
   }
 
-  renderText(value, isMarkdown: boolean = false): TemplateResult {
+  renderText(value: any, isMarkdown: boolean = false): TemplateResult {
     value = String(value);
     const markup: TemplateResult[] = autolink(
       value,
@@ -384,7 +384,7 @@ export class ChromedashFeatureDetail extends LitElement {
     return html`<span class="text">${markup}</span>`;
   }
 
-  renderUrl(value) {
+  renderUrl(value: string) {
     if (value.startsWith('http')) {
       return html`<chromedash-link
         href=${value}
@@ -395,7 +395,11 @@ export class ChromedashFeatureDetail extends LitElement {
     return this.renderText(value);
   }
 
-  renderValue(fieldType, value, isMarkdown: boolean): TemplateResult {
+  renderValue(
+    fieldType: string,
+    value: any,
+    isMarkdown: boolean
+  ): TemplateResult {
     if (fieldType == 'checkbox') {
       return this.renderText(value ? 'True' : 'False');
     } else if (fieldType == 'url') {
@@ -410,7 +414,7 @@ export class ChromedashFeatureDetail extends LitElement {
     return this.renderText(value, isMarkdown);
   }
 
-  renderField(fieldDef, feStage) {
+  renderField(fieldDef: any[], feStage: StageDict) {
     const [fieldId, fieldDisplayName, fieldType, deprecated, alwaysMarkdown] =
       fieldDef;
     const value = getFieldValueFromFeature(fieldId, feStage, this.feature);
@@ -435,7 +439,7 @@ export class ChromedashFeatureDetail extends LitElement {
     `;
   }
 
-  stageHasAnyFilledFields(fields, feStage) {
+  stageHasAnyFilledFields(fields: any[], feStage: StageDict) {
     return fields.some(fieldDef =>
       hasFieldValue(fieldDef[0], feStage, this.feature)
     );
@@ -443,7 +447,7 @@ export class ChromedashFeatureDetail extends LitElement {
 
   // Renders all fields for trial extension stages as a subsection of the
   // origin trial stage that the extension is associated with.
-  renderExtensionFields(extensionStages) {
+  renderExtensionFields(extensionStages: StageDict[]) {
     const extensionFields: TemplateResult[] = [];
     const fieldNames = flattenSections(FLAT_TRIAL_EXTENSION_FIELDS);
     const fields = makeDisplaySpecs(fieldNames);
@@ -463,7 +467,7 @@ export class ChromedashFeatureDetail extends LitElement {
     return extensionFields;
   }
 
-  renderSectionFields(fields, feStage) {
+  renderSectionFields(fields: any[], feStage: StageDict) {
     if (this.stageHasAnyFilledFields(fields, feStage)) {
       // Add the subsection of trial extension information if it is relevant.
       const extensionFields = feStage.extensions
@@ -480,11 +484,11 @@ export class ChromedashFeatureDetail extends LitElement {
   }
 
   renderSection(
-    summary,
-    content,
-    isActive = false,
-    defaultOpen = false,
-    isStage = true
+    summary: string,
+    content: TemplateResult,
+    isActive: boolean = false,
+    defaultOpen: boolean = false,
+    isStage: boolean = true
   ) {
     return html`
       <sl-details
@@ -499,7 +503,7 @@ export class ChromedashFeatureDetail extends LitElement {
     `;
   }
 
-  getStageForm(stageType) {
+  getStageForm(stageType: number) {
     return FORMS_BY_STAGE_TYPE[stageType] || null;
   }
 
@@ -525,7 +529,9 @@ export class ChromedashFeatureDetail extends LitElement {
 
     const content = html`
       <p class="description">${this.canEdit ? editButton : nothing}</p>
-      <section class="card">${this.renderSectionFields(fields, {})}</section>
+      <section class="card">
+        ${this.renderSectionFields(fields, {} as any)}
+      </section>
     `;
     return this.renderSection(
       'Metadata',
@@ -536,7 +542,7 @@ export class ChromedashFeatureDetail extends LitElement {
     );
   }
 
-  renderGateChip(feStage, gate) {
+  renderGateChip(feStage: StageDict, gate: GateDict) {
     return html`
       <chromedash-gate-chip
         .feature=${this.feature}
@@ -548,12 +554,12 @@ export class ChromedashFeatureDetail extends LitElement {
     `;
   }
 
-  hasActiveGates(feStage) {
+  hasActiveGates(feStage: StageDict) {
     const gatesForStage = this.gates.filter(g => g.stage_id == feStage.id);
     return gatesForStage.some(g => GATE_ACTIVE_REVIEW_STATES.includes(g.state));
   }
 
-  hasMixedGates(feStage) {
+  hasMixedGates(feStage: StageDict) {
     const gatesForStage = this.gates.filter(g => g.stage_id == feStage.id);
     return (
       gatesForStage.some(g => GATE_FINISHED_REVIEW_STATES.includes(g.state)) &&
@@ -561,7 +567,7 @@ export class ChromedashFeatureDetail extends LitElement {
     );
   }
 
-  renderGateChips(feStage) {
+  renderGateChips(feStage: StageDict) {
     const gatesForStage = this.gates.filter(g => {
       // Don't show API owner gate chips for shipping stages in PSA features.
       // TODO(DanielRyanSmith): This conditional can be removed once PSA
@@ -584,7 +590,7 @@ export class ChromedashFeatureDetail extends LitElement {
     return gatesForStage.map(g => this.renderGateChip(feStage, g));
   }
 
-  hasStageActions(stage, feStage) {
+  hasStageActions(stage: any, feStage: StageDict) {
     // TODO(DanielRyanSmith): This can be removed once PSA ship stages have
     // their API owners gate removed.
     if (
@@ -607,7 +613,7 @@ export class ChromedashFeatureDetail extends LitElement {
     return false;
   }
 
-  renderStageAction(action, stage, feStage) {
+  renderStageAction(action: any, stage: any, feStage: StageDict) {
     const label = action.name;
     const url = action.url
       .replace('{feature_id}', this.feature.id)
@@ -644,7 +650,7 @@ export class ChromedashFeatureDetail extends LitElement {
     `;
   }
 
-  renderStageActions(stage, feStage) {
+  renderStageActions(stage: any, feStage: StageDict) {
     if (!this.canEdit) {
       return nothing;
     }
@@ -714,7 +720,7 @@ export class ChromedashFeatureDetail extends LitElement {
     return this.renderSection(name, content, isActive, defaultOpen);
   }
 
-  renderEditButton(feStage, processStage) {
+  renderEditButton(feStage: StageDict, processStage: any) {
     if (!this.canEdit) {
       return nothing;
     }
@@ -726,7 +732,7 @@ export class ChromedashFeatureDetail extends LitElement {
     >`;
   }
 
-  renderFinalizeExtensionButton(extensionStage) {
+  renderFinalizeExtensionButton(extensionStage: StageDict) {
     return html` <sl-button
       size="small"
       variant="primary"
@@ -750,7 +756,7 @@ export class ChromedashFeatureDetail extends LitElement {
     </sl-tooltip>`;
   }
 
-  renderExtensionButton(feStage) {
+  renderExtensionButton(feStage: StageDict) {
     // Don't render an extension request button if this is not an OT stage,
     // or the user does not have access to submit an extension request,
     // or the OT stage has not been created in the OT Console yet.
@@ -807,7 +813,7 @@ export class ChromedashFeatureDetail extends LitElement {
     >`;
   }
 
-  renderOriginTrialButton(feStage) {
+  renderOriginTrialButton(feStage: StageDict) {
     // Don't render an origin trial button if this is not an OT stage.
     if (!STAGE_TYPES_ORIGIN_TRIAL.has(feStage.stage_type)) {
       return nothing;
@@ -876,7 +882,7 @@ export class ChromedashFeatureDetail extends LitElement {
     >`;
   }
 
-  renderRegistrantsDashboardButton(feStage) {
+  renderRegistrantsDashboardButton(feStage: StageDict) {
     // Registrants dashboard button is available on created OT stages,
     // only to Google/Chromium users with edit access to the feature.
     if (
@@ -903,7 +909,7 @@ export class ChromedashFeatureDetail extends LitElement {
     >`;
   }
 
-  offerAddXfnGates(feStage) {
+  offerAddXfnGates(feStage: StageDict) {
     const stageGates = this.gates.filter(g => g.stage_id == feStage.id);
     return feStage.stage_type == STAGE_PSA_SHIPPING && stageGates.length < 6;
   }
@@ -924,7 +930,7 @@ export class ChromedashFeatureDetail extends LitElement {
     `;
   }
 
-  renderStageMenu(feStage) {
+  renderStageMenu(feStage: StageDict) {
     const items: TemplateResult[] = [];
     if (this.offerAddXfnGates(feStage)) {
       items.push(html`

@@ -15,7 +15,7 @@
  */
 
 import {LitElement, html, css, nothing} from 'lit';
-import {showToastMessage, IS_MOBILE, redirectToCurrentPage} from './utils.js';
+import {showToastMessage, isMobile, redirectToCurrentPage} from './utils.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {customElement, property, state} from 'lit/decorators.js';
 import {User} from '../js-src/cs-client.js';
@@ -132,7 +132,7 @@ export class ChromedashHeader extends LitElement {
   connectedCallback() {
     super.connectedCallback();
 
-    if (IS_MOBILE) {
+    if (isMobile()) {
       // Login UI will be handled by chromedash-drawer instead.
       return;
     }
@@ -329,7 +329,7 @@ export class ChromedashHeader extends LitElement {
 
   render() {
     let accountMenu = html``;
-    if (!IS_MOBILE && !this.loading) {
+    if (!isMobile() && !this.loading) {
       accountMenu = html` <div class="flex-container">
         ${this.renderAccountMenu()}
       </div>`;
