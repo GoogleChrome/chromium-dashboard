@@ -413,3 +413,37 @@ class ProgressDetectorsTest(testing_config.CustomTestCase):
         self.assertFalse(detector(self.feature_1, self.stages_dict))
         self.stages_dict[1061][0].enterprise_policies = ['Policy1', 'Policy2']
         self.assertTrue(detector(self.feature_1, self.stages_dict))
+
+
+class WriteGatesAndStagesForFeatureTest(testing_config.CustomTestCase):
+    """Tests for write_gates_and_stages_for_feature."""
+
+    def tearDown(self):
+        """Clean up the test environment."""
+        from internals.review_models import Gate
+
+        kinds = [core_models.FeatureEntry, core_models.Stage, Gate]
+        for kind in kinds:
+            entities = kind.query().fetch()
+            for entity in entities:
+                entity.key.delete()
+
+    def test_write_gates_and_stages_for_feature(self):
+        """Test that stages and gates are created for a feature."""
+        from internals.review_models import Gate
+
+        feature = core_models.FeatureEntry(
+            name='feature one',
+            summary='sum',
+            category=1,
+            feature_type=0,
+        )
+        feature.put()
+        feature_id = feature.key.integer_id()
+
+        processes.write_gates_and_stages_for_feature(feature_id, 0)
+
+        stages = core_models.Stage.query().fetch()
+        gates = Gate.query().fetch()
+        self.assertEqual(len(stages), 6)
+        self.assertEqual(len(gates), 12)
