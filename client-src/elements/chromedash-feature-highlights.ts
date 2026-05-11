@@ -121,10 +121,6 @@ export class ChromedashFeatureHighlights extends LitElement {
     }
   }
 
-  renderEnterpriseFeatureContent() {
-    return this.renderSummary();
-  }
-
   renderFeatureContent() {
     return html`
       ${this.renderSummary()}
@@ -431,10 +427,7 @@ export class ChromedashFeatureHighlights extends LitElement {
     return html`
       <sl-details summary="Overview" ?open=${true}>
         <section class="card ${this.isSuspended() ? 'suspended' : ''}">
-          ${this.renderDotDotDotMenu()}
-          ${this.feature.is_enterprise_feature
-            ? this.renderEnterpriseFeatureContent()
-            : this.renderFeatureContent()}
+          ${this.renderDotDotDotMenu()} ${this.renderFeatureContent()}
           ${this.feature.is_enterprise_feature
             ? this.renderEnterpriseFeatureStatus()
             : this.renderFeatureStatus()}
