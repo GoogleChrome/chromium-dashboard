@@ -124,8 +124,12 @@ class LinkHelperTest(testing_config.CustomTestCase):
                 self.assertTrue(valid_url(url))
 
     @mock.patch('requests.get')
-    def test_mock_not_found_url(self, mock_requests_get):
+    @mock.patch('requests.head')
+    def test_mock_not_found_url(self, mock_requests_head, mock_requests_get):
         """Test mock not found url."""
+        mock_requests_head.return_value = testing_config.Blank(
+            status_code=404, content=''
+        )
         mock_requests_get.return_value = testing_config.Blank(
             status_code=404, content=''
         )
@@ -135,6 +139,41 @@ class LinkHelperTest(testing_config.CustomTestCase):
         self.assertEqual(link.type, LINK_TYPE_WEB)
         self.assertEqual(link.is_error, True)
         self.assertEqual(link.http_error_code, 404)
+
+    @mock.patch('requests.get')
+    @mock.patch('requests.head')
+    def test_validate_url_uses_head_success(
+        self, mock_requests_head, mock_requests_get
+    ):
+        """Test that _validate_url uses HEAD and succeeds."""
+        mock_requests_head.return_value = testing_config.Blank(
+            status_code=200, content=''
+        )
+
+        link = Link('https://www.google.com/')
+        link.parse()
+        self.assertTrue(mock_requests_head.called)
+        self.assertFalse(mock_requests_get.called)
+        self.assertFalse(link.is_error)
+
+    @mock.patch('requests.get')
+    @mock.patch('requests.head')
+    def test_validate_url_falls_back_to_get(
+        self, mock_requests_head, mock_requests_get
+    ):
+        """Test that _validate_url falls back to GET on non-200 HEAD."""
+        mock_requests_head.return_value = testing_config.Blank(
+            status_code=405, content=''
+        )
+        mock_requests_get.return_value = testing_config.Blank(
+            status_code=200, content=''
+        )
+
+        link = Link('https://www.google.com/')
+        link.parse()
+        self.assertTrue(mock_requests_head.called)
+        self.assertTrue(mock_requests_get.called)
+        self.assertFalse(link.is_error)
 
     def test_extract_urls_from_value(self):
         """Test extract urls from value."""
