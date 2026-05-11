@@ -79,7 +79,6 @@ DIRECTORIES = [
     'api',
     'client-src',
     'internals',
-    'pages',
     'framework',
     'scripts',
 ]

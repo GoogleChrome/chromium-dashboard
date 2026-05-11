@@ -41,10 +41,11 @@ os.environ.setdefault('SERVER_SOFTWARE', 'gunicorn')
 
 # pylint: disable=wrong-import-position
 # ruff: noqa: E402
+from pages.guide import FeatureCreateHandler
+
 from internals import core_enums
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
 from internals.user_models import AppUser
-from pages.guide import FeatureCreateHandler
 
 
 def add_features(server: str, after: datetime, detailsAfter: datetime):

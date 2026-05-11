@@ -28,7 +28,7 @@ dev-ot-key:
 do-tests:
 	. cs-env/bin/activate && curl -X POST 'http://localhost:15606/reset' && \
 	if command -v pytest >/dev/null 2>&1; then \
-		pytest -n auto -q *_test.py api/*_test.py internals/*_test.py framework/*_test.py pages/*_test.py scripts/*_test.py; \
+		pytest -n auto -q *_test.py api/*_test.py internals/*_test.py framework/*_test.py scripts/*_test.py; \
 	else \
 		python3.13 -m unittest discover -p '*_test.py' -b; \
 	fi

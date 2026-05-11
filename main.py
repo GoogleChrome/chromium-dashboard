@@ -34,10 +34,12 @@ from api import (
     external_reviews_api,
     feature_latency_api,
     feature_links_api,
+    featurelist_api,
     features_api,
     intents_api,
     login_api,
     logout_api,
+    metrics_api,
     metricsdata,
     origin_trials_api,
     ot_requests_handler,
@@ -68,7 +70,6 @@ from internals import (
     reminders,
     search_fulltext,
 )
-from pages import featurelist, guide, metrics
 
 # Patch treading library to work-around bug with Google Cloud Logging.
 original_delete = threading.Thread._delete  # type: ignore
@@ -295,20 +296,6 @@ spa_page_routes = [
         defaults={'require_edit_feature': True},
     ),
     Route(
-        '/guide/new',
-        guide.FeatureCreateHandler,
-        defaults={'require_create_feature': True},
-    ),
-    Route(
-        '/guide/enterprise/new',
-        guide.EnterpriseFeatureCreateHandler,
-        defaults={
-            'require_signin': True,
-            'require_create_feature': True,
-            'is_enterprise_page': True,
-        },
-    ),
-    Route(
         '/guide/stage/<int:feature_id>/<int:intent_stage>/<int:stage_id>',
         defaults={'require_edit_feature': True},
     ),
@@ -395,8 +382,8 @@ mpa_page_routes: list[Route] = [
     # Note: The only requests being made now hit /features.json and
     # /features_v2.json, but both of those cause version == 2.
     # There was logic to accept another version value, but it it was not used.
-    Route(r'/features.json', featurelist.FeaturesJsonHandler),
-    Route(r'/features_v2.json', featurelist.FeaturesJsonHandler),
+    Route(r'/features.json', featurelist_api.FeaturesJsonHandler),
+    Route(r'/features_v2.json', featurelist_api.FeaturesJsonHandler),
     Route(
         '/features.xml',
         basehandlers.ConstHandler,
@@ -407,7 +394,7 @@ mpa_page_routes: list[Route] = [
         basehandlers.ConstHandler,
         defaults={'template_path': 'farewell-samples.html'},
     ),
-    Route('/omaha_data', metrics.OmahaDataHandler),
+    Route('/omaha_data', metrics_api.OmahaDataHandler),
     Route(
         '/feature/<int:feature_id>/attachment/<int:attachment_id>',
         attachments_api.AttachmentServing,
