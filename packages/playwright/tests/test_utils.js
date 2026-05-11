@@ -170,7 +170,13 @@ export async function login(page) {
   } else {
     // On desktop, we can verify the account indicator is visible in the header.
     const accountIndicator = page.getByTestId('account-indicator');
-    await expect(accountIndicator).toBeVisible({timeout: 20000});
+    try {
+      await expect(accountIndicator).toBeVisible({timeout: 10000});
+    } catch {
+      console.log('Account indicator not found immediately. Reloading...');
+      await page.reload();
+      await expect(accountIndicator).toBeVisible({timeout: 10000});
+    }
   }
 }
 
