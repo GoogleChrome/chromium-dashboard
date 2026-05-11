@@ -15,7 +15,14 @@
  */
 
 import {SlDetails, SlIconButton, SlInput} from '@shoelace-style/shoelace';
-import {LitElement, TemplateResult, css, html, nothing} from 'lit';
+import {
+  LitElement,
+  TemplateResult,
+  css,
+  html,
+  nothing,
+  PropertyValues,
+} from 'lit';
 import {customElement, property, state} from 'lit/decorators.js';
 import {ref} from 'lit/directives/ref.js';
 
@@ -192,8 +199,14 @@ export class ChromedashFormField extends LitElement {
       });
   }
 
+  willUpdate(changedProperties: PropertyValues) {
+    super.willUpdate(changedProperties);
+    if (!this.hasUpdated) {
+      this.initialValue = JSON.parse(JSON.stringify(this.value));
+    }
+  }
+
   firstUpdated() {
-    this.initialValue = JSON.parse(JSON.stringify(this.value));
     // We need to wait until the entire page is rendered, so later dependents
     // are available to do the semantic check.
     if (document.readyState === 'loading') {
@@ -201,7 +214,7 @@ export class ChromedashFormField extends LitElement {
         this.doSemanticCheck();
       });
     } else {
-      this.doSemanticCheck();
+      setTimeout(() => this.doSemanticCheck(), 0);
     }
   }
 

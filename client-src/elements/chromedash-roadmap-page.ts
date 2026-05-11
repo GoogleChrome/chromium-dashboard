@@ -77,11 +77,14 @@ export class ChromedashRoadmapPage extends LitElement {
   }
 
   firstUpdated() {
-    this.handleResize();
+    requestAnimationFrame(() => {
+      this.handleResize();
+    });
   }
 
   handleResize() {
-    const containerWidth = this.sectionRef.value!.offsetWidth;
+    if (!this.sectionRef.value) return;
+    const containerWidth = this.sectionRef.value.offsetWidth;
     const margin = 16;
 
     let numColumns = 3;

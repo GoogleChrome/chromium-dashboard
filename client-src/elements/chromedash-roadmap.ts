@@ -198,8 +198,11 @@ export class ChromedashRoadmap extends LitElement {
 
       this.fetchNextBatch(channels['beta'].version, true);
       this.fetchPreviousBatch(channels['stable'].version);
-      this.lastMilestoneVisible =
-        channels[this.shownChannelNames[this.numColumns - 1]].version;
+      const colIndex = this.numColumns > 0 ? this.numColumns - 1 : 0;
+      const channelName = this.shownChannelNames[colIndex];
+      if (channelName && channels[channelName]) {
+        this.lastMilestoneVisible = channels[channelName].version;
+      }
     });
   }
 

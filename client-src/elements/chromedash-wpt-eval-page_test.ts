@@ -609,7 +609,6 @@ describe('chromedash-wpt-eval-page', () => {
       checkbox.checked = true;
       checkbox.dispatchEvent(new Event('sl-change'));
       await el.updateComplete;
-      await new Promise(resolve => setTimeout(resolve, 0));
 
       const button = el.shadowRoot!.querySelector(
         '.generate-button'
