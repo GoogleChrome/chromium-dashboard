@@ -20,6 +20,8 @@ from dataclasses import dataclass, field
 from typing import Any, Type
 
 import settings
+
+# TODO(jrobbins): Remove guide routes after a few weeks.
 from api import (
     accounts_api,
     attachments_api,
@@ -38,6 +40,7 @@ from api import (
     logout_api,
     metricsdata,
     origin_trials_api,
+    ot_requests_handler,
     permissions_api,
     processes_api,
     review_latency_api,
@@ -49,6 +52,7 @@ from api import (
     stale_features_api,
     stars_api,
     token_refresh_api,
+    users_handler,
     webdx_feature_api,
     wpt_coverage_api,
 )
@@ -64,9 +68,7 @@ from internals import (
     reminders,
     search_fulltext,
 )
-
-# TODO(jrobbins): Remove guide routes after a few weeks.
-from pages import featurelist, guide, metrics, ot_requests, users
+from pages import featurelist, guide, metrics
 
 # Patch treading library to work-around bug with Google Cloud Logging.
 original_delete = threading.Thread._delete  # type: ignore
@@ -388,8 +390,8 @@ spa_page_routes = [
 ]
 
 mpa_page_routes: list[Route] = [
-    Route('/admin/users/new', users.UserListHandler),
-    Route('/admin/ot_requests', ot_requests.OriginTrialsRequests),
+    Route('/admin/users/new', users_handler.UserListHandler),
+    Route('/admin/ot_requests', ot_requests_handler.OriginTrialsRequests),
     # Note: The only requests being made now hit /features.json and
     # /features_v2.json, but both of those cause version == 2.
     # There was logic to accept another version value, but it it was not used.
