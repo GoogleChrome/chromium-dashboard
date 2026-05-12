@@ -775,18 +775,6 @@ class FlaskHandler(BaseHandler):
         return param
 
 
-class Redirector(FlaskHandler):
-    """Reusable handler that always redirects.
-    Specify the location in the third part of a routing rule using:
-    {'location': '/path/to/page'}.
-    """  # noqa: D205
-
-    def get_template_data(self, **kwargs):
-        """Get template data for rendering."""
-        location = kwargs['location'] if 'location' in kwargs else '/'
-        return flask.redirect(location), self.get_headers()
-
-
 class ConstHandler(FlaskHandler):
     """Reusable handler for templates that require no page-specific logic.
     Specify the location in the third part of a routing rule using:

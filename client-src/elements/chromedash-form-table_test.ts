@@ -17,7 +17,6 @@
 import {assert, fixture} from '@open-wc/testing';
 import {html} from 'lit';
 import {ChromedashFormTable} from './chromedash-form-table.js';
-import {slotAssignedElements} from './utils.js';
 
 describe('chromedash-form-table', () => {
   it('renders with no data', async () => {
@@ -40,7 +39,9 @@ describe('chromedash-form-table', () => {
     assert.exists(component);
     await component.updateComplete;
 
-    const children = slotAssignedElements(component, '');
+    const children = component
+      .shadowRoot!.querySelector('slot')!
+      .assignedElements({flatten: true});
 
     const firstRow = children[0];
     assert.exists(firstRow);
