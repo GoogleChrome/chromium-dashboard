@@ -62,7 +62,7 @@
   "devDependencies": {
     "@open-wc/testing": "^4.0.0",
     "@openapitools/openapi-generator-cli": "^2.32.0",
-    "@playwright/test": "1.59.1",
+    "@playwright/test": "1.60.0",
     "@rollup/plugin-node-resolve": "^16.0.3",
     "@rollup/plugin-terser": "^1.0.0",
     "@rollup/plugin-typescript": "^12.3.0",
