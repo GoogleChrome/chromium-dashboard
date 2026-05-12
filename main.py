@@ -20,8 +20,6 @@ from dataclasses import dataclass, field
 from typing import Any, Type
 
 import settings
-
-# TODO(jrobbins): Remove guide routes after a few weeks.
 from api import (
     accounts_api,
     attachments_api,
