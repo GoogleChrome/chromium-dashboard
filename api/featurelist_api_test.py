@@ -1,3 +1,4 @@
+# Copyright 2026 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
 # you may not use this file except in compliance with the License.
@@ -72,7 +73,7 @@ class FeaturesJsonHandlerTest(TestWithFeature):
         """User can get a JSON feed of all features."""
         testing_config.sign_in('user@example.com', 111)
         with test_app.test_request_context(self.request_path):
-            json_data = self.handler.get_template_data()
+            json_data = self.handler.do_get()
 
         self.assertEqual(1, len(json_data))
         self.assertEqual('feature one', json_data[0]['name'])
@@ -84,18 +85,18 @@ class FeaturesJsonHandlerTest(TestWithFeature):
 
         testing_config.sign_out()
         with test_app.test_request_context(self.request_path):
-            json_data = self.handler.get_template_data()
+            json_data = self.handler.do_get()
         self.assertEqual(0, len(json_data))
 
         testing_config.sign_in('user@example.com', 111)
         with test_app.test_request_context(self.request_path):
-            json_data = self.handler.get_template_data()
+            json_data = self.handler.do_get()
         self.assertEqual(0, len(json_data))
 
     def test_get_template_data__unlisted_can_edit(self):
         """JSON feed includes unlisted features for site editors and admins."""
         testing_config.sign_in('admin@example.com', 111)
         with test_app.test_request_context(self.request_path):
-            json_data = self.handler.get_template_data()
+            json_data = self.handler.do_get()
         self.assertEqual(1, len(json_data))
         self.assertEqual('feature one', json_data[0]['name'])

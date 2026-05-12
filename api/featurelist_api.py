@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2021 Google Inc.
+# Copyright 2026 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
 # you may not use this file except in compliance with the License.
@@ -21,13 +21,10 @@ from framework import basehandlers, permissions, users
 from internals import feature_helpers
 
 
-class FeaturesJsonHandler(basehandlers.FlaskHandler):
+class FeaturesJsonHandler(basehandlers.EntitiesAPIHandler):
     """Handler for returning features list in JSON format."""
 
-    HTTP_CACHE_TYPE = 'private'
-    JSONIFY = True
-
-    def get_template_data(self, **kwargs):
+    def do_get(self, **kwargs):
         """Returns feature data in JSON format."""
         user = users.get_current_user()
         feature_list = feature_helpers.get_features_by_impl_status(

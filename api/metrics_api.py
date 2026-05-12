@@ -1,4 +1,4 @@
-# Copyright 2021 Google Inc.
+# Copyright 2026 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
 # you may not use this file except in compliance with the License.
@@ -19,12 +19,10 @@ from framework import basehandlers
 from internals import fetchchannels
 
 
-class OmahaDataHandler(basehandlers.FlaskHandler):
+class OmahaDataHandler(basehandlers.EntitiesAPIHandler):
     """Handler for retrieving Omaha data metrics."""
 
-    JSONIFY = True
-
-    def get_template_data(self, **kwargs):
+    def do_get(self, **kwargs):
         """Returns Omaha data metrics as JSON."""
         omaha_data = fetchchannels.get_omaha_data()
         return omaha_data
