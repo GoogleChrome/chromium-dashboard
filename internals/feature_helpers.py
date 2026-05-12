@@ -198,12 +198,20 @@ def _filter_out_wp_features_lacking_enterprise_approval(
     return result
 
 
-def get_features_in_release_notes(milestone: int):
-    """Fetches features slated for release notes in the specified milestone."""
+def get_features_in_release_notes(
+    milestone: int, end_milestone: int | None = None
+):
+    """Fetches features slated for release notes in the specified milestone or milestone range."""
+    actual_end_milestone = (
+        end_milestone if end_milestone is not None else milestone
+    )
+
     cache_key = '%s|%s|%s' % (
         FeatureEntry.SEARCH_CACHE_KEY,
         'release_notes_milestone',
-        milestone,
+        f'{milestone}_{end_milestone}'
+        if end_milestone is not None
+        else milestone,
     )
 
     cached_features = rediscache.get(cache_key)
@@ -287,7 +295,8 @@ def get_features_in_release_notes(milestone: int):
         for f in filter_unlisted_formatted(formatted_features)
         if (
             f['first_enterprise_notification_milestone'] is None
-            or f['first_enterprise_notification_milestone'] <= milestone
+            or f['first_enterprise_notification_milestone']
+            <= actual_end_milestone
         )
     ]
     logging.info('finished filtering')
@@ -297,6 +306,43 @@ def get_features_in_release_notes(milestone: int):
     formatted_features = filter_confidential_formatted(formatted_features)
     formatted_features = filter_unpublished_formatted(formatted_features)
     return formatted_features
+
+
+def get_features_for_l10n_extraction(
+    start_milestone: int, end_milestone: int
+) -> list[dict[str, Any]]:
+    """Fetches and structures enterprise features in a milestone range for l10n extraction."""
+    formatted_features = get_features_in_release_notes(
+        start_milestone, end_milestone=end_milestone
+    )
+
+    # Explicitly enforce both content_reviewed and publish_ready for l10n.
+    formatted_features = [
+        f
+        for f in formatted_features
+        if f.get('is_releasenotes_content_reviewed')
+        and f.get('is_releasenotes_publish_ready')
+    ]
+
+    # Pick and reformat the response to l10n-friendly format.
+    l10n_features = []
+    for f in formatted_features:
+        stages_list = []
+        for s in f.get('stages', []):
+            stage_item = {'id': s.get('id')}
+            if s.get('rollout_details'):
+                stage_item['rolloutDetails'] = s.get('rollout_details')
+            stages_list.append(stage_item)
+        if stages_list:
+            item = {
+                'id': f.get('id'),
+                'name': f.get('name'),
+                'summary': f.get('summary'),
+                'stages': stages_list,
+            }
+            l10n_features.append(item)
+
+    return l10n_features
 
 
 def get_in_milestone(
