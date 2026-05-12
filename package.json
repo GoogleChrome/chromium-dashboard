@@ -79,7 +79,7 @@
     "eslint-config-prettier": "^10.1.8",
     "glob-parent": ">=6.0.2",
     "gts": "^7.0.0",
-    "ini": ">=6.0.0",
+    "ini": ">=7.0.0",
     "kind-of": ">=6.0.3",
     "lit-analyzer": "^2.0.3",
     "lodash": ">=4.18.1",
