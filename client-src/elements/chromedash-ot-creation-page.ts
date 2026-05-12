@@ -37,6 +37,7 @@ import {
   getStageValue,
   setupScrollToHash,
   showToastMessage,
+  navigate,
 } from './utils.js';
 
 @customElement('chromedash-ot-creation-page')
@@ -152,7 +153,7 @@ export class ChromedashOTCreationPage extends LitElement {
         this.stage.ot_setup_status &&
         this.stage.ot_setup_status !== OT_SETUP_STATUS_OPTIONS.OT_NOT_CREATED
       ) {
-        window.location.href = `/feature/${this.featureId}`;
+        navigate(`/feature/${this.featureId}`);
       }
       // Check that necessary approvals have been obtained.
       const relevantGates = gatesRes.gates.filter(
@@ -161,7 +162,7 @@ export class ChromedashOTCreationPage extends LitElement {
       relevantGates.forEach(g => {
         if (!GATE_APPROVED_REVIEW_STATES.includes(g.state)) {
           // Redirect if approvals have not been obtained.
-          window.location.href = `/feature/${this.featureId}`;
+          navigate(`/feature/${this.featureId}`);
         }
       });
       if (this.feature.name) {
@@ -404,14 +405,14 @@ export class ChromedashOTCreationPage extends LitElement {
         } else {
           showToastMessage('Creation request submitted!');
           setTimeout(() => {
-            window.location.href = `/feature/${this.featureId}`;
+            navigate(`/feature/${this.featureId}`);
           }, 1000);
         }
       });
   }
 
   handleCancelClick() {
-    window.location.href = `/feature/${this.featureId}`;
+    navigate(`/feature/${this.featureId}`);
   }
 
   renderSkeletons() {

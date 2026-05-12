@@ -15,7 +15,12 @@
  */
 
 import {LitElement, html, css, nothing} from 'lit';
-import {showToastMessage, isMobile, redirectToCurrentPage} from './utils.js';
+import {
+  showToastMessage,
+  isMobile,
+  redirectToCurrentPage,
+  navigate,
+} from './utils.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {customElement, property, state} from 'lit/decorators.js';
 import {User} from '../js-src/cs-client.js';
@@ -255,7 +260,7 @@ export class ChromedashHeader extends LitElement {
   }
 
   gotoSettings() {
-    window.location.href = '/settings';
+    navigate('/settings');
   }
 
   signOut() {

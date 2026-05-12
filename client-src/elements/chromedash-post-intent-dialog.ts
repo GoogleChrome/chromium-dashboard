@@ -20,7 +20,7 @@ import {ref} from 'lit/directives/ref.js';
 import {FORM_STYLES} from '../css/forms-css.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {ALL_FIELDS} from './form-field-specs.js';
-import {showToastMessage} from './utils.js';
+import {showToastMessage, navigate} from './utils.js';
 
 let dialogEl;
 
@@ -132,7 +132,7 @@ class ChromedashPostIntentDialog extends LitElement {
           'Intent submitted! Check for your thread on blink-dev shortly.'
         );
         setTimeout(() => {
-          window.location.href = `/feature/${this.featureId}`;
+          navigate(`/feature/${this.featureId}`);
         }, 3000);
       })
       .catch(() => {

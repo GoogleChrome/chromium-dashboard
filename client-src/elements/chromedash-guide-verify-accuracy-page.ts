@@ -23,6 +23,7 @@ import {
   formatFeatureChanges,
   showToastMessage,
   FieldInfo,
+  navigate,
 } from './utils.js';
 import './chromedash-form-field.js';
 import './chromedash-form-table.js';
@@ -115,7 +116,7 @@ export class ChromedashGuideVerifyAccuracyPage extends LitElement {
   }
 
   navigateToFeaturePage() {
-    window.location.href = `/feature/${this.featureId}`;
+    navigate(`/feature/${this.featureId}`);
   }
 
   handleFormSubmit(e, hiddenTokenField) {

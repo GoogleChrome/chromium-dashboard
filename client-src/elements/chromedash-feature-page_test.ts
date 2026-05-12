@@ -174,6 +174,7 @@ describe('chromedash-feature-page', () => {
     sinon.stub(window.csClient, 'getFeatureProgress');
     sinon.stub(window.csClient, 'getSpecifiedChannels');
     sinon.stub(window.csClient, 'getFeatureLinks');
+    sinon.stub(window.csClient, 'getPermissions');
     window.csClient.getGates.returns(gatesPromise);
     window.csClient.getComments.returns(commentsPromise);
     window.csClient.getFeatureProcess.returns(processPromise);
@@ -181,6 +182,7 @@ describe('chromedash-feature-page', () => {
     window.csClient.getFeatureProgress.returns(progressPromise);
     window.csClient.getSpecifiedChannels.returns(channelsPromise);
     window.csClient.getFeatureLinks.returns(featureLinksPromise);
+    window.csClient.getPermissions.returns(Promise.resolve(user));
 
     // For the child component - chromedash-gantt
     sinon.stub(window.csClient, 'getChannels');
@@ -194,6 +196,7 @@ describe('chromedash-feature-page', () => {
     window.csClient.getChannels.restore();
     window.csClient.getSpecifiedChannels.restore();
     window.csClient.getFeatureLinks.restore();
+    window.csClient.getPermissions.restore();
   });
 
   it('renders with no data', async () => {
@@ -398,6 +401,16 @@ describe('chromedash-feature-page', () => {
     window.csClient.getFeature
       .withArgs(featureId)
       .returns(Promise.resolve(feature));
+    window.csClient.getPermissions.returns(
+      Promise.resolve({
+        can_create_feature: false,
+        can_edit_all: false,
+        is_admin: false,
+        email: 'reader@example.com',
+        approvable_gate_types: [],
+        editable_features: [],
+      })
+    );
 
     const component: ChromedashFeaturePage =
       await fixture<ChromedashFeaturePage>(

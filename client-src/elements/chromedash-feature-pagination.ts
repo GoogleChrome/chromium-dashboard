@@ -27,6 +27,7 @@ import {
   formatURLParams,
   formatUrlForRelativeOffset,
   formatUrlForOffset,
+  navigate,
 } from './utils.js';
 import {ifDefined} from 'lit/directives/if-defined.js';
 import {range} from 'lit/directives/range.js';
@@ -160,7 +161,7 @@ export class ChromedashFeaturePagination extends LitElement {
     const target = event.target as HTMLInputElement;
     const newSize = parseInt(target.value);
     const newURL = formatURLParams('num', newSize).toString();
-    window.location.href = newURL;
+    navigate(newURL);
   }
 
   renderItemsPerPage(): TemplateResult {
