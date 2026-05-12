@@ -135,11 +135,13 @@ export class ChromedashSettingsPage extends LitElement {
               </tr>
             </tbody>
           </table>
-          <input
+          <sl-button
+            variant="primary"
             type="submit"
-            value=${submitButtonTitle}
             ?disabled=${this.submitting}
-          />
+          >
+            ${submitButtonTitle}
+          </sl-button>
         </form>
       </section>
       ${this.submitting

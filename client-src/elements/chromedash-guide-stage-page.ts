@@ -355,20 +355,21 @@ export class ChromedashGuideStagePage extends LitElement {
           )}
         </chromedash-form-table>
         <div class="final_buttons">
-          <input
+          <sl-button
             id="submit-button"
-            class="button"
+            variant="primary"
             type="submit"
-            value=${submitButtonTitle}
             ?disabled=${this.submitting}
-          />
-          <button
+          >
+            ${submitButtonTitle}
+          </sl-button>
+          <sl-button
             id="cancel-button"
             type="reset"
             @click=${this.handleCancelClick}
           >
             Cancel
-          </button>
+          </sl-button>
         </div>
       </form>
     `;

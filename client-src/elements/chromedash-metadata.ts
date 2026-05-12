@@ -104,9 +104,10 @@ class ChromedashMetadata extends LitElement {
   }
 
   selectInVersionList(index) {
-    (
-      this.renderRoot.querySelector('#versionlist') as HTMLSelectElement
-    ).selectedIndex = index; // log null
+    const selectEl = this.renderRoot.querySelector('#versionlist') as any;
+    if (selectEl) {
+      selectEl.value = String(this._versions[index]);
+    }
   }
 
   _processResponse(response) {
@@ -168,16 +169,17 @@ class ChromedashMetadata extends LitElement {
 
   render() {
     return html`
-      <select
+      <sl-select
         id="versionlist"
         class="${ifDefined(this._className)}"
-        @change="${this._clickMilestone}"
+        placeholder="Select Chrome Version/Status"
+        .value=${this.selected}
+        @sl-change="${this._clickMilestone}"
       >
-        <option value="" disabled selected>Select Chrome Version/Status</option>
         ${this._versions.map((version, index) =>
           typeof this._className !== 'undefined'
             ? this._className == 'canaryisdev'
-              ? html`<option value="${version}">
+              ? html`<sl-option value="${version}">
                   ${version}
                   ${index == 3
                     ? 'canary/dev'
@@ -186,9 +188,9 @@ class ChromedashMetadata extends LitElement {
                       : index == 5
                         ? 'stable'
                         : ''}
-                </option>`
+                </sl-option>`
               : this._className == 'betaisdev'
-                ? html`<option value="${version}">
+                ? html`<sl-option value="${version}">
                     ${version}
                     ${index == 3
                       ? 'canary'
@@ -197,9 +199,9 @@ class ChromedashMetadata extends LitElement {
                         : index == 5
                           ? 'stable'
                           : ''}
-                  </option>`
+                  </sl-option>`
                 : ''
-            : html`<option value="${version}">
+            : html`<sl-option value="${version}">
                 ${version}
                 ${index == 3
                   ? 'canary'
@@ -210,9 +212,9 @@ class ChromedashMetadata extends LitElement {
                       : index == 6
                         ? 'stable'
                         : ''}
-              </option>`
+              </sl-option>`
         )}
-      </select>
+      </sl-select>
       <div ?hidden="${!this._fetchError}" class="error">
         Error fetching version information.
       </div>

@@ -158,20 +158,22 @@ export class ChromedashRoadmapPage extends LitElement {
       </div>
       <section id="releases-section" ${ref(this.sectionRef)}>
         <div class="timeline-controls">
-          <button
+          <sl-button
             id="previous-button"
             aria-label="Button to move to previous release"
             @click=${this.handleMove}
+            size="small"
           >
             Previous
-          </button>
-          <button
+          </sl-button>
+          <sl-button
             id="next-button"
             aria-label="Button to move to later release"
             @click=${this.handleMove}
+            size="small"
           >
             Next
-          </button>
+          </sl-button>
           ${this.renderHelpIcon()}
         </div>
         <chromedash-roadmap

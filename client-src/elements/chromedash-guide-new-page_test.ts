@@ -40,6 +40,8 @@ describe('chromedash-guide-new-page', () => {
     assert.exists(component);
     assert.instanceOf(component, ChromedashGuideNewPage);
 
+    await component.updateComplete;
+
     const subheaderDiv = component.renderRoot.querySelector('div#subheader');
     assert.exists(subheaderDiv);
     // Process and UI feedback link is clickable
@@ -69,7 +71,7 @@ describe('chromedash-guide-new-page', () => {
 
     // submit button exists
     const submitButton = component.renderRoot.querySelector(
-      'input[type="submit"]'
+      'sl-button[type="submit"]'
     );
     assert.exists(submitButton);
   });

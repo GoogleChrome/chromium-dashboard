@@ -255,14 +255,14 @@ export class ChromedashGuideMetadataPage extends LitElement {
         </chromedash-form-table>
 
         <div class="final_buttons">
-          <input class="button" type="submit" value="Submit" />
-          <button
+          <sl-button variant="primary" type="submit">Submit</sl-button>
+          <sl-button
             id="cancel-button"
             type="reset"
             @click=${this.handleCancelClick}
           >
             Cancel
-          </button>
+          </sl-button>
         </div>
       </form>
     `;

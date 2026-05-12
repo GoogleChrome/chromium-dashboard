@@ -226,12 +226,12 @@ class ChromedashIntentPreviewPage extends LitElement {
         </section>
         <section>
           <h3 class="inline">Send this text for your "Intent to ..." email</h3>
-          <input
-            ref()
+          <sl-button
             id="post-intent-button"
-            class="button inline"
+            class="inline"
+            variant="primary"
             type="submit"
-            value="Post directly to blink-dev"
+            ref()
             @click="${() =>
               openPostIntentDialog(
                 this.feature.id,
@@ -239,7 +239,9 @@ class ChromedashIntentPreviewPage extends LitElement {
                 this.feature.owner_emails,
                 this.gate?.id
               )}"
-          />
+          >
+            Post directly to blink-dev
+          </sl-button>
           <chromedash-intent-content
             appTitle="${this.appTitle}"
             .feature=${this.feature}

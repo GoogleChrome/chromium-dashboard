@@ -294,12 +294,13 @@ export class ChromedashGuideNewPage extends LitElement {
               )
             )}
           </chromedash-form-table>
-          <input
+          <sl-button
+            variant="primary"
             type="submit"
-            class="primary"
-            value=${submitLabel}
             ?disabled=${this.submitting}
-          />
+          >
+            ${submitLabel}
+          </sl-button>
         </form>
       </section>
     `;

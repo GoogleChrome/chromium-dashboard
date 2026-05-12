@@ -131,12 +131,8 @@ export class ChromedashAdminBlinkComponentListing extends LitElement {
     return this.shadowRoot!?.querySelector(`#owner_list_${this.index}`);
   }
 
-  _getOptionsElement() {
-    return this._ownerCandidates;
-  }
-
-  _findSelectedOptionElement() {
-    return this._getOptionsElement().selectedOptions[0];
+  _getSelectedUserId() {
+    return parseInt(this._ownerCandidates.value);
   }
 
   _isOwnerCheckboxChecked() {
@@ -152,11 +148,9 @@ export class ChromedashAdminBlinkComponentListing extends LitElement {
 
   _addUser() {
     const toggleAsOwner = this._isOwnerCheckboxChecked();
-    const selectedCandidate = this._findSelectedOptionElement();
+    const userId = parseInt(this._ownerCandidates.value);
 
-    const userId = parseInt(selectedCandidate.value);
-
-    if (selectedCandidate.disabled) {
+    if (!userId) {
       alert('Please select a user before trying to add');
       return;
     }
@@ -197,10 +191,9 @@ export class ChromedashAdminBlinkComponentListing extends LitElement {
    */
   _removeUser() {
     const toggleAsOwner = this._isOwnerCheckboxChecked();
-    const selectedCandidate = this._findSelectedOptionElement();
+    const userId = parseInt(this._ownerCandidates.value);
 
-    const userId = parseInt(selectedCandidate.value);
-    if (selectedCandidate.disabled) {
+    if (!userId) {
       alert('Please select a user before trying to remove');
       return;
     }
@@ -246,14 +239,14 @@ export class ChromedashAdminBlinkComponentListing extends LitElement {
     const userListTemplate: TemplateResult[] = [];
     for (const user of this.usersMap.values()) {
       userListTemplate.push(
-        html`<option
+        html`<sl-option
           class="owner_name"
           value="${user.id}"
           data-email="${user.email}"
           data-name="${user.name}"
         >
           ${user.name}: ${user.email}
-        </option>`
+        </sl-option>`
       );
     }
     return html`
@@ -264,53 +257,57 @@ export class ChromedashAdminBlinkComponentListing extends LitElement {
       <div class="owners_list layout horizontal center">
         <div>
           <div class="column_header">Receives email updates:</div>
-          <select
+          <sl-select
             multiple
             disabled
             id="owner_list_${this.index}"
-            size="${this.subscriberIds.length}"
+            .value=${this.subscriberIds.map(String)}
           >
             ${this.subscriberIds.map(subscriberId =>
               this.ownerIds.includes(subscriberId)
-                ? html`<option
+                ? html`<sl-option
                     class="owner_name component_owner"
                     value="${subscriberId}"
                   >
                     ${this._printUserDetails(subscriberId)}
-                  </option>`
-                : html`<option class="owner_name" value="${subscriberId}">
+                  </sl-option>`
+                : html`<sl-option class="owner_name" value="${subscriberId}">
                     ${this._printUserDetails(subscriberId)}
-                  </option>`
+                  </sl-option>`
             )};
-          </select>
+          </sl-select>
         </div>
         <div class="owners_list_add_remove">
           <div>
-            <select class="owner_candidates">
-              <option selected disabled data-placeholder="true">
-                Select owner to add/remove
-              </option>
-              ${userListTemplate}</select
-            ><br />
+            <sl-select
+              class="owner_candidates"
+              placeholder="Select owner to add/remove"
+            >
+              ${userListTemplate}
+            </sl-select>
+            <br />
             <label
               title="Toggles the user as an owner. If you click 'Remove' ans this is not checked, the user is removed from the component."
               >Owner? <input type="checkbox" class="is_primary_checkbox"
             /></label>
           </div>
-          <button
+          <sl-button
             @click="${this._addUser}"
             class="add_owner_button"
             data-component-name="${this.name}"
+            size="small"
           >
             Add
-          </button>
-          <button
+          </sl-button>
+          <sl-button
             @click="${this._removeUser}"
             class="remove_owner_button"
             data-component-name="${this.name}"
+            size="small"
+            variant="danger"
           >
             Remove
-          </button>
+          </sl-button>
         </div>
       </div>
     `;

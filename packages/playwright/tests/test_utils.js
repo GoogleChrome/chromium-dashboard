@@ -345,7 +345,7 @@ export async function createNewFeature(page) {
   await featureTypeRadioNew.click();
 
   // Submit the form.
-  const submitButton = page.locator('input[type="submit"]');
+  const submitButton = page.locator('sl-button[type="submit"]');
   await submitButton.click();
 
   // Wait until we are on the Feature page.

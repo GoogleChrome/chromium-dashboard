@@ -121,9 +121,8 @@ describe('chromedash-admin-blink-component-listing', () => {
     });
     it('should generate an alert if nothing is selected', async () => {
       const alertStub = sandbox.stub(window, 'alert');
-      const el = element._findSelectedOptionElement();
-      // The placeholder is selected.
-      expect(el.dataset.placeholder).to.equal('true');
+      // The placeholder is selected, so value is empty.
+      expect(element._ownerCandidates.value).to.equal('');
       expect(alertStub).to.have.callCount(0);
       element._addUser();
       expect(alertStub).to.have.callCount(1);
@@ -131,7 +130,7 @@ describe('chromedash-admin-blink-component-listing', () => {
     it('should do nothing for a user already subscribed', async () => {
       const alertStub = sandbox.stub(window, 'alert');
       // Must select user currently a subscriber.
-      element._getOptionsElement().options[1].selected = true;
+      element._ownerCandidates.value = '0';
       client.addUserToComponent.resolves({});
       element._addUser();
       // Should timeout
@@ -143,7 +142,7 @@ describe('chromedash-admin-blink-component-listing', () => {
     it('should make successful adminAddComponentUser event if addUserToComponent OK', async () => {
       const alertStub = sandbox.stub(window, 'alert');
       // Must select user not currently a subscriber.
-      element._getOptionsElement().options[5].selected = true;
+      element._ownerCandidates.value = '4';
       client.addUserToComponent.resolves({});
       element._addUser();
       const ev = await oneEvent(element, 'adminAddComponentUser');
@@ -186,17 +185,16 @@ describe('chromedash-admin-blink-component-listing', () => {
     });
     it('should generate an alert if nothing is selected', async () => {
       const alertStub = sandbox.stub(window, 'alert');
-      const el = element._findSelectedOptionElement();
-      // The placeholder is selected.
-      expect(el.dataset.placeholder).to.equal('true');
+      // The placeholder is selected, so value is empty.
+      expect(element._ownerCandidates.value).to.equal('');
       expect(alertStub).to.have.callCount(0);
       element._removeUser();
       expect(alertStub).to.have.callCount(1);
     });
     it('should do nothing for a user not already subscribed', async () => {
       const alertStub = sandbox.stub(window, 'alert');
-      // Must select user currently a subscriber.
-      element._getOptionsElement().options[5].selected = true;
+      // Must select user not currently a subscriber.
+      element._ownerCandidates.value = '4';
       client.removeUserFromComponent.resolves({});
       element._removeUser();
       // Should timeout
@@ -211,7 +209,7 @@ describe('chromedash-admin-blink-component-listing', () => {
       async () => {
         const alertStub = sandbox.stub(window, 'alert');
         // Must select user is currently a subscriber.
-        element._getOptionsElement().options[1].selected = true;
+        element._ownerCandidates.value = '0';
         client.removeUserFromComponent.resolves({});
         element._removeUser();
         const ev = await oneEvent(element, 'adminRemoveComponentUser');

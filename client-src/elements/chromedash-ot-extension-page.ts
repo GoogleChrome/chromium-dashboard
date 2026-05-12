@@ -369,19 +369,16 @@ export class ChromedashOTExtensionPage extends LitElement {
           <section class="stage_form">${this.renderFields(section)}</section>
         </chromedash-form-table>
         <div class="final_buttons">
-          <input
-            id="submit-button"
-            class="button"
-            type="submit"
-            value="Submit"
-          />
-          <button
+          <sl-button id="submit-button" variant="primary" type="submit">
+            Submit
+          </sl-button>
+          <sl-button
             id="cancel-button"
             type="reset"
             @click=${this.handleCancelClick}
           >
             Cancel
-          </button>
+          </sl-button>
         </div>
       </form>
     `;

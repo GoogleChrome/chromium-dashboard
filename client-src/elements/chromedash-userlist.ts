@@ -87,11 +87,11 @@ class ChromedashUserlist extends LitElement {
   _onAdminToggle() {
     const formEl = this.renderRoot.querySelector('form');
     const adminCheckbox = formEl?.querySelector(
-      'input[name="is_admin"]'
-    ) as HTMLInputElement;
+      'sl-checkbox[name="is_admin"]'
+    ) as any;
     const siteEditorCheckbox = formEl?.querySelector(
-      'input[name="is_site_editor"]'
-    ) as HTMLInputElement;
+      'sl-checkbox[name="is_site_editor"]'
+    ) as any;
     // Admins will always be site editors, so if the admin box is checked,
     // the site editor box is also checked and disabled.
     if (adminCheckbox.checked) {
@@ -108,15 +108,13 @@ class ChromedashUserlist extends LitElement {
     const formEl = this.renderRoot.querySelector('form')!;
 
     if (formEl.checkValidity()) {
-      const emailInput = formEl.querySelector(
-        'input[name="email"]'
-      ) as HTMLInputElement;
+      const emailInput = formEl.querySelector('sl-input[name="email"]') as any;
       const adminCheckbox = formEl.querySelector(
-        'input[name="is_admin"]'
-      ) as HTMLInputElement;
+        'sl-checkbox[name="is_admin"]'
+      ) as any;
       const siteEditorCheckbox = formEl.querySelector(
-        'input[name="is_site_editor"]'
-      ) as HTMLInputElement;
+        'sl-checkbox[name="is_site_editor"]'
+      ) as any;
       const email = emailInput?.value;
       const isAdmin = adminCheckbox?.checked;
       const isSiteEditor = siteEditorCheckbox?.checked;
@@ -151,33 +149,25 @@ class ChromedashUserlist extends LitElement {
   render() {
     this.sortUsers();
     return html`
-      <form id="form" name="user_form" method="post">
+      <form id="form" name="user_form" method="post" @submit=${this.ajaxSubmit}>
         <div>
-          <input
+          <sl-input
             type="email"
             placeholder="Email address"
             name="email"
             required
-          />
+          ></sl-input>
         </div>
         <div>
-          <label
-            ><input
-              type="checkbox"
-              name="is_admin"
-              @click="${this._onAdminToggle}"
-            />
-            User is admin</label
-          >
+          <sl-checkbox name="is_admin" @sl-change="${this._onAdminToggle}">
+            User is admin
+          </sl-checkbox>
         </div>
         <div>
-          <label
-            ><input type="checkbox" name="is_site_editor" /> User is site
-            editor</label
-          >
+          <sl-checkbox name="is_site_editor"> User is site editor </sl-checkbox>
         </div>
         <div>
-          <input type="submit" @click="${this.ajaxSubmit}" value="Add user" />
+          <sl-button type="submit" variant="primary">Add user</sl-button>
         </div>
       </form>
 

@@ -357,19 +357,20 @@ export class ChromedashGuideVerifyAccuracyPage extends LitElement {
         </chromedash-form-table>
 
         <section class="final_buttons">
-          <input
-            class="button"
+          <sl-button
+            variant="primary"
             type="submit"
-            value="${submitButtonTitle}"
             ?disabled=${this.submitting}
-          />
-          <button
+          >
+            ${submitButtonTitle}
+          </sl-button>
+          <sl-button
             id="cancel-button"
             type="reset"
             @click=${this.navigateToFeaturePage}
           >
             Cancel
-          </button>
+          </sl-button>
         </section>
       </form>
     `;

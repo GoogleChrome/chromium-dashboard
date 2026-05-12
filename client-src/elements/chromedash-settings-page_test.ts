@@ -72,7 +72,7 @@ describe('chromedash-settings-page', () => {
     // form exists and has a submit button
     const formEl = component.renderRoot.querySelector('form');
     assert.exists(formEl);
-    assert.include(formEl.innerHTML, 'input type="submit"');
+    assert.exists(formEl.querySelector('sl-button[type="submit"]'));
 
     // checkbox exists and is checked
     const checkboxEl = component.renderRoot.querySelector('sl-checkbox');
@@ -98,7 +98,7 @@ describe('chromedash-settings-page', () => {
     // form exists and has a submit button
     const formEl = component.renderRoot.querySelector('form');
     assert.exists(formEl);
-    assert.include(formEl.innerHTML, 'input type="submit"');
+    assert.exists(formEl.querySelector('sl-button[type="submit"]'));
 
     // checkbox exists and is not checked
     const checkboxEl = component.renderRoot.querySelector('sl-checkbox');

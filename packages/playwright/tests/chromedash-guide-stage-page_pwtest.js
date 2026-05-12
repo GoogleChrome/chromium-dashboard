@@ -98,7 +98,7 @@ test('edit origin trial stage', async ({page}) => {
   await expect(originTrialDesktopEndError).not.toBeVisible();
 
   // Submit the change of OT start milestone.
-  const submitButton = page.locator('input[type="submit"]');
+  const submitButton = page.locator('sl-button[type="submit"]');
   await submitButton.click();
 
   // Check that we are back on the Feature page
