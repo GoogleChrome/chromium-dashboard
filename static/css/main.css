@@ -385,9 +385,8 @@ body {
 }
 
 body.non-prod {
-  background: #fff4f4;
-  --page-background: #fff4f4;
-  --non-prod-page-background: #fff4f4;
+  background: repeating-linear-gradient(-45deg, var(--sl-color-danger-100), var(--sl-color-neutral-50) 100px);
+  --page-background: repeating-linear-gradient(-45deg, var(--sl-color-danger-100), var(--sl-color-neutral-50) 100px);
 }
 body.loading #spinner {
   display: flex;
