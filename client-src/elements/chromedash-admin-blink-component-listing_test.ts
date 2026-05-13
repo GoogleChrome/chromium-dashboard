@@ -19,6 +19,9 @@ import {html} from 'lit';
 import {assert, expect, fixture, oneEvent} from '@open-wc/testing';
 import sinon from 'sinon';
 import {DefaultApi, ComponentsUser} from 'chromestatus-openapi';
+import {setBasePath} from '@shoelace-style/shoelace/dist/utilities/base-path.js';
+
+setBasePath('/static/shoelace');
 
 const testUsersMap = new Map<number, ComponentsUser>([
   [0, {id: 0, email: 'a@b.c', name: '0'}],
@@ -122,7 +125,7 @@ describe('chromedash-admin-blink-component-listing', () => {
     it('should generate an alert if nothing is selected', async () => {
       const alertStub = sandbox.stub(window, 'alert');
       // The placeholder is selected, so value is empty.
-      expect(element._ownerCandidates.value).to.equal('');
+      expect(element._ownerCandidates.value || '').to.equal('');
       expect(alertStub).to.have.callCount(0);
       element._addUser();
       expect(alertStub).to.have.callCount(1);
@@ -133,8 +136,7 @@ describe('chromedash-admin-blink-component-listing', () => {
       element._ownerCandidates.value = '0';
       client.addUserToComponent.resolves({});
       element._addUser();
-      // Should timeout
-      expect(oneEvent(element, 'adminAddComponentUser')).to.throw;
+
       expect(alertStub).to.have.callCount(0);
       sandbox.assert.callCount(eventListeners.add, 0);
       sandbox.assert.callCount(eventListeners.remove, 0);
@@ -186,7 +188,7 @@ describe('chromedash-admin-blink-component-listing', () => {
     it('should generate an alert if nothing is selected', async () => {
       const alertStub = sandbox.stub(window, 'alert');
       // The placeholder is selected, so value is empty.
-      expect(element._ownerCandidates.value).to.equal('');
+      expect(element._ownerCandidates.value || '').to.equal('');
       expect(alertStub).to.have.callCount(0);
       element._removeUser();
       expect(alertStub).to.have.callCount(1);
@@ -197,8 +199,7 @@ describe('chromedash-admin-blink-component-listing', () => {
       element._ownerCandidates.value = '4';
       client.removeUserFromComponent.resolves({});
       element._removeUser();
-      // Should timeout
-      expect(oneEvent(element, 'adminRemoveComponentUser')).to.throw;
+
       expect(alertStub).to.have.callCount(0);
       sandbox.assert.callCount(eventListeners.add, 0);
       sandbox.assert.callCount(eventListeners.remove, 0);

@@ -4,6 +4,7 @@ const filteredLogs = [
 
 export default {
   files: 'build/**/*_test.{js,ts}',
+  rootDir: '.',
   concurrentBrowsers: 1,
   concurrency: 1,
   nodeResolve: true,

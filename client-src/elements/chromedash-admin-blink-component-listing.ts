@@ -140,17 +140,14 @@ export class ChromedashAdminBlinkComponentListing extends LitElement {
   }
 
   _isUserInOwnerList(userId: number) {
-    const ownersList = this.getOwnerListElement()!;
-    return Array.from(ownersList.options).find(
-      option => parseInt((option as HTMLOptionElement).value) === userId
-    );
+    return this.subscriberIds.includes(userId);
   }
 
   _addUser() {
     const toggleAsOwner = this._isOwnerCheckboxChecked();
     const userId = parseInt(this._ownerCandidates.value);
 
-    if (!userId) {
+    if (!this._ownerCandidates.value) {
       alert('Please select a user before trying to add');
       return;
     }
@@ -193,7 +190,7 @@ export class ChromedashAdminBlinkComponentListing extends LitElement {
     const toggleAsOwner = this._isOwnerCheckboxChecked();
     const userId = parseInt(this._ownerCandidates.value);
 
-    if (!userId) {
+    if (!this._ownerCandidates.value) {
       alert('Please select a user before trying to remove');
       return;
     }
