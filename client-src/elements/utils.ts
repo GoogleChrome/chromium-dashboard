@@ -20,6 +20,7 @@ import {html, nothing, TemplateResult} from 'lit';
 import {unsafeHTML} from 'lit/directives/unsafe-html.js';
 import DOMPurify from 'dompurify';
 import {marked} from 'marked';
+import page from 'page';
 import {
   Channels,
   Feature,
@@ -429,6 +430,14 @@ export function setupScrollToHash(pageElement) {
 export function redirectToCurrentPage(): void {
   const url = window.location.href.split('?')[0];
   window.location.href = url;
+}
+
+/**
+ * Navigates to a new path using page.js.
+ * @param {string} path The path to navigate to.
+ */
+export function navigate(path: string): void {
+  page(path);
 }
 
 /* Returns a html template if the condition is true, otherwise returns an empty html */

@@ -27,6 +27,7 @@ import {
   shouldShowDisplayNameField,
   maybeAlertOnLateChange,
   fetchCurrentBetaMilestone,
+  navigate,
 } from './utils.js';
 import './chromedash-form-table.js';
 import './chromedash-form-field.js';
@@ -190,9 +191,11 @@ export class ChromedashGuideStagePage extends LitElement {
         // If we have a set gate ID, we need to redirect the user to finish
         // initiating their extension.
         if (this.gateId) {
-          window.location.href = `/feature/${this.featureId}?gate=${this.gateId}&initiateExtension`;
+          navigate(
+            `/feature/${this.featureId}?gate=${this.gateId}&initiateExtension`
+          );
         } else {
-          window.location.href = `/feature/${this.featureId}`;
+          navigate(`/feature/${this.featureId}`);
         }
       })
       .catch(() => {
@@ -215,7 +218,7 @@ export class ChromedashGuideStagePage extends LitElement {
   }
 
   handleCancelClick() {
-    window.location.href = `/feature/${this.featureId}`;
+    navigate(`/feature/${this.featureId}`);
   }
 
   // get a comma-spearated list of field names

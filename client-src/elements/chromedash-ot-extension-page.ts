@@ -33,6 +33,7 @@ import {
   getDisabledHelpText,
   setupScrollToHash,
   showToastMessage,
+  navigate,
 } from './utils.js';
 
 export class ChromedashOTExtensionPage extends LitElement {
@@ -216,11 +217,11 @@ export class ChromedashOTExtensionPage extends LitElement {
         showToastMessage('Extension request started!');
         if (!newStageId || !gate) {
           setTimeout(() => {
-            window.location.href = `/feature/${this.featureId}`;
+            navigate(`/feature/${this.featureId}`);
           }, 1000);
         } else {
           setTimeout(() => {
-            window.location.href = `/feature/${this.featureId}?gate=${gate.id}`;
+            navigate(`/feature/${this.featureId}?gate=${gate.id}`);
           }, 1000);
         }
       })
@@ -233,7 +234,7 @@ export class ChromedashOTExtensionPage extends LitElement {
 
   handleCancelClick(e) {
     e.preventDefault(); // Stops the form from being submitted.
-    window.location.href = `/feature/${this.featureId}`;
+    navigate(`/feature/${this.featureId}`);
   }
 
   renderSkeletons() {

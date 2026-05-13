@@ -32,6 +32,7 @@ import {
   getFeatureOutdatedBanner,
   userCanEdit,
   maybeAlertOnLateChange,
+  navigate,
 } from './utils.js';
 import './chromedash-form-table.js';
 import './chromedash-form-field.js';
@@ -173,7 +174,7 @@ export class ChromedashGuideEditallPage extends LitElement {
         return window.csClient.updateFeature(submitBody);
       })
       .then(() => {
-        window.location.href = this.getNextPage();
+        navigate(this.getNextPage());
       })
       .catch(() => {
         this.submitting = false;
@@ -206,7 +207,7 @@ export class ChromedashGuideEditallPage extends LitElement {
   }
 
   handleCancelClick() {
-    window.location.href = this.getNextPage();
+    navigate(this.getNextPage());
   }
 
   renderSkeletons() {

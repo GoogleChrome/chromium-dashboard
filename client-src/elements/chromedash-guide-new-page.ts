@@ -34,6 +34,7 @@ import {
   getDisabledHelpText,
   showToastMessage,
   FieldInfo,
+  navigate,
 } from './utils.js';
 import {customElement, property, state} from 'lit/decorators.js';
 import {Feature} from '../js-src/cs-client.js';
@@ -114,7 +115,7 @@ export class ChromedashGuideNewPage extends LitElement {
     window.csClient
       .createFeature(createBody)
       .then(resp => {
-        window.location.href = `/feature/${resp.feature_id}`;
+        navigate(`/feature/${resp.feature_id}`);
       })
       .catch(() => {
         showToastMessage(

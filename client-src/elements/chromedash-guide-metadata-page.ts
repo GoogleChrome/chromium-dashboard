@@ -24,6 +24,7 @@ import {
   FieldInfo,
   maybeAlertOnLateChange,
   fetchCurrentBetaMilestone,
+  navigate,
 } from './utils.js';
 import './chromedash-form-table.js';
 import './chromedash-form-field.js';
@@ -124,7 +125,7 @@ export class ChromedashGuideMetadataPage extends LitElement {
         return window.csClient.updateFeature(submitBody);
       })
       .then(() => {
-        window.location.href = `/feature/${this.featureId}`;
+        navigate(`/feature/${this.featureId}`);
       })
       .catch(() => {
         showToastMessage(
@@ -148,7 +149,7 @@ export class ChromedashGuideMetadataPage extends LitElement {
   }
 
   handleCancelClick() {
-    window.location.href = `/feature/${this.featureId}`;
+    navigate(`/feature/${this.featureId}`);
   }
 
   // get a comma-spearated list of field names

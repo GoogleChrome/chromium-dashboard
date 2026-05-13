@@ -22,6 +22,7 @@ import {
   showToastMessage,
   METRICS_TYPE_AND_VIEW_TO_SUBTITLE,
   METRICS_TYPE_AND_VIEW_TO_DESCRIPTION,
+  navigate,
 } from './utils.js';
 
 export class ChromedashStackRankPage extends LitElement {
@@ -110,7 +111,9 @@ export class ChromedashStackRankPage extends LitElement {
     const property = this.viewList.find(
       item => item.property_name === inputValue
     );
-    window.location.href = `/metrics/${this.type}/timeline/${this.view}/${property.bucket_id}`;
+    navigate(
+      `/metrics/${this.type}/timeline/${this.view}/${property.bucket_id}`
+    );
   }
 
   renderSubheader() {

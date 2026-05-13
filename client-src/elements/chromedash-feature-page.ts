@@ -161,6 +161,7 @@ export class ChromedashFeaturePage extends LitElement {
       window.csClient.getStars(),
       window.csClient.getFeatureProgress(this.featureId),
       window.csClient.getChannels(),
+      window.csClient.getPermissions(),
     ])
       .then(
         async ([
@@ -171,8 +172,10 @@ export class ChromedashFeaturePage extends LitElement {
           starredFeatures,
           progress,
           channels,
+          user,
         ]) => {
           this.feature = feature;
+          this.user = user;
           this.gates = gatesRes.gates;
           this.comments = commentRes.comments;
           this.process = process;
