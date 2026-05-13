@@ -383,6 +383,12 @@ body {
   font: var(--default-font);
   background: var(--page-background);
 }
+
+body.non-prod {
+  background: #fff8f8;
+  --page-background: #fff8f8;
+  --non-prod-page-background: #fff8f8;
+}
 body.loading #spinner {
   display: flex;
 }
