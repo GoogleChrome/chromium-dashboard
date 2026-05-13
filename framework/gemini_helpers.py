@@ -484,7 +484,6 @@ def run_wpt_test_eval_pipeline(
             api_key=settings.GEMINI_API_KEY,
             explainer_urls=explainer_urls,
         )
-
         feature.ai_test_eval_report = report_markdown
         return core_enums.AITestEvaluationStatus.COMPLETE
     except utils.PipelineError as e:
