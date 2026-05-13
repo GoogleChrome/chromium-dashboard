@@ -385,9 +385,9 @@ body {
 }
 
 body.non-prod {
-  background: #fff8f8;
-  --page-background: #fff8f8;
-  --non-prod-page-background: #fff8f8;
+  background: #fff4f4;
+  --page-background: #fff4f4;
+  --non-prod-page-background: #fff4f4;
 }
 body.loading #spinner {
   display: flex;
