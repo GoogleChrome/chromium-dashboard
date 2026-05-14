@@ -1434,6 +1434,14 @@ class FeaturesAPITest(testing_config.CustomTestCase):
         # User's email should match creator_email field.
         self.assertEqual(new_feature.creator_email, 'admin@example.com')
 
+        # Check that an activity log record was created
+        activities = Activity.get_activities(response['feature_id'])
+        self.assertEqual(1, len(activities))
+        activity = activities[0]
+        self.assertEqual('admin@example.com', activity.author)
+        self.assertEqual(Activity.USER_CHANGE, activity.log_type)
+        self.assertEqual('Feature entry created', activity.content)
+
     def test_post__valid_stage_and_gate_creation(self):
         """POST request successful with valid input from user with permissions."""
         # Signed-in user with permissions.
