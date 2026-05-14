@@ -238,7 +238,6 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
         search_fulltext.index_feature(feature)
         self._write_stages_and_gates_for_feature(id, feature.feature_type)
 
-        user = self.get_current_user()
         activity = Activity(
             log_type=Activity.USER_CHANGE,
             feature_id=id,
