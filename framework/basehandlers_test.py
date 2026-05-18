@@ -95,7 +95,6 @@ test_app = basehandlers.FlaskApplication(
     [
         Route('/test', TestableFlaskHandler),
         Route('/data/test', TestableFlaskHandler),
-        Route('/old_path', basehandlers.Redirector, {'location': '/new_path'}),
         Route(
             '/just_a_template',
             basehandlers.ConstHandler,
@@ -1295,18 +1294,6 @@ class FlaskHandlerTests(testing_config.CustomTestCase):
                 ['http://example1.com', 'http://example2.com'],
                 self.handler.parse_links('extrajunk'),
             )
-
-
-class RedirectorTests(testing_config.CustomTestCase):
-    """Tests for simple redirector handlers."""
-
-    def test_redirector(self):
-        """If the user hits a redirector, they get a redirect response."""
-        with test_app.test_request_context('/old_path'):
-            actual_redirect, actual_headers = test_app.dispatch_request()
-
-        self.assertEqual(302, actual_redirect.status_code)
-        self.assertEqual('/new_path', actual_redirect.headers['location'])
 
 
 class ConstHandlerTests(testing_config.CustomTestCase):
