@@ -799,6 +799,14 @@ class ConstHandler(FlaskHandler):
         return flask.jsonify(defaults)
 
 
+class WarmupHandler(BaseHandler):
+    """Warmup request handler to load application code into a new instance."""
+
+    def get(self, *args, **kwargs):
+        """Handle warmup request."""
+        return 'OK', 200
+
+
 def ndb_wsgi_middleware(wsgi_app):
     """Create a new runtime context for cloud ndb for every request"""  # noqa: D415
     client = ndb.Client()

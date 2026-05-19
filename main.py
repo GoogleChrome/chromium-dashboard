@@ -583,6 +583,7 @@ internals_routes: list[Route] = [
         '/scripts/reset_outstanding_notifications',
         maintenance_scripts.ResetOutstandingNotifications,
     ),
+    Route('/_ah/warmup', basehandlers.WarmupHandler),
 ]
 
 dev_routes: list[Route] = []
