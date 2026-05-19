@@ -341,22 +341,25 @@ export interface GateDict {
 /**
  * Generic Chrome Status Http Error.
  */
-class ChromeStatusHttpError extends Error {
+export class ChromeStatusHttpError extends Error {
   resource: string;
   method: string;
   status: number;
+  body: string;
 
   constructor(
     message: string,
     resource: string,
     method: string,
-    status: number
+    status: number,
+    body: string = ''
   ) {
     super(message);
     this.name = 'ChromeStatusHttpError';
     this.resource = resource;
     this.method = method;
     this.status = status;
+    this.body = body;
   }
 }
 
@@ -439,11 +442,19 @@ export class ChromeStatusClient {
     const response = await fetch(url, options);
 
     if (response.status !== 200) {
+      let body = '';
+      try {
+        body = await response.text();
+      } catch {
+        // ignore
+      }
       throw new ChromeStatusHttpError(
-        `Got error response from server ${resource}: ${response.status}`,
+        body ||
+          `Got error response from server ${resource}: ${response.status}`,
         resource,
         httpMethod,
-        response.status
+        response.status,
+        body
       );
     }
     const rawResponseText = await response.text();
