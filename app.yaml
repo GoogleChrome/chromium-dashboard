@@ -48,3 +48,5 @@ env_variables:
 inbound_services:
 - mail
 - mail_bounce
+- warmup
+
