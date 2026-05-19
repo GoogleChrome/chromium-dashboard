@@ -800,11 +800,11 @@ class ConstHandler(FlaskHandler):
 
 
 class WarmupHandler(BaseHandler):
-  """Warmup request handler to load application code into a new instance."""
+    """Warmup request handler to load application code into a new instance."""
 
-  def get(self, *args, **kwargs):
-    """Handle warmup request."""
-    return 'OK', 200
+    def get(self, *args, **kwargs):
+        """Handle warmup request."""
+        return 'OK', 200
 
 
 def ndb_wsgi_middleware(wsgi_app):

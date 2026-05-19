@@ -35,7 +35,9 @@ class MainTest(testing_config.CustomTestCase):
 
     def test_warmup_route_registered(self):
         """Verify that the warmup route is registered to WarmupHandler."""
-        rules = [r for r in main.app.url_map.iter_rules() if r.rule == '/_ah/warmup']
+        rules = [
+            r for r in main.app.url_map.iter_rules() if r.rule == '/_ah/warmup'
+        ]
         self.assertEqual(len(rules), 1)
         rule = rules[0]
         view_func = main.app.view_functions[rule.endpoint]
@@ -47,8 +49,6 @@ class MainTest(testing_config.CustomTestCase):
         response, status = handler.get()
         self.assertEqual(response, 'OK')
         self.assertEqual(status, 200)
-
-
 
 
 class ConstTemplateTest(testing_config.CustomTestCase):
