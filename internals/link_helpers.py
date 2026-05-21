@@ -362,7 +362,15 @@ class Link:
         200 (OK), it sets the `is_error` flag to True and stores the HTTP error code. This method is
         used to determine if the URL is accessible and valid.
         """  # noqa: D205, E501
-        res = requests.get(self.url, allow_redirects=True, timeout=TIMEOUT)
+        try:
+            res = requests.head(self.url, allow_redirects=True, timeout=TIMEOUT)
+            if res.status_code != 200:
+                res = requests.get(
+                    self.url, allow_redirects=True, timeout=TIMEOUT
+                )
+        except requests.RequestException:
+            res = requests.get(self.url, allow_redirects=True, timeout=TIMEOUT)
+
         if res.status_code != 200:
             self.is_error = True
             self.http_error_code = res.status_code
@@ -407,7 +415,7 @@ class Link:
                 self.information = self._parse_html_head()
             elif self.type == LINK_TYPE_WEB:
                 self.information = None
-        except Exception as e:
+        except (requests.RequestException, HTTPError, ValueError) as e:
             logging.error(f'Error parsing {self.type} {self.url}: {e}')
             self.error = e
             self.is_error = True

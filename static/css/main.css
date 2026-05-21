@@ -383,6 +383,11 @@ body {
   font: var(--default-font);
   background: var(--page-background);
 }
+
+body.non-prod {
+  background: repeating-linear-gradient(-45deg, var(--sl-color-danger-100), var(--sl-color-neutral-50) 100px);
+  --page-background: repeating-linear-gradient(-45deg, var(--sl-color-danger-100), var(--sl-color-neutral-50) 100px);
+}
 body.loading #spinner {
   display: flex;
 }

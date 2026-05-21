@@ -91,16 +91,6 @@ class PipelineError(Exception):
     pass
 
 
-def normalized_name(val):
-    """Return a normalized string by converting to lowercase and removing spaces and slashes."""
-    return val.lower().replace(' ', '').replace('/', '')
-
-
-def format_feature_url(feature_id):
-    """Return the feature detail page URL for the specified feature."""
-    return '/feature/%d' % feature_id
-
-
 def retry(tries, delay=1, backoff=2):
     """A retry decorator with exponential backoff.
 
@@ -195,11 +185,6 @@ def get_banner_time(timestamp):
         return None
     ts = datetime.datetime(*timestamp, tzinfo=_UTC)
     return calendar.timegm(ts.timetuple())
-
-
-def dedupe(list_with_duplicates):
-    """Return a list without duplicates, in the original order."""
-    return list(dict.fromkeys(list_with_duplicates))
 
 
 def chunk_list(lst, n):

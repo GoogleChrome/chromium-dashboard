@@ -43,8 +43,8 @@ os.environ.setdefault('SERVER_SOFTWARE', 'gunicorn')
 # ruff: noqa: E402
 from internals import core_enums
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
+from internals.processes import write_gates_and_stages_for_feature
 from internals.user_models import AppUser
-from pages.guide import FeatureCreateHandler
 
 
 def add_features(server: str, after: datetime, detailsAfter: datetime):
@@ -255,9 +255,7 @@ def add_features(server: str, after: datetime, detailsAfter: datetime):
         fe.put()
 
         if details is None:
-            FeatureCreateHandler().write_gates_and_stages_for_feature(
-                fe.key.id(), fe.feature_type
-            )
+            write_gates_and_stages_for_feature(fe.key.id(), fe.feature_type)
 
 
 def add_admin(email: str):

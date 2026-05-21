@@ -60,20 +60,6 @@ class UtilsFunctionTests(unittest.TestCase):
         # Encode content into bytes, then base64 encode it.
         self.encoded_content = base64.b64encode(self.content.encode('utf-8'))
 
-    def test_normalized_name(self):
-        """Test normalized name."""
-        self.assertEqual('', utils.normalized_name(''))
-        self.assertEqual('abc', utils.normalized_name('abc'))
-        self.assertEqual('abc', utils.normalized_name('Abc'))
-        self.assertEqual('abc', utils.normalized_name('ABC'))
-        self.assertEqual('abc', utils.normalized_name('A BC'))
-        self.assertEqual('abc', utils.normalized_name('A B/C'))
-        self.assertEqual('abc', utils.normalized_name(' /A B/C /'))
-
-    def test_format_feature_url(self):
-        """Test format feature url."""
-        self.assertEqual('/feature/123', utils.format_feature_url(123))
-
     @mock.patch('logging.error')
     @mock.patch('logging.warning')
     @mock.patch('time.sleep')  # Run test full speed.

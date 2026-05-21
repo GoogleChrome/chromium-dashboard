@@ -22,7 +22,7 @@ import {Feature} from '../js-src/cs-client.js';
 import './chromedash-feature-filter.js';
 import './chromedash-feature-pagination.js';
 import './chromedash-feature-row.js';
-import {clamp, showToastMessage, formatUrlForRelativeOffset} from './utils.js';
+import {showToastMessage, formatUrlForRelativeOffset} from './utils.js';
 import {GateDict} from './chromedash-gate-chip.js';
 
 @customElement('chromedash-feature-table')

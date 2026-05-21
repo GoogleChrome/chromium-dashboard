@@ -207,6 +207,7 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
     def do_post(self, **kwargs):
         """Handle POST requests to create a single feature."""
         feature_changes = self.get_json_param_dict()
+        user_email = self.get_current_user().email()
 
         # A feature creation request should have all required fields.
         for field in FeatureEntry.REQUIRED_FIELDS:
@@ -214,7 +215,7 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
                 self.abort(400, msg=f'Required field "{field}" not provided.')
 
         fields_dict = {
-            'owner_emails': [self.get_current_user().email()],
+            'owner_emails': [user_email],
             'devrel_emails': [DEVREL_EMAIL],
             'category': int(core_enums.MISC),
             'blink_components': [settings.DEFAULT_COMPONENT],
@@ -236,6 +237,14 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
 
         search_fulltext.index_feature(feature)
         self._write_stages_and_gates_for_feature(id, feature.feature_type)
+
+        activity = Activity(
+            log_type=Activity.USER_CHANGE,
+            feature_id=id,
+            author=user_email,
+            content='Feature entry created',
+        )
+        activity.put()
 
         # Remove all feature-related cache.
         rediscache.delete_keys_with_prefix(FeatureEntry.DEFAULT_CACHE_KEY)

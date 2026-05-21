@@ -32,10 +32,12 @@ from api import (
     external_reviews_api,
     feature_latency_api,
     feature_links_api,
+    featurelist_api,
     features_api,
     intents_api,
     login_api,
     logout_api,
+    metrics_api,
     metricsdata,
     origin_trials_api,
     permissions_api,
@@ -64,9 +66,7 @@ from internals import (
     reminders,
     search_fulltext,
 )
-
-# TODO(jrobbins): Remove guide routes after a few weeks.
-from pages import featurelist, guide, metrics, ot_requests, users
+from pages import guide, ot_requests, users
 
 # Patch treading library to work-around bug with Google Cloud Logging.
 original_delete = threading.Thread._delete  # type: ignore
@@ -393,8 +393,8 @@ mpa_page_routes: list[Route] = [
     # Note: The only requests being made now hit /features.json and
     # /features_v2.json, but both of those cause version == 2.
     # There was logic to accept another version value, but it it was not used.
-    Route(r'/features.json', featurelist.FeaturesJsonHandler),
-    Route(r'/features_v2.json', featurelist.FeaturesJsonHandler),
+    Route(r'/features.json', featurelist_api.FeaturesJsonHandler),
+    Route(r'/features_v2.json', featurelist_api.FeaturesJsonHandler),
     Route(
         '/features.xml',
         basehandlers.ConstHandler,
@@ -405,7 +405,7 @@ mpa_page_routes: list[Route] = [
         basehandlers.ConstHandler,
         defaults={'template_path': 'farewell-samples.html'},
     ),
-    Route('/omaha_data', metrics.OmahaDataHandler),
+    Route('/omaha_data', metrics_api.OmahaDataHandler),
     Route(
         '/feature/<int:feature_id>/attachment/<int:attachment_id>',
         attachments_api.AttachmentServing,
@@ -583,6 +583,7 @@ internals_routes: list[Route] = [
         '/scripts/reset_outstanding_notifications',
         maintenance_scripts.ResetOutstandingNotifications,
     ),
+    Route('/_ah/warmup', basehandlers.WarmupHandler),
 ]
 
 dev_routes: list[Route] = []
