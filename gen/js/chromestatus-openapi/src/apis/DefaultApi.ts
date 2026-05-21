@@ -48,6 +48,7 @@ import type {
   PostVoteRequest,
   Process,
   RejectUnneededGetRequest,
+  ReleaseNotesL10nResponse,
   ReviewLatency,
   SetStarRequest,
   SignInRequest,
@@ -121,6 +122,8 @@ import {
     ProcessToJSON,
     RejectUnneededGetRequestFromJSON,
     RejectUnneededGetRequestToJSON,
+    ReleaseNotesL10nResponseFromJSON,
+    ReleaseNotesL10nResponseToJSON,
     ReviewLatencyFromJSON,
     ReviewLatencyToJSON,
     SetStarRequestFromJSON,
@@ -223,6 +226,11 @@ export interface GetProcessRequest {
 
 export interface GetProgressRequest {
     featureId: number;
+}
+
+export interface GetReleaseNotesL10nRequest {
+    startMilestone: number;
+    endMilestone: number;
 }
 
 export interface GetUserPermissionsRequest {
@@ -652,6 +660,22 @@ export interface DefaultApiInterface {
      * Get the progress for a feature
      */
     getProgress(requestParameters: GetProgressRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<{ [key: string]: any; }>;
+
+    /**
+     * 
+     * @summary Get release notes for a milestone range (localized)
+     * @param {number} startMilestone The start milestone of the range
+     * @param {number} endMilestone The end milestone of the range
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApiInterface
+     */
+    getReleaseNotesL10nRaw(requestParameters: GetReleaseNotesL10nRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ReleaseNotesL10nResponse>>;
+
+    /**
+     * Get release notes for a milestone range (localized)
+     */
+    getReleaseNotesL10n(requestParameters: GetReleaseNotesL10nRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ReleaseNotesL10nResponse>;
 
     /**
      * 
@@ -1821,6 +1845,54 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
      */
     async getProgress(requestParameters: GetProgressRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<{ [key: string]: any; }> {
         const response = await this.getProgressRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Get release notes for a milestone range (localized)
+     */
+    async getReleaseNotesL10nRaw(requestParameters: GetReleaseNotesL10nRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ReleaseNotesL10nResponse>> {
+        if (requestParameters['startMilestone'] == null) {
+            throw new runtime.RequiredError(
+                'startMilestone',
+                'Required parameter "startMilestone" was null or undefined when calling getReleaseNotesL10n().'
+            );
+        }
+
+        if (requestParameters['endMilestone'] == null) {
+            throw new runtime.RequiredError(
+                'endMilestone',
+                'Required parameter "endMilestone" was null or undefined when calling getReleaseNotesL10n().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        if (requestParameters['startMilestone'] != null) {
+            queryParameters['startMilestone'] = requestParameters['startMilestone'];
+        }
+
+        if (requestParameters['endMilestone'] != null) {
+            queryParameters['endMilestone'] = requestParameters['endMilestone'];
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/releasenotes/l10n`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => ReleaseNotesL10nResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Get release notes for a milestone range (localized)
+     */
+    async getReleaseNotesL10n(requestParameters: GetReleaseNotesL10nRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ReleaseNotesL10nResponse> {
+        const response = await this.getReleaseNotesL10nRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

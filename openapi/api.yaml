@@ -1008,6 +1008,30 @@ paths:
                 type: array
                 items:
                   type: string
+  /releasenotes/l10n:
+    get:
+      summary: Get release notes for a milestone range (localized)
+      operationId: getReleaseNotesL10n
+      parameters:
+        - name: startMilestone
+          in: query
+          required: true
+          schema:
+            type: integer
+          description: The start milestone of the range
+        - name: endMilestone
+          in: query
+          required: true
+          schema:
+            type: integer
+          description: The end milestone of the range
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReleaseNotesL10nResponse'
 components:
   parameters:
     startAtParam:
@@ -2054,3 +2078,26 @@ components:
         message:
           type: string
           example: "Method Not Allowed"
+    ReleaseNotesL10nItem:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        summary:
+          type: string
+        stages:
+          type: array
+          items:
+            type: object
+    ReleaseNotesL10nResponse:
+      type: object
+      properties:
+        features:
+          type: array
+          items:
+            $ref: '#/components/schemas/ReleaseNotesL10nItem'
+        descriptions:
+          type: object
+          additionalProperties: true

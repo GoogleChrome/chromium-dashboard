@@ -36,6 +36,7 @@ from chromestatus_openapi.models.post_settings_request import PostSettingsReques
 from chromestatus_openapi.models.post_vote_request import PostVoteRequest  # noqa: E501
 from chromestatus_openapi.models.process import Process  # noqa: E501
 from chromestatus_openapi.models.reject_unneeded_get_request import RejectUnneededGetRequest  # noqa: E501
+from chromestatus_openapi.models.release_notes_l10n_response import ReleaseNotesL10nResponse  # noqa: E501
 from chromestatus_openapi.models.review_latency import ReviewLatency  # noqa: E501
 from chromestatus_openapi.models.set_star_request import SetStarRequest  # noqa: E501
 from chromestatus_openapi.models.sign_in_request import SignInRequest  # noqa: E501
@@ -377,6 +378,21 @@ def get_progress(feature_id):  # noqa: E501
     :type feature_id: int
 
     :rtype: Union[Dict[str, object], Tuple[Dict[str, object], int], Tuple[Dict[str, object], int, Dict[str, str]]
+    """
+    return 'do some magic!'
+
+
+def get_release_notes_l10n(start_milestone, end_milestone):  # noqa: E501
+    """Get release notes for a milestone range (localized)
+
+     # noqa: E501
+
+    :param start_milestone: The start milestone of the range
+    :type start_milestone: int
+    :param end_milestone: The end milestone of the range
+    :type end_milestone: int
+
+    :rtype: Union[ReleaseNotesL10nResponse, Tuple[ReleaseNotesL10nResponse, int], Tuple[ReleaseNotesL10nResponse, int, Dict[str, str]]
     """
     return 'do some magic!'
 

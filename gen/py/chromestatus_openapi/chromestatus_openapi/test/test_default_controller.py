@@ -35,6 +35,7 @@ from chromestatus_openapi.models.post_settings_request import PostSettingsReques
 from chromestatus_openapi.models.post_vote_request import PostVoteRequest  # noqa: E501
 from chromestatus_openapi.models.process import Process  # noqa: E501
 from chromestatus_openapi.models.reject_unneeded_get_request import RejectUnneededGetRequest  # noqa: E501
+from chromestatus_openapi.models.release_notes_l10n_response import ReleaseNotesL10nResponse  # noqa: E501
 from chromestatus_openapi.models.review_latency import ReviewLatency  # noqa: E501
 from chromestatus_openapi.models.set_star_request import SetStarRequest  # noqa: E501
 from chromestatus_openapi.models.sign_in_request import SignInRequest  # noqa: E501
@@ -428,6 +429,24 @@ class TestDefaultController(BaseTestCase):
             '/api/v0/features/{feature_id}/progress'.format(feature_id=56),
             method='GET',
             headers=headers)
+        self.assert200(response,
+                       'Response body is : ' + response.data.decode('utf-8'))
+
+    def test_get_release_notes_l10n(self):
+        """Test case for get_release_notes_l10n
+
+        Get release notes for a milestone range (localized)
+        """
+        query_string = [('startMilestone', 56),
+                        ('endMilestone', 56)]
+        headers = { 
+            'Accept': 'application/json',
+        }
+        response = self.client.open(
+            '/api/v0/releasenotes/l10n',
+            method='GET',
+            headers=headers,
+            query_string=query_string)
         self.assert200(response,
                        'Response body is : ' + response.data.decode('utf-8'))
 
