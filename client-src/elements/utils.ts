@@ -413,6 +413,15 @@ export function redirectToCurrentPage(): void {
   window.location.href = url;
 }
 
+/**
+ * Navigates to a new path using a full page load.
+ * TODO: Replace this to use page.js and periodic app update logic.
+ * @param {string} path The path to navigate to.
+ */
+export function navigate(path: string): void {
+  window.location.href = path;
+}
+
 /* Returns a html template if the condition is true, otherwise returns an empty html */
 export function renderHTMLIf(condition, originalHTML) {
   return condition ? originalHTML : nothing;
