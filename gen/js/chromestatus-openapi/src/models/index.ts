@@ -67,6 +67,8 @@ export * from './Process';
 export * from './ProcessStage';
 export * from './ProgressItem';
 export * from './RejectUnneededGetRequest';
+export * from './ReleaseNotesL10nItem';
+export * from './ReleaseNotesL10nResponse';
 export * from './ReviewLatency';
 export * from './SetStarRequest';
 export * from './SignInRequest';

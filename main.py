@@ -42,6 +42,7 @@ from api import (
     origin_trials_api,
     permissions_api,
     processes_api,
+    releasenotes_api,
     review_latency_api,
     reviews_api,
     settings_api,
@@ -265,6 +266,9 @@ api_routes: list[Route] = [
     Route(f'{API_BASE}/web_feature_ids', webdx_feature_api.WebFeatureIDsAPI),
     # This is for the menu of webdx use counters.
     Route(f'{API_BASE}/webdxfeatures', webdx_feature_api.WebdxFeatureAPI),
+    Route(
+        f'{API_BASE}/releasenotes/l10n', releasenotes_api.ReleaseNotesL10nAPI
+    ),
 ]
 
 # The Routes below that have no handler specified use SPAHandler.
