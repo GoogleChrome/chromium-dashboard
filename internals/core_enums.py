@@ -905,6 +905,17 @@ WEB_DEV_VIEWS = {
 }
 
 
+RELEASE_NOTES_L10N_FIELDS_DESCRIPTIONS = {
+    'features': {
+        'name': 'The primary title or name of the feature displayed at the top of each release note entry',
+        'summary': 'The main descriptive paragraph explaining the feature. It may contain Markdown formatting',
+    },
+    'stages': {
+        'rolloutDetails': 'Additional narrative or specific notes regarding a rollout step, often used for complex schedules',
+    },
+}
+
+
 PROPERTY_NAMES_TO_ENUM_DICTS = {
     'feature_type': FEATURE_TYPES,
     'category': FEATURE_CATEGORIES,

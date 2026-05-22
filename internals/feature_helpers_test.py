@@ -788,6 +788,178 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
         rediscache.delete(cache_key)
         self.assertEqual(cached_result, features)
 
+    def test_get_features_in_release_notes__milestone_range_cached(self):
+        """We cache and retrieve feature lists correctly when a milestone range is queried."""
+        self._create_wp_stages_and_gates()
+        self.feature_1.enterprise_impact = core_enums.ENTERPRISE_IMPACT_LOW
+        self.feature_1.is_releasenotes_publish_ready = True
+        self.feature_1.put()
+
+        cache_key = '%s|%s|%s' % (
+            FeatureEntry.SEARCH_CACHE_KEY,
+            'release_notes_milestone',
+            '1_2',
+        )
+
+        # First call should fetch from Datastore and save to cache
+        features = feature_helpers.get_features_in_release_notes(
+            milestone=1, end_milestone=2
+        )
+        self.assertEqual(1, len(features))
+
+        cached_result = rediscache.get(cache_key)
+        self.assertIsNotNone(cached_result)
+        self.assertEqual(cached_result, features)
+
+        # Clean up cache
+        rediscache.delete(cache_key)
+
+    def test_get_features_for_l10n_extraction(self):
+        """We can retrieve l10n extraction data with filtered fields.
+
+        This test validates that `get_features_for_l10n_extraction` successfully
+        queries eligible features slated for release notes in the target milestone
+        range [1, 2], filters their fields, and structures their stages.
+
+        Test scenarios:
+        - feature_1: Standard incubate feature with low enterprise impact. It has gates
+          approved via `_create_wp_stages_and_gates()`, is content reviewed and publish ready.
+          It qualifies because its shipping stage is at milestone 1.
+        - feature_2: Standard existing feature whose type is dynamically overridden to
+          `FEATURE_TYPE_ENTERPRISE_ID`. It has gates approved, is content reviewed and publish ready.
+          It qualifies because its shipping stage is at milestone 1 (set up in setUp()).
+        """
+        self._create_wp_stages_and_gates()
+        self.feature_1.enterprise_impact = core_enums.ENTERPRISE_IMPACT_LOW
+        self.feature_1.is_releasenotes_publish_ready = True
+        self.feature_1.is_releasenotes_content_reviewed = True
+        self.feature_1.put()
+
+        # Configure the shipping stage (milestone 1) for feature_1
+        shipping_stage = self.fe_1_stages_dict[160][0]
+        shipping_stage.rollout_details = '2SV enforcement starts'
+        shipping_stage.put()
+
+        # Add an enterprise rollout stage (milestone 2) to feature_1
+        rollout_stage = Stage(
+            feature_id=self.feature_1.key.integer_id(),
+            stage_type=core_enums.STAGE_ENT_ROLLOUT,
+            rollout_milestone=2,
+            rollout_details='Phase 2: Full enforcement',
+        )
+        rollout_stage.put()
+
+        # Add a future stage (milestone 3 > end_milestone 2).
+        # This stage should still be included in the stages list of feature_1
+        # because the feature itself has qualified stages in the range, which
+        # causes the API to return all its non-archived stages for context.
+        future_stage = Stage(
+            feature_id=self.feature_1.key.integer_id(),
+            stage_type=core_enums.STAGE_BLINK_SHIPPING,
+            milestones=MilestoneSet(desktop_first=3),
+            rollout_details='Future enforcement',
+        )
+        future_stage.put()
+
+        # Set feature_2 to enterprise-type, content reviewed, and publish ready
+        self.feature_2.feature_type = core_enums.FEATURE_TYPE_ENTERPRISE_ID
+        self.feature_2.is_releasenotes_publish_ready = True
+        self.feature_2.is_releasenotes_content_reviewed = True
+        self.feature_2.put()
+
+        res = feature_helpers.get_features_for_l10n_extraction(
+            start_milestone=1, end_milestone=2
+        )
+
+        # --- Construct Expected Results dynamically to avoid ID mismatch ---
+
+        # Feature 1's expected stages:
+        # It gets default stages from `setUp`: types [110, 120, 130, 140, 150].
+        # Note that stage type 151 (extend origin trial) is omitted because it is
+        # an extension stage. Since its `ot_stage_id` was not set in `setUp`,
+        # `converters.py` skips it from the main stage list.
+        default_f1_ids = [
+            self.fe_1_stages_dict[st][0].key.integer_id()
+            for st in [110, 120, 130, 140, 150]
+        ]
+        expected_f1_stages = [{'id': idx} for idx in default_f1_ids] + [
+            {
+                'id': shipping_stage.key.integer_id(),
+                'rolloutDetails': '2SV enforcement starts',
+            },
+            {
+                'id': rollout_stage.key.integer_id(),
+                'rolloutDetails': 'Phase 2: Full enforcement',
+            },
+            {
+                'id': future_stage.key.integer_id(),
+                'rolloutDetails': 'Future enforcement',
+            },
+        ]
+        # Sort expected stages by ID to align with standard response comparison
+        expected_f1_stages.sort(key=lambda s: s['id'])
+
+        # Feature 2's expected stages:
+        # It gets all stages created in `setUp`: types [220, 230, 250, 251, 260].
+        # Note: Although type 251 (Fast Track origin trial extension) is an extension
+        # stage, it is NOT skipped here. This is because we overridden the feature type
+        # of `feature_2` to `FEATURE_TYPE_ENTERPRISE_ID`. Because of this type change,
+        # `converters.py` no longer identifies type 251 as an extension stage for
+        # this feature (since `STAGE_TYPES_EXTEND_ORIGIN_TRIAL` is None for enterprise
+        # features). Therefore, it gets returned as a normal, non-extension stage.
+        default_f2_ids = [
+            self.fe_2_stages_dict[st][0].key.integer_id()
+            for st in [220, 230, 250, 251, 260]
+        ]
+        expected_f2_stages = [{'id': idx} for idx in default_f2_ids]
+        expected_f2_stages.sort(key=lambda s: s['id'])
+
+        # Sort returned lists in-place to ensure stable comparison
+        for f in res:
+            f['stages'].sort(key=lambda s: s['id'])
+        res.sort(key=lambda f: f['id'])
+
+        expected_res = [
+            {
+                'id': self.feature_1.key.integer_id(),
+                'name': 'feature a',
+                'summary': 'sum',
+                'stages': expected_f1_stages,
+            },
+            {
+                'id': self.feature_2.key.integer_id(),
+                'name': 'feature b',
+                'summary': 'sum',
+                'stages': expected_f2_stages,
+            },
+        ]
+        expected_res.sort(key=lambda f: f['id'])
+
+        self.assertEqual(expected_res, res)
+
+    def test_get_features_for_l10n_extraction__notification_milestone_in_range(
+        self,
+    ):
+        """Features with first_enterprise_notification_milestone in the range are not filtered out."""
+        self._create_wp_stages_and_gates()
+
+        # feature_1 first_enterprise_notification_milestone = 2 (which is within start_milestone=1, end_milestone=2)
+        self.feature_1.enterprise_impact = core_enums.ENTERPRISE_IMPACT_LOW
+        self.feature_1.first_enterprise_notification_milestone = 2
+        self.feature_1.is_releasenotes_publish_ready = True
+        self.feature_1.is_releasenotes_content_reviewed = True
+        self.feature_1.put()
+        shipping_stage = self.fe_1_stages_dict[160][0]
+        shipping_stage.milestones = MilestoneSet(desktop_first=2)
+        shipping_stage.rollout_details = 'Milestone 2 feature'
+        shipping_stage.put()
+
+        res = feature_helpers.get_features_for_l10n_extraction(
+            start_milestone=1, end_milestone=2
+        )
+        self.assertEqual(1, len(res))
+        self.assertEqual('feature a', res[0]['name'])
+
     def test_group_by_roadmap_section__empty(self):
         """An empty list of features results in an empty roadmap card."""
         actual = feature_helpers._group_by_roadmap_section([], [], [], [])
