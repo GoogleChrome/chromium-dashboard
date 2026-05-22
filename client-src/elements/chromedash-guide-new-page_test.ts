@@ -73,4 +73,73 @@ describe('chromedash-guide-new-page', () => {
     );
     assert.exists(submitButton);
   });
+
+  it('handleFormSubmit redirects to feature page (non-enterprise)', async () => {
+    const userEmail = 'user@gmail.com';
+    const component = await fixture<ChromedashGuideNewPage>(
+      html`<chromedash-guide-new-page .userEmail=${userEmail}>
+      </chromedash-guide-new-page>`
+    );
+    await component.updateComplete;
+
+    const navigateStub = sinon.stub(component, 'navigate');
+    const createFeatureStub = sinon.stub(window.csClient, 'createFeature');
+    createFeatureStub.returns(Promise.resolve({feature_id: 12345}));
+
+    const fakeEvent = {preventDefault: sinon.spy()};
+    const hiddenTokenField = component.renderRoot.querySelector(
+      'input[name="token"]'
+    );
+    component.handleFormSubmit(fakeEvent, hiddenTokenField);
+
+    assert.isTrue(fakeEvent.preventDefault.calledOnce);
+    assert.isTrue(createFeatureStub.calledOnce);
+
+    // Default feature type should be 0 (Incubate)
+    assert.equal(createFeatureStub.firstCall.args[0].feature_type, 0);
+
+    await new Promise(resolve => setTimeout(resolve, 0));
+
+    assert.isTrue(navigateStub.calledOnceWith('/feature/12345'));
+
+    createFeatureStub.restore();
+    navigateStub.restore();
+  });
+
+  it('handleFormSubmit redirects to feature page (enterprise)', async () => {
+    const userEmail = 'user@gmail.com';
+    const component = await fixture<ChromedashGuideNewPage>(
+      html`<chromedash-guide-new-page
+        .userEmail=${userEmail}
+        .isEnterpriseFeature=${true}
+      >
+      </chromedash-guide-new-page>`
+    );
+    await component.updateComplete;
+
+    const navigateStub = sinon.stub(component, 'navigate');
+    const createFeatureStub = sinon.stub(window.csClient, 'createFeature');
+    createFeatureStub.returns(Promise.resolve({feature_id: 54321}));
+
+    const fakeEvent = {preventDefault: sinon.spy()};
+    const hiddenTokenField = component.renderRoot.querySelector(
+      'input[name="token"]'
+    );
+    component.handleFormSubmit(fakeEvent, hiddenTokenField);
+
+    assert.isTrue(fakeEvent.preventDefault.calledOnce);
+    assert.isTrue(createFeatureStub.calledOnce);
+
+    // Feature type should be 4 (Enterprise)
+    assert.equal(createFeatureStub.firstCall.args[0].feature_type, 4);
+
+    await new Promise(resolve => setTimeout(resolve, 0));
+
+    assert.isTrue(
+      navigateStub.calledOnceWith('/guide/editall/54321#id_rollout_milestone')
+    );
+
+    createFeatureStub.restore();
+    navigateStub.restore();
+  });
 });

@@ -34,6 +34,7 @@ import {
   getDisabledHelpText,
   showToastMessage,
   FieldInfo,
+  navigate,
 } from './utils.js';
 import {customElement, property, state} from 'lit/decorators.js';
 import {Feature} from '../js-src/cs-client.js';
@@ -114,13 +115,22 @@ export class ChromedashGuideNewPage extends LitElement {
     window.csClient
       .createFeature(createBody)
       .then(resp => {
-        window.location.href = `/feature/${resp.feature_id}`;
+        this.navigate(
+          this.isEnterpriseFeature
+            ? `/guide/editall/${resp.feature_id}#id_rollout_milestone`
+            : `/feature/${resp.feature_id}`
+        );
       })
       .catch(() => {
         showToastMessage(
           'Some errors occurred. Please refresh the page or try again later.'
         );
       });
+  }
+
+  // Local wrapper method is needed to allow sinon to stub this.
+  navigate(url) {
+    navigate(url);
   }
 
   maybeMakeWebFeatureRequired() {
