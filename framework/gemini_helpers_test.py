@@ -743,7 +743,6 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
         )
         mock_generate.assert_called_once()
 
-
 class GenerateWPTCoverageEvalReportHandlerTest(testing_config.CustomTestCase):
     """Tests for the GenerateWPTCoverageEvalReportHandler class."""
 
