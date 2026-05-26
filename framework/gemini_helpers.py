@@ -443,7 +443,7 @@ async def prompt_analysis(  # noqa: D417
     return gap_analysis_response
 
 
-async def run_wpt_test_eval_pipeline(
+def run_wpt_test_eval_pipeline(
     feature: FeatureEntry,
     include_explainer: bool = False,
 ) -> core_enums.AITestEvaluationStatus:
@@ -510,10 +510,8 @@ class GenerateWPTCoverageEvalReportHandler(basehandlers.FlaskHandler):
         )  # noqa: E501
 
         try:
-            import asyncio
-
-            result_status = asyncio.run(
-                run_wpt_test_eval_pipeline(feature, include_explainer)
+            result_status = run_wpt_test_eval_pipeline(
+                feature, include_explainer
             )
         except Exception as e:
             feature.ai_test_eval_run_status = (
