@@ -42,6 +42,4 @@ pillow==12.2.0
 ./gen/py/chromestatus_openapi
 ./gen/py/webstatus_openapi
 types-python-dateutil==2.9.0.20260518
-# Temporary dependency on main branch during active development.
-# Will pin to a stable release tag once integration is finalized in ChromeStatus.
-git+https://github.com/GoogleChromeLabs/wpt-gen.git@main
+git+https://github.com/GoogleChromeLabs/wpt-gen.git@v0.6.1#egg=wpt-gen-lib&subdirectory=lib
