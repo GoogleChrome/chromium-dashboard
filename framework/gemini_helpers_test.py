@@ -716,7 +716,6 @@ class GenerateWPTCoverageEvalReportHandlerTest(testing_config.CustomTestCase):
 
         self.mock_pipeline = mock.patch(
             'framework.gemini_helpers.run_wpt_test_eval_pipeline',
-            new_callable=mock.AsyncMock,
         ).start()
 
     def tearDown(self):
@@ -742,7 +741,7 @@ class GenerateWPTCoverageEvalReportHandlerTest(testing_config.CustomTestCase):
         )
 
         # Verify pipeline was called
-        self.mock_pipeline.assert_awaited_once_with(self.feature, False)
+        self.mock_pipeline.assert_called_once_with(self.feature, False)
 
         # Verify feature state was updated correctly
         updated_feature = FeatureEntry.get_by_id(self.feature_id)
