@@ -19,6 +19,7 @@ blobs, and web specs) and to synthesize data for Gemini prompts.
 """
 
 import logging
+import os
 import re
 from datetime import datetime
 from pathlib import Path
@@ -472,9 +473,14 @@ def run_wpt_test_eval_pipeline(
         # Determine explainer_urls. Passing [] forces wpt-gen to ignore explainers.
         explainer_urls = feature.explainer_links if include_explainer else []
 
+        # Ensure GEMINI_API_KEY is explicitly exposed in the OS environment for the SDK
+        if settings.GEMINI_API_KEY:
+            os.environ['GEMINI_API_KEY'] = settings.GEMINI_API_KEY
+
         # Call the programmatic wpt-gen API
         report_markdown = generate_audit_report(
-            feature_id=str(feature.key.id()),
+            feature_id = "5173990610042880",
+            # feature_id=str(feature.key.id()),
             provider='gemini',
             api_key=settings.GEMINI_API_KEY,
             explainer_urls=explainer_urls,
