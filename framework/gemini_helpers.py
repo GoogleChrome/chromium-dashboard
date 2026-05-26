@@ -479,7 +479,7 @@ def run_wpt_test_eval_pipeline(
 
         # Call the programmatic wpt-gen API
         report_markdown = generate_audit_report(
-            feature_id = "5173990610042880",
+            feature_id='5173990610042880',
             # feature_id=str(feature.key.id()),
             provider='gemini',
             api_key=settings.GEMINI_API_KEY,
