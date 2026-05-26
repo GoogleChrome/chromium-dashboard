@@ -511,6 +511,7 @@ class GenerateWPTCoverageEvalReportHandler(basehandlers.FlaskHandler):
 
         try:
             import asyncio
+
             result_status = asyncio.run(
                 run_wpt_test_eval_pipeline(feature, include_explainer)
             )
