@@ -78,7 +78,7 @@ limitations under the License.
   <script type="module" nonce="{{nonce}}" defer src="/static/dist/components.js?v={{app_version}}"></script>
 </head>
 
-<body>
+<body class="{% if not prod %}non-prod{% endif %}">
   <chromedash-app
     appTitle="{{APP_TITLE}}"
     googleSignInClientId="{{google_sign_in_client_id}}"

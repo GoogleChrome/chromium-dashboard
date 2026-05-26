@@ -79,6 +79,8 @@ chromestatus_openapi/models/process.py
 chromestatus_openapi/models/process_stage.py
 chromestatus_openapi/models/progress_item.py
 chromestatus_openapi/models/reject_unneeded_get_request.py
+chromestatus_openapi/models/release_notes_l10n_item.py
+chromestatus_openapi/models/release_notes_l10n_response.py
 chromestatus_openapi/models/review_latency.py
 chromestatus_openapi/models/set_star_request.py
 chromestatus_openapi/models/sign_in_request.py

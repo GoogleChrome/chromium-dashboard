@@ -120,19 +120,22 @@ class ChromedashUserlist extends LitElement {
       const email = emailInput?.value;
       const isAdmin = adminCheckbox?.checked;
       const isSiteEditor = siteEditorCheckbox?.checked;
-      window.csClient.createAccount(email, isAdmin, isSiteEditor).then(json => {
-        if (json.error_message) {
-          alert(json.error_message);
-        } else {
-          this.addUser(json);
-          formEl.reset();
-          (
-            formEl.querySelector(
-              'input[name="is_site_editor"]'
-            ) as HTMLInputElement
-          ).disabled = false;
-        }
-      });
+      window.csClient
+        .createAccount(email, isAdmin, isSiteEditor)
+        .then(json => {
+          if (json.error_message) {
+            alert(json.error_message);
+          } else {
+            this.addUser(json);
+            formEl.reset();
+            if (siteEditorCheckbox) {
+              siteEditorCheckbox.disabled = false;
+            }
+          }
+        })
+        .catch(error => {
+          alert(error.message || 'An error occurred');
+        });
     }
   }
 

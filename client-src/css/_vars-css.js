@@ -19,7 +19,6 @@ import {css} from 'lit';
 export const VARS = css`
 :host {
   --default-font-color: #222;
-  --page-background: #fafafa;
 
   --light-grey: #eee;
 

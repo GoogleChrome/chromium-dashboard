@@ -18,7 +18,6 @@ import {html} from 'lit';
 import sinon from 'sinon';
 import {
   autolink,
-  clamp,
   findClosestShippingDate,
   formatFeatureChanges,
   getDisabledHelpText,
@@ -133,19 +132,6 @@ go/this-is-a-test
     });
   });
 
-  describe('clamp', () => {
-    it('returns val when in bounds', () => {
-      assert.equal(10, clamp(10, 1, 100));
-    });
-    it('returns lowerBound when val is equal or below lowerBound', () => {
-      assert.equal(1, clamp(1, 1, 100));
-      assert.equal(1, clamp(0, 1, 100));
-    });
-    it('returns upperBound when val is equal or above upperBound', () => {
-      assert.equal(100, clamp(100, 1, 100));
-      assert.equal(100, clamp(101, 1, 100));
-    });
-  });
 
   describe('formatFeatureChanges', () => {
     const featureId = 1;
