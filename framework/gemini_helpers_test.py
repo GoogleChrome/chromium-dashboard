@@ -42,9 +42,6 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
             spec_link='https://spec.example.com',
             wpt_descr='https://wpt.fyi/results/test',
         )
-        from google.cloud import ndb
-
-        self.feature.key = ndb.Key(FeatureEntry, 123)
 
         self.feature.key = ndb.Key(FeatureEntry, 123)
 
