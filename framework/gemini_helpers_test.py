@@ -42,6 +42,9 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
             spec_link='https://spec.example.com',
             wpt_descr='https://wpt.fyi/results/test',
         )
+        from google.cloud import ndb
+
+        self.feature.key = ndb.Key(FeatureEntry, 123)
 
         self.feature.key = ndb.Key(FeatureEntry, 123)
 
@@ -739,6 +742,7 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
             self.feature.ai_test_eval_report,
         )
         mock_generate.assert_called_once()
+
 
 class GenerateWPTCoverageEvalReportHandlerTest(testing_config.CustomTestCase):
     """Tests for the GenerateWPTCoverageEvalReportHandler class."""
