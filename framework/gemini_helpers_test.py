@@ -41,6 +41,9 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
             spec_link='https://spec.example.com',
             wpt_descr='https://wpt.fyi/results/test',
         )
+        from google.cloud import ndb
+
+        self.feature.key = ndb.Key(FeatureEntry, 123)
 
         # Patch external dependencies
         self.mock_render_template = mock.patch(
@@ -684,6 +687,58 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
         self.assertEqual(result, 'Final Report')
         # Verify one warning logged for the failure
         self.mock_logging.error.assert_called_once()
+
+    @mock.patch('framework.gemini_helpers.generate_audit_report')
+    @mock.patch('framework.gemini_helpers.settings')
+    def test_run_pipeline__success(self, mock_settings, mock_generate):
+        """Pipeline runs successfully and returns COMPLETE status, saving the report."""
+        mock_settings.GEMINI_API_KEY = 'fake_api_key'
+        self.feature.spec_link = 'https://spec.example.com'
+        self.feature.wpt_descr = 'https://wpt.fyi/results/test'
+        self.feature.explainer_links = ['https://explainer.example.com']
+
+        mock_report = '# Mock WPT Coverage Report'
+        mock_generate.return_value = mock_report
+        self.mock_utils.extract_wpt_fyi_results_urls.return_value = [
+            'https://wpt.fyi/url1'
+        ]
+
+        result = gemini_helpers.run_wpt_test_eval_pipeline(
+            self.feature, include_explainer=True
+        )
+
+        self.assertEqual(result, core_enums.AITestEvaluationStatus.COMPLETE)
+        self.assertEqual(self.feature.ai_test_eval_report, mock_report)
+        mock_generate.assert_called_once_with(
+            feature_id=str(self.feature.key.id()),
+            provider='gemini',
+            api_key='fake_api_key',
+            explainer_urls=['https://explainer.example.com'],
+        )
+
+    @mock.patch('framework.gemini_helpers.generate_audit_report')
+    @mock.patch('framework.gemini_helpers.settings')
+    def test_run_pipeline__generate_audit_report_exception(
+        self, mock_settings, mock_generate
+    ):
+        """Pipeline fails if generate_audit_report raises an exception."""
+        mock_settings.GEMINI_API_KEY = 'fake_api_key'
+        self.feature.spec_link = 'https://spec.example.com'
+        self.feature.wpt_descr = 'https://wpt.fyi/results/test'
+        self.mock_utils.extract_wpt_fyi_results_urls.return_value = [
+            'https://wpt.fyi/url1'
+        ]
+
+        mock_generate.side_effect = Exception('Upstream API Failure')
+
+        result = gemini_helpers.run_wpt_test_eval_pipeline(self.feature)
+
+        self.assertEqual(result, core_enums.AITestEvaluationStatus.FAILED)
+        self.assertIn(
+            'Failed to generate WPT coverage report: Upstream API Failure',
+            self.feature.ai_test_eval_report,
+        )
+        mock_generate.assert_called_once()
 
 
 class GenerateWPTCoverageEvalReportHandlerTest(testing_config.CustomTestCase):
