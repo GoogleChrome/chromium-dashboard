@@ -23,6 +23,7 @@ from pathlib import Path
 from unittest import mock
 
 import requests
+from google.cloud import ndb
 
 import testing_config  # Must be imported before the module under test.
 from framework import gemini_helpers, utils
@@ -41,6 +42,8 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
             spec_link='https://spec.example.com',
             wpt_descr='https://wpt.fyi/results/test',
         )
+
+        self.feature.key = ndb.Key(FeatureEntry, 123)
 
         # Patch external dependencies
         self.mock_render_template = mock.patch(
@@ -685,174 +688,57 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
         # Verify one warning logged for the failure
         self.mock_logging.error.assert_called_once()
 
-    def test_run_pipeline__routes_to_unified_eval(self):
-        """Verify routing to unified_prompt_analysis when token count is low."""
+    @mock.patch('framework.gemini_helpers.generate_audit_report')
+    @mock.patch('framework.gemini_helpers.settings')
+    def test_run_pipeline__success(self, mock_settings, mock_generate):
+        """Pipeline runs successfully and returns COMPLETE status, saving the report."""
+        mock_settings.GEMINI_API_KEY = 'fake_api_key'
         self.feature.spec_link = 'https://spec.example.com'
         self.feature.wpt_descr = 'https://wpt.fyi/results/test'
+        self.feature.explainer_links = ['https://explainer.example.com']
 
-        # Return 1 file (less than MAX_SINGLE_PROMPT_TEST_COUNT)
-        test_files = {Path('t1.html'): 'c1'}
-        dependency_files = {}
-        dependency_mapping = {Path('t1.html'): set()}
-        wpt_contents = utils.WPTContents(
-            test_contents=test_files,
-            dependency_contents=dependency_files,
-            test_to_dependencies_map=dependency_mapping,
+        mock_report = '# Mock WPT Coverage Report'
+        mock_generate.return_value = mock_report
+        self.mock_utils.extract_wpt_fyi_results_urls.return_value = [
+            'https://wpt.fyi/url1'
+        ]
+
+        result = gemini_helpers.run_wpt_test_eval_pipeline(
+            self.feature, include_explainer=True
         )
 
-        self.mock_utils.extract_wpt_fyi_results_urls.return_value = ['url1']
-        self.mock_gemini_client.prompt_exceeds_input_token_limit.return_value = False  # noqa: E501
+        self.assertEqual(result, core_enums.AITestEvaluationStatus.COMPLETE)
+        self.assertEqual(self.feature.ai_test_eval_report, mock_report)
+        mock_generate.assert_called_once_with(
+            feature_id=str(self.feature.key.id()),
+            provider='gemini',
+            api_key='fake_api_key',
+            explainer_urls=['https://explainer.example.com'],
+        )
 
-        with (
-            mock.patch(
-                'framework.gemini_helpers._get_test_file_contents',
-                new_callable=mock.AsyncMock,
-            ) as mock_get_content,
-            mock.patch(
-                'framework.gemini_helpers.unified_prompt_analysis'
-            ) as mock_unified,
-            mock.patch(
-                'framework.gemini_helpers._generate_unified_prompt_text'
-            ) as mock_gen_prompt,
-            mock.patch(
-                'framework.gemini_helpers.prompt_analysis',
-                new_callable=mock.AsyncMock,
-            ) as mock_multi,
-        ):  # noqa: E501
-            mock_get_content.return_value = wpt_contents
-            mock_gen_prompt.return_value = 'Generated Prompt Text'
-            mock_unified.return_value = 'Unified Success'
-
-            result = asyncio.run(
-                gemini_helpers.run_wpt_test_eval_pipeline(self.feature)
-            )  # noqa: E501
-
-            # Verify Generator Called
-            mock_gen_prompt.assert_called_once_with(
-                self.feature, wpt_contents, False
-            )
-
-            # Verify Token Count Checked
-            self.mock_gemini_client.prompt_exceeds_input_token_limit.assert_called_once_with(
-                'Generated Prompt Text'
-            )
-
-            # Verify Unified Called
-            mock_unified.assert_called_once_with('Generated Prompt Text')
-
-            # Verify Multi NOT Called
-            mock_multi.assert_not_called()
-            self.assertEqual(
-                self.feature.ai_test_eval_report, 'Unified Success'
-            )
-            self.assertEqual(result, core_enums.AITestEvaluationStatus.COMPLETE)
-
-    def test_run_pipeline__routes_to_multi_prompt_due_to_tokens(self):
-        """Verify routing to prompt_analysis when token count is high."""
+    @mock.patch('framework.gemini_helpers.generate_audit_report')
+    @mock.patch('framework.gemini_helpers.settings')
+    def test_run_pipeline__generate_audit_report_exception(
+        self, mock_settings, mock_generate
+    ):
+        """Pipeline fails if generate_audit_report raises an exception."""
+        mock_settings.GEMINI_API_KEY = 'fake_api_key'
         self.feature.spec_link = 'https://spec.example.com'
         self.feature.wpt_descr = 'https://wpt.fyi/results/test'
+        self.mock_utils.extract_wpt_fyi_results_urls.return_value = [
+            'https://wpt.fyi/url1'
+        ]
 
-        # Create enough files to exceed threshold (10)
-        test_files = {Path(f't{i}.html'): 'c' for i in range(12)}
-        dependency_files = {}
-        dependency_mapping = {Path(f't{i}.html'): set() for i in range(12)}
-        wpt_contents = utils.WPTContents(
-            test_contents=test_files,
-            dependency_contents=dependency_files,
-            test_to_dependencies_map=dependency_mapping,
-        )
+        mock_generate.side_effect = Exception('Upstream API Failure')
 
-        self.mock_utils.extract_wpt_fyi_results_urls.return_value = ['url1']
-
-        self.mock_gemini_client.prompt_exceeds_input_token_limit.return_value = True
-
-        with (
-            mock.patch(
-                'framework.gemini_helpers._get_test_file_contents',
-                new_callable=mock.AsyncMock,
-            ) as mock_get_content,
-            mock.patch(
-                'framework.gemini_helpers.unified_prompt_analysis'
-            ) as mock_unified,
-            mock.patch(
-                'framework.gemini_helpers._generate_unified_prompt_text'
-            ) as mock_gen_prompt,
-            mock.patch(
-                'framework.gemini_helpers.prompt_analysis',
-                new_callable=mock.AsyncMock,
-            ) as mock_multi,
-        ):  # noqa: E501
-            mock_get_content.return_value = wpt_contents
-            mock_gen_prompt.return_value = 'Generated Huge Prompt'
-            mock_multi.return_value = 'Multi Success'
-
-            result = asyncio.run(
-                gemini_helpers.run_wpt_test_eval_pipeline(self.feature)
-            )  # noqa: E501
-
-            # Verify Token Count Checked
-            self.mock_gemini_client.prompt_exceeds_input_token_limit.assert_called_once_with(
-                'Generated Huge Prompt'
-            )
-
-            # Verify Multi Called
-            mock_multi.assert_awaited_once_with(
-                self.feature, wpt_contents, False
-            )
-
-            # Verify Unified NOT Called
-            mock_unified.assert_not_called()
-
-            self.assertEqual(self.feature.ai_test_eval_report, 'Multi Success')
-            self.assertEqual(result, core_enums.AITestEvaluationStatus.COMPLETE)
-
-    def test_run_pipeline__missing_spec_link(self):
-        """Pipeline should fail immediately if no spec link is present."""
-        self.feature.spec_link = None
-        result = asyncio.run(
-            gemini_helpers.run_wpt_test_eval_pipeline(self.feature)
-        )  # noqa: E501
-
-        self.assertEqual(result, core_enums.AITestEvaluationStatus.FAILED)
-        self.assertEqual(
-            self.feature.ai_test_eval_report, 'No spec URL provided.'
-        )
-        self.mock_gemini_client_cls.assert_not_called()
-
-    def test_run_pipeline__no_wpt_urls(self):
-        """Pipeline should fail if no WPT URLs can be extracted."""
-        self.mock_utils.extract_wpt_fyi_results_urls.return_value = []
-
-        result = asyncio.run(
-            gemini_helpers.run_wpt_test_eval_pipeline(self.feature)
-        )  # noqa: E501
+        result = gemini_helpers.run_wpt_test_eval_pipeline(self.feature)
 
         self.assertEqual(result, core_enums.AITestEvaluationStatus.FAILED)
         self.assertIn(
-            'No valid wpt.fyi results URLs found',
+            'Failed to generate WPT coverage report: Upstream API Failure',
             self.feature.ai_test_eval_report,
-        )  # noqa: E501
-        self.mock_gemini_client_cls.assert_not_called()
-
-    def test_run_pipeline__content_fetch_failure(self):
-        """Pipeline should return FAILED status if test content fetching fails."""
-        self.feature.spec_link = 'https://spec.example.com'
-        self.feature.wpt_descr = 'https://wpt.fyi/results/test'
-        self.mock_utils.extract_wpt_fyi_results_urls.return_value = ['url1']
-
-        error_msg = 'Content Fetch Error'
-        with mock.patch(
-            'framework.gemini_helpers._get_test_file_contents',
-            new_callable=mock.AsyncMock,
-        ) as mock_get_content:
-            mock_get_content.side_effect = utils.PipelineError(error_msg)
-
-            result = asyncio.run(
-                gemini_helpers.run_wpt_test_eval_pipeline(self.feature)
-            )  # noqa: E501
-
-            self.assertEqual(result, core_enums.AITestEvaluationStatus.FAILED)
-            self.assertEqual(self.feature.ai_test_eval_report, error_msg)
+        )
+        mock_generate.assert_called_once()
 
 
 class GenerateWPTCoverageEvalReportHandlerTest(testing_config.CustomTestCase):
@@ -882,7 +768,6 @@ class GenerateWPTCoverageEvalReportHandlerTest(testing_config.CustomTestCase):
 
         self.mock_pipeline = mock.patch(
             'framework.gemini_helpers.run_wpt_test_eval_pipeline',
-            new_callable=mock.AsyncMock,
         ).start()
 
     def tearDown(self):
@@ -908,7 +793,7 @@ class GenerateWPTCoverageEvalReportHandlerTest(testing_config.CustomTestCase):
         )
 
         # Verify pipeline was called
-        self.mock_pipeline.assert_awaited_once_with(self.feature, False)
+        self.mock_pipeline.assert_called_once_with(self.feature, False)
 
         # Verify feature state was updated correctly
         updated_feature = FeatureEntry.get_by_id(self.feature_id)

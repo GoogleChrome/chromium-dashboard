@@ -18,8 +18,8 @@ Provides utilities to fetch and parse external content (like GitHub PRs,
 blobs, and web specs) and to synthesize data for Gemini prompts.
 """
 
-import asyncio
 import logging
+import os
 import re
 from datetime import datetime
 from pathlib import Path
@@ -28,7 +28,9 @@ from urllib.parse import urlparse
 import requests
 import trafilatura
 from flask import render_template
+from wptgen import generate_audit_report
 
+import settings
 from framework import basehandlers, utils
 from framework.gemini_client import GeminiClient
 from internals import core_enums
@@ -442,7 +444,7 @@ async def prompt_analysis(  # noqa: D417
     return gap_analysis_response
 
 
-async def run_wpt_test_eval_pipeline(
+def run_wpt_test_eval_pipeline(
     feature: FeatureEntry,
     include_explainer: bool = False,
 ) -> core_enums.AITestEvaluationStatus:
@@ -468,28 +470,30 @@ async def run_wpt_test_eval_pipeline(
                 'No valid wpt.fyi results URLs found in WPT description.'
             )  # noqa: E501
 
-        wpt_contents = await _get_test_file_contents(test_locations)
-        prompt_text = _generate_unified_prompt_text(
-            feature, wpt_contents, include_explainer
-        )  # noqa: E501
+        # Determine explainer_urls. Passing [] forces wpt-gen to ignore explainers.
+        explainer_urls = feature.explainer_links if include_explainer else []
 
-        gemini_client = GeminiClient()
-        # Don't use the single prompt if it will overload the context.
-        if gemini_client.prompt_exceeds_input_token_limit(prompt_text):
-            logging.warning(
-                'The unified gap analysis prompt is too large. '
-                'Using the 3-prompt flow instead.'
-            )
-            gap_analysis_response = await prompt_analysis(
-                feature, wpt_contents, include_explainer
-            )  # noqa: E501
-        else:
-            gap_analysis_response = unified_prompt_analysis(prompt_text)
+        # Ensure GEMINI_API_KEY is explicitly exposed in the OS environment for the SDK
+        if settings.GEMINI_API_KEY:
+            os.environ['GEMINI_API_KEY'] = settings.GEMINI_API_KEY
 
-        feature.ai_test_eval_report = gap_analysis_response
+        # Call the programmatic wpt-gen API
+        report_markdown = generate_audit_report(
+            feature_id=str(feature.key.id()),
+            provider='gemini',
+            api_key=settings.GEMINI_API_KEY,
+            explainer_urls=explainer_urls,
+        )
+
+        feature.ai_test_eval_report = report_markdown
         return core_enums.AITestEvaluationStatus.COMPLETE
     except utils.PipelineError as e:
         feature.ai_test_eval_report = str(e)
+        return core_enums.AITestEvaluationStatus.FAILED
+    except Exception as e:
+        feature.ai_test_eval_report = (
+            f'Failed to generate WPT coverage report: {e}'
+        )
         return core_enums.AITestEvaluationStatus.FAILED
 
 
@@ -511,9 +515,9 @@ class GenerateWPTCoverageEvalReportHandler(basehandlers.FlaskHandler):
         )  # noqa: E501
 
         try:
-            result_status = asyncio.run(
-                run_wpt_test_eval_pipeline(feature, include_explainer)
-            )  # noqa: E501
+            result_status = run_wpt_test_eval_pipeline(
+                feature, include_explainer
+            )
         except Exception as e:
             feature.ai_test_eval_run_status = (
                 core_enums.AITestEvaluationStatus.FAILED
