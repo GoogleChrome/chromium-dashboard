@@ -248,8 +248,13 @@ def handle_incoming_mail(addr=None):
         # We only process plain text emails.
         if part.get_content_type() == 'text/plain':
             body = part.get_payload(decode=True)
+            logging.info('Considering: %r', body[:2000])
             if not isinstance(body, str):
-                body = body.decode('utf-8')
+                try:
+                    body = body.decode('utf-8')
+                except UnicodeDecodeError:
+                    logging.info('Bad unicode')
+                    return {'message': 'Bad unicode'}
             break  # Only consider the first text part.
 
     to_addr = urllib.parse.unquote(addr)

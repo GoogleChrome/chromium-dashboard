@@ -341,6 +341,19 @@ class InboundEmailHandlerTest(testing_config.CustomTestCase):
 
         self.assertEqual({'message': 'Missing From'}, actual)
 
+    @mock.patch('framework.sendemail.get_incoming_message')
+    def test_handle_incoming_mail__bad_unicode(self, mock_get_incoming_message):
+        """A incoming email with invalid unicode is rejected."""
+        msg = MakeMessage(HEADER_LINES, b'\x80 is not valid unicode')
+        mock_get_incoming_message.return_value = msg
+
+        with test_app.test_request_context(
+            '/_ah/mail/%s' % settings.INBOUND_EMAIL_ADDR, data='fake msg'
+        ):
+            actual = sendemail.handle_incoming_mail(settings.INBOUND_EMAIL_ADDR)
+
+        self.assertEqual({'message': 'Bad unicode'}, actual)
+
     @mock.patch('framework.cloud_tasks_helpers.enqueue_task')
     @mock.patch('framework.sendemail.get_incoming_message')
     def test_handle_incoming_mail__normal(
