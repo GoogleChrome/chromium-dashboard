@@ -873,16 +873,8 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
 
         # --- Construct Expected Results dynamically to avoid ID mismatch ---
 
-        # Feature 1's expected stages:
-        # It gets default stages from `setUp`: types [110, 120, 130, 140, 150].
-        # Note that stage type 151 (extend origin trial) is omitted because it is
-        # an extension stage. Since its `ot_stage_id` was not set in `setUp`,
-        # `converters.py` skips it from the main stage list.
-        default_f1_ids = [
-            self.fe_1_stages_dict[st][0].key.integer_id()
-            for st in [110, 120, 130, 140, 150]
-        ]
-        expected_f1_stages = [{'id': idx} for idx in default_f1_ids] + [
+        # Feature 1's expected stages (only stages with non-empty rolloutDetails):
+        expected_f1_stages = [
             {
                 'id': shipping_stage.key.integer_id(),
                 'rolloutDetails': '2SV enforcement starts',
@@ -899,24 +891,10 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
         # Sort expected stages by ID to align with standard response comparison
         expected_f1_stages.sort(key=lambda s: s['id'])
 
-        # Feature 2's expected stages:
-        # It gets all stages created in `setUp`: types [220, 230, 250, 251, 260].
-        # Note: Although type 251 (Fast Track origin trial extension) is an extension
-        # stage, it is NOT skipped here. This is because we overridden the feature type
-        # of `feature_2` to `FEATURE_TYPE_ENTERPRISE_ID`. Because of this type change,
-        # `converters.py` no longer identifies type 251 as an extension stage for
-        # this feature (since `STAGE_TYPES_EXTEND_ORIGIN_TRIAL` is None for enterprise
-        # features). Therefore, it gets returned as a normal, non-extension stage.
-        default_f2_ids = [
-            self.fe_2_stages_dict[st][0].key.integer_id()
-            for st in [220, 230, 250, 251, 260]
-        ]
-        expected_f2_stages = [{'id': idx} for idx in default_f2_ids]
-        expected_f2_stages.sort(key=lambda s: s['id'])
-
         # Sort returned lists in-place to ensure stable comparison
         for f in res:
-            f['stages'].sort(key=lambda s: s['id'])
+            if 'stages' in f:
+                f['stages'].sort(key=lambda s: s['id'])
         res.sort(key=lambda f: f['id'])
 
         expected_res = [
@@ -930,7 +908,6 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
                 'id': self.feature_2.key.integer_id(),
                 'name': 'feature b',
                 'summary': 'sum',
-                'stages': expected_f2_stages,
             },
         ]
         expected_res.sort(key=lambda f: f['id'])
