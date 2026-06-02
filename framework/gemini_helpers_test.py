@@ -23,6 +23,7 @@ from pathlib import Path
 from unittest import mock
 
 import requests
+from google.cloud import ndb
 
 import testing_config  # Must be imported before the module under test.
 from framework import gemini_helpers, utils
@@ -41,7 +42,6 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
             spec_link='https://spec.example.com',
             wpt_descr='https://wpt.fyi/results/test',
         )
-        from google.cloud import ndb
 
         self.feature.key = ndb.Key(FeatureEntry, 123)
 
