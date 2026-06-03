@@ -23,6 +23,7 @@ import {
   GATE_PREPARING,
   VOTE_OPTIONS,
   VOTE_NA_SELF,
+  VOTE_NA_VERIFIED,
 } from './form-field-enums.js';
 
 type statusEnum =
@@ -106,7 +107,8 @@ export class ChromedashReviewStatusIcon extends LitElement {
       if (
         g.state !== VOTE_OPTIONS['APPROVED'][0] &&
         g.state !== VOTE_OPTIONS['NA'][0] &&
-        g.state !== VOTE_NA_SELF
+        g.state !== VOTE_NA_SELF &&
+        g.state !== VOTE_NA_VERIFIED
       ) {
         targetGateId = g.id;
       }
@@ -124,7 +126,8 @@ export class ChromedashReviewStatusIcon extends LitElement {
         g =>
           g.state === VOTE_OPTIONS['APPROVED'][0] ||
           g.state === VOTE_OPTIONS['NA'][0] ||
-          g.state === VOTE_NA_SELF
+          g.state === VOTE_NA_SELF ||
+          g.state === VOTE_NA_VERIFIED
       )
     ) {
       status = 'Approved';
