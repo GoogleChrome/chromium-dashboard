@@ -56,3 +56,4 @@ build/
 
 # Temporary
 packages/playwright/playwright.config.ts
+.devcontainer/devcontainer-lock.json

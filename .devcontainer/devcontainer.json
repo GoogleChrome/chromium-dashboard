@@ -68,6 +68,11 @@
 		8888
 	],
 
+	// Mount host's .npmrc for npm registry authentication
+	"mounts": [
+		"source=${localEnv:HOME}/.npmrc,target=/home/vscode/.npmrc,type=bind,consistency=cached"
+	],
+
 	// Use 'postCreateCommand' to run commands after the container is created.
 	"postCreateCommand": "npm install -g gulp-cli && npm run clean-setup",
 	// 'postStartCommand' runs each time the devcontainer is started.
@@ -92,6 +97,9 @@
 			// Match the version on Cloudtops
 			"version": "3.13"
 		}
+	},
+	"containerEnv": {
+		"PUPPETEER_SKIP_DOWNLOAD": "true"
 	},
 	"remoteEnv": {
 		"GEMINI_API_KEY": "${localEnv:GEMINI_API_KEY}"
