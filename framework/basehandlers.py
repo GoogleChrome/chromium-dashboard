@@ -121,9 +121,9 @@ class BaseHandler(flask.views.MethodView):
         val = json_body.get(name, default)
         if required and val is None:
             self.abort(400, msg='Missing parameter %r' % name)
-        if val and validator and not validator(val):
+        if val is not None and validator and not validator(val):
             self.abort(400, msg='Invalid value for parameter %r' % name)
-        if val and allowed and val not in allowed:
+        if val is not None and allowed and val not in allowed:
             self.abort(400, msg='Unexpected value for parameter %r' % name)
         return val
 
