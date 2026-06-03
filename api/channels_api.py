@@ -144,7 +144,7 @@ class ChannelsAPI(basehandlers.APIHandler):
             return construct_chrome_channels_details()
 
         if start > end:
-            raise ValueError
+            self.abort(400, 'start is greater than end')
 
         if settings.UNIT_TEST_MODE or settings.PLAYWRIGHT_MODE:
             return {

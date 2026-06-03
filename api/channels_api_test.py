@@ -17,6 +17,7 @@
 from unittest import mock
 
 import flask
+import werkzeug.exceptions  # Flask HTTP stuff.
 
 import testing_config  # Must be imported first
 from api import channels_api
@@ -283,8 +284,13 @@ class ChannelsAPITest(testing_config.CustomTestCase):
         with test_app.test_request_context(
             self.request_path + '?start=2&end=1'
         ):
-            with self.assertRaises(ValueError):
+            with self.assertRaises(werkzeug.exceptions.BadRequest) as cm:
                 self.handler.do_get()
+            self.assertEqual(400, cm.exception.code)
+            self.assertEqual(
+                'start is greater than end',
+                cm.exception.description,
+            )
 
     @mock.patch('settings.UNIT_TEST_MODE', False)
     @mock.patch('api.channels_api.construct_specified_milestones_details')
