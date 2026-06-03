@@ -329,18 +329,20 @@ def get_features_for_l10n_extraction(
     for f in formatted_features:
         stages_list = []
         for s in f.get('stages', []):
-            stage_item = {'id': s.get('id')}
             if s.get('rollout_details'):
-                stage_item['rolloutDetails'] = s.get('rollout_details')
-            stages_list.append(stage_item)
+                stage_item = {
+                    'id': s.get('id'),
+                    'rolloutDetails': s.get('rollout_details'),
+                }
+                stages_list.append(stage_item)
+        item = {
+            'id': f.get('id'),
+            'name': f.get('name'),
+            'summary': f.get('summary'),
+        }
         if stages_list:
-            item = {
-                'id': f.get('id'),
-                'name': f.get('name'),
-                'summary': f.get('summary'),
-                'stages': stages_list,
-            }
-            l10n_features.append(item)
+            item['stages'] = stages_list
+        l10n_features.append(item)
 
     return l10n_features
 
