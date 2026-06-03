@@ -253,7 +253,7 @@ def handle_incoming_mail(addr=None):
                 try:
                     body = body.decode('utf-8')
                 except UnicodeDecodeError:
-                    logging.info('Bad unicode')
+                    logging.error('Bad unicode')
                     return {'message': 'Bad unicode'}
             break  # Only consider the first text part.
 
