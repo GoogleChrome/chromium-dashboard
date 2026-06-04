@@ -253,16 +253,19 @@ def apply_subscription_rule_webview(
 
 
 def is_relevant_to_web_platform(fe: FeatureEntry) -> bool:
+    """Return true if the feature is a WP feature."""
     return fe.feature_type != core_enums.FEATURE_TYPE_ENTERPRISE_ID
 
 
 def is_relevant_to_enterprise(fe: FeatureEntry) -> bool:
+    """Return true if the feature is an enterprise feature or has impact."""
     return (fe.feature_type == core_enums.FEATURE_TYPE_ENTERPRISE_ID or
             fe.enterprise_impact != core_enums.ENTERPRISE_IMPACT_NONE)
 
 
 def find_earliest_from_changes(
     changes: list, fields: set[str] = MILESTONE_FIELDS) -> int | None:
+    """Return the earliest milestone mentioned in the changes."""
     changed_milestone_strs = []
     for change in changes:
         if change['prop_name'] in fields:
