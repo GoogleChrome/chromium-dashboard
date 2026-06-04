@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# ruff: noqa: I001
+
 """Tests for the notifier module, verifying email formatting and template rendering."""
 
 import collections
@@ -21,8 +23,8 @@ from unittest import mock
 import flask
 from google.cloud import ndb  # type: ignore
 
-import settings
 import testing_config  # Must be imported before the module under test.
+import settings
 from api import converters
 from internals import approval_defs, core_enums, notifier, stage_helpers
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
@@ -2179,3 +2181,213 @@ class FunctionsTest(testing_config.CustomTestCase):
             ]
         )
         self.assertEqual({'bounced@example.com'}, actual_3)
+
+
+class ApplySubscriptionRuleEnterpriseTest(testing_config.CustomTestCase):
+    """Tests for apply_subscription_rule_enterprise."""
+
+    def setUp(self):
+        """Set up the test environment."""
+        self.fe = FeatureEntry(
+            name='feature one',
+            summary='sum',
+            category=1,
+            feature_type=core_enums.FEATURE_TYPE_ENTERPRISE_ID,
+            enterprise_impact=core_enums.ENTERPRISE_IMPACT_NONE,
+        )
+        self.fe.put()
+
+    def tearDown(self):
+        """Clean up the test environment."""
+        self.fe.key.delete()
+
+    def test_apply_subscription_rule_enterprise__not_relevant(self):
+        """Not enterprise type, and no enterprise impact."""
+        self.fe.feature_type = core_enums.FEATURE_TYPE_INCUBATE_ID
+        self.fe.enterprise_impact = core_enums.ENTERPRISE_IMPACT_NONE
+        self.fe.put()
+
+        actual = notifier.apply_subscription_rule_enterprise(
+            self.fe,
+            earliest_from_stages=None,
+            changes=[],
+            changed_field_names=set(),
+            current_beta_milestone=100,
+        )
+        self.assertEqual({}, actual)
+
+    def test_apply_subscription_rule_enterprise__relevant_by_type(self):
+        """Enterprise type, no impact, no changes."""
+        self.fe.feature_type = core_enums.FEATURE_TYPE_ENTERPRISE_ID
+        self.fe.enterprise_impact = core_enums.ENTERPRISE_IMPACT_NONE
+        self.fe.put()
+
+        actual = notifier.apply_subscription_rule_enterprise(
+            self.fe,
+            earliest_from_stages=None,
+            changes=[],
+            changed_field_names=set(),
+            current_beta_milestone=100,
+        )
+        self.assertEqual({}, actual)
+
+    def test_apply_subscription_rule_enterprise__relevant_by_impact(self):
+        """Not enterprise type, but has impact, no changes."""
+        self.fe.feature_type = core_enums.FEATURE_TYPE_INCUBATE_ID
+        self.fe.enterprise_impact = core_enums.ENTERPRISE_IMPACT_LOW
+        self.fe.put()
+
+        actual = notifier.apply_subscription_rule_enterprise(
+            self.fe,
+            earliest_from_stages=None,
+            changes=[],
+            changed_field_names=set(),
+            current_beta_milestone=100,
+        )
+        self.assertEqual({}, actual)
+
+    def test_apply_subscription_rule_enterprise__case_a_name_changed_post_beta_stage(
+        self,
+    ):
+        """Name changed, earliest_from_stages is post-beta (<= current_beta)."""
+        changed_field_names = {'name'}
+        actual = notifier.apply_subscription_rule_enterprise(
+            self.fe,
+            earliest_from_stages=90,
+            changes=[],
+            changed_field_names=changed_field_names,
+            current_beta_milestone=100,
+        )
+        self.assertEqual(
+            {
+                notifier.ENTERPRISE_LATE_RULE_REASON: notifier.RELEASENOTES_NOTIFY_ADDRS
+            },
+            actual,
+        )
+
+    def test_apply_subscription_rule_enterprise__case_a_summary_changed_post_beta_fe(
+        self,
+    ):
+        """Summary changed, fe.first_enterprise_notification_milestone is post-beta (<= current_beta)."""
+        self.fe.first_enterprise_notification_milestone = 80
+        self.fe.put()
+        changed_field_names = {'summary'}
+        actual = notifier.apply_subscription_rule_enterprise(
+            self.fe,
+            earliest_from_stages=None,
+            changes=[],
+            changed_field_names=changed_field_names,
+            current_beta_milestone=100,
+        )
+        self.assertEqual(
+            {
+                notifier.ENTERPRISE_LATE_RULE_REASON: notifier.RELEASENOTES_NOTIFY_ADDRS
+            },
+            actual,
+        )
+
+    def test_apply_subscription_rule_enterprise__case_a_no_post_beta(self):
+        """Name changed, but milestones are pre-beta (> current_beta) or None."""
+        self.fe.first_enterprise_notification_milestone = 120
+        self.fe.put()
+        changed_field_names = {'name'}
+        actual = notifier.apply_subscription_rule_enterprise(
+            self.fe,
+            earliest_from_stages=110,
+            changes=[],
+            changed_field_names=changed_field_names,
+            current_beta_milestone=100,
+        )
+        self.assertEqual({}, actual)
+
+    def test_apply_subscription_rule_enterprise__case_b_milestone_changed_post_beta(
+        self,
+    ):
+        """Milestone changed to/from post-beta."""
+        changes = [
+            {
+                'prop_name': 'shipped_milestone',
+                'old_val': 'None',
+                'new_val': '90',
+            }
+        ]
+        actual = notifier.apply_subscription_rule_enterprise(
+            self.fe,
+            earliest_from_stages=None,
+            changes=changes,
+            changed_field_names=set(),
+            current_beta_milestone=100,
+        )
+        self.assertEqual(
+            {
+                notifier.ENTERPRISE_LATE_RULE_REASON: notifier.RELEASENOTES_NOTIFY_ADDRS
+            },
+            actual,
+        )
+
+    def test_apply_subscription_rule_enterprise__case_b_milestone_changed_pre_beta(
+        self,
+    ):
+        """Milestone changed to/from pre-beta."""
+        changes = [
+            {
+                'prop_name': 'shipped_milestone',
+                'old_val': 'None',
+                'new_val': '110',
+            }
+        ]
+        actual = notifier.apply_subscription_rule_enterprise(
+            self.fe,
+            earliest_from_stages=None,
+            changes=changes,
+            changed_field_names=set(),
+            current_beta_milestone=100,
+        )
+        self.assertEqual({}, actual)
+
+    def test_apply_subscription_rule_enterprise__case_c_first_enterprise_milestone_changed_post_beta(
+        self,
+    ):
+        """first_enterprise_notification_milestone changed to/from post-beta."""
+        changed_field_names = {'first_enterprise_notification_milestone'}
+        changes = [
+            {
+                'prop_name': 'first_enterprise_notification_milestone',
+                'old_val': 'None',
+                'new_val': '90',
+            }
+        ]
+        actual = notifier.apply_subscription_rule_enterprise(
+            self.fe,
+            earliest_from_stages=None,
+            changes=changes,
+            changed_field_names=changed_field_names,
+            current_beta_milestone=100,
+        )
+        self.assertEqual(
+            {
+                notifier.ENTERPRISE_LATE_RULE_REASON: notifier.RELEASENOTES_NOTIFY_ADDRS
+            },
+            actual,
+        )
+
+    def test_apply_subscription_rule_enterprise__case_c_first_enterprise_milestone_changed_pre_beta(
+        self,
+    ):
+        """first_enterprise_notification_milestone changed to/from pre-beta."""
+        changed_field_names = {'first_enterprise_notification_milestone'}
+        changes = [
+            {
+                'prop_name': 'first_enterprise_notification_milestone',
+                'old_val': 'None',
+                'new_val': '110',
+            }
+        ]
+        actual = notifier.apply_subscription_rule_enterprise(
+            self.fe,
+            earliest_from_stages=None,
+            changes=changes,
+            changed_field_names=changed_field_names,
+            current_beta_milestone=100,
+        )
+        self.assertEqual({}, actual)
