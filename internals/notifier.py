@@ -259,12 +259,15 @@ def is_relevant_to_web_platform(fe: FeatureEntry) -> bool:
 
 def is_relevant_to_enterprise(fe: FeatureEntry) -> bool:
     """Return true if the feature is an enterprise feature or has impact."""
-    return (fe.feature_type == core_enums.FEATURE_TYPE_ENTERPRISE_ID or
-            fe.enterprise_impact != core_enums.ENTERPRISE_IMPACT_NONE)
+    return (
+        fe.feature_type == core_enums.FEATURE_TYPE_ENTERPRISE_ID
+        or fe.enterprise_impact != core_enums.ENTERPRISE_IMPACT_NONE
+    )
 
 
 def find_earliest_from_changes(
-    changes: list, fields: set[str] = MILESTONE_FIELDS) -> int | None:
+    changes: list, fields: set[str] = MILESTONE_FIELDS
+) -> int | None:
     """Return the earliest milestone mentioned in the changes."""
     changed_milestone_strs = []
     for change in changes:
@@ -327,9 +330,12 @@ def apply_subscription_rule_enterprise(
             and earliest_from_stages <= current_beta_milestone
         ) or (
             fe.first_enterprise_notification_milestone is not None
-            and fe.first_enterprise_notification_milestone <= current_beta_milestone
+            and fe.first_enterprise_notification_milestone
+            <= current_beta_milestone
         ):
-            rule_results[ENTERPRISE_LATE_RULE_REASON] = RELEASENOTES_NOTIFY_ADDRS
+            rule_results[ENTERPRISE_LATE_RULE_REASON] = (
+                RELEASENOTES_NOTIFY_ADDRS
+            )
 
     # Case B: any milestone changed to or from a post-beta value.
     earliest_from_changes = find_earliest_from_changes(changes)
@@ -341,12 +347,15 @@ def apply_subscription_rule_enterprise(
 
     if 'first_enterprise_notification_milestone' in changed_field_names:
         earliest_first = find_earliest_from_changes(
-            changes, {'first_enterprise_notification_milestone'})
+            changes, {'first_enterprise_notification_milestone'}
+        )
         if (
             earliest_first is not None
             and earliest_first <= current_beta_milestone
         ):
-            rule_results[ENTERPRISE_LATE_RULE_REASON] = RELEASENOTES_NOTIFY_ADDRS
+            rule_results[ENTERPRISE_LATE_RULE_REASON] = (
+                RELEASENOTES_NOTIFY_ADDRS
+            )
 
     return rule_results
 
@@ -378,14 +387,20 @@ def apply_subscription_rules(
     earliest_from_stages = stage_helpers.find_earliest_milestone(ship_stages)
     results.update(
         apply_subscription_rule_docs(
-            fe, earliest_from_stages, changes, changed_field_names,
-            current_beta_milestone
+            fe,
+            earliest_from_stages,
+            changes,
+            changed_field_names,
+            current_beta_milestone,
         )
     )
     results.update(
         apply_subscription_rule_enterprise(
-            fe, earliest_from_stages, changes, changed_field_names,
-            current_beta_milestone
+            fe,
+            earliest_from_stages,
+            changes,
+            changed_field_names,
+            current_beta_milestone,
         )
     )
 
