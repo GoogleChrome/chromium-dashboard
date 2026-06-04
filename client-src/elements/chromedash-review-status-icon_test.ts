@@ -23,6 +23,7 @@ import {
   GATE_PREPARING,
   VOTE_OPTIONS,
   VOTE_NA_SELF,
+  VOTE_NA_VERIFIED,
   FEATURE_TYPES,
 } from './form-field-enums.js';
 
@@ -110,6 +111,13 @@ const GATE_PRIVACY_NA_SELF = {
   stage_id: 57463,
   team_name: 'Privacy',
   state: VOTE_NA_SELF,
+};
+
+const GATE_PRIVACY_NA_VERIFIED = {
+  id: 12345001,
+  stage_id: 57463,
+  team_name: 'Privacy',
+  state: VOTE_NA_VERIFIED,
 };
 
 describe('chromedash-review-status-icon', () => {
@@ -227,7 +235,12 @@ describe('chromedash-review-status-icon', () => {
   it('renders "approved" when all gates are approved', async () => {
     getGatesStub.returns(
       Promise.resolve({
-        gates: [GATE_API_APPROVED, GATE_PRIVACY_NA_SELF, GATE_SECURITY_NA],
+        gates: [
+          GATE_API_APPROVED,
+          GATE_PRIVACY_NA_SELF,
+          GATE_PRIVACY_NA_VERIFIED,
+          GATE_SECURITY_NA,
+        ],
       })
     );
     const component = await fixture(COMPONENT_HTML);
