@@ -2320,7 +2320,7 @@ class ApplySubscriptionRuleEnterpriseTest(testing_config.CustomTestCase):
         )
         self.assertEqual(
             {
-                notifier.POST_BETA_RULE_REASON: notifier.RELEASENOTES_NOTIFY_ADDRS
+                notifier.ENTERPRISE_LATE_RULE_REASON: notifier.RELEASENOTES_NOTIFY_ADDRS
             },
             actual,
         )

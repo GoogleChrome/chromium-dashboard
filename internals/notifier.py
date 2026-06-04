@@ -343,7 +343,7 @@ def apply_subscription_rule_enterprise(
         earliest_from_changes
         and earliest_from_changes <= current_beta_milestone
     ):
-        rule_results[POST_BETA_RULE_REASON] = RELEASENOTES_NOTIFY_ADDRS
+        rule_results[ENTERPRISE_LATE_RULE_REASON] = RELEASENOTES_NOTIFY_ADDRS
 
     if 'first_enterprise_notification_milestone' in changed_field_names:
         earliest_first = find_earliest_from_changes(
