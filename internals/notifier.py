@@ -207,6 +207,10 @@ POST_BETA_RULE_REASON = (
     'Published aspects of this feature entry changed after it started beta'
 )
 POST_BETA_RULE_ADDRS = ['rachelandrew@google.com']
+ENTERPRISE_LATE_RULE_REASON = (
+    'Published aspects of this feature entry changed after it was first '
+    'included in release notes'
+)
 MILESTONE_FIELDS = {
     'shipped_milestone',
     'shipped_android_milestone',
@@ -214,6 +218,10 @@ MILESTONE_FIELDS = {
     'shipped_ios_milestone',
     'rollout_milestone',
 }
+RELEASENOTES_NOTIFY_ADDRS = [
+    core_enums.CBE_ESCLATION_EMAIL,
+    'siobhankeating@google.com',
+]
 
 
 def apply_subscription_rule_iwa(fe: FeatureEntry) -> dict[str, list[str]]:
@@ -244,40 +252,98 @@ def apply_subscription_rule_webview(
     return rule_results
 
 
-def apply_subscription_rule_docs(
-    fe: FeatureEntry,
-    ship_stages: list[Stage],
-    changes: list,
-    changed_field_names: set[str],
-) -> dict[str, list[str]]:
-    """Every change to a post-beta feature notifies the docs team."""
-    rule_results: dict[str, list[str]] = {}
-    # Case A: name or summary changing while any milestone is post-beta.
-    current_beta_milestone = fetchchannels.get_current_beta_milestone()
-    if 'name' in changed_field_names or 'summary' in changed_field_names:
-        earliest_from_feature = stage_helpers.find_earliest_milestone(
-            ship_stages
-        )
-        if (
-            earliest_from_feature is not None
-            and earliest_from_feature <= current_beta_milestone
-        ):
-            rule_results[POST_BETA_RULE_REASON] = POST_BETA_RULE_ADDRS
+def is_relevant_to_web_platform(fe: FeatureEntry) -> bool:
+    return fe.feature_type != core_enums.FEATURE_TYPE_ENTERPRISE_ID
 
-    # Case B: any milestone changed to or from a post-beta value.
+
+def is_relevant_to_enterprise(fe: FeatureEntry) -> bool:
+    return (fe.feature_type == core_enums.FEATURE_TYPE_ENTERPRISE_ID or
+            fe.enterprise_impact != core_enums.ENTERPRISE_IMPACT_NONE)
+
+
+def find_earliest_from_changes(
+    changes: list, fields: set[str] = MILESTONE_FIELDS) -> int | None:
     changed_milestone_strs = []
     for change in changes:
-        if change['prop_name'] in MILESTONE_FIELDS:
+        if change['prop_name'] in fields:
             changed_milestone_strs.append(change.get('old_val'))
             changed_milestone_strs.append(change.get('new_val'))
     changed_milestone_ints = [
         int(val) for val in changed_milestone_strs if val and val != 'None'
     ]
+    if changed_milestone_ints == []:
+        return None
+    return min(changed_milestone_ints)
+
+
+def apply_subscription_rule_docs(
+    fe: FeatureEntry,
+    earliest_from_stages: int | None,
+    changes: list,
+    changed_field_names: set[str],
+    current_beta_milestone: int,
+) -> dict[str, list[str]]:
+    """Every change to a post-beta WP feature notifies the docs team."""
+    if not is_relevant_to_web_platform(fe):
+        return {}
+    rule_results: dict[str, list[str]] = {}
+    # Case A: name or summary changing while any milestone is post-beta.
+    if 'name' in changed_field_names or 'summary' in changed_field_names:
+        if (
+            earliest_from_stages is not None
+            and earliest_from_stages <= current_beta_milestone
+        ):
+            rule_results[POST_BETA_RULE_REASON] = POST_BETA_RULE_ADDRS
+
+    # Case B: any milestone changed to or from a post-beta value.
+    earliest_from_changes = find_earliest_from_changes(changes)
     if (
-        changed_milestone_ints
-        and min(changed_milestone_ints) <= current_beta_milestone
+        earliest_from_changes
+        and earliest_from_changes <= current_beta_milestone
     ):
         rule_results[POST_BETA_RULE_REASON] = POST_BETA_RULE_ADDRS
+
+    return rule_results
+
+
+def apply_subscription_rule_enterprise(
+    fe: FeatureEntry,
+    earliest_from_stages: int | None,
+    changes: list,
+    changed_field_names: set[str],
+    current_beta_milestone: int,
+) -> dict[str, list[str]]:
+    """Every change to a post-beta enterprise feature notifies that team."""
+    if not is_relevant_to_enterprise(fe):
+        return {}
+    rule_results: dict[str, list[str]] = {}
+    # Case A: name or summary changing while any milestone is post-beta.
+    if 'name' in changed_field_names or 'summary' in changed_field_names:
+        if (
+            earliest_from_stages is not None
+            and earliest_from_stages <= current_beta_milestone
+        ) or (
+            fe.first_enterprise_notification_milestone is not None
+            and fe.first_enterprise_notification_milestone <= current_beta_milestone
+        ):
+            rule_results[ENTERPRISE_LATE_RULE_REASON] = RELEASENOTES_NOTIFY_ADDRS
+
+    # Case B: any milestone changed to or from a post-beta value.
+    earliest_from_changes = find_earliest_from_changes(changes)
+    if (
+        earliest_from_changes
+        and earliest_from_changes <= current_beta_milestone
+    ):
+        rule_results[POST_BETA_RULE_REASON] = RELEASENOTES_NOTIFY_ADDRS
+
+    if 'first_enterprise_notification_milestone' in changed_field_names:
+        earliest_first = find_earliest_from_changes(
+            changes, {'first_enterprise_notification_milestone'})
+        if (
+            earliest_first is not None
+            and earliest_first <= current_beta_milestone
+        ):
+            rule_results[ENTERPRISE_LATE_RULE_REASON] = RELEASENOTES_NOTIFY_ADDRS
 
     return rule_results
 
@@ -305,9 +371,18 @@ def apply_subscription_rules(
     )
 
     # Rule 3: Check if published aspects changed after beta start.
+    current_beta_milestone = fetchchannels.get_current_beta_milestone()
+    earliest_from_stages = stage_helpers.find_earliest_milestone(ship_stages)
     results.update(
         apply_subscription_rule_docs(
-            fe, ship_stages, changes, changed_field_names
+            fe, earliest_from_stages, changes, changed_field_names,
+            current_beta_milestone
+        )
+    )
+    results.update(
+        apply_subscription_rule_enterprise(
+            fe, earliest_from_stages, changes, changed_field_names,
+            current_beta_milestone
         )
     )
 
@@ -1590,10 +1665,6 @@ class ResetShippingMilestonesEmailHandler(basehandlers.FlaskHandler):
         }
 
 
-RELEASENOTES_NOTIFY_ADDRS = [
-    core_enums.CBE_ESCLATION_EMAIL,
-    'siobhankeating@google.com',
-]
 RESET_RELEASENOTES_TEMPLATE_PATH = 'reset-releasenotes-flags-email.html'
 
 
