@@ -333,7 +333,7 @@ def apply_subscription_rule_enterprise(
     if not is_relevant_to_enterprise(fe):
         return {}
     rule_results: dict[str, list[str]] = {}
-    # Case A: name or summary changing while any milestone is post-beta.
+    # Case A: Any enterprise release notes field changing while any milestone is post-beta.
     if not ENTERPRISE_RELEASENOTES_FIELDS.isdisjoint(changed_field_names):
         if (
             earliest_from_stages is not None
