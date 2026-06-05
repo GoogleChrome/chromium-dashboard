@@ -312,6 +312,16 @@ def apply_subscription_rule_docs(
     return rule_results
 
 
+ENTERPRISE_RELEASENOTES_FIELDS = {
+    'name',
+    'summary',
+    'enterprise_product_category',
+    'rollout_platforms',
+    'enterprise_feature_categories',
+    'enterprise_impact',
+}
+
+
 def apply_subscription_rule_enterprise(
     fe: FeatureEntry,
     earliest_from_stages: int | None,
@@ -324,7 +334,7 @@ def apply_subscription_rule_enterprise(
         return {}
     rule_results: dict[str, list[str]] = {}
     # Case A: name or summary changing while any milestone is post-beta.
-    if 'name' in changed_field_names or 'summary' in changed_field_names:
+    if not ENTERPRISE_RELEASENOTES_FIELDS.isdisjoint(changed_field_names):
         if (
             earliest_from_stages is not None
             and earliest_from_stages <= current_beta_milestone

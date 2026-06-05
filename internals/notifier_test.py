@@ -2286,6 +2286,27 @@ class ApplySubscriptionRuleEnterpriseTest(testing_config.CustomTestCase):
             actual,
         )
 
+    def test_apply_subscription_rule_enterprise__case_a_impact_changed_post_beta_fe(
+        self,
+    ):
+        """Impact changed, fe.first_enterprise_notification_milestone is post-beta (<= current_beta)."""
+        self.fe.first_enterprise_notification_milestone = 80
+        self.fe.put()
+        changed_field_names = {'enterprise_impact', 'some_irrelevant_field'}
+        actual = notifier.apply_subscription_rule_enterprise(
+            self.fe,
+            earliest_from_stages=None,
+            changes=[],
+            changed_field_names=changed_field_names,
+            current_beta_milestone=100,
+        )
+        self.assertEqual(
+            {
+                notifier.ENTERPRISE_LATE_RULE_REASON: notifier.RELEASENOTES_NOTIFY_ADDRS
+            },
+            actual,
+        )
+
     def test_apply_subscription_rule_enterprise__case_a_no_post_beta(self):
         """Name changed, but milestones are pre-beta (> current_beta) or None."""
         self.fe.first_enterprise_notification_milestone = 120
