@@ -137,36 +137,36 @@ def merge_translations(features: list[dict], lang: str) -> list[dict]:
             continue
 
         # Translate feature name
-        # Format template: feature_{feature_id}_name_{hash}
+        # Format template: FEATURE_{feature_id}_NAME_{hash}
         name_val = f.get('name', '')
         if name_val:
             name_hash = murmur3_x64_128_h1(name_val)
-            name_key = f'feature_{feature_id}_name_{name_hash}'
+            name_key = f'feature_{feature_id}_name_{name_hash}'.upper()
             if name_key in translation_dict:
-                f['name'] = translation_dict[name_key].get('text', name_val)
+                f['name'] = translation_dict[name_key].get('message', name_val)
 
         # Translate feature summary
-        # Format template: feature_{feature_id}_summary_{hash}
+        # Format template: FEATURE_{feature_id}_SUMMARY_{hash}
         summary_val = f.get('summary', '')
         if summary_val:
             summary_hash = murmur3_x64_128_h1(summary_val)
-            summary_key = f'feature_{feature_id}_summary_{summary_hash}'
+            summary_key = f'feature_{feature_id}_summary_{summary_hash}'.upper()
             if summary_key in translation_dict:
                 f['summary'] = translation_dict[summary_key].get(
-                    'text', summary_val
+                    'message', summary_val
                 )
 
         # Translate stage rollout details
-        # Format template: feature_{feature_id}_stage_{stage_id}_rolloutDetails_{hash}
+        # Format template: FEATURE_{feature_id}_STAGE_{stage_id}_ROLLOUTDETAILS_{hash}
         for stage in f.get('stages', []):
             stage_id = stage.get('id')
             rollout_details = stage.get('rollout_details')
             if stage_id and rollout_details:
                 details_hash = murmur3_x64_128_h1(rollout_details)
-                details_key = f'feature_{feature_id}_stage_{stage_id}_rolloutDetails_{details_hash}'
+                details_key = f'feature_{feature_id}_stage_{stage_id}_rolloutDetails_{details_hash}'.upper()
                 if details_key in translation_dict:
                     stage['rollout_details'] = translation_dict[
                         details_key
-                    ].get('text', rollout_details)
+                    ].get('message', rollout_details)
 
     return features

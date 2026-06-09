@@ -147,12 +147,12 @@ class ReleaseNotesServingTest(testing_config.CustomTestCase):
     def test_merge_translations(self, mock_fetch):
         """Verify merge_translations correctly merges values and falls back on mismatch."""
         mock_fetch.return_value = {
-            'feature_123_name_7851a20bf8f14d0a': {'text': 'Translated Name'},
-            'feature_123_summary_8914204e909276d9': {
-                'text': 'Translated Summary'
+            'FEATURE_123_NAME_7851A20BF8F14D0A': {'message': 'Translated Name'},
+            'FEATURE_123_SUMMARY_8914204E909276D9': {
+                'message': 'Translated Summary'
             },
-            'feature_123_stage_456_rolloutDetails_7851a20bf8f14d0a': {
-                'text': 'Translated Rollout'
+            'FEATURE_123_STAGE_456_ROLLOUTDETAILS_7851A20BF8F14D0A': {
+                'message': 'Translated Rollout'
             },
         }
 
@@ -212,7 +212,7 @@ class ReleaseNotesServingTest(testing_config.CustomTestCase):
             }
         ]
         mock_fetch.return_value = {
-            'feature_123_name_7851a20bf8f14d0a': {'text': 'Translated Name'},
+            'FEATURE_123_NAME_7851A20BF8F14D0A': {'message': 'Translated Name'},
         }
 
         # Request with lang=fr
