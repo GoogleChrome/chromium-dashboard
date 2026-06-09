@@ -277,3 +277,28 @@ class OTProcessRemindersTest(testing_config.CustomTestCase):
         self.assertEqual(
             set(ending_trial['contacts']), set(expected_ending_trial_contacts)
         )
+
+    def test_get_trial_end_release_offset(self):
+        """Test that the correct offset is returned based on release milestone."""
+        self.assertEqual(
+            ot_process_reminders.get_trial_end_release_offset(150), 2
+        )
+        self.assertEqual(
+            ot_process_reminders.get_trial_end_release_offset(151), 2
+        )
+        self.assertEqual(
+            ot_process_reminders.get_trial_end_release_offset(152), 3
+        )
+        self.assertEqual(
+            ot_process_reminders.get_trial_end_release_offset(153), 4
+        )
+        self.assertEqual(
+            ot_process_reminders.get_trial_end_release_offset(154), 4
+        )
+
+    def test_get_release_plus_n(self):
+        """Test that get_release_plus_n correctly increments milestones."""
+        self.assertEqual(ot_process_reminders.get_release_plus_n(150, 2), 152)
+        self.assertEqual(ot_process_reminders.get_release_plus_n(150, 4), 154)
+        # Test skipping milestone 82
+        self.assertEqual(ot_process_reminders.get_release_plus_n(80, 2), 83)
