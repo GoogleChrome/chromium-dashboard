@@ -166,7 +166,7 @@ const DEBUGGABILITY_ORIGIN_TRIAL_QUESTIONNAIRE: TemplateResult = html`
 
   <p>
     (1) Does Chrome DevTools (including the classic UI and
-    <a href="https://github.com/ChromeDevTools/chrome-devtools-mcp"
+    <a href="https://developer.chrome.com/docs/devtools/agents"
       target="_blank">Chrome DevTools for agents</a>) continue to work without
     breaking or crashing when the new Web Platform feature is present?
   </p>
@@ -184,8 +184,8 @@ const DEBUGGABILITY_ORIGIN_TRIAL_QUESTIONNAIRE: TemplateResult = html`
     (3) Would the new Web Platform feature's acceptance and/or adoption benefit
     from adding dedicated, custom developer workflows to Chrome DevTools (either
     UI or agentic)?  (e.g., consider what common mistakes developers might make
-    when using this feature.  Do they need new tools to identify and fix those
-    mistakes?)
+    when using this feature.  Do they or their agents need new tools to identify
+    and fix those mistakes?)
   </p>
 
   <b>Testing</b>
