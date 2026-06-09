@@ -162,25 +162,40 @@ const ENTERPRISE_SHIP_QUESTIONNAIRE: TemplateResult = html` <p>
   </p>`;
 
 const DEBUGGABILITY_ORIGIN_TRIAL_QUESTIONNAIRE: TemplateResult = html`
+  <b>Basic Support</b>
+
   <p>
-    (1) Does the introduction of the new Web Platform feature break Chrome
-    DevTools' existing developer experience?
+    (1) Does Chrome DevTools (including the classic UI and
+    <a href="https://github.com/ChromeDevTools/chrome-devtools-mcp"
+      target="_blank">Chrome DevTools for agents</a>) continue to work without
+    breaking or crashing when the new Web Platform feature is present?
   </p>
 
   <p>
-    (2) Does Chrome DevTools' existing set of tooling features interact with the
-    new Web Platform feature in an expected way?
+    (2) Is the new Web Platform feature introspectable with existing Chrome
+    DevTools tooling (both UI and agentic)?  (e.g., is the feature shown in the
+    UI similarly to related platform features, and do existing tools expose
+    enough information for an agent to reason about it?)
   </p>
+
+  <b>Extended Support</b>
 
   <p>
     (3) Would the new Web Platform feature's acceptance and/or adoption benefit
-    from adding a new developer workflow to Chrome DevTools?
+    from adding dedicated, custom developer workflows to Chrome DevTools (either
+    UI or agentic)?  (e.g., consider what common mistakes developers might make
+    when using this feature.  Do they need new tools to identify and fix those
+    mistakes?)
   </p>
 
+  <b>Testing</b>
+
   <p>
-    (4) Can the feature be tested with a WebDriver BiDi module or other
-    appropriate automation?
+    (4) Can web developers write automated tests that cover the feature (e.g.,
+    via a WebDriver BiDi module or other appropriate automation)?
   </p>
+
+  <hr>
 
   <p>
     When in doubt, please check out
