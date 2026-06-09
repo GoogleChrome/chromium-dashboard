@@ -166,14 +166,15 @@ const DEBUGGABILITY_ORIGIN_TRIAL_QUESTIONNAIRE: TemplateResult = html`
 
   <p>
     (1) Does Chrome DevTools (including the classic UI and
-    <a href="https://developer.chrome.com/docs/devtools/agents"
-      target="_blank">Chrome DevTools for agents</a>) continue to work without
-    breaking or crashing when the new Web Platform feature is present?
+    <a href="https://developer.chrome.com/docs/devtools/agents" target="_blank"
+      >Chrome DevTools for agents</a
+    >) continue to work without breaking or crashing when the new Web Platform
+    feature is present?
   </p>
 
   <p>
     (2) Is the new Web Platform feature introspectable with existing Chrome
-    DevTools tooling (both UI and agentic)?  (e.g., is the feature shown in the
+    DevTools tooling (both UI and agentic)? (e.g., is the feature shown in the
     UI similarly to related platform features, and do existing tools expose
     enough information for an agent to reason about it?)
   </p>
@@ -183,8 +184,8 @@ const DEBUGGABILITY_ORIGIN_TRIAL_QUESTIONNAIRE: TemplateResult = html`
   <p>
     (3) Would the new Web Platform feature's acceptance and/or adoption benefit
     from adding dedicated, custom developer workflows to Chrome DevTools (either
-    UI or agentic)?  (e.g., consider what common mistakes developers might make
-    when using this feature.  Do they or their agents need new tools to identify
+    UI or agentic)? (e.g., consider what common mistakes developers might make
+    when using this feature. Do they or their agents need new tools to identify
     and fix those mistakes?)
   </p>
 
@@ -195,7 +196,7 @@ const DEBUGGABILITY_ORIGIN_TRIAL_QUESTIONNAIRE: TemplateResult = html`
     via a WebDriver BiDi module or other appropriate automation)?
   </p>
 
-  <hr>
+  <hr />
 
   <p>
     When in doubt, please check out
