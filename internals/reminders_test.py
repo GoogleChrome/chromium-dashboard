@@ -506,6 +506,55 @@ class FeatureAccuracyHandlerTest(testing_config.CustomTestCase):
         self.assertEqual(self.feature_1.outstanding_notifications, 2)
         self.assertEqual(self.feature_2.outstanding_notifications, 2)
 
+    @mock.patch('requests.get')
+    def test_determine_features_to_notify__valid_features_post_153(
+        self, mock_get
+    ):
+        """Test determine features to notify for milestones >= 153 (2-week cycle)."""
+        feature_post_153 = FeatureEntry(
+            id=4,
+            name='feature post 153',
+            summary='sum',
+            owner_emails=['owner_post_153@example.com'],
+            category=1,
+            feature_type=1,
+        )
+        feature_post_153.put()
+        stage = Stage(
+            id=264,
+            feature_id=4,
+            stage_type=260,
+        )
+        stage.milestones = MilestoneSet(desktop_first=156)
+        stage.put()
+
+        owner_pref = UserPref(
+            email='owner_post_153@example.com', notify_as_starrer=False
+        )
+        owner_pref.put()
+
+        mock_return = MockResponse(
+            text=(
+                '{"mstones":[{"mstone": "153", '
+                '"earliest_beta": "2026-09-08T01:23:45"}]}'
+            )
+        )
+        mock_get.return_value = mock_return
+        with test_app.app_context():
+            result = self.handler.get_template_data()
+
+        expected_message = (
+            '1 email(s) sent or logged.\n'
+            'Recipients:\n'
+            'owner_post_153@example.com'
+        )
+        expected = {'message': expected_message}
+        self.assertEqual(result, expected)
+
+        feature_post_153.key.delete()
+        stage.key.delete()
+        owner_pref.key.delete()
+
 
 class PrepublicationHandlerTest(testing_config.CustomTestCase):
     """Tests for PrepublicationHandler."""

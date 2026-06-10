@@ -218,11 +218,27 @@ def send_beta_availability_emails(release):
     return send_count
 
 
+def get_trial_end_release_offset(release: int) -> int:
+    """Determine the milestone offset for trial end reminders based on release cycle."""
+    if release >= 153:
+        return 4
+    if release == 152:
+        return 3
+    return 2
+
+
+def get_release_plus_n(release: int, n: int) -> int:
+    """Get the milestone number N releases after the given release."""
+    res = release
+    for _ in range(n):
+        res = get_next_release_number(res)
+    return res
+
+
 def send_stable_update_emails(release):
     """Send reminders about trials that are entering stable."""
-    trial_end_release = get_next_release_number(
-        get_next_release_number(release)
-    )
+    offset = get_trial_end_release_offset(release)
+    trial_end_release = get_release_plus_n(release, offset)
     after_end_release = get_next_release_number(trial_end_release)
     after_end_branch_date = get_branch_date(get_release(after_end_release))
     formatted_branch_date = (
