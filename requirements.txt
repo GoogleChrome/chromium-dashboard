@@ -6,7 +6,7 @@ appengine-python-standard>=2.0.1
 html5lib==1.1
 funcsigs==1.0.2
 json5==0.14.0
-google-api-python-client==2.196.0
+google-api-python-client==2.197.0
 trafilatura==2.1.0
 
 # TODO(jrobbins): Add this back or replace it when python 3.10 is supported.
