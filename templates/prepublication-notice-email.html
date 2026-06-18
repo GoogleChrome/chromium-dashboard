@@ -58,15 +58,35 @@
     and then revise your feature summary to prepare it for
     publication.</p>
 
-  <p>Here's what we have now for publication:</p>
-  <div style="background:#eee">
-    <h3>{{feature.name}}</h3>
-    <p>{{feature.summary}}</p>
+  {% if suggestion and (suggestion.status == 'complete' or suggestion.status == 'applied') %}
+  <p>An AI-generated draft summary and documentation links suggestions are available for this feature.
+     Please review, edit, and apply these suggestions directly on the ChromeStatus review dashboard:</p>
+  <div style="background:#e8f0fe; border-left: 5px solid #1a73e8; padding: 1em; margin: 1em 0;">
+    <h3>AI Suggested Summary:</h3>
+    <p>{{suggestion.suggested_summary}}</p>
+    {% if suggestion.suggested_doc_links %}
+      <p><b>Discovered Documentation:</b></p>
+      <ul>
+        {% for link in suggestion.suggested_doc_links %}
+          <li><a href="{{link}}">{{link}}</a></li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+    <div style="{{styles.button_div}}">
+      <a href="{{SITE_URL}}releases?milestone={{milestone}}" style="{{styles.button_a}}"
+         >Review & Apply Draft</a>
+    </div>
   </div>
-
+  {% else %}
+  <p>Here's what we have now for publication:</p>
+  <div style="background:#eee; padding: 1em; margin: 1em 0;">
+    <h3>{{feature.name}}</h3>
+    <p>{{feature.summary or 'No summary provided.'}}</p>
+  </div>
   <div style="{{styles.button_div}}">
     <a href="{{SITE_URL}}feature/{{id}}" style="{{styles.button_a}}"
        >View feature details</a></div>
+  {% endif %}
 
   <p>Guidelines for writing the summary:</p>
   <ul>

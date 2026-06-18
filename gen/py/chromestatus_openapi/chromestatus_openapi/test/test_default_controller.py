@@ -18,6 +18,7 @@ from chromestatus_openapi.models.feature_latency import FeatureLatency  # noqa: 
 from chromestatus_openapi.models.feature_links_response import FeatureLinksResponse  # noqa: E501
 from chromestatus_openapi.models.feature_links_sample import FeatureLinksSample  # noqa: E501
 from chromestatus_openapi.models.feature_links_summary_response import FeatureLinksSummaryResponse  # noqa: E501
+from chromestatus_openapi.models.feature_summary_suggestion_response import FeatureSummarySuggestionResponse  # noqa: E501
 from chromestatus_openapi.models.get_comments_response import GetCommentsResponse  # noqa: E501
 from chromestatus_openapi.models.get_dismissed_cues400_response import GetDismissedCues400Response  # noqa: E501
 from chromestatus_openapi.models.get_gate_response import GetGateResponse  # noqa: E501
@@ -29,6 +30,7 @@ from chromestatus_openapi.models.get_votes_response import GetVotesResponse  # n
 from chromestatus_openapi.models.message_response import MessageResponse  # noqa: E501
 from chromestatus_openapi.models.patch_comment_request import PatchCommentRequest  # noqa: E501
 from chromestatus_openapi.models.patch_gate_request import PatchGateRequest  # noqa: E501
+from chromestatus_openapi.models.pending_reviews_count_response import PendingReviewsCountResponse  # noqa: E501
 from chromestatus_openapi.models.permissions_response import PermissionsResponse  # noqa: E501
 from chromestatus_openapi.models.post_intent_request import PostIntentRequest  # noqa: E501
 from chromestatus_openapi.models.post_settings_request import PostSettingsRequest  # noqa: E501
@@ -139,6 +141,21 @@ class TestDefaultController(BaseTestCase):
         self.assert200(response,
                        'Response body is : ' + response.data.decode('utf-8'))
 
+    def test_apply_summary_suggestion(self):
+        """Test case for apply_summary_suggestion
+
+        Apply the AI summary suggestion draft to the feature entry
+        """
+        headers = { 
+            'Accept': 'application/json',
+        }
+        response = self.client.open(
+            '/api/v0/features/{feature_id}/summary_suggestion/apply'.format(feature_id=56),
+            method='POST',
+            headers=headers)
+        self.assert200(response,
+                       'Response body is : ' + response.data.decode('utf-8'))
+
     def test_authenticate_user(self):
         """Test case for authenticate_user
 
@@ -155,6 +172,21 @@ class TestDefaultController(BaseTestCase):
             headers=headers,
             data=json.dumps(sign_in_request),
             content_type='application/json')
+        self.assert200(response,
+                       'Response body is : ' + response.data.decode('utf-8'))
+
+    def test_bypass_summary_suggestion(self):
+        """Test case for bypass_summary_suggestion
+
+        Bypass the suggestion draft review (saves bypass activity)
+        """
+        headers = { 
+            'Accept': 'application/json',
+        }
+        response = self.client.open(
+            '/api/v0/features/{feature_id}/summary_suggestion/bypass'.format(feature_id=56),
+            method='POST',
+            headers=headers)
         self.assert200(response,
                        'Response body is : ' + response.data.decode('utf-8'))
 
@@ -241,6 +273,21 @@ class TestDefaultController(BaseTestCase):
         response = self.client.open(
             '/api/v0/origintrials/{feature_id}/{extension_stage_id}/extend'.format(feature_id=56, extension_stage_id=56),
             method='PATCH',
+            headers=headers)
+        self.assert200(response,
+                       'Response body is : ' + response.data.decode('utf-8'))
+
+    def test_generate_summary_suggestion(self):
+        """Test case for generate_summary_suggestion
+
+        Trigger asynchronous AI summary generation for a feature
+        """
+        headers = { 
+            'Accept': 'application/json',
+        }
+        response = self.client.open(
+            '/api/v0/features/{feature_id}/summary_suggestion/generate'.format(feature_id=56),
+            method='POST',
             headers=headers)
         self.assert200(response,
                        'Response body is : ' + response.data.decode('utf-8'))
@@ -402,6 +449,21 @@ class TestDefaultController(BaseTestCase):
         self.assert200(response,
                        'Response body is : ' + response.data.decode('utf-8'))
 
+    def test_get_pending_reviews_count(self):
+        """Test case for get_pending_reviews_count
+
+        Get the count of pending AI-assisted feature reviews
+        """
+        headers = { 
+            'Accept': 'application/json',
+        }
+        response = self.client.open(
+            '/api/v0/features/pending_reviews_count',
+            method='GET',
+            headers=headers)
+        self.assert200(response,
+                       'Response body is : ' + response.data.decode('utf-8'))
+
     def test_get_process(self):
         """Test case for get_process
 
@@ -460,6 +522,21 @@ class TestDefaultController(BaseTestCase):
         }
         response = self.client.open(
             '/api/v0/currentuser/stars',
+            method='GET',
+            headers=headers)
+        self.assert200(response,
+                       'Response body is : ' + response.data.decode('utf-8'))
+
+    def test_get_summary_suggestion(self):
+        """Test case for get_summary_suggestion
+
+        Get the AI summary suggestion draft for a feature
+        """
+        headers = { 
+            'Accept': 'application/json',
+        }
+        response = self.client.open(
+            '/api/v0/features/{feature_id}/summary_suggestion'.format(feature_id=56),
             method='GET',
             headers=headers)
         self.assert200(response,

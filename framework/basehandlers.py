@@ -70,14 +70,17 @@ class BaseHandler(flask.views.MethodView):
         headers: dict[str, str] | None = None,
         **kwargs,
     ) -> NoReturn:
-        """Support webapp2-style, e.g., self.abort(400)."""
+        path_str = ''
+        if flask.has_request_context():
+            path_str = f' for path {flask.request.path}?{flask.request.query_string.decode("utf-8")}'
+
         if msg:
             if status == 500:
-                logging.error(f'ISE: {msg}')
+                logging.error(f'ISE: {msg}{path_str}')
             else:
-                logging.info(f'Abort {status}: {msg}')
+                logging.info(f'Abort {status}: {msg}{path_str}')
         else:
-            logging.info(f'Abort {status}')
+            logging.info(f'Abort {status}{path_str}')
 
         if headers is not None:
             try:

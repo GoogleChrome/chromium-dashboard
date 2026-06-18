@@ -1,0 +1,153 @@
+import {assert, fixture} from '@open-wc/testing';
+import {html} from 'lit';
+import sinon from 'sinon';
+import {ChromeStatusClient} from '../js-src/cs-client.js';
+import {ChromedashFeatureSuggestionStatus} from './chromedash-feature-suggestion-status.js';
+import './chromedash-feature-suggestion-status.js';
+
+describe('chromedash-feature-suggestion-status', () => {
+  const feature = {
+    id: 12345,
+    name: 'Mock Feature',
+    owner_emails: ['owner@example.com'],
+  };
+
+  const suggestionPromise = Promise.resolve({
+    status: 'complete',
+    suggested_summary: 'Suggested summary text.',
+    suggested_doc_links: ['https://example.com/doc'],
+    version_token: 1,
+  });
+
+  beforeEach(async () => {
+    window.csClient = new ChromeStatusClient('fake_token', 1);
+    sinon
+      .stub(window.csClient, 'getSummarySuggestion')
+      .returns(suggestionPromise);
+    sinon.stub(window.csClient, 'triggerSummaryGeneration').resolves({});
+  });
+
+  afterEach(() => {
+    window.csClient.getSummarySuggestion.restore();
+    window.csClient.triggerSummaryGeneration.restore();
+  });
+
+  it('renders nothing if canReview is false', async () => {
+    const el = (await fixture(
+      html`<chromedash-feature-suggestion-status
+        .feature=${feature}
+        .canReview=${false}
+      ></chromedash-feature-suggestion-status>`
+    )) as ChromedashFeatureSuggestionStatus;
+
+    await el.updateComplete;
+    const controlPanel = el.shadowRoot!.querySelector(
+      '.suggestion-control-panel'
+    );
+    assert.isNull(controlPanel);
+  });
+
+  it('renders skeleton loader when suggestion is pending', async () => {
+    // Delay resolution to catch pending state
+    let resolveSuggestion: any;
+    const pendingPromise = new Promise(resolve => {
+      resolveSuggestion = resolve;
+    });
+    window.csClient.getSummarySuggestion.restore();
+    sinon.stub(window.csClient, 'getSummarySuggestion').returns(pendingPromise);
+
+    const el = (await fixture(
+      html`<chromedash-feature-suggestion-status
+        .feature=${feature}
+        .canReview=${true}
+      ></chromedash-feature-suggestion-status>`
+    )) as ChromedashFeatureSuggestionStatus;
+
+    // Renders skeleton in shadow DOM
+    const skeleton = el.shadowRoot!.querySelector('sl-skeleton');
+    assert.exists(skeleton);
+
+    // Resolve and update
+    resolveSuggestion({
+      status: 'complete',
+      suggested_summary: 'Doc',
+      suggested_doc_links: [],
+    });
+    await new Promise(resolve => setTimeout(resolve, 0));
+    await el.updateComplete;
+
+    const controlPanel = el.shadowRoot!.querySelector(
+      '.suggestion-control-panel'
+    );
+    assert.exists(controlPanel);
+    assert.include(controlPanel.innerHTML, 'Draft Available');
+  });
+
+  it('renders suggestion status complete and reviews suggestions', async () => {
+    const el = (await fixture(
+      html`<chromedash-feature-suggestion-status
+        .feature=${feature}
+        .canReview=${true}
+      ></chromedash-feature-suggestion-status>`
+    )) as ChromedashFeatureSuggestionStatus;
+
+    await el.updateComplete;
+    const controlPanel = el.shadowRoot!.querySelector(
+      '.suggestion-control-panel'
+    );
+    assert.exists(controlPanel);
+    assert.include(controlPanel.innerHTML, 'Draft Available');
+
+    const reviewBtn = el.shadowRoot!.querySelector(
+      'sl-button[variant="primary"]'
+    ) as any;
+    assert.exists(reviewBtn);
+
+    // Click triggers review event to parent
+    const eventPromise = new Promise<CustomEvent>(resolve => {
+      el.addEventListener('review-suggestion', e => resolve(e as CustomEvent));
+    });
+    reviewBtn.click();
+    const event = await eventPromise;
+    assert.equal(event.detail.feature.id, 12345);
+  });
+
+  it('polls on in_progress status and triggers generation', async () => {
+    let callCount = 0;
+    window.csClient.getSummarySuggestion.restore();
+    sinon.stub(window.csClient, 'getSummarySuggestion').callsFake(() => {
+      callCount++;
+      if (callCount === 1) {
+        return Promise.resolve({status: 'in_progress'});
+      }
+      return Promise.resolve({
+        status: 'complete',
+        suggested_summary: 'Done',
+        suggested_doc_links: [],
+      });
+    });
+
+    const clock = sinon.useFakeTimers();
+
+    const el = (await fixture(
+      html`<chromedash-feature-suggestion-status
+        .feature=${feature}
+        .canReview=${true}
+      ></chromedash-feature-suggestion-status>`
+    )) as ChromedashFeatureSuggestionStatus;
+
+    await el.updateComplete;
+    let badge = el.shadowRoot!.querySelector('sl-tag');
+    assert.include(badge!.innerHTML, 'Generating');
+
+    // Fast-forward 2 seconds to trigger poll
+    await clock.tickAsync(2000);
+    await el.updateComplete;
+
+    // Second call resolved to complete
+    badge = el.shadowRoot!.querySelector('sl-tag');
+    assert.include(badge!.innerHTML, 'Draft Available');
+
+    clock.restore();
+  });
+});

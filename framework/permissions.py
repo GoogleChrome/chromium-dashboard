@@ -177,6 +177,8 @@ def can_review_release_notes(user: User) -> bool:
     """Return True if the user is allowed to mark release notes final."""
     if not user:
         return False
+    if settings.DEV_MODE and user.email() == 'devrel@chromium.org':
+        return True
     app_user = AppUser.get_app_user(user.email())
 
     return (

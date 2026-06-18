@@ -951,6 +951,26 @@ class AITestEvaluationStatus(int, Enum):
     DELETED = 4
 
 
+class SummarySuggestionStatus(str, Enum):
+    """Enums representing the AI generation status for feature summaries."""
+
+    NONE = 'none'
+    IN_PROGRESS = 'in_progress'
+    COMPLETE = 'complete'
+    FAILED = 'failed'
+    APPLIED = 'applied'
+    BYPASSED = 'bypassed'
+    DISCARDED = 'discarded'
+
+
+class BaselineStatus(str, Enum):
+    """Enums representing the WebDX Baseline status levels."""
+
+    LIMITED = 'limited'
+    NEWLY = 'newly'
+    WIDELY = 'widely'
+
+
 def convert_enum_int_to_string(property_name, value):
     """If the property is an enum, return human-readable string, else value."""
     # Check if the value is an int or can be converted to an int.

@@ -83,4 +83,39 @@ describe('chromedash-drawer', () => {
     assert.include(navInnerHTML, 'href="/metrics/feature/popularity"');
     assert.include(navInnerHTML, 'href="/myfeatures');
   });
+
+  it('renders release reviews pending badge for editors', async () => {
+    getPermissionsStub.returns(
+      Promise.resolve({
+        can_create_feature: true,
+        can_edit: true,
+        is_admin: true,
+        can_review_release_notes: true,
+        email: 'editor@google.com',
+      })
+    );
+    const getCountStub = sinon
+      .stub(window.csClient, 'getPendingReviewsCount')
+      .resolves({count: 3});
+
+    const component = await fixture(
+      html`<chromedash-drawer appTitle="Fake Title"></chromedash-drawer>`
+    );
+    assert.exists(component);
+    assert.instanceOf(component, ChromedashDrawer);
+
+    // Wait for async calls and rendering
+    await component.updateComplete;
+
+    const nav = component.shadowRoot!.querySelector('nav');
+    assert.exists(nav);
+
+    const navInnerHTML = nav.innerHTML;
+    assert.include(navInnerHTML, 'href="/releases"');
+    assert.include(navInnerHTML, 'Release Reviews');
+    assert.include(navInnerHTML, '<sl-badge variant="danger" pill');
+    assert.include(navInnerHTML, '>3</sl-badge>');
+
+    getCountStub.restore();
+  });
 });

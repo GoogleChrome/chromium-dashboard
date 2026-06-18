@@ -32,6 +32,11 @@ WORKDIR /workspace
 COPY --chown=appuser:appuser requirements.txt requirements.dev.txt Makefile package.json package-lock.json /workspace/
 COPY --chown=appuser:appuser openapi /workspace/openapi/
 COPY --chown=appuser:appuser gen /workspace/gen/
-RUN npm install -g gulp-cli && make setup && cs-env/bin/python -m pip install debugpy==1.6.7.post1
+RUN npm install -g gulp-cli && \
+    python3.13 -m venv cs-env && \
+    cs-env/bin/pip install --upgrade pip && \
+    cs-env/bin/pip install -r requirements.txt && \
+    cs-env/bin/pip install -r requirements.dev.txt && \
+    cs-env/bin/python -m pip install debugpy==1.6.7.post1
 # Copy the rest
 COPY --chown=appuser:appuser . /workspace

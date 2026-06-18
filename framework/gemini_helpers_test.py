@@ -21,7 +21,7 @@ from google.cloud import ndb
 import testing_config  # Must be imported before the module under test.
 from framework import gemini_helpers, utils
 from internals import core_enums
-from internals.core_models import FeatureEntry
+from internals.core_models import FeatureEntry, FeatureSummarySuggestion
 
 
 class GeminiHelpersTest(testing_config.CustomTestCase):
@@ -183,3 +183,97 @@ class GenerateWPTCoverageEvalReportHandlerTest(testing_config.CustomTestCase):
         )
 
         self.assertIn('Test failure', response['message'])
+
+
+class GenerateSummaryHandlerTest(testing_config.CustomTestCase):
+    """Tests for the GenerateSummaryHandler class."""
+
+    def setUp(self):
+        """Set up the test environment."""
+        super(GenerateSummaryHandlerTest, self).setUp()
+        self.feature = FeatureEntry(
+            name='Test Feature',
+            summary='A test feature summary',
+            feature_type=0,
+            category=1,
+            spec_link='https://spec.example.com',
+        )
+        self.feature.put()
+        self.feature_id = self.feature.key.integer_id()
+
+        # Instantiate handler
+        self.handler = gemini_helpers.GenerateSummaryHandler()
+
+        self.handler.require_task_header = mock.Mock()
+        self.handler.get_int_param = mock.Mock(return_value=self.feature_id)
+        # Mock get_param to return None by default for updated_time
+        self.handler.get_param = mock.Mock(return_value=None)
+        self.handler.get_validated_entity = mock.Mock(return_value=self.feature)
+
+        self.mock_generate = mock.patch(
+            'framework.summary_generator.generate_summary_suggestion',
+        ).start()
+
+    def tearDown(self):
+        """Clean up the test environment."""
+        self.feature.key.delete()
+        suggestion = FeatureSummarySuggestion.get_by_id(self.feature_id)
+        if suggestion:
+            suggestion.key.delete()
+        mock.patch.stopall()
+
+    def test_process_post_data__success(self):
+        """Tests that a successful Cloud Task run calls the summary generator."""
+        response = self.handler.process_post_data()
+
+        self.handler.require_task_header.assert_called_once()
+        self.handler.get_int_param.assert_called_with('feature_id')
+        self.handler.get_param.assert_called_with('updated_time')
+        self.handler.get_validated_entity.assert_called_with(
+            self.feature_id, FeatureEntry
+        )
+
+        self.mock_generate.assert_called_once_with(self.feature_id)
+        self.assertEqual(
+            response, {'message': 'AI summary generation task processed.'}
+        )
+
+    def test_process_post_data__skipped_due_to_newer_update(self):
+        """Tests that task is skipped if the payload updated_time is older than the current feature updated time."""
+        # Create a suggestion that is currently IN_PROGRESS
+        suggestion = FeatureSummarySuggestion(
+            id=self.feature_id,
+            status=core_enums.SummarySuggestionStatus.IN_PROGRESS.value,
+        )
+        suggestion.put()
+
+        # Setup payload updated_time as 10 seconds in the past
+        payload_time = self.feature.updated.timestamp() - 10
+        self.handler.get_param.return_value = str(payload_time)
+
+        response = self.handler.process_post_data()
+
+        # Should not call generator
+        self.mock_generate.assert_not_called()
+        self.assertEqual(response, {'message': 'Skipped due to newer updates.'})
+
+        # Verify suggestion status was reset to NONE (avoiding hanging lock)
+        updated_suggestion = FeatureSummarySuggestion.get_by_id(self.feature_id)
+        self.assertEqual(
+            updated_suggestion.status,
+            core_enums.SummarySuggestionStatus.NONE.value,
+        )
+
+    def test_process_post_data__proceed_due_to_same_or_newer_payload(self):
+        """Tests that task proceeds if the payload updated_time matches the current feature updated time."""
+        # Setup payload updated_time as exactly the same
+        payload_time = self.feature.updated.timestamp()
+        self.handler.get_param.return_value = str(payload_time)
+
+        response = self.handler.process_post_data()
+
+        # Should call generator
+        self.mock_generate.assert_called_once_with(self.feature_id)
+        self.assertEqual(
+            response, {'message': 'AI summary generation task processed.'}
+        )

@@ -44,6 +44,118 @@ paths:
               schema:
                 $ref: '#/components/schemas/AddAttachmentResponse'
 
+  /features/{feature_id}/summary_suggestion:
+    parameters:
+      - name: feature_id
+        in: path
+        description: Feature ID
+        required: true
+        schema:
+          type: integer
+    get:
+      summary: Get the AI summary suggestion draft for a feature
+      operationId: getSummarySuggestion
+      responses:
+        '200':
+          description: Feature summary suggestion draft data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeatureSummarySuggestionResponse'
+        '404':
+          description: Feature or suggestion not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+
+  /features/{feature_id}/summary_suggestion/generate:
+    parameters:
+      - name: feature_id
+        in: path
+        description: Feature ID
+        required: true
+        schema:
+          type: integer
+    post:
+      summary: Trigger asynchronous AI summary generation for a feature
+      operationId: generateSummarySuggestion
+      responses:
+        '202':
+          description: Suggestion generation request accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
+        '400':
+          description: Invalid request or feature state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+
+  /features/{feature_id}/summary_suggestion/apply:
+    parameters:
+      - name: feature_id
+        in: path
+        description: Feature ID
+        required: true
+        schema:
+          type: integer
+    post:
+      summary: Apply the AI summary suggestion draft to the feature entry
+      operationId: applySummarySuggestion
+      responses:
+        '200':
+          description: Suggestion applied successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
+        '404':
+          description: Feature or suggestion not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+
+  /features/{feature_id}/summary_suggestion/bypass:
+    parameters:
+      - name: feature_id
+        in: path
+        description: Feature ID
+        required: true
+        schema:
+          type: integer
+    post:
+      summary: Bypass the suggestion draft review (saves bypass activity)
+      operationId: bypassSummarySuggestion
+      responses:
+        '200':
+          description: Suggestion bypassed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
+        '404':
+          description: Feature not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+
+  /features/pending_reviews_count:
+    get:
+      summary: Get the count of pending AI-assisted feature reviews
+      operationId: getPendingReviewsCount
+      responses:
+        '200':
+          description: The count of pending reviews
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PendingReviewsCountResponse'
+
   /features/{feature_id}/votes:
     parameters:
       - name: feature_id
@@ -2101,3 +2213,33 @@ components:
         descriptions:
           type: object
           additionalProperties: true
+
+    FeatureSummarySuggestionResponse:
+      type: object
+      properties:
+        suggested_summary:
+          type: string
+        suggested_doc_links:
+          type: array
+          items:
+            type: string
+        baseline_status:
+          type: string
+        status:
+          type: string
+        status_timestamp:
+          type: string
+          format: date-time
+        last_generation_attempt:
+          type: string
+          format: date-time
+      required:
+        - status
+
+    PendingReviewsCountResponse:
+      type: object
+      properties:
+        count:
+          type: integer
+      required:
+        - count

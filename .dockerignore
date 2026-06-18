@@ -8,3 +8,5 @@ playwright/.cache/
 coverage
 
 __pycache__
+
+gemini_api_key.txt

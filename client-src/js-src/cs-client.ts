@@ -38,6 +38,18 @@ export interface FeatureLinksSummary {
   error_link_domains: Array<{key: string; count: number}>;
 }
 
+export interface SuggestionData {
+  status: string;
+  suggested_summary: string | null;
+  suggested_doc_links: string[];
+  baseline_status: string | null;
+  status_timestamp: string | null;
+  last_generation_attempt: string | null;
+  version_token: number;
+  summary_provenance?: unknown;
+  doc_links_provenance?: unknown;
+}
+
 export interface StageDict {
   id: number;
   created: string;
@@ -467,14 +479,14 @@ export class ChromeStatusClient {
     return JSON.parse(rawResponseText.substring(XSSIPrefix.length));
   }
 
-  async doGet(resource: string, body?: unknown): Promise<unknown> {
+  async doGet<T = unknown>(resource: string, body?: unknown): Promise<T> {
     // GET's do not use token.
-    return this.doFetch(resource, 'GET', body, false);
+    return this.doFetch(resource, 'GET', body, false) as Promise<T>;
   }
 
-  async doPost(resource: string, body?: unknown): Promise<unknown> {
+  async doPost<T = unknown>(resource: string, body?: unknown): Promise<T> {
     return this.ensureTokenIsValid().then(() => {
-      return this.doFetch(resource, 'POST', body);
+      return this.doFetch(resource, 'POST', body) as Promise<T>;
     });
   }
 
@@ -486,9 +498,9 @@ export class ChromeStatusClient {
     });
   }
 
-  async doPatch(resource: string, body?: unknown): Promise<unknown> {
+  async doPatch<T = unknown>(resource: string, body?: unknown): Promise<T> {
     return this.ensureTokenIsValid().then(() => {
-      return this.doFetch(resource, 'PATCH', body);
+      return this.doFetch(resource, 'PATCH', body) as Promise<T>;
     });
   }
 
@@ -711,6 +723,39 @@ export class ChromeStatusClient {
     milestone: number
   ): Promise<unknown> {
     return this.doGet(`/features?releaseNotesMilestone=${milestone}`);
+  }
+
+  async getPendingReviewsCount(): Promise<{count: number}> {
+    return this.doGet<{count: number}>('/features/pending_reviews_count');
+  }
+
+  async getSummarySuggestion(featureId: number): Promise<SuggestionData> {
+    return this.doGet<SuggestionData>(
+      `/features/${featureId}/summary_suggestion`
+    );
+  }
+
+  async triggerSummaryGeneration(featureId: number): Promise<unknown> {
+    return this.doPost<unknown>(
+      `/features/${featureId}/summary_suggestion/generate`
+    );
+  }
+
+  async patchSummarySuggestion(
+    featureId: number,
+    status: string,
+    versionToken: number,
+    suggestedSummary?: string,
+    suggestedDocLinks?: string[],
+    bypassJustification?: string
+  ): Promise<unknown> {
+    return this.doPatch<unknown>(`/features/${featureId}/summary_suggestion`, {
+      status,
+      version_token: versionToken,
+      suggested_summary: suggestedSummary,
+      suggested_doc_links: suggestedDocLinks,
+      bypass_justification: bypassJustification,
+    });
   }
 
   async searchFeatures(

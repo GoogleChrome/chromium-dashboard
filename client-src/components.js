@@ -111,6 +111,8 @@ import './elements/chromedash-report-review-latency-page';
 import './elements/chromedash-roadmap';
 import './elements/chromedash-roadmap-milestone-card';
 import './elements/chromedash-roadmap-page';
+import './elements/chromedash-releases-page';
+import './elements/chromedash-summary-review-dialog';
 import './elements/chromedash-userlist';
 import './elements/chromedash-x-meter';
 import './elements/chromedash-enterprise-page';

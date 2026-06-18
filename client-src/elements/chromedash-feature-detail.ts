@@ -45,15 +45,23 @@ import {
   getFieldValueFromFeature,
   hasFieldValue,
   isDefinedValue,
+  showToastMessage,
 } from './utils.js';
 
 import {property, state} from 'lit/decorators.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
-import {Feature, FeatureLink, StageDict, User} from '../js-src/cs-client.js';
+import {
+  Feature,
+  FeatureLink,
+  StageDict,
+  User,
+  SuggestionData,
+} from '../js-src/cs-client.js';
 import './chromedash-activity-log.js';
 import './chromedash-callout.js';
 import './chromedash-gate-chip.js';
 import './chromedash-wpt-eval-button.js';
+import '@shoelace-style/shoelace/dist/components/alert/alert.js';
 import {GateDict} from './chromedash-gate-chip.js';
 import {Process, ProgressItem} from './chromedash-gate-column.js';
 import {
@@ -121,6 +129,10 @@ export class ChromedashFeatureDetail extends LitElement {
   anyCollapsed = true;
   @state()
   openStage = 0;
+  @state()
+  suggestion: SuggestionData | null = null;
+  @state()
+  reverting = false;
 
   static get styles() {
     const ICON_WIDTH = 18;
@@ -229,6 +241,30 @@ export class ChromedashFeatureDetail extends LitElement {
   connectedCallback() {
     super.connectedCallback();
     this.initializeGateColumn();
+  }
+
+  willUpdate(changedProperties: Map<string, any>) {
+    if (changedProperties.has('feature') && this.feature) {
+      this.fetchSuggestion();
+    }
+  }
+
+  fetchSuggestion() {
+    const isAuthorized =
+      this.canEdit || (this.user && this.user.can_review_release_notes);
+    if (isAuthorized) {
+      window.csClient
+        .getSummarySuggestion(this.feature.id)
+        .then(sug => {
+          this.suggestion = sug;
+        })
+        .catch(err => {
+          console.error(
+            'Failed to fetch summary suggestion for detail page',
+            err
+          );
+        });
+    }
   }
 
   initializeExtensionDialog(rawQuery: Record<string, string>) {
@@ -431,7 +467,7 @@ export class ChromedashFeatureDetail extends LitElement {
 
     return html`
       <dt id=${fieldId}>${icon} ${fieldDisplayName}</dt>
-      <dd>
+      <dd data-testid=${fieldId === 'summary' ? 'summary-value' : nothing}>
         ${isDefined
           ? this.renderValue(fieldType, value, isMarkdown)
           : html`<i>No information provided yet</i>`}
@@ -988,11 +1024,86 @@ export class ChromedashFeatureDetail extends LitElement {
     </span>`;
   }
 
+  async revertSuggestion() {
+    if (this.reverting || !this.suggestion) return;
+    this.reverting = true;
+    try {
+      await window.csClient.patchSummarySuggestion(
+        this.feature.id,
+        'complete',
+        this.suggestion.version_token
+      );
+      this.suggestion = await window.csClient.getSummarySuggestion(
+        this.feature.id
+      );
+      showToastMessage('Original summary and links restored successfully.');
+      this._fireEvent('refetch-needed', {});
+    } catch (err) {
+      console.error(err);
+      showToastMessage('Failed to restore original summary.');
+    } finally {
+      this.reverting = false;
+    }
+  }
+
+  renderAiSuggestionBanner() {
+    if (!this.suggestion) {
+      return nothing;
+    }
+
+    if (this.suggestion.status === 'complete') {
+      const milestoneStage = this.feature.stages.find(s => s.desktop_first);
+      const milestone = milestoneStage ? milestoneStage.desktop_first : '';
+      const releasesLink = `/releases?milestone=${milestone}`;
+
+      return html`
+        <sl-alert
+          variant="primary"
+          open
+          style="margin-bottom: var(--content-padding);"
+        >
+          <sl-icon slot="icon" name="info-circle"></sl-icon>
+          <strong>AI Suggestion Ready:</strong> An AI-generated summary
+          suggestion draft is available for this feature.
+          <a href=${releasesLink} style="margin-left: 10px; font-weight: bold;"
+            >Review and Apply Suggestion</a
+          >
+        </sl-alert>
+      `;
+    }
+
+    if (this.suggestion.status === 'bypassed' && this.canEdit) {
+      return html`
+        <sl-alert
+          variant="warning"
+          open
+          style="margin-bottom: var(--content-padding);"
+        >
+          <sl-icon slot="icon" name="exclamation-triangle"></sl-icon>
+          <strong>AI Suggestion Applied (Bypassed):</strong> A DevRel editor
+          applied an AI suggestion because the review grace period expired. You
+          can revert this edit to restore your original raw summary and links.
+          <sl-button
+            variant="warning"
+            size="small"
+            style="margin-left: 15px;"
+            ?loading=${this.reverting}
+            @click=${this.revertSuggestion}
+          >
+            Revert to My Original
+          </sl-button>
+        </sl-alert>
+      `;
+    }
+
+    return nothing;
+  }
+
   render() {
     let previousType = 0;
     let sameTypeCount = 0;
     return html`
-      ${this.renderMetadataSection()}
+      ${this.renderAiSuggestionBanner()} ${this.renderMetadataSection()}
       <h2>${this.renderSectionHeader()} ${this.renderControls()}</h2>
       ${this.feature.stages.map(feStage => {
         if (previousType === feStage.stage_type) {

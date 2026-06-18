@@ -443,3 +443,40 @@ class Stage(ndb.Model):
 
     archived = ndb.BooleanProperty(default=False)
     created = ndb.DateTimeProperty(auto_now_add=True)
+
+
+class FeatureSummarySuggestion(ndb.Model):
+    """AI suggestion data and workflow status linked 1-to-1 with a FeatureEntry."""
+
+    suggested_summary = ndb.TextProperty()
+    status = ndb.StringProperty(
+        indexed=True
+    )  # Stored as str from SummarySuggestionStatus
+    status_timestamp = ndb.DateTimeProperty(auto_now=True)
+    last_generation_attempt = ndb.DateTimeProperty()
+    version = ndb.IntegerProperty(indexed=False)  # GENERATOR_VERSION
+    suggested_doc_links = ndb.StringProperty(repeated=True)
+    baseline_status = ndb.StringProperty(
+        indexed=True
+    )  # Stored as str from BaselineStatus
+    source_fingerprint = (
+        ndb.StringProperty()
+    )  # Hash of feature details to track edits
+    version_token = ndb.IntegerProperty(default=1)
+    summary_provenance = ndb.JsonProperty()
+    doc_links_provenance = ndb.JsonProperty()
+
+    # Backup fields for reversion / restoring original values
+    original_summary = ndb.TextProperty()
+    original_doc_links = ndb.StringProperty(repeated=True)
+    suggested_format = ndb.StringProperty(default='markdown')
+    original_summary_format = ndb.StringProperty()
+
+
+class MilestoneMetadata(ndb.Model):
+    """Metadata specific to a Chrome release milestone (e.g. Highlights, templates)."""
+
+    milestone = ndb.IntegerProperty(required=True, indexed=True)
+    highlights = ndb.TextProperty()
+    boilerplate_template = ndb.TextProperty()
+    created = ndb.DateTimeProperty(auto_now_add=True)

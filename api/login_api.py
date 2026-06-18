@@ -58,7 +58,7 @@ class LoginAPI(basehandlers.APIHandler):
         return {'message': message}
 
 
-TESTING_ACCOUNTS = ['example@chromium.org']
+TESTING_ACCOUNTS = ['example@chromium.org', 'devrel@chromium.org']
 
 
 class MockLogin(basehandlers.APIHandler):

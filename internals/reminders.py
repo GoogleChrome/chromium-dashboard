@@ -33,7 +33,12 @@ from internals import (
     slo,
     stage_helpers,
 )
-from internals.core_models import FeatureEntry, MilestoneSet, Stage
+from internals.core_models import (
+    FeatureEntry,
+    FeatureSummarySuggestion,
+    MilestoneSet,
+    Stage,
+)
 from internals.review_models import Gate
 from internals.user_models import UserPref
 
@@ -102,9 +107,12 @@ def build_email_tasks(
         # Get stage information needed to display the template.
         stage_info = stage_helpers.get_stage_info_for_templates(fe)
 
+        suggestion = FeatureSummarySuggestion.get_by_id(fe.key.integer_id())
+
         body_data = {
             'id': fe.key.integer_id(),
             'feature': fe,
+            'suggestion': suggestion,
             'stage_info': stage_info,
             'should_render_mstone_table': stage_info[
                 'should_render_mstone_table'

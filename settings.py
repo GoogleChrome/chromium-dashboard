@@ -102,6 +102,9 @@ GITHUB_TOKEN: str | None = None
 GEMINI_API_KEY: str | None = None
 OT_DATA_ACCESS_ADMIN_GROUP_NAME: str | None = None
 
+# AI Model settings
+SUMMARY_GENERATOR_MODEL = 'gemini-3.5-flash'
+
 # Dummy data for local OT support emails.
 DEV_MODE_OT_SUPPORT_EMAILS = 'user1@gmail.com,user2@gmail.com'
 
@@ -147,6 +150,12 @@ else:
 
 if PLAYWRIGHT_MODE or UNIT_TEST_MODE:
     SEND_EMAIL = False
+
+USE_MOCK_SUMMARY_GENERATOR = (
+    PLAYWRIGHT_MODE or
+    UNIT_TEST_MODE or
+    os.environ.get('USE_MOCK_SUMMARY_GENERATOR') == 'true'
+)
 
 RSS_FEED_LIMIT = 15
 

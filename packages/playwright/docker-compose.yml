@@ -61,6 +61,8 @@ services:
         - type=gha,scope=${GITHUB_REF_NAME:-}-myapp-image
       cache_to:
         - type=gha,mode=max,scope=${GITHUB_REF_NAME:-}-myapp-image
+    ports:
+      - 7777:7777
     depends_on:
       mydb:
         condition: service_healthy
@@ -79,6 +81,8 @@ services:
       - SERVER_SOFTWARE=Development
       - DATASTORE_PROJECT_ID=cr-status-staging
       - DATASTORE_EMULATOR_HOST=localhost:15607
+    volumes:
+      - ../../node_modules:/workspace/node_modules
   debugapp:
     <<: *myapp
     command: bash -c "source cs-env/bin/activate; env && whoami && npm run debug-app"

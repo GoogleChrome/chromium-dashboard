@@ -31,6 +31,7 @@ import type {
   FeatureLinksResponse,
   FeatureLinksSample,
   FeatureLinksSummaryResponse,
+  FeatureSummarySuggestionResponse,
   GetCommentsResponse,
   GetDismissedCues400Response,
   GetGateResponse,
@@ -42,6 +43,7 @@ import type {
   MessageResponse,
   PatchCommentRequest,
   PatchGateRequest,
+  PendingReviewsCountResponse,
   PermissionsResponse,
   PostIntentRequest,
   PostSettingsRequest,
@@ -88,6 +90,8 @@ import {
     FeatureLinksSampleToJSON,
     FeatureLinksSummaryResponseFromJSON,
     FeatureLinksSummaryResponseToJSON,
+    FeatureSummarySuggestionResponseFromJSON,
+    FeatureSummarySuggestionResponseToJSON,
     GetCommentsResponseFromJSON,
     GetCommentsResponseToJSON,
     GetDismissedCues400ResponseFromJSON,
@@ -110,6 +114,8 @@ import {
     PatchCommentRequestToJSON,
     PatchGateRequestFromJSON,
     PatchGateRequestToJSON,
+    PendingReviewsCountResponseFromJSON,
+    PendingReviewsCountResponseToJSON,
     PermissionsResponseFromJSON,
     PermissionsResponseToJSON,
     PostIntentRequestFromJSON,
@@ -163,8 +169,16 @@ export interface AddXfnGatesToStageRequest {
     stageId: number;
 }
 
+export interface ApplySummarySuggestionRequest {
+    featureId: number;
+}
+
 export interface AuthenticateUserRequest {
     signInRequest: SignInRequest;
+}
+
+export interface BypassSummarySuggestionRequest {
+    featureId: number;
 }
 
 export interface CreateAccountOperationRequest {
@@ -188,6 +202,10 @@ export interface DismissCueOperationRequest {
 export interface ExtendOriginTrialRequest {
     featureId: number;
     extensionStageId: number;
+}
+
+export interface GenerateSummarySuggestionRequest {
+    featureId: number;
 }
 
 export interface GetFeatureCommentsRequest {
@@ -231,6 +249,10 @@ export interface GetProgressRequest {
 export interface GetReleaseNotesL10nRequest {
     startMilestone: number;
     endMilestone: number;
+}
+
+export interface GetSummarySuggestionRequest {
+    featureId: number;
 }
 
 export interface GetUserPermissionsRequest {
@@ -388,6 +410,21 @@ export interface DefaultApiInterface {
 
     /**
      * 
+     * @summary Apply the AI summary suggestion draft to the feature entry
+     * @param {number} featureId Feature ID
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApiInterface
+     */
+    applySummarySuggestionRaw(requestParameters: ApplySummarySuggestionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SuccessMessage>>;
+
+    /**
+     * Apply the AI summary suggestion draft to the feature entry
+     */
+    applySummarySuggestion(requestParameters: ApplySummarySuggestionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SuccessMessage>;
+
+    /**
+     * 
      * @summary Authenticate user with Google Sign-In
      * @param {SignInRequest} signInRequest 
      * @param {*} [options] Override http request option.
@@ -400,6 +437,21 @@ export interface DefaultApiInterface {
      * Authenticate user with Google Sign-In
      */
     authenticateUser(requestParameters: AuthenticateUserRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SuccessMessage>;
+
+    /**
+     * 
+     * @summary Bypass the suggestion draft review (saves bypass activity)
+     * @param {number} featureId Feature ID
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApiInterface
+     */
+    bypassSummarySuggestionRaw(requestParameters: BypassSummarySuggestionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SuccessMessage>>;
+
+    /**
+     * Bypass the suggestion draft review (saves bypass activity)
+     */
+    bypassSummarySuggestion(requestParameters: BypassSummarySuggestionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SuccessMessage>;
 
     /**
      * 
@@ -478,6 +530,21 @@ export interface DefaultApiInterface {
      * Extend an existing origin trial
      */
     extendOriginTrial(requestParameters: ExtendOriginTrialRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SuccessMessage>;
+
+    /**
+     * 
+     * @summary Trigger asynchronous AI summary generation for a feature
+     * @param {number} featureId Feature ID
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApiInterface
+     */
+    generateSummarySuggestionRaw(requestParameters: GenerateSummarySuggestionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SuccessMessage>>;
+
+    /**
+     * Trigger asynchronous AI summary generation for a feature
+     */
+    generateSummarySuggestion(requestParameters: GenerateSummarySuggestionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SuccessMessage>;
 
     /**
      * 
@@ -633,6 +700,20 @@ export interface DefaultApiInterface {
 
     /**
      * 
+     * @summary Get the count of pending AI-assisted feature reviews
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApiInterface
+     */
+    getPendingReviewsCountRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<PendingReviewsCountResponse>>;
+
+    /**
+     * Get the count of pending AI-assisted feature reviews
+     */
+    getPendingReviewsCount(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<PendingReviewsCountResponse>;
+
+    /**
+     * 
      * @summary Get the process for a feature
      * @param {number} featureId Feature ID
      * @param {*} [options] Override http request option.
@@ -690,6 +771,21 @@ export interface DefaultApiInterface {
      * Get a list of all starred feature IDs for the signed-in user
      */
     getStars(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<GetStarsResponse>>;
+
+    /**
+     * 
+     * @summary Get the AI summary suggestion draft for a feature
+     * @param {number} featureId Feature ID
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApiInterface
+     */
+    getSummarySuggestionRaw(requestParameters: GetSummarySuggestionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FeatureSummarySuggestionResponse>>;
+
+    /**
+     * Get the AI summary suggestion draft for a feature
+     */
+    getSummarySuggestion(requestParameters: GetSummarySuggestionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FeatureSummarySuggestionResponse>;
 
     /**
      * 
@@ -1237,6 +1333,39 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
     }
 
     /**
+     * Apply the AI summary suggestion draft to the feature entry
+     */
+    async applySummarySuggestionRaw(requestParameters: ApplySummarySuggestionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SuccessMessage>> {
+        if (requestParameters['featureId'] == null) {
+            throw new runtime.RequiredError(
+                'featureId',
+                'Required parameter "featureId" was null or undefined when calling applySummarySuggestion().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/features/{feature_id}/summary_suggestion/apply`.replace(`{${"feature_id"}}`, encodeURIComponent(String(requestParameters['featureId']))),
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => SuccessMessageFromJSON(jsonValue));
+    }
+
+    /**
+     * Apply the AI summary suggestion draft to the feature entry
+     */
+    async applySummarySuggestion(requestParameters: ApplySummarySuggestionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SuccessMessage> {
+        const response = await this.applySummarySuggestionRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Authenticate user with Google Sign-In
      */
     async authenticateUserRaw(requestParameters: AuthenticateUserRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SuccessMessage>> {
@@ -1269,6 +1398,39 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
      */
     async authenticateUser(requestParameters: AuthenticateUserRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SuccessMessage> {
         const response = await this.authenticateUserRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Bypass the suggestion draft review (saves bypass activity)
+     */
+    async bypassSummarySuggestionRaw(requestParameters: BypassSummarySuggestionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SuccessMessage>> {
+        if (requestParameters['featureId'] == null) {
+            throw new runtime.RequiredError(
+                'featureId',
+                'Required parameter "featureId" was null or undefined when calling bypassSummarySuggestion().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/features/{feature_id}/summary_suggestion/bypass`.replace(`{${"feature_id"}}`, encodeURIComponent(String(requestParameters['featureId']))),
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => SuccessMessageFromJSON(jsonValue));
+    }
+
+    /**
+     * Bypass the suggestion draft review (saves bypass activity)
+     */
+    async bypassSummarySuggestion(requestParameters: BypassSummarySuggestionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SuccessMessage> {
+        const response = await this.bypassSummarySuggestionRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
@@ -1450,6 +1612,39 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
      */
     async extendOriginTrial(requestParameters: ExtendOriginTrialRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SuccessMessage> {
         const response = await this.extendOriginTrialRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Trigger asynchronous AI summary generation for a feature
+     */
+    async generateSummarySuggestionRaw(requestParameters: GenerateSummarySuggestionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SuccessMessage>> {
+        if (requestParameters['featureId'] == null) {
+            throw new runtime.RequiredError(
+                'featureId',
+                'Required parameter "featureId" was null or undefined when calling generateSummarySuggestion().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/features/{feature_id}/summary_suggestion/generate`.replace(`{${"feature_id"}}`, encodeURIComponent(String(requestParameters['featureId']))),
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => SuccessMessageFromJSON(jsonValue));
+    }
+
+    /**
+     * Trigger asynchronous AI summary generation for a feature
+     */
+    async generateSummarySuggestion(requestParameters: GenerateSummarySuggestionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SuccessMessage> {
+        const response = await this.generateSummarySuggestionRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
@@ -1783,6 +1978,32 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
     }
 
     /**
+     * Get the count of pending AI-assisted feature reviews
+     */
+    async getPendingReviewsCountRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<PendingReviewsCountResponse>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/features/pending_reviews_count`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => PendingReviewsCountResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Get the count of pending AI-assisted feature reviews
+     */
+    async getPendingReviewsCount(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<PendingReviewsCountResponse> {
+        const response = await this.getPendingReviewsCountRaw(initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Get the process for a feature
      */
     async getProcessRaw(requestParameters: GetProcessRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Process>> {
@@ -1919,6 +2140,39 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
      */
     async getStars(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<GetStarsResponse>> {
         const response = await this.getStarsRaw(initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Get the AI summary suggestion draft for a feature
+     */
+    async getSummarySuggestionRaw(requestParameters: GetSummarySuggestionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FeatureSummarySuggestionResponse>> {
+        if (requestParameters['featureId'] == null) {
+            throw new runtime.RequiredError(
+                'featureId',
+                'Required parameter "featureId" was null or undefined when calling getSummarySuggestion().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/features/{feature_id}/summary_suggestion`.replace(`{${"feature_id"}}`, encodeURIComponent(String(requestParameters['featureId']))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => FeatureSummarySuggestionResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Get the AI summary suggestion draft for a feature
+     */
+    async getSummarySuggestion(requestParameters: GetSummarySuggestionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FeatureSummarySuggestionResponse> {
+        const response = await this.getSummarySuggestionRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

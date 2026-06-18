@@ -20,6 +20,7 @@ import {customElement, property, state} from 'lit/decorators.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {User} from '../js-src/cs-client.js';
 import {isMobile, showToastMessage} from './utils.js';
+import '@shoelace-style/shoelace/dist/components/badge/badge.js';
 
 export const DRAWER_WIDTH_PX = 200;
 export const MOBILE_DRAWER_WIDTH_PX = 250;
@@ -120,6 +121,29 @@ export class ChromedashDrawer extends LitElement {
   user!: User;
   @state()
   loading = false;
+  @state()
+  pendingReviewsCount = 0;
+
+  updated(changedProperties) {
+    if (
+      changedProperties.has('user') &&
+      this.user &&
+      this.user.can_review_release_notes
+    ) {
+      this.fetchPendingReviewsCount();
+    }
+  }
+
+  fetchPendingReviewsCount() {
+    window.csClient
+      .getPendingReviewsCount()
+      .then(res => {
+        this.pendingReviewsCount = res.count;
+      })
+      .catch(err => {
+        console.error('Failed to fetch pending reviews count', err);
+      });
+  }
 
   connectedCallback() {
     super.connectedCallback();
@@ -242,7 +266,7 @@ export class ChromedashDrawer extends LitElement {
   }
 
   isCurrentPage(href) {
-    return this.currentPage === href;
+    return this.currentPage.startsWith(href);
   }
 
   toggleDrawerActions() {
@@ -250,9 +274,9 @@ export class ChromedashDrawer extends LitElement {
       '.drawer-placement-start'
     ) as SlDrawer;
     if (drawer.open) {
-      drawer.hide();
+      void drawer.hide();
     } else {
-      drawer.show();
+      void drawer.show();
     }
     return drawer.open;
   }
@@ -301,6 +325,7 @@ export class ChromedashDrawer extends LitElement {
         ?open=${!isMobile() && this.defaultOpen}
       >
         ${accountMenu} ${this.renderNavItem('/roadmap', 'Roadmap')}
+        ${this.renderNavItem('/releases', 'Releases')}
         ${this.renderNavItem('/features', 'All features')} ${shippingThisYear}
         ${shippingNextYear} ${myFeaturesMenu}
         <hr />
@@ -359,6 +384,15 @@ export class ChromedashDrawer extends LitElement {
       <div class="section-header">My features</div>
       ${this.userCanApprove()
         ? this.renderNavItem('/myfeatures/review', 'Pending review')
+        : nothing}
+      ${this.user?.can_review_release_notes && this.pendingReviewsCount > 0
+        ? this.renderNavItem(
+            '/releases',
+            html`Release Reviews
+              <sl-badge variant="danger" pill style="margin-left: 5px;"
+                >${this.pendingReviewsCount}</sl-badge
+              >`
+          )
         : nothing}
       ${this.renderNavItem('/myfeatures/starred', 'Starred')}
       ${this.renderNavItem('/myfeatures/editable', 'Owner / editor')}

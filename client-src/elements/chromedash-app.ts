@@ -340,6 +340,14 @@ export class ChromedashApp extends LitElement {
       if (!this.setupNewPage(ctx, 'chromedash-roadmap-page', true)) return;
       this.pageComponent.user = this.user;
     });
+    page('/releases', ctx => {
+      if (!this.setupNewPage(ctx, 'chromedash-releases-page', true)) return;
+      this.pageComponent.user = this.user;
+    });
+    page('/releases/:milestone(\\d+)', ctx => {
+      if (!this.setupNewPage(ctx, 'chromedash-releases-page', true)) return;
+      this.pageComponent.user = this.user;
+    });
     page('/myfeatures', () => page.redirect('/myfeatures/editable'));
     page('/myfeatures/', () => page.redirect('/myfeatures/editable'));
     page('/myfeatures/review', ctx => {

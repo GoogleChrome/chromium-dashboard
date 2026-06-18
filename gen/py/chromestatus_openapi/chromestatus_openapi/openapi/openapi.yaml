@@ -580,6 +580,18 @@ paths:
           description: User is not allowed to comment on this feature
       summary: Add a comment to a feature
       x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+  /features/pending_reviews_count:
+    get:
+      operationId: get_pending_reviews_count
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PendingReviewsCountResponse'
+          description: The count of pending reviews
+      summary: Get the count of pending AI-assisted feature reviews
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
   /features/{feature_id}/attachments:
     post:
       operationId: add_attachment
@@ -761,6 +773,114 @@ paths:
                 $ref: '#/components/schemas/ErrorMessage'
           description: Feature or Stage not found.
       summary: Add a full set of cross-functional gates to a stage.
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+  /features/{feature_id}/summary_suggestion:
+    get:
+      operationId: get_summary_suggestion
+      parameters:
+      - description: Feature ID
+        explode: false
+        in: path
+        name: feature_id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeatureSummarySuggestionResponse'
+          description: Feature summary suggestion draft data
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: Feature or suggestion not found
+      summary: Get the AI summary suggestion draft for a feature
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+  /features/{feature_id}/summary_suggestion/apply:
+    post:
+      operationId: apply_summary_suggestion
+      parameters:
+      - description: Feature ID
+        explode: false
+        in: path
+        name: feature_id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
+          description: Suggestion applied successfully
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: Feature or suggestion not found
+      summary: Apply the AI summary suggestion draft to the feature entry
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+  /features/{feature_id}/summary_suggestion/bypass:
+    post:
+      operationId: bypass_summary_suggestion
+      parameters:
+      - description: Feature ID
+        explode: false
+        in: path
+        name: feature_id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
+          description: Suggestion bypassed successfully
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: Feature not found
+      summary: Bypass the suggestion draft review (saves bypass activity)
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+  /features/{feature_id}/summary_suggestion/generate:
+    post:
+      operationId: generate_summary_suggestion
+      parameters:
+      - description: Feature ID
+        explode: false
+        in: path
+        name: feature_id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      responses:
+        "202":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
+          description: Suggestion generation request accepted
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: Invalid request or feature state
+      summary: Trigger asynchronous AI summary generation for a feature
       x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
   /features/{feature_id}/votes:
     get:
@@ -3336,6 +3456,54 @@ components:
           title: descriptions
           type: object
       title: ReleaseNotesL10nResponse
+      type: object
+    FeatureSummarySuggestionResponse:
+      example:
+        suggested_summary: suggested_summary
+        suggested_doc_links:
+        - suggested_doc_links
+        - suggested_doc_links
+        last_generation_attempt: 2000-01-23T04:56:07.000+00:00
+        status_timestamp: 2000-01-23T04:56:07.000+00:00
+        baseline_status: baseline_status
+        status: status
+      properties:
+        suggested_summary:
+          title: suggested_summary
+          type: string
+        suggested_doc_links:
+          items:
+            type: string
+          title: suggested_doc_links
+          type: array
+        baseline_status:
+          title: baseline_status
+          type: string
+        status:
+          title: status
+          type: string
+        status_timestamp:
+          format: date-time
+          title: status_timestamp
+          type: string
+        last_generation_attempt:
+          format: date-time
+          title: last_generation_attempt
+          type: string
+      required:
+      - status
+      title: FeatureSummarySuggestionResponse
+      type: object
+    PendingReviewsCountResponse:
+      example:
+        count: 0
+      properties:
+        count:
+          title: count
+          type: integer
+      required:
+      - count
+      title: PendingReviewsCountResponse
       type: object
     addAttachment_request:
       properties:

@@ -278,6 +278,7 @@ class Activity(ndb.Model):
     MILESTONE_RESET = 2
     USER_COMMENT = 3
     SYSTEM_CHANGE = 4
+    BYPASS_APPLIED = 5
 
     feature_id = ndb.IntegerProperty(required=True)
     gate_id = (

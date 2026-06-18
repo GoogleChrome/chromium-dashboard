@@ -56,7 +56,7 @@ export function capturePageEvents(page) {
     console.log(`close: ${page.url()}`);
   });
   page.on('pageerror', async (/** @type {Error} */ error) => {
-    console.log(`pageerror: ${error}`);
+    console.log(`pageerror: ${error.stack || error}`);
   });
   page.on('crash', async () => {
     console.log(`crash: ${page.url()}`);
@@ -325,11 +325,11 @@ export async function enterWebFeatureId(page) {
  * Create a new feature, starting from top-level page, ending up on feature page.
  * @param {import('@playwright/test').Page} page
  */
-export async function createNewFeature(page) {
+export async function createNewFeature(page, name = 'Test feature name') {
   await gotoNewFeaturePage(page);
   // Enter feature name
   const featureNameInput = page.locator('input[name="name"]');
-  await featureNameInput.fill('Test feature name');
+  await featureNameInput.fill(name);
 
   // Enter summary description
   const summaryInput = page.locator('textarea[name="summary"]');
@@ -425,7 +425,18 @@ export async function setupFakeNow(
     }
     // Override Date.now() to start from fakeNow
     const __DateNowOffset = ${fakeNow} - Date.now();
-    const __DateNow = Date.now;
     Date.now = () => __DateNow() + __DateNowOffset;
   }`);
+}
+
+/**
+ * Log in as a specific persona via mock login param
+ * @param {import("playwright-core").Page} page
+ * @param {string} email
+ */
+export async function loginAs(page, email) {
+  console.log(`[E2E] Logging in as ${email}...`);
+  await page.request.post(`/dev/mock_login?email=${email}`);
+  await page.goto('/', {timeout: 30000});
+  await page.waitForURL('**/roadmap', {timeout: 30000});
 }

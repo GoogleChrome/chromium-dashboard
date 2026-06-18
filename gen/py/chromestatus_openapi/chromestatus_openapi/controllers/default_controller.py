@@ -19,6 +19,7 @@ from chromestatus_openapi.models.feature_latency import FeatureLatency  # noqa: 
 from chromestatus_openapi.models.feature_links_response import FeatureLinksResponse  # noqa: E501
 from chromestatus_openapi.models.feature_links_sample import FeatureLinksSample  # noqa: E501
 from chromestatus_openapi.models.feature_links_summary_response import FeatureLinksSummaryResponse  # noqa: E501
+from chromestatus_openapi.models.feature_summary_suggestion_response import FeatureSummarySuggestionResponse  # noqa: E501
 from chromestatus_openapi.models.get_comments_response import GetCommentsResponse  # noqa: E501
 from chromestatus_openapi.models.get_dismissed_cues400_response import GetDismissedCues400Response  # noqa: E501
 from chromestatus_openapi.models.get_gate_response import GetGateResponse  # noqa: E501
@@ -30,6 +31,7 @@ from chromestatus_openapi.models.get_votes_response import GetVotesResponse  # n
 from chromestatus_openapi.models.message_response import MessageResponse  # noqa: E501
 from chromestatus_openapi.models.patch_comment_request import PatchCommentRequest  # noqa: E501
 from chromestatus_openapi.models.patch_gate_request import PatchGateRequest  # noqa: E501
+from chromestatus_openapi.models.pending_reviews_count_response import PendingReviewsCountResponse  # noqa: E501
 from chromestatus_openapi.models.permissions_response import PermissionsResponse  # noqa: E501
 from chromestatus_openapi.models.post_intent_request import PostIntentRequest  # noqa: E501
 from chromestatus_openapi.models.post_settings_request import PostSettingsRequest  # noqa: E501
@@ -130,6 +132,19 @@ def add_xfn_gates_to_stage(feature_id, stage_id):  # noqa: E501
     return 'do some magic!'
 
 
+def apply_summary_suggestion(feature_id):  # noqa: E501
+    """Apply the AI summary suggestion draft to the feature entry
+
+     # noqa: E501
+
+    :param feature_id: Feature ID
+    :type feature_id: int
+
+    :rtype: Union[SuccessMessage, Tuple[SuccessMessage, int], Tuple[SuccessMessage, int, Dict[str, str]]
+    """
+    return 'do some magic!'
+
+
 def authenticate_user(sign_in_request):  # noqa: E501
     """Authenticate user with Google Sign-In
 
@@ -142,6 +157,19 @@ def authenticate_user(sign_in_request):  # noqa: E501
     """
     if connexion.request.is_json:
         sign_in_request = SignInRequest.from_dict(connexion.request.get_json())  # noqa: E501
+    return 'do some magic!'
+
+
+def bypass_summary_suggestion(feature_id):  # noqa: E501
+    """Bypass the suggestion draft review (saves bypass activity)
+
+     # noqa: E501
+
+    :param feature_id: Feature ID
+    :type feature_id: int
+
+    :rtype: Union[SuccessMessage, Tuple[SuccessMessage, int], Tuple[SuccessMessage, int, Dict[str, str]]
+    """
     return 'do some magic!'
 
 
@@ -216,6 +244,19 @@ def extend_origin_trial(feature_id, extension_stage_id):  # noqa: E501
     :type feature_id: int
     :param extension_stage_id: 
     :type extension_stage_id: int
+
+    :rtype: Union[SuccessMessage, Tuple[SuccessMessage, int], Tuple[SuccessMessage, int, Dict[str, str]]
+    """
+    return 'do some magic!'
+
+
+def generate_summary_suggestion(feature_id):  # noqa: E501
+    """Trigger asynchronous AI summary generation for a feature
+
+     # noqa: E501
+
+    :param feature_id: Feature ID
+    :type feature_id: int
 
     :rtype: Union[SuccessMessage, Tuple[SuccessMessage, int], Tuple[SuccessMessage, int, Dict[str, str]]
     """
@@ -356,6 +397,17 @@ def get_pending_gates():  # noqa: E501
     return 'do some magic!'
 
 
+def get_pending_reviews_count():  # noqa: E501
+    """Get the count of pending AI-assisted feature reviews
+
+     # noqa: E501
+
+
+    :rtype: Union[PendingReviewsCountResponse, Tuple[PendingReviewsCountResponse, int], Tuple[PendingReviewsCountResponse, int, Dict[str, str]]
+    """
+    return 'do some magic!'
+
+
 def get_process(feature_id):  # noqa: E501
     """Get the process for a feature
 
@@ -404,6 +456,19 @@ def get_stars():  # noqa: E501
 
 
     :rtype: Union[List[GetStarsResponse], Tuple[List[GetStarsResponse], int], Tuple[List[GetStarsResponse], int, Dict[str, str]]
+    """
+    return 'do some magic!'
+
+
+def get_summary_suggestion(feature_id):  # noqa: E501
+    """Get the AI summary suggestion draft for a feature
+
+     # noqa: E501
+
+    :param feature_id: Feature ID
+    :type feature_id: int
+
+    :rtype: Union[FeatureSummarySuggestionResponse, Tuple[FeatureSummarySuggestionResponse, int], Tuple[FeatureSummarySuggestionResponse, int, Dict[str, str]]
     """
     return 'do some magic!'
 

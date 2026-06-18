@@ -26,7 +26,7 @@ from wptgen import generate_audit_report
 import settings
 from framework import basehandlers, utils
 from internals import core_enums
-from internals.core_models import FeatureEntry
+from internals.core_models import FeatureEntry, FeatureSummarySuggestion
 
 
 def run_wpt_test_eval_pipeline(
@@ -123,3 +123,49 @@ class GenerateWPTCoverageEvalReportHandler(basehandlers.FlaskHandler):
         feature.ai_test_eval_status_timestamp = datetime.now()
         feature.put()
         return {'message': 'WPT coverage analysis report generated.'}
+
+
+class GenerateSummaryHandler(basehandlers.FlaskHandler):
+    """Cloud Task handler for generating release notes summaries."""
+
+    IS_INTERNAL_HANDLER = True
+
+    def process_post_data(self, **kwargs):
+        """Process POST data for the handler."""
+        self.require_task_header()
+
+        feature_id = self.get_int_param('feature_id')
+        updated_time = self.get_param('updated_time')
+
+        feature = self.get_validated_entity(feature_id, FeatureEntry)
+
+        # Optimistic Concurrency Control
+        if updated_time:
+            try:
+                payload_updated = datetime.fromtimestamp(float(updated_time))
+                if feature.updated > payload_updated:
+                    logging.info(
+                        f'Feature {feature_id} was updated since the task was enqueued. '
+                        f'Skipping summary generation. '
+                        f'Feature updated: {feature.updated}, Payload updated: {payload_updated}'
+                    )
+                    # Reset suggestion status to NONE to prevent hanging IN_PROGRESS lock
+                    suggestion = FeatureSummarySuggestion.get_by_id(feature_id)
+                    if suggestion:
+                        suggestion.status = core_enums.SummarySuggestionStatus.NONE.value
+                        suggestion.put()
+                    return {'message': 'Skipped due to newer updates.'}
+            except (ValueError, TypeError) as e:
+                logging.warning(
+                    f'Invalid updated_time: {updated_time}. Proceeding anyway. Error: {e}'
+                )
+
+        logging.info(
+            f'Starting AI summary generation Cloud Task for feature {feature_id}'
+        )
+
+        from framework import summary_generator
+
+        summary_generator.generate_summary_suggestion(feature_id)
+
+        return {'message': 'AI summary generation task processed.'}

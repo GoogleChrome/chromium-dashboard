@@ -51,6 +51,7 @@ from api import (
     stages_api,
     stale_features_api,
     stars_api,
+    summary_suggestion_api,
     token_refresh_api,
     webdx_feature_api,
     wpt_coverage_api,
@@ -176,6 +177,18 @@ api_routes: list[Route] = [
         attachments_api.AttachmentsAPI,
     ),
     Route(
+        f'{API_BASE}/features/<int:feature_id>/summary_suggestion',
+        summary_suggestion_api.SummarySuggestionAPI,
+    ),
+    Route(
+        f'{API_BASE}/features/<int:feature_id>/summary_suggestion/generate',
+        summary_suggestion_api.SummarySuggestionGenerateAPI,
+    ),
+    Route(
+        f'{API_BASE}/features/pending_reviews_count',
+        summary_suggestion_api.PendingReviewsCountAPI,
+    ),
+    Route(
         f'{API_BASE}/features/<int:feature_id>/process',
         processes_api.ProcessesAPI,
     ),
@@ -276,6 +289,7 @@ api_routes: list[Route] = [
 spa_page_routes = [
     Route('/'),
     Route('/roadmap'),
+    Route('/releases'),
     # TODO(jrobbins): remove '/myfeatures' after a while.
     Route('/myfeatures', defaults={'require_signin': True}),
     Route('/myfeatures/review', defaults={'require_signin': True}),
@@ -511,6 +525,10 @@ internals_routes: list[Route] = [
     Route(
         '/tasks/generate-wpt-coverage-analysis',
         gemini_helpers.GenerateWPTCoverageEvalReportHandler,
+    ),
+    Route(
+        '/tasks/generate-summary',
+        gemini_helpers.GenerateSummaryHandler,
     ),
     # OT process reminder emails
     Route(

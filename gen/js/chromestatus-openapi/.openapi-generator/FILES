@@ -30,6 +30,7 @@ src/models/FeatureLink.ts
 src/models/FeatureLinksResponse.ts
 src/models/FeatureLinksSample.ts
 src/models/FeatureLinksSummaryResponse.ts
+src/models/FeatureSummarySuggestionResponse.ts
 src/models/FieldInfo.ts
 src/models/Gate.ts
 src/models/GateInfo.ts
@@ -64,6 +65,7 @@ src/models/OutstandingReview.ts
 src/models/OwnersAndSubscribersOfComponent.ts
 src/models/PatchCommentRequest.ts
 src/models/PatchGateRequest.ts
+src/models/PendingReviewsCountResponse.ts
 src/models/PermissionsResponse.ts
 src/models/PostIntentRequest.ts
 src/models/PostSettingsRequest.ts

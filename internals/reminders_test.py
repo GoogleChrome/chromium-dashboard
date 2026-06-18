@@ -372,6 +372,38 @@ class FunctionTest(testing_config.CustomTestCase):
             TESTDATA['test_build_email_tasks_prepublication.html'], task['html']
         )
 
+    def test_build_email_tasks_prepublication_with_suggestion(self):
+        """Test build email tasks prepublication includes AI suggestions when available."""
+        # Insert a COMPLETE suggestion
+        suggestion = reminders.FeatureSummarySuggestion(
+            id=self.feature_template.key.integer_id(),
+            suggested_summary='AI suggested summary draft text.',
+            suggested_doc_links=['https://example.com/ai-doc-link'],
+            status=core_enums.SummarySuggestionStatus.COMPLETE,
+            version_token=1,
+        )
+        suggestion.put()
+
+        try:
+            with test_app.app_context():
+                handler = reminders.PrepublicationHandler()
+                actual = reminders.build_email_tasks(
+                    [(self.feature_template, 100)],
+                    '[Action Required] Verify important information about your shipping feature (%s)',  # noqa: E501
+                    handler.EMAIL_TEMPLATE_PATH,
+                    self.current_milestone_info,
+                    handler.should_escalate_notification,
+                    handler.is_accuracy_email,
+                )
+            self.assertEqual(1, len(actual))
+            task = actual[0]
+            self.assertIn('AI suggested summary draft text.', task['html'])
+            self.assertIn('https://example.com/ai-doc-link', task['html'])
+            self.assertIn('Review & Apply Draft', task['html'])
+            self.assertIn('releases?milestone=100', task['html'])
+        finally:
+            suggestion.key.delete()
+
 
 class FeatureAccuracyHandlerTest(testing_config.CustomTestCase):
     """Tests for FeatureAccuracyHandler."""

@@ -22,6 +22,8 @@ import {
   GATE_REVIEW_REQUESTED,
   VOTE_OPTIONS,
 } from './form-field-enums.js';
+import sinon from 'sinon';
+import {ChromeStatusClient} from '../js-src/cs-client.js';
 
 describe('chromedash-feature-detail', () => {
   const stageNoGates = {id: 1} as any;
@@ -81,5 +83,82 @@ describe('chromedash-feature-detail', () => {
     assert.isFalse(component.hasMixedGates(stageActive));
     assert.isTrue(component.hasMixedGates(stageMixed));
     assert.isFalse(component.hasMixedGates(stageResolved));
+  });
+
+  it('renders AI suggestion ready banner for editors when complete suggestion exists', async () => {
+    window.csClient = new ChromeStatusClient('fake_token', 1);
+    const getSugStub = sinon
+      .stub(window.csClient, 'getSummarySuggestion')
+      .resolves({
+        status: 'complete',
+        suggested_summary: 'AI suggested summary.',
+        suggested_doc_links: [],
+        version_token: 1,
+      });
+
+    const component = (await fixture(
+      html`<chromedash-feature-detail
+        .feature=${feature}
+        .user=${{email: 'editor@google.com', can_review_release_notes: true}}
+        .canEdit=${true}
+      ></chromedash-feature-detail>`
+    )) as ChromedashFeatureDetail;
+
+    await component.updateComplete;
+    // Wait for the async suggestion fetch inside willUpdate/fetchSuggestion
+    await new Promise(resolve => setTimeout(resolve, 50));
+    await component.updateComplete;
+
+    const alert = component.shadowRoot!.querySelector('sl-alert');
+    assert.exists(alert);
+    assert.include(alert.innerHTML, 'AI Suggestion Ready');
+
+    getSugStub.restore();
+  });
+
+  it('renders AI suggestion bypassed warning banner and triggers revert API', async () => {
+    window.csClient = new ChromeStatusClient('fake_token', 1);
+    const getSugStub = sinon
+      .stub(window.csClient, 'getSummarySuggestion')
+      .resolves({
+        status: 'bypassed',
+        suggested_summary: 'AI suggested summary.',
+        suggested_doc_links: [],
+        version_token: 1,
+      });
+    const patchSugStub = sinon
+      .stub(window.csClient, 'patchSummarySuggestion')
+      .resolves({});
+
+    const component = (await fixture(
+      html`<chromedash-feature-detail
+        .feature=${feature}
+        .user=${{email: 'owner@google.com', can_review_release_notes: false}}
+        .canEdit=${true}
+      ></chromedash-feature-detail>`
+    )) as ChromedashFeatureDetail;
+
+    await component.updateComplete;
+    await new Promise(resolve => setTimeout(resolve, 50));
+    await component.updateComplete;
+
+    const alert = component.shadowRoot!.querySelector(
+      'sl-alert[variant="warning"]'
+    );
+    assert.exists(alert);
+    assert.include(alert.innerHTML, 'AI Suggestion Applied (Bypassed)');
+
+    const revertButton = alert!.querySelector('sl-button') as any;
+    assert.exists(revertButton);
+    assert.include(revertButton.innerText, 'Revert to My Original');
+
+    // Trigger revert click
+    revertButton.click();
+    await component.updateComplete;
+
+    assert.isTrue(patchSugStub.calledWith(feature.id, 'complete', 1));
+
+    getSugStub.restore();
+    patchSugStub.restore();
   });
 });

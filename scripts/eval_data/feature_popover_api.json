@@ -1,0 +1,12 @@
+[
+  {
+    "name": "Popover API",
+    "category": 1,
+    "summary": "The popover attribute provides a standard way to build popovers, light dismiss dialogs, and other pop-up content.",
+    "explainer_links": ["https://github.com/whatwg/html/pull/8221"],
+    "spec_link": "https://html.spec.whatwg.org/multipage/popover.html",
+    "gt_summary": "The popover attribute allows you to create popovers and pop-ups that display on top of other content. It simplifies the creation of menus, tooltips, and dialogs by handling stacking and light dismiss automatically.",
+    "gt_links": ["https://developer.mozilla.org/en-US/docs/Web/API/Popover_API"],
+    "gt_baseline": "widely"
+  }
+]
