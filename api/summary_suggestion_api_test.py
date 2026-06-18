@@ -175,7 +175,6 @@ class SummarySuggestionGenerateAPITest(testing_config.CustomTestCase):
                 'feature_id': 12345,
                 'updated_time': self.feature.updated.timestamp(),
             },
-            queue='summary-generation-queue',
         )
 
     @mock.patch('framework.cloud_tasks_helpers.enqueue_task')

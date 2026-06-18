@@ -454,7 +454,6 @@ class SummarySuggestionGenerateAPI(basehandlers.EntitiesAPIHandler):
         cloud_tasks_helpers.enqueue_task(
             '/tasks/generate-summary',
             task_params,
-            queue='summary-generation-queue',
         )
 
         return {'message': 'AI summary generation task accepted and queued.'}
