@@ -1,0 +1,368 @@
+[
+  {
+    "feature_name": "CSS Anchor Positioning",
+    "iterations": 3,
+    "stats": {
+      "clarity": {
+        "min": 5,
+        "max": 5,
+        "avg": 5.0,
+        "median": 5
+      },
+      "accuracy": {
+        "min": 5,
+        "max": 5,
+        "avg": 5.0,
+        "median": 5
+      },
+      "links_baseline": {
+        "min": 2,
+        "max": 3,
+        "avg": 2.6666666666666665,
+        "median": 3
+      }
+    },
+    "runs": [
+      {
+        "run": 1,
+        "summary": "CSS Anchor Positioning enables developers to position an absolute or fixed-positioned element relative to one or more target anchor elements on a page. This simplifies the creation of UI components like tooltips, popovers, and dropdown menus by removing the need for complex, performance-intensive JavaScript calculations. Developers can bind elements using the `anchor-name` property and position them using the `anchor()` function in inset properties like `top` or `left`.",
+        "links": [
+          "https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Anchor_positioning",
+          "https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Anchor_positioning/Using",
+          "https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Values/anchor"
+        ],
+        "baseline": "limited",
+        "scores": {
+          "clarity": 5,
+          "accuracy": 5,
+          "links_baseline": 3
+        },
+        "justification": "The summary is excellent: exactly three sentences, highly developer-focused, objective, and clearly communicates the performance benefits of eliminating JavaScript positioning. The accuracy is spot on, correctly naming the `anchor-name` property and `anchor()` function. For links and baseline, the baseline status 'limited' is off by one level from the ground truth 'newly' but is highly justifiable since the feature is currently only supported in Chromium. However, the MDN links point to slightly incorrect paths (e.g., using '/Guides/' instead of the standard '/CSS_anchor_positioning/' namespace on MDN)."
+      },
+      {
+        "run": 2,
+        "summary": "CSS Anchor Positioning allows developers to position an absolutely positioned element relative to one or more reference elements called anchors. This eliminates the need for complex, performance-heavy JavaScript calculations to position and update UI overlays like tooltips, popovers, or menus. Developers can establish an anchor using the `anchor-name` property and position elements relative to it using the `anchor()` function or the `position-anchor` property.",
+        "links": [
+          "https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_anchor_positioning",
+          "https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Anchor_positioning/Using"
+        ],
+        "baseline": "limited",
+        "scores": {
+          "clarity": 5,
+          "accuracy": 5,
+          "links_baseline": 3
+        },
+        "justification": "The AI suggestion is excellently written. It is exactly 3 sentences long, avoids marketing fluff, and is highly developer-focused with specific technical details (such as the `anchor-name` property and `anchor()` function). The technical accuracy is perfect with no hallucinations. For the links and baseline, the MDN links provided are highly relevant. The suggested Baseline status is 'limited' instead of the ground truth's 'newly'. This is off by one level but is highly justifiable, as CSS Anchor Positioning is only supported in Chromium browsers (Chrome/Edge 125+) and not yet in Firefox or Safari, which technically makes its Baseline status 'limited' rather than 'newly available' (which requires support across all major engines)."
+      },
+      {
+        "run": 3,
+        "summary": "CSS Anchor Positioning allows developers to position an absolute-positioned element relative to one or more anchor elements on a page. This simplifies the creation of complex UI patterns like tooltips, popovers, and menus by eliminating the need for custom JavaScript positioning logic and resize listeners. Developers can associate elements using the `anchor-name` property and position them using the `anchor()` function in inset properties.",
+        "links": [
+          "https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Anchor_positioning",
+          "https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Anchor_positioning/Using"
+        ],
+        "baseline": "limited",
+        "scores": {
+          "clarity": 5,
+          "accuracy": 5,
+          "links_baseline": 2
+        },
+        "justification": "Clarity is excellent: the summary is exactly three sentences, highly objective, and explains the developer benefits without any marketing jargon. Accuracy is also top-tier, correctly identifying that the feature applies to absolute-positioned elements and referencing the specific `anchor-name` property and `anchor()` function. However, the links score poorly because the suggested MDN URLs are hallucinated paths (MDN does not use the `/Web/CSS/Guides/...` structure for this feature; the correct path is `/Web/CSS/CSS_anchor_positioning`). The Baseline status of 'limited' is highly justifiable and actually more accurate than the ground truth 'newly' (as of late 2024, Safari and Firefox do not support it), but the broken links drag this score down."
+      }
+    ],
+    "scores": {
+      "clarity": 5.0,
+      "accuracy": 5.0,
+      "links_baseline": 2.6666666666666665
+    }
+  },
+  {
+    "feature_name": "CSS Gap Decorations",
+    "iterations": 3,
+    "stats": {
+      "clarity": {
+        "min": 5,
+        "max": 5,
+        "avg": 5.0,
+        "median": 5
+      },
+      "accuracy": {
+        "min": 4,
+        "max": 5,
+        "avg": 4.666666666666667,
+        "median": 5
+      },
+      "links_baseline": {
+        "min": 2,
+        "max": 5,
+        "avg": 3.6666666666666665,
+        "median": 4
+      }
+    },
+    "runs": [
+      {
+        "run": 1,
+        "summary": "CSS Gap Decorations adds properties such as `row-rule` and `column-rule` to style the gutters within grid and flexbox containers. This capability simplifies layout styling by eliminating the need for hacky workarounds, such as using nested elements or extra borders, to create separators between items. Developers can customize these lines using properties that control their width, style, color, and insets directly on the parent container.",
+        "links": [
+          "https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/column-rule",
+          "https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/gap"
+        ],
+        "baseline": "limited",
+        "scores": {
+          "clarity": 5,
+          "accuracy": 4,
+          "links_baseline": 4
+        },
+        "justification": "The AI suggestion is excellent in style and clarity, consisting of exactly three sentences that are objective, developer-focused, and free of marketing fluff. In terms of accuracy, it correctly identifies the purpose of the feature and the problem it solves, though it omits some technical nuances present in the ground truth, such as progressive-enhancement behavior and specific sub-properties like 'column-rule-inset'. The baseline status matches the ground truth perfectly. The suggested MDN links are highly relevant, but they use an outdated URL path structure ('/Web/CSS/Reference/Properties/') rather than the current canonical MDN path format ('/Web/CSS/')."
+      },
+      {
+        "run": 2,
+        "summary": "CSS Gap Decorations adds properties like `row-rule` and extends `column-rule` to support styling the gaps in Grid and Flexbox layouts. This allows developers to draw decorative lines or dividers directly in container gutters without using complex styling hacks or adding unnecessary wrapper elements. The feature supports customizing rule width, style, and color, matching the behavior of column rules in multi-column layouts.",
+        "links": [
+          "https://developer.mozilla.org/en-US/docs/Web/CSS/column-rule",
+          "https://developer.mozilla.org/en-US/docs/Web/CSS/gap"
+        ],
+        "baseline": "limited",
+        "scores": {
+          "clarity": 5,
+          "accuracy": 5,
+          "links_baseline": 5
+        },
+        "justification": "The AI suggestion is excellent across all criteria. The summary is exactly three sentences long, objective, benefit-driven, and completely free of marketing jargon. On accuracy, it correctly identifies that CSS Gap Decorations introduces `row-rule` properties and extends existing `column-rule` properties to grid/flexbox layouts. The MDN links and the Baseline status ('limited') are 100% identical to the ground truth."
+      },
+      {
+        "run": 3,
+        "summary": "CSS Gap Decorations allows developers to style the gaps between items in Grid and Flexbox layouts, similar to how the column-rule property works in multi-column containers. This eliminates the need for complex layout hacks, enabling clean, native styling of row and column separators within container layouts. Developers can customize these decorations using properties like row-rule and column-rule to specify the width, style, and color of the lines drawn in gaps.",
+        "links": [
+          "https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/column-rule",
+          "https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/gap"
+        ],
+        "baseline": "limited",
+        "scores": {
+          "clarity": 5,
+          "accuracy": 5,
+          "links_baseline": 2
+        },
+        "justification": "The AI suggestion is excellent in terms of clarity and style, adhering perfectly to the 2-3 sentence limit, avoiding marketing jargon, and focusing on developer benefits. Technically, it is highly accurate and correctly summarizes the feature without any hallucinations. However, the suggested MDN links are incorrect and contain invalid paths (/Reference/Properties/), which results in 404 errors, though the 'limited' baseline status matches the ground truth perfectly."
+      }
+    ],
+    "scores": {
+      "clarity": 5.0,
+      "accuracy": 4.666666666666667,
+      "links_baseline": 3.6666666666666665
+    }
+  },
+  {
+    "feature_name": "CSS Paint API",
+    "iterations": 3,
+    "stats": {
+      "clarity": {
+        "min": 5,
+        "max": 5,
+        "avg": 5.0,
+        "median": 5
+      },
+      "accuracy": {
+        "min": 5,
+        "max": 5,
+        "avg": 5.0,
+        "median": 5
+      },
+      "links_baseline": {
+        "min": 5,
+        "max": 5,
+        "avg": 5.0,
+        "median": 5
+      }
+    },
+    "runs": [
+      {
+        "run": 1,
+        "summary": "The CSS Paint API allows developers to use JavaScript to programmatically draw images directly into an element's background, border, mask, or content. This enables the creation of highly customizable, dynamic visual effects while reducing the performance overhead of DOM-based layouts and eliminating the need to download large static assets. To use it, register a custom paint class via a PaintWorklet and invoke it in your CSS using the paint() function.",
+        "links": [
+          "https://developer.mozilla.org/en-US/docs/Web/API/CSS_Painting_API/Guide",
+          "https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Values/image/paint"
+        ],
+        "baseline": "limited",
+        "scores": {
+          "clarity": 5,
+          "accuracy": 5,
+          "links_baseline": 5
+        },
+        "justification": "The AI suggestion is excellent. It is exactly three sentences long, objective, and highly developer-focused, clearly explaining the performance benefits without using any marketing jargon. Technically, it is 100% accurate, correctly identifying how the API operates (PaintWorklet and the paint() function). The baseline status matches the ground truth exactly, and the provided MDN links are highly relevant and accurate."
+      },
+      {
+        "run": 2,
+        "summary": "The CSS Paint API allows developers to programmatically generate images for CSS properties, such as backgrounds, borders, and masks, using custom JavaScript paint worklets. This enables highly customizable, responsive visual effects without the performance overhead of DOM manipulation or large image downloads, as the rendering logic runs within the browser's native paint stage. Developers can register a paint worklet module via `CSS.paintWorklet.addModule()` and apply it in CSS using the `paint()` function.",
+        "links": [
+          "https://developer.mozilla.org/en-US/docs/Web/API/CSS_Painting_API",
+          "https://developer.mozilla.org/en-US/docs/Web/API/CSS_Painting_API/Guide"
+        ],
+        "baseline": "limited",
+        "scores": {
+          "clarity": 5,
+          "accuracy": 5,
+          "links_baseline": 5
+        },
+        "justification": "The AI suggestion is excellent. The summary is exactly three sentences long, highly objective, and explains the developer benefits clearly. It contains useful, accurate technical details such as `CSS.paintWorklet.addModule()` and `paint()` without any hallucinations. The baseline status matches the ground truth perfectly, and the MDN links are highly relevant."
+      },
+      {
+        "run": 3,
+        "summary": "The CSS Paint API allows developers to write JavaScript functions that programmatically generate 2D images for use in CSS properties such as background-image, border-image, or mask-image. This approach enables dynamic, responsive visual effects without the loading overhead of traditional image files or the performance cost of DOM elements. Developers register a custom paint worklet using `CSS.paintWorklet.addModule()` and then invoke it in CSS with the `paint()` function.",
+        "links": [
+          "https://developer.mozilla.org/en-US/docs/Web/API/CSS_Painting_API",
+          "https://developer.mozilla.org/en-US/docs/Web/API/CSS_Painting_API/Guide"
+        ],
+        "baseline": "limited",
+        "scores": {
+          "clarity": 5,
+          "accuracy": 5,
+          "links_baseline": 5
+        },
+        "justification": "The AI suggestion is outstanding. It is exactly three sentences long, highly developer-focused, objective, and clearly highlights the performance benefits without using any prohibited marketing jargon. Technically, it is highly accurate, providing excellent concrete details such as the CSS.paintWorklet.addModule() method and the paint() CSS function. The baseline status matches the ground truth perfectly, and the MDN links are highly relevant and active."
+      }
+    ],
+    "scores": {
+      "clarity": 5.0,
+      "accuracy": 5.0,
+      "links_baseline": 5.0
+    }
+  },
+  {
+    "feature_name": "Popover API",
+    "iterations": 3,
+    "stats": {
+      "clarity": {
+        "min": 5,
+        "max": 5,
+        "avg": 5.0,
+        "median": 5
+      },
+      "accuracy": {
+        "min": 5,
+        "max": 5,
+        "avg": 5.0,
+        "median": 5
+      },
+      "links_baseline": {
+        "min": 3,
+        "max": 3,
+        "avg": 3.0,
+        "median": 3
+      }
+    },
+    "runs": [
+      {
+        "run": 1,
+        "summary": "The Popover API is a web standard that provides a declarative mechanism for displaying popovers, menus, and other pop-up elements in the top layer above other page content. This feature simplifies web layout and interaction code by eliminating the need for complex z-index management, custom focus handling, and manual click-outside-to-dismiss behavior. Developers can designate any HTML element as a popover using the global `popover` attribute and control its visibility using a button with the `popovertarget` attribute.",
+        "links": [
+          "https://developer.mozilla.org/en-US/docs/Web/API/Popover_API",
+          "https://developer.mozilla.org/en-US/docs/Web/API/Popover_API/Using",
+          "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Global_attributes/popover"
+        ],
+        "baseline": "newly",
+        "scores": {
+          "clarity": 5,
+          "accuracy": 5,
+          "links_baseline": 3
+        },
+        "justification": "The suggested summary is exactly three sentences, highly professional, benefits-driven, and completely objective, earning a 5 for Clarity & Style. It is technically precise, mentioning correct attributes (popover, popovertarget) and platform concepts (top layer, z-index management) without any hallucinations, earning a 5 for Accuracy. The links provided are highly relevant and accurate, but the Baseline status is marked as 'newly' instead of the ground truth 'widely' (off by one level), which rates a 3 for Links & Baseline."
+      },
+      {
+        "run": 2,
+        "summary": "The Popover API is a web standard that provides a declarative and programmatic way to build transient, top-layer user interface elements such as menus, tooltips, and dialogs. It simplifies web development by handling focus management, light dismissal, z-index layering, and keyboard navigation automatically without requiring custom JavaScript or complex CSS. Developers can designate an element as a popover simply by adding the `popover` attribute and controlling it with the `popovertarget` attribute or JavaScript methods like `showPopover()`.",
+        "links": [
+          "https://developer.mozilla.org/en-US/docs/Web/API/Popover_API",
+          "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Global_attributes/popover"
+        ],
+        "baseline": "newly",
+        "scores": {
+          "clarity": 5,
+          "accuracy": 5,
+          "links_baseline": 3
+        },
+        "justification": "The suggested summary is exactly three sentences, highly professional, objective, and developer-focused with zero marketing jargon. It is technically accurate and provides great context on how the Popover API works (referencing attributes like popovertarget and methods like showPopover). The discovered MDN links are excellent and highly relevant. However, the Baseline status is 'newly' instead of 'widely', which is off by one level (though plausible depending on the dataset timeline, as Popover transitioned to widely available in early 2024)."
+      },
+      {
+        "run": 3,
+        "summary": "The Popover API provides a standard web platform mechanism for displaying transient UI elements, such as tooltips, menus, and onboarding flows, on top of other page content. This API simplifies interface development by handling z-index layering, keyboard navigation, and light-dismiss behavior automatically without requiring complex custom scripting. Developers can designate a popover using the global `popover` attribute and trigger it declaratively using the `popovertarget` attribute on a button.",
+        "links": [
+          "https://developer.mozilla.org/en-US/docs/Web/API/Popover_API",
+          "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Global_attributes/popover"
+        ],
+        "baseline": "newly",
+        "scores": {
+          "clarity": 5,
+          "accuracy": 5,
+          "links_baseline": 3
+        },
+        "justification": "The suggested summary is excellent in clarity and style: it is exactly 3 sentences, highly objective, developer-focused, and free of marketing jargon. The accuracy is top-tier, correctly identifying technical details like z-index layering, keyboard navigation, the global 'popover' attribute, and 'popovertarget'. For links and baseline, the MDN links are excellent and highly relevant. However, the baseline status is 'newly' instead of 'widely' (off by one level, though plausible depending on the exact date of reference as the Popover API transitioned from newly to widely available in 2024)."
+      }
+    ],
+    "scores": {
+      "clarity": 5.0,
+      "accuracy": 5.0,
+      "links_baseline": 3.0
+    }
+  },
+  {
+    "feature_name": "Prompt API",
+    "iterations": 3,
+    "stats": {
+      "clarity": {
+        "min": 5,
+        "max": 5,
+        "avg": 5.0,
+        "median": 5.0
+      },
+      "accuracy": {
+        "min": 4,
+        "max": 5,
+        "avg": 4.5,
+        "median": 4.5
+      },
+      "links_baseline": {
+        "min": 5,
+        "max": 5,
+        "avg": 5.0,
+        "median": 5.0
+      }
+    },
+    "runs": [
+      {
+        "run": 1,
+        "summary": "The Prompt API in Chrome gives developers direct access to the browser's built-in large language model (Gemini Nano) to perform natural language tasks, supporting text, image, and audio inputs. By utilizing a built-in model, developers can build responsive, privacy-preserving AI features that run offline, eliminate server-side costs, and avoid the need to distribute heavy machine learning models to the client. The API is accessed asynchronously using `LanguageModel.create()` to initialize a session and the `prompt()` or `promptStreaming()` methods to interact with the model.",
+        "links": [
+          "https://developer.chrome.com/docs/ai/prompt-api"
+        ],
+        "baseline": "limited",
+        "scores": {
+          "clarity": 5,
+          "accuracy": 5,
+          "links_baseline": 5
+        },
+        "justification": "The AI suggestion is outstanding. It is exactly three sentences long, highly developer-focused, and clearly outlines the technical benefits (offline capability, no server costs, privacy-preserving) without using prohibited marketing fluff. It accurately identifies the specific API methods (LanguageModel.create, prompt, promptStreaming) and the underlying Gemini Nano model. Additionally, the baseline status and documentation links match the ground truth exactly."
+      },
+      {
+        "run": 3,
+        "summary": "The Prompt API provides direct access to Chrome's built-in large language model, supporting text, image, and audio inputs. Running inference locally enables low-latency, privacy-preserving AI interactions\u2014such as transcribing audio or analyzing images\u2014without the need for server round-trips, cloud API costs, or large client-side model downloads. Developers can check capability support using `LanguageModel.availability()`, initialize sessions with `LanguageModel.create()`, and enforce structured text outputs using JSON schemas or regular expressions.",
+        "links": [
+          "https://developer.chrome.com/docs/ai/prompt-api",
+          "https://webmachinelearning.github.io/prompt-api/"
+        ],
+        "baseline": "limited",
+        "scores": {
+          "clarity": 5,
+          "accuracy": 4,
+          "links_baseline": 5
+        },
+        "justification": "The summary is excellent in terms of clarity and style, adhering strictly to the 3-sentence limit while remaining highly objective, developer-focused, and free of marketing fluff. For accuracy, the AI introduces specific API methods (`LanguageModel.availability()` and `LanguageModel.create()`) that were not present in the raw summary. While these represent the API's actual capabilities, the capitalization of `LanguageModel` and the specific method names differ slightly from Chrome's actual implementation (which uses `ai.languageModel.capabilities()`), representing a minor technical inaccuracy. The baseline status is correct, and the provided links are highly relevant and active."
+      }
+    ],
+    "scores": {
+      "clarity": 5.0,
+      "accuracy": 4.5,
+      "links_baseline": 5.0
+    }
+  }
+]

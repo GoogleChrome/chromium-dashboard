@@ -32,7 +32,7 @@ from framework import secrets
 from internals import core_enums
 from internals.core_models import FeatureEntry, FeatureSummarySuggestion
 
-GENERATOR_VERSION = 1
+GENERATOR_VERSION = 2
 
 
 class SummaryResponseSchema(BaseModel):
@@ -98,6 +98,28 @@ def verify_link(url: str) -> str:
         return f'Invalid status: {resp.status_code}'
     except Exception as e:
         return f'Error: {e}'
+def read_url(url: str) -> str:
+    """Fetch and extract clean text content from a web page URL (such as a specification or explainer).
+
+    Args:
+        url: The absolute URL to read.
+
+    Returns:
+        The extracted text content of the page, or an error message.
+    """
+    import trafilatura
+    try:
+        resp = requests.get(url, timeout=15)
+        if resp.status_code != 200:
+            return f"Failed to fetch URL: HTTP {resp.status_code}"
+        downloaded = resp.text
+        extracted = trafilatura.extract(downloaded)
+        if not extracted:
+            return "Could not extract text content from the page."
+        return extracted
+    except Exception as e:
+        return f"Error reading URL: {e}"
+
 
 
 def compute_feature_fingerprint(feature: FeatureEntry) -> str:
@@ -163,7 +185,7 @@ class GeminiSummaryGenerator(SummaryGeneratorInterface):
             description='Generates release notes summary suggestions.',
             model=settings.SUMMARY_GENERATOR_MODEL,
             instruction=prompt,
-            tools=[search_mdn, verify_link],
+            tools=[search_mdn, verify_link, read_url],
         )
 
         runner = InMemoryRunner(agent=agent)
@@ -232,6 +254,7 @@ def get_summary_generator() -> SummaryGeneratorInterface:
     secrets.load_gemini_api_key()
     if settings.GEMINI_API_KEY:
         os.environ['GEMINI_API_KEY'] = settings.GEMINI_API_KEY
+        os.environ['GOOGLE_API_KEY'] = settings.GEMINI_API_KEY
         return GeminiSummaryGenerator()
 
     if settings.DEV_MODE:

@@ -6,7 +6,9 @@ This folder contains the ground-truth feature datasets used to evaluate and prev
 
 ## 1. How the Evaluation Works
 
-We use an **LLM-as-a-Judge** pipeline to compare the AI-generated release summaries against human-authored reference text. The evaluator grades results on a **1-5 scale** across three core vectors:
+We use an **LLM-as-a-Judge** pipeline to compare the AI-generated release summaries against human-authored reference text. The evaluator grades results on a highly standardized **1-5 Likert scale** across three core vectors.
+
+To ensure reproducibility and objectivity, the judge prompt explicitly defines every score point (1, 2, 3, 4, 5) for all vectors. For a detailed breakdown of the grading rubric, see the [Evaluation Framework Design Doc](file:///usr/local/google/home/jamescscott/.gemini/jetski/brain/25b0314c-6453-4f2b-ab3c-8a48a1afa32b/evaluation_framework_design.md).
 
 1.  **Clarity & Style**: Verifies length (exactly 2-3 sentences), objective tone, developer focus, and the complete absence of prohibited marketing terms.
 2.  **Accuracy & Drift**: Ensures technical facts match the raw summary and no feature capabilities are hallucinated.
@@ -52,26 +54,39 @@ To add a new feature to the evaluation dataset, create a new JSON file inside th
 
 ## 4. Running the Quality Suite
 
-Run all evaluations using the local Python environment:
+Run all evaluations using the local Python environment.
 
-### Run Default Evaluation
+### Run Default Evaluation (Single Pass)
 ```bash
 ./cs-env/bin/python3 scripts/eval_summaries.py --dataset scripts/eval_data/
 ```
 
-### Save Baseline Metrics
-Before editing prompts or core generator logic, export the baseline scores:
+### Run Statistical Evaluation (Multiple Iterations)
+Since LLM outputs are non-deterministic, you should run evaluations multiple times to compute statistical metrics (**Min/Avg/Median/Max**). This is crucial for catching flakiness and unstable prompts:
 ```bash
-./cs-env/bin/python3 scripts/eval_summaries.py --dataset scripts/eval_data/ --output-results scripts/eval_data/baseline.json
+# Run 3 iterations per feature (Recommended for local dev)
+./cs-env/bin/python3 scripts/eval_summaries.py --dataset scripts/eval_data/ --iterations 3
+```
+
+### Save/Update Baseline Metrics
+When you have finalized a prompt improvement and want to establish its scores as the **new gold standard**, manually export the baseline scores. Run a high-iteration pass to ensure statistical stability, and commit the updated JSON file to VCS:
+```bash
+./cs-env/bin/python3 scripts/eval_summaries.py --dataset scripts/eval_data/ --iterations 5 --output-results scripts/baseline_scores.json
 ```
 
 ### Run and Compare (Regression Check)
-After making edits to your new prompt file (e.g. `v2.md`), run the evaluation against the baseline to verify quality:
+After making edits to a new prompt file (e.g. `v2.md`), run the evaluation against your baseline:
 ```bash
-./cs-env/bin/python3 scripts/eval_summaries.py --dataset scripts/eval_data/ --prompt-version 2 --compare-with scripts/eval_data/baseline.json
+./cs-env/bin/python3 scripts/eval_summaries.py --dataset scripts/eval_data/ --prompt-version 2 --iterations 3 --compare-with scripts/baseline_scores.json
 ```
 
-The script will automatically compute the score differences and report any regressions (e.g., if clarity or accuracy scores drop):
+### The E2E Pass/Fail Gatekeeping Engine
+The script acts as a formal CI/CD gatekeeper and will exit with a **non-zero exit code (1)** if any quality gates are violated, and **exit code (0)** only when successful.
+
+A run is declared a **FAILURE** if:
+1.  **Gate 1 (Quality Floor)**: The dataset-wide average score for Clarity or Accuracy drops below **4.0/5**.
+2.  **Gate 2 (Robustness Floor)**: The *minimum* score for any individual run across all features drops below **3.0/5** (blocks flaky prompts).
+3.  **Gate 3 (Regression Check)**: The average score drops by more than the tolerance of **0.2** points compared to the baseline.
 
 ```
 === Regression Comparison ===

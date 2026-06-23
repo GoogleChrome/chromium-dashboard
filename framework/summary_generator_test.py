@@ -45,6 +45,7 @@ class SummaryGeneratorTest(testing_config.CustomTestCase):
         if suggestion:
             suggestion.key.delete()
 
+    @mock.patch('settings.USE_MOCK_SUMMARY_GENERATOR', False)
     @mock.patch('settings.GEMINI_API_KEY', 'dummy-key')
     @mock.patch('framework.summary_generator.secrets')
     @mock.patch('google.adk.runners.InMemoryRunner')
@@ -217,6 +218,33 @@ class SummaryGeneratorTest(testing_config.CustomTestCase):
         self.assertEqual(
             suggestion.status, core_enums.SummarySuggestionStatus.FAILED
         )
+    @mock.patch('settings.USE_MOCK_SUMMARY_GENERATOR', False)
+    @mock.patch('settings.GEMINI_API_KEY', 'dummy-key')
+    @mock.patch('framework.summary_generator.secrets')
+    def test_adk_client_initialization_smoke_test(self, mock_secrets):
+        """Verify ADK Agent can be initialized without mock, validating env var contract."""
+        mock_secrets.load_gemini_api_key.return_value = None
+
+        # We want to ensure that the environment variables set by get_summary_generator
+        # are sufficient for ADK to initialize its client without throwing ValueError.
+        generator = summary_generator.get_summary_generator()
+        self.assertIsNotNone(generator)
+
+        # Import ADK Gemini model class
+        from google.adk.models import Gemini
+        import settings
+
+        # Instantiate the model object directly (this is what ADK does internally)
+        model = Gemini(model=settings.SUMMARY_GENERATOR_MODEL)
+        self.assertIsNotNone(model)
+
+        # Force client initialization by accessing the cached property.
+        # This is where it will throw ValueError if the key is missing/unrecognized.
+        try:
+            client = model.api_client
+            self.assertIsNotNone(client)
+        except ValueError as e:
+            self.fail(f'ADK failed to resolve API key from environment: {e}')
 
 
 class SummaryGeneratorToolsTest(testing_config.CustomTestCase):
