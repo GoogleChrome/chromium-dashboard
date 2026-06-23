@@ -123,7 +123,7 @@ class SummaryGeneratorTest(testing_config.CustomTestCase):
         self.assertEqual(
             suggestion.baseline_status, core_enums.BaselineStatus.LIMITED
         )
-        self.assertEqual(suggestion.version, 1)
+        self.assertEqual(suggestion.version, summary_generator.GENERATOR_VERSION)
         self.assertEqual(
             suggestion.source_fingerprint,
             summary_generator.compute_feature_fingerprint(self.feature),
@@ -142,7 +142,7 @@ class SummaryGeneratorTest(testing_config.CustomTestCase):
         suggestion = FeatureSummarySuggestion(
             id=12345,
             status=core_enums.SummarySuggestionStatus.COMPLETE,
-            version=1,
+            version=summary_generator.GENERATOR_VERSION,
             source_fingerprint=expected_fp,
             suggested_summary='Existing AI summary.',
         )
@@ -164,7 +164,7 @@ class SummaryGeneratorTest(testing_config.CustomTestCase):
         suggestion = FeatureSummarySuggestion(
             id=12345,
             status=core_enums.SummarySuggestionStatus.COMPLETE,
-            version=1,
+            version=summary_generator.GENERATOR_VERSION,
             source_fingerprint=expected_fp,
             suggested_summary='Existing AI summary.',
         )
@@ -179,7 +179,7 @@ class SummaryGeneratorTest(testing_config.CustomTestCase):
         summary_generator.generate_summary_suggestion(12345, force=True)
 
         # generate_summary_for_feature should be called
-        mock_gen_summary.assert_called_once_with(mock.ANY, prompt_version=1)
+        mock_gen_summary.assert_called_once_with(mock.ANY, prompt_version=summary_generator.GENERATOR_VERSION)
 
     @mock.patch('framework.summary_generator.generate_summary_for_feature')
     def test_generate_summary_suggestion__skip_discarded_fingerprint(
@@ -194,7 +194,7 @@ class SummaryGeneratorTest(testing_config.CustomTestCase):
         suggestion = FeatureSummarySuggestion(
             id=12345,
             status=core_enums.SummarySuggestionStatus.DISCARDED,
-            version=1,
+            version=summary_generator.GENERATOR_VERSION,
             source_fingerprint=expected_fp,
             suggested_summary='Rejected AI summary.',
         )
@@ -213,6 +213,66 @@ class SummaryGeneratorTest(testing_config.CustomTestCase):
         summary_generator.generate_summary_suggestion(12345)
 
         # Check DB updates
+        suggestion = FeatureSummarySuggestion.get_by_id(12345)
+        self.assertIsNotNone(suggestion)
+        self.assertEqual(
+            suggestion.status, core_enums.SummarySuggestionStatus.FAILED
+        )
+
+    @mock.patch('framework.summary_generator.generate_summary_for_feature')
+    def test_generate_summary_suggestion__permanent_failure_no_retry(self, mock_gen_summary):
+        """Ensure a permanent error sets status to FAILED and does not re-raise."""
+        mock_gen_summary.side_effect = ValueError('Invalid configuration')
+
+        # Should not raise any exception
+        try:
+            summary_generator.generate_summary_suggestion(12345)
+        except Exception as e:
+            self.fail(f'Permanent error should not be re-raised, but got: {e}')
+
+        suggestion = FeatureSummarySuggestion.get_by_id(12345)
+        self.assertIsNotNone(suggestion)
+        self.assertEqual(
+            suggestion.status, core_enums.SummarySuggestionStatus.FAILED
+        )
+
+    @mock.patch('framework.summary_generator.get_task_retry_count')
+    @mock.patch('framework.summary_generator.generate_summary_for_feature')
+    def test_generate_summary_suggestion__transient_failure_triggers_retry(self, mock_gen_summary, mock_retry_count):
+        """Ensure a transient error does not set status to FAILED, and re-raises to trigger retry."""
+        from google.genai.errors import ServerError
+        
+        # ServerError is classified as a transient error
+        mock_gen_summary.side_effect = ServerError(503, {'message': 'Service Unavailable'}, None)
+        mock_retry_count.return_value = 0 # First attempt (0 retries)
+
+        # Should re-raise the ServerError
+        with self.assertRaises(ServerError):
+            summary_generator.generate_summary_suggestion(12345)
+
+        # Status should NOT be FAILED (should remain IN_PROGRESS)
+        suggestion = FeatureSummarySuggestion.get_by_id(12345)
+        self.assertIsNotNone(suggestion)
+        self.assertEqual(
+            suggestion.status, core_enums.SummarySuggestionStatus.IN_PROGRESS
+        )
+
+    @mock.patch('framework.summary_generator.get_task_retry_count')
+    @mock.patch('framework.summary_generator.generate_summary_for_feature')
+    def test_generate_summary_suggestion__transient_failure_exhausted_fails_permanently(self, mock_gen_summary, mock_retry_count):
+        """Ensure that if transient errors persist and exceed MAX_TRANSIENT_RETRIES, it fails permanently."""
+        from google.genai.errors import ServerError
+        
+        mock_gen_summary.side_effect = ServerError(503, {'message': 'Service Unavailable'}, None)
+        mock_retry_count.return_value = 5 # 6th attempt (exceeds MAX_TRANSIENT_RETRIES = 5)
+
+        # Should NOT raise any exception (swallowed to terminate the task)
+        try:
+            summary_generator.generate_summary_suggestion(12345)
+        except Exception as e:
+            self.fail(f'Exhausted transient error should not be re-raised, but got: {e}')
+
+        # Status should be set to FAILED permanently
         suggestion = FeatureSummarySuggestion.get_by_id(12345)
         self.assertIsNotNone(suggestion)
         self.assertEqual(

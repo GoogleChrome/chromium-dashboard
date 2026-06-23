@@ -31,6 +31,16 @@ import '@shoelace-style/shoelace/dist/components/option/option.js';
 import '@shoelace-style/shoelace/dist/components/alert/alert.js';
 import '@shoelace-style/shoelace/dist/components/icon/icon.js';
 
+interface MilestoneChannel {
+  version: number;
+}
+
+interface MilestoneChannels {
+  stable: MilestoneChannel;
+  beta: MilestoneChannel;
+  dev: MilestoneChannel;
+}
+
 @customElement('chromedash-releases-page')
 export class ChromedashReleasesPage extends LitElement {
   static get styles() {
@@ -88,6 +98,17 @@ export class ChromedashReleasesPage extends LitElement {
           margin: 0.5rem 0 0;
           padding-left: 1.2rem;
         }
+        .baseline-badge {
+          margin-left: 10px;
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+        }
+        .baseline-badge-icon {
+          width: 12px;
+          height: 12px;
+          display: inline-block;
+        }
         .suggestion-control-panel {
           margin-top: 1rem;
           padding-top: 1rem;
@@ -96,12 +117,49 @@ export class ChromedashReleasesPage extends LitElement {
           align-items: center;
           gap: 1rem;
         }
+        .reviews-header-container {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          margin-bottom: 2rem;
+          gap: 1rem;
+        }
+        @media (max-width: 768px) {
+          .reviews-header-container {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 1.5rem;
+          }
+        }
+        .reviews-title {
+          margin: 0;
+          font-size: 1.6rem;
+          font-weight: 500;
+        }
+        .reviews-subtitle {
+          margin: 0.5rem 0 0;
+          color: var(--sl-color-neutral-600);
+          font-size: 0.95rem;
+        }
+        .milestone-selector-container {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+        }
+        .milestone-select-elem {
+          width: 130px;
+        }
+        .pending-reviews-btn {
+          margin-left: 1rem;
+        }
       `,
     ];
   }
 
   @property({attribute: false})
   user!: User;
+  @state()
+  viewMode: 'milestone' | 'reviews' = 'milestone';
   @state()
   selectedMilestone!: number;
   @state()
@@ -113,7 +171,7 @@ export class ChromedashReleasesPage extends LitElement {
   @state()
   milestonesList: number[] = [];
   @state()
-  channels: any = null;
+  channels: MilestoneChannels | null = null;
 
   @state()
   activeReviewFeature: Feature | null = null;
@@ -144,18 +202,93 @@ export class ChromedashReleasesPage extends LitElement {
       );
 
       const queryParams = parseRawQuery(window.location.search);
-      if (queryParams.milestone) {
-        this.selectedMilestone = parseInt(queryParams.milestone, 10);
+      if (queryParams.view === 'reviews') {
+        this.viewMode = 'reviews';
+        await this.fetchPendingReviewsData();
       } else {
-        this.selectedMilestone = stableVersion;
-        updateURLParams('milestone', this.selectedMilestone.toString());
+        this.viewMode = 'milestone';
+        if (queryParams.milestone) {
+          this.selectedMilestone = parseInt(queryParams.milestone, 10);
+        } else {
+          this.selectedMilestone = stableVersion;
+          updateURLParams('milestone', this.selectedMilestone.toString());
+        }
+        await this.fetchMilestoneData();
       }
-      await this.fetchMilestoneData();
     } catch {
       showToastMessage('Failed to initialize releases page.');
     } finally {
       this.loading = false;
     }
+  }
+
+  async fetchPendingReviewsData() {
+    this.loading = true;
+    try {
+      const resp = await window.csClient.getPendingReviews();
+
+      const FEATURE_CATEGORIES: {[key: number]: string} = {
+        1: 'Web Components',
+        2: 'HTML5',
+        3: 'Multimedia',
+        4: 'CSS',
+        5: 'User Input',
+        6: 'Device',
+        7: 'Security/Privacy',
+        8: 'Offline/Storage',
+        9: 'Realtime/Communication',
+        10: 'JavaScript/V8',
+        11: 'Network/Connectivity',
+        12: 'Graphics',
+        13: 'Performance',
+        14: 'Security',
+        15: 'Sensors',
+        16: 'WebAssembly',
+        17: 'Other',
+      };
+
+      const grouped: {[key: string]: Feature[]} = {};
+
+      const features = (resp.features || []).map(f => ({
+        ...f,
+        owner_emails: f.owner_emails || f.owners || [],
+        editor_emails: f.editor_emails || f.editors || [],
+        creator_email: f.creator_email || f.creator,
+      }));
+
+      for (const f of features) {
+        const catName = FEATURE_CATEGORIES[f.category] || 'Other';
+        if (!grouped[catName]) grouped[catName] = [];
+        grouped[catName].push(f);
+      }
+
+      this.featuresByType = grouped;
+    } catch (err) {
+      showToastMessage('Failed to fetch pending reviews.');
+      console.error(err);
+    } finally {
+      this.loading = false;
+    }
+  }
+
+  async switchToReviewsMode() {
+    this.viewMode = 'reviews';
+    updateURLParams('view', 'reviews');
+    const url = new URL(window.location.href);
+    url.searchParams.delete('milestone');
+    window.history.pushState({}, '', url.toString());
+    await this.fetchPendingReviewsData();
+  }
+
+  async switchToMilestonesMode() {
+    this.viewMode = 'milestone';
+    updateURLParams('view', null);
+
+    const stableVersion = this.channels?.stable?.version || 120;
+    this.selectedMilestone = stableVersion;
+    updateURLParams('milestone', this.selectedMilestone.toString());
+
+    await this.fetchMilestoneData();
   }
 
   canUserEditFeature(feature: Feature) {
@@ -224,7 +357,7 @@ export class ChromedashReleasesPage extends LitElement {
   }
 
   handleReviewSuggestion(e: CustomEvent<{feature: Feature}>) {
-    this.openReviewDialog(e.detail.feature);
+    void this.openReviewDialog(e.detail.feature);
   }
 
   async openReviewDialog(feature: Feature) {
@@ -277,26 +410,31 @@ export class ChromedashReleasesPage extends LitElement {
 
     let label = '';
     let variant = '';
+    let iconSrc = '';
 
     switch (sug.baseline_status) {
       case 'widely':
         label = 'Baseline Widely Available';
         variant = 'success';
+        iconSrc = '/static/img/baseline-widely-icon.svg';
         break;
       case 'newly':
         label = 'Baseline Newly Available';
         variant = 'primary';
+        iconSrc = '/static/img/baseline-newly-icon.svg';
         break;
       case 'limited':
         label = 'Baseline Limited';
         variant = 'warning';
+        iconSrc = '/static/img/baseline-limited-icon.svg';
         break;
       default:
         return nothing;
     }
 
     return html`
-      <sl-tag variant=${variant} size="small" style="margin-left: 10px;" pill>
+      <sl-tag variant=${variant} size="small" class="baseline-badge" pill>
+        <img src="${iconSrc}" class="baseline-badge-icon" alt="" />
         ${label}
       </sl-tag>
     `;
@@ -386,13 +524,17 @@ export class ChromedashReleasesPage extends LitElement {
 
   render() {
     if (this.loading) {
+      const loadingMsg =
+        this.viewMode === 'reviews'
+          ? 'Loading pending AI reviews...'
+          : `Loading features for Chrome ${this.selectedMilestone}...`;
       return html`
         <div
           class="releases-container"
           style="text-align: center; margin-top: 5rem;"
         >
           <sl-spinner style="font-size: 3rem;"></sl-spinner>
-          <p>Loading features for Chrome ${this.selectedMilestone}...</p>
+          <p>${loadingMsg}</p>
         </div>
       `;
     }
@@ -403,35 +545,71 @@ export class ChromedashReleasesPage extends LitElement {
 
     return html`
       <div class="releases-container">
-        ${this.renderMilestoneChannelBanner()}
-        <div class="header-nav">
-          <sl-button @click=${() => this.navigateMilestone(-1)}>
-            &larr; Chrome ${this.selectedMilestone - 1}
-          </sl-button>
+        ${this.viewMode === 'milestone'
+          ? this.renderMilestoneChannelBanner()
+          : nothing}
+        ${this.viewMode === 'reviews'
+          ? html`
+              <div class="reviews-header-container">
+                <div>
+                  <h2 class="reviews-title">
+                    AI-Assisted Release Reviews Pending
+                  </h2>
+                  <p class="reviews-subtitle">
+                    Features across all milestones that have generated AI draft
+                    summaries awaiting your review.
+                  </p>
+                </div>
+                <sl-button
+                  @click=${this.switchToMilestonesMode}
+                  variant="neutral"
+                >
+                  &larr; Back to Milestones
+                </sl-button>
+              </div>
+            `
+          : html`
+              <div class="header-nav">
+                <sl-button @click=${() => this.navigateMilestone(-1)}>
+                  &larr; Chrome ${this.selectedMilestone - 1}
+                </sl-button>
 
-          <div style="display: flex; align-items: center; gap: 0.5rem;">
-            <h2>Chrome</h2>
-            <sl-select
-              .value=${this.selectedMilestone.toString()}
-              @sl-change=${this.handleMilestoneSelectChange}
-              style="width: 130px;"
-            >
-              ${this.milestonesList.map(
-                m => html` <sl-option value=${m.toString()}>${m}</sl-option> `
-              )}
-            </sl-select>
-            <h2>Releases</h2>
-          </div>
+                <div class="milestone-selector-container">
+                  <h2>Chrome</h2>
+                  <sl-select
+                    .value=${this.selectedMilestone.toString()}
+                    @sl-change=${this.handleMilestoneSelectChange}
+                    class="milestone-select-elem"
+                  >
+                    ${this.milestonesList.map(
+                      m => html`
+                        <sl-option value=${m.toString()}>${m}</sl-option>
+                      `
+                    )}
+                  </sl-select>
+                  <h2>Releases</h2>
 
-          <sl-button @click=${() => this.navigateMilestone(1)}>
-            Chrome ${this.selectedMilestone + 1} &rarr;
-          </sl-button>
-        </div>
+                  ${this.user?.can_review_release_notes
+                    ? html`
+                        <sl-button
+                          @click=${this.switchToReviewsMode}
+                          variant="primary"
+                          size="small"
+                          class="pending-reviews-btn"
+                        >
+                          View Pending Reviews
+                        </sl-button>
+                      `
+                    : nothing}
+                </div>
 
+                <sl-button @click=${() => this.navigateMilestone(1)}>
+                  Chrome ${this.selectedMilestone + 1} &rarr;
+                </sl-button>
+              </div>
+            `}
         ${!hasAnyFeatures
-          ? html`<p>
-              No features found shipping in milestone ${this.selectedMilestone}.
-            </p>`
+          ? html`<p>No features found awaiting review.</p>`
           : Object.keys(this.featuresByType).map(category =>
               this.renderCategoryGroup(category, this.featuresByType[category])
             )}

@@ -21,7 +21,7 @@ from abc import ABC, abstractmethod
 import hashlib
 import logging
 import os
-from datetime import datetime
+from datetime import date, datetime
 
 import requests
 from google.cloud import ndb  # type: ignore
@@ -46,6 +46,14 @@ class SummaryResponseSchema(BaseModel):
     )
     baseline_status: str = Field(
         description='Baseline compatibility status: limited, newly, widely.'
+    )
+    baseline_newly_date: str | None = Field(
+        default=None,
+        description='The date when the feature became interoperable (YYYY-MM-DD), or null.'
+    )
+    baseline_widely_date: str | None = Field(
+        default=None,
+        description='The date when the feature transitioned to widely available (YYYY-MM-DD), or null.'
     )
 
 
@@ -135,6 +143,17 @@ def compute_feature_fingerprint(feature: FeatureEntry) -> str:
     return hashlib.sha256(payload).hexdigest()
 
 
+def parse_baseline_date(date_str: str | None) -> date | None:
+    """Parses a YYYY-MM-DD string from the AI response into a datetime.date object."""
+    if not date_str:
+        return None
+    try:
+        return datetime.strptime(date_str.strip(), '%Y-%m-%d').date()
+    except ValueError:
+        logging.warning(f'Failed to parse baseline date string: {date_str}')
+        return None
+
+
 class SummaryGeneratorInterface(ABC):
     @abstractmethod
     def generate_summary(
@@ -174,16 +193,31 @@ class GeminiSummaryGenerator(SummaryGeneratorInterface):
             .replace('{{ spec_link }}', spec_str)
         )
 
-        logging.info(
-            f"[E2E DEBUG] GEMINI_API_KEY in os.environ: {'GEMINI_API_KEY' in os.environ}, "
-            f"value length: {len(os.environ.get('GEMINI_API_KEY', ''))}"
+        from functools import cached_property
+        from google.adk.models import Gemini
+        from google.genai import Client
+
+        class ConfiguredGemini(Gemini):
+            """Subclass to explicitly inject the API key, bypassing implicit env resolution."""
+            def __init__(self, model: str, api_key: str, **kwargs):
+                super().__init__(model=model, **kwargs)
+                self._custom_api_key = api_key
+
+            @cached_property
+            def api_client(self) -> Client:
+                # Explicit api_key prevents the SDK from clearing it when running in GCP/GAE
+                return Client(api_key=self._custom_api_key)
+
+        configured_model = ConfiguredGemini(
+            model=settings.SUMMARY_GENERATOR_MODEL,
+            api_key=settings.GEMINI_API_KEY
         )
 
         # Instantiate ADK Agent
         agent = Agent(
             name='summary_suggestion_generator',
             description='Generates release notes summary suggestions.',
-            model=settings.SUMMARY_GENERATOR_MODEL,
+            model=configured_model,
             instruction=prompt,
             tools=[search_mdn, verify_link, read_url],
         )
@@ -276,6 +310,61 @@ def generate_summary_for_feature(
     return generator.generate_summary(feature, prompt_version)
 
 
+def is_transient_error(e: Exception) -> bool:
+    """Classifies whether an exception represents a transient/retryable error."""
+    from google.genai.errors import APIError, ClientError, ServerError
+    import httpx
+    import requests
+
+    # 1. Google GenAI SDK API Errors
+    if isinstance(e, ServerError):
+        return True
+    if isinstance(e, ClientError):
+        # 429 Too Many Requests (Rate Limit) is transient
+        return getattr(e, 'code', None) == 429
+    if isinstance(e, APIError):
+        code = getattr(e, 'code', None)
+        return code in [429, 500, 503, 504]
+
+    # 2. HTTPX Network / Timeout Errors (used by google-genai SDK under the hood)
+    if isinstance(e, (httpx.ConnectError, httpx.TimeoutException, httpx.NetworkError)):
+        return True
+
+    # 3. Standard requests Network / Timeout Errors (used by our tools)
+    if isinstance(e, (requests.exceptions.Timeout, requests.exceptions.ConnectionError)):
+        return True
+
+    # 4. Specific system/SSL temporary errors
+    # E.g., FileNotFoundError on ssl.py (transient environment path resolution error)
+    if isinstance(e, FileNotFoundError):
+        tb = e.__traceback__
+        while tb:
+            filename = tb.tb_frame.f_code.co_filename
+            if 'ssl.py' in filename.lower():
+                return True
+            tb = tb.tb_next
+
+    # Default: Any other unclassified exception (like ValueError, KeyError, etc.)
+    # is treated as a permanent code/config error.
+    return False
+
+
+def get_task_retry_count() -> int:
+    """Retrieves the current task retry count from Flask request headers."""
+    try:
+        import flask
+        headers = flask.request.headers
+        retry_hdr = headers.get('X-AppEngine-TaskRetryCount') or headers.get('X-CloudTasks-TaskRetryCount')
+        if retry_hdr:
+            return int(retry_hdr)
+    except Exception:
+        pass
+    return 0
+
+
+MAX_TRANSIENT_RETRIES = 5
+
+
 def generate_summary_suggestion(
     feature_id: int,
     prompt_version: int = GENERATOR_VERSION,
@@ -328,6 +417,8 @@ def generate_summary_suggestion(
         suggestion.suggested_summary = result.suggested_summary
         suggestion.suggested_doc_links = result.suggested_doc_links
         suggestion.baseline_status = result.baseline_status
+        suggestion.baseline_newly_date = parse_baseline_date(result.baseline_newly_date)
+        suggestion.baseline_widely_date = parse_baseline_date(result.baseline_widely_date)
         suggestion.status = core_enums.SummarySuggestionStatus.COMPLETE.value
         suggestion.version = prompt_version
         suggestion.source_fingerprint = current_fp
@@ -354,6 +445,24 @@ def generate_summary_suggestion(
         )
 
     except Exception as e:
-        suggestion.status = core_enums.SummarySuggestionStatus.FAILED.value
-        suggestion.put()
-        logging.exception(f'Failed AI generation for feature {feature_id}: {e}')
+        retry_count = get_task_retry_count()
+        if is_transient_error(e) and retry_count < MAX_TRANSIENT_RETRIES:
+            logging.warning(
+                f'Transient failure during AI generation for feature {feature_id} '
+                f'(Attempt {retry_count + 1}/{MAX_TRANSIENT_RETRIES + 1}): {e}. '
+                'Re-raising to trigger Cloud Task retry with exponential backoff.'
+            )
+            # Update status timestamp to keep the lock fresh during retries
+            suggestion.status_timestamp = datetime.now()
+            suggestion.put()
+            raise
+        else:
+            suggestion.status = core_enums.SummarySuggestionStatus.FAILED.value
+            suggestion.put()
+            if is_transient_error(e):
+                logging.error(
+                    f'Transient failure exhausted after {retry_count + 1} attempts for feature {feature_id}. '
+                    f'Marking as FAILED permanently. Error: {e}'
+                )
+            else:
+                logging.exception(f'Permanent failure during AI generation for feature {feature_id}: {e}')

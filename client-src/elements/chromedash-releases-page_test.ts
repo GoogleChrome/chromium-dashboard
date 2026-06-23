@@ -292,6 +292,14 @@ describe('chromedash-releases-page', () => {
     );
     assert.exists(badge);
     assert.include(badge.innerHTML, 'Baseline Widely Available');
+
+    // Verify official SVG image is rendered inside the badge
+    const img = badge.querySelector('img');
+    assert.exists(img);
+    assert.equal(
+      img.getAttribute('src'),
+      '/static/img/baseline-widely-icon.svg'
+    );
   });
 
   it('handles features without summary text and missing links gracefully', async () => {
@@ -420,5 +428,98 @@ describe('chromedash-releases-page', () => {
       banner.innerHTML,
       'Chrome 127 is currently on the Dev channel'
     );
+  });
+
+  it('toggles and renders the unified pending reviews dashboard', async () => {
+    const user = {
+      can_create_feature: true,
+      can_edit: true,
+      is_admin: true,
+      can_review_release_notes: true,
+      email: 'editor@google.com',
+    };
+
+    const mockPendingReviews = {
+      features: [
+        {
+          id: 111,
+          name: 'CSS Subgrid Hack',
+          summary: 'Pending CSS subgrid improvements.',
+          blink_components: ['Blink>CSS'],
+          category: 4,
+          resources: {docs: []},
+        },
+        {
+          id: 222,
+          name: 'V8 Super Array',
+          summary: 'Pending V8 optimization.',
+          blink_components: ['Blink>JavaScript'],
+          category: 10,
+          resources: {docs: []},
+        },
+      ],
+      total_count: 2,
+    };
+    const getPendingReviewsStub = sinon
+      .stub(window.csClient, 'getPendingReviews')
+      .resolves(mockPendingReviews);
+
+    const component = (await fixture(
+      html`<chromedash-releases-page .user=${user}></chromedash-releases-page>`
+    )) as ChromedashReleasesPage;
+    await waitForLoading(component);
+
+    assert.equal(component.viewMode, 'milestone');
+
+    const viewReviewsBtn = component.renderRoot.querySelector(
+      '.pending-reviews-btn'
+    ) as HTMLElement;
+    assert.exists(viewReviewsBtn);
+    viewReviewsBtn.click();
+
+    await component.updateComplete;
+    await waitForLoading(component);
+
+    assert.equal(component.viewMode, 'reviews');
+    assert.isTrue(getPendingReviewsStub.calledOnce);
+
+    const headerNav = component.renderRoot.querySelector('.header-nav');
+    assert.isNull(headerNav);
+
+    const reviewsHeader = component.renderRoot.querySelector(
+      '.reviews-header-container'
+    );
+    assert.exists(reviewsHeader);
+    assert.include(
+      reviewsHeader.textContent,
+      'AI-Assisted Release Reviews Pending'
+    );
+
+    const categoryHeaders = Array.from(
+      component.renderRoot.querySelectorAll('.category-header')
+    ).map(el => el.textContent?.trim());
+
+    assert.include(categoryHeaders, 'CSS');
+    assert.include(categoryHeaders, 'JavaScript/V8');
+
+    const featureTitles = Array.from(
+      component.renderRoot.querySelectorAll('.feature-title')
+    ).map(el => el.textContent?.trim());
+
+    assert.include(featureTitles.join(' '), 'CSS Subgrid Hack');
+    assert.include(featureTitles.join(' '), 'V8 Super Array');
+
+    const backBtn = component.renderRoot.querySelector(
+      'sl-button[variant="neutral"]'
+    ) as HTMLElement;
+    assert.exists(backBtn);
+    backBtn.click();
+
+    await component.updateComplete;
+    await waitForLoading(component);
+
+    assert.equal(component.viewMode, 'milestone');
+
+    getPendingReviewsStub.restore();
   });
 });

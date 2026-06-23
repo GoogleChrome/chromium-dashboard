@@ -62,3 +62,7 @@ cron:
 - description: Delete WPT Coverage Report after 180 days
   url: /cron/delete_old_wpt_coverage_report
   schedule: every sunday 7:30
+# - description: Clean up stuck AI summary suggestion locks.
+#   url: /cron/cleanup_stuck_suggestions
+#   schedule: every 30 minutes
+

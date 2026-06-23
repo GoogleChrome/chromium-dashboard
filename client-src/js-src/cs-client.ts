@@ -43,6 +43,8 @@ export interface SuggestionData {
   suggested_summary: string | null;
   suggested_doc_links: string[];
   baseline_status: string | null;
+  baseline_newly_date: string | null;
+  baseline_widely_date: string | null;
   status_timestamp: string | null;
   last_generation_attempt: string | null;
   version_token: number;
@@ -729,6 +731,15 @@ export class ChromeStatusClient {
     return this.doGet<{count: number}>('/features/pending_reviews_count');
   }
 
+  async getPendingReviews(): Promise<{
+    features: Feature[];
+    total_count: number;
+  }> {
+    return this.doGet<{features: Feature[]; total_count: number}>(
+      '/features/pending_reviews'
+    );
+  }
+
   async getSummarySuggestion(featureId: number): Promise<SuggestionData> {
     return this.doGet<SuggestionData>(
       `/features/${featureId}/summary_suggestion`
@@ -747,7 +758,10 @@ export class ChromeStatusClient {
     versionToken: number,
     suggestedSummary?: string,
     suggestedDocLinks?: string[],
-    bypassJustification?: string
+    bypassJustification?: string,
+    baselineStatus?: string,
+    baselineNewlyDate?: string | null,
+    baselineWidelyDate?: string | null
   ): Promise<unknown> {
     return this.doPatch<unknown>(`/features/${featureId}/summary_suggestion`, {
       status,
@@ -755,6 +769,9 @@ export class ChromeStatusClient {
       suggested_summary: suggestedSummary,
       suggested_doc_links: suggestedDocLinks,
       bypass_justification: bypassJustification,
+      baseline_status: baselineStatus,
+      baseline_newly_date: baselineNewlyDate,
+      baseline_widely_date: baselineWidelyDate,
     });
   }
 

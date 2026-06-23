@@ -1,0 +1,12 @@
+- name: CSS Paint API
+  category: CSS
+  web_feature: paint
+  summary: The CSS Paint API allows developers to use JavaScript to draw directly into an element's background, border, or content.
+  explainer_links:
+    - https://github.com/w3c/css-houdini-drafts
+  spec_link: https://drafts.css-houdini.org/css-paint-api-1/
+  gt_summary: |
+    The CSS Paint API enables you to write JavaScript functions to draw custom images directly into CSS properties like background-image. This allows for dynamic, high-performance visual effects without relying on static images.
+  gt_links:
+    - https://developer.mozilla.org/en-US/docs/Web/API/CSS_Paint_API
+  gt_baseline: limited

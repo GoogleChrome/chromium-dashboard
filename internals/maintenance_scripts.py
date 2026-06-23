@@ -1795,3 +1795,43 @@ class DeleteWPTCoverageReport(FlaskHandler):
             f'Finished. Deleted a total of {count} old WPT coverage reports.'
         )
         return f'{count} WPT coverage reports deleted.'
+
+
+class CleanupStuckSuggestionsHandler(FlaskHandler):
+    """Cron handler to clean up stuck AI summary suggestions."""
+
+    def get_template_data(self, **kwargs) -> str:
+        self.require_cron_header()
+
+        from internals.core_models import FeatureSummarySuggestion
+        from internals import core_enums
+        from datetime import datetime, timedelta
+
+        # Query for suggestions stuck in IN_PROGRESS for more than 30 minutes.
+        stuck_threshold = datetime.now() - timedelta(minutes=30)
+
+        in_progress_suggestions = FeatureSummarySuggestion.query(
+            FeatureSummarySuggestion.status == core_enums.SummarySuggestionStatus.IN_PROGRESS.value
+        ).fetch()
+
+        cleaned_count = 0
+        batch = []
+        for suggestion in in_progress_suggestions:
+            timestamp = suggestion.status_timestamp or suggestion.last_generation_attempt
+            if timestamp and timestamp < stuck_threshold:
+                logging.info(
+                    f'Cleaning up stuck AI suggestion for feature {suggestion.key.id()}. '
+                    f'Stuck since: {timestamp}'
+                )
+                suggestion.status = core_enums.SummarySuggestionStatus.NONE.value
+                suggestion.status_timestamp = None
+                suggestion.last_generation_attempt = None
+                suggestion.source_fingerprint = None
+                batch.append(suggestion)
+                cleaned_count += 1
+
+        if batch:
+            ndb.put_multi(batch)
+
+        return f'Cleaned up {cleaned_count} stuck AI summary suggestions.'
+

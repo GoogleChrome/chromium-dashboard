@@ -100,6 +100,7 @@ def run_test() -> None:
         explainer_links = [explainer_links]
 
     spec_link = data.get('spec_link', '')
+    web_feature = data.get('web_feature', '')
 
     # Construct local unpersisted FeatureEntry
     mock_feature = FeatureEntry(
@@ -108,6 +109,7 @@ def run_test() -> None:
         summary=summary,
         explainer_links=explainer_links,
         spec_link=spec_link,
+        web_feature=web_feature,
     )
 
     print('\n--- Fetched Feature Details ---')

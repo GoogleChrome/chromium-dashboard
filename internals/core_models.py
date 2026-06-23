@@ -459,6 +459,8 @@ class FeatureSummarySuggestion(ndb.Model):
     baseline_status = ndb.StringProperty(
         indexed=True
     )  # Stored as str from BaselineStatus
+    baseline_newly_date = ndb.DateProperty(indexed=True)
+    baseline_widely_date = ndb.DateProperty(indexed=True)
     source_fingerprint = (
         ndb.StringProperty()
     )  # Hash of feature details to track edits

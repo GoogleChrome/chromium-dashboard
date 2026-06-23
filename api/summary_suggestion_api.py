@@ -27,6 +27,7 @@ from google.cloud import ndb  # type: ignore
 from framework import basehandlers, cloud_tasks_helpers, permissions
 from internals import core_enums
 from internals.core_models import FeatureEntry, FeatureSummarySuggestion
+from api import converters
 from internals.review_models import Activity
 
 
@@ -259,6 +260,27 @@ class SummarySuggestionAPI(basehandlers.EntitiesAPIHandler):
                 }
                 suggestion.suggested_doc_links = approved_links
 
+                # Update approved baseline status and dates
+                approved_baseline_status = params.get('baseline_status', suggestion.baseline_status)
+                approved_baseline_newly = params.get('baseline_newly_date')
+                approved_baseline_widely = params.get('baseline_widely_date')
+
+                def parse_date(date_str):
+                    if not date_str:
+                        return None
+                    try:
+                        if isinstance(date_str, datetime.date):
+                            return date_str
+                        return datetime.datetime.strptime(date_str, '%Y-%m-%d').date()
+                    except ValueError:
+                        return None
+
+                suggestion.baseline_status = approved_baseline_status
+                if approved_baseline_newly is not None:
+                    suggestion.baseline_newly_date = parse_date(approved_baseline_newly)
+                if approved_baseline_widely is not None:
+                    suggestion.baseline_widely_date = parse_date(approved_baseline_widely)
+
             elif target_status == core_enums.SummarySuggestionStatus.DISCARDED:
                 if current_status not in [
                     core_enums.SummarySuggestionStatus.COMPLETE.value,
@@ -473,3 +495,41 @@ class PendingReviewsCountAPI(basehandlers.EntitiesAPIHandler):
             == core_enums.SummarySuggestionStatus.COMPLETE
         ).count()
         return {'count': count}
+
+
+class PendingReviewsAPI(basehandlers.EntitiesAPIHandler):
+    """API handler to fetch the list of features with pending AI reviews."""
+
+    def do_get(self, **kwargs: Any) -> dict[str, Any]:
+        """Retrieve the list of features that have suggestions in COMPLETE status."""
+        user = self.get_current_user()
+        if not user or not permissions.can_review_release_notes(user):
+            self.abort(403, msg='Unauthorized.')
+
+        # 1. Query suggestions in COMPLETE status
+        suggestions = FeatureSummarySuggestion.query(
+            FeatureSummarySuggestion.status
+            == core_enums.SummarySuggestionStatus.COMPLETE
+        ).fetch()
+
+        if not suggestions:
+            return {'features': [], 'total_count': 0}
+
+        # 2. Get the feature IDs
+        feature_ids = [s.key.id() for s in suggestions]
+
+        # 3. Load all feature entries in a batch get
+        keys = [ndb.Key(FeatureEntry, fid) for fid in feature_ids]
+        features = ndb.get_multi(keys)
+
+        # 4. Serialize features to JSON verbose
+        serialized_features = [
+            converters.feature_entry_to_json_verbose(f)
+            for f in features
+            if f is not None
+        ]
+
+        return {
+            'features': serialized_features,
+            'total_count': len(serialized_features)
+        }

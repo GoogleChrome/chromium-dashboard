@@ -76,3 +76,57 @@ To support local testing and offline CI verification (like Playwright integratio
 
 *   If `GEMINI_API_KEY` is **not configured** and the app is running in `DEV_MODE` or `UNIT_TEST_MODE`, GAE skips calling the ADK Gemini agent and immediately returns a mock suggestion payload.
 *   In production, the backend raises a configuration error and sets the suggestion status to `FAILED`.
+
+---
+
+## 5. AI Quality Assurance & Hybrid E2E Evaluation Pipeline
+
+To ensure the AI generator produces highly accurate, professional, and regression-free summaries over time (as prompts or model versions evolve), ChromeStatus utilizes a **Grounded, Hybrid Linter-Judge E2E Evaluation Pipeline**.
+
+Developers and DevRel editors can run this evaluation suite locally to verify prompt changes before staging or deploying.
+
+### The Hybrid Linter-Judge Architecture
+
+Rather than relying purely on a zero-shot LLM to grade summaries (which introduces high latency, high token costs, and path-based URL hallucinations), the evaluation engine operates as a hybrid pipeline:
+
+1.  **Programmatic Python Pre-Grounding (Deterministic Check)**:
+    Before calling the LLM Judge, the python test runner (`scripts/eval_summaries.py`) performs fast, parallel HTTP HEAD requests using native Python on every URL suggested by the generator. It follows redirects and determines the exact real-world HTTP status (e.g. `Valid (HTTP 200 OK)` or `Invalid (HTTP 404)`).
+2.  **Grounded LLM Judge Grading (Semantic Check)**:
+    The test runner injects these pre-verified HTTP statuses directly into the LLM Judge's prompt. This completely eliminates the judge's path-guessing hallucinations, forcing it to grade links based on absolute physical reality. Additionally, the judge's Accuracy rubric is instructed to support technical enrichment from specs, preventing it from penalizing accurate property discoveries.
+3.  **Fast-Fail and Metric-Specific Tolerances**:
+    *   **Clarity & Style**: We allow a **`1.0` tolerance** margin. Minor, borderline word slip-ups (like a single use of the word `"introduces"`) generate a warning but do not break the build.
+    *   **Factual Accuracy & Link Validity**: We maintain a strict **`0.5` tolerance** margin. Any real technical drift or broken links will immediately fail the E2E check.
+    *   **Absolute Quality Floor Bypass**: If a new score is **$\ge 4.0$ (Good or Excellent)**, it is marked as a pass automatically, preventing false-positive build failures from minor fluctuations between 4 and 5.
+
+```mermaid
+graph TD
+    Gen[AI Generator] --> Python[Python Pre-Grounder]
+    Python -->|Pre-verifies Links HTTP 200/404| Prompt[Injects Facts into Judge Prompt]
+    Prompt --> Judge[LLM Judge Grader]
+    Judge --> Gates{Check Quality Gates}
+    
+    Gates -->|Clarity >= 4.0 & Accuracy >= 4.0| Pass[Green Pass scorecard]
+    Gates -->|Regression > Tolerances| Fail[Red Fail scorecard]
+```
+
+### The 3 E2E Quality Gates
+
+To pass the E2E verification suite, a test run ($N=3$ iterations per feature) must satisfy three strict gates:
+
+1.  **Gate 1 (Quality Floor)**: The dataset-wide average score for Clarity and Accuracy must be $\ge 4.0/5$.
+2.  **Gate 2 (Robustness Floor)**: The *minimum* score for any individual run must be $\ge 3.0/5$ (preventing occasional catastrophic failures or gibberish).
+3.  **Gate 3 (Zero Regression)**: The average score drop compared to the stable baseline (`scripts/baseline_scores.json`) must not exceed the metric-specific tolerances (0.5 for Accuracy/Links, 1.0 for Clarity).
+
+### Running the E2E Evaluation Locally
+
+Developers **must** run the statistical evaluation runner and verify a passing status before submitting any changes to prompts, model versions, or generator schemas:
+
+```bash
+# Initialize venv and run E2E evaluation against the YAML dataset (N=3 iterations)
+PYTHONPATH=.:cs-env/lib/python3.13/site-packages python3 scripts/eval_summaries.py --prompt-version 2 --iterations 3 --compare-with scripts/baseline_scores.json
+```
+
+The test runner will output a complete, formatted console scorecard, and if any run falls below the quality gates, it will print the **exact qualitative reasoning** from the LLM Judge directly to the console so developers can debug prompts instantly.
+
+The testing dataset is stored cleanly in the source tree as YAML files under `scripts/eval_data/` (e.g. `feature_prompt_api.yaml`), fully integrated with the official WebDX Feature IDs (`web_feature`) for complete traceability to `webstatus.dev`.
+

@@ -189,6 +189,10 @@ api_routes: list[Route] = [
         summary_suggestion_api.PendingReviewsCountAPI,
     ),
     Route(
+        f'{API_BASE}/features/pending_reviews',
+        summary_suggestion_api.PendingReviewsAPI,
+    ),
+    Route(
         f'{API_BASE}/features/<int:feature_id>/process',
         processes_api.ProcessesAPI,
     ),
@@ -484,6 +488,10 @@ internals_routes: list[Route] = [
     Route(
         '/cron/delete_old_wpt_coverage_report',
         maintenance_scripts.DeleteWPTCoverageReport,
+    ),
+    Route(
+        '/cron/cleanup_stuck_suggestions',
+        maintenance_scripts.CleanupStuckSuggestionsHandler,
     ),
     Route('/admin/find_stop_words', search_fulltext.FindStopWords),
     Route('/tasks/email-subscribers', notifier.FeatureChangeHandler),

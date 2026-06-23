@@ -17,7 +17,11 @@
 import {assert, fixture} from '@open-wc/testing';
 import {html} from 'lit';
 import sinon from 'sinon';
-import {ChromeStatusClient, User, ChromeStatusHttpError} from '../js-src/cs-client.js';
+import {
+  ChromeStatusClient,
+  User,
+  ChromeStatusHttpError,
+} from '../js-src/cs-client.js';
 import {ChromedashSummaryReviewDialog} from './chromedash-summary-review-dialog.js';
 import './chromedash-summary-review-dialog.js';
 
@@ -451,5 +455,257 @@ describe('chromedash-summary-review-dialog', () => {
     assert.equal(dialog.linksList[0].url, 'https://example.com/server-link');
     assert.isTrue(dialog.linksList[0].approved);
     assert.equal(dialog.linksList[1].url, 'https://example.com/original-link');
+  });
+
+  it('renders Blink components, spec/explainer links, and AI baseline status with dates', async () => {
+    const localSuggestion = {
+      status: 'complete',
+      suggested_summary: 'Suggested AI summary.',
+      suggested_doc_links: ['https://example.com/ai-suggested-link-1'],
+      version_token: 1,
+      baseline_status: 'newly',
+      baseline_newly_date: '2024-03-15',
+      baseline_widely_date: null,
+      status_timestamp: null,
+      last_generation_attempt: null,
+    } as any;
+
+    const localFeature = {
+      id: 12345,
+      name: 'Test Feature',
+      summary: 'Original summary text.',
+      resources: {
+        docs: ['https://example.com/original-link'],
+      },
+      blink_components: ['Blink>DOM'],
+      spec_link: 'https://example.com/spec',
+      explainer_links: ['https://example.com/explainer1'],
+    } as any;
+
+    const dialog = (await fixture(
+      html`<chromedash-summary-review-dialog
+        .feature=${localFeature}
+        .suggestion=${localSuggestion}
+      ></chromedash-summary-review-dialog>`
+    )) as ChromedashSummaryReviewDialog;
+
+    dialog.show();
+    await dialog.updateComplete;
+
+    // Check Blink components rendering
+    const metaContainer = dialog.renderRoot.querySelector(
+      '.feature-context-meta-list'
+    );
+    assert.exists(metaContainer);
+    const textNormalized = metaContainer.textContent?.replace(/\s+/g, ' ') || '';
+    assert.include(textNormalized, 'Blink Components: Blink>DOM');
+
+    // Verify link hrefs are correct in the DOM
+    const specLink = metaContainer.querySelector(
+      'a[href="https://example.com/spec"]'
+    );
+    assert.exists(specLink);
+    const explainerLink = metaContainer.querySelector(
+      'a[href="https://example.com/explainer1"]'
+    );
+    assert.exists(explainerLink);
+
+    // Check AI Baseline badge and dates
+    const baselineInfo = dialog.renderRoot.querySelector('.baseline-info-row');
+    assert.exists(baselineInfo);
+    assert.include(baselineInfo.innerHTML, 'baseline-newly-icon.svg');
+    assert.include(baselineInfo.textContent, 'Baseline Newly Available');
+    const columns = dialog.renderRoot.querySelectorAll('.diff-column');
+    assert.equal(columns.length, 2);
+    const baselineSection = columns[1].querySelector(
+      '.compare-section-divider'
+    );
+    assert.exists(baselineSection);
+    assert.include(
+      baselineSection.textContent || '',
+      'Newly Available since 2024-03-15'
+    );
+  });
+
+  it('toggles the links checklist when clicking Use Original and Use Suggested', async () => {
+    const localSuggestion = {
+      status: 'complete',
+      suggested_summary: 'Suggested AI summary.',
+      suggested_doc_links: ['https://example.com/ai-suggested-link-1'],
+      version_token: 1,
+      baseline_status: null,
+      status_timestamp: null,
+      last_generation_attempt: null,
+    } as any;
+
+    const localFeature = {
+      id: 12345,
+      name: 'Test Feature',
+      summary: 'Original summary text.',
+      resources: {
+        docs: ['https://example.com/original-link'],
+      },
+    } as any;
+
+    const dialog = (await fixture(
+      html`<chromedash-summary-review-dialog
+        .feature=${localFeature}
+        .suggestion=${localSuggestion}
+      ></chromedash-summary-review-dialog>`
+    )) as ChromedashSummaryReviewDialog;
+
+    dialog.show();
+    await dialog.updateComplete;
+
+    // By default, it combines links and checks those suggested by AI
+    assert.equal(dialog.linksList.length, 2);
+    const aiLinkItem = dialog.linksList.find(
+      item => item.url === 'https://example.com/ai-suggested-link-1'
+    );
+    assert.isTrue(aiLinkItem?.approved);
+    const origLinkItem = dialog.linksList.find(
+      item => item.url === 'https://example.com/original-link'
+    );
+    assert.isFalse(origLinkItem?.approved);
+
+    // Click "Use Original Links"
+    const buttons = Array.from(dialog.renderRoot.querySelectorAll('sl-button'));
+    const useOrigBtnReal = buttons.find(
+      b => b.textContent?.trim() === 'Use Original Links'
+    ) as HTMLElement;
+    assert.exists(useOrigBtnReal);
+    useOrigBtnReal.click();
+    await dialog.updateComplete;
+
+    // Now, linksList should contain ONLY the original link, checked!
+    assert.equal(dialog.linksList.length, 1);
+    assert.equal(dialog.linksList[0].url, 'https://example.com/original-link');
+    assert.isTrue(dialog.linksList[0].approved);
+
+    // Click "Use AI Links"
+    const useSuggestedBtnReal = buttons.find(
+      b => b.textContent?.trim() === 'Use AI Links'
+    ) as HTMLElement;
+    assert.exists(useSuggestedBtnReal);
+    useSuggestedBtnReal.click();
+    await dialog.updateComplete;
+
+    // Now, linksList should contain ONLY the AI suggested link, checked!
+    assert.equal(dialog.linksList.length, 1);
+    assert.equal(
+      dialog.linksList[0].url,
+      'https://example.com/ai-suggested-link-1'
+    );
+    assert.isTrue(dialog.linksList[0].approved);
+  });
+
+  it('toggles the summary text field when clicking Use Original Text and Use AI Text', async () => {
+    const localFeature = {
+      id: 12345,
+      name: 'Test Feature',
+      summary: 'Original summary text.',
+      resources: {
+        docs: ['https://example.com/original-link'],
+      },
+    } as any;
+
+    const localSuggestion = {
+      status: 'complete',
+      suggested_summary: 'Suggested AI summary.',
+      suggested_doc_links: ['https://example.com/ai-suggested-link-1'],
+      version_token: 1,
+      baseline_status: null,
+      status_timestamp: null,
+      last_generation_attempt: null,
+    } as any;
+
+    const dialog = (await fixture(
+      html`<chromedash-summary-review-dialog
+        .feature=${localFeature}
+        .suggestion=${localSuggestion}
+      ></chromedash-summary-review-dialog>`
+    )) as ChromedashSummaryReviewDialog;
+
+    dialog.show();
+    await dialog.updateComplete;
+
+    assert.equal(dialog.summaryText, 'Suggested AI summary.');
+
+    const buttons = Array.from(dialog.renderRoot.querySelectorAll('sl-button'));
+    
+    const useOrigTextBtn = buttons.find(
+      b => b.textContent?.trim() === 'Use Original Text'
+    ) as HTMLElement;
+    assert.exists(useOrigTextBtn);
+    useOrigTextBtn.click();
+    await dialog.updateComplete;
+
+    assert.equal(dialog.summaryText, 'Original summary text.');
+    assert.equal(dialog.linksList.length, 2);
+
+    const useAITextBtn = buttons.find(
+      b => b.textContent?.trim() === 'Use AI Text'
+    ) as HTMLElement;
+    assert.exists(useAITextBtn);
+    useAITextBtn.click();
+    await dialog.updateComplete;
+
+    assert.equal(dialog.summaryText, 'Suggested AI summary.');
+  });
+
+  it('updates baseline status overrides and sends them in save API payload', async () => {
+    const localFeature = {
+      id: 12345,
+      name: 'Test Feature',
+      summary: 'Original summary text.',
+      resources: {
+        docs: ['https://example.com/original-link'],
+      },
+    } as any;
+
+    const localSuggestion = {
+      status: 'complete',
+      suggested_summary: 'Suggested AI summary.',
+      suggested_doc_links: ['https://example.com/ai-suggested-link-1'],
+      version_token: 1,
+      baseline_status: null,
+      status_timestamp: null,
+      last_generation_attempt: null,
+    } as any;
+
+    const dialog = (await fixture(
+      html`<chromedash-summary-review-dialog
+        .feature=${localFeature}
+        .suggestion=${localSuggestion}
+      ></chromedash-summary-review-dialog>`
+    )) as ChromedashSummaryReviewDialog;
+
+    dialog.show();
+    await dialog.updateComplete;
+
+    assert.equal(dialog.editingBaselineStatus, 'none');
+
+    dialog.editingBaselineStatus = 'widely';
+    dialog.editingBaselineNewlyDate = '2024-06-01';
+    dialog.editingBaselineWidelyDate = '2024-07-01';
+    await dialog.updateComplete;
+
+    window.csClient.patchSummarySuggestion.resolves({});
+
+    await dialog.applySuggestion();
+
+    assert.isTrue(
+      window.csClient.patchSummarySuggestion.calledWith(
+        12345,
+        'applied',
+        1,
+        'Suggested AI summary.',
+        ['https://example.com/ai-suggested-link-1'],
+        undefined,
+        'widely',
+        '2024-06-01',
+        '2024-07-01'
+      )
+    );
   });
 });

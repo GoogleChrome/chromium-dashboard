@@ -1,0 +1,12 @@
+- name: CSS Anchor Positioning
+  category: CSS
+  web_feature: anchor-positioning
+  summary: Allows positioning a positioned element relative to one or more other anchor elements.
+  explainer_links:
+    - https://github.com/w3c/csswg-drafts/issues/8927
+  spec_link: https://drafts.csswg.org/css-anchor-position-1/
+  gt_summary: |
+    CSS anchor positioning enables you to tether a positioned element (like a tooltip or menu) to one or more anchor elements on the page. This eliminates the need for complex JavaScript calculations for popup positioning.
+  gt_links:
+    - https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_anchor_positioning
+  gt_baseline: newly

@@ -291,6 +291,61 @@ export class ChromedashSummaryReviewDialog extends LitElement {
           flex-direction: column;
           gap: 0.8rem;
         }
+
+        .compare-section-divider {
+          margin-top: 15px;
+          border-top: 1px solid var(--sl-color-neutral-200);
+          padding-top: 15px;
+        }
+        .compare-field-header-margin {
+          margin-bottom: 5px;
+        }
+        .baseline-info-row {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          margin-top: 5px;
+        }
+        .baseline-badge-flex {
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+        }
+        .baseline-badge-icon-sz {
+          width: 12px;
+          height: 12px;
+          display: inline-block;
+        }
+        .baseline-date-label {
+          font-size: 0.85em;
+          color: var(--sl-color-neutral-600);
+        }
+        .feature-context-meta-list {
+          font-size: 0.85em;
+          color: var(--sl-color-neutral-600);
+          line-height: 1.5;
+          margin-top: 5px;
+        }
+        .baseline-edit-row {
+          display: flex;
+          flex-direction: column;
+          gap: 1rem;
+          margin-top: 5px;
+        }
+        @media (min-width: 768px) {
+          .baseline-edit-row {
+            flex-direction: row;
+            align-items: center;
+          }
+        }
+        .baseline-select-width {
+          width: 220px;
+        }
+        .date-inputs-container {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+        }
       `,
     ];
   }
@@ -329,6 +384,12 @@ export class ChromedashSummaryReviewDialog extends LitElement {
   serverLinksList: {url: string; approved: boolean}[] = [];
   @state()
   serverVersionToken = 1;
+  @state()
+  editingBaselineStatus = 'none';
+  @state()
+  editingBaselineNewlyDate = '';
+  @state()
+  editingBaselineWidelyDate = '';
 
   @query('#dialog')
   dialogEl!: SlDialog;
@@ -359,6 +420,9 @@ export class ChromedashSummaryReviewDialog extends LitElement {
     this.serverSummaryText = '';
     this.serverLinksList = [];
     this.serverVersionToken = this.suggestion.version_token || 1;
+    this.editingBaselineStatus = this.suggestion.baseline_status || 'none';
+    this.editingBaselineNewlyDate = this.suggestion.baseline_newly_date || '';
+    this.editingBaselineWidelyDate = this.suggestion.baseline_widely_date || '';
 
     void this.dialogEl.show();
   }
@@ -367,29 +431,33 @@ export class ChromedashSummaryReviewDialog extends LitElement {
     void this.dialogEl.hide();
   }
 
-  useOriginalText() {
-    if (this.isDirty) {
-      const ok = window.confirm(
-        'You have unsaved changes. Overwriting will discard your edits. Do you want to proceed?'
-      );
-      if (!ok) return;
-    }
+  useOriginalSummaryOnly() {
     if (this.feature) {
       this.summaryText = this.feature.summary || '';
-      this.isDirty = false;
+      this.isDirty = true;
     }
   }
 
-  useAIText() {
-    if (this.isDirty) {
-      const ok = window.confirm(
-        'You have unsaved changes. Overwriting will discard your edits. Do you want to proceed?'
-      );
-      if (!ok) return;
-    }
+  useAISummaryOnly() {
     if (this.suggestion) {
       this.summaryText = this.suggestion.suggested_summary || '';
-      this.isDirty = false;
+      this.isDirty = true;
+    }
+  }
+
+  useOriginalLinksOnly() {
+    if (this.feature) {
+      const featureLinks = this.feature.resources?.docs || [];
+      this.linksList = featureLinks.map(url => ({url, approved: true}));
+      this.isDirty = true;
+    }
+  }
+
+  useAILinksOnly() {
+    if (this.suggestion) {
+      const aiLinks = this.suggestion.suggested_doc_links || [];
+      this.linksList = aiLinks.map(url => ({url, approved: true}));
+      this.isDirty = true;
     }
   }
 
@@ -409,6 +477,71 @@ export class ChromedashSummaryReviewDialog extends LitElement {
     this.linksList = [...this.linksList, {url, approved: true}];
     this.newLinkLabelInput = '';
     this.isDirty = true;
+  }
+
+  renderAIBaselineInfo() {
+    if (
+      !this.suggestion ||
+      !this.suggestion.baseline_status ||
+      this.suggestion.baseline_status === 'none'
+    ) {
+      return nothing;
+    }
+
+    let label = '';
+    let variant = '';
+    let iconSrc = '';
+    let dateLabel = '';
+
+    switch (this.suggestion.baseline_status) {
+      case 'widely':
+        label = 'Baseline Widely Available';
+        variant = 'success';
+        iconSrc = '/static/img/baseline-widely-icon.svg';
+        if (this.suggestion.baseline_widely_date) {
+          dateLabel = `Widely Available since ${this.suggestion.baseline_widely_date}`;
+        } else if (this.suggestion.baseline_newly_date) {
+          dateLabel = `Newly Available on ${this.suggestion.baseline_newly_date}`;
+        }
+        break;
+      case 'newly':
+        label = 'Baseline Newly Available';
+        variant = 'primary';
+        iconSrc = '/static/img/baseline-newly-icon.svg';
+        if (this.suggestion.baseline_newly_date) {
+          dateLabel = `Newly Available since ${this.suggestion.baseline_newly_date}`;
+        }
+        break;
+      case 'limited':
+        label = 'Baseline Limited';
+        variant = 'warning';
+        iconSrc = '/static/img/baseline-limited-icon.svg';
+        break;
+      default:
+        return nothing;
+    }
+
+    return html`
+      <div class="compare-section-divider">
+        <div class="field-header compare-field-header-margin">
+          <strong>AI-Evaluated Baseline Status</strong>
+        </div>
+        <div class="baseline-info-row">
+          <sl-tag
+            variant=${variant}
+            size="small"
+            class="baseline-badge-flex"
+            pill
+          >
+            <img src="${iconSrc}" class="baseline-badge-icon-sz" alt="" />
+            ${label}
+          </sl-tag>
+          ${dateLabel
+            ? html` <span class="baseline-date-label">${dateLabel}</span> `
+            : nothing}
+        </div>
+      </div>
+    `;
   }
 
   isBypassRequired() {
@@ -499,7 +632,14 @@ export class ChromedashSummaryReviewDialog extends LitElement {
           : this.suggestion.version_token,
         this.summaryText,
         approvedLinks,
-        this.bypassJustification || undefined
+        this.bypassJustification || undefined,
+        this.editingBaselineStatus,
+        this.editingBaselineStatus !== 'none'
+          ? this.editingBaselineNewlyDate || null
+          : null,
+        this.editingBaselineStatus === 'widely'
+          ? this.editingBaselineWidelyDate || null
+          : null
       );
 
       this.dispatchEvent(
@@ -586,7 +726,10 @@ export class ChromedashSummaryReviewDialog extends LitElement {
                   <div class="field-header">
                     <strong>Summary</strong>
                   </div>
-                  <div class="original-text" data-testid="server-summary-reference">
+                  <div
+                    class="original-text"
+                    data-testid="server-summary-reference"
+                  >
                     ${this.serverSummaryText || 'No summary'}
                   </div>
                   <div class="field-header">
@@ -615,7 +758,12 @@ export class ChromedashSummaryReviewDialog extends LitElement {
                   <div class="field-header">
                     <strong>Summary</strong>
                   </div>
-                  <div class="original-text" data-testid="local-summary-draft-reference">${this.summaryText}</div>
+                  <div
+                    class="original-text"
+                    data-testid="local-summary-draft-reference"
+                  >
+                    ${this.summaryText}
+                  </div>
                   <div class="field-header">
                     <strong>Links</strong>
                   </div>
@@ -692,6 +840,57 @@ export class ChromedashSummaryReviewDialog extends LitElement {
                         )
                       : 'No doc links'}
                   </div>
+
+                  <!-- Feature Context Metadata -->
+                  <div class="compare-section-divider">
+                    <div class="field-header compare-field-header-margin">
+                      <strong>Feature Context</strong>
+                    </div>
+                    <div class="feature-context-meta-list">
+                      ${this.feature?.blink_components?.length
+                        ? html`
+                            <div>
+                              <strong>Blink Components:</strong>
+                              ${this.feature.blink_components.join(', ')}
+                            </div>
+                          `
+                        : nothing}
+                      ${this.feature?.spec_link
+                        ? html`
+                            <div>
+                              <strong>Spec Link:</strong>
+                              <a
+                                href="${this.feature.spec_link}"
+                                target="_blank"
+                                rel="noopener"
+                                >Specification</a
+                              >
+                            </div>
+                          `
+                        : nothing}
+                      ${this.feature?.explainer_links?.length
+                        ? html`
+                            <div>
+                              <strong>Explainers:</strong>
+                              ${(this.feature?.explainer_links || []).map(
+                                (link, idx) => html`
+                                  <a
+                                    href="${link}"
+                                    target="_blank"
+                                    rel="noopener"
+                                    >Explainer ${idx + 1}</a
+                                  >${idx <
+                                  (this.feature?.explainer_links || []).length -
+                                    1
+                                    ? ', '
+                                    : ''}
+                                `
+                              )}
+                            </div>
+                          `
+                        : nothing}
+                    </div>
+                  </div>
                 </div>
 
                 <!-- Right Column (AI/Suggested Reference) -->
@@ -703,7 +902,10 @@ export class ChromedashSummaryReviewDialog extends LitElement {
                   <div class="field-header">
                     <strong>Suggested Summary</strong>
                   </div>
-                  <div class="original-text" data-testid="suggested-summary-reference">
+                  <div
+                    class="original-text"
+                    data-testid="suggested-summary-reference"
+                  >
                     ${this.suggestion?.suggested_summary ||
                     'No suggested summary'}
                   </div>
@@ -722,6 +924,9 @@ export class ChromedashSummaryReviewDialog extends LitElement {
                         )
                       : 'No doc links'}
                   </div>
+
+                  <!-- AI-evaluated Baseline Compatibility & Support Dates -->
+                  ${this.renderAIBaselineInfo()}
                 </div>
               </div>
 
@@ -768,15 +973,15 @@ export class ChromedashSummaryReviewDialog extends LitElement {
                         >
                           <sl-button
                             size="small"
-                            @click=${this.useOriginalText}
+                            @click=${this.useOriginalSummaryOnly}
                             ?disabled=${this.submitting}
-                            >Use Original</sl-button
+                            >Use Original Text</sl-button
                           >
                           <sl-button
                             size="small"
-                            @click=${this.useAIText}
+                            @click=${this.useAISummaryOnly}
                             ?disabled=${this.submitting}
-                            >Use Suggested</sl-button
+                            >Use AI Text</sl-button
                           >
                         </sl-button-group>
                       `
@@ -807,6 +1012,22 @@ export class ChromedashSummaryReviewDialog extends LitElement {
 
                 <div class="field-header">
                   <strong>Final Documentation Links</strong>
+                  <sl-button-group label="Use original or suggested links">
+                    <sl-button
+                      size="small"
+                      @click=${this.useOriginalLinksOnly}
+                      ?disabled=${this.submitting}
+                    >
+                      Use Original Links
+                    </sl-button>
+                    <sl-button
+                      size="small"
+                      @click=${this.useAILinksOnly}
+                      ?disabled=${this.submitting}
+                    >
+                      Use AI Links
+                    </sl-button>
+                  </sl-button-group>
                 </div>
                 <div class="suggested-links-container">
                   <div class="editable-links-list">
@@ -847,6 +1068,89 @@ export class ChromedashSummaryReviewDialog extends LitElement {
                       ?disabled=${this.submitting}
                       >Add</sl-button
                     >
+                  </div>
+                </div>
+
+                <!-- Editable Baseline Status Overrides -->
+                <div class="compare-section-divider">
+                  <div class="field-header compare-field-header-margin">
+                    <strong>Baseline Status Override</strong>
+                  </div>
+                  <div class="baseline-edit-row">
+                    <sl-select
+                      size="small"
+                      class="baseline-select-width"
+                      .value=${this.editingBaselineStatus || 'none'}
+                      ?disabled=${this.submitting}
+                      @sl-change=${(e: Event) => {
+                        const target = e.target;
+                        if (target && 'value' in target) {
+                          this.editingBaselineStatus = String(target.value);
+                          this.isDirty = true;
+                        }
+                      }}
+                    >
+                      <sl-option value="none"
+                        >None (Reject Suggestion)</sl-option
+                      >
+                      <sl-option value="limited">Baseline Limited</sl-option>
+                      <sl-option value="newly"
+                        >Baseline Newly Available</sl-option
+                      >
+                      <sl-option value="widely"
+                        >Baseline Widely Available</sl-option
+                      >
+                    </sl-select>
+
+                    ${this.editingBaselineStatus !== 'none'
+                      ? html`
+                          <div class="date-inputs-container">
+                            ${this.editingBaselineStatus === 'newly' ||
+                            this.editingBaselineStatus === 'widely'
+                              ? html`
+                                  <sl-input
+                                    type="date"
+                                    size="small"
+                                    label="Newly Available Date"
+                                    .value=${this.editingBaselineNewlyDate ||
+                                    ''}
+                                    ?disabled=${this.submitting}
+                                    @sl-input=${(e: Event) => {
+                                      const target = e.target;
+                                      if (target && 'value' in target) {
+                                        this.editingBaselineNewlyDate = String(
+                                          target.value
+                                        );
+                                        this.isDirty = true;
+                                      }
+                                    }}
+                                  ></sl-input>
+                                `
+                              : nothing}
+                            ${this.editingBaselineStatus === 'widely'
+                              ? html`
+                                  <sl-input
+                                    type="date"
+                                    size="small"
+                                    label="Widely Available Date"
+                                    .value=${this.editingBaselineWidelyDate ||
+                                    ''}
+                                    ?disabled=${this.submitting}
+                                    @sl-input=${(e: Event) => {
+                                      const target = e.target;
+                                      if (target && 'value' in target) {
+                                        this.editingBaselineWidelyDate = String(
+                                          target.value
+                                        );
+                                        this.isDirty = true;
+                                      }
+                                    }}
+                                  ></sl-input>
+                                `
+                              : nothing}
+                          </div>
+                        `
+                      : nothing}
                   </div>
                 </div>
               </div>

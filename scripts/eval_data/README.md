@@ -31,24 +31,42 @@ If you want to edit instructions or constraints:
 
 ## 3. Adding New Ground-Truth Features
 
-To add a new feature to the evaluation dataset, create a new JSON file inside this folder (e.g., `scripts/eval_data/feature_web_locks.json`):
+To add a new feature to the evaluation dataset, create a new YAML file inside this folder (e.g., `scripts/eval_data/feature_web_locks.yaml`). 
 
-```json
-[
-  {
-    "name": "Web Locks API",
-    "category": 7,
-    "summary": "Allows web applications to asynchronously acquire a lock, hold it while work is performed, then release it.",
-    "explainer_links": ["https://github.com/w3c/web-locks"],
-    "spec_link": "https://w3c.github.io/web-locks/",
-    "gt_summary": "The Web Locks API allows scripts running in different tabs or workers to asynchronously acquire a lock, preventing concurrent resource mutations. This helps coordinate shared storage access without blocking the main execution thread.",
-    "gt_links": ["https://developer.mozilla.org/en-US/docs/Web/API/Web_Locks_API"],
-    "gt_baseline": "widely"
-  }
-]
+While both JSON and YAML formats are supported by the loader, **YAML is highly preferred** because it natively supports clean multiline text blocks (using the `|` literal scalar), making long summaries extremely easy to read and write without escaping quotes or inserting `\n` characters:
+
+```yaml
+- name: Web Locks API
+  category: 7
+  web_feature: web-locks
+  summary: Allows web applications to asynchronously acquire a lock, hold it while work is performed, then release it.
+  explainer_links:
+    - https://github.com/w3c/web-locks
+  spec_link: https://w3c.github.io/web-locks/
+  gt_summary: |
+    The Web Locks API allows scripts running in different tabs or workers to asynchronously acquire a lock, preventing concurrent resource mutations. This helps coordinate shared storage access without blocking the main execution thread.
+  gt_links:
+    - https://developer.mozilla.org/en-US/docs/Web/API/Web_Locks_API
+  gt_baseline: widely
 ```
 
 *Note: For the `category` integer, map it to the categories defined in `internals/core_enums.py`.*
+
+### 3.1. Ground-Truth Schema Reference
+
+Every test case file (typically `.yaml` or `.json`) must contain a list containing a single feature object under test. The fields are defined as follows:
+
+| Field Name | Type | Required? | Description |
+| :--- | :--- | :--- | :--- |
+| `name` | string | **Yes** | The user-facing name of the feature (e.g., `"Popover API"`). |
+| `category` | string or integer | **Yes** | The category of the feature. Can be declared as a readable string name (e.g., `'CSS'`, `'JavaScript'`, `'Web Components'`) or its official integer ID. Strings are resolved case-insensitively (and common abbreviations like `'JS'` are supported), mapping back to the official IDs in [internals/core_enums.py](file:///usr/local/google/home/jamescscott/code/chromium-dashboard/internals/core_enums.py). |
+| `summary` | string | **Yes** | The raw, brief, or poorly-drafted summary of the feature stored in the ChromeStatus database. This acts as the primary input for the AI generator. |
+| `explainer_links` | array (strings) | No | A list of URLs pointing to explainer documents, GitHub issues, or design docs. |
+| `spec_link` | string | No | The URL pointing to the official specification draft (e.g., W3C or WHATWG drafts). |
+| `gt_summary` | string | **Yes** | The human-authored, high-quality, ground-truth reference summary. The LLM judge compares the AI summary against this for accuracy, tone, and length. |
+| `gt_links` | array (strings) | **Yes** | The high-quality documentation links (usually MDN or web.dev) we expect the AI to discover and include in its suggestion. |
+| `gt_baseline` | string | **Yes** | The ground-truth WebDX Baseline status of the feature. Must be one of: `"limited"`, `"newly"`, or `"widely"`. |
+| `web_feature` | string | No | **(Optional)** The official WebDX Feature ID from `webstatus.dev` (e.g., `"popover"`, `"anchor-positioning"`). Maps directly to the `web_feature` field on ChromeStatus's `FeatureEntry` model, providing clear traceability to the WebDX compat ecosystem. |
 
 ---
 

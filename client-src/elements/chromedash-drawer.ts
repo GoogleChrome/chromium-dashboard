@@ -387,7 +387,7 @@ export class ChromedashDrawer extends LitElement {
         : nothing}
       ${this.user?.can_review_release_notes && this.pendingReviewsCount > 0
         ? this.renderNavItem(
-            '/releases',
+            '/releases?view=reviews',
             html`Release Reviews
               <sl-badge variant="danger" pill style="margin-left: 5px;"
                 >${this.pendingReviewsCount}</sl-badge
