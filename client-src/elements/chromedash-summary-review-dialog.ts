@@ -184,8 +184,16 @@ export class ChromedashSummaryReviewDialog extends LitElement {
 
         .error-message {
           color: var(--sl-color-danger-600);
-          margin-top: 1rem;
           font-weight: 500;
+          margin-bottom: 0.5rem;
+          width: 100%;
+          text-align: left;
+        }
+
+        .dialog-footer-container {
+          display: flex;
+          flex-direction: column;
+          width: 100%;
         }
 
         .dialog-footer {
@@ -390,6 +398,8 @@ export class ChromedashSummaryReviewDialog extends LitElement {
   editingBaselineNewlyDate = '';
   @state()
   editingBaselineWidelyDate = '';
+  @state()
+  bypassAction: 'apply' | 'discard' = 'apply';
 
   @query('#dialog')
   dialogEl!: SlDialog;
@@ -413,6 +423,7 @@ export class ChromedashSummaryReviewDialog extends LitElement {
     this.errorMessage = '';
     this.submitting = false;
     this.showBypassUI = false;
+    this.bypassAction = 'apply';
     this.bypassJustification = '';
     this.activeTab = 'write';
     this.isDirty = false;
@@ -612,6 +623,7 @@ export class ChromedashSummaryReviewDialog extends LitElement {
     if (!this.feature || !this.suggestion) return;
 
     if (this.isBypassRequired() && !this.showBypassUI) {
+      this.bypassAction = 'apply';
       this.showBypassUI = true;
       return;
     }
@@ -672,6 +684,13 @@ export class ChromedashSummaryReviewDialog extends LitElement {
 
   async discardSuggestion() {
     if (!this.feature || !this.suggestion) return;
+
+    if (this.isBypassRequired() && !this.showBypassUI) {
+      this.bypassAction = 'discard';
+      this.showBypassUI = true;
+      return;
+    }
+
     this.submitting = true;
     this.errorMessage = '';
 
@@ -679,7 +698,10 @@ export class ChromedashSummaryReviewDialog extends LitElement {
       await window.csClient.patchSummarySuggestion(
         this.feature.id,
         'discarded',
-        this.suggestion.version_token
+        this.suggestion.version_token,
+        undefined,
+        undefined,
+        this.bypassJustification || undefined
       );
 
       this.dispatchEvent(new CustomEvent('discarded'));
@@ -1174,26 +1196,27 @@ export class ChromedashSummaryReviewDialog extends LitElement {
                     </div>
                   `
                 : nothing}
-              ${this.errorMessage
-                ? html`<div class="error-message">${this.errorMessage}</div>`
-                : nothing}
 
               <div slot="footer">
-                <div class="dialog-footer">
-                  <sl-button
-                    variant="danger"
-                    outline
-                    ?loading=${this.submitting}
-                    ?disabled=${this.submitting}
-                    @click=${this.discardSuggestion}
-                  >
-                    Discard Suggestion
-                  </sl-button>
-                  <div class="dialog-footer-actions">
-                    <sl-button ?disabled=${this.submitting} @click=${this.hide}
-                      >Cancel</sl-button
+                <div class="dialog-footer-container">
+                  ${this.errorMessage
+                    ? html`<div class="error-message">${this.errorMessage}</div>`
+                    : nothing}
+                  <div class="dialog-footer">
+                    <sl-button
+                      variant="danger"
+                      outline
+                      ?loading=${this.submitting}
+                      ?disabled=${this.submitting || this.showBypassUI}
+                      @click=${this.discardSuggestion}
                     >
-                    ${this.showBypassUI
+                      Discard Suggestion
+                    </sl-button>
+                    <div class="dialog-footer-actions">
+                      <sl-button ?disabled=${this.submitting} @click=${this.hide}
+                        >Cancel</sl-button
+                      >
+                      ${this.showBypassUI
                       ? html`
                           <sl-button
                             ?disabled=${this.submitting}
@@ -1204,13 +1227,13 @@ export class ChromedashSummaryReviewDialog extends LitElement {
                             Cancel Bypass
                           </sl-button>
                           <sl-button
-                            variant="primary"
+                            variant=${this.bypassAction === 'discard' ? 'danger' : 'primary'}
                             ?loading=${this.submitting}
                             ?disabled=${this.submitting ||
                             !this.bypassJustification.trim()}
-                            @click=${this.applySuggestion}
+                            @click=${this.bypassAction === 'discard' ? this.discardSuggestion : this.applySuggestion}
                           >
-                            Confirm Bypass
+                            Confirm ${this.bypassAction === 'discard' ? 'Discard' : 'Apply'} Bypass
                           </sl-button>
                         `
                       : html`
@@ -1223,6 +1246,7 @@ export class ChromedashSummaryReviewDialog extends LitElement {
                             Save & Apply
                           </sl-button>
                         `}
+                    </div>
                   </div>
                 </div>
               </div>

@@ -175,4 +175,8 @@ export class ChromedashFeatureSuggestionStatus extends LitElement {
       error: () => html`<p>Error loading suggestions</p>`,
     });
   }
+
+  refresh() {
+    this._suggestionTask.run();
+  }
 }

@@ -497,7 +497,8 @@ describe('chromedash-summary-review-dialog', () => {
       '.feature-context-meta-list'
     );
     assert.exists(metaContainer);
-    const textNormalized = metaContainer.textContent?.replace(/\s+/g, ' ') || '';
+    const textNormalized =
+      metaContainer.textContent?.replace(/\s+/g, ' ') || '';
     assert.include(textNormalized, 'Blink Components: Blink>DOM');
 
     // Verify link hrefs are correct in the DOM
@@ -632,7 +633,7 @@ describe('chromedash-summary-review-dialog', () => {
     assert.equal(dialog.summaryText, 'Suggested AI summary.');
 
     const buttons = Array.from(dialog.renderRoot.querySelectorAll('sl-button'));
-    
+
     const useOrigTextBtn = buttons.find(
       b => b.textContent?.trim() === 'Use Original Text'
     ) as HTMLElement;
@@ -705,6 +706,86 @@ describe('chromedash-summary-review-dialog', () => {
         'widely',
         '2024-06-01',
         '2024-07-01'
+      )
+    );
+  });
+
+  it('prompts for bypass justification and sends it when discarding during grace period', async () => {
+    const localFeature = {
+      id: 12345,
+      name: 'Test Feature',
+      summary: 'Original summary text.',
+      owner_emails: ['owner@google.com'],
+      resources: {docs: []},
+    } as any;
+
+    const localSuggestion = {
+      status: 'complete',
+      suggested_summary: 'Suggested AI summary.',
+      suggested_doc_links: [],
+      version_token: 1,
+      baseline_status: null,
+      status_timestamp: new Date().toISOString(),
+      last_generation_attempt: null,
+    } as any;
+
+    const user = {
+      can_create_feature: true,
+      can_edit: true,
+      is_admin: true,
+      can_review_release_notes: true,
+      email: 'editor@google.com',
+    } as unknown as User;
+
+    const dialog = (await fixture(
+      html`<chromedash-summary-review-dialog
+        .feature=${localFeature}
+        .suggestion=${localSuggestion}
+        .user=${user}
+      ></chromedash-summary-review-dialog>`
+    )) as ChromedashSummaryReviewDialog;
+
+    dialog.show();
+    await dialog.updateComplete;
+
+    assert.isTrue(dialog.isBypassRequired());
+    assert.isFalse(dialog.showBypassUI);
+
+    const discardBtn = dialog.renderRoot.querySelector(
+      'sl-button[variant="danger"]'
+    ) as HTMLElement;
+    assert.exists(discardBtn);
+    discardBtn.click();
+    await dialog.updateComplete;
+
+    assert.isFalse(window.csClient.patchSummarySuggestion.called);
+    assert.isTrue(dialog.showBypassUI);
+    assert.equal(dialog.bypassAction, 'discard');
+    assert.isTrue(discardBtn.hasAttribute('disabled'));
+
+    dialog.bypassJustification =
+      'This feature is a duplicate and suggestion is irrelevant.';
+    await dialog.updateComplete;
+
+    const footerButtons = Array.from(
+      dialog.renderRoot.querySelectorAll('.dialog-footer-actions sl-button')
+    );
+    const confirmBypassBtn = footerButtons.find(b =>
+      b.textContent?.trim().includes('Confirm Discard Bypass')
+    ) as HTMLElement;
+    assert.exists(confirmBypassBtn);
+
+    confirmBypassBtn.click();
+    await dialog.updateComplete;
+
+    assert.isTrue(
+      window.csClient.patchSummarySuggestion.calledWith(
+        12345,
+        'discarded',
+        1,
+        undefined,
+        undefined,
+        'This feature is a duplicate and suggestion is irrelevant.'
       )
     );
   });

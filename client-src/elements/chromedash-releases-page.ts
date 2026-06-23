@@ -21,7 +21,7 @@ import {User, Feature, SuggestionData} from '../js-src/cs-client.js';
 import {showToastMessage, updateURLParams, parseRawQuery} from './utils.js';
 import './chromedash-summary-review-dialog.js';
 import {ChromedashSummaryReviewDialog} from './chromedash-summary-review-dialog.js';
-import './chromedash-feature-suggestion-status.js';
+import './chromedash-release-feature-card.js';
 import '@shoelace-style/shoelace/dist/components/spinner/spinner.js';
 import '@shoelace-style/shoelace/dist/components/button/button.js';
 import '@shoelace-style/shoelace/dist/components/tag/tag.js';
@@ -159,15 +159,13 @@ export class ChromedashReleasesPage extends LitElement {
   @property({attribute: false})
   user!: User;
   @state()
-  viewMode: 'milestone' | 'reviews' = 'milestone';
-  @state()
   selectedMilestone!: number;
   @state()
   featuresByType: {[key: string]: Feature[]} = {};
   @state()
   loading = true;
   @state()
-  suggestionsMap: {[featureId: number]: SuggestionData} = {};
+  activeReviewSuggestion: SuggestionData | null = null;
   @state()
   milestonesList: number[] = [];
   @state()
@@ -202,93 +200,18 @@ export class ChromedashReleasesPage extends LitElement {
       );
 
       const queryParams = parseRawQuery(window.location.search);
-      if (queryParams.view === 'reviews') {
-        this.viewMode = 'reviews';
-        await this.fetchPendingReviewsData();
+      if (queryParams.milestone) {
+        this.selectedMilestone = parseInt(queryParams.milestone, 10);
       } else {
-        this.viewMode = 'milestone';
-        if (queryParams.milestone) {
-          this.selectedMilestone = parseInt(queryParams.milestone, 10);
-        } else {
-          this.selectedMilestone = stableVersion;
-          updateURLParams('milestone', this.selectedMilestone.toString());
-        }
-        await this.fetchMilestoneData();
+        this.selectedMilestone = stableVersion;
+        updateURLParams('milestone', this.selectedMilestone.toString());
       }
+      await this.fetchMilestoneData();
     } catch {
       showToastMessage('Failed to initialize releases page.');
     } finally {
       this.loading = false;
     }
-  }
-
-  async fetchPendingReviewsData() {
-    this.loading = true;
-    try {
-      const resp = await window.csClient.getPendingReviews();
-
-      const FEATURE_CATEGORIES: {[key: number]: string} = {
-        1: 'Web Components',
-        2: 'HTML5',
-        3: 'Multimedia',
-        4: 'CSS',
-        5: 'User Input',
-        6: 'Device',
-        7: 'Security/Privacy',
-        8: 'Offline/Storage',
-        9: 'Realtime/Communication',
-        10: 'JavaScript/V8',
-        11: 'Network/Connectivity',
-        12: 'Graphics',
-        13: 'Performance',
-        14: 'Security',
-        15: 'Sensors',
-        16: 'WebAssembly',
-        17: 'Other',
-      };
-
-      const grouped: {[key: string]: Feature[]} = {};
-
-      const features = (resp.features || []).map(f => ({
-        ...f,
-        owner_emails: f.owner_emails || f.owners || [],
-        editor_emails: f.editor_emails || f.editors || [],
-        creator_email: f.creator_email || f.creator,
-      }));
-
-      for (const f of features) {
-        const catName = FEATURE_CATEGORIES[f.category] || 'Other';
-        if (!grouped[catName]) grouped[catName] = [];
-        grouped[catName].push(f);
-      }
-
-      this.featuresByType = grouped;
-    } catch (err) {
-      showToastMessage('Failed to fetch pending reviews.');
-      console.error(err);
-    } finally {
-      this.loading = false;
-    }
-  }
-
-  async switchToReviewsMode() {
-    this.viewMode = 'reviews';
-    updateURLParams('view', 'reviews');
-    const url = new URL(window.location.href);
-    url.searchParams.delete('milestone');
-    window.history.pushState({}, '', url.toString());
-    await this.fetchPendingReviewsData();
-  }
-
-  async switchToMilestonesMode() {
-    this.viewMode = 'milestone';
-    updateURLParams('view', null);
-
-    const stableVersion = this.channels?.stable?.version || 120;
-    this.selectedMilestone = stableVersion;
-    updateURLParams('milestone', this.selectedMilestone.toString());
-
-    await this.fetchMilestoneData();
   }
 
   canUserEditFeature(feature: Feature) {
@@ -346,22 +269,16 @@ export class ChromedashReleasesPage extends LitElement {
     }
   }
 
-  handleSuggestionLoaded(
-    e: CustomEvent<{featureId: number; suggestion: SuggestionData}>
+  handleReviewSuggestion(
+    e: CustomEvent<{feature: Feature; suggestion: SuggestionData}>
   ) {
-    const {featureId, suggestion} = e.detail;
-    this.suggestionsMap = {
-      ...this.suggestionsMap,
-      [featureId]: suggestion,
-    };
-  }
-
-  handleReviewSuggestion(e: CustomEvent<{feature: Feature}>) {
-    void this.openReviewDialog(e.detail.feature);
-  }
-
-  async openReviewDialog(feature: Feature) {
+    const {feature, suggestion} = e.detail;
     this.activeReviewFeature = feature;
+    this.activeReviewSuggestion = suggestion;
+    void this.openReviewDialog();
+  }
+
+  async openReviewDialog() {
     await this.updateComplete;
     this.reviewDialogEl.show();
   }
@@ -370,116 +287,38 @@ export class ChromedashReleasesPage extends LitElement {
     if (!this.activeReviewFeature) return;
     const {summary, links} = e.detail;
 
-    // Update local feature instance
     this.activeReviewFeature.summary = summary;
     if (!this.activeReviewFeature.resources) {
       this.activeReviewFeature.resources = {docs: [], samples: []};
     }
     this.activeReviewFeature.resources.docs = links;
 
-    // Refresh suggestion details in our suggestions map
-    window.csClient
-      .getSummarySuggestion(this.activeReviewFeature.id)
-      .then(updatedSug => {
-        this.suggestionsMap = {
-          ...this.suggestionsMap,
-          [this.activeReviewFeature!.id]: updatedSug,
-        };
-      })
-      .catch(console.error);
+    // Trigger card component refresh for live sync!
+    const card = this.renderRoot.querySelector(
+      `[data-testid="feature-card-${this.activeReviewFeature.id}"]`
+    ) as any;
+    if (card) {
+      card.refreshSuggestion();
+    }
   }
 
   handleSuggestionDiscarded() {
     if (!this.activeReviewFeature) return;
-    window.csClient
-      .getSummarySuggestion(this.activeReviewFeature.id)
-      .then(updatedSug => {
-        this.suggestionsMap = {
-          ...this.suggestionsMap,
-          [this.activeReviewFeature!.id]: updatedSug,
-        };
-      })
-      .catch(console.error);
-  }
-
-  renderBaselineBadge(featureId: number) {
-    const sug = this.suggestionsMap[featureId];
-    if (!sug || !sug.baseline_status || sug.baseline_status === 'none') {
-      return nothing;
+    const card = this.renderRoot.querySelector(
+      `[data-testid="feature-card-${this.activeReviewFeature.id}"]`
+    ) as any;
+    if (card) {
+      card.refreshSuggestion();
     }
-
-    let label = '';
-    let variant = '';
-    let iconSrc = '';
-
-    switch (sug.baseline_status) {
-      case 'widely':
-        label = 'Baseline Widely Available';
-        variant = 'success';
-        iconSrc = '/static/img/baseline-widely-icon.svg';
-        break;
-      case 'newly':
-        label = 'Baseline Newly Available';
-        variant = 'primary';
-        iconSrc = '/static/img/baseline-newly-icon.svg';
-        break;
-      case 'limited':
-        label = 'Baseline Limited';
-        variant = 'warning';
-        iconSrc = '/static/img/baseline-limited-icon.svg';
-        break;
-      default:
-        return nothing;
-    }
-
-    return html`
-      <sl-tag variant=${variant} size="small" class="baseline-badge" pill>
-        <img src="${iconSrc}" class="baseline-badge-icon" alt="" />
-        ${label}
-      </sl-tag>
-    `;
   }
 
   renderFeature(feature: Feature) {
-    const docs = feature.resources?.docs || [];
     return html`
-      <div class="feature-card">
-        <div class="feature-header">
-          <div>
-            <h4 class="feature-title">
-              <a href="/feature/${feature.id}">${feature.name}</a>
-              ${this.renderBaselineBadge(feature.id)}
-            </h4>
-            <div style="margin-top: 0.5rem;">
-              <strong>Blink Components:</strong>
-              ${feature.blink_components?.join(', ') || 'None'}
-            </div>
-          </div>
-        </div>
-        <p class="feature-summary">
-          ${feature.summary || 'No summary provided.'}
-        </p>
-        ${docs.length > 0
-          ? html`
-              <strong>Documentation links:</strong>
-              <ul class="doc-links-list">
-                ${docs.map(
-                  link =>
-                    html`<li>
-                      <a href=${link} target="_blank">${link}</a>
-                    </li>`
-                )}
-              </ul>
-            `
-          : nothing}
-        <chromedash-feature-suggestion-status
-          .feature=${feature}
-          .canReview=${this.user?.can_review_release_notes ||
-          this.canUserEditFeature(feature)}
-          @suggestion-loaded=${this.handleSuggestionLoaded}
-          @review-suggestion=${this.handleReviewSuggestion}
-        ></chromedash-feature-suggestion-status>
-      </div>
+      <chromedash-release-feature-card
+        .feature=${feature}
+        .user=${this.user}
+        @review-suggestion=${this.handleReviewSuggestion}
+      ></chromedash-release-feature-card>
     `;
   }
 
@@ -524,17 +363,13 @@ export class ChromedashReleasesPage extends LitElement {
 
   render() {
     if (this.loading) {
-      const loadingMsg =
-        this.viewMode === 'reviews'
-          ? 'Loading pending AI reviews...'
-          : `Loading features for Chrome ${this.selectedMilestone}...`;
       return html`
         <div
           class="releases-container"
           style="text-align: center; margin-top: 5rem;"
         >
           <sl-spinner style="font-size: 3rem;"></sl-spinner>
-          <p>${loadingMsg}</p>
+          <p>Loading features for Chrome ${this.selectedMilestone}...</p>
         </div>
       `;
     }
@@ -545,71 +380,32 @@ export class ChromedashReleasesPage extends LitElement {
 
     return html`
       <div class="releases-container">
-        ${this.viewMode === 'milestone'
-          ? this.renderMilestoneChannelBanner()
-          : nothing}
-        ${this.viewMode === 'reviews'
-          ? html`
-              <div class="reviews-header-container">
-                <div>
-                  <h2 class="reviews-title">
-                    AI-Assisted Release Reviews Pending
-                  </h2>
-                  <p class="reviews-subtitle">
-                    Features across all milestones that have generated AI draft
-                    summaries awaiting your review.
-                  </p>
-                </div>
-                <sl-button
-                  @click=${this.switchToMilestonesMode}
-                  variant="neutral"
-                >
-                  &larr; Back to Milestones
-                </sl-button>
-              </div>
-            `
-          : html`
-              <div class="header-nav">
-                <sl-button @click=${() => this.navigateMilestone(-1)}>
-                  &larr; Chrome ${this.selectedMilestone - 1}
-                </sl-button>
+        ${this.renderMilestoneChannelBanner()}
+        <div class="header-nav">
+          <sl-button @click=${() => this.navigateMilestone(-1)}>
+            &larr; Chrome ${this.selectedMilestone - 1}
+          </sl-button>
 
-                <div class="milestone-selector-container">
-                  <h2>Chrome</h2>
-                  <sl-select
-                    .value=${this.selectedMilestone.toString()}
-                    @sl-change=${this.handleMilestoneSelectChange}
-                    class="milestone-select-elem"
-                  >
-                    ${this.milestonesList.map(
-                      m => html`
-                        <sl-option value=${m.toString()}>${m}</sl-option>
-                      `
-                    )}
-                  </sl-select>
-                  <h2>Releases</h2>
+          <div class="milestone-selector-container">
+            <h2>Chrome</h2>
+            <sl-select
+              .value=${this.selectedMilestone.toString()}
+              @sl-change=${this.handleMilestoneSelectChange}
+              class="milestone-select-elem"
+            >
+              ${this.milestonesList.map(
+                m => html` <sl-option value=${m.toString()}>${m}</sl-option> `
+              )}
+            </sl-select>
+            <h2>Releases</h2>
+          </div>
 
-                  ${this.user?.can_review_release_notes
-                    ? html`
-                        <sl-button
-                          @click=${this.switchToReviewsMode}
-                          variant="primary"
-                          size="small"
-                          class="pending-reviews-btn"
-                        >
-                          View Pending Reviews
-                        </sl-button>
-                      `
-                    : nothing}
-                </div>
-
-                <sl-button @click=${() => this.navigateMilestone(1)}>
-                  Chrome ${this.selectedMilestone + 1} &rarr;
-                </sl-button>
-              </div>
-            `}
+          <sl-button @click=${() => this.navigateMilestone(1)}>
+            Chrome ${this.selectedMilestone + 1} &rarr;
+          </sl-button>
+        </div>
         ${!hasAnyFeatures
-          ? html`<p>No features found awaiting review.</p>`
+          ? html`<p>No features found in this milestone.</p>`
           : Object.keys(this.featuresByType).map(category =>
               this.renderCategoryGroup(category, this.featuresByType[category])
             )}
@@ -620,9 +416,7 @@ export class ChromedashReleasesPage extends LitElement {
         id="review-dialog"
         .user=${this.user}
         .feature=${this.activeReviewFeature}
-        .suggestion=${this.activeReviewFeature
-          ? this.suggestionsMap[this.activeReviewFeature.id]
-          : null}
+        .suggestion=${this.activeReviewSuggestion}
         @applied=${this.handleSuggestionApplied}
         @discarded=${this.handleSuggestionDiscarded}
       ></chromedash-summary-review-dialog>

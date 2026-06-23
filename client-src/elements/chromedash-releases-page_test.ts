@@ -74,17 +74,55 @@ describe('chromedash-releases-page', () => {
     window.csClient.patchSummarySuggestion.restore();
   });
 
+  async function waitForStatusTask(statusEl: any, expectedCanReview = true) {
+    await statusEl.updateComplete;
+    if (expectedCanReview) {
+      // Wait for cascading properties to flow down (shadowRoot becomes populated)
+      while (
+        !statusEl.shadowRoot ||
+        statusEl.shadowRoot.innerHTML.trim() === '<!---->'
+      ) {
+        await new Promise(resolve => setTimeout(resolve, 10));
+        await statusEl.updateComplete;
+      }
+
+      // Wait for async task to resolve (skeleton loader disappears)
+      while (statusEl.shadowRoot.querySelector('sl-skeleton')) {
+        await new Promise(resolve => setTimeout(resolve, 10));
+        await statusEl.updateComplete;
+      }
+    }
+  }
+
   async function waitForLoading(component: ChromedashReleasesPage) {
     while (component.loading) {
       await new Promise(resolve => setTimeout(resolve, 10));
     }
     await component.updateComplete;
-    const statusEls = Array.from(
-      component.renderRoot.querySelectorAll(
-        'chromedash-feature-suggestion-status'
-      )
+    const cards = Array.from(
+      component.renderRoot.querySelectorAll('chromedash-release-feature-card')
     ) as any[];
-    await Promise.all(statusEls.map(el => el.updateComplete));
+    await Promise.all(cards.map(card => card.updateComplete));
+
+    const statusEls = cards
+      .map(card =>
+        card.renderRoot.querySelector('chromedash-feature-suggestion-status')
+      )
+      .filter(Boolean) as any[];
+
+    const canReview = !!(
+      component.user?.can_review_release_notes || component.user?.is_admin
+    );
+
+    if (canReview && statusEls.length === 0) {
+      throw new Error(
+        `TEST BUG: statusEls is empty! cards count: ${cards.length}, component.user: ${JSON.stringify(
+          component.user
+        )}`
+      );
+    }
+
+    await Promise.all(statusEls.map(el => waitForStatusTask(el, canReview)));
   }
 
   it('renders features list to normal users without editor control panel', async () => {
@@ -108,16 +146,20 @@ describe('chromedash-releases-page', () => {
     assert.equal(select.value, '125');
 
     // Should render feature details
-    const featureCard = component.renderRoot.querySelector('.feature-card');
-    assert.exists(featureCard);
-    assert.include(featureCard.innerHTML, 'Mock Feature One');
+    const card = component.renderRoot.querySelector(
+      'chromedash-release-feature-card'
+    ) as any;
+    assert.exists(card);
+    const cardContent = card.renderRoot.querySelector('.feature-card');
+    assert.exists(cardContent);
+    assert.include(cardContent.innerHTML, 'Mock Feature One');
     assert.include(
-      featureCard.innerHTML,
+      cardContent.innerHTML,
       'This is a mock description for feature one.'
     );
 
     // Control panel should NOT be visible to normal user
-    const statusEl = component.renderRoot.querySelector(
+    const statusEl = card.renderRoot.querySelector(
       'chromedash-feature-suggestion-status'
     ) as any;
     assert.exists(statusEl);
@@ -142,8 +184,11 @@ describe('chromedash-releases-page', () => {
     await waitForLoading(component);
     assert.exists(component);
 
-    // Control panel and "Review Suggestion" button should be visible
-    const statusEl = component.renderRoot.querySelector(
+    const card = component.renderRoot.querySelector(
+      'chromedash-release-feature-card'
+    ) as any;
+    assert.exists(card);
+    const statusEl = card.renderRoot.querySelector(
       'chromedash-feature-suggestion-status'
     ) as any;
     assert.exists(statusEl);
@@ -168,6 +213,7 @@ describe('chromedash-releases-page', () => {
       '#review-dialog'
     ) as ChromedashSummaryReviewDialog;
     assert.exists(dialog);
+    await dialog.updateComplete;
 
     assert.equal(component.activeReviewFeature?.id, 12345);
     assert.equal(dialog.summaryText, 'AI suggested summary text.');
@@ -204,7 +250,11 @@ describe('chromedash-releases-page', () => {
       html`<chromedash-releases-page .user=${user}></chromedash-releases-page>`
     )) as ChromedashReleasesPage;
     await waitForLoading(component);
-    let statusEl = component.renderRoot.querySelector(
+    let card = component.renderRoot.querySelector(
+      'chromedash-release-feature-card'
+    ) as any;
+    assert.exists(card);
+    let statusEl = card.renderRoot.querySelector(
       'chromedash-feature-suggestion-status'
     ) as any;
     assert.exists(statusEl);
@@ -228,7 +278,11 @@ describe('chromedash-releases-page', () => {
       html`<chromedash-releases-page .user=${user}></chromedash-releases-page>`
     )) as ChromedashReleasesPage;
     await waitForLoading(component);
-    statusEl = component.renderRoot.querySelector(
+    card = component.renderRoot.querySelector(
+      'chromedash-release-feature-card'
+    ) as any;
+    assert.exists(card);
+    statusEl = card.renderRoot.querySelector(
       'chromedash-feature-suggestion-status'
     ) as any;
     assert.exists(statusEl);
@@ -251,7 +305,11 @@ describe('chromedash-releases-page', () => {
       html`<chromedash-releases-page .user=${user}></chromedash-releases-page>`
     )) as ChromedashReleasesPage;
     await waitForLoading(component);
-    statusEl = component.renderRoot.querySelector(
+    card = component.renderRoot.querySelector(
+      'chromedash-release-feature-card'
+    ) as any;
+    assert.exists(card);
+    statusEl = card.renderRoot.querySelector(
       'chromedash-feature-suggestion-status'
     ) as any;
     assert.exists(statusEl);
@@ -287,9 +345,11 @@ describe('chromedash-releases-page', () => {
     )) as ChromedashReleasesPage;
     await waitForLoading(component);
 
-    const badge = component.renderRoot.querySelector(
-      'sl-tag[variant="success"]'
-    );
+    const card = component.renderRoot.querySelector(
+      'chromedash-release-feature-card'
+    ) as any;
+    assert.exists(card);
+    const badge = card.renderRoot.querySelector('sl-tag[variant="success"]');
     assert.exists(badge);
     assert.include(badge.innerHTML, 'Baseline Widely Available');
 
@@ -330,14 +390,15 @@ describe('chromedash-releases-page', () => {
     )) as ChromedashReleasesPage;
     await waitForLoading(component);
 
-    const featureSummary =
-      component.renderRoot.querySelector('.feature-summary');
+    const card = component.renderRoot.querySelector(
+      'chromedash-release-feature-card'
+    ) as any;
+    assert.exists(card);
+    const featureSummary = card.renderRoot.querySelector('.feature-summary');
     assert.exists(featureSummary);
     assert.include(featureSummary.innerHTML, 'No summary provided.');
 
-    const container = component.renderRoot.querySelector('.releases-container');
-    assert.exists(container);
-    assert.notInclude(container.innerHTML, 'Documentation links:');
+    assert.notInclude(card.renderRoot.innerHTML, 'Documentation links:');
   });
 
   it('receives applied event from review dialog and updates local state', async () => {
@@ -428,98 +489,5 @@ describe('chromedash-releases-page', () => {
       banner.innerHTML,
       'Chrome 127 is currently on the Dev channel'
     );
-  });
-
-  it('toggles and renders the unified pending reviews dashboard', async () => {
-    const user = {
-      can_create_feature: true,
-      can_edit: true,
-      is_admin: true,
-      can_review_release_notes: true,
-      email: 'editor@google.com',
-    };
-
-    const mockPendingReviews = {
-      features: [
-        {
-          id: 111,
-          name: 'CSS Subgrid Hack',
-          summary: 'Pending CSS subgrid improvements.',
-          blink_components: ['Blink>CSS'],
-          category: 4,
-          resources: {docs: []},
-        },
-        {
-          id: 222,
-          name: 'V8 Super Array',
-          summary: 'Pending V8 optimization.',
-          blink_components: ['Blink>JavaScript'],
-          category: 10,
-          resources: {docs: []},
-        },
-      ],
-      total_count: 2,
-    };
-    const getPendingReviewsStub = sinon
-      .stub(window.csClient, 'getPendingReviews')
-      .resolves(mockPendingReviews);
-
-    const component = (await fixture(
-      html`<chromedash-releases-page .user=${user}></chromedash-releases-page>`
-    )) as ChromedashReleasesPage;
-    await waitForLoading(component);
-
-    assert.equal(component.viewMode, 'milestone');
-
-    const viewReviewsBtn = component.renderRoot.querySelector(
-      '.pending-reviews-btn'
-    ) as HTMLElement;
-    assert.exists(viewReviewsBtn);
-    viewReviewsBtn.click();
-
-    await component.updateComplete;
-    await waitForLoading(component);
-
-    assert.equal(component.viewMode, 'reviews');
-    assert.isTrue(getPendingReviewsStub.calledOnce);
-
-    const headerNav = component.renderRoot.querySelector('.header-nav');
-    assert.isNull(headerNav);
-
-    const reviewsHeader = component.renderRoot.querySelector(
-      '.reviews-header-container'
-    );
-    assert.exists(reviewsHeader);
-    assert.include(
-      reviewsHeader.textContent,
-      'AI-Assisted Release Reviews Pending'
-    );
-
-    const categoryHeaders = Array.from(
-      component.renderRoot.querySelectorAll('.category-header')
-    ).map(el => el.textContent?.trim());
-
-    assert.include(categoryHeaders, 'CSS');
-    assert.include(categoryHeaders, 'JavaScript/V8');
-
-    const featureTitles = Array.from(
-      component.renderRoot.querySelectorAll('.feature-title')
-    ).map(el => el.textContent?.trim());
-
-    assert.include(featureTitles.join(' '), 'CSS Subgrid Hack');
-    assert.include(featureTitles.join(' '), 'V8 Super Array');
-
-    const backBtn = component.renderRoot.querySelector(
-      'sl-button[variant="neutral"]'
-    ) as HTMLElement;
-    assert.exists(backBtn);
-    backBtn.click();
-
-    await component.updateComplete;
-    await waitForLoading(component);
-
-    assert.equal(component.viewMode, 'milestone');
-
-    getPendingReviewsStub.restore();
   });
 });
