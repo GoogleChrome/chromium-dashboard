@@ -121,67 +121,71 @@ describe('chromedash-release-feature-card', () => {
     assert.isNull(docLinksSection);
   });
 
-  it('renders Baseline badges based on suggestion status', async () => {
-    const component = (await fixture(
+  it('renders Baseline badges based on suggestion status and user permissions', async () => {
+    // Case 1: Editor/Reviewer sees draft suggestion (complete) with "Suggested:" label!
+    const editorComponent = (await fixture(
       html`<chromedash-release-feature-card
         .feature=${mockFeature}
-        .user=${mockUserNormal}
+        .user=${mockUserReviewer}
       ></chromedash-release-feature-card>`
     )) as ChromedashReleaseFeatureCard;
 
-    // 1. Widely available
-    component.suggestion = {
+    editorComponent.suggestion = {
       status: 'complete',
       suggested_summary: 'AI summary',
       suggested_doc_links: [],
       version_token: 1,
       baseline_status: 'widely',
     } as any;
-    await component.updateComplete;
-    let badge = component.renderRoot.querySelector('.baseline-badge');
+    await editorComponent.updateComplete;
+
+    let badge = editorComponent.renderRoot.querySelector('.baseline-badge');
     assert.exists(badge);
     assert.equal(badge.getAttribute('variant'), 'success');
-    assert.include(badge.textContent?.trim(), 'Baseline Widely Available');
+    assert.include(
+      badge.textContent?.trim(),
+      'Suggested: Baseline Widely Available'
+    );
     assert.equal(
       badge.querySelector('img')?.getAttribute('src'),
       '/static/img/baseline-widely-icon.svg'
     );
 
-    // 2. Newly available
-    component.suggestion = {
-      status: 'complete',
-      suggested_summary: 'AI summary',
-      suggested_doc_links: [],
-      version_token: 1,
-      baseline_status: 'newly',
-    } as any;
-    await component.updateComplete;
-    badge = component.renderRoot.querySelector('.baseline-badge');
-    assert.exists(badge);
-    assert.equal(badge.getAttribute('variant'), 'primary');
-    assert.include(badge.textContent?.trim(), 'Baseline Newly Available');
-    assert.equal(
-      badge.querySelector('img')?.getAttribute('src'),
-      '/static/img/baseline-newly-icon.svg'
-    );
+    // Case 2: Normal user does NOT see draft suggestion (complete) baseline badge!
+    const normalComponent = (await fixture(
+      html`<chromedash-release-feature-card
+        .feature=${mockFeature}
+        .user=${mockUserNormal}
+      ></chromedash-release-feature-card>`
+    )) as ChromedashReleaseFeatureCard;
 
-    // 3. Limited
-    component.suggestion = {
+    normalComponent.suggestion = {
       status: 'complete',
       suggested_summary: 'AI summary',
       suggested_doc_links: [],
       version_token: 1,
-      baseline_status: 'limited',
+      baseline_status: 'widely',
     } as any;
-    await component.updateComplete;
-    badge = component.renderRoot.querySelector('.baseline-badge');
+    await normalComponent.updateComplete;
+
+    badge = normalComponent.renderRoot.querySelector('.baseline-badge');
+    assert.isNull(badge); // Draft suggestion hidden from public users!
+
+    // Case 3: Normal user DOES see approved suggestion (applied) baseline badge without "Suggested:" label!
+    normalComponent.suggestion = {
+      status: 'applied',
+      suggested_summary: 'AI summary',
+      suggested_doc_links: [],
+      version_token: 1,
+      baseline_status: 'widely',
+    } as any;
+    await normalComponent.updateComplete;
+
+    badge = normalComponent.renderRoot.querySelector('.baseline-badge');
     assert.exists(badge);
-    assert.equal(badge.getAttribute('variant'), 'warning');
-    assert.include(badge.textContent?.trim(), 'Baseline Limited');
-    assert.equal(
-      badge.querySelector('img')?.getAttribute('src'),
-      '/static/img/baseline-limited-icon.svg'
-    );
+    assert.equal(badge.getAttribute('variant'), 'success');
+    assert.notInclude(badge.textContent?.trim(), 'Suggested:');
+    assert.include(badge.textContent?.trim(), 'Baseline Widely Available');
   });
 
   describe('editor permissions logic', () => {

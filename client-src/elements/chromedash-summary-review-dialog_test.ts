@@ -511,13 +511,13 @@ describe('chromedash-summary-review-dialog', () => {
     );
     assert.exists(explainerLink);
 
-    // Check AI Baseline badge and dates
-    const baselineInfo = dialog.renderRoot.querySelector('.baseline-info-row');
+    // Check AI Baseline badge and dates in the Right Column
+    const columns = dialog.renderRoot.querySelectorAll('.diff-column');
+    assert.equal(columns.length, 2);
+    const baselineInfo = columns[1].querySelector('.baseline-info-row');
     assert.exists(baselineInfo);
     assert.include(baselineInfo.innerHTML, 'baseline-newly-icon.svg');
     assert.include(baselineInfo.textContent, 'Baseline Newly Available');
-    const columns = dialog.renderRoot.querySelectorAll('.diff-column');
-    assert.equal(columns.length, 2);
     const baselineSection = columns[1].querySelector(
       '.compare-section-divider'
     );
@@ -770,9 +770,10 @@ describe('chromedash-summary-review-dialog', () => {
     const footerButtons = Array.from(
       dialog.renderRoot.querySelectorAll('.dialog-footer-actions sl-button')
     );
-    const confirmBypassBtn = footerButtons.find(b =>
-      b.textContent?.trim().includes('Confirm Discard Bypass')
-    ) as HTMLElement;
+    const confirmBypassBtn = footerButtons.find(b => {
+      const text = b.textContent?.replace(/\s+/g, ' ').trim() || '';
+      return text.includes('Confirm Discard Bypass');
+    }) as HTMLElement;
     assert.exists(confirmBypassBtn);
 
     confirmBypassBtn.click();
@@ -788,5 +789,134 @@ describe('chromedash-summary-review-dialog', () => {
         'This feature is a duplicate and suggestion is irrelevant.'
       )
     );
+  });
+
+  describe('Baseline Status Override Selector', () => {
+    it('renders symmetrical original baseline status and dates', async () => {
+      const dialog = (await fixture(
+        html`<chromedash-summary-review-dialog
+          .feature=${feature}
+          .suggestion=${suggestion}
+        ></chromedash-summary-review-dialog>`
+      )) as ChromedashSummaryReviewDialog;
+
+      dialog.suggestion = {
+        ...dialog.suggestion,
+        original_baseline_status: 'newly',
+        original_baseline_newly_date: '2024-03-15',
+      } as any;
+      await dialog.updateComplete;
+
+      const badge = dialog.renderRoot.querySelector(
+        '[data-testid="original-baseline-badge"]'
+      );
+      assert.exists(badge);
+      assert.include(badge.textContent, 'Baseline Newly Available');
+
+      const dateLabel = dialog.renderRoot.querySelector('.baseline-date-label');
+      assert.exists(dateLabel);
+      assert.include(dateLabel.textContent, 'Newly Available since 2024-03-15');
+    });
+
+    it('renders radio cards with AI Suggested and Original highlights', async () => {
+      const dialog = (await fixture(
+        html`<chromedash-summary-review-dialog
+          .feature=${feature}
+          .suggestion=${suggestion}
+        ></chromedash-summary-review-dialog>`
+      )) as ChromedashSummaryReviewDialog;
+
+      dialog.suggestion = {
+        ...dialog.suggestion,
+        baseline_status: 'newly',
+        original_baseline_status: 'limited',
+      } as any;
+      await dialog.updateComplete;
+
+      const cards = dialog.renderRoot.querySelectorAll('.baseline-card');
+      assert.equal(cards.length, 4);
+
+      // Card 3 (Newly Available) should have the 'ai-suggested' class
+      const newlyCard = cards[2];
+      assert.isTrue(newlyCard.classList.contains('ai-suggested'));
+
+      // It should render "AI Suggested" badge
+      const aiBadge = newlyCard.querySelector('.baseline-card-badge');
+      assert.exists(aiBadge);
+      assert.include(aiBadge.textContent, 'AI Suggested');
+
+      // Card 2 (Limited) should render "Original" badge
+      const limitedCard = cards[1];
+      const originalBadge = limitedCard.querySelector('.baseline-card-badge');
+      assert.exists(originalBadge);
+      assert.include(originalBadge.textContent, 'Original');
+    });
+
+    it('updates state and clears non-applicable dates on click', async () => {
+      const dialog = (await fixture(
+        html`<chromedash-summary-review-dialog
+          .feature=${feature}
+          .suggestion=${suggestion}
+        ></chromedash-summary-review-dialog>`
+      )) as ChromedashSummaryReviewDialog;
+
+      dialog.editingBaselineStatus = 'widely';
+      dialog.editingBaselineNewlyDate = '2024-03-15';
+      dialog.editingBaselineWidelyDate = '2026-09-15';
+      await dialog.updateComplete;
+
+      // Click the Limited option (index 1)
+      const cards = dialog.renderRoot.querySelectorAll('.baseline-card');
+      const limitedCard = cards[1] as HTMLElement;
+      limitedCard.click();
+      await dialog.updateComplete;
+
+      assert.equal(dialog.editingBaselineStatus, 'limited');
+      // Dates should be wiped out!
+      assert.equal(dialog.editingBaselineNewlyDate, '');
+      assert.equal(dialog.editingBaselineWidelyDate, '');
+    });
+
+    it('enforces chronological date validation rules', async () => {
+      const dialog = (await fixture(
+        html`<chromedash-summary-review-dialog
+          .feature=${feature}
+          .suggestion=${suggestion}
+        ></chromedash-summary-review-dialog>`
+      )) as ChromedashSummaryReviewDialog;
+
+      // 1. Newly Available without newly date -> Fails
+      dialog.editingBaselineStatus = 'newly';
+      dialog.editingBaselineNewlyDate = '';
+      assert.isFalse(dialog.validateBaselineDates());
+      assert.include(dialog.errorMessage, 'Newly Available Date is required');
+
+      // 2. Widely Available with newly date but missing widely date -> Fails
+      dialog.editingBaselineStatus = 'widely';
+      dialog.editingBaselineNewlyDate = '2024-03-15';
+      dialog.editingBaselineWidelyDate = '';
+      assert.isFalse(dialog.validateBaselineDates());
+      assert.include(
+        dialog.errorMessage,
+        'Both Newly and Widely Available Dates are required'
+      );
+
+      // 3. Widely Available with widely date BEFORE newly date -> Fails
+      dialog.editingBaselineStatus = 'widely';
+      dialog.editingBaselineNewlyDate = '2024-03-15';
+      dialog.editingBaselineWidelyDate = '2024-03-14';
+      assert.isFalse(dialog.validateBaselineDates());
+      assert.include(
+        dialog.errorMessage,
+        'Widely Available Date must be chronologically after'
+      );
+
+      // 4. Correct dates -> Passes!
+      dialog.editingBaselineStatus = 'widely';
+      dialog.editingBaselineNewlyDate = '2024-03-15';
+      dialog.editingBaselineWidelyDate = '2026-09-15';
+      assert.isTrue(dialog.validateBaselineDates());
+      assert.equal(dialog.errorMessage, '');
+    });
   });
 });

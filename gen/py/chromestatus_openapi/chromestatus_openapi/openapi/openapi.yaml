@@ -3463,9 +3463,14 @@ components:
         suggested_doc_links:
         - suggested_doc_links
         - suggested_doc_links
+        original_baseline_widely_date: 2000-01-23
         last_generation_attempt: 2000-01-23T04:56:07.000+00:00
+        baseline_widely_date: 2000-01-23
+        original_baseline_newly_date: 2000-01-23
         status_timestamp: 2000-01-23T04:56:07.000+00:00
         baseline_status: baseline_status
+        baseline_newly_date: 2000-01-23
+        original_baseline_status: original_baseline_status
         status: status
       properties:
         suggested_summary:
@@ -3478,6 +3483,25 @@ components:
           type: array
         baseline_status:
           title: baseline_status
+          type: string
+        baseline_newly_date:
+          format: date
+          title: baseline_newly_date
+          type: string
+        baseline_widely_date:
+          format: date
+          title: baseline_widely_date
+          type: string
+        original_baseline_status:
+          title: original_baseline_status
+          type: string
+        original_baseline_newly_date:
+          format: date
+          title: original_baseline_newly_date
+          type: string
+        original_baseline_widely_date:
+          format: date
+          title: original_baseline_widely_date
           type: string
         status:
           title: status

@@ -203,7 +203,7 @@ describe('chromedash-releases-page', () => {
       'sl-button[variant="primary"]'
     ) as any;
     assert.exists(reviewButton);
-    assert.include(reviewButton.innerText, 'Review Suggestion');
+    assert.include(reviewButton.innerText, 'Review 2 suggestions');
 
     // Click "Review Suggestion" and check if it opens active state
     reviewButton.click();

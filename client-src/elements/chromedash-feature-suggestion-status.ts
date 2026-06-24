@@ -2,6 +2,7 @@ import {LitElement, css, html, nothing} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
 import {Task} from '@lit/task';
 import {SHARED_STYLES} from '../css/shared-css.js';
+import {SuggestionData} from '../js-src/cs-client.js';
 
 @customElement('chromedash-feature-suggestion-status')
 export class ChromedashFeatureSuggestionStatus extends LitElement {
@@ -14,6 +15,17 @@ export class ChromedashFeatureSuggestionStatus extends LitElement {
           display: flex;
           align-items: center;
           gap: 10px;
+        }
+
+        .gemini-icon {
+          width: 1.4em;
+          height: 1.4em;
+          transform-origin: center center;
+          transition: transform 0.7s ease-in-out;
+        }
+
+        sl-button:hover .gemini-icon {
+          transform: rotate(360deg);
         }
       `,
     ];
@@ -102,6 +114,55 @@ export class ChromedashFeatureSuggestionStatus extends LitElement {
     }
   }
 
+  getActiveSuggestionsCount(sug: SuggestionData | null) {
+    if (!sug) return 0;
+    let count = 0;
+
+    // 1. Check summary
+    if (
+      sug.suggested_summary &&
+      sug.suggested_summary !== this.feature.summary
+    ) {
+      count++;
+    }
+
+    // 2. Check baseline status
+    if (sug.baseline_status && sug.baseline_status !== 'none') {
+      count++;
+    }
+
+    // 3. Check new doc links
+    const originalLinks = this.feature.resources?.docs || [];
+    const suggestedLinks = sug.suggested_doc_links || [];
+    const newLinks = suggestedLinks.filter(
+      link => !originalLinks.includes(link)
+    );
+    if (newLinks.length > 0) {
+      count++;
+    }
+
+    return count;
+  }
+
+  getButtonText(sug: SuggestionData | null) {
+    const count = this.getActiveSuggestionsCount(sug);
+    if (count <= 1) {
+      return 'Review Suggestion';
+    }
+    return `Review ${count} suggestions`;
+  }
+
+  renderGeminiIcon() {
+    return html`
+      <img
+        slot="prefix"
+        class="gemini-icon"
+        src="https://www.gstatic.com/images/branding/productlogos/gemini_2025/v1/192px.svg"
+        alt="Gemini AI Logo"
+      />
+    `;
+  }
+
   render() {
     if (!this.canReview) return nothing;
 
@@ -130,7 +191,7 @@ export class ChromedashFeatureSuggestionStatus extends LitElement {
                     ?disabled=${status === 'in_progress'}
                     @click=${this.triggerGeneration}
                   >
-                    Generate Summary
+                    ${this.renderGeminiIcon()} Generate Summary
                   </sl-button>
                 `
               : nothing}
@@ -148,7 +209,7 @@ export class ChromedashFeatureSuggestionStatus extends LitElement {
                         })
                       )}
                   >
-                    Review Suggestion
+                    ${this.renderGeminiIcon()} ${this.getButtonText(sug)}
                   </sl-button>
                 `
               : nothing}
@@ -165,7 +226,7 @@ export class ChromedashFeatureSuggestionStatus extends LitElement {
                         })
                       )}
                   >
-                    Edit applied summary
+                    ${this.renderGeminiIcon()} Edit applied summary
                   </sl-button>
                 `
               : nothing}

@@ -104,6 +104,15 @@ export class ChromedashSummaryReviewDialog extends LitElement {
           font-size: 0.95rem;
         }
 
+        .ai-suggested-text,
+        .ai-suggested-links {
+          background: #f4f8ff; /* Subtle Gemini Blue */
+          border: 1px solid #d0e2ff;
+          padding: 0.8rem;
+          border-radius: 4px;
+          font-size: 0.95rem;
+        }
+
         .original-text {
           white-space: pre-wrap;
           min-height: 150px;
@@ -354,6 +363,108 @@ export class ChromedashSummaryReviewDialog extends LitElement {
           align-items: center;
           gap: 0.5rem;
         }
+
+        /* Radio Card Group Container */
+        .baseline-radio-group {
+          display: flex;
+          flex-direction: column;
+          gap: 0.8rem;
+          width: 100%;
+          margin-top: 0.5rem;
+        }
+
+        /* Individual Radio Card */
+        .baseline-card {
+          border: 1px solid var(--sl-color-neutral-200);
+          border-radius: 6px;
+          padding: 1rem;
+          transition: all 0.2s ease;
+          background: var(--sl-color-neutral-0);
+          position: relative;
+        }
+
+        .baseline-card:hover {
+          border-color: var(--sl-color-neutral-400);
+          cursor: pointer;
+        }
+
+        /* Selected Radio Card State */
+        .baseline-card.selected {
+          border-color: var(--sl-color-primary-600);
+          box-shadow: 0 0 0 1px var(--sl-color-primary-600);
+          background: var(--sl-color-neutral-0);
+        }
+
+        /* AI Suggested Highlight Card Style */
+        .baseline-card.ai-suggested {
+          background: #f4f8ff;
+          border-color: #d0e2ff;
+        }
+        .baseline-card.ai-suggested.selected {
+          border-color: var(--sl-color-primary-600);
+          box-shadow: 0 0 0 1px var(--sl-color-primary-600);
+        }
+
+        /* Rich Label Flex Layout */
+        .baseline-card-header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          width: 100%;
+        }
+
+        .baseline-card-label-left {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          font-weight: 600;
+        }
+
+        .baseline-card-icon {
+          width: 16px;
+          height: 16px;
+          flex-shrink: 0;
+        }
+
+        .baseline-card-description {
+          font-size: 0.85rem;
+          color: var(--sl-color-neutral-600);
+          margin-top: 0.25rem;
+          margin-left: 28px; /* Align with text after radio indicator */
+        }
+
+        /* Embedded Date Input Row */
+        .baseline-card-dates {
+          margin-top: 0.8rem;
+          margin-left: 28px;
+          padding-top: 0.8rem;
+          border-top: 1px dashed var(--sl-color-neutral-200);
+          display: flex;
+          flex-wrap: wrap;
+          gap: 1rem;
+          animation: slideDown 0.2s ease-out;
+        }
+
+        @keyframes slideDown {
+          from {
+            opacity: 0;
+            transform: translateY(-5px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        .baseline-card-dates sl-input {
+          width: 200px;
+        }
+
+        .baseline-card-badge {
+          font-size: 0.75rem;
+          font-weight: 700;
+          text-transform: uppercase;
+        }
       `,
     ];
   }
@@ -555,6 +666,156 @@ export class ChromedashSummaryReviewDialog extends LitElement {
     `;
   }
 
+  renderOriginalBaselineInfo() {
+    if (!this.suggestion) return nothing;
+
+    const status = this.suggestion.original_baseline_status || 'none';
+    const newlyDate = this.suggestion.original_baseline_newly_date;
+    const widelyDate = this.suggestion.original_baseline_widely_date;
+
+    if (status === 'none') {
+      return html`
+        <div class="compare-section-divider">
+          <div class="field-header compare-field-header-margin">
+            <strong>Original Baseline Status</strong>
+          </div>
+          <div class="baseline-info-row">
+            <sl-tag
+              variant="neutral"
+              size="small"
+              class="baseline-badge-flex"
+              pill
+              data-testid="original-baseline-badge"
+            >
+              None (Not Set)
+            </sl-tag>
+          </div>
+        </div>
+      `;
+    }
+
+    let label = '';
+    let variant = '';
+    let iconSrc = '';
+    let dateLabel = '';
+
+    switch (status) {
+      case 'widely':
+        label = 'Baseline Widely Available';
+        variant = 'success';
+        iconSrc = '/static/img/baseline-widely-icon.svg';
+        if (widelyDate) {
+          dateLabel = `Widely Available since ${widelyDate}`;
+        } else if (newlyDate) {
+          dateLabel = `Newly Available on ${newlyDate}`;
+        }
+        break;
+      case 'newly':
+        label = 'Baseline Newly Available';
+        variant = 'primary';
+        iconSrc = '/static/img/baseline-newly-icon.svg';
+        if (newlyDate) {
+          dateLabel = `Newly Available since ${newlyDate}`;
+        }
+        break;
+      case 'limited':
+        label = 'Baseline Limited';
+        variant = 'warning';
+        iconSrc = '/static/img/baseline-limited-icon.svg';
+        break;
+      default:
+        return nothing;
+    }
+
+    return html`
+      <div class="compare-section-divider">
+        <div class="field-header compare-field-header-margin">
+          <strong>Original Baseline Status</strong>
+        </div>
+        <div class="baseline-info-row">
+          <sl-tag
+            variant=${variant}
+            size="small"
+            class="baseline-badge-flex"
+            pill
+            data-testid="original-baseline-badge"
+          >
+            <img src="${iconSrc}" class="baseline-badge-icon-sz" alt="" />
+            ${label}
+          </sl-tag>
+          ${dateLabel
+            ? html` <span class="baseline-date-label">${dateLabel}</span> `
+            : nothing}
+        </div>
+      </div>
+    `;
+  }
+
+  selectBaselineStatus(status: string) {
+    if (this.submitting || this.editingBaselineStatus === status) return;
+    this.editingBaselineStatus = status;
+
+    // Clear dates that are not applicable to the newly selected status!
+    if (status === 'none' || status === 'limited') {
+      this.editingBaselineNewlyDate = '';
+      this.editingBaselineWidelyDate = '';
+    } else if (status === 'newly') {
+      this.editingBaselineWidelyDate = '';
+    }
+
+    this.isDirty = true;
+    this.validateBaselineDates();
+  }
+
+  handleNewlyDateChange(e: Event) {
+    const target = e.target as HTMLInputElement;
+    if (target) {
+      this.editingBaselineNewlyDate = target.value;
+      this.isDirty = true;
+      this.validateBaselineDates();
+    }
+  }
+
+  handleWidelyDateChange(e: Event) {
+    const target = e.target as HTMLInputElement;
+    if (target) {
+      this.editingBaselineWidelyDate = target.value;
+      this.isDirty = true;
+      this.validateBaselineDates();
+    }
+  }
+
+  // Frontend validation for baseline status and dates
+  validateBaselineDates(): boolean {
+    this.errorMessage = '';
+
+    if (this.editingBaselineStatus === 'newly') {
+      if (!this.editingBaselineNewlyDate) {
+        this.errorMessage =
+          'Newly Available Date is required for Baseline Newly Available status.';
+        return false;
+      }
+    }
+
+    if (this.editingBaselineStatus === 'widely') {
+      if (!this.editingBaselineNewlyDate || !this.editingBaselineWidelyDate) {
+        this.errorMessage =
+          'Both Newly and Widely Available Dates are required for Baseline Widely Available status.';
+        return false;
+      }
+
+      const newly = new Date(this.editingBaselineNewlyDate);
+      const widely = new Date(this.editingBaselineWidelyDate);
+      if (widely < newly) {
+        this.errorMessage =
+          'Widely Available Date must be chronologically after or equal to the Newly Available Date.';
+        return false;
+      }
+    }
+
+    return true;
+  }
+
   isBypassRequired() {
     if (!this.feature || !this.suggestion || !this.user) return false;
 
@@ -621,6 +882,11 @@ export class ChromedashSummaryReviewDialog extends LitElement {
 
   async applySuggestion() {
     if (!this.feature || !this.suggestion) return;
+
+    // Perform date validation
+    if (!this.validateBaselineDates()) {
+      return; // Stop and display the validation message
+    }
 
     if (this.isBypassRequired() && !this.showBypassUI) {
       this.bypassAction = 'apply';
@@ -913,6 +1179,9 @@ export class ChromedashSummaryReviewDialog extends LitElement {
                         : nothing}
                     </div>
                   </div>
+
+                  <!-- Original Baseline Status -->
+                  ${this.renderOriginalBaselineInfo()}
                 </div>
 
                 <!-- Right Column (AI/Suggested Reference) -->
@@ -925,7 +1194,7 @@ export class ChromedashSummaryReviewDialog extends LitElement {
                     <strong>Suggested Summary</strong>
                   </div>
                   <div
-                    class="original-text"
+                    class="ai-suggested-text"
                     data-testid="suggested-summary-reference"
                   >
                     ${this.suggestion?.suggested_summary ||
@@ -935,7 +1204,7 @@ export class ChromedashSummaryReviewDialog extends LitElement {
                   <div class="field-header">
                     <strong>Suggested Doc Links</strong>
                   </div>
-                  <div class="original-links">
+                  <div class="ai-suggested-links">
                     ${this.suggestion?.suggested_doc_links?.length
                       ? this.suggestion.suggested_doc_links.map(
                           link => html`
@@ -1098,81 +1367,259 @@ export class ChromedashSummaryReviewDialog extends LitElement {
                   <div class="field-header compare-field-header-margin">
                     <strong>Baseline Status Override</strong>
                   </div>
-                  <div class="baseline-edit-row">
-                    <sl-select
-                      size="small"
-                      class="baseline-select-width"
-                      .value=${this.editingBaselineStatus || 'none'}
-                      ?disabled=${this.submitting}
-                      @sl-change=${(e: Event) => {
-                        const target = e.target;
-                        if (target && 'value' in target) {
-                          this.editingBaselineStatus = String(target.value);
-                          this.isDirty = true;
-                        }
-                      }}
-                    >
-                      <sl-option value="none"
-                        >None (Reject Suggestion)</sl-option
-                      >
-                      <sl-option value="limited">Baseline Limited</sl-option>
-                      <sl-option value="newly"
-                        >Baseline Newly Available</sl-option
-                      >
-                      <sl-option value="widely"
-                        >Baseline Widely Available</sl-option
-                      >
-                    </sl-select>
 
-                    ${this.editingBaselineStatus !== 'none'
-                      ? html`
-                          <div class="date-inputs-container">
-                            ${this.editingBaselineStatus === 'newly' ||
-                            this.editingBaselineStatus === 'widely'
-                              ? html`
-                                  <sl-input
-                                    type="date"
-                                    size="small"
-                                    label="Newly Available Date"
-                                    .value=${this.editingBaselineNewlyDate ||
-                                    ''}
-                                    ?disabled=${this.submitting}
-                                    @sl-input=${(e: Event) => {
-                                      const target = e.target;
-                                      if (target && 'value' in target) {
-                                        this.editingBaselineNewlyDate = String(
-                                          target.value
-                                        );
-                                        this.isDirty = true;
-                                      }
-                                    }}
-                                  ></sl-input>
-                                `
-                              : nothing}
-                            ${this.editingBaselineStatus === 'widely'
-                              ? html`
-                                  <sl-input
-                                    type="date"
-                                    size="small"
-                                    label="Widely Available Date"
-                                    .value=${this.editingBaselineWidelyDate ||
-                                    ''}
-                                    ?disabled=${this.submitting}
-                                    @sl-input=${(e: Event) => {
-                                      const target = e.target;
-                                      if (target && 'value' in target) {
-                                        this.editingBaselineWidelyDate = String(
-                                          target.value
-                                        );
-                                        this.isDirty = true;
-                                      }
-                                    }}
-                                  ></sl-input>
-                                `
-                              : nothing}
-                          </div>
-                        `
-                      : nothing}
+                  <div
+                    class="baseline-radio-group"
+                    role="radiogroup"
+                    aria-label="Baseline Status Override"
+                  >
+                    <!-- Option 1: None (No Baseline Status) -->
+                    <div
+                      class="baseline-card ${this.editingBaselineStatus ===
+                      'none'
+                        ? 'selected'
+                        : ''}"
+                      @click=${() => this.selectBaselineStatus('none')}
+                    >
+                      <div class="baseline-card-header">
+                        <div class="baseline-card-label-left">
+                          <sl-radio
+                            value="none"
+                            ?checked=${this.editingBaselineStatus === 'none'}
+                            ?disabled=${this.submitting}
+                          >
+                            None (No Baseline Status)
+                          </sl-radio>
+                        </div>
+                        ${this.suggestion?.original_baseline_status ===
+                          'none' || !this.suggestion?.original_baseline_status
+                          ? html`<sl-tag
+                              size="small"
+                              variant="neutral"
+                              class="baseline-card-badge"
+                              >Original</sl-tag
+                            >`
+                          : nothing}
+                      </div>
+                      <div class="baseline-card-description">
+                        Keep this feature without a baseline status, or reject
+                        the suggestion.
+                      </div>
+                    </div>
+
+                    <!-- Option 2: Baseline Limited -->
+                    <div
+                      class="baseline-card ${this.editingBaselineStatus ===
+                      'limited'
+                        ? 'selected'
+                        : ''} ${this.suggestion?.baseline_status === 'limited'
+                        ? 'ai-suggested'
+                        : ''}"
+                      @click=${() => this.selectBaselineStatus('limited')}
+                    >
+                      <div class="baseline-card-header">
+                        <div class="baseline-card-label-left">
+                          <sl-radio
+                            value="limited"
+                            ?checked=${this.editingBaselineStatus === 'limited'}
+                            ?disabled=${this.submitting}
+                          >
+                            <span
+                              style="display: inline-flex; align-items: center; gap: 6px;"
+                            >
+                              <img
+                                src="/static/img/baseline-limited-icon.svg"
+                                class="baseline-card-icon"
+                                alt=""
+                              />
+                              Baseline Limited
+                            </span>
+                          </sl-radio>
+                        </div>
+                        <div style="display: flex; gap: 4px;">
+                          ${this.suggestion?.baseline_status === 'limited'
+                            ? html`<sl-tag
+                                size="small"
+                                variant="primary"
+                                class="baseline-card-badge"
+                                >AI Suggested</sl-tag
+                              >`
+                            : nothing}
+                          ${this.suggestion?.original_baseline_status ===
+                          'limited'
+                            ? html`<sl-tag
+                                size="small"
+                                variant="neutral"
+                                class="baseline-card-badge"
+                                >Original</sl-tag
+                              >`
+                            : nothing}
+                        </div>
+                      </div>
+                      <div class="baseline-card-description">
+                        The feature has limited support or is only available in
+                        some browsers.
+                      </div>
+                    </div>
+
+                    <!-- Option 3: Baseline Newly Available -->
+                    <div
+                      class="baseline-card ${this.editingBaselineStatus ===
+                      'newly'
+                        ? 'selected'
+                        : ''} ${this.suggestion?.baseline_status === 'newly'
+                        ? 'ai-suggested'
+                        : ''}"
+                      @click=${() => this.selectBaselineStatus('newly')}
+                    >
+                      <div class="baseline-card-header">
+                        <div class="baseline-card-label-left">
+                          <sl-radio
+                            value="newly"
+                            ?checked=${this.editingBaselineStatus === 'newly'}
+                            ?disabled=${this.submitting}
+                          >
+                            <span
+                              style="display: inline-flex; align-items: center; gap: 6px;"
+                            >
+                              <img
+                                src="/static/img/baseline-newly-icon.svg"
+                                class="baseline-card-icon"
+                                alt=""
+                              />
+                              Baseline Newly Available
+                            </span>
+                          </sl-radio>
+                        </div>
+                        <div style="display: flex; gap: 4px;">
+                          ${this.suggestion?.baseline_status === 'newly'
+                            ? html`<sl-tag
+                                size="small"
+                                variant="primary"
+                                class="baseline-card-badge"
+                                >AI Suggested</sl-tag
+                              >`
+                            : nothing}
+                          ${this.suggestion?.original_baseline_status ===
+                          'newly'
+                            ? html`<sl-tag
+                                size="small"
+                                variant="neutral"
+                                class="baseline-card-badge"
+                                >Original</sl-tag
+                              >`
+                            : nothing}
+                        </div>
+                      </div>
+                      <div class="baseline-card-description">
+                        Supported across all major browser engines. Requires
+                        newly available date.
+                      </div>
+
+                      <!-- Embedded Conditional Newly Available Date Picker -->
+                      ${this.editingBaselineStatus === 'newly'
+                        ? html`
+                            <div
+                              class="baseline-card-dates"
+                              @click=${(e: Event) => e.stopPropagation()}
+                            >
+                              <sl-input
+                                type="date"
+                                size="small"
+                                label="Newly Available Date"
+                                .value=${this.editingBaselineNewlyDate || ''}
+                                ?disabled=${this.submitting}
+                                @sl-input=${this.handleNewlyDateChange}
+                                required
+                              ></sl-input>
+                            </div>
+                          `
+                        : nothing}
+                    </div>
+
+                    <!-- Option 4: Baseline Widely Available -->
+                    <div
+                      class="baseline-card ${this.editingBaselineStatus ===
+                      'widely'
+                        ? 'selected'
+                        : ''} ${this.suggestion?.baseline_status === 'widely'
+                        ? 'ai-suggested'
+                        : ''}"
+                      @click=${() => this.selectBaselineStatus('widely')}
+                    >
+                      <div class="baseline-card-header">
+                        <div class="baseline-card-label-left">
+                          <sl-radio
+                            value="widely"
+                            ?checked=${this.editingBaselineStatus === 'widely'}
+                            ?disabled=${this.submitting}
+                          >
+                            <span
+                              style="display: inline-flex; align-items: center; gap: 6px;"
+                            >
+                              <img
+                                src="/static/img/baseline-widely-icon.svg"
+                                class="baseline-card-icon"
+                                alt=""
+                              />
+                              Baseline Widely Available
+                            </span>
+                          </sl-radio>
+                        </div>
+                        <div style="display: flex; gap: 4px;">
+                          ${this.suggestion?.baseline_status === 'widely'
+                            ? html`<sl-tag
+                                size="small"
+                                variant="primary"
+                                class="baseline-card-badge"
+                                >AI Suggested</sl-tag
+                              >`
+                            : nothing}
+                          ${this.suggestion?.original_baseline_status ===
+                          'widely'
+                            ? html`<sl-tag
+                                size="small"
+                                variant="neutral"
+                                class="baseline-card-badge"
+                                >Original</sl-tag
+                              >`
+                            : nothing}
+                        </div>
+                      </div>
+                      <div class="baseline-card-description">
+                        Supported in all major engines for 30+ months. Requires
+                        newly and widely available dates.
+                      </div>
+
+                      <!-- Embedded Conditional Widely Available Date Pickers -->
+                      ${this.editingBaselineStatus === 'widely'
+                        ? html`
+                            <div
+                              class="baseline-card-dates"
+                              @click=${(e: Event) => e.stopPropagation()}
+                            >
+                              <sl-input
+                                type="date"
+                                size="small"
+                                label="Newly Available Date"
+                                .value=${this.editingBaselineNewlyDate || ''}
+                                ?disabled=${this.submitting}
+                                @sl-input=${this.handleNewlyDateChange}
+                                required
+                              ></sl-input>
+                              <sl-input
+                                type="date"
+                                size="small"
+                                label="Widely Available Date"
+                                .value=${this.editingBaselineWidelyDate || ''}
+                                ?disabled=${this.submitting}
+                                @sl-input=${this.handleWidelyDateChange}
+                                required
+                              ></sl-input>
+                            </div>
+                          `
+                        : nothing}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1200,7 +1647,9 @@ export class ChromedashSummaryReviewDialog extends LitElement {
               <div slot="footer">
                 <div class="dialog-footer-container">
                   ${this.errorMessage
-                    ? html`<div class="error-message">${this.errorMessage}</div>`
+                    ? html`<div class="error-message">
+                        ${this.errorMessage}
+                      </div>`
                     : nothing}
                   <div class="dialog-footer">
                     <sl-button
@@ -1213,39 +1662,49 @@ export class ChromedashSummaryReviewDialog extends LitElement {
                       Discard Suggestion
                     </sl-button>
                     <div class="dialog-footer-actions">
-                      <sl-button ?disabled=${this.submitting} @click=${this.hide}
+                      <sl-button
+                        ?disabled=${this.submitting}
+                        @click=${this.hide}
                         >Cancel</sl-button
                       >
                       ${this.showBypassUI
-                      ? html`
-                          <sl-button
-                            ?disabled=${this.submitting}
-                            @click=${() => {
-                              this.showBypassUI = false;
-                            }}
-                          >
-                            Cancel Bypass
-                          </sl-button>
-                          <sl-button
-                            variant=${this.bypassAction === 'discard' ? 'danger' : 'primary'}
-                            ?loading=${this.submitting}
-                            ?disabled=${this.submitting ||
-                            !this.bypassJustification.trim()}
-                            @click=${this.bypassAction === 'discard' ? this.discardSuggestion : this.applySuggestion}
-                          >
-                            Confirm ${this.bypassAction === 'discard' ? 'Discard' : 'Apply'} Bypass
-                          </sl-button>
-                        `
-                      : html`
-                          <sl-button
-                            variant="primary"
-                            ?loading=${this.submitting}
-                            ?disabled=${this.submitting}
-                            @click=${this.applySuggestion}
-                          >
-                            Save & Apply
-                          </sl-button>
-                        `}
+                        ? html`
+                            <sl-button
+                              ?disabled=${this.submitting}
+                              @click=${() => {
+                                this.showBypassUI = false;
+                              }}
+                            >
+                              Cancel Bypass
+                            </sl-button>
+                            <sl-button
+                              variant=${this.bypassAction === 'discard'
+                                ? 'danger'
+                                : 'primary'}
+                              ?loading=${this.submitting}
+                              ?disabled=${this.submitting ||
+                              !this.bypassJustification.trim()}
+                              @click=${this.bypassAction === 'discard'
+                                ? this.discardSuggestion
+                                : this.applySuggestion}
+                            >
+                              Confirm
+                              ${this.bypassAction === 'discard'
+                                ? 'Discard'
+                                : 'Apply'}
+                              Bypass
+                            </sl-button>
+                          `
+                        : html`
+                            <sl-button
+                              variant="primary"
+                              ?loading=${this.submitting}
+                              ?disabled=${this.submitting}
+                              @click=${this.applySuggestion}
+                            >
+                              Save & Apply
+                            </sl-button>
+                          `}
                     </div>
                   </div>
                 </div>

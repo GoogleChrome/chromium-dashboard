@@ -471,6 +471,9 @@ class FeatureSummarySuggestion(ndb.Model):
     # Backup fields for reversion / restoring original values
     original_summary = ndb.TextProperty()
     original_doc_links = ndb.StringProperty(repeated=True)
+    original_baseline_status = ndb.StringProperty()
+    original_baseline_newly_date = ndb.DateProperty()
+    original_baseline_widely_date = ndb.DateProperty()
     suggested_format = ndb.StringProperty(default='markdown')
     original_summary_format = ndb.StringProperty()
 

@@ -39,6 +39,36 @@ export interface FeatureSummarySuggestionResponse {
     baseline_status?: string;
     /**
      * 
+     * @type {Date}
+     * @memberof FeatureSummarySuggestionResponse
+     */
+    baseline_newly_date?: Date;
+    /**
+     * 
+     * @type {Date}
+     * @memberof FeatureSummarySuggestionResponse
+     */
+    baseline_widely_date?: Date;
+    /**
+     * 
+     * @type {string}
+     * @memberof FeatureSummarySuggestionResponse
+     */
+    original_baseline_status?: string;
+    /**
+     * 
+     * @type {Date}
+     * @memberof FeatureSummarySuggestionResponse
+     */
+    original_baseline_newly_date?: Date;
+    /**
+     * 
+     * @type {Date}
+     * @memberof FeatureSummarySuggestionResponse
+     */
+    original_baseline_widely_date?: Date;
+    /**
+     * 
      * @type {string}
      * @memberof FeatureSummarySuggestionResponse
      */
@@ -78,6 +108,11 @@ export function FeatureSummarySuggestionResponseFromJSONTyped(json: any, ignoreD
         'suggested_summary': json['suggested_summary'] == null ? undefined : json['suggested_summary'],
         'suggested_doc_links': json['suggested_doc_links'] == null ? undefined : json['suggested_doc_links'],
         'baseline_status': json['baseline_status'] == null ? undefined : json['baseline_status'],
+        'baseline_newly_date': json['baseline_newly_date'] == null ? undefined : (new Date(json['baseline_newly_date'])),
+        'baseline_widely_date': json['baseline_widely_date'] == null ? undefined : (new Date(json['baseline_widely_date'])),
+        'original_baseline_status': json['original_baseline_status'] == null ? undefined : json['original_baseline_status'],
+        'original_baseline_newly_date': json['original_baseline_newly_date'] == null ? undefined : (new Date(json['original_baseline_newly_date'])),
+        'original_baseline_widely_date': json['original_baseline_widely_date'] == null ? undefined : (new Date(json['original_baseline_widely_date'])),
         'status': json['status'],
         'status_timestamp': json['status_timestamp'] == null ? undefined : (new Date(json['status_timestamp'])),
         'last_generation_attempt': json['last_generation_attempt'] == null ? undefined : (new Date(json['last_generation_attempt'])),
@@ -93,6 +128,11 @@ export function FeatureSummarySuggestionResponseToJSON(value?: FeatureSummarySug
         'suggested_summary': value['suggested_summary'],
         'suggested_doc_links': value['suggested_doc_links'],
         'baseline_status': value['baseline_status'],
+        'baseline_newly_date': value['baseline_newly_date'] == null ? undefined : ((value['baseline_newly_date']).toISOString().substring(0,10)),
+        'baseline_widely_date': value['baseline_widely_date'] == null ? undefined : ((value['baseline_widely_date']).toISOString().substring(0,10)),
+        'original_baseline_status': value['original_baseline_status'],
+        'original_baseline_newly_date': value['original_baseline_newly_date'] == null ? undefined : ((value['original_baseline_newly_date']).toISOString().substring(0,10)),
+        'original_baseline_widely_date': value['original_baseline_widely_date'] == null ? undefined : ((value['original_baseline_widely_date']).toISOString().substring(0,10)),
         'status': value['status'],
         'status_timestamp': value['status_timestamp'] == null ? undefined : ((value['status_timestamp']).toISOString()),
         'last_generation_attempt': value['last_generation_attempt'] == null ? undefined : ((value['last_generation_attempt']).toISOString()),

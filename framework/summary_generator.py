@@ -404,6 +404,14 @@ def generate_summary_suggestion(
 
 
 
+    # If the suggestion was already approved/applied, back up these values as the new "original" reference!
+    if suggestion.status == core_enums.SummarySuggestionStatus.APPLIED.value:
+        suggestion.original_summary = feature.summary
+        suggestion.original_doc_links = feature.doc_links or []
+        suggestion.original_baseline_status = suggestion.baseline_status
+        suggestion.original_baseline_newly_date = suggestion.baseline_newly_date
+        suggestion.original_baseline_widely_date = suggestion.baseline_widely_date
+
     suggestion.status = core_enums.SummarySuggestionStatus.IN_PROGRESS.value
     suggestion.last_generation_attempt = datetime.now()
     suggestion.put()

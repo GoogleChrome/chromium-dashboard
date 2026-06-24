@@ -2225,6 +2225,20 @@ components:
             type: string
         baseline_status:
           type: string
+        baseline_newly_date:
+          type: string
+          format: date
+        baseline_widely_date:
+          type: string
+          format: date
+        original_baseline_status:
+          type: string
+        original_baseline_newly_date:
+          type: string
+          format: date
+        original_baseline_widely_date:
+          type: string
+          format: date
         status:
           type: string
         status_timestamp:

@@ -16,6 +16,7 @@
 """Unit tests for api/summary_suggestion_api.py."""
 
 import datetime
+from datetime import date
 from unittest import mock
 
 import flask
@@ -70,6 +71,11 @@ class SummarySuggestionAPITest(testing_config.CustomTestCase):
                 'suggested_summary': None,
                 'suggested_doc_links': [],
                 'baseline_status': None,
+                'baseline_newly_date': None,
+                'baseline_widely_date': None,
+                'original_baseline_status': 'none',
+                'original_baseline_newly_date': None,
+                'original_baseline_widely_date': None,
                 'status_timestamp': None,
                 'last_generation_attempt': None,
                 'version_token': 1,
@@ -764,6 +770,79 @@ class SummarySuggestionPATCHAPITest(testing_config.CustomTestCase):
         activities = Activity.get_activities(12345)
         self.assertEqual(len(activities), 1)
         self.assertEqual(activities[0].log_type, Activity.USER_CHANGE)
+
+    @mock.patch('framework.permissions.can_review_release_notes')
+    def test_patch__apply_first_time_backups_baseline(self, mock_can_review):
+        """Applying a suggestion for the first time backs up original baseline status to 'none'."""
+        mock_can_review.return_value = True
+
+        with test_app.test_request_context(
+            '/api/v0/features/12345/summary_suggestion',
+            method='PATCH',
+            json={
+                'status': 'applied',
+                'suggested_summary': 'AI suggested summary.',
+                'suggested_doc_links': [],
+                'version_token': 1,
+                'baseline_status': 'newly',
+                'baseline_newly_date': '2024-03-20',
+            },
+        ):
+            response = self.handler.do_patch(feature_id=12345)
+
+        self.assertEqual(
+            response['message'], 'AI suggestion status updated successfully.'
+        )
+
+        # Check DB suggestion has baseline status updated AND original_baseline_status is backed up to 'none'!
+        updated_suggestion = FeatureSummarySuggestion.get_by_id(12345)
+        self.assertEqual(updated_suggestion.baseline_status, 'newly')
+        self.assertEqual(updated_suggestion.baseline_newly_date, date(2024, 3, 20))
+        self.assertEqual(updated_suggestion.original_baseline_status, 'none')
+        self.assertIsNone(updated_suggestion.original_baseline_newly_date)
+
+    @mock.patch('framework.permissions.can_review_release_notes')
+    def test_patch__revert_restores_baseline_status_and_dates(self, mock_can_review):
+        """Reverting a suggestion (transitioning back to COMPLETE) restores baseline values."""
+        mock_can_review.return_value = True
+
+        # Pre-populate suggestion as BYPASSED with baseline values AND backed up original baseline values
+        self.suggestion.status = core_enums.SummarySuggestionStatus.BYPASSED.value
+        self.suggestion.baseline_status = 'newly'
+        self.suggestion.baseline_newly_date = date(2024, 3, 20)
+        self.suggestion.original_baseline_status = 'newly'
+        self.suggestion.original_baseline_newly_date = date(2024, 3, 15)
+        self.suggestion.original_summary = 'Original technical summary.'
+        self.suggestion.original_doc_links = ['https://original.example.com']
+        self.suggestion.put()
+
+        with test_app.test_request_context(
+            '/api/v0/features/12345/summary_suggestion',
+            method='PATCH',
+            json={
+                'status': 'complete',  # Revert action
+                'version_token': 1,
+            },
+        ):
+            response = self.handler.do_patch(feature_id=12345)
+
+        self.assertEqual(
+            response['message'], 'AI suggestion status updated successfully.'
+        )
+
+        # Check that suggestion status is back to COMPLETE
+        # And its baseline status/dates are restored to the backed up values (2024-03-15)!
+        updated_suggestion = FeatureSummarySuggestion.get_by_id(12345)
+        self.assertEqual(
+            updated_suggestion.status,
+            core_enums.SummarySuggestionStatus.COMPLETE,
+        )
+        self.assertEqual(updated_suggestion.baseline_status, 'newly')
+        self.assertEqual(updated_suggestion.baseline_newly_date, date(2024, 3, 15))
+        
+        # Verify backup fields are cleared!
+        self.assertIsNone(updated_suggestion.original_baseline_status)
+        self.assertIsNone(updated_suggestion.original_baseline_newly_date)
 
 
 class PendingReviewsCountAPITest(testing_config.CustomTestCase):

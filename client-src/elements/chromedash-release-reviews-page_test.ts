@@ -80,7 +80,10 @@ describe('chromedash-release-reviews-page', () => {
       '.dashboard-header h2'
     );
     assert.exists(headerTitle);
-    assert.include(headerTitle.textContent, 'Release Reviews Dashboard');
+    assert.include(
+      headerTitle.textContent,
+      'AI-Assisted Release Reviews Pending'
+    );
 
     const badge = component.renderRoot.querySelector(
       '[data-testid="reviews-count"]'

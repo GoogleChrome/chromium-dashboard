@@ -42,6 +42,17 @@ export class ChromedashReleaseReviewsPage extends LitElement {
           gap: 12px;
         }
 
+        .gemini-icon {
+          width: 1.2em;
+          height: 1.2em;
+          transform-origin: center center;
+          transition: transform 0.7s ease-in-out;
+        }
+
+        h2:hover .gemini-icon {
+          transform: rotate(360deg);
+        }
+
         .reviews-count-badge {
           background: var(--sl-color-neutral-100);
           color: var(--sl-color-neutral-700);
@@ -299,7 +310,12 @@ export class ChromedashReleaseReviewsPage extends LitElement {
       <div class="reviews-container">
         <div class="dashboard-header">
           <h2>
-            Release Reviews Dashboard
+            <img
+              class="gemini-icon"
+              src="https://www.gstatic.com/images/branding/productlogos/gemini_2025/v1/192px.svg"
+              alt="Gemini AI Logo"
+            />
+            AI-Assisted Release Reviews Pending
             ${totalReviews > 0
               ? html`<span
                   class="reviews-count-badge"

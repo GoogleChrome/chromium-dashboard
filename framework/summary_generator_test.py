@@ -16,6 +16,7 @@
 """Unit tests for framework/summary_generator.py."""
 
 from unittest import mock
+from datetime import date
 
 import testing_config
 from framework import summary_generator
@@ -204,6 +205,76 @@ class SummaryGeneratorTest(testing_config.CustomTestCase):
 
         # generate_summary_for_feature should not be called
         mock_gen_summary.assert_not_called()
+
+    @mock.patch('framework.summary_generator.generate_summary_for_feature')
+    def test_generate_summary_suggestion__backup_on_regeneration(
+        self, mock_gen_summary
+    ):
+        """Ensure regeneration of an already applied suggestion backs up approved values."""
+        # 1. Pre-populate the suggestion as APPLIED
+        suggestion = FeatureSummarySuggestion(
+            id=12345,
+            status=core_enums.SummarySuggestionStatus.APPLIED,
+            version=summary_generator.GENERATOR_VERSION,
+            suggested_summary='Old approved summary.',
+            suggested_doc_links=['https://mdn.example.com/old'],
+            baseline_status=core_enums.BaselineStatus.NEWLY,
+            baseline_newly_date=date(2024, 3, 15),
+        )
+        suggestion.put()
+
+        # Update the feature summary to match the approved value
+        self.feature.summary = 'Old approved summary.'
+        self.feature.doc_links = ['https://mdn.example.com/old']
+        self.feature.put()
+
+        # Mock generator output for the new generation
+        mock_gen_summary.return_value = summary_generator.SummaryResponseSchema(
+            suggested_summary='New LLM suggestion summary.',
+            suggested_doc_links=['https://mdn.example.com/new'],
+            baseline_status='newly',
+            baseline_newly_date='2024-03-20',
+        )
+
+        summary_generator.generate_summary_suggestion(12345, force=True)
+
+        # Verify that the DB suggestion has the new values, BUT has backed up the old approved ones!
+        updated_suggestion = FeatureSummarySuggestion.get_by_id(12345)
+        self.assertIsNotNone(updated_suggestion)
+        self.assertEqual(
+            updated_suggestion.status,
+            core_enums.SummarySuggestionStatus.COMPLETE,
+        )
+        
+        # New values from generator
+        self.assertEqual(
+            updated_suggestion.suggested_summary,
+            'New LLM suggestion summary.',
+        )
+        self.assertEqual(
+            updated_suggestion.baseline_status,
+            core_enums.BaselineStatus.NEWLY,
+        )
+        self.assertEqual(
+            updated_suggestion.baseline_newly_date, date(2024, 3, 20)
+        )
+
+        # Backed up values!
+        self.assertEqual(
+            updated_suggestion.original_summary, 'Old approved summary.'
+        )
+        self.assertCountEqual(
+            updated_suggestion.original_doc_links,
+            ['https://mdn.example.com/old'],
+        )
+        self.assertEqual(
+            updated_suggestion.original_baseline_status, 'newly'
+        )
+        self.assertEqual(
+            updated_suggestion.original_baseline_newly_date,
+            date(2024, 3, 15),
+        )
+        self.assertIsNone(updated_suggestion.original_baseline_widely_date)
 
     @mock.patch('framework.summary_generator.generate_summary_for_feature')
     def test_generate_summary_suggestion__failure(self, mock_gen_summary):

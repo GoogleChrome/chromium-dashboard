@@ -56,6 +56,11 @@ class SummarySuggestionAPI(basehandlers.EntitiesAPIHandler):
                 'suggested_summary': None,
                 'suggested_doc_links': [],
                 'baseline_status': None,
+                'baseline_newly_date': None,
+                'baseline_widely_date': None,
+                'original_baseline_status': 'none',
+                'original_baseline_newly_date': None,
+                'original_baseline_widely_date': None,
                 'status_timestamp': None,
                 'last_generation_attempt': None,
                 'version_token': 1,
@@ -69,6 +74,27 @@ class SummarySuggestionAPI(basehandlers.EntitiesAPIHandler):
             'suggested_summary': suggestion.suggested_summary,
             'suggested_doc_links': suggestion.suggested_doc_links or [],
             'baseline_status': suggestion.baseline_status,
+            'baseline_newly_date': (
+                suggestion.baseline_newly_date.isoformat()
+                if suggestion.baseline_newly_date
+                else None
+            ),
+            'baseline_widely_date': (
+                suggestion.baseline_widely_date.isoformat()
+                if suggestion.baseline_widely_date
+                else None
+            ),
+            'original_baseline_status': suggestion.original_baseline_status or 'none',
+            'original_baseline_newly_date': (
+                suggestion.original_baseline_newly_date.isoformat()
+                if suggestion.original_baseline_newly_date
+                else None
+            ),
+            'original_baseline_widely_date': (
+                suggestion.original_baseline_widely_date.isoformat()
+                if suggestion.original_baseline_widely_date
+                else None
+            ),
             'status': suggestion.status,
             'status_timestamp': (
                 suggestion.status_timestamp.isoformat()
@@ -281,6 +307,10 @@ class SummarySuggestionAPI(basehandlers.EntitiesAPIHandler):
                 if approved_baseline_widely is not None:
                     suggestion.baseline_widely_date = parse_date(approved_baseline_widely)
 
+                # First-time apply: backup baseline status to none if no prior backup exists
+                if suggestion.original_baseline_status is None:
+                    suggestion.original_baseline_status = 'none'
+
             elif target_status == core_enums.SummarySuggestionStatus.DISCARDED:
                 if current_status not in [
                     core_enums.SummarySuggestionStatus.COMPLETE.value,
@@ -335,6 +365,17 @@ class SummarySuggestionAPI(basehandlers.EntitiesAPIHandler):
                     suggestion.original_summary = None
                     suggestion.original_doc_links = []
                     suggestion.original_summary_format = None
+
+                # Revert baseline status and dates
+                if suggestion.original_baseline_status is not None:
+                    suggestion.baseline_status = suggestion.original_baseline_status
+                    suggestion.baseline_newly_date = suggestion.original_baseline_newly_date
+                    suggestion.baseline_widely_date = suggestion.original_baseline_widely_date
+
+                    # Clear backups
+                    suggestion.original_baseline_status = None
+                    suggestion.original_baseline_newly_date = None
+                    suggestion.original_baseline_widely_date = None
 
             else:
                 return (

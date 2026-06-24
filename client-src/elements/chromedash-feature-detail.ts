@@ -48,7 +48,9 @@ import {
   showToastMessage,
 } from './utils.js';
 
-import {property, state} from 'lit/decorators.js';
+import {property, state, query} from 'lit/decorators.js';
+import './chromedash-summary-review-dialog.js';
+import {ChromedashSummaryReviewDialog} from './chromedash-summary-review-dialog.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {
   Feature,
@@ -133,6 +135,9 @@ export class ChromedashFeatureDetail extends LitElement {
   suggestion: SuggestionData | null = null;
   @state()
   reverting = false;
+
+  @query('#review-dialog')
+  reviewDialogEl!: ChromedashSummaryReviewDialog;
 
   static get styles() {
     const ICON_WIDTH = 18;
@@ -1046,16 +1051,29 @@ export class ChromedashFeatureDetail extends LitElement {
     }
   }
 
+  openReviewDialog(e: Event) {
+    e.preventDefault();
+    if (this.reviewDialogEl) {
+      this.reviewDialogEl.show();
+    }
+  }
+
+  handleSuggestionApplied() {
+    showToastMessage('AI summary suggestion successfully applied!');
+    this._fireEvent('refetch-needed', {});
+  }
+
+  handleSuggestionDiscarded() {
+    showToastMessage('AI summary suggestion discarded.');
+    this._fireEvent('refetch-needed', {});
+  }
+
   renderAiSuggestionBanner() {
     if (!this.suggestion) {
       return nothing;
     }
 
     if (this.suggestion.status === 'complete') {
-      const milestoneStage = this.feature.stages.find(s => s.desktop_first);
-      const milestone = milestoneStage ? milestoneStage.desktop_first : '';
-      const releasesLink = `/releases?milestone=${milestone}`;
-
       return html`
         <sl-alert
           variant="primary"
@@ -1065,7 +1083,10 @@ export class ChromedashFeatureDetail extends LitElement {
           <sl-icon slot="icon" name="info-circle"></sl-icon>
           <strong>AI Suggestion Ready:</strong> An AI-generated summary
           suggestion draft is available for this feature.
-          <a href=${releasesLink} style="margin-left: 10px; font-weight: bold;"
+          <a
+            href="#"
+            @click=${this.openReviewDialog}
+            style="margin-left: 10px; font-weight: bold;"
             >Review and Apply Suggestion</a
           >
         </sl-alert>
@@ -1115,6 +1136,15 @@ export class ChromedashFeatureDetail extends LitElement {
         return this.renderProcessStage(feStage, sameTypeCount);
       })}
       ${this.renderAddStageButton()} ${this.renderFootnote()}
+
+      <chromedash-summary-review-dialog
+        id="review-dialog"
+        .feature=${this.feature}
+        .suggestion=${this.suggestion}
+        .user=${this.user}
+        @applied=${this.handleSuggestionApplied}
+        @discarded=${this.handleSuggestionDiscarded}
+      ></chromedash-summary-review-dialog>
     `;
   }
 }

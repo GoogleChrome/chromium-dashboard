@@ -344,7 +344,7 @@ export class ChromedashApp extends LitElement {
       if (!this.setupNewPage(ctx, 'chromedash-releases-page', true)) return;
       this.pageComponent.user = this.user;
     });
-    page('/releases/reviews', ctx => {
+    page('/release-reviews', ctx => {
       if (!this.setupNewPage(ctx, 'chromedash-release-reviews-page', true))
         return;
       this.pageComponent.user = this.user;

@@ -45,6 +45,9 @@ export interface SuggestionData {
   baseline_status: string | null;
   baseline_newly_date: string | null;
   baseline_widely_date: string | null;
+  original_baseline_status: string | null;
+  original_baseline_newly_date: string | null;
+  original_baseline_widely_date: string | null;
   status_timestamp: string | null;
   last_generation_attempt: string | null;
   version_token: number;

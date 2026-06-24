@@ -12,7 +12,7 @@ class FeatureSummarySuggestionResponse(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, suggested_summary=None, suggested_doc_links=None, baseline_status=None, status=None, status_timestamp=None, last_generation_attempt=None):  # noqa: E501
+    def __init__(self, suggested_summary=None, suggested_doc_links=None, baseline_status=None, baseline_newly_date=None, baseline_widely_date=None, original_baseline_status=None, original_baseline_newly_date=None, original_baseline_widely_date=None, status=None, status_timestamp=None, last_generation_attempt=None):  # noqa: E501
         """FeatureSummarySuggestionResponse - a model defined in OpenAPI
 
         :param suggested_summary: The suggested_summary of this FeatureSummarySuggestionResponse.  # noqa: E501
@@ -21,6 +21,16 @@ class FeatureSummarySuggestionResponse(Model):
         :type suggested_doc_links: List[str]
         :param baseline_status: The baseline_status of this FeatureSummarySuggestionResponse.  # noqa: E501
         :type baseline_status: str
+        :param baseline_newly_date: The baseline_newly_date of this FeatureSummarySuggestionResponse.  # noqa: E501
+        :type baseline_newly_date: date
+        :param baseline_widely_date: The baseline_widely_date of this FeatureSummarySuggestionResponse.  # noqa: E501
+        :type baseline_widely_date: date
+        :param original_baseline_status: The original_baseline_status of this FeatureSummarySuggestionResponse.  # noqa: E501
+        :type original_baseline_status: str
+        :param original_baseline_newly_date: The original_baseline_newly_date of this FeatureSummarySuggestionResponse.  # noqa: E501
+        :type original_baseline_newly_date: date
+        :param original_baseline_widely_date: The original_baseline_widely_date of this FeatureSummarySuggestionResponse.  # noqa: E501
+        :type original_baseline_widely_date: date
         :param status: The status of this FeatureSummarySuggestionResponse.  # noqa: E501
         :type status: str
         :param status_timestamp: The status_timestamp of this FeatureSummarySuggestionResponse.  # noqa: E501
@@ -32,6 +42,11 @@ class FeatureSummarySuggestionResponse(Model):
             'suggested_summary': str,
             'suggested_doc_links': List[str],
             'baseline_status': str,
+            'baseline_newly_date': date,
+            'baseline_widely_date': date,
+            'original_baseline_status': str,
+            'original_baseline_newly_date': date,
+            'original_baseline_widely_date': date,
             'status': str,
             'status_timestamp': datetime,
             'last_generation_attempt': datetime
@@ -41,6 +56,11 @@ class FeatureSummarySuggestionResponse(Model):
             'suggested_summary': 'suggested_summary',
             'suggested_doc_links': 'suggested_doc_links',
             'baseline_status': 'baseline_status',
+            'baseline_newly_date': 'baseline_newly_date',
+            'baseline_widely_date': 'baseline_widely_date',
+            'original_baseline_status': 'original_baseline_status',
+            'original_baseline_newly_date': 'original_baseline_newly_date',
+            'original_baseline_widely_date': 'original_baseline_widely_date',
             'status': 'status',
             'status_timestamp': 'status_timestamp',
             'last_generation_attempt': 'last_generation_attempt'
@@ -49,6 +69,11 @@ class FeatureSummarySuggestionResponse(Model):
         self._suggested_summary = suggested_summary
         self._suggested_doc_links = suggested_doc_links
         self._baseline_status = baseline_status
+        self._baseline_newly_date = baseline_newly_date
+        self._baseline_widely_date = baseline_widely_date
+        self._original_baseline_status = original_baseline_status
+        self._original_baseline_newly_date = original_baseline_newly_date
+        self._original_baseline_widely_date = original_baseline_widely_date
         self._status = status
         self._status_timestamp = status_timestamp
         self._last_generation_attempt = last_generation_attempt
@@ -126,6 +151,111 @@ class FeatureSummarySuggestionResponse(Model):
         """
 
         self._baseline_status = baseline_status
+
+    @property
+    def baseline_newly_date(self) -> date:
+        """Gets the baseline_newly_date of this FeatureSummarySuggestionResponse.
+
+
+        :return: The baseline_newly_date of this FeatureSummarySuggestionResponse.
+        :rtype: date
+        """
+        return self._baseline_newly_date
+
+    @baseline_newly_date.setter
+    def baseline_newly_date(self, baseline_newly_date: date):
+        """Sets the baseline_newly_date of this FeatureSummarySuggestionResponse.
+
+
+        :param baseline_newly_date: The baseline_newly_date of this FeatureSummarySuggestionResponse.
+        :type baseline_newly_date: date
+        """
+
+        self._baseline_newly_date = baseline_newly_date
+
+    @property
+    def baseline_widely_date(self) -> date:
+        """Gets the baseline_widely_date of this FeatureSummarySuggestionResponse.
+
+
+        :return: The baseline_widely_date of this FeatureSummarySuggestionResponse.
+        :rtype: date
+        """
+        return self._baseline_widely_date
+
+    @baseline_widely_date.setter
+    def baseline_widely_date(self, baseline_widely_date: date):
+        """Sets the baseline_widely_date of this FeatureSummarySuggestionResponse.
+
+
+        :param baseline_widely_date: The baseline_widely_date of this FeatureSummarySuggestionResponse.
+        :type baseline_widely_date: date
+        """
+
+        self._baseline_widely_date = baseline_widely_date
+
+    @property
+    def original_baseline_status(self) -> str:
+        """Gets the original_baseline_status of this FeatureSummarySuggestionResponse.
+
+
+        :return: The original_baseline_status of this FeatureSummarySuggestionResponse.
+        :rtype: str
+        """
+        return self._original_baseline_status
+
+    @original_baseline_status.setter
+    def original_baseline_status(self, original_baseline_status: str):
+        """Sets the original_baseline_status of this FeatureSummarySuggestionResponse.
+
+
+        :param original_baseline_status: The original_baseline_status of this FeatureSummarySuggestionResponse.
+        :type original_baseline_status: str
+        """
+
+        self._original_baseline_status = original_baseline_status
+
+    @property
+    def original_baseline_newly_date(self) -> date:
+        """Gets the original_baseline_newly_date of this FeatureSummarySuggestionResponse.
+
+
+        :return: The original_baseline_newly_date of this FeatureSummarySuggestionResponse.
+        :rtype: date
+        """
+        return self._original_baseline_newly_date
+
+    @original_baseline_newly_date.setter
+    def original_baseline_newly_date(self, original_baseline_newly_date: date):
+        """Sets the original_baseline_newly_date of this FeatureSummarySuggestionResponse.
+
+
+        :param original_baseline_newly_date: The original_baseline_newly_date of this FeatureSummarySuggestionResponse.
+        :type original_baseline_newly_date: date
+        """
+
+        self._original_baseline_newly_date = original_baseline_newly_date
+
+    @property
+    def original_baseline_widely_date(self) -> date:
+        """Gets the original_baseline_widely_date of this FeatureSummarySuggestionResponse.
+
+
+        :return: The original_baseline_widely_date of this FeatureSummarySuggestionResponse.
+        :rtype: date
+        """
+        return self._original_baseline_widely_date
+
+    @original_baseline_widely_date.setter
+    def original_baseline_widely_date(self, original_baseline_widely_date: date):
+        """Sets the original_baseline_widely_date of this FeatureSummarySuggestionResponse.
+
+
+        :param original_baseline_widely_date: The original_baseline_widely_date of this FeatureSummarySuggestionResponse.
+        :type original_baseline_widely_date: date
+        """
+
+        self._original_baseline_widely_date = original_baseline_widely_date
 
     @property
     def status(self) -> str:

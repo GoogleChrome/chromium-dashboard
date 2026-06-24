@@ -138,6 +138,17 @@ export class ChromedashReleaseFeatureCard extends LitElement {
       return nothing;
     }
 
+    const isApplied = this.suggestion.status === 'applied';
+    const canReview = !!(
+      this.user?.can_review_release_notes ||
+      this.canUserEditFeature(this.feature)
+    );
+
+    // Public users should ONLY see approved/applied baseline badges!
+    if (!isApplied && !canReview) {
+      return nothing;
+    }
+
     let label = '';
     let variant = '';
     let iconSrc = '';
@@ -160,6 +171,22 @@ export class ChromedashReleaseFeatureCard extends LitElement {
         break;
       default:
         return nothing;
+    }
+
+    // If it is a draft suggestion and the user is an editor, render with dashed styling!
+    if (!isApplied && canReview) {
+      return html`
+        <sl-tag
+          variant=${variant}
+          size="small"
+          class="baseline-badge baseline-badge-suggested"
+          pill
+          style="border-style: dashed; border-width: 1.5px; background: transparent;"
+        >
+          <img src="${iconSrc}" class="baseline-badge-icon" alt="" />
+          <strong>Suggested:</strong> ${label}
+        </sl-tag>
+      `;
     }
 
     return html`
