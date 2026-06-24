@@ -958,6 +958,7 @@ class SummarySuggestionStatus(str, Enum):
     IN_PROGRESS = 'in_progress'
     COMPLETE = 'complete'
     FAILED = 'failed'
+    OVERLOADED = 'overloaded'
     APPLIED = 'applied'
     BYPASSED = 'bypassed'
     DISCARDED = 'discarded'

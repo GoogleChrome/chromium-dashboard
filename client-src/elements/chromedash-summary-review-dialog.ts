@@ -48,39 +48,70 @@ export class ChromedashSummaryReviewDialog extends LitElement {
         }
         @media (min-width: 768px) {
           sl-dialog {
-            --width: 85vw;
+            --width: 90vw;
           }
         }
         @media (min-width: 1200px) {
           sl-dialog {
-            --width: 70vw;
+            --width: 80vw;
           }
         }
 
-        .diff-split-container {
+        /* Unified Review Grid (Stack of Rows) */
+        .unified-review-grid {
+          display: flex;
+          flex-direction: column;
+          gap: 2rem;
+        }
+
+        /* Equal-Height Row Design */
+        .review-row {
           display: flex;
           flex-direction: column;
           gap: 1.5rem;
-        }
-        @media (min-width: 768px) {
-          .diff-split-container {
-            flex-direction: row;
-          }
+          padding-bottom: 2rem;
+          border-bottom: 1px solid var(--sl-color-neutral-200);
         }
 
-        .diff-column {
+        .review-row:last-child {
+          border-bottom: none;
+          padding-bottom: 0;
+        }
+
+        /* Cells inside the Row */
+        .review-cell {
           flex: 1;
           display: flex;
           flex-direction: column;
           gap: 0.8rem;
         }
 
-        .diff-column-header {
-          font-weight: bold;
-          font-size: 1.1rem;
-          border-bottom: 1px solid var(--sl-color-neutral-300);
+        /* Desktop Side-by-Side Symmetrical Divider Layout */
+        @media (min-width: 992px) {
+          .review-row {
+            flex-direction: row;
+            align-items: stretch; /* Forces left and right columns to match height perfectly */
+          }
+          .review-cell {
+            width: 50%;
+          }
+          .review-cell.left-cell {
+            border-right: 1px solid var(--sl-color-neutral-200);
+            padding-right: 1.8rem;
+          }
+          .review-cell.right-cell {
+            padding-left: 1.8rem;
+          }
+        }
+
+        /* Headers & Titles */
+        .section-title {
+          font-size: 1.15rem;
+          font-weight: 700;
+          margin: 0 0 0.5rem 0;
+          color: var(--sl-color-neutral-800);
+          border-bottom: 2px solid var(--sl-color-neutral-200);
           padding-bottom: 0.4rem;
-          margin: 0;
         }
 
         .field-header {
@@ -88,29 +119,27 @@ export class ChromedashSummaryReviewDialog extends LitElement {
           justify-content: space-between;
           align-items: center;
           min-height: 32px;
+          margin-bottom: 0.2rem;
         }
 
         .field-header strong {
           font-size: 0.95rem;
+          color: var(--sl-color-neutral-700);
         }
 
+        /* Custom Text and Links Panels */
         .original-text,
         .original-links,
-        .suggested-links-container {
+        .suggested-links-container,
+        .summary-workspace-card {
           background: var(--sl-color-neutral-50);
           border: 1px solid var(--sl-color-neutral-200);
           padding: 0.8rem;
           border-radius: 4px;
           font-size: 0.95rem;
-        }
-
-        .ai-suggested-text,
-        .ai-suggested-links {
-          background: #f4f8ff; /* Subtle Gemini Blue */
-          border: 1px solid #d0e2ff;
-          padding: 0.8rem;
-          border-radius: 4px;
-          font-size: 0.95rem;
+          display: flex;
+          flex-direction: column;
+          flex-grow: 1; /* Allows container to fill all remaining height in the cell */
         }
 
         .original-text {
@@ -118,15 +147,68 @@ export class ChromedashSummaryReviewDialog extends LitElement {
           min-height: 150px;
         }
 
-        .editable-summary-textarea::part(textarea) {
-          min-height: 150px;
+        .editable-summary-textarea {
+          flex-grow: 1;
         }
 
-        .original-links,
-        .suggested-links-container {
+        .editable-summary-textarea::part(textarea) {
           min-height: 150px;
+          height: 100%;
+        }
+
+        /* Write/Preview Tabs */
+        .tab-header {
           display: flex;
-          flex-direction: column;
+          gap: 0.5rem;
+          border-bottom: 2px solid var(--sl-color-neutral-200);
+          margin-bottom: 0.5rem;
+        }
+
+        .tab-btn {
+          background: none;
+          border: none;
+          padding: 0.5rem 1rem;
+          font-size: 0.95rem;
+          font-weight: 500;
+          cursor: pointer;
+          color: var(--sl-color-neutral-600);
+          border-bottom: 2px solid transparent;
+          margin-bottom: -2px;
+          outline: none;
+        }
+
+        .tab-btn:hover {
+          color: var(--sl-color-primary-600);
+        }
+
+        .tab-btn.active {
+          color: var(--sl-color-primary-600);
+          border-bottom-color: var(--sl-color-primary-600);
+        }
+
+        .preview-container {
+          background: var(--sl-color-neutral-0);
+          border: 1px solid var(--sl-color-neutral-200);
+          padding: 0.8rem;
+          border-radius: 4px;
+          min-height: 150px;
+          flex-grow: 1;
+          overflow-y: auto;
+          font-size: 0.95rem;
+          line-height: 1.5;
+        }
+
+        .preview-container p {
+          margin: 0 0 1em 0;
+        }
+
+        .preview-container p:last-child {
+          margin-bottom: 0;
+        }
+
+        /* Links Layouts */
+        .original-links {
+          min-height: 120px;
         }
 
         .original-link-row {
@@ -145,6 +227,7 @@ export class ChromedashSummaryReviewDialog extends LitElement {
         }
 
         .suggested-links-container {
+          min-height: 120px;
           gap: 0.8rem;
         }
 
@@ -183,6 +266,7 @@ export class ChromedashSummaryReviewDialog extends LitElement {
           border-top: 1px dashed var(--sl-color-neutral-300);
         }
 
+        /* Bypass Container */
         .bypass-container {
           margin-top: 1.5rem;
           padding: 1rem;
@@ -191,6 +275,7 @@ export class ChromedashSummaryReviewDialog extends LitElement {
           border-radius: 4px;
         }
 
+        /* Error Message */
         .error-message {
           color: var(--sl-color-danger-600);
           font-weight: 500;
@@ -199,6 +284,7 @@ export class ChromedashSummaryReviewDialog extends LitElement {
           text-align: left;
         }
 
+        /* Footer Container & Actions */
         .dialog-footer-container {
           display: flex;
           flex-direction: column;
@@ -217,69 +303,7 @@ export class ChromedashSummaryReviewDialog extends LitElement {
           gap: 0.5rem;
         }
 
-        .workspace-container {
-          margin-top: 1.5rem;
-          padding-top: 1.5rem;
-          border-top: 1px solid var(--sl-color-neutral-300);
-          display: flex;
-          flex-direction: column;
-          gap: 0.8rem;
-        }
-
-        .workspace-header {
-          font-weight: bold;
-          font-size: 1.1rem;
-          margin: 0;
-        }
-
-        .tab-header {
-          display: flex;
-          gap: 0.5rem;
-          border-bottom: 2px solid var(--sl-color-neutral-200);
-          margin-bottom: 0.5rem;
-        }
-
-        .tab-btn {
-          background: none;
-          border: none;
-          padding: 0.5rem 1rem;
-          font-size: 0.95rem;
-          font-weight: 500;
-          cursor: pointer;
-          color: var(--sl-color-neutral-600);
-          border-bottom: 2px solid transparent;
-          margin-bottom: -2px;
-          outline: none;
-        }
-
-        .tab-btn:hover {
-          color: var(--sl-color-primary-600);
-        }
-
-        .tab-btn.active {
-          color: var(--sl-color-primary-600);
-          border-bottom-color: var(--sl-color-primary-600);
-        }
-
-        .preview-container {
-          background: var(--sl-color-neutral-50);
-          border: 1px solid var(--sl-color-neutral-200);
-          padding: 0.8rem;
-          border-radius: 4px;
-          min-height: 150px;
-          overflow-y: auto;
-          font-size: 0.95rem;
-          line-height: 1.5;
-        }
-
-        .preview-container p {
-          margin: 0 0 1em 0;
-        }
-
-        .preview-container p:last-child {
-          margin-bottom: 0;
-        }
-
+        /* Conflict Pane styles */
         .conflict-banner {
           background: var(--sl-color-danger-50);
           border: 1px solid var(--sl-color-danger-200);
@@ -309,103 +333,58 @@ export class ChromedashSummaryReviewDialog extends LitElement {
           gap: 0.8rem;
         }
 
-        .compare-section-divider {
-          margin-top: 15px;
-          border-top: 1px solid var(--sl-color-neutral-200);
-          padding-top: 15px;
-        }
-        .compare-field-header-margin {
-          margin-bottom: 5px;
-        }
-        .baseline-info-row {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          margin-top: 5px;
-        }
-        .baseline-badge-flex {
-          display: inline-flex;
-          align-items: center;
-          gap: 4px;
-        }
-        .baseline-badge-icon-sz {
-          width: 12px;
-          height: 12px;
-          display: inline-block;
-        }
-        .baseline-date-label {
-          font-size: 0.85em;
-          color: var(--sl-color-neutral-600);
-        }
-        .feature-context-meta-list {
-          font-size: 0.85em;
-          color: var(--sl-color-neutral-600);
-          line-height: 1.5;
-          margin-top: 5px;
-        }
-        .baseline-edit-row {
-          display: flex;
-          flex-direction: column;
-          gap: 1rem;
-          margin-top: 5px;
-        }
-        @media (min-width: 768px) {
-          .baseline-edit-row {
-            flex-direction: row;
-            align-items: center;
-          }
-        }
-        .baseline-select-width {
-          width: 220px;
-        }
-        .date-inputs-container {
-          display: flex;
-          align-items: center;
-          gap: 0.5rem;
+        /* Baseline Radio Card Group */
+        sl-radio-group {
+          width: 100%;
         }
 
-        /* Radio Card Group Container */
+        sl-radio-group::part(form-control-input) {
+          display: flex;
+          flex-direction: column;
+          width: 100%;
+        }
+
         .baseline-radio-group {
           display: flex;
           flex-direction: column;
           gap: 0.8rem;
           width: 100%;
-          margin-top: 0.5rem;
         }
 
-        /* Individual Radio Card */
+        /* Styled Interactive Cards */
         .baseline-card {
           border: 1px solid var(--sl-color-neutral-200);
           border-radius: 6px;
-          padding: 1rem;
+          padding: 0.9rem;
           transition: all 0.2s ease;
           background: var(--sl-color-neutral-0);
-          position: relative;
+          cursor: pointer;
         }
 
         .baseline-card:hover {
           border-color: var(--sl-color-neutral-400);
-          cursor: pointer;
         }
 
-        /* Selected Radio Card State */
         .baseline-card.selected {
           border-color: var(--sl-color-primary-600);
           box-shadow: 0 0 0 1px var(--sl-color-primary-600);
-          background: var(--sl-color-neutral-0);
         }
 
         /* AI Suggested Highlight Card Style */
         .baseline-card.ai-suggested {
-          background: #f4f8ff;
+          background: #f4f8ff; /* Subtle Gemini Blue */
           border-color: #d0e2ff;
         }
+
         .baseline-card.ai-suggested.selected {
           border-color: var(--sl-color-primary-600);
           box-shadow: 0 0 0 1px var(--sl-color-primary-600);
+          background: var(
+            --sl-color-neutral-0
+          ); /* Revert back to neutral background on select for better focus */
         }
 
-        /* Rich Label Flex Layout */
+        /* Card layout details */
         .baseline-card-header {
           display: flex;
           align-items: center;
@@ -421,19 +400,20 @@ export class ChromedashSummaryReviewDialog extends LitElement {
         }
 
         .baseline-card-icon {
-          width: 16px;
-          height: 16px;
+          width: 14px;
+          height: 14px;
           flex-shrink: 0;
+          display: inline-block;
         }
 
         .baseline-card-description {
           font-size: 0.85rem;
           color: var(--sl-color-neutral-600);
           margin-top: 0.25rem;
-          margin-left: 28px; /* Align with text after radio indicator */
+          margin-left: 28px; /* Indent under the radio bubble */
         }
 
-        /* Embedded Date Input Row */
+        /* Card Dates container */
         .baseline-card-dates {
           margin-top: 0.8rem;
           margin-left: 28px;
@@ -457,13 +437,69 @@ export class ChromedashSummaryReviewDialog extends LitElement {
         }
 
         .baseline-card-dates sl-input {
-          width: 200px;
+          width: 190px;
         }
 
         .baseline-card-badge {
           font-size: 0.75rem;
           font-weight: 700;
           text-transform: uppercase;
+          flex-shrink: 0;
+        }
+
+        /* Divider & Metadata styles for Original Column */
+        .compare-section-divider {
+          margin-top: 15px;
+          border-top: 1px solid var(--sl-color-neutral-200);
+          padding-top: 15px;
+        }
+
+        .compare-field-header-margin {
+          margin-bottom: 5px;
+        }
+
+        .baseline-info-row {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          margin-top: 5px;
+        }
+
+        .baseline-badge-flex {
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+        }
+
+        .baseline-badge-icon-sz {
+          width: 12px;
+          height: 12px;
+          display: inline-block;
+        }
+
+        .baseline-date-label {
+          font-size: 0.85em;
+          color: var(--sl-color-neutral-600);
+        }
+
+        .feature-context-meta-list {
+          font-size: 0.85em;
+          color: var(--sl-color-neutral-600);
+          line-height: 1.5;
+          margin-top: 5px;
+        }
+
+        .feature-context-meta-list div {
+          margin-bottom: 0.3rem;
+        }
+
+        .feature-context-meta-list a {
+          color: var(--sl-color-primary-600);
+          text-decoration: none;
+        }
+
+        .feature-context-meta-list a:hover {
+          text-decoration: underline;
         }
       `,
     ];
@@ -751,11 +787,12 @@ export class ChromedashSummaryReviewDialog extends LitElement {
     `;
   }
 
+  // Master selector helper that handles status changes and date clearing
   selectBaselineStatus(status: string) {
     if (this.submitting || this.editingBaselineStatus === status) return;
     this.editingBaselineStatus = status;
 
-    // Clear dates that are not applicable to the newly selected status!
+    // Enforce strict date clearing logic to prevent sending stale parameters
     if (status === 'none' || status === 'limited') {
       this.editingBaselineNewlyDate = '';
       this.editingBaselineWidelyDate = '';
@@ -767,6 +804,35 @@ export class ChromedashSummaryReviewDialog extends LitElement {
     this.validateBaselineDates();
   }
 
+  // Use Original Baseline Action
+  useOriginalBaseline() {
+    if (!this.suggestion) return;
+    const origStatus = this.suggestion.original_baseline_status || 'none';
+
+    this.editingBaselineStatus = origStatus;
+    this.editingBaselineNewlyDate =
+      this.suggestion.original_baseline_newly_date || '';
+    this.editingBaselineWidelyDate =
+      this.suggestion.original_baseline_widely_date || '';
+
+    this.isDirty = true;
+    this.validateBaselineDates();
+  }
+
+  // Use AI Baseline Action
+  useAIBaseline() {
+    if (!this.suggestion) return;
+    const aiStatus = this.suggestion.baseline_status || 'none';
+
+    this.editingBaselineStatus = aiStatus;
+    this.editingBaselineNewlyDate = this.suggestion.baseline_newly_date || '';
+    this.editingBaselineWidelyDate = this.suggestion.baseline_widely_date || '';
+
+    this.isDirty = true;
+    this.validateBaselineDates();
+  }
+
+  // Individual Date Inputs Handlers
   handleNewlyDateChange(e: Event) {
     const target = e.target as HTMLInputElement;
     if (target) {
@@ -785,14 +851,14 @@ export class ChromedashSummaryReviewDialog extends LitElement {
     }
   }
 
-  // Frontend validation for baseline status and dates
+  // Front-end Validation and Inline Error Messages
   validateBaselineDates(): boolean {
     this.errorMessage = '';
 
     if (this.editingBaselineStatus === 'newly') {
       if (!this.editingBaselineNewlyDate) {
         this.errorMessage =
-          'Newly Available Date is required for Baseline Newly Available status.';
+          'Newly Available Date is required for Baseline Newly Available.';
         return false;
       }
     }
@@ -800,7 +866,7 @@ export class ChromedashSummaryReviewDialog extends LitElement {
     if (this.editingBaselineStatus === 'widely') {
       if (!this.editingBaselineNewlyDate || !this.editingBaselineWidelyDate) {
         this.errorMessage =
-          'Both Newly and Widely Available Dates are required for Baseline Widely Available status.';
+          'Both Newly and Widely Available Dates are required for Baseline Widely Available.';
         return false;
       }
 
@@ -1102,524 +1168,534 @@ export class ChromedashSummaryReviewDialog extends LitElement {
               </div>
             `
           : html`
-              <div class="diff-split-container">
-                <!-- Left Column (Original/Baseline) -->
-                <div class="diff-column">
-                  <h3 class="diff-column-header">Original Feature Details</h3>
-
-                  <div class="field-header">
-                    <strong>Original Summary</strong>
-                  </div>
-                  <div class="original-text" data-testid="original-summary">
-                    ${this.feature?.summary || 'No summary'}
-                  </div>
-
-                  <div class="field-header">
-                    <strong>Original Doc Links</strong>
-                  </div>
-                  <div class="original-links">
-                    ${this.feature?.resources?.docs?.length
-                      ? this.feature.resources.docs.map(
-                          link => html`
-                            <div class="original-link-row">
-                              &bull; <a href=${link} target="_blank">${link}</a>
-                            </div>
-                          `
-                        )
-                      : 'No doc links'}
-                  </div>
-
-                  <!-- Feature Context Metadata -->
-                  <div class="compare-section-divider">
-                    <div class="field-header compare-field-header-margin">
-                      <strong>Feature Context</strong>
+              <div class="unified-review-grid">
+                <!-- ==================== ROW 1: SUMMARY REVIEW ==================== -->
+                <div class="review-row">
+                  <!-- Left Column: Original (Read-Only) -->
+                  <div class="review-cell left-cell">
+                    <h4 class="section-title">Original Feature Details</h4>
+                    <div class="field-header">
+                      <strong>Original Summary</strong>
                     </div>
-                    <div class="feature-context-meta-list">
-                      ${this.feature?.blink_components?.length
+                    <div class="original-text" data-testid="original-summary">
+                      ${this.feature?.summary || 'No summary'}
+                    </div>
+
+                    <!-- General Feature Context Metadata -->
+                    <div class="compare-section-divider">
+                      <div class="field-header compare-field-header-margin">
+                        <strong>Feature Context</strong>
+                      </div>
+                      <div class="feature-context-meta-list">
+                        ${this.feature?.blink_components?.length
+                          ? html`
+                              <div>
+                                <strong>Blink Components:</strong>
+                                ${this.feature.blink_components.join(', ')}
+                              </div>
+                            `
+                          : nothing}
+                        ${this.feature?.spec_link
+                          ? html`
+                              <div>
+                                <strong>Spec Link:</strong>
+                                <a
+                                  href="${this.feature.spec_link}"
+                                  target="_blank"
+                                  rel="noopener"
+                                  >Specification</a
+                                >
+                              </div>
+                            `
+                          : nothing}
+                        ${this.feature?.explainer_links?.length
+                          ? html`
+                              <div>
+                                <strong>Explainers:</strong>
+                                ${(this.feature?.explainer_links || []).map(
+                                  (link, idx) => html`
+                                    <a
+                                      href="${link}"
+                                      target="_blank"
+                                      rel="noopener"
+                                      >Explainer ${idx + 1}</a
+                                    >${idx <
+                                    (this.feature?.explainer_links || [])
+                                      .length -
+                                      1
+                                      ? ', '
+                                      : ''}
+                                  `
+                                )}
+                              </div>
+                            `
+                          : nothing}
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Right Column: Interactive Workspace (Draft) -->
+                  <div class="review-cell right-cell">
+                    <h4 class="section-title">Interactive Workspace (Draft)</h4>
+                    <div class="field-header">
+                      <strong>Final Summary Draft</strong>
+                      <sl-button-group label="Copy original or suggested text">
+                        <sl-button
+                          size="small"
+                          @click=${this.useOriginalSummaryOnly}
+                          ?disabled=${this.submitting}
+                          >Use Original</sl-button
+                        >
+                        <sl-button
+                          size="small"
+                          @click=${this.useAISummaryOnly}
+                          ?disabled=${this.submitting}
+                          >Use AI</sl-button
+                        >
+                      </sl-button-group>
+                    </div>
+
+                    <!-- Tabbed Text Area Card -->
+                    <div class="summary-workspace-card">
+                      <div
+                        class="tab-header"
+                        role="tablist"
+                        aria-label="Draft tabs"
+                      >
+                        <button
+                          class="tab-btn ${this.activeTab === 'write'
+                            ? 'active'
+                            : ''}"
+                          role="tab"
+                          aria-selected=${this.activeTab === 'write'}
+                          @click=${() => {
+                            this.activeTab = 'write';
+                          }}
+                        >
+                          Write
+                        </button>
+                        <button
+                          class="tab-btn ${this.activeTab === 'preview'
+                            ? 'active'
+                            : ''}"
+                          role="tab"
+                          aria-selected=${this.activeTab === 'preview'}
+                          @click=${() => {
+                            this.activeTab = 'preview';
+                          }}
+                        >
+                          Preview
+                        </button>
+                      </div>
+
+                      ${this.activeTab === 'write'
                         ? html`
-                            <div>
-                              <strong>Blink Components:</strong>
-                              ${this.feature.blink_components.join(', ')}
-                            </div>
+                            <sl-textarea
+                              class="editable-summary-textarea"
+                              aria-label="Suggested Summary"
+                              .value=${this.summaryText}
+                              ?disabled=${this.submitting}
+                              @sl-input=${(e: Event) => {
+                                const target = e.target;
+                                if (target && 'value' in target) {
+                                  this.summaryText = String(target.value);
+                                  this.isDirty = true;
+                                }
+                              }}
+                            ></sl-textarea>
                           `
-                        : nothing}
-                      ${this.feature?.spec_link
-                        ? html`
-                            <div>
-                              <strong>Spec Link:</strong>
-                              <a
-                                href="${this.feature.spec_link}"
-                                target="_blank"
-                                rel="noopener"
-                                >Specification</a
+                        : html`
+                            <div class="preview-container">
+                              ${autolink(this.summaryText, [], true)}
+                            </div>
+                          `}
+                    </div>
+                  </div>
+                </div>
+
+                <!-- ==================== ROW 2: DOCUMENTATION LINKS REVIEW ==================== -->
+                <div class="review-row">
+                  <!-- Left Column: Original (Read-Only) -->
+                  <div class="review-cell left-cell">
+                    <div class="field-header">
+                      <strong>Original Doc Links</strong>
+                    </div>
+                    <div class="original-links">
+                      ${this.feature?.resources?.docs?.length
+                        ? this.feature.resources.docs.map(
+                            link => html`
+                              <div class="original-link-row">
+                                &bull;
+                                <a href=${link} target="_blank">${link}</a>
+                              </div>
+                            `
+                          )
+                        : 'No doc links'}
+                    </div>
+                  </div>
+
+                  <!-- Right Column: Interactive Workspace (Draft) -->
+                  <div class="review-cell right-cell">
+                    <div class="field-header">
+                      <strong>Final Documentation Links</strong>
+                      <sl-button-group label="Use original or suggested links">
+                        <sl-button
+                          size="small"
+                          @click=${this.useOriginalLinksOnly}
+                          ?disabled=${this.submitting}
+                        >
+                          Use Original
+                        </sl-button>
+                        <sl-button
+                          size="small"
+                          @click=${this.useAILinksOnly}
+                          ?disabled=${this.submitting}
+                        >
+                          Use AI
+                        </sl-button>
+                      </sl-button-group>
+                    </div>
+
+                    <div class="suggested-links-container">
+                      <div class="editable-links-list">
+                        ${this.linksList.map(
+                          (item, idx) => html`
+                            <div class="link-edit-row">
+                              <sl-checkbox
+                                data-testid="link-checkbox-${idx}"
+                                aria-label="Approve link: ${item.url}"
+                                ?checked=${item.approved}
+                                ?disabled=${this.submitting}
+                                @sl-change=${() => this.toggleLinkApproved(idx)}
+                              ></sl-checkbox>
+                              <a href=${item.url} target="_blank"
+                                >${item.url}</a
                               >
                             </div>
                           `
-                        : nothing}
-                      ${this.feature?.explainer_links?.length
-                        ? html`
-                            <div>
-                              <strong>Explainers:</strong>
-                              ${(this.feature?.explainer_links || []).map(
-                                (link, idx) => html`
-                                  <a
-                                    href="${link}"
-                                    target="_blank"
-                                    rel="noopener"
-                                    >Explainer ${idx + 1}</a
-                                  >${idx <
-                                  (this.feature?.explainer_links || []).length -
-                                    1
-                                    ? ', '
-                                    : ''}
-                                `
-                              )}
-                            </div>
-                          `
-                        : nothing}
-                    </div>
-                  </div>
+                        )}
+                      </div>
 
-                  <!-- Original Baseline Status -->
-                  ${this.renderOriginalBaselineInfo()}
-                </div>
-
-                <!-- Right Column (AI/Suggested Reference) -->
-                <div class="diff-column">
-                  <h3 class="diff-column-header">
-                    AI-Assisted Suggestion (Reference)
-                  </h3>
-
-                  <div class="field-header">
-                    <strong>Suggested Summary</strong>
-                  </div>
-                  <div
-                    class="ai-suggested-text"
-                    data-testid="suggested-summary-reference"
-                  >
-                    ${this.suggestion?.suggested_summary ||
-                    'No suggested summary'}
-                  </div>
-
-                  <div class="field-header">
-                    <strong>Suggested Doc Links</strong>
-                  </div>
-                  <div class="ai-suggested-links">
-                    ${this.suggestion?.suggested_doc_links?.length
-                      ? this.suggestion.suggested_doc_links.map(
-                          link => html`
-                            <div class="original-link-row">
-                              &bull; <a href=${link} target="_blank">${link}</a>
-                            </div>
-                          `
-                        )
-                      : 'No doc links'}
-                  </div>
-
-                  <!-- AI-evaluated Baseline Compatibility & Support Dates -->
-                  ${this.renderAIBaselineInfo()}
-                </div>
-              </div>
-
-              <!-- Bottom Workspace -->
-              <div class="workspace-container">
-                <h3 class="workspace-header">Edit and Finalize Draft</h3>
-
-                <div class="field-header">
-                  <div
-                    class="tab-header"
-                    role="tablist"
-                    aria-label="Draft tabs"
-                  >
-                    <button
-                      class="tab-btn ${this.activeTab === 'write'
-                        ? 'active'
-                        : ''}"
-                      role="tab"
-                      aria-selected=${this.activeTab === 'write'}
-                      @click=${() => {
-                        this.activeTab = 'write';
-                      }}
-                    >
-                      Write
-                    </button>
-                    <button
-                      class="tab-btn ${this.activeTab === 'preview'
-                        ? 'active'
-                        : ''}"
-                      role="tab"
-                      aria-selected=${this.activeTab === 'preview'}
-                      @click=${() => {
-                        this.activeTab = 'preview';
-                      }}
-                    >
-                      Preview
-                    </button>
-                  </div>
-
-                  ${this.activeTab === 'write'
-                    ? html`
-                        <sl-button-group
-                          label="Copy original or suggested text"
+                      <div class="add-link-container">
+                        <sl-input
+                          size="small"
+                          placeholder="Add custom doc link URL..."
+                          aria-label="New document link URL"
+                          .value=${this.newLinkLabelInput}
+                          ?disabled=${this.submitting}
+                          @sl-change=${(e: Event) => {
+                            const target = e.target;
+                            if (target && 'value' in target) {
+                              this.newLinkLabelInput = String(target.value);
+                            }
+                          }}
+                          style="flex-grow: 1;"
+                        ></sl-input>
+                        <sl-button
+                          size="small"
+                          @click=${this.addNewLink}
+                          ?disabled=${this.submitting}
+                          >Add</sl-button
                         >
-                          <sl-button
-                            size="small"
-                            @click=${this.useOriginalSummaryOnly}
-                            ?disabled=${this.submitting}
-                            >Use Original Text</sl-button
-                          >
-                          <sl-button
-                            size="small"
-                            @click=${this.useAISummaryOnly}
-                            ?disabled=${this.submitting}
-                            >Use AI Text</sl-button
-                          >
-                        </sl-button-group>
-                      `
-                    : nothing}
-                </div>
-
-                ${this.activeTab === 'write'
-                  ? html`
-                      <sl-textarea
-                        class="editable-summary-textarea"
-                        aria-label="Suggested Summary"
-                        .value=${this.summaryText}
-                        ?disabled=${this.submitting}
-                        @sl-input=${(e: Event) => {
-                          const target = e.target;
-                          if (target && 'value' in target) {
-                            this.summaryText = String(target.value);
-                            this.isDirty = true;
-                          }
-                        }}
-                      ></sl-textarea>
-                    `
-                  : html`
-                      <div class="preview-container">
-                        ${autolink(this.summaryText, [], true)}
                       </div>
-                    `}
-
-                <div class="field-header">
-                  <strong>Final Documentation Links</strong>
-                  <sl-button-group label="Use original or suggested links">
-                    <sl-button
-                      size="small"
-                      @click=${this.useOriginalLinksOnly}
-                      ?disabled=${this.submitting}
-                    >
-                      Use Original Links
-                    </sl-button>
-                    <sl-button
-                      size="small"
-                      @click=${this.useAILinksOnly}
-                      ?disabled=${this.submitting}
-                    >
-                      Use AI Links
-                    </sl-button>
-                  </sl-button-group>
+                    </div>
+                  </div>
                 </div>
-                <div class="suggested-links-container">
-                  <div class="editable-links-list">
-                    ${this.linksList.map(
-                      (item, idx) => html`
-                        <div class="link-edit-row">
-                          <sl-checkbox
-                            data-testid="link-checkbox-${idx}"
-                            aria-label="Approve link: ${item.url}"
-                            ?checked=${item.approved}
-                            ?disabled=${this.submitting}
-                            @sl-change=${() => this.toggleLinkApproved(idx)}
-                          ></sl-checkbox>
-                          <a href=${item.url} target="_blank">${item.url}</a>
-                        </div>
-                      `
-                    )}
+
+                <!-- ==================== ROW 3: BASELINE STATUS REVIEW ==================== -->
+                <div class="review-row">
+                  <!-- Left Column: Original Status (Read-Only) -->
+                  <div class="review-cell left-cell">
+                    <!-- Render dynamic original baseline badges and dates -->
+                    ${this.renderOriginalBaselineInfo()}
                   </div>
 
-                  <div class="add-link-container">
-                    <sl-input
-                      size="small"
-                      placeholder="Add custom doc link URL..."
-                      aria-label="New document link URL"
-                      .value=${this.newLinkLabelInput}
-                      ?disabled=${this.submitting}
+                  <!-- Right Column: Interactive Radio Cards Workspace -->
+                  <div class="review-cell right-cell">
+                    <div class="field-header">
+                      <strong>Final Baseline Status</strong>
+                      <sl-button-group
+                        label="Use original or suggested baseline status"
+                      >
+                        <sl-button
+                          size="small"
+                          @click=${this.useOriginalBaseline}
+                          ?disabled=${this.submitting}
+                        >
+                          Use Original
+                        </sl-button>
+                        <sl-button
+                          size="small"
+                          @click=${this.useAIBaseline}
+                          ?disabled=${this.submitting}
+                        >
+                          Use AI
+                        </sl-button>
+                      </sl-button-group>
+                    </div>
+
+                    <!-- Enforce mutual exclusivity by wrapping the styled cards inside sl-radio-group -->
+                    <sl-radio-group
+                      .value=${this.editingBaselineStatus || 'none'}
                       @sl-change=${(e: Event) => {
-                        const target = e.target;
-                        if (target && 'value' in target) {
-                          this.newLinkLabelInput = String(target.value);
-                        }
+                        const target = e.target as HTMLElement & {
+                          value: string;
+                        };
+                        this.selectBaselineStatus(target.value);
                       }}
-                      style="flex-grow: 1;"
-                    ></sl-input>
-                    <sl-button
-                      size="small"
-                      @click=${this.addNewLink}
-                      ?disabled=${this.submitting}
-                      >Add</sl-button
                     >
-                  </div>
-                </div>
-
-                <!-- Editable Baseline Status Overrides -->
-                <div class="compare-section-divider">
-                  <div class="field-header compare-field-header-margin">
-                    <strong>Baseline Status Override</strong>
-                  </div>
-
-                  <div
-                    class="baseline-radio-group"
-                    role="radiogroup"
-                    aria-label="Baseline Status Override"
-                  >
-                    <!-- Option 1: None (No Baseline Status) -->
-                    <div
-                      class="baseline-card ${this.editingBaselineStatus ===
-                      'none'
-                        ? 'selected'
-                        : ''}"
-                      @click=${() => this.selectBaselineStatus('none')}
-                    >
-                      <div class="baseline-card-header">
-                        <div class="baseline-card-label-left">
-                          <sl-radio
-                            value="none"
-                            ?checked=${this.editingBaselineStatus === 'none'}
-                            ?disabled=${this.submitting}
-                          >
-                            None (No Baseline Status)
-                          </sl-radio>
+                      <div class="baseline-radio-group">
+                        <!-- Option 1: None (No Baseline Status) -->
+                        <div
+                          class="baseline-card ${this.editingBaselineStatus ===
+                          'none'
+                            ? 'selected'
+                            : ''}"
+                          @click=${() => this.selectBaselineStatus('none')}
+                        >
+                          <div class="baseline-card-header">
+                            <div class="baseline-card-label-left">
+                              <sl-radio
+                                value="none"
+                                ?disabled=${this.submitting}
+                              >
+                                None (No Baseline Status)
+                              </sl-radio>
+                            </div>
+                            ${this.suggestion?.original_baseline_status ===
+                              'none' ||
+                            !this.suggestion?.original_baseline_status
+                              ? html`<sl-tag
+                                  size="small"
+                                  variant="neutral"
+                                  class="baseline-card-badge"
+                                  >Original</sl-tag
+                                >`
+                              : nothing}
+                          </div>
+                          <div class="baseline-card-description">
+                            Keep this feature without a baseline status, or
+                            reject the suggestion.
+                          </div>
                         </div>
-                        ${this.suggestion?.original_baseline_status ===
-                          'none' || !this.suggestion?.original_baseline_status
-                          ? html`<sl-tag
-                              size="small"
-                              variant="neutral"
-                              class="baseline-card-badge"
-                              >Original</sl-tag
-                            >`
-                          : nothing}
-                      </div>
-                      <div class="baseline-card-description">
-                        Keep this feature without a baseline status, or reject
-                        the suggestion.
-                      </div>
-                    </div>
 
-                    <!-- Option 2: Baseline Limited -->
-                    <div
-                      class="baseline-card ${this.editingBaselineStatus ===
-                      'limited'
-                        ? 'selected'
-                        : ''} ${this.suggestion?.baseline_status === 'limited'
-                        ? 'ai-suggested'
-                        : ''}"
-                      @click=${() => this.selectBaselineStatus('limited')}
-                    >
-                      <div class="baseline-card-header">
-                        <div class="baseline-card-label-left">
-                          <sl-radio
-                            value="limited"
-                            ?checked=${this.editingBaselineStatus === 'limited'}
-                            ?disabled=${this.submitting}
-                          >
-                            <span
-                              style="display: inline-flex; align-items: center; gap: 6px;"
-                            >
-                              <img
-                                src="/static/img/baseline-limited-icon.svg"
-                                class="baseline-card-icon"
-                                alt=""
-                              />
-                              Baseline Limited
-                            </span>
-                          </sl-radio>
-                        </div>
-                        <div style="display: flex; gap: 4px;">
-                          ${this.suggestion?.baseline_status === 'limited'
-                            ? html`<sl-tag
-                                size="small"
-                                variant="primary"
-                                class="baseline-card-badge"
-                                >AI Suggested</sl-tag
-                              >`
-                            : nothing}
-                          ${this.suggestion?.original_baseline_status ===
+                        <!-- Option 2: Baseline Limited -->
+                        <div
+                          class="baseline-card ${this.editingBaselineStatus ===
                           'limited'
-                            ? html`<sl-tag
-                                size="small"
-                                variant="neutral"
-                                class="baseline-card-badge"
-                                >Original</sl-tag
-                              >`
-                            : nothing}
+                            ? 'selected'
+                            : ''} ${this.suggestion?.baseline_status ===
+                          'limited'
+                            ? 'ai-suggested'
+                            : ''}"
+                          @click=${() => this.selectBaselineStatus('limited')}
+                        >
+                          <div class="baseline-card-header">
+                            <div class="baseline-card-label-left">
+                              <sl-radio
+                                value="limited"
+                                ?disabled=${this.submitting}
+                              >
+                                <span
+                                  style="display: inline-flex; align-items: center; gap: 6px;"
+                                >
+                                  <img
+                                    src="/static/img/baseline-limited-icon.svg"
+                                    class="baseline-card-icon"
+                                    alt=""
+                                  />
+                                  Baseline Limited
+                                </span>
+                              </sl-radio>
+                            </div>
+                            <div style="display: flex; gap: 4px;">
+                              ${this.suggestion?.baseline_status === 'limited'
+                                ? html`<sl-tag
+                                    size="small"
+                                    variant="primary"
+                                    class="baseline-card-badge"
+                                    >AI Suggested</sl-tag
+                                  >`
+                                : nothing}
+                              ${this.suggestion?.original_baseline_status ===
+                              'limited'
+                                ? html`<sl-tag
+                                    size="small"
+                                    variant="neutral"
+                                    class="baseline-card-badge"
+                                    >Original</sl-tag
+                                  >`
+                                : nothing}
+                            </div>
+                          </div>
+                          <div class="baseline-card-description">
+                            The feature has limited support or is only available
+                            in some browsers.
+                          </div>
                         </div>
-                      </div>
-                      <div class="baseline-card-description">
-                        The feature has limited support or is only available in
-                        some browsers.
-                      </div>
-                    </div>
 
-                    <!-- Option 3: Baseline Newly Available -->
-                    <div
-                      class="baseline-card ${this.editingBaselineStatus ===
-                      'newly'
-                        ? 'selected'
-                        : ''} ${this.suggestion?.baseline_status === 'newly'
-                        ? 'ai-suggested'
-                        : ''}"
-                      @click=${() => this.selectBaselineStatus('newly')}
-                    >
-                      <div class="baseline-card-header">
-                        <div class="baseline-card-label-left">
-                          <sl-radio
-                            value="newly"
-                            ?checked=${this.editingBaselineStatus === 'newly'}
-                            ?disabled=${this.submitting}
-                          >
-                            <span
-                              style="display: inline-flex; align-items: center; gap: 6px;"
-                            >
-                              <img
-                                src="/static/img/baseline-newly-icon.svg"
-                                class="baseline-card-icon"
-                                alt=""
-                              />
-                              Baseline Newly Available
-                            </span>
-                          </sl-radio>
-                        </div>
-                        <div style="display: flex; gap: 4px;">
-                          ${this.suggestion?.baseline_status === 'newly'
-                            ? html`<sl-tag
-                                size="small"
-                                variant="primary"
-                                class="baseline-card-badge"
-                                >AI Suggested</sl-tag
-                              >`
-                            : nothing}
-                          ${this.suggestion?.original_baseline_status ===
+                        <!-- Option 3: Baseline Newly Available -->
+                        <div
+                          class="baseline-card ${this.editingBaselineStatus ===
                           'newly'
-                            ? html`<sl-tag
-                                size="small"
-                                variant="neutral"
-                                class="baseline-card-badge"
-                                >Original</sl-tag
-                              >`
-                            : nothing}
-                        </div>
-                      </div>
-                      <div class="baseline-card-description">
-                        Supported across all major browser engines. Requires
-                        newly available date.
-                      </div>
-
-                      <!-- Embedded Conditional Newly Available Date Picker -->
-                      ${this.editingBaselineStatus === 'newly'
-                        ? html`
-                            <div
-                              class="baseline-card-dates"
-                              @click=${(e: Event) => e.stopPropagation()}
-                            >
-                              <sl-input
-                                type="date"
-                                size="small"
-                                label="Newly Available Date"
-                                .value=${this.editingBaselineNewlyDate || ''}
+                            ? 'selected'
+                            : ''} ${this.suggestion?.baseline_status === 'newly'
+                            ? 'ai-suggested'
+                            : ''}"
+                          @click=${() => this.selectBaselineStatus('newly')}
+                        >
+                          <div class="baseline-card-header">
+                            <div class="baseline-card-label-left">
+                              <sl-radio
+                                value="newly"
                                 ?disabled=${this.submitting}
-                                @sl-input=${this.handleNewlyDateChange}
-                                required
-                              ></sl-input>
+                              >
+                                <span
+                                  style="display: inline-flex; align-items: center; gap: 6px;"
+                                >
+                                  <img
+                                    src="/static/img/baseline-newly-icon.svg"
+                                    class="baseline-card-icon"
+                                    alt=""
+                                  />
+                                  Baseline Newly Available
+                                </span>
+                              </sl-radio>
                             </div>
-                          `
-                        : nothing}
-                    </div>
+                            <div style="display: flex; gap: 4px;">
+                              ${this.suggestion?.baseline_status === 'newly'
+                                ? html`<sl-tag
+                                    size="small"
+                                    variant="primary"
+                                    class="baseline-card-badge"
+                                    >AI Suggested</sl-tag
+                                  >`
+                                : nothing}
+                              ${this.suggestion?.original_baseline_status ===
+                              'newly'
+                                ? html`<sl-tag
+                                    size="small"
+                                    variant="neutral"
+                                    class="baseline-card-badge"
+                                    >Original</sl-tag
+                                  >`
+                                : nothing}
+                            </div>
+                          </div>
+                          <div class="baseline-card-description">
+                            Supported across all major browser engines. Requires
+                            newly available date.
+                          </div>
 
-                    <!-- Option 4: Baseline Widely Available -->
-                    <div
-                      class="baseline-card ${this.editingBaselineStatus ===
-                      'widely'
-                        ? 'selected'
-                        : ''} ${this.suggestion?.baseline_status === 'widely'
-                        ? 'ai-suggested'
-                        : ''}"
-                      @click=${() => this.selectBaselineStatus('widely')}
-                    >
-                      <div class="baseline-card-header">
-                        <div class="baseline-card-label-left">
-                          <sl-radio
-                            value="widely"
-                            ?checked=${this.editingBaselineStatus === 'widely'}
-                            ?disabled=${this.submitting}
-                          >
-                            <span
-                              style="display: inline-flex; align-items: center; gap: 6px;"
-                            >
-                              <img
-                                src="/static/img/baseline-widely-icon.svg"
-                                class="baseline-card-icon"
-                                alt=""
-                              />
-                              Baseline Widely Available
-                            </span>
-                          </sl-radio>
-                        </div>
-                        <div style="display: flex; gap: 4px;">
-                          ${this.suggestion?.baseline_status === 'widely'
-                            ? html`<sl-tag
-                                size="small"
-                                variant="primary"
-                                class="baseline-card-badge"
-                                >AI Suggested</sl-tag
-                              >`
+                          <!-- Embedded Conditional Newly Available Date Picker -->
+                          ${this.editingBaselineStatus === 'newly'
+                            ? html`
+                                <div
+                                  class="baseline-card-dates"
+                                  @click=${(e: Event) => e.stopPropagation()}
+                                >
+                                  <sl-input
+                                    type="date"
+                                    size="small"
+                                    label="Newly Available Date"
+                                    .value=${this.editingBaselineNewlyDate ||
+                                    ''}
+                                    ?disabled=${this.submitting}
+                                    @sl-input=${this.handleNewlyDateChange}
+                                    required
+                                  ></sl-input>
+                                </div>
+                              `
                             : nothing}
-                          ${this.suggestion?.original_baseline_status ===
+                        </div>
+
+                        <!-- Option 4: Baseline Widely Available -->
+                        <div
+                          class="baseline-card ${this.editingBaselineStatus ===
                           'widely'
-                            ? html`<sl-tag
-                                size="small"
-                                variant="neutral"
-                                class="baseline-card-badge"
-                                >Original</sl-tag
-                              >`
+                            ? 'selected'
+                            : ''} ${this.suggestion?.baseline_status ===
+                          'widely'
+                            ? 'ai-suggested'
+                            : ''}"
+                          @click=${() => this.selectBaselineStatus('widely')}
+                        >
+                          <div class="baseline-card-header">
+                            <div class="baseline-card-label-left">
+                              <sl-radio
+                                value="widely"
+                                ?disabled=${this.submitting}
+                              >
+                                <span
+                                  style="display: inline-flex; align-items: center; gap: 6px;"
+                                >
+                                  <img
+                                    src="/static/img/baseline-widely-icon.svg"
+                                    class="baseline-card-icon"
+                                    alt=""
+                                  />
+                                  Baseline Widely Available
+                                </span>
+                              </sl-radio>
+                            </div>
+                            <div style="display: flex; gap: 4px;">
+                              ${this.suggestion?.baseline_status === 'widely'
+                                ? html`<sl-tag
+                                    size="small"
+                                    variant="primary"
+                                    class="baseline-card-badge"
+                                    >AI Suggested</sl-tag
+                                  >`
+                                : nothing}
+                              ${this.suggestion?.original_baseline_status ===
+                              'widely'
+                                ? html`<sl-tag
+                                    size="small"
+                                    variant="neutral"
+                                    class="baseline-card-badge"
+                                    >Original</sl-tag
+                                  >`
+                                : nothing}
+                            </div>
+                          </div>
+                          <div class="baseline-card-description">
+                            Supported in all major engines for 30+ months.
+                            Requires newly and widely available dates.
+                          </div>
+
+                          <!-- Embedded Conditional Widely Available Date Pickers -->
+                          ${this.editingBaselineStatus === 'widely'
+                            ? html`
+                                <div
+                                  class="baseline-card-dates"
+                                  @click=${(e: Event) => e.stopPropagation()}
+                                >
+                                  <sl-input
+                                    type="date"
+                                    size="small"
+                                    label="Newly Available Date"
+                                    .value=${this.editingBaselineNewlyDate ||
+                                    ''}
+                                    ?disabled=${this.submitting}
+                                    @sl-input=${this.handleNewlyDateChange}
+                                    required
+                                  ></sl-input>
+                                  <sl-input
+                                    type="date"
+                                    size="small"
+                                    label="Widely Available Date"
+                                    .value=${this.editingBaselineWidelyDate ||
+                                    ''}
+                                    ?disabled=${this.submitting}
+                                    @sl-input=${this.handleWidelyDateChange}
+                                    required
+                                  ></sl-input>
+                                </div>
+                              `
                             : nothing}
                         </div>
                       </div>
-                      <div class="baseline-card-description">
-                        Supported in all major engines for 30+ months. Requires
-                        newly and widely available dates.
-                      </div>
-
-                      <!-- Embedded Conditional Widely Available Date Pickers -->
-                      ${this.editingBaselineStatus === 'widely'
-                        ? html`
-                            <div
-                              class="baseline-card-dates"
-                              @click=${(e: Event) => e.stopPropagation()}
-                            >
-                              <sl-input
-                                type="date"
-                                size="small"
-                                label="Newly Available Date"
-                                .value=${this.editingBaselineNewlyDate || ''}
-                                ?disabled=${this.submitting}
-                                @sl-input=${this.handleNewlyDateChange}
-                                required
-                              ></sl-input>
-                              <sl-input
-                                type="date"
-                                size="small"
-                                label="Widely Available Date"
-                                .value=${this.editingBaselineWidelyDate || ''}
-                                ?disabled=${this.submitting}
-                                @sl-input=${this.handleWidelyDateChange}
-                                required
-                              ></sl-input>
-                            </div>
-                          `
-                        : nothing}
-                    </div>
+                    </sl-radio-group>
                   </div>
                 </div>
               </div>

@@ -1,8 +1,9 @@
 import {html, fixture, assert} from '@open-wc/testing';
+import {LitElement} from 'lit';
 import sinon from 'sinon';
 import {ChromedashReleaseReviewsPage} from './chromedash-release-reviews-page.js';
 import './chromedash-release-reviews-page.js';
-import {User, ChromeStatusClient} from '../js-src/cs-client.js';
+import {User, ChromeStatusClient, Feature} from '../js-src/cs-client.js';
 
 describe('chromedash-release-reviews-page', () => {
   const user = {
@@ -56,7 +57,7 @@ describe('chromedash-release-reviews-page', () => {
     await component.updateComplete;
     const cards = Array.from(
       component.renderRoot.querySelectorAll('chromedash-release-feature-card')
-    ) as any[];
+    ) as LitElement[];
     await Promise.all(cards.map(card => card.updateComplete));
   }
 
@@ -91,38 +92,40 @@ describe('chromedash-release-reviews-page', () => {
     assert.exists(badge);
     assert.include(badge.textContent, '2 pending');
 
-    // Verify categories rendering
+    // Verify category groups are NOT present (flat list layout)
     const cssGroup = component.renderRoot.querySelector(
       '[data-testid="category-group-CSS"]'
     );
-    assert.exists(cssGroup);
-    assert.include(cssGroup.textContent, 'CSS (1)');
+    assert.isNull(cssGroup);
 
     const jsGroup = component.renderRoot.querySelector(
       '[data-testid="category-group-JavaScript/V8"]'
     );
-    assert.exists(jsGroup);
-    assert.include(jsGroup.textContent, 'JavaScript/V8 (1)');
+    assert.isNull(jsGroup);
+
+    // Verify flat features list container is present
+    const featuresList = component.renderRoot.querySelector('.features-list');
+    assert.exists(featuresList);
 
     // Verify feature card rendering
     const cards = Array.from(
       component.renderRoot.querySelectorAll('chromedash-release-feature-card')
-    ) as any[];
+    ) as (LitElement & {feature: Feature})[];
 
     const card1 = cards.find(c => c.feature.id === 111);
     assert.exists(card1);
     await card1.updateComplete;
-    assert.include(card1.shadowRoot.textContent, 'CSS Subgrid Hack');
+    assert.include(card1.shadowRoot!.textContent, 'CSS Subgrid Hack');
     assert.include(
-      card1.shadowRoot.textContent,
+      card1.shadowRoot!.textContent,
       'Pending CSS subgrid improvements.'
     );
 
     const card2 = cards.find(c => c.feature.id === 222);
     assert.exists(card2);
     await card2.updateComplete;
-    assert.include(card2.shadowRoot.textContent, 'V8 Super Array');
-    assert.include(card2.shadowRoot.textContent, 'Pending V8 optimization.');
+    assert.include(card2.shadowRoot!.textContent, 'V8 Super Array');
+    assert.include(card2.shadowRoot!.textContent, 'Pending V8 optimization.');
   });
 
   it('renders empty dashboard state when there are no reviews pending', async () => {
@@ -153,5 +156,95 @@ describe('chromedash-release-reviews-page', () => {
       '[data-testid="reviews-count"]'
     );
     assert.isNull(badge);
+  });
+
+  it('handles flat list pagination correctly when count exceeds page limit', async () => {
+    // Create 12 mock features (limit is 10)
+    const manyFeatures = Array.from({length: 12}, (_, i) => ({
+      id: i + 1,
+      name: `Feature ${i + 1}`,
+      summary: `Summary ${i + 1}`,
+      blink_components: ['Blink'],
+      category: 1,
+      resources: {docs: []},
+    }));
+    const mockManyReviews = {
+      features: manyFeatures,
+      total_count: 12,
+    };
+
+    const getPendingReviewsStub = sinon
+      .stub(window.csClient, 'getPendingReviews')
+      .resolves(mockManyReviews);
+
+    const component = (await fixture(
+      html`<chromedash-release-reviews-page
+        .user=${user}
+      ></chromedash-release-reviews-page>`
+    )) as ChromedashReleaseReviewsPage;
+
+    await waitForLoading(component);
+
+    assert.isTrue(getPendingReviewsStub.calledOnce);
+
+    // Verify page 1: renders exactly 10 cards
+    let cards = Array.from(
+      component.renderRoot.querySelectorAll('chromedash-release-feature-card')
+    );
+    assert.equal(cards.length, 10);
+
+    // Verify pagination controls are visible
+    const pagination = component.renderRoot.querySelector(
+      '[data-testid="pagination"]'
+    );
+    assert.exists(pagination);
+
+    const info = component.renderRoot.querySelector(
+      '[data-testid="pagination-info"]'
+    );
+    assert.include(info?.textContent, 'Page 1 of 2');
+
+    // Click Next button
+    const nextButton = component.renderRoot.querySelectorAll(
+      '[data-testid="pagination"] sl-button'
+    )[1] as HTMLElement; // Next button is the second button
+    assert.exists(nextButton);
+    assert.isFalse(nextButton.hasAttribute('disabled'));
+    nextButton.click();
+
+    await component.updateComplete;
+    // Wait for cards to render
+    cards = Array.from(
+      component.renderRoot.querySelectorAll('chromedash-release-feature-card')
+    );
+    await Promise.all(cards.map(c => (c as LitElement).updateComplete));
+
+    // Verify page 2: renders remaining 2 cards
+    cards = Array.from(
+      component.renderRoot.querySelectorAll('chromedash-release-feature-card')
+    );
+    assert.equal(cards.length, 2);
+    assert.include(info?.textContent, 'Page 2 of 2');
+
+    // Click Previous button
+    const prevButton = component.renderRoot.querySelectorAll(
+      '[data-testid="pagination"] sl-button'
+    )[0] as HTMLElement; // Prev button is the first button
+    assert.exists(prevButton);
+    assert.isFalse(prevButton.hasAttribute('disabled'));
+    prevButton.click();
+
+    await component.updateComplete;
+    cards = Array.from(
+      component.renderRoot.querySelectorAll('chromedash-release-feature-card')
+    );
+    await Promise.all(cards.map(c => (c as LitElement).updateComplete));
+
+    // Verify back to page 1
+    cards = Array.from(
+      component.renderRoot.querySelectorAll('chromedash-release-feature-card')
+    );
+    assert.equal(cards.length, 10);
+    assert.include(info?.textContent, 'Page 1 of 2');
   });
 });

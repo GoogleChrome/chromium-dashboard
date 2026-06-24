@@ -2,7 +2,6 @@
 import {test, expect} from '@playwright/test';
 import {
   captureConsoleMessages,
-  logout,
   createNewFeature,
   loginAs,
   expectScreenshot,
@@ -151,10 +150,7 @@ test.describe('AI Summary Suggestions E2E Integration Tests', () => {
     });
 
     // Capture screenshot of releases dashboard badges
-    await expectScreenshot(
-      page,
-      'preleases_dashboard_badges',
-    );
+    await expectScreenshot(page, 'preleases_dashboard_badges');
 
     // Verify "Review Suggestion" button is now visible
     const reviewBtn = card.getByRole('button', {name: 'Review Suggestion'});
@@ -166,10 +162,7 @@ test.describe('AI Summary Suggestions E2E Integration Tests', () => {
     await expect(dialog).toBeVisible();
 
     // Capture screenshot of review diff dialog
-    await expectScreenshot(
-      page,
-      'review_diff_dialog'
-    );
+    await expectScreenshot(page, 'review_diff_dialog');
 
     // Verify content comparison
     await expect(dialog.getByTestId('original-summary')).toContainText(
@@ -247,10 +240,7 @@ test.describe('AI Summary Suggestions E2E Integration Tests', () => {
     await expect(confirmButton).toBeEnabled();
 
     // Capture screenshot of bypass warning/prompt
-    await expectScreenshot(
-      page,
-      'bypass_justification_prompt'
-    );
+    await expectScreenshot(page, 'bypass_justification_prompt');
 
     await confirmButton.click();
     await expect(dialog).not.toBeVisible();
@@ -265,10 +255,7 @@ test.describe('AI Summary Suggestions E2E Integration Tests', () => {
     await expect(banner).toContainText('AI Suggestion Applied (Bypassed)');
 
     // Capture screenshot of detail page banner
-    await expectScreenshot(
-      page,
-      'feature_detail_ai_banner'
-    );
+    await expectScreenshot(page, 'feature_detail_ai_banner');
 
     // 5. Owner clicks "Revert to My Original"
     const revertBtn = banner.getByRole('button', {

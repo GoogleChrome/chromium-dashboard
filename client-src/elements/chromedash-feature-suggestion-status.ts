@@ -13,6 +13,7 @@ export class ChromedashFeatureSuggestionStatus extends LitElement {
         .suggestion-control-panel {
           margin-top: var(--content-padding-half);
           display: flex;
+          flex-wrap: wrap; /* Wrap elements gracefully on mobile */
           align-items: center;
           gap: 10px;
         }
@@ -109,6 +110,16 @@ export class ChromedashFeatureSuggestionStatus extends LitElement {
         return html`<sl-tag variant="neutral" pill>Discarded</sl-tag>`;
       case 'failed':
         return html`<sl-tag variant="danger" pill>Failed</sl-tag>`;
+      case 'overloaded':
+        return html`
+          <sl-tooltip
+            content="Gemini API is experiencing high demand. Click 'Generate Summary' to try again."
+          >
+            <sl-tag variant="warning" pill style="cursor: help;"
+              >Server Busy</sl-tag
+            >
+          </sl-tooltip>
+        `;
       default:
         return nothing;
     }
@@ -183,6 +194,7 @@ export class ChromedashFeatureSuggestionStatus extends LitElement {
             ${this.renderBadge(status)}
             ${status === 'none' ||
             status === 'failed' ||
+            status === 'overloaded' ||
             status === 'discarded' ||
             status === 'in_progress'
               ? html`

@@ -152,8 +152,6 @@ export class ChromedashFeatureDetail extends LitElement {
           display: block;
           position: relative;
           box-sizing: border-box;
-          contain: content;
-          overflow: hidden;
           background: inherit;
         }
 

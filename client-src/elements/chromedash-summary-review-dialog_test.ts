@@ -511,20 +511,14 @@ describe('chromedash-summary-review-dialog', () => {
     );
     assert.exists(explainerLink);
 
-    // Check AI Baseline badge and dates in the Right Column
-    const columns = dialog.renderRoot.querySelectorAll('.diff-column');
-    assert.equal(columns.length, 2);
-    const baselineInfo = columns[1].querySelector('.baseline-info-row');
-    assert.exists(baselineInfo);
-    assert.include(baselineInfo.innerHTML, 'baseline-newly-icon.svg');
-    assert.include(baselineInfo.textContent, 'Baseline Newly Available');
-    const baselineSection = columns[1].querySelector(
-      '.compare-section-divider'
+    // Verify that the Newly Available radio card is highlighted as AI Suggested in the Right Column
+    const newlyCard = dialog.renderRoot.querySelector(
+      '.baseline-card.ai-suggested'
     );
-    assert.exists(baselineSection);
+    assert.exists(newlyCard);
     assert.include(
-      baselineSection.textContent || '',
-      'Newly Available since 2024-03-15'
+      newlyCard.querySelector('.baseline-card-badge')?.textContent || '',
+      'AI Suggested'
     );
   });
 
@@ -569,10 +563,14 @@ describe('chromedash-summary-review-dialog', () => {
     );
     assert.isFalse(origLinkItem?.approved);
 
-    // Click "Use Original Links"
-    const buttons = Array.from(dialog.renderRoot.querySelectorAll('sl-button'));
+    // Query buttons specifically inside the Links row (second review-row, index 1)
+    const rows = dialog.renderRoot.querySelectorAll('.review-row');
+    const linksRow = rows[1];
+    const buttons = Array.from(linksRow.querySelectorAll('sl-button'));
+
+    // Click "Use Original"
     const useOrigBtnReal = buttons.find(
-      b => b.textContent?.trim() === 'Use Original Links'
+      b => b.textContent?.trim() === 'Use Original'
     ) as HTMLElement;
     assert.exists(useOrigBtnReal);
     useOrigBtnReal.click();
@@ -583,9 +581,9 @@ describe('chromedash-summary-review-dialog', () => {
     assert.equal(dialog.linksList[0].url, 'https://example.com/original-link');
     assert.isTrue(dialog.linksList[0].approved);
 
-    // Click "Use AI Links"
+    // Click "Use AI"
     const useSuggestedBtnReal = buttons.find(
-      b => b.textContent?.trim() === 'Use AI Links'
+      b => b.textContent?.trim() === 'Use AI'
     ) as HTMLElement;
     assert.exists(useSuggestedBtnReal);
     useSuggestedBtnReal.click();
@@ -632,10 +630,13 @@ describe('chromedash-summary-review-dialog', () => {
 
     assert.equal(dialog.summaryText, 'Suggested AI summary.');
 
-    const buttons = Array.from(dialog.renderRoot.querySelectorAll('sl-button'));
+    // Query buttons specifically inside the Summary row (first review-row, index 0)
+    const rows = dialog.renderRoot.querySelectorAll('.review-row');
+    const summaryRow = rows[0];
+    const buttons = Array.from(summaryRow.querySelectorAll('sl-button'));
 
     const useOrigTextBtn = buttons.find(
-      b => b.textContent?.trim() === 'Use Original Text'
+      b => b.textContent?.trim() === 'Use Original'
     ) as HTMLElement;
     assert.exists(useOrigTextBtn);
     useOrigTextBtn.click();
@@ -645,7 +646,7 @@ describe('chromedash-summary-review-dialog', () => {
     assert.equal(dialog.linksList.length, 2);
 
     const useAITextBtn = buttons.find(
-      b => b.textContent?.trim() === 'Use AI Text'
+      b => b.textContent?.trim() === 'Use AI'
     ) as HTMLElement;
     assert.exists(useAITextBtn);
     useAITextBtn.click();

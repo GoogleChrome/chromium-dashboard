@@ -17,10 +17,10 @@
 
 from __future__ import annotations
 
-from abc import ABC, abstractmethod
 import hashlib
 import logging
 import os
+from abc import ABC, abstractmethod
 from datetime import date, datetime
 
 import requests
@@ -155,18 +155,23 @@ def parse_baseline_date(date_str: str | None) -> date | None:
 
 
 class SummaryGeneratorInterface(ABC):
+    """Interface for feature summary generators."""
+
     @abstractmethod
     def generate_summary(
         self, feature: FeatureEntry, prompt_version: int
     ) -> SummaryResponseSchema:
+        """Generates an AI summary suggestion for the given feature entry."""
         pass
 
 
 class GeminiSummaryGenerator(SummaryGeneratorInterface):
     """Real implementation invoking the Gemini API via google-adk."""
+
     def generate_summary(
         self, feature: FeatureEntry, prompt_version: int
     ) -> SummaryResponseSchema:
+        """Generates summary using the Gemini API via google-adk."""
         from google.adk import Agent
         from google.adk.runners import InMemoryRunner
         from google.genai import types
@@ -194,6 +199,7 @@ class GeminiSummaryGenerator(SummaryGeneratorInterface):
         )
 
         from functools import cached_property
+
         from google.adk.models import Gemini
         from google.genai import Client
 
@@ -225,23 +231,26 @@ class GeminiSummaryGenerator(SummaryGeneratorInterface):
         runner = InMemoryRunner(agent=agent)
         runner.auto_create_session = True
 
-        events = runner.run(
-            user_id='system',
-            session_id=f'summary_gen_{feature.key.id() if feature.key else "mock"}',
-            new_message=types.Content(parts=[types.Part(text='Generate summary')]),
-        )
+        import asyncio
 
-        final_text = None
-        for event in events:
-            print(
-                f'[AGENT EVENT] role={getattr(event.content, "role", None) if event.content else None}'
+        async def run_agent_async():
+            events = runner.run_async(
+                user_id='system',
+                session_id=f'summary_gen_{feature.key.id() if feature.key else "mock"}',
+                new_message=types.Content(parts=[types.Part(text='Generate summary')]),
             )
-            if hasattr(event, 'content') and event.content is not None:
-                print(f'  Content parts: {event.content.parts}')
-                if getattr(event.content, 'role', None) == 'model':
+            final_text = None
+            async for event in events:
+                role = getattr(event.content, "role", None) if event.content else None
+                event_dict = event.model_dump(exclude_none=True) if hasattr(event, 'model_dump') else event.dict(exclude_none=True)
+                logging.info(f'[AGENT EVENT] role={role}, event={event_dict}')
+                if role == 'model' and event.content and event.content.parts:
                     for part in event.content.parts:
                         if part.text:
                             final_text = part.text
+            return final_text
+
+        final_text = asyncio.run(run_agent_async())
 
         if not final_text:
             raise ValueError('No text response received from the AI summary agent.')
@@ -264,9 +273,11 @@ class GeminiSummaryGenerator(SummaryGeneratorInterface):
 
 class MockSummaryGenerator(SummaryGeneratorInterface):
     """Mock implementation returning canned suggestion responses instantly."""
+
     def generate_summary(
         self, feature: FeatureEntry, prompt_version: int
     ) -> SummaryResponseSchema:
+        """Generates a canned mock summary response locally."""
         return SummaryResponseSchema(
             suggested_summary=(
                 f"This is a mock summary suggestion for the feature '{feature.name}'. "
@@ -306,15 +317,16 @@ def generate_summary_for_feature(
     feature: FeatureEntry,
     prompt_version: int = GENERATOR_VERSION,
 ) -> SummaryResponseSchema:
+    """Helper to retrieve the active generator factory and run generation on a feature."""
     generator = get_summary_generator()
     return generator.generate_summary(feature, prompt_version)
 
 
 def is_transient_error(e: Exception) -> bool:
     """Classifies whether an exception represents a transient/retryable error."""
-    from google.genai.errors import APIError, ClientError, ServerError
     import httpx
     import requests
+    from google.genai.errors import APIError, ClientError, ServerError
 
     # 1. Google GenAI SDK API Errors
     if isinstance(e, ServerError):
@@ -465,12 +477,13 @@ def generate_summary_suggestion(
             suggestion.put()
             raise
         else:
-            suggestion.status = core_enums.SummarySuggestionStatus.FAILED.value
-            suggestion.put()
             if is_transient_error(e):
+                suggestion.status = core_enums.SummarySuggestionStatus.OVERLOADED.value
                 logging.error(
                     f'Transient failure exhausted after {retry_count + 1} attempts for feature {feature_id}. '
-                    f'Marking as FAILED permanently. Error: {e}'
+                    f'Marking as OVERLOADED permanently. Error: {e}'
                 )
             else:
+                suggestion.status = core_enums.SummarySuggestionStatus.FAILED.value
                 logging.exception(f'Permanent failure during AI generation for feature {feature_id}: {e}')
+            suggestion.put()

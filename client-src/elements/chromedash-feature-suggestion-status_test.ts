@@ -49,7 +49,7 @@ describe('chromedash-feature-suggestion-status', () => {
 
   it('renders skeleton loader when suggestion is pending', async () => {
     // Delay resolution to catch pending state
-    let resolveSuggestion: any;
+    let resolveSuggestion: (value: unknown) => void = () => {};
     const pendingPromise = new Promise(resolve => {
       resolveSuggestion = resolve;
     });
@@ -100,7 +100,7 @@ describe('chromedash-feature-suggestion-status', () => {
 
     const reviewBtn = el.shadowRoot!.querySelector(
       'sl-button[variant="primary"]'
-    ) as any;
+    ) as HTMLElement;
     assert.exists(reviewBtn);
 
     // Click triggers review event to parent
@@ -149,5 +149,45 @@ describe('chromedash-feature-suggestion-status', () => {
     assert.include(badge!.innerHTML, 'Draft Available');
 
     clock.restore();
+  });
+
+  it('renders Server Busy badge and allows regeneration when status is overloaded', async () => {
+    window.csClient.getSummarySuggestion.restore();
+    sinon.stub(window.csClient, 'getSummarySuggestion').resolves({
+      status: 'overloaded',
+      suggested_summary: null,
+      suggested_doc_links: [],
+      version_token: 1,
+    });
+
+    const el = (await fixture(
+      html`<chromedash-feature-suggestion-status
+        .feature=${feature}
+        .canReview=${true}
+      ></chromedash-feature-suggestion-status>`
+    )) as ChromedashFeatureSuggestionStatus;
+
+    await el.updateComplete;
+
+    // Verify badge
+    const badge = el.shadowRoot!.querySelector('sl-tag');
+    assert.exists(badge);
+    assert.include(badge.textContent, 'Server Busy');
+
+    // Verify Generate button is visible and active
+    const generateBtn = el.shadowRoot!.querySelector(
+      'sl-button'
+    ) as HTMLElement;
+    assert.exists(generateBtn);
+    assert.include(generateBtn.textContent, 'Generate Summary');
+    assert.isFalse(generateBtn.hasAttribute('disabled'));
+
+    // Click triggers generation
+    generateBtn.click();
+    assert.isTrue(
+      (
+        window.csClient.triggerSummaryGeneration as sinon.SinonStub
+      ).calledOnceWith(12345)
+    );
   });
 });

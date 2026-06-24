@@ -1801,11 +1801,13 @@ class CleanupStuckSuggestionsHandler(FlaskHandler):
     """Cron handler to clean up stuck AI summary suggestions."""
 
     def get_template_data(self, **kwargs) -> str:
+        """Query and unlock AI suggestions stuck in IN_PROGRESS for >30 mins."""
         self.require_cron_header()
 
-        from internals.core_models import FeatureSummarySuggestion
-        from internals import core_enums
         from datetime import datetime, timedelta
+
+        from internals import core_enums
+        from internals.core_models import FeatureSummarySuggestion
 
         # Query for suggestions stuck in IN_PROGRESS for more than 30 minutes.
         stuck_threshold = datetime.now() - timedelta(minutes=30)

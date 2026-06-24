@@ -1,11 +1,11 @@
 import {html, fixture, assert} from '@open-wc/testing';
 import {ChromedashReleaseFeatureCard} from './chromedash-release-feature-card.js';
 import './chromedash-release-feature-card.js';
-import {ChromeStatusClient} from '../js-src/cs-client.js';
+import {ChromeStatusClient, Feature, SuggestionData} from '../js-src/cs-client.js';
 import sinon from 'sinon';
 
 describe('chromedash-release-feature-card', () => {
-  let originalCsClient: any;
+  let originalCsClient: ChromeStatusClient;
   const mockFeature = {
     id: 12345,
     name: 'Mock Feature One',
@@ -17,7 +17,7 @@ describe('chromedash-release-feature-card', () => {
     owner_emails: ['owner@google.com'],
     editor_emails: ['editor@google.com'],
     creator_email: 'creator@google.com',
-  };
+  } as unknown as Feature;
 
   const mockUserNormal = {
     can_create_feature: false,
@@ -96,7 +96,7 @@ describe('chromedash-release-feature-card', () => {
       summary: '',
       blink_components: [],
       resources: {docs: []},
-    } as any;
+    } as unknown as Feature;
 
     const component = (await fixture(
       html`<chromedash-release-feature-card
@@ -122,7 +122,7 @@ describe('chromedash-release-feature-card', () => {
   });
 
   it('renders Baseline badges based on suggestion status and user permissions', async () => {
-    // Case 1: Editor/Reviewer sees draft suggestion (complete) with "Suggested:" label!
+    // Case 1: Editor/Reviewer does NOT see draft suggestion (complete) pre-emptively on the card!
     const editorComponent = (await fixture(
       html`<chromedash-release-feature-card
         .feature=${mockFeature}
@@ -136,20 +136,11 @@ describe('chromedash-release-feature-card', () => {
       suggested_doc_links: [],
       version_token: 1,
       baseline_status: 'widely',
-    } as any;
+    } as unknown as SuggestionData;
     await editorComponent.updateComplete;
 
     let badge = editorComponent.renderRoot.querySelector('.baseline-badge');
-    assert.exists(badge);
-    assert.equal(badge.getAttribute('variant'), 'success');
-    assert.include(
-      badge.textContent?.trim(),
-      'Suggested: Baseline Widely Available'
-    );
-    assert.equal(
-      badge.querySelector('img')?.getAttribute('src'),
-      '/static/img/baseline-widely-icon.svg'
-    );
+    assert.isNull(badge); // Draft suggestions should not show pre-emptive badges on the card!
 
     // Case 2: Normal user does NOT see draft suggestion (complete) baseline badge!
     const normalComponent = (await fixture(
@@ -165,7 +156,7 @@ describe('chromedash-release-feature-card', () => {
       suggested_doc_links: [],
       version_token: 1,
       baseline_status: 'widely',
-    } as any;
+    } as unknown as SuggestionData;
     await normalComponent.updateComplete;
 
     badge = normalComponent.renderRoot.querySelector('.baseline-badge');
@@ -178,7 +169,7 @@ describe('chromedash-release-feature-card', () => {
       suggested_doc_links: [],
       version_token: 1,
       baseline_status: 'widely',
-    } as any;
+    } as unknown as SuggestionData;
     await normalComponent.updateComplete;
 
     badge = normalComponent.renderRoot.querySelector('.baseline-badge');
@@ -199,8 +190,8 @@ describe('chromedash-release-feature-card', () => {
 
       await component.updateComplete;
       const statusEl = component.renderRoot.querySelector(
-        'chromedash-feature-suggestion-status'
-      ) as any;
+      'chromedash-feature-suggestion-status'
+    ) as HTMLElement & {canReview: boolean};
       assert.exists(statusEl);
       assert.isTrue(statusEl.canReview);
     });
@@ -219,8 +210,8 @@ describe('chromedash-release-feature-card', () => {
 
       await component.updateComplete;
       const statusEl = component.renderRoot.querySelector(
-        'chromedash-feature-suggestion-status'
-      ) as any;
+      'chromedash-feature-suggestion-status'
+    ) as HTMLElement & {canReview: boolean};
       assert.exists(statusEl);
       assert.isTrue(statusEl.canReview);
     });
@@ -239,8 +230,8 @@ describe('chromedash-release-feature-card', () => {
 
       await component.updateComplete;
       const statusEl = component.renderRoot.querySelector(
-        'chromedash-feature-suggestion-status'
-      ) as any;
+      'chromedash-feature-suggestion-status'
+    ) as HTMLElement & {canReview: boolean};
       assert.exists(statusEl);
       assert.isTrue(statusEl.canReview);
     });
@@ -255,8 +246,8 @@ describe('chromedash-release-feature-card', () => {
 
       await component.updateComplete;
       const statusEl = component.renderRoot.querySelector(
-        'chromedash-feature-suggestion-status'
-      ) as any;
+      'chromedash-feature-suggestion-status'
+    ) as HTMLElement & {canReview: boolean};
       assert.exists(statusEl);
       assert.isFalse(statusEl.canReview);
     });
@@ -275,24 +266,25 @@ describe('chromedash-release-feature-card', () => {
       status: 'complete',
       suggested_summary: 'Suggested AI text',
       suggested_doc_links: [],
-    };
-    component.suggestion = mockSuggestion as any;
+    } as unknown as SuggestionData;
+    component.suggestion = mockSuggestion;
     await component.updateComplete;
 
     const statusEl = component.renderRoot.querySelector(
       'chromedash-feature-suggestion-status'
-    ) as any;
+    ) as HTMLElement & {canReview: boolean};
     assert.exists(statusEl);
 
     // Setup event listeners
     let enrichedEventDispatched = false;
-    let enrichedEventDetail: any = null;
+    let enrichedEventDetail: {feature: Feature; suggestion: SuggestionData} | null = null;
 
     // Listen on the component itself to capture the card's dispatched enriched event
-    component.addEventListener('review-suggestion', (e: any) => {
-      if (e.detail && e.detail.feature && e.detail.suggestion) {
+    component.addEventListener('review-suggestion', (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      if (detail && detail.feature && detail.suggestion) {
         enrichedEventDispatched = true;
-        enrichedEventDetail = e.detail;
+        enrichedEventDetail = detail;
       }
     });
 
@@ -309,7 +301,7 @@ describe('chromedash-release-feature-card', () => {
     // Verify:
     // 1. The card successfully dispatched the enriched event
     assert.isTrue(enrichedEventDispatched);
-    assert.deepEqual(enrichedEventDetail.feature, mockFeature);
-    assert.deepEqual(enrichedEventDetail.suggestion, mockSuggestion);
+    assert.deepEqual(enrichedEventDetail!.feature, mockFeature);
+    assert.deepEqual(enrichedEventDetail!.suggestion, mockSuggestion);
   });
 });

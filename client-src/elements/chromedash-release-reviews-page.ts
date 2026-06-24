@@ -155,6 +155,21 @@ export class ChromedashReleaseReviewsPage extends LitElement {
           gap: 10px;
           margin-bottom: var(--content-padding-half);
         }
+
+        .pagination-controls {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          gap: var(--content-padding);
+          margin-top: 2rem;
+          padding-top: 1rem;
+          border-top: 1px solid var(--sl-color-neutral-100);
+        }
+
+        .pagination-info {
+          font-weight: 500;
+          color: var(--sl-color-neutral-600);
+        }
       `,
     ];
   }
@@ -163,7 +178,10 @@ export class ChromedashReleaseReviewsPage extends LitElement {
   user!: User;
 
   @state()
-  featuresByType: {[key: string]: Feature[]} = {};
+  pendingFeatures: Feature[] = [];
+
+  @state()
+  currentPage = 1;
 
   @state()
   loading = true;
@@ -186,31 +204,8 @@ export class ChromedashReleaseReviewsPage extends LitElement {
     this.loading = true;
     try {
       const resp = await window.csClient.getPendingReviews();
-
-      const FEATURE_CATEGORIES: {[key: number]: string} = {
-        1: 'Web Components',
-        2: 'HTML',
-        3: 'DOM',
-        4: 'Multimedia',
-        5: 'CSS',
-        6: 'JavaScript/V8',
-        7: 'Security',
-        8: 'Network/Connectivity',
-        9: 'Device Capabilities',
-        10: 'Other',
-      };
-
-      const grouped: {[key: string]: Feature[]} = {};
-      resp.features.forEach((f: Feature) => {
-        const catId = f.category || 10;
-        const catName = FEATURE_CATEGORIES[catId] || 'Other';
-        if (!grouped[catName]) {
-          grouped[catName] = [];
-        }
-        grouped[catName].push(f);
-      });
-
-      this.featuresByType = grouped;
+      this.pendingFeatures = resp.features;
+      this.currentPage = 1;
     } catch {
       showToastMessage('Failed to load pending release reviews.');
     } finally {
@@ -234,7 +229,7 @@ export class ChromedashReleaseReviewsPage extends LitElement {
     const {feature, suggestion} = e.detail;
     this.activeReviewFeature = feature;
     this.activeReviewSuggestion = suggestion;
-    this.updateComplete.then(() => {
+    void this.updateComplete.then(() => {
       if (this.reviewDialogEl) {
         this.reviewDialogEl.show();
       }
@@ -301,10 +296,14 @@ export class ChromedashReleaseReviewsPage extends LitElement {
   }
 
   render() {
-    const totalReviews = Object.values(this.featuresByType).reduce(
-      (acc, list) => acc + list.length,
-      0
-    );
+    const totalReviews = this.pendingFeatures.length;
+    const ITEMS_PER_PAGE = 10;
+    const totalPages = Math.ceil(totalReviews / ITEMS_PER_PAGE) || 1;
+
+    // Slice features for current page
+    const startIndex = (this.currentPage - 1) * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+    const paginatedFeatures = this.pendingFeatures.slice(startIndex, endIndex);
 
     return html`
       <div class="reviews-container">
@@ -342,24 +341,40 @@ export class ChromedashReleaseReviewsPage extends LitElement {
                 </div>
               `
             : html`
-                ${Object.entries(this.featuresByType).map(
-                  ([category, features]) => html`
-                    <div
-                      class="category-group"
-                      data-testid="category-group-${category.replace(
-                        /\s+/g,
-                        '-'
-                      )}"
-                    >
-                      <div class="category-title">
-                        ${category} (${features.length})
+                <div class="features-list">
+                  ${paginatedFeatures.map(f => this.renderFeatureCard(f))}
+                </div>
+
+                <!-- Pagination Controls -->
+                ${totalPages > 1
+                  ? html`
+                      <div class="pagination-controls" data-testid="pagination">
+                        <sl-button
+                          size="small"
+                          ?disabled=${this.currentPage === 1 || this.loading}
+                          @click=${() => {
+                            this.currentPage--;
+                          }}
+                        >
+                          <sl-icon name="chevron-left" slot="prefix"></sl-icon>
+                          Previous
+                        </sl-button>
+                        <span class="pagination-info" data-testid="pagination-info">
+                          Page ${this.currentPage} of ${totalPages}
+                        </span>
+                        <sl-button
+                          size="small"
+                          ?disabled=${this.currentPage === totalPages || this.loading}
+                          @click=${() => {
+                            this.currentPage++;
+                          }}
+                        >
+                          Next
+                          <sl-icon name="chevron-right" slot="suffix"></sl-icon>
+                        </sl-button>
                       </div>
-                      <div class="features-list">
-                        ${features.map(f => this.renderFeatureCard(f))}
-                      </div>
-                    </div>
-                  `
-                )}
+                    `
+                  : nothing}
               `}
       </div>
 

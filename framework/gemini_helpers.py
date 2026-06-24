@@ -166,6 +166,19 @@ class GenerateSummaryHandler(basehandlers.FlaskHandler):
 
         from framework import summary_generator
 
-        summary_generator.generate_summary_suggestion(feature_id)
+        try:
+            summary_generator.generate_summary_suggestion(feature_id)
+        except Exception as e:
+            if summary_generator.is_transient_error(e):
+                logging.warning(
+                    f'Transient failure during AI generation for feature {feature_id}: {e}. '
+                    'Aborting with HTTP 503 to trigger Cloud Task retry.'
+                )
+                self.abort(503, msg=str(e))
+            else:
+                logging.exception(
+                    f'Permanent failure during AI generation for feature {feature_id}: {e}'
+                )
+                self.abort(500, msg=str(e))
 
         return {'message': 'AI summary generation task processed.'}

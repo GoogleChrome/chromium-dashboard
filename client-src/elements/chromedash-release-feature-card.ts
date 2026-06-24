@@ -17,10 +17,11 @@ export class ChromedashReleaseFeatureCard extends LitElement {
           border-radius: 8px;
           padding: var(--content-padding);
           display: flex;
-          justify-content: space-between;
-          align-items: flex-start;
+          flex-direction: column;
+          align-items: stretch;
           transition: box-shadow 0.2s ease;
           margin-bottom: var(--content-padding-half);
+          gap: 0.8rem;
         }
 
         .feature-card:hover {
@@ -28,7 +29,6 @@ export class ChromedashReleaseFeatureCard extends LitElement {
         }
 
         .feature-info {
-          flex: 1;
           display: flex;
           flex-direction: column;
           gap: 6px;
@@ -38,7 +38,7 @@ export class ChromedashReleaseFeatureCard extends LitElement {
           display: flex;
           justify-content: space-between;
           align-items: flex-start;
-          margin-bottom: 0.5rem;
+          margin-bottom: 0.2rem;
         }
 
         .feature-title {
@@ -59,7 +59,7 @@ export class ChromedashReleaseFeatureCard extends LitElement {
           color: var(--sl-color-neutral-600);
           font-size: 0.95rem;
           line-height: 1.4;
-          margin-bottom: 0.5rem;
+          margin-bottom: 0.2rem;
         }
 
         .baseline-badge {
@@ -89,6 +89,14 @@ export class ChromedashReleaseFeatureCard extends LitElement {
 
         .doc-links-list a:hover {
           text-decoration: underline;
+        }
+
+        .feature-card-footer {
+          margin-top: 0.2rem;
+          padding-top: 0.6rem;
+          border-top: 1px solid var(--sl-color-neutral-100);
+          display: flex;
+          justify-content: flex-end;
         }
       `,
     ];
@@ -139,13 +147,10 @@ export class ChromedashReleaseFeatureCard extends LitElement {
     }
 
     const isApplied = this.suggestion.status === 'applied';
-    const canReview = !!(
-      this.user?.can_review_release_notes ||
-      this.canUserEditFeature(this.feature)
-    );
 
-    // Public users should ONLY see approved/applied baseline badges!
-    if (!isApplied && !canReview) {
+    // We only show the baseline status badge on the card if the suggestion has been applied!
+    // Draft suggestions should not show pre-emptive badges (dashed or solid) on the dashboard card.
+    if (!isApplied) {
       return nothing;
     }
 
@@ -171,22 +176,6 @@ export class ChromedashReleaseFeatureCard extends LitElement {
         break;
       default:
         return nothing;
-    }
-
-    // If it is a draft suggestion and the user is an editor, render with dashed styling!
-    if (!isApplied && canReview) {
-      return html`
-        <sl-tag
-          variant=${variant}
-          size="small"
-          class="baseline-badge baseline-badge-suggested"
-          pill
-          style="border-style: dashed; border-width: 1.5px; background: transparent;"
-        >
-          <img src="${iconSrc}" class="baseline-badge-icon" alt="" />
-          <strong>Suggested:</strong> ${label}
-        </sl-tag>
-      `;
     }
 
     return html`
@@ -233,13 +222,17 @@ export class ChromedashReleaseFeatureCard extends LitElement {
               `
             : nothing}
         </div>
-        <chromedash-feature-suggestion-status
-          .feature=${this.feature}
-          .canReview=${this.user?.can_review_release_notes ||
-          this.canUserEditFeature(this.feature)}
-          @suggestion-loaded=${this.handleSuggestionLoaded}
-          @review-suggestion=${this.handleReviewSuggestion}
-        ></chromedash-feature-suggestion-status>
+
+        <!-- Action Footer (Aligned at the bottom!) -->
+        <div class="feature-card-footer">
+          <chromedash-feature-suggestion-status
+            .feature=${this.feature}
+            .canReview=${this.user?.can_review_release_notes ||
+            this.canUserEditFeature(this.feature)}
+            @suggestion-loaded=${this.handleSuggestionLoaded}
+            @review-suggestion=${this.handleReviewSuggestion}
+          ></chromedash-feature-suggestion-status>
+        </div>
       </div>
     `;
   }
@@ -247,7 +240,7 @@ export class ChromedashReleaseFeatureCard extends LitElement {
   refreshSuggestion() {
     const statusComponent = this.shadowRoot?.querySelector(
       'chromedash-feature-suggestion-status'
-    ) as any;
+    ) as HTMLElement & {refresh: () => void};
     if (statusComponent) {
       statusComponent.refresh();
     }

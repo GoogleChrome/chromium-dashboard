@@ -15,8 +15,8 @@
 
 """Unit tests for framework/summary_generator.py."""
 
-from unittest import mock
 from datetime import date
+from unittest import mock
 
 import testing_config
 from framework import summary_generator
@@ -71,9 +71,12 @@ class SummaryGeneratorTest(testing_config.CustomTestCase):
         """
         mock_event.content.parts = [mock_part]
 
-        # InMemoryRunner.run returns an iterable of events
+        # InMemoryRunner.run_async returns an async generator of events
+        async def mock_run_async(*args, **kwargs):
+            yield mock_event
+
         runner_instance = mock_runner.return_value
-        runner_instance.run.return_value = [mock_event]
+        runner_instance.run_async.side_effect = mock_run_async
 
         result = summary_generator.generate_summary_for_feature(self.feature)
 
@@ -343,11 +346,11 @@ class SummaryGeneratorTest(testing_config.CustomTestCase):
         except Exception as e:
             self.fail(f'Exhausted transient error should not be re-raised, but got: {e}')
 
-        # Status should be set to FAILED permanently
+        # Status should be set to OVERLOADED permanently
         suggestion = FeatureSummarySuggestion.get_by_id(12345)
         self.assertIsNotNone(suggestion)
         self.assertEqual(
-            suggestion.status, core_enums.SummarySuggestionStatus.FAILED
+            suggestion.status, core_enums.SummarySuggestionStatus.OVERLOADED
         )
     @mock.patch('settings.USE_MOCK_SUMMARY_GENERATOR', False)
     @mock.patch('settings.GEMINI_API_KEY', 'dummy-key')
@@ -363,6 +366,7 @@ class SummaryGeneratorTest(testing_config.CustomTestCase):
 
         # Import ADK Gemini model class
         from google.adk.models import Gemini
+
         import settings
 
         # Instantiate the model object directly (this is what ADK does internally)

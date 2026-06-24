@@ -277,3 +277,30 @@ class GenerateSummaryHandlerTest(testing_config.CustomTestCase):
         self.assertEqual(
             response, {'message': 'AI summary generation task processed.'}
         )
+
+    def test_process_post_data__transient_error_aborts_503(self):
+        """Tests that a transient error during generation aborts with HTTP 503."""
+        from google.genai.errors import ServerError
+        import werkzeug.exceptions
+
+        # Mock generator raising a transient ServerError (503)
+        self.mock_generate.side_effect = ServerError(503, {}, None)
+
+        with self.assertRaises(werkzeug.exceptions.HTTPException) as cm:
+            self.handler.process_post_data()
+
+        self.assertEqual(cm.exception.code, 503)
+        self.mock_generate.assert_called_once_with(self.feature_id)
+
+    def test_process_post_data__permanent_error_aborts_500(self):
+        """Tests that a permanent error during generation aborts with HTTP 500."""
+        import werkzeug.exceptions
+
+        # Mock generator raising a permanent ValueError
+        self.mock_generate.side_effect = ValueError("Permanent database error")
+
+        with self.assertRaises(werkzeug.exceptions.HTTPException) as cm:
+            self.handler.process_post_data()
+
+        self.assertEqual(cm.exception.code, 500)
+        self.mock_generate.assert_called_once_with(self.feature_id)
