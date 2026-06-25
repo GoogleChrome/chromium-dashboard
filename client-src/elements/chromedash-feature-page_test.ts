@@ -174,6 +174,7 @@ describe('chromedash-feature-page', () => {
     sinon.stub(window.csClient, 'getFeatureProgress');
     sinon.stub(window.csClient, 'getSpecifiedChannels');
     sinon.stub(window.csClient, 'getFeatureLinks');
+    sinon.stub(window.csClient, 'getSummarySuggestion');
     window.csClient.getGates.returns(gatesPromise);
     window.csClient.getComments.returns(commentsPromise);
     window.csClient.getFeatureProcess.returns(processPromise);
@@ -181,6 +182,13 @@ describe('chromedash-feature-page', () => {
     window.csClient.getFeatureProgress.returns(progressPromise);
     window.csClient.getSpecifiedChannels.returns(channelsPromise);
     window.csClient.getFeatureLinks.returns(featureLinksPromise);
+    window.csClient.getSummarySuggestion.returns(
+      Promise.resolve({
+        status: 'none',
+        suggested_summary: null,
+        suggested_doc_links: [],
+      })
+    );
 
     // For the child component - chromedash-gantt
     sinon.stub(window.csClient, 'getChannels');
@@ -194,6 +202,7 @@ describe('chromedash-feature-page', () => {
     window.csClient.getChannels.restore();
     window.csClient.getSpecifiedChannels.restore();
     window.csClient.getFeatureLinks.restore();
+    window.csClient.getSummarySuggestion.restore();
   });
 
   it('renders with no data', async () => {

@@ -648,6 +648,11 @@ export class ChromedashApp extends LitElement {
     if (this.gateColumnRef.value?.refetch) {
       this.gateColumnRef.value.refetch();
     }
+    // Real-time synchronization: Update the navigation drawer's pending reviews badge count!
+    const drawer = this.renderRoot.querySelector('chromedash-drawer') as any;
+    if (drawer?.fetchPendingReviewsCount) {
+      drawer.fetchPendingReviewsCount();
+    }
   }
 
   renderContentAndSidebar() {

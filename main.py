@@ -294,6 +294,7 @@ spa_page_routes = [
     Route('/'),
     Route('/roadmap'),
     Route('/releases'),
+    Route('/release-reviews'),
     # TODO(jrobbins): remove '/myfeatures' after a while.
     Route('/myfeatures', defaults={'require_signin': True}),
     Route('/myfeatures/review', defaults={'require_signin': True}),

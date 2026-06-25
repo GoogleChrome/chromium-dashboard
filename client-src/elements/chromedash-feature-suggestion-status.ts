@@ -212,6 +212,7 @@ export class ChromedashFeatureSuggestionStatus extends LitElement {
                     <sl-button
                       size="small"
                       variant="primary"
+                      data-testid="suggestion-action-button"
                       @click=${() =>
                         this.dispatchEvent(
                           new CustomEvent('review-suggestion', {
@@ -232,6 +233,7 @@ export class ChromedashFeatureSuggestionStatus extends LitElement {
                 ? html`
                     <sl-button
                       size="small"
+                      data-testid="suggestion-action-button"
                       @click=${() =>
                         this.dispatchEvent(
                           new CustomEvent('review-suggestion', {

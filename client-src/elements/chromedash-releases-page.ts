@@ -300,6 +300,13 @@ export class ChromedashReleasesPage extends LitElement {
     if (card) {
       card.refreshSuggestion();
     }
+
+    this.dispatchEvent(
+      new CustomEvent('refetch-needed', {
+        bubbles: true,
+        composed: true,
+      })
+    );
   }
 
   handleSuggestionDiscarded() {
@@ -310,6 +317,13 @@ export class ChromedashReleasesPage extends LitElement {
     if (card) {
       card.refreshSuggestion();
     }
+
+    this.dispatchEvent(
+      new CustomEvent('refetch-needed', {
+        bubbles: true,
+        composed: true,
+      })
+    );
   }
 
   renderFeature(feature: Feature) {

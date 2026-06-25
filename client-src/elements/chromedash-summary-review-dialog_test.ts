@@ -494,7 +494,7 @@ describe('chromedash-summary-review-dialog', () => {
 
     // Check Blink components rendering
     const metaContainer = dialog.renderRoot.querySelector(
-      '.feature-context-meta-list'
+      '.global-feature-context'
     );
     assert.exists(metaContainer);
     const textNormalized =
@@ -918,6 +918,56 @@ describe('chromedash-summary-review-dialog', () => {
       dialog.editingBaselineWidelyDate = '2026-09-15';
       assert.isTrue(dialog.validateBaselineDates());
       assert.equal(dialog.errorMessage, '');
+    });
+
+    it('renders the expandable AI rationale panel if present, and hides it if absent', async () => {
+      const suggestionWithRationale = {
+        ...suggestion,
+        generation_rationale: 'AI generation details and context recommendations.',
+      };
+
+      const dialog = (await fixture(
+        html`<chromedash-summary-review-dialog
+          .feature=${feature}
+          .suggestion=${suggestionWithRationale}
+        ></chromedash-summary-review-dialog>`
+      )) as ChromedashSummaryReviewDialog;
+
+      dialog.show();
+      await dialog.updateComplete;
+
+      // 1. Verify rationale panel is rendered and visible
+      const rationaleDetails = dialog.renderRoot.querySelector('.rationale-details');
+      assert.exists(rationaleDetails);
+      assert.include(rationaleDetails.textContent, 'AI Generation & Enrichment Rationale');
+      assert.include(rationaleDetails.textContent, 'AI generation details and context recommendations.');
+
+      // 2. Verify dialog without rationale does not render it
+      const suggestionNoRationale = {
+        ...suggestion,
+        generation_rationale: null,
+      };
+      dialog.suggestion = suggestionNoRationale;
+      await dialog.updateComplete;
+      const missingRationale = dialog.renderRoot.querySelector('.rationale-details');
+      assert.isNull(missingRationale);
+    });
+
+    it('renders the traceability details and timeline console logs', async () => {
+      const dialog = (await fixture(
+        html`<chromedash-summary-review-dialog
+          .feature=${feature}
+          .suggestion=${suggestion}
+        ></chromedash-summary-review-dialog>`
+      )) as ChromedashSummaryReviewDialog;
+
+      dialog.show();
+      await dialog.updateComplete;
+
+      // Verify traceability details details box is rendered
+      const traceDetails = dialog.renderRoot.querySelector('.traceability-details');
+      assert.exists(traceDetails);
+      assert.include(traceDetails.textContent, 'View Generation & Traceability Logs');
     });
   });
 });

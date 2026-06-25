@@ -453,6 +453,7 @@ class FeatureSummarySuggestion(ndb.Model):
         indexed=True
     )  # Stored as str from SummarySuggestionStatus
     status_timestamp = ndb.DateTimeProperty(auto_now=True)
+    generated_at = ndb.DateTimeProperty()
     last_generation_attempt = ndb.DateTimeProperty()
     version = ndb.IntegerProperty(indexed=False)  # GENERATOR_VERSION
     suggested_doc_links = ndb.StringProperty(repeated=True)

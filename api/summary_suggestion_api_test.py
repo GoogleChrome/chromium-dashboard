@@ -57,6 +57,11 @@ class SummarySuggestionAPITest(testing_config.CustomTestCase):
         suggestion = FeatureSummarySuggestion.get_by_id(12345)
         if suggestion:
             suggestion.key.delete()
+        # Clean up progress steps parented under feature 12345 to prevent test pollution
+        steps = FeatureSummaryProgressStep.query(
+            ancestor=ndb.Key(FeatureSummarySuggestion, 12345)
+        ).fetch(keys_only=True)
+        ndb.delete_multi(steps)
 
     @mock.patch('framework.permissions.can_view_feature')
     def test_get__default_none(self, mock_can_view):
@@ -76,6 +81,7 @@ class SummarySuggestionAPITest(testing_config.CustomTestCase):
                 'model_used': None,
                 'progress_steps': [],
                 'suggested_summary': None,
+                'generation_rationale': None,
                 'suggested_doc_links': [],
                 'baseline_status': None,
                 'baseline_newly_date': None,
@@ -364,6 +370,11 @@ class SummarySuggestionPATCHAPITest(testing_config.CustomTestCase):
         activities = Activity.get_activities(12345)
         for act in activities:
             act.key.delete()
+        # Clean up progress steps parented under feature 12345 to prevent test pollution
+        steps = FeatureSummaryProgressStep.query(
+            ancestor=ndb.Key(FeatureSummarySuggestion, 12345)
+        ).fetch(keys_only=True)
+        ndb.delete_multi(steps)
 
     @mock.patch('framework.permissions.can_review_release_notes')
     def test_patch__success_apply_as_is(self, mock_can_review):
@@ -828,6 +839,124 @@ class SummarySuggestionPATCHAPITest(testing_config.CustomTestCase):
         self.assertEqual(activities[0].log_type, Activity.USER_CHANGE)
 
     @mock.patch('framework.permissions.can_review_release_notes')
+    def test_patch__bypass_whitespace_validation_failure(self, mock_can_review):
+        """Bypass fails if justification consists only of whitespace."""
+        mock_can_review.return_value = True
+        self.feature.owner_emails = ['owner@example.com']  # Logged in reviewer is not an owner
+        self.feature.put()
+
+        with test_app.test_request_context(
+            '/api/v0/features/12345/summary_suggestion',
+            method='PATCH',
+            json={
+                'status': 'applied',
+                'suggested_summary': 'AI suggested summary.',
+                'suggested_doc_links': [],
+                'version_token': 1,
+                'bypass_justification': '   ',  # Whitespace only justification
+            },
+        ):
+            with self.assertRaises(werkzeug.exceptions.Forbidden) as context:
+                self.handler.do_patch(feature_id=12345)
+
+            self.assertIn(
+                'Bypass justification is required during the 7-day grace period.',
+                context.exception.description,
+            )
+
+    @mock.patch('framework.permissions.can_review_release_notes')
+    def test_patch__bypass_post_grace_period_success(self, mock_can_review):
+        """After 7-day grace period, non-owners can commit directly without a justification."""
+        mock_can_review.return_value = True
+        self.feature.owner_emails = ['owner@example.com']  # Logged in reviewer is not an owner
+        self.feature.put()
+
+        # Mock that suggestion was generated 8 days ago
+        now = datetime.datetime.utcnow()
+        eight_days_ago = now - datetime.timedelta(days=8)
+        self.suggestion.status_timestamp = eight_days_ago
+        self.suggestion.generated_at = eight_days_ago
+        self.suggestion.put()
+
+        with test_app.test_request_context(
+            '/api/v0/features/12345/summary_suggestion',
+            method='PATCH',
+            json={
+                'status': 'applied',
+                'suggested_summary': 'AI suggested summary.',
+                'suggested_doc_links': [],
+                'version_token': 1,
+            },
+        ):
+            response = self.handler.do_patch(feature_id=12345)
+
+        self.assertEqual(
+            response['message'], 'AI suggestion status updated successfully.'
+        )
+
+        # Check Suggestion status becomes APPLIED (not BYPASSED)
+        updated_suggestion = FeatureSummarySuggestion.get_by_id(12345)
+        self.assertEqual(
+            updated_suggestion.status,
+            core_enums.SummarySuggestionStatus.APPLIED,
+        )
+
+        # Check Activity Log contains USER_CHANGE (not BYPASS_APPLIED)
+        activities = Activity.get_activities(12345)
+        self.assertEqual(len(activities), 1)
+        self.assertEqual(activities[0].log_type, Activity.USER_CHANGE)
+
+    @mock.patch('framework.permissions.can_review_release_notes')
+    def test_patch__markdown_format_transitions(self, mock_can_review):
+        """Applying a suggestion with markdown format adds 'summary' to markdown_fields, and reverting clears it."""
+        mock_can_review.return_value = True
+        self.feature.owner_emails = ['owner@example.com']  # Logged in reviewer is not an owner
+        self.feature.markdown_fields = []
+        self.feature.put()
+
+        self.suggestion.suggested_format = 'markdown'
+        self.suggestion.put()
+
+        # 1. Apply suggestion via DevRel bypass (status becomes BYPASSED, which is allowed to revert)
+        with test_app.test_request_context(
+            '/api/v0/features/12345/summary_suggestion',
+            method='PATCH',
+            json={
+                'status': 'applied',
+                'suggested_summary': 'AI suggested summary.',
+                'suggested_doc_links': [],
+                'version_token': 1,
+                'bypass_justification': 'Emergency release notes formatting fix.',
+            },
+        ):
+            self.handler.do_patch(feature_id=12345)
+
+        # Assert 'summary' is added to markdown_fields
+        updated_feature = FeatureEntry.get_by_id(12345)
+        self.assertIn('summary', updated_feature.markdown_fields or [])
+
+        # Get the new OCC token to prevent 409 Conflict on the subsequent patch
+        updated_suggestion = FeatureSummarySuggestion.get_by_id(12345)
+        self.assertEqual(updated_suggestion.status, core_enums.SummarySuggestionStatus.BYPASSED)
+        new_token = updated_suggestion.version_token
+
+        # 2. Revert/Restore suggestion (BYPASSED -> COMPLETE is allowed, but needs bypass justification for non-owners)
+        with test_app.test_request_context(
+            '/api/v0/features/12345/summary_suggestion',
+            method='PATCH',
+            json={
+                'status': 'complete',
+                'version_token': new_token,
+                'bypass_justification': 'Reverting formatting change.',
+            },
+        ):
+            self.handler.do_patch(feature_id=12345)
+
+        # Assert 'summary' is removed/restored from markdown_fields
+        reverted_feature = FeatureEntry.get_by_id(12345)
+        self.assertNotIn('summary', reverted_feature.markdown_fields or [])
+
+    @mock.patch('framework.permissions.can_review_release_notes')
     def test_patch__apply_first_time_backups_baseline(self, mock_can_review):
         """Applying a suggestion for the first time backs up original baseline status to 'none'."""
         mock_can_review.return_value = True
@@ -940,3 +1069,127 @@ class PendingReviewsCountAPITest(testing_config.CustomTestCase):
             response = self.handler.do_get()
 
         self.assertEqual(response, {'count': 2})
+
+
+class PendingReviewsAPITest(testing_config.CustomTestCase):
+    """Tests for GET /features/pending_reviews."""
+
+    def setUp(self):
+        """Set up test environment and mock data."""
+        testing_config.sign_in('reviewer@example.com', 333)
+        self.handler = summary_suggestion_api.PendingReviewsAPI()
+        
+        self.feature_1 = FeatureEntry(
+            id=101,
+            name='Feature One',
+            summary='Technical description one.',
+            category=1,
+        )
+        self.feature_2 = FeatureEntry(
+            id=102,
+            name='Feature Two',
+            summary='Technical description two.',
+            category=2,
+        )
+        ndb.put_multi([self.feature_1, self.feature_2])
+
+        self.suggestion_1 = FeatureSummarySuggestion(
+            id=101,
+            suggested_summary='AI summary one.',
+            suggested_doc_links=[],
+            baseline_status='limited',
+            status=core_enums.SummarySuggestionStatus.COMPLETE,
+        )
+        self.suggestion_2 = FeatureSummarySuggestion(
+            id=102,
+            suggested_summary='AI summary two.',
+            suggested_doc_links=[],
+            baseline_status='newly',
+            status=core_enums.SummarySuggestionStatus.COMPLETE,
+        )
+        self.suggestion_3 = FeatureSummarySuggestion(
+            id=103,  # In progress - should not be returned
+            status=core_enums.SummarySuggestionStatus.IN_PROGRESS,
+        )
+        ndb.put_multi([self.suggestion_1, self.suggestion_2, self.suggestion_3])
+
+    def tearDown(self):
+        """Clean up datastore entities."""
+        ndb.delete_multi([
+            ndb.Key(FeatureEntry, 101),
+            ndb.Key(FeatureEntry, 102),
+            ndb.Key(FeatureSummarySuggestion, 101),
+            ndb.Key(FeatureSummarySuggestion, 102),
+            ndb.Key(FeatureSummarySuggestion, 103),
+            ndb.Key(FeatureSummarySuggestion, 104),  # In case created
+        ])
+
+    @mock.patch('framework.permissions.can_review_release_notes')
+    def test_get__unauthorized(self, mock_can_review):
+        """Ensure GET returns 403 Forbidden if user is not authorized."""
+        mock_can_review.return_value = False
+
+        with test_app.test_request_context('/api/v0/features/pending_reviews'):
+            with self.assertRaises(werkzeug.exceptions.Forbidden):
+                self.handler.do_get()
+
+    @mock.patch('framework.permissions.can_review_release_notes')
+    def test_get__empty(self, mock_can_review):
+        """Ensure GET returns empty list if no suggestions are in COMPLETE status."""
+        mock_can_review.return_value = True
+        # Mark all as applied
+        self.suggestion_1.status = core_enums.SummarySuggestionStatus.APPLIED
+        self.suggestion_2.status = core_enums.SummarySuggestionStatus.APPLIED
+        ndb.put_multi([self.suggestion_1, self.suggestion_2])
+
+        with test_app.test_request_context('/api/v0/features/pending_reviews'):
+            response = self.handler.do_get()
+
+        self.assertEqual(response, {'features': [], 'total_count': 0})
+
+    @mock.patch('framework.permissions.can_review_release_notes')
+    def test_get__success(self, mock_can_review):
+        """Ensure GET returns features with complete suggestions correctly serialized."""
+        mock_can_review.return_value = True
+
+        with test_app.test_request_context('/api/v0/features/pending_reviews'):
+            response = self.handler.do_get()
+
+        self.assertIn('features', response)
+        features = response['features']
+        self.assertEqual(len(features), 2)
+
+        # Map by ID for easy assertions (asserting the flat FeatureEntry verbose schema)
+        feature_map = {f['id']: f for f in features}
+        self.assertIn(101, feature_map)
+        self.assertIn(102, feature_map)
+
+        self.assertEqual(feature_map[101]['name'], 'Feature One')
+        self.assertEqual(feature_map[101]['summary'], 'Technical description one.')
+
+        self.assertEqual(feature_map[102]['name'], 'Feature Two')
+        self.assertEqual(feature_map[102]['summary'], 'Technical description two.')
+
+    @mock.patch('framework.permissions.can_review_release_notes')
+    def test_get__dangling_suggestion(self, mock_can_review):
+        """Ensure GET filters out dangling suggestions where the feature entry no longer exists."""
+        mock_can_review.return_value = True
+        
+        # Suggestion 104 is COMPLETE but has NO matching FeatureEntry (104) in Datastore!
+        dangling_suggestion = FeatureSummarySuggestion(
+            id=104,
+            suggested_summary='AI summary dangling.',
+            suggested_doc_links=[],
+            status=core_enums.SummarySuggestionStatus.COMPLETE,
+        )
+        dangling_suggestion.put()
+
+        with test_app.test_request_context('/api/v0/features/pending_reviews'):
+            response = self.handler.do_get()
+
+        features = response['features']
+        # Should only return features 101 and 102, filtering out the dangling 104 suggestion!
+        self.assertEqual(len(features), 2)
+        feature_ids = [f['id'] for f in features]
+        self.assertNotIn(104, feature_ids)
+

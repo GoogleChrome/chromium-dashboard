@@ -239,11 +239,23 @@ export class ChromedashReleaseReviewsPage extends LitElement {
   handleApplied() {
     void this.fetchPendingReviewsData();
     showToastMessage('AI summary suggestion successfully applied!');
+    this.dispatchEvent(
+      new CustomEvent('refetch-needed', {
+        bubbles: true,
+        composed: true,
+      })
+    );
   }
 
   handleDiscarded() {
     void this.fetchPendingReviewsData();
     showToastMessage('AI summary suggestion discarded.');
+    this.dispatchEvent(
+      new CustomEvent('refetch-needed', {
+        bubbles: true,
+        composed: true,
+      })
+    );
   }
 
   renderSkeletons() {

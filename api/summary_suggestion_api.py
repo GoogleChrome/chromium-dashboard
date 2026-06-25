@@ -120,8 +120,8 @@ class SummarySuggestionAPI(basehandlers.EntitiesAPIHandler):
             'model_used': suggestion.model_used,
             'progress_steps': serialized_steps,
             'status_timestamp': (
-                suggestion.status_timestamp.isoformat() + 'Z'
-                if suggestion.status_timestamp
+                (suggestion.generated_at or suggestion.status_timestamp).isoformat() + 'Z'
+                if (suggestion.generated_at or suggestion.status_timestamp)
                 else None
             ),
             'last_generation_attempt': (
@@ -197,19 +197,15 @@ class SummarySuggestionAPI(basehandlers.EntitiesAPIHandler):
             is_privileged_owner = is_owner or is_editor or is_creator
 
             is_within_grace = False
-            if current_status := suggestion.status:
-                if (
-                    current_status
-                    == core_enums.SummarySuggestionStatus.COMPLETE.value
-                    and suggestion.status_timestamp
-                ):
-                    grace_limit = (
-                        suggestion.status_timestamp + datetime.timedelta(days=7)
-                    )
-                    is_within_grace = datetime.datetime.utcnow() < grace_limit
+            reference_time = suggestion.generated_at or suggestion.status_timestamp
+            if reference_time:
+                grace_limit = reference_time + datetime.timedelta(days=7)
+                is_within_grace = datetime.datetime.utcnow() < grace_limit
 
             is_bypass = is_within_grace and not is_privileged_owner
             bypass_justification = params.get('bypass_justification')
+            if bypass_justification:
+                bypass_justification = bypass_justification.strip()
 
             if is_bypass and not bypass_justification:
                 return (
@@ -324,11 +320,43 @@ class SummarySuggestionAPI(basehandlers.EntitiesAPIHandler):
                     except ValueError:
                         return None
 
+                # 1. Validate baseline status values
+                if approved_baseline_status not in ['none', 'limited', 'newly', 'widely']:
+                    return False, f'Invalid baseline status: {approved_baseline_status}', None
+
+                newly_date = None
+                widely_date = None
+
+                # 2. Enforce Newly Available Date constraints
+                if approved_baseline_status in ['newly', 'widely']:
+                    if not approved_baseline_newly:
+                        return False, 'Newly Available Date is required for Baseline Newly/Widely Available.', None
+                    newly_date = parse_date(approved_baseline_newly)
+                    if not newly_date:
+                        return False, f'Invalid Newly Available Date format: {approved_baseline_newly}', None
+
+                # 3. Enforce Widely Available Date constraints & Chronology
+                if approved_baseline_status == 'widely':
+                    if not approved_baseline_widely:
+                        return False, 'Widely Available Date is required for Baseline Widely Available.', None
+                    widely_date = parse_date(approved_baseline_widely)
+                    if not widely_date:
+                        return False, f'Invalid Widely Available Date format: {approved_baseline_widely}', None
+                    if widely_date < newly_date:
+                        return False, 'Widely Available Date must be chronologically after or equal to the Newly Available Date.', None
+
+                # 4. Clean dates based on status to prevent dangling stale records
+                if approved_baseline_status in ['none', 'limited']:
+                    suggestion.baseline_newly_date = None
+                    suggestion.baseline_widely_date = None
+                elif approved_baseline_status == 'newly':
+                    suggestion.baseline_newly_date = newly_date
+                    suggestion.baseline_widely_date = None
+                else:
+                    suggestion.baseline_newly_date = newly_date
+                    suggestion.baseline_widely_date = widely_date
+
                 suggestion.baseline_status = approved_baseline_status
-                if approved_baseline_newly is not None:
-                    suggestion.baseline_newly_date = parse_date(approved_baseline_newly)
-                if approved_baseline_widely is not None:
-                    suggestion.baseline_widely_date = parse_date(approved_baseline_widely)
 
                 # First-time apply: backup baseline status to none if no prior backup exists
                 if suggestion.original_baseline_status is None:
@@ -531,9 +559,9 @@ class SummarySuggestionGenerateAPI(basehandlers.EntitiesAPIHandler):
             suggestion.status_timestamp = now
             suggestion.last_generation_attempt = now
             suggestion.put()
-            return feature, None
+            return feature, now.timestamp(), None
 
-        feature, error_msg = start_generation_tx()
+        feature, attempt_timestamp, error_msg = start_generation_tx()
         if error_msg:
             self.abort(400, msg=error_msg)
 
@@ -545,6 +573,7 @@ class SummarySuggestionGenerateAPI(basehandlers.EntitiesAPIHandler):
                 if feature and feature.updated
                 else 0
             ),
+            'attempt_time': attempt_timestamp,
         }
         cloud_tasks_helpers.enqueue_task(
             '/tasks/generate-summary',

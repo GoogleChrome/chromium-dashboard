@@ -822,7 +822,10 @@ def generate_summary_suggestion(
         suggestion.model_used = settings.SUMMARY_GENERATOR_MODEL
         suggestion.version = prompt_version
         suggestion.source_fingerprint = current_fp
-        suggestion.version_token = 1
+        # Optimistic Concurrency Control: Increment the token for every new draft,
+        # forcing stale clients to reload and preventing silent overwrites!
+        suggestion.version_token = (suggestion.version_token or 1) + 1
+        suggestion.generated_at = datetime.utcnow()
 
         now_str = datetime.utcnow().isoformat()
         suggestion.summary_provenance = {

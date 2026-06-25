@@ -65,10 +65,9 @@ debug-app: build
 
 start: stop
 	. cs-env/bin/activate && \
-	($(MAKE) start-emulator-persist > /dev/null 2>&1 &) && \
-	$(MAKE) start-app; status=$$?; $(MAKE) stop-emulator; exit $$status
+	$(MAKE) start-app; status=$$?; exit $$status
 
-stop: pwtests-shutdown
+stop:
 	kill `pgrep gunicorn` || true
 
 test:

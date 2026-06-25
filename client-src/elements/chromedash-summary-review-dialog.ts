@@ -1540,6 +1540,7 @@ export class ChromedashSummaryReviewDialog extends LitElement {
                           ? html`
                               <sl-textarea
                                 class="editable-summary-textarea"
+                                data-testid="suggested-summary-textarea"
                                 aria-label="Suggested Summary"
                                 .value=${this.summaryText}
                                 ?disabled=${this.submitting}
@@ -1553,7 +1554,7 @@ export class ChromedashSummaryReviewDialog extends LitElement {
                               ></sl-textarea>
                             `
                           : html`
-                              <div class="preview-container">
+                              <div class="preview-container" data-testid="summary-preview-container">
                                 ${autolink(this.summaryText, [], true)}
                               </div>
                             `
@@ -1688,12 +1689,6 @@ export class ChromedashSummaryReviewDialog extends LitElement {
                     <!-- Enforce mutual exclusivity by wrapping the styled cards inside sl-radio-group -->
                     <sl-radio-group
                       .value=${this.editingBaselineStatus || 'none'}
-                      @sl-change=${(e: Event) => {
-                        const target = e.target as HTMLElement & {
-                          value: string;
-                        };
-                        this.selectBaselineStatus(target.value);
-                      }}
                     >
                       <div class="baseline-radio-group">
                         <!-- Option 1: None (No Baseline Status) -->
@@ -1710,6 +1705,7 @@ export class ChromedashSummaryReviewDialog extends LitElement {
                               <sl-radio
                                 value="none"
                                 ?disabled=${this.submitting}
+                                @click=${() => this.selectBaselineStatus('none')}
                               >
                                 None (No Baseline Status)
                               </sl-radio>
@@ -1751,6 +1747,7 @@ export class ChromedashSummaryReviewDialog extends LitElement {
                               <sl-radio
                                 value="limited"
                                 ?disabled=${this.submitting}
+                                @click=${() => this.selectBaselineStatus('limited')}
                               >
                                 <span
                                   style="display: inline-flex; align-items: center; gap: 6px;"
@@ -1812,6 +1809,7 @@ export class ChromedashSummaryReviewDialog extends LitElement {
                               <sl-radio
                                 value="newly"
                                 ?disabled=${this.submitting}
+                                @click=${() => this.selectBaselineStatus('newly')}
                               >
                                 <span
                                   style="display: inline-flex; align-items: center; gap: 6px;"
@@ -1896,6 +1894,7 @@ export class ChromedashSummaryReviewDialog extends LitElement {
                               <sl-radio
                                 value="widely"
                                 ?disabled=${this.submitting}
+                                @click=${() => this.selectBaselineStatus('widely')}
                               >
                                 <span
                                   style="display: inline-flex; align-items: center; gap: 6px;"
@@ -2159,6 +2158,7 @@ export class ChromedashSummaryReviewDialog extends LitElement {
                         <div class="bypass-container">
                           <sl-textarea
                             name="bypass_justification"
+                            data-testid="bypass-justification-textarea"
                             label="Bypass Justification (Required)"
                             placeholder="Explain why you are bypassing the feature owner..."
                             .value=${this.bypassJustification}

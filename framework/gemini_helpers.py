@@ -136,6 +136,7 @@ class GenerateSummaryHandler(basehandlers.FlaskHandler):
 
         feature_id = self.get_int_param('feature_id')
         updated_time = self.get_param('updated_time')
+        attempt_time = self.get_param('attempt_time')
 
         feature = self.get_validated_entity(feature_id, FeatureEntry)
 
@@ -149,15 +150,20 @@ class GenerateSummaryHandler(basehandlers.FlaskHandler):
                         f'Skipping summary generation. '
                         f'Feature updated: {feature.updated}, Payload updated: {payload_updated}'
                     )
-                    # Reset suggestion status to NONE to prevent hanging IN_PROGRESS lock
+                    # Reset suggestion status to NONE to prevent hanging IN_PROGRESS lock,
+                    # BUT ONLY if this task is the one that set it to IN_PROGRESS! (Prevents newer task resets)
                     suggestion = FeatureSummarySuggestion.get_by_id(feature_id)
-                    if suggestion:
-                        suggestion.status = core_enums.SummarySuggestionStatus.NONE.value
-                        suggestion.put()
+                    if suggestion and suggestion.status == core_enums.SummarySuggestionStatus.IN_PROGRESS.value:
+                        if attempt_time and suggestion.last_generation_attempt:
+                            # Allow a tiny drift of 1.0s in floating point conversions
+                            if abs(suggestion.last_generation_attempt.timestamp() - float(attempt_time)) < 1.0:
+                                suggestion.status = core_enums.SummarySuggestionStatus.NONE.value
+                                suggestion.put()
+                                logging.info(f'Safely reset hanging IN_PROGRESS status for feature {feature_id}.')
                     return {'message': 'Skipped due to newer updates.'}
             except (ValueError, TypeError) as e:
                 logging.warning(
-                    f'Invalid updated_time: {updated_time}. Proceeding anyway. Error: {e}'
+                    f'Invalid updated_time or attempt_time: {updated_time}/{attempt_time}. Proceeding anyway. Error: {e}'
                 )
 
         logging.info(
@@ -165,6 +171,11 @@ class GenerateSummaryHandler(basehandlers.FlaskHandler):
         )
 
         from framework import summary_generator
+
+        if settings.DEV_MODE:
+            import time
+            logging.info('Artificial delay of 2.0s for dev/E2E transition state visibility...')
+            time.sleep(2.0)
 
         try:
             summary_generator.generate_summary_suggestion(feature_id)

@@ -73,6 +73,8 @@ class MockLogin(basehandlers.APIHandler):
             )
 
         email = self.get_param('email', default=TESTING_ACCOUNTS[0])
+        import logging
+        logging.info('MockLogin request received for email: %s', email)
         if email not in TESTING_ACCOUNTS:
             self.abort(
                 status=403,
@@ -80,4 +82,5 @@ class MockLogin(basehandlers.APIHandler):
             )
 
         users.add_signed_user_info_to_session(email)
+        logging.info('MockLogin successfully signed in session for email: %s', email)
         return {'message': f'Signed in as {email}'}

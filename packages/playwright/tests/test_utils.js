@@ -429,14 +429,22 @@ export async function setupFakeNow(
   }`);
 }
 
-/**
- * Log in as a specific persona via mock login param
- * @param {import("playwright-core").Page} page
- * @param {string} email
- */
 export async function loginAs(page, email) {
+  page.on('console', msg => {
+    console.log(`[BROWSER CONSOLE] [${msg.type()}] ${msg.text()}`);
+  });
   console.log(`[E2E] Logging in as ${email}...`);
-  await page.request.post(`/dev/mock_login?email=${email}`);
+  await page.context().clearCookies();
+  const response = await page.request.post(`/dev/mock_login`, {
+    data: {
+      email: email
+    }
+  });
+  if (!response.ok()) {
+    throw new Error(`Failed to mock login as ${email}: ${response.status()} ${response.statusText()}`);
+  }
+  console.log(`[E2E DEBUG] Cookies after mock login POST for ${email}:`);
+  await decodeCookies(page);
   await page.goto('/', {timeout: 30000});
   await page.waitForURL('**/roadmap', {timeout: 30000});
 }

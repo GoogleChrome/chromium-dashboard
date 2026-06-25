@@ -247,4 +247,65 @@ describe('chromedash-release-reviews-page', () => {
     assert.equal(cards.length, 10);
     assert.include(info?.textContent, 'Page 1 of 2');
   });
+
+  it('renders loading skeletons when loading is true', async () => {
+    // Return a promise that doesn't resolve immediately
+    let resolveReviews: (val: any) => void = () => {};
+    const pendingPromise = new Promise(resolve => {
+      resolveReviews = resolve;
+    });
+    sinon.stub(window.csClient, 'getPendingReviews').returns(pendingPromise as any);
+
+    const component = (await fixture(
+      html`<chromedash-release-reviews-page
+        .user=${user}
+      ></chromedash-release-reviews-page>`
+    )) as ChromedashReleaseReviewsPage;
+
+    // Component is in loading state
+    assert.isTrue(component.loading);
+
+    // Verify loading skeletons are rendered
+    const skeletons = component.renderRoot.querySelectorAll('.skeleton-card');
+    assert.isAtLeast(skeletons.length, 1);
+
+    // Resolve the promise to clean up
+    resolveReviews({features: [], total_count: 0});
+    await waitForLoading(component);
+  });
+
+  it('dispatches refetch-needed event when child dialog dispatches applied event', async () => {
+    sinon.stub(window.csClient, 'getPendingReviews').resolves(mockPendingReviews);
+
+    const component = (await fixture(
+      html`<chromedash-release-reviews-page
+        .user=${user}
+      ></chromedash-release-reviews-page>`
+    )) as ChromedashReleaseReviewsPage;
+
+    await waitForLoading(component);
+
+    // Set up event listener on the component to catch the bubbled refetch-needed event
+    const refetchStub = sinon.stub();
+    component.addEventListener('refetch-needed', refetchStub);
+
+    // Locate the child review dialog component
+    const dialog = component.renderRoot.querySelector(
+      'chromedash-summary-review-dialog'
+    ) as LitElement & {show: () => void};
+    assert.exists(dialog);
+
+    // Simulate the dialog dispatching the 'applied' event on successful save
+    dialog.dispatchEvent(
+      new CustomEvent('applied', {
+        detail: {
+          summary: 'Newly applied summary text',
+          links: ['https://example.com/explainer'],
+        },
+      })
+    );
+
+    // Verify that the 'refetch-needed' event bubbled up and was dispatched by the page component!
+    assert.isTrue(refetchStub.calledOnce);
+  });
 });
