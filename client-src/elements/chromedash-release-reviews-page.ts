@@ -359,12 +359,16 @@ export class ChromedashReleaseReviewsPage extends LitElement {
                           <sl-icon name="chevron-left" slot="prefix"></sl-icon>
                           Previous
                         </sl-button>
-                        <span class="pagination-info" data-testid="pagination-info">
+                        <span
+                          class="pagination-info"
+                          data-testid="pagination-info"
+                        >
                           Page ${this.currentPage} of ${totalPages}
                         </span>
                         <sl-button
                           size="small"
-                          ?disabled=${this.currentPage === totalPages || this.loading}
+                          ?disabled=${this.currentPage === totalPages ||
+                          this.loading}
                           @click=${() => {
                             this.currentPage++;
                           }}

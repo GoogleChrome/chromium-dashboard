@@ -962,6 +962,31 @@ class SummarySuggestionStatus(str, Enum):
     APPLIED = 'applied'
     BYPASSED = 'bypassed'
     DISCARDED = 'discarded'
+    SKIPPED = 'skipped'
+
+
+class ProgressStepStatus(str, Enum):
+    """Enums representing the execution status of a single progress step."""
+
+    IN_PROGRESS = 'IN_PROGRESS'
+    SUCCESS = 'SUCCESS'
+    FAILED = 'FAILED'
+    RETRIYING = 'RETRIYING'
+
+
+class ProgressStepId(str, Enum):
+    """Enums representing standard milestone step IDs in the AI generation timeline."""
+
+    START = 'start'
+    LLM_GENERATION = 'llm_generation'
+
+
+class AISummaryToolName(str, Enum):
+    """Enums representing the tool names used by the AI summary generator agent."""
+
+    SEARCH_MDN = 'search_mdn'
+    VERIFY_LINK = 'verify_link'
+    READ_URL = 'read_url'
 
 
 class BaselineStatus(str, Enum):

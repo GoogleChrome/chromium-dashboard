@@ -38,9 +38,18 @@ export interface FeatureLinksSummary {
   error_link_domains: Array<{key: string; count: number}>;
 }
 
+export interface ProgressStep {
+  step_id: string;
+  start_timestamp: string;
+  end_timestamp: string | null;
+  message: string;
+  status: string;
+}
+
 export interface SuggestionData {
   status: string;
   suggested_summary: string | null;
+  generation_rationale: string | null;
   suggested_doc_links: string[];
   baseline_status: string | null;
   baseline_newly_date: string | null;
@@ -53,6 +62,7 @@ export interface SuggestionData {
   version_token: number;
   summary_provenance?: unknown;
   doc_links_provenance?: unknown;
+  progress_steps?: ProgressStep[];
 }
 
 export interface StageDict {

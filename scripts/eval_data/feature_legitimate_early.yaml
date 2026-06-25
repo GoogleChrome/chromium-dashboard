@@ -1,0 +1,12 @@
+- name: "CSS Row Rule decorations"
+  category: "CSS"
+  web_feature: "css-row-rules"
+  summary: "Adds the row-rule-visibility and row-rule-inset properties to let developers draw rules between grid/flex row items."
+  explainer_links:
+    - "https://github.com/w3c/csswg-drafts/issues/123456"
+  spec_link: "https://drafts.csswg.org/css-grid-3/"
+  gt_feasibility_decision: "generate"
+  gt_summary: |
+    Adds CSS grid row rule styling properties to draw decorative lines between grid row items, letting developers customize grid gutters with lines and insets directly in CSS.
+  gt_links: []
+  gt_baseline: "limited"

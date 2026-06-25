@@ -68,6 +68,7 @@ from chromestatus_openapi.models.post_vote_request import PostVoteRequest
 from chromestatus_openapi.models.process import Process
 from chromestatus_openapi.models.process_stage import ProcessStage
 from chromestatus_openapi.models.progress_item import ProgressItem
+from chromestatus_openapi.models.progress_step import ProgressStep
 from chromestatus_openapi.models.reject_unneeded_get_request import RejectUnneededGetRequest
 from chromestatus_openapi.models.release_notes_l10n_item import ReleaseNotesL10nItem
 from chromestatus_openapi.models.release_notes_l10n_response import ReleaseNotesL10nResponse

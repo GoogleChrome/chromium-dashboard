@@ -3,6 +3,7 @@ import {customElement, property} from 'lit/decorators.js';
 import {Task} from '@lit/task';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {SuggestionData} from '../js-src/cs-client.js';
+import './chromedash-ai-summary-progress.js';
 
 @customElement('chromedash-feature-suggestion-status')
 export class ChromedashFeatureSuggestionStatus extends LitElement {
@@ -33,15 +34,14 @@ export class ChromedashFeatureSuggestionStatus extends LitElement {
   }
 
   @property({type: Object})
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   feature!: any;
 
   @property({type: Boolean})
   canReview = false;
 
-  private _pollingInterval?: number;
-
   private _suggestionTask = new Task(this, {
-    task: async ([featureId], {signal}) => {
+    task: async ([featureId]) => {
       const sug = await window.csClient.getSummarySuggestion(featureId);
 
       // Dispatch event to update parent state (for header baseline badge)
@@ -53,39 +53,15 @@ export class ChromedashFeatureSuggestionStatus extends LitElement {
         })
       );
 
-      if (sug.status === 'in_progress') {
-        this.startPolling();
-      } else {
-        this.stopPolling();
-      }
       return sug;
     },
     args: () => [this.feature.id],
   });
 
-  startPolling() {
-    if (this._pollingInterval) return;
-    this._pollingInterval = window.setInterval(() => {
-      this._suggestionTask.run();
-    }, 2000); // Fast poll every 2 seconds
-  }
-
-  stopPolling() {
-    if (this._pollingInterval) {
-      window.clearInterval(this._pollingInterval);
-      this._pollingInterval = undefined;
-    }
-  }
-
-  disconnectedCallback() {
-    super.disconnectedCallback();
-    this.stopPolling();
-  }
-
   async triggerGeneration() {
     try {
       await window.csClient.triggerSummaryGeneration(this.feature.id);
-      this._suggestionTask.run(); // Instantly rerun task to enter 'in_progress' state
+      void this._suggestionTask.run(); // Instantly rerun task to enter 'in_progress' state
     } catch (err) {
       console.error(err);
     }
@@ -101,6 +77,20 @@ export class ChromedashFeatureSuggestionStatus extends LitElement {
             ></sl-spinner>
             Generating
           </sl-tag>
+        `;
+      case 'skipped':
+        return html`
+          <sl-tooltip
+            content="AI evaluated this feature and skipped summary generation (e.g. low confidence, internal test, or insufficient documentation). Click to view rationale or write manually."
+          >
+            <sl-tag variant="neutral" pill style="cursor: help;">
+              <sl-icon
+                name="slash-circle"
+                style="font-size: 10px; margin-right: 5px; vertical-align: middle;"
+              ></sl-icon>
+              Skipped
+            </sl-tag>
+          </sl-tooltip>
         `;
       case 'complete':
         return html`<sl-tag variant="success" pill>Draft Available</sl-tag>`;
@@ -189,59 +179,73 @@ export class ChromedashFeatureSuggestionStatus extends LitElement {
       complete: sug => {
         const status = sug?.status || 'none';
         return html`
-          <div class="suggestion-control-panel">
-            <strong>AI Summary suggestion:</strong>
-            ${this.renderBadge(status)}
-            ${status === 'none' ||
-            status === 'failed' ||
-            status === 'overloaded' ||
-            status === 'discarded' ||
-            status === 'in_progress'
-              ? html`
-                  <sl-button
-                    size="small"
-                    ?disabled=${status === 'in_progress'}
-                    @click=${this.triggerGeneration}
-                  >
-                    ${this.renderGeminiIcon()} Generate Summary
-                  </sl-button>
-                `
-              : nothing}
-            ${status === 'complete'
-              ? html`
-                  <sl-button
-                    size="small"
-                    variant="primary"
-                    @click=${() =>
-                      this.dispatchEvent(
-                        new CustomEvent('review-suggestion', {
-                          detail: {feature: this.feature},
-                          bubbles: true,
-                          composed: true,
-                        })
-                      )}
-                  >
-                    ${this.renderGeminiIcon()} ${this.getButtonText(sug)}
-                  </sl-button>
-                `
-              : nothing}
-            ${status === 'applied'
-              ? html`
-                  <sl-button
-                    size="small"
-                    @click=${() =>
-                      this.dispatchEvent(
-                        new CustomEvent('review-suggestion', {
-                          detail: {feature: this.feature},
-                          bubbles: true,
-                          composed: true,
-                        })
-                      )}
-                  >
-                    ${this.renderGeminiIcon()} Edit applied summary
-                  </sl-button>
-                `
-              : nothing}
+          <div
+            class="suggestion-control-panel"
+            style="display: flex; flex-direction: column; align-items: flex-start; gap: 8px; width: 100%;"
+          >
+            <div
+              style="display: flex; align-items: center; gap: 10px; width: 100%; flex-wrap: wrap;"
+            >
+              ${status === 'in_progress'
+                ? html`
+                    <chromedash-ai-summary-progress
+                      .featureId=${this.feature.id}
+                      @suggestion-finished=${this.refresh}
+                    ></chromedash-ai-summary-progress>
+                  `
+                : html`
+                    <strong>AI Summary suggestion:</strong>
+                    ${this.renderBadge(status)}
+                  `}
+              ${status === 'none' ||
+              status === 'failed' ||
+              status === 'overloaded' ||
+              status === 'discarded'
+                ? html`
+                    <sl-button size="small" @click=${this.triggerGeneration}>
+                      ${this.renderGeminiIcon()} Generate Summary
+                    </sl-button>
+                  `
+                : nothing}
+              ${status === 'complete' || status === 'skipped'
+                ? html`
+                    <sl-button
+                      size="small"
+                      variant="primary"
+                      @click=${() =>
+                        this.dispatchEvent(
+                          new CustomEvent('review-suggestion', {
+                            detail: {feature: this.feature},
+                            bubbles: true,
+                            composed: true,
+                          })
+                        )}
+                    >
+                      ${this.renderGeminiIcon()}
+                      ${status === 'skipped'
+                        ? 'Write Summary Manually'
+                        : this.getButtonText(sug)}
+                    </sl-button>
+                  `
+                : nothing}
+              ${status === 'applied'
+                ? html`
+                    <sl-button
+                      size="small"
+                      @click=${() =>
+                        this.dispatchEvent(
+                          new CustomEvent('review-suggestion', {
+                            detail: {feature: this.feature},
+                            bubbles: true,
+                            composed: true,
+                          })
+                        )}
+                    >
+                      ${this.renderGeminiIcon()} Edit applied summary
+                    </sl-button>
+                  `
+                : nothing}
+            </div>
           </div>
         `;
       },
@@ -250,6 +254,6 @@ export class ChromedashFeatureSuggestionStatus extends LitElement {
   }
 
   refresh() {
-    this._suggestionTask.run();
+    void this._suggestionTask.run();
   }
 }

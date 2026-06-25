@@ -13,6 +13,13 @@
  */
 
 import { mapValues } from '../runtime';
+import type { ProgressStep } from './ProgressStep';
+import {
+    ProgressStepFromJSON,
+    ProgressStepFromJSONTyped,
+    ProgressStepToJSON,
+} from './ProgressStep';
+
 /**
  * 
  * @export
@@ -25,6 +32,12 @@ export interface FeatureSummarySuggestionResponse {
      * @memberof FeatureSummarySuggestionResponse
      */
     suggested_summary?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof FeatureSummarySuggestionResponse
+     */
+    generation_rationale?: string;
     /**
      * 
      * @type {Array<string>}
@@ -75,6 +88,24 @@ export interface FeatureSummarySuggestionResponse {
     status: string;
     /**
      * 
+     * @type {string}
+     * @memberof FeatureSummarySuggestionResponse
+     */
+    status_message?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof FeatureSummarySuggestionResponse
+     */
+    model_used?: string;
+    /**
+     * 
+     * @type {Array<ProgressStep>}
+     * @memberof FeatureSummarySuggestionResponse
+     */
+    progress_steps?: Array<ProgressStep>;
+    /**
+     * 
      * @type {Date}
      * @memberof FeatureSummarySuggestionResponse
      */
@@ -106,6 +137,7 @@ export function FeatureSummarySuggestionResponseFromJSONTyped(json: any, ignoreD
     return {
         
         'suggested_summary': json['suggested_summary'] == null ? undefined : json['suggested_summary'],
+        'generation_rationale': json['generation_rationale'] == null ? undefined : json['generation_rationale'],
         'suggested_doc_links': json['suggested_doc_links'] == null ? undefined : json['suggested_doc_links'],
         'baseline_status': json['baseline_status'] == null ? undefined : json['baseline_status'],
         'baseline_newly_date': json['baseline_newly_date'] == null ? undefined : (new Date(json['baseline_newly_date'])),
@@ -114,6 +146,9 @@ export function FeatureSummarySuggestionResponseFromJSONTyped(json: any, ignoreD
         'original_baseline_newly_date': json['original_baseline_newly_date'] == null ? undefined : (new Date(json['original_baseline_newly_date'])),
         'original_baseline_widely_date': json['original_baseline_widely_date'] == null ? undefined : (new Date(json['original_baseline_widely_date'])),
         'status': json['status'],
+        'status_message': json['status_message'] == null ? undefined : json['status_message'],
+        'model_used': json['model_used'] == null ? undefined : json['model_used'],
+        'progress_steps': json['progress_steps'] == null ? undefined : ((json['progress_steps'] as Array<any>).map(ProgressStepFromJSON)),
         'status_timestamp': json['status_timestamp'] == null ? undefined : (new Date(json['status_timestamp'])),
         'last_generation_attempt': json['last_generation_attempt'] == null ? undefined : (new Date(json['last_generation_attempt'])),
     };
@@ -126,6 +161,7 @@ export function FeatureSummarySuggestionResponseToJSON(value?: FeatureSummarySug
     return {
         
         'suggested_summary': value['suggested_summary'],
+        'generation_rationale': value['generation_rationale'],
         'suggested_doc_links': value['suggested_doc_links'],
         'baseline_status': value['baseline_status'],
         'baseline_newly_date': value['baseline_newly_date'] == null ? undefined : ((value['baseline_newly_date']).toISOString().substring(0,10)),
@@ -134,6 +170,9 @@ export function FeatureSummarySuggestionResponseToJSON(value?: FeatureSummarySug
         'original_baseline_newly_date': value['original_baseline_newly_date'] == null ? undefined : ((value['original_baseline_newly_date']).toISOString().substring(0,10)),
         'original_baseline_widely_date': value['original_baseline_widely_date'] == null ? undefined : ((value['original_baseline_widely_date']).toISOString().substring(0,10)),
         'status': value['status'],
+        'status_message': value['status_message'],
+        'model_used': value['model_used'],
+        'progress_steps': value['progress_steps'] == null ? undefined : ((value['progress_steps'] as Array<any>).map(ProgressStepToJSON)),
         'status_timestamp': value['status_timestamp'] == null ? undefined : ((value['status_timestamp']).toISOString()),
         'last_generation_attempt': value['last_generation_attempt'] == null ? undefined : ((value['last_generation_attempt']).toISOString()),
     };

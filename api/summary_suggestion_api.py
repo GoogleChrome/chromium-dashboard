@@ -27,7 +27,11 @@ from google.cloud import ndb  # type: ignore
 from api import converters
 from framework import basehandlers, cloud_tasks_helpers, permissions
 from internals import core_enums
-from internals.core_models import FeatureEntry, FeatureSummarySuggestion
+from internals.core_models import (
+    FeatureEntry,
+    FeatureSummaryProgressStep,
+    FeatureSummarySuggestion,
+)
 from internals.review_models import Activity
 
 
@@ -53,7 +57,11 @@ class SummarySuggestionAPI(basehandlers.EntitiesAPIHandler):
             # Return a default none state response conforming to the schema
             return {
                 'status': core_enums.SummarySuggestionStatus.NONE.value,
+                'status_message': None,
+                'model_used': None,
+                'progress_steps': [],
                 'suggested_summary': None,
+                'generation_rationale': None,
                 'suggested_doc_links': [],
                 'baseline_status': None,
                 'baseline_newly_date': None,
@@ -70,8 +78,20 @@ class SummarySuggestionAPI(basehandlers.EntitiesAPIHandler):
                 'original_summary_format': None,
             }
 
+        steps = FeatureSummaryProgressStep.get_timeline(feature_id)
+        serialized_steps = []
+        for step in steps:
+            serialized_steps.append({
+                'step_id': step.key.id(),
+                'start_timestamp': (step.start_timestamp.isoformat() + 'Z') if step.start_timestamp else None,
+                'end_timestamp': (step.end_timestamp.isoformat() + 'Z') if step.end_timestamp else None,
+                'message': step.message,
+                'status': step.status.lower(),  # Convert to lowercase to match OpenAPI spec enum
+            })
+
         return {
             'suggested_summary': suggestion.suggested_summary,
+            'generation_rationale': suggestion.generation_rationale,
             'suggested_doc_links': suggestion.suggested_doc_links or [],
             'baseline_status': suggestion.baseline_status,
             'baseline_newly_date': (
@@ -96,13 +116,16 @@ class SummarySuggestionAPI(basehandlers.EntitiesAPIHandler):
                 else None
             ),
             'status': suggestion.status,
+            'status_message': suggestion.status_message,
+            'model_used': suggestion.model_used,
+            'progress_steps': serialized_steps,
             'status_timestamp': (
-                suggestion.status_timestamp.isoformat()
+                suggestion.status_timestamp.isoformat() + 'Z'
                 if suggestion.status_timestamp
                 else None
             ),
             'last_generation_attempt': (
-                suggestion.last_generation_attempt.isoformat()
+                suggestion.last_generation_attempt.isoformat() + 'Z'
                 if suggestion.last_generation_attempt
                 else None
             ),
@@ -386,9 +409,12 @@ class SummarySuggestionAPI(basehandlers.EntitiesAPIHandler):
 
             # Increment concurrency version token
             if is_bypass:
-                suggestion.status = (
-                    core_enums.SummarySuggestionStatus.BYPASSED.value
-                )
+                if target_status == core_enums.SummarySuggestionStatus.APPLIED:
+                    suggestion.status = (
+                        core_enums.SummarySuggestionStatus.BYPASSED.value
+                    )
+                else:
+                    suggestion.status = target_status.value
             else:
                 suggestion.status = target_status.value
             suggestion.version_token += 1
@@ -397,10 +423,16 @@ class SummarySuggestionAPI(basehandlers.EntitiesAPIHandler):
             # Record Activity log (A)
             if is_bypass:
                 log_type = Activity.BYPASS_APPLIED
-                content = (
-                    f'AI suggestion status transitioned to bypassed '
-                    f'by DevRel bypass. Justification: {bypass_justification}'
-                )
+                if target_status == core_enums.SummarySuggestionStatus.APPLIED:
+                    content = (
+                        f'AI suggestion status transitioned to bypassed '
+                        f'by DevRel bypass. Justification: {bypass_justification}'
+                    )
+                else:
+                    content = (
+                        f'AI suggestion discarded '
+                        f'by DevRel bypass. Justification: {bypass_justification}'
+                    )
             else:
                 log_type = Activity.USER_CHANGE
                 content = f'AI suggestion status transitioned to {target_status.value}.'

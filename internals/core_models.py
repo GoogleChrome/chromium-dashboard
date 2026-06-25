@@ -456,6 +456,7 @@ class FeatureSummarySuggestion(ndb.Model):
     last_generation_attempt = ndb.DateTimeProperty()
     version = ndb.IntegerProperty(indexed=False)  # GENERATOR_VERSION
     suggested_doc_links = ndb.StringProperty(repeated=True)
+    generation_rationale = ndb.TextProperty()
     baseline_status = ndb.StringProperty(
         indexed=True
     )  # Stored as str from BaselineStatus
@@ -476,6 +477,72 @@ class FeatureSummarySuggestion(ndb.Model):
     original_baseline_widely_date = ndb.DateProperty()
     suggested_format = ndb.StringProperty(default='markdown')
     original_summary_format = ndb.StringProperty()
+    model_used = ndb.StringProperty()  # Tracks the model name (e.g. for fallback telemetry)
+    status_message = ndb.StringProperty()  # User-facing error or status description
+    
+    
+class FeatureSummaryProgressStep(ndb.Model):
+    """Represents a single event or milestone in the AI generation timeline.
+    
+    This entity is parented under the FeatureSummarySuggestion using ancestor paths:
+    Key: ('FeatureSummarySuggestion', feature_id, 'FeatureSummaryProgressStep', step_id)
+    """
+    start_timestamp = ndb.DateTimeProperty(auto_now_add=True)
+    end_timestamp = ndb.DateTimeProperty()  # Populated when status transitions to SUCCESS or FAILED
+    message = ndb.TextProperty(required=True)  # User-friendly progress message
+    status = ndb.StringProperty(
+        choices=[v.value for v in core_enums.ProgressStepStatus],
+        default=core_enums.ProgressStepStatus.IN_PROGRESS.value
+    )
+
+    @classmethod
+    def update_step(cls, feature_id: int, step_id: str, message: str, status: str) -> None:
+        """Creates or updates an independent progress step child entity.
+        
+        Safe to call concurrently from parallel ADK threads or separate tasks.
+        """
+        from datetime import datetime
+        step_key = ndb.Key(
+            'FeatureSummarySuggestion', feature_id,
+            'FeatureSummaryProgressStep', step_id
+        )
+        
+        step = step_key.get()
+        if step:
+            step.message = message
+            step.status = status
+            if status in [
+                core_enums.ProgressStepStatus.SUCCESS.value,
+                core_enums.ProgressStepStatus.FAILED.value,
+            ]:
+                step.end_timestamp = datetime.now()
+        else:
+            step = cls(
+                key=step_key,
+                message=message,
+                status=status
+            )
+            # start_timestamp is auto_now_add and set on creation
+        step.put()
+
+    @classmethod
+    def clear_timeline(cls, feature_id: int) -> None:
+        """Prunes the timeline history to prevent infinite growth, keeping the last 20 steps."""
+        parent_key = ndb.Key('FeatureSummarySuggestion', feature_id)
+        steps = cls.query(ancestor=parent_key).order(cls.start_timestamp).fetch()
+        if len(steps) > 20:
+            keys_to_delete = [s.key for s in steps[:-20]]
+            ndb.delete_multi(keys_to_delete)
+
+    @classmethod
+    def get_timeline(cls, feature_id: int) -> list['FeatureSummaryProgressStep']:
+        """Retrieves all progress steps for a feature, ordered by timestamp (strongly consistent)."""
+        parent_key = ndb.Key('FeatureSummarySuggestion', feature_id)
+        return (
+            cls.query(ancestor=parent_key)
+            .order(cls.start_timestamp)
+            .fetch()
+        )
 
 
 class MilestoneMetadata(ndb.Model):

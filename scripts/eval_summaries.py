@@ -30,7 +30,10 @@ sys.path.insert(
 
 # Populate dummy SERVER_SOFTWARE to satisfy settings.py checks
 os.environ['SERVER_SOFTWARE'] = 'test'
+os.environ.setdefault('DATASTORE_EMULATOR_HOST', 'localhost:15606')
+os.environ.setdefault('GOOGLE_CLOUD_PROJECT', 'cr-status-staging')
 
+from google.cloud import ndb  # type: ignore
 from google.genai import Client
 
 import settings
@@ -175,6 +178,11 @@ def run_evaluation() -> None:
     settings.USE_MOCK_SUMMARY_GENERATOR = False
     os.environ['USE_MOCK_SUMMARY_GENERATOR'] = 'false'
 
+    # Establish NDB context for database accesses in standalone script
+    ndb_client = ndb.Client()
+    ndb_context = ndb_client.context()
+    ndb_context.__enter__()
+
     print(
         f'Starting LLM-as-a-Judge Evaluation (Dataset: {os.path.basename(args.dataset)}, Prompt: v{args.prompt_version}.md)...\n'
     )
@@ -197,6 +205,7 @@ def run_evaluation() -> None:
 
         # Create unpersisted FeatureEntry model
         feature = FeatureEntry(
+            id=i + 99999,
             name=gt.get('name'),
             category=resolve_category_id(gt.get('category', 2)),
             summary=gt.get('summary'),
@@ -234,6 +243,7 @@ def run_evaluation() -> None:
                     except Exception as e:
                         verified_links_status[link] = f"Connection Error (Failed to reach domain: {str(e)})"
 
+                gt_feasibility_decision = gt.get('gt_feasibility_decision', 'generate')
                 # Assemble judge prompt
                 judge_prompt = f"""You are an expert technical editor for Google Developer Relations. Your task is to evaluate the quality of an AI-generated release notes summary for a web platform feature compared to a human-authored ground truth reference.
 
@@ -242,35 +252,43 @@ Evaluate the AI suggestion based on the following three criteria, scoring each o
 1. CLARITY & STYLE (Score 1-5):
    - The summary should be concise: typically 1 to 3 short paragraphs, totaling 3 to 6 sentences.
    - It must be benefits-driven, objective, and developer-focused.
-   - It should NOT contain prohibited marketing jargon (e.g., "introducing", "introduces", "introduce", "revolutionary", "exciting", "powerful", etc.).
+   - It must strictly use active voice and present tense (e.g., "Adds support...", "Lets you create...").
+   - It must strictly use "lets you" instead of "allows/enables you to" (or "allowing/enabling you to").
+   - It must NOT contain prohibited marketing jargon (e.g., "introducing", "revolutionary", "exciting", "powerful", etc.).
+   - It must NOT contain subjective filler words that imply ease or speed (e.g., "simply", "easy", "easily", "quickly", "just").
+   - If the AI correctly decided to skip generation, clarity is automatically scored 5 (as no low-quality summary was generated).
    - Scoring guide:
-     5 (Excellent): Fits the 3-6 sentence, 1-3 paragraph range. Perfectly objective, professional, and developer-focused. Highlights clear benefits. Absolutely zero marketing jargon or prohibited words.
-     4 (Good): Fits within the 3-6 sentence range. Objective and developer-focused. May contain extremely minor, borderline jargon or prohibited words (like a single use of 'introduces') or minor wordiness, but remains highly professional.
-     3 (Satisfactory): Fits within the 3-6 sentence range. Contains noticeable marketing jargon or fluff, or the tone is dry/passive (reads like a bulleted list). Alternatively, length is slightly deviant (e.g., exactly 2 sentences or 7 sentences) but otherwise correct.
-     2 (Poor): Heavy marketing hype (e.g., 'revolutionary', 'exciting', 'powerful new'), or length is highly deviant (1 sentence or >= 8 sentences).
+     5 (Excellent): Fits the 3-6 sentence range. Perfectly objective, professional, and developer-focused. Highlights clear benefits. Strictly uses present tense, active voice, and "lets you". Absolutely zero marketing jargon, prohibited words, or subjective filler words (simply/easy/etc.). Or, the AI correctly skipped generation.
+     4 (Good): Fits the 3-6 sentence range. Objective and developer-focused. May contain extremely minor, borderline style guide deviations (e.g., a single passive sentence, or a slightly less punchy benefit), but contains no prohibited jargon or subjective fillers.
+     3 (Satisfactory): Fits the 3-6 sentence range. Contains minor style guide violations (e.g. uses "allows you to" once, or contains a single "simply/easy" filler word).
+     2 (Poor): Contains multiple style guide violations (e.g., uses both "allows you to" and "simply", or uses passive voice throughout, or has incorrect browser terminology).
      1 (Unacceptable): Placeholders, mock text, or completely unreadable length.
 
-2. ACCURACY & DRIFT (Score 1-5):
-   - The summary must accurately reflect the technical details of the raw summary.
-   - It must NOT contain factual errors or incorrect syntax.
-   - **Technical Enrichment Support**: The AI generator is explicitly instructed to research the official Spec/Explainer links and enrich brief summaries with concrete, accurate technical details (such as specific CSS properties, JS methods, or HTML attributes). **You MUST NOT penalize the AI or score it down for 'hallucinations' if it introduces technical details, properties, or methods that were not in the raw summary, provided they are technically correct and factually accurate to the specification.** Only penalize actual factual errors, incorrect code syntax, or details that contradict the raw summary.
+2. ACCURACY & DRIFT & FEASIBILITY (Score 1-5):
+   - The summary must accurately reflect the technical details of the raw summary and must not contain factual errors or incorrect syntax.
+   - **Technical Enrichment Support**: The AI generator is explicitly instructed to research the official Spec/Explainer links and enrich brief summaries with concrete, accurate technical details. You MUST NOT penalize the AI for 'hallucinations' if it introduces technical details, properties, or methods that were not in the raw summary, provided they are technically correct and factually accurate to the specification.
+   - **Generation Feasibility & Confidence**: The AI must evaluate whether to generate a summary (`"generate"`) or skip it because it is an internal test/spam entry (`"skipped_spam_or_test"`) or has insufficient information to generate reliably (`"skipped_insufficient_data"`).
+   - **Correct Skip**: If the Ground Truth Feasibility is a skipped status (e.g. `skipped_insufficient_data` or `skipped_spam_or_test`), and the AI correctly selected that skipped status, it must be awarded a **perfect score (5)** for Accuracy (provided its rationale explaining why it skipped is accurate and logical).
+   - **False Positive (Failed to Skip)**: If the Ground Truth Feasibility is skipped, but the AI generated a summary anyway, it must be scored **1 or 2 (Poor/Unacceptable)**, because it failed to skip a test/spam entry and likely generated hallucinated or useless content.
+   - **False Negative (Incorrectly Skipped)**: If the Ground Truth Feasibility is `"generate"`, but the AI skipped generation, it must be scored **1 or 2 (Poor/Unacceptable)**, because it failed to generate a summary for a legitimate web platform feature.
    - Scoring guide:
-     5 (Excellent): 100% accurate. Correctly captures the core technology, specific JS/CSS namespaces, properties, and browser engine behaviors. Zero actual factual errors, incorrect syntax, or contradictions. Rich in accurate technical details.
+     5 (Excellent): 100% accurate. Core technologies, CSS/JS namespaces, and properties are correct. Zero actual factual errors. Rich in accurate technical details. Or, the AI correctly skipped generation matching the Ground Truth.
      4 (Good): Accurate on all major points. May omit one minor technical detail or contain extremely minor over-simplifications that do not mislead web developers.
-     3 (Satisfactory): Captures the high-level intent, but has noticeable omissions of important details (e.g., misses progressive enhancement support) or contains minor technical inaccuracies.
-     2 (Poor): Contains major technical inaccuracies, incorrect property/API names (actual factual errors), or completely misrepresents a key technical aspect of the feature.
-     1 (Unacceptable): Catastrophic drift. Severe factual errors, placeholders, or completely wrong technical details.
+     3 (Satisfactory): Captures high-level intent, but has noticeable omissions or contains minor technical inaccuracies.
+     2 (Poor): Contains major technical inaccuracies, incorrect property/API names, or the AI's feasibility decision (generate vs skip) is incorrect (e.g., failed to skip a spam/test entry, or incorrectly skipped a legitimate feature).
+     1 (Unacceptable): Catastrophic drift, severe factual errors, or completely wrong feasibility decision (e.g., generating a heavily hallucinated summary for a spam entry).
 
 3. LINKS & BASELINE (Score 1-5):
    - Discovered MDN/web.dev links must be highly relevant to the feature.
-   - **Trust Pre-Verified Statuses**: The AI suggested links have been programmatically pre-verified via HTTP. **You MUST use the pre-verified HTTP statuses provided in the 'Verified Doc Links Status' section below. If a link is marked as 'Valid (HTTP 200 OK)', it is active and correct; do NOT penalize it or guess that it is a 404 based on its path structure.**
-   - The Baseline status (limited, newly, widely) must match the ground truth or be highly justifiable based on documentation.
+   - **Trust Pre-Verified Statuses**: Use the pre-verified HTTP statuses provided. If a link is marked as 'Valid', it is active; do NOT penalize it.
+   - The Baseline status (limited, newly, widely) must match the ground truth.
+   - If the AI correctly decided to skip generation, links/baseline is automatically scored 5 (as no links or baseline dates were expected).
    - Scoring guide:
-     5 (Excellent): Discovered MDN/web.dev links are highly relevant, active, and correct. Baseline status matches the ground truth exactly.
+     5 (Excellent): Discovered MDN/web.dev links are highly relevant, active, and correct. Baseline status matches the ground truth exactly. Or, the AI correctly skipped generation matching the Ground Truth.
      4 (Good): Links are highly relevant and active, but might point to a slightly different (but still valid) guide or reference than the ground truth. Baseline status matches exactly.
-     3 (Satisfactory): Links are correct but somewhat generic or tangential (e.g., pointing to a generic Web/API landing page instead of the specific property page). Baseline status is off by one level (e.g., "newly" instead of "widely") but has a plausible justification.
-     2 (Poor): Includes dead/404 links (verified fake, e.g. placeholders or linking to completely wrong domains), or baseline status is off by more than one level.
-     1 (Unacceptable): All links are broken/generic, or baseline status is completely wrong (e.g., "widely" vs "limited") without any justification.
+     3 (Satisfactory): Links are correct but somewhat generic or tangential. Baseline status is off by one level but has a plausible justification.
+     2 (Poor): Includes dead/404 links (verified fake), or baseline status is off by more than one level, or the AI incorrectly skipped a legitimate feature.
+     1 (Unacceptable): All links are broken, or baseline status is completely wrong without any justification.
 
 Inputs:
 Feature Name: {gt.get('name')}
@@ -278,8 +296,11 @@ Raw Summary: {gt.get('summary')}
 Ground Truth Summary: {gt.get('gt_summary')}
 Ground Truth Doc Links: {gt.get('gt_links')}
 Ground Truth Baseline: {gt.get('gt_baseline')}
+Ground Truth Feasibility (gt_feasibility_decision): {gt_feasibility_decision}
 
 AI Suggestion:
+AI Feasibility Decision (feasibility_decision): {result.feasibility_decision}
+AI Rationale: {result.generation_rationale}
 Suggested Summary: {result.suggested_summary}
 Suggested Doc Links: {result.suggested_doc_links}
 Verified Doc Links Status (Pre-verified via HTTP): {json.dumps(verified_links_status, indent=2)}

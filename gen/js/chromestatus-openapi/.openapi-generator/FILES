@@ -74,6 +74,7 @@ src/models/PostVoteRequest.ts
 src/models/Process.ts
 src/models/ProcessStage.ts
 src/models/ProgressItem.ts
+src/models/ProgressStep.ts
 src/models/RejectUnneededGetRequest.ts
 src/models/ReleaseNotesL10nItem.ts
 src/models/ReleaseNotesL10nResponse.ts

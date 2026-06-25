@@ -501,6 +501,204 @@ export class ChromedashSummaryReviewDialog extends LitElement {
         .feature-context-meta-list a:hover {
           text-decoration: underline;
         }
+
+        /* Global Feature Context Metadata Bar */
+        .global-feature-context {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 1.5rem;
+          background: var(--sl-color-neutral-50);
+          border: 1px solid var(--sl-color-neutral-200);
+          border-radius: var(--sl-input-border-radius-medium);
+          padding: 10px 16px;
+          margin-bottom: 1.5rem;
+          font-size: 0.85rem;
+          color: var(--sl-color-neutral-600);
+          line-height: 1.4;
+        }
+
+        .context-item {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+        }
+
+        .context-label {
+          font-weight: 600;
+          color: var(--sl-color-neutral-800);
+        }
+
+        .context-item a {
+          color: var(--sl-color-primary-600);
+          text-decoration: none;
+        }
+
+        .context-item a:hover {
+          text-decoration: underline;
+        }
+
+        /* AI Rationale Callout Box */
+        .rationale-callout {
+          display: flex;
+          gap: 10px;
+          background: var(--sl-color-primary-50);
+          border-left: 4px solid var(--sl-color-primary-500);
+          padding: 12px;
+          border-radius: 0 4px 4px 0;
+          margin-bottom: 1rem;
+          font-size: 0.85rem;
+          line-height: 1.4;
+          color: var(--sl-color-neutral-800);
+        }
+
+        .rationale-icon {
+          color: var(--sl-color-primary-600);
+          font-size: 1.1rem;
+          margin-top: 1px;
+          flex-shrink: 0;
+        }
+
+        .rationale-label {
+          font-weight: 600;
+          color: var(--sl-color-primary-800);
+          margin-right: 4px;
+        }
+
+        /* Traceability & Console Log details widget */
+        .traceability-details {
+          margin-top: 2rem;
+          border: 1px solid var(--sl-color-neutral-200);
+          border-radius: var(--sl-input-border-radius-medium);
+          background: var(--sl-color-neutral-50);
+          overflow: hidden;
+        }
+
+        .traceability-summary {
+          font-weight: 600;
+          cursor: pointer;
+          color: var(--sl-color-neutral-700);
+          font-size: 0.85rem;
+          user-select: none;
+          padding: 12px 16px;
+          background: var(--sl-color-neutral-100);
+          transition: background-color 0.2s ease;
+        }
+
+        .traceability-summary:hover {
+          background: var(--sl-color-neutral-200);
+        }
+
+        .traceability-content {
+          padding: 16px;
+          border-top: 1px solid var(--sl-color-neutral-200);
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+        }
+
+        /* Call-To-Action (CTA) to edit prompt */
+        .cta-improve-prompt {
+          background: var(--sl-color-success-50);
+          border: 1px solid var(--sl-color-success-200);
+          border-radius: 4px;
+          padding: 12px;
+          font-size: 0.85rem;
+          line-height: 1.5;
+          color: var(--sl-color-success-800);
+          display: flex;
+          align-items: flex-start;
+          gap: 8px;
+        }
+
+        .cta-icon {
+          color: var(--sl-color-success-600);
+          font-size: 1.1rem;
+          margin-top: 1px;
+          flex-shrink: 0;
+        }
+
+        /* Console Log style from chromedash-ai-summary-progress */
+        .traceability-logs-tray {
+          width: 100%;
+          max-height: 160px;
+          overflow-y: auto;
+          background: var(--sl-color-neutral-950);
+          border: 1px solid var(--sl-color-neutral-800);
+          border-radius: 4px;
+          padding: 10px 14px;
+          font-family: var(--sl-font-mono);
+          font-size: 0.75rem;
+          color: var(--sl-color-neutral-300);
+          box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Thin scrollbar for console tray */
+        .traceability-logs-tray::-webkit-scrollbar {
+          width: 6px;
+        }
+        .traceability-logs-tray::-webkit-scrollbar-track {
+          background: var(--sl-color-neutral-950);
+        }
+        .traceability-logs-tray::-webkit-scrollbar-thumb {
+          background: var(--sl-color-neutral-800);
+          border-radius: 3px;
+        }
+
+        .trace-line {
+          display: flex;
+          align-items: flex-start;
+          gap: 10px;
+          line-height: 1.5;
+          margin-bottom: 4px;
+        }
+
+        .trace-line:last-child {
+          margin-bottom: 0;
+        }
+
+        .trace-icon {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          width: 14px;
+          height: 14px;
+          margin-top: 2px;
+        }
+
+        .trace-line.in_progress {
+          color: var(--sl-color-primary-400);
+        }
+        .trace-line.success {
+          color: var(--sl-color-success-400);
+        }
+        .trace-line.failed {
+          color: var(--sl-color-danger-400);
+        }
+        .trace-line.retrying {
+          color: var(--sl-color-warning-400);
+        }
+        .trace-line.pruned-marker-line {
+          color: var(--sl-color-neutral-500);
+          font-style: italic;
+        }
+
+        .trace-time {
+          color: var(--sl-color-neutral-600);
+          user-select: none;
+          min-width: 135px; /* Fits YYYY-MM-DD HH:MM:SS */
+        }
+
+        .trace-msg {
+          flex-grow: 1;
+          word-break: break-word;
+        }
+
+        .trace-elapsed {
+          color: var(--sl-color-neutral-500);
+          text-align: right;
+          min-width: 45px;
+          user-select: none;
+        }
       `,
     ];
   }
@@ -1168,6 +1366,98 @@ export class ChromedashSummaryReviewDialog extends LitElement {
               </div>
             `
           : html`
+              ${
+                this.suggestion?.status === 'skipped'
+                  ? html`
+                      <sl-alert
+                        variant="neutral"
+                        open
+                        style="margin-bottom: 1.5rem; border-left: 4px solid var(--sl-color-neutral-400);"
+                      >
+                        <sl-icon
+                          slot="icon"
+                          name="robot"
+                          style="font-size: 1.25rem; color: var(--sl-color-neutral-600);"
+                        ></sl-icon>
+                        <strong style="color: var(--sl-color-neutral-800);"
+                          >AI Summary Generation Skipped</strong
+                        ><br />
+                        The summary generator evaluated this feature and decided
+                        to skip automatic generation.<br />
+                        <strong>Reason:</strong>
+                        <em
+                          >${this.suggestion.generation_rationale ||
+                          'Insufficient technical details or documentation to generate confidently.'}</em
+                        >
+                      </sl-alert>
+                    `
+                  : nothing
+              }
+
+              <!-- Global Feature Context Metadata Bar (Top-Level) -->
+              <div class="global-feature-context">
+                ${
+                  this.feature?.blink_components?.length
+                    ? html`
+                        <div class="context-item">
+                          <span class="context-label">Blink Components:</span>
+                          <span
+                            >${this.feature.blink_components.join(', ')}</span
+                          >
+                        </div>
+                      `
+                    : nothing
+                }
+                ${
+                  this.feature?.web_feature
+                    ? html`
+                        <div class="context-item">
+                          <span class="context-label">WebDX Feature:</span>
+                          <sl-badge variant="neutral" pill
+                            >${this.feature.web_feature}</sl-badge
+                          >
+                        </div>
+                      `
+                    : nothing
+                }
+                ${
+                  this.feature?.spec_link
+                    ? html`
+                        <div class="context-item">
+                          <span class="context-label">Spec Link:</span>
+                          <a
+                            href="${this.feature.spec_link}"
+                            target="_blank"
+                            rel="noopener"
+                            >Specification</a
+                          >
+                        </div>
+                      `
+                    : nothing
+                }
+                ${
+                  this.feature?.explainer_links?.length
+                    ? html`
+                        <div class="context-item">
+                          <span class="context-label">Explainers:</span>
+                          <span>
+                            ${(this.feature?.explainer_links || []).map(
+                              (link, idx) => html`
+                                <a href="${link}" target="_blank" rel="noopener"
+                                  >Explainer ${idx + 1}</a
+                                >${idx <
+                                (this.feature?.explainer_links || []).length - 1
+                                  ? ', '
+                                  : ''}
+                              `
+                            )}
+                          </span>
+                        </div>
+                      `
+                    : nothing
+                }
+              </div>
+
               <div class="unified-review-grid">
                 <!-- ==================== ROW 1: SUMMARY REVIEW ==================== -->
                 <div class="review-row">
@@ -1180,79 +1470,36 @@ export class ChromedashSummaryReviewDialog extends LitElement {
                     <div class="original-text" data-testid="original-summary">
                       ${this.feature?.summary || 'No summary'}
                     </div>
-
-                    <!-- General Feature Context Metadata -->
-                    <div class="compare-section-divider">
-                      <div class="field-header compare-field-header-margin">
-                        <strong>Feature Context</strong>
-                      </div>
-                      <div class="feature-context-meta-list">
-                        ${this.feature?.blink_components?.length
-                          ? html`
-                              <div>
-                                <strong>Blink Components:</strong>
-                                ${this.feature.blink_components.join(', ')}
-                              </div>
-                            `
-                          : nothing}
-                        ${this.feature?.spec_link
-                          ? html`
-                              <div>
-                                <strong>Spec Link:</strong>
-                                <a
-                                  href="${this.feature.spec_link}"
-                                  target="_blank"
-                                  rel="noopener"
-                                  >Specification</a
-                                >
-                              </div>
-                            `
-                          : nothing}
-                        ${this.feature?.explainer_links?.length
-                          ? html`
-                              <div>
-                                <strong>Explainers:</strong>
-                                ${(this.feature?.explainer_links || []).map(
-                                  (link, idx) => html`
-                                    <a
-                                      href="${link}"
-                                      target="_blank"
-                                      rel="noopener"
-                                      >Explainer ${idx + 1}</a
-                                    >${idx <
-                                    (this.feature?.explainer_links || [])
-                                      .length -
-                                      1
-                                      ? ', '
-                                      : ''}
-                                  `
-                                )}
-                              </div>
-                            `
-                          : nothing}
-                      </div>
-                    </div>
                   </div>
 
                   <!-- Right Column: Interactive Workspace (Draft) -->
                   <div class="review-cell right-cell">
                     <h4 class="section-title">Interactive Workspace (Draft)</h4>
+
                     <div class="field-header">
-                      <strong>Final Summary Draft</strong>
-                      <sl-button-group label="Copy original or suggested text">
-                        <sl-button
-                          size="small"
-                          @click=${this.useOriginalSummaryOnly}
-                          ?disabled=${this.submitting}
-                          >Use Original</sl-button
-                        >
-                        <sl-button
-                          size="small"
-                          @click=${this.useAISummaryOnly}
-                          ?disabled=${this.submitting}
-                          >Use AI</sl-button
-                        >
-                      </sl-button-group>
+                      <strong>Final Summary Draft ${this.suggestion?.status === 'skipped' ? '(Manual Workspace)' : ''}</strong>
+                      ${
+                        this.suggestion?.status !== 'skipped'
+                          ? html`
+                              <sl-button-group
+                                label="Copy original or suggested text"
+                              >
+                                <sl-button
+                                  size="small"
+                                  @click=${this.useOriginalSummaryOnly}
+                                  ?disabled=${this.submitting}
+                                  >Use Original</sl-button
+                                >
+                                <sl-button
+                                  size="small"
+                                  @click=${this.useAISummaryOnly}
+                                  ?disabled=${this.submitting}
+                                  >Use AI</sl-button
+                                >
+                              </sl-button-group>
+                            `
+                          : nothing
+                      }
                     </div>
 
                     <!-- Tabbed Text Area Card -->
@@ -1263,9 +1510,9 @@ export class ChromedashSummaryReviewDialog extends LitElement {
                         aria-label="Draft tabs"
                       >
                         <button
-                          class="tab-btn ${this.activeTab === 'write'
-                            ? 'active'
-                            : ''}"
+                          class="tab-btn ${
+                            this.activeTab === 'write' ? 'active' : ''
+                          }"
                           role="tab"
                           aria-selected=${this.activeTab === 'write'}
                           @click=${() => {
@@ -1275,9 +1522,9 @@ export class ChromedashSummaryReviewDialog extends LitElement {
                           Write
                         </button>
                         <button
-                          class="tab-btn ${this.activeTab === 'preview'
-                            ? 'active'
-                            : ''}"
+                          class="tab-btn ${
+                            this.activeTab === 'preview' ? 'active' : ''
+                          }"
                           role="tab"
                           aria-selected=${this.activeTab === 'preview'}
                           @click=${() => {
@@ -1288,27 +1535,29 @@ export class ChromedashSummaryReviewDialog extends LitElement {
                         </button>
                       </div>
 
-                      ${this.activeTab === 'write'
-                        ? html`
-                            <sl-textarea
-                              class="editable-summary-textarea"
-                              aria-label="Suggested Summary"
-                              .value=${this.summaryText}
-                              ?disabled=${this.submitting}
-                              @sl-input=${(e: Event) => {
-                                const target = e.target;
-                                if (target && 'value' in target) {
-                                  this.summaryText = String(target.value);
-                                  this.isDirty = true;
-                                }
-                              }}
-                            ></sl-textarea>
-                          `
-                        : html`
-                            <div class="preview-container">
-                              ${autolink(this.summaryText, [], true)}
-                            </div>
-                          `}
+                      ${
+                        this.activeTab === 'write'
+                          ? html`
+                              <sl-textarea
+                                class="editable-summary-textarea"
+                                aria-label="Suggested Summary"
+                                .value=${this.summaryText}
+                                ?disabled=${this.submitting}
+                                @sl-input=${(e: Event) => {
+                                  const target = e.target;
+                                  if (target && 'value' in target) {
+                                    this.summaryText = String(target.value);
+                                    this.isDirty = true;
+                                  }
+                                }}
+                              ></sl-textarea>
+                            `
+                          : html`
+                              <div class="preview-container">
+                                ${autolink(this.summaryText, [], true)}
+                              </div>
+                            `
+                      }
                     </div>
                   </div>
                 </div>
@@ -1321,16 +1570,18 @@ export class ChromedashSummaryReviewDialog extends LitElement {
                       <strong>Original Doc Links</strong>
                     </div>
                     <div class="original-links">
-                      ${this.feature?.resources?.docs?.length
-                        ? this.feature.resources.docs.map(
-                            link => html`
-                              <div class="original-link-row">
-                                &bull;
-                                <a href=${link} target="_blank">${link}</a>
-                              </div>
-                            `
-                          )
-                        : 'No doc links'}
+                      ${
+                        this.feature?.resources?.docs?.length
+                          ? this.feature.resources.docs.map(
+                              link => html`
+                                <div class="original-link-row">
+                                  &bull;
+                                  <a href=${link} target="_blank">${link}</a>
+                                </div>
+                              `
+                            )
+                          : 'No doc links'
+                      }
                     </div>
                   </div>
 
@@ -1447,10 +1698,11 @@ export class ChromedashSummaryReviewDialog extends LitElement {
                       <div class="baseline-radio-group">
                         <!-- Option 1: None (No Baseline Status) -->
                         <div
-                          class="baseline-card ${this.editingBaselineStatus ===
-                          'none'
-                            ? 'selected'
-                            : ''}"
+                          class="baseline-card ${
+                            this.editingBaselineStatus === 'none'
+                              ? 'selected'
+                              : ''
+                          }"
                           @click=${() => this.selectBaselineStatus('none')}
                         >
                           <div class="baseline-card-header">
@@ -1462,16 +1714,18 @@ export class ChromedashSummaryReviewDialog extends LitElement {
                                 None (No Baseline Status)
                               </sl-radio>
                             </div>
-                            ${this.suggestion?.original_baseline_status ===
-                              'none' ||
-                            !this.suggestion?.original_baseline_status
-                              ? html`<sl-tag
-                                  size="small"
-                                  variant="neutral"
-                                  class="baseline-card-badge"
-                                  >Original</sl-tag
-                                >`
-                              : nothing}
+                            ${
+                              this.suggestion?.original_baseline_status ===
+                                'none' ||
+                              !this.suggestion?.original_baseline_status
+                                ? html`<sl-tag
+                                    size="small"
+                                    variant="neutral"
+                                    class="baseline-card-badge"
+                                    >Original</sl-tag
+                                  >`
+                                : nothing
+                            }
                           </div>
                           <div class="baseline-card-description">
                             Keep this feature without a baseline status, or
@@ -1481,13 +1735,15 @@ export class ChromedashSummaryReviewDialog extends LitElement {
 
                         <!-- Option 2: Baseline Limited -->
                         <div
-                          class="baseline-card ${this.editingBaselineStatus ===
-                          'limited'
-                            ? 'selected'
-                            : ''} ${this.suggestion?.baseline_status ===
-                          'limited'
-                            ? 'ai-suggested'
-                            : ''}"
+                          class="baseline-card ${
+                            this.editingBaselineStatus === 'limited'
+                              ? 'selected'
+                              : ''
+                          } ${
+                            this.suggestion?.baseline_status === 'limited'
+                              ? 'ai-suggested'
+                              : ''
+                          }"
                           @click=${() => this.selectBaselineStatus('limited')}
                         >
                           <div class="baseline-card-header">
@@ -1509,23 +1765,27 @@ export class ChromedashSummaryReviewDialog extends LitElement {
                               </sl-radio>
                             </div>
                             <div style="display: flex; gap: 4px;">
-                              ${this.suggestion?.baseline_status === 'limited'
-                                ? html`<sl-tag
-                                    size="small"
-                                    variant="primary"
-                                    class="baseline-card-badge"
-                                    >AI Suggested</sl-tag
-                                  >`
-                                : nothing}
-                              ${this.suggestion?.original_baseline_status ===
-                              'limited'
-                                ? html`<sl-tag
-                                    size="small"
-                                    variant="neutral"
-                                    class="baseline-card-badge"
-                                    >Original</sl-tag
-                                  >`
-                                : nothing}
+                              ${
+                                this.suggestion?.baseline_status === 'limited'
+                                  ? html`<sl-tag
+                                      size="small"
+                                      variant="primary"
+                                      class="baseline-card-badge"
+                                      >AI Suggested</sl-tag
+                                    >`
+                                  : nothing
+                              }
+                              ${
+                                this.suggestion?.original_baseline_status ===
+                                'limited'
+                                  ? html`<sl-tag
+                                      size="small"
+                                      variant="neutral"
+                                      class="baseline-card-badge"
+                                      >Original</sl-tag
+                                    >`
+                                  : nothing
+                              }
                             </div>
                           </div>
                           <div class="baseline-card-description">
@@ -1536,12 +1796,15 @@ export class ChromedashSummaryReviewDialog extends LitElement {
 
                         <!-- Option 3: Baseline Newly Available -->
                         <div
-                          class="baseline-card ${this.editingBaselineStatus ===
-                          'newly'
-                            ? 'selected'
-                            : ''} ${this.suggestion?.baseline_status === 'newly'
-                            ? 'ai-suggested'
-                            : ''}"
+                          class="baseline-card ${
+                            this.editingBaselineStatus === 'newly'
+                              ? 'selected'
+                              : ''
+                          } ${
+                            this.suggestion?.baseline_status === 'newly'
+                              ? 'ai-suggested'
+                              : ''
+                          }"
                           @click=${() => this.selectBaselineStatus('newly')}
                         >
                           <div class="baseline-card-header">
@@ -1563,23 +1826,27 @@ export class ChromedashSummaryReviewDialog extends LitElement {
                               </sl-radio>
                             </div>
                             <div style="display: flex; gap: 4px;">
-                              ${this.suggestion?.baseline_status === 'newly'
-                                ? html`<sl-tag
-                                    size="small"
-                                    variant="primary"
-                                    class="baseline-card-badge"
-                                    >AI Suggested</sl-tag
-                                  >`
-                                : nothing}
-                              ${this.suggestion?.original_baseline_status ===
-                              'newly'
-                                ? html`<sl-tag
-                                    size="small"
-                                    variant="neutral"
-                                    class="baseline-card-badge"
-                                    >Original</sl-tag
-                                  >`
-                                : nothing}
+                              ${
+                                this.suggestion?.baseline_status === 'newly'
+                                  ? html`<sl-tag
+                                      size="small"
+                                      variant="primary"
+                                      class="baseline-card-badge"
+                                      >AI Suggested</sl-tag
+                                    >`
+                                  : nothing
+                              }
+                              ${
+                                this.suggestion?.original_baseline_status ===
+                                'newly'
+                                  ? html`<sl-tag
+                                      size="small"
+                                      variant="neutral"
+                                      class="baseline-card-badge"
+                                      >Original</sl-tag
+                                    >`
+                                  : nothing
+                              }
                             </div>
                           </div>
                           <div class="baseline-card-description">
@@ -1588,36 +1855,40 @@ export class ChromedashSummaryReviewDialog extends LitElement {
                           </div>
 
                           <!-- Embedded Conditional Newly Available Date Picker -->
-                          ${this.editingBaselineStatus === 'newly'
-                            ? html`
-                                <div
-                                  class="baseline-card-dates"
-                                  @click=${(e: Event) => e.stopPropagation()}
-                                >
-                                  <sl-input
-                                    type="date"
-                                    size="small"
-                                    label="Newly Available Date"
-                                    .value=${this.editingBaselineNewlyDate ||
-                                    ''}
-                                    ?disabled=${this.submitting}
-                                    @sl-input=${this.handleNewlyDateChange}
-                                    required
-                                  ></sl-input>
-                                </div>
-                              `
-                            : nothing}
+                          ${
+                            this.editingBaselineStatus === 'newly'
+                              ? html`
+                                  <div
+                                    class="baseline-card-dates"
+                                    @click=${(e: Event) => e.stopPropagation()}
+                                  >
+                                    <sl-input
+                                      type="date"
+                                      size="small"
+                                      label="Newly Available Date"
+                                      .value=${this.editingBaselineNewlyDate ||
+                                      ''}
+                                      ?disabled=${this.submitting}
+                                      @sl-input=${this.handleNewlyDateChange}
+                                      required
+                                    ></sl-input>
+                                  </div>
+                                `
+                              : nothing
+                          }
                         </div>
 
                         <!-- Option 4: Baseline Widely Available -->
                         <div
-                          class="baseline-card ${this.editingBaselineStatus ===
-                          'widely'
-                            ? 'selected'
-                            : ''} ${this.suggestion?.baseline_status ===
-                          'widely'
-                            ? 'ai-suggested'
-                            : ''}"
+                          class="baseline-card ${
+                            this.editingBaselineStatus === 'widely'
+                              ? 'selected'
+                              : ''
+                          } ${
+                            this.suggestion?.baseline_status === 'widely'
+                              ? 'ai-suggested'
+                              : ''
+                          }"
                           @click=${() => this.selectBaselineStatus('widely')}
                         >
                           <div class="baseline-card-header">
@@ -1639,23 +1910,27 @@ export class ChromedashSummaryReviewDialog extends LitElement {
                               </sl-radio>
                             </div>
                             <div style="display: flex; gap: 4px;">
-                              ${this.suggestion?.baseline_status === 'widely'
-                                ? html`<sl-tag
-                                    size="small"
-                                    variant="primary"
-                                    class="baseline-card-badge"
-                                    >AI Suggested</sl-tag
-                                  >`
-                                : nothing}
-                              ${this.suggestion?.original_baseline_status ===
-                              'widely'
-                                ? html`<sl-tag
-                                    size="small"
-                                    variant="neutral"
-                                    class="baseline-card-badge"
-                                    >Original</sl-tag
-                                  >`
-                                : nothing}
+                              ${
+                                this.suggestion?.baseline_status === 'widely'
+                                  ? html`<sl-tag
+                                      size="small"
+                                      variant="primary"
+                                      class="baseline-card-badge"
+                                      >AI Suggested</sl-tag
+                                    >`
+                                  : nothing
+                              }
+                              ${
+                                this.suggestion?.original_baseline_status ===
+                                'widely'
+                                  ? html`<sl-tag
+                                      size="small"
+                                      variant="neutral"
+                                      class="baseline-card-badge"
+                                      >Original</sl-tag
+                                    >`
+                                  : nothing
+                              }
                             </div>
                           </div>
                           <div class="baseline-card-description">
@@ -1664,35 +1939,37 @@ export class ChromedashSummaryReviewDialog extends LitElement {
                           </div>
 
                           <!-- Embedded Conditional Widely Available Date Pickers -->
-                          ${this.editingBaselineStatus === 'widely'
-                            ? html`
-                                <div
-                                  class="baseline-card-dates"
-                                  @click=${(e: Event) => e.stopPropagation()}
-                                >
-                                  <sl-input
-                                    type="date"
-                                    size="small"
-                                    label="Newly Available Date"
-                                    .value=${this.editingBaselineNewlyDate ||
-                                    ''}
-                                    ?disabled=${this.submitting}
-                                    @sl-input=${this.handleNewlyDateChange}
-                                    required
-                                  ></sl-input>
-                                  <sl-input
-                                    type="date"
-                                    size="small"
-                                    label="Widely Available Date"
-                                    .value=${this.editingBaselineWidelyDate ||
-                                    ''}
-                                    ?disabled=${this.submitting}
-                                    @sl-input=${this.handleWidelyDateChange}
-                                    required
-                                  ></sl-input>
-                                </div>
-                              `
-                            : nothing}
+                          ${
+                            this.editingBaselineStatus === 'widely'
+                              ? html`
+                                  <div
+                                    class="baseline-card-dates"
+                                    @click=${(e: Event) => e.stopPropagation()}
+                                  >
+                                    <sl-input
+                                      type="date"
+                                      size="small"
+                                      label="Newly Available Date"
+                                      .value=${this.editingBaselineNewlyDate ||
+                                      ''}
+                                      ?disabled=${this.submitting}
+                                      @sl-input=${this.handleNewlyDateChange}
+                                      required
+                                    ></sl-input>
+                                    <sl-input
+                                      type="date"
+                                      size="small"
+                                      label="Widely Available Date"
+                                      .value=${this.editingBaselineWidelyDate ||
+                                      ''}
+                                      ?disabled=${this.submitting}
+                                      @sl-input=${this.handleWidelyDateChange}
+                                      required
+                                    ></sl-input>
+                                  </div>
+                                `
+                              : nothing
+                          }
                         </div>
                       </div>
                     </sl-radio-group>
@@ -1700,87 +1977,280 @@ export class ChromedashSummaryReviewDialog extends LitElement {
                 </div>
               </div>
 
-              ${this.showBypassUI
-                ? html`
-                    <div class="bypass-container">
-                      <sl-textarea
-                        name="bypass_justification"
-                        label="Bypass Justification (Required)"
-                        placeholder="Explain why you are bypassing the feature owner..."
-                        .value=${this.bypassJustification}
-                        ?disabled=${this.submitting}
-                        @sl-input=${(e: Event) => {
-                          const target = e.target;
-                          if (target && 'value' in target) {
-                            this.bypassJustification = String(target.value);
-                          }
-                        }}
-                      ></sl-textarea>
-                    </div>
-                  `
-                : nothing}
+              <!-- AI Rationale Expandable Details (Full-Width) -->
+              ${
+                this.suggestion?.generation_rationale
+                  ? html`
+                      <details class="rationale-details" open>
+                        <summary class="rationale-summary">
+                          <sl-icon
+                            class="rationale-icon"
+                            name="lightbulb-fill"
+                          ></sl-icon>
+                          💡 AI Generation & Enrichment Rationale
+                        </summary>
+                        <div class="rationale-content">
+                          <div class="rationale-markdown-body">
+                            ${autolink(
+                              this.suggestion.generation_rationale,
+                              [],
+                              true
+                            )}
+                          </div>
+                        </div>
+                      </details>
+                    `
+                  : nothing
+              }
 
-              <div slot="footer">
-                <div class="dialog-footer-container">
-                  ${this.errorMessage
-                    ? html`<div class="error-message">
-                        ${this.errorMessage}
-                      </div>`
-                    : nothing}
-                  <div class="dialog-footer">
-                    <sl-button
-                      variant="danger"
-                      outline
-                      ?loading=${this.submitting}
-                      ?disabled=${this.submitting || this.showBypassUI}
-                      @click=${this.discardSuggestion}
-                    >
-                      Discard Suggestion
-                    </sl-button>
-                    <div class="dialog-footer-actions">
-                      <sl-button
-                        ?disabled=${this.submitting}
-                        @click=${this.hide}
-                        >Cancel</sl-button
-                      >
-                      ${this.showBypassUI
-                        ? html`
-                            <sl-button
-                              ?disabled=${this.submitting}
-                              @click=${() => {
-                                this.showBypassUI = false;
-                              }}
+              <!-- Traceability Details & Console Logs (Bottom-Level, Full-Width) -->
+              <details class="traceability-details">
+                  <summary class="traceability-summary">
+                    🔍 View Generation & Traceability Logs
+                  </summary>
+                  <div class="traceability-content">
+                    <!-- Prompt Improvement CTA -->
+                    <div class="cta-improve-prompt">
+                      <sl-icon class="cta-icon" name="info-circle"></sl-icon>
+                      <div>
+                        <strong
+                          >Want to improve the AI release notes
+                          summaries?</strong
+                        >
+                        You can edit the system guidelines and prompt template
+                        in the codebase at
+                        <code>framework/prompts/v2.md</code>, or read the
+                        guidelines in the <code>README.md</code>. Work with
+                        DevRel and writing experts to iterate on prompt styling!
+                      </div>
+                    </div>
+
+                    <!-- Trace logs console -->
+                    <div class="traceability-logs-tray">
+                      ${
+                        this.suggestion?.progress_steps?.length
+                          ? this.suggestion.progress_steps.map(step => {
+                              const is_success = step.status === 'success';
+                              const is_failed = step.status === 'failed';
+                              const is_in_progress =
+                                step.status === 'in_progress';
+                              const is_retrying = step.status === 'retrying';
+
+                              // Format duration
+                              let elapsed = '';
+                              if (step.start_timestamp) {
+                                const start = new Date(
+                                  step.start_timestamp
+                                ).getTime();
+                                const end = step.end_timestamp
+                                  ? new Date(step.end_timestamp).getTime()
+                                  : Date.now();
+                                const diffMs = end - start;
+                                elapsed =
+                                  diffMs < 100
+                                    ? '+0.1s'
+                                    : `+${(diffMs / 1000).toFixed(1)}s`;
+                              }
+
+                              // Format time with YYYY-MM-DD HH:MM:SS
+                              let formattedTime = '';
+                              if (step.start_timestamp) {
+                                const d = new Date(step.start_timestamp);
+                                const yr = d.getFullYear();
+                                const mo = String(d.getMonth() + 1).padStart(
+                                  2,
+                                  '0'
+                                );
+                                const dy = String(d.getDate()).padStart(2, '0');
+                                const time = d.toLocaleTimeString([], {
+                                  hour: '2-digit',
+                                  minute: '2-digit',
+                                  second: '2-digit',
+                                  hour12: false,
+                                });
+                                formattedTime = `${yr}-${mo}-${dy} ${time}`;
+                              }
+
+                              return html`
+                                <div class="trace-line ${step.status}">
+                                  <span class="trace-icon">
+                                    ${is_in_progress
+                                      ? html`<div
+                                          class="timeline-spinner"
+                                        ></div>`
+                                      : nothing}
+                                    ${is_retrying
+                                      ? html`<div
+                                          class="timeline-spinner"
+                                          style="border-style: dotted;"
+                                        ></div>`
+                                      : nothing}
+                                    ${is_success
+                                      ? html`
+                                          <svg
+                                            width="12"
+                                            height="12"
+                                            viewBox="0 0 24 24"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            stroke-width="3"
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                          >
+                                            <polyline
+                                              points="20 6 9 17 4 12"
+                                            ></polyline>
+                                          </svg>
+                                        `
+                                      : nothing}
+                                    ${is_failed
+                                      ? html`
+                                          <svg
+                                            width="12"
+                                            height="12"
+                                            viewBox="0 0 24 24"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            stroke-width="3"
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                          >
+                                            <line
+                                              x1="18"
+                                              y1="6"
+                                              x2="6"
+                                              y2="18"
+                                            ></line>
+                                            <line
+                                              x1="6"
+                                              y1="6"
+                                              x2="18"
+                                              y2="18"
+                                            ></line>
+                                          </svg>
+                                        `
+                                      : nothing}
+                                  </span>
+                                  <span class="trace-time"
+                                    >${formattedTime}</span
+                                  >
+                                  <span class="trace-msg">${step.message}</span>
+                                  <span class="trace-elapsed">
+                                    ${is_in_progress || is_retrying
+                                      ? 'active'
+                                      : elapsed}
+                                  </span>
+                                </div>
+                              `;
+                            })
+                          : html`<div
+                              style="color: var(--sl-color-neutral-500); font-style: italic;"
                             >
-                              Cancel Bypass
-                            </sl-button>
-                            <sl-button
-                              variant=${this.bypassAction === 'discard'
-                                ? 'danger'
-                                : 'primary'}
-                              ?loading=${this.submitting}
-                              ?disabled=${this.submitting ||
-                              !this.bypassJustification.trim()}
-                              @click=${this.bypassAction === 'discard'
-                                ? this.discardSuggestion
-                                : this.applySuggestion}
-                            >
-                              Confirm
-                              ${this.bypassAction === 'discard'
-                                ? 'Discard'
-                                : 'Apply'}
-                              Bypass
-                            </sl-button>
-                          `
-                        : html`
-                            <sl-button
-                              variant="primary"
-                              ?loading=${this.submitting}
-                              ?disabled=${this.submitting}
-                              @click=${this.applySuggestion}
-                            >
-                              Save & Apply
-                            </sl-button>
-                          `}
+                              No logs available for this suggestion.
+                            </div>`
+                      }
+                    </div>
+                  </div>
+                </details>
+
+                ${
+                  this.showBypassUI
+                    ? html`
+                        <div class="bypass-container">
+                          <sl-textarea
+                            name="bypass_justification"
+                            label="Bypass Justification (Required)"
+                            placeholder="Explain why you are bypassing the feature owner..."
+                            .value=${this.bypassJustification}
+                            ?disabled=${this.submitting}
+                            @sl-input=${(e: Event) => {
+                              const target = e.target;
+                              if (target && 'value' in target) {
+                                this.bypassJustification = String(target.value);
+                              }
+                            }}
+                          ></sl-textarea>
+                        </div>
+                      `
+                    : nothing
+                }
+
+                <div slot="footer">
+                  <div class="dialog-footer-container">
+                    ${
+                      this.errorMessage
+                        ? html`<div class="error-message">
+                            ${this.errorMessage}
+                          </div>`
+                        : nothing
+                    }
+                    <div class="dialog-footer">
+                      ${
+                        this.suggestion?.status !== 'skipped'
+                          ? html`
+                              <sl-button
+                                variant="danger"
+                                outline
+                                ?loading=${this.submitting}
+                                ?disabled=${this.submitting ||
+                                this.showBypassUI}
+                                @click=${this.discardSuggestion}
+                              >
+                                Discard Suggestion
+                              </sl-button>
+                            `
+                          : nothing
+                      }
+                      <div class="dialog-footer-actions">
+                        <sl-button
+                          ?disabled=${this.submitting}
+                          @click=${this.hide}
+                        >
+                          ${this.suggestion?.status === 'skipped' ? 'Acknowledge Skip' : 'Cancel'}
+                        </sl-button>
+                        ${
+                          this.showBypassUI
+                            ? html`
+                                <sl-button
+                                  ?disabled=${this.submitting}
+                                  @click=${() => {
+                                    this.showBypassUI = false;
+                                  }}
+                                >
+                                  Cancel Bypass
+                                </sl-button>
+                                <sl-button
+                                  variant=${this.bypassAction === 'discard'
+                                    ? 'danger'
+                                    : 'primary'}
+                                  ?loading=${this.submitting}
+                                  ?disabled=${this.submitting ||
+                                  !this.bypassJustification.trim()}
+                                  @click=${this.bypassAction === 'discard'
+                                    ? this.discardSuggestion
+                                    : this.applySuggestion}
+                                >
+                                  Confirm
+                                  ${this.bypassAction === 'discard'
+                                    ? 'Discard'
+                                    : 'Apply'}
+                                  Bypass
+                                </sl-button>
+                              `
+                            : html`
+                                <sl-button
+                                  variant="primary"
+                                  ?loading=${this.submitting}
+                                  ?disabled=${this.submitting}
+                                  @click=${this.applySuggestion}
+                                >
+                                  ${this.suggestion?.status === 'skipped'
+                                    ? 'Save & Apply Manual'
+                                    : 'Save & Apply'}
+                                </sl-button>
+                              `
+                        }
+                      </div>
                     </div>
                   </div>
                 </div>

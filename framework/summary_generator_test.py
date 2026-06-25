@@ -59,14 +59,18 @@ class SummaryGeneratorTest(testing_config.CustomTestCase):
 
         # Set up runner mock response events
         mock_event = mock.Mock()
+        mock_event.get_function_calls.return_value = []
+        mock_event.get_function_responses.return_value = []
         mock_event.content = mock.Mock()
         mock_event.content.role = 'model'
         mock_part = mock.Mock()
         mock_part.text = """
         {
+            "feasibility_decision": "generate",
             "suggested_summary": "A simplified overview of the feature.",
             "suggested_doc_links": ["https://developer.mozilla.org/docs/Web/API"],
-            "baseline_status": "limited"
+            "baseline_status": "limited",
+            "generation_rationale": "Enriched with MDN reference links."
         }
         """
         mock_event.content.parts = [mock_part]
@@ -106,9 +110,11 @@ class SummaryGeneratorTest(testing_config.CustomTestCase):
     def test_generate_summary_suggestion__success(self, mock_gen_summary):
         """Ensure successful orchestration saves COMPLETE suggestion to DB."""
         mock_schema = summary_generator.SummaryResponseSchema(
+            feasibility_decision='generate',
             suggested_summary='AI summary text.',
             suggested_doc_links=['https://mdn.example.com'],
             baseline_status='limited',
+            generation_rationale='Enriched with MDN reference links.',
         )
         mock_gen_summary.return_value = mock_schema
 
@@ -175,15 +181,21 @@ class SummaryGeneratorTest(testing_config.CustomTestCase):
         suggestion.put()
 
         mock_gen_summary.return_value = summary_generator.SummaryResponseSchema(
+            feasibility_decision='generate',
             suggested_summary='New AI summary.',
             suggested_doc_links=[],
             baseline_status='widely',
+            generation_rationale='Enriched with W3C specification links.',
         )
 
         summary_generator.generate_summary_suggestion(12345, force=True)
 
         # generate_summary_for_feature should be called
-        mock_gen_summary.assert_called_once_with(mock.ANY, prompt_version=summary_generator.GENERATOR_VERSION)
+        mock_gen_summary.assert_called_once_with(
+            mock.ANY,
+            prompt_version=summary_generator.GENERATOR_VERSION,
+            run_id=mock.ANY,
+        )
 
     @mock.patch('framework.summary_generator.generate_summary_for_feature')
     def test_generate_summary_suggestion__skip_discarded_fingerprint(
@@ -233,10 +245,12 @@ class SummaryGeneratorTest(testing_config.CustomTestCase):
 
         # Mock generator output for the new generation
         mock_gen_summary.return_value = summary_generator.SummaryResponseSchema(
+            feasibility_decision='generate',
             suggested_summary='New LLM suggestion summary.',
             suggested_doc_links=['https://mdn.example.com/new'],
             baseline_status='newly',
             baseline_newly_date='2024-03-20',
+            generation_rationale='Enriched with newer MDN documents.',
         )
 
         summary_generator.generate_summary_suggestion(12345, force=True)
@@ -431,13 +445,13 @@ class SummaryGeneratorToolsTest(testing_config.CustomTestCase):
 
     @mock.patch('framework.summary_generator.requests.get')
     @mock.patch('framework.summary_generator.requests.head')
-    def test_verify_link__success_head(self, mock_head, mock_get):
-        """Ensure verify_link succeeds if HEAD request returns 200."""
+    def test_verify_doc_link__success_head(self, mock_head, mock_get):
+        """Ensure verify_doc_link succeeds if HEAD request returns 200."""
         mock_resp = mock.Mock()
         mock_resp.status_code = 200
         mock_head.return_value = mock_resp
 
-        result = summary_generator.verify_link('https://example.com')
+        result = summary_generator.verify_doc_link('https://developer.mozilla.org/en-US/')
 
         self.assertEqual(result, 'Valid')
         mock_head.assert_called_once()
@@ -445,8 +459,8 @@ class SummaryGeneratorToolsTest(testing_config.CustomTestCase):
 
     @mock.patch('framework.summary_generator.requests.get')
     @mock.patch('framework.summary_generator.requests.head')
-    def test_verify_link__success_get_fallback(self, mock_head, mock_get):
-        """Ensure verify_link falls back to GET if HEAD request returns non-200 and succeeds."""
+    def test_verify_doc_link__success_get_fallback(self, mock_head, mock_get):
+        """Ensure verify_doc_link falls back to GET if HEAD request returns non-200 and succeeds."""
         mock_resp_head = mock.Mock()
         mock_resp_head.status_code = 405  # Method Not Allowed
         mock_head.return_value = mock_resp_head
@@ -455,7 +469,7 @@ class SummaryGeneratorToolsTest(testing_config.CustomTestCase):
         mock_resp_get.status_code = 200
         mock_get.return_value = mock_resp_get
 
-        result = summary_generator.verify_link('https://example.com')
+        result = summary_generator.verify_doc_link('https://developer.mozilla.org/en-US/')
 
         self.assertEqual(result, 'Valid')
         mock_head.assert_called_once()
@@ -463,8 +477,8 @@ class SummaryGeneratorToolsTest(testing_config.CustomTestCase):
 
     @mock.patch('framework.summary_generator.requests.get')
     @mock.patch('framework.summary_generator.requests.head')
-    def test_verify_link__failure(self, mock_head, mock_get):
-        """Ensure verify_link returns failure string if both HEAD and GET fail."""
+    def test_verify_doc_link__failure(self, mock_head, mock_get):
+        """Ensure verify_doc_link returns failure string if both HEAD and GET fail."""
         mock_resp_head = mock.Mock()
         mock_resp_head.status_code = 404
         mock_head.return_value = mock_resp_head
@@ -473,15 +487,69 @@ class SummaryGeneratorToolsTest(testing_config.CustomTestCase):
         mock_resp_get.status_code = 404
         mock_get.return_value = mock_resp_get
 
-        result = summary_generator.verify_link('https://example.com')
+        result = summary_generator.verify_doc_link('https://developer.mozilla.org/en-US/')
 
         self.assertEqual(result, 'Invalid status: 404')
 
     @mock.patch('framework.summary_generator.requests.head')
-    def test_verify_link__exception(self, mock_head):
-        """Ensure verify_link handles network exceptions gracefully."""
+    def test_verify_doc_link__exception(self, mock_head):
+        """Ensure verify_doc_link handles network exceptions gracefully."""
         mock_head.side_effect = Exception('Host not found')
 
-        result = summary_generator.verify_link('https://example.com')
+        result = summary_generator.verify_doc_link('https://developer.mozilla.org/en-US/')
 
         self.assertEqual(result, 'Error: Host not found')
+
+    def test_is_safe_url__spec_allowlist(self):
+        """Ensure is_safe_url correctly filters domains against ALLOWED_SPEC_DOMAINS."""
+        # Allowed spec domains
+        self.assertTrue(summary_generator.is_safe_url('https://w3.org/TR/css-paint/', summary_generator.ALLOWED_SPEC_DOMAINS))
+        self.assertTrue(summary_generator.is_safe_url('https://drafts.csswg.org/css-grid/', summary_generator.ALLOWED_SPEC_DOMAINS))
+        self.assertTrue(summary_generator.is_safe_url('https://w3c.github.io/webgpu/', summary_generator.ALLOWED_SPEC_DOMAINS))
+        self.assertTrue(summary_generator.is_safe_url('https://github.com/w3c/explainer', summary_generator.ALLOWED_SPEC_DOMAINS))
+        
+        # Blocked domains (even if allowed in other lists, e.g. MDN)
+        self.assertFalse(summary_generator.is_safe_url('https://developer.mozilla.org', summary_generator.ALLOWED_SPEC_DOMAINS))
+        self.assertFalse(summary_generator.is_safe_url('https://web.dev/popover', summary_generator.ALLOWED_SPEC_DOMAINS))
+        self.assertFalse(summary_generator.is_safe_url('https://evilsite.ru/exploit', summary_generator.ALLOWED_SPEC_DOMAINS))
+
+    def test_is_safe_url__explainer_allowlist(self):
+        """Ensure is_safe_url correctly filters domains against ALLOWED_EXPLAINER_DOMAINS."""
+        # Allowed explainer domains
+        self.assertTrue(summary_generator.is_safe_url('https://github.com/w3c/explainer', summary_generator.ALLOWED_EXPLAINER_DOMAINS))
+        self.assertTrue(summary_generator.is_safe_url('https://raw.githubusercontent.com/explain.md', summary_generator.ALLOWED_EXPLAINER_DOMAINS))
+        
+        # Blocked domains (e.g. MDN or CSSWG)
+        self.assertFalse(summary_generator.is_safe_url('https://developer.mozilla.org', summary_generator.ALLOWED_EXPLAINER_DOMAINS))
+        self.assertFalse(summary_generator.is_safe_url('https://drafts.csswg.org/css-grid/', summary_generator.ALLOWED_EXPLAINER_DOMAINS))
+
+    def test_is_safe_url__doc_allowlist(self):
+        """Ensure is_safe_url correctly filters domains against ALLOWED_DOC_DOMAINS."""
+        # Allowed doc domains
+        self.assertTrue(summary_generator.is_safe_url('https://developer.mozilla.org/en-US/', summary_generator.ALLOWED_DOC_DOMAINS))
+        self.assertTrue(summary_generator.is_safe_url('https://web.dev/popover/', summary_generator.ALLOWED_DOC_DOMAINS))
+        
+        # Blocked domains (e.g. GitHub or W3C specs)
+        self.assertFalse(summary_generator.is_safe_url('https://github.com/w3c/explainer', summary_generator.ALLOWED_DOC_DOMAINS))
+        self.assertFalse(summary_generator.is_safe_url('https://w3.org/TR/css-paint/', summary_generator.ALLOWED_DOC_DOMAINS))
+
+    @mock.patch('framework.summary_generator.requests.head')
+    def test_verify_doc_link__blocked_by_sandbox(self, mock_head):
+        """Ensure verify_doc_link returns a blocked error without making HTTP calls for spec/explainer domains."""
+        result = summary_generator.verify_doc_link('https://github.com/w3c/explainer')
+        self.assertEqual(result, 'Error: Blocked untrusted URL (unauthorized domain)')
+        mock_head.assert_not_called()
+
+    @mock.patch('framework.summary_generator.requests.get')
+    def test_read_spec_link__blocked_by_sandbox(self, mock_get):
+        """Ensure read_spec_link returns blocked error for non-spec domains (like MDN or raw github)."""
+        result = summary_generator.read_spec_link('https://developer.mozilla.org/docs')
+        self.assertEqual(result, 'Error: Blocked untrusted URL (unauthorized domain)')
+        mock_get.assert_not_called()
+
+    @mock.patch('framework.summary_generator.requests.get')
+    def test_read_explainer_link__blocked_by_sandbox(self, mock_get):
+        """Ensure read_explainer_link returns blocked error for non-explainer domains (like MDN)."""
+        result = summary_generator.read_explainer_link('https://developer.mozilla.org/docs')
+        self.assertEqual(result, 'Error: Blocked untrusted URL (unauthorized domain)')
+        mock_get.assert_not_called()

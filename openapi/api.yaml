@@ -2219,6 +2219,8 @@ components:
       properties:
         suggested_summary:
           type: string
+        generation_rationale:
+          type: string
         suggested_doc_links:
           type: array
           items:
@@ -2241,6 +2243,14 @@ components:
           format: date
         status:
           type: string
+        status_message:
+          type: string
+        model_used:
+          type: string
+        progress_steps:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProgressStep'
         status_timestamp:
           type: string
           format: date-time
@@ -2249,6 +2259,23 @@ components:
           format: date-time
       required:
         - status
+
+    ProgressStep:
+      type: object
+      properties:
+        step_id:
+          type: string
+        start_timestamp:
+          type: string
+          format: date-time
+        end_timestamp:
+          type: string
+          format: date-time
+        message:
+          type: string
+        status:
+          type: string
+          enum: [in_progress, success, failed, retrying]
 
     PendingReviewsCountResponse:
       type: object

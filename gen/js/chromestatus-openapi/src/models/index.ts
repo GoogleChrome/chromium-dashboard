@@ -68,6 +68,7 @@ export * from './PostVoteRequest';
 export * from './Process';
 export * from './ProcessStage';
 export * from './ProgressItem';
+export * from './ProgressStep';
 export * from './RejectUnneededGetRequest';
 export * from './ReleaseNotesL10nItem';
 export * from './ReleaseNotesL10nResponse';

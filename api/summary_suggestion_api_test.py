@@ -26,7 +26,11 @@ from google.cloud import ndb  # type: ignore
 import testing_config
 from api import summary_suggestion_api
 from internals import core_enums
-from internals.core_models import FeatureEntry, FeatureSummarySuggestion
+from internals.core_models import (
+    FeatureEntry,
+    FeatureSummaryProgressStep,
+    FeatureSummarySuggestion,
+)
 from internals.review_models import Activity
 
 test_app = flask.Flask(__name__)
@@ -68,6 +72,9 @@ class SummarySuggestionAPITest(testing_config.CustomTestCase):
             response,
             {
                 'status': 'none',
+                'status_message': None,
+                'model_used': None,
+                'progress_steps': [],
                 'suggested_summary': None,
                 'suggested_doc_links': [],
                 'baseline_status': None,
@@ -96,6 +103,8 @@ class SummarySuggestionAPITest(testing_config.CustomTestCase):
             suggested_doc_links=['https://example.com/doc'],
             baseline_status=core_enums.BaselineStatus.LIMITED,
             status=core_enums.SummarySuggestionStatus.COMPLETE,
+            status_message='Generation complete!',
+            model_used='gemini-3.5-flash',
             status_timestamp=datetime.datetime(2026, 6, 1, 12, 0, 0),
             last_generation_attempt=datetime.datetime(2026, 6, 1, 11, 58, 0),
         )
@@ -107,15 +116,62 @@ class SummarySuggestionAPITest(testing_config.CustomTestCase):
             response = self.handler.do_get(feature_id=12345)
 
         self.assertEqual(response['status'], 'complete')
+        self.assertEqual(response['status_message'], 'Generation complete!')
+        self.assertEqual(response['model_used'], 'gemini-3.5-flash')
+        self.assertEqual(response['progress_steps'], [])
         self.assertEqual(response['suggested_summary'], 'Simplified summary.')
         self.assertEqual(
             response['suggested_doc_links'], ['https://example.com/doc']
         )
         self.assertEqual(response['baseline_status'], 'limited')
         self.assertEqual(
-            response['last_generation_attempt'], '2026-06-01T11:58:00'
+            response['last_generation_attempt'], '2026-06-01T11:58:00Z'
         )
         self.assertIsNotNone(response['status_timestamp'])
+
+    @mock.patch('framework.permissions.can_view_feature')
+    def test_get__success_with_progress(self, mock_can_view):
+        """Ensure requesting a suggestion returns progress steps correctly serialized."""
+        mock_can_view.return_value = True
+        suggestion = FeatureSummarySuggestion(
+            id=12345,
+            status=core_enums.SummarySuggestionStatus.IN_PROGRESS,
+            status_message='Executing AI generation loop...',
+            status_timestamp=datetime.datetime(2026, 6, 1, 12, 0, 0),
+        )
+        suggestion.put()
+
+        # Insert progress steps
+        FeatureSummaryProgressStep.update_step(
+            12345, 'start', 'Initializing...', 'SUCCESS'
+        )
+        FeatureSummaryProgressStep.update_step(
+            12345, 'tool_1', 'Searching MDN...', 'IN_PROGRESS'
+        )
+
+        with test_app.test_request_context(
+            '/api/v0/features/12345/summary_suggestion'
+        ):
+            response = self.handler.do_get(feature_id=12345)
+
+        self.assertEqual(response['status'], 'in_progress')
+        self.assertEqual(response['status_message'], 'Executing AI generation loop...')
+        
+        steps = response['progress_steps']
+        self.assertEqual(len(steps), 2)
+        
+        # Step 1: start
+        self.assertEqual(steps[0]['step_id'], 'start')
+        self.assertEqual(steps[0]['message'], 'Initializing...')
+        self.assertEqual(steps[0]['status'], 'success')
+        self.assertIsNotNone(steps[0]['start_timestamp'])
+        
+        # Step 2: tool_1
+        self.assertEqual(steps[1]['step_id'], 'tool_1')
+        self.assertEqual(steps[1]['message'], 'Searching MDN...')
+        self.assertEqual(steps[1]['status'], 'in_progress')
+        self.assertIsNotNone(steps[1]['start_timestamp'])
+        self.assertIsNone(steps[1]['end_timestamp'])  # In progress step has no end timestamp
 
     @mock.patch('framework.permissions.can_view_feature')
     def test_get__unauthorized(self, mock_can_view):

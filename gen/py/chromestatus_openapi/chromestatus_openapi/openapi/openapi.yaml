@@ -3459,14 +3459,28 @@ components:
       type: object
     FeatureSummarySuggestionResponse:
       example:
+        status_message: status_message
         suggested_summary: suggested_summary
+        original_baseline_widely_date: 2000-01-23
+        model_used: model_used
+        original_baseline_newly_date: 2000-01-23
+        progress_steps:
+        - end_timestamp: 2000-01-23T04:56:07.000+00:00
+          start_timestamp: 2000-01-23T04:56:07.000+00:00
+          step_id: step_id
+          message: message
+          status: in_progress
+        - end_timestamp: 2000-01-23T04:56:07.000+00:00
+          start_timestamp: 2000-01-23T04:56:07.000+00:00
+          step_id: step_id
+          message: message
+          status: in_progress
+        generation_rationale: generation_rationale
         suggested_doc_links:
         - suggested_doc_links
         - suggested_doc_links
-        original_baseline_widely_date: 2000-01-23
         last_generation_attempt: 2000-01-23T04:56:07.000+00:00
         baseline_widely_date: 2000-01-23
-        original_baseline_newly_date: 2000-01-23
         status_timestamp: 2000-01-23T04:56:07.000+00:00
         baseline_status: baseline_status
         baseline_newly_date: 2000-01-23
@@ -3475,6 +3489,9 @@ components:
       properties:
         suggested_summary:
           title: suggested_summary
+          type: string
+        generation_rationale:
+          title: generation_rationale
           type: string
         suggested_doc_links:
           items:
@@ -3506,6 +3523,17 @@ components:
         status:
           title: status
           type: string
+        status_message:
+          title: status_message
+          type: string
+        model_used:
+          title: model_used
+          type: string
+        progress_steps:
+          items:
+            $ref: '#/components/schemas/ProgressStep'
+          title: progress_steps
+          type: array
         status_timestamp:
           format: date-time
           title: status_timestamp
@@ -3517,6 +3545,38 @@ components:
       required:
       - status
       title: FeatureSummarySuggestionResponse
+      type: object
+    ProgressStep:
+      example:
+        end_timestamp: 2000-01-23T04:56:07.000+00:00
+        start_timestamp: 2000-01-23T04:56:07.000+00:00
+        step_id: step_id
+        message: message
+        status: in_progress
+      properties:
+        step_id:
+          title: step_id
+          type: string
+        start_timestamp:
+          format: date-time
+          title: start_timestamp
+          type: string
+        end_timestamp:
+          format: date-time
+          title: end_timestamp
+          type: string
+        message:
+          title: message
+          type: string
+        status:
+          enum:
+          - in_progress
+          - success
+          - failed
+          - retrying
+          title: status
+          type: string
+      title: ProgressStep
       type: object
     PendingReviewsCountResponse:
       example:

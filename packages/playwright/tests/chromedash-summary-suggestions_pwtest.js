@@ -143,10 +143,22 @@ test.describe('AI Summary Suggestions E2E Integration Tests', () => {
     console.log('[E2E] Triggering AI generation...');
     await generateBtn.click();
 
-    // Wait until suggestion badge changes to "Draft Available" (synchronous Cloud Task simulation)
+    // Verify the progress element is rendered and showing details
+    const progressTimeline = card.locator('chromedash-ai-summary-progress');
+    await expect(progressTimeline).toBeVisible();
+
+    const showDetailsBtn = progressTimeline.locator('.details-toggle-btn');
+    await expect(showDetailsBtn).toBeVisible();
+    await showDetailsBtn.click();
+
+    // Verify DevOps console tray expands and renders logs
+    const consoleTray = progressTimeline.locator('.timeline-console-tray');
+    await expect(consoleTray).toBeVisible();
+
+    // Wait until suggestion badge changes to "Draft Available"
     const suggestionBadge = card.locator('sl-tag[variant="success"]');
     await expect(suggestionBadge).toHaveText(/Draft Available/, {
-      timeout: 10000,
+      timeout: 15000,
     });
 
     // Capture screenshot of releases dashboard badges

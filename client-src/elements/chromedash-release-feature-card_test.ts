@@ -1,7 +1,11 @@
 import {html, fixture, assert} from '@open-wc/testing';
 import {ChromedashReleaseFeatureCard} from './chromedash-release-feature-card.js';
 import './chromedash-release-feature-card.js';
-import {ChromeStatusClient, Feature, SuggestionData} from '../js-src/cs-client.js';
+import {
+  ChromeStatusClient,
+  Feature,
+  SuggestionData,
+} from '../js-src/cs-client.js';
 import sinon from 'sinon';
 
 describe('chromedash-release-feature-card', () => {
@@ -190,8 +194,8 @@ describe('chromedash-release-feature-card', () => {
 
       await component.updateComplete;
       const statusEl = component.renderRoot.querySelector(
-      'chromedash-feature-suggestion-status'
-    ) as HTMLElement & {canReview: boolean};
+        'chromedash-feature-suggestion-status'
+      ) as HTMLElement & {canReview: boolean};
       assert.exists(statusEl);
       assert.isTrue(statusEl.canReview);
     });
@@ -210,8 +214,8 @@ describe('chromedash-release-feature-card', () => {
 
       await component.updateComplete;
       const statusEl = component.renderRoot.querySelector(
-      'chromedash-feature-suggestion-status'
-    ) as HTMLElement & {canReview: boolean};
+        'chromedash-feature-suggestion-status'
+      ) as HTMLElement & {canReview: boolean};
       assert.exists(statusEl);
       assert.isTrue(statusEl.canReview);
     });
@@ -230,8 +234,8 @@ describe('chromedash-release-feature-card', () => {
 
       await component.updateComplete;
       const statusEl = component.renderRoot.querySelector(
-      'chromedash-feature-suggestion-status'
-    ) as HTMLElement & {canReview: boolean};
+        'chromedash-feature-suggestion-status'
+      ) as HTMLElement & {canReview: boolean};
       assert.exists(statusEl);
       assert.isTrue(statusEl.canReview);
     });
@@ -246,8 +250,8 @@ describe('chromedash-release-feature-card', () => {
 
       await component.updateComplete;
       const statusEl = component.renderRoot.querySelector(
-      'chromedash-feature-suggestion-status'
-    ) as HTMLElement & {canReview: boolean};
+        'chromedash-feature-suggestion-status'
+      ) as HTMLElement & {canReview: boolean};
       assert.exists(statusEl);
       assert.isFalse(statusEl.canReview);
     });
@@ -277,7 +281,10 @@ describe('chromedash-release-feature-card', () => {
 
     // Setup event listeners
     let enrichedEventDispatched = false;
-    let enrichedEventDetail: {feature: Feature; suggestion: SuggestionData} | null = null;
+    let enrichedEventDetail: {
+      feature: Feature;
+      suggestion: SuggestionData;
+    } | null = null;
 
     // Listen on the component itself to capture the card's dispatched enriched event
     component.addEventListener('review-suggestion', (e: Event) => {

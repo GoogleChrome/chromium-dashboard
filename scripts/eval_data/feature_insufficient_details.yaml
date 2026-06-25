@@ -1,0 +1,10 @@
+- name: "More improvements"
+  category: "Miscellaneous"
+  web_feature: "none"
+  summary: "WIP: Make more improvements to the browser engine and fix minor bugs."
+  explainer_links: []
+  spec_link: null
+  gt_feasibility_decision: "skipped_insufficient_data"
+  gt_summary: null
+  gt_links: []
+  gt_baseline: "limited"

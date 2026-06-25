@@ -263,8 +263,17 @@ describe('chromedash-releases-page', () => {
       '.suggestion-control-panel'
     );
     assert.exists(controlPanel);
-    assert.include(controlPanel.innerHTML, 'Generating');
-    assert.include(controlPanel.innerHTML, 'disabled'); // Generating button should be disabled
+    const progressEl = controlPanel.querySelector(
+      'chromedash-ai-summary-progress'
+    );
+    assert.exists(progressEl);
+    await progressEl.updateComplete;
+    const tag = progressEl.shadowRoot.querySelector('sl-tag');
+    assert.exists(tag);
+    assert.include(tag.textContent, 'Generating');
+    // Verify the Generate button does not exist (it should be hidden when in_progress)
+    const generateBtn = controlPanel.querySelector('sl-button');
+    assert.isNull(generateBtn);
 
     // 2. applied
     window.csClient.getSummarySuggestion.restore();
@@ -333,7 +342,7 @@ describe('chromedash-releases-page', () => {
     // Mock widely baseline status
     window.csClient.getSummarySuggestion.restore();
     sinon.stub(window.csClient, 'getSummarySuggestion').resolves({
-      status: 'complete',
+      status: 'applied',
       suggested_summary: 'AI summary',
       suggested_doc_links: [],
       version_token: 1,

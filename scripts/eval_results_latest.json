@@ -16,21 +16,51 @@
         "median": 5
       },
       "links_baseline": {
-        "min": 2,
-        "max": 2,
-        "avg": 2.0,
-        "median": 2
+        "min": 3,
+        "max": 3,
+        "avg": 3.0,
+        "median": 3
       }
     },
     "runs": null,
     "scores": {
       "clarity": 5.0,
       "accuracy": 5.0,
-      "links_baseline": 2.0
+      "links_baseline": 3.0
     }
   },
   {
     "feature_name": "CSS Gap Decorations",
+    "iterations": 1,
+    "stats": {
+      "clarity": {
+        "min": 5,
+        "max": 5,
+        "avg": 5.0,
+        "median": 5
+      },
+      "accuracy": {
+        "min": 5,
+        "max": 5,
+        "avg": 5.0,
+        "median": 5
+      },
+      "links_baseline": {
+        "min": 4,
+        "max": 4,
+        "avg": 4.0,
+        "median": 4
+      }
+    },
+    "runs": null,
+    "scores": {
+      "clarity": 5.0,
+      "accuracy": 5.0,
+      "links_baseline": 4.0
+    }
+  },
+  {
+    "feature_name": "CSS Paint API",
     "iterations": 1,
     "stats": {
       "clarity": {
@@ -60,7 +90,7 @@
     }
   },
   {
-    "feature_name": "CSS Paint API",
+    "feature_name": "More improvements",
     "iterations": 1,
     "stats": {
       "clarity": {
@@ -76,17 +106,47 @@
         "median": 5
       },
       "links_baseline": {
-        "min": 3,
-        "max": 3,
-        "avg": 3.0,
-        "median": 3
+        "min": 5,
+        "max": 5,
+        "avg": 5.0,
+        "median": 5
       }
     },
     "runs": null,
     "scores": {
       "clarity": 5.0,
       "accuracy": 5.0,
-      "links_baseline": 3.0
+      "links_baseline": 5.0
+    }
+  },
+  {
+    "feature_name": "CSS Row Rule decorations",
+    "iterations": 1,
+    "stats": {
+      "clarity": {
+        "min": 5,
+        "max": 5,
+        "avg": 5.0,
+        "median": 5
+      },
+      "accuracy": {
+        "min": 5,
+        "max": 5,
+        "avg": 5.0,
+        "median": 5
+      },
+      "links_baseline": {
+        "min": 5,
+        "max": 5,
+        "avg": 5.0,
+        "median": 5
+      }
+    },
+    "runs": null,
+    "scores": {
+      "clarity": 5.0,
+      "accuracy": 5.0,
+      "links_baseline": 5.0
     }
   },
   {
@@ -121,6 +181,36 @@
   },
   {
     "feature_name": "Prompt API",
+    "iterations": 1,
+    "stats": {
+      "clarity": {
+        "min": 5,
+        "max": 5,
+        "avg": 5.0,
+        "median": 5
+      },
+      "accuracy": {
+        "min": 5,
+        "max": 5,
+        "avg": 5.0,
+        "median": 5
+      },
+      "links_baseline": {
+        "min": 4,
+        "max": 4,
+        "avg": 4.0,
+        "median": 4
+      }
+    },
+    "runs": null,
+    "scores": {
+      "clarity": 5.0,
+      "accuracy": 5.0,
+      "links_baseline": 4.0
+    }
+  },
+  {
+    "feature_name": "dummy test feature asdf",
     "iterations": 1,
     "stats": {
       "clarity": {

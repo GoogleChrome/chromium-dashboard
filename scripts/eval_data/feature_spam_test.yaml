@@ -1,0 +1,10 @@
+- name: "dummy test feature asdf"
+  category: "Miscellaneous"
+  web_feature: "none"
+  summary: "This is just a test entry to see if the pipeline works. foo bar."
+  explainer_links: []
+  spec_link: null
+  gt_feasibility_decision: "skipped_spam_or_test"
+  gt_summary: null
+  gt_links: []
+  gt_baseline: "limited"

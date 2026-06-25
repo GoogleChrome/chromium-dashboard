@@ -280,8 +280,8 @@ class GenerateSummaryHandlerTest(testing_config.CustomTestCase):
 
     def test_process_post_data__transient_error_aborts_503(self):
         """Tests that a transient error during generation aborts with HTTP 503."""
-        from google.genai.errors import ServerError
         import werkzeug.exceptions
+        from google.genai.errors import ServerError
 
         # Mock generator raising a transient ServerError (503)
         self.mock_generate.side_effect = ServerError(503, {}, None)

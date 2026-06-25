@@ -112,22 +112,12 @@ describe('chromedash-feature-suggestion-status', () => {
     assert.equal(event.detail.feature.id, 12345);
   });
 
-  it('polls on in_progress status and triggers generation', async () => {
-    let callCount = 0;
+  it('renders chromedash-ai-summary-progress when status is in_progress', async () => {
     window.csClient.getSummarySuggestion.restore();
-    sinon.stub(window.csClient, 'getSummarySuggestion').callsFake(() => {
-      callCount++;
-      if (callCount === 1) {
-        return Promise.resolve({status: 'in_progress'});
-      }
-      return Promise.resolve({
-        status: 'complete',
-        suggested_summary: 'Done',
-        suggested_doc_links: [],
-      });
+    sinon.stub(window.csClient, 'getSummarySuggestion').resolves({
+      status: 'in_progress',
+      progress_steps: [],
     });
-
-    const clock = sinon.useFakeTimers();
 
     const el = (await fixture(
       html`<chromedash-feature-suggestion-status
@@ -137,18 +127,12 @@ describe('chromedash-feature-suggestion-status', () => {
     )) as ChromedashFeatureSuggestionStatus;
 
     await el.updateComplete;
-    let badge = el.shadowRoot!.querySelector('sl-tag');
-    assert.include(badge!.innerHTML, 'Generating');
 
-    // Fast-forward 2 seconds to trigger poll
-    await clock.tickAsync(2000);
-    await el.updateComplete;
-
-    // Second call resolved to complete
-    badge = el.shadowRoot!.querySelector('sl-tag');
-    assert.include(badge!.innerHTML, 'Draft Available');
-
-    clock.restore();
+    // Verify child component is rendered
+    const progressEl = el.shadowRoot!.querySelector(
+      'chromedash-ai-summary-progress'
+    );
+    assert.exists(progressEl);
   });
 
   it('renders Server Busy badge and allows regeneration when status is overloaded', async () => {
