@@ -4,6 +4,7 @@ import {SHARED_STYLES} from '../css/shared-css.js';
 import {User, Feature, SuggestionData} from '../js-src/cs-client.js';
 import './chromedash-feature-suggestion-status.js';
 import '@shoelace-style/shoelace/dist/components/tag/tag.js';
+import {autolink} from './utils.js';
 
 @customElement('chromedash-release-feature-card')
 export class ChromedashReleaseFeatureCard extends LitElement {
@@ -206,7 +207,9 @@ export class ChromedashReleaseFeatureCard extends LitElement {
             </div>
           </div>
           <p class="feature-summary">
-            ${this.feature.summary || html`<em>No summary provided.</em>`}
+            ${this.feature.summary
+              ? autolink(this.feature.summary, [], (this.feature.markdown_fields || []).includes('summary'))
+              : html`<em>No summary provided.</em>`}
           </p>
           ${docs.length > 0
             ? html`

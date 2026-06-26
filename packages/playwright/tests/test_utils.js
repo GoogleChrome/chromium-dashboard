@@ -325,7 +325,7 @@ export async function enterWebFeatureId(page) {
  * Create a new feature, starting from top-level page, ending up on feature page.
  * @param {import('@playwright/test').Page} page
  */
-export async function createNewFeature(page, name = 'Test feature name') {
+export async function createNewFeature(page, name = 'Test feature name', summary = 'Test summary description') {
   await gotoNewFeaturePage(page);
   // Enter feature name
   const featureNameInput = page.locator('input[name="name"]');
@@ -333,7 +333,7 @@ export async function createNewFeature(page, name = 'Test feature name') {
 
   // Enter summary description
   const summaryInput = page.locator('textarea[name="summary"]');
-  await summaryInput.fill('Test summary description');
+  await summaryInput.fill(summary);
 
   await enterBlinkComponent(page);
   await enterWebFeatureId(page);

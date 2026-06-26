@@ -237,13 +237,15 @@ class SummarySuggestionGenerateAPITest(testing_config.CustomTestCase):
             suggestion.status, core_enums.SummarySuggestionStatus.IN_PROGRESS
         )
 
-        mock_enqueue.assert_called_once_with(
-            '/tasks/generate-summary',
-            {
-                'feature_id': 12345,
-                'updated_time': self.feature.updated.timestamp(),
-            },
-        )
+        # Verify enqueue_task was called with correct path and parameters, allowing dynamic attempt_time
+        mock_enqueue.assert_called_once()
+        call_args, call_kwargs = mock_enqueue.call_args
+        self.assertEqual(call_args[0], '/tasks/generate-summary')
+        params = call_args[1]
+        self.assertEqual(params['feature_id'], 12345)
+        self.assertEqual(params['updated_time'], self.feature.updated.timestamp())
+        self.assertIn('attempt_time', params)
+        self.assertIsInstance(params['attempt_time'], float)
 
     @mock.patch('framework.cloud_tasks_helpers.enqueue_task')
     @mock.patch('framework.permissions.can_review_release_notes')

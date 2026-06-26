@@ -311,4 +311,34 @@ describe('chromedash-release-feature-card', () => {
     assert.deepEqual(enrichedEventDetail!.feature, mockFeature);
     assert.deepEqual(enrichedEventDetail!.suggestion, mockSuggestion);
   });
+
+  it('renders summary as markdown when designated in markdown_fields', async () => {
+    const markdownFeature = {
+      ...mockFeature,
+      summary: 'This is a **bold summary** with a [link](https://example.com).',
+      markdown_fields: ['summary'],
+    } as unknown as Feature;
+
+    const component = (await fixture(
+      html`<chromedash-release-feature-card
+        .feature=${markdownFeature}
+        .user=${mockUserNormal}
+      ></chromedash-release-feature-card>`
+    )) as ChromedashReleaseFeatureCard;
+
+    await component.updateComplete;
+
+    const summaryEl = component.renderRoot.querySelector('.feature-summary');
+    assert.exists(summaryEl);
+
+    // Verify markdown rendering
+    const boldEl = summaryEl.querySelector('strong');
+    assert.exists(boldEl);
+    assert.equal(boldEl.textContent, 'bold summary');
+
+    const linkEl = summaryEl.querySelector('a');
+    assert.exists(linkEl);
+    assert.equal(linkEl.textContent, 'link');
+    assert.equal(linkEl.getAttribute('href'), 'https://example.com');
+  });
 });

@@ -321,14 +321,15 @@ class SummarySuggestionAPI(basehandlers.EntitiesAPIHandler):
                         return None
 
                 # 1. Validate baseline status values
-                if approved_baseline_status not in ['none', 'limited', 'newly', 'widely']:
+                valid_statuses = [status.value for status in core_enums.BaselineStatus]
+                if approved_baseline_status is not None and approved_baseline_status not in valid_statuses:
                     return False, f'Invalid baseline status: {approved_baseline_status}', None
 
                 newly_date = None
                 widely_date = None
 
                 # 2. Enforce Newly Available Date constraints
-                if approved_baseline_status in ['newly', 'widely']:
+                if approved_baseline_status in [core_enums.BaselineStatus.NEWLY.value, core_enums.BaselineStatus.WIDELY.value]:
                     if not approved_baseline_newly:
                         return False, 'Newly Available Date is required for Baseline Newly/Widely Available.', None
                     newly_date = parse_date(approved_baseline_newly)
@@ -336,7 +337,7 @@ class SummarySuggestionAPI(basehandlers.EntitiesAPIHandler):
                         return False, f'Invalid Newly Available Date format: {approved_baseline_newly}', None
 
                 # 3. Enforce Widely Available Date constraints & Chronology
-                if approved_baseline_status == 'widely':
+                if approved_baseline_status == core_enums.BaselineStatus.WIDELY.value:
                     if not approved_baseline_widely:
                         return False, 'Widely Available Date is required for Baseline Widely Available.', None
                     widely_date = parse_date(approved_baseline_widely)
@@ -346,10 +347,10 @@ class SummarySuggestionAPI(basehandlers.EntitiesAPIHandler):
                         return False, 'Widely Available Date must be chronologically after or equal to the Newly Available Date.', None
 
                 # 4. Clean dates based on status to prevent dangling stale records
-                if approved_baseline_status in ['none', 'limited']:
+                if approved_baseline_status in [core_enums.BaselineStatus.NONE.value, core_enums.BaselineStatus.LIMITED.value]:
                     suggestion.baseline_newly_date = None
                     suggestion.baseline_widely_date = None
-                elif approved_baseline_status == 'newly':
+                elif approved_baseline_status == core_enums.BaselineStatus.NEWLY.value:
                     suggestion.baseline_newly_date = newly_date
                     suggestion.baseline_widely_date = None
                 else:
@@ -532,6 +533,7 @@ class SummarySuggestionGenerateAPI(basehandlers.EntitiesAPIHandler):
                         if time_since < datetime.timedelta(minutes=15):
                             return (
                                 None,
+                                None,
                                 'AI summary generation is already in progress.',
                             )
 
@@ -544,6 +546,7 @@ class SummarySuggestionGenerateAPI(basehandlers.EntitiesAPIHandler):
                         time_since = now - suggestion.status_timestamp
                         if time_since < datetime.timedelta(minutes=30):
                             return (
+                                None,
                                 None,
                                 'Cooldown in progress. Try again in a few minutes.',
                             )
@@ -559,6 +562,10 @@ class SummarySuggestionGenerateAPI(basehandlers.EntitiesAPIHandler):
             suggestion.status_timestamp = now
             suggestion.last_generation_attempt = now
             suggestion.put()
+            
+            # Immediately purge any old completed progress steps from previous runs
+            FeatureSummaryProgressStep.delete_timeline(feature_id)
+            
             return feature, now.timestamp(), None
 
         feature, attempt_timestamp, error_msg = start_generation_tx()

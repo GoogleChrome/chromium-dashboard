@@ -506,7 +506,7 @@ class GeminiSummaryGenerator(SummaryGeneratorInterface):
                         
                         res_str = str(resp.response)
                         is_success = True
-                        if 'Invalid' in res_str or 'Error' in res_str or 'failed' in res_str.lower():
+                        if 'Invalid' in res_str or 'Error' in res_str or 'failed' in res_str.lower() or 'Could not' in res_str:
                             is_success = False
                             
                         status = (
@@ -515,13 +515,45 @@ class GeminiSummaryGenerator(SummaryGeneratorInterface):
                             else core_enums.ProgressStepStatus.FAILED.value
                         )
                         
+                        # Get the base message from the previously written step (which contains the tool arguments)
+                        base_msg = "Executed tool"
                         if step:
                             base_msg = step.message.rstrip('.')
                             if base_msg.endswith('...'):
                                 base_msg = base_msg[:-3]
-                            msg = f"{base_msg}... {'Done' if is_success else 'Failed'}"
+                                
+                        # Construct rich detail message based on the tool name
+                        detail_msg = ""
+                        if resp.name == core_enums.AISummaryToolName.SEARCH_MDN.value:
+                            if not is_success:
+                                detail_msg = f"Failed ({res_str})"
+                            else:
+                                import re
+                                titles = re.findall(r"Title: ([^\n]+)", res_str)
+                                if titles:
+                                    titles_str = ", ".join(f"'{t}'" for t in titles[:3])
+                                    if len(titles) > 3:
+                                        titles_str += f" and {len(titles) - 3} more"
+                                    detail_msg = f"Done (Found {len(titles)} articles: {titles_str})"
+                                else:
+                                    detail_msg = "Done (No articles found)"
+                                    
+                        elif resp.name == core_enums.AISummaryToolName.VERIFY_LINK.value:
+                            if is_success:
+                                detail_msg = "Done (Link is VALID)"
+                            else:
+                                detail_msg = f"Failed ({res_str})"
+                                
+                        elif resp.name in [core_enums.AISummaryToolName.READ_URL.value, 'read_spec_link', 'read_explainer_link']:
+                            if is_success:
+                                char_count = len(res_str)
+                                detail_msg = f"Done (Read {char_count} chars of technical text)"
+                            else:
+                                detail_msg = f"Failed ({res_str})"
                         else:
-                            msg = f"Executed tool: {resp.name}... {'Done' if is_success else 'Failed'}"
+                            detail_msg = "Done" if is_success else f"Failed ({res_str})"
+                            
+                        msg = f"{base_msg}... {detail_msg}"
                             
                         FeatureSummaryProgressStep.update_step(
                             feature_id, step_id, msg, status

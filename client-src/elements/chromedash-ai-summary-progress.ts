@@ -401,6 +401,20 @@ export class ChromedashAiSummaryProgress extends LitElement {
     this.timelineExpanded = !this.timelineExpanded;
   }
 
+  updated(changedProperties: Map<string | symbol, unknown>) {
+    super.updated(changedProperties);
+    if (this.timelineExpanded) {
+      const tray = this.renderRoot.querySelector('.timeline-console-tray');
+      if (tray) {
+        // Auto-scroll to the bottom of the console as new steps arrive
+        tray.scrollTo({
+          top: tray.scrollHeight,
+          behavior: 'smooth'
+        });
+      }
+    }
+  }
+
   // Calculate elapsed time from ISO strings
   getElapsedDuration(step: ProgressStep): string {
     if (!step.start_timestamp) return '';

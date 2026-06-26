@@ -32,6 +32,8 @@ services:
       # GitHub sets CI to true automatically
       # https://docs.github.com/en/actions/learn-github-actions/variables#default-environment-variables
       - CI
+      - GEMINI_API_KEY
+      - USE_MOCK_SUMMARY_GENERATOR
     volumes:
       - ./tests:/work/tests
       - ./test-results:/work/test-results
@@ -81,6 +83,8 @@ services:
       - SERVER_SOFTWARE=Development
       - DATASTORE_PROJECT_ID=cr-status-staging
       - DATASTORE_EMULATOR_HOST=localhost:15607
+      - GEMINI_API_KEY
+      - USE_MOCK_SUMMARY_GENERATOR
     volumes:
       - ../../node_modules:/workspace/node_modules
   debugapp:

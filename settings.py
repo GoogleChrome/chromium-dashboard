@@ -152,9 +152,10 @@ if PLAYWRIGHT_MODE or UNIT_TEST_MODE:
     SEND_EMAIL = False
 
 USE_MOCK_SUMMARY_GENERATOR = (
-    PLAYWRIGHT_MODE or
-    UNIT_TEST_MODE or
-    os.environ.get('USE_MOCK_SUMMARY_GENERATOR') == 'true'
+    (PLAYWRIGHT_MODE or
+     UNIT_TEST_MODE or
+     os.environ.get('USE_MOCK_SUMMARY_GENERATOR') == 'true') and
+    os.environ.get('USE_MOCK_SUMMARY_GENERATOR') != 'false'
 )
 
 RSS_FEED_LIMIT = 15

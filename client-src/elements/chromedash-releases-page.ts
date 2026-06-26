@@ -347,6 +347,18 @@ export class ChromedashReleasesPage extends LitElement {
   renderMilestoneChannelBanner() {
     if (!this.channels) return nothing;
 
+    if (this.selectedMilestone < this.channels.stable.version - 5) {
+      return html`
+        <sl-alert variant="neutral" open style="margin-bottom: 1.5rem;">
+          <sl-icon slot="icon" name="info-circle"></sl-icon>
+          Looking for official historical logs? View the published
+          <a href="https://developer.chrome.com/release-notes/${this.selectedMilestone}" target="_blank">
+            Chrome ${this.selectedMilestone} Release Notes on developer.chrome.com
+          </a>.
+        </sl-alert>
+      `;
+    }
+
     let bannerText = '';
     let variant = 'primary';
     let iconName = 'info-circle';

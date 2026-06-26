@@ -144,7 +144,7 @@ def run_test() -> None:
             baseline_enum = None
             if result.baseline_status:
                 try:
-                    baseline_enum = core_enums.WebdxFeatureBaselineStatus(
+                    baseline_enum = core_enums.BaselineStatus(
                         result.baseline_status
                     )
                 except ValueError:

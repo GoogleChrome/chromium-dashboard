@@ -31,6 +31,7 @@ export default defineConfig({
 
     // See https://playwright.dev/docs/test-use-options#recording-options.
     screenshot: 'only-on-failure',
+    video: process.env.RECORD_VIDEO === 'true' ? 'on' : 'off',
   },
   preserveOutput: 'always',
 
@@ -91,8 +92,8 @@ export default defineConfig({
 
   /* Run your local dev server before starting the tests */
   webServer: {
-    command: 'npm run start',
+    command: 'make start',
     url: 'http://localhost:7777',
-    reuseExistingServer: true,
+    reuseExistingServer: false,
   },
 });

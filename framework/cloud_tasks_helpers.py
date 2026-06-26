@@ -56,19 +56,31 @@ class LocalCloudTasksClient(object):
         )
 
     def create_task(self, parent=None, task=None, **kwargs):
-        """Immediately hit the target URL."""
+        """Hit the target URL asynchronously in a background thread."""
+        import threading
         uri = task.get('app_engine_http_request').get('relative_uri')
         target_url = 'http://localhost:7777' + uri
         body = task.get('app_engine_http_request').get('body')
-        handler_response = requests.request(
-            'POST',
-            target_url,
-            data=body,
-            allow_redirects=False,
-            # This header can only be set on internal requests, not by users.
-            headers={'X-AppEngine-QueueName': 'default'},
-        )
-        logging.info('Task handler status: %d', handler_response.status_code)
+        
+        def run_task():
+            try:
+                logging.info(f'[LocalTaskQueue] Dispatching task to {target_url}...')
+                handler_response = requests.request(
+                    'POST',
+                    target_url,
+                    data=body,
+                    allow_redirects=False,
+                    headers={'X-AppEngine-QueueName': 'default'},
+                )
+                logging.info('[LocalTaskQueue] Task handler status: %d', handler_response.status_code)
+            except Exception as e:
+                logging.exception(f'[LocalTaskQueue] Error running background task: {e}')
+
+        # Start the task in a background daemon thread so it doesn't block the request handler thread
+        thread = threading.Thread(target=run_task)
+        thread.daemon = True
+        thread.start()
+        logging.info('[LocalTaskQueue] Enqueued and spawned background thread for task.')
 
 
 def _get_client():

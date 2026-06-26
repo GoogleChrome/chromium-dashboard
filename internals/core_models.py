@@ -536,6 +536,17 @@ class FeatureSummaryProgressStep(ndb.Model):
             ndb.delete_multi(keys_to_delete)
 
     @classmethod
+    def delete_timeline(cls, feature_id: int) -> None:
+        """Deletes all progress steps parented under a feature suggestions entity.
+        
+        Called when initiating a fresh generation run to clear old completed steps.
+        """
+        parent_key = ndb.Key('FeatureSummarySuggestion', feature_id)
+        keys_to_delete = cls.query(ancestor=parent_key).fetch(keys_only=True)
+        if keys_to_delete:
+            ndb.delete_multi(keys_to_delete)
+
+    @classmethod
     def get_timeline(cls, feature_id: int) -> list['FeatureSummaryProgressStep']:
         """Retrieves all progress steps for a feature, ordered by timestamp (strongly consistent)."""
         parent_key = ndb.Key('FeatureSummarySuggestion', feature_id)

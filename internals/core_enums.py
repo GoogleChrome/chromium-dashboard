@@ -992,6 +992,7 @@ class AISummaryToolName(str, Enum):
 class BaselineStatus(str, Enum):
     """Enums representing the WebDX Baseline status levels."""
 
+    NONE = 'none'
     LIMITED = 'limited'
     NEWLY = 'newly'
     WIDELY = 'widely'

@@ -499,4 +499,44 @@ describe('chromedash-releases-page', () => {
       'Chrome 127 is currently on the Dev channel'
     );
   });
+
+  it('renders DCC fallback warning banner for older milestones', async () => {
+    const user = {
+      can_create_feature: false,
+      can_edit: false,
+      is_admin: false,
+      can_review_release_notes: false,
+      email: 'user@example.com',
+    };
+
+    window.csClient.getChannels.restore();
+    sinon.stub(window.csClient, 'getChannels').resolves({
+      stable: {version: 125},
+      beta: {version: 126},
+      dev: {version: 127},
+    });
+
+    const component = (await fixture(
+      html`<chromedash-releases-page .user=${user}></chromedash-releases-page>`
+    )) as ChromedashReleasesPage;
+    await waitForLoading(component);
+
+    // Select a milestone older than stable - 5 (125 - 5 = 120, select 110)
+    component.selectedMilestone = 110;
+    await component.updateComplete;
+
+    const banner = component.renderRoot.querySelector('sl-alert[variant="neutral"]');
+    assert.exists(banner);
+    assert.include(
+      banner.innerHTML,
+      'Looking for official historical logs? View the published'
+    );
+
+    const link = banner!.querySelector('a');
+    assert.exists(link);
+    assert.equal(
+      link.getAttribute('href'),
+      'https://developer.chrome.com/release-notes/110'
+    );
+  });
 });
