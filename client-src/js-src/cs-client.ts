@@ -63,6 +63,7 @@ export interface SuggestionData {
   summary_provenance?: unknown;
   doc_links_provenance?: unknown;
   progress_steps?: ProgressStep[];
+  drift_detected?: 'none' | 'minor' | 'major';
 }
 
 export interface StageDict {

@@ -26,26 +26,29 @@ import {ChromedashSummaryReviewDialog} from './chromedash-summary-review-dialog.
 import './chromedash-summary-review-dialog.js';
 
 describe('chromedash-summary-review-dialog', () => {
-  const feature = {
-    id: 12345,
-    name: 'Test Feature',
-    summary: 'Original summary text.',
-    resources: {
-      docs: ['https://example.com/original-link'],
-    },
-  } as any;
-
-  const suggestion = {
-    status: 'complete',
-    suggested_summary: 'Suggested AI summary.',
-    suggested_doc_links: ['https://example.com/ai-suggested-link-1'],
-    version_token: 1,
-    baseline_status: null,
-    status_timestamp: null,
-    last_generation_attempt: null,
-  } as any;
+  let feature: any;
+  let suggestion: any;
 
   beforeEach(async () => {
+    feature = {
+      id: 12345,
+      name: 'Test Feature',
+      summary: 'Original summary text.',
+      resources: {
+        docs: ['https://example.com/original-link'],
+      },
+    };
+
+    suggestion = {
+      status: 'complete',
+      suggested_summary: 'Suggested AI summary.',
+      suggested_doc_links: ['https://example.com/ai-suggested-link-1'],
+      version_token: 1,
+      baseline_status: null,
+      status_timestamp: null,
+      last_generation_attempt: null,
+    };
+
     await fixture(html`<chromedash-toast></chromedash-toast>`);
     window.csClient = new ChromeStatusClient('fake_token', 1);
     sinon.stub(window.csClient, 'patchSummarySuggestion');
@@ -326,7 +329,7 @@ describe('chromedash-summary-review-dialog', () => {
     );
   });
 
-  it('toggles between write and preview tabs and renders markdown', async () => {
+  it('toggles between edit and preview tabs and renders markdown', async () => {
     const dialog = (await fixture(
       html`<chromedash-summary-review-dialog
         .feature=${feature}
@@ -337,8 +340,8 @@ describe('chromedash-summary-review-dialog', () => {
     dialog.show();
     await dialog.updateComplete;
 
-    // Default tab is write
-    assert.equal(dialog.activeTab, 'write');
+    // Default tab is edit
+    assert.equal(dialog.activeTab, 'edit');
     const textarea = dialog.renderRoot.querySelector(
       '.editable-summary-textarea'
     ) as HTMLTextAreaElement;
@@ -351,10 +354,10 @@ describe('chromedash-summary-review-dialog', () => {
     dialog.summaryText = 'This is **bold** text';
     dialog.isDirty = true;
 
-    // Switch to preview tab
+    // Switch to preview tab (index 2: edit=0, diff=1, preview=2)
     const previewTabButton = dialog.renderRoot.querySelectorAll(
       '.tab-btn'
-    )[1] as HTMLButtonElement;
+    )[2] as HTMLButtonElement;
     assert.exists(previewTabButton);
     previewTabButton.click();
     await dialog.updateComplete;
@@ -968,6 +971,130 @@ describe('chromedash-summary-review-dialog', () => {
       const traceDetails = dialog.renderRoot.querySelector('.traceability-details');
       assert.exists(traceDetails);
       assert.include(traceDetails.textContent, 'View Generation & Traceability Logs');
+    });
+
+    it('renders symmetrical 3-tab curation workspace and toggles views', async () => {
+      const dialog = (await fixture(
+        html`<chromedash-summary-review-dialog
+          .feature=${feature}
+          .suggestion=${suggestion}
+        ></chromedash-summary-review-dialog>`
+      )) as ChromedashSummaryReviewDialog;
+
+      dialog.show();
+      await dialog.updateComplete;
+
+      // 1. Default tab is 'edit'
+      assert.equal(dialog.activeTab, 'edit');
+      const leftPane = dialog.renderRoot.querySelector('.left-cell [data-testid="original-summary"]');
+      assert.exists(leftPane);
+      assert.include(leftPane.textContent, 'Original summary text.');
+
+      const rightTextarea = dialog.renderRoot.querySelector('.right-cell sl-textarea') as any;
+      assert.exists(rightTextarea);
+      assert.equal(rightTextarea.value, 'Suggested AI summary.');
+
+      // 2. Switch to 'diff' tab
+      dialog.activeTab = 'diff';
+      await dialog.updateComplete;
+      const diffContainer = dialog.renderRoot.querySelector('.visual-diff-container');
+      assert.exists(diffContainer);
+      // Should render added/removed classes
+      assert.exists(diffContainer.querySelector('.diff-line.removed'));
+      assert.exists(diffContainer.querySelector('.diff-line.added'));
+
+      // 3. Switch to 'preview' tab
+      dialog.activeTab = 'preview';
+      await dialog.updateComplete;
+      const previewContainer = dialog.renderRoot.querySelector('.preview-container');
+      assert.exists(previewContainer);
+      assert.include(previewContainer.innerHTML, 'Suggested AI summary.');
+    });
+
+    it('disables keep curated version button for Major Drift and allows it for Minor Drift', async () => {
+      const dialog = (await fixture(
+        html`<chromedash-summary-review-dialog
+          .feature=${feature}
+          .suggestion=${suggestion}
+        ></chromedash-summary-review-dialog>`
+      )) as ChromedashSummaryReviewDialog;
+
+      // 1. Major Drift Case
+      dialog.suggestion = {
+        ...suggestion,
+        status: 'out_of_date',
+        drift_detected: 'major',
+      } as any;
+      dialog.show();
+      await dialog.updateComplete;
+
+      const keepButtonMajor = dialog.renderRoot.querySelector('sl-button[variant="warning"]') as any;
+      assert.exists(keepButtonMajor);
+      assert.isTrue(keepButtonMajor.disabled); // Should be disabled!
+
+      // 2. Minor Drift Case
+      dialog.suggestion = {
+        ...suggestion,
+        status: 'out_of_date',
+        drift_detected: 'minor',
+      } as any;
+      await dialog.updateComplete;
+
+      const keepButtonMinor = dialog.renderRoot.querySelector('sl-button[variant="warning"]') as any;
+      assert.exists(keepButtonMinor);
+      assert.isFalse(keepButtonMinor.disabled); // Should be enabled!
+
+      // Click it -> should prompt confirm and then trigger save
+      const confirmStub = sinon.stub(window, 'confirm').returns(true);
+      window.csClient.patchSummarySuggestion.resolves({});
+      await dialog.keepCuratedVersion();
+      assert.isTrue(confirmStub.called);
+      assert.isTrue(window.csClient.patchSummarySuggestion.called);
+      confirmStub.restore();
+    });
+
+    it('locks curation panel and renders resolve dispute link when DISPUTED', async () => {
+      const dialog = (await fixture(
+        html`<chromedash-summary-review-dialog
+          .feature=${feature}
+          .suggestion=${suggestion}
+        ></chromedash-summary-review-dialog>`
+      )) as ChromedashSummaryReviewDialog;
+
+      dialog.suggestion = {
+        ...suggestion,
+        status: 'disputed',
+      } as any;
+      dialog.show();
+      await dialog.updateComplete;
+
+      // 1. Curation text area should be locked/disabled
+      const textarea = dialog.renderRoot.querySelector('.editable-summary-textarea') as any;
+      assert.exists(textarea);
+      assert.isTrue(textarea.disabled);
+
+      // 2. Links and baseline fieldsets should be disabled
+      const checkboxes = dialog.renderRoot.querySelectorAll('.link-edit-row sl-checkbox');
+      checkboxes.forEach((cb: any) => {
+        assert.isTrue(cb.disabled);
+      });
+
+      const baselineFieldset = dialog.renderRoot.querySelector('fieldset');
+      assert.exists(baselineFieldset);
+      assert.isTrue(baselineFieldset.hasAttribute('disabled'));
+
+      // 3. Footer should show dispute banner and resolve dispute button
+      const banner = dialog.renderRoot.querySelector('.conflict-banner');
+      assert.exists(banner);
+      assert.include(banner.textContent, 'DISPUTED');
+
+      const resolveBtn = dialog.renderRoot.querySelector('sl-button[href*="b.corp.google.com"]') as any;
+      assert.exists(resolveBtn);
+      assert.include(resolveBtn.textContent, 'Resolve Dispute');
+
+      // Primary curation save button should NOT be rendered
+      const saveBtn = dialog.renderRoot.querySelector('sl-button[variant="primary"]');
+      assert.isNull(saveBtn);
     });
   });
 });

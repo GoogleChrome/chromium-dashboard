@@ -96,6 +96,14 @@ export class ChromedashFeatureSuggestionStatus extends LitElement {
         return html`<sl-tag variant="success" pill>Draft Available</sl-tag>`;
       case 'applied':
         return html`<sl-tag variant="primary" pill>Applied</sl-tag>`;
+      case 'bypassed':
+        return html`<sl-tag variant="warning" pill>Bypassed</sl-tag>`;
+      case 'out_of_date':
+        return html`<sl-tag variant="warning" pill>Out of Date</sl-tag>`;
+      case 'disputed':
+        return html`<sl-tag variant="danger" pill>Disputed</sl-tag>`;
+      case 'finalized':
+        return html`<sl-tag variant="neutral" pill>Finalized</sl-tag>`;
       case 'discarded':
         return html`<sl-tag variant="neutral" pill>Discarded</sl-tag>`;
       case 'failed':
@@ -207,7 +215,10 @@ export class ChromedashFeatureSuggestionStatus extends LitElement {
                     </sl-button>
                   `
                 : nothing}
-              ${status === 'complete' || status === 'skipped'
+              ${status === 'complete' ||
+              status === 'skipped' ||
+              status === 'out_of_date' ||
+              status === 'disputed'
                 ? html`
                     <sl-button
                       size="small"
@@ -225,11 +236,15 @@ export class ChromedashFeatureSuggestionStatus extends LitElement {
                       ${this.renderGeminiIcon()}
                       ${status === 'skipped'
                         ? 'Write Summary Manually'
+                        : status === 'out_of_date'
+                        ? 'Review Curation (Drift)'
+                        : status === 'disputed'
+                        ? 'Review Dispute'
                         : this.getButtonText(sug)}
                     </sl-button>
                   `
                 : nothing}
-              ${status === 'applied'
+              ${status === 'applied' || status === 'bypassed' || status === 'finalized'
                 ? html`
                     <sl-button
                       size="small"
@@ -243,7 +258,8 @@ export class ChromedashFeatureSuggestionStatus extends LitElement {
                           })
                         )}
                     >
-                      ${this.renderGeminiIcon()} Edit applied summary
+                      ${this.renderGeminiIcon()}
+                      ${status === 'finalized' ? 'View applied summary' : 'Edit applied summary'}
                     </sl-button>
                   `
                 : nothing}

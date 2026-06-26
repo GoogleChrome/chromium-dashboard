@@ -448,6 +448,10 @@ class Stage(ndb.Model):
 class FeatureSummarySuggestion(ndb.Model):
     """AI suggestion data and workflow status linked 1-to-1 with a FeatureEntry."""
 
+    generation_token = ndb.StringProperty()  # Unique UUID per generation attempt
+    lease_expiry = ndb.DateTimeProperty()    # Cooldown lock protecting against concurrent task runs
+    emailed_version_token = ndb.IntegerProperty()  # Tracks if email has been sent for this version
+
     suggested_summary = ndb.TextProperty()
     status = ndb.StringProperty(
         indexed=True
@@ -564,3 +568,17 @@ class MilestoneMetadata(ndb.Model):
     highlights = ndb.TextProperty()
     boilerplate_template = ndb.TextProperty()
     created = ndb.DateTimeProperty(auto_now_add=True)
+
+
+class MilestoneCuration(ndb.Model):
+    """Tracks the editorial and curation status of an entire milestone's release notes.
+    
+    The Key ID is the milestone number as a string (e.g., ndb.Key(MilestoneCuration, '120')),
+    enabling O(1) strongly consistent key lookups.
+    """
+    status = ndb.StringProperty(
+        choices=['not_started', 'in_review', 'finalized'],
+        default='not_started'
+    )
+    updated_by = ndb.StringProperty()  # Email of the editor who changed the status
+    updated_at = ndb.DateTimeProperty(auto_now=True)

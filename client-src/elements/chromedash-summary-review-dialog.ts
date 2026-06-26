@@ -699,6 +699,43 @@ export class ChromedashSummaryReviewDialog extends LitElement {
           min-width: 45px;
           user-select: none;
         }
+
+        /* Visual Diff Styling */
+        .visual-diff-container {
+          display: flex;
+          flex-direction: column;
+          border: 1px solid var(--sl-color-neutral-200);
+          border-radius: 4px;
+          background: var(--sl-color-neutral-0);
+          overflow: hidden;
+          max-height: 300px;
+          overflow-y: auto;
+        }
+
+        .diff-line {
+          padding: 0.25rem 0.5rem;
+          font-family: var(--sl-font-mono);
+          font-size: 0.85rem;
+          line-height: 1.5;
+          white-space: pre-wrap;
+          word-break: break-all;
+        }
+
+        .diff-line.unchanged {
+          color: var(--sl-color-neutral-700);
+        }
+
+        .diff-line.removed {
+          background: var(--sl-color-danger-50);
+          color: var(--sl-color-danger-800);
+          border-left: 3px solid var(--sl-color-danger-500);
+        }
+
+        .diff-line.added {
+          background: var(--sl-color-success-50);
+          color: var(--sl-color-success-800);
+          border-left: 3px solid var(--sl-color-success-500);
+        }
       `,
     ];
   }
@@ -726,7 +763,11 @@ export class ChromedashSummaryReviewDialog extends LitElement {
   @state()
   errorMessage = '';
   @state()
-  activeTab: 'write' | 'preview' = 'write';
+  activeTab: 'edit' | 'diff' | 'preview' = 'edit';
+
+  get isLocked() {
+    return this.suggestion?.status === 'disputed' || this.suggestion?.status === 'finalized';
+  }
   @state()
   isDirty = false;
   @state()
@@ -770,7 +811,7 @@ export class ChromedashSummaryReviewDialog extends LitElement {
     this.showBypassUI = false;
     this.bypassAction = 'apply';
     this.bypassJustification = '';
-    this.activeTab = 'write';
+    this.activeTab = 'edit';
     this.isDirty = false;
     this.inConflict = false;
     this.serverSummaryText = '';
@@ -788,6 +829,7 @@ export class ChromedashSummaryReviewDialog extends LitElement {
   }
 
   useOriginalSummaryOnly() {
+    if (this.isLocked) return;
     if (this.feature) {
       this.summaryText = this.feature.summary || '';
       this.isDirty = true;
@@ -795,6 +837,7 @@ export class ChromedashSummaryReviewDialog extends LitElement {
   }
 
   useAISummaryOnly() {
+    if (this.isLocked) return;
     if (this.suggestion) {
       this.summaryText = this.suggestion.suggested_summary || '';
       this.isDirty = true;
@@ -802,6 +845,7 @@ export class ChromedashSummaryReviewDialog extends LitElement {
   }
 
   useOriginalLinksOnly() {
+    if (this.isLocked) return;
     if (this.feature) {
       const featureLinks = this.feature.resources?.docs || [];
       this.linksList = featureLinks.map(url => ({url, approved: true}));
@@ -810,6 +854,7 @@ export class ChromedashSummaryReviewDialog extends LitElement {
   }
 
   useAILinksOnly() {
+    if (this.isLocked) return;
     if (this.suggestion) {
       const aiLinks = this.suggestion.suggested_doc_links || [];
       this.linksList = aiLinks.map(url => ({url, approved: true}));
@@ -818,12 +863,14 @@ export class ChromedashSummaryReviewDialog extends LitElement {
   }
 
   toggleLinkApproved(index: number) {
+    if (this.isLocked) return;
     this.linksList[index].approved = !this.linksList[index].approved;
     this.linksList = [...this.linksList];
     this.isDirty = true;
   }
 
   addNewLink() {
+    if (this.isLocked) return;
     const url = this.newLinkLabelInput.trim();
     if (!url) return;
     if (this.linksList.some(item => item.url === url)) {
@@ -987,6 +1034,7 @@ export class ChromedashSummaryReviewDialog extends LitElement {
 
   // Master selector helper that handles status changes and date clearing
   selectBaselineStatus(status: string) {
+    if (this.isLocked) return;
     if (this.submitting || this.editingBaselineStatus === status) return;
     this.editingBaselineStatus = status;
 
@@ -1004,6 +1052,7 @@ export class ChromedashSummaryReviewDialog extends LitElement {
 
   // Use Original Baseline Action
   useOriginalBaseline() {
+    if (this.isLocked) return;
     if (!this.suggestion) return;
     const origStatus = this.suggestion.original_baseline_status || 'none';
 
@@ -1019,6 +1068,7 @@ export class ChromedashSummaryReviewDialog extends LitElement {
 
   // Use AI Baseline Action
   useAIBaseline() {
+    if (this.isLocked) return;
     if (!this.suggestion) return;
     const aiStatus = this.suggestion.baseline_status || 'none';
 
@@ -1252,6 +1302,73 @@ export class ChromedashSummaryReviewDialog extends LitElement {
     }
   }
 
+  renderVisualDiff() {
+    const original = this.feature?.summary || '';
+    const curated = this.summaryText;
+    const originalLines = original.split('\n');
+    const curatedLines = curated.split('\n');
+    const diffLines: any[] = [];
+    const maxLines = Math.max(originalLines.length, curatedLines.length);
+    for (let i = 0; i < maxLines; i++) {
+      const origLine = originalLines[i];
+      const curLine = curatedLines[i];
+      if (origLine === curLine) {
+        if (origLine !== undefined) {
+          diffLines.push(html`<div class="diff-line unchanged">${origLine}</div>`);
+        }
+      } else {
+        if (origLine !== undefined) {
+          diffLines.push(html`<div class="diff-line removed">- ${origLine}</div>`);
+        }
+        if (curLine !== undefined) {
+          diffLines.push(html`<div class="diff-line added">+ ${curLine}</div>`);
+        }
+      }
+    }
+    return html`
+      <div class="visual-diff-container">
+        ${diffLines}
+      </div>
+    `;
+  }
+
+  async keepCuratedVersion() {
+    if (!this.feature || !this.suggestion) return;
+    if (this.suggestion.drift_detected === 'major') return;
+    if (!confirm('Are you sure you want to keep the curated version and dismiss the minor drift warning?')) {
+      return;
+    }
+    this.submitting = true;
+    try {
+      await window.csClient.patchSummarySuggestion(
+        this.feature.id,
+        'applied',
+        this.suggestion.version_token,
+        this.summaryText,
+        this.linksList.filter(l => l.approved).map(l => l.url),
+        this.editingBaselineStatus,
+        this.editingBaselineNewlyDate || null,
+        this.editingBaselineWidelyDate || null
+      );
+      
+      this.dispatchEvent(
+        new CustomEvent<{summary: string; links: string[]}>('applied', {
+          detail: {
+            summary: this.summaryText,
+            links: this.linksList.filter(l => l.approved).map(l => l.url),
+          },
+        })
+      );
+      showToastMessage('Curated version kept. Drift warning resolved.');
+      this.hide();
+    } catch (err) {
+      console.error(err);
+      this.errorMessage = 'Failed to keep curated version.';
+    } finally {
+      this.submitting = false;
+    }
+  }
+
   render() {
     return html`
       <sl-dialog
@@ -1394,6 +1511,18 @@ export class ChromedashSummaryReviewDialog extends LitElement {
                   : nothing
               }
 
+              ${this.suggestion?.status === 'out_of_date'
+                ? html`
+                    <sl-alert variant="warning" open style="margin-bottom: 1.5rem;">
+                      <sl-icon slot="icon" name="exclamation-triangle"></sl-icon>
+                      <strong>Out-of-Date Curation (Drift Detected):</strong> The original summary or fields have been modified by the owner since this suggestion was curated.
+                      ${this.suggestion.drift_detected === 'major'
+                        ? html`<br /><span style="color: var(--sl-color-danger-600); font-weight: bold;">Major Drift: The original summary has changed significantly. Curation is out of date and must be revised manually or re-generated.</span>`
+                        : html`<br />Minor Drift: The changes are minor. You can keep your curated version or revise it.`}
+                    </sl-alert>
+                  `
+                : nothing}
+
               <!-- Global Feature Context Metadata Bar (Top-Level) -->
               <div class="global-feature-context">
                 ${
@@ -1401,9 +1530,7 @@ export class ChromedashSummaryReviewDialog extends LitElement {
                     ? html`
                         <div class="context-item">
                           <span class="context-label">Blink Components:</span>
-                          <span
-                            >${this.feature.blink_components.join(', ')}</span
-                          >
+                          <span>${this.feature.blink_components.join(', ')}</span>
                         </div>
                       `
                     : nothing
@@ -1458,537 +1585,532 @@ export class ChromedashSummaryReviewDialog extends LitElement {
                 }
               </div>
 
-              <div class="unified-review-grid">
-                <!-- ==================== ROW 1: SUMMARY REVIEW ==================== -->
-                <div class="review-row">
-                  <!-- Left Column: Original (Read-Only) -->
-                  <div class="review-cell left-cell">
-                    <h4 class="section-title">Original Feature Details</h4>
-                    <div class="field-header">
-                      <strong>Original Summary</strong>
-                    </div>
-                    <div class="original-text" data-testid="original-summary">
-                      ${this.feature?.summary || 'No summary'}
-                    </div>
-                  </div>
+              <!-- Top-Level symmetrical 3-tab header -->
+              <div class="curation-tab-header" role="tablist" aria-label="Curation workspace tabs" style="margin-bottom: 1.5rem; border-bottom: 1px solid var(--sl-color-neutral-200); display: flex; gap: 1rem;">
+                <button class="tab-btn ${this.activeTab === 'edit' ? 'active' : ''}" role="tab" aria-selected=${this.activeTab === 'edit'} @click=${() => { this.activeTab = 'edit'; }} style="background: none; border: none; padding: 0.5rem 1rem; cursor: pointer; font-weight: bold; border-bottom: 2px solid ${this.activeTab === 'edit' ? 'var(--sl-color-primary-500)' : 'transparent'}; color: ${this.activeTab === 'edit' ? 'var(--sl-color-primary-600)' : 'var(--sl-color-neutral-600)'};">
+                  Review & Edit
+                </button>
+                <button class="tab-btn ${this.activeTab === 'diff' ? 'active' : ''}" role="tab" aria-selected=${this.activeTab === 'diff'} @click=${() => { this.activeTab = 'diff'; }} style="background: none; border: none; padding: 0.5rem 1rem; cursor: pointer; font-weight: bold; border-bottom: 2px solid ${this.activeTab === 'diff' ? 'var(--sl-color-primary-500)' : 'transparent'}; color: ${this.activeTab === 'diff' ? 'var(--sl-color-primary-600)' : 'var(--sl-color-neutral-600)'};">
+                  Visual Diff
+                </button>
+                <button class="tab-btn ${this.activeTab === 'preview' ? 'active' : ''}" role="tab" aria-selected=${this.activeTab === 'preview'} @click=${() => { this.activeTab = 'preview'; }} style="background: none; border: none; padding: 0.5rem 1rem; cursor: pointer; font-weight: bold; border-bottom: 2px solid ${this.activeTab === 'preview' ? 'var(--sl-color-primary-500)' : 'transparent'}; color: ${this.activeTab === 'preview' ? 'var(--sl-color-primary-600)' : 'var(--sl-color-neutral-600)'};">
+                  Preview
+                </button>
+              </div>
 
-                  <!-- Right Column: Interactive Workspace (Draft) -->
-                  <div class="review-cell right-cell">
-                    <h4 class="section-title">Interactive Workspace (Draft)</h4>
+              <!-- Tab Contents -->
+              <div class="curation-tab-contents" style="margin-bottom: 1.5rem;">
+                ${this.activeTab === 'diff'
+                  ? this.renderVisualDiff()
+                  : this.activeTab === 'preview'
+                  ? html`
+                      <div class="preview-container" data-testid="summary-preview-container" style="padding: 1rem; border: 1px solid var(--sl-color-neutral-200); border-radius: 4px; min-height: 200px; background: #fff;">
+                        ${autolink(this.summaryText, [], true)}
+                      </div>
+                    `
+                  : html`
+                      <!-- activeTab === 'edit' -->
+                      <fieldset ?disabled=${this.isLocked} style="border: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 1.5rem;">
+                        <!-- ==================== ROW 1: SUMMARY REVIEW ==================== -->
+                        <div class="review-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                          <!-- Left Column: Original (Read-Only) -->
+                          <div class="review-cell left-cell" style="background: var(--sl-color-neutral-50); padding: 1rem; border-radius: 4px; border: 1px solid var(--sl-color-neutral-200); overflow-y: auto; max-height: 300px;">
+                            <h4 class="section-title" style="margin-top: 0;">Original Feature Details</h4>
+                            <div class="field-header">
+                              <strong>Original Summary</strong>
+                            </div>
+                            <div class="original-text" data-testid="original-summary" style="white-space: pre-wrap; font-size: 0.9rem;">
+                              ${this.feature?.summary || 'No summary'}
+                            </div>
+                          </div>
 
-                    <div class="field-header">
-                      <strong>Final Summary Draft ${this.suggestion?.status === 'skipped' ? '(Manual Workspace)' : ''}</strong>
-                      ${
-                        this.suggestion?.status !== 'skipped'
-                          ? html`
-                              <sl-button-group
-                                label="Copy original or suggested text"
-                              >
+                          <!-- Right Column: Interactive Workspace (Draft) -->
+                          <div class="review-cell right-cell" style="display: flex; flex-direction: column; gap: 0.75rem;">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                              <h4 class="section-title" style="margin: 0;">Interactive Workspace (Draft)</h4>
+                              ${
+                                this.suggestion?.status !== 'skipped'
+                                  ? html`
+                                      <sl-button-group
+                                        label="Copy original or suggested text"
+                                      >
+                                        <sl-button
+                                          size="small"
+                                          @click=${this.useOriginalSummaryOnly}
+                                          ?disabled=${this.submitting || this.isLocked}
+                                          >Use Original</sl-button
+                                        >
+                                        <sl-button
+                                          size="small"
+                                          @click=${this.useAISummaryOnly}
+                                          ?disabled=${this.submitting || this.isLocked}
+                                          >Use AI</sl-button
+                                        >
+                                      </sl-button-group>
+                                    `
+                                  : nothing
+                              }
+                            </div>
+
+                            <sl-textarea
+                              class="editable-summary-textarea"
+                              data-testid="suggested-summary-textarea"
+                              aria-label="Suggested Summary"
+                              .value=${this.summaryText}
+                              ?disabled=${this.submitting || this.isLocked}
+                              @sl-input=${(e: Event) => {
+                                const target = e.target;
+                                if (target && 'value' in target) {
+                                  this.summaryText = String(target.value);
+                                  this.isDirty = true;
+                                }
+                              }}
+                              style="flex-grow: 1;"
+                              rows="10"
+                            ></sl-textarea>
+                          </div>
+                        </div>
+
+                        <!-- ==================== ROW 2: DOCUMENTATION LINKS REVIEW ==================== -->
+                        <div class="review-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                          <!-- Left Column: Original (Read-Only) -->
+                          <div class="review-cell left-cell" style="background: var(--sl-color-neutral-50); padding: 1rem; border-radius: 4px; border: 1px solid var(--sl-color-neutral-200);">
+                            <div class="field-header">
+                              <strong>Original Doc Links</strong>
+                            </div>
+                            <div class="original-links" style="font-size: 0.9rem;">
+                              ${
+                                this.feature?.resources?.docs?.length
+                                  ? this.feature.resources.docs.map(
+                                      link => html`
+                                        <div class="original-link-row">
+                                          &bull;
+                                          <a href=${link} target="_blank">${link}</a>
+                                        </div>
+                                      `
+                                    )
+                                  : 'No doc links'
+                              }
+                            </div>
+                          </div>
+
+                          <!-- Right Column: Interactive Workspace (Draft) -->
+                          <div class="review-cell right-cell" style="display: flex; flex-direction: column; gap: 0.5rem;">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                              <strong style="font-size: 0.95rem;">Final Documentation Links</strong>
+                              <sl-button-group label="Use original or suggested links">
                                 <sl-button
                                   size="small"
-                                  @click=${this.useOriginalSummaryOnly}
-                                  ?disabled=${this.submitting}
-                                  >Use Original</sl-button
+                                  @click=${this.useOriginalLinksOnly}
+                                  ?disabled=${this.submitting || this.isLocked}
                                 >
+                                  Use Original
+                                </sl-button>
                                 <sl-button
                                   size="small"
-                                  @click=${this.useAISummaryOnly}
-                                  ?disabled=${this.submitting}
-                                  >Use AI</sl-button
+                                  @click=${this.useAILinksOnly}
+                                  ?disabled=${this.submitting || this.isLocked}
                                 >
+                                  Use AI
+                                </sl-button>
                               </sl-button-group>
-                            `
-                          : nothing
-                      }
-                    </div>
+                            </div>
 
-                    <!-- Tabbed Text Area Card -->
-                    <div class="summary-workspace-card">
-                      <div
-                        class="tab-header"
-                        role="tablist"
-                        aria-label="Draft tabs"
-                      >
-                        <button
-                          class="tab-btn ${
-                            this.activeTab === 'write' ? 'active' : ''
-                          }"
-                          role="tab"
-                          aria-selected=${this.activeTab === 'write'}
-                          @click=${() => {
-                            this.activeTab = 'write';
-                          }}
-                        >
-                          Write
-                        </button>
-                        <button
-                          class="tab-btn ${
-                            this.activeTab === 'preview' ? 'active' : ''
-                          }"
-                          role="tab"
-                          aria-selected=${this.activeTab === 'preview'}
-                          @click=${() => {
-                            this.activeTab = 'preview';
-                          }}
-                        >
-                          Preview
-                        </button>
-                      </div>
-
-                      ${
-                        this.activeTab === 'write'
-                          ? html`
-                              <sl-textarea
-                                class="editable-summary-textarea"
-                                data-testid="suggested-summary-textarea"
-                                aria-label="Suggested Summary"
-                                .value=${this.summaryText}
-                                ?disabled=${this.submitting}
-                                @sl-input=${(e: Event) => {
-                                  const target = e.target;
-                                  if (target && 'value' in target) {
-                                    this.summaryText = String(target.value);
-                                    this.isDirty = true;
-                                  }
-                                }}
-                              ></sl-textarea>
-                            `
-                          : html`
-                              <div class="preview-container" data-testid="summary-preview-container">
-                                ${autolink(this.summaryText, [], true)}
+                            <div class="suggested-links-container" style="display: flex; flex-direction: column; gap: 0.5rem;">
+                              <div class="editable-links-list" style="max-height: 150px; overflow-y: auto; display: flex; flex-direction: column; gap: 0.25rem;">
+                                ${this.linksList.map(
+                                  (item, idx) => html`
+                                    <div class="link-edit-row" style="display: flex; align-items: center; gap: 0.5rem;">
+                                      <sl-checkbox
+                                        data-testid="link-checkbox-${idx}"
+                                        aria-label="Approve link: ${item.url}"
+                                        ?checked=${item.approved}
+                                        ?disabled=${this.submitting || this.isLocked}
+                                        @sl-change=${() => this.toggleLinkApproved(idx)}
+                                      ></sl-checkbox>
+                                      <a href=${item.url} target="_blank" style="font-size: 0.9rem;"
+                                        >${item.url}</a
+                                      >
+                                    </div>
+                                  `
+                                )}
                               </div>
-                            `
-                      }
-                    </div>
-                  </div>
-                </div>
 
-                <!-- ==================== ROW 2: DOCUMENTATION LINKS REVIEW ==================== -->
-                <div class="review-row">
-                  <!-- Left Column: Original (Read-Only) -->
-                  <div class="review-cell left-cell">
-                    <div class="field-header">
-                      <strong>Original Doc Links</strong>
-                    </div>
-                    <div class="original-links">
-                      ${
-                        this.feature?.resources?.docs?.length
-                          ? this.feature.resources.docs.map(
-                              link => html`
-                                <div class="original-link-row">
-                                  &bull;
-                                  <a href=${link} target="_blank">${link}</a>
+                              <div class="add-link-container" style="display: flex; gap: 0.5rem; align-items: center;">
+                                <sl-input
+                                  size="small"
+                                  placeholder="Add custom doc link URL..."
+                                  aria-label="New document link URL"
+                                  .value=${this.newLinkLabelInput}
+                                  ?disabled=${this.submitting || this.isLocked}
+                                  @sl-change=${(e: Event) => {
+                                    const target = e.target;
+                                    if (target && 'value' in target) {
+                                      this.newLinkLabelInput = String(target.value);
+                                    }
+                                  }}
+                                  style="flex-grow: 1;"
+                                ></sl-input>
+                                <sl-button
+                                  size="small"
+                                  @click=${this.addNewLink}
+                                  ?disabled=${this.submitting || this.isLocked}
+                                  >Add</sl-button
+                                >
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <!-- ==================== ROW 3: BASELINE STATUS REVIEW ==================== -->
+                        <div class="review-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                          <!-- Left Column: Original Status (Read-Only) -->
+                          <div class="review-cell left-cell" style="background: var(--sl-color-neutral-50); padding: 1rem; border-radius: 4px; border: 1px solid var(--sl-color-neutral-200);">
+                            <!-- Render dynamic original baseline badges and dates -->
+                            ${this.renderOriginalBaselineInfo()}
+                          </div>
+
+                          <!-- Right Column: Interactive Radio Cards Workspace -->
+                          <div class="review-cell right-cell" style="display: flex; flex-direction: column; gap: 0.5rem;">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                              <strong style="font-size: 0.95rem;">Final Baseline Status</strong>
+                              <sl-button-group
+                                label="Use original or suggested baseline status"
+                              >
+                                <sl-button
+                                  size="small"
+                                  @click=${this.useOriginalBaseline}
+                                  ?disabled=${this.submitting || this.isLocked}
+                                >
+                                  Use Original
+                                </sl-button>
+                                <sl-button
+                                  size="small"
+                                  @click=${this.useAIBaseline}
+                                  ?disabled=${this.submitting || this.isLocked}
+                                >
+                                  Use AI
+                                </sl-button>
+                              </sl-button-group>
+                            </div>
+
+                            <sl-radio-group
+                              .value=${this.editingBaselineStatus || 'none'}
+                            >
+                              <div class="baseline-radio-group" style="display: flex; flex-direction: column; gap: 0.5rem;">
+                                <!-- Option 1: None (No Baseline Status) -->
+                                <div
+                                  class="baseline-card ${
+                                    this.editingBaselineStatus === 'none'
+                                      ? 'selected'
+                                      : ''
+                                  }"
+                                  @click=${() => this.selectBaselineStatus('none')}
+                                  style="border: 1px solid var(--sl-color-neutral-200); padding: 0.75rem; border-radius: 4px; cursor: pointer; transition: all 0.15s ease;"
+                                >
+                                  <div class="baseline-card-header" style="display: flex; justify-content: space-between; align-items: center;">
+                                    <div class="baseline-card-label-left">
+                                      <sl-radio
+                                        value="none"
+                                        ?disabled=${this.submitting || this.isLocked}
+                                        @click=${() => this.selectBaselineStatus('none')}
+                                      >
+                                        None (No Baseline Status)
+                                      </sl-radio>
+                                    </div>
+                                    ${
+                                      this.suggestion?.original_baseline_status ===
+                                        'none' ||
+                                      !this.suggestion?.original_baseline_status
+                                        ? html`<sl-tag
+                                            size="small"
+                                            variant="neutral"
+                                            class="baseline-card-badge"
+                                            >Original</sl-tag
+                                          >`
+                                        : nothing
+                                    }
+                                  </div>
+                                  <div class="baseline-card-description" style="font-size: 0.85rem; color: var(--sl-color-neutral-500); margin-top: 0.25rem;">
+                                    Keep this feature without a baseline status, or
+                                    reject the suggestion.
+                                  </div>
                                 </div>
-                              `
-                            )
-                          : 'No doc links'
-                      }
-                    </div>
-                  </div>
 
-                  <!-- Right Column: Interactive Workspace (Draft) -->
-                  <div class="review-cell right-cell">
-                    <div class="field-header">
-                      <strong>Final Documentation Links</strong>
-                      <sl-button-group label="Use original or suggested links">
-                        <sl-button
-                          size="small"
-                          @click=${this.useOriginalLinksOnly}
-                          ?disabled=${this.submitting}
-                        >
-                          Use Original
-                        </sl-button>
-                        <sl-button
-                          size="small"
-                          @click=${this.useAILinksOnly}
-                          ?disabled=${this.submitting}
-                        >
-                          Use AI
-                        </sl-button>
-                      </sl-button-group>
-                    </div>
-
-                    <div class="suggested-links-container">
-                      <div class="editable-links-list">
-                        ${this.linksList.map(
-                          (item, idx) => html`
-                            <div class="link-edit-row">
-                              <sl-checkbox
-                                data-testid="link-checkbox-${idx}"
-                                aria-label="Approve link: ${item.url}"
-                                ?checked=${item.approved}
-                                ?disabled=${this.submitting}
-                                @sl-change=${() => this.toggleLinkApproved(idx)}
-                              ></sl-checkbox>
-                              <a href=${item.url} target="_blank"
-                                >${item.url}</a
-                              >
-                            </div>
-                          `
-                        )}
-                      </div>
-
-                      <div class="add-link-container">
-                        <sl-input
-                          size="small"
-                          placeholder="Add custom doc link URL..."
-                          aria-label="New document link URL"
-                          .value=${this.newLinkLabelInput}
-                          ?disabled=${this.submitting}
-                          @sl-change=${(e: Event) => {
-                            const target = e.target;
-                            if (target && 'value' in target) {
-                              this.newLinkLabelInput = String(target.value);
-                            }
-                          }}
-                          style="flex-grow: 1;"
-                        ></sl-input>
-                        <sl-button
-                          size="small"
-                          @click=${this.addNewLink}
-                          ?disabled=${this.submitting}
-                          >Add</sl-button
-                        >
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- ==================== ROW 3: BASELINE STATUS REVIEW ==================== -->
-                <div class="review-row">
-                  <!-- Left Column: Original Status (Read-Only) -->
-                  <div class="review-cell left-cell">
-                    <!-- Render dynamic original baseline badges and dates -->
-                    ${this.renderOriginalBaselineInfo()}
-                  </div>
-
-                  <!-- Right Column: Interactive Radio Cards Workspace -->
-                  <div class="review-cell right-cell">
-                    <div class="field-header">
-                      <strong>Final Baseline Status</strong>
-                      <sl-button-group
-                        label="Use original or suggested baseline status"
-                      >
-                        <sl-button
-                          size="small"
-                          @click=${this.useOriginalBaseline}
-                          ?disabled=${this.submitting}
-                        >
-                          Use Original
-                        </sl-button>
-                        <sl-button
-                          size="small"
-                          @click=${this.useAIBaseline}
-                          ?disabled=${this.submitting}
-                        >
-                          Use AI
-                        </sl-button>
-                      </sl-button-group>
-                    </div>
-
-                    <!-- Enforce mutual exclusivity by wrapping the styled cards inside sl-radio-group -->
-                    <sl-radio-group
-                      .value=${this.editingBaselineStatus || 'none'}
-                    >
-                      <div class="baseline-radio-group">
-                        <!-- Option 1: None (No Baseline Status) -->
-                        <div
-                          class="baseline-card ${
-                            this.editingBaselineStatus === 'none'
-                              ? 'selected'
-                              : ''
-                          }"
-                          @click=${() => this.selectBaselineStatus('none')}
-                        >
-                          <div class="baseline-card-header">
-                            <div class="baseline-card-label-left">
-                              <sl-radio
-                                value="none"
-                                ?disabled=${this.submitting}
-                                @click=${() => this.selectBaselineStatus('none')}
-                              >
-                                None (No Baseline Status)
-                              </sl-radio>
-                            </div>
-                            ${
-                              this.suggestion?.original_baseline_status ===
-                                'none' ||
-                              !this.suggestion?.original_baseline_status
-                                ? html`<sl-tag
-                                    size="small"
-                                    variant="neutral"
-                                    class="baseline-card-badge"
-                                    >Original</sl-tag
-                                  >`
-                                : nothing
-                            }
-                          </div>
-                          <div class="baseline-card-description">
-                            Keep this feature without a baseline status, or
-                            reject the suggestion.
-                          </div>
-                        </div>
-
-                        <!-- Option 2: Baseline Limited -->
-                        <div
-                          class="baseline-card ${
-                            this.editingBaselineStatus === 'limited'
-                              ? 'selected'
-                              : ''
-                          } ${
-                            this.suggestion?.baseline_status === 'limited'
-                              ? 'ai-suggested'
-                              : ''
-                          }"
-                          @click=${() => this.selectBaselineStatus('limited')}
-                        >
-                          <div class="baseline-card-header">
-                            <div class="baseline-card-label-left">
-                              <sl-radio
-                                value="limited"
-                                ?disabled=${this.submitting}
-                                @click=${() => this.selectBaselineStatus('limited')}
-                              >
-                                <span
-                                  style="display: inline-flex; align-items: center; gap: 6px;"
+                                <!-- Option 2: Baseline Limited -->
+                                <div
+                                  class="baseline-card ${
+                                    this.editingBaselineStatus === 'limited'
+                                      ? 'selected'
+                                      : ''
+                                  } ${
+                                    this.suggestion?.baseline_status === 'limited'
+                                      ? 'ai-suggested'
+                                      : ''
+                                  }"
+                                  @click=${() => this.selectBaselineStatus('limited')}
+                                  style="border: 1px solid var(--sl-color-neutral-200); padding: 0.75rem; border-radius: 4px; cursor: pointer; transition: all 0.15s ease;"
                                 >
-                                  <img
-                                    src="/static/img/baseline-limited-icon.svg"
-                                    class="baseline-card-icon"
-                                    alt=""
-                                  />
-                                  Baseline Limited
-                                </span>
-                              </sl-radio>
-                            </div>
-                            <div style="display: flex; gap: 4px;">
-                              ${
-                                this.suggestion?.baseline_status === 'limited'
-                                  ? html`<sl-tag
-                                      size="small"
-                                      variant="primary"
-                                      class="baseline-card-badge"
-                                      >AI Suggested</sl-tag
-                                    >`
-                                  : nothing
-                              }
-                              ${
-                                this.suggestion?.original_baseline_status ===
-                                'limited'
-                                  ? html`<sl-tag
-                                      size="small"
-                                      variant="neutral"
-                                      class="baseline-card-badge"
-                                      >Original</sl-tag
-                                    >`
-                                  : nothing
-                              }
-                            </div>
-                          </div>
-                          <div class="baseline-card-description">
-                            The feature has limited support or is only available
-                            in some browsers.
-                          </div>
-                        </div>
-
-                        <!-- Option 3: Baseline Newly Available -->
-                        <div
-                          class="baseline-card ${
-                            this.editingBaselineStatus === 'newly'
-                              ? 'selected'
-                              : ''
-                          } ${
-                            this.suggestion?.baseline_status === 'newly'
-                              ? 'ai-suggested'
-                              : ''
-                          }"
-                          @click=${() => this.selectBaselineStatus('newly')}
-                        >
-                          <div class="baseline-card-header">
-                            <div class="baseline-card-label-left">
-                              <sl-radio
-                                value="newly"
-                                ?disabled=${this.submitting}
-                                @click=${() => this.selectBaselineStatus('newly')}
-                              >
-                                <span
-                                  style="display: inline-flex; align-items: center; gap: 6px;"
-                                >
-                                  <img
-                                    src="/static/img/baseline-newly-icon.svg"
-                                    class="baseline-card-icon"
-                                    alt=""
-                                  />
-                                  Baseline Newly Available
-                                </span>
-                              </sl-radio>
-                            </div>
-                            <div style="display: flex; gap: 4px;">
-                              ${
-                                this.suggestion?.baseline_status === 'newly'
-                                  ? html`<sl-tag
-                                      size="small"
-                                      variant="primary"
-                                      class="baseline-card-badge"
-                                      >AI Suggested</sl-tag
-                                    >`
-                                  : nothing
-                              }
-                              ${
-                                this.suggestion?.original_baseline_status ===
-                                'newly'
-                                  ? html`<sl-tag
-                                      size="small"
-                                      variant="neutral"
-                                      class="baseline-card-badge"
-                                      >Original</sl-tag
-                                    >`
-                                  : nothing
-                              }
-                            </div>
-                          </div>
-                          <div class="baseline-card-description">
-                            Supported across all major browser engines. Requires
-                            newly available date.
-                          </div>
-
-                          <!-- Embedded Conditional Newly Available Date Picker -->
-                          ${
-                            this.editingBaselineStatus === 'newly'
-                              ? html`
-                                  <div
-                                    class="baseline-card-dates"
-                                    @click=${(e: Event) => e.stopPropagation()}
-                                  >
-                                    <sl-input
-                                      type="date"
-                                      size="small"
-                                      label="Newly Available Date"
-                                      .value=${this.editingBaselineNewlyDate ||
-                                      ''}
-                                      ?disabled=${this.submitting}
-                                      @sl-input=${this.handleNewlyDateChange}
-                                      required
-                                    ></sl-input>
+                                  <div class="baseline-card-header" style="display: flex; justify-content: space-between; align-items: center;">
+                                    <div class="baseline-card-label-left">
+                                      <sl-radio
+                                        value="limited"
+                                        ?disabled=${this.submitting || this.isLocked}
+                                        @click=${() => this.selectBaselineStatus('limited')}
+                                      >
+                                        <span
+                                          style="display: inline-flex; align-items: center; gap: 6px;"
+                                        >
+                                          <img
+                                            src="/static/img/baseline-limited-icon.svg"
+                                            class="baseline-card-icon"
+                                            alt=""
+                                            style="width: 16px; height: 16px;"
+                                          />
+                                          Baseline Limited
+                                        </span>
+                                      </sl-radio>
+                                    </div>
+                                    <div style="display: flex; gap: 4px;">
+                                      ${
+                                        this.suggestion?.baseline_status === 'limited'
+                                          ? html`<sl-tag
+                                              size="small"
+                                              variant="primary"
+                                              class="baseline-card-badge"
+                                              >AI Suggested</sl-tag
+                                            >`
+                                          : nothing
+                                      }
+                                      ${
+                                        this.suggestion?.original_baseline_status ===
+                                        'limited'
+                                          ? html`<sl-tag
+                                              size="small"
+                                              variant="neutral"
+                                              class="baseline-card-badge"
+                                              >Original</sl-tag
+                                            >`
+                                          : nothing
+                                      }
+                                    </div>
                                   </div>
-                                `
-                              : nothing
-                          }
-                        </div>
-
-                        <!-- Option 4: Baseline Widely Available -->
-                        <div
-                          class="baseline-card ${
-                            this.editingBaselineStatus === 'widely'
-                              ? 'selected'
-                              : ''
-                          } ${
-                            this.suggestion?.baseline_status === 'widely'
-                              ? 'ai-suggested'
-                              : ''
-                          }"
-                          @click=${() => this.selectBaselineStatus('widely')}
-                        >
-                          <div class="baseline-card-header">
-                            <div class="baseline-card-label-left">
-                              <sl-radio
-                                value="widely"
-                                ?disabled=${this.submitting}
-                                @click=${() => this.selectBaselineStatus('widely')}
-                              >
-                                <span
-                                  style="display: inline-flex; align-items: center; gap: 6px;"
-                                >
-                                  <img
-                                    src="/static/img/baseline-widely-icon.svg"
-                                    class="baseline-card-icon"
-                                    alt=""
-                                  />
-                                  Baseline Widely Available
-                                </span>
-                              </sl-radio>
-                            </div>
-                            <div style="display: flex; gap: 4px;">
-                              ${
-                                this.suggestion?.baseline_status === 'widely'
-                                  ? html`<sl-tag
-                                      size="small"
-                                      variant="primary"
-                                      class="baseline-card-badge"
-                                      >AI Suggested</sl-tag
-                                    >`
-                                  : nothing
-                              }
-                              ${
-                                this.suggestion?.original_baseline_status ===
-                                'widely'
-                                  ? html`<sl-tag
-                                      size="small"
-                                      variant="neutral"
-                                      class="baseline-card-badge"
-                                      >Original</sl-tag
-                                    >`
-                                  : nothing
-                              }
-                            </div>
-                          </div>
-                          <div class="baseline-card-description">
-                            Supported in all major engines for 30+ months.
-                            Requires newly and widely available dates.
-                          </div>
-
-                          <!-- Embedded Conditional Widely Available Date Pickers -->
-                          ${
-                            this.editingBaselineStatus === 'widely'
-                              ? html`
-                                  <div
-                                    class="baseline-card-dates"
-                                    @click=${(e: Event) => e.stopPropagation()}
-                                  >
-                                    <sl-input
-                                      type="date"
-                                      size="small"
-                                      label="Newly Available Date"
-                                      .value=${this.editingBaselineNewlyDate ||
-                                      ''}
-                                      ?disabled=${this.submitting}
-                                      @sl-input=${this.handleNewlyDateChange}
-                                      required
-                                    ></sl-input>
-                                    <sl-input
-                                      type="date"
-                                      size="small"
-                                      label="Widely Available Date"
-                                      .value=${this.editingBaselineWidelyDate ||
-                                      ''}
-                                      ?disabled=${this.submitting}
-                                      @sl-input=${this.handleWidelyDateChange}
-                                      required
-                                    ></sl-input>
+                                  <div class="baseline-card-description" style="font-size: 0.85rem; color: var(--sl-color-neutral-500); margin-top: 0.25rem;">
+                                    The feature has limited support or is only available
+                                    in some browsers.
                                   </div>
-                                `
-                              : nothing
-                          }
+                                </div>
+
+                                <!-- Option 3: Baseline Newly Available -->
+                                <div
+                                  class="baseline-card ${
+                                    this.editingBaselineStatus === 'newly'
+                                      ? 'selected'
+                                      : ''
+                                  } ${
+                                    this.suggestion?.baseline_status === 'newly'
+                                      ? 'ai-suggested'
+                                      : ''
+                                  }"
+                                  @click=${() => this.selectBaselineStatus('newly')}
+                                  style="border: 1px solid var(--sl-color-neutral-200); padding: 0.75rem; border-radius: 4px; cursor: pointer; transition: all 0.15s ease;"
+                                >
+                                  <div class="baseline-card-header" style="display: flex; justify-content: space-between; align-items: center;">
+                                    <div class="baseline-card-label-left">
+                                      <sl-radio
+                                        value="newly"
+                                        ?disabled=${this.submitting || this.isLocked}
+                                        @click=${() => this.selectBaselineStatus('newly')}
+                                      >
+                                        <span
+                                          style="display: inline-flex; align-items: center; gap: 6px;"
+                                        >
+                                          <img
+                                            src="/static/img/baseline-newly-icon.svg"
+                                            class="baseline-card-icon"
+                                            alt=""
+                                            style="width: 16px; height: 16px;"
+                                          />
+                                          Baseline Newly Available
+                                        </span>
+                                      </sl-radio>
+                                    </div>
+                                    <div style="display: flex; gap: 4px;">
+                                      ${
+                                        this.suggestion?.baseline_status === 'newly'
+                                          ? html`<sl-tag
+                                              size="small"
+                                              variant="primary"
+                                              class="baseline-card-badge"
+                                              >AI Suggested</sl-tag
+                                            >`
+                                          : nothing
+                                      }
+                                      ${
+                                        this.suggestion?.original_baseline_status ===
+                                        'newly'
+                                          ? html`<sl-tag
+                                              size="small"
+                                              variant="neutral"
+                                              class="baseline-card-badge"
+                                              >Original</sl-tag
+                                            >`
+                                          : nothing
+                                      }
+                                    </div>
+                                  </div>
+                                  <div class="baseline-card-description" style="font-size: 0.85rem; color: var(--sl-color-neutral-500); margin-top: 0.25rem;">
+                                    Supported across all major browser engines. Requires
+                                    newly available date.
+                                  </div>
+
+                                  <!-- Embedded Conditional Newly Available Date Picker -->
+                                  ${
+                                    this.editingBaselineStatus === 'newly'
+                                      ? html`
+                                          <div
+                                            class="baseline-card-dates"
+                                            @click=${(e: Event) => e.stopPropagation()}
+                                            style="margin-top: 0.5rem; display: flex; gap: 0.5rem;"
+                                          >
+                                            <sl-input
+                                              type="date"
+                                              size="small"
+                                              label="Newly Available Date"
+                                              .value=${this.editingBaselineNewlyDate ||
+                                              ''}
+                                              ?disabled=${this.submitting || this.isLocked}
+                                              @sl-input=${this.handleNewlyDateChange}
+                                              required
+                                              style="width: 100%;"
+                                            ></sl-input>
+                                          </div>
+                                        `
+                                      : nothing
+                                  }
+                                </div>
+
+                                <!-- Option 4: Baseline Widely Available -->
+                                <div
+                                  class="baseline-card ${
+                                    this.editingBaselineStatus === 'widely'
+                                      ? 'selected'
+                                      : ''
+                                  } ${
+                                    this.suggestion?.baseline_status === 'widely'
+                                      ? 'ai-suggested'
+                                      : ''
+                                  }"
+                                  @click=${() => this.selectBaselineStatus('widely')}
+                                  style="border: 1px solid var(--sl-color-neutral-200); padding: 0.75rem; border-radius: 4px; cursor: pointer; transition: all 0.15s ease;"
+                                >
+                                  <div class="baseline-card-header" style="display: flex; justify-content: space-between; align-items: center;">
+                                    <div class="baseline-card-label-left">
+                                      <sl-radio
+                                        value="widely"
+                                        ?disabled=${this.submitting || this.isLocked}
+                                        @click=${() => this.selectBaselineStatus('widely')}
+                                      >
+                                        <span
+                                          style="display: inline-flex; align-items: center; gap: 6px;"
+                                        >
+                                          <img
+                                            src="/static/img/baseline-widely-icon.svg"
+                                            class="baseline-card-icon"
+                                            alt=""
+                                            style="width: 16px; height: 16px;"
+                                          />
+                                          Baseline Widely Available
+                                        </span>
+                                      </sl-radio>
+                                    </div>
+                                    <div style="display: flex; gap: 4px;">
+                                      ${
+                                        this.suggestion?.baseline_status === 'widely'
+                                          ? html`<sl-tag
+                                              size="small"
+                                              variant="primary"
+                                              class="baseline-card-badge"
+                                              >AI Suggested</sl-tag
+                                            >`
+                                          : nothing
+                                      }
+                                      ${
+                                        this.suggestion?.original_baseline_status ===
+                                        'widely'
+                                          ? html`<sl-tag
+                                              size="small"
+                                              variant="neutral"
+                                              class="baseline-card-badge"
+                                              >Original</sl-tag
+                                            >`
+                                          : nothing
+                                      }
+                                    </div>
+                                  </div>
+                                  <div class="baseline-card-description" style="font-size: 0.85rem; color: var(--sl-color-neutral-500); margin-top: 0.25rem;">
+                                    Supported in all major engines for 30+ months.
+                                    Requires newly and widely available dates.
+                                  </div>
+
+                                  <!-- Embedded Conditional Widely Available Date Pickers -->
+                                  ${
+                                    this.editingBaselineStatus === 'widely'
+                                      ? html`
+                                          <div
+                                            class="baseline-card-dates"
+                                            @click=${(e: Event) => e.stopPropagation()}
+                                            style="margin-top: 0.5rem; display: flex; gap: 0.5rem;"
+                                          >
+                                            <sl-input
+                                              type="date"
+                                              size="small"
+                                              label="Newly Available Date"
+                                              .value=${this.editingBaselineNewlyDate ||
+                                              ''}
+                                              ?disabled=${this.submitting || this.isLocked}
+                                              @sl-input=${this.handleNewlyDateChange}
+                                              required
+                                              style="flex: 1;"
+                                            ></sl-input>
+                                            <sl-input
+                                              type="date"
+                                              size="small"
+                                              label="Widely Available Date"
+                                              .value=${this.editingBaselineWidelyDate ||
+                                              ''}
+                                              ?disabled=${this.submitting || this.isLocked}
+                                              @sl-input=${this.handleWidelyDateChange}
+                                              required
+                                              style="flex: 1;"
+                                            ></sl-input>
+                                          </div>
+                                        `
+                                      : nothing
+                                  }
+                                </div>
+                              </div>
+                            </sl-radio-group>
+                          </div>
                         </div>
-                      </div>
-                    </sl-radio-group>
-                  </div>
-                </div>
+                      </fieldset>
+                    `}
               </div>
 
               <!-- AI Rationale Expandable Details (Full-Width) -->
               ${
                 this.suggestion?.generation_rationale
                   ? html`
-                      <details class="rationale-details" open>
-                        <summary class="rationale-summary">
+                      <details class="rationale-details" open style="border: 1px solid var(--sl-color-neutral-200); border-radius: 4px; margin-bottom: 1.5rem; background: var(--sl-color-neutral-50);">
+                        <summary class="rationale-summary" style="padding: 0.75rem; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 0.5rem;">
                           <sl-icon
                             class="rationale-icon"
                             name="lightbulb-fill"
+                            style="color: var(--sl-color-warning-500);"
                           ></sl-icon>
                           💡 AI Generation & Enrichment Rationale
                         </summary>
-                        <div class="rationale-content">
+                        <div class="rationale-content" style="padding: 0 0.75rem 0.75rem 0.75rem; border-top: 1px solid var(--sl-color-neutral-200); background: #fff; font-size: 0.9rem;">
                           <div class="rationale-markdown-body">
                             ${autolink(
                               this.suggestion.generation_rationale,
@@ -2003,14 +2125,14 @@ export class ChromedashSummaryReviewDialog extends LitElement {
               }
 
               <!-- Traceability Details & Console Logs (Bottom-Level, Full-Width) -->
-              <details class="traceability-details">
-                  <summary class="traceability-summary">
+              <details class="traceability-details" style="border: 1px solid var(--sl-color-neutral-200); border-radius: 4px; margin-bottom: 1.5rem;">
+                  <summary class="traceability-summary" style="padding: 0.75rem; font-weight: bold; cursor: pointer;">
                     🔍 View Generation & Traceability Logs
                   </summary>
-                  <div class="traceability-content">
+                  <div class="traceability-content" style="padding: 0.75rem; border-top: 1px solid var(--sl-color-neutral-200);">
                     <!-- Prompt Improvement CTA -->
-                    <div class="cta-improve-prompt">
-                      <sl-icon class="cta-icon" name="info-circle"></sl-icon>
+                    <div class="cta-improve-prompt" style="display: flex; gap: 0.5rem; align-items: center; background: var(--sl-color-neutral-50); padding: 0.5rem; border-radius: 4px; margin-bottom: 0.75rem; font-size: 0.85rem;">
+                      <sl-icon class="cta-icon" name="info-circle" style="color: var(--sl-color-primary-500);"></sl-icon>
                       <div>
                         <strong
                           >Want to improve the AI release notes
@@ -2025,7 +2147,7 @@ export class ChromedashSummaryReviewDialog extends LitElement {
                     </div>
 
                     <!-- Trace logs console -->
-                    <div class="traceability-logs-tray">
+                    <div class="traceability-logs-tray" style="background: #1e1e1e; color: #d4d4d4; font-family: monospace; font-size: 0.8rem; padding: 0.5rem; border-radius: 4px; max-height: 200px; overflow-y: auto;">
                       ${
                         this.suggestion?.progress_steps?.length
                           ? this.suggestion.progress_steps.map(step => {
@@ -2071,8 +2193,8 @@ export class ChromedashSummaryReviewDialog extends LitElement {
                               }
 
                               return html`
-                                <div class="trace-line ${step.status}">
-                                  <span class="trace-icon">
+                                <div class="trace-line ${step.status}" style="display: flex; gap: 0.5rem; margin-bottom: 0.25rem;">
+                                  <span class="trace-icon" style="color: ${is_success ? '#4caf50' : is_failed ? '#f44336' : '#2196f3'};">
                                     ${is_in_progress
                                       ? html`<div
                                           class="timeline-spinner"
@@ -2130,11 +2252,11 @@ export class ChromedashSummaryReviewDialog extends LitElement {
                                         `
                                       : nothing}
                                   </span>
-                                  <span class="trace-time"
+                                  <span class="trace-time" style="color: #858585;"
                                     >${formattedTime}</span
                                   >
                                   <span class="trace-msg">${step.message}</span>
-                                  <span class="trace-elapsed">
+                                  <span class="trace-elapsed" style="margin-left: auto; color: #858585;">
                                     ${is_in_progress || is_retrying
                                       ? 'active'
                                       : elapsed}
@@ -2150,108 +2272,149 @@ export class ChromedashSummaryReviewDialog extends LitElement {
                       }
                     </div>
                   </div>
-                </details>
+              </details>
 
-                ${
-                  this.showBypassUI
-                    ? html`
-                        <div class="bypass-container">
-                          <sl-textarea
-                            name="bypass_justification"
-                            data-testid="bypass-justification-textarea"
-                            label="Bypass Justification (Required)"
-                            placeholder="Explain why you are bypassing the feature owner..."
-                            .value=${this.bypassJustification}
-                            ?disabled=${this.submitting}
-                            @sl-input=${(e: Event) => {
-                              const target = e.target;
-                              if (target && 'value' in target) {
-                                this.bypassJustification = String(target.value);
-                              }
-                            }}
-                          ></sl-textarea>
-                        </div>
-                      `
-                    : nothing
-                }
-
-                <div slot="footer">
-                  <div class="dialog-footer-container">
-                    ${
-                      this.errorMessage
-                        ? html`<div class="error-message">
-                            ${this.errorMessage}
-                          </div>`
-                        : nothing
-                    }
-                    <div class="dialog-footer">
-                      ${
-                        this.suggestion?.status !== 'skipped'
-                          ? html`
-                              <sl-button
-                                variant="danger"
-                                outline
-                                ?loading=${this.submitting}
-                                ?disabled=${this.submitting ||
-                                this.showBypassUI}
-                                @click=${this.discardSuggestion}
-                              >
-                                Discard Suggestion
-                              </sl-button>
-                            `
-                          : nothing
-                      }
-                      <div class="dialog-footer-actions">
-                        <sl-button
+              ${
+                this.showBypassUI
+                  ? html`
+                      <div class="bypass-container" style="margin-bottom: 1.5rem;">
+                        <sl-textarea
+                          name="bypass_justification"
+                          data-testid="bypass-justification-textarea"
+                          label="Bypass Justification (Required)"
+                          placeholder="Explain why you are bypassing the feature owner..."
+                          .value=${this.bypassJustification}
                           ?disabled=${this.submitting}
-                          @click=${this.hide}
-                        >
-                          ${this.suggestion?.status === 'skipped' ? 'Acknowledge Skip' : 'Cancel'}
-                        </sl-button>
-                        ${
-                          this.showBypassUI
+                          @sl-input=${(e: Event) => {
+                            const target = e.target;
+                            if (target && 'value' in target) {
+                              this.bypassJustification = String(target.value);
+                            }
+                          }}
+                        ></sl-textarea>
+                      </div>
+                    `
+                  : nothing
+              }
+
+              <div slot="footer">
+                <div class="dialog-footer-container" style="display: flex; flex-direction: column; gap: 0.5rem; width: 100%;">
+                  ${
+                    this.errorMessage
+                      ? html`<div class="error-message" style="color: var(--sl-color-danger-600); font-weight: bold; font-size: 0.9rem;">
+                          ${this.errorMessage}
+                        </div>`
+                      : nothing
+                  }
+                  <div class="dialog-footer" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                    ${this.isLocked
+                      ? html`
+                          ${this.suggestion?.status === 'disputed'
                             ? html`
+                                <div class="conflict-banner" style="margin: 0; background: var(--sl-color-danger-50); color: var(--sl-color-danger-800); border: 1px solid var(--sl-color-danger-200); font-weight: bold; padding: 0.5rem 1rem; border-radius: 4px; display: flex; align-items: center; gap: 0.5rem;">
+                                  ⚠️ DISPUTED: Curation locked to owner's original version.
+                                </div>
                                 <sl-button
-                                  ?disabled=${this.submitting}
-                                  @click=${() => {
-                                    this.showBypassUI = false;
-                                  }}
+                                  variant="warning"
+                                  href="https://b.corp.google.com/issues/new?component=1456399"
+                                  target="_blank"
+                                  style="margin-left: auto; margin-right: 0.5rem;"
                                 >
-                                  Cancel Bypass
-                                </sl-button>
-                                <sl-button
-                                  variant=${this.bypassAction === 'discard'
-                                    ? 'danger'
-                                    : 'primary'}
-                                  ?loading=${this.submitting}
-                                  ?disabled=${this.submitting ||
-                                  !this.bypassJustification.trim()}
-                                  @click=${this.bypassAction === 'discard'
-                                    ? this.discardSuggestion
-                                    : this.applySuggestion}
-                                >
-                                  Confirm
-                                  ${this.bypassAction === 'discard'
-                                    ? 'Discard'
-                                    : 'Apply'}
-                                  Bypass
+                                  Resolve Dispute ↗
                                 </sl-button>
                               `
                             : html`
-                                <sl-button
-                                  variant="primary"
-                                  ?loading=${this.submitting}
-                                  ?disabled=${this.submitting}
-                                  @click=${this.applySuggestion}
-                                >
-                                  ${this.suggestion?.status === 'skipped'
-                                    ? 'Save & Apply Manual'
-                                    : 'Save & Apply'}
-                                </sl-button>
-                              `
-                        }
-                      </div>
-                    </div>
+                                <div class="conflict-banner" style="margin: 0; background: var(--sl-color-neutral-100); color: var(--sl-color-neutral-700); border: 1px solid var(--sl-color-neutral-300); padding: 0.5rem 1rem; border-radius: 4px; font-weight: bold;">
+                                  Milestone is finalized. Curation is locked.
+                                </div>
+                              `}
+                          <sl-button @click=${this.hide} style="${this.suggestion?.status !== 'disputed' ? 'margin-left: auto;' : ''}">Close</sl-button>
+                        `
+                      : html`
+                          <div class="dialog-footer" style="display: flex; gap: 0.5rem; align-items: center; width: 100%;">
+                            ${this.suggestion?.status === 'out_of_date'
+                              ? html`
+                                  <sl-button
+                                    variant="warning"
+                                    ?disabled=${this.submitting || this.suggestion.drift_detected === 'major'}
+                                    @click=${this.keepCuratedVersion}
+                                    style="margin-right: auto;"
+                                  >
+                                    Keep Curated Version
+                                  </sl-button>
+                                `
+                              : nothing}
+                            
+                            <div class="dialog-footer-actions" style="margin-left: ${this.suggestion?.status === 'out_of_date' ? '0' : 'auto'}; display: flex; gap: 0.5rem; align-items: center;">
+                              ${
+                                this.suggestion?.status !== 'skipped'
+                                  ? html`
+                                      <sl-button
+                                        variant="danger"
+                                        outline
+                                        ?loading=${this.submitting}
+                                        ?disabled=${this.submitting ||
+                                        this.showBypassUI}
+                                        @click=${this.discardSuggestion}
+                                      >
+                                        Discard Suggestion
+                                      </sl-button>
+                                    `
+                                  : nothing
+                              }
+                              
+                              <sl-button
+                                ?disabled=${this.submitting}
+                                @click=${this.hide}
+                              >
+                                ${this.suggestion?.status === 'skipped' ? 'Acknowledge Skip' : 'Cancel'}
+                              </sl-button>
+                              
+                              ${
+                                this.showBypassUI
+                                  ? html`
+                                      <sl-button
+                                        ?disabled=${this.submitting}
+                                        @click=${() => {
+                                          this.showBypassUI = false;
+                                        }}
+                                      >
+                                        Cancel Bypass
+                                      </sl-button>
+                                      <sl-button
+                                        variant=${this.bypassAction === 'discard'
+                                          ? 'danger'
+                                          : 'primary'}
+                                        ?loading=${this.submitting}
+                                        ?disabled=${this.submitting ||
+                                        !this.bypassJustification.trim()}
+                                        @click=${this.bypassAction === 'discard'
+                                          ? this.discardSuggestion
+                                          : this.applySuggestion}
+                                      >
+                                        Confirm
+                                        ${this.bypassAction === 'discard'
+                                          ? 'Discard'
+                                          : 'Apply'}
+                                        Bypass
+                                      </sl-button>
+                                    `
+                                  : html`
+                                      <sl-button
+                                        variant="primary"
+                                        ?loading=${this.submitting}
+                                        ?disabled=${this.submitting}
+                                        @click=${this.applySuggestion}
+                                      >
+                                        ${this.suggestion?.status === 'skipped'
+                                          ? 'Save & Apply Manual'
+                                          : 'Save & Apply'}
+                                      </sl-button>
+                                    `
+                              }
+                            </div>
+                          </div>
+                        `}
                   </div>
                 </div>
               </div>

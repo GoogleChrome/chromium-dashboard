@@ -963,6 +963,7 @@ class SummarySuggestionStatus(str, Enum):
     BYPASSED = 'bypassed'
     DISCARDED = 'discarded'
     SKIPPED = 'skipped'
+    FINALIZED = 'finalized'
 
 
 class ProgressStepStatus(str, Enum):

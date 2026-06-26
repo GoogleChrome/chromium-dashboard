@@ -1031,15 +1031,19 @@ export class ChromedashFeatureDetail extends LitElement {
     if (this.reverting || !this.suggestion) return;
     this.reverting = true;
     try {
+      // If the suggestion is already applied, clicking Revert raises a dispute and locks it
+      const targetStatus = this.suggestion.status === 'applied' ? 'disputed' : 'complete';
       await window.csClient.patchSummarySuggestion(
         this.feature.id,
-        'complete',
+        targetStatus,
         this.suggestion.version_token
       );
-      this.suggestion = await window.csClient.getSummarySuggestion(
-        this.feature.id
+      this.suggestion = await window.csClient.getSummarySuggestion(this.feature.id);
+      showToastMessage(
+        targetStatus === 'disputed'
+          ? 'Curation reverted. Dispute raised and curation locked.'
+          : 'Original summary and links restored successfully.'
       );
-      showToastMessage('Original summary and links restored successfully.');
       this._fireEvent('refetch-needed', {});
     } catch (err) {
       console.error(err);
@@ -1071,46 +1075,50 @@ export class ChromedashFeatureDetail extends LitElement {
       return nothing;
     }
 
+    // 1. Suggestion Draft Ready (Writers can review/apply)
     if (this.suggestion.status === 'complete') {
       return html`
-        <sl-alert
-          variant="primary"
-          open
-          style="margin-bottom: var(--content-padding);"
-        >
+        <sl-alert variant="primary" open style="margin-bottom: var(--content-padding);">
           <sl-icon slot="icon" name="info-circle"></sl-icon>
-          <strong>AI Suggestion Ready:</strong> An AI-generated summary
-          suggestion draft is available for this feature.
-          <a
-            href="#"
-            @click=${this.openReviewDialog}
-            style="margin-left: 10px; font-weight: bold;"
-            >Review and Apply Suggestion</a
-          >
+          <strong>AI Suggestion Ready:</strong> An AI-generated summary suggestion draft is available for this feature.
+          <a href="#" @click=${this.openReviewDialog} style="margin-left: 10px; font-weight: bold;">
+            Review and Apply Suggestion
+          </a>
         </sl-alert>
       `;
     }
 
+    // 2. Bypassed (Active 7-day grace period expired warning banner)
     if (this.suggestion.status === 'bypassed' && this.canEdit) {
       return html`
-        <sl-alert
-          variant="warning"
-          open
-          style="margin-bottom: var(--content-padding);"
-        >
+        <sl-alert variant="warning" open style="margin-bottom: var(--content-padding);">
           <sl-icon slot="icon" name="exclamation-triangle"></sl-icon>
-          <strong>AI Suggestion Applied (Bypassed):</strong> A DevRel editor
-          applied an AI suggestion because the review grace period expired. You
-          can revert this edit to restore your original raw summary and links.
-          <sl-button
-            variant="warning"
-            size="small"
-            style="margin-left: 15px;"
-            ?loading=${this.reverting}
-            @click=${this.revertSuggestion}
-          >
+          <strong>AI Suggestion Applied (Bypassed):</strong> A DevRel editor applied an AI suggestion because the review grace period expired. You can revert this edit to restore your original raw summary and links.
+          <sl-button variant="warning" size="small" style="margin-left: 15px;" ?loading=${this.reverting} @click=${this.revertSuggestion}>
             Revert to My Original
           </sl-button>
+        </sl-alert>
+      `;
+    }
+
+    // 3. Applied Curation (Soft Blue informational banner) or Disputed state (Locked Curation)
+    if ((this.suggestion.status === 'applied' || this.suggestion.status === 'disputed') && this.canEdit) {
+      const isDisputed = this.suggestion.status === 'disputed';
+      return html`
+        <sl-alert variant="primary" open style="margin-bottom: var(--content-padding); border-left: 4px solid var(--sl-color-primary-500);">
+          <sl-icon slot="icon" name="info-circle"></sl-icon>
+          <strong>Release Notes Curation:</strong> A DevRel editor has curated the summary for this feature. You can review the changes, revert to your original, or open a dispute.
+          
+          ${!isDisputed ? html`
+            <sl-button variant="primary" size="small" style="margin-left: 15px;" ?loading=${this.reverting} @click=${this.revertSuggestion}>
+              Revert to My Original
+            </sl-button>
+          ` : html`
+            <span style="margin-left: 15px; font-weight: bold; color: var(--sl-color-neutral-600);">[Disputed - Locked to Original]</span>
+            <a href="https://b.corp.google.com/issues/new?component=1456399" target="_blank" style="margin-left: 15px; font-weight: bold;">
+              Resolve Dispute ↗
+            </a>
+          `}
         </sl-alert>
       `;
     }

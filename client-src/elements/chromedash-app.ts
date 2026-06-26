@@ -340,17 +340,17 @@ export class ChromedashApp extends LitElement {
       if (!this.setupNewPage(ctx, 'chromedash-roadmap-page', true)) return;
       this.pageComponent.user = this.user;
     });
-    page('/releases', ctx => {
-      if (!this.setupNewPage(ctx, 'chromedash-releases-page', true)) return;
+    page('/release-notes', ctx => {
+      if (!this.setupNewPage(ctx, 'chromedash-release-notes-page', true)) return;
       this.pageComponent.user = this.user;
     });
-    page('/release-reviews', ctx => {
+    page('/review-release-notes', ctx => {
       if (!this.setupNewPage(ctx, 'chromedash-release-reviews-page', true))
         return;
       this.pageComponent.user = this.user;
     });
-    page('/releases/:milestone(\\d+)', ctx => {
-      if (!this.setupNewPage(ctx, 'chromedash-releases-page', true)) return;
+    page('/release-notes/:milestone(\\d+)', ctx => {
+      if (!this.setupNewPage(ctx, 'chromedash-release-notes-page', true)) return;
       this.pageComponent.user = this.user;
     });
     page('/myfeatures', () => page.redirect('/myfeatures/editable'));

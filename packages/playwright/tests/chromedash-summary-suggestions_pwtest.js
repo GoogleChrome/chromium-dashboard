@@ -770,4 +770,152 @@ test.describe('AI Summary Suggestions E2E Integration Tests', () => {
     await expect(featureSummary).toBeVisible();
     await expect(featureSummary).toContainText('Test summary description');
   });
+
+  test('Disputed Curation Lock workflow', async ({page}) => {
+    // 1. Create feature as Owner
+    await loginAs(page, 'example@chromium.org');
+    const featureName = `Disputed Lock Test ${Date.now()}`;
+    await createNewFeature(page, featureName);
+    const parts = page.url().split('/');
+    const dispFeatureId = parseInt(parts[parts.length - 1], 10);
+    featureIdToDelete = dispFeatureId;
+    await setShippedMilestone(page, dispFeatureId, stableMilestone);
+
+    // Trigger AI generation
+    await page.goto(`/releases?milestone=${stableMilestone}`);
+    const card = page.getByTestId(`feature-card-${dispFeatureId}`);
+    await card.getByRole('button', {name: 'Generate Summary'}).click();
+    await expect(card.locator('sl-tag[variant="success"]')).toHaveText(/Draft Available/, {timeout: 15000});
+
+    // 2. Log in as DevRel to curate and apply the suggestion
+    await loginAs(page, 'devrel@chromium.org');
+    await page.goto(`/releases?milestone=${stableMilestone}`);
+    const devrelCard = page.getByTestId(`feature-card-${dispFeatureId}`);
+    await devrelCard.getByRole('button', {name: /Review.*suggestion/i}).click();
+    
+    const dialog = page.getByRole('dialog', {name: 'Review AI Suggested'});
+    await expect(dialog).toBeVisible();
+
+    // Save and Apply (requires bypass since DevRel is not owner)
+    await page.locator('sl-textarea.editable-summary-textarea').locator('textarea').fill('Bypassed curated summary text.');
+    await page.getByRole('button', {name: 'Save & Apply'}).click({force: true});
+    await page.locator('sl-textarea[name="bypass_justification"]').locator('textarea').fill('Curating for release notes.');
+    
+    const savePromise = page.waitForResponse(r => r.url().includes('/summary_suggestion') && r.request().method() === 'PATCH' && r.status() === 200);
+    await page.getByRole('button', {name: 'Confirm Apply Bypass'}).click({force: true});
+    await savePromise;
+    await expect(dialog).not.toBeVisible();
+
+    // 3. Log in as Owner -> visit detail page -> see Blue Curation Banner and click Revert
+    await loginAs(page, 'example@chromium.org');
+    await page.goto(`/feature/${dispFeatureId}`);
+
+    // Detail page should show Blue Curation Banner (status: 'applied')
+    const curationBanner = page.locator('sl-alert[variant="primary"]', {hasText: 'Release Notes Curation'});
+    await expect(curationBanner).toBeVisible();
+
+    // Click "Revert to My Original" -> this will transition suggestion status to 'disputed' and write back original text!
+    const revertBtn = curationBanner.getByRole('button', {name: 'Revert to My Original'});
+    await expect(revertBtn).toBeVisible();
+    
+    const revertPromise = page.waitForResponse(r => r.url().includes('/summary_suggestion') && r.request().method() === 'PATCH' && r.status() === 200);
+    await revertBtn.click();
+    await revertPromise;
+
+    // 4. Verify detail page now renders Locked Dispute Banner
+    // The banner should still be visible, but show "[Disputed - Locked to Original]" and a Buganizer link
+    await expect(curationBanner).toBeVisible();
+    await expect(curationBanner).toContainText('[Disputed - Locked to Original]');
+    
+    const buganizerLink = curationBanner.locator('a[href*="b.corp.google.com"]');
+    await expect(buganizerLink).toBeVisible();
+    await expect(buganizerLink).toHaveAttribute('target', '_blank');
+
+    // 5. Open Review Dialog -> should be completely locked
+    await page.goto(`/releases?milestone=${stableMilestone}`);
+    const ownerCard = page.getByTestId(`feature-card-${dispFeatureId}`);
+    
+    // The badge should say "Disputed"
+    const disputedTag = ownerCard.locator('sl-tag[variant="danger"]');
+    await expect(disputedTag).toBeVisible();
+    await expect(disputedTag).toContainText('Disputed');
+
+    // Click Review
+    await ownerCard.getByRole('button', {name: /Review.*suggestion/i}).click();
+    await expect(dialog).toBeVisible();
+
+    // Curation panel must be locked: textarea disabled, save button hidden, resolve dispute button visible
+    const textarea = page.locator('sl-textarea.editable-summary-textarea').locator('textarea');
+    await expect(textarea).toBeDisabled();
+
+    const saveBtn = page.getByRole('button', {name: 'Save & Apply'});
+    await expect(saveBtn).not.toBeVisible();
+
+    const resolveBtn = page.getByRole('button', {name: 'Resolve Dispute ↗'});
+    await expect(resolveBtn).toBeVisible();
+  });
+
+  test('Milestone Finalized locks curation panel and displays badge', async ({page}) => {
+    // 1. Create feature as Owner and generate suggestion
+    await loginAs(page, 'example@chromium.org');
+    const featureName = `Milestone Finalized Test ${Date.now()}`;
+    await createNewFeature(page, featureName);
+    const parts = page.url().split('/');
+    const finFeatureId = parseInt(parts[parts.length - 1], 10);
+    featureIdToDelete = finFeatureId;
+    await setShippedMilestone(page, finFeatureId, stableMilestone);
+
+    await page.goto(`/releases?milestone=${stableMilestone}`);
+    const card = page.getByTestId(`feature-card-${finFeatureId}`);
+    await card.getByRole('button', {name: 'Generate Summary'}).click();
+    await expect(card.locator('sl-tag[variant="success"]')).toHaveText(/Draft Available/, {timeout: 15000});
+
+    // 2. Mock the GET suggestion API to return status 'finalized'
+    await page.route(`**/api/v0/features/${finFeatureId}/summary_suggestion`, async (route, request) => {
+      if (request.method() === 'GET') {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: ")]}'\n" + JSON.stringify({
+            status: 'finalized',
+            status_message: 'Milestone is finalized. Curation is locked.',
+            model_used: 'gemini-1.5-pro',
+            progress_steps: [],
+            suggested_summary: 'Finalized summary text.',
+            suggested_doc_links: [],
+            baseline_status: 'none',
+            version_token: 1
+          })
+        });
+      } else {
+        await route.continue();
+      }
+    });
+
+    // Reload Releases page to pick up mocked 'finalized' state
+    await page.goto(`/releases?milestone=${stableMilestone}`);
+    const finCard = page.getByTestId(`feature-card-${finFeatureId}`);
+
+    // Verify "Finalized" badge is displayed
+    const finalizedTag = finCard.locator('sl-tag[variant="neutral"]');
+    await expect(finalizedTag).toBeVisible();
+    await expect(finalizedTag).toContainText('Finalized');
+
+    // Click Review
+    await finCard.getByRole('button', {name: /Review.*suggestion/i}).click();
+    const dialog = page.getByRole('dialog', {name: 'Review AI Suggested'});
+    await expect(dialog).toBeVisible();
+
+    // Curation panel should be locked
+    const textarea = page.locator('sl-textarea.editable-summary-textarea').locator('textarea');
+    await expect(textarea).toBeDisabled();
+
+    const saveBtn = page.getByRole('button', {name: 'Save & Apply'});
+    await expect(saveBtn).not.toBeVisible();
+
+    // Footer should show Finalized informational banner
+    const banner = page.locator('.conflict-banner');
+    await expect(banner).toBeVisible();
+    await expect(banner).toContainText('Milestone is finalized. Curation is locked.');
+  });
 });

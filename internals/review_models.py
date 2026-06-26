@@ -279,6 +279,8 @@ class Activity(ndb.Model):
     USER_COMMENT = 3
     SYSTEM_CHANGE = 4
     BYPASS_APPLIED = 5
+    BYPASS_REVERTED = 6
+
 
     feature_id = ndb.IntegerProperty(required=True)
     gate_id = (

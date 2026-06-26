@@ -1837,3 +1837,145 @@ class CleanupStuckSuggestionsHandler(FlaskHandler):
 
         return f'Cleaned up {cleaned_count} stuck AI summary suggestions.'
 
+
+import re
+import html
+
+MARKDOWN_SPECIAL_CHARS = r'\*_\`\#\{\}\[\]\(\)\+\-\!'
+
+def safe_plain_text_to_markdown(text: str) -> str:
+    """Converts plain-text summaries to Markdown safely and idempotently.
+    
+    Guarantees that already-escaped characters are NOT double-escaped,
+    raw backslashes are preserved, and HTML tags are safely entity-escaped.
+    """
+    if not text:
+        return ""
+    text = html.unescape(text)
+    pattern = re.compile(
+        r'(\\[%s])|(\\\\)|(\\)|([%s])' % (MARKDOWN_SPECIAL_CHARS, MARKDOWN_SPECIAL_CHARS)
+    )
+    def escape_callback(match):
+        g1 = match.group(1)
+        g2 = match.group(2)
+        g3 = match.group(3)
+        g4 = match.group(4)
+        if g1:
+            return g1
+        elif g2:
+            return g2  # Already escaped backslash, keep as is
+        elif g3:
+            return r'\\'  # Unescaped backslash, escape it
+        elif g4:
+            return '\\' + g4
+        return match.group(0)
+    escaped_text = pattern.sub(escape_callback, text)
+    return escaped_text.replace('<', '&lt;').replace('>', '&gt;')
+
+
+def markdown_to_plain_text(markdown_text: str) -> str:
+    """Reverses the markdown escaping, restoring the exact original plain text."""
+    if not markdown_text:
+        return ""
+    text = markdown_text.replace('&lt;', '<').replace('&gt;', '>')
+    pattern = re.compile(r'\\([%s\\])' % MARKDOWN_SPECIAL_CHARS)
+    return pattern.sub(r'\1', text)
+
+
+def migrate_milestone_summaries_to_markdown(
+    milestone: int, batch_size: int = 50, dry_run: bool = True
+) -> dict[str, Any]:
+    """Migrates all plain-text feature summaries in a milestone to Markdown.
+    
+    Avoids NDB cursor pagination on OR/IN queries by fetching all stages at once
+    and batching the feature updates in memory.
+    """
+    logging.info(f"Starting Markdown migration for M{milestone} (Dry Run: {dry_run})")
+    
+    # Fetch all matching stages at once
+    stages = Stage.query(
+        Stage.archived == False,
+        Stage.stage_type.IN([
+            core_enums.STAGE_BLINK_SHIPPING,
+            core_enums.STAGE_PSA_SHIPPING,
+            core_enums.STAGE_FAST_SHIPPING,
+            core_enums.STAGE_DEP_SHIPPING,
+            core_enums.STAGE_ENT_ROLLOUT
+        ]),
+        ndb.OR(
+            Stage.milestones.desktop_first == milestone,
+            Stage.milestones.android_first == milestone,
+            Stage.milestones.ios_first == milestone,
+            Stage.milestones.webview_first == milestone,
+            Stage.rollout_milestone == milestone
+        )
+    ).fetch()
+    
+    if not stages:
+        return {'processed': 0, 'updated': 0, 'dry_run': dry_run}
+        
+    feature_ids = list({s.feature_id for s in stages})
+    total_processed = 0
+    total_updated = 0
+    
+    # Process features in batches
+    for i in range(0, len(feature_ids), batch_size):
+        batch_ids = feature_ids[i:i+batch_size]
+        feature_keys = [ndb.Key(FeatureEntry, fid) for fid in batch_ids]
+        features = ndb.get_multi(feature_keys)
+        features_to_update = []
+        
+        for feature in features:
+            if not feature or feature.deleted:
+                continue
+            total_processed += 1
+            has_md_summary = (
+                feature.markdown_fields and 'summary' in feature.markdown_fields
+            )
+            original_summary = feature.summary
+            if not original_summary:
+                continue
+            escaped_summary = safe_plain_text_to_markdown(original_summary)
+            if escaped_summary == original_summary and has_md_summary:
+                continue
+            total_updated += 1
+            if not dry_run:
+                feature.summary = escaped_summary
+                if not feature.markdown_fields:
+                    feature.markdown_fields = []
+                if 'summary' not in feature.markdown_fields:
+                    feature.markdown_fields.append('summary')
+                features_to_update.append(feature)
+            
+        if not dry_run and features_to_update:
+            ndb.put_multi(features_to_update)
+            
+    return {
+        'processed': total_processed,
+        'updated': total_updated,
+        'dry_run': dry_run
+    }
+
+
+class MigrateMilestoneSummariesToMarkdown(FlaskHandler):
+    """Cron/maintenance handler to migrate milestone summaries to Markdown."""
+
+    def get_template_data(self, **kwargs) -> str:
+        self.require_cron_header()
+        
+        milestone_str = self.get_param('milestone')
+        dry_run_str = self.get_param('dry_run', required=False) or 'true'
+        
+        if not milestone_str:
+            self.abort(400, msg='milestone parameter is required.')
+            
+        milestone = int(milestone_str)
+        dry_run = dry_run_str.lower() == 'true'
+        
+        res = migrate_milestone_summaries_to_markdown(milestone=milestone, dry_run=dry_run)
+        return (
+            f"Migration completed. Processed: {res['processed']}, "
+            f"Updated: {res['updated']}, Dry Run: {res['dry_run']}"
+        )
+
+

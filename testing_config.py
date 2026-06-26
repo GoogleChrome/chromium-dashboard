@@ -101,10 +101,20 @@ class CustomTestCase(unittest.TestCase):
     def run(self, result=None):
         """Runs the test case, managing the context for NDB and clearing caches."""
         from framework import rediscache
+        import requests
 
         if rediscache.redis_client:
             rediscache.redis_client.flushall()
         sign_out()
+
+        # Reset the Datastore emulator to ensure complete test isolation
+        emulator_host = os.environ.get('DATASTORE_EMULATOR_HOST')
+        if emulator_host:
+            try:
+                requests.post(f'http://{emulator_host}/reset')
+            except Exception as e:
+                print(f"DEBUG: Emulator reset failed: {e}")
+
         client = ndb.Client()
         with client.context():
             super(CustomTestCase, self).run(result=result)

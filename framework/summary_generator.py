@@ -255,6 +255,31 @@ def verify_doc_link(url: str) -> str:
         return f'Error: {e}'
 
 
+def fetch_url_content_with_limit(url: str, max_bytes: int = 5 * 1024 * 1024) -> str | None:
+    """Fetches URL content in chunks up to 5MB to prevent OOM."""
+    try:
+        with requests.get(url, timeout=15, stream=True) as resp:
+            if resp.status_code != 200:
+                return None
+            
+            content_length = resp.headers.get('Content-Length')
+            if content_length and int(content_length) > max_bytes:
+                logging.warning(f'Skipping URL {url}: Content-Length {content_length} exceeds 5MB limit.')
+                return None
+            
+            downloaded_bytes = bytearray()
+            for chunk in resp.iter_content(chunk_size=1024 * 1024):  # 1MB chunks
+                if chunk:
+                    downloaded_bytes.extend(chunk)
+                    if len(downloaded_bytes) > max_bytes:
+                        logging.warning(f'Aborted URL {url} fetch: exceeded 5MB download limit.')
+                        return None
+            return downloaded_bytes.decode('utf-8', errors='ignore')
+    except Exception as e:
+        logging.error(f'Error fetching URL {url} with limit: {e}')
+        return None
+
+
 def read_spec_link(url: str) -> str:
     """Fetch and extract clean text content from an official specification URL.
 
@@ -270,10 +295,9 @@ def read_spec_link(url: str) -> str:
         return 'Error: Blocked untrusted URL (unauthorized domain)'
     import trafilatura
     try:
-        resp = requests.get(url, timeout=15)
-        if resp.status_code != 200:
-            return f"Failed to fetch URL: HTTP {resp.status_code}"
-        downloaded = resp.text
+        downloaded = fetch_url_content_with_limit(url)
+        if not downloaded:
+            return "Failed to fetch or read URL content within safety limits."
         extracted = trafilatura.extract(downloaded)
         if not extracted:
             return "Could not extract text content from the page."
@@ -297,10 +321,9 @@ def read_explainer_link(url: str) -> str:
         return 'Error: Blocked untrusted URL (unauthorized domain)'
     import trafilatura
     try:
-        resp = requests.get(url, timeout=15)
-        if resp.status_code != 200:
-            return f"Failed to fetch URL: HTTP {resp.status_code}"
-        downloaded = resp.text
+        downloaded = fetch_url_content_with_limit(url)
+        if not downloaded:
+            return "Failed to fetch or read URL content within safety limits."
         extracted = trafilatura.extract(downloaded)
         if not extracted:
             return "Could not extract text content from the page."
@@ -651,9 +674,16 @@ def generate_summary_for_feature(
 
 def is_transient_error(e: Exception) -> bool:
     """Classifies whether an exception represents a transient/retryable error."""
+    import json
+    from pydantic import ValidationError
     import httpx
     import requests
     from google.genai.errors import APIError, ClientError, ServerError
+
+    # Parse & validation errors can occur transiently if the LLM output is truncated
+    if isinstance(e, (json.JSONDecodeError, ValidationError)):
+        return True
+
 
     # 1. Google GenAI SDK API Errors
     if isinstance(e, ServerError):
@@ -741,6 +771,7 @@ def generate_summary_suggestion(
     feature_id: int,
     prompt_version: int = GENERATOR_VERSION,
     force: bool = False,
+    generation_token: str | None = None,
 ) -> None:
     """Orchestrates loading, generation, and updating of the FeatureSummarySuggestion."""
     feature = FeatureEntry.get_by_id(feature_id)
@@ -875,17 +906,47 @@ def generate_summary_suggestion(
             'timestamp': now_str,
         }
         
-        # Mark the LLM generation step as complete
-        FeatureSummaryProgressStep.update_step(
-            feature_id,
-            llm_step_id,
-            'AI generation complete!',
-            core_enums.ProgressStepStatus.SUCCESS.value
-        )
-        suggestion.put()
-        logging.info(
-            f'AI generation for feature {feature_id} completed successfully.'
-        )
+        # Transactional Write-Back Guard
+        @ndb.transactional()
+        def write_back_tx() -> tuple[bool, str | None]:
+            current_suggestion = suggestion_key.get()
+            if not current_suggestion:
+                return False, 'Suggestion entity not found.'
+            if current_suggestion.status != core_enums.SummarySuggestionStatus.IN_PROGRESS.value:
+                return False, 'Status is no longer IN_PROGRESS (e.g. human curated).'
+            if generation_token and current_suggestion.generation_token != generation_token:
+                return False, 'Generation token has changed (newer task started).'
+            
+            current_suggestion.suggested_summary = suggestion.suggested_summary
+            current_suggestion.suggested_doc_links = suggestion.suggested_doc_links
+            current_suggestion.baseline_status = suggestion.baseline_status
+            current_suggestion.baseline_newly_date = suggestion.baseline_newly_date
+            current_suggestion.baseline_widely_date = suggestion.baseline_widely_date
+            current_suggestion.generation_rationale = suggestion.generation_rationale
+            current_suggestion.status = suggestion.status
+            current_suggestion.status_message = suggestion.status_message
+            current_suggestion.model_used = suggestion.model_used
+            current_suggestion.version = suggestion.version
+            current_suggestion.source_fingerprint = suggestion.source_fingerprint
+            current_suggestion.version_token = (current_suggestion.version_token or 1) + 1
+            current_suggestion.generated_at = suggestion.generated_at
+            current_suggestion.summary_provenance = suggestion.summary_provenance
+            current_suggestion.doc_links_provenance = suggestion.doc_links_provenance
+            
+            FeatureSummaryProgressStep.update_step(
+                feature_id,
+                llm_step_id,
+                'AI generation complete!',
+                core_enums.ProgressStepStatus.SUCCESS.value
+            )
+            current_suggestion.put()
+            return True, None
+
+        success, err = write_back_tx()
+        if not success:
+            logging.warning(f"Discarding AI output for feature {feature_id}: {err}")
+        else:
+            logging.info(f'AI generation for feature {feature_id} completed successfully.')
 
     except Exception as e:
         retry_count = get_task_retry_count()

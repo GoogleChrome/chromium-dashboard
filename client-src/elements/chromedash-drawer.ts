@@ -17,6 +17,7 @@
 import {SlDrawer} from '@shoelace-style/shoelace';
 import {LitElement, TemplateResult, css, html, nothing} from 'lit';
 import {customElement, property, state} from 'lit/decorators.js';
+import {Task} from '@lit/task';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {User} from '../js-src/cs-client.js';
 import {isMobile, showToastMessage} from './utils.js';
@@ -105,6 +106,30 @@ export class ChromedashDrawer extends LitElement {
             display: none;
           }
         }
+        .nav-item-with-badges {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding-right: var(--content-padding-half);
+        }
+        .channel-badges-inline {
+          display: flex;
+          gap: 6px;
+          align-items: center;
+        }
+        .badge-link {
+          text-decoration: none !important;
+          padding: 0 !important;
+          display: inline-block !important;
+          line-height: 0;
+          transition: transform 0.1s ease;
+        }
+        .badge-link:hover {
+          transform: scale(1.08);
+        }
+        .badge-link sl-badge::part(base) {
+          cursor: pointer;
+        }
       `,
     ];
   }
@@ -123,6 +148,13 @@ export class ChromedashDrawer extends LitElement {
   loading = false;
   @state()
   pendingReviewsCount = 0;
+
+  private _channelsTask = new Task(this, {
+    task: async () => {
+      return await window.csClient.getChannels();
+    },
+    args: () => [],
+  });
 
   updated(changedProperties) {
     if (
@@ -325,7 +357,26 @@ export class ChromedashDrawer extends LitElement {
         ?open=${!isMobile() && this.defaultOpen}
       >
         ${accountMenu} ${this.renderNavItem('/roadmap', 'Roadmap')}
-        ${this.renderNavItem('/releases', 'Releases')}
+        ${this._channelsTask.render({
+          pending: () => this.renderNavItem('/release-notes', 'Release Notes'),
+          complete: (channels: any) => html`
+            <div class="nav-item-with-badges">
+              ${this.renderNavItem('/release-notes', 'Release Notes')}
+              <div class="channel-badges-inline">
+                <a href="/release-notes/${channels.stable.version}" class="badge-link">
+                  <sl-badge variant="success" size="small">${channels.stable.version}</sl-badge>
+                </a>
+                <a href="/release-notes/${channels.beta.version}" class="badge-link">
+                  <sl-badge variant="warning" size="small">${channels.beta.version}</sl-badge>
+                </a>
+                <a href="/release-notes/${channels.dev.version}" class="badge-link">
+                  <sl-badge variant="primary" size="small">${channels.dev.version}</sl-badge>
+                </a>
+              </div>
+            </div>
+          `,
+          error: () => this.renderNavItem('/release-notes', 'Release Notes'),
+        })}
         ${this.renderNavItem('/features', 'All features')} ${shippingThisYear}
         ${shippingNextYear} ${myFeaturesMenu}
         <hr />
@@ -387,8 +438,8 @@ export class ChromedashDrawer extends LitElement {
         : nothing}
       ${this.user?.can_review_release_notes && this.pendingReviewsCount > 0
         ? this.renderNavItem(
-            '/release-reviews',
-            html`Release Reviews
+            '/review-release-notes',
+            html`Review Release Notes
               <sl-badge variant="danger" pill style="margin-left: 5px;"
                 >${this.pendingReviewsCount}</sl-badge
               >`

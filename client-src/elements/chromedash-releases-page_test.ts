@@ -18,14 +18,17 @@ import {assert, fixture} from '@open-wc/testing';
 import {html} from 'lit';
 import sinon from 'sinon';
 import {ChromeStatusClient} from '../js-src/cs-client.js';
-import {ChromedashReleasesPage} from './chromedash-releases-page.js';
+import {ChromedashReleaseNotesPage} from './chromedash-releases-page.js';
+import {TaskStatus} from '@lit/task';
 import {ChromedashSummaryReviewDialog} from './chromedash-summary-review-dialog.js';
 import './chromedash-releases-page.js';
 import './chromedash-summary-review-dialog.js';
 
-describe('chromedash-releases-page', () => {
+describe('chromedash-release-notes-page', () => {
   const channelsPromise = Promise.resolve({
     stable: {version: 125},
+    beta: {version: 126},
+    dev: {version: 127},
   });
 
   const featuresPromise = Promise.resolve({
@@ -94,8 +97,11 @@ describe('chromedash-releases-page', () => {
     }
   }
 
-  async function waitForLoading(component: ChromedashReleasesPage) {
+  async function waitForLoading(component: ChromedashReleaseNotesPage) {
     while (component.loading) {
+      await new Promise(resolve => setTimeout(resolve, 10));
+    }
+    while (component._featuresTask.status === TaskStatus.PENDING) {
       await new Promise(resolve => setTimeout(resolve, 10));
     }
     await component.updateComplete;
@@ -134,16 +140,16 @@ describe('chromedash-releases-page', () => {
       email: 'user@example.com',
     };
     const component = (await fixture(
-      html`<chromedash-releases-page .user=${user}></chromedash-releases-page>`
-    )) as ChromedashReleasesPage;
+      html`<chromedash-release-notes-page .user=${user}></chromedash-release-notes-page>`
+    )) as ChromedashReleaseNotesPage;
     await waitForLoading(component);
     assert.exists(component);
-    assert.instanceOf(component, ChromedashReleasesPage);
+    assert.instanceOf(component, ChromedashReleaseNotesPage);
 
-    // Should load milestone select dropdown
-    const select = component.renderRoot.querySelector('sl-select') as any;
-    assert.exists(select);
-    assert.equal(select.value, '125');
+    // Should load milestone search input
+    const input = component.renderRoot.querySelector('.milestone-search-input') as HTMLInputElement;
+    assert.exists(input);
+    assert.equal(input.value, '125');
 
     // Should render feature details
     const card = component.renderRoot.querySelector(
@@ -179,8 +185,8 @@ describe('chromedash-releases-page', () => {
       email: 'editor@google.com',
     };
     const component = (await fixture(
-      html`<chromedash-releases-page .user=${user}></chromedash-releases-page>`
-    )) as ChromedashReleasesPage;
+      html`<chromedash-release-notes-page .user=${user}></chromedash-release-notes-page>`
+    )) as ChromedashReleaseNotesPage;
     await waitForLoading(component);
     assert.exists(component);
 
@@ -247,8 +253,8 @@ describe('chromedash-releases-page', () => {
       version_token: 1,
     });
     let component = (await fixture(
-      html`<chromedash-releases-page .user=${user}></chromedash-releases-page>`
-    )) as ChromedashReleasesPage;
+      html`<chromedash-release-notes-page .user=${user}></chromedash-release-notes-page>`
+    )) as ChromedashReleaseNotesPage;
     await waitForLoading(component);
     let card = component.renderRoot.querySelector(
       'chromedash-release-feature-card'
@@ -284,8 +290,8 @@ describe('chromedash-releases-page', () => {
       version_token: 1,
     });
     component = (await fixture(
-      html`<chromedash-releases-page .user=${user}></chromedash-releases-page>`
-    )) as ChromedashReleasesPage;
+      html`<chromedash-release-notes-page .user=${user}></chromedash-release-notes-page>`
+    )) as ChromedashReleaseNotesPage;
     await waitForLoading(component);
     card = component.renderRoot.querySelector(
       'chromedash-release-feature-card'
@@ -311,8 +317,8 @@ describe('chromedash-releases-page', () => {
       version_token: 1,
     });
     component = (await fixture(
-      html`<chromedash-releases-page .user=${user}></chromedash-releases-page>`
-    )) as ChromedashReleasesPage;
+      html`<chromedash-release-notes-page .user=${user}></chromedash-release-notes-page>`
+    )) as ChromedashReleaseNotesPage;
     await waitForLoading(component);
     card = component.renderRoot.querySelector(
       'chromedash-release-feature-card'
@@ -350,8 +356,8 @@ describe('chromedash-releases-page', () => {
     });
 
     const component = (await fixture(
-      html`<chromedash-releases-page .user=${user}></chromedash-releases-page>`
-    )) as ChromedashReleasesPage;
+      html`<chromedash-release-notes-page .user=${user}></chromedash-release-notes-page>`
+    )) as ChromedashReleaseNotesPage;
     await waitForLoading(component);
 
     const card = component.renderRoot.querySelector(
@@ -395,8 +401,8 @@ describe('chromedash-releases-page', () => {
     });
 
     const component = (await fixture(
-      html`<chromedash-releases-page .user=${user}></chromedash-releases-page>`
-    )) as ChromedashReleasesPage;
+      html`<chromedash-release-notes-page .user=${user}></chromedash-release-notes-page>`
+    )) as ChromedashReleaseNotesPage;
     await waitForLoading(component);
 
     const card = component.renderRoot.querySelector(
@@ -420,8 +426,8 @@ describe('chromedash-releases-page', () => {
     };
 
     const component = (await fixture(
-      html`<chromedash-releases-page .user=${user}></chromedash-releases-page>`
-    )) as ChromedashReleasesPage;
+      html`<chromedash-release-notes-page .user=${user}></chromedash-release-notes-page>`
+    )) as ChromedashReleaseNotesPage;
     await waitForLoading(component);
 
     const dialog = component.renderRoot.querySelector(
@@ -430,7 +436,7 @@ describe('chromedash-releases-page', () => {
     assert.exists(dialog);
 
     component.activeReviewFeature =
-      component.featuresByType['Enabled by default'][0];
+      component._featuresTask.value!['Enabled by default'][0];
 
     // Dispatch custom event simulated from dialog
     dialog.dispatchEvent(
@@ -443,11 +449,11 @@ describe('chromedash-releases-page', () => {
     );
 
     assert.equal(
-      component.activeReviewFeature.summary,
+      component.activeReviewFeature!.summary,
       'Newly updated summary text!'
     );
     assert.equal(
-      component.activeReviewFeature.resources.docs[0],
+      component.activeReviewFeature!.resources!.docs[0],
       'https://example.com/newly-approved'
     );
   });
@@ -470,8 +476,8 @@ describe('chromedash-releases-page', () => {
     });
 
     const component = (await fixture(
-      html`<chromedash-releases-page .user=${user}></chromedash-releases-page>`
-    )) as ChromedashReleasesPage;
+      html`<chromedash-release-notes-page .user=${user}></chromedash-release-notes-page>`
+    )) as ChromedashReleaseNotesPage;
     await waitForLoading(component);
 
     // Default milestone is stable (125)
@@ -517,26 +523,160 @@ describe('chromedash-releases-page', () => {
     });
 
     const component = (await fixture(
-      html`<chromedash-releases-page .user=${user}></chromedash-releases-page>`
-    )) as ChromedashReleasesPage;
+      html`<chromedash-release-notes-page .user=${user}></chromedash-release-notes-page>`
+    )) as ChromedashReleaseNotesPage;
     await waitForLoading(component);
 
     // Select a milestone older than stable - 5 (125 - 5 = 120, select 110)
     component.selectedMilestone = 110;
     await component.updateComplete;
 
-    const banner = component.renderRoot.querySelector('sl-alert[variant="neutral"]');
+    const banner = component.renderRoot.querySelector('.dcc-redirect-banner');
     assert.exists(banner);
     assert.include(
-      banner.innerHTML,
-      'Looking for official historical logs? View the published'
+      banner.textContent,
+      'Official editorial release notes for Chrome 110 are hosted on the Chrome Developer Blog.'
     );
 
-    const link = banner!.querySelector('a');
+    const link = banner!.querySelector('sl-button');
     assert.exists(link);
     assert.equal(
       link.getAttribute('href'),
       'https://developer.chrome.com/release-notes/110'
     );
+  });
+
+  it('filters milestone combobox options on user text input and handles selection', async () => {
+    const user = {
+      can_create_feature: false,
+      can_edit: false,
+      is_admin: false,
+      can_review_release_notes: false,
+      email: 'user@example.com',
+    };
+    const component = (await fixture(
+      html`<chromedash-release-notes-page .user=${user}></chromedash-release-notes-page>`
+    )) as ChromedashReleaseNotesPage;
+    await waitForLoading(component);
+
+    const input = component.renderRoot.querySelector('.milestone-search-input') as HTMLInputElement;
+    assert.exists(input);
+
+    // 1. Initially, dropdown options are hidden
+    let optionsContainer = component.renderRoot.querySelector('.milestone-options-dropdown');
+    assert.isNull(optionsContainer);
+
+    // 2. Focus input -> dropdown options should appear
+    input.dispatchEvent(new Event('focus'));
+    await component.updateComplete;
+
+    optionsContainer = component.renderRoot.querySelector('.milestone-options-dropdown');
+    assert.exists(optionsContainer);
+
+    const initialOptionsCount = optionsContainer.querySelectorAll('.milestone-option').length;
+    // Should have a large set of milestone options in our scalable list
+    assert.isAbove(initialOptionsCount, 100);
+
+    // 3. Type text '12' -> should filter options containing '12'
+    input.value = '12';
+    input.dispatchEvent(new Event('input'));
+    await component.updateComplete;
+
+    const filteredOptions = optionsContainer.querySelectorAll('.milestone-option');
+    filteredOptions.forEach((option: any) => {
+      assert.include(option.textContent, '12');
+    });
+
+    // 4. Click option '120' -> should set input value and trigger fetch
+    const option120 = Array.from(filteredOptions).find((opt: any) => opt.textContent.includes('120')) as HTMLElement;
+    assert.exists(option120);
+
+    const getFeaturesStub = window.csClient.getFeaturesInMilestone as sinon.SinonStub;
+    getFeaturesStub.resetHistory();
+    option120.click();
+    await waitForLoading(component);
+
+    const inputAfter = component.renderRoot.querySelector('.milestone-search-input') as HTMLInputElement;
+    assert.exists(inputAfter);
+    assert.equal(inputAfter.value, '120');
+    assert.isTrue(getFeaturesStub.calledWith(120));
+
+    // Dropdown options should hide after selection
+    assert.isNull(component.renderRoot.querySelector('.milestone-options-dropdown'));
+  });
+
+  it('displays error message inside combobox dropdown when no milestone matches search query', async () => {
+    const user = {
+      can_create_feature: false,
+      can_edit: false,
+      is_admin: false,
+      can_review_release_notes: false,
+      email: 'user@example.com',
+    };
+    const component = (await fixture(
+      html`<chromedash-release-notes-page .user=${user}></chromedash-release-notes-page>`
+    )) as ChromedashReleaseNotesPage;
+    await waitForLoading(component);
+
+    const input = component.renderRoot.querySelector('.milestone-search-input') as HTMLInputElement;
+    assert.exists(input);
+
+    input.dispatchEvent(new Event('focus'));
+    await component.updateComplete;
+
+    // Type a bad milestone number
+    input.value = '999';
+    input.dispatchEvent(new Event('input'));
+    await component.updateComplete;
+
+    const optionsContainer = component.renderRoot.querySelector('.milestone-options-dropdown');
+    assert.exists(optionsContainer);
+
+    const noResults = optionsContainer.querySelector('.dropdown-no-results');
+    assert.exists(noResults);
+    assert.include(noResults.textContent, 'No milestone "999" found.');
+    assert.include(noResults.textContent, 'Valid milestones: 1 to');
+  });
+
+  it('renders channel quick-jump buttons and navigates milestone on click', async () => {
+    const user = {
+      can_create_feature: false,
+      can_edit: false,
+      is_admin: false,
+      can_review_release_notes: false,
+      email: 'user@example.com',
+    };
+
+    window.csClient.getChannels.restore();
+    sinon.stub(window.csClient, 'getChannels').resolves({
+      stable: {version: 125},
+      beta: {version: 126},
+      dev: {version: 127},
+    });
+
+    const component = (await fixture(
+      html`<chromedash-release-notes-page .user=${user}></chromedash-release-notes-page>`
+    )) as ChromedashReleaseNotesPage;
+    await waitForLoading(component);
+
+    const quickJumps = component.renderRoot.querySelector('.channel-quick-jumps');
+    assert.exists(quickJumps);
+
+    const buttons = quickJumps.querySelectorAll('sl-button');
+    assert.equal(buttons.length, 3);
+    assert.include(buttons[0].textContent, 'Stable: 125');
+    assert.include(buttons[1].textContent, 'Beta: 126');
+    assert.include(buttons[2].textContent, 'Dev: 127');
+
+    // Click on Beta: 126 and verify it navigates and fetches
+    const getFeaturesStub = window.csClient.getFeaturesInMilestone as sinon.SinonStub;
+    getFeaturesStub.resetHistory();
+
+    const betaBtn = buttons[1] as HTMLElement;
+    betaBtn.click();
+    await waitForLoading(component);
+
+    assert.equal(component.selectedMilestone, 126);
+    assert.isTrue(getFeaturesStub.calledWith(126));
   });
 });

@@ -52,6 +52,7 @@ from api import (
     stale_features_api,
     stars_api,
     summary_suggestion_api,
+    milestone_curation_api,
     token_refresh_api,
     webdx_feature_api,
     wpt_coverage_api,
@@ -193,6 +194,10 @@ api_routes: list[Route] = [
         summary_suggestion_api.PendingReviewsAPI,
     ),
     Route(
+        f'{API_BASE}/milestones/<int:milestone>/curation',
+        milestone_curation_api.MilestoneCurationAPI,
+    ),
+    Route(
         f'{API_BASE}/features/<int:feature_id>/process',
         processes_api.ProcessesAPI,
     ),
@@ -293,8 +298,8 @@ api_routes: list[Route] = [
 spa_page_routes = [
     Route('/'),
     Route('/roadmap'),
-    Route('/releases'),
-    Route('/release-reviews'),
+    Route('/release-notes'),
+    Route('/review-release-notes'),
     # TODO(jrobbins): remove '/myfeatures' after a while.
     Route('/myfeatures', defaults={'require_signin': True}),
     Route('/myfeatures/review', defaults={'require_signin': True}),
@@ -539,6 +544,10 @@ internals_routes: list[Route] = [
         '/tasks/generate-summary',
         gemini_helpers.GenerateSummaryHandler,
     ),
+    Route(
+        '/tasks/revert-milestone',
+        notifier.MilestoneReversionHandler,
+    ),
     # OT process reminder emails
     Route(
         '/tasks/email-ot-first-branch', notifier.OTFirstBranchReminderHandler
@@ -582,6 +591,10 @@ internals_routes: list[Route] = [
     Route(
         '/scripts/backfill_enterprise_impact',
         maintenance_scripts.BackfillFeatureEnterpriseImpact,
+    ),
+    Route(
+        '/cron/migrate_markdown',
+        maintenance_scripts.MigrateMilestoneSummariesToMarkdown,
     ),
     Route(
         '/scripts/delete_empty_extension_stages',

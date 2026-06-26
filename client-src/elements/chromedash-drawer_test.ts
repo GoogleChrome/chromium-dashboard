@@ -26,14 +26,21 @@ describe('chromedash-drawer', () => {
    * which are not available here, so we initialize them before each test.
    * We also stub out the API calls here so that they return test data. */
   let getPermissionsStub: SinonStub;
+  let getChannelsStub: SinonStub;
   beforeEach(async () => {
     await fixture(html`<chromedash-toast></chromedash-toast>`);
     window.csClient = new ChromeStatusClient('fake_token', 1);
     getPermissionsStub = sinon.stub(window.csClient, 'getPermissions');
+    getChannelsStub = sinon.stub(window.csClient, 'getChannels').resolves({
+      stable: {version: 125},
+      beta: {version: 126},
+      dev: {version: 127},
+    });
   });
 
   afterEach(() => {
     getPermissionsStub.restore();
+    getChannelsStub.restore();
   });
 
   it('user is not signed in', async () => {
@@ -98,9 +105,9 @@ describe('chromedash-drawer', () => {
       .stub(window.csClient, 'getPendingReviewsCount')
       .resolves({count: 3});
 
-    const component = await fixture(
+    const component = (await fixture(
       html`<chromedash-drawer appTitle="Fake Title"></chromedash-drawer>`
-    );
+    )) as ChromedashDrawer;
     assert.exists(component);
     assert.instanceOf(component, ChromedashDrawer);
 
@@ -111,11 +118,43 @@ describe('chromedash-drawer', () => {
     assert.exists(nav);
 
     const navInnerHTML = nav.innerHTML;
-    assert.include(navInnerHTML, 'href="/releases"');
-    assert.include(navInnerHTML, 'Release Reviews');
+    assert.include(navInnerHTML, 'href="/review-release-notes"');
+    assert.include(navInnerHTML, 'Review Release Notes');
     assert.include(navInnerHTML, '<sl-badge variant="danger" pill');
     assert.include(navInnerHTML, '>3</sl-badge>');
 
     getCountStub.restore();
+  });
+
+  it('renders dynamic channel badges for release notes when channels are loaded', async () => {
+    getPermissionsStub.returns(Promise.resolve(null)); // Anonymous user
+    const component = (await fixture(
+      html`<chromedash-drawer appTitle="Fake Title"></chromedash-drawer>`
+    )) as ChromedashDrawer;
+    assert.exists(component);
+    
+    // Wait for async connectedCallback calls to resolve and update
+    await component.updateComplete;
+
+    const nav = component.shadowRoot!.querySelector('nav');
+    assert.exists(nav);
+
+    // Assert the main Release Notes link is rendered
+    const releaseNotesLink = nav.querySelector('a[href="/release-notes"]');
+    assert.exists(releaseNotesLink);
+    assert.include(releaseNotesLink.textContent, 'Release Notes');
+
+    // Assert the badge elements are rendered with correct versions
+    const stableBadge = nav.querySelector('a[href="/release-notes/125"] sl-badge[variant="success"]');
+    assert.exists(stableBadge);
+    assert.include(stableBadge.textContent, '125');
+
+    const betaBadge = nav.querySelector('a[href="/release-notes/126"] sl-badge[variant="warning"]');
+    assert.exists(betaBadge);
+    assert.include(betaBadge.textContent, '126');
+
+    const devBadge = nav.querySelector('a[href="/release-notes/127"] sl-badge[variant="primary"]');
+    assert.exists(devBadge);
+    assert.include(devBadge.textContent, '127');
   });
 });

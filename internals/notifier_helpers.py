@@ -78,7 +78,7 @@ def notify_feature_subscribers_of_changes(
     }
 
     # Create task to email subscribers.
-    cloud_tasks_helpers.enqueue_task('/tasks/email-subscribers', params)
+    cloud_tasks_helpers.enqueue_task_transactionally('/tasks/email-subscribers', params)
 
 
 def notify_subscribers_and_save_amendments(

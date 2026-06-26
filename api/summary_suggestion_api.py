@@ -20,7 +20,9 @@ the AI-generated feature summaries and documentation link suggestions.
 """
 
 import datetime
+import re
 from typing import Any
+
 
 from google.cloud import ndb  # type: ignore
 
@@ -38,6 +40,51 @@ from internals.review_models import Activity
 class SummarySuggestionAPI(basehandlers.EntitiesAPIHandler):
     """API handler to retrieve the draft AI summary suggestion."""
 
+    def strip_html_tags(self, text: str) -> str:
+        """Strips raw HTML/XML tags from user/AI summaries to prevent injection."""
+        if not text:
+            return ""
+        clean = re.compile(r'<.*?>')
+        return re.sub(clean, '', text)
+
+    def extract_link(self, text: str) -> list[str]:
+        """Extracts valid HTTP/HTTPS URLs from a string."""
+        if not text:
+            return []
+        url_pattern = re.compile(r'https?://[^\s<>"]+|www\.[^\s<>"]+')
+        return [url for url in url_pattern.findall(text) if url]
+
+    def calculate_drift(self, feature_summary: str | None, curated_summary: str | None,
+                        feature_links: list[str] | None, curated_links: list[str] | None) -> str:
+        """Calculate the semantic drift level between current feature data and approved curation."""
+        feature_summary = (feature_summary or '').strip()
+        curated_summary = (curated_summary or '').strip()
+        feature_links = feature_links or []
+        curated_links = curated_links or []
+
+        if not curated_summary:
+            return 'none'
+
+        if not feature_summary:
+            return 'major'
+
+        # 1. Calculate text similarity ratio using standard difflib
+        import difflib
+        # Ignore case and normalize whitespace for comparison
+        f_norm = ' '.join(feature_summary.lower().split())
+        c_norm = ' '.join(curated_summary.lower().split())
+        
+        matcher = difflib.SequenceMatcher(None, f_norm, c_norm)
+        ratio = matcher.ratio()
+
+        if ratio == 1.0 and set(feature_links) == set(curated_links):
+            return 'none'
+            
+        if ratio >= 0.85:
+            return 'minor'
+            
+        return 'major'
+
     def do_get(self, **kwargs: Any) -> dict[str, Any]:
         """Fetch the current AI summary suggestion and baseline details for a feature."""
         feature_id = kwargs.get('feature_id')
@@ -48,6 +95,17 @@ class SummarySuggestionAPI(basehandlers.EntitiesAPIHandler):
         if not feature:
             self.abort(404, msg='Feature not found.')
 
+        # Check if the milestone is finalized to lock curation
+        from internals import stage_helpers
+        from internals.core_models import MilestoneCuration
+        stages = stage_helpers.get_all_shipping_stages_with_milestones(feature_id)
+        milestone = stage_helpers.find_earliest_milestone(stages)
+        is_finalized = False
+        if milestone:
+            curation = MilestoneCuration.get_by_id(str(milestone))
+            if curation and curation.status == 'finalized':
+                is_finalized = True
+
         user = self.get_current_user()
         if not permissions.can_view_feature(user, feature):
             self.abort(403, msg='Unauthorized to view feature.')
@@ -56,7 +114,7 @@ class SummarySuggestionAPI(basehandlers.EntitiesAPIHandler):
         if not suggestion:
             # Return a default none state response conforming to the schema
             return {
-                'status': core_enums.SummarySuggestionStatus.NONE.value,
+                'status': core_enums.SummarySuggestionStatus.FINALIZED.value if is_finalized else core_enums.SummarySuggestionStatus.NONE.value,
                 'status_message': None,
                 'model_used': None,
                 'progress_steps': [],
@@ -76,6 +134,7 @@ class SummarySuggestionAPI(basehandlers.EntitiesAPIHandler):
                 'doc_links_provenance': None,
                 'suggested_format': 'markdown',
                 'original_summary_format': None,
+                'drift_detected': 'none',
             }
 
         steps = FeatureSummaryProgressStep.get_timeline(feature_id)
@@ -88,6 +147,13 @@ class SummarySuggestionAPI(basehandlers.EntitiesAPIHandler):
                 'message': step.message,
                 'status': step.status.lower(),  # Convert to lowercase to match OpenAPI spec enum
             })
+
+        drift = self.calculate_drift(
+            feature.summary,
+            suggestion.suggested_summary,
+            feature.doc_links,
+            suggestion.suggested_doc_links
+        )
 
         return {
             'suggested_summary': suggestion.suggested_summary,
@@ -115,7 +181,7 @@ class SummarySuggestionAPI(basehandlers.EntitiesAPIHandler):
                 if suggestion.original_baseline_widely_date
                 else None
             ),
-            'status': suggestion.status,
+            'status': core_enums.SummarySuggestionStatus.FINALIZED.value if is_finalized else suggestion.status,
             'status_message': suggestion.status_message,
             'model_used': suggestion.model_used,
             'progress_steps': serialized_steps,
@@ -134,6 +200,7 @@ class SummarySuggestionAPI(basehandlers.EntitiesAPIHandler):
             'doc_links_provenance': suggestion.doc_links_provenance,
             'suggested_format': suggestion.suggested_format or 'markdown',
             'original_summary_format': suggestion.original_summary_format,
+            'drift_detected': drift,
         }
 
     def do_patch(self, **kwargs: Any) -> dict[str, Any]:
@@ -173,7 +240,6 @@ class SummarySuggestionAPI(basehandlers.EntitiesAPIHandler):
         except ValueError:
             self.abort(400, msg=f'Invalid target status: {new_status_str}')
 
-        @ndb.transactional()
         def patch_suggestion_tx() -> tuple[
             bool, str | None, dict[str, Any] | None
         ]:
@@ -181,6 +247,16 @@ class SummarySuggestionAPI(basehandlers.EntitiesAPIHandler):
             suggestion = FeatureSummarySuggestion.get_by_id(feature_id)
             if not feature or not suggestion:
                 return False, 'Feature or AI suggestion not found.', None
+
+            # Check if milestone is finalized (curation is locked!)
+            from internals import stage_helpers
+            from internals.core_models import MilestoneCuration
+            stages = stage_helpers.get_all_shipping_stages_with_milestones(feature_id)
+            milestone = stage_helpers.find_earliest_milestone(stages)
+            if milestone:
+                curation = MilestoneCuration.get_by_id(str(milestone))
+                if curation and curation.status == 'finalized':
+                    return False, 'Milestone is finalized. Curation is locked.', None
 
             # Concurrency check (stale write prevention)
             if suggestion.version_token != version_token:
@@ -216,14 +292,15 @@ class SummarySuggestionAPI(basehandlers.EntitiesAPIHandler):
 
             # Validate State Transitions
             current_status = suggestion.status
+            current_status_val = current_status.value if hasattr(current_status, 'value') else current_status
             if target_status == core_enums.SummarySuggestionStatus.APPLIED:
                 if (
-                    current_status
+                    current_status_val
                     != core_enums.SummarySuggestionStatus.COMPLETE.value
                 ):
                     return (
                         False,
-                        f'Cannot transition from {current_status} to applied.',
+                        f'Cannot transition from {current_status_val} to applied.',
                         None,
                     )
 
@@ -243,6 +320,18 @@ class SummarySuggestionAPI(basehandlers.EntitiesAPIHandler):
                         'suggested_doc_links list is required when status is applied.',
                         None,
                     )
+
+                # Sanitize summary by stripping raw HTML/XML tags
+                approved_summary = self.strip_html_tags(approved_summary)
+
+                # Sanitize and validate links using extract_link helper
+                sanitized_links = []
+                for link in approved_links:
+                    extracted = self.extract_link(link)
+                    if extracted:
+                        sanitized_links.extend(extracted)
+                approved_links = list(set(sanitized_links))
+
 
                 # Save backup values of FeatureEntry before overwriting
                 if suggestion.original_summary is None:
@@ -364,13 +453,13 @@ class SummarySuggestionAPI(basehandlers.EntitiesAPIHandler):
                     suggestion.original_baseline_status = 'none'
 
             elif target_status == core_enums.SummarySuggestionStatus.DISCARDED:
-                if current_status not in [
+                if current_status_val not in [
                     core_enums.SummarySuggestionStatus.COMPLETE.value,
                     core_enums.SummarySuggestionStatus.BYPASSED.value,
                 ]:
                     return (
                         False,
-                        f'Cannot transition from {current_status} to discarded.',
+                        f'Cannot transition from {current_status_val} to discarded.',
                         None,
                     )
 
@@ -386,13 +475,13 @@ class SummarySuggestionAPI(basehandlers.EntitiesAPIHandler):
 
             elif target_status == core_enums.SummarySuggestionStatus.COMPLETE:
                 # Restore: transition back to COMPLETE from DISCARDED or BYPASSED
-                if current_status not in [
+                if current_status_val not in [
                     core_enums.SummarySuggestionStatus.DISCARDED.value,
                     core_enums.SummarySuggestionStatus.BYPASSED.value,
                 ]:
                     return (
                         False,
-                        f'Cannot restore status to complete from {current_status}.',
+                        f'Cannot restore status to complete from {current_status_val}.',
                         None,
                     )
 
@@ -512,26 +601,36 @@ class SummarySuggestionGenerateAPI(basehandlers.EntitiesAPIHandler):
         ):
             self.abort(403, msg='Unauthorized.')
 
-        # NDB transactional block for safety, rate limiting, and status update
-        @ndb.transactional()
-        def start_generation_tx() -> tuple[FeatureEntry | None, str | None]:
+        # Rate limiting and status update (non-transactional)
+        def start_generation_tx() -> tuple[FeatureEntry | None, float | None, str | None, str | None]:
             feature = FeatureEntry.get_by_id(feature_id)
             if not feature:
-                return None, 'Feature not found'
+                return None, None, None, 'Feature not found'
 
             suggestion = FeatureSummarySuggestion.get_by_id(feature_id)
             now = datetime.datetime.utcnow()
 
             if suggestion:
-                # If generation is already in progress, rate limit it (15 mins timeout)
+                # If generation is already in progress, check the lease lock
                 if (
                     suggestion.status
-                    == core_enums.SummarySuggestionStatus.IN_PROGRESS
+                    == core_enums.SummarySuggestionStatus.IN_PROGRESS.value
                 ):
-                    if suggestion.status_timestamp:
+                    # Check lease lock if present
+                    if suggestion.lease_expiry:
+                        if now < suggestion.lease_expiry:
+                            return (
+                                None,
+                                None,
+                                None,
+                                'AI summary generation is already in progress.',
+                            )
+                    # Fallback to status_timestamp if lease_expiry is missing (legacy/test support)
+                    elif suggestion.status_timestamp:
                         time_since = now - suggestion.status_timestamp
                         if time_since < datetime.timedelta(minutes=15):
                             return (
+                                None,
                                 None,
                                 None,
                                 'AI summary generation is already in progress.',
@@ -540,12 +639,13 @@ class SummarySuggestionGenerateAPI(basehandlers.EntitiesAPIHandler):
                 # Cooldown limit to prevent abuse if complete (30 mins cooldown)
                 if (
                     suggestion.status
-                    == core_enums.SummarySuggestionStatus.COMPLETE
+                    == core_enums.SummarySuggestionStatus.COMPLETE.value
                 ):
                     if suggestion.status_timestamp:
                         time_since = now - suggestion.status_timestamp
                         if time_since < datetime.timedelta(minutes=30):
                             return (
+                                None,
                                 None,
                                 None,
                                 'Cooldown in progress. Try again in a few minutes.',
@@ -556,19 +656,24 @@ class SummarySuggestionGenerateAPI(basehandlers.EntitiesAPIHandler):
                     status=core_enums.SummarySuggestionStatus.NONE.value,
                 )
 
+            import uuid
+            token = uuid.uuid4().hex
+
             suggestion.status = (
                 core_enums.SummarySuggestionStatus.IN_PROGRESS.value
             )
             suggestion.status_timestamp = now
             suggestion.last_generation_attempt = now
+            suggestion.lease_expiry = now + datetime.timedelta(minutes=5)
+            suggestion.generation_token = token
             suggestion.put()
             
             # Immediately purge any old completed progress steps from previous runs
             FeatureSummaryProgressStep.delete_timeline(feature_id)
             
-            return feature, now.timestamp(), None
+            return feature, now.timestamp(), token, None
 
-        feature, attempt_timestamp, error_msg = start_generation_tx()
+        feature, attempt_timestamp, token, error_msg = start_generation_tx()
         if error_msg:
             self.abort(400, msg=error_msg)
 
@@ -581,6 +686,7 @@ class SummarySuggestionGenerateAPI(basehandlers.EntitiesAPIHandler):
                 else 0
             ),
             'attempt_time': attempt_timestamp,
+            'generation_token': token,
         }
         cloud_tasks_helpers.enqueue_task(
             '/tasks/generate-summary',

@@ -63,8 +63,8 @@ test('Demo 1: AI Summary Generation & Draft Status Badge', async ({ page, reques
   console.log('[Demo 1] Step 3: Setting Shipped Milestone, Explainer, and Spec Links');
   await setFeatureCurationDetails(page, featureId, stableMilestone, targetFeature.explainer, targetFeature.spec);
 
-  console.log('[Demo 1] Step 4: Navigating to Releases Page');
-  await page.goto(`/releases?milestone=${stableMilestone}`);
+  console.log('[Demo 1] Step 4: Navigating to Release Notes Page');
+  await page.goto(`/release-notes?milestone=${stableMilestone}`);
   await page.waitForTimeout(2500); // Allow dashboard to load beautifully
 
   const card = page.getByTestId(`feature-card-${featureId}`);

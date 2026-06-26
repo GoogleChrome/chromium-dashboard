@@ -129,3 +129,16 @@ def enqueue_task(handler_path, task_params, queue='default', **kwargs):
 
     kwargs.setdefault('retry', _DEFAULT_RETRY)
     return client.create_task(parent=parent, task=task, **kwargs)
+
+
+def enqueue_task_transactionally(handler_path, task_params, queue='default', **kwargs):
+    """Enqueues a Cloud Task only if the current Datastore transaction commits successfully."""
+    from google.cloud import ndb  # type: ignore
+    ctx = ndb.get_context()
+    if ctx.in_transaction():
+        ctx.call_on_commit(
+            lambda: enqueue_task(handler_path, task_params, queue, **kwargs)
+        )
+    else:
+        enqueue_task(handler_path, task_params, queue, **kwargs)
+

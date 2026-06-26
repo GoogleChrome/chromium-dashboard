@@ -1714,3 +1714,49 @@ def notify_releasenotes_reviewers(fe: FeatureEntry) -> None:
         'html': html,
     }
     send_emails([email_task])
+
+
+class MilestoneReversionHandler(basehandlers.FlaskHandler):
+    """Asynchronously reverts a milestone curation status to in_review on major drift."""
+
+    IS_INTERNAL_HANDLER = True
+
+    def process_post_data(self, **kwargs):
+        self.require_task_header()
+        
+        milestone = self.get_param('milestone')
+        feature_id = self.get_param('feature_id')
+        reason = self.get_param('reason', required=False) or 'Major drift detected'
+        
+        if not milestone or not feature_id:
+            self.abort(400, msg='milestone and feature_id are required.')
+            
+        from internals.core_models import MilestoneCuration
+        from internals.review_models import Activity
+        
+        @ndb.transactional(xg=True)
+        def revert_milestone_tx():
+            curation = MilestoneCuration.get_by_id(str(milestone))
+            if not curation:
+                curation = MilestoneCuration(id=str(milestone))
+            
+            if curation.status == 'finalized':
+                curation.status = 'in_review'
+                curation.updated_by = 'SYSTEM'
+                curation.put()
+                
+                activity = Activity(
+                    feature_id=feature_id,
+                    log_type=Activity.BYPASS_REVERTED,
+                    author='SYSTEM',
+                    content=(
+                        f'Milestone {milestone} curation status reverted to in_review '
+                        f'due to major drift in feature {feature_id}. Reason: {reason}'
+                    )
+                )
+                activity.put()
+                logging.info(f'Milestone {milestone} reverted to in_review due to feature {feature_id} drift.')
+                
+        revert_milestone_tx()
+        return {'message': 'Done'}
+

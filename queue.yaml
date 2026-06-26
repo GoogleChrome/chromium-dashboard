@@ -8,3 +8,11 @@ queue:
   # bucket_size: 40
   # max_concurrent_requests: 5
 # total_storage_limit: 120M
+
+- name: ai-summary-queue
+  rate: 1/s
+  max_concurrent_requests: 3
+  retry_parameters:
+    task_retry_limit: 5
+    min_backoff_seconds: 10
+    max_backoff_seconds: 180

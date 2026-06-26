@@ -30,6 +30,9 @@ from internals.core_models import (
     FeatureEntry,
     FeatureSummaryProgressStep,
     FeatureSummarySuggestion,
+    Stage,
+    MilestoneSet,
+    MilestoneCuration,
 )
 from internals.review_models import Activity
 
@@ -96,6 +99,7 @@ class SummarySuggestionAPITest(testing_config.CustomTestCase):
                 'doc_links_provenance': None,
                 'suggested_format': 'markdown',
                 'original_summary_format': None,
+                'drift_detected': 'none',
             },
         )
 
@@ -189,6 +193,86 @@ class SummarySuggestionAPITest(testing_config.CustomTestCase):
         ):
             with self.assertRaises(werkzeug.exceptions.Forbidden):
                 self.handler.do_get(feature_id=12345)
+
+    @mock.patch('framework.permissions.can_view_feature')
+    def test_get__milestone_finalized(self, mock_can_view):
+        """Ensure that if the feature's shipped milestone is finalized, GET returns status 'finalized'."""
+        mock_can_view.return_value = True
+
+        # 1. Create a shipping stage for the feature with milestone 120
+        stage = Stage(
+            feature_id=12345,
+            stage_type=core_enums.STAGE_BLINK_SHIPPING,
+            milestones=MilestoneSet(desktop_first=120)
+        )
+        stage.put()
+
+        # 2. Create a finalized MilestoneCuration entity for milestone 120
+        curation = MilestoneCuration(id='120', status='finalized')
+        curation.put()
+
+        # 3. Create an applied suggestion
+        suggestion = FeatureSummarySuggestion(
+            id=12345,
+            status=core_enums.SummarySuggestionStatus.APPLIED,
+            suggested_summary='Polished summary text.',
+        )
+        suggestion.put()
+
+        with test_app.test_request_context(
+            '/api/v0/features/12345/summary_suggestion'
+        ):
+            response = self.handler.do_get(feature_id=12345)
+
+        # 4. Verify status is overridden to 'finalized'!
+        self.assertEqual(response['status'], 'finalized')
+        self.assertEqual(response['suggested_summary'], 'Polished summary text.')
+
+        # Clean up
+        stage.key.delete()
+        curation.key.delete()
+
+    def test_calculate_drift(self):
+        """Verify that calculate_drift correctly classifies semantic and link differences."""
+        # 1. No curation yet -> none
+        self.assertEqual(self.handler.calculate_drift(
+            'Current summary', None, [], []), 'none')
+
+        # 2. Curated summary exists, but feature summary is missing -> major
+        self.assertEqual(self.handler.calculate_drift(
+            None, 'Curated summary', [], []), 'major')
+        self.assertEqual(self.handler.calculate_drift(
+            '   ', 'Curated summary', [], []), 'major')
+
+        # 3. Curated summary is identical to feature summary -> none
+        self.assertEqual(self.handler.calculate_drift(
+            'This is a curated summary of the feature.',
+            'This is a curated summary of the feature.',
+            ['https://example.com'], ['https://example.com']), 'none')
+
+        # 4. Normalization (whitespace, casing) -> none
+        self.assertEqual(self.handler.calculate_drift(
+            'This is a CURATED summary of the feature.  ',
+            'This is a curated summary of the feature.',
+            [], []), 'none')
+
+        # 5. Minor changes (ratio >= 0.85) -> minor
+        self.assertEqual(self.handler.calculate_drift(
+            'This is a curated summary of the features!',
+            'This is a curated summary of the feature.',
+            [], []), 'minor')
+
+        # 6. Major changes (ratio < 0.85) -> major
+        self.assertEqual(self.handler.calculate_drift(
+            'This is a completely different description of the feature.',
+            'This is a curated summary of the feature.',
+            [], []), 'major')
+
+        # 7. Links differ but summaries are identical -> minor
+        self.assertEqual(self.handler.calculate_drift(
+            'This is a curated summary of the feature.',
+            'This is a curated summary of the feature.',
+            ['https://example.com'], ['https://example.com', 'https://another.com']), 'minor')
 
 
 class SummarySuggestionGenerateAPITest(testing_config.CustomTestCase):
@@ -320,6 +404,62 @@ class SummarySuggestionGenerateAPITest(testing_config.CustomTestCase):
             with self.assertRaises(werkzeug.exceptions.Forbidden):
                 self.handler.do_post(feature_id=12345)
 
+    @mock.patch('framework.cloud_tasks_helpers.enqueue_task')
+    @mock.patch('framework.permissions.can_review_release_notes')
+    @mock.patch('framework.permissions.can_edit_feature')
+    def test_post__lease_lock_active_blocks(self, mock_can_edit, mock_can_review, mock_enqueue):
+        """Verify that triggering generation while a lock lease is active (< 5 mins) returns 400."""
+        mock_can_edit.return_value = True
+        mock_can_review.return_value = True
+        
+        # Setup suggestion with active lease (4 minutes ago)
+        now = datetime.datetime.utcnow()
+        suggestion = FeatureSummarySuggestion(
+            id=12345,
+            status=core_enums.SummarySuggestionStatus.IN_PROGRESS,
+            status_timestamp=now - datetime.timedelta(minutes=4),
+            lease_expiry=now + datetime.timedelta(minutes=1), # lock still active for 1 minute
+            generation_token='token-123'
+        )
+        suggestion.put()
+        
+        with test_app.test_request_context('/api/v0/features/12345/summary_suggestion/generate', method='POST'):
+            with self.assertRaises(werkzeug.exceptions.BadRequest) as context:
+                self.handler.do_post(feature_id=12345)
+            self.assertIn('already in progress', context.exception.description)
+            
+        mock_enqueue.assert_not_called()
+
+    @mock.patch('framework.cloud_tasks_helpers.enqueue_task')
+    @mock.patch('framework.permissions.can_review_release_notes')
+    @mock.patch('framework.permissions.can_edit_feature')
+    def test_post__lease_lock_expired_overrides(self, mock_can_edit, mock_can_review, mock_enqueue):
+        """Verify that triggering generation after the 5-minute lease expiry overrides the lock and succeeds."""
+        mock_can_edit.return_value = True
+        mock_can_review.return_value = True
+        
+        # Setup suggestion with EXPIRED lease (6 minutes ago)
+        now = datetime.datetime.utcnow()
+        suggestion = FeatureSummarySuggestion(
+            id=12345,
+            status=core_enums.SummarySuggestionStatus.IN_PROGRESS,
+            status_timestamp=now - datetime.timedelta(minutes=6),
+            lease_expiry=now - datetime.timedelta(minutes=1), # lock expired 1 minute ago
+            generation_token='token-old'
+        )
+        suggestion.put()
+        
+        with test_app.test_request_context('/api/v0/features/12345/summary_suggestion/generate', method='POST'):
+            response = self.handler.do_post(feature_id=12345)
+            
+        self.assertEqual(response, {'message': 'AI summary generation task accepted and queued.'})
+        
+        # Verify new lease and token were written
+        updated_suggestion = FeatureSummarySuggestion.get_by_id(12345)
+        self.assertNotEqual(updated_suggestion.generation_token, 'token-old')
+        self.assertGreater(updated_suggestion.lease_expiry, now)
+        mock_enqueue.assert_called_once()
+
 
 class SummarySuggestionPATCHAPITest(testing_config.CustomTestCase):
     """Tests for PATCH /features/{feature_id}/summary_suggestion."""
@@ -377,6 +517,46 @@ class SummarySuggestionPATCHAPITest(testing_config.CustomTestCase):
             ancestor=ndb.Key(FeatureSummarySuggestion, 12345)
         ).fetch(keys_only=True)
         ndb.delete_multi(steps)
+
+    @mock.patch('framework.permissions.can_review_release_notes')
+    @mock.patch('framework.permissions.can_edit_feature')
+    def test_patch__milestone_finalized(self, mock_can_edit, mock_can_review):
+        """Ensure that if the shipped milestone is finalized, any PATCH is rejected."""
+        mock_can_edit.return_value = True
+        mock_can_review.return_value = True
+
+        # 1. Create a shipping stage for the feature with milestone 120
+        stage = Stage(
+            feature_id=12345,
+            stage_type=core_enums.STAGE_BLINK_SHIPPING,
+            milestones=MilestoneSet(desktop_first=120)
+        )
+        stage.put()
+
+        # 2. Create a finalized MilestoneCuration entity for milestone 120
+        curation = MilestoneCuration(id='120', status='finalized')
+        curation.put()
+
+        # 3. Attempt to apply the suggestion
+        params = {
+            'status': 'applied',
+            'version_token': 1,
+            'suggested_summary': 'New summary text.',
+            'suggested_doc_links': [],
+        }
+        with test_app.test_request_context(
+            '/api/v0/features/12345/summary_suggestion',
+            method='PATCH',
+            json=params,
+        ):
+            with self.assertRaises(werkzeug.exceptions.BadRequest) as ctx:
+                self.handler.do_patch(feature_id=12345)
+
+        self.assertEqual(ctx.exception.description, 'Milestone is finalized. Curation is locked.')
+
+        # Clean up
+        stage.key.delete()
+        curation.key.delete()
 
     @mock.patch('framework.permissions.can_review_release_notes')
     def test_patch__success_apply_as_is(self, mock_can_review):
@@ -1030,6 +1210,53 @@ class SummarySuggestionPATCHAPITest(testing_config.CustomTestCase):
         # Verify backup fields are cleared!
         self.assertIsNone(updated_suggestion.original_baseline_status)
         self.assertIsNone(updated_suggestion.original_baseline_newly_date)
+
+    @mock.patch('framework.permissions.can_review_release_notes')
+    def test_patch__grace_period_boundary_conditions(self, mock_can_review):
+        """Verify the 7-day grace period boundary conditions (exactly 7 days, 1s before, 1s after)."""
+        mock_can_review.return_value = True
+        self.feature.owner_emails = ['owner@example.com']  # Logged in reviewer is not an owner
+        self.feature.put()
+        
+        now = datetime.datetime.utcnow()
+        
+        # Scenario 1: 1 second BEFORE the 7-day grace period expires -> requires bypass justification
+        self.suggestion.generated_at = now - datetime.timedelta(days=7) + datetime.timedelta(seconds=1)
+        self.suggestion.status = core_enums.SummarySuggestionStatus.COMPLETE
+        self.suggestion.version_token = 1
+        self.suggestion.put()
+        
+        patch_body = {
+            'status': 'applied',
+            'suggested_summary': 'AI suggested summary.',
+            'suggested_doc_links': [],
+            'version_token': 1,
+        }
+        
+        with test_app.test_request_context('/api/v0/features/12345/summary_suggestion', method='PATCH', json=patch_body):
+            with self.assertRaises(werkzeug.exceptions.Forbidden) as context:
+                self.handler.do_patch(feature_id=12345)
+            self.assertIn('Bypass justification is required', context.exception.description)
+            
+        # Scenario 2: Exactly 7 days after generation -> grace period expired! No justification needed, applies normally.
+        self.suggestion.generated_at = now - datetime.timedelta(days=7)
+        self.suggestion.version_token = 1
+        self.suggestion.put()
+        
+        patch_body_expired = {
+            'status': 'applied',
+            'suggested_summary': 'AI suggested summary.',
+            'suggested_doc_links': [],
+            'version_token': 1,
+        }
+        
+        with test_app.test_request_context('/api/v0/features/12345/summary_suggestion', method='PATCH', json=patch_body_expired):
+            response = self.handler.do_patch(feature_id=12345)
+            
+        self.assertEqual(response['message'], 'AI suggestion status updated successfully.')
+        
+        updated_suggestion = FeatureSummarySuggestion.get_by_id(12345)
+        self.assertEqual(updated_suggestion.status, core_enums.SummarySuggestionStatus.APPLIED)
 
 
 class PendingReviewsCountAPITest(testing_config.CustomTestCase):

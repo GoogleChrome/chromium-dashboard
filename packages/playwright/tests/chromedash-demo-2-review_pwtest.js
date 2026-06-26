@@ -78,8 +78,8 @@ test('Demo 2: Symmetrical Review Dialog Workspace & Markdown Editing', async ({ 
   console.log('[Demo 2] Step 3: Setting Shipped Milestone, Explainer, and Spec Links');
   await setFeatureCurationDetails(page, featureId, stableMilestone, targetFeature.explainer, targetFeature.spec);
 
-  console.log('[Demo 2] Step 4: Navigating to Releases Page & Triggering AI Generation');
-  await page.goto(`/releases?milestone=${stableMilestone}`);
+  console.log('[Demo 2] Step 4: Navigating to Release Notes Page & Triggering AI Generation');
+  await page.goto(`/release-notes?milestone=${stableMilestone}`);
   const card = page.getByTestId(`feature-card-${featureId}`);
   await expect(card).toBeVisible();
   await card.scrollIntoViewIfNeeded();
@@ -104,18 +104,19 @@ test('Demo 2: Symmetrical Review Dialog Workspace & Markdown Editing', async ({ 
   await expect(dialog).toBeVisible();
   await page.waitForTimeout(2500); // Pause to let the viewer see the symmetrical layout
 
-  console.log('[Demo 2] Step 7: Demonstrating Write/Preview Tabs');
+  console.log('[Demo 2] Step 7: Demonstrating Workspace Tabs');
   const previewTab = page.getByRole('tab', { name: 'Preview' });
-  const writeTab = page.getByRole('tab', { name: 'Write' });
+  const diffTab = page.getByRole('tab', { name: 'Visual Diff' });
+  const editTab = page.getByRole('tab', { name: 'Review & Edit' });
   
   await previewTab.hover();
   await page.waitForTimeout(500);
   await previewTab.click();
   await page.waitForTimeout(1500); // Look at live preview of generated text
 
-  await writeTab.hover();
+  await editTab.hover();
   await page.waitForTimeout(500);
-  await writeTab.click();
+  await editTab.click();
   await page.waitForTimeout(1000);
 
   console.log('[Demo 2] Step 8: Editing the summary with Markdown in slow-mo');
@@ -126,20 +127,20 @@ test('Demo 2: Symmetrical Review Dialog Workspace & Markdown Editing', async ({ 
   await page.waitForTimeout(800);
 
   // Type a polished summary that relates directly to the real feature!
-  const polishedSummary = `This feature **simplifies tooltip and popup positioning** by introducing a native browser-supported anchoring workflow. It tether-positions elements relative to one or more anchor elements, eliminating the need for complex JavaScript calculations like Popper.js!`;
+  const polishedSummary = `This feature **simplifies tooltip and popup positioning** by introducing a native browser-supported anchoring workflow. It tether-positions elements relative to one or more anchor elements, eliminating the need for JavaScript!`;
   await typeSlowly(page, textarea, polishedSummary);
   await page.waitForTimeout(1500);
 
-  console.log('[Demo 2] Step 9: Toggling to Preview tab to show live Markdown rendering');
-  await previewTab.click();
-  await page.waitForTimeout(2500); // Let viewer inspect bold text, punctuation, and links
+  console.log('[Demo 2] Step 9: Toggling to Visual Diff tab to show line-by-line diff');
+  await diffTab.click();
+  await page.waitForTimeout(2500); // Look at visual diff highlights
 
   console.log('[Demo 2] Step 10: Approving / Pruning documentation links');
-  await writeTab.click();
+  await editTab.click();
   await page.waitForTimeout(1000);
 
-  // Locate the checkbox items (which were populated by the real Gemini call!)
-  const firstCheckbox = page.locator('sl-checkbox.link-checkbox').first();
+  // Locate the checkbox items using data-testid
+  const firstCheckbox = page.getByTestId('link-checkbox-0');
   if (await firstCheckbox.isVisible()) {
     await firstCheckbox.scrollIntoViewIfNeeded();
     await page.waitForTimeout(500);
@@ -173,5 +174,66 @@ test('Demo 2: Symmetrical Review Dialog Workspace & Markdown Editing', async ({ 
 
   // Dialog closes, back to dashboard
   await expect(dialog).not.toBeVisible();
-  await page.waitForTimeout(3000); // Hold final screen showing updated badge
+  await page.waitForTimeout(2000);
+
+  console.log('[Demo 2] Step 13: Simulating Curation Drift (Feature Owner edits original description)');
+  await page.goto(`/guide/editall/${featureId}`);
+  await page.waitForTimeout(1500);
+  
+  const summaryInput = page.locator('textarea[name="summary"]');
+  await summaryInput.scrollIntoViewIfNeeded();
+  await summaryInput.focus();
+  await page.keyboard.press('Control+A');
+  await page.keyboard.press('Backspace');
+  await page.waitForTimeout(500);
+  // Minor edit adding a sentence to the original description
+  await summaryInput.fill(targetFeature.summary + " Note: This native workflow offers substantial CPU savings on layout passes.");
+  await page.waitForTimeout(1000);
+  
+  const submitBtn = page.locator('input[type="submit"]');
+  await submitBtn.click();
+  await page.waitForURL(`**/feature/${featureId}`);
+  await page.waitForTimeout(2000);
+
+  console.log('[Demo 2] Step 14: Returning to Release Notes page to observe yellow Out of Date badge');
+  await page.goto(`/release-notes?milestone=${stableMilestone}`);
+  await card.scrollIntoViewIfNeeded();
+  await page.waitForTimeout(1500);
+
+  // Verify the yellow Out of Date badge is visible
+  const outOfDateBadge = card.locator('sl-tag[variant="warning"]');
+  await expect(outOfDateBadge).toHaveText(/Out of Date/);
+  await page.waitForTimeout(2000);
+
+  console.log('[Demo 2] Step 15: Clicking "Review Curation (Drift)" to resolve the drift');
+  const reviewDriftBtn = card.getByRole('button', { name: 'Review Curation (Drift)' });
+  await reviewDriftBtn.hover();
+  await page.waitForTimeout(800);
+  await reviewDriftBtn.click();
+
+  // Dialog opens showing the Smart Merge Panel!
+  await expect(dialog).toBeVisible();
+  await page.waitForTimeout(2000);
+
+  console.log('[Demo 2] Step 16: Clicking "Keep Curated Version" to dismiss the drift warning');
+  const keepCuratedBtn = page.getByRole('button', { name: 'Keep Curated Version' });
+  await expect(keepCuratedBtn).toBeVisible();
+  await keepCuratedBtn.hover();
+  await page.waitForTimeout(800);
+
+  // Intercept confirm() dialog because Playwright automatically dismisses alerts by default!
+  page.once('dialog', async d => {
+    console.log(`[Demo 2] Confirm dialog popped up: "${d.message()}". Clicking OK.`);
+    await d.accept();
+  });
+  await keepCuratedBtn.click();
+
+  // Dialog closes, back to dashboard, drift resolved
+  await expect(dialog).not.toBeVisible();
+  await page.waitForTimeout(1500);
+
+  // Verify the card's badge has returned to "Applied"
+  const finalBadge = card.locator('sl-tag[variant="primary"]');
+  await expect(finalBadge).toHaveText(/Applied/);
+  await page.waitForTimeout(3000); // Hold final screen
 });
