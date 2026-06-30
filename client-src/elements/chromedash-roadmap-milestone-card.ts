@@ -213,13 +213,15 @@ export class ChromedashRoadmapMilestoneCard extends LitElement {
         : this.channel?.stable_date;
     const logo = html`
       <span class="chrome-logo">
-        ${this.templateContent.channelTag
-          ? html`
-              <span class="channel-tag"
-                >${this.templateContent.channelTag}</span
-              >
-            `
-          : nothing}
+        ${
+          this.templateContent.channelTag
+            ? html`
+                <span class="channel-tag"
+                  >${this.templateContent.channelTag}</span
+                >
+              `
+            : nothing
+        }
       </span>
     `;
 
@@ -227,36 +229,40 @@ export class ChromedashRoadmapMilestoneCard extends LitElement {
       <div class="layout vertical center">
         <h1 class="channel_label">${this.templateContent.channelLabel}</h1>
         <h1
-          class="chrome_version layout horizontal center ${this.templateContent
-            .h1Class}"
+          class="chrome_version layout horizontal center ${
+            this.templateContent.h1Class
+          }"
         >
           ${logo} Chrome ${this.channel?.version}
         </h1>
       </div>
-      ${this.showDates && this.channel?.earliest_beta
-        ? html`
-            <div class="milestone_info layout horizontal center-center">
-              <h3>
-                <span class="channel_label">Beta</span> ${this.templateContent
-                  .dateText}
-                <span class="milestone_info-beta">
-                  ${this._computeDate(this.channel?.earliest_beta)} -
-                  ${this._computeDate(this.channel?.latest_beta)}
-                </span>
-              </h3>
-            </div>
-            <div class="milestone_info layout horizontal center-center">
-              <h3>
-                <span class="channel_label">Stable</span>
-                ${this._computeDaysUntil(stableStart)}
-                <span class="release-stable"
-                  >(${this._computeDate(stableStart, true)})</span
-                >
-                ${this.renderInfoIcon()}
-              </h3>
-            </div>
-          `
-        : nothing}
+      ${
+        this.showDates && this.channel?.earliest_beta
+          ? html`
+              <div class="milestone_info layout horizontal center-center">
+                <h3>
+                  <span class="channel_label">Beta</span> ${
+                    this.templateContent.dateText
+                  }
+                  <span class="milestone_info-beta">
+                    ${this._computeDate(this.channel?.earliest_beta)} -
+                    ${this._computeDate(this.channel?.latest_beta)}
+                  </span>
+                </h3>
+              </div>
+              <div class="milestone_info layout horizontal center-center">
+                <h3>
+                  <span class="channel_label">Stable</span>
+                  ${this._computeDaysUntil(stableStart)}
+                  <span class="release-stable"
+                    >(${this._computeDate(stableStart, true)})</span
+                  >
+                  ${this.renderInfoIcon()}
+                </h3>
+              </div>
+            `
+          : nothing
+      }
     `;
   }
 
@@ -275,12 +281,10 @@ export class ChromedashRoadmapMilestoneCard extends LitElement {
       return false;
     }
     // If this feature is not shipping within two upcoming milestones, return false.
-    if (
-      !(
-        this.stableMilestone + 1 === liveChromeVersion ||
-        this.stableMilestone + 2 === liveChromeVersion
-      )
-    ) {
+    if (!(
+      this.stableMilestone + 1 === liveChromeVersion ||
+      this.stableMilestone + 2 === liveChromeVersion
+    )) {
       return false;
     }
 
@@ -295,9 +299,9 @@ export class ChromedashRoadmapMilestoneCard extends LitElement {
     return html`
       <li
         data-feature-id="${f.id}"
-        class="hbox align-top ${f.id == this.highlightFeature
-          ? 'highlight'
-          : ''}"
+        class="hbox align-top ${
+          f.id == this.highlightFeature ? 'highlight' : ''
+        }"
       >
         <chromedash-review-status-icon
           .feature=${f}
@@ -325,61 +329,71 @@ export class ChromedashRoadmapMilestoneCard extends LitElement {
         </span>
         <span class="spacer"></span>
         <span class="icon_row">
-          ${this._isFeatureOutdated(f.accurate_as_of, this.channel?.version)
-            ? html`
-                <span
-                  class="tooltip"
-                  id="outdated-icon"
-                  title="Feature outdated - last checked for overall accuracy more than four weeks ago"
-                >
-                  <sl-icon
-                    name="exclamation-circle-fill"
-                    data-tooltip
-                  ></sl-icon>
-                </span>
-              `
-            : nothing}
-          ${DEPRECATION_TRIAL.includes(shippingType)
-            ? html`
-                <span class="tooltip" title="Deprecation Trial">
-                  <sl-icon
-                    library="material"
-                    name="extension"
-                    class="experimental"
-                    data-tooltip
-                  ></sl-icon>
-                </span>
-              `
-            : nothing}
-          ${REMOVED_STATUS.includes(shippingType)
-            ? html`
-                <span class="tooltip" title="Removed">
-                  <sl-icon
-                    name="x-circle-fill"
-                    class="remove"
-                    data-tooltip
-                  ></sl-icon>
-                </span>
-              `
-            : nothing}
-          ${this.signedIn
-            ? html`
-                <span
-                  class="tooltip"
-                  title="Receive an email notification when there are updates"
-                >
-                  <sl-icon
-                    name="${this.starredFeatures.has(Number(f.id))
-                      ? 'star-fill'
-                      : 'star'}"
-                    class="pushicon"
-                    data-feature-id="${f.id}"
-                    @click="${this.toggleStar}"
+          ${
+            this._isFeatureOutdated(f.accurate_as_of, this.channel?.version)
+              ? html`
+                  <span
+                    class="tooltip"
+                    id="outdated-icon"
+                    title="Feature outdated - last checked for overall accuracy more than four weeks ago"
                   >
-                  </sl-icon>
-                </span>
-              `
-            : nothing}
+                    <sl-icon
+                      name="exclamation-circle-fill"
+                      data-tooltip
+                    ></sl-icon>
+                  </span>
+                `
+              : nothing
+          }
+          ${
+            DEPRECATION_TRIAL.includes(shippingType)
+              ? html`
+                  <span class="tooltip" title="Deprecation Trial">
+                    <sl-icon
+                      library="material"
+                      name="extension"
+                      class="experimental"
+                      data-tooltip
+                    ></sl-icon>
+                  </span>
+                `
+              : nothing
+          }
+          ${
+            REMOVED_STATUS.includes(shippingType)
+              ? html`
+                  <span class="tooltip" title="Removed">
+                    <sl-icon
+                      name="x-circle-fill"
+                      class="remove"
+                      data-tooltip
+                    ></sl-icon>
+                  </span>
+                `
+              : nothing
+          }
+          ${
+            this.signedIn
+              ? html`
+                  <span
+                    class="tooltip"
+                    title="Receive an email notification when there are updates"
+                  >
+                    <sl-icon
+                      name="${
+                        this.starredFeatures.has(Number(f.id))
+                          ? 'star-fill'
+                          : 'star'
+                      }"
+                      class="pushicon"
+                      data-feature-id="${f.id}"
+                      @click="${this.toggleStar}"
+                    >
+                    </sl-icon>
+                  </span>
+                `
+              : nothing
+          }
         </span>
       </li>
     `;
@@ -426,9 +440,7 @@ export class ChromedashRoadmapMilestoneCard extends LitElement {
 
   renderCardFeatureList() {
     const featureListItems: (
-      | TemplateResult[]
-      | TemplateResult
-      | typeof nothing
+      TemplateResult[] | TemplateResult | typeof nothing
     )[] = this._objKeys(this.channel?.features).map(shippingType => {
       if (shippingType === ORIGIN_TRIAL[0]) {
         return this.renderOTFeatures(this.channel?.features[shippingType]);
@@ -447,16 +459,18 @@ export class ChromedashRoadmapMilestoneCard extends LitElement {
 
     return html`
       <div class="features_list">
-        ${this._isAnyFeatureReleased()
-          ? html`
+        ${
+          this._isAnyFeatureReleased()
+            ? html`
         <div class="features_header">${this.templateContent.featureHeader}:</div>
           ${featureListItems}
           </div>`
-          : html`
-              <div class="features_header no_feature_released">
-                ${NO_FEATURE_STRING}
-              </div>
-            `}
+            : html`
+                <div class="features_header no_feature_released">
+                  ${NO_FEATURE_STRING}
+                </div>
+              `
+        }
       </div>
     `;
   }
@@ -506,9 +520,11 @@ export class ChromedashRoadmapMilestoneCard extends LitElement {
   render() {
     return html`
       <section class="release">
-        ${this.channel
-          ? html` ${this.renderCardHeader()} ${this.renderCardFeatureList()} `
-          : html` ${this.renderSkeletons()} `}
+        ${
+          this.channel
+            ? html` ${this.renderCardHeader()} ${this.renderCardFeatureList()} `
+            : html` ${this.renderSkeletons()} `
+        }
       </section>
     `;
   }

@@ -111,9 +111,11 @@ export class ChromedashAdminFeatureLinksPage extends LitElement {
             <div class="line">
               <div>
                 <a href=${sample.url}><i>${sample.url}</i></a>
-                ${sample.http_error_code
-                  ? html`<i>(${sample.http_error_code})</i>`
-                  : nothing}
+                ${
+                  sample.http_error_code
+                    ? html`<i>(${sample.http_error_code})</i>`
+                    : nothing
+                }
               </div>
               <a
                 href=${`/feature/${sample.feature_ids}`}
@@ -183,10 +185,12 @@ export class ChromedashAdminFeatureLinksPage extends LitElement {
                 </div>
                 <b>${domain.count}</b>
               </div>
-              ${this.sampleId ===
-              this.calcSampleId(domain.key, 'web', undefined)
-                ? this.renderSamples()
-                : nothing}
+              ${
+                this.sampleId ===
+                this.calcSampleId(domain.key, 'web', undefined)
+                  ? this.renderSamples()
+                  : nothing
+              }
             `
           )}
         </sl-details>
@@ -209,9 +213,11 @@ export class ChromedashAdminFeatureLinksPage extends LitElement {
                 </div>
                 <b>${domain.count}</b>
               </div>
-              ${this.sampleId === this.calcSampleId(domain.key, undefined, true)
-                ? this.renderSamples()
-                : nothing}
+              ${
+                this.sampleId === this.calcSampleId(domain.key, undefined, true)
+                  ? this.renderSamples()
+                  : nothing
+              }
             `
           )}
         </sl-details>

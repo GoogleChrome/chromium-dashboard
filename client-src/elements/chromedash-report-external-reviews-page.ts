@@ -212,18 +212,24 @@ export class ChromedashReportExternalReviewsPage extends LitElement {
                       ></chromedash-link>
                     </td>
                     <td class="milestones">
-                      ${review.estimated_start_milestone
-                        ? 'M' + review.estimated_start_milestone
-                        : nothing}${['shipping', 'shipped'].includes(
-                        review.current_stage
-                      )
-                        ? nothing
-                        : html`${review.estimated_start_milestone ||
-                          review.estimated_end_milestone
-                            ? '–'
-                            : nothing}${review.estimated_end_milestone
-                            ? 'M' + review.estimated_end_milestone
-                            : nothing}`}
+                      ${
+                        review.estimated_start_milestone
+                          ? 'M' + review.estimated_start_milestone
+                          : nothing
+                      }${
+                        ['shipping', 'shipped'].includes(review.current_stage)
+                          ? nothing
+                          : html`${
+                              review.estimated_start_milestone ||
+                              review.estimated_end_milestone
+                                ? '–'
+                                : nothing
+                            }${
+                              review.estimated_end_milestone
+                                ? 'M' + review.estimated_end_milestone
+                                : nothing
+                            }`
+                      }
                     </td>
                   </tr>
                 `

@@ -507,35 +507,39 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
         <th>User productivity / Apps</th>
         <th>Management</th>
       </tr>
-      ${features.length === 0
-        ? html`<tr>
-            <td colspan="4">Nothing</td>
-          </tr>`
-        : features.map(
-            f => html`
-              <tr>
-                <td>${f.name}</td>
-                <td>
-                  ${this.getFeatureMarkerForCategory(
-                    f,
-                    ENTERPRISE_FEATURE_CATEGORIES['SECURITYANDPRIVACY'][0]
-                  )}
-                </td>
-                <td>
-                  ${this.getFeatureMarkerForCategory(
-                    f,
-                    ENTERPRISE_FEATURE_CATEGORIES['USERPRODUCTIVITYANDAPPS'][0]
-                  )}
-                </td>
-                <td>
-                  ${this.getFeatureMarkerForCategory(
-                    f,
-                    ENTERPRISE_FEATURE_CATEGORIES['MANAGEMENT'][0]
-                  )}
-                </td>
-              </tr>
-            `
-          )}
+      ${
+        features.length === 0
+          ? html`<tr>
+              <td colspan="4">Nothing</td>
+            </tr>`
+          : features.map(
+              f => html`
+                <tr>
+                  <td>${f.name}</td>
+                  <td>
+                    ${this.getFeatureMarkerForCategory(
+                      f,
+                      ENTERPRISE_FEATURE_CATEGORIES['SECURITYANDPRIVACY'][0]
+                    )}
+                  </td>
+                  <td>
+                    ${this.getFeatureMarkerForCategory(
+                      f,
+                      ENTERPRISE_FEATURE_CATEGORIES[
+                        'USERPRODUCTIVITYANDAPPS'
+                      ][0]
+                    )}
+                  </td>
+                  <td>
+                    ${this.getFeatureMarkerForCategory(
+                      f,
+                      ENTERPRISE_FEATURE_CATEGORIES['MANAGEMENT'][0]
+                    )}
+                  </td>
+                </tr>
+              `
+            )
+      }
     `;
   }
 
@@ -736,9 +740,9 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
         - <a target="_blank" href="/feature/${f.id}">Feature details</a> -
         <b>Owners:</b> ${f.browsers.chrome.owners?.join(', ')} -
         <b>Editors:</b> ${(f.editors || []).join(', ')} -
-        <b>Enterprise impact:</b> ${ENTERPRISE_IMPACT_DISPLAYNAME[
-          f.enterprise_impact
-        ]}
+        <b>Enterprise impact:</b> ${
+          ENTERPRISE_IMPACT_DISPLAYNAME[f.enterprise_impact]
+        }
         - <b>First notice:</b> ${f.first_enterprise_notification_milestone} -
         <b>Last updated:</b>
         <a
@@ -1042,12 +1046,14 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
     return html`
       <li class="stage">
         <span
-          class="${shouldDisplayStageTitleInBold(
-            s.rollout_milestone,
-            f.stages.map(s => s.rollout_milestone).sort()
-          )
-            ? 'bold'
-            : ''}"
+          class="${
+            shouldDisplayStageTitleInBold(
+              s.rollout_milestone,
+              f.stages.map(s => s.rollout_milestone).sort()
+            )
+              ? 'bold'
+              : ''
+          }"
         >
           ${this.getStageTitle(s)}
         </span>
@@ -1086,13 +1092,17 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
     return html` <section class="feature">
       ${this.renderEditButton(f)}
       ${isEditing ? this.renderEditableLabels(f) : this.renderLabels(f)}
-      ${isEditing
-        ? this.renderEditableFeatureName(f)
-        : this.renderFeatureName(f)}
+      ${
+        isEditing
+          ? this.renderEditableFeatureName(f)
+          : this.renderFeatureName(f)
+      }
       ${this.renderToRemoveParagraph(f)}
-      ${isEditing
-        ? this.renderEditableFeatureSummary(f)
-        : this.renderFeatureSummary(f)}
+      ${
+        isEditing
+          ? this.renderEditableFeatureSummary(f)
+          : this.renderFeatureSummary(f)
+      }
       <ul class="stages">
         ${f.stages.map(s =>
           isEditing && s.id

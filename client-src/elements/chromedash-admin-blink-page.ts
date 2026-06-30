@@ -181,11 +181,13 @@ export class ChromedashAdminBlinkPage extends LitElement {
         <div class="layout horizontal center">
           <div>
             <h2>Blink components</h2>
-            ${this.loading
-              ? html`<div>loading components</div>`
-              : html`<div id="component-count">
-                  listing ${this.components!.length} components
-                </div>`}
+            ${
+              this.loading
+                ? html`<div>loading components</div>`
+                : html`<div id="component-count">
+                    listing ${this.components!.length} components
+                  </div>`
+            }
           </div>
         </div>
         <div class="layout horizontal subheader_toggles">

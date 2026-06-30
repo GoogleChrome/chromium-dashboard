@@ -286,44 +286,48 @@ export class ChromedashHeader extends LitElement {
       this.isCurrentPage('/guide/new') ||
       this.isCurrentPage('/guide/enterprise/new');
     return html`
-      ${this.user
-        ? html`
-            ${this.user.can_create_feature && !alreadyOnNew
-              ? html`
-                  <sl-button
-                    data-testid="create-feature-button"
-                    href="/guide/new"
-                    variant="primary"
-                    size="small"
-                  >
-                    Create feature
-                  </sl-button>
-                `
-              : nothing}
-            <sl-dropdown>
-              <sl-button
-                slot="trigger"
-                variant="text"
-                size="medium"
-                data-testid="account-indicator"
-                caret
-              >
-                ${this.user.email}
-              </sl-button>
-              <sl-menu>
-                <sl-menu-item @click=${this.gotoSettings}>
-                  Settings
-                </sl-menu-item>
-                <sl-menu-item
-                  id="sign-out-link"
-                  data-testid="sign-out-link"
-                  @click=${this.signOut}
-                  >Sign out</sl-menu-item
+      ${
+        this.user
+          ? html`
+              ${
+                this.user.can_create_feature && !alreadyOnNew
+                  ? html`
+                      <sl-button
+                        data-testid="create-feature-button"
+                        href="/guide/new"
+                        variant="primary"
+                        size="small"
+                      >
+                        Create feature
+                      </sl-button>
+                    `
+                  : nothing
+              }
+              <sl-dropdown>
+                <sl-button
+                  slot="trigger"
+                  variant="text"
+                  size="medium"
+                  data-testid="account-indicator"
+                  caret
                 >
-              </sl-menu>
-            </sl-dropdown>
-          `
-        : html` <slot></slot> `}
+                  ${this.user.email}
+                </sl-button>
+                <sl-menu>
+                  <sl-menu-item @click=${this.gotoSettings}>
+                    Settings
+                  </sl-menu-item>
+                  <sl-menu-item
+                    id="sign-out-link"
+                    data-testid="sign-out-link"
+                    @click=${this.signOut}
+                    >Sign out</sl-menu-item
+                  >
+                </sl-menu>
+              </sl-dropdown>
+            `
+          : html` <slot></slot> `
+      }
     `;
   }
 

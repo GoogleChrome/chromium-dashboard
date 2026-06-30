@@ -196,9 +196,11 @@ class ChromedashUserlist extends LitElement {
                 >delete</a
               >
               ${user.is_admin ? html`(admin)` : nothing}
-              ${!user.is_admin && user.is_site_editor
-                ? html`(site editor)`
-                : nothing}
+              ${
+                !user.is_admin && user.is_site_editor
+                  ? html`(site editor)`
+                  : nothing
+              }
               <span>${user.email}</span>
             </li>
           `

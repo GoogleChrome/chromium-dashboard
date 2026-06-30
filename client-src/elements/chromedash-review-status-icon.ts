@@ -27,11 +27,7 @@ import {
 } from './form-field-enums.js';
 
 type statusEnum =
-  | 'Not started'
-  | 'In-progress'
-  | 'Needs work'
-  | 'Approved'
-  | 'Denied';
+  'Not started' | 'In-progress' | 'Needs work' | 'Approved' | 'Denied';
 
 const STATUS_TO_ICON_NAME: Record<statusEnum, string> = {
   'Not started': 'arrow_circle_right_20px',

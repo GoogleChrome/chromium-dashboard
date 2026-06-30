@@ -215,8 +215,10 @@ class ChromedashStackRank extends LitElement {
         <p class="title-text">
           Showing
           <span
-            >${this.viewList.length -
-            (this.shouldHideObsolete ? this.obsoleteCount : 0)}</span
+            >${
+              this.viewList.length -
+              (this.shouldHideObsolete ? this.obsoleteCount : 0)
+            }</span
           >
           properties
         </p>
@@ -260,8 +262,9 @@ class ChromedashStackRank extends LitElement {
               </sl-menu-item>
               <sl-menu-item
                 type="checkbox"
-                ?checked=${this.sortType == 'property_name' &&
-                !this.sortReverse}
+                ?checked=${
+                  this.sortType == 'property_name' && !this.sortReverse
+                }
                 data-order="property_name"
               >
                 Name (Z-A)
@@ -278,9 +281,11 @@ class ChromedashStackRank extends LitElement {
       ${displayedList.map(
         item => html`
           <li
-            class="stack-rank-item ${this.shouldHideObsolete && item.obsolete
-              ? 'stack-rank-item-hidden'
-              : ''}"
+            class="stack-rank-item ${
+              this.shouldHideObsolete && item.obsolete
+                ? 'stack-rank-item-hidden'
+                : ''
+            }"
             id="${item.property_name}"
           >
             <div
@@ -303,15 +308,17 @@ class ChromedashStackRank extends LitElement {
               <chromedash-x-meter
                 value="${item.percentage}"
                 max="${this.maxPercentage}"
-                href="/metrics/${this.type}/timeline/${this
-                  .view}/${item.bucket_id}"
+                href="/metrics/${this.type}/timeline/${
+                  this.view
+                }/${item.bucket_id}"
                 title="Click to see a timeline view of this property"
               >
               </chromedash-x-meter>
               <a
                 class="icon-wrapper"
-                href="/metrics/${this.type}/timeline/${this
-                  .view}/${item.bucket_id}"
+                href="/metrics/${this.type}/timeline/${
+                  this.view
+                }/${item.bucket_id}"
                 title="Click to see a timeline view of this property"
               >
                 <sl-icon name="graph-up"></sl-icon>
@@ -355,9 +362,11 @@ class ChromedashStackRank extends LitElement {
             </a>
           </div>
         </li>
-        ${this.viewList.length
-          ? this.renderStackRank(this.viewList)
-          : this.renderTemporaryRank()}
+        ${
+          this.viewList.length
+            ? this.renderStackRank(this.viewList)
+            : this.renderTemporaryRank()
+        }
       </ol>
     `;
   }

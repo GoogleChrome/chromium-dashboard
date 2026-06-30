@@ -560,14 +560,16 @@ export class ChromedashGuideEditallPage extends LitElement {
   render() {
     return html`
       ${this.renderSubheader()}
-      ${this.loading
-        ? nothing
-        : getFeatureOutdatedBanner(
-            this.feature,
-            this.shippingInfo,
-            Date.now(),
-            userCanEdit(this.user, this.feature.id)
-          )}
+      ${
+        this.loading
+          ? nothing
+          : getFeatureOutdatedBanner(
+              this.feature,
+              this.shippingInfo,
+              Date.now(),
+              userCanEdit(this.user, this.feature.id)
+            )
+      }
       ${this.loading ? this.renderSkeletons() : this.renderForm()}
     `;
   }

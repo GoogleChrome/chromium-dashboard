@@ -511,15 +511,20 @@ export class ChromedashOTCreationPage extends LitElement {
     const section = ORIGIN_TRIAL_CREATION_FIELDS.sections[0];
     return html`
       <form name="feature_form">
-        ${this.submitting
-          ? html`<div id="overlay">
-              <div class="loading">
-                <div id="spinner">
-                  <img class="submission-spinner" src="/static/img/ring.svg" />
+        ${
+          this.submitting
+            ? html`<div id="overlay">
+                <div class="loading">
+                  <div id="spinner">
+                    <img
+                      class="submission-spinner"
+                      src="/static/img/ring.svg"
+                    />
+                  </div>
                 </div>
-              </div>
-            </div>`
-          : nothing}
+              </div>`
+            : nothing
+        }
         <chromedash-form-table ${ref(this.registerHandlers)}>
           <section class="stage_form">
             <div class="warning warning-div">
