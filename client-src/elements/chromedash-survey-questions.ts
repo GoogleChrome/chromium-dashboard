@@ -401,9 +401,11 @@ export class ChromedashSurveyQuestions extends LitElement {
   render(): TemplateResult {
     return html`
       <h2>Survey questions</h2>
-      ${this.loading
-        ? this.renderQuestionnaireSkeleton()
-        : this.renderQuestionnaire()}
+      ${
+        this.loading
+          ? this.renderQuestionnaireSkeleton()
+          : this.renderQuestionnaire()
+      }
     `;
   }
 }

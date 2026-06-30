@@ -124,92 +124,104 @@ export class ChromedashFeatureHighlights extends LitElement {
   renderFeatureContent() {
     return html`
       ${this.renderSummary()}
-      ${this.feature.motivation
-        ? html`
-            <section id="motivation">
-              <h3>Motivation</h3>
-              <!-- prettier-ignore -->
-              <p class="preformatted">${autolink(
-                this.feature.motivation,
-                this.featureLinks
-              )}</p>
-            </section>
-          `
-        : nothing}
-      ${this.feature.resources?.samples?.length
-        ? html`
-            <section id="demo">
-              <h3>Demos and samples</h3>
-              <ul>
-                ${this.feature.resources.samples.map(
-                  sampleLink => html`
-                    <li>${enhanceUrl(sampleLink, this.featureLinks)}</li>
-                  `
-                )}
-              </ul>
-            </section>
-          `
-        : nothing}
-      ${this.feature.resources?.docs?.length
-        ? html`
-            <section id="documentation">
-              <h3>Documentation</h3>
-              <ul>
-                ${this.feature.resources.docs.map(
-                  docLink => html`
-                    <li>${enhanceUrl(docLink, this.featureLinks)}</li>
-                  `
-                )}
-              </ul>
-            </section>
-          `
-        : nothing}
-      ${this.feature.standards.spec
-        ? html`
-            <section id="specification">
-              <h3>Specification</h3>
-              <p>
-                ${enhanceUrl(this.feature.standards.spec, this.featureLinks)}
-              </p>
-              <p>Spec status: ${this.feature.standards.maturity.text}</p>
-            </section>
-          `
-        : this.feature.explainer_links?.length
+      ${
+        this.feature.motivation
           ? html`
-              <section id="specification">
-                <h3>Explainer(s)</h3>
+              <section id="motivation">
+                <h3>Motivation</h3>
+                <!-- prettier-ignore -->
+                <p class="preformatted">${autolink(
+                  this.feature.motivation,
+                  this.featureLinks
+                )}</p>
+              </section>
+            `
+          : nothing
+      }
+      ${
+        this.feature.resources?.samples?.length
+          ? html`
+              <section id="demo">
+                <h3>Demos and samples</h3>
                 <ul>
-                  ${this.feature.explainer_links?.map(
-                    link =>
-                      html`<li>${enhanceUrl(link, this.featureLinks)}</li>`
+                  ${this.feature.resources.samples.map(
+                    sampleLink => html`
+                      <li>${enhanceUrl(sampleLink, this.featureLinks)}</li>
+                    `
                   )}
                 </ul>
               </section>
             `
-          : nothing}
+          : nothing
+      }
+      ${
+        this.feature.resources?.docs?.length
+          ? html`
+              <section id="documentation">
+                <h3>Documentation</h3>
+                <ul>
+                  ${this.feature.resources.docs.map(
+                    docLink => html`
+                      <li>${enhanceUrl(docLink, this.featureLinks)}</li>
+                    `
+                  )}
+                </ul>
+              </section>
+            `
+          : nothing
+      }
+      ${
+        this.feature.standards.spec
+          ? html`
+              <section id="specification">
+                <h3>Specification</h3>
+                <p>
+                  ${enhanceUrl(this.feature.standards.spec, this.featureLinks)}
+                </p>
+                <p>Spec status: ${this.feature.standards.maturity.text}</p>
+              </section>
+            `
+          : this.feature.explainer_links?.length
+            ? html`
+                <section id="specification">
+                  <h3>Explainer(s)</h3>
+                  <ul>
+                    ${this.feature.explainer_links?.map(
+                      link =>
+                        html`<li>${enhanceUrl(link, this.featureLinks)}</li>`
+                    )}
+                  </ul>
+                </section>
+              `
+            : nothing
+      }
     `;
   }
 
   renderEnterpriseFeatureStatus() {
     return html`
-      ${this.feature.browsers.chrome.owners
-        ? html`
-            <section id="owner">
-              <h3>
-                ${this.feature.browsers.chrome.owners.length == 1
-                  ? 'Owner'
-                  : 'Owners'}
-              </h3>
-              <ul>
-                ${this.feature.browsers.chrome.owners.map(
-                  owner => html`
-                    <li><a href="mailto:${owner}">${owner}</a></li>
-                  `
-                )}
-              </ul>
-            </section>
-          `
-        : nothing}
+      ${
+        this.feature.browsers.chrome.owners
+          ? html`
+              <section id="owner">
+                <h3>
+                  ${
+                    this.feature.browsers.chrome.owners.length == 1
+                      ? 'Owner'
+                      : 'Owners'
+                  }
+                </h3>
+                <ul>
+                  ${this.feature.browsers.chrome.owners.map(
+                    owner => html`
+                      <li><a href="mailto:${owner}">${owner}</a></li>
+                    `
+                  )}
+                </ul>
+              </section>
+            `
+          : nothing
+      }
     `;
   }
 
@@ -218,18 +230,22 @@ export class ChromedashFeatureHighlights extends LitElement {
       <section id="status">
         <h3>Status in Chromium</h3>
         <p>
-          ${this.isSuspended()
-            ? html` <label>Implementation status:</label>
-                <b>Development work is on hold</b>`
-            : nothing}
-          ${this.feature.browsers.chrome.bug
-            ? html`<chromedash-link
-                href=${this.feature.browsers.chrome.bug}
-                .featureLinks=${this.featureLinks}
-                alwaysInTag
-                >tracking bug</chromedash-link
-              >`
-            : nothing}
+          ${
+            this.isSuspended()
+              ? html` <label>Implementation status:</label>
+                  <b>Development work is on hold</b>`
+              : nothing
+          }
+          ${
+            this.feature.browsers.chrome.bug
+              ? html`<chromedash-link
+                  href=${this.feature.browsers.chrome.bug}
+                  .featureLinks=${this.featureLinks}
+                  alwaysInTag
+                  >tracking bug</chromedash-link
+                >`
+              : nothing
+          }
           <chromedash-gantt .feature=${this.feature}></chromedash-gantt>
         </p>
       </section>
@@ -242,79 +258,94 @@ export class ChromedashFeatureHighlights extends LitElement {
         </div>
         <br />
         <ul>
-          ${this.feature.browsers.ff.view.val
-            ? html`
-                <li>
-                  <label>Firefox:</label>
-                  <chromedash-vendor-views
-                    href=${this.feature.browsers.ff.view.url || nothing}
-                    .featureLinks=${this.featureLinks}
-                    >${this.feature.browsers.ff.view
-                      .text}</chromedash-vendor-views
-                  >
-                </li>
-              `
-            : nothing}
-          ${this.feature.browsers.safari.view.val
-            ? html`
-                <li>
-                  <label>WebKit:</label>
-                  <chromedash-vendor-views
-                    href=${this.feature.browsers.safari.view.url || nothing}
-                    .featureLinks=${this.featureLinks}
-                    >${this.feature.browsers.safari.view
-                      .text}</chromedash-vendor-views
-                  >
-                </li>
-              `
-            : nothing}
+          ${
+            this.feature.browsers.ff.view.val
+              ? html`
+                  <li>
+                    <label>Firefox:</label>
+                    <chromedash-vendor-views
+                      href=${this.feature.browsers.ff.view.url || nothing}
+                      .featureLinks=${this.featureLinks}
+                      >${
+                        this.feature.browsers.ff.view.text
+                      }</chromedash-vendor-views
+                    >
+                  </li>
+                `
+              : nothing
+          }
+          ${
+            this.feature.browsers.safari.view.val
+              ? html`
+                  <li>
+                    <label>WebKit:</label>
+                    <chromedash-vendor-views
+                      href=${this.feature.browsers.safari.view.url || nothing}
+                      .featureLinks=${this.featureLinks}
+                      >${
+                        this.feature.browsers.safari.view.text
+                      }</chromedash-vendor-views
+                    >
+                  </li>
+                `
+              : nothing
+          }
           <li>
-            <label>Web Developers:</label> ${this.feature.browsers.webdev.view
-              .text}
+            <label>Web Developers:</label> ${
+              this.feature.browsers.webdev.view.text
+            }
           </li>
         </ul>
       </section>
 
-      ${this.feature.browsers.chrome.owners
-        ? html`
-            <section id="owner">
-              <h3>
-                ${this.feature.browsers.chrome.owners.length == 1
-                  ? 'Owner'
-                  : 'Owners'}
-              </h3>
-              <ul>
-                ${this.feature.browsers.chrome.owners.map(
-                  owner => html`
-                    <li><a href="mailto:${owner}">${owner}</a></li>
-                  `
-                )}
-              </ul>
-            </section>
-          `
-        : nothing}
-      ${this.feature.intent_to_implement_url
-        ? html`
-            <section id="intent_to_implement_url">
-              <h3>Intent to Prototype url</h3>
-              <a href=${this.feature.intent_to_implement_url}
-                >Intent to Prototype thread</a
-              >
-            </section>
-          `
-        : nothing}
-      ${this.feature.comments
-        ? html`
-            <section id="comments">
-              <h3>Comments</h3>
-              <!-- prettier-ignore -->
-              <p class="preformatted">${autolink(
-                this.feature.comments,
-                this.featureLinks
-              )}</p>
-            </section>
-          `
-        : nothing}
+      ${
+        this.feature.browsers.chrome.owners
+          ? html`
+              <section id="owner">
+                <h3>
+                  ${
+                    this.feature.browsers.chrome.owners.length == 1
+                      ? 'Owner'
+                      : 'Owners'
+                  }
+                </h3>
+                <ul>
+                  ${this.feature.browsers.chrome.owners.map(
+                    owner => html`
+                      <li><a href="mailto:${owner}">${owner}</a></li>
+                    `
+                  )}
+                </ul>
+              </section>
+            `
+          : nothing
+      }
+      ${
+        this.feature.intent_to_implement_url
+          ? html`
+              <section id="intent_to_implement_url">
+                <h3>Intent to Prototype url</h3>
+                <a href=${this.feature.intent_to_implement_url}
+                  >Intent to Prototype thread</a
+                >
+              </section>
+            `
+          : nothing
+      }
+      ${
+        this.feature.comments
+          ? html`
+              <section id="comments">
+                <h3>Comments</h3>
+                <!-- prettier-ignore -->
+                <p class="preformatted">${autolink(
+                  this.feature.comments,
+                  this.featureLinks
+                )}</p>
+              </section>
+            `
+          : nothing
+      }
       <section id="metadata">
         <h3>Metadata</h3>
         <p>
@@ -338,17 +369,19 @@ export class ChromedashFeatureHighlights extends LitElement {
             `
           )}
         </p>
-        ${this.feature.tags?.length
-          ? html` <p>
-              <label>Search tags:</label>
-              ${this.feature.tags.map(
-                tag => html`
-                  <a href="/features?q=tag:${tag}">${tag}</a
-                  ><span class="conditional-comma">, </span>
-                `
-              )}
-            </p>`
-          : nothing}
+        ${
+          this.feature.tags?.length
+            ? html` <p>
+                <label>Search tags:</label>
+                ${this.feature.tags.map(
+                  tag => html`
+                    <a href="/features?q=tag:${tag}">${tag}</a
+                    ><span class="conditional-comma">, </span>
+                  `
+                )}
+              </p>`
+            : nothing
+        }
       </section>
     `;
   }
@@ -428,9 +461,11 @@ export class ChromedashFeatureHighlights extends LitElement {
       <sl-details summary="Overview" ?open=${true}>
         <section class="card ${this.isSuspended() ? 'suspended' : ''}">
           ${this.renderDotDotDotMenu()} ${this.renderFeatureContent()}
-          ${this.feature.is_enterprise_feature
-            ? this.renderEnterpriseFeatureStatus()
-            : this.renderFeatureStatus()}
+          ${
+            this.feature.is_enterprise_feature
+              ? this.renderEnterpriseFeatureStatus()
+              : this.renderFeatureStatus()
+          }
           ${this.renderHistory()}
         </section>
       </sl-details>

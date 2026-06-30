@@ -123,9 +123,9 @@ class ChromedashFeatureRow extends LitElement {
         @click=${this.toggleStar}
         title="Receive an email notification when there are updates"
         library="material"
-        name="${this.starredFeatures.has(Number(feature.id))
-          ? 'star'
-          : 'star_border'}"
+        name="${
+          this.starredFeatures.has(Number(feature.id)) ? 'star' : 'star_border'
+        }"
         data-feature-id="${feature.id}"
       ></sl-icon-button>
     `;
@@ -217,15 +217,17 @@ class ChromedashFeatureRow extends LitElement {
 
       return html`
         <div class="highlights">
-          ${activeStages.length > 0
-            ? html`
-                <div>
-                  ${activeStages.map(stageAndGates =>
-                    this.renderActiveStageAndGates(stageAndGates)
-                  )}
-                </div>
-              `
-            : nothing}
+          ${
+            activeStages.length > 0
+              ? html`
+                  <div>
+                    ${activeStages.map(stageAndGates =>
+                      this.renderActiveStageAndGates(stageAndGates)
+                    )}
+                  </div>
+                `
+              : nothing
+          }
           ${this.renderQuickActions(feature)}
         </div>
       `;

@@ -343,11 +343,13 @@ export class ChromedashBulkEditPage extends LitElement {
         ${this.renderPreview()}
       </section>
       <section>${this.renderControls()}</section>
-      ${this.parsing || this.submitting
-        ? html` <div class="loading">
-            <div id="spinner"><img src="/static/img/ring.svg" /></div>
-          </div>`
-        : nothing}
+      ${
+        this.parsing || this.submitting
+          ? html` <div class="loading">
+              <div id="spinner"><img src="/static/img/ring.svg" /></div>
+            </div>`
+          : nothing
+      }
     `;
   }
 }
