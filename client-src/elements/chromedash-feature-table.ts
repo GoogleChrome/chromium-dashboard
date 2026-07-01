@@ -347,8 +347,10 @@ export class ChromedashFeatureTable extends LitElement {
     return html`
       ${this.renderSearch()} ${this.renderLoadingStatusAndCount()}
       <table>
-        ${this.renderMessages() ||
-        this.features.map(feature => this.renderFeature(feature))}
+        ${
+          this.renderMessages() ||
+          this.features.map(feature => this.renderFeature(feature))
+        }
       </table>
       ${this.renderPagination(this.features)}
     `;

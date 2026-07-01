@@ -75,41 +75,51 @@ function enhanceChromeStatusLink(featureLink, text?) {
 
   function renderTooltipContent() {
     return html`<div class="tooltip">
-      ${summary &&
-      html`
-        <div>
-          <strong>Summary:</strong>
-          <span>${summary}</span>
-        </div>
-      `}
-      ${openedTimestamp &&
-      html`
-        <div>
-          <strong>Opened:</strong>
-          <span>${_formatTimestamp(openedTimestamp)}</span>
-        </div>
-      `}
-      ${closedTimestamp &&
-      html`
-        <div>
-          <strong>Closed:</strong>
-          <span>${_formatTimestamp(closedTimestamp)}</span>
-        </div>
-      `}
-      ${reporterRef &&
-      html`
-        <div>
-          <strong>Reporter:</strong>
-          <span>${reporterRef.displayName}</span>
-        </div>
-      `}
-      ${ownerRef &&
-      html`
-        <div>
-          <strong>Owner:</strong>
-          <span>${ownerRef.displayName}</span>
-        </div>
-      `}
+      ${
+        summary &&
+        html`
+          <div>
+            <strong>Summary:</strong>
+            <span>${summary}</span>
+          </div>
+        `
+      }
+      ${
+        openedTimestamp &&
+        html`
+          <div>
+            <strong>Opened:</strong>
+            <span>${_formatTimestamp(openedTimestamp)}</span>
+          </div>
+        `
+      }
+      ${
+        closedTimestamp &&
+        html`
+          <div>
+            <strong>Closed:</strong>
+            <span>${_formatTimestamp(closedTimestamp)}</span>
+          </div>
+        `
+      }
+      ${
+        reporterRef &&
+        html`
+          <div>
+            <strong>Reporter:</strong>
+            <span>${reporterRef.displayName}</span>
+          </div>
+        `
+      }
+      ${
+        ownerRef &&
+        html`
+          <div>
+            <strong>Owner:</strong>
+            <span>${ownerRef.displayName}</span>
+          </div>
+        `
+      }
     </div>`;
   }
   return html`<a
@@ -205,62 +215,78 @@ function enhanceGithubIssueLink(featureLink, text?) {
 
   function renderTooltipContent() {
     return html`<div class="tooltip">
-      ${title &&
-      html`
-        <div>
-          <strong>Title:</strong>
-          <span>${title}</span>
-        </div>
-      `}
-      ${repo &&
-      html`
-        <div>
-          <strong>Repo:</strong>
-          <span>${repo}</span>
-        </div>
-      `}
-      ${type &&
-      html`
-        <div>
-          <strong>Type:</strong>
-          <span>${type}</span>
-        </div>
-      `}
-      ${createdAt &&
-      html`
-        <div>
-          <strong>Opened:</strong>
-          <span>${_formatISOTime(createdAt)}</span>
-        </div>
-      `}
-      ${updatedAt &&
-      html`
-        <div>
-          <strong>Updated:</strong>
-          <span>${_formatISOTime(updatedAt)}</span>
-        </div>
-      `}
-      ${closedAt &&
-      html`
-        <div>
-          <strong>Closed:</strong>
-          <span>${_formatISOTime(closedAt)}</span>
-        </div>
-      `}
-      ${assignee &&
-      html`
-        <div>
-          <strong>Assignee:</strong>
-          <span>${assignee}</span>
-        </div>
-      `}
-      ${owner &&
-      html`
-        <div>
-          <strong>Owner:</strong>
-          <span>${owner}</span>
-        </div>
-      `}
+      ${
+        title &&
+        html`
+          <div>
+            <strong>Title:</strong>
+            <span>${title}</span>
+          </div>
+        `
+      }
+      ${
+        repo &&
+        html`
+          <div>
+            <strong>Repo:</strong>
+            <span>${repo}</span>
+          </div>
+        `
+      }
+      ${
+        type &&
+        html`
+          <div>
+            <strong>Type:</strong>
+            <span>${type}</span>
+          </div>
+        `
+      }
+      ${
+        createdAt &&
+        html`
+          <div>
+            <strong>Opened:</strong>
+            <span>${_formatISOTime(createdAt)}</span>
+          </div>
+        `
+      }
+      ${
+        updatedAt &&
+        html`
+          <div>
+            <strong>Updated:</strong>
+            <span>${_formatISOTime(updatedAt)}</span>
+          </div>
+        `
+      }
+      ${
+        closedAt &&
+        html`
+          <div>
+            <strong>Closed:</strong>
+            <span>${_formatISOTime(closedAt)}</span>
+          </div>
+        `
+      }
+      ${
+        assignee &&
+        html`
+          <div>
+            <strong>Assignee:</strong>
+            <span>${assignee}</span>
+          </div>
+        `
+      }
+      ${
+        owner &&
+        html`
+          <div>
+            <strong>Owner:</strong>
+            <span>${owner}</span>
+          </div>
+        `
+      }
     </div>`;
   }
   return html`<a
@@ -272,8 +298,10 @@ function enhanceGithubIssueLink(featureLink, text?) {
       <div slot="content">${renderTooltipContent()}</div>
       <sl-tag>
         <img
-          src=${externalReviewer?.icon ??
-          'https://docs.github.com/assets/cb-600/images/site/favicon.png'}
+          src=${
+            externalReviewer?.icon ??
+            'https://docs.github.com/assets/cb-600/images/site/favicon.png'
+          }
           alt="icon"
           class="icon"
         />
@@ -298,27 +326,33 @@ function enhanceGithubMarkdownLink(featureLink, text?) {
 
   function renderTooltipContent() {
     return html`<div class="tooltip">
-      ${title &&
-      html`
-        <div>
-          <strong>Title:</strong>
-          <span>${title}</span>
-        </div>
-      `}
-      ${path &&
-      html`
-        <div>
-          <strong>File:</strong>
-          <span>${path}</span>
-        </div>
-      `}
-      ${size &&
-      html`
-        <div>
-          <strong>Size:</strong>
-          <span>${readableSize}</span>
-        </div>
-      `}
+      ${
+        title &&
+        html`
+          <div>
+            <strong>Title:</strong>
+            <span>${title}</span>
+          </div>
+        `
+      }
+      ${
+        path &&
+        html`
+          <div>
+            <strong>File:</strong>
+            <span>${path}</span>
+          </div>
+        `
+      }
+      ${
+        size &&
+        html`
+          <div>
+            <strong>Size:</strong>
+            <span>${readableSize}</span>
+          </div>
+        `
+      }
     </div>`;
   }
   return html`<a
@@ -347,20 +381,24 @@ function _enhanceLinkWithTitleAndDescription(featureLink, iconUrl) {
 
   function renderTooltipContent() {
     return html`<div class="tooltip">
-      ${title &&
-      html`
-        <div>
-          <strong>Title:</strong>
-          <span>${title}</span>
-        </div>
-      `}
-      ${description &&
-      html`
-        <div>
-          <strong>Description:</strong>
-          <span>${description}</span>
-        </div>
-      `}
+      ${
+        title &&
+        html`
+          <div>
+            <strong>Title:</strong>
+            <span>${title}</span>
+          </div>
+        `
+      }
+      ${
+        description &&
+        html`
+          <div>
+            <strong>Description:</strong>
+            <span>${description}</span>
+          </div>
+        `
+      }
     </div>`;
   }
   return html`<a
@@ -388,27 +426,33 @@ function enhanceSpecsLink(featureLink) {
 
   function renderTooltipContent() {
     return html`<div class="tooltip">
-      ${title &&
-      html`
-        <div>
-          <strong>Title:</strong>
-          <span>${title}</span>
-        </div>
-      `}
-      ${description &&
-      html`
-        <div>
-          <strong>Description:</strong>
-          <span>${description}</span>
-        </div>
-      `}
-      ${hashtag &&
-      html`
-        <div>
-          <strong>Hashtag:</strong>
-          <span>#${hashtag}</span>
-        </div>
-      `}
+      ${
+        title &&
+        html`
+          <div>
+            <strong>Title:</strong>
+            <span>${title}</span>
+          </div>
+        `
+      }
+      ${
+        description &&
+        html`
+          <div>
+            <strong>Description:</strong>
+            <span>${description}</span>
+          </div>
+        `
+      }
+      ${
+        hashtag &&
+        html`
+          <div>
+            <strong>Hashtag:</strong>
+            <span>#${hashtag}</span>
+          </div>
+        `
+      }
     </div>`;
   }
   return html`<a
@@ -593,9 +637,9 @@ export class ChromedashLink extends LitElement {
           <sl-icon library="material" name="link"></sl-icon>
           <sl-badge
             size="small"
-            variant="${featureLink.http_error_code >= 500
-              ? 'danger'
-              : 'warning'}"
+            variant="${
+              featureLink.http_error_code >= 500 ? 'danger' : 'warning'
+            }"
           >
             ${featureLink.http_error_code}
           </sl-badge>

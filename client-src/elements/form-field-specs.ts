@@ -82,8 +82,7 @@ export type FieldValueGetter = {
 };
 
 type CheckResult =
-  | undefined
-  | {message?: string; warning?: string; error?: string};
+  undefined | {message?: string; warning?: string; error?: string};
 
 export type CheckFunction = (
   fieldValue: string,

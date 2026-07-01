@@ -6,7 +6,7 @@ appengine-python-standard>=2.0.1
 html5lib==1.1
 funcsigs==1.0.2
 json5==0.15.0
-google-api-python-client==2.197.0
+google-api-python-client==2.198.0
 trafilatura==2.1.0
 
 # TODO(jrobbins): Add this back or replace it when python 3.10 is supported.
@@ -18,7 +18,7 @@ google-cloud-ndb==2.5.0
 google-cloud-logging==3.16.0
 google-cloud-secret-manager==2.29.0
 google-cloud-storage==3.12.0
-google-auth==2.54.0
+google-auth==2.55.1
 google-genai==2.9.0
 requests==2.34.2
 redis==7.4.0
@@ -30,7 +30,7 @@ Jinja2==3.1.6
 json5==0.15.0
 MarkupSafe==3.0.3
 Werkzeug==3.1.8
-click==8.4.1
+click==8.4.2
 itsdangerous==2.2.0
 ghapi==1.0.14
 validators==0.35.0

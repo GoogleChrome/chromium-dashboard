@@ -382,26 +382,28 @@ export class ChromedashFeaturePage extends LitElement {
     return html`
       <div id="subheader" style="display:block">
         <div class="tooltips" style="float:right; font-size:1.1rem">
-          ${this.user
-            ? html`
-                <span
-                  class="tooltip"
-                  title="Receive an email notification when there are updates"
-                >
-                  <a
-                    href="#"
-                    data-tooltip
-                    id="star-when-signed-in"
-                    @click=${this.handleStarClick}
+          ${
+            this.user
+              ? html`
+                  <span
+                    class="tooltip"
+                    title="Receive an email notification when there are updates"
                   >
-                    <sl-icon
-                      name=${this.starred ? 'star-fill' : 'star'}
-                      class="pushicon"
-                    ></sl-icon>
-                  </a>
-                </span>
-              `
-            : nothing}
+                    <a
+                      href="#"
+                      data-tooltip
+                      id="star-when-signed-in"
+                      @click=${this.handleStarClick}
+                    >
+                      <sl-icon
+                        name=${this.starred ? 'star-fill' : 'star'}
+                        class="pushicon"
+                      ></sl-icon>
+                    </a>
+                  </span>
+                `
+              : nothing
+          }
           <span class="tooltip" title="File a bug against this feature">
             <a
               href=${ifDefined(this.feature.new_crbug_url)}
@@ -447,9 +449,11 @@ export class ChromedashFeaturePage extends LitElement {
           <a href="/feature/${this.featureId}">
             Feature: ${this.feature.name}
           </a>
-          ${this.featureIsInactive()
-            ? html`(${this.feature.browsers.chrome.status.text})`
-            : nothing}
+          ${
+            this.featureIsInactive()
+              ? html`(${this.feature.browsers.chrome.status.text})`
+              : nothing
+          }
         </h2>
       </div>
     `;

@@ -143,16 +143,18 @@ export class ChromedashFeaturePagination extends LitElement {
         `
       )}
       ${missingBack ? html`<div>...</div>` : nothing}
-      ${hasLastPage
-        ? html`<sl-button
-            variant="text"
-            id="jump_${numPages}"
-            class="page-button ${numPages - 1 === currentPage ? 'active' : ''}"
-            href=${formatUrlForOffset((numPages - 1) * this.pageSize)}
-          >
-            ${numPages}
-          </sl-button>`
-        : nothing}
+      ${
+        hasLastPage
+          ? html`<sl-button
+              variant="text"
+              id="jump_${numPages}"
+              class="page-button ${numPages - 1 === currentPage ? 'active' : ''}"
+              href=${formatUrlForOffset((numPages - 1) * this.pageSize)}
+            >
+              ${numPages}
+            </sl-button>`
+          : nothing
+      }
     `;
   }
 

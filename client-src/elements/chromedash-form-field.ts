@@ -330,21 +330,25 @@ export class ChromedashFormField extends LitElement {
         return false;
       } else {
         this.checkMessage = html` <span
-          class="check-${checkResult.message
-            ? 'message'
-            : checkResult.warning
-              ? 'warning'
-              : checkResult.error
-                ? 'error'
-                : 'unknown'}"
+          class="check-${
+            checkResult.message
+              ? 'message'
+              : checkResult.warning
+                ? 'warning'
+                : checkResult.error
+                  ? 'error'
+                  : 'unknown'
+          }"
         >
-          ${checkResult.message
-            ? checkResult.message
-            : checkResult.warning
-              ? html`<b>Warning</b>: ${checkResult.warning}`
-              : checkResult.error
-                ? html`<b>Error</b>: ${checkResult.error}`
-                : ''}
+          ${
+            checkResult.message
+              ? checkResult.message
+              : checkResult.warning
+                ? html`<b>Warning</b>: ${checkResult.warning}`
+                : checkResult.error
+                  ? html`<b>Error</b>: ${checkResult.error}`
+                  : ''
+          }
         </span>`;
         // Return from doSemanticCheck with the first non-empty message.
         return true;
@@ -400,9 +404,11 @@ export class ChromedashFormField extends LitElement {
           name="${fieldName}"
           id="id_${this.name}"
           size="small"
-          ?checked=${fieldValue === true ||
-          fieldValue === 'true' ||
-          fieldValue === 'True'}
+          ?checked=${
+            fieldValue === true ||
+            fieldValue === 'true' ||
+            fieldValue === 'True'
+          }
           ?disabled=${this.disabled || fieldDisabled}
           @sl-change="${this.handleFieldUpdated}"
         >
@@ -609,73 +615,83 @@ export class ChromedashFormField extends LitElement {
         : this.fieldProps.extra_help;
     const fadeInClass = this.shouldFadeIn ? 'fade-in' : '';
     return html`
-      ${this.fieldProps.label
-        ? html`
-            <tr class="${fadeInClass}">
-              <th class="form-field-header">
-                <div>
-                  <b>${this.fieldProps.label}:</b>
-                </div>
-                <div>
-                  ${this.renderUsageIcons(
-                    this.fieldProps.usage,
-                    this.feature?.feature_type_int
-                  )}
-                </div>
-              </th>
-            </tr>
-          `
-        : nothing}
+      ${
+        this.fieldProps.label
+          ? html`
+              <tr class="${fadeInClass}">
+                <th class="form-field-header">
+                  <div>
+                    <b>${this.fieldProps.label}:</b>
+                  </div>
+                  <div>
+                    ${this.renderUsageIcons(
+                      this.fieldProps.usage,
+                      this.feature?.feature_type_int
+                    )}
+                  </div>
+                </th>
+              </tr>
+            `
+          : nothing
+      }
       <tr class=${fadeInClass}>
         <td>${this.renderWidget()} ${this.checkMessage}</td>
         <td>
-          ${helpText
-            ? html`<span class="helptext"> ${helpText} </span>`
-            : nothing}
-          ${extraHelpText
-            ? html`
-                <sl-icon-button
-                  name="plus-square"
-                  label="Toggle extra help"
-                  style="position:absolute"
-                  @click="${this.toggleExtraHelp}"
-                >
-                  +
-                </sl-icon-button>
-              `
-            : nothing}
+          ${
+            helpText
+              ? html`<span class="helptext"> ${helpText} </span>`
+              : nothing
+          }
+          ${
+            extraHelpText
+              ? html`
+                  <sl-icon-button
+                    name="plus-square"
+                    label="Toggle extra help"
+                    style="position:absolute"
+                    @click="${this.toggleExtraHelp}"
+                  >
+                    +
+                  </sl-icon-button>
+                `
+              : nothing
+          }
         </td>
       </tr>
 
-      ${extraHelpText
-        ? html`
-            <tr>
-              <td colspan="2" class="extrahelp">
-                <sl-details summary="">
-                  <span class="helptext"> ${extraHelpText} </span>
-                </sl-details>
-              </td>
-            </tr>
-          `
-        : nothing}
-      ${this.shouldDisplayFeatureLink(this.name, this.value)
-        ? html`
-            <tr>
-              <td colspan="2" class="webdx">
-                See web feature
-                <a
-                  href="https://webstatus.dev/features/${enumLabelToFeatureKey(
-                    this.value
-                  )}"
-                  target="_blank"
-                >
-                  ${this.value}
-                </a>
-                in webstatus.dev
-              </td>
-            </tr>
-          `
-        : nothing}
+      ${
+        extraHelpText
+          ? html`
+              <tr>
+                <td colspan="2" class="extrahelp">
+                  <sl-details summary="">
+                    <span class="helptext"> ${extraHelpText} </span>
+                  </sl-details>
+                </td>
+              </tr>
+            `
+          : nothing
+      }
+      ${
+        this.shouldDisplayFeatureLink(this.name, this.value)
+          ? html`
+              <tr>
+                <td colspan="2" class="webdx">
+                  See web feature
+                  <a
+                    href="https://webstatus.dev/features/${enumLabelToFeatureKey(
+                      this.value
+                    )}"
+                    target="_blank"
+                  >
+                    ${this.value}
+                  </a>
+                  in webstatus.dev
+                </td>
+              </tr>
+            `
+          : nothing
+      }
     `;
   }
 }

@@ -432,9 +432,11 @@ export class ChromedashFeatureDetail extends LitElement {
     return html`
       <dt id=${fieldId}>${icon} ${fieldDisplayName}</dt>
       <dd>
-        ${isDefined
-          ? this.renderValue(fieldType, value, isMarkdown)
-          : html`<i>No information provided yet</i>`}
+        ${
+          isDefined
+            ? this.renderValue(fieldType, value, isMarkdown)
+            : html`<i>No information provided yet</i>`
+        }
       </dd>
     `;
   }
@@ -701,9 +703,11 @@ export class ChromedashFeatureDetail extends LitElement {
     const content = html`
       <p class="description">
         ${stageMenu} ${trialButton} ${registrantsDashboardButton}
-        ${this.hasStageActions(processStage, feStage)
-          ? this.renderStageActions(processStage, feStage)
-          : nothing}
+        ${
+          this.hasStageActions(processStage, feStage)
+            ? this.renderStageActions(processStage, feStage)
+            : nothing
+        }
         ${editButton} ${addExtensionButton} ${processStage.description}
       </p>
       <div class="gates">${gatesPrefix}${this.renderGateChips(feStage)}</div>
@@ -726,8 +730,9 @@ export class ChromedashFeatureDetail extends LitElement {
     }
     return html` <sl-button
       size="small"
-      href="/guide/stage/${this.feature
-        .id}/${processStage.outgoing_stage}/${feStage.id}"
+      href="/guide/stage/${
+        this.feature.id
+      }/${processStage.outgoing_stage}/${feStage.id}"
       >Edit fields</sl-button
     >`;
   }

@@ -878,13 +878,15 @@ export class ChromedashGateColumn extends LitElement {
         hoist
         size="small"
       >
-        ${this.votes.some(
-          v => v.state === VOTE_NA_SELF || v.state === VOTE_NA_VERIFIED
-        )
-          ? html` <sl-option value="${VOTE_NA_VERIFIED}"
-              >N/a verified</sl-option
-            >`
-          : nothing}
+        ${
+          this.votes.some(
+            v => v.state === VOTE_NA_SELF || v.state === VOTE_NA_VERIFIED
+          )
+            ? html` <sl-option value="${VOTE_NA_VERIFIED}"
+                >N/a verified</sl-option
+              >`
+            : nothing
+        }
         ${Object.values(VOTE_OPTIONS).map(
           valName =>
             html` <sl-option value="${valName[0]}">${valName[1]}</sl-option>`
@@ -1143,15 +1145,17 @@ export class ChromedashGateColumn extends LitElement {
       ${this.loading ? this.renderHeadingsSkeleton() : this.renderHeadings()}
 
       <div id="review-status-area">
-        ${this.loading
-          ? this.renderReviewStatusSkeleton()
-          : this.renderReviewStatus()}
+        ${
+          this.loading
+            ? this.renderReviewStatusSkeleton()
+            : this.renderReviewStatus()
+        }
         ${this.renderReviewRequest()}
       </div>
       <div id="slo-area">
-        ${this.loading
-          ? this.renderSLOStatusSkeleton()
-          : this.renderSLOStatus()}
+        ${
+          this.loading ? this.renderSLOStatusSkeleton() : this.renderSLOStatus()
+        }
         ${this.renderGateRationale()}
       </div>
 
