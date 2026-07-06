@@ -1191,6 +1191,8 @@ components:
           type: boolean
         adoption_mdn_drafted:
           type: boolean
+        adoption_mwg_drafted:
+          type: boolean
         launch_or_contact:
           type: string
         explanation:

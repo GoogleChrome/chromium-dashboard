@@ -93,6 +93,12 @@ export interface SurveyAnswers {
     adoption_mdn_drafted?: boolean;
     /**
      * 
+     * @type {boolean}
+     * @memberof SurveyAnswers
+     */
+    adoption_mwg_drafted?: boolean;
+    /**
+     * 
      * @type {string}
      * @memberof SurveyAnswers
      */
@@ -134,6 +140,7 @@ export function SurveyAnswersFromJSONTyped(json: any, ignoreDiscriminator: boole
         'adoption_style_aligned': json['adoption_style_aligned'] == null ? undefined : json['adoption_style_aligned'],
         'adoption_lead_time': json['adoption_lead_time'] == null ? undefined : json['adoption_lead_time'],
         'adoption_mdn_drafted': json['adoption_mdn_drafted'] == null ? undefined : json['adoption_mdn_drafted'],
+        'adoption_mwg_drafted': json['adoption_mwg_drafted'] == null ? undefined : json['adoption_mwg_drafted'],
         'launch_or_contact': json['launch_or_contact'] == null ? undefined : json['launch_or_contact'],
         'explanation': json['explanation'] == null ? undefined : json['explanation'],
     };
@@ -157,6 +164,7 @@ export function SurveyAnswersToJSON(value?: SurveyAnswers | null): any {
         'adoption_style_aligned': value['adoption_style_aligned'],
         'adoption_lead_time': value['adoption_lead_time'],
         'adoption_mdn_drafted': value['adoption_mdn_drafted'],
+        'adoption_mwg_drafted': value['adoption_mwg_drafted'],
         'launch_or_contact': value['launch_or_contact'],
         'explanation': value['explanation'],
     };
