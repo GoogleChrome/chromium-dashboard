@@ -12,7 +12,7 @@ class SurveyAnswers(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, is_language_polyfill=None, is_api_polyfill=None, is_same_origin_css=None, covers_existence=None, covers_common_cases=None, covers_errors=None, covers_invalidation=None, covers_integration=None, adoption_fields_up_to_date=None, adoption_style_aligned=None, adoption_lead_time=None, adoption_mdn_drafted=None, launch_or_contact=None, explanation=None):  # noqa: E501
+    def __init__(self, is_language_polyfill=None, is_api_polyfill=None, is_same_origin_css=None, covers_existence=None, covers_common_cases=None, covers_errors=None, covers_invalidation=None, covers_integration=None, adoption_fields_up_to_date=None, adoption_style_aligned=None, adoption_lead_time=None, adoption_mdn_drafted=None, adoption_mwg_drafted=None, launch_or_contact=None, explanation=None):  # noqa: E501
         """SurveyAnswers - a model defined in OpenAPI
 
         :param is_language_polyfill: The is_language_polyfill of this SurveyAnswers.  # noqa: E501
@@ -39,6 +39,8 @@ class SurveyAnswers(Model):
         :type adoption_lead_time: bool
         :param adoption_mdn_drafted: The adoption_mdn_drafted of this SurveyAnswers.  # noqa: E501
         :type adoption_mdn_drafted: bool
+        :param adoption_mwg_drafted: The adoption_mwg_drafted of this SurveyAnswers.  # noqa: E501
+        :type adoption_mwg_drafted: bool
         :param launch_or_contact: The launch_or_contact of this SurveyAnswers.  # noqa: E501
         :type launch_or_contact: str
         :param explanation: The explanation of this SurveyAnswers.  # noqa: E501
@@ -57,6 +59,7 @@ class SurveyAnswers(Model):
             'adoption_style_aligned': bool,
             'adoption_lead_time': bool,
             'adoption_mdn_drafted': bool,
+            'adoption_mwg_drafted': bool,
             'launch_or_contact': str,
             'explanation': str
         }
@@ -74,6 +77,7 @@ class SurveyAnswers(Model):
             'adoption_style_aligned': 'adoption_style_aligned',
             'adoption_lead_time': 'adoption_lead_time',
             'adoption_mdn_drafted': 'adoption_mdn_drafted',
+            'adoption_mwg_drafted': 'adoption_mwg_drafted',
             'launch_or_contact': 'launch_or_contact',
             'explanation': 'explanation'
         }
@@ -90,6 +94,7 @@ class SurveyAnswers(Model):
         self._adoption_style_aligned = adoption_style_aligned
         self._adoption_lead_time = adoption_lead_time
         self._adoption_mdn_drafted = adoption_mdn_drafted
+        self._adoption_mwg_drafted = adoption_mwg_drafted
         self._launch_or_contact = launch_or_contact
         self._explanation = explanation
 
@@ -355,6 +360,27 @@ class SurveyAnswers(Model):
         """
 
         self._adoption_mdn_drafted = adoption_mdn_drafted
+
+    @property
+    def adoption_mwg_drafted(self) -> bool:
+        """Gets the adoption_mwg_drafted of this SurveyAnswers.
+
+
+        :return: The adoption_mwg_drafted of this SurveyAnswers.
+        :rtype: bool
+        """
+        return self._adoption_mwg_drafted
+
+    @adoption_mwg_drafted.setter
+    def adoption_mwg_drafted(self, adoption_mwg_drafted: bool):
+        """Sets the adoption_mwg_drafted of this SurveyAnswers.
+
+
+        :param adoption_mwg_drafted: The adoption_mwg_drafted of this SurveyAnswers.
+        :type adoption_mwg_drafted: bool
+        """
+
+        self._adoption_mwg_drafted = adoption_mwg_drafted
 
     @property
     def launch_or_contact(self) -> str:

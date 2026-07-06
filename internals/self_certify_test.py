@@ -150,6 +150,7 @@ class SelfCertifyFunctionTest(testing_config.CustomTestCase):
                     adoption_style_aligned=True,
                     adoption_lead_time=True,
                     adoption_mdn_drafted=True,
+                    adoption_mwg_drafted=True,
                 )
             )
         )
@@ -185,6 +186,7 @@ class SelfCertifyFunctionTest(testing_config.CustomTestCase):
                         adoption_style_aligned=True,
                         adoption_lead_time=True,
                         adoption_mdn_drafted=True,
+                        adoption_mwg_drafted=True,
                     ),
                 )
             )
