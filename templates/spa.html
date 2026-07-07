@@ -76,6 +76,20 @@ limitations under the License.
   </script>
 
   <script type="module" nonce="{{nonce}}" defer src="/static/dist/components.js?v={{app_version}}"></script>
+
+  <style>
+    .crawlers-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+  </style>
 </head>
 
 <body class="{% if not prod %}non-prod{% endif %}">
@@ -95,6 +109,9 @@ limitations under the License.
   See https://github.com/GoogleChrome/chromium-dashboard/issues/2014
   #}
   <script type="module" nonce="{{nonce}}" src="/static/dist/shared.js?v={{app_version}}"></script>
+
+  {% include "crawler_content.html" %}
+
 </body>
 
 </html>

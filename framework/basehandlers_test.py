@@ -1365,11 +1365,11 @@ class SPAHandlerTests(testing_config.CustomTestCase):
     @mock.patch('framework.basehandlers.get_spa_template_data')
     def test_get_template_data(self, mock_get_spa):
         """It simply calls get_spa_template_data."""
-        mock_get_spa.return_value = 'fake response'
+        mock_get_spa.return_value = {'msg': 'fake response'}
         handler = basehandlers.SPAHandler()
         actual = handler.get_template_data(x=1, y=2)
 
-        self.assertEqual('fake response', actual)
+        self.assertEqual({'msg': 'fake response'}, actual)
         mock_get_spa.assert_called_once_with(handler, {'x': 1, 'y': 2})
 
 

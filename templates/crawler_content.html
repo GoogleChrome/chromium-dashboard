@@ -1,0 +1,38 @@
+{# This is semantic HTML content for crawlers.  Most users will not see it. #}
+
+{% if crawler %}
+<div class="crawlers-only">
+<article>
+
+  <header>
+    <h2>Feature entry: {{crawler.heading.title}}</h2>
+  </header>
+
+  <nav>
+    <a href="/roadmap">Features by milestone</a>
+    <a href="/features">All features</a>
+  </nav>
+
+  {% for sect in crawler.sections %}
+  <section>
+    <h3>{{sect.summary}}</h3>
+    {% if sect.fields %}
+    <dl>
+      {% for key, value in sect.fields.items() %}
+        <dt>{{key}}:</dt>
+        <dd>{{value | tojson}}</dd>
+      {% endfor %}
+    </dl>
+    {% endif %}
+  </section>
+  {% endfor %}
+
+  <nav>
+    {% for link in crawler.pagination %}
+      <a href="{{link.href}}">{{link.name}}</a>
+    {% endfor %}
+  </nav>
+
+</article>
+</div>
+{% endif %}

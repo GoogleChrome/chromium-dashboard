@@ -67,7 +67,7 @@ from internals import (
     reminders,
     search_fulltext,
 )
-from pages import guide, ot_requests, users
+from pages import featuredetail, guide, ot_requests, users
 
 # Patch treading library to work-around bug with Google Cloud Logging.
 original_delete = threading.Thread._delete  # type: ignore
@@ -284,7 +284,7 @@ spa_page_routes = [
     Route('/features'),
     Route('/features/stale'),
     Route('/newfeatures'),
-    Route('/feature/<int:feature_id>'),
+    Route('/feature/<int:feature_id>', featuredetail.FeatureDetailHandler),
     Route('/feature/<int:feature_id>/activity'),
     Route(
         '/feature/<int:feature_id>/ai-coverage-analysis',

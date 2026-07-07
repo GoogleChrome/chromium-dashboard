@@ -825,7 +825,16 @@ class SPAHandler(FlaskHandler):
 
     def get_template_data(self, **defaults):
         """Get template data for rendering."""
-        return get_spa_template_data(self, defaults)
+        template_data = get_spa_template_data(self, defaults)
+        crawler_data = self.get_crawler_data(defaults)
+        if crawler_data:
+            template_data['crawler'] = crawler_data
+        logging.info('template data is %r', template_data)
+        return template_data
+
+    def get_crawler_data(self, defaults):
+        """Return dict for semantic HTML content for crawlers."""
+        return {}
 
 
 def get_spa_template_data(handler_obj, defaults):
