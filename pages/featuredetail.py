@@ -14,7 +14,6 @@
 
 """Serves the SPA with minimal semantic HTML for feature details."""
 
-
 from framework import basehandlers, permissions, users
 from internals import feature_helpers
 from internals.core_enums import INTENT_STAGES
@@ -25,7 +24,9 @@ class FeatureDetailHandler(basehandlers.SPAHandler):
 
     def get_crawler_data(self, defaults):
         """Retrieves basic details of the current feature."""
-        crawler_data = super(FeatureDetailHandler, self).get_crawler_data(defaults)
+        crawler_data = super(FeatureDetailHandler, self).get_crawler_data(
+            defaults
+        )
         user = users.get_current_user()
         feature_id = defaults.get('feature_id', None)
         feature_dict = None
@@ -43,7 +44,7 @@ class FeatureDetailHandler(basehandlers.SPAHandler):
         """Create heading data for the crawler."""
         return {
             'title': 'Feature entry: ' + fe['name'],
-            }
+        }
 
     def make_sections(self, feature_dict):
         """Create sections data (metadata and stages) for the crawler."""
@@ -57,12 +58,13 @@ class FeatureDetailHandler(basehandlers.SPAHandler):
         stage_data = [
             {
                 'summary': (
-                    'Stage: ' +
-                    INTENT_STAGES.get(s.get('intent_stage'), '') + ' ' +
-                    (s.get('display_name') or '')
+                    'Stage: '
+                    + INTENT_STAGES.get(s.get('intent_stage'), '')
+                    + ' '
+                    + (s.get('display_name') or '')
                 ),
-                'fields': s
-                }
+                'fields': s,
+            }
             for s in stages
         ]
         return [metadata] + stage_data
