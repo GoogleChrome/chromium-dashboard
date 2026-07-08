@@ -829,7 +829,6 @@ class SPAHandler(FlaskHandler):
         crawler_data = self.get_crawler_data(defaults)
         if crawler_data:
             template_data['crawler'] = crawler_data
-        logging.info('template data is %r', template_data)
         return template_data
 
     def get_crawler_data(self, defaults):

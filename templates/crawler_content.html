@@ -1,11 +1,10 @@
 {# This is semantic HTML content for crawlers.  Most users will not see it. #}
 
 {% if crawler %}
-<div class="crawlers-only">
-<article>
+<article class="crawlers-only">
 
   <header>
-    <h2>Feature entry: {{crawler.heading.title}}</h2>
+    <h2>{{crawler.heading.title}}</h2>
   </header>
 
   <nav>
@@ -14,8 +13,8 @@
   </nav>
 
   {% for sect in crawler.sections %}
-  <section>
-    <h3>{{sect.summary}}</h3>
+  <details>
+    <summary>{{sect.summary}}</summary>
     {% if sect.fields %}
     <dl>
       {% for key, value in sect.fields.items() %}
@@ -24,7 +23,7 @@
       {% endfor %}
     </dl>
     {% endif %}
-  </section>
+  </details>
   {% endfor %}
 
   <nav>
@@ -34,5 +33,4 @@
   </nav>
 
 </article>
-</div>
 {% endif %}

@@ -21,7 +21,6 @@ from unittest import mock
 import flask
 
 import settings
-from internals.core_models import FeatureEntry
 from pages import featuredetail
 
 test_app = flask.Flask(
@@ -42,53 +41,46 @@ class FeatureDetailHandlerTest(testing_config.CustomTestCase):
       crawler_data = self.handler.get_crawler_data(defaults)
       self.assertEqual({}, crawler_data)
 
-  @mock.patch('internals.core_models.FeatureEntry.get_by_id')
-  def test_get_crawler_data__feature_not_found(self, mock_get_by_id):
+  @mock.patch('internals.feature_helpers.get_by_ids')
+  def test_get_crawler_data__feature_not_found(self, mock_get_by_ids):
     """It handles feature not found gracefully."""
-    mock_get_by_id.return_value = None
+    mock_get_by_ids.return_value = []
     with test_app.test_request_context('/feature/123'):
       defaults = {'feature_id': 123}
       crawler_data = self.handler.get_crawler_data(defaults)
       self.assertEqual({}, crawler_data)
-      mock_get_by_id.assert_called_once_with(123)
+      mock_get_by_ids.assert_called_once_with([123])
 
-  @mock.patch('internals.core_models.FeatureEntry.get_by_id')
-  @mock.patch('framework.permissions.can_view_feature')
+  @mock.patch('internals.feature_helpers.get_by_ids')
+  @mock.patch('framework.permissions.can_view_feature_formatted')
   @mock.patch('framework.users.get_current_user')
   def test_get_crawler_data__no_permission(
-      self, mock_get_current_user, mock_can_view_feature, mock_get_by_id):
+      self, mock_get_current_user, mock_can_view_feature_formatted, mock_get_by_ids):
     """It returns empty crawler data if user has no permission."""
     mock_user = mock.Mock()
     mock_get_current_user.return_value = mock_user
 
-    mock_fe = mock.Mock(spec=FeatureEntry)
-    mock_get_by_id.return_value = mock_fe
+    fake_feature_dict = {'id': 123, 'name': 'Fake Feature'}
+    mock_get_by_ids.return_value = [fake_feature_dict]
 
-    mock_can_view_feature.return_value = False
+    mock_can_view_feature_formatted.return_value = False
 
     with test_app.test_request_context('/feature/123'):
       defaults = {'feature_id': 123}
       crawler_data = self.handler.get_crawler_data(defaults)
       self.assertEqual({}, crawler_data)
-      mock_get_by_id.assert_called_once_with(123)
-      mock_can_view_feature.assert_called_once_with(mock_user, mock_fe)
+      mock_get_by_ids.assert_called_once_with([123])
+      mock_can_view_feature_formatted.assert_called_once_with(mock_user, fake_feature_dict)
 
-  @mock.patch('internals.core_models.FeatureEntry.get_by_id')
-  @mock.patch('framework.permissions.can_view_feature')
+  @mock.patch('internals.feature_helpers.get_by_ids')
+  @mock.patch('framework.permissions.can_view_feature_formatted')
   @mock.patch('framework.users.get_current_user')
-  @mock.patch('api.converters.feature_entry_to_json_verbose')
   def test_get_crawler_data__has_permission(
-      self, mock_to_json, mock_get_current_user, mock_can_view_feature,
-      mock_get_by_id):
+      self, mock_get_current_user, mock_can_view_feature_formatted,
+      mock_get_by_ids):
     """It returns crawler data when user has permission."""
     mock_user = mock.Mock()
     mock_get_current_user.return_value = mock_user
-
-    mock_fe = mock.Mock(spec=FeatureEntry)
-    mock_fe.name = 'Fake Feature'
-    mock_get_by_id.return_value = mock_fe
-
-    mock_can_view_feature.return_value = True
 
     fake_feature_dict = {
         'id': 123,
@@ -99,17 +91,18 @@ class FeatureDetailHandlerTest(testing_config.CustomTestCase):
             {'intent_stage': 2, 'display_name': 'Stage Two'},
         ],
     }
-    mock_to_json.return_value = fake_feature_dict
+    mock_get_by_ids.return_value = [fake_feature_dict]
+
+    mock_can_view_feature_formatted.return_value = True
 
     with test_app.test_request_context('/feature/123'):
       defaults = {'feature_id': 123}
       crawler_data = self.handler.get_crawler_data(defaults)
 
-      mock_get_by_id.assert_called_once_with(123)
-      mock_can_view_feature.assert_called_once_with(mock_user, mock_fe)
-      mock_to_json.assert_called_once_with(mock_fe)
+      mock_get_by_ids.assert_called_once_with([123])
+      mock_can_view_feature_formatted.assert_called_once_with(mock_user, fake_feature_dict)
 
-      self.assertEqual({'title': 'Fake Feature'}, crawler_data.get('heading'))
+      self.assertEqual({'title': 'Feature entry: Fake Feature'}, crawler_data.get('heading'))
       
       sections = crawler_data.get('sections')
       self.assertEqual(3, len(sections)) # 1 metadata + 2 stages

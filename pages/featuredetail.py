@@ -15,11 +15,9 @@
 """Serves the SPA with minimal semantic HTML for feature details."""
 
 
-
-from api import converters
 from framework import basehandlers, permissions, users
+from internals import feature_helpers
 from internals.core_enums import INTENT_STAGES
-from internals.core_models import FeatureEntry
 
 
 class FeatureDetailHandler(basehandlers.SPAHandler):
@@ -30,21 +28,21 @@ class FeatureDetailHandler(basehandlers.SPAHandler):
         crawler_data = super(FeatureDetailHandler, self).get_crawler_data(defaults)
         user = users.get_current_user()
         feature_id = defaults.get('feature_id', None)
-        fe = None
+        feature_dict = None
         if feature_id:
-            fe = FeatureEntry.get_by_id(feature_id)
-        if fe:
-            if permissions.can_view_feature(user, fe):
-                feature_dict = converters.feature_entry_to_json_verbose(fe)
-                crawler_data['heading'] = self.make_heading(fe)
+            features = feature_helpers.get_by_ids([feature_id])
+            feature_dict = features[0] if features else None
+        if feature_dict:
+            if permissions.can_view_feature_formatted(user, feature_dict):
+                crawler_data['heading'] = self.make_heading(feature_dict)
                 crawler_data['sections'] = self.make_sections(feature_dict)
 
         return crawler_data
 
-    def make_heading(self, fe: FeatureEntry):
+    def make_heading(self, fe: dict):
         """Create heading data for the crawler."""
         return {
-            'title': fe.name,
+            'title': 'Feature entry: ' + fe['name'],
             }
 
     def make_sections(self, feature_dict):
