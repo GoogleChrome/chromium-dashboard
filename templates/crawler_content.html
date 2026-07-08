@@ -17,20 +17,24 @@
     <summary>{{sect.summary}}</summary>
     {% if sect.fields %}
     <dl>
-      {% for key, value in sect.fields.items() %}
-        <dt>{{key}}:</dt>
-        <dd>{{value | tojson}}</dd>
-      {% endfor %}
+      {%- for key, value in sect.fields.items() -%}
+        {% if value != None and value != [] %}
+          <dt>{{key}}:</dt>
+          <dd>{{value | tojson}}</dd>
+        {% endif %}
+      {%- endfor -%}
     </dl>
     {% endif %}
   </details>
   {% endfor %}
 
-  <nav>
-    {% for link in crawler.pagination %}
-      <a href="{{link.href}}">{{link.name}}</a>
-    {% endfor %}
-  </nav>
+  {% if crawler.pagination %}
+    <nav>
+      {% for link in crawler.pagination %}
+        <a href="{{link.href}}">{{link.name}}</a>
+      {% endfor %}
+    </nav>
+  {% endif %}
 
 </article>
 {% endif %}
