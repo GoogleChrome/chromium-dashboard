@@ -86,7 +86,7 @@ test('add an origin trial stage', async ({page}) => {
 
   // Take a screenshot of the content area.
   // First scroll to "Prepare to ship" panel to frame the shot.
-  const prepareToShipPanel = page.getByText('Prepare to ship');
+  const prepareToShipPanel = page.locator('sl-details[summary="Prepare to ship"]');
   await prepareToShipPanel.scrollIntoViewIfNeeded();
 
   await expectScreenshot(page, 'origin-trial-panels', {
