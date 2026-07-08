@@ -29,11 +29,11 @@
   {% endfor %}
 
   {% if crawler.pagination %}
-    <nav>
+    <div>
       {% for link in crawler.pagination %}
         <a href="{{link.href}}">{{link.name}}</a>
       {% endfor %}
-    </nav>
+    </div>
   {% endif %}
 
 </article>
