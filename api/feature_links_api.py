@@ -17,12 +17,10 @@
 
 from chromestatus_openapi.models import (
     FeatureLinksResponse,
-    FeatureLinksSample,
     FeatureLinksSummaryResponse,
 )
 
 from framework import basehandlers, permissions
-from internals.core_models import FeatureEntry
 from internals.feature_links import (
     get_by_feature_id,
     get_feature_links_samples,
@@ -35,9 +33,7 @@ class FeatureLinksAPI(basehandlers.APIHandler):
 
     def get_feature_links(self, feature_id: int, update_stale_links: bool):
         """Get links for a feature."""
-        feature = FeatureEntry.get_by_id(feature_id)
-        if not feature:
-            self.abort(404, msg='Feature not found')
+        self.get_specified_feature(feature_id=feature_id)
         return get_by_feature_id(feature_id, update_stale_links)
 
     def do_get(self, **kwargs):
@@ -76,6 +72,4 @@ class FeatureLinksSamplesAPI(basehandlers.APIHandler):
         type = self.request.args.get('type', None)
         is_error = self.get_bool_arg('is_error', None)
         if domain:
-            return FeatureLinksSample.from_dict(
-                get_feature_links_samples(domain, type, is_error)
-            )  # noqa: E501
+            return get_feature_links_samples(domain, type, is_error)

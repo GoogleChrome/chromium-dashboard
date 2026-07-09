@@ -65,7 +65,7 @@ class VotesAPI(basehandlers.APIHandler):
         """Return a list of all vote values for a given feature."""
         feature_id = kwargs['feature_id']
         gate_id = kwargs.get('gate_id', None)
-        # Note: We assume that anyone may view approvals.
+        self.get_specified_feature(feature_id=feature_id)
         votes = Vote.get_votes(feature_id=feature_id, gate_id=gate_id)
         dicts = [converters.vote_value_to_json_dict(v) for v in votes]
         return GetVotesResponse.from_dict({'votes': dicts}).to_dict()

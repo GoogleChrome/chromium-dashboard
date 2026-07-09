@@ -55,8 +55,12 @@ class StagesAPI(basehandlers.EntitiesAPIHandler):
 
     def do_get(self, **kwargs):
         """Return a specified stage based on the given ID."""
+        feature_id = kwargs.get('feature_id')
+        self.get_specified_feature(feature_id=feature_id)
         stage_id = kwargs.get('stage_id')
         stage = self.get_validated_entity(stage_id, Stage)
+        if stage.feature_id != feature_id:
+            self.abort(404, msg=f'Stage {stage_id} not found.')
 
         stage_dict = converters.stage_to_json_dict(stage)
         # Add extensions associated with the stage if they exist.

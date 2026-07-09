@@ -14,16 +14,18 @@
 
 """Tests for the attachments_api module, verifying attachment upload permissions and serving."""
 
+import testing_config  # isort: skip  # Must be imported before the module under test.
+
 import io
 
 import flask
 import werkzeug.exceptions
 
 import settings
-import testing_config  # Must be imported before the module under test.
 from api import attachments_api
 from internals import attachments, core_enums
 from internals.core_models import FeatureEntry
+from internals.user_models import AppUser
 
 test_app = flask.Flask(__name__)
 test_app.secret_key = 'test'
@@ -128,6 +130,13 @@ class AttachmentServingTest(testing_config.CustomTestCase):
         )
         self.handler = attachments_api.AttachmentServing()
 
+    def tearDown(self):
+        """Clean up the test."""
+        self.attachment.key.delete()
+        self.feature.key.delete()
+        for user in AppUser.query().fetch(None):
+            user.key.delete()
+
     def test_maybe_redirect__expected_url(self):
         """Requesting an attachment from the canonical URL returns None."""
         # self.request_path is the same as the canonical URL.
@@ -178,6 +187,75 @@ class AttachmentServingTest(testing_config.CustomTestCase):
 
         self.assertEqual(content, self.content)
         self.assertEqual(headers['Content-Type'], 'text/plain')
+
+    def test_get_template_data__forbidden(self):
+        """Regular users cannot fetch attachments for a confidential feature."""
+        confidential_feature = FeatureEntry(
+            name='confidential feature',
+            summary='secret',
+            category=1,
+            confidential=True,
+        )
+        confidential_feature.put()
+        cf_id = confidential_feature.key.integer_id()
+
+        cf_attachment = attachments.Attachment(
+            feature_id=cf_id,
+            content=b'secret attachment data',
+            mime_type='text/plain',
+        )
+        cf_attachment.put()
+        cf_attachment_id = cf_attachment.key.integer_id()
+
+        testing_config.sign_out()
+        testing_config.sign_in('regular_user@example.com', 123)
+        path = f'/feature/{cf_id}/attachment/{cf_attachment_id}'
+        with test_app.test_request_context(path):
+            with self.assertRaises(werkzeug.exceptions.Forbidden):
+                self.handler.get_template_data(
+                    feature_id=cf_id, attachment_id=cf_attachment_id
+                )
+        testing_config.sign_out()
+        cf_attachment.key.delete()
+        confidential_feature.key.delete()
+
+    def test_get_template_data__admin_can_view_confidential(self):
+        """Admin users CAN fetch attachments for a confidential feature."""
+        admin_user = AppUser(email='admin@example.com', is_admin=True)
+        admin_user.put()
+
+        confidential_feature = FeatureEntry(
+            name='confidential feature',
+            summary='secret',
+            category=1,
+            confidential=True,
+        )
+        confidential_feature.put()
+        cf_id = confidential_feature.key.integer_id()
+
+        cf_attachment = attachments.Attachment(
+            feature_id=cf_id,
+            content=b'secret attachment data',
+            mime_type='text/plain',
+        )
+        cf_attachment.put()
+        cf_attachment_id = cf_attachment.key.integer_id()
+
+        testing_config.sign_out()
+        testing_config.sign_in('admin@example.com', 123)
+        path = f'/feature/{cf_id}/attachment/{cf_attachment_id}'
+        base = settings.SITE_URL
+        with test_app.test_request_context(path, base_url=base):
+            content, headers = self.handler.get_template_data(
+                feature_id=cf_id, attachment_id=cf_attachment_id
+            )
+        testing_config.sign_out()
+
+        self.assertEqual(content, b'secret attachment data')
+        self.assertEqual(headers['Content-Type'], 'text/plain')
+
+        cf_attachment.key.delete()
+        confidential_feature.key.delete()
 
 
 class RoundTripTest(testing_config.CustomTestCase):

@@ -19,9 +19,11 @@ from dataclasses import asdict
 
 import flask
 
+import werkzeug.exceptions
 import testing_config  # Must be imported before the module under test.
 from api import processes_api
 from internals import core_enums, core_models, processes
+from internals.user_models import AppUser
 
 test_app = flask.Flask(__name__)
 
@@ -163,6 +165,61 @@ class ProcessesAPITest(testing_config.CustomTestCase):
 
         self.assertEqual(expected, actual)
 
+    def test_get__feature_not_found(self):
+        """We get a 404 if the feature does not exist."""
+        bad_path = '/api/v0/features/12345/processes'
+        testing_config.sign_out()
+        testing_config.sign_in('user7@example.com', 123567890)
+        with test_app.test_request_context(bad_path):
+            with self.assertRaises(werkzeug.exceptions.NotFound):
+                self.handler.do_get(feature_id=12345)
+        testing_config.sign_out()
+
+    def test_get__forbidden(self):
+        """We get a 403 if the user does not have permission to view the feature."""
+        confidential_feature = core_models.FeatureEntry(
+            name='confidential feature',
+            summary='secret',
+            category=1,
+            confidential=True,
+        )
+        confidential_feature.put()
+        cf_id = confidential_feature.key.integer_id()
+
+        testing_config.sign_out()
+        testing_config.sign_in('regular_user@example.com', 123)
+
+        path = '/api/v0/features/%d/processes' % cf_id
+        with test_app.test_request_context(path):
+            with self.assertRaises(werkzeug.exceptions.Forbidden):
+                self.handler.do_get(feature_id=cf_id)
+        testing_config.sign_out()
+
+    def test_get__admin_can_view_confidential(self):
+        """An admin can view the process for a confidential feature."""
+        admin_user = AppUser(email='admin@example.com', is_admin=True)
+        admin_user.put()
+
+        confidential_feature = core_models.FeatureEntry(
+            name='confidential feature',
+            summary='secret',
+            category=1,
+            confidential=True,
+            feature_type=core_enums.FEATURE_TYPE_INCUBATE_ID,
+        )
+        confidential_feature.put()
+        cf_id = confidential_feature.key.integer_id()
+
+        testing_config.sign_out()
+        testing_config.sign_in('admin@example.com', 123456)
+        path = '/api/v0/features/%d/processes' % cf_id
+        with test_app.test_request_context(path):
+            actual = self.handler.do_get(feature_id=cf_id)
+        testing_config.sign_out()
+
+        expected = processes.process_to_dict(processes.BLINK_LAUNCH_PROCESS)
+        self.assertEqual(expected, actual)
+
 
 class ProgressAPITest(testing_config.CustomTestCase):
     """Tests for ProgressAPI."""
@@ -232,3 +289,57 @@ class ProgressAPITest(testing_config.CustomTestCase):
             },
             actual,
         )
+
+    def test_get__feature_not_found(self):
+        """We get a 404 if the feature does not exist."""
+        bad_path = '/api/v0/features/12345/progress'
+        testing_config.sign_out()
+        testing_config.sign_in('user7@example.com', 123567890)
+        with test_app.test_request_context(bad_path):
+            with self.assertRaises(werkzeug.exceptions.NotFound):
+                self.handler.do_get(feature_id=12345)
+        testing_config.sign_out()
+
+    def test_get__forbidden(self):
+        """We get a 403 if the user does not have permission to view the feature."""
+        confidential_feature = core_models.FeatureEntry(
+            name='confidential feature',
+            summary='secret',
+            category=1,
+            confidential=True,
+        )
+        confidential_feature.put()
+        cf_id = confidential_feature.key.integer_id()
+
+        testing_config.sign_out()
+        testing_config.sign_in('regular_user@example.com', 123)
+
+        path = '/api/v0/features/%d/progress' % cf_id
+        with test_app.test_request_context(path):
+            with self.assertRaises(werkzeug.exceptions.Forbidden):
+                self.handler.do_get(feature_id=cf_id)
+        testing_config.sign_out()
+
+    def test_get__admin_can_view_confidential(self):
+        """An admin can view the progress for a confidential feature."""
+        admin_user = AppUser(email='admin@example.com', is_admin=True)
+        admin_user.put()
+
+        confidential_feature = core_models.FeatureEntry(
+            name='confidential feature',
+            summary='secret',
+            category=1,
+            confidential=True,
+            feature_type=core_enums.FEATURE_TYPE_INCUBATE_ID,
+        )
+        confidential_feature.put()
+        cf_id = confidential_feature.key.integer_id()
+
+        testing_config.sign_out()
+        testing_config.sign_in('admin@example.com', 123456)
+        path = '/api/v0/features/%d/progress' % cf_id
+        with test_app.test_request_context(path):
+            actual = self.handler.do_get(feature_id=cf_id)
+        testing_config.sign_out()
+
+        self.assertEqual({}, actual)

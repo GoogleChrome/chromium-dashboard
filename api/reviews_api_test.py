@@ -24,6 +24,7 @@ import testing_config  # Must be imported before the module under test.
 from api import reviews_api
 from internals import approval_defs, core_enums, core_models
 from internals.review_models import Gate, SurveyAnswers, Vote
+from internals.user_models import AppUser
 
 test_app = flask.Flask(__name__)
 
@@ -154,6 +155,90 @@ class VotesAPITest(testing_config.CustomTestCase):
             )
 
         self.assertEqual({'votes': [self.vote_expected1]}, actual_response)
+
+    def test_get__feature_not_found(self):
+        """We get a 404 if the feature does not exist."""
+        bad_path = '/api/v0/features/12345/votes'
+        testing_config.sign_out()
+        testing_config.sign_in('user7@example.com', 123567890)
+        with test_app.test_request_context(bad_path):
+            with self.assertRaises(werkzeug.exceptions.NotFound):
+                self.handler.do_get(feature_id=12345)
+        testing_config.sign_out()
+
+    def test_get__forbidden(self):
+        """We get a 403 if the user does not have permission to view the feature."""
+        confidential_feature = core_models.FeatureEntry(
+            name='confidential feature',
+            summary='secret',
+            category=1,
+            confidential=True,
+        )
+        confidential_feature.put()
+        cf_id = confidential_feature.key.integer_id()
+
+        testing_config.sign_out()
+        testing_config.sign_in('regular_user@example.com', 123)
+
+        path = '/api/v0/features/%d/votes' % cf_id
+        with test_app.test_request_context(path):
+            with self.assertRaises(werkzeug.exceptions.Forbidden):
+                self.handler.do_get(feature_id=cf_id)
+        testing_config.sign_out()
+
+    def test_get__admin_can_view_confidential(self):
+        """An admin can view votes on a confidential feature."""
+        admin_user = AppUser(email='admin@example.com', is_admin=True)
+        admin_user.put()
+
+        confidential_feature = core_models.FeatureEntry(
+            name='confidential feature',
+            summary='secret',
+            category=1,
+            confidential=True,
+        )
+        confidential_feature.put()
+        cf_id = confidential_feature.key.integer_id()
+
+        gate_3 = Gate(feature_id=cf_id, stage_id=1, gate_type=1, state=Vote.NA)
+        gate_3.put()
+        gate_3_id = gate_3.key.integer_id()
+
+        vote_3 = Vote(
+            feature_id=cf_id,
+            gate_id=gate_3_id,
+            gate_type=1,
+            set_by='reviewer3@example.com',
+            set_on=NOW,
+            state=Vote.APPROVED,
+        )
+        vote_3.put()
+
+        vote_expected3 = {
+            'feature_id': cf_id,
+            'gate_id': gate_3_id,
+            'gate_type': 1,
+            'set_by': 'reviewer3@example.com',
+            'set_on': str(NOW),
+            'state': Vote.APPROVED,
+        }
+
+        testing_config.sign_out()
+        testing_config.sign_in('admin@example.com', 123456)
+        path = '/api/v0/features/%d/votes' % cf_id
+        with test_app.test_request_context(path):
+            resp = self.handler.do_get(feature_id=cf_id)
+        testing_config.sign_out()
+
+        self.assertEqual({'votes': [vote_expected3]}, resp)
+
+    def test_get__gate_not_found(self):
+        """We get an empty list of votes if the gate ID doesn't match any votes."""
+        testing_config.sign_out()
+        testing_config.sign_in('user7@example.com', 123567890)
+        with test_app.test_request_context(self.request_path + '/999'):
+            resp = self.handler.do_get(feature_id=self.feature_id, gate_id=999)
+        self.assertEqual({'votes': []}, resp)
 
     def test_post__bad_feature_id(self):
         """Handler rejects requests that don't specify an existing feature."""
