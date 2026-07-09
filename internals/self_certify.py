@@ -63,6 +63,8 @@ def update_survey_answers(gate: Gate, new_answers: OASurveyAnswers):
         answers.adoption_lead_time = new_answers.adoption_lead_time
     if new_answers.adoption_mdn_drafted is not None:
         answers.adoption_mdn_drafted = new_answers.adoption_mdn_drafted
+    if new_answers.adoption_mwg_drafted is not None:
+        answers.adoption_mwg_drafted = new_answers.adoption_mwg_drafted
 
     if new_answers.launch_or_contact is not None:
         answers.launch_or_contact = new_answers.launch_or_contact
@@ -97,6 +99,7 @@ def is_adoption_eligible(answers: SurveyAnswers) -> bool:
         and answers.adoption_style_aligned
         and answers.adoption_lead_time
         and answers.adoption_mdn_drafted
+        and answers.adoption_mwg_drafted
     )
 
 

@@ -33,6 +33,7 @@ from internals import (
     notifier,
     notifier_helpers,
     processes,
+    releasenotes_l10n_helpers,
     search,
     search_fulltext,
     stage_helpers,
@@ -107,6 +108,18 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
                     milestone=release_notes_milestone
                 )
             )
+            lang = self.request.args.get('lang')
+            if lang:
+                normalized_lang = lang.strip().lower()
+                if (
+                    normalized_lang
+                    in releasenotes_l10n_helpers.SUPPORTED_LANGUAGES
+                ):
+                    features_in_release_notes = (
+                        releasenotes_l10n_helpers.merge_translations(
+                            features_in_release_notes, normalized_lang
+                        )
+                    )
             return {
                 'features': features_in_release_notes,
                 'total_count': len(features_in_release_notes),

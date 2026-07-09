@@ -196,6 +196,7 @@ class SurveyAnswers(ndb.Model):
     adoption_style_aligned = ndb.BooleanProperty(default=False)
     adoption_lead_time = ndb.BooleanProperty(default=False)
     adoption_mdn_drafted = ndb.BooleanProperty(default=False)
+    adoption_mwg_drafted = ndb.BooleanProperty(default=False)
 
     # Questions that are potentially useful to several teams.
     launch_or_contact = ndb.StringProperty()  # URL or email for more info.

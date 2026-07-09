@@ -550,6 +550,47 @@ class FeaturesAPITest(testing_config.CustomTestCase):
                 cm.exception.description,
             )
 
+    @mock.patch('internals.feature_helpers.get_features_in_release_notes')
+    @mock.patch('internals.releasenotes_l10n_helpers.merge_translations')
+    def test_get__release_notes_milestone(self, mock_merge, mock_get_features):
+        """Verify do_get supports releaseNotesMilestone and lang translations."""
+        mock_get_features.return_value = [{'id': 123, 'name': 'feature one'}]
+        mock_merge.return_value = [
+            {'id': 123, 'name': 'translated feature one'}
+        ]
+
+        # Scenario 1: Without lang parameter
+        url = self.request_path + '?releaseNotesMilestone=138'
+        with test_app.test_request_context(url):
+            actual = self.handler.do_get()
+        mock_get_features.assert_called_once_with(milestone=138)
+        mock_merge.assert_not_called()
+        self.assertEqual('feature one', actual['features'][0]['name'])
+
+        # Scenario 2: With valid lang parameter
+        mock_get_features.reset_mock()
+        mock_merge.reset_mock()
+        url = self.request_path + '?releaseNotesMilestone=138&lang=fr'
+        with test_app.test_request_context(url):
+            actual = self.handler.do_get()
+        mock_get_features.assert_called_once_with(milestone=138)
+        mock_merge.assert_called_once_with(
+            [{'id': 123, 'name': 'feature one'}], 'fr'
+        )
+        self.assertEqual(
+            'translated feature one', actual['features'][0]['name']
+        )
+
+        # Scenario 3: With invalid lang parameter (unsupported)
+        mock_get_features.reset_mock()
+        mock_merge.reset_mock()
+        url = self.request_path + '?releaseNotesMilestone=138&lang=it'
+        with test_app.test_request_context(url):
+            actual = self.handler.do_get()
+        mock_get_features.assert_called_once_with(milestone=138)
+        mock_merge.assert_not_called()
+        self.assertEqual('feature one', actual['features'][0]['name'])
+
     def test_get__specific_id__found(self):
         """JSON feed has just the feature requested."""
         request_path = self.request_path + '/' + str(self.feature_1_id)

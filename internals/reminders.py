@@ -188,6 +188,10 @@ class AbstractReminderHandler(basehandlers.FlaskHandler):
         self.changes_after_sending_notifications(features_to_notify)
         return {'message': message}
 
+    def get_future_milestones_to_consider(self, current_milestone: int) -> int:
+        """Return the number of future milestones to consider."""
+        return self.FUTURE_MILESTONES_TO_CONSIDER
+
     def prefilter_features(
         self, current_milestone_info: dict, features: list[FeatureEntry]
     ) -> list[FeatureEntry]:
@@ -202,7 +206,8 @@ class AbstractReminderHandler(basehandlers.FlaskHandler):
         # We send notifications to any feature planned for beta or stable launch
         # in the next 4 * FUTURE_MILESTONES_TO_CONSIDER weeks.
         min_mstone = int(current_milestone_info['mstone'])
-        max_mstone = min_mstone + self.FUTURE_MILESTONES_TO_CONSIDER
+        future_milestones = self.get_future_milestones_to_consider(min_mstone)
+        max_mstone = min_mstone + future_milestones
 
         feature_ids = [f.key.integer_id() for f in features]
         futures = []
@@ -309,6 +314,14 @@ class FeatureAccuracyHandler(AbstractReminderHandler):
         'shipped_webview_milestone',
         'rollout_milestone',
     ]
+
+    def get_future_milestones_to_consider(self, current_milestone: int) -> int:
+        """Return the number of future milestones to consider."""
+        if current_milestone >= 153:
+            return 4
+        if current_milestone == 152:
+            return 3
+        return self.FUTURE_MILESTONES_TO_CONSIDER
 
     def prefilter_features(
         self, current_milestone_info: dict, features: list[FeatureEntry]

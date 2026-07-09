@@ -647,6 +647,7 @@ class GateConvertersTest(testing_config.CustomTestCase):
                 'adoption_style_aligned': False,
                 'adoption_lead_time': False,
                 'adoption_mdn_drafted': False,
+                'adoption_mwg_drafted': False,
                 'launch_or_contact': 'reviewer@example.com',
                 'explanation': 'something',
             },

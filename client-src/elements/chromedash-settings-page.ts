@@ -142,11 +142,13 @@ export class ChromedashSettingsPage extends LitElement {
           />
         </form>
       </section>
-      ${this.submitting
-        ? html` <div class="loading">
-            <div id="spinner"><img src="/static/img/ring.svg" /></div>
-          </div>`
-        : nothing}
+      ${
+        this.submitting
+          ? html` <div class="loading">
+              <div id="spinner"><img src="/static/img/ring.svg" /></div>
+            </div>`
+          : nothing
+      }
     `;
   }
 }

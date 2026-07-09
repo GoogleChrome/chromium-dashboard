@@ -629,89 +629,101 @@ export class ChromedashWPTEvalPage extends LitElement {
             ${this._renderPreformattedText(this.feature.summary)}
           </div>
           ${this.renderRequirementItem(hasSpecLink, 'Spec URL', 'id_spec_link')}
-          ${hasSpecLink
-            ? html`
-                <div class="url-list-container">
-                  <div class="url-list">
-                    <a
-                      href="${ifDefined(this.feature.spec_link)}"
-                      target="_blank"
-                      >${this.feature.spec_link}</a
-                    >
+          ${
+            hasSpecLink
+              ? html`
+                  <div class="url-list-container">
+                    <div class="url-list">
+                      <a
+                        href="${ifDefined(this.feature.spec_link)}"
+                        target="_blank"
+                        >${this.feature.spec_link}</a
+                      >
+                    </div>
                   </div>
-                </div>
-              `
-            : nothing}
+                `
+              : nothing
+          }
           ${this.renderRequirementItem(
             hasWptDescr,
             'WPT description',
             'id_wpt_descr'
           )}
-          ${hasWptDescr
-            ? html`
-                <div class="url-list-container">
-                  ${this._renderPreformattedText(this.feature.wpt_descr)}
-                </div>
-              `
-            : nothing}
+          ${
+            hasWptDescr
+              ? html`
+                  <div class="url-list-container">
+                    ${this._renderPreformattedText(this.feature.wpt_descr)}
+                  </div>
+                `
+              : nothing
+          }
           ${this.renderRequirementItem(
             hasValidUrls,
             'Valid wpt.fyi results URLs',
             'id_wpt_descr'
           )}
-          ${hasValidUrls
-            ? html`
-                <div class="url-list-container">
-                  <ul class="url-list">
-                    ${wptUrls.map(url => {
-                      const isDir = this._isDirectoryWptUrl(url);
-                      return html`
-                        <li>
-                          <a href="${url}" target="_blank" title="${url}"
-                            >${url}</a
-                          >
-                          ${isDir
-                            ? html`<span class="dir-note"
-                                >(all tests in directory)</span
-                              >`
-                            : nothing}
-                        </li>
-                      `;
-                    })}
-                  </ul>
-                </div>
-              `
-            : nothing}
+          ${
+            hasValidUrls
+              ? html`
+                  <div class="url-list-container">
+                    <ul class="url-list">
+                      ${wptUrls.map(url => {
+                        const isDir = this._isDirectoryWptUrl(url);
+                        return html`
+                          <li>
+                            <a href="${url}" target="_blank" title="${url}"
+                              >${url}</a
+                            >
+                            ${
+                              isDir
+                                ? html`<span class="dir-note"
+                                    >(all tests in directory)</span
+                                  >`
+                                : nothing
+                            }
+                          </li>
+                        `;
+                      })}
+                    </ul>
+                  </div>
+                `
+              : nothing
+          }
           <div class="requirement-item">
-            ${!this.includeExplainer
-              ? html`<sl-icon
-                  library="material"
-                  name="info_20px"
-                  style="color: var(--sl-color-neutral-600); font-size: 20px"
-                ></sl-icon>`
-              : this.feature.explainer_links?.length
+            ${
+              !this.includeExplainer
                 ? html`<sl-icon
-                    class="success"
                     library="material"
-                    name="check_circle_20px"
+                    name="info_20px"
+                    style="color: var(--sl-color-neutral-600); font-size: 20px"
                   ></sl-icon>`
-                : html`<sl-icon
-                    library="material"
-                    name="cancel_20px"
-                    class="danger"
-                    style="font-size: 20px"
-                  ></sl-icon>`}
+                : this.feature.explainer_links?.length
+                  ? html`<sl-icon
+                      class="success"
+                      library="material"
+                      name="check_circle_20px"
+                    ></sl-icon>`
+                  : html`<sl-icon
+                      library="material"
+                      name="cancel_20px"
+                      class="danger"
+                      style="font-size: 20px"
+                    ></sl-icon>`
+            }
             <sl-checkbox
               ?checked=${this.includeExplainer}
               @sl-change=${(e: any) =>
                 (this.includeExplainer = e.target.checked)}
             >
               Include feature explainers
-              ${!this.feature.explainer_links?.length
-                ? html`<sl-badge variant="neutral" size="small"
-                    >Optional</sl-badge
-                  >`
-                : nothing}
+              ${
+                !this.feature.explainer_links?.length
+                  ? html`<sl-badge variant="neutral" size="small"
+                      >Optional</sl-badge
+                    >`
+                  : nothing
+              }
             </sl-checkbox>
             <a
               class="edit-link"
@@ -720,25 +732,30 @@ export class ChromedashWPTEvalPage extends LitElement {
               Edit
             </a>
           </div>
-          ${this.includeExplainer
-            ? html`
-                <div class="url-list-container">
-                  <ul class="url-list">
-                    ${this.feature.explainer_links?.length
-                      ? this.feature.explainer_links.map(
-                          url => html`
-                            <li>
-                              <a href="${url}" target="_blank">${url}</a>
-                            </li>
-                          `
-                        )
-                      : html`<li>
-                          None provided. Use the "Edit" link above to add one.
-                        </li>`}
-                  </ul>
-                </div>
-              `
-            : nothing}
+          ${
+            this.includeExplainer
+              ? html`
+                  <div class="url-list-container">
+                    <ul class="url-list">
+                      ${
+                        this.feature.explainer_links?.length
+                          ? this.feature.explainer_links.map(
+                              url => html`
+                                <li>
+                                  <a href="${url}" target="_blank">${url}</a>
+                                </li>
+                              `
+                            )
+                          : html`<li>
+                              None provided. Use the "Edit" link above to add
+                              one.
+                            </li>`
+                      }
+                    </ul>
+                  </div>
+                `
+              : nothing
+          }
         </div>
       </section>
     `;
@@ -819,51 +836,61 @@ export class ChromedashWPTEvalPage extends LitElement {
 
     return html`
       <section class="card action-section">
-        ${status === AITestEvaluationStatus.FAILED
-          ? html`
-              <sl-alert variant="danger" open>
-                The previous analysis run failed. Please try again.
-              </sl-alert>
-            `
-          : nothing}
+        ${
+          status === AITestEvaluationStatus.FAILED
+            ? html`
+                <sl-alert variant="danger" open>
+                  The previous analysis run failed. Please try again.
+                </sl-alert>
+              `
+            : nothing
+        }
 
         <sl-button
           variant="${this.feature.ai_test_eval_report ? 'danger' : 'primary'}"
           size="large"
           class="generate-button"
-          ?disabled=${!this.isRequirementsFulfilled ||
-          isCooldownActive ||
-          this.feature.confidential}
+          ?disabled=${
+            !this.isRequirementsFulfilled ||
+            isCooldownActive ||
+            this.feature.confidential
+          }
           @click=${this.handleGenerateClick}
         >
           ${buttonLabel}
         </sl-button>
 
-        ${this.feature.confidential
-          ? html`
-              <div class="help-text">
-                This feature is set to "confidential". The feature's information
-                cannot be sent to Gemini for evaluation.
-              </div>
-            `
-          : nothing}
-        ${isHanging
-          ? html`
-              <div class="help-text">
-                The previous analysis seems to be stuck. You can try starting a
-                new one.
-              </div>
-            `
-          : nothing}
-        ${isCooldownActive && !this.feature.confidential
-          ? html`
-              <div class="cooldown-message">
-                <sl-icon name="hourglass-split"></sl-icon>
-                Available in ${minutesRemaining}
-                minute${minutesRemaining !== 1 ? 's' : ''}
-              </div>
-            `
-          : nothing}
+        ${
+          this.feature.confidential
+            ? html`
+                <div class="help-text">
+                  This feature is set to "confidential". The feature's
+                  information cannot be sent to Gemini for evaluation.
+                </div>
+              `
+            : nothing
+        }
+        ${
+          isHanging
+            ? html`
+                <div class="help-text">
+                  The previous analysis seems to be stuck. You can try starting
+                  a new one.
+                </div>
+              `
+            : nothing
+        }
+        ${
+          isCooldownActive && !this.feature.confidential
+            ? html`
+                <div class="cooldown-message">
+                  <sl-icon name="hourglass-split"></sl-icon>
+                  Available in ${minutesRemaining}
+                  minute${minutesRemaining !== 1 ? 's' : ''}
+                </div>
+              `
+            : nothing
+        }
       </section>
     `;
   }
@@ -1020,12 +1047,14 @@ export class ChromedashWPTEvalPage extends LitElement {
           </ul>
         </section>
 
-        ${this.loading
-          ? this.renderSkeletons()
-          : html`
-              ${this.renderRequirementsChecks()} ${this.renderReport()}
-              ${this.renderActionSection()}
-            `}
+        ${
+          this.loading
+            ? this.renderSkeletons()
+            : html`
+                ${this.renderRequirementsChecks()} ${this.renderReport()}
+                ${this.renderActionSection()}
+              `
+        }
       </div>
     `;
   }

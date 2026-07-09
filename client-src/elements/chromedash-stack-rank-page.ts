@@ -126,9 +126,11 @@ export class ChromedashStackRankPage extends LitElement {
         type="search"
         list="features"
         autocomplete="off"
-        placeholder=${this.viewList.length
-          ? 'Select or search a property for detailed stats'
-          : 'loading...'}
+        placeholder=${
+          this.viewList.length
+            ? 'Select or search a property for detailed stats'
+            : 'loading...'
+        }
         @change="${this.handleSearchBarChange}"
       />
       <datalist id="features">

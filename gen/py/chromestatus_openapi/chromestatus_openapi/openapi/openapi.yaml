@@ -1356,6 +1356,7 @@ components:
           covers_integration: true
           adoption_fields_up_to_date: true
           explanation: explanation
+          adoption_mwg_drafted: true
           is_language_polyfill: true
           covers_errors: true
           adoption_style_aligned: true
@@ -1474,6 +1475,7 @@ components:
         covers_integration: true
         adoption_fields_up_to_date: true
         explanation: explanation
+        adoption_mwg_drafted: true
         is_language_polyfill: true
         covers_errors: true
         adoption_style_aligned: true
@@ -1519,6 +1521,9 @@ components:
         adoption_mdn_drafted:
           title: adoption_mdn_drafted
           type: boolean
+        adoption_mwg_drafted:
+          title: adoption_mwg_drafted
+          type: boolean
         launch_or_contact:
           title: launch_or_contact
           type: string
@@ -1551,6 +1556,7 @@ components:
             covers_integration: true
             adoption_fields_up_to_date: true
             explanation: explanation
+            adoption_mwg_drafted: true
             is_language_polyfill: true
             covers_errors: true
             adoption_style_aligned: true
@@ -1593,6 +1599,7 @@ components:
             covers_integration: true
             adoption_fields_up_to_date: true
             explanation: explanation
+            adoption_mwg_drafted: true
             is_language_polyfill: true
             covers_errors: true
             adoption_style_aligned: true
@@ -1634,6 +1641,7 @@ components:
           covers_integration: true
           adoption_fields_up_to_date: true
           explanation: explanation
+          adoption_mwg_drafted: true
           is_language_polyfill: true
           covers_errors: true
           adoption_style_aligned: true

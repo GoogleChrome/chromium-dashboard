@@ -293,9 +293,9 @@ export class ChromedashDrawer extends LitElement {
         label="Menu"
         placement="start"
         class="drawer-placement-start"
-        style="--size: ${isMobile()
-          ? MOBILE_DRAWER_WIDTH_PX
-          : DRAWER_WIDTH_PX}px;"
+        style="--size: ${
+          isMobile() ? MOBILE_DRAWER_WIDTH_PX : DRAWER_WIDTH_PX
+        }px;"
         contained
         noHeader
         ?open=${!isMobile() && this.defaultOpen}
@@ -333,18 +333,20 @@ export class ChromedashDrawer extends LitElement {
         @click=${this.handleSignOutClick}
         >Sign out</a
       >
-      ${this.user.can_create_feature && !this.isCurrentPage('/guide/new')
-        ? html`
-            <sl-button
-              data-testid="create-feature-button"
-              href="/guide/new"
-              variant="primary"
-              size="small"
-            >
-              Create feature
-            </sl-button>
-          `
-        : nothing}
+      ${
+        this.user.can_create_feature && !this.isCurrentPage('/guide/new')
+          ? html`
+              <sl-button
+                data-testid="create-feature-button"
+                href="/guide/new"
+                variant="primary"
+                size="small"
+              >
+                Create feature
+              </sl-button>
+            `
+          : nothing
+      }
       <hr />
     `;
   }
@@ -357,9 +359,11 @@ export class ChromedashDrawer extends LitElement {
     return html`
       <hr />
       <div class="section-header">My features</div>
-      ${this.userCanApprove()
-        ? this.renderNavItem('/myfeatures/review', 'Pending review')
-        : nothing}
+      ${
+        this.userCanApprove()
+          ? this.renderNavItem('/myfeatures/review', 'Pending review')
+          : nothing
+      }
       ${this.renderNavItem('/myfeatures/starred', 'Starred')}
       ${this.renderNavItem('/myfeatures/editable', 'Owner / editor')}
     `;

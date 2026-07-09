@@ -362,6 +362,24 @@ export class ChromedashSurveyQuestions extends LitElement {
               this feature on
               <a href="https://github.com/mdn/content" target="_blank">MDN</a>.`
           )}
+          ${this.renderBooleanField(
+            'adoption_mwg_drafted',
+            html`<b>MWG work tracked</b>. You have
+              <a
+                href="https://github.com/GoogleChrome/modern-web-guidance-src/issues/new?template=new-feature.yml"
+                target="_blank"
+                >created an issue</a
+              >
+              in the
+              <a
+                href="https://github.com/GoogleChrome/modern-web-guidance-src"
+                target="_blank"
+                >Modern Web Guidance</a
+              >
+              tracker, providing information about how your feature impacts
+              guidance for LLMs, or you have left a comment here explaining why
+              there is no impact.`
+          )}
         </ol>
       </div>
     `;
@@ -401,9 +419,11 @@ export class ChromedashSurveyQuestions extends LitElement {
   render(): TemplateResult {
     return html`
       <h2>Survey questions</h2>
-      ${this.loading
-        ? this.renderQuestionnaireSkeleton()
-        : this.renderQuestionnaire()}
+      ${
+        this.loading
+          ? this.renderQuestionnaireSkeleton()
+          : this.renderQuestionnaire()
+      }
     `;
   }
 }
