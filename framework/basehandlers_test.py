@@ -14,6 +14,7 @@
 
 """Tests for the basehandlers module, verifying request handling, permissions, and responses."""
 
+import testing_config  # isort: skip  # Must be imported before the module under test.
 import json
 from unittest import mock
 
@@ -22,16 +23,15 @@ import flask.views
 import werkzeug.exceptions  # Flask HTTP stuff.
 
 import settings
-import testing_config  # Must be imported before the module under test.
 
 # from google.appengine.api import users
 from framework import basehandlers, users, xsrf
+from framework.basehandlers import Route
 from gen.py.chromestatus_openapi.chromestatus_openapi.models.feature_links_response import (  # noqa: E501
     FeatureLinksResponse,
 )
 from internals.core_models import FeatureEntry, Stage
 from internals.user_models import AppUser
-from main import Route
 
 
 class TestableAPIHandler(basehandlers.APIHandler):
@@ -142,8 +142,37 @@ class BaseHandlerTests(testing_config.CustomTestCase):
             category=1,
         )
         self.fe_1.put()
-        self.stage_1 = Stage(feature_id=1, stage_type=110)
+        self.fe_1_id = self.fe_1.key.integer_id()
+        self.stage_1 = Stage(feature_id=self.fe_1_id, stage_type=110)
         self.stage_1.put()
+        self.stage_1_id = self.stage_1.key.integer_id()
+
+        self.fe_2 = FeatureEntry(name='fe 2', summary='sum2', category=1)
+        self.fe_2.put()
+        self.fe_2_id = self.fe_2.key.integer_id()
+        self.stage_2 = Stage(feature_id=self.fe_2_id, stage_type=110)
+        self.stage_2.put()
+        self.stage_2_id = self.stage_2.key.integer_id()
+
+        from internals.review_models import Gate
+
+        self.gate_1 = Gate(
+            feature_id=self.fe_1_id,
+            stage_id=self.stage_1_id,
+            gate_type=1,
+            state=Gate.PREPARING,
+        )
+        self.gate_1.put()
+        self.gate_1_id = self.gate_1.key.integer_id()
+
+        self.gate_2 = Gate(
+            feature_id=self.fe_2_id,
+            stage_id=self.stage_2_id,
+            gate_type=1,
+            state=Gate.PREPARING,
+        )
+        self.gate_2.put()
+        self.gate_2_id = self.gate_2.key.integer_id()
 
     @mock.patch('flask.request', 'fake request')
     def test_request(self):
@@ -368,24 +397,21 @@ class BaseHandlerTests(testing_config.CustomTestCase):
         """Reject requests that need a feature ID but don't provide one."""
         mock_abort.side_effect = werkzeug.exceptions.BadRequest
 
-        with test_app.test_request_context('/test', json={}):
+        with test_app.test_request_context('/test'):
             with self.assertRaises(werkzeug.exceptions.BadRequest):
                 self.handler.get_specified_feature()
             mock_abort.assert_called_once_with(
-                400, msg="Missing parameter 'featureId'"
+                400, msg='Feature ID not specified'
             )
 
-    @mock.patch('framework.basehandlers.BaseHandler.abort')
-    def test_get_specified_feature__bad(self, mock_abort):
-        """Reject requests that need a feature ID but provide junk."""
-        mock_abort.side_effect = werkzeug.exceptions.BadRequest
-
-        with test_app.test_request_context('/test', json={'featureId': 'junk'}):
-            with self.assertRaises(werkzeug.exceptions.BadRequest):
-                self.handler.get_specified_feature()
-            mock_abort.assert_called_once_with(
-                400, msg="Parameter 'featureId' was not an int"
-            )
+    @mock.patch('framework.permissions.can_view_feature')
+    def test_get_specified_feature__valid(self, mock_can_view):
+        """Fetch a valid feature specified in kwargs."""
+        mock_can_view.return_value = True
+        fe_id = self.fe_1.key.integer_id()
+        with test_app.test_request_context('/test'):
+            feature = self.handler.get_specified_feature(feature_id=fe_id)
+            self.assertEqual(fe_id, feature.key.integer_id())
 
     @mock.patch('framework.permissions.can_view_feature')
     @mock.patch('framework.basehandlers.BaseHandler.abort')
@@ -395,54 +421,111 @@ class BaseHandlerTests(testing_config.CustomTestCase):
         mock_can_view.return_value = False
 
         fe_id = self.fe_1.key.integer_id()
-        with test_app.test_request_context('/test', json={'featureId': fe_id}):
+        with test_app.test_request_context('/test'):
             with self.assertRaises(werkzeug.exceptions.Forbidden):
-                self.handler.get_specified_feature()
+                self.handler.get_specified_feature(feature_id=fe_id)
             mock_abort.assert_called_once_with(
                 403, msg='Cannot view that feature'
             )
 
-    def test_get_specified_stage__valid(self):
-        """Return a given stage if a valid stage ID is passed as a JSON dict
-        property.
-        """  # noqa: D205
+    def test_get_specified_feature_and_stage__valid(self):
+        """Return a feature and stage if valid IDs are passed in kwargs."""
+        fe_id = self.fe_1.key.integer_id()
         stage_id = self.stage_1.key.integer_id()
-        with test_app.test_request_context(
-            '/test', json={'stage_id': stage_id}
-        ):
-            stage = self.handler.get_specified_stage()
+        with test_app.test_request_context('/test'):
+            feature, stage = self.handler.get_specified_feature_and_stage(
+                feature_id=fe_id, stage_id=stage_id
+            )
+        self.assertEqual(feature.key.integer_id(), fe_id)
         self.assertEqual(stage.key.integer_id(), stage_id)
 
-    def test_get_specified_stage__passed_as_arg(self):
-        """Return a given stage if a valid stage ID is passed as an argument."""
-        with test_app.test_request_context('/test', json={}):
-            stage = self.handler.get_specified_stage(
-                self.stage_1.key.integer_id()
+    @mock.patch('framework.basehandlers.BaseHandler.abort')
+    def test_get_specified_feature_and_stage__mismatch(self, mock_abort):
+        """Abort if the stage does not belong to the feature."""
+        mock_abort.side_effect = werkzeug.exceptions.BadRequest
+        fe_id = self.fe_1.key.integer_id()
+        stage_id = self.stage_2.key.integer_id()  # Belongs to fe_2!
+        with test_app.test_request_context('/test'):
+            with self.assertRaises(werkzeug.exceptions.BadRequest):
+                self.handler.get_specified_feature_and_stage(
+                    feature_id=fe_id, stage_id=stage_id
+                )
+            mock_abort.assert_called_once_with(
+                400, msg='Stage does not belong to given feature'
             )
-        self.assertEqual(stage.key.integer_id(), self.stage_1.key.integer_id())
 
     @mock.patch('framework.basehandlers.BaseHandler.abort')
-    def test_get_specified_stage__missing(self, mock_abort):
+    def test_get_specified_feature_and_stage__missing(self, mock_abort):
         """Reject requests that need a stage ID but don't provide one."""
         mock_abort.side_effect = werkzeug.exceptions.BadRequest
-
-        with test_app.test_request_context('/test', json={}):
+        fe_id = self.fe_1.key.integer_id()
+        with test_app.test_request_context('/test'):
             with self.assertRaises(werkzeug.exceptions.BadRequest):
-                self.handler.get_specified_stage()
+                self.handler.get_specified_feature_and_stage(feature_id=fe_id)
             mock_abort.assert_called_once_with(
                 400, msg="Missing parameter 'stage_id'"
             )
 
     @mock.patch('framework.basehandlers.BaseHandler.abort')
-    def test_get_specified_stage__bad(self, mock_abort):
+    def test_get_specified_feature_and_stage__bad(self, mock_abort):
         """Reject requests that need a stage ID but provide junk."""
         mock_abort.side_effect = werkzeug.exceptions.BadRequest
-
+        fe_id = self.fe_1.key.integer_id()
         with test_app.test_request_context('/test', json={'stage_id': 'junk'}):
             with self.assertRaises(werkzeug.exceptions.BadRequest):
-                self.handler.get_specified_stage()
+                self.handler.get_specified_feature_and_stage(feature_id=fe_id)
             mock_abort.assert_called_once_with(
                 400, msg="Parameter 'stage_id' was not an int"
+            )
+
+    def test_get_specified_feature_and_gate__valid(self):
+        """Return a feature and gate if valid IDs are passed in kwargs."""
+        fe_id = self.fe_1.key.integer_id()
+        gate_id = self.gate_1.key.integer_id()
+        with test_app.test_request_context('/test'):
+            feature, gate = self.handler.get_specified_feature_and_gate(
+                feature_id=fe_id, gate_id=gate_id
+            )
+        self.assertEqual(feature.key.integer_id(), fe_id)
+        self.assertEqual(gate.key.integer_id(), gate_id)
+
+    @mock.patch('framework.basehandlers.BaseHandler.abort')
+    def test_get_specified_feature_and_gate__mismatch(self, mock_abort):
+        """Abort if the gate does not belong to the feature."""
+        mock_abort.side_effect = werkzeug.exceptions.BadRequest
+        fe_id = self.fe_1.key.integer_id()
+        gate_id = self.gate_2.key.integer_id()  # Belongs to fe_2!
+        with test_app.test_request_context('/test'):
+            with self.assertRaises(werkzeug.exceptions.BadRequest):
+                self.handler.get_specified_feature_and_gate(
+                    feature_id=fe_id, gate_id=gate_id
+                )
+            mock_abort.assert_called_once_with(
+                400, msg='Gate does not belong to given feature'
+            )
+
+    @mock.patch('framework.basehandlers.BaseHandler.abort')
+    def test_get_specified_feature_and_gate__missing(self, mock_abort):
+        """Reject requests that need a gate ID but don't provide one."""
+        mock_abort.side_effect = werkzeug.exceptions.BadRequest
+        fe_id = self.fe_1.key.integer_id()
+        with test_app.test_request_context('/test'):
+            with self.assertRaises(werkzeug.exceptions.BadRequest):
+                self.handler.get_specified_feature_and_gate(feature_id=fe_id)
+            mock_abort.assert_called_once_with(
+                400, msg="Missing parameter 'gate_id'"
+            )
+
+    @mock.patch('framework.basehandlers.BaseHandler.abort')
+    def test_get_specified_feature_and_gate__bad(self, mock_abort):
+        """Reject requests that need a gate ID but provide junk."""
+        mock_abort.side_effect = werkzeug.exceptions.BadRequest
+        fe_id = self.fe_1.key.integer_id()
+        with test_app.test_request_context('/test', json={'gate_id': 'junk'}):
+            with self.assertRaises(werkzeug.exceptions.BadRequest):
+                self.handler.get_specified_feature_and_gate(feature_id=fe_id)
+            mock_abort.assert_called_once_with(
+                400, msg="Parameter 'gate_id' was not an int"
             )
 
     def test_get_bool_arg__explicitly_true(self):
@@ -1587,10 +1670,94 @@ class FlaskApplicationTests(testing_config.CustomTestCase):
 
     def test_cors_with_api(self):
         """If the request hits a /api/v0/features path, they get a CORS header."""
+        # 1. Test request without Origin header
         with test_app.test_request_context('/api/v0/features'):
             actual_response = test_app.full_dispatch_request()
-
         self.assertIn('Access-Control-Allow-Origin', actual_response.headers)
+
+        # 2. Test valid localhost origins
+        valid_localhosts = [
+            'http://localhost:8080',
+            'http://localhost:8000',
+            'http://localhost:1',
+            'http://localhost:65535',
+        ]
+        for origin in valid_localhosts:
+            with test_app.test_request_context(
+                '/api/v0/features', headers={'Origin': origin}
+            ):
+                actual_response = test_app.full_dispatch_request()
+            self.assertEqual(
+                origin,
+                actual_response.headers.get('Access-Control-Allow-Origin'),
+                msg=f'Expected allowed origin: {origin}',
+            )
+
+        # 3. Test invalid localhost origins
+        invalid_origins = [
+            'http://localhost',  # No port
+            'https://localhost:8080',  # https instead of http
+            'http://localhost:8080/',  # Trailing slash
+            'http://localhost:8080/foo',  # Trailing path
+            'http://localhost:8080a',  # Trailing char
+            'http://127.0.0.1:8080',  # IP instead of literal 'localhost'
+            'http://evil.com/http://localhost:8080',
+            'http://localhost:8080.evil.com',
+            'http://localhost:8080 ',  # Trailing space
+            'http://localhost:',  # No port digits
+            'http://localhost:abc',  # Invalid port
+            'http://foo.localhost:8080',  # Subdomain
+            'http://localhost.localdomain:8080',
+        ]
+        for origin in invalid_origins:
+            with test_app.test_request_context(
+                '/api/v0/features', headers={'Origin': origin}
+            ):
+                actual_response = test_app.full_dispatch_request()
+            self.assertNotIn(
+                'Access-Control-Allow-Origin',
+                actual_response.headers,
+                msg=f'Expected REJECTED origin: {origin}',
+            )
+
+        # 4. Test other valid literal and regex origins
+        valid_other = [
+            'https://chromeenterprise.google',
+            'https://chromeenterprise-staging.corp.google.com',
+            'https://feature-dot-xl-chrome-enterprise-staging.uc.r.appspot.com',
+            'https://a-dot-xl-chrome-enterprise-staging.uc.r.appspot.com',
+        ]
+        for origin in valid_other:
+            with test_app.test_request_context(
+                '/api/v0/features', headers={'Origin': origin}
+            ):
+                actual_response = test_app.full_dispatch_request()
+            self.assertEqual(
+                origin,
+                actual_response.headers.get('Access-Control-Allow-Origin'),
+                msg=f'Expected allowed other origin: {origin}',
+            )
+
+        # 5. Test other invalid literal and regex origins
+        invalid_other = [
+            'http://chromeenterprise.google',
+            'https://evil.chromeenterprise.google',
+            'https://chromeenterprise.google.evil.com',
+            'https://chromeenterprise-staging.evil.corp.google.com',
+            'https://evil-dot-xl-chrome-enterprise-staging.appspot.com',  # Missing '.uc.r.'
+            'https://123-dot-xl-chrome-enterprise-staging.uc.r.appspot.com',  # Numbers instead of letters
+            'https://-dot-xl-chrome-enterprise-staging.uc.r.appspot.com',
+        ]
+        for origin in invalid_other:
+            with test_app.test_request_context(
+                '/api/v0/features', headers={'Origin': origin}
+            ):
+                actual_response = test_app.full_dispatch_request()
+            self.assertNotIn(
+                'Access-Control-Allow-Origin',
+                actual_response.headers,
+                msg=f'Expected REJECTED other origin: {origin}',
+            )
 
     def test_cors_without_allow_origin(self):
         """If the request hits any non-/data path, they get no header."""

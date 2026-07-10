@@ -96,11 +96,13 @@ class FeatureLinksAPITest(testing_config.CustomTestCase):
 
     @mock.patch('framework.cloud_tasks_helpers.enqueue_task')
     def test_get_feature_links__success(self, mock_enqueue):
-        """We can retrieve feature links for a public feature using get_feature_links."""
-        with test_app.test_request_context(self.request_path):
-            data, has_stale_links = self.handler.get_feature_links(
-                feature_id=self.feature_id, update_stale_links=False
-            )
+        """We can retrieve feature links for a public feature."""
+        path = f'/api/v0/feature_links?feature_id={self.feature_id}&update_stale_links=false'
+        with test_app.test_request_context(path):
+            resp = self.handler.do_get()
+        actual_dict = resp.to_dict()
+        data = actual_dict['data']
+        has_stale_links = actual_dict['has_stale_links']
 
         self.assertEqual(2, len(data))
         self.assertEqual('https://example.com/spec', data[0]['url'])
@@ -122,8 +124,6 @@ class FeatureLinksAPITest(testing_config.CustomTestCase):
         self, mock_datetime, mock_enqueue
     ):
         """If update_stale_links is True, stale links trigger background cloud task update."""
-        # Make datetime.datetime.now() return a time 1 hour in the future,
-        # making existing links stale.
         future_now = datetime.datetime.now(
             tz=datetime.timezone.utc
         ) + datetime.timedelta(hours=1)
@@ -131,16 +131,16 @@ class FeatureLinksAPITest(testing_config.CustomTestCase):
         mock_datetime.timedelta = datetime.timedelta
         mock_datetime.timezone = datetime.timezone
 
-        with test_app.test_request_context(self.request_path):
-            data, has_stale_links = self.handler.get_feature_links(
-                feature_id=self.feature_id, update_stale_links=True
-            )
+        path = f'/api/v0/feature_links?feature_id={self.feature_id}&update_stale_links=true'
+        with test_app.test_request_context(path):
+            resp = self.handler.do_get()
+        actual_dict = resp.to_dict()
+        data = actual_dict['data']
+        has_stale_links = actual_dict['has_stale_links']
 
         self.assertEqual(2, len(data))
         self.assertTrue(has_stale_links)
 
-        # It should trigger enqueue_task for both link_1 and link_2 since both are stale
-        # (created/updated defaults to the old timestamp in test setup or is behind LINK_STALE_MINUTES).
         mock_enqueue.assert_called_once()
         args, kwargs = mock_enqueue.call_args
         self.assertEqual('/tasks/update-feature-links', args[0])
@@ -151,12 +151,10 @@ class FeatureLinksAPITest(testing_config.CustomTestCase):
         """Regular users cannot view links for a confidential feature."""
         testing_config.sign_out()
         testing_config.sign_in('regular_user@example.com', 123)
-        path = f'/api/v0/feature_links?feature_id={self.cf_id}'
+        path = f'/api/v0/feature_links?feature_id={self.cf_id}&update_stale_links=false'
         with test_app.test_request_context(path):
             with self.assertRaises(werkzeug.exceptions.Forbidden):
-                self.handler.get_feature_links(
-                    feature_id=self.cf_id, update_stale_links=False
-                )
+                self.handler.do_get()
         testing_config.sign_out()
 
     def test_get_feature_links__admin_can_view_confidential(self):
@@ -166,24 +164,25 @@ class FeatureLinksAPITest(testing_config.CustomTestCase):
 
         testing_config.sign_out()
         testing_config.sign_in('admin@example.com', 123)
-        path = f'/api/v0/feature_links?feature_id={self.cf_id}'
+        path = f'/api/v0/feature_links?feature_id={self.cf_id}&update_stale_links=false'
         with test_app.test_request_context(path):
-            data, has_stale_links = self.handler.get_feature_links(
-                feature_id=self.cf_id, update_stale_links=False
-            )
+            resp = self.handler.do_get()
         testing_config.sign_out()
+
+        actual_dict = resp.to_dict()
+        data = actual_dict['data']
 
         self.assertEqual(1, len(data))
         self.assertEqual('https://example.org/web', data[0]['url'])
 
     def test_get_feature_links__not_found(self):
         """We get a 404 if the feature does not exist."""
-        bad_path = '/api/v0/feature_links?feature_id=99999'
+        bad_path = (
+            '/api/v0/feature_links?feature_id=99999&update_stale_links=false'
+        )
         with test_app.test_request_context(bad_path):
             with self.assertRaises(werkzeug.exceptions.NotFound):
-                self.handler.get_feature_links(
-                    feature_id=99999, update_stale_links=False
-                )
+                self.handler.do_get()
 
     @mock.patch('framework.cloud_tasks_helpers.enqueue_task')
     def test_do_get__success(self, mock_enqueue):

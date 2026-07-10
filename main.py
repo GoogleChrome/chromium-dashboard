@@ -16,8 +16,6 @@
 """Main application entry point, routing configuration, and Flask app setup."""
 
 import threading
-from dataclasses import dataclass, field
-from typing import Any, Type
 
 import settings
 from api import (
@@ -56,6 +54,7 @@ from api import (
     wpt_coverage_api,
 )
 from framework import basehandlers, csp, gemini_helpers, secrets, sendemail
+from framework.basehandlers import Route
 from internals import (
     data_backup,
     detect_intent,
@@ -102,16 +101,6 @@ secrets.load_ot_api_key()
 # those parameters as keywords in those handlers where the same
 # handler might be used for multiple routes that have the field
 # or not.
-
-
-@dataclass
-class Route:
-    """Represents a routing configuration for the application."""
-
-    path: str
-    handler_class: Type[basehandlers.BaseHandler] = basehandlers.SPAHandler
-    defaults: dict[str, Any] = field(default_factory=dict)
-
 
 metrics_chart_routes: list[Route] = [
     Route('/data/timeline/cssanimated', metricsdata.AnimatedTimelineHandler),

@@ -539,6 +539,8 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
         """Update feature fields with changes provided in the PATCH request."""
         has_updated = len(updated_stages) > 0
         for field, field_type in api_specs.FEATURE_FIELD_DATA_TYPES:
+            if field in FeatureEntry.FIELDS_IMMUTABLE_BY_USER:
+                continue
             if field not in feature_changes:
                 continue
             old_value = getattr(feature, field)

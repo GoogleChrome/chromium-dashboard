@@ -223,9 +223,7 @@ class StagesAPITest(testing_config.CustomTestCase):
         with test_app.test_request_context(f'{self.request_path}1/stages/3001'):
             with self.assertRaises(werkzeug.exceptions.BadRequest):
                 self.handler.do_get(feature_id=1, stage_id=3001)
-        mock_abort.assert_called_once_with(
-            404, description='Stage 3001 not found.'
-        )
+        mock_abort.assert_called_once_with(404, description='Stage not found')
 
     @mock.patch('flask.abort')
     def test_get__no_id(self, mock_abort):
@@ -235,7 +233,7 @@ class StagesAPITest(testing_config.CustomTestCase):
             with self.assertRaises(werkzeug.exceptions.BadRequest):
                 self.handler.do_get(feature_id=1)
         mock_abort.assert_called_once_with(
-            400, description='No Stage ID specified.'
+            400, description="Missing parameter 'stage_id'"
         )
 
     def test_get__valid(self):
@@ -494,7 +492,7 @@ class StagesAPITest(testing_config.CustomTestCase):
             with self.assertRaises(werkzeug.exceptions.BadRequest):
                 self.handler.do_get(feature_id=1, stage_id=30)
         mock_abort.assert_called_once_with(
-            404, description='Stage 30 not found.'
+            400, description='Stage does not belong to given feature'
         )
 
     @mock.patch('flask.abort')
@@ -507,7 +505,7 @@ class StagesAPITest(testing_config.CustomTestCase):
             with self.assertRaises(werkzeug.exceptions.BadRequest):
                 self.handler.do_get(feature_id=1, stage_id='not-an-int')
         mock_abort.assert_called_once_with(
-            400, description='Invalid Stage ID: not-an-int.'
+            400, description="Parameter 'stage_id' was not an int"
         )
 
     @mock.patch('flask.abort')

@@ -29,8 +29,7 @@ class ProcessesAPI(basehandlers.APIHandler):
     def do_get(self, **kwargs):
         """Return the process of the feature."""
         # Load feature directly from NDB so as to never get a stale cached copy.
-        feature_id = kwargs['feature_id']
-        fe = self.get_specified_feature(feature_id=feature_id)
+        fe = self.get_specified_feature(**kwargs)
 
         feature_process = processes.ALL_PROCESSES.get(
             fe.feature_type, processes.BLINK_LAUNCH_PROCESS
@@ -59,8 +58,7 @@ class ProgressAPI(basehandlers.APIHandler):
 
     def do_get(self, **kwargs):
         """Return the progress of the feature."""
-        feature_id = kwargs['feature_id']
-        fe = self.get_specified_feature(feature_id=feature_id)
+        fe = self.get_specified_feature(**kwargs)
         stages = stage_helpers.get_feature_stages(fe.key.integer_id())
         progress_so_far = {}
         for progress_item, detector in list(

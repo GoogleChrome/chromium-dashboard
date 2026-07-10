@@ -27,7 +27,6 @@ import settings
 from api import converters
 from framework import basehandlers, cloud_tasks_helpers, permissions
 from internals import core_enums, stage_helpers
-from internals.core_models import FeatureEntry
 from internals.review_models import Gate
 
 SUBJECT_PREFIXES = {
@@ -71,19 +70,9 @@ class IntentsAPI(basehandlers.APIHandler):
 
     def do_get(self, **kwargs) -> Response | dict | str:
         """Get the body of a draft intent."""
-        feature_id = int(kwargs['feature_id'])
-        # Check that feature ID is valid.
-        if not feature_id:
-            self.abort(400, msg='No feature specified')
-        feature: FeatureEntry = self.get_specified_feature(feature_id)
-
-        # Check that stage ID is valid.
-        stage_id = int(kwargs.get('stage_id', 0))
-        if not stage_id:
-            self.abort(400, msg='No stage specified.')
-        stage = self.get_specified_stage(stage_id)
-        if stage.feature_id != feature_id:
-            self.abort(400, msg='Stage does not belong to given feature')
+        feature, stage = self.get_specified_feature_and_stage(**kwargs)
+        feature_id = feature.key.integer_id()
+        stage_id = stage.key.integer_id()
 
         intent_type = None
         if stage.stage_type in core_enums.INTENT_DRAFT_TYPES_BY_STAGE_TYPE:
@@ -141,19 +130,8 @@ class IntentsAPI(basehandlers.APIHandler):
 
     def do_post(self, **kwargs) -> Response | dict | MessageResponse:
         """Submit an intent email directly to blink-dev."""
-        feature_id = int(kwargs.get('feature_id', 0))
-        # Check that feature ID is valid.
-        if not feature_id:
-            self.abort(400, msg='No feature specified.')
-        feature: FeatureEntry = self.get_specified_feature(feature_id)
-
-        # Check that stage ID is valid.
-        stage_id = int(kwargs.get('stage_id', 0))
-        if not stage_id:
-            self.abort(400, msg='No stage specified.')
-        stage = self.get_specified_stage(stage_id)
-        if stage.feature_id != feature_id:
-            self.abort(400, msg='Stage does not belong to given feature')
+        feature, stage = self.get_specified_feature_and_stage(**kwargs)
+        feature_id = feature.key.integer_id()
 
         intent_type = None
         if stage.stage_type in core_enums.INTENT_DRAFT_TYPES_BY_STAGE_TYPE:

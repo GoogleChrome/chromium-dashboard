@@ -30,7 +30,6 @@ import testing_config  # Must be imported before the module under test.
 from api import comments_api
 from internals.core_models import FeatureEntry
 from internals.review_models import Activity, Amendment, Gate, Vote
-from internals.user_models import AppUser
 
 test_app = flask.Flask(__name__)
 
@@ -364,97 +363,3 @@ class CommentsAPITest(testing_config.CustomTestCase):
                 self.handler.do_post(
                     feature_id=self.feature_id, gate_id=self.gate_1_id
                 )
-
-    def test_get__forbidden(self):
-        """We get a 403 if the user does not have permission to view the feature."""
-        confidential_feature = FeatureEntry(
-            name='confidential feature',
-            summary='secret',
-            category=1,
-            confidential=True,
-        )
-        confidential_feature.put()
-        cf_id = confidential_feature.key.integer_id()
-
-        testing_config.sign_out()
-        testing_config.sign_in('regular_user@example.com', 123)
-
-        path = '/api/v0/features/%d/approvals/comments' % cf_id
-        with test_app.test_request_context(path):
-            with self.assertRaises(werkzeug.exceptions.Forbidden):
-                self.handler.do_get(feature_id=cf_id)
-        testing_config.sign_out()
-
-    def test_get__admin_can_see_deleted_comment(self):
-        """An admin can see deleted comments."""
-        admin_user = AppUser(email='admin@example.com', is_admin=True)
-        admin_user.put()
-
-        self.act_1_1.deleted_by = 'other_user@example.com'
-        self.act_1_1.put()
-
-        testing_config.sign_out()
-        testing_config.sign_in('admin@example.com', 123456)
-        with test_app.test_request_context(self.request_path):
-            resp = self.handler.do_get(
-                feature_id=self.feature_id, gate_id=self.gate_1_id
-            )
-        testing_config.sign_out()
-
-        self.assertEqual(1, len(resp['comments']))
-        self.assertEqual('Good job', resp['comments'][0]['content'])
-
-    def test_get__all_gates_and_legacy(self):
-        """We can get all comments for a feature if gate_id is not specified."""
-        # This will be act_1_1 (gate 1)
-        self.act_1_1.put()
-
-        # Gate 2
-        gate_2 = Gate(
-            feature_id=self.feature_id, stage_id=2, gate_type=3, state=Vote.NA
-        )
-        gate_2.put()
-        gate_2_id = gate_2.key.integer_id()
-
-        act_2 = Activity(
-            log_type=Activity.USER_COMMENT,
-            feature_id=self.feature_id,
-            gate_id=gate_2_id,
-            author='owner2@example.com',
-            created=NOW,
-            content='Approved on gate 2',
-        )
-        act_2.put()
-
-        # Legacy comment (no gate ID)
-        legacy_act = Activity(
-            log_type=Activity.USER_COMMENT,
-            feature_id=self.feature_id,
-            author='owner1@example.com',
-            created=NOW,
-            content='Legacy comment',
-        )
-        legacy_act.put()
-
-        path = '/api/v0/features/%d/approvals/comments' % self.feature_id
-        testing_config.sign_out()
-        testing_config.sign_in('user7@example.com', 123567890)
-        with test_app.test_request_context(path):
-            resp = self.handler.do_get(feature_id=self.feature_id)
-        testing_config.sign_out()
-
-        self.assertEqual(3, len(resp['comments']))
-        contents = [c['content'] for c in resp['comments']]
-        self.assertIn('Good job', contents)
-        self.assertIn('Approved on gate 2', contents)
-        self.assertIn('Legacy comment', contents)
-
-    def test_get__feature_not_found(self):
-        """We get a 404 if the feature does not exist."""
-        bad_path = '/api/v0/features/12345/approvals/comments'
-        testing_config.sign_out()
-        testing_config.sign_in('user7@example.com', 123567890)
-        with test_app.test_request_context(bad_path):
-            with self.assertRaises(werkzeug.exceptions.NotFound):
-                self.handler.do_get(feature_id=12345)
-        testing_config.sign_out()

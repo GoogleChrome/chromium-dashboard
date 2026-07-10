@@ -31,24 +31,16 @@ from internals.feature_links import (
 class FeatureLinksAPI(basehandlers.APIHandler):
     """FeatureLinksAPI will return the links and its information to the client."""
 
-    def get_feature_links(self, feature_id: int, update_stale_links: bool):
-        """Get links for a feature."""
-        self.get_specified_feature(feature_id=feature_id)
-        return get_by_feature_id(feature_id, update_stale_links)
-
     def do_get(self, **kwargs):
         """Get links for a feature."""
-        feature_id = self.get_int_arg('feature_id', None)
+        feature = self.get_specified_feature(**kwargs)
         update_stale_links = self.get_bool_arg('update_stale_links', True)
-        if feature_id:
-            data, has_stale_links = self.get_feature_links(
-                feature_id, update_stale_links
-            )
-            return FeatureLinksResponse.from_dict(
-                {'data': data, 'has_stale_links': has_stale_links}
-            )
-        else:
-            self.abort(400, msg='Missing feature_id')
+        data, has_stale_links = get_by_feature_id(
+            feature.key.integer_id(), update_stale_links
+        )
+        return FeatureLinksResponse.from_dict(
+            {'data': data, 'has_stale_links': has_stale_links}
+        )
 
 
 class FeatureLinksSummaryAPI(basehandlers.APIHandler):
@@ -73,3 +65,4 @@ class FeatureLinksSamplesAPI(basehandlers.APIHandler):
         is_error = self.get_bool_arg('is_error', None)
         if domain:
             return get_feature_links_samples(domain, type, is_error)
+        return []

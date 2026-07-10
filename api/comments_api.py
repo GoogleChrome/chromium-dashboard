@@ -81,9 +81,9 @@ class CommentsAPI(basehandlers.APIHandler):
 
     def do_get(self, **kwargs) -> dict[str, list[dict[str, Any]]]:
         """Return a list of all review comments on the given feature."""
-        feature_id = kwargs['feature_id']
+        feature = self.get_specified_feature(**kwargs)
+        feature_id = feature.key.integer_id()
         gate_id = kwargs.get('gate_id', None)
-        self.get_specified_feature(feature_id=feature_id)
         comments = Activity.get_activities(feature_id, gate_id)
         user = self.get_current_user()
         is_admin = permissions.can_admin_site(user)
