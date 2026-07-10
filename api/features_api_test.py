@@ -909,6 +909,182 @@ class FeaturesAPITest(testing_config.CustomTestCase):
         # Updater email field should NOT be changed. No changes were made.
         self.assertIsNone(self.feature_1.updater_email)
 
+    def test_patch__immutable_fields_ignored(self):
+        """PATCH request ignores attempts to change fields in FIELDS_IMMUTABLE_BY_USER."""
+        # Signed-in user with permissions.
+        testing_config.sign_in('admin@example.com', 123567890)
+
+        # Set specific initial values for immutable fields.
+        old_created = datetime(2020, 1, 1)
+        old_updated = datetime(2020, 1, 1)
+        old_ai_timestamp = datetime(2020, 1, 1)
+
+        self.feature_1.created = old_created
+        self.feature_1.creator_email = 'original_creator@example.com'
+        self.feature_1.updated = old_updated
+        self.feature_1.updater_email = 'original_updater@example.com'
+        self.feature_1.outstanding_notifications = 5
+        self.feature_1.deleted = False
+        self.feature_1.star_count = 10
+        self.feature_1.feature_type = 0
+        self.feature_1.ai_test_eval_report = 'Original report'
+        self.feature_1.ai_test_eval_run_status = 1
+        self.feature_1.ai_test_eval_status_timestamp = old_ai_timestamp
+        self.feature_1.put()
+
+        request_body = {
+            'feature_changes': {
+                'id': self.feature_1_id,
+                'created': '2026-01-01T00:00:00',
+                'creator_email': 'new_creator@example.com',
+                'updated': '2026-01-01T00:00:00',
+                'updater_email': 'new_updater@example.com',
+                'outstanding_notifications': 99,
+                'deleted': True,
+                'star_count': 999,
+                'feature_type': 3,  # Valid FEATURE_FIELD_DATA_TYPES, but immutable.
+                'ai_test_eval_report': 'New report',
+                'ai_test_eval_run_status': 2,
+                'ai_test_eval_status_timestamp': '2026-01-01T00:00:00',
+            },
+            'stages': [],
+        }
+        request_path = f'{self.request_path}/update'
+        with test_app.test_request_context(request_path, json=request_body):
+            response = self.handler.do_patch()
+
+        self.assertEqual(
+            {'message': f'Feature {self.feature_1_id} updated.'}, response
+        )
+
+        # Read back the feature and verify NOTHING changed.
+        revised_feature = FeatureEntry.get_by_id(self.feature_1_id)
+        self.assertEqual(revised_feature.created, old_created)
+        self.assertEqual(
+            revised_feature.creator_email, 'original_creator@example.com'
+        )
+        self.assertEqual(revised_feature.updated, old_updated)
+        self.assertEqual(
+            revised_feature.updater_email, 'original_updater@example.com'
+        )
+        self.assertEqual(revised_feature.outstanding_notifications, 5)
+        self.assertEqual(revised_feature.deleted, False)
+        self.assertEqual(revised_feature.star_count, 10)
+        self.assertEqual(revised_feature.feature_type, 0)
+        self.assertEqual(revised_feature.ai_test_eval_report, 'Original report')
+        self.assertEqual(revised_feature.ai_test_eval_run_status, 1)
+        self.assertEqual(
+            revised_feature.ai_test_eval_status_timestamp, old_ai_timestamp
+        )
+
+    def test_patch__accurate_as_of_ignored_value(self):
+        """PATCH request ignores the provided value for accurate_as_of and sets it to now."""
+        # Signed-in user with permissions.
+        testing_config.sign_in('admin@example.com', 123567890)
+
+        old_accuracy_date = datetime(2020, 1, 1)
+        self.feature_1.accurate_as_of = old_accuracy_date
+        self.feature_1.outstanding_notifications = 5
+        self.feature_1.put()
+
+        request_body = {
+            'feature_changes': {
+                'id': self.feature_1_id,
+                'accurate_as_of': '2000-01-01T00:00:00',  # User tries to set an old date.
+            },
+            'stages': [],
+        }
+        request_path = f'{self.request_path}/update'
+        with test_app.test_request_context(request_path, json=request_body):
+            self.handler.do_patch(feature_id=self.feature_1_id)
+
+        revised_feature = FeatureEntry.get_by_id(self.feature_1_id)
+        self.assertIsNotNone(revised_feature.accurate_as_of)
+        # It should NOT be the user-provided date.
+        self.assertNotEqual(
+            revised_feature.accurate_as_of.strftime('%Y-%m-%dT%H:%M:%S'),
+            '2000-01-01T00:00:00',
+        )
+        # It should be close to now (certainly greater than old_accuracy_date).
+        self.assertTrue(revised_feature.accurate_as_of > old_accuracy_date)
+        # outstanding_notifications should still be reset to 0.
+        self.assertEqual(revised_feature.outstanding_notifications, 0)
+        # And updated/updater_email SHOULD change because changes were made.
+        self.assertEqual(revised_feature.updater_email, 'admin@example.com')
+        self.assertTrue(revised_feature.updated > old_accuracy_date)
+
+    def test_patch__immutable_and_valid_fields(self):
+        """PATCH updates valid fields while ignoring immutable fields, setting updated/updater_email."""
+        # Signed-in user with permissions.
+        testing_config.sign_in('admin@example.com', 123567890)
+
+        # Set specific initial values for immutable fields.
+        old_created = datetime(2020, 1, 1)
+        old_updated = datetime(2020, 1, 1)
+        old_ai_timestamp = datetime(2020, 1, 1)
+
+        self.feature_1.created = old_created
+        self.feature_1.creator_email = 'original_creator@example.com'
+        self.feature_1.updated = old_updated
+        self.feature_1.updater_email = 'original_updater@example.com'
+        self.feature_1.outstanding_notifications = 5
+        self.feature_1.deleted = False
+        self.feature_1.star_count = 10
+        self.feature_1.feature_type = 0
+        self.feature_1.ai_test_eval_report = 'Original report'
+        self.feature_1.ai_test_eval_run_status = 1
+        self.feature_1.ai_test_eval_status_timestamp = old_ai_timestamp
+        self.feature_1.summary = 'Old summary'
+        self.feature_1.put()
+
+        new_summary = 'New summary for valid change'
+        request_body = {
+            'feature_changes': {
+                'id': self.feature_1_id,
+                'summary': new_summary,  # Valid!
+                'created': '2026-01-01T00:00:00',  # Immutable!
+                'creator_email': 'new_creator@example.com',  # Immutable!
+                'updated': '2026-01-01T00:00:00',  # Immutable!
+                'updater_email': 'new_updater@example.com',  # Immutable!
+                'outstanding_notifications': 99,  # Immutable!
+                'deleted': True,  # Immutable!
+                'star_count': 999,  # Immutable!
+                'feature_type': 3,  # Valid in api_specs, but Immutable on patch!
+                'ai_test_eval_report': 'New report',  # Immutable!
+                'ai_test_eval_run_status': 2,  # Immutable!
+                'ai_test_eval_status_timestamp': '2026-01-01T00:00:00',  # Immutable!
+            },
+            'stages': [],
+        }
+        request_path = f'{self.request_path}/update'
+        with test_app.test_request_context(request_path, json=request_body):
+            response = self.handler.do_patch()
+
+        self.assertEqual(
+            {'message': f'Feature {self.feature_1_id} updated.'}, response
+        )
+
+        revised_feature = FeatureEntry.get_by_id(self.feature_1_id)
+        # Verify valid change WAS made.
+        self.assertEqual(revised_feature.summary, new_summary)
+        # Verify immutable fields were IGNORED.
+        self.assertEqual(revised_feature.created, old_created)
+        self.assertEqual(
+            revised_feature.creator_email, 'original_creator@example.com'
+        )
+        self.assertEqual(revised_feature.outstanding_notifications, 5)
+        self.assertEqual(revised_feature.deleted, False)
+        self.assertEqual(revised_feature.star_count, 10)
+        self.assertEqual(revised_feature.feature_type, 0)
+        self.assertEqual(revised_feature.ai_test_eval_report, 'Original report')
+        self.assertEqual(revised_feature.ai_test_eval_run_status, 1)
+        self.assertEqual(
+            revised_feature.ai_test_eval_status_timestamp, old_ai_timestamp
+        )
+        # Verify updater_email and updated WERE changed to now/admin by the SERVER.
+        self.assertEqual(revised_feature.updater_email, 'admin@example.com')
+        self.assertTrue(revised_feature.updated > old_updated)
+
     def test_patch__accurate_as_of(self):
         """Updates accurate_as_of for accuracy verification request."""
         # Signed-in user with permissions.
@@ -1623,6 +1799,76 @@ class FeaturesAPITest(testing_config.CustomTestCase):
                 )
             else:
                 self.assertEqual(getattr(new_feature, field), value)
+
+    def test_post__all_immutable_fields_ignored(self):
+        """POST request succeeds while ignoring all immutable fields provided in the body."""
+        # Signed-in user with permissions.
+        testing_config.sign_in('admin@example.com', 123567890)
+
+        request_body = {
+            'name': 'A name for create',
+            'summary': 'A summary for create',
+            'category': 1,
+            'feature_type': 1,  # Mutable on create!
+            'impl_status_chrome': 1,
+            'standard_maturity': 1,
+            'ff_views': 1,
+            'safari_views': 1,
+            'web_dev_views': 1,
+            # Immutable fields that should be IGNORED:
+            'creator_email': 'evil_creator@example.com',
+            'updater_email': 'evil_updater@example.com',
+            'created': '2000-01-01T00:00:00',
+            'updated': '2000-01-01T00:00:00',
+            'accurate_as_of': '2000-01-01T00:00:00',
+            'outstanding_notifications': 99,
+            'deleted': True,
+            'star_count': 999,
+            'ai_test_eval_report': 'Evil report',
+            'ai_test_eval_run_status': 2,
+            'ai_test_eval_status_timestamp': '2000-01-01T00:00:00',
+        }
+        request_path = f'{self.request_path}/create'
+        with test_app.test_request_context(request_path, json=request_body):
+            response = self.handler.do_post()
+
+        self.assertIsNotNone(response['feature_id'])
+        self.assertIsInstance(response['feature_id'], int)
+
+        new_feature: FeatureEntry | None = FeatureEntry.get_by_id(
+            response['feature_id']
+        )
+        self.assertIsNotNone(new_feature)
+
+        # Verify valid and required fields were set.
+        self.assertEqual(new_feature.name, 'A name for create')
+        self.assertEqual(new_feature.summary, 'A summary for create')
+        self.assertEqual(new_feature.feature_type, 1)
+
+        # Verify immutable fields were IGNORED or set by server.
+        self.assertEqual(new_feature.creator_email, 'admin@example.com')
+        self.assertEqual(new_feature.updater_email, 'admin@example.com')
+        self.assertIsNotNone(new_feature.created)
+        self.assertNotEqual(
+            new_feature.created.strftime('%Y-%m-%dT%H:%M:%S'),
+            '2000-01-01T00:00:00',
+        )
+        self.assertIsNotNone(new_feature.updated)
+        self.assertNotEqual(
+            new_feature.updated.strftime('%Y-%m-%dT%H:%M:%S'),
+            '2000-01-01T00:00:00',
+        )
+        self.assertIsNotNone(new_feature.accurate_as_of)
+        self.assertNotEqual(
+            new_feature.accurate_as_of.strftime('%Y-%m-%dT%H:%M:%S'),
+            '2000-01-01T00:00:00',
+        )
+        self.assertEqual(new_feature.outstanding_notifications, 0)
+        self.assertEqual(new_feature.deleted, False)
+        self.assertEqual(new_feature.star_count, 0)
+        self.assertIsNone(new_feature.ai_test_eval_report)
+        self.assertIsNone(new_feature.ai_test_eval_run_status)
+        self.assertIsNone(new_feature.ai_test_eval_status_timestamp)
 
     def test_post__bad_data_type_int(self):
         """POST request fails with 400 when a bad int data type is provided."""
