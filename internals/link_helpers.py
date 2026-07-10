@@ -26,10 +26,23 @@ from urllib.parse import urlparse
 
 import requests
 import validators
+from fastspec.errors import APIError
 from ghapi.core import GhApi
 
 import settings
 from framework import secrets
+
+
+def _get_error_code(e: Exception) -> Optional[int]:
+    """Get the HTTP status code from an exception."""
+    code = getattr(e, 'status_code', None) or getattr(e, 'code', None)
+    if code is not None:
+        try:
+            return int(code)
+        except ValueError:
+            pass
+    return None
+
 
 github_api_client = None
 
@@ -125,7 +138,7 @@ def get_github_api_client():
     global github_api_client
     if github_api_client is None:
         github_credential = secrets.ApiCredential.get_github_credendial()
-        github_api_client = GhApi(token=github_credential.token)
+        github_api_client = GhApi(token=github_credential.token, sync=True)
 
     return github_api_client
 
@@ -192,9 +205,9 @@ class Link:
                 owner=owner, repo=repo, branch=ref
             )
             ref = branch_information.name
-        except HTTPError as e:
+        except (HTTPError, APIError) as e:
             # if the branch does not exist, then it is probably a commit hash
-            if e.code != 404:
+            if _get_error_code(e) != 404:
                 raise e
 
         try:
@@ -202,9 +215,10 @@ class Link:
                 owner=owner, repo=repo, path=file_path, ref=ref
             )
             return information
-        except HTTPError as e:
-            logging.info(f'Got http response code {e.code}')
-            if e.code != 404 and retries > 0:
+        except (HTTPError, APIError) as e:
+            code = _get_error_code(e)
+            logging.info(f'Got http response code {code}')
+            if code != 404 and retries > 0:
                 rotate_github_client()
                 return self._fetch_github_file(
                     owner, repo, ref, file_path, retries=retries - 1
@@ -241,9 +255,10 @@ class Link:
                 owner=owner, repo=repo, issue_number=issue_id
             )
             return resp
-        except HTTPError as e:
-            logging.info(f'Got http response code {e.code}')
-            if e.code != 404 and retries > 0:
+        except (HTTPError, APIError) as e:
+            code = _get_error_code(e)
+            logging.info(f'Got http response code {code}')
+            if code != 404 and retries > 0:
                 rotate_github_client()
                 return self._fetch_github_issue(
                     owner, repo, issue_id, retries=retries - 1
