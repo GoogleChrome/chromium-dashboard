@@ -14,6 +14,7 @@
 
 """Tests for the basehandlers module, verifying request handling, permissions, and responses."""
 
+import testing_config  # isort: skip  # Must be imported before the module under test.
 import json
 from unittest import mock
 
@@ -22,7 +23,6 @@ import flask.views
 import werkzeug.exceptions  # Flask HTTP stuff.
 
 import settings
-import testing_config  # Must be imported before the module under test.
 
 # from google.appengine.api import users
 from framework import basehandlers, users, xsrf
@@ -1587,10 +1587,94 @@ class FlaskApplicationTests(testing_config.CustomTestCase):
 
     def test_cors_with_api(self):
         """If the request hits a /api/v0/features path, they get a CORS header."""
+        # 1. Test request without Origin header
         with test_app.test_request_context('/api/v0/features'):
             actual_response = test_app.full_dispatch_request()
-
         self.assertIn('Access-Control-Allow-Origin', actual_response.headers)
+
+        # 2. Test valid localhost origins
+        valid_localhosts = [
+            'http://localhost:8080',
+            'http://localhost:8000',
+            'http://localhost:1',
+            'http://localhost:65535',
+        ]
+        for origin in valid_localhosts:
+            with test_app.test_request_context(
+                '/api/v0/features', headers={'Origin': origin}
+            ):
+                actual_response = test_app.full_dispatch_request()
+            self.assertEqual(
+                origin,
+                actual_response.headers.get('Access-Control-Allow-Origin'),
+                msg=f'Expected allowed origin: {origin}',
+            )
+
+        # 3. Test invalid localhost origins
+        invalid_origins = [
+            'http://localhost',  # No port
+            'https://localhost:8080',  # https instead of http
+            'http://localhost:8080/',  # Trailing slash
+            'http://localhost:8080/foo',  # Trailing path
+            'http://localhost:8080a',  # Trailing char
+            'http://127.0.0.1:8080',  # IP instead of literal 'localhost'
+            'http://evil.com/http://localhost:8080',
+            'http://localhost:8080.evil.com',
+            'http://localhost:8080 ',  # Trailing space
+            'http://localhost:',  # No port digits
+            'http://localhost:abc',  # Invalid port
+            'http://foo.localhost:8080',  # Subdomain
+            'http://localhost.localdomain:8080',
+        ]
+        for origin in invalid_origins:
+            with test_app.test_request_context(
+                '/api/v0/features', headers={'Origin': origin}
+            ):
+                actual_response = test_app.full_dispatch_request()
+            self.assertNotIn(
+                'Access-Control-Allow-Origin',
+                actual_response.headers,
+                msg=f'Expected REJECTED origin: {origin}',
+            )
+
+        # 4. Test other valid literal and regex origins
+        valid_other = [
+            'https://chromeenterprise.google',
+            'https://chromeenterprise-staging.corp.google.com',
+            'https://feature-dot-xl-chrome-enterprise-staging.uc.r.appspot.com',
+            'https://a-dot-xl-chrome-enterprise-staging.uc.r.appspot.com',
+        ]
+        for origin in valid_other:
+            with test_app.test_request_context(
+                '/api/v0/features', headers={'Origin': origin}
+            ):
+                actual_response = test_app.full_dispatch_request()
+            self.assertEqual(
+                origin,
+                actual_response.headers.get('Access-Control-Allow-Origin'),
+                msg=f'Expected allowed other origin: {origin}',
+            )
+
+        # 5. Test other invalid literal and regex origins
+        invalid_other = [
+            'http://chromeenterprise.google',
+            'https://evil.chromeenterprise.google',
+            'https://chromeenterprise.google.evil.com',
+            'https://chromeenterprise-staging.evil.corp.google.com',
+            'https://evil-dot-xl-chrome-enterprise-staging.appspot.com',  # Missing '.uc.r.'
+            'https://123-dot-xl-chrome-enterprise-staging.uc.r.appspot.com',  # Numbers instead of letters
+            'https://-dot-xl-chrome-enterprise-staging.uc.r.appspot.com',
+        ]
+        for origin in invalid_other:
+            with test_app.test_request_context(
+                '/api/v0/features', headers={'Origin': origin}
+            ):
+                actual_response = test_app.full_dispatch_request()
+            self.assertNotIn(
+                'Access-Control-Allow-Origin',
+                actual_response.headers,
+                msg=f'Expected REJECTED other origin: {origin}',
+            )
 
     def test_cors_without_allow_origin(self):
         """If the request hits any non-/data path, they get no header."""
