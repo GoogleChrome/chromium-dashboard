@@ -20,7 +20,7 @@ import dataclasses
 from chromestatus_openapi.models import Process
 
 from framework import basehandlers
-from internals import core_enums, core_models, processes, stage_helpers
+from internals import core_enums, processes, stage_helpers
 
 
 class ProcessesAPI(basehandlers.APIHandler):

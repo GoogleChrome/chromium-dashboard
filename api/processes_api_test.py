@@ -18,8 +18,8 @@
 from dataclasses import asdict
 
 import flask
-
 import werkzeug.exceptions
+
 import testing_config  # Must be imported before the module under test.
 from api import processes_api
 from internals import core_enums, core_models, processes

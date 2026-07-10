@@ -868,6 +868,7 @@ def review_is_done(status):
 # If they return a string, and it starts with "http:" or "https:", it will
 # be used as a link URL.
 
+
 def _get_stage_attr(stages, stage_type, attr):
     """Safely get an attribute of the first stage of the given type."""
     if stage_type is None:
@@ -876,6 +877,7 @@ def _get_stage_attr(stages, stage_type, attr):
     if s_list and len(s_list) > 0:
         return getattr(s_list[0], attr, None)
     return None
+
 
 def _get_stage_milestone_attr(stages, stage_type, attr):
     """Safely get a milestone field from the first stage of the given type."""
@@ -887,6 +889,7 @@ def _get_stage_milestone_attr(stages, stage_type, attr):
         if hasattr(stage, 'milestones') and stage.milestones:
             return getattr(stage.milestones, attr, None)
     return None
+
 
 PROGRESS_DETECTORS = {
     'Initial public proposal': lambda f, _: f.initial_public_proposal_url,
@@ -905,22 +908,22 @@ PROGRESS_DETECTORS = {
     'Intent to Prototype email': lambda f, stages: _get_stage_attr(
         stages,
         core_enums.STAGE_TYPES_PROTOTYPE.get(f.feature_type),
-        'intent_thread_url'
+        'intent_thread_url',
     ),
     'Intent to Ship email': lambda f, stages: _get_stage_attr(
         stages,
         core_enums.STAGE_TYPES_SHIPPING.get(f.feature_type),
-        'intent_thread_url'
+        'intent_thread_url',
     ),
     'Ready for Developer Testing email': lambda f, stages: _get_stage_attr(
         stages,
         core_enums.STAGE_TYPES_DEV_TRIAL.get(f.feature_type),
-        'announcement_url'
+        'announcement_url',
     ),
     'Intent to Experiment email': lambda f, stages: _get_stage_attr(
         stages,
         core_enums.STAGE_TYPES_ORIGIN_TRIAL.get(f.feature_type),
-        'intent_thread_url'
+        'intent_thread_url',
     ),
     'Samples': lambda f, _: f.sample_links and f.sample_links[0],
     'Doc links': lambda f, _: f.doc_links and f.doc_links[0],
@@ -951,21 +954,21 @@ PROGRESS_DETECTORS = {
         _get_stage_milestone_attr(
             stages,
             core_enums.STAGE_TYPES_SHIPPING.get(f.feature_type),
-            'desktop_first'
+            'desktop_first',
         )
     ),
     'Updated target milestone': lambda f, stages: bool(
         _get_stage_milestone_attr(
             stages,
             core_enums.STAGE_TYPES_SHIPPING.get(f.feature_type),
-            'desktop_first'
+            'desktop_first',
         )
     ),
     'Final target milestone': lambda f, stages: bool(
         _get_stage_milestone_attr(
             stages,
             core_enums.STAGE_TYPES_SHIPPING.get(f.feature_type),
-            'desktop_first'
+            'desktop_first',
         )
     ),
     'Finch feature name or non-finch justification': lambda f, stages: bool(
@@ -985,32 +988,32 @@ PROGRESS_DETECTORS = {
     'Rollout impact': lambda f, stages: _get_stage_attr(
         stages,
         core_enums.STAGE_TYPES_ROLLOUT.get(f.feature_type),
-        'rollout_impact'
+        'rollout_impact',
     ),
     'Rollout milestone': lambda f, stages: _get_stage_attr(
         stages,
         core_enums.STAGE_TYPES_ROLLOUT.get(f.feature_type),
-        'rollout_milestone'
+        'rollout_milestone',
     ),
     'Rollout platforms': lambda f, stages: _get_stage_attr(
         stages,
         core_enums.STAGE_TYPES_ROLLOUT.get(f.feature_type),
-        'rollout_platforms'
+        'rollout_platforms',
     ),
     'Rollout details': lambda f, stages: _get_stage_attr(
         stages,
         core_enums.STAGE_TYPES_ROLLOUT.get(f.feature_type),
-        'rollout_details'
+        'rollout_details',
     ),
     'Rollout stage plan': lambda f, stages: _get_stage_attr(
         stages,
         core_enums.STAGE_TYPES_ROLLOUT.get(f.feature_type),
-        'rollout_stage_plan'
+        'rollout_stage_plan',
     ),
     'Enterprise policies': lambda f, stages: _get_stage_attr(
         stages,
         core_enums.STAGE_TYPES_ROLLOUT.get(f.feature_type),
-        'enterprise_policies'
+        'enterprise_policies',
     ),
 }
 

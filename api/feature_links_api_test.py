@@ -81,7 +81,9 @@ class FeatureLinksAPITest(testing_config.CustomTestCase):
         self.link_2.put()
 
         self.handler = feature_links_api.FeatureLinksAPI()
-        self.request_path = f'/api/v0/feature_links?feature_id={self.feature_id}'
+        self.request_path = (
+            f'/api/v0/feature_links?feature_id={self.feature_id}'
+        )
 
     def tearDown(self):
         """Clean up the test environment."""
@@ -219,7 +221,9 @@ class FeatureLinksAPITest(testing_config.CustomTestCase):
 
     def test_do_get__invalid_feature_id(self):
         """We get a 400 if feature_id is not an integer."""
-        with test_app.test_request_context('/api/v0/feature_links?feature_id=abc'):
+        with test_app.test_request_context(
+            '/api/v0/feature_links?feature_id=abc'
+        ):
             with self.assertRaises(werkzeug.exceptions.BadRequest):
                 self.handler.do_get()
 
@@ -277,9 +281,7 @@ class FeatureLinksSummaryAPITest(testing_config.CustomTestCase):
             actual_response = self.handler.do_get()
         testing_config.sign_out()
 
-        self.assertIsInstance(
-            actual_response, FeatureLinksSummaryResponse
-        )
+        self.assertIsInstance(actual_response, FeatureLinksSummaryResponse)
         actual_dict = actual_response.to_dict()
 
         self.assertEqual(2, actual_dict['total_count'])
@@ -358,7 +360,7 @@ class FeatureLinksSamplesAPITest(testing_config.CustomTestCase):
 
         testing_config.sign_out()
         testing_config.sign_in('admin@example.com', 123)
-        
+
         path = '/api/v0/feature_links_samples?domain=https://example.org'
         with test_app.test_request_context(path):
             actual_response = self.handler.do_get()
@@ -377,7 +379,9 @@ class FeatureLinksSamplesAPITest(testing_config.CustomTestCase):
         """Regular users cannot retrieve sample feature links."""
         testing_config.sign_out()
         testing_config.sign_in('regular_user@example.com', 123)
-        with test_app.test_request_context('/api/v0/feature_links_samples?domain=https://example.org'):
+        with test_app.test_request_context(
+            '/api/v0/feature_links_samples?domain=https://example.org'
+        ):
             with self.assertRaises(werkzeug.exceptions.Forbidden):
                 self.handler.do_get()
         testing_config.sign_out()

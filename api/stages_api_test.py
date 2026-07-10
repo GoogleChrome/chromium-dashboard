@@ -426,12 +426,12 @@ class StagesAPITest(testing_config.CustomTestCase):
     def test_get__feature_not_found(self, mock_abort):
         """Raises 404 if the feature ID does not match any feature."""
         mock_abort.side_effect = werkzeug.exceptions.BadRequest
-        with test_app.test_request_context(f'{self.request_path}12345/stages/10'):
+        with test_app.test_request_context(
+            f'{self.request_path}12345/stages/10'
+        ):
             with self.assertRaises(werkzeug.exceptions.BadRequest):
                 self.handler.do_get(feature_id=12345, stage_id=10)
-        mock_abort.assert_called_once_with(
-            404, description='Feature not found'
-        )
+        mock_abort.assert_called_once_with(404, description='Feature not found')
 
     @mock.patch('flask.abort')
     def test_get__forbidden(self, mock_abort):
@@ -501,7 +501,9 @@ class StagesAPITest(testing_config.CustomTestCase):
     def test_get__invalid_stage_id(self, mock_abort):
         """Raises 400 if the stage ID is not an integer."""
         mock_abort.side_effect = werkzeug.exceptions.BadRequest
-        with test_app.test_request_context(f'{self.request_path}1/stages/not-an-int'):
+        with test_app.test_request_context(
+            f'{self.request_path}1/stages/not-an-int'
+        ):
             with self.assertRaises(werkzeug.exceptions.BadRequest):
                 self.handler.do_get(feature_id=1, stage_id='not-an-int')
         mock_abort.assert_called_once_with(
