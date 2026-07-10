@@ -157,6 +157,7 @@ class VotesAPITest(testing_config.CustomTestCase):
 
     def test_post__bad_feature_id(self):
         """Handler rejects requests that don't specify an existing feature."""
+        testing_config.sign_in('admin@example.com', 1234567890)
         params = {}
         with test_app.test_request_context(self.request_path, json=params):
             with self.assertRaises(werkzeug.exceptions.NotFound):

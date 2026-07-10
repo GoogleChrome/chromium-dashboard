@@ -25,8 +25,8 @@ import testing_config  # Must be imported before the module under test.
 
 # from google.appengine.api import users
 from framework import basehandlers, permissions, users
+from framework.basehandlers import Route
 from internals import core_models, user_models
-from main import Route
 
 
 class MockHandler(basehandlers.BaseHandler):

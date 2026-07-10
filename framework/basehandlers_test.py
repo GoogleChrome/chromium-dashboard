@@ -26,12 +26,12 @@ import settings
 
 # from google.appengine.api import users
 from framework import basehandlers, users, xsrf
+from framework.basehandlers import Route
 from gen.py.chromestatus_openapi.chromestatus_openapi.models.feature_links_response import (  # noqa: E501
     FeatureLinksResponse,
 )
 from internals.core_models import FeatureEntry, Stage
 from internals.user_models import AppUser
-from main import Route
 
 
 class TestableAPIHandler(basehandlers.APIHandler):
@@ -142,8 +142,37 @@ class BaseHandlerTests(testing_config.CustomTestCase):
             category=1,
         )
         self.fe_1.put()
-        self.stage_1 = Stage(feature_id=1, stage_type=110)
+        self.fe_1_id = self.fe_1.key.integer_id()
+        self.stage_1 = Stage(feature_id=self.fe_1_id, stage_type=110)
         self.stage_1.put()
+        self.stage_1_id = self.stage_1.key.integer_id()
+
+        self.fe_2 = FeatureEntry(name='fe 2', summary='sum2', category=1)
+        self.fe_2.put()
+        self.fe_2_id = self.fe_2.key.integer_id()
+        self.stage_2 = Stage(feature_id=self.fe_2_id, stage_type=110)
+        self.stage_2.put()
+        self.stage_2_id = self.stage_2.key.integer_id()
+
+        from internals.review_models import Gate
+
+        self.gate_1 = Gate(
+            feature_id=self.fe_1_id,
+            stage_id=self.stage_1_id,
+            gate_type=1,
+            state=Gate.PREPARING,
+        )
+        self.gate_1.put()
+        self.gate_1_id = self.gate_1.key.integer_id()
+
+        self.gate_2 = Gate(
+            feature_id=self.fe_2_id,
+            stage_id=self.stage_2_id,
+            gate_type=1,
+            state=Gate.PREPARING,
+        )
+        self.gate_2.put()
+        self.gate_2_id = self.gate_2.key.integer_id()
 
     @mock.patch('flask.request', 'fake request')
     def test_request(self):
@@ -368,24 +397,21 @@ class BaseHandlerTests(testing_config.CustomTestCase):
         """Reject requests that need a feature ID but don't provide one."""
         mock_abort.side_effect = werkzeug.exceptions.BadRequest
 
-        with test_app.test_request_context('/test', json={}):
+        with test_app.test_request_context('/test'):
             with self.assertRaises(werkzeug.exceptions.BadRequest):
                 self.handler.get_specified_feature()
             mock_abort.assert_called_once_with(
-                400, msg="Missing parameter 'featureId'"
+                400, msg='Feature ID not specified'
             )
 
-    @mock.patch('framework.basehandlers.BaseHandler.abort')
-    def test_get_specified_feature__bad(self, mock_abort):
-        """Reject requests that need a feature ID but provide junk."""
-        mock_abort.side_effect = werkzeug.exceptions.BadRequest
-
-        with test_app.test_request_context('/test', json={'featureId': 'junk'}):
-            with self.assertRaises(werkzeug.exceptions.BadRequest):
-                self.handler.get_specified_feature()
-            mock_abort.assert_called_once_with(
-                400, msg="Parameter 'featureId' was not an int"
-            )
+    @mock.patch('framework.permissions.can_view_feature')
+    def test_get_specified_feature__valid(self, mock_can_view):
+        """Fetch a valid feature specified in kwargs."""
+        mock_can_view.return_value = True
+        fe_id = self.fe_1.key.integer_id()
+        with test_app.test_request_context('/test'):
+            feature = self.handler.get_specified_feature(feature_id=fe_id)
+            self.assertEqual(fe_id, feature.key.integer_id())
 
     @mock.patch('framework.permissions.can_view_feature')
     @mock.patch('framework.basehandlers.BaseHandler.abort')
@@ -395,54 +421,111 @@ class BaseHandlerTests(testing_config.CustomTestCase):
         mock_can_view.return_value = False
 
         fe_id = self.fe_1.key.integer_id()
-        with test_app.test_request_context('/test', json={'featureId': fe_id}):
+        with test_app.test_request_context('/test'):
             with self.assertRaises(werkzeug.exceptions.Forbidden):
-                self.handler.get_specified_feature()
+                self.handler.get_specified_feature(feature_id=fe_id)
             mock_abort.assert_called_once_with(
                 403, msg='Cannot view that feature'
             )
 
-    def test_get_specified_stage__valid(self):
-        """Return a given stage if a valid stage ID is passed as a JSON dict
-        property.
-        """  # noqa: D205
+    def test_get_specified_feature_and_stage__valid(self):
+        """Return a feature and stage if valid IDs are passed in kwargs."""
+        fe_id = self.fe_1.key.integer_id()
         stage_id = self.stage_1.key.integer_id()
-        with test_app.test_request_context(
-            '/test', json={'stage_id': stage_id}
-        ):
-            stage = self.handler.get_specified_stage()
+        with test_app.test_request_context('/test'):
+            feature, stage = self.handler.get_specified_feature_and_stage(
+                feature_id=fe_id, stage_id=stage_id
+            )
+        self.assertEqual(feature.key.integer_id(), fe_id)
         self.assertEqual(stage.key.integer_id(), stage_id)
 
-    def test_get_specified_stage__passed_as_arg(self):
-        """Return a given stage if a valid stage ID is passed as an argument."""
-        with test_app.test_request_context('/test', json={}):
-            stage = self.handler.get_specified_stage(
-                self.stage_1.key.integer_id()
+    @mock.patch('framework.basehandlers.BaseHandler.abort')
+    def test_get_specified_feature_and_stage__mismatch(self, mock_abort):
+        """Abort if the stage does not belong to the feature."""
+        mock_abort.side_effect = werkzeug.exceptions.BadRequest
+        fe_id = self.fe_1.key.integer_id()
+        stage_id = self.stage_2.key.integer_id()  # Belongs to fe_2!
+        with test_app.test_request_context('/test'):
+            with self.assertRaises(werkzeug.exceptions.BadRequest):
+                self.handler.get_specified_feature_and_stage(
+                    feature_id=fe_id, stage_id=stage_id
+                )
+            mock_abort.assert_called_once_with(
+                400, msg='Stage does not belong to given feature'
             )
-        self.assertEqual(stage.key.integer_id(), self.stage_1.key.integer_id())
 
     @mock.patch('framework.basehandlers.BaseHandler.abort')
-    def test_get_specified_stage__missing(self, mock_abort):
+    def test_get_specified_feature_and_stage__missing(self, mock_abort):
         """Reject requests that need a stage ID but don't provide one."""
         mock_abort.side_effect = werkzeug.exceptions.BadRequest
-
-        with test_app.test_request_context('/test', json={}):
+        fe_id = self.fe_1.key.integer_id()
+        with test_app.test_request_context('/test'):
             with self.assertRaises(werkzeug.exceptions.BadRequest):
-                self.handler.get_specified_stage()
+                self.handler.get_specified_feature_and_stage(feature_id=fe_id)
             mock_abort.assert_called_once_with(
                 400, msg="Missing parameter 'stage_id'"
             )
 
     @mock.patch('framework.basehandlers.BaseHandler.abort')
-    def test_get_specified_stage__bad(self, mock_abort):
+    def test_get_specified_feature_and_stage__bad(self, mock_abort):
         """Reject requests that need a stage ID but provide junk."""
         mock_abort.side_effect = werkzeug.exceptions.BadRequest
-
+        fe_id = self.fe_1.key.integer_id()
         with test_app.test_request_context('/test', json={'stage_id': 'junk'}):
             with self.assertRaises(werkzeug.exceptions.BadRequest):
-                self.handler.get_specified_stage()
+                self.handler.get_specified_feature_and_stage(feature_id=fe_id)
             mock_abort.assert_called_once_with(
                 400, msg="Parameter 'stage_id' was not an int"
+            )
+
+    def test_get_specified_feature_and_gate__valid(self):
+        """Return a feature and gate if valid IDs are passed in kwargs."""
+        fe_id = self.fe_1.key.integer_id()
+        gate_id = self.gate_1.key.integer_id()
+        with test_app.test_request_context('/test'):
+            feature, gate = self.handler.get_specified_feature_and_gate(
+                feature_id=fe_id, gate_id=gate_id
+            )
+        self.assertEqual(feature.key.integer_id(), fe_id)
+        self.assertEqual(gate.key.integer_id(), gate_id)
+
+    @mock.patch('framework.basehandlers.BaseHandler.abort')
+    def test_get_specified_feature_and_gate__mismatch(self, mock_abort):
+        """Abort if the gate does not belong to the feature."""
+        mock_abort.side_effect = werkzeug.exceptions.BadRequest
+        fe_id = self.fe_1.key.integer_id()
+        gate_id = self.gate_2.key.integer_id()  # Belongs to fe_2!
+        with test_app.test_request_context('/test'):
+            with self.assertRaises(werkzeug.exceptions.BadRequest):
+                self.handler.get_specified_feature_and_gate(
+                    feature_id=fe_id, gate_id=gate_id
+                )
+            mock_abort.assert_called_once_with(
+                400, msg='Gate does not belong to given feature'
+            )
+
+    @mock.patch('framework.basehandlers.BaseHandler.abort')
+    def test_get_specified_feature_and_gate__missing(self, mock_abort):
+        """Reject requests that need a gate ID but don't provide one."""
+        mock_abort.side_effect = werkzeug.exceptions.BadRequest
+        fe_id = self.fe_1.key.integer_id()
+        with test_app.test_request_context('/test'):
+            with self.assertRaises(werkzeug.exceptions.BadRequest):
+                self.handler.get_specified_feature_and_gate(feature_id=fe_id)
+            mock_abort.assert_called_once_with(
+                400, msg="Missing parameter 'gate_id'"
+            )
+
+    @mock.patch('framework.basehandlers.BaseHandler.abort')
+    def test_get_specified_feature_and_gate__bad(self, mock_abort):
+        """Reject requests that need a gate ID but provide junk."""
+        mock_abort.side_effect = werkzeug.exceptions.BadRequest
+        fe_id = self.fe_1.key.integer_id()
+        with test_app.test_request_context('/test', json={'gate_id': 'junk'}):
+            with self.assertRaises(werkzeug.exceptions.BadRequest):
+                self.handler.get_specified_feature_and_gate(feature_id=fe_id)
+            mock_abort.assert_called_once_with(
+                400, msg="Parameter 'gate_id' was not an int"
             )
 
     def test_get_bool_arg__explicitly_true(self):

@@ -19,6 +19,8 @@ import json
 import logging
 import os
 import re
+from dataclasses import dataclass
+from dataclasses import field as dc_field
 from datetime import datetime
 from typing import Any, NoReturn, Optional, Type, TypeVar
 
@@ -36,6 +38,7 @@ from framework import csp, permissions, secrets, users, utils, xsrf
 from internals import approval_defs, core_enums, notifier_helpers, user_models
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
 from internals.data_types import CHANGED_FIELDS_LIST_TYPE
+from internals.review_models import Gate
 
 # Our API responses are prefixed with this ro prevent attacks that
 # exploit <script src="...">.  See go/xssi.
@@ -149,13 +152,20 @@ class BaseHandler(flask.views.MethodView):
             self.abort(400, msg='Parameter %r was not a bool' % name)
         return val
 
-    def get_specified_feature(
-        self, feature_id: Optional[int] = None
-    ) -> FeatureEntry:
-        """Get the feature specified in the featureId parameter."""
-        feature_id = feature_id or self.get_int_param(
-            'featureId', required=True
-        )
+    def get_specified_feature(self, **kwargs) -> FeatureEntry:
+        """Get the feature specified in the feature_id parameter."""
+        feature_id = kwargs.get('feature_id')
+        if not feature_id:
+            feature_id = self.get_int_arg('feature_id')
+        if not feature_id:
+            try:
+                feature_id = self.get_int_param('feature_id', required=False)
+            except Exception:
+                feature_id = None
+
+        if not feature_id:
+            self.abort(400, msg='Feature ID not specified')
+
         # Load feature directly from NDB so as to never get a stale cached copy.
         feature: FeatureEntry | None = FeatureEntry.get_by_id(feature_id)
         if not feature:
@@ -165,13 +175,59 @@ class BaseHandler(flask.views.MethodView):
             self.abort(403, msg='Cannot view that feature')
         return feature
 
-    def get_specified_stage(self, stage_id: int | None = None) -> Stage:
-        """Get the stage specified in the stage_id parameter."""
-        stage_id = stage_id or self.get_int_param('stage_id', required=True)
-        stage = Stage.get_by_id(stage_id)
+    def get_specified_feature_and_stage(
+        self, **kwargs
+    ) -> tuple[FeatureEntry, Stage]:
+        """Get the feature and stage specified in feature_id and stage_id parameters."""
+        feature = self.get_specified_feature(**kwargs)
+        feature_id = feature.key.integer_id()
+
+        if 'stage_id' in kwargs and kwargs['stage_id'] is not None:
+            stage_id = kwargs['stage_id']
+            try:
+                stage_id = int(stage_id)
+            except (ValueError, TypeError):
+                self.abort(400, msg="Parameter 'stage_id' was not an int")
+            if not stage_id:
+                self.abort(400, msg="Missing parameter 'stage_id'")
+        else:
+            stage_id = self.get_int_param('stage_id', required=True)
+
+        stage: Stage | None = Stage.get_by_id(stage_id)
         if not stage:
             self.abort(404, msg='Stage not found')
-        return stage
+
+        if stage.feature_id != feature_id:
+            self.abort(400, msg='Stage does not belong to given feature')
+
+        return feature, stage
+
+    def get_specified_feature_and_gate(
+        self, **kwargs
+    ) -> tuple[FeatureEntry, Gate]:
+        """Get the feature and gate specified in feature_id and gate_id parameters."""
+        feature = self.get_specified_feature(**kwargs)
+        feature_id = feature.key.integer_id()
+
+        if 'gate_id' in kwargs and kwargs['gate_id'] is not None:
+            gate_id = kwargs['gate_id']
+            try:
+                gate_id = int(gate_id)
+            except (ValueError, TypeError):
+                self.abort(400, msg="Parameter 'gate_id' was not an int")
+            if not gate_id:
+                self.abort(400, msg="Missing parameter 'gate_id'")
+        else:
+            gate_id = self.get_int_param('gate_id', required=True)
+
+        gate: Gate | None = Gate.get_by_id(gate_id)
+        if not gate:
+            self.abort(404, msg='Gate not found')
+
+        if gate.feature_id != feature_id:
+            self.abort(400, msg='Gate does not belong to given feature')
+
+        return feature, gate
 
     def get_bool_arg(self, name, default=False):
         """Get the specified boolean from the query string."""
@@ -900,6 +956,15 @@ def get_spa_template_data(handler_obj, defaults):
     return {}  # no handler_data needed to be returned
 
 
+@dataclass
+class Route:
+    """Represents a routing configuration for the application."""
+
+    path: str
+    handler_class: Type[BaseHandler] = SPAHandler
+    defaults: dict[str, Any] = dc_field(default_factory=dict)
+
+
 def FlaskApplication(import_name, routes, pattern_base='', debug=False):
     """Make a Flask app and add routes and handlers that work like webapp2."""
     app = flask.Flask(
@@ -909,10 +974,13 @@ def FlaskApplication(import_name, routes, pattern_base='', debug=False):
     app.wsgi_app = ndb_wsgi_middleware(app.wsgi_app)  # For Cloud NDB Context
     # For GAE legacy libraries
     app.wsgi_app = google.appengine.api.wrap_wsgi_app(app.wsgi_app)
-    client = ndb.Client()
-    with client.context():
-        app.secret_key = secrets.get_session_secret()  # For flask.session
-        app.permanent_session_lifetime = xsrf.REFRESH_TOKEN_TIMEOUT_SEC
+    if settings.UNIT_TEST_MODE:
+        app.secret_key = 'test_session_secret'
+    else:
+        client = ndb.Client()
+        with client.context():
+            app.secret_key = secrets.get_session_secret()  # For flask.session
+    app.permanent_session_lifetime = xsrf.REFRESH_TOKEN_TIMEOUT_SEC
 
     for i, route in enumerate(routes):
         classname = route.handler_class.__name__

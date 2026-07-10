@@ -98,6 +98,72 @@ def sign_in(user_email, user_id):
 class CustomTestCase(unittest.TestCase):
     """Custom base test case with database and cache clearing."""
 
+    def setUp(self):
+        """Clean up the Datastore before every test case."""
+        super(CustomTestCase, self).setUp()
+        try:
+            from google.cloud import ndb
+
+            from framework.secrets import ApiCredential, Secrets
+            from internals.attachments import Attachment, Thumbnail
+            from internals.core_models import FeatureEntry, MilestoneSet, Stage
+            from internals.feature_links import FeatureLinks
+            from internals.metrics_models import HistogramModel, StableInstance
+            from internals.notifier import FeatureStar
+            from internals.review_models import (
+                Activity,
+                Amendment,
+                Gate,
+                GateDef,
+                OwnersFile,
+                SurveyAnswers,
+                Vote,
+            )
+            from internals.search_fulltext import FeatureWords
+            from internals.user_models import (
+                AppUser,
+                BlinkComponent,
+                FeatureOwner,
+                UserPref,
+            )
+            from internals.webdx_feature_models import WebdxFeatures
+
+            keys = []
+            for model in [
+                Secrets,
+                ApiCredential,
+                Attachment,
+                Thumbnail,
+                FeatureEntry,
+                MilestoneSet,
+                Stage,
+                FeatureLinks,
+                StableInstance,
+                HistogramModel,
+                FeatureStar,
+                OwnersFile,
+                GateDef,
+                Vote,
+                SurveyAnswers,
+                Gate,
+                Amendment,
+                Activity,
+                FeatureWords,
+                UserPref,
+                AppUser,
+                FeatureOwner,
+                BlinkComponent,
+                WebdxFeatures,
+            ]:
+                try:
+                    keys.extend(model.query().fetch(keys_only=True))
+                except Exception:
+                    pass
+            if keys:
+                ndb.delete_multi(keys)
+        except Exception as e:
+            logging.warning('Failed to delete NDB entities: %s', e)
+
     def run(self, result=None):
         """Runs the test case, managing the context for NDB and clearing caches."""
         from framework import rediscache
