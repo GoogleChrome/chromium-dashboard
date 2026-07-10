@@ -79,6 +79,8 @@ export * from './SpecMentor';
 export * from './StageField';
 export * from './StringFieldInfoValue';
 export * from './SuccessMessage';
+export * from './SummarySuggestionPatchRequest';
+export * from './SummarySuggestionPatchResponse';
 export * from './SurveyAnswers';
 export * from './TokenRefreshResponse';
 export * from './UserPermissions';

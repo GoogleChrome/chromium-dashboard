@@ -44,6 +44,8 @@ from chromestatus_openapi.models.set_star_request import SetStarRequest  # noqa:
 from chromestatus_openapi.models.sign_in_request import SignInRequest  # noqa: E501
 from chromestatus_openapi.models.spec_mentor import SpecMentor  # noqa: E501
 from chromestatus_openapi.models.success_message import SuccessMessage  # noqa: E501
+from chromestatus_openapi.models.summary_suggestion_patch_request import SummarySuggestionPatchRequest  # noqa: E501
+from chromestatus_openapi.models.summary_suggestion_patch_response import SummarySuggestionPatchResponse  # noqa: E501
 from chromestatus_openapi import util
 
 
@@ -610,6 +612,23 @@ def logout_user():  # noqa: E501
 
     :rtype: Union[SuccessMessage, Tuple[SuccessMessage, int], Tuple[SuccessMessage, int, Dict[str, str]]
     """
+    return 'do some magic!'
+
+
+def patch_summary_suggestion(feature_id, summary_suggestion_patch_request):  # noqa: E501
+    """Update the status or fields of the AI summary suggestion draft
+
+     # noqa: E501
+
+    :param feature_id: Feature ID
+    :type feature_id: int
+    :param summary_suggestion_patch_request: 
+    :type summary_suggestion_patch_request: dict | bytes
+
+    :rtype: Union[SummarySuggestionPatchResponse, Tuple[SummarySuggestionPatchResponse, int], Tuple[SummarySuggestionPatchResponse, int, Dict[str, str]]
+    """
+    if connexion.request.is_json:
+        summary_suggestion_patch_request = SummarySuggestionPatchRequest.from_dict(connexion.request.get_json())  # noqa: E501
     return 'do some magic!'
 
 

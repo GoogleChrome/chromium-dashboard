@@ -801,6 +801,62 @@ paths:
           description: Feature or suggestion not found
       summary: Get the AI summary suggestion draft for a feature
       x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+    patch:
+      operationId: patch_summary_suggestion
+      parameters:
+      - description: Feature ID
+        explode: false
+        in: path
+        name: feature_id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SummarySuggestionPatchRequest'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SummarySuggestionPatchResponse'
+          description: Suggestion status updated successfully
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: Invalid request parameters or target status
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: Unauthorized
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: Forbidden (insufficient permissions or missing bypass justification)
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: Feature or suggestion not found
+        "409":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: Conflict (stale version token or concurrent edit detected)
+      summary: Update the status or fields of the AI summary suggestion draft
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
   /features/{feature_id}/summary_suggestion/apply:
     post:
       operationId: apply_summary_suggestion
@@ -3588,6 +3644,65 @@ components:
       required:
       - count
       title: PendingReviewsCountResponse
+      type: object
+    SummarySuggestionPatchRequest:
+      example:
+        bypass_justification: bypass_justification
+        suggested_summary: suggested_summary
+        suggested_doc_links:
+        - suggested_doc_links
+        - suggested_doc_links
+        version_token: 0
+        baseline_widely_date: 2000-01-23
+        baseline_status: baseline_status
+        baseline_newly_date: 2000-01-23
+        status: status
+      properties:
+        status:
+          title: status
+          type: string
+        version_token:
+          title: version_token
+          type: integer
+        suggested_summary:
+          title: suggested_summary
+          type: string
+        suggested_doc_links:
+          items:
+            type: string
+          title: suggested_doc_links
+          type: array
+        baseline_status:
+          title: baseline_status
+          type: string
+        baseline_newly_date:
+          format: date
+          title: baseline_newly_date
+          type: string
+        baseline_widely_date:
+          format: date
+          title: baseline_widely_date
+          type: string
+        bypass_justification:
+          title: bypass_justification
+          type: string
+      required:
+      - status
+      - version_token
+      title: SummarySuggestionPatchRequest
+      type: object
+    SummarySuggestionPatchResponse:
+      example:
+        version_token: 0
+        message: message
+      properties:
+        message:
+          title: message
+          type: string
+        version_token:
+          title: version_token
+          type: integer
+      title: SummarySuggestionPatchResponse
       type: object
     addAttachment_request:
       properties:

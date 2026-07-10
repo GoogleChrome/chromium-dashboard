@@ -68,6 +68,52 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorMessage'
+    patch:
+      summary: Update the status or fields of the AI summary suggestion draft
+      operationId: patchSummarySuggestion
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SummarySuggestionPatchRequest'
+      responses:
+        '200':
+          description: Suggestion status updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SummarySuggestionPatchResponse'
+        '400':
+          description: Invalid request parameters or target status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '403':
+          description: Forbidden (insufficient permissions or missing bypass justification)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '404':
+          description: Feature or suggestion not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '409':
+          description: Conflict (stale version token or concurrent edit detected)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
 
   /features/{feature_id}/summary_suggestion/generate:
     parameters:
@@ -2284,3 +2330,39 @@ components:
           type: integer
       required:
         - count
+
+    SummarySuggestionPatchRequest:
+      type: object
+      properties:
+        status:
+          type: string
+        version_token:
+          type: integer
+        suggested_summary:
+          type: string
+        suggested_doc_links:
+          type: array
+          items:
+            type: string
+        baseline_status:
+          type: string
+        baseline_newly_date:
+          type: string
+          format: date
+        baseline_widely_date:
+          type: string
+          format: date
+        bypass_justification:
+          type: string
+      required:
+        - status
+        - version_token
+
+    SummarySuggestionPatchResponse:
+      type: object
+      properties:
+        message:
+          type: string
+        version_token:
+          type: integer
+

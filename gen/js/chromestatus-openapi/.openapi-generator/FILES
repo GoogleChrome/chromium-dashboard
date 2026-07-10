@@ -85,6 +85,8 @@ src/models/SpecMentor.ts
 src/models/StageField.ts
 src/models/StringFieldInfoValue.ts
 src/models/SuccessMessage.ts
+src/models/SummarySuggestionPatchRequest.ts
+src/models/SummarySuggestionPatchResponse.ts
 src/models/SurveyAnswers.ts
 src/models/TokenRefreshResponse.ts
 src/models/UserPermissions.ts

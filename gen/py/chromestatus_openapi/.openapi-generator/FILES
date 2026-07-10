@@ -91,6 +91,8 @@ chromestatus_openapi/models/spec_mentor.py
 chromestatus_openapi/models/stage_field.py
 chromestatus_openapi/models/string_field_info_value.py
 chromestatus_openapi/models/success_message.py
+chromestatus_openapi/models/summary_suggestion_patch_request.py
+chromestatus_openapi/models/summary_suggestion_patch_response.py
 chromestatus_openapi/models/survey_answers.py
 chromestatus_openapi/models/token_refresh_response.py
 chromestatus_openapi/models/user_permissions.py

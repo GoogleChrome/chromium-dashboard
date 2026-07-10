@@ -10,6 +10,7 @@ test('Demo 6: AI Pipeline Trust & Grounded Evaluation', async () => {
 
   console.log('[Demo 6] Executing offline evaluation pipeline (scripts/eval_summaries.py) on spam test dataset...');
   
+  // We run the script inside the container's virtual environment
   const command = './cs-env/bin/python3 scripts/eval_summaries.py --dataset scripts/eval_data/feature_spam_test.yaml --prompt-version 2';
   
   try {
@@ -19,6 +20,7 @@ test('Demo 6: AI Pipeline Trust & Grounded Evaluation', async () => {
       console.error('[Demo 6] Evaluator stderr:\n', stderr);
     }
     
+    // Assertions for pipeline trust and grounded evaluation PASS scorecard!
     expect(stdout).toContain('Average Clarity & Style: 5.00/5');
     expect(stdout).toContain('Average Accuracy & Drift: 5.00/5');
     expect(stdout).toContain('Average Links & Baseline: 5.00/5');

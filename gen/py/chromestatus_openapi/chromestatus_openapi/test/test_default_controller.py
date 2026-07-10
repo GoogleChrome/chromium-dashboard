@@ -43,6 +43,8 @@ from chromestatus_openapi.models.set_star_request import SetStarRequest  # noqa:
 from chromestatus_openapi.models.sign_in_request import SignInRequest  # noqa: E501
 from chromestatus_openapi.models.spec_mentor import SpecMentor  # noqa: E501
 from chromestatus_openapi.models.success_message import SuccessMessage  # noqa: E501
+from chromestatus_openapi.models.summary_suggestion_patch_request import SummarySuggestionPatchRequest  # noqa: E501
+from chromestatus_openapi.models.summary_suggestion_patch_response import SummarySuggestionPatchResponse  # noqa: E501
 from chromestatus_openapi.test import BaseTestCase
 
 
@@ -712,6 +714,25 @@ class TestDefaultController(BaseTestCase):
             '/api/v0/logout',
             method='POST',
             headers=headers)
+        self.assert200(response,
+                       'Response body is : ' + response.data.decode('utf-8'))
+
+    def test_patch_summary_suggestion(self):
+        """Test case for patch_summary_suggestion
+
+        Update the status or fields of the AI summary suggestion draft
+        """
+        summary_suggestion_patch_request = {"bypass_justification":"bypass_justification","suggested_summary":"suggested_summary","suggested_doc_links":["suggested_doc_links","suggested_doc_links"],"version_token":0,"baseline_widely_date":"2000-01-23","baseline_status":"baseline_status","baseline_newly_date":"2000-01-23","status":"status"}
+        headers = { 
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+        }
+        response = self.client.open(
+            '/api/v0/features/{feature_id}/summary_suggestion'.format(feature_id=56),
+            method='PATCH',
+            headers=headers,
+            data=json.dumps(summary_suggestion_patch_request),
+            content_type='application/json')
         self.assert200(response,
                        'Response body is : ' + response.data.decode('utf-8'))
 

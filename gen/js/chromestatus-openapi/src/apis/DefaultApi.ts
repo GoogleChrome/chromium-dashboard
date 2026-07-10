@@ -56,6 +56,8 @@ import type {
   SignInRequest,
   SpecMentor,
   SuccessMessage,
+  SummarySuggestionPatchRequest,
+  SummarySuggestionPatchResponse,
 } from '../models/index';
 import {
     AccountResponseFromJSON,
@@ -140,6 +142,10 @@ import {
     SpecMentorToJSON,
     SuccessMessageFromJSON,
     SuccessMessageToJSON,
+    SummarySuggestionPatchRequestFromJSON,
+    SummarySuggestionPatchRequestToJSON,
+    SummarySuggestionPatchResponseFromJSON,
+    SummarySuggestionPatchResponseToJSON,
 } from '../models/index';
 
 export interface AddAttachmentRequest {
@@ -279,6 +285,11 @@ export interface ListFeatureLatencyRequest {
 
 export interface ListSpecMentorsRequest {
     after?: Date;
+}
+
+export interface PatchSummarySuggestionRequest {
+    featureId: number;
+    summarySuggestionPatchRequest: SummarySuggestionPatchRequest;
 }
 
 export interface PostIntentToBlinkDevRequest {
@@ -948,6 +959,22 @@ export interface DefaultApiInterface {
      * Log out the current user
      */
     logoutUser(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SuccessMessage>;
+
+    /**
+     * 
+     * @summary Update the status or fields of the AI summary suggestion draft
+     * @param {number} featureId Feature ID
+     * @param {SummarySuggestionPatchRequest} summarySuggestionPatchRequest 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApiInterface
+     */
+    patchSummarySuggestionRaw(requestParameters: PatchSummarySuggestionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SummarySuggestionPatchResponse>>;
+
+    /**
+     * Update the status or fields of the AI summary suggestion draft
+     */
+    patchSummarySuggestion(requestParameters: PatchSummarySuggestionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SummarySuggestionPatchResponse>;
 
     /**
      * 
@@ -2521,6 +2548,49 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
      */
     async logoutUser(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SuccessMessage> {
         const response = await this.logoutUserRaw(initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Update the status or fields of the AI summary suggestion draft
+     */
+    async patchSummarySuggestionRaw(requestParameters: PatchSummarySuggestionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SummarySuggestionPatchResponse>> {
+        if (requestParameters['featureId'] == null) {
+            throw new runtime.RequiredError(
+                'featureId',
+                'Required parameter "featureId" was null or undefined when calling patchSummarySuggestion().'
+            );
+        }
+
+        if (requestParameters['summarySuggestionPatchRequest'] == null) {
+            throw new runtime.RequiredError(
+                'summarySuggestionPatchRequest',
+                'Required parameter "summarySuggestionPatchRequest" was null or undefined when calling patchSummarySuggestion().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        const response = await this.request({
+            path: `/features/{feature_id}/summary_suggestion`.replace(`{${"feature_id"}}`, encodeURIComponent(String(requestParameters['featureId']))),
+            method: 'PATCH',
+            headers: headerParameters,
+            query: queryParameters,
+            body: SummarySuggestionPatchRequestToJSON(requestParameters['summarySuggestionPatchRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => SummarySuggestionPatchResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Update the status or fields of the AI summary suggestion draft
+     */
+    async patchSummarySuggestion(requestParameters: PatchSummarySuggestionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SummarySuggestionPatchResponse> {
+        const response = await this.patchSummarySuggestionRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
