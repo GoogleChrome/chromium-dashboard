@@ -21,13 +21,17 @@ import json
 import logging
 import re
 from typing import Any, Optional
-from fastspec.errors import APIError
 from urllib.error import HTTPError
 from urllib.parse import urlparse
 
 import requests
 import validators
+from fastspec.errors import APIError
 from ghapi.core import GhApi
+
+import settings
+from framework import secrets
+
 
 def _get_error_code(e: Exception) -> Optional[int]:
     """Get the HTTP status code from an exception."""
@@ -39,8 +43,6 @@ def _get_error_code(e: Exception) -> Optional[int]:
             pass
     return None
 
-import settings
-from framework import secrets
 
 github_api_client = None
 
