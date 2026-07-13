@@ -24,6 +24,7 @@ and relationships to other data entities.
 
 from __future__ import annotations
 
+import datetime
 from typing import Any, Optional
 
 from google.cloud import ndb  # type: ignore
@@ -443,3 +444,83 @@ class Stage(ndb.Model):
 
     archived = ndb.BooleanProperty(default=False)
     created = ndb.DateTimeProperty(auto_now_add=True)
+
+
+class FeatureSummarySuggestion(ndb.Model):
+    """An AI-generated summary and documentation link suggestion for a FeatureEntry.
+
+    Maintains a 1-to-1 relationship with `FeatureEntry` where the entity key is
+    explicitly structured as `ndb.Key('FeatureSummarySuggestion', feature_id)`.
+    Optimistic Concurrency Control (OCC) is enforced via `version_token` without
+    requiring Datastore transactions (`@ndb.transactional`). String enum
+    properties (`status` and `baseline_status`) serialize directly to raw string
+    values without integer conversion helpers.
+    """
+
+    status = ndb.StringProperty(
+        default=core_enums.SummarySuggestionStatus.PROPOSED
+    )
+    baseline_status = ndb.StringProperty()
+    suggested_summary = ndb.TextProperty()
+    suggested_doc_links = ndb.StringProperty(repeated=True)
+    version_token = ndb.IntegerProperty(default=1)
+    generation_token = ndb.StringProperty()
+    lease_expiry = ndb.DateTimeProperty(tzinfo=datetime.timezone.utc)
+    source_fingerprint = ndb.StringProperty()
+    original_summary = ndb.TextProperty()
+    original_doc_links = ndb.StringProperty(repeated=True)
+    created = ndb.DateTimeProperty(
+        auto_now_add=True, tzinfo=datetime.timezone.utc
+    )
+    updated = ndb.DateTimeProperty(auto_now=True, tzinfo=datetime.timezone.utc)
+
+
+class FeatureSummaryProgressStep(ndb.Model):
+    """A granular timeline event tracking background AI summary generation.
+
+    Entities are parented under a `FeatureSummarySuggestion` key (`ndb.Key(
+    'FeatureSummarySuggestion', feature_id, 'FeatureSummaryProgressStep', step_id_or_seq)`)
+    to allow strongly consistent ancestor queries. Both `step_id` and `status`
+    store string representation values directly.
+    """
+
+    step_id = ndb.StringProperty(required=True)
+    status = ndb.StringProperty(required=True)
+    start_timestamp = ndb.DateTimeProperty(
+        required=True, tzinfo=datetime.timezone.utc
+    )
+    end_timestamp = ndb.DateTimeProperty(tzinfo=datetime.timezone.utc)
+    message = ndb.TextProperty()
+    tool_name = ndb.StringProperty()
+    attempt_count = ndb.IntegerProperty(default=1)
+
+    @classmethod
+    def clear_timeline(cls, feature_id: int, keep_count: int = 20) -> None:
+        """Prune historical generation progress steps, retaining the most recent.
+
+        Queries ancestor keys sorted by `start_timestamp` descending, keeping
+        exactly `keep_count` steps and batch-deleting any older excess entries.
+        Using `keys_only=True` avoids loading full step text properties into memory.
+        """
+        parent_key = ndb.Key('FeatureSummarySuggestion', feature_id)
+        step_keys = (
+            cls.query(ancestor=parent_key)
+            .order(-cls.start_timestamp)
+            .fetch(keys_only=True)
+        )
+        if len(step_keys) > keep_count:
+            excess_keys = step_keys[keep_count:]
+            ndb.delete_multi(excess_keys)
+
+
+class MilestoneCuration(ndb.Model):
+    """Tracks editorial state and curation progress across a specific release milestone.
+
+    Entities are keyed directly by string representation of the milestone
+    (`ndb.Key('MilestoneCuration', str(milestone))` or `id=str(milestone)`).
+    """
+
+    milestone = ndb.IntegerProperty(required=True)
+    curator_email = ndb.StringProperty()
+    status = ndb.StringProperty(default='PENDING')
+    updated = ndb.DateTimeProperty(auto_now=True, tzinfo=datetime.timezone.utc)
