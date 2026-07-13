@@ -10,7 +10,7 @@ gunicorn==26.0.0
 mypy==2.1.0
 types-protobuf
 types-redis
-types-requests==2.33.0.20260518
+types-requests==2.33.0.20260712
 urllib3==2.7.0
 types-setuptools
 types-pytz
