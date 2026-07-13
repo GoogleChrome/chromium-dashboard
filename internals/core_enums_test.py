@@ -117,3 +117,81 @@ class EnumsFunctionsTest(testing_config.CustomTestCase):
             'impl_status_chrome', 'abc'
         )
         self.assertEqual(-1, actual)
+
+
+class AIReleaseNotesEnumsTest(testing_config.CustomTestCase):
+    """Tests for AI release notes string enums and constants."""
+
+    def test_summary_suggestion_status_members(self):
+        """Verify SummarySuggestionStatus string literals and member count."""
+        self.assertEqual(core_enums.SummarySuggestionStatus.UNKNOWN, 'UNKNOWN')
+        self.assertEqual(
+            core_enums.SummarySuggestionStatus.PROPOSED, 'PROPOSED'
+        )
+        self.assertEqual(core_enums.SummarySuggestionStatus.PENDING, 'PENDING')
+        self.assertEqual(core_enums.SummarySuggestionStatus.APPLIED, 'APPLIED')
+        self.assertEqual(
+            core_enums.SummarySuggestionStatus.REJECTED, 'REJECTED'
+        )
+        self.assertEqual(
+            core_enums.SummarySuggestionStatus.DISCARDED, 'DISCARDED'
+        )
+        self.assertEqual(
+            core_enums.SummarySuggestionStatus.BYPASSED, 'BYPASSED'
+        )
+        self.assertEqual(core_enums.SummarySuggestionStatus.SKIPPED, 'SKIPPED')
+        self.assertEqual(len(core_enums.SummarySuggestionStatus), 8)
+
+    def test_progress_step_status_members(self):
+        """Verify ProgressStepStatus string literals and member count."""
+        self.assertEqual(core_enums.ProgressStepStatus.UNKNOWN, 'UNKNOWN')
+        self.assertEqual(core_enums.ProgressStepStatus.START, 'START')
+        self.assertEqual(
+            core_enums.ProgressStepStatus.IN_PROGRESS, 'IN_PROGRESS'
+        )
+        self.assertEqual(core_enums.ProgressStepStatus.SUCCESS, 'SUCCESS')
+        self.assertEqual(core_enums.ProgressStepStatus.FAILED, 'FAILED')
+        self.assertEqual(core_enums.ProgressStepStatus.RETRYING, 'RETRYING')
+        self.assertEqual(len(core_enums.ProgressStepStatus), 6)
+
+    def test_progress_step_id_members(self):
+        """Verify ProgressStepId string literals and member count."""
+        self.assertEqual(core_enums.ProgressStepId.UNKNOWN, 'UNKNOWN')
+        self.assertEqual(core_enums.ProgressStepId.START, 'START')
+        self.assertEqual(core_enums.ProgressStepId.SEARCH_MDN, 'SEARCH_MDN')
+        self.assertEqual(core_enums.ProgressStepId.READ_SPEC, 'READ_SPEC')
+        self.assertEqual(
+            core_enums.ProgressStepId.LLM_GENERATION, 'LLM_GENERATION'
+        )
+        self.assertEqual(core_enums.ProgressStepId.EVALUATION, 'EVALUATION')
+        self.assertEqual(core_enums.ProgressStepId.SUCCESS, 'SUCCESS')
+        self.assertEqual(len(core_enums.ProgressStepId), 7)
+
+    def test_ai_summary_tool_name_members(self):
+        """Verify AISummaryToolName declaration values and member count."""
+        self.assertEqual(
+            core_enums.AISummaryToolName.SEARCH_MDN, 'search_mdn_tool'
+        )
+        self.assertEqual(
+            core_enums.AISummaryToolName.VERIFY_DOC_LINK, 'verify_doc_link_tool'
+        )
+        self.assertEqual(
+            core_enums.AISummaryToolName.READ_SPEC_LINK, 'read_spec_link_tool'
+        )
+        self.assertEqual(len(core_enums.AISummaryToolName), 3)
+
+    def test_baseline_status_members(self):
+        """Verify BaselineStatus string values and member count."""
+        self.assertEqual(core_enums.BaselineStatus.NONE, 'none')
+        self.assertEqual(core_enums.BaselineStatus.LIMITED, 'limited')
+        self.assertEqual(core_enums.BaselineStatus.NEWLY, 'newly')
+        self.assertEqual(core_enums.BaselineStatus.WIDELY, 'widely')
+        self.assertEqual(len(core_enums.BaselineStatus), 4)
+
+    def test_string_enums_isinstance_str(self):
+        """Confirm our enums inherit from str for seamless API / NDB usage."""
+        self.assertIsInstance(core_enums.SummarySuggestionStatus.PROPOSED, str)
+        self.assertIsInstance(core_enums.ProgressStepStatus.IN_PROGRESS, str)
+        self.assertIsInstance(core_enums.ProgressStepId.LLM_GENERATION, str)
+        self.assertIsInstance(core_enums.AISummaryToolName.SEARCH_MDN, str)
+        self.assertIsInstance(core_enums.BaselineStatus.WIDELY, str)

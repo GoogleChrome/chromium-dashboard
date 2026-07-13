@@ -991,3 +991,87 @@ def convert_enum_string_to_int(property_name, value):
 def is_enum_field(property_name):
     """Return True if the given property name maps to an enum."""
     return property_name in PROPERTY_NAMES_TO_ENUM_DICTS
+
+
+# Enums for AI Release Notes and Summary Suggestions review workflows.
+class SummarySuggestionStatus(str, Enum):
+    """Lifecycle statuses for AI-generated FeatureSummarySuggestion entities.
+
+    Tracks human review decisions (`PROPOSED`, `APPLIED`, `REJECTED`,
+    `BYPASSED`) across the summary suggestion state machine. Inheriting from
+    `str` enables direct serialization to JSON API payloads and NDB string
+    properties without integer mapping tables or database migrations.
+    """
+
+    UNKNOWN = 'UNKNOWN'
+    PROPOSED = 'PROPOSED'
+    PENDING = 'PENDING'
+    APPLIED = 'APPLIED'
+    REJECTED = 'REJECTED'
+    DISCARDED = 'DISCARDED'
+    BYPASSED = 'BYPASSED'
+    SKIPPED = 'SKIPPED'
+
+
+class ProgressStepStatus(str, Enum):
+    """Statuses for individual steps in an AI generation timeline.
+
+    Paired with `ProgressStepId` in background tasks to report live generation
+    state (`IN_PROGRESS`, `SUCCESS`, `FAILED`, `RETRYING`). Using string enum
+    values enables real-time status reporting and UI progress bars without
+    client-side code lookups.
+    """
+
+    UNKNOWN = 'UNKNOWN'
+    START = 'START'
+    IN_PROGRESS = 'IN_PROGRESS'
+    SUCCESS = 'SUCCESS'
+    FAILED = 'FAILED'
+    RETRYING = 'RETRYING'
+
+
+class ProgressStepId(str, Enum):
+    """Canonical step identifiers for an AI summary generation workflow.
+
+    Logged by generation workers to track progress through discrete stages
+    (`SEARCH_MDN`, `READ_SPEC`, `LLM_GENERATION`, `EVALUATION`). Structured string
+    identifiers prevent typo-induced pipeline failures and enable uniform
+    telemetry across background tasks.
+    """
+
+    UNKNOWN = 'UNKNOWN'
+    START = 'START'
+    SEARCH_MDN = 'SEARCH_MDN'
+    READ_SPEC = 'READ_SPEC'
+    LLM_GENERATION = 'LLM_GENERATION'
+    EVALUATION = 'EVALUATION'
+    SUCCESS = 'SUCCESS'
+
+
+class AISummaryToolName(str, Enum):
+    """Names of sandbox tools available to the Gemini Summary Generator.
+
+    Checked by backend dispatch loops when the LLM requests external
+    documentation or specification lookups. The string values match exact
+    function call declaration names expected by the Gemini API tool-calling
+    framework (`search_mdn_tool`, etc.).
+    """
+
+    SEARCH_MDN = 'search_mdn_tool'
+    VERIFY_DOC_LINK = 'verify_doc_link_tool'
+    READ_SPEC_LINK = 'read_spec_link_tool'
+
+
+class BaselineStatus(str, Enum):
+    """WebDX Baseline compatibility status constants.
+
+    Serialized directly in feature API responses to render compatibility badges
+    in the frontend dashboard. String literal values (`'none'`, `'limited'`,
+    `'newly'`, `'widely'`) match exact external WebDX and `web-features` dataset
+    definitions.
+    """
+
+    NONE = 'none'
+    LIMITED = 'limited'
+    NEWLY = 'newly'
+    WIDELY = 'widely'

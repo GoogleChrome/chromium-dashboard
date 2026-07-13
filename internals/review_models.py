@@ -274,11 +274,17 @@ class Amendment(ndb.Model):
 class Activity(ndb.Model):
     """An activity log entry (comment + amendments) on a gate or feature."""
 
-    # Log types
+    # Log types (stored in NDB as integer properties for backward compatibility).
     USER_CHANGE = 1
     MILESTONE_RESET = 2
     USER_COMMENT = 3
     SYSTEM_CHANGE = 4
+    # Editorial bypass audit log types. Created when an editor bypasses or reverts
+    # review/summary requirements, enabling clear audit trails in activity feeds
+    # (`get_activities`). Stored as integers to maintain direct compatibility with
+    # the existing `log_type` IntegerProperty without database schema migrations.
+    BYPASS_APPLIED = 5
+    BYPASS_REVERTED = 6
 
     feature_id = ndb.IntegerProperty(required=True)
     gate_id = (
