@@ -17,12 +17,10 @@
 
 from chromestatus_openapi.models import (
     FeatureLinksResponse,
-    FeatureLinksSample,
     FeatureLinksSummaryResponse,
 )
 
 from framework import basehandlers, permissions
-from internals.core_models import FeatureEntry
 from internals.feature_links import (
     get_by_feature_id,
     get_feature_links_samples,
@@ -33,26 +31,16 @@ from internals.feature_links import (
 class FeatureLinksAPI(basehandlers.APIHandler):
     """FeatureLinksAPI will return the links and its information to the client."""
 
-    def get_feature_links(self, feature_id: int, update_stale_links: bool):
-        """Get links for a feature."""
-        feature = FeatureEntry.get_by_id(feature_id)
-        if not feature:
-            self.abort(404, msg='Feature not found')
-        return get_by_feature_id(feature_id, update_stale_links)
-
     def do_get(self, **kwargs):
         """Get links for a feature."""
-        feature_id = self.get_int_arg('feature_id', None)
+        feature = self.get_specified_feature(**kwargs)
         update_stale_links = self.get_bool_arg('update_stale_links', True)
-        if feature_id:
-            data, has_stale_links = self.get_feature_links(
-                feature_id, update_stale_links
-            )
-            return FeatureLinksResponse.from_dict(
-                {'data': data, 'has_stale_links': has_stale_links}
-            )
-        else:
-            self.abort(400, msg='Missing feature_id')
+        data, has_stale_links = get_by_feature_id(
+            feature.key.integer_id(), update_stale_links
+        )
+        return FeatureLinksResponse.from_dict(
+            {'data': data, 'has_stale_links': has_stale_links}
+        )
 
 
 class FeatureLinksSummaryAPI(basehandlers.APIHandler):
@@ -76,6 +64,5 @@ class FeatureLinksSamplesAPI(basehandlers.APIHandler):
         type = self.request.args.get('type', None)
         is_error = self.get_bool_arg('is_error', None)
         if domain:
-            return FeatureLinksSample.from_dict(
-                get_feature_links_samples(domain, type, is_error)
-            )  # noqa: E501
+            return get_feature_links_samples(domain, type, is_error)
+        return []

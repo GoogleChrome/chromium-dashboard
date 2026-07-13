@@ -223,9 +223,7 @@ class StagesAPITest(testing_config.CustomTestCase):
         with test_app.test_request_context(f'{self.request_path}1/stages/3001'):
             with self.assertRaises(werkzeug.exceptions.BadRequest):
                 self.handler.do_get(feature_id=1, stage_id=3001)
-        mock_abort.assert_called_once_with(
-            404, description='Stage 3001 not found.'
-        )
+        mock_abort.assert_called_once_with(404, description='Stage not found')
 
     @mock.patch('flask.abort')
     def test_get__no_id(self, mock_abort):
@@ -235,7 +233,7 @@ class StagesAPITest(testing_config.CustomTestCase):
             with self.assertRaises(werkzeug.exceptions.BadRequest):
                 self.handler.do_get(feature_id=1)
         mock_abort.assert_called_once_with(
-            400, description='No Stage ID specified.'
+            400, description="Missing parameter 'stage_id'"
         )
 
     def test_get__valid(self):
@@ -421,6 +419,94 @@ class StagesAPITest(testing_config.CustomTestCase):
             actual = self.handler.do_get(feature_id=1, stage_id=40)
 
         self.assertEqual(expect, actual)
+
+    @mock.patch('flask.abort')
+    def test_get__feature_not_found(self, mock_abort):
+        """Raises 404 if the feature ID does not match any feature."""
+        mock_abort.side_effect = werkzeug.exceptions.BadRequest
+        with test_app.test_request_context(
+            f'{self.request_path}12345/stages/10'
+        ):
+            with self.assertRaises(werkzeug.exceptions.BadRequest):
+                self.handler.do_get(feature_id=12345, stage_id=10)
+        mock_abort.assert_called_once_with(404, description='Feature not found')
+
+    @mock.patch('flask.abort')
+    def test_get__forbidden(self, mock_abort):
+        """Raises 403 if the user does not have permission to view the feature."""
+        confidential_feature = FeatureEntry(
+            name='confidential feature',
+            summary='secret',
+            category=1,
+            confidential=True,
+        )
+        confidential_feature.put()
+        cf_id = confidential_feature.key.integer_id()
+
+        mock_abort.side_effect = werkzeug.exceptions.BadRequest
+        path = f'{self.request_path}{cf_id}/stages/10'
+        testing_config.sign_out()
+        testing_config.sign_in('regular_user@example.com', 123)
+        with test_app.test_request_context(path):
+            with self.assertRaises(werkzeug.exceptions.BadRequest):
+                self.handler.do_get(feature_id=cf_id, stage_id=10)
+        mock_abort.assert_called_once_with(
+            403, description='Cannot view that feature'
+        )
+        testing_config.sign_out()
+
+    def test_get__admin_can_view_confidential(self):
+        """An admin can view stages for a confidential feature."""
+        admin_user = AppUser(email='admin@example.com', is_admin=True)
+        admin_user.put()
+
+        confidential_feature = FeatureEntry(
+            name='confidential feature',
+            summary='secret',
+            category=1,
+            confidential=True,
+        )
+        confidential_feature.put()
+        cf_id = confidential_feature.key.integer_id()
+
+        stage_cf = Stage(feature_id=cf_id, stage_type=150, created=self.now)
+        stage_cf.put()
+        stage_cf_id = stage_cf.key.integer_id()
+
+        testing_config.sign_out()
+        testing_config.sign_in('admin@example.com', 123456)
+        path = f'{self.request_path}{cf_id}/stages/{stage_cf_id}'
+        with test_app.test_request_context(path):
+            actual = self.handler.do_get(feature_id=cf_id, stage_id=stage_cf_id)
+        testing_config.sign_out()
+
+        self.assertEqual(cf_id, actual['feature_id'])
+        self.assertEqual(stage_cf_id, actual['id'])
+
+    @mock.patch('flask.abort')
+    def test_get__stage_belongs_to_other_feature(self, mock_abort):
+        """Raises 404 if the stage belongs to a different feature."""
+        mock_abort.side_effect = werkzeug.exceptions.BadRequest
+        # Stage 30 has feature_id = 99 (created in setUp). Request via feature 1!
+        with test_app.test_request_context(f'{self.request_path}1/stages/30'):
+            with self.assertRaises(werkzeug.exceptions.BadRequest):
+                self.handler.do_get(feature_id=1, stage_id=30)
+        mock_abort.assert_called_once_with(
+            400, description='Stage does not belong to given feature'
+        )
+
+    @mock.patch('flask.abort')
+    def test_get__invalid_stage_id(self, mock_abort):
+        """Raises 400 if the stage ID is not an integer."""
+        mock_abort.side_effect = werkzeug.exceptions.BadRequest
+        with test_app.test_request_context(
+            f'{self.request_path}1/stages/not-an-int'
+        ):
+            with self.assertRaises(werkzeug.exceptions.BadRequest):
+                self.handler.do_get(feature_id=1, stage_id='not-an-int')
+        mock_abort.assert_called_once_with(
+            400, description="Parameter 'stage_id' was not an int"
+        )
 
     @mock.patch('flask.abort')
     def test_post__not_allowed(self, mock_abort):
