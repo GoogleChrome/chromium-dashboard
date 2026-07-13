@@ -102,6 +102,15 @@ class ActivityTest(testing_config.CustomTestCase):
         )
         self.assertEqual([], actual_3)
 
+    def test_log_types(self):
+        """Verifies Activity log type constants."""
+        self.assertEqual(1, Activity.USER_CHANGE)
+        self.assertEqual(2, Activity.MILESTONE_RESET)
+        self.assertEqual(3, Activity.USER_COMMENT)
+        self.assertEqual(4, Activity.SYSTEM_CHANGE)
+        self.assertEqual(5, Activity.BYPASS_APPLIED)
+        self.assertEqual(6, Activity.BYPASS_REVERTED)
+
 
 class GateTest(testing_config.CustomTestCase):
     """Tests for Gate."""
