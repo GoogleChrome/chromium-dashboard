@@ -152,19 +152,20 @@ class BaseHandler(flask.views.MethodView):
             self.abort(400, msg='Parameter %r was not a bool' % name)
         return val
 
+    def _extract_id_param(self, kwargs, name: str) -> int | None:
+        """Extracts a required integer ID from kwargs."""
+        val = kwargs.get(name) or flask.request.args.get(name)
+        if val is not None:
+            try:
+                return int(val)
+            except ValueError:
+                self.abort(400, msg=f"Parameter '{name}' was not an int")
+        else:
+            self.abort(400, msg=f"Missing parameter '{name}'")
+
     def get_specified_feature(self, **kwargs) -> FeatureEntry:
         """Get the feature specified in the feature_id parameter."""
-        feature_id = kwargs.get('feature_id')
-        if not feature_id:
-            feature_id = self.get_int_arg('feature_id')
-        if not feature_id:
-            try:
-                feature_id = self.get_int_param('feature_id', required=False)
-            except Exception:
-                feature_id = None
-
-        if not feature_id:
-            self.abort(400, msg='Feature ID not specified')
+        feature_id = self._extract_id_param(kwargs, 'feature_id')
 
         # Load feature directly from NDB so as to never get a stale cached copy.
         feature: FeatureEntry | None = FeatureEntry.get_by_id(feature_id)
@@ -182,17 +183,7 @@ class BaseHandler(flask.views.MethodView):
         feature = self.get_specified_feature(**kwargs)
         feature_id = feature.key.integer_id()
 
-        if 'stage_id' in kwargs and kwargs['stage_id'] is not None:
-            stage_id = kwargs['stage_id']
-            try:
-                stage_id = int(stage_id)
-            except (ValueError, TypeError):
-                self.abort(400, msg="Parameter 'stage_id' was not an int")
-            if not stage_id:
-                self.abort(400, msg="Missing parameter 'stage_id'")
-        else:
-            stage_id = self.get_int_param('stage_id', required=True)
-
+        stage_id = self._extract_id_param(kwargs, 'stage_id')
         stage: Stage | None = Stage.get_by_id(stage_id)
         if not stage:
             self.abort(404, msg='Stage not found')
@@ -209,17 +200,7 @@ class BaseHandler(flask.views.MethodView):
         feature = self.get_specified_feature(**kwargs)
         feature_id = feature.key.integer_id()
 
-        if 'gate_id' in kwargs and kwargs['gate_id'] is not None:
-            gate_id = kwargs['gate_id']
-            try:
-                gate_id = int(gate_id)
-            except (ValueError, TypeError):
-                self.abort(400, msg="Parameter 'gate_id' was not an int")
-            if not gate_id:
-                self.abort(400, msg="Missing parameter 'gate_id'")
-        else:
-            gate_id = self.get_int_param('gate_id', required=True)
-
+        gate_id = self._extract_id_param(kwargs, 'gate_id')
         gate: Gate | None = Gate.get_by_id(gate_id)
         if not gate:
             self.abort(404, msg='Gate not found')

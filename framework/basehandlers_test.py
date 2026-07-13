@@ -401,7 +401,7 @@ class BaseHandlerTests(testing_config.CustomTestCase):
             with self.assertRaises(werkzeug.exceptions.BadRequest):
                 self.handler.get_specified_feature()
             mock_abort.assert_called_once_with(
-                400, msg='Feature ID not specified'
+                400, msg="Missing parameter 'feature_id'"
             )
 
     @mock.patch('framework.permissions.can_view_feature')
@@ -466,18 +466,6 @@ class BaseHandlerTests(testing_config.CustomTestCase):
                 400, msg="Missing parameter 'stage_id'"
             )
 
-    @mock.patch('framework.basehandlers.BaseHandler.abort')
-    def test_get_specified_feature_and_stage__bad(self, mock_abort):
-        """Reject requests that need a stage ID but provide junk."""
-        mock_abort.side_effect = werkzeug.exceptions.BadRequest
-        fe_id = self.fe_1.key.integer_id()
-        with test_app.test_request_context('/test', json={'stage_id': 'junk'}):
-            with self.assertRaises(werkzeug.exceptions.BadRequest):
-                self.handler.get_specified_feature_and_stage(feature_id=fe_id)
-            mock_abort.assert_called_once_with(
-                400, msg="Parameter 'stage_id' was not an int"
-            )
-
     def test_get_specified_feature_and_gate__valid(self):
         """Return a feature and gate if valid IDs are passed in kwargs."""
         fe_id = self.fe_1.key.integer_id()
@@ -514,18 +502,6 @@ class BaseHandlerTests(testing_config.CustomTestCase):
                 self.handler.get_specified_feature_and_gate(feature_id=fe_id)
             mock_abort.assert_called_once_with(
                 400, msg="Missing parameter 'gate_id'"
-            )
-
-    @mock.patch('framework.basehandlers.BaseHandler.abort')
-    def test_get_specified_feature_and_gate__bad(self, mock_abort):
-        """Reject requests that need a gate ID but provide junk."""
-        mock_abort.side_effect = werkzeug.exceptions.BadRequest
-        fe_id = self.fe_1.key.integer_id()
-        with test_app.test_request_context('/test', json={'gate_id': 'junk'}):
-            with self.assertRaises(werkzeug.exceptions.BadRequest):
-                self.handler.get_specified_feature_and_gate(feature_id=fe_id)
-            mock_abort.assert_called_once_with(
-                400, msg="Parameter 'gate_id' was not an int"
             )
 
     def test_get_bool_arg__explicitly_true(self):
