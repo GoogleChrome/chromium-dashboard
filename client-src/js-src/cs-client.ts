@@ -615,7 +615,7 @@ export class ChromeStatusClient {
 
   getGates(featureId: number): Promise<{gates: GateDict[]}> {
     return this.doGet(
-      `/features/${featureId}/gates?include_deleted=1`
+      `/features/${featureId}/gates`
     ) as Promise<{gates: GateDict[]}>;
   }
 

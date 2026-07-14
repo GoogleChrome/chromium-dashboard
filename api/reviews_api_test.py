@@ -513,24 +513,8 @@ class GatesAPITest(testing_config.CustomTestCase):
         self.feature_1.put()
 
         with test_app.test_request_context(self.request_path):
-            actual = self.handler.do_get(feature_id=self.feature_id)
-
-        expected = {
-            'gates': [],
-        }
-        self.assertEqual(actual, expected)
-
-    def test_do_get__include_deleted(self):
-        """If a feature is deleted, return gates if include_deleted=1."""
-        self.feature_1.deleted = True
-        self.feature_1.put()
-
-        with test_app.test_request_context(
-            self.request_path + '?include_deleted=1'
-        ):
-            actual = self.handler.do_get(feature_id=self.feature_id)
-
-        self.assertEqual(1, len(actual['gates']))
+            with self.assertRaises(werkzeug.exceptions.Forbidden):
+                self.handler.do_get(feature_id=self.feature_id)
 
 
 class XfnGatesAPITest(testing_config.CustomTestCase):

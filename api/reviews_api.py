@@ -123,7 +123,7 @@ class VotesAPI(basehandlers.APIHandler):
             Vote.NA_REQUESTED,
         )
         is_approving = new_state in Gate.APPROVED_STATES
-        is_editor = permissions.can_edit_feature(user, feature.key.integer_id())
+        is_editor = permissions.can_edit_feature(user, feature)
         approvers = approval_defs.get_approvers(gate.gate_type)
         is_approver = permissions.can_review_gate(
             user, feature, gate, approvers
@@ -163,14 +163,9 @@ class GatesAPI(basehandlers.APIHandler):
 
     def do_get(self, **kwargs) -> dict[str, Any]:
         """Return a list of all gates associated with the given feature."""
-        feature_id = kwargs.get('feature_id', None)
-        feature: FeatureEntry = self.get_specified_feature(
-            feature_id=feature_id
-        )
-        gates: list[Gate] = []
-
-        if not feature.deleted or self.get_bool_arg('include_deleted'):
-            gates = Gate.query(Gate.feature_id == feature_id).fetch()
+        fe: FeatureEntry = self.get_specified_feature(**kwargs)
+        feature_id = fe.key.integer_id()
+        gates: list[Gate] = Gate.query(Gate.feature_id == feature_id).fetch()
 
         dicts = [converters.gate_value_to_json_dict(g) for g in gates]
         for g in dicts:
@@ -222,7 +217,7 @@ class GatesAPI(basehandlers.APIHandler):
 
     def require_permissions(self, user, feature, gate):
         """Abort the request if the user lacks permission to set assignees."""
-        is_editor = permissions.can_edit_feature(user, feature.key.integer_id())
+        is_editor = permissions.can_edit_feature(user, feature)
         approvers = approval_defs.get_approvers(gate.gate_type)
         is_approver = permissions.can_review_gate(
             user, feature, gate, approvers
@@ -307,21 +302,12 @@ class XfnGatesAPI(basehandlers.APIHandler):
 
     def do_post(self, **kwargs) -> dict[str, str]:
         """Add a full set of cross-functional gates to a stage."""
-        feature_id: int = kwargs['feature_id']
-        fe: FeatureEntry | None = self.get_specified_feature(
-            feature_id=feature_id
-        )
-        if fe is None:
-            self.abort(404, msg=f'Feature {feature_id} not found')
-        stage_id: int = kwargs['stage_id']
-        stage: Stage | None = Stage.get_by_id(stage_id)
-        if stage is None:
-            self.abort(404, msg=f'Stage {stage_id} not found')
+        fe, stage = self.get_specified_feature_and_stage(**kwargs)
+        feature_id = fe.key.integer_id()
+        stage_id = stage.key.integer_id()
 
         user: User = self.get_current_user(required=True)
-        is_editor = fe and permissions.can_edit_feature(
-            user, fe.key.integer_id()
-        )
+        is_editor = fe and permissions.can_edit_feature(user, fe)
         is_approver = approval_defs.fields_approvable_by(user)
         if not is_editor and not is_approver:
             self.abort(403, msg='User lacks permission to create gates')
