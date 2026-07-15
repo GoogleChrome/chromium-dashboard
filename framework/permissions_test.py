@@ -348,7 +348,7 @@ class PermissionFunctionTests(testing_config.CustomTestCase):
         # Check in context of specific feature.
         self.check_function_results_with_feature(
             permissions.can_edit_feature,
-            (self.feature_id,),
+            (self.feature_1,),
             unregistered=False,
             registered=False,
             feature_owner=True,

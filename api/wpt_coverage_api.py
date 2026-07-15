@@ -39,7 +39,7 @@ class WPTCoverageAPI(basehandlers.EntitiesAPIHandler):
 
         # Validate the user has edit permissions.
         can_edit = permissions.can_edit_feature(
-            self.get_current_user(), feature_id
+            self.get_current_user(), feature
         )
         if not can_edit:
             self.abort(
@@ -122,7 +122,7 @@ class WPTCoverageAPI(basehandlers.EntitiesAPIHandler):
 
         # Validate the user has edit permissions.
         can_edit = permissions.can_edit_feature(
-            self.get_current_user(), feature_id
+            self.get_current_user(), feature
         )
         if not can_edit:
             self.abort(

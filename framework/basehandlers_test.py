@@ -1528,13 +1528,11 @@ class GetSPATemplateDataTests(testing_config.CustomTestCase):
         testing_config.sign_in('admin@chromium.org', 111)
         with test_app.test_request_context('/must_have_edit'):
             defaults = {'require_edit_feature': True}  # no feature_id.
-            with self.assertRaises(
-                werkzeug.exceptions.InternalServerError
-            ) as cm:
+            with self.assertRaises(werkzeug.exceptions.BadRequest) as cm:
                 basehandlers.get_spa_template_data(self.handler, defaults)
 
         self.assertEqual(
-            cm.exception.description, 'Cannot get feature ID from the URL'
+            cm.exception.description, "Missing parameter 'feature_id'"
         )
 
     def test_get_spa_template_data__edit_perm_anon(self):

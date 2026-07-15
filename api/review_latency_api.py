@@ -37,15 +37,11 @@ PENDING_LATENCY = -2
 
 
 class ReviewLatencyAPI(basehandlers.APIHandler):
-    """Implements the OpenAPI /spec_mentors path."""
+    """Implements the OpenAPI /review-latency path."""
 
     @permissions.require_create_feature
     def do_get(self, **kwargs):
-        """Get a list of matching spec mentors.
-
-        Returns:
-          A list of data on all public origin trials.
-        """
+        """Get information about review latency."""
         today = kwargs.get('today')
         gates = self.get_recently_reviewed_gates(
             DEFAULT_RECENT_DAYS, today=today

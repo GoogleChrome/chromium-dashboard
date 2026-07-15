@@ -896,11 +896,9 @@ def get_spa_template_data(handler_obj, defaults):
 
         # Validate the user has edit permissions and redirect if needed.
         if defaults.get('require_edit_feature'):
-            feature_id = defaults.get('feature_id')
-            if not feature_id:
-                handler_obj.abort(500, msg='Cannot get feature ID from the URL')
+            fe = handler_obj.get_specified_feature(**defaults)
             redirect_resp = permissions.validate_feature_edit_permission(
-                handler_obj, feature_id
+                handler_obj, fe
             )
             if redirect_resp:
                 return redirect_resp
