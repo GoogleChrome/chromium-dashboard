@@ -20,8 +20,6 @@ Provides functions to verify if users have the necessary privileges to
 view, edit, or administer features and other resources.
 """
 
-from typing import Optional
-
 import flask
 from google.cloud import ndb  # type: ignore
 
@@ -95,6 +93,9 @@ def _can_view_confidential_feature_formatted(user: User, feature: dict):
 def can_view_feature(user: User, feature: FeatureEntry) -> bool:
     """Return True if the user is allowed to view the given feature."""
     if not feature:
+        return False
+
+    if feature.deleted and not can_edit_feature(user, feature):
         return False
 
     return not feature.confidential or _can_view_confidential_feature(
@@ -202,18 +203,13 @@ def feature_edit_list(user: User) -> list[int]:
     return list(set([fk.integer_id() for fk in editable_feature_keys]))
 
 
-def can_edit_feature(user: User, feature_id: int) -> bool:
+def can_edit_feature(user: User, feature: FeatureEntry) -> bool:
     """Return True if the user is allowed to edit the given feature."""
     # If the user can edit any feature, they can edit this feature.
     if can_edit_any_feature(user):
         return True
 
-    if not feature_id or not user:
-        return False
-
-    # Load feature directly from NDB so as to never get a stale cached copy.
-    feature: Optional[FeatureEntry] = FeatureEntry.get_by_id(feature_id)
-    if not feature:
+    if not feature or not user:
         return False
 
     email = user.email()
@@ -326,7 +322,7 @@ def validate_feature_create_permission(handler_obj):
 
 
 def validate_feature_edit_permission(
-    handler_obj, feature_id: int
+    handler_obj, fe: FeatureEntry
 ) -> flask.Response | dict:
     """Check if user has permission to edit feature and abort if not."""
     user = handler_obj.get_current_user()
@@ -338,13 +334,14 @@ def validate_feature_edit_permission(
         if redirect:
             return redirect
 
-    # Respond with 404 if feature is not found.
+    # Respond with 404 if feature was not found.
     # Load feature directly from NDB so as to never get a stale cached copy.
-    if FeatureEntry.get_by_id(feature_id) is None:
+    if not fe:
         handler_obj.abort(404, msg='Feature not found')
 
     # Respond with 403 if user does not have edit permission for feature.
-    if not can_edit_feature(user, feature_id):
+    feature_id = fe.key.integer_id()
+    if not can_edit_feature(user, fe):
         handler_obj.abort(403, msg='User cannot edit feature %r' % feature_id)
 
     return {}

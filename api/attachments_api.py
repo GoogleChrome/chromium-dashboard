@@ -28,16 +28,10 @@ class AttachmentsAPI(basehandlers.EntitiesAPIHandler):
     @permissions.require_create_feature
     def do_post(self, **kwargs) -> dict[str, str]:
         """Handle POST requests to create a single attachment."""
-        feature_id: int | None = kwargs.get('feature_id', None)
-
-        if feature_id is None:
-            self.abort(400, msg='Feature ID is required')
+        fe = self.get_specified_feature(**kwargs)
 
         # Validate the user has edit permissions and redirect if needed.
-        redirect_resp = permissions.validate_feature_edit_permission(
-            self, feature_id
-        )
-        if redirect_resp:
+        if permissions.validate_feature_edit_permission(self, fe):
             self.abort(403, msg='User lacks permission to edit')
 
         logging.info('files are %r', self.request.files)
@@ -50,7 +44,7 @@ class AttachmentsAPI(basehandlers.EntitiesAPIHandler):
         content = file.read()
 
         attach = attachments.store_attachment(
-            feature_id, content, file.mimetype
+            fe.key.integer_id(), content, file.mimetype
         )
         url = attachments.get_attachment_url(attach)
         return AddAttachmentResponse.from_dict(
