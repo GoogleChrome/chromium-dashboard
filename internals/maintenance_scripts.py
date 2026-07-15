@@ -1818,20 +1818,3 @@ def safe_plain_text_to_markdown(text: str | None) -> str:
     # 2. Idempotently escape unescaped asterisks and underscores using negative lookbehind
     safe_text = re.sub(r'(?<!\\)([\*_])', r'\\\1', safe_text)
     return safe_text.strip()
-
-
-def markdown_to_plain_text(text: str | None) -> str:
-    r"""Reversible helper converting sanitized markdown back to plain text.
-
-    Unescapes markdown symbols (\\* -> *, \\_ -> _) and restores HTML brackets.
-    """
-    if not text:
-        return ''
-
-    # 1. Unescape markdown backslashes for * and _
-    plain = re.sub(r'\\([\*_])', r'\1', text)
-
-    # 2. Restore sanitized HTML brackets
-    plain = plain.replace('&lt;', '<').replace('&gt;', '>')
-
-    return plain.strip()

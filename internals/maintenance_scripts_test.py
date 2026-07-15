@@ -3023,12 +3023,3 @@ class MarkdownConvertersTest(testing_config.CustomTestCase):
                     first_pass
                 )
                 self.assertEqual(first_pass, second_pass)
-
-    def test_markdown_to_plain_text__reversibility(self):
-        """Verifies unescaping markdown symbols and restoring HTML tags."""
-        self.assertEqual('', maintenance_scripts.markdown_to_plain_text(None))
-        md = 'Here is &lt;tag&gt; and \\*escaped\\* asterisk \\_underscore\\_'
-        expected = 'Here is <tag> and *escaped* asterisk _underscore_'
-        self.assertEqual(
-            expected, maintenance_scripts.markdown_to_plain_text(md)
-        )
