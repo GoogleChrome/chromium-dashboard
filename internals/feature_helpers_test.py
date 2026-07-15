@@ -1821,6 +1821,66 @@ class ShippingFeatureHelpersTest(testing_config.CustomTestCase):
             state=Vote.APPROVED,
         ).put()
 
+        # Feature 13: Deleted (Should be excluded).
+        self.feature_13 = FeatureEntry(
+            id=13,
+            name='Feature 13 (Deleted)',
+            summary='sum',
+            category=1,
+            feature_type=core_enums.FEATURE_TYPE_INCUBATE_ID,
+            finch_name='feature13Finch',
+            owner_emails=['owner@example.com'],
+            bug_url='https://example.com/bug13',
+            launch_bug_url='https://example.com/launch13',
+            deleted=True,
+        )
+        self.feature_13.put()
+        self.stage_13 = Stage(
+            id=113,
+            feature_id=13,
+            stage_type=160,
+            intent_thread_url='https://example.com/intent13',
+            milestones=MilestoneSet(desktop_first=self.milestone),
+        )
+        self.stage_13.put()
+        Gate(
+            id=1013,
+            feature_id=13,
+            stage_id=113,
+            gate_type=core_enums.GATE_API_SHIP,
+            state=Vote.APPROVED,
+        ).put()
+
+        # Feature 14: Archived Stage (Should be excluded).
+        self.feature_14 = FeatureEntry(
+            id=14,
+            name='Feature 14 (Archived Stage)',
+            summary='sum',
+            category=1,
+            feature_type=core_enums.FEATURE_TYPE_INCUBATE_ID,
+            finch_name='feature14Finch',
+            owner_emails=['owner@example.com'],
+            bug_url='https://example.com/bug14',
+            launch_bug_url='https://example.com/launch14',
+        )
+        self.feature_14.put()
+        self.stage_14 = Stage(
+            id=114,
+            feature_id=14,
+            stage_type=160,
+            intent_thread_url='https://example.com/intent14',
+            milestones=MilestoneSet(desktop_first=self.milestone),
+            archived=True,
+        )
+        self.stage_14.put()
+        Gate(
+            id=1014,
+            feature_id=14,
+            stage_id=114,
+            gate_type=core_enums.GATE_API_SHIP,
+            state=Vote.APPROVED,
+        ).put()
+
     def test_validate_feature_in_chromium(self):
         """Tests parsing logic for JSON and C++ mock data."""
         # Case 1: Found in JSON and stable -> No missing criteria.
@@ -1953,6 +2013,8 @@ class ShippingFeatureHelpersTest(testing_config.CustomTestCase):
             self.stage_10,
             self.stage_11,
             self.stage_12,
+            self.stage_13,
+            self.stage_14,
         ]
 
         complete, incomplete = feature_helpers.aggregate_shipping_features(
@@ -1973,6 +2035,8 @@ class ShippingFeatureHelpersTest(testing_config.CustomTestCase):
             ],
         )
         self.assertNotIn('Feature 12 (Confidential)', complete_names)
+        self.assertNotIn('Feature 13 (Deleted)', complete_names)
+        self.assertNotIn('Feature 14 (Archived Stage)', complete_names)
 
         # Verify Incomplete Features
         self.assertEqual(len(incomplete), 6)
@@ -1996,3 +2060,5 @@ class ShippingFeatureHelpersTest(testing_config.CustomTestCase):
         )  # noqa: E501
 
         self.assertNotIn('Feature 12 (Confidential)', incomplete_map)
+        self.assertNotIn('Feature 13 (Deleted)', incomplete_map)
+        self.assertNotIn('Feature 14 (Archived Stage)', incomplete_map)

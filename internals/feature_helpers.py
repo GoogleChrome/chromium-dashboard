@@ -1118,27 +1118,27 @@ def aggregate_shipping_features(
     incomplete_features: list[tuple[ShippingFeatureInfo, list[str]]] = []
 
     for stage in shipping_stages:
-        feature: FeatureEntry | None = FeatureEntry.get_by_id(stage.feature_id)
-        if feature is None:
+        fe = FeatureEntry.get_by_id(stage.feature_id)
+        if fe is None:
             logging.warning(f'Feature {stage.feature_id} not found.')
             continue
 
         # WP feature entries cannot be confidential, so this should not matter.
         # But, if they ever did exist, we exclude them from the report because
         # the user is not authenticated.
-        if feature.confidential:
+        if fe.confidential or fe.deleted or stage.archived:
             continue
 
-        feature_info = build_feature_info(feature, stage)
+        feature_info = build_feature_info(fe, stage)
 
         # PSA features do not require strict validation
-        if feature.feature_type == core_enums.FEATURE_TYPE_CODE_CHANGE_ID:
+        if fe.feature_type == core_enums.FEATURE_TYPE_CODE_CHANGE_ID:
             complete_features.append(feature_info)
             continue
 
         # Perform strict validation
         criteria_missing = validate_shipping_criteria(
-            feature, stage, enabled_features_json, content_features_file
+            fe, stage, enabled_features_json, content_features_file
         )
 
         if criteria_missing:
