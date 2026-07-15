@@ -1123,6 +1123,12 @@ def aggregate_shipping_features(
             logging.warning(f'Feature {stage.feature_id} not found.')
             continue
 
+        # WP feature entries cannot be confidential, so this should not matter.
+        # But, if they ever did exist, we exclude them from the report because
+        # the user is not authenticated.
+        if feature.confidential:
+            continue
+
         feature_info = build_feature_info(feature, stage)
 
         # PSA features do not require strict validation

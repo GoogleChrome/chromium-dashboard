@@ -1791,6 +1791,36 @@ class ShippingFeatureHelpersTest(testing_config.CustomTestCase):
             state=Vote.APPROVED,
         ).put()
 
+        # Feature 12: Confidential (Should be excluded).
+        self.feature_12 = FeatureEntry(
+            id=12,
+            name='Feature 12 (Confidential)',
+            summary='sum',
+            category=1,
+            feature_type=core_enums.FEATURE_TYPE_INCUBATE_ID,
+            finch_name='feature12Finch',
+            owner_emails=['owner@example.com'],
+            bug_url='https://example.com/bug12',
+            launch_bug_url='https://example.com/launch12',
+            confidential=True,
+        )
+        self.feature_12.put()
+        self.stage_12 = Stage(
+            id=112,
+            feature_id=12,
+            stage_type=160,
+            intent_thread_url='https://example.com/intent12',
+            milestones=MilestoneSet(desktop_first=self.milestone),
+        )
+        self.stage_12.put()
+        Gate(
+            id=1012,
+            feature_id=12,
+            stage_id=112,
+            gate_type=core_enums.GATE_API_SHIP,
+            state=Vote.APPROVED,
+        ).put()
+
     def test_validate_feature_in_chromium(self):
         """Tests parsing logic for JSON and C++ mock data."""
         # Case 1: Found in JSON and stable -> No missing criteria.
@@ -1922,6 +1952,7 @@ class ShippingFeatureHelpersTest(testing_config.CustomTestCase):
             self.stage_9,
             self.stage_10,
             self.stage_11,
+            self.stage_12,
         ]
 
         complete, incomplete = feature_helpers.aggregate_shipping_features(
@@ -1941,6 +1972,7 @@ class ShippingFeatureHelpersTest(testing_config.CustomTestCase):
                 'Feature 5 (PSA)',
             ],
         )
+        self.assertNotIn('Feature 12 (Confidential)', complete_names)
 
         # Verify Incomplete Features
         self.assertEqual(len(incomplete), 6)
@@ -1962,3 +1994,5 @@ class ShippingFeatureHelpersTest(testing_config.CustomTestCase):
         self.assertEqual(
             incomplete_map['F9 Disabled'], ['content_feature_not_enabled']
         )  # noqa: E501
+
+        self.assertNotIn('Feature 12 (Confidential)', incomplete_map)
