@@ -167,6 +167,14 @@ class ExternalReviewsAPI(basehandlers.APIHandler):
         reviewer_info = ExternalReviewerInfo(review_group)
         unreviewed_features = reviewer_info.unreviewed_features_query.fetch()
 
+        # WP features cannot be confidential, so this should not matter.
+        # But if any is ever somehow confidential, remove it.
+        unreviewed_features = [
+            feature
+            for feature in unreviewed_features
+            if not feature.confidential
+        ]
+
         # Remove features for which the review link isn't a request for the review group to review the  # noqa: E501
         # feature.
         unreviewed_features = [

@@ -128,3 +128,42 @@ class StaleFeaturesAPITest(testing_config.CustomTestCase):
         mock_get_stale_features.assert_called_once()
         self.assertIn('stale_features', response)
         self.assertEqual(response['stale_features'], [])
+
+    @mock.patch('internals.feature_helpers.get_stale_features')
+    def test_do_get__omits_unlisted_and_confidential_features(
+        self, mock_get_stale_features
+    ):
+        """The API should omit unlisted and confidential features from the response."""
+        feature_unlisted = FeatureEntry(
+            id=3,
+            name='Unlisted Stale Feature',
+            summary='summary',
+            category=1,
+            owner_emails=['owner@example.com'],
+            unlisted=True,
+        )
+        feature_confidential = FeatureEntry(
+            id=4,
+            name='Confidential Stale Feature',
+            summary='summary',
+            category=1,
+            owner_emails=['owner@example.com'],
+            confidential=True,
+        )
+
+        mock_get_stale_features.return_value = [
+            (self.feature_1, 120, 'shipped_milestone'),
+            (feature_unlisted, 121, 'shipped_android_milestone'),
+            (feature_confidential, 122, 'shipped_ios_milestone'),
+        ]
+
+        with test_app.test_request_context('/api/v0/stalefeatures'):
+            response = self.handler.do_get()
+
+        mock_get_stale_features.assert_called_once()
+        self.assertIn('stale_features', response)
+        stale_features_info = response['stale_features']
+        self.assertEqual(len(stale_features_info), 1)
+        self.assertEqual(
+            stale_features_info[0]['id'], self.feature_1.key.integer_id()
+        )

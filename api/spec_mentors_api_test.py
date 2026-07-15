@@ -123,6 +123,22 @@ class SpecMentorsAPITest(testing_config.CustomTestCase):
 
         self.assertEqual(response, [])
 
+    def test_omits_confidential_feature(self):
+        """Does not return a confidential feature that has a mentor."""
+        # Create a feature using the admin user.
+        testing_config.sign_in(self.app_admin.email, 123567890)
+
+        feature = self.createFeature({'name': 'The feature'})
+        feature.spec_mentor_emails = ['mentor@example.org']
+        feature.confidential = True
+        feature.put()
+        testing_config.sign_out()
+
+        with test_app.test_request_context(self.request_path):
+            response = self.spec_mentors_handler.do_get()
+
+        self.assertEqual(response, [])
+
     def test_obeys_after_param(self):
         """The ?after URL parameter filters features."""
         # Create a feature using the admin user.

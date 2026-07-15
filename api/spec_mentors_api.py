@@ -57,6 +57,9 @@ class SpecMentorsAPI(basehandlers.APIHandler):
             if feature.unlisted:
                 # TODO: Consider showing these when the caller is logged in and has the right to see them.  # noqa: E501
                 continue
+            if feature.confidential:
+                # WP features cannot be confidential, but skip them just in case.
+                continue
             for mentor in feature.spec_mentor_emails:
                 mentors.setdefault(mentor, []).append(
                     FeatureLink(id=feature.key.integer_id(), name=feature.name)
