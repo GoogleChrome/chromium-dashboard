@@ -170,18 +170,18 @@ class ExternalReviewsAPI(basehandlers.APIHandler):
         # WP features cannot be confidential, so this should not matter.
         # But if any is ever somehow confidential, remove it.
         unreviewed_features = [
-            feature
-            for feature in unreviewed_features
-            if not feature.confidential
+            fe
+            for fe in unreviewed_features
+            if not fe.confidential and not fe.deleted
         ]
 
         # Remove features for which the review link isn't a request for the review group to review the  # noqa: E501
         # feature.
         unreviewed_features = [
-            feature
-            for feature in unreviewed_features
+            fe
+            for fe in unreviewed_features
             if reviewer_info.review_pattern.search(
-                reviewer_info.review_link(feature)
+                reviewer_info.review_link(fe)
             )
         ]
 
@@ -190,9 +190,9 @@ class ExternalReviewsAPI(basehandlers.APIHandler):
             stage.feature_id: stage
             for stage in ndb.get_multi(
                 [
-                    ndb.Key('Stage', feature.active_stage_id)
-                    for feature in unreviewed_features
-                    if feature.active_stage_id
+                    ndb.Key('Stage', fe.active_stage_id)
+                    for fe in unreviewed_features
+                    if fe.active_stage_id
                 ]
             )
             if stage
@@ -200,21 +200,20 @@ class ExternalReviewsAPI(basehandlers.APIHandler):
 
         # Filter to reviews for which we could fetch a preview.
         feature_links, _has_stale_links = get_feature_links_by_feature_ids(
-            [feature.key.id() for feature in unreviewed_features],
+            [fe.key.id() for fe in unreviewed_features],
             update_stale_links=True,  # noqa: E501
         )
         review_links = {
-            reviewer_info.review_link(feature)
-            for feature in unreviewed_features
+            reviewer_info.review_link(fe) for fe in unreviewed_features
         }
         previewable_urls = {fl['url'] for fl in feature_links}
 
         # Build the response objects.
         reviews = [
             OutstandingReview(
-                review_link=reviewer_info.review_link(feature),
-                feature=FeatureLink(id=feature.key.id(), name=feature.name),
-                current_stage=stage_type(feature, stage),
+                review_link=reviewer_info.review_link(fe),
+                feature=FeatureLink(id=fe.key.id(), name=fe.name),
+                current_stage=stage_type(fe, stage),
                 estimated_start_milestone=min_of_present(
                     stage.milestones.desktop_first,
                     stage.milestones.android_first,
@@ -232,9 +231,9 @@ class ExternalReviewsAPI(basehandlers.APIHandler):
                 if stage and stage.milestones
                 else None,
             )
-            for feature in unreviewed_features
-            for stage in [active_stage.get(feature.key.id(), None)]
-            if reviewer_info.review_link(feature) in previewable_urls
+            for fe in unreviewed_features
+            for stage in [active_stage.get(fe.key.id(), None)]
+            if reviewer_info.review_link(fe) in previewable_urls
         ]
         reviews.sort(
             key=lambda review: (
