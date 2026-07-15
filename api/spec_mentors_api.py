@@ -47,19 +47,20 @@ class SpecMentorsAPI(basehandlers.APIHandler):
         features: list[FeatureEntry] = query.fetch()
         if after is not None:
             # Do this in Python rather than the NDB query because NDB queries only support one inequality.  # noqa: E501
-            features = [
-                feature for feature in features if feature.updated > after
-            ]
-        features.sort(key=lambda f: f.updated, reverse=True)
+            features = [fe for fe in features if fe.updated > after]
+        features.sort(key=lambda fe: fe.updated, reverse=True)
 
         mentors: dict[str, list[FeatureLink]] = {}
-        for feature in features:
-            if feature.unlisted:
+        for fe in features:
+            if fe.unlisted:
                 # TODO: Consider showing these when the caller is logged in and has the right to see them.  # noqa: E501
                 continue
-            for mentor in feature.spec_mentor_emails:
+            if fe.confidential or fe.deleted:
+                # WP features cannot be confidential, but skip them just in case.
+                continue
+            for mentor in fe.spec_mentor_emails:
                 mentors.setdefault(mentor, []).append(
-                    FeatureLink(id=feature.key.integer_id(), name=feature.name)
+                    FeatureLink(id=fe.key.integer_id(), name=fe.name)
                 )  # noqa: E501
 
         return [

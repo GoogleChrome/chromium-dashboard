@@ -47,6 +47,11 @@ class StaleFeaturesAPI(basehandlers.EntitiesAPIHandler):
         stale_features = feature_helpers.get_stale_features()
         stale_features_info: list[StaleFeatureInfo] = []
         for feature, mstone, mstone_field in stale_features:
+            if feature.unlisted:
+                continue
+            if feature.confidential:
+                # WP features cannot be confidential, but skip them just in case.
+                continue
             stale_features_info.append(
                 {
                     'id': feature.key.integer_id(),

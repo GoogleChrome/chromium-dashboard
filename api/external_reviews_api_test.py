@@ -213,6 +213,46 @@ class ExternalReviewsAPITest(testing_config.CustomTestCase):
             result,
         )
 
+    def test_omit_confidential_features(self):
+        """Test confidential feature isn't shown."""
+        tag = 'https://github.com/w3ctag/design-reviews/issues/1'
+        fe = make_feature(
+            'Feature confidential',
+            core_enums.STAGE_BLINK_PROTOTYPE,
+            tag=tag,
+        )
+        fe.confidential = True
+        fe.put()
+
+        result = self.handler.do_get(review_group='tag')
+        self.assertEqual(
+            {
+                'reviews': [],
+                'link_previews': [],
+            },
+            result,
+        )
+
+    def test_omit_deleted_features(self):
+        """Test deleted feature isn't shown."""
+        tag = 'https://github.com/w3ctag/design-reviews/issues/1'
+        fe = make_feature(
+            'Feature deleted',
+            core_enums.STAGE_BLINK_PROTOTYPE,
+            tag=tag,
+        )
+        fe.deleted = True
+        fe.put()
+
+        result = self.handler.do_get(review_group='tag')
+        self.assertEqual(
+            {
+                'reviews': [],
+                'link_previews': [],
+            },
+            result,
+        )
+
     def test_milestones_summarize(self):
         """We take the earliest start milestone and the latest end milestone.
 
