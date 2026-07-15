@@ -18,6 +18,7 @@
 import collections
 import csv
 import logging
+import re
 from datetime import date, datetime, timedelta
 from io import StringIO
 from typing import Any
@@ -1795,3 +1796,153 @@ class DeleteWPTCoverageReport(FlaskHandler):
             f'Finished. Deleted a total of {count} old WPT coverage reports.'
         )
         return f'{count} WPT coverage reports deleted.'
+
+
+# ---------------------------------------------------------------------------
+# Idempotent Markdown Text Converters and Summary Migration Helpers
+# ---------------------------------------------------------------------------
+
+
+def safe_plain_text_to_markdown(text: str | None) -> str:
+    r"""Converts plain text to safe, idempotent markdown string.
+
+    Sanitizes HTML entities (< and >) to prevent XSS/ReDoS and prevents
+    double-escaping markdown symbols across multiple conversions.
+    """
+    if not text:
+        return ''
+
+    # 1. Sanitize HTML tags/entities (< -> &lt;, > -> &gt;)
+    safe_text = text.replace('<', '&lt;').replace('>', '&gt;')
+
+    # 2. Idempotently escape unescaped asterisks and underscores using negative lookbehind
+    safe_text = re.sub(r'(?<!\\)([\*_])', r'\\\1', safe_text)
+    return safe_text.strip()
+
+
+def markdown_to_plain_text(text: str | None) -> str:
+    r"""Reversible helper converting sanitized markdown back to plain text.
+
+    Unescapes markdown symbols (\\* -> *, \\_ -> _) and restores HTML brackets.
+    """
+    if not text:
+        return ''
+
+    # 1. Unescape markdown backslashes for * and _
+    plain = re.sub(r'\\([\*_])', r'\1', text)
+
+    # 2. Restore sanitized HTML brackets
+    plain = plain.replace('&lt;', '<').replace('&gt;', '>')
+
+    return plain.strip()
+
+
+def migrate_milestone_summaries_to_markdown(
+    milestone: int, dry_run: bool = True
+) -> dict[str, Any]:
+    """Migrates FeatureEntry summary fields for a milestone to idempotent markdown.
+
+    Queries all Stage entities matching the given milestone, loads their
+    parent FeatureEntry entities, and converts plain-text summaries using
+    `safe_plain_text_to_markdown`.
+
+    Args:
+        milestone: Target Chromium milestone number.
+        dry_run: If True, returns migration statistics and sample conversions
+            without committing changes to Datastore (0 Datastore writes).
+
+    Returns:
+        Dict containing total scanned count, migrated count, dry_run flag, and sample diffs.
+    """
+    # 1. Gather feature IDs for all stages matching the target milestone
+    stage_queries = [
+        Stage.query(Stage.milestones.desktop_first == milestone),
+        Stage.query(Stage.milestones.android_first == milestone),
+        Stage.query(Stage.milestones.ios_first == milestone),
+        Stage.query(Stage.milestones.webview_first == milestone),
+    ]
+
+    feature_ids: set[int] = set()
+    for q in stage_queries:
+        for stage in q.fetch():
+            if stage.feature_id:
+                feature_ids.add(stage.feature_id)
+
+    if not feature_ids:
+        return {
+            'milestone': milestone,
+            'scanned_count': 0,
+            'migrated_count': 0,
+            'dry_run': dry_run,
+            'samples': [],
+        }
+
+    # 2. Batch fetch FeatureEntry objects using ndb.get_multi
+    keys = [ndb.Key(FeatureEntry, fid) for fid in sorted(feature_ids)]
+    feature_entries = [fe for fe in ndb.get_multi(keys) if fe is not None]
+
+    migrated_count = 0
+    samples: list[dict[str, Any]] = []
+    batch: list[FeatureEntry] = []
+    BATCH_SIZE = 100
+
+    for fe in feature_entries:
+        if not fe.summary or not fe.summary.strip():
+            continue
+
+        migrated_summary = safe_plain_text_to_markdown(fe.summary)
+        if migrated_summary != fe.summary:
+            migrated_count += 1
+            if len(samples) < 10:  # Keep up to 10 sample diffs for inspection
+                samples.append(
+                    {
+                        'feature_id': fe.key.integer_id(),
+                        'old_summary': fe.summary,
+                        'new_summary': migrated_summary,
+                    }
+                )
+
+            if not dry_run:
+                fe.summary = migrated_summary
+                batch.append(fe)
+                if len(batch) >= BATCH_SIZE:
+                    ndb.put_multi(batch)
+                    batch = []
+
+    if not dry_run and batch:
+        ndb.put_multi(batch)
+
+    return {
+        'milestone': milestone,
+        'scanned_count': len(feature_entries),
+        'migrated_count': migrated_count,
+        'dry_run': dry_run,
+        'samples': samples,
+    }
+
+
+class MigrateMilestoneSummaries(FlaskHandler):
+    """Cron/Admin handler to migrate feature summaries for a milestone to markdown."""
+
+    def get_template_data(self, **kwargs) -> str:
+        """Invokes batch summary migration for the specified milestone parameter."""
+        self.require_cron_header()
+        milestone_param = kwargs.get('milestone')
+        if milestone_param is None:
+            return 'Missing milestone parameter.'
+        try:
+            milestone = int(milestone_param)
+        except ValueError:
+            return f'Invalid milestone parameter: {milestone_param}'
+
+        dry_run_param = self.request.args.get('dry_run', 'true').lower()
+        dry_run = dry_run_param not in ('false', '0', 'no')
+
+        result = migrate_milestone_summaries_to_markdown(
+            milestone, dry_run=dry_run
+        )
+        return (
+            f'Migration complete (dry_run={dry_run}): '
+            f'Scanned {result["scanned_count"]} feature(s), '
+            f'Migrated {result["migrated_count"]} feature(s).'
+        )

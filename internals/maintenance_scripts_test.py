@@ -2981,3 +2981,153 @@ class DeleteWPTCoverageReportTest(testing_config.CustomTestCase):
         # Verify that activities were created for the deleted reports.
         activities = Activity.query().fetch()
         self.assertEqual(len(activities), 2)
+
+
+# ---------------------------------------------------------------------------
+# Idempotent Markdown Text Converters and Summary Migration Tests
+# ---------------------------------------------------------------------------
+
+
+class MarkdownConvertersTest(testing_config.CustomTestCase):
+    """Tests for safe_plain_text_to_markdown and markdown_to_plain_text."""
+
+    def test_safe_plain_text_to_markdown__empty_and_none(self):
+        """None or empty strings return an empty string cleanly."""
+        self.assertEqual(
+            '', maintenance_scripts.safe_plain_text_to_markdown(None)
+        )
+        self.assertEqual(
+            '', maintenance_scripts.safe_plain_text_to_markdown('   ')
+        )
+
+    def test_safe_plain_text_to_markdown__html_sanitization(self):
+        """HTML brackets (<, >) are sanitized to prevent XSS and ReDoS."""
+        raw = 'Here is a <script>alert(1)</script> tag.'
+        expected = 'Here is a &lt;script&gt;alert(1)&lt;/script&gt; tag.'
+        self.assertEqual(
+            expected, maintenance_scripts.safe_plain_text_to_markdown(raw)
+        )
+
+    def test_safe_plain_text_to_markdown__idempotency(self):
+        """Verifies exact idempotency across repeated conversions (safe(safe(s)) == safe(s))."""
+        test_strings = [
+            'Hello *world* and _italic_ text.',
+            'Already escaped \\*asterisk\\* and \\_underscore\\_.',
+            'Mixed <html_tag> with *literal* asterisks and _underscores_.',
+            '5 * 5 = 25 and 10 _ 2 = 5.',
+        ]
+        for s in test_strings:
+            with self.subTest(s=s):
+                first_pass = maintenance_scripts.safe_plain_text_to_markdown(s)
+                second_pass = maintenance_scripts.safe_plain_text_to_markdown(
+                    first_pass
+                )
+                self.assertEqual(first_pass, second_pass)
+
+    def test_markdown_to_plain_text__reversibility(self):
+        """Verifies unescaping markdown symbols and restoring HTML tags."""
+        self.assertEqual('', maintenance_scripts.markdown_to_plain_text(None))
+        md = 'Here is &lt;tag&gt; and \\*escaped\\* asterisk \\_underscore\\_'
+        expected = 'Here is <tag> and *escaped* asterisk _underscore_'
+        self.assertEqual(
+            expected, maintenance_scripts.markdown_to_plain_text(md)
+        )
+
+
+class MigrateMilestoneSummariesTest(testing_config.CustomTestCase):
+    """Tests for migrate_milestone_summaries_to_markdown and MigrateMilestoneSummaries."""
+
+    def setUp(self):
+        """Set up test FeatureEntry and Stage entities."""
+        self.fe_1 = FeatureEntry(
+            name='Feature One',
+            summary='Plain <text> with *literal* asterisk',
+            category=1,
+            feature_type=0,
+        )
+        self.fe_1.put()
+        self.stage_1 = Stage(
+            feature_id=self.fe_1.key.integer_id(),
+            stage_type=core_enums.STAGE_BLINK_SHIPPING,
+            milestones=MilestoneSet(desktop_first=125),
+        )
+        self.stage_1.put()
+
+        self.fe_2 = FeatureEntry(
+            name='Feature Two',
+            summary='Already clean summary',
+            category=1,
+            feature_type=0,
+        )
+        self.fe_2.put()
+        self.stage_2 = Stage(
+            feature_id=self.fe_2.key.integer_id(),
+            stage_type=core_enums.STAGE_BLINK_SHIPPING,
+            milestones=MilestoneSet(android_first=125),
+        )
+        self.stage_2.put()
+
+        self.handler = maintenance_scripts.MigrateMilestoneSummaries()
+
+    def tearDown(self):
+        """Clean up entities."""
+        for fe in [self.fe_1, self.fe_2]:
+            if fe and fe.key:
+                fe.key.delete()
+        for stage in [self.stage_1, self.stage_2]:
+            if stage and stage.key:
+                stage.key.delete()
+
+    def test_migrate_milestone_summaries_to_markdown__dry_run(self):
+        """Dry run previews conversions without committing Datastore mutations."""
+        result = maintenance_scripts.migrate_milestone_summaries_to_markdown(
+            125, dry_run=True
+        )
+        self.assertEqual(125, result['milestone'])
+        self.assertEqual(2, result['scanned_count'])
+        self.assertEqual(1, result['migrated_count'])
+        self.assertTrue(result['dry_run'])
+        self.assertEqual(1, len(result['samples']))
+        self.assertEqual(
+            self.fe_1.key.integer_id(), result['samples'][0]['feature_id']
+        )
+
+        # Verify Datastore entity remains untouched when dry_run=True
+        fe_after = self.fe_1.key.get()
+        self.assertEqual(
+            'Plain <text> with *literal* asterisk', fe_after.summary
+        )
+
+    def test_migrate_milestone_summaries_to_markdown__commit(self):
+        """Executing with dry_run=False commits idempotent conversions."""
+        result = maintenance_scripts.migrate_milestone_summaries_to_markdown(
+            125, dry_run=False
+        )
+        self.assertEqual(1, result['migrated_count'])
+        self.assertFalse(result['dry_run'])
+
+        # Verify entity in Datastore is now converted to idempotent markdown
+        fe_after = self.fe_1.key.get()
+        self.assertEqual(
+            'Plain &lt;text&gt; with \\*literal\\* asterisk', fe_after.summary
+        )
+
+    @mock.patch('framework.basehandlers.FlaskHandler.require_cron_header')
+    def test_handler_get_template_data__missing_milestone(self, mock_header):
+        """Handler returns error string when milestone parameter is absent."""
+        result = self.handler.get_template_data()
+        self.assertEqual('Missing milestone parameter.', result)
+
+    @mock.patch(
+        'internals.maintenance_scripts.MigrateMilestoneSummaries.request',
+        new_callable=mock.PropertyMock,
+    )
+    @mock.patch('framework.basehandlers.FlaskHandler.require_cron_header')
+    def test_handler_get_template_data__success(self, mock_header, mock_req):
+        """Handler executes migration and formats result string."""
+        mock_req.return_value.args = {'dry_run': 'true'}
+        result = self.handler.get_template_data(milestone=125)
+        self.assertEqual(
+            'Migration complete (dry_run=True): Scanned 2 feature(s), Migrated 1 feature(s).',
+            result,
+        )
