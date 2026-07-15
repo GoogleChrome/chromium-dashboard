@@ -55,7 +55,8 @@ class StagesAPI(basehandlers.EntitiesAPIHandler):
 
     def do_get(self, **kwargs):
         """Return a specified stage based on the given ID."""
-        feature, stage = self.get_specified_feature_and_stage(**kwargs)
+        # We get both the feature and stage for the permission checks.
+        unused_fe, stage = self.get_specified_feature_and_stage(**kwargs)
         stage_dict = converters.stage_to_json_dict(stage)
         # Add extensions associated with the stage if they exist.
         extensions = stage_helpers.get_ot_stage_extensions(stage_dict['id'])
@@ -67,7 +68,7 @@ class StagesAPI(basehandlers.EntitiesAPIHandler):
 
         return stage_dict
 
-    def _validate_edit_permissions(self, feature_id: int, request_body: dict):
+    def _validate_edit_permissions(self, fe: FeatureEntry, request_body: dict):
         """Validate the user has permission to submit this request."""
         user = self.get_current_user()
         is_ot_request = request_body.get('ot_action_requested', False)
@@ -82,9 +83,7 @@ class StagesAPI(basehandlers.EntitiesAPIHandler):
             )
         ):
             # Validate the user has edit permissions and redirect if needed.
-            return permissions.validate_feature_edit_permission(
-                self, feature_id
-            )
+            return permissions.validate_feature_edit_permission(self, fe)
         return None
 
     def do_post(self, **kwargs):
@@ -98,7 +97,7 @@ class StagesAPI(basehandlers.EntitiesAPIHandler):
             self.abort(400, msg='Stage type not specified.')
         stage_type = int(body['stage_type']['value'])
 
-        redirect_resp = self._validate_edit_permissions(feature_id, body)
+        redirect_resp = self._validate_edit_permissions(feature, body)
         if redirect_resp:
             return redirect_resp
 
@@ -120,11 +119,9 @@ class StagesAPI(basehandlers.EntitiesAPIHandler):
         stage_id = kwargs.get('stage_id')
         stage = self.get_validated_entity(stage_id, Stage)
         feature = self.get_validated_entity(stage.feature_id, FeatureEntry)
-
-        feature_id = feature.key.integer_id()
         body = self.get_json_param_dict()
 
-        redirect_resp = self._validate_edit_permissions(feature_id, body)
+        redirect_resp = self._validate_edit_permissions(feature, body)
         if redirect_resp:
             return redirect_resp
 
@@ -156,13 +153,10 @@ class StagesAPI(basehandlers.EntitiesAPIHandler):
 
     def do_delete(self, **kwargs):
         """Delete an existing stage."""
-        stage_id = kwargs.get('stage_id')
-        stage = self.get_validated_entity(stage_id, Stage)
+        fe, stage = self.get_specified_feature_and_stage(**kwargs)
 
         # Validate the user has edit permissions and redirect if needed.
-        redirect_resp = permissions.validate_feature_edit_permission(
-            self, stage.feature_id
-        )
+        redirect_resp = permissions.validate_feature_edit_permission(self, fe)
         if redirect_resp:
             return redirect_resp
 

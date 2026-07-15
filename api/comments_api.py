@@ -114,7 +114,7 @@ class CommentsAPI(basehandlers.APIHandler):
         if comment_content:
             can_comment = permissions.can_comment(
                 user
-            ) or permissions.can_edit_feature(user, feature_id)
+            ) or permissions.can_edit_feature(user, feature)
             if not can_comment:
                 self.abort(403, msg='User is not allowed to comment')
 

@@ -66,18 +66,8 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
 
     def get_one_feature(self, feature_id: int) -> VerboseFeatureDict:
         """Get a single feature by ID."""
-        feature = FeatureEntry.get_by_id(feature_id)
-        if not feature:
-            self.abort(404, msg='Feature %r not found' % feature_id)
-        user = users.get_current_user()
-        if feature.deleted and not permissions.can_edit_feature(
-            user, feature_id
-        ):
-            self.abort(404, msg='Feature %r not found' % feature_id)
-        if not permissions.can_view_feature(user, feature):
-            self.abort(404, msg='Feature %r not found' % feature_id)
-
-        return converters.feature_entry_to_json_verbose(feature)
+        fe = self.get_specified_feature(feature_id=feature_id)
+        return converters.feature_entry_to_json_verbose(fe)
 
     def do_search(self):
         """Search for features."""
@@ -164,7 +154,7 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
 
     def _shared_update_special_fields(
         self,
-        feature: FeatureEntry,
+        fe: FeatureEntry,
         feature_changes: dict[str, Any],
     ) -> bool:
         """Handle any special FeatureEntry fields common to creating or updating."""
@@ -174,12 +164,12 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
             new_markdown = feature_changes.get(field + '_is_markdown')
             if new_markdown is None:
                 continue
-            if new_markdown and field not in feature.markdown_fields:
-                feature.markdown_fields.append(field)
+            if new_markdown and field not in fe.markdown_fields:
+                fe.markdown_fields.append(field)
                 has_updated = True
-            elif not new_markdown and field in feature.markdown_fields:
-                feature.markdown_fields = [
-                    mf for mf in feature.markdown_fields if mf != field
+            elif not new_markdown and field in fe.markdown_fields:
+                fe.markdown_fields = [
+                    mf for mf in fe.markdown_fields if mf != field
                 ]
                 has_updated = True
 
@@ -187,34 +177,34 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
 
     def _post_update_special_fields(
         self,
-        feature: FeatureEntry,
+        fe: FeatureEntry,
         feature_changes: dict[str, Any],
     ) -> None:
         """Handle any special FeatureEntry fields when creating."""
-        self._shared_update_special_fields(feature, feature_changes)
+        self._shared_update_special_fields(fe, feature_changes)
 
         if 'first_enterprise_notification_milestone' in feature_changes:
-            feature.first_enterprise_notification_milestone = int(
+            fe.first_enterprise_notification_milestone = int(
                 feature_changes['first_enterprise_notification_milestone']
             )
         elif needs_default_first_notification_milestone(
             new_fields=feature_changes
         ):
-            feature.first_enterprise_notification_milestone = (
+            fe.first_enterprise_notification_milestone = (
                 get_default_first_notice_milestone_for_feature()
             )
 
-        if feature.feature_type == core_enums.FEATURE_TYPE_ENTERPRISE_ID:
-            feature.blink_components = [settings.DEFAULT_ENTERPRISE_COMPONENT]
-            feature.tag_review_status = core_enums.REVIEW_NA
+        if fe.feature_type == core_enums.FEATURE_TYPE_ENTERPRISE_ID:
+            fe.blink_components = [settings.DEFAULT_ENTERPRISE_COMPONENT]
+            fe.tag_review_status = core_enums.REVIEW_NA
         else:
-            feature.tag_review_status = processes.initial_tag_review_status(
-                feature.feature_type
+            fe.tag_review_status = processes.initial_tag_review_status(
+                fe.feature_type
             )
 
-        feature.creator_email = self.get_current_user().email()
-        feature.updater_email = self.get_current_user().email()
-        feature.accurate_as_of = datetime.now()
+        fe.creator_email = self.get_current_user().email()
+        fe.updater_email = self.get_current_user().email()
+        fe.accurate_as_of = datetime.now()
 
     @permissions.require_create_feature
     def do_post(self, **kwargs):
@@ -241,19 +231,19 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
 
         # Try to create the feature using the provided data.
         try:
-            feature = FeatureEntry(**fields_dict)
-            self._post_update_special_fields(feature, feature_changes)
-            feature.put()
+            fe = FeatureEntry(**fields_dict)
+            self._post_update_special_fields(fe, feature_changes)
+            fe.put()
         except Exception as e:
             self.abort(400, msg=str(e))
-        id = feature.key.integer_id()
+        feature_id = fe.key.integer_id()
 
-        search_fulltext.index_feature(feature)
-        self._write_stages_and_gates_for_feature(id, feature.feature_type)
+        search_fulltext.index_feature(fe)
+        self._write_stages_and_gates_for_feature(feature_id, fe.feature_type)
 
         activity = Activity(
             log_type=Activity.USER_CHANGE,
-            feature_id=id,
+            feature_id=feature_id,
             author=user_email,
             content='Feature entry created',
         )
@@ -263,7 +253,10 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
         rediscache.delete_keys_with_prefix(FeatureEntry.DEFAULT_CACHE_KEY)
         rediscache.delete_keys_with_prefix(FeatureEntry.SEARCH_CACHE_KEY)
 
-        return {'message': f'Feature {id} created.', 'feature_id': id}
+        return {
+            'message': f'Feature {feature_id} created.',
+            'feature_id': feature_id,
+        }
 
     def _write_stages_and_gates_for_feature(
         self, feature_id: int, feature_type: int
@@ -566,15 +559,13 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
         # Check if valid ID is provided and fetch feature if it exists.
         if 'id' not in body['feature_changes']:
             self.abort(400, msg='Missing feature ID in feature updates')
-        feature_id = body['feature_changes']['id']
-        feature: FeatureEntry | None = FeatureEntry.get_by_id(feature_id)
-        if not feature:
-            self.abort(400, msg=f'Feature not found for ID {feature_id}')
+        fe = self.get_specified_feature(
+            feature_id=body['feature_changes']['id']
+        )
+        feature_id = fe.key.integer_id()
 
         # Validate the user has edit permissions and redirect if needed.
-        redirect_resp = permissions.validate_feature_edit_permission(
-            self, feature_id
-        )
+        redirect_resp = permissions.validate_feature_edit_permission(self, fe)
         if redirect_resp:
             return redirect_resp
 
@@ -587,11 +578,11 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
         )
         # Reset outstanding notifications if the user updated any ship/rollout milestones.
         if ship_milestones_were_updated:
-            feature.outstanding_notifications = 0
-            self._maybe_reset_releasenotes_flags(feature, changed_fields)
+            fe.outstanding_notifications = 0
+            self._maybe_reset_releasenotes_flags(fe, changed_fields)
 
         self._patch_update_feature(
-            feature,
+            fe,
             body['feature_changes'],
             updated_stages,
             changed_fields,
@@ -599,48 +590,39 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
         )
 
         notifier_helpers.notify_subscribers_and_save_amendments(
-            feature, changed_fields, notify=True
+            fe, changed_fields, notify=True
         )
         # Remove all feature-related cache.
         rediscache.delete_keys_with_prefix(FeatureEntry.DEFAULT_CACHE_KEY)
         rediscache.delete_keys_with_prefix(FeatureEntry.SEARCH_CACHE_KEY)
         # Update full-text index.
-        if feature:
-            search_fulltext.index_feature(feature)
-            feature_links.update_feature_links(feature, changed_fields)
+        if fe:
+            search_fulltext.index_feature(fe)
+            feature_links.update_feature_links(fe, changed_fields)
 
         return {'message': f'Feature {feature_id} updated.'}
 
     def do_delete(self, **kwargs) -> flask.Response | dict[str, str]:
         """Delete the specified feature."""
         # TODO(jrobbins): implement undelete UI.  For now, use cloud console.
-        if 'feature_id' not in kwargs:
-            self.abort(404, msg='Feature ID not specified')
-        feature_id: int = kwargs['feature_id']
+        fe = self.get_specified_feature(**kwargs)
         # Validate the user has edit permissions and redirect if needed.
-        redirect_resp = permissions.validate_feature_edit_permission(
-            self, feature_id
-        )
+        redirect_resp = permissions.validate_feature_edit_permission(self, fe)
         if redirect_resp:
-            self.abort(
-                403, msg='User does not have permission to edit this feature.'
-            )
+            return redirect_resp
 
-        feature: FeatureEntry = self.get_specified_feature(
-            feature_id=feature_id
-        )
-        feature.deleted = True
+        fe.deleted = True
         # Delete any AI-generated content during archival.
-        feature.ai_test_eval_report = None
-        feature.put()
+        fe.ai_test_eval_report = None
+        fe.put()
 
         user = users.get_current_user()
         email = user.email() if user else None
         activity = Activity(
             log_type=Activity.USER_COMMENT,
-            feature_id=feature_id,
+            feature_id=fe.key.integer_id(),
             author=email,
-            content=f'Feature "{feature.name}" was archived.',
+            content=f'Feature "{fe.name}" was archived.',
         )
         activity.put()
 

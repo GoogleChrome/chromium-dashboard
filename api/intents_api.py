@@ -70,8 +70,8 @@ class IntentsAPI(basehandlers.APIHandler):
 
     def do_get(self, **kwargs) -> Response | dict | str:
         """Get the body of a draft intent."""
-        feature, stage = self.get_specified_feature_and_stage(**kwargs)
-        feature_id = feature.key.integer_id()
+        fe, stage = self.get_specified_feature_and_stage(**kwargs)
+        feature_id = fe.key.integer_id()
         stage_id = stage.key.integer_id()
 
         intent_type = None
@@ -94,13 +94,11 @@ class IntentsAPI(basehandlers.APIHandler):
                 self.abort(400, msg='Given gate does not belong to stage')
 
         # Check that the user has feature edit permissions.
-        redirect_resp = permissions.validate_feature_edit_permission(
-            self, feature_id
-        )
+        redirect_resp = permissions.validate_feature_edit_permission(self, fe)
         if redirect_resp:
             return redirect_resp
 
-        stage_info = stage_helpers.get_stage_info_for_templates(feature)
+        stage_info = stage_helpers.get_stage_info_for_templates(fe)
         default_url = (
             f'{self.request.scheme}://{self.request.host}/feature/{feature_id}'
         )
@@ -108,8 +106,8 @@ class IntentsAPI(basehandlers.APIHandler):
             default_url += f'?gate={gate_id}'
 
         template_data = {
-            'feature': converters.feature_entry_to_json_verbose(feature),
-            'stage_info': stage_helpers.get_stage_info_for_templates(feature),
+            'feature': converters.feature_entry_to_json_verbose(fe),
+            'stage_info': stage_helpers.get_stage_info_for_templates(fe),
             'should_render_mstone_table': stage_info[
                 'should_render_mstone_table'
             ],
@@ -120,8 +118,8 @@ class IntentsAPI(basehandlers.APIHandler):
         }
         return GetIntentResponse(
             subject=(
-                f'{compute_subject_prefix(feature.feature_type, intent_type)}: '
-                f'{feature.name}'
+                f'{compute_subject_prefix(fe.feature_type, intent_type)}: '
+                f'{fe.name}'
             ),
             email_body=render_template(
                 'blink/intent_to_implement.html', **template_data
@@ -130,8 +128,8 @@ class IntentsAPI(basehandlers.APIHandler):
 
     def do_post(self, **kwargs) -> Response | dict | MessageResponse:
         """Submit an intent email directly to blink-dev."""
-        feature, stage = self.get_specified_feature_and_stage(**kwargs)
-        feature_id = feature.key.integer_id()
+        fe, stage = self.get_specified_feature_and_stage(**kwargs)
+        feature_id = fe.key.integer_id()
 
         intent_type = None
         if stage.stage_type in core_enums.INTENT_DRAFT_TYPES_BY_STAGE_TYPE:
@@ -145,9 +143,7 @@ class IntentsAPI(basehandlers.APIHandler):
             )
 
         # Check that the user has feature edit permissions.
-        redirect_resp = permissions.validate_feature_edit_permission(
-            self, feature_id
-        )
+        redirect_resp = permissions.validate_feature_edit_permission(self, fe)
         if redirect_resp:
             return redirect_resp
 
@@ -163,7 +159,9 @@ class IntentsAPI(basehandlers.APIHandler):
         if gate:
             default_url += f'?gate={parsed_args.gate_id}'
 
-        subject = f'{compute_subject_prefix(feature.feature_type, intent_type)}: {feature.name}'  # noqa: E501
+        subject = (
+            f'{compute_subject_prefix(fe.feature_type, intent_type)}: {fe.name}'  # noqa: E501
+        )
         cc_emails = parsed_args.intent_cc_emails or []
         # Make sure emails are not empty and are unique.
         cc_emails = sorted(list(set([email for email in cc_emails if email])))

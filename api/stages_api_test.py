@@ -1015,7 +1015,7 @@ class StagesAPITest(testing_config.CustomTestCase):
         mock_abort.side_effect = werkzeug.exceptions.Forbidden
         with test_app.test_request_context(f'{self.request_path}1/stages/10'):
             with self.assertRaises(werkzeug.exceptions.Forbidden):
-                self.handler.do_delete(stage_id=10)
+                self.handler.do_delete(feature_id=1, stage_id=10)
         mock_abort.assert_called_once_with(
             403, description='User cannot edit feature 1'
         )
@@ -1030,7 +1030,7 @@ class StagesAPITest(testing_config.CustomTestCase):
             with self.assertRaises(werkzeug.exceptions.BadRequest):
                 self.handler.do_delete(feature_id=1)
         mock_abort.assert_called_once_with(
-            400, description='No Stage ID specified.'
+            400, description="Missing parameter 'stage_id'"
         )
 
     @mock.patch('flask.abort')
@@ -1040,10 +1040,8 @@ class StagesAPITest(testing_config.CustomTestCase):
         mock_abort.side_effect = werkzeug.exceptions.BadRequest
         with test_app.test_request_context(f'{self.request_path}1/stages/3001'):
             with self.assertRaises(werkzeug.exceptions.BadRequest):
-                self.handler.do_delete(stage_id=3001)
-        mock_abort.assert_called_once_with(
-            404, description='Stage 3001 not found.'
-        )
+                self.handler.do_delete(feature_id=1, stage_id=3001)
+        mock_abort.assert_called_once_with(404, description='Stage not found')
 
     def test_delete__valid(self):
         """A valid DELETE request should mark the existing stage as archived."""
