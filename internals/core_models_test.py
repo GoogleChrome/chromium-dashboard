@@ -163,13 +163,15 @@ class MilestoneCurationTest(testing_config.CustomTestCase):
         curation = MilestoneCuration(
             id=str(milestone_num),
             milestone=milestone_num,
-            curator_email='curator@google.com',
-            status='IN_REVIEW',
+            curator_emails=['curator@google.com'],
+            status=core_enums.MilestoneCurationStatus.IN_REVIEW,
         )
         curation.put()
 
         retrieved = ndb.Key('MilestoneCuration', str(milestone_num)).get()
         self.assertIsNotNone(retrieved)
         self.assertEqual(retrieved.milestone, 135)
-        self.assertEqual(retrieved.curator_email, 'curator@google.com')
-        self.assertEqual(retrieved.status, 'IN_REVIEW')
+        self.assertEqual(retrieved.curator_emails, ['curator@google.com'])
+        self.assertEqual(
+            retrieved.status, core_enums.MilestoneCurationStatus.IN_REVIEW
+        )

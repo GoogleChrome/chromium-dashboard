@@ -1027,6 +1027,113 @@ paths:
           description: User logged out successfully
       summary: Log out the current user
       x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+  /milestone-curation/{milestone}:
+    get:
+      operationId: get_milestone_curation
+      parameters:
+      - description: Target Chromium milestone number (positive integer)
+        explode: false
+        in: path
+        name: milestone
+        required: true
+        schema:
+          minimum: 1
+          type: integer
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MilestoneCurationResponse'
+          description: Success
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: Bad Request - Invalid milestone parameter
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: Unauthorized - Authentication required
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: Forbidden - Insufficient permissions to view editorial curation
+            details
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: Milestone curation record not found
+      summary: Get editorial review status and curation details for a release milestone
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+    patch:
+      operationId: update_milestone_curation
+      parameters:
+      - description: Target Chromium milestone number (positive integer)
+        explode: false
+        in: path
+        name: milestone
+        required: true
+        schema:
+          minimum: 1
+          type: integer
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MilestoneCurationPatchRequest'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MilestoneCurationResponse'
+          description: Success
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: "Bad Request - Malformed payload, invalid status enum, or invalid\
+            \ curator emails"
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: Unauthorized - Authentication required
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: Forbidden - Insufficient editorial/admin review permissions
+            (`can_review_release_notes` / `can_edit_all`)
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: Milestone curation record not found
+        "409":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: Conflict - Concurrent editorial update conflict
+      summary: Update editorial review status or curator assignment for a release
+        milestone
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
   /origintrials:
     get:
       operationId: get_origin_trials
@@ -1174,6 +1281,40 @@ paths:
           description: Success
       summary: Get release notes for a milestone range (localized)
       x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+  /releasenotes/{milestone}:
+    get:
+      operationId: get_release_notes
+      parameters:
+      - description: Target Chromium milestone number (positive integer)
+        explode: false
+        in: path
+        name: milestone
+        required: true
+        schema:
+          minimum: 1
+          type: integer
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReleaseNotesResponse'
+          description: Success
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: Bad Request - Invalid milestone parameter
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: Milestone not found or has no release notes
+      summary: Get categorized release notes for a milestone (read-only)
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
   /review-latency:
     get:
       operationId: list_reviews_with_latency
@@ -1213,6 +1354,190 @@ paths:
           description: The ?after query parameter isn't a valid date in ISO YYYY-MM-DD
             format.
       summary: List spec mentors and their activity
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+  /summary-suggestions/pending:
+    get:
+      operationId: get_pending_summary_suggestions
+      parameters:
+      - description: Cursor token for pagination
+        explode: true
+        in: query
+        name: cursor
+        required: false
+        schema:
+          type: string
+        style: form
+      - description: Maximum number of suggestions to return (capped at 100 to prevent
+          OOM/Datastore DoS)
+        explode: true
+        in: query
+        name: limit
+        required: false
+        schema:
+          default: 25
+          maximum: 100
+          minimum: 1
+          type: integer
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SummarySuggestionListResponse'
+          description: Success
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: Bad Request - Invalid pagination limit or cursor parameter
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: Unauthorized - Authentication required
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: Forbidden - Insufficient editorial permissions (`can_review_release_notes`)
+      summary: Get paginated list of pending summary suggestions for DevRel review
+        queue
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+  /summary-suggestions/pending-count:
+    get:
+      operationId: get_pending_summary_suggestions_count
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PendingCountResponse'
+          description: Success
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: Unauthorized - Authentication required
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: Forbidden - Insufficient editorial permissions to view review
+            queue metrics
+      summary: Get aggregated O(1) count of pending summary suggestions across all
+        features
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+  /summary-suggestions/{feature_id}:
+    get:
+      operationId: get_summary_suggestion
+      parameters:
+      - description: Feature ID (positive integer)
+        explode: false
+        in: path
+        name: feature_id
+        required: true
+        schema:
+          minimum: 1
+          type: integer
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SummarySuggestionResponse'
+          description: Success
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: Bad Request - Invalid feature_id parameter
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: Unauthorized - Authentication required to view confidential
+            feature
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: Forbidden - BOLA/IDOR check failed (`permissions.can_view_feature`
+            returned false)
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: Feature or suggestion not found
+      summary: Get AI summary suggestion and progress timeline for a feature
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+    patch:
+      operationId: update_summary_suggestion
+      parameters:
+      - description: Feature ID (positive integer)
+        explode: false
+        in: path
+        name: feature_id
+        required: true
+        schema:
+          minimum: 1
+          type: integer
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SummarySuggestionPatchRequest'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SummarySuggestionResponse'
+          description: Success
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: "Bad Request - Malformed JSON body, invalid enum, or missing\
+            \ required version_token"
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: Unauthorized - Authentication required to edit summary suggestion
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: Forbidden - Insufficient editorial/author permissions (`can_edit_any_feature`)
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: Feature or suggestion not found
+        "409":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: Conflict - OCC version token mismatch
+      summary: Update AI summary suggestion status or fields
       x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
   /web_feature_ids:
     get:
@@ -3344,6 +3669,424 @@ components:
           title: descriptions
           type: object
       title: ReleaseNotesL10nResponse
+      type: object
+    SummaryProgressStep:
+      example:
+        tool_name: search_mdn_tool
+        attempt_count: 0
+        end_timestamp: 2000-01-23T04:56:07.000+00:00
+        start_timestamp: 2000-01-23T04:56:07.000+00:00
+        step_id: UNKNOWN
+        message: message
+        status: UNKNOWN
+      properties:
+        step_id:
+          enum:
+          - UNKNOWN
+          - START
+          - SEARCH_MDN
+          - READ_SPEC
+          - LLM_GENERATION
+          - EVALUATION
+          - SUCCESS
+          title: step_id
+          type: string
+        status:
+          enum:
+          - UNKNOWN
+          - START
+          - IN_PROGRESS
+          - SUCCESS
+          - FAILED
+          - RETRYING
+          title: status
+          type: string
+        message:
+          title: message
+          type: string
+        tool_name:
+          enum:
+          - search_mdn_tool
+          - verify_doc_link_tool
+          - read_spec_link_tool
+          title: tool_name
+          type: string
+        attempt_count:
+          default: 1
+          title: attempt_count
+          type: integer
+        start_timestamp:
+          format: date-time
+          title: start_timestamp
+          type: string
+        end_timestamp:
+          format: date-time
+          title: end_timestamp
+          type: string
+      required:
+      - start_timestamp
+      - status
+      - step_id
+      title: SummaryProgressStep
+      type: object
+    SummarySuggestion:
+      example:
+        feature_id: 0
+        suggested_summary: suggested_summary
+        suggested_doc_links:
+        - suggested_doc_links
+        - suggested_doc_links
+        original_summary: original_summary
+        created: 2000-01-23T04:56:07.000+00:00
+        confidence_score: 6.0274563
+        reasoning: reasoning
+        version_token: 1
+        baseline_status: none
+        updated: 2000-01-23T04:56:07.000+00:00
+        status: UNKNOWN
+      properties:
+        feature_id:
+          title: feature_id
+          type: integer
+        suggested_summary:
+          title: suggested_summary
+          type: string
+        original_summary:
+          title: original_summary
+          type: string
+        status:
+          enum:
+          - UNKNOWN
+          - PROPOSED
+          - PENDING
+          - APPLIED
+          - REJECTED
+          - DISCARDED
+          - BYPASSED
+          - SKIPPED
+          title: status
+          type: string
+        baseline_status:
+          enum:
+          - none
+          - limited
+          - newly
+          - widely
+          title: baseline_status
+          type: string
+        confidence_score:
+          format: float
+          title: confidence_score
+          type: number
+        reasoning:
+          title: reasoning
+          type: string
+        suggested_doc_links:
+          items:
+            type: string
+          title: suggested_doc_links
+          type: array
+        version_token:
+          title: version_token
+          type: integer
+        created:
+          format: date-time
+          title: created
+          type: string
+        updated:
+          format: date-time
+          title: updated
+          type: string
+      required:
+      - created
+      - feature_id
+      - status
+      - updated
+      - version_token
+      title: SummarySuggestion
+      type: object
+    SummarySuggestionResponse:
+      example:
+        suggestion:
+          feature_id: 0
+          suggested_summary: suggested_summary
+          suggested_doc_links:
+          - suggested_doc_links
+          - suggested_doc_links
+          original_summary: original_summary
+          created: 2000-01-23T04:56:07.000+00:00
+          confidence_score: 6.0274563
+          reasoning: reasoning
+          version_token: 1
+          baseline_status: none
+          updated: 2000-01-23T04:56:07.000+00:00
+          status: UNKNOWN
+        can_edit: true
+        progress_steps:
+        - tool_name: search_mdn_tool
+          attempt_count: 0
+          end_timestamp: 2000-01-23T04:56:07.000+00:00
+          start_timestamp: 2000-01-23T04:56:07.000+00:00
+          step_id: UNKNOWN
+          message: message
+          status: UNKNOWN
+        - tool_name: search_mdn_tool
+          attempt_count: 0
+          end_timestamp: 2000-01-23T04:56:07.000+00:00
+          start_timestamp: 2000-01-23T04:56:07.000+00:00
+          step_id: UNKNOWN
+          message: message
+          status: UNKNOWN
+      properties:
+        suggestion:
+          $ref: '#/components/schemas/SummarySuggestion'
+        progress_steps:
+          items:
+            $ref: '#/components/schemas/SummaryProgressStep'
+          title: progress_steps
+          type: array
+        can_edit:
+          title: can_edit
+          type: boolean
+      required:
+      - can_edit
+      - progress_steps
+      - suggestion
+      title: SummarySuggestionResponse
+      type: object
+    SummarySuggestionPatchRequest:
+      example:
+        suggested_summary: suggested_summary
+        original_summary: original_summary
+        version_token: 0
+        status: UNKNOWN
+      properties:
+        status:
+          enum:
+          - UNKNOWN
+          - PROPOSED
+          - PENDING
+          - APPLIED
+          - REJECTED
+          - DISCARDED
+          - BYPASSED
+          - SKIPPED
+          title: status
+          type: string
+        suggested_summary:
+          title: suggested_summary
+          type: string
+        original_summary:
+          title: original_summary
+          type: string
+        version_token:
+          title: version_token
+          type: integer
+      required:
+      - version_token
+      title: SummarySuggestionPatchRequest
+      type: object
+    SummarySuggestionListResponse:
+      example:
+        next_cursor: next_cursor
+        total_count: 5
+        suggestions:
+        - feature_id: 0
+          suggested_summary: suggested_summary
+          suggested_doc_links:
+          - suggested_doc_links
+          - suggested_doc_links
+          original_summary: original_summary
+          created: 2000-01-23T04:56:07.000+00:00
+          confidence_score: 6.0274563
+          reasoning: reasoning
+          version_token: 1
+          baseline_status: none
+          updated: 2000-01-23T04:56:07.000+00:00
+          status: UNKNOWN
+        - feature_id: 0
+          suggested_summary: suggested_summary
+          suggested_doc_links:
+          - suggested_doc_links
+          - suggested_doc_links
+          original_summary: original_summary
+          created: 2000-01-23T04:56:07.000+00:00
+          confidence_score: 6.0274563
+          reasoning: reasoning
+          version_token: 1
+          baseline_status: none
+          updated: 2000-01-23T04:56:07.000+00:00
+          status: UNKNOWN
+      properties:
+        suggestions:
+          items:
+            $ref: '#/components/schemas/SummarySuggestion'
+          title: suggestions
+          type: array
+        next_cursor:
+          title: next_cursor
+          type: string
+        total_count:
+          title: total_count
+          type: integer
+      required:
+      - suggestions
+      - total_count
+      title: SummarySuggestionListResponse
+      type: object
+    PendingCountResponse:
+      example:
+        count: 0
+      properties:
+        count:
+          title: count
+          type: integer
+      required:
+      - count
+      title: PendingCountResponse
+      type: object
+    MilestoneCurationResponse:
+      example:
+        milestone: 0
+        curator_emails:
+        - curator_emails
+        - curator_emails
+        last_reviewed: 2000-01-23T04:56:07.000+00:00
+        status: PENDING
+      properties:
+        milestone:
+          title: milestone
+          type: integer
+        status:
+          enum:
+          - PENDING
+          - IN_REVIEW
+          - COMPLETED
+          title: status
+          type: string
+        curator_emails:
+          items:
+            type: string
+          title: curator_emails
+          type: array
+        last_reviewed:
+          format: date-time
+          title: last_reviewed
+          type: string
+      required:
+      - curator_emails
+      - milestone
+      - status
+      title: MilestoneCurationResponse
+      type: object
+    MilestoneCurationPatchRequest:
+      example:
+        curator_emails:
+        - curator_emails
+        - curator_emails
+        status: PENDING
+      properties:
+        status:
+          enum:
+          - PENDING
+          - IN_REVIEW
+          - COMPLETED
+          title: status
+          type: string
+        curator_emails:
+          items:
+            type: string
+          title: curator_emails
+          type: array
+      title: MilestoneCurationPatchRequest
+      type: object
+    ReleaseNoteFeature:
+      example:
+        summary: summary
+        feature_type: 5
+        category_name: category_name
+        name: name
+        id: 6
+        has_applied_suggestion: true
+        category: 1
+        baseline_status: none
+      properties:
+        id:
+          title: id
+          type: integer
+        name:
+          title: name
+          type: string
+        summary:
+          title: summary
+          type: string
+        category:
+          title: category
+          type: integer
+        category_name:
+          title: category_name
+          type: string
+        feature_type:
+          title: feature_type
+          type: integer
+        baseline_status:
+          enum:
+          - none
+          - limited
+          - newly
+          - widely
+          title: baseline_status
+          type: string
+        has_applied_suggestion:
+          title: has_applied_suggestion
+          type: boolean
+      required:
+      - category
+      - feature_type
+      - id
+      - name
+      title: ReleaseNoteFeature
+      type: object
+    ReleaseNotesResponse:
+      example:
+        milestone: 0
+        archival_banner: archival_banner
+        categories:
+          key:
+          - summary: summary
+            feature_type: 5
+            category_name: category_name
+            name: name
+            id: 6
+            has_applied_suggestion: true
+            category: 1
+            baseline_status: none
+          - summary: summary
+            feature_type: 5
+            category_name: category_name
+            name: name
+            id: 6
+            has_applied_suggestion: true
+            category: 1
+            baseline_status: none
+      properties:
+        milestone:
+          title: milestone
+          type: integer
+        categories:
+          additionalProperties:
+            items:
+              $ref: '#/components/schemas/ReleaseNoteFeature'
+            type: array
+          title: categories
+          type: object
+        archival_banner:
+          title: archival_banner
+          type: string
+      required:
+      - categories
+      - milestone
+      title: ReleaseNotesResponse
       type: object
     addAttachment_request:
       properties:

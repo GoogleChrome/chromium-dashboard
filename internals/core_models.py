@@ -521,6 +521,8 @@ class MilestoneCuration(ndb.Model):
     """
 
     milestone = ndb.IntegerProperty(required=True)
-    curator_email = ndb.StringProperty()
-    status = ndb.StringProperty(default='PENDING')
+    curator_emails = ndb.StringProperty(repeated=True)
+    status = ndb.StringProperty(
+        default=core_enums.MilestoneCurationStatus.PENDING
+    )
     updated = ndb.DateTimeProperty(auto_now=True, tzinfo=datetime.timezone.utc)

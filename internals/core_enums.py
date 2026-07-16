@@ -1075,3 +1075,14 @@ class BaselineStatus(str, Enum):
     LIMITED = 'limited'
     NEWLY = 'newly'
     WIDELY = 'widely'
+
+
+class MilestoneCurationStatus(str, Enum):
+    """Editorial curation status constants for a release milestone.
+
+    Serialized directly in milestone curation API responses (`/milestone-curation/{milestone}`).
+    """
+
+    PENDING = 'PENDING'
+    IN_REVIEW = 'IN_REVIEW'
+    COMPLETED = 'COMPLETED'

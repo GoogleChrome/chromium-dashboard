@@ -1032,6 +1032,283 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ReleaseNotesL10nResponse'
+  /releasenotes/{milestone}:
+    get:
+      summary: Get categorized release notes for a milestone (read-only)
+      operationId: getReleaseNotes
+      parameters:
+        - name: milestone
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+          description: Target Chromium milestone number (positive integer)
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReleaseNotesResponse'
+        '400':
+          description: Bad Request - Invalid milestone parameter
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '404':
+          description: Milestone not found or has no release notes
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+  /summary-suggestions/{feature_id}:
+    parameters:
+      - name: feature_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          minimum: 1
+        description: Feature ID (positive integer)
+    get:
+      summary: Get AI summary suggestion and progress timeline for a feature
+      operationId: getSummarySuggestion
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SummarySuggestionResponse'
+        '400':
+          description: Bad Request - Invalid feature_id parameter
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '401':
+          description: Unauthorized - Authentication required to view confidential feature
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '403':
+          description: Forbidden - BOLA/IDOR check failed (`permissions.can_view_feature` returned false)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '404':
+          description: Feature or suggestion not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+    patch:
+      summary: Update AI summary suggestion status or fields
+      operationId: updateSummarySuggestion
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SummarySuggestionPatchRequest'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SummarySuggestionResponse'
+        '400':
+          description: Bad Request - Malformed JSON body, invalid enum, or missing required version_token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '401':
+          description: Unauthorized - Authentication required to edit summary suggestion
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '403':
+          description: Forbidden - Insufficient editorial/author permissions (`can_edit_any_feature`)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '404':
+          description: Feature or suggestion not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '409':
+          description: Conflict - OCC version token mismatch
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+  /summary-suggestions/pending-count:
+    get:
+      summary: Get aggregated O(1) count of pending summary suggestions across all features
+      operationId: getPendingSummarySuggestionsCount
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PendingCountResponse'
+        '401':
+          description: Unauthorized - Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '403':
+          description: Forbidden - Insufficient editorial permissions to view review queue metrics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+  /summary-suggestions/pending:
+    get:
+      summary: Get paginated list of pending summary suggestions for DevRel review queue
+      operationId: getPendingSummarySuggestions
+      parameters:
+        - name: cursor
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Cursor token for pagination
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 25
+          description: Maximum number of suggestions to return (capped at 100 to prevent OOM/Datastore DoS)
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SummarySuggestionListResponse'
+        '400':
+          description: Bad Request - Invalid pagination limit or cursor parameter
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '401':
+          description: Unauthorized - Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '403':
+          description: Forbidden - Insufficient editorial permissions (`can_review_release_notes`)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+  /milestone-curation/{milestone}:
+    parameters:
+      - name: milestone
+        in: path
+        required: true
+        schema:
+          type: integer
+          minimum: 1
+        description: Target Chromium milestone number (positive integer)
+    get:
+      summary: Get editorial review status and curation details for a release milestone
+      operationId: getMilestoneCuration
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MilestoneCurationResponse'
+        '400':
+          description: Bad Request - Invalid milestone parameter
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '401':
+          description: Unauthorized - Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '403':
+          description: Forbidden - Insufficient permissions to view editorial curation details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '404':
+          description: Milestone curation record not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+    patch:
+      summary: Update editorial review status or curator assignment for a release milestone
+      operationId: updateMilestoneCuration
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MilestoneCurationPatchRequest'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MilestoneCurationResponse'
+        '400':
+          description: Bad Request - Malformed payload, invalid status enum, or invalid curator emails
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '401':
+          description: Unauthorized - Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '403':
+          description: Forbidden - Insufficient editorial/admin review permissions (`can_review_release_notes` / `can_edit_all`)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '404':
+          description: Milestone curation record not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '409':
+          description: Conflict - Concurrent editorial update conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
 components:
   parameters:
     startAtParam:
@@ -2103,3 +2380,189 @@ components:
         descriptions:
           type: object
           additionalProperties: true
+
+    SummaryProgressStep:
+      type: object
+      required:
+        - step_id
+        - status
+        - start_timestamp
+      properties:
+        step_id:
+          type: string
+          enum: [UNKNOWN, START, SEARCH_MDN, READ_SPEC, LLM_GENERATION, EVALUATION, SUCCESS]
+        status:
+          type: string
+          enum: [UNKNOWN, START, IN_PROGRESS, SUCCESS, FAILED, RETRYING]
+        message:
+          type: string
+        tool_name:
+          type: string
+          enum: [search_mdn_tool, verify_doc_link_tool, read_spec_link_tool]
+        attempt_count:
+          type: integer
+          default: 1
+        start_timestamp:
+          type: string
+          format: date-time
+        end_timestamp:
+          type: string
+          format: date-time
+    SummarySuggestion:
+      type: object
+      required:
+        - feature_id
+        - status
+        - version_token
+        - created
+        - updated
+      properties:
+        feature_id:
+          type: integer
+        suggested_summary:
+          type: string
+        original_summary:
+          type: string
+        status:
+          type: string
+          enum: [UNKNOWN, PROPOSED, PENDING, APPLIED, REJECTED, DISCARDED, BYPASSED, SKIPPED]
+        baseline_status:
+          type: string
+          enum: [none, limited, newly, widely]
+        confidence_score:
+          type: number
+          format: float
+        reasoning:
+          type: string
+        suggested_doc_links:
+          type: array
+          items:
+            type: string
+        version_token:
+          type: integer
+        created:
+          type: string
+          format: date-time
+        updated:
+          type: string
+          format: date-time
+    SummarySuggestionResponse:
+      type: object
+      required:
+        - suggestion
+        - progress_steps
+        - can_edit
+      properties:
+        suggestion:
+          $ref: '#/components/schemas/SummarySuggestion'
+        progress_steps:
+          type: array
+          items:
+            $ref: '#/components/schemas/SummaryProgressStep'
+        can_edit:
+          type: boolean
+    SummarySuggestionPatchRequest:
+      type: object
+      required:
+        - version_token
+      properties:
+        status:
+          type: string
+          enum: [UNKNOWN, PROPOSED, PENDING, APPLIED, REJECTED, DISCARDED, BYPASSED, SKIPPED]
+        suggested_summary:
+          type: string
+        original_summary:
+          type: string
+        version_token:
+          type: integer
+    SummarySuggestionListResponse:
+      type: object
+      required:
+        - suggestions
+        - total_count
+      properties:
+        suggestions:
+          type: array
+          items:
+            $ref: '#/components/schemas/SummarySuggestion'
+        next_cursor:
+          type: string
+        total_count:
+          type: integer
+    PendingCountResponse:
+      type: object
+      required:
+        - count
+      properties:
+        count:
+          type: integer
+    MilestoneCurationResponse:
+      type: object
+      required:
+        - milestone
+        - status
+        - curator_emails
+      properties:
+        milestone:
+          type: integer
+        status:
+          type: string
+          enum: [PENDING, IN_REVIEW, COMPLETED]
+        curator_emails:
+          type: array
+          items:
+            type: string
+        last_reviewed:
+          type: string
+          format: date-time
+    MilestoneCurationPatchRequest:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [PENDING, IN_REVIEW, COMPLETED]
+        curator_emails:
+          type: array
+          items:
+            type: string
+    ReleaseNoteFeature:
+      type: object
+      required:
+        - id
+        - name
+        - category
+        - feature_type
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        summary:
+          type: string
+        category:
+          type: integer
+        category_name:
+          type: string
+        feature_type:
+          type: integer
+        baseline_status:
+          type: string
+          enum: [none, limited, newly, widely]
+        has_applied_suggestion:
+          type: boolean
+    ReleaseNotesResponse:
+      type: object
+      required:
+        - milestone
+        - categories
+      properties:
+        milestone:
+          type: integer
+        categories:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              $ref: '#/components/schemas/ReleaseNoteFeature'
+        archival_banner:
+          type: string

@@ -28,8 +28,11 @@ from chromestatus_openapi.models.get_settings_response import GetSettingsRespons
 from chromestatus_openapi.models.get_stars_response import GetStarsResponse  # noqa: E501
 from chromestatus_openapi.models.get_votes_response import GetVotesResponse  # noqa: E501
 from chromestatus_openapi.models.message_response import MessageResponse  # noqa: E501
+from chromestatus_openapi.models.milestone_curation_patch_request import MilestoneCurationPatchRequest  # noqa: E501
+from chromestatus_openapi.models.milestone_curation_response import MilestoneCurationResponse  # noqa: E501
 from chromestatus_openapi.models.patch_comment_request import PatchCommentRequest  # noqa: E501
 from chromestatus_openapi.models.patch_gate_request import PatchGateRequest  # noqa: E501
+from chromestatus_openapi.models.pending_count_response import PendingCountResponse  # noqa: E501
 from chromestatus_openapi.models.permissions_response import PermissionsResponse  # noqa: E501
 from chromestatus_openapi.models.post_intent_request import PostIntentRequest  # noqa: E501
 from chromestatus_openapi.models.post_settings_request import PostSettingsRequest  # noqa: E501
@@ -37,11 +40,15 @@ from chromestatus_openapi.models.post_vote_request import PostVoteRequest  # noq
 from chromestatus_openapi.models.process import Process  # noqa: E501
 from chromestatus_openapi.models.reject_unneeded_get_request import RejectUnneededGetRequest  # noqa: E501
 from chromestatus_openapi.models.release_notes_l10n_response import ReleaseNotesL10nResponse  # noqa: E501
+from chromestatus_openapi.models.release_notes_response import ReleaseNotesResponse  # noqa: E501
 from chromestatus_openapi.models.review_latency import ReviewLatency  # noqa: E501
 from chromestatus_openapi.models.set_star_request import SetStarRequest  # noqa: E501
 from chromestatus_openapi.models.sign_in_request import SignInRequest  # noqa: E501
 from chromestatus_openapi.models.spec_mentor import SpecMentor  # noqa: E501
 from chromestatus_openapi.models.success_message import SuccessMessage  # noqa: E501
+from chromestatus_openapi.models.summary_suggestion_list_response import SummarySuggestionListResponse  # noqa: E501
+from chromestatus_openapi.models.summary_suggestion_patch_request import SummarySuggestionPatchRequest  # noqa: E501
+from chromestatus_openapi.models.summary_suggestion_response import SummarySuggestionResponse  # noqa: E501
 from chromestatus_openapi import util
 
 
@@ -334,6 +341,19 @@ def get_intent_body(feature_id, stage_id, gate_id):  # noqa: E501
     return 'do some magic!'
 
 
+def get_milestone_curation(milestone):  # noqa: E501
+    """Get editorial review status and curation details for a release milestone
+
+     # noqa: E501
+
+    :param milestone: Target Chromium milestone number (positive integer)
+    :type milestone: int
+
+    :rtype: Union[MilestoneCurationResponse, Tuple[MilestoneCurationResponse, int], Tuple[MilestoneCurationResponse, int, Dict[str, str]]
+    """
+    return 'do some magic!'
+
+
 def get_origin_trials():  # noqa: E501
     """Get origin trials
 
@@ -352,6 +372,32 @@ def get_pending_gates():  # noqa: E501
 
 
     :rtype: Union[GetGateResponse, Tuple[GetGateResponse, int], Tuple[GetGateResponse, int, Dict[str, str]]
+    """
+    return 'do some magic!'
+
+
+def get_pending_summary_suggestions(cursor=None, limit=None):  # noqa: E501
+    """Get paginated list of pending summary suggestions for DevRel review queue
+
+     # noqa: E501
+
+    :param cursor: Cursor token for pagination
+    :type cursor: str
+    :param limit: Maximum number of suggestions to return (capped at 100 to prevent OOM/Datastore DoS)
+    :type limit: int
+
+    :rtype: Union[SummarySuggestionListResponse, Tuple[SummarySuggestionListResponse, int], Tuple[SummarySuggestionListResponse, int, Dict[str, str]]
+    """
+    return 'do some magic!'
+
+
+def get_pending_summary_suggestions_count():  # noqa: E501
+    """Get aggregated O(1) count of pending summary suggestions across all features
+
+     # noqa: E501
+
+
+    :rtype: Union[PendingCountResponse, Tuple[PendingCountResponse, int], Tuple[PendingCountResponse, int, Dict[str, str]]
     """
     return 'do some magic!'
 
@@ -382,6 +428,19 @@ def get_progress(feature_id):  # noqa: E501
     return 'do some magic!'
 
 
+def get_release_notes(milestone):  # noqa: E501
+    """Get categorized release notes for a milestone (read-only)
+
+     # noqa: E501
+
+    :param milestone: Target Chromium milestone number (positive integer)
+    :type milestone: int
+
+    :rtype: Union[ReleaseNotesResponse, Tuple[ReleaseNotesResponse, int], Tuple[ReleaseNotesResponse, int, Dict[str, str]]
+    """
+    return 'do some magic!'
+
+
 def get_release_notes_l10n(start_milestone, end_milestone):  # noqa: E501
     """Get release notes for a milestone range (localized)
 
@@ -404,6 +463,19 @@ def get_stars():  # noqa: E501
 
 
     :rtype: Union[List[GetStarsResponse], Tuple[List[GetStarsResponse], int], Tuple[List[GetStarsResponse], int, Dict[str, str]]
+    """
+    return 'do some magic!'
+
+
+def get_summary_suggestion(feature_id):  # noqa: E501
+    """Get AI summary suggestion and progress timeline for a feature
+
+     # noqa: E501
+
+    :param feature_id: Feature ID (positive integer)
+    :type feature_id: int
+
+    :rtype: Union[SummarySuggestionResponse, Tuple[SummarySuggestionResponse, int], Tuple[SummarySuggestionResponse, int, Dict[str, str]]
     """
     return 'do some magic!'
 
@@ -703,4 +775,38 @@ def update_feature_comment(feature_id, patch_comment_request):  # noqa: E501
     """
     if connexion.request.is_json:
         patch_comment_request = PatchCommentRequest.from_dict(connexion.request.get_json())  # noqa: E501
+    return 'do some magic!'
+
+
+def update_milestone_curation(milestone, milestone_curation_patch_request):  # noqa: E501
+    """Update editorial review status or curator assignment for a release milestone
+
+     # noqa: E501
+
+    :param milestone: Target Chromium milestone number (positive integer)
+    :type milestone: int
+    :param milestone_curation_patch_request: 
+    :type milestone_curation_patch_request: dict | bytes
+
+    :rtype: Union[MilestoneCurationResponse, Tuple[MilestoneCurationResponse, int], Tuple[MilestoneCurationResponse, int, Dict[str, str]]
+    """
+    if connexion.request.is_json:
+        milestone_curation_patch_request = MilestoneCurationPatchRequest.from_dict(connexion.request.get_json())  # noqa: E501
+    return 'do some magic!'
+
+
+def update_summary_suggestion(feature_id, summary_suggestion_patch_request):  # noqa: E501
+    """Update AI summary suggestion status or fields
+
+     # noqa: E501
+
+    :param feature_id: Feature ID (positive integer)
+    :type feature_id: int
+    :param summary_suggestion_patch_request: 
+    :type summary_suggestion_patch_request: dict | bytes
+
+    :rtype: Union[SummarySuggestionResponse, Tuple[SummarySuggestionResponse, int], Tuple[SummarySuggestionResponse, int, Dict[str, str]]
+    """
+    if connexion.request.is_json:
+        summary_suggestion_patch_request = SummarySuggestionPatchRequest.from_dict(connexion.request.get_json())  # noqa: E501
     return 'do some magic!'

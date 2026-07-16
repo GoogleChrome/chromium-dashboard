@@ -40,8 +40,11 @@ import type {
   GetStarsResponse,
   GetVotesResponse,
   MessageResponse,
+  MilestoneCurationPatchRequest,
+  MilestoneCurationResponse,
   PatchCommentRequest,
   PatchGateRequest,
+  PendingCountResponse,
   PermissionsResponse,
   PostIntentRequest,
   PostSettingsRequest,
@@ -49,11 +52,15 @@ import type {
   Process,
   RejectUnneededGetRequest,
   ReleaseNotesL10nResponse,
+  ReleaseNotesResponse,
   ReviewLatency,
   SetStarRequest,
   SignInRequest,
   SpecMentor,
   SuccessMessage,
+  SummarySuggestionListResponse,
+  SummarySuggestionPatchRequest,
+  SummarySuggestionResponse,
 } from '../models/index';
 import {
     AccountResponseFromJSON,
@@ -106,10 +113,16 @@ import {
     GetVotesResponseToJSON,
     MessageResponseFromJSON,
     MessageResponseToJSON,
+    MilestoneCurationPatchRequestFromJSON,
+    MilestoneCurationPatchRequestToJSON,
+    MilestoneCurationResponseFromJSON,
+    MilestoneCurationResponseToJSON,
     PatchCommentRequestFromJSON,
     PatchCommentRequestToJSON,
     PatchGateRequestFromJSON,
     PatchGateRequestToJSON,
+    PendingCountResponseFromJSON,
+    PendingCountResponseToJSON,
     PermissionsResponseFromJSON,
     PermissionsResponseToJSON,
     PostIntentRequestFromJSON,
@@ -124,6 +137,8 @@ import {
     RejectUnneededGetRequestToJSON,
     ReleaseNotesL10nResponseFromJSON,
     ReleaseNotesL10nResponseToJSON,
+    ReleaseNotesResponseFromJSON,
+    ReleaseNotesResponseToJSON,
     ReviewLatencyFromJSON,
     ReviewLatencyToJSON,
     SetStarRequestFromJSON,
@@ -134,6 +149,12 @@ import {
     SpecMentorToJSON,
     SuccessMessageFromJSON,
     SuccessMessageToJSON,
+    SummarySuggestionListResponseFromJSON,
+    SummarySuggestionListResponseToJSON,
+    SummarySuggestionPatchRequestFromJSON,
+    SummarySuggestionPatchRequestToJSON,
+    SummarySuggestionResponseFromJSON,
+    SummarySuggestionResponseToJSON,
 } from '../models/index';
 
 export interface AddAttachmentRequest {
@@ -220,6 +241,15 @@ export interface GetIntentBodyRequest {
     gateId: number;
 }
 
+export interface GetMilestoneCurationRequest {
+    milestone: number;
+}
+
+export interface GetPendingSummarySuggestionsRequest {
+    cursor?: string;
+    limit?: number;
+}
+
 export interface GetProcessRequest {
     featureId: number;
 }
@@ -228,9 +258,17 @@ export interface GetProgressRequest {
     featureId: number;
 }
 
+export interface GetReleaseNotesRequest {
+    milestone: number;
+}
+
 export interface GetReleaseNotesL10nRequest {
     startMilestone: number;
     endMilestone: number;
+}
+
+export interface GetSummarySuggestionRequest {
+    featureId: number;
 }
 
 export interface GetUserPermissionsRequest {
@@ -295,6 +333,16 @@ export interface SetVoteForFeatureAndGateRequest {
 export interface UpdateFeatureCommentRequest {
     featureId: number;
     patchCommentRequest: PatchCommentRequest;
+}
+
+export interface UpdateMilestoneCurationRequest {
+    milestone: number;
+    milestoneCurationPatchRequest: MilestoneCurationPatchRequest;
+}
+
+export interface UpdateSummarySuggestionRequest {
+    featureId: number;
+    summarySuggestionPatchRequest: SummarySuggestionPatchRequest;
 }
 
 /**
@@ -605,6 +653,21 @@ export interface DefaultApiInterface {
 
     /**
      * 
+     * @summary Get editorial review status and curation details for a release milestone
+     * @param {number} milestone Target Chromium milestone number (positive integer)
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApiInterface
+     */
+    getMilestoneCurationRaw(requestParameters: GetMilestoneCurationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<MilestoneCurationResponse>>;
+
+    /**
+     * Get editorial review status and curation details for a release milestone
+     */
+    getMilestoneCuration(requestParameters: GetMilestoneCurationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<MilestoneCurationResponse>;
+
+    /**
+     * 
      * @summary Get origin trials
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -630,6 +693,36 @@ export interface DefaultApiInterface {
      * Get all pending gates
      */
     getPendingGates(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GetGateResponse>;
+
+    /**
+     * 
+     * @summary Get paginated list of pending summary suggestions for DevRel review queue
+     * @param {string} [cursor] Cursor token for pagination
+     * @param {number} [limit] Maximum number of suggestions to return (capped at 100 to prevent OOM/Datastore DoS)
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApiInterface
+     */
+    getPendingSummarySuggestionsRaw(requestParameters: GetPendingSummarySuggestionsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SummarySuggestionListResponse>>;
+
+    /**
+     * Get paginated list of pending summary suggestions for DevRel review queue
+     */
+    getPendingSummarySuggestions(requestParameters: GetPendingSummarySuggestionsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SummarySuggestionListResponse>;
+
+    /**
+     * 
+     * @summary Get aggregated O(1) count of pending summary suggestions across all features
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApiInterface
+     */
+    getPendingSummarySuggestionsCountRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<PendingCountResponse>>;
+
+    /**
+     * Get aggregated O(1) count of pending summary suggestions across all features
+     */
+    getPendingSummarySuggestionsCount(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<PendingCountResponse>;
 
     /**
      * 
@@ -663,6 +756,21 @@ export interface DefaultApiInterface {
 
     /**
      * 
+     * @summary Get categorized release notes for a milestone (read-only)
+     * @param {number} milestone Target Chromium milestone number (positive integer)
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApiInterface
+     */
+    getReleaseNotesRaw(requestParameters: GetReleaseNotesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ReleaseNotesResponse>>;
+
+    /**
+     * Get categorized release notes for a milestone (read-only)
+     */
+    getReleaseNotes(requestParameters: GetReleaseNotesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ReleaseNotesResponse>;
+
+    /**
+     * 
      * @summary Get release notes for a milestone range (localized)
      * @param {number} startMilestone The start milestone of the range
      * @param {number} endMilestone The end milestone of the range
@@ -690,6 +798,21 @@ export interface DefaultApiInterface {
      * Get a list of all starred feature IDs for the signed-in user
      */
     getStars(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<GetStarsResponse>>;
+
+    /**
+     * 
+     * @summary Get AI summary suggestion and progress timeline for a feature
+     * @param {number} featureId Feature ID (positive integer)
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApiInterface
+     */
+    getSummarySuggestionRaw(requestParameters: GetSummarySuggestionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SummarySuggestionResponse>>;
+
+    /**
+     * Get AI summary suggestion and progress timeline for a feature
+     */
+    getSummarySuggestion(requestParameters: GetSummarySuggestionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SummarySuggestionResponse>;
 
     /**
      * 
@@ -1009,6 +1132,38 @@ export interface DefaultApiInterface {
      * Update a comment on a feature
      */
     updateFeatureComment(requestParameters: UpdateFeatureCommentRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SuccessMessage>;
+
+    /**
+     * 
+     * @summary Update editorial review status or curator assignment for a release milestone
+     * @param {number} milestone Target Chromium milestone number (positive integer)
+     * @param {MilestoneCurationPatchRequest} milestoneCurationPatchRequest 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApiInterface
+     */
+    updateMilestoneCurationRaw(requestParameters: UpdateMilestoneCurationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<MilestoneCurationResponse>>;
+
+    /**
+     * Update editorial review status or curator assignment for a release milestone
+     */
+    updateMilestoneCuration(requestParameters: UpdateMilestoneCurationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<MilestoneCurationResponse>;
+
+    /**
+     * 
+     * @summary Update AI summary suggestion status or fields
+     * @param {number} featureId Feature ID (positive integer)
+     * @param {SummarySuggestionPatchRequest} summarySuggestionPatchRequest 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApiInterface
+     */
+    updateSummarySuggestionRaw(requestParameters: UpdateSummarySuggestionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SummarySuggestionResponse>>;
+
+    /**
+     * Update AI summary suggestion status or fields
+     */
+    updateSummarySuggestion(requestParameters: UpdateSummarySuggestionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SummarySuggestionResponse>;
 
 }
 
@@ -1731,6 +1886,39 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
     }
 
     /**
+     * Get editorial review status and curation details for a release milestone
+     */
+    async getMilestoneCurationRaw(requestParameters: GetMilestoneCurationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<MilestoneCurationResponse>> {
+        if (requestParameters['milestone'] == null) {
+            throw new runtime.RequiredError(
+                'milestone',
+                'Required parameter "milestone" was null or undefined when calling getMilestoneCuration().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/milestone-curation/{milestone}`.replace(`{${"milestone"}}`, encodeURIComponent(String(requestParameters['milestone']))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => MilestoneCurationResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Get editorial review status and curation details for a release milestone
+     */
+    async getMilestoneCuration(requestParameters: GetMilestoneCurationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<MilestoneCurationResponse> {
+        const response = await this.getMilestoneCurationRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Get origin trials
      */
     async getOriginTrialsRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GetOriginTrialsResponse>> {
@@ -1779,6 +1967,66 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
      */
     async getPendingGates(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GetGateResponse> {
         const response = await this.getPendingGatesRaw(initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Get paginated list of pending summary suggestions for DevRel review queue
+     */
+    async getPendingSummarySuggestionsRaw(requestParameters: GetPendingSummarySuggestionsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SummarySuggestionListResponse>> {
+        const queryParameters: any = {};
+
+        if (requestParameters['cursor'] != null) {
+            queryParameters['cursor'] = requestParameters['cursor'];
+        }
+
+        if (requestParameters['limit'] != null) {
+            queryParameters['limit'] = requestParameters['limit'];
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/summary-suggestions/pending`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => SummarySuggestionListResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Get paginated list of pending summary suggestions for DevRel review queue
+     */
+    async getPendingSummarySuggestions(requestParameters: GetPendingSummarySuggestionsRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SummarySuggestionListResponse> {
+        const response = await this.getPendingSummarySuggestionsRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Get aggregated O(1) count of pending summary suggestions across all features
+     */
+    async getPendingSummarySuggestionsCountRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<PendingCountResponse>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/summary-suggestions/pending-count`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => PendingCountResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Get aggregated O(1) count of pending summary suggestions across all features
+     */
+    async getPendingSummarySuggestionsCount(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<PendingCountResponse> {
+        const response = await this.getPendingSummarySuggestionsCountRaw(initOverrides);
         return await response.value();
     }
 
@@ -1845,6 +2093,39 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
      */
     async getProgress(requestParameters: GetProgressRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<{ [key: string]: any; }> {
         const response = await this.getProgressRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Get categorized release notes for a milestone (read-only)
+     */
+    async getReleaseNotesRaw(requestParameters: GetReleaseNotesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ReleaseNotesResponse>> {
+        if (requestParameters['milestone'] == null) {
+            throw new runtime.RequiredError(
+                'milestone',
+                'Required parameter "milestone" was null or undefined when calling getReleaseNotes().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/releasenotes/{milestone}`.replace(`{${"milestone"}}`, encodeURIComponent(String(requestParameters['milestone']))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => ReleaseNotesResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Get categorized release notes for a milestone (read-only)
+     */
+    async getReleaseNotes(requestParameters: GetReleaseNotesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ReleaseNotesResponse> {
+        const response = await this.getReleaseNotesRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
@@ -1919,6 +2200,39 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
      */
     async getStars(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<GetStarsResponse>> {
         const response = await this.getStarsRaw(initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Get AI summary suggestion and progress timeline for a feature
+     */
+    async getSummarySuggestionRaw(requestParameters: GetSummarySuggestionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SummarySuggestionResponse>> {
+        if (requestParameters['featureId'] == null) {
+            throw new runtime.RequiredError(
+                'featureId',
+                'Required parameter "featureId" was null or undefined when calling getSummarySuggestion().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/summary-suggestions/{feature_id}`.replace(`{${"feature_id"}}`, encodeURIComponent(String(requestParameters['featureId']))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => SummarySuggestionResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Get AI summary suggestion and progress timeline for a feature
+     */
+    async getSummarySuggestion(requestParameters: GetSummarySuggestionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SummarySuggestionResponse> {
+        const response = await this.getSummarySuggestionRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
@@ -2654,6 +2968,92 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
      */
     async updateFeatureComment(requestParameters: UpdateFeatureCommentRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SuccessMessage> {
         const response = await this.updateFeatureCommentRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Update editorial review status or curator assignment for a release milestone
+     */
+    async updateMilestoneCurationRaw(requestParameters: UpdateMilestoneCurationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<MilestoneCurationResponse>> {
+        if (requestParameters['milestone'] == null) {
+            throw new runtime.RequiredError(
+                'milestone',
+                'Required parameter "milestone" was null or undefined when calling updateMilestoneCuration().'
+            );
+        }
+
+        if (requestParameters['milestoneCurationPatchRequest'] == null) {
+            throw new runtime.RequiredError(
+                'milestoneCurationPatchRequest',
+                'Required parameter "milestoneCurationPatchRequest" was null or undefined when calling updateMilestoneCuration().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        const response = await this.request({
+            path: `/milestone-curation/{milestone}`.replace(`{${"milestone"}}`, encodeURIComponent(String(requestParameters['milestone']))),
+            method: 'PATCH',
+            headers: headerParameters,
+            query: queryParameters,
+            body: MilestoneCurationPatchRequestToJSON(requestParameters['milestoneCurationPatchRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => MilestoneCurationResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Update editorial review status or curator assignment for a release milestone
+     */
+    async updateMilestoneCuration(requestParameters: UpdateMilestoneCurationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<MilestoneCurationResponse> {
+        const response = await this.updateMilestoneCurationRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Update AI summary suggestion status or fields
+     */
+    async updateSummarySuggestionRaw(requestParameters: UpdateSummarySuggestionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SummarySuggestionResponse>> {
+        if (requestParameters['featureId'] == null) {
+            throw new runtime.RequiredError(
+                'featureId',
+                'Required parameter "featureId" was null or undefined when calling updateSummarySuggestion().'
+            );
+        }
+
+        if (requestParameters['summarySuggestionPatchRequest'] == null) {
+            throw new runtime.RequiredError(
+                'summarySuggestionPatchRequest',
+                'Required parameter "summarySuggestionPatchRequest" was null or undefined when calling updateSummarySuggestion().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        const response = await this.request({
+            path: `/summary-suggestions/{feature_id}`.replace(`{${"feature_id"}}`, encodeURIComponent(String(requestParameters['featureId']))),
+            method: 'PATCH',
+            headers: headerParameters,
+            query: queryParameters,
+            body: SummarySuggestionPatchRequestToJSON(requestParameters['summarySuggestionPatchRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => SummarySuggestionResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Update AI summary suggestion status or fields
+     */
+    async updateSummarySuggestion(requestParameters: UpdateSummarySuggestionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SummarySuggestionResponse> {
+        const response = await this.updateSummarySuggestionRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
