@@ -49,6 +49,16 @@ class CommentsConvertersTest(testing_config.CustomTestCase):
         self.assertEqual(oam.old_value, 'old')
         self.assertEqual(oam.new_value, 'new,fresh')
 
+    def test_amendment_to_OAM__trailing_brackets(self):
+        """We don't strip backets that don't look like an array."""
+        amend = Amendment(
+            field_name='summary', old_value='niice', new_value='niice [sic]'
+        )
+        oam = comments_api.amendment_to_OAM(amend)
+        self.assertEqual(oam.field_name, 'summary')
+        self.assertEqual(oam.old_value, 'niice')
+        self.assertEqual(oam.new_value, 'niice [sic]')
+
     def test_amendment_to_OAM__null(self):
         """We can convert, even if some field was specified."""
         amend = Amendment(field_name='summary', old_value='old')
