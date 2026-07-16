@@ -41,5 +41,7 @@ class SitemapHandler(basehandlers.FlaskHandler):
         feature_ids = [k.integer_id() for k in keys]
         feature_ids.sort()
 
-        content = ''.join(f'https://chromestatus.com/feature/{fid}\n' for fid in feature_ids)
+        content = ''.join(
+            f'https://chromestatus.com/feature/{fid}\n' for fid in feature_ids
+        )
         return content, headers
