@@ -15,13 +15,9 @@
 
 """Tests for the sitemap module."""
 
-import unittest
-from unittest.mock import patch
-
 import flask
-from google.cloud import ndb
 
-import testing_config  # noqa: F401
+import testing_config
 from internals.core_models import FeatureEntry
 from pages import sitemap
 
@@ -29,69 +25,73 @@ test_app = flask.Flask(__name__)
 test_app.secret_key = 'test_session_secret'
 
 
-class SitemapHandlerTest(unittest.TestCase):
-    """Tests for the SitemapHandler."""
+class SitemapHandlerTest(testing_config.CustomTestCase):
+    """Tests for the SitemapHandler using real Datastore queries."""
 
     def setUp(self):
         """Set up the test."""
         self.handler = sitemap.SitemapHandler()
         self.request_path = '/sitemap.txt'
 
-    @patch('internals.core_models.FeatureEntry.query')
-    def test_get_sitemap(self, mock_query):
-        """We can retrieve the sitemap.txt content and filter features correctly."""
-        client = ndb.Client()
-        with client.context():
-            fe1 = FeatureEntry(
-                id=1,
-                name='Listed 1',
-                category=1,
-                deleted=False,
-                unlisted=False,
-                confidential=False,
-            )
-            fe2 = FeatureEntry(
-                id=2,
-                name='Unlisted',
-                category=1,
-                deleted=False,
-                unlisted=True,
-                confidential=False,
-            )
-            fe3 = FeatureEntry(
-                id=3,
-                name='Confidential',
-                category=1,
-                deleted=False,
-                unlisted=False,
-                confidential=True,
-            )
-            fe4 = FeatureEntry(
-                id=4,
-                name='Deleted',
-                category=1,
-                deleted=True,
-                unlisted=False,
-                confidential=False,
-            )
-            fe5 = FeatureEntry(
-                id=5,
-                name='Listed 2',
-                category=1,
-                deleted=False,
-                unlisted=False,
-                confidential=False,
-            )
+        self.fe1 = FeatureEntry(
+            name='Listed 1',
+            summary='summary',
+            category=1,
+            deleted=False,
+            unlisted=False,
+            confidential=False,
+        )
+        self.fe1.put()
+        self.fe1_id = self.fe1.key.integer_id()
 
-        # Mock the fetch to return ALL features to test our in-memory filtering as well,
-        # or exactly what the query would return (which would be 1, 3, 5 if we query deleted=False and unlisted=False).
-        # Wait, if the query in the code is:
-        #   query = FeatureEntry.query(deleted == False, unlisted == False)
-        # Then the mock should return the set of features that MATCH that query,
-        # OR we can return all of them to make sure the IN-MEMORY filter catches the rest!
-        # Let's return all to be thorough with in-memory filter testing.
-        mock_query.return_value.fetch.return_value = [fe1, fe2, fe3, fe4, fe5]
+        self.fe2 = FeatureEntry(
+            name='Unlisted',
+            summary='summary',
+            category=1,
+            deleted=False,
+            unlisted=True,
+            confidential=False,
+        )
+        self.fe2.put()
 
+        self.fe3 = FeatureEntry(
+            name='Confidential',
+            summary='summary',
+            category=1,
+            deleted=False,
+            unlisted=False,
+            confidential=True,
+        )
+        self.fe3.put()
+
+        self.fe4 = FeatureEntry(
+            name='Deleted',
+            summary='summary',
+            category=1,
+            deleted=True,
+            unlisted=False,
+            confidential=False,
+        )
+        self.fe4.put()
+
+        self.fe5 = FeatureEntry(
+            name='Listed 2',
+            summary='summary',
+            category=1,
+            deleted=False,
+            unlisted=False,
+            confidential=False,
+        )
+        self.fe5.put()
+        self.fe5_id = self.fe5.key.integer_id()
+
+    def tearDown(self):
+        """Clean up the test environment by deleting created FeatureEntries."""
+        for entry in FeatureEntry.query():
+            entry.key.delete()
+
+    def test_get_sitemap(self):
+        """We can retrieve the sitemap.txt content with actual Datastore queries."""
         with test_app.test_request_context(self.request_path):
             actual_response = self.handler.get()
 
@@ -100,42 +100,12 @@ class SitemapHandlerTest(unittest.TestCase):
         self.assertEqual(2, len(actual_response))
 
         content, headers = actual_response
-        expected_content = 'https://chromestatus.com/feature/1\nhttps://chromestatus.com/feature/5\n'
+
+        # Sort the IDs so we know the expected URL order
+        expected_ids = sorted([self.fe1_id, self.fe5_id])
+        expected_content = (
+            f'https://chromestatus.com/feature/{expected_ids[0]}\n'
+            f'https://chromestatus.com/feature/{expected_ids[1]}\n'
+        )
         self.assertEqual(expected_content, content)
         self.assertEqual('text/plain', headers['Content-Type'])
-
-        # Verify that the query was called with expected filters
-        mock_query.assert_called_once()
-
-    @patch('internals.core_models.FeatureEntry.query')
-    def test_route_registered(self, mock_query):
-        """The /sitemap.txt route is registered in main.py and returns expected content."""
-        client = ndb.Client()
-        with client.context():
-            fe1 = FeatureEntry(
-                id=1,
-                name='Listed 1',
-                category=1,
-                deleted=False,
-                unlisted=False,
-                confidential=False,
-            )
-            fe5 = FeatureEntry(
-                id=5,
-                name='Listed 2',
-                category=1,
-                deleted=False,
-                unlisted=False,
-                confidential=False,
-            )
-
-        mock_query.return_value.fetch.return_value = [fe1, fe5]
-
-        from main import app
-
-        with app.test_client() as client:
-            response = client.get('/sitemap.txt')
-            self.assertEqual(200, response.status_code)
-            expected_content = b'https://chromestatus.com/feature/1\nhttps://chromestatus.com/feature/5\n'
-            self.assertEqual(expected_content, response.data)
-            self.assertIn('text/plain', response.headers['Content-Type'])

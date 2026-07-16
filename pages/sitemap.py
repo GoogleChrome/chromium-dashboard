@@ -27,20 +27,16 @@ class SitemapHandler(basehandlers.FlaskHandler):
         headers = self.get_headers()
         headers['Content-Type'] = 'text/plain'
 
-        # Query for non-deleted and non-unlisted features.
-        # We filter confidential in memory to be safe with default/None values,
-        # and double check unlisted and deleted as well.
+        # Query for non-deleted, non-unlisted, and non-confidential features.
+        # We use keys_only=True for optimal performance and memory footprint.
         query = FeatureEntry.query(
             FeatureEntry.deleted == False,  # noqa: E712
             FeatureEntry.unlisted == False,  # noqa: E712
+            FeatureEntry.confidential == False,  # noqa: E712
         )
-        features = query.fetch()
+        keys = query.fetch(keys_only=True)
 
-        feature_ids = [
-            fe.key.integer_id()
-            for fe in features
-            if not fe.confidential and not fe.unlisted and not fe.deleted
-        ]
+        feature_ids = [k.integer_id() for k in keys]
         feature_ids.sort()
 
         urls = [
