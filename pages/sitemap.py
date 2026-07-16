@@ -22,6 +22,8 @@ from internals.core_models import FeatureEntry
 class SitemapHandler(basehandlers.FlaskHandler):
     """Handler for serving the sitemap.txt file."""
 
+    HTTP_CACHE_TYPE = 'public'
+
     def get_template_data(self, **kwargs):
         """Returns the sitemap.txt content with URLs for all listed features."""
         headers = self.get_headers()

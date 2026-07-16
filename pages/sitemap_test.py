@@ -109,3 +109,4 @@ class SitemapHandlerTest(testing_config.CustomTestCase):
         )
         self.assertEqual(expected_content, content)
         self.assertEqual('text/plain', headers['Content-Type'])
+        self.assertIn('public, max-age=3600', headers.get('Cache-Control', ''))
