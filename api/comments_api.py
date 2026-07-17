@@ -36,12 +36,19 @@ from internals import approval_defs, notifier, notifier_helpers, slo
 from internals.review_models import Activity, Amendment, Gate
 
 
+def _strip_brackets(s: str) -> str:
+    """Make serialized arrays look nicer."""
+    if s.startswith('[') and s.endswith(']'):
+        return s[1:-1]
+    return s
+
+
 def amendment_to_OAM(amendment: Amendment) -> AmendmentModel:
     """Convert an Amendment entity to an OpenAPI AmendmentModel."""
     return AmendmentModel(
         field_name=amendment.field_name,
-        old_value=(amendment.old_value or '').strip('[]'),
-        new_value=(amendment.new_value or '').strip('[]'),
+        old_value=_strip_brackets(amendment.old_value or ''),
+        new_value=_strip_brackets(amendment.new_value or ''),
     )
 
 
