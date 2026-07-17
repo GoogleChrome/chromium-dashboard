@@ -111,7 +111,7 @@ def _min_of_first(stage: Stage | None) -> int | None:
             )
             if m is not None
         ),
-        default=None
+        default=None,
     )
 
 
@@ -130,7 +130,7 @@ def _max_of_last(stage: Stage | None) -> int | None:
             )
             if m is not None
         ),
-        default=None
+        default=None,
     )
 
 
