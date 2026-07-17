@@ -275,6 +275,7 @@ class ExternalReviewsAPI(basehandlers.APIHandler):
         stages = []
         for chunk in chunk_list(feature_ids, 30):
             stages.extend(Stage.query(Stage.feature_id.IN(chunk)).fetch())
+        stages = [s for s in stages if not s.archived]
 
         # Group stages by feature_id.
         stages_by_fid = defaultdict(list)

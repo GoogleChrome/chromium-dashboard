@@ -741,3 +741,116 @@ class ExternalReviewsAPITest(testing_config.CustomTestCase):
             },
             result,
         )
+
+    def test_archived_stages_are_ignored(self):
+        """Archived stages are ignored when identifying the active stage."""
+        tag1 = 'https://github.com/w3ctag/design-reviews/issues/101'
+        fe1 = FeatureEntry(
+            name='Feature with archived and non-archived stages',
+            category=1,
+            summary='Summary',
+            tag_review=tag1,
+        )
+        fe1.put()
+        fe_id1 = fe1.key.integer_id()
+
+        # Stage 1 is PROTOTYPE (greater) but ARCHIVED.
+        stage1 = Stage(
+            feature_id=fe_id1,
+            stage_type=core_enums.STAGE_BLINK_PROTOTYPE,
+            milestones=MilestoneSet(desktop_first=101),
+            archived=True,
+        )
+        stage1.put()
+
+        # Stage 2 is INCUBATE (smaller) and NOT ARCHIVED.
+        stage2 = Stage(
+            feature_id=fe_id1,
+            stage_type=core_enums.STAGE_BLINK_INCUBATE,
+            milestones=MilestoneSet(desktop_first=100),
+            archived=False,
+        )
+        stage2.put()
+
+        fl1 = FeatureLinks(
+            feature_ids=[fe_id1],
+            url=tag1,
+            type=LINK_TYPE_GITHUB_ISSUE,
+            information={},
+        )
+        fl1.put()
+
+        tag2 = 'https://github.com/w3ctag/design-reviews/issues/102'
+        fe2 = FeatureEntry(
+            name='Feature with ONLY archived stage',
+            category=1,
+            summary='Summary',
+            tag_review=tag2,
+        )
+        fe2.put()
+        fe_id2 = fe2.key.integer_id()
+
+        # Stage 3 is PROTOTYPE and ARCHIVED.
+        stage3 = Stage(
+            feature_id=fe_id2,
+            stage_type=core_enums.STAGE_BLINK_PROTOTYPE,
+            milestones=MilestoneSet(desktop_first=102),
+            archived=True,
+        )
+        stage3.put()
+
+        fl2 = FeatureLinks(
+            feature_ids=[fe_id2],
+            url=tag2,
+            type=LINK_TYPE_GITHUB_ISSUE,
+            information={},
+        )
+        fl2.put()
+
+        testing_config.sign_out()
+
+        result = self.handler.do_get(review_group='tag')
+
+        self.assertEqual(
+            {
+                'reviews': [
+                    # For fe1, it should pick stage2 (Incubate, M100).
+                    dict(
+                        feature=dict(
+                            id=fe1.key.id(),
+                            name='Feature with archived and non-archived stages',
+                        ),
+                        review_link=tag1,
+                        current_stage='incubating',
+                        estimated_start_milestone=100,
+                        estimated_end_milestone=None,
+                    ),
+                    # For fe2, it should fall back to stage=None (Incubating, M=None).
+                    dict(
+                        feature=dict(
+                            id=fe2.key.id(),
+                            name='Feature with ONLY archived stage',
+                        ),
+                        review_link=tag2,
+                        current_stage='incubating',
+                        estimated_start_milestone=None,
+                        estimated_end_milestone=None,
+                    ),
+                ],
+                'link_previews': [
+                    dict(
+                        url=tag1,
+                        type=LINK_TYPE_GITHUB_ISSUE,
+                        information={},
+                        http_error_code=None,
+                    ),
+                    dict(
+                        url=tag2,
+                        type=LINK_TYPE_GITHUB_ISSUE,
+                        information={},
+                        http_error_code=None,
+                    ),
+                ],
+            },
+            result,
+        )
