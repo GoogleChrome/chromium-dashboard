@@ -100,38 +100,38 @@ def _min_of_first(stage: Stage | None) -> int | None:
     """Return the minimum of the first milestones, ignoring None values."""
     if stage is None or stage.milestones is None:
         return None
-    present_args = [
-        arg
-        for arg in [
-            stage.milestones.desktop_first,
-            stage.milestones.android_first,
-            stage.milestones.ios_first,
-            stage.milestones.webview_first,
-        ]
-        if arg is not None
-    ]
-    if len(present_args) == 0:
-        return None
-    return min(present_args)
+    return min(
+        (
+            m
+            for m in (
+                stage.milestones.desktop_first,
+                stage.milestones.android_first,
+                stage.milestones.ios_first,
+                stage.milestones.webview_first,
+            )
+            if m is not None
+        ),
+        default=None
+    )
 
 
 def _max_of_last(stage: Stage | None) -> int | None:
     """Return the maximum of the last milestones, ignoring None values."""
     if stage is None or stage.milestones is None:
         return None
-    present_args = [
-        arg
-        for arg in [
-            stage.milestones.desktop_last,
-            stage.milestones.android_last,
-            stage.milestones.ios_last,
-            stage.milestones.webview_last,
-        ]
-        if arg is not None
-    ]
-    if len(present_args) == 0:
-        return None
-    return max(present_args)
+    return max(
+        (
+            m
+            for m in (
+                stage.milestones.desktop_last,
+                stage.milestones.android_last,
+                stage.milestones.ios_last,
+                stage.milestones.webview_last,
+            )
+            if m is not None
+        ),
+        default=None
+    )
 
 
 class ExternalReviewerInfo:
