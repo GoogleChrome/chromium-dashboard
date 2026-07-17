@@ -66,7 +66,7 @@ from internals import (
     reminders,
     search_fulltext,
 )
-from pages import guide, ot_requests, sitemap, users
+from pages import featuredetail, guide, ot_requests, sitemap, users
 
 # Patch treading library to work-around bug with Google Cloud Logging.
 original_delete = threading.Thread._delete  # type: ignore
@@ -409,6 +409,7 @@ mpa_page_routes: list[Route] = [
         defaults={'thumbnail': True},
     ),
     Route('/sitemap.txt', sitemap.SitemapHandler),
+    Route('/feature-ssr/<int:feature_id>', featuredetail.FeatureDetailHandler),
 ]
 
 internals_routes: list[Route] = [
