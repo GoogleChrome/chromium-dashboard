@@ -39,6 +39,21 @@ NOW = datetime.datetime.now()
 class CommentsConvertersTest(testing_config.CustomTestCase):
     """Tests for comment converters."""
 
+    def test_strip_brackets(self):
+        """It makes arrays looks nicer and doesn't mess up other brackets."""
+        self.assertEqual(
+            'item1, item2',
+            comments_api._strip_brackets('[item1, item2]'))
+        self.assertEqual(
+            'word [note]',
+            comments_api._strip_brackets('word [note]'))
+        self.assertEqual(
+            '[word',
+            comments_api._strip_brackets('[word'))
+        self.assertEqual(
+            'word]',
+            comments_api._strip_brackets('word]'))
+
     def test_amendment_to_OAM__normal(self):
         """We can convert a NDB Amendment to a Open API Amendment."""
         amend = Amendment(
