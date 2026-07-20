@@ -1022,6 +1022,8 @@ class ProgressStepStatus(str, Enum):
     client-side code lookups.
     """
 
+    UNKNOWN = 'UNKNOWN'
+    START = 'START'
     IN_PROGRESS = 'IN_PROGRESS'
     SUCCESS = 'SUCCESS'
     FAILED = 'FAILED'
@@ -1032,16 +1034,18 @@ class ProgressStepId(str, Enum):
     """Canonical step identifiers for an AI summary generation workflow.
 
     Logged by generation workers to track progress through discrete stages
-    (`SEARCH_MDN`, `VERIFY_DOC_LINK`, `READ_SPEC`, `READ_EXPLAINER`, `LLM_GENERATION`).
-    Structured string identifiers prevent typo-induced pipeline failures and enable
-    uniform telemetry across background tasks.
+    (`SEARCH_MDN`, `READ_SPEC`, `LLM_GENERATION`, `EVALUATION`). Structured string
+    identifiers prevent typo-induced pipeline failures and enable uniform
+    telemetry across background tasks.
     """
 
+    UNKNOWN = 'UNKNOWN'
+    START = 'START'
     SEARCH_MDN = 'SEARCH_MDN'
-    VERIFY_DOC_LINK = 'VERIFY_DOC_LINK'
     READ_SPEC = 'READ_SPEC'
-    READ_EXPLAINER = 'READ_EXPLAINER'
     LLM_GENERATION = 'LLM_GENERATION'
+    EVALUATION = 'EVALUATION'
+    SUCCESS = 'SUCCESS'
 
 
 class AISummaryToolName(str, Enum):
@@ -1071,14 +1075,3 @@ class BaselineStatus(str, Enum):
     LIMITED = 'limited'
     NEWLY = 'newly'
     WIDELY = 'widely'
-
-
-class MilestoneCurationStatus(str, Enum):
-    """Editorial curation status constants for a release milestone.
-
-    Serialized directly in milestone curation API responses (`/milestone-curation/{milestone}`).
-    """
-
-    PENDING = 'PENDING'
-    IN_REVIEW = 'IN_REVIEW'
-    COMPLETED = 'COMPLETED'

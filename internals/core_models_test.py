@@ -101,10 +101,11 @@ class FeatureSummaryProgressStepTest(testing_config.CustomTestCase):
         now = datetime.datetime.now(datetime.timezone.utc)
         step = FeatureSummaryProgressStep(
             parent=self.parent_key,
-            step=core_enums.ProgressStepId.SEARCH_MDN,
+            step_id=core_enums.ProgressStepId.SEARCH_MDN,
             status=core_enums.ProgressStepStatus.IN_PROGRESS,
             start_timestamp=now,
             message='Searching MDN for documentation.',
+            tool_name=core_enums.AISummaryToolName.SEARCH_MDN,
         )
         step.put()
 
@@ -112,8 +113,8 @@ class FeatureSummaryProgressStepTest(testing_config.CustomTestCase):
             ancestor=self.parent_key
         ).fetch()
         self.assertEqual(len(steps), 1)
-        self.assertEqual(steps[0].step, 'SEARCH_MDN')
-        self.assertIsInstance(steps[0].step, str)
+        self.assertEqual(steps[0].step_id, 'SEARCH_MDN')
+        self.assertIsInstance(steps[0].step_id, str)
         self.assertEqual(steps[0].status, 'IN_PROGRESS')
         self.assertIsInstance(steps[0].status, str)
 
@@ -126,7 +127,7 @@ class FeatureSummaryProgressStepTest(testing_config.CustomTestCase):
             step_time = base_time + datetime.timedelta(seconds=i)
             step = FeatureSummaryProgressStep(
                 parent=self.parent_key,
-                step=core_enums.ProgressStepId.LLM_GENERATION,
+                step_id=core_enums.ProgressStepId.LLM_GENERATION,
                 status=core_enums.ProgressStepStatus.IN_PROGRESS,
                 start_timestamp=step_time,
                 message=f'Step number {i}',
@@ -162,15 +163,13 @@ class MilestoneCurationTest(testing_config.CustomTestCase):
         curation = MilestoneCuration(
             id=str(milestone_num),
             milestone=milestone_num,
-            curator_emails=['curator@google.com'],
-            status=core_enums.MilestoneCurationStatus.IN_REVIEW,
+            curator_email='curator@google.com',
+            status='IN_REVIEW',
         )
         curation.put()
 
         retrieved = ndb.Key('MilestoneCuration', str(milestone_num)).get()
         self.assertIsNotNone(retrieved)
         self.assertEqual(retrieved.milestone, 135)
-        self.assertEqual(retrieved.curator_emails, ['curator@google.com'])
-        self.assertEqual(
-            retrieved.status, core_enums.MilestoneCurationStatus.IN_REVIEW
-        )
+        self.assertEqual(retrieved.curator_email, 'curator@google.com')
+        self.assertEqual(retrieved.status, 'IN_REVIEW')

@@ -484,13 +484,15 @@ class FeatureSummaryProgressStep(ndb.Model):
     store string representation values directly.
     """
 
-    step = ndb.StringProperty(required=True)
+    step_id = ndb.StringProperty(required=True)
     status = ndb.StringProperty(required=True)
     start_timestamp = ndb.DateTimeProperty(
         required=True, tzinfo=datetime.timezone.utc
     )
     end_timestamp = ndb.DateTimeProperty(tzinfo=datetime.timezone.utc)
     message = ndb.TextProperty()
+    tool_name = ndb.StringProperty()
+    attempt_count = ndb.IntegerProperty(default=1)
 
     @classmethod
     def clear_timeline(cls, feature_id: int, keep_count: int = 20) -> None:
@@ -519,8 +521,6 @@ class MilestoneCuration(ndb.Model):
     """
 
     milestone = ndb.IntegerProperty(required=True)
-    curator_emails = ndb.StringProperty(repeated=True)
-    status = ndb.StringProperty(
-        default=core_enums.MilestoneCurationStatus.PENDING
-    )
+    curator_email = ndb.StringProperty()
+    status = ndb.StringProperty(default='PENDING')
     updated = ndb.DateTimeProperty(auto_now=True, tzinfo=datetime.timezone.utc)
