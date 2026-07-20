@@ -72,7 +72,7 @@ chromestatus_openapi/models/outstanding_review.py
 chromestatus_openapi/models/owners_and_subscribers_of_component.py
 chromestatus_openapi/models/patch_comment_request.py
 chromestatus_openapi/models/patch_gate_request.py
-chromestatus_openapi/models/pending_count_response.py
+chromestatus_openapi/models/pending_suggestions_count_response.py
 chromestatus_openapi/models/permissions_response.py
 chromestatus_openapi/models/post_intent_request.py
 chromestatus_openapi/models/post_settings_request.py

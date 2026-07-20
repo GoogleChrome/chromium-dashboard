@@ -32,7 +32,7 @@ from chromestatus_openapi.models.milestone_curation_patch_request import Milesto
 from chromestatus_openapi.models.milestone_curation_response import MilestoneCurationResponse  # noqa: E501
 from chromestatus_openapi.models.patch_comment_request import PatchCommentRequest  # noqa: E501
 from chromestatus_openapi.models.patch_gate_request import PatchGateRequest  # noqa: E501
-from chromestatus_openapi.models.pending_count_response import PendingCountResponse  # noqa: E501
+from chromestatus_openapi.models.pending_suggestions_count_response import PendingSuggestionsCountResponse  # noqa: E501
 from chromestatus_openapi.models.permissions_response import PermissionsResponse  # noqa: E501
 from chromestatus_openapi.models.post_intent_request import PostIntentRequest  # noqa: E501
 from chromestatus_openapi.models.post_settings_request import PostSettingsRequest  # noqa: E501
@@ -392,12 +392,12 @@ def get_pending_summary_suggestions(cursor=None, limit=None):  # noqa: E501
 
 
 def get_pending_summary_suggestions_count():  # noqa: E501
-    """Get aggregated O(1) count of pending summary suggestions across all features
+    """Get count of pending summary suggestions for review queue
 
-     # noqa: E501
+    Retrieves the total count of pending AI summary suggestions awaiting DevRel editorial review. # noqa: E501
 
 
-    :rtype: Union[PendingCountResponse, Tuple[PendingCountResponse, int], Tuple[PendingCountResponse, int, Dict[str, str]]
+    :rtype: Union[PendingSuggestionsCountResponse, Tuple[PendingSuggestionsCountResponse, int], Tuple[PendingSuggestionsCountResponse, int, Dict[str, str]]
     """
     return 'do some magic!'
 

@@ -1154,7 +1154,8 @@ paths:
                 $ref: '#/components/schemas/ErrorMessage'
   /summary-suggestions/pending-count:
     get:
-      summary: Get aggregated O(1) count of pending summary suggestions across all features
+      summary: Get count of pending summary suggestions for review queue
+      description: Retrieves the total count of pending AI summary suggestions awaiting DevRel editorial review.
       operationId: getPendingSummarySuggestionsCount
       responses:
         '200':
@@ -1162,7 +1163,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PendingCountResponse'
+                $ref: '#/components/schemas/PendingSuggestionsCountResponse'
         '401':
           description: Unauthorized - Authentication required
           content:
@@ -2521,7 +2522,7 @@ components:
         total_count:
           type: integer
           minimum: 0
-    PendingCountResponse:
+    PendingSuggestionsCountResponse:
       type: object
       required:
         - count
@@ -2529,6 +2530,7 @@ components:
         count:
           type: integer
           minimum: 0
+          description: Total count of pending AI summary suggestions awaiting editorial review.
     MilestoneCurationResponse:
       type: object
       required:

@@ -1415,13 +1415,15 @@ paths:
       x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
   /summary-suggestions/pending-count:
     get:
+      description: Retrieves the total count of pending AI summary suggestions awaiting
+        DevRel editorial review.
       operationId: get_pending_summary_suggestions_count
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PendingCountResponse'
+                $ref: '#/components/schemas/PendingSuggestionsCountResponse'
           description: Success
         "401":
           content:
@@ -1436,8 +1438,7 @@ paths:
                 $ref: '#/components/schemas/ErrorMessage'
           description: Forbidden - Insufficient editorial permissions to view review
             queue metrics
-      summary: Get aggregated O(1) count of pending summary suggestions across all
-        features
+      summary: Get count of pending summary suggestions for review queue
       x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
   /summary-suggestions/{feature_id}:
     get:
@@ -3948,17 +3949,19 @@ components:
       - total_count
       title: SummarySuggestionListResponse
       type: object
-    PendingCountResponse:
+    PendingSuggestionsCountResponse:
       example:
         count: 0
       properties:
         count:
+          description: Total count of pending AI summary suggestions awaiting editorial
+            review.
           minimum: 0
           title: count
           type: integer
       required:
       - count
-      title: PendingCountResponse
+      title: PendingSuggestionsCountResponse
       type: object
     MilestoneCurationResponse:
       example:
