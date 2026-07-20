@@ -484,7 +484,7 @@ class FeatureSummaryProgressStep(ndb.Model):
     store string representation values directly.
     """
 
-    step_id = ndb.StringProperty(required=True)
+    step = ndb.StringProperty(required=True)
     status = ndb.StringProperty(required=True)
     start_timestamp = ndb.DateTimeProperty(
         required=True, tzinfo=datetime.timezone.utc

@@ -3674,29 +3674,23 @@ components:
       example:
         end_timestamp: 2000-01-23T04:56:07.000+00:00
         start_timestamp: 2000-01-23T04:56:07.000+00:00
-        step_id: UNKNOWN
+        step: SEARCH_MDN
         message: message
-        status: UNKNOWN
+        status: IN_PROGRESS
       properties:
-        step_id:
+        step:
           description: The concrete step or tool execution stage in the AI pipeline.
           enum:
-          - UNKNOWN
-          - START
           - SEARCH_MDN
           - VERIFY_DOC_LINK
           - READ_SPEC
           - READ_EXPLAINER
           - LLM_GENERATION
-          - EVALUATION
-          - SUCCESS
-          title: step_id
+          title: step
           type: string
         status:
           description: Execution status of this step.
           enum:
-          - UNKNOWN
-          - START
           - IN_PROGRESS
           - SUCCESS
           - FAILED
@@ -3715,7 +3709,7 @@ components:
           type: string
         end_timestamp:
           description: "Timestamp when this step reached a terminal state (SUCCESS,\
-            \ FAILED, or CANCELLED). Null while status is IN_PROGRESS or START."
+            \ FAILED, or CANCELLED). Null while status is IN_PROGRESS."
           format: date-time
           nullable: true
           title: end_timestamp
@@ -3723,7 +3717,7 @@ components:
       required:
       - start_timestamp
       - status
-      - step_id
+      - step
       title: SummaryProgressStep
       type: object
     SummarySuggestion:
@@ -3823,14 +3817,14 @@ components:
         progress_steps:
         - end_timestamp: 2000-01-23T04:56:07.000+00:00
           start_timestamp: 2000-01-23T04:56:07.000+00:00
-          step_id: UNKNOWN
+          step: SEARCH_MDN
           message: message
-          status: UNKNOWN
+          status: IN_PROGRESS
         - end_timestamp: 2000-01-23T04:56:07.000+00:00
           start_timestamp: 2000-01-23T04:56:07.000+00:00
-          step_id: UNKNOWN
+          step: SEARCH_MDN
           message: message
-          status: UNKNOWN
+          status: IN_PROGRESS
       properties:
         suggestion:
           $ref: '#/components/schemas/SummarySuggestion'

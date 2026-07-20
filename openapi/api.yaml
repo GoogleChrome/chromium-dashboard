@@ -2384,17 +2384,17 @@ components:
     SummaryProgressStep:
       type: object
       required:
-        - step_id
+        - step
         - status
         - start_timestamp
       properties:
-        step_id:
+        step:
           type: string
-          enum: [UNKNOWN, START, SEARCH_MDN, VERIFY_DOC_LINK, READ_SPEC, READ_EXPLAINER, LLM_GENERATION, EVALUATION, SUCCESS]
+          enum: [SEARCH_MDN, VERIFY_DOC_LINK, READ_SPEC, READ_EXPLAINER, LLM_GENERATION]
           description: The concrete step or tool execution stage in the AI pipeline.
         status:
           type: string
-          enum: [UNKNOWN, START, IN_PROGRESS, SUCCESS, FAILED, RETRYING]
+          enum: [IN_PROGRESS, SUCCESS, FAILED, RETRYING]
           description: Execution status of this step.
         message:
           type: string
@@ -2407,7 +2407,7 @@ components:
           type: string
           format: date-time
           nullable: true
-          description: Timestamp when this step reached a terminal state (SUCCESS, FAILED, or CANCELLED). Null while status is IN_PROGRESS or START.
+          description: Timestamp when this step reached a terminal state (SUCCESS, FAILED, or CANCELLED). Null while status is IN_PROGRESS.
     SummarySuggestion:
       type: object
       required:

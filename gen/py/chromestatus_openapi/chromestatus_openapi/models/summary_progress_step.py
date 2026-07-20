@@ -12,11 +12,11 @@ class SummaryProgressStep(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, step_id=None, status=None, message=None, start_timestamp=None, end_timestamp=None):  # noqa: E501
+    def __init__(self, step=None, status=None, message=None, start_timestamp=None, end_timestamp=None):  # noqa: E501
         """SummaryProgressStep - a model defined in OpenAPI
 
-        :param step_id: The step_id of this SummaryProgressStep.  # noqa: E501
-        :type step_id: str
+        :param step: The step of this SummaryProgressStep.  # noqa: E501
+        :type step: str
         :param status: The status of this SummaryProgressStep.  # noqa: E501
         :type status: str
         :param message: The message of this SummaryProgressStep.  # noqa: E501
@@ -27,7 +27,7 @@ class SummaryProgressStep(Model):
         :type end_timestamp: datetime
         """
         self.openapi_types = {
-            'step_id': str,
+            'step': str,
             'status': str,
             'message': str,
             'start_timestamp': datetime,
@@ -35,14 +35,14 @@ class SummaryProgressStep(Model):
         }
 
         self.attribute_map = {
-            'step_id': 'step_id',
+            'step': 'step',
             'status': 'status',
             'message': 'message',
             'start_timestamp': 'start_timestamp',
             'end_timestamp': 'end_timestamp'
         }
 
-        self._step_id = step_id
+        self._step = step
         self._status = status
         self._message = message
         self._start_timestamp = start_timestamp
@@ -60,33 +60,33 @@ class SummaryProgressStep(Model):
         return util.deserialize_model(dikt, cls)
 
     @property
-    def step_id(self) -> str:
-        """Gets the step_id of this SummaryProgressStep.
+    def step(self) -> str:
+        """Gets the step of this SummaryProgressStep.
 
         The concrete step or tool execution stage in the AI pipeline.  # noqa: E501
 
-        :return: The step_id of this SummaryProgressStep.
+        :return: The step of this SummaryProgressStep.
         :rtype: str
         """
-        return self._step_id
+        return self._step
 
-    @step_id.setter
-    def step_id(self, step_id: str):
-        """Sets the step_id of this SummaryProgressStep.
+    @step.setter
+    def step(self, step: str):
+        """Sets the step of this SummaryProgressStep.
 
         The concrete step or tool execution stage in the AI pipeline.  # noqa: E501
 
-        :param step_id: The step_id of this SummaryProgressStep.
-        :type step_id: str
+        :param step: The step of this SummaryProgressStep.
+        :type step: str
         """
-        allowed_values = ["UNKNOWN", "START", "SEARCH_MDN", "VERIFY_DOC_LINK", "READ_SPEC", "READ_EXPLAINER", "LLM_GENERATION", "EVALUATION", "SUCCESS"]  # noqa: E501
-        if step_id not in allowed_values:
+        allowed_values = ["SEARCH_MDN", "VERIFY_DOC_LINK", "READ_SPEC", "READ_EXPLAINER", "LLM_GENERATION"]  # noqa: E501
+        if step not in allowed_values:
             raise ValueError(
-                "Invalid value for `step_id` ({0}), must be one of {1}"
-                .format(step_id, allowed_values)
+                "Invalid value for `step` ({0}), must be one of {1}"
+                .format(step, allowed_values)
             )
 
-        self._step_id = step_id
+        self._step = step
 
     @property
     def status(self) -> str:
@@ -108,7 +108,7 @@ class SummaryProgressStep(Model):
         :param status: The status of this SummaryProgressStep.
         :type status: str
         """
-        allowed_values = ["UNKNOWN", "START", "IN_PROGRESS", "SUCCESS", "FAILED", "RETRYING"]  # noqa: E501
+        allowed_values = ["IN_PROGRESS", "SUCCESS", "FAILED", "RETRYING"]  # noqa: E501
         if status not in allowed_values:
             raise ValueError(
                 "Invalid value for `status` ({0}), must be one of {1}"
@@ -169,7 +169,7 @@ class SummaryProgressStep(Model):
     def end_timestamp(self) -> datetime:
         """Gets the end_timestamp of this SummaryProgressStep.
 
-        Timestamp when this step reached a terminal state (SUCCESS, FAILED, or CANCELLED). Null while status is IN_PROGRESS or START.  # noqa: E501
+        Timestamp when this step reached a terminal state (SUCCESS, FAILED, or CANCELLED). Null while status is IN_PROGRESS.  # noqa: E501
 
         :return: The end_timestamp of this SummaryProgressStep.
         :rtype: datetime
@@ -180,7 +180,7 @@ class SummaryProgressStep(Model):
     def end_timestamp(self, end_timestamp: datetime):
         """Sets the end_timestamp of this SummaryProgressStep.
 
-        Timestamp when this step reached a terminal state (SUCCESS, FAILED, or CANCELLED). Null while status is IN_PROGRESS or START.  # noqa: E501
+        Timestamp when this step reached a terminal state (SUCCESS, FAILED, or CANCELLED). Null while status is IN_PROGRESS.  # noqa: E501
 
         :param end_timestamp: The end_timestamp of this SummaryProgressStep.
         :type end_timestamp: datetime
