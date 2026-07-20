@@ -101,6 +101,7 @@ class ReleaseNotesResponse(Model):
     def archival_banner(self) -> str:
         """Gets the archival_banner of this ReleaseNotesResponse.
 
+        Archival notice URL populated for historical milestones (milestone < current_stable - 5). Null for active milestones.  # noqa: E501
 
         :return: The archival_banner of this ReleaseNotesResponse.
         :rtype: str
@@ -111,6 +112,7 @@ class ReleaseNotesResponse(Model):
     def archival_banner(self, archival_banner: str):
         """Sets the archival_banner of this ReleaseNotesResponse.
 
+        Archival notice URL populated for historical milestones (milestone < current_stable - 5). Null for active milestones.  # noqa: E501
 
         :param archival_banner: The archival_banner of this ReleaseNotesResponse.
         :type archival_banner: str

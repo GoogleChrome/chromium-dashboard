@@ -81,6 +81,7 @@ class MilestoneCurationResponse(Model):
     def status(self) -> str:
         """Gets the status of this MilestoneCurationResponse.
 
+        Editorial review status of the milestone curation workflow. Allowed transitions: PENDING -> IN_REVIEW -> COMPLETED.  # noqa: E501
 
         :return: The status of this MilestoneCurationResponse.
         :rtype: str
@@ -91,6 +92,7 @@ class MilestoneCurationResponse(Model):
     def status(self, status: str):
         """Sets the status of this MilestoneCurationResponse.
 
+        Editorial review status of the milestone curation workflow. Allowed transitions: PENDING -> IN_REVIEW -> COMPLETED.  # noqa: E501
 
         :param status: The status of this MilestoneCurationResponse.
         :type status: str

@@ -2395,7 +2395,7 @@ components:
         status:
           type: string
           enum: [IN_PROGRESS, SUCCESS, FAILED, RETRYING]
-          description: Execution status of this step.
+          description: "Execution status of this step. Allowed transitions: IN_PROGRESS -> SUCCESS, IN_PROGRESS -> RETRYING -> SUCCESS, IN_PROGRESS -> FAILED."
         message:
           type: string
           description: Human-readable progress update, completion summary, or error reason when status == FAILED.
@@ -2426,6 +2426,7 @@ components:
         status:
           type: string
           enum: [PENDING, APPLIED, REJECTED, DISCARDED, BYPASSED]
+          description: "Lifecycle status of the AI summary suggestion. Allowed transitions: PENDING -> APPLIED (approved), PENDING -> REJECTED (declined), PENDING -> DISCARDED (obsolete), PENDING -> BYPASSED (manually edited)."
         baseline_status:
           type: string
           enum: [none, limited, newly, widely]
@@ -2510,6 +2511,7 @@ components:
         status:
           type: string
           enum: [PENDING, IN_REVIEW, COMPLETED]
+          description: "Editorial review status of the milestone curation workflow. Allowed transitions: PENDING -> IN_REVIEW -> COMPLETED."
         curator_emails:
           type: array
           items:
@@ -2568,3 +2570,5 @@ components:
             $ref: '#/components/schemas/ReleaseNoteFeature'
         archival_banner:
           type: string
+          nullable: true
+          description: "Archival notice URL populated for historical milestones (milestone < current_stable - 5). Null for active milestones."

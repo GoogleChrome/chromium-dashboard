@@ -158,6 +158,7 @@ class SummarySuggestion(Model):
     def status(self) -> str:
         """Gets the status of this SummarySuggestion.
 
+        Lifecycle status of the AI summary suggestion. Allowed transitions: PENDING -> APPLIED (approved), PENDING -> REJECTED (declined), PENDING -> DISCARDED (obsolete), PENDING -> BYPASSED (manually edited).  # noqa: E501
 
         :return: The status of this SummarySuggestion.
         :rtype: str
@@ -168,6 +169,7 @@ class SummarySuggestion(Model):
     def status(self, status: str):
         """Sets the status of this SummarySuggestion.
 
+        Lifecycle status of the AI summary suggestion. Allowed transitions: PENDING -> APPLIED (approved), PENDING -> REJECTED (declined), PENDING -> DISCARDED (obsolete), PENDING -> BYPASSED (manually edited).  # noqa: E501
 
         :param status: The status of this SummarySuggestion.
         :type status: str

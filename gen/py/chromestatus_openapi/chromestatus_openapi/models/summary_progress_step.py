@@ -92,7 +92,7 @@ class SummaryProgressStep(Model):
     def status(self) -> str:
         """Gets the status of this SummaryProgressStep.
 
-        Execution status of this step.  # noqa: E501
+        Execution status of this step. Allowed transitions: IN_PROGRESS -> SUCCESS, IN_PROGRESS -> RETRYING -> SUCCESS, IN_PROGRESS -> FAILED.  # noqa: E501
 
         :return: The status of this SummaryProgressStep.
         :rtype: str
@@ -103,7 +103,7 @@ class SummaryProgressStep(Model):
     def status(self, status: str):
         """Sets the status of this SummaryProgressStep.
 
-        Execution status of this step.  # noqa: E501
+        Execution status of this step. Allowed transitions: IN_PROGRESS -> SUCCESS, IN_PROGRESS -> RETRYING -> SUCCESS, IN_PROGRESS -> FAILED.  # noqa: E501
 
         :param status: The status of this SummaryProgressStep.
         :type status: str

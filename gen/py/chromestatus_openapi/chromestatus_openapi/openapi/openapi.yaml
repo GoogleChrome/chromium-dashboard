@@ -3689,7 +3689,8 @@ components:
           title: step
           type: string
         status:
-          description: Execution status of this step.
+          description: "Execution status of this step. Allowed transitions: IN_PROGRESS\
+            \ -> SUCCESS, IN_PROGRESS -> RETRYING -> SUCCESS, IN_PROGRESS -> FAILED."
           enum:
           - IN_PROGRESS
           - SUCCESS
@@ -3746,6 +3747,9 @@ components:
           title: original_summary
           type: string
         status:
+          description: "Lifecycle status of the AI summary suggestion. Allowed transitions:\
+            \ PENDING -> APPLIED (approved), PENDING -> REJECTED (declined), PENDING\
+            \ -> DISCARDED (obsolete), PENDING -> BYPASSED (manually edited)."
           enum:
           - PENDING
           - APPLIED
@@ -3941,6 +3945,8 @@ components:
           title: milestone
           type: integer
         status:
+          description: "Editorial review status of the milestone curation workflow.\
+            \ Allowed transitions: PENDING -> IN_REVIEW -> COMPLETED."
           enum:
           - PENDING
           - IN_REVIEW
@@ -4063,6 +4069,9 @@ components:
           title: features
           type: array
         archival_banner:
+          description: Archival notice URL populated for historical milestones (milestone
+            < current_stable - 5). Null for active milestones.
+          nullable: true
           title: archival_banner
           type: string
       required:
