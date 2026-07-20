@@ -20,43 +20,43 @@ import { mapValues } from '../runtime';
  */
 export interface SummaryProgressStep {
     /**
-     * 
+     * The concrete step or tool execution stage in the AI pipeline.
      * @type {string}
      * @memberof SummaryProgressStep
      */
     step_id: SummaryProgressStepStepIdEnum;
     /**
-     * 
+     * Execution status of this step.
      * @type {string}
      * @memberof SummaryProgressStep
      */
     status: SummaryProgressStepStatusEnum;
     /**
-     * 
+     * Human-readable progress update, completion summary, or error reason when status == FAILED.
      * @type {string}
      * @memberof SummaryProgressStep
      */
     message?: string;
     /**
-     * 
+     * Optional name of the sandbox tool executed.
      * @type {string}
      * @memberof SummaryProgressStep
      */
     tool_name?: SummaryProgressStepToolNameEnum;
     /**
-     * 
+     * Monotonic retry counter for this step (1 for initial run, 2+ if retried).
      * @type {number}
      * @memberof SummaryProgressStep
      */
     attempt_count?: number;
     /**
-     * 
+     * Timestamp when this step began execution.
      * @type {Date}
      * @memberof SummaryProgressStep
      */
     start_timestamp: Date;
     /**
-     * 
+     * Timestamp when this step reached a terminal state (SUCCESS, FAILED, or CANCELLED). Null while status is IN_PROGRESS or START.
      * @type {Date}
      * @memberof SummaryProgressStep
      */
@@ -71,7 +71,9 @@ export const SummaryProgressStepStepIdEnum = {
     UNKNOWN: 'UNKNOWN',
     START: 'START',
     SEARCH_MDN: 'SEARCH_MDN',
+    VERIFY_DOC_LINK: 'VERIFY_DOC_LINK',
     READ_SPEC: 'READ_SPEC',
+    READ_EXPLAINER: 'READ_EXPLAINER',
     LLM_GENERATION: 'LLM_GENERATION',
     EVALUATION: 'EVALUATION',
     SUCCESS: 'SUCCESS'
@@ -144,7 +146,7 @@ export function SummaryProgressStepToJSON(value?: SummaryProgressStep | null): a
         'tool_name': value['tool_name'],
         'attempt_count': value['attempt_count'],
         'start_timestamp': ((value['start_timestamp']).toISOString()),
-        'end_timestamp': value['end_timestamp'] == null ? undefined : ((value['end_timestamp']).toISOString()),
+        'end_timestamp': value['end_timestamp'] == null ? undefined : ((value['end_timestamp'] as any).toISOString()),
     };
 }
 

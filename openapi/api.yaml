@@ -2390,24 +2390,32 @@ components:
       properties:
         step_id:
           type: string
-          enum: [UNKNOWN, START, SEARCH_MDN, READ_SPEC, LLM_GENERATION, EVALUATION, SUCCESS]
+          enum: [UNKNOWN, START, SEARCH_MDN, VERIFY_DOC_LINK, READ_SPEC, READ_EXPLAINER, LLM_GENERATION, EVALUATION, SUCCESS]
+          description: The concrete step or tool execution stage in the AI pipeline.
         status:
           type: string
           enum: [UNKNOWN, START, IN_PROGRESS, SUCCESS, FAILED, RETRYING]
+          description: Execution status of this step.
         message:
           type: string
+          description: Human-readable progress update, completion summary, or error reason when status == FAILED.
         tool_name:
           type: string
           enum: [search_mdn_tool, verify_doc_link_tool, read_spec_link_tool]
+          description: Optional name of the sandbox tool executed.
         attempt_count:
           type: integer
           default: 1
+          description: Monotonic retry counter for this step (1 for initial run, 2+ if retried).
         start_timestamp:
           type: string
           format: date-time
+          description: Timestamp when this step began execution.
         end_timestamp:
           type: string
           format: date-time
+          nullable: true
+          description: Timestamp when this step reached a terminal state (SUCCESS, FAILED, or CANCELLED). Null while status is IN_PROGRESS or START.
     SummarySuggestion:
       type: object
       required:

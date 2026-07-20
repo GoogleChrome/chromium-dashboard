@@ -73,6 +73,7 @@ class SummaryProgressStep(Model):
     def step_id(self) -> str:
         """Gets the step_id of this SummaryProgressStep.
 
+        The concrete step or tool execution stage in the AI pipeline.  # noqa: E501
 
         :return: The step_id of this SummaryProgressStep.
         :rtype: str
@@ -83,11 +84,12 @@ class SummaryProgressStep(Model):
     def step_id(self, step_id: str):
         """Sets the step_id of this SummaryProgressStep.
 
+        The concrete step or tool execution stage in the AI pipeline.  # noqa: E501
 
         :param step_id: The step_id of this SummaryProgressStep.
         :type step_id: str
         """
-        allowed_values = ["UNKNOWN", "START", "SEARCH_MDN", "READ_SPEC", "LLM_GENERATION", "EVALUATION", "SUCCESS"]  # noqa: E501
+        allowed_values = ["UNKNOWN", "START", "SEARCH_MDN", "VERIFY_DOC_LINK", "READ_SPEC", "READ_EXPLAINER", "LLM_GENERATION", "EVALUATION", "SUCCESS"]  # noqa: E501
         if step_id not in allowed_values:
             raise ValueError(
                 "Invalid value for `step_id` ({0}), must be one of {1}"
@@ -100,6 +102,7 @@ class SummaryProgressStep(Model):
     def status(self) -> str:
         """Gets the status of this SummaryProgressStep.
 
+        Execution status of this step.  # noqa: E501
 
         :return: The status of this SummaryProgressStep.
         :rtype: str
@@ -110,6 +113,7 @@ class SummaryProgressStep(Model):
     def status(self, status: str):
         """Sets the status of this SummaryProgressStep.
 
+        Execution status of this step.  # noqa: E501
 
         :param status: The status of this SummaryProgressStep.
         :type status: str
@@ -127,6 +131,7 @@ class SummaryProgressStep(Model):
     def message(self) -> str:
         """Gets the message of this SummaryProgressStep.
 
+        Human-readable progress update, completion summary, or error reason when status == FAILED.  # noqa: E501
 
         :return: The message of this SummaryProgressStep.
         :rtype: str
@@ -137,6 +142,7 @@ class SummaryProgressStep(Model):
     def message(self, message: str):
         """Sets the message of this SummaryProgressStep.
 
+        Human-readable progress update, completion summary, or error reason when status == FAILED.  # noqa: E501
 
         :param message: The message of this SummaryProgressStep.
         :type message: str
@@ -148,6 +154,7 @@ class SummaryProgressStep(Model):
     def tool_name(self) -> str:
         """Gets the tool_name of this SummaryProgressStep.
 
+        Optional name of the sandbox tool executed.  # noqa: E501
 
         :return: The tool_name of this SummaryProgressStep.
         :rtype: str
@@ -158,6 +165,7 @@ class SummaryProgressStep(Model):
     def tool_name(self, tool_name: str):
         """Sets the tool_name of this SummaryProgressStep.
 
+        Optional name of the sandbox tool executed.  # noqa: E501
 
         :param tool_name: The tool_name of this SummaryProgressStep.
         :type tool_name: str
@@ -175,6 +183,7 @@ class SummaryProgressStep(Model):
     def attempt_count(self) -> int:
         """Gets the attempt_count of this SummaryProgressStep.
 
+        Monotonic retry counter for this step (1 for initial run, 2+ if retried).  # noqa: E501
 
         :return: The attempt_count of this SummaryProgressStep.
         :rtype: int
@@ -185,6 +194,7 @@ class SummaryProgressStep(Model):
     def attempt_count(self, attempt_count: int):
         """Sets the attempt_count of this SummaryProgressStep.
 
+        Monotonic retry counter for this step (1 for initial run, 2+ if retried).  # noqa: E501
 
         :param attempt_count: The attempt_count of this SummaryProgressStep.
         :type attempt_count: int
@@ -196,6 +206,7 @@ class SummaryProgressStep(Model):
     def start_timestamp(self) -> datetime:
         """Gets the start_timestamp of this SummaryProgressStep.
 
+        Timestamp when this step began execution.  # noqa: E501
 
         :return: The start_timestamp of this SummaryProgressStep.
         :rtype: datetime
@@ -206,6 +217,7 @@ class SummaryProgressStep(Model):
     def start_timestamp(self, start_timestamp: datetime):
         """Sets the start_timestamp of this SummaryProgressStep.
 
+        Timestamp when this step began execution.  # noqa: E501
 
         :param start_timestamp: The start_timestamp of this SummaryProgressStep.
         :type start_timestamp: datetime
@@ -219,6 +231,7 @@ class SummaryProgressStep(Model):
     def end_timestamp(self) -> datetime:
         """Gets the end_timestamp of this SummaryProgressStep.
 
+        Timestamp when this step reached a terminal state (SUCCESS, FAILED, or CANCELLED). Null while status is IN_PROGRESS or START.  # noqa: E501
 
         :return: The end_timestamp of this SummaryProgressStep.
         :rtype: datetime
@@ -229,6 +242,7 @@ class SummaryProgressStep(Model):
     def end_timestamp(self, end_timestamp: datetime):
         """Sets the end_timestamp of this SummaryProgressStep.
 
+        Timestamp when this step reached a terminal state (SUCCESS, FAILED, or CANCELLED). Null while status is IN_PROGRESS or START.  # noqa: E501
 
         :param end_timestamp: The end_timestamp of this SummaryProgressStep.
         :type end_timestamp: datetime
