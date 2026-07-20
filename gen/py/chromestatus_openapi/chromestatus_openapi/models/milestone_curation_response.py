@@ -81,7 +81,7 @@ class MilestoneCurationResponse(Model):
     def status(self) -> str:
         """Gets the status of this MilestoneCurationResponse.
 
-        Editorial review status of the milestone curation workflow. Allowed transitions: PENDING -> IN_REVIEW -> COMPLETED.  # noqa: E501
+        Editorial review status of the milestone curation workflow. Allowed State Transitions: - PENDING -> IN_REVIEW (DevRel curators begin reviewing milestone summaries) - IN_REVIEW -> COMPLETED (All milestone features reviewed and approved for publication) - PENDING -> COMPLETED (Fast-path editorial completion) - COMPLETED -> IN_REVIEW (Re-opened for post-release editorial updates)   # noqa: E501
 
         :return: The status of this MilestoneCurationResponse.
         :rtype: str
@@ -92,7 +92,7 @@ class MilestoneCurationResponse(Model):
     def status(self, status: str):
         """Sets the status of this MilestoneCurationResponse.
 
-        Editorial review status of the milestone curation workflow. Allowed transitions: PENDING -> IN_REVIEW -> COMPLETED.  # noqa: E501
+        Editorial review status of the milestone curation workflow. Allowed State Transitions: - PENDING -> IN_REVIEW (DevRel curators begin reviewing milestone summaries) - IN_REVIEW -> COMPLETED (All milestone features reviewed and approved for publication) - PENDING -> COMPLETED (Fast-path editorial completion) - COMPLETED -> IN_REVIEW (Re-opened for post-release editorial updates)   # noqa: E501
 
         :param status: The status of this MilestoneCurationResponse.
         :type status: str

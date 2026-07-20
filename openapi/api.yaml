@@ -2391,11 +2391,24 @@ components:
         step:
           type: string
           enum: [UNKNOWN, SEARCH_MDN, VERIFY_DOC_LINK, READ_SPEC, READ_EXPLAINER]
-          description: The concrete step or tool execution stage in the AI pipeline.
+          description: |
+            The concrete step or tool execution stage in the AI generation pipeline:
+            - UNKNOWN: Fallback for forward compatibility with new Day 2 tools
+            - SEARCH_MDN: Querying MDN documentation
+            - VERIFY_DOC_LINK: Checking external documentation links
+            - READ_SPEC: Fetching and parsing W3C/WHATWG specification
+            - READ_EXPLAINER: Fetching feature explainer document
         status:
           type: string
           enum: [IN_PROGRESS, SUCCESS, FAILED, RETRYING]
-          description: "Execution status of this step. Allowed transitions: IN_PROGRESS -> SUCCESS, IN_PROGRESS -> RETRYING -> SUCCESS, IN_PROGRESS -> FAILED."
+          description: |
+            Execution status of this step.
+            Allowed State Transitions:
+            - IN_PROGRESS -> SUCCESS (Step finished successfully)
+            - IN_PROGRESS -> RETRYING (Transient rate limit / network error; exponential backoff active)
+            - RETRYING -> SUCCESS (Step succeeded after retry)
+            - IN_PROGRESS -> FAILED (Non-retryable error encountered)
+            - RETRYING -> FAILED (Step failed after exhausting retry attempts)
         message:
           type: string
           description: Human-readable progress update, completion summary, or error reason when status == FAILED.
@@ -2426,7 +2439,14 @@ components:
         status:
           type: string
           enum: [PENDING, APPLIED, REJECTED, DISCARDED, BYPASSED]
-          description: "Lifecycle status of the AI summary suggestion. Allowed transitions: PENDING -> APPLIED (approved), PENDING -> REJECTED (declined), PENDING -> DISCARDED (obsolete), PENDING -> BYPASSED (manually edited)."
+          description: |
+            Lifecycle status of the AI summary suggestion.
+            Allowed State Transitions:
+            - PENDING -> APPLIED (DevRel editor approves AI suggestion)
+            - PENDING -> REJECTED (DevRel editor declines AI suggestion)
+            - PENDING -> DISCARDED (Feature deleted or suggestion rendered obsolete)
+            - PENDING -> BYPASSED (Feature owner manually overwrites summary)
+            - APPLIED -> REJECTED | DISCARDED (Editor reverts prior approval)
         baseline_status:
           type: string
           enum: [none, limited, newly, widely]
@@ -2511,7 +2531,13 @@ components:
         status:
           type: string
           enum: [PENDING, IN_REVIEW, COMPLETED]
-          description: "Editorial review status of the milestone curation workflow. Allowed transitions: PENDING -> IN_REVIEW -> COMPLETED."
+          description: |
+            Editorial review status of the milestone curation workflow.
+            Allowed State Transitions:
+            - PENDING -> IN_REVIEW (DevRel curators begin reviewing milestone summaries)
+            - IN_REVIEW -> COMPLETED (All milestone features reviewed and approved for publication)
+            - PENDING -> COMPLETED (Fast-path editorial completion)
+            - COMPLETED -> IN_REVIEW (Re-opened for post-release editorial updates)
         curator_emails:
           type: array
           items:
@@ -2568,7 +2594,3 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ReleaseNoteFeature'
-        archival_banner:
-          type: string
-          nullable: true
-          description: "Archival notice URL populated for historical milestones (milestone < current_stable - 5). Null for active milestones."

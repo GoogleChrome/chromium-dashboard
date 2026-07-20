@@ -63,7 +63,7 @@ class SummaryProgressStep(Model):
     def step(self) -> str:
         """Gets the step of this SummaryProgressStep.
 
-        The concrete step or tool execution stage in the AI pipeline.  # noqa: E501
+        The concrete step or tool execution stage in the AI generation pipeline: - UNKNOWN: Fallback for forward compatibility with new Day 2 tools - SEARCH_MDN: Querying MDN documentation - VERIFY_DOC_LINK: Checking external documentation links - READ_SPEC: Fetching and parsing W3C/WHATWG specification - READ_EXPLAINER: Fetching feature explainer document   # noqa: E501
 
         :return: The step of this SummaryProgressStep.
         :rtype: str
@@ -74,7 +74,7 @@ class SummaryProgressStep(Model):
     def step(self, step: str):
         """Sets the step of this SummaryProgressStep.
 
-        The concrete step or tool execution stage in the AI pipeline.  # noqa: E501
+        The concrete step or tool execution stage in the AI generation pipeline: - UNKNOWN: Fallback for forward compatibility with new Day 2 tools - SEARCH_MDN: Querying MDN documentation - VERIFY_DOC_LINK: Checking external documentation links - READ_SPEC: Fetching and parsing W3C/WHATWG specification - READ_EXPLAINER: Fetching feature explainer document   # noqa: E501
 
         :param step: The step of this SummaryProgressStep.
         :type step: str
@@ -92,7 +92,7 @@ class SummaryProgressStep(Model):
     def status(self) -> str:
         """Gets the status of this SummaryProgressStep.
 
-        Execution status of this step. Allowed transitions: IN_PROGRESS -> SUCCESS, IN_PROGRESS -> RETRYING -> SUCCESS, IN_PROGRESS -> FAILED.  # noqa: E501
+        Execution status of this step. Allowed State Transitions: - IN_PROGRESS -> SUCCESS (Step finished successfully) - IN_PROGRESS -> RETRYING (Transient rate limit / network error; exponential backoff active) - RETRYING -> SUCCESS (Step succeeded after retry) - IN_PROGRESS -> FAILED (Non-retryable error encountered) - RETRYING -> FAILED (Step failed after exhausting retry attempts)   # noqa: E501
 
         :return: The status of this SummaryProgressStep.
         :rtype: str
@@ -103,7 +103,7 @@ class SummaryProgressStep(Model):
     def status(self, status: str):
         """Sets the status of this SummaryProgressStep.
 
-        Execution status of this step. Allowed transitions: IN_PROGRESS -> SUCCESS, IN_PROGRESS -> RETRYING -> SUCCESS, IN_PROGRESS -> FAILED.  # noqa: E501
+        Execution status of this step. Allowed State Transitions: - IN_PROGRESS -> SUCCESS (Step finished successfully) - IN_PROGRESS -> RETRYING (Transient rate limit / network error; exponential backoff active) - RETRYING -> SUCCESS (Step succeeded after retry) - IN_PROGRESS -> FAILED (Non-retryable error encountered) - RETRYING -> FAILED (Step failed after exhausting retry attempts)   # noqa: E501
 
         :param status: The status of this SummaryProgressStep.
         :type status: str

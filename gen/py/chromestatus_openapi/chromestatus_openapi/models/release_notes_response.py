@@ -14,31 +14,26 @@ class ReleaseNotesResponse(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, milestone=None, features=None, archival_banner=None):  # noqa: E501
+    def __init__(self, milestone=None, features=None):  # noqa: E501
         """ReleaseNotesResponse - a model defined in OpenAPI
 
         :param milestone: The milestone of this ReleaseNotesResponse.  # noqa: E501
         :type milestone: int
         :param features: The features of this ReleaseNotesResponse.  # noqa: E501
         :type features: List[ReleaseNoteFeature]
-        :param archival_banner: The archival_banner of this ReleaseNotesResponse.  # noqa: E501
-        :type archival_banner: str
         """
         self.openapi_types = {
             'milestone': int,
-            'features': List[ReleaseNoteFeature],
-            'archival_banner': str
+            'features': List[ReleaseNoteFeature]
         }
 
         self.attribute_map = {
             'milestone': 'milestone',
-            'features': 'features',
-            'archival_banner': 'archival_banner'
+            'features': 'features'
         }
 
         self._milestone = milestone
         self._features = features
-        self._archival_banner = archival_banner
 
     @classmethod
     def from_dict(cls, dikt) -> 'ReleaseNotesResponse':
@@ -96,26 +91,3 @@ class ReleaseNotesResponse(Model):
             raise ValueError("Invalid value for `features`, must not be `None`")  # noqa: E501
 
         self._features = features
-
-    @property
-    def archival_banner(self) -> str:
-        """Gets the archival_banner of this ReleaseNotesResponse.
-
-        Archival notice URL populated for historical milestones (milestone < current_stable - 5). Null for active milestones.  # noqa: E501
-
-        :return: The archival_banner of this ReleaseNotesResponse.
-        :rtype: str
-        """
-        return self._archival_banner
-
-    @archival_banner.setter
-    def archival_banner(self, archival_banner: str):
-        """Sets the archival_banner of this ReleaseNotesResponse.
-
-        Archival notice URL populated for historical milestones (milestone < current_stable - 5). Null for active milestones.  # noqa: E501
-
-        :param archival_banner: The archival_banner of this ReleaseNotesResponse.
-        :type archival_banner: str
-        """
-
-        self._archival_banner = archival_banner
