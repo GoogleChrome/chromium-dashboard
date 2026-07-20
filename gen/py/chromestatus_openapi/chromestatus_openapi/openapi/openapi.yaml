@@ -3804,6 +3804,10 @@ components:
           title: suggested_doc_links
           type: array
         version_token:
+          description: |
+            Monotonically increasing Optimistic Concurrency Control (OCC) version counter.
+            Increments on every mutation to prevent mid-air collision overwrites during concurrent editorial reviews.
+            Note: Body-based version_token is used instead of HTTP ETag / If-Match headers to maintain type safety across OpenAPI generated client SDKs.
           minimum: 1
           title: version_token
           type: integer
@@ -3892,6 +3896,10 @@ components:
           title: original_summary
           type: string
         version_token:
+          description: |
+            Expected current version_token of the suggestion being patched for Optimistic Concurrency Control (OCC).
+            Must match the server's current version_token, otherwise the server rejects the request with HTTP 409 Conflict.
+            Note: Body-based version_token is used instead of HTTP ETag / If-Match headers to maintain type safety across OpenAPI generated client SDKs.
           minimum: 1
           title: version_token
           type: integer
