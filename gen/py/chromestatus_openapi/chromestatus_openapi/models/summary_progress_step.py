@@ -79,7 +79,7 @@ class SummaryProgressStep(Model):
         :param step: The step of this SummaryProgressStep.
         :type step: str
         """
-        allowed_values = ["SEARCH_MDN", "VERIFY_DOC_LINK", "READ_SPEC", "READ_EXPLAINER", "LLM_GENERATION"]  # noqa: E501
+        allowed_values = ["UNKNOWN", "SEARCH_MDN", "VERIFY_DOC_LINK", "READ_SPEC", "READ_EXPLAINER"]  # noqa: E501
         if step not in allowed_values:
             raise ValueError(
                 "Invalid value for `step` ({0}), must be one of {1}"

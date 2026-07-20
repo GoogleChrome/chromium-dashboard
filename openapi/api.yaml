@@ -2390,7 +2390,7 @@ components:
       properties:
         step:
           type: string
-          enum: [SEARCH_MDN, VERIFY_DOC_LINK, READ_SPEC, READ_EXPLAINER, LLM_GENERATION]
+          enum: [UNKNOWN, SEARCH_MDN, VERIFY_DOC_LINK, READ_SPEC, READ_EXPLAINER]
           description: The concrete step or tool execution stage in the AI pipeline.
         status:
           type: string
@@ -2425,7 +2425,7 @@ components:
           type: string
         status:
           type: string
-          enum: [UNKNOWN, PROPOSED, PENDING, APPLIED, REJECTED, DISCARDED, BYPASSED, SKIPPED]
+          enum: [PENDING, APPLIED, REJECTED, DISCARDED, BYPASSED]
         baseline_status:
           type: string
           enum: [none, limited, newly, widely]
@@ -2469,7 +2469,7 @@ components:
       properties:
         status:
           type: string
-          enum: [UNKNOWN, PROPOSED, PENDING, APPLIED, REJECTED, DISCARDED, BYPASSED, SKIPPED]
+          enum: [PENDING, APPLIED, REJECTED, DISCARDED, BYPASSED]
           nullable: true
         suggested_summary:
           type: string

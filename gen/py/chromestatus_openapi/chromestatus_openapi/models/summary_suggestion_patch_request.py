@@ -72,7 +72,7 @@ class SummarySuggestionPatchRequest(Model):
         :param status: The status of this SummarySuggestionPatchRequest.
         :type status: str
         """
-        allowed_values = [None,"UNKNOWN", "PROPOSED", "PENDING", "APPLIED", "REJECTED", "DISCARDED", "BYPASSED", "SKIPPED"]  # noqa: E501
+        allowed_values = [None,"PENDING", "APPLIED", "REJECTED", "DISCARDED", "BYPASSED"]  # noqa: E501
         if status not in allowed_values:
             raise ValueError(
                 "Invalid value for `status` ({0}), must be one of {1}"

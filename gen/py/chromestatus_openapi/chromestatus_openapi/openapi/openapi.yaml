@@ -3674,18 +3674,18 @@ components:
       example:
         end_timestamp: 2000-01-23T04:56:07.000+00:00
         start_timestamp: 2000-01-23T04:56:07.000+00:00
-        step: SEARCH_MDN
+        step: UNKNOWN
         message: message
         status: IN_PROGRESS
       properties:
         step:
           description: The concrete step or tool execution stage in the AI pipeline.
           enum:
+          - UNKNOWN
           - SEARCH_MDN
           - VERIFY_DOC_LINK
           - READ_SPEC
           - READ_EXPLAINER
-          - LLM_GENERATION
           title: step
           type: string
         status:
@@ -3734,7 +3734,7 @@ components:
         version_token: 1
         baseline_status: none
         updated: 2000-01-23T04:56:07.000+00:00
-        status: UNKNOWN
+        status: PENDING
       properties:
         feature_id:
           title: feature_id
@@ -3747,14 +3747,11 @@ components:
           type: string
         status:
           enum:
-          - UNKNOWN
-          - PROPOSED
           - PENDING
           - APPLIED
           - REJECTED
           - DISCARDED
           - BYPASSED
-          - SKIPPED
           title: status
           type: string
         baseline_status:
@@ -3812,17 +3809,17 @@ components:
           version_token: 1
           baseline_status: none
           updated: 2000-01-23T04:56:07.000+00:00
-          status: UNKNOWN
+          status: PENDING
         can_edit: true
         progress_steps:
         - end_timestamp: 2000-01-23T04:56:07.000+00:00
           start_timestamp: 2000-01-23T04:56:07.000+00:00
-          step: SEARCH_MDN
+          step: UNKNOWN
           message: message
           status: IN_PROGRESS
         - end_timestamp: 2000-01-23T04:56:07.000+00:00
           start_timestamp: 2000-01-23T04:56:07.000+00:00
-          step: SEARCH_MDN
+          step: UNKNOWN
           message: message
           status: IN_PROGRESS
       properties:
@@ -3847,18 +3844,15 @@ components:
         suggested_summary: suggested_summary
         original_summary: original_summary
         version_token: 0
-        status: UNKNOWN
+        status: PENDING
       properties:
         status:
           enum:
-          - UNKNOWN
-          - PROPOSED
           - PENDING
           - APPLIED
           - REJECTED
           - DISCARDED
           - BYPASSED
-          - SKIPPED
           nullable: true
           title: status
           type: string
@@ -3892,7 +3886,7 @@ components:
           version_token: 1
           baseline_status: none
           updated: 2000-01-23T04:56:07.000+00:00
-          status: UNKNOWN
+          status: PENDING
         - feature_id: 0
           suggested_summary: suggested_summary
           suggested_doc_links:
@@ -3905,7 +3899,7 @@ components:
           version_token: 1
           baseline_status: none
           updated: 2000-01-23T04:56:07.000+00:00
-          status: UNKNOWN
+          status: PENDING
       properties:
         suggestions:
           items:

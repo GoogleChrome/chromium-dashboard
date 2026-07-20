@@ -925,7 +925,7 @@ class TestDefaultController(BaseTestCase):
 
         Update AI summary suggestion status or fields
         """
-        summary_suggestion_patch_request = {"suggested_summary":"suggested_summary","original_summary":"original_summary","version_token":0,"status":"UNKNOWN"}
+        summary_suggestion_patch_request = {"suggested_summary":"suggested_summary","original_summary":"original_summary","version_token":0,"status":"PENDING"}
         headers = { 
             'Accept': 'application/json',
             'Content-Type': 'application/json',
