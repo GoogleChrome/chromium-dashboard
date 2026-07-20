@@ -60,7 +60,7 @@
     "url": "https://github.com/GoogleChrome/chromium-dashboard/issues"
   },
   "devDependencies": {
-    "@open-wc/testing": "^4.0.0",
+    "@open-wc/testing": "^5.0.0",
     "@openapitools/openapi-generator-cli": "^2.39.1",
     "@playwright/test": "1.61.1",
     "@rollup/plugin-node-resolve": "^16.0.3",
