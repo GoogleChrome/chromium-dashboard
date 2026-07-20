@@ -170,7 +170,7 @@ class SummaryProgressStep(Model):
         :param tool_name: The tool_name of this SummaryProgressStep.
         :type tool_name: str
         """
-        allowed_values = ["search_mdn_tool", "verify_doc_link_tool", "read_spec_link_tool"]  # noqa: E501
+        allowed_values = [None,"search_mdn_tool", "verify_doc_link_tool", "read_spec_link_tool"]  # noqa: E501
         if tool_name not in allowed_values:
             raise ValueError(
                 "Invalid value for `tool_name` ({0}), must be one of {1}"

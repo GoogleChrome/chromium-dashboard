@@ -3716,6 +3716,7 @@ components:
           - search_mdn_tool
           - verify_doc_link_tool
           - read_spec_link_tool
+          nullable: true
           title: tool_name
           type: string
         attempt_count:
@@ -3785,6 +3786,7 @@ components:
           - limited
           - newly
           - widely
+          nullable: true
           title: baseline_status
           type: string
         confidence_score:
@@ -3884,6 +3886,7 @@ components:
           - DISCARDED
           - BYPASSED
           - SKIPPED
+          nullable: true
           title: status
           type: string
         suggested_summary:
@@ -4004,6 +4007,7 @@ components:
           - PENDING
           - IN_REVIEW
           - COMPLETED
+          nullable: true
           title: status
           type: string
         curator_emails:
