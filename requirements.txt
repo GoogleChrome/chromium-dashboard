@@ -19,7 +19,7 @@ google-cloud-logging==3.16.0
 google-cloud-secret-manager==2.29.0
 google-cloud-storage==3.13.0
 google-auth==2.55.1
-google-genai==2.11.0
+google-genai==2.12.1
 requests==2.34.2
 redis==7.4.0
 fakeredis==2.36.2
