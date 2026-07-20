@@ -226,7 +226,7 @@ class ReleaseNoteFeature(Model):
         :param baseline_status: The baseline_status of this ReleaseNoteFeature.
         :type baseline_status: str
         """
-        allowed_values = ["none", "limited", "newly", "widely"]  # noqa: E501
+        allowed_values = [None,"none", "limited", "newly", "widely"]  # noqa: E501
         if baseline_status not in allowed_values:
             raise ValueError(
                 "Invalid value for `baseline_status` ({0}), must be one of {1}"

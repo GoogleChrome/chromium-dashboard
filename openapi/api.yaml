@@ -2560,6 +2560,7 @@ components:
         baseline_status:
           type: string
           enum: [none, limited, newly, widely]
+          nullable: true
         has_applied_suggestion:
           type: boolean
     ReleaseNotesResponse:

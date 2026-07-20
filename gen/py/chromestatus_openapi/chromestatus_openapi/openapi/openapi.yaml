@@ -4052,6 +4052,7 @@ components:
           - limited
           - newly
           - widely
+          nullable: true
           title: baseline_status
           type: string
         has_applied_suggestion:
