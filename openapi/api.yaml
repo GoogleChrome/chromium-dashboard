@@ -1178,6 +1178,11 @@ paths:
   /summary-suggestions/pending:
     get:
       summary: Get paginated list of pending summary suggestions for DevRel review queue
+      description: >-
+        Retrieves a cursor-paginated list of pending AI summary suggestions for the DevRel review queue.
+        Omit cursor on initial request. Pass limit (default 25, max 100) to control page size.
+        Pass next_cursor as the cursor query parameter on subsequent requests to fetch the next page.
+        When next_cursor is null, the end of the queue has been reached.
       operationId: getPendingSummarySuggestions
       parameters:
         - name: cursor
@@ -1185,7 +1190,7 @@ paths:
           required: false
           schema:
             type: string
-          description: Cursor token for pagination
+          description: Opaque cursor token returned from a previous response next_cursor field. Omit on initial page request.
         - name: limit
           in: query
           required: false
@@ -1194,7 +1199,7 @@ paths:
             minimum: 1
             maximum: 100
             default: 25
-          description: Maximum number of suggestions to return (capped at 100 to prevent OOM/Datastore DoS)
+          description: "Maximum number of items to return per page (default: 25, max: 100)."
       responses:
         '200':
           description: Success

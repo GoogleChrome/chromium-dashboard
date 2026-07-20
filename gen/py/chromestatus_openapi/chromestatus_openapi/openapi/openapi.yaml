@@ -1357,9 +1357,15 @@ paths:
       x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
   /summary-suggestions/pending:
     get:
+      description: "Retrieves a cursor-paginated list of pending AI summary suggestions\
+        \ for the DevRel review queue. Omit cursor on initial request. Pass limit\
+        \ (default 25, max 100) to control page size. Pass next_cursor as the cursor\
+        \ query parameter on subsequent requests to fetch the next page. When next_cursor\
+        \ is null, the end of the queue has been reached."
       operationId: get_pending_summary_suggestions
       parameters:
-      - description: Cursor token for pagination
+      - description: Opaque cursor token returned from a previous response next_cursor
+          field. Omit on initial page request.
         explode: true
         in: query
         name: cursor
@@ -1367,8 +1373,8 @@ paths:
         schema:
           type: string
         style: form
-      - description: Maximum number of suggestions to return (capped at 100 to prevent
-          OOM/Datastore DoS)
+      - description: "Maximum number of items to return per page (default: 25, max:\
+          \ 100)."
         explode: true
         in: query
         name: limit

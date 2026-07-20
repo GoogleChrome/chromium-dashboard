@@ -379,11 +379,11 @@ def get_pending_gates():  # noqa: E501
 def get_pending_summary_suggestions(cursor=None, limit=None):  # noqa: E501
     """Get paginated list of pending summary suggestions for DevRel review queue
 
-     # noqa: E501
+    Retrieves a cursor-paginated list of pending AI summary suggestions for the DevRel review queue. Omit cursor on initial request. Pass limit (default 25, max 100) to control page size. Pass next_cursor as the cursor query parameter on subsequent requests to fetch the next page. When next_cursor is null, the end of the queue has been reached. # noqa: E501
 
-    :param cursor: Cursor token for pagination
+    :param cursor: Opaque cursor token returned from a previous response next_cursor field. Omit on initial page request.
     :type cursor: str
-    :param limit: Maximum number of suggestions to return (capped at 100 to prevent OOM/Datastore DoS)
+    :param limit: Maximum number of items to return per page (default: 25, max: 100).
     :type limit: int
 
     :rtype: Union[SummarySuggestionListResponse, Tuple[SummarySuggestionListResponse, int], Tuple[SummarySuggestionListResponse, int, Dict[str, str]]
