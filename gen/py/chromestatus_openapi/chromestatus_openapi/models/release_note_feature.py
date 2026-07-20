@@ -94,6 +94,8 @@ class ReleaseNoteFeature(Model):
         """
         if id is None:
             raise ValueError("Invalid value for `id`, must not be `None`")  # noqa: E501
+        if id is not None and id < 1:  # noqa: E501
+            raise ValueError("Invalid value for `id`, must be a value greater than or equal to `1`")  # noqa: E501
 
         self._id = id
 

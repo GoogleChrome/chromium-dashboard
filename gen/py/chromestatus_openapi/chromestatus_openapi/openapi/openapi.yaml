@@ -3681,7 +3681,7 @@ components:
         step:
           description: |
             The concrete step or tool execution stage in the AI generation pipeline:
-            - UNKNOWN: Fallback for forward compatibility with new Day 2 tools
+            - UNKNOWN: Fallback for unknown or unsupported execution steps
             - SEARCH_MDN: Querying MDN documentation
             - VERIFY_DOC_LINK: Checking external documentation links
             - READ_SPEC: Fetching and parsing W3C/WHATWG specification
@@ -3696,13 +3696,11 @@ components:
           type: string
         status:
           description: |
-            Execution status of this step.
-            Allowed State Transitions:
-            - IN_PROGRESS -> SUCCESS (Step finished successfully)
-            - IN_PROGRESS -> RETRYING (Transient rate limit / network error; exponential backoff active)
-            - RETRYING -> SUCCESS (Step succeeded after retry)
-            - IN_PROGRESS -> FAILED (Non-retryable error encountered)
-            - RETRYING -> FAILED (Step failed after exhausting retry attempts)
+            Execution status of this step:
+            - IN_PROGRESS: Step is currently running
+            - SUCCESS: Step completed successfully
+            - FAILED: Step failed to complete
+            - RETRYING: Step is re-attempting execution after a transient issue
           enum:
           - IN_PROGRESS
           - SUCCESS
@@ -3712,7 +3710,7 @@ components:
           type: string
         message:
           description: "Human-readable progress update, completion summary, or error\
-            \ reason when status == FAILED."
+            \ reason when status is FAILED."
           title: message
           type: string
         start_timestamp:
@@ -3721,8 +3719,8 @@ components:
           title: start_timestamp
           type: string
         end_timestamp:
-          description: "Timestamp when this step reached a terminal state (SUCCESS,\
-            \ FAILED, or CANCELLED). Null while status is IN_PROGRESS."
+          description: Timestamp when this step reached a terminal state (SUCCESS
+            or FAILED). Null while step is active (IN_PROGRESS or RETRYING).
           format: date-time
           nullable: true
           title: end_timestamp
@@ -3735,14 +3733,14 @@ components:
       type: object
     SummarySuggestion:
       example:
-        feature_id: 0
+        feature_id: 1
         suggested_summary: suggested_summary
         suggested_doc_links:
         - suggested_doc_links
         - suggested_doc_links
         original_summary: original_summary
         created: 2000-01-23T04:56:07.000+00:00
-        confidence_score: 6.0274563
+        confidence_score: 0.6027456
         reasoning: reasoning
         version_token: 1
         baseline_status: none
@@ -3750,6 +3748,7 @@ components:
         status: PENDING
       properties:
         feature_id:
+          minimum: 1
           title: feature_id
           type: integer
         suggested_summary:
@@ -3760,13 +3759,12 @@ components:
           type: string
         status:
           description: |
-            Lifecycle status of the AI summary suggestion.
-            Allowed State Transitions:
-            - PENDING -> APPLIED (DevRel editor approves AI suggestion)
-            - PENDING -> REJECTED (DevRel editor declines AI suggestion)
-            - PENDING -> DISCARDED (Feature deleted or suggestion rendered obsolete)
-            - PENDING -> BYPASSED (Feature owner manually overwrites summary)
-            - APPLIED -> REJECTED | DISCARDED (Editor reverts prior approval)
+            Lifecycle status of the summary suggestion:
+            - PENDING: Awaiting review
+            - APPLIED: Approved and applied to feature
+            - REJECTED: Suggestion declined
+            - DISCARDED: Obsolete or feature deleted
+            - BYPASSED: Manually overridden by owner
           enum:
           - PENDING
           - APPLIED
@@ -3786,6 +3784,8 @@ components:
           type: string
         confidence_score:
           format: float
+          maximum: 1.0
+          minimum: 0.0
           title: confidence_score
           type: number
         reasoning:
@@ -3797,6 +3797,7 @@ components:
           title: suggested_doc_links
           type: array
         version_token:
+          minimum: 1
           title: version_token
           type: integer
         created:
@@ -3818,14 +3819,14 @@ components:
     SummarySuggestionResponse:
       example:
         suggestion:
-          feature_id: 0
+          feature_id: 1
           suggested_summary: suggested_summary
           suggested_doc_links:
           - suggested_doc_links
           - suggested_doc_links
           original_summary: original_summary
           created: 2000-01-23T04:56:07.000+00:00
-          confidence_score: 6.0274563
+          confidence_score: 0.6027456
           reasoning: reasoning
           version_token: 1
           baseline_status: none
@@ -3864,7 +3865,7 @@ components:
       example:
         suggested_summary: suggested_summary
         original_summary: original_summary
-        version_token: 0
+        version_token: 1
         status: PENDING
       properties:
         status:
@@ -3884,6 +3885,7 @@ components:
           title: original_summary
           type: string
         version_token:
+          minimum: 1
           title: version_token
           type: integer
       required:
@@ -3893,29 +3895,29 @@ components:
     SummarySuggestionListResponse:
       example:
         next_cursor: next_cursor
-        total_count: 5
+        total_count: 0
         suggestions:
-        - feature_id: 0
+        - feature_id: 1
           suggested_summary: suggested_summary
           suggested_doc_links:
           - suggested_doc_links
           - suggested_doc_links
           original_summary: original_summary
           created: 2000-01-23T04:56:07.000+00:00
-          confidence_score: 6.0274563
+          confidence_score: 0.6027456
           reasoning: reasoning
           version_token: 1
           baseline_status: none
           updated: 2000-01-23T04:56:07.000+00:00
           status: PENDING
-        - feature_id: 0
+        - feature_id: 1
           suggested_summary: suggested_summary
           suggested_doc_links:
           - suggested_doc_links
           - suggested_doc_links
           original_summary: original_summary
           created: 2000-01-23T04:56:07.000+00:00
-          confidence_score: 6.0274563
+          confidence_score: 0.6027456
           reasoning: reasoning
           version_token: 1
           baseline_status: none
@@ -3928,9 +3930,11 @@ components:
           title: suggestions
           type: array
         next_cursor:
+          nullable: true
           title: next_cursor
           type: string
         total_count:
+          minimum: 0
           title: total_count
           type: integer
       required:
@@ -3943,6 +3947,7 @@ components:
         count: 0
       properties:
         count:
+          minimum: 0
           title: count
           type: integer
       required:
@@ -3951,7 +3956,7 @@ components:
       type: object
     MilestoneCurationResponse:
       example:
-        milestone: 0
+        milestone: 1
         curator_emails:
         - curator_emails
         - curator_emails
@@ -3959,16 +3964,15 @@ components:
         status: PENDING
       properties:
         milestone:
+          minimum: 1
           title: milestone
           type: integer
         status:
           description: |
-            Editorial review status of the milestone curation workflow.
-            Allowed State Transitions:
-            - PENDING -> IN_REVIEW (DevRel curators begin reviewing milestone summaries)
-            - IN_REVIEW -> COMPLETED (All milestone features reviewed and approved for publication)
-            - PENDING -> COMPLETED (Fast-path editorial completion)
-            - COMPLETED -> IN_REVIEW (Re-opened for post-release editorial updates)
+            Editorial review status of the milestone curation workflow:
+            - PENDING: Milestone curation has not started
+            - IN_REVIEW: Milestone curation is under active editorial review
+            - COMPLETED: Milestone curation review is completed
           enum:
           - PENDING
           - IN_REVIEW
@@ -3982,6 +3986,7 @@ components:
           type: array
         last_reviewed:
           format: date-time
+          nullable: true
           title: last_reviewed
           type: string
       required:
@@ -4018,12 +4023,13 @@ components:
         feature_type: 5
         category_name: category_name
         name: name
-        id: 6
+        id: 1
         has_applied_suggestion: true
         category: 1
         baseline_status: none
       properties:
         id:
+          minimum: 1
           title: id
           type: integer
         name:
@@ -4067,7 +4073,7 @@ components:
           feature_type: 5
           category_name: category_name
           name: name
-          id: 6
+          id: 1
           has_applied_suggestion: true
           category: 1
           baseline_status: none
@@ -4075,13 +4081,14 @@ components:
           feature_type: 5
           category_name: category_name
           name: name
-          id: 6
+          id: 1
           has_applied_suggestion: true
           category: 1
           baseline_status: none
-        milestone: 0
+        milestone: 1
       properties:
         milestone:
+          minimum: 1
           title: milestone
           type: integer
         features:

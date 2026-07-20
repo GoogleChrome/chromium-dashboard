@@ -143,5 +143,7 @@ class SummarySuggestionPatchRequest(Model):
         """
         if version_token is None:
             raise ValueError("Invalid value for `version_token`, must not be `None`")  # noqa: E501
+        if version_token is not None and version_token < 1:  # noqa: E501
+            raise ValueError("Invalid value for `version_token`, must be a value greater than or equal to `1`")  # noqa: E501
 
         self._version_token = version_token

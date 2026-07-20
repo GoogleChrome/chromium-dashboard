@@ -109,6 +109,8 @@ class SummarySuggestion(Model):
         """
         if feature_id is None:
             raise ValueError("Invalid value for `feature_id`, must not be `None`")  # noqa: E501
+        if feature_id is not None and feature_id < 1:  # noqa: E501
+            raise ValueError("Invalid value for `feature_id`, must be a value greater than or equal to `1`")  # noqa: E501
 
         self._feature_id = feature_id
 
@@ -158,7 +160,7 @@ class SummarySuggestion(Model):
     def status(self) -> str:
         """Gets the status of this SummarySuggestion.
 
-        Lifecycle status of the AI summary suggestion. Allowed State Transitions: - PENDING -> APPLIED (DevRel editor approves AI suggestion) - PENDING -> REJECTED (DevRel editor declines AI suggestion) - PENDING -> DISCARDED (Feature deleted or suggestion rendered obsolete) - PENDING -> BYPASSED (Feature owner manually overwrites summary) - APPLIED -> REJECTED | DISCARDED (Editor reverts prior approval)   # noqa: E501
+        Lifecycle status of the summary suggestion: - PENDING: Awaiting review - APPLIED: Approved and applied to feature - REJECTED: Suggestion declined - DISCARDED: Obsolete or feature deleted - BYPASSED: Manually overridden by owner   # noqa: E501
 
         :return: The status of this SummarySuggestion.
         :rtype: str
@@ -169,7 +171,7 @@ class SummarySuggestion(Model):
     def status(self, status: str):
         """Sets the status of this SummarySuggestion.
 
-        Lifecycle status of the AI summary suggestion. Allowed State Transitions: - PENDING -> APPLIED (DevRel editor approves AI suggestion) - PENDING -> REJECTED (DevRel editor declines AI suggestion) - PENDING -> DISCARDED (Feature deleted or suggestion rendered obsolete) - PENDING -> BYPASSED (Feature owner manually overwrites summary) - APPLIED -> REJECTED | DISCARDED (Editor reverts prior approval)   # noqa: E501
+        Lifecycle status of the summary suggestion: - PENDING: Awaiting review - APPLIED: Approved and applied to feature - REJECTED: Suggestion declined - DISCARDED: Obsolete or feature deleted - BYPASSED: Manually overridden by owner   # noqa: E501
 
         :param status: The status of this SummarySuggestion.
         :type status: str
@@ -228,6 +230,10 @@ class SummarySuggestion(Model):
         :param confidence_score: The confidence_score of this SummarySuggestion.
         :type confidence_score: float
         """
+        if confidence_score is not None and confidence_score > 1.0:  # noqa: E501
+            raise ValueError("Invalid value for `confidence_score`, must be a value less than or equal to `1.0`")  # noqa: E501
+        if confidence_score is not None and confidence_score < 0.0:  # noqa: E501
+            raise ValueError("Invalid value for `confidence_score`, must be a value greater than or equal to `0.0`")  # noqa: E501
 
         self._confidence_score = confidence_score
 
@@ -293,6 +299,8 @@ class SummarySuggestion(Model):
         """
         if version_token is None:
             raise ValueError("Invalid value for `version_token`, must not be `None`")  # noqa: E501
+        if version_token is not None and version_token < 1:  # noqa: E501
+            raise ValueError("Invalid value for `version_token`, must be a value greater than or equal to `1`")  # noqa: E501
 
         self._version_token = version_token
 

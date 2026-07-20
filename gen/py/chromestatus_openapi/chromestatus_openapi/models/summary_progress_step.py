@@ -63,7 +63,7 @@ class SummaryProgressStep(Model):
     def step(self) -> str:
         """Gets the step of this SummaryProgressStep.
 
-        The concrete step or tool execution stage in the AI generation pipeline: - UNKNOWN: Fallback for forward compatibility with new Day 2 tools - SEARCH_MDN: Querying MDN documentation - VERIFY_DOC_LINK: Checking external documentation links - READ_SPEC: Fetching and parsing W3C/WHATWG specification - READ_EXPLAINER: Fetching feature explainer document   # noqa: E501
+        The concrete step or tool execution stage in the AI generation pipeline: - UNKNOWN: Fallback for unknown or unsupported execution steps - SEARCH_MDN: Querying MDN documentation - VERIFY_DOC_LINK: Checking external documentation links - READ_SPEC: Fetching and parsing W3C/WHATWG specification - READ_EXPLAINER: Fetching feature explainer document   # noqa: E501
 
         :return: The step of this SummaryProgressStep.
         :rtype: str
@@ -74,7 +74,7 @@ class SummaryProgressStep(Model):
     def step(self, step: str):
         """Sets the step of this SummaryProgressStep.
 
-        The concrete step or tool execution stage in the AI generation pipeline: - UNKNOWN: Fallback for forward compatibility with new Day 2 tools - SEARCH_MDN: Querying MDN documentation - VERIFY_DOC_LINK: Checking external documentation links - READ_SPEC: Fetching and parsing W3C/WHATWG specification - READ_EXPLAINER: Fetching feature explainer document   # noqa: E501
+        The concrete step or tool execution stage in the AI generation pipeline: - UNKNOWN: Fallback for unknown or unsupported execution steps - SEARCH_MDN: Querying MDN documentation - VERIFY_DOC_LINK: Checking external documentation links - READ_SPEC: Fetching and parsing W3C/WHATWG specification - READ_EXPLAINER: Fetching feature explainer document   # noqa: E501
 
         :param step: The step of this SummaryProgressStep.
         :type step: str
@@ -92,7 +92,7 @@ class SummaryProgressStep(Model):
     def status(self) -> str:
         """Gets the status of this SummaryProgressStep.
 
-        Execution status of this step. Allowed State Transitions: - IN_PROGRESS -> SUCCESS (Step finished successfully) - IN_PROGRESS -> RETRYING (Transient rate limit / network error; exponential backoff active) - RETRYING -> SUCCESS (Step succeeded after retry) - IN_PROGRESS -> FAILED (Non-retryable error encountered) - RETRYING -> FAILED (Step failed after exhausting retry attempts)   # noqa: E501
+        Execution status of this step: - IN_PROGRESS: Step is currently running - SUCCESS: Step completed successfully - FAILED: Step failed to complete - RETRYING: Step is re-attempting execution after a transient issue   # noqa: E501
 
         :return: The status of this SummaryProgressStep.
         :rtype: str
@@ -103,7 +103,7 @@ class SummaryProgressStep(Model):
     def status(self, status: str):
         """Sets the status of this SummaryProgressStep.
 
-        Execution status of this step. Allowed State Transitions: - IN_PROGRESS -> SUCCESS (Step finished successfully) - IN_PROGRESS -> RETRYING (Transient rate limit / network error; exponential backoff active) - RETRYING -> SUCCESS (Step succeeded after retry) - IN_PROGRESS -> FAILED (Non-retryable error encountered) - RETRYING -> FAILED (Step failed after exhausting retry attempts)   # noqa: E501
+        Execution status of this step: - IN_PROGRESS: Step is currently running - SUCCESS: Step completed successfully - FAILED: Step failed to complete - RETRYING: Step is re-attempting execution after a transient issue   # noqa: E501
 
         :param status: The status of this SummaryProgressStep.
         :type status: str
@@ -121,7 +121,7 @@ class SummaryProgressStep(Model):
     def message(self) -> str:
         """Gets the message of this SummaryProgressStep.
 
-        Human-readable progress update, completion summary, or error reason when status == FAILED.  # noqa: E501
+        Human-readable progress update, completion summary, or error reason when status is FAILED.  # noqa: E501
 
         :return: The message of this SummaryProgressStep.
         :rtype: str
@@ -132,7 +132,7 @@ class SummaryProgressStep(Model):
     def message(self, message: str):
         """Sets the message of this SummaryProgressStep.
 
-        Human-readable progress update, completion summary, or error reason when status == FAILED.  # noqa: E501
+        Human-readable progress update, completion summary, or error reason when status is FAILED.  # noqa: E501
 
         :param message: The message of this SummaryProgressStep.
         :type message: str
@@ -169,7 +169,7 @@ class SummaryProgressStep(Model):
     def end_timestamp(self) -> datetime:
         """Gets the end_timestamp of this SummaryProgressStep.
 
-        Timestamp when this step reached a terminal state (SUCCESS, FAILED, or CANCELLED). Null while status is IN_PROGRESS.  # noqa: E501
+        Timestamp when this step reached a terminal state (SUCCESS or FAILED). Null while step is active (IN_PROGRESS or RETRYING).  # noqa: E501
 
         :return: The end_timestamp of this SummaryProgressStep.
         :rtype: datetime
@@ -180,7 +180,7 @@ class SummaryProgressStep(Model):
     def end_timestamp(self, end_timestamp: datetime):
         """Sets the end_timestamp of this SummaryProgressStep.
 
-        Timestamp when this step reached a terminal state (SUCCESS, FAILED, or CANCELLED). Null while status is IN_PROGRESS.  # noqa: E501
+        Timestamp when this step reached a terminal state (SUCCESS or FAILED). Null while step is active (IN_PROGRESS or RETRYING).  # noqa: E501
 
         :param end_timestamp: The end_timestamp of this SummaryProgressStep.
         :type end_timestamp: datetime

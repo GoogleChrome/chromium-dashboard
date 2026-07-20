@@ -59,5 +59,7 @@ class PendingCountResponse(Model):
         """
         if count is None:
             raise ValueError("Invalid value for `count`, must not be `None`")  # noqa: E501
+        if count is not None and count < 0:  # noqa: E501
+            raise ValueError("Invalid value for `count`, must be a value greater than or equal to `0`")  # noqa: E501
 
         self._count = count

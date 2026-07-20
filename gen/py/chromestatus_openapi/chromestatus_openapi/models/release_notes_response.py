@@ -66,6 +66,8 @@ class ReleaseNotesResponse(Model):
         """
         if milestone is None:
             raise ValueError("Invalid value for `milestone`, must not be `None`")  # noqa: E501
+        if milestone is not None and milestone < 1:  # noqa: E501
+            raise ValueError("Invalid value for `milestone`, must be a value greater than or equal to `1`")  # noqa: E501
 
         self._milestone = milestone
 

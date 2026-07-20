@@ -115,5 +115,7 @@ class SummarySuggestionListResponse(Model):
         """
         if total_count is None:
             raise ValueError("Invalid value for `total_count`, must not be `None`")  # noqa: E501
+        if total_count is not None and total_count < 0:  # noqa: E501
+            raise ValueError("Invalid value for `total_count`, must be a value greater than or equal to `0`")  # noqa: E501
 
         self._total_count = total_count

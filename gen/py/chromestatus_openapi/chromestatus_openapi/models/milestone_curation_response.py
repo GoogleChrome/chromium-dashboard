@@ -74,6 +74,8 @@ class MilestoneCurationResponse(Model):
         """
         if milestone is None:
             raise ValueError("Invalid value for `milestone`, must not be `None`")  # noqa: E501
+        if milestone is not None and milestone < 1:  # noqa: E501
+            raise ValueError("Invalid value for `milestone`, must be a value greater than or equal to `1`")  # noqa: E501
 
         self._milestone = milestone
 
@@ -81,7 +83,7 @@ class MilestoneCurationResponse(Model):
     def status(self) -> str:
         """Gets the status of this MilestoneCurationResponse.
 
-        Editorial review status of the milestone curation workflow. Allowed State Transitions: - PENDING -> IN_REVIEW (DevRel curators begin reviewing milestone summaries) - IN_REVIEW -> COMPLETED (All milestone features reviewed and approved for publication) - PENDING -> COMPLETED (Fast-path editorial completion) - COMPLETED -> IN_REVIEW (Re-opened for post-release editorial updates)   # noqa: E501
+        Editorial review status of the milestone curation workflow: - PENDING: Milestone curation has not started - IN_REVIEW: Milestone curation is under active editorial review - COMPLETED: Milestone curation review is completed   # noqa: E501
 
         :return: The status of this MilestoneCurationResponse.
         :rtype: str
@@ -92,7 +94,7 @@ class MilestoneCurationResponse(Model):
     def status(self, status: str):
         """Sets the status of this MilestoneCurationResponse.
 
-        Editorial review status of the milestone curation workflow. Allowed State Transitions: - PENDING -> IN_REVIEW (DevRel curators begin reviewing milestone summaries) - IN_REVIEW -> COMPLETED (All milestone features reviewed and approved for publication) - PENDING -> COMPLETED (Fast-path editorial completion) - COMPLETED -> IN_REVIEW (Re-opened for post-release editorial updates)   # noqa: E501
+        Editorial review status of the milestone curation workflow: - PENDING: Milestone curation has not started - IN_REVIEW: Milestone curation is under active editorial review - COMPLETED: Milestone curation review is completed   # noqa: E501
 
         :param status: The status of this MilestoneCurationResponse.
         :type status: str
