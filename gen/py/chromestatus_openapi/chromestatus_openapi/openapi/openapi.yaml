@@ -4040,42 +4040,39 @@ components:
       type: object
     ReleaseNotesResponse:
       example:
+        features:
+        - summary: summary
+          feature_type: 5
+          category_name: category_name
+          name: name
+          id: 6
+          has_applied_suggestion: true
+          category: 1
+          baseline_status: none
+        - summary: summary
+          feature_type: 5
+          category_name: category_name
+          name: name
+          id: 6
+          has_applied_suggestion: true
+          category: 1
+          baseline_status: none
         milestone: 0
         archival_banner: archival_banner
-        categories:
-          key:
-          - summary: summary
-            feature_type: 5
-            category_name: category_name
-            name: name
-            id: 6
-            has_applied_suggestion: true
-            category: 1
-            baseline_status: none
-          - summary: summary
-            feature_type: 5
-            category_name: category_name
-            name: name
-            id: 6
-            has_applied_suggestion: true
-            category: 1
-            baseline_status: none
       properties:
         milestone:
           title: milestone
           type: integer
-        categories:
-          additionalProperties:
-            items:
-              $ref: '#/components/schemas/ReleaseNoteFeature'
-            type: array
-          title: categories
-          type: object
+        features:
+          items:
+            $ref: '#/components/schemas/ReleaseNoteFeature'
+          title: features
+          type: array
         archival_banner:
           title: archival_banner
           type: string
       required:
-      - categories
+      - features
       - milestone
       title: ReleaseNotesResponse
       type: object

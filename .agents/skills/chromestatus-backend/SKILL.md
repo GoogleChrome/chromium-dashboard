@@ -21,7 +21,9 @@ This skill provides context and guidelines for developing the backend of the `ch
 - `gen/py/chromestatus_openapi/`: Auto-generated Python models from OpenAPI.
 
 ## Guidelines
-- **API Development**: Prefer adding new APIs via OpenAPI in `openapi/api.yaml`. Use `make openapi-backend` to regenerate models.
+- **API Development**: Prefer adding new APIs via OpenAPI in `openapi/api.yaml`. Use `make openapi` to regenerate models.
+  > [!IMPORTANT]
+  > **Post-Generation Cleanup Rule:** `openapi-generator-cli` overwrites custom tooling configuration files (`gen/js/chromestatus-openapi/package.json`, `gen/js/chromestatus-openapi/tsconfig.json`, `gen/js/chromestatus-openapi/tsconfig.esm.json`, and `package-lock.json`). Immediately after running `make openapi`, you MUST execute `git checkout origin/main -- gen/js/chromestatus-openapi/package.json gen/js/chromestatus-openapi/tsconfig.json gen/js/chromestatus-openapi/tsconfig.esm.json package-lock.json` to revert those 4 files.
 - **Handlers**: Extend `basehandlers.py` classes for consistent permission checking and response handling. Do not add new handlers to the legacy `pages/` directory.
 - **Datastore**: Use NDB models defined in `internals/models.py`. Ensure queries are optimized and use proper indexing (see `index.yaml`).
 - **Testing**: Python unit tests are located alongside the code (e.g., `*_test.py`). Run them using `npm test`.

@@ -14,30 +14,30 @@ class ReleaseNotesResponse(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, milestone=None, categories=None, archival_banner=None):  # noqa: E501
+    def __init__(self, milestone=None, features=None, archival_banner=None):  # noqa: E501
         """ReleaseNotesResponse - a model defined in OpenAPI
 
         :param milestone: The milestone of this ReleaseNotesResponse.  # noqa: E501
         :type milestone: int
-        :param categories: The categories of this ReleaseNotesResponse.  # noqa: E501
-        :type categories: Dict[str, List[ReleaseNoteFeature]]
+        :param features: The features of this ReleaseNotesResponse.  # noqa: E501
+        :type features: List[ReleaseNoteFeature]
         :param archival_banner: The archival_banner of this ReleaseNotesResponse.  # noqa: E501
         :type archival_banner: str
         """
         self.openapi_types = {
             'milestone': int,
-            'categories': Dict[str, List[ReleaseNoteFeature]],
+            'features': List[ReleaseNoteFeature],
             'archival_banner': str
         }
 
         self.attribute_map = {
             'milestone': 'milestone',
-            'categories': 'categories',
+            'features': 'features',
             'archival_banner': 'archival_banner'
         }
 
         self._milestone = milestone
-        self._categories = categories
+        self._features = features
         self._archival_banner = archival_banner
 
     @classmethod
@@ -75,27 +75,27 @@ class ReleaseNotesResponse(Model):
         self._milestone = milestone
 
     @property
-    def categories(self) -> Dict[str, List[ReleaseNoteFeature]]:
-        """Gets the categories of this ReleaseNotesResponse.
+    def features(self) -> List[ReleaseNoteFeature]:
+        """Gets the features of this ReleaseNotesResponse.
 
 
-        :return: The categories of this ReleaseNotesResponse.
-        :rtype: Dict[str, List[ReleaseNoteFeature]]
+        :return: The features of this ReleaseNotesResponse.
+        :rtype: List[ReleaseNoteFeature]
         """
-        return self._categories
+        return self._features
 
-    @categories.setter
-    def categories(self, categories: Dict[str, List[ReleaseNoteFeature]]):
-        """Sets the categories of this ReleaseNotesResponse.
+    @features.setter
+    def features(self, features: List[ReleaseNoteFeature]):
+        """Sets the features of this ReleaseNotesResponse.
 
 
-        :param categories: The categories of this ReleaseNotesResponse.
-        :type categories: Dict[str, List[ReleaseNoteFeature]]
+        :param features: The features of this ReleaseNotesResponse.
+        :type features: List[ReleaseNoteFeature]
         """
-        if categories is None:
-            raise ValueError("Invalid value for `categories`, must not be `None`")  # noqa: E501
+        if features is None:
+            raise ValueError("Invalid value for `features`, must not be `None`")  # noqa: E501
 
-        self._categories = categories
+        self._features = features
 
     @property
     def archival_banner(self) -> str:

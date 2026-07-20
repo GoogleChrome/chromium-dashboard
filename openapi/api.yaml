@@ -2558,15 +2558,13 @@ components:
       type: object
       required:
         - milestone
-        - categories
+        - features
       properties:
         milestone:
           type: integer
-        categories:
-          type: object
-          additionalProperties:
-            type: array
-            items:
-              $ref: '#/components/schemas/ReleaseNoteFeature'
+        features:
+          type: array
+          items:
+            $ref: '#/components/schemas/ReleaseNoteFeature'
         archival_banner:
           type: string
