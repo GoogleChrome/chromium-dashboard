@@ -105,7 +105,6 @@ class FeatureSummaryProgressStepTest(testing_config.CustomTestCase):
             status=core_enums.ProgressStepStatus.IN_PROGRESS,
             start_timestamp=now,
             message='Searching MDN for documentation.',
-            tool_name=core_enums.AISummaryToolName.SEARCH_MDN,
         )
         step.put()
 

@@ -3672,8 +3672,6 @@ components:
       type: object
     SummaryProgressStep:
       example:
-        tool_name: search_mdn_tool
-        attempt_count: 0
         end_timestamp: 2000-01-23T04:56:07.000+00:00
         start_timestamp: 2000-01-23T04:56:07.000+00:00
         step_id: UNKNOWN
@@ -3710,21 +3708,6 @@ components:
             \ reason when status == FAILED."
           title: message
           type: string
-        tool_name:
-          description: Optional name of the sandbox tool executed.
-          enum:
-          - search_mdn_tool
-          - verify_doc_link_tool
-          - read_spec_link_tool
-          nullable: true
-          title: tool_name
-          type: string
-        attempt_count:
-          default: 1
-          description: "Monotonic retry counter for this step (1 for initial run,\
-            \ 2+ if retried)."
-          title: attempt_count
-          type: integer
         start_timestamp:
           description: Timestamp when this step began execution.
           format: date-time
@@ -3838,16 +3821,12 @@ components:
           status: UNKNOWN
         can_edit: true
         progress_steps:
-        - tool_name: search_mdn_tool
-          attempt_count: 0
-          end_timestamp: 2000-01-23T04:56:07.000+00:00
+        - end_timestamp: 2000-01-23T04:56:07.000+00:00
           start_timestamp: 2000-01-23T04:56:07.000+00:00
           step_id: UNKNOWN
           message: message
           status: UNKNOWN
-        - tool_name: search_mdn_tool
-          attempt_count: 0
-          end_timestamp: 2000-01-23T04:56:07.000+00:00
+        - end_timestamp: 2000-01-23T04:56:07.000+00:00
           start_timestamp: 2000-01-23T04:56:07.000+00:00
           step_id: UNKNOWN
           message: message

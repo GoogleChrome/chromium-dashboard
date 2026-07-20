@@ -491,8 +491,6 @@ class FeatureSummaryProgressStep(ndb.Model):
     )
     end_timestamp = ndb.DateTimeProperty(tzinfo=datetime.timezone.utc)
     message = ndb.TextProperty()
-    tool_name = ndb.StringProperty()
-    attempt_count = ndb.IntegerProperty(default=1)
 
     @classmethod
     def clear_timeline(cls, feature_id: int, keep_count: int = 20) -> None:

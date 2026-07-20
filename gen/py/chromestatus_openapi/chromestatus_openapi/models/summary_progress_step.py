@@ -12,7 +12,7 @@ class SummaryProgressStep(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, step_id=None, status=None, message=None, tool_name=None, attempt_count=1, start_timestamp=None, end_timestamp=None):  # noqa: E501
+    def __init__(self, step_id=None, status=None, message=None, start_timestamp=None, end_timestamp=None):  # noqa: E501
         """SummaryProgressStep - a model defined in OpenAPI
 
         :param step_id: The step_id of this SummaryProgressStep.  # noqa: E501
@@ -21,10 +21,6 @@ class SummaryProgressStep(Model):
         :type status: str
         :param message: The message of this SummaryProgressStep.  # noqa: E501
         :type message: str
-        :param tool_name: The tool_name of this SummaryProgressStep.  # noqa: E501
-        :type tool_name: str
-        :param attempt_count: The attempt_count of this SummaryProgressStep.  # noqa: E501
-        :type attempt_count: int
         :param start_timestamp: The start_timestamp of this SummaryProgressStep.  # noqa: E501
         :type start_timestamp: datetime
         :param end_timestamp: The end_timestamp of this SummaryProgressStep.  # noqa: E501
@@ -34,8 +30,6 @@ class SummaryProgressStep(Model):
             'step_id': str,
             'status': str,
             'message': str,
-            'tool_name': str,
-            'attempt_count': int,
             'start_timestamp': datetime,
             'end_timestamp': datetime
         }
@@ -44,8 +38,6 @@ class SummaryProgressStep(Model):
             'step_id': 'step_id',
             'status': 'status',
             'message': 'message',
-            'tool_name': 'tool_name',
-            'attempt_count': 'attempt_count',
             'start_timestamp': 'start_timestamp',
             'end_timestamp': 'end_timestamp'
         }
@@ -53,8 +45,6 @@ class SummaryProgressStep(Model):
         self._step_id = step_id
         self._status = status
         self._message = message
-        self._tool_name = tool_name
-        self._attempt_count = attempt_count
         self._start_timestamp = start_timestamp
         self._end_timestamp = end_timestamp
 
@@ -149,58 +139,6 @@ class SummaryProgressStep(Model):
         """
 
         self._message = message
-
-    @property
-    def tool_name(self) -> str:
-        """Gets the tool_name of this SummaryProgressStep.
-
-        Optional name of the sandbox tool executed.  # noqa: E501
-
-        :return: The tool_name of this SummaryProgressStep.
-        :rtype: str
-        """
-        return self._tool_name
-
-    @tool_name.setter
-    def tool_name(self, tool_name: str):
-        """Sets the tool_name of this SummaryProgressStep.
-
-        Optional name of the sandbox tool executed.  # noqa: E501
-
-        :param tool_name: The tool_name of this SummaryProgressStep.
-        :type tool_name: str
-        """
-        allowed_values = [None,"search_mdn_tool", "verify_doc_link_tool", "read_spec_link_tool"]  # noqa: E501
-        if tool_name not in allowed_values:
-            raise ValueError(
-                "Invalid value for `tool_name` ({0}), must be one of {1}"
-                .format(tool_name, allowed_values)
-            )
-
-        self._tool_name = tool_name
-
-    @property
-    def attempt_count(self) -> int:
-        """Gets the attempt_count of this SummaryProgressStep.
-
-        Monotonic retry counter for this step (1 for initial run, 2+ if retried).  # noqa: E501
-
-        :return: The attempt_count of this SummaryProgressStep.
-        :rtype: int
-        """
-        return self._attempt_count
-
-    @attempt_count.setter
-    def attempt_count(self, attempt_count: int):
-        """Sets the attempt_count of this SummaryProgressStep.
-
-        Monotonic retry counter for this step (1 for initial run, 2+ if retried).  # noqa: E501
-
-        :param attempt_count: The attempt_count of this SummaryProgressStep.
-        :type attempt_count: int
-        """
-
-        self._attempt_count = attempt_count
 
     @property
     def start_timestamp(self) -> datetime:
