@@ -3807,7 +3807,7 @@ components:
           description: |
             Monotonically increasing Optimistic Concurrency Control (OCC) version counter.
             Increments on every mutation to prevent mid-air collision overwrites during concurrent editorial reviews.
-            (Alternatively, HTTP ETag / If-Match headers could be used for OCC; version_token provides an explicit JSON field in generated SDK models.)
+            (TODO: Migrate to standard HTTP ETag / If-Match headers if the repo adopts header-based OCC across REST endpoints.)
           minimum: 1
           title: version_token
           type: integer
@@ -3899,7 +3899,7 @@ components:
           description: |
             Expected current version_token of the suggestion being patched for Optimistic Concurrency Control (OCC).
             Must match the server's current version_token, otherwise the server rejects the request with HTTP 409 Conflict.
-            (Alternatively, HTTP ETag / If-Match headers could be used for OCC; version_token provides an explicit JSON field in generated SDK models.)
+            (TODO: Migrate to standard HTTP ETag / If-Match headers if the repo adopts header-based OCC across REST endpoints.)
           minimum: 1
           title: version_token
           type: integer

@@ -127,7 +127,7 @@ class SummarySuggestionPatchRequest(Model):
     def version_token(self) -> int:
         """Gets the version_token of this SummarySuggestionPatchRequest.
 
-        Expected current version_token of the suggestion being patched for Optimistic Concurrency Control (OCC). Must match the server's current version_token, otherwise the server rejects the request with HTTP 409 Conflict. (Alternatively, HTTP ETag / If-Match headers could be used for OCC; version_token provides an explicit JSON field in generated SDK models.)   # noqa: E501
+        Expected current version_token of the suggestion being patched for Optimistic Concurrency Control (OCC). Must match the server's current version_token, otherwise the server rejects the request with HTTP 409 Conflict. (TODO: Migrate to standard HTTP ETag / If-Match headers if the repo adopts header-based OCC across REST endpoints.)   # noqa: E501
 
         :return: The version_token of this SummarySuggestionPatchRequest.
         :rtype: int
@@ -138,7 +138,7 @@ class SummarySuggestionPatchRequest(Model):
     def version_token(self, version_token: int):
         """Sets the version_token of this SummarySuggestionPatchRequest.
 
-        Expected current version_token of the suggestion being patched for Optimistic Concurrency Control (OCC). Must match the server's current version_token, otherwise the server rejects the request with HTTP 409 Conflict. (Alternatively, HTTP ETag / If-Match headers could be used for OCC; version_token provides an explicit JSON field in generated SDK models.)   # noqa: E501
+        Expected current version_token of the suggestion being patched for Optimistic Concurrency Control (OCC). Must match the server's current version_token, otherwise the server rejects the request with HTTP 409 Conflict. (TODO: Migrate to standard HTTP ETag / If-Match headers if the repo adopts header-based OCC across REST endpoints.)   # noqa: E501
 
         :param version_token: The version_token of this SummarySuggestionPatchRequest.
         :type version_token: int
