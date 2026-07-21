@@ -3750,7 +3750,6 @@ components:
         - suggested_doc_links
         original_summary: original_summary
         created: 2000-01-23T04:56:07.000+00:00
-        confidence_score: 0.6027456
         reasoning: reasoning
         version_token: 1
         baseline_status: none
@@ -3798,13 +3797,6 @@ components:
           nullable: true
           title: baseline_status
           type: string
-        confidence_score:
-          description: Model confidence rating between 0.0 and 1.0.
-          format: float
-          maximum: 1.0
-          minimum: 0.0
-          title: confidence_score
-          type: number
         reasoning:
           description: Grounding rationale and source links evaluated during generation.
           title: reasoning
@@ -3855,7 +3847,6 @@ components:
           - suggested_doc_links
           original_summary: original_summary
           created: 2000-01-23T04:56:07.000+00:00
-          confidence_score: 0.6027456
           reasoning: reasoning
           version_token: 1
           baseline_status: none
@@ -3954,7 +3945,6 @@ components:
           - suggested_doc_links
           original_summary: original_summary
           created: 2000-01-23T04:56:07.000+00:00
-          confidence_score: 0.6027456
           reasoning: reasoning
           version_token: 1
           baseline_status: none
@@ -3967,7 +3957,6 @@ components:
           - suggested_doc_links
           original_summary: original_summary
           created: 2000-01-23T04:56:07.000+00:00
-          confidence_score: 0.6027456
           reasoning: reasoning
           version_token: 1
           baseline_status: none

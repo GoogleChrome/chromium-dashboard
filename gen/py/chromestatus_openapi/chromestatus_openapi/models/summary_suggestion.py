@@ -12,7 +12,7 @@ class SummarySuggestion(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, feature_id=None, suggested_summary=None, original_summary=None, status=None, baseline_status=None, confidence_score=None, reasoning=None, suggested_doc_links=None, version_token=None, created=None, updated=None):  # noqa: E501
+    def __init__(self, feature_id=None, suggested_summary=None, original_summary=None, status=None, baseline_status=None, reasoning=None, suggested_doc_links=None, version_token=None, created=None, updated=None):  # noqa: E501
         """SummarySuggestion - a model defined in OpenAPI
 
         :param feature_id: The feature_id of this SummarySuggestion.  # noqa: E501
@@ -25,8 +25,6 @@ class SummarySuggestion(Model):
         :type status: str
         :param baseline_status: The baseline_status of this SummarySuggestion.  # noqa: E501
         :type baseline_status: str
-        :param confidence_score: The confidence_score of this SummarySuggestion.  # noqa: E501
-        :type confidence_score: float
         :param reasoning: The reasoning of this SummarySuggestion.  # noqa: E501
         :type reasoning: str
         :param suggested_doc_links: The suggested_doc_links of this SummarySuggestion.  # noqa: E501
@@ -44,7 +42,6 @@ class SummarySuggestion(Model):
             'original_summary': str,
             'status': str,
             'baseline_status': str,
-            'confidence_score': float,
             'reasoning': str,
             'suggested_doc_links': List[str],
             'version_token': int,
@@ -58,7 +55,6 @@ class SummarySuggestion(Model):
             'original_summary': 'original_summary',
             'status': 'status',
             'baseline_status': 'baseline_status',
-            'confidence_score': 'confidence_score',
             'reasoning': 'reasoning',
             'suggested_doc_links': 'suggested_doc_links',
             'version_token': 'version_token',
@@ -71,7 +67,6 @@ class SummarySuggestion(Model):
         self._original_summary = original_summary
         self._status = status
         self._baseline_status = baseline_status
-        self._confidence_score = confidence_score
         self._reasoning = reasoning
         self._suggested_doc_links = suggested_doc_links
         self._version_token = version_token
@@ -219,33 +214,6 @@ class SummarySuggestion(Model):
             )
 
         self._baseline_status = baseline_status
-
-    @property
-    def confidence_score(self) -> float:
-        """Gets the confidence_score of this SummarySuggestion.
-
-        Model confidence rating between 0.0 and 1.0.  # noqa: E501
-
-        :return: The confidence_score of this SummarySuggestion.
-        :rtype: float
-        """
-        return self._confidence_score
-
-    @confidence_score.setter
-    def confidence_score(self, confidence_score: float):
-        """Sets the confidence_score of this SummarySuggestion.
-
-        Model confidence rating between 0.0 and 1.0.  # noqa: E501
-
-        :param confidence_score: The confidence_score of this SummarySuggestion.
-        :type confidence_score: float
-        """
-        if confidence_score is not None and confidence_score > 1.0:  # noqa: E501
-            raise ValueError("Invalid value for `confidence_score`, must be a value less than or equal to `1.0`")  # noqa: E501
-        if confidence_score is not None and confidence_score < 0.0:  # noqa: E501
-            raise ValueError("Invalid value for `confidence_score`, must be a value greater than or equal to `0.0`")  # noqa: E501
-
-        self._confidence_score = confidence_score
 
     @property
     def reasoning(self) -> str:

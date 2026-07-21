@@ -2460,12 +2460,6 @@ components:
           enum: [none, limited, newly, widely]
           nullable: true
           description: WebDX Baseline interoperability state at suggestion generation time. Null if un-tracked.
-        confidence_score:
-          type: number
-          format: float
-          minimum: 0.0
-          maximum: 1.0
-          description: Model confidence rating between 0.0 and 1.0.
         reasoning:
           type: string
           description: Grounding rationale and source links evaluated during generation.
