@@ -21,7 +21,12 @@ import werkzeug.exceptions  # Flask HTTP stuff.
 
 from api import releasenotes_api
 from internals import core_enums
-from internals.core_models import FeatureEntry, MilestoneSet, Stage
+from internals.core_models import (
+    FeatureEntry,
+    FeatureSummarySuggestion,
+    MilestoneSet,
+    Stage,
+)
 from internals.review_models import Gate
 
 test_app = flask.Flask(__name__)
@@ -335,3 +340,132 @@ class ReleaseNotesL10nAPITest(testing_config.CustomTestCase):
         feature_after_filtered.key.delete()
         after_filtered_stage.key.delete()
         after_filtered_gate.key.delete()
+
+
+class ReleaseNotesAPITest(testing_config.CustomTestCase):
+    """Tests for ReleaseNotesAPI (GET /api/v0/releasenotes/{milestone})."""
+
+    def setUp(self):
+        """Set up test fixtures."""
+        self.handler = releasenotes_api.ReleaseNotesAPI()
+
+        self.feature_1 = FeatureEntry(
+            id=101,
+            name='CSS Anchor Positioning',
+            summary='Human summary for anchor positioning.',
+            category=1,
+            feature_type=1,
+            unlisted=False,
+            confidential=False,
+        )
+        self.feature_1.put()
+
+        self.stage_1 = Stage(
+            feature_id=101,
+            stage_type=core_enums.STAGE_BLINK_SHIPPING,
+            milestones=MilestoneSet(desktop_first=132),
+        )
+        self.stage_1.put()
+
+    def tearDown(self):
+        """Tear down test database."""
+        self.feature_1.key.delete()
+        self.stage_1.key.delete()
+        for s in FeatureSummarySuggestion.query():
+            s.key.delete()
+
+    def test_do_get__invalid_milestone(self):
+        """It aborts HTTP 400 if milestone <= 0."""
+        with test_app.test_request_context('/api/v0/releasenotes/0'):
+            with self.assertRaises(werkzeug.exceptions.BadRequest) as cm:
+                self.handler.do_get(milestone=0)
+            self.assertEqual(400, cm.exception.code)
+
+        with test_app.test_request_context('/api/v0/releasenotes/-5'):
+            with self.assertRaises(werkzeug.exceptions.BadRequest) as cm:
+                self.handler.do_get(milestone=-5)
+            self.assertEqual(400, cm.exception.code)
+
+        with test_app.test_request_context('/api/v0/releasenotes/abc'):
+            with self.assertRaises(werkzeug.exceptions.BadRequest) as cm:
+                self.handler.do_get(milestone='abc')
+            self.assertEqual(400, cm.exception.code)
+
+    def test_do_get__success_human_fallback(self):
+        """It returns feature with summary_source = HUMAN when no AI suggestion exists."""
+        with test_app.test_request_context('/api/v0/releasenotes/132'):
+            response = self.handler.do_get(milestone=132)
+
+        self.assertEqual(132, response['milestone'])
+        self.assertEqual(1, len(response['features']))
+        feat = response['features'][0]
+        self.assertEqual(101, feat['id'])
+        self.assertEqual('CSS Anchor Positioning', feat['name'])
+        self.assertEqual(
+            'Human summary for anchor positioning.', feat['summary']
+        )
+        self.assertEqual('HUMAN', feat['summary_source'])
+
+    def test_do_get__success_ai_applied(self):
+        """It overrides summary and sets summary_source = AI_APPLIED when an applied suggestion exists."""
+        suggestion = FeatureSummarySuggestion(
+            id=101,
+            suggested_summary='AI-generated approved summary text.',
+            status=core_enums.SummarySuggestionStatus.APPLIED,
+            baseline_status=core_enums.BaselineStatus.NEWLY,
+        )
+        suggestion.put()
+
+        with test_app.test_request_context('/api/v0/releasenotes/132'):
+            response = self.handler.do_get(milestone=132)
+
+        self.assertEqual(132, response['milestone'])
+        self.assertEqual(1, len(response['features']))
+        feat = response['features'][0]
+        self.assertEqual(101, feat['id'])
+        self.assertEqual('AI-generated approved summary text.', feat['summary'])
+        self.assertEqual('AI_APPLIED', feat['summary_source'])
+        self.assertEqual('newly', feat['baseline_status'])
+
+    def test_do_get__unapplied_suggestion_ignored(self):
+        """It ignores PROPOSED or REJECTED suggestions and falls back to HUMAN summary."""
+        suggestion = FeatureSummarySuggestion(
+            id=101,
+            suggested_summary='Unapproved draft summary.',
+            status=core_enums.SummarySuggestionStatus.PROPOSED,
+        )
+        suggestion.put()
+
+        with test_app.test_request_context('/api/v0/releasenotes/132'):
+            response = self.handler.do_get(milestone=132)
+
+        feat = response['features'][0]
+        self.assertEqual(
+            'Human summary for anchor positioning.', feat['summary']
+        )
+        self.assertEqual('HUMAN', feat['summary_source'])
+
+    def test_do_get__excludes_unlisted_and_deleted_features(self):
+        """It excludes unlisted, confidential, or deleted features from release notes."""
+        # 1. Unlisted feature
+        self.feature_1.unlisted = True
+        self.feature_1.put()
+        with test_app.test_request_context('/api/v0/releasenotes/132'):
+            response = self.handler.do_get(milestone=132)
+        self.assertEqual([], response['features'])
+
+        # 2. Confidential feature
+        self.feature_1.unlisted = False
+        self.feature_1.confidential = True
+        self.feature_1.put()
+        with test_app.test_request_context('/api/v0/releasenotes/132'):
+            response = self.handler.do_get(milestone=132)
+        self.assertEqual([], response['features'])
+
+        # 3. Deleted feature
+        self.feature_1.confidential = False
+        self.feature_1.deleted = True
+        self.feature_1.put()
+        with test_app.test_request_context('/api/v0/releasenotes/132'):
+            response = self.handler.do_get(milestone=132)
+        self.assertEqual([], response['features'])
