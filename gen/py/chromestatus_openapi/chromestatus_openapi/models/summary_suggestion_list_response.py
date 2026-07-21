@@ -55,6 +55,7 @@ class SummarySuggestionListResponse(Model):
     def suggestions(self) -> List[SummarySuggestion]:
         """Gets the suggestions of this SummarySuggestionListResponse.
 
+        List of pending summary suggestion objects for the current page.  # noqa: E501
 
         :return: The suggestions of this SummarySuggestionListResponse.
         :rtype: List[SummarySuggestion]
@@ -65,6 +66,7 @@ class SummarySuggestionListResponse(Model):
     def suggestions(self, suggestions: List[SummarySuggestion]):
         """Sets the suggestions of this SummarySuggestionListResponse.
 
+        List of pending summary suggestion objects for the current page.  # noqa: E501
 
         :param suggestions: The suggestions of this SummarySuggestionListResponse.
         :type suggestions: List[SummarySuggestion]
@@ -78,6 +80,7 @@ class SummarySuggestionListResponse(Model):
     def next_cursor(self) -> str:
         """Gets the next_cursor of this SummarySuggestionListResponse.
 
+        Opaque cursor token for requesting the next page of suggestions. Null when on the last page.  # noqa: E501
 
         :return: The next_cursor of this SummarySuggestionListResponse.
         :rtype: str
@@ -88,6 +91,7 @@ class SummarySuggestionListResponse(Model):
     def next_cursor(self, next_cursor: str):
         """Sets the next_cursor of this SummarySuggestionListResponse.
 
+        Opaque cursor token for requesting the next page of suggestions. Null when on the last page.  # noqa: E501
 
         :param next_cursor: The next_cursor of this SummarySuggestionListResponse.
         :type next_cursor: str
@@ -99,6 +103,7 @@ class SummarySuggestionListResponse(Model):
     def total_count(self) -> int:
         """Gets the total_count of this SummarySuggestionListResponse.
 
+        Total count of matching pending summary suggestions across all pages.  # noqa: E501
 
         :return: The total_count of this SummarySuggestionListResponse.
         :rtype: int
@@ -109,6 +114,7 @@ class SummarySuggestionListResponse(Model):
     def total_count(self, total_count: int):
         """Sets the total_count of this SummarySuggestionListResponse.
 
+        Total count of matching pending summary suggestions across all pages.  # noqa: E501
 
         :param total_count: The total_count of this SummarySuggestionListResponse.
         :type total_count: int

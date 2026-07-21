@@ -2427,6 +2427,7 @@ components:
           description: Timestamp when this step reached a terminal state (SUCCESS or FAILED). Null while step is active (IN_PROGRESS or RETRYING).
     SummarySuggestion:
       type: object
+      description: AI-generated summary suggestion entity tracking proposed release notes text, provenance status, confidence score, grounding reasoning, and optimistic concurrency version token.
       required:
         - feature_id
         - status
@@ -2437,10 +2438,13 @@ components:
         feature_id:
           type: integer
           minimum: 1
+          description: Associated feature identifier.
         suggested_summary:
           type: string
+          description: AI-suggested release notes summary text.
         original_summary:
           type: string
+          description: Original human-authored summary from FeatureEntry before AI processing.
         status:
           type: string
           enum: [PENDING, APPLIED, REJECTED, DISCARDED, BYPASSED]
@@ -2455,17 +2459,21 @@ components:
           type: string
           enum: [none, limited, newly, widely]
           nullable: true
+          description: WebDX Baseline interoperability state at suggestion generation time. Null if un-tracked.
         confidence_score:
           type: number
           format: float
           minimum: 0.0
           maximum: 1.0
+          description: Model confidence rating between 0.0 and 1.0.
         reasoning:
           type: string
+          description: Grounding rationale and source links evaluated during generation.
         suggested_doc_links:
           type: array
           items:
             type: string
+          description: List of verified external documentation links associated with the feature.
         version_token:
           type: integer
           minimum: 1
@@ -2476,11 +2484,14 @@ components:
         created:
           type: string
           format: date-time
+          description: UTC timestamp when the suggestion was created.
         updated:
           type: string
           format: date-time
+          description: UTC timestamp when the suggestion was last modified.
     SummarySuggestionResponse:
       type: object
+      description: Response payload containing a feature summary suggestion, its progress execution steps, and current user access level.
       required:
         - suggestion
         - progress_steps
@@ -2492,6 +2503,7 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/SummaryProgressStep'
+          description: Ordered timeline of tool execution progress steps for this summary generation.
         access_level:
           type: string
           enum: [READ_ONLY, CAN_EDIT]
@@ -2502,6 +2514,7 @@ components:
             Note: Returned directly in the response payload to eliminate an extra round-trip permissions check in client UIs.
     SummarySuggestionPatchRequest:
       type: object
+      description: Payload for updating the review status or text of an AI summary suggestion.
       required:
         - version_token
       properties:
@@ -2509,10 +2522,13 @@ components:
           type: string
           enum: [PENDING, APPLIED, REJECTED, DISCARDED, BYPASSED]
           nullable: true
+          description: Updated lifecycle status for the suggestion. Null if status is unchanged.
         suggested_summary:
           type: string
+          description: Updated summary text edited by reviewer.
         original_summary:
           type: string
+          description: Updated original summary reference text.
         version_token:
           type: integer
           minimum: 1
@@ -2522,6 +2538,7 @@ components:
             (TODO: Migrate to standard HTTP ETag / If-Match headers if the repo adopts header-based OCC across REST endpoints.)
     SummarySuggestionListResponse:
       type: object
+      description: Paginated response containing a list of pending AI summary suggestions for the review queue.
       required:
         - suggestions
         - total_count
@@ -2530,14 +2547,18 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/SummarySuggestion'
+          description: List of pending summary suggestion objects for the current page.
         next_cursor:
           type: string
           nullable: true
+          description: Opaque cursor token for requesting the next page of suggestions. Null when on the last page.
         total_count:
           type: integer
           minimum: 0
+          description: Total count of matching pending summary suggestions across all pages.
     PendingSuggestionsCountResponse:
       type: object
+      description: Response payload containing the count of pending AI summary suggestions.
       required:
         - count
       properties:
@@ -2547,6 +2568,7 @@ components:
           description: Total count of pending AI summary suggestions awaiting release notes editorial review.
     MilestoneCurationResponse:
       type: object
+      description: Editorial curation review state for a specific Chromium release milestone.
       required:
         - milestone
         - status
@@ -2555,6 +2577,7 @@ components:
         milestone:
           type: integer
           minimum: 1
+          description: Target Chromium milestone number.
         status:
           type: string
           enum: [PENDING, IN_REVIEW, COMPLETED]
@@ -2567,23 +2590,29 @@ components:
           type: array
           items:
             type: string
+          description: List of editor email addresses assigned to curate release notes for this milestone.
         last_reviewed:
           type: string
           format: date-time
           nullable: true
+          description: UTC timestamp when milestone curation was last reviewed or completed. Null if unreviewed.
     MilestoneCurationPatchRequest:
       type: object
+      description: Payload for updating the curation review status or assigned curators for a milestone.
       properties:
         status:
           type: string
           enum: [PENDING, IN_REVIEW, COMPLETED]
           nullable: true
+          description: Updated editorial review status for the milestone. Null if status is unchanged.
         curator_emails:
           type: array
           items:
             type: string
+          description: Updated list of assigned curator email addresses.
     ReleaseNoteFeature:
       type: object
+      description: Individual feature entry formatted for public release notes.
       required:
         - id
         - name
@@ -2627,6 +2656,7 @@ components:
             Note: Returned directly in the response payload to eliminate extra provenance lookups in client UI cards.
     ReleaseNotesResponse:
       type: object
+      description: Public release notes payload containing categorized features for a milestone.
       required:
         - milestone
         - features
@@ -2634,7 +2664,9 @@ components:
         milestone:
           type: integer
           minimum: 1
+          description: Target Chromium milestone number.
         features:
           type: array
           items:
             $ref: '#/components/schemas/ReleaseNoteFeature'
+          description: List of curated feature release notes for the milestone.

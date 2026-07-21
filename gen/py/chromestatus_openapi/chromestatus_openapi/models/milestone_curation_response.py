@@ -58,6 +58,7 @@ class MilestoneCurationResponse(Model):
     def milestone(self) -> int:
         """Gets the milestone of this MilestoneCurationResponse.
 
+        Target Chromium milestone number.  # noqa: E501
 
         :return: The milestone of this MilestoneCurationResponse.
         :rtype: int
@@ -68,6 +69,7 @@ class MilestoneCurationResponse(Model):
     def milestone(self, milestone: int):
         """Sets the milestone of this MilestoneCurationResponse.
 
+        Target Chromium milestone number.  # noqa: E501
 
         :param milestone: The milestone of this MilestoneCurationResponse.
         :type milestone: int
@@ -112,6 +114,7 @@ class MilestoneCurationResponse(Model):
     def curator_emails(self) -> List[str]:
         """Gets the curator_emails of this MilestoneCurationResponse.
 
+        List of editor email addresses assigned to curate release notes for this milestone.  # noqa: E501
 
         :return: The curator_emails of this MilestoneCurationResponse.
         :rtype: List[str]
@@ -122,6 +125,7 @@ class MilestoneCurationResponse(Model):
     def curator_emails(self, curator_emails: List[str]):
         """Sets the curator_emails of this MilestoneCurationResponse.
 
+        List of editor email addresses assigned to curate release notes for this milestone.  # noqa: E501
 
         :param curator_emails: The curator_emails of this MilestoneCurationResponse.
         :type curator_emails: List[str]
@@ -135,6 +139,7 @@ class MilestoneCurationResponse(Model):
     def last_reviewed(self) -> datetime:
         """Gets the last_reviewed of this MilestoneCurationResponse.
 
+        UTC timestamp when milestone curation was last reviewed or completed. Null if unreviewed.  # noqa: E501
 
         :return: The last_reviewed of this MilestoneCurationResponse.
         :rtype: datetime
@@ -145,6 +150,7 @@ class MilestoneCurationResponse(Model):
     def last_reviewed(self, last_reviewed: datetime):
         """Sets the last_reviewed of this MilestoneCurationResponse.
 
+        UTC timestamp when milestone curation was last reviewed or completed. Null if unreviewed.  # noqa: E501
 
         :param last_reviewed: The last_reviewed of this MilestoneCurationResponse.
         :type last_reviewed: datetime

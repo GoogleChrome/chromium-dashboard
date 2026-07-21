@@ -48,6 +48,7 @@ class MilestoneCurationPatchRequest(Model):
     def status(self) -> str:
         """Gets the status of this MilestoneCurationPatchRequest.
 
+        Updated editorial review status for the milestone. Null if status is unchanged.  # noqa: E501
 
         :return: The status of this MilestoneCurationPatchRequest.
         :rtype: str
@@ -58,6 +59,7 @@ class MilestoneCurationPatchRequest(Model):
     def status(self, status: str):
         """Sets the status of this MilestoneCurationPatchRequest.
 
+        Updated editorial review status for the milestone. Null if status is unchanged.  # noqa: E501
 
         :param status: The status of this MilestoneCurationPatchRequest.
         :type status: str
@@ -75,6 +77,7 @@ class MilestoneCurationPatchRequest(Model):
     def curator_emails(self) -> List[str]:
         """Gets the curator_emails of this MilestoneCurationPatchRequest.
 
+        Updated list of assigned curator email addresses.  # noqa: E501
 
         :return: The curator_emails of this MilestoneCurationPatchRequest.
         :rtype: List[str]
@@ -85,6 +88,7 @@ class MilestoneCurationPatchRequest(Model):
     def curator_emails(self, curator_emails: List[str]):
         """Sets the curator_emails of this MilestoneCurationPatchRequest.
 
+        Updated list of assigned curator email addresses.  # noqa: E501
 
         :param curator_emails: The curator_emails of this MilestoneCurationPatchRequest.
         :type curator_emails: List[str]

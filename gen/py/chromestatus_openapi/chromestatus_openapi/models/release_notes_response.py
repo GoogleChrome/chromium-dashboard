@@ -50,6 +50,7 @@ class ReleaseNotesResponse(Model):
     def milestone(self) -> int:
         """Gets the milestone of this ReleaseNotesResponse.
 
+        Target Chromium milestone number.  # noqa: E501
 
         :return: The milestone of this ReleaseNotesResponse.
         :rtype: int
@@ -60,6 +61,7 @@ class ReleaseNotesResponse(Model):
     def milestone(self, milestone: int):
         """Sets the milestone of this ReleaseNotesResponse.
 
+        Target Chromium milestone number.  # noqa: E501
 
         :param milestone: The milestone of this ReleaseNotesResponse.
         :type milestone: int
@@ -75,6 +77,7 @@ class ReleaseNotesResponse(Model):
     def features(self) -> List[ReleaseNoteFeature]:
         """Gets the features of this ReleaseNotesResponse.
 
+        List of curated feature release notes for the milestone.  # noqa: E501
 
         :return: The features of this ReleaseNotesResponse.
         :rtype: List[ReleaseNoteFeature]
@@ -85,6 +88,7 @@ class ReleaseNotesResponse(Model):
     def features(self, features: List[ReleaseNoteFeature]):
         """Sets the features of this ReleaseNotesResponse.
 
+        List of curated feature release notes for the milestone.  # noqa: E501
 
         :param features: The features of this ReleaseNotesResponse.
         :type features: List[ReleaseNoteFeature]

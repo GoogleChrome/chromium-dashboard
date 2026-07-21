@@ -93,6 +93,7 @@ class SummarySuggestion(Model):
     def feature_id(self) -> int:
         """Gets the feature_id of this SummarySuggestion.
 
+        Associated feature identifier.  # noqa: E501
 
         :return: The feature_id of this SummarySuggestion.
         :rtype: int
@@ -103,6 +104,7 @@ class SummarySuggestion(Model):
     def feature_id(self, feature_id: int):
         """Sets the feature_id of this SummarySuggestion.
 
+        Associated feature identifier.  # noqa: E501
 
         :param feature_id: The feature_id of this SummarySuggestion.
         :type feature_id: int
@@ -118,6 +120,7 @@ class SummarySuggestion(Model):
     def suggested_summary(self) -> str:
         """Gets the suggested_summary of this SummarySuggestion.
 
+        AI-suggested release notes summary text.  # noqa: E501
 
         :return: The suggested_summary of this SummarySuggestion.
         :rtype: str
@@ -128,6 +131,7 @@ class SummarySuggestion(Model):
     def suggested_summary(self, suggested_summary: str):
         """Sets the suggested_summary of this SummarySuggestion.
 
+        AI-suggested release notes summary text.  # noqa: E501
 
         :param suggested_summary: The suggested_summary of this SummarySuggestion.
         :type suggested_summary: str
@@ -139,6 +143,7 @@ class SummarySuggestion(Model):
     def original_summary(self) -> str:
         """Gets the original_summary of this SummarySuggestion.
 
+        Original human-authored summary from FeatureEntry before AI processing.  # noqa: E501
 
         :return: The original_summary of this SummarySuggestion.
         :rtype: str
@@ -149,6 +154,7 @@ class SummarySuggestion(Model):
     def original_summary(self, original_summary: str):
         """Sets the original_summary of this SummarySuggestion.
 
+        Original human-authored summary from FeatureEntry before AI processing.  # noqa: E501
 
         :param original_summary: The original_summary of this SummarySuggestion.
         :type original_summary: str
@@ -189,6 +195,7 @@ class SummarySuggestion(Model):
     def baseline_status(self) -> str:
         """Gets the baseline_status of this SummarySuggestion.
 
+        WebDX Baseline interoperability state at suggestion generation time. Null if un-tracked.  # noqa: E501
 
         :return: The baseline_status of this SummarySuggestion.
         :rtype: str
@@ -199,6 +206,7 @@ class SummarySuggestion(Model):
     def baseline_status(self, baseline_status: str):
         """Sets the baseline_status of this SummarySuggestion.
 
+        WebDX Baseline interoperability state at suggestion generation time. Null if un-tracked.  # noqa: E501
 
         :param baseline_status: The baseline_status of this SummarySuggestion.
         :type baseline_status: str
@@ -216,6 +224,7 @@ class SummarySuggestion(Model):
     def confidence_score(self) -> float:
         """Gets the confidence_score of this SummarySuggestion.
 
+        Model confidence rating between 0.0 and 1.0.  # noqa: E501
 
         :return: The confidence_score of this SummarySuggestion.
         :rtype: float
@@ -226,6 +235,7 @@ class SummarySuggestion(Model):
     def confidence_score(self, confidence_score: float):
         """Sets the confidence_score of this SummarySuggestion.
 
+        Model confidence rating between 0.0 and 1.0.  # noqa: E501
 
         :param confidence_score: The confidence_score of this SummarySuggestion.
         :type confidence_score: float
@@ -241,6 +251,7 @@ class SummarySuggestion(Model):
     def reasoning(self) -> str:
         """Gets the reasoning of this SummarySuggestion.
 
+        Grounding rationale and source links evaluated during generation.  # noqa: E501
 
         :return: The reasoning of this SummarySuggestion.
         :rtype: str
@@ -251,6 +262,7 @@ class SummarySuggestion(Model):
     def reasoning(self, reasoning: str):
         """Sets the reasoning of this SummarySuggestion.
 
+        Grounding rationale and source links evaluated during generation.  # noqa: E501
 
         :param reasoning: The reasoning of this SummarySuggestion.
         :type reasoning: str
@@ -262,6 +274,7 @@ class SummarySuggestion(Model):
     def suggested_doc_links(self) -> List[str]:
         """Gets the suggested_doc_links of this SummarySuggestion.
 
+        List of verified external documentation links associated with the feature.  # noqa: E501
 
         :return: The suggested_doc_links of this SummarySuggestion.
         :rtype: List[str]
@@ -272,6 +285,7 @@ class SummarySuggestion(Model):
     def suggested_doc_links(self, suggested_doc_links: List[str]):
         """Sets the suggested_doc_links of this SummarySuggestion.
 
+        List of verified external documentation links associated with the feature.  # noqa: E501
 
         :param suggested_doc_links: The suggested_doc_links of this SummarySuggestion.
         :type suggested_doc_links: List[str]
@@ -310,6 +324,7 @@ class SummarySuggestion(Model):
     def created(self) -> datetime:
         """Gets the created of this SummarySuggestion.
 
+        UTC timestamp when the suggestion was created.  # noqa: E501
 
         :return: The created of this SummarySuggestion.
         :rtype: datetime
@@ -320,6 +335,7 @@ class SummarySuggestion(Model):
     def created(self, created: datetime):
         """Sets the created of this SummarySuggestion.
 
+        UTC timestamp when the suggestion was created.  # noqa: E501
 
         :param created: The created of this SummarySuggestion.
         :type created: datetime
@@ -333,6 +349,7 @@ class SummarySuggestion(Model):
     def updated(self) -> datetime:
         """Gets the updated of this SummarySuggestion.
 
+        UTC timestamp when the suggestion was last modified.  # noqa: E501
 
         :return: The updated of this SummarySuggestion.
         :rtype: datetime
@@ -343,6 +360,7 @@ class SummarySuggestion(Model):
     def updated(self, updated: datetime):
         """Sets the updated of this SummarySuggestion.
 
+        UTC timestamp when the suggestion was last modified.  # noqa: E501
 
         :param updated: The updated of this SummarySuggestion.
         :type updated: datetime

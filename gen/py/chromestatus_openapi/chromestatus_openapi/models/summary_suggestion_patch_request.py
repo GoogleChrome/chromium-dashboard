@@ -58,6 +58,7 @@ class SummarySuggestionPatchRequest(Model):
     def status(self) -> str:
         """Gets the status of this SummarySuggestionPatchRequest.
 
+        Updated lifecycle status for the suggestion. Null if status is unchanged.  # noqa: E501
 
         :return: The status of this SummarySuggestionPatchRequest.
         :rtype: str
@@ -68,6 +69,7 @@ class SummarySuggestionPatchRequest(Model):
     def status(self, status: str):
         """Sets the status of this SummarySuggestionPatchRequest.
 
+        Updated lifecycle status for the suggestion. Null if status is unchanged.  # noqa: E501
 
         :param status: The status of this SummarySuggestionPatchRequest.
         :type status: str
@@ -85,6 +87,7 @@ class SummarySuggestionPatchRequest(Model):
     def suggested_summary(self) -> str:
         """Gets the suggested_summary of this SummarySuggestionPatchRequest.
 
+        Updated summary text edited by reviewer.  # noqa: E501
 
         :return: The suggested_summary of this SummarySuggestionPatchRequest.
         :rtype: str
@@ -95,6 +98,7 @@ class SummarySuggestionPatchRequest(Model):
     def suggested_summary(self, suggested_summary: str):
         """Sets the suggested_summary of this SummarySuggestionPatchRequest.
 
+        Updated summary text edited by reviewer.  # noqa: E501
 
         :param suggested_summary: The suggested_summary of this SummarySuggestionPatchRequest.
         :type suggested_summary: str
@@ -106,6 +110,7 @@ class SummarySuggestionPatchRequest(Model):
     def original_summary(self) -> str:
         """Gets the original_summary of this SummarySuggestionPatchRequest.
 
+        Updated original summary reference text.  # noqa: E501
 
         :return: The original_summary of this SummarySuggestionPatchRequest.
         :rtype: str
@@ -116,6 +121,7 @@ class SummarySuggestionPatchRequest(Model):
     def original_summary(self, original_summary: str):
         """Sets the original_summary of this SummarySuggestionPatchRequest.
 
+        Updated original summary reference text.  # noqa: E501
 
         :param original_summary: The original_summary of this SummarySuggestionPatchRequest.
         :type original_summary: str

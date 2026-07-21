@@ -80,6 +80,7 @@ class SummarySuggestionResponse(Model):
     def progress_steps(self) -> List[SummaryProgressStep]:
         """Gets the progress_steps of this SummarySuggestionResponse.
 
+        Ordered timeline of tool execution progress steps for this summary generation.  # noqa: E501
 
         :return: The progress_steps of this SummarySuggestionResponse.
         :rtype: List[SummaryProgressStep]
@@ -90,6 +91,7 @@ class SummarySuggestionResponse(Model):
     def progress_steps(self, progress_steps: List[SummaryProgressStep]):
         """Sets the progress_steps of this SummarySuggestionResponse.
 
+        Ordered timeline of tool execution progress steps for this summary generation.  # noqa: E501
 
         :param progress_steps: The progress_steps of this SummarySuggestionResponse.
         :type progress_steps: List[SummaryProgressStep]
