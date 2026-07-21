@@ -2587,28 +2587,44 @@ components:
       required:
         - id
         - name
+        - summary
         - category
+        - category_name
         - feature_type
+        - summary_source
       properties:
         id:
           type: integer
           minimum: 1
+          description: Unique feature identifier.
         name:
           type: string
+          description: Feature title or display name.
         summary:
           type: string
+          description: Release note summary text (either human-written summary or applied AI suggestion).
         category:
           type: integer
+          description: Numeric category identifier.
         category_name:
           type: string
+          description: Human-readable category label (e.g., 'DOM', 'CSS', 'JavaScript').
         feature_type:
           type: integer
+          description: Numeric feature launch type identifier (e.g., New Feature, Deprecation).
         baseline_status:
           type: string
           enum: [none, limited, newly, widely]
           nullable: true
-        has_applied_suggestion:
-          type: boolean
+          description: WebDX Baseline interoperability state. Null if Baseline status is un-tracked.
+        summary_source:
+          type: string
+          enum: [HUMAN, AI_APPLIED]
+          description: |
+            Source provenance of the summary text:
+            - HUMAN: Manually authored feature summary from FeatureEntry.
+            - AI_APPLIED: Approved and applied AI summary suggestion.
+            Note: Returned directly in the response payload to eliminate extra provenance lookups in client UI cards.
     ReleaseNotesResponse:
       type: object
       required:

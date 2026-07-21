@@ -12,7 +12,7 @@ class ReleaseNoteFeature(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, id=None, name=None, summary=None, category=None, category_name=None, feature_type=None, baseline_status=None, has_applied_suggestion=None):  # noqa: E501
+    def __init__(self, id=None, name=None, summary=None, category=None, category_name=None, feature_type=None, baseline_status=None, summary_source=None):  # noqa: E501
         """ReleaseNoteFeature - a model defined in OpenAPI
 
         :param id: The id of this ReleaseNoteFeature.  # noqa: E501
@@ -29,8 +29,8 @@ class ReleaseNoteFeature(Model):
         :type feature_type: int
         :param baseline_status: The baseline_status of this ReleaseNoteFeature.  # noqa: E501
         :type baseline_status: str
-        :param has_applied_suggestion: The has_applied_suggestion of this ReleaseNoteFeature.  # noqa: E501
-        :type has_applied_suggestion: bool
+        :param summary_source: The summary_source of this ReleaseNoteFeature.  # noqa: E501
+        :type summary_source: str
         """
         self.openapi_types = {
             'id': int,
@@ -40,7 +40,7 @@ class ReleaseNoteFeature(Model):
             'category_name': str,
             'feature_type': int,
             'baseline_status': str,
-            'has_applied_suggestion': bool
+            'summary_source': str
         }
 
         self.attribute_map = {
@@ -51,7 +51,7 @@ class ReleaseNoteFeature(Model):
             'category_name': 'category_name',
             'feature_type': 'feature_type',
             'baseline_status': 'baseline_status',
-            'has_applied_suggestion': 'has_applied_suggestion'
+            'summary_source': 'summary_source'
         }
 
         self._id = id
@@ -61,7 +61,7 @@ class ReleaseNoteFeature(Model):
         self._category_name = category_name
         self._feature_type = feature_type
         self._baseline_status = baseline_status
-        self._has_applied_suggestion = has_applied_suggestion
+        self._summary_source = summary_source
 
     @classmethod
     def from_dict(cls, dikt) -> 'ReleaseNoteFeature':
@@ -78,6 +78,7 @@ class ReleaseNoteFeature(Model):
     def id(self) -> int:
         """Gets the id of this ReleaseNoteFeature.
 
+        Unique feature identifier.  # noqa: E501
 
         :return: The id of this ReleaseNoteFeature.
         :rtype: int
@@ -88,6 +89,7 @@ class ReleaseNoteFeature(Model):
     def id(self, id: int):
         """Sets the id of this ReleaseNoteFeature.
 
+        Unique feature identifier.  # noqa: E501
 
         :param id: The id of this ReleaseNoteFeature.
         :type id: int
@@ -103,6 +105,7 @@ class ReleaseNoteFeature(Model):
     def name(self) -> str:
         """Gets the name of this ReleaseNoteFeature.
 
+        Feature title or display name.  # noqa: E501
 
         :return: The name of this ReleaseNoteFeature.
         :rtype: str
@@ -113,6 +116,7 @@ class ReleaseNoteFeature(Model):
     def name(self, name: str):
         """Sets the name of this ReleaseNoteFeature.
 
+        Feature title or display name.  # noqa: E501
 
         :param name: The name of this ReleaseNoteFeature.
         :type name: str
@@ -126,6 +130,7 @@ class ReleaseNoteFeature(Model):
     def summary(self) -> str:
         """Gets the summary of this ReleaseNoteFeature.
 
+        Release note summary text (either human-written summary or applied AI suggestion).  # noqa: E501
 
         :return: The summary of this ReleaseNoteFeature.
         :rtype: str
@@ -136,10 +141,13 @@ class ReleaseNoteFeature(Model):
     def summary(self, summary: str):
         """Sets the summary of this ReleaseNoteFeature.
 
+        Release note summary text (either human-written summary or applied AI suggestion).  # noqa: E501
 
         :param summary: The summary of this ReleaseNoteFeature.
         :type summary: str
         """
+        if summary is None:
+            raise ValueError("Invalid value for `summary`, must not be `None`")  # noqa: E501
 
         self._summary = summary
 
@@ -147,6 +155,7 @@ class ReleaseNoteFeature(Model):
     def category(self) -> int:
         """Gets the category of this ReleaseNoteFeature.
 
+        Numeric category identifier.  # noqa: E501
 
         :return: The category of this ReleaseNoteFeature.
         :rtype: int
@@ -157,6 +166,7 @@ class ReleaseNoteFeature(Model):
     def category(self, category: int):
         """Sets the category of this ReleaseNoteFeature.
 
+        Numeric category identifier.  # noqa: E501
 
         :param category: The category of this ReleaseNoteFeature.
         :type category: int
@@ -170,6 +180,7 @@ class ReleaseNoteFeature(Model):
     def category_name(self) -> str:
         """Gets the category_name of this ReleaseNoteFeature.
 
+        Human-readable category label (e.g., 'DOM', 'CSS', 'JavaScript').  # noqa: E501
 
         :return: The category_name of this ReleaseNoteFeature.
         :rtype: str
@@ -180,10 +191,13 @@ class ReleaseNoteFeature(Model):
     def category_name(self, category_name: str):
         """Sets the category_name of this ReleaseNoteFeature.
 
+        Human-readable category label (e.g., 'DOM', 'CSS', 'JavaScript').  # noqa: E501
 
         :param category_name: The category_name of this ReleaseNoteFeature.
         :type category_name: str
         """
+        if category_name is None:
+            raise ValueError("Invalid value for `category_name`, must not be `None`")  # noqa: E501
 
         self._category_name = category_name
 
@@ -191,6 +205,7 @@ class ReleaseNoteFeature(Model):
     def feature_type(self) -> int:
         """Gets the feature_type of this ReleaseNoteFeature.
 
+        Numeric feature launch type identifier (e.g., New Feature, Deprecation).  # noqa: E501
 
         :return: The feature_type of this ReleaseNoteFeature.
         :rtype: int
@@ -201,6 +216,7 @@ class ReleaseNoteFeature(Model):
     def feature_type(self, feature_type: int):
         """Sets the feature_type of this ReleaseNoteFeature.
 
+        Numeric feature launch type identifier (e.g., New Feature, Deprecation).  # noqa: E501
 
         :param feature_type: The feature_type of this ReleaseNoteFeature.
         :type feature_type: int
@@ -214,6 +230,7 @@ class ReleaseNoteFeature(Model):
     def baseline_status(self) -> str:
         """Gets the baseline_status of this ReleaseNoteFeature.
 
+        WebDX Baseline interoperability state. Null if Baseline status is un-tracked.  # noqa: E501
 
         :return: The baseline_status of this ReleaseNoteFeature.
         :rtype: str
@@ -224,6 +241,7 @@ class ReleaseNoteFeature(Model):
     def baseline_status(self, baseline_status: str):
         """Sets the baseline_status of this ReleaseNoteFeature.
 
+        WebDX Baseline interoperability state. Null if Baseline status is un-tracked.  # noqa: E501
 
         :param baseline_status: The baseline_status of this ReleaseNoteFeature.
         :type baseline_status: str
@@ -238,22 +256,30 @@ class ReleaseNoteFeature(Model):
         self._baseline_status = baseline_status
 
     @property
-    def has_applied_suggestion(self) -> bool:
-        """Gets the has_applied_suggestion of this ReleaseNoteFeature.
+    def summary_source(self) -> str:
+        """Gets the summary_source of this ReleaseNoteFeature.
 
+        Source provenance of the summary text: - HUMAN: Manually authored feature summary from FeatureEntry. - AI_APPLIED: Approved and applied AI summary suggestion. Note: Returned directly in the response payload to eliminate extra provenance lookups in client UI cards.   # noqa: E501
 
-        :return: The has_applied_suggestion of this ReleaseNoteFeature.
-        :rtype: bool
+        :return: The summary_source of this ReleaseNoteFeature.
+        :rtype: str
         """
-        return self._has_applied_suggestion
+        return self._summary_source
 
-    @has_applied_suggestion.setter
-    def has_applied_suggestion(self, has_applied_suggestion: bool):
-        """Sets the has_applied_suggestion of this ReleaseNoteFeature.
+    @summary_source.setter
+    def summary_source(self, summary_source: str):
+        """Sets the summary_source of this ReleaseNoteFeature.
 
+        Source provenance of the summary text: - HUMAN: Manually authored feature summary from FeatureEntry. - AI_APPLIED: Approved and applied AI summary suggestion. Note: Returned directly in the response payload to eliminate extra provenance lookups in client UI cards.   # noqa: E501
 
-        :param has_applied_suggestion: The has_applied_suggestion of this ReleaseNoteFeature.
-        :type has_applied_suggestion: bool
+        :param summary_source: The summary_source of this ReleaseNoteFeature.
+        :type summary_source: str
         """
+        allowed_values = ["HUMAN", "AI_APPLIED"]  # noqa: E501
+        if summary_source not in allowed_values:
+            raise ValueError(
+                "Invalid value for `summary_source` ({0}), must be one of {1}"
+                .format(summary_source, allowed_values)
+            )
 
-        self._has_applied_suggestion = has_applied_suggestion
+        self._summary_source = summary_source

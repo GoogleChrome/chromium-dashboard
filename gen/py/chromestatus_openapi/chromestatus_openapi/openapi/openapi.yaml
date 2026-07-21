@@ -4047,32 +4047,42 @@ components:
         summary: summary
         feature_type: 5
         category_name: category_name
+        summary_source: HUMAN
         name: name
         id: 1
-        has_applied_suggestion: true
         category: 1
         baseline_status: none
       properties:
         id:
+          description: Unique feature identifier.
           minimum: 1
           title: id
           type: integer
         name:
+          description: Feature title or display name.
           title: name
           type: string
         summary:
+          description: Release note summary text (either human-written summary or
+            applied AI suggestion).
           title: summary
           type: string
         category:
+          description: Numeric category identifier.
           title: category
           type: integer
         category_name:
+          description: "Human-readable category label (e.g., 'DOM', 'CSS', 'JavaScript')."
           title: category_name
           type: string
         feature_type:
+          description: "Numeric feature launch type identifier (e.g., New Feature,\
+            \ Deprecation)."
           title: feature_type
           type: integer
         baseline_status:
+          description: WebDX Baseline interoperability state. Null if Baseline status
+            is un-tracked.
           enum:
           - none
           - limited
@@ -4081,14 +4091,25 @@ components:
           nullable: true
           title: baseline_status
           type: string
-        has_applied_suggestion:
-          title: has_applied_suggestion
-          type: boolean
+        summary_source:
+          description: |
+            Source provenance of the summary text:
+            - HUMAN: Manually authored feature summary from FeatureEntry.
+            - AI_APPLIED: Approved and applied AI summary suggestion.
+            Note: Returned directly in the response payload to eliminate extra provenance lookups in client UI cards.
+          enum:
+          - HUMAN
+          - AI_APPLIED
+          title: summary_source
+          type: string
       required:
       - category
+      - category_name
       - feature_type
       - id
       - name
+      - summary
+      - summary_source
       title: ReleaseNoteFeature
       type: object
     ReleaseNotesResponse:
@@ -4097,17 +4118,17 @@ components:
         - summary: summary
           feature_type: 5
           category_name: category_name
+          summary_source: HUMAN
           name: name
           id: 1
-          has_applied_suggestion: true
           category: 1
           baseline_status: none
         - summary: summary
           feature_type: 5
           category_name: category_name
+          summary_source: HUMAN
           name: name
           id: 1
-          has_applied_suggestion: true
           category: 1
           baseline_status: none
         milestone: 1
