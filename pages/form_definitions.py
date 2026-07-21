@@ -37,6 +37,9 @@ class FormDef(TypedDict):
     sections: list[Section]
 
 
+# TODO(jrobbins): Consider loading and parsing a shared JSON file
+# to avoid code duplication.  See comments on PR #6626.
+
 # The fields relevant to the incubate/planning stage.
 FLAT_INCUBATE_FIELDS: FormDef = {
     'name': 'Identify the need',
