@@ -16,10 +16,10 @@ trafilatura==2.1.0
 google-cloud-tasks==2.23.0
 google-cloud-ndb==2.5.0
 google-cloud-logging==3.16.0
-google-cloud-secret-manager==2.29.0
+google-cloud-secret-manager==2.30.0
 google-cloud-storage==3.13.0
 google-auth==2.55.1
-google-genai==2.11.0
+google-genai==2.12.1
 requests==2.34.2
 redis==7.4.0
 fakeredis==2.36.2
@@ -41,7 +41,7 @@ pillow==12.3.0
 # OpenAPI files
 ./gen/py/chromestatus_openapi
 ./gen/py/webstatus_openapi
-types-python-dateutil==2.9.0.20260518
+types-python-dateutil==2.9.0.20260716
 wpt-gen-lib @ git+https://github.com/GoogleChromeLabs/wpt-gen.git@fix-lib-packaging#subdirectory=lib
 pymmh3==0.0.5
 

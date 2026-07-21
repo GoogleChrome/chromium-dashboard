@@ -17,6 +17,7 @@
 
 import math
 import re
+from collections import defaultdict
 from enum import StrEnum
 from typing import Literal
 
@@ -29,6 +30,7 @@ from chromestatus_openapi.models.outstanding_review import OutstandingReview
 from google.cloud import ndb  # type: ignore
 
 from framework import basehandlers
+from framework.utils import chunk_list
 from internals import core_enums
 from internals.core_models import FeatureEntry, Stage
 from internals.feature_links import (
@@ -94,20 +96,42 @@ def stage_type(feature: FeatureEntry, stage: Stage | None) -> StageType:
     return tentative_type
 
 
-def min_of_present(*args):
-    """Return the minimum of the given arguments, ignoring None values."""
-    present_args = [arg for arg in args if arg is not None]
-    if len(present_args) == 0:
+def _min_of_first(stage: Stage | None) -> int | None:
+    """Return the minimum of the first milestones, ignoring None values."""
+    if stage is None or stage.milestones is None:
         return None
-    return min(present_args)
+    return min(
+        (
+            m
+            for m in (
+                stage.milestones.desktop_first,
+                stage.milestones.android_first,
+                stage.milestones.ios_first,
+                stage.milestones.webview_first,
+            )
+            if m is not None
+        ),
+        default=None,
+    )
 
 
-def max_of_present(*args):
-    """Return the maximum of the given arguments, ignoring None values."""
-    present_args = [arg for arg in args if arg is not None]
-    if len(present_args) == 0:
+def _max_of_last(stage: Stage | None) -> int | None:
+    """Return the maximum of the last milestones, ignoring None values."""
+    if stage is None or stage.milestones is None:
         return None
-    return max(present_args)
+    return max(
+        (
+            m
+            for m in (
+                stage.milestones.desktop_last,
+                stage.milestones.android_last,
+                stage.milestones.ios_last,
+                stage.milestones.webview_last,
+            )
+            if m is not None
+        ),
+        default=None,
+    )
 
 
 class ExternalReviewerInfo:
@@ -185,18 +209,7 @@ class ExternalReviewsAPI(basehandlers.APIHandler):
             )
         ]
 
-        # Build a map from each feature ID to its active Stage information.
-        active_stage = {
-            stage.feature_id: stage
-            for stage in ndb.get_multi(
-                [
-                    ndb.Key('Stage', fe.active_stage_id)
-                    for fe in unreviewed_features
-                    if fe.active_stage_id
-                ]
-            )
-            if stage
-        }
+        active_stage = self._find_active_stages(unreviewed_features)
 
         # Filter to reviews for which we could fetch a preview.
         feature_links, _has_stale_links = get_feature_links_by_feature_ids(
@@ -214,22 +227,8 @@ class ExternalReviewsAPI(basehandlers.APIHandler):
                 review_link=reviewer_info.review_link(fe),
                 feature=FeatureLink(id=fe.key.id(), name=fe.name),
                 current_stage=stage_type(fe, stage),
-                estimated_start_milestone=min_of_present(
-                    stage.milestones.desktop_first,
-                    stage.milestones.android_first,
-                    stage.milestones.ios_first,
-                    stage.milestones.webview_first,
-                )
-                if stage and stage.milestones
-                else None,
-                estimated_end_milestone=max_of_present(
-                    stage.milestones.desktop_last,
-                    stage.milestones.android_last,
-                    stage.milestones.ios_last,
-                    stage.milestones.webview_last,
-                )
-                if stage and stage.milestones
-                else None,
+                estimated_start_milestone=_min_of_first(stage),
+                estimated_end_milestone=_max_of_last(stage),
             )
             for fe in unreviewed_features
             for stage in [active_stage.get(fe.key.id(), None)]
@@ -264,3 +263,45 @@ class ExternalReviewsAPI(basehandlers.APIHandler):
             reviews=reviews, link_previews=link_previews
         )  # noqa: E501
         return result.to_dict()
+
+    def _find_active_stages(
+        self, unreviewed_features: list[FeatureEntry]
+    ) -> dict[int, Stage]:
+        """Build a map from each feature ID to the stage with the greatest stage_type that has at least one non-None milestone."""  # noqa: E501
+        # Collect all feature IDs.
+        feature_ids = [fe.key.id() for fe in unreviewed_features]
+
+        # Fetch all stages for these features in chunks to avoid query limits.
+        stages = []
+        for chunk in chunk_list(feature_ids, 30):
+            stages.extend(Stage.query(Stage.feature_id.IN(chunk)).fetch())
+        stages = [s for s in stages if not s.archived]
+
+        # Group stages by feature_id.
+        stages_by_fid = defaultdict(list)
+        for stage in stages:
+            stages_by_fid[stage.feature_id].append(stage)
+
+        # Build a map from each feature ID to the stage with the greatest stage_type
+        # that has at least one non-None milestone.
+        active_stage = {}
+        for fe in unreviewed_features:
+            fid = fe.key.id()
+            feature_stages = stages_by_fid.get(fid, [])
+
+            # Filter stages that have at least one non-None milestone.
+            valid_stages = [
+                s
+                for s in feature_stages
+                if _min_of_first(s) is not None or _max_of_last(s) is not None
+            ]
+
+            if valid_stages:
+                # Pick the stage with the greatest stage_type, using creation time as a tie-breaker.
+                chosen_stage = max(
+                    valid_stages,
+                    key=lambda s: (s.stage_type, s.created),
+                )
+                active_stage[fid] = chosen_stage
+
+        return active_stage

@@ -16,6 +16,7 @@
 
 import testing_config  # isort: split
 
+import datetime
 import json
 import logging
 import os.path
@@ -43,7 +44,7 @@ def make_feature(
     tag: str | None = None,
     webkit: str | None = None,
     gecko: str | None = None,
-    milestones: MilestoneSet = MilestoneSet(),
+    milestones: MilestoneSet = MilestoneSet(desktop_first=100),
 ) -> FeatureEntry:
     """Create a new FeatureEntry and Stage for testing."""
     fe = FeatureEntry(
@@ -127,7 +128,7 @@ class ExternalReviewsAPITest(testing_config.CustomTestCase):
                         feature=dict(id=fe.key.id(), name='Feature one'),
                         review_link=tag,
                         current_stage='prototyping',
-                        estimated_start_milestone=None,
+                        estimated_start_milestone=100,
                         estimated_end_milestone=None,
                     )
                 ],
@@ -162,7 +163,7 @@ class ExternalReviewsAPITest(testing_config.CustomTestCase):
                         feature=dict(id=fe.key.id(), name='Feature one'),
                         review_link=webkit,
                         current_stage='prototyping',
-                        estimated_start_milestone=None,
+                        estimated_start_milestone=100,
                         estimated_end_milestone=None,
                     )
                 ],
@@ -197,7 +198,7 @@ class ExternalReviewsAPITest(testing_config.CustomTestCase):
                         feature=dict(id=fe.key.id(), name='Feature one'),
                         review_link=gecko,
                         current_stage='prototyping',
-                        estimated_start_milestone=None,
+                        estimated_start_milestone=100,
                         estimated_end_milestone=None,
                     )
                 ],
@@ -578,6 +579,7 @@ class ExternalReviewsAPITest(testing_config.CustomTestCase):
                 ff_views_link='https://github.com/mozilla/standards-positions/issues/2',
             ),
             active_stage_type=core_enums.STAGE_FAST_SHIPPING,
+            milestones=MilestoneSet(desktop_first=105),
         )
         f3 = self._use_ui_to_create_feature(
             dict(
@@ -597,6 +599,7 @@ class ExternalReviewsAPITest(testing_config.CustomTestCase):
                 ff_views_link='https://github.com/mozilla/standards-positions/issues/4',
             ),
             active_stage_type=core_enums.STAGE_BLINK_PROTOTYPE,
+            milestones=MilestoneSet(desktop_first=105),
         )
         f5 = self._use_ui_to_create_feature(
             dict(
@@ -671,3 +674,183 @@ class ExternalReviewsAPITest(testing_config.CustomTestCase):
 
         self.assertEqual(expected_response, result)
         self.assertEqual([], unexpected_links)
+
+    def test_stage_selection_tie_breaker_uses_creation_time(self):
+        """When multiple stages have the same stage_type and valid milestones, the newer one wins as a tie-breaker."""
+        tag = 'https://github.com/w3ctag/design-reviews/issues/100'
+        fe = FeatureEntry(
+            name='Tie breaker feature',
+            category=1,
+            summary='Summary',
+            tag_review=tag,
+        )
+        fe.put()
+        fe_id = fe.key.integer_id()
+
+        # Create two stages with the same stage_type but different created times.
+        stage1 = Stage(
+            feature_id=fe_id,
+            stage_type=core_enums.STAGE_BLINK_PROTOTYPE,
+            milestones=MilestoneSet(desktop_first=100),
+            created=datetime.datetime(2024, 1, 1),
+        )
+        stage1.put()
+
+        stage2 = Stage(
+            feature_id=fe_id,
+            stage_type=core_enums.STAGE_BLINK_PROTOTYPE,
+            milestones=MilestoneSet(desktop_first=101),
+            created=datetime.datetime(2024, 1, 2),
+        )
+        stage2.put()
+
+        fl = FeatureLinks(
+            feature_ids=[fe_id],
+            url=tag,
+            type=LINK_TYPE_GITHUB_ISSUE,
+            information={},
+        )
+        fl.put()
+
+        testing_config.sign_out()
+
+        result = self.handler.do_get(review_group='tag')
+
+        # It should pick stage2, so the estimated_start_milestone should be 101.
+        self.assertEqual(
+            {
+                'reviews': [
+                    dict(
+                        feature=dict(
+                            id=fe.key.id(), name='Tie breaker feature'
+                        ),
+                        review_link=tag,
+                        current_stage='prototyping',
+                        estimated_start_milestone=101,
+                        estimated_end_milestone=None,
+                    )
+                ],
+                'link_previews': [
+                    dict(
+                        url=tag,
+                        type=LINK_TYPE_GITHUB_ISSUE,
+                        information={},
+                        http_error_code=None,
+                    )
+                ],
+            },
+            result,
+        )
+
+    def test_archived_stages_are_ignored(self):
+        """Archived stages are ignored when identifying the active stage."""
+        tag1 = 'https://github.com/w3ctag/design-reviews/issues/101'
+        fe1 = FeatureEntry(
+            name='Feature with archived and non-archived stages',
+            category=1,
+            summary='Summary',
+            tag_review=tag1,
+        )
+        fe1.put()
+        fe_id1 = fe1.key.integer_id()
+
+        # Stage 1 is PROTOTYPE (greater) but ARCHIVED.
+        stage1 = Stage(
+            feature_id=fe_id1,
+            stage_type=core_enums.STAGE_BLINK_PROTOTYPE,
+            milestones=MilestoneSet(desktop_first=101),
+            archived=True,
+        )
+        stage1.put()
+
+        # Stage 2 is INCUBATE (smaller) and NOT ARCHIVED.
+        stage2 = Stage(
+            feature_id=fe_id1,
+            stage_type=core_enums.STAGE_BLINK_INCUBATE,
+            milestones=MilestoneSet(desktop_first=100),
+            archived=False,
+        )
+        stage2.put()
+
+        fl1 = FeatureLinks(
+            feature_ids=[fe_id1],
+            url=tag1,
+            type=LINK_TYPE_GITHUB_ISSUE,
+            information={},
+        )
+        fl1.put()
+
+        tag2 = 'https://github.com/w3ctag/design-reviews/issues/102'
+        fe2 = FeatureEntry(
+            name='Feature with ONLY archived stage',
+            category=1,
+            summary='Summary',
+            tag_review=tag2,
+        )
+        fe2.put()
+        fe_id2 = fe2.key.integer_id()
+
+        # Stage 3 is PROTOTYPE and ARCHIVED.
+        stage3 = Stage(
+            feature_id=fe_id2,
+            stage_type=core_enums.STAGE_BLINK_PROTOTYPE,
+            milestones=MilestoneSet(desktop_first=102),
+            archived=True,
+        )
+        stage3.put()
+
+        fl2 = FeatureLinks(
+            feature_ids=[fe_id2],
+            url=tag2,
+            type=LINK_TYPE_GITHUB_ISSUE,
+            information={},
+        )
+        fl2.put()
+
+        testing_config.sign_out()
+
+        result = self.handler.do_get(review_group='tag')
+
+        self.assertEqual(
+            {
+                'reviews': [
+                    # For fe1, it should pick stage2 (Incubate, M100).
+                    dict(
+                        feature=dict(
+                            id=fe1.key.id(),
+                            name='Feature with archived and non-archived stages',
+                        ),
+                        review_link=tag1,
+                        current_stage='incubating',
+                        estimated_start_milestone=100,
+                        estimated_end_milestone=None,
+                    ),
+                    # For fe2, it should fall back to stage=None (Incubating, M=None).
+                    dict(
+                        feature=dict(
+                            id=fe2.key.id(),
+                            name='Feature with ONLY archived stage',
+                        ),
+                        review_link=tag2,
+                        current_stage='incubating',
+                        estimated_start_milestone=None,
+                        estimated_end_milestone=None,
+                    ),
+                ],
+                'link_previews': [
+                    dict(
+                        url=tag1,
+                        type=LINK_TYPE_GITHUB_ISSUE,
+                        information={},
+                        http_error_code=None,
+                    ),
+                    dict(
+                        url=tag2,
+                        type=LINK_TYPE_GITHUB_ISSUE,
+                        information={},
+                        http_error_code=None,
+                    ),
+                ],
+            },
+            result,
+        )
