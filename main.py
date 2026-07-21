@@ -258,6 +258,10 @@ api_routes: list[Route] = [
     Route(
         f'{API_BASE}/releasenotes/l10n', releasenotes_api.ReleaseNotesL10nAPI
     ),
+    Route(
+        f'{API_BASE}/releasenotes/<int:milestone>',
+        releasenotes_api.ReleaseNotesAPI,
+    ),
 ]
 
 # The Routes below that have no handler specified use SPAHandler.

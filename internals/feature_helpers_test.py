@@ -21,7 +21,12 @@ import testing_config  # Must be imported before the module under test.
 from api import converters
 from framework import rediscache
 from internals import core_enums, feature_helpers, stage_helpers
-from internals.core_models import FeatureEntry, MilestoneSet, Stage
+from internals.core_models import (
+    FeatureEntry,
+    FeatureSummarySuggestion,
+    MilestoneSet,
+    Stage,
+)
 from internals.review_models import Gate, Vote
 from internals.user_models import AppUser
 
@@ -152,6 +157,15 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
         self.app_admin = AppUser(email='admin@example.com')
         self.app_admin.is_admin = True
         self.app_admin.put()
+
+    def tearDown(self):
+        """Tear down test database."""
+        for fe in FeatureEntry.query():
+            fe.key.delete()
+        for s in Stage.query():
+            s.key.delete()
+        for s in FeatureSummarySuggestion.query():
+            s.key.delete()
 
     def test_get_by_participant(self):
         """The people who are involve in a feature can edit it, others can't."""
@@ -2062,3 +2076,136 @@ class ShippingFeatureHelpersTest(testing_config.CustomTestCase):
         self.assertNotIn('Feature 12 (Confidential)', incomplete_map)
         self.assertNotIn('Feature 13 (Deleted)', incomplete_map)
         self.assertNotIn('Feature 14 (Archived Stage)', incomplete_map)
+
+
+class DeveloperReleaseNotesFeaturesTest(testing_config.CustomTestCase):
+    """Tests for feature_helpers.get_developer_release_notes_features."""
+
+    def setUp(self):
+        """Set up test fixtures."""
+        self.feature_1 = FeatureEntry(
+            id=101,
+            name='CSS Anchor Positioning',
+            summary='Human summary for anchor positioning.',
+            category=1,
+            feature_type=1,
+            unlisted=False,
+            confidential=False,
+        )
+        self.feature_1.put()
+
+        self.stage_1 = Stage(
+            feature_id=101,
+            stage_type=core_enums.STAGE_BLINK_SHIPPING,
+            milestones=MilestoneSet(desktop_first=132),
+        )
+        self.stage_1.put()
+
+    def tearDown(self):
+        """Tear down test database."""
+        for fe in FeatureEntry.query():
+            fe.key.delete()
+        for s in Stage.query():
+            s.key.delete()
+        for s in FeatureSummarySuggestion.query():
+            s.key.delete()
+
+    def test_get_developer_release_notes_features__normal(self):
+        """It returns feature with summary_source = HUMAN when no AI suggestion exists."""
+        features = feature_helpers.get_developer_release_notes_features(132)
+        self.assertEqual(1, len(features))
+        feat = features[0]
+        self.assertEqual(101, feat['id'])
+        self.assertEqual('CSS Anchor Positioning', feat['name'])
+        self.assertEqual(
+            'Human summary for anchor positioning.', feat['summary']
+        )
+        self.assertEqual(
+            converters.OpenAPISummarySource.HUMAN, feat['summary_source']
+        )
+
+    def test_get_developer_release_notes_features__ai_applied(self):
+        """It overrides summary and sets summary_source = AI_APPLIED when an applied suggestion exists."""
+        suggestion = FeatureSummarySuggestion(
+            id=101,
+            suggested_summary='AI-generated approved summary text.',
+            status=core_enums.SummarySuggestionStatus.APPLIED,
+            baseline_status=core_enums.BaselineStatus.NEWLY,
+        )
+        suggestion.put()
+
+        features = feature_helpers.get_developer_release_notes_features(132)
+        self.assertEqual(1, len(features))
+        feat = features[0]
+        self.assertEqual('AI-generated approved summary text.', feat['summary'])
+        self.assertEqual(
+            converters.OpenAPISummarySource.AI_APPLIED, feat['summary_source']
+        )
+        self.assertEqual(
+            converters.OpenAPIBaselineStatus.NEWLY, feat['baseline_status']
+        )
+
+    def test_get_developer_release_notes_features__unapplied_ignored(self):
+        """It ignores PROPOSED or REJECTED suggestions and falls back to HUMAN summary."""
+        suggestion = FeatureSummarySuggestion(
+            id=101,
+            suggested_summary='AI-generated unapproved summary text.',
+            status=core_enums.SummarySuggestionStatus.PROPOSED,
+        )
+        suggestion.put()
+
+        features = feature_helpers.get_developer_release_notes_features(132)
+        self.assertEqual(1, len(features))
+        feat = features[0]
+        self.assertEqual(
+            'Human summary for anchor positioning.', feat['summary']
+        )
+        self.assertEqual(
+            converters.OpenAPISummarySource.HUMAN, feat['summary_source']
+        )
+
+    def test_get_developer_release_notes_features__empty_milestone(self):
+        """It returns empty list when no shipping features exist in milestone."""
+        features = feature_helpers.get_developer_release_notes_features(999)
+        self.assertEqual(0, len(features))
+
+    def test_get_developer_release_notes_features__confidential_filtered(self):
+        """It shields confidential features from public developer release notes."""
+        self.feature_1.confidential = True
+        self.feature_1.put()
+        testing_config.sign_out()
+
+        features = feature_helpers.get_developer_release_notes_features(132)
+        self.assertEqual(0, len(features))
+
+    def test_get_developer_release_notes_features__unlisted_filtered(self):
+        """It shields unlisted features from public developer release notes."""
+        self.feature_1.unlisted = True
+        self.feature_1.put()
+
+        features = feature_helpers.get_developer_release_notes_features(132)
+        self.assertEqual(0, len(features))
+
+    def test_get_developer_release_notes_features__alphabetical_sorting(self):
+        """It returns release notes features sorted alphabetically by name."""
+        feature_2 = FeatureEntry(
+            id=102,
+            name='Alpha Feature',
+            summary='Summary for alpha.',
+            category=1,
+            feature_type=1,
+            unlisted=False,
+            confidential=False,
+        )
+        feature_2.put()
+        stage_2 = Stage(
+            feature_id=102,
+            stage_type=core_enums.STAGE_BLINK_SHIPPING,
+            milestones=MilestoneSet(desktop_first=132),
+        )
+        stage_2.put()
+
+        features = feature_helpers.get_developer_release_notes_features(132)
+        self.assertEqual(2, len(features))
+        self.assertEqual('Alpha Feature', features[0]['name'])
+        self.assertEqual('CSS Anchor Positioning', features[1]['name'])
