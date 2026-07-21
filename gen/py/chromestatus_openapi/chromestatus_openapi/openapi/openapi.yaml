@@ -4129,10 +4129,10 @@ components:
           type: string
         summary_source:
           description: |
-            Source provenance of the summary text:
-            - HUMAN: Manually authored feature summary from FeatureEntry.
-            - AI_APPLIED: Approved and applied AI summary suggestion.
-            Note: Returned directly in the response payload to eliminate extra provenance lookups in client UI cards.
+            Source provenance of the feature summary text returned in this release note:
+            - AI_APPLIED: An AI summary suggestion was generated and explicitly approved (SummarySuggestion.status == APPLIED).
+            - HUMAN: Manually authored summary from FeatureEntry. Used when no AI suggestion exists, or when the AI suggestion is PENDING, REJECTED, DISCARDED, or BYPASSED.
+            Note: Derived per-feature at request time to eliminate extra provenance lookups in client UIs.
           enum:
           - HUMAN
           - AI_APPLIED
