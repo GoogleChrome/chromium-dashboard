@@ -17,10 +17,23 @@
 from datetime import datetime
 from unittest import mock
 
+from chromestatus_openapi.models import (
+    MilestoneCurationResponse,
+    SummaryProgressStep,
+    SummarySuggestion,
+)
+
 import testing_config  # Must be imported before the module under test.
 from api import converters
 from internals import approval_defs, core_enums
-from internals.core_models import FeatureEntry, MilestoneSet, Stage
+from internals.core_models import (
+    FeatureEntry,
+    FeatureSummaryProgressStep,
+    FeatureSummarySuggestion,
+    MilestoneCuration,
+    MilestoneSet,
+    Stage,
+)
 from internals.review_models import Gate, SurveyAnswers, Vote
 
 
@@ -673,3 +686,205 @@ class GateConvertersTest(testing_config.CustomTestCase):
 
         self.assertEqual(4, actual['slo_initial_response_took'])
         self.assertEqual(None, actual['slo_initial_response_remaining'])
+
+
+class AICurationConvertersTest(testing_config.CustomTestCase):
+    """Tests for AI suggestion, progress step, and milestone curation converters."""
+
+    def tearDown(self):
+        """Tear down test database entities."""
+        for fe in FeatureEntry.query():
+            fe.key.delete()
+        for s in FeatureSummarySuggestion.query():
+            s.key.delete()
+        for c in MilestoneCuration.query():
+            c.key.delete()
+
+    def test_feature_summary_suggestion_to_dict__serializes_cleanly(self):
+        """Verify string enums and properties serialize cleanly without integer helpers."""
+        fe = FeatureEntry(
+            id=101,
+            name='Feature 101',
+            summary='Summary 101',
+            category=1,
+            feature_type=1,
+        )
+        fe.put()
+        suggestion = FeatureSummarySuggestion(
+            id=101,
+            suggested_summary='AI suggested summary',
+            original_summary='Summary 101',
+            status=core_enums.SummarySuggestionStatus.PROPOSED,
+            baseline_status=core_enums.BaselineStatus.WIDELY,
+            suggested_doc_links=['https://developer.mozilla.org/doc'],
+            version_token=3,
+        )
+        suggestion.put()
+
+        actual = converters.feature_summary_suggestion_to_dict(suggestion)
+        self.assertEqual(101, actual['feature_id'])
+        self.assertEqual('AI suggested summary', actual['suggested_summary'])
+        self.assertEqual('Summary 101', actual['original_summary'])
+        self.assertEqual('PENDING', actual['status'])
+        self.assertEqual('widely', actual['baseline_status'])
+        self.assertIsNone(actual['reasoning'])
+        self.assertEqual(
+            ['https://developer.mozilla.org/doc'], actual['suggested_doc_links']
+        )
+        self.assertEqual(3, actual['version_token'])
+        self.assertIsInstance(actual['created'], str)
+
+    def test_summary_progress_step_to_dict__serializes_cleanly(self):
+        """Verify step timeline telemetry serializes string IDs and timestamps cleanly."""
+        step = FeatureSummaryProgressStep(
+            step_id=core_enums.ProgressStepId.SEARCH_MDN,
+            status=core_enums.ProgressStepStatus.IN_PROGRESS,
+            message='Searching MDN',
+            start_timestamp=datetime(2026, 7, 16, 12, 0),
+        )
+
+        actual = converters.summary_progress_step_to_dict(step)
+        self.assertEqual('SEARCH_MDN', actual['step'])
+        self.assertEqual('IN_PROGRESS', actual['status'])
+        self.assertEqual('Searching MDN', actual['message'])
+        self.assertEqual('2026-07-16 12:00:00', actual['start_timestamp'])
+
+    def test_milestone_curation_to_dict__serializes_cleanly(self):
+        """Verify milestone curation serializes repeated curator emails and string status."""
+        curation = MilestoneCuration(
+            id='135',
+            milestone=135,
+            status=core_enums.MilestoneCurationStatus.IN_REVIEW,
+            curator_emails=['editor1@google.com'],
+        )
+        curation.put()
+
+        actual = converters.milestone_curation_to_dict(curation)
+        self.assertEqual(135, actual['milestone'])
+        self.assertEqual('IN_REVIEW', actual['status'])
+        self.assertEqual(
+            ['editor1@google.com'],
+            actual['curator_emails'],
+        )
+
+    def test_feature_entry_to_release_note_feature_dict__serializes_cleanly(
+        self,
+    ):
+        """Verify feature entries serialize categorized items for the release hub."""
+        fe = FeatureEntry(
+            id=202,
+            name='CSS Anchor Positioning',
+            summary='Positions elements relative to anchors.',
+            category=1,  # WebComponents or CSS depending on lookup
+            feature_type=1,
+        )
+        fe.put()
+
+        actual = converters.feature_entry_to_release_note_feature_dict(
+            fe,
+            has_applied_suggestion=True,
+            baseline_status=core_enums.BaselineStatus.NEWLY,
+        )
+        self.assertEqual(202, actual['id'])
+        self.assertEqual('CSS Anchor Positioning', actual['name'])
+        self.assertEqual('newly', actual['baseline_status'])
+        self.assertEqual('AI_APPLIED', actual['summary_source'])
+
+    def test_unmapped_enum_fallback(self):
+        """Verify that encountering an unmapped enum value falls back to safe default without crashing."""
+        fe = FeatureEntry(
+            id=101,
+            name='Feature 101',
+            summary='Summary 101',
+            category=1,
+            feature_type=1,
+        )
+        fe.put()
+        suggestion = FeatureSummarySuggestion(
+            id=101,
+            suggested_summary='AI suggested summary',
+            status='UNMAPPED_BOGUS_STATUS',
+            baseline_status='UNMAPPED_BASELINE',
+        )
+        suggestion.put()
+
+        actual = converters.feature_summary_suggestion_to_dict(suggestion)
+        self.assertEqual('PENDING', actual['status'])
+        self.assertEqual('none', actual['baseline_status'])
+
+    def test_exhaustive_enum_parity_with_openapi_models(self):
+        """Build-time guard asserting 100% parity between core_enums members, converter maps, and generated OpenAPI allowed_values."""
+        # 1. SummarySuggestionStatus
+        for member in core_enums.SummarySuggestionStatus:
+            self.assertIn(
+                member,
+                converters.SUMMARY_SUGGESTION_STATUS_TO_API,
+                f'Missing {member} in SUMMARY_SUGGESTION_STATUS_TO_API',
+            )
+            mapped_val = converters.SUMMARY_SUGGESTION_STATUS_TO_API[member]
+            try:
+                SummarySuggestion(status=mapped_val)
+            except ValueError as e:
+                self.fail(
+                    f"OpenAPI SummarySuggestion.status rejected mapped enum {member} -> '{mapped_val}': {e}"
+                )
+
+        # 2. BaselineStatus
+        for member in core_enums.BaselineStatus:
+            self.assertIn(
+                member,
+                converters.BASELINE_STATUS_TO_API,
+                f'Missing {member} in BASELINE_STATUS_TO_API',
+            )
+            mapped_val = converters.BASELINE_STATUS_TO_API[member]
+            try:
+                SummarySuggestion(baseline_status=mapped_val)
+            except ValueError as e:
+                self.fail(
+                    f"OpenAPI SummarySuggestion.baseline_status rejected mapped enum {member} -> '{mapped_val}': {e}"
+                )
+
+        # 3. ProgressStepId
+        for member in core_enums.ProgressStepId:
+            self.assertIn(
+                member,
+                converters.PROGRESS_STEP_ID_TO_API,
+                f'Missing {member} in PROGRESS_STEP_ID_TO_API',
+            )
+            mapped_val = converters.PROGRESS_STEP_ID_TO_API[member]
+            try:
+                SummaryProgressStep(step=mapped_val, status='IN_PROGRESS')
+            except ValueError as e:
+                self.fail(
+                    f"OpenAPI SummaryProgressStep.step rejected mapped enum {member} -> '{mapped_val}': {e}"
+                )
+
+        # 4. ProgressStepStatus
+        for member in core_enums.ProgressStepStatus:
+            self.assertIn(
+                member,
+                converters.PROGRESS_STEP_STATUS_TO_API,
+                f'Missing {member} in PROGRESS_STEP_STATUS_TO_API',
+            )
+            mapped_val = converters.PROGRESS_STEP_STATUS_TO_API[member]
+            try:
+                SummaryProgressStep(step='SEARCH_MDN', status=mapped_val)
+            except ValueError as e:
+                self.fail(
+                    f"OpenAPI SummaryProgressStep.status rejected mapped enum {member} -> '{mapped_val}': {e}"
+                )
+
+        # 5. MilestoneCurationStatus
+        for member in core_enums.MilestoneCurationStatus:
+            self.assertIn(
+                member,
+                converters.MILESTONE_CURATION_STATUS_TO_API,
+                f'Missing {member} in MILESTONE_CURATION_STATUS_TO_API',
+            )
+            mapped_val = converters.MILESTONE_CURATION_STATUS_TO_API[member]
+            try:
+                MilestoneCurationResponse(status=mapped_val)
+            except ValueError as e:
+                self.fail(
+                    f"OpenAPI MilestoneCurationResponse.status rejected mapped enum {member} -> '{mapped_val}': {e}"
+                )

@@ -462,6 +462,7 @@ class FeatureSummarySuggestion(ndb.Model):
     )
     baseline_status = ndb.StringProperty()
     suggested_summary = ndb.TextProperty()
+    generation_rationale = ndb.TextProperty()
     suggested_doc_links = ndb.StringProperty(repeated=True)
     version_token = ndb.IntegerProperty(default=1)
     generation_token = ndb.StringProperty()
@@ -521,6 +522,6 @@ class MilestoneCuration(ndb.Model):
     """
 
     milestone = ndb.IntegerProperty(required=True)
-    curator_email = ndb.StringProperty()
+    curator_emails = ndb.StringProperty(repeated=True)
     status = ndb.StringProperty(default='PENDING')
     updated = ndb.DateTimeProperty(auto_now=True, tzinfo=datetime.timezone.utc)

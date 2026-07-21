@@ -21,7 +21,7 @@ feature categories, platforms, standardization statuses, and gate types.
 
 import collections
 import re
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import Optional
 
 # URL constants.
@@ -995,11 +995,11 @@ def is_enum_field(property_name):
 
 
 # Enums for AI Release Notes and Summary Suggestions review workflows.
-class SummarySuggestionStatus(str, Enum):
+class SummarySuggestionStatus(StrEnum):
     """Lifecycle statuses for AI-generated FeatureSummarySuggestion entities.
 
     Tracks human review decisions (`PROPOSED`, `APPLIED`, `REJECTED`,
-    `BYPASSED`) across the summary suggestion state machine. Inheriting from
+    `DISCARDED`) across the summary suggestion state machine. Inheriting from
     `str` enables direct serialization to JSON API payloads and NDB string
     properties without integer mapping tables or database migrations.
     """
@@ -1010,11 +1010,10 @@ class SummarySuggestionStatus(str, Enum):
     APPLIED = 'APPLIED'
     REJECTED = 'REJECTED'
     DISCARDED = 'DISCARDED'
-    BYPASSED = 'BYPASSED'
     SKIPPED = 'SKIPPED'
 
 
-class ProgressStepStatus(str, Enum):
+class ProgressStepStatus(StrEnum):
     """Statuses for individual steps in an AI generation timeline.
 
     Paired with `ProgressStepId` in background tasks to report live generation
@@ -1031,7 +1030,7 @@ class ProgressStepStatus(str, Enum):
     RETRYING = 'RETRYING'
 
 
-class ProgressStepId(str, Enum):
+class ProgressStepId(StrEnum):
     """Canonical step identifiers for an AI summary generation workflow.
 
     Logged by generation workers to track progress through discrete stages
@@ -1049,7 +1048,7 @@ class ProgressStepId(str, Enum):
     SUCCESS = 'SUCCESS'
 
 
-class AISummaryToolName(str, Enum):
+class AISummaryToolName(StrEnum):
     """Names of sandbox tools available to the Gemini Summary Generator.
 
     Checked by backend dispatch loops when the LLM requests external
@@ -1063,7 +1062,7 @@ class AISummaryToolName(str, Enum):
     READ_SPEC_LINK = 'read_spec_link_tool'
 
 
-class BaselineStatus(str, Enum):
+class BaselineStatus(StrEnum):
     """WebDX Baseline compatibility status constants.
 
     Serialized directly in feature API responses to render compatibility badges
@@ -1076,3 +1075,11 @@ class BaselineStatus(str, Enum):
     LIMITED = 'limited'
     NEWLY = 'newly'
     WIDELY = 'widely'
+
+
+class MilestoneCurationStatus(StrEnum):
+    """Editorial review status constants for milestone release note curation workflows."""
+
+    PENDING = 'PENDING'
+    IN_REVIEW = 'IN_REVIEW'
+    COMPLETED = 'COMPLETED'
