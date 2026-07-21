@@ -283,7 +283,7 @@ class SummarySuggestion(Model):
     def version_token(self) -> int:
         """Gets the version_token of this SummarySuggestion.
 
-        Monotonically increasing Optimistic Concurrency Control (OCC) version counter. Increments on every mutation to prevent mid-air collision overwrites during concurrent editorial reviews. Note: Body-based version_token is used instead of HTTP ETag / If-Match headers to maintain type safety across OpenAPI generated client SDKs.   # noqa: E501
+        Monotonically increasing Optimistic Concurrency Control (OCC) version counter. Increments on every mutation to prevent mid-air collision overwrites during concurrent editorial reviews. (Alternatively, HTTP ETag / If-Match headers could be used for OCC; version_token provides an explicit JSON field in generated SDK models.)   # noqa: E501
 
         :return: The version_token of this SummarySuggestion.
         :rtype: int
@@ -294,7 +294,7 @@ class SummarySuggestion(Model):
     def version_token(self, version_token: int):
         """Sets the version_token of this SummarySuggestion.
 
-        Monotonically increasing Optimistic Concurrency Control (OCC) version counter. Increments on every mutation to prevent mid-air collision overwrites during concurrent editorial reviews. Note: Body-based version_token is used instead of HTTP ETag / If-Match headers to maintain type safety across OpenAPI generated client SDKs.   # noqa: E501
+        Monotonically increasing Optimistic Concurrency Control (OCC) version counter. Increments on every mutation to prevent mid-air collision overwrites during concurrent editorial reviews. (Alternatively, HTTP ETag / If-Match headers could be used for OCC; version_token provides an explicit JSON field in generated SDK models.)   # noqa: E501
 
         :param version_token: The version_token of this SummarySuggestion.
         :type version_token: int
