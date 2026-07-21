@@ -427,7 +427,7 @@ class TestDefaultController(BaseTestCase):
     def test_get_pending_summary_suggestions(self):
         """Test case for get_pending_summary_suggestions
 
-        Get paginated list of pending summary suggestions for DevRel review queue
+        Get paginated list of pending summary suggestions for release notes review queue
         """
         query_string = [('cursor', 'cursor_example'),
                         ('limit', 25)]

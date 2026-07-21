@@ -43,7 +43,7 @@ class PendingSuggestionsCountResponse(Model):
     def count(self) -> int:
         """Gets the count of this PendingSuggestionsCountResponse.
 
-        Total count of pending AI summary suggestions awaiting editorial review.  # noqa: E501
+        Total count of pending AI summary suggestions awaiting release notes editorial review.  # noqa: E501
 
         :return: The count of this PendingSuggestionsCountResponse.
         :rtype: int
@@ -54,7 +54,7 @@ class PendingSuggestionsCountResponse(Model):
     def count(self, count: int):
         """Sets the count of this PendingSuggestionsCountResponse.
 
-        Total count of pending AI summary suggestions awaiting editorial review.  # noqa: E501
+        Total count of pending AI summary suggestions awaiting release notes editorial review.  # noqa: E501
 
         :param count: The count of this PendingSuggestionsCountResponse.
         :type count: int

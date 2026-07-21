@@ -1155,7 +1155,7 @@ paths:
   /summary-suggestions/pending-count:
     get:
       summary: Get count of pending summary suggestions for review queue
-      description: Retrieves the total count of pending AI summary suggestions awaiting DevRel editorial review.
+      description: Retrieves the total count of pending AI summary suggestions awaiting release notes editorial review.
       operationId: getPendingSummarySuggestionsCount
       responses:
         '200':
@@ -1178,9 +1178,9 @@ paths:
                 $ref: '#/components/schemas/ErrorMessage'
   /summary-suggestions/pending:
     get:
-      summary: Get paginated list of pending summary suggestions for DevRel review queue
+      summary: Get paginated list of pending summary suggestions for release notes review queue
       description: >-
-        Retrieves a cursor-paginated list of pending AI summary suggestions for the DevRel review queue.
+        Retrieves a cursor-paginated list of pending AI summary suggestions for the release notes review queue.
         Omit cursor on initial request. Pass limit (default 25, max 100) to control page size.
         Pass next_cursor as the cursor query parameter on subsequent requests to fetch the next page.
         When next_cursor is null, the end of the queue has been reached.
@@ -2538,7 +2538,7 @@ components:
         count:
           type: integer
           minimum: 0
-          description: Total count of pending AI summary suggestions awaiting editorial review.
+          description: Total count of pending AI summary suggestions awaiting release notes editorial review.
     MilestoneCurationResponse:
       type: object
       required:
