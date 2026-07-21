@@ -110,7 +110,7 @@ class SummarySuggestionPatchRequest(Model):
     def original_summary(self) -> str:
         """Gets the original_summary of this SummarySuggestionPatchRequest.
 
-        Updated original summary reference text.  # noqa: E501
+        Pre-existing feature summary text active prior to AI generation.  # noqa: E501
 
         :return: The original_summary of this SummarySuggestionPatchRequest.
         :rtype: str
@@ -121,7 +121,7 @@ class SummarySuggestionPatchRequest(Model):
     def original_summary(self, original_summary: str):
         """Sets the original_summary of this SummarySuggestionPatchRequest.
 
-        Updated original summary reference text.  # noqa: E501
+        Pre-existing feature summary text active prior to AI generation.  # noqa: E501
 
         :param original_summary: The original_summary of this SummarySuggestionPatchRequest.
         :type original_summary: str

@@ -143,7 +143,7 @@ class SummarySuggestion(Model):
     def original_summary(self) -> str:
         """Gets the original_summary of this SummarySuggestion.
 
-        Original human-authored summary from FeatureEntry before AI processing.  # noqa: E501
+        Feature summary text active prior to AI generation, used for visual diffing and revert workflows.  # noqa: E501
 
         :return: The original_summary of this SummarySuggestion.
         :rtype: str
@@ -154,7 +154,7 @@ class SummarySuggestion(Model):
     def original_summary(self, original_summary: str):
         """Sets the original_summary of this SummarySuggestion.
 
-        Original human-authored summary from FeatureEntry before AI processing.  # noqa: E501
+        Feature summary text active prior to AI generation, used for visual diffing and revert workflows.  # noqa: E501
 
         :param original_summary: The original_summary of this SummarySuggestion.
         :type original_summary: str

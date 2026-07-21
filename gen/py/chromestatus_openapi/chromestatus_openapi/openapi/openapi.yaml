@@ -3767,8 +3767,8 @@ components:
           title: suggested_summary
           type: string
         original_summary:
-          description: Original human-authored summary from FeatureEntry before AI
-            processing.
+          description: "Feature summary text active prior to AI generation, used for\
+            \ visual diffing and revert workflows."
           title: original_summary
           type: string
         status:
@@ -3925,7 +3925,7 @@ components:
           title: suggested_summary
           type: string
         original_summary:
-          description: Updated original summary reference text.
+          description: Pre-existing feature summary text active prior to AI generation.
           title: original_summary
           type: string
         version_token:

@@ -2444,7 +2444,7 @@ components:
           description: AI-suggested release notes summary text.
         original_summary:
           type: string
-          description: Original human-authored summary from FeatureEntry before AI processing.
+          description: Feature summary text active prior to AI generation, used for visual diffing and revert workflows.
         status:
           type: string
           enum: [PENDING, APPLIED, REJECTED, DISCARDED, BYPASSED]
@@ -2528,7 +2528,7 @@ components:
           description: Updated summary text edited by reviewer.
         original_summary:
           type: string
-          description: Updated original summary reference text.
+          description: Pre-existing feature summary text active prior to AI generation.
         version_token:
           type: integer
           minimum: 1
