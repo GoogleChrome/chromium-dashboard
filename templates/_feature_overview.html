@@ -1,0 +1,33 @@
+{% import 'macros/field_render.html' as r %}
+
+<details open>
+  <summary>Overview</summary>
+  <dl>
+    {{ r.render_field('summary', metadata.get('summary'), field_specs) }}
+    {{ r.render_field('owner', metadata.get('owner'), field_specs) }}
+    
+    <dt>Created</dt>
+    <dd>
+      {% if metadata.get('created') and metadata.created.when %}
+        {{ metadata.created.when }}
+        {% if metadata.created.by %}
+          by {{ metadata.created.by }}
+        {% endif %}
+      {% else %}
+        <em>None</em>
+      {% endif %}
+    </dd>
+
+    <dt>Updated</dt>
+    <dd>
+      {% if metadata.get('updated') and metadata.updated.when %}
+        {{ metadata.updated.when }}
+        {% if metadata.updated.by %}
+          by {{ metadata.updated.by }}
+        {% endif %}
+      {% else %}
+        <em>None</em>
+      {% endif %}
+    </dd>
+  </dl>
+</details>

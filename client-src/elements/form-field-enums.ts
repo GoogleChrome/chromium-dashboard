@@ -316,6 +316,7 @@ export const STAGE_DEP_DEV_TRIAL = 430;
 export const STAGE_DEP_DEPRECATION_TRIAL = 450;
 export const STAGE_DEP_EXTEND_DEPRECATION_TRIAL = 451;
 export const STAGE_DEP_SHIPPING = 460;
+// We currently don't display a "Remove" stage, but it does exist in the DB.
 // const STAGE_DEP_REMOVE_CODE = 470;
 
 // Note STAGE_* enum values 500-999 are reseverd for future WP processes.

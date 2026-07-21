@@ -277,6 +277,7 @@ STAGE_DEP_DEV_TRIAL = 430
 STAGE_DEP_DEPRECATION_TRIAL = 450
 STAGE_DEP_EXTEND_DEPRECATION_TRIAL = 451
 STAGE_DEP_SHIPPING = 460
+# We currently don't display a "Remove" stage, but it does exist in the DB.
 STAGE_DEP_REMOVE_CODE = 470
 # TODO(jrobbins): reverse origin trial stage?
 

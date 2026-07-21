@@ -1,0 +1,47 @@
+{# Macro to render a single field with its display label and value #}
+{% macro render_field(field_name, value, field_specs) %}
+  {% set spec = field_specs.get(field_name) if field_specs else None %}
+  {% set label = spec.label if (spec and spec.label) else (field_name | replace('_', ' ') | capitalize) %}
+  
+  <dt>{{ label }}</dt>
+  <dd>
+    {% if value is iterable and value is not string and value is not mapping %}
+      {% if value | length > 0 %}
+        <ul>
+          {% for item in value %}
+            <li>{{ item }}</li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <em>None</em>
+      {% endif %}
+    {% elif value is mapping %}
+      <pre>{{ value | tojson(indent=2) }}</pre>
+    {% elif value is not none and value != '' %}
+      {{ value }}
+    {% else %}
+      <em>None</em>
+    {% endif %}
+  </dd>
+{% endmacro %}
+
+{# Macro to render a list of fields in Order using FormDef sections, excluding specified keys #}
+{% macro render_field_list(data_dict, form_def, field_specs, exclude_fields) %}
+  <dl>
+    {% if form_def and form_def.sections %}
+      {% for section in form_def.sections %}
+        {% for field in section.fields %}
+          {% if field not in exclude_fields %}
+            {{ render_field(field, data_dict.get(field), field_specs) }}
+          {% endif %}
+        {% endfor %}
+      {% endfor %}
+    {% else %}
+      {% for key, val in data_dict.items() %}
+        {% if key not in exclude_fields and key not in ['form', 'stage_form', 'id', 'stage_type', 'display_name', 'feature_id', 'intent_stage', 'created', 'updated'] %}
+          {{ render_field(key, val, field_specs) }}
+        {% endif %}
+      {% endfor %}
+    {% endif %}
+  </dl>
+{% endmacro %}

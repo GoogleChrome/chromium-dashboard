@@ -1,0 +1,16 @@
+{% import 'macros/field_render.html' as r %}
+
+{% set base_stage_fields = [
+    'stage_form',
+    'form',
+    'id',
+    'stage_type',
+    'display_name',
+    'feature_id',
+    'intent_stage'
+] %}
+
+<details>
+  <summary>{{ stage.stage_form.name if (stage.stage_form and stage.stage_form.name) else (stage.display_name or 'Stage') }}</summary>
+  {{ r.render_field_list(stage, stage.stage_form, field_specs, base_stage_fields) }}
+</details>
