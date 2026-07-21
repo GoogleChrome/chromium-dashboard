@@ -3829,6 +3829,7 @@ components:
       type: object
     SummarySuggestionResponse:
       example:
+        access_level: READ_ONLY
         suggestion:
           feature_id: 1
           suggested_summary: suggested_summary
@@ -3843,7 +3844,6 @@ components:
           baseline_status: none
           updated: 2000-01-23T04:56:07.000+00:00
           status: PENDING
-        can_edit: true
         progress_steps:
         - end_timestamp: 2000-01-23T04:56:07.000+00:00
           start_timestamp: 2000-01-23T04:56:07.000+00:00
@@ -3863,11 +3863,19 @@ components:
             $ref: '#/components/schemas/SummaryProgressStep'
           title: progress_steps
           type: array
-        can_edit:
-          title: can_edit
-          type: boolean
+        access_level:
+          description: |
+            The editorial access level of the current authenticated user for this summary suggestion:
+            - READ_ONLY: User can view the suggestion and progress timeline, but cannot edit or apply changes.
+            - CAN_EDIT: User has permission to edit and apply suggestions.
+            Note: Returned directly in the response payload to eliminate an extra round-trip permissions check in client UIs.
+          enum:
+          - READ_ONLY
+          - CAN_EDIT
+          title: access_level
+          type: string
       required:
-      - can_edit
+      - access_level
       - progress_steps
       - suggestion
       title: SummarySuggestionResponse

@@ -2484,7 +2484,7 @@ components:
       required:
         - suggestion
         - progress_steps
-        - can_edit
+        - access_level
       properties:
         suggestion:
           $ref: '#/components/schemas/SummarySuggestion'
@@ -2492,8 +2492,14 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/SummaryProgressStep'
-        can_edit:
-          type: boolean
+        access_level:
+          type: string
+          enum: [READ_ONLY, CAN_EDIT]
+          description: |
+            The editorial access level of the current authenticated user for this summary suggestion:
+            - READ_ONLY: User can view the suggestion and progress timeline, but cannot edit or apply changes.
+            - CAN_EDIT: User has permission to edit and apply suggestions.
+            Note: Returned directly in the response payload to eliminate an extra round-trip permissions check in client UIs.
     SummarySuggestionPatchRequest:
       type: object
       required:

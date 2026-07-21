@@ -16,31 +16,31 @@ class SummarySuggestionResponse(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, suggestion=None, progress_steps=None, can_edit=None):  # noqa: E501
+    def __init__(self, suggestion=None, progress_steps=None, access_level=None):  # noqa: E501
         """SummarySuggestionResponse - a model defined in OpenAPI
 
         :param suggestion: The suggestion of this SummarySuggestionResponse.  # noqa: E501
         :type suggestion: SummarySuggestion
         :param progress_steps: The progress_steps of this SummarySuggestionResponse.  # noqa: E501
         :type progress_steps: List[SummaryProgressStep]
-        :param can_edit: The can_edit of this SummarySuggestionResponse.  # noqa: E501
-        :type can_edit: bool
+        :param access_level: The access_level of this SummarySuggestionResponse.  # noqa: E501
+        :type access_level: str
         """
         self.openapi_types = {
             'suggestion': SummarySuggestion,
             'progress_steps': List[SummaryProgressStep],
-            'can_edit': bool
+            'access_level': str
         }
 
         self.attribute_map = {
             'suggestion': 'suggestion',
             'progress_steps': 'progress_steps',
-            'can_edit': 'can_edit'
+            'access_level': 'access_level'
         }
 
         self._suggestion = suggestion
         self._progress_steps = progress_steps
-        self._can_edit = can_edit
+        self._access_level = access_level
 
     @classmethod
     def from_dict(cls, dikt) -> 'SummarySuggestionResponse':
@@ -100,24 +100,30 @@ class SummarySuggestionResponse(Model):
         self._progress_steps = progress_steps
 
     @property
-    def can_edit(self) -> bool:
-        """Gets the can_edit of this SummarySuggestionResponse.
+    def access_level(self) -> str:
+        """Gets the access_level of this SummarySuggestionResponse.
 
+        The editorial access level of the current authenticated user for this summary suggestion: - READ_ONLY: User can view the suggestion and progress timeline, but cannot edit or apply changes. - CAN_EDIT: User has permission to edit and apply suggestions. Note: Returned directly in the response payload to eliminate an extra round-trip permissions check in client UIs.   # noqa: E501
 
-        :return: The can_edit of this SummarySuggestionResponse.
-        :rtype: bool
+        :return: The access_level of this SummarySuggestionResponse.
+        :rtype: str
         """
-        return self._can_edit
+        return self._access_level
 
-    @can_edit.setter
-    def can_edit(self, can_edit: bool):
-        """Sets the can_edit of this SummarySuggestionResponse.
+    @access_level.setter
+    def access_level(self, access_level: str):
+        """Sets the access_level of this SummarySuggestionResponse.
 
+        The editorial access level of the current authenticated user for this summary suggestion: - READ_ONLY: User can view the suggestion and progress timeline, but cannot edit or apply changes. - CAN_EDIT: User has permission to edit and apply suggestions. Note: Returned directly in the response payload to eliminate an extra round-trip permissions check in client UIs.   # noqa: E501
 
-        :param can_edit: The can_edit of this SummarySuggestionResponse.
-        :type can_edit: bool
+        :param access_level: The access_level of this SummarySuggestionResponse.
+        :type access_level: str
         """
-        if can_edit is None:
-            raise ValueError("Invalid value for `can_edit`, must not be `None`")  # noqa: E501
+        allowed_values = ["READ_ONLY", "CAN_EDIT"]  # noqa: E501
+        if access_level not in allowed_values:
+            raise ValueError(
+                "Invalid value for `access_level` ({0}), must be one of {1}"
+                .format(access_level, allowed_values)
+            )
 
-        self._can_edit = can_edit
+        self._access_level = access_level
