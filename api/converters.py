@@ -17,8 +17,16 @@
 
 import datetime
 import re
+from enum import StrEnum
+from types import MappingProxyType
 from typing import Any, Optional, TypedDict
 
+from chromestatus_openapi.models import (
+    MilestoneCurationResponse,
+    ReleaseNoteFeature,
+    SummaryProgressStep,
+    SummarySuggestion,
+)
 from google.cloud import ndb  # type: ignore
 
 import settings
@@ -31,6 +39,9 @@ from internals import (
 )
 from internals.core_models import (
     FeatureEntry,
+    FeatureSummaryProgressStep,
+    FeatureSummarySuggestion,
+    MilestoneCuration,
     MilestoneSet,
     ReviewResultProperty,
     Stage,
@@ -847,3 +858,226 @@ def gate_value_to_json_dict(gate: Gate) -> dict[str, Any]:
         'self_certify_eligible': self_certify_eligible,
         'survey_answers': survey_answers,
     }
+
+
+# OpenAPI string constants and fallback defaults for Datastore-to-API status mappings.
+SUMMARY_SOURCE_AI_APPLIED = 'AI_APPLIED'
+SUMMARY_SOURCE_HUMAN = 'HUMAN'
+DEFAULT_CATEGORY_NAME = 'Other'
+
+
+# OpenAPI StrEnum definitions for Datastore-to-API status mappings.
+class OpenAPISuggestionStatus(StrEnum):
+    """OpenAPI string constants for summary suggestion review statuses."""
+
+    PENDING = 'PENDING'
+    APPLIED = 'APPLIED'
+    REJECTED = 'REJECTED'
+    DISCARDED = 'DISCARDED'
+
+
+class OpenAPIBaselineStatus(StrEnum):
+    """OpenAPI string constants for WebDX Baseline compatibility statuses."""
+
+    NONE = 'none'
+    LIMITED = 'limited'
+    NEWLY = 'newly'
+    WIDELY = 'widely'
+
+
+class OpenAPIProgressStepId(StrEnum):
+    """OpenAPI string constants for AI summary progress step identifiers."""
+
+    UNKNOWN = 'UNKNOWN'
+    SEARCH_MDN = 'SEARCH_MDN'
+    READ_SPEC = 'READ_SPEC'
+
+
+class OpenAPIProgressStepStatus(StrEnum):
+    """OpenAPI string constants for AI summary progress step execution statuses."""
+
+    IN_PROGRESS = 'IN_PROGRESS'
+    SUCCESS = 'SUCCESS'
+    FAILED = 'FAILED'
+    RETRYING = 'RETRYING'
+
+
+class OpenAPICurationStatus(StrEnum):
+    """OpenAPI string constants for milestone release note curation statuses."""
+
+    PENDING = 'PENDING'
+    IN_REVIEW = 'IN_REVIEW'
+    COMPLETED = 'COMPLETED'
+
+
+SUMMARY_SUGGESTION_STATUS_TO_API: MappingProxyType[
+    core_enums.SummarySuggestionStatus, OpenAPISuggestionStatus
+] = MappingProxyType(
+    {
+        core_enums.SummarySuggestionStatus.UNKNOWN: OpenAPISuggestionStatus.PENDING,
+        core_enums.SummarySuggestionStatus.PROPOSED: OpenAPISuggestionStatus.PENDING,
+        core_enums.SummarySuggestionStatus.PENDING: OpenAPISuggestionStatus.PENDING,
+        core_enums.SummarySuggestionStatus.APPLIED: OpenAPISuggestionStatus.APPLIED,
+        core_enums.SummarySuggestionStatus.REJECTED: OpenAPISuggestionStatus.REJECTED,
+        core_enums.SummarySuggestionStatus.DISCARDED: OpenAPISuggestionStatus.DISCARDED,
+        core_enums.SummarySuggestionStatus.SKIPPED: OpenAPISuggestionStatus.DISCARDED,
+    }
+)
+
+BASELINE_STATUS_TO_API: MappingProxyType[
+    core_enums.BaselineStatus, OpenAPIBaselineStatus
+] = MappingProxyType(
+    {
+        core_enums.BaselineStatus.NONE: OpenAPIBaselineStatus.NONE,
+        core_enums.BaselineStatus.LIMITED: OpenAPIBaselineStatus.LIMITED,
+        core_enums.BaselineStatus.NEWLY: OpenAPIBaselineStatus.NEWLY,
+        core_enums.BaselineStatus.WIDELY: OpenAPIBaselineStatus.WIDELY,
+    }
+)
+
+PROGRESS_STEP_ID_TO_API: MappingProxyType[
+    core_enums.ProgressStepId, OpenAPIProgressStepId
+] = MappingProxyType(
+    {
+        core_enums.ProgressStepId.UNKNOWN: OpenAPIProgressStepId.UNKNOWN,
+        core_enums.ProgressStepId.START: OpenAPIProgressStepId.UNKNOWN,
+        core_enums.ProgressStepId.SEARCH_MDN: OpenAPIProgressStepId.SEARCH_MDN,
+        core_enums.ProgressStepId.READ_SPEC: OpenAPIProgressStepId.READ_SPEC,
+        core_enums.ProgressStepId.LLM_GENERATION: OpenAPIProgressStepId.UNKNOWN,
+        core_enums.ProgressStepId.EVALUATION: OpenAPIProgressStepId.UNKNOWN,
+        core_enums.ProgressStepId.SUCCESS: OpenAPIProgressStepId.UNKNOWN,
+    }
+)
+
+PROGRESS_STEP_STATUS_TO_API: MappingProxyType[
+    core_enums.ProgressStepStatus, OpenAPIProgressStepStatus
+] = MappingProxyType(
+    {
+        core_enums.ProgressStepStatus.UNKNOWN: OpenAPIProgressStepStatus.IN_PROGRESS,
+        core_enums.ProgressStepStatus.START: OpenAPIProgressStepStatus.IN_PROGRESS,
+        core_enums.ProgressStepStatus.IN_PROGRESS: OpenAPIProgressStepStatus.IN_PROGRESS,
+        core_enums.ProgressStepStatus.SUCCESS: OpenAPIProgressStepStatus.SUCCESS,
+        core_enums.ProgressStepStatus.FAILED: OpenAPIProgressStepStatus.FAILED,
+        core_enums.ProgressStepStatus.RETRYING: OpenAPIProgressStepStatus.RETRYING,
+    }
+)
+
+MILESTONE_CURATION_STATUS_TO_API: MappingProxyType[
+    core_enums.MilestoneCurationStatus, OpenAPICurationStatus
+] = MappingProxyType(
+    {
+        core_enums.MilestoneCurationStatus.PENDING: OpenAPICurationStatus.PENDING,
+        core_enums.MilestoneCurationStatus.IN_REVIEW: OpenAPICurationStatus.IN_REVIEW,
+        core_enums.MilestoneCurationStatus.COMPLETED: OpenAPICurationStatus.COMPLETED,
+    }
+)
+
+
+def feature_summary_suggestion_to_dict(
+    suggestion: FeatureSummarySuggestion,
+) -> dict[str, Any]:
+    """Converts a FeatureSummarySuggestion entity into a dict matching SummarySuggestion schema."""
+    status_str = SUMMARY_SUGGESTION_STATUS_TO_API.get(
+        suggestion.status, OpenAPISuggestionStatus.PENDING
+    )
+    baseline_str = BASELINE_STATUS_TO_API.get(
+        suggestion.baseline_status, OpenAPIBaselineStatus.NONE
+    )
+
+    model = SummarySuggestion(
+        feature_id=suggestion.key.integer_id(),
+        suggested_summary=suggestion.suggested_summary,
+        original_summary=suggestion.original_summary,
+        status=status_str,
+        baseline_status=baseline_str,
+        reasoning=suggestion.generation_rationale,
+        suggested_doc_links=suggestion.suggested_doc_links or [],
+        version_token=suggestion.version_token,
+        created=_date_to_str(suggestion.created),
+        updated=_date_to_str(suggestion.updated),
+    )
+    return model.to_dict()
+
+
+def summary_progress_step_to_dict(
+    step: FeatureSummaryProgressStep,
+) -> dict[str, Any]:
+    """Converts a FeatureSummaryProgressStep entity into a dict matching SummaryProgressStep schema."""
+    step_str = PROGRESS_STEP_ID_TO_API.get(
+        step.step_id, OpenAPIProgressStepId.UNKNOWN
+    )
+    status_str = PROGRESS_STEP_STATUS_TO_API.get(
+        step.status, OpenAPIProgressStepStatus.IN_PROGRESS
+    )
+
+    model = SummaryProgressStep(
+        step=step_str,
+        status=status_str,
+        message=step.message,
+        start_timestamp=_date_to_str(step.start_timestamp),
+        end_timestamp=_date_to_str(step.end_timestamp),
+    )
+    return model.to_dict()
+
+
+def milestone_curation_to_dict(curation: MilestoneCuration) -> dict[str, Any]:
+    """Converts a MilestoneCuration entity into a dict matching MilestoneCurationResponse schema."""
+    status_str = MILESTONE_CURATION_STATUS_TO_API.get(
+        curation.status, OpenAPICurationStatus.PENDING
+    )
+
+    model = MilestoneCurationResponse(
+        milestone=curation.milestone,
+        status=status_str,
+        curator_emails=curation.curator_emails or [],
+        last_reviewed=_date_to_str(curation.updated),
+    )
+    return model.to_dict()
+
+
+def feature_entry_to_release_note_feature_dict(
+    fe: FeatureEntry,
+    applied_suggestion: FeatureSummarySuggestion | None = None,
+    baseline_status: str | None = None,
+    has_applied_suggestion: bool | None = None,
+) -> dict[str, Any]:
+    """Converts a FeatureEntry into a dict matching the ReleaseNoteFeature schema."""
+    feature_id = fe.key.integer_id()
+    category_int = fe.category if fe.category is not None else 0
+    category_name = core_enums.FEATURE_CATEGORIES.get(
+        category_int, DEFAULT_CATEGORY_NAME
+    )
+    feature_type_int = fe.feature_type if fe.feature_type is not None else 0
+
+    if (
+        applied_suggestion is not None
+        and applied_suggestion.status
+        == core_enums.SummarySuggestionStatus.APPLIED
+    ):
+        summary_text = applied_suggestion.suggested_summary or fe.summary or ''
+        summary_source = SUMMARY_SOURCE_AI_APPLIED
+        effective_baseline = applied_suggestion.baseline_status
+    elif has_applied_suggestion:
+        summary_text = fe.summary or ''
+        summary_source = SUMMARY_SOURCE_AI_APPLIED
+        effective_baseline = baseline_status
+    else:
+        summary_text = fe.summary or ''
+        summary_source = SUMMARY_SOURCE_HUMAN
+        effective_baseline = baseline_status
+
+    baseline_val = BASELINE_STATUS_TO_API.get(
+        effective_baseline, OpenAPIBaselineStatus.NONE
+    )
+
+    model = ReleaseNoteFeature(
+        id=feature_id,
+        name=fe.name or '',
+        summary=summary_text,
+        category=category_int,
+        category_name=category_name,
+        feature_type=feature_type_int,
+        baseline_status=baseline_val,
+        summary_source=summary_source,
+    )
+    return model.to_dict()

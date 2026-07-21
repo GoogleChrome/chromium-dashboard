@@ -136,11 +136,8 @@ class AIReleaseNotesEnumsTest(testing_config.CustomTestCase):
         self.assertEqual(
             core_enums.SummarySuggestionStatus.DISCARDED, 'DISCARDED'
         )
-        self.assertEqual(
-            core_enums.SummarySuggestionStatus.BYPASSED, 'BYPASSED'
-        )
         self.assertEqual(core_enums.SummarySuggestionStatus.SKIPPED, 'SKIPPED')
-        self.assertEqual(len(core_enums.SummarySuggestionStatus), 8)
+        self.assertEqual(len(core_enums.SummarySuggestionStatus), 7)
 
     def test_progress_step_status_members(self):
         """Verify ProgressStepStatus string literals and member count."""
