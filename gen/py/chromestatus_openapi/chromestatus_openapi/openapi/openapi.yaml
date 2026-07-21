@@ -3900,8 +3900,12 @@ components:
         status: PENDING
       properties:
         status:
-          description: Updated lifecycle status for the suggestion. Null if status
-            is unchanged.
+          description: |
+            Updated lifecycle status for the suggestion. Null if status is unchanged:
+            - APPLIED: Approves suggestion, updating FeatureEntry.summary and setting summary_source to AI_APPLIED.
+            - REJECTED: Declines suggestion, preserving manual summary and setting summary_source to HUMAN.
+            - DISCARDED: Obsoletes suggestion (e.g. feature deleted or re-generated).
+            - BYPASSED: Marks suggestion manually overridden by feature owner.
           enum:
           - PENDING
           - APPLIED
@@ -4023,7 +4027,7 @@ components:
             Editorial review status of the milestone curation workflow:
             - PENDING: Milestone curation has not started
             - IN_REVIEW: Milestone curation is under active editorial review
-            - COMPLETED: Milestone curation review is completed
+            - COMPLETED: Milestone curation review is completed (updates last_reviewed timestamp)
           enum:
           - PENDING
           - IN_REVIEW
@@ -4060,8 +4064,11 @@ components:
         status: PENDING
       properties:
         status:
-          description: Updated editorial review status for the milestone. Null if
-            status is unchanged.
+          description: |
+            Updated editorial review status for the milestone. Null if status is unchanged:
+            - PENDING: Milestone curation reset to un-started.
+            - IN_REVIEW: Milestone curation marked under active review.
+            - COMPLETED: Marks milestone curation completed and populates last_reviewed timestamp.
           enum:
           - PENDING
           - IN_REVIEW

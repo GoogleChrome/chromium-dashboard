@@ -48,7 +48,7 @@ class MilestoneCurationPatchRequest(Model):
     def status(self) -> str:
         """Gets the status of this MilestoneCurationPatchRequest.
 
-        Updated editorial review status for the milestone. Null if status is unchanged.  # noqa: E501
+        Updated editorial review status for the milestone. Null if status is unchanged: - PENDING: Milestone curation reset to un-started. - IN_REVIEW: Milestone curation marked under active review. - COMPLETED: Marks milestone curation completed and populates last_reviewed timestamp.   # noqa: E501
 
         :return: The status of this MilestoneCurationPatchRequest.
         :rtype: str
@@ -59,7 +59,7 @@ class MilestoneCurationPatchRequest(Model):
     def status(self, status: str):
         """Sets the status of this MilestoneCurationPatchRequest.
 
-        Updated editorial review status for the milestone. Null if status is unchanged.  # noqa: E501
+        Updated editorial review status for the milestone. Null if status is unchanged: - PENDING: Milestone curation reset to un-started. - IN_REVIEW: Milestone curation marked under active review. - COMPLETED: Marks milestone curation completed and populates last_reviewed timestamp.   # noqa: E501
 
         :param status: The status of this MilestoneCurationPatchRequest.
         :type status: str

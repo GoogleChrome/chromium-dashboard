@@ -85,7 +85,7 @@ class MilestoneCurationResponse(Model):
     def status(self) -> str:
         """Gets the status of this MilestoneCurationResponse.
 
-        Editorial review status of the milestone curation workflow: - PENDING: Milestone curation has not started - IN_REVIEW: Milestone curation is under active editorial review - COMPLETED: Milestone curation review is completed   # noqa: E501
+        Editorial review status of the milestone curation workflow: - PENDING: Milestone curation has not started - IN_REVIEW: Milestone curation is under active editorial review - COMPLETED: Milestone curation review is completed (updates last_reviewed timestamp)   # noqa: E501
 
         :return: The status of this MilestoneCurationResponse.
         :rtype: str
@@ -96,7 +96,7 @@ class MilestoneCurationResponse(Model):
     def status(self, status: str):
         """Sets the status of this MilestoneCurationResponse.
 
-        Editorial review status of the milestone curation workflow: - PENDING: Milestone curation has not started - IN_REVIEW: Milestone curation is under active editorial review - COMPLETED: Milestone curation review is completed   # noqa: E501
+        Editorial review status of the milestone curation workflow: - PENDING: Milestone curation has not started - IN_REVIEW: Milestone curation is under active editorial review - COMPLETED: Milestone curation review is completed (updates last_reviewed timestamp)   # noqa: E501
 
         :param status: The status of this MilestoneCurationResponse.
         :type status: str
