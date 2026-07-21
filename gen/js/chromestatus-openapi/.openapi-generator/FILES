@@ -1,6 +1,5 @@
 .gitignore
 .npmignore
-.openapi-generator-ignore
 README.md
 package.json
 src/apis/DefaultApi.ts
@@ -58,12 +57,15 @@ src/models/LinkPreviewOpenGraphAllOfInformation.ts
 src/models/LinkPreviewSpecs.ts
 src/models/LinkPreviewWebkitBug.ts
 src/models/MessageResponse.ts
+src/models/MilestoneCurationPatchRequest.ts
+src/models/MilestoneCurationResponse.ts
 src/models/MilestoneSetField.ts
 src/models/OriginTrialsInfo.ts
 src/models/OutstandingReview.ts
 src/models/OwnersAndSubscribersOfComponent.ts
 src/models/PatchCommentRequest.ts
 src/models/PatchGateRequest.ts
+src/models/PendingCountResponse.ts
 src/models/PermissionsResponse.ts
 src/models/PostIntentRequest.ts
 src/models/PostSettingsRequest.ts
@@ -73,8 +75,10 @@ src/models/Process.ts
 src/models/ProcessStage.ts
 src/models/ProgressItem.ts
 src/models/RejectUnneededGetRequest.ts
+src/models/ReleaseNoteFeature.ts
 src/models/ReleaseNotesL10nItem.ts
 src/models/ReleaseNotesL10nResponse.ts
+src/models/ReleaseNotesResponse.ts
 src/models/ReviewLatency.ts
 src/models/SetStarRequest.ts
 src/models/SignInRequest.ts
@@ -82,6 +86,11 @@ src/models/SpecMentor.ts
 src/models/StageField.ts
 src/models/StringFieldInfoValue.ts
 src/models/SuccessMessage.ts
+src/models/SummaryProgressStep.ts
+src/models/SummarySuggestion.ts
+src/models/SummarySuggestionListResponse.ts
+src/models/SummarySuggestionPatchRequest.ts
+src/models/SummarySuggestionResponse.ts
 src/models/SurveyAnswers.ts
 src/models/TokenRefreshResponse.ts
 src/models/UserPermissions.ts

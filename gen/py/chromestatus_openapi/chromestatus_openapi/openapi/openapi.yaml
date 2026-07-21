@@ -1027,6 +1027,113 @@ paths:
           description: User logged out successfully
       summary: Log out the current user
       x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+  /milestone-curation/{milestone}:
+    get:
+      operationId: get_milestone_curation
+      parameters:
+      - description: Target Chromium milestone number (positive integer)
+        explode: false
+        in: path
+        name: milestone
+        required: true
+        schema:
+          minimum: 1
+          type: integer
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MilestoneCurationResponse'
+          description: Success
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: Bad Request - Invalid milestone parameter
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: Unauthorized - Authentication required
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: Forbidden - Insufficient permissions to view editorial curation
+            details
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: Milestone curation record not found
+      summary: Get editorial review status and curation details for a release milestone
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+    patch:
+      operationId: update_milestone_curation
+      parameters:
+      - description: Target Chromium milestone number (positive integer)
+        explode: false
+        in: path
+        name: milestone
+        required: true
+        schema:
+          minimum: 1
+          type: integer
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MilestoneCurationPatchRequest'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MilestoneCurationResponse'
+          description: Success
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: "Bad Request - Malformed payload, invalid status enum, or invalid\
+            \ curator emails"
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: Unauthorized - Authentication required
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: Forbidden - Insufficient editorial/admin review permissions
+            (`can_review_release_notes` / `can_edit_all`)
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: Milestone curation record not found
+        "409":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: Conflict - Concurrent editorial update conflict
+      summary: Update editorial review status or curator assignment for a release
+        milestone
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
   /origintrials:
     get:
       operationId: get_origin_trials
@@ -1174,6 +1281,40 @@ paths:
           description: Success
       summary: Get release notes for a milestone range (localized)
       x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+  /releasenotes/{milestone}:
+    get:
+      operationId: get_release_notes
+      parameters:
+      - description: Target Chromium milestone number (positive integer)
+        explode: false
+        in: path
+        name: milestone
+        required: true
+        schema:
+          minimum: 1
+          type: integer
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReleaseNotesResponse'
+          description: Success
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: Bad Request - Invalid milestone parameter
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: Milestone not found or has no release notes
+      summary: Get categorized release notes for a milestone (read-only)
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
   /review-latency:
     get:
       operationId: list_reviews_with_latency
@@ -1213,6 +1354,197 @@ paths:
           description: The ?after query parameter isn't a valid date in ISO YYYY-MM-DD
             format.
       summary: List spec mentors and their activity
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+  /summary-suggestions/pending:
+    get:
+      description: "Retrieves a cursor-paginated list of pending AI summary suggestions\
+        \ for the release notes review queue. Omit cursor on initial request. Pass\
+        \ limit (default 25, max 100) to control page size. Pass next_cursor as the\
+        \ cursor query parameter on subsequent requests to fetch the next page. When\
+        \ next_cursor is null, the end of the queue has been reached."
+      operationId: get_pending_summary_suggestions
+      parameters:
+      - description: Opaque cursor token returned from a previous response next_cursor
+          field. Omit on initial page request.
+        explode: true
+        in: query
+        name: cursor
+        required: false
+        schema:
+          type: string
+        style: form
+      - description: "Maximum number of items to return per page (default: 25, max:\
+          \ 100)."
+        explode: true
+        in: query
+        name: limit
+        required: false
+        schema:
+          default: 25
+          maximum: 100
+          minimum: 1
+          type: integer
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SummarySuggestionListResponse'
+          description: Success
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: Bad Request - Invalid pagination limit or cursor parameter
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: Unauthorized - Authentication required
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: Forbidden - Insufficient editorial permissions (`can_review_release_notes`)
+      summary: Get paginated list of pending summary suggestions for release notes
+        review queue
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+  /summary-suggestions/pending-count:
+    get:
+      description: Retrieves the total count of pending AI summary suggestions awaiting
+        release notes editorial review.
+      operationId: get_pending_summary_suggestions_count
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PendingSuggestionsCountResponse'
+          description: Success
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: Unauthorized - Authentication required
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: Forbidden - Insufficient editorial permissions to view review
+            queue metrics
+      summary: Get count of pending summary suggestions for review queue
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+  /summary-suggestions/{feature_id}:
+    get:
+      operationId: get_summary_suggestion
+      parameters:
+      - description: Feature ID (positive integer)
+        explode: false
+        in: path
+        name: feature_id
+        required: true
+        schema:
+          minimum: 1
+          type: integer
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SummarySuggestionResponse'
+          description: Success
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: Bad Request - Invalid feature_id parameter
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: Unauthorized - Authentication required to view confidential
+            feature
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: Forbidden - BOLA/IDOR check failed (`permissions.can_view_feature`
+            returned false)
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: Feature or suggestion not found
+      summary: Get AI summary suggestion and progress timeline for a feature
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+    patch:
+      operationId: update_summary_suggestion
+      parameters:
+      - description: Feature ID (positive integer)
+        explode: false
+        in: path
+        name: feature_id
+        required: true
+        schema:
+          minimum: 1
+          type: integer
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SummarySuggestionPatchRequest'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SummarySuggestionResponse'
+          description: Success
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: "Bad Request - Malformed JSON body, invalid enum, or missing\
+            \ required version_token"
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: Unauthorized - Authentication required to edit summary suggestion
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: Forbidden - Insufficient editorial/author permissions (`can_edit_any_feature`)
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: Feature or suggestion not found
+        "409":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: Conflict - OCC version token mismatch
+      summary: Update AI summary suggestion status or fields
       x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
   /web_feature_ids:
     get:
@@ -3344,6 +3676,523 @@ components:
           title: descriptions
           type: object
       title: ReleaseNotesL10nResponse
+      type: object
+    SummaryProgressStep:
+      example:
+        end_timestamp: 2000-01-23T04:56:07.000+00:00
+        start_timestamp: 2000-01-23T04:56:07.000+00:00
+        step: UNKNOWN
+        message: message
+        status: IN_PROGRESS
+      properties:
+        step:
+          description: |
+            The concrete step or tool execution stage in the AI generation pipeline:
+            - UNKNOWN: Fallback for unknown or unsupported execution steps
+            - SEARCH_MDN: Querying MDN documentation
+            - VERIFY_DOC_LINK: Checking external documentation links
+            - READ_SPEC: Fetching and parsing W3C/WHATWG specification
+            - READ_EXPLAINER: Fetching feature explainer document
+          enum:
+          - UNKNOWN
+          - SEARCH_MDN
+          - VERIFY_DOC_LINK
+          - READ_SPEC
+          - READ_EXPLAINER
+          title: step
+          type: string
+        status:
+          description: |
+            Execution status of this step:
+            - IN_PROGRESS: Step is currently running
+            - SUCCESS: Step completed successfully
+            - FAILED: Step failed to complete
+            - RETRYING: Step is re-attempting execution after a transient issue
+          enum:
+          - IN_PROGRESS
+          - SUCCESS
+          - FAILED
+          - RETRYING
+          title: status
+          type: string
+        message:
+          description: "Human-readable progress update, completion summary, or error\
+            \ reason when status is FAILED."
+          title: message
+          type: string
+        start_timestamp:
+          description: Timestamp when this step began execution.
+          format: date-time
+          title: start_timestamp
+          type: string
+        end_timestamp:
+          description: Timestamp when this step reached a terminal state (SUCCESS
+            or FAILED). Null while step is active (IN_PROGRESS or RETRYING).
+          format: date-time
+          nullable: true
+          title: end_timestamp
+          type: string
+      required:
+      - start_timestamp
+      - status
+      - step
+      title: SummaryProgressStep
+      type: object
+    SummarySuggestion:
+      description: "AI-generated summary suggestion entity tracking proposed release\
+        \ notes text, provenance status, confidence score, grounding reasoning, and\
+        \ optimistic concurrency version token."
+      example:
+        feature_id: 1
+        suggested_summary: suggested_summary
+        suggested_doc_links:
+        - suggested_doc_links
+        - suggested_doc_links
+        original_summary: original_summary
+        created: 2000-01-23T04:56:07.000+00:00
+        reasoning: reasoning
+        version_token: 1
+        baseline_status: none
+        updated: 2000-01-23T04:56:07.000+00:00
+        status: PENDING
+      properties:
+        feature_id:
+          description: Associated feature identifier.
+          minimum: 1
+          title: feature_id
+          type: integer
+        suggested_summary:
+          description: AI-suggested release notes summary text.
+          title: suggested_summary
+          type: string
+        original_summary:
+          description: "Feature summary text active prior to AI generation, used for\
+            \ visual diffing and revert workflows."
+          title: original_summary
+          type: string
+        status:
+          description: |
+            Lifecycle status of the summary suggestion:
+            - PENDING: Awaiting review
+            - APPLIED: Approved and applied to feature
+            - REJECTED: Suggestion declined
+            - DISCARDED: Obsolete or feature deleted
+            - BYPASSED: Manually overridden by owner
+          enum:
+          - PENDING
+          - APPLIED
+          - REJECTED
+          - DISCARDED
+          - BYPASSED
+          title: status
+          type: string
+        baseline_status:
+          description: WebDX Baseline interoperability state at suggestion generation
+            time. Null if un-tracked.
+          enum:
+          - none
+          - limited
+          - newly
+          - widely
+          nullable: true
+          title: baseline_status
+          type: string
+        reasoning:
+          description: Grounding rationale and source links evaluated during generation.
+          title: reasoning
+          type: string
+        suggested_doc_links:
+          description: List of verified external documentation links associated with
+            the feature.
+          items:
+            type: string
+          title: suggested_doc_links
+          type: array
+        version_token:
+          description: |
+            Monotonically increasing Optimistic Concurrency Control (OCC) version counter.
+            Increments on every mutation to prevent mid-air collision overwrites during concurrent editorial reviews.
+            (TODO: Migrate to standard HTTP ETag / If-Match headers if the repo adopts header-based OCC across REST endpoints.)
+          minimum: 1
+          title: version_token
+          type: integer
+        created:
+          description: UTC timestamp when the suggestion was created.
+          format: date-time
+          title: created
+          type: string
+        updated:
+          description: UTC timestamp when the suggestion was last modified.
+          format: date-time
+          title: updated
+          type: string
+      required:
+      - created
+      - feature_id
+      - status
+      - updated
+      - version_token
+      title: SummarySuggestion
+      type: object
+    SummarySuggestionResponse:
+      description: "Response payload containing a feature summary suggestion, its\
+        \ progress execution steps, and current user access level."
+      example:
+        access_level: READ_ONLY
+        suggestion:
+          feature_id: 1
+          suggested_summary: suggested_summary
+          suggested_doc_links:
+          - suggested_doc_links
+          - suggested_doc_links
+          original_summary: original_summary
+          created: 2000-01-23T04:56:07.000+00:00
+          reasoning: reasoning
+          version_token: 1
+          baseline_status: none
+          updated: 2000-01-23T04:56:07.000+00:00
+          status: PENDING
+        progress_steps:
+        - end_timestamp: 2000-01-23T04:56:07.000+00:00
+          start_timestamp: 2000-01-23T04:56:07.000+00:00
+          step: UNKNOWN
+          message: message
+          status: IN_PROGRESS
+        - end_timestamp: 2000-01-23T04:56:07.000+00:00
+          start_timestamp: 2000-01-23T04:56:07.000+00:00
+          step: UNKNOWN
+          message: message
+          status: IN_PROGRESS
+      properties:
+        suggestion:
+          $ref: '#/components/schemas/SummarySuggestion'
+        progress_steps:
+          description: Ordered timeline of tool execution progress steps for this
+            summary generation.
+          items:
+            $ref: '#/components/schemas/SummaryProgressStep'
+          title: progress_steps
+          type: array
+        access_level:
+          description: |
+            The editorial access level of the current authenticated user for this summary suggestion:
+            - READ_ONLY: User can view the suggestion and progress timeline, but cannot edit or apply changes.
+            - CAN_EDIT: User has permission to edit and apply suggestions.
+            Note: Returned directly in the response payload to eliminate an extra round-trip permissions check in client UIs.
+          enum:
+          - READ_ONLY
+          - CAN_EDIT
+          title: access_level
+          type: string
+      required:
+      - access_level
+      - progress_steps
+      - suggestion
+      title: SummarySuggestionResponse
+      type: object
+    SummarySuggestionPatchRequest:
+      description: Payload for updating the review status or text of an AI summary
+        suggestion.
+      example:
+        suggested_summary: suggested_summary
+        original_summary: original_summary
+        version_token: 1
+        status: PENDING
+      properties:
+        status:
+          description: |
+            Updated lifecycle status for the suggestion. Null if status is unchanged:
+            - APPLIED: Approves suggestion, updating FeatureEntry.summary and setting summary_source to AI_APPLIED.
+            - REJECTED: Declines suggestion, preserving manual summary and setting summary_source to HUMAN.
+            - DISCARDED: Obsoletes suggestion (e.g. feature deleted or re-generated).
+            - BYPASSED: Marks suggestion manually overridden by feature owner.
+          enum:
+          - PENDING
+          - APPLIED
+          - REJECTED
+          - DISCARDED
+          - BYPASSED
+          nullable: true
+          title: status
+          type: string
+        suggested_summary:
+          description: Updated summary text edited by reviewer.
+          title: suggested_summary
+          type: string
+        original_summary:
+          description: Pre-existing feature summary text active prior to AI generation.
+          title: original_summary
+          type: string
+        version_token:
+          description: |
+            Expected current version_token of the suggestion being patched for Optimistic Concurrency Control (OCC).
+            Must match the server's current version_token, otherwise the server rejects the request with HTTP 409 Conflict.
+            (TODO: Migrate to standard HTTP ETag / If-Match headers if the repo adopts header-based OCC across REST endpoints.)
+          minimum: 1
+          title: version_token
+          type: integer
+      required:
+      - version_token
+      title: SummarySuggestionPatchRequest
+      type: object
+    SummarySuggestionListResponse:
+      description: Paginated response containing a list of pending AI summary suggestions
+        for the review queue.
+      example:
+        next_cursor: next_cursor
+        total_count: 0
+        suggestions:
+        - feature_id: 1
+          suggested_summary: suggested_summary
+          suggested_doc_links:
+          - suggested_doc_links
+          - suggested_doc_links
+          original_summary: original_summary
+          created: 2000-01-23T04:56:07.000+00:00
+          reasoning: reasoning
+          version_token: 1
+          baseline_status: none
+          updated: 2000-01-23T04:56:07.000+00:00
+          status: PENDING
+        - feature_id: 1
+          suggested_summary: suggested_summary
+          suggested_doc_links:
+          - suggested_doc_links
+          - suggested_doc_links
+          original_summary: original_summary
+          created: 2000-01-23T04:56:07.000+00:00
+          reasoning: reasoning
+          version_token: 1
+          baseline_status: none
+          updated: 2000-01-23T04:56:07.000+00:00
+          status: PENDING
+      properties:
+        suggestions:
+          description: List of pending summary suggestion objects for the current
+            page.
+          items:
+            $ref: '#/components/schemas/SummarySuggestion'
+          title: suggestions
+          type: array
+        next_cursor:
+          description: Opaque cursor token for requesting the next page of suggestions.
+            Null when on the last page.
+          nullable: true
+          title: next_cursor
+          type: string
+        total_count:
+          description: Total count of matching pending summary suggestions across
+            all pages.
+          minimum: 0
+          title: total_count
+          type: integer
+      required:
+      - suggestions
+      - total_count
+      title: SummarySuggestionListResponse
+      type: object
+    PendingSuggestionsCountResponse:
+      description: Response payload containing the count of pending AI summary suggestions.
+      example:
+        count: 0
+      properties:
+        count:
+          description: Total count of pending AI summary suggestions awaiting release
+            notes editorial review.
+          minimum: 0
+          title: count
+          type: integer
+      required:
+      - count
+      title: PendingSuggestionsCountResponse
+      type: object
+    MilestoneCurationResponse:
+      description: Editorial curation review state for a specific Chromium release
+        milestone.
+      example:
+        milestone: 1
+        curator_emails:
+        - curator_emails
+        - curator_emails
+        last_reviewed: 2000-01-23T04:56:07.000+00:00
+        status: PENDING
+      properties:
+        milestone:
+          description: Target Chromium milestone number.
+          minimum: 1
+          title: milestone
+          type: integer
+        status:
+          description: |
+            Editorial review status of the milestone curation workflow:
+            - PENDING: Milestone curation has not started
+            - IN_REVIEW: Milestone curation is under active editorial review
+            - COMPLETED: Milestone curation review is completed (updates last_reviewed timestamp)
+          enum:
+          - PENDING
+          - IN_REVIEW
+          - COMPLETED
+          title: status
+          type: string
+        curator_emails:
+          description: List of editor email addresses assigned to curate release notes
+            for this milestone.
+          items:
+            type: string
+          title: curator_emails
+          type: array
+        last_reviewed:
+          description: UTC timestamp when milestone curation was last reviewed or
+            completed. Null if unreviewed.
+          format: date-time
+          nullable: true
+          title: last_reviewed
+          type: string
+      required:
+      - curator_emails
+      - milestone
+      - status
+      title: MilestoneCurationResponse
+      type: object
+    MilestoneCurationPatchRequest:
+      description: Payload for updating the curation review status or assigned curators
+        for a milestone.
+      example:
+        curator_emails:
+        - curator_emails
+        - curator_emails
+        status: PENDING
+      properties:
+        status:
+          description: |
+            Updated editorial review status for the milestone. Null if status is unchanged:
+            - PENDING: Milestone curation reset to un-started.
+            - IN_REVIEW: Milestone curation marked under active review.
+            - COMPLETED: Marks milestone curation completed and populates last_reviewed timestamp.
+          enum:
+          - PENDING
+          - IN_REVIEW
+          - COMPLETED
+          nullable: true
+          title: status
+          type: string
+        curator_emails:
+          description: Updated list of assigned curator email addresses.
+          items:
+            type: string
+          title: curator_emails
+          type: array
+      title: MilestoneCurationPatchRequest
+      type: object
+    ReleaseNoteFeature:
+      description: Individual feature entry formatted for public release notes.
+      example:
+        summary: summary
+        feature_type: 5
+        category_name: category_name
+        summary_source: HUMAN
+        name: name
+        id: 1
+        category: 1
+        baseline_status: none
+      properties:
+        id:
+          description: Unique feature identifier.
+          minimum: 1
+          title: id
+          type: integer
+        name:
+          description: Feature title or display name.
+          title: name
+          type: string
+        summary:
+          description: Release note summary text (either human-written summary or
+            applied AI suggestion).
+          title: summary
+          type: string
+        category:
+          description: Numeric category identifier.
+          title: category
+          type: integer
+        category_name:
+          description: "Human-readable category label (e.g., 'DOM', 'CSS', 'JavaScript')."
+          title: category_name
+          type: string
+        feature_type:
+          description: "Numeric feature launch type identifier (e.g., New Feature,\
+            \ Deprecation)."
+          title: feature_type
+          type: integer
+        baseline_status:
+          description: WebDX Baseline interoperability state. Null if Baseline status
+            is un-tracked.
+          enum:
+          - none
+          - limited
+          - newly
+          - widely
+          nullable: true
+          title: baseline_status
+          type: string
+        summary_source:
+          description: |
+            Source provenance of the active feature summary text returned in this release note:
+            - AI_APPLIED: The active summary text was generated by AI and explicitly approved by an editor (SummarySuggestion.status == APPLIED).
+            - HUMAN: The active summary text was manually authored by a human developer or editor.
+            Note: Unapproved draft suggestions sitting in state PENDING do not alter the active summary text or its provenance until approved.
+          enum:
+          - HUMAN
+          - AI_APPLIED
+          title: summary_source
+          type: string
+      required:
+      - category
+      - category_name
+      - feature_type
+      - id
+      - name
+      - summary
+      - summary_source
+      title: ReleaseNoteFeature
+      type: object
+    ReleaseNotesResponse:
+      description: Public release notes payload containing categorized features for
+        a milestone.
+      example:
+        features:
+        - summary: summary
+          feature_type: 5
+          category_name: category_name
+          summary_source: HUMAN
+          name: name
+          id: 1
+          category: 1
+          baseline_status: none
+        - summary: summary
+          feature_type: 5
+          category_name: category_name
+          summary_source: HUMAN
+          name: name
+          id: 1
+          category: 1
+          baseline_status: none
+        milestone: 1
+      properties:
+        milestone:
+          description: Target Chromium milestone number.
+          minimum: 1
+          title: milestone
+          type: integer
+        features:
+          description: List of curated feature release notes for the milestone.
+          items:
+            $ref: '#/components/schemas/ReleaseNoteFeature'
+          title: features
+          type: array
+      required:
+      - features
+      - milestone
+      title: ReleaseNotesResponse
       type: object
     addAttachment_request:
       properties:
