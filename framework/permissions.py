@@ -126,6 +126,18 @@ def _can_view_confidential_feature(user: User, feature: FeatureEntry):
     return False
 
 
+# Note: Once an organization has over 10 registered users and there
+# are no concerns, we can register the entire organization for
+# streamlining.  Other folks, and anyone needing to be a site editor,
+# should email a request to become a registered user.
+REGISTERED_USER_ORGANIZATIONS = (
+    '@chromium.org',
+    '@google.com',
+    '@microsoft.com',
+    '@igalia.com',
+)
+
+
 def can_create_feature(user: User) -> bool:
     """Return True if the user is allowed to create features."""
     if not user:
@@ -134,8 +146,7 @@ def can_create_feature(user: User) -> bool:
     if can_admin_site(user):
         return True
 
-    # TODO(jrobbins): generalize this.
-    if user.email().endswith(('@chromium.org', '@google.com')):
+    if user.email().endswith(REGISTERED_USER_ORGANIZATIONS):
         return True
 
     app_user = AppUser.get_app_user(user.email())

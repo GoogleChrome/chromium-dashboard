@@ -19,6 +19,7 @@ import flask
 
 import testing_config  # Must be imported before the module under test.
 from api import permissions_api
+from framework import permissions
 
 test_app = flask.Flask(__name__)
 
@@ -96,3 +97,24 @@ class PermissionsAPITest(testing_config.CustomTestCase):
             }
         }
         self.assertEqual(expected, actual)
+
+    def test_get__registered_org_user(self):
+        """Users from registered orgs have default permissions to create features."""
+        for domain in permissions.REGISTERED_USER_ORGANIZATIONS:
+            email = f'one{domain}'
+            testing_config.sign_in(email, 67890)
+            with test_app.test_request_context(self.request_path):
+                actual = self.handler.do_get()
+            expected = {
+                'user': {
+                    'can_create_feature': True,
+                    'approvable_gate_types': [],
+                    'can_comment': True,
+                    'can_edit_all': False,
+                    'can_review_release_notes': False,
+                    'is_admin': False,
+                    'email': email,
+                    'editable_features': [],
+                }
+            }
+            self.assertEqual(expected, actual)

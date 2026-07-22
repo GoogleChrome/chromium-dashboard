@@ -157,14 +157,11 @@ class PermissionFunctionTests(testing_config.CustomTestCase):
         user = users.get_current_user()
         self.assertEqual(registered, func(user, *additional_args))
 
-        # Test special users
-        # TODO(jrobbins): generalize this.
-        testing_config.sign_in('user@google.com', 123)
-        user = users.get_current_user()
-        self.assertEqual(special, func(user, *additional_args))
-        testing_config.sign_in('user@chromium.org', 123)
-        user = users.get_current_user()
-        self.assertEqual(special, func(user, *additional_args))
+        # Test special users (registered orgs)
+        for domain in permissions.REGISTERED_USER_ORGANIZATIONS:
+            testing_config.sign_in(f'user{domain}', 123)
+            user = users.get_current_user()
+            self.assertEqual(special, func(user, *additional_args))
 
         # Test site editor user
         testing_config.sign_in('editor@example.com', 123)
@@ -299,6 +296,25 @@ class PermissionFunctionTests(testing_config.CustomTestCase):
             admin=True,
             anon=False,
         )
+
+    def test_can_create_feature__registered_orgs(self):
+        """Users from any registered org domain can create features."""
+        for domain in permissions.REGISTERED_USER_ORGANIZATIONS:
+            testing_config.sign_in(f'user{domain}', 123)
+            user = users.get_current_user()
+            self.assertTrue(permissions.can_create_feature(user))
+
+    def test_can_create_feature__unregistered_orgs(self):
+        """Unregistered users from non-whitelisted orgs cannot create features."""
+        unregistered_emails = [
+            'user@example.com',
+            'user@otherdomain.com',
+            'user@fakechromium.org.evil.com',
+        ]
+        for email in unregistered_emails:
+            testing_config.sign_in(email, 123)
+            user = users.get_current_user()
+            self.assertFalse(permissions.can_create_feature(user))
 
     def test_can_edit_any_feature(self):
         """Test can edit any feature."""
