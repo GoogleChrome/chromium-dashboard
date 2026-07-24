@@ -95,6 +95,8 @@ class FeatureSummaryProgressStepTest(testing_config.CustomTestCase):
         """Set up test feature id."""
         self.feature_id = 999001
         self.parent_key = ndb.Key('FeatureSummarySuggestion', self.feature_id)
+        for step in FeatureSummaryProgressStep.query(ancestor=self.parent_key):
+            step.key.delete()
 
     def test_create_progress_step(self):
         """Verify timeline step persistence and string properties."""
@@ -163,7 +165,7 @@ class MilestoneCurationTest(testing_config.CustomTestCase):
         curation = MilestoneCuration(
             id=str(milestone_num),
             milestone=milestone_num,
-            curator_email='curator@google.com',
+            curator_emails=['curator@google.com'],
             status='IN_REVIEW',
         )
         curation.put()
@@ -171,5 +173,5 @@ class MilestoneCurationTest(testing_config.CustomTestCase):
         retrieved = ndb.Key('MilestoneCuration', str(milestone_num)).get()
         self.assertIsNotNone(retrieved)
         self.assertEqual(retrieved.milestone, 135)
-        self.assertEqual(retrieved.curator_email, 'curator@google.com')
+        self.assertEqual(retrieved.curator_emails, ['curator@google.com'])
         self.assertEqual(retrieved.status, 'IN_REVIEW')
