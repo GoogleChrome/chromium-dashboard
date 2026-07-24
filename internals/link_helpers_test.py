@@ -227,6 +227,18 @@ class LinkHelperTest(testing_config.CustomTestCase):
         self.assertEqual(info['_parsed_title'], 'Reporting API')
         print(info)
 
+    def test_link_parse_github_markdown_not_found(self):
+        """Test link parse github markdown with bad filename."""
+        link = Link('https://github.com/w3c/reporting/blob/master/NOT_FOUND.md')
+        link.parse()
+        if link.is_error and link.http_error_code == 429:
+            return
+        self.assertEqual(link.type, LINK_TYPE_GITHUB_MARKDOWN)
+        self.assertEqual(link.is_parsed, True)
+        self.assertEqual(link.is_error, True)
+        self.assertEqual(link.http_error_code, 404)
+        self.assertEqual(link.information, None)
+
     def test_link_parse_github_markdown_with_hash(self):
         """Test link parse github markdown with hash."""
         link = Link(
