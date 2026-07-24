@@ -17,9 +17,12 @@ Add your new field as an `ndb` property.
 ```python
 # internals/core_models.py
 
+
 class FeatureEntry(ndb.Model):
-  # ...
-  my_new_field = ndb.StringProperty()  # Use appropriate ndb type (IntegerProperty, BooleanProperty, etc.)
+    # ...
+    my_new_field = (
+        ndb.StringProperty()
+    )  # Use appropriate ndb type (IntegerProperty, BooleanProperty, etc.)
 ```
 
 ## 2. API Layer (Backend)
@@ -31,8 +34,8 @@ The `FeaturesAPI` uses `api/api_specs.py` to map request fields to database prop
 # api/api_specs.py
 
 FEATURE_FIELD_DATA_TYPES: FIELD_INFO_DATA_TYPE = [
-  # ...
-  ('my_new_field', 'str'),  # 'str', 'int', 'bool', 'link', 'emails', etc.
+    # ...
+    ('my_new_field', 'str'),  # 'str', 'int', 'bool', 'link', 'emails', etc.
 ]
 ```
 
