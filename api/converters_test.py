@@ -15,7 +15,7 @@
 """Tests for the converters module, verifying correct transformation of data models to dictionaries."""
 
 from datetime import datetime
-from typing import Any, Mapping
+from typing import Any, Iterable, Mapping
 from unittest import mock
 
 import yaml
@@ -697,13 +697,43 @@ class AICurationConvertersTest(testing_config.CustomTestCase):
         for c in MilestoneCuration.query():
             c.key.delete()
 
-    def assert_enum_mapping_matches_openapi_schema(
+    def assert_bidirectional_enum_parity(
         self,
         mapping: Mapping[Any, Any],
+        internal_enum: Iterable[Any],
         schema_name: str,
         property_name: str,
     ) -> None:
-        """Asserts bidirectional parity between converter mapping values and OpenAPI schema enum definitions."""
+        """Asserts 100% bidirectional parity between Datastore enums, converters, and OpenAPI schemas.
+
+        This build-time guard checks both sides of the serialization boundary:
+        1. Input Boundary: Asserts that every member in `internal_enum` is present as a key
+           in `mapping`, preventing unmapped backend database states from causing runtime errors.
+        2. Output Boundary: Asserts that the set of target values produced by `mapping` exactly
+           matches the allowed `enum` strings defined in `openapi/api.yaml` under
+           `components.schemas.<schema_name>.properties.<property_name>`.
+
+        Args:
+            mapping: The converter lookup dictionary (e.g., `converters.BASELINE_STATUS_TO_API`)
+              mapping internal Datastore enum members to target OpenAPI string constants.
+            internal_enum: An iterable or Enum class (e.g., `core_enums.BaselineStatus`)
+              representing the complete domain of valid internal database states.
+            schema_name: The name of the target schema component in `openapi/api.yaml`
+              (e.g., `'SummarySuggestion'`).
+            property_name: The property name within `schema_name` whose allowed enum strings
+              should be matched (e.g., `'baseline_status'`).
+
+        Raises:
+            AssertionError: If any internal enum member is missing from `mapping` keys, or if
+              the mapping values drift from the OpenAPI schema enum definition.
+        """
+        self.assertEqual(
+            set(internal_enum),
+            set(mapping.keys()),
+            f'Input boundary drift detected for {schema_name}.{property_name}: '
+            f'Internal enum members {set(internal_enum)} != mapping keys {set(mapping.keys())}',
+        )
+
         with open('openapi/api.yaml', encoding='utf-8') as f:
             api_spec = yaml.safe_load(f)
         openapi_allowed = set(
@@ -715,7 +745,7 @@ class AICurationConvertersTest(testing_config.CustomTestCase):
         self.assertEqual(
             openapi_allowed,
             mapped_values,
-            f'Schema drift detected for {schema_name}.{property_name}: '
+            f'Output boundary drift detected for {schema_name}.{property_name}: '
             f'OpenAPI allowed {openapi_allowed} != mapping values {mapped_values}',
         )
 
@@ -842,54 +872,41 @@ class AICurationConvertersTest(testing_config.CustomTestCase):
     def test_exhaustive_enum_parity_with_openapi_models(self):
         """Build-time guard asserting 100% parity between core_enums members, converter maps, and generated OpenAPI allowed_values."""
         # 1. SummarySuggestionStatus
-        self.assertEqual(
-            set(core_enums.SummarySuggestionStatus),
-            set(converters.SUMMARY_SUGGESTION_STATUS_TO_API.keys()),
-        )
-        self.assert_enum_mapping_matches_openapi_schema(
+        self.assert_bidirectional_enum_parity(
             converters.SUMMARY_SUGGESTION_STATUS_TO_API,
+            core_enums.SummarySuggestionStatus,
             'SummarySuggestion',
             'status',
         )
 
         # 2. BaselineStatus
-        self.assertEqual(
-            set(core_enums.BaselineStatus),
-            set(converters.BASELINE_STATUS_TO_API.keys()),
-        )
-        self.assert_enum_mapping_matches_openapi_schema(
+        self.assert_bidirectional_enum_parity(
             converters.BASELINE_STATUS_TO_API,
+            core_enums.BaselineStatus,
             'SummarySuggestion',
             'baseline_status',
         )
 
         # 3. ProgressStepId
-        self.assertEqual(
-            set(core_enums.ProgressStepId),
-            set(converters.PROGRESS_STEP_ID_TO_API.keys()),
-        )
-        self.assert_enum_mapping_matches_openapi_schema(
-            converters.PROGRESS_STEP_ID_TO_API, 'SummaryProgressStep', 'step'
+        self.assert_bidirectional_enum_parity(
+            converters.PROGRESS_STEP_ID_TO_API,
+            core_enums.ProgressStepId,
+            'SummaryProgressStep',
+            'step',
         )
 
         # 4. ProgressStepStatus
-        self.assertEqual(
-            set(core_enums.ProgressStepStatus),
-            set(converters.PROGRESS_STEP_STATUS_TO_API.keys()),
-        )
-        self.assert_enum_mapping_matches_openapi_schema(
+        self.assert_bidirectional_enum_parity(
             converters.PROGRESS_STEP_STATUS_TO_API,
+            core_enums.ProgressStepStatus,
             'SummaryProgressStep',
             'status',
         )
 
         # 5. MilestoneCurationStatus
-        self.assertEqual(
-            set(core_enums.MilestoneCurationStatus),
-            set(converters.MILESTONE_CURATION_STATUS_TO_API.keys()),
-        )
-        self.assert_enum_mapping_matches_openapi_schema(
+        self.assert_bidirectional_enum_parity(
             converters.MILESTONE_CURATION_STATUS_TO_API,
+            core_enums.MilestoneCurationStatus,
             'MilestoneCurationResponse',
             'status',
         )
