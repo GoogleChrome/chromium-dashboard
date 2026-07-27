@@ -439,9 +439,6 @@ class Link:
             logging.error(f'Error parsing {self.type} {self.url}: {e}')
             self.error = e
             self.is_error = True
-            if isinstance(e, HTTPError):
-                self.http_error_code = e.code
-            if isinstance(e, APIError):
-                self.http_error_code = _get_error_code(e)
+            self.http_error_code = _get_error_code(e)
             self.information = None
         self.is_parsed = True
