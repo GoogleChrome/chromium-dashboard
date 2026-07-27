@@ -21,29 +21,23 @@ import {
 } from './ReleaseNoteFeature';
 
 /**
- * 
+ * Public release notes payload containing categorized features for a milestone.
  * @export
  * @interface ReleaseNotesResponse
  */
 export interface ReleaseNotesResponse {
     /**
-     * 
+     * Target Chromium milestone number.
      * @type {number}
      * @memberof ReleaseNotesResponse
      */
     milestone: number;
     /**
-     * 
-     * @type {{ [key: string]: Array<ReleaseNoteFeature>; }}
+     * List of curated feature release notes for the milestone.
+     * @type {Array<ReleaseNoteFeature>}
      * @memberof ReleaseNotesResponse
      */
-    categories: { [key: string]: Array<ReleaseNoteFeature>; };
-    /**
-     * 
-     * @type {string}
-     * @memberof ReleaseNotesResponse
-     */
-    archival_banner?: string;
+    features: Array<ReleaseNoteFeature>;
 }
 
 /**
@@ -51,7 +45,7 @@ export interface ReleaseNotesResponse {
  */
 export function instanceOfReleaseNotesResponse(value: object): value is ReleaseNotesResponse {
     if (!('milestone' in value) || value['milestone'] === undefined) return false;
-    if (!('categories' in value) || value['categories'] === undefined) return false;
+    if (!('features' in value) || value['features'] === undefined) return false;
     return true;
 }
 
@@ -66,8 +60,7 @@ export function ReleaseNotesResponseFromJSONTyped(json: any, ignoreDiscriminator
     return {
         
         'milestone': json['milestone'],
-        'categories': json['categories'],
-        'archival_banner': json['archival_banner'] == null ? undefined : json['archival_banner'],
+        'features': ((json['features'] as Array<any>).map(ReleaseNoteFeatureFromJSON)),
     };
 }
 
@@ -78,8 +71,7 @@ export function ReleaseNotesResponseToJSON(value?: ReleaseNotesResponse | null):
     return {
         
         'milestone': value['milestone'],
-        'categories': value['categories'],
-        'archival_banner': value['archival_banner'],
+        'features': ((value['features'] as Array<any>).map(ReleaseNoteFeatureToJSON)),
     };
 }
 

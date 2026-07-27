@@ -60,7 +60,7 @@ export * from './OutstandingReview';
 export * from './OwnersAndSubscribersOfComponent';
 export * from './PatchCommentRequest';
 export * from './PatchGateRequest';
-export * from './PendingCountResponse';
+export * from './PendingSuggestionsCountResponse';
 export * from './PermissionsResponse';
 export * from './PostIntentRequest';
 export * from './PostSettingsRequest';

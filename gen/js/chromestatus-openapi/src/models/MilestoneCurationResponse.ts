@@ -14,31 +14,35 @@
 
 import { mapValues } from '../runtime';
 /**
- * 
+ * Editorial curation review state for a specific Chromium release milestone.
  * @export
  * @interface MilestoneCurationResponse
  */
 export interface MilestoneCurationResponse {
     /**
-     * 
+     * Target Chromium milestone number.
      * @type {number}
      * @memberof MilestoneCurationResponse
      */
     milestone: number;
     /**
+     * Editorial review status of the milestone curation workflow:
+     * - PENDING: Milestone curation has not started
+     * - IN_REVIEW: Milestone curation is under active editorial review
+     * - COMPLETED: Milestone curation review is completed (updates last_reviewed timestamp)
      * 
      * @type {string}
      * @memberof MilestoneCurationResponse
      */
     status: MilestoneCurationResponseStatusEnum;
     /**
-     * 
+     * List of editor email addresses assigned to curate release notes for this milestone.
      * @type {Array<string>}
      * @memberof MilestoneCurationResponse
      */
     curator_emails: Array<string>;
     /**
-     * 
+     * UTC timestamp when milestone curation was last reviewed or completed. Null if unreviewed.
      * @type {Date}
      * @memberof MilestoneCurationResponse
      */
@@ -93,7 +97,7 @@ export function MilestoneCurationResponseToJSON(value?: MilestoneCurationRespons
         'milestone': value['milestone'],
         'status': value['status'],
         'curator_emails': value['curator_emails'],
-        'last_reviewed': value['last_reviewed'] == null ? undefined : ((value['last_reviewed']).toISOString()),
+        'last_reviewed': value['last_reviewed'] == null ? undefined : ((value['last_reviewed'] as any).toISOString()),
     };
 }
 

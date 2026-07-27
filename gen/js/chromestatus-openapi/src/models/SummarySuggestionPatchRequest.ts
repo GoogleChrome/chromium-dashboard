@@ -14,30 +14,37 @@
 
 import { mapValues } from '../runtime';
 /**
- * 
+ * Payload for updating the review status or text of an AI summary suggestion.
  * @export
  * @interface SummarySuggestionPatchRequest
  */
 export interface SummarySuggestionPatchRequest {
     /**
+     * Updated lifecycle status for the suggestion. Null if status is unchanged:
+     * - APPLIED: Approves suggestion, updating FeatureEntry.summary and setting summary_source to AI_APPLIED.
+     * - REJECTED: Declines suggestion, preserving manual summary and setting summary_source to HUMAN.
+     * - DISCARDED: Obsoletes suggestion (e.g. feature deleted or re-generated).
      * 
      * @type {string}
      * @memberof SummarySuggestionPatchRequest
      */
     status?: SummarySuggestionPatchRequestStatusEnum;
     /**
-     * 
+     * Updated summary text edited by reviewer.
      * @type {string}
      * @memberof SummarySuggestionPatchRequest
      */
     suggested_summary?: string;
     /**
-     * 
+     * Pre-existing feature summary text active prior to AI generation.
      * @type {string}
      * @memberof SummarySuggestionPatchRequest
      */
     original_summary?: string;
     /**
+     * Expected current version_token of the suggestion being patched for Optimistic Concurrency Control (OCC).
+     * Must match the server's current version_token, otherwise the server rejects the request with HTTP 409 Conflict.
+     * (TODO: Migrate to standard HTTP ETag / If-Match headers if the repo adopts header-based OCC across REST endpoints.)
      * 
      * @type {number}
      * @memberof SummarySuggestionPatchRequest
@@ -50,14 +57,10 @@ export interface SummarySuggestionPatchRequest {
  * @export
  */
 export const SummarySuggestionPatchRequestStatusEnum = {
-    UNKNOWN: 'UNKNOWN',
-    PROPOSED: 'PROPOSED',
     PENDING: 'PENDING',
     APPLIED: 'APPLIED',
     REJECTED: 'REJECTED',
-    DISCARDED: 'DISCARDED',
-    BYPASSED: 'BYPASSED',
-    SKIPPED: 'SKIPPED'
+    DISCARDED: 'DISCARDED'
 } as const;
 export type SummarySuggestionPatchRequestStatusEnum = typeof SummarySuggestionPatchRequestStatusEnum[keyof typeof SummarySuggestionPatchRequestStatusEnum];
 
