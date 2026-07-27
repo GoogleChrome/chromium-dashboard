@@ -14,73 +14,75 @@
 
 import { mapValues } from '../runtime';
 /**
- * 
+ * AI-generated summary suggestion entity tracking proposed release notes text, provenance status, confidence score, grounding reasoning, and optimistic concurrency version token.
  * @export
  * @interface SummarySuggestion
  */
 export interface SummarySuggestion {
     /**
-     * 
+     * Associated feature identifier.
      * @type {number}
      * @memberof SummarySuggestion
      */
     feature_id: number;
     /**
-     * 
+     * AI-suggested release notes summary text.
      * @type {string}
      * @memberof SummarySuggestion
      */
     suggested_summary?: string;
     /**
-     * 
+     * Feature summary text active prior to AI generation, used for visual diffing and revert workflows.
      * @type {string}
      * @memberof SummarySuggestion
      */
     original_summary?: string;
     /**
+     * Lifecycle status of the summary suggestion:
+     * - PENDING: Awaiting review
+     * - APPLIED: Approved and applied to feature
+     * - REJECTED: Suggestion declined
+     * - DISCARDED: Obsolete or feature deleted
      * 
      * @type {string}
      * @memberof SummarySuggestion
      */
     status: SummarySuggestionStatusEnum;
     /**
-     * 
+     * WebDX Baseline interoperability state at suggestion generation time. Null if un-tracked.
      * @type {string}
      * @memberof SummarySuggestion
      */
     baseline_status?: SummarySuggestionBaselineStatusEnum;
     /**
-     * 
-     * @type {number}
-     * @memberof SummarySuggestion
-     */
-    confidence_score?: number;
-    /**
-     * 
+     * Grounding rationale and source links evaluated during generation.
      * @type {string}
      * @memberof SummarySuggestion
      */
     reasoning?: string;
     /**
-     * 
+     * List of verified external documentation links associated with the feature.
      * @type {Array<string>}
      * @memberof SummarySuggestion
      */
     suggested_doc_links?: Array<string>;
     /**
+     * Monotonically increasing Optimistic Concurrency Control (OCC) version counter.
+     * Increments on every mutation to prevent mid-air collision overwrites during concurrent editorial reviews.
+     * (TODO: Migrate to standard HTTP ETag / If-Match headers if the repo adopts header-based OCC across REST endpoints.)
      * 
      * @type {number}
      * @memberof SummarySuggestion
      */
     version_token: number;
     /**
-     * 
+     * UTC timestamp when the suggestion was created.
      * @type {Date}
      * @memberof SummarySuggestion
      */
     created: Date;
     /**
-     * 
+     * UTC timestamp when the suggestion was last modified.
      * @type {Date}
      * @memberof SummarySuggestion
      */
@@ -92,14 +94,10 @@ export interface SummarySuggestion {
  * @export
  */
 export const SummarySuggestionStatusEnum = {
-    UNKNOWN: 'UNKNOWN',
-    PROPOSED: 'PROPOSED',
     PENDING: 'PENDING',
     APPLIED: 'APPLIED',
     REJECTED: 'REJECTED',
-    DISCARDED: 'DISCARDED',
-    BYPASSED: 'BYPASSED',
-    SKIPPED: 'SKIPPED'
+    DISCARDED: 'DISCARDED'
 } as const;
 export type SummarySuggestionStatusEnum = typeof SummarySuggestionStatusEnum[keyof typeof SummarySuggestionStatusEnum];
 
@@ -142,7 +140,6 @@ export function SummarySuggestionFromJSONTyped(json: any, ignoreDiscriminator: b
         'original_summary': json['original_summary'] == null ? undefined : json['original_summary'],
         'status': json['status'],
         'baseline_status': json['baseline_status'] == null ? undefined : json['baseline_status'],
-        'confidence_score': json['confidence_score'] == null ? undefined : json['confidence_score'],
         'reasoning': json['reasoning'] == null ? undefined : json['reasoning'],
         'suggested_doc_links': json['suggested_doc_links'] == null ? undefined : json['suggested_doc_links'],
         'version_token': json['version_token'],
@@ -162,7 +159,6 @@ export function SummarySuggestionToJSON(value?: SummarySuggestion | null): any {
         'original_summary': value['original_summary'],
         'status': value['status'],
         'baseline_status': value['baseline_status'],
-        'confidence_score': value['confidence_score'],
         'reasoning': value['reasoning'],
         'suggested_doc_links': value['suggested_doc_links'],
         'version_token': value['version_token'],

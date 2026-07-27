@@ -14,32 +14,32 @@
 
 import { mapValues } from '../runtime';
 /**
- * 
+ * Response payload containing the count of pending AI summary suggestions.
  * @export
- * @interface PendingCountResponse
+ * @interface PendingSuggestionsCountResponse
  */
-export interface PendingCountResponse {
+export interface PendingSuggestionsCountResponse {
     /**
-     * 
+     * Total count of pending AI summary suggestions awaiting release notes editorial review.
      * @type {number}
-     * @memberof PendingCountResponse
+     * @memberof PendingSuggestionsCountResponse
      */
     count: number;
 }
 
 /**
- * Check if a given object implements the PendingCountResponse interface.
+ * Check if a given object implements the PendingSuggestionsCountResponse interface.
  */
-export function instanceOfPendingCountResponse(value: object): value is PendingCountResponse {
+export function instanceOfPendingSuggestionsCountResponse(value: object): value is PendingSuggestionsCountResponse {
     if (!('count' in value) || value['count'] === undefined) return false;
     return true;
 }
 
-export function PendingCountResponseFromJSON(json: any): PendingCountResponse {
-    return PendingCountResponseFromJSONTyped(json, false);
+export function PendingSuggestionsCountResponseFromJSON(json: any): PendingSuggestionsCountResponse {
+    return PendingSuggestionsCountResponseFromJSONTyped(json, false);
 }
 
-export function PendingCountResponseFromJSONTyped(json: any, ignoreDiscriminator: boolean): PendingCountResponse {
+export function PendingSuggestionsCountResponseFromJSONTyped(json: any, ignoreDiscriminator: boolean): PendingSuggestionsCountResponse {
     if (json == null) {
         return json;
     }
@@ -49,7 +49,7 @@ export function PendingCountResponseFromJSONTyped(json: any, ignoreDiscriminator
     };
 }
 
-export function PendingCountResponseToJSON(value?: PendingCountResponse | null): any {
+export function PendingSuggestionsCountResponseToJSON(value?: PendingSuggestionsCountResponse | null): any {
     if (value == null) {
         return value;
     }

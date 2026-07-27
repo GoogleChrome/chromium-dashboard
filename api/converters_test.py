@@ -15,13 +15,10 @@
 """Tests for the converters module, verifying correct transformation of data models to dictionaries."""
 
 from datetime import datetime
+from typing import Any, Mapping
 from unittest import mock
 
-from chromestatus_openapi.models import (
-    MilestoneCurationResponse,
-    SummaryProgressStep,
-    SummarySuggestion,
-)
+import yaml
 
 import testing_config  # Must be imported before the module under test.
 from api import converters
@@ -700,6 +697,28 @@ class AICurationConvertersTest(testing_config.CustomTestCase):
         for c in MilestoneCuration.query():
             c.key.delete()
 
+    def assert_enum_mapping_matches_openapi_schema(
+        self,
+        mapping: Mapping[Any, Any],
+        schema_name: str,
+        property_name: str,
+    ) -> None:
+        """Asserts bidirectional parity between converter mapping values and OpenAPI schema enum definitions."""
+        with open('openapi/api.yaml', encoding='utf-8') as f:
+            api_spec = yaml.safe_load(f)
+        openapi_allowed = set(
+            api_spec['components']['schemas'][schema_name]['properties'][
+                property_name
+            ]['enum']
+        )
+        mapped_values = set(mapping.values())
+        self.assertEqual(
+            openapi_allowed,
+            mapped_values,
+            f'Schema drift detected for {schema_name}.{property_name}: '
+            f'OpenAPI allowed {openapi_allowed} != mapping values {mapped_values}',
+        )
+
     def test_feature_summary_suggestion_to_dict__serializes_cleanly(self):
         """Verify string enums and properties serialize cleanly without integer helpers."""
         fe = FeatureEntry(
@@ -787,8 +806,12 @@ class AICurationConvertersTest(testing_config.CustomTestCase):
         )
         self.assertEqual(202, actual['id'])
         self.assertEqual('CSS Anchor Positioning', actual['name'])
-        self.assertEqual('newly', actual['baseline_status'])
-        self.assertEqual('AI_APPLIED', actual['summary_source'])
+        self.assertEqual(
+            converters.OpenAPIBaselineStatus.NEWLY, actual['baseline_status']
+        )
+        self.assertEqual(
+            converters.OpenAPISummarySource.AI_APPLIED, actual['summary_source']
+        )
 
     def test_unmapped_enum_fallback(self):
         """Verify that encountering an unmapped enum value falls back to safe default without crashing."""
@@ -809,82 +832,96 @@ class AICurationConvertersTest(testing_config.CustomTestCase):
         suggestion.put()
 
         actual = converters.feature_summary_suggestion_to_dict(suggestion)
-        self.assertEqual('PENDING', actual['status'])
-        self.assertEqual('none', actual['baseline_status'])
+        self.assertEqual(
+            converters.OpenAPISuggestionStatus.PENDING, actual['status']
+        )
+        self.assertEqual(
+            converters.OpenAPIBaselineStatus.NONE, actual['baseline_status']
+        )
 
     def test_exhaustive_enum_parity_with_openapi_models(self):
         """Build-time guard asserting 100% parity between core_enums members, converter maps, and generated OpenAPI allowed_values."""
         # 1. SummarySuggestionStatus
-        for member in core_enums.SummarySuggestionStatus:
-            self.assertIn(
-                member,
-                converters.SUMMARY_SUGGESTION_STATUS_TO_API,
-                f'Missing {member} in SUMMARY_SUGGESTION_STATUS_TO_API',
-            )
-            mapped_val = converters.SUMMARY_SUGGESTION_STATUS_TO_API[member]
-            try:
-                SummarySuggestion(status=mapped_val)
-            except ValueError as e:
-                self.fail(
-                    f"OpenAPI SummarySuggestion.status rejected mapped enum {member} -> '{mapped_val}': {e}"
-                )
+        self.assertEqual(
+            set(core_enums.SummarySuggestionStatus),
+            set(converters.SUMMARY_SUGGESTION_STATUS_TO_API.keys()),
+        )
+        self.assert_enum_mapping_matches_openapi_schema(
+            converters.SUMMARY_SUGGESTION_STATUS_TO_API,
+            'SummarySuggestion',
+            'status',
+        )
 
         # 2. BaselineStatus
-        for member in core_enums.BaselineStatus:
-            self.assertIn(
-                member,
-                converters.BASELINE_STATUS_TO_API,
-                f'Missing {member} in BASELINE_STATUS_TO_API',
-            )
-            mapped_val = converters.BASELINE_STATUS_TO_API[member]
-            try:
-                SummarySuggestion(baseline_status=mapped_val)
-            except ValueError as e:
-                self.fail(
-                    f"OpenAPI SummarySuggestion.baseline_status rejected mapped enum {member} -> '{mapped_val}': {e}"
-                )
+        self.assertEqual(
+            set(core_enums.BaselineStatus),
+            set(converters.BASELINE_STATUS_TO_API.keys()),
+        )
+        self.assert_enum_mapping_matches_openapi_schema(
+            converters.BASELINE_STATUS_TO_API,
+            'SummarySuggestion',
+            'baseline_status',
+        )
 
         # 3. ProgressStepId
-        for member in core_enums.ProgressStepId:
-            self.assertIn(
-                member,
-                converters.PROGRESS_STEP_ID_TO_API,
-                f'Missing {member} in PROGRESS_STEP_ID_TO_API',
-            )
-            mapped_val = converters.PROGRESS_STEP_ID_TO_API[member]
-            try:
-                SummaryProgressStep(step=mapped_val, status='IN_PROGRESS')
-            except ValueError as e:
-                self.fail(
-                    f"OpenAPI SummaryProgressStep.step rejected mapped enum {member} -> '{mapped_val}': {e}"
-                )
+        self.assertEqual(
+            set(core_enums.ProgressStepId),
+            set(converters.PROGRESS_STEP_ID_TO_API.keys()),
+        )
+        self.assert_enum_mapping_matches_openapi_schema(
+            converters.PROGRESS_STEP_ID_TO_API, 'SummaryProgressStep', 'step'
+        )
 
         # 4. ProgressStepStatus
-        for member in core_enums.ProgressStepStatus:
-            self.assertIn(
-                member,
-                converters.PROGRESS_STEP_STATUS_TO_API,
-                f'Missing {member} in PROGRESS_STEP_STATUS_TO_API',
-            )
-            mapped_val = converters.PROGRESS_STEP_STATUS_TO_API[member]
-            try:
-                SummaryProgressStep(step='SEARCH_MDN', status=mapped_val)
-            except ValueError as e:
-                self.fail(
-                    f"OpenAPI SummaryProgressStep.status rejected mapped enum {member} -> '{mapped_val}': {e}"
-                )
+        self.assertEqual(
+            set(core_enums.ProgressStepStatus),
+            set(converters.PROGRESS_STEP_STATUS_TO_API.keys()),
+        )
+        self.assert_enum_mapping_matches_openapi_schema(
+            converters.PROGRESS_STEP_STATUS_TO_API,
+            'SummaryProgressStep',
+            'status',
+        )
 
         # 5. MilestoneCurationStatus
-        for member in core_enums.MilestoneCurationStatus:
-            self.assertIn(
-                member,
-                converters.MILESTONE_CURATION_STATUS_TO_API,
-                f'Missing {member} in MILESTONE_CURATION_STATUS_TO_API',
-            )
-            mapped_val = converters.MILESTONE_CURATION_STATUS_TO_API[member]
-            try:
-                MilestoneCurationResponse(status=mapped_val)
-            except ValueError as e:
-                self.fail(
-                    f"OpenAPI MilestoneCurationResponse.status rejected mapped enum {member} -> '{mapped_val}': {e}"
-                )
+        self.assertEqual(
+            set(core_enums.MilestoneCurationStatus),
+            set(converters.MILESTONE_CURATION_STATUS_TO_API.keys()),
+        )
+        self.assert_enum_mapping_matches_openapi_schema(
+            converters.MILESTONE_CURATION_STATUS_TO_API,
+            'MilestoneCurationResponse',
+            'status',
+        )
+
+    def test_feature_entry_to_release_note_feature_dict__baseline_fallback_when_suggestion_baseline_is_none(
+        self,
+    ):
+        """Verify fallback to baseline_status arg when applied suggestion has baseline_status=None."""
+        fe = FeatureEntry(
+            id=101,
+            name='Feature 101',
+            summary='Summary 101',
+            category=1,
+            feature_type=1,
+        )
+        fe.put()
+        suggestion = FeatureSummarySuggestion(
+            id=101,
+            suggested_summary='AI suggested summary',
+            status=core_enums.SummarySuggestionStatus.APPLIED,
+            baseline_status=None,
+        )
+        suggestion.put()
+
+        actual = converters.feature_entry_to_release_note_feature_dict(
+            fe,
+            applied_suggestion=suggestion,
+            baseline_status=core_enums.BaselineStatus.WIDELY,
+        )
+        self.assertEqual(
+            converters.OpenAPIBaselineStatus.WIDELY, actual['baseline_status']
+        )
+        self.assertEqual(
+            converters.OpenAPISummarySource.AI_APPLIED, actual['summary_source']
+        )

@@ -20,35 +20,34 @@ import { mapValues } from '../runtime';
  */
 export interface SummaryProgressStep {
     /**
-     * The concrete step or tool execution stage in the AI pipeline.
+     * The concrete step or tool execution stage in the AI generation pipeline:
+     * - UNKNOWN: Fallback for unknown or unsupported execution steps
+     * - SEARCH_MDN: Querying MDN documentation
+     * - VERIFY_DOC_LINK: Checking external documentation links
+     * - READ_SPEC: Fetching and parsing W3C/WHATWG specification
+     * - READ_EXPLAINER: Fetching feature explainer document
+     * 
      * @type {string}
      * @memberof SummaryProgressStep
      */
-    step_id: SummaryProgressStepStepIdEnum;
+    step: SummaryProgressStepStepEnum;
     /**
-     * Execution status of this step.
+     * Execution status of this step:
+     * - IN_PROGRESS: Step is currently running
+     * - SUCCESS: Step completed successfully
+     * - FAILED: Step failed to complete
+     * - RETRYING: Step is re-attempting execution after a transient issue
+     * 
      * @type {string}
      * @memberof SummaryProgressStep
      */
     status: SummaryProgressStepStatusEnum;
     /**
-     * Human-readable progress update, completion summary, or error reason when status == FAILED.
+     * Human-readable progress update, completion summary, or error reason when status is FAILED.
      * @type {string}
      * @memberof SummaryProgressStep
      */
     message?: string;
-    /**
-     * Optional name of the sandbox tool executed.
-     * @type {string}
-     * @memberof SummaryProgressStep
-     */
-    tool_name?: SummaryProgressStepToolNameEnum;
-    /**
-     * Monotonic retry counter for this step (1 for initial run, 2+ if retried).
-     * @type {number}
-     * @memberof SummaryProgressStep
-     */
-    attempt_count?: number;
     /**
      * Timestamp when this step began execution.
      * @type {Date}
@@ -56,7 +55,7 @@ export interface SummaryProgressStep {
      */
     start_timestamp: Date;
     /**
-     * Timestamp when this step reached a terminal state (SUCCESS, FAILED, or CANCELLED). Null while status is IN_PROGRESS or START.
+     * Timestamp when this step reached a terminal state (SUCCESS or FAILED). Null while step is active (IN_PROGRESS or RETRYING).
      * @type {Date}
      * @memberof SummaryProgressStep
      */
@@ -67,25 +66,19 @@ export interface SummaryProgressStep {
 /**
  * @export
  */
-export const SummaryProgressStepStepIdEnum = {
+export const SummaryProgressStepStepEnum = {
     UNKNOWN: 'UNKNOWN',
-    START: 'START',
     SEARCH_MDN: 'SEARCH_MDN',
     VERIFY_DOC_LINK: 'VERIFY_DOC_LINK',
     READ_SPEC: 'READ_SPEC',
-    READ_EXPLAINER: 'READ_EXPLAINER',
-    LLM_GENERATION: 'LLM_GENERATION',
-    EVALUATION: 'EVALUATION',
-    SUCCESS: 'SUCCESS'
+    READ_EXPLAINER: 'READ_EXPLAINER'
 } as const;
-export type SummaryProgressStepStepIdEnum = typeof SummaryProgressStepStepIdEnum[keyof typeof SummaryProgressStepStepIdEnum];
+export type SummaryProgressStepStepEnum = typeof SummaryProgressStepStepEnum[keyof typeof SummaryProgressStepStepEnum];
 
 /**
  * @export
  */
 export const SummaryProgressStepStatusEnum = {
-    UNKNOWN: 'UNKNOWN',
-    START: 'START',
     IN_PROGRESS: 'IN_PROGRESS',
     SUCCESS: 'SUCCESS',
     FAILED: 'FAILED',
@@ -93,22 +86,12 @@ export const SummaryProgressStepStatusEnum = {
 } as const;
 export type SummaryProgressStepStatusEnum = typeof SummaryProgressStepStatusEnum[keyof typeof SummaryProgressStepStatusEnum];
 
-/**
- * @export
- */
-export const SummaryProgressStepToolNameEnum = {
-    search_mdn_tool: 'search_mdn_tool',
-    verify_doc_link_tool: 'verify_doc_link_tool',
-    read_spec_link_tool: 'read_spec_link_tool'
-} as const;
-export type SummaryProgressStepToolNameEnum = typeof SummaryProgressStepToolNameEnum[keyof typeof SummaryProgressStepToolNameEnum];
-
 
 /**
  * Check if a given object implements the SummaryProgressStep interface.
  */
 export function instanceOfSummaryProgressStep(value: object): value is SummaryProgressStep {
-    if (!('step_id' in value) || value['step_id'] === undefined) return false;
+    if (!('step' in value) || value['step'] === undefined) return false;
     if (!('status' in value) || value['status'] === undefined) return false;
     if (!('start_timestamp' in value) || value['start_timestamp'] === undefined) return false;
     return true;
@@ -124,11 +107,9 @@ export function SummaryProgressStepFromJSONTyped(json: any, ignoreDiscriminator:
     }
     return {
         
-        'step_id': json['step_id'],
+        'step': json['step'],
         'status': json['status'],
         'message': json['message'] == null ? undefined : json['message'],
-        'tool_name': json['tool_name'] == null ? undefined : json['tool_name'],
-        'attempt_count': json['attempt_count'] == null ? undefined : json['attempt_count'],
         'start_timestamp': (new Date(json['start_timestamp'])),
         'end_timestamp': json['end_timestamp'] == null ? undefined : (new Date(json['end_timestamp'])),
     };
@@ -140,11 +121,9 @@ export function SummaryProgressStepToJSON(value?: SummaryProgressStep | null): a
     }
     return {
         
-        'step_id': value['step_id'],
+        'step': value['step'],
         'status': value['status'],
         'message': value['message'],
-        'tool_name': value['tool_name'],
-        'attempt_count': value['attempt_count'],
         'start_timestamp': ((value['start_timestamp']).toISOString()),
         'end_timestamp': value['end_timestamp'] == null ? undefined : ((value['end_timestamp'] as any).toISOString()),
     };

@@ -58,7 +58,7 @@ class SummarySuggestionPatchRequest(Model):
     def status(self) -> str:
         """Gets the status of this SummarySuggestionPatchRequest.
 
-        Updated lifecycle status for the suggestion. Null if status is unchanged: - APPLIED: Approves suggestion, updating FeatureEntry.summary and setting summary_source to AI_APPLIED. - REJECTED: Declines suggestion, preserving manual summary and setting summary_source to HUMAN. - DISCARDED: Obsoletes suggestion (e.g. feature deleted or re-generated). - BYPASSED: Marks suggestion manually overridden by feature owner.   # noqa: E501
+        Updated lifecycle status for the suggestion. Null if status is unchanged: - APPLIED: Approves suggestion, updating FeatureEntry.summary and setting summary_source to AI_APPLIED. - REJECTED: Declines suggestion, preserving manual summary and setting summary_source to HUMAN. - DISCARDED: Obsoletes suggestion (e.g. feature deleted or re-generated).   # noqa: E501
 
         :return: The status of this SummarySuggestionPatchRequest.
         :rtype: str
@@ -69,12 +69,12 @@ class SummarySuggestionPatchRequest(Model):
     def status(self, status: str):
         """Sets the status of this SummarySuggestionPatchRequest.
 
-        Updated lifecycle status for the suggestion. Null if status is unchanged: - APPLIED: Approves suggestion, updating FeatureEntry.summary and setting summary_source to AI_APPLIED. - REJECTED: Declines suggestion, preserving manual summary and setting summary_source to HUMAN. - DISCARDED: Obsoletes suggestion (e.g. feature deleted or re-generated). - BYPASSED: Marks suggestion manually overridden by feature owner.   # noqa: E501
+        Updated lifecycle status for the suggestion. Null if status is unchanged: - APPLIED: Approves suggestion, updating FeatureEntry.summary and setting summary_source to AI_APPLIED. - REJECTED: Declines suggestion, preserving manual summary and setting summary_source to HUMAN. - DISCARDED: Obsoletes suggestion (e.g. feature deleted or re-generated).   # noqa: E501
 
         :param status: The status of this SummarySuggestionPatchRequest.
         :type status: str
         """
-        allowed_values = [None,"PENDING", "APPLIED", "REJECTED", "DISCARDED", "BYPASSED"]  # noqa: E501
+        allowed_values = [None,"PENDING", "APPLIED", "REJECTED", "DISCARDED"]  # noqa: E501
         if status not in allowed_values:
             raise ValueError(
                 "Invalid value for `status` ({0}), must be one of {1}"

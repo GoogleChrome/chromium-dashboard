@@ -156,13 +156,19 @@ class AIReleaseNotesEnumsTest(testing_config.CustomTestCase):
         self.assertEqual(core_enums.ProgressStepId.UNKNOWN, 'UNKNOWN')
         self.assertEqual(core_enums.ProgressStepId.START, 'START')
         self.assertEqual(core_enums.ProgressStepId.SEARCH_MDN, 'SEARCH_MDN')
+        self.assertEqual(
+            core_enums.ProgressStepId.VERIFY_DOC_LINK, 'VERIFY_DOC_LINK'
+        )
         self.assertEqual(core_enums.ProgressStepId.READ_SPEC, 'READ_SPEC')
+        self.assertEqual(
+            core_enums.ProgressStepId.READ_EXPLAINER, 'READ_EXPLAINER'
+        )
         self.assertEqual(
             core_enums.ProgressStepId.LLM_GENERATION, 'LLM_GENERATION'
         )
         self.assertEqual(core_enums.ProgressStepId.EVALUATION, 'EVALUATION')
         self.assertEqual(core_enums.ProgressStepId.SUCCESS, 'SUCCESS')
-        self.assertEqual(len(core_enums.ProgressStepId), 7)
+        self.assertEqual(len(core_enums.ProgressStepId), 9)
 
     def test_ai_summary_tool_name_members(self):
         """Verify AISummaryToolName declaration values and member count."""

@@ -21,25 +21,25 @@ import {
 } from './SummarySuggestion';
 
 /**
- * 
+ * Paginated response containing a list of pending AI summary suggestions for the review queue.
  * @export
  * @interface SummarySuggestionListResponse
  */
 export interface SummarySuggestionListResponse {
     /**
-     * 
+     * List of pending summary suggestion objects for the current page.
      * @type {Array<SummarySuggestion>}
      * @memberof SummarySuggestionListResponse
      */
     suggestions: Array<SummarySuggestion>;
     /**
-     * 
+     * Opaque cursor token for requesting the next page of suggestions. Null when on the last page.
      * @type {string}
      * @memberof SummarySuggestionListResponse
      */
     next_cursor?: string;
     /**
-     * 
+     * Total count of matching pending summary suggestions across all pages.
      * @type {number}
      * @memberof SummarySuggestionListResponse
      */

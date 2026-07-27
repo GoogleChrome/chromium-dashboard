@@ -861,12 +861,17 @@ def gate_value_to_json_dict(gate: Gate) -> dict[str, Any]:
 
 
 # OpenAPI string constants and fallback defaults for Datastore-to-API status mappings.
-SUMMARY_SOURCE_AI_APPLIED = 'AI_APPLIED'
-SUMMARY_SOURCE_HUMAN = 'HUMAN'
 DEFAULT_CATEGORY_NAME = 'Other'
 
 
 # OpenAPI StrEnum definitions for Datastore-to-API status mappings.
+class OpenAPISummarySource(StrEnum):
+    """OpenAPI string constants for release note summary origins."""
+
+    HUMAN = 'HUMAN'
+    AI_APPLIED = 'AI_APPLIED'
+
+
 class OpenAPISuggestionStatus(StrEnum):
     """OpenAPI string constants for summary suggestion review statuses."""
 
@@ -890,7 +895,9 @@ class OpenAPIProgressStepId(StrEnum):
 
     UNKNOWN = 'UNKNOWN'
     SEARCH_MDN = 'SEARCH_MDN'
+    VERIFY_DOC_LINK = 'VERIFY_DOC_LINK'
     READ_SPEC = 'READ_SPEC'
+    READ_EXPLAINER = 'READ_EXPLAINER'
 
 
 class OpenAPIProgressStepStatus(StrEnum):
@@ -942,7 +949,9 @@ PROGRESS_STEP_ID_TO_API: MappingProxyType[
         core_enums.ProgressStepId.UNKNOWN: OpenAPIProgressStepId.UNKNOWN,
         core_enums.ProgressStepId.START: OpenAPIProgressStepId.UNKNOWN,
         core_enums.ProgressStepId.SEARCH_MDN: OpenAPIProgressStepId.SEARCH_MDN,
+        core_enums.ProgressStepId.VERIFY_DOC_LINK: OpenAPIProgressStepId.VERIFY_DOC_LINK,
         core_enums.ProgressStepId.READ_SPEC: OpenAPIProgressStepId.READ_SPEC,
+        core_enums.ProgressStepId.READ_EXPLAINER: OpenAPIProgressStepId.READ_EXPLAINER,
         core_enums.ProgressStepId.LLM_GENERATION: OpenAPIProgressStepId.UNKNOWN,
         core_enums.ProgressStepId.EVALUATION: OpenAPIProgressStepId.UNKNOWN,
         core_enums.ProgressStepId.SUCCESS: OpenAPIProgressStepId.UNKNOWN,
@@ -1038,7 +1047,7 @@ def milestone_curation_to_dict(curation: MilestoneCuration) -> dict[str, Any]:
 def feature_entry_to_release_note_feature_dict(
     fe: FeatureEntry,
     applied_suggestion: FeatureSummarySuggestion | None = None,
-    baseline_status: str | None = None,
+    baseline_status: core_enums.BaselineStatus | None = None,
     has_applied_suggestion: bool | None = None,
 ) -> dict[str, Any]:
     """Converts a FeatureEntry into a dict matching the ReleaseNoteFeature schema."""
@@ -1055,19 +1064,22 @@ def feature_entry_to_release_note_feature_dict(
         == core_enums.SummarySuggestionStatus.APPLIED
     ):
         summary_text = applied_suggestion.suggested_summary or fe.summary or ''
-        summary_source = SUMMARY_SOURCE_AI_APPLIED
-        effective_baseline = applied_suggestion.baseline_status
+        summary_source = OpenAPISummarySource.AI_APPLIED
+        effective_baseline = (
+            applied_suggestion.baseline_status or baseline_status
+        )
     elif has_applied_suggestion:
         summary_text = fe.summary or ''
-        summary_source = SUMMARY_SOURCE_AI_APPLIED
+        summary_source = OpenAPISummarySource.AI_APPLIED
         effective_baseline = baseline_status
     else:
         summary_text = fe.summary or ''
-        summary_source = SUMMARY_SOURCE_HUMAN
+        summary_source = OpenAPISummarySource.HUMAN
         effective_baseline = baseline_status
 
     baseline_val = BASELINE_STATUS_TO_API.get(
-        effective_baseline, OpenAPIBaselineStatus.NONE
+        effective_baseline or core_enums.BaselineStatus.NONE,
+        OpenAPIBaselineStatus.NONE,
     )
 
     model = ReleaseNoteFeature(

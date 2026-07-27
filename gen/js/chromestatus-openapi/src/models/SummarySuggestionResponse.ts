@@ -27,7 +27,7 @@ import {
 } from './SummarySuggestion';
 
 /**
- * 
+ * Response payload containing a feature summary suggestion, its progress execution steps, and current user access level.
  * @export
  * @interface SummarySuggestionResponse
  */
@@ -39,18 +39,33 @@ export interface SummarySuggestionResponse {
      */
     suggestion: SummarySuggestion;
     /**
-     * 
+     * Ordered timeline of tool execution progress steps for this summary generation.
      * @type {Array<SummaryProgressStep>}
      * @memberof SummarySuggestionResponse
      */
     progress_steps: Array<SummaryProgressStep>;
     /**
+     * The editorial access level of the current authenticated user for this summary suggestion:
+     * - READ_ONLY: User can view the suggestion and progress timeline, but cannot edit or apply changes.
+     * - CAN_EDIT: User has permission to edit and apply suggestions.
+     * Note: Returned directly in the response payload to eliminate an extra round-trip permissions check in client UIs.
      * 
-     * @type {boolean}
+     * @type {string}
      * @memberof SummarySuggestionResponse
      */
-    can_edit: boolean;
+    access_level: SummarySuggestionResponseAccessLevelEnum;
 }
+
+
+/**
+ * @export
+ */
+export const SummarySuggestionResponseAccessLevelEnum = {
+    READ_ONLY: 'READ_ONLY',
+    CAN_EDIT: 'CAN_EDIT'
+} as const;
+export type SummarySuggestionResponseAccessLevelEnum = typeof SummarySuggestionResponseAccessLevelEnum[keyof typeof SummarySuggestionResponseAccessLevelEnum];
+
 
 /**
  * Check if a given object implements the SummarySuggestionResponse interface.
@@ -58,7 +73,7 @@ export interface SummarySuggestionResponse {
 export function instanceOfSummarySuggestionResponse(value: object): value is SummarySuggestionResponse {
     if (!('suggestion' in value) || value['suggestion'] === undefined) return false;
     if (!('progress_steps' in value) || value['progress_steps'] === undefined) return false;
-    if (!('can_edit' in value) || value['can_edit'] === undefined) return false;
+    if (!('access_level' in value) || value['access_level'] === undefined) return false;
     return true;
 }
 
@@ -74,7 +89,7 @@ export function SummarySuggestionResponseFromJSONTyped(json: any, ignoreDiscrimi
         
         'suggestion': SummarySuggestionFromJSON(json['suggestion']),
         'progress_steps': ((json['progress_steps'] as Array<any>).map(SummaryProgressStepFromJSON)),
-        'can_edit': json['can_edit'],
+        'access_level': json['access_level'],
     };
 }
 
@@ -86,7 +101,7 @@ export function SummarySuggestionResponseToJSON(value?: SummarySuggestionRespons
         
         'suggestion': SummarySuggestionToJSON(value['suggestion']),
         'progress_steps': ((value['progress_steps'] as Array<any>).map(SummaryProgressStepToJSON)),
-        'can_edit': value['can_edit'],
+        'access_level': value['access_level'],
     };
 }
 
