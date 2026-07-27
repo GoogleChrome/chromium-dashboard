@@ -3777,13 +3777,11 @@ components:
             - APPLIED: Approved and applied to feature
             - REJECTED: Suggestion declined
             - DISCARDED: Obsolete or feature deleted
-            - BYPASSED: Manually overridden by owner
           enum:
           - PENDING
           - APPLIED
           - REJECTED
           - DISCARDED
-          - BYPASSED
           title: status
           type: string
         baseline_status:
@@ -3905,13 +3903,11 @@ components:
             - APPLIED: Approves suggestion, updating FeatureEntry.summary and setting summary_source to AI_APPLIED.
             - REJECTED: Declines suggestion, preserving manual summary and setting summary_source to HUMAN.
             - DISCARDED: Obsoletes suggestion (e.g. feature deleted or re-generated).
-            - BYPASSED: Marks suggestion manually overridden by feature owner.
           enum:
           - PENDING
           - APPLIED
           - REJECTED
           - DISCARDED
-          - BYPASSED
           nullable: true
           title: status
           type: string

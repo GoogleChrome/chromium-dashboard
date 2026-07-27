@@ -44,7 +44,7 @@ import type {
   MilestoneCurationResponse,
   PatchCommentRequest,
   PatchGateRequest,
-  PendingCountResponse,
+  PendingSuggestionsCountResponse,
   PermissionsResponse,
   PostIntentRequest,
   PostSettingsRequest,
@@ -121,8 +121,8 @@ import {
     PatchCommentRequestToJSON,
     PatchGateRequestFromJSON,
     PatchGateRequestToJSON,
-    PendingCountResponseFromJSON,
-    PendingCountResponseToJSON,
+    PendingSuggestionsCountResponseFromJSON,
+    PendingSuggestionsCountResponseToJSON,
     PermissionsResponseFromJSON,
     PermissionsResponseToJSON,
     PostIntentRequestFromJSON,
@@ -695,10 +695,10 @@ export interface DefaultApiInterface {
     getPendingGates(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GetGateResponse>;
 
     /**
-     * 
-     * @summary Get paginated list of pending summary suggestions for DevRel review queue
-     * @param {string} [cursor] Cursor token for pagination
-     * @param {number} [limit] Maximum number of suggestions to return (capped at 100 to prevent OOM/Datastore DoS)
+     * Retrieves a cursor-paginated list of pending AI summary suggestions for the release notes review queue. Omit cursor on initial request. Pass limit (default 25, max 100) to control page size. Pass next_cursor as the cursor query parameter on subsequent requests to fetch the next page. When next_cursor is null, the end of the queue has been reached.
+     * @summary Get paginated list of pending summary suggestions for release notes review queue
+     * @param {string} [cursor] Opaque cursor token returned from a previous response next_cursor field. Omit on initial page request.
+     * @param {number} [limit] Maximum number of items to return per page (default: 25, max: 100).
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof DefaultApiInterface
@@ -706,23 +706,25 @@ export interface DefaultApiInterface {
     getPendingSummarySuggestionsRaw(requestParameters: GetPendingSummarySuggestionsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SummarySuggestionListResponse>>;
 
     /**
-     * Get paginated list of pending summary suggestions for DevRel review queue
+     * Retrieves a cursor-paginated list of pending AI summary suggestions for the release notes review queue. Omit cursor on initial request. Pass limit (default 25, max 100) to control page size. Pass next_cursor as the cursor query parameter on subsequent requests to fetch the next page. When next_cursor is null, the end of the queue has been reached.
+     * Get paginated list of pending summary suggestions for release notes review queue
      */
     getPendingSummarySuggestions(requestParameters: GetPendingSummarySuggestionsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SummarySuggestionListResponse>;
 
     /**
-     * 
-     * @summary Get aggregated O(1) count of pending summary suggestions across all features
+     * Retrieves the total count of pending AI summary suggestions awaiting release notes editorial review.
+     * @summary Get count of pending summary suggestions for review queue
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof DefaultApiInterface
      */
-    getPendingSummarySuggestionsCountRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<PendingCountResponse>>;
+    getPendingSummarySuggestionsCountRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<PendingSuggestionsCountResponse>>;
 
     /**
-     * Get aggregated O(1) count of pending summary suggestions across all features
+     * Retrieves the total count of pending AI summary suggestions awaiting release notes editorial review.
+     * Get count of pending summary suggestions for review queue
      */
-    getPendingSummarySuggestionsCount(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<PendingCountResponse>;
+    getPendingSummarySuggestionsCount(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<PendingSuggestionsCountResponse>;
 
     /**
      * 
@@ -1971,7 +1973,8 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
     }
 
     /**
-     * Get paginated list of pending summary suggestions for DevRel review queue
+     * Retrieves a cursor-paginated list of pending AI summary suggestions for the release notes review queue. Omit cursor on initial request. Pass limit (default 25, max 100) to control page size. Pass next_cursor as the cursor query parameter on subsequent requests to fetch the next page. When next_cursor is null, the end of the queue has been reached.
+     * Get paginated list of pending summary suggestions for release notes review queue
      */
     async getPendingSummarySuggestionsRaw(requestParameters: GetPendingSummarySuggestionsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SummarySuggestionListResponse>> {
         const queryParameters: any = {};
@@ -1997,7 +2000,8 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
     }
 
     /**
-     * Get paginated list of pending summary suggestions for DevRel review queue
+     * Retrieves a cursor-paginated list of pending AI summary suggestions for the release notes review queue. Omit cursor on initial request. Pass limit (default 25, max 100) to control page size. Pass next_cursor as the cursor query parameter on subsequent requests to fetch the next page. When next_cursor is null, the end of the queue has been reached.
+     * Get paginated list of pending summary suggestions for release notes review queue
      */
     async getPendingSummarySuggestions(requestParameters: GetPendingSummarySuggestionsRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SummarySuggestionListResponse> {
         const response = await this.getPendingSummarySuggestionsRaw(requestParameters, initOverrides);
@@ -2005,9 +2009,10 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
     }
 
     /**
-     * Get aggregated O(1) count of pending summary suggestions across all features
+     * Retrieves the total count of pending AI summary suggestions awaiting release notes editorial review.
+     * Get count of pending summary suggestions for review queue
      */
-    async getPendingSummarySuggestionsCountRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<PendingCountResponse>> {
+    async getPendingSummarySuggestionsCountRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<PendingSuggestionsCountResponse>> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -2019,13 +2024,14 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
             query: queryParameters,
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => PendingCountResponseFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => PendingSuggestionsCountResponseFromJSON(jsonValue));
     }
 
     /**
-     * Get aggregated O(1) count of pending summary suggestions across all features
+     * Retrieves the total count of pending AI summary suggestions awaiting release notes editorial review.
+     * Get count of pending summary suggestions for review queue
      */
-    async getPendingSummarySuggestionsCount(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<PendingCountResponse> {
+    async getPendingSummarySuggestionsCount(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<PendingSuggestionsCountResponse> {
         const response = await this.getPendingSummarySuggestionsCountRaw(initOverrides);
         return await response.value();
     }

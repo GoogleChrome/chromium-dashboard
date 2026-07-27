@@ -14,19 +14,23 @@
 
 import { mapValues } from '../runtime';
 /**
- * 
+ * Payload for updating the curation review status or assigned curators for a milestone.
  * @export
  * @interface MilestoneCurationPatchRequest
  */
 export interface MilestoneCurationPatchRequest {
     /**
+     * Updated editorial review status for the milestone. Null if status is unchanged:
+     * - PENDING: Milestone curation reset to un-started.
+     * - IN_REVIEW: Milestone curation marked under active review.
+     * - COMPLETED: Marks milestone curation completed and populates last_reviewed timestamp.
      * 
      * @type {string}
      * @memberof MilestoneCurationPatchRequest
      */
     status?: MilestoneCurationPatchRequestStatusEnum;
     /**
-     * 
+     * Updated list of assigned curator email addresses.
      * @type {Array<string>}
      * @memberof MilestoneCurationPatchRequest
      */
