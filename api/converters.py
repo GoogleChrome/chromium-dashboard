@@ -860,8 +860,8 @@ def gate_value_to_json_dict(gate: Gate) -> dict[str, Any]:
     }
 
 
-# OpenAPI string constants and fallback defaults for Datastore-to-API status mappings.
-DEFAULT_CATEGORY_NAME = 'Other'
+# Default fallback category display name for unmapped FeatureEntry category IDs.
+DEFAULT_CATEGORY_NAME = core_enums.FEATURE_CATEGORIES[core_enums.MISC]
 
 
 # OpenAPI StrEnum definitions for Datastore-to-API status mappings.

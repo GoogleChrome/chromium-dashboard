@@ -824,7 +824,7 @@ class AICurationConvertersTest(testing_config.CustomTestCase):
             id=202,
             name='CSS Anchor Positioning',
             summary='Positions elements relative to anchors.',
-            category=1,  # WebComponents or CSS depending on lookup
+            category=core_enums.CSS,
             feature_type=1,
         )
         fe.put()
@@ -836,12 +836,29 @@ class AICurationConvertersTest(testing_config.CustomTestCase):
         )
         self.assertEqual(202, actual['id'])
         self.assertEqual('CSS Anchor Positioning', actual['name'])
+        self.assertEqual('CSS', actual['category_name'])
         self.assertEqual(
             converters.OpenAPIBaselineStatus.NEWLY, actual['baseline_status']
         )
         self.assertEqual(
             converters.OpenAPISummarySource.AI_APPLIED, actual['summary_source']
         )
+
+    def test_feature_entry_to_release_note_feature_dict__unmapped_category_fallback(
+        self,
+    ):
+        """Verify fallback to official MISC category display name when category ID is unmapped."""
+        fe = FeatureEntry(
+            id=203,
+            name='Unmapped Feature',
+            summary='An unmapped category feature.',
+            category=999,
+            feature_type=1,
+        )
+        fe.put()
+
+        actual = converters.feature_entry_to_release_note_feature_dict(fe)
+        self.assertEqual('Miscellaneous', actual['category_name'])
 
     def test_unmapped_enum_fallback(self):
         """Verify that encountering an unmapped enum value falls back to safe default without crashing."""
