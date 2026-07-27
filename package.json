@@ -71,7 +71,7 @@
     "@types/node": "^26.1.0",
     "@web/test-runner": "^1.0.0",
     "@web/test-runner-playwright": "^1.0.0",
-    "@web/test-runner-puppeteer": "^0.18.0",
+    "@web/test-runner-puppeteer": "^1.0.1",
     "acorn": ">=8.17.0",
     "color-string": ">=2.1.4",
     "dot-prop": ">=10.1.0",
