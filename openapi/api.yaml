@@ -2447,14 +2447,13 @@ components:
           description: Feature summary text active prior to AI generation, used for visual diffing and revert workflows.
         status:
           type: string
-          enum: [PENDING, APPLIED, REJECTED, DISCARDED, BYPASSED]
+          enum: [PENDING, APPLIED, REJECTED, DISCARDED]
           description: |
             Lifecycle status of the summary suggestion:
             - PENDING: Awaiting review
             - APPLIED: Approved and applied to feature
             - REJECTED: Suggestion declined
             - DISCARDED: Obsolete or feature deleted
-            - BYPASSED: Manually overridden by owner
         baseline_status:
           type: string
           enum: [none, limited, newly, widely]
@@ -2514,14 +2513,13 @@ components:
       properties:
         status:
           type: string
-          enum: [PENDING, APPLIED, REJECTED, DISCARDED, BYPASSED]
+          enum: [PENDING, APPLIED, REJECTED, DISCARDED]
           nullable: true
           description: |
             Updated lifecycle status for the suggestion. Null if status is unchanged:
             - APPLIED: Approves suggestion, updating FeatureEntry.summary and setting summary_source to AI_APPLIED.
             - REJECTED: Declines suggestion, preserving manual summary and setting summary_source to HUMAN.
             - DISCARDED: Obsoletes suggestion (e.g. feature deleted or re-generated).
-            - BYPASSED: Marks suggestion manually overridden by feature owner.
         suggested_summary:
           type: string
           description: Updated summary text edited by reviewer.
