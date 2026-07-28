@@ -20,6 +20,7 @@ from unittest import mock
 
 import flask
 import werkzeug.exceptions
+from google.cloud import ndb
 
 import testing_config
 from api import converters, summary_suggestion_api
@@ -29,6 +30,7 @@ from internals.core_models import (
     FeatureSummaryProgressStep,
     FeatureSummarySuggestion,
 )
+from internals.user_models import AppUser
 
 test_app = flask.Flask(__name__)
 
@@ -315,3 +317,235 @@ class SummarySuggestionAPITest(testing_config.CustomTestCase):
             with self.assertRaises(werkzeug.exceptions.HTTPException) as cm:
                 self.handler.do_patch(feature_id=101)
             self.assertEqual(403, cm.exception.code)
+
+
+class PendingSuggestionsCountAPITest(testing_config.CustomTestCase):
+    """Unit tests for PendingSuggestionsCountAPI handler."""
+
+    def setUp(self):
+        """Set up test environment and pending suggestions."""
+        super().setUp()
+        self.handler = summary_suggestion_api.PendingSuggestionsCountAPI()
+        self.app_user = AppUser(email='admin@example.com', is_site_editor=True)
+        self.app_user.put()
+        testing_config.sign_in('admin@example.com', 12345)
+
+        self.suggestion_1 = FeatureSummarySuggestion(
+            id=101,
+            suggested_summary='Pending summary 1',
+            status=core_enums.SummarySuggestionStatus.PENDING.value,
+        )
+        self.suggestion_2 = FeatureSummarySuggestion(
+            id=102,
+            suggested_summary='Applied summary 2',
+            status=core_enums.SummarySuggestionStatus.APPLIED.value,
+        )
+        self.suggestion_3 = FeatureSummarySuggestion(
+            id=103,
+            suggested_summary='Pending summary 3',
+            status=core_enums.SummarySuggestionStatus.PENDING.value,
+        )
+        ndb.put_multi([self.suggestion_1, self.suggestion_2, self.suggestion_3])
+
+    def tearDown(self):
+        """Clean up test NDB entities."""
+        ndb.delete_multi(
+            [
+                self.app_user.key,
+                self.suggestion_1.key,
+                self.suggestion_2.key,
+                self.suggestion_3.key,
+            ]
+        )
+        testing_config.sign_out()
+        super().tearDown()
+
+    def test_get__unauthorized_403(self):
+        """It aborts HTTP 403 when user is not a site editor or admin."""
+        testing_config.sign_out()
+        with test_app.test_request_context(
+            '/api/v0/summary-suggestions/pending-count'
+        ):
+            with self.assertRaises(werkzeug.exceptions.HTTPException) as cm:
+                self.handler.do_get()
+            self.assertEqual(403, cm.exception.code)
+
+    def test_get__success_count(self):
+        """It returns the accurate count of PENDING summary suggestions."""
+        with test_app.test_request_context(
+            '/api/v0/summary-suggestions/pending-count'
+        ):
+            actual = self.handler.do_get()
+            self.assertEqual(2, actual['count'])
+
+
+class PendingSuggestionsQueueAPITest(testing_config.CustomTestCase):
+    """Unit tests for PendingSuggestionsQueueAPI handler."""
+
+    def setUp(self):
+        """Set up test environment, features, and pending suggestions."""
+        super().setUp()
+        self.handler = summary_suggestion_api.PendingSuggestionsQueueAPI()
+        self.app_user = AppUser(email='admin@example.com', is_site_editor=True)
+        self.app_user.put()
+        testing_config.sign_in('admin@example.com', 12345)
+
+        self.feature_1 = FeatureEntry(
+            id=101, name='Feature One', summary='F1', category=1, feature_type=1
+        )
+        self.feature_2 = FeatureEntry(
+            id=102, name='Feature Two', summary='F2', category=1, feature_type=1
+        )
+        ndb.put_multi([self.feature_1, self.feature_2])
+
+        self.suggestion_1 = FeatureSummarySuggestion(
+            id=101,
+            suggested_summary='[Link](http://example.com) *Pending* suggestion **one**.',
+            status=core_enums.SummarySuggestionStatus.PENDING.value,
+        )
+        self.suggestion_2 = FeatureSummarySuggestion(
+            id=102,
+            suggested_summary='Pending suggestion two.',
+            status=core_enums.SummarySuggestionStatus.PENDING.value,
+        )
+        ndb.put_multi([self.suggestion_1, self.suggestion_2])
+
+    def tearDown(self):
+        """Clean up test NDB entities."""
+        ndb.delete_multi(
+            [
+                self.app_user.key,
+                self.feature_1.key,
+                self.feature_2.key,
+                self.suggestion_1.key,
+                self.suggestion_2.key,
+            ]
+        )
+        testing_config.sign_out()
+        super().tearDown()
+
+    def test_get__unauthorized_403(self):
+        """It aborts HTTP 403 when user lacks permissions to view pending queue."""
+        testing_config.sign_out()
+        with test_app.test_request_context(
+            '/api/v0/summary-suggestions/pending'
+        ):
+            with self.assertRaises(werkzeug.exceptions.HTTPException) as cm:
+                self.handler.do_get()
+            self.assertEqual(403, cm.exception.code)
+
+    def test_get__non_editor_user_403(self):
+        """It aborts HTTP 403 when user is authenticated but not a site editor or admin."""
+        testing_config.sign_in('regular_user@example.com', 54321)
+        with test_app.test_request_context(
+            '/api/v0/summary-suggestions/pending'
+        ):
+            with self.assertRaises(werkzeug.exceptions.HTTPException) as cm:
+                self.handler.do_get()
+            self.assertEqual(403, cm.exception.code)
+
+    def test_get__invalid_limit_400(self):
+        """It aborts HTTP 400 when limit parameter is invalid or out of bounds."""
+        with test_app.test_request_context(
+            '/api/v0/summary-suggestions/pending?limit=invalid'
+        ):
+            with self.assertRaises(werkzeug.exceptions.HTTPException) as cm:
+                self.handler.do_get()
+            self.assertEqual(400, cm.exception.code)
+
+        with test_app.test_request_context(
+            '/api/v0/summary-suggestions/pending?limit=0'
+        ):
+            with self.assertRaises(werkzeug.exceptions.HTTPException) as cm:
+                self.handler.do_get()
+            self.assertEqual(400, cm.exception.code)
+
+        with test_app.test_request_context(
+            '/api/v0/summary-suggestions/pending?limit=150'
+        ):
+            with self.assertRaises(werkzeug.exceptions.HTTPException) as cm:
+                self.handler.do_get()
+            self.assertEqual(400, cm.exception.code)
+
+    def test_get__invalid_cursor_400(self):
+        """It aborts HTTP 400 when cursor parameter is malformed."""
+        with test_app.test_request_context(
+            '/api/v0/summary-suggestions/pending?cursor=invalid_base64_garbage'
+        ):
+            with self.assertRaises(werkzeug.exceptions.HTTPException) as cm:
+                self.handler.do_get()
+            self.assertEqual(400, cm.exception.code)
+
+    def test_get__success_queue_multipage(self):
+        """It returns paginated pending suggestions across multiple pages using cursor tokens."""
+        with test_app.test_request_context(
+            '/api/v0/summary-suggestions/pending?limit=1'
+        ):
+            page1 = self.handler.do_get()
+            self.assertEqual(2, page1['total_count'])
+            self.assertEqual(1, len(page1['suggestions']))
+            self.assertIsNotNone(page1['next_cursor'])
+
+        cursor_token_1 = page1['next_cursor']
+        with test_app.test_request_context(
+            f'/api/v0/summary-suggestions/pending?limit=1&cursor={cursor_token_1}'
+        ):
+            page2 = self.handler.do_get()
+            self.assertEqual(2, page2['total_count'])
+            self.assertEqual(1, len(page2['suggestions']))
+            self.assertIsNotNone(page2['next_cursor'])
+
+        cursor_token_2 = page2['next_cursor']
+        with test_app.test_request_context(
+            f'/api/v0/summary-suggestions/pending?limit=1&cursor={cursor_token_2}'
+        ):
+            page3 = self.handler.do_get()
+            self.assertEqual(2, page3['total_count'])
+            self.assertEqual(0, len(page3['suggestions']))
+            self.assertIsNone(page3['next_cursor'])
+
+    def test_get__success_queue(self):
+        """It returns paginated pending suggestions with plain-text hover snippets."""
+        with test_app.test_request_context(
+            '/api/v0/summary-suggestions/pending?limit=25'
+        ):
+            actual = self.handler.do_get()
+            self.assertEqual(2, actual['total_count'])
+            self.assertEqual(2, len(actual['suggestions']))
+            self.assertIsNone(actual['next_cursor'])
+
+            # Verify plain-text markdown stripping on hover snippet
+            first_sug = next(
+                s for s in actual['suggestions'] if s['feature_id'] == 101
+            )
+            self.assertEqual(101, first_sug['feature_id'])
+            hover = summary_suggestion_api.strip_markdown_hover_snippet(
+                first_sug['suggested_summary']
+            )
+            self.assertEqual('Link Pending suggestion one.', hover)
+
+
+class StripMarkdownHoverSnippetTest(testing_config.CustomTestCase):
+    """Unit tests for strip_markdown_hover_snippet helper utility."""
+
+    def test_strip_markdown_hover_snippet(self):
+        """It strips links, markdown formatting characters, and collapses whitespace."""
+        self.assertEqual(
+            '', summary_suggestion_api.strip_markdown_hover_snippet(None)
+        )
+        self.assertEqual(
+            '', summary_suggestion_api.strip_markdown_hover_snippet('')
+        )
+
+        text = '  [MDN Documentation](https://developer.mozilla.org) for *CSS* `anchor` **positioning**.  '
+        expected = 'MDN Documentation for CSS anchor positioning.'
+        self.assertEqual(
+            expected, summary_suggestion_api.strip_markdown_hover_snippet(text)
+        )
+
+        long_text = 'A' * 200
+        truncated = summary_suggestion_api.strip_markdown_hover_snippet(
+            long_text, max_len=50
+        )
+        self.assertEqual(50, len(truncated))
+        self.assertTrue(truncated.endswith('...'))

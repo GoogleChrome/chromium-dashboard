@@ -264,6 +264,14 @@ api_routes: list[Route] = [
         releasenotes_api.ReleaseNotesAPI,
     ),
     Route(
+        f'{API_BASE}/summary-suggestions/pending-count',
+        summary_suggestion_api.PendingSuggestionsCountAPI,
+    ),
+    Route(
+        f'{API_BASE}/summary-suggestions/pending',
+        summary_suggestion_api.PendingSuggestionsQueueAPI,
+    ),
+    Route(
         f'{API_BASE}/summary-suggestions/<int:feature_id>',
         summary_suggestion_api.SummarySuggestionAPI,
     ),
