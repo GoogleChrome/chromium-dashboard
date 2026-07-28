@@ -1,0 +1,22 @@
+{#
+  Primary SEO Meta Include (templates/seo/_meta.html)
+
+  Usage in any Jinja2 page template:
+    {% block meta %}
+      {% include "seo/_meta.html" with context %}
+    {% endblock %}
+
+  Expected Context Dictionary ('seo'):
+    - seo.canonical_url (str): Absolute canonical URL.
+    - seo.seo_title (str): Specific SEO title.
+    - seo.seo_description (str): Page meta description text.
+    - seo.site_logo_url (str): Absolute URL to site preview image.
+    - seo.og_type (str): Open Graph page type (default: 'website').
+    - seo.schema_type (str): Schema.org JSON-LD type (default: 'WebPage').
+    - seo.twitter_card (str): Twitter card style (default: 'summary_large_image').
+#}
+{% if seo and seo.canonical_url %}
+<link rel="canonical" href="{{ seo.canonical_url }}">
+{% endif %}
+{% include "seo/_open_graph.html" with context %}
+{% include "seo/_json_ld.html" with context %}

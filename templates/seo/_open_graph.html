@@ -1,0 +1,22 @@
+{#
+  Open Graph & Twitter Cards Sub-Template (templates/seo/_open_graph.html)
+
+  Included automatically via templates/seo/_meta.html.
+
+  Context Variables Used:
+    - seo.seo_title / page_title / APP_TITLE: Title for og:title and twitter:title.
+    - seo.seo_description: Description text for og:description and twitter:description.
+    - seo.canonical_url: Absolute URL for og:url.
+    - seo.site_logo_url: Absolute image URL for og:image and twitter:image.
+    - seo.og_type: Open Graph category ('website', 'article', etc. Default: 'website').
+    - seo.twitter_card: Twitter card layout ('summary_large_image', 'summary', etc.).
+#}
+<meta property="og:title" content="{{ (seo and seo.seo_title) | default(page_title) | default(APP_TITLE) }}">
+<meta property="og:description" content="{{ (seo and seo.seo_description) | default('') }}">
+<meta property="og:url" content="{{ seo and seo.canonical_url }}">
+<meta property="og:type" content="{{ (seo and seo.og_type) | default('website') }}">
+<meta property="og:image" content="{{ seo and seo.site_logo_url }}">
+<meta name="twitter:card" content="{{ (seo and seo.twitter_card) | default('summary_large_image') }}">
+<meta name="twitter:title" content="{{ (seo and seo.seo_title) | default(page_title) | default(APP_TITLE) }}">
+<meta name="twitter:description" content="{{ (seo and seo.seo_description) | default('') }}">
+<meta name="twitter:image" content="{{ seo and seo.site_logo_url }}">

@@ -40,6 +40,9 @@ DEFAULT_COMPONENT = 'Blink'
 # The default component for enterprise features.
 DEFAULT_ENTERPRISE_COMPONENT = 'Enterprise'
 
+# The default site logo asset path.
+DEFAULT_SITE_LOGO_PATH = '/static/img/crstatus_192.png'
+
 # Enable to activate the automated OT creation process
 AUTOMATED_OT_CREATION = True
 

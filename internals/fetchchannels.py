@@ -86,26 +86,37 @@ def get_omaha_data():
     return json.loads(omaha_data)
 
 
-def get_current_beta_milestone() -> int:
-    """Return the milestone number that is current on the beta channel."""
-    if flask.has_app_context() and hasattr(flask.g, 'current_beta_milestone'):
-        return flask.g.current_beta_milestone
+def get_current_channel_milestone(channel: str = 'stable') -> int:
+    """Return the milestone number that is current on the given channel."""
+    cache_attr = f'current_{channel}_milestone'
+    if flask.has_app_context() and hasattr(flask.g, cache_attr):
+        return getattr(flask.g, cache_attr)
 
     omaha_data = get_omaha_data()
-    beta_version = next(
+    version_str = next(
         (
             v['version']
             for v in omaha_data[0]['versions']
-            if v['channel'] == 'beta'
+            if v['channel'] == channel
         ),
         '0.0',
     )
-    milestone = int(beta_version.split('.')[0])
+    milestone = int(version_str.split('.')[0])
 
     if flask.has_app_context():
-        flask.g.current_beta_milestone = milestone
+        setattr(flask.g, cache_attr, milestone)
 
     return milestone
+
+
+def get_current_stable_milestone() -> int:
+    """Return the milestone number that is current on the stable channel."""
+    return get_current_channel_milestone('stable')
+
+
+def get_current_beta_milestone() -> int:
+    """Return the milestone number that is current on the beta channel."""
+    return get_current_channel_milestone('beta')
 
 
 SCHEDULE_CACHE_TIME = 60 * 60  # 1 hour

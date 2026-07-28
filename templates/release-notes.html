@@ -1,0 +1,225 @@
+{% extends "_base.html" %}
+
+{% block page_title %}{{ seo_title }} - {% endblock %}
+
+{% block meta %}
+{% include "seo/_meta.html" with context %}
+{% endblock %}
+
+{% block css %}
+<style>
+  #release-notes-container {
+    width: 100%;
+    max-width: var(--max-content-width);
+    margin: 0 auto;
+    padding: 0 0 var(--content-padding-large) 0;
+  }
+
+  .nav-strip {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--content-padding);
+    padding: var(--content-padding);
+    background-color: var(--card-background);
+    border: var(--default-border);
+    border-radius: var(--border-radius);
+    margin-bottom: var(--content-padding-large);
+  }
+
+  .channel-pills {
+    display: flex;
+    align-items: center;
+    gap: var(--content-padding-half);
+  }
+
+  .milestone-select-group {
+    display: flex;
+    align-items: center;
+    gap: var(--content-padding-half);
+  }
+
+  .milestone-select {
+    padding: var(--content-padding-quarter) var(--content-padding-half);
+    border-radius: var(--border-radius);
+    border: var(--default-border);
+    background-color: var(--card-background);
+    color: var(--default-color);
+    font-size: var(--default-font);
+    cursor: pointer;
+  }
+
+  .category-section {
+    margin-bottom: var(--content-padding-large);
+  }
+
+  .category-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--heading-color);
+    border-bottom: var(--default-border);
+    padding-bottom: var(--content-padding-quarter);
+    margin-bottom: var(--content-padding);
+  }
+
+  .feature-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--content-padding);
+  }
+
+  .feature-card {
+    flex: 1 1 calc(50% - var(--content-padding));
+    border: var(--default-border);
+    border-radius: var(--border-radius);
+    padding: var(--content-padding);
+    background-color: var(--card-background);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .feature-name {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: var(--content-padding-half);
+    display: inline-block;
+  }
+
+  .feature-summary {
+    font-size: var(--default-font);
+    line-height: 1.5;
+    color: var(--default-color);
+    margin-bottom: var(--content-padding);
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  .feature-doc-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--content-padding-quarter) var(--content-padding-half);
+    font-size: 0.85rem;
+    border-top: var(--default-border);
+    padding-top: var(--content-padding-half);
+  }
+
+  .feature-doc-links a {
+    display: inline-block;
+    max-width: 100%;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--unimportant-text-color);
+  }
+
+  @media (max-width: 700px) {
+    .nav-strip {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .channel-pills, .milestone-select-group {
+      width: 100%;
+      justify-content: space-between;
+    }
+
+    .feature-card {
+      flex: 1 1 100%;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block subheader %}
+<div id="subheader" class="actionlinks">
+  <div>
+    <h2>Chrome {{ milestone }} Release Notes</h2>
+  </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<section id="release-notes-container">
+  {# Symmetrical Navigation Strip #}
+  <div class="nav-strip">
+    <div class="channel-pills">
+      <a href="/release-notes/{{ stable_milestone }}" class="button {% if milestone == stable_milestone %}primary{% endif %}">
+        Stable (M{{ stable_milestone }})
+      </a>
+      <a href="/release-notes/{{ beta_milestone }}" class="button {% if milestone == beta_milestone %}primary{% endif %}">
+        Beta (M{{ beta_milestone }})
+      </a>
+      <a href="/release-notes/{{ dev_milestone }}" class="button {% if milestone == dev_milestone %}primary{% endif %}">
+        Dev (M{{ dev_milestone }})
+      </a>
+    </div>
+
+    <div class="milestone-select-group">
+      <label for="milestone-select">Milestone:</label>
+      <select id="milestone-select" class="milestone-select">
+        {% for m in milestones_list %}
+          <option value="{{ m }}" {% if m == milestone %}selected{% endif %}>
+            Chrome {{ m }}
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+  </div>
+
+  {# Category-Grouped Feature Grid #}
+  {% if features_by_category %}
+    {% for category_name, category_features in features_by_category.items() %}
+      <div class="category-section" id="{{ category_name | lower | replace(' ', '-') }}">
+        <h3 class="category-title" id="category-{{ category_name | lower | replace(' ', '-') }}">{{ category_name }}</h3>
+        <div class="feature-grid">
+          {% for feature in category_features %}
+            <div class="feature-card" id="feature-{{ feature.id }}">
+              <div>
+                <a class="feature-name" href="/feature/{{ feature.id }}">{{ feature.name }}</a>
+                <div class="feature-summary">{{ feature.summary }}</div>
+              </div>
+              {% if feature.doc_links %}
+                <div class="feature-doc-links">
+                  {% for link in feature.doc_links %}
+                    <a href="{{ link }}" target="_blank" rel="noopener noreferrer" title="{{ link }}">{{ link }}</a>
+                  {% endfor %}
+                </div>
+              {% endif %}
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    {% endfor %}
+  {% else %}
+    <div class="empty-state">
+      <h3>No release notes features available for Chrome {{ milestone }}.</h3>
+    </div>
+  {% endif %}
+</section>
+{% endblock %}
+
+{% block js %}
+<script nonce="{{nonce}}">
+  document.body.classList.remove('loading');
+
+  const milestoneSelect = document.getElementById('milestone-select');
+  if (milestoneSelect) {
+    milestoneSelect.addEventListener('change', (e) => {
+      const target = e.target;
+      if (target && 'value' in target) {
+        const val = parseInt(String(target.value), 10);
+        if (!isNaN(val) && val > 0) {
+          window.location.href = `/release-notes/${val}`;
+        }
+      }
+    });
+  }
+</script>
+{% endblock %}

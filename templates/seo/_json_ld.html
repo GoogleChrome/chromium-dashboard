@@ -1,0 +1,20 @@
+{#
+  Schema.org JSON-LD Structured Data Sub-Template (templates/seo/_json_ld.html)
+
+  Included automatically via templates/seo/_meta.html.
+
+  Context Variables Used:
+    - seo.schema_type: Schema.org entity type ('ItemPage', 'WebPage', etc. Default: 'WebPage').
+    - seo.seo_title / page_title / APP_TITLE: Structured name field.
+    - seo.seo_description: Structured description field.
+    - seo.canonical_url: Structured page URL field.
+#}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "{{ (seo and seo.schema_type) | default('WebPage') }}",
+  "name": "{{ (seo and seo.seo_title) | default(page_title) | default(APP_TITLE) }}",
+  "description": "{{ (seo and seo.seo_description) | default('') }}",
+  "url": "{{ seo and seo.canonical_url }}"
+}
+</script>

@@ -324,16 +324,20 @@ export async function enterWebFeatureId(page) {
 /**
  * Create a new feature, starting from top-level page, ending up on feature page.
  * @param {import('@playwright/test').Page} page
+ * @param {{name?: string, summary?: string, milestone?: number|string}} [options]
  */
-export async function createNewFeature(page) {
+export async function createNewFeature(page, options = {}) {
   await gotoNewFeaturePage(page);
+  const name = options.name || 'Test feature name';
+  const summary = options.summary || 'Test summary description';
+
   // Enter feature name
   const featureNameInput = page.locator('input[name="name"]');
-  await featureNameInput.fill('Test feature name');
+  await featureNameInput.fill(name);
 
   // Enter summary description
   const summaryInput = page.locator('textarea[name="summary"]');
-  await summaryInput.fill('Test summary description');
+  await summaryInput.fill(summary);
 
   await enterBlinkComponent(page);
   await enterWebFeatureId(page);
@@ -362,6 +366,29 @@ export async function createNewFeature(page) {
   }
 
   await expect(detail).toBeVisible({timeout: 30000});
+
+  // If an explicit milestone was provided, set the shipping milestone on the feature.
+  if (options.milestone) {
+    const url = page.url();
+    const featureIdMatch = url.match(/\/feature\/(\d+)/);
+    if (featureIdMatch) {
+      const featureId = featureIdMatch[1];
+      await page.goto(`/guide/editall/${featureId}`);
+      const shippedInput = page
+        .locator(
+          'input[name="shipped_milestone"], input[name="shipped_desktop"], input[name="desktop_first"]'
+        )
+        .first();
+      if (await shippedInput.isVisible()) {
+        await shippedInput.fill(String(options.milestone));
+        const submitBtn = page
+          .locator('input[type="submit"], button[type="submit"]')
+          .first();
+        await submitBtn.click();
+        await page.waitForURL(`**/feature/${featureId}`);
+      }
+    }
+  }
 }
 
 /**

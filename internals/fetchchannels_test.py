@@ -86,3 +86,22 @@ class ChannelsAPITest(testing_config.CustomTestCase):
             },
             actual,
         )
+
+    @mock.patch('internals.fetchchannels.get_omaha_data')
+    def test_get_current_channel_milestone(self, mock_get_omaha):
+        """It returns the integer milestone for the specified channel."""
+        mock_get_omaha.return_value = [
+            {
+                'versions': [
+                    {'channel': 'stable', 'version': '147.0.7727.56'},
+                    {'channel': 'beta', 'version': '148.0.7778.5'},
+                    {'channel': 'dev', 'version': '149.0.7779.3'},
+                ]
+            }
+        ]
+
+        self.assertEqual(147, fetchchannels.get_current_stable_milestone())
+        self.assertEqual(148, fetchchannels.get_current_beta_milestone())
+        self.assertEqual(
+            149, fetchchannels.get_current_channel_milestone('dev')
+        )
