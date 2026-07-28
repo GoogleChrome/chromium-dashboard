@@ -37,6 +37,7 @@ from api import (
     logout_api,
     metrics_api,
     metricsdata,
+    milestone_curation_api,
     origin_trials_api,
     permissions_api,
     processes_api,
@@ -274,6 +275,10 @@ api_routes: list[Route] = [
     Route(
         f'{API_BASE}/summary-suggestions/<int:feature_id>',
         summary_suggestion_api.SummarySuggestionAPI,
+    ),
+    Route(
+        f'{API_BASE}/milestone-curation/<int:milestone>',
+        milestone_curation_api.MilestoneCurationAPI,
     ),
 ]
 
