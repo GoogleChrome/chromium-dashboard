@@ -49,6 +49,7 @@ from api import (
     stages_api,
     stale_features_api,
     stars_api,
+    summary_suggestion_api,
     token_refresh_api,
     webdx_feature_api,
     wpt_coverage_api,
@@ -261,6 +262,10 @@ api_routes: list[Route] = [
     Route(
         f'{API_BASE}/releasenotes/<int:milestone>',
         releasenotes_api.ReleaseNotesAPI,
+    ),
+    Route(
+        f'{API_BASE}/summary-suggestions/<int:feature_id>',
+        summary_suggestion_api.SummarySuggestionAPI,
     ),
 ]
 
