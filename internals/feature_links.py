@@ -342,7 +342,13 @@ def _index_feature_links_by_ids(
 
             logging.info(f'processing {feature_link.url}')
             link = Link(feature_link.url)
-            link.parse()
+            try:
+                link.parse()
+            except Exception as e:
+                logging.error(
+                    f'Unexpected error parsing {feature_link.url}: {e}'
+                )
+                link.is_error = True
             if link.is_error:
                 if not feature_link.is_error and should_notify_on_error:
                     # TODO: if feature_link turns from no-error to error, notify users
