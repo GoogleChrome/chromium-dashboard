@@ -37,6 +37,8 @@ from internals.link_helpers import (
 LINK_STALE_MINUTES = 30
 CRON_JOB_LINK_STALE_DAYS = 8
 
+_RATE_LIMIT_HTTP_CODES = frozenset((403, 429))
+
 
 class FeatureLinks(ndb.Model):
     """Links that occur in the fields of the feature.
@@ -324,39 +326,132 @@ class FeatureLinksUpdateHandler(FlaskHandler):
         logging.info('Finished indexing feature links')
         return {'message': 'Done'}
 
+def _normalise_http_status_code(value: Any) -> Optional[int]:
+    """Return a valid HTTP status code, if value represents one."""
+    if callable(value):
+        return None
+
+    try:
+        status_code = int(value)
+    except (TypeError, ValueError, OverflowError):
+        return None
+
+    if 100 <= status_code <= 599:
+        return status_code
+
+    return None
+
+
+def _http_status_code_from_exception(exc: BaseException) -> Optional[int]:
+    """Extract an HTTP status from common HTTP/GitHub exception types."""
+    # urllib errors commonly use .code, requests uses .response.status_code,
+    # and PyGithub's GithubException uses .status.
+    for obj in (exc, getattr(exc, 'response', None)):
+        if obj is None:
+            continue
+
+        for attribute in ('status_code', 'status', 'code'):
+            status_code = _normalise_http_status_code(
+                getattr(obj, attribute, None)
+            )
+            if status_code is not None:
+                return status_code
+
+    return None
+
+
+def _log_rate_limit(
+    status_code: int,
+    url: str,
+    index: int,
+    batch_size: int,
+) -> None:
+    remaining = batch_size - index - 1
+    logging.warning(
+        'GitHub rate limit (%s) encountered while updating %s. '
+        'Stopping the current batch; %d link(s) remaining.',
+        status_code,
+        url,
+        remaining,
+    )
+
 
 def _index_feature_links_by_ids(
-    feature_link_ids: list[Any], should_notify_on_error: bool
+    feature_link_ids: list[Any],
+    should_notify_on_error: bool,
 ) -> None:
-    """Index the links in the given feature links ids"""  # noqa: D415
-    for feature_link_id in feature_link_ids:
+    """Index the links in the given feature link ids."""
+    for i, feature_link_id in enumerate(feature_link_ids):
         feature_link: FeatureLinks = FeatureLinks.get_by_id(feature_link_id)
-        if feature_link:
-            logging.info(f'processing {feature_link.url}')
+        if not feature_link:
+            continue
+
+        logging.info('processing %s', feature_link.url)
+
+        try:
             link = Link(feature_link.url)
             link.parse()
-            if link.is_error:
-                if not feature_link.is_error and should_notify_on_error:
-                    # TODO: if feature_link turns from no-error to error, notify users
-                    pass
-                if link.http_error_code:
-                    feature_link.http_error_code = link.http_error_code
-                feature_link.is_error = link.is_error
-                logging.info(
-                    f'Update indexed link {feature_link_id} {feature_link.url} encountered error'
-                )  # noqa: E501
-            else:
-                # update the information if it is not an error
-                feature_link.information = link.information
-                feature_link.is_error = False
-                feature_link.http_error_code = None
-                logging.info(
-                    f'Update indexed link {feature_link_id} {feature_link.url} successfully'
-                )  # noqa: E501
-                _denormalize_feature_link_into_entries(feature_link)
+        except Exception as exc:
+            status_code = _http_status_code_from_exception(exc)
 
-            feature_link.type = link.type
+            # Do not treat rate limiting as a permanent link failure.
+            # Stop this batch and let a later scheduled run retry it
+            # after the limit resets.
+            if status_code in _RATE_LIMIT_HTTP_CODES:
+                _log_rate_limit(
+                    status_code,
+                    feature_link.url,
+                    i,
+                    len(feature_link_ids),
+                )
+                return
+
+            logging.exception(
+                'Unexpected error while parsing %s',
+                feature_link.url,
+            )
+            feature_link.is_error = True
+            feature_link.http_error_code = status_code
             feature_link.put()
+            continue
+
+        status_code = _normalise_http_status_code(link.http_error_code)
+
+        if link.is_error and status_code in _RATE_LIMIT_HTTP_CODES:
+            _log_rate_limit(
+                status_code,
+                feature_link.url,
+                i,
+                len(feature_link_ids),
+            )
+            return
+
+        if link.is_error:
+            if not feature_link.is_error and should_notify_on_error:
+                # TODO: if feature_link turns from no-error to error,
+                # notify users
+                pass
+
+            feature_link.is_error = True
+            feature_link.http_error_code = status_code
+            logging.info(
+                'Update indexed link %s %s encountered error',
+                feature_link_id,
+                feature_link.url,
+            )
+        else:
+            feature_link.information = link.information
+            feature_link.is_error = False
+            feature_link.http_error_code = None
+            logging.info(
+                'Update indexed link %s %s successfully',
+                feature_link_id,
+                feature_link.url,
+            )
+            _denormalize_feature_link_into_entries(feature_link)
+
+        feature_link.type = link.type
+        feature_link.put()
 
 
 def _extract_feature_urls(fe: FeatureEntry) -> list[str]:
