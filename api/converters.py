@@ -872,6 +872,13 @@ class OpenAPISummarySource(StrEnum):
     AI_APPLIED = 'AI_APPLIED'
 
 
+class OpenAPISummarySuggestionAccessLevel(StrEnum):
+    """OpenAPI string constants for feature summary suggestion access levels."""
+
+    READ_ONLY = 'READ_ONLY'
+    CAN_EDIT = 'CAN_EDIT'
+
+
 class OpenAPISuggestionStatus(StrEnum):
     """OpenAPI string constants for summary suggestion review statuses."""
 
@@ -978,6 +985,15 @@ MILESTONE_CURATION_STATUS_TO_API: MappingProxyType[
         core_enums.MilestoneCurationStatus.PENDING: OpenAPICurationStatus.PENDING,
         core_enums.MilestoneCurationStatus.IN_REVIEW: OpenAPICurationStatus.IN_REVIEW,
         core_enums.MilestoneCurationStatus.COMPLETED: OpenAPICurationStatus.COMPLETED,
+    }
+)
+
+SUMMARY_SUGGESTION_ACCESS_LEVEL_TO_API: MappingProxyType[
+    bool, OpenAPISummarySuggestionAccessLevel
+] = MappingProxyType(
+    {
+        True: OpenAPISummarySuggestionAccessLevel.CAN_EDIT,
+        False: OpenAPISummarySuggestionAccessLevel.READ_ONLY,
     }
 )
 
