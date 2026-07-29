@@ -17,6 +17,8 @@
 import json
 from unittest import mock
 
+import flask
+
 import testing_config  # Must be imported first
 from internals import fetchchannels
 
@@ -86,3 +88,50 @@ class ChannelsAPITest(testing_config.CustomTestCase):
             },
             actual,
         )
+
+    @mock.patch('internals.fetchchannels.get_omaha_data')
+    def test_get_current_channel_milestone(self, mock_get_omaha):
+        """It sets flask.g attributes on first call and reads from flask.g on cache hits."""
+        mock_get_omaha.return_value = [
+            {
+                'versions': [
+                    {'channel': 'stable', 'version': '147.0.7727.56'},
+                    {'channel': 'beta', 'version': '148.0.7778.5'},
+                    {'channel': 'dev', 'version': '149.0.7779.3'},
+                ]
+            }
+        ]
+
+        app = flask.Flask(__name__)
+        with app.test_request_context('/'):
+            # First calls compute milestones for stable, beta, dev and set flask.g attributes
+            self.assertEqual(147, fetchchannels.get_current_stable_milestone())
+            self.assertEqual(148, fetchchannels.get_current_beta_milestone())
+            self.assertEqual(
+                149,
+                fetchchannels.get_current_channel_milestone(
+                    fetchchannels.Channel.DEV
+                ),
+            )
+
+            # Verify get_omaha_data was called exactly 3 times (once per channel)
+            self.assertEqual(3, mock_get_omaha.call_count)
+
+            # Verify attributes are set on flask.g with exact key names
+            self.assertEqual(147, getattr(flask.g, 'current_stable_milestone'))
+            self.assertEqual(148, getattr(flask.g, 'current_beta_milestone'))
+            self.assertEqual(149, getattr(flask.g, 'current_dev_milestone'))
+
+            # Reset mock call counter
+            mock_get_omaha.reset_mock()
+
+            # Subsequent calls read directly from flask.g without querying get_omaha_data()
+            self.assertEqual(147, fetchchannels.get_current_stable_milestone())
+            self.assertEqual(148, fetchchannels.get_current_beta_milestone())
+            self.assertEqual(
+                149,
+                fetchchannels.get_current_channel_milestone(
+                    fetchchannels.Channel.DEV
+                ),
+            )
+            mock_get_omaha.assert_not_called()
