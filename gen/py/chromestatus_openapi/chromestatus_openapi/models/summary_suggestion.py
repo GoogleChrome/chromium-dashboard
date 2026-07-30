@@ -161,7 +161,7 @@ class SummarySuggestion(Model):
     def status(self) -> str:
         """Gets the status of this SummarySuggestion.
 
-        Lifecycle status of the summary suggestion: - PENDING: Awaiting review - APPLIED: Approved and applied to feature - REJECTED: Suggestion declined - DISCARDED: Obsolete or feature deleted - BYPASSED: Manually overridden by owner   # noqa: E501
+        Lifecycle status of the summary suggestion: - PENDING: Awaiting review - APPLIED: Approved and applied to feature - REJECTED: Suggestion declined - DISCARDED: Obsolete or feature deleted   # noqa: E501
 
         :return: The status of this SummarySuggestion.
         :rtype: str
@@ -172,12 +172,12 @@ class SummarySuggestion(Model):
     def status(self, status: str):
         """Sets the status of this SummarySuggestion.
 
-        Lifecycle status of the summary suggestion: - PENDING: Awaiting review - APPLIED: Approved and applied to feature - REJECTED: Suggestion declined - DISCARDED: Obsolete or feature deleted - BYPASSED: Manually overridden by owner   # noqa: E501
+        Lifecycle status of the summary suggestion: - PENDING: Awaiting review - APPLIED: Approved and applied to feature - REJECTED: Suggestion declined - DISCARDED: Obsolete or feature deleted   # noqa: E501
 
         :param status: The status of this SummarySuggestion.
         :type status: str
         """
-        allowed_values = ["PENDING", "APPLIED", "REJECTED", "DISCARDED", "BYPASSED"]  # noqa: E501
+        allowed_values = ["PENDING", "APPLIED", "REJECTED", "DISCARDED"]  # noqa: E501
         if status not in allowed_values:
             raise ValueError(
                 "Invalid value for `status` ({0}), must be one of {1}"
