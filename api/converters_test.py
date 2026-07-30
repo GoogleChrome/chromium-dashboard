@@ -928,14 +928,6 @@ class AICurationConvertersTest(testing_config.CustomTestCase):
             'status',
         )
 
-        # 6. OpenAPISummarySuggestionAccessLevel
-        self.assert_bidirectional_enum_parity(
-            converters.SUMMARY_SUGGESTION_ACCESS_LEVEL_TO_API,
-            [True, False],
-            'SummarySuggestionResponse',
-            'access_level',
-        )
-
     def test_feature_entry_to_release_note_feature_dict__baseline_fallback_when_suggestion_baseline_is_none(
         self,
     ):

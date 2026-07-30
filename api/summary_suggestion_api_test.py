@@ -73,11 +73,10 @@ class SummarySuggestionAPITest(testing_config.CustomTestCase):
     @mock.patch('internals.core_models.FeatureEntry.get_by_id')
     @mock.patch('internals.core_models.FeatureSummarySuggestion.get_by_id')
     @mock.patch('internals.core_models.FeatureSummaryProgressStep.query')
-    def test_get__success_read_only(
+    def test_get__success(
         self, mock_step_query, mock_suggestion_get, mock_feature_get
     ):
-        """It returns 200 OK with READ_ONLY access for anonymous users."""
-        testing_config.sign_out()
+        """It returns 200 OK with suggestion payload and progress steps timeline."""
         mock_feature_get.return_value = self.feature_1
         mock_suggestion_get.return_value = self.suggestion_1
         mock_step_query.return_value.order.return_value.fetch.return_value = [
@@ -87,10 +86,7 @@ class SummarySuggestionAPITest(testing_config.CustomTestCase):
         with test_app.test_request_context('/api/v0/summary-suggestions/101'):
             actual = self.handler.do_get(feature_id=101)
 
-        self.assertEqual(
-            converters.OpenAPISummarySuggestionAccessLevel.READ_ONLY.value,
-            actual['access_level'],
-        )
+        self.assertNotIn('access_level', actual)
         self.assertEqual(
             'AI summary text.', actual['suggestion']['suggested_summary']
         )
@@ -98,29 +94,6 @@ class SummarySuggestionAPITest(testing_config.CustomTestCase):
         self.assertEqual(
             converters.OpenAPIProgressStepId.SEARCH_MDN.value,
             actual['progress_steps'][0]['step'],
-        )
-
-    @mock.patch('internals.core_models.FeatureEntry.get_by_id')
-    @mock.patch('internals.core_models.FeatureSummarySuggestion.get_by_id')
-    @mock.patch('internals.core_models.FeatureSummaryProgressStep.query')
-    def test_get__success_can_edit(
-        self, mock_step_query, mock_suggestion_get, mock_feature_get
-    ):
-        """It returns 200 OK with CAN_EDIT access for feature owners."""
-        testing_config.sign_in('owner@example.com', 12345)
-        mock_feature_get.return_value = self.feature_1
-        mock_suggestion_get.return_value = self.suggestion_1
-        mock_step_query.return_value.order.return_value.fetch.return_value = []
-
-        with test_app.test_request_context('/api/v0/summary-suggestions/101'):
-            actual = self.handler.do_get(feature_id=101)
-
-        self.assertEqual(
-            converters.OpenAPISummarySuggestionAccessLevel.CAN_EDIT.value,
-            actual['access_level'],
-        )
-        self.assertEqual(
-            'AI summary text.', actual['suggestion']['suggested_summary']
         )
 
     def test_get__invalid_id(self):

@@ -14,7 +14,6 @@
 
 """API handler for AI summary suggestions (GET and PATCH /api/v0/summary-suggestions/<int:feature_id>)."""
 
-from datetime import datetime, timezone
 from typing import Any
 
 from chromestatus_openapi.models import SummarySuggestionResponse
@@ -33,7 +32,7 @@ class SummarySuggestionAPI(basehandlers.APIHandler):
     """API handler for AI summary suggestions (GET and PATCH /api/v0/summary-suggestions/<int:feature_id>)."""
 
     def do_get(self, **kwargs: Any) -> dict[str, Any]:
-        """Fetches an AI summary suggestion, progress steps timeline, and access level.
+        """Fetches an AI summary suggestion and progress steps timeline.
 
         Returns:
             JSON response conforming to SummarySuggestionResponse schema.
@@ -56,14 +55,7 @@ class SummarySuggestionAPI(basehandlers.APIHandler):
             .fetch()
         )
 
-        # 3. Determine editorial access level for authenticated user.
-        user = self.get_current_user()
-        can_edit = permissions.can_edit_feature(user, feature)
-        access_level = converters.SUMMARY_SUGGESTION_ACCESS_LEVEL_TO_API[
-            can_edit
-        ].value
-
-        # 4. Build and return OpenAPI-compliant dictionary response.
+        # 3. Build and return OpenAPI-compliant dictionary response.
         payload = {
             'suggestion': converters.feature_summary_suggestion_to_dict(
                 suggestion
@@ -71,7 +63,6 @@ class SummarySuggestionAPI(basehandlers.APIHandler):
             'progress_steps': [
                 converters.summary_progress_step_to_dict(s) for s in steps
             ],
-            'access_level': access_level,
         }
         return SummarySuggestionResponse.from_dict(payload).to_dict()
 
@@ -127,9 +118,8 @@ class SummarySuggestionAPI(basehandlers.APIHandler):
         if 'suggested_summary' in request_body:
             suggestion.suggested_summary = request_body['suggested_summary']
 
-        # 6. Increment OCC version token, update timestamp, and save entity.
+        # 6. Increment OCC version token and save entity (updated timestamp set via auto_now=True).
         suggestion.version_token += 1
-        suggestion.updated = datetime.now(timezone.utc)
         suggestion.put()
 
         # 7. Fetch progress steps timeline and return updated response.
@@ -147,8 +137,5 @@ class SummarySuggestionAPI(basehandlers.APIHandler):
             'progress_steps': [
                 converters.summary_progress_step_to_dict(s) for s in steps
             ],
-            'access_level': converters.SUMMARY_SUGGESTION_ACCESS_LEVEL_TO_API[
-                True
-            ].value,
         }
         return SummarySuggestionResponse.from_dict(payload).to_dict()
