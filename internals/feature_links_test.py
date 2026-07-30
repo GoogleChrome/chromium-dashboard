@@ -15,6 +15,7 @@
 
 """Tests for the feature_links module, verifying link extraction, updating, and indexing logic."""
 
+import datetime
 from unittest import mock
 
 import flask
@@ -362,6 +363,15 @@ class LinkTest(testing_config.CustomTestCase):
         mockParse.side_effect = side_effect_2
 
         link = FeatureLinks.query(FeatureLinks.url == url).get()
+        auto_now = FeatureLinks._properties['updated']._auto_now
+        try:
+            FeatureLinks._properties['updated']._auto_now = False
+            link.updated = datetime.datetime.now() - datetime.timedelta(
+                minutes=31
+            )
+            link.put()
+        finally:
+            FeatureLinks._properties['updated']._auto_now = auto_now
         update_feature_links = FeatureLinksUpdateHandler()
         with test_app.test_request_context(
             '/tasks/update-feature-links',
@@ -515,4 +525,98 @@ class LinkTest(testing_config.CustomTestCase):
             result = update_all_feature_links.get_template_data()
         expected = 'Started updating 2 Feature Links in 1 batches'
 
+        self.assertEqual(result, expected)
+
+    @mock.patch.object(Link, 'parse', autospec=True)
+    def test_index_feature_links_skips_recently_updated(
+        self, mock_parse: mock.MagicMock
+    ):
+        """Test _index_feature_links_by_ids skips recently updated links."""
+        url = 'https://example.com/recently-updated'
+        link = FeatureLinks(
+            url=url,
+            type=LINK_TYPE_WEB,
+        )
+        link.put()
+
+        update_feature_links = FeatureLinksUpdateHandler()
+        with test_app.test_request_context(
+            '/tasks/update-feature-links',
+            json={'feature_link_ids': [link.key.id()]},
+        ):
+            update_feature_links.process_post_data()
+
+        mock_parse.assert_not_called()
+
+    @mock.patch.object(Link, 'parse', autospec=True)
+    def test_index_feature_links_updates_stale(
+        self, mock_parse: mock.MagicMock
+    ):
+        """Test _index_feature_links_by_ids updates links older than stale threshold."""
+        url = 'https://example.com/stale-link'
+        link = FeatureLinks(
+            url=url,
+            type=LINK_TYPE_WEB,
+        )
+        link.put()
+        auto_now = FeatureLinks._properties['updated']._auto_now
+        try:
+            FeatureLinks._properties['updated']._auto_now = False
+            link.updated = datetime.datetime.now() - datetime.timedelta(
+                minutes=31
+            )
+            link.put()
+        finally:
+            FeatureLinks._properties['updated']._auto_now = auto_now
+
+        def side_effect(self_link):
+            self_link.is_parsed = True
+            self_link.is_error = False
+            self_link.type = LINK_TYPE_WEB
+            self_link.information = {'title': 'Updated Stale Link'}
+
+        mock_parse.side_effect = side_effect
+
+        update_feature_links = FeatureLinksUpdateHandler()
+        with test_app.test_request_context(
+            '/tasks/update-feature-links',
+            json={'feature_link_ids': [link.key.id()]},
+        ):
+            update_feature_links.process_post_data()
+
+        mock_parse.assert_called_once()
+        updated_link = link.key.get()
+        self.assertEqual(
+            updated_link.information, {'title': 'Updated Stale Link'}
+        )
+
+    @mock.patch('internals.link_helpers.Link.parse', autospec=True)
+    def test_update_all_feature_links_batch_size_75(self, mock_parse):
+        """Test update all feature links splits tasks into batches of 75."""
+        stale_time = datetime.datetime.now() - datetime.timedelta(days=10)
+        feature_links = [
+            FeatureLinks(
+                url=f'https://example.com/item_{i}',
+                type=LINK_TYPE_WEB,
+            )
+            for i in range(80)
+        ]
+        ndb.put_multi(feature_links)
+        auto_now = FeatureLinks._properties['updated']._auto_now
+        try:
+            FeatureLinks._properties['updated']._auto_now = False
+            for fl in feature_links:
+                fl.updated = stale_time
+            ndb.put_multi(feature_links)
+        finally:
+            FeatureLinks._properties['updated']._auto_now = auto_now
+
+        update_all_feature_links = UpdateAllFeatureLinksHandlers()
+        with test_app.test_request_context(
+            '/cron/update_all_feature_links',
+            query_string={'should_notify_on_error': False},
+        ):
+            result = update_all_feature_links.get_template_data()
+
+        expected = 'Started updating 80 Feature Links in 2 batches'
         self.assertEqual(result, expected)
