@@ -29,7 +29,12 @@ from api import converters
 from framework import permissions, rediscache, users
 from framework.utils import get_current_milestone_info
 from internals import core_enums
-from internals.core_models import FeatureEntry, MilestoneSet, Stage
+from internals.core_models import (
+    FeatureEntry,
+    FeatureSummarySuggestion,
+    MilestoneSet,
+    Stage,
+)
 from internals.review_models import Gate, Vote
 from internals.stage_helpers import organize_all_stages_by_feature
 
@@ -198,10 +203,77 @@ def _filter_out_wp_features_lacking_enterprise_approval(
     return result
 
 
+def get_developer_release_notes_features(
+    milestone: int,
+) -> list[dict[str, Any]]:
+    """Fetches and formats web platform features for developer.chrome.com release notes.
+
+    Note: This helper retrieves general shipping web standards features (incubations,
+    existing implementations, code changes, and deprecations) via get_in_milestone(),
+    applies confidentiality and unlisted visibility filters, and converts them to lean
+    OpenAPI ReleaseNoteFeature dictionaries with attached AI summary suggestions and
+    WebDX baseline statuses. For Chrome Enterprise IT administrator release notes
+    tracking enterprise impact and rollout stages, use
+    get_features_in_release_notes(milestone) instead.
+
+    Args:
+        milestone: The integer Chrome milestone (e.g., 135) to retrieve release notes for.
+
+    Returns:
+        A list of dictionaries matching the OpenAPI ReleaseNoteFeature schema.
+    """
+    milestone_data = get_in_milestone(milestone)
+    seen_ids: set[int] = set()
+    for reason, feature_dicts in milestone_data.items():
+        for fdict in feature_dicts:
+            fid = fdict.get('id')
+            if fid:
+                seen_ids.add(fid)
+
+    if not seen_ids:
+        return []
+
+    # Batch fetch FeatureEntry entities (prevents N+1 query loop)
+    feature_keys = [ndb.Key(FeatureEntry, fid) for fid in seen_ids]
+    raw_features = ndb.get_multi(feature_keys)
+    feature_entries = filter_unlisted(filter_confidential(raw_features))
+    feature_entries.sort(key=lambda f: f.name or '')
+
+    # Batch fetch FeatureSummarySuggestion entities by key (prevents unbounded table scan)
+    valid_fids = [fe.key.integer_id() for fe in feature_entries if fe.key]
+    suggestion_keys = [
+        ndb.Key(FeatureSummarySuggestion, fid) for fid in valid_fids
+    ]
+    suggestions = ndb.get_multi(suggestion_keys)
+    applied_map = {
+        s.key.id(): s
+        for s in suggestions
+        if s and s.status == core_enums.SummarySuggestionStatus.APPLIED
+    }
+
+    formatted_features = []
+    for fe in feature_entries:
+        fid = fe.key.integer_id() if fe.key else 0
+        applied_suggestion = applied_map.get(fid)
+        rn_dict = converters.feature_entry_to_release_note_feature_dict(
+            fe, applied_suggestion=applied_suggestion
+        )
+        formatted_features.append(rn_dict)
+
+    return formatted_features
+
+
 def get_features_in_release_notes(
     milestone: int, end_milestone: int | None = None
 ):
-    """Fetches features slated for release notes in the specified milestone or milestone range."""
+    """Fetches Chrome Enterprise IT admin release notes features for a milestone or range.
+
+    Note: This helper specifically queries features with enterprise impact or enterprise
+    feature types, and formats them using the verbose dictionary schema with rollout
+    and approval fields for enterprise administrators. For public web developer and
+    web standards release notes (developer.chrome.com), use
+    get_developer_release_notes_features(milestone) instead.
+    """
     actual_end_milestone = (
         end_milestone if end_milestone is not None else milestone
     )

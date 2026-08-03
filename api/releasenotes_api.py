@@ -19,10 +19,39 @@ from typing import Any
 
 from chromestatus_openapi.models import (
     ReleaseNotesL10nResponse,
+    ReleaseNotesResponse,
 )
 
 from framework import basehandlers
 from internals import core_enums, feature_helpers
+
+
+class ReleaseNotesAPI(basehandlers.APIHandler):
+    """API handler for fetching public release notes features for a milestone (GET /api/v0/releasenotes/{milestone})."""
+
+    def do_get(self, **kwargs: Any) -> dict[str, Any]:
+        """Get public release notes features for a specific milestone.
+
+        Args:
+            **kwargs: Keyword arguments containing path or query parameters.
+
+        Returns:
+            A dictionary matching the ReleaseNotesResponse OpenAPI schema:
+            { "milestone": milestone, "features": [ReleaseNoteFeature, ...] }
+        """
+        milestone = self._extract_id_param(kwargs, 'milestone')
+        if milestone is None or milestone <= 0:
+            self.abort(400, msg='Milestone must be a positive integer')
+
+        release_note_features = (
+            feature_helpers.get_developer_release_notes_features(milestone)
+        )
+
+        payload = {
+            'milestone': milestone,
+            'features': release_note_features,
+        }
+        return ReleaseNotesResponse.from_dict(payload).to_dict()
 
 
 class ReleaseNotesL10nAPI(basehandlers.APIHandler):
