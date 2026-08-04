@@ -1,0 +1,72 @@
+#!/usr/bin/env bash
+# Continuous Deployment runner for Google Cloud Build.
+set -euo pipefail
+
+DEPLOY_ENV="${_DEPLOY_ENV:-${1:-staging}}"
+FORCE_DEPLOY="${_FORCE_DEPLOY:-false}"
+SKIP_ISSUE="${_SKIP_ISSUE_CREATION:-false}"
+
+FLAGS=("-q")
+if [[ "${FORCE_DEPLOY}" == "true" ]]; then FLAGS+=("-f"); fi
+if [[ "${SKIP_ISSUE}" == "true" ]]; then FLAGS+=("-b"); fi
+
+echo "================================================================"
+echo "Installing Docker & DevContainer CLI (@devcontainers/cli)..."
+echo "================================================================"
+export DEBIAN_FRONTEND=noninteractive
+apt-get update -qq
+apt-get install -y -qq docker.io nodejs npm jq curl git
+npm install -g @devcontainers/cli json5
+
+# Ensure checkout is in /workspace/chromium-dashboard on host volume so Docker daemon resolves bind mounts
+if [[ ! -d "/workspace/chromium-dashboard/.git" ]]; then
+  echo "Moving checkout into /workspace/chromium-dashboard for DevContainer bind mounts..."
+  mkdir -p /tmp/stage
+  shopt -s dotglob
+  mv /workspace/* /tmp/stage/ 2>/dev/null || true
+  mkdir -p /workspace/chromium-dashboard
+  mv /tmp/stage/* /workspace/chromium-dashboard/
+  shopt -u dotglob
+fi
+
+chown -R 1001:1001 /workspace/chromium-dashboard
+cd /workspace/chromium-dashboard
+
+# Ensure complete git history is un-shallowed for versioning
+git config --global --add safe.directory '/workspace/chromium-dashboard'
+git fetch --unshallow origin main 2>/dev/null || git fetch --depth=200 origin main 2>/dev/null || true
+
+echo "================================================================"
+echo "Building and starting DevContainer environment..."
+echo "================================================================"
+trap 'rm -f /tmp/devcontainer-ci.json' EXIT
+json5 .devcontainer/devcontainer.json | jq '.runArgs += ["--network=host"]' > /tmp/devcontainer-ci.json
+devcontainer up --workspace-folder /workspace/chromium-dashboard --config .devcontainer/devcontainer.json --override-config /tmp/devcontainer-ci.json
+
+echo "================================================================"
+echo "Executing client build inside DevContainer..."
+echo "================================================================"
+devcontainer exec --workspace-folder /workspace/chromium-dashboard \
+  --remote-env GH_TOKEN="${GH_TOKEN:-}" \
+  bash -l -c "npm run build"
+
+echo "================================================================"
+echo "Executing deployment for DEPLOY_ENV=${DEPLOY_ENV}..."
+echo "================================================================"
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+SERVICES="default notifier"
+VERSION=$(git describe --always --abbrev=7 --match 'NOT A TAG' --dirty='-tainted')
+
+if [[ "${DEPLOY_ENV}" == "staging" ]]; then
+  "${DIR}/deploy-staging" "${FLAGS[@]}"
+  echo "Routing 100% staging traffic to version ${VERSION}..."
+  for SERVICE in $SERVICES; do
+    gcloud app services set-traffic "$SERVICE" --project=cr-status-staging --splits="${VERSION}=1" --quiet
+  done
+  "${DIR}/promote-and-chain-staging"
+elif [[ "${DEPLOY_ENV}" == "prod" || "${DEPLOY_ENV}" == "production" ]]; then
+  "${DIR}/deploy-production" "${FLAGS[@]}"
+else
+  echo "Unknown deployment environment: ${DEPLOY_ENV}" >&2
+  exit 1
+fi

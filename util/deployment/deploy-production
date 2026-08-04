@@ -2,22 +2,42 @@
 # Deploys the site to the production environment.
 set -e
 
-# Verify we are on the main branch
-BRANCH=$(git rev-parse --abbrev-ref HEAD)
-if [ "$BRANCH" != "main" ]; then
-  echo "Not on the main branch. Aborting deployment."
-  exit 1
+QUIET="false"
+FORCE="false"
+SKIP_ISSUE="false"
+
+while getopts ':qfbh' flag; do
+  case "${flag}" in
+    q) QUIET="true" ;;
+    f) FORCE="true" ;;
+    b) SKIP_ISSUE="true" ;;
+    h) echo "Usage: $0 [-q] [-f] [-b]"; exit 0 ;;
+    *) ;;
+  esac
+done
+
+# Verify we are on the main branch (or detached HEAD on main in CI)
+if [[ "$FORCE" != "true" ]]; then
+  BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "HEAD")
+  if [ "$BRANCH" != "main" ]; then
+    if ! git merge-base --is-ancestor HEAD main 2>/dev/null && ! git merge-base --is-ancestor HEAD origin/main 2>/dev/null; then
+      echo "Not on the main branch. Aborting deployment."
+      exit 1
+    fi
+  fi
 fi
 
 # Check for uncommitted changes
 if [ -n "$(git status --porcelain)" ]; then
   echo "Uncommitted changes detected:"
   git status
-  read -p "Do you want to proceed with the deployment? (y/n) " -n 1 -r
-  echo
-  if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-    echo "Deployment aborted."
-    exit 1
+  if [[ "$QUIET" != "true" ]]; then
+    read -p "Do you want to proceed with the deployment? (y/n) " -n 1 -r
+    echo
+    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+      echo "Deployment aborted."
+      exit 1
+    fi
   fi
 fi
 
@@ -25,13 +45,15 @@ fi
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 # Create the GitHub issue for this deployment if it doesn't already exist.
-"$DIR/create-deployment-issue"
+if [[ "$SKIP_ISSUE" != "true" ]]; then
+  "$DIR/create-deployment-issue" "$@"
+fi
 
 export APP_NAME="cr-status"
 export APP_YAML="app.yaml"
 export NOTIFIER_YAML="notifier.yaml"
 
-"$DIR/deploy-env"
+"$DIR/deploy-env" "$@"
 
 SERVICES="default notifier"
 VERSION_URL=$(gcloud app --project="$APP_NAME" versions list --sort-by=~last_deployed_time --filter='service=default' --limit=1 --format=json | jq -r '.[] | .version.versionUrl')
@@ -39,10 +61,13 @@ LATEST_VERSION=$(gcloud app --project="$APP_NAME" versions list --sort-by=~last_
 
 echo -e "\nDeployment complete. Validating..."
 echo "Visit $VERSION_URL to confirm that everything works."
-read -p "Press 'y' to redirect traffic to version $LATEST_VERSION for all services. (y/n) " -n 1 -r
-echo
 
-if [[ $REPLY =~ ^[Yy]$ ]]; then
+if [[ "$QUIET" != "true" ]]; then
+  read -p "Press 'y' to redirect traffic to version $LATEST_VERSION for all services. (y/n) " -n 1 -r
+  echo
+fi
+
+if [[ "$QUIET" == "true" || $REPLY =~ ^[Yy]$ ]]; then
   for SERVICE in $SERVICES
   do
     gcloud app --project="$APP_NAME" services set-traffic $SERVICE --splits $LATEST_VERSION=1 --quiet
