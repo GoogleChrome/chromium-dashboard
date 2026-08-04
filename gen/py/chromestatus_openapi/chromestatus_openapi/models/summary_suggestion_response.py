@@ -16,31 +16,26 @@ class SummarySuggestionResponse(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, suggestion=None, progress_steps=None, access_level=None):  # noqa: E501
+    def __init__(self, suggestion=None, progress_steps=None):  # noqa: E501
         """SummarySuggestionResponse - a model defined in OpenAPI
 
         :param suggestion: The suggestion of this SummarySuggestionResponse.  # noqa: E501
         :type suggestion: SummarySuggestion
         :param progress_steps: The progress_steps of this SummarySuggestionResponse.  # noqa: E501
         :type progress_steps: List[SummaryProgressStep]
-        :param access_level: The access_level of this SummarySuggestionResponse.  # noqa: E501
-        :type access_level: str
         """
         self.openapi_types = {
             'suggestion': SummarySuggestion,
-            'progress_steps': List[SummaryProgressStep],
-            'access_level': str
+            'progress_steps': List[SummaryProgressStep]
         }
 
         self.attribute_map = {
             'suggestion': 'suggestion',
-            'progress_steps': 'progress_steps',
-            'access_level': 'access_level'
+            'progress_steps': 'progress_steps'
         }
 
         self._suggestion = suggestion
         self._progress_steps = progress_steps
-        self._access_level = access_level
 
     @classmethod
     def from_dict(cls, dikt) -> 'SummarySuggestionResponse':
@@ -100,32 +95,3 @@ class SummarySuggestionResponse(Model):
             raise ValueError("Invalid value for `progress_steps`, must not be `None`")  # noqa: E501
 
         self._progress_steps = progress_steps
-
-    @property
-    def access_level(self) -> str:
-        """Gets the access_level of this SummarySuggestionResponse.
-
-        The editorial access level of the current authenticated user for this summary suggestion: - READ_ONLY: User can view the suggestion and progress timeline, but cannot edit or apply changes. - CAN_EDIT: User has permission to edit and apply suggestions. Note: Returned directly in the response payload to eliminate an extra round-trip permissions check in client UIs.   # noqa: E501
-
-        :return: The access_level of this SummarySuggestionResponse.
-        :rtype: str
-        """
-        return self._access_level
-
-    @access_level.setter
-    def access_level(self, access_level: str):
-        """Sets the access_level of this SummarySuggestionResponse.
-
-        The editorial access level of the current authenticated user for this summary suggestion: - READ_ONLY: User can view the suggestion and progress timeline, but cannot edit or apply changes. - CAN_EDIT: User has permission to edit and apply suggestions. Note: Returned directly in the response payload to eliminate an extra round-trip permissions check in client UIs.   # noqa: E501
-
-        :param access_level: The access_level of this SummarySuggestionResponse.
-        :type access_level: str
-        """
-        allowed_values = ["READ_ONLY", "CAN_EDIT"]  # noqa: E501
-        if access_level not in allowed_values:
-            raise ValueError(
-                "Invalid value for `access_level` ({0}), must be one of {1}"
-                .format(access_level, allowed_values)
-            )
-
-        self._access_level = access_level

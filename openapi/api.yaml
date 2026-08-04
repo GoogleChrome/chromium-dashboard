@@ -2484,11 +2484,10 @@ components:
           description: UTC timestamp when the suggestion was last modified.
     SummarySuggestionResponse:
       type: object
-      description: Response payload containing a feature summary suggestion, its progress execution steps, and current user access level.
+      description: Response payload containing a feature summary suggestion and its progress execution steps.
       required:
         - suggestion
         - progress_steps
-        - access_level
       properties:
         suggestion:
           $ref: '#/components/schemas/SummarySuggestion'
@@ -2497,14 +2496,6 @@ components:
           items:
             $ref: '#/components/schemas/SummaryProgressStep'
           description: Ordered timeline of tool execution progress steps for this summary generation.
-        access_level:
-          type: string
-          enum: [READ_ONLY, CAN_EDIT]
-          description: |
-            The editorial access level of the current authenticated user for this summary suggestion:
-            - READ_ONLY: User can view the suggestion and progress timeline, but cannot edit or apply changes.
-            - CAN_EDIT: User has permission to edit and apply suggestions.
-            Note: Returned directly in the response payload to eliminate an extra round-trip permissions check in client UIs.
     SummarySuggestionPatchRequest:
       type: object
       description: Payload for updating the review status or text of an AI summary suggestion.
