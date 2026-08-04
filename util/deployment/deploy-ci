@@ -29,7 +29,8 @@ if [[ ! -d "/workspace/chromium-dashboard/.git" ]]; then
   shopt -u dotglob
 fi
 
-chown -R 1001:1001 /workspace/chromium-dashboard
+chmod -R 777 /workspace/chromium-dashboard
+chown -R 1000:1000 /workspace/chromium-dashboard 2>/dev/null || true
 cd /workspace/chromium-dashboard
 
 # Ensure complete git history is un-shallowed for versioning
@@ -50,6 +51,7 @@ echo "================================================================"
 devcontainer exec --workspace-folder /workspace/chromium-dashboard \
   --remote-env GH_TOKEN="${GH_TOKEN:-}" \
   bash -l -c "npm run build"
+chmod -R 777 /workspace/chromium-dashboard 2>/dev/null || true
 
 echo "================================================================"
 echo "Executing deployment for DEPLOY_ENV=${DEPLOY_ENV}..."
