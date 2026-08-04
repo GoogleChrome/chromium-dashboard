@@ -3833,10 +3833,9 @@ components:
       title: SummarySuggestion
       type: object
     SummarySuggestionResponse:
-      description: "Response payload containing a feature summary suggestion, its\
-        \ progress execution steps, and current user access level."
+      description: Response payload containing a feature summary suggestion and its
+        progress execution steps.
       example:
-        access_level: READ_ONLY
         suggestion:
           feature_id: 1
           suggested_summary: suggested_summary
@@ -3871,19 +3870,7 @@ components:
             $ref: '#/components/schemas/SummaryProgressStep'
           title: progress_steps
           type: array
-        access_level:
-          description: |
-            The editorial access level of the current authenticated user for this summary suggestion:
-            - READ_ONLY: User can view the suggestion and progress timeline, but cannot edit or apply changes.
-            - CAN_EDIT: User has permission to edit and apply suggestions.
-            Note: Returned directly in the response payload to eliminate an extra round-trip permissions check in client UIs.
-          enum:
-          - READ_ONLY
-          - CAN_EDIT
-          title: access_level
-          type: string
       required:
-      - access_level
       - progress_steps
       - suggestion
       title: SummarySuggestionResponse

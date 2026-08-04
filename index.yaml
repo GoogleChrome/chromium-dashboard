@@ -11,6 +11,12 @@ indexes:
   - name: start_timestamp
     direction: desc
 
+- kind: FeatureSummarySuggestion
+  properties:
+  - name: status
+  - name: created
+    direction: desc
+
 - kind: FeatureEntry
   properties:
   - name: deleted
