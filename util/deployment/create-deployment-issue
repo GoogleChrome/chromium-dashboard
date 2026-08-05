@@ -3,6 +3,14 @@ set -e
 
 REPO="GoogleChrome/chromium-dashboard"
 
+QUIET="false"
+while getopts ':q' flag; do
+  case "${flag}" in
+    q) QUIET="true" ;;
+    *) ;;
+  esac
+done
+
 # Ensure we are in the project root
 if [ "$(git rev-parse --git-dir 2>/dev/null)" != ".git" ]; then
   echo "Please run this script from the root of the repository."
@@ -10,11 +18,16 @@ if [ "$(git rev-parse --git-dir 2>/dev/null)" != ".git" ]; then
 fi
 
 echo "Checking GitHub CLI authentication status..."
-if ! gh auth status > /dev/null 2>/dev/null; then
-  echo "You are not logged into the GitHub CLI. Starting login process..."
-  gh auth login
-  if ! gh auth status > /dev/null 2>/dev/null; then
-    echo "GitHub login failed. Please run 'gh auth login' manually and try again."
+if ! gh auth status > /dev/null 2>&1; then
+  if [[ "$QUIET" != "true" ]]; then
+    echo "You are not logged into the GitHub CLI. Starting login process..."
+    gh auth login
+    if ! gh auth status > /dev/null 2>&1; then
+      echo "GitHub login failed. Please run 'gh auth login' manually and try again."
+      exit 1
+    fi
+  else
+    echo "Error: GitHub CLI is not authenticated and running non-interactively." >&2
     exit 1
   fi
 fi
@@ -27,11 +40,13 @@ if [ -z "$PREVIOUS_SHORT_SHA" ]; then
 else
   if ! CHANGELOG=$(git log --oneline "$PREVIOUS_SHORT_SHA..HEAD" --format="- %C(auto) %h %s" 2>/dev/null); then
     echo "Could not fetch a list of changes from the previous commit ($PREVIOUS_SHORT_SHA) to HEAD."
-    read -p "The previous deployment might have been from a tainted branch. Do you want to create a deployment issue with the last 40 commits (HEAD~40)? (y/n) " -n 1 -r
-    echo
-    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-      echo "Deployment aborted."
-      exit 1
+    if [[ "$QUIET" != "true" ]]; then
+      read -p "The previous deployment might have been from a tainted branch. Do you want to create a deployment issue with the last 40 commits (HEAD~40)? (y/n) " -n 1 -r
+      echo
+      if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+        echo "Deployment aborted."
+        exit 1
+      fi
     fi
     CHANGELOG=$(git log --oneline -40 --format="- %C(auto) %h %s")
   fi
@@ -52,7 +67,7 @@ EXISTING_ISSUE_JSON=$(gh issue list --search "$ISSUE_TITLE in:title" --label rel
 echo "Existing issue: $EXISTING_ISSUE_JSON"
 
 if [[ -n "$EXISTING_ISSUE_JSON" ]]; then
-  ISSUE_STATE=$(echo "$EXISTING_EXISTING_ISSUE_JSON" | jq -r '.state')
+  ISSUE_STATE=$(echo "$EXISTING_ISSUE_JSON" | jq -r '.state')
   ISSUE_URL=$(echo "$EXISTING_ISSUE_JSON" | jq -r '.url')
   echo -e "An issue with the title '$ISSUE_TITLE' already exists in state $ISSUE_STATE:\n  $ISSUE_URL"
   exit 0
@@ -75,8 +90,11 @@ echo "Title: $ISSUE_TITLE"
 echo "Body:"
 echo "$ISSUE_BODY"
 echo "---"
-echo "Press enter to create the issue, or Ctrl+C to cancel."
-read -r
+
+if [[ "$QUIET" != "true" ]]; then
+  echo "Press enter to create the issue, or Ctrl+C to cancel."
+  read -r
+fi
 
 if ( ! gh issue create --title "$ISSUE_TITLE" --body "$ISSUE_BODY" --label "release" --assignee "@me" -R "$REPO"); then
   echo "GitHub issue creation failed."

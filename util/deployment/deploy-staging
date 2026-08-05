@@ -9,4 +9,4 @@ export APP_NAME="cr-status-staging"
 export APP_YAML="app.staging.yaml"
 export NOTIFIER_YAML="notifier.staging.yaml"
 
-"$DIR/deploy-env"
+"$DIR/deploy-env" "$@"
