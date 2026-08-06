@@ -233,6 +233,16 @@ class LinkTest(testing_config.CustomTestCase):
         # add invalid url to feature
         self.mock_user_change_fields(changed_fields)
         link = query.get()
+        self.assertIsNotNone(link)
+        self.assertEqual(link.url, url)
+        self.assertIn(self.feature_id, link.feature_ids)
+        self.assertTrue(link.is_error)
+        self.assertEqual(link.http_error_code, 404)
+
+        # remove invalid url field, the link should be deleted
+        changed_fields_remove = [('bug_url', url, None)]
+        self.mock_user_change_fields(changed_fields_remove)
+        link = query.get()
         self.assertIsNone(link)
 
     @mock.patch.object(Link, 'parse', autospec=True)

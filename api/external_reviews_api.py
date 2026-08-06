@@ -219,7 +219,11 @@ class ExternalReviewsAPI(basehandlers.APIHandler):
         review_links = {
             reviewer_info.review_link(fe) for fe in unreviewed_features
         }
-        previewable_urls = {fl['url'] for fl in feature_links}
+        previewable_urls = {
+            fl['url']
+            for fl in feature_links
+            if fl.get('information') is not None
+        }
 
         # Build the response objects.
         reviews = [
@@ -256,6 +260,7 @@ class ExternalReviewsAPI(basehandlers.APIHandler):
             )
             for feature_link in feature_links
             if feature_link['url'] in review_links
+            and feature_link.get('information') is not None
         ]
         link_previews.sort(key=lambda link: link.url)
 

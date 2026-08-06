@@ -121,8 +121,6 @@ def _get_index_link(
     else:
         if should_parse_new_link:
             link.parse()
-            if link.is_error:
-                return None
         feature_link = FeatureLinks(
             feature_ids=[feature_id],
             type=link.type,
