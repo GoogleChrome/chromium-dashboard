@@ -17,6 +17,8 @@
 
 import json
 import logging
+from enum import StrEnum
+from typing import TypedDict
 
 import flask
 import requests
@@ -29,6 +31,23 @@ OMAHA_URL_TEMPLATE = (
     'https://versionhistory.googleapis.com'
     '/v1/chrome/platforms/win/channels/%s/versions/?pageSize=1'
 )
+
+
+class Channel(StrEnum):
+    """Chrome release channel names."""
+
+    STABLE = 'stable'
+    BETA = 'beta'
+    DEV = 'dev'
+    CANARY = 'canary'
+
+
+class ChannelVersionMapping(TypedDict):
+    """Typed dictionary representing a channel version entry in Omaha data."""
+
+    channel: Channel
+    version: str
+
 
 # Expected response for the "stable" channel looks like:
 # {
@@ -43,14 +62,14 @@ OMAHA_URL_TEMPLATE = (
 # We really only need the version string.
 
 
-def get_channel_version(channel: str) -> str:
+def get_channel_version(channel: Channel) -> str:
     """Return the version string that is live on the given channel."""
     if settings.UNIT_TEST_MODE or settings.PLAYWRIGHT_MODE:
-        if channel == 'stable':
+        if channel == Channel.STABLE:
             return '147.0.7727.56'
-        if channel == 'beta':
+        if channel == Channel.BETA:
             return '148.0.7778.5'
-        if channel == 'dev':
+        if channel == Channel.DEV:
             return '149.0.7779.3'
 
     url = OMAHA_URL_TEMPLATE % channel
@@ -65,7 +84,7 @@ def get_channel_version(channel: str) -> str:
     return version
 
 
-def get_omaha_data():
+def get_omaha_data() -> list[dict[str, list[ChannelVersionMapping]]]:
     """Fetch and return the Omaha data, caching it in Redis.
 
     Returns:
@@ -74,10 +93,19 @@ def get_omaha_data():
     omaha_data = rediscache.get('omaha_data')
 
     if omaha_data is None:
-        win_versions = [
-            {'channel': 'stable', 'version': get_channel_version('stable')},
-            {'channel': 'beta', 'version': get_channel_version('beta')},
-            {'channel': 'dev', 'version': get_channel_version('dev')},
+        win_versions: list[ChannelVersionMapping] = [
+            {
+                'channel': Channel.STABLE,
+                'version': get_channel_version(Channel.STABLE),
+            },
+            {
+                'channel': Channel.BETA,
+                'version': get_channel_version(Channel.BETA),
+            },
+            {
+                'channel': Channel.DEV,
+                'version': get_channel_version(Channel.DEV),
+            },
         ]
         omaha_info = [{'versions': win_versions}]
         omaha_data = json.dumps(omaha_info)
@@ -86,26 +114,39 @@ def get_omaha_data():
     return json.loads(omaha_data)
 
 
-def get_current_beta_milestone() -> int:
-    """Return the milestone number that is current on the beta channel."""
-    if flask.has_app_context() and hasattr(flask.g, 'current_beta_milestone'):
-        return flask.g.current_beta_milestone
+def get_current_channel_milestone(
+    channel: Channel = Channel.STABLE,
+) -> int:
+    """Return the milestone number that is current on the given channel."""
+    cache_attr = f'current_{channel}_milestone'
+    if flask.has_app_context() and hasattr(flask.g, cache_attr):
+        return getattr(flask.g, cache_attr)
 
     omaha_data = get_omaha_data()
-    beta_version = next(
+    version_str = next(
         (
             v['version']
             for v in omaha_data[0]['versions']
-            if v['channel'] == 'beta'
+            if v['channel'] == channel
         ),
         '0.0',
     )
-    milestone = int(beta_version.split('.')[0])
+    milestone = int(version_str.split('.')[0])
 
     if flask.has_app_context():
-        flask.g.current_beta_milestone = milestone
+        setattr(flask.g, cache_attr, milestone)
 
     return milestone
+
+
+def get_current_stable_milestone() -> int:
+    """Return the milestone number that is current on the stable channel."""
+    return get_current_channel_milestone(Channel.STABLE)
+
+
+def get_current_beta_milestone() -> int:
+    """Return the milestone number that is current on the beta channel."""
+    return get_current_channel_milestone(Channel.BETA)
 
 
 SCHEDULE_CACHE_TIME = 60 * 60  # 1 hour
