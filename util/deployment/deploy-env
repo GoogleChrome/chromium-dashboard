@@ -1,14 +1,26 @@
-#!/bin/bash
-set -e
+#!/usr/bin/env bash
+set -euo pipefail
 
 # This is a helper script for deploying to a specific environment.
 # It is called by the deploy-staging and deploy-production scripts.
 
+usage() {
+  echo "Usage: $0 [-q] [-f] [-b] [-h]"
+  echo "  -q : Pass --quiet to gcloud app deploy"
+  echo "  -f : Force deployment"
+  echo "  -b : Bypass issue creation"
+  echo "  -h : Show this help message"
+}
+
 QUIET_FLAG=""
-while getopts ':q' flag; do
+FORCE="false"
+while getopts ':qfbh' flag; do
   case "${flag}" in
     q) QUIET_FLAG="--quiet" ;;
-    *) ;;
+    f) FORCE="true" ;;
+    b) ;; # Handled by deploy-production
+    h) usage && exit 0 ;;
+    \?) echo "Invalid option: -${OPTARG}" >&2; usage >&2; exit 1 ;;
   esac
 done
 
@@ -21,21 +33,22 @@ if [[ -z "${QUIET_FLAG}" ]]; then
 fi
 
 # Check that all required environment variables are set.
-if [ -z "$APP_NAME" ] || [ -z "$APP_YAML" ] || [ -z "$NOTIFIER_YAML" ]; then
-    echo "Error: One or more required environment variables are not set."
-    echo "Please ensure the environment variables APP_NAME, APP_YAML, and NOTIFIER_YAML are exported."
+if [ -z "${APP_NAME:-}" ] || [ -z "${APP_YAML:-}" ] || [ -z "${NOTIFIER_YAML:-}" ]; then
+    echo "Error: One or more required environment variables are not set." >&2
+    echo "Please ensure the environment variables APP_NAME, APP_YAML, and NOTIFIER_YAML are exported." >&2
     exit 1
 fi
 
 echo "Starting deployment for $APP_NAME..."
 
 # 1. Set up the environment and build the client-side code.
-if [[ -z "${CI:-}" ]]; then
-  npm run clean-setup
-  npm run build
-fi
+# Note: In CI/CD Cloud Build runs, deploy-ci disables DevContainer's postCreateCommand
+# and postStartCommand to keep container startup fast and avoid running local emulators.
+# Therefore, deploy-env always executes npm run clean-setup and npm run build explicitly.
+npm run clean-setup
+npm run build
 
-# 2. Deploy the application services.
+# 2. Deploy the application services and routing/cron/queue configs.
 VERSION=$(git describe --always --abbrev=7 --match 'NOT A TAG' --dirty='-tainted')
 
 gcloud app deploy \
@@ -47,7 +60,8 @@ gcloud app deploy \
   "$APP_YAML" \
   "$NOTIFIER_YAML" \
   dispatch.yaml \
-  cron.yaml
+  cron.yaml \
+  queue.yaml
 
 # 3. Deploy the datastore indexes.
 gcloud app deploy \

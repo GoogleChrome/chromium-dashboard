@@ -74,7 +74,7 @@
 	],
 
 	// Use 'postCreateCommand' to run commands after the container is created.
-	"postCreateCommand": "npm install -g gulp-cli && npm run clean-setup",
+	"postCreateCommand": "npm run clean-setup",
 	// 'postStartCommand' runs each time the devcontainer is started.
 	"postStartCommand": "docker-compose -f .devcontainer/db-docker-compose.yml down && docker-compose -f .devcontainer/db-docker-compose.yml up -d && npm run setup && npx playwright install --with-deps",
 	// Use 'postAttachCommand' to run commands after the container is created and attached.
