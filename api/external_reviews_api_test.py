@@ -367,6 +367,39 @@ class ExternalReviewsAPITest(testing_config.CustomTestCase):
         result = self.handler.do_get(review_group='tag')
         self.assertEqual(0, len(result['reviews']))
 
+    def test_feature_with_error_link_isnt_shown(self):
+        """Test feature with an error/404 review link isn't shown."""
+        tag = 'https://github.com/w3ctag/design-reviews/issues/99999'
+        fe = FeatureEntry(
+            name='Feature with 404 review link',
+            category=1,
+            summary='Summary',
+            tag_review=tag,
+            tag_review_resolution=None,
+        )
+        fe.put()
+        fe_id = fe.key.integer_id()
+        stage = Stage(
+            feature_id=fe_id,
+            stage_type=core_enums.STAGE_BLINK_PROTOTYPE,
+            milestones=MilestoneSet(desktop_first=100),
+        )
+        stage.put()
+        fe.active_stage_id = stage.key.id()
+        fe.put()
+        fl = FeatureLinks(
+            feature_ids=[fe_id],
+            url=tag,
+            type=LINK_TYPE_GITHUB_ISSUE,
+            information=None,
+            is_error=True,
+            http_error_code=404,
+        )
+        fl.put()
+
+        actual = self.handler.do_get(review_group='tag')
+        self.assertEqual({'reviews': [], 'link_previews': []}, actual)
+
     class FeatureDict(TypedDict):
         """A dictionary representation of a feature for testing."""
 
