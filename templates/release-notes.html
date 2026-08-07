@@ -1,0 +1,488 @@
+{% extends "_base.html" %}
+
+{% block page_title %}{{ seo.seo_title }} - {% endblock %}
+
+{% block meta %}
+{% include "seo/_meta.html" with context %}
+{% endblock %}
+
+{% block css %}
+<style>
+  #release-notes-container {
+    width: 100%;
+    max-width: var(--max-content-width);
+    margin: 0 auto;
+    padding: 0 0 var(--content-padding-large) 0;
+  }
+
+  .nav-strip {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--content-padding);
+    padding: var(--content-padding);
+    background-color: var(--card-background);
+    border: var(--card-border);
+    border-radius: var(--border-radius);
+    box-shadow: var(--card-box-shadow);
+    margin-bottom: var(--content-padding-large);
+  }
+
+  .stepper-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--content-padding-quarter);
+    font-weight: 500;
+    font-size: var(--button-font-size, 10pt);
+    color: var(--link-color);
+    text-decoration: none;
+    min-height: 40px;
+    padding: var(--content-padding-quarter) var(--content-padding-half);
+  }
+
+  .stepper-btn:hover {
+    color: var(--link-hover-color);
+  }
+
+  .stepper-btn:focus-visible {
+    outline: 2px solid var(--primary-button-background);
+    outline-offset: 2px;
+    border-radius: var(--border-radius);
+  }
+
+  .milestone-jump-box {
+    display: flex;
+    align-items: center;
+    gap: var(--content-padding-half);
+    flex: 1;
+    max-width: 320px;
+    justify-content: center;
+  }
+
+  .milestone-input {
+    width: 100%;
+    max-width: 240px;
+    padding: var(--content-padding-quarter) var(--content-padding-half);
+    border-radius: var(--border-radius);
+    border: var(--default-border);
+    background-color: var(--card-background);
+    color: var(--default-color);
+    font-size: var(--default-font);
+    font-weight: 600;
+    text-align: center;
+    box-sizing: border-box;
+  }
+
+  .milestone-input:focus-visible,
+  .milestone-input:focus {
+    outline: 2px solid var(--primary-button-background);
+    outline-offset: 2px;
+  }
+
+  .archival-notice-banner {
+    background-color: var(--card-background);
+    border: var(--card-border);
+    border-left: 4px solid var(--primary-button-background);
+    border-radius: var(--border-radius);
+    box-shadow: var(--card-box-shadow);
+    padding: var(--content-padding);
+    margin-bottom: var(--content-padding-large);
+    font-size: var(--button-font-size, 10pt);
+    line-height: 1.5;
+  }
+
+  .archival-notice-content a {
+    color: var(--link-color);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    font-weight: 500;
+  }
+
+  .archival-notice-content a:hover {
+    color: var(--link-hover-color);
+  }
+
+  .category-section {
+    margin-bottom: var(--content-padding-large);
+    scroll-margin-top: 80px;
+  }
+
+  .category-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--heading-color);
+    border-bottom: var(--default-border);
+    padding-bottom: var(--content-padding-quarter);
+    margin-bottom: var(--content-padding);
+    text-wrap: balance;
+    scroll-margin-top: 80px;
+  }
+
+  .feature-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--content-padding);
+  }
+
+  .feature-card {
+    flex: 1 1 calc(50% - var(--content-padding));
+    border: var(--card-border);
+    border-radius: var(--border-radius);
+    box-shadow: var(--card-box-shadow);
+    padding: var(--content-padding);
+    background-color: var(--card-background);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    scroll-margin-top: 80px;
+    transition: box-shadow 0.2s ease, outline 0.2s ease;
+  }
+
+  .feature-card:target {
+    outline: 2px solid var(--primary-button-background);
+    outline-offset: 2px;
+  }
+
+  .feature-title {
+    margin: 0 0 var(--content-padding-half) 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    line-height: 1.3;
+    text-wrap: balance;
+    display: flex;
+    align-items: baseline;
+    gap: var(--content-padding-quarter);
+    position: relative;
+  }
+
+  .feature-name {
+    font-size: inherit;
+    font-weight: inherit;
+    color: var(--link-color);
+    display: inline-block;
+  }
+
+  .feature-name:hover {
+    color: var(--link-hover-color);
+  }
+
+  .heading-anchor-link {
+    opacity: 0;
+    color: var(--unimportant-text-color);
+    text-decoration: none;
+    font-weight: 400;
+    font-size: 0.95rem;
+    padding: 1px 4px;
+    border-radius: var(--border-radius);
+    transition: opacity 0.15s ease, color 0.15s ease, background-color 0.15s ease;
+    position: relative;
+    cursor: pointer;
+    line-height: 1;
+  }
+
+  .feature-card:hover .heading-anchor-link,
+  .heading-anchor-link:focus-visible {
+    opacity: 1;
+  }
+
+  .heading-anchor-link:hover,
+  .heading-anchor-link:focus-visible {
+    color: var(--link-hover-color);
+    background-color: rgba(26, 115, 232, 0.08);
+    outline: 2px solid var(--primary-button-background);
+    outline-offset: 2px;
+  }
+
+  .anchor-tooltip {
+    position: absolute;
+    bottom: calc(100% + 6px);
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #202124;
+    color: #ffffff;
+    font-size: 0.75rem;
+    font-weight: 500;
+    padding: 4px 8px;
+    border-radius: 4px;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    z-index: 10;
+  }
+
+  .heading-anchor-link.copied .anchor-tooltip {
+    opacity: 1;
+    transform: translateX(-50%) translateY(-2px);
+  }
+
+  .feature-summary {
+    font-size: var(--default-font);
+    line-height: 1.5;
+    color: var(--default-color);
+    margin-bottom: var(--content-padding);
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+    text-wrap: pretty;
+  }
+
+  .feature-doc-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--content-padding-quarter) var(--content-padding-half);
+    font-size: var(--button-small-font-size, 9pt);
+    border-top: var(--default-border);
+    padding-top: var(--content-padding-half);
+  }
+
+  .feature-doc-links a {
+    display: inline-block;
+    max-width: 100%;
+    color: var(--link-color);
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+
+  .feature-doc-links a:hover {
+    color: var(--link-hover-color);
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: calc(var(--content-padding-large) * 2) var(--content-padding);
+    color: var(--unimportant-text-color);
+  }
+
+  .empty-state-heading {
+    text-wrap: balance;
+  }
+
+  .empty-state-desc {
+    margin: var(--content-padding-half) 0 var(--content-padding) 0;
+    color: var(--default-color);
+    text-wrap: pretty;
+  }
+
+  .empty-state-actions {
+    display: flex;
+    justify-content: center;
+    gap: var(--content-padding-half);
+    flex-wrap: wrap;
+  }
+
+  .empty-state-actions .button.primary {
+    background-color: var(--sl-color-primary-700, #0369a1);
+    color: #ffffff;
+    font-size: var(--default-font);
+    font-weight: 600;
+  }
+
+  .empty-state-actions .button.primary:hover {
+    background-color: var(--sl-color-primary-800, #075985);
+  }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  @media (max-width: 700px) {
+    .nav-strip {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .milestone-jump-box {
+      max-width: 100%;
+    }
+
+    .feature-card {
+      flex: 1 1 100%;
+    }
+
+    #subheader div {
+      display: block;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block subheader %}
+<div id="subheader" class="actionlinks">
+  <div class="actionlinks">
+    <h1 style="text-wrap: balance;">Chrome {{ milestone }} Release Notes</h1>
+  </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<main id="release-notes-container" aria-label="Chrome {{ milestone }} Release Notes">
+  {# Modern Milestone Navigation Strip #}
+  <nav class="nav-strip" aria-label="Milestone navigation">
+    <div>
+      {% if prev_milestone %}
+        <a href="/release-notes/{{ prev_milestone }}" class="button stepper-btn" id="prev-milestone-btn" aria-label="Previous milestone: Chrome {{ prev_milestone }}">
+          <span aria-hidden="true">‹</span> Chrome {{ prev_milestone }}
+        </a>
+      {% endif %}
+    </div>
+
+    <search class="milestone-jump-box" role="search">
+      <label for="milestone-input" class="sr-only">Jump to Chrome milestone</label>
+      <input 
+        type="text" 
+        id="milestone-input" 
+        list="milestones-datalist" 
+        placeholder="e.g. Chrome {{ stable_milestone }}" 
+        value="Chrome {{ milestone }}"
+        inputmode="numeric"
+        autocomplete="off"
+        class="milestone-input"
+      />
+      <datalist id="milestones-datalist">
+        {% for m in milestones_list %}
+          <option value="Chrome {{ m }}">
+        {% endfor %}
+      </datalist>
+    </search>
+
+    <div>
+      {% if next_milestone %}
+        <a href="/release-notes/{{ next_milestone }}" class="button stepper-btn" id="next-milestone-btn" aria-label="Next milestone: Chrome {{ next_milestone }}">
+          Chrome {{ next_milestone }} <span aria-hidden="true">›</span>
+        </a>
+      {% endif %}
+    </div>
+  </nav>
+
+  {# Archival Notice for Cutoff Milestone #}
+  {% if is_min_ssr_milestone %}
+    <aside class="archival-notice-banner" role="note" aria-label="Historical release notes notice">
+      <div class="archival-notice-content">
+        <span aria-hidden="true">🏛️</span> ChromeStatus release notes begin with <strong>Chrome {{ min_ssr_milestone }}</strong>. For earlier milestones, browse the
+        <a href="https://developer.chrome.com/release-notes" target="_blank" rel="noopener noreferrer">Chrome for Developers archive <span aria-hidden="true">↗</span><span class="sr-only">(opens in new window)</span></a>.
+      </div>
+    </aside>
+  {% endif %}
+
+  {# Category-Grouped Feature Grid #}
+  {% if features_by_category %}
+    {% for category_name, category_features in features_by_category.items() %}
+      <section class="category-section" id="{{ category_name | lower | replace(' ', '-') }}" aria-labelledby="category-{{ category_name | lower | replace(' ', '-') }}">
+        <h2 class="category-title" id="category-{{ category_name | lower | replace(' ', '-') }}">{{ category_name }}</h2>
+        <div class="feature-grid">
+          {% for feature in category_features %}
+            <article class="feature-card" id="feature-{{ feature.id }}">
+              <div>
+                <h3 class="feature-title">
+                  <a class="feature-name" href="/feature/{{ feature.id }}">{{ feature.name }}</a>
+                  <a class="heading-anchor-link" href="#feature-{{ feature.id }}" aria-label="Copy link to {{ feature.name }}" title="Copy link to section" data-anchor="#feature-{{ feature.id }}">
+                    <span aria-hidden="true">#</span>
+                    <span class="anchor-tooltip" role="status" aria-live="polite">Link copied!</span>
+                  </a>
+                </h3>
+                <div class="feature-summary">{{ feature.summary }}</div>
+              </div>
+              {% if feature.doc_links %}
+                <div class="feature-doc-links" aria-label="Documentation links">
+                  {% for link in feature.doc_links %}
+                    <a href="{{ link }}" target="_blank" rel="noopener noreferrer" title="{{ link }}">{{ link }} <span class="sr-only">(opens in new window)</span></a>
+                  {% endfor %}
+                </div>
+              {% endif %}
+            </article>
+          {% endfor %}
+        </div>
+      </section>
+    {% endfor %}
+  {% else %}
+    <section class="empty-state" aria-labelledby="empty-state-title">
+      <h2 id="empty-state-title" class="empty-state-heading">No release notes features available for Chrome {{ milestone }}.</h2>
+      <p class="empty-state-desc">Features targeting Chrome {{ milestone }} may be in development or scheduled for upcoming releases.</p>
+      <div class="empty-state-actions">
+        <a href="/roadmap" class="button primary">View Chrome Roadmap</a>
+        <a href="/features#milestone={{ milestone }}" class="button">Search Features</a>
+      </div>
+    </section>
+  {% endif %}
+</main>
+{% endblock %}
+
+{% block js %}
+<script nonce="{{nonce}}">
+  document.body.classList.remove('loading');
+
+  const milestoneInput = document.getElementById('milestone-input');
+  const currentMilestone = {{ milestone }};
+
+  function navigateToMilestone(val) {
+    if (!val) return;
+    const match = String(val).match(/\d+/);
+    if (match) {
+      const m = parseInt(match[0], 10);
+      if (!isNaN(m) && m > 0 && m !== currentMilestone) {
+        window.location.href = `/release-notes/${m}`;
+      }
+    }
+  }
+
+  if (milestoneInput) {
+    milestoneInput.addEventListener('focus', () => {
+      milestoneInput.select();
+    });
+
+    milestoneInput.addEventListener('change', (e) => {
+      const target = e.target;
+      if (target && 'value' in target) {
+        navigateToMilestone(target.value);
+      }
+    });
+
+    milestoneInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        const target = e.target;
+        if (target && 'value' in target) {
+          navigateToMilestone(target.value);
+        }
+      }
+    });
+  }
+
+  // Heading anchor links: copy direct URL and smooth scroll
+  document.querySelectorAll('.heading-anchor-link').forEach((link) => {
+    link.addEventListener('click', async (e) => {
+      e.preventDefault();
+      const anchor = link.getAttribute('data-anchor');
+      if (!anchor) return;
+      const targetEl = document.querySelector(anchor);
+      if (targetEl) {
+        targetEl.scrollIntoView({behavior: 'smooth'});
+        window.history.pushState(null, '', anchor);
+      }
+      const fullUrl = window.location.origin + window.location.pathname + anchor;
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          await navigator.clipboard.writeText(fullUrl);
+          link.classList.add('copied');
+          setTimeout(() => {
+            link.classList.remove('copied');
+          }, 2000);
+        }
+      } catch (err) {
+        console.warn('Could not copy link to clipboard:', err);
+      }
+    });
+  });
+</script>
+{% endblock %}
