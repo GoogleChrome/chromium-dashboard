@@ -101,6 +101,7 @@ OT_API_KEY: str | None = None
 GITHUB_TOKEN: str | None = None
 GEMINI_API_KEY: str | None = None
 OT_DATA_ACCESS_ADMIN_GROUP_NAME: str | None = None
+SUMMARY_GENERATOR_MODEL: str = 'gemini-2.0-flash'
 
 # Dummy data for local OT support emails.
 DEV_MODE_OT_SUPPORT_EMAILS = 'user1@gmail.com,user2@gmail.com'
