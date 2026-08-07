@@ -1,0 +1,259 @@
+# Copyright 2026 Google Inc. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+"""Unit tests for pure AI release note summary generator engine."""
+
+from __future__ import annotations
+
+import testing_config  # isort: skip  # Must be imported before other project modules.
+
+from unittest import mock
+
+from google.adk.events import Event
+from google.genai import types
+
+from ai.mock_summary_generator import MockSummaryGenerator
+from ai.progress_reporter import FeatureSummaryInput, ListProgressReporter
+from ai.summary_generator import (
+    GeminiSummaryGenerator,
+    build_summary_agent,
+    extract_json_payload,
+)
+from internals.core_enums import (
+    AISummaryToolName,
+    ProgressStepId,
+    ProgressStepStatus,
+)
+from prompts.renderer import FeaturePromptTemplate
+
+
+class GeminiSummaryGeneratorTest(testing_config.CustomTestCase):
+    """Tests pure multi-turn LLM generation, tool dispatching, and telemetry reporting."""
+
+    def setUp(self):
+        """Initializes generator and test feature input DTO."""
+        self.generator = GeminiSummaryGenerator(
+            model_name='gemini-3.0-flash',
+        )
+        self.feature_input = FeatureSummaryInput(
+            name='WebGPU Subgroups',
+            summary='Enables SIMD operations across shader invocations in WGSL.',
+            shipped_milestone=130,
+            spec_link='https://gpuweb.github.io/gpuweb/',
+            standard_maturity=1,
+            category=2,
+            search_tags=('webgpu', 'wgsl', 'subgroups'),
+            doc_links=('https://developer.chrome.com/docs/webgpu',),
+        )
+
+    def test_extract_json_payload_clean_json(self):
+        """Tests extracting clean JSON string payload."""
+        raw = (
+            '{"summary": "Adds WebGPU subgroups.", "rationale": "High'
+            ' performance.", "doc_links": ["https://web.dev/webgpu"]}'
+        )
+        payload = extract_json_payload(raw)
+        self.assertEqual(payload['summary'], 'Adds WebGPU subgroups.')
+        self.assertEqual(payload['rationale'], 'High performance.')
+        self.assertEqual(payload['doc_links'], ['https://web.dev/webgpu'])
+
+    def test_extract_json_payload_markdown_code_fences(self):
+        """Tests extracting JSON payload enclosed in markdown code fences."""
+        raw = (
+            '```json\n{"summary": "Adds WebGPU subgroups.", "rationale": "Great.",'
+            ' "doc_links": []}\n```'
+        )
+        payload = extract_json_payload(raw)
+        self.assertEqual(payload['summary'], 'Adds WebGPU subgroups.')
+        self.assertEqual(payload['rationale'], 'Great.')
+        self.assertEqual(payload['doc_links'], [])
+
+    def test_extract_json_payload_non_dict_fallback(self):
+        """Tests fallback handling when parsed JSON is a list instead of dict."""
+        raw = '["item1", "item2"]'
+        payload = extract_json_payload(raw)
+        self.assertIn('item1', payload['summary'])
+        self.assertEqual(payload['doc_links'], [])
+
+    def test_extract_json_payload_invalid_json_fallback(self):
+        """Tests fallback when payload is unparseable plain text."""
+        raw = 'This is plain text without JSON'
+        payload = extract_json_payload(raw)
+        self.assertEqual(payload['summary'], 'This is plain text without JSON')
+        self.assertEqual(payload['rationale'], '')
+        self.assertEqual(payload['doc_links'], [])
+
+    def test_generator_initialization_with_prompt_template_instance(self):
+        """Tests generator initialized with FeaturePromptTemplate instance."""
+        template = FeaturePromptTemplate('generate_release_notes.md.jinja')
+        generator = GeminiSummaryGenerator(
+            model_name='gemini-2.5-flash',
+            prompt_template=template,
+        )
+        self.assertEqual(generator.prompt_template, template)
+
+    def test_build_summary_agent_configuration(self):
+        """Tests that build_summary_agent returns configured ADK Agent."""
+        agent = build_summary_agent(
+            model_name='gemini-3.0-flash', instruction='Test instructions'
+        )
+        self.assertEqual(agent.name, 'release_notes_summary_agent')
+        self.assertEqual(agent.model, 'gemini-3.0-flash')
+        self.assertEqual(agent.instruction, 'Test instructions')
+        self.assertTrue(len(agent.tools) >= 3)
+
+    @mock.patch('ai.summary_generator.Runner')
+    def test_generate_summary_single_turn_success(self, mock_runner_cls):
+        """Tests successful single-turn generation with ADK Runner."""
+        mock_runner = mock.MagicMock()
+        event = Event(
+            author='release_notes_summary_agent',
+            message=types.Content(
+                role='model',
+                parts=[
+                    types.Part.from_text(
+                        text=(
+                            '{"summary": "WebGPU subgroups allow SIMD.",'
+                            ' "rationale": "Enriched.", "doc_links":'
+                            ' ["https://web.dev/webgpu"]}'
+                        )
+                    )
+                ],
+            ),
+        )
+        mock_runner.run.return_value = [event]
+        mock_runner_cls.return_value = mock_runner
+
+        reporter = ListProgressReporter()
+        result = self.generator.generate_summary(
+            self.feature_input, reporter=reporter
+        )
+
+        self.assertEqual(
+            result.suggested_summary, 'WebGPU subgroups allow SIMD.'
+        )
+        self.assertEqual(result.generation_rationale, 'Enriched.')
+        self.assertEqual(
+            result.suggested_doc_links, ('https://web.dev/webgpu',)
+        )
+        self.assertIsNone(result.error_message)
+
+        # Verify telemetry steps
+        step_ids = [s.step_id for s in reporter.steps]
+        self.assertIn(ProgressStepId.START.value, step_ids)
+        self.assertIn(ProgressStepId.LLM_GENERATION.value, step_ids)
+        self.assertIn(ProgressStepId.SUCCESS.value, step_ids)
+
+    @mock.patch('ai.summary_generator.Runner')
+    def test_generate_summary_multi_turn_with_tool_events(
+        self, mock_runner_cls
+    ):
+        """Tests multi-turn tool execution telemetry recording from ADK events."""
+        mock_runner = mock.MagicMock()
+
+        # Tool call event
+        fn_call = mock.MagicMock()
+        fn_call.name = AISummaryToolName.SEARCH_MDN.value
+        fn_call.args = {'query': 'subgroups'}
+        event_1 = mock.MagicMock()
+        event_1.get_function_calls.return_value = [fn_call]
+        event_1.get_function_responses.return_value = []
+        event_1.message = None
+
+        # Tool response event
+        fn_resp = mock.MagicMock()
+        fn_resp.name = AISummaryToolName.SEARCH_MDN.value
+        fn_resp.response = {'status': 'success', 'results': []}
+        event_2 = mock.MagicMock()
+        event_2.get_function_calls.return_value = []
+        event_2.get_function_responses.return_value = [fn_resp]
+        event_2.message = None
+
+        # Final response event
+        event_3 = Event(
+            author='release_notes_summary_agent',
+            message=types.Content(
+                role='model',
+                parts=[
+                    types.Part.from_text(
+                        text=(
+                            '{"summary": "Multi-turn summary.", "rationale": "Found'
+                            ' in MDN.", "doc_links":'
+                            ' ["https://developer.mozilla.org/subgroups"]}'
+                        )
+                    )
+                ],
+            ),
+        )
+        mock_runner.run.return_value = [event_1, event_2, event_3]
+        mock_runner_cls.return_value = mock_runner
+
+        reporter = ListProgressReporter()
+        result = self.generator.generate_summary(
+            self.feature_input, reporter=reporter
+        )
+
+        self.assertEqual(result.suggested_summary, 'Multi-turn summary.')
+        self.assertEqual(
+            result.suggested_doc_links,
+            ('https://developer.mozilla.org/subgroups',),
+        )
+
+        step_ids = [s.step_id for s in reporter.steps]
+        self.assertIn(ProgressStepId.SEARCH_MDN.value, step_ids)
+        self.assertIn(ProgressStepId.SUCCESS.value, step_ids)
+
+    @mock.patch('ai.summary_generator.Runner')
+    def test_generate_summary_runner_exception_returns_error_result(
+        self, mock_runner_cls
+    ):
+        """Tests that ADK Runner errors are captured in SummaryResult.error_message."""
+        mock_runner = mock.MagicMock()
+        mock_runner.run.side_effect = Exception('Gemini 503 Unavailable')
+        mock_runner_cls.return_value = mock_runner
+
+        reporter = ListProgressReporter()
+        result = self.generator.generate_summary(
+            self.feature_input, reporter=reporter
+        )
+
+        self.assertEqual(result.suggested_summary, '')
+        self.assertIn('Gemini 503 Unavailable', result.error_message or '')
+        self.assertEqual(
+            reporter.steps[-1].status, ProgressStepStatus.FAILED.value
+        )
+
+
+class MockSummaryGeneratorTest(testing_config.CustomTestCase):
+    """Tests deterministic MockSummaryGenerator."""
+
+    def test_mock_generator_returns_canned_result(self):
+        """Tests that MockSummaryGenerator returns canned response and logs steps."""
+        mock_gen = MockSummaryGenerator(
+            canned_summary='Mock summary.',
+            canned_rationale='Mock rationale.',
+            canned_doc_links=['https://web.dev/mock'],
+        )
+        reporter = ListProgressReporter()
+        dummy_input = FeatureSummaryInput(name='Test', summary='Test summary')
+        result = mock_gen.generate_summary(dummy_input, reporter=reporter)
+
+        self.assertEqual(result.suggested_summary, 'Mock summary.')
+        self.assertEqual(result.generation_rationale, 'Mock rationale.')
+        self.assertEqual(result.suggested_doc_links, ('https://web.dev/mock',))
+        self.assertEqual(len(reporter.steps), 2)
+        self.assertEqual(reporter.steps[0].step_id, ProgressStepId.START.value)
+        self.assertEqual(
+            reporter.steps[1].step_id, ProgressStepId.SUCCESS.value
+        )
