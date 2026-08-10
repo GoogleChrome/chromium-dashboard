@@ -117,8 +117,8 @@
   }
 
   .feature-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    display: flex;
+    flex-direction: column;
     gap: var(--content-padding);
   }
 
@@ -286,10 +286,6 @@
 
     .milestone-jump-box {
       max-width: 100%;
-    }
-
-    .feature-grid {
-      grid-template-columns: 1fr;
     }
 
     #subheader div {
