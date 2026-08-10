@@ -8,6 +8,9 @@
 
 {% block css %}
 <style>
+  /* ==========================================================================
+     Layout & Main Container
+     ========================================================================== */
   #release-notes-container {
     width: 100%;
     max-width: var(--max-content-width);
@@ -15,6 +18,9 @@
     padding: 0 0 var(--content-padding-large) 0;
   }
 
+  /* ==========================================================================
+     Milestone Navigation Strip
+     ========================================================================== */
   .nav-strip {
     display: flex;
     justify-content: space-between;
@@ -34,7 +40,7 @@
     align-items: center;
     gap: var(--content-padding-quarter);
     font-weight: 500;
-    font-size: var(--button-font-size, 10pt);
+    font-size: var(--button-font-size, 0.875rem);
     color: var(--link-color);
     text-decoration: none;
     min-height: 40px;
@@ -68,7 +74,7 @@
     border: var(--default-border);
     background-color: var(--card-background);
     color: var(--default-color);
-    font-size: var(--default-font);
+    font-size: 0.875rem;
     font-weight: 600;
     text-align: center;
     box-sizing: border-box;
@@ -80,6 +86,9 @@
     outline-offset: 2px;
   }
 
+  /* ==========================================================================
+     Archival Notice Banner
+     ========================================================================== */
   .archival-notice-banner {
     background-color: var(--card-background);
     border: var(--card-border);
@@ -88,7 +97,7 @@
     box-shadow: var(--card-box-shadow);
     padding: var(--content-padding);
     margin-bottom: var(--content-padding-large);
-    font-size: var(--button-font-size, 10pt);
+    font-size: 0.875rem;
     line-height: 1.5;
   }
 
@@ -103,6 +112,9 @@
     color: var(--link-hover-color);
   }
 
+  /* ==========================================================================
+     Category Sections & Feature Grid
+     ========================================================================== */
   .category-section {
     margin-bottom: var(--content-padding-large);
     scroll-margin-top: 80px;
@@ -120,13 +132,12 @@
   }
 
   .feature-grid {
-    display: flex;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
     gap: var(--content-padding);
   }
 
   .feature-card {
-    flex: 1 1 calc(50% - var(--content-padding));
     border: var(--card-border);
     border-radius: var(--border-radius);
     box-shadow: var(--card-box-shadow);
@@ -173,7 +184,12 @@
     text-decoration: none;
     font-weight: 400;
     font-size: 0.95rem;
-    padding: 1px 4px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 28px;
+    min-height: 28px;
+    padding: 2px;
     border-radius: var(--border-radius);
     transition: opacity 0.15s ease, color 0.15s ease, background-color 0.15s ease;
     position: relative;
@@ -219,7 +235,7 @@
   }
 
   .feature-summary {
-    font-size: var(--default-font);
+    font-size: 0.875rem;
     line-height: 1.5;
     color: var(--default-color);
     margin-bottom: var(--content-padding);
@@ -232,7 +248,7 @@
     display: flex;
     flex-wrap: wrap;
     gap: var(--content-padding-quarter) var(--content-padding-half);
-    font-size: var(--button-small-font-size, 9pt);
+    font-size: var(--button-small-font-size, 0.75rem);
     border-top: var(--default-border);
     padding-top: var(--content-padding-half);
   }
@@ -250,6 +266,9 @@
     color: var(--link-hover-color);
   }
 
+  /* ==========================================================================
+     Empty State & Utilities
+     ========================================================================== */
   .empty-state {
     text-align: center;
     padding: calc(var(--content-padding-large) * 2) var(--content-padding);
@@ -276,7 +295,7 @@
   .empty-state-actions .button.primary {
     background-color: var(--sl-color-primary-700, #0369a1);
     color: #ffffff;
-    font-size: var(--default-font);
+    font-size: 0.875rem;
     font-weight: 600;
   }
 
@@ -296,6 +315,9 @@
     border: 0;
   }
 
+  /* ==========================================================================
+     Responsive Breakpoints
+     ========================================================================== */
   @media (max-width: 700px) {
     .nav-strip {
       flex-direction: column;
@@ -306,8 +328,8 @@
       max-width: 100%;
     }
 
-    .feature-card {
-      flex: 1 1 100%;
+    .feature-grid {
+      grid-template-columns: 1fr;
     }
 
     #subheader div {
@@ -320,13 +342,13 @@
 {% block subheader %}
 <div id="subheader" class="actionlinks">
   <div class="actionlinks">
-    <h1 style="text-wrap: balance;">Chrome {{ milestone }} Release Notes</h1>
+    <h1 id="page-title" style="text-wrap: balance;">Chrome {{ milestone }} Release Notes</h1>
   </div>
 </div>
 {% endblock %}
 
 {% block content %}
-<main id="release-notes-container" aria-label="Chrome {{ milestone }} Release Notes">
+<main id="release-notes-container" aria-labelledby="page-title">
   {# Modern Milestone Navigation Strip #}
   <nav class="nav-strip" aria-label="Milestone navigation">
     <div>
@@ -337,7 +359,7 @@
       {% endif %}
     </div>
 
-    <search class="milestone-jump-box" role="search">
+    <search class="milestone-jump-box">
       <label for="milestone-input" class="sr-only">Jump to Chrome milestone</label>
       <input 
         type="text" 
@@ -346,6 +368,7 @@
         placeholder="e.g. Chrome {{ stable_milestone }}" 
         value="Chrome {{ milestone }}"
         inputmode="numeric"
+        enterkeyhint="go"
         autocomplete="off"
         class="milestone-input"
       />
@@ -378,8 +401,9 @@
   {# Category-Grouped Feature Grid #}
   {% if features_by_category %}
     {% for category_name, category_features in features_by_category.items() %}
-      <section class="category-section" id="{{ category_name | lower | replace(' ', '-') }}" aria-labelledby="category-{{ category_name | lower | replace(' ', '-') }}">
-        <h2 class="category-title" id="category-{{ category_name | lower | replace(' ', '-') }}">{{ category_name }}</h2>
+      {% set category_slug = category_name | lower | replace(' ', '-') | replace('/', '-') %}
+      <section class="category-section" id="{{ category_slug }}" aria-labelledby="category-{{ category_slug }}">
+        <h2 class="category-title" id="category-{{ category_slug }}">{{ category_name }}</h2>
         <div class="feature-grid">
           {% for feature in category_features %}
             <article class="feature-card" id="feature-{{ feature.id }}">
@@ -422,8 +446,9 @@
 <script nonce="{{nonce}}">
   document.body.classList.remove('loading');
 
-  const milestoneInput = document.getElementById('milestone-input');
   const currentMilestone = {{ milestone }};
+  const milestoneInput = document.getElementById('milestone-input');
+  const releaseContainer = document.getElementById('release-notes-container');
 
   function navigateToMilestone(val) {
     if (!val) return;
@@ -441,36 +466,35 @@
       milestoneInput.select();
     });
 
-    milestoneInput.addEventListener('change', (e) => {
-      const target = e.target;
-      if (target && 'value' in target) {
-        navigateToMilestone(target.value);
-      }
+    milestoneInput.addEventListener('change', () => {
+      navigateToMilestone(milestoneInput.value);
     });
 
     milestoneInput.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') {
         e.preventDefault();
-        const target = e.target;
-        if (target && 'value' in target) {
-          navigateToMilestone(target.value);
-        }
+        navigateToMilestone(milestoneInput.value);
       }
     });
   }
 
-  // Heading anchor links: copy direct URL and smooth scroll
-  document.querySelectorAll('.heading-anchor-link').forEach((link) => {
-    link.addEventListener('click', async (e) => {
+  // Delegated Heading Anchor Link Management (Clipboard copy & smooth scroll)
+  if (releaseContainer) {
+    releaseContainer.addEventListener('click', async (e) => {
+      const link = e.target.closest('.heading-anchor-link');
+      if (!link) return;
+
       e.preventDefault();
       const anchor = link.getAttribute('data-anchor');
       if (!anchor) return;
+
       const targetEl = document.querySelector(anchor);
       if (targetEl) {
         targetEl.scrollIntoView({behavior: 'smooth'});
         window.history.pushState(null, '', anchor);
       }
-      const fullUrl = window.location.origin + window.location.pathname + anchor;
+
+      const fullUrl = new URL(anchor, window.location.href).href;
       try {
         if (navigator.clipboard && navigator.clipboard.writeText) {
           await navigator.clipboard.writeText(fullUrl);
@@ -483,6 +507,6 @@
         console.warn('Could not copy link to clipboard:', err);
       }
     });
-  });
+  }
 </script>
 {% endblock %}
