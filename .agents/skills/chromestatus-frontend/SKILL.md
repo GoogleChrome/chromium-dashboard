@@ -24,7 +24,7 @@ This skill provides context and guidelines for developing the frontend of the `c
 - **Component Development**: Create new components in `client-src/elements/`. Follow the naming convention `chromedash-*.js`.
 - **Icons**: Prefer Material Icons. If using Bootstrap icons via Shoelace, ensure they are copied to `static/shoelace/assets/icons`.
 - **API Interaction**: Use the client wrapper in `cs-client.js` or the OpenAPI context consumer for making server requests.
-- **Styling & CSS Hygiene**: Use Lit's `css` tagged templates for component styles. Leverage variables from the design system where possible. In SSR templates (`templates/*.html`), never redundantly override global anchor styles (`a { color }`, `a:hover`) or heading typography (`h1`, `h2`, `h3`) defined in `static/css/main.css`; rely on `main.css` defaults and design tokens (`var(--...)`) for page layout.
+- **Styling & CSS Hygiene**: Use Lit's `css` tagged templates for component styles. Leverage variables from the design system where possible. In SSR templates (`templates/*.html`), never redundantly override global anchor styles (`a { color }`, `a:hover`) or heading typography (`h1`, `h2`, `h3`) defined in `static/css/main.css`; rely on `main.css` defaults and design tokens (`var(--...)`) for page layout. Remember that `_base.html` automatically wraps content in `#content-component-wrapper` (centered at 860px max-width). Always add `scroll-margin-top: 80px` to targetable sections/cards so hash navigation clears `<chromedash-header>`.
 - **Legacy Code**: Do not add new code or components to the legacy `pages/` directory on the backend, even if it contains old templates. All newer frontend logic should reside in `client-src/`.
 
 ## Common Tasks

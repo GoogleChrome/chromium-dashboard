@@ -9,18 +9,12 @@
 {% block css %}
 <style>
   /* ==========================================================================
-     Layout & Main Container
+     Layout & Milestone Navigation
      ========================================================================== */
   #release-notes-container {
-    width: 100%;
-    max-width: var(--max-content-width);
-    margin: 0 auto;
-    padding: 0 0 var(--content-padding-large) 0;
+    padding-bottom: var(--content-padding-large);
   }
 
-  /* ==========================================================================
-     Milestone Navigation Strip
-     ========================================================================== */
   .nav-strip {
     display: flex;
     justify-content: space-between;
@@ -39,15 +33,6 @@
     display: inline-flex;
     align-items: center;
     gap: var(--content-padding-quarter);
-    font-weight: 500;
-    min-height: 40px;
-    padding: var(--content-padding-quarter) var(--content-padding-half);
-  }
-
-  .stepper-btn:focus-visible {
-    outline: 2px solid var(--primary-button-background);
-    outline-offset: 2px;
-    border-radius: var(--border-radius);
   }
 
   .milestone-jump-box {
@@ -67,14 +52,13 @@
     border: var(--default-border);
     background-color: var(--card-background);
     color: var(--default-color);
-    font-size: 0.875rem;
-    font-weight: 600;
     text-align: center;
-    box-sizing: border-box;
   }
 
+  .stepper-btn:focus-visible,
   .milestone-input:focus-visible,
-  .milestone-input:focus {
+  .milestone-input:focus,
+  .feature-card:target {
     outline: 2px solid var(--primary-button-background);
     outline-offset: 2px;
   }
@@ -90,14 +74,6 @@
     box-shadow: var(--card-box-shadow);
     padding: var(--content-padding);
     margin-bottom: var(--content-padding-large);
-    font-size: 0.875rem;
-    line-height: 1.5;
-  }
-
-  .archival-notice-content a {
-    text-decoration: underline;
-    text-underline-offset: 2px;
-    font-weight: 500;
   }
 
   /* ==========================================================================
@@ -112,7 +88,6 @@
     border-bottom: var(--default-border);
     padding-bottom: var(--content-padding-quarter);
     margin-bottom: var(--content-padding);
-    text-wrap: balance;
     scroll-margin-top: 80px;
   }
 
@@ -132,33 +107,21 @@
     flex-direction: column;
     justify-content: space-between;
     scroll-margin-top: 80px;
-    transition: box-shadow 0.2s ease, outline 0.2s ease;
-  }
-
-  .feature-card:target {
-    outline: 2px solid var(--primary-button-background);
-    outline-offset: 2px;
   }
 
   .feature-title {
-    margin: 0 0 var(--content-padding-half) 0;
-    text-wrap: balance;
+    margin-bottom: var(--content-padding-half);
     display: flex;
     align-items: baseline;
     gap: var(--content-padding-quarter);
-    position: relative;
   }
 
-  .feature-name {
-    display: inline-block;
-  }
-
+  /* ==========================================================================
+     Heading Anchor Copy Links & Tooltips
+     ========================================================================== */
   .heading-anchor-link {
     opacity: 0;
     color: var(--unimportant-text-color);
-    text-decoration: none;
-    font-weight: 400;
-    font-size: 0.95rem;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -166,10 +129,8 @@
     min-height: 28px;
     padding: 2px;
     border-radius: var(--border-radius);
-    transition: opacity 0.15s ease, color 0.15s ease, background-color 0.15s ease;
     position: relative;
-    cursor: pointer;
-    line-height: 1;
+    transition: opacity 0.15s ease, color 0.15s ease;
   }
 
   .feature-card:hover .heading-anchor-link,
@@ -193,7 +154,6 @@
     background-color: #202124;
     color: #ffffff;
     font-size: 0.75rem;
-    font-weight: 500;
     padding: 4px 8px;
     border-radius: 4px;
     white-space: nowrap;
@@ -209,18 +169,19 @@
     transform: translateX(-50%) translateY(-2px);
   }
 
+  /* ==========================================================================
+     Feature Details & Doc Link Truncation
+     ========================================================================== */
   .feature-summary {
     margin-bottom: var(--content-padding);
     white-space: pre-wrap;
     overflow-wrap: break-word;
-    text-wrap: pretty;
   }
 
   .feature-doc-links {
     display: flex;
     flex-wrap: wrap;
     gap: var(--content-padding-quarter) var(--content-padding-half);
-    font-size: var(--button-small-font-size, 0.75rem);
     border-top: var(--default-border);
     padding-top: var(--content-padding-half);
   }
@@ -234,7 +195,7 @@
   }
 
   /* ==========================================================================
-     Empty State & Utilities
+     Empty State & Accessibility
      ========================================================================== */
   .empty-state {
     text-align: center;
@@ -242,13 +203,8 @@
     color: var(--unimportant-text-color);
   }
 
-  .empty-state-heading {
-    text-wrap: balance;
-  }
-
   .empty-state-desc {
     margin: var(--content-padding-half) 0 var(--content-padding) 0;
-    text-wrap: pretty;
   }
 
   .empty-state-actions {
@@ -286,10 +242,6 @@
 
     .milestone-jump-box {
       max-width: 100%;
-    }
-
-    #subheader div {
-      display: block;
     }
   }
 </style>
