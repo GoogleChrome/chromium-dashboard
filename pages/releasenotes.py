@@ -167,7 +167,7 @@ class ReleaseNotesHandler(basehandlers.FlaskHandler):
                 milestone == MIN_SSR_RELEASE_NOTES_MILESTONE
             ),
             'min_ssr_milestone': MIN_SSR_RELEASE_NOTES_MILESTONE,
-            'min_external_milestone': MIN_EXTERNAL_RELEASE_NOTES_MILESTONE,
+            'min_dropdown_milestone': MIN_EXTERNAL_RELEASE_NOTES_MILESTONE,
             'max_dropdown_milestone': max_dropdown_milestone,
             'features_by_category': features_by_category,
             'total_features_count': len(release_note_features),

@@ -196,3 +196,8 @@ class ReleaseNotesHandlerTest(testing_config.CustomTestCase):
             self.assertIn(
                 'https://developer.chrome.com/release-notes', parser.links
             )
+
+            # Verify feature title permalink, section anchor link, and documentation link
+            self.assertIn('/feature/101', parser.links)
+            self.assertIn('#feature-101', parser.links)
+            self.assertIn('https://example.com/spec', parser.links)

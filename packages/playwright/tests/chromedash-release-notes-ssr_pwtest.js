@@ -26,27 +26,27 @@ async function withShippedFeature(page, milestone, testFn) {
     expect(match).not.toBeNull();
     featureId = match ? match[1] : '';
 
-    await page.goto(`/guide/editall/${featureId}`, {timeout: 30000});
+    const editButton = page.locator('a[href^="/guide/editall/"]');
+    await expect(editButton).toBeVisible({timeout: 15000});
+    await editButton.click();
+
     await expect(page.locator('chromedash-form-table')).toBeVisible({
       timeout: 30000,
     });
 
-    const shippedInput = page.getByLabel('Shipped', {exact: false});
-    if (await shippedInput.isVisible()) {
-      await shippedInput.fill(String(milestone));
-    } else {
-      await page
-        .locator('input[name="shipped_milestone"]')
-        .fill(String(milestone));
-    }
+    const shippedInput = page.locator('input[name="shipped_milestone"]');
+    await expect(shippedInput).toBeVisible({timeout: 10000});
+    await shippedInput.fill(String(milestone));
 
-    const submitButton = page.getByRole('button', {name: /Submit|Save/i});
-    if (await submitButton.isVisible()) {
-      await submitButton.click();
-    } else {
-      await page.locator('input[type="submit"]').click();
-    }
-    await expect(page).toHaveURL(new RegExp(`/feature/${featureId}`));
+    const submitButton = page.locator('input[type="submit"]');
+    await submitButton.click();
+
+    await page.waitForURL(new RegExp(`/feature/${featureId}`), {
+      timeout: 30000,
+    });
+    await expect(page.locator('chromedash-feature-detail')).toBeVisible({
+      timeout: 30000,
+    });
 
     await testFn(featureId);
   } finally {
@@ -148,6 +148,25 @@ test.describe('Release Notes SSR Page', () => {
     await expect(jumpInput).toHaveValue('Chrome 153');
   });
 
+  test('should not navigate when typing numbers below minimum milestone threshold (< 124)', async ({
+    page,
+  }) => {
+    await page.goto('/release-notes/151', {timeout: 30000});
+
+    const jumpInput = page.getByLabel('Jump to Chrome milestone');
+    await expect(jumpInput).toBeVisible();
+
+    // Type single leading digit '1' and press Enter - should not navigate
+    await jumpInput.fill('1');
+    await jumpInput.press('Enter');
+    await expect(page).toHaveURL(/\/release-notes\/151/);
+
+    // Type '12' and press Enter - should not navigate
+    await jumpInput.fill('12');
+    await jumpInput.press('Enter');
+    await expect(page).toHaveURL(/\/release-notes\/151/);
+  });
+
   test('should navigate to next milestone when clicking the next stepper button', async ({
     page,
   }) => {
@@ -176,7 +195,7 @@ test.describe('Release Notes SSR Page', () => {
     await expect(archivalBanner).toBeVisible();
 
     const archiveLink = archivalBanner.getByRole('link', {
-      name: /Chrome for Developers archive/i,
+      name: /archive/i,
     });
     await expect(archiveLink).toBeVisible();
     await expect(archiveLink).toHaveAttribute('target', '_blank');
@@ -197,6 +216,10 @@ test.describe('Release Notes SSR Page', () => {
       // Verify specific feature card is rendered
       const featureCard = page.locator(`#feature-${featureId}`);
       await expect(featureCard).toBeVisible({timeout: 20000});
+
+      // Verify feature title permalink
+      const titleLink = featureCard.locator('.feature-name');
+      await expect(titleLink).toHaveAttribute('href', `/feature/${featureId}`);
     });
   });
 
@@ -243,11 +266,22 @@ test.describe('Release Notes SSR Page', () => {
     await page.goto('/release-notes/151', {timeout: 30000});
 
     const archiveLink = page.getByRole('link', {
-      name: /Chrome for Developers archive/i,
+      name: /archive/i,
     });
     await expect(archiveLink).toBeVisible({timeout: 20000});
     await expect(archiveLink).toHaveAttribute('target', '_blank');
     await expect(archiveLink).toHaveAttribute('rel', 'noopener noreferrer');
+
+    // Verify all documentation links on feature cards enforce safe external window behavior
+    const docLinks = page.locator('.feature-doc-links a');
+    const docLinkCount = await docLinks.count();
+    if (docLinkCount > 0) {
+      for (let i = 0; i < docLinkCount; i++) {
+        const link = docLinks.nth(i);
+        await expect(link).toHaveAttribute('target', '_blank');
+        await expect(link).toHaveAttribute('rel', 'noopener noreferrer');
+      }
+    }
   });
 
   test('should render empty state with roadmap action buttons on unpopulated milestone', async ({

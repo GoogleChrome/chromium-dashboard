@@ -67,13 +67,58 @@
      Archival Notice Banner
      ========================================================================== */
   .archival-notice-banner {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--content-padding);
     background-color: var(--card-background);
     border: var(--card-border);
     border-left: 4px solid var(--primary-button-background);
     border-radius: var(--border-radius);
     box-shadow: var(--card-box-shadow);
-    padding: var(--content-padding);
+    padding: var(--content-padding-half) var(--content-padding);
     margin-bottom: var(--content-padding-large);
+  }
+
+  .archival-notice-body {
+    display: flex;
+    align-items: center;
+    gap: var(--content-padding-half);
+    color: var(--default-color);
+    line-height: 1.5;
+  }
+
+  .archival-notice-icon {
+    font-size: 1.25rem;
+    line-height: 1;
+    flex-shrink: 0;
+  }
+
+  .archival-action-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--content-padding-quarter);
+    background-color: var(--card-background);
+    border: 1px solid var(--sl-color-primary-300, #7dd3fc);
+    text-decoration: none;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
+  }
+
+  .archival-action-btn:hover {
+    background-color: var(--sl-color-primary-100, #e0f2fe);
+    border-color: var(--sl-color-primary-600, #0284c7);
+    text-decoration: none;
+  }
+
+  .archival-action-btn:focus-visible {
+    outline: 2px solid var(--primary-button-background);
+    outline-offset: 2px;
+  }
+
+  .archival-action-btn .external-icon {
+    font-size: 0.875rem;
+    line-height: 1;
   }
 
   /* ==========================================================================
@@ -121,7 +166,6 @@
      ========================================================================== */
   .heading-anchor-link {
     opacity: 0;
-    color: var(--unimportant-text-color);
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -130,7 +174,7 @@
     padding: 2px;
     border-radius: var(--border-radius);
     position: relative;
-    transition: opacity 0.15s ease, color 0.15s ease;
+    transition: opacity 0.15s ease;
   }
 
   .feature-card:hover .heading-anchor-link,
@@ -140,7 +184,6 @@
 
   .heading-anchor-link:hover,
   .heading-anchor-link:focus-visible {
-    color: var(--link-hover-color);
     background-color: rgba(26, 115, 232, 0.08);
     outline: 2px solid var(--primary-button-background);
     outline-offset: 2px;
@@ -180,18 +223,31 @@
 
   .feature-doc-links {
     display: flex;
-    flex-wrap: wrap;
-    gap: var(--content-padding-quarter) var(--content-padding-half);
+    flex-direction: column;
+    gap: var(--content-padding-quarter);
     border-top: var(--default-border);
     padding-top: var(--content-padding-half);
   }
 
   .feature-doc-links a {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--content-padding-quarter);
     max-width: 100%;
-    text-overflow: ellipsis;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  .doc-link-text {
     overflow: hidden;
+    text-overflow: ellipsis;
     white-space: nowrap;
+  }
+
+  .feature-doc-links .external-icon {
+    font-size: 0.8125rem;
+    line-height: 1;
+    flex-shrink: 0;
   }
 
   /* ==========================================================================
@@ -212,11 +268,6 @@
     justify-content: center;
     gap: var(--content-padding-half);
     flex-wrap: wrap;
-  }
-
-  .empty-state-actions .button.primary {
-    background-color: var(--sl-color-primary-700, #0369a1);
-    color: #ffffff;
   }
 
   .sr-only {
@@ -242,6 +293,16 @@
 
     .milestone-jump-box {
       max-width: 100%;
+    }
+
+    .archival-notice-banner {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .archival-action-btn {
+      justify-content: center;
+      width: 100%;
     }
   }
 </style>
@@ -298,9 +359,24 @@
   {# Archival Notice for Cutoff Milestone #}
   {% if is_min_ssr_milestone %}
     <aside class="archival-notice-banner" role="note" aria-label="Historical release notes notice">
-      <div class="archival-notice-content">
-        <span aria-hidden="true">🏛️</span> ChromeStatus release notes begin with <strong>Chrome {{ min_ssr_milestone }}</strong>. For earlier milestones, browse the
-        <a href="https://developer.chrome.com/release-notes" target="_blank" rel="noopener noreferrer">Chrome for Developers archive <span aria-hidden="true">↗</span><span class="sr-only">(opens in new window)</span></a>.
+      <div class="archival-notice-body">
+        <span class="archival-notice-icon" aria-hidden="true">🏛️</span>
+        <div class="archival-notice-text">
+          ChromeStatus release notes begin with <strong>Chrome {{ min_ssr_milestone }}</strong>. Earlier milestones are available in the archive.
+        </div>
+      </div>
+      <div class="archival-notice-actions">
+        <a 
+          href="https://developer.chrome.com/release-notes" 
+          target="_blank" 
+          rel="noopener noreferrer" 
+          class="button archival-action-btn"
+          aria-label="Browse Chrome for Developers archive (opens in new window)"
+        >
+          <span>Browse Archive</span>
+          <span aria-hidden="true" class="external-icon">↗</span>
+          <span class="sr-only">(opens in new window)</span>
+        </a>
       </div>
     </aside>
   {% endif %}
@@ -327,7 +403,11 @@
               {% if feature.doc_links %}
                 <div class="feature-doc-links" aria-label="Documentation links">
                   {% for link in feature.doc_links %}
-                    <a href="{{ link }}" target="_blank" rel="noopener noreferrer" title="{{ link }}">{{ link }} <span class="sr-only">(opens in new window)</span></a>
+                    <a href="{{ link }}" target="_blank" rel="noopener noreferrer" title="{{ link }}">
+                      <span class="doc-link-text">{{ link }}</span>
+                      <span aria-hidden="true" class="external-icon">↗</span>
+                      <span class="sr-only">(opens in new window)</span>
+                    </a>
                   {% endfor %}
                 </div>
               {% endif %}
@@ -341,7 +421,7 @@
       <h2 id="empty-state-title" class="empty-state-heading">No release notes features available for Chrome {{ milestone }}.</h2>
       <p class="empty-state-desc">Features targeting Chrome {{ milestone }} may be in development or scheduled for upcoming releases.</p>
       <div class="empty-state-actions">
-        <a href="/roadmap" class="button primary">View Chrome Roadmap</a>
+        <a href="/roadmap" class="button">View Chrome Roadmap</a>
         <a href="/features#milestone={{ milestone }}" class="button">Search Features</a>
       </div>
     </section>
@@ -354,8 +434,8 @@
   document.body.classList.remove('loading');
 
   const currentMilestone = {{ milestone }};
-  const minMilestone = {{ min_external_milestone | default(124) }};
-  const maxMilestone = {{ max_dropdown_milestone | default(175) }};
+  const minMilestone = {{ min_dropdown_milestone }};
+  const maxMilestone = {{ max_dropdown_milestone }};
   const milestoneInput = document.getElementById('milestone-input');
   const releaseContainer = document.getElementById('release-notes-container');
 

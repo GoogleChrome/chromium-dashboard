@@ -2209,3 +2209,21 @@ class DeveloperReleaseNotesFeaturesTest(testing_config.CustomTestCase):
         self.assertEqual(2, len(features))
         self.assertEqual('Alpha Feature', features[0]['name'])
         self.assertEqual('CSS Anchor Positioning', features[1]['name'])
+
+    def test_get_developer_release_notes_features__includes_doc_links(self):
+        """It attaches doc_links to the feature dictionary when present on FeatureEntry."""
+        self.feature_1.doc_links = [
+            'https://developer.mozilla.org/doc1',
+            'https://drafts.csswg.org/doc2',
+        ]
+        self.feature_1.put()
+
+        features = feature_helpers.get_developer_release_notes_features(132)
+        self.assertEqual(1, len(features))
+        self.assertEqual(
+            [
+                'https://developer.mozilla.org/doc1',
+                'https://drafts.csswg.org/doc2',
+            ],
+            features[0]['doc_links'],
+        )
