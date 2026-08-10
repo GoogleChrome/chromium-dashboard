@@ -40,15 +40,8 @@
     align-items: center;
     gap: var(--content-padding-quarter);
     font-weight: 500;
-    font-size: var(--button-font-size, 0.875rem);
-    color: var(--link-color);
-    text-decoration: none;
     min-height: 40px;
     padding: var(--content-padding-quarter) var(--content-padding-half);
-  }
-
-  .stepper-btn:hover {
-    color: var(--link-hover-color);
   }
 
   .stepper-btn:focus-visible {
@@ -102,14 +95,9 @@
   }
 
   .archival-notice-content a {
-    color: var(--link-color);
     text-decoration: underline;
     text-underline-offset: 2px;
     font-weight: 500;
-  }
-
-  .archival-notice-content a:hover {
-    color: var(--link-hover-color);
   }
 
   /* ==========================================================================
@@ -121,9 +109,6 @@
   }
 
   .category-title {
-    font-size: 1.25rem;
-    font-weight: 600;
-    color: var(--heading-color);
     border-bottom: var(--default-border);
     padding-bottom: var(--content-padding-quarter);
     margin-bottom: var(--content-padding);
@@ -157,9 +142,6 @@
 
   .feature-title {
     margin: 0 0 var(--content-padding-half) 0;
-    font-size: 1.1rem;
-    font-weight: 600;
-    line-height: 1.3;
     text-wrap: balance;
     display: flex;
     align-items: baseline;
@@ -168,14 +150,7 @@
   }
 
   .feature-name {
-    font-size: inherit;
-    font-weight: inherit;
-    color: var(--link-color);
     display: inline-block;
-  }
-
-  .feature-name:hover {
-    color: var(--link-hover-color);
   }
 
   .heading-anchor-link {
@@ -235,9 +210,6 @@
   }
 
   .feature-summary {
-    font-size: 0.875rem;
-    line-height: 1.5;
-    color: var(--default-color);
     margin-bottom: var(--content-padding);
     white-space: pre-wrap;
     overflow-wrap: break-word;
@@ -256,14 +228,9 @@
   .feature-doc-links a {
     display: inline-block;
     max-width: 100%;
-    color: var(--link-color);
     text-overflow: ellipsis;
     overflow: hidden;
     white-space: nowrap;
-  }
-
-  .feature-doc-links a:hover {
-    color: var(--link-hover-color);
   }
 
   /* ==========================================================================
@@ -281,7 +248,6 @@
 
   .empty-state-desc {
     margin: var(--content-padding-half) 0 var(--content-padding) 0;
-    color: var(--default-color);
     text-wrap: pretty;
   }
 
@@ -295,12 +261,6 @@
   .empty-state-actions .button.primary {
     background-color: var(--sl-color-primary-700, #0369a1);
     color: #ffffff;
-    font-size: 0.875rem;
-    font-weight: 600;
-  }
-
-  .empty-state-actions .button.primary:hover {
-    background-color: var(--sl-color-primary-800, #075985);
   }
 
   .sr-only {
@@ -367,7 +327,6 @@
         list="milestones-datalist" 
         placeholder="e.g. Chrome {{ stable_milestone }}" 
         value="Chrome {{ milestone }}"
-        inputmode="numeric"
         enterkeyhint="go"
         autocomplete="off"
         class="milestone-input"
@@ -447,6 +406,8 @@
   document.body.classList.remove('loading');
 
   const currentMilestone = {{ milestone }};
+  const minMilestone = {{ min_external_milestone | default(124) }};
+  const maxMilestone = {{ max_dropdown_milestone | default(175) }};
   const milestoneInput = document.getElementById('milestone-input');
   const releaseContainer = document.getElementById('release-notes-container');
 
@@ -455,8 +416,9 @@
     const match = String(val).match(/\d+/);
     if (match) {
       const m = parseInt(match[0], 10);
-      if (!isNaN(m) && m > 0 && m !== currentMilestone) {
-        window.location.href = `/release-notes/${m}`;
+      if (!isNaN(m) && m >= minMilestone && m <= maxMilestone && m !== currentMilestone) {
+        const targetUrl = new URL(`/release-notes/${m}`, window.location.origin);
+        window.location.assign(targetUrl.href);
       }
     }
   }

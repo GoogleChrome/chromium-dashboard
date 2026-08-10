@@ -93,13 +93,14 @@ class ReleaseNotesHandlerTest(testing_config.CustomTestCase):
             self.assertTrue(data['is_min_ssr_milestone'])
             self.assertIn('features_by_category', data)
             self.assertIn('milestones_list', data)
+            self.assertEqual(124, data['milestones_list'][-1])
             self.assertIn('seo', data)
             self.assertEqual(
                 'Chrome 151 Release Notes', data['seo']['seo_title']
             )
 
-    def test_get_template_data__m151_cutoff_redirect(self):
-        """It returns an HTTP 302 redirect to developer.chrome.com/release-notes/<milestone> for milestones < 151."""
+    def test_get_template_data__m124_to_m150_redirect(self):
+        """It returns an HTTP 302 redirect to developer.chrome.com/release-notes/<milestone> for 124 <= m < 151."""
         with test_app.test_request_context('/release-notes/150'):
             resp = self.handler.get_template_data(milestone=150)
             self.assertEqual(302, resp.status_code)
@@ -107,6 +108,25 @@ class ReleaseNotesHandlerTest(testing_config.CustomTestCase):
                 'https://developer.chrome.com/release-notes/150',
                 resp.headers['Location'],
             )
+
+        with test_app.test_request_context('/release-notes/124'):
+            resp = self.handler.get_template_data(milestone=124)
+            self.assertEqual(302, resp.status_code)
+            self.assertEqual(
+                'https://developer.chrome.com/release-notes/124',
+                resp.headers['Location'],
+            )
+
+    def test_get_template_data__pre_m124_archive_redirect(self):
+        """It returns an HTTP 302 redirect to developer.chrome.com/release-notes archive root for m < 124."""
+        for pre_124_m in (1, 100, 120, 123):
+            with test_app.test_request_context(f'/release-notes/{pre_124_m}'):
+                resp = self.handler.get_template_data(milestone=pre_124_m)
+                self.assertEqual(302, resp.status_code)
+                self.assertEqual(
+                    'https://developer.chrome.com/release-notes',
+                    resp.headers['Location'],
+                )
 
     def test_get_template_data__default_milestone(self):
         """It defaults to current stable milestone when no milestone param is provided."""
@@ -129,6 +149,7 @@ class ReleaseNotesHandlerTest(testing_config.CustomTestCase):
                 self.assertEqual(151, data['milestone'])
                 self.assertEqual(151, data['stable_milestone'])
                 self.assertEqual(153, data['milestones_list'][0])
+                self.assertEqual(124, data['milestones_list'][-1])
 
     def test_get_template_data__string_milestone(self):
         """It accepts string milestone parameters and coerces them to int."""

@@ -28,6 +28,9 @@ from internals import feature_helpers, fetchchannels
 # ChromeStatus SSR release notes curation begins with Chrome 151.
 MIN_SSR_RELEASE_NOTES_MILESTONE: int = 151
 
+# developer.chrome.com began publishing standalone release notes with Chrome 124.
+MIN_EXTERNAL_RELEASE_NOTES_MILESTONE: int = 124
+
 # Maximum future milestone offset above stable milestone allowed before returning 404 (DoS defense).
 MAX_SSR_RELEASE_NOTES_FUTURE_OFFSET: int = 20
 
@@ -39,6 +42,9 @@ STEPPER_MILESTONE_OFFSET: int = 1
 
 EXTERNAL_RELEASE_NOTES_URL_TEMPLATE: str = (
     'https://developer.chrome.com/release-notes/{milestone}'
+)
+EXTERNAL_RELEASE_NOTES_ARCHIVE_URL: str = (
+    'https://developer.chrome.com/release-notes'
 )
 
 
@@ -94,8 +100,11 @@ class ReleaseNotesHandler(basehandlers.FlaskHandler):
         if milestone > max_allowed_milestone:
             self.abort(404, f'Milestone {milestone} is not available')
 
-        # Milestones prior to 151 redirect immediately to developer.chrome.com/release-notes/<milestone>
+        # Milestones prior to M151 redirect to developer.chrome.com
         if milestone < MIN_SSR_RELEASE_NOTES_MILESTONE:
+            if milestone < MIN_EXTERNAL_RELEASE_NOTES_MILESTONE:
+                # Pre-124 milestones do not exist on d.c.c/release-notes/<m>; redirect to archive root.
+                return self.redirect(EXTERNAL_RELEASE_NOTES_ARCHIVE_URL)
             redirect_url = EXTERNAL_RELEASE_NOTES_URL_TEMPLATE.format(
                 milestone=milestone
             )
@@ -110,16 +119,22 @@ class ReleaseNotesHandler(basehandlers.FlaskHandler):
             category = feature.get('category_name') or 'Other'
             features_by_category.setdefault(category, []).append(feature)
 
-        # Bound the datalist dropdown options to the visible release horizon (Dev channel = stable + 2).
+        # Bound the datalist dropdown options to the visible release horizon down to M124.
         max_dropdown_milestone = (
             max(stable_milestone, MIN_SSR_RELEASE_NOTES_MILESTONE)
             + ACTIVE_RELEASE_CHANNELS_OFFSET
         )
-        milestones_list = list(range(max_dropdown_milestone, 0, -1))
+        milestones_list = list(
+            range(
+                max_dropdown_milestone,
+                MIN_EXTERNAL_RELEASE_NOTES_MILESTONE - 1,
+                -1,
+            )
+        )
 
         prev_milestone = (
             milestone - STEPPER_MILESTONE_OFFSET
-            if milestone > STEPPER_MILESTONE_OFFSET
+            if milestone > MIN_EXTERNAL_RELEASE_NOTES_MILESTONE
             else None
         )
         next_milestone = (
@@ -152,6 +167,8 @@ class ReleaseNotesHandler(basehandlers.FlaskHandler):
                 milestone == MIN_SSR_RELEASE_NOTES_MILESTONE
             ),
             'min_ssr_milestone': MIN_SSR_RELEASE_NOTES_MILESTONE,
+            'min_external_milestone': MIN_EXTERNAL_RELEASE_NOTES_MILESTONE,
+            'max_dropdown_milestone': max_dropdown_milestone,
             'features_by_category': features_by_category,
             'total_features_count': len(release_note_features),
             'milestones_list': milestones_list,
