@@ -8,6 +8,8 @@ import {
   createNewFeature,
 } from './test_utils';
 
+const AXE_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'best-practice'];
+
 /**
  * Shared helper to create a feature in the Datastore emulator,
  * assign its shipped milestone, run test assertions, and ensure clean teardown.
@@ -234,7 +236,7 @@ test.describe('Release Notes SSR Page', () => {
       await expect(page).toHaveURL(new RegExp(`#feature-${featureId}$`));
 
       // Assert tooltip is visually rendered (not just attached in DOM)
-      const tooltip = anchorLink.locator('.anchor-tooltip');
+      const tooltip = anchorLink.getByRole('status');
       await expect(tooltip).toBeVisible({timeout: 5000});
       await expect(tooltip).toHaveText('Link copied!');
     });
@@ -290,7 +292,7 @@ test.describe('Release Notes SSR Page', () => {
     // Audit unmodified production CSS directly
     const accessibilityScanResults = await new AxeBuilder({page})
       .include('#release-notes-container')
-      .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'best-practice'])
+      .withTags(AXE_TAGS)
       .analyze();
 
     if (accessibilityScanResults.violations.length > 0) {
@@ -318,7 +320,7 @@ test.describe('Release Notes SSR Page', () => {
       // Audit unmodified production CSS directly
       const accessibilityScanResults = await new AxeBuilder({page})
         .include('#release-notes-container')
-        .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'best-practice'])
+        .withTags(AXE_TAGS)
         .analyze();
 
       if (accessibilityScanResults.violations.length > 0) {
@@ -384,7 +386,7 @@ test.describe('Release Notes SSR Page', () => {
 
     const inputA11yScan = await new AxeBuilder({page})
       .include('.nav-strip')
-      .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'best-practice'])
+      .withTags(AXE_TAGS)
       .analyze();
 
     if (inputA11yScan.violations.length > 0) {
