@@ -16,12 +16,10 @@ const AXE_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'best-practice'];
  * @param {import('@playwright/test').Page} page
  * @param {number|string} milestone
  * @param {(featureId: string) => Promise<void>} testFn
- * @param {string} [docLinks]
  */
-async function withShippedFeature(page, milestone, testFn, docLinks = '') {
+async function withShippedFeature(page, milestone, testFn) {
   let featureId = '';
   try {
-    await login(page);
     await createNewFeature(page);
 
     const match = page.url().match(/\/feature\/(\d+)/);
@@ -40,13 +38,6 @@ async function withShippedFeature(page, milestone, testFn, docLinks = '') {
       await page
         .locator('input[name="shipped_milestone"]')
         .fill(String(milestone));
-    }
-
-    if (docLinks) {
-      const docLinksInput = page.locator('textarea[name="doc_links"]');
-      if (await docLinksInput.isVisible()) {
-        await docLinksInput.fill(docLinks);
-      }
     }
 
     const submitButton = page.getByRole('button', {name: /Submit|Save/i});
@@ -68,7 +59,6 @@ async function withShippedFeature(page, milestone, testFn, docLinks = '') {
         }, featureId)
         .catch(() => {});
     }
-    await logout(page);
   }
 }
 
@@ -76,6 +66,11 @@ test.describe('Release Notes SSR Page', () => {
   test.beforeEach(async ({page}, testInfo) => {
     captureConsoleMessages(page);
     testInfo.setTimeout(60000);
+    await login(page);
+  });
+
+  test.afterEach(async ({page}) => {
+    await logout(page);
   });
 
   test('should render milestone navigation strip with accessible steppers and jump box', async ({
