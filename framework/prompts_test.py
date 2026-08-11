@@ -14,24 +14,23 @@
 
 """Unit tests for AI release note markdown prompt templates."""
 
-import os
-import unittest
+import testing_config  # isort: skip  # Must be imported before other project modules.
+from pathlib import Path
 
 
-class PromptsTest(unittest.TestCase):
+class PromptsTest(testing_config.CustomTestCase):
     """Tests prompt template structure and placeholder contracts."""
 
     def setUp(self):
         """Initializes prompt directory path."""
-        self.prompts_dir = os.path.join(os.path.dirname(__file__), 'prompts')
+        self.prompts_dir = Path(__file__).resolve().parent / 'prompts'
 
     def test_v1_prompt_template_exists_and_contains_placeholders(self):
         """Tests that v1.md exists and includes all required placeholder variables."""
-        v1_path = os.path.join(self.prompts_dir, 'v1.md')
-        self.assertTrue(os.path.exists(v1_path), f'Missing {v1_path}')
+        v1_path = self.prompts_dir / 'v1.md'
+        self.assertTrue(v1_path.exists(), f'Missing {v1_path}')
 
-        with open(v1_path, 'r', encoding='utf-8') as f:
-            content = f.read()
+        content = v1_path.read_text(encoding='utf-8')
 
         required_placeholders = [
             '{{ name }}',
@@ -52,9 +51,8 @@ class PromptsTest(unittest.TestCase):
 
     def test_v1_prompt_declares_tools_and_json_schema(self):
         """Tests that v1.md documents interactive tools and valid JSON output schema."""
-        v1_path = os.path.join(self.prompts_dir, 'v1.md')
-        with open(v1_path, 'r', encoding='utf-8') as f:
-            content = f.read()
+        v1_path = self.prompts_dir / 'v1.md'
+        content = v1_path.read_text(encoding='utf-8')
 
         # Tools
         self.assertIn('search_mdn_tool', content)
