@@ -7,6 +7,7 @@ PLAYWRIGHT_DIR="${REPO_ROOT_DIR}/packages/playwright"
 export USERID=$(id -u)
 export GROUPID=$(id -g)
 export PLAYWRIGHT_VERSION=$(bash -c "${PLAYWRIGHT_DIR}/get-npm-package-version.sh ./package.json '@playwright/test'")
+export AXE_CORE_PLAYWRIGHT_VERSION=$(bash -c "${PLAYWRIGHT_DIR}/get-npm-package-version.sh ./package.json '@axe-core/playwright'")
 
 # playwright.config.ts needs to be in the root of the repository so that vscode will pick up automatically.
 # In the meantime for the pwtests container, we copy a version over
@@ -24,7 +25,8 @@ build() {
     --parallel \
     --build-arg USERID=${USERID} \
     --build-arg GROUPID=${GROUPID} \
-    --build-arg PLAYWRIGHT_VERSION=${PLAYWRIGHT_VERSION}
+    --build-arg PLAYWRIGHT_VERSION=${PLAYWRIGHT_VERSION} \
+    --build-arg AXE_CORE_PLAYWRIGHT_VERSION=${AXE_CORE_PLAYWRIGHT_VERSION}
 }
 
 

@@ -258,6 +258,8 @@ def get_developer_release_notes_features(
         rn_dict = converters.feature_entry_to_release_note_feature_dict(
             fe, applied_suggestion=applied_suggestion
         )
+        if fe.doc_links:
+            rn_dict['doc_links'] = fe.doc_links
         formatted_features.append(rn_dict)
 
     return formatted_features
