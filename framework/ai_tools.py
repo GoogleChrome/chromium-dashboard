@@ -18,14 +18,17 @@ Provides SSRF-protected interactive tools (search_mdn, verify_doc_link, read_spe
 that Gemini 2.0 can invoke during multi-turn developer release note generation.
 """
 
+from __future__ import annotations
+
 import json
 import logging
 import urllib.error
 import urllib.parse
 import urllib.request
+from collections.abc import Callable
 from html.parser import HTMLParser
 from types import MappingProxyType
-from typing import Any, Callable
+from typing import Any
 
 import wptgen.context
 
@@ -43,6 +46,7 @@ class _SimpleHTMLTextExtractor(HTMLParser):
     def __init__(self) -> None:
         super().__init__()
         self.title: str = ''
+        self._title_chunks: list[str] = []
         self._in_title: bool = False
         self._ignored_tags: set[str] = {
             'script',
@@ -52,6 +56,8 @@ class _SimpleHTMLTextExtractor(HTMLParser):
             'footer',
             'noscript',
             'svg',
+            'template',
+            'iframe',
         }
         self._ignore_depth: int = 0
         self._text_chunks: list[str] = []
@@ -69,12 +75,16 @@ class _SimpleHTMLTextExtractor(HTMLParser):
         tag_lower = tag.lower()
         if tag_lower == 'title':
             self._in_title = False
+            if self._title_chunks:
+                self.title = ' '.join(self._title_chunks).strip()
         if tag_lower in self._ignored_tags and self._ignore_depth > 0:
             self._ignore_depth -= 1
 
     def handle_data(self, data: str) -> None:
-        if self._in_title and not self.title:
-            self.title = data.strip()
+        if self._in_title:
+            cleaned_title = data.strip()
+            if cleaned_title:
+                self._title_chunks.append(cleaned_title)
         if self._ignore_depth == 0:
             cleaned = data.strip()
             if cleaned:
@@ -190,8 +200,8 @@ def verify_doc_link_tool(url: str) -> dict[str, Any]:
         MDN page).
 
     Returns:
-      A dictionary containing validity status, HTTP status, page title, and text
-      snippet.
+      A dictionary containing execution status, validity boolean, page title, and
+      text snippet.
     """
     clean_url = str(url).strip() if url else ''
     if not clean_url:

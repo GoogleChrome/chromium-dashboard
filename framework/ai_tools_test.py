@@ -18,6 +18,7 @@ import testing_config  # isort: skip  # Must be imported before other project mo
 import io
 import json
 import urllib.error
+from types import MappingProxyType
 from unittest import mock
 
 from framework.ai_tools import (
@@ -41,7 +42,7 @@ class AIToolsTest(testing_config.CustomTestCase):
     <!DOCTYPE html>
     <html>
       <head>
-        <title>CSS Anchor Positioning</title>
+        <title>CSS &amp; Anchor Positioning</title>
         <style>body { color: red; }</style>
         <script>console.log("ignore");</script>
       </head>
@@ -57,7 +58,7 @@ class AIToolsTest(testing_config.CustomTestCase):
     """
         extractor = _SimpleHTMLTextExtractor()
         extractor.feed(html)
-        self.assertEqual(extractor.title, 'CSS Anchor Positioning')
+        self.assertEqual(extractor.title, 'CSS & Anchor Positioning')
         clean_text = extractor.get_clean_text()
         self.assertIn('Overview', clean_text)
         self.assertIn('Enables tethering elements together.', clean_text)
@@ -113,7 +114,9 @@ class AIToolsTest(testing_config.CustomTestCase):
                 {
                     'title': 'anchor-name',
                     'summary': 'The anchor-name CSS property.',
-                    'mdn_url': 'https://developer.mozilla.org/en-US/docs/Web/CSS/anchor-name',
+                    'mdn_url': (
+                        'https://developer.mozilla.org/en-US/docs/Web/CSS/anchor-name'
+                    ),
                 },
             ]
         }
@@ -223,8 +226,6 @@ class AIToolsTest(testing_config.CustomTestCase):
 
     def test_tool_map_and_list_parity(self):
         """Tests parity between AISummaryToolName enum, MappingProxyType, and tuple registry."""
-        from types import MappingProxyType
-
         expected_tools = {
             AISummaryToolName.SEARCH_MDN.value,
             AISummaryToolName.VERIFY_DOC_LINK.value,
