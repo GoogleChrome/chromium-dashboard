@@ -12,4 +12,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""AI prompt templates and prompt testing infrastructure."""
+"""AI prompt templates and prompt rendering infrastructure."""
