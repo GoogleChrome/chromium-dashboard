@@ -12,27 +12,33 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Unit tests for AI release note markdown prompt templates."""
+"""Unit tests for AI release note canonical prompt template."""
+
+from __future__ import annotations
 
 import testing_config  # isort: skip  # Must be imported before other project modules.
+
 import json
 import re
 from pathlib import Path
 
 
-class PromptsTest(testing_config.CustomTestCase):
-    """Tests prompt template structure and placeholder contracts."""
+class GenerateReleaseNotesPromptTest(testing_config.CustomTestCase):
+    """Tests canonical prompt template structure, XML tagging, and placeholder contracts."""
 
     def setUp(self):
-        """Initializes prompt directory path."""
-        self.prompts_dir = Path(__file__).resolve().parent / 'prompts'
+        """Initializes prompt template path."""
+        self.prompt_path = (
+            Path(__file__).resolve().parent / 'generate_release_notes.md'
+        )
 
-    def test_v1_prompt_template_exists_and_contains_placeholders(self):
-        """Tests that v1.md exists and includes exact expected placeholder variables."""
-        v1_path = self.prompts_dir / 'v1.md'
-        self.assertTrue(v1_path.exists(), f'Missing {v1_path}')
+    def test_prompt_template_exists_and_contains_placeholders(self):
+        """Tests that generate_release_notes.md exists and includes exact expected placeholder variables."""
+        self.assertTrue(
+            self.prompt_path.exists(), f'Missing {self.prompt_path}'
+        )
 
-        content = v1_path.read_text(encoding='utf-8')
+        content = self.prompt_path.read_text(encoding='utf-8')
 
         expected_placeholders = {
             'name',
@@ -51,10 +57,9 @@ class PromptsTest(testing_config.CustomTestCase):
             f'Mismatch in prompt template placeholders: {found_placeholders ^ expected_placeholders}',
         )
 
-    def test_v1_prompt_declares_tools_and_json_schema(self):
-        """Tests that v1.md documents interactive tools and valid JSON output schema."""
-        v1_path = self.prompts_dir / 'v1.md'
-        content = v1_path.read_text(encoding='utf-8')
+    def test_prompt_declares_tools_and_json_schema(self):
+        """Tests that generate_release_notes.md documents interactive tools and valid JSON output schema."""
+        content = self.prompt_path.read_text(encoding='utf-8')
 
         # Tools
         self.assertIn('search_mdn_tool', content)
@@ -64,17 +69,17 @@ class PromptsTest(testing_config.CustomTestCase):
         # Verify embedded JSON example is syntactically valid JSON
         match = re.search(r'```json\s*(\{.*?\})\s*```', content, re.DOTALL)
         self.assertIsNotNone(
-            match, 'JSON schema example block missing in v1.md'
+            match,
+            'JSON schema example block missing in generate_release_notes.md',
         )
         schema_obj = json.loads(match.group(1))
         self.assertEqual(
             set(schema_obj.keys()), {'summary', 'rationale', 'doc_links'}
         )
 
-    def test_v1_prompt_rendering_with_mock_data(self):
-        """Tests that v1.md renders cleanly with sample feature dictionary."""
-        v1_path = self.prompts_dir / 'v1.md'
-        template = v1_path.read_text(encoding='utf-8')
+    def test_prompt_rendering_with_mock_data(self):
+        """Tests that generate_release_notes.md renders cleanly with XML structure and mock data."""
+        template = self.prompt_path.read_text(encoding='utf-8')
 
         mock_data = {
             'name': 'Popover API',
@@ -99,4 +104,9 @@ class PromptsTest(testing_config.CustomTestCase):
             f'Unresolved placeholders in rendered prompt: {remaining}',
         )
         self.assertIn('<feature_metadata>', rendered)
-        self.assertIn('Popover API', rendered)
+        self.assertIn('</feature_metadata>', rendered)
+        self.assertIn('<name>Popover API</name>', rendered)
+        self.assertIn(
+            '<feature_summary>Provides standard popover behavior.</feature_summary>',
+            rendered,
+        )
