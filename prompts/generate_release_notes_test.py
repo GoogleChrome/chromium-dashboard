@@ -16,14 +16,13 @@
 
 from __future__ import annotations
 
-import testing_config  # isort: skip  # Must be imported before other project modules.
-
 import json
 import re
+import unittest
 from pathlib import Path
 
 
-class GenerateReleaseNotesPromptTest(testing_config.CustomTestCase):
+class GenerateReleaseNotesPromptTest(unittest.TestCase):
     """Tests canonical prompt template structure, XML tagging, and placeholder contracts."""
 
     def setUp(self):
