@@ -1,4 +1,4 @@
-.PHONY: setup clean-setup deps dev-deps dev-ot-key do-tests start-emulator-persist start-emulator \
+.PHONY: setup clean-setup deps dev-deps compile-requirements dev-ot-key do-tests start-emulator-persist start-emulator \
 	stop-emulator build tsc-clean watch start-app debug-app start stop test webtest webtest-watch \
 	webtestpuppeteer webtestpuppeteer-watch webtest-coverage do-coverage coverage view-coverage \
 	mypy lint lint-frontend lint-backend lint-fix lint-fix-frontend lint-fix-backend presubmit pylint openapi openapi-webstatus openapi-frontend openapi-backend \
@@ -21,6 +21,11 @@ deps:
 
 dev-deps:
 	@echo 'dev-deps is no longer needed'
+
+compile-requirements:
+	. cs-env/bin/activate && pip install pip-tools && \
+	pip-compile requirements.in -o requirements.txt && \
+	pip-compile requirements.dev.in -o requirements.dev.txt
 
 dev-ot-key:
 	gcloud secrets versions access latest --secret=DEV_OT_API_KEY --out-file=ot_api_key.txt --project=cr-status-staging
