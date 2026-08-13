@@ -1,0 +1,17 @@
+# Development and testing requirements.
+# Compile into locked requirements.dev.txt via:
+#   pip-compile requirements.dev.in -o requirements.dev.txt
+
+coverage==7.15.2
+gunicorn==26.0.0
+mypy==2.3.0
+pip-tools>=7.4.0
+pytest==9.1.1
+pytest-xdist==3.8.0
+ruff==0.16.2
+types-protobuf
+types-pytz
+types-redis
+types-requests==2.33.0.20260712
+types-setuptools
+urllib3==2.7.0
