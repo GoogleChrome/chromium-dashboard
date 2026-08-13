@@ -28,7 +28,7 @@ class GenerateReleaseNotesPromptTest(unittest.TestCase):
     def setUp(self):
         """Initializes prompt template path."""
         self.prompt_path = (
-            Path(__file__).resolve().parent / 'generate_release_notes.md'
+            Path(__file__).resolve().parent / 'generate_release_notes.md.jinja'
         )
 
     def test_prompt_template_exists_and_contains_placeholders(self):
