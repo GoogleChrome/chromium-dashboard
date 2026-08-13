@@ -598,6 +598,8 @@ export const GATE_TYPES: Record<string, number> = {
   TESTING_PLAN: 75,
   ADOPTION_SHIP: 84,
   ADOPTION_PLAN: 85,
+  GTM_SHIP: 94,
+  GTM_PLAN: 95,
 };
 
 export const GATE_PREPARING = 0;
@@ -643,6 +645,7 @@ export const GATE_TEAM_ORDER = [
   'Debuggability',
   'Testing',
   'Adoption',
+  'GTM',
   'API Owners',
 ];
 
