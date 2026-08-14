@@ -16,28 +16,14 @@
 
 from __future__ import annotations
 
-import abc
-
 from ai.progress_reporter import (
     FeatureSummaryInput,
     ListProgressReporter,
     ProgressReporter,
     SummaryResult,
 )
+from ai.summary_generator import SummaryGenerator
 from internals.core_enums import ProgressStepId, ProgressStepStatus
-
-
-class SummaryGenerator(abc.ABC):
-    """Abstract interface for release note summary generators."""
-
-    @abc.abstractmethod
-    def generate_summary(
-        self,
-        feature_input: FeatureSummaryInput,
-        reporter: ProgressReporter | None = None,
-    ) -> SummaryResult:
-        """Generates release note summary for a typed feature input."""
-        pass
 
 
 class MockSummaryGenerator(SummaryGenerator):

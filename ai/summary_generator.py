@@ -16,10 +16,11 @@
 
 from __future__ import annotations
 
+import abc
 import dataclasses
 import json
 import logging
-import re
+import uuid
 from collections.abc import Callable, Sequence
 from typing import Any
 
@@ -29,7 +30,6 @@ from google.adk.sessions import InMemorySessionService
 from google.genai import types
 
 from ai.errors import get_error_source_and_message
-from ai.mock_summary_generator import SummaryGenerator
 from ai.progress_reporter import (
     FeatureSummaryInput,
     ListProgressReporter,
@@ -52,7 +52,18 @@ DEFAULT_SYSTEM_INSTRUCTION = (
     ' developer release notes.'
 )
 
-_JSON_CODEBLOCK_PATTERN = re.compile(r'```(?:json)?\s*([\s\S]*?)(?:```|$)')
+
+class SummaryGenerator(abc.ABC):
+    """Abstract interface for release note summary generators."""
+
+    @abc.abstractmethod
+    def generate_summary(
+        self,
+        feature_input: FeatureSummaryInput,
+        reporter: ProgressReporter | None = None,
+    ) -> SummaryResult:
+        """Generates release note summary for a typed feature input."""
+        pass
 
 
 @dataclasses.dataclass(frozen=True)
@@ -88,17 +99,29 @@ def build_summary_agent(
         tools=list(tools),
         output_schema=output_schema,
         description=(
-            'Autonomous agent that researches web platform specifications and'
-            ' MDN docs to generate developer release notes.'
+            'Autonomous agent that analyzes ChromeStatus feature entries and'
+            ' researches web platform specifications and MDN docs to generate'
+            ' developer release notes.'
         ),
     )
 
 
 def parse_summary_result(raw_text: str) -> SummaryResult:
-    """Parses raw model response text directly into a strongly-typed SummaryResult.
+    """Parses raw model response text into a strongly-typed SummaryResult.
+
+    Extracts the structured JSON payload matching GeneratedSummaryPayload.
+    The extracted summary string within the JSON payload contains
+    Markdown-formatted developer release notes.
+
+    Example input payload:
+      {
+        "summary": "Adds support for `WebGPU` subgroups.",
+        "rationale": "High-impact compute feature for shader developers.",
+        "doc_links": ["https://developer.chrome.com/docs/webgpu"]
+      }
 
     Args:
-      raw_text: Raw LLM output string containing JSON or Markdown code block.
+      raw_text: Raw LLM output JSON string matching GeneratedSummaryPayload schema.
 
     Returns:
       SummaryResult containing suggested summary, rationale, and doc links.
@@ -107,11 +130,7 @@ def parse_summary_result(raw_text: str) -> SummaryResult:
       json.JSONDecodeError: If raw_text is not valid JSON.
       TypeError: If payload structure does not match GeneratedSummaryPayload schema.
     """
-    clean_text = raw_text.strip()
-    match = _JSON_CODEBLOCK_PATTERN.search(clean_text)
-    if match:
-        clean_text = match.group(1).strip()
-    data = json.loads(clean_text)
+    data = json.loads(raw_text.strip())
     payload = GeneratedSummaryPayload(**data)
     return SummaryResult(
         suggested_summary=payload.summary.strip(),
@@ -205,7 +224,7 @@ class GeminiSummaryGenerator(SummaryGenerator):
                 message=f'Invoking {self.model_name} with ADK Runner',
             )
 
-            session_id = f'summary_{feature_input.name}'
+            session_id = f'summary_{uuid.uuid4().hex}'
             new_message = types.Content(
                 role='user', parts=[types.Part.from_text(text=user_prompt)]
             )
@@ -249,9 +268,11 @@ class GeminiSummaryGenerator(SummaryGenerator):
                         ),
                     )
 
-                # 3. Capture generated model text parts
-                if event.message and event.message.parts:
-                    text_parts = [p.text for p in event.message.parts if p.text]
+                # 3. Capture the final model response (ADK native helper)
+                if event.is_final_response() and event.message:
+                    text_parts = [
+                        p.text for p in (event.message.parts or []) if p.text
+                    ]
                     if text_parts:
                         final_text = ''.join(text_parts)
 

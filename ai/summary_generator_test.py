@@ -78,17 +78,6 @@ class GeminiSummaryGeneratorTest(testing_config.CustomTestCase):
         )
         self.assertEqual(result.raw_response, raw)
 
-    def test_parse_summary_result_markdown_code_fences(self):
-        """Tests parsing JSON enclosed in markdown code fences."""
-        raw = (
-            '```json\n{"summary": "Adds WebGPU subgroups.", "rationale": "Great.",'
-            ' "doc_links": []}\n```'
-        )
-        result = parse_summary_result(raw)
-        self.assertEqual(result.suggested_summary, 'Adds WebGPU subgroups.')
-        self.assertEqual(result.generation_rationale, 'Great.')
-        self.assertEqual(result.suggested_doc_links, ())
-
     def test_parse_summary_result_non_dict_raises_type_error(self):
         """Tests that non-dict JSON raises TypeError during dataclass unpacking."""
         raw = '["item1", "item2"]'
@@ -187,7 +176,12 @@ class GeminiSummaryGeneratorTest(testing_config.CustomTestCase):
         event_2 = mock.MagicMock()
         event_2.get_function_calls.return_value = []
         event_2.get_function_responses.return_value = [fn_resp]
-        event_2.message = None
+        event_2.message = types.Content(
+            role='tool',
+            parts=[
+                types.Part.from_text(text='Intermediate tool execution text')
+            ],
+        )
 
         # Final response event
         event_3 = Event(
