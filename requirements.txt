@@ -8,11 +8,21 @@
     # via -r requirements.in
 -e ./gen/py/webstatus_openapi
     # via -r requirements.in
+aiohappyeyeballs==2.7.1
+    # via aiohttp
+aiohttp==3.14.3
+    # via google-adk
+aiosignal==1.4.0
+    # via aiohttp
+aiosqlite==0.22.1
+    # via google-adk
 annotated-doc==0.0.5
-    # via typer
+    # via
+    #   fastapi
+    #   typer
 annotated-types==0.8.0
     # via pydantic
-anthropic==0.121.0
+anthropic==0.122.0
     # via wpt-gen-lib
 anyio==4.14.2
     # via
@@ -28,9 +38,12 @@ asgiref==3.12.1
     # via connexion
 attrs==26.1.0
     # via
+    #   aiohttp
     #   appengine-python-standard
     #   jsonschema
     #   referencing
+authlib==1.7.2
+    # via google-adk
 babel==2.18.0
     # via courlan
 beautifulsoup4==4.15.0
@@ -56,12 +69,17 @@ click==8.4.2
     # via
     #   -r requirements.in
     #   flask
+    #   google-adk
+    #   uvicorn
 connexion==3.3.0
     # via chromestatus-openapi
 courlan==1.4.0
     # via trafilatura
 cryptography==50.0.0
-    # via google-auth
+    # via
+    #   authlib
+    #   google-auth
+    #   joserfc
 dateparser==1.4.2
     # via htmldate
 distro==1.9.0
@@ -73,6 +91,8 @@ docstring-parser==0.18.0
     # via anthropic
 fakeredis==2.37.0
     # via -r requirements.in
+fastapi==0.141.1
+    # via google-adk
 fastcore==2.2.12
     # via
     #   fastspec
@@ -90,9 +110,15 @@ flask-cors==6.0.5
     # via -r requirements.in
 frozendict==2.4.7
     # via appengine-python-standard
+frozenlist==1.8.0
+    # via
+    #   aiohttp
+    #   aiosignal
 funcsigs==1.0.2
     # via -r requirements.in
 ghapi==2.1.2
+    # via -r requirements.in
+google-adk==2.6.3
     # via -r requirements.in
 google-api-core[grpc]==2.34.0
     # via
@@ -107,10 +133,11 @@ google-api-core[grpc]==2.34.0
     #   google-cloud-tasks
 google-api-python-client==2.198.0
     # via -r requirements.in
-google-auth[requests]==2.56.2
+google-auth[pyopenssl,requests]==2.56.2
     # via
     #   -r requirements.in
     #   appengine-python-standard
+    #   google-adk
     #   google-api-core
     #   google-api-python-client
     #   google-auth-httplib2
@@ -152,6 +179,7 @@ google-crc32c==1.8.0
 google-genai==2.17.0
     # via
     #   -r requirements.in
+    #   google-adk
     #   wpt-gen-lib
 google-resumable-media==2.10.1
     # via google-cloud-storage
@@ -161,6 +189,8 @@ googleapis-common-protos[grpc]==1.75.1
     #   google-cloud-audit-log
     #   grpc-google-iam-v1
     #   grpcio-status
+graphviz==0.21
+    # via google-adk
 grpc-google-iam-v1==0.14.5
     # via
     #   google-cloud-logging
@@ -187,6 +217,7 @@ h11==0.16.0
     # via
     #   httpcore
     #   httpcore2
+    #   uvicorn
 html5lib==1.1
     # via -r requirements.in
 htmldate==1.10.0
@@ -203,6 +234,7 @@ httpx==0.28.1
     # via
     #   anthropic
     #   connexion
+    #   google-adk
     #   google-genai
 httpx2==2.10.0
     # via
@@ -214,6 +246,7 @@ idna==3.18
     #   httpx
     #   httpx2
     #   requests
+    #   yarl
 inflection==0.5.1
     # via connexion
 itsdangerous==2.2.0
@@ -231,10 +264,14 @@ jiter==0.16.0
     # via
     #   anthropic
     #   openai
+joserfc==1.7.4
+    # via authlib
 json5==0.15.0
     # via -r requirements.in
 jsonschema==4.26.0
-    # via connexion
+    # via
+    #   connexion
+    #   google-adk
 jsonschema-specifications==2025.9.1
     # via jsonschema
 justext==3.0.2
@@ -264,14 +301,32 @@ mdurl==0.1.2
     # via markdown-it-py
 mock==5.2.0
     # via appengine-python-standard
+multidict==6.7.1
+    # via
+    #   aiohttp
+    #   yarl
 openai==3.0.0
     # via wpt-gen-lib
-opentelemetry-api==1.44.0
-    # via google-cloud-logging
+opentelemetry-api==1.42.1
+    # via
+    #   google-adk
+    #   google-cloud-logging
+    #   opentelemetry-sdk
+    #   opentelemetry-semantic-conventions
+opentelemetry-sdk==1.42.1
+    # via google-adk
+opentelemetry-semantic-conventions==0.63b1
+    # via opentelemetry-sdk
+packaging==26.3
+    # via google-adk
 pillow==12.3.0
     # via
     #   -r requirements.in
     #   appengine-python-standard
+propcache==0.5.2
+    # via
+    #   aiohttp
+    #   yarl
 proto-plus==1.28.3
     # via
     #   google-api-core
@@ -307,6 +362,8 @@ pycparser==3.0
 pydantic==2.13.4
     # via
     #   anthropic
+    #   fastapi
+    #   google-adk
     #   google-genai
     #   openai
     #   webstatus-openapi
@@ -328,8 +385,12 @@ python-dateutil==2.9.0.post0
     #   dateparser
     #   htmldate
     #   webstatus-openapi
+python-dotenv==1.2.2
+    # via google-adk
 python-multipart==0.0.32
-    # via connexion
+    # via
+    #   connexion
+    #   google-adk
 pytz==2026.3.post1
     # via
     #   appengine-python-standard
@@ -338,6 +399,7 @@ pytz==2026.3.post1
 pyyaml==6.0.3
     # via
     #   connexion
+    #   google-adk
     #   wpt-gen-lib
 redis==7.4.0
     # via
@@ -357,6 +419,7 @@ requests==2.34.2
     #   -r requirements.in
     #   appengine-python-standard
     #   connexion
+    #   google-adk
     #   google-api-core
     #   google-auth
     #   google-cloud-storage
@@ -392,11 +455,16 @@ sortedcontainers==2.4.0
 soupsieve==2.9.2
     # via beautifulsoup4
 starlette==1.6.0
-    # via connexion
+    # via
+    #   connexion
+    #   fastapi
+    #   google-adk
 swagger-ui-bundle==1.1.0
     # via chromestatus-openapi
 tenacity==9.1.4
-    # via google-genai
+    # via
+    #   google-adk
+    #   google-genai
 tiktoken==0.13.0
     # via wpt-gen-lib
 tld==0.13.2
@@ -418,18 +486,26 @@ typing-extensions==4.16.0
     #   anthropic
     #   beautifulsoup4
     #   connexion
+    #   fastapi
+    #   google-adk
     #   google-genai
     #   grpcio
     #   openai
     #   opentelemetry-api
+    #   opentelemetry-sdk
+    #   opentelemetry-semantic-conventions
     #   pydantic
     #   pydantic-core
     #   typing-inspection
     #   webstatus-openapi
 typing-inspection==0.4.4
-    # via pydantic
+    # via
+    #   fastapi
+    #   pydantic
 tzlocal==5.4.4
-    # via dateparser
+    # via
+    #   dateparser
+    #   google-adk
 uritemplate==4.2.0
     # via google-api-python-client
 urllib3==1.26.20
@@ -440,12 +516,18 @@ urllib3==1.26.20
     #   requests
     #   trafilatura
     #   webstatus-openapi
+uvicorn==0.52.3
+    # via google-adk
 validators==0.35.0
     # via -r requirements.in
+watchdog==6.0.0
+    # via google-adk
 webencodings==0.5.1
     # via html5lib
-websockets==16.1.1
-    # via google-genai
+websockets==15.0.1
+    # via
+    #   google-adk
+    #   google-genai
 werkzeug==3.1.8
     # via
     #   -r requirements.in
@@ -454,6 +536,8 @@ werkzeug==3.1.8
     #   flask-cors
 wpt-gen-lib @ git+https://github.com/GoogleChromeLabs/wpt-gen.git@v0.6.4#subdirectory=lib
     # via -r requirements.in
+yarl==1.24.5
+    # via aiohttp
 
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools
