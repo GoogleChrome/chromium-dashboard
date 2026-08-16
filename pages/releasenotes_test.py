@@ -65,7 +65,11 @@ class ReleaseNotesHandlerTest(testing_config.CustomTestCase):
             {
                 'id': 101,
                 'name': 'Sample CSS Feature',
-                'summary': 'Summary of CSS feature',
+                'summary': (
+                    'Summary with `CSS.highlights`, [Spec'
+                    ' Link](https://example.com/spec), and'
+                    ' https://web.dev/webgpu.'
+                ),
                 'category_name': 'CSS',
                 'doc_links': ['https://example.com/spec'],
             }
@@ -201,3 +205,16 @@ class ReleaseNotesHandlerTest(testing_config.CustomTestCase):
             self.assertIn('/feature/101', parser.links)
             self.assertIn('#feature-101', parser.links)
             self.assertIn('https://example.com/spec', parser.links)
+
+            # Verify CommonMark rendering of feature summary
+            self.assertIn('<code>CSS.highlights</code>', html_str)
+            self.assertIn(
+                '<a href="https://example.com/spec" target="_blank"'
+                ' rel="noopener noreferrer">Spec Link</a>',
+                html_str,
+            )
+            self.assertIn(
+                '<a href="https://web.dev/webgpu" target="_blank"'
+                ' rel="noopener noreferrer">https://web.dev/webgpu</a>',
+                html_str,
+            )

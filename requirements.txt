@@ -286,9 +286,13 @@ lxml[html-clean]==6.1.1
     #   trafilatura
     #   wpt-gen-lib
 lxml-html-clean==0.4.5
-    # via lxml
+    # via
+    #   -r requirements.in
+    #   lxml
 markdown-it-py==4.2.0
-    # via rich
+    # via
+    #   -r requirements.in
+    #   rich
 markdownify==1.2.3
     # via wpt-gen-lib
 markupsafe==3.0.3
