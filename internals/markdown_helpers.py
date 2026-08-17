@@ -16,7 +16,6 @@
 
 from __future__ import annotations
 
-import re
 from typing import Any
 
 from lxml_html_clean import Cleaner
@@ -24,8 +23,6 @@ from markdown_it import MarkdownIt
 from markdown_it.renderer import RendererHTML
 from markdown_it.token import Token
 from markdown_it.utils import OptionsDict
-
-_TRAILING_PUNCTUATION = '.,;:!?'
 
 _ALLOWED_HTML_TAGS = {
     'p',
@@ -71,8 +68,14 @@ def _custom_link_open_rule(
 
 
 def _build_markdown_parser() -> MarkdownIt:
-    """Constructs a CommonMark parser with raw HTML strictly disabled."""
-    md = MarkdownIt('commonmark', {'html': False})
+    """Constructs a CommonMark parser with linkify-it-py autolinking and raw HTML disabled."""
+    md = MarkdownIt(
+        'commonmark',
+        {
+            'linkify': True,
+            'html': False,
+        },
+    ).enable('linkify')
     md.add_render_rule('link_open', _custom_link_open_rule)
     return md
 
@@ -80,41 +83,12 @@ def _build_markdown_parser() -> MarkdownIt:
 _MARKDOWN_PARSER = _build_markdown_parser()
 
 
-def autolink_bare_urls(text: str) -> str:
-    """Encloses bare http(s) URLs in CommonMark angle brackets (<url>) for autolinking.
-
-    Avoids modifying URLs already inside inline code backticks or markdown link definitions.
-
-    Args:
-      text: Raw markdown text.
-
-    Returns:
-      Markdown text with bare URLs wrapped in CommonMark autolink brackets.
-    """
-    parts = re.split(r'(`[^`]+`)', text)
-    for i, part in enumerate(parts):
-        if not part.startswith('`'):
-
-            def _replace_url(match: re.Match[str]) -> str:
-                url = match.group(1)
-                trailing = ''
-                while url and url[-1] in _TRAILING_PUNCTUATION:
-                    trailing = url[-1] + trailing
-                    url = url[:-1]
-                return f'<{url}>{trailing}'
-
-            parts[i] = re.sub(
-                r'(?<![\(<"\'])(https?://[^\s\)]+)', _replace_url, part
-            )
-    return ''.join(parts)
-
-
 def render_markdown(text: str | None) -> str:
     """Renders CommonMark markdown text to safe, sanitized HTML.
 
-    1. Autolinks bare http(s) URLs not enclosed in code backticks.
-    2. Parses markdown using CommonMark rules (matching frontend marked.js).
-    3. Neutralizes raw HTML tags and sanitizes output against XSS.
+    1. Parses markdown using CommonMark rules (matching frontend marked.js).
+    2. Autolinks bare URLs via linkify-it-py (RFC 3986 and Unicode compliant).
+    3. Neutralizes raw HTML tags (html=False) and sanitizes output against XSS.
     4. Applies target='_blank' and rel='noopener noreferrer' to links.
 
     Args:
@@ -126,12 +100,9 @@ def render_markdown(text: str | None) -> str:
     if not text:
         return ''
 
-    # 1. Preprocess bare URLs
-    preprocessed_text = autolink_bare_urls(text)
+    # Render to HTML via CommonMark parser with native linkify tokenization
+    rendered_html = _MARKDOWN_PARSER.render(text).strip()
 
-    # 2. Render to HTML via CommonMark parser (html=False escapes raw HTML tags)
-    rendered_html = _MARKDOWN_PARSER.render(preprocessed_text).strip()
-
-    # 3. Sanitize HTML tree to enforce tag and attribute allowlists
+    # Sanitize HTML tree to enforce tag and attribute allowlists
     cleaned_html: str = _HTML_CLEANER.clean_html(rendered_html)
     return cleaned_html
