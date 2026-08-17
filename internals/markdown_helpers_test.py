@@ -119,7 +119,9 @@ class MarkdownHelpersTest(unittest.TestCase):
             '<script>alert("XSS")</script>'
         )
         self.assertNotIn('<script>', result)
-        self.assertIn('&lt;script&gt;alert("XSS")&lt;/script&gt;', result)
+        self.assertIn(
+            '&lt;script&gt;alert(&quot;XSS&quot;)&lt;/script&gt;', result
+        )
 
     def test_render_markdown_xss_protection_event_handlers(self):
         """Tests that HTML event handlers like onerror are safely escaped."""

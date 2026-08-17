@@ -36,7 +36,6 @@ wpt-gen-lib @ git+https://github.com/GoogleChromeLabs/wpt-gen.git@v0.6.4#subdire
 pymmh3==0.0.5
 markdown-it-py==4.2.0
 linkify-it-py==2.1.0
-lxml-html-clean==0.4.5
 
 # Local OpenAPI generated packages (editable relative paths)
 -e ./gen/py/chromestatus_openapi

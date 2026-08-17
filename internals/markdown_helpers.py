@@ -18,39 +18,10 @@ from __future__ import annotations
 
 from typing import Any
 
-from lxml_html_clean import Cleaner
 from markdown_it import MarkdownIt
 from markdown_it.renderer import RendererHTML
 from markdown_it.token import Token
 from markdown_it.utils import OptionsDict
-
-_ALLOWED_HTML_TAGS = {
-    'p',
-    'code',
-    'a',
-    'strong',
-    'em',
-    'ul',
-    'ol',
-    'li',
-    'br',
-    'pre',
-}
-
-_ALLOWED_HTML_ATTRS = {
-    'href',
-    'target',
-    'rel',
-    'class',
-    'title',
-}
-
-_HTML_CLEANER = Cleaner(
-    allow_tags=_ALLOWED_HTML_TAGS,
-    safe_attrs_only=True,
-    safe_attrs=_ALLOWED_HTML_ATTRS,
-    remove_unknown_tags=False,
-)
 
 
 def _custom_link_open_rule(
@@ -88,7 +59,7 @@ def render_markdown(text: str | None) -> str:
 
     1. Parses markdown using CommonMark rules (matching frontend marked.js).
     2. Autolinks bare URLs via linkify-it-py (RFC 3986 and Unicode compliant).
-    3. Neutralizes raw HTML tags (html=False) and sanitizes output against XSS.
+    3. Neutralizes raw HTML tags (html=False) escaping all embedded tags.
     4. Applies target='_blank' and rel='noopener noreferrer' to links.
 
     Args:
@@ -101,8 +72,4 @@ def render_markdown(text: str | None) -> str:
         return ''
 
     # Render to HTML via CommonMark parser with native linkify tokenization
-    rendered_html = _MARKDOWN_PARSER.render(text).strip()
-
-    # Sanitize HTML tree to enforce tag and attribute allowlists
-    cleaned_html: str = _HTML_CLEANER.clean_html(rendered_html)
-    return cleaned_html
+    return _MARKDOWN_PARSER.render(text).strip()
