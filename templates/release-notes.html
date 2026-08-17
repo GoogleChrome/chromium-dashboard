@@ -217,8 +217,40 @@
      ========================================================================== */
   .feature-summary {
     margin-bottom: var(--content-padding);
-    white-space: pre-wrap;
     overflow-wrap: break-word;
+  }
+
+  .feature-summary code {
+    font-family: monospace;
+    background-color: var(--light-accent-color);
+    padding: calc(var(--content-padding-quarter) / 2) var(--content-padding-quarter);
+    border-radius: var(--border-radius);
+    border: var(--default-border);
+  }
+
+  .feature-summary a {
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    overflow-wrap: break-word;
+  }
+
+  .feature-summary p {
+    margin: 0 0 var(--content-padding-half) 0;
+    line-height: 1.4;
+  }
+
+  .feature-summary p:last-child {
+    margin-bottom: 0;
+  }
+
+  .feature-summary ul,
+  .feature-summary ol {
+    margin: var(--content-padding-half) 0;
+    padding-left: var(--content-padding-large);
+  }
+
+  .feature-summary li {
+    margin-bottom: var(--content-padding-quarter);
   }
 
   .feature-doc-links {
@@ -398,7 +430,7 @@
                     <span class="anchor-tooltip" role="status" aria-live="polite">Link copied!</span>
                   </a>
                 </h3>
-                <div class="feature-summary">{{ feature.summary }}</div>
+                <div class="feature-summary">{{ feature.formatted_summary | safe }}</div>
               </div>
               {% if feature.doc_links %}
                 <div class="feature-doc-links" aria-label="Documentation links">

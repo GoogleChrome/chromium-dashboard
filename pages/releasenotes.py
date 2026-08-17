@@ -22,7 +22,7 @@ import flask
 
 import settings
 from framework import basehandlers, seo
-from internals import feature_helpers, fetchchannels
+from internals import feature_helpers, fetchchannels, markdown_helpers
 
 # Milestones prior to M151 were published as standalone blog posts on developer.chrome.com.
 # ChromeStatus SSR release notes curation begins with Chrome 151.
@@ -117,6 +117,9 @@ class ReleaseNotesHandler(basehandlers.FlaskHandler):
         features_by_category: dict[str, list[dict[str, Any]]] = {}
         for feature in release_note_features:
             category = feature.get('category_name') or 'Other'
+            feature['formatted_summary'] = markdown_helpers.render_markdown(
+                feature.get('summary') or ''
+            )
             features_by_category.setdefault(category, []).append(feature)
 
         # Bound the datalist dropdown options to the visible release horizon down to M124.

@@ -278,6 +278,8 @@ justext==3.0.2
     # via trafilatura
 legacy-cgi==2.6.4
     # via appengine-python-standard
+linkify-it-py==2.1.0
+    # via -r requirements.in
 lxml[html-clean]==6.1.1
     # via
     #   htmldate
@@ -288,7 +290,9 @@ lxml[html-clean]==6.1.1
 lxml-html-clean==0.4.5
     # via lxml
 markdown-it-py==4.2.0
-    # via rich
+    # via
+    #   -r requirements.in
+    #   rich
 markdownify==1.2.3
     # via wpt-gen-lib
 markupsafe==3.0.3
@@ -506,6 +510,8 @@ tzlocal==5.4.4
     # via
     #   dateparser
     #   google-adk
+uc-micro-py==2.0.0
+    # via linkify-it-py
 uritemplate==4.2.0
     # via google-api-python-client
 urllib3==1.26.20
