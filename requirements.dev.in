@@ -2,7 +2,7 @@
 # Compile into locked requirements.dev.txt via:
 #   pip-compile requirements.dev.in -o requirements.dev.txt
 
-coverage==7.15.2
+coverage==7.15.4
 gunicorn==26.0.0
 mypy==2.3.0
 pip-tools>=7.4.0
