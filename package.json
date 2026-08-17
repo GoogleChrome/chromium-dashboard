@@ -100,7 +100,7 @@
   "dependencies": {
     "@lit/task": "^1.0.3",
     "@types/google.accounts": "^0.0.18",
-    "@types/google.visualization": "^0.0.74",
+    "@types/google.visualization": "^0.0.75",
     "csv-parse": "^7.0.2",
     "dompurify": "^3.4.13",
     "lit": "^3",
