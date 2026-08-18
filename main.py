@@ -534,6 +534,10 @@ internals_routes: list[Route] = [
         '/tasks/generate-wpt-coverage-analysis',
         gemini_helpers.GenerateWPTCoverageEvalReportHandler,
     ),
+    Route(
+        '/tasks/generate-summary',
+        gemini_helpers.GenerateSummaryHandler,
+    ),
     # OT process reminder emails
     Route(
         '/tasks/email-ot-first-branch', notifier.OTFirstBranchReminderHandler

@@ -18,10 +18,17 @@ from unittest import mock
 
 from google.cloud import ndb
 
-import testing_config  # Must be imported before the module under test.
-from framework import gemini_helpers, utils
+import testing_config  # isort: skip  # Must be imported before other project modules.
+
+import settings
+from ai.progress_reporter import SummaryResult
+from framework import feature_fingerprint, gemini_helpers, utils
 from internals import core_enums
-from internals.core_models import FeatureEntry
+from internals.core_models import (
+    FeatureEntry,
+    FeatureSummaryProgressStep,
+    FeatureSummarySuggestion,
+)
 
 
 class GeminiHelpersTest(testing_config.CustomTestCase):
@@ -183,3 +190,166 @@ class GenerateWPTCoverageEvalReportHandlerTest(testing_config.CustomTestCase):
         )
 
         self.assertIn('Test failure', response['message'])
+
+
+class GenerateSummaryHandlerTest(testing_config.CustomTestCase):
+    """Tests for GenerateSummaryHandler cloud task worker."""
+
+    def setUp(self):
+        """Set up test FeatureEntry entity and mocked handler dependencies."""
+        super(GenerateSummaryHandlerTest, self).setUp()
+        self.feature = FeatureEntry(
+            name='Test WebGPU Feature',
+            summary='Original raw technical description.',
+            feature_type=0,
+            category=1,
+            spec_link='https://gpuweb.github.io/gpuweb/',
+            doc_links=['https://developer.chrome.com/docs/webgpu'],
+        )
+        self.feature.put()
+        self.feature_id = self.feature.key.integer_id()
+
+        self.handler = gemini_helpers.GenerateSummaryHandler()
+        self.handler.require_task_header = mock.Mock()
+        self.handler.get_int_param = mock.Mock(return_value=self.feature_id)
+        self.handler.get_bool_param = mock.Mock(return_value=False)
+        self.handler.get_validated_entity = mock.Mock(return_value=self.feature)
+
+    def tearDown(self):
+        """Clean up active mock patches and Datastore test entities."""
+        mock.patch.stopall()
+        if hasattr(self, 'feature') and self.feature and self.feature.key:
+            self.feature.key.delete()
+        suggestion = FeatureSummarySuggestion.get_by_id(self.feature_id)
+        if suggestion:
+            suggestion.key.delete()
+        parent_key = ndb.Key(FeatureSummarySuggestion, self.feature_id)
+        steps = FeatureSummaryProgressStep.query(ancestor=parent_key).fetch(
+            keys_only=True
+        )
+        if steps:
+            ndb.delete_multi(steps)
+
+    @mock.patch('framework.gemini_helpers.GeminiSummaryGenerator')
+    def test_process_post_data__success(self, mock_generator_cls):
+        """Tests successful generation and Datastore persistence."""
+        mock_generator = mock.MagicMock()
+        mock_generator.generate_summary.return_value = SummaryResult(
+            suggested_summary='AI suggested summary.',
+            generation_rationale='Clear and concise.',
+            suggested_doc_links=('https://developer.chrome.com/docs/webgpu',),
+        )
+        mock_generator_cls.return_value = mock_generator
+
+        response = self.handler.process_post_data()
+
+        mock_generator_cls.assert_called_once_with(
+            model_name=settings.SUMMARY_GENERATOR_MODEL
+        )
+        self.assertEqual(
+            response['message'],
+            f'AI summary generated for feature {self.feature_id}.',
+        )
+        self.assertEqual(response['suggested_summary'], 'AI suggested summary.')
+
+        suggestion = FeatureSummarySuggestion.get_by_id(self.feature_id)
+        self.assertIsNotNone(suggestion)
+        self.assertEqual(suggestion.suggested_summary, 'AI suggested summary.')
+        self.assertEqual(suggestion.generation_rationale, 'Clear and concise.')
+        self.assertEqual(
+            suggestion.suggested_doc_links,
+            ['https://developer.chrome.com/docs/webgpu'],
+        )
+        self.assertEqual(
+            suggestion.status, core_enums.SummarySuggestionStatus.PROPOSED
+        )
+        self.assertEqual(suggestion.version_token, 2)
+        self.assertEqual(
+            suggestion.source_fingerprint,
+            feature_fingerprint.compute_feature_fingerprint(self.feature),
+        )
+
+    @mock.patch('framework.gemini_helpers.GeminiSummaryGenerator')
+    def test_process_post_data__deleted_feature_skipped(
+        self, mock_generator_cls
+    ):
+        """Tests that soft-deleted features skip generation."""
+        self.feature.deleted = True
+        self.feature.put()
+
+        response = self.handler.process_post_data()
+
+        self.assertTrue(response.get('skipped'))
+        self.assertIn('deleted', response['message'])
+        mock_generator_cls.assert_not_called()
+
+    @mock.patch('framework.gemini_helpers.GeminiSummaryGenerator')
+    def test_process_post_data__deduplication_skipped(self, mock_generator_cls):
+        """Tests that matching source_fingerprint skips execution when force=False."""
+        fingerprint = feature_fingerprint.compute_feature_fingerprint(
+            self.feature
+        )
+        suggestion = FeatureSummarySuggestion(
+            id=self.feature_id,
+            suggested_summary='Existing summary.',
+            generation_rationale='Rationale.',
+            source_fingerprint=fingerprint,
+            status=core_enums.SummarySuggestionStatus.PROPOSED,
+        )
+        suggestion.put()
+
+        response = self.handler.process_post_data()
+
+        self.assertTrue(response.get('skipped'))
+        mock_generator_cls.assert_not_called()
+
+    @mock.patch('framework.gemini_helpers.GeminiSummaryGenerator')
+    def test_process_post_data__force_regenerates(self, mock_generator_cls):
+        """Tests that force=True regenerates even if source_fingerprint matches."""
+        fingerprint = feature_fingerprint.compute_feature_fingerprint(
+            self.feature
+        )
+        suggestion = FeatureSummarySuggestion(
+            id=self.feature_id,
+            suggested_summary='Existing summary.',
+            generation_rationale='Rationale.',
+            source_fingerprint=fingerprint,
+            status=core_enums.SummarySuggestionStatus.PROPOSED,
+        )
+        suggestion.put()
+
+        self.handler.get_bool_param = mock.Mock(return_value=True)
+
+        mock_generator = mock.MagicMock()
+        mock_generator.generate_summary.return_value = SummaryResult(
+            suggested_summary='Regenerated summary.',
+            generation_rationale='Updated rationale.',
+            suggested_doc_links=(),
+        )
+        mock_generator_cls.return_value = mock_generator
+
+        response = self.handler.process_post_data()
+
+        self.assertFalse(response.get('skipped', False))
+        self.assertEqual(response['suggested_summary'], 'Regenerated summary.')
+        mock_generator.generate_summary.assert_called_once()
+
+    @mock.patch('framework.gemini_helpers.GeminiSummaryGenerator')
+    def test_process_post_data__generation_error(self, mock_generator_cls):
+        """Tests that generation errors update suggestion status to FAILED."""
+        mock_generator = mock.MagicMock()
+        mock_generator.generate_summary.return_value = SummaryResult(
+            suggested_summary='',
+            generation_rationale='',
+            error_message='API rate limit exceeded',
+        )
+        mock_generator_cls.return_value = mock_generator
+
+        response = self.handler.process_post_data()
+
+        self.assertIn('error', response)
+        suggestion = FeatureSummarySuggestion.get_by_id(self.feature_id)
+        self.assertIsNotNone(suggestion)
+        self.assertEqual(
+            suggestion.status, core_enums.SummarySuggestionStatus.UNKNOWN
+        )
