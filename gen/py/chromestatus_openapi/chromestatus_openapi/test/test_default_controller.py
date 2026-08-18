@@ -48,6 +48,7 @@ from chromestatus_openapi.models.success_message import SuccessMessage  # noqa: 
 from chromestatus_openapi.models.summary_suggestion_list_response import SummarySuggestionListResponse  # noqa: E501
 from chromestatus_openapi.models.summary_suggestion_patch_request import SummarySuggestionPatchRequest  # noqa: E501
 from chromestatus_openapi.models.summary_suggestion_response import SummarySuggestionResponse  # noqa: E501
+from chromestatus_openapi.models.summary_suggestion_trigger_request import SummarySuggestionTriggerRequest  # noqa: E501
 from chromestatus_openapi.test import BaseTestCase
 
 
@@ -878,6 +879,25 @@ class TestDefaultController(BaseTestCase):
             method='POST',
             headers=headers,
             data=json.dumps(post_vote_request),
+            content_type='application/json')
+        self.assert200(response,
+                       'Response body is : ' + response.data.decode('utf-8'))
+
+    def test_trigger_summary_generation(self):
+        """Test case for trigger_summary_generation
+
+        Enqueue AI summary generation task for a feature
+        """
+        summary_suggestion_trigger_request = {"force":False}
+        headers = { 
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+        }
+        response = self.client.open(
+            '/api/v0/summary-suggestions/{feature_id}'.format(feature_id=56),
+            method='POST',
+            headers=headers,
+            data=json.dumps(summary_suggestion_trigger_request),
             content_type='application/json')
         self.assert200(response,
                        'Response body is : ' + response.data.decode('utf-8'))

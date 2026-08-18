@@ -1106,6 +1106,49 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorMessage'
+    post:
+      summary: Enqueue AI summary generation task for a feature
+      description: >-
+        Enqueues an asynchronous background Cloud Task to generate an AI release notes summary.
+        Verifies feature edit permissions (owner, editor, admin) before enqueuing.
+      operationId: triggerSummaryGeneration
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SummarySuggestionTriggerRequest'
+      responses:
+        '200':
+          description: Success - Task enqueued
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
+        '400':
+          description: Bad Request - Invalid feature_id parameter or non-boolean force parameter
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '401':
+          description: Unauthorized - Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '403':
+          description: Forbidden - Insufficient edit permissions for this feature
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '404':
+          description: Feature not found or marked soft-deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
     patch:
       summary: Update AI summary suggestion status or fields
       operationId: updateSummarySuggestion
@@ -2524,6 +2567,14 @@ components:
             Expected current version_token of the suggestion being patched for Optimistic Concurrency Control (OCC).
             Must match the server's current version_token, otherwise the server rejects the request with HTTP 409 Conflict.
             (TODO: Migrate to standard HTTP ETag / If-Match headers if the repo adopts header-based OCC across REST endpoints.)
+    SummarySuggestionTriggerRequest:
+      type: object
+      description: Optional payload for triggering AI summary generation.
+      properties:
+        force:
+          type: boolean
+          default: false
+          description: Whether to bypass cached feature fingerprint checks and force LLM generation.
     SummarySuggestionListResponse:
       type: object
       description: Paginated response containing a list of pending AI summary suggestions for the review queue.
