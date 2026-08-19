@@ -42,9 +42,15 @@ import {
   SummarySuggestion,
   SummaryProgressStep as ProgressStep,
   SummarySuggestionResponse,
+  SummarySuggestionPatchRequest,
 } from 'chromestatus-openapi';
 
-export {SummarySuggestion, ProgressStep, SummarySuggestionResponse};
+export {
+  SummarySuggestion,
+  ProgressStep,
+  SummarySuggestionResponse,
+  SummarySuggestionPatchRequest,
+};
 
 export interface StageDict {
   id: number;
@@ -956,5 +962,18 @@ export class ChromeStatusClient {
     return this.doPost(`/summary-suggestions/${featureId}`, {
       force,
     }) as Promise<{message: string}>;
+  }
+
+  async updateSummarySuggestion(
+    featureId: number,
+    patch: SummarySuggestionPatchRequest
+  ): Promise<SummarySuggestionResponse> {
+    if (!Number.isInteger(featureId) || featureId <= 0) {
+      throw new Error(`Invalid featureId: ${featureId}`);
+    }
+    return this.doPatch(
+      `/summary-suggestions/${featureId}`,
+      patch
+    ) as Promise<SummarySuggestionResponse>;
   }
 }
