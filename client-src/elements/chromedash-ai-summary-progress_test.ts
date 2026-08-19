@@ -628,4 +628,57 @@ describe('chromedash-ai-summary-progress', () => {
     ).to.be.true;
     expect(el.suggestion?.feature_id).to.equal(202);
   });
+
+  it('triggers polling automatically when autoPoll is dynamically toggled to true', async () => {
+    (window.csClient.getSummarySuggestion as sinon.SinonStub)
+      .withArgs(303)
+      .resolves({
+        suggestion: {
+          feature_id: 303,
+          status: 'PENDING',
+          suggested_summary: 'AI summary 303',
+          suggested_doc_links: [],
+          version_token: 1,
+          created: new Date(),
+          updated: new Date(),
+        },
+        progress_steps: [
+          {
+            step: SummaryProgressStepStepEnum.READ_SPEC,
+            status: SummaryProgressStepStatusEnum.SUCCESS,
+            message: 'Done 303',
+            start_timestamp: new Date(),
+          },
+        ],
+      });
+
+    let resolveCompleted: (e: CustomEvent) => void;
+    const completedPromise = new Promise<CustomEvent>(resolve => {
+      resolveCompleted = resolve;
+    });
+
+    const el = await fixture<ChromedashAiSummaryProgress>(
+      html`<chromedash-ai-summary-progress
+        .autoPoll=${false}
+        .featureId=${303}
+        @summary-generation-completed=${(e: CustomEvent) => {
+          resolveCompleted(e);
+        }}
+      ></chromedash-ai-summary-progress>`
+    );
+
+    // Initial state: autoPoll is false, so getSummarySuggestion(303) should not have been called
+    expect(
+      (window.csClient.getSummarySuggestion as sinon.SinonStub).calledWith(303)
+    ).to.be.false;
+
+    // Dynamically toggle autoPoll to true
+    el.autoPoll = true;
+    await completedPromise;
+
+    expect(
+      (window.csClient.getSummarySuggestion as sinon.SinonStub).calledWith(303)
+    ).to.be.true;
+    expect(el.suggestion?.feature_id).to.equal(303);
+  });
 });
