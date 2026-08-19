@@ -86,6 +86,7 @@ export * from './SummarySuggestion';
 export * from './SummarySuggestionListResponse';
 export * from './SummarySuggestionPatchRequest';
 export * from './SummarySuggestionResponse';
+export * from './SummarySuggestionTriggerRequest';
 export * from './SurveyAnswers';
 export * from './TokenRefreshResponse';
 export * from './UserPermissions';

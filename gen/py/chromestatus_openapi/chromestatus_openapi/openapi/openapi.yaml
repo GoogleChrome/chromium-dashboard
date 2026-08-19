@@ -1546,6 +1546,61 @@ paths:
           description: Conflict - OCC version token mismatch
       summary: Update AI summary suggestion status or fields
       x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+    post:
+      description: "Enqueues an asynchronous background Cloud Task to generate an\
+        \ AI release notes summary. Verifies feature edit permissions (owner, editor,\
+        \ admin) before enqueuing."
+      operationId: trigger_summary_generation
+      parameters:
+      - description: Feature ID (positive integer)
+        explode: false
+        in: path
+        name: feature_id
+        required: true
+        schema:
+          minimum: 1
+          type: integer
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SummarySuggestionTriggerRequest'
+        required: false
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
+          description: Success - Task enqueued
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: Bad Request - Invalid feature_id parameter or non-boolean force
+            parameter
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: Unauthorized - Authentication required
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: Forbidden - Insufficient edit permissions for this feature
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: Feature not found or marked soft-deleted
+      summary: Enqueue AI summary generation task for a feature
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
   /web_feature_ids:
     get:
       operationId: get_web_feature_ids
@@ -3917,6 +3972,19 @@ components:
       required:
       - version_token
       title: SummarySuggestionPatchRequest
+      type: object
+    SummarySuggestionTriggerRequest:
+      description: Optional payload for triggering AI summary generation.
+      example:
+        force: false
+      properties:
+        force:
+          default: false
+          description: Whether to bypass cached feature fingerprint checks and force
+            LLM generation.
+          title: force
+          type: boolean
+      title: SummarySuggestionTriggerRequest
       type: object
     SummarySuggestionListResponse:
       description: Paginated response containing a list of pending AI summary suggestions
