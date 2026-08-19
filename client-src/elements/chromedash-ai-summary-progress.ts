@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 
-import {LitElement, css, html, nothing} from 'lit';
-import {customElement, property} from 'lit/decorators.js';
+import {Task} from '@lit/task';
+import {LitElement, PropertyValues, css, html, nothing} from 'lit';
+import {customElement, property, state} from 'lit/decorators.js';
 import '@shoelace-style/shoelace/dist/components/spinner/spinner.js';
 import '@shoelace-style/shoelace/dist/components/icon/icon.js';
 import '@shoelace-style/shoelace/dist/components/button/button.js';
@@ -25,11 +26,16 @@ import {
   SummaryProgressStep as ProgressStep,
   SummaryProgressStepStatusEnum,
   SummaryProgressStepStepEnum,
+  SummarySuggestion,
+  SummarySuggestionResponse,
 } from 'chromestatus-openapi';
+import {TaskProgressMonitor} from '../js-src/task-progress-monitor.js';
 
 const MAX_STEP_MESSAGE_LENGTH = 300;
+const MAX_ERROR_MESSAGE_LENGTH = 200;
 const DEFAULT_TRIGGER_ERROR_MESSAGE =
   'Failed to trigger summary generation task';
+const DEFAULT_FETCH_ERROR_MESSAGE = 'Failed to fetch summary generation status';
 const DEFAULT_STEP_LABEL = 'Processing feature data';
 
 /** Compile-time exhaustive map from pipeline step enum to human-readable label. */
@@ -80,21 +86,14 @@ export const STATUS_LABELS: Readonly<
 });
 
 /**
- * UI presentational component displaying the live progress timeline of AI summary generation.
+ * Component displaying live progress timeline and background execution polling for AI summary generation.
  *
  * @fires summary-generation-started - Dispatched when background generation is triggered.
  *   detail: { featureId: number, force: boolean }
- *
- * @example
- * ```html
- * <chromedash-ai-summary-progress
- *   .featureId=${123}
- *   .progressSteps=${steps}
- *   @summary-generation-started=${(e) => {
- *     console.log('Started generation for feature:', e.detail.featureId);
- *   }}
- * ></chromedash-ai-summary-progress>
- * ```
+ * @fires summary-generation-completed - Dispatched when generation completes successfully.
+ *   detail: { featureId: number, suggestion: SummarySuggestion | null, progressSteps: ProgressStep[] }
+ * @fires summary-generation-failed - Dispatched when a pipeline step fails.
+ *   detail: { featureId: number, suggestion: SummarySuggestion | null, progressSteps: ProgressStep[], error?: string }
  */
 @customElement('chromedash-ai-summary-progress')
 export class ChromedashAiSummaryProgress extends LitElement {
@@ -102,16 +101,87 @@ export class ChromedashAiSummaryProgress extends LitElement {
   featureId = 0;
 
   @property({attribute: false})
+  suggestion: SummarySuggestion | null = null;
+
+  @property({attribute: false})
   progressSteps: ProgressStep[] = [];
+
+  @property({type: Boolean})
+  autoPoll = true;
 
   @property({type: Boolean})
   compact = false;
 
-  @property({type: Boolean})
+  @state()
   loading = false;
 
-  @property({type: String})
+  @state()
   error: string | null = null;
+
+  private _monitor: TaskProgressMonitor<SummarySuggestionResponse> | null =
+    null;
+
+  /**
+   * Reactive @lit/task managing background polling and lifecycle integration.
+   * Exposed with a leading underscore as a public lifecycle and testing hook so
+   * test suites and integration harnesses can inspect execution state or trigger
+   * manual task runs deterministically.
+   */
+  public _statusTask = new Task(this, {
+    task: async ([featureId], {signal}) => {
+      if (!featureId || featureId <= 0 || !this.autoPoll) {
+        return null;
+      }
+
+      this.error = null;
+      this._monitor = new TaskProgressMonitor<SummarySuggestionResponse>({
+        fetcher: () => window.csClient.getSummarySuggestion(featureId),
+        shouldContinue: resp => this._isStepsActive(resp.progress_steps),
+        onProgress: resp => {
+          this.suggestion = resp.suggestion ?? null;
+          this.progressSteps = resp.progress_steps ?? [];
+        },
+      });
+
+      try {
+        const resp = await this._monitor.run(signal);
+        this.suggestion = resp.suggestion ?? null;
+        this.progressSteps = resp.progress_steps ?? [];
+
+        const hasFailed = this.progressSteps.some(
+          s => s.status === SummaryProgressStepStatusEnum.FAILED
+        );
+        if (hasFailed) {
+          this._dispatchFailedEvent();
+        } else {
+          this._dispatchCompletedEvent();
+        }
+        return resp;
+      } catch (err) {
+        const isAbort =
+          signal?.aborted ||
+          (err instanceof DOMException && err.name === 'AbortError') ||
+          (err instanceof Error && err.name === 'AbortError');
+        if (isAbort) return null;
+
+        const errorMsg =
+          err instanceof Error
+            ? err.message
+            : typeof err === 'object'
+              ? JSON.stringify(err)
+              : String(err);
+        this.error = this._formatErrorMessage(
+          errorMsg,
+          DEFAULT_FETCH_ERROR_MESSAGE
+        );
+        this._dispatchFailedEvent(this.error);
+        throw err;
+      } finally {
+        this._monitor = null;
+      }
+    },
+    args: () => [this.featureId],
+  });
 
   static get styles() {
     return [
@@ -264,13 +334,44 @@ export class ChromedashAiSummaryProgress extends LitElement {
     return this.compact ? 'small' : 'medium';
   }
 
-  get isTaskRunning(): boolean {
-    if (this.loading) return true;
-    return this.progressSteps.some(
+  private _isStepsActive(steps?: ProgressStep[]): boolean {
+    if (!steps || steps.length === 0) return false;
+    return steps.some(
       s =>
         s.status === SummaryProgressStepStatusEnum.IN_PROGRESS ||
         s.status === SummaryProgressStepStatusEnum.RETRYING
     );
+  }
+
+  get isTaskRunning(): boolean {
+    return (
+      this.loading ||
+      (this._monitor?.isRunning ?? false) ||
+      this._isStepsActive(this.progressSteps)
+    );
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    if (this._monitor) {
+      this._monitor.stop();
+      this._monitor = null;
+    }
+  }
+
+  override willUpdate(changedProperties: PropertyValues) {
+    if (
+      changedProperties.has('featureId') &&
+      changedProperties.get('featureId') !== undefined
+    ) {
+      if (this._monitor) {
+        this._monitor.stop();
+        this._monitor = null;
+      }
+      this.suggestion = null;
+      this.progressSteps = [];
+      this.error = null;
+    }
   }
 
   async handleTrigger(force = false) {
@@ -286,11 +387,14 @@ export class ChromedashAiSummaryProgress extends LitElement {
     try {
       this.loading = true;
       this.error = null;
+      this.progressSteps = [];
+      this.suggestion = null;
 
       await window.csClient.triggerSummaryGeneration(this.featureId, force);
       if (!this.isConnected) return;
 
       this._dispatchStartedEvent(force);
+      await this._statusTask.run();
     } catch (err) {
       if (!this.isConnected) return;
       const errorMsg =
@@ -299,10 +403,24 @@ export class ChromedashAiSummaryProgress extends LitElement {
           : typeof err === 'object'
             ? JSON.stringify(err)
             : String(err);
-      this.error = errorMsg || DEFAULT_TRIGGER_ERROR_MESSAGE;
+      this.error = this._formatErrorMessage(
+        errorMsg,
+        DEFAULT_TRIGGER_ERROR_MESSAGE
+      );
     } finally {
       this.loading = false;
     }
+  }
+
+  private _formatErrorMessage(
+    rawMsg: string | undefined | null,
+    fallback: string
+  ): string {
+    const trimmed = (rawMsg || '').trim();
+    if (!trimmed) return fallback;
+    return trimmed.length > MAX_ERROR_MESSAGE_LENGTH
+      ? `${trimmed.slice(0, MAX_ERROR_MESSAGE_LENGTH)}...`
+      : trimmed;
   }
 
   /**
@@ -315,6 +433,35 @@ export class ChromedashAiSummaryProgress extends LitElement {
         bubbles: true,
         composed: true,
         detail: {featureId: this.featureId, force},
+      })
+    );
+  }
+
+  private _dispatchCompletedEvent() {
+    this.dispatchEvent(
+      new CustomEvent('summary-generation-completed', {
+        bubbles: true,
+        composed: true,
+        detail: {
+          featureId: this.featureId,
+          suggestion: this.suggestion,
+          progressSteps: this.progressSteps,
+        },
+      })
+    );
+  }
+
+  private _dispatchFailedEvent(error?: string | null) {
+    this.dispatchEvent(
+      new CustomEvent('summary-generation-failed', {
+        bubbles: true,
+        composed: true,
+        detail: {
+          featureId: this.featureId,
+          suggestion: this.suggestion,
+          progressSteps: this.progressSteps,
+          ...(error !== undefined && {error}),
+        },
       })
     );
   }
