@@ -38,6 +38,14 @@ export interface FeatureLinksSummary {
   error_link_domains: Array<{key: string; count: number}>;
 }
 
+import {
+  SummarySuggestion,
+  SummaryProgressStep as ProgressStep,
+  SummarySuggestionResponse,
+} from 'chromestatus-openapi';
+
+export {SummarySuggestion, ProgressStep, SummarySuggestionResponse};
+
 export interface StageDict {
   id: number;
   created: string;
@@ -924,5 +932,29 @@ export class ChromeStatusClient {
 
   async getSpecifiedChannels(start: number, end: number): Promise<unknown> {
     return this.doGet(`/channels?start=${start}&end=${end}`);
+  }
+
+  // Summary Suggestions API
+  async getSummarySuggestion(
+    featureId: number
+  ): Promise<SummarySuggestionResponse> {
+    if (!Number.isInteger(featureId) || featureId <= 0) {
+      throw new Error(`Invalid featureId: ${featureId}`);
+    }
+    return this.doGet(
+      `/summary-suggestions/${featureId}`
+    ) as Promise<SummarySuggestionResponse>;
+  }
+
+  async triggerSummaryGeneration(
+    featureId: number,
+    force = false
+  ): Promise<{message: string}> {
+    if (!Number.isInteger(featureId) || featureId <= 0) {
+      throw new Error(`Invalid featureId: ${featureId}`);
+    }
+    return this.doPost(`/summary-suggestions/${featureId}`, {
+      force,
+    }) as Promise<{message: string}>;
   }
 }
