@@ -128,8 +128,8 @@ export class ChromedashAiSummaryProgress extends LitElement {
    * manual task runs deterministically.
    */
   public _statusTask = new Task(this, {
-    task: async ([featureId], {signal}) => {
-      if (!featureId || featureId <= 0 || !this.autoPoll) {
+    task: async ([featureId, autoPoll], {signal}) => {
+      if (!featureId || featureId <= 0 || !autoPoll) {
         return null;
       }
 
@@ -180,7 +180,7 @@ export class ChromedashAiSummaryProgress extends LitElement {
         this._monitor = null;
       }
     },
-    args: () => [this.featureId],
+    args: () => [this.featureId, this.autoPoll],
   });
 
   static get styles() {
