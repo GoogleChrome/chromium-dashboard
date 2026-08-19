@@ -14,14 +14,20 @@
  * limitations under the License.
  */
 
-import {LitElement, css, html, nothing} from 'lit';
+import {Task} from '@lit/task';
+import {LitElement, PropertyValues, css, html, nothing} from 'lit';
 import {customElement, property, state} from 'lit/decorators.js';
 import '@shoelace-style/shoelace/dist/components/spinner/spinner.js';
 import '@shoelace-style/shoelace/dist/components/icon/icon.js';
 import '@shoelace-style/shoelace/dist/components/button/button.js';
 import '@shoelace-style/shoelace/dist/components/badge/badge.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
-import {ProgressStep, SummarySuggestion} from '../js-src/cs-client.js';
+import {
+  ProgressStep,
+  SummarySuggestion,
+  SummarySuggestionResponse,
+} from '../js-src/cs-client.js';
+import {TaskProgressMonitor} from '../js-src/task-progress-monitor.js';
 
 export const STEP_LABELS: Readonly<Record<string, string>> = Object.freeze({
   READ_SPEC: 'Reading specification',
@@ -43,13 +49,64 @@ export class ChromedashAiSummaryProgress extends LitElement {
   progressSteps: ProgressStep[] = [];
 
   @property({type: Boolean})
-  compact = false;
+  autoPoll = true;
 
   @property({type: Boolean})
+  compact = false;
+
+  @state()
   loading = false;
 
-  @property({type: String})
+  @state()
   error: string | null = null;
+
+  private _monitor: TaskProgressMonitor<SummarySuggestionResponse> | null =
+    null;
+
+  public _statusTask = new Task(this, {
+    task: async ([featureId], {signal}) => {
+      if (!featureId || featureId <= 0 || !this.autoPoll) {
+        return null;
+      }
+
+      this.error = null;
+      this._monitor = new TaskProgressMonitor<SummarySuggestionResponse>({
+        fetcher: () => window.csClient.getSummarySuggestion(featureId),
+        shouldContinue: resp =>
+          resp.progress_steps?.some(
+            s => s.status === 'IN_PROGRESS' || s.status === 'RETRYING'
+          ) ?? false,
+        onProgress: resp => {
+          this.suggestion = resp.suggestion ?? null;
+          this.progressSteps = resp.progress_steps ?? [];
+        },
+      });
+
+      try {
+        const resp = await this._monitor.run(signal);
+        this.suggestion = resp.suggestion ?? null;
+        this.progressSteps = resp.progress_steps ?? [];
+
+        const hasFailed = this.progressSteps.some(s => s.status === 'FAILED');
+        if (hasFailed) {
+          this._dispatchFailedEvent();
+        } else {
+          this._dispatchCompletedEvent();
+        }
+        return resp;
+      } catch (err) {
+        if (signal?.aborted) return null;
+        const error = err instanceof Error ? err : new Error(String(err));
+        this.error = this._formatErrorMessage(
+          error,
+          'Failed to fetch summary generation status'
+        );
+        this._dispatchFailedEvent(this.error);
+        throw error;
+      }
+    },
+    args: () => [this.featureId],
+  });
 
   static get styles() {
     return [
@@ -186,26 +243,57 @@ export class ChromedashAiSummaryProgress extends LitElement {
     ];
   }
 
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    if (this._monitor) {
+      this._monitor.stop();
+    }
+  }
+
+  override willUpdate(changedProperties: PropertyValues) {
+    if (
+      changedProperties.has('featureId') &&
+      changedProperties.get('featureId') !== undefined
+    ) {
+      if (this._monitor) {
+        this._monitor.stop();
+      }
+      this.suggestion = null;
+      this.progressSteps = [];
+      this.error = null;
+    }
+  }
+
   async handleTrigger(force = false) {
     if (!this.featureId || this.loading) return;
 
     try {
       this.loading = true;
       this.error = null;
+      this.progressSteps = [];
 
       await window.csClient.triggerSummaryGeneration(this.featureId, force);
       if (!this.isConnected) return;
 
       this._dispatchStartedEvent(force);
+      await this._statusTask.run([this.featureId]);
     } catch (err) {
       if (!this.isConnected) return;
-      const error = err instanceof Error ? err : new Error(String(err));
-      this.error = error.message || 'Failed to trigger summary generation task';
+      this.error = this._formatErrorMessage(
+        err instanceof Error ? err : new Error(String(err)),
+        'Failed to trigger summary generation task'
+      );
     } finally {
       if (this.isConnected) {
         this.loading = false;
       }
     }
+  }
+
+  private _formatErrorMessage(err: Error, fallback: string): string {
+    const rawMsg = err.message;
+    if (!rawMsg) return fallback;
+    return rawMsg.length > 200 ? `${rawMsg.slice(0, 200)}...` : rawMsg;
   }
 
   private _dispatchStartedEvent(force: boolean) {
@@ -214,6 +302,35 @@ export class ChromedashAiSummaryProgress extends LitElement {
         bubbles: true,
         composed: true,
         detail: {featureId: this.featureId, force},
+      })
+    );
+  }
+
+  private _dispatchCompletedEvent() {
+    this.dispatchEvent(
+      new CustomEvent('summary-generation-completed', {
+        bubbles: true,
+        composed: true,
+        detail: {
+          featureId: this.featureId,
+          suggestion: this.suggestion,
+          progressSteps: this.progressSteps,
+        },
+      })
+    );
+  }
+
+  private _dispatchFailedEvent(error?: string | null) {
+    this.dispatchEvent(
+      new CustomEvent('summary-generation-failed', {
+        bubbles: true,
+        composed: true,
+        detail: {
+          featureId: this.featureId,
+          suggestion: this.suggestion,
+          progressSteps: this.progressSteps,
+          ...(error !== undefined && {error}),
+        },
       })
     );
   }
@@ -255,6 +372,7 @@ export class ChromedashAiSummaryProgress extends LitElement {
   get isTaskRunning(): boolean {
     return (
       this.loading ||
+      (this._monitor?.isRunning ?? false) ||
       this.progressSteps.some(
         s => s.status === 'IN_PROGRESS' || s.status === 'RETRYING'
       )
