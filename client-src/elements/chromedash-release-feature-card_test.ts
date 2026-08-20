@@ -203,4 +203,52 @@ describe('chromedash-release-feature-card', () => {
 
     clipboardStub.restore();
   });
+
+  it('renders nothing when feature is null', async () => {
+    const el = await fixture<ChromedashReleaseFeatureCard>(
+      html`<chromedash-release-feature-card></chromedash-release-feature-card>`
+    );
+    assert.isNull(el.shadowRoot!.querySelector('.feature-card'));
+  });
+
+  it('does not render card actions when reviewMode is false', async () => {
+    const el = await fixture<ChromedashReleaseFeatureCard>(
+      html`<chromedash-release-feature-card
+        .feature=${mockFeature}
+        .reviewMode=${false}
+      ></chromedash-release-feature-card>`
+    );
+    assert.isNull(el.shadowRoot!.querySelector('.card-actions'));
+  });
+
+  it('renders inspect button when reviewMode is true without pending suggestion', async () => {
+    const el = await fixture<ChromedashReleaseFeatureCard>(
+      html`<chromedash-release-feature-card
+        .feature=${mockFeature}
+        ?reviewMode=${true}
+      ></chromedash-release-feature-card>`
+    );
+    const reviewBtn = el.shadowRoot!.querySelector('.review-button');
+    assert.include(reviewBtn?.textContent || '', 'Inspect / Edit');
+    const generateBtn = el.shadowRoot!.querySelector('.generate-button');
+    assert.include(generateBtn?.textContent || '', 'Generate AI Summary');
+  });
+
+  it('renders category badge from numeric category ID', async () => {
+    const featureWithNumCategory: FeatureCardItem = {
+      ...mockFeature,
+      category: 15,
+      category_name: undefined,
+    };
+    const el = await fixture<ChromedashReleaseFeatureCard>(
+      html`<chromedash-release-feature-card
+        .feature=${featureWithNumCategory}
+      ></chromedash-release-feature-card>`
+    );
+    const badges = el.shadowRoot!.querySelectorAll('sl-badge');
+    const categoryBadge = Array.from(badges).find(
+      b => b.textContent?.trim() === 'CSS'
+    );
+    assert.isDefined(categoryBadge);
+  });
 });

@@ -22,6 +22,7 @@ import '@shoelace-style/shoelace/dist/components/icon/icon.js';
 import '@shoelace-style/shoelace/dist/components/tooltip/tooltip.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {autolink} from './utils.js';
+import {FEATURE_CATEGORIES} from './form-field-enums.js';
 import {
   SummarySuggestion,
   SummarySuggestionStatusEnum,
@@ -58,6 +59,15 @@ export class ChromedashReleaseFeatureCard extends LitElement {
 
   @state()
   isCopied = false;
+
+  private _copiedTimeout?: ReturnType<typeof setTimeout>;
+
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    if (this._copiedTimeout) {
+      clearTimeout(this._copiedTimeout);
+    }
+  }
 
   static get styles() {
     return [
@@ -266,8 +276,11 @@ export class ChromedashReleaseFeatureCard extends LitElement {
     try {
       if (navigator.clipboard && navigator.clipboard.writeText) {
         await navigator.clipboard.writeText(fullUrl);
+        if (this._copiedTimeout) {
+          clearTimeout(this._copiedTimeout);
+        }
         this.isCopied = true;
-        setTimeout(() => {
+        this._copiedTimeout = setTimeout(() => {
           this.isCopied = false;
         }, 2000);
       }
@@ -305,9 +318,15 @@ export class ChromedashReleaseFeatureCard extends LitElement {
 
   renderCategoryBadge(): TemplateResult | typeof nothing {
     if (!this.feature) return nothing;
-    const categoryName =
-      this.feature.category_name ||
-      (typeof this.feature.category === 'string' ? this.feature.category : '');
+    let categoryName = this.feature.category_name;
+    if (!categoryName && typeof this.feature.category === 'string') {
+      categoryName = this.feature.category;
+    } else if (!categoryName && typeof this.feature.category === 'number') {
+      const entry = Object.values(FEATURE_CATEGORIES).find(
+        ([val]) => val === this.feature!.category
+      );
+      categoryName = entry ? entry[1] : '';
+    }
     if (!categoryName) return nothing;
 
     return html`<sl-badge variant="neutral" pill>${categoryName}</sl-badge>`;
@@ -434,7 +453,11 @@ export class ChromedashReleaseFeatureCard extends LitElement {
             ? html`
                 <div class="suggestion-meta">
                   <sl-tooltip content=${this.suggestion.reasoning}>
-                    <sl-icon name="info-circle"></sl-icon>
+                    <sl-icon
+                      tabindex="0"
+                      name="info-circle"
+                      aria-label="Summary reasoning details"
+                    ></sl-icon>
                   </sl-tooltip>
                   <span>Grounding available</span>
                 </div>
@@ -450,15 +473,15 @@ export class ChromedashReleaseFeatureCard extends LitElement {
       return nothing;
     }
 
-    const isMarkdown =
-      (this.feature.markdown_fields || []).includes('summary') || true;
+    const isMarkdown = Boolean(
+      this.feature.markdown_fields?.includes('summary')
+    );
     const formattedSummary = autolink(this.feature.summary, [], isMarkdown);
 
     return html`
       <article
         class="feature-card"
         id="feature-${this.feature.id}"
-        role="article"
         aria-labelledby="feature-title-${this.feature.id}"
       >
         <header class="card-header">
