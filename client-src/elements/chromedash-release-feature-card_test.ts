@@ -251,4 +251,95 @@ describe('chromedash-release-feature-card', () => {
     );
     assert.isDefined(categoryBadge);
   });
+
+  it('renders no doc links section when no links are present', async () => {
+    const featureNoLinks: FeatureCardItem = {
+      ...mockFeature,
+      doc_links: [],
+      spec_link: undefined,
+      explainer_links: [],
+    };
+    const el = await fixture<ChromedashReleaseFeatureCard>(
+      html`<chromedash-release-feature-card
+        .feature=${featureNoLinks}
+      ></chromedash-release-feature-card>`
+    );
+    assert.isNull(el.shadowRoot!.querySelector('.feature-links-section'));
+  });
+
+  it('deduplicates links across doc_links, spec_link, explainer_links, and suggested_doc_links', async () => {
+    const duplicateFeature: FeatureCardItem = {
+      ...mockFeature,
+      doc_links: ['https://example.com/same-link'],
+      spec_link: 'https://example.com/same-link',
+      explainer_links: ['https://example.com/same-link'],
+    };
+    const suggestionWithSameLink: SummarySuggestion = {
+      ...mockSuggestion,
+      suggested_doc_links: ['https://example.com/same-link'],
+    };
+    const el = await fixture<ChromedashReleaseFeatureCard>(
+      html`<chromedash-release-feature-card
+        .feature=${duplicateFeature}
+        .suggestion=${suggestionWithSameLink}
+      ></chromedash-release-feature-card>`
+    );
+    const links = el.shadowRoot!.querySelectorAll(
+      '.feature-links-section .feature-link-item'
+    );
+    assert.equal(links.length, 1);
+    assert.equal(
+      links[0].getAttribute('href'),
+      'https://example.com/same-link'
+    );
+  });
+
+  it('handles clipboard failure gracefully without throwing', async () => {
+    const clipboardStub = sinon
+      .stub(navigator.clipboard, 'writeText')
+      .rejects(new Error('Clipboard permission denied'));
+
+    const el = await fixture<ChromedashReleaseFeatureCard>(
+      html`<chromedash-release-feature-card
+        .feature=${mockFeature}
+      ></chromedash-release-feature-card>`
+    );
+
+    const anchorLink = el.shadowRoot!.querySelector<HTMLElement>(
+      '.heading-anchor-link'
+    );
+    anchorLink?.click();
+
+    // Should not throw or mark isCopied
+    assert.isFalse(el.isCopied);
+
+    clipboardStub.restore();
+  });
+
+  it('clears copied timeout on disconnectedCallback', async () => {
+    const clearTimeoutSpy = sinon.spy(window, 'clearTimeout');
+    const clipboardStub = sinon
+      .stub(navigator.clipboard, 'writeText')
+      .resolves();
+
+    const el = await fixture<ChromedashReleaseFeatureCard>(
+      html`<chromedash-release-feature-card
+        .feature=${mockFeature}
+      ></chromedash-release-feature-card>`
+    );
+
+    const clickEvent = new MouseEvent('click', {
+      bubbles: true,
+      cancelable: true,
+    });
+    await el.handleAnchorCopy(clickEvent);
+    assert.isTrue(el.isCopied);
+
+    // Trigger disconnectedCallback
+    el.disconnectedCallback();
+    assert.isTrue(clearTimeoutSpy.called);
+
+    clipboardStub.restore();
+    clearTimeoutSpy.restore();
+  });
 });
