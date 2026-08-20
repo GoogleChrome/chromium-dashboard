@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {html, fixture, expect} from '@open-wc/testing';
+import {html, fixture, expect, oneEvent} from '@open-wc/testing';
 import sinon from 'sinon';
 import './chromedash-ai-summary-progress.js';
 import {ChromedashAiSummaryProgress} from './chromedash-ai-summary-progress.js';
@@ -23,6 +23,7 @@ import {
   SummaryProgressStep as ProgressStep,
   SummaryProgressStepStatusEnum,
   SummaryProgressStepStepEnum,
+  SummarySuggestion,
 } from 'chromestatus-openapi';
 
 describe('chromedash-ai-summary-progress', () => {
@@ -31,6 +32,31 @@ describe('chromedash-ai-summary-progress', () => {
   beforeEach(() => {
     sandbox = sinon.createSandbox();
     window.csClient = {
+      getSummarySuggestion: sandbox.stub().resolves({
+        suggestion: {
+          feature_id: 101,
+          status: 'PENDING',
+          suggested_summary: 'AI summary',
+          suggested_doc_links: [],
+          version_token: 1,
+          created: new Date(),
+          updated: new Date(),
+        } as SummarySuggestion,
+        progress_steps: [
+          {
+            step: SummaryProgressStepStepEnum.READ_SPEC,
+            status: SummaryProgressStepStatusEnum.SUCCESS,
+            message: 'Read 120 lines',
+            start_timestamp: new Date(),
+          },
+          {
+            step: SummaryProgressStepStepEnum.SEARCH_MDN,
+            status: SummaryProgressStepStatusEnum.IN_PROGRESS,
+            message: 'Querying MDN',
+            start_timestamp: new Date(),
+          },
+        ] as ProgressStep[],
+      }),
       triggerSummaryGeneration: sandbox.stub().resolves({
         message: 'Task enqueued',
       }),
@@ -43,7 +69,9 @@ describe('chromedash-ai-summary-progress', () => {
 
   it('renders nothing when empty with no steps, not loading, and no error', async () => {
     const el = await fixture<ChromedashAiSummaryProgress>(
-      html`<chromedash-ai-summary-progress></chromedash-ai-summary-progress>`
+      html`<chromedash-ai-summary-progress
+        .autoPoll=${false}
+      ></chromedash-ai-summary-progress>`
     );
 
     expect(el.shadowRoot!.children.length).to.equal(0);
@@ -79,6 +107,7 @@ describe('chromedash-ai-summary-progress', () => {
 
     const el = await fixture<ChromedashAiSummaryProgress>(
       html`<chromedash-ai-summary-progress
+        .autoPoll=${false}
         .progressSteps=${steps}
       ></chromedash-ai-summary-progress>`
     );
@@ -140,6 +169,7 @@ describe('chromedash-ai-summary-progress', () => {
 
     const el = await fixture<ChromedashAiSummaryProgress>(
       html`<chromedash-ai-summary-progress
+        .autoPoll=${false}
         .progressSteps=${steps}
       ></chromedash-ai-summary-progress>`
     );
@@ -167,6 +197,7 @@ describe('chromedash-ai-summary-progress', () => {
 
     const el = await fixture<ChromedashAiSummaryProgress>(
       html`<chromedash-ai-summary-progress
+        .autoPoll=${false}
         .progressSteps=${steps}
       ></chromedash-ai-summary-progress>`
     );
@@ -180,6 +211,7 @@ describe('chromedash-ai-summary-progress', () => {
   it('renders header spinner and Running badge in loading-only state when progressSteps is empty', async () => {
     const el = await fixture<ChromedashAiSummaryProgress>(
       html`<chromedash-ai-summary-progress
+        .autoPoll=${false}
         .loading=${true}
       ></chromedash-ai-summary-progress>`
     );
@@ -200,6 +232,7 @@ describe('chromedash-ai-summary-progress', () => {
     const warnSpy = sandbox.spy(console, 'warn');
     const el = await fixture<ChromedashAiSummaryProgress>(
       html`<chromedash-ai-summary-progress
+        .autoPoll=${false}
         .featureId=${0}
       ></chromedash-ai-summary-progress>`
     );
@@ -211,48 +244,40 @@ describe('chromedash-ai-summary-progress', () => {
       .to.be.false;
   });
 
-  it('does not re-trigger when loading is already true', async () => {
+  it('clears suggestion and progressSteps when handleTrigger is invoked', async () => {
     const el = await fixture<ChromedashAiSummaryProgress>(
       html`<chromedash-ai-summary-progress
-        .featureId=${101}
-        .loading=${true}
-      ></chromedash-ai-summary-progress>`
-    );
-
-    await el.handleTrigger();
-
-    expect((window.csClient.triggerSummaryGeneration as sinon.SinonStub).called)
-      .to.be.false;
-  });
-
-  it('resets loading flag unconditionally even if disconnected during execution', async () => {
-    let resolveTrigger: (value?: unknown) => void;
-    (window.csClient.triggerSummaryGeneration as sinon.SinonStub).returns(
-      new Promise(resolve => {
-        resolveTrigger = resolve;
-      })
-    );
-
-    const el = await fixture<ChromedashAiSummaryProgress>(
-      html`<chromedash-ai-summary-progress
+        .autoPoll=${false}
         .featureId=${101}
       ></chromedash-ai-summary-progress>`
     );
+    el.suggestion = {
+      feature_id: 101,
+      status: 'PENDING',
+      suggested_summary: 'Old summary',
+      suggested_doc_links: [],
+      version_token: 1,
+      created: new Date(),
+      updated: new Date(),
+    };
+    el.progressSteps = [
+      {
+        step: SummaryProgressStepStepEnum.READ_SPEC,
+        status: SummaryProgressStepStatusEnum.SUCCESS,
+        start_timestamp: new Date(),
+      },
+    ];
 
-    const triggerPromise = el.handleTrigger();
-    expect(el.loading).to.be.true;
-
-    // Disconnect element while in-flight
-    el.remove();
-    resolveTrigger!();
+    const triggerPromise = el.handleTrigger(true);
+    expect(el.suggestion).to.be.null;
+    expect(el.progressSteps).to.deep.equal([]);
     await triggerPromise;
-
-    expect(el.loading).to.be.false;
   });
 
   it('renders error banner and calls handleTrigger on Retry click', async () => {
     const el = await fixture<ChromedashAiSummaryProgress>(
       html`<chromedash-ai-summary-progress
+        .autoPoll=${false}
         .featureId=${101}
       ></chromedash-ai-summary-progress>`
     );
@@ -274,26 +299,232 @@ describe('chromedash-ai-summary-progress', () => {
   it('dispatches summary-generation-started event when triggered', async () => {
     const el = await fixture<ChromedashAiSummaryProgress>(
       html`<chromedash-ai-summary-progress
+        .autoPoll=${false}
         .featureId=${101}
       ></chromedash-ai-summary-progress>`
     );
 
-    let eventFired = false;
-    el.addEventListener('summary-generation-started', ((
-      e: CustomEvent<{featureId: number; force: boolean}>
-    ) => {
-      eventFired = true;
-      expect(e.detail.featureId).to.equal(101);
-      expect(e.detail.force).to.be.true;
-    }) as EventListener);
-
+    const startedPromise = oneEvent(el, 'summary-generation-started');
     await el.handleTrigger(true);
-    expect(eventFired).to.be.true;
+    const event = (await startedPromise) as CustomEvent<{
+      featureId: number;
+      force: boolean;
+    }>;
+
+    expect(event.detail.featureId).to.equal(101);
+    expect(event.detail.force).to.be.true;
     expect(
       (
         window.csClient.triggerSummaryGeneration as sinon.SinonStub
       ).calledOnceWith(101, true)
     ).to.be.true;
+  });
+
+  it('polls status and emits summary-generation-completed when finished', async () => {
+    (window.csClient.getSummarySuggestion as sinon.SinonStub).resolves({
+      suggestion: {
+        feature_id: 101,
+        status: 'PENDING',
+        suggested_summary: 'Completed AI summary',
+        suggested_doc_links: [],
+        version_token: 1,
+        created: new Date(),
+        updated: new Date(),
+      },
+      progress_steps: [
+        {
+          step: SummaryProgressStepStepEnum.READ_SPEC,
+          status: SummaryProgressStepStatusEnum.SUCCESS,
+          message: 'Done',
+          start_timestamp: new Date(),
+        },
+      ],
+    });
+
+    let resolveCompleted: (e: CustomEvent) => void;
+    const completedPromise = new Promise<CustomEvent>(resolve => {
+      resolveCompleted = resolve;
+    });
+
+    const el = await fixture<ChromedashAiSummaryProgress>(
+      html`<chromedash-ai-summary-progress
+        .autoPoll=${true}
+        .featureId=${101}
+        @summary-generation-completed=${(e: CustomEvent) => resolveCompleted(e)}
+      ></chromedash-ai-summary-progress>`
+    );
+
+    const event = (await completedPromise) as CustomEvent<{
+      featureId: number;
+      suggestion: SummarySuggestion | null;
+    }>;
+
+    expect(event.detail.featureId).to.equal(101);
+    expect(event.detail.suggestion?.suggested_summary).to.equal(
+      'Completed AI summary'
+    );
+    expect(el.suggestion?.suggested_summary).to.equal('Completed AI summary');
+  });
+
+  it('emits summary-generation-failed event when a step fails', async () => {
+    (window.csClient.getSummarySuggestion as sinon.SinonStub).resolves({
+      suggestion: null,
+      progress_steps: [
+        {
+          step: SummaryProgressStepStepEnum.READ_SPEC,
+          status: SummaryProgressStepStatusEnum.FAILED,
+          message: 'Error reading spec',
+          start_timestamp: new Date(),
+        },
+      ],
+    });
+
+    let resolveFailed: (e: CustomEvent) => void;
+    const failedPromise = new Promise<CustomEvent>(resolve => {
+      resolveFailed = resolve;
+    });
+
+    const el = await fixture<ChromedashAiSummaryProgress>(
+      html`<chromedash-ai-summary-progress
+        .autoPoll=${true}
+        .featureId=${101}
+        @summary-generation-failed=${(e: CustomEvent) => resolveFailed(e)}
+      ></chromedash-ai-summary-progress>`
+    );
+
+    const event = (await failedPromise) as CustomEvent<{
+      featureId: number;
+    }>;
+
+    expect(event.detail.featureId).to.equal(101);
+  });
+
+  it('stops in-flight monitor and does not emit failure event when featureId changes rapidly', async () => {
+    let resolveDelay: (value: unknown) => void;
+    (window.csClient.getSummarySuggestion as sinon.SinonStub)
+      .withArgs(101)
+      .returns(
+        new Promise(resolve => {
+          resolveDelay = resolve;
+        })
+      );
+
+    let failedEventFired = false;
+    const el = await fixture<ChromedashAiSummaryProgress>(
+      html`<chromedash-ai-summary-progress
+        .autoPoll=${true}
+        .featureId=${101}
+        @summary-generation-failed=${() => {
+          failedEventFired = true;
+        }}
+      ></chromedash-ai-summary-progress>`
+    );
+
+    // Rapidly switch featureId while 101 is pending
+    el.featureId = 202;
+    await el.updateComplete;
+
+    // Resolve the old 101 promise
+    resolveDelay!({
+      suggestion: null,
+      progress_steps: [],
+    });
+
+    expect(failedEventFired).to.be.false;
+  });
+
+  it('stops in-flight monitor and emits no events when disconnected', async () => {
+    let failedEventFired = false;
+    (window.csClient.getSummarySuggestion as sinon.SinonStub)
+      .withArgs(101)
+      .returns(new Promise(() => {}));
+
+    const el = await fixture<ChromedashAiSummaryProgress>(
+      html`<chromedash-ai-summary-progress
+        .autoPoll=${true}
+        .featureId=${101}
+        @summary-generation-failed=${() => {
+          failedEventFired = true;
+        }}
+      ></chromedash-ai-summary-progress>`
+    );
+
+    el.remove();
+    expect(failedEventFired).to.be.false;
+  });
+
+  it('truncates error messages exceeding 200 characters with ellipsis at exact boundary', async () => {
+    const msg200 = 'E'.repeat(200);
+    const msg201 = 'F'.repeat(201);
+
+    (window.csClient.getSummarySuggestion as sinon.SinonStub)
+      .withArgs(101)
+      .rejects(new Error(msg200));
+
+    (window.csClient.getSummarySuggestion as sinon.SinonStub)
+      .withArgs(202)
+      .rejects(new Error(msg201));
+
+    let resolveFailed1: (e: CustomEvent) => void;
+    const failedPromise1 = new Promise<CustomEvent>(resolve => {
+      resolveFailed1 = resolve;
+    });
+
+    const el1 = await fixture<ChromedashAiSummaryProgress>(
+      html`<chromedash-ai-summary-progress
+        .autoPoll=${true}
+        .featureId=${101}
+        @summary-generation-failed=${(e: CustomEvent) => resolveFailed1(e)}
+      ></chromedash-ai-summary-progress>`
+    );
+
+    await failedPromise1;
+    await el1.updateComplete;
+
+    expect(el1.error).to.equal(msg200);
+    expect(el1.error!.endsWith('...')).to.be.false;
+
+    let resolveFailed2: (e: CustomEvent) => void;
+    const failedPromise2 = new Promise<CustomEvent>(resolve => {
+      resolveFailed2 = resolve;
+    });
+
+    const el2 = await fixture<ChromedashAiSummaryProgress>(
+      html`<chromedash-ai-summary-progress
+        .autoPoll=${true}
+        .featureId=${202}
+        @summary-generation-failed=${(e: CustomEvent) => resolveFailed2(e)}
+      ></chromedash-ai-summary-progress>`
+    );
+
+    await failedPromise2;
+    await el2.updateComplete;
+
+    expect(el2.error).to.equal('F'.repeat(200) + '...');
+  });
+
+  it('falls back to default fetch error message when error message is empty or whitespace', async () => {
+    (window.csClient.getSummarySuggestion as sinon.SinonStub)
+      .withArgs(101)
+      .rejects(new Error('   '));
+
+    let resolveFailed: (e: CustomEvent) => void;
+    const failedPromise = new Promise<CustomEvent>(resolve => {
+      resolveFailed = resolve;
+    });
+
+    const el = await fixture<ChromedashAiSummaryProgress>(
+      html`<chromedash-ai-summary-progress
+        .autoPoll=${true}
+        .featureId=${101}
+        @summary-generation-failed=${(e: CustomEvent) => resolveFailed(e)}
+      ></chromedash-ai-summary-progress>`
+    );
+
+    await failedPromise;
+    await el.updateComplete;
+
+    expect(el.error).to.equal('Failed to fetch summary generation status');
   });
 
   it('applies compact styling when compact is true', async () => {
@@ -308,6 +539,7 @@ describe('chromedash-ai-summary-progress', () => {
 
     const el = await fixture<ChromedashAiSummaryProgress>(
       html`<chromedash-ai-summary-progress
+        .autoPoll=${false}
         .compact=${true}
         .progressSteps=${steps}
       ></chromedash-ai-summary-progress>`
@@ -316,5 +548,137 @@ describe('chromedash-ai-summary-progress', () => {
     const container = el.shadowRoot!.querySelector('.container');
     expect(container).to.exist;
     expect(container!.classList.contains('compact')).to.be.true;
+  });
+
+  it('resets state and refetches when featureId changes dynamically', async () => {
+    (window.csClient.getSummarySuggestion as sinon.SinonStub)
+      .withArgs(101)
+      .resolves({
+        suggestion: {
+          feature_id: 101,
+          status: 'PENDING',
+          suggested_summary: 'AI summary 101',
+          suggested_doc_links: [],
+          version_token: 1,
+          created: new Date(),
+          updated: new Date(),
+        },
+        progress_steps: [
+          {
+            step: SummaryProgressStepStepEnum.READ_SPEC,
+            status: SummaryProgressStepStatusEnum.SUCCESS,
+            message: 'Done 101',
+            start_timestamp: new Date(),
+          },
+        ],
+      });
+
+    (window.csClient.getSummarySuggestion as sinon.SinonStub)
+      .withArgs(202)
+      .resolves({
+        suggestion: {
+          feature_id: 202,
+          status: 'PENDING',
+          suggested_summary: 'New summary for 202',
+          suggested_doc_links: [],
+          version_token: 1,
+          created: new Date(),
+          updated: new Date(),
+        },
+        progress_steps: [
+          {
+            step: SummaryProgressStepStepEnum.READ_SPEC,
+            status: SummaryProgressStepStatusEnum.SUCCESS,
+            message: 'Read spec for 202',
+            start_timestamp: new Date(),
+          },
+        ],
+      });
+
+    let resolveFirst: (e: CustomEvent) => void;
+    const firstPromise = new Promise<CustomEvent>(resolve => {
+      resolveFirst = resolve;
+    });
+    let resolveSecond: (e: CustomEvent) => void;
+    const secondPromise = new Promise<CustomEvent>(resolve => {
+      resolveSecond = resolve;
+    });
+
+    let completedCount = 0;
+    const el = await fixture<ChromedashAiSummaryProgress>(
+      html`<chromedash-ai-summary-progress
+        .autoPoll=${true}
+        .featureId=${101}
+        @summary-generation-completed=${(e: CustomEvent) => {
+          completedCount++;
+          if (completedCount === 1) resolveFirst(e);
+          else resolveSecond(e);
+        }}
+      ></chromedash-ai-summary-progress>`
+    );
+
+    await firstPromise;
+    expect(el.suggestion?.feature_id).to.equal(101);
+
+    el.featureId = 202;
+    await secondPromise;
+
+    expect(
+      (window.csClient.getSummarySuggestion as sinon.SinonStub).calledWith(202)
+    ).to.be.true;
+    expect(el.suggestion?.feature_id).to.equal(202);
+  });
+
+  it('triggers polling automatically when autoPoll is dynamically toggled to true', async () => {
+    (window.csClient.getSummarySuggestion as sinon.SinonStub)
+      .withArgs(303)
+      .resolves({
+        suggestion: {
+          feature_id: 303,
+          status: 'PENDING',
+          suggested_summary: 'AI summary 303',
+          suggested_doc_links: [],
+          version_token: 1,
+          created: new Date(),
+          updated: new Date(),
+        },
+        progress_steps: [
+          {
+            step: SummaryProgressStepStepEnum.READ_SPEC,
+            status: SummaryProgressStepStatusEnum.SUCCESS,
+            message: 'Done 303',
+            start_timestamp: new Date(),
+          },
+        ],
+      });
+
+    let resolveCompleted: (e: CustomEvent) => void;
+    const completedPromise = new Promise<CustomEvent>(resolve => {
+      resolveCompleted = resolve;
+    });
+
+    const el = await fixture<ChromedashAiSummaryProgress>(
+      html`<chromedash-ai-summary-progress
+        .autoPoll=${false}
+        .featureId=${303}
+        @summary-generation-completed=${(e: CustomEvent) => {
+          resolveCompleted(e);
+        }}
+      ></chromedash-ai-summary-progress>`
+    );
+
+    // Initial state: autoPoll is false, so getSummarySuggestion(303) should not have been called
+    expect(
+      (window.csClient.getSummarySuggestion as sinon.SinonStub).calledWith(303)
+    ).to.be.false;
+
+    // Dynamically toggle autoPoll to true
+    el.autoPoll = true;
+    await completedPromise;
+
+    expect(
+      (window.csClient.getSummarySuggestion as sinon.SinonStub).calledWith(303)
+    ).to.be.true;
+    expect(el.suggestion?.feature_id).to.equal(303);
   });
 });
