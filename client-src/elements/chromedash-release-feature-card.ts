@@ -468,15 +468,25 @@ export class ChromedashReleaseFeatureCard extends LitElement {
     `;
   }
 
-  render() {
-    if (!this.feature) {
-      return nothing;
-    }
+  renderFeatureSummary(): TemplateResult | typeof nothing {
+    if (!this.feature) return nothing;
 
     const isMarkdown = Boolean(
       this.feature.markdown_fields?.includes('summary')
     );
     const formattedSummary = autolink(this.feature.summary, [], isMarkdown);
+
+    return html`
+      <div class="feature-summary ${isMarkdown ? '' : 'preformatted'}">
+        ${formattedSummary}
+      </div>
+    `;
+  }
+
+  render() {
+    if (!this.feature) {
+      return nothing;
+    }
 
     return html`
       <article
@@ -511,9 +521,8 @@ export class ChromedashReleaseFeatureCard extends LitElement {
           </div>
         </header>
 
-        <div class="feature-summary">${formattedSummary}</div>
-
-        ${this.renderDocLinks()} ${this.renderReviewActions()}
+        ${this.renderFeatureSummary()} ${this.renderDocLinks()}
+        ${this.renderReviewActions()}
       </article>
     `;
   }

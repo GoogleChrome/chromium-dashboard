@@ -88,6 +88,48 @@ describe('chromedash-release-feature-card', () => {
     assert.equal(links.length, 3);
   });
 
+  it('renders plain-text summary with preformatted class', async () => {
+    const plainFeature: FeatureCardItem = {
+      ...mockFeature,
+      summary: 'Line 1\nLine 2',
+      markdown_fields: [],
+    };
+
+    const el = await fixture<ChromedashReleaseFeatureCard>(
+      html`<chromedash-release-feature-card
+        .feature=${plainFeature}
+      ></chromedash-release-feature-card>`
+    );
+
+    const summaryEl = el.shadowRoot!.querySelector('.feature-summary');
+    assert.isNotNull(summaryEl);
+    assert.isTrue(summaryEl?.classList.contains('preformatted'));
+    assert.include(summaryEl?.textContent || '', 'Line 1\nLine 2');
+  });
+
+  it('renders markdown summary without preformatted class', async () => {
+    const mdFeature: FeatureCardItem = {
+      ...mockFeature,
+      summary: '**Bold summary** with [link](https://example.com)',
+      markdown_fields: ['summary'],
+    };
+
+    const el = await fixture<ChromedashReleaseFeatureCard>(
+      html`<chromedash-release-feature-card
+        .feature=${mdFeature}
+      ></chromedash-release-feature-card>`
+    );
+
+    const summaryEl = el.shadowRoot!.querySelector('.feature-summary');
+    assert.isNotNull(summaryEl);
+    assert.isFalse(summaryEl?.classList.contains('preformatted'));
+    assert.isNotNull(summaryEl?.querySelector('strong'));
+    assert.equal(
+      summaryEl?.querySelector('strong')?.textContent,
+      'Bold summary'
+    );
+  });
+
   it('renders AI Applied badge when summary_source is AI_APPLIED', async () => {
     const aiFeature: FeatureCardItem = {
       ...mockFeature,
