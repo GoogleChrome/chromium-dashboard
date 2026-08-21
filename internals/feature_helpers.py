@@ -224,11 +224,31 @@ def get_developer_release_notes_features(
     """
     milestone_data = get_in_milestone(milestone)
     seen_ids: set[int] = set()
+    origin_trial_fids: set[int] = set()
+    deprecation_fids: set[int] = set()
+
+    origin_trial_urls: dict[int, str] = {}
     for reason, feature_dicts in milestone_data.items():
         for fdict in feature_dicts:
             fid = fdict.get('id')
-            if fid:
-                seen_ids.add(fid)
+            if not fid:
+                continue
+            seen_ids.add(fid)
+            if (
+                reason
+                == core_enums.IMPLEMENTATION_STATUS[core_enums.ORIGIN_TRIAL]
+            ):
+                origin_trial_fids.add(fid)
+                stage_id = fdict.get('stage_id')
+                if stage_id:
+                    origin_trial_urls[fid] = (
+                        f'/origintrials#/view_trial/{stage_id}'
+                    )
+            elif reason in (
+                core_enums.IMPLEMENTATION_STATUS[core_enums.DEPRECATED],
+                core_enums.IMPLEMENTATION_STATUS[core_enums.REMOVED],
+            ):
+                deprecation_fids.add(fid)
 
     if not seen_ids:
         return []
@@ -255,11 +275,26 @@ def get_developer_release_notes_features(
     for fe in feature_entries:
         fid = fe.key.integer_id() if fe.key else 0
         applied_suggestion = applied_map.get(fid)
+        if fid in origin_trial_fids:
+            milestone_classification = 'ORIGIN_TRIAL'
+        elif (
+            fid in deprecation_fids
+            or fe.feature_type == core_enums.FEATURE_TYPE_DEPRECATION_ID
+            or fe.impl_status_chrome == core_enums.DEPRECATED
+        ):
+            milestone_classification = 'DEPRECATION'
+        elif fe.impl_status_chrome == core_enums.REMOVED:
+            milestone_classification = 'REMOVAL'
+        else:
+            milestone_classification = 'SHIPPING'
+
+        ot_url = origin_trial_urls.get(fid)
         rn_dict = converters.feature_entry_to_release_note_feature_dict(
-            fe, applied_suggestion=applied_suggestion
+            fe,
+            applied_suggestion=applied_suggestion,
+            milestone_classification=milestone_classification,
+            origin_trial_url=ot_url,
         )
-        if fe.doc_links:
-            rn_dict['doc_links'] = fe.doc_links
         formatted_features.append(rn_dict)
 
     return formatted_features

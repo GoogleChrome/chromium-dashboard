@@ -220,6 +220,14 @@ test.describe('Release Notes SSR Page', () => {
       // Verify feature title permalink
       const titleLink = featureCard.locator('.feature-name');
       await expect(titleLink).toHaveAttribute('href', `/feature/${featureId}`);
+
+      // Verify metadata links bar
+      const linksBar = featureCard.locator('.feature-links-bar');
+      await expect(linksBar).toBeVisible();
+      const entryLink = linksBar.getByRole('link', {
+        name: 'ChromeStatus.com entry',
+      });
+      await expect(entryLink).toHaveAttribute('href', `/feature/${featureId}`);
     });
   });
 
@@ -436,5 +444,59 @@ test.describe('Release Notes SSR Page', () => {
         name: 'Chrome 152 Release Notes',
       })
     ).toBeVisible();
+  });
+
+  test('should have zero Cumulative Layout Shift (CLS) during SSR render and hydration', async ({
+    page,
+  }) => {
+    // Inject PerformanceObserver before any HTML or scripts are parsed
+    await page.addInitScript(() => {
+      // @ts-ignore
+      window.__clsScore = 0;
+      // @ts-ignore
+      window.__layoutShiftEntries = [];
+      const observer = new PerformanceObserver(list => {
+        for (const entry of list.getEntries()) {
+          // @ts-ignore
+          if (!entry.hadRecentInput) {
+            // @ts-ignore
+            window.__clsScore += entry.value;
+            // @ts-ignore
+            window.__layoutShiftEntries.push({
+              // @ts-ignore
+              value: entry.value,
+              // @ts-ignore
+              sources: (entry.sources || []).map(s => ({
+                node: s.node ? s.node.nodeName : null,
+                previousRect: s.previousRect,
+                currentRect: s.currentRect,
+              })),
+            });
+          }
+        }
+      });
+      observer.observe({type: 'layout-shift', buffered: true});
+    });
+
+    await page.goto('/release-notes/151', {timeout: 30000});
+    await page.waitForLoadState('networkidle');
+    await page.waitForTimeout(1000);
+
+    const {clsScore, entries} = await page.evaluate(() => ({
+      // @ts-ignore
+      clsScore: window.__clsScore || 0,
+      // @ts-ignore
+      entries: window.__layoutShiftEntries || [],
+    }));
+
+    if (clsScore > 0) {
+      console.warn(
+        `Measured CLS score: ${clsScore}`,
+        JSON.stringify(entries, null, 2)
+      );
+    }
+
+    // Layout stability target is 0.00 (zero layout shifts during SSR hydration)
+    expect(clsScore).toBeLessThan(0.001);
   });
 });

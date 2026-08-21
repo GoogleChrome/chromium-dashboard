@@ -253,6 +253,27 @@
     margin-bottom: var(--content-padding-quarter);
   }
 
+  .feature-links-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--content-padding-quarter) var(--content-padding-half);
+    border-top: var(--default-border);
+    padding-top: var(--content-padding-half);
+    margin-top: auto;
+    font-size: var(--button-font-size);
+  }
+
+  .feature-links-bar a {
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  .link-separator {
+    color: var(--card-border);
+    user-select: none;
+  }
+
   .feature-doc-links {
     display: flex;
     flex-direction: column;
@@ -260,6 +281,7 @@
     border-top: var(--default-border);
     padding-top: var(--content-padding-half);
   }
+
 
   .feature-doc-links a {
     display: inline-flex;
@@ -413,7 +435,7 @@
     </aside>
   {% endif %}
 
-  {# Category-Grouped Feature Grid #}
+  {# 1. Web Platform Features Grouped by Category #}
   {% if features_by_category %}
     {% for category_name, category_features in features_by_category.items() %}
       {% set category_slug = category_name | lower | replace(' ', '-') | replace('/', '-') %}
@@ -432,13 +454,22 @@
                 </h3>
                 <div class="feature-summary">{{ feature.formatted_summary | safe }}</div>
               </div>
-              {% if feature.doc_links %}
-                <div class="feature-doc-links" aria-label="Documentation links">
-                  {% for link in feature.doc_links %}
-                    <a href="{{ link }}" target="_blank" rel="noopener noreferrer" title="{{ link }}">
-                      <span class="doc-link-text">{{ link }}</span>
-                      <span aria-hidden="true" class="external-icon">↗</span>
-                      <span class="sr-only">(opens in new window)</span>
+              {% if feature.links %}
+                <div class="feature-links-bar" aria-label="Feature metadata and resources">
+                  {% for link in feature.links %}
+                    {% if not loop.first %}
+                      <span class="link-separator" aria-hidden="true">|</span>
+                    {% endif %}
+                    <a 
+                      href="{{ link.url }}" 
+                      {% if not link.url.startswith('/') and not link.url.startswith('#') %}target="_blank" rel="noopener noreferrer"{% endif %}
+                      title="{{ link.url }}"
+                    >
+                      <span class="doc-link-text">{{ link.title or link.type }}</span>
+                      {% if not link.url.startswith('/') and not link.url.startswith('#') %}
+                        <span aria-hidden="true" class="external-icon">↗</span>
+                        <span class="sr-only">(opens in new window)</span>
+                      {% endif %}
                     </a>
                   {% endfor %}
                 </div>
@@ -448,7 +479,97 @@
         </div>
       </section>
     {% endfor %}
-  {% else %}
+  {% endif %}
+
+  {# 2. New Origin Trials Section #}
+  {% if origin_trials %}
+    <section class="category-section" id="origin-trials" aria-labelledby="category-origin-trials">
+      <h2 class="category-title" id="category-origin-trials">New origin trials</h2>
+      <div class="feature-grid">
+        {% for feature in origin_trials %}
+          <article class="feature-card" id="feature-{{ feature.id }}">
+            <div>
+              <h3 class="feature-title">
+                <a class="feature-name" href="/feature/{{ feature.id }}">{{ feature.name }}</a>
+                <a class="heading-anchor-link" href="#feature-{{ feature.id }}" aria-label="Copy link to {{ feature.name }}" title="Copy link to section" data-anchor="#feature-{{ feature.id }}">
+                  <span aria-hidden="true">#</span>
+                  <span class="anchor-tooltip" role="status" aria-live="polite">Link copied!</span>
+                </a>
+              </h3>
+              <div class="feature-summary">{{ feature.formatted_summary | safe }}</div>
+            </div>
+            {% if feature.links %}
+              <div class="feature-links-bar" aria-label="Feature metadata and resources">
+                {% for link in feature.links %}
+                  {% if not loop.first %}
+                    <span class="link-separator" aria-hidden="true">|</span>
+                  {% endif %}
+                  <a 
+                    href="{{ link.url }}" 
+                    {% if not link.url.startswith('/') and not link.url.startswith('#') %}target="_blank" rel="noopener noreferrer"{% endif %}
+                    title="{{ link.url }}"
+                  >
+                    <span class="doc-link-text">{{ link.title or link.type }}</span>
+                    {% if not link.url.startswith('/') and not link.url.startswith('#') %}
+                      <span aria-hidden="true" class="external-icon">↗</span>
+                      <span class="sr-only">(opens in new window)</span>
+                    {% endif %}
+                  </a>
+                {% endfor %}
+              </div>
+            {% endif %}
+          </article>
+        {% endfor %}
+      </div>
+    </section>
+  {% endif %}
+
+  {# 3. Deprecations and Removals Section #}
+  {% if deprecations_and_removals %}
+    <section class="category-section" id="deprecations-and-removals" aria-labelledby="category-deprecations-and-removals">
+      <h2 class="category-title" id="category-deprecations-and-removals">Deprecations and removals</h2>
+      <div class="feature-grid">
+        {% for feature in deprecations_and_removals %}
+          <article class="feature-card" id="feature-{{ feature.id }}">
+            <div>
+              <h3 class="feature-title">
+                <a class="feature-name" href="/feature/{{ feature.id }}">{{ feature.name }}</a>
+                <a class="heading-anchor-link" href="#feature-{{ feature.id }}" aria-label="Copy link to {{ feature.name }}" title="Copy link to section" data-anchor="#feature-{{ feature.id }}">
+                  <span aria-hidden="true">#</span>
+                  <span class="anchor-tooltip" role="status" aria-live="polite">Link copied!</span>
+                </a>
+              </h3>
+              <div class="feature-summary">{{ feature.formatted_summary | safe }}</div>
+            </div>
+            {% if feature.links %}
+              <div class="feature-links-bar" aria-label="Feature metadata and resources">
+                {% for link in feature.links %}
+                  {% if not loop.first %}
+                    <span class="link-separator" aria-hidden="true">|</span>
+                  {% endif %}
+                  <a 
+                    href="{{ link.url }}" 
+                    {% if not link.url.startswith('/') and not link.url.startswith('#') %}target="_blank" rel="noopener noreferrer"{% endif %}
+                    title="{{ link.url }}"
+                  >
+                    <span class="doc-link-text">{{ link.title or link.type }}</span>
+                    {% if not link.url.startswith('/') and not link.url.startswith('#') %}
+                      <span aria-hidden="true" class="external-icon">↗</span>
+                      <span class="sr-only">(opens in new window)</span>
+                    {% endif %}
+                  </a>
+                {% endfor %}
+              </div>
+            {% endif %}
+          </article>
+        {% endfor %}
+      </div>
+    </section>
+  {% endif %}
+
+  {# 4. Fallback Empty State if total_features_count is 0 #}
+
+  {% if total_features_count == 0 %}
     <section class="empty-state" aria-labelledby="empty-state-title">
       <h2 id="empty-state-title" class="empty-state-heading">No release notes features available for Chrome {{ milestone }}.</h2>
       <p class="empty-state-desc">Features targeting Chrome {{ milestone }} may be in development or scheduled for upcoming releases.</p>
@@ -458,6 +579,7 @@
       </div>
     </section>
   {% endif %}
+
 </main>
 {% endblock %}
 

@@ -77,6 +77,8 @@ src/models/ProcessStage.ts
 src/models/ProgressItem.ts
 src/models/RejectUnneededGetRequest.ts
 src/models/ReleaseNoteFeature.ts
+src/models/ReleaseNoteLink.ts
+src/models/ReleaseNoteLinkType.ts
 src/models/ReleaseNotesL10nItem.ts
 src/models/ReleaseNotesL10nResponse.ts
 src/models/ReleaseNotesResponse.ts
