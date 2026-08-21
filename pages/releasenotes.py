@@ -22,7 +22,12 @@ import flask
 
 import settings
 from framework import basehandlers, seo
-from internals import feature_helpers, fetchchannels, markdown_helpers
+from internals import (
+    core_enums,
+    feature_helpers,
+    fetchchannels,
+    markdown_helpers,
+)
 
 # Milestones prior to M151 were published as standalone blog posts on developer.chrome.com.
 # ChromeStatus SSR release notes curation begins with Chrome 151.
@@ -115,12 +120,27 @@ class ReleaseNotesHandler(basehandlers.FlaskHandler):
         )
 
         features_by_category: dict[str, list[dict[str, Any]]] = {}
+        origin_trials: list[dict[str, Any]] = []
+        deprecations_and_removals: list[dict[str, Any]] = []
+
         for feature in release_note_features:
-            category = feature.get('category_name') or 'Other'
             feature['formatted_summary'] = markdown_helpers.render_markdown(
                 feature.get('summary') or ''
             )
-            features_by_category.setdefault(category, []).append(feature)
+            classification = feature.get('milestone_classification')
+            if (
+                classification
+                == core_enums.ReleaseNoteMilestoneClassification.ORIGIN_TRIAL
+            ):
+                origin_trials.append(feature)
+            elif classification in (
+                core_enums.ReleaseNoteMilestoneClassification.DEPRECATION,
+                core_enums.ReleaseNoteMilestoneClassification.REMOVAL,
+            ):
+                deprecations_and_removals.append(feature)
+            else:
+                category = feature.get('category_name') or 'Other'
+                features_by_category.setdefault(category, []).append(feature)
 
         # Bound the datalist dropdown options to the visible release horizon down to M124.
         max_dropdown_milestone = (
@@ -173,6 +193,8 @@ class ReleaseNotesHandler(basehandlers.FlaskHandler):
             'min_dropdown_milestone': MIN_EXTERNAL_RELEASE_NOTES_MILESTONE,
             'max_dropdown_milestone': max_dropdown_milestone,
             'features_by_category': features_by_category,
+            'origin_trials': origin_trials,
+            'deprecations_and_removals': deprecations_and_removals,
             'total_features_count': len(release_note_features),
             'milestones_list': milestones_list,
             'seo': seo_metadata.to_dict(),

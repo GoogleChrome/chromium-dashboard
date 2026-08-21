@@ -24,6 +24,7 @@ from typing import Any, Optional, TypedDict
 from chromestatus_openapi.models import (
     MilestoneCurationResponse,
     ReleaseNoteFeature,
+    ReleaseNoteLink,
     SummaryProgressStep,
     SummarySuggestion,
 )
@@ -33,6 +34,7 @@ import settings
 from internals import (
     approval_defs,
     core_enums,
+    link_helpers,
     self_certify,
     slo,
     stage_helpers,
@@ -1044,11 +1046,150 @@ def milestone_curation_to_dict(curation: MilestoneCuration) -> dict[str, Any]:
     return model.to_dict()
 
 
+class ReleaseNoteLinkExtractor:
+    """Builds and deduplicates typed ReleaseNoteLink instances for a feature."""
+
+    def __init__(
+        self,
+        fe: FeatureEntry,
+        origin_trial_url: str | None = None,
+        extra_doc_links: list[str] | None = None,
+    ):
+        """Initializes the extractor with feature entry and optional link overrides."""
+        self.fe = fe
+        self.origin_trial_url = origin_trial_url
+        self.extra_doc_links = extra_doc_links or []
+        self.links: list[ReleaseNoteLink] = []
+        self._seen_urls: set[str] = set()
+
+    def add_link(
+        self,
+        raw_url: str | None,
+        link_type: core_enums.ReleaseNoteLinkType,
+        title: str | None = None,
+    ) -> None:
+        """Adds a URL link if valid, normalized, and not previously added."""
+        if not raw_url or not isinstance(raw_url, str):
+            return
+        url = raw_url.strip()
+        if not url or url in self._seen_urls:
+            return
+        if not url.startswith(('http://', 'https://', '/')):
+            return
+        self._seen_urls.add(url)
+        self.links.append(
+            ReleaseNoteLink(url=url, type=str(link_type), title=title)
+        )
+
+    def extract_links(self) -> list[ReleaseNoteLink]:
+        """Assembles all feature links in canonical priority order.
+
+        Priority Order Reference:
+            Mirrors the standard metadata layout on developer.chrome.com/release-notes:
+            1. Origin Trial (if an active trial is associated with this milestone)
+            2. Tracking Bug (Chromium issue tracker reference #<id>)
+            3. ChromeStatus.com entry (canonical permalink to the feature)
+            4. Specification (W3C/WHATWG/IETF standards draft)
+            5. Documentation (developer guides, MDN, web.dev articles)
+            6. Explainers (WICG/standards GitHub explainers)
+            7. Demos (interactive code samples/demos)
+        """
+        # 1. Origin trial (appears first on developer.chrome.com when active)
+        if self.origin_trial_url:
+            self.add_link(
+                self.origin_trial_url,
+                core_enums.ReleaseNoteLinkType.ORIGIN_TRIAL,
+                core_enums.RELEASE_NOTE_LINK_DEFAULT_TITLES[
+                    core_enums.ReleaseNoteLinkType.ORIGIN_TRIAL
+                ],
+            )
+
+        # 2. Tracking bug
+        if self.fe.bug_url:
+            bug_url, bug_title = link_helpers.format_chromium_bug_url(
+                self.fe.bug_url
+            )
+            if bug_url:
+                self.add_link(
+                    bug_url, core_enums.ReleaseNoteLinkType.BUG, bug_title
+                )
+
+        # 3. ChromeStatus.com entry permalink
+        if self.fe.key:
+            feature_url = link_helpers.format_feature_url(
+                self.fe.key.integer_id()
+            )
+            self.add_link(
+                feature_url,
+                core_enums.ReleaseNoteLinkType.CHROMESTATUS,
+                core_enums.RELEASE_NOTE_LINK_DEFAULT_TITLES[
+                    core_enums.ReleaseNoteLinkType.CHROMESTATUS
+                ],
+            )
+
+        # 4. Specification
+        if self.fe.spec_link:
+            self.add_link(
+                self.fe.spec_link,
+                core_enums.ReleaseNoteLinkType.SPEC,
+                core_enums.RELEASE_NOTE_LINK_DEFAULT_TITLES[
+                    core_enums.ReleaseNoteLinkType.SPEC
+                ],
+            )
+
+        # 5. Documentation (Merged from FeatureEntry doc_links and extra doc links)
+        doc_urls = list(self.fe.doc_links or [])
+        for u in self.extra_doc_links:
+            if u not in doc_urls:
+                doc_urls.append(u)
+        for url in doc_urls:
+            self.add_link(url, core_enums.ReleaseNoteLinkType.DOC, None)
+
+        # 6. Explainers
+        for url in self.fe.explainer_links or []:
+            self.add_link(
+                url,
+                core_enums.ReleaseNoteLinkType.EXPLAINER,
+                core_enums.RELEASE_NOTE_LINK_DEFAULT_TITLES[
+                    core_enums.ReleaseNoteLinkType.EXPLAINER
+                ],
+            )
+
+        # 7. Samples & Demos
+        for url in self.fe.sample_links or []:
+            self.add_link(
+                url,
+                core_enums.ReleaseNoteLinkType.DEMO,
+                core_enums.RELEASE_NOTE_LINK_DEFAULT_TITLES[
+                    core_enums.ReleaseNoteLinkType.DEMO
+                ],
+            )
+
+        return self.links
+
+
+def extract_release_note_links(
+    fe: FeatureEntry,
+    origin_trial_url: str | None = None,
+    extra_doc_links: list[str] | None = None,
+) -> list[ReleaseNoteLink]:
+    """Assembles all feature links into typed ReleaseNoteLink instances."""
+    return ReleaseNoteLinkExtractor(
+        fe,
+        origin_trial_url=origin_trial_url,
+        extra_doc_links=extra_doc_links,
+    ).extract_links()
+
+
 def feature_entry_to_release_note_feature_dict(
     fe: FeatureEntry,
     applied_suggestion: FeatureSummarySuggestion | None = None,
     baseline_status: core_enums.BaselineStatus | None = None,
     has_applied_suggestion: bool | None = None,
+    milestone_classification: core_enums.ReleaseNoteMilestoneClassification = (
+        core_enums.ReleaseNoteMilestoneClassification.SHIPPING
+    ),
+    origin_trial_url: str | None = None,
 ) -> dict[str, Any]:
     """Converts a FeatureEntry into a dict matching the ReleaseNoteFeature schema."""
     feature_id = fe.key.integer_id()
@@ -1082,6 +1223,39 @@ def feature_entry_to_release_note_feature_dict(
         OpenAPIBaselineStatus.NONE,
     )
 
+    # When milestone_classification is not explicitly provided (defaulting to SHIPPING),
+    # infer whether the feature is a deprecation, removal, or origin trial from the
+    # entity's feature_type and impl_status_chrome fields.
+    effective_classification = milestone_classification
+    if (
+        effective_classification
+        == core_enums.ReleaseNoteMilestoneClassification.SHIPPING
+    ):
+        if (
+            feature_type_int == core_enums.FEATURE_TYPE_DEPRECATION_ID
+            or fe.impl_status_chrome == core_enums.DEPRECATED
+        ):
+            effective_classification = (
+                core_enums.ReleaseNoteMilestoneClassification.DEPRECATION
+            )
+        elif fe.impl_status_chrome == core_enums.REMOVED:
+            effective_classification = (
+                core_enums.ReleaseNoteMilestoneClassification.REMOVAL
+            )
+        elif fe.impl_status_chrome == core_enums.ORIGIN_TRIAL:
+            effective_classification = (
+                core_enums.ReleaseNoteMilestoneClassification.ORIGIN_TRIAL
+            )
+
+    extra_doc_links = (
+        applied_suggestion.suggested_doc_links if applied_suggestion else None
+    )
+    links = extract_release_note_links(
+        fe,
+        origin_trial_url=origin_trial_url,
+        extra_doc_links=extra_doc_links,
+    )
+
     model = ReleaseNoteFeature(
         id=feature_id,
         name=fe.name or '',
@@ -1091,5 +1265,7 @@ def feature_entry_to_release_note_feature_dict(
         feature_type=feature_type_int,
         baseline_status=baseline_val,
         summary_source=summary_source,
+        milestone_classification=str(effective_classification),
+        links=links,
     )
     return model.to_dict()

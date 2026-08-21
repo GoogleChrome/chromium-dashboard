@@ -1085,3 +1085,35 @@ class MilestoneCurationStatus(StrEnum):
     PENDING = 'PENDING'
     IN_REVIEW = 'IN_REVIEW'
     COMPLETED = 'COMPLETED'
+
+
+class ReleaseNoteMilestoneClassification(StrEnum):
+    """Milestone launch classification constants for developer release notes."""
+
+    SHIPPING = 'SHIPPING'
+    ORIGIN_TRIAL = 'ORIGIN_TRIAL'
+    DEPRECATION = 'DEPRECATION'
+    REMOVAL = 'REMOVAL'
+
+
+class ReleaseNoteLinkType(StrEnum):
+    """Link classification constants for developer release notes resources."""
+
+    BUG = 'BUG'
+    CHROMESTATUS = 'CHROMESTATUS'
+    SPEC = 'SPEC'
+    ORIGIN_TRIAL = 'ORIGIN_TRIAL'
+    DOC = 'DOC'
+    EXPLAINER = 'EXPLAINER'
+    DEMO = 'DEMO'
+    OTHER = 'OTHER'
+
+
+RELEASE_NOTE_LINK_DEFAULT_TITLES: dict[ReleaseNoteLinkType, str] = {
+    ReleaseNoteLinkType.ORIGIN_TRIAL: 'Origin Trial',
+    ReleaseNoteLinkType.BUG: 'Tracking bug',
+    ReleaseNoteLinkType.CHROMESTATUS: 'ChromeStatus.com entry',
+    ReleaseNoteLinkType.SPEC: 'Spec',
+    ReleaseNoteLinkType.EXPLAINER: 'Explainer',
+    ReleaseNoteLinkType.DEMO: 'Demo',
+}

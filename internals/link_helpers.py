@@ -442,3 +442,57 @@ class Link:
             self.http_error_code = _get_error_code(e)
             self.information = None
         self.is_parsed = True
+
+
+CRBUG_NUMERIC_RE = re.compile(r'^\d+$')
+ISSUES_TRACKER_ID_RE = re.compile(
+    r'(?:crbug\.com/|issues\.chromium\.org/issues/|issues/detail\?id=)(\d+)'
+)
+
+
+def format_chromium_bug_url(
+    bug_url: str | None,
+) -> tuple[str | None, str | None]:
+    """Normalizes raw bug input to a canonical issues.chromium.org URL and display title.
+
+    Handles bare issue numbers ('40731275'), crbug shortlinks, and full URLs.
+
+    Returns:
+        (canonical_url, display_title) tuple, or (None, None) if raw input is empty.
+    """
+    if not bug_url or not isinstance(bug_url, str):
+        return None, None
+    cleaned = bug_url.strip()
+    if not cleaned:
+        return None, None
+
+    title = 'Tracking bug'
+    if CRBUG_NUMERIC_RE.match(cleaned):
+        return (
+            f'https://issues.chromium.org/issues/{cleaned}',
+            f'{title} #{cleaned}',
+        )
+
+    match = ISSUES_TRACKER_ID_RE.search(cleaned)
+    if match:
+        return cleaned, f'{title} #{match.group(1)}'
+
+    return cleaned, title
+
+
+def format_feature_url(feature_id: int | str | None) -> str | None:
+    """Returns the canonical relative permalink to a ChromeStatus feature."""
+    if not feature_id:
+        return None
+    return f'/feature/{feature_id}'
+
+
+def format_origin_trial_url(
+    origin_trial_id: str | None = None,
+    stage_id: int | str | None = None,
+) -> str | None:
+    """Constructs the canonical relative URL to view/register for an origin trial."""
+    ot_id = origin_trial_id or (str(stage_id) if stage_id else None)
+    if not ot_id:
+        return None
+    return f'/origintrials#/view_trial/{ot_id}'
