@@ -14,15 +14,18 @@
  * limitations under the License.
  */
 
-import {html, fixture, assert} from '@open-wc/testing';
+import {html, fixture, assert, oneEvent} from '@open-wc/testing';
 import './chromedash-release-feature-card.js';
 import {
   ChromedashReleaseFeatureCard,
   FeatureCardItem,
+  aggregateFeatureLinks,
 } from './chromedash-release-feature-card.js';
 import {
   ReleaseNoteFeatureSummarySourceEnum,
   ReleaseNoteLinkTypeEnum,
+  SummarySuggestion,
+  SummarySuggestionStatusEnum,
 } from 'chromestatus-openapi';
 import sinon from 'sinon';
 
@@ -61,6 +64,20 @@ describe('chromedash-release-feature-card', () => {
         type: ReleaseNoteLinkTypeEnum.EXPLAINER,
       },
     ],
+  };
+
+  const mockSuggestion: SummarySuggestion = {
+    feature_id: 12345,
+    suggested_summary: 'AI-generated summary for CSS Subgrid.',
+    original_summary: 'Enables grid items to inherit grid definition.',
+    status: SummarySuggestionStatusEnum.PENDING,
+    reasoning: 'Extracted from W3C spec and MDN documentation.',
+    suggested_doc_links: [
+      'https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_grid_layout/Subgrid',
+    ],
+    version_token: 1,
+    created: new Date('2026-08-20T10:00:00Z'),
+    updated: new Date('2026-08-20T10:00:00Z'),
   };
 
   it('renders standard feature card with name, summary, category, and links', async () => {
@@ -293,6 +310,85 @@ describe('chromedash-release-feature-card', () => {
     assert.include(unsetTexts, 'Human Authored');
   });
 
+  it('renders AI Review Pending badge alongside provenance badge when pending suggestion exists', async () => {
+    const el = await fixture<ChromedashReleaseFeatureCard>(
+      html`<chromedash-release-feature-card
+        .feature=${mockFeature}
+        .suggestion=${mockSuggestion}
+      ></chromedash-release-feature-card>`
+    );
+    const badges = el.shadowRoot!.querySelectorAll('.badges-wrapper sl-badge');
+    const badgeTexts = Array.from(badges).map(b => b.textContent?.trim());
+    assert.include(badgeTexts, 'CSS');
+    assert.include(badgeTexts, 'Human Authored');
+    assert.include(badgeTexts, 'AI Review Pending');
+  });
+
+  it('renders review actions when reviewMode is true', async () => {
+    const el = await fixture<ChromedashReleaseFeatureCard>(
+      html`<chromedash-release-feature-card
+        .feature=${mockFeature}
+        .suggestion=${mockSuggestion}
+        ?reviewMode=${true}
+      ></chromedash-release-feature-card>`
+    );
+
+    const actions = el.shadowRoot!.querySelector('.card-actions');
+    assert.isNotNull(actions);
+
+    const reviewBtn = el.shadowRoot!.querySelector('.review-button');
+    assert.isNotNull(reviewBtn);
+    assert.include(reviewBtn?.textContent || '', 'Review Suggestion');
+
+    const generateBtn = el.shadowRoot!.querySelector('.generate-button');
+    assert.isNotNull(generateBtn);
+    assert.include(generateBtn?.textContent || '', 'Regenerate');
+
+    const groundingMeta = el.shadowRoot!.querySelector('.suggestion-meta');
+    assert.isNotNull(groundingMeta);
+    assert.include(groundingMeta?.textContent || '', 'Grounding available');
+  });
+
+  it('dispatches review-click event when review button is clicked', async () => {
+    const el = await fixture<ChromedashReleaseFeatureCard>(
+      html`<chromedash-release-feature-card
+        .feature=${mockFeature}
+        .suggestion=${mockSuggestion}
+        ?reviewMode=${true}
+      ></chromedash-release-feature-card>`
+    );
+
+    const reviewBtn =
+      el.shadowRoot!.querySelector<HTMLElement>('.review-button');
+    const eventPromise = oneEvent(el, 'review-click');
+    reviewBtn?.click();
+
+    const event = (await eventPromise) as CustomEvent;
+    assert.isNotNull(event);
+    assert.strictEqual(event.detail.featureId, 12345);
+    assert.deepEqual(event.detail.suggestion, mockSuggestion);
+  });
+
+  it('dispatches generate-click event when generate button is clicked', async () => {
+    const el = await fixture<ChromedashReleaseFeatureCard>(
+      html`<chromedash-release-feature-card
+        .feature=${mockFeature}
+        .suggestion=${mockSuggestion}
+        ?reviewMode=${true}
+      ></chromedash-release-feature-card>`
+    );
+
+    const generateBtn =
+      el.shadowRoot!.querySelector<HTMLElement>('.generate-button');
+    const eventPromise = oneEvent(el, 'generate-click');
+    generateBtn?.click();
+
+    const event = (await eventPromise) as CustomEvent;
+    assert.isNotNull(event);
+    assert.strictEqual(event.detail.featureId, 12345);
+    assert.deepEqual(event.detail.suggestion, mockSuggestion);
+  });
+
   it('copies anchor link when heading anchor link is clicked', async () => {
     const clipboardStub = sandbox
       .stub(navigator.clipboard, 'writeText')
@@ -320,6 +416,29 @@ describe('chromedash-release-feature-card', () => {
       html`<chromedash-release-feature-card></chromedash-release-feature-card>`
     );
     assert.isNull(el.shadowRoot!.querySelector('.feature-card'));
+  });
+
+  it('does not render card actions when reviewMode is false', async () => {
+    const el = await fixture<ChromedashReleaseFeatureCard>(
+      html`<chromedash-release-feature-card
+        .feature=${mockFeature}
+        .reviewMode=${false}
+      ></chromedash-release-feature-card>`
+    );
+    assert.isNull(el.shadowRoot!.querySelector('.card-actions'));
+  });
+
+  it('renders inspect button when reviewMode is true without pending suggestion', async () => {
+    const el = await fixture<ChromedashReleaseFeatureCard>(
+      html`<chromedash-release-feature-card
+        .feature=${mockFeature}
+        ?reviewMode=${true}
+      ></chromedash-release-feature-card>`
+    );
+    const reviewBtn = el.shadowRoot!.querySelector('.review-button');
+    assert.include(reviewBtn?.textContent || '', 'Inspect / Edit');
+    const generateBtn = el.shadowRoot!.querySelector('.generate-button');
+    assert.include(generateBtn?.textContent || '', 'Generate AI Summary');
   });
 
   it('renders category badge from numeric category ID', async () => {
@@ -398,7 +517,7 @@ describe('chromedash-release-feature-card', () => {
     );
   });
 
-  it('deduplicates links across doc_links, spec_link, and explainer_links', async () => {
+  it('deduplicates links across doc_links, spec_link, explainer_links, and suggested_doc_links', async () => {
     const duplicateFeature: FeatureCardItem = {
       ...mockFeature,
       links: undefined,
@@ -409,9 +528,14 @@ describe('chromedash-release-feature-card', () => {
       spec_link: 'https://example.com/same-link',
       explainer_links: ['https://example.com/same-link'],
     };
+    const suggestionWithSameLink: SummarySuggestion = {
+      ...mockSuggestion,
+      suggested_doc_links: ['https://example.com/same-link'],
+    };
     const el = await fixture<ChromedashReleaseFeatureCard>(
       html`<chromedash-release-feature-card
         .feature=${duplicateFeature}
+        .suggestion=${suggestionWithSameLink}
       ></chromedash-release-feature-card>`
     );
     const links = el.shadowRoot!.querySelectorAll(
@@ -421,6 +545,34 @@ describe('chromedash-release-feature-card', () => {
     assert.strictEqual(
       links[0].getAttribute('href'),
       'https://example.com/same-link'
+    );
+  });
+
+  it('deduplicates duplicate links across feature fields and suggestions via Set and trimming', async () => {
+    const featureWithWhitespaceLink: FeatureCardItem = {
+      ...mockFeature,
+      links: undefined,
+      doc_links: ['  https://example.com/docs/guide  '],
+      spec_link: undefined,
+      explainer_links: [],
+    };
+    const suggestionWithSameLink: SummarySuggestion = {
+      ...mockSuggestion,
+      suggested_doc_links: ['https://example.com/docs/guide'],
+    };
+    const el = await fixture<ChromedashReleaseFeatureCard>(
+      html`<chromedash-release-feature-card
+        .feature=${featureWithWhitespaceLink}
+        .suggestion=${suggestionWithSameLink}
+      ></chromedash-release-feature-card>`
+    );
+    const links = el.shadowRoot!.querySelectorAll(
+      '.feature-links-bar .feature-link-item'
+    );
+    assert.strictEqual(links.length, 1);
+    assert.strictEqual(
+      links[0].getAttribute('href'),
+      'https://example.com/docs/guide'
     );
   });
 
@@ -442,6 +594,7 @@ describe('chromedash-release-feature-card', () => {
     });
     await el.handleAnchorCopy(clickEvent);
 
+    // Should not throw or mark isCopied
     assert.isFalse(el.isCopied);
     assert.isTrue(warnStub.calledOnce);
   });
@@ -463,7 +616,49 @@ describe('chromedash-release-feature-card', () => {
     await el.handleAnchorCopy(clickEvent);
     assert.isTrue(el.isCopied);
 
+    // Trigger disconnectedCallback
     el.disconnectedCallback();
     assert.isTrue(clearTimeoutSpy.called);
+  });
+
+  describe('aggregateFeatureLinks', () => {
+    it('aggregates structured feature links directly', () => {
+      const links = aggregateFeatureLinks(mockFeature);
+      assert.strictEqual(links.length, 3);
+      assert.strictEqual(
+        links[0].url,
+        'https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_grid_layout/Subgrid'
+      );
+      assert.strictEqual(links[0].title, 'MDN Subgrid Guide');
+    });
+
+    it('aggregates legacy fields and suggested doc links with Set deduplication', () => {
+      const legacy: FeatureCardItem = {
+        id: 999,
+        name: 'Legacy Feature',
+        summary: 'Summary',
+        doc_links: ['https://example.com/doc', 'https://example.com/doc'],
+        spec_link: 'https://example.com/spec',
+        explainer_links: ['https://example.com/explainer'],
+      };
+      const suggestion: SummarySuggestion = {
+        ...mockSuggestion,
+        suggested_doc_links: [
+          'https://example.com/doc',
+          'https://example.com/new-doc',
+        ],
+      };
+      const links = aggregateFeatureLinks(legacy, suggestion);
+      assert.strictEqual(links.length, 4);
+      assert.deepStrictEqual(
+        links.map(l => l.url),
+        [
+          'https://example.com/doc',
+          'https://example.com/spec',
+          'https://example.com/explainer',
+          'https://example.com/new-doc',
+        ]
+      );
+    });
   });
 });
