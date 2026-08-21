@@ -312,7 +312,7 @@
 
 <br>
 <br>
-{%- if feature.feature_type_int != 2 %}
+{%- if intent_type != 'prototype' and feature.feature_type_int != 2 %}
 <div><b>Requires code in //chrome?</b></div>
 {{feature.requires_embedder_support}}
 {%- endif -%}
