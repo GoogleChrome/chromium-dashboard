@@ -17,6 +17,7 @@
 
 import datetime
 import re
+import urllib.parse
 from enum import StrEnum
 from types import MappingProxyType
 from typing import Any, Optional, TypedDict
@@ -24,6 +25,8 @@ from typing import Any, Optional, TypedDict
 from chromestatus_openapi.models import (
     MilestoneCurationResponse,
     ReleaseNoteFeature,
+    ReleaseNoteLink,
+    ReleaseNoteLinkType,
     SummaryProgressStep,
     SummarySuggestion,
 )
@@ -1044,11 +1047,113 @@ def milestone_curation_to_dict(curation: MilestoneCuration) -> dict[str, Any]:
     return model.to_dict()
 
 
+CRBUG_NUMERIC_RE = re.compile(r'^\d+$')
+ISSUES_TRACKER_ID_RE = re.compile(
+    r'(?:crbug\.com/|issues\.chromium\.org/issues/|issues/detail\?id=)(\d+)'
+)
+CONTROL_CHARS_RE = re.compile(r'[\x00-\x1f\x7f-\x9f\s]')
+VALID_RELATIVE_PATH_RE = re.compile(r'^/(?![/\\])[\w\-./#?=&%]*$')
+
+
+def sanitize_and_validate_url(raw_url: str | None) -> str | None:
+    """Validates and sanitizes a URL for safe rendering in HTML href attributes."""
+    if not raw_url or not isinstance(raw_url, str):
+        return None
+    cleaned = raw_url.strip()
+    if not cleaned:
+        return None
+    if CONTROL_CHARS_RE.search(cleaned):
+        cleaned = CONTROL_CHARS_RE.sub('', cleaned)
+    if cleaned.startswith('/'):
+        if VALID_RELATIVE_PATH_RE.match(cleaned):
+            return cleaned
+        return None
+    try:
+        parsed = urllib.parse.urlparse(cleaned)
+    except Exception:
+        return None
+    scheme = parsed.scheme.lower()
+    if scheme not in ('http', 'https') or not parsed.netloc:
+        return None
+    return cleaned
+
+
+def extract_release_note_links(
+    fe: FeatureEntry,
+    applied_suggestion: FeatureSummarySuggestion | None = None,
+    origin_trial_url: str | None = None,
+) -> list[ReleaseNoteLink]:
+    """Assembles all feature links into typed ReleaseNoteLink instances."""
+    links: list[ReleaseNoteLink] = []
+    seen_urls: set[str] = set()
+
+    def add_link(
+        raw_url: str | None, link_type: str, title: str | None = None
+    ) -> None:
+        url = sanitize_and_validate_url(raw_url)
+        if not url or url in seen_urls:
+            return
+        seen_urls.add(url)
+        links.append(ReleaseNoteLink(url=url, type=link_type, title=title))
+
+    # 1. Origin trial (if applicable, appears first on DCC)
+    if origin_trial_url:
+        add_link(
+            origin_trial_url, ReleaseNoteLinkType.ORIGIN_TRIAL, 'Origin Trial'
+        )
+
+    # 2. Tracking bug
+    if fe.bug_url:
+        bug_url = fe.bug_url.strip()
+        title = 'Tracking bug'
+        if CRBUG_NUMERIC_RE.match(bug_url):
+            title = f'Tracking bug #{bug_url}'
+            bug_url = f'https://issues.chromium.org/issues/{bug_url}'
+        else:
+            match = ISSUES_TRACKER_ID_RE.search(bug_url)
+            if match:
+                title = f'Tracking bug #{match.group(1)}'
+        add_link(bug_url, ReleaseNoteLinkType.BUG, title)
+
+    # 3. ChromeStatus.com entry permalink
+    if fe.key:
+        add_link(
+            f'/feature/{fe.key.integer_id()}',
+            ReleaseNoteLinkType.CHROMESTATUS,
+            'ChromeStatus.com entry',
+        )
+
+    # 4. Specification
+    if fe.spec_link:
+        add_link(fe.spec_link, ReleaseNoteLinkType.SPEC, 'Spec')
+
+    # 5. Documentation (Merged from FeatureEntry + Applied AI suggestion)
+    doc_urls = list(fe.doc_links or [])
+    if applied_suggestion and applied_suggestion.suggested_doc_links:
+        for u in applied_suggestion.suggested_doc_links:
+            if u not in doc_urls:
+                doc_urls.append(u)
+    for url in doc_urls:
+        add_link(url, ReleaseNoteLinkType.DOC, None)
+
+    # 6. Explainers
+    for url in fe.explainer_links or []:
+        add_link(url, ReleaseNoteLinkType.EXPLAINER, 'Explainer')
+
+    # 7. Samples & Demos
+    for url in fe.sample_links or []:
+        add_link(url, ReleaseNoteLinkType.DEMO, 'Demo')
+
+    return links
+
+
 def feature_entry_to_release_note_feature_dict(
     fe: FeatureEntry,
     applied_suggestion: FeatureSummarySuggestion | None = None,
     baseline_status: core_enums.BaselineStatus | None = None,
     has_applied_suggestion: bool | None = None,
+    milestone_classification: str = 'SHIPPING',
+    origin_trial_url: str | None = None,
 ) -> dict[str, Any]:
     """Converts a FeatureEntry into a dict matching the ReleaseNoteFeature schema."""
     feature_id = fe.key.integer_id()
@@ -1082,6 +1187,24 @@ def feature_entry_to_release_note_feature_dict(
         OpenAPIBaselineStatus.NONE,
     )
 
+    effective_classification = milestone_classification
+    if effective_classification == 'SHIPPING':
+        if (
+            feature_type_int == core_enums.FEATURE_TYPE_DEPRECATION_ID
+            or fe.impl_status_chrome == core_enums.DEPRECATED
+        ):
+            effective_classification = 'DEPRECATION'
+        elif fe.impl_status_chrome == core_enums.REMOVED:
+            effective_classification = 'REMOVAL'
+        elif fe.impl_status_chrome == core_enums.ORIGIN_TRIAL:
+            effective_classification = 'ORIGIN_TRIAL'
+
+    links = extract_release_note_links(
+        fe,
+        applied_suggestion=applied_suggestion,
+        origin_trial_url=origin_trial_url,
+    )
+
     model = ReleaseNoteFeature(
         id=feature_id,
         name=fe.name or '',
@@ -1091,5 +1214,7 @@ def feature_entry_to_release_note_feature_dict(
         feature_type=feature_type_int,
         baseline_status=baseline_val,
         summary_source=summary_source,
+        milestone_classification=effective_classification,
+        links=links,
     )
     return model.to_dict()

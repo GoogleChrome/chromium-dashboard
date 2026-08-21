@@ -2211,7 +2211,7 @@ class DeveloperReleaseNotesFeaturesTest(testing_config.CustomTestCase):
         self.assertEqual('CSS Anchor Positioning', features[1]['name'])
 
     def test_get_developer_release_notes_features__includes_doc_links(self):
-        """It attaches doc_links to the feature dictionary when present on FeatureEntry."""
+        """It attaches doc_links to the feature links list when present on FeatureEntry."""
         self.feature_1.doc_links = [
             'https://developer.mozilla.org/doc1',
             'https://drafts.csswg.org/doc2',
@@ -2220,10 +2220,15 @@ class DeveloperReleaseNotesFeaturesTest(testing_config.CustomTestCase):
 
         features = feature_helpers.get_developer_release_notes_features(132)
         self.assertEqual(1, len(features))
+        doc_urls = [
+            link['url']
+            for link in features[0]['links']
+            if link['type'] == 'DOC'
+        ]
         self.assertEqual(
             [
                 'https://developer.mozilla.org/doc1',
                 'https://drafts.csswg.org/doc2',
             ],
-            features[0]['doc_links'],
+            doc_urls,
         )

@@ -94,7 +94,18 @@ a img {
   -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
 }
 
+/* Layout containment for SSR custom elements to prevent Cumulative Layout Shift (CLS) */
+chromedash-header {
+  display: block;
+  min-height: 56px;
+}
+
+.main-toolbar {
+  min-height: 56px;
+}
+
 h1, h2, h3, h4 {
+
   font-weight: 300;
 }
 

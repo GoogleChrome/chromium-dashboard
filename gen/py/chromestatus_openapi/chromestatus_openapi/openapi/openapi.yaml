@@ -4135,6 +4135,42 @@ components:
           type: array
       title: MilestoneCurationPatchRequest
       type: object
+    ReleaseNoteLinkType:
+      description: Semantic classification of the feature reference link.
+      enum:
+      - BUG
+      - CHROMESTATUS
+      - SPEC
+      - ORIGIN_TRIAL
+      - DOC
+      - EXPLAINER
+      - DEMO
+      - OTHER
+      title: ReleaseNoteLinkType
+      type: string
+    ReleaseNoteLink:
+      description: Structured reference link for a release note feature.
+      example:
+        type: BUG
+        title: title
+        url: url
+      properties:
+        url:
+          description: Target URL of the resource.
+          title: url
+          type: string
+        type:
+          $ref: '#/components/schemas/ReleaseNoteLinkType'
+        title:
+          description: Optional human-readable display label (e.g. 'Tracking bug
+          nullable: true
+          title: title
+          type: string
+      required:
+      - type
+      - url
+      title: ReleaseNoteLink
+      type: object
     ReleaseNoteFeature:
       description: Individual feature entry formatted for public release notes.
       example:
@@ -4143,7 +4179,15 @@ components:
         category_name: category_name
         summary_source: HUMAN
         name: name
+        links:
+        - type: BUG
+          title: title
+          url: url
+        - type: BUG
+          title: title
+          url: url
         id: 1
+        milestone_classification: SHIPPING
         category: 1
         baseline_status: none
       properties:
@@ -4196,6 +4240,23 @@ components:
           - AI_APPLIED
           title: summary_source
           type: string
+        milestone_classification:
+          default: SHIPPING
+          description: Launch status classification of this feature in the target
+            milestone.
+          enum:
+          - SHIPPING
+          - ORIGIN_TRIAL
+          - DEPRECATION
+          - REMOVAL
+          title: milestone_classification
+          type: string
+        links:
+          description: Structured list of categorized resource and reference links.
+          items:
+            $ref: '#/components/schemas/ReleaseNoteLink'
+          title: links
+          type: array
       required:
       - category
       - category_name
@@ -4216,7 +4277,15 @@ components:
           category_name: category_name
           summary_source: HUMAN
           name: name
+          links:
+          - type: BUG
+            title: title
+            url: url
+          - type: BUG
+            title: title
+            url: url
           id: 1
+          milestone_classification: SHIPPING
           category: 1
           baseline_status: none
         - summary: summary
@@ -4224,7 +4293,15 @@ components:
           category_name: category_name
           summary_source: HUMAN
           name: name
+          links:
+          - type: BUG
+            title: title
+            url: url
+          - type: BUG
+            title: title
+            url: url
           id: 1
+          milestone_classification: SHIPPING
           category: 1
           baseline_status: none
         milestone: 1

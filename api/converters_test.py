@@ -826,6 +826,15 @@ class AICurationConvertersTest(testing_config.CustomTestCase):
             summary='Positions elements relative to anchors.',
             category=core_enums.CSS,
             feature_type=1,
+            bug_url='https://issues.chromium.org/issues/40731275',
+            spec_link='https://www.w3.org/TR/css-anchor-position-1/',
+            doc_links=[
+                'https://developer.chrome.com/docs/css-ui/anchor-positioning'
+            ],
+            explainer_links=[
+                'https://github.com/w3c/csswg-drafts/issues/css-anchor'
+            ],
+            sample_links=['https://glitch.com/~anchor-positioning-demo'],
         )
         fe.put()
 
@@ -833,6 +842,8 @@ class AICurationConvertersTest(testing_config.CustomTestCase):
             fe,
             has_applied_suggestion=True,
             baseline_status=core_enums.BaselineStatus.NEWLY,
+            milestone_classification='ORIGIN_TRIAL',
+            origin_trial_url='/origintrials#/view_trial/ot-anchor-1',
         )
         self.assertEqual(202, actual['id'])
         self.assertEqual('CSS Anchor Positioning', actual['name'])
@@ -843,6 +854,51 @@ class AICurationConvertersTest(testing_config.CustomTestCase):
         self.assertEqual(
             converters.OpenAPISummarySource.AI_APPLIED, actual['summary_source']
         )
+        self.assertEqual('ORIGIN_TRIAL', actual['milestone_classification'])
+
+        # Verify typed links array
+        links = actual['links']
+        self.assertEqual(7, len(links))
+        self.assertEqual(
+            '/origintrials#/view_trial/ot-anchor-1', links[0]['url']
+        )
+        self.assertEqual('ORIGIN_TRIAL', links[0]['type'])
+        self.assertEqual('Origin Trial', links[0]['title'])
+
+        self.assertEqual(
+            'https://issues.chromium.org/issues/40731275', links[1]['url']
+        )
+        self.assertEqual('BUG', links[1]['type'])
+        self.assertEqual('Tracking bug #40731275', links[1]['title'])
+
+        self.assertEqual('/feature/202', links[2]['url'])
+        self.assertEqual('CHROMESTATUS', links[2]['type'])
+        self.assertEqual('ChromeStatus.com entry', links[2]['title'])
+
+        self.assertEqual(
+            'https://www.w3.org/TR/css-anchor-position-1/', links[3]['url']
+        )
+        self.assertEqual('SPEC', links[3]['type'])
+        self.assertEqual('Spec', links[3]['title'])
+
+        self.assertEqual(
+            'https://developer.chrome.com/docs/css-ui/anchor-positioning',
+            links[4]['url'],
+        )
+        self.assertEqual('DOC', links[4]['type'])
+
+        self.assertEqual(
+            'https://github.com/w3c/csswg-drafts/issues/css-anchor',
+            links[5]['url'],
+        )
+        self.assertEqual('EXPLAINER', links[5]['type'])
+        self.assertEqual('Explainer', links[5]['title'])
+
+        self.assertEqual(
+            'https://glitch.com/~anchor-positioning-demo', links[6]['url']
+        )
+        self.assertEqual('DEMO', links[6]['type'])
+        self.assertEqual('Demo', links[6]['title'])
 
     def test_feature_entry_to_release_note_feature_dict__unmapped_category_fallback(
         self,
