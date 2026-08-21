@@ -16,17 +16,12 @@
 
 import {LitElement, css, html, nothing, TemplateResult} from 'lit';
 import {customElement, property, state} from 'lit/decorators.js';
-import '@shoelace-style/shoelace/dist/components/button/button.js';
 import '@shoelace-style/shoelace/dist/components/badge/badge.js';
 import '@shoelace-style/shoelace/dist/components/icon/icon.js';
-import '@shoelace-style/shoelace/dist/components/tooltip/tooltip.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {autolink} from './utils.js';
 import {FEATURE_CATEGORIES} from './form-field-enums.js';
-import {
-  SummarySuggestion,
-  SummarySuggestionStatusEnum,
-} from 'chromestatus-openapi';
+import {ReleaseNoteFeatureSummarySourceEnum} from 'chromestatus-openapi';
 
 export type FeatureCardItem = {
   id: number;
@@ -47,12 +42,6 @@ export type FeatureCardItem = {
 export class ChromedashReleaseFeatureCard extends LitElement {
   @property({attribute: false})
   feature: FeatureCardItem | null = null;
-
-  @property({attribute: false})
-  suggestion: SummarySuggestion | null = null;
-
-  @property({type: Boolean})
-  reviewMode = false;
 
   @property({type: Number})
   milestone?: number;
@@ -238,30 +227,6 @@ export class ChromedashReleaseFeatureCard extends LitElement {
           text-overflow: ellipsis;
           white-space: nowrap;
         }
-
-        .card-actions {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          flex-wrap: wrap;
-          gap: var(--sl-spacing-small);
-          border-top: var(--default-border);
-          padding-top: var(--content-padding-half);
-        }
-
-        .action-buttons {
-          display: flex;
-          align-items: center;
-          gap: var(--sl-spacing-small);
-        }
-
-        .suggestion-meta {
-          display: flex;
-          align-items: center;
-          gap: var(--sl-spacing-x-small);
-          font-size: var(--button-small-font-size, 0.875rem);
-          color: var(--unimportant-text-color);
-        }
       `,
     ];
   }
@@ -289,33 +254,6 @@ export class ChromedashReleaseFeatureCard extends LitElement {
     }
   }
 
-  handleReviewClick() {
-    this.dispatchEvent(
-      new CustomEvent('review-click', {
-        detail: {
-          feature: this.feature,
-          suggestion: this.suggestion,
-          featureId: this.feature?.id,
-        },
-        bubbles: true,
-        composed: true,
-      })
-    );
-  }
-
-  handleGenerateClick() {
-    this.dispatchEvent(
-      new CustomEvent('generate-click', {
-        detail: {
-          feature: this.feature,
-          featureId: this.feature?.id,
-        },
-        bubbles: true,
-        composed: true,
-      })
-    );
-  }
-
   renderCategoryBadge(): TemplateResult | typeof nothing {
     if (!this.feature) return nothing;
     let categoryName = this.feature.category_name;
@@ -336,15 +274,9 @@ export class ChromedashReleaseFeatureCard extends LitElement {
     if (!this.feature) return nothing;
 
     if (
-      this.suggestion &&
-      this.suggestion.status === SummarySuggestionStatusEnum.PENDING
+      this.feature.summary_source ===
+      ReleaseNoteFeatureSummarySourceEnum.AI_APPLIED
     ) {
-      return html`<sl-badge variant="warning" pill
-        >AI Review Pending</sl-badge
-      >`;
-    }
-
-    if (this.feature.summary_source === 'AI_APPLIED') {
       return html`<sl-badge variant="success" pill>AI Applied</sl-badge>`;
     }
 
@@ -369,16 +301,6 @@ export class ChromedashReleaseFeatureCard extends LitElement {
         }
       }
     }
-    if (
-      this.suggestion?.suggested_doc_links &&
-      Array.isArray(this.suggestion.suggested_doc_links)
-    ) {
-      for (const link of this.suggestion.suggested_doc_links) {
-        if (!links.includes(link)) {
-          links.push(link);
-        }
-      }
-    }
 
     if (links.length === 0) return nothing;
 
@@ -398,72 +320,6 @@ export class ChromedashReleaseFeatureCard extends LitElement {
             </a>
           `
         )}
-      </div>
-    `;
-  }
-
-  renderReviewActions(): TemplateResult | typeof nothing {
-    if (!this.reviewMode || !this.feature) return nothing;
-
-    const hasPendingSuggestion =
-      this.suggestion &&
-      this.suggestion.status === SummarySuggestionStatusEnum.PENDING;
-
-    return html`
-      <div class="card-actions">
-        <div class="action-buttons">
-          ${
-            hasPendingSuggestion
-              ? html`
-                  <sl-button
-                    size="small"
-                    variant="primary"
-                    class="review-button"
-                    @click=${this.handleReviewClick}
-                  >
-                    <sl-icon slot="prefix" name="pencil"></sl-icon>
-                    Review Suggestion
-                  </sl-button>
-                `
-              : html`
-                  <sl-button
-                    size="small"
-                    variant="default"
-                    class="review-button"
-                    @click=${this.handleReviewClick}
-                  >
-                    <sl-icon slot="prefix" name="eye"></sl-icon>
-                    Inspect / Edit
-                  </sl-button>
-                `
-          }
-          <sl-button
-            size="small"
-            variant="default"
-            class="generate-button"
-            @click=${this.handleGenerateClick}
-          >
-            <sl-icon slot="prefix" name="arrow-clockwise"></sl-icon>
-            ${hasPendingSuggestion ? 'Regenerate' : 'Generate AI Summary'}
-          </sl-button>
-        </div>
-
-        ${
-          this.suggestion?.reasoning
-            ? html`
-                <div class="suggestion-meta">
-                  <sl-tooltip content=${this.suggestion.reasoning}>
-                    <sl-icon
-                      tabindex="0"
-                      name="info-circle"
-                      aria-label="Summary reasoning details"
-                    ></sl-icon>
-                  </sl-tooltip>
-                  <span>Grounding available</span>
-                </div>
-              `
-            : nothing
-        }
       </div>
     `;
   }
@@ -522,7 +378,6 @@ export class ChromedashReleaseFeatureCard extends LitElement {
         </header>
 
         ${this.renderFeatureSummary()} ${this.renderDocLinks()}
-        ${this.renderReviewActions()}
       </article>
     `;
   }
