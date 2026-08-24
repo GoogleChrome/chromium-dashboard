@@ -20,7 +20,7 @@ cryptography==50.0.0
     #   types-redis
 execnet==2.1.2
     # via pytest-xdist
-gunicorn==26.0.0
+gunicorn==26.1.0
     # via -r requirements.dev.in
 iniconfig==2.3.0
     # via pytest
@@ -33,7 +33,6 @@ mypy-extensions==1.1.0
 packaging==26.3
     # via
     #   build
-    #   gunicorn
     #   pytest
     #   wheel
 pathspec==1.1.1
