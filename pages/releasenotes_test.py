@@ -342,9 +342,7 @@ class ReleaseNotesHandlerTest(testing_config.CustomTestCase):
             self.assertIn('/release-notes/150?hl=ja', parser.links)
             self.assertIn('/release-notes/152?hl=ja', parser.links)
             self.assertIn('lang="ja"', html_str)
-            self.assertIn(
-                '<option value="/release-notes/151?hl=ja" selected>', html_str
-            )
+            self.assertIn('<option value="ja" selected>', html_str)
 
     def test_get_template_data__l10n_spanish(self):
         """It resolves Spanish UI strings when ?hl=es is requested."""

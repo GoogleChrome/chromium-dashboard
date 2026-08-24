@@ -472,7 +472,7 @@ test.describe('Release Notes SSR Page', () => {
 
       const langSelect = page.locator('#language-select');
       await expect(langSelect).toBeVisible();
-      await expect(langSelect).toHaveValue('/release-notes/151?hl=ja');
+      await expect(langSelect).toHaveValue('ja');
 
       // Assert that category heading is localized to Japanese (e.g. その他 or CSS)
       const categoryHeading = page.locator('.category-title');
@@ -490,7 +490,7 @@ test.describe('Release Notes SSR Page', () => {
     const langSelect = page.locator('#language-select');
     await expect(langSelect).toBeVisible();
 
-    await langSelect.selectOption('/release-notes/151?hl=es');
+    await langSelect.selectOption('es');
     await expect(page).toHaveURL(/\/release-notes\/151\?hl=es/);
 
     const spanishHeading = page.getByRole('heading', {

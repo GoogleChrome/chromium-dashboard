@@ -432,11 +432,12 @@
           <label for="language-select" class="sr-only">{{ ui.language_selector_aria }}</label>
           <select id="language-select" class="language-picker" aria-label="{{ ui.language_selector_aria }}">
             {% for lang in supported_languages %}
-              <option value="/release-notes/{{ milestone }}{% if lang.code != 'en' %}?hl={{ lang.code }}{% endif %}" {% if lang.code == current_lang %}selected{% endif %}>
+              <option value="{{ lang.code }}" {% if lang.code == current_lang %}selected{% endif %}>
                 {{ lang.display_name }}
               </option>
             {% endfor %}
           </select>
+
         </div>
       {% endif %}
 
@@ -668,22 +669,16 @@
   const langSelect = document.getElementById('language-select');
   if (langSelect) {
     langSelect.addEventListener('change', () => {
-      const selectedVal = langSelect.value;
-      if (selectedVal && selectedVal.startsWith('/release-notes/')) {
-        try {
-          const safeUrl = new URL(selectedVal, window.location.origin);
-          if (
-            safeUrl.origin === window.location.origin &&
-            safeUrl.pathname.startsWith('/release-notes/')
-          ) {
-            window.location.assign(safeUrl.href);
-          }
-        } catch {
-          // Ignore malformed URL
-        }
+      const url = new URL(window.location.href);
+      if (langSelect.value === 'en') {
+        url.searchParams.delete('hl');
+      } else {
+        url.searchParams.set('hl', langSelect.value);
       }
+      window.location.assign(url.href);
     });
   }
+
 
 
   // Delegated Heading Anchor Link Management (Clipboard copy & smooth scroll)
