@@ -668,11 +668,23 @@
   const langSelect = document.getElementById('language-select');
   if (langSelect) {
     langSelect.addEventListener('change', () => {
-      if (langSelect.value) {
-        window.location.assign(langSelect.value);
+      const selectedVal = langSelect.value;
+      if (selectedVal && selectedVal.startsWith('/release-notes/')) {
+        try {
+          const safeUrl = new URL(selectedVal, window.location.origin);
+          if (
+            safeUrl.origin === window.location.origin &&
+            safeUrl.pathname.startsWith('/release-notes/')
+          ) {
+            window.location.assign(safeUrl.href);
+          }
+        } catch {
+          // Ignore malformed URL
+        }
       }
     });
   }
+
 
   // Delegated Heading Anchor Link Management (Clipboard copy & smooth scroll)
 
