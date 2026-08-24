@@ -461,19 +461,25 @@ test.describe('Release Notes SSR Page', () => {
   test('should render localized Japanese release notes with ?hl=ja', async ({
     page,
   }) => {
-    await trackCumulativeLayoutShift(page);
-    await page.goto('/release-notes/151?hl=ja', {timeout: 30000});
+    await withShippedFeature(page, 151, async () => {
+      await trackCumulativeLayoutShift(page);
+      await page.goto('/release-notes/151?hl=ja', {timeout: 30000});
 
-    const pageHeading = page.getByRole('heading', {
-      name: 'Chrome 151 リリースノート',
+      const pageHeading = page.getByRole('heading', {
+        name: 'Chrome 151 リリースノート',
+      });
+      await expect(pageHeading).toBeVisible();
+
+      const langSelect = page.locator('#language-select');
+      await expect(langSelect).toBeVisible();
+      await expect(langSelect).toHaveValue('/release-notes/151?hl=ja');
+
+      // Assert that category heading is localized to Japanese (e.g. その他 or CSS)
+      const categoryHeading = page.locator('.category-title');
+      await expect(categoryHeading.first()).toBeVisible();
+
+      await expectZeroLayoutShift(page);
     });
-    await expect(pageHeading).toBeVisible();
-
-    const langSelect = page.locator('#language-select');
-    await expect(langSelect).toBeVisible();
-    await expect(langSelect).toHaveValue('/release-notes/151?hl=ja');
-
-    await expectZeroLayoutShift(page);
   });
 
   test('should change language using language selector dropdown', async ({

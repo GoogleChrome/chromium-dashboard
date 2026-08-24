@@ -22,5 +22,39 @@
     "search_features_btn": "Rechercher toutes les fonctionnalités",
     "external_window_sr": "(s'ouvre dans une nouvelle fenêtre)",
     "language_selector_aria": "Sélectionner la langue"
+  },
+  "categories": {
+    "CSS": "CSS",
+    "DOM": "DOM",
+    "JavaScript": "JavaScript",
+    "Web Components": "Composants Web",
+    "Security": "Sécurité",
+    "Multimedia": "Multimédia",
+    "File APIs": "API de fichiers",
+    "Offline / Storage": "Hors ligne / Stockage",
+    "Device": "Appareil",
+    "Realtime / Communication": "Temps réel / Communication",
+    "Network / Connectivity": "Réseau / Connectivité",
+    "User input": "Saisie utilisateur",
+    "Performance": "Performances",
+    "Graphics": "Graphisme",
+    "Houdini": "Houdini",
+    "Service Worker": "Service Worker",
+    "WebRTC": "WebRTC",
+    "Layered APIs": "API superposées",
+    "WebAssembly": "WebAssembly",
+    "Capabilities (Project Fugu)": "Capacités (Projet Fugu)",
+    "Isolated Web Apps": "Applications Web isolées",
+    "Miscellaneous": "Divers"
+  },
+  "links": {
+    "tracking_bug": "Bug de suivi n° {bug_id}",
+    "chromestatus": "ChromeStatus",
+    "spec": "Spécification",
+    "origin_trial": "Origin Trial",
+    "doc": "Documentation",
+    "explainer": "Explications",
+    "demo": "Démo",
+    "other": "Lien"
   }
 }

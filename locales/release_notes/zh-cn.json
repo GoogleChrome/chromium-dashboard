@@ -22,5 +22,39 @@
     "search_features_btn": "搜索所有功能",
     "external_window_sr": "(在新窗口中打开)",
     "language_selector_aria": "选择语言"
+  },
+  "categories": {
+    "CSS": "CSS",
+    "DOM": "DOM",
+    "JavaScript": "JavaScript",
+    "Web Components": "Web 组件",
+    "Security": "安全",
+    "Multimedia": "多媒体",
+    "File APIs": "文件 API",
+    "Offline / Storage": "离线/存储",
+    "Device": "设备",
+    "Realtime / Communication": "实时/通信",
+    "Network / Connectivity": "网络/连接",
+    "User input": "用户输入",
+    "Performance": "性能",
+    "Graphics": "图形",
+    "Houdini": "Houdini",
+    "Service Worker": "Service Worker",
+    "WebRTC": "WebRTC",
+    "Layered APIs": "分层 API",
+    "WebAssembly": "WebAssembly",
+    "Capabilities (Project Fugu)": "功能 (Project Fugu)",
+    "Isolated Web Apps": "隔离 Web 应用",
+    "Miscellaneous": "其他"
+  },
+  "links": {
+    "tracking_bug": "跟踪错误 #{bug_id}",
+    "chromestatus": "ChromeStatus",
+    "spec": "规范",
+    "origin_trial": "源试用 (Origin Trial)",
+    "doc": "文档",
+    "explainer": "说明",
+    "demo": "演示",
+    "other": "链接"
   }
 }

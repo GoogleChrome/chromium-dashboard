@@ -146,6 +146,14 @@ class ReleaseNotesHandler(basehandlers.FlaskHandler):
             feature['formatted_summary'] = markdown_helpers.render_markdown(
                 feature.get('summary') or ''
             )
+            if (
+                current_lang != l10n_models.SupportedLanguage.EN
+                and 'links' in feature
+            ):
+                feature['links'] = l10n_helpers.localize_release_note_links(
+                    feature['links'], current_lang
+                )
+
             classification = feature.get('milestone_classification')
             if (
                 classification
@@ -158,7 +166,10 @@ class ReleaseNotesHandler(basehandlers.FlaskHandler):
             ):
                 deprecations_and_removals.append(feature)
             else:
-                category = feature.get('category_name') or 'Other'
+                raw_category = feature.get('category_name') or 'Miscellaneous'
+                category = l10n_helpers.get_localized_category_name(
+                    raw_category, current_lang
+                )
                 features_by_category.setdefault(category, []).append(feature)
 
         # Bound the datalist dropdown options to the visible release horizon down to M124.

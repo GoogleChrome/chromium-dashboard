@@ -180,3 +180,91 @@ class L10nHelpersTest(unittest.TestCase):
             self.assertIn('placeholder mismatch', str(ctx.exception))
         finally:
             shutil.rmtree(temp_dir)
+
+    def test_get_localized_category_name(self):
+        """It translates category names into the target language with English fallback."""
+        # Japanese translations
+        self.assertEqual(
+            l10n_helpers.get_localized_category_name('Miscellaneous', 'ja'),
+            'その他',
+        )
+        self.assertEqual(
+            l10n_helpers.get_localized_category_name('Security', 'ja'),
+            'セキュリティ',
+        )
+        self.assertEqual(
+            l10n_helpers.get_localized_category_name('CSS', 'ja'),
+            'CSS',
+        )
+
+        # Spanish translations
+        self.assertEqual(
+            l10n_helpers.get_localized_category_name('Miscellaneous', 'es'),
+            'Varios',
+        )
+        self.assertEqual(
+            l10n_helpers.get_localized_category_name('Performance', 'es'),
+            'Rendimiento',
+        )
+
+        # German translations
+        self.assertEqual(
+            l10n_helpers.get_localized_category_name('Miscellaneous', 'de'),
+            'Sonstiges',
+        )
+
+        # English (identity)
+        self.assertEqual(
+            l10n_helpers.get_localized_category_name('Miscellaneous', 'en'),
+            'Miscellaneous',
+        )
+
+        # Unknown / non-standard category fallback
+        self.assertEqual(
+            l10n_helpers.get_localized_category_name('Custom Cat', 'ja'),
+            'Custom Cat',
+        )
+
+    def test_localize_release_note_links(self):
+        """It translates link titles and extracts tracking bug numbers."""
+        test_links = [
+            {
+                'type': 'BUG',
+                'url': 'https://issues.chromium.org/issues/12345',
+                'title': 'Tracking bug #12345',
+            },
+            {
+                'type': 'SPEC',
+                'url': 'https://w3c.github.io/spec',
+                'title': 'Spec',
+            },
+            {
+                'type': 'DOC',
+                'url': 'https://developer.mozilla.org/docs',
+                'title': 'Docs',
+            },
+            {
+                'type': 'ORIGIN_TRIAL',
+                'url': '/origintrials#/view_trial/1',
+                'title': 'Origin trial',
+            },
+        ]
+
+        # Japanese localization
+        ja_links = l10n_helpers.localize_release_note_links(test_links, 'ja')
+        self.assertEqual(ja_links[0]['title'], 'トラッキング バグ #12345')
+        self.assertEqual(ja_links[1]['title'], '仕様')
+        self.assertEqual(ja_links[2]['title'], 'ドキュメント')
+        self.assertEqual(ja_links[3]['title'], 'オリジントライアル')
+
+        # Spanish localization
+        es_links = l10n_helpers.localize_release_note_links(test_links, 'es')
+        self.assertEqual(es_links[0]['title'], 'Error de seguimiento n.º 12345')
+        self.assertEqual(es_links[1]['title'], 'Especificación')
+        self.assertEqual(es_links[2]['title'], 'Documentación')
+        self.assertEqual(es_links[3]['title'], 'Prueba de origen')
+
+        # English (identity)
+        en_links = l10n_helpers.localize_release_note_links(test_links, 'en')
+        self.assertEqual(en_links[0]['title'], 'Tracking bug #12345')
+        self.assertEqual(en_links[1]['title'], 'Spec')

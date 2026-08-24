@@ -22,5 +22,39 @@
     "search_features_btn": "모든 기능 검색",
     "external_window_sr": "(새 창에서 열림)",
     "language_selector_aria": "언어 선택"
+  },
+  "categories": {
+    "CSS": "CSS",
+    "DOM": "DOM",
+    "JavaScript": "JavaScript",
+    "Web Components": "웹 구성요소",
+    "Security": "보안",
+    "Multimedia": "멀티미디어",
+    "File APIs": "파일 API",
+    "Offline / Storage": "오프라인 / 스토리지",
+    "Device": "기기",
+    "Realtime / Communication": "실시간 / 통신",
+    "Network / Connectivity": "네트워크 / 연결",
+    "User input": "사용자 입력",
+    "Performance": "성능",
+    "Graphics": "그래픽",
+    "Houdini": "Houdini",
+    "Service Worker": "Service Worker",
+    "WebRTC": "WebRTC",
+    "Layered APIs": "계층형 API",
+    "WebAssembly": "WebAssembly",
+    "Capabilities (Project Fugu)": "기능 (Project Fugu)",
+    "Isolated Web Apps": "격리된 웹 앱",
+    "Miscellaneous": "기타"
+  },
+  "links": {
+    "tracking_bug": "추적 버그 #{bug_id}",
+    "chromestatus": "ChromeStatus",
+    "spec": "사양",
+    "origin_trial": "오리진 트라이얼",
+    "doc": "문서",
+    "explainer": "설명서",
+    "demo": "데모",
+    "other": "링크"
   }
 }

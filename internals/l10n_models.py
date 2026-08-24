@@ -202,7 +202,59 @@ class ReleaseNotesUiStrings(BasePageUiStrings):
         return self._copy_link_template.format(feature_name=feature_name)
 
 
+@dataclasses.dataclass(frozen=True)
+class ReleaseNotesCategories(BasePageUiStrings):
+    """Schema contract for localized feature category titles."""
+
+    PAGE_NAMESPACE: ClassVar[str] = 'categories'
+
+    REQUIRED_PLACEHOLDERS: ClassVar[dict[str, set[str]]] = {
+        'CSS': set(),
+        'DOM': set(),
+        'JavaScript': set(),
+        'Web Components': set(),
+        'Security': set(),
+        'Multimedia': set(),
+        'File APIs': set(),
+        'Offline / Storage': set(),
+        'Device': set(),
+        'Realtime / Communication': set(),
+        'Network / Connectivity': set(),
+        'User input': set(),
+        'Performance': set(),
+        'Graphics': set(),
+        'Houdini': set(),
+        'Service Worker': set(),
+        'WebRTC': set(),
+        'Layered APIs': set(),
+        'WebAssembly': set(),
+        'Capabilities (Project Fugu)': set(),
+        'Isolated Web Apps': set(),
+        'Miscellaneous': set(),
+    }
+
+
+@dataclasses.dataclass(frozen=True)
+class ReleaseNotesLinks(BasePageUiStrings):
+    """Schema contract for localized feature link titles."""
+
+    PAGE_NAMESPACE: ClassVar[str] = 'links'
+
+    REQUIRED_PLACEHOLDERS: ClassVar[dict[str, set[str]]] = {
+        'tracking_bug': {'bug_id'},
+        'chromestatus': set(),
+        'spec': set(),
+        'origin_trial': set(),
+        'doc': set(),
+        'explainer': set(),
+        'demo': set(),
+        'other': set(),
+    }
+
+
 # Extensible central registry of all localized page schemas
 REGISTERED_PAGE_SCHEMAS: dict[str, type[BasePageUiStrings]] = {
     ReleaseNotesUiStrings.PAGE_NAMESPACE: ReleaseNotesUiStrings,
+    ReleaseNotesCategories.PAGE_NAMESPACE: ReleaseNotesCategories,
+    ReleaseNotesLinks.PAGE_NAMESPACE: ReleaseNotesLinks,
 }

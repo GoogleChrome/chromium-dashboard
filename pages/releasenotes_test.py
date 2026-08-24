@@ -140,6 +140,22 @@ class ReleaseNotesHandlerTest(testing_config.CustomTestCase):
                     },
                 ],
             },
+            {
+                'id': 104,
+                'name': 'Sample Misc Feature',
+                'summary': 'Summary for miscellaneous feature.',
+                'category_name': 'Miscellaneous',
+                'milestone_classification': (
+                    core_enums.ReleaseNoteMilestoneClassification.SHIPPING
+                ),
+                'links': [
+                    {
+                        'url': 'https://issues.chromium.org/issues/789012',
+                        'type': core_enums.ReleaseNoteLinkType.BUG,
+                        'title': 'Tracking bug #789012',
+                    },
+                ],
+            },
         ]
 
         patcher = mock.patch(
@@ -322,6 +338,7 @@ class ReleaseNotesHandlerTest(testing_config.CustomTestCase):
             self.assertIn('Chrome 151 リリースノート', parser.headings)
             self.assertIn('新しいオリジントライアル', parser.headings)
             self.assertIn('非推奨および削除', parser.headings)
+            self.assertIn('その他', parser.headings)
             self.assertIn('/release-notes/150?hl=ja', parser.links)
             self.assertIn('/release-notes/152?hl=ja', parser.links)
             self.assertIn('lang="ja"', html_str)
@@ -340,6 +357,7 @@ class ReleaseNotesHandlerTest(testing_config.CustomTestCase):
             self.assertEqual(
                 'Nuevas pruebas de origen', data['ui'].origin_trials_heading
             )
+            self.assertIn('Varios', data['features_by_category'])
 
     def test_get_template_data__l10n_fallback_on_unknown(self):
         """It cleanly falls back to English when an unknown language code is passed."""

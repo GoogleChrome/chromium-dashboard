@@ -17,6 +17,7 @@
 import json
 import logging
 import os
+import re
 from typing import Any
 
 from internals.l10n_models import (
@@ -166,3 +167,87 @@ def build_release_notes_ui_strings(
         language_selector_aria=get_str('language_selector_aria'),
         _copy_link_template=get_str('copy_link_aria'),
     )
+
+
+def get_localized_category_name(
+    category_name: str,
+    lang: SupportedLanguage | str | None = None,
+) -> str:
+    """Returns the localized display name for a feature category."""
+    if not category_name:
+        return ''
+    resolved_lang = (
+        lang
+        if isinstance(lang, SupportedLanguage)
+        else resolve_supported_language(lang)
+    )
+    if resolved_lang == DEFAULT_LANGUAGE:
+        return category_name
+
+    categories = _CATALOGS_REGISTRY.get(resolved_lang.value, {}).get(
+        'categories', {}
+    )
+    return categories.get(category_name, category_name)
+
+
+def localize_release_note_links(
+    links: list[dict[str, Any]],
+    lang: SupportedLanguage | str | None = None,
+) -> list[dict[str, Any]]:
+    """Translates the titles of release note links according to the target language."""
+    if not links:
+        return []
+    resolved_lang = (
+        lang
+        if isinstance(lang, SupportedLanguage)
+        else resolve_supported_language(lang)
+    )
+    if resolved_lang == DEFAULT_LANGUAGE:
+        return links
+
+    link_catalog = _CATALOGS_REGISTRY.get(resolved_lang.value, {}).get(
+        'links', {}
+    )
+    if not link_catalog:
+        return links
+
+    localized_links: list[dict[str, Any]] = []
+    for link in links:
+        link_copy = dict(link)
+        link_type = link_copy.get('type')
+        title = link_copy.get('title') or ''
+
+        if link_type == 'BUG':
+            # Extract numeric bug ID
+            match = re.search(r'\d+', title) or re.search(
+                r'\d+', link_copy.get('url', '')
+            )
+            if match:
+                bug_id = match.group(0)
+                link_copy['title'] = link_catalog.get(
+                    'tracking_bug', 'Tracking bug #{bug_id}'
+                ).format(bug_id=bug_id)
+        elif link_type == 'CHROMESTATUS':
+            link_copy['title'] = link_catalog.get(
+                'chromestatus', title or 'ChromeStatus'
+            )
+        elif link_type == 'SPEC':
+            link_copy['title'] = link_catalog.get('spec', title or 'Spec')
+        elif link_type == 'ORIGIN_TRIAL':
+            link_copy['title'] = link_catalog.get(
+                'origin_trial', title or 'Origin trial'
+            )
+        elif link_type == 'DOC':
+            link_copy['title'] = link_catalog.get('doc', title or 'Docs')
+        elif link_type == 'EXPLAINER':
+            link_copy['title'] = link_catalog.get(
+                'explainer', title or 'Explainer'
+            )
+        elif link_type == 'DEMO':
+            link_copy['title'] = link_catalog.get('demo', title or 'Demo')
+        elif link_type == 'OTHER':
+            link_copy['title'] = link_catalog.get('other', title or 'Link')
+
+        localized_links.append(link_copy)
+
+    return localized_links

@@ -22,5 +22,39 @@
     "search_features_btn": "すべての機能を検索",
     "external_window_sr": "(新しいウィンドウで開きます)",
     "language_selector_aria": "言語を選択"
+  },
+  "categories": {
+    "CSS": "CSS",
+    "DOM": "DOM",
+    "JavaScript": "JavaScript",
+    "Web Components": "Web コンポーネント",
+    "Security": "セキュリティ",
+    "Multimedia": "マルチメディア",
+    "File APIs": "ファイル API",
+    "Offline / Storage": "オフライン / ストレージ",
+    "Device": "デバイス",
+    "Realtime / Communication": "リアルタイム / 通信",
+    "Network / Connectivity": "ネットワーク / 接続",
+    "User input": "ユーザー入力",
+    "Performance": "パフォーマンス",
+    "Graphics": "グラフィック",
+    "Houdini": "Houdini",
+    "Service Worker": "Service Worker",
+    "WebRTC": "WebRTC",
+    "Layered APIs": "レイヤード API",
+    "WebAssembly": "WebAssembly",
+    "Capabilities (Project Fugu)": "機能 (Project Fugu)",
+    "Isolated Web Apps": "Isolated Web Apps",
+    "Miscellaneous": "その他"
+  },
+  "links": {
+    "tracking_bug": "トラッキング バグ #{bug_id}",
+    "chromestatus": "ChromeStatus",
+    "spec": "仕様",
+    "origin_trial": "オリジントライアル",
+    "doc": "ドキュメント",
+    "explainer": "解説",
+    "demo": "デモ",
+    "other": "リンク"
   }
 }

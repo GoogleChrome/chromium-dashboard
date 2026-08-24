@@ -22,5 +22,39 @@
     "search_features_btn": "Cari semua fitur",
     "external_window_sr": "(terbuka di jendela baru)",
     "language_selector_aria": "Pilih bahasa"
+  },
+  "categories": {
+    "CSS": "CSS",
+    "DOM": "DOM",
+    "JavaScript": "JavaScript",
+    "Web Components": "Komponen Web",
+    "Security": "Keamanan",
+    "Multimedia": "Multimedia",
+    "File APIs": "API File",
+    "Offline / Storage": "Luring / Penyimpanan",
+    "Device": "Perangkat",
+    "Realtime / Communication": "Waktu nyata / Komunikasi",
+    "Network / Connectivity": "Jaringan / Konektivitas",
+    "User input": "Input pengguna",
+    "Performance": "Performa",
+    "Graphics": "Grafis",
+    "Houdini": "Houdini",
+    "Service Worker": "Service Worker",
+    "WebRTC": "WebRTC",
+    "Layered APIs": "API Berlapis",
+    "WebAssembly": "WebAssembly",
+    "Capabilities (Project Fugu)": "Kemampuan (Proyek Fugu)",
+    "Isolated Web Apps": "Aplikasi Web Terisolasi",
+    "Miscellaneous": "Lain-lain"
+  },
+  "links": {
+    "tracking_bug": "Bug pelacakan #{bug_id}",
+    "chromestatus": "ChromeStatus",
+    "spec": "Spesifikasi",
+    "origin_trial": "Origin Trial",
+    "doc": "Dokumentasi",
+    "explainer": "Penjelas",
+    "demo": "Demo",
+    "other": "Tautan"
   }
 }
