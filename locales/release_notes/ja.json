@@ -1,0 +1,26 @@
+{
+  "meta": {
+    "language_code": "ja",
+    "display_name": "日本語",
+    "english_name": "Japanese"
+  },
+  "release_notes": {
+    "page_title": "Chrome {milestone} リリースノート",
+    "jump_placeholder": "Chrome のマイルストーンにジャンプ",
+    "jump_aria": "Chrome のマイルストーンにジャンプ",
+    "prev_milestone_aria": "前のマイルストーン: Chrome {milestone}",
+    "next_milestone_aria": "次のマイルストーン: Chrome {milestone}",
+    "archival_banner": "Chrome 150 以前のリリースノートは developer.chrome.com にアーカイブされています。",
+    "browse_archive_btn": "アーカイブを閲覧",
+    "origin_trials_heading": "新しいオリジントライアル",
+    "deprecations_heading": "非推奨および削除",
+    "link_copied_tooltip": "リンクをコピーしました！",
+    "copy_link_aria": "{feature_name} へのリンクをコピー",
+    "empty_state_heading": "Chrome {milestone} に利用可能なリリースノート機能はありません。",
+    "empty_state_desc": "Chrome {milestone} をターゲットとする機能は開発中か、今後のリリースで予定されています。",
+    "view_roadmap_btn": "Chrome ロードマップを表示",
+    "search_features_btn": "すべての機能を検索",
+    "external_window_sr": "(新しいウィンドウで開きます)",
+    "language_selector_aria": "言語を選択"
+  }
+}

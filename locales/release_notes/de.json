@@ -1,0 +1,26 @@
+{
+  "meta": {
+    "language_code": "de",
+    "display_name": "Deutsch",
+    "english_name": "German"
+  },
+  "release_notes": {
+    "page_title": "Chrome {milestone} Versionshinweise",
+    "jump_placeholder": "Zu Chrome-Meilenstein springen",
+    "jump_aria": "Zu Chrome-Meilenstein springen",
+    "prev_milestone_aria": "Vorheriger Meilenstein: Chrome {milestone}",
+    "next_milestone_aria": "Nächster Meilenstein: Chrome {milestone}",
+    "archival_banner": "Versionshinweise für Chrome 150 und früher sind auf developer.chrome.com archiviert.",
+    "browse_archive_btn": "Archiv durchsuchen",
+    "origin_trials_heading": "Neue Origin Trials",
+    "deprecations_heading": "Einstellungen und Entfernungen",
+    "link_copied_tooltip": "Link kopiert!",
+    "copy_link_aria": "Link zu {feature_name} kopieren",
+    "empty_state_heading": "Keine Versionshinweise-Funktionen für Chrome {milestone} verfügbar.",
+    "empty_state_desc": "Funktionen für Chrome {milestone} befinden sich möglicherweise in der Entwicklung oder sind für künftige Versionen geplant.",
+    "view_roadmap_btn": "Chrome Roadmap anzeigen",
+    "search_features_btn": "Alle Funktionen durchsuchen",
+    "external_window_sr": "(wird in neuem Fenster geöffnet)",
+    "language_selector_aria": "Sprache auswählen"
+  }
+}

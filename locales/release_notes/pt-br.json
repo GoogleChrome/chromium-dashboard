@@ -1,0 +1,26 @@
+{
+  "meta": {
+    "language_code": "pt-br",
+    "display_name": "Português (Brasil)",
+    "english_name": "Portuguese (Brazil)"
+  },
+  "release_notes": {
+    "page_title": "Notas de versão do Chrome {milestone}",
+    "jump_placeholder": "Ir para a versão do Chrome",
+    "jump_aria": "Ir para a versão do Chrome",
+    "prev_milestone_aria": "Versão anterior: Chrome {milestone}",
+    "next_milestone_aria": "Próxima versão: Chrome {milestone}",
+    "archival_banner": "As notas de versão do Chrome 150 e versões anteriores estão arquivadas no developer.chrome.com.",
+    "browse_archive_btn": "Navegar no arquivo",
+    "origin_trials_heading": "Novos testes de origem",
+    "deprecations_heading": "Descontinuações e remoções",
+    "link_copied_tooltip": "Link copiado!",
+    "copy_link_aria": "Copiar link para {feature_name}",
+    "empty_state_heading": "Nenhum recurso de notas de versão disponível para o Chrome {milestone}.",
+    "empty_state_desc": "Os recursos direcionados ao Chrome {milestone} podem estar em desenvolvimento ou programados para versões futuras.",
+    "view_roadmap_btn": "Ver o roteiro do Chrome",
+    "search_features_btn": "Pesquisar todos os recursos",
+    "external_window_sr": "(abre em uma nova janela)",
+    "language_selector_aria": "Selecionar idioma"
+  }
+}

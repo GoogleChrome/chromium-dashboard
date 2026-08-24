@@ -399,6 +399,11 @@ test.describe('Release Notes SSR Page', () => {
     await page.keyboard.press('Tab');
     await expect(milestoneInput).toBeFocused();
 
+    // Tab to language selector dropdown
+    const langSelect = page.locator('#language-select');
+    await page.keyboard.press('Tab');
+    await expect(langSelect).toBeFocused();
+
     // Tab to next stepper button
     await page.keyboard.press('Tab');
     await expect(nextStepper).toBeFocused();
@@ -451,5 +456,40 @@ test.describe('Release Notes SSR Page', () => {
         name: 'Chrome 152 Release Notes',
       })
     ).toBeVisible();
+  });
+
+  test('should render localized Japanese release notes with ?hl=ja', async ({
+    page,
+  }) => {
+    await trackCumulativeLayoutShift(page);
+    await page.goto('/release-notes/151?hl=ja', {timeout: 30000});
+
+    const pageHeading = page.getByRole('heading', {
+      name: 'Chrome 151 リリースノート',
+    });
+    await expect(pageHeading).toBeVisible();
+
+    const langSelect = page.locator('#language-select');
+    await expect(langSelect).toBeVisible();
+    await expect(langSelect).toHaveValue('/release-notes/151?hl=ja');
+
+    await expectZeroLayoutShift(page);
+  });
+
+  test('should change language using language selector dropdown', async ({
+    page,
+  }) => {
+    await page.goto('/release-notes/151', {timeout: 30000});
+
+    const langSelect = page.locator('#language-select');
+    await expect(langSelect).toBeVisible();
+
+    await langSelect.selectOption('/release-notes/151?hl=es');
+    await expect(page).toHaveURL(/\/release-notes\/151\?hl=es/);
+
+    const spanishHeading = page.getByRole('heading', {
+      name: 'Notas de la versión de Chrome 151',
+    });
+    await expect(spanishHeading).toBeVisible();
   });
 });

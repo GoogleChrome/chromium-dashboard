@@ -1,0 +1,26 @@
+{
+  "meta": {
+    "language_code": "id",
+    "display_name": "Bahasa Indonesia",
+    "english_name": "Indonesian"
+  },
+  "release_notes": {
+    "page_title": "Catatan Rilis Chrome {milestone}",
+    "jump_placeholder": "Beralih ke milestone Chrome",
+    "jump_aria": "Beralih ke milestone Chrome",
+    "prev_milestone_aria": "Milestone sebelumnya: Chrome {milestone}",
+    "next_milestone_aria": "Milestone berikutnya: Chrome {milestone}",
+    "archival_banner": "Catatan rilis untuk Chrome 150 dan sebelumnya diarsipkan di developer.chrome.com.",
+    "browse_archive_btn": "Jelajahi arsip",
+    "origin_trials_heading": "Origin trial baru",
+    "deprecations_heading": "Penghentian dan penghapusan",
+    "link_copied_tooltip": "Tautan disalin!",
+    "copy_link_aria": "Salin tautan ke {feature_name}",
+    "empty_state_heading": "Tidak ada fitur catatan rilis yang tersedia untuk Chrome {milestone}.",
+    "empty_state_desc": "Fitur untuk Chrome {milestone} mungkin sedang dalam pengembangan atau dijadwalkan untuk rilis mendatang.",
+    "view_roadmap_btn": "Lihat Roadmap Chrome",
+    "search_features_btn": "Cari semua fitur",
+    "external_window_sr": "(terbuka di jendela baru)",
+    "language_selector_aria": "Pilih bahasa"
+  }
+}

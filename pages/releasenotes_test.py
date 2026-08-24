@@ -304,3 +304,60 @@ class ReleaseNotesHandlerTest(testing_config.CustomTestCase):
                 ' rel="noopener noreferrer">https://web.dev/webgpu</a>',
                 html_str,
             )
+
+    def test_get_template_data__l10n_japanese(self):
+        """It renders localized UI strings, language attribute, and preserved ?hl= stepper links for Japanese."""
+        with test_app.test_request_context('/release-notes/151?hl=ja'):
+            data = self.handler.get_template_data(milestone=151)
+            self.assertEqual('ja', data['current_lang'])
+            self.assertEqual('Chrome 151 リリースノート', data['ui'].page_title)
+            self.assertEqual(
+                '新しいオリジントライアル', data['ui'].origin_trials_heading
+            )
+
+            html_str = flask.render_template('release-notes.html', **data)
+            parser = ReleaseNotesHTMLParser()
+            parser.feed(html_str)
+
+            self.assertIn('Chrome 151 リリースノート', parser.headings)
+            self.assertIn('新しいオリジントライアル', parser.headings)
+            self.assertIn('非推奨および削除', parser.headings)
+            self.assertIn('/release-notes/150?hl=ja', parser.links)
+            self.assertIn('/release-notes/152?hl=ja', parser.links)
+            self.assertIn('lang="ja"', html_str)
+            self.assertIn(
+                '<option value="/release-notes/151?hl=ja" selected>', html_str
+            )
+
+    def test_get_template_data__l10n_spanish(self):
+        """It resolves Spanish UI strings when ?hl=es is requested."""
+        with test_app.test_request_context('/release-notes/151?hl=es'):
+            data = self.handler.get_template_data(milestone=151)
+            self.assertEqual('es', data['current_lang'])
+            self.assertEqual(
+                'Notas de la versión de Chrome 151', data['ui'].page_title
+            )
+            self.assertEqual(
+                'Nuevas pruebas de origen', data['ui'].origin_trials_heading
+            )
+
+    def test_get_template_data__l10n_fallback_on_unknown(self):
+        """It cleanly falls back to English when an unknown language code is passed."""
+        with test_app.test_request_context(
+            '/release-notes/151?hl=unknown_code'
+        ):
+            data = self.handler.get_template_data(milestone=151)
+            self.assertEqual('en', data['current_lang'])
+            self.assertEqual('Chrome 151 Release Notes', data['ui'].page_title)
+            self.assertEqual(
+                'New origin trials', data['ui'].origin_trials_heading
+            )
+
+    def test_get_template_data__l10n_legacy_lang_param(self):
+        """It supports ?lang=fr as backward-compatible fallback."""
+        with test_app.test_request_context('/release-notes/151?lang=fr'):
+            data = self.handler.get_template_data(milestone=151)
+            self.assertEqual('fr', data['current_lang'])
+            self.assertEqual(
+                'Notes de version de Chrome 151', data['ui'].page_title
+            )

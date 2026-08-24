@@ -1,0 +1,26 @@
+{
+  "meta": {
+    "language_code": "nl",
+    "display_name": "Nederlands",
+    "english_name": "Dutch"
+  },
+  "release_notes": {
+    "page_title": "Releaseopmerkingen voor Chrome {milestone}",
+    "jump_placeholder": "Naar Chrome-mijlpaal gaan",
+    "jump_aria": "Naar Chrome-mijlpaal gaan",
+    "prev_milestone_aria": "Vorige mijlpaal: Chrome {milestone}",
+    "next_milestone_aria": "Volgende mijlpaal: Chrome {milestone}",
+    "archival_banner": "Releaseopmerkingen voor Chrome 150 en ouder zijn gearchiveerd op developer.chrome.com.",
+    "browse_archive_btn": "Archief bekijken",
+    "origin_trials_heading": "Nieuwe origin trials",
+    "deprecations_heading": "Buiten gebruik gesteld en verwijderd",
+    "link_copied_tooltip": "Link gekopieerd!",
+    "copy_link_aria": "Link naar {feature_name} kopiëren",
+    "empty_state_heading": "Geen releaseopmerkingen-functies beschikbaar voor Chrome {milestone}.",
+    "empty_state_desc": "Functies voor Chrome {milestone} zijn mogelijk in ontwikkeling of gepland voor toekomstige releases.",
+    "view_roadmap_btn": "Chrome-roadmap bekijken",
+    "search_features_btn": "Alle functies doorzoeken",
+    "external_window_sr": "(opent in een nieuw venster)",
+    "language_selector_aria": "Taal selecteren"
+  }
+}
