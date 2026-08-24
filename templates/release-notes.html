@@ -11,11 +11,18 @@
   /* ==========================================================================
      Layout & Milestone Navigation
      ========================================================================== */
+  /* Layout containment for top navigation to prevent un-upgraded custom element CLS */
+  chromedash-header:not(:defined) {
+    display: block;
+    min-height: 56px;
+  }
+
   #release-notes-container {
     padding-bottom: var(--content-padding-large);
   }
 
   .nav-strip {
+
     display: flex;
     justify-content: space-between;
     align-items: center;

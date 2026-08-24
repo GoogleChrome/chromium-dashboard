@@ -6,6 +6,8 @@ import {
   login,
   logout,
   createNewFeature,
+  trackCumulativeLayoutShift,
+  expectZeroLayoutShift,
 } from './test_utils';
 
 const AXE_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'best-practice'];
@@ -76,6 +78,7 @@ test.describe('Release Notes SSR Page', () => {
   test('should render milestone navigation strip with accessible steppers and jump box', async ({
     page,
   }) => {
+    await trackCumulativeLayoutShift(page);
     await page.goto('/release-notes/151', {timeout: 30000});
 
     const pageHeading = page.getByRole('heading', {
@@ -106,6 +109,8 @@ test.describe('Release Notes SSR Page', () => {
       .locator('#milestones-datalist')
       .locator('option[value="Chrome 151"]');
     await expect(option151).toBeAttached();
+
+    await expectZeroLayoutShift(page);
   });
 
   test('should navigate to another milestone when typing milestone number and pressing Enter', async ({
@@ -206,6 +211,7 @@ test.describe('Release Notes SSR Page', () => {
     page,
   }) => {
     await withShippedFeature(page, 151, async featureId => {
+      await trackCumulativeLayoutShift(page);
       await page.goto('/release-notes/151', {timeout: 30000});
 
       const pageHeading = page.getByRole('heading', {
@@ -220,6 +226,8 @@ test.describe('Release Notes SSR Page', () => {
       // Verify feature title permalink
       const titleLink = featureCard.locator('.feature-name');
       await expect(titleLink).toHaveAttribute('href', `/feature/${featureId}`);
+
+      await expectZeroLayoutShift(page);
     });
   });
 
