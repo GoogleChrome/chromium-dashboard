@@ -194,7 +194,7 @@ class ReleaseNotesHandler(basehandlers.FlaskHandler):
             else None
         )
 
-        ui = translations.build_ui_strings(
+        ui = translations.format_ui(
             milestone=milestone,
             prev_milestone=prev_milestone,
             next_milestone=next_milestone,
@@ -211,7 +211,7 @@ class ReleaseNotesHandler(basehandlers.FlaskHandler):
             canonical_url=urllib.parse.urljoin(
                 settings.SITE_URL, canonical_path
             ),
-            seo_title=ui.page_title,
+            seo_title=ui['page_title'],
             seo_description=(
                 f'Discover web platform features, deprecations, and developer updates '
                 f'shipped in Google Chrome {milestone}.'

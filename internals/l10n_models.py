@@ -19,8 +19,6 @@ import re
 from enum import StrEnum
 from typing import Any
 
-from internals import core_enums
-
 
 class LocaleValidationError(Exception):
     """Raised when a localization catalog fails schema or placeholder validation."""
@@ -180,48 +178,12 @@ RELEASE_NOTES_PLACEHOLDERS: dict[ReleaseNotesKey, set[str]] = {
     ReleaseNotesKey.LINK_TRACKING_BUG: {'bug_id'},
 }
 
-CATEGORY_NAME_TO_KEY: dict[str, ReleaseNotesKey] = {
-    'CSS': ReleaseNotesKey.CATEGORY_CSS,
-    'Web Components': ReleaseNotesKey.CATEGORY_WEB_COMPONENTS,
-    'Miscellaneous': ReleaseNotesKey.CATEGORY_MISCELLANEOUS,
-    'Security': ReleaseNotesKey.CATEGORY_SECURITY,
-    'Multimedia': ReleaseNotesKey.CATEGORY_MULTIMEDIA,
-    'DOM': ReleaseNotesKey.CATEGORY_DOM,
-    'File APIs': ReleaseNotesKey.CATEGORY_FILE_APIS,
-    'Offline / Storage': ReleaseNotesKey.CATEGORY_OFFLINE_STORAGE,
-    'Device': ReleaseNotesKey.CATEGORY_DEVICE,
-    'Realtime / Communication': ReleaseNotesKey.CATEGORY_REALTIME_COMMUNICATION,
-    'JavaScript': ReleaseNotesKey.CATEGORY_JAVASCRIPT,
-    'Network / Connectivity': ReleaseNotesKey.CATEGORY_NETWORK_CONNECTIVITY,
-    'User input': ReleaseNotesKey.CATEGORY_USER_INPUT,
-    'Performance': ReleaseNotesKey.CATEGORY_PERFORMANCE,
-    'Graphics': ReleaseNotesKey.CATEGORY_GRAPHICS,
-    'Houdini': ReleaseNotesKey.CATEGORY_HOUDINI,
-    'Service Worker': ReleaseNotesKey.CATEGORY_SERVICE_WORKER,
-    'WebRTC': ReleaseNotesKey.CATEGORY_WEBRTC,
-    'Layered APIs': ReleaseNotesKey.CATEGORY_LAYERED_APIS,
-    'WebAssembly': ReleaseNotesKey.CATEGORY_WEBASSEMBLY,
-    'Capabilities (Fugu)': ReleaseNotesKey.CATEGORY_CAPABILITIES_FUGU,
-    'Isolated Web Apps': ReleaseNotesKey.CATEGORY_ISOLATED_WEB_APPS,
-    'Isolated Web Apps-specific API': ReleaseNotesKey.CATEGORY_ISOLATED_WEB_APPS,
-}
-
-LINK_TYPE_TO_KEY: dict[str, ReleaseNotesKey] = {
-    'BUG': ReleaseNotesKey.LINK_TRACKING_BUG,
-    'CHROMESTATUS': ReleaseNotesKey.LINK_CHROMESTATUS,
-    'SPEC': ReleaseNotesKey.LINK_SPEC,
-    'ORIGIN_TRIAL': ReleaseNotesKey.LINK_ORIGIN_TRIAL,
-    'DOC': ReleaseNotesKey.LINK_DOC,
-    'EXPLAINER': ReleaseNotesKey.LINK_EXPLAINER,
-    'DEMO': ReleaseNotesKey.LINK_DEMO,
-    'OTHER': ReleaseNotesKey.LINK_OTHER,
-}
-
 
 @dataclasses.dataclass(frozen=True)
-class ReleaseNotesUiStrings:
-    """Pre-formatted, strongly-typed UI strings for release-notes.html."""
+class ReleaseNotesTranslations:
+    """Strongly-typed, pure attribute translations for the Release Notes page."""
 
+    # UI Strings
     page_title: str
     jump_placeholder: str
     jump_aria: str
@@ -232,122 +194,170 @@ class ReleaseNotesUiStrings:
     origin_trials_heading: str
     deprecations_heading: str
     link_copied_tooltip: str
+    copy_link_aria: str
     empty_state_heading: str
     empty_state_desc: str
     view_roadmap_btn: str
     search_features_btn: str
     external_window_sr: str
     language_selector_aria: str
-    _copy_link_template: str
 
-    def copy_link_aria(self, feature_name: str) -> str:
-        """Formats the aria-label for copy link buttons with the feature name."""
-        return self._copy_link_template.format(feature_name=feature_name)
+    # Categories
+    category_css: str
+    category_dom: str
+    category_javascript: str
+    category_web_components: str
+    category_security: str
+    category_multimedia: str
+    category_file_apis: str
+    category_offline_storage: str
+    category_device: str
+    category_realtime_communication: str
+    category_network_connectivity: str
+    category_user_input: str
+    category_performance: str
+    category_graphics: str
+    category_houdini: str
+    category_service_worker: str
+    category_webrtc: str
+    category_layered_apis: str
+    category_webassembly: str
+    category_capabilities_fugu: str
+    category_isolated_web_apps: str
+    category_miscellaneous: str
 
-
-@dataclasses.dataclass(frozen=True)
-class ReleaseNotesTranslations:
-    """Encapsulates flat string catalog access, category resolution, and link translation."""
-
-    strings: dict[str, str]
+    # Links
+    link_tracking_bug: str
+    link_chromestatus: str
+    link_spec: str
+    link_origin_trial: str
+    link_doc: str
+    link_explainer: str
+    link_demo: str
+    link_other: str
 
     def get_category(self, category_name: str | None) -> str:
-        """Returns the localized category display name, defaulting to Miscellaneous."""
-        target = category_name or core_enums.FEATURE_CATEGORIES[core_enums.MISC]
-        key = CATEGORY_NAME_TO_KEY.get(target)
-        if key and key.value in self.strings:
-            return self.strings[key.value]
-        return target
+        """Returns localized category display name using direct attribute access."""
+        match category_name:
+            case 'CSS':
+                return self.category_css
+            case 'DOM':
+                return self.category_dom
+            case 'JavaScript':
+                return self.category_javascript
+            case 'Web Components':
+                return self.category_web_components
+            case 'Security':
+                return self.category_security
+            case 'Multimedia':
+                return self.category_multimedia
+            case 'File APIs':
+                return self.category_file_apis
+            case 'Offline / Storage':
+                return self.category_offline_storage
+            case 'Device':
+                return self.category_device
+            case 'Realtime / Communication':
+                return self.category_realtime_communication
+            case 'Network / Connectivity':
+                return self.category_network_connectivity
+            case 'User input':
+                return self.category_user_input
+            case 'Performance':
+                return self.category_performance
+            case 'Graphics':
+                return self.category_graphics
+            case 'Houdini':
+                return self.category_houdini
+            case 'Service Worker':
+                return self.category_service_worker
+            case 'WebRTC':
+                return self.category_webrtc
+            case 'Layered APIs':
+                return self.category_layered_apis
+            case 'WebAssembly':
+                return self.category_webassembly
+            case 'Capabilities (Fugu)':
+                return self.category_capabilities_fugu
+            case 'Isolated Web Apps' | 'Isolated Web Apps-specific API':
+                return self.category_isolated_web_apps
+            case _:
+                return self.category_miscellaneous
+
+    def localize_link_title(self, link: dict[str, Any]) -> str:
+        """Translates a single link's title using direct attribute access."""
+        link_type = str(link.get('type', '')).upper()
+        title = str(link.get('title') or '')
+        url = str(link.get('url') or '')
+
+        if link_type == 'BUG':
+            match = re.search(r'\d+', title) or re.search(r'\d+', url)
+            if match:
+                return self.link_tracking_bug.format(bug_id=match.group(0))
+            return title or 'Tracking bug'
+
+        match link_type:
+            case 'SPEC':
+                return self.link_spec
+            case 'DOC':
+                return self.link_doc
+            case 'ORIGIN_TRIAL':
+                return self.link_origin_trial
+            case 'EXPLAINER':
+                return self.link_explainer
+            case 'DEMO':
+                return self.link_demo
+            case 'CHROMESTATUS':
+                return self.link_chromestatus
+            case 'OTHER':
+                return self.link_other
+            case _:
+                return title
 
     def localize_links(
         self, links: list[dict[str, Any]]
     ) -> list[dict[str, Any]]:
-        """Translates the titles of release note links in-place."""
-        if not links:
-            return []
-        localized: list[dict[str, Any]] = []
-        for link in links:
-            link_copy = dict(link)
-            raw_type = link_copy.get('type')
-            link_type_str = str(
-                getattr(raw_type, 'value', raw_type) or ''
-            ).upper()
-            title = str(link_copy.get('title') or '')
+        """Translates a list of release note links in-place with zero casting."""
+        return [
+            {**link, 'title': self.localize_link_title(link)} for link in links
+        ]
 
-            if link_type_str == 'BUG':
-                match = re.search(r'\d+', title) or re.search(
-                    r'\d+', str(link_copy.get('url', ''))
-                )
-                if match:
-                    template = self.strings.get(
-                        ReleaseNotesKey.LINK_TRACKING_BUG.value,
-                        'Tracking bug #{bug_id}',
-                    )
-                    link_copy['title'] = template.format(bug_id=match.group(0))
-            else:
-                key = LINK_TYPE_TO_KEY.get(link_type_str)
-                if key and key.value in self.strings:
-                    link_copy['title'] = self.strings[key.value]
-
-            localized.append(link_copy)
-        return localized
-
-    def build_ui_strings(
+    def format_ui(
         self,
         milestone: int,
         prev_milestone: int | None = None,
         next_milestone: int | None = None,
-    ) -> ReleaseNotesUiStrings:
-        """Constructs pre-formatted, type-safe UI strings for the release notes template."""
+    ) -> dict[str, Any]:
+        """Pre-formats milestone tokens in UI strings for Jinja templates."""
         prev_m = prev_milestone if prev_milestone is not None else milestone
         next_m = next_milestone if next_milestone is not None else milestone
 
-        return ReleaseNotesUiStrings(
-            page_title=self.strings[ReleaseNotesKey.PAGE_TITLE.value].format(
+        return {
+            'page_title': self.page_title.format(milestone=milestone),
+            'jump_placeholder': self.jump_placeholder,
+            'jump_aria': self.jump_aria,
+            'prev_milestone_aria': self.prev_milestone_aria.format(
+                milestone=prev_m
+            ),
+            'next_milestone_aria': self.next_milestone_aria.format(
+                milestone=next_m
+            ),
+            'archival_banner': self.archival_banner,
+            'browse_archive_btn': self.browse_archive_btn,
+            'origin_trials_heading': self.origin_trials_heading,
+            'deprecations_heading': self.deprecations_heading,
+            'link_copied_tooltip': self.link_copied_tooltip,
+            'empty_state_heading': self.empty_state_heading.format(
                 milestone=milestone
             ),
-            jump_placeholder=self.strings[
-                ReleaseNotesKey.JUMP_PLACEHOLDER.value
-            ],
-            jump_aria=self.strings[ReleaseNotesKey.JUMP_ARIA.value],
-            prev_milestone_aria=self.strings[
-                ReleaseNotesKey.PREV_MILESTONE_ARIA.value
-            ].format(milestone=prev_m),
-            next_milestone_aria=self.strings[
-                ReleaseNotesKey.NEXT_MILESTONE_ARIA.value
-            ].format(milestone=next_m),
-            archival_banner=self.strings[ReleaseNotesKey.ARCHIVAL_BANNER.value],
-            browse_archive_btn=self.strings[
-                ReleaseNotesKey.BROWSE_ARCHIVE_BTN.value
-            ],
-            origin_trials_heading=self.strings[
-                ReleaseNotesKey.ORIGIN_TRIALS_HEADING.value
-            ],
-            deprecations_heading=self.strings[
-                ReleaseNotesKey.DEPRECATIONS_HEADING.value
-            ],
-            link_copied_tooltip=self.strings[
-                ReleaseNotesKey.LINK_COPIED_TOOLTIP.value
-            ],
-            empty_state_heading=self.strings[
-                ReleaseNotesKey.EMPTY_STATE_HEADING.value
-            ].format(milestone=milestone),
-            empty_state_desc=self.strings[
-                ReleaseNotesKey.EMPTY_STATE_DESC.value
-            ].format(milestone=milestone),
-            view_roadmap_btn=self.strings[
-                ReleaseNotesKey.VIEW_ROADMAP_BTN.value
-            ],
-            search_features_btn=self.strings[
-                ReleaseNotesKey.SEARCH_FEATURES_BTN.value
-            ],
-            external_window_sr=self.strings[
-                ReleaseNotesKey.EXTERNAL_WINDOW_SR.value
-            ],
-            language_selector_aria=self.strings[
-                ReleaseNotesKey.LANGUAGE_SELECTOR_ARIA.value
-            ],
-            _copy_link_template=self.strings[
-                ReleaseNotesKey.COPY_LINK_ARIA.value
-            ],
-        )
+            'empty_state_desc': self.empty_state_desc.format(
+                milestone=milestone
+            ),
+            'view_roadmap_btn': self.view_roadmap_btn,
+            'search_features_btn': self.search_features_btn,
+            'external_window_sr': self.external_window_sr,
+            'language_selector_aria': self.language_selector_aria,
+            'copy_link_aria': lambda feature_name: self.copy_link_aria.format(
+                feature_name=feature_name
+            ),
+        }
