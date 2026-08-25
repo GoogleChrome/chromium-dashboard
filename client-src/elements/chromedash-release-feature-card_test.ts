@@ -20,7 +20,10 @@ import {
   ChromedashReleaseFeatureCard,
   FeatureCardItem,
 } from './chromedash-release-feature-card.js';
-import {ReleaseNoteFeatureSummarySourceEnum} from 'chromestatus-openapi';
+import {
+  ReleaseNoteFeatureSummarySourceEnum,
+  ReleaseNoteLinkTypeEnum,
+} from 'chromestatus-openapi';
 import sinon from 'sinon';
 
 describe('chromedash-release-feature-card', () => {
@@ -29,15 +32,25 @@ describe('chromedash-release-feature-card', () => {
     name: 'CSS Subgrid',
     summary:
       'Enables grid items to inherit and share the **grid definition** of their parent.',
-    category: 'CSS',
+    category: 15,
     category_name: 'CSS',
     feature_type: 1,
     summary_source: ReleaseNoteFeatureSummarySourceEnum.HUMAN,
-    doc_links: [
-      'https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_grid_layout/Subgrid',
+    links: [
+      {
+        url: 'https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_grid_layout/Subgrid',
+        type: ReleaseNoteLinkTypeEnum.DOC,
+        title: 'MDN Subgrid Guide',
+      },
+      {
+        url: 'https://www.w3.org/TR/css-grid-2/',
+        type: ReleaseNoteLinkTypeEnum.SPEC,
+      },
+      {
+        url: 'https://github.com/w3c/csswg-drafts/issues/1234',
+        type: ReleaseNoteLinkTypeEnum.EXPLAINER,
+      },
     ],
-    spec_link: 'https://www.w3.org/TR/css-grid-2/',
-    explainer_links: ['https://github.com/w3c/csswg-drafts/issues/1234'],
   };
 
   it('renders standard feature card with name, summary, category, and links', async () => {
@@ -66,9 +79,58 @@ describe('chromedash-release-feature-card', () => {
     assert.equal(categoryBadge?.textContent?.trim(), 'CSS');
 
     const links = el.shadowRoot!.querySelectorAll(
-      '.feature-links-section .feature-link-item'
+      '.feature-links-bar .feature-link-item'
     );
     assert.equal(links.length, 3);
+    assert.equal(
+      links[0].querySelector('.doc-link-text')?.textContent?.trim(),
+      'MDN Subgrid Guide'
+    );
+    assert.equal(
+      links[1].querySelector('.doc-link-text')?.textContent?.trim(),
+      'Spec'
+    );
+    assert.equal(
+      links[2].querySelector('.doc-link-text')?.textContent?.trim(),
+      'Explainer'
+    );
+  });
+
+  it('renders links from legacy flat fields when links array is missing', async () => {
+    const legacyFeature: FeatureCardItem = {
+      id: 67890,
+      name: 'Legacy Links Feature',
+      summary: 'Summary text.',
+      category: 5,
+      category_name: 'DOM',
+      feature_type: 1,
+      doc_links: ['https://example.com/doc'],
+      spec_link: 'https://example.com/spec',
+      explainer_links: ['https://example.com/explainer'],
+    };
+
+    const el = await fixture<ChromedashReleaseFeatureCard>(
+      html`<chromedash-release-feature-card
+        .feature=${legacyFeature}
+      ></chromedash-release-feature-card>`
+    );
+
+    const links = el.shadowRoot!.querySelectorAll(
+      '.feature-links-bar .feature-link-item'
+    );
+    assert.equal(links.length, 3);
+    assert.equal(
+      links[0].querySelector('.doc-link-text')?.textContent?.trim(),
+      'Docs'
+    );
+    assert.equal(
+      links[1].querySelector('.doc-link-text')?.textContent?.trim(),
+      'Spec'
+    );
+    assert.equal(
+      links[2].querySelector('.doc-link-text')?.textContent?.trim(),
+      'Explainer'
+    );
   });
 
   it('renders plain-text summary with preformatted class', async () => {
@@ -193,6 +255,7 @@ describe('chromedash-release-feature-card', () => {
   it('renders no doc links section when no links are present', async () => {
     const featureNoLinks: FeatureCardItem = {
       ...mockFeature,
+      links: [],
       doc_links: [],
       spec_link: undefined,
       explainer_links: [],
@@ -202,12 +265,13 @@ describe('chromedash-release-feature-card', () => {
         .feature=${featureNoLinks}
       ></chromedash-release-feature-card>`
     );
-    assert.isNull(el.shadowRoot!.querySelector('.feature-links-section'));
+    assert.isNull(el.shadowRoot!.querySelector('.feature-links-bar'));
   });
 
   it('deduplicates links across doc_links, spec_link, and explainer_links', async () => {
     const duplicateFeature: FeatureCardItem = {
       ...mockFeature,
+      links: undefined,
       doc_links: ['https://example.com/same-link'],
       spec_link: 'https://example.com/same-link',
       explainer_links: ['https://example.com/same-link'],
@@ -218,7 +282,7 @@ describe('chromedash-release-feature-card', () => {
       ></chromedash-release-feature-card>`
     );
     const links = el.shadowRoot!.querySelectorAll(
-      '.feature-links-section .feature-link-item'
+      '.feature-links-bar .feature-link-item'
     );
     assert.equal(links.length, 1);
     assert.equal(

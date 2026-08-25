@@ -16,21 +16,36 @@
 
 import {LitElement, css, html, nothing, TemplateResult} from 'lit';
 import {customElement, property, state} from 'lit/decorators.js';
-import '@shoelace-style/shoelace/dist/components/badge/badge.js';
-import '@shoelace-style/shoelace/dist/components/icon/icon.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {autolink} from './utils.js';
 import {FEATURE_CATEGORIES} from './form-field-enums.js';
-import {ReleaseNoteFeatureSummarySourceEnum} from 'chromestatus-openapi';
+import {
+  ReleaseNoteFeature,
+  ReleaseNoteLink,
+  ReleaseNoteLinkTypeEnum,
+  ReleaseNoteFeatureSummarySourceEnum,
+} from 'chromestatus-openapi';
 
-export type FeatureCardItem = {
+export const LINK_TYPE_TITLES: Record<ReleaseNoteLinkTypeEnum, string> = {
+  [ReleaseNoteLinkTypeEnum.BUG]: 'Tracking bug',
+  [ReleaseNoteLinkTypeEnum.CHROMESTATUS]: 'ChromeStatus',
+  [ReleaseNoteLinkTypeEnum.SPEC]: 'Spec',
+  [ReleaseNoteLinkTypeEnum.ORIGIN_TRIAL]: 'Origin trial',
+  [ReleaseNoteLinkTypeEnum.DOC]: 'Docs',
+  [ReleaseNoteLinkTypeEnum.EXPLAINER]: 'Explainer',
+  [ReleaseNoteLinkTypeEnum.DEMO]: 'Demo',
+  [ReleaseNoteLinkTypeEnum.OTHER]: 'Resource',
+};
+
+export type FeatureCardItem = Partial<ReleaseNoteFeature> & {
   id: number;
   name: string;
   summary: string;
   category?: string | number;
   category_name?: string;
   feature_type?: string | number;
-  summary_source?: string;
+  summary_source?: ReleaseNoteFeatureSummarySourceEnum | string;
+  links?: ReleaseNoteLink[];
   doc_links?: string[];
   spec_link?: string;
   explainer_links?: string[];
@@ -204,12 +219,25 @@ export class ChromedashReleaseFeatureCard extends LitElement {
           text-underline-offset: 2px;
         }
 
-        .feature-links-section {
+        .feature-links-bar {
           display: flex;
-          flex-direction: column;
-          gap: var(--content-padding-quarter);
+          flex-wrap: wrap;
+          align-items: center;
+          gap: var(--content-padding-quarter) var(--content-padding-half);
           border-top: var(--default-border);
           padding-top: var(--content-padding-half);
+          margin-top: auto;
+          font-size: var(--button-font-size, 0.875rem);
+        }
+
+        .feature-links-bar a {
+          text-decoration: underline;
+          text-underline-offset: 2px;
+        }
+
+        .link-separator {
+          color: var(--card-border, #e0e0e0);
+          user-select: none;
         }
 
         .feature-link-item {
@@ -219,13 +247,17 @@ export class ChromedashReleaseFeatureCard extends LitElement {
           max-width: 100%;
           text-decoration: underline;
           text-underline-offset: 2px;
-          font-size: var(--button-small-font-size, 0.875rem);
         }
 
-        .link-text {
+        .doc-link-text {
           overflow: hidden;
           text-overflow: ellipsis;
           white-space: nowrap;
+        }
+
+        .external-icon {
+          font-size: var(--button-font-size, 0.875rem);
+          line-height: 1;
         }
       `,
     ];
@@ -260,8 +292,9 @@ export class ChromedashReleaseFeatureCard extends LitElement {
     if (!categoryName && typeof this.feature.category === 'string') {
       categoryName = this.feature.category;
     } else if (!categoryName && typeof this.feature.category === 'number') {
+      const targetCat = this.feature.category;
       const entry = Object.values(FEATURE_CATEGORIES).find(
-        ([val]) => val === this.feature!.category
+        tuple => tuple[0] === targetCat
       );
       categoryName = entry ? entry[1] : '';
     }
@@ -286,40 +319,77 @@ export class ChromedashReleaseFeatureCard extends LitElement {
   renderDocLinks(): TemplateResult | typeof nothing {
     if (!this.feature) return nothing;
 
-    const links: string[] = [];
+    let normalizedLinks: ReleaseNoteLink[] = [];
 
-    if (Array.isArray(this.feature.doc_links)) {
-      links.push(...this.feature.doc_links);
-    }
-    if (this.feature.spec_link && !links.includes(this.feature.spec_link)) {
-      links.push(this.feature.spec_link);
-    }
-    if (Array.isArray(this.feature.explainer_links)) {
-      for (const link of this.feature.explainer_links) {
-        if (!links.includes(link)) {
-          links.push(link);
+    if (Array.isArray(this.feature.links) && this.feature.links.length > 0) {
+      normalizedLinks = this.feature.links;
+    } else {
+      if (Array.isArray(this.feature.doc_links)) {
+        for (const url of this.feature.doc_links) {
+          normalizedLinks.push({
+            url,
+            type: ReleaseNoteLinkTypeEnum.DOC,
+          });
+        }
+      }
+      if (
+        this.feature.spec_link &&
+        !normalizedLinks.some(l => l.url === this.feature!.spec_link)
+      ) {
+        normalizedLinks.push({
+          url: this.feature.spec_link,
+          type: ReleaseNoteLinkTypeEnum.SPEC,
+        });
+      }
+      if (Array.isArray(this.feature.explainer_links)) {
+        for (const url of this.feature.explainer_links) {
+          if (!normalizedLinks.some(l => l.url === url)) {
+            normalizedLinks.push({
+              url,
+              type: ReleaseNoteLinkTypeEnum.EXPLAINER,
+            });
+          }
         }
       }
     }
 
-    if (links.length === 0) return nothing;
+    if (normalizedLinks.length === 0) return nothing;
 
     return html`
-      <div class="feature-links-section" aria-label="Documentation links">
-        ${links.map(
-          link => html`
+      <div
+        class="feature-links-bar"
+        aria-label="Feature metadata and resources"
+      >
+        ${normalizedLinks.map((link, idx) => {
+          const isExternal =
+            !link.url.startsWith('/') && !link.url.startsWith('#');
+          const displayLabel =
+            link.title ||
+            LINK_TYPE_TITLES[link.type as ReleaseNoteLinkTypeEnum] ||
+            link.url;
+          return html`
+            ${
+              idx > 0
+                ? html`<span class="link-separator" aria-hidden="true">|</span>`
+                : nothing
+            }
             <a
               class="feature-link-item"
-              href=${link}
-              target="_blank"
-              rel="noopener noreferrer"
-              title=${link}
+              href=${link.url}
+              target=${isExternal ? '_blank' : '_self'}
+              rel=${isExternal ? 'noopener noreferrer' : ''}
+              title=${link.url}
             >
-              <span class="link-text">${link}</span>
-              <sl-icon name="box-arrow-up-right"></sl-icon>
+              <span class="doc-link-text">${displayLabel}</span>
+              ${
+                isExternal
+                  ? html`<span aria-hidden="true" class="external-icon">↗</span
+                      ><span class="sr-only">(opens in new window)</span>`
+                  : nothing
+              }
             </a>
-          `
-        )}
+          `;
+        })}
       </div>
     `;
   }
