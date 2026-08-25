@@ -127,17 +127,9 @@ class ReleaseNotesHandler(basehandlers.FlaskHandler):
         release_note_features = (
             feature_helpers.get_developer_release_notes_features(milestone)
         )
-
-        if current_lang != l10n_models.SupportedLanguage.EN:
-            if (
-                current_lang.value
-                in releasenotes_l10n_helpers.SUPPORTED_LANGUAGES
-            ):
-                release_note_features = (
-                    releasenotes_l10n_helpers.merge_translations(
-                        release_note_features, current_lang.value
-                    )
-                )
+        release_note_features = releasenotes_l10n_helpers.merge_translations(
+            release_note_features, current_lang.value
+        )
 
         features_by_category: dict[str, list[dict[str, Any]]] = {}
         origin_trials: list[dict[str, Any]] = []
@@ -149,18 +141,14 @@ class ReleaseNotesHandler(basehandlers.FlaskHandler):
             )
             raw_links = feature.get('links') or []
             link_items = [
-                (
-                    link_item
-                    if isinstance(link_item, l10n_models.ReleaseNoteLinkItem)
-                    else l10n_models.ReleaseNoteLinkItem(
-                        url=link_item.get('url', ''),
-                        type=link_item.get(
-                            'type', core_enums.ReleaseNoteLinkType.OTHER
-                        ),
-                        title=link_item.get('title'),
-                    )
+                l10n_models.ReleaseNoteLinkItem(
+                    url=link_entry.get('url', ''),
+                    type=link_entry.get(
+                        'type', core_enums.ReleaseNoteLinkType.OTHER
+                    ),
+                    title=link_entry.get('title'),
                 )
-                for link_item in raw_links
+                for link_entry in raw_links
             ]
             feature['links'] = translations.localize_links(link_items)
 
@@ -212,9 +200,9 @@ class ReleaseNotesHandler(basehandlers.FlaskHandler):
             l10n_helpers.RELEASE_NOTES_TRANSLATIONS
         )
 
-        canonical_path = f'/release-notes/{milestone}'
-        if current_lang != l10n_models.SupportedLanguage.EN:
-            canonical_path += f'?hl={current_lang.value}'
+        canonical_path = l10n_helpers.format_localized_path(
+            f'/release-notes/{milestone}', current_lang
+        )
 
         seo_metadata = seo.Metadata(
             canonical_url=urllib.parse.urljoin(
