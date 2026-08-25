@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {html, fixture, expect} from '@open-wc/testing';
+import {html, fixture, assert} from '@open-wc/testing';
 import './chromedash-summary-diff-view.js';
 import {ChromedashSummaryDiffView} from './chromedash-summary-diff-view.js';
 
@@ -31,27 +31,30 @@ describe('chromedash-summary-diff-view', () => {
     );
 
     const columns = el.shadowRoot!.querySelectorAll('.column-card');
-    expect(columns.length).to.equal(2);
+    assert.equal(columns.length, 2);
 
-    expect(columns[0].getAttribute('role')).to.equal('region');
-    expect(columns[0].getAttribute('aria-labelledby')).to.equal(
+    assert.equal(columns[0].getAttribute('role'), 'region');
+    assert.equal(
+      columns[0].getAttribute('aria-labelledby'),
       'current-summary-header'
     );
-    expect(columns[0].textContent).to.contain('Current Feature Summary');
-    expect(columns[0].textContent).to.contain('Manual author summary');
+    assert.include(columns[0].textContent, 'Current Feature Summary');
+    assert.include(columns[0].textContent, 'Manual author summary');
 
-    expect(columns[1].getAttribute('role')).to.equal('region');
-    expect(columns[1].getAttribute('aria-labelledby')).to.equal(
+    assert.equal(columns[1].getAttribute('role'), 'region');
+    assert.equal(
+      columns[1].getAttribute('aria-labelledby'),
       'suggested-summary-header'
     );
-    expect(columns[1].textContent).to.contain('AI Suggested Summary');
-    expect(columns[1].textContent).to.contain(
+    assert.include(columns[1].textContent, 'AI Suggested Summary');
+    assert.include(
+      columns[1].textContent,
       'AI generated summary for feature 101.'
     );
 
     const badges = el.shadowRoot!.querySelectorAll('.sources-list sl-badge');
-    expect(badges.length).to.equal(1);
-    expect(badges[0].textContent).to.contain('developer.mozilla.org');
+    assert.equal(badges.length, 1);
+    assert.include(badges[0].textContent, 'developer.mozilla.org');
   });
 
   it('handles empty current summary gracefully', async () => {
@@ -65,7 +68,7 @@ describe('chromedash-summary-diff-view', () => {
     const leftContent = el.shadowRoot!.querySelector(
       '.column-card:first-child .column-content'
     );
-    expect(leftContent!.textContent).to.contain('(No existing summary)');
+    assert.include(leftContent!.textContent, '(No existing summary)');
   });
 
   it('toggles edit mode, emits summary-edit-toggle event, and focuses textarea', async () => {
@@ -81,23 +84,23 @@ describe('chromedash-summary-diff-view', () => {
       e: CustomEvent<{isEditing: boolean; value: string}>
     ) => {
       toggleFired = true;
-      expect(e.detail.isEditing).to.be.true;
+      assert.isTrue(e.detail.isEditing);
     }) as EventListener);
 
     const editBtn = el.shadowRoot!.querySelector(
       '.column-header sl-button'
     ) as HTMLElement;
-    expect(editBtn.textContent).to.contain('Edit');
+    assert.include(editBtn.textContent, 'Edit');
 
     await el.toggleEdit();
     await el.updateComplete;
 
-    expect(toggleFired).to.be.true;
-    expect(editBtn.textContent).to.contain('Preview');
+    assert.isTrue(toggleFired);
+    assert.include(editBtn.textContent, 'Preview');
     const textarea = el.shadowRoot!.querySelector('sl-textarea');
-    expect(textarea).to.exist;
-    expect(textarea!.value).to.equal('AI suggested summary');
-    expect(el.textareaEl).to.equal(textarea);
+    assert.exists(textarea);
+    assert.equal(textarea!.value, 'AI suggested summary');
+    assert.equal(el.textareaEl, textarea);
   });
 
   it('dispatches summary-value-change when textarea input changes', async () => {
@@ -116,14 +119,14 @@ describe('chromedash-summary-diff-view', () => {
     }) as EventListener);
 
     const textarea = el.shadowRoot!.querySelector('sl-textarea');
-    expect(textarea).to.exist;
+    assert.exists(textarea);
 
     textarea!.value = 'Updated custom summary text';
     textarea!.dispatchEvent(new Event('input'));
     await el.updateComplete;
 
-    expect(changedValue).to.equal('Updated custom summary text');
-    expect(el.editBuffer).to.equal('Updated custom summary text');
+    assert.equal(changedValue, 'Updated custom summary text');
+    assert.equal(el.editBuffer, 'Updated custom summary text');
   });
 
   it('preserves active in-progress editBuffer when suggestedSummary updates during edit mode', async () => {
@@ -138,7 +141,7 @@ describe('chromedash-summary-diff-view', () => {
     el.suggestedSummary = 'New background summary from server';
     await el.updateComplete;
 
-    expect(el.editBuffer).to.equal('User active in-progress edits');
+    assert.equal(el.editBuffer, 'User active in-progress edits');
   });
 
   it('sanitizes malicious markup in markdown summaries to prevent XSS', async () => {
@@ -152,8 +155,8 @@ describe('chromedash-summary-diff-view', () => {
     );
 
     const contentHtml = el.shadowRoot!.innerHTML;
-    expect(contentHtml).to.not.contain('<script>');
-    expect(contentHtml).to.not.contain('onerror');
-    expect(contentHtml).to.not.contain('href="javascript:');
+    assert.notInclude(contentHtml, '<script>');
+    assert.notInclude(contentHtml, 'onerror');
+    assert.notInclude(contentHtml, 'href="javascript:');
   });
 });

@@ -16,10 +16,7 @@
 
 import {LitElement, PropertyValues, css, html, nothing} from 'lit';
 import {customElement, property, query, state} from 'lit/decorators.js';
-import SlTextarea from '@shoelace-style/shoelace/dist/components/textarea/textarea.js';
-import '@shoelace-style/shoelace/dist/components/button/button.js';
-import '@shoelace-style/shoelace/dist/components/badge/badge.js';
-import '@shoelace-style/shoelace/dist/components/icon/icon.js';
+import type SlTextarea from '@shoelace-style/shoelace/dist/components/textarea/textarea.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {autolink} from './utils.js';
 
