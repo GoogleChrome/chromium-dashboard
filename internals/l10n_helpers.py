@@ -24,6 +24,7 @@ from internals.l10n_models import (
     DEFAULT_LANGUAGE,
     LanguageOption,
     LocaleValidationError,
+    ReleaseNotesTranslations,
     SupportedLanguage,
 )
 
@@ -110,7 +111,7 @@ def get_page_translations(
     raw = loaded.get(resolved_lang, loaded.get(DEFAULT_LANGUAGE, {}))
     formatted: dict[str, Any] = {}
     for key, text in raw.items():
-        if '{' in text and any(f'{{{k}}}' in text for k in context):
+        if '{' in text and any(f"{{{k}}}" in text for k in context):
             try:
                 formatted[key] = text.format(**context)
             except (KeyError, IndexError):
@@ -131,3 +132,23 @@ def format_localized_path(
     if resolved == DEFAULT_LANGUAGE:
         return path
     return f'{path}?hl={resolved.value}'
+
+
+# In-memory dictionary of Release Notes translations loaded once on module import
+RELEASE_NOTES_TRANSLATIONS: dict[
+    SupportedLanguage, ReleaseNotesTranslations
+] = {
+    lang: ReleaseNotesTranslations(**strings)
+    for lang, strings in load_flat_page_strings('release_notes').items()
+}
+
+
+def get_release_notes_translations(
+    lang: SupportedLanguage | str | None = None,
+) -> ReleaseNotesTranslations:
+    """Returns the typed translations object for release notes with full-page English fallback."""
+    resolved_lang = resolve_supported_language(lang)
+    return RELEASE_NOTES_TRANSLATIONS.get(
+        resolved_lang,
+        RELEASE_NOTES_TRANSLATIONS[DEFAULT_LANGUAGE],
+    )

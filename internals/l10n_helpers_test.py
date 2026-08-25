@@ -12,8 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Unit tests for core localization framework, universal parity validator, and helpers."""
+"""Unit tests for localization framework, universal parity validator, and release notes translations."""
 
+import dataclasses
 import json
 import os
 import shutil
@@ -22,7 +23,7 @@ import unittest
 from enum import StrEnum
 from typing import TypeVar
 
-from internals import l10n_helpers, l10n_models
+from internals import core_enums, l10n_helpers, l10n_models
 
 E = TypeVar('E', bound=StrEnum)
 
@@ -294,7 +295,6 @@ class L10nCoreFrameworkTest(unittest.TestCase):
         self.assertEqual(ja_ui['header_title'], 'Title in ja')
         self.assertEqual(ja_ui['welcome_message'], 'Hello Alice in ja')
         self.assertEqual(ja_ui['action_button'], 'Submit in ja')
-        # item_count_desc was not bound in context -> returns callable
         self.assertEqual(
             ja_ui['item_count_desc'](count=5, item_type='features'),
             'You have 5 features in ja',
@@ -310,3 +310,151 @@ class L10nCoreFrameworkTest(unittest.TestCase):
         )
         self.assertEqual(fallback_ui['header_title'], 'Title in en')
         self.assertEqual(fallback_ui['welcome_message'], 'Hello Bob in en')
+
+
+class ReleaseNotesL10nTest(unittest.TestCase):
+    """Exhaustive tests for the Release Notes localization catalogs and models."""
+
+    def test_production_release_notes_locales_have_exact_schema_parity(self):
+        """Asserts that all 10 real production JSON files in locales/release_notes pass parity checks."""
+        assert_page_locale_parity(
+            locales_dir='locales/release_notes',
+            key_enum=l10n_models.ReleaseNotesKey,
+            placeholders=l10n_models.RELEASE_NOTES_PLACEHOLDERS,
+        )
+
+    def test_dataclass_fields_match_enum(self):
+        """Guarantees that ReleaseNotesTranslations dataclass fields match ReleaseNotesKey exactly."""
+        dataclass_fields = {
+            f.name
+            for f in dataclasses.fields(l10n_models.ReleaseNotesTranslations)
+        }
+        enum_fields = {k.value for k in l10n_models.ReleaseNotesKey}
+        self.assertEqual(dataclass_fields, enum_fields)
+
+    def test_all_core_enums_categories_have_l10n_parity(self):
+        """Guarantees that all categories in core_enums.FEATURE_CATEGORIES resolve cleanly in L10n."""
+        en_trans = l10n_helpers.get_release_notes_translations('en')
+        ja_trans = l10n_helpers.get_release_notes_translations('ja')
+        for category_id in core_enums.FEATURE_CATEGORIES.keys():
+            en_cat = en_trans.get_category(category_id)
+            ja_cat = ja_trans.get_category(category_id)
+            self.assertTrue(len(en_cat) > 0)
+            self.assertTrue(len(ja_cat) > 0)
+
+    def test_get_release_notes_translations__returns_loaded_translations(self):
+        """It retrieves the typed translations for a language with English fallback."""
+        ja_trans = l10n_helpers.get_release_notes_translations('ja')
+        self.assertEqual(ja_trans.category_css, 'CSS')
+
+        fallback_trans = l10n_helpers.get_release_notes_translations(
+            'unknown-lang'
+        )
+        self.assertEqual(
+            fallback_trans.page_title,
+            'Chrome {milestone} Release Notes',
+        )
+
+    def test_category_localization_and_fallback(self):
+        """It translates category integer IDs into target languages and encapsulates defaults."""
+        ja_trans = l10n_helpers.get_release_notes_translations('ja')
+        self.assertEqual(ja_trans.get_category(core_enums.MISC), 'その他')
+        self.assertEqual(ja_trans.get_category(None), 'その他')
+        self.assertEqual(
+            ja_trans.get_category(core_enums.SECURITY), 'セキュリティ'
+        )
+        self.assertEqual(ja_trans.get_category(core_enums.CSS), 'CSS')
+        self.assertEqual(ja_trans.get_category(99999), 'その他')
+
+        es_trans = l10n_helpers.get_release_notes_translations('es')
+        self.assertEqual(es_trans.get_category(core_enums.MISC), 'Varios')
+        self.assertEqual(es_trans.get_category(None), 'Varios')
+        self.assertEqual(
+            es_trans.get_category(core_enums.PERFORMANCE), 'Rendimiento'
+        )
+
+        de_trans = l10n_helpers.get_release_notes_translations('de')
+        self.assertEqual(de_trans.get_category(core_enums.MISC), 'Sonstiges')
+
+        en_trans = l10n_helpers.get_release_notes_translations('en')
+        self.assertEqual(
+            en_trans.get_category(core_enums.MISC), 'Miscellaneous'
+        )
+        self.assertEqual(en_trans.get_category(None), 'Miscellaneous')
+
+    def test_link_localization(self):
+        """It translates link titles and extracts tracking bug numbers."""
+        test_links = [
+            {
+                'type': 'BUG',
+                'url': 'https://issues.chromium.org/issues/12345',
+                'title': 'Tracking bug #12345',
+            },
+            {
+                'type': 'SPEC',
+                'url': 'https://w3c.github.io/spec',
+                'title': 'Spec',
+            },
+            {
+                'type': 'DOC',
+                'url': 'https://developer.mozilla.org/docs',
+                'title': 'Docs',
+            },
+            {
+                'type': 'ORIGIN_TRIAL',
+                'url': '/origintrials#/view_trial/1',
+                'title': 'Origin trial',
+            },
+        ]
+
+        ja_trans = l10n_helpers.get_release_notes_translations('ja')
+        ja_links = ja_trans.localize_links(test_links)
+        self.assertEqual(ja_links[0]['title'], 'トラッキング バグ #12345')
+        self.assertEqual(ja_links[1]['title'], '仕様')
+        self.assertEqual(ja_links[2]['title'], 'ドキュメント')
+        self.assertEqual(ja_links[3]['title'], 'オリジントライアル')
+
+        es_trans = l10n_helpers.get_release_notes_translations('es')
+        es_links = es_trans.localize_links(test_links)
+        self.assertEqual(
+            es_links[0]['title'], 'Error de seguimiento n.º 12345'
+        )
+        self.assertEqual(es_links[1]['title'], 'Especificación')
+        self.assertEqual(es_links[2]['title'], 'Documentación')
+        self.assertEqual(es_links[3]['title'], 'Prueba de origen')
+
+    def test_format_ui__english_and_japanese(self):
+        """It constructs pre-formatted type-safe UI strings for release notes."""
+        en_trans = l10n_helpers.get_release_notes_translations('en')
+        en_ui = en_trans.format_ui(
+            milestone=151, prev_milestone=150, next_milestone=152
+        )
+        self.assertEqual(en_ui['page_title'], 'Chrome 151 Release Notes')
+        self.assertEqual(
+            en_ui['prev_milestone_aria'], 'Previous milestone: Chrome 150'
+        )
+        self.assertEqual(
+            en_ui['next_milestone_aria'], 'Next milestone: Chrome 152'
+        )
+        self.assertEqual(en_ui['origin_trials_heading'], 'New origin trials')
+        self.assertEqual(
+            en_ui['copy_link_aria']('CSS Grid'), 'Copy link to CSS Grid'
+        )
+
+        ja_trans = l10n_helpers.get_release_notes_translations('ja')
+        ja_ui = ja_trans.format_ui(
+            milestone=151, prev_milestone=150, next_milestone=152
+        )
+        self.assertEqual(ja_ui['page_title'], 'Chrome 151 リリースノート')
+        self.assertEqual(
+            ja_ui['prev_milestone_aria'], '前のマイルストーン: Chrome 150'
+        )
+        self.assertEqual(
+            ja_ui['next_milestone_aria'], '次のマイルストーン: Chrome 152'
+        )
+        self.assertEqual(
+            ja_ui['origin_trials_heading'], '新しいオリジントライアル'
+        )
+        self.assertEqual(
+            ja_ui['copy_link_aria']('CSS Grid'), 'CSS Grid へのリンクをコピー'
+        )
