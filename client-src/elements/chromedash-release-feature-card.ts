@@ -41,16 +41,10 @@ export type FeatureCardItem = Partial<ReleaseNoteFeature> & {
   id: number;
   name: string;
   summary: string;
-  category?: string | number;
-  category_name?: string;
-  feature_type?: string | number;
-  summary_source?: ReleaseNoteFeatureSummarySourceEnum | string;
-  links?: ReleaseNoteLink[];
   doc_links?: string[];
   spec_link?: string;
   explainer_links?: string[];
   markdown_fields?: string[];
-  [key: string]: unknown;
 };
 
 @customElement('chromedash-release-feature-card')
@@ -66,10 +60,11 @@ export class ChromedashReleaseFeatureCard extends LitElement {
 
   private _copiedTimeout?: ReturnType<typeof setTimeout>;
 
-  disconnectedCallback() {
+  disconnectedCallback(): void {
     super.disconnectedCallback();
     if (this._copiedTimeout) {
       clearTimeout(this._copiedTimeout);
+      this._copiedTimeout = undefined;
     }
   }
 
@@ -97,7 +92,7 @@ export class ChromedashReleaseFeatureCard extends LitElement {
         }
 
         .feature-card:hover {
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+          box-shadow: var(--sl-shadow-medium, 0 4px 12px rgba(0, 0, 0, 0.08));
         }
 
         .card-header {
@@ -116,10 +111,11 @@ export class ChromedashReleaseFeatureCard extends LitElement {
         }
 
         .feature-title {
-          font-size: var(--h3-font-size, 1.25rem);
+          font-size: var(--sl-font-size-large, 1.25rem);
           font-weight: 600;
           margin: 0;
           line-height: 1.3;
+          overflow-wrap: break-word;
         }
 
         .feature-name {
@@ -153,12 +149,24 @@ export class ChromedashReleaseFeatureCard extends LitElement {
           opacity: 1;
         }
 
-        .heading-anchor-link:hover,
+        .heading-anchor-link:hover {
+          background-color: var(--light-accent-color);
+          color: var(--default-color);
+        }
+
         .heading-anchor-link:focus-visible {
           background-color: var(--light-accent-color);
           color: var(--default-color);
           outline: 2px solid var(--primary-button-background);
           outline-offset: 2px;
+        }
+
+        @media (hover: none) {
+          .heading-anchor-link {
+            opacity: 0.6;
+            min-width: 2rem;
+            min-height: 2rem;
+          }
         }
 
         .anchor-tooltip {
@@ -236,7 +244,7 @@ export class ChromedashReleaseFeatureCard extends LitElement {
         }
 
         .link-separator {
-          color: var(--card-border, #e0e0e0);
+          color: var(--sl-color-neutral-400);
           user-select: none;
         }
 
@@ -247,12 +255,26 @@ export class ChromedashReleaseFeatureCard extends LitElement {
           max-width: 100%;
           text-decoration: underline;
           text-underline-offset: 2px;
+          min-width: 0;
         }
 
         .doc-link-text {
           overflow: hidden;
           text-overflow: ellipsis;
           white-space: nowrap;
+          min-width: 0;
+        }
+
+        .sr-only {
+          position: absolute;
+          width: 1px;
+          height: 1px;
+          padding: 0;
+          margin: -1px;
+          overflow: hidden;
+          clip: rect(0, 0, 0, 0);
+          white-space: nowrap;
+          border: 0;
         }
 
         .external-icon {
@@ -263,15 +285,16 @@ export class ChromedashReleaseFeatureCard extends LitElement {
     ];
   }
 
-  async handleAnchorCopy(e: Event) {
-    e.preventDefault();
-    if (!this.feature) return;
+  async handleAnchorCopy(e: Event): Promise<void> {
+    const feature = this.feature;
+    if (!feature) return;
 
-    const anchor = `#feature-${this.feature.id}`;
+    const anchor = `#feature-${feature.id}`;
     const fullUrl = new URL(anchor, window.location.href).href;
 
-    try {
-      if (navigator.clipboard && navigator.clipboard.writeText) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      e.preventDefault();
+      try {
         await navigator.clipboard.writeText(fullUrl);
         if (this._copiedTimeout) {
           clearTimeout(this._copiedTimeout);
@@ -279,24 +302,26 @@ export class ChromedashReleaseFeatureCard extends LitElement {
         this.isCopied = true;
         this._copiedTimeout = setTimeout(() => {
           this.isCopied = false;
+          this._copiedTimeout = undefined;
         }, 2000);
+      } catch (err) {
+        console.warn('Could not copy anchor link to clipboard:', err);
+        window.location.hash = anchor;
       }
-    } catch (err) {
-      console.warn('Could not copy anchor link to clipboard:', err);
     }
   }
 
   renderCategoryBadge(): TemplateResult | typeof nothing {
-    if (!this.feature) return nothing;
-    let categoryName = this.feature.category_name;
-    if (!categoryName && typeof this.feature.category === 'string') {
-      categoryName = this.feature.category;
-    } else if (!categoryName && typeof this.feature.category === 'number') {
-      const targetCat = this.feature.category;
+    const feature = this.feature;
+    if (!feature) return nothing;
+
+    let categoryName = feature.category_name?.trim();
+    if (!categoryName && typeof feature.category === 'number') {
+      const targetCat = feature.category;
       const entry = Object.values(FEATURE_CATEGORIES).find(
         tuple => tuple[0] === targetCat
       );
-      categoryName = entry ? entry[1] : '';
+      categoryName = entry ? entry[1] : undefined;
     }
     if (!categoryName) return nothing;
 
@@ -304,11 +329,11 @@ export class ChromedashReleaseFeatureCard extends LitElement {
   }
 
   renderProvenanceBadge(): TemplateResult | typeof nothing {
-    if (!this.feature) return nothing;
+    const feature = this.feature;
+    if (!feature) return nothing;
 
     if (
-      this.feature.summary_source ===
-      ReleaseNoteFeatureSummarySourceEnum.AI_APPLIED
+      feature.summary_source === ReleaseNoteFeatureSummarySourceEnum.AI_APPLIED
     ) {
       return html`<sl-badge variant="success" pill>AI Applied</sl-badge>`;
     }
@@ -317,33 +342,36 @@ export class ChromedashReleaseFeatureCard extends LitElement {
   }
 
   renderDocLinks(): TemplateResult | typeof nothing {
-    if (!this.feature) return nothing;
+    const feature = this.feature;
+    if (!feature) return nothing;
 
     let normalizedLinks: ReleaseNoteLink[] = [];
 
-    if (Array.isArray(this.feature.links) && this.feature.links.length > 0) {
-      normalizedLinks = this.feature.links;
+    if (Array.isArray(feature.links) && feature.links.length > 0) {
+      normalizedLinks = feature.links;
     } else {
-      if (Array.isArray(this.feature.doc_links)) {
-        for (const url of this.feature.doc_links) {
-          normalizedLinks.push({
-            url,
-            type: ReleaseNoteLinkTypeEnum.DOC,
-          });
+      if (Array.isArray(feature.doc_links)) {
+        for (const url of feature.doc_links) {
+          if (url && !normalizedLinks.some(l => l.url === url)) {
+            normalizedLinks.push({
+              url,
+              type: ReleaseNoteLinkTypeEnum.DOC,
+            });
+          }
         }
       }
       if (
-        this.feature.spec_link &&
-        !normalizedLinks.some(l => l.url === this.feature!.spec_link)
+        feature.spec_link &&
+        !normalizedLinks.some(l => l.url === feature.spec_link)
       ) {
         normalizedLinks.push({
-          url: this.feature.spec_link,
+          url: feature.spec_link,
           type: ReleaseNoteLinkTypeEnum.SPEC,
         });
       }
-      if (Array.isArray(this.feature.explainer_links)) {
-        for (const url of this.feature.explainer_links) {
-          if (!normalizedLinks.some(l => l.url === url)) {
+      if (Array.isArray(feature.explainer_links)) {
+        for (const url of feature.explainer_links) {
+          if (url && !normalizedLinks.some(l => l.url === url)) {
             normalizedLinks.push({
               url,
               type: ReleaseNoteLinkTypeEnum.EXPLAINER,
@@ -353,6 +381,7 @@ export class ChromedashReleaseFeatureCard extends LitElement {
       }
     }
 
+    normalizedLinks = normalizedLinks.filter(l => Boolean(l?.url?.trim()));
     if (normalizedLinks.length === 0) return nothing;
 
     return html`
@@ -361,12 +390,12 @@ export class ChromedashReleaseFeatureCard extends LitElement {
         aria-label="Feature metadata and resources"
       >
         ${normalizedLinks.map((link, idx) => {
-          const isExternal =
-            !link.url.startsWith('/') && !link.url.startsWith('#');
-          const displayLabel =
-            link.title ||
-            LINK_TYPE_TITLES[link.type as ReleaseNoteLinkTypeEnum] ||
-            link.url;
+          const isInternal =
+            (link.url.startsWith('/') && !link.url.startsWith('//')) ||
+            link.url.startsWith('#');
+          const isExternal = !isInternal;
+          const title = link.title?.trim();
+          const displayLabel = title || LINK_TYPE_TITLES[link.type] || link.url;
           return html`
             ${
               idx > 0
@@ -395,12 +424,11 @@ export class ChromedashReleaseFeatureCard extends LitElement {
   }
 
   renderFeatureSummary(): TemplateResult | typeof nothing {
-    if (!this.feature) return nothing;
+    const feature = this.feature;
+    if (!feature || !feature.summary?.trim()) return nothing;
 
-    const isMarkdown = Boolean(
-      this.feature.markdown_fields?.includes('summary')
-    );
-    const formattedSummary = autolink(this.feature.summary, [], isMarkdown);
+    const isMarkdown = Boolean(feature.markdown_fields?.includes('summary'));
+    const formattedSummary = autolink(feature.summary, [], isMarkdown);
 
     return html`
       <div class="feature-summary ${isMarkdown ? '' : 'preformatted'}">
@@ -409,30 +437,35 @@ export class ChromedashReleaseFeatureCard extends LitElement {
     `;
   }
 
-  render() {
-    if (!this.feature) {
+  render(): TemplateResult | typeof nothing {
+    const feature = this.feature;
+    if (!feature) {
       return nothing;
     }
 
     return html`
       <article
         class="feature-card"
-        id="feature-${this.feature.id}"
-        aria-labelledby="feature-title-${this.feature.id}"
+        id="feature-${feature.id}"
+        aria-labelledby="feature-title-${feature.id}"
       >
         <header class="card-header">
           <div class="title-wrapper">
-            <h3 class="feature-title" id="feature-title-${this.feature.id}">
-              <a class="feature-name" href="/feature/${this.feature.id}">
-                ${this.feature.name}
+            <h3 class="feature-title" id="feature-title-${feature.id}">
+              <a class="feature-name" href="/feature/${feature.id}">
+                ${feature.name}
               </a>
             </h3>
             <a
               class="heading-anchor-link ${this.isCopied ? 'copied' : ''}"
-              href="#feature-${this.feature.id}"
-              aria-label="Copy link to ${this.feature.name}"
+              href="#feature-${feature.id}"
+              aria-label=${
+                this.isCopied
+                  ? `Link to ${feature.name} copied to clipboard`
+                  : `Copy link to ${feature.name}`
+              }
               title="Copy link to feature"
-              data-anchor="#feature-${this.feature.id}"
+              data-anchor="#feature-${feature.id}"
               @click=${this.handleAnchorCopy}
             >
               <span aria-hidden="true">#</span>
