@@ -26,7 +26,10 @@ from internals import (
     core_enums,
     feature_helpers,
     fetchchannels,
+    l10n_helpers,
+    l10n_models,
     markdown_helpers,
+    releasenotes_l10n_helpers,
 )
 
 # Milestones prior to M151 were published as standalone blog posts on developer.chrome.com.
@@ -115,8 +118,17 @@ class ReleaseNotesHandler(basehandlers.FlaskHandler):
             )
             return self.redirect(redirect_url)
 
+        raw_lang = flask.request.args.get('hl') or flask.request.args.get(
+            'lang'
+        )
+        current_lang = l10n_helpers.resolve_supported_language(raw_lang)
+        translations = l10n_helpers.get_release_notes_translations(current_lang)
+
         release_note_features = (
             feature_helpers.get_developer_release_notes_features(milestone)
+        )
+        release_note_features = releasenotes_l10n_helpers.merge_translations(
+            release_note_features, current_lang.value
         )
 
         features_by_category: dict[str, list[dict[str, Any]]] = {}
@@ -127,6 +139,19 @@ class ReleaseNotesHandler(basehandlers.FlaskHandler):
             feature['formatted_summary'] = markdown_helpers.render_markdown(
                 feature.get('summary') or ''
             )
+            raw_links = feature.get('links') or []
+            link_items = [
+                l10n_models.ReleaseNoteLinkItem(
+                    url=link_entry.get('url', ''),
+                    type=link_entry.get(
+                        'type', core_enums.ReleaseNoteLinkType.OTHER
+                    ),
+                    title=link_entry.get('title'),
+                )
+                for link_entry in raw_links
+            ]
+            feature['links'] = translations.localize_links(link_items)
+
             classification = feature.get('milestone_classification')
             if (
                 classification
@@ -139,7 +164,7 @@ class ReleaseNotesHandler(basehandlers.FlaskHandler):
             ):
                 deprecations_and_removals.append(feature)
             else:
-                category = feature.get('category_name') or 'Other'
+                category = translations.get_category(feature.get('category'))
                 features_by_category.setdefault(category, []).append(feature)
 
         # Bound the datalist dropdown options to the visible release horizon down to M124.
@@ -166,11 +191,24 @@ class ReleaseNotesHandler(basehandlers.FlaskHandler):
             else None
         )
 
+        ui = translations.format_ui(
+            milestone=milestone,
+            prev_milestone=prev_milestone,
+            next_milestone=next_milestone,
+        )
+        supported_languages = l10n_helpers.get_supported_languages(
+            l10n_helpers.RELEASE_NOTES_TRANSLATIONS
+        )
+
+        canonical_path = l10n_helpers.format_localized_path(
+            f'/release-notes/{milestone}', current_lang
+        )
+
         seo_metadata = seo.Metadata(
             canonical_url=urllib.parse.urljoin(
-                settings.SITE_URL, f'/release-notes/{milestone}'
+                settings.SITE_URL, canonical_path
             ),
-            seo_title=f'Chrome {milestone} Release Notes',
+            seo_title=ui['page_title'],
             seo_description=(
                 f'Discover web platform features, deprecations, and developer updates '
                 f'shipped in Google Chrome {milestone}.'
@@ -197,5 +235,8 @@ class ReleaseNotesHandler(basehandlers.FlaskHandler):
             'deprecations_and_removals': deprecations_and_removals,
             'total_features_count': len(release_note_features),
             'milestones_list': milestones_list,
+            'current_lang': current_lang.value,
+            'supported_languages': supported_languages,
+            'ui': ui,
             'seo': seo_metadata.to_dict(),
         }
