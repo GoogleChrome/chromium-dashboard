@@ -24,23 +24,23 @@ from internals import l10n_helpers, l10n_models
 
 
 class L10nHelpersTest(unittest.TestCase):
-    """Unit test suite for l10n helpers, catalog loading, and validation."""
+    """Unit test suite for l10n helpers, bundle loading, and validation."""
 
     def test_all_registered_locales_have_exact_schema_and_placeholder_parity(
         self,
     ):
         """Asserts that all real production JSON files in locales/ pass strict parity checks."""
-        catalogs = l10n_helpers.load_and_validate_catalogs()
-        self.assertIn('en', catalogs)
-        self.assertIn('ja', catalogs)
-        self.assertIn('es', catalogs)
-        self.assertIn('de', catalogs)
-        self.assertIn('fr', catalogs)
-        self.assertIn('id', catalogs)
-        self.assertIn('ko', catalogs)
-        self.assertIn('nl', catalogs)
-        self.assertIn('pt-br', catalogs)
-        self.assertIn('zh-cn', catalogs)
+        bundles = l10n_helpers.load_and_validate_bundles()
+        self.assertIn('en', bundles)
+        self.assertIn('ja', bundles)
+        self.assertIn('es', bundles)
+        self.assertIn('de', bundles)
+        self.assertIn('fr', bundles)
+        self.assertIn('id', bundles)
+        self.assertIn('ko', bundles)
+        self.assertIn('nl', bundles)
+        self.assertIn('pt-br', bundles)
+        self.assertIn('zh-cn', bundles)
 
     def test_resolve_supported_language(self):
         """It correctly parses case-insensitive and hyphenated language tags."""
@@ -55,6 +55,13 @@ class L10nHelpersTest(unittest.TestCase):
         self.assertEqual(
             l10n_helpers.resolve_supported_language('pt-BR'),
             l10n_models.SupportedLanguage.PT_BR,
+        )
+        # Pass-through for Enum
+        self.assertEqual(
+            l10n_helpers.resolve_supported_language(
+                l10n_models.SupportedLanguage.JA
+            ),
+            l10n_models.SupportedLanguage.JA,
         )
         # Fallbacks for unknown, empty, or None
         self.assertEqual(
@@ -72,7 +79,7 @@ class L10nHelpersTest(unittest.TestCase):
 
     def test_get_supported_languages_for_page(self):
         """It returns supported language options in canonical order with English first."""
-        langs = l10n_helpers.get_supported_languages_for_page('release_notes')
+        langs = l10n_helpers.get_supported_languages_for_page()
         self.assertTrue(len(langs) >= 10)
         # First language MUST be English
         self.assertEqual(langs[0].code, 'en')
@@ -84,8 +91,8 @@ class L10nHelpersTest(unittest.TestCase):
 
     def test_build_release_notes_ui_strings__english(self):
         """It formats English release notes UI strings with milestone tokens."""
-        ui = l10n_helpers.build_release_notes_ui_strings(
-            lang='en',
+        bundle = l10n_helpers.get_release_notes_bundle('en')
+        ui = bundle.translations.build_ui_strings(
             milestone=151,
             prev_milestone=150,
             next_milestone=152,
@@ -100,8 +107,8 @@ class L10nHelpersTest(unittest.TestCase):
 
     def test_build_release_notes_ui_strings__japanese(self):
         """It formats Japanese release notes UI strings with milestone tokens."""
-        ui = l10n_helpers.build_release_notes_ui_strings(
-            lang='ja',
+        bundle = l10n_helpers.get_release_notes_bundle('ja')
+        ui = bundle.translations.build_ui_strings(
             milestone=151,
             prev_milestone=150,
             next_milestone=152,
@@ -120,8 +127,8 @@ class L10nHelpersTest(unittest.TestCase):
 
     def test_build_release_notes_ui_strings__fallback_on_unsupported_lang(self):
         """It falls back to English when an unsupported language is requested."""
-        ui = l10n_helpers.build_release_notes_ui_strings(
-            lang='unsupported-lang',
+        bundle = l10n_helpers.get_release_notes_bundle('unsupported-lang')
+        ui = bundle.translations.build_ui_strings(
             milestone=151,
             prev_milestone=150,
             next_milestone=152,
@@ -138,12 +145,23 @@ class L10nHelpersTest(unittest.TestCase):
             with open(
                 os.path.join(temp_dir, 'en.json'), 'w', encoding='utf-8'
             ) as f:
-                json.dump(l10n_helpers._CATALOGS_REGISTRY['en'], f)
+                with open(
+                    'locales/release_notes/en.json', 'r', encoding='utf-8'
+                ) as src:
+                    f.write(src.read())
 
             # Create invalid de.json with missing key
             de_data = {
-                'meta': {},
-                'release_notes': {'page_title': 'Chrome {milestone}'},
+                'meta': {
+                    'language_code': 'de',
+                    'display_name': 'Deutsch',
+                    'english_name': 'German',
+                },
+                'translations': {
+                    'ui': {'page_title': 'Chrome {milestone}'},
+                    'categories': {},
+                    'links': {},
+                },
             }
             with open(
                 os.path.join(temp_dir, 'de.json'), 'w', encoding='utf-8'
@@ -151,7 +169,7 @@ class L10nHelpersTest(unittest.TestCase):
                 json.dump(de_data, f)
 
             with self.assertRaises(l10n_models.LocaleValidationError) as ctx:
-                l10n_helpers.load_and_validate_catalogs(temp_dir)
+                l10n_helpers.load_and_validate_bundles(temp_dir)
             self.assertIn('missing required keys', str(ctx.exception))
         finally:
             shutil.rmtree(temp_dir)
@@ -163,65 +181,89 @@ class L10nHelpersTest(unittest.TestCase):
             with open(
                 os.path.join(temp_dir, 'en.json'), 'w', encoding='utf-8'
             ) as f:
-                json.dump(l10n_helpers._CATALOGS_REGISTRY['en'], f)
+                with open(
+                    'locales/release_notes/en.json', 'r', encoding='utf-8'
+                ) as src:
+                    en_content = src.read()
+                    f.write(en_content)
 
             # Copy en.json to es.json but corrupt a placeholder name
-            es_data = dict(l10n_helpers._CATALOGS_REGISTRY['en'])
-            es_data['release_notes'] = dict(es_data['release_notes'])
+            es_data = json.loads(en_content)
             # Mistype {milestone} as {m}
-            es_data['release_notes']['page_title'] = 'Chrome {m} Notas'
+            es_data['translations']['ui']['page_title'] = 'Chrome {m} Notas'
             with open(
                 os.path.join(temp_dir, 'es.json'), 'w', encoding='utf-8'
             ) as f:
                 json.dump(es_data, f)
 
             with self.assertRaises(l10n_models.LocaleValidationError) as ctx:
-                l10n_helpers.load_and_validate_catalogs(temp_dir)
+                l10n_helpers.load_and_validate_bundles(temp_dir)
             self.assertIn('placeholder mismatch', str(ctx.exception))
         finally:
             shutil.rmtree(temp_dir)
 
-    def test_get_localized_category_name(self):
-        """It translates category names into the target language with English fallback."""
+    def test_get_category_translations_and_fallbacks(self):
+        """It translates category names into the target language and encapsulates defaults."""
+        ja_bundle = l10n_helpers.get_release_notes_bundle('ja')
         # Japanese translations
         self.assertEqual(
-            l10n_helpers.get_localized_category_name('Miscellaneous', 'ja'),
+            ja_bundle.translations.get_category('Miscellaneous'),
+            'その他',
+        )
+        # Automatic fallback for None and empty string
+        self.assertEqual(
+            ja_bundle.translations.get_category(None),
             'その他',
         )
         self.assertEqual(
-            l10n_helpers.get_localized_category_name('Security', 'ja'),
+            ja_bundle.translations.get_category(''),
+            'その他',
+        )
+        self.assertEqual(
+            ja_bundle.translations.get_category('Security'),
             'セキュリティ',
         )
         self.assertEqual(
-            l10n_helpers.get_localized_category_name('CSS', 'ja'),
+            ja_bundle.translations.get_category('CSS'),
             'CSS',
         )
 
         # Spanish translations
+        es_bundle = l10n_helpers.get_release_notes_bundle('es')
         self.assertEqual(
-            l10n_helpers.get_localized_category_name('Miscellaneous', 'es'),
+            es_bundle.translations.get_category('Miscellaneous'),
             'Varios',
         )
         self.assertEqual(
-            l10n_helpers.get_localized_category_name('Performance', 'es'),
+            es_bundle.translations.get_category(None),
+            'Varios',
+        )
+        self.assertEqual(
+            es_bundle.translations.get_category('Performance'),
             'Rendimiento',
         )
 
         # German translations
+        de_bundle = l10n_helpers.get_release_notes_bundle('de')
         self.assertEqual(
-            l10n_helpers.get_localized_category_name('Miscellaneous', 'de'),
+            de_bundle.translations.get_category('Miscellaneous'),
             'Sonstiges',
         )
 
         # English (identity)
+        en_bundle = l10n_helpers.get_release_notes_bundle('en')
         self.assertEqual(
-            l10n_helpers.get_localized_category_name('Miscellaneous', 'en'),
+            en_bundle.translations.get_category('Miscellaneous'),
+            'Miscellaneous',
+        )
+        self.assertEqual(
+            en_bundle.translations.get_category(None),
             'Miscellaneous',
         )
 
         # Unknown / non-standard category fallback
         self.assertEqual(
-            l10n_helpers.get_localized_category_name('Custom Cat', 'ja'),
+            ja_bundle.translations.get_category('Custom Cat'),
             'Custom Cat',
         )
 
@@ -251,20 +293,23 @@ class L10nHelpersTest(unittest.TestCase):
         ]
 
         # Japanese localization
-        ja_links = l10n_helpers.localize_release_note_links(test_links, 'ja')
+        ja_bundle = l10n_helpers.get_release_notes_bundle('ja')
+        ja_links = ja_bundle.translations.localize_links(test_links)
         self.assertEqual(ja_links[0]['title'], 'トラッキング バグ #12345')
         self.assertEqual(ja_links[1]['title'], '仕様')
         self.assertEqual(ja_links[2]['title'], 'ドキュメント')
         self.assertEqual(ja_links[3]['title'], 'オリジントライアル')
 
         # Spanish localization
-        es_links = l10n_helpers.localize_release_note_links(test_links, 'es')
+        es_bundle = l10n_helpers.get_release_notes_bundle('es')
+        es_links = es_bundle.translations.localize_links(test_links)
         self.assertEqual(es_links[0]['title'], 'Error de seguimiento n.º 12345')
         self.assertEqual(es_links[1]['title'], 'Especificación')
         self.assertEqual(es_links[2]['title'], 'Documentación')
         self.assertEqual(es_links[3]['title'], 'Prueba de origen')
 
         # English (identity)
-        en_links = l10n_helpers.localize_release_note_links(test_links, 'en')
+        en_bundle = l10n_helpers.get_release_notes_bundle('en')
+        en_links = en_bundle.translations.localize_links(test_links)
         self.assertEqual(en_links[0]['title'], 'Tracking bug #12345')
         self.assertEqual(en_links[1]['title'], 'Spec')

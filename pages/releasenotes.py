@@ -122,6 +122,7 @@ class ReleaseNotesHandler(basehandlers.FlaskHandler):
             'lang'
         )
         current_lang = l10n_helpers.resolve_supported_language(raw_lang)
+        bundle = l10n_helpers.get_release_notes_bundle(current_lang)
 
         release_note_features = (
             feature_helpers.get_developer_release_notes_features(milestone)
@@ -150,8 +151,8 @@ class ReleaseNotesHandler(basehandlers.FlaskHandler):
                 current_lang != l10n_models.SupportedLanguage.EN
                 and 'links' in feature
             ):
-                feature['links'] = l10n_helpers.localize_release_note_links(
-                    feature['links'], current_lang
+                feature['links'] = bundle.translations.localize_links(
+                    feature['links']
                 )
 
             classification = feature.get('milestone_classification')
@@ -166,9 +167,8 @@ class ReleaseNotesHandler(basehandlers.FlaskHandler):
             ):
                 deprecations_and_removals.append(feature)
             else:
-                raw_category = feature.get('category_name') or 'Miscellaneous'
-                category = l10n_helpers.get_localized_category_name(
-                    raw_category, current_lang
+                category = bundle.translations.get_category(
+                    feature.get('category_name')
                 )
                 features_by_category.setdefault(category, []).append(feature)
 
@@ -196,15 +196,12 @@ class ReleaseNotesHandler(basehandlers.FlaskHandler):
             else None
         )
 
-        ui = l10n_helpers.build_release_notes_ui_strings(
-            lang=current_lang,
+        ui = bundle.translations.build_ui_strings(
             milestone=milestone,
             prev_milestone=prev_milestone,
             next_milestone=next_milestone,
         )
-        supported_languages = l10n_helpers.get_supported_languages_for_page(
-            'release_notes'
-        )
+        supported_languages = l10n_helpers.get_supported_languages_for_page()
 
         canonical_path = f'/release-notes/{milestone}'
         if current_lang != l10n_models.SupportedLanguage.EN:

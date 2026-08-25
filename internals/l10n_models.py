@@ -17,7 +17,9 @@
 import dataclasses
 import re
 from enum import StrEnum
-from typing import Any, ClassVar
+from typing import Any, ClassVar, Generic, TypeVar
+
+from internals import core_enums
 
 
 class LocaleValidationError(Exception):
@@ -71,91 +73,29 @@ class LanguageOption:
     english_name: str
 
 
-class BasePageUiStrings:
-    """Base contract for localized page UI models with co-located schema validation."""
+@dataclasses.dataclass(frozen=True)
+class LocaleMeta:
+    """Represents the metadata header in a locale catalog file."""
 
-    PAGE_NAMESPACE: ClassVar[str]
-    REQUIRED_PLACEHOLDERS: ClassVar[dict[str, set[str]]]
+    language_code: str
+    display_name: str
+    english_name: str
 
-    @classmethod
-    def validate_page_catalog(
-        cls,
-        lang_code: str,
-        page_dict: dict[str, str],
-        en_page_dict: dict[str, str],
-    ) -> None:
-        """Validates key parity and placeholder contracts for this page in a specific locale."""
-        en_keys = set(en_page_dict.keys())
-        target_keys = set(page_dict.keys())
 
-        missing_keys = en_keys - target_keys
-        if missing_keys:
-            raise LocaleValidationError(
-                f"Locale '{lang_code}' namespace '{cls.PAGE_NAMESPACE}' is missing required keys: {missing_keys}"
-            )
-
-        extra_keys = target_keys - en_keys
-        if extra_keys:
-            raise LocaleValidationError(
-                f"Locale '{lang_code}' namespace '{cls.PAGE_NAMESPACE}' contains unrecognized keys: {extra_keys}"
-            )
-
-        for field_name, expected_tokens in cls.REQUIRED_PLACEHOLDERS.items():
-            if field_name not in page_dict:
-                raise LocaleValidationError(
-                    f"Locale '{lang_code}' namespace '{cls.PAGE_NAMESPACE}' is missing schema field '{field_name}'"
-                )
-            field_text = page_dict[field_name]
-            actual_tokens = extract_placeholders(field_text)
-            if actual_tokens != expected_tokens:
-                raise LocaleValidationError(
-                    f"Locale '{lang_code}' namespace '{cls.PAGE_NAMESPACE}' field '{field_name}' placeholder mismatch: "
-                    f'expected {expected_tokens}, got {actual_tokens}'
-                )
-
-    @classmethod
-    def validate_all_locales(
-        cls, loaded_catalogs: dict[str, dict[str, Any]]
-    ) -> None:
-        """Validates all loaded locale catalogs against this page schema contract."""
-        if DEFAULT_LANGUAGE.value not in loaded_catalogs:
-            raise LocaleValidationError(
-                f'Canonical English locale ({DEFAULT_LANGUAGE.value}.json) not found'
-            )
-
-        en_catalog = loaded_catalogs[DEFAULT_LANGUAGE.value]
-        en_page_dict = en_catalog.get(cls.PAGE_NAMESPACE, {})
-
-        # 1. Validate canonical English baseline against schema contract
-        for field_name, expected_tokens in cls.REQUIRED_PLACEHOLDERS.items():
-            if field_name not in en_page_dict:
-                raise LocaleValidationError(
-                    f"Canonical English locale is missing required field '{field_name}' in namespace '{cls.PAGE_NAMESPACE}'"
-                )
-            actual_tokens = extract_placeholders(en_page_dict[field_name])
-            if actual_tokens != expected_tokens:
-                raise LocaleValidationError(
-                    f"Canonical English namespace '{cls.PAGE_NAMESPACE}' field '{field_name}' placeholder mismatch: "
-                    f'expected {expected_tokens}, got {actual_tokens}'
-                )
-
-        # 2. Validate all other locales providing this namespace
-        for lang_code, catalog in loaded_catalogs.items():
-            if lang_code == DEFAULT_LANGUAGE.value:
-                continue
-            if cls.PAGE_NAMESPACE in catalog:
-                cls.validate_page_catalog(
-                    lang_code,
-                    catalog[cls.PAGE_NAMESPACE],
-                    en_page_dict,
-                )
+T = TypeVar('T')
 
 
 @dataclasses.dataclass(frozen=True)
-class ReleaseNotesUiStrings(BasePageUiStrings):
-    """Type-safe, pre-formatted UI strings for the Release Notes page."""
+class TranslationBundle(Generic[T]):
+    """Generic envelope containing locale metadata and typed translations for a domain."""
 
-    PAGE_NAMESPACE: ClassVar[str] = 'release_notes'
+    meta: LocaleMeta
+    translations: T
+
+
+@dataclasses.dataclass(frozen=True)
+class ReleaseNotesUiStrings:
+    """Type-safe, pre-formatted UI strings for the Release Notes page."""
 
     # Schema contract co-located directly on the dataclass definition
     REQUIRED_PLACEHOLDERS: ClassVar[dict[str, set[str]]] = {
@@ -203,44 +143,10 @@ class ReleaseNotesUiStrings(BasePageUiStrings):
 
 
 @dataclasses.dataclass(frozen=True)
-class ReleaseNotesCategories(BasePageUiStrings):
-    """Schema contract for localized feature category titles."""
+class ReleaseNotesTranslations:
+    """Full domain translation model for Release Notes including UI strings, categories, and links."""
 
-    PAGE_NAMESPACE: ClassVar[str] = 'categories'
-
-    REQUIRED_PLACEHOLDERS: ClassVar[dict[str, set[str]]] = {
-        'CSS': set(),
-        'DOM': set(),
-        'JavaScript': set(),
-        'Web Components': set(),
-        'Security': set(),
-        'Multimedia': set(),
-        'File APIs': set(),
-        'Offline / Storage': set(),
-        'Device': set(),
-        'Realtime / Communication': set(),
-        'Network / Connectivity': set(),
-        'User input': set(),
-        'Performance': set(),
-        'Graphics': set(),
-        'Houdini': set(),
-        'Service Worker': set(),
-        'WebRTC': set(),
-        'Layered APIs': set(),
-        'WebAssembly': set(),
-        'Capabilities (Project Fugu)': set(),
-        'Isolated Web Apps': set(),
-        'Miscellaneous': set(),
-    }
-
-
-@dataclasses.dataclass(frozen=True)
-class ReleaseNotesLinks(BasePageUiStrings):
-    """Schema contract for localized feature link titles."""
-
-    PAGE_NAMESPACE: ClassVar[str] = 'links'
-
-    REQUIRED_PLACEHOLDERS: ClassVar[dict[str, set[str]]] = {
+    REQUIRED_LINK_PLACEHOLDERS: ClassVar[dict[str, set[str]]] = {
         'tracking_bug': {'bug_id'},
         'chromestatus': set(),
         'spec': set(),
@@ -251,10 +157,159 @@ class ReleaseNotesLinks(BasePageUiStrings):
         'other': set(),
     }
 
+    ui: dict[str, str]
+    categories: dict[str, str]
+    links: dict[str, str]
 
-# Extensible central registry of all localized page schemas
-REGISTERED_PAGE_SCHEMAS: dict[str, type[BasePageUiStrings]] = {
-    ReleaseNotesUiStrings.PAGE_NAMESPACE: ReleaseNotesUiStrings,
-    ReleaseNotesCategories.PAGE_NAMESPACE: ReleaseNotesCategories,
-    ReleaseNotesLinks.PAGE_NAMESPACE: ReleaseNotesLinks,
-}
+    def get_category(self, category_name: str | None) -> str:
+        """Returns the localized category display name, defaulting to MISC if None or empty."""
+        target = (
+            category_name
+            if category_name
+            else core_enums.FEATURE_CATEGORIES[core_enums.MISC]
+        )
+        return self.categories.get(target, target)
+
+    def localize_links(
+        self, links: list[dict[str, Any]]
+    ) -> list[dict[str, Any]]:
+        """Translates the titles of release note links according to the target language."""
+        if not links:
+            return []
+        localized: list[dict[str, Any]] = []
+        for link in links:
+            link_copy = dict(link)
+            raw_type = link_copy.get('type')
+            link_type_str = str(getattr(raw_type, 'value', raw_type) or '')
+            title = link_copy.get('title') or ''
+
+            if link_type_str.upper() == 'BUG':
+                match = re.search(r'\d+', title) or re.search(
+                    r'\d+', link_copy.get('url', '')
+                )
+                if match:
+                    link_copy['title'] = self.links.get(
+                        'tracking_bug', 'Tracking bug #{bug_id}'
+                    ).format(bug_id=match.group(0))
+            else:
+                key = link_type_str.lower()
+                if key in self.links:
+                    link_copy['title'] = self.links[key]
+
+            localized.append(link_copy)
+        return localized
+
+    def build_ui_strings(
+        self,
+        milestone: int,
+        prev_milestone: int | None = None,
+        next_milestone: int | None = None,
+    ) -> ReleaseNotesUiStrings:
+        """Constructs pre-formatted, type-safe UI strings for the Release Notes page."""
+        context = {
+            'milestone': milestone,
+            'prev_milestone': (
+                prev_milestone if prev_milestone is not None else milestone
+            ),
+            'next_milestone': (
+                next_milestone if next_milestone is not None else milestone
+            ),
+        }
+        formatted: dict[str, Any] = {}
+        for key, val in self.ui.items():
+            placeholders = ReleaseNotesUiStrings.REQUIRED_PLACEHOLDERS.get(
+                key, set()
+            )
+            if 'milestone' in placeholders:
+                token_key = 'milestone'
+                if key == 'prev_milestone_aria':
+                    token_key = 'prev_milestone'
+                elif key == 'next_milestone_aria':
+                    token_key = 'next_milestone'
+                formatted[key] = val.format(milestone=context[token_key])
+            elif key == 'copy_link_aria':
+                formatted['_copy_link_template'] = val
+            else:
+                formatted[key] = val
+
+        return ReleaseNotesUiStrings(**formatted)
+
+    @classmethod
+    def validate_locale_data(
+        cls,
+        lang_code: str,
+        translations_dict: dict[str, Any],
+        en_translations_dict: dict[str, Any],
+    ) -> None:
+        """Validates key parity and placeholder contracts for this bundle against English baseline."""
+        for section in ('ui', 'categories', 'links'):
+            if section not in translations_dict:
+                raise LocaleValidationError(
+                    f"Locale '{lang_code}' is missing required section '{section}' in 'translations'"
+                )
+
+        # 1. Validate UI strings
+        ui_dict = translations_dict['ui']
+        en_ui_dict = en_translations_dict['ui']
+        missing_ui = set(en_ui_dict.keys()) - set(ui_dict.keys())
+        if missing_ui:
+            raise LocaleValidationError(
+                f"Locale '{lang_code}' namespace 'ui' is missing required keys: {missing_ui}"
+            )
+        extra_ui = set(ui_dict.keys()) - set(en_ui_dict.keys())
+        if extra_ui:
+            raise LocaleValidationError(
+                f"Locale '{lang_code}' namespace 'ui' contains unrecognized keys: {extra_ui}"
+            )
+        for (
+            field_name,
+            expected_tokens,
+        ) in ReleaseNotesUiStrings.REQUIRED_PLACEHOLDERS.items():
+            if field_name not in ui_dict:
+                raise LocaleValidationError(
+                    f"Locale '{lang_code}' is missing schema field '{field_name}' in 'ui'"
+                )
+            actual_tokens = extract_placeholders(ui_dict[field_name])
+            if actual_tokens != expected_tokens:
+                raise LocaleValidationError(
+                    f"Locale '{lang_code}' namespace 'ui' field '{field_name}' placeholder mismatch: "
+                    f'expected {expected_tokens}, got {actual_tokens}'
+                )
+
+        # 2. Validate Categories
+        cat_dict = translations_dict['categories']
+        en_cat_dict = en_translations_dict['categories']
+        missing_cats = set(en_cat_dict.keys()) - set(cat_dict.keys())
+        if missing_cats:
+            raise LocaleValidationError(
+                f"Locale '{lang_code}' namespace 'categories' is missing required keys: {missing_cats}"
+            )
+        extra_cats = set(cat_dict.keys()) - set(en_cat_dict.keys())
+        if extra_cats:
+            raise LocaleValidationError(
+                f"Locale '{lang_code}' namespace 'categories' contains unrecognized keys: {extra_cats}"
+            )
+
+        # 3. Validate Links
+        link_dict = translations_dict['links']
+        en_link_dict = en_translations_dict['links']
+        missing_links = set(en_link_dict.keys()) - set(link_dict.keys())
+        if missing_links:
+            raise LocaleValidationError(
+                f"Locale '{lang_code}' namespace 'links' is missing required keys: {missing_links}"
+            )
+        extra_links = set(link_dict.keys()) - set(en_link_dict.keys())
+        if extra_links:
+            raise LocaleValidationError(
+                f"Locale '{lang_code}' namespace 'links' contains unrecognized keys: {extra_links}"
+            )
+        for (
+            field_name,
+            expected_tokens,
+        ) in cls.REQUIRED_LINK_PLACEHOLDERS.items():
+            actual_tokens = extract_placeholders(link_dict.get(field_name, ''))
+            if actual_tokens != expected_tokens:
+                raise LocaleValidationError(
+                    f"Locale '{lang_code}' namespace 'links' field '{field_name}' placeholder mismatch: "
+                    f'expected {expected_tokens}, got {actual_tokens}'
+                )
