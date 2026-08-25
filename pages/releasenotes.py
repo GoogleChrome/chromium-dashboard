@@ -165,9 +165,7 @@ class ReleaseNotesHandler(basehandlers.FlaskHandler):
             ):
                 deprecations_and_removals.append(feature)
             else:
-                category = translations.get_category(
-                    feature.get('category_name')
-                )
+                category = translations.get_category(feature.get('category'))
                 features_by_category.setdefault(category, []).append(feature)
 
         # Bound the datalist dropdown options to the visible release horizon down to M124.

@@ -71,6 +71,7 @@ class ReleaseNotesHandlerTest(testing_config.CustomTestCase):
                     ' Link](https://example.com/spec), and'
                     ' https://web.dev/webgpu.'
                 ),
+                'category': core_enums.CSS,
                 'category_name': 'CSS',
                 'milestone_classification': (
                     core_enums.ReleaseNoteMilestoneClassification.SHIPPING
@@ -102,6 +103,7 @@ class ReleaseNotesHandlerTest(testing_config.CustomTestCase):
                 'id': 102,
                 'name': 'Sample Origin Trial Feature',
                 'summary': 'Summary for active origin trial feature.',
+                'category': core_enums.DOM,
                 'category_name': 'Web APIs',
                 'milestone_classification': (
                     core_enums.ReleaseNoteMilestoneClassification.ORIGIN_TRIAL
@@ -123,6 +125,7 @@ class ReleaseNotesHandlerTest(testing_config.CustomTestCase):
                 'id': 103,
                 'name': 'Sample Deprecated Feature',
                 'summary': 'Summary for removed feature.',
+                'category': core_enums.SECURITY,
                 'category_name': 'Security',
                 'milestone_classification': (
                     core_enums.ReleaseNoteMilestoneClassification.DEPRECATION

@@ -19,6 +19,8 @@ import re
 from enum import StrEnum
 from typing import Any
 
+from internals import core_enums
+
 
 class LocaleValidationError(Exception):
     """Raised when a localization catalog fails schema or placeholder validation."""
@@ -236,50 +238,50 @@ class ReleaseNotesTranslations:
     link_demo: str
     link_other: str
 
-    def get_category(self, category_name: str | None) -> str:
+    def get_category(self, category_id: int | None) -> str:
         """Returns localized category display name using direct attribute access."""
-        match category_name:
-            case 'CSS':
+        match category_id:
+            case core_enums.CSS:
                 return self.category_css
-            case 'DOM':
+            case core_enums.DOM:
                 return self.category_dom
-            case 'JavaScript':
+            case core_enums.JAVASCRIPT:
                 return self.category_javascript
-            case 'Web Components':
+            case core_enums.WEBCOMPONENTS:
                 return self.category_web_components
-            case 'Security':
+            case core_enums.SECURITY:
                 return self.category_security
-            case 'Multimedia':
+            case core_enums.MULTIMEDIA:
                 return self.category_multimedia
-            case 'File APIs':
+            case core_enums.FILE:
                 return self.category_file_apis
-            case 'Offline / Storage':
+            case core_enums.OFFLINE:
                 return self.category_offline_storage
-            case 'Device':
+            case core_enums.DEVICE:
                 return self.category_device
-            case 'Realtime / Communication':
+            case core_enums.COMMUNICATION:
                 return self.category_realtime_communication
-            case 'Network / Connectivity':
+            case core_enums.NETWORKING:
                 return self.category_network_connectivity
-            case 'User input':
+            case core_enums.INPUT:
                 return self.category_user_input
-            case 'Performance':
+            case core_enums.PERFORMANCE:
                 return self.category_performance
-            case 'Graphics':
+            case core_enums.GRAPHICS:
                 return self.category_graphics
-            case 'Houdini':
+            case core_enums.HOUDINI:
                 return self.category_houdini
-            case 'Service Worker':
+            case core_enums.SERVICEWORKER:
                 return self.category_service_worker
-            case 'WebRTC':
+            case core_enums.WEBRTC:
                 return self.category_webrtc
-            case 'Layered APIs':
+            case core_enums.LAYERED:
                 return self.category_layered_apis
-            case 'WebAssembly':
+            case core_enums.WEBASSEMBLY:
                 return self.category_webassembly
-            case 'Capabilities (Fugu)':
+            case core_enums.CAPABILITIES:
                 return self.category_capabilities_fugu
-            case 'Isolated Web Apps' | 'Isolated Web Apps-specific API':
+            case core_enums.IWA:
                 return self.category_isolated_web_apps
             case _:
                 return self.category_miscellaneous
