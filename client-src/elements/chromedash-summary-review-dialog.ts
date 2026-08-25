@@ -16,10 +16,7 @@
 
 import {LitElement, PropertyValues, css, html, nothing} from 'lit';
 import {customElement, property, query, state} from 'lit/decorators.js';
-import SlDialog from '@shoelace-style/shoelace/dist/components/dialog/dialog.js';
-import '@shoelace-style/shoelace/dist/components/button/button.js';
-import '@shoelace-style/shoelace/dist/components/alert/alert.js';
-import '@shoelace-style/shoelace/dist/components/icon/icon.js';
+import type SlDialog from '@shoelace-style/shoelace/dist/components/dialog/dialog.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {ChromeStatusHttpError} from '../js-src/cs-client.js';
 import {
@@ -67,7 +64,7 @@ export class ChromedashSummaryReviewDialog extends LitElement {
       ...SHARED_STYLES,
       css`
         sl-dialog {
-          --width: 900px;
+          --width: min(900px, 95vw);
         }
 
         sl-alert {
@@ -92,6 +89,31 @@ export class ChromedashSummaryReviewDialog extends LitElement {
           display: flex;
           align-items: center;
           gap: var(--sl-spacing-small);
+        }
+
+        @media (max-width: 768px) {
+          .dialog-footer {
+            flex-direction: column-reverse;
+            align-items: stretch;
+            gap: var(--sl-spacing-medium);
+          }
+
+          .footer-left,
+          .footer-right {
+            width: 100%;
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--sl-spacing-small);
+          }
+
+          .footer-left sl-button {
+            width: 100%;
+          }
+
+          .footer-right sl-button {
+            flex: 1 1 110px;
+            min-width: 0;
+          }
         }
       `,
     ];

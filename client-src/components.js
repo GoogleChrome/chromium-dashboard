@@ -117,3 +117,5 @@ import './elements/chromedash-enterprise-page';
 import './elements/chromedash-enterprise-release-notes-page';
 import './elements/chromedash-wpt-eval-button';
 import './elements/chromedash-wpt-eval-page';
+import './elements/chromedash-summary-diff-view';
+import './elements/chromedash-summary-review-dialog';

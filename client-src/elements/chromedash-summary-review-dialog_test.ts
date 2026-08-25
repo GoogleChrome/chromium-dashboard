@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {html, fixture, expect} from '@open-wc/testing';
+import {html, fixture, assert} from '@open-wc/testing';
 import sinon from 'sinon';
 import './chromedash-summary-review-dialog.js';
 import {ChromedashSummaryReviewDialog} from './chromedash-summary-review-dialog.js';
@@ -79,8 +79,8 @@ describe('chromedash-summary-review-dialog', () => {
     const diffView = el.shadowRoot!.querySelector(
       'chromedash-summary-diff-view'
     );
-    expect(diffView).to.exist;
-    expect(el.editedSummary).to.equal(mockSuggestion.suggested_summary);
+    assert.exists(diffView);
+    assert.equal(el.editedSummary, mockSuggestion.suggested_summary);
   });
 
   it('calls updateSummarySuggestion with APPLIED and dispatches event on Accept', async () => {
@@ -89,8 +89,9 @@ describe('chromedash-summary-review-dialog', () => {
       e: CustomEvent<{featureId: number; summary: string}>
     ) => {
       appliedFired = true;
-      expect(e.detail.featureId).to.equal(101);
-      expect(e.detail.summary).to.equal(
+      assert.equal(e.detail.featureId, 101);
+      assert.equal(
+        e.detail.summary,
         'AI generated summary for feature **101**.'
       );
     };
@@ -108,7 +109,7 @@ describe('chromedash-summary-review-dialog', () => {
     await el.handleAccept();
     await el.updateComplete;
 
-    expect(
+    assert.isTrue(
       (
         window.csClient.updateSummarySuggestion as sinon.SinonStub
       ).calledOnceWith(101, {
@@ -116,17 +117,17 @@ describe('chromedash-summary-review-dialog', () => {
         suggested_summary: 'AI generated summary for feature **101**.',
         version_token: 42,
       })
-    ).to.be.true;
+    );
 
-    expect(appliedFired).to.be.true;
-    expect(hideSpy.calledOnce).to.be.true;
+    assert.isTrue(appliedFired);
+    assert.isTrue(hideSpy.calledOnce);
   });
 
   it('calls updateSummarySuggestion with REJECTED and dispatches event on Discard', async () => {
     let rejectedFired = false;
     const onRejected = (e: CustomEvent<{featureId: number}>) => {
       rejectedFired = true;
-      expect(e.detail.featureId).to.equal(101);
+      assert.equal(e.detail.featureId, 101);
     };
 
     const el = await fixture<ChromedashSummaryReviewDialog>(
@@ -142,25 +143,25 @@ describe('chromedash-summary-review-dialog', () => {
     await el.handleReject();
     await el.updateComplete;
 
-    expect(
+    assert.isTrue(
       (
         window.csClient.updateSummarySuggestion as sinon.SinonStub
       ).calledOnceWith(101, {
         status: SummarySuggestionStatusEnum.REJECTED,
         version_token: 42,
       })
-    ).to.be.true;
+    );
 
-    expect(rejectedFired).to.be.true;
-    expect(hideSpy.calledOnce).to.be.true;
+    assert.isTrue(rejectedFired);
+    assert.isTrue(hideSpy.calledOnce);
   });
 
   it('calls triggerSummaryGeneration and dispatches event on Regenerate', async () => {
     let regenFired = false;
     const onRegen = (e: CustomEvent<{featureId: number; force: boolean}>) => {
       regenFired = true;
-      expect(e.detail.featureId).to.equal(101);
-      expect(e.detail.force).to.be.true;
+      assert.equal(e.detail.featureId, 101);
+      assert.isTrue(e.detail.force);
     };
 
     const el = await fixture<ChromedashSummaryReviewDialog>(
@@ -176,14 +177,14 @@ describe('chromedash-summary-review-dialog', () => {
     await el.handleRegenerate();
     await el.updateComplete;
 
-    expect(
+    assert.isTrue(
       (
         window.csClient.triggerSummaryGeneration as sinon.SinonStub
       ).calledOnceWith(101, true)
-    ).to.be.true;
+    );
 
-    expect(regenFired).to.be.true;
-    expect(hideSpy.calledOnce).to.be.true;
+    assert.isTrue(regenFired);
+    assert.isTrue(hideSpy.calledOnce);
   });
 
   it('handles OCC 409 conflict and refreshes latest data', async () => {
@@ -202,18 +203,21 @@ describe('chromedash-summary-review-dialog', () => {
     await el.handleAccept();
     await el.updateComplete;
 
-    expect(el.occConflict).to.be.true;
+    assert.isTrue(el.occConflict);
     const warningAlert = el.shadowRoot!.querySelector(
       'sl-alert[variant="warning"]'
     );
-    expect(warningAlert).to.exist;
-    expect(warningAlert!.textContent).to.contain('modified in another session');
+    assert.exists(warningAlert);
+    assert.include(
+      warningAlert!.textContent || '',
+      'modified in another session'
+    );
 
     // Accept button should be disabled during OCC conflict
     const acceptBtn = el.shadowRoot!.querySelector(
       'sl-button[variant="primary"]'
     ) as HTMLElement;
-    expect(acceptBtn.hasAttribute('disabled')).to.be.true;
+    assert.isTrue(acceptBtn.hasAttribute('disabled'));
 
     // Refresh updated version
     const updatedSuggestion: SummarySuggestion = {
@@ -229,9 +233,9 @@ describe('chromedash-summary-review-dialog', () => {
     await el.handleRefresh();
     await el.updateComplete;
 
-    expect(el.occConflict).to.be.false;
-    expect(el.suggestion?.version_token).to.equal(43);
-    expect(el.editedSummary).to.equal('Newer remote summary from token 43');
+    assert.isFalse(el.occConflict);
+    assert.equal(el.suggestion?.version_token, 43);
+    assert.equal(el.editedSummary, 'Newer remote summary from token 43');
   });
 
   it('renders danger alert on general API error', async () => {
@@ -250,12 +254,12 @@ describe('chromedash-summary-review-dialog', () => {
     await el.handleAccept();
     await el.updateComplete;
 
-    expect(el.occConflict).to.be.false;
+    assert.isFalse(el.occConflict);
     const dangerAlert = el.shadowRoot!.querySelector(
       'sl-alert[variant="danger"]'
     );
-    expect(dangerAlert).to.exist;
-    expect(dangerAlert!.textContent).to.contain('Permission denied');
+    assert.exists(dangerAlert);
+    assert.include(dangerAlert!.textContent || '', 'Permission denied');
   });
 
   it('preserves uncommitted edits and shows notification when suggestion changes while editing', async () => {
@@ -279,14 +283,16 @@ describe('chromedash-summary-review-dialog', () => {
     el.suggestion = newerSuggestion;
     await el.updateComplete;
 
-    expect(el.editedSummary).to.equal(
+    assert.equal(
+      el.editedSummary,
       'My customized draft that should not be lost.'
     );
-    expect(el.newerSuggestionAvailable).to.be.true;
+    assert.isTrue(el.newerSuggestionAvailable);
 
     const alert = el.shadowRoot!.querySelector('sl-alert[variant="primary"]');
-    expect(alert).to.exist;
-    expect(alert!.textContent).to.contain(
+    assert.exists(alert);
+    assert.include(
+      alert!.textContent || '',
       'A newer suggestion is available on the server.'
     );
   });
@@ -312,21 +318,21 @@ describe('chromedash-summary-review-dialog', () => {
     el.suggestion = newerSuggestion;
     await el.updateComplete;
 
-    expect(el.newerSuggestionAvailable).to.be.true;
+    assert.isTrue(el.newerSuggestionAvailable);
 
     // Test dismiss
     el.handleDismissNewerSuggestion();
     await el.updateComplete;
-    expect(el.newerSuggestionAvailable).to.be.false;
-    expect(el.editedSummary).to.equal('My custom edit.');
+    assert.isFalse(el.newerSuggestionAvailable);
+    assert.equal(el.editedSummary, 'My custom edit.');
 
     // Test load newest
     el.newerSuggestionAvailable = true;
     el.handleLoadNewestSuggestion();
     await el.updateComplete;
-    expect(el.newerSuggestionAvailable).to.be.false;
-    expect(el.editedSummary).to.equal('New remote summary.');
-    expect(el.isEditing).to.be.false;
+    assert.isFalse(el.newerSuggestionAvailable);
+    assert.equal(el.editedSummary, 'New remote summary.');
+    assert.isFalse(el.isEditing);
   });
 
   it('disables buttons when suggestion is null or missing version_token', async () => {
@@ -345,8 +351,8 @@ describe('chromedash-summary-review-dialog', () => {
       'sl-button[variant="danger"]'
     ) as HTMLElement;
 
-    expect(acceptBtn.hasAttribute('disabled')).to.be.true;
-    expect(discardBtn.hasAttribute('disabled')).to.be.true;
+    assert.isTrue(acceptBtn.hasAttribute('disabled'));
+    assert.isTrue(discardBtn.hasAttribute('disabled'));
   });
 
   it('delegates to extracted API methods which can be overridden or spyed', async () => {
@@ -362,6 +368,6 @@ describe('chromedash-summary-review-dialog', () => {
     await el.handleAccept();
     await el.updateComplete;
 
-    expect(applySpy.calledOnce).to.be.true;
+    assert.isTrue(applySpy.calledOnce);
   });
 });
