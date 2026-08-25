@@ -17,7 +17,7 @@
 import dataclasses
 import re
 from enum import StrEnum
-from typing import Any
+from typing import Any, TypedDict
 
 from internals import core_enums
 
@@ -181,9 +181,17 @@ RELEASE_NOTES_PLACEHOLDERS: dict[ReleaseNotesKey, set[str]] = {
 }
 
 
+class ReleaseNoteLinkDict(TypedDict):
+    """Schema for a release note link dictionary."""
+
+    url: str
+    type: core_enums.ReleaseNoteLinkType | str
+    title: str | None
+
+
 @dataclasses.dataclass(frozen=True)
 class ReleaseNotesTranslations:
-    """Strongly-typed, pure attribute translations for the Release Notes page."""
+    """Strongly-typed translations for the Release Notes page."""
 
     # UI Strings
     page_title: str
@@ -286,40 +294,40 @@ class ReleaseNotesTranslations:
             case _:
                 return self.category_miscellaneous
 
-    def localize_link_title(self, link: dict[str, Any]) -> str:
-        """Translates a single link's title using direct attribute access."""
-        link_type = str(link.get('type', '')).upper()
-        title = str(link.get('title') or '')
-        url = str(link.get('url') or '')
-
-        if link_type == 'BUG':
-            match = re.search(r'\d+', title) or re.search(r'\d+', url)
-            if match:
-                return self.link_tracking_bug.format(bug_id=match.group(0))
-            return title or 'Tracking bug'
+    def localize_link_title(self, link: ReleaseNoteLinkDict) -> str:
+        """Translates a single release note link's title into the target locale."""
+        link_type = link.get('type')
+        title = link.get('title')
+        url = link.get('url', '')
 
         match link_type:
-            case 'SPEC':
+            case core_enums.ReleaseNoteLinkType.BUG | 'BUG':
+                raw_text = f'{title or ""} {url}'
+                match = re.search(r'\d+', raw_text)
+                if match:
+                    return self.link_tracking_bug.format(bug_id=match.group(0))
+                return title or 'Tracking bug'
+            case core_enums.ReleaseNoteLinkType.SPEC | 'SPEC':
                 return self.link_spec
-            case 'DOC':
+            case core_enums.ReleaseNoteLinkType.DOC | 'DOC':
                 return self.link_doc
-            case 'ORIGIN_TRIAL':
+            case core_enums.ReleaseNoteLinkType.ORIGIN_TRIAL | 'ORIGIN_TRIAL':
                 return self.link_origin_trial
-            case 'EXPLAINER':
+            case core_enums.ReleaseNoteLinkType.EXPLAINER | 'EXPLAINER':
                 return self.link_explainer
-            case 'DEMO':
+            case core_enums.ReleaseNoteLinkType.DEMO | 'DEMO':
                 return self.link_demo
-            case 'CHROMESTATUS':
+            case core_enums.ReleaseNoteLinkType.CHROMESTATUS | 'CHROMESTATUS':
                 return self.link_chromestatus
-            case 'OTHER':
+            case core_enums.ReleaseNoteLinkType.OTHER | 'OTHER':
                 return self.link_other
             case _:
-                return title
+                return title or ''
 
     def localize_links(
-        self, links: list[dict[str, Any]]
-    ) -> list[dict[str, Any]]:
-        """Translates a list of release note links in-place with zero casting."""
+        self, links: list[ReleaseNoteLinkDict]
+    ) -> list[ReleaseNoteLinkDict]:
+        """Translates a list of release note links."""
         return [
             {**link, 'title': self.localize_link_title(link)} for link in links
         ]

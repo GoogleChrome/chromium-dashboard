@@ -384,7 +384,7 @@ class ReleaseNotesL10nTest(unittest.TestCase):
 
     def test_link_localization(self):
         """It translates link titles and extracts tracking bug numbers."""
-        test_links = [
+        test_links: list[l10n_models.ReleaseNoteLinkDict] = [
             {
                 'type': 'BUG',
                 'url': 'https://issues.chromium.org/issues/12345',
@@ -416,9 +416,7 @@ class ReleaseNotesL10nTest(unittest.TestCase):
 
         es_trans = l10n_helpers.get_release_notes_translations('es')
         es_links = es_trans.localize_links(test_links)
-        self.assertEqual(
-            es_links[0]['title'], 'Error de seguimiento n.º 12345'
-        )
+        self.assertEqual(es_links[0]['title'], 'Error de seguimiento n.º 12345')
         self.assertEqual(es_links[1]['title'], 'Especificación')
         self.assertEqual(es_links[2]['title'], 'Documentación')
         self.assertEqual(es_links[3]['title'], 'Prueba de origen')
