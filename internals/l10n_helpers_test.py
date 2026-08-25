@@ -256,6 +256,33 @@ class L10nCoreFrameworkTest(unittest.TestCase):
             l10n_models.SupportedLanguage.EN,
         )
 
+    def test_format_localized_path(self):
+        """It formats canonical URL paths with ?hl= for non-default languages only."""
+        self.assertEqual(
+            l10n_helpers.format_localized_path('/release-notes/151', 'en'),
+            '/release-notes/151',
+        )
+        self.assertEqual(
+            l10n_helpers.format_localized_path(
+                '/release-notes/151', l10n_models.SupportedLanguage.EN
+            ),
+            '/release-notes/151',
+        )
+        self.assertEqual(
+            l10n_helpers.format_localized_path('/release-notes/151', 'ja'),
+            '/release-notes/151?hl=ja',
+        )
+        self.assertEqual(
+            l10n_helpers.format_localized_path(
+                '/release-notes/151', l10n_models.SupportedLanguage.ES
+            ),
+            '/release-notes/151?hl=es',
+        )
+        self.assertEqual(
+            l10n_helpers.format_localized_path('/roadmap', 'unknown-lang'),
+            '/roadmap',
+        )
+
     def test_get_page_translations__static_and_context_formatting(self):
         """It formats context placeholders and provides callables for dynamic placeholders."""
         ja_ui = l10n_helpers.get_page_translations(

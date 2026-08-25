@@ -119,5 +119,15 @@ def get_page_translations(
             formatted[key] = lambda name=text, **kw: name.format(**kw)
         else:
             formatted[key] = text
-
     return formatted
+
+
+def format_localized_path(
+    path: str,
+    lang: SupportedLanguage | str | None = None,
+) -> str:
+    """Formats a canonical URL path, appending ?hl= for non-default languages."""
+    resolved = resolve_supported_language(lang)
+    if resolved == DEFAULT_LANGUAGE:
+        return path
+    return f'{path}?hl={resolved.value}'
