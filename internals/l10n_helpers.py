@@ -93,3 +93,31 @@ def get_supported_languages(
         for opt in ALL_LANGUAGE_OPTIONS
         if SupportedLanguage(opt.code) in translations_map
     ]
+
+
+def get_page_translations(
+    domain_name: str,
+    lang: SupportedLanguage | str | None = None,
+    locales_dir: str | None = None,
+    **context: Any,
+) -> dict[str, Any]:
+    """Retrieves and pre-formats translations for any page domain with English fallback."""
+    resolved_lang = resolve_supported_language(lang)
+    loaded = load_flat_page_strings(domain_name, locales_dir=locales_dir)
+    if not loaded:
+        return {}
+
+    raw = loaded.get(resolved_lang, loaded.get(DEFAULT_LANGUAGE, {}))
+    formatted: dict[str, Any] = {}
+    for key, text in raw.items():
+        if '{' in text and any(f'{{{k}}}' in text for k in context):
+            try:
+                formatted[key] = text.format(**context)
+            except (KeyError, IndexError):
+                formatted[key] = text
+        elif '{' in text:
+            formatted[key] = lambda name=text, **kw: name.format(**kw)
+        else:
+            formatted[key] = text
+
+    return formatted

@@ -255,3 +255,31 @@ class L10nCoreFrameworkTest(unittest.TestCase):
             l10n_helpers.resolve_supported_language('unknown-lang'),
             l10n_models.SupportedLanguage.EN,
         )
+
+    def test_get_page_translations__static_and_context_formatting(self):
+        """It formats context placeholders and provides callables for dynamic placeholders."""
+        ja_ui = l10n_helpers.get_page_translations(
+            domain_name='mock',
+            lang='ja',
+            locales_dir=self.temp_dir,
+            username='Alice',
+        )
+        self.assertEqual(ja_ui['header_title'], 'Title in ja')
+        self.assertEqual(ja_ui['welcome_message'], 'Hello Alice in ja')
+        self.assertEqual(ja_ui['action_button'], 'Submit in ja')
+        # item_count_desc was not bound in context -> returns callable
+        self.assertEqual(
+            ja_ui['item_count_desc'](count=5, item_type='features'),
+            'You have 5 features in ja',
+        )
+
+    def test_get_page_translations__safe_fallback_on_unknown_lang(self):
+        """It safely falls back to English when an unknown language code is requested."""
+        fallback_ui = l10n_helpers.get_page_translations(
+            domain_name='mock',
+            lang='invalid-locale',
+            locales_dir=self.temp_dir,
+            username='Bob',
+        )
+        self.assertEqual(fallback_ui['header_title'], 'Title in en')
+        self.assertEqual(fallback_ui['welcome_message'], 'Hello Bob in en')
