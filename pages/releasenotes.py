@@ -147,11 +147,22 @@ class ReleaseNotesHandler(basehandlers.FlaskHandler):
             feature['formatted_summary'] = markdown_helpers.render_markdown(
                 feature.get('summary') or ''
             )
-            if (
-                current_lang != l10n_models.SupportedLanguage.EN
-                and 'links' in feature
-            ):
-                feature['links'] = translations.localize_links(feature['links'])
+            raw_links = feature.get('links') or []
+            link_items = [
+                (
+                    link_item
+                    if isinstance(link_item, l10n_models.ReleaseNoteLinkItem)
+                    else l10n_models.ReleaseNoteLinkItem(
+                        url=link_item.get('url', ''),
+                        type=link_item.get(
+                            'type', core_enums.ReleaseNoteLinkType.OTHER
+                        ),
+                        title=link_item.get('title'),
+                    )
+                )
+                for link_item in raw_links
+            ]
+            feature['links'] = translations.localize_links(link_items)
 
             classification = feature.get('milestone_classification')
             if (

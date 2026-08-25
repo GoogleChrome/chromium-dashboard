@@ -321,29 +321,17 @@ class ReleaseNotesTranslations:
                 return link.title or ''
 
     def localize_links(
-        self, links: list[dict[str, Any] | ReleaseNoteLinkItem]
+        self, links: list[ReleaseNoteLinkItem]
     ) -> list[ReleaseNoteLinkItem]:
         """Translates a list of release note links."""
-        result: list[ReleaseNoteLinkItem] = []
-        for link_entry in links:
-            if isinstance(link_entry, ReleaseNoteLinkItem):
-                item = link_entry
-            else:
-                item = ReleaseNoteLinkItem(
-                    url=link_entry.get('url', ''),
-                    type=link_entry.get(
-                        'type', core_enums.ReleaseNoteLinkType.OTHER
-                    ),
-                    title=link_entry.get('title'),
-                )
-            result.append(
-                ReleaseNoteLinkItem(
-                    url=item.url,
-                    type=item.type,
-                    title=self.localize_link_title(item),
-                )
+        return [
+            ReleaseNoteLinkItem(
+                url=link.url,
+                type=link.type,
+                title=self.localize_link_title(link),
             )
-        return result
+            for link in links
+        ]
 
     def format_ui(
         self,
