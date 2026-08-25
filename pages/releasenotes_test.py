@@ -21,6 +21,7 @@ import flask
 import werkzeug.exceptions
 
 import testing_config
+from internals import core_enums
 from pages import releasenotes
 
 test_app = flask.Flask(__name__, template_folder='../templates')
@@ -71,9 +72,76 @@ class ReleaseNotesHandlerTest(testing_config.CustomTestCase):
                     ' https://web.dev/webgpu.'
                 ),
                 'category_name': 'CSS',
-                'doc_links': ['https://example.com/spec'],
-            }
+                'milestone_classification': (
+                    core_enums.ReleaseNoteMilestoneClassification.SHIPPING
+                ),
+                'links': [
+                    {
+                        'url': 'https://issues.chromium.org/issues/40731275',
+                        'type': core_enums.ReleaseNoteLinkType.BUG,
+                        'title': 'Tracking bug #40731275',
+                    },
+                    {
+                        'url': '/feature/101',
+                        'type': core_enums.ReleaseNoteLinkType.CHROMESTATUS,
+                        'title': 'ChromeStatus.com entry',
+                    },
+                    {
+                        'url': 'https://www.w3.org/TR/css-overflow-3/',
+                        'type': core_enums.ReleaseNoteLinkType.SPEC,
+                        'title': 'Spec',
+                    },
+                    {
+                        'url': 'https://example.com/spec',
+                        'type': core_enums.ReleaseNoteLinkType.DOC,
+                        'title': None,
+                    },
+                ],
+            },
+            {
+                'id': 102,
+                'name': 'Sample Origin Trial Feature',
+                'summary': 'Summary for active origin trial feature.',
+                'category_name': 'Web APIs',
+                'milestone_classification': (
+                    core_enums.ReleaseNoteMilestoneClassification.ORIGIN_TRIAL
+                ),
+                'links': [
+                    {
+                        'url': '/origintrials#/view_trial/trial-123',
+                        'type': core_enums.ReleaseNoteLinkType.ORIGIN_TRIAL,
+                        'title': 'Origin Trial',
+                    },
+                    {
+                        'url': '/feature/102',
+                        'type': core_enums.ReleaseNoteLinkType.CHROMESTATUS,
+                        'title': 'ChromeStatus.com entry',
+                    },
+                ],
+            },
+            {
+                'id': 103,
+                'name': 'Sample Deprecated Feature',
+                'summary': 'Summary for removed feature.',
+                'category_name': 'Security',
+                'milestone_classification': (
+                    core_enums.ReleaseNoteMilestoneClassification.DEPRECATION
+                ),
+                'links': [
+                    {
+                        'url': 'https://issues.chromium.org/issues/123456',
+                        'type': core_enums.ReleaseNoteLinkType.BUG,
+                        'title': 'Tracking bug #123456',
+                    },
+                    {
+                        'url': '/feature/103',
+                        'type': core_enums.ReleaseNoteLinkType.CHROMESTATUS,
+                        'title': 'ChromeStatus.com entry',
+                    },
+                ],
+            },
         ]
+
         patcher = mock.patch(
             'internals.feature_helpers.get_developer_release_notes_features',
             return_value=self.mock_features,
@@ -201,10 +269,28 @@ class ReleaseNotesHandlerTest(testing_config.CustomTestCase):
                 'https://developer.chrome.com/release-notes', parser.links
             )
 
-            # Verify feature title permalink, section anchor link, and documentation link
+            # Verify feature title permalinks and anchor links
             self.assertIn('/feature/101', parser.links)
             self.assertIn('#feature-101', parser.links)
-            self.assertIn('https://example.com/spec', parser.links)
+            self.assertIn('/feature/102', parser.links)
+            self.assertIn('#feature-102', parser.links)
+            self.assertIn('/feature/103', parser.links)
+            self.assertIn('#feature-103', parser.links)
+
+            # Verify section headings
+            self.assertIn('CSS', parser.headings)
+            self.assertIn('New origin trials', parser.headings)
+            self.assertIn('Deprecations and removals', parser.headings)
+
+            # Verify metadata link bar items
+            self.assertIn(
+                'https://issues.chromium.org/issues/40731275', parser.links
+            )
+            self.assertIn('https://www.w3.org/TR/css-overflow-3/', parser.links)
+            self.assertIn('/origintrials#/view_trial/trial-123', parser.links)
+            self.assertIn(
+                'https://issues.chromium.org/issues/123456', parser.links
+            )
 
             # Verify CommonMark rendering of feature summary
             self.assertIn('<code>CSS.highlights</code>', html_str)

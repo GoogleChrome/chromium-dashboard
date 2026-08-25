@@ -2211,7 +2211,7 @@ class DeveloperReleaseNotesFeaturesTest(testing_config.CustomTestCase):
         self.assertEqual('CSS Anchor Positioning', features[1]['name'])
 
     def test_get_developer_release_notes_features__includes_doc_links(self):
-        """It attaches doc_links to the feature dictionary when present on FeatureEntry."""
+        """It attaches doc_links to the feature links list when present on FeatureEntry."""
         self.feature_1.doc_links = [
             'https://developer.mozilla.org/doc1',
             'https://drafts.csswg.org/doc2',
@@ -2220,10 +2220,56 @@ class DeveloperReleaseNotesFeaturesTest(testing_config.CustomTestCase):
 
         features = feature_helpers.get_developer_release_notes_features(132)
         self.assertEqual(1, len(features))
+        doc_urls = [
+            link['url']
+            for link in features[0]['links']
+            if link['type'] == core_enums.ReleaseNoteLinkType.DOC
+        ]
         self.assertEqual(
             [
                 'https://developer.mozilla.org/doc1',
                 'https://drafts.csswg.org/doc2',
             ],
-            features[0]['doc_links'],
+            doc_urls,
         )
+
+    def test_get_developer_release_notes_features__origin_trial_classification_and_url(
+        self,
+    ):
+        """It correctly classifies origin trial features and includes the trial registration link."""
+        ot_feature = FeatureEntry(
+            id=103,
+            name='Sample OT Feature',
+            summary='OT summary',
+            category=1,
+            impl_status_chrome=core_enums.ORIGIN_TRIAL,
+            owner_emails=['owner@example.com'],
+            feature_type=core_enums.FEATURE_TYPE_INCUBATE_ID,
+        )
+        ot_feature.put()
+        stage_ot = Stage(
+            feature_id=103,
+            stage_type=core_enums.STAGE_BLINK_ORIGIN_TRIAL,
+            origin_trial_id='4199606652522987521',
+            milestones=MilestoneSet(desktop_first=132),
+        )
+        stage_ot.put()
+
+        features = feature_helpers.get_developer_release_notes_features(132)
+        # Should contain both feature_1 (shipping) and ot_feature (origin trial)
+        ot_matches = [f for f in features if f['id'] == 103]
+        self.assertEqual(1, len(ot_matches))
+        ot_dict = ot_matches[0]
+        self.assertEqual(
+            core_enums.ReleaseNoteMilestoneClassification.ORIGIN_TRIAL,
+            ot_dict['milestone_classification'],
+        )
+        ot_link = ot_dict['links'][0]
+        self.assertEqual(
+            '/origintrials#/view_trial/4199606652522987521',
+            ot_link['url'],
+        )
+        self.assertEqual(
+            core_enums.ReleaseNoteLinkType.ORIGIN_TRIAL, ot_link['type']
+        )
+        self.assertEqual('Origin Trial', ot_link['title'])

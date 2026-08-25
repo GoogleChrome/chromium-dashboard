@@ -28,7 +28,7 @@ import settings
 from api import converters
 from framework import permissions, rediscache, users
 from framework.utils import get_current_milestone_info
-from internals import core_enums
+from internals import core_enums, link_helpers
 from internals.core_models import (
     FeatureEntry,
     FeatureSummarySuggestion,
@@ -203,6 +203,9 @@ def _filter_out_wp_features_lacking_enterprise_approval(
     return result
 
 
+format_origin_trial_url = link_helpers.format_origin_trial_url
+
+
 def get_developer_release_notes_features(
     milestone: int,
 ) -> list[dict[str, Any]]:
@@ -224,11 +227,35 @@ def get_developer_release_notes_features(
     """
     milestone_data = get_in_milestone(milestone)
     seen_ids: set[int] = set()
+    origin_trial_fids: set[int] = set()
+    deprecation_fids: set[int] = set()
+
+    origin_trial_urls: dict[int, str] = {}
     for reason, feature_dicts in milestone_data.items():
         for fdict in feature_dicts:
             fid = fdict.get('id')
-            if fid:
-                seen_ids.add(fid)
+            if not fid:
+                continue
+            seen_ids.add(fid)
+            if (
+                reason
+                == core_enums.IMPLEMENTATION_STATUS[core_enums.ORIGIN_TRIAL]
+            ):
+                origin_trial_fids.add(fid)
+                ot_id = fdict.get('origin_trial_id')
+                stage_ids = fdict.get('roadmap_stage_ids')
+                stage_id = stage_ids[0] if stage_ids else fdict.get('stage_id')
+                trial_url = format_origin_trial_url(
+                    origin_trial_id=ot_id, stage_id=stage_id
+                )
+                if trial_url:
+                    origin_trial_urls[fid] = trial_url
+
+            elif reason in (
+                core_enums.IMPLEMENTATION_STATUS[core_enums.DEPRECATED],
+                core_enums.IMPLEMENTATION_STATUS[core_enums.REMOVED],
+            ):
+                deprecation_fids.add(fid)
 
     if not seen_ids:
         return []
@@ -255,11 +282,35 @@ def get_developer_release_notes_features(
     for fe in feature_entries:
         fid = fe.key.integer_id() if fe.key else 0
         applied_suggestion = applied_map.get(fid)
+        if fid in origin_trial_fids:
+            milestone_classification = (
+                core_enums.ReleaseNoteMilestoneClassification.ORIGIN_TRIAL
+            )
+        elif (
+            fid in deprecation_fids
+            or fe.feature_type == core_enums.FEATURE_TYPE_DEPRECATION_ID
+            or fe.impl_status_chrome == core_enums.DEPRECATED
+        ):
+            milestone_classification = (
+                core_enums.ReleaseNoteMilestoneClassification.DEPRECATION
+            )
+        elif fe.impl_status_chrome == core_enums.REMOVED:
+            milestone_classification = (
+                core_enums.ReleaseNoteMilestoneClassification.REMOVAL
+            )
+        else:
+            milestone_classification = (
+                core_enums.ReleaseNoteMilestoneClassification.SHIPPING
+            )
+
+        ot_url = origin_trial_urls.get(fid)
         rn_dict = converters.feature_entry_to_release_note_feature_dict(
-            fe, applied_suggestion=applied_suggestion
+            fe,
+            applied_suggestion=applied_suggestion,
+            milestone_classification=milestone_classification,
+            origin_trial_url=ot_url,
         )
-        if fe.doc_links:
-            rn_dict['doc_links'] = fe.doc_links
+
         formatted_features.append(rn_dict)
 
     return formatted_features
@@ -715,13 +766,20 @@ def _set_feature_fields_for_roadmap(
     formatted_features: list[dict[str, Any]],
     triggering_stages_by_fid: dict[int, list[Stage]],
 ) -> None:
-    """Add roadmap_stage_ids and finch_urls items to formated features."""
+    """Add roadmap_stage_ids, origin_trial_id, and finch_urls items to formatted features."""
     for ff in formatted_features:
         # The feature's stages that caused it to appear in this roadmap section.
         feature_trigger_stages = triggering_stages_by_fid.get(ff['id'], [])
         ff['roadmap_stage_ids'] = [
             s.key.integer_id() for s in feature_trigger_stages
         ]  # noqa: E501
+        ot_ids = [
+            s.origin_trial_id
+            for s in feature_trigger_stages
+            if s.origin_trial_id
+        ]
+        if ot_ids:
+            ff['origin_trial_id'] = ot_ids[0]
         ff['feature_type_int'] = ff['feature_type_int']
         ff['finch_urls'] = [
             s.finch_url for s in feature_trigger_stages if s.finch_url

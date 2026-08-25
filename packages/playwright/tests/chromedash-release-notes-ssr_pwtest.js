@@ -55,9 +55,8 @@ async function withShippedFeature(page, milestone, testFn) {
     if (featureId) {
       await page
         .evaluate(async id => {
-          // @ts-ignore
-          if (window.csClient)
-            await window.csClient.doDelete(`/features/${id}`);
+          const client = window['csClient'];
+          if (client) await client.doDelete(`/features/${id}`);
         }, featureId)
         .catch(() => {});
     }
@@ -226,6 +225,14 @@ test.describe('Release Notes SSR Page', () => {
       // Verify feature title permalink
       const titleLink = featureCard.locator('.feature-name');
       await expect(titleLink).toHaveAttribute('href', `/feature/${featureId}`);
+
+      // Verify metadata links bar
+      const linksBar = featureCard.locator('.feature-links-bar');
+      await expect(linksBar).toBeVisible();
+      const entryLink = linksBar.getByRole('link', {
+        name: 'ChromeStatus.com entry',
+      });
+      await expect(entryLink).toHaveAttribute('href', `/feature/${featureId}`);
 
       await expectZeroLayoutShift(page);
     });

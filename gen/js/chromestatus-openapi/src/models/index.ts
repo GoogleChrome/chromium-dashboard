@@ -71,6 +71,7 @@ export * from './ProcessStage';
 export * from './ProgressItem';
 export * from './RejectUnneededGetRequest';
 export * from './ReleaseNoteFeature';
+export * from './ReleaseNoteLink';
 export * from './ReleaseNotesL10nItem';
 export * from './ReleaseNotesL10nResponse';
 export * from './ReleaseNotesResponse';
