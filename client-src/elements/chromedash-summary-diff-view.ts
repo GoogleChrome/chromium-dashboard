@@ -64,12 +64,6 @@ export class ChromedashSummaryDiffView extends LitElement {
           margin-bottom: var(--sl-spacing-medium);
         }
 
-        @media (max-width: 768px) {
-          .comparison-grid {
-            grid-template-columns: 1fr;
-          }
-        }
-
         .column-card {
           border: 1px solid var(--sl-color-neutral-200);
           border-radius: var(--sl-border-radius-medium);
@@ -142,6 +136,18 @@ export class ChromedashSummaryDiffView extends LitElement {
 
         .source-link {
           text-decoration: none;
+        }
+
+        @media (max-width: 768px) {
+          .comparison-grid {
+            grid-template-columns: 1fr;
+            gap: var(--sl-spacing-small);
+          }
+
+          .column-content {
+            min-height: auto;
+            padding: var(--sl-spacing-small) var(--sl-spacing-medium);
+          }
         }
       `,
     ];
