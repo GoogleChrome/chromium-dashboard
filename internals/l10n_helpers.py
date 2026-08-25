@@ -111,7 +111,7 @@ def get_page_translations(
     raw = loaded.get(resolved_lang, loaded.get(DEFAULT_LANGUAGE, {}))
     formatted: dict[str, Any] = {}
     for key, text in raw.items():
-        if '{' in text and any(f"{{{k}}}" in text for k in context):
+        if '{' in text and any(f'{{{k}}}' in text for k in context):
             try:
                 formatted[key] = text.format(**context)
             except (KeyError, IndexError):

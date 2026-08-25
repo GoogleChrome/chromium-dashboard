@@ -38,7 +38,7 @@
   "category_capabilities_fugu": "機能 (Project Fugu)",
   "category_isolated_web_apps": "Isolated Web Apps",
   "category_miscellaneous": "その他",
-  "link_tracking_bug": "トラッキング バグ #{bug_id}",
+  "link_tracking_bug": "トラッキング バグ{bug_id}",
   "link_chromestatus": "ChromeStatus",
   "link_spec": "仕様",
   "link_origin_trial": "オリジントライアル",

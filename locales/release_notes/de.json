@@ -38,7 +38,7 @@
   "category_capabilities_fugu": "Funktionen (Project Fugu)",
   "category_isolated_web_apps": "Isolierte Web-Apps",
   "category_miscellaneous": "Sonstiges",
-  "link_tracking_bug": "Tracking-Bug #{bug_id}",
+  "link_tracking_bug": "Tracking-Bug{bug_id}",
   "link_chromestatus": "ChromeStatus",
   "link_spec": "Spezifikation",
   "link_origin_trial": "Origin Trial",

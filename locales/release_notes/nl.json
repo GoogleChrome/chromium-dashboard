@@ -38,7 +38,7 @@
   "category_capabilities_fugu": "Mogelijkheden (Fugu)",
   "category_isolated_web_apps": "Geïsoleerde web-apps",
   "category_miscellaneous": "Overig",
-  "link_tracking_bug": "Trackingbug #{bug_id}",
+  "link_tracking_bug": "Trackingbug{bug_id}",
   "link_chromestatus": "ChromeStatus",
   "link_spec": "Specificatie",
   "link_origin_trial": "Origin-proefversie",

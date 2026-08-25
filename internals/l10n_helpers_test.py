@@ -384,42 +384,49 @@ class ReleaseNotesL10nTest(unittest.TestCase):
 
     def test_link_localization(self):
         """It translates link titles and extracts tracking bug numbers."""
-        test_links: list[l10n_models.ReleaseNoteLinkDict] = [
-            {
-                'type': 'BUG',
-                'url': 'https://issues.chromium.org/issues/12345',
-                'title': 'Tracking bug #12345',
-            },
-            {
-                'type': 'SPEC',
-                'url': 'https://w3c.github.io/spec',
-                'title': 'Spec',
-            },
-            {
-                'type': 'DOC',
-                'url': 'https://developer.mozilla.org/docs',
-                'title': 'Docs',
-            },
-            {
-                'type': 'ORIGIN_TRIAL',
-                'url': '/origintrials#/view_trial/1',
-                'title': 'Origin trial',
-            },
+        test_links = [
+            l10n_models.ReleaseNoteLinkItem(
+                type=core_enums.ReleaseNoteLinkType.BUG,
+                url='https://issues.chromium.org/issues/12345',
+                title='Tracking bug #12345',
+            ),
+            l10n_models.ReleaseNoteLinkItem(
+                type=core_enums.ReleaseNoteLinkType.SPEC,
+                url='https://w3c.github.io/spec',
+                title='Spec',
+            ),
+            l10n_models.ReleaseNoteLinkItem(
+                type=core_enums.ReleaseNoteLinkType.DOC,
+                url='https://developer.mozilla.org/docs',
+                title='Docs',
+            ),
+            l10n_models.ReleaseNoteLinkItem(
+                type=core_enums.ReleaseNoteLinkType.ORIGIN_TRIAL,
+                url='/origintrials#/view_trial/1',
+                title='Origin trial',
+            ),
+            l10n_models.ReleaseNoteLinkItem(
+                type=core_enums.ReleaseNoteLinkType.BUG,
+                url='https://issues.chromium.org/new',
+                title=None,
+            ),
         ]
 
         ja_trans = l10n_helpers.get_release_notes_translations('ja')
         ja_links = ja_trans.localize_links(test_links)
-        self.assertEqual(ja_links[0]['title'], 'トラッキング バグ #12345')
-        self.assertEqual(ja_links[1]['title'], '仕様')
-        self.assertEqual(ja_links[2]['title'], 'ドキュメント')
-        self.assertEqual(ja_links[3]['title'], 'オリジントライアル')
+        self.assertEqual(ja_links[0].title, 'トラッキング バグ #12345')
+        self.assertEqual(ja_links[1].title, '仕様')
+        self.assertEqual(ja_links[2].title, 'ドキュメント')
+        self.assertEqual(ja_links[3].title, 'オリジントライアル')
+        self.assertEqual(ja_links[4].title, 'トラッキング バグ')
 
         es_trans = l10n_helpers.get_release_notes_translations('es')
         es_links = es_trans.localize_links(test_links)
-        self.assertEqual(es_links[0]['title'], 'Error de seguimiento n.º 12345')
-        self.assertEqual(es_links[1]['title'], 'Especificación')
-        self.assertEqual(es_links[2]['title'], 'Documentación')
-        self.assertEqual(es_links[3]['title'], 'Prueba de origen')
+        self.assertEqual(es_links[0].title, 'Error de seguimiento #12345')
+        self.assertEqual(es_links[1].title, 'Especificación')
+        self.assertEqual(es_links[2].title, 'Documentación')
+        self.assertEqual(es_links[3].title, 'Prueba de origen')
+        self.assertEqual(es_links[4].title, 'Error de seguimiento')
 
     def test_format_ui__english_and_japanese(self):
         """It constructs pre-formatted type-safe UI strings for release notes."""

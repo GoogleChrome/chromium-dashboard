@@ -38,7 +38,7 @@
   "category_capabilities_fugu": "기능 (Project Fugu)",
   "category_isolated_web_apps": "격리된 웹 앱",
   "category_miscellaneous": "기타",
-  "link_tracking_bug": "추적 버그 #{bug_id}",
+  "link_tracking_bug": "추적 버그{bug_id}",
   "link_chromestatus": "ChromeStatus",
   "link_spec": "사양",
   "link_origin_trial": "오리진 트라이얼",

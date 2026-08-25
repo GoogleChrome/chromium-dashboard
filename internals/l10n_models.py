@@ -17,7 +17,7 @@
 import dataclasses
 import re
 from enum import StrEnum
-from typing import Any, TypedDict
+from typing import Any
 
 from internals import core_enums
 
@@ -181,12 +181,13 @@ RELEASE_NOTES_PLACEHOLDERS: dict[ReleaseNotesKey, set[str]] = {
 }
 
 
-class ReleaseNoteLinkDict(TypedDict):
-    """Schema for a release note link dictionary."""
+@dataclasses.dataclass(frozen=True)
+class ReleaseNoteLinkItem:
+    """Represents a release note link."""
 
     url: str
     type: core_enums.ReleaseNoteLinkType | str
-    title: str | None
+    title: str | None = None
 
 
 @dataclasses.dataclass(frozen=True)
@@ -294,43 +295,55 @@ class ReleaseNotesTranslations:
             case _:
                 return self.category_miscellaneous
 
-    def localize_link_title(self, link: ReleaseNoteLinkDict) -> str:
+    def localize_link_title(self, link: ReleaseNoteLinkItem) -> str:
         """Translates a single release note link's title into the target locale."""
-        link_type = link.get('type')
-        title = link.get('title')
-        url = link.get('url', '')
-
-        match link_type:
-            case core_enums.ReleaseNoteLinkType.BUG | 'BUG':
-                raw_text = f'{title or ""} {url}'
+        match link.type:
+            case core_enums.ReleaseNoteLinkType.BUG:
+                raw_text = f'{link.title or ""} {link.url}'
                 match = re.search(r'\d+', raw_text)
-                if match:
-                    return self.link_tracking_bug.format(bug_id=match.group(0))
-                return title or 'Tracking bug'
-            case core_enums.ReleaseNoteLinkType.SPEC | 'SPEC':
+                bug_suffix = f' #{match.group(0)}' if match else ''
+                return self.link_tracking_bug.format(bug_id=bug_suffix)
+            case core_enums.ReleaseNoteLinkType.SPEC:
                 return self.link_spec
-            case core_enums.ReleaseNoteLinkType.DOC | 'DOC':
+            case core_enums.ReleaseNoteLinkType.DOC:
                 return self.link_doc
-            case core_enums.ReleaseNoteLinkType.ORIGIN_TRIAL | 'ORIGIN_TRIAL':
+            case core_enums.ReleaseNoteLinkType.ORIGIN_TRIAL:
                 return self.link_origin_trial
-            case core_enums.ReleaseNoteLinkType.EXPLAINER | 'EXPLAINER':
+            case core_enums.ReleaseNoteLinkType.EXPLAINER:
                 return self.link_explainer
-            case core_enums.ReleaseNoteLinkType.DEMO | 'DEMO':
+            case core_enums.ReleaseNoteLinkType.DEMO:
                 return self.link_demo
-            case core_enums.ReleaseNoteLinkType.CHROMESTATUS | 'CHROMESTATUS':
+            case core_enums.ReleaseNoteLinkType.CHROMESTATUS:
                 return self.link_chromestatus
-            case core_enums.ReleaseNoteLinkType.OTHER | 'OTHER':
+            case core_enums.ReleaseNoteLinkType.OTHER:
                 return self.link_other
             case _:
-                return title or ''
+                return link.title or ''
 
     def localize_links(
-        self, links: list[ReleaseNoteLinkDict]
-    ) -> list[ReleaseNoteLinkDict]:
+        self, links: list[dict[str, Any] | ReleaseNoteLinkItem]
+    ) -> list[ReleaseNoteLinkItem]:
         """Translates a list of release note links."""
-        return [
-            {**link, 'title': self.localize_link_title(link)} for link in links
-        ]
+        result: list[ReleaseNoteLinkItem] = []
+        for link_entry in links:
+            if isinstance(link_entry, ReleaseNoteLinkItem):
+                item = link_entry
+            else:
+                item = ReleaseNoteLinkItem(
+                    url=link_entry.get('url', ''),
+                    type=link_entry.get(
+                        'type', core_enums.ReleaseNoteLinkType.OTHER
+                    ),
+                    title=link_entry.get('title'),
+                )
+            result.append(
+                ReleaseNoteLinkItem(
+                    url=item.url,
+                    type=item.type,
+                    title=self.localize_link_title(item),
+                )
+            )
+        return result
 
     def format_ui(
         self,

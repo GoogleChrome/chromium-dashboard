@@ -38,7 +38,7 @@
   "category_capabilities_fugu": "Kemampuan (Fugu)",
   "category_isolated_web_apps": "Aplikasi Web Terisolasi",
   "category_miscellaneous": "Lain-lain",
-  "link_tracking_bug": "Bug pelacakan #{bug_id}",
+  "link_tracking_bug": "Bug pelacakan{bug_id}",
   "link_chromestatus": "ChromeStatus",
   "link_spec": "Spesifikasi",
   "link_origin_trial": "Origin Trial",

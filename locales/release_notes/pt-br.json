@@ -38,7 +38,7 @@
   "category_capabilities_fugu": "Recursos (Fugu)",
   "category_isolated_web_apps": "Apps Web Isolados",
   "category_miscellaneous": "Outros",
-  "link_tracking_bug": "Bug de rastreamento nº {bug_id}",
+  "link_tracking_bug": "Bug de acompanhamento{bug_id}",
   "link_chromestatus": "ChromeStatus",
   "link_spec": "Especificação",
   "link_origin_trial": "Teste de origem",

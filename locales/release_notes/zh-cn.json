@@ -38,7 +38,7 @@
   "category_capabilities_fugu": "功能 (Project Fugu)",
   "category_isolated_web_apps": "隔离 Web 应用",
   "category_miscellaneous": "其他",
-  "link_tracking_bug": "跟踪错误 #{bug_id}",
+  "link_tracking_bug": "跟踪错误{bug_id}",
   "link_chromestatus": "ChromeStatus",
   "link_spec": "规范",
   "link_origin_trial": "源试用 (Origin Trial)",
