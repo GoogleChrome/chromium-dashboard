@@ -87,24 +87,6 @@ export class ChromedashDrawer extends LitElement {
           justify-content: space-between;
           gap: var(--content-padding-half);
         }
-        sl-drawer a .nav-status-icon {
-          font-size: 14px;
-          color: var(--sl-color-neutral-500);
-          flex-shrink: 0;
-          display: flex;
-          align-items: center;
-        }
-        sl-drawer a:hover .nav-status-icon {
-          color: var(--sl-color-neutral-900);
-        }
-        sl-drawer a[active] .nav-status-icon {
-          color: var(--nav-link-active-color);
-        }
-        sl-drawer a sl-tooltip {
-          display: flex;
-          align-items: center;
-          flex-shrink: 0;
-        }
         sl-drawer::part(header) {
           display: none;
         }
@@ -335,11 +317,7 @@ export class ChromedashDrawer extends LitElement {
           'Release notes',
           html`
             <sl-tooltip content="Preview" distance="8">
-              <sl-icon
-                name="info-circle"
-                aria-hidden="true"
-                class="nav-status-icon"
-              ></sl-icon>
+              <sl-icon name="info-circle" aria-hidden="true"></sl-icon>
             </sl-tooltip>
           `
         )}
