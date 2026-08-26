@@ -85,12 +85,17 @@ export class ChromedashDrawer extends LitElement {
           display: flex;
           align-items: center;
           justify-content: space-between;
-          gap: var(--content-padding-half);
+          gap: var(--content-padding-quarter);
+          overflow: hidden;
         }
         sl-drawer a sl-badge::part(base) {
-          font-size: var(--sl-font-size-2x-small);
+          font-size: 10px;
+          line-height: 14px;
+          min-height: 16px;
+          padding: 0 5px;
           text-transform: uppercase;
           letter-spacing: 0.5px;
+          font-weight: 600;
         }
         sl-drawer::part(header) {
           display: none;
@@ -109,7 +114,8 @@ export class ChromedashDrawer extends LitElement {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: var(--content-padding-half);
+            gap: var(--content-padding-quarter);
+            overflow: hidden;
           }
           sl-drawer::part(header) {
             display: none;
