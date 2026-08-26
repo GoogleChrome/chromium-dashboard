@@ -130,7 +130,7 @@ export class ChromedashFeatureDetail extends LitElement {
   @query('chromedash-summary-review-dialog')
   reviewDialog?: ChromedashSummaryReviewDialog;
 
-  handleSummaryCompleted(
+  async handleSummaryCompleted(
     e: CustomEvent<{
       featureId: number;
       suggestion: SummarySuggestion | null;
@@ -138,6 +138,7 @@ export class ChromedashFeatureDetail extends LitElement {
   ) {
     if (e.detail.suggestion) {
       this.activeSuggestion = e.detail.suggestion;
+      await this.updateComplete;
       this.reviewDialog?.show();
     }
   }
