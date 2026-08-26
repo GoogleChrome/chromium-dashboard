@@ -119,3 +119,4 @@ import './elements/chromedash-wpt-eval-button';
 import './elements/chromedash-wpt-eval-page';
 import './elements/chromedash-summary-diff-view';
 import './elements/chromedash-summary-review-dialog';
+import './elements/chromedash-release-feature-card';
