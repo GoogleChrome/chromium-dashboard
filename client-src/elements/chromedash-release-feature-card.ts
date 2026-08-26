@@ -24,6 +24,8 @@ import {
   ReleaseNoteLink,
   ReleaseNoteLinkTypeEnum,
   ReleaseNoteFeatureSummarySourceEnum,
+  SummarySuggestion,
+  SummarySuggestionStatusEnum,
 } from 'chromestatus-openapi';
 
 export const LINK_TYPE_TITLES: Record<ReleaseNoteLinkTypeEnum, string> = {
@@ -47,10 +49,66 @@ export type FeatureCardItem = Partial<ReleaseNoteFeature> & {
   markdown_fields?: string[];
 };
 
+/**
+ * Aggregates and deduplicates resource and documentation links for a feature.
+ */
+export function aggregateFeatureLinks(
+  feature: FeatureCardItem,
+  suggestion?: SummarySuggestion | null
+): ReleaseNoteLink[] {
+  const normalizedLinks: ReleaseNoteLink[] = [];
+  const seenUrls = new Set<string>();
+
+  function addLink(
+    url?: string,
+    type: ReleaseNoteLinkTypeEnum = ReleaseNoteLinkTypeEnum.DOC,
+    title?: string
+  ): void {
+    const trimmed = url?.trim();
+    if (!trimmed || seenUrls.has(trimmed)) return;
+    seenUrls.add(trimmed);
+    normalizedLinks.push({url: trimmed, type, title: title?.trim()});
+  }
+
+  if (Array.isArray(feature.links) && feature.links.length > 0) {
+    for (const link of feature.links) {
+      addLink(link.url, link.type, link.title);
+    }
+  } else {
+    if (Array.isArray(feature.doc_links)) {
+      for (const url of feature.doc_links) {
+        addLink(url, ReleaseNoteLinkTypeEnum.DOC);
+      }
+    }
+    if (feature.spec_link) {
+      addLink(feature.spec_link, ReleaseNoteLinkTypeEnum.SPEC);
+    }
+    if (Array.isArray(feature.explainer_links)) {
+      for (const url of feature.explainer_links) {
+        addLink(url, ReleaseNoteLinkTypeEnum.EXPLAINER);
+      }
+    }
+  }
+
+  if (Array.isArray(suggestion?.suggested_doc_links)) {
+    for (const url of suggestion.suggested_doc_links) {
+      addLink(url, ReleaseNoteLinkTypeEnum.DOC);
+    }
+  }
+
+  return normalizedLinks;
+}
+
 @customElement('chromedash-release-feature-card')
 export class ChromedashReleaseFeatureCard extends LitElement {
   @property({attribute: false})
   feature: FeatureCardItem | null = null;
+
+  @property({attribute: false})
+  suggestion: SummarySuggestion | null = null;
+
+  @property({type: Boolean})
+  reviewMode = false;
 
   @property({type: Number})
   milestone?: number;
@@ -281,6 +339,30 @@ export class ChromedashReleaseFeatureCard extends LitElement {
           font-size: var(--button-font-size, 0.875rem);
           line-height: 1;
         }
+
+        .card-actions {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          flex-wrap: wrap;
+          gap: var(--sl-spacing-small);
+          border-top: var(--default-border);
+          padding-top: var(--content-padding-half);
+        }
+
+        .action-buttons {
+          display: flex;
+          align-items: center;
+          gap: var(--sl-spacing-small);
+        }
+
+        .suggestion-meta {
+          display: flex;
+          align-items: center;
+          gap: var(--sl-spacing-x-small);
+          font-size: var(--button-small-font-size, 0.875rem);
+          color: var(--unimportant-text-color);
+        }
       `,
     ];
   }
@@ -309,6 +391,44 @@ export class ChromedashReleaseFeatureCard extends LitElement {
         window.location.hash = anchor;
       }
     }
+  }
+
+  /**
+   * Dispatched when the user clicks the "Review Suggestion" or "Inspect / Edit" button.
+   * Event name: `review-click`
+   * Detail payload: { feature: FeatureCardItem | null, featureId: number | undefined, suggestion: SummarySuggestion | null }
+   */
+  handleReviewClick(): void {
+    this.dispatchEvent(
+      new CustomEvent('review-click', {
+        detail: {
+          feature: this.feature,
+          featureId: this.feature?.id,
+          suggestion: this.suggestion ?? null,
+        },
+        bubbles: true,
+        composed: true,
+      })
+    );
+  }
+
+  /**
+   * Dispatched when the user clicks the "Generate AI Summary" or "Regenerate" button.
+   * Event name: `generate-click`
+   * Detail payload: { feature: FeatureCardItem | null, featureId: number | undefined, suggestion: SummarySuggestion | null }
+   */
+  handleGenerateClick(): void {
+    this.dispatchEvent(
+      new CustomEvent('generate-click', {
+        detail: {
+          feature: this.feature,
+          featureId: this.feature?.id,
+          suggestion: this.suggestion ?? null,
+        },
+        bubbles: true,
+        composed: true,
+      })
+    );
   }
 
   renderCategoryBadge(): TemplateResult | typeof nothing {
@@ -341,47 +461,23 @@ export class ChromedashReleaseFeatureCard extends LitElement {
     return html`<sl-badge variant="neutral" pill>Human Authored</sl-badge>`;
   }
 
+  renderReviewBadge(): TemplateResult | typeof nothing {
+    if (
+      this.suggestion &&
+      this.suggestion.status === SummarySuggestionStatusEnum.PENDING
+    ) {
+      return html`<sl-badge variant="warning" pill
+        >AI Review Pending</sl-badge
+      >`;
+    }
+    return nothing;
+  }
+
   renderDocLinks(): TemplateResult | typeof nothing {
     const feature = this.feature;
     if (!feature) return nothing;
 
-    let normalizedLinks: ReleaseNoteLink[] = [];
-
-    if (Array.isArray(feature.links) && feature.links.length > 0) {
-      normalizedLinks = feature.links;
-    } else {
-      if (Array.isArray(feature.doc_links)) {
-        for (const url of feature.doc_links) {
-          if (url && !normalizedLinks.some(l => l.url === url)) {
-            normalizedLinks.push({
-              url,
-              type: ReleaseNoteLinkTypeEnum.DOC,
-            });
-          }
-        }
-      }
-      if (
-        feature.spec_link &&
-        !normalizedLinks.some(l => l.url === feature.spec_link)
-      ) {
-        normalizedLinks.push({
-          url: feature.spec_link,
-          type: ReleaseNoteLinkTypeEnum.SPEC,
-        });
-      }
-      if (Array.isArray(feature.explainer_links)) {
-        for (const url of feature.explainer_links) {
-          if (url && !normalizedLinks.some(l => l.url === url)) {
-            normalizedLinks.push({
-              url,
-              type: ReleaseNoteLinkTypeEnum.EXPLAINER,
-            });
-          }
-        }
-      }
-    }
-
-    normalizedLinks = normalizedLinks.filter(l => Boolean(l?.url?.trim()));
+    const normalizedLinks = aggregateFeatureLinks(feature, this.suggestion);
     if (normalizedLinks.length === 0) return nothing;
 
     return html`
@@ -419,6 +515,84 @@ export class ChromedashReleaseFeatureCard extends LitElement {
             </a>
           `;
         })}
+      </div>
+    `;
+  }
+
+  renderPrimaryReviewButton(hasPendingSuggestion: boolean): TemplateResult {
+    if (hasPendingSuggestion) {
+      return html`
+        <sl-button
+          size="small"
+          variant="primary"
+          class="review-button"
+          @click=${this.handleReviewClick}
+        >
+          <sl-icon slot="prefix" name="pencil"></sl-icon>
+          Review Suggestion
+        </sl-button>
+      `;
+    }
+
+    return html`
+      <sl-button
+        size="small"
+        variant="default"
+        class="review-button"
+        @click=${this.handleReviewClick}
+      >
+        <sl-icon slot="prefix" name="eye"></sl-icon>
+        Inspect / Edit
+      </sl-button>
+    `;
+  }
+
+  renderGenerateButton(hasPendingSuggestion: boolean): TemplateResult {
+    const label = hasPendingSuggestion ? 'Regenerate' : 'Generate AI Summary';
+    return html`
+      <sl-button
+        size="small"
+        variant="default"
+        class="generate-button"
+        @click=${this.handleGenerateClick}
+      >
+        <sl-icon slot="prefix" name="arrow-clockwise"></sl-icon>
+        ${label}
+      </sl-button>
+    `;
+  }
+
+  renderReasoningMeta(): TemplateResult | typeof nothing {
+    const reasoning = this.suggestion?.reasoning?.trim();
+    if (!reasoning) return nothing;
+
+    return html`
+      <div class="suggestion-meta">
+        <sl-tooltip content=${reasoning}>
+          <sl-icon
+            tabindex="0"
+            name="info-circle"
+            aria-label="Summary reasoning details"
+          ></sl-icon>
+        </sl-tooltip>
+        <span>Grounding available</span>
+      </div>
+    `;
+  }
+
+  renderReviewActions(): TemplateResult | typeof nothing {
+    if (!this.reviewMode || !this.feature) return nothing;
+
+    const hasPendingSuggestion =
+      this.suggestion?.status === SummarySuggestionStatusEnum.PENDING;
+
+    return html`
+      <div class="card-actions">
+        <div class="action-buttons">
+          ${this.renderPrimaryReviewButton(hasPendingSuggestion)}
+          ${this.renderGenerateButton(hasPendingSuggestion)}
+        </div>
+        ${this.renderReasoningMeta()}
       </div>
     `;
   }
@@ -477,10 +651,12 @@ export class ChromedashReleaseFeatureCard extends LitElement {
 
           <div class="badges-wrapper">
             ${this.renderCategoryBadge()} ${this.renderProvenanceBadge()}
+            ${this.renderReviewBadge()}
           </div>
         </header>
 
         ${this.renderFeatureSummary()} ${this.renderDocLinks()}
+        ${this.renderReviewActions()}
       </article>
     `;
   }
