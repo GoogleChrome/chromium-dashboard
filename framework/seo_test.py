@@ -26,16 +26,16 @@ class SEOMetadataTest(testing_config.CustomTestCase):
     def test_instantiation_defaults(self):
         """It applies default StrEnum values for og_type and schema_type."""
         metadata = seo.Metadata(
-            canonical_url='https://chromestatus.com/release-notes/151',
-            seo_title='Chrome 151 Release Notes',
+            canonical_url='https://chromestatus.com/release-notes/152',
+            seo_title='Chrome 152 Release Notes',
             seo_description='Release notes description.',
             site_logo_url='https://chromestatus.com/static/img/crstatus_192.png',
         )
 
         self.assertEqual(
-            'https://chromestatus.com/release-notes/151', metadata.canonical_url
+            'https://chromestatus.com/release-notes/152', metadata.canonical_url
         )
-        self.assertEqual('Chrome 151 Release Notes', metadata.seo_title)
+        self.assertEqual('Chrome 152 Release Notes', metadata.seo_title)
         self.assertEqual('Release notes description.', metadata.seo_description)
         self.assertEqual(
             'https://chromestatus.com/static/img/crstatus_192.png',
@@ -47,7 +47,7 @@ class SEOMetadataTest(testing_config.CustomTestCase):
     def test_strenum_custom_values(self):
         """It accepts explicit StrEnum members for og_type and schema_type."""
         metadata = seo.Metadata(
-            canonical_url='https://chromestatus.com/release-notes/151',
+            canonical_url='https://chromestatus.com/release-notes/152',
             og_type=seo.OpenGraphType.WEBSITE,
             schema_type=seo.SchemaType.ITEM_PAGE,
         )
