@@ -17,7 +17,7 @@
 import dataclasses
 import re
 from enum import StrEnum
-from typing import Any
+from typing import Any, TypedDict
 
 from internals import core_enums
 
@@ -181,13 +181,35 @@ RELEASE_NOTES_PLACEHOLDERS: dict[ReleaseNotesKey, set[str]] = {
 }
 
 
+class ReleaseNoteLinkDict(TypedDict, total=False):
+    """Raw link dictionary structure from datastore or converters."""
+
+    url: str
+    type: core_enums.ReleaseNoteLinkType | str
+    title: str | None
+
+
 @dataclasses.dataclass(frozen=True)
 class ReleaseNoteLinkItem:
-    """Represents a release note link."""
+    """Represents a strongly-typed release note link."""
 
     url: str
     type: core_enums.ReleaseNoteLinkType | str
     title: str | None = None
+
+
+class ReleaseNoteFeatureDict(TypedDict, total=False):
+    """Strongly-typed release note feature dictionary used across SSR and l10n."""
+
+    id: int
+    name: str
+    summary: str
+    formatted_summary: str
+    summary_lang: str
+    category: int | None
+    category_name: str
+    milestone_classification: int
+    links: list[ReleaseNoteLinkItem]
 
 
 @dataclasses.dataclass(frozen=True)

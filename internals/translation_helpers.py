@@ -57,7 +57,7 @@ def compute_summary_hash(summary: str) -> str:
 
 
 def build_summary_cache_key(
-    feature_id: int | str, lang: str, source_hash: str
+    feature_id: int, lang: str, source_hash: str
 ) -> str:
     """Builds a deterministic Redis cache key containing the feature ID, language, and content hash."""
     return f'l10n_feat_summary|{feature_id}|{lang}|{source_hash}'
@@ -80,23 +80,17 @@ def translate_html_batch(
     if not html_list:
         return []
     if target_lang == l10n_models.DEFAULT_LANGUAGE.value:
-        return html_list
+        return [h for h in html_list]
 
-    # In unit test mode or if mock provider is enabled, return deterministic mock translations.
-    if settings.UNIT_TEST_MODE or getattr(
-        settings, 'MOCK_TRANSLATION_SERVICE', False
-    ):
+    # In local development, unit test mode, or playwright mode, return deterministic mock translations.
+    if settings.DEV_MODE or settings.UNIT_TEST_MODE or settings.PLAYWRIGHT_MODE:
         return [f'[Translated to {target_lang}] {h}' for h in html_list]
 
     try:
         from google.cloud import translate_v3
 
-        project_id = (
-            getattr(settings, 'GOOGLE_CLOUD_PROJECT', None)
-            or 'chromestatus-backend'
-        )
         client = translate_v3.TranslationServiceClient()
-        parent = f'projects/{project_id}/locations/global'
+        parent = f'projects/{settings.APP_ID}/locations/global'
 
         # Protect code tokens before sending to Cloud Translation
         masked_contents = [
