@@ -12,7 +12,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Core loader, language resolver, and helper functions for localization (L10n)."""
+"""Core loader, language resolver, and helper functions for static UI localization (L10n).
+
+Architectural Role:
+    This module manages STATIC UI strings and catalogs authored by engineers/translators
+    and stored as static JSON files in `locales/<page_name>/<lang>.json`. These strings
+    are loaded into memory at server startup and validated against strongly-typed dataclasses.
+
+When to add to `l10n_helpers.py`:
+    - Adding or updating static UI string loaders and language catalog resolvers.
+    - Adding new supported page catalogs or language options for UI selectors.
+    - Path localization helpers (e.g., `format_localized_path`).
+    - Validation and parsing of static JSON translation catalogs.
+
+When to add to `translation_helpers.py` instead:
+    - Anything related to DYNAMIC content machine translation (e.g., translating feature summaries).
+    - Cloud Translation API / Gemini translation service calls and timeouts.
+    - Redis fingerprint caching (`l10n_feat_summary|...`) and content hash validation.
+    - HTML code-masking (`translate="no"`) for live content translation.
+"""
 
 import json
 import logging

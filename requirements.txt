@@ -131,6 +131,7 @@ google-api-core[grpc]==2.34.0
     #   google-cloud-secret-manager
     #   google-cloud-storage
     #   google-cloud-tasks
+    #   google-cloud-translate
 google-api-python-client==2.198.0
     # via -r requirements.in
 google-auth[pyopenssl,requests]==2.56.2
@@ -148,6 +149,7 @@ google-auth[pyopenssl,requests]==2.56.2
     #   google-cloud-secret-manager
     #   google-cloud-storage
     #   google-cloud-tasks
+    #   google-cloud-translate
     #   google-genai
 google-auth-httplib2==0.4.1
     # via google-api-python-client
@@ -160,6 +162,7 @@ google-cloud-core==2.6.1
     #   google-cloud-datastore
     #   google-cloud-logging
     #   google-cloud-storage
+    #   google-cloud-translate
 google-cloud-datastore==2.26.0
     # via google-cloud-ndb
 google-cloud-logging==3.16.1
@@ -171,6 +174,8 @@ google-cloud-secret-manager==2.30.0
 google-cloud-storage==3.13.1
     # via -r requirements.in
 google-cloud-tasks==2.24.0
+    # via -r requirements.in
+google-cloud-translate==3.27.0
     # via -r requirements.in
 google-crc32c==1.8.0
     # via
@@ -196,6 +201,7 @@ grpc-google-iam-v1==0.14.5
     #   google-cloud-logging
     #   google-cloud-secret-manager
     #   google-cloud-tasks
+    #   google-cloud-translate
 grpcio==1.83.0
     # via
     #   appengine-python-standard
@@ -205,6 +211,7 @@ grpcio==1.83.0
     #   google-cloud-logging
     #   google-cloud-secret-manager
     #   google-cloud-tasks
+    #   google-cloud-translate
     #   googleapis-common-protos
     #   grpc-google-iam-v1
     #   grpcio-status
@@ -339,6 +346,7 @@ proto-plus==1.28.3
     #   google-cloud-logging
     #   google-cloud-secret-manager
     #   google-cloud-tasks
+    #   google-cloud-translate
 protobuf==7.35.1
     # via
     #   appengine-python-standard
@@ -350,6 +358,7 @@ protobuf==7.35.1
     #   google-cloud-ndb
     #   google-cloud-secret-manager
     #   google-cloud-tasks
+    #   google-cloud-translate
     #   googleapis-common-protos
     #   grpc-google-iam-v1
     #   grpcio-status

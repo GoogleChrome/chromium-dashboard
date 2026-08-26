@@ -396,7 +396,7 @@
 {% endblock %}
 
 {% block content %}
-<main id="release-notes-container" aria-labelledby="page-title" lang="{{ current_lang }}">
+<main id="release-notes-container" aria-labelledby="page-title" lang="{{ current_lang }}" data-page-lang="{{ current_lang }}">
   {# Modern Milestone Navigation Strip #}
   <nav class="nav-strip" aria-label="Milestone navigation">
     <div>
@@ -492,7 +492,7 @@
                     <span class="anchor-tooltip" role="status" aria-live="polite">{{ ui.link_copied_tooltip }}</span>
                   </a>
                 </h3>
-                <div class="feature-summary">{{ feature.formatted_summary | safe }}</div>
+                <div class="feature-summary" lang="{{ feature.summary_lang }}" data-summary-lang="{{ feature.summary_lang }}">{{ feature.formatted_summary | safe }}</div>
               </div>
               {% if feature.links %}
                 <div class="feature-links-bar" aria-label="Feature metadata and resources">
@@ -536,7 +536,7 @@
                   <span class="anchor-tooltip" role="status" aria-live="polite">{{ ui.link_copied_tooltip }}</span>
                 </a>
               </h3>
-              <div class="feature-summary">{{ feature.formatted_summary | safe }}</div>
+              <div class="feature-summary" lang="{{ feature.summary_lang }}" data-summary-lang="{{ feature.summary_lang }}">{{ feature.formatted_summary | safe }}</div>
             </div>
             {% if feature.links %}
               <div class="feature-links-bar" aria-label="Feature metadata and resources">
@@ -579,7 +579,7 @@
                   <span class="anchor-tooltip" role="status" aria-live="polite">{{ ui.link_copied_tooltip }}</span>
                 </a>
               </h3>
-              <div class="feature-summary">{{ feature.formatted_summary | safe }}</div>
+              <div class="feature-summary" lang="{{ feature.summary_lang }}" data-summary-lang="{{ feature.summary_lang }}">{{ feature.formatted_summary | safe }}</div>
             </div>
             {% if feature.links %}
               <div class="feature-links-bar" aria-label="Feature metadata and resources">
