@@ -307,3 +307,20 @@ class ReleaseNotesHandlerTest(testing_config.CustomTestCase):
                 ' rel="noopener noreferrer">https://web.dev/webgpu</a>',
                 html_str,
             )
+            # Verify English summary lang attributes
+            self.assertIn(
+                'class="feature-summary" lang="en" data-summary-lang="en"',
+                html_str,
+            )
+
+    def test_get_template_data__japanese_localizes_summaries(self):
+        """It renders localized summary text and data-summary-lang='ja' when ?hl=ja is requested."""
+        with test_app.test_request_context('/release-notes/151?hl=ja'):
+            data = self.handler.get_template_data(milestone=151)
+            html_str = flask.render_template('release-notes.html', **data)
+            self.assertEqual('ja', data['current_lang'])
+            self.assertIn(
+                'class="feature-summary" lang="ja" data-summary-lang="ja"',
+                html_str,
+            )
+            self.assertIn('[Translated to ja]', html_str)

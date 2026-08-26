@@ -28,8 +28,8 @@ from internals import (
     fetchchannels,
     l10n_helpers,
     l10n_models,
-    markdown_helpers,
     releasenotes_l10n_helpers,
+    translation_helpers,
 )
 
 # Milestones prior to M151 were published as standalone blog posts on developer.chrome.com.
@@ -130,15 +130,17 @@ class ReleaseNotesHandler(basehandlers.FlaskHandler):
         release_note_features = releasenotes_l10n_helpers.merge_translations(
             release_note_features, current_lang.value
         )
+        release_note_features = (
+            translation_helpers.localize_features_for_release_notes(
+                release_note_features, current_lang.value
+            )
+        )
 
         features_by_category: dict[str, list[dict[str, Any]]] = {}
         origin_trials: list[dict[str, Any]] = []
         deprecations_and_removals: list[dict[str, Any]] = []
 
         for feature in release_note_features:
-            feature['formatted_summary'] = markdown_helpers.render_markdown(
-                feature.get('summary') or ''
-            )
             raw_links = feature.get('links') or []
             link_items = [
                 l10n_models.ReleaseNoteLinkItem(

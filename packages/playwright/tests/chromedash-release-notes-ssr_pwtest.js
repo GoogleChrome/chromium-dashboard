@@ -470,13 +470,26 @@ test.describe('Release Notes SSR Page', () => {
       });
       await expect(pageHeading).toBeVisible();
 
-      const langSelect = page.locator('#language-select');
-      await expect(langSelect).toBeVisible();
-      await expect(langSelect).toHaveValue('ja');
+      // Assert root container has data-page-lang="ja" and lang="ja"
+      const container = page.locator('#release-notes-container');
+      await expect(container).toHaveAttribute('data-page-lang', 'ja');
+      await expect(container).toHaveAttribute('lang', 'ja');
 
       // Assert that category heading is localized to Japanese (e.g. その他 or CSS)
       const categoryHeading = page.locator('.category-title');
       await expect(categoryHeading.first()).toBeVisible();
+
+      // Assert that feature summaries are localized to Japanese and zero 'en' summaries leaked
+      const featureSummaries = page.locator('.feature-summary');
+      const summaryCount = await featureSummaries.count();
+      if (summaryCount > 0) {
+        await expect(
+          page.locator('.feature-summary[data-summary-lang="en"]')
+        ).toHaveCount(0);
+        await expect(
+          page.locator('.feature-summary[data-summary-lang="ja"]')
+        ).toHaveCount(summaryCount);
+      }
 
       await expectZeroLayoutShift(page);
     });
@@ -497,5 +510,9 @@ test.describe('Release Notes SSR Page', () => {
       name: 'Notas de la versión de Chrome 151',
     });
     await expect(spanishHeading).toBeVisible();
+    await expect(page.locator('#release-notes-container')).toHaveAttribute(
+      'data-page-lang',
+      'es'
+    );
   });
 });
