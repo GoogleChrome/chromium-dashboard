@@ -47,13 +47,17 @@ import {
   isDefinedValue,
 } from './utils.js';
 
-import {property, state} from 'lit/decorators.js';
+import {property, query, state} from 'lit/decorators.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {Feature, FeatureLink, StageDict, User} from '../js-src/cs-client.js';
 import './chromedash-activity-log.js';
 import './chromedash-callout.js';
 import './chromedash-gate-chip.js';
 import './chromedash-wpt-eval-button.js';
+import './chromedash-ai-summary-progress.js';
+import './chromedash-summary-review-dialog.js';
+import type {ChromedashSummaryReviewDialog} from './chromedash-summary-review-dialog.js';
+import {SummarySuggestion} from 'chromestatus-openapi';
 import {GateDict} from './chromedash-gate-chip.js';
 import {Process, ProgressItem} from './chromedash-gate-column.js';
 import {
@@ -121,6 +125,31 @@ export class ChromedashFeatureDetail extends LitElement {
   anyCollapsed = true;
   @state()
   openStage = 0;
+  @state()
+  activeSuggestion: SummarySuggestion | null = null;
+  @query('chromedash-summary-review-dialog')
+  reviewDialog?: ChromedashSummaryReviewDialog;
+
+  handleSummaryCompleted(
+    e: CustomEvent<{
+      featureId: number;
+      suggestion: SummarySuggestion | null;
+    }>
+  ) {
+    if (e.detail.suggestion) {
+      this.activeSuggestion = e.detail.suggestion;
+      this.reviewDialog?.show();
+    }
+  }
+
+  handleSummarySuggestionApplied(
+    e: CustomEvent<{featureId: number; summary: string}>
+  ) {
+    if (this.feature && e.detail.summary) {
+      this.feature.summary = e.detail.summary;
+      this._fireEvent('refetch-needed', {});
+    }
+  }
 
   static get styles() {
     const ICON_WIDTH = 18;
@@ -355,9 +384,24 @@ export class ChromedashFeatureDetail extends LitElement {
         ></chromedash-wpt-eval-button>`;
       }
     }
+    let aiSummaryProgress = html`${nothing}`;
+    if (
+      this.canEdit &&
+      this.feature.feature_type_int !==
+        FEATURE_TYPES.FEATURE_TYPE_ENTERPRISE_ID[0]
+    ) {
+      aiSummaryProgress = html`
+        <chromedash-ai-summary-progress
+          .featureId=${this.feature.id}
+          .compact=${true}
+          @summary-generation-completed=${this.handleSummaryCompleted}
+        ></chromedash-ai-summary-progress>
+      `;
+    }
     const toggleLabel = this.anyCollapsed ? 'Expand all' : 'Collapse all';
     return html`
-      ${wptEvalButton} ${this.canEdit ? editAllButton : nothing}
+      ${aiSummaryProgress} ${wptEvalButton}
+      ${this.canEdit ? editAllButton : nothing}
       <sl-button
         variant="text"
         title="Expand or collapse all sections"
@@ -1009,6 +1053,18 @@ export class ChromedashFeatureDetail extends LitElement {
         return this.renderProcessStage(feStage, sameTypeCount);
       })}
       ${this.renderAddStageButton()} ${this.renderFootnote()}
+      ${
+        this.canEdit
+          ? html`
+              <chromedash-summary-review-dialog
+                .featureId=${this.feature.id}
+                .currentSummary=${this.feature.summary || ''}
+                .suggestion=${this.activeSuggestion}
+                @summary-suggestion-applied=${this.handleSummarySuggestionApplied}
+              ></chromedash-summary-review-dialog>
+            `
+          : nothing
+      }
     `;
   }
 }

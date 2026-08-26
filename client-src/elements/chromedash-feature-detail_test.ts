@@ -82,4 +82,86 @@ describe('chromedash-feature-detail', () => {
     assert.isTrue(component.hasMixedGates(stageMixed));
     assert.isFalse(component.hasMixedGates(stageResolved));
   });
+
+  it('renders AI summary progress and review dialog when user has edit permissions', async () => {
+    const component = await fixture<ChromedashFeatureDetail>(
+      html`<chromedash-feature-detail
+        .feature=${feature}
+        .canEdit=${true}
+      ></chromedash-feature-detail>`
+    );
+    const progressEl = component.shadowRoot?.querySelector(
+      'chromedash-ai-summary-progress'
+    );
+    assert.exists(progressEl);
+
+    const reviewDialog = component.shadowRoot?.querySelector(
+      'chromedash-summary-review-dialog'
+    );
+    assert.exists(reviewDialog);
+  });
+
+  it('does not render AI summary progress when user lacks edit permissions', async () => {
+    const component = await fixture<ChromedashFeatureDetail>(
+      html`<chromedash-feature-detail
+        .feature=${feature}
+        .canEdit=${false}
+      ></chromedash-feature-detail>`
+    );
+    const progressEl = component.shadowRoot?.querySelector(
+      'chromedash-ai-summary-progress'
+    );
+    assert.isNull(progressEl);
+  });
+
+  it('handles summary completion and opens review dialog with active suggestion', async () => {
+    const component = await fixture<ChromedashFeatureDetail>(
+      html`<chromedash-feature-detail
+        .feature=${feature}
+        .canEdit=${true}
+      ></chromedash-feature-detail>`
+    );
+    const mockSuggestion = {
+      feature_id: 123456789,
+      suggested_summary: 'Suggested AI summary.',
+      version_token: 1,
+    } as any;
+
+    component.handleSummaryCompleted(
+      new CustomEvent('summary-generation-completed', {
+        detail: {
+          featureId: 123456789,
+          suggestion: mockSuggestion,
+        },
+      })
+    );
+
+    assert.deepEqual(component.activeSuggestion, mockSuggestion);
+  });
+
+  it('updates feature summary and dispatches refetch-needed on suggestion applied', async () => {
+    const component = await fixture<ChromedashFeatureDetail>(
+      html`<chromedash-feature-detail
+        .feature=${{...feature, summary: 'Old summary'}}
+        .canEdit=${true}
+      ></chromedash-feature-detail>`
+    );
+
+    let refetchDispatched = false;
+    component.addEventListener('refetch-needed', () => {
+      refetchDispatched = true;
+    });
+
+    component.handleSummarySuggestionApplied(
+      new CustomEvent('summary-suggestion-applied', {
+        detail: {
+          featureId: 123456789,
+          summary: 'New applied AI summary',
+        },
+      })
+    );
+
+    assert.equal(component.feature.summary, 'New applied AI summary');
+    assert.isTrue(refetchDispatched);
+  });
 });

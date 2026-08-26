@@ -16,6 +16,7 @@
 
 import {LitElement, PropertyValues, css, html, nothing} from 'lit';
 import {customElement, property, query, state} from 'lit/decorators.js';
+import '@shoelace-style/shoelace/dist/components/dialog/dialog.js';
 import type SlDialog from '@shoelace-style/shoelace/dist/components/dialog/dialog.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {ChromeStatusHttpError} from '../js-src/cs-client.js';
@@ -120,11 +121,19 @@ export class ChromedashSummaryReviewDialog extends LitElement {
   }
 
   show() {
-    this.dialogEl?.show();
+    if (typeof this.dialogEl?.show === 'function') {
+      this.dialogEl.show();
+    } else if (this.dialogEl) {
+      this.dialogEl.setAttribute('open', '');
+    }
   }
 
   hide() {
-    this.dialogEl?.hide();
+    if (typeof this.dialogEl?.hide === 'function') {
+      this.dialogEl.hide();
+    } else if (this.dialogEl) {
+      this.dialogEl.removeAttribute('open');
+    }
   }
 
   override willUpdate(changedProperties: PropertyValues) {
