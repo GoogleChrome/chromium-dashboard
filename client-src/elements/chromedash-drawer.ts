@@ -82,7 +82,15 @@ export class ChromedashDrawer extends LitElement {
           font-weight: bold;
         }
         sl-drawer a {
-          display: block;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: var(--content-padding-half);
+        }
+        sl-drawer a sl-badge::part(base) {
+          font-size: var(--sl-font-size-2x-small);
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
         }
         sl-drawer::part(header) {
           display: none;
@@ -98,7 +106,10 @@ export class ChromedashDrawer extends LitElement {
             display: block;
           }
           sl-drawer a {
-            display: block;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: var(--content-padding-half);
           }
           sl-drawer::part(header) {
             display: none;
@@ -241,8 +252,8 @@ export class ChromedashDrawer extends LitElement {
     );
   }
 
-  isCurrentPage(href) {
-    return this.currentPage === href;
+  isCurrentPage(href: string) {
+    return this.currentPage === href || this.currentPage.startsWith(href + '/');
   }
 
   toggleDrawerActions() {
@@ -257,10 +268,15 @@ export class ChromedashDrawer extends LitElement {
     return drawer.open;
   }
 
-  renderNavItem(url, label) {
-    return html`<a href="${url}" ?active=${this.isCurrentPage(url)}
-      >${label}</a
-    >`;
+  renderNavItem(
+    url: string,
+    label: string,
+    badge: TemplateResult | typeof nothing = nothing
+  ) {
+    return html`<a href="${url}" ?active=${this.isCurrentPage(url)}>
+      <span>${label}</span>
+      ${badge}
+    </a>`;
   }
 
   renderDrawer() {
@@ -301,6 +317,11 @@ export class ChromedashDrawer extends LitElement {
         ?open=${!isMobile() && this.defaultOpen}
       >
         ${accountMenu} ${this.renderNavItem('/roadmap', 'Roadmap')}
+        ${this.renderNavItem(
+          '/release-notes',
+          'Release notes',
+          html`<sl-badge variant="neutral" pill size="small">Preview</sl-badge>`
+        )}
         ${this.renderNavItem('/features', 'All features')} ${shippingThisYear}
         ${shippingNextYear} ${myFeaturesMenu}
         <hr />
