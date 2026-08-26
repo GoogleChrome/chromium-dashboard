@@ -384,13 +384,25 @@
       width: 100%;
     }
   }
+
+  .page-title-row {
+    display: flex;
+    align-items: center;
+    gap: var(--content-padding-half);
+  }
+
+  .page-title-row h1 {
+    text-wrap: balance;
+    margin: 0;
+  }
 </style>
 {% endblock %}
 
 {% block subheader %}
 <div id="subheader" class="actionlinks">
-  <div class="actionlinks">
-    <h1 id="page-title" style="text-wrap: balance;">{{ ui.page_title }}</h1>
+  <div class="actionlinks page-title-row">
+    <h1 id="page-title">{{ ui.page_title }}</h1>
+    <sl-badge variant="neutral" pill size="small">{{ ui.preview_badge }}</sl-badge>
   </div>
 </div>
 {% endblock %}

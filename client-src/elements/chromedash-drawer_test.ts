@@ -50,7 +50,8 @@ describe('chromedash-drawer', () => {
     const navInnerHTML = nav.innerHTML;
     assert.include(navInnerHTML, 'href="/roadmap"');
     assert.include(navInnerHTML, 'href="/release-notes"');
-    assert.include(navInnerHTML, 'Preview');
+    assert.include(navInnerHTML, 'name="info-circle"');
+    assert.include(navInnerHTML, 'content="Preview"');
     assert.include(navInnerHTML, 'href="/features"');
     assert.include(navInnerHTML, 'href="/metrics/css/popularity"');
     assert.include(navInnerHTML, 'href="/metrics/feature/popularity"');
@@ -81,7 +82,8 @@ describe('chromedash-drawer', () => {
     const navInnerHTML = nav.innerHTML;
     assert.include(navInnerHTML, 'href="/roadmap"');
     assert.include(navInnerHTML, 'href="/release-notes"');
-    assert.include(navInnerHTML, 'Preview');
+    assert.include(navInnerHTML, 'name="info-circle"');
+    assert.include(navInnerHTML, 'content="Preview"');
     assert.include(navInnerHTML, 'href="/features"');
     assert.include(navInnerHTML, 'href="/metrics/css/popularity"');
     assert.include(navInnerHTML, 'href="/metrics/feature/popularity"');

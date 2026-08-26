@@ -1,5 +1,6 @@
 {
   "page_title": "Catatan Rilis Chrome {milestone}",
+  "preview_badge": "Pratinjau",
   "jump_placeholder": "Beralih ke milestone Chrome",
   "jump_aria": "Beralih ke milestone Chrome",
   "prev_milestone_aria": "Milestone sebelumnya: Chrome {milestone}",

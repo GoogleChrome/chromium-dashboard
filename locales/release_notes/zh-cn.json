@@ -1,5 +1,6 @@
 {
   "page_title": "Chrome {milestone} 发布说明",
+  "preview_badge": "预览",
   "jump_placeholder": "跳转到 Chrome 里程碑",
   "jump_aria": "跳转到 Chrome 里程碑",
   "prev_milestone_aria": "上一个里程碑: Chrome {milestone}",

@@ -118,6 +118,7 @@ class ReleaseNotesKey(StrEnum):
 
     # UI Strings
     PAGE_TITLE = 'page_title'
+    PREVIEW_BADGE = 'preview_badge'
     JUMP_PLACEHOLDER = 'jump_placeholder'
     JUMP_ARIA = 'jump_aria'
     PREV_MILESTONE_ARIA = 'prev_milestone_aria'
@@ -196,6 +197,7 @@ class ReleaseNotesTranslations:
 
     # UI Strings
     page_title: str
+    preview_badge: str
     jump_placeholder: str
     jump_aria: str
     prev_milestone_aria: str
@@ -345,6 +347,7 @@ class ReleaseNotesTranslations:
 
         return {
             'page_title': self.page_title.format(milestone=milestone),
+            'preview_badge': self.preview_badge,
             'jump_placeholder': self.jump_placeholder,
             'jump_aria': self.jump_aria,
             'prev_milestone_aria': self.prev_milestone_aria.format(

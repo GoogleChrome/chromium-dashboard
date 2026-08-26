@@ -85,17 +85,25 @@ export class ChromedashDrawer extends LitElement {
           display: flex;
           align-items: center;
           justify-content: space-between;
-          gap: var(--content-padding-quarter);
-          overflow: hidden;
+          gap: var(--content-padding-half);
         }
-        sl-drawer a sl-badge::part(base) {
-          font-size: 10px;
-          line-height: 14px;
-          min-height: 16px;
-          padding: 0 5px;
-          text-transform: uppercase;
-          letter-spacing: 0.5px;
-          font-weight: 600;
+        sl-drawer a .nav-status-icon {
+          font-size: 14px;
+          color: var(--sl-color-neutral-500);
+          flex-shrink: 0;
+          display: flex;
+          align-items: center;
+        }
+        sl-drawer a:hover .nav-status-icon {
+          color: var(--sl-color-neutral-900);
+        }
+        sl-drawer a[active] .nav-status-icon {
+          color: var(--nav-link-active-color);
+        }
+        sl-drawer a sl-tooltip {
+          display: flex;
+          align-items: center;
+          flex-shrink: 0;
         }
         sl-drawer::part(header) {
           display: none;
@@ -114,8 +122,7 @@ export class ChromedashDrawer extends LitElement {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: var(--content-padding-quarter);
-            overflow: hidden;
+            gap: var(--content-padding-half);
           }
           sl-drawer::part(header) {
             display: none;
@@ -326,7 +333,15 @@ export class ChromedashDrawer extends LitElement {
         ${this.renderNavItem(
           '/release-notes',
           'Release notes',
-          html`<sl-badge variant="neutral" pill size="small">Preview</sl-badge>`
+          html`
+            <sl-tooltip content="Preview" distance="8">
+              <sl-icon
+                name="info-circle"
+                aria-hidden="true"
+                class="nav-status-icon"
+              ></sl-icon>
+            </sl-tooltip>
+          `
         )}
         ${this.renderNavItem('/features', 'All features')} ${shippingThisYear}
         ${shippingNextYear} ${myFeaturesMenu}
