@@ -100,15 +100,6 @@ export class ChromedashDrawer extends LitElement {
             margin: 0;
             display: block;
           }
-          sl-drawer a {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: var(--content-padding-half);
-          }
-          sl-drawer::part(header) {
-            display: none;
-          }
         }
       `,
     ];
