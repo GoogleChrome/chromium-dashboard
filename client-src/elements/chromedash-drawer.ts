@@ -100,6 +100,12 @@ export class ChromedashDrawer extends LitElement {
             margin: 0;
             display: block;
           }
+          sl-drawer a {
+            display: block;
+          }
+          sl-drawer::part(header) {
+            display: none;
+          }
         }
       `,
     ];
