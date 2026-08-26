@@ -395,6 +395,24 @@
     text-wrap: balance;
     margin: 0;
   }
+
+  .preview-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--sl-font-size-2x-small, 11px);
+    font-weight: 600;
+    line-height: 1;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 3px 8px;
+    border-radius: var(--pill-border-radius, 9999px);
+    background-color: var(--sl-color-neutral-100, #f1f3f4);
+    color: var(--sl-color-neutral-700, #3c4043);
+    border: 1px solid var(--sl-color-neutral-300, #dadce0);
+    user-select: none;
+    vertical-align: middle;
+  }
 </style>
 {% endblock %}
 
@@ -402,7 +420,7 @@
 <div id="subheader" class="actionlinks">
   <div class="actionlinks page-title-row">
     <h1 id="page-title">{{ ui.page_title }}</h1>
-    <sl-badge variant="neutral" pill size="small">{{ ui.preview_badge }}</sl-badge>
+    <span class="preview-badge" role="status">{{ ui.preview_badge }}</span>
   </div>
 </div>
 {% endblock %}
