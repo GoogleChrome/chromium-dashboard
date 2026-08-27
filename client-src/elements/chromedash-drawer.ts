@@ -82,7 +82,10 @@ export class ChromedashDrawer extends LitElement {
           font-weight: bold;
         }
         sl-drawer a {
-          display: block;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: var(--content-padding-half);
         }
         sl-drawer::part(header) {
           display: none;
@@ -241,8 +244,8 @@ export class ChromedashDrawer extends LitElement {
     );
   }
 
-  isCurrentPage(href) {
-    return this.currentPage === href;
+  isCurrentPage(href: string) {
+    return this.currentPage === href || this.currentPage.startsWith(href + '/');
   }
 
   toggleDrawerActions() {
@@ -257,10 +260,15 @@ export class ChromedashDrawer extends LitElement {
     return drawer.open;
   }
 
-  renderNavItem(url, label) {
-    return html`<a href="${url}" ?active=${this.isCurrentPage(url)}
-      >${label}</a
-    >`;
+  renderNavItem(
+    url: string,
+    label: string,
+    badge: TemplateResult | typeof nothing = nothing
+  ) {
+    return html`<a href="${url}" ?active=${this.isCurrentPage(url)}>
+      <span>${label}</span>
+      ${badge}
+    </a>`;
   }
 
   renderDrawer() {
@@ -301,6 +309,15 @@ export class ChromedashDrawer extends LitElement {
         ?open=${!isMobile() && this.defaultOpen}
       >
         ${accountMenu} ${this.renderNavItem('/roadmap', 'Roadmap')}
+        ${this.renderNavItem(
+          '/release-notes',
+          'Release notes',
+          html`
+            <sl-tooltip content="Preview" distance="8">
+              <sl-icon name="info-circle" aria-hidden="true"></sl-icon>
+            </sl-tooltip>
+          `
+        )}
         ${this.renderNavItem('/features', 'All features')} ${shippingThisYear}
         ${shippingNextYear} ${myFeaturesMenu}
         <hr />

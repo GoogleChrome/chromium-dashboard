@@ -384,13 +384,43 @@
       width: 100%;
     }
   }
+
+  .page-title-row {
+    display: flex;
+    align-items: center;
+    gap: var(--content-padding-half);
+  }
+
+  .page-title-row h1 {
+    text-wrap: balance;
+    margin: 0;
+  }
+
+  .preview-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--sl-font-size-2x-small);
+    font-weight: var(--sl-font-weight-semibold);
+    line-height: 1;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: var(--content-padding-quarter) var(--content-padding-half);
+    border-radius: var(--pill-border-radius);
+    background-color: var(--sl-color-neutral-100);
+    color: var(--sl-color-neutral-700);
+    border: 1px solid var(--sl-color-neutral-300);
+    user-select: none;
+    vertical-align: middle;
+  }
 </style>
 {% endblock %}
 
 {% block subheader %}
 <div id="subheader" class="actionlinks">
-  <div class="actionlinks">
-    <h1 id="page-title" style="text-wrap: balance;">{{ ui.page_title }}</h1>
+  <div class="actionlinks page-title-row">
+    <h1 id="page-title">{{ ui.page_title }}</h1>
+    <span class="preview-badge" role="status">{{ ui.preview_badge }}</span>
   </div>
 </div>
 {% endblock %}
