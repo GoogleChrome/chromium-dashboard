@@ -16,6 +16,8 @@
 
 import {
   MessageResponse,
+  PendingSuggestionsCountResponse,
+  SummarySuggestionListResponse,
   SummarySuggestionPatchRequest,
   SummarySuggestionResponse,
 } from 'chromestatus-openapi';
@@ -976,5 +978,26 @@ export class ChromeStatusClient {
       `/summary-suggestions/${featureId}`,
       patch
     ) as Promise<SummarySuggestionResponse>;
+  }
+
+  /** Fetches the count of pending AI summary suggestions awaiting review. */
+  async getPendingSuggestionsCount(): Promise<PendingSuggestionsCountResponse> {
+    return this.doGet(
+      '/summary-suggestions/pending-count'
+    ) as Promise<PendingSuggestionsCountResponse>;
+  }
+
+  /** Fetches paginated pending AI summary suggestions in the curation review queue. */
+  async getPendingSuggestionsQueue(
+    limit = 25,
+    cursor?: string
+  ): Promise<SummarySuggestionListResponse> {
+    const params = new URLSearchParams({limit: String(limit)});
+    if (cursor) {
+      params.append('cursor', cursor);
+    }
+    return this.doGet(
+      `/summary-suggestions/pending?${params.toString()}`
+    ) as Promise<SummarySuggestionListResponse>;
   }
 }

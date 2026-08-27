@@ -592,6 +592,10 @@ export class ChromedashApp extends LitElement {
         return;
       this.pageComponent.user = this.user;
     });
+    page('/review-release-notes', ctx => {
+      if (!this.setupNewPage(ctx, 'chromedash-release-reviews-page')) return;
+      this.pageComponent.user = this.user;
+    });
     page.start();
   }
 

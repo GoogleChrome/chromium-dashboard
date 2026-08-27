@@ -393,6 +393,7 @@ spa_page_routes = [
         '/enterprise/releasenotes',
         defaults={'require_signin': True, 'is_enterprise_page': True},
     ),
+    Route('/review-release-notes'),
     # Admin pages
     Route(
         '/admin/blink',
