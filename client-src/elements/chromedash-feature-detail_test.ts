@@ -116,6 +116,19 @@ describe('chromedash-feature-detail', () => {
     assert.isNull(progressEl);
   });
 
+  it('renders AI summary progress component when user has edit permissions', async () => {
+    const component = await fixture<ChromedashFeatureDetail>(
+      html`<chromedash-feature-detail
+        .feature=${feature}
+        .canEdit=${true}
+      ></chromedash-feature-detail>`
+    );
+    const progressEl = component.shadowRoot?.querySelector(
+      'chromedash-ai-summary-progress'
+    );
+    assert.exists(progressEl);
+  });
+
   it('handles summary completion and opens review dialog with active suggestion', async () => {
     const component = await fixture<ChromedashFeatureDetail>(
       html`<chromedash-feature-detail

@@ -113,6 +113,9 @@ export class ChromedashAiSummaryProgress extends LitElement {
   @property({type: Boolean})
   compact = false;
 
+  @property({type: Boolean})
+  hideIdleTrigger = false;
+
   @state()
   loading = false;
 
@@ -220,6 +223,17 @@ export class ChromedashAiSummaryProgress extends LitElement {
           clip: rect(0, 0, 0, 0);
           white-space: nowrap;
           border: 0;
+        }
+
+        .gemini-icon {
+          width: 1.5em;
+          height: 1.5em;
+          transform-origin: center center;
+          transition: transform 0.7s ease-in-out;
+        }
+
+        sl-button:hover .gemini-icon {
+          transform: rotate(360deg);
         }
 
         .container {
@@ -559,7 +573,39 @@ export class ChromedashAiSummaryProgress extends LitElement {
 
   render() {
     if (!this.progressSteps.length && !this.loading && !this.error) {
-      return nothing;
+      if (this.hideIdleTrigger) {
+        return nothing;
+      }
+      if (this.suggestion?.status === 'PENDING') {
+        return html`
+          <sl-button
+            variant="primary"
+            size=${this.compact ? 'small' : 'medium'}
+            @click=${() => this._dispatchCompletedEvent()}
+            data-testid="review-ai-summary-button"
+          >
+            <sl-icon slot="prefix" name="pencil"></sl-icon>
+            Review AI summary
+          </sl-button>
+        `;
+      }
+      return html`
+        <sl-button
+          variant="default"
+          size=${this.compact ? 'small' : 'medium'}
+          ?disabled=${this.loading}
+          @click=${() => this.handleTrigger(false)}
+          data-testid="generate-ai-summary-button"
+        >
+          <img
+            slot="prefix"
+            class="gemini-icon"
+            src="https://www.gstatic.com/images/branding/productlogos/gemini_2025/v1/192px.svg"
+            alt="Gemini AI Logo"
+          />
+          Generate AI summary
+        </sl-button>
+      `;
     }
 
     const running = this.isTaskRunning;

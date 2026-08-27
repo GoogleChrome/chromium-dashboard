@@ -67,14 +67,45 @@ describe('chromedash-ai-summary-progress', () => {
     sandbox.restore();
   });
 
-  it('renders nothing when empty with no steps, not loading, and no error', async () => {
+  it('renders trigger button when empty with no steps, not loading, and no error', async () => {
     const el = await fixture<ChromedashAiSummaryProgress>(
       html`<chromedash-ai-summary-progress
         .autoPoll=${false}
       ></chromedash-ai-summary-progress>`
     );
 
+    const button = el.shadowRoot!.querySelector(
+      'sl-button[data-testid="generate-ai-summary-button"]'
+    );
+    expect(button).to.exist;
+  });
+
+  it('renders nothing when hideIdleTrigger is true and empty', async () => {
+    const el = await fixture<ChromedashAiSummaryProgress>(
+      html`<chromedash-ai-summary-progress
+        .autoPoll=${false}
+        .hideIdleTrigger=${true}
+      ></chromedash-ai-summary-progress>`
+    );
+
     expect(el.shadowRoot!.children.length).to.equal(0);
+  });
+
+  it('renders review button when suggestion is pending and not running', async () => {
+    const el = await fixture<ChromedashAiSummaryProgress>(
+      html`<chromedash-ai-summary-progress
+        .autoPoll=${false}
+        .suggestion=${{
+          status: 'PENDING',
+          suggested_summary: 'Pending test',
+        } as SummarySuggestion}
+      ></chromedash-ai-summary-progress>`
+    );
+
+    const reviewButton = el.shadowRoot!.querySelector(
+      'sl-button[data-testid="review-ai-summary-button"]'
+    );
+    expect(reviewButton).to.exist;
   });
 
   it('renders progress steps with correct labels, accessibility roles, and icons', async () => {
