@@ -16,6 +16,8 @@
 
 import {assert, fixture} from '@open-wc/testing';
 import {html} from 'lit';
+import './chromedash-ai-summary-progress.js';
+import './chromedash-summary-review-dialog.js';
 import {ChromedashFeatureDetail} from './chromedash-feature-detail.js';
 import {
   GATE_PREPARING,
@@ -127,7 +129,7 @@ describe('chromedash-feature-detail', () => {
       version_token: 1,
     } as any;
 
-    component.handleSummaryCompleted(
+    await component.handleSummaryCompleted(
       new CustomEvent('summary-generation-completed', {
         detail: {
           featureId: 123456789,

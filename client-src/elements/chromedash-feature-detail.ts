@@ -54,8 +54,6 @@ import './chromedash-activity-log.js';
 import './chromedash-callout.js';
 import './chromedash-gate-chip.js';
 import './chromedash-wpt-eval-button.js';
-import './chromedash-ai-summary-progress.js';
-import './chromedash-summary-review-dialog.js';
 import type {ChromedashSummaryReviewDialog} from './chromedash-summary-review-dialog.js';
 import {SummarySuggestion} from 'chromestatus-openapi';
 import {GateDict} from './chromedash-gate-chip.js';
@@ -369,28 +367,26 @@ export class ChromedashFeatureDetail extends LitElement {
       </sl-button>
     `;
     let wptEvalButton = html`${nothing}`;
+    // Enterprise features represent internal policy controls rather than web platform features
+    // and are excluded from developer release notes and WPT coverage evaluations.
+    const isWebPlatformFeature =
+      this.feature.feature_type_int !==
+      FEATURE_TYPES.FEATURE_TYPE_ENTERPRISE_ID[0];
+
     // For now, the WPT coverage evaluation page is only visible to Googlers and Chromium users.
     if (
       this.user?.email?.endsWith('@google.com') ||
       this.user?.email?.endsWith('@chromium.org')
     ) {
-      if (
-        this.canEdit &&
-        // Enterprise features don't provide spec URLs or Web Platform Tests info.
-        this.feature.feature_type_int !==
-          FEATURE_TYPES.FEATURE_TYPE_ENTERPRISE_ID[0]
-      ) {
+      if (this.canEdit && isWebPlatformFeature && this.feature?.id) {
         wptEvalButton = html` <chromedash-wpt-eval-button
           .featureId=${this.feature.id}
         ></chromedash-wpt-eval-button>`;
       }
     }
+
     let aiSummaryProgress = html`${nothing}`;
-    if (
-      this.canEdit &&
-      this.feature.feature_type_int !==
-        FEATURE_TYPES.FEATURE_TYPE_ENTERPRISE_ID[0]
-    ) {
+    if (this.canEdit && isWebPlatformFeature) {
       aiSummaryProgress = html`
         <chromedash-ai-summary-progress
           .featureId=${this.feature.id}

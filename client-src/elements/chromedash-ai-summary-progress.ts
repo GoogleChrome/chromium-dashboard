@@ -171,10 +171,7 @@ export class ChromedashAiSummaryProgress extends LitElement {
           (err &&
             typeof err === 'object' &&
             'status' in err &&
-            (err as {status: number}).status === 404) ||
-          (err instanceof Error &&
-            (err.message.includes('404') ||
-              err.message.includes('Task did not start or expired')));
+            (err as {status: number}).status === 404);
         if (is404) {
           this.suggestion = null;
           this.progressSteps = [];

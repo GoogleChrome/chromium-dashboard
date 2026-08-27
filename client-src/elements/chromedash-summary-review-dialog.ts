@@ -121,19 +121,11 @@ export class ChromedashSummaryReviewDialog extends LitElement {
   }
 
   show() {
-    if (typeof this.dialogEl?.show === 'function') {
-      this.dialogEl.show();
-    } else if (this.dialogEl) {
-      this.dialogEl.setAttribute('open', '');
-    }
+    this.dialogEl?.show();
   }
 
   hide() {
-    if (typeof this.dialogEl?.hide === 'function') {
-      this.dialogEl.hide();
-    } else if (this.dialogEl) {
-      this.dialogEl.removeAttribute('open');
-    }
+    this.dialogEl?.hide();
   }
 
   override willUpdate(changedProperties: PropertyValues) {
