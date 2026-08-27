@@ -30,6 +30,7 @@ from ai.summary_generator import GeminiSummaryGenerator
 from framework import (
     basehandlers,
     feature_fingerprint,
+    secrets,
     utils,
 )
 from internals import core_enums
@@ -186,6 +187,13 @@ class GenerateSummaryHandler(basehandlers.FlaskHandler):
 
         # Clear historical progress timeline steps.
         FeatureSummaryProgressStep.clear_timeline(feature_id, keep_count=0)
+
+        # Ensure GEMINI_API_KEY is loaded and explicitly exposed in the OS environment for the SDK
+        if not settings.GEMINI_API_KEY:
+            secrets.load_gemini_api_key()
+        if settings.GEMINI_API_KEY:
+            os.environ['GEMINI_API_KEY'] = settings.GEMINI_API_KEY
+            os.environ['GOOGLE_API_KEY'] = settings.GEMINI_API_KEY
 
         reporter = DatastoreProgressReporter(feature_id)
         feature_input = FeatureSummaryInput.from_feature(feature)

@@ -21,6 +21,7 @@ the Datastore.
 """
 
 import logging
+import os
 import random
 import string
 import time
@@ -207,6 +208,9 @@ def load_gemini_api_key() -> None:
     """Obtain an API key to be used for requests to the Gemini API."""
     # Reuse the API key's value if we've already obtained it.
     if settings.GEMINI_API_KEY is not None:
+        if settings.GEMINI_API_KEY:
+            os.environ['GEMINI_API_KEY'] = settings.GEMINI_API_KEY
+            os.environ['GOOGLE_API_KEY'] = settings.GEMINI_API_KEY
         return
 
     if settings.DEV_MODE or settings.UNIT_TEST_MODE:
@@ -214,6 +218,9 @@ def load_gemini_api_key() -> None:
         try:
             with open(f'{settings.ROOT_DIR}/gemini_api_key.txt', 'r') as f:
                 settings.GEMINI_API_KEY = f.read().strip()
+                if settings.GEMINI_API_KEY:
+                    os.environ['GEMINI_API_KEY'] = settings.GEMINI_API_KEY
+                    os.environ['GOOGLE_API_KEY'] = settings.GEMINI_API_KEY
         except:  # noqa: E722
             logging.info('No key found locally for the Gemini API.')
     else:
@@ -228,6 +235,9 @@ def load_gemini_api_key() -> None:
         response = client.access_secret_version(request={'name': name})
         if response:
             settings.GEMINI_API_KEY = response.payload.data.decode('UTF-8')
+            if settings.GEMINI_API_KEY:
+                os.environ['GEMINI_API_KEY'] = settings.GEMINI_API_KEY
+                os.environ['GOOGLE_API_KEY'] = settings.GEMINI_API_KEY
         else:
             raise RuntimeError(
                 'Failed to obtain the Gemini API key from secrets.'
