@@ -260,24 +260,24 @@ class L10nCoreFrameworkTest(unittest.TestCase):
     def test_format_localized_path(self):
         """It formats canonical URL paths with ?hl= for non-default languages only."""
         self.assertEqual(
-            l10n_helpers.format_localized_path('/release-notes/151', 'en'),
-            '/release-notes/151',
+            l10n_helpers.format_localized_path('/release-notes/152', 'en'),
+            '/release-notes/152',
         )
         self.assertEqual(
             l10n_helpers.format_localized_path(
-                '/release-notes/151', l10n_models.SupportedLanguage.EN
+                '/release-notes/152', l10n_models.SupportedLanguage.EN
             ),
-            '/release-notes/151',
+            '/release-notes/152',
         )
         self.assertEqual(
-            l10n_helpers.format_localized_path('/release-notes/151', 'ja'),
-            '/release-notes/151?hl=ja',
+            l10n_helpers.format_localized_path('/release-notes/152', 'ja'),
+            '/release-notes/152?hl=ja',
         )
         self.assertEqual(
             l10n_helpers.format_localized_path(
-                '/release-notes/151', l10n_models.SupportedLanguage.ES
+                '/release-notes/152', l10n_models.SupportedLanguage.ES
             ),
-            '/release-notes/151?hl=es',
+            '/release-notes/152?hl=es',
         )
         self.assertEqual(
             l10n_helpers.format_localized_path('/roadmap', 'unknown-lang'),

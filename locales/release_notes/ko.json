@@ -5,7 +5,7 @@
   "jump_aria": "Chrome 마일스톤으로 이동",
   "prev_milestone_aria": "이전 마일스톤: Chrome {milestone}",
   "next_milestone_aria": "다음 마일스톤: Chrome {milestone}",
-  "archival_banner": "Chrome 150 이전의 릴리스 노트는 developer.chrome.com에 보관되어 있습니다.",
+  "archival_banner": "Chrome 151 이전의 릴리스 노트는 developer.chrome.com에 보관되어 있습니다.",
   "browse_archive_btn": "보관 문서 탐색",
   "origin_trials_heading": "새 오리진 트라이얼",
   "deprecations_heading": "지원 중단 및 삭제",

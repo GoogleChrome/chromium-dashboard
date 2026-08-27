@@ -5,7 +5,7 @@
   "jump_aria": "跳转到 Chrome 里程碑",
   "prev_milestone_aria": "上一个里程碑: Chrome {milestone}",
   "next_milestone_aria": "下一个里程碑: Chrome {milestone}",
-  "archival_banner": "Chrome 150 及更早版本的发布说明已在 developer.chrome.com 上归档。",
+  "archival_banner": "Chrome 151 及更早版本的发布说明已在 developer.chrome.com 上归档。",
   "browse_archive_btn": "浏览归档",
   "origin_trials_heading": "新的源试用 (Origin Trials)",
   "deprecations_heading": "已弃用和已移除的功能",

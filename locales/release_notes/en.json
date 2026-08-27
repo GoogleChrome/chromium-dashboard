@@ -5,7 +5,7 @@
   "jump_aria": "Jump to Chrome milestone",
   "prev_milestone_aria": "Previous milestone: Chrome {milestone}",
   "next_milestone_aria": "Next milestone: Chrome {milestone}",
-  "archival_banner": "Release notes for Chrome 150 and earlier are archived on developer.chrome.com.",
+  "archival_banner": "Release notes for Chrome 151 and earlier are archived on developer.chrome.com.",
   "browse_archive_btn": "Browse archive",
   "origin_trials_heading": "New origin trials",
   "deprecations_heading": "Deprecations and removals",

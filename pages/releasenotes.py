@@ -32,9 +32,9 @@ from internals import (
     translation_helpers,
 )
 
-# Milestones prior to M151 were published as standalone blog posts on developer.chrome.com.
-# ChromeStatus SSR release notes curation begins with Chrome 151.
-MIN_SSR_RELEASE_NOTES_MILESTONE: int = 151
+# Milestones prior to M152 were published as standalone blog posts on developer.chrome.com.
+# ChromeStatus SSR release notes curation begins with Chrome 152.
+MIN_SSR_RELEASE_NOTES_MILESTONE: int = 152
 
 # developer.chrome.com began publishing standalone release notes with Chrome 124.
 MIN_EXTERNAL_RELEASE_NOTES_MILESTONE: int = 124
@@ -108,7 +108,7 @@ class ReleaseNotesHandler(basehandlers.FlaskHandler):
         if milestone > max_allowed_milestone:
             self.abort(404, f'Milestone {milestone} is not available')
 
-        # Milestones prior to M151 redirect to developer.chrome.com
+        # Milestones prior to M152 redirect to developer.chrome.com
         if milestone < MIN_SSR_RELEASE_NOTES_MILESTONE:
             if milestone < MIN_EXTERNAL_RELEASE_NOTES_MILESTONE:
                 # Pre-124 milestones do not exist on d.c.c/release-notes/<m>; redirect to archive root.

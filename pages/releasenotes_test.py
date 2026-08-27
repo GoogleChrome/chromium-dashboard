@@ -159,23 +159,31 @@ class ReleaseNotesHandlerTest(testing_config.CustomTestCase):
         )
 
     def test_get_template_data__specific_milestone(self):
-        """It returns template context data for a specific milestone >= 151."""
-        with test_app.test_request_context('/release-notes/151'):
-            data = self.handler.get_template_data(milestone=151)
-            self.assertEqual(151, data['milestone'])
-            self.assertEqual(150, data['prev_milestone'])
-            self.assertEqual(152, data['next_milestone'])
+        """It returns template context data for a specific milestone >= 152."""
+        with test_app.test_request_context('/release-notes/152'):
+            data = self.handler.get_template_data(milestone=152)
+            self.assertEqual(152, data['milestone'])
+            self.assertEqual(151, data['prev_milestone'])
+            self.assertEqual(153, data['next_milestone'])
             self.assertTrue(data['is_min_ssr_milestone'])
             self.assertIn('features_by_category', data)
             self.assertIn('milestones_list', data)
             self.assertEqual(124, data['milestones_list'][-1])
             self.assertIn('seo', data)
             self.assertEqual(
-                'Chrome 151 Release Notes', data['seo']['seo_title']
+                'Chrome 152 Release Notes', data['seo']['seo_title']
             )
 
-    def test_get_template_data__m124_to_m150_redirect(self):
-        """It returns an HTTP 302 redirect to developer.chrome.com/release-notes/<milestone> for 124 <= m < 151."""
+    def test_get_template_data__m124_to_m151_redirect(self):
+        """It returns an HTTP 302 redirect to developer.chrome.com/release-notes/<milestone> for 124 <= m < 152."""
+        with test_app.test_request_context('/release-notes/151'):
+            resp = self.handler.get_template_data(milestone=151)
+            self.assertEqual(302, resp.status_code)
+            self.assertEqual(
+                'https://developer.chrome.com/release-notes/151',
+                resp.headers['Location'],
+            )
+
         with test_app.test_request_context('/release-notes/150'):
             resp = self.handler.get_template_data(milestone=150)
             self.assertEqual(302, resp.status_code)
@@ -208,10 +216,10 @@ class ReleaseNotesHandlerTest(testing_config.CustomTestCase):
         with test_app.test_request_context('/release-notes'):
             with mock.patch(
                 'internals.fetchchannels.get_current_stable_milestone',
-                return_value=151,
+                return_value=152,
             ):
                 data = self.handler.get_template_data()
-                self.assertEqual(151, data['milestone'])
+                self.assertEqual(152, data['milestone'])
 
     def test_get_template_data__upstream_omaha_downtime_fallback(self):
         """It gracefully falls back to MIN_SSR_RELEASE_NOTES_MILESTONE if Omaha returns 0."""
@@ -221,16 +229,16 @@ class ReleaseNotesHandlerTest(testing_config.CustomTestCase):
                 return_value=0,
             ):
                 data = self.handler.get_template_data()
-                self.assertEqual(151, data['milestone'])
-                self.assertEqual(151, data['stable_milestone'])
-                self.assertEqual(153, data['milestones_list'][0])
+                self.assertEqual(152, data['milestone'])
+                self.assertEqual(152, data['stable_milestone'])
+                self.assertEqual(154, data['milestones_list'][0])
                 self.assertEqual(124, data['milestones_list'][-1])
 
     def test_get_template_data__string_milestone(self):
         """It accepts string milestone parameters and coerces them to int."""
-        with test_app.test_request_context('/release-notes/151'):
-            data = self.handler.get_template_data(milestone='151')
-            self.assertEqual(151, data['milestone'])
+        with test_app.test_request_context('/release-notes/152'):
+            data = self.handler.get_template_data(milestone='152')
+            self.assertEqual(152, data['milestone'])
 
     def test_get_template_data__invalid_milestone_400(self):
         """It aborts HTTP 400 for non-positive milestone values or invalid strings."""
@@ -245,7 +253,7 @@ class ReleaseNotesHandlerTest(testing_config.CustomTestCase):
         with test_app.test_request_context('/release-notes/9999'):
             with mock.patch(
                 'internals.fetchchannels.get_current_stable_milestone',
-                return_value=151,
+                return_value=152,
             ):
                 with self.assertRaises(werkzeug.exceptions.HTTPException) as cm:
                     self.handler.get_template_data(milestone=9999)
@@ -253,21 +261,21 @@ class ReleaseNotesHandlerTest(testing_config.CustomTestCase):
 
     def test_render_template_html_structure(self):
         """It asserts HTML elements, steppers, and jump box using built-in html.parser."""
-        with test_app.test_request_context('/release-notes/151'):
-            data = self.handler.get_template_data(milestone=151)
+        with test_app.test_request_context('/release-notes/152'):
+            data = self.handler.get_template_data(milestone=152)
             html_str = flask.render_template('release-notes.html', **data)
 
             parser = ReleaseNotesHTMLParser()
             parser.feed(html_str)
 
             # Verify subheader title (rendered as h1)
-            self.assertIn('Chrome 151 Release Notes', parser.headings)
+            self.assertIn('Chrome 152 Release Notes', parser.headings)
 
             # Verify previous and next stepper links
-            self.assertIn('/release-notes/150', parser.links)
-            self.assertIn('/release-notes/152', parser.links)
+            self.assertIn('/release-notes/151', parser.links)
+            self.assertIn('/release-notes/153', parser.links)
 
-            # Verify archival notice link on M151
+            # Verify archival notice link on M152
             self.assertIn(
                 'https://developer.chrome.com/release-notes', parser.links
             )
@@ -315,8 +323,8 @@ class ReleaseNotesHandlerTest(testing_config.CustomTestCase):
 
     def test_get_template_data__japanese_localizes_summaries(self):
         """It renders localized summary text and data-summary-lang='ja' when ?hl=ja is requested."""
-        with test_app.test_request_context('/release-notes/151?hl=ja'):
-            data = self.handler.get_template_data(milestone=151)
+        with test_app.test_request_context('/release-notes/152?hl=ja'):
+            data = self.handler.get_template_data(milestone=152)
             html_str = flask.render_template('release-notes.html', **data)
             self.assertEqual('ja', data['current_lang'])
             self.assertIn(
