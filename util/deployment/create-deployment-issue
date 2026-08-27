@@ -1,39 +1,86 @@
-#!/bin/bash
-set -e
+#!/usr/bin/env bash
+set -euo pipefail
 
 REPO="GoogleChrome/chromium-dashboard"
 
+usage() {
+  echo "Usage: $0 [-q] [-f] [-b] [-h]"
+  echo "  -q : Run non-interactively without prompts"
+  echo "  -f : Force issue creation even with uncommitted changes"
+  echo "  -b : Skip issue creation (exits immediately with code 0)"
+  echo "  -h : Show this help message"
+}
+
+QUIET="false"
+FORCE="false"
+while getopts ':qfbh' flag; do
+  case "${flag}" in
+    q) QUIET="true" ;;
+    f) FORCE="true" ;;
+    b) echo "Skipping issue creation (-b flag passed)."; exit 0 ;;
+    h) usage && exit 0 ;;
+    \?) echo "Invalid option: -${OPTARG}" >&2; usage >&2; exit 1 ;;
+  esac
+done
+shift $((OPTIND - 1))
+
+# If CI or CLOUD_BUILD environment variables are true, default QUIET to true
+if [[ "${CI:-false}" == "true" || "${CLOUD_BUILD:-false}" == "true" ]]; then
+  QUIET="true"
+fi
+
 # Ensure we are in the project root
-if [ "$(git rev-parse --git-dir 2>/dev/null)" != ".git" ]; then
-  echo "Please run this script from the root of the repository."
+if [[ "$(git rev-parse --show-toplevel 2>/dev/null)" != "$(pwd -P)" ]]; then
+  echo "Please run this script from the root of the repository." >&2
   exit 1
 fi
 
 echo "Checking GitHub CLI authentication status..."
-if ! gh auth status > /dev/null 2>/dev/null; then
-  echo "You are not logged into the GitHub CLI. Starting login process..."
-  gh auth login
-  if ! gh auth status > /dev/null 2>/dev/null; then
-    echo "GitHub login failed. Please run 'gh auth login' manually and try again."
+if ! gh auth status > /dev/null 2>&1; then
+  if [[ "$QUIET" != "true" ]]; then
+    echo "You are not logged into the GitHub CLI. Starting login process..."
+    gh auth login
+    if ! gh auth status > /dev/null 2>&1; then
+      echo "GitHub login failed. Please run 'gh auth login' manually and try again." >&2
+      exit 1
+    fi
+  else
+    echo "Error: GitHub CLI is not authenticated in non-interactive CI/CD mode. Ensure GH_TOKEN or GITHUB_TOKEN environment variable is set." >&2
     exit 1
   fi
 fi
 echo "Authenticated."
 
-PREVIOUS_SHORT_SHA=$(gh issue list --state=closed --label="release" --json title --repo "$REPO" | jq -r '.[0].title' | awk '{print $NF}')
-if [ -z "$PREVIOUS_SHORT_SHA" ]; then
-  echo "Could not determine the previous release SHA. Using last 10 commits for changelog."
-  CHANGELOG=$(git log --oneline -10 --format="- %C(auto) %h %s")
+PREVIOUS_SHORT_SHA=$( (gh issue list --state=closed --label="release" --json title --repo "$REPO" 2>/dev/null || true) | jq -r '.[0].title // ""' 2>/dev/null | awk '{print $NF}')
+CHANGELOG=""
+
+if [[ -z "$PREVIOUS_SHORT_SHA" || "$PREVIOUS_SHORT_SHA" == "null" ]]; then
+  if [[ "$QUIET" == "true" ]]; then
+    echo "Could not determine the previous release SHA from closed issues. Generating recent 20 commits..."
+    CHANGELOG=$(git log -n 20 --oneline --format="- %C(auto) %h %s")
+    PREVIOUS_SHORT_SHA=$(git rev-parse --short HEAD~20 2>/dev/null || git rev-parse --short HEAD || echo "HEAD~20")
+  else
+    echo "Could not determine the previous release SHA. Using last 10 commits for changelog."
+    CHANGELOG=$(git log --oneline -10 --format="- %C(auto) %h %s")
+    PREVIOUS_SHORT_SHA=$(git rev-parse --short HEAD~10 2>/dev/null || git rev-parse --short HEAD || echo "HEAD~10")
+  fi
 else
   if ! CHANGELOG=$(git log --oneline "$PREVIOUS_SHORT_SHA..HEAD" --format="- %C(auto) %h %s" 2>/dev/null); then
-    echo "Could not fetch a list of changes from the previous commit ($PREVIOUS_SHORT_SHA) to HEAD."
-    read -p "The previous deployment might have been from a tainted branch. Do you want to create a deployment issue with the last 40 commits (HEAD~40)? (y/n) " -n 1 -r
-    echo
-    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-      echo "Deployment aborted."
-      exit 1
+    if [[ "$QUIET" == "true" ]]; then
+      echo "Previous commit ($PREVIOUS_SHORT_SHA) not directly in DAG or shallow clone; generating recent 40 commits..."
+      CHANGELOG=$(git log -n 40 --oneline --format="- %C(auto) %h %s")
+      PREVIOUS_SHORT_SHA=$(git rev-parse --short HEAD~40 2>/dev/null || git rev-parse --short HEAD || echo "HEAD~40")
+    else
+      echo "Could not fetch a list of changes from the previous commit ($PREVIOUS_SHORT_SHA) to HEAD."
+      read -p "The previous deployment might have been from a tainted branch. Do you want to create a deployment issue with the last 40 commits (HEAD~40)? (y/n) " -n 1 -r
+      echo
+      if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+        echo "Deployment aborted." >&2
+        exit 1
+      fi
+      CHANGELOG=$(git log --oneline -40 --format="- %C(auto) %h %s")
+      PREVIOUS_SHORT_SHA=$(git rev-parse --short HEAD~40 2>/dev/null || git rev-parse --short HEAD || echo "HEAD~40")
     fi
-    CHANGELOG=$(git log --oneline -40 --format="- %C(auto) %h %s")
   fi
 fi
 
@@ -47,14 +94,12 @@ fi
 ISSUE_TITLE="Deploy $DIRTY_PREFIX$NEW_SHA"
 
 echo "Checking for existing issue with title: $ISSUE_TITLE"
-EXISTING_ISSUE_JSON=$(gh issue list --search "$ISSUE_TITLE in:title" --label release --state all --repo "$REPO" --json number,title,state,url | jq --arg title "$ISSUE_TITLE" '.[] | select(.title == $title)')
-
-echo "Existing issue: $EXISTING_ISSUE_JSON"
+EXISTING_ISSUE_JSON=$( (gh issue list --search "$ISSUE_TITLE in:title" --label release --state all --repo "$REPO" --json number,title,state,url 2>/dev/null || true) | jq --arg title "$ISSUE_TITLE" '.[] | select(.title == $title)')
 
 if [[ -n "$EXISTING_ISSUE_JSON" ]]; then
-  ISSUE_STATE=$(echo "$EXISTING_EXISTING_ISSUE_JSON" | jq -r '.state')
+  ISSUE_STATE=$(echo "$EXISTING_ISSUE_JSON" | jq -r '.state')
   ISSUE_URL=$(echo "$EXISTING_ISSUE_JSON" | jq -r '.url')
-  echo -e "An issue with the title '$ISSUE_TITLE' already exists in state $ISSUE_STATE:\n  $ISSUE_URL"
+  printf "An issue with the title '%s' already exists in state %s:\n  %s\n" "$ISSUE_TITLE" "$ISSUE_STATE" "$ISSUE_URL"
   exit 0
 fi
 
@@ -75,11 +120,14 @@ echo "Title: $ISSUE_TITLE"
 echo "Body:"
 echo "$ISSUE_BODY"
 echo "---"
-echo "Press enter to create the issue, or Ctrl+C to cancel."
-read -r
 
-if ( ! gh issue create --title "$ISSUE_TITLE" --body "$ISSUE_BODY" --label "release" --assignee "@me" -R "$REPO"); then
-  echo "GitHub issue creation failed."
+if [[ "$QUIET" != "true" ]]; then
+  echo "Press enter to create the issue, or Ctrl+C to cancel."
+  read -r
+fi
+
+if ! gh issue create --title "$ISSUE_TITLE" --body "$ISSUE_BODY" --label "release" -R "$REPO"; then
+  echo "GitHub issue creation failed." >&2
   exit 1
 fi
 

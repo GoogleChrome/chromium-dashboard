@@ -17,20 +17,33 @@
 
 import datetime
 import re
+from enum import StrEnum
+from types import MappingProxyType
 from typing import Any, Optional, TypedDict
 
+from chromestatus_openapi.models import (
+    MilestoneCurationResponse,
+    ReleaseNoteFeature,
+    ReleaseNoteLink,
+    SummaryProgressStep,
+    SummarySuggestion,
+)
 from google.cloud import ndb  # type: ignore
 
 import settings
 from internals import (
     approval_defs,
     core_enums,
+    link_helpers,
     self_certify,
     slo,
     stage_helpers,
 )
 from internals.core_models import (
     FeatureEntry,
+    FeatureSummaryProgressStep,
+    FeatureSummarySuggestion,
+    MilestoneCuration,
     MilestoneSet,
     ReviewResultProperty,
     Stage,
@@ -847,3 +860,412 @@ def gate_value_to_json_dict(gate: Gate) -> dict[str, Any]:
         'self_certify_eligible': self_certify_eligible,
         'survey_answers': survey_answers,
     }
+
+
+# Default fallback category display name for unmapped FeatureEntry category IDs.
+DEFAULT_CATEGORY_NAME = core_enums.FEATURE_CATEGORIES[core_enums.MISC]
+
+
+# OpenAPI StrEnum definitions for Datastore-to-API status mappings.
+class OpenAPISummarySource(StrEnum):
+    """OpenAPI string constants for release note summary origins."""
+
+    HUMAN = 'HUMAN'
+    AI_APPLIED = 'AI_APPLIED'
+
+
+class OpenAPISuggestionStatus(StrEnum):
+    """OpenAPI string constants for summary suggestion review statuses."""
+
+    PENDING = 'PENDING'
+    APPLIED = 'APPLIED'
+    REJECTED = 'REJECTED'
+    DISCARDED = 'DISCARDED'
+
+
+class OpenAPIBaselineStatus(StrEnum):
+    """OpenAPI string constants for WebDX Baseline compatibility statuses."""
+
+    NONE = 'none'
+    LIMITED = 'limited'
+    NEWLY = 'newly'
+    WIDELY = 'widely'
+
+
+class OpenAPIProgressStepId(StrEnum):
+    """OpenAPI string constants for AI summary progress step identifiers."""
+
+    UNKNOWN = 'UNKNOWN'
+    SEARCH_MDN = 'SEARCH_MDN'
+    VERIFY_DOC_LINK = 'VERIFY_DOC_LINK'
+    READ_SPEC = 'READ_SPEC'
+    READ_EXPLAINER = 'READ_EXPLAINER'
+
+
+class OpenAPIProgressStepStatus(StrEnum):
+    """OpenAPI string constants for AI summary progress step execution statuses."""
+
+    IN_PROGRESS = 'IN_PROGRESS'
+    SUCCESS = 'SUCCESS'
+    FAILED = 'FAILED'
+    RETRYING = 'RETRYING'
+
+
+class OpenAPICurationStatus(StrEnum):
+    """OpenAPI string constants for milestone release note curation statuses."""
+
+    PENDING = 'PENDING'
+    IN_REVIEW = 'IN_REVIEW'
+    COMPLETED = 'COMPLETED'
+
+
+SUMMARY_SUGGESTION_STATUS_TO_API: MappingProxyType[
+    core_enums.SummarySuggestionStatus, OpenAPISuggestionStatus
+] = MappingProxyType(
+    {
+        core_enums.SummarySuggestionStatus.UNKNOWN: OpenAPISuggestionStatus.PENDING,
+        core_enums.SummarySuggestionStatus.PROPOSED: OpenAPISuggestionStatus.PENDING,
+        core_enums.SummarySuggestionStatus.PENDING: OpenAPISuggestionStatus.PENDING,
+        core_enums.SummarySuggestionStatus.APPLIED: OpenAPISuggestionStatus.APPLIED,
+        core_enums.SummarySuggestionStatus.REJECTED: OpenAPISuggestionStatus.REJECTED,
+        core_enums.SummarySuggestionStatus.DISCARDED: OpenAPISuggestionStatus.DISCARDED,
+        core_enums.SummarySuggestionStatus.SKIPPED: OpenAPISuggestionStatus.DISCARDED,
+    }
+)
+
+BASELINE_STATUS_TO_API: MappingProxyType[
+    core_enums.BaselineStatus, OpenAPIBaselineStatus
+] = MappingProxyType(
+    {
+        core_enums.BaselineStatus.NONE: OpenAPIBaselineStatus.NONE,
+        core_enums.BaselineStatus.LIMITED: OpenAPIBaselineStatus.LIMITED,
+        core_enums.BaselineStatus.NEWLY: OpenAPIBaselineStatus.NEWLY,
+        core_enums.BaselineStatus.WIDELY: OpenAPIBaselineStatus.WIDELY,
+    }
+)
+
+PROGRESS_STEP_ID_TO_API: MappingProxyType[
+    core_enums.ProgressStepId, OpenAPIProgressStepId
+] = MappingProxyType(
+    {
+        core_enums.ProgressStepId.UNKNOWN: OpenAPIProgressStepId.UNKNOWN,
+        core_enums.ProgressStepId.START: OpenAPIProgressStepId.UNKNOWN,
+        core_enums.ProgressStepId.SEARCH_MDN: OpenAPIProgressStepId.SEARCH_MDN,
+        core_enums.ProgressStepId.VERIFY_DOC_LINK: OpenAPIProgressStepId.VERIFY_DOC_LINK,
+        core_enums.ProgressStepId.READ_SPEC: OpenAPIProgressStepId.READ_SPEC,
+        core_enums.ProgressStepId.READ_EXPLAINER: OpenAPIProgressStepId.READ_EXPLAINER,
+        core_enums.ProgressStepId.LLM_GENERATION: OpenAPIProgressStepId.UNKNOWN,
+        core_enums.ProgressStepId.EVALUATION: OpenAPIProgressStepId.UNKNOWN,
+        core_enums.ProgressStepId.SUCCESS: OpenAPIProgressStepId.UNKNOWN,
+    }
+)
+
+PROGRESS_STEP_STATUS_TO_API: MappingProxyType[
+    core_enums.ProgressStepStatus, OpenAPIProgressStepStatus
+] = MappingProxyType(
+    {
+        core_enums.ProgressStepStatus.UNKNOWN: OpenAPIProgressStepStatus.IN_PROGRESS,
+        core_enums.ProgressStepStatus.START: OpenAPIProgressStepStatus.IN_PROGRESS,
+        core_enums.ProgressStepStatus.IN_PROGRESS: OpenAPIProgressStepStatus.IN_PROGRESS,
+        core_enums.ProgressStepStatus.SUCCESS: OpenAPIProgressStepStatus.SUCCESS,
+        core_enums.ProgressStepStatus.FAILED: OpenAPIProgressStepStatus.FAILED,
+        core_enums.ProgressStepStatus.RETRYING: OpenAPIProgressStepStatus.RETRYING,
+    }
+)
+
+MILESTONE_CURATION_STATUS_TO_API: MappingProxyType[
+    core_enums.MilestoneCurationStatus, OpenAPICurationStatus
+] = MappingProxyType(
+    {
+        core_enums.MilestoneCurationStatus.PENDING: OpenAPICurationStatus.PENDING,
+        core_enums.MilestoneCurationStatus.IN_REVIEW: OpenAPICurationStatus.IN_REVIEW,
+        core_enums.MilestoneCurationStatus.COMPLETED: OpenAPICurationStatus.COMPLETED,
+    }
+)
+
+
+def feature_summary_suggestion_to_dict(
+    suggestion: FeatureSummarySuggestion,
+) -> dict[str, Any]:
+    """Converts a FeatureSummarySuggestion entity into a dict matching SummarySuggestion schema."""
+    status_str = SUMMARY_SUGGESTION_STATUS_TO_API.get(
+        suggestion.status, OpenAPISuggestionStatus.PENDING
+    )
+    baseline_str = BASELINE_STATUS_TO_API.get(
+        suggestion.baseline_status, OpenAPIBaselineStatus.NONE
+    )
+
+    model = SummarySuggestion(
+        feature_id=suggestion.key.integer_id(),
+        suggested_summary=suggestion.suggested_summary,
+        original_summary=suggestion.original_summary,
+        status=status_str,
+        baseline_status=baseline_str,
+        reasoning=suggestion.generation_rationale,
+        suggested_doc_links=suggestion.suggested_doc_links or [],
+        version_token=suggestion.version_token,
+        created=_date_to_str(suggestion.created),
+        updated=_date_to_str(suggestion.updated),
+    )
+    return model.to_dict()
+
+
+def summary_progress_step_to_dict(
+    step: FeatureSummaryProgressStep,
+) -> dict[str, Any]:
+    """Converts a FeatureSummaryProgressStep entity into a dict matching SummaryProgressStep schema."""
+    step_str = PROGRESS_STEP_ID_TO_API.get(
+        step.step_id, OpenAPIProgressStepId.UNKNOWN
+    )
+    status_str = PROGRESS_STEP_STATUS_TO_API.get(
+        step.status, OpenAPIProgressStepStatus.IN_PROGRESS
+    )
+
+    model = SummaryProgressStep(
+        step=step_str,
+        status=status_str,
+        message=step.message,
+        start_timestamp=_date_to_str(step.start_timestamp),
+        end_timestamp=_date_to_str(step.end_timestamp),
+    )
+    return model.to_dict()
+
+
+def milestone_curation_to_dict(curation: MilestoneCuration) -> dict[str, Any]:
+    """Converts a MilestoneCuration entity into a dict matching MilestoneCurationResponse schema."""
+    status_str = MILESTONE_CURATION_STATUS_TO_API.get(
+        curation.status, OpenAPICurationStatus.PENDING
+    )
+
+    model = MilestoneCurationResponse(
+        milestone=curation.milestone,
+        status=status_str,
+        curator_emails=curation.curator_emails or [],
+        last_reviewed=_date_to_str(curation.updated),
+    )
+    return model.to_dict()
+
+
+class ReleaseNoteLinkExtractor:
+    """Builds and deduplicates typed ReleaseNoteLink instances for a feature."""
+
+    def __init__(
+        self,
+        fe: FeatureEntry,
+        origin_trial_url: str | None = None,
+        extra_doc_links: list[str] | None = None,
+    ):
+        """Initializes the extractor with feature entry and optional link overrides."""
+        self.fe = fe
+        self.origin_trial_url = origin_trial_url
+        self.extra_doc_links = extra_doc_links or []
+        self.links: list[ReleaseNoteLink] = []
+        self._seen_urls: set[str] = set()
+
+    def add_link(
+        self,
+        raw_url: str | None,
+        link_type: core_enums.ReleaseNoteLinkType,
+        title: str | None = None,
+    ) -> None:
+        """Adds a URL link if valid, normalized, and not previously added."""
+        if not raw_url or not isinstance(raw_url, str):
+            return
+        url = raw_url.strip()
+        if not url or url in self._seen_urls:
+            return
+        if not url.startswith(('http://', 'https://', '/')):
+            return
+        self._seen_urls.add(url)
+        self.links.append(
+            ReleaseNoteLink(url=url, type=str(link_type), title=title)
+        )
+
+    def extract_links(self) -> list[ReleaseNoteLink]:
+        """Assembles all feature links in canonical priority order.
+
+        Priority Order Reference:
+            Mirrors the standard metadata layout on developer.chrome.com/release-notes:
+            1. Origin Trial (if an active trial is associated with this milestone)
+            2. Tracking Bug (Chromium issue tracker reference #<id>)
+            3. ChromeStatus.com entry (canonical permalink to the feature)
+            4. Specification (W3C/WHATWG/IETF standards draft)
+            5. Documentation (developer guides, MDN, web.dev articles)
+            6. Explainers (WICG/standards GitHub explainers)
+            7. Demos (interactive code samples/demos)
+        """
+        # 1. Origin trial (appears first on developer.chrome.com when active)
+        if self.origin_trial_url:
+            self.add_link(
+                self.origin_trial_url,
+                core_enums.ReleaseNoteLinkType.ORIGIN_TRIAL,
+                core_enums.RELEASE_NOTE_LINK_DEFAULT_TITLES[
+                    core_enums.ReleaseNoteLinkType.ORIGIN_TRIAL
+                ],
+            )
+
+        # 2. Tracking bug
+        if self.fe.bug_url:
+            bug_url, bug_title = link_helpers.format_chromium_bug_url(
+                self.fe.bug_url
+            )
+            if bug_url:
+                self.add_link(
+                    bug_url, core_enums.ReleaseNoteLinkType.BUG, bug_title
+                )
+
+        # 3. ChromeStatus.com entry permalink
+        if self.fe.key:
+            feature_url = link_helpers.format_feature_url(
+                self.fe.key.integer_id()
+            )
+            self.add_link(
+                feature_url,
+                core_enums.ReleaseNoteLinkType.CHROMESTATUS,
+                core_enums.RELEASE_NOTE_LINK_DEFAULT_TITLES[
+                    core_enums.ReleaseNoteLinkType.CHROMESTATUS
+                ],
+            )
+
+        # 4. Specification
+        if self.fe.spec_link:
+            self.add_link(
+                self.fe.spec_link,
+                core_enums.ReleaseNoteLinkType.SPEC,
+                core_enums.RELEASE_NOTE_LINK_DEFAULT_TITLES[
+                    core_enums.ReleaseNoteLinkType.SPEC
+                ],
+            )
+
+        # 5. Documentation (Merged from FeatureEntry doc_links and extra doc links)
+        doc_urls = list(self.fe.doc_links or [])
+        for u in self.extra_doc_links:
+            if u not in doc_urls:
+                doc_urls.append(u)
+        for url in doc_urls:
+            self.add_link(url, core_enums.ReleaseNoteLinkType.DOC, None)
+
+        # 6. Explainers
+        for url in self.fe.explainer_links or []:
+            self.add_link(
+                url,
+                core_enums.ReleaseNoteLinkType.EXPLAINER,
+                core_enums.RELEASE_NOTE_LINK_DEFAULT_TITLES[
+                    core_enums.ReleaseNoteLinkType.EXPLAINER
+                ],
+            )
+
+        # 7. Samples & Demos
+        for url in self.fe.sample_links or []:
+            self.add_link(
+                url,
+                core_enums.ReleaseNoteLinkType.DEMO,
+                core_enums.RELEASE_NOTE_LINK_DEFAULT_TITLES[
+                    core_enums.ReleaseNoteLinkType.DEMO
+                ],
+            )
+
+        return self.links
+
+
+def extract_release_note_links(
+    fe: FeatureEntry,
+    origin_trial_url: str | None = None,
+    extra_doc_links: list[str] | None = None,
+) -> list[ReleaseNoteLink]:
+    """Assembles all feature links into typed ReleaseNoteLink instances."""
+    return ReleaseNoteLinkExtractor(
+        fe,
+        origin_trial_url=origin_trial_url,
+        extra_doc_links=extra_doc_links,
+    ).extract_links()
+
+
+def feature_entry_to_release_note_feature_dict(
+    fe: FeatureEntry,
+    applied_suggestion: FeatureSummarySuggestion | None = None,
+    baseline_status: core_enums.BaselineStatus | None = None,
+    has_applied_suggestion: bool | None = None,
+    milestone_classification: core_enums.ReleaseNoteMilestoneClassification = (
+        core_enums.ReleaseNoteMilestoneClassification.SHIPPING
+    ),
+    origin_trial_url: str | None = None,
+) -> dict[str, Any]:
+    """Converts a FeatureEntry into a dict matching the ReleaseNoteFeature schema."""
+    feature_id = fe.key.integer_id()
+    category_int = fe.category if fe.category is not None else 0
+    category_name = core_enums.FEATURE_CATEGORIES.get(
+        category_int, DEFAULT_CATEGORY_NAME
+    )
+    feature_type_int = fe.feature_type if fe.feature_type is not None else 0
+
+    if (
+        applied_suggestion is not None
+        and applied_suggestion.status
+        == core_enums.SummarySuggestionStatus.APPLIED
+    ):
+        summary_text = applied_suggestion.suggested_summary or fe.summary or ''
+        summary_source = OpenAPISummarySource.AI_APPLIED
+        effective_baseline = (
+            applied_suggestion.baseline_status or baseline_status
+        )
+    elif has_applied_suggestion:
+        summary_text = fe.summary or ''
+        summary_source = OpenAPISummarySource.AI_APPLIED
+        effective_baseline = baseline_status
+    else:
+        summary_text = fe.summary or ''
+        summary_source = OpenAPISummarySource.HUMAN
+        effective_baseline = baseline_status
+
+    baseline_val = BASELINE_STATUS_TO_API.get(
+        effective_baseline or core_enums.BaselineStatus.NONE,
+        OpenAPIBaselineStatus.NONE,
+    )
+
+    # When milestone_classification is not explicitly provided (defaulting to SHIPPING),
+    # infer whether the feature is a deprecation, removal, or origin trial from the
+    # entity's feature_type and impl_status_chrome fields.
+    effective_classification = milestone_classification
+    if (
+        effective_classification
+        == core_enums.ReleaseNoteMilestoneClassification.SHIPPING
+    ):
+        if (
+            feature_type_int == core_enums.FEATURE_TYPE_DEPRECATION_ID
+            or fe.impl_status_chrome == core_enums.DEPRECATED
+        ):
+            effective_classification = (
+                core_enums.ReleaseNoteMilestoneClassification.DEPRECATION
+            )
+        elif fe.impl_status_chrome == core_enums.REMOVED:
+            effective_classification = (
+                core_enums.ReleaseNoteMilestoneClassification.REMOVAL
+            )
+        elif fe.impl_status_chrome == core_enums.ORIGIN_TRIAL:
+            effective_classification = (
+                core_enums.ReleaseNoteMilestoneClassification.ORIGIN_TRIAL
+            )
+
+    extra_doc_links = (
+        applied_suggestion.suggested_doc_links if applied_suggestion else None
+    )
+    links = extract_release_note_links(
+        fe,
+        origin_trial_url=origin_trial_url,
+        extra_doc_links=extra_doc_links,
+    )
+
+    model = ReleaseNoteFeature(
+        id=feature_id,
+        name=fe.name or '',
+        summary=summary_text,
+        category=category_int,
+        category_name=category_name,
+        feature_type=feature_type_int,
+        baseline_status=baseline_val,
+        summary_source=summary_source,
+        milestone_classification=str(effective_classification),
+        links=links,
+    )
+    return model.to_dict()

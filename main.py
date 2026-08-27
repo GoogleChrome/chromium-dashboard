@@ -16,8 +16,6 @@
 """Main application entry point, routing configuration, and Flask app setup."""
 
 import threading
-from dataclasses import dataclass, field
-from typing import Any, Type
 
 import settings
 from api import (
@@ -39,6 +37,7 @@ from api import (
     logout_api,
     metrics_api,
     metricsdata,
+    milestone_curation_api,
     origin_trials_api,
     permissions_api,
     processes_api,
@@ -51,11 +50,13 @@ from api import (
     stages_api,
     stale_features_api,
     stars_api,
+    summary_suggestion_api,
     token_refresh_api,
     webdx_feature_api,
     wpt_coverage_api,
 )
 from framework import basehandlers, csp, gemini_helpers, secrets, sendemail
+from framework.basehandlers import Route
 from internals import (
     data_backup,
     detect_intent,
@@ -67,7 +68,14 @@ from internals import (
     reminders,
     search_fulltext,
 )
-from pages import guide, ot_requests, users
+from pages import (
+    featuredetail,
+    guide,
+    ot_requests,
+    releasenotes,
+    sitemap,
+    users,
+)
 
 # Patch treading library to work-around bug with Google Cloud Logging.
 original_delete = threading.Thread._delete  # type: ignore
@@ -102,16 +110,6 @@ secrets.load_ot_api_key()
 # those parameters as keywords in those handlers where the same
 # handler might be used for multiple routes that have the field
 # or not.
-
-
-@dataclass
-class Route:
-    """Represents a routing configuration for the application."""
-
-    path: str
-    handler_class: Type[basehandlers.BaseHandler] = basehandlers.SPAHandler
-    defaults: dict[str, Any] = field(default_factory=dict)
-
 
 metrics_chart_routes: list[Route] = [
     Route('/data/timeline/cssanimated', metricsdata.AnimatedTimelineHandler),
@@ -269,6 +267,26 @@ api_routes: list[Route] = [
     Route(
         f'{API_BASE}/releasenotes/l10n', releasenotes_api.ReleaseNotesL10nAPI
     ),
+    Route(
+        f'{API_BASE}/releasenotes/<int:milestone>',
+        releasenotes_api.ReleaseNotesAPI,
+    ),
+    Route(
+        f'{API_BASE}/summary-suggestions/pending-count',
+        summary_suggestion_api.PendingSuggestionsCountAPI,
+    ),
+    Route(
+        f'{API_BASE}/summary-suggestions/pending',
+        summary_suggestion_api.PendingSuggestionsQueueAPI,
+    ),
+    Route(
+        f'{API_BASE}/summary-suggestions/<int:feature_id>',
+        summary_suggestion_api.SummarySuggestionAPI,
+    ),
+    Route(
+        f'{API_BASE}/milestone-curation/<int:milestone>',
+        milestone_curation_api.MilestoneCurationAPI,
+    ),
 ]
 
 # The Routes below that have no handler specified use SPAHandler.
@@ -419,6 +437,10 @@ mpa_page_routes: list[Route] = [
         attachments_api.AttachmentServing,
         defaults={'thumbnail': True},
     ),
+    Route('/sitemap.txt', sitemap.SitemapHandler),
+    Route('/feature-ssr/<int:feature_id>', featuredetail.FeatureDetailHandler),
+    Route('/release-notes/<int:milestone>', releasenotes.ReleaseNotesHandler),
+    Route('/release-notes', releasenotes.ReleaseNotesHandler),
 ]
 
 internals_routes: list[Route] = [
@@ -511,6 +533,10 @@ internals_routes: list[Route] = [
     Route(
         '/tasks/generate-wpt-coverage-analysis',
         gemini_helpers.GenerateWPTCoverageEvalReportHandler,
+    ),
+    Route(
+        '/tasks/generate-summary',
+        gemini_helpers.GenerateSummaryHandler,
     ),
     # OT process reminder emails
     Route(

@@ -39,6 +39,17 @@ NOW = datetime.datetime.now()
 class CommentsConvertersTest(testing_config.CustomTestCase):
     """Tests for comment converters."""
 
+    def test_strip_brackets(self):
+        """It makes arrays looks nicer and doesn't mess up other brackets."""
+        self.assertEqual(
+            'item1, item2', comments_api._strip_brackets('[item1, item2]')
+        )
+        self.assertEqual(
+            'word [note]', comments_api._strip_brackets('word [note]')
+        )
+        self.assertEqual('[word', comments_api._strip_brackets('[word'))
+        self.assertEqual('word]', comments_api._strip_brackets('word]'))
+
     def test_amendment_to_OAM__normal(self):
         """We can convert a NDB Amendment to a Open API Amendment."""
         amend = Amendment(
@@ -48,6 +59,16 @@ class CommentsConvertersTest(testing_config.CustomTestCase):
         self.assertEqual(oam.field_name, 'summary')
         self.assertEqual(oam.old_value, 'old')
         self.assertEqual(oam.new_value, 'new,fresh')
+
+    def test_amendment_to_OAM__trailing_brackets(self):
+        """We don't strip backets that don't look like an array."""
+        amend = Amendment(
+            field_name='summary', old_value='niice', new_value='niice [sic]'
+        )
+        oam = comments_api.amendment_to_OAM(amend)
+        self.assertEqual(oam.field_name, 'summary')
+        self.assertEqual(oam.old_value, 'niice')
+        self.assertEqual(oam.new_value, 'niice [sic]')
 
     def test_amendment_to_OAM__null(self):
         """We can convert, even if some field was specified."""

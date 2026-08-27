@@ -19,6 +19,7 @@ import logging
 from unittest import mock, skip
 
 import testing_config
+from internals import link_helpers
 from internals.link_helpers import (
     LINK_TYPE_CHROMIUM_BUG,
     LINK_TYPE_GITHUB_ISSUE,
@@ -227,6 +228,18 @@ class LinkHelperTest(testing_config.CustomTestCase):
         self.assertEqual(info['_parsed_title'], 'Reporting API')
         print(info)
 
+    def test_link_parse_github_markdown_not_found(self):
+        """Test link parse github markdown with bad filename."""
+        link = Link('https://github.com/w3c/reporting/blob/master/NOT_FOUND.md')
+        link.parse()
+        if link.is_error and link.http_error_code == 429:
+            return
+        self.assertEqual(link.type, LINK_TYPE_GITHUB_MARKDOWN)
+        self.assertEqual(link.is_parsed, True)
+        self.assertEqual(link.is_error, True)
+        self.assertEqual(link.http_error_code, 404)
+        self.assertEqual(link.information, None)
+
     def test_link_parse_github_markdown_with_hash(self):
         """Test link parse github markdown with hash."""
         link = Link(
@@ -365,3 +378,67 @@ class LinkHelperTest(testing_config.CustomTestCase):
         """Test extract invalid url."""
         urls = Link.extract_urls_from_value('Some kind of https://... link.')
         self.assertEqual(len(urls), 0)
+
+
+class LinkFormattingHelpersTest(testing_config.CustomTestCase):
+    """Unit tests for centralized URL formatting functions in link_helpers."""
+
+    def test_format_chromium_bug_url__numeric_id(self):
+        """It parses numeric bug IDs and creates issues.chromium.org URLs."""
+        url, title = link_helpers.format_chromium_bug_url('40731275')
+        self.assertEqual('https://issues.chromium.org/issues/40731275', url)
+        self.assertEqual('Tracking bug #40731275', title)
+
+    def test_format_chromium_bug_url__crbug_shortlink(self):
+        """It parses crbug shortlinks and extracts bug IDs."""
+        url, title = link_helpers.format_chromium_bug_url(
+            'https://crbug.com/123456'
+        )
+        self.assertEqual('https://crbug.com/123456', url)
+        self.assertEqual('Tracking bug #123456', title)
+
+    def test_format_chromium_bug_url__issues_chromium_org(self):
+        """It parses full issues.chromium.org URLs."""
+        url, title = link_helpers.format_chromium_bug_url(
+            'https://issues.chromium.org/issues/40146374'
+        )
+        self.assertEqual('https://issues.chromium.org/issues/40146374', url)
+        self.assertEqual('Tracking bug #40146374', title)
+
+    def test_format_chromium_bug_url__empty_and_non_matching(self):
+        """It handles empty input and unrecognized bug URLs gracefully."""
+        self.assertEqual(
+            (None, None), link_helpers.format_chromium_bug_url(None)
+        )
+        self.assertEqual(
+            (None, None), link_helpers.format_chromium_bug_url('  ')
+        )
+        url, title = link_helpers.format_chromium_bug_url(
+            'https://bugs.example.com/123'
+        )
+        self.assertEqual('https://bugs.example.com/123', url)
+        self.assertEqual('Tracking bug', title)
+
+    def test_format_feature_url(self):
+        """It generates canonical relative ChromeStatus feature permalinks."""
+        self.assertEqual(
+            '/feature/12345', link_helpers.format_feature_url(12345)
+        )
+        self.assertEqual(
+            '/feature/54321', link_helpers.format_feature_url('54321')
+        )
+        self.assertIsNone(link_helpers.format_feature_url(None))
+
+    def test_format_origin_trial_url(self):
+        """It generates canonical origin trial view URLs from OT IDs or stage IDs."""
+        self.assertEqual(
+            '/origintrials#/view_trial/4199606652522987521',
+            link_helpers.format_origin_trial_url(
+                origin_trial_id='4199606652522987521'
+            ),
+        )
+        self.assertEqual(
+            '/origintrials#/view_trial/105',
+            link_helpers.format_origin_trial_url(stage_id=105),
+        )
+        self.assertIsNone(link_helpers.format_origin_trial_url())

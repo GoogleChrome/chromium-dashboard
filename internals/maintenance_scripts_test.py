@@ -1,4 +1,5 @@
 # ruff: noqa: D205
+# ruff: noqa: I001
 # Copyright 2023 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License')
@@ -17,6 +18,7 @@
 
 import csv
 import logging
+import testing_config  # isort: split
 from datetime import date, datetime, timedelta
 from io import StringIO
 from unittest import mock
@@ -26,7 +28,6 @@ from google.cloud import ndb
 from webstatus_openapi import ApiException, FeaturePage
 
 import settings
-import testing_config  # Must be imported before the module under test.
 from api import converters
 from internals import core_enums, maintenance_scripts
 from internals.core_models import FeatureEntry, MilestoneSet, Stage

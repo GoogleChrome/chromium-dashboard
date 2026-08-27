@@ -607,3 +607,20 @@ async def get_mixed_wpt_contents_async(
         dependency_contents=dependency_contents,
         test_to_dependencies_map=test_to_dependencies_map,
     )
+
+
+def safe_plain_text_to_markdown(text: str | None) -> str:
+    r"""Converts plain text to safe, idempotent markdown string.
+
+    Sanitizes HTML entities (< and >) to prevent XSS/ReDoS and prevents
+    double-escaping markdown symbols across multiple conversions.
+    """
+    if not text:
+        return ''
+
+    # 1. Sanitize HTML tags/entities (< -> &lt;, > -> &gt;)
+    safe_text = text.replace('<', '&lt;').replace('>', '&gt;')
+
+    # 2. Idempotently escape unescaped asterisks and underscores using negative lookbehind
+    safe_text = re.sub(r'(?<!\\)([\*_])', r'\\\1', safe_text)
+    return safe_text.strip()

@@ -36,12 +36,19 @@ from internals import approval_defs, notifier, notifier_helpers, slo
 from internals.review_models import Activity, Amendment, Gate
 
 
+def _strip_brackets(s: str) -> str:
+    """Make serialized arrays look nicer."""
+    if s.startswith('[') and s.endswith(']'):
+        return s[1:-1]
+    return s
+
+
 def amendment_to_OAM(amendment: Amendment) -> AmendmentModel:
     """Convert an Amendment entity to an OpenAPI AmendmentModel."""
     return AmendmentModel(
         field_name=amendment.field_name,
-        old_value=(amendment.old_value or '').strip('[]'),
-        new_value=(amendment.new_value or '').strip('[]'),
+        old_value=_strip_brackets(amendment.old_value or ''),
+        new_value=_strip_brackets(amendment.new_value or ''),
     )
 
 
@@ -81,9 +88,9 @@ class CommentsAPI(basehandlers.APIHandler):
 
     def do_get(self, **kwargs) -> dict[str, list[dict[str, Any]]]:
         """Return a list of all review comments on the given feature."""
-        feature_id = kwargs['feature_id']
+        feature = self.get_specified_feature(**kwargs)
+        feature_id = feature.key.integer_id()
         gate_id = kwargs.get('gate_id', None)
-        # Note: We assume that anyone may view approval comments.
         comments = Activity.get_activities(feature_id, gate_id)
         user = self.get_current_user()
         is_admin = permissions.can_admin_site(user)
@@ -114,7 +121,7 @@ class CommentsAPI(basehandlers.APIHandler):
         if comment_content:
             can_comment = permissions.can_comment(
                 user
-            ) or permissions.can_edit_feature(user, feature_id)
+            ) or permissions.can_edit_feature(user, feature)
             if not can_comment:
                 self.abort(403, msg='User is not allowed to comment')
 

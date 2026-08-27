@@ -1,23 +1,68 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Deploys the site to the production environment.
-set -e
+set -euo pipefail
 
-# Verify we are on the main branch
-BRANCH=$(git rev-parse --abbrev-ref HEAD)
-if [ "$BRANCH" != "main" ]; then
-  echo "Not on the main branch. Aborting deployment."
-  exit 1
+QUIET="false"
+FORCE="false"
+SKIP_ISSUE="false"
+CI="${CI:-false}"
+CLOUD_BUILD="${CLOUD_BUILD:-false}"
+
+usage() {
+  echo "Usage: $0 [-q] [-f] [-b] [-h]"
+  echo "  -q : Run non-interactively without prompts"
+  echo "  -f : Force deployment even with uncommitted changes or branch divergence"
+  echo "  -b : Bypass GitHub issue creation"
+  echo "  -h : Show this help message"
+}
+
+while getopts ':qfbh' flag; do
+  case "${flag}" in
+    q) QUIET="true" ;;
+    f) FORCE="true" ;;
+    b) SKIP_ISSUE="true" ;;
+    h) usage && exit 0 ;;
+    \?) echo "Invalid option: -${OPTARG}" >&2; usage >&2; exit 1 ;;
+  esac
+done
+shift $((OPTIND - 1))
+
+# If CI or CLOUD_BUILD environment variables are true, default QUIET to true
+if [[ "${CI}" == "true" || "${CLOUD_BUILD}" == "true" ]]; then
+  QUIET="true"
+fi
+
+# Fetch main and origin/main for ancestry check
+git fetch origin main 2>/dev/null || true
+
+# Verify we are on the main branch (or detached HEAD on main in CI)
+if [[ "$FORCE" != "true" ]]; then
+  BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "HEAD")
+  if [[ "$BRANCH" != "main" ]]; then
+    if ! git merge-base --is-ancestor HEAD main 2>/dev/null && ! git merge-base --is-ancestor HEAD origin/main 2>/dev/null; then
+      echo "Error: Not on the main branch and commit is not an ancestor of main. Aborting deployment." >&2
+      echo "Pass -f (or _FORCE_DEPLOY=true) to force." >&2
+      exit 1
+    fi
+  fi
 fi
 
 # Check for uncommitted changes
-if [ -n "$(git status --porcelain)" ]; then
+if [[ -n "$(git status --porcelain)" ]]; then
   echo "Uncommitted changes detected:"
   git status
-  read -p "Do you want to proceed with the deployment? (y/n) " -n 1 -r
-  echo
-  if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-    echo "Deployment aborted."
+  if [[ "$FORCE" == "true" ]]; then
+    echo "FORCE=true: Proceeding with uncommitted changes."
+  elif [[ "$QUIET" == "true" ]]; then
+    echo "Error: Non-interactive CI/CD mode (-q) and uncommitted changes detected without -f. Aborting." >&2
     exit 1
+  else
+    read -p "Do you want to proceed with the deployment? (y/n) " -n 1 -r
+    echo
+    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+      echo "Deployment aborted." >&2
+      exit 1
+    fi
   fi
 fi
 
@@ -25,42 +70,51 @@ fi
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 # Create the GitHub issue for this deployment if it doesn't already exist.
-"$DIR/create-deployment-issue"
+if [[ "$SKIP_ISSUE" != "true" ]]; then
+  "$DIR/create-deployment-issue" "$@"
+fi
 
 export APP_NAME="cr-status"
 export APP_YAML="app.yaml"
 export NOTIFIER_YAML="notifier.yaml"
 
-"$DIR/deploy-env"
+"$DIR/deploy-env" "$@"
 
-SERVICES="default notifier"
-VERSION_URL=$(gcloud app --project="$APP_NAME" versions list --sort-by=~last_deployed_time --filter='service=default' --limit=1 --format=json | jq -r '.[] | .version.versionUrl')
-LATEST_VERSION=$(gcloud app --project="$APP_NAME" versions list --sort-by=~last_deployed_time --filter='service=default' --limit=1 --format=json | jq -r '.[] | .id')
+SERVICES=("default" "notifier")
+VERSION=$(git describe --always --abbrev=7 --match 'NOT A TAG' --dirty='-tainted')
+VERSION_URL="https://${VERSION}-dot-cr-status.appspot.com"
 
-echo -e "\nDeployment complete. Validating..."
+printf "\nDeployment complete. Validating...\n"
 echo "Visit $VERSION_URL to confirm that everything works."
-read -p "Press 'y' to redirect traffic to version $LATEST_VERSION for all services. (y/n) " -n 1 -r
-echo
 
-if [[ $REPLY =~ ^[Yy]$ ]]; then
-  for SERVICE in $SERVICES
-  do
-    gcloud app --project="$APP_NAME" services set-traffic $SERVICE --splits $LATEST_VERSION=1 --quiet
+if [[ "$QUIET" != "true" ]]; then
+  read -p "Press 'y' to redirect traffic to version $VERSION for all services. (y/n) " -n 1 -r
+  echo
+fi
+
+if [[ "$QUIET" == "true" || ${REPLY:-} =~ ^[Yy]$ ]]; then
+  for SERVICE in "${SERVICES[@]}"; do
+    gcloud app --project="$APP_NAME" services set-traffic "$SERVICE" --splits "${VERSION}=1" --quiet
   done
-  echo "Traffic migrated."
+  echo "Traffic migrated to version ${VERSION}."
 else
   echo "Traffic migration skipped. Don't forget to migrate traffic manually:"
   echo "- 'default' service: https://console.cloud.google.com/appengine/versions?serviceId=default&project=$APP_NAME"
   echo "- 'notifier' service: https://console.cloud.google.com/appengine/versions?serviceId=notifier&project=$APP_NAME"
 fi
 
-# Update and close deployment bug.
-REPO="GoogleChrome/chromium-dashboard"
-LAST_DEPLOYMENT_ISSUE=$(gh issue list --state open --label "release" --repo "$REPO" --limit 1 --json number --jq '.[] | .number')
+# Update and close deployment release issue.
+if [[ "$SKIP_ISSUE" != "true" ]]; then
+  REPO="GoogleChrome/chromium-dashboard"
+  OPEN_RELEASE_ISSUE=$( (gh issue list --state open --label "release" --search "${VERSION}" --limit 1 --json number --repo "$REPO" 2>/dev/null || true) | jq -r '.[0].number // ""' 2>/dev/null || echo "")
+  if [[ -z "${OPEN_RELEASE_ISSUE}" ]]; then
+    OPEN_RELEASE_ISSUE=$( (gh issue list --state open --label "release" --limit 1 --json number --repo "$REPO" 2>/dev/null || true) | jq -r '.[0].number // ""' 2>/dev/null || echo "")
+  fi
 
-if [ -n "$LAST_DEPLOYMENT_ISSUE" ]; then
-  gh issue close "$LAST_DEPLOYMENT_ISSUE" -c "Deployment is now complete." -R "$REPO"
-  echo "Closed GitHub release issue #$LAST_DEPLOYMENT_ISSUE."
-else
-  echo "Could not find an open release issue to close."
+  if [[ -n "$OPEN_RELEASE_ISSUE" ]]; then
+    gh issue close "$OPEN_RELEASE_ISSUE" -c "Deployment is now complete." -R "$REPO" || echo "WARNING: Failed to close GitHub issue #${OPEN_RELEASE_ISSUE}." >&2
+    echo "Closed GitHub release issue #$OPEN_RELEASE_ISSUE."
+  else
+    echo "Could not find an open release issue to close."
+  fi
 fi

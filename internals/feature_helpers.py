@@ -28,8 +28,13 @@ import settings
 from api import converters
 from framework import permissions, rediscache, users
 from framework.utils import get_current_milestone_info
-from internals import core_enums
-from internals.core_models import FeatureEntry, MilestoneSet, Stage
+from internals import core_enums, link_helpers
+from internals.core_models import (
+    FeatureEntry,
+    FeatureSummarySuggestion,
+    MilestoneSet,
+    Stage,
+)
 from internals.review_models import Gate, Vote
 from internals.stage_helpers import organize_all_stages_by_feature
 
@@ -198,10 +203,130 @@ def _filter_out_wp_features_lacking_enterprise_approval(
     return result
 
 
+format_origin_trial_url = link_helpers.format_origin_trial_url
+
+
+def get_developer_release_notes_features(
+    milestone: int,
+) -> list[dict[str, Any]]:
+    """Fetches and formats web platform features for developer.chrome.com release notes.
+
+    Note: This helper retrieves general shipping web standards features (incubations,
+    existing implementations, code changes, and deprecations) via get_in_milestone(),
+    applies confidentiality and unlisted visibility filters, and converts them to lean
+    OpenAPI ReleaseNoteFeature dictionaries with attached AI summary suggestions and
+    WebDX baseline statuses. For Chrome Enterprise IT administrator release notes
+    tracking enterprise impact and rollout stages, use
+    get_features_in_release_notes(milestone) instead.
+
+    Args:
+        milestone: The integer Chrome milestone (e.g., 135) to retrieve release notes for.
+
+    Returns:
+        A list of dictionaries matching the OpenAPI ReleaseNoteFeature schema.
+    """
+    milestone_data = get_in_milestone(milestone)
+    seen_ids: set[int] = set()
+    origin_trial_fids: set[int] = set()
+    deprecation_fids: set[int] = set()
+
+    origin_trial_urls: dict[int, str] = {}
+    for reason, feature_dicts in milestone_data.items():
+        for fdict in feature_dicts:
+            fid = fdict.get('id')
+            if not fid:
+                continue
+            seen_ids.add(fid)
+            if (
+                reason
+                == core_enums.IMPLEMENTATION_STATUS[core_enums.ORIGIN_TRIAL]
+            ):
+                origin_trial_fids.add(fid)
+                ot_id = fdict.get('origin_trial_id')
+                stage_ids = fdict.get('roadmap_stage_ids')
+                stage_id = stage_ids[0] if stage_ids else fdict.get('stage_id')
+                trial_url = format_origin_trial_url(
+                    origin_trial_id=ot_id, stage_id=stage_id
+                )
+                if trial_url:
+                    origin_trial_urls[fid] = trial_url
+
+            elif reason in (
+                core_enums.IMPLEMENTATION_STATUS[core_enums.DEPRECATED],
+                core_enums.IMPLEMENTATION_STATUS[core_enums.REMOVED],
+            ):
+                deprecation_fids.add(fid)
+
+    if not seen_ids:
+        return []
+
+    # Batch fetch FeatureEntry entities (prevents N+1 query loop)
+    feature_keys = [ndb.Key(FeatureEntry, fid) for fid in seen_ids]
+    raw_features = ndb.get_multi(feature_keys)
+    feature_entries = filter_unlisted(filter_confidential(raw_features))
+    feature_entries.sort(key=lambda f: f.name or '')
+
+    # Batch fetch FeatureSummarySuggestion entities by key (prevents unbounded table scan)
+    valid_fids = [fe.key.integer_id() for fe in feature_entries if fe.key]
+    suggestion_keys = [
+        ndb.Key(FeatureSummarySuggestion, fid) for fid in valid_fids
+    ]
+    suggestions = ndb.get_multi(suggestion_keys)
+    applied_map = {
+        s.key.id(): s
+        for s in suggestions
+        if s and s.status == core_enums.SummarySuggestionStatus.APPLIED
+    }
+
+    formatted_features = []
+    for fe in feature_entries:
+        fid = fe.key.integer_id() if fe.key else 0
+        applied_suggestion = applied_map.get(fid)
+        if fid in origin_trial_fids:
+            milestone_classification = (
+                core_enums.ReleaseNoteMilestoneClassification.ORIGIN_TRIAL
+            )
+        elif (
+            fid in deprecation_fids
+            or fe.feature_type == core_enums.FEATURE_TYPE_DEPRECATION_ID
+            or fe.impl_status_chrome == core_enums.DEPRECATED
+        ):
+            milestone_classification = (
+                core_enums.ReleaseNoteMilestoneClassification.DEPRECATION
+            )
+        elif fe.impl_status_chrome == core_enums.REMOVED:
+            milestone_classification = (
+                core_enums.ReleaseNoteMilestoneClassification.REMOVAL
+            )
+        else:
+            milestone_classification = (
+                core_enums.ReleaseNoteMilestoneClassification.SHIPPING
+            )
+
+        ot_url = origin_trial_urls.get(fid)
+        rn_dict = converters.feature_entry_to_release_note_feature_dict(
+            fe,
+            applied_suggestion=applied_suggestion,
+            milestone_classification=milestone_classification,
+            origin_trial_url=ot_url,
+        )
+
+        formatted_features.append(rn_dict)
+
+    return formatted_features
+
+
 def get_features_in_release_notes(
     milestone: int, end_milestone: int | None = None
 ):
-    """Fetches features slated for release notes in the specified milestone or milestone range."""
+    """Fetches Chrome Enterprise IT admin release notes features for a milestone or range.
+
+    Note: This helper specifically queries features with enterprise impact or enterprise
+    feature types, and formats them using the verbose dictionary schema with rollout
+    and approval fields for enterprise administrators. For public web developer and
+    web standards release notes (developer.chrome.com), use
+    get_developer_release_notes_features(milestone) instead.
+    """
     actual_end_milestone = (
         end_milestone if end_milestone is not None else milestone
     )
@@ -641,13 +766,20 @@ def _set_feature_fields_for_roadmap(
     formatted_features: list[dict[str, Any]],
     triggering_stages_by_fid: dict[int, list[Stage]],
 ) -> None:
-    """Add roadmap_stage_ids and finch_urls items to formated features."""
+    """Add roadmap_stage_ids, origin_trial_id, and finch_urls items to formatted features."""
     for ff in formatted_features:
         # The feature's stages that caused it to appear in this roadmap section.
         feature_trigger_stages = triggering_stages_by_fid.get(ff['id'], [])
         ff['roadmap_stage_ids'] = [
             s.key.integer_id() for s in feature_trigger_stages
         ]  # noqa: E501
+        ot_ids = [
+            s.origin_trial_id
+            for s in feature_trigger_stages
+            if s.origin_trial_id
+        ]
+        if ot_ids:
+            ff['origin_trial_id'] = ot_ids[0]
         ff['feature_type_int'] = ff['feature_type_int']
         ff['finch_urls'] = [
             s.finch_url for s in feature_trigger_stages if s.finch_url
@@ -1118,21 +1250,27 @@ def aggregate_shipping_features(
     incomplete_features: list[tuple[ShippingFeatureInfo, list[str]]] = []
 
     for stage in shipping_stages:
-        feature: FeatureEntry | None = FeatureEntry.get_by_id(stage.feature_id)
-        if feature is None:
+        fe = FeatureEntry.get_by_id(stage.feature_id)
+        if fe is None:
             logging.warning(f'Feature {stage.feature_id} not found.')
             continue
 
-        feature_info = build_feature_info(feature, stage)
+        # WP feature entries cannot be confidential, so this should not matter.
+        # But, if they ever did exist, we exclude them from the report because
+        # the user is not authenticated.
+        if fe.confidential or fe.deleted or stage.archived:
+            continue
+
+        feature_info = build_feature_info(fe, stage)
 
         # PSA features do not require strict validation
-        if feature.feature_type == core_enums.FEATURE_TYPE_CODE_CHANGE_ID:
+        if fe.feature_type == core_enums.FEATURE_TYPE_CODE_CHANGE_ID:
             complete_features.append(feature_info)
             continue
 
         # Perform strict validation
         criteria_missing = validate_shipping_criteria(
-            feature, stage, enabled_features_json, content_features_file
+            fe, stage, enabled_features_json, content_features_file
         )
 
         if criteria_missing:

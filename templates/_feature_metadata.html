@@ -1,0 +1,24 @@
+{% import 'macros/field_render.html' as r %}
+
+{% set overview_fields = [
+    'summary',
+    'owner',
+    'owner_emails',
+    'created',
+    'updated',
+    'creator_email',
+    'updater_email',
+    'metadata_form',
+    'form',
+    'id',
+    'feature_type_int',
+    'feature_type',
+    'star_count',
+    'accurate_as_of',
+    'markdown_fields'
+] %}
+
+<details>
+  <summary>{{ metadata_form.name if metadata_form else 'Feature Metadata' }}</summary>
+  {{ r.render_field_list(metadata, metadata_form, field_specs, overview_fields) }}
+</details>

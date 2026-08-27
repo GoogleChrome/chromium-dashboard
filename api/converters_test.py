@@ -15,12 +15,22 @@
 """Tests for the converters module, verifying correct transformation of data models to dictionaries."""
 
 from datetime import datetime
+from typing import Any, Iterable, Mapping
 from unittest import mock
+
+import yaml
 
 import testing_config  # Must be imported before the module under test.
 from api import converters
 from internals import approval_defs, core_enums
-from internals.core_models import FeatureEntry, MilestoneSet, Stage
+from internals.core_models import (
+    FeatureEntry,
+    FeatureSummaryProgressStep,
+    FeatureSummarySuggestion,
+    MilestoneCuration,
+    MilestoneSet,
+    Stage,
+)
 from internals.review_models import Gate, SurveyAnswers, Vote
 
 
@@ -673,3 +683,346 @@ class GateConvertersTest(testing_config.CustomTestCase):
 
         self.assertEqual(4, actual['slo_initial_response_took'])
         self.assertEqual(None, actual['slo_initial_response_remaining'])
+
+
+class AICurationConvertersTest(testing_config.CustomTestCase):
+    """Tests for AI suggestion, progress step, and milestone curation converters."""
+
+    def tearDown(self):
+        """Tear down test database entities."""
+        for fe in FeatureEntry.query():
+            fe.key.delete()
+        for s in FeatureSummarySuggestion.query():
+            s.key.delete()
+        for c in MilestoneCuration.query():
+            c.key.delete()
+
+    def assert_bidirectional_enum_parity(
+        self,
+        mapping: Mapping[Any, Any],
+        internal_enum: Iterable[Any],
+        schema_name: str,
+        property_name: str,
+    ) -> None:
+        """Asserts 100% bidirectional parity between Datastore enums, converters, and OpenAPI schemas.
+
+        This build-time guard checks both sides of the serialization boundary:
+        1. Input Boundary: Asserts that every member in `internal_enum` is present as a key
+           in `mapping`, preventing unmapped backend database states from causing runtime errors.
+        2. Output Boundary: Asserts that the set of target values produced by `mapping` exactly
+           matches the allowed `enum` strings defined in `openapi/api.yaml` under
+           `components.schemas.<schema_name>.properties.<property_name>`.
+
+        Args:
+            mapping: The converter lookup dictionary (e.g., `converters.BASELINE_STATUS_TO_API`)
+              mapping internal Datastore enum members to target OpenAPI string constants.
+            internal_enum: An iterable or Enum class (e.g., `core_enums.BaselineStatus`)
+              representing the complete domain of valid internal database states.
+            schema_name: The name of the target schema component in `openapi/api.yaml`
+              (e.g., `'SummarySuggestion'`).
+            property_name: The property name within `schema_name` whose allowed enum strings
+              should be matched (e.g., `'baseline_status'`).
+
+        Raises:
+            AssertionError: If any internal enum member is missing from `mapping` keys, or if
+              the mapping values drift from the OpenAPI schema enum definition.
+        """
+        self.assertEqual(
+            set(internal_enum),
+            set(mapping.keys()),
+            f'Input boundary drift detected for {schema_name}.{property_name}: '
+            f'Internal enum members {set(internal_enum)} != mapping keys {set(mapping.keys())}',
+        )
+
+        with open('openapi/api.yaml', encoding='utf-8') as f:
+            api_spec = yaml.safe_load(f)
+        openapi_allowed = set(
+            api_spec['components']['schemas'][schema_name]['properties'][
+                property_name
+            ]['enum']
+        )
+        mapped_values = set(mapping.values())
+        self.assertEqual(
+            openapi_allowed,
+            mapped_values,
+            f'Output boundary drift detected for {schema_name}.{property_name}: '
+            f'OpenAPI allowed {openapi_allowed} != mapping values {mapped_values}',
+        )
+
+    def test_feature_summary_suggestion_to_dict__serializes_cleanly(self):
+        """Verify string enums and properties serialize cleanly without integer helpers."""
+        fe = FeatureEntry(
+            id=101,
+            name='Feature 101',
+            summary='Summary 101',
+            category=1,
+            feature_type=1,
+        )
+        fe.put()
+        suggestion = FeatureSummarySuggestion(
+            id=101,
+            suggested_summary='AI suggested summary',
+            original_summary='Summary 101',
+            status=core_enums.SummarySuggestionStatus.PROPOSED,
+            baseline_status=core_enums.BaselineStatus.WIDELY,
+            suggested_doc_links=['https://developer.mozilla.org/doc'],
+            version_token=3,
+        )
+        suggestion.put()
+
+        actual = converters.feature_summary_suggestion_to_dict(suggestion)
+        self.assertEqual(101, actual['feature_id'])
+        self.assertEqual('AI suggested summary', actual['suggested_summary'])
+        self.assertEqual('Summary 101', actual['original_summary'])
+        self.assertEqual('PENDING', actual['status'])
+        self.assertEqual('widely', actual['baseline_status'])
+        self.assertIsNone(actual['reasoning'])
+        self.assertEqual(
+            ['https://developer.mozilla.org/doc'], actual['suggested_doc_links']
+        )
+        self.assertEqual(3, actual['version_token'])
+        self.assertIsInstance(actual['created'], str)
+
+    def test_summary_progress_step_to_dict__serializes_cleanly(self):
+        """Verify step timeline telemetry serializes string IDs and timestamps cleanly."""
+        step = FeatureSummaryProgressStep(
+            step_id=core_enums.ProgressStepId.SEARCH_MDN,
+            status=core_enums.ProgressStepStatus.IN_PROGRESS,
+            message='Searching MDN',
+            start_timestamp=datetime(2026, 7, 16, 12, 0),
+        )
+
+        actual = converters.summary_progress_step_to_dict(step)
+        self.assertEqual('SEARCH_MDN', actual['step'])
+        self.assertEqual('IN_PROGRESS', actual['status'])
+        self.assertEqual('Searching MDN', actual['message'])
+        self.assertEqual('2026-07-16 12:00:00', actual['start_timestamp'])
+
+    def test_milestone_curation_to_dict__serializes_cleanly(self):
+        """Verify milestone curation serializes repeated curator emails and string status."""
+        curation = MilestoneCuration(
+            id='135',
+            milestone=135,
+            status=core_enums.MilestoneCurationStatus.IN_REVIEW,
+            curator_emails=['editor1@google.com'],
+        )
+        curation.put()
+
+        actual = converters.milestone_curation_to_dict(curation)
+        self.assertEqual(135, actual['milestone'])
+        self.assertEqual('IN_REVIEW', actual['status'])
+        self.assertEqual(
+            ['editor1@google.com'],
+            actual['curator_emails'],
+        )
+
+    def test_feature_entry_to_release_note_feature_dict__serializes_cleanly(
+        self,
+    ):
+        """Verify feature entries serialize categorized items for the release hub."""
+        fe = FeatureEntry(
+            id=202,
+            name='CSS Anchor Positioning',
+            summary='Positions elements relative to anchors.',
+            category=core_enums.CSS,
+            feature_type=1,
+            bug_url='https://issues.chromium.org/issues/40731275',
+            spec_link='https://www.w3.org/TR/css-anchor-position-1/',
+            doc_links=[
+                'https://developer.chrome.com/docs/css-ui/anchor-positioning'
+            ],
+            explainer_links=[
+                'https://github.com/w3c/csswg-drafts/issues/css-anchor'
+            ],
+            sample_links=['https://glitch.com/~anchor-positioning-demo'],
+        )
+        fe.put()
+
+        actual = converters.feature_entry_to_release_note_feature_dict(
+            fe,
+            has_applied_suggestion=True,
+            baseline_status=core_enums.BaselineStatus.NEWLY,
+            milestone_classification=(
+                core_enums.ReleaseNoteMilestoneClassification.ORIGIN_TRIAL
+            ),
+            origin_trial_url='/origintrials#/view_trial/ot-anchor-1',
+        )
+        self.assertEqual(202, actual['id'])
+        self.assertEqual('CSS Anchor Positioning', actual['name'])
+        self.assertEqual('CSS', actual['category_name'])
+        self.assertEqual(
+            converters.OpenAPIBaselineStatus.NEWLY, actual['baseline_status']
+        )
+        self.assertEqual(
+            converters.OpenAPISummarySource.AI_APPLIED, actual['summary_source']
+        )
+        self.assertEqual(
+            core_enums.ReleaseNoteMilestoneClassification.ORIGIN_TRIAL,
+            actual['milestone_classification'],
+        )
+
+        # Verify typed links array
+        links = actual['links']
+        self.assertEqual(7, len(links))
+        self.assertEqual(
+            '/origintrials#/view_trial/ot-anchor-1', links[0]['url']
+        )
+        self.assertEqual(
+            core_enums.ReleaseNoteLinkType.ORIGIN_TRIAL, links[0]['type']
+        )
+        self.assertEqual('Origin Trial', links[0]['title'])
+
+        self.assertEqual(
+            'https://issues.chromium.org/issues/40731275', links[1]['url']
+        )
+        self.assertEqual(core_enums.ReleaseNoteLinkType.BUG, links[1]['type'])
+        self.assertEqual('Tracking bug #40731275', links[1]['title'])
+
+        self.assertEqual('/feature/202', links[2]['url'])
+        self.assertEqual(
+            core_enums.ReleaseNoteLinkType.CHROMESTATUS, links[2]['type']
+        )
+        self.assertEqual('ChromeStatus.com entry', links[2]['title'])
+
+        self.assertEqual(
+            'https://www.w3.org/TR/css-anchor-position-1/', links[3]['url']
+        )
+        self.assertEqual(core_enums.ReleaseNoteLinkType.SPEC, links[3]['type'])
+        self.assertEqual('Spec', links[3]['title'])
+
+        self.assertEqual(
+            'https://developer.chrome.com/docs/css-ui/anchor-positioning',
+            links[4]['url'],
+        )
+        self.assertEqual(core_enums.ReleaseNoteLinkType.DOC, links[4]['type'])
+
+        self.assertEqual(
+            'https://github.com/w3c/csswg-drafts/issues/css-anchor',
+            links[5]['url'],
+        )
+        self.assertEqual(
+            core_enums.ReleaseNoteLinkType.EXPLAINER, links[5]['type']
+        )
+        self.assertEqual('Explainer', links[5]['title'])
+
+        self.assertEqual(
+            'https://glitch.com/~anchor-positioning-demo', links[6]['url']
+        )
+        self.assertEqual(core_enums.ReleaseNoteLinkType.DEMO, links[6]['type'])
+        self.assertEqual('Demo', links[6]['title'])
+
+    def test_feature_entry_to_release_note_feature_dict__unmapped_category_fallback(
+        self,
+    ):
+        """Verify fallback to official MISC category display name when category ID is unmapped."""
+        fe = FeatureEntry(
+            id=203,
+            name='Unmapped Feature',
+            summary='An unmapped category feature.',
+            category=999,
+            feature_type=1,
+        )
+        fe.put()
+
+        actual = converters.feature_entry_to_release_note_feature_dict(fe)
+        self.assertEqual('Miscellaneous', actual['category_name'])
+
+    def test_unmapped_enum_fallback(self):
+        """Verify that encountering an unmapped enum value falls back to safe default without crashing."""
+        fe = FeatureEntry(
+            id=101,
+            name='Feature 101',
+            summary='Summary 101',
+            category=1,
+            feature_type=1,
+        )
+        fe.put()
+        suggestion = FeatureSummarySuggestion(
+            id=101,
+            suggested_summary='AI suggested summary',
+            status='UNMAPPED_BOGUS_STATUS',
+            baseline_status='UNMAPPED_BASELINE',
+        )
+        suggestion.put()
+
+        actual = converters.feature_summary_suggestion_to_dict(suggestion)
+        self.assertEqual(
+            converters.OpenAPISuggestionStatus.PENDING, actual['status']
+        )
+        self.assertEqual(
+            converters.OpenAPIBaselineStatus.NONE, actual['baseline_status']
+        )
+
+    def test_exhaustive_enum_parity_with_openapi_models(self):
+        """Build-time guard asserting 100% parity between core_enums members, converter maps, and generated OpenAPI allowed_values."""
+        # 1. SummarySuggestionStatus
+        self.assert_bidirectional_enum_parity(
+            converters.SUMMARY_SUGGESTION_STATUS_TO_API,
+            core_enums.SummarySuggestionStatus,
+            'SummarySuggestion',
+            'status',
+        )
+
+        # 2. BaselineStatus
+        self.assert_bidirectional_enum_parity(
+            converters.BASELINE_STATUS_TO_API,
+            core_enums.BaselineStatus,
+            'SummarySuggestion',
+            'baseline_status',
+        )
+
+        # 3. ProgressStepId
+        self.assert_bidirectional_enum_parity(
+            converters.PROGRESS_STEP_ID_TO_API,
+            core_enums.ProgressStepId,
+            'SummaryProgressStep',
+            'step',
+        )
+
+        # 4. ProgressStepStatus
+        self.assert_bidirectional_enum_parity(
+            converters.PROGRESS_STEP_STATUS_TO_API,
+            core_enums.ProgressStepStatus,
+            'SummaryProgressStep',
+            'status',
+        )
+
+        # 5. MilestoneCurationStatus
+        self.assert_bidirectional_enum_parity(
+            converters.MILESTONE_CURATION_STATUS_TO_API,
+            core_enums.MilestoneCurationStatus,
+            'MilestoneCurationResponse',
+            'status',
+        )
+
+    def test_feature_entry_to_release_note_feature_dict__baseline_fallback_when_suggestion_baseline_is_none(
+        self,
+    ):
+        """Verify fallback to baseline_status arg when applied suggestion has baseline_status=None."""
+        fe = FeatureEntry(
+            id=101,
+            name='Feature 101',
+            summary='Summary 101',
+            category=1,
+            feature_type=1,
+        )
+        fe.put()
+        suggestion = FeatureSummarySuggestion(
+            id=101,
+            suggested_summary='AI suggested summary',
+            status=core_enums.SummarySuggestionStatus.APPLIED,
+            baseline_status=None,
+        )
+        suggestion.put()
+
+        actual = converters.feature_entry_to_release_note_feature_dict(
+            fe,
+            applied_suggestion=suggestion,
+            baseline_status=core_enums.BaselineStatus.WIDELY,
+        )
+        self.assertEqual(
+            converters.OpenAPIBaselineStatus.WIDELY, actual['baseline_status']
+        )
+        self.assertEqual(
+            converters.OpenAPISummarySource.AI_APPLIED, actual['summary_source']
+        )

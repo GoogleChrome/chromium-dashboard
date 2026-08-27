@@ -914,3 +914,32 @@ class AsyncUtilsGitHubTests(unittest.IsolatedAsyncioTestCase):
             result.test_to_dependencies_map[Path('test_b.js')],
             {Path('shared.js')},
         )  # noqa: E501
+
+
+class MarkdownConvertersTest(unittest.TestCase):
+    """Tests for safe_plain_text_to_markdown."""
+
+    def test_safe_plain_text_to_markdown__empty_and_none(self):
+        """None or empty strings return an empty string cleanly."""
+        self.assertEqual('', utils.safe_plain_text_to_markdown(None))
+        self.assertEqual('', utils.safe_plain_text_to_markdown('   '))
+
+    def test_safe_plain_text_to_markdown__html_sanitization(self):
+        """HTML brackets (<, >) are sanitized to prevent XSS and ReDoS."""
+        raw = 'Here is a <script>alert(1)</script> tag.'
+        expected = 'Here is a &lt;script&gt;alert(1)&lt;/script&gt; tag.'
+        self.assertEqual(expected, utils.safe_plain_text_to_markdown(raw))
+
+    def test_safe_plain_text_to_markdown__idempotency(self):
+        """Verifies exact idempotency across repeated conversions (safe(safe(s)) == safe(s))."""
+        test_strings = [
+            'Hello *world* and _italic_ text.',
+            'Already escaped \\*asterisk\\* and \\_underscore\\_.',
+            'Mixed <html_tag> with *literal* asterisks and _underscores_.',
+            '5 * 5 = 25 and 10 _ 2 = 5.',
+        ]
+        for s in test_strings:
+            with self.subTest(s=s):
+                first_pass = utils.safe_plain_text_to_markdown(s)
+                second_pass = utils.safe_plain_text_to_markdown(first_pass)
+                self.assertEqual(first_pass, second_pass)

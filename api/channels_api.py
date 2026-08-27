@@ -143,6 +143,9 @@ class ChannelsAPI(basehandlers.APIHandler):
                 return TEST_CHANNEL_DATA
             return construct_chrome_channels_details()
 
+        if start < 1 or end < 1:
+            self.abort(400, 'milestone numbers must be greater than zero')
+
         if start > end:
             self.abort(400, 'start is greater than end')
 

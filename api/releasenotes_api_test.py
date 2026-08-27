@@ -16,12 +16,18 @@
 
 import testing_config  # isort: split
 
+from unittest import mock
+
 import flask
 import werkzeug.exceptions  # Flask HTTP stuff.
 
-from api import releasenotes_api
+from api import converters, releasenotes_api
 from internals import core_enums
-from internals.core_models import FeatureEntry, MilestoneSet, Stage
+from internals.core_models import (
+    FeatureEntry,
+    MilestoneSet,
+    Stage,
+)
 from internals.review_models import Gate
 
 test_app = flask.Flask(__name__)
@@ -335,3 +341,106 @@ class ReleaseNotesL10nAPITest(testing_config.CustomTestCase):
         feature_after_filtered.key.delete()
         after_filtered_stage.key.delete()
         after_filtered_gate.key.delete()
+
+
+class ReleaseNotesAPITest(testing_config.CustomTestCase):
+    """Tests for ReleaseNotesAPI (GET /api/v0/releasenotes/{milestone})."""
+
+    def setUp(self):
+        """Set up test fixtures."""
+        self.handler = releasenotes_api.ReleaseNotesAPI()
+
+    def test_do_get__invalid_milestone(self):
+        """It aborts HTTP 400 if milestone <= 0."""
+        with test_app.test_request_context('/api/v0/releasenotes/0'):
+            with self.assertRaises(werkzeug.exceptions.BadRequest) as cm:
+                self.handler.do_get(milestone=0)
+            self.assertEqual(400, cm.exception.code)
+
+        with test_app.test_request_context('/api/v0/releasenotes/-5'):
+            with self.assertRaises(werkzeug.exceptions.BadRequest) as cm:
+                self.handler.do_get(milestone=-5)
+            self.assertEqual(400, cm.exception.code)
+
+        with test_app.test_request_context('/api/v0/releasenotes/abc'):
+            with self.assertRaises(werkzeug.exceptions.BadRequest) as cm:
+                self.handler.do_get(milestone='abc')
+            self.assertEqual(400, cm.exception.code)
+
+    @mock.patch(
+        'internals.feature_helpers.get_developer_release_notes_features'
+    )
+    def test_do_get__success_human_fallback(self, mock_get_features):
+        """It returns feature with summary_source = HUMAN when no AI suggestion exists."""
+        mock_get_features.return_value = [
+            {
+                'id': 101,
+                'name': 'CSS Anchor Positioning',
+                'summary': 'Human summary for anchor positioning.',
+                'category_name': 'CSS',
+                'summary_source': converters.OpenAPISummarySource.HUMAN,
+                'baseline_status': converters.OpenAPIBaselineStatus.NONE,
+            }
+        ]
+
+        with test_app.test_request_context('/api/v0/releasenotes/132'):
+            response = self.handler.do_get(milestone=132)
+
+        mock_get_features.assert_called_once_with(132)
+        self.assertEqual(132, response['milestone'])
+        self.assertEqual(1, len(response['features']))
+        feat = response['features'][0]
+        self.assertEqual(101, feat['id'])
+        self.assertEqual('CSS Anchor Positioning', feat['name'])
+        self.assertEqual(
+            'Human summary for anchor positioning.', feat['summary']
+        )
+        self.assertEqual(
+            converters.OpenAPISummarySource.HUMAN, feat['summary_source']
+        )
+
+    @mock.patch(
+        'internals.feature_helpers.get_developer_release_notes_features'
+    )
+    def test_do_get__success_ai_applied(self, mock_get_features):
+        """It overrides summary and sets summary_source = AI_APPLIED when an applied suggestion exists."""
+        mock_get_features.return_value = [
+            {
+                'id': 101,
+                'name': 'CSS Anchor Positioning',
+                'summary': 'AI-generated approved summary text.',
+                'category_name': 'CSS',
+                'summary_source': converters.OpenAPISummarySource.AI_APPLIED,
+                'baseline_status': converters.OpenAPIBaselineStatus.NEWLY,
+            }
+        ]
+
+        with test_app.test_request_context('/api/v0/releasenotes/132'):
+            response = self.handler.do_get(milestone=132)
+
+        mock_get_features.assert_called_once_with(132)
+        self.assertEqual(132, response['milestone'])
+        self.assertEqual(1, len(response['features']))
+        feat = response['features'][0]
+        self.assertEqual(101, feat['id'])
+        self.assertEqual('AI-generated approved summary text.', feat['summary'])
+        self.assertEqual(
+            converters.OpenAPISummarySource.AI_APPLIED, feat['summary_source']
+        )
+        self.assertEqual(
+            converters.OpenAPIBaselineStatus.NEWLY, feat['baseline_status']
+        )
+
+    @mock.patch(
+        'internals.feature_helpers.get_developer_release_notes_features'
+    )
+    def test_do_get__empty(self, mock_get_features):
+        """It returns empty list when no shipping features exist in milestone."""
+        mock_get_features.return_value = []
+
+        with test_app.test_request_context('/api/v0/releasenotes/999'):
+            response = self.handler.do_get(milestone=999)
+
+        mock_get_features.assert_called_once_with(999)
+        self.assertEqual(999, response['milestone'])
+        self.assertEqual([], response['features'])

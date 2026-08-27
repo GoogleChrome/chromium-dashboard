@@ -157,6 +157,7 @@ class VotesAPITest(testing_config.CustomTestCase):
 
     def test_post__bad_feature_id(self):
         """Handler rejects requests that don't specify an existing feature."""
+        testing_config.sign_in('admin@example.com', 1234567890)
         params = {}
         with test_app.test_request_context(self.request_path, json=params):
             with self.assertRaises(werkzeug.exceptions.NotFound):
@@ -512,24 +513,8 @@ class GatesAPITest(testing_config.CustomTestCase):
         self.feature_1.put()
 
         with test_app.test_request_context(self.request_path):
-            actual = self.handler.do_get(feature_id=self.feature_id)
-
-        expected = {
-            'gates': [],
-        }
-        self.assertEqual(actual, expected)
-
-    def test_do_get__include_deleted(self):
-        """If a feature is deleted, return gates if include_deleted=1."""
-        self.feature_1.deleted = True
-        self.feature_1.put()
-
-        with test_app.test_request_context(
-            self.request_path + '?include_deleted=1'
-        ):
-            actual = self.handler.do_get(feature_id=self.feature_id)
-
-        self.assertEqual(1, len(actual['gates']))
+            with self.assertRaises(werkzeug.exceptions.Forbidden):
+                self.handler.do_get(feature_id=self.feature_id)
 
 
 class XfnGatesAPITest(testing_config.CustomTestCase):

@@ -26,10 +26,23 @@ from urllib.parse import urlparse
 
 import requests
 import validators
+from fastspec.errors import APIError
 from ghapi.core import GhApi
 
 import settings
 from framework import secrets
+
+
+def _get_error_code(e: Exception) -> Optional[int]:
+    """Get the HTTP status code from an exception."""
+    code = getattr(e, 'status_code', None) or getattr(e, 'code', None)
+    if code is not None:
+        try:
+            return int(code)
+        except ValueError:
+            pass
+    return None
+
 
 github_api_client = None
 
@@ -125,7 +138,7 @@ def get_github_api_client():
     global github_api_client
     if github_api_client is None:
         github_credential = secrets.ApiCredential.get_github_credendial()
-        github_api_client = GhApi(token=github_credential.token)
+        github_api_client = GhApi(token=github_credential.token, sync=True)
 
     return github_api_client
 
@@ -192,9 +205,9 @@ class Link:
                 owner=owner, repo=repo, branch=ref
             )
             ref = branch_information.name
-        except HTTPError as e:
+        except (HTTPError, APIError) as e:
             # if the branch does not exist, then it is probably a commit hash
-            if e.code != 404:
+            if _get_error_code(e) != 404:
                 raise e
 
         try:
@@ -202,9 +215,10 @@ class Link:
                 owner=owner, repo=repo, path=file_path, ref=ref
             )
             return information
-        except HTTPError as e:
-            logging.info(f'Got http response code {e.code}')
-            if e.code != 404 and retries > 0:
+        except (HTTPError, APIError) as e:
+            code = _get_error_code(e)
+            logging.info(f'Got http response code {code}')
+            if code != 404 and retries > 0:
                 rotate_github_client()
                 return self._fetch_github_file(
                     owner, repo, ref, file_path, retries=retries - 1
@@ -241,9 +255,10 @@ class Link:
                 owner=owner, repo=repo, issue_number=issue_id
             )
             return resp
-        except HTTPError as e:
-            logging.info(f'Got http response code {e.code}')
-            if e.code != 404 and retries > 0:
+        except (HTTPError, APIError) as e:
+            code = _get_error_code(e)
+            logging.info(f'Got http response code {code}')
+            if code != 404 and retries > 0:
                 rotate_github_client()
                 return self._fetch_github_issue(
                     owner, repo, issue_id, retries=retries - 1
@@ -415,11 +430,69 @@ class Link:
                 self.information = self._parse_html_head()
             elif self.type == LINK_TYPE_WEB:
                 self.information = None
-        except (requests.RequestException, HTTPError, ValueError) as e:
+        except (
+            requests.RequestException,
+            HTTPError,
+            ValueError,
+            APIError,
+        ) as e:
             logging.error(f'Error parsing {self.type} {self.url}: {e}')
             self.error = e
             self.is_error = True
-            if isinstance(e, HTTPError):
-                self.http_error_code = e.code
+            self.http_error_code = _get_error_code(e)
             self.information = None
         self.is_parsed = True
+
+
+CRBUG_NUMERIC_RE = re.compile(r'^\d+$')
+ISSUES_TRACKER_ID_RE = re.compile(
+    r'(?:crbug\.com/|issues\.chromium\.org/issues/|issues/detail\?id=)(\d+)'
+)
+
+
+def format_chromium_bug_url(
+    bug_url: str | None,
+) -> tuple[str | None, str | None]:
+    """Normalizes raw bug input to a canonical issues.chromium.org URL and display title.
+
+    Handles bare issue numbers ('40731275'), crbug shortlinks, and full URLs.
+
+    Returns:
+        (canonical_url, display_title) tuple, or (None, None) if raw input is empty.
+    """
+    if not bug_url or not isinstance(bug_url, str):
+        return None, None
+    cleaned = bug_url.strip()
+    if not cleaned:
+        return None, None
+
+    title = 'Tracking bug'
+    if CRBUG_NUMERIC_RE.match(cleaned):
+        return (
+            f'https://issues.chromium.org/issues/{cleaned}',
+            f'{title} #{cleaned}',
+        )
+
+    match = ISSUES_TRACKER_ID_RE.search(cleaned)
+    if match:
+        return cleaned, f'{title} #{match.group(1)}'
+
+    return cleaned, title
+
+
+def format_feature_url(feature_id: int | str | None) -> str | None:
+    """Returns the canonical relative permalink to a ChromeStatus feature."""
+    if not feature_id:
+        return None
+    return f'/feature/{feature_id}'
+
+
+def format_origin_trial_url(
+    origin_trial_id: str | None = None,
+    stage_id: int | str | None = None,
+) -> str | None:
+    """Constructs the canonical relative URL to view/register for an origin trial."""
+    ot_id = origin_trial_id or (str(stage_id) if stage_id else None)
+    if not ot_id:
+        return None
+    return f'/origintrials#/view_trial/{ot_id}'

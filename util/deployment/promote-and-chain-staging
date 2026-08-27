@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+# Tags verified-staging-latest and queues trigger-chromestatus-prod in Cloud Build.
+set -euo pipefail
+
+# Only promote when deploying staging
+if [[ "${_DEPLOY_ENV:-staging}" != "staging" ]]; then
+  exit 0
+fi
+
+git config --global --add safe.directory '/workspace/chromium-dashboard'
+COMMIT_SHA="${COMMIT_SHA:-$(git rev-parse HEAD)}"
+
+# Only tag and trigger production build if commit is on main branch
+git fetch origin main 2>/dev/null || true
+if ! git merge-base --is-ancestor HEAD main 2>/dev/null && ! git merge-base --is-ancestor HEAD origin/main 2>/dev/null; then
+  echo "Commit is not on main branch. Skipping staging tag promotion and production trigger."
+  exit 0
+fi
+
+echo "Tagging verified-staging-latest..."
+git tag -f verified-staging-latest HEAD
+if [[ -n "${GH_TOKEN:-}" ]]; then
+  AUTH_HEADER=$(printf "interop-tooling-ops-bot:%s" "${GH_TOKEN}" | base64 | tr -d '\r\n')
+  if ! git -c http.https://github.com/.extraheader="Authorization: Basic ${AUTH_HEADER}" push -f origin verified-staging-latest; then
+    echo "WARNING: Failed to push tag 'verified-staging-latest' to GitHub. Check GH_TOKEN permissions." >&2
+  fi
+else
+  git push -f origin verified-staging-latest 2>/dev/null || true
+fi
+
+echo "Triggering production build (trigger-chromestatus-prod)..."
+gcloud builds triggers run trigger-chromestatus-prod \
+  --project=interop-tooling-ops \
+  --region=us-central1 \
+  --sha="${COMMIT_SHA}" \
+  --substitutions=_DEPLOY_ENV=prod,_FORCE_DEPLOY=false,_SKIP_ISSUE_CREATION=false || echo "Warning: Could not trigger trigger-chromestatus-prod."

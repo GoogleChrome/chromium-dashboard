@@ -296,46 +296,27 @@ class OriginTrialsAPI(basehandlers.EntitiesAPIHandler):
 
         return validation_errors
 
-    def check_post_permissions(self, feature_id) -> flask.Response | dict:
+    def check_post_permissions(self, fe: FeatureEntry) -> flask.Response | dict:
         """Raise an exception or redirect if the user cannot request OT."""
         if permissions.is_google_or_chromium_account(self.get_current_user()):
             return {}
 
-        redirect_resp = permissions.validate_feature_edit_permission(
-            self, feature_id
-        )
+        redirect_resp = permissions.validate_feature_edit_permission(self, fe)
         return redirect_resp
 
     def do_post(self, **kwargs):
         """Handle POST requests."""
-        feature_id = int(kwargs['feature_id'])
-        # Check that feature ID is valid.
-        if not feature_id:
-            self.abort(404, msg='No feature specified.')
-        feature: FeatureEntry | None = FeatureEntry.get_by_id(feature_id)
-        if feature is None:
-            self.abort(404, msg=f'Feature {feature_id} not found')
-
-        # Check that stage ID is valid.
-        ot_stage_id = int(kwargs['stage_id'])
-        if not ot_stage_id:
-            self.abort(404, msg='No stage specified.')
-        ot_stage: Stage | None = Stage.get_by_id(ot_stage_id)
-        if ot_stage is None:
-            self.abort(404, msg=f'Stage {ot_stage_id} not found')
-        if ot_stage.feature_id != feature_id:
-            self.abort(
-                403,
-                msg=f'Stage {ot_stage_id} does not belong to Feature {feature_id}',
-            )
+        fe, ot_stage = self.get_specified_feature_and_stage(**kwargs)
 
         # Check that user has permission to edit the feature associated
         # with the origin trial, or has a @google or @chromium account.
-        redirect_resp = self.check_post_permissions(feature_id)
+        redirect_resp = self.check_post_permissions(fe)
         if redirect_resp:
             return redirect_resp
 
-        gates: list[Gate] = Gate.query(Gate.stage_id == ot_stage_id)
+        gates: list[Gate] = Gate.query(
+            Gate.stage_id == ot_stage.key.integer_id()
+        )
         for gate in gates:
             if gate.state not in Gate.APPROVED_STATES:
                 self.abort(400, 'Unapproved gate found for trial stage.')
@@ -383,20 +364,9 @@ class OriginTrialsAPI(basehandlers.EntitiesAPIHandler):
         ).to_dict()  # noqa: E501
 
     def _validate_extension_args(
-        self, feature_id: int, ot_stage: Stage, extension_stage: Stage
+        self, ot_stage: Stage, extension_stage: Stage
     ) -> None:
         """Abort if any arguments used for origin trial extension are invalid."""
-        # The stage should belong to the feature.
-        if feature_id != extension_stage.feature_id:
-            self.abort(
-                400,
-                (
-                    'Stage does not belong to feature. '
-                    f'feature_id: {feature_id}, '
-                    f'stage_id: {extension_stage.key.integer_id()}'
-                ),
-            )
-
         trial_id = ot_stage.origin_trial_id
         if trial_id is None:
             self.abort(400, f'Invalid argument for trial_id: {trial_id}')
@@ -421,21 +391,12 @@ class OriginTrialsAPI(basehandlers.EntitiesAPIHandler):
 
     def do_patch(self, **kwargs):
         """Extends an existing origin trial"""  # noqa: D415
-        feature_id = int(kwargs['feature_id'])
-        extension_stage_id = int(kwargs['extension_stage_id'])
-        # Check that feature ID is valid.
-        if not feature_id:
-            self.abort(404, msg='No feature specified.')
-        feature: FeatureEntry | None = FeatureEntry.get_by_id(feature_id)
-        if feature is None:
-            self.abort(404, msg=f'Feature {feature_id} not found')
+        fe, extension_stage = self.get_specified_feature_and_stage(
+            feature_id=kwargs['feature_id'],
+            stage_id=kwargs['extension_stage_id'],
+        )
+        extension_stage_id = extension_stage.key.integer_id()
 
-        # Check that stage ID is valid.
-        if not extension_stage_id:
-            self.abort(404, msg='No stage specified.')
-        extension_stage: Stage | None = Stage.get_by_id(extension_stage_id)
-        if extension_stage is None:
-            self.abort(404, msg=f'Stage {extension_stage_id} not found')
         if extension_stage.ot_stage_id is None:
             self.abort(
                 400,
@@ -452,13 +413,11 @@ class OriginTrialsAPI(basehandlers.EntitiesAPIHandler):
 
         # Check that user has permission to edit the feature
         # associated with the origin trial.
-        redirect_resp = permissions.validate_feature_edit_permission(
-            self, feature_id
-        )
+        redirect_resp = permissions.validate_feature_edit_permission(self, fe)
         if redirect_resp:
             return redirect_resp
 
-        self._validate_extension_args(feature_id, ot_stage, extension_stage)
+        self._validate_extension_args(ot_stage, extension_stage)
 
         try:
             origin_trials_client.extend_origin_trial(

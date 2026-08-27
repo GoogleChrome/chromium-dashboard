@@ -17,9 +17,12 @@ Add your new field as an `ndb` property.
 ```python
 # internals/core_models.py
 
+
 class FeatureEntry(ndb.Model):
-  # ...
-  my_new_field = ndb.StringProperty()  # Use appropriate ndb type (IntegerProperty, BooleanProperty, etc.)
+    # ...
+    my_new_field = (
+        ndb.StringProperty()
+    )  # Use appropriate ndb type (IntegerProperty, BooleanProperty, etc.)
 ```
 
 ## 2. API Layer (Backend)
@@ -31,8 +34,8 @@ The `FeaturesAPI` uses `api/api_specs.py` to map request fields to database prop
 # api/api_specs.py
 
 FEATURE_FIELD_DATA_TYPES: FIELD_INFO_DATA_TYPE = [
-  # ...
-  ('my_new_field', 'str'),  # 'str', 'int', 'bool', 'link', 'emails', etc.
+    # ...
+    ('my_new_field', 'str'),  # 'str', 'int', 'bool', 'link', 'emails', etc.
 ]
 ```
 
@@ -100,8 +103,49 @@ export const FLAT_METADATA_FIELDS: MetadataFields = {
 };
 ```
 
-## 5. Verification
 
-1. **Backend**: Run `npm test` to ensure NDB properties and converters work.
-2. **Frontend**: Run `npm run webtest` or manually verify the new field appears in the feature edit form.
-3. **API**: Manually check `/api/v0/features/{id}` to see if the field is present.
+## 5. Server-Side Form Display & Formatting (Backend Sync)
+
+To enable the backend to understand and correctly display the form fields (even when not generating full editing forms on the server), the TypeScript form and field specifications MUST be mirrored in the Python backend files located in the `pages/` directory.
+
+### Update `pages/form_field_specs.py`
+Add the field's `type` and `label` to `ALL_FIELDS` in `pages/form_field_specs.py`.
+
+```python
+# pages/form_field_specs.py
+
+ALL_FIELDS: dict[str, FieldSpec] = {
+    # ...
+    'my_new_field': {
+        'type': 'input',  # Match the type from client-side form-field-specs.ts
+        'label': 'My New Field',  # Match the label (or displayLabel) from client-side
+    },
+}
+```
+
+### Update `pages/form_definitions.py`
+If the field is used in any feature guide stage, add it to the corresponding form definition(s) and/or `FORMS_BY_STAGE_TYPE` in `pages/form_definitions.py`. If it is a general feature metadata field, add it to `FLAT_METADATA_FIELDS` or `FLAT_ENTERPRISE_METADATA_FIELDS`.
+
+```python
+# pages/form_definitions.py
+
+FLAT_METADATA_FIELDS: FormDef = {
+    'name': 'Feature metadata',
+    'sections': [
+        {
+            'name': 'Feature metadata',
+            'fields': [
+                # ...
+                'my_new_field',
+            ],
+        },
+    ],
+}
+```
+
+## 6. Verification
+
+1. **Backend Tests**: Run `npm test` to ensure NDB properties and converters work.
+2. **Form Display Tests**: Run `./cs-env/bin/pytest pages/form_definitions_test.py` to ensure that all defined fields in `form_field_specs.py` are properly referenced in `form_definitions.py` and vice versa, and that static typing checks (`mypy`) and linting (`ruff`) pass on the new definitions.
+3. **Frontend**: Run `npm run webtest` or manually verify the new field appears in the feature edit form.
+4. **API**: Manually check `/api/v0/features/{id}` to see if the field is present.

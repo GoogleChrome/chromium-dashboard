@@ -47,7 +47,8 @@ class StarsAPI(basehandlers.APIHandler):
 
     def do_post(self, **kwargs):
         """Set or clear a star on the specified feature."""
-        feature = self.get_specified_feature()
+        feature_id = self.get_int_param('featureId', required=True)
+        feature = self.get_specified_feature(feature_id=feature_id)
         starred = self.get_bool_param('starred', default=True)
         user = self.get_current_user(required=True)
 

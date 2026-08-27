@@ -1,0 +1,85 @@
+#!/usr/bin/env bash
+# Continuous Deployment runner for Google Cloud Build.
+# Runs deployments inside the project DevContainer to ensure unified tooling (gh, gcloud, Node, Python).
+set -euo pipefail
+
+DEPLOY_ENV="${_DEPLOY_ENV:-${1:-staging}}"
+if [[ "${DEPLOY_ENV}" == "production" ]]; then
+  DEPLOY_ENV="prod"
+fi
+
+FORCE_DEPLOY="${_FORCE_DEPLOY:-false}"
+SKIP_ISSUE="${_SKIP_ISSUE_CREATION:-false}"
+
+FLAGS=("-q")
+if [[ "${FORCE_DEPLOY}" == "true" ]]; then FLAGS+=("-f"); fi
+if [[ "${SKIP_ISSUE}" == "true" ]]; then FLAGS+=("-b"); fi
+
+echo "================================================================"
+echo "Installing Docker & DevContainer CLI (@devcontainers/cli)..."
+echo "================================================================"
+export DEBIAN_FRONTEND=noninteractive
+apt-get update -qq
+apt-get install -y -qq docker.io nodejs npm jq curl git
+npm install -g @devcontainers/cli json5
+
+# Ensure checkout is in /workspace/chromium-dashboard on host volume so Docker daemon resolves bind mounts
+if [[ ! -d "/workspace/chromium-dashboard/.git" ]]; then
+  echo "Moving checkout into /workspace/chromium-dashboard for DevContainer bind mounts..."
+  mkdir -p /tmp/stage
+  shopt -s dotglob
+  mv /workspace/* /tmp/stage/ 2>/dev/null || true
+  mkdir -p /workspace/chromium-dashboard
+  mv /tmp/stage/* /workspace/chromium-dashboard/
+  shopt -u dotglob
+fi
+
+chown -R 1000:1000 /workspace/chromium-dashboard
+cd /workspace/chromium-dashboard
+
+# Ensure complete git history is available for changelog and versioning
+git config --global --add safe.directory '/workspace/chromium-dashboard'
+git fetch --unshallow origin main 2>/dev/null || git fetch --depth=200 origin main 2>/dev/null || true
+
+echo "================================================================"
+echo "Building and starting DevContainer environment..."
+echo "================================================================"
+touch "${HOME}/.npmrc"
+trap 'rm -f /tmp/devcontainer-ci.json' EXIT
+json5 .devcontainer/devcontainer.json | jq '.runArgs += ["--network=host"] | .mounts = [] | .postCreateCommand = "" | .postStartCommand = ""' > /tmp/devcontainer-ci.json
+devcontainer up --workspace-folder /workspace/chromium-dashboard --config .devcontainer/devcontainer.json --override-config /tmp/devcontainer-ci.json
+
+echo "================================================================"
+echo "Executing deployment for DEPLOY_ENV=${DEPLOY_ENV} inside DevContainer..."
+echo "================================================================"
+
+AUTH_TOKEN=$(gcloud auth print-access-token --scopes="https://www.googleapis.com/auth/cloud-platform" 2>/dev/null) || {
+  echo "Error: Failed to obtain GCP access token via gcloud auth." >&2
+  exit 1
+}
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+if [[ "${DEPLOY_ENV}" == "staging" ]]; then
+  devcontainer exec --workspace-folder /workspace/chromium-dashboard \
+    --remote-env GOOGLE_OAUTH_ACCESS_TOKEN="${AUTH_TOKEN}" \
+    --remote-env CLOUDSDK_AUTH_ACCESS_TOKEN="${AUTH_TOKEN}" \
+    --remote-env GH_TOKEN="${GH_TOKEN:-}" \
+    --remote-env GITHUB_TOKEN="${GH_TOKEN:-}" \
+    --remote-env CI=true \
+    --remote-env CLOUD_BUILD=true \
+    bash -l -c "./util/deployment/deploy-staging ${FLAGS[*]}"
+
+  "${DIR}/promote-and-chain-staging"
+elif [[ "${DEPLOY_ENV}" == "prod" ]]; then
+  devcontainer exec --workspace-folder /workspace/chromium-dashboard \
+    --remote-env GOOGLE_OAUTH_ACCESS_TOKEN="${AUTH_TOKEN}" \
+    --remote-env CLOUDSDK_AUTH_ACCESS_TOKEN="${AUTH_TOKEN}" \
+    --remote-env GH_TOKEN="${GH_TOKEN:-}" \
+    --remote-env GITHUB_TOKEN="${GH_TOKEN:-}" \
+    --remote-env CI=true \
+    --remote-env CLOUD_BUILD=true \
+    bash -l -c "./util/deployment/deploy-production ${FLAGS[*]}"
+else
+  echo "Unknown deployment environment: ${DEPLOY_ENV}" >&2
+  exit 1
+fi

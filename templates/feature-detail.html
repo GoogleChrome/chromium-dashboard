@@ -1,0 +1,94 @@
+{% extends "_base.html" %}
+
+{% block page_title %}{{ metadata.name or 'Feature Detail' }} - {% endblock %}
+
+{% block css %}
+<style>
+  details {
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    background-color: #fff;
+  }
+  summary {
+    font-size: 1.2rem;
+    font-weight: 600;
+    cursor: pointer;
+    margin: -1rem;
+    padding: 1rem;
+    background-color: #f7f7f7;
+    border-bottom: 1px solid #ccc;
+    border-radius: 4px 4px 0 0;
+  }
+  details[open] summary {
+    margin-bottom: 1rem;
+  }
+  dl {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    grid-gap: 12px 24px;
+    margin: 0;
+  }
+  dt {
+    grid-column: 1;
+    color: #555;
+    font-weight: 500;
+    text-align: right;
+  }
+  dd {
+    grid-column: 2;
+    margin: 0;
+  }
+  ul {
+    margin: 0;
+    padding-left: 20px;
+  }
+  pre {
+    margin: 0;
+    background-color: #f4f4f4;
+    padding: 8px;
+    border-radius: 4px;
+    overflow-x: auto;
+  }
+  em {
+    color: #888;
+  }
+  #feature-detail-container {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 1rem;
+  }
+</style>
+{% endblock %}
+
+{% block subheader %}
+<div id="subheader">
+  <div>
+    <h2>{{ metadata.name }}</h2>
+  </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<section id="feature-detail-container">
+  {# 1. Feature Overview (Initially Open) #}
+  {% include '_feature_overview.html' %}
+
+  {# 2. Feature Metadata #}
+  {% include '_feature_metadata.html' %}
+
+  {# 3. Feature Stages #}
+  {% for stage in stages %}
+    {% set outer_loop = loop %}
+    {% include '_feature_stage.html' %}
+  {% endfor %}
+</section>
+{% endblock %}
+
+{% block js %}
+<script nonce="{{nonce}}">
+  // Remove loading spinner at page load.
+  document.body.classList.remove('loading');
+</script>
+{% endblock %}

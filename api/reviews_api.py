@@ -18,7 +18,7 @@
 
 import logging
 from datetime import datetime
-from typing import Any, Tuple
+from typing import Any
 
 from chromestatus_openapi.models import (
     GetGateResponse,
@@ -38,24 +38,6 @@ from internals.core_models import FeatureEntry, Stage
 from internals.review_models import Activity, Amendment, Gate, Vote
 
 
-def get_user_feature_and_gate(
-    handler, kwargs
-) -> Tuple[User, FeatureEntry, Gate, int, int]:
-    """Get common parameters from the request."""
-    feature_id: int = kwargs['feature_id']
-    gate_id: int = kwargs['gate_id']
-    fe: FeatureEntry = handler.get_specified_feature(feature_id=feature_id)
-
-    user: User = handler.get_current_user(required=True)
-    gate: Gate = Gate.get_by_id(gate_id)
-    if not gate:
-        handler.abort(404, msg='Gate not found')
-    if gate.feature_id != feature_id:
-        handler.abort(400, msg='Mismatched feature and gate')
-
-    return user, fe, gate, feature_id, gate_id
-
-
 class VotesAPI(basehandlers.APIHandler):
     """Users may see the set of votes on a feature, and add their own,
     if allowed.
@@ -63,18 +45,20 @@ class VotesAPI(basehandlers.APIHandler):
 
     def do_get(self, **kwargs) -> dict[str, list[dict[str, Any]]]:
         """Return a list of all vote values for a given feature."""
-        feature_id = kwargs['feature_id']
+        feature = self.get_specified_feature(**kwargs)
         gate_id = kwargs.get('gate_id', None)
-        # Note: We assume that anyone may view approvals.
-        votes = Vote.get_votes(feature_id=feature_id, gate_id=gate_id)
+        votes = Vote.get_votes(
+            feature_id=feature.key.integer_id(), gate_id=gate_id
+        )
         dicts = [converters.vote_value_to_json_dict(v) for v in votes]
         return GetVotesResponse.from_dict({'votes': dicts}).to_dict()
 
     def do_post(self, **kwargs) -> dict[str, str]:
         """Set a user's vote value for the specified feature and gate."""
-        user, fe, gate, feature_id, gate_id = get_user_feature_and_gate(
-            self, kwargs
-        )
+        user: User = self.get_current_user(required=True)
+        fe, gate = self.get_specified_feature_and_gate(**kwargs)
+        feature_id = fe.key.integer_id()
+        gate_id = gate.key.integer_id()
         new_state = self.get_int_param('state', validator=Vote.is_valid_state)
 
         old_votes = Vote.get_votes(
@@ -139,7 +123,7 @@ class VotesAPI(basehandlers.APIHandler):
             Vote.NA_REQUESTED,
         )
         is_approving = new_state in Gate.APPROVED_STATES
-        is_editor = permissions.can_edit_feature(user, feature.key.integer_id())
+        is_editor = permissions.can_edit_feature(user, feature)
         approvers = approval_defs.get_approvers(gate.gate_type)
         is_approver = permissions.can_review_gate(
             user, feature, gate, approvers
@@ -179,14 +163,9 @@ class GatesAPI(basehandlers.APIHandler):
 
     def do_get(self, **kwargs) -> dict[str, Any]:
         """Return a list of all gates associated with the given feature."""
-        feature_id = kwargs.get('feature_id', None)
-        feature: FeatureEntry = self.get_specified_feature(
-            feature_id=feature_id
-        )
-        gates: list[Gate] = []
-
-        if not feature.deleted or self.get_bool_arg('include_deleted'):
-            gates = Gate.query(Gate.feature_id == feature_id).fetch()
+        fe: FeatureEntry = self.get_specified_feature(**kwargs)
+        feature_id = fe.key.integer_id()
+        gates: list[Gate] = Gate.query(Gate.feature_id == feature_id).fetch()
 
         dicts = [converters.gate_value_to_json_dict(g) for g in gates]
         for g in dicts:
@@ -206,9 +185,8 @@ class GatesAPI(basehandlers.APIHandler):
 
     def do_patch(self, **kwargs) -> dict[str, str]:
         """Set the assignees for a gate."""
-        user, fe, gate, feature_id, gate_id = get_user_feature_and_gate(
-            self, kwargs
-        )
+        user: User = self.get_current_user(required=True)
+        fe, gate = self.get_specified_feature_and_gate(**kwargs)
         request = PatchGateRequest.from_dict(self.request.json)
         changes: list[str] = []
         new_assignees = request.assignees
@@ -239,7 +217,7 @@ class GatesAPI(basehandlers.APIHandler):
 
     def require_permissions(self, user, feature, gate):
         """Abort the request if the user lacks permission to set assignees."""
-        is_editor = permissions.can_edit_feature(user, feature.key.integer_id())
+        is_editor = permissions.can_edit_feature(user, feature)
         approvers = approval_defs.get_approvers(gate.gate_type)
         is_approver = permissions.can_review_gate(
             user, feature, gate, approvers
@@ -324,21 +302,12 @@ class XfnGatesAPI(basehandlers.APIHandler):
 
     def do_post(self, **kwargs) -> dict[str, str]:
         """Add a full set of cross-functional gates to a stage."""
-        feature_id: int = kwargs['feature_id']
-        fe: FeatureEntry | None = self.get_specified_feature(
-            feature_id=feature_id
-        )
-        if fe is None:
-            self.abort(404, msg=f'Feature {feature_id} not found')
-        stage_id: int = kwargs['stage_id']
-        stage: Stage | None = Stage.get_by_id(stage_id)
-        if stage is None:
-            self.abort(404, msg=f'Stage {stage_id} not found')
+        fe, stage = self.get_specified_feature_and_stage(**kwargs)
+        feature_id = fe.key.integer_id()
+        stage_id = stage.key.integer_id()
 
         user: User = self.get_current_user(required=True)
-        is_editor = fe and permissions.can_edit_feature(
-            user, fe.key.integer_id()
-        )
+        is_editor = fe and permissions.can_edit_feature(user, fe)
         is_approver = approval_defs.fields_approvable_by(user)
         if not is_editor and not is_approver:
             self.abort(403, msg='User lacks permission to create gates')

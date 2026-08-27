@@ -21,7 +21,7 @@ feature categories, platforms, standardization statuses, and gate types.
 
 import collections
 import re
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import Optional
 
 # URL constants.
@@ -277,6 +277,7 @@ STAGE_DEP_DEV_TRIAL = 430
 STAGE_DEP_DEPRECATION_TRIAL = 450
 STAGE_DEP_EXTEND_DEPRECATION_TRIAL = 451
 STAGE_DEP_SHIPPING = 460
+# We currently don't display a "Remove" stage, but it does exist in the DB.
 STAGE_DEP_REMOVE_CODE = 470
 # TODO(jrobbins): reverse origin trial stage?
 
@@ -991,3 +992,128 @@ def convert_enum_string_to_int(property_name, value):
 def is_enum_field(property_name):
     """Return True if the given property name maps to an enum."""
     return property_name in PROPERTY_NAMES_TO_ENUM_DICTS
+
+
+# Enums for AI Release Notes and Summary Suggestions review workflows.
+class SummarySuggestionStatus(StrEnum):
+    """Lifecycle statuses for AI-generated FeatureSummarySuggestion entities.
+
+    Tracks human review decisions (`PROPOSED`, `APPLIED`, `REJECTED`,
+    `DISCARDED`) across the summary suggestion state machine. Inheriting from
+    `str` enables direct serialization to JSON API payloads and NDB string
+    properties without integer mapping tables or database migrations.
+    """
+
+    UNKNOWN = 'UNKNOWN'
+    PROPOSED = 'PROPOSED'
+    PENDING = 'PENDING'
+    APPLIED = 'APPLIED'
+    REJECTED = 'REJECTED'
+    DISCARDED = 'DISCARDED'
+    SKIPPED = 'SKIPPED'
+
+
+class ProgressStepStatus(StrEnum):
+    """Statuses for individual steps in an AI generation timeline.
+
+    Paired with `ProgressStepId` in background tasks to report live generation
+    state (`IN_PROGRESS`, `SUCCESS`, `FAILED`, `RETRYING`). Using string enum
+    values enables real-time status reporting and UI progress bars without
+    client-side code lookups.
+    """
+
+    UNKNOWN = 'UNKNOWN'
+    START = 'START'
+    IN_PROGRESS = 'IN_PROGRESS'
+    SUCCESS = 'SUCCESS'
+    FAILED = 'FAILED'
+    RETRYING = 'RETRYING'
+
+
+class ProgressStepId(StrEnum):
+    """Canonical step identifiers for an AI summary generation workflow.
+
+    Logged by generation workers to track progress through discrete stages
+    (`SEARCH_MDN`, `READ_SPEC`, `LLM_GENERATION`, `EVALUATION`). Structured string
+    identifiers prevent typo-induced pipeline failures and enable uniform
+    telemetry across background tasks.
+    """
+
+    UNKNOWN = 'UNKNOWN'
+    START = 'START'
+    SEARCH_MDN = 'SEARCH_MDN'
+    VERIFY_DOC_LINK = 'VERIFY_DOC_LINK'
+    READ_SPEC = 'READ_SPEC'
+    READ_EXPLAINER = 'READ_EXPLAINER'
+    LLM_GENERATION = 'LLM_GENERATION'
+    EVALUATION = 'EVALUATION'
+    SUCCESS = 'SUCCESS'
+
+
+class AISummaryToolName(StrEnum):
+    """Names of sandbox tools available to the Gemini Summary Generator.
+
+    Checked by backend dispatch loops when the LLM requests external
+    documentation or specification lookups. The string values match exact
+    function call declaration names expected by the Gemini API tool-calling
+    framework (`search_mdn_tool`, etc.).
+    """
+
+    SEARCH_MDN = 'search_mdn_tool'
+    VERIFY_DOC_LINK = 'verify_doc_link_tool'
+    READ_SPEC_LINK = 'read_spec_link_tool'
+
+
+class BaselineStatus(StrEnum):
+    """WebDX Baseline compatibility status constants.
+
+    Serialized directly in feature API responses to render compatibility badges
+    in the frontend dashboard. String literal values (`'none'`, `'limited'`,
+    `'newly'`, `'widely'`) match exact external WebDX and `web-features` dataset
+    definitions.
+    """
+
+    NONE = 'none'
+    LIMITED = 'limited'
+    NEWLY = 'newly'
+    WIDELY = 'widely'
+
+
+class MilestoneCurationStatus(StrEnum):
+    """Editorial review status constants for milestone release note curation workflows."""
+
+    PENDING = 'PENDING'
+    IN_REVIEW = 'IN_REVIEW'
+    COMPLETED = 'COMPLETED'
+
+
+class ReleaseNoteMilestoneClassification(StrEnum):
+    """Milestone launch classification constants for developer release notes."""
+
+    SHIPPING = 'SHIPPING'
+    ORIGIN_TRIAL = 'ORIGIN_TRIAL'
+    DEPRECATION = 'DEPRECATION'
+    REMOVAL = 'REMOVAL'
+
+
+class ReleaseNoteLinkType(StrEnum):
+    """Link classification constants for developer release notes resources."""
+
+    BUG = 'BUG'
+    CHROMESTATUS = 'CHROMESTATUS'
+    SPEC = 'SPEC'
+    ORIGIN_TRIAL = 'ORIGIN_TRIAL'
+    DOC = 'DOC'
+    EXPLAINER = 'EXPLAINER'
+    DEMO = 'DEMO'
+    OTHER = 'OTHER'
+
+
+RELEASE_NOTE_LINK_DEFAULT_TITLES: dict[ReleaseNoteLinkType, str] = {
+    ReleaseNoteLinkType.ORIGIN_TRIAL: 'Origin Trial',
+    ReleaseNoteLinkType.BUG: 'Tracking bug',
+    ReleaseNoteLinkType.CHROMESTATUS: 'ChromeStatus.com entry',
+    ReleaseNoteLinkType.SPEC: 'Spec',
+    ReleaseNoteLinkType.EXPLAINER: 'Explainer',
+    ReleaseNoteLinkType.DEMO: 'Demo',
+}

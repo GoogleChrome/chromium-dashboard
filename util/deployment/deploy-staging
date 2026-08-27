@@ -1,6 +1,32 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Deploys the site to the staging environment.
-set -e
+set -euo pipefail
+
+QUIET="false"
+FORCE="false"
+CI="${CI:-false}"
+CLOUD_BUILD="${CLOUD_BUILD:-false}"
+
+usage() {
+  echo "Usage: $0 [-q] [-f] [-h]"
+  echo "  -q : Run non-interactively without prompts"
+  echo "  -f : Force deployment"
+  echo "  -h : Show this help message"
+}
+
+while getopts ':qfbh' flag; do
+  case "${flag}" in
+    q) QUIET="true" ;;
+    f) FORCE="true" ;;
+    b) ;; # Staging does not create release issues
+    h) usage && exit 0 ;;
+    \?) echo "Invalid option: -${OPTARG}" >&2; usage >&2; exit 1 ;;
+  esac
+done
+
+if [[ "${CI}" == "true" || "${CLOUD_BUILD}" == "true" ]]; then
+  QUIET="true"
+fi
 
 # Get the directory of the script
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
@@ -9,4 +35,25 @@ export APP_NAME="cr-status-staging"
 export APP_YAML="app.staging.yaml"
 export NOTIFIER_YAML="notifier.staging.yaml"
 
-"$DIR/deploy-env"
+"$DIR/deploy-env" "$@"
+
+SERVICES="default notifier"
+VERSION=$(git describe --always --abbrev=7 --match 'NOT A TAG' --dirty='-tainted')
+VERSION_URL="https://${VERSION}-dot-cr-status-staging.appspot.com"
+
+echo -e "\nDeployment to staging complete. Validating..."
+echo "Visit $VERSION_URL to confirm that everything works."
+
+if [[ "$QUIET" != "true" ]]; then
+  read -p "Press 'y' to redirect traffic to version $VERSION for all staging services. (y/n) " -n 1 -r
+  echo
+fi
+
+if [[ "$QUIET" == "true" || ${REPLY:-} =~ ^[Yy]$ ]]; then
+  for SERVICE in $SERVICES; do
+    gcloud app --project="$APP_NAME" services set-traffic "$SERVICE" --splits "${VERSION}=1" --quiet
+  done
+  echo "Staging traffic migrated to version ${VERSION}."
+else
+  echo "Staging traffic migration skipped."
+fi

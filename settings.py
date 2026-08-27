@@ -40,6 +40,9 @@ DEFAULT_COMPONENT = 'Blink'
 # The default component for enterprise features.
 DEFAULT_ENTERPRISE_COMPONENT = 'Enterprise'
 
+# Default site logo / OpenGraph icon path.
+SITE_LOGO_PATH = '/static/img/crstatus_192.png'
+
 # Enable to activate the automated OT creation process
 AUTOMATED_OT_CREATION = True
 
@@ -101,6 +104,9 @@ OT_API_KEY: str | None = None
 GITHUB_TOKEN: str | None = None
 GEMINI_API_KEY: str | None = None
 OT_DATA_ACCESS_ADMIN_GROUP_NAME: str | None = None
+SUMMARY_GENERATOR_MODEL: str = os.environ.get(
+    'SUMMARY_GENERATOR_MODEL', 'gemini-3.1-pro-preview'
+)
 
 # Dummy data for local OT support emails.
 DEV_MODE_OT_SUPPORT_EMAILS = 'user1@gmail.com,user2@gmail.com'

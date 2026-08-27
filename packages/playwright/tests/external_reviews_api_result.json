@@ -27,14 +27,14 @@
     {
       "current_stage": "prototyping",
       "estimated_end_milestone": null,
-      "estimated_start_milestone": null,
+      "estimated_start_milestone": 105,
       "feature": {"id": 1004, "name": "Feature 4"},
       "review_link": "https://github.com/mozilla/standards-positions/issues/4"
     },
     {
       "current_stage": "shipped",
       "estimated_end_milestone": null,
-      "estimated_start_milestone": null,
+      "estimated_start_milestone": 105,
       "feature": {"id": 1005, "name": "Feature 2"},
       "review_link": "https://github.com/mozilla/standards-positions/issues/2"
     }

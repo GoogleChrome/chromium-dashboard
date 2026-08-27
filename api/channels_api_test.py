@@ -292,6 +292,18 @@ class ChannelsAPITest(testing_config.CustomTestCase):
                 cm.exception.description,
             )
 
+    def test_do_get__zero_milestone(self):
+        """Test do_get rejects milestone zero, which does not exist."""
+        for query in ('?start=0&end=0', '?start=0&end=5', '?start=5&end=0'):
+            with test_app.test_request_context(self.request_path + query):
+                with self.assertRaises(werkzeug.exceptions.BadRequest) as cm:
+                    self.handler.do_get()
+                self.assertEqual(400, cm.exception.code)
+                self.assertEqual(
+                    'milestone numbers must be greater than zero',
+                    cm.exception.description,
+                )
+
     @mock.patch('settings.UNIT_TEST_MODE', False)
     @mock.patch('api.channels_api.construct_specified_milestones_details')
     def test_do_get__start_and_end(self, mock_call):

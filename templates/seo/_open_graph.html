@@ -1,0 +1,17 @@
+{#
+  Open Graph Sub-Template (templates/seo/_open_graph.html)
+
+  Included automatically via templates/seo/_meta.html.
+
+  Context Variables Used:
+    - seo.seo_title / page_title / APP_TITLE: Title for og:title.
+    - seo.seo_description: Description text for og:description.
+    - seo.canonical_url: Absolute URL for og:url.
+    - seo.site_logo_url: Absolute image URL for og:image.
+    - seo.og_type: Open Graph category (Default: 'website').
+#}
+<meta property="og:title" content="{{ (seo and seo.seo_title) | default(page_title) | default(APP_TITLE) }}">
+<meta property="og:description" content="{{ (seo and seo.seo_description) | default('') }}">
+<meta property="og:url" content="{{ seo and seo.canonical_url }}">
+<meta property="og:type" content="{{ (seo and seo.og_type) | default('website') }}">
+<meta property="og:image" content="{{ seo and seo.site_logo_url }}">

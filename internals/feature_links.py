@@ -121,8 +121,6 @@ def _get_index_link(
     else:
         if should_parse_new_link:
             link.parse()
-            if link.is_error:
-                return None
         feature_link = FeatureLinks(
             feature_ids=[feature_id],
             type=link.type,
@@ -329,12 +327,26 @@ def _index_feature_links_by_ids(
     feature_link_ids: list[Any], should_notify_on_error: bool
 ) -> None:
     """Index the links in the given feature links ids"""  # noqa: D415
+    stale_time = datetime.datetime.now(
+        tz=datetime.timezone.utc
+    ) - datetime.timedelta(minutes=LINK_STALE_MINUTES)
+    stale_time = stale_time.replace(tzinfo=None)
     for feature_link_id in feature_link_ids:
         feature_link: FeatureLinks = FeatureLinks.get_by_id(feature_link_id)
         if feature_link:
+            if feature_link.updated and feature_link.updated > stale_time:
+                logging.info(f'skipping recently updated {feature_link.url}')
+                continue
+
             logging.info(f'processing {feature_link.url}')
             link = Link(feature_link.url)
-            link.parse()
+            try:
+                link.parse()
+            except Exception as e:
+                logging.error(
+                    f'Unexpected error parsing {feature_link.url}: {e}'
+                )
+                link.is_error = True
             if link.is_error:
                 if not feature_link.is_error and should_notify_on_error:
                     # TODO: if feature_link turns from no-error to error, notify users
@@ -545,8 +557,8 @@ class UpdateAllFeatureLinksHandlers(FlaskHandler):
             ) - datetime.timedelta(days=CRON_JOB_LINK_STALE_DAYS)  # noqa: E501
             stale_time = stale_time.replace(tzinfo=None)
             for fe in feature_links:
-                # if stale
-                if fe.updated < stale_time:
+                # if stale or updated timestamp is missing
+                if fe.updated is None or fe.updated < stale_time:
                     ids_to_update.append(fe.key.integer_id())
                 # if error exists
                 elif fe.is_error or fe.http_error_code:
@@ -555,7 +567,7 @@ class UpdateAllFeatureLinksHandlers(FlaskHandler):
                 elif fe.type != Link.get_type(fe.url):
                     ids_to_update.append(fe.key.integer_id())
 
-        BATCH_SIZE = 100
+        BATCH_SIZE = 75
         batch_update_ids = [
             ids_to_update[i : i + BATCH_SIZE]
             for i in range(0, len(ids_to_update), BATCH_SIZE)

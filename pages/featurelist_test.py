@@ -1,3 +1,4 @@
+# ruff: noqa: I001
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
 # you may not use this file except in compliance with the License.
@@ -13,12 +14,11 @@
 
 """Tests for the features list JSON feed handler."""
 
+import testing_config  # isort: split
 from typing import Optional
 
 import flask
-
 import settings
-import testing_config  # Must be imported first
 from internals import core_enums, user_models
 from internals.core_models import FeatureEntry
 from pages import featurelist

@@ -238,7 +238,7 @@ bool FeatureHasExpiryGracePeriod(blink::mojom::OriginTrialFeature feature) {
             self.request_path, method='POST', json={}
         ):
             with self.assertRaises(werkzeug.exceptions.Forbidden):
-                self.handler.check_post_permissions(self.feature_1_id)
+                self.handler.check_post_permissions(self.feature_1)
 
     def test_check_post_permissions__rando(self):
         """Random users cannot request origin trials."""
@@ -247,7 +247,7 @@ bool FeatureHasExpiryGracePeriod(blink::mojom::OriginTrialFeature feature) {
             self.request_path, method='POST', json={}
         ):
             with self.assertRaises(werkzeug.exceptions.Forbidden):
-                self.handler.check_post_permissions(self.feature_1_id)
+                self.handler.check_post_permissions(self.feature_1)
 
     def test_check_post_permissions__googler_chromie(self):
         """Googlers and chromies can request origin trials."""
@@ -255,14 +255,14 @@ bool FeatureHasExpiryGracePeriod(blink::mojom::OriginTrialFeature feature) {
         with test_app.test_request_context(
             self.request_path, method='POST', json={}
         ):
-            result = self.handler.check_post_permissions(self.feature_1_id)
+            result = self.handler.check_post_permissions(self.feature_1)
         self.assertEqual({}, result)
 
         testing_config.sign_in('user@chromium.org', 1234567890)
         with test_app.test_request_context(
             self.request_path, method='POST', json={}
         ):
-            result = self.handler.check_post_permissions(self.feature_1_id)
+            result = self.handler.check_post_permissions(self.feature_1)
         self.assertEqual({}, result)
 
     def test_check_post_permissions__feature_owner(self):
@@ -271,7 +271,7 @@ bool FeatureHasExpiryGracePeriod(blink::mojom::OriginTrialFeature feature) {
         with test_app.test_request_context(
             self.request_path, method='POST', json={}
         ):
-            result = self.handler.check_post_permissions(self.feature_1_id)
+            result = self.handler.check_post_permissions(self.feature_1)
         self.assertEqual({}, result)
 
     def test_do_post__feature_not_found(self):
@@ -831,7 +831,7 @@ bool FeatureHasExpiryGracePeriod(blink::mojom::OriginTrialFeature feature) {
         # No exception should be raised.
         with test_app.test_request_context(self.request_path):
             self.handler._validate_extension_args(
-                self.feature_1_id, self.ot_stage_1, self.extension_stage_1
+                self.ot_stage_1, self.extension_stage_1
             )
 
     def test_validate_extension_args__missing_ot_id(self):
@@ -841,7 +841,7 @@ bool FeatureHasExpiryGracePeriod(blink::mojom::OriginTrialFeature feature) {
         with test_app.test_request_context(self.request_path):
             with self.assertRaises(werkzeug.exceptions.BadRequest):
                 self.handler._validate_extension_args(
-                    self.feature_1_id, self.ot_stage_1, self.extension_stage_1
+                    self.ot_stage_1, self.extension_stage_1
                 )
 
     def test_validate_extension_args__missing_end_milestone(self):
@@ -851,7 +851,7 @@ bool FeatureHasExpiryGracePeriod(blink::mojom::OriginTrialFeature feature) {
         with test_app.test_request_context(self.request_path):
             with self.assertRaises(werkzeug.exceptions.NotFound):
                 self.handler._validate_extension_args(
-                    self.feature_1_id, self.ot_stage_1, self.extension_stage_1
+                    self.ot_stage_1, self.extension_stage_1
                 )
 
     def test_validate_extension_args__invalid_intent_url(self):
@@ -861,7 +861,7 @@ bool FeatureHasExpiryGracePeriod(blink::mojom::OriginTrialFeature feature) {
         with test_app.test_request_context(self.request_path):
             with self.assertRaises(werkzeug.exceptions.BadRequest):
                 self.handler._validate_extension_args(
-                    self.feature_1_id, self.ot_stage_1, self.extension_stage_1
+                    self.ot_stage_1, self.extension_stage_1
                 )
 
     def test_validate_extension_args__missing_intent_url(self):
@@ -871,7 +871,7 @@ bool FeatureHasExpiryGracePeriod(blink::mojom::OriginTrialFeature feature) {
         with test_app.test_request_context(self.request_path):
             with self.assertRaises(werkzeug.exceptions.BadRequest):
                 self.handler._validate_extension_args(
-                    self.feature_1_id, self.ot_stage_1, self.extension_stage_1
+                    self.ot_stage_1, self.extension_stage_1
                 )
 
     def test_validate_extension_args__na(self):
@@ -880,7 +880,7 @@ bool FeatureHasExpiryGracePeriod(blink::mojom::OriginTrialFeature feature) {
         self.extension_gate_1.put()
         with test_app.test_request_context(self.request_path):
             self.handler._validate_extension_args(
-                self.feature_1_id, self.ot_stage_1, self.extension_stage_1
+                self.ot_stage_1, self.extension_stage_1
             )
 
     def test_validate_extension_args__not_approved(self):
@@ -890,7 +890,7 @@ bool FeatureHasExpiryGracePeriod(blink::mojom::OriginTrialFeature feature) {
         with test_app.test_request_context(self.request_path):
             with self.assertRaises(werkzeug.exceptions.BadRequest):
                 self.handler._validate_extension_args(
-                    self.feature_1_id, self.ot_stage_1, self.extension_stage_1
+                    self.ot_stage_1, self.extension_stage_1
                 )
 
     def test_post__mismatched_stage_feature(self):
@@ -899,7 +899,7 @@ bool FeatureHasExpiryGracePeriod(blink::mojom::OriginTrialFeature feature) {
         stage2 = Stage(feature_id=999, stage_type=150)
         stage2.put()
         with test_app.test_request_context(self.request_path, json={}):
-            with self.assertRaises(werkzeug.exceptions.Forbidden):
+            with self.assertRaises(werkzeug.exceptions.BadRequest):
                 self.handler.do_post(
                     feature_id=self.feature_1_id,
                     stage_id=stage2.key.integer_id(),
