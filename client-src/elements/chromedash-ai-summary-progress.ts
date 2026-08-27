@@ -30,6 +30,7 @@ import {
   SummarySuggestionResponse,
 } from 'chromestatus-openapi';
 import {TaskProgressMonitor} from '../js-src/task-progress-monitor.js';
+import {ChromeStatusHttpError} from '../js-src/cs-client.js';
 
 const MAX_STEP_MESSAGE_LENGTH = 300;
 const MAX_ERROR_MESSAGE_LENGTH = 200;
@@ -137,6 +138,7 @@ export class ChromedashAiSummaryProgress extends LitElement {
       this._monitor = new TaskProgressMonitor<SummarySuggestionResponse>({
         fetcher: () => window.csClient.getSummarySuggestion(featureId),
         shouldContinue: resp => this._isStepsActive(resp.progress_steps),
+        maxInitial404Retries: 1,
         onProgress: resp => {
           this.suggestion = resp.suggestion ?? null;
           this.progressSteps = resp.progress_steps ?? [];
@@ -163,6 +165,22 @@ export class ChromedashAiSummaryProgress extends LitElement {
           (err instanceof DOMException && err.name === 'AbortError') ||
           (err instanceof Error && err.name === 'AbortError');
         if (isAbort) return null;
+
+        const is404 =
+          (err instanceof ChromeStatusHttpError && err.status === 404) ||
+          (err &&
+            typeof err === 'object' &&
+            'status' in err &&
+            (err as {status: number}).status === 404) ||
+          (err instanceof Error &&
+            (err.message.includes('404') ||
+              err.message.includes('Task did not start or expired')));
+        if (is404) {
+          this.suggestion = null;
+          this.progressSteps = [];
+          this.error = null;
+          return null;
+        }
 
         const errorMsg =
           err instanceof Error
