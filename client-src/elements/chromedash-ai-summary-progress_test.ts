@@ -95,10 +95,12 @@ describe('chromedash-ai-summary-progress', () => {
     const el = await fixture<ChromedashAiSummaryProgress>(
       html`<chromedash-ai-summary-progress
         .autoPoll=${false}
-        .suggestion=${{
-          status: 'PENDING',
-          suggested_summary: 'Pending test',
-        } as SummarySuggestion}
+        .suggestion=${
+          {
+            status: 'PENDING',
+            suggested_summary: 'Pending test',
+          } as SummarySuggestion
+        }
       ></chromedash-ai-summary-progress>`
     );
 
