@@ -416,13 +416,8 @@ export class ChromedashAiSummaryProgress extends LitElement {
     }
     this._emptyStepsGraceCount = 0;
 
-    // Steps from the API are ordered descending by start_timestamp (newest first).
-    // If the latest step has failed or completed, the task is no longer running.
-    const latestStep = steps[0];
-    if (
-      latestStep.status === SummaryProgressStepStatusEnum.FAILED ||
-      latestStep.status === SummaryProgressStepStatusEnum.SUCCESS
-    ) {
+    // If any step has failed, the pipeline execution has ended with an error.
+    if (steps.some(s => s.status === SummaryProgressStepStatusEnum.FAILED)) {
       return false;
     }
 

@@ -191,14 +191,20 @@ class GenerateSummaryHandler(basehandlers.FlaskHandler):
         # Ensure GEMINI_API_KEY is loaded and explicitly exposed in the OS environment for the SDK
         if not settings.GEMINI_API_KEY:
             secrets.load_gemini_api_key()
-        if settings.GEMINI_API_KEY:
-            os.environ['GEMINI_API_KEY'] = settings.GEMINI_API_KEY
-            os.environ['GOOGLE_API_KEY'] = settings.GEMINI_API_KEY
+        api_key = (
+            settings.GEMINI_API_KEY
+            or os.environ.get('GEMINI_API_KEY')
+            or os.environ.get('GOOGLE_API_KEY')
+        )
+        if api_key:
+            os.environ['GEMINI_API_KEY'] = api_key
+            os.environ['GOOGLE_API_KEY'] = api_key
 
         reporter = DatastoreProgressReporter(feature_id)
         feature_input = FeatureSummaryInput.from_feature(feature)
         generator = GeminiSummaryGenerator(
             model_name=settings.SUMMARY_GENERATOR_MODEL,
+            api_key=api_key,
         )
 
         result = generator.generate_summary(feature_input, reporter=reporter)

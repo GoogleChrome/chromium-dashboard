@@ -207,10 +207,9 @@ def load_github_token():
 def load_gemini_api_key() -> None:
     """Obtain an API key to be used for requests to the Gemini API."""
     # Reuse the API key's value if we've already obtained it.
-    if settings.GEMINI_API_KEY is not None:
-        if settings.GEMINI_API_KEY:
-            os.environ['GEMINI_API_KEY'] = settings.GEMINI_API_KEY
-            os.environ['GOOGLE_API_KEY'] = settings.GEMINI_API_KEY
+    if settings.GEMINI_API_KEY:
+        os.environ['GEMINI_API_KEY'] = settings.GEMINI_API_KEY
+        os.environ['GOOGLE_API_KEY'] = settings.GEMINI_API_KEY
         return
 
     if settings.DEV_MODE or settings.UNIT_TEST_MODE:

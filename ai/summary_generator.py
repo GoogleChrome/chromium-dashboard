@@ -27,6 +27,7 @@ from collections.abc import Callable, Sequence
 from typing import Any
 
 from google.adk.agents import Agent
+from google.adk.models.google_llm import Gemini
 from google.adk.runners import Runner
 from google.adk.sessions import InMemorySessionService
 from google.genai import types
@@ -82,6 +83,7 @@ def build_summary_agent(
     instruction: str = DEFAULT_SYSTEM_INSTRUCTION,
     tools: Sequence[Callable[..., Any]] = AI_SUMMARY_TOOLS,
     output_schema: type | None = GeneratedSummaryPayload,
+    api_key: str | None = None,
 ) -> Agent:
     """Builds a Google ADK Agent instance configured for release note generation.
 
@@ -90,13 +92,24 @@ def build_summary_agent(
       instruction: System instruction prompt guiding agent behavior.
       tools: Sequence of tool functions available to the agent for research.
       output_schema: Optional type or schema class for structured output.
+      api_key: Optional Gemini API key passed explicitly to the client.
 
     Returns:
       Configured Google ADK Agent.
     """
+    resolved_key = (
+        api_key
+        or os.environ.get('GEMINI_API_KEY')
+        or os.environ.get('GOOGLE_API_KEY')
+    )
+    client_kwargs = {'api_key': resolved_key} if resolved_key else None
+    model = Gemini(
+        model=model_name,
+        client_kwargs=client_kwargs,
+    )
     return Agent(
         name='release_notes_summary_agent',
-        model=model_name,
+        model=model,
         instruction=instruction,
         tools=list(tools),
         output_schema=output_schema,
@@ -177,6 +190,7 @@ class GeminiSummaryGenerator(SummaryGenerator):
         prompt_template: FeaturePromptTemplate = CANONICAL_RELEASE_NOTES_TEMPLATE,
         tools: Sequence[Callable[..., Any]] = AI_SUMMARY_TOOLS,
         output_schema: type | None = GeneratedSummaryPayload,
+        api_key: str | None = None,
     ) -> None:
         """Initializes generator with model name, prompt template, and tools.
 
@@ -185,18 +199,21 @@ class GeminiSummaryGenerator(SummaryGenerator):
           prompt_template: Template loader used to format feature prompts.
           tools: Tool functions available for research in the ADK loop.
           output_schema: Optional type or schema class for structured output.
+          api_key: Optional Gemini API key passed explicitly.
         """
         self.model_name = model_name
         self.tools = list(tools)
         self.prompt_template = prompt_template
         self.instruction = DEFAULT_SYSTEM_INSTRUCTION
         self.output_schema = output_schema
+        self.api_key = api_key
 
         self.agent = build_summary_agent(
             model_name=self.model_name,
             instruction=self.instruction,
             tools=self.tools,
             output_schema=self.output_schema,
+            api_key=self.api_key,
         )
 
     def _map_tool_to_step_id(

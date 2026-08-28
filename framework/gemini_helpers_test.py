@@ -244,7 +244,8 @@ class GenerateSummaryHandlerTest(testing_config.CustomTestCase):
         response = self.handler.process_post_data()
 
         mock_generator_cls.assert_called_once_with(
-            model_name=settings.SUMMARY_GENERATOR_MODEL
+            model_name=settings.SUMMARY_GENERATOR_MODEL,
+            api_key='fake_api_key',
         )
         self.assertEqual(
             response['message'],

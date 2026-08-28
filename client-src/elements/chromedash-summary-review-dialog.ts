@@ -463,9 +463,9 @@ export class ChromedashSummaryReviewDialog extends LitElement {
           <sl-button
             variant="default"
             size="small"
-            @click=${this.handleRegenerate}
-            ?loading=${this.loading}
-            ?disabled=${this.loading}
+            @click=${() => this.handleRegenerate()}
+            ?loading=${this.loading || this.isGenerating}
+            ?disabled=${this.loading || this.isGenerating}
           >
             <sl-icon slot="prefix" name="arrow-clockwise"></sl-icon>
             Regenerate
