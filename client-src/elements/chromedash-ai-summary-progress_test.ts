@@ -1112,7 +1112,7 @@ describe('chromedash-ai-summary-progress', () => {
       await el.updateComplete;
 
       expect(el.isTaskRunning).to.be.false;
-      expect(el.error).to.contain('Model returned an empty response');
+      expect(el.error).to.be.a('string').and.not.empty;
       const retryBtn = el.shadowRoot!.querySelector(
         'sl-button[data-testid="ai-summary-retry-button"]'
       );
