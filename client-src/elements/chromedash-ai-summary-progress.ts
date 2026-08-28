@@ -158,12 +158,17 @@ export class ChromedashAiSummaryProgress extends LitElement {
         this.suggestion = resp.suggestion ?? null;
         this.progressSteps = resp.progress_steps ?? [];
 
-        const hasFailed = this.progressSteps.some(
+        const failedStep = this.progressSteps.find(
           s => s.status === SummaryProgressStepStatusEnum.FAILED
         );
-        if (hasFailed) {
-          this._dispatchFailedEvent();
+        if (failedStep) {
+          this.error = this._formatErrorMessage(
+            failedStep.message,
+            DEFAULT_TRIGGER_ERROR_MESSAGE
+          );
+          this._dispatchFailedEvent(this.error);
         } else {
+          this.error = null;
           this._dispatchCompletedEvent();
         }
         return resp;
@@ -382,11 +387,38 @@ export class ChromedashAiSummaryProgress extends LitElement {
 
   private _isStepsActive(steps?: ProgressStep[]): boolean {
     if (!steps || steps.length === 0) return false;
-    return steps.some(
-      s =>
-        s.status === SummaryProgressStepStatusEnum.IN_PROGRESS ||
-        s.status === SummaryProgressStepStatusEnum.RETRYING
-    );
+
+    // Steps from the API are ordered descending by start_timestamp (newest first).
+    // If the latest step has failed or completed, the task is no longer running.
+    const latestStep = steps[0];
+    if (
+      latestStep.status === SummaryProgressStepStatusEnum.FAILED ||
+      latestStep.status === SummaryProgressStepStatusEnum.SUCCESS
+    ) {
+      return false;
+    }
+
+    const now = Date.now();
+    const STALE_STEP_TIMEOUT_MS = 5 * 60 * 1000; // 5 minutes
+
+    return steps.some(s => {
+      if (
+        s.status !== SummaryProgressStepStatusEnum.IN_PROGRESS &&
+        s.status !== SummaryProgressStepStatusEnum.RETRYING
+      ) {
+        return false;
+      }
+      if (s.start_timestamp) {
+        const startTime =
+          s.start_timestamp instanceof Date
+            ? s.start_timestamp.getTime()
+            : new Date(s.start_timestamp).getTime();
+        if (!isNaN(startTime) && now - startTime > STALE_STEP_TIMEOUT_MS) {
+          return false;
+        }
+      }
+      return true;
+    });
   }
 
   get isTaskRunning(): boolean {
@@ -455,6 +487,17 @@ export class ChromedashAiSummaryProgress extends LitElement {
       this.progressSteps = [];
       this.error = null;
       this._clearCooldown();
+    }
+    if (changedProperties.has('progressSteps')) {
+      const failedStep = this.progressSteps.find(
+        s => s.status === SummaryProgressStepStatusEnum.FAILED
+      );
+      if (failedStep && !this.error) {
+        this.error = this._formatErrorMessage(
+          failedStep.message,
+          DEFAULT_TRIGGER_ERROR_MESSAGE
+        );
+      }
     }
   }
 
@@ -690,7 +733,10 @@ export class ChromedashAiSummaryProgress extends LitElement {
       `;
     }
 
-    if (this.suggestion?.status === 'PENDING') {
+    if (
+      this.suggestion?.status === 'PENDING' &&
+      this.suggestion.suggested_summary
+    ) {
       return html`
         <sl-button
           size="small"
@@ -736,7 +782,10 @@ export class ChromedashAiSummaryProgress extends LitElement {
       if (this.hideIdleTrigger) {
         return nothing;
       }
-      if (this.suggestion?.status === 'PENDING') {
+      if (
+        this.suggestion?.status === 'PENDING' &&
+        this.suggestion.suggested_summary
+      ) {
         return html`
           <sl-button
             variant="primary"

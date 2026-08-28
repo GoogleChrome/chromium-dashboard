@@ -163,8 +163,6 @@ export class ChromedashFeatureDetail extends LitElement {
           display: block;
           position: relative;
           box-sizing: border-box;
-          contain: content;
-          overflow: hidden;
           background: inherit;
         }
 
@@ -424,7 +422,12 @@ export class ChromedashFeatureDetail extends LitElement {
           @summary-generation-started=${() =>
             this.reviewDialog?.openForGeneration()}
           @summary-generation-completed=${this.handleSummaryCompleted}
-          @summary-dialog-requested=${() => this.reviewDialog?.show()}
+          @summary-dialog-requested=${() => {
+            if (this.reviewDialog) {
+              this.reviewDialog.isGenerating = true;
+              this.reviewDialog.show();
+            }
+          }}
         ></chromedash-ai-summary-progress>
       `;
     }

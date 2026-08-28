@@ -884,4 +884,90 @@ describe('chromedash-ai-summary-progress', () => {
       expect(el.retryCooldownSeconds).to.equal(10);
     });
   });
+
+  describe('stale step handling and null summary recovery', () => {
+    it('returns isTaskRunning = false when latest step is FAILED despite older IN_PROGRESS steps', async () => {
+      const el = await fixture<ChromedashAiSummaryProgress>(
+        html`<chromedash-ai-summary-progress
+          .autoPoll=${false}
+          .compact=${true}
+          .featureId=${501}
+        ></chromedash-ai-summary-progress>`
+      );
+
+      el.progressSteps = [
+        {
+          step: SummaryProgressStepStepEnum.UNKNOWN,
+          status: SummaryProgressStepStatusEnum.FAILED,
+          message: 'JSON Parsing Error: Failed to parse LLM structured output',
+          start_timestamp: new Date(),
+        },
+        {
+          step: SummaryProgressStepStepEnum.UNKNOWN,
+          status: SummaryProgressStepStatusEnum.IN_PROGRESS,
+          message: 'Invoking gemini-3.1-pro-preview with ADK Runner',
+          start_timestamp: new Date(Date.now() - 3600000),
+        },
+      ];
+      await el.updateComplete;
+
+      expect(el.isTaskRunning).to.be.false;
+      expect(el.error).to.contain('JSON Parsing Error');
+
+      const retryBtn = el.shadowRoot!.querySelector(
+        'sl-button[data-testid="ai-summary-retry-button"]'
+      );
+      expect(retryBtn).to.exist;
+      expect(retryBtn!.textContent).to.contain('Failed · Retry');
+    });
+
+    it('expires IN_PROGRESS steps older than 5 minutes as stale', async () => {
+      const el = await fixture<ChromedashAiSummaryProgress>(
+        html`<chromedash-ai-summary-progress
+          .autoPoll=${false}
+          .compact=${true}
+          .featureId=${502}
+        ></chromedash-ai-summary-progress>`
+      );
+
+      // Step started 10 minutes ago
+      el.progressSteps = [
+        {
+          step: SummaryProgressStepStepEnum.UNKNOWN,
+          status: SummaryProgressStepStatusEnum.IN_PROGRESS,
+          message: 'Invoking gemini',
+          start_timestamp: new Date(Date.now() - 10 * 60 * 1000),
+        },
+      ];
+      await el.updateComplete;
+
+      expect(el.isTaskRunning).to.be.false;
+    });
+
+    it('does not render Review button when suggestion.suggested_summary is null', async () => {
+      const el = await fixture<ChromedashAiSummaryProgress>(
+        html`<chromedash-ai-summary-progress
+          .autoPoll=${false}
+          .compact=${true}
+          .featureId=${503}
+          .suggestion=${{
+            feature_id: 503,
+            suggested_summary: null as unknown as string,
+            status: 'PENDING',
+            version_token: 1,
+          }}
+        ></chromedash-ai-summary-progress>`
+      );
+
+      const reviewBtn = el.shadowRoot!.querySelector(
+        'sl-button[data-testid="review-ai-summary-button"]'
+      );
+      expect(reviewBtn).to.not.exist;
+
+      const generateBtn = el.shadowRoot!.querySelector(
+        'sl-button[data-testid="generate-ai-summary-button"]'
+      );
+      expect(generateBtn).to.exist;
+    });
+  });
 });

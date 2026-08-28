@@ -80,7 +80,9 @@ class FeatureSummarySuggestionTest(testing_config.CustomTestCase):
 
         retrieved = ndb.Key('FeatureSummarySuggestion', self.feature_id).get()
         self.assertIsNotNone(retrieved)
-        self.assertEqual(retrieved.status, core_enums.SummarySuggestionStatus.PENDING)
+        self.assertEqual(
+            retrieved.status, core_enums.SummarySuggestionStatus.PENDING
+        )
 
     def test_occ_token_increment_on_update(self):
         """Verify OCC version_token can be incremented cleanly across edits."""
