@@ -560,7 +560,7 @@ describe('chromedash-ai-summary-progress', () => {
     expect(el.error).to.equal('Failed to fetch summary generation status');
   });
 
-  it('applies compact styling when compact is true', async () => {
+  it('renders fixed-geometry button and avoids expanding container in compact mode', async () => {
     const steps: ProgressStep[] = [
       {
         step: SummaryProgressStepStepEnum.READ_SPEC,
@@ -579,8 +579,31 @@ describe('chromedash-ai-summary-progress', () => {
     );
 
     const container = el.shadowRoot!.querySelector('.container');
-    expect(container).to.exist;
-    expect(container!.classList.contains('compact')).to.be.true;
+    expect(container).to.not.exist;
+
+    const button = el.shadowRoot!.querySelector('sl-button');
+    expect(button).to.exist;
+    expect(button!.getAttribute('size')).to.equal('small');
+  });
+
+  it('dispatches summary-dialog-requested when clicked during running in compact mode', async () => {
+    const el = await fixture<ChromedashAiSummaryProgress>(
+      html`<chromedash-ai-summary-progress
+        .autoPoll=${false}
+        .compact=${true}
+        .loading=${true}
+      ></chromedash-ai-summary-progress>`
+    );
+
+    const dialogRequestedPromise = oneEvent(el, 'summary-dialog-requested');
+    const generatingButton = el.shadowRoot!.querySelector(
+      'sl-button[data-testid="ai-summary-generating-button"]'
+    );
+    expect(generatingButton).to.exist;
+    (generatingButton as HTMLElement).click();
+
+    const event = await dialogRequestedPromise;
+    expect(event).to.exist;
   });
 
   it('resets state and refetches when featureId changes dynamically', async () => {
@@ -713,5 +736,152 @@ describe('chromedash-ai-summary-progress', () => {
       (window.csClient.getSummarySuggestion as sinon.SinonStub).calledWith(303)
     ).to.be.true;
     expect(el.suggestion?.feature_id).to.equal(303);
+  });
+
+  describe('retry cooldown and error rate limiting', () => {
+    let clock: sinon.SinonFakeTimers;
+
+    beforeEach(() => {
+      clock = sinon.useFakeTimers();
+    });
+
+    afterEach(() => {
+      clock.restore();
+    });
+
+    it('sets 30s cooldown when error mentions 429, quota, or rate limit', async () => {
+      (window.csClient.triggerSummaryGeneration as sinon.SinonStub)
+        .withArgs(401, false)
+        .rejects(new Error('HTTP 429: ResourceExhausted Quota Exceeded'));
+
+      const el = await fixture<ChromedashAiSummaryProgress>(
+        html`<chromedash-ai-summary-progress
+          .autoPoll=${false}
+          .featureId=${401}
+        ></chromedash-ai-summary-progress>`
+      );
+
+      await el.handleTrigger(false);
+      expect(el.retryCooldownSeconds).to.equal(30);
+    });
+
+    it('sets 5s cooldown for general network or server errors', async () => {
+      (window.csClient.triggerSummaryGeneration as sinon.SinonStub)
+        .withArgs(402, false)
+        .rejects(new Error('Internal Server Error 500'));
+
+      const el = await fixture<ChromedashAiSummaryProgress>(
+        html`<chromedash-ai-summary-progress
+          .autoPoll=${false}
+          .featureId=${402}
+        ></chromedash-ai-summary-progress>`
+      );
+
+      await el.handleTrigger(false);
+      expect(el.retryCooldownSeconds).to.equal(5);
+    });
+
+    it('renders disabled cooldown button in compact mode and enables retry button when countdown hits 0', async () => {
+      const el = await fixture<ChromedashAiSummaryProgress>(
+        html`<chromedash-ai-summary-progress
+          .autoPoll=${false}
+          .compact=${true}
+          .featureId=${403}
+        ></chromedash-ai-summary-progress>`
+      );
+
+      el.error = 'Rate limit reached';
+      el._startCooldown(3);
+      await el.updateComplete;
+
+      let cooldownBtn = el.shadowRoot!.querySelector(
+        'sl-button[data-testid="ai-summary-cooldown-button"]'
+      );
+      expect(cooldownBtn).to.exist;
+      expect(cooldownBtn!.hasAttribute('disabled')).to.be.true;
+      expect(cooldownBtn!.textContent).to.contain('Retry in 3s');
+
+      // Advance clock by 1 second
+      clock.tick(1000);
+      await el.updateComplete;
+      expect(el.retryCooldownSeconds).to.equal(2);
+      cooldownBtn = el.shadowRoot!.querySelector(
+        'sl-button[data-testid="ai-summary-cooldown-button"]'
+      );
+      expect(cooldownBtn!.textContent).to.contain('Retry in 2s');
+
+      // Advance clock by 2 more seconds -> cooldown expires
+      clock.tick(2000);
+      await el.updateComplete;
+      expect(el.retryCooldownSeconds).to.equal(0);
+
+      const retryBtn = el.shadowRoot!.querySelector(
+        'sl-button[data-testid="ai-summary-retry-button"]'
+      );
+      expect(retryBtn).to.exist;
+      expect(retryBtn!.textContent).to.contain('Failed · Retry');
+    });
+
+    it('disables retry button with countdown in full error banner during cooldown', async () => {
+      const el = await fixture<ChromedashAiSummaryProgress>(
+        html`<chromedash-ai-summary-progress
+          .autoPoll=${false}
+          .compact=${false}
+          .featureId=${404}
+        ></chromedash-ai-summary-progress>`
+      );
+
+      el.error = 'Temporary service failure';
+      el._startCooldown(4);
+      await el.updateComplete;
+
+      const bannerRetryBtn = el.shadowRoot!.querySelector(
+        'sl-button[data-testid="ai-summary-banner-retry-button"]'
+      );
+      expect(bannerRetryBtn).to.exist;
+      expect(bannerRetryBtn!.hasAttribute('disabled')).to.be.true;
+      expect(bannerRetryBtn!.textContent).to.contain('Retry in 4s');
+
+      clock.tick(4000);
+      await el.updateComplete;
+      expect(bannerRetryBtn!.hasAttribute('disabled')).to.be.false;
+      expect(bannerRetryBtn!.textContent).to.contain('Retry');
+    });
+
+    it('prevents handleTrigger execution while cooldown is active', async () => {
+      const el = await fixture<ChromedashAiSummaryProgress>(
+        html`<chromedash-ai-summary-progress
+          .autoPoll=${false}
+          .featureId=${405}
+        ></chromedash-ai-summary-progress>`
+      );
+
+      el._startCooldown(15);
+      await el.handleTrigger(true);
+
+      expect(
+        (
+          window.csClient.triggerSummaryGeneration as sinon.SinonStub
+        ).calledWith(405)
+      ).to.be.false;
+    });
+
+    it('clears cooldown timer and interval on disconnectedCallback', async () => {
+      const el = await fixture<ChromedashAiSummaryProgress>(
+        html`<chromedash-ai-summary-progress
+          .autoPoll=${false}
+          .featureId=${406}
+        ></chromedash-ai-summary-progress>`
+      );
+
+      el._startCooldown(10);
+      expect(el.retryCooldownSeconds).to.equal(10);
+
+      el.disconnectedCallback();
+      clock.tick(5000);
+
+      // Interval should have been cleared, so timer doesn't tick after disconnect
+      expect(el.retryCooldownSeconds).to.equal(10);
+    });
   });
 });

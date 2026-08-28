@@ -122,6 +122,11 @@ export class ChromedashAiSummaryProgress extends LitElement {
   @state()
   error: string | null = null;
 
+  @state()
+  retryCooldownSeconds = 0;
+
+  private _cooldownInterval: number | null = null;
+
   private _monitor: TaskProgressMonitor<SummarySuggestionResponse> | null =
     null;
 
@@ -179,6 +184,7 @@ export class ChromedashAiSummaryProgress extends LitElement {
           this.suggestion = null;
           this.progressSteps = [];
           this.error = null;
+          this._clearCooldown();
           return null;
         }
 
@@ -192,6 +198,7 @@ export class ChromedashAiSummaryProgress extends LitElement {
           errorMsg,
           DEFAULT_FETCH_ERROR_MESSAGE
         );
+        this._startCooldown(this._determineCooldownSeconds(errorMsg));
         this._dispatchFailedEvent(this.error);
         throw err;
       } finally {
@@ -390,8 +397,45 @@ export class ChromedashAiSummaryProgress extends LitElement {
     );
   }
 
+  private _determineCooldownSeconds(errorMsg: string): number {
+    const lower = errorMsg.toLowerCase();
+    if (
+      lower.includes('429') ||
+      lower.includes('rate limit') ||
+      lower.includes('quota') ||
+      lower.includes('resource_exhausted') ||
+      lower.includes('too many requests')
+    ) {
+      return 30;
+    }
+    return 5;
+  }
+
+  public _startCooldown(seconds: number) {
+    this._clearCooldown();
+    if (seconds <= 0) return;
+
+    this.retryCooldownSeconds = seconds;
+    this._cooldownInterval = window.setInterval(() => {
+      if (this.retryCooldownSeconds > 1) {
+        this.retryCooldownSeconds--;
+      } else {
+        this.retryCooldownSeconds = 0;
+        this._clearCooldown();
+      }
+    }, 1000);
+  }
+
+  private _clearCooldown() {
+    if (this._cooldownInterval !== null) {
+      clearInterval(this._cooldownInterval);
+      this._cooldownInterval = null;
+    }
+  }
+
   disconnectedCallback() {
     super.disconnectedCallback();
+    this._clearCooldown();
     if (this._monitor) {
       this._monitor.stop();
       this._monitor = null;
@@ -410,6 +454,7 @@ export class ChromedashAiSummaryProgress extends LitElement {
       this.suggestion = null;
       this.progressSteps = [];
       this.error = null;
+      this._clearCooldown();
     }
   }
 
@@ -421,13 +466,14 @@ export class ChromedashAiSummaryProgress extends LitElement {
       );
       return;
     }
-    if (this.loading) return;
+    if (this.loading || this.retryCooldownSeconds > 0) return;
 
     try {
       this.loading = true;
       this.error = null;
       this.progressSteps = [];
       this.suggestion = null;
+      this._clearCooldown();
 
       await window.csClient.triggerSummaryGeneration(this.featureId, force);
       if (!this.isConnected) return;
@@ -446,6 +492,7 @@ export class ChromedashAiSummaryProgress extends LitElement {
         errorMsg,
         DEFAULT_TRIGGER_ERROR_MESSAGE
       );
+      this._startCooldown(this._determineCooldownSeconds(errorMsg));
     } finally {
       this.loading = false;
     }
@@ -565,23 +612,126 @@ export class ChromedashAiSummaryProgress extends LitElement {
 
   private _renderErrorBanner() {
     if (!this.error) return nothing;
+    const isCooldown = this.retryCooldownSeconds > 0;
+    const retryLabel = isCooldown
+      ? `Retry in ${this.retryCooldownSeconds}s`
+      : 'Retry';
+
     return html`
       <div class="error-banner" role="alert">
         <span>${this.error}</span>
         <sl-button
           size="small"
           variant="text"
-          ?disabled=${this.loading}
+          ?disabled=${this.loading || isCooldown}
           ?loading=${this.loading}
           @click=${() => this.handleTrigger(true)}
+          data-testid="ai-summary-banner-retry-button"
         >
-          Retry
+          ${retryLabel}
         </sl-button>
       </div>
     `;
   }
 
+  private _dispatchOpenDialogEvent() {
+    this.dispatchEvent(
+      new CustomEvent('summary-dialog-requested', {
+        bubbles: true,
+        composed: true,
+      })
+    );
+  }
+
+  private _renderCompactButton() {
+    if (this.isTaskRunning) {
+      return html`
+        <sl-button
+          size="small"
+          variant="default"
+          loading
+          @click=${() => this._dispatchOpenDialogEvent()}
+          title="AI generation in progress. Click to view status."
+          data-testid="ai-summary-generating-button"
+        >
+          Generating summary...
+        </sl-button>
+      `;
+    }
+
+    if (this.error) {
+      if (this.retryCooldownSeconds > 0) {
+        return html`
+          <sl-button
+            size="small"
+            variant="default"
+            disabled
+            title="${this.error}. Retry available in ${this.retryCooldownSeconds}s."
+            data-testid="ai-summary-cooldown-button"
+          >
+            <sl-icon slot="prefix" name="hourglass-split"></sl-icon>
+            Retry in ${this.retryCooldownSeconds}s
+          </sl-button>
+        `;
+      }
+
+      return html`
+        <sl-button
+          size="small"
+          variant="danger"
+          outline
+          @click=${() => this.handleTrigger(true)}
+          title="${this.error}. Click to retry."
+          data-testid="ai-summary-retry-button"
+        >
+          <sl-icon slot="prefix" name="exclamation-triangle"></sl-icon>
+          Failed · Retry
+        </sl-button>
+      `;
+    }
+
+    if (this.suggestion?.status === 'PENDING') {
+      return html`
+        <sl-button
+          size="small"
+          variant="primary"
+          @click=${() => this._dispatchCompletedEvent()}
+          data-testid="review-ai-summary-button"
+        >
+          <sl-icon slot="prefix" name="pencil"></sl-icon>
+          Review AI summary
+        </sl-button>
+      `;
+    }
+
+    if (this.hideIdleTrigger) {
+      return nothing;
+    }
+
+    return html`
+      <sl-button
+        size="small"
+        variant="default"
+        ?disabled=${this.loading}
+        @click=${() => this.handleTrigger(false)}
+        data-testid="generate-ai-summary-button"
+      >
+        <img
+          slot="prefix"
+          class="gemini-icon"
+          src="https://www.gstatic.com/images/branding/productlogos/gemini_2025/v1/192px.svg"
+          alt="Gemini AI Logo"
+        />
+        Generate AI summary
+      </sl-button>
+    `;
+  }
+
   render() {
+    if (this.compact) {
+      return this._renderCompactButton();
+    }
+
     if (!this.progressSteps.length && !this.loading && !this.error) {
       if (this.hideIdleTrigger) {
         return nothing;
@@ -590,7 +740,7 @@ export class ChromedashAiSummaryProgress extends LitElement {
         return html`
           <sl-button
             variant="primary"
-            size=${this.compact ? 'small' : 'medium'}
+            size="medium"
             @click=${() => this._dispatchCompletedEvent()}
             data-testid="review-ai-summary-button"
           >
@@ -602,7 +752,7 @@ export class ChromedashAiSummaryProgress extends LitElement {
       return html`
         <sl-button
           variant="default"
-          size=${this.compact ? 'small' : 'medium'}
+          size="medium"
           ?disabled=${this.loading}
           @click=${() => this.handleTrigger(false)}
           data-testid="generate-ai-summary-button"
@@ -621,10 +771,7 @@ export class ChromedashAiSummaryProgress extends LitElement {
     const running = this.isTaskRunning;
 
     return html`
-      <div
-        class="container ${this.compact ? 'compact' : ''}"
-        aria-live="polite"
-      >
+      <div class="container" aria-live="polite">
         ${this._renderHeader(running)}
         ${
           this.progressSteps.length

@@ -405,6 +405,15 @@ export class ChromedashSummaryReviewDialog extends LitElement {
         <sl-alert variant="danger" open>
           <sl-icon slot="icon" name="exclamation-octagon"></sl-icon>
           <span>${this.errorMessage}</span>
+          <sl-button
+            size="small"
+            variant="text"
+            @click=${() => this.handleRegenerate()}
+            ?disabled=${this.loading}
+            data-testid="dialog-alert-retry-button"
+          >
+            Retry
+          </sl-button>
         </sl-alert>
       `;
     }

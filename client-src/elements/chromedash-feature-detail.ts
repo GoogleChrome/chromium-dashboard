@@ -168,12 +168,35 @@ export class ChromedashFeatureDetail extends LitElement {
           background: inherit;
         }
 
-        h2 {
-          margin-top: var(--content-padding);
+        .section-header-bar {
           display: flex;
+          align-items: center;
+          justify-content: space-between;
+          flex-wrap: wrap;
+          gap: var(--sl-spacing-small);
+          margin-top: var(--content-padding);
+          margin-bottom: var(--sl-spacing-2x-small);
+          padding: 0 var(--content-padding-half);
         }
-        h2 span {
-          flex: 1;
+
+        .section-header-bar h2 {
+          margin: 0;
+          display: inline-flex;
+          align-items: center;
+          gap: var(--sl-spacing-2x-small);
+          font-size: var(--sl-font-size-large);
+          font-weight: var(--sl-font-weight-semibold);
+        }
+
+        .section-toolbar {
+          display: inline-flex;
+          align-items: center;
+          gap: var(--sl-spacing-x-small);
+          flex-wrap: wrap;
+        }
+
+        .section-toolbar sl-button {
+          font-size: var(--sl-font-size-small);
         }
 
         .description,
@@ -362,7 +385,12 @@ export class ChromedashFeatureDetail extends LitElement {
 
   renderControls() {
     const editAllButton = html`
-      <sl-button variant="text" href="/guide/editall/${this.feature.id}">
+      <sl-button
+        size="small"
+        variant="default"
+        href="/guide/editall/${this.feature.id}"
+      >
+        <sl-icon slot="prefix" name="pencil"></sl-icon>
         Edit all fields
       </sl-button>
     `;
@@ -380,6 +408,7 @@ export class ChromedashFeatureDetail extends LitElement {
     ) {
       if (this.canEdit && isWebPlatformFeature && this.feature?.id) {
         wptEvalButton = html` <chromedash-wpt-eval-button
+          size="small"
           .featureId=${this.feature.id}
         ></chromedash-wpt-eval-button>`;
       }
@@ -392,22 +421,35 @@ export class ChromedashFeatureDetail extends LitElement {
           .featureId=${this.feature.id}
           .compact=${true}
           .suggestion=${this.activeSuggestion}
-          @summary-generation-started=${() => this.reviewDialog?.openForGeneration()}
+          @summary-generation-started=${() =>
+            this.reviewDialog?.openForGeneration()}
           @summary-generation-completed=${this.handleSummaryCompleted}
+          @summary-dialog-requested=${() => this.reviewDialog?.show()}
         ></chromedash-ai-summary-progress>
       `;
     }
     const toggleLabel = this.anyCollapsed ? 'Expand all' : 'Collapse all';
     return html`
-      ${aiSummaryProgress} ${wptEvalButton}
-      ${this.canEdit ? editAllButton : nothing}
-      <sl-button
-        variant="text"
-        title="Expand or collapse all sections"
-        @click=${this.toggleAll}
+      <div
+        class="section-toolbar"
+        role="toolbar"
+        aria-label="Development stages actions"
       >
-        ${toggleLabel}
-      </sl-button>
+        ${aiSummaryProgress} ${wptEvalButton}
+        ${this.canEdit ? editAllButton : nothing}
+        <sl-button
+          size="small"
+          variant="default"
+          title="Expand or collapse all sections"
+          @click=${this.toggleAll}
+        >
+          <sl-icon
+            slot="prefix"
+            name=${this.anyCollapsed ? 'arrows-expand' : 'arrows-collapse'}
+          ></sl-icon>
+          ${toggleLabel}
+        </sl-button>
+      </div>
     `;
   }
 
@@ -1041,7 +1083,10 @@ export class ChromedashFeatureDetail extends LitElement {
     let sameTypeCount = 0;
     return html`
       ${this.renderMetadataSection()}
-      <h2>${this.renderSectionHeader()} ${this.renderControls()}</h2>
+      <div class="section-header-bar">
+        <h2>${this.renderSectionHeader()}</h2>
+        ${this.renderControls()}
+      </div>
       ${this.feature.stages.map(feStage => {
         if (previousType === feStage.stage_type) {
           sameTypeCount++;

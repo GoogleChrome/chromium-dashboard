@@ -368,7 +368,7 @@ describe('chromedash-summary-review-dialog', () => {
     assert.isTrue(discardBtn.hasAttribute('disabled'));
   });
 
-  it('delegates to extracted API methods which can be overridden or spyed', async () => {
+  it('renders retry button in errorMessage sl-alert and triggers regeneration', async () => {
     const el = await fixture<ChromedashSummaryReviewDialog>(
       html`<chromedash-summary-review-dialog
         .featureId=${101}
@@ -377,10 +377,23 @@ describe('chromedash-summary-review-dialog', () => {
       ></chromedash-summary-review-dialog>`
     );
 
-    const applySpy = sandbox.spy(el, 'applySuggestion');
-    await el.handleAccept();
+    el.errorMessage = 'Rate limit reached from Gemini API.';
     await el.updateComplete;
 
-    assert.isTrue(applySpy.calledOnce);
+    const alert = el.shadowRoot!.querySelector('sl-alert[variant="danger"]');
+    assert.exists(alert);
+    assert.include(
+      alert!.textContent || '',
+      'Rate limit reached from Gemini API.'
+    );
+
+    const retryBtn = alert!.querySelector(
+      'sl-button[data-testid="dialog-alert-retry-button"]'
+    ) as HTMLElement;
+    assert.exists(retryBtn);
+
+    const regenSpy = sandbox.spy(el, 'triggerRegeneration');
+    retryBtn.click();
+    assert.isTrue(regenSpy.calledOnceWith(101, true));
   });
 });

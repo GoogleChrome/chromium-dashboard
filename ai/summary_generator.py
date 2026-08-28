@@ -287,9 +287,7 @@ class GeminiSummaryGenerator(SummaryGenerator):
 
                 # 3. Capture model response text parts
                 if event.message and event.message.parts:
-                    text_parts = [
-                        p.text for p in event.message.parts if p.text
-                    ]
+                    text_parts = [p.text for p in event.message.parts if p.text]
                     if text_parts:
                         final_text = ''.join(text_parts)
 
