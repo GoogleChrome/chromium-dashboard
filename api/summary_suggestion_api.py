@@ -203,10 +203,17 @@ class PendingSuggestionsCountAPI(basehandlers.APIHandler):
                 msg='User does not have permission to view pending suggestions queue',
             )
 
-        count = FeatureSummarySuggestion.query(
+        # Count all pending suggestions awaiting editorial review. Supports both
+        # PENDING and legacy PROPOSED status values.
+        pending_count = FeatureSummarySuggestion.query(
             FeatureSummarySuggestion.status
             == core_enums.SummarySuggestionStatus.PENDING.value
         ).count()
+        proposed_count = FeatureSummarySuggestion.query(
+            FeatureSummarySuggestion.status
+            == core_enums.SummarySuggestionStatus.PROPOSED.value
+        ).count()
+        count = pending_count + proposed_count
 
         return PendingSuggestionsCountResponse.from_dict(
             {'count': count}

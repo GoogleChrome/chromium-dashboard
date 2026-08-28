@@ -261,13 +261,20 @@ class GenerateSummaryHandlerTest(testing_config.CustomTestCase):
             ['https://developer.chrome.com/docs/webgpu'],
         )
         self.assertEqual(
-            suggestion.status, core_enums.SummarySuggestionStatus.PROPOSED
+            suggestion.status, core_enums.SummarySuggestionStatus.PENDING
         )
         self.assertEqual(suggestion.version_token, 2)
         self.assertEqual(
             suggestion.source_fingerprint,
             feature_fingerprint.compute_feature_fingerprint(self.feature),
         )
+
+        # Verify that newly generated suggestion is discovered by the pending review count query.
+        pending_count = FeatureSummarySuggestion.query(
+            FeatureSummarySuggestion.status
+            == core_enums.SummarySuggestionStatus.PENDING.value
+        ).count()
+        self.assertEqual(pending_count, 1)
 
     @mock.patch('framework.gemini_helpers.GeminiSummaryGenerator')
     def test_process_post_data__deleted_feature_skipped(

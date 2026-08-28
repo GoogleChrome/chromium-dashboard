@@ -488,6 +488,23 @@ class PendingSuggestionsCountAPITest(testing_config.CustomTestCase):
             actual = self.handler.do_get()
             self.assertEqual(2, actual['count'])
 
+    def test_get__includes_legacy_proposed_status(self):
+        """It includes both PENDING and legacy PROPOSED suggestions in the count."""
+        legacy_suggestion = FeatureSummarySuggestion(
+            id=104,
+            suggested_summary='Proposed summary 4',
+            status=core_enums.SummarySuggestionStatus.PROPOSED.value,
+        )
+        legacy_suggestion.put()
+        try:
+            with test_app.test_request_context(
+                '/api/v0/summary-suggestions/pending-count'
+            ):
+                actual = self.handler.do_get()
+                self.assertEqual(3, actual['count'])
+        finally:
+            legacy_suggestion.key.delete()
+
 
 class PendingSuggestionsQueueAPITest(testing_config.CustomTestCase):
     """Unit tests for PendingSuggestionsQueueAPI handler."""

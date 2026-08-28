@@ -228,7 +228,7 @@ class GenerateSummaryHandler(basehandlers.FlaskHandler):
         suggestion.suggested_summary = result.suggested_summary
         suggestion.generation_rationale = result.generation_rationale
         suggestion.suggested_doc_links = result.suggested_doc_links
-        suggestion.status = core_enums.SummarySuggestionStatus.PROPOSED
+        suggestion.status = core_enums.SummarySuggestionStatus.PENDING
         suggestion.put()
 
         return {
