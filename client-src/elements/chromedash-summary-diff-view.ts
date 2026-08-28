@@ -302,20 +302,25 @@ export class ChromedashSummaryDiffView extends LitElement {
       <div class="sources-section">
         <div class="sources-title">Referenced Resources</div>
         <ul class="sources-list">
-          ${this.suggestedDocLinks.map(
-            url => html`
-              <li>
-                <a
-                  class="source-link"
-                  href="${url}"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <sl-badge variant="neutral" pill>${url}</sl-badge>
-                </a>
-              </li>
-            `
-          )}
+          ${this.suggestedDocLinks
+            .filter(
+              url =>
+                url && (url.startsWith('https://') || url.startsWith('http://'))
+            )
+            .map(
+              url => html`
+                <li>
+                  <a
+                    class="source-link"
+                    href="${url}"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <sl-badge variant="neutral" pill>${url}</sl-badge>
+                  </a>
+                </li>
+              `
+            )}
         </ul>
       </div>
     `;

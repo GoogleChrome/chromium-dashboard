@@ -138,8 +138,13 @@ export class ChromedashDrawer extends LitElement {
     args: () => [this.user],
   });
 
+  private _boundRefetchNeeded = () => {
+    this._pendingReviewsTask.run();
+  };
+
   connectedCallback() {
     super.connectedCallback();
+    window.addEventListener('refetch-needed', this._boundRefetchNeeded);
 
     // user is passed in from chromedash-app
     if (this.user && this.user.email) return;
@@ -171,6 +176,11 @@ export class ChromedashDrawer extends LitElement {
       .finally(() => {
         this.loading = false;
       });
+  }
+
+  disconnectedCallback() {
+    window.removeEventListener('refetch-needed', this._boundRefetchNeeded);
+    super.disconnectedCallback();
   }
 
   initializeGoogleSignIn() {

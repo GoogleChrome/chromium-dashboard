@@ -256,14 +256,14 @@ export class ChromedashReleaseReviewsPage extends LitElement {
     const {featureId} = e.detail;
     this.suggestions = this.suggestions.filter(s => s.feature_id !== featureId);
     this.totalCount = Math.max(0, this.totalCount - 1);
-    showToastMessage('AI summary applied and published successfully.');
+    window.dispatchEvent(new CustomEvent('refetch-needed'));
   }
 
   handleSuggestionRejected(e: CustomEvent<{featureId: number}>) {
     const {featureId} = e.detail;
     this.suggestions = this.suggestions.filter(s => s.feature_id !== featureId);
     this.totalCount = Math.max(0, this.totalCount - 1);
-    showToastMessage('AI summary suggestion discarded.');
+    window.dispatchEvent(new CustomEvent('refetch-needed'));
   }
 
   renderQueueItem(item: PendingSuggestionItem) {

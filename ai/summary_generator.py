@@ -21,6 +21,7 @@ import dataclasses
 import json
 import logging
 import os
+import urllib.parse
 import uuid
 from collections.abc import Callable, Sequence
 from typing import Any
@@ -150,10 +151,19 @@ def parse_summary_result(raw_text: str) -> SummaryResult:
     cleaned = strip_json_markdown(raw_text)
     data = json.loads(cleaned)
     payload = GeneratedSummaryPayload(**data)
+    safe_doc_links = []
+    for link in payload.doc_links:
+        if not link or not isinstance(link, str):
+            continue
+        link_clean = link.strip()
+        parsed = urllib.parse.urlparse(link_clean)
+        if parsed.scheme.lower() in ('https', 'http') and parsed.netloc:
+            safe_doc_links.append(link_clean)
+
     return SummaryResult(
         suggested_summary=payload.summary.strip(),
         generation_rationale=payload.rationale.strip(),
-        suggested_doc_links=tuple(payload.doc_links),
+        suggested_doc_links=tuple(safe_doc_links),
         raw_response=raw_text,
     )
 

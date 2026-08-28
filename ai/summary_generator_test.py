@@ -97,6 +97,30 @@ class GeminiSummaryGeneratorTest(testing_config.CustomTestCase):
             result.suggested_doc_links, ('https://web.dev/webgpu',)
         )
 
+    def test_parse_summary_result_sanitizes_dangerous_doc_link_schemes(self):
+        """Tests that javascript:, data:, and invalid URIs are stripped from suggested_doc_links."""
+        raw = (
+            '{\n'
+            '  "summary": "Adds WebGPU subgroups.",\n'
+            '  "rationale": "High performance.",\n'
+            '  "doc_links": [\n'
+            '    "javascript:alert(1)",\n'
+            '    "data:text/html,<script>alert(1)</script>",\n'
+            '    "https://developer.chrome.com/docs/webgpu",\n'
+            '    "http://example.com/spec",\n'
+            '    "not-a-url"\n'
+            '  ]\n'
+            '}'
+        )
+        result = parse_summary_result(raw)
+        self.assertEqual(
+            result.suggested_doc_links,
+            (
+                'https://developer.chrome.com/docs/webgpu',
+                'http://example.com/spec',
+            ),
+        )
+
     def test_parse_summary_result_empty_string_raises_value_error(self):
         """Tests that empty or whitespace-only strings raise ValueError."""
         with self.assertRaises(ValueError):

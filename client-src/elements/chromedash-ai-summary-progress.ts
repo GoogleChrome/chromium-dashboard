@@ -146,7 +146,6 @@ export class ChromedashAiSummaryProgress extends LitElement {
       this._monitor = new TaskProgressMonitor<SummarySuggestionResponse>({
         fetcher: () => window.csClient.getSummarySuggestion(featureId),
         shouldContinue: resp => this._isStepsActive(resp.progress_steps),
-        maxInitial404Retries: 1,
         onProgress: resp => {
           this.suggestion = resp.suggestion ?? null;
           this.progressSteps = resp.progress_steps ?? [];

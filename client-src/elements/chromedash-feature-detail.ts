@@ -425,7 +425,7 @@ export class ChromedashFeatureDetail extends LitElement {
           .compact=${true}
           .suggestion=${this.activeSuggestion}
           @summary-generation-started=${() =>
-            this.reviewDialog?.openForGeneration()}
+            this.reviewDialog?.openForGeneration(false)}
           @summary-generation-completed=${this.handleSummaryCompleted}
           @summary-dialog-requested=${() => {
             if (this.reviewDialog) {

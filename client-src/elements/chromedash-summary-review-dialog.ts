@@ -266,15 +266,17 @@ export class ChromedashSummaryReviewDialog extends LitElement {
     }
   }
 
-  openForGeneration() {
+  openForGeneration(triggerTask = true) {
     this.isGenerating = true;
     this.errorMessage = null;
     this.occConflict = false;
     this.show();
-    this.triggerRegeneration(this.featureId, false).catch(err => {
-      this.isGenerating = false;
-      this._handleApiError(err);
-    });
+    if (triggerTask) {
+      this.triggerRegeneration(this.featureId, false).catch(err => {
+        this.isGenerating = false;
+        this._handleApiError(err);
+      });
+    }
   }
 
   handleSummaryGenerationCompleted(

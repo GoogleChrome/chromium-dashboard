@@ -415,6 +415,76 @@ class SummarySuggestionAPITest(testing_config.CustomTestCase):
         self.assertEqual(
             ['https://developer.mozilla.org/'], reloaded_feature.doc_links
         )
+        self.assertIn('summary', reloaded_feature.markdown_fields)
+
+    @mock.patch('internals.core_models.FeatureSummarySuggestion.get_by_id')
+    @mock.patch('internals.core_models.FeatureSummaryProgressStep.query')
+    def test_patch__permitted_for_release_note_reviewers(
+        self, mock_step_query, mock_suggestion_get
+    ):
+        """It allows users with can_review_release_notes to patch a suggestion."""
+        testing_config.sign_in('elmirakalali@google.com', 54321)
+        self.feature_1.put()
+        mock_suggestion_get.return_value = self.suggestion_1
+        mock_step_query.return_value.order.return_value.fetch.return_value = []
+
+        payload = {
+            'version_token': 1,
+            'status': 'APPLIED',
+            'suggested_summary': 'Reviewed and applied by release editor.',
+        }
+        with test_app.test_request_context(
+            '/api/v0/summary-suggestions/101',
+            method='PATCH',
+            data=json.dumps(payload),
+            content_type='application/json',
+        ):
+            actual = self.handler.do_patch(feature_id=101)
+
+        self.assertEqual(
+            'Reviewed and applied by release editor.',
+            actual['suggestion']['suggested_summary'],
+        )
+
+    @mock.patch('internals.core_models.FeatureSummarySuggestion.get_by_id')
+    @mock.patch('internals.core_models.FeatureSummaryProgressStep.query')
+    def test_patch__sanitizes_untrusted_doc_links(
+        self, mock_step_query, mock_suggestion_get
+    ):
+        """It filters out javascript: and data: URIs when applying doc links."""
+        testing_config.sign_in('owner@example.com', 12345)
+        self.feature_1.doc_links = ['https://existing.example.com']
+        self.feature_1.put()
+
+        untrusted_suggestion = FeatureSummarySuggestion(
+            id=101,
+            suggested_summary='AI summary.',
+            suggested_doc_links=[
+                'javascript:alert(1)',
+                'data:text/html,<script>alert(1)</script>',
+                '   https://safe.example.com/spec   ',
+                'invalid-url-schema',
+            ],
+            version_token=1,
+            status=core_enums.SummarySuggestionStatus.PENDING.value,
+        )
+        mock_suggestion_get.return_value = untrusted_suggestion
+        mock_step_query.return_value.order.return_value.fetch.return_value = []
+
+        payload = {'version_token': 1, 'status': 'APPLIED'}
+        with test_app.test_request_context(
+            '/api/v0/summary-suggestions/101',
+            method='PATCH',
+            data=json.dumps(payload),
+            content_type='application/json',
+        ):
+            self.handler.do_patch(feature_id=101)
+
+        reloaded_feature = FeatureEntry.get_by_id(101)
+        self.assertEqual(
+            ['https://existing.example.com', 'https://safe.example.com/spec'],
+            reloaded_feature.doc_links,
+        )
 
     @mock.patch('internals.core_models.FeatureEntry.get_by_id')
     def test_post__unauthorized_403(self, mock_feature_get):
@@ -557,6 +627,15 @@ class PendingSuggestionsCountAPITest(testing_config.CustomTestCase):
 
     def test_get__success_count(self):
         """It returns the accurate count of PENDING summary suggestions."""
+        with test_app.test_request_context(
+            '/api/v0/summary-suggestions/pending-count'
+        ):
+            actual = self.handler.do_get()
+            self.assertEqual(2, actual['count'])
+
+    def test_get__permitted_for_release_note_reviewers(self):
+        """It allows users with can_review_release_notes to query the pending count."""
+        testing_config.sign_in('elmirakalali@google.com', 54321)
         with test_app.test_request_context(
             '/api/v0/summary-suggestions/pending-count'
         ):
@@ -725,6 +804,29 @@ class PendingSuggestionsQueueAPITest(testing_config.CustomTestCase):
                 first_sug['suggested_summary']
             )
             self.assertEqual('Link Pending suggestion one.', hover)
+
+    def test_get__permitted_for_release_note_reviewers(self):
+        """It allows users with can_review_release_notes to query the pending queue."""
+        testing_config.sign_in('elmirakalali@google.com', 54321)
+        with test_app.test_request_context(
+            '/api/v0/summary-suggestions/pending?limit=25'
+        ):
+            actual = self.handler.do_get()
+            self.assertEqual(2, actual['total_count'])
+            self.assertEqual(2, len(actual['suggestions']))
+
+    def test_get__filters_deleted_features(self):
+        """It excludes suggestions whose parent FeatureEntry is soft-deleted."""
+        self.feature_2.deleted = True
+        self.feature_2.put()
+
+        with test_app.test_request_context(
+            '/api/v0/summary-suggestions/pending?limit=25'
+        ):
+            actual = self.handler.do_get()
+            # suggestion_2 is excluded from returned suggestions because feature_2 is deleted
+            self.assertEqual(1, len(actual['suggestions']))
+            self.assertEqual(101, actual['suggestions'][0]['feature_id'])
 
 
 class StripMarkdownHoverSnippetTest(testing_config.CustomTestCase):
