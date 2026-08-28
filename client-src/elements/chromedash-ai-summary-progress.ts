@@ -145,7 +145,8 @@ export class ChromedashAiSummaryProgress extends LitElement {
       this.error = null;
       this._monitor = new TaskProgressMonitor<SummarySuggestionResponse>({
         fetcher: () => window.csClient.getSummarySuggestion(featureId),
-        shouldContinue: resp => this._isStepsActive(resp.progress_steps),
+        shouldContinue: resp =>
+          this._isStepsActive(resp.progress_steps, resp.suggestion),
         onProgress: resp => {
           this.suggestion = resp.suggestion ?? null;
           this.progressSteps = resp.progress_steps ?? [];
@@ -157,21 +158,21 @@ export class ChromedashAiSummaryProgress extends LitElement {
         this.suggestion = resp.suggestion ?? null;
         this.progressSteps = resp.progress_steps ?? [];
 
-        const failedStep = this.progressSteps.find(
-          s => s.status === SummaryProgressStepStatusEnum.FAILED
-        );
-        if (failedStep) {
-          this.error = this._formatErrorMessage(
-            failedStep.message,
-            DEFAULT_TRIGGER_ERROR_MESSAGE
-          );
-          this._dispatchFailedEvent(this.error);
-        } else if (this._hasValidSuggestion(this.suggestion)) {
+        // Check for success FIRST: If a valid suggestion was generated,
+        // intermediate tool failures (e.g. searching external docs) do not invalidate it.
+        if (this._hasValidSuggestion(this.suggestion)) {
           this.error = null;
           this._dispatchCompletedEvent();
         } else {
-          this.error =
-            'Summary generation did not produce any candidate summary or documentation links. Please retry.';
+          const failedStep = this.progressSteps.find(
+            s => s.status === SummaryProgressStepStatusEnum.FAILED
+          );
+          this.error = failedStep
+            ? this._formatErrorMessage(
+                failedStep.message,
+                DEFAULT_TRIGGER_ERROR_MESSAGE
+              )
+            : 'Summary generation did not produce any candidate summary or documentation links. Please retry.';
           this._dispatchFailedEvent(this.error);
         }
         return resp;
@@ -403,7 +404,14 @@ export class ChromedashAiSummaryProgress extends LitElement {
     return hasSummary || hasDocLinks;
   }
 
-  private _isStepsActive(steps?: ProgressStep[]): boolean {
+  private _isStepsActive(
+    steps?: ProgressStep[],
+    suggestion?: SummarySuggestion | null
+  ): boolean {
+    if (this._hasValidSuggestion(suggestion)) {
+      return false;
+    }
+
     if (!steps || steps.length === 0) {
       if (
         (this.loading || (this._monitor?.isRunning ?? false)) &&
@@ -416,39 +424,49 @@ export class ChromedashAiSummaryProgress extends LitElement {
     }
     this._emptyStepsGraceCount = 0;
 
-    // If any step has failed, the pipeline execution has ended with an error.
-    if (steps.some(s => s.status === SummaryProgressStepStatusEnum.FAILED)) {
+    // Steps from the API are ordered descending by start_timestamp (newest first).
+    // The latest step represents the active execution frontier.
+    const latestStep = steps[0];
+    if (latestStep.status === SummaryProgressStepStatusEnum.FAILED) {
+      return false;
+    }
+    if (
+      latestStep.status === SummaryProgressStepStatusEnum.SUCCESS &&
+      latestStep.message?.includes('successfully')
+    ) {
       return false;
     }
 
     const now = Date.now();
     const STALE_STEP_TIMEOUT_MS = 5 * 60 * 1000; // 5 minutes
 
-    return steps.some(s => {
-      if (
-        s.status !== SummaryProgressStepStatusEnum.IN_PROGRESS &&
-        s.status !== SummaryProgressStepStatusEnum.RETRYING
-      ) {
-        return false;
-      }
-      if (s.start_timestamp) {
+    if (
+      latestStep.status === SummaryProgressStepStatusEnum.IN_PROGRESS ||
+      latestStep.status === SummaryProgressStepStatusEnum.RETRYING
+    ) {
+      if (latestStep.start_timestamp) {
         const startTime =
-          s.start_timestamp instanceof Date
-            ? s.start_timestamp.getTime()
-            : new Date(s.start_timestamp).getTime();
+          latestStep.start_timestamp instanceof Date
+            ? latestStep.start_timestamp.getTime()
+            : new Date(latestStep.start_timestamp).getTime();
         if (!isNaN(startTime) && now - startTime > STALE_STEP_TIMEOUT_MS) {
           return false;
         }
       }
       return true;
-    });
+    }
+
+    return false;
   }
 
   get isTaskRunning(): boolean {
+    if (this._hasValidSuggestion(this.suggestion)) {
+      return false;
+    }
     return (
       this.loading ||
       (this._monitor?.isRunning ?? false) ||
-      this._isStepsActive(this.progressSteps)
+      this._isStepsActive(this.progressSteps, this.suggestion)
     );
   }
 

@@ -145,6 +145,9 @@ export class ChromedashSummaryReviewDialog extends LitElement {
         this.newerSuggestionAvailable = false;
         this.occConflict = false;
         this.errorMessage = null;
+        if (newSuggested) {
+          this.isGenerating = false;
+        }
       }
     }
   }

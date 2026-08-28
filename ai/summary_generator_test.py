@@ -157,7 +157,9 @@ class GeminiSummaryGeneratorTest(testing_config.CustomTestCase):
             api_key='test_key_123',
         )
         self.assertEqual(agent.name, 'release_notes_summary_agent')
-        model_name = agent.model.model if hasattr(agent.model, 'model') else agent.model
+        model_name = (
+            agent.model.model if hasattr(agent.model, 'model') else agent.model
+        )
         self.assertEqual(model_name, 'gemini-3.1-pro-preview')
         self.assertEqual(agent.instruction, 'Test instructions')
         self.assertEqual(agent.output_schema, GeneratedSummaryPayload)

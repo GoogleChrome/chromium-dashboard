@@ -429,7 +429,14 @@ export class ChromedashFeatureDetail extends LitElement {
           @summary-generation-completed=${this.handleSummaryCompleted}
           @summary-dialog-requested=${() => {
             if (this.reviewDialog) {
-              this.reviewDialog.isGenerating = true;
+              if (
+                this.activeSuggestion?.suggested_summary &&
+                this.activeSuggestion.status === 'PENDING'
+              ) {
+                this.reviewDialog.isGenerating = false;
+              } else {
+                this.reviewDialog.isGenerating = true;
+              }
               this.reviewDialog.show();
             }
           }}
