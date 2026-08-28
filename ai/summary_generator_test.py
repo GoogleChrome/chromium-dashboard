@@ -78,6 +78,32 @@ class GeminiSummaryGeneratorTest(testing_config.CustomTestCase):
         )
         self.assertEqual(result.raw_response, raw)
 
+    def test_parse_summary_result_markdown_fenced_json(self):
+        """Tests parsing markdown code fenced JSON into SummaryResult."""
+        raw = (
+            '```json\n'
+            '{\n'
+            '  "summary": "Adds WebGPU subgroups.",\n'
+            '  "rationale": "High performance.",\n'
+            '  "doc_links": ["https://web.dev/webgpu"]\n'
+            '}\n'
+            '```'
+        )
+        result = parse_summary_result(raw)
+        self.assertIsInstance(result, SummaryResult)
+        self.assertEqual(result.suggested_summary, 'Adds WebGPU subgroups.')
+        self.assertEqual(result.generation_rationale, 'High performance.')
+        self.assertEqual(
+            result.suggested_doc_links, ('https://web.dev/webgpu',)
+        )
+
+    def test_parse_summary_result_empty_string_raises_value_error(self):
+        """Tests that empty or whitespace-only strings raise ValueError."""
+        with self.assertRaises(ValueError):
+            parse_summary_result('')
+        with self.assertRaises(ValueError):
+            parse_summary_result('   \n\t  ')
+
     def test_parse_summary_result_non_dict_raises_type_error(self):
         """Tests that non-dict JSON raises TypeError during dataclass unpacking."""
         raw = '["item1", "item2"]'

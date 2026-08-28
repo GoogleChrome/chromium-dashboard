@@ -106,6 +106,19 @@ def build_summary_agent(
     )
 
 
+def strip_json_markdown(text: str) -> str:
+    """Strips markdown code fences (```json ... ``` or ``` ... ```) from LLM output."""
+    stripped = text.strip()
+    if stripped.startswith('```'):
+        lines = stripped.splitlines()
+        if lines and lines[0].startswith('```'):
+            lines = lines[1:]
+        if lines and lines[-1].strip() == '```':
+            lines = lines[:-1]
+        stripped = '\n'.join(lines).strip()
+    return stripped
+
+
 def parse_summary_result(raw_text: str) -> SummaryResult:
     """Parses raw model response text into a strongly-typed SummaryResult.
 
@@ -127,10 +140,14 @@ def parse_summary_result(raw_text: str) -> SummaryResult:
       SummaryResult containing suggested summary, rationale, and doc links.
 
     Raises:
+      ValueError: If raw_text is empty or blank.
       json.JSONDecodeError: If raw_text is not valid JSON.
       TypeError: If payload structure does not match GeneratedSummaryPayload schema.
     """
-    data = json.loads(raw_text.strip())
+    if not raw_text or not raw_text.strip():
+        raise ValueError('Model returned an empty response.')
+    cleaned = strip_json_markdown(raw_text)
+    data = json.loads(cleaned)
     payload = GeneratedSummaryPayload(**data)
     return SummaryResult(
         suggested_summary=payload.summary.strip(),
@@ -268,13 +285,15 @@ class GeminiSummaryGenerator(SummaryGenerator):
                         ),
                     )
 
-                # 3. Capture the final model response (ADK native helper)
-                if event.is_final_response() and event.message:
+                # 3. Capture model response text parts
+                if event.message and event.message.parts:
                     text_parts = [
-                        p.text for p in (event.message.parts or []) if p.text
+                        p.text for p in event.message.parts if p.text
                     ]
                     if text_parts:
                         final_text = ''.join(text_parts)
+
+            result = parse_summary_result(final_text)
 
             rep.log_step(
                 step_id=ProgressStepId.SUCCESS,
@@ -282,7 +301,7 @@ class GeminiSummaryGenerator(SummaryGenerator):
                 message='LLM generated release note candidate successfully',
             )
 
-            return parse_summary_result(final_text)
+            return result
 
         except Exception as e:
             logging.error('GeminiSummaryGenerator error: %s', e, exc_info=True)
