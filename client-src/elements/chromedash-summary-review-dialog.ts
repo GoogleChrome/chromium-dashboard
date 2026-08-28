@@ -145,6 +145,9 @@ export class ChromedashSummaryReviewDialog extends LitElement {
         this.newerSuggestionAvailable = false;
         this.occConflict = false;
         this.errorMessage = null;
+        if (newSuggested) {
+          this.isGenerating = false;
+        }
       }
     }
   }
@@ -266,15 +269,17 @@ export class ChromedashSummaryReviewDialog extends LitElement {
     }
   }
 
-  openForGeneration() {
+  openForGeneration(triggerTask = true) {
     this.isGenerating = true;
     this.errorMessage = null;
     this.occConflict = false;
     this.show();
-    this.triggerRegeneration(this.featureId, false).catch(err => {
-      this.isGenerating = false;
-      this._handleApiError(err);
-    });
+    if (triggerTask) {
+      this.triggerRegeneration(this.featureId, false).catch(err => {
+        this.isGenerating = false;
+        this._handleApiError(err);
+      });
+    }
   }
 
   handleSummaryGenerationCompleted(
@@ -286,7 +291,8 @@ export class ChromedashSummaryReviewDialog extends LitElement {
     this.isGenerating = false;
     if (e.detail?.suggestion) {
       this.suggestion = e.detail.suggestion;
-      this.editedSummary = this.suggestion?.suggested_summary || '';
+      this.editedSummary =
+        this.suggestion?.suggested_summary || this.currentSummary || '';
       this.isEditing = false;
       this.errorMessage = null;
       this.occConflict = false;
@@ -435,9 +441,17 @@ export class ChromedashSummaryReviewDialog extends LitElement {
       `;
     }
 
+    const hasValidSummary = Boolean(
+      this.editedSummary && this.editedSummary.trim()
+    );
+    const hasValidLinks = Boolean(
+      this.suggestion?.suggested_doc_links &&
+      this.suggestion.suggested_doc_links.length > 0
+    );
     const isAcceptDisabled =
       this.loading ||
       !this.suggestion ||
+      (!hasValidSummary && !hasValidLinks) ||
       typeof this.suggestion.version_token !== 'number' ||
       this.occConflict;
 
@@ -452,9 +466,9 @@ export class ChromedashSummaryReviewDialog extends LitElement {
           <sl-button
             variant="default"
             size="small"
-            @click=${this.handleRegenerate}
-            ?loading=${this.loading}
-            ?disabled=${this.loading}
+            @click=${() => this.handleRegenerate()}
+            ?loading=${this.loading || this.isGenerating}
+            ?disabled=${this.loading || this.isGenerating}
           >
             <sl-icon slot="prefix" name="arrow-clockwise"></sl-icon>
             Regenerate
@@ -513,6 +527,8 @@ export class ChromedashSummaryReviewDialog extends LitElement {
                   .currentSummary=${this.currentSummary}
                   .suggestedSummary=${this.editedSummary}
                   .suggestedDocLinks=${this.suggestion?.suggested_doc_links ?? []}
+                  .reasoning=${this.suggestion?.reasoning ?? ''}
+                  .baselineStatus=${this.suggestion?.baseline_status ?? ''}
                   .isEditing=${this.isEditing}
                   .disabled=${this.loading}
                   @summary-edit-toggle=${(

@@ -884,4 +884,240 @@ describe('chromedash-ai-summary-progress', () => {
       expect(el.retryCooldownSeconds).to.equal(10);
     });
   });
+
+  describe('stale step handling and null summary recovery', () => {
+    it('returns isTaskRunning = false when latest step is FAILED despite older IN_PROGRESS steps', async () => {
+      const el = await fixture<ChromedashAiSummaryProgress>(
+        html`<chromedash-ai-summary-progress
+          .autoPoll=${false}
+          .compact=${true}
+          .featureId=${501}
+        ></chromedash-ai-summary-progress>`
+      );
+
+      el.progressSteps = [
+        {
+          step: SummaryProgressStepStepEnum.UNKNOWN,
+          status: SummaryProgressStepStatusEnum.FAILED,
+          message: 'JSON Parsing Error: Failed to parse LLM structured output',
+          start_timestamp: new Date(),
+        },
+        {
+          step: SummaryProgressStepStepEnum.UNKNOWN,
+          status: SummaryProgressStepStatusEnum.IN_PROGRESS,
+          message: 'Invoking gemini-3.1-pro-preview with ADK Runner',
+          start_timestamp: new Date(Date.now() - 3600000),
+        },
+      ];
+      await el.updateComplete;
+
+      expect(el.isTaskRunning).to.be.false;
+      expect(el.error).to.contain('JSON Parsing Error');
+
+      const retryBtn = el.shadowRoot!.querySelector(
+        'sl-button[data-testid="ai-summary-retry-button"]'
+      );
+      expect(retryBtn).to.exist;
+      expect(retryBtn!.textContent).to.contain('Failed · Retry');
+    });
+
+    it('expires IN_PROGRESS steps older than 5 minutes as stale', async () => {
+      const el = await fixture<ChromedashAiSummaryProgress>(
+        html`<chromedash-ai-summary-progress
+          .autoPoll=${false}
+          .compact=${true}
+          .featureId=${502}
+        ></chromedash-ai-summary-progress>`
+      );
+
+      // Step started 10 minutes ago
+      el.progressSteps = [
+        {
+          step: SummaryProgressStepStepEnum.UNKNOWN,
+          status: SummaryProgressStepStatusEnum.IN_PROGRESS,
+          message: 'Invoking gemini',
+          start_timestamp: new Date(Date.now() - 10 * 60 * 1000),
+        },
+      ];
+      await el.updateComplete;
+
+      expect(el.isTaskRunning).to.be.false;
+    });
+
+    it('does not render Review button when suggestion.suggested_summary is null', async () => {
+      const el = await fixture<ChromedashAiSummaryProgress>(
+        html`<chromedash-ai-summary-progress
+          .autoPoll=${false}
+          .compact=${true}
+          .featureId=${503}
+          .suggestion=${{
+            feature_id: 503,
+            suggested_summary: null as unknown as string,
+            status: 'PENDING',
+            version_token: 1,
+          }}
+        ></chromedash-ai-summary-progress>`
+      );
+
+      const reviewBtn = el.shadowRoot!.querySelector(
+        'sl-button[data-testid="review-ai-summary-button"]'
+      );
+      expect(reviewBtn).to.not.exist;
+
+      const generateBtn = el.shadowRoot!.querySelector(
+        'sl-button[data-testid="generate-ai-summary-button"]'
+      );
+      expect(generateBtn).to.exist;
+    });
+
+    it('tolerates initial empty steps while loading=true within grace period', async () => {
+      const el = await fixture<ChromedashAiSummaryProgress>(
+        html`<chromedash-ai-summary-progress
+          .autoPoll=${false}
+          .compact=${true}
+          .featureId=${504}
+        ></chromedash-ai-summary-progress>`
+      );
+
+      el.loading = true;
+      // First poll with empty steps returns true (still active)
+      expect(el['_isStepsActive']([])).to.be.true;
+      // Subsequent poll with empty steps still returns true during grace period
+      expect(el['_isStepsActive']([])).to.be.true;
+    });
+
+    it('emits failure event and sets error if task finishes without suggested_summary', async () => {
+      let failedEventFired = false;
+      const el = await fixture<ChromedashAiSummaryProgress>(
+        html`<chromedash-ai-summary-progress
+          .autoPoll=${true}
+          .compact=${true}
+          .featureId=${505}
+          @summary-generation-failed=${() => {
+            failedEventFired = true;
+          }}
+        ></chromedash-ai-summary-progress>`
+      );
+
+      (window.csClient.getSummarySuggestion as sinon.SinonStub)
+        .withArgs(505)
+        .resolves({
+          suggestion: {
+            feature_id: 505,
+            suggested_summary: null as unknown as string,
+            status: 'PENDING',
+            version_token: 1,
+          },
+          progress_steps: [
+            {
+              step: SummaryProgressStepStepEnum.UNKNOWN,
+              status: SummaryProgressStepStatusEnum.SUCCESS,
+              message: 'Finished without summary',
+              start_timestamp: new Date(),
+            },
+          ],
+        });
+
+      await el._statusTask.run();
+      expect(failedEventFired).to.be.true;
+      expect(el.error).to.contain(
+        'did not produce any candidate summary or documentation links'
+      );
+    });
+
+    it('successfully completes when suggestion has suggested_doc_links even without suggested_summary', async () => {
+      let completedEventFired = false;
+      const el = await fixture<ChromedashAiSummaryProgress>(
+        html`<chromedash-ai-summary-progress
+          .autoPoll=${true}
+          .compact=${true}
+          .featureId=${506}
+          @summary-generation-completed=${() => {
+            completedEventFired = true;
+          }}
+        ></chromedash-ai-summary-progress>`
+      );
+
+      (window.csClient.getSummarySuggestion as sinon.SinonStub)
+        .withArgs(506)
+        .resolves({
+          suggestion: {
+            feature_id: 506,
+            suggested_summary: null as unknown as string,
+            suggested_doc_links: [
+              'https://developer.mozilla.org/en-US/docs/Web/CSS/masonry',
+            ],
+            status: 'PENDING',
+            version_token: 1,
+          },
+          progress_steps: [
+            {
+              step: SummaryProgressStepStepEnum.UNKNOWN,
+              status: SummaryProgressStepStatusEnum.SUCCESS,
+              message: 'Finished with doc links',
+              start_timestamp: new Date(),
+            },
+          ],
+        });
+
+      await el._statusTask.run();
+      expect(completedEventFired).to.be.true;
+      expect(el.error).to.be.null;
+    });
+
+    it('marks task as not running and renders retry button when steps contains FAILED as latest step even with older IN_PROGRESS steps', async () => {
+      const featureId = 5980625432215552;
+      const recentTimestamp = new Date();
+      const olderTimestamp = new Date(recentTimestamp.getTime() - 1000);
+
+      const el = await fixture<ChromedashAiSummaryProgress>(
+        html`<chromedash-ai-summary-progress
+          .autoPoll=${false}
+          .compact=${true}
+          .featureId=${featureId}
+        ></chromedash-ai-summary-progress>`
+      );
+
+      el.progressSteps = [
+        {
+          step: SummaryProgressStepStepEnum.UNKNOWN,
+          status: SummaryProgressStepStatusEnum.FAILED,
+          message: 'Generation Error: Model returned an empty response.',
+          start_timestamp: recentTimestamp,
+          end_timestamp: recentTimestamp,
+        },
+        {
+          step: SummaryProgressStepStepEnum.UNKNOWN,
+          status: SummaryProgressStepStatusEnum.FAILED,
+          message: 'Generation Error: Model returned an empty response.',
+          start_timestamp: olderTimestamp,
+          end_timestamp: olderTimestamp,
+        },
+        {
+          step: SummaryProgressStepStepEnum.UNKNOWN,
+          status: SummaryProgressStepStatusEnum.IN_PROGRESS,
+          message: 'Invoking gemini-3.1-pro-preview with ADK Runner',
+          start_timestamp: olderTimestamp,
+          end_timestamp: olderTimestamp,
+        },
+        {
+          step: SummaryProgressStepStepEnum.UNKNOWN,
+          status: SummaryProgressStepStatusEnum.SUCCESS,
+          message: 'Rendered prompt template for feature',
+          start_timestamp: olderTimestamp,
+          end_timestamp: olderTimestamp,
+        },
+      ];
+
+      await el.updateComplete;
+
+      expect(el.isTaskRunning).to.be.false;
+      expect(el.error).to.be.a('string').and.not.empty;
+      const retryBtn = el.shadowRoot!.querySelector(
+        'sl-button[data-testid="ai-summary-retry-button"]'
+      );
+      expect(retryBtn).to.exist;
+      expect(retryBtn!.textContent).to.contain('Failed · Retry');
+    });
+  });
 });

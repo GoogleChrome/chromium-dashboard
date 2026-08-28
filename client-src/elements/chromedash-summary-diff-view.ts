@@ -37,6 +37,12 @@ export class ChromedashSummaryDiffView extends LitElement {
   @property({attribute: false})
   suggestedDocLinks: string[] = [];
 
+  @property({type: String})
+  reasoning = '';
+
+  @property({type: String})
+  baselineStatus = '';
+
   @property({type: Boolean})
   isEditing = false;
 
@@ -138,6 +144,30 @@ export class ChromedashSummaryDiffView extends LitElement {
           text-decoration: none;
         }
 
+        .reasoning-section {
+          margin-top: var(--sl-spacing-medium);
+          padding: var(--sl-spacing-small);
+          background: var(--sl-color-neutral-100);
+          border-radius: var(--sl-border-radius-small);
+          border-left: 3px solid var(--sl-color-primary-600);
+        }
+
+        .reasoning-title {
+          font-weight: var(--sl-font-weight-semibold);
+          font-size: var(--sl-font-size-x-small);
+          color: var(--sl-color-neutral-700);
+          margin-bottom: var(--sl-spacing-2x-small);
+          display: flex;
+          align-items: center;
+          gap: var(--sl-spacing-2x-small);
+        }
+
+        .reasoning-body {
+          font-size: var(--sl-font-size-x-small);
+          color: var(--sl-color-neutral-600);
+          line-height: var(--sl-line-height-normal);
+        }
+
         @media (max-width: 768px) {
           .comparison-grid {
             grid-template-columns: 1fr;
@@ -223,7 +253,12 @@ export class ChromedashSummaryDiffView extends LitElement {
         aria-labelledby="suggested-summary-header"
       >
         <div class="column-header" id="suggested-summary-header">
-          <span>AI Suggested Summary</span>
+          <div
+            style="display: flex; align-items: center; gap: var(--sl-spacing-2x-small); flex-wrap: wrap;"
+          >
+            <span>AI Suggested Summary</span>
+            ${this._renderBaselineBadge()}
+          </div>
           <sl-button
             size="small"
             variant="text"
@@ -252,7 +287,7 @@ export class ChromedashSummaryDiffView extends LitElement {
                 `
               : autolink(displayText, [], true)
           }
-          ${this._renderDocLinks()}
+          ${this._renderDocLinks()} ${this._renderReasoning()}
         </div>
       </div>
     `;
@@ -267,21 +302,55 @@ export class ChromedashSummaryDiffView extends LitElement {
       <div class="sources-section">
         <div class="sources-title">Referenced Resources</div>
         <ul class="sources-list">
-          ${this.suggestedDocLinks.map(
-            url => html`
-              <li>
-                <a
-                  class="source-link"
-                  href="${url}"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <sl-badge variant="neutral" pill>${url}</sl-badge>
-                </a>
-              </li>
-            `
-          )}
+          ${this.suggestedDocLinks
+            .filter(
+              url =>
+                url && (url.startsWith('https://') || url.startsWith('http://'))
+            )
+            .map(
+              url => html`
+                <li>
+                  <a
+                    class="source-link"
+                    href="${url}"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <sl-badge variant="neutral" pill>${url}</sl-badge>
+                  </a>
+                </li>
+              `
+            )}
         </ul>
+      </div>
+    `;
+  }
+
+  private _renderBaselineBadge() {
+    if (!this.baselineStatus || this.baselineStatus === 'none') {
+      return nothing;
+    }
+    const label =
+      this.baselineStatus === 'newly'
+        ? 'Baseline: Newly available'
+        : this.baselineStatus === 'widely'
+          ? 'Baseline: Widely available'
+          : `Baseline: ${this.baselineStatus}`;
+    return html`
+      <sl-badge variant="neutral" pill size="small">${label}</sl-badge>
+    `;
+  }
+
+  private _renderReasoning() {
+    if (!this.reasoning || !this.reasoning.trim()) {
+      return nothing;
+    }
+    return html`
+      <div class="reasoning-section" data-testid="diff-reasoning-section">
+        <div class="reasoning-title">
+          <sl-icon name="lightbulb"></sl-icon> Grounding Rationale
+        </div>
+        <div class="reasoning-body">${this.reasoning}</div>
       </div>
     `;
   }

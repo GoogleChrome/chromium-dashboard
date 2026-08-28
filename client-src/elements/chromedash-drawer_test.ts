@@ -83,4 +83,33 @@ describe('chromedash-drawer', () => {
     assert.include(navInnerHTML, 'href="/metrics/feature/popularity"');
     assert.include(navInnerHTML, 'href="/myfeatures');
   });
+
+  it('renders review release notes link and badge for reviewer', async () => {
+    getPermissionsStub.returns(
+      Promise.resolve({
+        can_create_feature: true,
+        can_edit_all: false,
+        can_review_release_notes: true,
+        is_admin: false,
+        email: 'reviewer@google.com',
+      })
+    );
+    const getPendingCountStub = sinon
+      .stub(window.csClient, 'getPendingSuggestionsCount')
+      .resolves({count: 5});
+
+    const component = await fixture<ChromedashDrawer>(
+      html`<chromedash-drawer appTitle="Fake Title"></chromedash-drawer>`
+    );
+    // Allow promises and reactive updates to resolve
+    await new Promise(resolve => setTimeout(resolve, 50));
+    await component.updateComplete;
+
+    const nav = component.shadowRoot!.querySelector('nav');
+    assert.exists(nav);
+    assert.include(nav!.innerHTML, 'href="/review-release-notes"');
+    assert.include(nav!.innerHTML, '5');
+
+    getPendingCountStub.restore();
+  });
 });

@@ -121,3 +121,4 @@ import './elements/chromedash-ai-summary-progress';
 import './elements/chromedash-summary-diff-view';
 import './elements/chromedash-summary-review-dialog';
 import './elements/chromedash-release-feature-card';
+import './elements/chromedash-release-reviews-page';

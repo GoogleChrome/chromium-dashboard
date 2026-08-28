@@ -342,6 +342,151 @@ class SummarySuggestionAPITest(testing_config.CustomTestCase):
             )
 
     @mock.patch('internals.core_models.FeatureEntry.get_by_id')
+    @mock.patch('framework.cloud_tasks_helpers.enqueue_task')
+    def test_post__initializes_anchor_step_and_resets_draft(
+        self, mock_enqueue_task, mock_feature_get
+    ):
+        """It writes an initial START progress step and clears old suggested_summary."""
+        testing_config.sign_in('owner@example.com', 12345)
+        mock_feature_get.return_value = self.feature_1
+        self.suggestion_1.put()
+
+        with test_app.test_request_context(
+            '/api/v0/summary-suggestions/101',
+            method='POST',
+            data=json.dumps({}),
+            content_type='application/json',
+        ):
+            response = self.handler.do_post(feature_id=101)
+
+        self.assertEqual(
+            'Summary generation task enqueued for feature 101',
+            response['message'],
+        )
+        # Check initial anchor step
+        ancestor_key = ndb.Key(FeatureSummarySuggestion, 101)
+        steps = FeatureSummaryProgressStep.query(ancestor=ancestor_key).fetch()
+        self.assertEqual(1, len(steps))
+        self.assertEqual(
+            core_enums.ProgressStepId.START.value, steps[0].step_id
+        )
+        self.assertEqual(
+            core_enums.ProgressStepStatus.IN_PROGRESS.value, steps[0].status
+        )
+        self.assertEqual(
+            'Summary generation task enqueued in Cloud Tasks', steps[0].message
+        )
+
+        # Check that existing suggestion's draft was reset
+        reloaded_suggestion = FeatureSummarySuggestion.get_by_id(101)
+        self.assertIsNotNone(reloaded_suggestion)
+        self.assertIsNone(reloaded_suggestion.suggested_summary)
+        self.assertIsNone(reloaded_suggestion.generation_rationale)
+        self.assertEqual([], reloaded_suggestion.suggested_doc_links)
+
+    @mock.patch('internals.core_models.FeatureSummarySuggestion.get_by_id')
+    @mock.patch('internals.core_models.FeatureSummaryProgressStep.query')
+    def test_patch__applied_updates_feature_summary(
+        self, mock_step_query, mock_suggestion_get
+    ):
+        """It updates feature.summary when suggestion status is set to APPLIED."""
+        testing_config.sign_in('owner@example.com', 12345)
+        self.feature_1.put()
+        mock_suggestion_get.return_value = self.suggestion_1
+        mock_step_query.return_value.order.return_value.fetch.return_value = []
+
+        payload = {
+            'version_token': 1,
+            'status': 'APPLIED',
+            'suggested_summary': 'Newly accepted AI summary.',
+        }
+        json_data = json.dumps(payload)
+
+        with test_app.test_request_context(
+            '/api/v0/summary-suggestions/101',
+            method='PATCH',
+            data=json_data,
+            content_type='application/json',
+        ):
+            self.handler.do_patch(feature_id=101)
+
+        reloaded_feature = FeatureEntry.get_by_id(101)
+        self.assertEqual('Newly accepted AI summary.', reloaded_feature.summary)
+        self.assertEqual(
+            ['https://developer.mozilla.org/'], reloaded_feature.doc_links
+        )
+        self.assertIn('summary', reloaded_feature.markdown_fields)
+
+    @mock.patch('internals.core_models.FeatureSummarySuggestion.get_by_id')
+    @mock.patch('internals.core_models.FeatureSummaryProgressStep.query')
+    def test_patch__permitted_for_release_note_reviewers(
+        self, mock_step_query, mock_suggestion_get
+    ):
+        """It allows users with can_review_release_notes to patch a suggestion."""
+        testing_config.sign_in('elmirakalali@google.com', 54321)
+        self.feature_1.put()
+        mock_suggestion_get.return_value = self.suggestion_1
+        mock_step_query.return_value.order.return_value.fetch.return_value = []
+
+        payload = {
+            'version_token': 1,
+            'status': 'APPLIED',
+            'suggested_summary': 'Reviewed and applied by release editor.',
+        }
+        with test_app.test_request_context(
+            '/api/v0/summary-suggestions/101',
+            method='PATCH',
+            data=json.dumps(payload),
+            content_type='application/json',
+        ):
+            actual = self.handler.do_patch(feature_id=101)
+
+        self.assertEqual(
+            'Reviewed and applied by release editor.',
+            actual['suggestion']['suggested_summary'],
+        )
+
+    @mock.patch('internals.core_models.FeatureSummarySuggestion.get_by_id')
+    @mock.patch('internals.core_models.FeatureSummaryProgressStep.query')
+    def test_patch__sanitizes_untrusted_doc_links(
+        self, mock_step_query, mock_suggestion_get
+    ):
+        """It filters out javascript: and data: URIs when applying doc links."""
+        testing_config.sign_in('owner@example.com', 12345)
+        self.feature_1.doc_links = ['https://existing.example.com']
+        self.feature_1.put()
+
+        untrusted_suggestion = FeatureSummarySuggestion(
+            id=101,
+            suggested_summary='AI summary.',
+            suggested_doc_links=[
+                'javascript:alert(1)',
+                'data:text/html,<script>alert(1)</script>',
+                '   https://safe.example.com/spec   ',
+                'invalid-url-schema',
+            ],
+            version_token=1,
+            status=core_enums.SummarySuggestionStatus.PENDING.value,
+        )
+        mock_suggestion_get.return_value = untrusted_suggestion
+        mock_step_query.return_value.order.return_value.fetch.return_value = []
+
+        payload = {'version_token': 1, 'status': 'APPLIED'}
+        with test_app.test_request_context(
+            '/api/v0/summary-suggestions/101',
+            method='PATCH',
+            data=json.dumps(payload),
+            content_type='application/json',
+        ):
+            self.handler.do_patch(feature_id=101)
+
+        reloaded_feature = FeatureEntry.get_by_id(101)
+        self.assertEqual(
+            ['https://existing.example.com', 'https://safe.example.com/spec'],
+            reloaded_feature.doc_links,
+        )
+
+    @mock.patch('internals.core_models.FeatureEntry.get_by_id')
     def test_post__unauthorized_403(self, mock_feature_get):
         """It aborts HTTP 403 when user lacks edit permissions."""
         mock_feature_get.return_value = self.feature_1
@@ -488,6 +633,32 @@ class PendingSuggestionsCountAPITest(testing_config.CustomTestCase):
             actual = self.handler.do_get()
             self.assertEqual(2, actual['count'])
 
+    def test_get__permitted_for_release_note_reviewers(self):
+        """It allows users with can_review_release_notes to query the pending count."""
+        testing_config.sign_in('elmirakalali@google.com', 54321)
+        with test_app.test_request_context(
+            '/api/v0/summary-suggestions/pending-count'
+        ):
+            actual = self.handler.do_get()
+            self.assertEqual(2, actual['count'])
+
+    def test_get__includes_legacy_proposed_status(self):
+        """It includes both PENDING and legacy PROPOSED suggestions in the count."""
+        legacy_suggestion = FeatureSummarySuggestion(
+            id=104,
+            suggested_summary='Proposed summary 4',
+            status=core_enums.SummarySuggestionStatus.PROPOSED.value,
+        )
+        legacy_suggestion.put()
+        try:
+            with test_app.test_request_context(
+                '/api/v0/summary-suggestions/pending-count'
+            ):
+                actual = self.handler.do_get()
+                self.assertEqual(3, actual['count'])
+        finally:
+            legacy_suggestion.key.delete()
+
 
 class PendingSuggestionsQueueAPITest(testing_config.CustomTestCase):
     """Unit tests for PendingSuggestionsQueueAPI handler."""
@@ -633,6 +804,29 @@ class PendingSuggestionsQueueAPITest(testing_config.CustomTestCase):
                 first_sug['suggested_summary']
             )
             self.assertEqual('Link Pending suggestion one.', hover)
+
+    def test_get__permitted_for_release_note_reviewers(self):
+        """It allows users with can_review_release_notes to query the pending queue."""
+        testing_config.sign_in('elmirakalali@google.com', 54321)
+        with test_app.test_request_context(
+            '/api/v0/summary-suggestions/pending?limit=25'
+        ):
+            actual = self.handler.do_get()
+            self.assertEqual(2, actual['total_count'])
+            self.assertEqual(2, len(actual['suggestions']))
+
+    def test_get__filters_deleted_features(self):
+        """It excludes suggestions whose parent FeatureEntry is soft-deleted."""
+        self.feature_2.deleted = True
+        self.feature_2.put()
+
+        with test_app.test_request_context(
+            '/api/v0/summary-suggestions/pending?limit=25'
+        ):
+            actual = self.handler.do_get()
+            # suggestion_2 is excluded from returned suggestions because feature_2 is deleted
+            self.assertEqual(1, len(actual['suggestions']))
+            self.assertEqual(101, actual['suggestions'][0]['feature_id'])
 
 
 class StripMarkdownHoverSnippetTest(testing_config.CustomTestCase):

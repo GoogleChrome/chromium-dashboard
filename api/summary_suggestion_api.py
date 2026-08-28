@@ -15,6 +15,8 @@
 """API handler for AI summary suggestions (GET, POST, and PATCH /api/v0/summary-suggestions/<int:feature_id>)."""
 
 import re
+import urllib.parse
+from datetime import datetime, timezone
 from typing import Any
 
 from chromestatus_openapi.models import (
@@ -106,7 +108,38 @@ class SummarySuggestionAPI(basehandlers.APIHandler):
         # 2. Extract force parameter (default False) from request body.
         force = self.get_bool_param('force', default=False)
 
-        # 3. Enqueue Cloud Task to generate the AI summary.
+        # 3. Clear old steps and record initial anchor step in Datastore immediately
+        # so polling clients immediately see an active task before Cloud Tasks runs.
+        FeatureSummaryProgressStep.clear_timeline(feature_id, keep_count=0)
+        parent_key = ndb.Key(FeatureSummarySuggestion, feature_id)
+        now = datetime.now(timezone.utc)
+        FeatureSummaryProgressStep(
+            parent=parent_key,
+            step_id=core_enums.ProgressStepId.START.value,
+            status=core_enums.ProgressStepStatus.IN_PROGRESS.value,
+            message='Summary generation task enqueued in Cloud Tasks',
+            start_timestamp=now,
+            end_timestamp=now,
+        ).put()
+
+        # Ensure suggestion entity exists and reset draft fields before worker runs
+        # so polling clients never encounter an initial 404 before Cloud Tasks executes.
+        suggestion = FeatureSummarySuggestion.get_by_id(feature_id)
+        if not suggestion:
+            suggestion = FeatureSummarySuggestion(
+                id=feature_id,
+                original_summary=feature.summary,
+                original_doc_links=feature.doc_links or [],
+                status=core_enums.SummarySuggestionStatus.PENDING.value,
+                version_token=1,
+            )
+        else:
+            suggestion.suggested_summary = None
+            suggestion.generation_rationale = None
+            suggestion.suggested_doc_links = []
+        suggestion.put()
+
+        # 4. Enqueue Cloud Task to generate the AI summary.
         cloud_tasks_helpers.enqueue_task(
             '/tasks/generate-summary',
             {'feature_id': feature_id, 'force': force},
@@ -128,7 +161,10 @@ class SummarySuggestionAPI(basehandlers.APIHandler):
             self.abort(404, msg='Feature not found')
 
         user = self.get_current_user()
-        if not permissions.can_edit_feature(user, feature):
+        if not (
+            permissions.can_edit_feature(user, feature)
+            or permissions.can_review_release_notes(user)
+        ):
             self.abort(
                 403, msg='User does not have edit permissions for this feature'
             )
@@ -165,6 +201,37 @@ class SummarySuggestionAPI(basehandlers.APIHandler):
                 self.abort(400, msg=f'Invalid status value: {raw_status}')
             suggestion.status = status_enum.value
 
+            if status_enum == core_enums.SummarySuggestionStatus.APPLIED:
+                applied_summary = (
+                    request_body.get('suggested_summary')
+                    or suggestion.suggested_summary
+                )
+                if applied_summary:
+                    feature.summary = applied_summary
+                    if 'summary' not in (feature.markdown_fields or []):
+                        feature.markdown_fields = list(
+                            feature.markdown_fields or []
+                        ) + ['summary']
+                if suggestion.suggested_doc_links:
+                    existing_docs = list(feature.doc_links or [])
+                    for link in suggestion.suggested_doc_links:
+                        if not link or not isinstance(link, str):
+                            continue
+                        link_clean = link.strip()
+                        parsed = urllib.parse.urlparse(link_clean)
+                        if (
+                            parsed.scheme.lower()
+                            in (
+                                'https',
+                                'http',
+                            )
+                            and parsed.netloc
+                        ):
+                            if link_clean not in existing_docs:
+                                existing_docs.append(link_clean)
+                    feature.doc_links = existing_docs
+                feature.put()
+
         if 'suggested_summary' in request_body:
             suggestion.suggested_summary = request_body['suggested_summary']
 
@@ -197,16 +264,26 @@ class PendingSuggestionsCountAPI(basehandlers.APIHandler):
     def do_get(self, **kwargs: Any) -> dict[str, Any]:
         """Returns total count of pending AI summary suggestions in review queue."""
         user = self.get_current_user()
-        if not user or not permissions.can_edit_any_feature(user):
+        if not user or not (
+            permissions.can_edit_any_feature(user)
+            or permissions.can_review_release_notes(user)
+        ):
             self.abort(
                 403,
                 msg='User does not have permission to view pending suggestions queue',
             )
 
-        count = FeatureSummarySuggestion.query(
+        # Count all pending suggestions awaiting editorial review. Supports both
+        # PENDING and legacy PROPOSED status values.
+        pending_count = FeatureSummarySuggestion.query(
             FeatureSummarySuggestion.status
             == core_enums.SummarySuggestionStatus.PENDING.value
         ).count()
+        proposed_count = FeatureSummarySuggestion.query(
+            FeatureSummarySuggestion.status
+            == core_enums.SummarySuggestionStatus.PROPOSED.value
+        ).count()
+        count = pending_count + proposed_count
 
         return PendingSuggestionsCountResponse.from_dict(
             {'count': count}
@@ -219,7 +296,10 @@ class PendingSuggestionsQueueAPI(basehandlers.APIHandler):
     def do_get(self, **kwargs: Any) -> dict[str, Any]:
         """Returns cursor-paginated list of pending AI summary suggestions in review queue."""
         user = self.get_current_user()
-        if not user or not permissions.can_edit_any_feature(user):
+        if not user or not (
+            permissions.can_edit_any_feature(user)
+            or permissions.can_review_release_notes(user)
+        ):
             self.abort(
                 403,
                 msg='User does not have permission to view pending suggestions queue',
@@ -265,14 +345,16 @@ class PendingSuggestionsQueueAPI(basehandlers.APIHandler):
         features = ndb.get_multi(feature_keys)
         feature_map = {f.key.id(): f for f in features if f}
 
-        # 4. Serialize suggestion dicts and attach hover snippets.
+        # 4. Serialize suggestion dicts and attach hover snippets (skipping deleted features).
         suggestion_dicts = []
         for s in suggestions:
             feature_id = s.key.id()
             fe = feature_map.get(feature_id)
+            if not fe or fe.deleted:
+                continue
             d = converters.feature_summary_suggestion_to_dict(s)
             d['feature_id'] = feature_id
-            d['feature_name'] = fe.name if fe else 'Unknown Feature'
+            d['feature_name'] = fe.name
             d['hover_snippet'] = strip_markdown_hover_snippet(
                 s.suggested_summary
             )

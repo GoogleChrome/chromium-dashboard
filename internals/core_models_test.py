@@ -70,6 +70,20 @@ class FeatureSummarySuggestionTest(testing_config.CustomTestCase):
         self.assertEqual(retrieved.baseline_status, 'widely')
         self.assertIsInstance(retrieved.baseline_status, str)
 
+    def test_default_status_is_pending(self):
+        """Verify default status for a new FeatureSummarySuggestion is PENDING."""
+        suggestion = FeatureSummarySuggestion(
+            id=self.feature_id,
+            suggested_summary='Auto generated text.',
+        )
+        suggestion.put()
+
+        retrieved = ndb.Key('FeatureSummarySuggestion', self.feature_id).get()
+        self.assertIsNotNone(retrieved)
+        self.assertEqual(
+            retrieved.status, core_enums.SummarySuggestionStatus.PENDING
+        )
+
     def test_occ_token_increment_on_update(self):
         """Verify OCC version_token can be incremented cleanly across edits."""
         suggestion = FeatureSummarySuggestion(

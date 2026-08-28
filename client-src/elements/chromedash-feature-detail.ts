@@ -134,8 +134,13 @@ export class ChromedashFeatureDetail extends LitElement {
       suggestion: SummarySuggestion | null;
     }>
   ) {
-    if (e.detail.suggestion) {
-      this.activeSuggestion = e.detail.suggestion;
+    const s = e.detail.suggestion;
+    const hasContent = Boolean(
+      (s?.suggested_summary && s.suggested_summary.trim().length > 0) ||
+      (s?.suggested_doc_links && s.suggested_doc_links.length > 0)
+    );
+    if (s && hasContent) {
+      this.activeSuggestion = s;
       await this.updateComplete;
       this.reviewDialog?.show();
     }
@@ -163,8 +168,6 @@ export class ChromedashFeatureDetail extends LitElement {
           display: block;
           position: relative;
           box-sizing: border-box;
-          contain: content;
-          overflow: hidden;
           background: inherit;
         }
 
@@ -422,9 +425,29 @@ export class ChromedashFeatureDetail extends LitElement {
           .compact=${true}
           .suggestion=${this.activeSuggestion}
           @summary-generation-started=${() =>
-            this.reviewDialog?.openForGeneration()}
+            this.reviewDialog?.openForGeneration(false)}
           @summary-generation-completed=${this.handleSummaryCompleted}
-          @summary-dialog-requested=${() => this.reviewDialog?.show()}
+          @summary-generation-failed=${(e: CustomEvent<{error?: string}>) => {
+            if (this.reviewDialog && e.detail?.error) {
+              this.reviewDialog.errorMessage = e.detail.error;
+            }
+          }}
+          @summary-dialog-requested=${(e: CustomEvent<{error?: string}>) => {
+            if (this.reviewDialog) {
+              if (
+                this.activeSuggestion?.suggested_summary &&
+                this.activeSuggestion.status === 'PENDING'
+              ) {
+                this.reviewDialog.isGenerating = false;
+              } else {
+                this.reviewDialog.isGenerating = false;
+              }
+              if (e.detail?.error) {
+                this.reviewDialog.errorMessage = e.detail.error;
+              }
+              this.reviewDialog.show();
+            }
+          }}
         ></chromedash-ai-summary-progress>
       `;
     }

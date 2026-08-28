@@ -458,7 +458,7 @@ class FeatureSummarySuggestion(ndb.Model):
     """
 
     status = ndb.StringProperty(
-        default=core_enums.SummarySuggestionStatus.PROPOSED
+        default=core_enums.SummarySuggestionStatus.PENDING
     )
     baseline_status = ndb.StringProperty()
     suggested_summary = ndb.TextProperty()

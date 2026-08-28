@@ -17,6 +17,7 @@
 import {SlDrawer} from '@shoelace-style/shoelace';
 import {LitElement, TemplateResult, css, html, nothing} from 'lit';
 import {customElement, property, state} from 'lit/decorators.js';
+import {Task} from '@lit/task';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {User} from '../js-src/cs-client.js';
 import {isMobile, showToastMessage} from './utils.js';
@@ -90,6 +91,9 @@ export class ChromedashDrawer extends LitElement {
         sl-button {
           margin-left: 10px;
         }
+        .review-badge {
+          margin-left: var(--sl-spacing-2x-small);
+        }
         @media only screen and (max-width: 700px) {
           header {
             --logoSize: 24px;
@@ -121,8 +125,26 @@ export class ChromedashDrawer extends LitElement {
   @state()
   loading = false;
 
+  private _pendingReviewsTask = new Task(this, {
+    task: async ([user]) => {
+      if (!this.userCanReviewReleaseNotes(user)) return 0;
+      try {
+        const resp = await window.csClient?.getPendingSuggestionsCount?.();
+        return resp && typeof resp.count === 'number' ? resp.count : 0;
+      } catch {
+        return 0;
+      }
+    },
+    args: () => [this.user],
+  });
+
+  private _boundRefetchNeeded = () => {
+    this._pendingReviewsTask.run();
+  };
+
   connectedCallback() {
     super.connectedCallback();
+    window.addEventListener('refetch-needed', this._boundRefetchNeeded);
 
     // user is passed in from chromedash-app
     if (this.user && this.user.email) return;
@@ -154,6 +176,11 @@ export class ChromedashDrawer extends LitElement {
       .finally(() => {
         this.loading = false;
       });
+  }
+
+  disconnectedCallback() {
+    window.removeEventListener('refetch-needed', this._boundRefetchNeeded);
+    super.disconnectedCallback();
   }
 
   initializeGoogleSignIn() {
@@ -238,6 +265,13 @@ export class ChromedashDrawer extends LitElement {
     return (
       this.user &&
       (this.user.is_admin || this.user.approvable_gate_types?.length > 0)
+    );
+  }
+
+  userCanReviewReleaseNotes(user: User | null = this.user): boolean {
+    return Boolean(
+      user &&
+      (user.is_admin || user.can_edit_all || user.can_review_release_notes)
     );
   }
 
@@ -368,14 +402,35 @@ export class ChromedashDrawer extends LitElement {
       ${this.renderNavItem('/myfeatures/editable', 'Owner / editor')}
     `;
   }
-  renderAdminMenu() {
+  renderReleaseNotesReviewMenuItem() {
+    if (!this.userCanReviewReleaseNotes()) {
+      return nothing;
+    }
+
+    const reviewBadge = this._pendingReviewsTask.render({
+      complete: count =>
+        count > 0
+          ? html`<sl-badge variant="primary" pill class="review-badge"
+              >${count}</sl-badge
+            >`
+          : nothing,
+    });
+
+    return html`
+      <a
+        href="/review-release-notes"
+        ?active=${this.isCurrentPage('/review-release-notes')}
+        >Review release notes ${reviewBadge}</a
+      >
+    `;
+  }
+
+  renderAdminMenuItems() {
     if (!this.user?.is_admin) {
       return nothing;
     }
 
     return html`
-      <hr />
-      <div class="section-header">Admin</div>
       ${this.renderNavItem('/admin/users/new', 'Users')}
       ${this.renderNavItem('/admin/ot_requests', 'OT requests')}
       ${this.renderNavItem('/admin/bulk_edit', 'Bulk edit')}
@@ -385,6 +440,21 @@ export class ChromedashDrawer extends LitElement {
       ${this.renderNavItem('/admin/blink', 'Subscriptions')}
       ${this.renderNavItem('/admin/find_stop_words', 'Find stop words JSON')}
       ${this.renderNavItem('/features/stale', 'Stale features')}
+    `;
+  }
+
+  renderAdminMenu() {
+    const isAdmin = Boolean(this.user?.is_admin);
+    const canReview = this.userCanReviewReleaseNotes();
+
+    if (!isAdmin && !canReview) {
+      return nothing;
+    }
+
+    return html`
+      <hr />
+      <div class="section-header">Admin</div>
+      ${this.renderReleaseNotesReviewMenuItem()} ${this.renderAdminMenuItems()}
     `;
   }
 

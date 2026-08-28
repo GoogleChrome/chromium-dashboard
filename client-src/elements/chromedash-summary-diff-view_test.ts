@@ -159,4 +159,40 @@ describe('chromedash-summary-diff-view', () => {
     assert.notInclude(contentHtml, 'onerror');
     assert.notInclude(contentHtml, 'href="javascript:');
   });
+
+  it('renders grounding reasoning callout when reasoning is provided', async () => {
+    const el = await fixture<ChromedashSummaryDiffView>(
+      html`<chromedash-summary-diff-view
+        .currentSummary=${'Current summary'}
+        .suggestedSummary=${'Suggested summary'}
+        .reasoning=${'Summary streamlined to highlight CSS Grid masonry placement algorithm.'}
+      ></chromedash-summary-diff-view>`
+    );
+
+    const reasoningSection = el.shadowRoot!.querySelector(
+      '[data-testid="diff-reasoning-section"]'
+    );
+    assert.isNotNull(reasoningSection);
+    assert.include(
+      reasoningSection!.textContent,
+      'Summary streamlined to highlight CSS Grid masonry placement algorithm.'
+    );
+    assert.include(reasoningSection!.textContent, 'Grounding Rationale');
+  });
+
+  it('renders baseline status badge when baselineStatus is non-empty and not none', async () => {
+    const el = await fixture<ChromedashSummaryDiffView>(
+      html`<chromedash-summary-diff-view
+        .currentSummary=${'Current summary'}
+        .suggestedSummary=${'Suggested summary'}
+        .baselineStatus=${'newly'}
+      ></chromedash-summary-diff-view>`
+    );
+
+    const badge = el.shadowRoot!.querySelector(
+      '#suggested-summary-header sl-badge'
+    );
+    assert.isNotNull(badge);
+    assert.include(badge!.textContent, 'Baseline: Newly available');
+  });
 });

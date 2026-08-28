@@ -145,8 +145,8 @@ export class ChromedashAiSummaryProgress extends LitElement {
       this.error = null;
       this._monitor = new TaskProgressMonitor<SummarySuggestionResponse>({
         fetcher: () => window.csClient.getSummarySuggestion(featureId),
-        shouldContinue: resp => this._isStepsActive(resp.progress_steps),
-        maxInitial404Retries: 1,
+        shouldContinue: resp =>
+          this._isStepsActive(resp.progress_steps, resp.suggestion),
         onProgress: resp => {
           this.suggestion = resp.suggestion ?? null;
           this.progressSteps = resp.progress_steps ?? [];
@@ -158,13 +158,22 @@ export class ChromedashAiSummaryProgress extends LitElement {
         this.suggestion = resp.suggestion ?? null;
         this.progressSteps = resp.progress_steps ?? [];
 
-        const hasFailed = this.progressSteps.some(
-          s => s.status === SummaryProgressStepStatusEnum.FAILED
-        );
-        if (hasFailed) {
-          this._dispatchFailedEvent();
-        } else {
+        // Check for success FIRST: If a valid suggestion was generated,
+        // intermediate tool failures (e.g. searching external docs) do not invalidate it.
+        if (this._hasValidSuggestion(this.suggestion)) {
+          this.error = null;
           this._dispatchCompletedEvent();
+        } else {
+          const failedStep = this.progressSteps.find(
+            s => s.status === SummaryProgressStepStatusEnum.FAILED
+          );
+          this.error = failedStep
+            ? this._formatErrorMessage(
+                failedStep.message,
+                DEFAULT_TRIGGER_ERROR_MESSAGE
+              )
+            : 'Summary generation did not produce any candidate summary or documentation links. Please retry.';
+          this._dispatchFailedEvent(this.error);
         }
         return resp;
       } catch (err) {
@@ -380,20 +389,84 @@ export class ChromedashAiSummaryProgress extends LitElement {
     return this.compact ? 'small' : 'medium';
   }
 
-  private _isStepsActive(steps?: ProgressStep[]): boolean {
-    if (!steps || steps.length === 0) return false;
-    return steps.some(
-      s =>
-        s.status === SummaryProgressStepStatusEnum.IN_PROGRESS ||
-        s.status === SummaryProgressStepStatusEnum.RETRYING
+  private _emptyStepsGraceCount = 0;
+
+  private _hasValidSuggestion(suggestion?: SummarySuggestion | null): boolean {
+    if (!suggestion) return false;
+    const hasSummary = Boolean(
+      suggestion.suggested_summary &&
+      suggestion.suggested_summary.trim().length > 0
     );
+    const hasDocLinks = Boolean(
+      suggestion.suggested_doc_links &&
+      suggestion.suggested_doc_links.length > 0
+    );
+    return hasSummary || hasDocLinks;
+  }
+
+  private _isStepsActive(
+    steps?: ProgressStep[],
+    suggestion?: SummarySuggestion | null
+  ): boolean {
+    if (this._hasValidSuggestion(suggestion)) {
+      return false;
+    }
+
+    if (!steps || steps.length === 0) {
+      if (
+        (this.loading || (this._monitor?.isRunning ?? false)) &&
+        this._emptyStepsGraceCount < 5
+      ) {
+        this._emptyStepsGraceCount++;
+        return true;
+      }
+      return false;
+    }
+    this._emptyStepsGraceCount = 0;
+
+    // Steps from the API are ordered descending by start_timestamp (newest first).
+    // The latest step represents the active execution frontier.
+    const latestStep = steps[0];
+    if (latestStep.status === SummaryProgressStepStatusEnum.FAILED) {
+      return false;
+    }
+    if (
+      latestStep.status === SummaryProgressStepStatusEnum.SUCCESS &&
+      latestStep.message?.includes('successfully')
+    ) {
+      return false;
+    }
+
+    const now = Date.now();
+    const STALE_STEP_TIMEOUT_MS = 5 * 60 * 1000; // 5 minutes
+
+    if (
+      latestStep.status === SummaryProgressStepStatusEnum.IN_PROGRESS ||
+      latestStep.status === SummaryProgressStepStatusEnum.RETRYING
+    ) {
+      if (latestStep.start_timestamp) {
+        const startTime =
+          latestStep.start_timestamp instanceof Date
+            ? latestStep.start_timestamp.getTime()
+            : new Date(latestStep.start_timestamp).getTime();
+        if (!isNaN(startTime) && now - startTime > STALE_STEP_TIMEOUT_MS) {
+          return false;
+        }
+      }
+      return true;
+    }
+
+    return false;
   }
 
   get isTaskRunning(): boolean {
+    if (this._hasValidSuggestion(this.suggestion)) {
+      return false;
+    }
     return (
       this.loading ||
       (this._monitor?.isRunning ?? false) ||
-      this._isStepsActive(this.progressSteps)
+      this._isStepsActive(this.progressSteps, this.suggestion)
     );
   }
 
@@ -456,6 +529,17 @@ export class ChromedashAiSummaryProgress extends LitElement {
       this.error = null;
       this._clearCooldown();
     }
+    if (changedProperties.has('progressSteps')) {
+      const failedStep = this.progressSteps.find(
+        s => s.status === SummaryProgressStepStatusEnum.FAILED
+      );
+      if (failedStep && !this.error) {
+        this.error = this._formatErrorMessage(
+          failedStep.message,
+          DEFAULT_TRIGGER_ERROR_MESSAGE
+        );
+      }
+    }
   }
 
   async handleTrigger(force = false) {
@@ -473,6 +557,7 @@ export class ChromedashAiSummaryProgress extends LitElement {
       this.error = null;
       this.progressSteps = [];
       this.suggestion = null;
+      this._emptyStepsGraceCount = 0;
       this._clearCooldown();
 
       await window.csClient.triggerSummaryGeneration(this.featureId, force);
@@ -634,11 +719,17 @@ export class ChromedashAiSummaryProgress extends LitElement {
     `;
   }
 
-  private _dispatchOpenDialogEvent() {
+  private _dispatchOpenDialogEvent(error?: string) {
     this.dispatchEvent(
       new CustomEvent('summary-dialog-requested', {
         bubbles: true,
         composed: true,
+        detail: {
+          featureId: this.featureId,
+          suggestion: this.suggestion,
+          progressSteps: this.progressSteps,
+          error: error || this.error,
+        },
       })
     );
   }
@@ -680,8 +771,8 @@ export class ChromedashAiSummaryProgress extends LitElement {
           size="small"
           variant="danger"
           outline
-          @click=${() => this.handleTrigger(true)}
-          title="${this.error}. Click to retry."
+          @click=${() => this._dispatchOpenDialogEvent()}
+          title="${this.error}. Click to view details and retry."
           data-testid="ai-summary-retry-button"
         >
           <sl-icon slot="prefix" name="exclamation-triangle"></sl-icon>
@@ -690,7 +781,10 @@ export class ChromedashAiSummaryProgress extends LitElement {
       `;
     }
 
-    if (this.suggestion?.status === 'PENDING') {
+    if (
+      this.suggestion?.status === 'PENDING' &&
+      this._hasValidSuggestion(this.suggestion)
+    ) {
       return html`
         <sl-button
           size="small"
@@ -736,7 +830,10 @@ export class ChromedashAiSummaryProgress extends LitElement {
       if (this.hideIdleTrigger) {
         return nothing;
       }
-      if (this.suggestion?.status === 'PENDING') {
+      if (
+        this.suggestion?.status === 'PENDING' &&
+        this._hasValidSuggestion(this.suggestion)
+      ) {
         return html`
           <sl-button
             variant="primary"

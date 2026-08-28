@@ -18,6 +18,7 @@ import {assert} from '@open-wc/testing';
 import sinon from 'sinon';
 import {ChromeStatusClient} from './cs-client.js';
 import {
+  SummarySuggestionListResponse,
   SummarySuggestionPatchRequest,
   SummarySuggestionPatchRequestStatusEnum,
   SummarySuggestionResponse,
@@ -152,6 +153,56 @@ describe('ChromeStatusClient - Summary Suggestions API', () => {
         assert.include(error.message, 'Invalid featureId');
         assert.include(error.message, '-5');
       }
+    });
+  });
+
+  describe('getPendingSuggestionsCount', () => {
+    it('calls doGet with the expected path', async () => {
+      const mockResponse = {count: 7};
+      const doGetStub = sandbox.stub(client, 'doGet').resolves(mockResponse);
+
+      const result = await client.getPendingSuggestionsCount();
+
+      assert.deepEqual(result, mockResponse);
+      assert.isTrue(
+        doGetStub.calledOnceWith('/summary-suggestions/pending-count')
+      );
+    });
+  });
+
+  describe('getPendingSuggestionsQueue', () => {
+    it('calls doGet with default limit and no cursor', async () => {
+      const mockResponse: SummarySuggestionListResponse = {
+        suggestions: [],
+        total_count: 0,
+        next_cursor: undefined,
+      };
+      const doGetStub = sandbox.stub(client, 'doGet').resolves(mockResponse);
+
+      const result = await client.getPendingSuggestionsQueue();
+
+      assert.deepEqual(result, mockResponse);
+      assert.isTrue(
+        doGetStub.calledOnceWith('/summary-suggestions/pending?limit=25')
+      );
+    });
+
+    it('calls doGet with custom limit and cursor', async () => {
+      const mockResponse = {
+        suggestions: [],
+        total_count: 10,
+        next_cursor: 'cursor123',
+      };
+      const doGetStub = sandbox.stub(client, 'doGet').resolves(mockResponse);
+
+      const result = await client.getPendingSuggestionsQueue(10, 'cursor_abc');
+
+      assert.deepEqual(result, mockResponse);
+      assert.isTrue(
+        doGetStub.calledOnceWith(
+          '/summary-suggestions/pending?limit=10&cursor=cursor_abc'
+        )
+      );
     });
   });
 });
