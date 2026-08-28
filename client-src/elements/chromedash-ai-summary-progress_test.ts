@@ -1020,7 +1020,49 @@ describe('chromedash-ai-summary-progress', () => {
 
       await el._statusTask.run();
       expect(failedEventFired).to.be.true;
-      expect(el.error).to.contain('did not produce a candidate summary');
+      expect(el.error).to.contain(
+        'did not produce any candidate summary or documentation links'
+      );
+    });
+
+    it('successfully completes when suggestion has suggested_doc_links even without suggested_summary', async () => {
+      let completedEventFired = false;
+      const el = await fixture<ChromedashAiSummaryProgress>(
+        html`<chromedash-ai-summary-progress
+          .autoPoll=${true}
+          .compact=${true}
+          .featureId=${506}
+          @summary-generation-completed=${() => {
+            completedEventFired = true;
+          }}
+        ></chromedash-ai-summary-progress>`
+      );
+
+      (window.csClient.getSummarySuggestion as sinon.SinonStub)
+        .withArgs(506)
+        .resolves({
+          suggestion: {
+            feature_id: 506,
+            suggested_summary: null as unknown as string,
+            suggested_doc_links: [
+              'https://developer.mozilla.org/en-US/docs/Web/CSS/masonry',
+            ],
+            status: 'PENDING',
+            version_token: 1,
+          },
+          progress_steps: [
+            {
+              step: SummaryProgressStepStepEnum.UNKNOWN,
+              status: SummaryProgressStepStatusEnum.SUCCESS,
+              message: 'Finished with doc links',
+              start_timestamp: new Date(),
+            },
+          ],
+        });
+
+      await el._statusTask.run();
+      expect(completedEventFired).to.be.true;
+      expect(el.error).to.be.null;
     });
   });
 });

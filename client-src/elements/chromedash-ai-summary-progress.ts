@@ -167,15 +167,12 @@ export class ChromedashAiSummaryProgress extends LitElement {
             DEFAULT_TRIGGER_ERROR_MESSAGE
           );
           this._dispatchFailedEvent(this.error);
-        } else if (
-          this.suggestion?.suggested_summary &&
-          this.suggestion.suggested_summary.trim().length > 0
-        ) {
+        } else if (this._hasValidSuggestion(this.suggestion)) {
           this.error = null;
           this._dispatchCompletedEvent();
         } else {
           this.error =
-            'Summary generation did not produce a candidate summary. Please retry.';
+            'Summary generation did not produce any candidate summary or documentation links. Please retry.';
           this._dispatchFailedEvent(this.error);
         }
         return resp;
@@ -393,6 +390,19 @@ export class ChromedashAiSummaryProgress extends LitElement {
   }
 
   private _emptyStepsGraceCount = 0;
+
+  private _hasValidSuggestion(suggestion?: SummarySuggestion | null): boolean {
+    if (!suggestion) return false;
+    const hasSummary = Boolean(
+      suggestion.suggested_summary &&
+      suggestion.suggested_summary.trim().length > 0
+    );
+    const hasDocLinks = Boolean(
+      suggestion.suggested_doc_links &&
+      suggestion.suggested_doc_links.length > 0
+    );
+    return hasSummary || hasDocLinks;
+  }
 
   private _isStepsActive(steps?: ProgressStep[]): boolean {
     if (!steps || steps.length === 0) {
@@ -755,7 +765,7 @@ export class ChromedashAiSummaryProgress extends LitElement {
 
     if (
       this.suggestion?.status === 'PENDING' &&
-      this.suggestion.suggested_summary
+      this._hasValidSuggestion(this.suggestion)
     ) {
       return html`
         <sl-button
@@ -804,7 +814,7 @@ export class ChromedashAiSummaryProgress extends LitElement {
       }
       if (
         this.suggestion?.status === 'PENDING' &&
-        this.suggestion.suggested_summary
+        this._hasValidSuggestion(this.suggestion)
       ) {
         return html`
           <sl-button

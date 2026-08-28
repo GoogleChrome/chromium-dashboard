@@ -286,7 +286,8 @@ export class ChromedashSummaryReviewDialog extends LitElement {
     this.isGenerating = false;
     if (e.detail?.suggestion) {
       this.suggestion = e.detail.suggestion;
-      this.editedSummary = this.suggestion?.suggested_summary || '';
+      this.editedSummary =
+        this.suggestion?.suggested_summary || this.currentSummary || '';
       this.isEditing = false;
       this.errorMessage = null;
       this.occConflict = false;
@@ -435,10 +436,17 @@ export class ChromedashSummaryReviewDialog extends LitElement {
       `;
     }
 
+    const hasValidSummary = Boolean(
+      this.editedSummary && this.editedSummary.trim()
+    );
+    const hasValidLinks = Boolean(
+      this.suggestion?.suggested_doc_links &&
+      this.suggestion.suggested_doc_links.length > 0
+    );
     const isAcceptDisabled =
       this.loading ||
       !this.suggestion ||
-      !this.editedSummary.trim() ||
+      (!hasValidSummary && !hasValidLinks) ||
       typeof this.suggestion.version_token !== 'number' ||
       this.occConflict;
 

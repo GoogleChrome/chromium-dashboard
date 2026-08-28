@@ -412,6 +412,9 @@ class SummarySuggestionAPITest(testing_config.CustomTestCase):
 
         reloaded_feature = FeatureEntry.get_by_id(101)
         self.assertEqual('Newly accepted AI summary.', reloaded_feature.summary)
+        self.assertEqual(
+            ['https://developer.mozilla.org/'], reloaded_feature.doc_links
+        )
 
     @mock.patch('internals.core_models.FeatureEntry.get_by_id')
     def test_post__unauthorized_403(self, mock_feature_get):

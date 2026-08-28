@@ -196,7 +196,13 @@ class SummarySuggestionAPI(basehandlers.APIHandler):
                 )
                 if applied_summary:
                     feature.summary = applied_summary
-                    feature.put()
+                if suggestion.suggested_doc_links:
+                    existing_docs = list(feature.doc_links or [])
+                    for link in suggestion.suggested_doc_links:
+                        if link not in existing_docs:
+                            existing_docs.append(link)
+                    feature.doc_links = existing_docs
+                feature.put()
 
         if 'suggested_summary' in request_body:
             suggestion.suggested_summary = request_body['suggested_summary']
