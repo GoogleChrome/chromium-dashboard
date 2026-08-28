@@ -969,5 +969,58 @@ describe('chromedash-ai-summary-progress', () => {
       );
       expect(generateBtn).to.exist;
     });
+
+    it('tolerates initial empty steps while loading=true within grace period', async () => {
+      const el = await fixture<ChromedashAiSummaryProgress>(
+        html`<chromedash-ai-summary-progress
+          .autoPoll=${false}
+          .compact=${true}
+          .featureId=${504}
+        ></chromedash-ai-summary-progress>`
+      );
+
+      el.loading = true;
+      // First poll with empty steps returns true (still active)
+      expect(el['_isStepsActive']([])).to.be.true;
+      // Subsequent poll with empty steps still returns true during grace period
+      expect(el['_isStepsActive']([])).to.be.true;
+    });
+
+    it('emits failure event and sets error if task finishes without suggested_summary', async () => {
+      let failedEventFired = false;
+      const el = await fixture<ChromedashAiSummaryProgress>(
+        html`<chromedash-ai-summary-progress
+          .autoPoll=${true}
+          .compact=${true}
+          .featureId=${505}
+          @summary-generation-failed=${() => {
+            failedEventFired = true;
+          }}
+        ></chromedash-ai-summary-progress>`
+      );
+
+      (window.csClient.getSummarySuggestion as sinon.SinonStub)
+        .withArgs(505)
+        .resolves({
+          suggestion: {
+            feature_id: 505,
+            suggested_summary: null as unknown as string,
+            status: 'PENDING',
+            version_token: 1,
+          },
+          progress_steps: [
+            {
+              step: SummaryProgressStepStepEnum.UNKNOWN,
+              status: SummaryProgressStepStatusEnum.SUCCESS,
+              message: 'Finished without summary',
+              start_timestamp: new Date(),
+            },
+          ],
+        });
+
+      await el._statusTask.run();
+      expect(failedEventFired).to.be.true;
+      expect(el.error).to.contain('did not produce a candidate summary');
+    });
   });
 });

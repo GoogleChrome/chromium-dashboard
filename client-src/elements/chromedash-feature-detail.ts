@@ -134,7 +134,11 @@ export class ChromedashFeatureDetail extends LitElement {
       suggestion: SummarySuggestion | null;
     }>
   ) {
-    if (e.detail.suggestion) {
+    if (
+      e.detail.suggestion &&
+      e.detail.suggestion.suggested_summary &&
+      e.detail.suggestion.suggested_summary.trim().length > 0
+    ) {
       this.activeSuggestion = e.detail.suggestion;
       await this.updateComplete;
       this.reviewDialog?.show();

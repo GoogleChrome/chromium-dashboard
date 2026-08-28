@@ -342,6 +342,78 @@ class SummarySuggestionAPITest(testing_config.CustomTestCase):
             )
 
     @mock.patch('internals.core_models.FeatureEntry.get_by_id')
+    @mock.patch('framework.cloud_tasks_helpers.enqueue_task')
+    def test_post__initializes_anchor_step_and_resets_draft(
+        self, mock_enqueue_task, mock_feature_get
+    ):
+        """It writes an initial START progress step and clears old suggested_summary."""
+        testing_config.sign_in('owner@example.com', 12345)
+        mock_feature_get.return_value = self.feature_1
+        self.suggestion_1.put()
+
+        with test_app.test_request_context(
+            '/api/v0/summary-suggestions/101',
+            method='POST',
+            data=json.dumps({}),
+            content_type='application/json',
+        ):
+            response = self.handler.do_post(feature_id=101)
+
+        self.assertEqual(
+            'Summary generation task enqueued for feature 101',
+            response['message'],
+        )
+        # Check initial anchor step
+        ancestor_key = ndb.Key(FeatureSummarySuggestion, 101)
+        steps = FeatureSummaryProgressStep.query(ancestor=ancestor_key).fetch()
+        self.assertEqual(1, len(steps))
+        self.assertEqual(
+            core_enums.ProgressStepId.START.value, steps[0].step_id
+        )
+        self.assertEqual(
+            core_enums.ProgressStepStatus.IN_PROGRESS.value, steps[0].status
+        )
+        self.assertEqual(
+            'Summary generation task enqueued in Cloud Tasks', steps[0].message
+        )
+
+        # Check that existing suggestion's draft was reset
+        reloaded_suggestion = FeatureSummarySuggestion.get_by_id(101)
+        self.assertIsNotNone(reloaded_suggestion)
+        self.assertIsNone(reloaded_suggestion.suggested_summary)
+        self.assertIsNone(reloaded_suggestion.generation_rationale)
+        self.assertEqual([], reloaded_suggestion.suggested_doc_links)
+
+    @mock.patch('internals.core_models.FeatureSummarySuggestion.get_by_id')
+    @mock.patch('internals.core_models.FeatureSummaryProgressStep.query')
+    def test_patch__applied_updates_feature_summary(
+        self, mock_step_query, mock_suggestion_get
+    ):
+        """It updates feature.summary when suggestion status is set to APPLIED."""
+        testing_config.sign_in('owner@example.com', 12345)
+        self.feature_1.put()
+        mock_suggestion_get.return_value = self.suggestion_1
+        mock_step_query.return_value.order.return_value.fetch.return_value = []
+
+        payload = {
+            'version_token': 1,
+            'status': 'APPLIED',
+            'suggested_summary': 'Newly accepted AI summary.',
+        }
+        json_data = json.dumps(payload)
+
+        with test_app.test_request_context(
+            '/api/v0/summary-suggestions/101',
+            method='PATCH',
+            data=json_data,
+            content_type='application/json',
+        ):
+            self.handler.do_patch(feature_id=101)
+
+        reloaded_feature = FeatureEntry.get_by_id(101)
+        self.assertEqual('Newly accepted AI summary.', reloaded_feature.summary)
+
+    @mock.patch('internals.core_models.FeatureEntry.get_by_id')
     def test_post__unauthorized_403(self, mock_feature_get):
         """It aborts HTTP 403 when user lacks edit permissions."""
         mock_feature_get.return_value = self.feature_1

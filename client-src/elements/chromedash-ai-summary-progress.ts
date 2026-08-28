@@ -167,9 +167,16 @@ export class ChromedashAiSummaryProgress extends LitElement {
             DEFAULT_TRIGGER_ERROR_MESSAGE
           );
           this._dispatchFailedEvent(this.error);
-        } else {
+        } else if (
+          this.suggestion?.suggested_summary &&
+          this.suggestion.suggested_summary.trim().length > 0
+        ) {
           this.error = null;
           this._dispatchCompletedEvent();
+        } else {
+          this.error =
+            'Summary generation did not produce a candidate summary. Please retry.';
+          this._dispatchFailedEvent(this.error);
         }
         return resp;
       } catch (err) {
@@ -385,8 +392,20 @@ export class ChromedashAiSummaryProgress extends LitElement {
     return this.compact ? 'small' : 'medium';
   }
 
+  private _emptyStepsGraceCount = 0;
+
   private _isStepsActive(steps?: ProgressStep[]): boolean {
-    if (!steps || steps.length === 0) return false;
+    if (!steps || steps.length === 0) {
+      if (
+        (this.loading || (this._monitor?.isRunning ?? false)) &&
+        this._emptyStepsGraceCount < 5
+      ) {
+        this._emptyStepsGraceCount++;
+        return true;
+      }
+      return false;
+    }
+    this._emptyStepsGraceCount = 0;
 
     // Steps from the API are ordered descending by start_timestamp (newest first).
     // If the latest step has failed or completed, the task is no longer running.
@@ -516,6 +535,7 @@ export class ChromedashAiSummaryProgress extends LitElement {
       this.error = null;
       this.progressSteps = [];
       this.suggestion = null;
+      this._emptyStepsGraceCount = 0;
       this._clearCooldown();
 
       await window.csClient.triggerSummaryGeneration(this.featureId, force);

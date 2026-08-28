@@ -15,6 +15,7 @@
 """API handler for AI summary suggestions (GET, POST, and PATCH /api/v0/summary-suggestions/<int:feature_id>)."""
 
 import re
+from datetime import datetime, timezone
 from typing import Any
 
 from chromestatus_openapi.models import (
@@ -106,7 +107,30 @@ class SummarySuggestionAPI(basehandlers.APIHandler):
         # 2. Extract force parameter (default False) from request body.
         force = self.get_bool_param('force', default=False)
 
-        # 3. Enqueue Cloud Task to generate the AI summary.
+        # 3. Clear old steps and record initial anchor step in Datastore immediately
+        # so polling clients immediately see an active task before Cloud Tasks runs.
+        FeatureSummaryProgressStep.clear_timeline(feature_id, keep_count=0)
+        parent_key = ndb.Key(FeatureSummarySuggestion, feature_id)
+        now = datetime.now(timezone.utc)
+        FeatureSummaryProgressStep(
+            parent=parent_key,
+            step_id=core_enums.ProgressStepId.START.value,
+            status=core_enums.ProgressStepStatus.IN_PROGRESS.value,
+            message='Summary generation task enqueued in Cloud Tasks',
+            start_timestamp=now,
+            end_timestamp=now,
+        ).put()
+
+        # If a previous suggestion entity exists, reset its suggested_summary to None
+        # so clients don't see an old draft while the new generation is running.
+        suggestion = FeatureSummarySuggestion.get_by_id(feature_id)
+        if suggestion:
+            suggestion.suggested_summary = None
+            suggestion.generation_rationale = None
+            suggestion.suggested_doc_links = []
+            suggestion.put()
+
+        # 4. Enqueue Cloud Task to generate the AI summary.
         cloud_tasks_helpers.enqueue_task(
             '/tasks/generate-summary',
             {'feature_id': feature_id, 'force': force},
@@ -164,6 +188,15 @@ class SummarySuggestionAPI(basehandlers.APIHandler):
             except (ValueError, TypeError):
                 self.abort(400, msg=f'Invalid status value: {raw_status}')
             suggestion.status = status_enum.value
+
+            if status_enum == core_enums.SummarySuggestionStatus.APPLIED:
+                applied_summary = (
+                    request_body.get('suggested_summary')
+                    or suggestion.suggested_summary
+                )
+                if applied_summary:
+                    feature.summary = applied_summary
+                    feature.put()
 
         if 'suggested_summary' in request_body:
             suggestion.suggested_summary = request_body['suggested_summary']

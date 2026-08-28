@@ -438,6 +438,7 @@ export class ChromedashSummaryReviewDialog extends LitElement {
     const isAcceptDisabled =
       this.loading ||
       !this.suggestion ||
+      !this.editedSummary.trim() ||
       typeof this.suggestion.version_token !== 'number' ||
       this.occConflict;
 
@@ -513,6 +514,8 @@ export class ChromedashSummaryReviewDialog extends LitElement {
                   .currentSummary=${this.currentSummary}
                   .suggestedSummary=${this.editedSummary}
                   .suggestedDocLinks=${this.suggestion?.suggested_doc_links ?? []}
+                  .reasoning=${this.suggestion?.reasoning ?? ''}
+                  .baselineStatus=${this.suggestion?.baseline_status ?? ''}
                   .isEditing=${this.isEditing}
                   .disabled=${this.loading}
                   @summary-edit-toggle=${(
