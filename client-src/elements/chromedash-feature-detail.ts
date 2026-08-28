@@ -427,7 +427,12 @@ export class ChromedashFeatureDetail extends LitElement {
           @summary-generation-started=${() =>
             this.reviewDialog?.openForGeneration(false)}
           @summary-generation-completed=${this.handleSummaryCompleted}
-          @summary-dialog-requested=${() => {
+          @summary-generation-failed=${(e: CustomEvent<{error?: string}>) => {
+            if (this.reviewDialog && e.detail?.error) {
+              this.reviewDialog.errorMessage = e.detail.error;
+            }
+          }}
+          @summary-dialog-requested=${(e: CustomEvent<{error?: string}>) => {
             if (this.reviewDialog) {
               if (
                 this.activeSuggestion?.suggested_summary &&
@@ -435,7 +440,10 @@ export class ChromedashFeatureDetail extends LitElement {
               ) {
                 this.reviewDialog.isGenerating = false;
               } else {
-                this.reviewDialog.isGenerating = true;
+                this.reviewDialog.isGenerating = false;
+              }
+              if (e.detail?.error) {
+                this.reviewDialog.errorMessage = e.detail.error;
               }
               this.reviewDialog.show();
             }

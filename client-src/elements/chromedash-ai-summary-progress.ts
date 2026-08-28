@@ -719,11 +719,17 @@ export class ChromedashAiSummaryProgress extends LitElement {
     `;
   }
 
-  private _dispatchOpenDialogEvent() {
+  private _dispatchOpenDialogEvent(error?: string) {
     this.dispatchEvent(
       new CustomEvent('summary-dialog-requested', {
         bubbles: true,
         composed: true,
+        detail: {
+          featureId: this.featureId,
+          suggestion: this.suggestion,
+          progressSteps: this.progressSteps,
+          error: error || this.error,
+        },
       })
     );
   }
@@ -765,8 +771,8 @@ export class ChromedashAiSummaryProgress extends LitElement {
           size="small"
           variant="danger"
           outline
-          @click=${() => this.handleTrigger(true)}
-          title="${this.error}. Click to retry."
+          @click=${() => this._dispatchOpenDialogEvent()}
+          title="${this.error}. Click to view details and retry."
           data-testid="ai-summary-retry-button"
         >
           <sl-icon slot="prefix" name="exclamation-triangle"></sl-icon>
