@@ -20,6 +20,7 @@ import abc
 import dataclasses
 import json
 import logging
+import os
 import uuid
 from collections.abc import Callable, Sequence
 from typing import Any
@@ -218,6 +219,19 @@ class GeminiSummaryGenerator(SummaryGenerator):
           SummaryResult containing suggested summary, rationale, and doc links.
         """
         rep = reporter or ListProgressReporter()
+
+        # Defense-in-depth: ensure GEMINI_API_KEY or GOOGLE_API_KEY is loaded into os.environ
+        if not os.environ.get('GEMINI_API_KEY') and not os.environ.get(
+            'GOOGLE_API_KEY'
+        ):
+            try:
+                from framework import secrets
+
+                secrets.load_gemini_api_key()
+            except Exception as sec_err:
+                logging.warning(
+                    'Could not load Gemini API key from secrets: %s', sec_err
+                )
 
         try:
             rep.log_step(

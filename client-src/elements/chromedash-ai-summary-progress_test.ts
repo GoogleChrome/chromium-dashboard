@@ -1064,5 +1064,60 @@ describe('chromedash-ai-summary-progress', () => {
       expect(completedEventFired).to.be.true;
       expect(el.error).to.be.null;
     });
+
+    it('marks task as not running and renders retry button when steps contains FAILED as latest step even with older IN_PROGRESS steps', async () => {
+      const featureId = 5980625432215552;
+      const recentTimestamp = new Date();
+      const olderTimestamp = new Date(recentTimestamp.getTime() - 1000);
+
+      const el = await fixture<ChromedashAiSummaryProgress>(
+        html`<chromedash-ai-summary-progress
+          .autoPoll=${false}
+          .compact=${true}
+          .featureId=${featureId}
+        ></chromedash-ai-summary-progress>`
+      );
+
+      el.progressSteps = [
+        {
+          step: SummaryProgressStepStepEnum.UNKNOWN,
+          status: SummaryProgressStepStatusEnum.FAILED,
+          message: 'Generation Error: Model returned an empty response.',
+          start_timestamp: recentTimestamp,
+          end_timestamp: recentTimestamp,
+        },
+        {
+          step: SummaryProgressStepStepEnum.UNKNOWN,
+          status: SummaryProgressStepStatusEnum.FAILED,
+          message: 'Generation Error: Model returned an empty response.',
+          start_timestamp: olderTimestamp,
+          end_timestamp: olderTimestamp,
+        },
+        {
+          step: SummaryProgressStepStepEnum.UNKNOWN,
+          status: SummaryProgressStepStatusEnum.IN_PROGRESS,
+          message: 'Invoking gemini-3.1-pro-preview with ADK Runner',
+          start_timestamp: olderTimestamp,
+          end_timestamp: olderTimestamp,
+        },
+        {
+          step: SummaryProgressStepStepEnum.UNKNOWN,
+          status: SummaryProgressStepStatusEnum.SUCCESS,
+          message: 'Rendered prompt template for feature',
+          start_timestamp: olderTimestamp,
+          end_timestamp: olderTimestamp,
+        },
+      ];
+
+      await el.updateComplete;
+
+      expect(el.isTaskRunning).to.be.false;
+      expect(el.error).to.contain('Model returned an empty response');
+      const retryBtn = el.shadowRoot!.querySelector(
+        'sl-button[data-testid="ai-summary-retry-button"]'
+      );
+      expect(retryBtn).to.exist;
+      expect(retryBtn!.textContent).to.contain('Failed · Retry');
+    });
   });
 });
