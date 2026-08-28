@@ -391,6 +391,8 @@ export class ChromedashFeatureDetail extends LitElement {
         <chromedash-ai-summary-progress
           .featureId=${this.feature.id}
           .compact=${true}
+          .suggestion=${this.activeSuggestion}
+          @summary-generation-started=${() => this.reviewDialog?.openForGeneration()}
           @summary-generation-completed=${this.handleSummaryCompleted}
         ></chromedash-ai-summary-progress>
       `;

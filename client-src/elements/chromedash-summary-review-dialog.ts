@@ -26,6 +26,7 @@ import {
   SummarySuggestionStatusEnum,
 } from 'chromestatus-openapi';
 import './chromedash-summary-diff-view.js';
+import './chromedash-ai-summary-progress.js';
 import {showToastMessage} from './utils.js';
 
 @customElement('chromedash-summary-review-dialog')
@@ -38,6 +39,9 @@ export class ChromedashSummaryReviewDialog extends LitElement {
 
   @property({attribute: false})
   suggestion: SummarySuggestion | null = null;
+
+  @state()
+  isGenerating = false;
 
   @state()
   editedSummary = '';
@@ -262,13 +266,52 @@ export class ChromedashSummaryReviewDialog extends LitElement {
     }
   }
 
+  openForGeneration() {
+    this.isGenerating = true;
+    this.errorMessage = null;
+    this.occConflict = false;
+    this.show();
+    this.triggerRegeneration(this.featureId, false).catch(err => {
+      this.isGenerating = false;
+      this._handleApiError(err);
+    });
+  }
+
+  handleSummaryGenerationCompleted(
+    e: CustomEvent<{
+      featureId: number;
+      suggestion: SummarySuggestion | null;
+    }>
+  ) {
+    this.isGenerating = false;
+    if (e.detail?.suggestion) {
+      this.suggestion = e.detail.suggestion;
+      this.editedSummary = this.suggestion?.suggested_summary || '';
+      this.isEditing = false;
+      this.errorMessage = null;
+      this.occConflict = false;
+    }
+  }
+
+  handleSummaryGenerationFailed(
+    e: CustomEvent<{
+      featureId: number;
+      error?: string;
+    }>
+  ) {
+    this.isGenerating = false;
+    if (e.detail?.error) {
+      this.errorMessage = e.detail.error;
+    }
+  }
+
   async handleRegenerate() {
     if (!this.featureId || this.loading) return;
 
     try {
-      this.loading = true;
       this.errorMessage = null;
       this.occConflict = false;
+      this.isGenerating = true;
 
       await this.triggerRegeneration(this.featureId, true);
 
@@ -279,13 +322,9 @@ export class ChromedashSummaryReviewDialog extends LitElement {
           detail: {featureId: this.featureId, force: true},
         })
       );
-
-      showToastMessage('Summary regeneration enqueued.');
-      this.hide();
     } catch (err) {
+      this.isGenerating = false;
       this._handleApiError(err);
-    } finally {
-      this.loading = false;
     }
   }
 
@@ -374,6 +413,19 @@ export class ChromedashSummaryReviewDialog extends LitElement {
   }
 
   private _renderFooter() {
+    if (this.isGenerating) {
+      return html`
+        <div slot="footer" class="dialog-footer">
+          <div class="footer-left"></div>
+          <div class="footer-right">
+            <sl-button variant="default" size="small" @click=${this.hide}>
+              Run in background
+            </sl-button>
+          </div>
+        </div>
+      `;
+    }
+
     const isAcceptDisabled =
       this.loading ||
       !this.suggestion ||
@@ -435,24 +487,37 @@ export class ChromedashSummaryReviewDialog extends LitElement {
     return html`
       <sl-dialog label="Review AI Summary Suggestion">
         ${this._renderAlertBanner()}
-
-        <chromedash-summary-diff-view
-          .currentSummary=${this.currentSummary}
-          .suggestedSummary=${this.editedSummary}
-          .suggestedDocLinks=${this.suggestion?.suggested_doc_links ?? []}
-          .isEditing=${this.isEditing}
-          .disabled=${this.loading}
-          @summary-edit-toggle=${(
-            e: CustomEvent<{isEditing: boolean; value: string}>
-          ) => {
-            this.isEditing = e.detail.isEditing;
-            this.editedSummary = e.detail.value;
-          }}
-          @summary-value-change=${(e: CustomEvent<{value: string}>) => {
-            this.editedSummary = e.detail.value;
-          }}
-        ></chromedash-summary-diff-view>
-
+        ${
+          this.isGenerating
+            ? html`
+                <chromedash-ai-summary-progress
+                  .featureId=${this.featureId}
+                  .autoPoll=${true}
+                  .compact=${false}
+                  .hideIdleTrigger=${true}
+                  @summary-generation-completed=${this.handleSummaryGenerationCompleted}
+                  @summary-generation-failed=${this.handleSummaryGenerationFailed}
+                ></chromedash-ai-summary-progress>
+              `
+            : html`
+                <chromedash-summary-diff-view
+                  .currentSummary=${this.currentSummary}
+                  .suggestedSummary=${this.editedSummary}
+                  .suggestedDocLinks=${this.suggestion?.suggested_doc_links ?? []}
+                  .isEditing=${this.isEditing}
+                  .disabled=${this.loading}
+                  @summary-edit-toggle=${(
+                    e: CustomEvent<{isEditing: boolean; value: string}>
+                  ) => {
+                    this.isEditing = e.detail.isEditing;
+                    this.editedSummary = e.detail.value;
+                  }}
+                  @summary-value-change=${(e: CustomEvent<{value: string}>) => {
+                    this.editedSummary = e.detail.value;
+                  }}
+                ></chromedash-summary-diff-view>
+              `
+        }
         ${this._renderFooter()}
       </sl-dialog>
     `;

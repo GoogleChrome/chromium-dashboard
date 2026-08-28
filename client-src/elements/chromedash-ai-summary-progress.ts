@@ -226,14 +226,24 @@ export class ChromedashAiSummaryProgress extends LitElement {
         }
 
         .gemini-icon {
-          width: 1.5em;
-          height: 1.5em;
+          width: 1.25rem;
+          height: 1.25rem;
+          flex-shrink: 0;
           transform-origin: center center;
           transition: transform 0.7s ease-in-out;
         }
 
         sl-button:hover .gemini-icon {
           transform: rotate(360deg);
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          .gemini-icon {
+            transition: none;
+          }
+          sl-button:hover .gemini-icon {
+            transform: none;
+          }
         }
 
         .container {

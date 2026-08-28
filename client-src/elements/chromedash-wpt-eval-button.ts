@@ -23,14 +23,19 @@ export class ChromedashWPTEvalButton extends LitElement {
   @property({type: Number})
   featureId = 0;
 
+  @property({type: String})
+  size: 'small' | 'medium' | 'large' = 'small';
+
   static styles = css`
     :host {
-      display: inline-block;
+      display: inline-flex;
+      vertical-align: middle;
     }
 
     .gemini-icon {
-      width: 1.5em;
-      height: 1.5em;
+      width: 1.25rem;
+      height: 1.25rem;
+      flex-shrink: 0;
       transform-origin: center center;
       transition: transform 0.7s ease-in-out;
     }
@@ -38,11 +43,23 @@ export class ChromedashWPTEvalButton extends LitElement {
     sl-button:hover .gemini-icon {
       transform: rotate(360deg);
     }
+
+    @media (prefers-reduced-motion: reduce) {
+      .gemini-icon {
+        transition: none;
+      }
+      sl-button:hover .gemini-icon {
+        transform: none;
+      }
+    }
   `;
 
   render() {
     return html`
-      <sl-button href="/feature/${this.featureId}/ai-coverage-analysis">
+      <sl-button
+        size=${this.size}
+        href="/feature/${this.featureId}/ai-coverage-analysis"
+      >
         <img
           slot="prefix"
           class="gemini-icon"

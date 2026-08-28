@@ -173,7 +173,6 @@ describe('chromedash-summary-review-dialog', () => {
       ></chromedash-summary-review-dialog>`
     );
 
-    const hideSpy = sandbox.spy(el, 'hide');
     await el.handleRegenerate();
     await el.updateComplete;
 
@@ -184,7 +183,21 @@ describe('chromedash-summary-review-dialog', () => {
     );
 
     assert.isTrue(regenFired);
-    assert.isTrue(hideSpy.calledOnce);
+  });
+
+  it('opens dialog for generation via openForGeneration', async () => {
+    const el = await fixture<ChromedashSummaryReviewDialog>(
+      html`<chromedash-summary-review-dialog
+        .featureId=${101}
+        .currentSummary=${'Old summary'}
+      ></chromedash-summary-review-dialog>`
+    );
+
+    const showSpy = sandbox.spy(el, 'show');
+    el.openForGeneration();
+
+    assert.isTrue(showSpy.calledOnce);
+    assert.isTrue(el.isGenerating);
   });
 
   it('handles OCC 409 conflict and refreshes latest data', async () => {
