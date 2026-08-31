@@ -55,7 +55,7 @@ pytest==9.1.1
     #   pytest-xdist
 pytest-xdist==3.8.0
     # via -r requirements.dev.in
-ruff==0.16.4
+ruff==0.16.5
     # via -r requirements.dev.in
 types-cffi==2.0.0.20260518
     # via types-pyopenssl
