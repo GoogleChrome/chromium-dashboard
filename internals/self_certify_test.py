@@ -16,9 +16,12 @@
 
 import testing_config  # isort: split
 
+from unittest import mock
+
 from chromestatus_openapi.models import SurveyAnswers as OASurveyAnswers
 
 from internals import core_enums, self_certify
+from internals.core_models import FeatureEntry
 from internals.review_models import Gate, SurveyAnswers
 
 
@@ -136,22 +139,76 @@ class SelfCertifyFunctionTest(testing_config.CustomTestCase):
         )
 
     def test_is_adoption_eligible(self):
-        """Adoption is eligible if all of the booleans is True."""
+        """Adoption is eligible if required booleans are True."""
         self.assertFalse(self_certify.is_adoption_eligible(SurveyAnswers()))
         self.assertFalse(
             self_certify.is_adoption_eligible(
                 SurveyAnswers(adoption_style_aligned=False)
             )
         )
+        all_five = SurveyAnswers(
+            adoption_fields_up_to_date=True,
+            adoption_style_aligned=True,
+            adoption_lead_time=True,
+            adoption_mdn_drafted=True,
+            adoption_mwg_drafted=True,
+        )
+        first_four_only = SurveyAnswers(
+            adoption_fields_up_to_date=True,
+            adoption_style_aligned=True,
+            adoption_lead_time=True,
+            adoption_mdn_drafted=True,
+            adoption_mwg_drafted=False,
+        )
+        # Without feature (or None), all 5 are required.
+        self.assertTrue(self_certify.is_adoption_eligible(all_five))
+        self.assertFalse(self_certify.is_adoption_eligible(first_four_only))
+
+        feature_incubate = FeatureEntry(
+            feature_type=core_enums.FEATURE_TYPE_INCUBATE_ID
+        )
+        feature_code_change = FeatureEntry(
+            feature_type=core_enums.FEATURE_TYPE_CODE_CHANGE_ID
+        )
+
+        # For normal feature types, MWG is required.
         self.assertTrue(
             self_certify.is_adoption_eligible(
+                all_five,
+                feature=feature_incubate,
+            )
+        )
+        self.assertFalse(
+            self_certify.is_adoption_eligible(
+                first_four_only,
+                feature=feature_incubate,
+            )
+        )
+
+        # For code change features, MWG is NOT required.
+        self.assertTrue(
+            self_certify.is_adoption_eligible(
+                first_four_only,
+                feature=feature_code_change,
+            )
+        )
+        self.assertTrue(
+            self_certify.is_adoption_eligible(
+                all_five,
+                feature=feature_code_change,
+            )
+        )
+        # But other 4 fields are still required for code change features.
+        self.assertFalse(
+            self_certify.is_adoption_eligible(
                 SurveyAnswers(
-                    adoption_fields_up_to_date=True,
+                    adoption_fields_up_to_date=False,
                     adoption_style_aligned=True,
                     adoption_lead_time=True,
                     adoption_mdn_drafted=True,
-                    adoption_mwg_drafted=True,
-                )
+                    adoption_mwg_drafted=False,
+                ),
+                feature=feature_code_change,
             )
         )
 
@@ -191,6 +248,85 @@ class SelfCertifyFunctionTest(testing_config.CustomTestCase):
                 )
             )
         )
+
+        feature_code_change = FeatureEntry(
+            feature_type=core_enums.FEATURE_TYPE_CODE_CHANGE_ID
+        )
+        feature_incubate = FeatureEntry(
+            feature_type=core_enums.FEATURE_TYPE_INCUBATE_ID
+        )
+
+        # Code change features allow self-certifying adoption gate without mwg drafted.
+        adoption_gate = Gate(
+            gate_type=core_enums.GATE_ADOPTION_SHIP,
+            survey_answers=SurveyAnswers(
+                adoption_fields_up_to_date=True,
+                adoption_style_aligned=True,
+                adoption_lead_time=True,
+                adoption_mdn_drafted=True,
+                adoption_mwg_drafted=False,
+            ),
+        )
+        self.assertTrue(
+            self_certify.is_eligible(
+                adoption_gate,
+                feature=feature_code_change,
+            )
+        )
+        self.assertFalse(
+            self_certify.is_eligible(
+                adoption_gate,
+                feature=feature_incubate,
+            )
+        )
+
+        # Also works for GATE_ADOPTION_PLAN.
+        adoption_plan_gate = Gate(
+            gate_type=core_enums.GATE_ADOPTION_PLAN,
+            survey_answers=SurveyAnswers(
+                adoption_fields_up_to_date=True,
+                adoption_style_aligned=True,
+                adoption_lead_time=True,
+                adoption_mdn_drafted=True,
+                adoption_mwg_drafted=False,
+            ),
+        )
+        self.assertTrue(
+            self_certify.is_eligible(
+                adoption_plan_gate,
+                feature=feature_code_change,
+            )
+        )
+
+        # If gate has feature_id and neither feature nor feature_type is passed,
+        # it fetches the FeatureEntry by id.
+        gate_with_fid = Gate(
+            feature_id=123,
+            gate_type=core_enums.GATE_ADOPTION_SHIP,
+            survey_answers=SurveyAnswers(
+                adoption_fields_up_to_date=True,
+                adoption_style_aligned=True,
+                adoption_lead_time=True,
+                adoption_mdn_drafted=True,
+                adoption_mwg_drafted=False,
+            ),
+        )
+        with mock.patch(
+            'internals.core_models.FeatureEntry.get_by_id'
+        ) as mock_get_by_id:
+            mock_get_by_id.return_value = FeatureEntry(
+                feature_type=core_enums.FEATURE_TYPE_CODE_CHANGE_ID
+            )
+            self.assertTrue(self_certify.is_eligible(gate_with_fid))
+            mock_get_by_id.assert_called_once_with(123)
+
+        with mock.patch(
+            'internals.core_models.FeatureEntry.get_by_id'
+        ) as mock_get_by_id:
+            mock_get_by_id.return_value = FeatureEntry(
+                feature_type=core_enums.FEATURE_TYPE_INCUBATE_ID
+            )
+            self.assertFalse(self_certify.is_eligible(gate_with_fid))
 
         self.assertFalse(
             self_certify.is_eligible(

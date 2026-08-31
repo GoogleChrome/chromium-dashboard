@@ -684,6 +684,39 @@ class GateConvertersTest(testing_config.CustomTestCase):
         self.assertEqual(4, actual['slo_initial_response_took'])
         self.assertEqual(None, actual['slo_initial_response_remaining'])
 
+    def test_adoption_gate_code_change(self):
+        """Adoption gate is eligible for code change features even without MWG."""
+        gate = Gate(
+            feature_id=1,
+            stage_id=2,
+            gate_type=core_enums.GATE_ADOPTION_SHIP,
+            state=4,
+        )
+        gate.survey_answers = SurveyAnswers(
+            adoption_fields_up_to_date=True,
+            adoption_style_aligned=True,
+            adoption_lead_time=True,
+            adoption_mdn_drafted=True,
+            adoption_mwg_drafted=False,
+        )
+        gate.put()
+
+        actual = converters.gate_value_to_json_dict(
+            gate,
+            feature=FeatureEntry(
+                feature_type=core_enums.FEATURE_TYPE_CODE_CHANGE_ID
+            ),
+        )
+        self.assertTrue(actual['self_certify_eligible'])
+
+        actual_other = converters.gate_value_to_json_dict(
+            gate,
+            feature=FeatureEntry(
+                feature_type=core_enums.FEATURE_TYPE_INCUBATE_ID
+            ),
+        )
+        self.assertFalse(actual_other['self_certify_eligible'])
+
 
 class AICurationConvertersTest(testing_config.CustomTestCase):
     """Tests for AI suggestion, progress step, and milestone curation converters."""
