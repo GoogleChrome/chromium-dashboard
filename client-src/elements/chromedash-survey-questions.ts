@@ -20,7 +20,7 @@ import {SHARED_STYLES} from '../css/shared-css.js';
 import {SlChangeEvent, SlInput} from '@shoelace-style/shoelace';
 import {Feature, StageDict, User} from '../js-src/cs-client.js';
 import {GateDict} from './chromedash-gate-chip.js';
-import {GATE_TYPES} from './form-field-enums.js';
+import {FEATURE_TYPES, GATE_TYPES} from './form-field-enums.js';
 import {GATE_QUESTIONNAIRES} from './gate-details.js';
 import {autolink} from './utils.js';
 
@@ -315,6 +315,8 @@ export class ChromedashSurveyQuestions extends LitElement {
   }
 
   renderAdoptionForm(): TemplateResult {
+    const mwg_needed = this.feature.feature_type_int !==
+      FEATURE_TYPES.FEATURE_TYPE_CODE_CHANGE_ID[0];
     return html`
       <div id="questionnaire">
         Check the boxes below that are true for your feature, then use the
@@ -362,7 +364,7 @@ export class ChromedashSurveyQuestions extends LitElement {
               this feature on
               <a href="https://github.com/mdn/content" target="_blank">MDN</a>.`
           )}
-          ${this.renderBooleanField(
+          ${mwg_needed ? this.renderBooleanField(
             'adoption_mwg_drafted',
             html`<b>MWG work tracked</b>. You have
               <a
@@ -379,7 +381,7 @@ export class ChromedashSurveyQuestions extends LitElement {
               tracker, providing information about how your feature impacts
               guidance for LLMs, or you have left a comment here explaining why
               there is no impact.`
-          )}
+          ) : nothing}
         </ol>
       </div>
     `;
