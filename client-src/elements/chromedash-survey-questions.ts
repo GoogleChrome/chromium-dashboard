@@ -315,7 +315,8 @@ export class ChromedashSurveyQuestions extends LitElement {
   }
 
   renderAdoptionForm(): TemplateResult {
-    const mwg_needed = this.feature.feature_type_int !==
+    const mwg_needed =
+      this.feature.feature_type_int !==
       FEATURE_TYPES.FEATURE_TYPE_CODE_CHANGE_ID[0];
     return html`
       <div id="questionnaire">
@@ -364,24 +365,28 @@ export class ChromedashSurveyQuestions extends LitElement {
               this feature on
               <a href="https://github.com/mdn/content" target="_blank">MDN</a>.`
           )}
-          ${mwg_needed ? this.renderBooleanField(
-            'adoption_mwg_drafted',
-            html`<b>MWG work tracked</b>. You have
-              <a
-                href="https://github.com/GoogleChrome/modern-web-guidance-src/issues/new?template=new-feature.yml"
-                target="_blank"
-                >created an issue</a
-              >
-              in the
-              <a
-                href="https://github.com/GoogleChrome/modern-web-guidance-src"
-                target="_blank"
-                >Modern Web Guidance</a
-              >
-              tracker, providing information about how your feature impacts
-              guidance for LLMs, or you have left a comment here explaining why
-              there is no impact.`
-          ) : nothing}
+          ${
+            mwg_needed
+              ? this.renderBooleanField(
+                  'adoption_mwg_drafted',
+                  html`<b>MWG work tracked</b>. You have
+                    <a
+                      href="https://github.com/GoogleChrome/modern-web-guidance-src/issues/new?template=new-feature.yml"
+                      target="_blank"
+                      >created an issue</a
+                    >
+                    in the
+                    <a
+                      href="https://github.com/GoogleChrome/modern-web-guidance-src"
+                      target="_blank"
+                      >Modern Web Guidance</a
+                    >
+                    tracker, providing information about how your feature
+                    impacts guidance for LLMs, or you have left a comment here
+                    explaining why there is no impact.`
+                )
+              : nothing
+          }
         </ol>
       </div>
     `;
