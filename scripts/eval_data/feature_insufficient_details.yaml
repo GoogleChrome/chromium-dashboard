@@ -1,0 +1,12 @@
+name: Internal refactoring of widget pipeline
+summary: Refactored internal plumbing for widget layout logic.
+shipped_milestone: 151
+spec_link: null
+doc_links: []
+search_tags: []
+standard_maturity: 0
+category: 0
+is_internal_refactoring: true
+min_words: 20
+max_words: 85
+min_score_threshold: 0.70

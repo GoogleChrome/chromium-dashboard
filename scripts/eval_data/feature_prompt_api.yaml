@@ -1,0 +1,29 @@
+name: Prompt API for Gemini Nano
+summary: >
+  The Prompt API allows web applications to prompt on-device language models (Gemini Nano)
+  directly in the browser for tasks like summarization, rephrasing, classification, and
+  translation with zero cloud latency and full user data privacy.
+shipped_milestone: 145
+spec_link: https://github.com/explainers-by-googlers/prompt-api
+doc_links:
+  - https://developer.chrome.com/docs/ai/built-in
+search_tags:
+  - ai
+  - gemini
+  - nano
+  - on-device
+standard_maturity: 1
+category: 3
+gold_devrel_summary: >
+  The Prompt API enables web applications to prompt on-device Gemini Nano models directly in Chrome.
+  Using `window.ai.languageModel`, developers can run summarization, translation, and classification tasks
+  locally in the browser with zero cloud latency and complete user data privacy.
+expected_entities:
+  - window.ai.languageModel
+  - prompt
+  - gemini nano
+  - on-device
+  - privacy
+min_words: 30
+max_words: 80
+min_score_threshold: 0.75
