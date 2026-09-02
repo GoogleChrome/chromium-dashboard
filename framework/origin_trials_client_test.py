@@ -21,9 +21,11 @@ trials, extending trials, and handling API key presence/absence.
 from unittest import mock
 
 import flask
+import requests
+
+import testing_config  # isort: split
 
 import settings
-import testing_config  # Must be imported before the module under test.
 from framework import origin_trials_client
 from internals.core_models import MilestoneSet, Stage
 
@@ -399,3 +401,188 @@ class OriginTrialsClientTest(testing_config.CustomTestCase):
             params={'key': 'api_key_value'},
             json={'trial_id': '-1234567890'},
         )
+
+    def test_extract_error_text(self):
+        """Should extract error text from response if available, else exception str."""
+        mock_response = mock.MagicMock(text='Error from API')
+        http_err = requests.exceptions.HTTPError(
+            '400 Client Error', response=mock_response
+        )
+        self.assertEqual(
+            origin_trials_client._extract_error_text(http_err), 'Error from API'
+        )
+
+        conn_err = requests.exceptions.ConnectionError('Connection refused')
+        self.assertEqual(
+            origin_trials_client._extract_error_text(conn_err),
+            'Connection refused',
+        )
+
+        empty_resp = mock.MagicMock(text='')
+        http_err_empty = requests.exceptions.HTTPError(
+            '502 Bad Gateway', response=empty_resp
+        )
+        self.assertEqual(
+            origin_trials_client._extract_error_text(http_err_empty),
+            '502 Bad Gateway',
+        )
+
+    @mock.patch('framework.origin_trials_client._get_ot_access_token')
+    @mock.patch('framework.origin_trials_client._get_trial_end_time')
+    @mock.patch('requests.post')
+    def test_create_origin_trial__create_connection_error(
+        self,
+        mock_requests_post,
+        mock_get_trial_end_time,
+        mock_get_ot_access_token,
+    ):
+        """If create trial request encounters network error, return error text without crashing."""
+        mock_requests_post.side_effect = requests.exceptions.ConnectionError(
+            'Failed to connect'
+        )
+        mock_get_trial_end_time.return_value = 111222333
+        mock_get_ot_access_token.return_value = 'access_token'
+        settings.OT_API_KEY = 'api_key_value'
+
+        ot_id, error_text = origin_trials_client.create_origin_trial(
+            self.ot_stage
+        )
+        self.assertIsNone(ot_id)
+        self.assertEqual('Failed to connect', error_text)
+
+    @mock.patch('framework.origin_trials_client._get_ot_access_token')
+    @mock.patch('framework.origin_trials_client._get_trial_end_time')
+    @mock.patch('requests.post')
+    def test_create_origin_trial__create_http_error(
+        self,
+        mock_requests_post,
+        mock_get_trial_end_time,
+        mock_get_ot_access_token,
+    ):
+        """If create trial request returns HTTP error, return response error text."""
+        mock_response = mock.MagicMock(
+            status_code=400,
+            text='{"error": "Invalid trial params"}',
+        )
+        mock_response.raise_for_status.side_effect = (
+            requests.exceptions.HTTPError(
+                '400 Client Error', response=mock_response
+            )
+        )
+        mock_requests_post.return_value = mock_response
+        mock_get_trial_end_time.return_value = 111222333
+        mock_get_ot_access_token.return_value = 'access_token'
+        settings.OT_API_KEY = 'api_key_value'
+
+        ot_id, error_text = origin_trials_client.create_origin_trial(
+            self.ot_stage
+        )
+        self.assertIsNone(ot_id)
+        self.assertEqual('{"error": "Invalid trial params"}', error_text)
+
+    @mock.patch('framework.secrets.get_ot_data_access_admin_group')
+    @mock.patch('framework.origin_trials_client._get_ot_access_token')
+    @mock.patch('framework.origin_trials_client._get_trial_end_time')
+    @mock.patch('requests.post')
+    def test_create_origin_trial__setup_connection_error(
+        self,
+        mock_requests_post,
+        mock_get_trial_end_time,
+        mock_get_ot_access_token,
+        mock_get_admin_group,
+    ):
+        """If setup request encounters network error, return trial ID and error text without crashing."""
+        create_response = mock.MagicMock(
+            status_code=200, json=lambda: ({'trial': {'id': -1234567890}})
+        )
+        create_response.raise_for_status.return_value = None
+        mock_requests_post.side_effect = [
+            create_response,
+            requests.exceptions.Timeout('Setup request timed out'),
+        ]
+        mock_get_trial_end_time.return_value = 111222333
+        mock_get_ot_access_token.return_value = 'access_token'
+        mock_get_admin_group.return_value = 'test-group-123'
+        settings.OT_API_KEY = 'api_key_value'
+
+        ot_id, error_text = origin_trials_client.create_origin_trial(
+            self.ot_stage
+        )
+        self.assertEqual(ot_id, '-1234567890')
+        self.assertEqual('Setup request timed out', error_text)
+
+    @mock.patch('framework.secrets.get_ot_data_access_admin_group')
+    @mock.patch('framework.origin_trials_client._get_ot_access_token')
+    @mock.patch('framework.origin_trials_client._get_trial_end_time')
+    @mock.patch('requests.post')
+    def test_create_origin_trial__setup_http_error(
+        self,
+        mock_requests_post,
+        mock_get_trial_end_time,
+        mock_get_ot_access_token,
+        mock_get_admin_group,
+    ):
+        """If setup request returns HTTP error, return trial ID and response error text."""
+        create_response = mock.MagicMock(
+            status_code=200, json=lambda: ({'trial': {'id': -1234567890}})
+        )
+        create_response.raise_for_status.return_value = None
+        setup_response = mock.MagicMock(
+            status_code=500,
+            text='{"error": "Internal setup failure"}',
+        )
+        setup_response.raise_for_status.side_effect = (
+            requests.exceptions.HTTPError(
+                '500 Server Error', response=setup_response
+            )
+        )
+        mock_requests_post.side_effect = [create_response, setup_response]
+        mock_get_trial_end_time.return_value = 111222333
+        mock_get_ot_access_token.return_value = 'access_token'
+        mock_get_admin_group.return_value = 'test-group-123'
+        settings.OT_API_KEY = 'api_key_value'
+
+        ot_id, error_text = origin_trials_client.create_origin_trial(
+            self.ot_stage
+        )
+        self.assertEqual(ot_id, '-1234567890')
+        self.assertEqual('{"error": "Internal setup failure"}', error_text)
+
+    @mock.patch('framework.origin_trials_client._get_ot_access_token')
+    @mock.patch('requests.post')
+    def test_activate_origin_trial__connection_error(
+        self,
+        mock_requests_post,
+        mock_get_ot_access_token,
+    ):
+        """If activation encounters network error, raise exception without UnboundLocalError."""
+        mock_requests_post.side_effect = requests.exceptions.ConnectionError(
+            'Network unreachable'
+        )
+        mock_get_ot_access_token.return_value = 'access_token'
+        settings.OT_API_KEY = 'api_key_value'
+
+        with self.assertRaises(requests.exceptions.ConnectionError):
+            origin_trials_client.activate_origin_trial('-1234567890')
+
+    @mock.patch('framework.origin_trials_client._get_ot_access_token')
+    @mock.patch('framework.origin_trials_client._get_trial_end_time')
+    @mock.patch('requests.post')
+    def test_extend_origin_trial__connection_error(
+        self,
+        mock_requests_post,
+        mock_get_trial_end_time,
+        mock_get_ot_access_token,
+    ):
+        """If extension encounters network error, raise exception without error."""
+        mock_requests_post.side_effect = requests.exceptions.ConnectionError(
+            'Network unreachable'
+        )
+        mock_get_trial_end_time.return_value = 111222333
+        mock_get_ot_access_token.return_value = 'access_token'
+        settings.OT_API_KEY = 'api_key_value'
+
+        with self.assertRaises(requests.exceptions.ConnectionError):
+            origin_trials_client.extend_origin_trial(
+                '1234567890', 123, 'https://example.com/intent'
+            )
