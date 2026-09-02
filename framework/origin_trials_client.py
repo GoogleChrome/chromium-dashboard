@@ -176,6 +176,13 @@ def _get_ot_access_token() -> str:
     return credentials.token
 
 
+def _extract_error_text(e: requests.exceptions.RequestException) -> str:
+    """Extract error text from a RequestException or fallback to exception message."""
+    if e.response is not None and e.response.text:
+        return e.response.text
+    return str(e) or 'Unknown request error'
+
+
 def _send_create_trial_request(
     ot_stage: Stage, api_key: str, access_token: str
 ) -> tuple[int | None, str | None]:
@@ -252,11 +259,12 @@ def _send_create_trial_request(
         )
         logging.info(f'CreateTrial response text: {response.text}')
         response.raise_for_status()
-    except requests.exceptions.RequestException:
+    except requests.exceptions.RequestException as e:
+        error_text = _extract_error_text(e)
         logging.exception(
-            f'Failed to get response from origin trials API. {response.text}'
+            f'Failed to get response from origin trials API. {error_text}'
         )
-        return None, response.text
+        return None, error_text
     response_json = response.json()
     return response_json['trial']['id'], None
 
@@ -296,11 +304,12 @@ def _send_set_up_trial_request(
         )
         logging.info(f'SetUpTrial response text: {response.text}')
         response.raise_for_status()
-    except requests.exceptions.RequestException:
+    except requests.exceptions.RequestException as e:
+        error_text = _extract_error_text(e)
         logging.exception(
-            f'Failed to get response from origin trials API. {response.text}'
+            f'Failed to get response from origin trials API. {error_text}'
         )
-        return response.text
+        return error_text
     return None
 
 
@@ -388,8 +397,9 @@ def activate_origin_trial(origin_trial_id: str) -> None:
         logging.info(response.text)
         response.raise_for_status()
     except requests.exceptions.RequestException as e:
+        error_text = _extract_error_text(e)
         logging.exception(
-            f'Failed to get response from origin trials API. {response.text}'
+            f'Failed to get response from origin trials API. {error_text}'
         )
         raise e
 
@@ -430,5 +440,8 @@ def extend_origin_trial(trial_id: str, end_milestone: int, intent_url: str):
         logging.info(response.text)
         response.raise_for_status()
     except requests.exceptions.RequestException as e:
-        logging.exception('Failed to get response from origin trials API.')
+        error_text = _extract_error_text(e)
+        logging.exception(
+            f'Failed to get response from origin trials API. {error_text}'
+        )
         raise e
