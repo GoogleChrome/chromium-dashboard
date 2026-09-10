@@ -168,6 +168,7 @@ class BaseHandler(flask.views.MethodView):
         feature_id = self._extract_id_param(kwargs, 'feature_id')
 
         # Load feature directly from NDB so as to never get a stale cached copy.
+        logging.info('Getting specified feature %r', feature_id)
         feature: FeatureEntry | None = FeatureEntry.get_by_id(feature_id)
         if not feature:
             self.abort(404, msg='Feature not found')
@@ -287,8 +288,10 @@ class APIHandler(BaseHandler):
 
     def get(self, *args, **kwargs):
         """Handle an incoming HTTP GET request."""
+        logging.info('Starting to handle GET')
         headers = self.get_headers()
         handler_data = self.do_get(*args, **kwargs)
+        logging.info('do_get completed')
         # OpenAPI models have a to_dict attribute that should be used for
         # converting to JSON.
         if hasattr(handler_data, 'to_dict'):
@@ -297,6 +300,7 @@ class APIHandler(BaseHandler):
 
     def post(self, *args, **kwargs):
         """Handle an incoming HTTP POST request."""
+        logging.info('Starting to handle POST')
         json_body = self.request.get_json(force=True, silent=True) or {}
         logging.info('POST data is:')
         for k, v in json_body.items():
@@ -310,27 +314,34 @@ class APIHandler(BaseHandler):
             self.require_signed_in_and_xsrf_token()
         headers = self.get_headers()
         handler_data = self.do_post(*args, **kwargs)
+        logging.info('do_post completed')
         return self.defensive_jsonify(handler_data), headers
 
     def put(self, *args, **kwargs):
         """Handle an incoming HTTP PUT request."""
+        logging.info('Starting to handle PUT')
         self.require_signed_in_and_xsrf_token()
         headers = self.get_headers()
         handler_data = self.do_put(*args, **kwargs)
+        logging.info('do_put completed')
         return self.defensive_jsonify(handler_data), headers
 
     def patch(self, *args, **kwargs):
         """Handle an incoming HTTP PATCH request."""
+        logging.info('Starting to handle PATCH')
         self.require_signed_in_and_xsrf_token()
         headers = self.get_headers()
         handler_data = self.do_patch(*args, **kwargs)
+        logging.info('do_patch completed')
         return self.defensive_jsonify(handler_data), headers
 
     def delete(self, *args, **kwargs):
         """Handle an incoming HTTP DELETE request."""
+        logging.info('Starting to handle DELETE')
         self.require_signed_in_and_xsrf_token()
         headers = self.get_headers()
         handler_data = self.do_delete(*args, **kwargs)
+        logging.info('do_delete completed')
         return self.defensive_jsonify(handler_data), headers
 
     def _get_valid_methods(self):
