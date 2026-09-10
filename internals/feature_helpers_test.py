@@ -166,6 +166,7 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
             s.key.delete()
         for s in FeatureSummarySuggestion.query():
             s.key.delete()
+        rediscache.flushall()
 
     def test_get_by_participant(self):
         """The people who are involve in a feature can edit it, others can't."""
@@ -191,6 +192,23 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
         self.assertEqual([self.feature_4.key], mentor_keys)
         other_keys = feature_helpers.get_by_participant('other@example.com')
         self.assertEqual([], other_keys)
+
+        cache_key = '%s|participant|%s' % (
+            FeatureEntry.SEARCH_CACHE_KEY,
+            'editor@example.com',
+        )
+        self.assertEqual([self.feature_2.key], rediscache.get(cache_key))
+
+    def test_get_by_participant__cached(self):
+        """If participant keys are in cache, we use them."""
+        cache_key = '%s|participant|%s' % (
+            FeatureEntry.SEARCH_CACHE_KEY,
+            'cached@example.com',
+        )
+        rediscache.set(cache_key, [self.feature_1.key])
+
+        actual = feature_helpers.get_by_participant('cached@example.com')
+        self.assertEqual([self.feature_1.key], actual)
 
     def test_get_by_ids__empty(self):
         """A request to load zero features returns zero results."""
@@ -423,7 +441,7 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
         self.assertEqual(6, len(actual))
 
         cache_key = '%s|%s|%s' % (
-            FeatureEntry.DEFAULT_CACHE_KEY,
+            FeatureEntry.SEARCH_CACHE_KEY,
             'milestone',
             1,
         )
@@ -546,7 +564,7 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
     def test_get_in_milestone__cached(self):
         """If there is something in the cache, we use it."""
         cache_key = '%s|%s|%s' % (
-            FeatureEntry.DEFAULT_CACHE_KEY,
+            FeatureEntry.SEARCH_CACHE_KEY,
             'milestone',
             1,
         )
@@ -1078,6 +1096,13 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
         )
         self.assertEqual('feature a', features[2]['name'])
         self.assertEqual('feature b', features[3]['name'])
+        cache_key = '%s|%s|%s|%s' % (
+            FeatureEntry.SEARCH_CACHE_KEY,
+            'impl_order',
+            None,
+            False,
+        )
+        self.assertEqual(features, rediscache.get(cache_key))
 
     def test_get_features_by_impl_status__deleted(self):
         """Deleted features are not included in /features_v2.json."""

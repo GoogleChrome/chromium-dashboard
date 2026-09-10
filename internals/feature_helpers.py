@@ -485,7 +485,7 @@ def get_in_milestone(
     """  # noqa: D205
     features_by_type = {}
     cache_key = '%s|%s|%s' % (
-        FeatureEntry.DEFAULT_CACHE_KEY,
+        FeatureEntry.SEARCH_CACHE_KEY,
         'milestone',
         milestone,
     )
@@ -788,7 +788,7 @@ def _set_feature_fields_for_roadmap(
 
 def get_by_participant(email: str) -> list[ndb.Key]:
     """Return NDB keys of FeatureEntrys that the user can edit."""
-    CACHE_KEY = '%s|participant|%s' % (FeatureEntry.DEFAULT_CACHE_KEY, email)
+    CACHE_KEY = '%s|participant|%s' % (FeatureEntry.SEARCH_CACHE_KEY, email)
     result = rediscache.get(CACHE_KEY)
 
     if result is None:
@@ -964,7 +964,7 @@ def get_features_by_impl_status(
     data from NDB directly.
     """
     cache_key = '%s|%s|%s|%s' % (
-        FeatureEntry.DEFAULT_CACHE_KEY,
+        FeatureEntry.SEARCH_CACHE_KEY,
         'impl_order',
         limit,
         show_unlisted,
