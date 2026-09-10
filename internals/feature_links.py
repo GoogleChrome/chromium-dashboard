@@ -65,13 +65,13 @@ def update_feature_links(
 
             # Clear the denormalized fields that get filled from feature links; they'll get updated below  # noqa: E501
             # with their new values.
-            if (field == 'safari_views_link' and fe.safari_views_link_result):
+            if field == 'safari_views_link' and fe.safari_views_link_result:
                 fe.safari_views_link_result = None
                 needs_put = True
-            if (field == 'ff_views_link' and fe.ff_views_link_result):
+            if field == 'ff_views_link' and fe.ff_views_link_result:
                 fe.ff_views_link_result = None
                 needs_put = True
-            if (field == 'tag_review' and fe.tag_review_resolution):
+            if field == 'tag_review' and fe.tag_review_resolution:
                 fe.tag_review_resolution = None
                 needs_put = True
 
