@@ -25,7 +25,7 @@ from google.cloud import ndb
 
 import settings
 from api import api_specs, converters
-from framework import basehandlers, permissions, users
+from framework import basehandlers, permissions, rediscache, users
 from internals import (
     attachments,
     core_enums,
@@ -249,6 +249,10 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
             content='Feature entry created',
         )
         activity.put()
+
+        # Remove all feature-related cache.
+        rediscache.delete_keys_with_prefix(FeatureEntry.DEFAULT_CACHE_KEY)
+        rediscache.delete_keys_with_prefix(FeatureEntry.SEARCH_CACHE_KEY)
 
         return {
             'message': f'Feature {feature_id} created.',
@@ -594,7 +598,10 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
         notifier_helpers.notify_subscribers_and_save_amendments(
             fe, changed_fields, notify=True
         )
-
+        # Remove all feature-related cache.
+        logging.info('Invalidating caches')
+        rediscache.delete_keys_with_prefix(FeatureEntry.DEFAULT_CACHE_KEY)
+        rediscache.delete_keys_with_prefix(FeatureEntry.SEARCH_CACHE_KEY)
         # Update full-text index.
         if fe:
             logging.info('Starting fulltext indexing')
@@ -627,5 +634,8 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
             content=f'Feature "{fe.name}" was archived.',
         )
         activity.put()
+
+        rediscache.delete_keys_with_prefix(FeatureEntry.DEFAULT_CACHE_KEY)
+        rediscache.delete_keys_with_prefix(FeatureEntry.SEARCH_CACHE_KEY)
 
         return {'message': 'Done'}
