@@ -70,6 +70,7 @@ def update_feature_links(
                 fe.ff_views_link_result = None
             if field == 'tag_review':
                 fe.tag_review_resolution = None
+            logging.info('Saving feature in update_feature_links')
             fe.put()
 
             old_val_urls = Link.extract_urls_from_value(old_val)

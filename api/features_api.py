@@ -15,6 +15,7 @@
 
 """API handlers for creating, retrieving, updating, and deleting feature entries."""
 
+import logging
 import re
 from datetime import datetime
 from typing import Any
@@ -307,6 +308,7 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
             if 'id' not in change_info:
                 self.abort(400, msg='Missing stage ID in stage updates')
             id = change_info['id']
+            logging.info('Updating stage %r', id)
             stage = Stage.get_by_id(id)
             if not stage:
                 self.abort(400, msg=f'Stage not found for ID {id}')
@@ -420,6 +422,7 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
         stage_ids: list[int],
     ) -> None:
         """Handle any special FeatureEntry fields when updating."""
+        logging.info('Updating special fields')
         now = datetime.now()
         feature_id = feature.key.integer_id()
         # Set accurate_as_of if this is an accuracy verification request.
@@ -526,6 +529,7 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
         stage_ids: list[int],
     ) -> None:
         """Update feature fields with changes provided in the PATCH request."""
+        logging.info('Updating feature %r', feature.key.integer_id())
         has_updated = len(updated_stages) > 0
         for field, field_type in api_specs.FEATURE_FIELD_DATA_TYPES:
             if field in FeatureEntry.FIELDS_IMMUTABLE_BY_USER:
@@ -547,6 +551,7 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
             stage_ids,
         )
         feature.put()
+        logging.info('Saved feature to datastore')
 
     def do_patch(self, **kwargs) -> flask.Response | dict[str, str]:
         """Handle PATCH requests to update fields in a single feature."""
@@ -585,13 +590,16 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
             stage_ids,
         )
 
+        logging.info('Enqueueing notifications')
         notifier_helpers.notify_subscribers_and_save_amendments(
             fe, changed_fields, notify=True
         )
 
         # Update full-text index.
         if fe:
+            logging.info('Starting fulltext indexing')
             search_fulltext.index_feature(fe)
+            logging.info('Updating feature links')
             feature_links.update_feature_links(fe, changed_fields)
 
         return {'message': f'Feature {feature_id} updated.'}

@@ -143,7 +143,6 @@ class Vote(ndb.Model):
         cls,
         feature_id: Optional[int] = None,
         gate_id: Optional[int] = None,
-        gate_type: Optional[int] = None,
         states: Optional[list[int]] = None,
         set_by: Optional[str] = None,
         limit=None,
@@ -154,8 +153,6 @@ class Vote(ndb.Model):
             query = query.filter(Vote.feature_id == feature_id)
         if gate_id is not None:
             query = query.filter(Vote.gate_id == gate_id)
-        if gate_type is not None:
-            query = query.filter(Vote.gate_type == gate_type)
         if states is not None:
             query = query.filter(Vote.state.IN(states))
         if set_by is not None:
