@@ -15,7 +15,7 @@
  */
 
 import {html} from 'lit';
-import SlCheckbox from '@shoelace-style/shoelace/dist/components/checkbox/checkbox.js';
+import CwCheckbox from '@cordwainer/cw-elements/dist/components/checkbox/checkbox.js';
 import {assert, fixture} from '@open-wc/testing';
 import {ChromedashTextarea} from './chromedash-textarea.js';
 
@@ -203,7 +203,7 @@ describe('chromedash-textarea', () => {
       assert.exists(useMarkdownEl);
       assert.include(useMarkdownEl.outerHTML, 'checked');
       const showPreviewEl =
-        component.renderRoot.querySelector<SlCheckbox>('#show-preview');
+        component.renderRoot.querySelector<CwCheckbox>('#show-preview');
       assert.exists(showPreviewEl);
       assert.include(showPreviewEl.outerHTML, 'checked');
       const previewEl = component.renderRoot.querySelector('#preview');

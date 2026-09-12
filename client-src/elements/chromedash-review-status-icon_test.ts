@@ -141,7 +141,7 @@ describe('chromedash-review-status-icon', () => {
     );
     assert.exists(component);
     assert.instanceOf(component, ChromedashReviewStatusIcon);
-    const icon = component.shadowRoot!.querySelector('sl-icon');
+    const icon = component.shadowRoot!.querySelector('cw-icon');
     assert.exists(icon);
     assert.equal(icon.getAttribute('name'), null);
   });
@@ -151,7 +151,7 @@ describe('chromedash-review-status-icon', () => {
     const component = await fixture(COMPONENT_HTML);
     assert.exists(component);
     assert.instanceOf(component, ChromedashReviewStatusIcon);
-    const icon = component.shadowRoot!.querySelector('sl-icon');
+    const icon = component.shadowRoot!.querySelector('cw-icon');
     assert.exists(icon);
     assert.equal(icon.getAttribute('name'), null);
   });
@@ -161,7 +161,7 @@ describe('chromedash-review-status-icon', () => {
     const component = await fixture(COMPONENT_HTML);
     assert.exists(component);
     assert.instanceOf(component, ChromedashReviewStatusIcon);
-    const icon = component.shadowRoot!.querySelector('sl-icon');
+    const icon = component.shadowRoot!.querySelector('cw-icon');
     assert.exists(icon);
     assert.equal(icon.getAttribute('name'), null);
   });
@@ -173,7 +173,7 @@ describe('chromedash-review-status-icon', () => {
     const component = await fixture(COMPONENT_HTML);
     assert.exists(component);
     assert.instanceOf(component, ChromedashReviewStatusIcon);
-    const icon = component.shadowRoot!.querySelector('sl-icon');
+    const icon = component.shadowRoot!.querySelector('cw-icon');
     assert.exists(icon);
     assert.equal(icon.getAttribute('name'), 'arrow_circle_right_20px');
   });
@@ -191,7 +191,7 @@ describe('chromedash-review-status-icon', () => {
     const component = await fixture(COMPONENT_HTML);
     assert.exists(component);
     assert.instanceOf(component, ChromedashReviewStatusIcon);
-    const icon = component.shadowRoot!.querySelector('sl-icon');
+    const icon = component.shadowRoot!.querySelector('cw-icon');
     assert.exists(icon);
     assert.equal(icon.getAttribute('name'), 'pending_20px');
   });
@@ -209,7 +209,7 @@ describe('chromedash-review-status-icon', () => {
     const component = await fixture(COMPONENT_HTML);
     assert.exists(component);
     assert.instanceOf(component, ChromedashReviewStatusIcon);
-    const icon = component.shadowRoot!.querySelector('sl-icon');
+    const icon = component.shadowRoot!.querySelector('cw-icon');
     assert.exists(icon);
     assert.equal(icon.getAttribute('name'), 'pending_20px');
   });
@@ -227,7 +227,7 @@ describe('chromedash-review-status-icon', () => {
     const component = await fixture(COMPONENT_HTML);
     assert.exists(component);
     assert.instanceOf(component, ChromedashReviewStatusIcon);
-    const icon = component.shadowRoot!.querySelector('sl-icon');
+    const icon = component.shadowRoot!.querySelector('cw-icon');
     assert.exists(icon);
     assert.equal(icon.getAttribute('name'), 'autorenew_20px');
   });
@@ -246,7 +246,7 @@ describe('chromedash-review-status-icon', () => {
     const component = await fixture(COMPONENT_HTML);
     assert.exists(component);
     assert.instanceOf(component, ChromedashReviewStatusIcon);
-    const icon = component.shadowRoot!.querySelector('sl-icon');
+    const icon = component.shadowRoot!.querySelector('cw-icon');
     assert.exists(icon);
     assert.equal(icon.getAttribute('name'), 'check_circle_filled_20px');
   });
@@ -264,7 +264,7 @@ describe('chromedash-review-status-icon', () => {
     const component = await fixture(COMPONENT_HTML);
     assert.exists(component);
     assert.instanceOf(component, ChromedashReviewStatusIcon);
-    const icon = component.shadowRoot!.querySelector('sl-icon');
+    const icon = component.shadowRoot!.querySelector('cw-icon');
     assert.exists(icon);
     assert.equal(icon.getAttribute('name'), 'block_20px');
   });
@@ -276,7 +276,7 @@ describe('chromedash-review-status-icon', () => {
     const component = await fixture(COMPONENT_HTML_PSA);
     assert.exists(component);
     assert.instanceOf(component, ChromedashReviewStatusIcon);
-    const icon = component.shadowRoot!.querySelector('sl-icon');
+    const icon = component.shadowRoot!.querySelector('cw-icon');
     assert.exists(icon);
     assert.equal(
       icon.getAttribute('name'),

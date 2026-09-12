@@ -156,10 +156,10 @@ export class ChromedashFeatureTable extends LitElement {
           color: var(--unimportant-text-color);
           margin-right: var(--content-padding);
         }
-        .status-and-count sl-icon-button {
+        .status-and-count cw-icon-button {
           font-size: 1.6rem;
         }
-        .status-and-count sl-icon-button::part(base) {
+        .status-and-count cw-icon-button::part(base) {
           padding: 0;
         }
         table {
@@ -170,7 +170,7 @@ export class ChromedashFeatureTable extends LitElement {
           padding: 14px;
           border-bottom: var(--table-divider);
         }
-        sl-skeleton {
+        cw-skeleton {
           height: 24px;
         }
         .message {
@@ -185,22 +185,22 @@ export class ChromedashFeatureTable extends LitElement {
       return html`
         <tr class="skel">
           <td>
-            <sl-skeleton effect="sheen" style="width: 50%"></sl-skeleton>
+            <cw-skeleton effect="sheen" style="width: 50%"></cw-skeleton>
           </td>
         </tr>
         <tr class="skel">
           <td>
-            <sl-skeleton effect="sheen" style="width: 65%"></sl-skeleton>
+            <cw-skeleton effect="sheen" style="width: 65%"></cw-skeleton>
           </td>
         </tr>
         <tr class="skel">
           <td>
-            <sl-skeleton effect="sheen" style="width: 40%"></sl-skeleton>
+            <cw-skeleton effect="sheen" style="width: 40%"></cw-skeleton>
           </td>
         </tr>
         <tr class="skel">
           <td>
-            <sl-skeleton effect="sheen" style="width: 50%"></sl-skeleton>
+            <cw-skeleton effect="sheen" style="width: 50%"></cw-skeleton>
           </td>
         </tr>
       `;
@@ -256,8 +256,8 @@ export class ChromedashFeatureTable extends LitElement {
       if (this.loading) {
         // reserve vertical space to use when loaded.
         return html` <div class="status-and-count">
-          <sl-skeleton effect="sheen" style="float: right; width: 12em">
-          </sl-skeleton>
+          <cw-skeleton effect="sheen" style="float: right; width: 12em">
+          </cw-skeleton>
         </div>`;
       }
     } else {
@@ -277,20 +277,20 @@ export class ChromedashFeatureTable extends LitElement {
         <span>${this.reloading ? 'Reloading...' : nothing}</span>
         <div class="spacer"></div>
         <span>${firstShown} - ${lastShown} of ${this.totalCount}</span>
-        <sl-icon-button
+        <cw-icon-button
           library="material"
           name="navigate_before"
           title="Previous page"
           href=${ifDefined(prevUrl)}
           ?disabled=${prevUrl === undefined}
-        ></sl-icon-button>
-        <sl-icon-button
+        ></cw-icon-button>
+        <cw-icon-button
           library="material"
           name="navigate_next"
           title="Next page"
           href=${ifDefined(nextUrl)}
           ?disabled=${nextUrl === undefined}
-        ></sl-icon-button>
+        ></cw-icon-button>
       </div>
     `;
   }
@@ -303,8 +303,8 @@ export class ChromedashFeatureTable extends LitElement {
       if (this.loading) {
         // reserve vertical space to use when loaded.
         return html` <div class="pagination">
-          <sl-skeleton effect="sheen" style="float: right; width: 12em">
-          </sl-skeleton>
+          <cw-skeleton effect="sheen" style="float: right; width: 12em">
+          </cw-skeleton>
         </div>`;
       }
     } else {

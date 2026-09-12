@@ -67,7 +67,6 @@
     "@rollup/plugin-node-resolve": "^16.0.3",
     "@rollup/plugin-terser": "^1.0.0",
     "@rollup/plugin-typescript": "^12.3.0",
-    "@shoelace-style/shoelace": "^2.20.1",
     "@types/jest": "^30.0.0",
     "@types/node": "^26.4.1",
     "@web/test-runner": "^1.0.0",
@@ -95,7 +94,8 @@
     "tar": ">=7.5.22",
     "trim-newlines": ">=5.0.0",
     "ts-lit-plugin": "^2.0.2",
-    "typescript": "^6.0.3"
+    "typescript": "^6.0.3",
+    "@cordwainer/cw-elements": "1.4.0"
   },
   "dependencies": {
     "@lit/task": "^1.0.3",

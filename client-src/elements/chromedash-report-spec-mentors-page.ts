@@ -16,14 +16,14 @@
 
 // @ts-check
 import {Task} from '@lit/task';
-import '@shoelace-style/shoelace';
+import '@cordwainer/cw-elements';
 import {LitElement, css, html} from 'lit';
 import {customElement, property, state} from 'lit/decorators.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import './chromedash-report-spec-mentor.js';
 import {isoDateString, RawQuery} from './utils.js';
 import {DefaultApiInterface, SpecMentor} from 'chromestatus-openapi';
-import {SlChangeEvent, SlInput} from '@shoelace-style/shoelace';
+import {CwChangeEvent, CwInput} from '@cordwainer/cw-elements';
 
 @customElement('chromedash-report-spec-mentors-page')
 export class ChromedashReportSpecMentorsPage extends LitElement {
@@ -69,7 +69,7 @@ export class ChromedashReportSpecMentorsPage extends LitElement {
     }
   }
 
-  afterChanged(e: SlChangeEvent & {target: SlInput}): void {
+  afterChanged(e: CwChangeEvent & {target: CwInput}): void {
     e.stopPropagation();
     const newDate = e.target.valueAsDate;
     if (newDate) {
@@ -87,19 +87,19 @@ export class ChromedashReportSpecMentorsPage extends LitElement {
   render() {
     return html`
       <div id="subheader">
-        <sl-input
+        <cw-input
           type="date"
           name="after"
           value=${isoDateString(this._updatedAfter)}
           label="List spec mentors who've worked on features that were updated after this date"
-          @sl-change=${this.afterChanged}
-        ></sl-input>
+          @cw-change=${this.afterChanged}
+        ></cw-input>
       </div>
       ${this._mentorsTask.render({
         pending: () =>
           html` <details open>
-            <summary><sl-skeleton effect="sheen"></sl-skeleton></summary>
-            <sl-skeleton effect="sheen"></sl-skeleton>
+            <summary><cw-skeleton effect="sheen"></cw-skeleton></summary>
+            <cw-skeleton effect="sheen"></cw-skeleton>
           </details>`,
         complete: specMentors =>
           specMentors.map(

@@ -73,18 +73,18 @@ import {
 
 export const DETAILS_STYLES = [
   css`
-    sl-details {
+    cw-details {
       border: var(--card-border);
       box-shadow: var(--card-box-shadow);
       margin: var(--content-padding-half);
       border-radius: 4px;
       background: var(--card-background);
     }
-    sl-details::part(base),
-    sl-details::part(header) {
+    cw-details::part(base),
+    cw-details::part(header) {
       background: transparent;
     }
-    sl-details::part(header) {
+    cw-details::part(header) {
       padding-bottom: 8px;
     }
 
@@ -153,18 +153,18 @@ export class ChromedashFeatureDetail extends LitElement {
           padding: 8px 16px;
         }
 
-        sl-details sl-button,
-        sl-details sl-dropdown {
+        cw-details cw-button,
+        cw-details cw-dropdown {
           float: right;
           margin-right: 4px;
         }
-        sl-details sl-dropdown sl-icon-button {
+        cw-details cw-dropdown cw-icon-button {
           font-size: 1.4rem;
         }
 
-        sl-details sl-button[variant='default']::part(base) {
-          color: var(--sl-color-primary-600);
-          border: 1px solid var(--sl-color-primary-600);
+        cw-details cw-button[variant='default']::part(base) {
+          color: var(--cw-color-primary-600);
+          border: 1px solid var(--cw-color-primary-600);
         }
 
         dl {
@@ -177,7 +177,7 @@ export class ChromedashFeatureDetail extends LitElement {
           gap: ${GAP}px;
           align-items: center;
         }
-        dt sl-icon {
+        dt cw-icon {
           color: var(--gate-approved-color);
           font-size: 1.3em;
         }
@@ -334,9 +334,9 @@ export class ChromedashFeatureDetail extends LitElement {
 
   renderControls() {
     const editAllButton = html`
-      <sl-button variant="text" href="/guide/editall/${this.feature.id}">
+      <cw-button variant="text" href="/guide/editall/${this.feature.id}">
         Edit all fields
-      </sl-button>
+      </cw-button>
     `;
     let wptEvalButton = html`${nothing}`;
     // For now, the WPT coverage evaluation page is only visible to Googlers and Chromium users.
@@ -358,13 +358,13 @@ export class ChromedashFeatureDetail extends LitElement {
     const toggleLabel = this.anyCollapsed ? 'Expand all' : 'Collapse all';
     return html`
       ${wptEvalButton} ${this.canEdit ? editAllButton : nothing}
-      <sl-button
+      <cw-button
         variant="text"
         title="Expand or collapse all sections"
         @click=${this.toggleAll}
       >
         ${toggleLabel}
-      </sl-button>
+      </cw-button>
     `;
   }
 
@@ -426,8 +426,8 @@ export class ChromedashFeatureDetail extends LitElement {
       (this.feature.markdown_fields || []).includes(fieldId) || alwaysMarkdown;
 
     const icon = isDefined
-      ? html`<sl-icon library="material" name="check_circle_20px"></sl-icon>`
-      : html`<sl-icon library="material" name="blank_20px"></sl-icon>`;
+      ? html`<cw-icon library="material" name="check_circle_20px"></cw-icon>`
+      : html`<cw-icon library="material" name="blank_20px"></cw-icon>`;
 
     return html`
       <dt id=${fieldId}>${icon} ${fieldDisplayName}</dt>
@@ -493,15 +493,15 @@ export class ChromedashFeatureDetail extends LitElement {
     isStage: boolean = true
   ) {
     return html`
-      <sl-details
+      <cw-details
         summary=${summary}
-        @sl-after-show=${this.updateCollapsed}
-        @sl-after-hide=${this.updateCollapsed}
+        @cw-after-show=${this.updateCollapsed}
+        @cw-after-hide=${this.updateCollapsed}
         ?open=${isActive || defaultOpen}
         class="${isStage ? 'stage' : ''}"
       >
         ${content}
-      </sl-details>
+      </cw-details>
     `;
   }
 
@@ -521,11 +521,11 @@ export class ChromedashFeatureDetail extends LitElement {
     }
     const fields = makeDisplaySpecs(fieldNames);
     const editButton = html`
-      <sl-button
+      <cw-button
         size="small"
         style="float:right"
         href="/guide/stage/${this.feature.id}/metadata"
-        >Edit fields</sl-button
+        >Edit fields</cw-button
       >
     `;
 
@@ -648,7 +648,7 @@ export class ChromedashFeatureDetail extends LitElement {
       }
     };
     return html`
-      <sl-button size="small" @click=${checkCompletion}>${label}</sl-button>
+      <cw-button size="small" @click=${checkCompletion}>${label}</cw-button>
     `;
   }
 
@@ -728,17 +728,17 @@ export class ChromedashFeatureDetail extends LitElement {
     if (!this.canEdit) {
       return nothing;
     }
-    return html` <sl-button
+    return html` <cw-button
       size="small"
       href="/guide/stage/${
         this.feature.id
       }/${processStage.outgoing_stage}/${feStage.id}"
-      >Edit fields</sl-button
+      >Edit fields</cw-button
     >`;
   }
 
   renderFinalizeExtensionButton(extensionStage: StageDict) {
-    return html` <sl-button
+    return html` <cw-button
       size="small"
       variant="primary"
       @click=${() =>
@@ -748,7 +748,7 @@ export class ChromedashFeatureDetail extends LitElement {
           extensionStage.desktop_last,
           dialogTypes.FINALIZE_EXTENSION
         )}
-      >Finalize Extension</sl-button
+      >Finalize Extension</cw-button
     >`;
   }
 
@@ -756,9 +756,9 @@ export class ChromedashFeatureDetail extends LitElement {
     const tooltipText =
       'A pending extension request exists. Follow the process for ' +
       'obtaining extension approval, or contact origin-trials-support@google.com for help.';
-    return html` <sl-tooltip content=${tooltipText}>
-      <sl-button size="small" disabled>Trial Extension Pending</sl-button>
-    </sl-tooltip>`;
+    return html` <cw-tooltip content=${tooltipText}>
+      <cw-button size="small" disabled>Trial Extension Pending</cw-button>
+    </cw-tooltip>`;
   }
 
   renderExtensionButton(feStage: StageDict) {
@@ -810,11 +810,11 @@ export class ChromedashFeatureDetail extends LitElement {
     }
 
     const stageId = feStage.id;
-    return html` <sl-button
+    return html` <cw-button
       size="small"
       @click=${() =>
         location.assign(`/ot_extension_request/${this.feature.id}/${stageId}`)}
-      >${extensionButtonText}</sl-button
+      >${extensionButtonText}</cw-button
     >`;
   }
 
@@ -831,12 +831,12 @@ export class ChromedashFeatureDetail extends LitElement {
       if (this.appTitle === 'Chrome Platform Status') {
         originTrialsURL = `https://developer.chrome.com/origintrials/#/view_trial/${feStage.origin_trial_id}`;
       }
-      return html` <sl-button
+      return html` <cw-button
         size="small"
         variant="primary"
         href=${originTrialsURL}
         target="_blank"
-        >View Origin Trial</sl-button
+        >View Origin Trial</cw-button
       >`;
     }
     const canSeeOTControls =
@@ -859,31 +859,31 @@ export class ChromedashFeatureDetail extends LitElement {
     ) {
       // Display the button as disabled with tooltip text if a request
       // has already been submitted.
-      return html` <sl-tooltip
+      return html` <cw-tooltip
         content="Action already requested. For further inquiries, contact origin-trials-support@google.com."
       >
-        <sl-button size="small" variant="primary" disabled
-          >Request Trial Creation</sl-button
+        <cw-button size="small" variant="primary" disabled
+          >Request Trial Creation</cw-button
         >
-      </sl-tooltip>`;
+      </cw-tooltip>`;
     } else if (!trialIsApproved) {
       // Display the button as disabled with tooltip text if the trial has not
       // yet received approvals.
-      return html` <sl-tooltip
+      return html` <cw-tooltip
         content="Approvals must be obtained before submission. For questions, contact origin-trials-support@google.com."
       >
-        <sl-button size="small" variant="primary" disabled
-          >Request Trial Creation</sl-button
+        <cw-button size="small" variant="primary" disabled
+          >Request Trial Creation</cw-button
         >
-      </sl-tooltip>`;
+      </cw-tooltip>`;
     }
     // Display the creation request button if user has edit access.
-    return html` <sl-button
+    return html` <cw-button
       size="small"
       variant="primary"
       @click="${() =>
         openPrereqsDialog(this.feature.id, feStage, dialogTypes.CREATION)}"
-      >Request Trial Creation</sl-button
+      >Request Trial Creation</cw-button
     >`;
   }
 
@@ -906,11 +906,11 @@ export class ChromedashFeatureDetail extends LitElement {
       return nothing;
     }
 
-    return html` <sl-button
+    return html` <cw-button
       size="small"
       style="float:right"
       href="http://go/ot-registrants-dashboard?f=trial_id:in:${feStage.origin_trial_id}"
-      >Registrant data</sl-button
+      >Registrant data</cw-button
     >`;
   }
 
@@ -939,24 +939,24 @@ export class ChromedashFeatureDetail extends LitElement {
     const items: TemplateResult[] = [];
     if (this.offerAddXfnGates(feStage)) {
       items.push(html`
-        <sl-menu-item @click=${() => this.handleAddXfnGates(feStage)}>
+        <cw-menu-item @click=${() => this.handleAddXfnGates(feStage)}>
           Add cross-functional gates
-        </sl-menu-item>
+        </cw-menu-item>
       `);
     }
 
     if (items.length === 0) return nothing;
 
     return html`
-      <sl-dropdown>
-        <sl-icon-button
+      <cw-dropdown>
+        <cw-icon-button
           library="material"
           name="more_vert_24px"
           label="Stage menu"
           slot="trigger"
-        ></sl-icon-button>
-        <sl-menu>${items}</sl-menu>
-      </sl-dropdown>
+        ></cw-icon-button>
+        <cw-menu>${items}</cw-menu>
+      </cw-dropdown>
     `;
   }
 
@@ -966,14 +966,14 @@ export class ChromedashFeatureDetail extends LitElement {
     }
     const text = this.feature.is_enterprise_feature ? 'Add Step' : 'Add Stage';
 
-    return html` <sl-button
+    return html` <cw-button
       id="new-stage"
       size="small"
       @click="${() =>
         openAddStageDialog(this.feature.id, this.feature.feature_type_int)}"
     >
       ${text}
-    </sl-button>`;
+    </cw-button>`;
   }
 
   renderSectionHeader() {
@@ -982,14 +982,14 @@ export class ChromedashFeatureDetail extends LitElement {
       : 'Development stages';
     return html` <span
       >${text}
-      <sl-icon-button
+      <cw-icon-button
         name="info-circle"
         href="https://www.chromium.org/blink/launching-features"
         style="font-size: 0.8rem;"
         target="_blank"
         label="Launching feature guide"
       >
-      </sl-icon-button>
+      </cw-icon-button>
     </span>`;
   }
 

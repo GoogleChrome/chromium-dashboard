@@ -229,18 +229,18 @@ export class ChromedashGuideStagePage extends LitElement {
 
   renderSkeletons() {
     return html`
-      <h3><sl-skeleton effect="sheen"></sl-skeleton></h3>
+      <h3><cw-skeleton effect="sheen"></cw-skeleton></h3>
       <section id="metadata">
-        <h3><sl-skeleton effect="sheen"></sl-skeleton></h3>
+        <h3><cw-skeleton effect="sheen"></cw-skeleton></h3>
         <p>
-          <sl-skeleton effect="sheen"></sl-skeleton>
-          <sl-skeleton effect="sheen"></sl-skeleton>
-          <sl-skeleton effect="sheen"></sl-skeleton>
-          <sl-skeleton effect="sheen"></sl-skeleton>
-          <sl-skeleton effect="sheen"></sl-skeleton>
-          <sl-skeleton effect="sheen"></sl-skeleton>
-          <sl-skeleton effect="sheen"></sl-skeleton>
-          <sl-skeleton effect="sheen"></sl-skeleton>
+          <cw-skeleton effect="sheen"></cw-skeleton>
+          <cw-skeleton effect="sheen"></cw-skeleton>
+          <cw-skeleton effect="sheen"></cw-skeleton>
+          <cw-skeleton effect="sheen"></cw-skeleton>
+          <cw-skeleton effect="sheen"></cw-skeleton>
+          <cw-skeleton effect="sheen"></cw-skeleton>
+          <cw-skeleton effect="sheen"></cw-skeleton>
+          <cw-skeleton effect="sheen"></cw-skeleton>
         </p>
       </section>
     `;
@@ -255,7 +255,7 @@ export class ChromedashGuideStagePage extends LitElement {
       <div id="subheader">
         <h2 id="breadcrumbs">
           <a href=${this.getNextPage()}>
-            <sl-icon name="arrow-left"></sl-icon>
+            <cw-icon name="arrow-left"></cw-icon>
             Edit feature: ${this.feature.name}
           </a>
         </h2>

@@ -453,7 +453,7 @@ export function renderRelativeDate(dateStr) {
   const dateObj = _parseDateStr(dateStr);
   if (!dateObj) return nothing;
   return html` <span class="relative_date">
-    (<sl-relative-time date="${dateObj.toISOString()}"> </sl-relative-time>)
+    (<cw-relative-time date="${dateObj.toISOString()}"> </cw-relative-time>)
   </span>`;
 }
 
@@ -1012,15 +1012,15 @@ export function getFeatureOutdatedBanner(
       return html`
         <div class="warning layout horizontal center">
           <span class="tooltip" id="outdated-icon" title="Feature outdated ">
-            <sl-icon name="exclamation-circle-fill" data-tooltip></sl-icon>
+            <cw-icon name="exclamation-circle-fill" data-tooltip></cw-icon>
           </span>
           <span>
             Your feature hasn't been verified as accurate since&nbsp;
-            <sl-relative-time
+            <cw-relative-time
               date=${feature.accurate_as_of ?? ''}
-            ></sl-relative-time
+            ></cw-relative-time
             >, but it is scheduled to ship&nbsp;
-            <sl-relative-time date=${closestShippingDate}></sl-relative-time>.
+            <cw-relative-time date=${closestShippingDate}></cw-relative-time>.
             Please
             <a href="/guide/verify_accuracy/${feature.id}"
               >verify that your feature is accurate</a
@@ -1032,15 +1032,15 @@ export function getFeatureOutdatedBanner(
       return html`
         <div class="warning layout horizontal center">
           <span class="tooltip" id="outdated-icon" title="Feature outdated ">
-            <sl-icon name="exclamation-circle-fill" data-tooltip></sl-icon>
+            <cw-icon name="exclamation-circle-fill" data-tooltip></cw-icon>
           </span>
           <span>
             This feature hasn't been verified as accurate since&nbsp;
-            <sl-relative-time
+            <cw-relative-time
               date=${feature.accurate_as_of ?? ''}
-            ></sl-relative-time
+            ></cw-relative-time
             >, but it is scheduled to ship&nbsp;
-            <sl-relative-time date=${closestShippingDate}></sl-relative-time>.
+            <cw-relative-time date=${closestShippingDate}></cw-relative-time>.
           </span>
         </div>
       `;
@@ -1063,15 +1063,15 @@ export function getFeatureOutdatedBanner(
             id="shipped-outdated-author"
             title="Feature outdated "
           >
-            <sl-icon name="exclamation-circle-fill" data-tooltip></sl-icon>
+            <cw-icon name="exclamation-circle-fill" data-tooltip></cw-icon>
           </span>
           <span>
             Your feature hasn't been verified as accurate since&nbsp;
-            <sl-relative-time
+            <cw-relative-time
               date=${feature.accurate_as_of ?? ''}
-            ></sl-relative-time
+            ></cw-relative-time
             >, but it claims to have shipped&nbsp;
-            <sl-relative-time date=${closestShippingDate}></sl-relative-time>.
+            <cw-relative-time date=${closestShippingDate}></cw-relative-time>.
             Please
             <a href="/guide/verify_accuracy/${feature.id}"
               >verify that your feature is accurate</a
@@ -1094,15 +1094,15 @@ export function getFeatureOutdatedBanner(
             id="shipped-outdated-all"
             title="Feature outdated "
           >
-            <sl-icon name="exclamation-circle-fill" data-tooltip></sl-icon>
+            <cw-icon name="exclamation-circle-fill" data-tooltip></cw-icon>
           </span>
           <span>
             This feature hasn't been verified as accurate since&nbsp;
-            <sl-relative-time
+            <cw-relative-time
               date=${feature.accurate_as_of ?? ''}
-            ></sl-relative-time
+            ></cw-relative-time
             >, but it claims to have shipped&nbsp;
-            <sl-relative-time date=${closestShippingDate}></sl-relative-time>.
+            <cw-relative-time date=${closestShippingDate}></cw-relative-time>.
           </span>
         </div>
       `;

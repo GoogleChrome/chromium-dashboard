@@ -43,7 +43,7 @@ export class ChromedashWPTEvalPage extends LitElement {
         :host {
           display: block;
           min-height: 100vh;
-          background: var(--sl-color-neutral-50);
+          background: var(--cw-color-neutral-50);
           padding: 2em;
         }
 
@@ -69,19 +69,19 @@ export class ChromedashWPTEvalPage extends LitElement {
           font-size: 0.6em;
           font-weight: normal;
           vertical-align: middle;
-          background: var(--sl-color-neutral-200);
+          background: var(--cw-color-neutral-200);
           padding: 2px 8px;
           border-radius: 12px;
           margin-left: 8px;
         }
 
         .card {
-          background: var(--sl-color-neutral-0);
-          border: 1px solid var(--sl-color-neutral-200);
-          border-radius: var(--sl-border-radius-medium);
-          padding: var(--sl-spacing-x-large);
-          box-shadow: var(--sl-shadow-x-small);
-          margin-bottom: var(--sl-spacing-large);
+          background: var(--cw-color-neutral-0);
+          border: 1px solid var(--cw-color-neutral-200);
+          border-radius: var(--cw-border-radius-medium);
+          padding: var(--cw-spacing-x-large);
+          box-shadow: var(--cw-shadow-x-small);
+          margin-bottom: var(--cw-spacing-large);
         }
 
         .description ul {
@@ -103,35 +103,35 @@ export class ChromedashWPTEvalPage extends LitElement {
           gap: 12px;
           font-size: 16px;
           padding: 8px;
-          border-radius: var(--sl-border-radius-medium);
+          border-radius: var(--cw-border-radius-medium);
           transition: background 0.2s ease;
         }
         .requirement-item:hover {
-          background: var(--sl-color-neutral-50);
+          background: var(--cw-color-neutral-50);
         }
 
-        .requirement-item sl-icon {
+        .requirement-item cw-icon {
           font-size: 20px;
           flex-shrink: 0;
         }
         .requirement-item .success {
-          color: var(--sl-color-success-600);
+          color: var(--cw-color-success-600);
         }
         .requirement-item .danger {
-          color: var(--sl-color-danger-600);
+          color: var(--cw-color-danger-600);
         }
 
         .edit-link {
           font-size: 0.9em;
           margin-left: auto;
           padding: 4px 12px;
-          background: var(--sl-color-primary-50);
+          background: var(--cw-color-primary-50);
           border-radius: 12px;
           text-decoration: none;
           font-weight: 600;
         }
         .edit-link:hover {
-          background: var(--sl-color-primary-100);
+          background: var(--cw-color-primary-100);
         }
 
         .url-list-container {
@@ -142,9 +142,9 @@ export class ChromedashWPTEvalPage extends LitElement {
           margin: 0;
           padding: 12px;
           font-size: 0.85em;
-          background: var(--sl-color-neutral-100);
+          background: var(--cw-color-neutral-100);
           border-radius: 4px;
-          border: 1px solid var(--sl-color-neutral-200);
+          border: 1px solid var(--cw-color-neutral-200);
           max-height: 150px;
           overflow-y: auto;
         }
@@ -175,13 +175,13 @@ export class ChromedashWPTEvalPage extends LitElement {
           padding-left: 2rem;
           padding-right: 2rem;
         }
-        .generate-button sl-icon {
+        .generate-button cw-icon {
           font-size: 1.3em;
         }
 
         .cooldown-message {
           margin-top: 12px;
-          color: var(--sl-color-neutral-600);
+          color: var(--cw-color-neutral-600);
           font-size: 0.9em;
           display: flex;
           align-items: center;
@@ -190,7 +190,7 @@ export class ChromedashWPTEvalPage extends LitElement {
 
         .help-text {
           margin-top: 8px;
-          color: var(--sl-color-neutral-600);
+          color: var(--cw-color-neutral-600);
           font-size: 0.9rem;
           max-width: 400px;
           line-height: 1.4;
@@ -205,18 +205,18 @@ export class ChromedashWPTEvalPage extends LitElement {
           font-size: 1.1rem;
         }
         .status-in-progress {
-          color: var(--sl-color-primary-600);
+          color: var(--cw-color-primary-600);
         }
-        .status-in-progress sl-spinner {
+        .status-in-progress cw-spinner {
           font-size: 3rem;
           --track-width: 4px;
         }
         .status-complete {
-          color: var(--sl-color-success-700);
+          color: var(--cw-color-success-700);
         }
-        .status-complete sl-icon {
+        .status-complete cw-icon {
           font-size: 3rem;
-          color: var(--sl-color-success-600);
+          color: var(--cw-color-success-600);
         }
 
         .report-content {
@@ -228,19 +228,19 @@ export class ChromedashWPTEvalPage extends LitElement {
         .report-content h3 {
           margin-top: 1.5em;
           margin-bottom: 0.75em;
-          color: var(--sl-color-neutral-1000);
+          color: var(--cw-color-neutral-1000);
         }
         .report-content *:first-child {
           margin-top: 0;
         }
         .report-content pre {
-          background: var(--sl-color-neutral-900);
+          background: var(--cw-color-neutral-900);
           padding: 16px;
           border-radius: 6px;
           overflow-x: auto;
         }
         .report-content code {
-          background: var(--sl-color-neutral-200);
+          background: var(--cw-color-neutral-200);
           padding: 2px 4px;
           border-radius: 4px;
           font-size: 0.9em;
@@ -277,8 +277,8 @@ export class ChromedashWPTEvalPage extends LitElement {
           animation-delay: 0.4s;
         }
 
-        sl-alert {
-          margin-bottom: var(--sl-spacing-large);
+        cw-alert {
+          margin-bottom: var(--cw-spacing-large);
         }
 
         .report-header {
@@ -544,17 +544,17 @@ export class ChromedashWPTEvalPage extends LitElement {
     urlHash: string
   ): TemplateResult {
     const icon = isFulfilled
-      ? html`<sl-icon
+      ? html`<cw-icon
           class="success"
           library="material"
           name="check_circle_20px"
-        ></sl-icon>`
-      : html`<sl-icon
+        ></cw-icon>`
+      : html`<cw-icon
           library="material"
           name="cancel_20px"
           class="danger"
           style="font-size: 20px"
-        ></sl-icon>`;
+        ></cw-icon>`;
 
     const text = isFulfilled ? `${label} provided` : `Missing ${label}`;
 
@@ -693,38 +693,38 @@ export class ChromedashWPTEvalPage extends LitElement {
           <div class="requirement-item">
             ${
               !this.includeExplainer
-                ? html`<sl-icon
+                ? html`<cw-icon
                     library="material"
                     name="info_20px"
-                    style="color: var(--sl-color-neutral-600); font-size: 20px"
-                  ></sl-icon>`
+                    style="color: var(--cw-color-neutral-600); font-size: 20px"
+                  ></cw-icon>`
                 : this.feature.explainer_links?.length
-                  ? html`<sl-icon
+                  ? html`<cw-icon
                       class="success"
                       library="material"
                       name="check_circle_20px"
-                    ></sl-icon>`
-                  : html`<sl-icon
+                    ></cw-icon>`
+                  : html`<cw-icon
                       library="material"
                       name="cancel_20px"
                       class="danger"
                       style="font-size: 20px"
-                    ></sl-icon>`
+                    ></cw-icon>`
             }
-            <sl-checkbox
+            <cw-checkbox
               ?checked=${this.includeExplainer}
-              @sl-change=${(e: any) =>
+              @cw-change=${(e: any) =>
                 (this.includeExplainer = e.target.checked)}
             >
               Include feature explainers
               ${
                 !this.feature.explainer_links?.length
-                  ? html`<sl-badge variant="neutral" size="small"
-                      >Optional</sl-badge
+                  ? html`<cw-badge variant="neutral" size="small"
+                      >Optional</cw-badge
                     >`
                   : nothing
               }
-            </sl-checkbox>
+            </cw-checkbox>
             <a
               class="edit-link"
               href="/guide/editall/${this.featureId}#id_explainer_links"
@@ -789,7 +789,7 @@ export class ChromedashWPTEvalPage extends LitElement {
       return html`
         <section class="card action-section">
           <div class="status-in-progress">
-            <sl-spinner></sl-spinner>
+            <cw-spinner></cw-spinner>
             <span>Analysis in progress... This may take a few minutes.</span>
           </div>
         </section>
@@ -805,7 +805,7 @@ export class ChromedashWPTEvalPage extends LitElement {
       return html`
         <section class="card action-section">
           <div class="status-complete fade-in">
-            <sl-icon library="material" name="check_circle_20px"></sl-icon>
+            <cw-icon library="material" name="check_circle_20px"></cw-icon>
             <span>Analysis complete! The report is available above.</span>
           </div>
         </section>
@@ -818,7 +818,7 @@ export class ChromedashWPTEvalPage extends LitElement {
       return html`
         <section class="card action-section">
           <div class="status-complete fade-in">
-            <sl-icon library="material" name="check_circle_20px"></sl-icon>
+            <cw-icon library="material" name="check_circle_20px"></cw-icon>
             <span>Report deleted.</span>
           </div>
         </section>
@@ -839,14 +839,14 @@ export class ChromedashWPTEvalPage extends LitElement {
         ${
           status === AITestEvaluationStatus.FAILED
             ? html`
-                <sl-alert variant="danger" open>
+                <cw-alert variant="danger" open>
                   The previous analysis run failed. Please try again.
-                </sl-alert>
+                </cw-alert>
               `
             : nothing
         }
 
-        <sl-button
+        <cw-button
           variant="${this.feature.ai_test_eval_report ? 'danger' : 'primary'}"
           size="large"
           class="generate-button"
@@ -858,7 +858,7 @@ export class ChromedashWPTEvalPage extends LitElement {
           @click=${this.handleGenerateClick}
         >
           ${buttonLabel}
-        </sl-button>
+        </cw-button>
 
         ${
           this.feature.confidential
@@ -884,7 +884,7 @@ export class ChromedashWPTEvalPage extends LitElement {
           isCooldownActive && !this.feature.confidential
             ? html`
                 <div class="cooldown-message">
-                  <sl-icon name="hourglass-split"></sl-icon>
+                  <cw-icon name="hourglass-split"></cw-icon>
                   Available in ${minutesRemaining}
                   minute${minutesRemaining !== 1 ? 's' : ''}
                 </div>
@@ -915,25 +915,25 @@ export class ChromedashWPTEvalPage extends LitElement {
         <div class="report-header">
           <h2 class="${titleClass}">Analysis Results</h2>
           <div class="report-actions">
-            <sl-button
+            <cw-button
               variant="danger"
               outline
               size="small"
               @click=${this.handleDeleteReport}
               title="Delete report"
             >
-              <sl-icon slot="prefix" name="trash"></sl-icon>
+              <cw-icon slot="prefix" name="trash"></cw-icon>
               Delete Report
-            </sl-button>
-            <sl-button
+            </cw-button>
+            <cw-button
               variant="default"
               size="small"
               @click=${this.handleCopyReport}
               title="Copy report to clipboard"
             >
-              <sl-icon slot="prefix" name="copy"></sl-icon>
+              <cw-icon slot="prefix" name="copy"></cw-icon>
               Copy Report
-            </sl-button>
+            </cw-button>
           </div>
         </div>
         <div class="report-content ${contentClass}">
@@ -946,11 +946,11 @@ export class ChromedashWPTEvalPage extends LitElement {
   renderSkeletonSection() {
     return html`
       <section class="card">
-        <h3><sl-skeleton effect="sheen" style="width: 50%"></sl-skeleton></h3>
+        <h3><cw-skeleton effect="sheen" style="width: 50%"></cw-skeleton></h3>
         <p>
-          <sl-skeleton effect="sheen"></sl-skeleton>
-          <sl-skeleton effect="sheen"></sl-skeleton>
-          <sl-skeleton effect="sheen"></sl-skeleton>
+          <cw-skeleton effect="sheen"></cw-skeleton>
+          <cw-skeleton effect="sheen"></cw-skeleton>
+          <cw-skeleton effect="sheen"></cw-skeleton>
         </p>
       </section>
     `;
@@ -972,8 +972,8 @@ export class ChromedashWPTEvalPage extends LitElement {
           <span class="experimental-tag">Experimental</span>
         </h1>
 
-        <sl-alert variant="primary" open>
-          <sl-icon slot="icon" library="material" name="info_20px"></sl-icon>
+        <cw-alert variant="primary" open>
+          <cw-icon slot="icon" library="material" name="info_20px"></cw-icon>
           This feature is experimental and reports may be inaccurate. Please
           <a
             href="https://github.com/GoogleChrome/chromium-dashboard/issues/new?labels=Feedback,WPT-AI"
@@ -981,7 +981,7 @@ export class ChromedashWPTEvalPage extends LitElement {
             >file an issue</a
           >
           if you have feedback or suggestions.
-        </sl-alert>
+        </cw-alert>
 
         <section class="card description">
           <h2>About</h2>

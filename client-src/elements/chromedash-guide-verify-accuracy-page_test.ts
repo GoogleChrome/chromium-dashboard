@@ -135,7 +135,7 @@ describe('chromedash-guide-verify-accuracy-page', () => {
     );
     await component.updateComplete;
 
-    const skeleton = component.renderRoot.querySelector('sl-skeleton');
+    const skeleton = component.renderRoot.querySelector('cw-skeleton');
     assert.exists(skeleton);
     const form = component.renderRoot.querySelector(
       'form[name="feature_form"]'

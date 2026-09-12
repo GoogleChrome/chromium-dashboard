@@ -119,20 +119,20 @@ export const FORM_STYLES = [
       margin-top: 4px;
     }
 
-    sl-input::part(base) {
+    cw-input::part(base) {
       overflow: visible;
     }
 
-    sl-input[invalid]::part(input),
-    sl-checkbox[invalid]::part(input),
+    cw-input[invalid]::part(input),
+    cw-checkbox[invalid]::part(input),
     chromedash-textarea[invalid]::part(textarea)
     {
       outline: 1px dotted red;
       background-color: #FFEDF5;
     }
 
-    sl-select[size="small"] sl-menu-item::part(base) {
-      font-size: var(--sl-font-size-x-small);
+    cw-select[size="small"] cw-menu-item::part(base) {
+      font-size: var(--cw-font-size-x-small);
       padding: 0px;
     }
 
@@ -142,7 +142,7 @@ export const FORM_STYLES = [
     }
 
     /* menu items for selects should not be displayed at all, until defined */
-    sl-select sl-menu-item:not(:defined) {
+    cw-select cw-menu-item:not(:defined) {
       display: none;
     }
 
@@ -213,25 +213,25 @@ export const FORM_STYLES = [
       color: red;
     }
 
-    chromedash-form-field sl-input[data-user-invalid]::part(base),
+    chromedash-form-field cw-input[data-user-invalid]::part(base),
     chromedash-form-field chromedash-textarea[data-user-invalid]::part(base) {
       border-color: red;
     }
 
-    chromedash-form-field sl-details::part(base) {
+    chromedash-form-field cw-details::part(base) {
       border-width: 0;
     }
 
-    chromedash-form-field sl-details::part(header) {
+    chromedash-form-field cw-details::part(header) {
       padding: 0;
       display: none;
     }
 
-    chromedash-form-field sl-details::part(content) {
+    chromedash-form-field cw-details::part(content) {
       padding-top: 0;
     }
 
-    chromedash-form-field sl-icon-button::part(base) {
+    chromedash-form-field cw-icon-button::part(base) {
       font-size: 16px;
       color: var(--link-color);
       padding: 0;
@@ -290,15 +290,15 @@ export const FORM_STYLES = [
       border: 1px solid #bdbdbd;
     }
 
-    sl-skeleton {
+    cw-skeleton {
       margin-bottom: 1em;
       width: 60%;
     }
-    sl-skeleton:nth-of-type(even) {
+    cw-skeleton:nth-of-type(even) {
       width: 50%;
     }
 
-    h3 sl-skeleton {
+    h3 cw-skeleton {
       margin-top: 1em;
       width: 30%;
       height: 1.5em;

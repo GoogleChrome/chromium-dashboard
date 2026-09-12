@@ -101,7 +101,7 @@ class ChromedashPrevoteDialog extends LitElement {
         #prereqs-header {
           margin-bottom: 8px;
         }
-        sl-button {
+        cw-button {
           float: right;
           margin: var(--content-padding-half);
         }
@@ -110,11 +110,11 @@ class ChromedashPrevoteDialog extends LitElement {
   }
 
   show() {
-    this.renderRoot.querySelector('sl-dialog')?.show();
+    this.renderRoot.querySelector('cw-dialog')?.show();
   }
 
   hide() {
-    this.renderRoot.querySelector('sl-dialog')?.hide();
+    this.renderRoot.querySelector('cw-dialog')?.hide();
   }
 
   handleCancel() {
@@ -191,14 +191,14 @@ class ChromedashPrevoteDialog extends LitElement {
   }
 
   render() {
-    return html` <sl-dialog label="Prerequsites for API Owner approval">
+    return html` <cw-dialog label="Prerequsites for API Owner approval">
       ${this.renderFieldsSection()} ${this.renderGatesSection()}
-      <sl-button size="small" @click=${this.handleProceed}
-        >Approve anyway</sl-button
+      <cw-button size="small" @click=${this.handleProceed}
+        >Approve anyway</cw-button
       >
-      <sl-button size="small" variant="warning" @click=${this.handleCancel}
-        >Don't approve yet</sl-button
+      <cw-button size="small" variant="warning" @click=${this.handleCancel}
+        >Don't approve yet</cw-button
       >
-    </sl-dialog>`;
+    </cw-dialog>`;
   }
 }

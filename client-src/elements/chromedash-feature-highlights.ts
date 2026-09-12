@@ -54,7 +54,7 @@ export class ChromedashFeatureHighlights extends LitElement {
           margin-top: var(--content-padding-half);
         }
 
-        sl-dropdown {
+        cw-dropdown {
           float: right;
           margin-right: -16px;
           margin-top: -20px;
@@ -420,45 +420,45 @@ export class ChromedashFeatureHighlights extends LitElement {
 
     if (this.canDeleteFeature) {
       archiveItem = html`
-        <sl-menu-item id="archive-feature" @click=${this.handleArchiveFeature}>
+        <cw-menu-item id="archive-feature" @click=${this.handleArchiveFeature}>
           Archive feature
-        </sl-menu-item>
+        </cw-menu-item>
       `;
     }
 
     if (this.canEditFeature) {
       if (this.isSuspended()) {
         resumeItem = html`
-          <sl-menu-item @click=${this.handleResume}>
+          <cw-menu-item @click=${this.handleResume}>
             Resume active development
-          </sl-menu-item>
+          </cw-menu-item>
         `;
       } else {
         suspendItem = html`
-          <sl-menu-item @click=${this.handleSuspend}>
+          <cw-menu-item @click=${this.handleSuspend}>
             Suspend development
-          </sl-menu-item>
+          </cw-menu-item>
         `;
       }
     }
 
     return html`
-      <sl-dropdown placement="left-start">
-        <sl-icon-button
+      <cw-dropdown placement="left-start">
+        <cw-icon-button
           library="material"
           name="more_vert_24px"
           label="Feature menu"
           style="font-size: 1.3rem;"
           slot="trigger"
-        ></sl-icon-button>
-        <sl-menu> ${suspendItem} ${resumeItem} ${archiveItem} </sl-menu>
-      </sl-dropdown>
+        ></cw-icon-button>
+        <cw-menu> ${suspendItem} ${resumeItem} ${archiveItem} </cw-menu>
+      </cw-dropdown>
     `;
   }
 
   render() {
     return html`
-      <sl-details summary="Overview" ?open=${true}>
+      <cw-details summary="Overview" ?open=${true}>
         <section class="card ${this.isSuspended() ? 'suspended' : ''}">
           ${this.renderDotDotDotMenu()} ${this.renderFeatureContent()}
           ${
@@ -468,7 +468,7 @@ export class ChromedashFeatureHighlights extends LitElement {
           }
           ${this.renderHistory()}
         </section>
-      </sl-details>
+      </cw-details>
     `;
   }
 }

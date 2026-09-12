@@ -67,7 +67,7 @@ export class ChromedashTimelinePage extends LitElement {
       <div id="subheader">
         <h2 id="breadcrumbs">
           <a href="/metrics/${this.type}/${this.view}">
-            <sl-icon name="arrow-left"></sl-icon> </a
+            <cw-icon name="arrow-left"></cw-icon> </a
           >${subTitleText} > timeline
         </h2>
       </div>

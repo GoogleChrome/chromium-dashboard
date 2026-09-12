@@ -18,11 +18,11 @@ import {css, html, LitElement, TemplateResult, nothing} from 'lit';
 import {customElement, state, property} from 'lit/decorators.js';
 import {ifDefined} from 'lit/directives/if-defined.js';
 import {
-  SlTextarea,
-  SlInput,
-  SlSelect,
-  SlCheckbox,
-} from '@shoelace-style/shoelace';
+  CwTextarea,
+  CwInput,
+  CwSelect,
+  CwCheckbox,
+} from '@cordwainer/cw-elements';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {Feature, User, StageDict} from '../js-src/cs-client.js';
 import {
@@ -175,7 +175,7 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
           font-weight: bold;
         }
         .reviewed::part(base) {
-          background: var(--sl-color-blue-100);
+          background: var(--cw-color-blue-100);
         }
         .ready::part(base) {
           background: var(--success-background);
@@ -472,19 +472,19 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
     const options: TemplateResult[] = [];
     for (let i = 0; i < this.selectedMilestone! + 20; ++i) {
       options.push(
-        html`<sl-option value="${i}">Chrome ${i} release summary</sl-option>`
+        html`<cw-option value="${i}">Chrome ${i} release summary</cw-option>`
       );
     }
-    return html` <sl-select
+    return html` <cw-select
       id="milestone-selector"
       placement="top"
       hoist
       size="small"
       value=${this.selectedMilestone!}
-      @sl-change=${this.updateSelectedMilestone}
+      @cw-change=${this.updateSelectedMilestone}
     >
       ${options.map(option => option)}
-    </sl-select>`;
+    </cw-select>`;
   }
 
   /**
@@ -653,15 +653,15 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
         fieldValues.push({name, value, touched: true, stageId: stage?.id});
       }
     };
-    let nameEl: SlTextarea = this.shadowRoot?.querySelector<SlTextarea>(
+    let nameEl: CwTextarea = this.shadowRoot?.querySelector<CwTextarea>(
       '#edit-name-' + f.id
     )!;
     addFieldValue('name', nameEl, f.name);
-    let confidentialEl: SlCheckbox = this.shadowRoot?.querySelector<SlCheckbox>(
+    let confidentialEl: CwCheckbox = this.shadowRoot?.querySelector<CwCheckbox>(
       '#edit-confidential-' + f.id
     )!;
     addFieldValue('confidential', confidentialEl, f.confidential);
-    let reviewedEl: SlCheckbox = this.shadowRoot?.querySelector<SlCheckbox>(
+    let reviewedEl: CwCheckbox = this.shadowRoot?.querySelector<CwCheckbox>(
       '#edit-reviewed-' + f.id
     )!;
     addFieldValue(
@@ -669,7 +669,7 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
       reviewedEl,
       f.is_releasenotes_content_reviewed
     );
-    let readyEl: SlCheckbox = this.shadowRoot?.querySelector<SlCheckbox>(
+    let readyEl: CwCheckbox = this.shadowRoot?.querySelector<CwCheckbox>(
       '#edit-ready-' + f.id
     )!;
     addFieldValue(
@@ -677,27 +677,27 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
       readyEl,
       f.is_releasenotes_publish_ready
     );
-    let summaryEl: SlTextarea = this.shadowRoot?.querySelector<SlTextarea>(
+    let summaryEl: CwTextarea = this.shadowRoot?.querySelector<CwTextarea>(
       '#edit-summary-' + f.id
     )!;
     addFieldValue('summary', summaryEl, f.summary);
     const isMarkdown = (f.markdown_fields || []).includes('summary');
-    let markdownEl: SlCheckbox = this.shadowRoot?.querySelector<SlCheckbox>(
+    let markdownEl: CwCheckbox = this.shadowRoot?.querySelector<CwCheckbox>(
       '#summary-is-markdown-' + f.id
     )!;
     addFieldValue('summary_is_markdown', markdownEl, isMarkdown);
 
     for (const s of f.stages) {
       if (s.id) {
-        const milestoneEl = this.shadowRoot?.querySelector<SlInput>(
+        const milestoneEl = this.shadowRoot?.querySelector<CwInput>(
           '#edit-rollout-milestone-' + s.id
         )!;
         addFieldValue('rollout_milestone', milestoneEl, s.rollout_milestone, s);
-        const platformsEl = this.shadowRoot?.querySelector<SlSelect>(
+        const platformsEl = this.shadowRoot?.querySelector<CwSelect>(
           '#edit-rollout-platforms-' + s.id
         )!;
         addFieldValue('rollout_platforms', platformsEl, s.rollout_platforms, s);
-        const rolloutStagePlanEl = this.shadowRoot?.querySelector<SlSelect>(
+        const rolloutStagePlanEl = this.shadowRoot?.querySelector<CwSelect>(
           '#edit-rollout-stage-plan-' + s.id
         )!;
         addFieldValue(
@@ -706,7 +706,7 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
           s.rollout_stage_plan,
           s
         );
-        const detailsEl = this.shadowRoot?.querySelector<SlInput>(
+        const detailsEl = this.shadowRoot?.querySelector<CwInput>(
           '#edit-rollout-details-' + s.id
         )!;
         addFieldValue('rollout_details', detailsEl, s.rollout_details, s);
@@ -763,13 +763,13 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
   renderEditButton(f: Feature): TemplateResult {
     if (this.userCanEdit(f) && !this.editingFeatureIds.has(f.id)) {
       return html`
-        <sl-button
+        <cw-button
           @click=${() => {
             this.startEditing(f.id);
           }}
           class="edit-button"
           size="small"
-          >Edit</sl-button
+          >Edit</cw-button
         >
       `;
     }
@@ -779,20 +779,20 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
   renderLabels(f: Feature): TemplateResult {
     let confidentialLabel = html``;
     if (f.confidential) {
-      confidentialLabel = html`<sl-tag pill size="small" class="confidential"
-        >CONFIDENTIAL</sl-tag
+      confidentialLabel = html`<cw-tag pill size="small" class="confidential"
+        >CONFIDENTIAL</cw-tag
       >`;
     }
     let reviewedLabel = html``;
     if (f.is_releasenotes_content_reviewed) {
-      reviewedLabel = html`<sl-tag pill size="small" class="reviewed"
-        >Release Notes Content Finalized</sl-tag
+      reviewedLabel = html`<cw-tag pill size="small" class="reviewed"
+        >Release Notes Content Finalized</cw-tag
       >`;
     }
     let readyLabel = html``;
     if (f.is_releasenotes_publish_ready) {
-      readyLabel = html`<sl-tag pill size="small" class="ready"
-        >Ready for Publishing</sl-tag
+      readyLabel = html`<cw-tag pill size="small" class="ready"
+        >Ready for Publishing</cw-tag
       >`;
     }
     return html`<div class="labels">
@@ -803,14 +803,14 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
   renderEditableLabels(f: Feature): TemplateResult {
     let confidentialBox = html`
       <div>
-        <sl-checkbox
+        <cw-checkbox
           class="feature-confidential"
           id="edit-confidential-${f.id}"
           ?checked=${f.confidential}
           size="small"
         >
           Confidential
-        </sl-checkbox>
+        </cw-checkbox>
       </div>
     `;
 
@@ -818,14 +818,14 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
     if (this.userCanReview()) {
       reviewedBox = html`
         <div>
-          <sl-checkbox
+          <cw-checkbox
             class="feature-reviewed"
             id="edit-reviewed-${f.id}"
             ?checked=${f.is_releasenotes_content_reviewed}
             size="small"
           >
             Release Notes Content Finalized
-          </sl-checkbox>
+          </cw-checkbox>
         </div>
       `;
     }
@@ -833,14 +833,14 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
     let readyBox = html``;
     if (this.userCanReview()) {
       readyBox = html`<div>
-        <sl-checkbox
+        <cw-checkbox
           class="feature-ready"
           id="edit-ready-${f.id}"
           ?checked=${f.is_releasenotes_publish_ready}
           size="small"
         >
           Ready for Publishing
-        </sl-checkbox>
+        </cw-checkbox>
       </div> `;
     }
 
@@ -853,13 +853,13 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
 
   renderEditableFeatureName(f: Feature): TemplateResult {
     return html`
-      <sl-input
+      <cw-input
         class="feature-name"
         id="edit-name-${f.id}"
         value=${f.name}
         size="small"
       >
-      </sl-input>
+      </cw-input>
     `;
   }
 
@@ -886,7 +886,7 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
   renderEditableFeatureSummary(f: Feature): TemplateResult {
     const isMarkdown = (f.markdown_fields || []).includes('summary');
     const isPreviewing = this.previewingIds.has(f.id);
-    const editor = html` <sl-textarea
+    const editor = html` <cw-textarea
       ?hidden=${isPreviewing}
       class="feature-summary"
       id="edit-summary-${f.id}"
@@ -894,12 +894,12 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
       size="small"
       resize="auto"
     >
-    </sl-textarea>`;
+    </cw-textarea>`;
     const previewText =
-      this.shadowRoot?.querySelector<SlTextarea>('#edit-summary-' + f.id)
+      this.shadowRoot?.querySelector<CwTextarea>('#edit-summary-' + f.id)
         ?.value ?? f.summary;
     const markdownChecked =
-      this.shadowRoot?.querySelector<SlCheckbox>('#summary-is-markdown-' + f.id)
+      this.shadowRoot?.querySelector<CwCheckbox>('#summary-is-markdown-' + f.id)
         ?.checked ?? isMarkdown;
     const preview = html`
       <div
@@ -911,28 +911,28 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
       </div>
     `;
     const controls = html`
-      <sl-checkbox
+      <cw-checkbox
         class="markdown-checkbox"
         id="summary-is-markdown-${f.id}"
         size="small"
         ?checked=${isMarkdown}
-        >Use markdown</sl-checkbox
+        >Use markdown</cw-checkbox
       >
-      <sl-icon-button
+      <cw-icon-button
         name="info-circle"
         id="info-button"
         title="GitHub flavored markdown docs"
         href="https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax"
         target="_blank"
-      ></sl-icon-button>
-      <sl-checkbox
+      ></cw-icon-button>
+      <cw-checkbox
         id="show-preview-${f.id}"
         size="small"
         ?checked=${isPreviewing}
-        @sl-change=${e => this.handlePreviewChecked(e, f.id)}
+        @cw-change=${e => this.handlePreviewChecked(e, f.id)}
       >
         Preview
-      </sl-checkbox>
+      </cw-checkbox>
     `;
     return html` ${preview} ${editor} ${controls} `;
   }
@@ -949,7 +949,7 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
     );
 
     const isPreviewing = this.previewingIds.has(s.id);
-    const editor = html` <sl-textarea
+    const editor = html` <cw-textarea
       ?hidden=${isPreviewing}
       class="rollout-details"
       id="edit-rollout-details-${s.id}"
@@ -958,9 +958,9 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
       rows="1"
       resize="auto"
     >
-    </sl-textarea>`;
+    </cw-textarea>`;
     const previewText =
-      this.shadowRoot?.querySelector<SlTextarea>(
+      this.shadowRoot?.querySelector<CwTextarea>(
         '#edit-rollout-details-' + s.id
       )?.value ?? s.rollout_details;
     const preview = html`
@@ -973,37 +973,37 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
       </div>
     `;
     const controls = html`
-      <sl-checkbox class="markdown-checkbox" size="small" checked disabled
-        >Use markdown</sl-checkbox
+      <cw-checkbox class="markdown-checkbox" size="small" checked disabled
+        >Use markdown</cw-checkbox
       >
-      <sl-icon-button
+      <cw-icon-button
         name="info-circle"
         id="info-button"
         title="GitHub flavored markdown docs"
         href="https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax"
         target="_blank"
-      ></sl-icon-button>
-      <sl-checkbox
+      ></cw-icon-button>
+      <cw-checkbox
         id="show-preview-${s.id}"
         size="small"
         ?checked=${isPreviewing}
-        @sl-change=${e => this.handlePreviewChecked(e, s.id)}
+        @cw-change=${e => this.handlePreviewChecked(e, s.id)}
       >
         Preview
-      </sl-checkbox>
+      </cw-checkbox>
     `;
 
     return html`
       <li class="stage">
         <div class="hbox">
-          <sl-input
+          <cw-input
             class="rollout-milestone"
             id="edit-rollout-milestone-${s.id}"
             type="number"
             value=${s.rollout_milestone}
-          ></sl-input>
+          ></cw-input>
 
-          <sl-select
+          <cw-select
             class="rollout-platforms"
             multiple
             clearable
@@ -1012,21 +1012,21 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
           >
             ${availableOptions.map(
               ([value, label]) => html`
-                <sl-option value="${value}"> ${label} </sl-option>
+                <cw-option value="${value}"> ${label} </cw-option>
               `
             )}
-          </sl-select>
+          </cw-select>
         </div>
-        <sl-select
+        <cw-select
           class="rollout-stage-plan"
           id="edit-rollout-stage-plan-${s.id}"
           value=${s.rollout_stage_plan}
         >
           ${Object.values(ROLLOUT_STAGE_PLAN_CATEGORIES).map(
             ([value, label]) =>
-              html`<sl-option value=${value}>${label}</sl-option>`
+              html`<cw-option value=${value}>${label}</cw-option>`
           )}
-        </sl-select>
+        </cw-select>
         ${preview} ${editor} ${controls}
       </li>
     `;
@@ -1065,22 +1065,22 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
   renderSaveAndCancel(f: Feature): TemplateResult {
     if (this.editingFeatureIds.has(f.id)) {
       return html`
-        <sl-button
+        <cw-button
           class="save-button"
           @click=${() => {
             this.save(f);
           }}
           size="small"
           variant="primary"
-          >Save</sl-button
+          >Save</cw-button
         >
-        <sl-button
+        <cw-button
           class="cancel-button"
           @click=${() => {
             this.cancel(f.id);
           }}
           size="small"
-          >Cancel</sl-button
+          >Cancel</cw-button
         >
       `;
     }

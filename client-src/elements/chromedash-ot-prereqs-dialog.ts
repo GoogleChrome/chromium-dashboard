@@ -117,11 +117,11 @@ class ChromedashOTPrereqsDialog extends LitElement {
   }
 
   show() {
-    this.renderRoot.querySelector('sl-dialog')?.show();
+    this.renderRoot.querySelector('cw-dialog')?.show();
   }
 
   renderEndMilestoneExplanationDialog() {
-    return html` <sl-dialog label="End milestone date">
+    return html` <cw-dialog label="End milestone date">
       <p>
         When a specific milestone is approved by API owners, the trial's end
         date is set based on the stable release date of (end milestone +2). Most
@@ -130,7 +130,7 @@ class ChromedashOTPrereqsDialog extends LitElement {
         ensures users don't see breakage before upgrading to the version with
         the feature enabled by default.
       </p>
-    </sl-dialog>`;
+    </cw-dialog>`;
   }
 
   submitTrialExtension() {
@@ -150,7 +150,7 @@ class ChromedashOTPrereqsDialog extends LitElement {
   }
 
   renderThreadMissingDialog() {
-    return html`<sl-dialog label="Intent thread not found">
+    return html`<cw-dialog label="Intent thread not found">
       <p>
         LGTMs have been detected for this trial extension, but
         <strong>no intent thread link has been detected or provided</strong>.
@@ -158,28 +158,28 @@ class ChromedashOTPrereqsDialog extends LitElement {
         add the value to the "Intent to Extend Experiment link" field by
         selecting "Edit fields" button on your feature's "Origin Trial" section.
       </p>
-    </sl-dialog>`;
+    </cw-dialog>`;
   }
 
   renderFinalizeExtensionDialog() {
     if (!this.stage.intent_thread_url) {
       return this.renderThreadMissingDialog();
     }
-    return html` <sl-dialog label="Finalize trial extension">
+    return html` <cw-dialog label="Finalize trial extension">
       <p>
         LGTMs have been detected for this trial extension. This origin trial
         will be extended <strong>through milestone ${this.milestone}</strong>.
         Is this correct?
       </p>
       <br />
-      <sl-button
+      <cw-button
         class="float-right"
         variant="primary"
         size="small"
         @click=${() => this.submitTrialExtension()}
-        >Proceed</sl-button
+        >Proceed</cw-button
       >
-      <sl-button
+      <cw-button
         class="float-right"
         id="update-button"
         variant="info"
@@ -188,13 +188,13 @@ class ChromedashOTPrereqsDialog extends LitElement {
           location.assign(
             `/guide/stage/${this.featureId}/${this.stage.id}?updateExtension`
           )}
-        >Change milestone</sl-button
+        >Change milestone</cw-button
       >
-    </sl-dialog>`;
+    </cw-dialog>`;
   }
 
   renderExtensionPrereqs() {
-    return html` <sl-dialog label="Origin trial extension prerequisites">
+    return html` <cw-dialog label="Origin trial extension prerequisites">
       <div id="prereqs-header">
         <strong>Before submitting an extension request</strong>, please ensure
         that your Intent to Extend Experiment has been drafted, and the required
@@ -208,7 +208,7 @@ class ChromedashOTPrereqsDialog extends LitElement {
         </a>
       </div>
       <br />
-      <sl-button
+      <cw-button
         id="continue-button"
         variant="primary"
         @click=${() =>
@@ -216,13 +216,13 @@ class ChromedashOTPrereqsDialog extends LitElement {
             `/ot_extension_request/${this.featureId}/${this.stage.id}`
           )}
         size="small"
-        >Proceed</sl-button
+        >Proceed</cw-button
       >
-    </sl-dialog>`;
+    </cw-dialog>`;
   }
 
   renderCreationPrereqs() {
-    return html` <sl-dialog label="Origin trial creation prerequisites">
+    return html` <cw-dialog label="Origin trial creation prerequisites">
       <div id="prereqs-header">
         <strong>Before submitting a creation request</strong>, please ensure the
         following prerequisite steps have been completed:
@@ -281,7 +281,7 @@ class ChromedashOTPrereqsDialog extends LitElement {
         origin-trials-support@google.com.
       </p>
       <br />
-      <sl-button
+      <cw-button
         class="float-right"
         variant="primary"
         @click=${() =>
@@ -289,9 +289,9 @@ class ChromedashOTPrereqsDialog extends LitElement {
             `/ot_creation_request/${this.featureId}/${this.stage.id}`
           )}
         size="small"
-        >Proceed</sl-button
+        >Proceed</cw-button
       >
-    </sl-dialog>`;
+    </cw-dialog>`;
   }
 
   render() {

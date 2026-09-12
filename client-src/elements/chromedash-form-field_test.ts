@@ -15,7 +15,7 @@
  */
 
 import {assert, fixture} from '@open-wc/testing';
-import '@shoelace-style/shoelace/dist/components/option/option.js';
+import '@cordwainer/cw-elements/dist/components/option/option.js';
 import {html, render} from 'lit';
 import {
   ChromedashFormField,
@@ -49,7 +49,7 @@ describe('chromedash-form-field', () => {
 
     const renderElement = component.renderRoot as HTMLElement;
     assert.include(renderElement.innerHTML, 'Unlisted');
-    assert.include(renderElement.innerHTML, 'sl-checkbox');
+    assert.include(renderElement.innerHTML, 'cw-checkbox');
     assert.include(renderElement.innerHTML, 'checked');
     assert.include(renderElement.innerHTML, 'A specific label');
   });
@@ -66,7 +66,7 @@ describe('chromedash-form-field', () => {
 
     const renderElement = component.renderRoot as HTMLElement;
     assert.include(renderElement.innerHTML, 'Confidential');
-    assert.include(renderElement.innerHTML, 'sl-checkbox');
+    assert.include(renderElement.innerHTML, 'cw-checkbox');
     assert.include(renderElement.innerHTML, 'checked');
   });
 
@@ -82,8 +82,8 @@ describe('chromedash-form-field', () => {
 
     const renderElement = component.renderRoot as HTMLElement;
     assert.include(renderElement.innerHTML, 'category');
-    assert.include(renderElement.innerHTML, 'sl-select');
-    assert.include(renderElement.innerHTML, 'sl-option');
+    assert.include(renderElement.innerHTML, 'cw-select');
+    assert.include(renderElement.innerHTML, 'cw-option');
     assert.notInclude(renderElement.innerHTML, 'required');
   });
 
@@ -111,9 +111,9 @@ describe('chromedash-form-field', () => {
 
     const renderElement = component.renderRoot as HTMLElement;
     assert.include(renderElement.innerHTML, 'Feature name');
-    assert.include(renderElement.innerHTML, 'sl-input');
+    assert.include(renderElement.innerHTML, 'cw-input');
     assert.include(renderElement.innerHTML, 'required');
-    assert.include(renderElement.innerHTML, 'sl-icon-button');
+    assert.include(renderElement.innerHTML, 'cw-icon-button');
     assert.include(renderElement.innerHTML, 'class="extrahelp"');
   });
 
@@ -223,7 +223,7 @@ describe('chromedash-form-field', () => {
 
     const renderElement = component.renderRoot as HTMLElement;
     assert.include(renderElement.innerHTML, 'Rollout platforms');
-    assert.include(renderElement.innerHTML, 'sl-select');
+    assert.include(renderElement.innerHTML, 'cw-select');
     assert.include(renderElement.innerHTML, 'multiple');
     assert.include(renderElement.innerHTML, 'cleareable');
   });
@@ -243,7 +243,7 @@ describe('chromedash-form-field', () => {
     assert.exists(component);
     assert.instanceOf(component, ChromedashFormField);
 
-    const slSelect = component.renderRoot.querySelector('sl-select');
+    const slSelect = component.renderRoot.querySelector('cw-select');
     const inner = slSelect?.innerHTML;
     assert.include(inner, 'Android');
     assert.notInclude(inner, 'LaCrOS'); // It is obsolete.
@@ -258,7 +258,7 @@ describe('chromedash-form-field', () => {
     assert.exists(component);
     assert.instanceOf(component, ChromedashFormField);
 
-    const slSelect = component.renderRoot.querySelector('sl-select');
+    const slSelect = component.renderRoot.querySelector('cw-select');
     const inner = slSelect?.innerHTML;
     assert.include(inner, 'Android');
     assert.include(inner, 'LaCrOS'); // Obsoelete, but used.
@@ -292,7 +292,7 @@ describe('chromedash-form-field', () => {
       `);
       assert.instanceOf(component, ChromedashFormField);
       const optionValues = Array.from(
-        component.renderRoot.querySelectorAll('sl-option')
+        component.renderRoot.querySelectorAll('cw-option')
       ).map(option => ({
         text: option.textContent!.trim(),
         value: option.value,

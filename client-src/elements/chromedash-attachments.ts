@@ -58,7 +58,7 @@ export class ChromedashAttachments extends LitElement {
   handleFieldUpdated(e) {
     let fieldValue: string = e.target.value;
     this.value = fieldValue;
-    this.dispatchEvent(new CustomEvent('sl-change'));
+    this.dispatchEvent(new CustomEvent('cw-change'));
   }
 
   handleFileSelected(e: Event) {
@@ -69,7 +69,7 @@ export class ChromedashAttachments extends LitElement {
         .addAttachment(this.featureId, inputEl.name, file)
         .then(resp => {
           this.value += '\n' + resp.attachment_url;
-          this.dispatchEvent(new CustomEvent('sl-change'));
+          this.dispatchEvent(new CustomEvent('cw-change'));
         });
     }
   }
@@ -127,13 +127,13 @@ export class ChromedashAttachments extends LitElement {
         style="display:none"
       />
       <div style=${styleMap(buttonContainerStyles)}>
-        <sl-button
+        <cw-button
           id="upload-button"
           @click=${e => this.fileInputRef?.value?.click()}
         >
-          <sl-icon slot="prefix" name="upload"></sl-icon>
+          <cw-icon slot="prefix" name="upload"></cw-icon>
           Upload image
-        </sl-button>
+        </cw-button>
         <div>Max size: 1MB</div>
       </div>
     `;
@@ -151,7 +151,7 @@ export class ChromedashAttachments extends LitElement {
         pattern=${this.pattern}
         chromedash_single_pattern=${this.chromedash_single_pattern}
         chromedash_split_pattern=${this.chromedash_split_pattern}
-        @sl-change=${this.handleFieldUpdated}
+        @cw-change=${this.handleFieldUpdated}
         @keyup=${this.handleFieldUpdated}
       ></chromedash-textarea>
       <div>${this.renderThumbnails()} ${this.renderUploadButton()}</div>

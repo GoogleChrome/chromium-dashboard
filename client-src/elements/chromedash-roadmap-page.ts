@@ -22,7 +22,7 @@ import {User} from '../js-src/cs-client.js';
 import './chromedash-roadmap.js';
 import {ChromedashRoadmap} from './chromedash-roadmap.js';
 import {openRoadmapHelpDialog} from './chromedash-roadmap-help-dialog.js';
-import {SlDialog} from '@shoelace-style/shoelace';
+import {CwDialog} from '@cordwainer/cw-elements';
 
 @customElement('chromedash-roadmap-page')
 export class ChromedashRoadmapPage extends LitElement {
@@ -139,13 +139,13 @@ export class ChromedashRoadmapPage extends LitElement {
 
   renderHelpIcon() {
     return html`
-      <sl-icon
+      <cw-icon
         id="help-button"
         library="material"
         name="help_20px"
         @click="${openRoadmapHelpDialog}"
       >
-      </sl-icon>
+      </cw-icon>
     `;
   }
 

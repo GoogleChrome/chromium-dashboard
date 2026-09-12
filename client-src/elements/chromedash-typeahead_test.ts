@@ -15,14 +15,14 @@
  */
 
 import {assert, fixture} from '@open-wc/testing';
-import '@shoelace-style/shoelace/dist/components/input/input.js';
+import '@cordwainer/cw-elements/dist/components/input/input.js';
 import {
-  SlInput,
-  SlDropdown,
-  type SlMenu,
-  type SlMenuItem,
-} from '@shoelace-style/shoelace';
-import '@shoelace-style/shoelace/dist/components/menu/menu.js';
+  CwInput,
+  CwDropdown,
+  type CwMenu,
+  type CwMenuItem,
+} from '@cordwainer/cw-elements';
+import '@cordwainer/cw-elements/dist/components/menu/menu.js';
 import {html} from 'lit';
 import {
   ChromedashTypeahead,
@@ -37,7 +37,7 @@ describe('chromedash-typeahead', () => {
     `);
     assert.exists(component);
     assert.instanceOf(component, ChromedashTypeahead);
-    const slInput = component.renderRoot.querySelector('sl-input');
+    const slInput = component.renderRoot.querySelector('cw-input');
 
     slInput!.value = 'test value';
     component.reflectValue();
@@ -82,8 +82,8 @@ describe('chromedash-typeahead', () => {
     `);
     assert.exists(component);
     assert.instanceOf(component, ChromedashTypeahead);
-    const slInput = component.renderRoot.querySelector('sl-input');
-    assert.instanceOf(slInput, SlInput);
+    const slInput = component.renderRoot.querySelector('cw-input');
+    assert.instanceOf(slInput, CwInput);
 
     slInput.value = '';
     await slInput.updateComplete;
@@ -188,8 +188,8 @@ describe('chromedash-typeahead-dropdown', () => {
   it('can get, set, and clear its current item', async () => {
     const component = await fixture(html`
       <chromedash-typeahead-dropdown>
-        <sl-input slot="trigger"> </sl-input>
-        <sl-menu>
+        <cw-input slot="trigger"> </cw-input>
+        <cw-menu>
           <chromedash-typeahead-item
             id="item0"
             value="aaa"
@@ -200,13 +200,13 @@ describe('chromedash-typeahead-dropdown', () => {
             value="bbb"
             doc="Docs about bbb"
           ></chromedash-typeahead-item>
-        </sl-menu>
+        </cw-menu>
       </chromedash-typeahead-dropdown>
     `);
     assert.exists(component);
     assert.instanceOf(component, ChromedashTypeaheadDropdown);
-    const item0 = component.querySelector<SlMenuItem>('#item0');
-    const item1 = component.querySelector<SlMenuItem>('#item1');
+    const item0 = component.querySelector<CwMenuItem>('#item0');
+    const item1 = component.querySelector<CwMenuItem>('#item1');
 
     assert.equal(item0, component.getCurrentItem());
 

@@ -19,7 +19,7 @@ import {ref, createRef} from 'lit/directives/ref.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {customElement, property} from 'lit/decorators.js';
 import {GateDict} from './chromedash-gate-chip.js';
-import {SlDialog, SlTextarea} from '@shoelace-style/shoelace';
+import {CwDialog, CwTextarea} from '@cordwainer/cw-elements';
 
 let naRationalDialogEl;
 
@@ -38,8 +38,8 @@ export async function openNaRationaleDialog(gate: GateDict) {
 
 @customElement('chromedash-na-rationale-dialog')
 export class ChromedashNaRationaleDialog extends LitElement {
-  rationaleDialogRef = createRef<SlDialog>();
-  rationaleRef = createRef<SlTextarea>();
+  rationaleDialogRef = createRef<CwDialog>();
+  rationaleRef = createRef<CwTextarea>();
 
   static get styles() {
     return [...SHARED_STYLES, css``];
@@ -75,22 +75,22 @@ export class ChromedashNaRationaleDialog extends LitElement {
         reviewers will still evaluate whether to give an "N/A" response or do a
         review.
       </p>
-      <sl-textarea ${ref(this.rationaleRef)}></sl-textarea>
-      <sl-button
+      <cw-textarea ${ref(this.rationaleRef)}></cw-textarea>
+      <cw-button
         slot="footer"
         variant="primary"
         size="small"
         @click=${this.handlePost}
-        >Post</sl-button
+        >Post</cw-button
       >
     `;
   }
 
   render() {
     return html`
-      <sl-dialog ${ref(this.rationaleDialogRef)} label="Request an N/A">
+      <cw-dialog ${ref(this.rationaleDialogRef)} label="Request an N/A">
         ${this.renderDialogContent()}
-      </sl-dialog>
+      </cw-dialog>
     `;
   }
 }

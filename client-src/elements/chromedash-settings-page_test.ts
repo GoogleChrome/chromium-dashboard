@@ -75,7 +75,7 @@ describe('chromedash-settings-page', () => {
     assert.include(formEl.innerHTML, 'input type="submit"');
 
     // checkbox exists and is checked
-    const checkboxEl = component.renderRoot.querySelector('sl-checkbox');
+    const checkboxEl = component.renderRoot.querySelector('cw-checkbox');
     assert.exists(checkboxEl);
     assert.include(checkboxEl.outerHTML, 'checked');
   });
@@ -101,7 +101,7 @@ describe('chromedash-settings-page', () => {
     assert.include(formEl.innerHTML, 'input type="submit"');
 
     // checkbox exists and is not checked
-    const checkboxEl = component.renderRoot.querySelector('sl-checkbox');
+    const checkboxEl = component.renderRoot.querySelector('cw-checkbox');
     assert.exists(checkboxEl);
     assert.notInclude(checkboxEl.outerHTML, 'checked');
   });

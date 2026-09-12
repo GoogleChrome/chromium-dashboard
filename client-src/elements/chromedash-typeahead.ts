@@ -15,11 +15,11 @@
  */
 
 import {
-  SlInput,
-  SlDropdown,
-  type SlMenu,
-  type SlMenuItem,
-} from '@shoelace-style/shoelace';
+  CwInput,
+  CwDropdown,
+  type CwMenu,
+  type CwMenuItem,
+} from '@cordwainer/cw-elements';
 import {css, html, LitElement, type TemplateResult, nothing} from 'lit';
 import {customElement, property, state} from 'lit/decorators.js';
 import {live} from 'lit/directives/live.js';
@@ -31,7 +31,7 @@ import {SHARED_STYLES} from '../css/shared-css.js';
 
    1. Chromedash-typeahead represents the overall UI widget, accepts a
    `vocabulary` list of words, exposes a `value` string, and emits a
-   `sl-change` event when the user hits enter to submit the value.
+   `cw-change` event when the user hits enter to submit the value.
    Internally, it is responsible for narrowing the vocabulary down to a list
    of candidates based on the prefix that the user has typed.
 
@@ -50,7 +50,7 @@ export interface Candidate {
 @customElement('chromedash-typeahead')
 export class ChromedashTypeahead extends LitElement {
   slDropdownRef: Ref<ChromedashTypeaheadDropdown> = createRef();
-  slInputRef: Ref<SlInput> = createRef();
+  slInputRef: Ref<CwInput> = createRef();
 
   @property()
   value = '';
@@ -114,12 +114,12 @@ export class ChromedashTypeahead extends LitElement {
   }
 
   focus() {
-    const slInput: SlInput = this.slInputRef.value as SlInput;
+    const slInput: CwInput = this.slInputRef.value as CwInput;
     slInput?.focus();
   }
 
   blur() {
-    const slInput: SlInput = this.slInputRef.value as SlInput;
+    const slInput: CwInput = this.slInputRef.value as CwInput;
     slInput?.blur();
   }
 
@@ -186,7 +186,7 @@ export class ChromedashTypeahead extends LitElement {
     return result;
   }
 
-  async handleCandidateSelected(e: {detail: {item: SlMenuItem}}) {
+  async handleCandidateSelected(e: {detail: {item: CwMenuItem}}) {
     const candidateValue = e.detail.item.value;
     const inputEl = this.slInputRef.value?.renderRoot.querySelector('input');
     if (!inputEl) return;
@@ -230,7 +230,7 @@ export class ChromedashTypeahead extends LitElement {
       const currentItem = slDropdown.getCurrentItem();
       if (!slDropdown.open || !currentItem) {
         // User wants to send the query to the server.
-        this._fireEvent('sl-change', this);
+        this._fireEvent('cw-change', this);
         event.stopPropagation();
       }
     }
@@ -278,7 +278,7 @@ export class ChromedashTypeahead extends LitElement {
 
   renderInputField() {
     return html`
-      <sl-input
+      <cw-input
         id="inputfield"
         slot="trigger"
         placeholder=${this.placeholder}
@@ -290,12 +290,12 @@ export class ChromedashTypeahead extends LitElement {
         @keyup="${this.handleInputFieldKeyUp}"
         @focus="${this.calcCandidates}"
         @click="${this.calcCandidates}"
-        @sl-change="${this.reflectValue}"
-        @sl-input="${this.reflectValue}"
+        @cw-change="${this.reflectValue}"
+        @cw-input="${this.reflectValue}"
       >
         <slot name="prefix" slot="prefix"></slot>
         <slot name="suffix" slot="suffix"></slot>
-      </sl-input>
+      </cw-input>
     `;
   }
 
@@ -306,9 +306,9 @@ export class ChromedashTypeahead extends LitElement {
       <chromedash-typeahead-invisible-item></chromedash-typeahead-invisible-item>
     `;
     return html`
-      <sl-menu
+      <cw-menu
         @click=${e => e.preventDefault()}
-        @sl-select=${this.handleCandidateSelected}
+        @cw-select=${this.handleCandidateSelected}
       >
         ${nonselectableItem}
         ${this.candidates.map(
@@ -320,7 +320,7 @@ export class ChromedashTypeahead extends LitElement {
             ></chromedash-typeahead-item>
           `
         )}
-      </sl-menu>
+      </cw-menu>
     `;
   }
 
@@ -338,8 +338,8 @@ export class ChromedashTypeahead extends LitElement {
 }
 
 @customElement('chromedash-typeahead-dropdown')
-export class ChromedashTypeaheadDropdown extends SlDropdown {
-  getCurrentItem(): SlMenuItem | undefined {
+export class ChromedashTypeaheadDropdown extends CwDropdown {
+  getCurrentItem(): CwMenuItem | undefined {
     const item = this.getMenu()!.getCurrentItem();
     if (!item || item instanceof ChromedashTypeaheadInvisibleItem) {
       return undefined;
@@ -347,13 +347,13 @@ export class ChromedashTypeaheadDropdown extends SlDropdown {
     return item;
   }
 
-  setCurrentItem(newCurrentItem: SlMenuItem) {
+  setCurrentItem(newCurrentItem: CwMenuItem) {
     const menu = this.getMenu();
     menu!.setCurrentItem(newCurrentItem);
     newCurrentItem.scrollIntoView({block: 'nearest', behavior: 'smooth'});
   }
 
-  getAllVisibleItems(menu: SlMenu): SlMenuItem[] {
+  getAllVisibleItems(menu: CwMenu): CwMenuItem[] {
     const items = menu.getAllItems();
     return items.filter(
       item => !(item instanceof ChromedashTypeaheadInvisibleItem)
@@ -441,14 +441,14 @@ export class ChromedashTypeaheadItem extends LitElement {
         .menu-item {
           display: flex;
           flex-wrap: wrap;
-          font-family: var(--sl-font-sans);
-          font-size: var(--sl-font-size-medium);
-          font-weight: var(--sl-font-weight-normal);
-          line-height: var(--sl-line-height-normal);
-          letter-spacing: var(--sl-letter-spacing-normal);
-          color: var(--sl-color-neutral-700);
-          padding: var(--sl-spacing-2x-small) var(--sl-spacing-2x-small);
-          transition: var(--sl-transition-fast) fill;
+          font-family: var(--cw-font-sans);
+          font-size: var(--cw-font-size-medium);
+          font-weight: var(--cw-font-weight-normal);
+          line-height: var(--cw-line-height-normal);
+          letter-spacing: var(--cw-letter-spacing-normal);
+          color: var(--cw-color-neutral-700);
+          padding: var(--cw-spacing-2x-small) var(--cw-spacing-2x-small);
+          transition: var(--cw-transition-fast) fill;
           user-select: none;
           -webkit-user-select: none;
           white-space: nowrap;
@@ -457,7 +457,7 @@ export class ChromedashTypeaheadItem extends LitElement {
 
         .active {
           outline: none;
-          background-color: var(--sl-color-primary-200);
+          background-color: var(--cw-color-primary-200);
           opacity: 1;
         }
         #value {
@@ -475,8 +475,8 @@ export class ChromedashTypeaheadItem extends LitElement {
 
   handleMouseOver(event: Event) {
     if (this.parentElement) {
-      (this.parentElement as SlMenu).setCurrentItem(
-        this as unknown as SlMenuItem
+      (this.parentElement as CwMenu).setCurrentItem(
+        this as unknown as CwMenuItem
       );
     }
     event.stopPropagation();

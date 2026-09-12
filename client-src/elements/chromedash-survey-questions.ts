@@ -17,7 +17,7 @@
 import {LitElement, TemplateResult, css, html, nothing} from 'lit';
 import {customElement, property, state} from 'lit/decorators.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
-import {SlChangeEvent, SlInput} from '@shoelace-style/shoelace';
+import {CwChangeEvent, CwInput} from '@cordwainer/cw-elements';
 import {Feature, StageDict, User} from '../js-src/cs-client.js';
 import {GateDict} from './chromedash-gate-chip.js';
 import {FEATURE_TYPES, GATE_TYPES} from './form-field-enums.js';
@@ -115,12 +115,12 @@ export class ChromedashSurveyQuestions extends LitElement {
     const value: boolean = this.gate.survey_answers?.[name];
     return html`
       <li class="question">
-        <sl-checkbox
+        <cw-checkbox
           name=${name}
           ?checked=${value}
           ?disabled=${!this.canEditSurvey()}
-          @sl-change=${e => this.handleFieldChange(name, e.target?.checked)}
-        ></sl-checkbox>
+          @cw-change=${e => this.handleFieldChange(name, e.target?.checked)}
+        ></cw-checkbox>
         ${desc}
       </li>
     `;
@@ -131,14 +131,14 @@ export class ChromedashSurveyQuestions extends LitElement {
     return html`
       <li class="question">
         ${desc}
-        <sl-input
+        <cw-input
           name="${name}"
           size="small"
           value=${value}
           ?disabled=${!this.canEditSurvey()}
-          @sl-change=${e => this.handleFieldChange(name, e.target?.value)}
+          @cw-change=${e => this.handleFieldChange(name, e.target?.value)}
           @keyup=${e => this.handleFieldKeyup(name, e.target?.value)}
-        ></sl-input>
+        ></cw-input>
       </li>
     `;
   }
@@ -148,16 +148,16 @@ export class ChromedashSurveyQuestions extends LitElement {
     return html`
       <li class="question">
         ${desc}
-        <sl-textarea
+        <cw-textarea
           name="${name}"
           size="small"
           rows="2"
           resize="auto"
           value=${value}
           ?disabled=${!this.canEditSurvey()}
-          @sl-change=${e => this.handleFieldChange(name, e.target?.value)}
+          @cw-change=${e => this.handleFieldChange(name, e.target?.value)}
           @keyup=${e => this.handleFieldKeyup(name, e.target?.value)}
-        ></sl-textarea>
+        ></cw-textarea>
       </li>
     `;
   }

@@ -32,7 +32,7 @@ export class ChromedashReportSpecMentor extends LitElement {
 
   render() {
     return html`
-      <sl-details summary="${this.mentor.email} has mentored:" open>
+      <cw-details summary="${this.mentor.email} has mentored:" open>
         <table>
           ${this.mentor.mentored_features.map(
             feature => html`
@@ -42,7 +42,7 @@ export class ChromedashReportSpecMentor extends LitElement {
             `
           )}
         </table>
-      </sl-details>
+      </cw-details>
     `;
   }
 }

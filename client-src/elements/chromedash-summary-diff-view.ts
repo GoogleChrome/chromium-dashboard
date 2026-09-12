@@ -16,7 +16,7 @@
 
 import {LitElement, PropertyValues, css, html, nothing} from 'lit';
 import {customElement, property, query, state} from 'lit/decorators.js';
-import type SlTextarea from '@shoelace-style/shoelace/dist/components/textarea/textarea.js';
+import type CwTextarea from '@cordwainer/cw-elements/dist/components/textarea/textarea.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {autolink} from './utils.js';
 
@@ -46,8 +46,8 @@ export class ChromedashSummaryDiffView extends LitElement {
   @state()
   editBuffer = '';
 
-  @query('sl-textarea')
-  textareaEl?: SlTextarea;
+  @query('cw-textarea')
+  textareaEl?: CwTextarea;
 
   static get styles() {
     return [
@@ -60,26 +60,26 @@ export class ChromedashSummaryDiffView extends LitElement {
         .comparison-grid {
           display: grid;
           grid-template-columns: 1fr 1fr;
-          gap: var(--sl-spacing-medium);
-          margin-bottom: var(--sl-spacing-medium);
+          gap: var(--cw-spacing-medium);
+          margin-bottom: var(--cw-spacing-medium);
         }
 
         .column-card {
-          border: 1px solid var(--sl-color-neutral-200);
-          border-radius: var(--sl-border-radius-medium);
-          background: var(--sl-color-neutral-50);
+          border: 1px solid var(--cw-color-neutral-200);
+          border-radius: var(--cw-border-radius-medium);
+          background: var(--cw-color-neutral-50);
           display: flex;
           flex-direction: column;
           overflow: hidden;
         }
 
         .column-header {
-          padding: var(--sl-spacing-small) var(--sl-spacing-medium);
-          background: var(--sl-color-neutral-100);
-          border-bottom: 1px solid var(--sl-color-neutral-200);
-          font-weight: var(--sl-font-weight-semibold);
-          font-size: var(--sl-font-size-small);
-          color: var(--sl-color-neutral-700);
+          padding: var(--cw-spacing-small) var(--cw-spacing-medium);
+          background: var(--cw-color-neutral-100);
+          border-bottom: 1px solid var(--cw-color-neutral-200);
+          font-weight: var(--cw-font-weight-semibold);
+          font-size: var(--cw-font-size-small);
+          color: var(--cw-color-neutral-700);
           display: flex;
           align-items: center;
           justify-content: space-between;
@@ -87,48 +87,48 @@ export class ChromedashSummaryDiffView extends LitElement {
         }
 
         .column-content {
-          padding: var(--sl-spacing-medium);
-          font-size: var(--sl-font-size-small);
-          color: var(--sl-color-neutral-800);
-          line-height: var(--sl-line-height-normal);
+          padding: var(--cw-spacing-medium);
+          font-size: var(--cw-font-size-small);
+          color: var(--cw-color-neutral-800);
+          line-height: var(--cw-line-height-normal);
           flex-grow: 1;
           min-height: 140px;
         }
 
         .column-content.empty {
-          color: var(--sl-color-neutral-400);
+          color: var(--cw-color-neutral-400);
           font-style: italic;
         }
 
-        .column-content sl-textarea {
+        .column-content cw-textarea {
           width: 100%;
         }
 
-        .column-content sl-textarea::part(textarea) {
+        .column-content cw-textarea::part(textarea) {
           font-family: inherit;
-          font-size: var(--sl-font-size-small);
+          font-size: var(--cw-font-size-small);
           min-height: 140px;
         }
 
         .sources-section {
-          margin-top: var(--sl-spacing-small);
-          padding-top: var(--sl-spacing-small);
-          border-top: 1px solid var(--sl-color-neutral-200);
+          margin-top: var(--cw-spacing-small);
+          padding-top: var(--cw-spacing-small);
+          border-top: 1px solid var(--cw-color-neutral-200);
         }
 
         .sources-title {
-          font-weight: var(--sl-font-weight-semibold);
-          font-size: var(--sl-font-size-x-small);
-          color: var(--sl-color-neutral-600);
+          font-weight: var(--cw-font-weight-semibold);
+          font-size: var(--cw-font-size-x-small);
+          color: var(--cw-color-neutral-600);
           text-transform: uppercase;
-          letter-spacing: var(--sl-letter-spacing-loose);
-          margin-bottom: var(--sl-spacing-2x-small);
+          letter-spacing: var(--cw-letter-spacing-loose);
+          margin-bottom: var(--cw-spacing-2x-small);
         }
 
         .sources-list {
           display: flex;
           flex-wrap: wrap;
-          gap: var(--sl-spacing-2x-small);
+          gap: var(--cw-spacing-2x-small);
           list-style: none;
           margin: 0;
           padding: 0;
@@ -141,12 +141,12 @@ export class ChromedashSummaryDiffView extends LitElement {
         @media (max-width: 768px) {
           .comparison-grid {
             grid-template-columns: 1fr;
-            gap: var(--sl-spacing-small);
+            gap: var(--cw-spacing-small);
           }
 
           .column-content {
             min-height: auto;
-            padding: var(--sl-spacing-small) var(--sl-spacing-medium);
+            padding: var(--cw-spacing-small) var(--cw-spacing-medium);
           }
         }
       `,
@@ -180,7 +180,7 @@ export class ChromedashSummaryDiffView extends LitElement {
   private _handleInput(e: Event) {
     const value =
       this.textareaEl?.value ??
-      (e.target as SlTextarea | HTMLInputElement)?.value ??
+      (e.target as CwTextarea | HTMLInputElement)?.value ??
       '';
     this.editBuffer = value;
     this.dispatchEvent(
@@ -224,31 +224,31 @@ export class ChromedashSummaryDiffView extends LitElement {
       >
         <div class="column-header" id="suggested-summary-header">
           <span>AI Suggested Summary</span>
-          <sl-button
+          <cw-button
             size="small"
             variant="text"
             @click=${this.toggleEdit}
             ?disabled=${this.disabled}
           >
-            <sl-icon
+            <cw-icon
               slot="prefix"
               name=${this.isEditing ? 'eye' : 'pencil'}
-            ></sl-icon>
+            ></cw-icon>
             ${this.isEditing ? 'Preview' : 'Edit'}
-          </sl-button>
+          </cw-button>
         </div>
         <div class="column-content">
           ${
             this.isEditing
               ? html`
-                  <sl-textarea
+                  <cw-textarea
                     .value=${this.editBuffer}
                     rows="6"
                     placeholder="Edit summary..."
                     label="AI Suggested Summary Editor"
                     ?disabled=${this.disabled}
                     @input=${this._handleInput}
-                  ></sl-textarea>
+                  ></cw-textarea>
                 `
               : autolink(displayText, [], true)
           }
@@ -276,7 +276,7 @@ export class ChromedashSummaryDiffView extends LitElement {
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  <sl-badge variant="neutral" pill>${url}</sl-badge>
+                  <cw-badge variant="neutral" pill>${url}</cw-badge>
                 </a>
               </li>
             `

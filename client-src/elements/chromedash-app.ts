@@ -307,7 +307,7 @@ export class ChromedashApp extends LitElement {
         this.addBeforeUnloadHandler();
 
         // Remember if anything has changed since the page was loaded.
-        this.pageComponent.addEventListener('sl-change', () => {
+        this.pageComponent.addEventListener('cw-change', () => {
           this.setUnsavedChanges(true);
         });
 

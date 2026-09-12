@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {SlDetails, SlIconButton, SlInput} from '@shoelace-style/shoelace';
+import {CwDetails, CwIconButton, CwInput} from '@cordwainer/cw-elements';
 import {
   LitElement,
   TemplateResult,
@@ -228,10 +228,10 @@ export class ChromedashFormField extends LitElement {
   }
 
   toggleExtraHelp() {
-    const details: SlDetails = this.renderRoot.querySelector('sl-details')!;
+    const details: CwDetails = this.renderRoot.querySelector('cw-details')!;
     details.open = !details.open;
-    const button: SlIconButton =
-      this.renderRoot.querySelector('sl-icon-button')!;
+    const button: CwIconButton =
+      this.renderRoot.querySelector('cw-icon-button')!;
     button.name = details.open ? 'dash-square' : 'plus-square';
   }
 
@@ -400,7 +400,7 @@ export class ChromedashFormField extends LitElement {
     if (type === 'checkbox') {
       const label = this.checkboxLabel || this.fieldProps.label;
       fieldHTML = html`
-        <sl-checkbox
+        <cw-checkbox
           name="${fieldName}"
           id="id_${this.name}"
           size="small"
@@ -410,28 +410,28 @@ export class ChromedashFormField extends LitElement {
             fieldValue === 'True'
           }
           ?disabled=${this.disabled || fieldDisabled}
-          @sl-change="${this.handleFieldUpdated}"
+          @cw-change="${this.handleFieldUpdated}"
         >
           ${label}
-        </sl-checkbox>
+        </cw-checkbox>
       `;
     } else if (type === 'select') {
       fieldHTML = html`
-        <sl-select
+        <cw-select
           name="${fieldName}"
           id="id_${this.name}"
           value="${fieldValue}"
           size="small"
           hoist
           ?disabled=${fieldDisabled || this.disabled || this.loading}
-          @sl-change="${this.handleFieldUpdated}"
+          @cw-change="${this.handleFieldUpdated}"
         >
           ${Object.values(choices).map(
             ([value, label]) => html`
-              <sl-option value="${value}"> ${label} </sl-option>
+              <cw-option value="${value}"> ${label} </cw-option>
             `
           )}
-        </sl-select>
+        </cw-select>
       `;
     } else if (type === 'multiselect') {
       const valueArray: string[] = fieldValue.split(',');
@@ -440,7 +440,7 @@ export class ChromedashFormField extends LitElement {
           !obsolete || valueArray.includes('' + value)
       );
       fieldHTML = html`
-        <sl-select
+        <cw-select
           name="${fieldName}"
           id="id_${this.name}"
           .value=${valueArray}
@@ -450,18 +450,18 @@ export class ChromedashFormField extends LitElement {
           cleareable
           ?required=${isRequired}
           ?disabled=${fieldDisabled || this.disabled || this.loading}
-          @sl-change="${this.handleFieldUpdated}"
+          @cw-change="${this.handleFieldUpdated}"
         >
           ${availableOptions.map(
             ([value, label]) => html`
-              <sl-option value="${value}"> ${label} </sl-option>
+              <cw-option value="${value}"> ${label} </cw-option>
             `
           )}
-        </sl-select>
+        </cw-select>
       `;
     } else if (type === 'input') {
       fieldHTML = html`
-        <sl-input
+        <cw-input
           ${ref(this.updateAttributes)}
           name="${fieldName}"
           id="id_${this.name}"
@@ -472,9 +472,9 @@ export class ChromedashFormField extends LitElement {
           help-text="${this.disabledReason}"
           ?disabled=${this.disabled || this.disabledReason || fieldDisabled}
           ?required=${isRequired}
-          @sl-change="${this.handleFieldUpdated}"
+          @cw-change="${this.handleFieldUpdated}"
         >
-        </sl-input>
+        </cw-input>
       `;
     } else if (type === 'textarea') {
       fieldHTML = html`
@@ -490,7 +490,7 @@ export class ChromedashFormField extends LitElement {
           ?offerMarkdown=${offerMarkdown}
           ?isMarkdown=${isMarkdown}
           ?alwaysMarkdown=${this.fieldProps.always_markdown}
-          @sl-change="${this.handleFieldUpdated}"
+          @cw-change="${this.handleFieldUpdated}"
         >
         </chromedash-textarea>
       `;
@@ -504,7 +504,7 @@ export class ChromedashFormField extends LitElement {
           size="small"
           value=${fieldValue}
           ?required=${isRequired}
-          @sl-change="${this.handleFieldUpdated}"
+          @cw-change="${this.handleFieldUpdated}"
         >
         </chromedash-attachments>
       `;
@@ -645,14 +645,14 @@ export class ChromedashFormField extends LitElement {
           ${
             extraHelpText
               ? html`
-                  <sl-icon-button
+                  <cw-icon-button
                     name="plus-square"
                     label="Toggle extra help"
                     style="position:absolute"
                     @click="${this.toggleExtraHelp}"
                   >
                     +
-                  </sl-icon-button>
+                  </cw-icon-button>
                 `
               : nothing
           }
@@ -664,9 +664,9 @@ export class ChromedashFormField extends LitElement {
           ? html`
               <tr>
                 <td colspan="2" class="extrahelp">
-                  <sl-details summary="">
+                  <cw-details summary="">
                     <span class="helptext"> ${extraHelpText} </span>
-                  </sl-details>
+                  </cw-details>
                 </td>
               </tr>
             `

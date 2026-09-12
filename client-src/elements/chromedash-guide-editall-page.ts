@@ -211,24 +211,24 @@ export class ChromedashGuideEditallPage extends LitElement {
 
   renderSkeletons() {
     return html`
-      <h3><sl-skeleton effect="sheen"></sl-skeleton></h3>
+      <h3><cw-skeleton effect="sheen"></cw-skeleton></h3>
       <section class="flat_form">
-        <h3><sl-skeleton effect="sheen"></sl-skeleton></h3>
+        <h3><cw-skeleton effect="sheen"></cw-skeleton></h3>
         <p>
-          <sl-skeleton effect="sheen"></sl-skeleton>
-          <sl-skeleton effect="sheen"></sl-skeleton>
-          <sl-skeleton effect="sheen"></sl-skeleton>
-          <sl-skeleton effect="sheen"></sl-skeleton>
+          <cw-skeleton effect="sheen"></cw-skeleton>
+          <cw-skeleton effect="sheen"></cw-skeleton>
+          <cw-skeleton effect="sheen"></cw-skeleton>
+          <cw-skeleton effect="sheen"></cw-skeleton>
         </p>
       </section>
-      <h3><sl-skeleton effect="sheen"></sl-skeleton></h3>
+      <h3><cw-skeleton effect="sheen"></cw-skeleton></h3>
       <section class="flat_form">
-        <h3><sl-skeleton effect="sheen"></sl-skeleton></h3>
+        <h3><cw-skeleton effect="sheen"></cw-skeleton></h3>
         <p>
-          <sl-skeleton effect="sheen"></sl-skeleton>
-          <sl-skeleton effect="sheen"></sl-skeleton>
-          <sl-skeleton effect="sheen"></sl-skeleton>
-          <sl-skeleton effect="sheen"></sl-skeleton>
+          <cw-skeleton effect="sheen"></cw-skeleton>
+          <cw-skeleton effect="sheen"></cw-skeleton>
+          <cw-skeleton effect="sheen"></cw-skeleton>
+          <cw-skeleton effect="sheen"></cw-skeleton>
         </p>
       </section>
     `;
@@ -239,7 +239,7 @@ export class ChromedashGuideEditallPage extends LitElement {
       <div id="subheader">
         <h2 id="breadcrumbs">
           <a href=${this.getNextPage()}>
-            <sl-icon name="arrow-left"></sl-icon>
+            <cw-icon name="arrow-left"></cw-icon>
             Edit feature: ${this.loading ? 'loading...' : this.feature.name}
           </a>
         </h2>
@@ -372,13 +372,13 @@ export class ChromedashGuideEditallPage extends LitElement {
         <section class="flat_form" stage="${feStage.stage_type}">
           ${renderHTMLIf(
             feStage.stage_type === STAGE_ENT_ROLLOUT,
-            html` <sl-button
+            html` <cw-button
               stage="${feStage.stage_type}"
               size="small"
               @click="${() => this.deleteStage(feStage)}"
             >
               Delete
-            </sl-button>`
+            </cw-button>`
           )}
           ${formFieldEls}
         </section>
@@ -478,9 +478,9 @@ export class ChromedashGuideEditallPage extends LitElement {
     };
     return renderHTMLIf(
       this.feature.is_enterprise_feature,
-      html` <sl-button size="small" @click="${clickHandler}">
+      html` <cw-button size="small" @click="${clickHandler}">
         Add Step
-      </sl-button>`
+      </cw-button>`
     );
   }
 

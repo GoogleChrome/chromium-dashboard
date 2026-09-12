@@ -104,99 +104,99 @@ class ChromedashGateChip extends LitElement {
     return [
       ...SHARED_STYLES,
       css`
-        sl-icon {
+        cw-icon {
           font-size: 1.2rem;
         }
 
-        sl-button::part(label) {
+        cw-button::part(label) {
           padding: 0 4px;
         }
 
-        sl-button::part(suffix) {
+        cw-button::part(suffix) {
           padding-right: 4px;
         }
 
-        sl-button::part(base) {
+        cw-button::part(base) {
           border: var(--chip-border);
           padding: 0 0 0 4px;
           align-items: center;
         }
 
-        sl-button.selected::part(base) {
+        cw-button.selected::part(base) {
           box-shadow: 0 0 0 2px var(--dark-spot-color);
         }
 
-        sl-button:hover .teamname {
+        cw-button:hover .teamname {
           text-decoration: underline;
         }
 
-        sl-button.not_applicable::part(base),
-        sl-button.na_self-certified::part(base) {
+        cw-button.not_applicable::part(base),
+        cw-button.na_self-certified::part(base) {
           background: var(--gate-not-applicable-background);
           color: var(--gate-not-applicable-color);
         }
-        sl-button.na_self-certified_then_verified::part(base) {
+        cw-button.na_self-certified_then_verified::part(base) {
           background: var(--gate-not-applicable-background);
           color: var(--gate-not-applicable-color);
         }
-        sl-button.not_applicable::part(prefix),
-        sl-button.na_self-certified::part(prefix) {
+        cw-button.not_applicable::part(prefix),
+        cw-button.na_self-certified::part(prefix) {
           align-items: baseline;
         }
 
-        sl-button.preparing::part(base) {
+        cw-button.preparing::part(base) {
           background: var(--gate-preparing-background);
           color: var(--gate-preparing-color);
         }
-        .preparing sl-icon {
+        .preparing cw-icon {
           color: var(--gate-preparing-icon-color);
         }
 
-        sl-button.pending::part(base) {
+        cw-button.pending::part(base) {
           background: var(--gate-pending-background);
           color: var(--gate-pending-color);
         }
-        .pending sl-icon {
+        .pending cw-icon {
           color: var(--gate-pending-icon-color);
         }
 
-        sl-button.needs_work::part(base) {
+        cw-button.needs_work::part(base) {
           background: var(--gate-needs-work-background);
           color: var(--gate-needs-work-color);
         }
-        .needs_work sl-icon {
+        .needs_work cw-icon {
           color: var(--gate-needs-work-icon-color);
         }
 
-        sl-button.approved::part(base) {
+        cw-button.approved::part(base) {
           background: var(--gate-approved-background);
           color: var(--gate-approved-color);
         }
-        .approved sl-icon {
+        .approved cw-icon {
           color: var(--gate-approved-icon-color);
         }
 
-        sl-button.denied::part(base) {
+        cw-button.denied::part(base) {
           background: var(--gate-denied-background);
           color: var(--gate-denied-color);
         }
-        .denied sl-icon {
+        .denied cw-icon {
           color: var(--gate-denied-icon-color);
         }
 
-        sl-button.internal_review::part(base) {
+        cw-button.internal_review::part(base) {
           background: var(--gate-pending-background);
           color: var(--gate-pending-color);
         }
-        sl-button.internal_review::part(prefix) {
+        cw-button.internal_review::part(prefix) {
           align-items: baseline;
         }
 
-        sl-button.na_requested::part(base) {
+        cw-button.na_requested::part(base) {
           background: var(--gate-pending-background);
           color: var(--gate-pending-color);
         }
-        sl-button.na_requested::part(prefix) {
+        cw-button.na_requested::part(prefix) {
           align-items: baseline;
         }
 
@@ -205,7 +205,7 @@ class ChromedashGateChip extends LitElement {
           font-weight: 900;
         }
 
-        sl-button sl-icon.overdue {
+        cw-button cw-icon.overdue {
           color: var(--slo-overdue-color);
         }
       `,
@@ -251,27 +251,27 @@ class ChromedashGateChip extends LitElement {
     let statusIcon = html`<b class="abbrev" slot="prefix">${abbrev}</b>`;
     if (statusIconName) {
       statusIcon = html`
-        <sl-icon
+        <cw-icon
           slot="prefix"
           library="material"
           name=${statusIconName}
-        ></sl-icon>
+        ></cw-icon>
       `;
     }
 
     const overdue = this.gate.slo_initial_response_remaining < 0;
     const overdueIcon = overdue
-      ? html`<sl-icon
+      ? html`<cw-icon
           slot="suffix"
           library="material"
           class="overdue"
           name="clock_loader_60_20px"
-        ></sl-icon>`
+        ></cw-icon>`
       : nothing;
     const overdueTitle = overdue ? '. Overdue.' : '';
 
     return html`
-      <sl-button
+      <cw-button
         pill
         size="small"
         class="${className} ${selected}"
@@ -281,7 +281,7 @@ class ChromedashGateChip extends LitElement {
         ${statusIcon}
         <span class="teamname">${teamName}</span>
         ${overdueIcon}
-      </sl-button>
+      </cw-button>
     `;
   }
 }

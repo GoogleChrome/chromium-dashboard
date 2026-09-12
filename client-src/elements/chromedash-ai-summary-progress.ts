@@ -17,10 +17,10 @@
 import {Task} from '@lit/task';
 import {LitElement, PropertyValues, css, html, nothing} from 'lit';
 import {customElement, property, state} from 'lit/decorators.js';
-import '@shoelace-style/shoelace/dist/components/spinner/spinner.js';
-import '@shoelace-style/shoelace/dist/components/icon/icon.js';
-import '@shoelace-style/shoelace/dist/components/button/button.js';
-import '@shoelace-style/shoelace/dist/components/badge/badge.js';
+import '@cordwainer/cw-elements/dist/components/spinner/spinner.js';
+import '@cordwainer/cw-elements/dist/components/icon/icon.js';
+import '@cordwainer/cw-elements/dist/components/button/button.js';
+import '@cordwainer/cw-elements/dist/components/badge/badge.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {
   SummaryProgressStep as ProgressStep,
@@ -208,46 +208,46 @@ export class ChromedashAiSummaryProgress extends LitElement {
         }
 
         .container {
-          background: var(--sl-color-neutral-50);
-          border: 1px solid var(--sl-color-neutral-200);
-          border-radius: var(--sl-border-radius-medium);
-          padding: var(--sl-spacing-medium);
+          background: var(--cw-color-neutral-50);
+          border: 1px solid var(--cw-color-neutral-200);
+          border-radius: var(--cw-border-radius-medium);
+          padding: var(--cw-spacing-medium);
         }
 
         .container.compact {
-          padding: var(--sl-spacing-small);
+          padding: var(--cw-spacing-small);
         }
 
         .header {
           display: flex;
           align-items: center;
           justify-content: space-between;
-          margin-bottom: var(--sl-spacing-small);
+          margin-bottom: var(--cw-spacing-small);
         }
 
         .container.compact .header {
-          margin-bottom: var(--sl-spacing-2x-small);
+          margin-bottom: var(--cw-spacing-2x-small);
         }
 
         .title {
           display: flex;
           align-items: center;
-          gap: var(--sl-spacing-x-small);
-          font-size: var(--sl-font-size-small);
-          font-weight: var(--sl-font-weight-semibold);
-          color: var(--sl-color-neutral-700);
+          gap: var(--cw-spacing-x-small);
+          font-size: var(--cw-font-size-small);
+          font-weight: var(--cw-font-weight-semibold);
+          color: var(--cw-color-neutral-700);
         }
 
-        sl-spinner {
-          font-size: var(--sl-font-size-small);
-          --indicator-color: var(--sl-color-primary-600);
+        cw-spinner {
+          font-size: var(--cw-font-size-small);
+          --indicator-color: var(--cw-color-primary-600);
           --track-width: 2px;
         }
 
         .steps-list {
           display: flex;
           flex-direction: column;
-          gap: var(--sl-spacing-2x-small);
+          gap: var(--cw-spacing-2x-small);
           list-style: none;
           margin: 0;
           padding: 0;
@@ -256,9 +256,9 @@ export class ChromedashAiSummaryProgress extends LitElement {
         .step-item {
           display: flex;
           align-items: center;
-          gap: var(--sl-spacing-x-small);
-          font-size: var(--sl-font-size-small);
-          color: var(--sl-color-neutral-600);
+          gap: var(--cw-spacing-x-small);
+          font-size: var(--cw-font-size-small);
+          color: var(--cw-color-neutral-600);
         }
 
         .container.compact .step-item {
@@ -266,24 +266,24 @@ export class ChromedashAiSummaryProgress extends LitElement {
         }
 
         .step-item.in-progress {
-          color: var(--sl-color-primary-700);
-          font-weight: var(--sl-font-weight-medium);
+          color: var(--cw-color-primary-700);
+          font-weight: var(--cw-font-weight-medium);
         }
 
         .step-item.success {
-          color: var(--sl-color-success-700);
+          color: var(--cw-color-success-700);
         }
 
         .step-item.failed {
-          color: var(--sl-color-danger-700);
+          color: var(--cw-color-danger-700);
         }
 
         .step-item.retrying {
-          color: var(--sl-color-warning-700);
+          color: var(--cw-color-warning-700);
         }
 
-        .step-item sl-icon {
-          font-size: var(--sl-font-size-medium);
+        .step-item cw-icon {
+          font-size: var(--cw-font-size-medium);
           flex-shrink: 0;
         }
 
@@ -292,8 +292,8 @@ export class ChromedashAiSummaryProgress extends LitElement {
         }
 
         .step-message {
-          font-size: var(--sl-font-size-x-small);
-          color: var(--sl-color-neutral-500);
+          font-size: var(--cw-font-size-x-small);
+          color: var(--cw-color-neutral-500);
           word-break: break-word;
           overflow-wrap: anywhere;
         }
@@ -302,14 +302,14 @@ export class ChromedashAiSummaryProgress extends LitElement {
           display: flex;
           align-items: center;
           justify-content: space-between;
-          gap: var(--sl-spacing-small);
-          margin-top: var(--sl-spacing-small);
-          padding: var(--sl-spacing-2x-small) var(--sl-spacing-small);
-          background: var(--sl-color-danger-50);
-          border: 1px solid var(--sl-color-danger-200);
-          color: var(--sl-color-danger-800);
-          border-radius: var(--sl-border-radius-small);
-          font-size: var(--sl-font-size-small);
+          gap: var(--cw-spacing-small);
+          margin-top: var(--cw-spacing-small);
+          padding: var(--cw-spacing-2x-small) var(--cw-spacing-small);
+          background: var(--cw-color-danger-50);
+          border: 1px solid var(--cw-color-danger-200);
+          color: var(--cw-color-danger-800);
+          border-radius: var(--cw-border-radius-small);
+          font-size: var(--cw-font-size-small);
         }
 
         .error-banner span {
@@ -317,14 +317,14 @@ export class ChromedashAiSummaryProgress extends LitElement {
           word-break: break-word;
         }
 
-        .error-banner sl-button {
+        .error-banner cw-button {
           flex-shrink: 0;
         }
 
-        .error-banner sl-button::part(base) {
-          color: var(--sl-color-danger-800);
-          font-weight: var(--sl-font-weight-semibold);
-          padding: 0 var(--sl-spacing-2x-small);
+        .error-banner cw-button::part(base) {
+          color: var(--cw-color-danger-800);
+          font-weight: var(--cw-font-weight-semibold);
+          padding: 0 var(--cw-spacing-2x-small);
         }
       `,
     ];
@@ -468,12 +468,12 @@ export class ChromedashAiSummaryProgress extends LitElement {
 
   renderStepIcon(status: SummaryProgressStepStatusEnum) {
     if (status === SummaryProgressStepStatusEnum.IN_PROGRESS) {
-      return html`<sl-spinner aria-hidden="true"></sl-spinner>`;
+      return html`<cw-spinner aria-hidden="true"></cw-spinner>`;
     }
     const iconName =
       STEP_STATUS_ICONS[status as keyof typeof STEP_STATUS_ICONS];
     return iconName
-      ? html`<sl-icon name="${iconName}" aria-hidden="true"></sl-icon>`
+      ? html`<cw-icon name="${iconName}" aria-hidden="true"></cw-icon>`
       : nothing;
   }
 
@@ -508,16 +508,16 @@ export class ChromedashAiSummaryProgress extends LitElement {
         <span class="title">
           ${
             running
-              ? html`<sl-spinner aria-hidden="true"></sl-spinner>`
+              ? html`<cw-spinner aria-hidden="true"></cw-spinner>`
               : nothing
           }
           AI Summary Generation
         </span>
         ${
           running
-            ? html`<sl-badge variant="primary" pill size=${this.badgeSize}>
+            ? html`<cw-badge variant="primary" pill size=${this.badgeSize}>
                 Running
-              </sl-badge>`
+              </cw-badge>`
             : nothing
         }
       </div>
@@ -529,7 +529,7 @@ export class ChromedashAiSummaryProgress extends LitElement {
     return html`
       <div class="error-banner" role="alert">
         <span>${this.error}</span>
-        <sl-button
+        <cw-button
           size="small"
           variant="text"
           ?disabled=${this.loading}
@@ -537,7 +537,7 @@ export class ChromedashAiSummaryProgress extends LitElement {
           @click=${() => this.handleTrigger(true)}
         >
           Retry
-        </sl-button>
+        </cw-button>
       </div>
     `;
   }

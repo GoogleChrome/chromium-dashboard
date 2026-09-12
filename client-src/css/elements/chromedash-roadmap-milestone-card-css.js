@@ -47,17 +47,17 @@ export const ROADMAP_MILESTONE_CARD_CSS = [
       counter-reset: featurecount;
       margin: 8px;
     }
-    sl-icon {
+    cw-icon {
       font-size: 1.4rem;
       color: #366597;
     }
-    sl-icon:hover {
+    cw-icon:hover {
       color: #248;
     }
-    sl-icon.pushicon {
+    cw-icon.pushicon {
       cursor: pointer;
     }
-    sl-icon-button {
+    cw-icon-button {
      font-size: 16px;
     }
     .popup-content {
@@ -112,7 +112,7 @@ export const ROADMAP_MILESTONE_CARD_CSS = [
       font-size: 10px;
       font-weight: bold;
       color: white;
-      background: var(--sl-color-neutral-900);
+      background: var(--cw-color-neutral-900);
     }
     .release {
       padding: 16px;
@@ -184,13 +184,13 @@ export const ROADMAP_MILESTONE_CARD_CSS = [
       justify-content: center;
       margin-top: 10px;
     }
-    .sl-skeleton-header-container sl-skeleton {
+    .sl-skeleton-header-container cw-skeleton {
       width: 60%;
     }
     .sl-skeleton-title-container {
       width: 50%;
     }
-    .features_list sl-skeleton {
+    .features_list cw-skeleton {
       height: 20px;
       margin: 8px;
     }

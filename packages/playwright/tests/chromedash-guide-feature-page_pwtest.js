@@ -36,7 +36,7 @@ test('add an origin trial stage', async ({page}) => {
   const selectOpenedPromise = stageSelect.evaluate(
     node =>
       new Promise(resolve =>
-        node.addEventListener('sl-after-show', resolve, {once: true})
+        node.addEventListener('cw-after-show', resolve, {once: true})
       )
   );
 

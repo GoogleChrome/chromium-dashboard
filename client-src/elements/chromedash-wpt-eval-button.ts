@@ -16,7 +16,7 @@
 
 import {LitElement, html, css} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
-import '@shoelace-style/shoelace/dist/components/button/button.js';
+import '@cordwainer/cw-elements/dist/components/button/button.js';
 
 @customElement('chromedash-wpt-eval-button')
 export class ChromedashWPTEvalButton extends LitElement {
@@ -35,14 +35,14 @@ export class ChromedashWPTEvalButton extends LitElement {
       transition: transform 0.7s ease-in-out;
     }
 
-    sl-button:hover .gemini-icon {
+    cw-button:hover .gemini-icon {
       transform: rotate(360deg);
     }
   `;
 
   render() {
     return html`
-      <sl-button href="/feature/${this.featureId}/ai-coverage-analysis">
+      <cw-button href="/feature/${this.featureId}/ai-coverage-analysis">
         <img
           slot="prefix"
           class="gemini-icon"
@@ -50,7 +50,7 @@ export class ChromedashWPTEvalButton extends LitElement {
           alt="Gemini AI Logo"
         />
         Analyze test coverage
-      </sl-button>
+      </cw-button>
     `;
   }
 }

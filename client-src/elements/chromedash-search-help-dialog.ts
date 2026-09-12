@@ -58,11 +58,11 @@ export class ChromedashSearchHelpDialog extends LitElement {
   }
 
   show() {
-    this.renderRoot.querySelector('sl-dialog')?.show();
+    this.renderRoot.querySelector('cw-dialog')?.show();
   }
 
   hide() {
-    this.renderRoot.querySelector('sl-dialog')?.hide();
+    this.renderRoot.querySelector('cw-dialog')?.hide();
   }
 
   renderExampleRow(terms, explanation) {
@@ -245,13 +245,13 @@ export class ChromedashSearchHelpDialog extends LitElement {
 
   render() {
     return html`
-      <sl-dialog
+      <cw-dialog
         class="missing-prereqs"
         label="Feature Search Help"
         style="--width:fit-content"
       >
         ${this.renderDialogContent()}
-      </sl-dialog>
+      </cw-dialog>
     `;
   }
 }

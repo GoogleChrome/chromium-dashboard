@@ -16,7 +16,7 @@
 
 import {LitElement, css, html, nothing} from 'lit';
 import {SHARED_STYLES} from '../css/shared-css.js';
-import {SlRadioGroup, SlTextarea} from '@shoelace-style/shoelace';
+import {CwRadioGroup, CwTextarea} from '@cordwainer/cw-elements';
 import {customElement, property} from 'lit/decorators.js';
 import {GateDict} from './chromedash-gate-chip.js';
 import {GATE_TYPES} from './form-field-enums.js';
@@ -80,7 +80,7 @@ export class ChromedashSecondarySurveyDialog extends LitElement {
         ol li {
           margin-bottom: var(--content-padding);
         }
-        sl-button {
+        cw-button {
           float: right;
           margin: var(--content-padding-half);
         }
@@ -89,21 +89,21 @@ export class ChromedashSecondarySurveyDialog extends LitElement {
   }
 
   show() {
-    this.renderRoot.querySelector('sl-dialog')?.show();
+    this.renderRoot.querySelector('cw-dialog')?.show();
   }
 
   hide() {
-    this.renderRoot.querySelector('sl-dialog')?.hide();
+    this.renderRoot.querySelector('cw-dialog')?.hide();
   }
 
   generateTestingComment() {
     const answer1 =
-      this.renderRoot.querySelector<SlRadioGroup>('#coverage')!.value;
+      this.renderRoot.querySelector<CwRadioGroup>('#coverage')!.value;
     const answer2 =
-      this.renderRoot.querySelector<SlTextarea>('#performance_tests')!.value;
+      this.renderRoot.querySelector<CwTextarea>('#performance_tests')!.value;
     const answer3 =
-      this.renderRoot.querySelector<SlRadioGroup>('#automation')!.value;
-    const answer4 = this.renderRoot.querySelector<SlTextarea>('#impact')!.value;
+      this.renderRoot.querySelector<CwRadioGroup>('#automation')!.value;
+    const answer4 = this.renderRoot.querySelector<CwTextarea>('#impact')!.value;
 
     const commentText = `Survey answers:
 > 1. Does your feature have sufficient automated
@@ -168,18 +168,18 @@ ${answer4}
           >? Do the automated tests have more than 93% green (flakiness < 7%) on
           CQ and CI builders?
 
-          <sl-radio-group id="coverage">
-            <sl-radio value="${option1a}" size="small"> ${option1a} </sl-radio>
-            <sl-radio value="${option1b}" size="small"> ${option1b} </sl-radio>
-          </sl-radio-group>
+          <cw-radio-group id="coverage">
+            <cw-radio value="${option1a}" size="small"> ${option1a} </cw-radio>
+            <cw-radio value="${option1b}" size="small"> ${option1b} </cw-radio>
+          </cw-radio-group>
         </li>
 
         <li>
           <b>How are performance tests conducted on Chromium builders?</b> List
           links to tests if any.
 
-          <sl-textarea id="performance_tests" size="small" rows="2">
-          </sl-textarea>
+          <cw-textarea id="performance_tests" size="small" rows="2">
+          </cw-textarea>
         </li>
 
         <li>
@@ -188,11 +188,11 @@ ${answer4}
             manual testing? Do you have a plan to get them tested?</b
           >
 
-          <sl-radio-group id="automation">
-            <sl-radio value="${option3a}" size="small"> ${option3a} </sl-radio>
-            <sl-radio value="${option3b}" size="small"> ${option3b} </sl-radio>
-            <sl-radio value="${option3c}" size="small"> ${option3c} </sl-radio>
-          </sl-radio-group>
+          <cw-radio-group id="automation">
+            <cw-radio value="${option3a}" size="small"> ${option3a} </cw-radio>
+            <cw-radio value="${option3b}" size="small"> ${option3b} </cw-radio>
+            <cw-radio value="${option3c}" size="small"> ${option3c} </cw-radio>
+          </cw-radio-group>
         </li>
 
         <li>
@@ -204,7 +204,7 @@ ${answer4}
           >
           Make a copy, answer the survey questions, and provide a link to your
           document here.
-          <sl-textarea id="impact" size="small" rows="2"> </sl-textarea>
+          <cw-textarea id="impact" size="small" rows="2"> </cw-textarea>
         </li>
       </ol>
     `;
@@ -215,17 +215,17 @@ ${answer4}
       return html`Loading gates...`;
     }
 
-    return html` <sl-dialog label="Additional questions">
+    return html` <cw-dialog label="Additional questions">
       ${isTestingGate(this.gate) ? this.renderTestingContent() : nothing}
       <div>
-        <sl-button
+        <cw-button
           id="generate_button"
           size="small"
           variant="primary"
           @click=${this.handleGenerateComment}
-          >Generate comment and request review</sl-button
+          >Generate comment and request review</cw-button
         >
       </div>
-    </sl-dialog>`;
+    </cw-dialog>`;
   }
 }

@@ -241,25 +241,25 @@ export const SHARED_STYLES = [
     align-items: center;
   }
 
-  #breadcrumbs a sl-icon {
+  #breadcrumbs a cw-icon {
     padding-right: var(--content-padding-half);
   }
 
-  sl-dialog::part(title) {
+  cw-dialog::part(title) {
     padding-top: calc(var(--header-spacing) / 2);
     padding-bottom: calc(var(--header-spacing) / 2);
   }
 
-  sl-dialog::part(close-button) {
+  cw-dialog::part(close-button) {
     padding-right: 0;
   }
 
-  sl-dialog::part(body) {
+  cw-dialog::part(body) {
     padding-top: 0;
     padding-bottom: calc(var(--body-spacing) / 2);
   }
 
-  sl-details::part(base) {
+  cw-details::part(base) {
     margin: var(--content-padding-half) 0 0 0;
     color: var(--accordion-color);
     border: none;
@@ -267,7 +267,7 @@ export const SHARED_STYLES = [
     background-color: transparent;
   }
 
-  sl-details::part(header) {
+  cw-details::part(header) {
     border-radius: var(--accordion-border-radius);
     background: var(--accordion-background);
     font-weight: 300;
@@ -275,20 +275,20 @@ export const SHARED_STYLES = [
     padding: var(--content-padding-quarter) var(--content-padding-half);
   }
 
-  sl-details::part(content) {
+  cw-details::part(content) {
     padding: 0;
   }
 
-  sl-skeleton {
+  cw-skeleton {
     --color: #eee;
     --sheen-color: #ccc;
   }
 
-  sl-relative-time {
+  cw-relative-time {
     margin: 0 -3px; /* Mitigate spacing from unknown cause. */
   }
 
-  sl-relative-time.no-squeeze {
+  cw-relative-time.no-squeeze {
     margin: 0 0;
   }
 

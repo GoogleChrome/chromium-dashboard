@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {SlPopup} from '@shoelace-style/shoelace';
+import {CwPopup} from '@cordwainer/cw-elements';
 import {LitElement, TemplateResult, html, nothing} from 'lit';
 import {customElement, property, state} from 'lit/decorators.js';
 import {createRef, ref} from 'lit/directives/ref.js';
@@ -40,7 +40,7 @@ export interface TemplateContent {
 
 @customElement('chromedash-roadmap-milestone-card')
 export class ChromedashRoadmapMilestoneCard extends LitElement {
-  infoPopupRef = createRef<SlPopup>();
+  infoPopupRef = createRef<CwPopup>();
 
   static styles = ROADMAP_MILESTONE_CARD_CSS;
 
@@ -149,11 +149,11 @@ export class ChromedashRoadmapMilestoneCard extends LitElement {
     if (diff.days < 1) {
       return 'coming soon';
     }
-    return html`<sl-relative-time
+    return html`<cw-relative-time
       class="no-squeeze"
       date="${date.toISOString()}"
     >
-    </sl-relative-time>`;
+    </cw-relative-time>`;
   }
 
   _objKeys(obj) {
@@ -173,15 +173,15 @@ export class ChromedashRoadmapMilestoneCard extends LitElement {
 
   renderInfoIcon() {
     return html`
-      <sl-icon-button
+      <cw-icon-button
         name="info-circle"
         id="info-button"
         @click=${() =>
           (this.infoPopupRef.value!.active = !this.infoPopupRef.value!.active)}
         @focusout=${this.hidePopup}
-      ></sl-icon-button>
+      ></cw-icon-button>
 
-      <sl-popup
+      <cw-popup
         anchor="info-button"
         placement="bottom"
         strategy="fixed"
@@ -198,7 +198,7 @@ export class ChromedashRoadmapMilestoneCard extends LitElement {
             >detailed dates</a
           >.
         </div>
-      </sl-popup>
+      </cw-popup>
     `;
   }
 
@@ -337,10 +337,10 @@ export class ChromedashRoadmapMilestoneCard extends LitElement {
                     id="outdated-icon"
                     title="Feature outdated - last checked for overall accuracy more than four weeks ago"
                   >
-                    <sl-icon
+                    <cw-icon
                       name="exclamation-circle-fill"
                       data-tooltip
-                    ></sl-icon>
+                    ></cw-icon>
                   </span>
                 `
               : nothing
@@ -349,12 +349,12 @@ export class ChromedashRoadmapMilestoneCard extends LitElement {
             DEPRECATION_TRIAL.includes(shippingType)
               ? html`
                   <span class="tooltip" title="Deprecation Trial">
-                    <sl-icon
+                    <cw-icon
                       library="material"
                       name="extension"
                       class="experimental"
                       data-tooltip
-                    ></sl-icon>
+                    ></cw-icon>
                   </span>
                 `
               : nothing
@@ -363,11 +363,11 @@ export class ChromedashRoadmapMilestoneCard extends LitElement {
             REMOVED_STATUS.includes(shippingType)
               ? html`
                   <span class="tooltip" title="Removed">
-                    <sl-icon
+                    <cw-icon
                       name="x-circle-fill"
                       class="remove"
                       data-tooltip
-                    ></sl-icon>
+                    ></cw-icon>
                   </span>
                 `
               : nothing
@@ -379,7 +379,7 @@ export class ChromedashRoadmapMilestoneCard extends LitElement {
                     class="tooltip"
                     title="Receive an email notification when there are updates"
                   >
-                    <sl-icon
+                    <cw-icon
                       name="${
                         this.starredFeatures.has(Number(f.id))
                           ? 'star-fill'
@@ -389,7 +389,7 @@ export class ChromedashRoadmapMilestoneCard extends LitElement {
                       data-feature-id="${f.id}"
                       @click="${this.toggleStar}"
                     >
-                    </sl-icon>
+                    </cw-icon>
                   </span>
                 `
               : nothing
@@ -481,37 +481,37 @@ export class ChromedashRoadmapMilestoneCard extends LitElement {
         <h1 class="channel_label">${this.templateContent.channelLabel}</h1>
         <h1 class="chrome_version layout horizontal sl-skeleton-header-container ${this.templateContent.h1Class}">
           <span class="chrome-logo"></span>
-          <sl-skeleton effect="sheen"></sl-skeleton>
+          <cw-skeleton effect="sheen"></cw-skeleton>
         </h1>
       </div>
       <div class="milestone_info layout horizontal center-center">
-        <h3 class="sl-skeleton-header-container">
-          <sl-skeleton effect="sheen"></sl-skeleton>
+        <h3 class="cw-skeleton-header-container">
+          <cw-skeleton effect="sheen"></cw-skeleton>
         </h3>
       </div>
       <div class="milestone_info layout horizontal center-center">
-        <h3 class="sl-skeleton-header-container">
-          <sl-skeleton effect="sheen"></sl-skeleton>
+        <h3 class="cw-skeleton-header-container">
+          <cw-skeleton effect="sheen"></cw-skeleton>
         </h3>
       </div>
       <div class="features_list">
-        <div class="sl-skeleton-title-container">
-          <sl-skeleton effect="sheen"></sl-skeleton>
+        <div class="cw-skeleton-title-container">
+          <cw-skeleton effect="sheen"></cw-skeleton>
         </div>
-        <sl-skeleton effect="sheen"></sl-skeleton>
-        <sl-skeleton effect="sheen"></sl-skeleton>
-        <sl-skeleton effect="sheen"></sl-skeleton>
-        <sl-skeleton effect="sheen"></sl-skeleton>
+        <cw-skeleton effect="sheen"></cw-skeleton>
+        <cw-skeleton effect="sheen"></cw-skeleton>
+        <cw-skeleton effect="sheen"></cw-skeleton>
+        <cw-skeleton effect="sheen"></cw-skeleton>
         </div>
       </div>
       <div class="features_list">
-        <div class="sl-skeleton-title-container">
-          <sl-skeleton effect="sheen"></sl-skeleton>
+        <div class="cw-skeleton-title-container">
+          <cw-skeleton effect="sheen"></cw-skeleton>
         </div>
-        <sl-skeleton effect="sheen"></sl-skeleton>
-        <sl-skeleton effect="sheen"></sl-skeleton>
-        <sl-skeleton effect="sheen"></sl-skeleton>
-        <sl-skeleton effect="sheen"></sl-skeleton>
+        <cw-skeleton effect="sheen"></cw-skeleton>
+        <cw-skeleton effect="sheen"></cw-skeleton>
+        <cw-skeleton effect="sheen"></cw-skeleton>
+        <cw-skeleton effect="sheen"></cw-skeleton>
         </div>
       </div>
     `;

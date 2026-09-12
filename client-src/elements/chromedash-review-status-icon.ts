@@ -49,24 +49,24 @@ export class ChromedashReviewStatusIcon extends LitElement {
     return [
       ...SHARED_STYLES,
       css`
-        sl-icon {
+        cw-icon {
           width: 26px;
           height: 18px;
         }
 
-        sl-icon.not-started {
+        cw-icon.not-started {
           color: var(--gate-preparing-icon-color);
         }
-        sl-icon.in-progress {
+        cw-icon.in-progress {
           color: var(--gate-pending-icon-color);
         }
-        sl-icon.needs-work {
+        cw-icon.needs-work {
           color: var(--gate-needs-work-icon-color);
         }
-        sl-icon.approved {
+        cw-icon.approved {
           color: var(--gate-approved-icon-color);
         }
-        sl-icon.denied {
+        cw-icon.denied {
           color: var(--gate-denied-icon-color);
         }
       `,
@@ -162,7 +162,7 @@ export class ChromedashReviewStatusIcon extends LitElement {
 
   render() {
     if (this.gates.length === 0) {
-      return html`<sl-icon></sl-icon>`;
+      return html`<cw-icon></cw-icon>`;
     }
 
     const {status, targetGateId} = this.calcStatus();
@@ -170,12 +170,12 @@ export class ChromedashReviewStatusIcon extends LitElement {
     let iconName = STATUS_TO_ICON_NAME[status];
     let hoverText = 'Reviews: ' + status;
     const icon = html`
-      <sl-icon
+      <cw-icon
         library="material"
         title="${hoverText}"
         class="${className}"
         name="${iconName}"
-      ></sl-icon>
+      ></cw-icon>
     `;
 
     if (targetGateId) {

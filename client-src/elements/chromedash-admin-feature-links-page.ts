@@ -40,7 +40,7 @@ export class ChromedashAdminFeatureLinksPage extends LitElement {
         .feature-links-samples .line {
           background: rgb(232, 234, 237);
         }
-        sl-icon-button::part(base) {
+        cw-icon-button::part(base) {
           padding: 0;
           margin-left: 8px;
         }
@@ -102,7 +102,7 @@ export class ChromedashAdminFeatureLinksPage extends LitElement {
 
   renderSamples() {
     if (this.samplesLoading) {
-      return html`<sl-spinner></sl-spinner>`;
+      return html`<cw-spinner></cw-spinner>`;
     }
     return html`
       <div class="feature-links-samples">
@@ -122,12 +122,12 @@ export class ChromedashAdminFeatureLinksPage extends LitElement {
                 target="_blank"
                 rel="noopener"
               >
-                <sl-icon
+                <cw-icon
                   library="material"
                   name="link"
                   slot="prefix"
                   title="linked feature"
-                ></sl-icon>
+                ></cw-icon>
               </a>
             </div>
           `
@@ -139,7 +139,7 @@ export class ChromedashAdminFeatureLinksPage extends LitElement {
   renderComponents() {
     return html`
       <div class="feature-links-summary">
-        <sl-details summary="Link Summary" open>
+        <cw-details summary="Link Summary" open>
           <div class="line">
             All Links <b>${this.featureLinksSummary.total_count}</b>
           </div>
@@ -156,8 +156,8 @@ export class ChromedashAdminFeatureLinksPage extends LitElement {
           <div class="line">
             HTTP Error Links<b>${this.featureLinksSummary.http_error_count}</b>
           </div>
-        </sl-details>
-        <sl-details summary="Link Types" open>
+        </cw-details>
+        <cw-details summary="Link Types" open>
           ${this.featureLinksSummary.link_types.map(
             linkType => html`
               <div class="line">
@@ -165,14 +165,14 @@ export class ChromedashAdminFeatureLinksPage extends LitElement {
               </div>
             `
           )}
-        </sl-details>
-        <sl-details summary="Uncovered Link Domains" open>
+        </cw-details>
+        <cw-details summary="Uncovered Link Domains" open>
           ${this.featureLinksSummary.uncovered_link_domains.map(
             domain => html`
               <div class="line">
                 <div>
                   <a href=${domain.key}>${domain.key}</a>
-                  <sl-icon-button
+                  <cw-icon-button
                     library="material"
                     name="search"
                     slot="prefix"
@@ -180,7 +180,7 @@ export class ChromedashAdminFeatureLinksPage extends LitElement {
                     @click=${() =>
                       this.fetchLinkSamples(domain.key, 'web', undefined)}
                   >
-                    ></sl-icon-button
+                    ></cw-icon-button
                   >
                 </div>
                 <b>${domain.count}</b>
@@ -193,14 +193,14 @@ export class ChromedashAdminFeatureLinksPage extends LitElement {
               }
             `
           )}
-        </sl-details>
-        <sl-details summary="Error Link Domains" open>
+        </cw-details>
+        <cw-details summary="Error Link Domains" open>
           ${this.featureLinksSummary.error_link_domains.map(
             domain => html`
               <div class="line">
                 <div>
                   <a href=${domain.key}>${domain.key}</a>
-                  <sl-icon-button
+                  <cw-icon-button
                     library="material"
                     name="search"
                     slot="prefix"
@@ -208,7 +208,7 @@ export class ChromedashAdminFeatureLinksPage extends LitElement {
                     @click=${() =>
                       this.fetchLinkSamples(domain.key, undefined, true)}
                   >
-                    ></sl-icon-button
+                    ></cw-icon-button
                   >
                 </div>
                 <b>${domain.count}</b>
@@ -220,7 +220,7 @@ export class ChromedashAdminFeatureLinksPage extends LitElement {
               }
             `
           )}
-        </sl-details>
+        </cw-details>
       </div>
     `;
   }

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {SlDrawer} from '@shoelace-style/shoelace';
+import {CwDrawer} from '@cordwainer/cw-elements';
 import {LitElement, TemplateResult, css, html, nothing} from 'lit';
 import {customElement, property, state} from 'lit/decorators.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
@@ -31,10 +31,10 @@ export class ChromedashDrawer extends LitElement {
       ...SHARED_STYLES,
       css`
         :host {
-          --nav-link-color: var(--sl-color-neutral-700);
+          --nav-link-color: var(--cw-color-neutral-700);
           --nav-link-font-size: 16px;
-          --nav-link-hover-background: var(--sl-color-neutral-100);
-          --nav-link-active-color: var(--sl-color-primary-900);
+          --nav-link-hover-background: var(--cw-color-neutral-100);
+          --nav-link-active-color: var(--cw-color-primary-900);
           --nav-link-active-background: var(--light-accent-color);
         }
         nav {
@@ -71,7 +71,7 @@ export class ChromedashDrawer extends LitElement {
           background: var(--nav-link-active-background);
         }
         nav [active]:hover {
-          background: var(--sl-color-neutral-100);
+          background: var(--cw-color-neutral-100);
         }
         hr {
           margin: 15px var(--content-padding-half);
@@ -81,16 +81,16 @@ export class ChromedashDrawer extends LitElement {
           margin: 0px var(--content-padding-half) 10px;
           font-weight: bold;
         }
-        sl-drawer a {
+        cw-drawer a {
           display: flex;
           align-items: center;
           justify-content: space-between;
           gap: var(--content-padding-half);
         }
-        sl-drawer::part(header) {
+        cw-drawer::part(header) {
           display: none;
         }
-        sl-button {
+        cw-button {
           margin-left: 10px;
         }
         @media only screen and (max-width: 700px) {
@@ -100,10 +100,10 @@ export class ChromedashDrawer extends LitElement {
             margin: 0;
             display: block;
           }
-          sl-drawer a {
+          cw-drawer a {
             display: block;
           }
-          sl-drawer::part(header) {
+          cw-drawer::part(header) {
             display: none;
           }
         }
@@ -251,7 +251,7 @@ export class ChromedashDrawer extends LitElement {
   toggleDrawerActions() {
     const drawer = this.shadowRoot!.querySelector(
       '.drawer-placement-start'
-    ) as SlDrawer;
+    ) as CwDrawer;
     if (drawer.open) {
       drawer.hide();
     } else {
@@ -297,7 +297,7 @@ export class ChromedashDrawer extends LitElement {
     }
 
     return html`
-      <sl-drawer
+      <cw-drawer
         label="Menu"
         placement="start"
         class="drawer-placement-start"
@@ -313,9 +313,9 @@ export class ChromedashDrawer extends LitElement {
           '/release-notes',
           'Release notes',
           html`
-            <sl-tooltip content="Preview" distance="8">
-              <sl-icon name="info-circle" aria-hidden="true"></sl-icon>
-            </sl-tooltip>
+            <cw-tooltip content="Preview" distance="8">
+              <cw-icon name="info-circle" aria-hidden="true"></cw-icon>
+            </cw-tooltip>
           `
         )}
         ${this.renderNavItem('/features', 'All features')} ${shippingThisYear}
@@ -331,7 +331,7 @@ export class ChromedashDrawer extends LitElement {
         ${this.renderNavItem('/reports/spec_mentors', 'Spec Mentors')}
         ${this.renderNavItem('/reports/external_reviews', 'External Reviews')}
         ${adminMenu}
-      </sl-drawer>
+      </cw-drawer>
     `;
   }
 
@@ -353,14 +353,14 @@ export class ChromedashDrawer extends LitElement {
       ${
         this.user.can_create_feature && !this.isCurrentPage('/guide/new')
           ? html`
-              <sl-button
+              <cw-button
                 data-testid="create-feature-button"
                 href="/guide/new"
                 variant="primary"
                 size="small"
               >
                 Create feature
-              </sl-button>
+              </cw-button>
             `
           : nothing
       }

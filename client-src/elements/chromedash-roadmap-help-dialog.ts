@@ -49,23 +49,23 @@ export class ChromedashRoadmapHelpDialog extends LitElement {
           width: 8em;
         }
 
-        #legend sl-icon {
+        #legend cw-icon {
           width: 26px;
           height: 18px;
         }
-        sl-icon.not-started {
+        cw-icon.not-started {
           color: var(--gate-preparing-icon-color);
         }
-        sl-icon.in-progress {
+        cw-icon.in-progress {
           color: var(--gate-pending-icon-color);
         }
-        sl-icon.needs-work {
+        cw-icon.needs-work {
           color: var(--gate-needs-work-icon-color);
         }
-        sl-icon.approved {
+        cw-icon.approved {
           color: var(--gate-approved-icon-color);
         }
-        sl-icon.denied {
+        cw-icon.denied {
           color: var(--gate-denied-icon-color);
         }
       `,
@@ -73,11 +73,11 @@ export class ChromedashRoadmapHelpDialog extends LitElement {
   }
 
   show() {
-    this.renderRoot.querySelector('sl-dialog')?.show();
+    this.renderRoot.querySelector('cw-dialog')?.show();
   }
 
   hide() {
-    this.renderRoot.querySelector('sl-dialog')?.hide();
+    this.renderRoot.querySelector('cw-dialog')?.hide();
   }
 
   renderDialogContent() {
@@ -85,47 +85,47 @@ export class ChromedashRoadmapHelpDialog extends LitElement {
       <div id="dialog-content">
         <ul id="legend">
           <li>
-            <sl-icon
+            <cw-icon
               library="material"
               class="approved"
               name="check_circle_filled_20px"
-            ></sl-icon>
+            ></cw-icon>
             <span>Approved</span>
             <span>Reviewers approved feature at this stage</span>
           </li>
           <li>
-            <sl-icon
+            <cw-icon
               library="material"
               class="not-started"
               name="arrow_circle_right_20px"
-            ></sl-icon>
+            ></cw-icon>
             <span>Not started</span>
             <span>Feature owners have not requested reviews yet</span>
           </li>
           <li>
-            <sl-icon
+            <cw-icon
               library="material"
               class="in-progress"
               name="pending_20px"
-            ></sl-icon>
+            ></cw-icon>
             <span>In-progress</span>
             <span>Not all reviews have finished</span>
           </li>
           <li>
-            <sl-icon
+            <cw-icon
               library="material"
               class="needs-work"
               name="autorenew_20px"
-            ></sl-icon>
+            ></cw-icon>
             <span>Needs work</span>
             <span>Reviewers have asked for changes</span>
           </li>
           <li>
-            <sl-icon
+            <cw-icon
               library="material"
               class="denied"
               name="block_20px"
-            ></sl-icon>
+            ></cw-icon>
             <span>Denied</span>
             <span>Reviewers suggested directional changes</span>
           </li>
@@ -136,9 +136,9 @@ export class ChromedashRoadmapHelpDialog extends LitElement {
 
   render() {
     return html`
-      <sl-dialog label="Roadmap legend" style="--width:fit-content">
+      <cw-dialog label="Roadmap legend" style="--width:fit-content">
         ${this.renderDialogContent()}
-      </sl-dialog>
+      </cw-dialog>
     `;
   }
 }

@@ -35,7 +35,7 @@ test('spec mentors report renders', async ({page}) => {
 
   await test.step('Verify "Expert" mentor details', async () => {
     // Scope locators to the specific panel to avoid accidental cross-talk
-    const expertPanel = page.locator('sl-details', {
+    const expertPanel = page.locator('cw-details', {
       hasText: 'expert@example.com',
     });
     const links = expertPanel.getByRole('link');
@@ -46,7 +46,7 @@ test('spec mentors report renders', async ({page}) => {
   });
 
   await test.step('Verify "Mentor" mentor details', async () => {
-    const mentorPanel = page.locator('sl-details', {
+    const mentorPanel = page.locator('cw-details', {
       hasText: 'mentor@example.org',
     });
     const links = mentorPanel.getByRole('link');

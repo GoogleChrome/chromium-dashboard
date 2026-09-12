@@ -55,8 +55,8 @@ describe('chromedash-activity', () => {
     );
     assert.exists(component);
     assert.instanceOf(component, ChromedashActivity);
-    assert.notExists(component.shadowRoot!.querySelector('sl-relative-time'));
-    assert.notExists(component.shadowRoot!.querySelector('sl-menu'));
+    assert.notExists(component.shadowRoot!.querySelector('cw-relative-time'));
+    assert.notExists(component.shadowRoot!.querySelector('cw-menu'));
   });
 
   it('renders an activity when signed out', async () => {
@@ -74,9 +74,9 @@ describe('chromedash-activity', () => {
     assert.include(commentDiv!.innerHTML, '2022-08-30 12:34:45');
     assert.include(commentDiv!.innerHTML, 'hey, nice feature');
     // TODO: Fails on firefox.  See issue #2186.
-    // assert.exists(component.shadowRoot.querySelector('sl-relative-time'));
-    assert.notExists(component.shadowRoot!.querySelector('sl-dropdown'));
-    assert.notExists(component.shadowRoot!.querySelector('sl-menu'));
+    // assert.exists(component.shadowRoot.querySelector('cw-relative-time'));
+    assert.notExists(component.shadowRoot!.querySelector('cw-dropdown'));
+    assert.notExists(component.shadowRoot!.querySelector('cw-menu'));
   });
 
   it('renders an activity when signed in', async () => {
@@ -90,7 +90,7 @@ describe('chromedash-activity', () => {
     );
     const commentDiv = component.shadowRoot!.querySelector('.comment');
     assert.include(commentDiv!.innerHTML, 'hey, nice feature');
-    assert.exists(component.shadowRoot!.querySelector('sl-menu'));
+    assert.exists(component.shadowRoot!.querySelector('cw-menu'));
   });
 
   // Note: It does not hide or prefix a deleted comment for users who don't
@@ -116,8 +116,8 @@ describe('chromedash-activity', () => {
     const commentDiv = component.shadowRoot!.querySelector('.comment');
     assert.include(commentDiv!.innerHTML, '[Deleted]');
     assert.include(commentDiv!.innerHTML, 'better left unsaid');
-    assert.exists(component.shadowRoot!.querySelector('sl-dropdown'));
-    assert.exists(component.shadowRoot!.querySelector('sl-menu'));
+    assert.exists(component.shadowRoot!.querySelector('cw-dropdown'));
+    assert.exists(component.shadowRoot!.querySelector('cw-menu'));
   });
 
   it('can delete an activity', async () => {
@@ -198,7 +198,7 @@ describe('chromedash-activity', () => {
     );
 
     const relativeDate =
-      component.shadowRoot!.querySelector('sl-relative-time');
+      component.shadowRoot!.querySelector('cw-relative-time');
     assert.exists(relativeDate);
     const dateStr = relativeDate.getAttribute('date');
     assert.equal(dateStr, '2022-08-30T12:34:45.567Z');

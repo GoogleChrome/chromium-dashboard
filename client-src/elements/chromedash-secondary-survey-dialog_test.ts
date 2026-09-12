@@ -16,7 +16,7 @@
 
 import {html} from 'lit';
 import {fixture, assert, expect, elementUpdated} from '@open-wc/testing';
-import {SlTextarea} from '@shoelace-style/shoelace';
+import {CwTextarea} from '@cordwainer/cw-elements';
 import sinon from 'sinon';
 import './chromedash-secondary-survey-dialog.js';
 import {
@@ -69,7 +69,7 @@ describe('chromedash-secondary-survey-dialog', () => {
   it('renders the testing form', async () => {
     component.gate = {gate_type: GATE_TYPES.TESTING_PLAN};
     await elementUpdated(component);
-    const radios = component.shadowRoot?.querySelector('sl-radio-group');
+    const radios = component.shadowRoot?.querySelector('cw-radio-group');
     assert.isNotNull(radios, 'Testing form should contain radio groups');
     const button = component.shadowRoot?.querySelector('#generate_button');
     assert.isNotNull(button, 'Testing form should contain generate button');
@@ -83,7 +83,7 @@ describe('chromedash-secondary-survey-dialog', () => {
     };
     await elementUpdated(component);
     const textarea =
-      component.shadowRoot?.querySelector<SlTextarea>('sl-textarea');
+      component.shadowRoot?.querySelector<CwTextarea>('cw-textarea');
     textarea!.value = 'This is a unique string';
     component.generateTestingComment();
     assert.include(actual, 'This is a unique string');

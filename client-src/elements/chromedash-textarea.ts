@@ -15,13 +15,12 @@
  */
 
 import {TemplateResult, html, nothing} from 'lit';
-import SlTextarea from '@shoelace-style/shoelace/dist/components/textarea/textarea.js';
+import CwTextarea from '@cordwainer/cw-elements/dist/components/textarea/textarea.js';
 import {customElement, property, state} from 'lit/decorators.js';
 import {autolink} from './utils.js';
 
-// @ts-expect-error ts(1238)
 @customElement('chromedash-textarea')
-export class ChromedashTextarea extends SlTextarea {
+export class ChromedashTextarea extends CwTextarea {
   @property({type: Boolean})
   multiple;
   @property({type: String})
@@ -137,31 +136,31 @@ export class ChromedashTextarea extends SlTextarea {
 
     return html`
       ${this.showPreview ? preview : editor}
-      <sl-checkbox
+      <cw-checkbox
         id="use-markdown"
         name="${this.name}_is_markdown"
         ?checked=${this.isMarkdown || this.alwaysMarkdown}
         ?disabled=${this.alwaysMarkdown}
-        @sl-change=${this.handleMarkdownChecked}
+        @cw-change=${this.handleMarkdownChecked}
       >
         Use markdown
-      </sl-checkbox>
-      <sl-icon-button
+      </cw-checkbox>
+      <cw-icon-button
         name="info-circle"
         id="info-button"
         title="GitHub flavored markdown docs"
         href="https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax"
         target="_blank"
-      ></sl-icon-button>
+      ></cw-icon-button>
       ${
         this.isMarkdown || this.alwaysMarkdown
-          ? html` <sl-checkbox
+          ? html` <cw-checkbox
               id="show-preview"
               ?checked=${this.showPreview}
-              @sl-change=${this.handlePreviewChecked}
+              @cw-change=${this.handlePreviewChecked}
             >
               Preview
-            </sl-checkbox>`
+            </cw-checkbox>`
           : nothing
       }
     `;

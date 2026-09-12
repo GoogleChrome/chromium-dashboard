@@ -187,11 +187,11 @@ export class ChromedashIntentContent extends LitElement {
           style="float:right"
           title="Copy text to clipboard"
         >
-          <sl-icon
+          <cw-icon
             name="copy"
             id="copy-email-body"
             @click="${() => this.copyIntentBodyHandler()}"
-          ></sl-icon>
+          ></cw-icon>
         </span>
       </p>
 

@@ -150,7 +150,7 @@ export class ChromedashReleaseFeatureCard extends LitElement {
         }
 
         .feature-card:hover {
-          box-shadow: var(--sl-shadow-medium, 0 4px 12px rgba(0, 0, 0, 0.08));
+          box-shadow: var(--cw-shadow-medium, 0 4px 12px rgba(0, 0, 0, 0.08));
         }
 
         .card-header {
@@ -169,7 +169,7 @@ export class ChromedashReleaseFeatureCard extends LitElement {
         }
 
         .feature-title {
-          font-size: var(--sl-font-size-large, 1.25rem);
+          font-size: var(--cw-font-size-large, 1.25rem);
           font-weight: 600;
           margin: 0;
           line-height: 1.3;
@@ -254,7 +254,7 @@ export class ChromedashReleaseFeatureCard extends LitElement {
         .badges-wrapper {
           display: flex;
           align-items: center;
-          gap: var(--sl-spacing-2x-small);
+          gap: var(--cw-spacing-2x-small);
           flex-wrap: wrap;
         }
 
@@ -302,7 +302,7 @@ export class ChromedashReleaseFeatureCard extends LitElement {
         }
 
         .link-separator {
-          color: var(--sl-color-neutral-400);
+          color: var(--cw-color-neutral-400);
           user-select: none;
         }
 
@@ -345,7 +345,7 @@ export class ChromedashReleaseFeatureCard extends LitElement {
           align-items: center;
           justify-content: space-between;
           flex-wrap: wrap;
-          gap: var(--sl-spacing-small);
+          gap: var(--cw-spacing-small);
           border-top: var(--default-border);
           padding-top: var(--content-padding-half);
         }
@@ -353,13 +353,13 @@ export class ChromedashReleaseFeatureCard extends LitElement {
         .action-buttons {
           display: flex;
           align-items: center;
-          gap: var(--sl-spacing-small);
+          gap: var(--cw-spacing-small);
         }
 
         .suggestion-meta {
           display: flex;
           align-items: center;
-          gap: var(--sl-spacing-x-small);
+          gap: var(--cw-spacing-x-small);
           font-size: var(--button-small-font-size, 0.875rem);
           color: var(--unimportant-text-color);
         }
@@ -445,7 +445,7 @@ export class ChromedashReleaseFeatureCard extends LitElement {
     }
     if (!categoryName) return nothing;
 
-    return html`<sl-badge variant="neutral" pill>${categoryName}</sl-badge>`;
+    return html`<cw-badge variant="neutral" pill>${categoryName}</cw-badge>`;
   }
 
   renderProvenanceBadge(): TemplateResult | typeof nothing {
@@ -455,10 +455,10 @@ export class ChromedashReleaseFeatureCard extends LitElement {
     if (
       feature.summary_source === ReleaseNoteFeatureSummarySourceEnum.AI_APPLIED
     ) {
-      return html`<sl-badge variant="success" pill>AI Applied</sl-badge>`;
+      return html`<cw-badge variant="success" pill>AI Applied</cw-badge>`;
     }
 
-    return html`<sl-badge variant="neutral" pill>Human Authored</sl-badge>`;
+    return html`<cw-badge variant="neutral" pill>Human Authored</cw-badge>`;
   }
 
   renderReviewBadge(): TemplateResult | typeof nothing {
@@ -466,8 +466,8 @@ export class ChromedashReleaseFeatureCard extends LitElement {
       this.suggestion &&
       this.suggestion.status === SummarySuggestionStatusEnum.PENDING
     ) {
-      return html`<sl-badge variant="warning" pill
-        >AI Review Pending</sl-badge
+      return html`<cw-badge variant="warning" pill
+        >AI Review Pending</cw-badge
       >`;
     }
     return nothing;
@@ -522,43 +522,43 @@ export class ChromedashReleaseFeatureCard extends LitElement {
   renderPrimaryReviewButton(hasPendingSuggestion: boolean): TemplateResult {
     if (hasPendingSuggestion) {
       return html`
-        <sl-button
+        <cw-button
           size="small"
           variant="primary"
           class="review-button"
           @click=${this.handleReviewClick}
         >
-          <sl-icon slot="prefix" name="pencil"></sl-icon>
+          <cw-icon slot="prefix" name="pencil"></cw-icon>
           Review Suggestion
-        </sl-button>
+        </cw-button>
       `;
     }
 
     return html`
-      <sl-button
+      <cw-button
         size="small"
         variant="default"
         class="review-button"
         @click=${this.handleReviewClick}
       >
-        <sl-icon slot="prefix" name="eye"></sl-icon>
+        <cw-icon slot="prefix" name="eye"></cw-icon>
         Inspect / Edit
-      </sl-button>
+      </cw-button>
     `;
   }
 
   renderGenerateButton(hasPendingSuggestion: boolean): TemplateResult {
     const label = hasPendingSuggestion ? 'Regenerate' : 'Generate AI Summary';
     return html`
-      <sl-button
+      <cw-button
         size="small"
         variant="default"
         class="generate-button"
         @click=${this.handleGenerateClick}
       >
-        <sl-icon slot="prefix" name="arrow-clockwise"></sl-icon>
+        <cw-icon slot="prefix" name="arrow-clockwise"></cw-icon>
         ${label}
-      </sl-button>
+      </cw-button>
     `;
   }
 
@@ -568,13 +568,13 @@ export class ChromedashReleaseFeatureCard extends LitElement {
 
     return html`
       <div class="suggestion-meta">
-        <sl-tooltip content=${reasoning}>
-          <sl-icon
+        <cw-tooltip content=${reasoning}>
+          <cw-icon
             tabindex="0"
             name="info-circle"
             aria-label="Summary reasoning details"
-          ></sl-icon>
-        </sl-tooltip>
+          ></cw-icon>
+        </cw-tooltip>
         <span>Grounding available</span>
       </div>
     `;

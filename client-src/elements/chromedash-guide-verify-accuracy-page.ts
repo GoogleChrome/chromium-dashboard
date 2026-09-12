@@ -156,18 +156,18 @@ export class ChromedashGuideVerifyAccuracyPage extends LitElement {
 
   renderSkeletons() {
     return html`
-      <h3><sl-skeleton effect="sheen"></sl-skeleton></h3>
+      <h3><cw-skeleton effect="sheen"></cw-skeleton></h3>
       <section id="metadata">
-        <h3><sl-skeleton effect="sheen"></sl-skeleton></h3>
+        <h3><cw-skeleton effect="sheen"></cw-skeleton></h3>
         <p>
-          <sl-skeleton effect="sheen"></sl-skeleton>
-          <sl-skeleton effect="sheen"></sl-skeleton>
-          <sl-skeleton effect="sheen"></sl-skeleton>
-          <sl-skeleton effect="sheen"></sl-skeleton>
-          <sl-skeleton effect="sheen"></sl-skeleton>
-          <sl-skeleton effect="sheen"></sl-skeleton>
-          <sl-skeleton effect="sheen"></sl-skeleton>
-          <sl-skeleton effect="sheen"></sl-skeleton>
+          <cw-skeleton effect="sheen"></cw-skeleton>
+          <cw-skeleton effect="sheen"></cw-skeleton>
+          <cw-skeleton effect="sheen"></cw-skeleton>
+          <cw-skeleton effect="sheen"></cw-skeleton>
+          <cw-skeleton effect="sheen"></cw-skeleton>
+          <cw-skeleton effect="sheen"></cw-skeleton>
+          <cw-skeleton effect="sheen"></cw-skeleton>
+          <cw-skeleton effect="sheen"></cw-skeleton>
         </p>
       </section>
     `;
@@ -178,7 +178,7 @@ export class ChromedashGuideVerifyAccuracyPage extends LitElement {
       <div id="subheader">
         <h2 id="breadcrumbs">
           <a href="/feature/${this.featureId}">
-            <sl-icon name="arrow-left"></sl-icon>
+            <cw-icon name="arrow-left"></cw-icon>
             Verify feature data for ${this.feature.name}
           </a>
         </h2>
@@ -343,15 +343,15 @@ export class ChromedashGuideVerifyAccuracyPage extends LitElement {
           value=${allFormFields.join(',')}
         />
         <h3>${title}</h3>
-        <sl-alert variant="warning" open class="verify-banner">
-          <sl-icon slot="icon" name="info-circle"></sl-icon>
+        <cw-alert variant="warning" open class="verify-banner">
+          <cw-icon slot="icon" name="info-circle"></cw-icon>
           <strong
             >Please review your information below and click 'Submit' to confirm
             it is accurate,
             <p id="alertUnderline">even if no changes are made</p>
             !</strong
           >
-        </sl-alert>
+        </cw-alert>
         <chromedash-form-table ${ref(this.registerFormSubmitHandler)}>
           ${formsToRender}
         </chromedash-form-table>

@@ -95,7 +95,7 @@ class ChromedashFeatureFilter extends LitElement {
     return [
       ...SHARED_STYLES,
       css`
-        sl-icon-button {
+        cw-icon-button {
           font-size: 1.6rem;
           margin: 0 !important;
         }
@@ -118,22 +118,22 @@ class ChromedashFeatureFilter extends LitElement {
         value=${this.query}
         placeholder="Search"
         .vocabulary=${VOCABULARY}
-        @sl-change=${this.handleSearchClick}
+        @cw-change=${this.handleSearchClick}
       >
-        <sl-icon-button
+        <cw-icon-button
           library="material"
           name="search"
           slot="prefix"
           @click="${this.handleSearchClick}"
         >
-        </sl-icon-button>
-        <sl-icon-button
+        </cw-icon-button>
+        <cw-icon-button
           library="material"
           name="help_20px"
           slot="suffix"
           @click="${this.showHelp}"
         >
-        </sl-icon-button>
+        </cw-icon-button>
       </chromedash-typeahead>
     `;
   }

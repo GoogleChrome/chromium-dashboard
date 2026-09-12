@@ -321,14 +321,14 @@ export class ChromedashBulkEditPage extends LitElement {
 
   renderControls() {
     return html`
-      <sl-button
+      <cw-button
         ?disabled=${this.parsing || this.submitting || this.items.length == 0}
         @click=${this.handleSubmit}
         size="small"
         variant="primary"
       >
         Update all
-      </sl-button>
+      </cw-button>
     `;
   }
 

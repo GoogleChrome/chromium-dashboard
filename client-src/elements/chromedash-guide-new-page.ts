@@ -50,8 +50,8 @@ export class ChromedashGuideNewPage extends LitElement {
       // We do depend on sl-focus-ring being defined.
       css`
         table td label input[type='radio']:focus {
-          box-shadow: 0 0 0 var(--sl-focus-ring-width)
-            var(--sl-input-focus-ring-color);
+          box-shadow: 0 0 0 var(--cw-focus-ring-width)
+            var(--cw-input-focus-ring-color);
         }
         .process-notice {
           margin: var(--content-padding-half) 0;

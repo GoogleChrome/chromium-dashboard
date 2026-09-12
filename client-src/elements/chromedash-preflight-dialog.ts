@@ -128,7 +128,7 @@ export class ChromedashPreflightDialog extends LitElement {
           visibility: visible;
         }
 
-        sl-button {
+        cw-button {
           float: right;
           margin: var(--content-padding-half);
         }
@@ -154,11 +154,11 @@ export class ChromedashPreflightDialog extends LitElement {
     this._feStage = feStage;
     this._featureGates = featureGates;
     this._url = url;
-    this.renderRoot.querySelector('sl-dialog')?.show();
+    this.renderRoot.querySelector('cw-dialog')?.show();
   }
 
   hide() {
-    this.renderRoot.querySelector('sl-dialog')?.hide();
+    this.renderRoot.querySelector('cw-dialog')?.hide();
   }
 
   handleCancel() {
@@ -261,28 +261,28 @@ export class ChromedashPreflightDialog extends LitElement {
         )}
       </ul>
 
-      <sl-button
+      <cw-button
         href="${this._url}"
         target="_blank"
         size="small"
         @click=${this.handleProceed}
         >Proceed anyway
-      </sl-button>
-      <sl-button size="small" variant="warning" @click=${this.handleCancel}
-        >Don't draft email yet</sl-button
+      </cw-button>
+      <cw-button size="small" variant="warning" @click=${this.handleCancel}
+        >Don't draft email yet</cw-button
       >
     `;
   }
 
   render() {
     return html`
-      <sl-dialog
+      <cw-dialog
         class="missing-prereqs"
         label="Missing Prerequisites"
         style="--width:fit-content"
       >
         ${this.renderDialogContent()}
-      </sl-dialog>
+      </cw-dialog>
     `;
   }
 }

@@ -100,7 +100,7 @@ describe('chromedash-release-feature-card', () => {
     assert.include(summaryEl!.textContent!, 'Enables grid items to inherit');
 
     const categoryBadge = el.shadowRoot!.querySelector<HTMLElement>(
-      '.badges-wrapper sl-badge'
+      '.badges-wrapper cw-badge'
     );
     assert.isNotNull(categoryBadge);
     assert.strictEqual(categoryBadge!.textContent?.trim(), 'CSS');
@@ -277,7 +277,7 @@ describe('chromedash-release-feature-card', () => {
       ></chromedash-release-feature-card>`
     );
 
-    const badges = el.shadowRoot!.querySelectorAll('.badges-wrapper sl-badge');
+    const badges = el.shadowRoot!.querySelectorAll('.badges-wrapper cw-badge');
     const badgeTexts = Array.from(badges).map(b => b.textContent?.trim());
     assert.include(badgeTexts, 'AI Applied');
   });
@@ -289,7 +289,7 @@ describe('chromedash-release-feature-card', () => {
       ></chromedash-release-feature-card>`
     );
     const humanBadges = humanEl.shadowRoot!.querySelectorAll(
-      '.badges-wrapper sl-badge'
+      '.badges-wrapper cw-badge'
     );
     const humanTexts = Array.from(humanBadges).map(b => b.textContent?.trim());
     assert.include(humanTexts, 'Human Authored');
@@ -304,7 +304,7 @@ describe('chromedash-release-feature-card', () => {
       ></chromedash-release-feature-card>`
     );
     const unsetBadges = unsetEl.shadowRoot!.querySelectorAll(
-      '.badges-wrapper sl-badge'
+      '.badges-wrapper cw-badge'
     );
     const unsetTexts = Array.from(unsetBadges).map(b => b.textContent?.trim());
     assert.include(unsetTexts, 'Human Authored');
@@ -317,7 +317,7 @@ describe('chromedash-release-feature-card', () => {
         .suggestion=${mockSuggestion}
       ></chromedash-release-feature-card>`
     );
-    const badges = el.shadowRoot!.querySelectorAll('.badges-wrapper sl-badge');
+    const badges = el.shadowRoot!.querySelectorAll('.badges-wrapper cw-badge');
     const badgeTexts = Array.from(badges).map(b => b.textContent?.trim());
     assert.include(badgeTexts, 'CSS');
     assert.include(badgeTexts, 'Human Authored');
@@ -452,7 +452,7 @@ describe('chromedash-release-feature-card', () => {
         .feature=${featureWithNumCategory}
       ></chromedash-release-feature-card>`
     );
-    const badges = el.shadowRoot!.querySelectorAll('sl-badge');
+    const badges = el.shadowRoot!.querySelectorAll('cw-badge');
     const categoryBadge = Array.from(badges).find(
       b => b.textContent?.trim() === 'CSS'
     );
@@ -470,7 +470,7 @@ describe('chromedash-release-feature-card', () => {
         .feature=${featureWithUnknownCategory}
       ></chromedash-release-feature-card>`
     );
-    const badges = el.shadowRoot!.querySelectorAll('sl-badge');
+    const badges = el.shadowRoot!.querySelectorAll('cw-badge');
     assert.strictEqual(badges.length, 1);
     assert.strictEqual(badges[0].textContent?.trim(), 'Human Authored');
   });

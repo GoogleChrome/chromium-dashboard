@@ -71,10 +71,10 @@ class ChromedashPostIntentDialog extends LitElement {
         .float-right {
           float: right;
         }
-        sl-input::part(base) {
+        cw-input::part(base) {
           margin-top: 8px;
         }
-        sl-input[data-user-invalid]::part(base) {
+        cw-input[data-user-invalid]::part(base) {
           border-color: red;
         }
       `,
@@ -82,7 +82,7 @@ class ChromedashPostIntentDialog extends LitElement {
   }
 
   show() {
-    this.shadowRoot!.querySelector('sl-dialog')!.show();
+    this.shadowRoot!.querySelector('cw-dialog')!.show();
   }
 
   updateAttributes(el) {
@@ -99,7 +99,7 @@ class ChromedashPostIntentDialog extends LitElement {
     const defaultCCEmails = this.ownerEmails.join(',');
 
     return html`${fieldInfo.help_text}<br />
-      <sl-input
+      <cw-input
         ${ref(this.updateAttributes)}
         id="id_${fieldInfo.name}"
         size="small"
@@ -107,12 +107,12 @@ class ChromedashPostIntentDialog extends LitElement {
         .value=${defaultCCEmails}
         ?required=${fieldInfo.required}
       >
-      </sl-input>`;
+      </cw-input>`;
   }
 
   submitIntent() {
     // Make sure that the CC emails input is valid.
-    const ccEmailsInput = this.shadowRoot!.querySelector('sl-input');
+    const ccEmailsInput = this.shadowRoot!.querySelector('cw-input');
     if (!ccEmailsInput || ccEmailsInput.hasAttribute('data-user-invalid')) {
       return;
     }
@@ -146,7 +146,7 @@ class ChromedashPostIntentDialog extends LitElement {
   }
 
   renderDialog() {
-    return html`<sl-dialog label="Post intent to blink-dev">
+    return html`<cw-dialog label="Post intent to blink-dev">
       <p>
         This intent will be sent directly to
         <a
@@ -159,15 +159,15 @@ class ChromedashPostIntentDialog extends LitElement {
       <br /><br />
       ${this.renderIntentCCEmailOption()}
       <br /><br />
-      <sl-button
+      <cw-button
         class="float-right"
         id="submit-intent-button"
         variant="primary"
         size="small"
         @click=${() => this.submitIntent()}
-        >Submit intent</sl-button
+        >Submit intent</cw-button
       >
-    </sl-dialog>`;
+    </cw-dialog>`;
   }
 
   render() {

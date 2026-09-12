@@ -219,7 +219,7 @@ describe('chromedash-guide-editall-page', () => {
     assert.exists(formTable, 'Form table exists.');
 
     // delete button shown on rollout steps only
-    const deleteButtons = formTable.querySelectorAll('sl-button[stage="1061"]');
+    const deleteButtons = formTable.querySelectorAll('cw-button[stage="1061"]');
     assert.equal(deleteButtons.length, 2);
   });
 
@@ -318,7 +318,7 @@ describe('chromedash-guide-editall-page', () => {
   //   milestoneFieldEnd.value = '99';
 
   //   // Trigger the change event on the milestone field
-  //   milestoneFieldStartInput.dispatchEvent(new Event('sl-change'));
+  //   milestoneFieldStartInput.dispatchEvent(new Event('cw-change'));
 
   //   // The error messages should be displayed
   //   const errorMessageStart = milestoneFieldStartInput.shadowRoot.querySelector('.check-error');
@@ -332,7 +332,7 @@ describe('chromedash-guide-editall-page', () => {
   //   milestoneFieldEnd.value = '43';
 
   //   // Trigger the change event on the milestone field
-  //   milestoneField.dispatchEvent(new Event('sl-change'));
+  //   milestoneField.dispatchEvent(new Event('cw-change'));
 
   //   // The error messages should not be displayed
   //   assert.notExists(errorMessageStart);

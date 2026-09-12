@@ -56,7 +56,7 @@ class ChromedashAddStageDialog extends LitElement {
 
   @query('#stage_create_select')
   stageCreateSelect;
-  @query('sl-dialog')
+  @query('cw-dialog')
   dialog;
 
   static get styles() {
@@ -87,7 +87,7 @@ class ChromedashAddStageDialog extends LitElement {
       // Get the name of the stage from the form definition based on the stage type.
       const stageInfo = FORMS_BY_STAGE_TYPE[stageType];
       menuItems.push(html`
-        <sl-option value="${stageType}"> ${stageInfo.name} </sl-option>
+        <cw-option value="${stageType}"> ${stageInfo.name} </cw-option>
       `);
     }
     return menuItems;
@@ -126,24 +126,24 @@ class ChromedashAddStageDialog extends LitElement {
   renderStageSelect() {
     return html`
       <div id="controls">
-        <sl-select
+        <cw-select
           placement="top"
           hoist
           value="0"
           id="stage_create_select"
           size="small"
-          @sl-change=${this.checkCanSubmit}
+          @cw-change=${this.checkCanSubmit}
           style="width:16rem"
         >
-          <sl-option value="0" disabled>Select a stage to create</sl-option>
+          <cw-option value="0" disabled>Select a stage to create</cw-option>
           ${this.renderSelectMenuItems()}
-        </sl-select>
-        <sl-button
+        </cw-select>
+        <cw-button
           variant="primary"
           @click=${this.handleStageCreate}
           ?disabled=${!this.canSubmit}
           size="small"
-          >Create stage</sl-button
+          >Create stage</cw-button
         >
       </div>
     `;
@@ -151,10 +151,10 @@ class ChromedashAddStageDialog extends LitElement {
 
   render() {
     return html`
-      <sl-dialog label="Create a new stage">
+      <cw-dialog label="Create a new stage">
         <p>Here, you can add additional stages to your feature as needed.</p>
         ${this.renderStageSelect()}
-      </sl-dialog>
+      </cw-dialog>
     `;
   }
 }

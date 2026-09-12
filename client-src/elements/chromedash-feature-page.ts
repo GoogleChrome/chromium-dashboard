@@ -74,16 +74,16 @@ export class ChromedashFeaturePage extends LitElement {
           margin-right: 5px;
         }
 
-        sl-skeleton {
+        cw-skeleton {
           margin-bottom: 1em;
           width: 60%;
         }
 
-        sl-skeleton:nth-of-type(even) {
+        cw-skeleton:nth-of-type(even) {
           width: 50%;
         }
 
-        h3 sl-skeleton {
+        h3 cw-skeleton {
           width: 30%;
           height: 1.5em;
         }
@@ -346,10 +346,10 @@ export class ChromedashFeaturePage extends LitElement {
   renderSkeletonSection() {
     return html`
       <section>
-        <h3><sl-skeleton effect="sheen"></sl-skeleton></h3>
+        <h3><cw-skeleton effect="sheen"></cw-skeleton></h3>
         <p>
-          <sl-skeleton effect="sheen"></sl-skeleton>
-          <sl-skeleton effect="sheen"></sl-skeleton>
+          <cw-skeleton effect="sheen"></cw-skeleton>
+          <cw-skeleton effect="sheen"></cw-skeleton>
         </p>
       </section>
     `;
@@ -395,10 +395,10 @@ export class ChromedashFeaturePage extends LitElement {
                       id="star-when-signed-in"
                       @click=${this.handleStarClick}
                     >
-                      <sl-icon
+                      <cw-icon
                         name=${this.starred ? 'star-fill' : 'star'}
                         class="pushicon"
-                      ></sl-icon>
+                      ></cw-icon>
                     </a>
                   </span>
                 `
@@ -412,7 +412,7 @@ export class ChromedashFeaturePage extends LitElement {
               target="_blank"
               rel="noopener"
             >
-              <sl-icon name="bug"></sl-icon>
+              <cw-icon name="bug"></cw-icon>
             </a>
           </span>
           <span
@@ -425,7 +425,7 @@ export class ChromedashFeaturePage extends LitElement {
               id="share-feature"
               @click=${this.handleShareClick}
             >
-              <sl-icon name="share"></sl-icon>
+              <cw-icon name="share"></cw-icon>
             </a>
           </span>
           <span
@@ -438,13 +438,13 @@ export class ChromedashFeaturePage extends LitElement {
               id="copy-link"
               @click=${this.handleCopyLinkClick}
             >
-              <sl-icon library="material" name="link"></sl-icon>
+              <cw-icon library="material" name="link"></cw-icon>
             </a>
           </span>
         </div>
         <h2 id="breadcrumbs">
           <a href="${this.contextLink}">
-            <sl-icon name="arrow-left"></sl-icon>
+            <cw-icon name="arrow-left"></cw-icon>
           </a>
           <a href="/feature/${this.featureId}">
             Feature: ${this.feature.name}

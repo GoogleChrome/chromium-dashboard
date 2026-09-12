@@ -83,10 +83,10 @@ class ChromedashFeatureRow extends LitElement {
           color: var(--unimportant-text-color);
           padding: var(--content-padding-quarter);
         }
-        sl-icon-button {
+        cw-icon-button {
           font-size: 1.3rem;
         }
-        sl-icon-button::part(base) {
+        cw-icon-button::part(base) {
           color: var(--link-color);
         }
       `,
@@ -119,7 +119,7 @@ class ChromedashFeatureRow extends LitElement {
 
   renderStarIcon(feature) {
     return html`
-      <sl-icon-button
+      <cw-icon-button
         @click=${this.toggleStar}
         title="Receive an email notification when there are updates"
         library="material"
@@ -127,7 +127,7 @@ class ChromedashFeatureRow extends LitElement {
           this.starredFeatures.has(Number(feature.id)) ? 'star' : 'star_border'
         }"
         data-feature-id="${feature.id}"
-      ></sl-icon-button>
+      ></cw-icon-button>
     `;
   }
 

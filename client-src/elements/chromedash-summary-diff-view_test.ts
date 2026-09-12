@@ -52,7 +52,7 @@ describe('chromedash-summary-diff-view', () => {
       'AI generated summary for feature 101.'
     );
 
-    const badges = el.shadowRoot!.querySelectorAll('.sources-list sl-badge');
+    const badges = el.shadowRoot!.querySelectorAll('.sources-list cw-badge');
     assert.equal(badges.length, 1);
     assert.include(badges[0].textContent, 'developer.mozilla.org');
   });
@@ -88,7 +88,7 @@ describe('chromedash-summary-diff-view', () => {
     }) as EventListener);
 
     const editBtn = el.shadowRoot!.querySelector(
-      '.column-header sl-button'
+      '.column-header cw-button'
     ) as HTMLElement;
     assert.include(editBtn.textContent, 'Edit');
 
@@ -97,7 +97,7 @@ describe('chromedash-summary-diff-view', () => {
 
     assert.isTrue(toggleFired);
     assert.include(editBtn.textContent, 'Preview');
-    const textarea = el.shadowRoot!.querySelector('sl-textarea');
+    const textarea = el.shadowRoot!.querySelector('cw-textarea');
     assert.exists(textarea);
     assert.equal(textarea!.value, 'AI suggested summary');
     assert.equal(el.textareaEl, textarea);
@@ -118,7 +118,7 @@ describe('chromedash-summary-diff-view', () => {
       changedValue = e.detail.value;
     }) as EventListener);
 
-    const textarea = el.shadowRoot!.querySelector('sl-textarea');
+    const textarea = el.shadowRoot!.querySelector('cw-textarea');
     assert.exists(textarea);
 
     textarea!.value = 'Updated custom summary text';

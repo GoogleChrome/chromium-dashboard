@@ -89,7 +89,7 @@ class ChromedashTimeline extends LitElement {
         .callout {
           padding: var(--content-padding);
           margin-top: var(--content-padding);
-          background-color: var(--sl-color-warning-100);
+          background-color: var(--cw-color-warning-100);
           border-color: rgba(27, 31, 35, 0.15);
           line-height: 1.4;
         }
@@ -115,7 +115,7 @@ class ChromedashTimeline extends LitElement {
           font-size: 15px;
         }
 
-        sl-progress-bar {
+        cw-progress-bar {
           --height: 4px;
           --track-color: var(--barchart-foreground);
           --indicator-color: var(--barchart-background);
@@ -261,7 +261,7 @@ class ChromedashTimeline extends LitElement {
 
     // the chartEl's innerHTML will get overwritten once the chart is loaded
     const chartEl = this.shadowRoot!.querySelector('#chart');
-    if (!chartEl!.innerHTML.includes('sl-progress-bar')) {
+    if (!chartEl!.innerHTML.includes('cw-progress-bar')) {
       chartEl!.insertAdjacentHTML(
         'afterbegin',
         '<sl-progress-bar indeterminate></sl-progress-bar>'

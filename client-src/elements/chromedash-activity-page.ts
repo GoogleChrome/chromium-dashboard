@@ -134,7 +134,7 @@ export class ChromedashActivityPage extends LitElement {
     // TODO(jrobbins): Include activities too.
     return html`
       <h2>Comments</h2>
-      <sl-skeleton effect="sheen"></sl-skeleton>
+      <cw-skeleton effect="sheen"></cw-skeleton>
     `;
   }
 
@@ -142,26 +142,26 @@ export class ChromedashActivityPage extends LitElement {
     if (!this.user || !this.user.can_comment) return nothing;
 
     const postButton = html`
-      <sl-button
+      <cw-button
         variant="primary"
         @click=${this.handlePost}
         ?disabled=${!this.needsPost}
         size="small"
-        >Post</sl-button
+        >Post</cw-button
       >
     `;
 
     return html`
-      <sl-textarea
+      <cw-textarea
         id="comment_area"
         rows="2"
         cols="40"
         resize="auto"
         ${ref(this.commentAreaRef)}
-        @sl-change=${this.checkNeedsPost}
+        @cw-change=${this.checkNeedsPost}
         @keypress=${this.checkNeedsPost}
         placeholder="Add a comment"
-      ></sl-textarea>
+      ></cw-textarea>
       <div class="instructions">
         Comments will be visible publicly. Only reviewers will be notified when
         a comment is posted.
@@ -176,7 +176,7 @@ export class ChromedashActivityPage extends LitElement {
       <div id="header">
         <h2 id="breadcrumbs">
           <a href="/feature/${this.featureId}">
-            <sl-icon name="arrow-left"></sl-icon>
+            <cw-icon name="arrow-left"></cw-icon>
             Comments &amp; Activity
           </a>
         </h2>

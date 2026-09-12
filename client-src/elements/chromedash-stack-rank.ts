@@ -76,10 +76,10 @@ class ChromedashStackRank extends LitElement {
         }
 
         #dropdown-selection:hover {
-          background: var(--sl-color-neutral-100);
+          background: var(--cw-color-neutral-100);
         }
 
-        sl-button::part(base) {
+        cw-button::part(base) {
           color: #000;
         }
 
@@ -144,7 +144,7 @@ class ChromedashStackRank extends LitElement {
           visibility: hidden;
         }
 
-        sl-skeleton {
+        cw-skeleton {
           margin: 0;
           padding: 5px 20px;
         }
@@ -222,45 +222,45 @@ class ChromedashStackRank extends LitElement {
           >
           properties
         </p>
-        <sl-checkbox
+        <cw-checkbox
           ?checked=${this.shouldHideObsolete}
           @input=${this.handleChangeHideObsolete}
         >
           Hide obsolete
-        </sl-checkbox>
+        </cw-checkbox>
         <div id="dropdown-selection">
-          <sl-dropdown>
-            <sl-button
+          <cw-dropdown>
+            <cw-button
               slot="trigger"
               variant="text"
               ?disabled=${!this.viewList.length}
             >
-              <sl-icon name="filter-left"></sl-icon>
+              <cw-icon name="filter-left"></cw-icon>
               SORT BY
-            </sl-button>
-            <sl-menu @click="${this.sort}">
-              <sl-menu-item
+            </cw-button>
+            <cw-menu @click="${this.sort}">
+              <cw-menu-item
                 type="checkbox"
                 ?checked=${this.sortType == 'percentage' && !this.sortReverse}
                 data-order="percentage"
               >
                 Most used
-              </sl-menu-item>
-              <sl-menu-item
+              </cw-menu-item>
+              <cw-menu-item
                 type="checkbox"
                 ?checked=${this.sortType == 'percentage' && this.sortReverse}
                 data-order="percentage-reverse"
               >
                 Least used
-              </sl-menu-item>
-              <sl-menu-item
+              </cw-menu-item>
+              <cw-menu-item
                 type="checkbox"
                 ?checked=${this.sortType == 'property_name' && this.sortReverse}
                 data-order="property_name-reverse"
               >
                 Name (A-Z)
-              </sl-menu-item>
-              <sl-menu-item
+              </cw-menu-item>
+              <cw-menu-item
                 type="checkbox"
                 ?checked=${
                   this.sortType == 'property_name' && !this.sortReverse
@@ -268,9 +268,9 @@ class ChromedashStackRank extends LitElement {
                 data-order="property_name"
               >
                 Name (Z-A)
-              </sl-menu-item>
-            </sl-menu>
-          </sl-dropdown>
+              </cw-menu-item>
+            </cw-menu>
+          </cw-dropdown>
         </div>
       </div>
     `;
@@ -296,11 +296,11 @@ class ChromedashStackRank extends LitElement {
                 href="#${item.property_name}"
                 @click=${this.scrollToPosition}
               >
-                <sl-icon
+                <cw-icon
                   class="hash-link"
                   library="material"
                   name="link"
-                ></sl-icon>
+                ></cw-icon>
                 <p>${item.property_name}</p>
               </a>
             </div>
@@ -321,7 +321,7 @@ class ChromedashStackRank extends LitElement {
                 }/${item.bucket_id}"
                 title="Click to see a timeline view of this property"
               >
-                <sl-icon name="graph-up"></sl-icon>
+                <cw-icon name="graph-up"></cw-icon>
                 <p class="icon-text">Timeline</p>
               </a>
             </div>
@@ -335,8 +335,8 @@ class ChromedashStackRank extends LitElement {
     return html`${Array.from(Array(20)).map(
       () => html`
         <li class="stack-rank-item">
-          <sl-skeleton effect="sheen"></sl-skeleton>
-          <sl-skeleton effect="sheen"></sl-skeleton>
+          <cw-skeleton effect="sheen"></cw-skeleton>
+          <cw-skeleton effect="sheen"></cw-skeleton>
         </li>
       `
     )}`;
@@ -357,7 +357,7 @@ class ChromedashStackRank extends LitElement {
           <div class="stack-rank-item-result">
             <p class="title-text">Percentage</p>
             <a class="icon-wrapper spacer">
-              <sl-icon name="graph-up"></sl-icon>
+              <cw-icon name="graph-up"></cw-icon>
               <p class="icon-text">Timeline</p>
             </a>
           </div>

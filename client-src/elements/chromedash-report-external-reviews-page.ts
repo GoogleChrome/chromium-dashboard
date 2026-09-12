@@ -16,7 +16,7 @@
 
 // @ts-check
 import {Task} from '@lit/task';
-import '@shoelace-style/shoelace';
+import '@cordwainer/cw-elements';
 import {
   DefaultApiInterface,
   OutstandingReview,
@@ -96,7 +96,7 @@ export class ChromedashReportExternalReviewsPage extends LitElement {
           margin-top: var(--content-padding);
           margin-bottom: var(--content-padding-quarter);
 
-          sl-skeleton {
+          cw-skeleton {
             width: 30%;
             height: 1lh;
           }
@@ -260,20 +260,20 @@ export class ChromedashReportExternalReviewsPage extends LitElement {
       ${this._reviewsTask.render({
         pending: () => html`
           <section>
-            <h3><sl-skeleton effect="sheen"></sl-skeleton></h3>
+            <h3><cw-skeleton effect="sheen"></cw-skeleton></h3>
             <table class="data-table">
               ${this.headerRow()}
               ${[1, 2, 3].map(
                 () => html`
                   <tr>
                     <td class="feature">
-                      <sl-skeleton effect="sheen"></sl-skeleton>
+                      <cw-skeleton effect="sheen"></cw-skeleton>
                     </td>
                     <td class="review">
-                      <sl-skeleton effect="sheen"></sl-skeleton>
+                      <cw-skeleton effect="sheen"></cw-skeleton>
                     </td>
                     <td class="milestones">
-                      <sl-skeleton effect="sheen"></sl-skeleton>
+                      <cw-skeleton effect="sheen"></cw-skeleton>
                     </td>
                   </tr>
                 `

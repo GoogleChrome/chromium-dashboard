@@ -166,25 +166,25 @@ export class ChromedashActivity extends LitElement {
       return nothing;
     }
     // Show delete option if not deleted, else show undelete.
-    let menuItem = html` <sl-menu-item
+    let menuItem = html` <cw-menu-item
       @click="${() => this.handleDelete(false)}"
-      >Delete Comment</sl-menu-item
+      >Delete Comment</cw-menu-item
     >`;
     if (this.activity.deleted_by) {
-      menuItem = html` <sl-menu-item @click="${() => this.handleDelete(true)}"
-        >Undelete Comment</sl-menu-item
+      menuItem = html` <cw-menu-item @click="${() => this.handleDelete(true)}"
+        >Undelete Comment</cw-menu-item
       >`;
     }
 
-    return html` <sl-dropdown class="comment-menu-icon">
-      <sl-icon-button
+    return html` <cw-dropdown class="comment-menu-icon">
+      <cw-icon-button
         library="material"
         name="more_vert_24px"
         label="Comment menu"
         slot="trigger"
-      ></sl-icon-button>
-      <sl-menu>${menuItem}</sl-menu>
-    </sl-dropdown>`;
+      ></cw-icon-button>
+      <cw-menu>${menuItem}</cw-menu>
+    </cw-dropdown>`;
   }
 
   render() {

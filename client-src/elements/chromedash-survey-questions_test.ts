@@ -16,7 +16,7 @@
 
 import {html} from 'lit';
 import {assert, fixture} from '@open-wc/testing';
-import {SlCheckbox} from '@shoelace-style/shoelace';
+import {CwCheckbox} from '@cordwainer/cw-elements';
 import {ChromedashSurveyQuestions} from './chromedash-survey-questions.js';
 import {ChromeStatusClient} from '../js-src/cs-client.js';
 import {GATE_TYPES} from './form-field-enums.js';
@@ -135,13 +135,13 @@ describe('chromedash-survey-questions', () => {
     const checkbox1 = component.shadowRoot!.querySelector(
       '[name=is_language_polyfill]'
     );
-    assert.instanceOf(checkbox1, SlCheckbox);
+    assert.instanceOf(checkbox1, CwCheckbox);
     assert.isTrue(checkbox1.checked);
     assert.isTrue(checkbox1.disabled);
     const checkbox2 = component.shadowRoot!.querySelector(
       '[name=is_api_polyfill]'
     );
-    assert.instanceOf(checkbox2, SlCheckbox);
+    assert.instanceOf(checkbox2, CwCheckbox);
     assert.isFalse(checkbox2.checked);
     assert.isTrue(checkbox2.disabled);
   });
@@ -161,13 +161,13 @@ describe('chromedash-survey-questions', () => {
     const checkbox1 = component.shadowRoot!.querySelector(
       '[name=is_language_polyfill]'
     );
-    assert.instanceOf(checkbox1, SlCheckbox);
+    assert.instanceOf(checkbox1, CwCheckbox);
     assert.isFalse(checkbox1.checked);
     assert.isTrue(checkbox1.disabled);
     const checkbox2 = component.shadowRoot!.querySelector(
       '[name=is_api_polyfill]'
     );
-    assert.instanceOf(checkbox2, SlCheckbox);
+    assert.instanceOf(checkbox2, CwCheckbox);
     assert.isFalse(checkbox2.checked);
     assert.isTrue(checkbox2.disabled);
   });
@@ -186,13 +186,13 @@ describe('chromedash-survey-questions', () => {
     const checkbox1 = component.shadowRoot!.querySelector(
       '[name=is_language_polyfill]'
     );
-    assert.instanceOf(checkbox1, SlCheckbox);
+    assert.instanceOf(checkbox1, CwCheckbox);
     assert.isTrue(checkbox1.checked);
     assert.isTrue(checkbox1.disabled);
     const checkbox2 = component.shadowRoot!.querySelector(
       '[name=is_api_polyfill]'
     );
-    assert.instanceOf(checkbox2, SlCheckbox);
+    assert.instanceOf(checkbox2, CwCheckbox);
     assert.isFalse(checkbox2.checked);
     assert.isTrue(checkbox2.disabled);
   });
@@ -211,13 +211,13 @@ describe('chromedash-survey-questions', () => {
     const checkbox1 = component.shadowRoot!.querySelector(
       '[name=is_language_polyfill]'
     );
-    assert.instanceOf(checkbox1, SlCheckbox);
+    assert.instanceOf(checkbox1, CwCheckbox);
     assert.isTrue(checkbox1.checked);
     assert.isFalse(checkbox1.disabled);
     const checkbox2 = component.shadowRoot!.querySelector(
       '[name=is_api_polyfill]'
     );
-    assert.instanceOf(checkbox2, SlCheckbox);
+    assert.instanceOf(checkbox2, CwCheckbox);
     assert.isFalse(checkbox2.checked);
     assert.isFalse(checkbox2.disabled);
   });
@@ -236,13 +236,13 @@ describe('chromedash-survey-questions', () => {
     const checkbox1 = component.shadowRoot!.querySelector(
       '[name=is_language_polyfill]'
     );
-    assert.instanceOf(checkbox1, SlCheckbox);
+    assert.instanceOf(checkbox1, CwCheckbox);
     assert.isTrue(checkbox1.checked);
     assert.isFalse(checkbox1.disabled);
     const checkbox2 = component.shadowRoot!.querySelector(
       '[name=is_api_polyfill]'
     );
-    assert.instanceOf(checkbox2, SlCheckbox);
+    assert.instanceOf(checkbox2, CwCheckbox);
     assert.isFalse(checkbox2.checked);
     assert.isFalse(checkbox2.disabled);
   });

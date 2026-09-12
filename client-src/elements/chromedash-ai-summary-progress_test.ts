@@ -126,7 +126,7 @@ describe('chromedash-ai-summary-progress', () => {
     expect(
       stepItems[0].querySelector('.visually-hidden')!.textContent
     ).to.contain('Status: Succeeded');
-    const successIcon = stepItems[0].querySelector('sl-icon');
+    const successIcon = stepItems[0].querySelector('cw-icon');
     expect(successIcon).to.exist;
     expect(successIcon!.getAttribute('name')).to.equal('check-lg');
     expect(successIcon!.getAttribute('aria-hidden')).to.equal('true');
@@ -136,7 +136,7 @@ describe('chromedash-ai-summary-progress', () => {
     expect(
       stepItems[1].querySelector('.visually-hidden')!.textContent
     ).to.contain('Status: In progress');
-    expect(stepItems[1].querySelector('sl-spinner')).to.exist;
+    expect(stepItems[1].querySelector('cw-spinner')).to.exist;
 
     expect(stepItems[2].classList.contains('failed')).to.be.true;
     expect(stepItems[2].textContent).to.contain(
@@ -145,7 +145,7 @@ describe('chromedash-ai-summary-progress', () => {
     expect(
       stepItems[2].querySelector('.visually-hidden')!.textContent
     ).to.contain('Status: Failed');
-    const failedIcon = stepItems[2].querySelector('sl-icon');
+    const failedIcon = stepItems[2].querySelector('cw-icon');
     expect(failedIcon).to.exist;
     expect(failedIcon!.getAttribute('name')).to.equal('x-circle-fill');
 
@@ -153,7 +153,7 @@ describe('chromedash-ai-summary-progress', () => {
     expect(
       stepItems[3].querySelector('.visually-hidden')!.textContent
     ).to.contain('Status: Retrying');
-    const retryIcon = stepItems[3].querySelector('sl-icon');
+    const retryIcon = stepItems[3].querySelector('cw-icon');
     expect(retryIcon).to.exist;
     expect(retryIcon!.getAttribute('name')).to.equal('exclamation-circle-fill');
   });
@@ -180,8 +180,8 @@ describe('chromedash-ai-summary-progress', () => {
     expect(stepItem!.querySelector('.visually-hidden')!.textContent).to.contain(
       'Status: UNKNOWN_STATUS'
     );
-    expect(stepItem!.querySelector('sl-icon')).to.not.exist;
-    expect(stepItem!.querySelector('sl-spinner')).to.not.exist;
+    expect(stepItem!.querySelector('cw-icon')).to.not.exist;
+    expect(stepItem!.querySelector('cw-spinner')).to.not.exist;
   });
 
   it('truncates step message longer than MAX_STEP_MESSAGE_LENGTH (300 chars)', async () => {
@@ -221,7 +221,7 @@ describe('chromedash-ai-summary-progress', () => {
 
     const header = el.shadowRoot!.querySelector('.header');
     expect(header).to.exist;
-    expect(header!.querySelector('sl-spinner')).to.exist;
+    expect(header!.querySelector('cw-spinner')).to.exist;
     expect(header!.textContent).to.contain('Running');
 
     const stepsList = el.shadowRoot!.querySelector('.steps-list');
@@ -288,7 +288,7 @@ describe('chromedash-ai-summary-progress', () => {
     expect(errorBanner).to.exist;
     expect(errorBanner!.textContent).to.contain('Failed to generate summary');
 
-    const retryButton = errorBanner!.querySelector('sl-button');
+    const retryButton = errorBanner!.querySelector('cw-button');
     expect(retryButton).to.exist;
 
     const triggerSpy = sandbox.spy(el, 'handleTrigger');

@@ -18,31 +18,31 @@
     shoelace components and our own components */
 
 // Shoelace components and CSS
-import '@shoelace-style/shoelace/dist/components/button/button.js';
-import '@shoelace-style/shoelace/dist/components/checkbox/checkbox.js';
-import '@shoelace-style/shoelace/dist/components/dialog/dialog.js';
-import '@shoelace-style/shoelace/dist/components/drawer/drawer.js';
-import '@shoelace-style/shoelace/dist/components/details/details.js';
-import '@shoelace-style/shoelace/dist/components/dropdown/dropdown.js';
-import '@shoelace-style/shoelace/dist/components/icon/icon.js';
-import '@shoelace-style/shoelace/dist/components/icon-button/icon-button.js';
-import '@shoelace-style/shoelace/dist/components/input/input.js';
-import '@shoelace-style/shoelace/dist/components/menu/menu.js';
-import '@shoelace-style/shoelace/dist/components/menu-item/menu-item.js';
-import '@shoelace-style/shoelace/dist/components/option/option.js';
-import '@shoelace-style/shoelace/dist/components/popup/popup.js';
-import '@shoelace-style/shoelace/dist/components/progress-bar/progress-bar.js';
-import '@shoelace-style/shoelace/dist/components/radio-group/radio-group.js';
-import '@shoelace-style/shoelace/dist/components/radio/radio.js';
-import '@shoelace-style/shoelace/dist/components/relative-time/relative-time.js';
-import '@shoelace-style/shoelace/dist/components/skeleton/skeleton.js';
-import '@shoelace-style/shoelace/dist/components/select/select.js';
-import '@shoelace-style/shoelace/dist/components/textarea/textarea.js';
-import '@shoelace-style/shoelace/dist/components/badge/badge.js';
-import '@shoelace-style/shoelace/dist/components/tag/tag.js';
-import '@shoelace-style/shoelace/dist/components/tooltip/tooltip.js';
-import '@shoelace-style/shoelace/dist/themes/light.css';
-import {setBasePath} from '@shoelace-style/shoelace/dist/utilities/base-path.js';
+import '@cordwainer/cw-elements/dist/components/button/button.js';
+import '@cordwainer/cw-elements/dist/components/checkbox/checkbox.js';
+import '@cordwainer/cw-elements/dist/components/dialog/dialog.js';
+import '@cordwainer/cw-elements/dist/components/drawer/drawer.js';
+import '@cordwainer/cw-elements/dist/components/details/details.js';
+import '@cordwainer/cw-elements/dist/components/dropdown/dropdown.js';
+import '@cordwainer/cw-elements/dist/components/icon/icon.js';
+import '@cordwainer/cw-elements/dist/components/icon-button/icon-button.js';
+import '@cordwainer/cw-elements/dist/components/input/input.js';
+import '@cordwainer/cw-elements/dist/components/menu/menu.js';
+import '@cordwainer/cw-elements/dist/components/menu-item/menu-item.js';
+import '@cordwainer/cw-elements/dist/components/option/option.js';
+import '@cordwainer/cw-elements/dist/components/popup/popup.js';
+import '@cordwainer/cw-elements/dist/components/progress-bar/progress-bar.js';
+import '@cordwainer/cw-elements/dist/components/radio-group/radio-group.js';
+import '@cordwainer/cw-elements/dist/components/radio/radio.js';
+import '@cordwainer/cw-elements/dist/components/relative-time/relative-time.js';
+import '@cordwainer/cw-elements/dist/components/skeleton/skeleton.js';
+import '@cordwainer/cw-elements/dist/components/select/select.js';
+import '@cordwainer/cw-elements/dist/components/textarea/textarea.js';
+import '@cordwainer/cw-elements/dist/components/badge/badge.js';
+import '@cordwainer/cw-elements/dist/components/tag/tag.js';
+import '@cordwainer/cw-elements/dist/components/tooltip/tooltip.js';
+import '@cordwainer/cw-elements/dist/themes/light.css';
+import {setBasePath} from '@cordwainer/cw-elements/dist/utilities/base-path.js';
 
 // Set the base path to the folder you copied Shoelace's assets to
 setBasePath('/static/shoelace');
@@ -50,7 +50,7 @@ setBasePath('/static/shoelace');
 // Configure shoelace to also find material design 24pt outline icons
 // like: <sl-icon-button library="material" name="unfold-more">
 // See developer-documentation.md for instructions adding icons.
-import {registerIconLibrary} from '@shoelace-style/shoelace/dist/utilities/icon-library.js';
+import {registerIconLibrary} from '@cordwainer/cw-elements/dist/utilities/icon-library.js';
 registerIconLibrary('material', {
   resolver: name => `/static/shoelace/assets/material-icons/${name}.svg`,
   mutator: svg => svg.setAttribute('fill', 'currentColor'),

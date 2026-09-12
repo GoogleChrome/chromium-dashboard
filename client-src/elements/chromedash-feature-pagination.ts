@@ -62,21 +62,21 @@ export class ChromedashFeaturePagination extends LitElement {
           color: var(--unimportant-text-color);
           margin-right: var(--content-padding);
         }
-        sl-button::part(base):hover {
-          background: var(--sl-color-blue-100);
+        cw-button::part(base):hover {
+          background: var(--cw-color-blue-100);
         }
-        .pagination sl-icon-button {
+        .pagination cw-icon-button {
           font-size: 1.6rem;
         }
-        .pagination sl-icon-button::part(base) {
+        .pagination cw-icon-button::part(base) {
           padding: 0;
         }
         #items-per-page {
           align-self: center;
           color: var(--unimportant-text-color);
-          font-size: var(--sl-input-font-size-small);
+          font-size: var(--cw-input-font-size-small);
         }
-        sl-select {
+        cw-select {
           align-self: center;
           display: inline-block;
           margin: 0 var(--content-padding-quarter) 0 var(--content-padding);
@@ -120,39 +120,39 @@ export class ChromedashFeaturePagination extends LitElement {
     displayPages = Array.from(displaySet);
 
     return html`
-      <sl-button
+      <cw-button
         variant="text"
         id="jump_1"
         class="page-button ${0 === currentPage ? 'active' : ''}"
         href=${formatUrlForOffset(0)}
       >
         ${1}
-      </sl-button>
+      </cw-button>
       ${missingFront ? html`<div>...</div>` : nothing}
       ${map(
         displayPages,
         i => html`
-          <sl-button
+          <cw-button
             variant="text"
             id="jump_${i + 1}"
             class="page-button ${i === currentPage ? 'active' : ''}"
             href=${formatUrlForOffset(i * this.pageSize)}
           >
             ${i + 1}
-          </sl-button>
+          </cw-button>
         `
       )}
       ${missingBack ? html`<div>...</div>` : nothing}
       ${
         hasLastPage
-          ? html`<sl-button
+          ? html`<cw-button
               variant="text"
               id="jump_${numPages}"
               class="page-button ${numPages - 1 === currentPage ? 'active' : ''}"
               href=${formatUrlForOffset((numPages - 1) * this.pageSize)}
             >
               ${numPages}
-            </sl-button>`
+            </cw-button>`
           : nothing
       }
     `;
@@ -172,17 +172,17 @@ export class ChromedashFeaturePagination extends LitElement {
       options.sort((a, b) => a - b);
     }
     return html`
-      <sl-select
+      <cw-select
         value="${this.pageSize}"
         size="small"
-        @sl-change=${this.setItemsPerPage}
+        @cw-change=${this.setItemsPerPage}
       >
         ${options.map(
           opt => html`
-            <sl-option id="opt_${opt}" value=${opt}>${opt}</sl-option>
+            <cw-option id="opt_${opt}" value=${opt}>${opt}</cw-option>
           `
         )}
-      </sl-select>
+      </cw-select>
       <span id="items-per-page"> items per page </span>
     `;
   }
@@ -208,24 +208,24 @@ export class ChromedashFeaturePagination extends LitElement {
     return html`
       <div id="main" class="pagination hbox halign-items-space-between">
         <div class="spacer"></div>
-        <sl-button
+        <cw-button
           variant="text"
           id="previous"
           class="stepper"
           href=${ifDefined(prevUrl)}
           ?disabled=${prevUrl === undefined}
-          >Previous</sl-button
+          >Previous</cw-button
         >
 
         ${this.renderPageButtons()}
 
-        <sl-button
+        <cw-button
           variant="text"
           id="next"
           class="stepper"
           href=${ifDefined(nextUrl)}
           ?disabled=${nextUrl === undefined}
-          >Next</sl-button
+          >Next</cw-button
         >
 
         ${this.renderItemsPerPage()}

@@ -16,7 +16,7 @@
 
 import {html} from 'lit';
 import {assert, fixture, nextFrame} from '@open-wc/testing';
-import {SlButton} from '@shoelace-style/shoelace';
+import {CwButton} from '@cordwainer/cw-elements';
 import {ChromedashEnterpriseReleaseNotesPage} from './chromedash-enterprise-release-notes-page.js';
 import {ENTERPRISE_IMPACT} from './form-field-enums.js';
 import {parseRawQuery, clearURLParams} from './utils.js';
@@ -624,7 +624,7 @@ describe('chromedash-enterprise-release-notes-page', () => {
       assert.instanceOf(component, ChromedashEnterpriseReleaseNotesPage);
 
       const firstNote = component.shadowRoot!.querySelector('.feature');
-      const editButton = firstNote?.querySelector<SlButton>('.edit-button');
+      const editButton = firstNote?.querySelector<CwButton>('.edit-button');
       editButton!.click();
       await component.updateComplete;
 
@@ -655,7 +655,7 @@ describe('chromedash-enterprise-release-notes-page', () => {
       assert.instanceOf(component, ChromedashEnterpriseReleaseNotesPage);
 
       const firstNote = component.shadowRoot!.querySelector('.feature');
-      const editButton = firstNote?.querySelector<SlButton>('.edit-button');
+      const editButton = firstNote?.querySelector<CwButton>('.edit-button');
       const nameElBefore = firstNote?.querySelector('.feature-name');
       assert.notExists(nameElBefore);
 
@@ -665,7 +665,7 @@ describe('chromedash-enterprise-release-notes-page', () => {
       const nameElDuring = firstNote?.querySelector('.feature-name');
       assert.exists(nameElDuring);
 
-      const cancelEl = firstNote?.querySelector<SlButton>('.cancel-button');
+      const cancelEl = firstNote?.querySelector<CwButton>('.cancel-button');
       assert.exists(cancelEl);
       cancelEl!.click();
       await component.updateComplete;

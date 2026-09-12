@@ -16,7 +16,7 @@
 
 import {LitElement, PropertyValues, css, html, nothing} from 'lit';
 import {customElement, property, query, state} from 'lit/decorators.js';
-import type SlDialog from '@shoelace-style/shoelace/dist/components/dialog/dialog.js';
+import type CwDialog from '@cordwainer/cw-elements/dist/components/dialog/dialog.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {ChromeStatusHttpError} from '../js-src/cs-client.js';
 import {
@@ -56,46 +56,46 @@ export class ChromedashSummaryReviewDialog extends LitElement {
   @state()
   errorMessage: string | null = null;
 
-  @query('sl-dialog')
-  dialogEl?: SlDialog;
+  @query('cw-dialog')
+  dialogEl?: CwDialog;
 
   static get styles() {
     return [
       ...SHARED_STYLES,
       css`
-        sl-dialog {
+        cw-dialog {
           --width: min(900px, 95vw);
         }
 
-        sl-alert {
-          margin-bottom: var(--sl-spacing-medium);
+        cw-alert {
+          margin-bottom: var(--cw-spacing-medium);
         }
 
         .dialog-footer {
           display: flex;
           align-items: center;
           justify-content: space-between;
-          gap: var(--sl-spacing-small);
+          gap: var(--cw-spacing-small);
           width: 100%;
         }
 
         .footer-left {
           display: flex;
           align-items: center;
-          gap: var(--sl-spacing-x-small);
+          gap: var(--cw-spacing-x-small);
         }
 
         .footer-right {
           display: flex;
           align-items: center;
-          gap: var(--sl-spacing-small);
+          gap: var(--cw-spacing-small);
         }
 
         @media (max-width: 768px) {
           .dialog-footer {
             flex-direction: column-reverse;
             align-items: stretch;
-            gap: var(--sl-spacing-medium);
+            gap: var(--cw-spacing-medium);
           }
 
           .footer-left,
@@ -103,14 +103,14 @@ export class ChromedashSummaryReviewDialog extends LitElement {
             width: 100%;
             display: flex;
             flex-wrap: wrap;
-            gap: var(--sl-spacing-small);
+            gap: var(--cw-spacing-small);
           }
 
-          .footer-left sl-button {
+          .footer-left cw-button {
             width: 100%;
           }
 
-          .footer-right sl-button {
+          .footer-right cw-button {
             flex: 1 1 110px;
             min-width: 0;
           }
@@ -322,50 +322,50 @@ export class ChromedashSummaryReviewDialog extends LitElement {
   private _renderAlertBanner() {
     if (this.occConflict) {
       return html`
-        <sl-alert variant="warning" open>
-          <sl-icon slot="icon" name="exclamation-triangle"></sl-icon>
+        <cw-alert variant="warning" open>
+          <cw-icon slot="icon" name="exclamation-triangle"></cw-icon>
           <span>${this.errorMessage}</span>
-          <sl-button
+          <cw-button
             size="small"
             variant="text"
             @click=${this.handleRefresh}
             ?disabled=${this.loading}
           >
             Refresh
-          </sl-button>
-        </sl-alert>
+          </cw-button>
+        </cw-alert>
       `;
     }
 
     if (this.newerSuggestionAvailable) {
       return html`
-        <sl-alert variant="primary" open>
-          <sl-icon slot="icon" name="info-circle"></sl-icon>
+        <cw-alert variant="primary" open>
+          <cw-icon slot="icon" name="info-circle"></cw-icon>
           <span>A newer suggestion is available on the server.</span>
-          <sl-button
+          <cw-button
             size="small"
             variant="text"
             @click=${this.handleLoadNewestSuggestion}
           >
             Load Newest
-          </sl-button>
-          <sl-button
+          </cw-button>
+          <cw-button
             size="small"
             variant="text"
             @click=${this.handleDismissNewerSuggestion}
           >
             Keep My Edits
-          </sl-button>
-        </sl-alert>
+          </cw-button>
+        </cw-alert>
       `;
     }
 
     if (this.errorMessage) {
       return html`
-        <sl-alert variant="danger" open>
-          <sl-icon slot="icon" name="exclamation-octagon"></sl-icon>
+        <cw-alert variant="danger" open>
+          <cw-icon slot="icon" name="exclamation-octagon"></cw-icon>
           <span>${this.errorMessage}</span>
-        </sl-alert>
+        </cw-alert>
       `;
     }
 
@@ -387,27 +387,27 @@ export class ChromedashSummaryReviewDialog extends LitElement {
     return html`
       <div slot="footer" class="dialog-footer">
         <div class="footer-left">
-          <sl-button
+          <cw-button
             variant="default"
             size="small"
             @click=${this.handleRegenerate}
             ?loading=${this.loading}
             ?disabled=${this.loading}
           >
-            <sl-icon slot="prefix" name="arrow-clockwise"></sl-icon>
+            <cw-icon slot="prefix" name="arrow-clockwise"></cw-icon>
             Regenerate
-          </sl-button>
+          </cw-button>
         </div>
         <div class="footer-right">
-          <sl-button
+          <cw-button
             variant="default"
             size="small"
             @click=${this.hide}
             ?disabled=${this.loading}
           >
             Cancel
-          </sl-button>
-          <sl-button
+          </cw-button>
+          <cw-button
             variant="danger"
             size="small"
             @click=${this.handleReject}
@@ -415,8 +415,8 @@ export class ChromedashSummaryReviewDialog extends LitElement {
             ?disabled=${isDiscardDisabled}
           >
             Discard
-          </sl-button>
-          <sl-button
+          </cw-button>
+          <cw-button
             variant="primary"
             size="small"
             @click=${this.handleAccept}
@@ -424,7 +424,7 @@ export class ChromedashSummaryReviewDialog extends LitElement {
             ?disabled=${isAcceptDisabled}
           >
             Accept & Apply
-          </sl-button>
+          </cw-button>
         </div>
       </div>
     `;
@@ -432,7 +432,7 @@ export class ChromedashSummaryReviewDialog extends LitElement {
 
   render() {
     return html`
-      <sl-dialog label="Review AI Summary Suggestion">
+      <cw-dialog label="Review AI Summary Suggestion">
         ${this._renderAlertBanner()}
 
         <chromedash-summary-diff-view
@@ -453,7 +453,7 @@ export class ChromedashSummaryReviewDialog extends LitElement {
         ></chromedash-summary-diff-view>
 
         ${this._renderFooter()}
-      </sl-dialog>
+      </cw-dialog>
     `;
   }
 }

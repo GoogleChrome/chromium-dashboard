@@ -16,7 +16,7 @@
 
 // @ts-check
 
-import {SlBadge} from '@shoelace-style/shoelace';
+import {CwBadge} from '@cordwainer/cw-elements';
 import {css, html, LitElement, TemplateResult} from 'lit';
 import {customElement, property, state} from 'lit/decorators.js';
 import {ifDefined} from 'lit/directives/if-defined.js';
@@ -127,22 +127,22 @@ function enhanceChromeStatusLink(featureLink, text?) {
     target="_blank"
     rel="noopener noreferrer"
   >
-    <sl-tooltip style="--sl-tooltip-arrow-size: 0;--max-width: 50vw;">
+    <cw-tooltip style="--cw-tooltip-arrow-size: 0;--max-width: 50vw;">
       <div slot="content">${renderTooltipContent()}</div>
-      <sl-tag>
+      <cw-tag>
         <img
           src="https://bugs.chromium.org/static/images/monorail.ico"
           alt="icon"
           class="icon"
         />
-        <sl-badge
+        <cw-badge
           size="small"
           variant="${statusRef.meansOpen ? 'success' : 'neutral'}"
-          >${statusRef.status}</sl-badge
+          >${statusRef.status}</cw-badge
         >
         ${_formatLongText(text)}
-      </sl-tag>
-    </sl-tooltip>
+      </cw-tag>
+    </cw-tooltip>
   </a>`;
 }
 
@@ -172,7 +172,7 @@ function enhanceGithubIssueLink(featureLink, text?) {
   // If this issue is an external review of the feature, find the summary description.
   const externalReviewer = ExternalReviewer.get(repo);
   let stateDescription: string | TemplateResult = html``;
-  let stateVariant: SlBadge['variant'] | undefined = undefined;
+  let stateVariant: CwBadge['variant'] | undefined = undefined;
   if (externalReviewer) {
     for (const label of information.labels) {
       const labelInfo = externalReviewer.label(label);
@@ -187,8 +187,8 @@ function enhanceGithubIssueLink(featureLink, text?) {
     if (state === 'open') {
       const age = Date.now() - createdAt.getTime();
       stateDescription = html`Opened
-        <sl-relative-time date=${createdAt.toISOString()}
-          >on ${_dateTimeFormat.format(createdAt)}</sl-relative-time
+        <cw-relative-time date=${createdAt.toISOString()}
+          >on ${_dateTimeFormat.format(createdAt)}</cw-relative-time
         >`;
       const week = 7 * 24 * 60 * 60 * 1000;
       stateVariant = 'success';
@@ -294,9 +294,9 @@ function enhanceGithubIssueLink(featureLink, text?) {
     target="_blank"
     rel="noopener noreferrer"
   >
-    <sl-tooltip style="--sl-tooltip-arrow-size: 0;--max-width: 50vw;">
+    <cw-tooltip style="--cw-tooltip-arrow-size: 0;--max-width: 50vw;">
       <div slot="content">${renderTooltipContent()}</div>
-      <sl-tag>
+      <cw-tag>
         <img
           src=${
             externalReviewer?.icon ??
@@ -305,12 +305,12 @@ function enhanceGithubIssueLink(featureLink, text?) {
           alt="icon"
           class="icon"
         />
-        <sl-badge size="small" variant=${stateVariant}
-          >${stateDescription}</sl-badge
+        <cw-badge size="small" variant=${stateVariant}
+          >${stateDescription}</cw-badge
         >
         ${_formatLongText(`#${number} ` + text)}
-      </sl-tag>
-    </sl-tooltip>
+      </cw-tag>
+    </cw-tooltip>
   </a>`;
 }
 
@@ -360,17 +360,17 @@ function enhanceGithubMarkdownLink(featureLink, text?) {
     target="_blank"
     rel="noopener noreferrer"
   >
-    <sl-tooltip style="--sl-tooltip-arrow-size: 0;--max-width: 50vw;">
+    <cw-tooltip style="--cw-tooltip-arrow-size: 0;--max-width: 50vw;">
       <div slot="content">${renderTooltipContent()}</div>
-      <sl-tag>
+      <cw-tag>
         <img
           src="https://docs.github.com/assets/cb-600/images/site/favicon.png"
           alt="icon"
           class="icon"
         />
         ${_formatLongText('Markdown: ' + text)}
-      </sl-tag>
-    </sl-tooltip>
+      </cw-tag>
+    </cw-tooltip>
   </a>`;
 }
 
@@ -406,13 +406,13 @@ function _enhanceLinkWithTitleAndDescription(featureLink, iconUrl) {
     target="_blank"
     rel="noopener noreferrer"
   >
-    <sl-tooltip style="--sl-tooltip-arrow-size: 0;--max-width: 50vw;">
+    <cw-tooltip style="--cw-tooltip-arrow-size: 0;--max-width: 50vw;">
       <div slot="content">${renderTooltipContent()}</div>
-      <sl-tag>
+      <cw-tag>
         <img src="${iconUrl}" alt="icon" class="icon" />
         ${_formatLongText(title)}
-      </sl-tag>
-    </sl-tooltip>
+      </cw-tag>
+    </cw-tooltip>
   </a>`;
 }
 
@@ -460,13 +460,13 @@ function enhanceSpecsLink(featureLink) {
     target="_blank"
     rel="noopener noreferrer"
   >
-    <sl-tooltip style="--sl-tooltip-arrow-size: 0;--max-width: 50vw;">
+    <cw-tooltip style="--cw-tooltip-arrow-size: 0;--max-width: 50vw;">
       <div slot="content">${renderTooltipContent()}</div>
-      <sl-tag>
+      <cw-tag>
         <img src="${iconUrl}" alt="icon" class="icon" />
         Spec: ${_formatLongText(title)}
-      </sl-tag>
-    </sl-tooltip>
+      </cw-tag>
+    </cw-tooltip>
   </a>`;
 }
 
@@ -524,7 +524,7 @@ export class ChromedashLink extends LitElement {
         text-decoration: none;
       }
 
-      sl-badge::part(base) {
+      cw-badge::part(base) {
         display: inline;
         padding: 0 4px;
         border-width: 0;
@@ -532,7 +532,7 @@ export class ChromedashLink extends LitElement {
         font-weight: 400;
       }
 
-      sl-tag::part(base) {
+      cw-tag::part(base) {
         vertical-align: middle;
         height: 18px;
         background-color: rgb(232, 234, 237);
@@ -546,11 +546,11 @@ export class ChromedashLink extends LitElement {
         margin: 1px 0;
       }
 
-      sl-tag::part(base):hover {
+      cw-tag::part(base):hover {
         background-color: rgb(209, 211, 213);
       }
 
-      sl-relative-time {
+      cw-relative-time {
         margin: 0;
       }
 
@@ -606,7 +606,7 @@ export class ChromedashLink extends LitElement {
       target="_blank"
       rel="noopener noreferrer"
       class=${this.class}
-      >${this.alwaysInTag ? html`<sl-tag>${slot}</sl-tag>` : slot}</a
+      >${this.alwaysInTag ? html`<cw-tag>${slot}</cw-tag>` : slot}</a
     >`;
   }
 
@@ -633,18 +633,18 @@ export class ChromedashLink extends LitElement {
         featureLink.http_error_code &&
         !this.ignoreHttpErrorCodes.includes(featureLink.http_error_code)
       ) {
-        return html`<sl-tag>
-          <sl-icon library="material" name="link"></sl-icon>
-          <sl-badge
+        return html`<cw-tag>
+          <cw-icon library="material" name="link"></cw-icon>
+          <cw-badge
             size="small"
             variant="${
               featureLink.http_error_code >= 500 ? 'danger' : 'warning'
             }"
           >
             ${featureLink.http_error_code}
-          </sl-badge>
+          </cw-badge>
           ${this.fallback()}
-        </sl-tag>`;
+        </cw-tag>`;
       }
       return this.fallback();
     }

@@ -68,7 +68,7 @@ describe('chromedash-wpt-eval-page', () => {
       'AI-powered WPT coverage analysis'
     );
     expect(el.shadowRoot!.querySelector('.experimental-tag')).to.exist;
-    expect(el.shadowRoot!.querySelector('sl-alert')).to.exist;
+    expect(el.shadowRoot!.querySelector('cw-alert')).to.exist;
     expect(el.shadowRoot!.querySelector('.description')).to.exist;
     expect(
       el.shadowRoot!.querySelector('.description')!.textContent
@@ -91,7 +91,7 @@ describe('chromedash-wpt-eval-page', () => {
     expect(el.loading).to.be.true;
     // Look for sl-skeleton elements
     expect(
-      el.shadowRoot!.querySelectorAll('sl-skeleton').length
+      el.shadowRoot!.querySelectorAll('cw-skeleton').length
     ).to.be.greaterThan(0);
     // Ensure main content hasn't rendered yet
     expect(el.shadowRoot!.querySelector('.report-section')).to.not.exist;
@@ -200,7 +200,7 @@ describe('chromedash-wpt-eval-page', () => {
       await el.updateComplete;
 
       const copyButton = el.shadowRoot!.querySelector(
-        'sl-button[title="Copy report to clipboard"]'
+        'cw-button[title="Copy report to clipboard"]'
       );
       expect(copyButton).to.exist;
       expect(copyButton!.textContent).to.contain('Copy Report');
@@ -219,7 +219,7 @@ describe('chromedash-wpt-eval-page', () => {
       await el.updateComplete;
 
       const copyButton = el.shadowRoot!.querySelector(
-        'sl-button[title="Copy report to clipboard"]'
+        'cw-button[title="Copy report to clipboard"]'
       ) as HTMLElement;
       copyButton.click();
 
@@ -272,9 +272,9 @@ describe('chromedash-wpt-eval-page', () => {
       items.forEach((item, index) => {
         if (index === 5) {
           // Explainers is the 6th item and is info by default
-          expect(item.querySelector('sl-icon[name="info_20px"]')).to.exist;
+          expect(item.querySelector('cw-icon[name="info_20px"]')).to.exist;
         } else {
-          expect(item.querySelector('sl-icon')!.classList.contains('success'))
+          expect(item.querySelector('cw-icon')!.classList.contains('success'))
             .to.be.true;
         }
       });
@@ -323,12 +323,12 @@ describe('chromedash-wpt-eval-page', () => {
 
       const explainerItem = items[5];
       // Note: By default includeExplainer is false, so it will show info icon initially unless checked
-      expect(explainerItem.querySelector('sl-icon[name="info_20px"]')).to.exist;
-      expect(explainerItem.querySelector('sl-checkbox')).to.exist;
+      expect(explainerItem.querySelector('cw-icon[name="info_20px"]')).to.exist;
+      expect(explainerItem.querySelector('cw-checkbox')).to.exist;
       expect(
-        explainerItem.querySelector('sl-checkbox')!.textContent
+        explainerItem.querySelector('cw-checkbox')!.textContent
       ).to.contain('Include feature explainers');
-      expect(explainerItem.querySelector('sl-badge')).to.not.exist;
+      expect(explainerItem.querySelector('cw-badge')).to.not.exist;
 
       // The list is NOT rendered if includeExplainer is false
       const urlListContainer = el.shadowRoot!.querySelectorAll(
@@ -356,10 +356,10 @@ describe('chromedash-wpt-eval-page', () => {
       const explainerItem = items[5];
       // includeExplainer defaults to false, so it should show info icon if missing
       expect(explainerItem.querySelector('.success')).to.not.exist;
-      expect(explainerItem.querySelector('sl-icon[name="info_20px"]')).to.exist;
-      expect(explainerItem.querySelector('sl-badge[variant="neutral"]')).to
+      expect(explainerItem.querySelector('cw-icon[name="info_20px"]')).to.exist;
+      expect(explainerItem.querySelector('cw-badge[variant="neutral"]')).to
         .exist;
-      expect(explainerItem.querySelector('sl-badge')!.textContent).to.contain(
+      expect(explainerItem.querySelector('cw-badge')!.textContent).to.contain(
         'Optional'
       );
 
@@ -383,11 +383,11 @@ describe('chromedash-wpt-eval-page', () => {
 
       expect(el.includeExplainer).to.be.false;
       const items = el.shadowRoot!.querySelectorAll('.requirement-item');
-      expect(items[5].querySelector('sl-icon[name="info_20px"]')).to.exist;
+      expect(items[5].querySelector('cw-icon[name="info_20px"]')).to.exist;
 
-      const checkbox = el.shadowRoot!.querySelector('sl-checkbox') as any;
+      const checkbox = el.shadowRoot!.querySelector('cw-checkbox') as any;
       checkbox.checked = true;
-      checkbox.dispatchEvent(new Event('sl-change'));
+      checkbox.dispatchEvent(new Event('cw-change'));
       await el.updateComplete;
       await new Promise(resolve => setTimeout(resolve, 0));
 
@@ -395,7 +395,7 @@ describe('chromedash-wpt-eval-page', () => {
       expect(
         el
           .shadowRoot!.querySelectorAll('.requirement-item')[5]
-          .querySelector('sl-icon[name="cancel_20px"].danger')
+          .querySelector('cw-icon[name="cancel_20px"].danger')
       ).to.exist;
     });
 
@@ -586,7 +586,7 @@ describe('chromedash-wpt-eval-page', () => {
         AITestEvaluationStatus.IN_PROGRESS
       );
       expect(el.shadowRoot!.querySelector('.status-in-progress')).to.exist;
-      expect(el.shadowRoot!.querySelector('sl-spinner')).to.exist;
+      expect(el.shadowRoot!.querySelector('cw-spinner')).to.exist;
 
       // Polling started
       expect((ChromedashWPTEvalPage.prototype.managePolling as any).called).to
@@ -605,9 +605,9 @@ describe('chromedash-wpt-eval-page', () => {
       await el.updateComplete;
 
       // Check the checkbox
-      const checkbox = el.shadowRoot!.querySelector('sl-checkbox') as any;
+      const checkbox = el.shadowRoot!.querySelector('cw-checkbox') as any;
       checkbox.checked = true;
-      checkbox.dispatchEvent(new Event('sl-change'));
+      checkbox.dispatchEvent(new Event('cw-change'));
       await el.updateComplete;
 
       const button = el.shadowRoot!.querySelector(
@@ -703,7 +703,7 @@ describe('chromedash-wpt-eval-page', () => {
       );
       await el.updateComplete;
 
-      const alert = el.shadowRoot!.querySelector('sl-alert[variant="danger"]');
+      const alert = el.shadowRoot!.querySelector('cw-alert[variant="danger"]');
       expect(alert).to.exist;
       expect(alert!.textContent).to.contain('previous analysis run failed');
 
@@ -732,7 +732,7 @@ describe('chromedash-wpt-eval-page', () => {
 
       // Spinner should NOT exist
       expect(el.shadowRoot!.querySelector('.status-in-progress')).to.not.exist;
-      expect(el.shadowRoot!.querySelector('sl-spinner')).to.not.exist;
+      expect(el.shadowRoot!.querySelector('cw-spinner')).to.not.exist;
 
       // Button SHOULD exist and have specific text
       const button = el.shadowRoot!.querySelector('.generate-button');
@@ -776,7 +776,7 @@ describe('chromedash-wpt-eval-page', () => {
       // New behavior: finally block ensures loading is false even on generic error
       expect(el.loading).to.be.false;
       // Should NOT show skeletons anymore
-      expect(el.shadowRoot!.querySelector('sl-skeleton')).to.not.exist;
+      expect(el.shadowRoot!.querySelector('cw-skeleton')).to.not.exist;
     });
   });
 
@@ -900,7 +900,7 @@ describe('chromedash-wpt-eval-page', () => {
       });
 
       const deleteButton = el.shadowRoot!.querySelector(
-        'sl-button[title="Delete report"]'
+        'cw-button[title="Delete report"]'
       ) as HTMLElement;
       deleteButton.click();
       await nextFrame(); // Let delete operation process
@@ -972,7 +972,7 @@ describe('chromedash-wpt-eval-page', () => {
       await el.updateComplete;
 
       const deleteButton = el.shadowRoot!.querySelector(
-        'sl-button[title="Delete report"]'
+        'cw-button[title="Delete report"]'
       );
       expect(deleteButton).to.exist;
       expect(deleteButton!.textContent).to.contain('Delete Report');
@@ -991,7 +991,7 @@ describe('chromedash-wpt-eval-page', () => {
       await el.updateComplete;
 
       const deleteButton = el.shadowRoot!.querySelector(
-        'sl-button[title="Delete report"]'
+        'cw-button[title="Delete report"]'
       );
       expect(deleteButton).to.not.exist;
     });
@@ -1009,7 +1009,7 @@ describe('chromedash-wpt-eval-page', () => {
       await el.updateComplete;
 
       const deleteButton = el.shadowRoot!.querySelector(
-        'sl-button[title="Delete report"]'
+        'cw-button[title="Delete report"]'
       ) as HTMLElement;
       deleteButton.click();
 

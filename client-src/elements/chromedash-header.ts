@@ -27,9 +27,9 @@ export class ChromedashHeader extends LitElement {
       ...SHARED_STYLES,
       css`
         :host {
-          --nav-link-color: var(--sl-color-neutral-700);
+          --nav-link-color: var(--cw-color-neutral-700);
           --nav-link-font-size: 16px;
-          --nav-link-hover-background: var(--sl-color-neutral-100);
+          --nav-link-hover-background: var(--cw-color-neutral-100);
           --nav-link-border: 2px solid transparent;
           --nav-link-active-color: var(--cl-color-primary-900);
           --nav-link-active-border: 2px solid var(--nav-link-active-color);
@@ -54,7 +54,7 @@ export class ChromedashHeader extends LitElement {
           -webkit-font-smoothing: initial;
         }
 
-        sl-button[slot='trigger']::part(base) {
+        cw-button[slot='trigger']::part(base) {
           color: var(--unimportant-text-color);
         }
         header aside a {
@@ -80,7 +80,7 @@ export class ChromedashHeader extends LitElement {
           display: flex;
           align-items: flex-end;
         }
-        .nav-dropdown-trigger sl-icon {
+        .nav-dropdown-trigger cw-icon {
           padding-left: var(--content-padding-half);
         }
 
@@ -292,19 +292,19 @@ export class ChromedashHeader extends LitElement {
               ${
                 this.user.can_create_feature && !alreadyOnNew
                   ? html`
-                      <sl-button
+                      <cw-button
                         data-testid="create-feature-button"
                         href="/guide/new"
                         variant="primary"
                         size="small"
                       >
                         Create feature
-                      </sl-button>
+                      </cw-button>
                     `
                   : nothing
               }
-              <sl-dropdown>
-                <sl-button
+              <cw-dropdown>
+                <cw-button
                   slot="trigger"
                   variant="text"
                   size="medium"
@@ -312,19 +312,19 @@ export class ChromedashHeader extends LitElement {
                   caret
                 >
                   ${this.user.email}
-                </sl-button>
-                <sl-menu>
-                  <sl-menu-item @click=${this.gotoSettings}>
+                </cw-button>
+                <cw-menu>
+                  <cw-menu-item @click=${this.gotoSettings}>
                     Settings
-                  </sl-menu-item>
-                  <sl-menu-item
+                  </cw-menu-item>
+                  <cw-menu-item
                     id="sign-out-link"
                     data-testid="sign-out-link"
                     @click=${this.signOut}
-                    >Sign out</sl-menu-item
+                    >Sign out</cw-menu-item
                   >
-                </sl-menu>
-              </sl-dropdown>
+                </cw-menu>
+              </cw-dropdown>
             `
           : html` <slot></slot> `
       }
@@ -341,7 +341,7 @@ export class ChromedashHeader extends LitElement {
 
     return html`
       <header data-testid="header">
-        <sl-icon-button
+        <cw-icon-button
           data-testid="menu"
           variant="text"
           library="material"
@@ -350,7 +350,7 @@ export class ChromedashHeader extends LitElement {
           name="menu_20px"
           @click="${this.handleDrawer}"
         >
-        </sl-icon-button>
+        </cw-icon-button>
         <aside>
           <a href="/roadmap" target="_top">
             <h1>

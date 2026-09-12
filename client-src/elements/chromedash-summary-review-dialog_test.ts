@@ -205,7 +205,7 @@ describe('chromedash-summary-review-dialog', () => {
 
     assert.isTrue(el.occConflict);
     const warningAlert = el.shadowRoot!.querySelector(
-      'sl-alert[variant="warning"]'
+      'cw-alert[variant="warning"]'
     );
     assert.exists(warningAlert);
     assert.include(
@@ -215,7 +215,7 @@ describe('chromedash-summary-review-dialog', () => {
 
     // Accept button should be disabled during OCC conflict
     const acceptBtn = el.shadowRoot!.querySelector(
-      'sl-button[variant="primary"]'
+      'cw-button[variant="primary"]'
     ) as HTMLElement;
     assert.isTrue(acceptBtn.hasAttribute('disabled'));
 
@@ -256,7 +256,7 @@ describe('chromedash-summary-review-dialog', () => {
 
     assert.isFalse(el.occConflict);
     const dangerAlert = el.shadowRoot!.querySelector(
-      'sl-alert[variant="danger"]'
+      'cw-alert[variant="danger"]'
     );
     assert.exists(dangerAlert);
     assert.include(dangerAlert!.textContent || '', 'Permission denied');
@@ -289,7 +289,7 @@ describe('chromedash-summary-review-dialog', () => {
     );
     assert.isTrue(el.newerSuggestionAvailable);
 
-    const alert = el.shadowRoot!.querySelector('sl-alert[variant="primary"]');
+    const alert = el.shadowRoot!.querySelector('cw-alert[variant="primary"]');
     assert.exists(alert);
     assert.include(
       alert!.textContent || '',
@@ -345,10 +345,10 @@ describe('chromedash-summary-review-dialog', () => {
     );
 
     const acceptBtn = el.shadowRoot!.querySelector(
-      'sl-button[variant="primary"]'
+      'cw-button[variant="primary"]'
     ) as HTMLElement;
     const discardBtn = el.shadowRoot!.querySelector(
-      'sl-button[variant="danger"]'
+      'cw-button[variant="danger"]'
     ) as HTMLElement;
 
     assert.isTrue(acceptBtn.hasAttribute('disabled'));

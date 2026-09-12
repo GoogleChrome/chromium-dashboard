@@ -73,7 +73,7 @@ class ChromedashSelfCertifyDialog extends LitElement {
         #prereqs-header {
           margin-bottom: 8px;
         }
-        sl-button {
+        cw-button {
           float: right;
           margin: var(--content-padding-half);
         }
@@ -82,11 +82,11 @@ class ChromedashSelfCertifyDialog extends LitElement {
   }
 
   show() {
-    this.renderRoot.querySelector('sl-dialog')?.show();
+    this.renderRoot.querySelector('cw-dialog')?.show();
   }
 
   hide() {
-    this.renderRoot.querySelector('sl-dialog')?.hide();
+    this.renderRoot.querySelector('cw-dialog')?.hide();
   }
 
   handleSelfCertify() {
@@ -109,11 +109,11 @@ class ChromedashSelfCertifyDialog extends LitElement {
         consulation with the review team, you may request a full review.
       </div>
       <br />
-      <sl-button size="small" @click=${this.handleFullReview}
-        >Request full review</sl-button
+      <cw-button size="small" @click=${this.handleFullReview}
+        >Request full review</cw-button
       >
-      <sl-button size="small" variant="primary" @click=${this.handleSelfCertify}
-        >Self-certify ${voteWord}</sl-button
+      <cw-button size="small" variant="primary" @click=${this.handleSelfCertify}
+        >Self-certify ${voteWord}</cw-button
       >
     `;
   }
@@ -123,8 +123,8 @@ class ChromedashSelfCertifyDialog extends LitElement {
       return html`Loading gates...`;
     }
 
-    return html` <sl-dialog label="Self-certification">
+    return html` <cw-dialog label="Self-certification">
       ${this.renderContentWhenEligible()}
-    </sl-dialog>`;
+    </cw-dialog>`;
   }
 }

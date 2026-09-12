@@ -69,7 +69,7 @@ describe('ChromedashStaleFeaturesPage', () => {
       );
       await elementUpdated(element);
 
-      const skeleton = element.shadowRoot?.querySelector('sl-skeleton');
+      const skeleton = element.shadowRoot?.querySelector('cw-skeleton');
       assert.isNotNull(skeleton, 'Skeleton should be rendered while loading');
 
       const table = element.shadowRoot?.querySelector('table');

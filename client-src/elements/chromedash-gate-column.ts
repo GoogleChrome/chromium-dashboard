@@ -126,28 +126,28 @@ export class ChromedashGateColumn extends LitElement {
           align-items: center;
           font-weight: 500;
         }
-        sl-icon {
+        cw-icon {
           font-size: 1.3rem;
         }
         .approved {
           color: var(--gate-approved-color);
         }
-        .approved sl-icon {
+        .approved cw-icon {
           color: var(--gate-approved-icon-color);
         }
         .denied {
           color: var(--gate-denied-color);
         }
-        .denied sl-icon {
+        .denied cw-icon {
           color: var(--gate-denied-icon-color);
         }
-        #slo-area sl-icon {
+        #slo-area cw-icon {
           font-size: 16px;
           vertical-align: text-bottom;
           color: var(--unimportant-text-color);
         }
         .overdue,
-        #slo-area .overdue sl-icon {
+        #slo-area .overdue cw-icon {
           color: var(--slo-overdue-color);
         }
 
@@ -402,14 +402,14 @@ export class ChromedashGateColumn extends LitElement {
 
   renderHeadingsSkeleton() {
     return html`
-      <h3 class="sl-skeleton-header-container" style="width: 60%">
-        <sl-skeleton effect="sheen"></sl-skeleton>
+      <h3 class="cw-skeleton-header-container" style="width: 60%">
+        <cw-skeleton effect="sheen"></cw-skeleton>
       </h3>
       <h2
-        class="sl-skeleton-header-container"
+        class="cw-skeleton-header-container"
         style="margin-top: 4px; width: 75%"
       >
-        <sl-skeleton effect="sheen"></sl-skeleton>
+        <cw-skeleton effect="sheen"></cw-skeleton>
       </h2>
     `;
   }
@@ -425,8 +425,8 @@ export class ChromedashGateColumn extends LitElement {
 
   renderReviewStatusSkeleton() {
     return html`
-      <h3 class="sl-skeleton-header-container">
-        Status: <sl-skeleton effect="sheen"></sl-skeleton>
+      <h3 class="cw-skeleton-header-container">
+        Status: <cw-skeleton effect="sheen"></cw-skeleton>
       </h3>
     `;
   }
@@ -567,11 +567,11 @@ export class ChromedashGateColumn extends LitElement {
     };
 
     return html`
-      <sl-button
+      <cw-button
         @click=${loadThenCheckCompletion}
         size="small"
         variant="primary"
-        >${label}</sl-button
+        >${label}</cw-button
       >
     `;
   }
@@ -592,14 +592,14 @@ export class ChromedashGateColumn extends LitElement {
     }
 
     return html`
-      <sl-button
+      <cw-button
         size="small"
         variant="primary"
         @click=${this.handleReviewRequested}
-        >Request review</sl-button
+        >Request review</cw-button
       >
-      <sl-button size="small" @click=${this.handleNARequested}
-        >Request N/A</sl-button
+      <cw-button size="small" @click=${this.handleNARequested}
+        >Request N/A</cw-button
       >
     `;
   }
@@ -609,11 +609,11 @@ export class ChromedashGateColumn extends LitElement {
       ? nothing
       : html`
           <div>
-            <sl-button
+            <cw-button
               size="small"
               variant="primary"
               @click=${this.handleReviewRequested}
-              >Re-request review</sl-button
+              >Re-request review</cw-button
             >
           </div>
         `;
@@ -642,7 +642,7 @@ export class ChromedashGateColumn extends LitElement {
     // TODO(jrobbins): Show date of approval.
     return html`
       <div class="status approved">
-        <sl-icon library="material" name="check_circle_filled_20px"></sl-icon>
+        <cw-icon library="material" name="check_circle_filled_20px"></cw-icon>
         Approved
       </div>
     `;
@@ -652,7 +652,7 @@ export class ChromedashGateColumn extends LitElement {
     // TODO(jrobbins): Show date of N/a.
     return html`
       <div class="status approved">
-        <sl-icon library="material" name="check_circle_filled_20px"></sl-icon>
+        <cw-icon library="material" name="check_circle_filled_20px"></cw-icon>
         N/a
       </div>
     `;
@@ -662,7 +662,7 @@ export class ChromedashGateColumn extends LitElement {
     // TODO(jrobbins): Show date of N/a.
     return html`
       <div class="status approved">
-        <sl-icon library="material" name="check_circle_filled_20px"></sl-icon>
+        <cw-icon library="material" name="check_circle_filled_20px"></cw-icon>
         N/a (self-certified)
       </div>
     `;
@@ -671,7 +671,7 @@ export class ChromedashGateColumn extends LitElement {
   renderReviewStatusNaVerified() {
     return html`
       <div class="status approved">
-        <sl-icon library="material" name="check_circle_filled_20px"></sl-icon>
+        <cw-icon library="material" name="check_circle_filled_20px"></cw-icon>
         N/a (self-certified then verified)
       </div>
     `;
@@ -681,7 +681,7 @@ export class ChromedashGateColumn extends LitElement {
     // TODO(jrobbins): Show date of denial.
     return html`
       <div class="status denied">
-        <sl-icon library="material" name="block_20px"></sl-icon>
+        <cw-icon library="material" name="block_20px"></cw-icon>
         Denied
       </div>
     `;
@@ -738,7 +738,7 @@ export class ChromedashGateColumn extends LitElement {
       }
       return html`
         <span class="${className}">
-          <sl-icon library="material" name="clock_loader_60_20px"></sl-icon>
+          <cw-icon library="material" name="clock_loader_60_20px"></cw-icon>
           ${msg}
         </span>
       `;
@@ -834,8 +834,8 @@ export class ChromedashGateColumn extends LitElement {
           <th>Review status</th>
         </tr>
         <tr>
-          <td><sl-skeleton effect="sheen"></sl-skeleton></td>
-          <td><sl-skeleton effect="sheen"></sl-skeleton></td>
+          <td><cw-skeleton effect="sheen"></cw-skeleton></td>
+          <td><cw-skeleton effect="sheen"></cw-skeleton></td>
         </tr>
       </table>
     `;
@@ -870,11 +870,11 @@ export class ChromedashGateColumn extends LitElement {
   renderVoteMenu(state) {
     // hoist is needed when <sl-select> is in overflow:auto context.
     return html`
-      <sl-select
+      <cw-select
         name="${this.gate.id}"
         value="${state}"
         ${ref(this.voteSelectRef)}
-        @sl-change=${this.handleSelectChanged}
+        @cw-change=${this.handleSelectChanged}
         hoist
         size="small"
       >
@@ -882,27 +882,27 @@ export class ChromedashGateColumn extends LitElement {
           this.votes.some(
             v => v.state === VOTE_NA_SELF || v.state === VOTE_NA_VERIFIED
           )
-            ? html` <sl-option value="${VOTE_NA_VERIFIED}"
-                >N/a verified</sl-option
+            ? html` <cw-option value="${VOTE_NA_VERIFIED}"
+                >N/a verified</cw-option
               >`
             : nothing
         }
         ${Object.values(VOTE_OPTIONS).map(
           valName =>
-            html` <sl-option value="${valName[0]}">${valName[1]}</sl-option>`
+            html` <cw-option value="${valName[0]}">${valName[1]}</cw-option>`
         )}
-      </sl-select>
+      </cw-select>
     `;
   }
 
   renderSaveButton() {
     return html`
-      <sl-button
+      <cw-button
         size="small"
         variant="primary"
         @click=${this.handleSave}
         ?disabled=${this.submittingComment}
-        >Save</sl-button
+        >Save</cw-button
       >
     `;
   }
@@ -978,22 +978,22 @@ export class ChromedashGateColumn extends LitElement {
     return html`
       <details>
         <summary>Assign a reviewer</summary>
-        <sl-select
+        <cw-select
           hoist
           size="small"
           ${ref(this.assigneeSelectRef)}
           value=${currentAssignee}
         >
-          <sl-option value="">None</sl-option>
+          <cw-option value="">None</cw-option>
           ${this.gate.possible_assignee_emails.map(
-            email => html` <sl-option value="${email}">${email}</sl-option>`
+            email => html` <cw-option value="${email}">${email}</cw-option>`
           )}
-        </sl-select>
-        <sl-button
+        </cw-select>
+        <cw-button
           size="small"
           variant="primary"
           @click=${() => this.saveAssignedReviewer()}
-          >Assign</sl-button
+          >Assign</cw-button
         >
       </details>
     `;
@@ -1040,7 +1040,7 @@ export class ChromedashGateColumn extends LitElement {
   renderCommentsSkeleton() {
     return html`
       <h2>Comments</h2>
-      <sl-skeleton effect="sheen"></sl-skeleton>
+      <cw-skeleton effect="sheen"></cw-skeleton>
     `;
   }
 
@@ -1065,12 +1065,12 @@ export class ChromedashGateColumn extends LitElement {
     if (!canComment) return nothing;
 
     const postButton = html`
-      <sl-button
+      <cw-button
         variant="primary"
         @click=${this.handlePost}
         ?disabled=${!this.needsPost || this.submittingVote}
         size="small"
-        >Post</sl-button
+        >Post</cw-button
       >
     `;
     const checkboxLabel = this.stage.intent_thread_url
@@ -1083,11 +1083,11 @@ export class ChromedashGateColumn extends LitElement {
       : 'Also post to intent thread';
     const postToThreadCheckbox = this.gateHasIntentThread()
       ? html`
-          <sl-checkbox
+          <cw-checkbox
             ${ref(this.postToThreadRef)}
             ?disabled=${!this.canPostTo(this.stage.intent_thread_url)}
             size="small"
-            >${checkboxLabel}</sl-checkbox
+            >${checkboxLabel}</cw-checkbox
           >
         `
       : nothing;
@@ -1099,16 +1099,16 @@ export class ChromedashGateColumn extends LitElement {
       : nothing;
 
     return html`
-      <sl-textarea
+      <cw-textarea
         id="comment_area"
         rows="2"
         cols="40"
         resize="auto"
         ${ref(this.commentAreaRef)}
-        @sl-change=${this.checkNeedsPost}
+        @cw-change=${this.checkNeedsPost}
         @keypress=${this.checkNeedsPost}
         placeholder="Add a comment"
-      ></sl-textarea>
+      ></cw-textarea>
       <div id="controls">${postButton} ${postToThreadCheckbox}</div>
       <div class="instructions">
         Comments will be visible publicly. Only reviewers will be notified when
@@ -1135,12 +1135,12 @@ export class ChromedashGateColumn extends LitElement {
 
   render() {
     return html`
-      <sl-icon-button
+      <cw-icon-button
         title="Close"
         name="x"
         id="close-button"
         @click=${() => this.handleCancel()}
-      ></sl-icon-button>
+      ></cw-icon-button>
 
       ${this.loading ? this.renderHeadingsSkeleton() : this.renderHeadings()}
 
