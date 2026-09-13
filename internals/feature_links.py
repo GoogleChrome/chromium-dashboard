@@ -57,6 +57,7 @@ def update_feature_links(
     fe: FeatureEntry, changed_fields: list[tuple[str, Any, Any]]
 ) -> None:  # noqa: E501
     """Update the links in the given feature entry."""
+    needs_put = False
     for field, old_val, new_val in changed_fields:
         if new_val != old_val:
             if old_val is None and not bool(new_val):
@@ -64,14 +65,15 @@ def update_feature_links(
 
             # Clear the denormalized fields that get filled from feature links; they'll get updated below  # noqa: E501
             # with their new values.
-            if field == 'safari_views_link':
+            if field == 'safari_views_link' and fe.safari_views_link_result:
                 fe.safari_views_link_result = None
-            if field == 'ff_views_link':
+                needs_put = True
+            if field == 'ff_views_link' and fe.ff_views_link_result:
                 fe.ff_views_link_result = None
-            if field == 'tag_review':
+                needs_put = True
+            if field == 'tag_review' and fe.tag_review_resolution:
                 fe.tag_review_resolution = None
-            logging.info('Saving feature in update_feature_links')
-            fe.put()
+                needs_put = True
 
             old_val_urls = Link.extract_urls_from_value(old_val)
             new_val_urls = Link.extract_urls_from_value(new_val)
@@ -100,6 +102,10 @@ def update_feature_links(
                             logging.info(
                                 f'Indexed feature_link {feature_link.url} to {feature_link.key.integer_id()} for feature {fe.key.integer_id()}'  # noqa: E501
                             )
+
+    if needs_put:
+        logging.info('Saving feature in update_feature_links')
+        fe.put()
 
 
 def _get_index_link(
