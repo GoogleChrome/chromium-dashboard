@@ -1,0 +1,32 @@
+name: CSS Anchor Positioning
+summary: >
+  CSS Anchor Positioning allows developers to tether positioned elements to one
+  or more anchor elements on a page, creating tooltips, popovers, and menus that
+  dynamically reposition as anchors move or scroll without JavaScript.
+shipped_milestone: 142
+spec_link: https://drafts.csswg.org/css-anchor-position-1/
+doc_links:
+  - https://developer.chrome.com/blog/anchor-positioning-api
+  - https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_anchor_positioning
+search_tags:
+  - css
+  - anchor
+  - position-anchor
+  - anchor-name
+  - position-area
+standard_maturity: 2
+category: 1
+gold_devrel_summary: >
+  CSS Anchor Positioning allows developers to position elements relative to anchor elements
+  on a page. Using `anchor-name`, `position-anchor`, and `position-area`, tooltips,
+  popovers, and menus reposition dynamically without requiring custom JavaScript scroll handlers.
+expected_entities:
+  - anchor-name
+  - position-anchor
+  - position-area
+  - anchor
+  - tooltip
+  - popover
+min_words: 30
+max_words: 80
+min_score_threshold: 0.75
