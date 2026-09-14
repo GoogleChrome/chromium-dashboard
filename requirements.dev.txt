@@ -67,7 +67,7 @@ types-pytz==2026.3.1.20260727
     # via -r requirements.dev.in
 types-redis==4.6.0.20241004
     # via -r requirements.dev.in
-types-requests==2.33.0.20260712
+types-requests==2.33.0.20260906
     # via -r requirements.dev.in
 types-setuptools==84.0.0.20260812
     # via
