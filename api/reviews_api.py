@@ -33,7 +33,13 @@ from api import converters
 from framework import basehandlers, permissions
 from framework.users import User
 from framework.utils import chunk_list
-from internals import approval_defs, core_enums, notifier_helpers, self_certify
+from internals import (
+    approval_defs,
+    core_enums,
+    notifier_helpers,
+    ot_auto_extension,
+    self_certify,
+)
 from internals.core_models import FeatureEntry, Stage
 from internals.review_models import Activity, Amendment, Gate, Vote
 
@@ -83,6 +89,10 @@ class VotesAPI(basehandlers.APIHandler):
         if recently_approved:
             stage = Stage.get_by_id(gate.stage_id)
             notifier_helpers.notify_approvals(fe, stage, gate)
+            if gate.gate_type == core_enums.GATE_API_SHIP:
+                ot_auto_extension.maybe_extend_trials_for_shipping(
+                    fe, stage, user.email()
+                )
 
         if new_state in (Vote.REVIEW_REQUESTED, Vote.NA_REQUESTED):
             old_assignees = gate.assignee_emails[:]

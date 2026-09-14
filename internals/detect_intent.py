@@ -23,7 +23,13 @@ from typing import Optional
 
 import settings
 from framework import basehandlers, permissions, users
-from internals import approval_defs, core_enums, notifier_helpers, slo
+from internals import (
+    approval_defs,
+    core_enums,
+    notifier_helpers,
+    ot_auto_extension,
+    slo,
+)
 from internals.core_models import FeatureEntry, Stage
 from internals.review_models import Activity, Gate, Vote
 
@@ -461,6 +467,10 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
             )
             if recently_approved:
                 notifier_helpers.notify_approvals(feature, stage, gate)
+                if gate.gate_type == core_enums.GATE_API_SHIP:
+                    ot_auto_extension.maybe_extend_trials_for_shipping(
+                        feature, stage, from_addr
+                    )
 
         # Case 2: Create a review request and set gate state for any
         # discussion that does not already have any approval values
