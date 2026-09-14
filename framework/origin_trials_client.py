@@ -131,6 +131,37 @@ def get_trials_list() -> list[dict[str, Any]]:
     return trials_list
 
 
+def get_next_release_number(version_num: int) -> int:
+    """Get the next milestone number, skipping milestone 82."""
+    if version_num == 81:
+        return 83
+    return version_num + 1
+
+
+def get_previous_release_number(version_num):
+    """Get the previous milestone number, skipping milestone 82."""
+    if version_num == 83:
+        return 81
+    return version_num - 1
+
+
+def get_trial_end_release_offset(release: int) -> int:
+    """Determine the milestone offset for trial end reminders based on release cycle."""
+    if release >= 153:
+        return 4
+    if release == 152:
+        return 3
+    return 2
+
+
+def get_release_plus_n(release: int, n: int) -> int:
+    """Get the milestone number N releases after the given release."""
+    res = release
+    for _ in range(n):
+        res = get_next_release_number(res)
+    return res
+
+
 def _get_trial_end_time(end_milestone: int) -> int:
     """Get the end time of the origin trial based on end milestone.
 
@@ -143,8 +174,9 @@ def _get_trial_end_time(end_milestone: int) -> int:
       KeyError: If the response from Chromium schedule API is not in the expected
         format.
     """
-    milestone_plus_two = int(end_milestone) + 2
-    mstone_info = utils.get_chromium_milestone_info(milestone_plus_two)
+    offset = get_trial_end_release_offset(end_milestone)
+    buffered_milestone = get_release_plus_n(end_milestone, offset)
+    mstone_info = utils.get_chromium_milestone_info(buffered_milestone)
 
     # Raise error if the response is not in the expected format.
     if (

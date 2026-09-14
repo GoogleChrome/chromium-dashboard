@@ -194,15 +194,74 @@ class OriginTrialsClientTest(testing_config.CustomTestCase):
     @mock.patch('settings.UNIT_TEST_MODE', False)
     @mock.patch('requests.get')
     def test_get_trial_end_time(self, mock_requests_get):
-        """Should return an int value based on the date from the request."""
+        """Should return an int value based on the buffered milestone date."""
         mock_requests_get.return_value = mock.MagicMock(
             status_code=200,
             json=lambda: {'mstones': [{'stable_date': '2023-04-30T00:00:00'}]},
         )
 
+        # Milestone < 152 uses offset 2 (123 + 2 = 125).
         return_result = origin_trials_client._get_trial_end_time(123)
         self.assertEqual(return_result, 1682812800)
-        mock_requests_get.assert_called_once()
+        mock_requests_get.assert_called_once_with(
+            'https://chromiumdash.appspot.com/fetch_milestone_schedule?mstone=125'
+        )
+        mock_requests_get.reset_mock()
+
+        # Milestone 152 uses offset 3 (152 + 3 = 155).
+        return_result = origin_trials_client._get_trial_end_time(152)
+        self.assertEqual(return_result, 1682812800)
+        mock_requests_get.assert_called_once_with(
+            'https://chromiumdash.appspot.com/fetch_milestone_schedule?mstone=155'
+        )
+        mock_requests_get.reset_mock()
+
+        # Milestone >= 153 uses offset 4 (153 + 4 = 157).
+        return_result = origin_trials_client._get_trial_end_time(153)
+        self.assertEqual(return_result, 1682812800)
+        mock_requests_get.assert_called_once_with(
+            'https://chromiumdash.appspot.com/fetch_milestone_schedule?mstone=157'
+        )
+
+    def test_get_trial_end_release_offset(self):
+        """Test that the correct offset is returned based on release milestone."""
+        self.assertEqual(
+            origin_trials_client.get_trial_end_release_offset(150), 2
+        )
+        self.assertEqual(
+            origin_trials_client.get_trial_end_release_offset(151), 2
+        )
+        self.assertEqual(
+            origin_trials_client.get_trial_end_release_offset(152), 3
+        )
+        self.assertEqual(
+            origin_trials_client.get_trial_end_release_offset(153), 4
+        )
+        self.assertEqual(
+            origin_trials_client.get_trial_end_release_offset(154), 4
+        )
+
+    def test_get_release_plus_n(self):
+        """Test that get_release_plus_n correctly increments milestones."""
+        self.assertEqual(origin_trials_client.get_release_plus_n(150, 2), 152)
+        self.assertEqual(origin_trials_client.get_release_plus_n(150, 4), 154)
+        # Test skipping milestone 82
+        self.assertEqual(origin_trials_client.get_release_plus_n(80, 2), 83)
+
+    def test_get_next_and_previous_release_number(self):
+        """Test milestone increments and decrements around milestone 82."""
+        self.assertEqual(origin_trials_client.get_next_release_number(80), 81)
+        self.assertEqual(origin_trials_client.get_next_release_number(81), 83)
+        self.assertEqual(origin_trials_client.get_next_release_number(83), 84)
+        self.assertEqual(
+            origin_trials_client.get_previous_release_number(84), 83
+        )
+        self.assertEqual(
+            origin_trials_client.get_previous_release_number(83), 81
+        )
+        self.assertEqual(
+            origin_trials_client.get_previous_release_number(81), 80
+        )
 
     @mock.patch('requests.post')
     def test_create_origin_trial__no_api_key(self, mock_requests_post):
