@@ -71,9 +71,8 @@ TESTING_APPROVERS = [
 ADOPTION_APPROVERS = [
     'rachelandrew@google.com',
 ]
-GTM_APPROVERS = [
-    'rachelandrew@google.com',
-]
+DQ_APPROVERS = IN_NDB
+
 
 DEFAULT_SLO_LIMIT = 5  # Five weekdays in the Pacific timezone.
 DEFAULT_SLO_RESOLVE_LIMIT = 10  # Ten weekdays in the Pacific timezone.
@@ -274,22 +273,22 @@ AdoptionPlanApproval = GateInfo(
     team_name='Adoption',
 )
 
-GTMShipApproval = GateInfo(
-    'GTM Ship Review',
-    'GTM Ship Review',
-    core_enums.GATE_GTM_SHIP,
+DataQualityShipApproval = GateInfo(
+    'Data Quality Ship Review',
+    'Data Quality Review',
+    core_enums.GATE_DQ_SHIP,
     ONE_LGTM,
-    approvers=GTM_APPROVERS,
-    team_name='GTM',
+    approvers=DQ_APPROVERS,
+    team_name='Data Quality',
 )
 
-GTMPlanApproval = GateInfo(
-    'GTM Deprecation Plan Review',
-    'GTM Deprecation Plan Review',
-    core_enums.GATE_GTM_PLAN,
+DataQualityPlanApproval = GateInfo(
+    'Data Quality Deprecation Plan Review',
+    'Data Quality Deprecation Plan Review',
+    core_enums.GATE_DQ_PLAN,
     ONE_LGTM,
-    approvers=GTM_APPROVERS,
-    team_name='GTM',
+    approvers=DQ_APPROVERS,
+    team_name='Data Quality',
 )
 
 
@@ -314,8 +313,8 @@ APPROVAL_FIELDS_BY_ID = {
         TestingPlanApproval,
         AdoptionShipApproval,
         AdoptionPlanApproval,
-        GTMShipApproval,
-        GTMPlanApproval,
+        DataQualityShipApproval,
+        DataQualityPlanApproval,
     ]
 }
 

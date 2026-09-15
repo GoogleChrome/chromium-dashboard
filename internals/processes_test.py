@@ -446,4 +446,4 @@ class WriteGatesAndStagesForFeatureTest(testing_config.CustomTestCase):
         stages = core_models.Stage.query().fetch()
         gates = Gate.query().fetch()
         self.assertEqual(len(stages), 6)
-        self.assertEqual(len(gates), 12)
+        self.assertEqual(len(gates), 13)
