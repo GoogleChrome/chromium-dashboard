@@ -21,12 +21,18 @@ This skill provides context and guidelines for developing the frontend of the `c
 - `templates/`: Jinja2 templates for the initial page load skeleton.
 
 ## Guidelines
-- **Component Development**: Create new components in `client-src/elements/`. Follow the naming convention `chromedash-*.js`.
+- **Component Development**: Create new components in `client-src/elements/`. Follow the naming convention `chromedash-*.ts` or `chromedash-*.js`.
 - **Icons**: Prefer Material Icons. If using Bootstrap icons via Shoelace, ensure they are copied to `static/shoelace/assets/icons`.
 - **API Interaction**: Use the client wrapper in `cs-client.js` or the OpenAPI context consumer for making server requests.
-- **Styling**: Use Lit's `css` tagged templates for component styles. Leverage variables from the design system where possible.
+- **Styling & CSS Hygiene**:
+  - **Design Tokens**: Use Lit's `css` tagged templates for component styles and leverage design tokens defined in `client-src/css/_vars-css.js` and `client-src/css/shared-css.js` (e.g., `var(--max-content-width)`, `var(--card-background)`, `var(--content-padding)`).
+  - **Global CSS Inheritance**: In SSR templates (`templates/*.html`), rely on global style inheritance from `static/css/main.css`. Do not redundantly override base typography (`h1`, `h2`, `h3`), link styling (`a`, `a:hover`), or standard button rules.
+  - **Layout Containment**: `templates/_base.html` automatically wraps page content in `#content-component-wrapper`, handling horizontal centering and maximum width containment via `var(--max-content-width)`. Avoid defining redundant width caps or outer centering wrappers in individual template views.
+  - **Anchor & Hash Navigation**: When implementing in-page anchor targets, section headings, or deep-linkable cards, apply `scroll-margin-top` to account for the sticky top toolbar and header (`<chromedash-header>`) to prevent content occlusion upon navigation.
+- **Shoelace Component Imports**: Import all Shoelace components centrally in `client-src/components.js` rather than in individual component source files to keep component headers uncluttered and avoid duplicate custom element registrations. In individual `.ts` source files, use `import type SlComponent from '...'` only when needed for TypeScript type annotations.
+- **Frontend Test Assertion Style**: In frontend test suites (`client-src/**/*_test.ts`), prefer Chai's `assert.*` form (`assert.exists()`, `assert.equal()`, `assert.isTrue()`, `assert.deepEqual()`) over `expect(...)` to maintain consistency with backend Python unit tests and existing repository patterns.
 - **Legacy Code**: Do not add new code or components to the legacy `pages/` directory on the backend, even if it contains old templates. All newer frontend logic should reside in `client-src/`.
 
 ## Common Tasks
-- **Adding a New Page**: Register the route in `chromedash-app.js` (within `setUpRoutes`) and create the corresponding Lit component.
+- **Adding a New Page**: Register the route in `chromedash-app.ts` (within `setUpRoutes`) and create the corresponding Lit component.
 - **Building assets**: Use `make watch` during development for live-reloading or `make build` for a final build.

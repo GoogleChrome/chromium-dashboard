@@ -49,6 +49,9 @@ describe('chromedash-drawer', () => {
     // nav bar has correct tabs
     const navInnerHTML = nav.innerHTML;
     assert.include(navInnerHTML, 'href="/roadmap"');
+    assert.include(navInnerHTML, 'href="/release-notes"');
+    assert.include(navInnerHTML, 'name="info-circle"');
+    assert.include(navInnerHTML, 'content="Preview"');
     assert.include(navInnerHTML, 'href="/features"');
     assert.include(navInnerHTML, 'href="/metrics/css/popularity"');
     assert.include(navInnerHTML, 'href="/metrics/feature/popularity"');
@@ -78,9 +81,26 @@ describe('chromedash-drawer', () => {
 
     const navInnerHTML = nav.innerHTML;
     assert.include(navInnerHTML, 'href="/roadmap"');
+    assert.include(navInnerHTML, 'href="/release-notes"');
+    assert.include(navInnerHTML, 'name="info-circle"');
+    assert.include(navInnerHTML, 'content="Preview"');
     assert.include(navInnerHTML, 'href="/features"');
     assert.include(navInnerHTML, 'href="/metrics/css/popularity"');
     assert.include(navInnerHTML, 'href="/metrics/feature/popularity"');
     assert.include(navInnerHTML, 'href="/myfeatures');
+  });
+
+  it('marks release notes active on subpaths', async () => {
+    getPermissionsStub.returns(Promise.resolve(null));
+    const component = await fixture<ChromedashDrawer>(
+      html`<chromedash-drawer
+        currentPage="/release-notes/151"
+      ></chromedash-drawer>`
+    );
+    const releaseNotesLink = component.shadowRoot!.querySelector(
+      'a[href="/release-notes"]'
+    );
+    assert.exists(releaseNotesLink);
+    assert.isTrue(releaseNotesLink!.hasAttribute('active'));
   });
 });

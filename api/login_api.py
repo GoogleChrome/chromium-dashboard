@@ -16,7 +16,6 @@
 """API handlers for user authentication and session creation via Google Sign-In."""
 
 import google.oauth2.id_token
-import werkzeug.exceptions
 from chromestatus_openapi.models import SignInRequest
 from google.auth.transport import requests
 
@@ -37,12 +36,9 @@ class LoginAPI(basehandlers.APIHandler):
             request = SignInRequest.from_dict(self.request.json)
             token = request.credential
             if not token:
-                raise werkzeug.exceptions.BadRequest(
-                    description="Missing required field 'credential'"
-                )  # noqa: E501
-            message = 'Unable to Authenticate. Please sign in again.'
-        except ValueError:
-            message = 'Invalid Request'
+                self.abort(400, msg="Missing required field 'credential'")
+        except (ValueError, TypeError):
+            self.abort(400, msg='Invalid Request')
 
         try:
             idinfo = google.oauth2.id_token.verify_oauth2_token(
@@ -50,12 +46,11 @@ class LoginAPI(basehandlers.APIHandler):
             )
             users.add_signed_user_info_to_session(idinfo['email'])
             self._update_last_visit_field(idinfo['email'])
-            message = 'Done'
             # print(idinfo['email'], file=sys.stderr)
         except ValueError:
-            message = 'Invalid token'
+            self.abort(400, msg='Invalid token')
 
-        return {'message': message}
+        return {'message': 'Done'}
 
 
 TESTING_ACCOUNTS = ['example@chromium.org']

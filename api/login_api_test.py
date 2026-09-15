@@ -51,13 +51,46 @@ class LoginAPITest(testing_config.CustomTestCase):
                 self.handler.do_post()
             self.assertEqual(1, len(session))
 
-    def test_post__invalid_credential_token(self):
+    def test_post__credential_token_is_none(self):
+        """We reject login requests where credential_token is None."""
+        params = {'credential': None}
+        with test_app.test_request_context(self.request_path, json=params):
+            session.clear()
+            session['something else'] = 'some other aspect of the session'
+            with self.assertRaises(werkzeug.exceptions.BadRequest):
+                self.handler.do_post()
+            self.assertEqual(1, len(session))
+
+    def test_post__empty_credential_token(self):
+        """We reject login requests with an empty credential_token."""
+        params = {'credential': ''}
+        with test_app.test_request_context(self.request_path, json=params):
+            session.clear()
+            session['something else'] = 'some other aspect of the session'
+            with self.assertRaises(werkzeug.exceptions.BadRequest):
+                self.handler.do_post()
+            self.assertEqual(1, len(session))
+
+    def test_post__invalid_request_body(self):
+        """We reject login requests where the body is not a valid dict."""
+        with test_app.test_request_context(self.request_path, json=123):
+            session.clear()
+            session['something else'] = 'some other aspect of the session'
+            with self.assertRaises(werkzeug.exceptions.BadRequest):
+                self.handler.do_post()
+            self.assertEqual(1, len(session))
+
+    @mock.patch('google.oauth2.id_token.verify_oauth2_token')
+    def test_post__invalid_credential_token(self, mock_verify):
         """We reject login requests that have an invalid credential_token."""
+        mock_verify.side_effect = ValueError('Invalid token')
         params = {'credential': 'fake bad token'}
         with test_app.test_request_context(self.request_path, json=params):
             session.clear()
-            actual_response = self.handler.do_post()
-            self.assertEqual({'message': 'Invalid token'}, actual_response)
+            session['something else'] = 'some other aspect of the session'
+            with self.assertRaises(werkzeug.exceptions.BadRequest):
+                self.handler.do_post()
+            self.assertEqual(1, len(session))
             self.assertNotIn('signed_user_info', session)
 
     @mock.patch('google.oauth2.id_token.verify_oauth2_token')

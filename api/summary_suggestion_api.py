@@ -12,20 +12,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""API handler for AI summary suggestions (GET and PATCH /api/v0/summary-suggestions/<int:feature_id>)."""
+"""API handler for AI summary suggestions (GET, POST, and PATCH /api/v0/summary-suggestions/<int:feature_id>)."""
 
 import re
 from typing import Any
 
 from chromestatus_openapi.models import (
     PendingSuggestionsCountResponse,
+    SuccessMessage,
     SummarySuggestionListResponse,
     SummarySuggestionResponse,
 )
 from google.cloud import ndb
 
 from api import converters
-from framework import basehandlers, permissions
+from framework import basehandlers, cloud_tasks_helpers, permissions
 from internals import core_enums
 from internals.core_models import (
     FeatureEntry,
@@ -47,7 +48,7 @@ def strip_markdown_hover_snippet(text: str | None, max_len: int = 150) -> str:
 
 
 class SummarySuggestionAPI(basehandlers.APIHandler):
-    """API handler for AI summary suggestions (GET and PATCH /api/v0/summary-suggestions/<int:feature_id>)."""
+    """API handler for AI summary suggestions (GET, POST, and PATCH /api/v0/summary-suggestions/<int:feature_id>)."""
 
     def do_get(self, **kwargs: Any) -> dict[str, Any]:
         """Fetches an AI summary suggestion and progress steps timeline.
@@ -83,6 +84,37 @@ class SummarySuggestionAPI(basehandlers.APIHandler):
             ],
         }
         return SummarySuggestionResponse.from_dict(payload).to_dict()
+
+    def do_post(self, **kwargs: Any) -> dict[str, Any]:
+        """Enqueues an AI summary generation task for the specified feature.
+
+        Returns:
+            Dict containing confirmation message and feature ID.
+        """
+        # 1. Retrieve feature and check edit permissions (BOLA authorization).
+        feature = self.get_specified_feature(**kwargs)
+        if feature.deleted:
+            self.abort(404, msg='Feature not found')
+
+        user = self.get_current_user()
+        if not permissions.can_edit_feature(user, feature):
+            self.abort(
+                403, msg='User does not have edit permissions for this feature'
+            )
+        feature_id = feature.key.id()
+
+        # 2. Extract force parameter (default False) from request body.
+        force = self.get_bool_param('force', default=False)
+
+        # 3. Enqueue Cloud Task to generate the AI summary.
+        cloud_tasks_helpers.enqueue_task(
+            '/tasks/generate-summary',
+            {'feature_id': feature_id, 'force': force},
+        )
+
+        return SuccessMessage(
+            message=f'Summary generation task enqueued for feature {feature_id}'
+        ).to_dict()
 
     def do_patch(self, **kwargs: Any) -> dict[str, Any]:
         """Updates an AI summary suggestion with OCC version token enforcement.

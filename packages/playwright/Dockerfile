@@ -23,10 +23,11 @@ WORKDIR /work
 # Set environment variable so we can tell we're performing Playwright tests.
 ENV PLAYWRIGHT_MODE=true
 
-# Install a consistent version of Playwright. The duplicate ARG line is needed to copy the value
-# into this build stage.
+# Install consistent versions of Playwright and Axe. The duplicate ARG lines are needed
+# to copy values into this build stage.
 ARG PLAYWRIGHT_VERSION
-RUN npm install @playwright/test@${PLAYWRIGHT_VERSION}
+ARG AXE_CORE_PLAYWRIGHT_VERSION
+RUN npm install @playwright/test@${PLAYWRIGHT_VERSION} @axe-core/playwright@${AXE_CORE_PLAYWRIGHT_VERSION}
 
 # Copy the root directory. Subdirectories are mounted in docker-compose.yml.
 COPY --chown=pwuser:pwuser wait-for-app.sh playwright.config.ts /work/

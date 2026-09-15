@@ -21,9 +21,11 @@ trials, extending trials, and handling API key presence/absence.
 from unittest import mock
 
 import flask
+import requests
+
+import testing_config  # isort: split
 
 import settings
-import testing_config  # Must be imported before the module under test.
 from framework import origin_trials_client
 from internals.core_models import MilestoneSet, Stage
 
@@ -192,15 +194,74 @@ class OriginTrialsClientTest(testing_config.CustomTestCase):
     @mock.patch('settings.UNIT_TEST_MODE', False)
     @mock.patch('requests.get')
     def test_get_trial_end_time(self, mock_requests_get):
-        """Should return an int value based on the date from the request."""
+        """Should return an int value based on the buffered milestone date."""
         mock_requests_get.return_value = mock.MagicMock(
             status_code=200,
             json=lambda: {'mstones': [{'stable_date': '2023-04-30T00:00:00'}]},
         )
 
+        # Milestone < 152 uses offset 2 (123 + 2 = 125).
         return_result = origin_trials_client._get_trial_end_time(123)
         self.assertEqual(return_result, 1682812800)
-        mock_requests_get.assert_called_once()
+        mock_requests_get.assert_called_once_with(
+            'https://chromiumdash.appspot.com/fetch_milestone_schedule?mstone=125'
+        )
+        mock_requests_get.reset_mock()
+
+        # Milestone 152 uses offset 3 (152 + 3 = 155).
+        return_result = origin_trials_client._get_trial_end_time(152)
+        self.assertEqual(return_result, 1682812800)
+        mock_requests_get.assert_called_once_with(
+            'https://chromiumdash.appspot.com/fetch_milestone_schedule?mstone=155'
+        )
+        mock_requests_get.reset_mock()
+
+        # Milestone >= 153 uses offset 4 (153 + 4 = 157).
+        return_result = origin_trials_client._get_trial_end_time(153)
+        self.assertEqual(return_result, 1682812800)
+        mock_requests_get.assert_called_once_with(
+            'https://chromiumdash.appspot.com/fetch_milestone_schedule?mstone=157'
+        )
+
+    def test_get_trial_end_release_offset(self):
+        """Test that the correct offset is returned based on release milestone."""
+        self.assertEqual(
+            origin_trials_client.get_trial_end_release_offset(150), 2
+        )
+        self.assertEqual(
+            origin_trials_client.get_trial_end_release_offset(151), 2
+        )
+        self.assertEqual(
+            origin_trials_client.get_trial_end_release_offset(152), 3
+        )
+        self.assertEqual(
+            origin_trials_client.get_trial_end_release_offset(153), 4
+        )
+        self.assertEqual(
+            origin_trials_client.get_trial_end_release_offset(154), 4
+        )
+
+    def test_get_release_plus_n(self):
+        """Test that get_release_plus_n correctly increments milestones."""
+        self.assertEqual(origin_trials_client.get_release_plus_n(150, 2), 152)
+        self.assertEqual(origin_trials_client.get_release_plus_n(150, 4), 154)
+        # Test skipping milestone 82
+        self.assertEqual(origin_trials_client.get_release_plus_n(80, 2), 83)
+
+    def test_get_next_and_previous_release_number(self):
+        """Test milestone increments and decrements around milestone 82."""
+        self.assertEqual(origin_trials_client.get_next_release_number(80), 81)
+        self.assertEqual(origin_trials_client.get_next_release_number(81), 83)
+        self.assertEqual(origin_trials_client.get_next_release_number(83), 84)
+        self.assertEqual(
+            origin_trials_client.get_previous_release_number(84), 83
+        )
+        self.assertEqual(
+            origin_trials_client.get_previous_release_number(83), 81
+        )
+        self.assertEqual(
+            origin_trials_client.get_previous_release_number(81), 80
+        )
 
     @mock.patch('requests.post')
     def test_create_origin_trial__no_api_key(self, mock_requests_post):
@@ -399,3 +460,188 @@ class OriginTrialsClientTest(testing_config.CustomTestCase):
             params={'key': 'api_key_value'},
             json={'trial_id': '-1234567890'},
         )
+
+    def test_extract_error_text(self):
+        """Should extract error text from response if available, else exception str."""
+        mock_response = mock.MagicMock(text='Error from API')
+        http_err = requests.exceptions.HTTPError(
+            '400 Client Error', response=mock_response
+        )
+        self.assertEqual(
+            origin_trials_client._extract_error_text(http_err), 'Error from API'
+        )
+
+        conn_err = requests.exceptions.ConnectionError('Connection refused')
+        self.assertEqual(
+            origin_trials_client._extract_error_text(conn_err),
+            'Connection refused',
+        )
+
+        empty_resp = mock.MagicMock(text='')
+        http_err_empty = requests.exceptions.HTTPError(
+            '502 Bad Gateway', response=empty_resp
+        )
+        self.assertEqual(
+            origin_trials_client._extract_error_text(http_err_empty),
+            '502 Bad Gateway',
+        )
+
+    @mock.patch('framework.origin_trials_client._get_ot_access_token')
+    @mock.patch('framework.origin_trials_client._get_trial_end_time')
+    @mock.patch('requests.post')
+    def test_create_origin_trial__create_connection_error(
+        self,
+        mock_requests_post,
+        mock_get_trial_end_time,
+        mock_get_ot_access_token,
+    ):
+        """If create trial request encounters network error, return error text without crashing."""
+        mock_requests_post.side_effect = requests.exceptions.ConnectionError(
+            'Failed to connect'
+        )
+        mock_get_trial_end_time.return_value = 111222333
+        mock_get_ot_access_token.return_value = 'access_token'
+        settings.OT_API_KEY = 'api_key_value'
+
+        ot_id, error_text = origin_trials_client.create_origin_trial(
+            self.ot_stage
+        )
+        self.assertIsNone(ot_id)
+        self.assertEqual('Failed to connect', error_text)
+
+    @mock.patch('framework.origin_trials_client._get_ot_access_token')
+    @mock.patch('framework.origin_trials_client._get_trial_end_time')
+    @mock.patch('requests.post')
+    def test_create_origin_trial__create_http_error(
+        self,
+        mock_requests_post,
+        mock_get_trial_end_time,
+        mock_get_ot_access_token,
+    ):
+        """If create trial request returns HTTP error, return response error text."""
+        mock_response = mock.MagicMock(
+            status_code=400,
+            text='{"error": "Invalid trial params"}',
+        )
+        mock_response.raise_for_status.side_effect = (
+            requests.exceptions.HTTPError(
+                '400 Client Error', response=mock_response
+            )
+        )
+        mock_requests_post.return_value = mock_response
+        mock_get_trial_end_time.return_value = 111222333
+        mock_get_ot_access_token.return_value = 'access_token'
+        settings.OT_API_KEY = 'api_key_value'
+
+        ot_id, error_text = origin_trials_client.create_origin_trial(
+            self.ot_stage
+        )
+        self.assertIsNone(ot_id)
+        self.assertEqual('{"error": "Invalid trial params"}', error_text)
+
+    @mock.patch('framework.secrets.get_ot_data_access_admin_group')
+    @mock.patch('framework.origin_trials_client._get_ot_access_token')
+    @mock.patch('framework.origin_trials_client._get_trial_end_time')
+    @mock.patch('requests.post')
+    def test_create_origin_trial__setup_connection_error(
+        self,
+        mock_requests_post,
+        mock_get_trial_end_time,
+        mock_get_ot_access_token,
+        mock_get_admin_group,
+    ):
+        """If setup request encounters network error, return trial ID and error text without crashing."""
+        create_response = mock.MagicMock(
+            status_code=200, json=lambda: ({'trial': {'id': -1234567890}})
+        )
+        create_response.raise_for_status.return_value = None
+        mock_requests_post.side_effect = [
+            create_response,
+            requests.exceptions.Timeout('Setup request timed out'),
+        ]
+        mock_get_trial_end_time.return_value = 111222333
+        mock_get_ot_access_token.return_value = 'access_token'
+        mock_get_admin_group.return_value = 'test-group-123'
+        settings.OT_API_KEY = 'api_key_value'
+
+        ot_id, error_text = origin_trials_client.create_origin_trial(
+            self.ot_stage
+        )
+        self.assertEqual(ot_id, '-1234567890')
+        self.assertEqual('Setup request timed out', error_text)
+
+    @mock.patch('framework.secrets.get_ot_data_access_admin_group')
+    @mock.patch('framework.origin_trials_client._get_ot_access_token')
+    @mock.patch('framework.origin_trials_client._get_trial_end_time')
+    @mock.patch('requests.post')
+    def test_create_origin_trial__setup_http_error(
+        self,
+        mock_requests_post,
+        mock_get_trial_end_time,
+        mock_get_ot_access_token,
+        mock_get_admin_group,
+    ):
+        """If setup request returns HTTP error, return trial ID and response error text."""
+        create_response = mock.MagicMock(
+            status_code=200, json=lambda: ({'trial': {'id': -1234567890}})
+        )
+        create_response.raise_for_status.return_value = None
+        setup_response = mock.MagicMock(
+            status_code=500,
+            text='{"error": "Internal setup failure"}',
+        )
+        setup_response.raise_for_status.side_effect = (
+            requests.exceptions.HTTPError(
+                '500 Server Error', response=setup_response
+            )
+        )
+        mock_requests_post.side_effect = [create_response, setup_response]
+        mock_get_trial_end_time.return_value = 111222333
+        mock_get_ot_access_token.return_value = 'access_token'
+        mock_get_admin_group.return_value = 'test-group-123'
+        settings.OT_API_KEY = 'api_key_value'
+
+        ot_id, error_text = origin_trials_client.create_origin_trial(
+            self.ot_stage
+        )
+        self.assertEqual(ot_id, '-1234567890')
+        self.assertEqual('{"error": "Internal setup failure"}', error_text)
+
+    @mock.patch('framework.origin_trials_client._get_ot_access_token')
+    @mock.patch('requests.post')
+    def test_activate_origin_trial__connection_error(
+        self,
+        mock_requests_post,
+        mock_get_ot_access_token,
+    ):
+        """If activation encounters network error, raise exception without UnboundLocalError."""
+        mock_requests_post.side_effect = requests.exceptions.ConnectionError(
+            'Network unreachable'
+        )
+        mock_get_ot_access_token.return_value = 'access_token'
+        settings.OT_API_KEY = 'api_key_value'
+
+        with self.assertRaises(requests.exceptions.ConnectionError):
+            origin_trials_client.activate_origin_trial('-1234567890')
+
+    @mock.patch('framework.origin_trials_client._get_ot_access_token')
+    @mock.patch('framework.origin_trials_client._get_trial_end_time')
+    @mock.patch('requests.post')
+    def test_extend_origin_trial__connection_error(
+        self,
+        mock_requests_post,
+        mock_get_trial_end_time,
+        mock_get_ot_access_token,
+    ):
+        """If extension encounters network error, raise exception without error."""
+        mock_requests_post.side_effect = requests.exceptions.ConnectionError(
+            'Network unreachable'
+        )
+        mock_get_trial_end_time.return_value = 111222333
+        mock_get_ot_access_token.return_value = 'access_token'
+        settings.OT_API_KEY = 'api_key_value'
+
+        with self.assertRaises(requests.exceptions.ConnectionError):
+            origin_trials_client.extend_origin_trial(
+                '1234567890', 123, 'https://example.com/intent'
+            )

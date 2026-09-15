@@ -291,6 +291,143 @@ class SummarySuggestionAPITest(testing_config.CustomTestCase):
                 self.handler.do_patch(feature_id=101)
             self.assertEqual(403, cm.exception.code)
 
+    @mock.patch('internals.core_models.FeatureEntry.get_by_id')
+    @mock.patch('framework.cloud_tasks_helpers.enqueue_task')
+    def test_post__success_enqueues_cloud_task(
+        self, mock_enqueue_task, mock_feature_get
+    ):
+        """It enqueues a Cloud Task for summary generation when user has edit access."""
+        testing_config.sign_in('owner@example.com', 12345)
+        mock_feature_get.return_value = self.feature_1
+
+        with test_app.test_request_context(
+            '/api/v0/summary-suggestions/101',
+            method='POST',
+            data=json.dumps({}),
+            content_type='application/json',
+        ):
+            response = self.handler.do_post(feature_id=101)
+            self.assertEqual(
+                'Summary generation task enqueued for feature 101',
+                response['message'],
+            )
+            mock_enqueue_task.assert_called_once_with(
+                '/tasks/generate-summary',
+                {'feature_id': 101, 'force': False},
+            )
+
+    @mock.patch('internals.core_models.FeatureEntry.get_by_id')
+    @mock.patch('framework.cloud_tasks_helpers.enqueue_task')
+    def test_post__with_force_true_enqueues_cloud_task(
+        self, mock_enqueue_task, mock_feature_get
+    ):
+        """It passes force=True to Cloud Tasks when specified in request payload."""
+        testing_config.sign_in('owner@example.com', 12345)
+        mock_feature_get.return_value = self.feature_1
+
+        with test_app.test_request_context(
+            '/api/v0/summary-suggestions/101',
+            method='POST',
+            data=json.dumps({'force': True}),
+            content_type='application/json',
+        ):
+            response = self.handler.do_post(feature_id=101)
+            self.assertEqual(
+                'Summary generation task enqueued for feature 101',
+                response['message'],
+            )
+            mock_enqueue_task.assert_called_once_with(
+                '/tasks/generate-summary',
+                {'feature_id': 101, 'force': True},
+            )
+
+    @mock.patch('internals.core_models.FeatureEntry.get_by_id')
+    def test_post__unauthorized_403(self, mock_feature_get):
+        """It aborts HTTP 403 when user lacks edit permissions."""
+        mock_feature_get.return_value = self.feature_1
+        testing_config.sign_out()
+
+        with test_app.test_request_context(
+            '/api/v0/summary-suggestions/101',
+            method='POST',
+            data=json.dumps({}),
+            content_type='application/json',
+        ):
+            with self.assertRaises(werkzeug.exceptions.HTTPException) as cm:
+                self.handler.do_post(feature_id=101)
+            self.assertEqual(403, cm.exception.code)
+
+    @mock.patch('internals.core_models.FeatureEntry.get_by_id')
+    def test_post__feature_not_found_404(self, mock_feature_get):
+        """It aborts HTTP 404 when feature does not exist."""
+        testing_config.sign_in('owner@example.com', 12345)
+        mock_feature_get.return_value = None
+
+        with test_app.test_request_context(
+            '/api/v0/summary-suggestions/999',
+            method='POST',
+            data=json.dumps({}),
+            content_type='application/json',
+        ):
+            with self.assertRaises(werkzeug.exceptions.HTTPException) as cm:
+                self.handler.do_post(feature_id=999)
+            self.assertEqual(404, cm.exception.code)
+
+    @mock.patch('internals.core_models.FeatureEntry.get_by_id')
+    def test_post__deleted_feature_404(self, mock_feature_get):
+        """It aborts HTTP 404 when target feature is marked deleted."""
+        testing_config.sign_in('owner@example.com', 12345)
+        deleted_feature = FeatureEntry(
+            id=102,
+            name='Deleted Feature',
+            summary='Summary',
+            deleted=True,
+            owner_emails=['owner@example.com'],
+        )
+        mock_feature_get.return_value = deleted_feature
+
+        with test_app.test_request_context(
+            '/api/v0/summary-suggestions/102',
+            method='POST',
+            data=json.dumps({}),
+            content_type='application/json',
+        ):
+            with self.assertRaises(werkzeug.exceptions.HTTPException) as cm:
+                self.handler.do_post(feature_id=102)
+            self.assertEqual(404, cm.exception.code)
+
+    @mock.patch('internals.core_models.FeatureEntry.get_by_id')
+    def test_post__invalid_force_type_400(self, mock_feature_get):
+        """It aborts HTTP 400 when force parameter is not a boolean."""
+        testing_config.sign_in('owner@example.com', 12345)
+        mock_feature_get.return_value = self.feature_1
+
+        with test_app.test_request_context(
+            '/api/v0/summary-suggestions/101',
+            method='POST',
+            data=json.dumps({'force': 'true'}),
+            content_type='application/json',
+        ):
+            with self.assertRaises(werkzeug.exceptions.HTTPException) as cm:
+                self.handler.do_post(feature_id=101)
+            self.assertEqual(400, cm.exception.code)
+
+    @mock.patch('internals.core_models.FeatureEntry.get_by_id')
+    def test_post__authenticated_non_editor_403(self, mock_feature_get):
+        """It aborts HTTP 403 when an authenticated user lacks edit permissions."""
+        testing_config.sign_in('random_user@example.com', 98765)
+        mock_feature_get.return_value = self.feature_1
+
+        with test_app.test_request_context(
+            '/api/v0/summary-suggestions/101',
+            method='POST',
+            data=json.dumps({}),
+            content_type='application/json',
+        ):
+            with self.assertRaises(werkzeug.exceptions.HTTPException) as cm:
+                self.handler.do_post(feature_id=101)
+            self.assertEqual(403, cm.exception.code)
+
 
 class PendingSuggestionsCountAPITest(testing_config.CustomTestCase):
     """Unit tests for PendingSuggestionsCountAPI handler."""

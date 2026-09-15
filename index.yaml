@@ -5,10 +5,6 @@ indexes:
   ancestor: yes
   properties:
   - name: start_timestamp
-- kind: FeatureSummaryProgressStep
-  ancestor: yes
-  properties:
-  - name: start_timestamp
     direction: desc
 
 - kind: FeatureSummarySuggestion
@@ -56,11 +52,6 @@ indexes:
   - name: bucket_id
   - name: date
     direction: desc
-- kind: AnimatedProperty
-  properties:
-  - name: date
-  - name: day_percentage
-    direction: desc
 - kind: FeatureObserver
   properties:
   - name: bucket_id
@@ -70,11 +61,6 @@ indexes:
   - name: bucket_id
   - name: date
     direction: desc
-- kind: FeatureObserver
-  properties:
-  - name: date
-  - name: day_percentage
-    direction: desc
 - kind: StableInstance
   properties:
   - name: bucket_id
@@ -83,21 +69,6 @@ indexes:
   properties:
   - name: bucket_id
   - name: date
-    direction: desc
-- kind: StableInstance
-  properties:
-  - name: bucket_id=
-  - name: date
-    direction: desc
-- kind: StableInstance
-  properties:
-  - name: date
-  - name: day_percentage
-    direction: desc
-- kind: StableInstance
-  properties:
-  - name: date
-  - name: hits
     direction: desc
 # New kinds from schema migration.
 - kind: Activity
@@ -120,69 +91,8 @@ indexes:
 - kind: FeatureEntry
   properties:
   - name: deleted
-  - name: owner_emails
-  - name: updated
-    direction: desc
-- kind: FeatureEntry
-  properties:
-  - name: deleted
   - name: unlisted
   - name: feature_type
-- kind: FeatureEntry
-  properties:
-  - name: category
-  - name: updated
-    direction: desc
-- kind: FeatureEntry
-  properties:
-  - name: category
-  - name: updated
-    direction: desc
-  - name: name
-- kind: FeatureEntry
-  properties:
-  - name: deleted
-  - name: updated
-    direction: desc
-- kind: FeatureEntry
-  properties:
-  - name: impl_status_chrome
-  - name: name
-    direction: desc
-- kind: FeatureEntry
-  properties:
-  - name: name
-  - name: updated
-- kind: FeatureEntry
-  properties:
-  - name: name
-  - name: updated
-    direction: desc
-- kind: FeatureEntry
-  properties:
-  - name: sample_links
-  - name: updated
-    direction: desc
-- kind: FeatureEntry
-  properties:
-  - name: updated
-    direction: desc
-  - name: name
-- kind: FeatureEntry
-  properties:
-  - name: editor_emails
-  - name: updated
-    direction: desc
-- kind: FeatureEntry
-  properties:
-  - name: creator_email
-  - name: updated
-    direction: desc
-- kind: FeatureEntry
-  properties:
-  - name: spec_mentor_emails
-  - name: updated
-    direction: desc
 - kind: FeatureWords
   properties:
   - name: words
@@ -191,13 +101,6 @@ indexes:
   properties:
   - name: feature_id
   - name: gate_id
-  - name: gate_type
-  - name: set_by
-  - name: set_on
-- kind: Vote
-  properties:
-  - name: feature_id
-  - name: gate_id
   - name: set_by
   - name: set_on
 - kind: Vote
@@ -213,25 +116,8 @@ indexes:
   - name: set_on
 - kind: Vote
   properties:
-  - name: set_by
-  - name: set_on
-- kind: Vote
-  properties:
   - name: gate_id
   - name: set_on
-- kind: Vote
-  properties:
-  - name: gate_type
-  - name: set_on
-- kind: Vote
-  properties:
-  - name: state
-  - name: set_on
-- kind: Vote
-  properties:
-  - name: state
-  - name: set_on
-    direction: desc
 - kind: Vote
   properties:
   - name: state
@@ -272,11 +158,6 @@ indexes:
   - name: archived
   - name: stage_type
   - name: milestones.desktop_last
-- kind: Stage
-  properties:
-  - name: archived
-  - name: stage_type
-  - name: milestones.android_last
 - kind: Stage
   properties:
   - name: archived
@@ -340,10 +221,6 @@ indexes:
   properties:
   - name: stage_type
   - name: rollout_milestone
-  - name: feature_id
-- kind: Gate
-  properties:
-  - name: state
   - name: feature_id
 - kind: Gate
   properties:

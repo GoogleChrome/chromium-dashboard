@@ -61,6 +61,7 @@ import type {
   SummarySuggestionListResponse,
   SummarySuggestionPatchRequest,
   SummarySuggestionResponse,
+  SummarySuggestionTriggerRequest,
 } from '../models/index';
 import {
     AccountResponseFromJSON,
@@ -155,6 +156,8 @@ import {
     SummarySuggestionPatchRequestToJSON,
     SummarySuggestionResponseFromJSON,
     SummarySuggestionResponseToJSON,
+    SummarySuggestionTriggerRequestFromJSON,
+    SummarySuggestionTriggerRequestToJSON,
 } from '../models/index';
 
 export interface AddAttachmentRequest {
@@ -328,6 +331,11 @@ export interface SetVoteForFeatureAndGateRequest {
     featureId: number;
     gateId: number;
     postVoteRequest: PostVoteRequest;
+}
+
+export interface TriggerSummaryGenerationRequest {
+    featureId: number;
+    summarySuggestionTriggerRequest?: SummarySuggestionTriggerRequest;
 }
 
 export interface UpdateFeatureCommentRequest {
@@ -1118,6 +1126,23 @@ export interface DefaultApiInterface {
      * Set a user\'s vote value for the specific feature and gate.
      */
     setVoteForFeatureAndGate(requestParameters: SetVoteForFeatureAndGateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SuccessMessage>;
+
+    /**
+     * Enqueues an asynchronous background Cloud Task to generate an AI release notes summary. Verifies feature edit permissions (owner, editor, admin) before enqueuing.
+     * @summary Enqueue AI summary generation task for a feature
+     * @param {number} featureId Feature ID (positive integer)
+     * @param {SummarySuggestionTriggerRequest} [summarySuggestionTriggerRequest] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApiInterface
+     */
+    triggerSummaryGenerationRaw(requestParameters: TriggerSummaryGenerationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SuccessMessage>>;
+
+    /**
+     * Enqueues an asynchronous background Cloud Task to generate an AI release notes summary. Verifies feature edit permissions (owner, editor, admin) before enqueuing.
+     * Enqueue AI summary generation task for a feature
+     */
+    triggerSummaryGeneration(requestParameters: TriggerSummaryGenerationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SuccessMessage>;
 
     /**
      * 
@@ -2931,6 +2956,44 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
      */
     async setVoteForFeatureAndGate(requestParameters: SetVoteForFeatureAndGateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SuccessMessage> {
         const response = await this.setVoteForFeatureAndGateRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Enqueues an asynchronous background Cloud Task to generate an AI release notes summary. Verifies feature edit permissions (owner, editor, admin) before enqueuing.
+     * Enqueue AI summary generation task for a feature
+     */
+    async triggerSummaryGenerationRaw(requestParameters: TriggerSummaryGenerationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SuccessMessage>> {
+        if (requestParameters['featureId'] == null) {
+            throw new runtime.RequiredError(
+                'featureId',
+                'Required parameter "featureId" was null or undefined when calling triggerSummaryGeneration().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        const response = await this.request({
+            path: `/summary-suggestions/{feature_id}`.replace(`{${"feature_id"}}`, encodeURIComponent(String(requestParameters['featureId']))),
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: SummarySuggestionTriggerRequestToJSON(requestParameters['summarySuggestionTriggerRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => SuccessMessageFromJSON(jsonValue));
+    }
+
+    /**
+     * Enqueues an asynchronous background Cloud Task to generate an AI release notes summary. Verifies feature edit permissions (owner, editor, admin) before enqueuing.
+     * Enqueue AI summary generation task for a feature
+     */
+    async triggerSummaryGeneration(requestParameters: TriggerSummaryGenerationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SuccessMessage> {
+        const response = await this.triggerSummaryGenerationRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

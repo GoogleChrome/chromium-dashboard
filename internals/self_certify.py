@@ -17,6 +17,7 @@
 from chromestatus_openapi.models import SurveyAnswers as OASurveyAnswers
 
 from internals import core_enums
+from internals.core_models import FeatureEntry
 from internals.review_models import Gate, SurveyAnswers
 
 CERTIFIABLE_GATE_TYPES = [
@@ -92,18 +93,27 @@ def is_testing_eligible(answers: SurveyAnswers) -> bool:
     )
 
 
-def is_adoption_eligible(answers: SurveyAnswers) -> bool:
+def is_adoption_eligible(
+    answers: SurveyAnswers, feature: FeatureEntry | None = None
+) -> bool:
     """Return True if the answers allow self-certify for the Adoption gate."""
-    return (
+    mwg_needed = (
+        feature is None
+        or feature.feature_type != core_enums.FEATURE_TYPE_CODE_CHANGE_ID
+    )
+    return bool(
         answers.adoption_fields_up_to_date
         and answers.adoption_style_aligned
         and answers.adoption_lead_time
         and answers.adoption_mdn_drafted
-        and answers.adoption_mwg_drafted
+        and (not mwg_needed or answers.adoption_mwg_drafted)
     )
 
 
-def is_eligible(gate: Gate) -> bool:
+def is_eligible(
+    gate: Gate,
+    feature: FeatureEntry | None = None,
+) -> bool:
     """Return True if the feature owner can self-certify the gate now."""
     answers = gate.survey_answers
     if answers is None:
@@ -123,7 +133,9 @@ def is_eligible(gate: Gate) -> bool:
         core_enums.GATE_ADOPTION_PLAN,
         core_enums.GATE_ADOPTION_SHIP,
     ]:
-        return is_adoption_eligible(answers)
+        if feature is None and gate.feature_id:
+            feature = FeatureEntry.get_by_id(gate.feature_id)
+        return is_adoption_eligible(answers, feature=feature)
 
     return False
 

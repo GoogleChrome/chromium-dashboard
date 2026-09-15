@@ -397,6 +397,68 @@ class VotesAPITest(testing_config.CustomTestCase):
             Vote.NO_RESPONSE,
         )
 
+    @mock.patch('internals.notifier_helpers.notify_subscribers_of_vote_changes')
+    @mock.patch('internals.approval_defs.get_approvers')
+    def test_post__self_cert__adoption_code_change_eligible(
+        self, mock_get_approvers, mock_notifier
+    ):
+        """Feature owner can self-approve adoption gate for code change without mwg."""
+        mock_get_approvers.return_value = ['reviewer1@example.com']
+        testing_config.sign_in('owner1@example.com', 123567890)
+        self.feature_1.feature_type = core_enums.FEATURE_TYPE_CODE_CHANGE_ID
+        self.feature_1.put()
+        self.gate_1.gate_type = core_enums.GATE_ADOPTION_SHIP
+        self.gate_1.survey_answers = SurveyAnswers(
+            adoption_fields_up_to_date=True,
+            adoption_style_aligned=True,
+            adoption_lead_time=True,
+            adoption_mdn_drafted=True,
+            adoption_mwg_drafted=False,
+        )
+        self.gate_1.put()
+
+        params = {'state': Vote.NA_SELF}
+        with test_app.test_request_context(self.request_path, json=params):
+            actual = self.handler.do_post(
+                feature_id=self.feature_id, gate_id=self.gate_1_id
+            )
+
+        self.assertEqual(actual, {'message': 'Done'})
+        updated_votes = Vote.get_votes(feature_id=self.feature_id)
+        self.assertEqual(1, len(updated_votes))
+        vote = updated_votes[0]
+        self.assertEqual(vote.feature_id, self.feature_id)
+        self.assertEqual(vote.gate_id, 1)
+        self.assertEqual(vote.set_by, 'owner1@example.com')
+        self.assertEqual(vote.state, Vote.NA_SELF)
+
+    @mock.patch('internals.notifier_helpers.notify_subscribers_of_vote_changes')
+    @mock.patch('internals.approval_defs.get_approvers')
+    def test_post__self_cert__adoption_other_feature_type_ineligible(
+        self, mock_get_approvers, mock_notifier
+    ):
+        """Feature owner cannot self-approve adoption gate for incubate feature without mwg."""
+        mock_get_approvers.return_value = ['reviewer1@example.com']
+        testing_config.sign_in('owner1@example.com', 123567890)
+        self.feature_1.feature_type = core_enums.FEATURE_TYPE_INCUBATE_ID
+        self.feature_1.put()
+        self.gate_1.gate_type = core_enums.GATE_ADOPTION_SHIP
+        self.gate_1.survey_answers = SurveyAnswers(
+            adoption_fields_up_to_date=True,
+            adoption_style_aligned=True,
+            adoption_lead_time=True,
+            adoption_mdn_drafted=True,
+            adoption_mwg_drafted=False,
+        )
+        self.gate_1.put()
+
+        params = {'state': Vote.NA_SELF}
+        with test_app.test_request_context(self.request_path, json=params):
+            with self.assertRaises(werkzeug.exceptions.Forbidden):
+                self.handler.do_post(
+                    feature_id=self.feature_id, gate_id=self.gate_1_id
+                )
+
     def test_check_voting_rules__not_verification(self):
         """We allow anything that is not NA_VERIFIED."""
         self.handler.check_voting_rules(self.gate_1, Vote.NO_RESPONSE)
@@ -506,6 +568,28 @@ class GatesAPITest(testing_config.CustomTestCase):
             'gates': [],
         }
         self.assertEqual(actual, expected)
+
+    @mock.patch('internals.approval_defs.get_approvers')
+    def test_do_get__adoption_gate_code_change(self, mock_get_approvers):
+        """Adoption gate for code change feature is self-certify eligible without mwg."""
+        mock_get_approvers.return_value = ['reviewer1@example.com']
+        self.feature_1.feature_type = core_enums.FEATURE_TYPE_CODE_CHANGE_ID
+        self.feature_1.put()
+        self.gate_1.gate_type = core_enums.GATE_ADOPTION_SHIP
+        self.gate_1.survey_answers = SurveyAnswers(
+            adoption_fields_up_to_date=True,
+            adoption_style_aligned=True,
+            adoption_lead_time=True,
+            adoption_mdn_drafted=True,
+            adoption_mwg_drafted=False,
+        )
+        self.gate_1.put()
+
+        with test_app.test_request_context(self.request_path):
+            actual = self.handler.do_get(feature_id=self.feature_id)
+
+        self.assertEqual(1, len(actual['gates']))
+        self.assertTrue(actual['gates'][0]['self_certify_eligible'])
 
     def test_do_get__deleted(self):
         """If a feature is deleted, don't return any gates."""

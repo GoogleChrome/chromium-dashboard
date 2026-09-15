@@ -21,12 +21,23 @@ import logging
 import os
 from datetime import datetime
 
+from google.cloud import ndb
 from wptgen import generate_audit_report
 
 import settings
-from framework import basehandlers, utils
+from ai.progress_reporter import DatastoreProgressReporter, FeatureSummaryInput
+from ai.summary_generator import GeminiSummaryGenerator
+from framework import (
+    basehandlers,
+    feature_fingerprint,
+    utils,
+)
 from internals import core_enums
-from internals.core_models import FeatureEntry
+from internals.core_models import (
+    FeatureEntry,
+    FeatureSummaryProgressStep,
+    FeatureSummarySuggestion,
+)
 
 
 def run_wpt_test_eval_pipeline(
@@ -123,3 +134,97 @@ class GenerateWPTCoverageEvalReportHandler(basehandlers.FlaskHandler):
         feature.ai_test_eval_status_timestamp = datetime.now()
         feature.put()
         return {'message': 'WPT coverage analysis report generated.'}
+
+
+class GenerateSummaryHandler(basehandlers.FlaskHandler):
+    """Cloud Task handler for generating an AI release note summary for a feature."""
+
+    IS_INTERNAL_HANDLER = True
+
+    def process_post_data(self, **kwargs):
+        """Process POST data for generating an AI summary."""
+        self.require_task_header()
+
+        feature_id = self.get_int_param('feature_id')
+        force = self.get_bool_param('force', default=False)
+        feature = self.get_validated_entity(feature_id, FeatureEntry)
+
+        if feature.deleted:
+            logging.info(
+                f'Feature {feature_id} is deleted, skipping generation.'
+            )
+            return {
+                'message': f'Feature {feature_id} is deleted.',
+                'skipped': True,
+                'feature_id': feature_id,
+            }
+
+        fingerprint = feature_fingerprint.compute_feature_fingerprint(feature)
+        suggestion_key = ndb.Key(FeatureSummarySuggestion, feature_id)
+        suggestion: FeatureSummarySuggestion | None = suggestion_key.get()
+
+        # Deduplication: Skip generation if already generated for the same fingerprint.
+        if (
+            not force
+            and suggestion is not None
+            and suggestion.source_fingerprint == fingerprint
+            and suggestion.suggested_summary
+        ):
+            logging.info(
+                f'Summary for feature {feature_id} is already up-to-date with '
+                f'fingerprint {fingerprint}.'
+            )
+            return {
+                'message': f'Summary for feature {feature_id} is already up-to-date.',
+                'skipped': True,
+                'feature_id': feature_id,
+            }
+
+        logging.info(
+            f'Starting AI summary generation for feature {feature_id} (force={force})'
+        )
+
+        # Clear historical progress timeline steps.
+        FeatureSummaryProgressStep.clear_timeline(feature_id, keep_count=0)
+
+        reporter = DatastoreProgressReporter(feature_id)
+        feature_input = FeatureSummaryInput.from_feature(feature)
+        generator = GeminiSummaryGenerator(
+            model_name=settings.SUMMARY_GENERATOR_MODEL,
+        )
+
+        result = generator.generate_summary(feature_input, reporter=reporter)
+
+        # Update or create FeatureSummarySuggestion in Datastore.
+        if suggestion is None:
+            suggestion = FeatureSummarySuggestion(
+                id=feature_id,
+                original_summary=feature.summary,
+                original_doc_links=feature.doc_links or [],
+                version_token=1,
+            )
+
+        suggestion.source_fingerprint = fingerprint
+        suggestion.version_token = (suggestion.version_token or 1) + 1
+
+        if result.error_message:
+            suggestion.status = core_enums.SummarySuggestionStatus.UNKNOWN
+            suggestion.put()
+            error_msg = (
+                f'AI summary generation failed for feature {feature_id}: '
+                f'{result.error_message}'
+            )
+            logging.error(error_msg)
+            return {'error': error_msg, 'feature_id': feature_id}
+
+        suggestion.suggested_summary = result.suggested_summary
+        suggestion.generation_rationale = result.generation_rationale
+        suggestion.suggested_doc_links = result.suggested_doc_links
+        suggestion.status = core_enums.SummarySuggestionStatus.PROPOSED
+        suggestion.put()
+
+        return {
+            'message': f'AI summary generated for feature {feature_id}.',
+            'feature_id': feature_id,
+            'suggested_summary': result.suggested_summary,
+        }

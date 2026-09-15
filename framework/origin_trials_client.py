@@ -131,6 +131,37 @@ def get_trials_list() -> list[dict[str, Any]]:
     return trials_list
 
 
+def get_next_release_number(version_num: int) -> int:
+    """Get the next milestone number, skipping milestone 82."""
+    if version_num == 81:
+        return 83
+    return version_num + 1
+
+
+def get_previous_release_number(version_num):
+    """Get the previous milestone number, skipping milestone 82."""
+    if version_num == 83:
+        return 81
+    return version_num - 1
+
+
+def get_trial_end_release_offset(release: int) -> int:
+    """Determine the milestone offset for trial end reminders based on release cycle."""
+    if release >= 153:
+        return 4
+    if release == 152:
+        return 3
+    return 2
+
+
+def get_release_plus_n(release: int, n: int) -> int:
+    """Get the milestone number N releases after the given release."""
+    res = release
+    for _ in range(n):
+        res = get_next_release_number(res)
+    return res
+
+
 def _get_trial_end_time(end_milestone: int) -> int:
     """Get the end time of the origin trial based on end milestone.
 
@@ -143,8 +174,9 @@ def _get_trial_end_time(end_milestone: int) -> int:
       KeyError: If the response from Chromium schedule API is not in the expected
         format.
     """
-    milestone_plus_two = int(end_milestone) + 2
-    mstone_info = utils.get_chromium_milestone_info(milestone_plus_two)
+    offset = get_trial_end_release_offset(end_milestone)
+    buffered_milestone = get_release_plus_n(end_milestone, offset)
+    mstone_info = utils.get_chromium_milestone_info(buffered_milestone)
 
     # Raise error if the response is not in the expected format.
     if (
@@ -174,6 +206,13 @@ def _get_ot_access_token() -> str:
     if credentials.token is None:
         return ''
     return credentials.token
+
+
+def _extract_error_text(e: requests.exceptions.RequestException) -> str:
+    """Extract error text from a RequestException or fallback to exception message."""
+    if e.response is not None and e.response.text:
+        return e.response.text
+    return str(e) or 'Unknown request error'
 
 
 def _send_create_trial_request(
@@ -252,11 +291,12 @@ def _send_create_trial_request(
         )
         logging.info(f'CreateTrial response text: {response.text}')
         response.raise_for_status()
-    except requests.exceptions.RequestException:
+    except requests.exceptions.RequestException as e:
+        error_text = _extract_error_text(e)
         logging.exception(
-            f'Failed to get response from origin trials API. {response.text}'
+            f'Failed to get response from origin trials API. {error_text}'
         )
-        return None, response.text
+        return None, error_text
     response_json = response.json()
     return response_json['trial']['id'], None
 
@@ -296,11 +336,12 @@ def _send_set_up_trial_request(
         )
         logging.info(f'SetUpTrial response text: {response.text}')
         response.raise_for_status()
-    except requests.exceptions.RequestException:
+    except requests.exceptions.RequestException as e:
+        error_text = _extract_error_text(e)
         logging.exception(
-            f'Failed to get response from origin trials API. {response.text}'
+            f'Failed to get response from origin trials API. {error_text}'
         )
-        return response.text
+        return error_text
     return None
 
 
@@ -388,8 +429,9 @@ def activate_origin_trial(origin_trial_id: str) -> None:
         logging.info(response.text)
         response.raise_for_status()
     except requests.exceptions.RequestException as e:
+        error_text = _extract_error_text(e)
         logging.exception(
-            f'Failed to get response from origin trials API. {response.text}'
+            f'Failed to get response from origin trials API. {error_text}'
         )
         raise e
 
@@ -430,5 +472,8 @@ def extend_origin_trial(trial_id: str, end_milestone: int, intent_url: str):
         logging.info(response.text)
         response.raise_for_status()
     except requests.exceptions.RequestException as e:
-        logging.exception('Failed to get response from origin trials API.')
+        error_text = _extract_error_text(e)
+        logging.exception(
+            f'Failed to get response from origin trials API. {error_text}'
+        )
         raise e

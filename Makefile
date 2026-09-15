@@ -1,4 +1,4 @@
-.PHONY: setup clean-setup deps dev-deps dev-ot-key do-tests start-emulator-persist start-emulator \
+.PHONY: setup clean-setup deps dev-deps compile-requirements dev-ot-key do-tests start-emulator-persist start-emulator \
 	stop-emulator build tsc-clean watch start-app debug-app start stop test webtest webtest-watch \
 	webtestpuppeteer webtestpuppeteer-watch webtest-coverage do-coverage coverage view-coverage \
 	mypy lint lint-frontend lint-backend lint-fix lint-fix-frontend lint-fix-backend presubmit pylint openapi openapi-webstatus openapi-frontend openapi-backend \
@@ -22,13 +22,18 @@ deps:
 dev-deps:
 	@echo 'dev-deps is no longer needed'
 
+compile-requirements:
+	. cs-env/bin/activate && pip install pip-tools && \
+	pip-compile requirements.in -o requirements.txt && \
+	pip-compile requirements.dev.in -o requirements.dev.txt
+
 dev-ot-key:
 	gcloud secrets versions access latest --secret=DEV_OT_API_KEY --out-file=ot_api_key.txt --project=cr-status-staging
 
 do-tests:
 	. cs-env/bin/activate && curl -X POST 'http://localhost:15606/reset' && \
 	if command -v pytest >/dev/null 2>&1; then \
-		pytest -n auto -q *_test.py api/*_test.py internals/*_test.py framework/*_test.py pages/*_test.py scripts/*_test.py; \
+		pytest -n auto -q *_test.py api/*_test.py internals/*_test.py framework/*_test.py pages/*_test.py scripts/*_test.py prompts/*_test.py; \
 	else \
 		python3.13 -m unittest discover -p '*_test.py' -b; \
 	fi

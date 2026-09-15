@@ -14,6 +14,12 @@
  * limitations under the License.
  */
 
+import {
+  MessageResponse,
+  SummarySuggestionPatchRequest,
+  SummarySuggestionResponse,
+} from 'chromestatus-openapi';
+
 export interface FeatureLink {
   url: string;
   type: string;
@@ -924,5 +930,51 @@ export class ChromeStatusClient {
 
   async getSpecifiedChannels(start: number, end: number): Promise<unknown> {
     return this.doGet(`/channels?start=${start}&end=${end}`);
+  }
+
+  // Summary Suggestions API
+  /** Fetches current AI summary suggestion draft and execution progress timeline. */
+  async getSummarySuggestion(
+    featureId: number
+  ): Promise<SummarySuggestionResponse> {
+    if (!Number.isInteger(featureId) || featureId <= 0) {
+      throw new Error(
+        `Invalid featureId (${featureId}): must be a positive integer.`
+      );
+    }
+    return this.doGet(
+      `/summary-suggestions/${featureId}`
+    ) as Promise<SummarySuggestionResponse>;
+  }
+
+  /** Enqueues an asynchronous Cloud Task to generate AI summary and progress steps. */
+  async triggerSummaryGeneration(
+    featureId: number,
+    force = false
+  ): Promise<MessageResponse> {
+    if (!Number.isInteger(featureId) || featureId <= 0) {
+      throw new Error(
+        `Invalid featureId (${featureId}): must be a positive integer.`
+      );
+    }
+    return this.doPost(`/summary-suggestions/${featureId}`, {
+      force,
+    }) as Promise<MessageResponse>;
+  }
+
+  /** Applies review decision (APPLIED/REJECTED) or updates edited summary with OCC version token. */
+  async updateSummarySuggestion(
+    featureId: number,
+    patch: SummarySuggestionPatchRequest
+  ): Promise<SummarySuggestionResponse> {
+    if (!Number.isInteger(featureId) || featureId <= 0) {
+      throw new Error(
+        `Invalid featureId (${featureId}): must be a positive integer.`
+      );
+    }
+    return this.doPatch(
+      `/summary-suggestions/${featureId}`,
+      patch
+    ) as Promise<SummarySuggestionResponse>;
   }
 }

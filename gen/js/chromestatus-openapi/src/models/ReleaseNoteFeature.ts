@@ -13,6 +13,13 @@
  */
 
 import { mapValues } from '../runtime';
+import type { ReleaseNoteLink } from './ReleaseNoteLink';
+import {
+    ReleaseNoteLinkFromJSON,
+    ReleaseNoteLinkFromJSONTyped,
+    ReleaseNoteLinkToJSON,
+} from './ReleaseNoteLink';
+
 /**
  * Individual feature entry formatted for public release notes.
  * @export
@@ -71,6 +78,18 @@ export interface ReleaseNoteFeature {
      * @memberof ReleaseNoteFeature
      */
     summary_source: ReleaseNoteFeatureSummarySourceEnum;
+    /**
+     * Launch status classification of this feature in the target milestone.
+     * @type {string}
+     * @memberof ReleaseNoteFeature
+     */
+    milestone_classification?: ReleaseNoteFeatureMilestoneClassificationEnum;
+    /**
+     * Structured list of categorized resource and reference links.
+     * @type {Array<ReleaseNoteLink>}
+     * @memberof ReleaseNoteFeature
+     */
+    links?: Array<ReleaseNoteLink>;
 }
 
 
@@ -93,6 +112,17 @@ export const ReleaseNoteFeatureSummarySourceEnum = {
     AI_APPLIED: 'AI_APPLIED'
 } as const;
 export type ReleaseNoteFeatureSummarySourceEnum = typeof ReleaseNoteFeatureSummarySourceEnum[keyof typeof ReleaseNoteFeatureSummarySourceEnum];
+
+/**
+ * @export
+ */
+export const ReleaseNoteFeatureMilestoneClassificationEnum = {
+    SHIPPING: 'SHIPPING',
+    ORIGIN_TRIAL: 'ORIGIN_TRIAL',
+    DEPRECATION: 'DEPRECATION',
+    REMOVAL: 'REMOVAL'
+} as const;
+export type ReleaseNoteFeatureMilestoneClassificationEnum = typeof ReleaseNoteFeatureMilestoneClassificationEnum[keyof typeof ReleaseNoteFeatureMilestoneClassificationEnum];
 
 
 /**
@@ -127,6 +157,8 @@ export function ReleaseNoteFeatureFromJSONTyped(json: any, ignoreDiscriminator: 
         'feature_type': json['feature_type'],
         'baseline_status': json['baseline_status'] == null ? undefined : json['baseline_status'],
         'summary_source': json['summary_source'],
+        'milestone_classification': json['milestone_classification'] == null ? undefined : json['milestone_classification'],
+        'links': json['links'] == null ? undefined : ((json['links'] as Array<any>).map(ReleaseNoteLinkFromJSON)),
     };
 }
 
@@ -144,6 +176,8 @@ export function ReleaseNoteFeatureToJSON(value?: ReleaseNoteFeature | null): any
         'feature_type': value['feature_type'],
         'baseline_status': value['baseline_status'],
         'summary_source': value['summary_source'],
+        'milestone_classification': value['milestone_classification'],
+        'links': value['links'] == null ? undefined : ((value['links'] as Array<any>).map(ReleaseNoteLinkToJSON)),
     };
 }
 

@@ -22,6 +22,12 @@ from typing import Any
 import requests
 
 from framework import cloud_tasks_helpers, origin_trials_client
+from framework.origin_trials_client import (
+    get_next_release_number,
+    get_previous_release_number,
+    get_release_plus_n,
+    get_trial_end_release_offset,
+)
 from framework.utils import chunk_list
 from internals.core_models import Stage
 
@@ -218,23 +224,6 @@ def send_beta_availability_emails(release):
     return send_count
 
 
-def get_trial_end_release_offset(release: int) -> int:
-    """Determine the milestone offset for trial end reminders based on release cycle."""
-    if release >= 153:
-        return 4
-    if release == 152:
-        return 3
-    return 2
-
-
-def get_release_plus_n(release: int, n: int) -> int:
-    """Get the milestone number N releases after the given release."""
-    res = release
-    for _ in range(n):
-        res = get_next_release_number(res)
-    return res
-
-
 def send_stable_update_emails(release):
     """Send reminders about trials that are entering stable."""
     offset = get_trial_end_release_offset(release)
@@ -338,20 +327,6 @@ def get_current_stable_release(today: date):
         version_stable_date = get_stable_date(next_version)
 
     return next_version
-
-
-def get_next_release_number(version_num: int) -> int:
-    """Get the next milestone number, skipping milestone 82."""
-    if version_num == 81:
-        return 83
-    return version_num + 1
-
-
-def get_previous_release_number(version_num):
-    """Get the previous milestone number, skipping milestone 82."""
-    if version_num == 83:
-        return 81
-    return version_num - 1
 
 
 def get_branch_date(release_json: dict[str, str]) -> date:

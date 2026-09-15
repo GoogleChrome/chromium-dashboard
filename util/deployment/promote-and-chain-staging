@@ -7,7 +7,7 @@ if [[ "${_DEPLOY_ENV:-staging}" != "staging" ]]; then
   exit 0
 fi
 
-git config --global --add safe.directory '*'
+git config --global --add safe.directory '/workspace/chromium-dashboard'
 COMMIT_SHA="${COMMIT_SHA:-$(git rev-parse HEAD)}"
 
 # Only tag and trigger production build if commit is on main branch
@@ -32,4 +32,5 @@ echo "Triggering production build (trigger-chromestatus-prod)..."
 gcloud builds triggers run trigger-chromestatus-prod \
   --project=interop-tooling-ops \
   --region=us-central1 \
-  --sha="${COMMIT_SHA}" || echo "Warning: Could not trigger trigger-chromestatus-prod."
+  --sha="${COMMIT_SHA}" \
+  --substitutions=_DEPLOY_ENV=prod,_FORCE_DEPLOY=false,_SKIP_ISSUE_CREATION=false || echo "Warning: Could not trigger trigger-chromestatus-prod."
