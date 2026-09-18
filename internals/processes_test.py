@@ -73,7 +73,10 @@ class HelperFunctionsTest(testing_config.CustomTestCase):
                     [PI_COLD_DOUGH],
                     [
                         processes.Action(
-                            'Share kneading video', 'https://example.com', []
+                            'Share kneading video',
+                            'https://example.com',
+                            [],
+                            [],
                         )
                     ],
                     [],
@@ -109,6 +112,7 @@ class HelperFunctionsTest(testing_config.CustomTestCase):
                             'name': 'Share kneading video',
                             'url': 'https://example.com',
                             'prerequisites': [],
+                            'gate_types': [],
                         }
                     ],
                     'approvals': [],

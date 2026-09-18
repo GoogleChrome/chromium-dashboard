@@ -1597,6 +1597,10 @@ components:
           type: array
           items:
             type: string
+        gate_types:
+          type: array
+          items:
+            type: integer
     GateInfo:
       type: object
       properties:
