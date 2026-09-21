@@ -108,24 +108,49 @@ export class ChromedashPreflightDialog extends LitElement {
     return [
       ...SHARED_STYLES,
       css`
-        li {
-          margin-top: 0.5em;
+        h3 {
+          margin: var(--content-padding) 0 var(--content-padding-quarter) 0;
+          font-size: 16px;
+          font-weight: 500;
         }
 
-        .missing-prereqs-list {
-          padding-bottom: 1em;
+        .data-table {
+          margin-bottom: var(--content-padding-half);
         }
 
-        .edit-progress-item {
-          visibility: hidden;
-          margin-left: var(--content-padding-half);
+        .data-table tr:first-child td {
+          border-top: none;
         }
 
-        .active .edit-progress-item,
-        .missing-prereqs .edit-progress-item,
-        .pending:hover .edit-progress-item,
-        .done:hover .edit-progress-item {
-          visibility: visible;
+        .data-table td {
+      vertical-align: middle;
+      padding: 0 var(content-padding);
+        }
+
+        .data-table td:first-child {
+          width: 7em;
+        }
+
+        .data-table td:last-child {
+          width: 4em;
+          text-align: right;
+        }
+
+        .status {
+          display: inline-block;
+          padding: 2px 8px;
+          border-radius: var(--pill-border-radius);
+          font-size: 0.9em;
+        }
+
+        .status.approved {
+          background: var(--gate-approved-background);
+          color: var(--gate-approved-color);
+        }
+
+        .status.pending {
+          background: var(--sl-color-neutral-200);
+          color: var(--sl-color-neutral-700);
         }
 
         sl-button {
@@ -181,8 +206,12 @@ export class ChromedashPreflightDialog extends LitElement {
       return nothing;
     }
 
+    const isMetadataField =
+      pi.field === 'web_feature' || pi.field === 'bug_url';
     const pathSegment =
-      stage && feStage ? `${stage.outgoing_stage}/${feStage.id}` : 'metadata';
+      !isMetadataField && stage && feStage
+        ? `${stage.outgoing_stage}/${feStage.id}`
+        : 'metadata';
 
     return html`
       <a
@@ -195,71 +224,91 @@ export class ChromedashPreflightDialog extends LitElement {
     `;
   }
 
-  makePrereqItem(itemName) {
-    // TODO(jrobbins): Rewrite this logic to search forms rather than progress
-    // items. And eventually phase out progress items.
-    if (itemName === 'Web feature') {
-      return {name: itemName, field: 'web_feature', stage: null};
-    } else if (itemName === 'Tracking bug URL') {
-      return {name: itemName, field: 'bug_url', stage: null};
+  renderStageTable(stage: ProcessStage, prereqItems: ProgressItem[]) {
+    if (prereqItems.length === 0) {
+      return nothing;
     }
-    for (const s of this._process.stages || []) {
-      for (const pi of s.progress_items) {
-        if (itemName == pi.name) {
-          return {...pi, stage: s};
-        }
-      }
+    const feStage =
+      stage.outgoing_stage !== undefined
+        ? findFirstFeatureStage(
+            stage.outgoing_stage,
+            this._stage,
+            this._feature
+          )
+        : null;
+
+    return html`
+      <h3>${stage.name}</h3>
+      <table class="data-table">
+        ${prereqItems.map(item => {
+          const isApproved = this._progress.hasOwnProperty(item.name);
+          return html`
+            <tr class=${isApproved ? 'done' : 'pending'}>
+              <td>
+                <span class="status ${isApproved ? 'approved' : 'pending'}">
+                  ${isApproved ? 'Approved' : 'Pending'}
+                </span>
+              </td>
+              <td>${item.name}</td>
+              <td>${this.renderEditLink(stage, feStage, item)}</td>
+            </tr>
+          `;
+        })}
+      </table>
+    `;
+  }
+
+  renderPendingGatesTable(pendingGates: GateDict[]) {
+    if (pendingGates.length === 0) {
+      return nothing;
     }
-    throw new Error('prerequiste is not a defined progress item: ' + itemName);
+
+    return html`
+      <h3>Pending gates</h3>
+      <table class="data-table">
+        ${pendingGates.map(
+          g => html`
+            <tr class="pending">
+              <td>
+                <span class="status pending">Pending</span>
+              </td>
+              <td>${g.team_name}</td>
+              <td>
+                <a
+                  href="/feature/${this._feature.id}?gate=${g.id}"
+                  @click=${this.hide}
+                  >View</a
+                >
+              </td>
+            </tr>
+          `
+        )}
+      </table>
+    `;
   }
 
   renderDialogContent() {
     if (this._feature == null) {
       return nothing;
     }
-    const prereqItems: ProgressItem[] = [];
-    for (const itemName of this._action.prerequisites || []) {
-      if (!this._progress.hasOwnProperty(itemName)) {
-        prereqItems.push(this.makePrereqItem(itemName));
-      }
-    }
+    const prereqNames = new Set(this._action.prerequisites || []);
+    const seenPrereqs = new Set<string>();
+    const stageTables = (this._process?.stages || []).map(s => {
+      const stagePrereqs = (s.progress_items || []).filter(pi => {
+        if (prereqNames.has(pi.name) && !seenPrereqs.has(pi.name)) {
+          seenPrereqs.add(pi.name);
+          return true;
+        }
+        return false;
+      });
+      return this.renderStageTable(s, stagePrereqs);
+    });
     const pendingGates = findPendingGates(this._featureGates, this._feStage);
 
     return html`
       Before you ${this._action.name}, it is strongly recommended that you do
-      the following:
-      <ul class="missing-prereqs-list">
-        ${prereqItems.map(
-          item =>
-            html` <li class="pending">
-              ${item.stage?.name || 'Metadata'}: ${item.name}
-              ${this.renderEditLink(
-                item.stage,
-                item.stage?.outgoing_stage !== undefined
-                  ? findFirstFeatureStage(
-                      item.stage.outgoing_stage,
-                      this._stage,
-                      this._feature
-                    )
-                  : null,
-                item
-              )}
-            </li>`
-        )}
-        ${pendingGates.map(
-          g => html`
-            <li class="pending">
-              Get approval or NA from the
-              <a
-                href="/feature/${this._feature.id}?gate=${g.id}"
-                @click=${this.hide}
-                >${g.team_name}</a
-              >
-              team
-            </li>
-          `
-        )}
-      </ul>
+      the following: ${stageTables}
+      ${this.renderPendingGatesTable(pendingGates)}
 
       <sl-button
         href="${this._url}"
