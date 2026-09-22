@@ -156,6 +156,7 @@ class ReleaseNotesHandlerTest(testing_config.CustomTestCase):
             'internals.fetchchannels.fetch_chrome_release_info',
             return_value={
                 'stable_date': '2026-09-01T00:00:00',
+                'earliest_beta': '2026-08-05T00:00:00',
                 'mstone': 152,
                 'version': 152,
             },
@@ -358,6 +359,7 @@ class ReleaseNotesHandlerTest(testing_config.CustomTestCase):
         """It omits the scheduled stable release line when stable_date is None."""
         self.mock_fetch_release_info.return_value = {
             'stable_date': None,
+            'earliest_beta': None,
             'mstone': 152,
             'version': 152,
         }
@@ -368,4 +370,84 @@ class ReleaseNotesHandlerTest(testing_config.CustomTestCase):
             self.assertEqual('', data['ui']['scheduled_stable_release'])
             self.assertNotIn(
                 'class="actionlinks release-date-subtitle"', html_str
+            )
+
+    def test_get_template_data__currently_on_beta_channel(self):
+        """It appends '(Currently on Beta channel)' when milestone matches current beta milestone."""
+        with (
+            test_app.test_request_context('/release-notes/153'),
+            mock.patch(
+                'internals.fetchchannels.get_current_beta_milestone',
+                return_value=153,
+            ),
+            mock.patch(
+                'internals.fetchchannels.get_current_channel_milestone',
+                return_value=154,
+            ),
+        ):
+            data = self.handler.get_template_data(milestone=153)
+            html_str = flask.render_template('release-notes.html', **data)
+            self.assertTrue(data['is_on_beta'])
+            self.assertFalse(data['is_on_dev'])
+            self.assertEqual(
+                '(Currently on Beta channel)', data['ui']['channel_status']
+            )
+            self.assertIn(
+                'Scheduled Stable Release September 1, 2026 (Currently on Beta'
+                ' channel)',
+                html_str,
+            )
+
+    def test_get_template_data__currently_on_dev_channel(self):
+        """It appends '(Currently on Dev channel, reaches Beta on DATE)' when milestone matches current dev milestone."""
+        with (
+            test_app.test_request_context('/release-notes/154'),
+            mock.patch(
+                'internals.fetchchannels.get_current_beta_milestone',
+                return_value=153,
+            ),
+            mock.patch(
+                'internals.fetchchannels.get_current_channel_milestone',
+                return_value=154,
+            ),
+        ):
+            data = self.handler.get_template_data(milestone=154)
+            html_str = flask.render_template('release-notes.html', **data)
+            self.assertFalse(data['is_on_beta'])
+            self.assertTrue(data['is_on_dev'])
+            self.assertEqual(
+                '(Currently on Dev channel, reaches Beta on August 5, 2026)',
+                data['ui']['channel_status'],
+            )
+            self.assertIn(
+                'Scheduled Stable Release September 1, 2026 (Currently on Dev'
+                ' channel, reaches Beta on August 5, 2026)',
+                html_str,
+            )
+
+    def test_get_template_data__currently_on_dev_and_beta_channels(self):
+        """It appends '(Currently on Dev and Beta channels)' when milestone is on both channels."""
+        with (
+            test_app.test_request_context('/release-notes/153'),
+            mock.patch(
+                'internals.fetchchannels.get_current_beta_milestone',
+                return_value=153,
+            ),
+            mock.patch(
+                'internals.fetchchannels.get_current_channel_milestone',
+                return_value=153,
+            ),
+        ):
+            data = self.handler.get_template_data(milestone=153)
+            html_str = flask.render_template('release-notes.html', **data)
+            self.assertTrue(data['is_on_beta'])
+            self.assertTrue(data['is_on_dev'])
+            self.assertEqual(
+                '(Currently on Dev and Beta channels)',
+                data['ui']['channel_status'],
+            )
+            self.assertIn(
+                'Scheduled Stable Release September 1, 2026 (Currently on Dev'
+                ' and Beta channels)',
+                html_str,
             )

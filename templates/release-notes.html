@@ -433,8 +433,8 @@
     <h1 id="page-title">{{ ui.page_title }}</h1>
     <span class="preview-badge" role="status">{{ ui.preview_badge }}</span>
   </div>
-  {% if ui.scheduled_stable_release %}
-  <p class="actionlinks release-date-subtitle">{{ ui.scheduled_stable_release }}</p>
+  {% if ui.scheduled_stable_release or ui.channel_status %}
+  <p class="actionlinks release-date-subtitle">{{ ui.scheduled_stable_release }}{% if ui.scheduled_stable_release and ui.channel_status %} {% endif %}{{ ui.channel_status }}</p>
   {% endif %}
 </div>
 {% endblock %}

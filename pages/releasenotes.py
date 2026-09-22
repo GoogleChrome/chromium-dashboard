@@ -151,6 +151,7 @@ class ReleaseNotesHandler(basehandlers.FlaskHandler):
         if settings.PLAYWRIGHT_MODE:
             release_info = {
                 'stable_date': '2026-09-01T00:00:00',
+                'earliest_beta': '2026-08-05T00:00:00',
                 'mstone': milestone,
                 'version': milestone,
             }
@@ -176,6 +177,23 @@ class ReleaseNotesHandler(basehandlers.FlaskHandler):
             raw_stable_date if isinstance(raw_stable_date, str) else None,
             current_lang,
         )
+
+        raw_earliest_beta = (
+            release_info.get('earliest_beta')
+            if isinstance(release_info, dict)
+            else None
+        )
+        formatted_earliest_beta = format_stable_release_date(
+            raw_earliest_beta if isinstance(raw_earliest_beta, str) else None,
+            current_lang,
+        )
+
+        beta_milestone = fetchchannels.get_current_beta_milestone()
+        dev_milestone = fetchchannels.get_current_channel_milestone(
+            fetchchannels.Channel.DEV
+        )
+        is_on_beta = beta_milestone > 0 and milestone == beta_milestone
+        is_on_dev = dev_milestone > 0 and milestone == dev_milestone
 
         release_note_features = (
             feature_helpers.get_developer_release_notes_features(milestone)
@@ -251,6 +269,9 @@ class ReleaseNotesHandler(basehandlers.FlaskHandler):
             prev_milestone=prev_milestone,
             next_milestone=next_milestone,
             stable_date=formatted_stable_date,
+            earliest_beta_date=formatted_earliest_beta,
+            is_on_beta=is_on_beta,
+            is_on_dev=is_on_dev,
         )
         supported_languages = l10n_helpers.get_supported_languages(
             l10n_helpers.RELEASE_NOTES_TRANSLATIONS
@@ -279,6 +300,9 @@ class ReleaseNotesHandler(basehandlers.FlaskHandler):
             'milestone': milestone,
             'stable_milestone': stable_milestone,
             'stable_date': formatted_stable_date,
+            'earliest_beta': formatted_earliest_beta,
+            'is_on_beta': is_on_beta,
+            'is_on_dev': is_on_dev,
             'prev_milestone': prev_milestone,
             'next_milestone': next_milestone,
             'is_min_ssr_milestone': (
