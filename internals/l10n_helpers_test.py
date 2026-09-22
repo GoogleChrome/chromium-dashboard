@@ -432,9 +432,16 @@ class ReleaseNotesL10nTest(unittest.TestCase):
         """It constructs pre-formatted type-safe UI strings for release notes."""
         en_trans = l10n_helpers.get_release_notes_translations('en')
         en_ui = en_trans.format_ui(
-            milestone=151, prev_milestone=150, next_milestone=152
+            milestone=151,
+            prev_milestone=150,
+            next_milestone=152,
+            stable_date='September 1, 2026',
         )
         self.assertEqual(en_ui['page_title'], 'Chrome 151 Release Notes')
+        self.assertEqual(
+            en_ui['scheduled_stable_release'],
+            'Scheduled Stable Release September 1, 2026',
+        )
         self.assertEqual(
             en_ui['prev_milestone_aria'], 'Previous milestone: Chrome 150'
         )
@@ -448,9 +455,16 @@ class ReleaseNotesL10nTest(unittest.TestCase):
 
         ja_trans = l10n_helpers.get_release_notes_translations('ja')
         ja_ui = ja_trans.format_ui(
-            milestone=151, prev_milestone=150, next_milestone=152
+            milestone=151,
+            prev_milestone=150,
+            next_milestone=152,
+            stable_date='2026年9月1日',
         )
         self.assertEqual(ja_ui['page_title'], 'Chrome 151 リリースノート')
+        self.assertEqual(
+            ja_ui['scheduled_stable_release'],
+            '安定版のリリース予定日: 2026年9月1日',
+        )
         self.assertEqual(
             ja_ui['prev_milestone_aria'], '前のマイルストーン: Chrome 150'
         )

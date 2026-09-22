@@ -1,6 +1,7 @@
 {
   "page_title": "Chrome {milestone} 发布说明",
   "preview_badge": "预览",
+  "scheduled_stable_release": "计划的稳定版发布日期：{date}",
   "jump_placeholder": "跳转到 Chrome 里程碑",
   "jump_aria": "跳转到 Chrome 里程碑",
   "prev_milestone_aria": "上一个里程碑: Chrome {milestone}",

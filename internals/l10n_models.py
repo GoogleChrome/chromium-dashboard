@@ -119,6 +119,7 @@ class ReleaseNotesKey(StrEnum):
     # UI Strings
     PAGE_TITLE = 'page_title'
     PREVIEW_BADGE = 'preview_badge'
+    SCHEDULED_STABLE_RELEASE = 'scheduled_stable_release'
     JUMP_PLACEHOLDER = 'jump_placeholder'
     JUMP_ARIA = 'jump_aria'
     PREV_MILESTONE_ARIA = 'prev_milestone_aria'
@@ -173,6 +174,7 @@ class ReleaseNotesKey(StrEnum):
 
 RELEASE_NOTES_PLACEHOLDERS: dict[ReleaseNotesKey, set[str]] = {
     ReleaseNotesKey.PAGE_TITLE: {'milestone'},
+    ReleaseNotesKey.SCHEDULED_STABLE_RELEASE: {'date'},
     ReleaseNotesKey.PREV_MILESTONE_ARIA: {'milestone'},
     ReleaseNotesKey.NEXT_MILESTONE_ARIA: {'milestone'},
     ReleaseNotesKey.EMPTY_STATE_HEADING: {'milestone'},
@@ -220,6 +222,7 @@ class ReleaseNotesTranslations:
     # UI Strings
     page_title: str
     preview_badge: str
+    scheduled_stable_release: str
     jump_placeholder: str
     jump_aria: str
     prev_milestone_aria: str
@@ -362,6 +365,7 @@ class ReleaseNotesTranslations:
         milestone: int,
         prev_milestone: int | None = None,
         next_milestone: int | None = None,
+        stable_date: str | None = None,
     ) -> dict[str, Any]:
         """Pre-formats milestone tokens in UI strings for Jinja templates."""
         prev_m = prev_milestone if prev_milestone is not None else milestone
@@ -370,6 +374,11 @@ class ReleaseNotesTranslations:
         return {
             'page_title': self.page_title.format(milestone=milestone),
             'preview_badge': self.preview_badge,
+            'scheduled_stable_release': (
+                self.scheduled_stable_release.format(date=stable_date)
+                if stable_date
+                else ''
+            ),
             'jump_placeholder': self.jump_placeholder,
             'jump_aria': self.jump_aria,
             'prev_milestone_aria': self.prev_milestone_aria.format(

@@ -1,6 +1,7 @@
 {
   "page_title": "Chrome {milestone} リリースノート",
   "preview_badge": "プレビュー",
+  "scheduled_stable_release": "安定版のリリース予定日: {date}",
   "jump_placeholder": "Chrome のマイルストーンにジャンプ",
   "jump_aria": "Chrome のマイルストーンにジャンプ",
   "prev_milestone_aria": "前のマイルストーン: Chrome {milestone}",

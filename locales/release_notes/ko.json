@@ -1,6 +1,7 @@
 {
   "page_title": "Chrome {milestone} 릴리스 노트",
   "preview_badge": "미리보기",
+  "scheduled_stable_release": "안정화 버전 출시 예정일: {date}",
   "jump_placeholder": "Chrome 마일스톤으로 이동",
   "jump_aria": "Chrome 마일스톤으로 이동",
   "prev_milestone_aria": "이전 마일스톤: Chrome {milestone}",

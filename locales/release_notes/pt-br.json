@@ -1,6 +1,7 @@
 {
   "page_title": "Notas de versão do Chrome {milestone}",
   "preview_badge": "Prévia",
+  "scheduled_stable_release": "Lançamento estável programado: {date}",
   "jump_placeholder": "Ir para a versão do Chrome",
   "jump_aria": "Ir para a versão do Chrome",
   "prev_milestone_aria": "Versão anterior: Chrome {milestone}",

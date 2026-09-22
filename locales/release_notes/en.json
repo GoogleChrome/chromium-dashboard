@@ -1,6 +1,7 @@
 {
   "page_title": "Chrome {milestone} Release Notes",
   "preview_badge": "Preview",
+  "scheduled_stable_release": "Scheduled Stable Release {date}",
   "jump_placeholder": "Jump to Chrome milestone",
   "jump_aria": "Jump to Chrome milestone",
   "prev_milestone_aria": "Previous milestone: Chrome {milestone}",

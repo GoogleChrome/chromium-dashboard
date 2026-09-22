@@ -152,6 +152,17 @@ class ReleaseNotesHandlerTest(testing_config.CustomTestCase):
         self.addCleanup(patcher.stop)
         self.mock_get_features = patcher.start()
 
+        release_info_patcher = mock.patch(
+            'internals.fetchchannels.fetch_chrome_release_info',
+            return_value={
+                'stable_date': '2026-09-01T00:00:00',
+                'mstone': 152,
+                'version': 152,
+            },
+        )
+        self.addCleanup(release_info_patcher.stop)
+        self.mock_fetch_release_info = release_info_patcher.start()
+
     def test_http_cache_type_private(self):
         """It configures private HTTP caching to prevent CDN caching of XSRF tokens."""
         self.assertEqual(
@@ -163,6 +174,11 @@ class ReleaseNotesHandlerTest(testing_config.CustomTestCase):
         with test_app.test_request_context('/release-notes/152'):
             data = self.handler.get_template_data(milestone=152)
             self.assertEqual(152, data['milestone'])
+            self.assertEqual('September 1, 2026', data['stable_date'])
+            self.assertEqual(
+                'Scheduled Stable Release September 1, 2026',
+                data['ui']['scheduled_stable_release'],
+            )
             self.assertEqual(151, data['prev_milestone'])
             self.assertEqual(153, data['next_milestone'])
             self.assertTrue(data['is_min_ssr_milestone'])
@@ -268,8 +284,11 @@ class ReleaseNotesHandlerTest(testing_config.CustomTestCase):
             parser = ReleaseNotesHTMLParser()
             parser.feed(html_str)
 
-            # Verify subheader title (rendered as h1)
+            # Verify subheader title (rendered as h1) and scheduled stable release date
             self.assertIn('Chrome 152 Release Notes', parser.headings)
+            self.assertIn(
+                'Scheduled Stable Release September 1, 2026', html_str
+            )
 
             # Verify previous and next stepper links
             self.assertIn('/release-notes/151', parser.links)
@@ -322,13 +341,31 @@ class ReleaseNotesHandlerTest(testing_config.CustomTestCase):
             )
 
     def test_get_template_data__japanese_localizes_summaries(self):
-        """It renders localized summary text and data-summary-lang='ja' when ?hl=ja is requested."""
+        """It renders localized summary text, release date, and data-summary-lang='ja' when ?hl=ja is requested."""
         with test_app.test_request_context('/release-notes/152?hl=ja'):
             data = self.handler.get_template_data(milestone=152)
             html_str = flask.render_template('release-notes.html', **data)
             self.assertEqual('ja', data['current_lang'])
+            self.assertEqual('2026年9月1日', data['stable_date'])
+            self.assertIn('安定版のリリース予定日: 2026年9月1日', html_str)
             self.assertIn(
                 'class="feature-summary" lang="ja" data-summary-lang="ja"',
                 html_str,
             )
             self.assertIn('[Translated to ja]', html_str)
+
+    def test_get_template_data__missing_stable_date(self):
+        """It omits the scheduled stable release line when stable_date is None."""
+        self.mock_fetch_release_info.return_value = {
+            'stable_date': None,
+            'mstone': 152,
+            'version': 152,
+        }
+        with test_app.test_request_context('/release-notes/152'):
+            data = self.handler.get_template_data(milestone=152)
+            html_str = flask.render_template('release-notes.html', **data)
+            self.assertIsNone(data['stable_date'])
+            self.assertEqual('', data['ui']['scheduled_stable_release'])
+            self.assertNotIn(
+                'class="actionlinks release-date-subtitle"', html_str
+            )
