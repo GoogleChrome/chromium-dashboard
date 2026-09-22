@@ -97,54 +97,63 @@ PI_FEATURE_NAME = ProgressItem(
     'Feature name',
     'name',
     'Feature name is clear, accurate, and not a placeholder',
-    ('Not a bug number, internal codename, or "TBD". '
-     'Matches the intent email subject.')
+    (
+        'Not a bug number, internal codename, or "TBD". '
+        'Matches the intent email subject.'
+    ),
 )
 
 PI_SUMMARY = ProgressItem(
     'Summary',
     'summary',
     'Summary is complete, developer-facing, and ≥ 100 characters',
-    ('Explains what the feature does, why it matters, and how developers use it. '
-     'Not a copy of the spec title.<br>'
-     '<br>'
-     'Note: The summary should use the present tense for these descriptions '
-     '(e.g., "we launch") instead of the future tense. Since these notes are '
-     'published at the time of shipment, they should reflect how the product works '
-     'at the point of release.')
+    (
+        'Explains what the feature does, why it matters, and how developers use it. '
+        'Not a copy of the spec title.<br>'
+        '<br>'
+        'Note: The summary should use the present tense for these descriptions '
+        '(e.g., "we launch") instead of the future tense. Since these notes are '
+        'published at the time of shipment, they should reflect how the product works '
+        'at the point of release.'
+    ),
 )
 
 PI_SUMMARY_POLICY = ProgressItem(
     'Policy in summary',
     'summary',
     'If enterprise policy applies, policy name is stated in the summary',
-    ('Required when the feature has an enterprise escape-hatch policy. '
-    'Name must match the policy registry.')
+    (
+        'Required when the feature has an enterprise escape-hatch policy. '
+        'Name must match the policy registry.'
+    ),
 )
 
 PI_CATEGORY = ProgressItem(
     'Category',
     'category',
     'Feature category is correctly set (e.g. CSS, JavaScript, Web APIs)',
-    ('Must match the nature of the feature. Wrong category routes the feature '
-     'into the wrong blog section.')
+    (
+        'Must match the nature of the feature. Wrong category routes the feature '
+        'into the wrong blog section.'
+    ),
 )
 
 PI_FEATURE_TYPE = ProgressItem(
     'Feature type',
     'feature_type',
     'Feature type matches the feature description',
-    'Drives which stages and gates apply. Cannot be changed after creation.'
+    'Drives which stages and gates apply. Cannot be changed after creation.',
 )
 
 PI_OWNER_EMAILS = ProgressItem(
     'Owner emails',
     'owner_emails',
     'At least one feature owner email is present and valid',
-    ('Non-empty, valid email format, not a departed owner. '
-     'Update if the owner has left.')
+    (
+        'Non-empty, valid email format, not a departed owner. '
+        'Update if the owner has left.'
+    ),
 )
-
 
 
 PI_INITIAL_PUBLIC_PROPOSAL = ProgressItem(
@@ -157,23 +166,27 @@ PI_WEB_FEATURE = ProgressItem(
     'Web feature',
     'web_feature',
     'Web Feature ID (WebDX / web-features ID) is set or confirmed N/A',
-    ('If a matching WebDX web-features ID exists (e.g. "fetch", "grid"), '
-     'it must be set. If no web-features entry exists yet, note this. '
-     'Enables Baseline status linking on webstatus.dev, MDN, and Can I Use.')
+    (
+        'If a matching WebDX web-features ID exists (e.g. "fetch", "grid"), '
+        'it must be set. If no web-features entry exists yet, note this. '
+        'Enables Baseline status linking on webstatus.dev, MDN, and Can I Use.'
+    ),
 )
 
 PI_TRACKING_BUG = ProgressItem(
     'Tracking bug URL',
     'bug_url',
     'Chromium tracking bug URL is present and resolves (HTTP 200)',
-    'bugs.chromium.org URL pattern. Must open and reflect current status.'
+    'bugs.chromium.org URL pattern. Must open and reflect current status.',
 )
 
 nPI_BLINK_COMPONENTS = ProgressItem(
     'Blink components',
     'blink_components',
     'Blink component is not a generic catch-all (e.g. not just "Blink")',
-    ('Drives reviewer notifications. Verify it maps to the correct owning team.')
+    (
+        'Drives reviewer notifications. Verify it maps to the correct owning team.'
+    ),
 )
 
 PI_SPEC_LINK = ProgressItem('Spec link', 'spec_link')

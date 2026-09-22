@@ -50,7 +50,8 @@ BAKE_APPROVAL_DEF_DICT = collections.OrderedDict(
 )
 
 PI_COLD_DOUGH = processes.ProgressItem(
-    'Cold dough', 'dough', 'Moist and plyable', 'No longer sticky')
+    'Cold dough', 'dough', 'Moist and plyable', 'No longer sticky'
+)
 PI_LOAF = processes.ProgressItem('A loaf', None)
 PI_DIRTY_PAN = processes.ProgressItem('A dirty pan', None)
 
@@ -106,10 +107,12 @@ class HelperFunctionsTest(testing_config.CustomTestCase):
                     'name': 'Make dough',
                     'description': 'Mix it and knead',
                     'progress_items': [
-                        {'name': 'Cold dough',
-                         'field': 'dough',
-                         'description': 'Moist and plyable',
-                         'criteria': 'No longer sticky'},
+                        {
+                            'name': 'Cold dough',
+                            'field': 'dough',
+                            'description': 'Moist and plyable',
+                            'criteria': 'No longer sticky',
+                        },
                     ],
                     'actions': [
                         {
@@ -128,10 +131,18 @@ class HelperFunctionsTest(testing_config.CustomTestCase):
                     'name': 'Bake it',
                     'description': 'Heat at 375 for 40 minutes',
                     'progress_items': [
-                        {'name': 'A loaf', 'field': None,
-                         'description': None, 'criteria': None},
-                        {'name': 'A dirty pan', 'field': None,
-                         'description': None, 'criteria': None},
+                        {
+                            'name': 'A loaf',
+                            'field': None,
+                            'description': None,
+                            'criteria': None,
+                        },
+                        {
+                            'name': 'A dirty pan',
+                            'field': None,
+                            'description': None,
+                            'criteria': None,
+                        },
                     ],
                     'actions': [],
                     'approvals': [BAKE_APPROVAL_DEF_DICT],
