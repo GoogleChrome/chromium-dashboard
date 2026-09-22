@@ -30,6 +30,7 @@ class Action:
     name: str
     url: str
     prerequisites: list[str]
+    gate_types: list[int]
 
 
 @dataclass
@@ -337,6 +338,7 @@ BLINK_PROCESS_STAGES = [
                     PI_MOTIVATION.name,
                     PI_EXPLAINER.name,
                 ],
+                [core_enums.GATE_API_PROTOTYPE],
             )
         ],
         [approval_defs.PrototypeApproval],
@@ -371,6 +373,7 @@ BLINK_PROCESS_STAGES = [
                     PI_EXPLAINER.name,
                     PI_SPEC_LINK.name,
                 ],
+                [],
             )
         ],
         [],
@@ -418,6 +421,7 @@ BLINK_PROCESS_STAGES = [
                     PI_SPEC_LINK.name,
                     PI_EST_TARGET_MILESTONE.name,
                 ],
+                [core_enums.GATE_API_ORIGIN_TRIAL],
             )
         ],
         [approval_defs.ExperimentApproval],
@@ -431,7 +435,10 @@ BLINK_PROCESS_STAGES = [
         [],
         [
             Action(
-                'Draft Intent to Extend Experiment email', INTENT_EMAIL_URL, []
+                'Draft Intent to Extend Experiment email',
+                INTENT_EMAIL_URL,
+                [],
+                [],
             )
         ],
         [approval_defs.ExtendExperimentApproval],
@@ -452,6 +459,23 @@ BLINK_PROCESS_STAGES = [
         ],
         [
             Action(
+                'Review data quality',
+                INTENT_EMAIL_URL,  # TODO(jrobbins) checklist URL
+                [
+                    PI_INITIAL_PUBLIC_PROPOSAL.name,
+                    PI_MOTIVATION.name,
+                    PI_EXPLAINER.name,
+                    PI_SPEC_LINK.name,
+                    PI_WEB_FEATURE.name,
+                    PI_TRACKING_BUG.name,
+                    PI_FINCH_FEATURE_OR_JUSTIFY.name,
+                    PI_UPDATED_VENDOR_SIGNALS.name,
+                    PI_TAG_ADDRESSED.name,
+                    PI_UPDATED_TARGET_MILESTONE.name,
+                ],
+                [core_enums.GATE_DQ_SHIP],
+            ),
+            Action(
                 'Draft Intent to Ship email',
                 INTENT_EMAIL_URL,
                 [
@@ -466,7 +490,8 @@ BLINK_PROCESS_STAGES = [
                     PI_TAG_ADDRESSED.name,
                     PI_UPDATED_TARGET_MILESTONE.name,
                 ],
-            )
+                [core_enums.GATE_API_SHIP],
+            ),
         ],
         [approval_defs.ShipApproval],
         core_enums.INTENT_IMPLEMENT_SHIP,
@@ -515,6 +540,7 @@ BLINK_FAST_TRACK_STAGES = [
                 'Draft Intent to Prototype email',
                 INTENT_EMAIL_URL,
                 [PI_SPEC_LINK.name],
+                [core_enums.GATE_API_PROTOTYPE],
             )
         ],
         [approval_defs.PrototypeApproval],
@@ -544,6 +570,7 @@ BLINK_FAST_TRACK_STAGES = [
                     PI_SPEC_LINK.name,
                     PI_EST_TARGET_MILESTONE.name,
                 ],
+                [],
             )
         ],
         [],
@@ -571,6 +598,7 @@ BLINK_FAST_TRACK_STAGES = [
                     PI_SPEC_LINK.name,
                     PI_EST_TARGET_MILESTONE.name,
                 ],
+                [core_enums.GATE_API_ORIGIN_TRIAL],
             )
         ],
         [approval_defs.ExperimentApproval],
@@ -584,7 +612,10 @@ BLINK_FAST_TRACK_STAGES = [
         [],
         [
             Action(
-                'Draft Intent to Extend Experiment email', INTENT_EMAIL_URL, []
+                'Draft Intent to Extend Experiment email',
+                INTENT_EMAIL_URL,
+                [],
+                [],
             )
         ],
         [approval_defs.ExtendExperimentApproval],
@@ -604,6 +635,18 @@ BLINK_FAST_TRACK_STAGES = [
         ],
         [
             Action(
+                'Review data quality',
+                INTENT_EMAIL_URL,  # TODO(jrobbins) checklist URL
+                [
+                    PI_TRACKING_BUG.name,
+                    PI_SPEC_LINK.name,
+                    PI_WEB_FEATURE.name,
+                    PI_FINCH_FEATURE_OR_JUSTIFY.name,
+                    PI_UPDATED_TARGET_MILESTONE.name,
+                ],
+                [core_enums.GATE_DQ_SHIP],
+            ),
+            Action(
                 'Draft Intent to Ship email',
                 INTENT_EMAIL_URL,
                 [
@@ -613,7 +656,8 @@ BLINK_FAST_TRACK_STAGES = [
                     PI_FINCH_FEATURE_OR_JUSTIFY.name,
                     PI_UPDATED_TARGET_MILESTONE.name,
                 ],
-            )
+                [core_enums.GATE_API_SHIP],
+            ),
         ],
         [approval_defs.ShipApproval],
         core_enums.INTENT_EXPERIMENT,
@@ -676,6 +720,7 @@ PSA_ONLY_STAGES = [
                     PI_SPEC_LINK.name,
                     PI_EST_TARGET_MILESTONE.name,
                 ],
+                [],
             )
         ],
         [],
@@ -701,6 +746,7 @@ PSA_ONLY_STAGES = [
                     PI_FINCH_FEATURE_OR_JUSTIFY.name,
                     PI_UPDATED_TARGET_MILESTONE.name,
                 ],
+                [],
             )
         ],
         [approval_defs.ShipApproval],
@@ -747,6 +793,16 @@ DEPRECATION_STAGES = [
         ],
         [
             Action(
+                'Review data quality',
+                INTENT_EMAIL_URL,  # TODO(jrobbins): checklist page URL
+                [
+                    PI_TRACKING_BUG.name,
+                    PI_MOTIVATION.name,
+                    PI_TRACKING_BUG.name,
+                ],
+                [core_enums.GATE_DQ_PLAN],
+            ),
+            Action(
                 'Draft Intent to Deprecate and Remove email',
                 INTENT_EMAIL_URL,
                 [
@@ -754,7 +810,8 @@ DEPRECATION_STAGES = [
                     PI_MOTIVATION.name,
                     PI_TRACKING_BUG.name,
                 ],
-            )
+                [core_enums.GATE_API_PLAN],
+            ),
         ],
         [approval_defs.PrototypeApproval],
         core_enums.INTENT_NONE,
@@ -781,6 +838,7 @@ DEPRECATION_STAGES = [
                     PI_VENDOR_SIGNALS.name,
                     PI_EST_TARGET_MILESTONE.name,
                 ],
+                [],
             )
         ],
         [],
@@ -808,6 +866,7 @@ DEPRECATION_STAGES = [
                     PI_VENDOR_SIGNALS.name,
                     PI_EST_TARGET_MILESTONE.name,
                 ],
+                [core_enums.GATE_API_ORIGIN_TRIAL],
             )
         ],
         [approval_defs.ExperimentApproval],
@@ -823,6 +882,7 @@ DEPRECATION_STAGES = [
             Action(
                 'Draft Intent to Extend Deprecation Trial email',
                 INTENT_EMAIL_URL,
+                [],
                 [],
             )
         ],
@@ -842,17 +902,8 @@ DEPRECATION_STAGES = [
             PI_I2S_LGTMS,
         ],
         [
-            Action(
-                'Draft Intent to Ship email',
-                INTENT_EMAIL_URL,
-                [
-                    PI_TRACKING_BUG.name,
-                    PI_MOTIVATION.name,
-                    PI_FINCH_FEATURE_OR_JUSTIFY.name,
-                    PI_VENDOR_SIGNALS.name,
-                    PI_UPDATED_TARGET_MILESTONE.name,
-                ],
-            )
+            # There is no I2S for deprecations because it all happens during planning.
+            # And thre is no API Owner gate on this stage.
         ],
         [approval_defs.ShipApproval],
         core_enums.INTENT_EXPERIMENT,
@@ -875,6 +926,7 @@ DEPRECATION_STAGES = [
                     PI_VENDOR_SIGNALS.name,
                     PI_UPDATED_TARGET_MILESTONE.name,
                 ],
+                [],
             ),
         ],
         [],

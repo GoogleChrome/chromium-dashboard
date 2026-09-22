@@ -2062,38 +2062,44 @@ components:
             name: name
             description: description
           incoming_stage: 5
-          stage_type: 2
+          stage_type: 7
           approvals:
-          - gate_type: 0
+          - gate_type: 6
             name: name
-            slo_initial_response: 6
+            slo_initial_response: 1
             description: description
             rule: rule
             approvers: approvers
             escalation_email: escalation_email
             team_name: team_name
-            slo_resolve: 1
-          - gate_type: 0
+            slo_resolve: 5
+          - gate_type: 6
             name: name
-            slo_initial_response: 6
+            slo_initial_response: 1
             description: description
             rule: rule
             approvers: approvers
             escalation_email: escalation_email
             team_name: team_name
-            slo_resolve: 1
+            slo_resolve: 5
           name: name
-          outgoing_stage: 5
+          outgoing_stage: 2
           description: description
           actions:
           - prerequisites:
             - prerequisites
             - prerequisites
+            gate_types:
+            - 0
+            - 0
             name: name
             url: url
           - prerequisites:
             - prerequisites
             - prerequisites
+            gate_types:
+            - 0
+            - 0
             name: name
             url: url
         - progress_items:
@@ -2106,38 +2112,44 @@ components:
             name: name
             description: description
           incoming_stage: 5
-          stage_type: 2
+          stage_type: 7
           approvals:
-          - gate_type: 0
+          - gate_type: 6
             name: name
-            slo_initial_response: 6
+            slo_initial_response: 1
             description: description
             rule: rule
             approvers: approvers
             escalation_email: escalation_email
             team_name: team_name
-            slo_resolve: 1
-          - gate_type: 0
+            slo_resolve: 5
+          - gate_type: 6
             name: name
-            slo_initial_response: 6
+            slo_initial_response: 1
             description: description
             rule: rule
             approvers: approvers
             escalation_email: escalation_email
             team_name: team_name
-            slo_resolve: 1
+            slo_resolve: 5
           name: name
-          outgoing_stage: 5
+          outgoing_stage: 2
           description: description
           actions:
           - prerequisites:
             - prerequisites
             - prerequisites
+            gate_types:
+            - 0
+            - 0
             name: name
             url: url
           - prerequisites:
             - prerequisites
             - prerequisites
+            gate_types:
+            - 0
+            - 0
             name: name
             url: url
         description: description
@@ -2171,38 +2183,44 @@ components:
           name: name
           description: description
         incoming_stage: 5
-        stage_type: 2
+        stage_type: 7
         approvals:
-        - gate_type: 0
+        - gate_type: 6
           name: name
-          slo_initial_response: 6
+          slo_initial_response: 1
           description: description
           rule: rule
           approvers: approvers
           escalation_email: escalation_email
           team_name: team_name
-          slo_resolve: 1
-        - gate_type: 0
+          slo_resolve: 5
+        - gate_type: 6
           name: name
-          slo_initial_response: 6
+          slo_initial_response: 1
           description: description
           rule: rule
           approvers: approvers
           escalation_email: escalation_email
           team_name: team_name
-          slo_resolve: 1
+          slo_resolve: 5
         name: name
-        outgoing_stage: 5
+        outgoing_stage: 2
         description: description
         actions:
         - prerequisites:
           - prerequisites
           - prerequisites
+          gate_types:
+          - 0
+          - 0
           name: name
           url: url
         - prerequisites:
           - prerequisites
           - prerequisites
+          gate_types:
+          - 0
+          - 0
           name: name
           url: url
       properties:
@@ -2265,6 +2283,9 @@ components:
         prerequisites:
         - prerequisites
         - prerequisites
+        gate_types:
+        - 0
+        - 0
         name: name
         url: url
       properties:
@@ -2279,19 +2300,24 @@ components:
             type: string
           title: prerequisites
           type: array
+        gate_types:
+          items:
+            type: integer
+          title: gate_types
+          type: array
       title: Action
       type: object
     GateInfo:
       example:
-        gate_type: 0
+        gate_type: 6
         name: name
-        slo_initial_response: 6
+        slo_initial_response: 1
         description: description
         rule: rule
         approvers: approvers
         escalation_email: escalation_email
         team_name: team_name
-        slo_resolve: 1
+        slo_resolve: 5
       properties:
         name:
           title: name
