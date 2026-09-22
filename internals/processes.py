@@ -281,7 +281,7 @@ PI_ENTERPRISE_POLICIES = ProgressItem(
 )  # noqa: E501
 
 
-PI_GROUP_METADATA = [
+PI_GROUP_METADATA: list[ProgressItem] = [
     PI_FEATURE_NAME,
     PI_SUMMARY,
     PI_CATEGORY,
@@ -318,7 +318,8 @@ BLINK_PROCESS_STAGES = [
         'Start incubating',
         'Create an initial WebStatus feature entry and kick off standards '
         'incubation (WICG) to share ideas.',
-        [
+        PI_GROUP_METADATA
+        + [
             PI_INITIAL_PUBLIC_PROPOSAL,
             PI_MOTIVATION,
             PI_EXPLAINER,
@@ -474,7 +475,7 @@ BLINK_PROCESS_STAGES = [
             Action(
                 'Review data quality',
                 INTENT_EMAIL_URL,  # TODO(jrobbins) checklist URL
-                PI_GROUP_METADATA + [],  # TODO(jrobbins): other PI groups.
+                [pi.name for pi in PI_GROUP_METADATA],
                 [core_enums.GATE_DQ_SHIP],
             ),
             Action(
@@ -531,7 +532,8 @@ BLINK_FAST_TRACK_STAGES = [
         'Start prototyping',
         'Write up use cases and scenarios, start coding as a '
         'runtime enabled feature.',
-        [
+        PI_GROUP_METADATA
+        + [
             PI_SPEC_LINK,
             PI_CODE_IN_CHROMIUM,
             PI_WEB_FEATURE,
@@ -639,7 +641,7 @@ BLINK_FAST_TRACK_STAGES = [
             Action(
                 'Review data quality',
                 INTENT_EMAIL_URL,  # TODO(jrobbins) checklist URL
-                PI_GROUP_METADATA + [],  # TODO(jrobbins): other PI groups.
+                [pi.name for pi in PI_GROUP_METADATA],
                 [core_enums.GATE_DQ_SHIP],
             ),
             Action(
@@ -690,7 +692,8 @@ PSA_ONLY_STAGES = [
     ProcessStage(
         'Implement',
         'Check code into Chromium under a flag.',
-        [PI_SPEC_LINK, PI_CODE_IN_CHROMIUM, PI_WEB_FEATURE, PI_TRACKING_BUG],
+        PI_GROUP_METADATA
+        + [PI_SPEC_LINK, PI_CODE_IN_CHROMIUM, PI_WEB_FEATURE, PI_TRACKING_BUG],
         [],
         [],
         core_enums.INTENT_NONE,
@@ -736,7 +739,7 @@ PSA_ONLY_STAGES = [
             Action(
                 'Review data quality',
                 INTENT_EMAIL_URL,  # TODO(jrobbins) checklist URL
-                PI_GROUP_METADATA + [],  # TODO(jrobbins): other PI groups.
+                [pi.name for pi in PI_GROUP_METADATA],
                 [core_enums.GATE_DQ_SHIP],
             ),
             Action(
@@ -788,7 +791,8 @@ DEPRECATION_STAGES = [
         'Create an initial WebStatus feature entry to deprecate '
         'an existing feature, including motivation and impact. '
         'Then, get approval for your deprecation plans.',
-        [
+        PI_GROUP_METADATA
+        + [
             PI_EXISTING_FEATURE,
             PI_MOTIVATION,
             PI_TRACKING_BUG,
@@ -797,7 +801,7 @@ DEPRECATION_STAGES = [
             Action(
                 'Review data quality',
                 INTENT_EMAIL_URL,  # TODO(jrobbins): checklist page URL
-                PI_GROUP_METADATA + [],  # TODO(jrobbins): other PI groups.
+                [pi.name for pi in PI_GROUP_METADATA],
                 [core_enums.GATE_DQ_PLAN],
             ),
             Action(
