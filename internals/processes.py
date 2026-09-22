@@ -474,18 +474,7 @@ BLINK_PROCESS_STAGES = [
             Action(
                 'Review data quality',
                 INTENT_EMAIL_URL,  # TODO(jrobbins) checklist URL
-                [
-                    PI_INITIAL_PUBLIC_PROPOSAL.name,
-                    PI_MOTIVATION.name,
-                    PI_EXPLAINER.name,
-                    PI_SPEC_LINK.name,
-                    PI_WEB_FEATURE.name,
-                    PI_TRACKING_BUG.name,
-                    PI_FINCH_FEATURE_OR_JUSTIFY.name,
-                    PI_UPDATED_VENDOR_SIGNALS.name,
-                    PI_TAG_ADDRESSED.name,
-                    PI_UPDATED_TARGET_MILESTONE.name,
-                ],
+                PI_GROUP_METADATA + [],  # TODO(jrobbins): other PI groups.
                 [core_enums.GATE_DQ_SHIP],
             ),
             Action(
@@ -650,13 +639,7 @@ BLINK_FAST_TRACK_STAGES = [
             Action(
                 'Review data quality',
                 INTENT_EMAIL_URL,  # TODO(jrobbins) checklist URL
-                [
-                    PI_TRACKING_BUG.name,
-                    PI_SPEC_LINK.name,
-                    PI_WEB_FEATURE.name,
-                    PI_FINCH_FEATURE_OR_JUSTIFY.name,
-                    PI_UPDATED_TARGET_MILESTONE.name,
-                ],
+                PI_GROUP_METADATA + [],  # TODO(jrobbins): other PI groups.
                 [core_enums.GATE_DQ_SHIP],
             ),
             Action(
@@ -751,6 +734,12 @@ PSA_ONLY_STAGES = [
         ],
         [
             Action(
+                'Review data quality',
+                INTENT_EMAIL_URL,  # TODO(jrobbins) checklist URL
+                PI_GROUP_METADATA + [],  # TODO(jrobbins): other PI groups.
+                [core_enums.GATE_DQ_SHIP],
+            ),
+            Action(
                 'Draft Web-Facing Change PSA email',
                 INTENT_EMAIL_URL_NO_APPROVALS,  # noqa: E501
                 [
@@ -760,7 +749,7 @@ PSA_ONLY_STAGES = [
                     PI_UPDATED_TARGET_MILESTONE.name,
                 ],
                 [],
-            )
+            ),
         ],
         [approval_defs.ShipApproval],
         core_enums.INTENT_EXPERIMENT,
@@ -808,11 +797,7 @@ DEPRECATION_STAGES = [
             Action(
                 'Review data quality',
                 INTENT_EMAIL_URL,  # TODO(jrobbins): checklist page URL
-                [
-                    PI_TRACKING_BUG.name,
-                    PI_MOTIVATION.name,
-                    PI_TRACKING_BUG.name,
-                ],
+                PI_GROUP_METADATA + [],  # TODO(jrobbins): other PI groups.
                 [core_enums.GATE_DQ_PLAN],
             ),
             Action(
