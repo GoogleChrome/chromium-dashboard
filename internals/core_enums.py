@@ -408,6 +408,9 @@ GATE_TESTING_SHIP = 74
 GATE_TESTING_PLAN = 75
 GATE_ADOPTION_SHIP = 84
 GATE_ADOPTION_PLAN = 85
+GATE_DQ_SHIP = 94
+GATE_DQ_PLAN = 95
+
 
 # List of (stage type, gate type) for each feature type.
 STAGES_AND_GATES_BY_FEATURE_TYPE: dict[int, list[tuple[int, list[int]]]] = {

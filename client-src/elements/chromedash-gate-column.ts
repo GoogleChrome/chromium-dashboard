@@ -582,13 +582,11 @@ export class ChromedashGateColumn extends LitElement {
     }
 
     const processStage = findProcessStage(this.stage, this.process);
-    if (
-      processStage?.actions?.length > 0 &&
-      this.gate.team_name == 'API Owners'
-    ) {
-      return processStage.actions.map(act =>
-        this.renderAction(processStage, act)
-      );
+    const relevantActions = (processStage?.actions || []).filter(act =>
+      act.gate_types.includes(this.gate.gate_type)
+    );
+    if (relevantActions.length > 0) {
+      return relevantActions.map(act => this.renderAction(processStage, act));
     }
 
     return html`
