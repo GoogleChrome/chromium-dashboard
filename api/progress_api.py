@@ -17,6 +17,8 @@
 
 import datetime
 
+from chromestatus_openapi.models import SuccessMessage
+
 from framework import basehandlers
 from internals import progress, stage_helpers
 
@@ -30,7 +32,7 @@ class ProgressAPI(basehandlers.APIHandler):
         feature_id = fe.key.integer_id()
         stages = stage_helpers.get_feature_stages(feature_id)
         now_iso = datetime.datetime.now().isoformat()
-        progress_so_far: dict[str, dict[str, int | str]] = {}
+        progress_so_far: dict[str, dict[str, int | str | None]] = {}
         for progress_item, detector in list(
             progress.PROGRESS_DETECTORS.items()
         ):
@@ -54,3 +56,38 @@ class ProgressAPI(basehandlers.APIHandler):
             }
 
         return progress_so_far
+
+    def do_post(self, **kwargs):
+        """Set a user's vote value for a progress item on the specified feature."""
+        user = self.get_current_user()
+        fe = self.get_specified_feature(**kwargs)
+        feature_id = fe.key.integer_id()
+        progress_item_name = self.get_param('progress_item_name')
+        new_state = self.get_int_param(
+            'state', validator=progress.ProgressVote.is_valid_state
+        )
+        feedback = self.get_param('feedback', required=False)
+
+        self.require_permissions(user, fe, progress_item_name, new_state)
+
+        progress.set_progress_vote(
+            feature_id,
+            progress_item_name,
+            new_state,
+            user.email(),
+            feedback=feedback,
+        )
+        return SuccessMessage(message='Done').to_dict()
+
+    def require_permissions(
+        self,
+        user=None,
+        feature=None,
+        progress_item_name=None,
+        new_state=None,
+    ) -> None:
+        """Abort the request if the user lacks permission to set this vote."""
+        if not user:
+            self.abort(403, 'User lacks permission to vote')
+        # TODO(jrobbins): Check permissions and call self.abort(403) if denied.
+        return

@@ -155,3 +155,61 @@ class ProgressAPITest(testing_config.CustomTestCase):
                 'set_by': 'reviewer@example.com',
             },
         )
+
+    def test_post___create_and_overwrite_vote(self):
+        """do_post stores a ProgressVote and overwrites any previous vote for the same (feature_id, progress_item_name)."""
+        testing_config.sign_in('reviewer@example.com', 111)
+        with test_app.test_request_context(
+            self.request_path,
+            json={
+                'progress_item_name': 'Spec link',
+                'state': progress.ProgressVote.NEEDS_WORK,
+                'feedback': 'Needs anchor links',
+            },
+        ):
+            res = self.handler.do_post(feature_id=self.feature_id)
+
+        self.assertEqual(res, {'message': 'Done'})
+        votes = progress.ProgressVote.query(
+            progress.ProgressVote.feature_id == self.feature_id
+        ).fetch()
+        self.assertEqual(len(votes), 1)
+        self.assertEqual(votes[0].progress_item_name, 'Spec link')
+        self.assertEqual(votes[0].state, progress.ProgressVote.NEEDS_WORK)
+        self.assertEqual(votes[0].feedback, 'Needs anchor links')
+        self.assertEqual(votes[0].set_by, 'reviewer@example.com')
+
+        # Second post for the same (feature_id, progress_item_name) overwrites the existing entity.
+        with test_app.test_request_context(
+            self.request_path,
+            json={
+                'progress_item_name': 'Spec link',
+                'state': progress.ProgressVote.VERIFIED,
+            },
+        ):
+            res = self.handler.do_post(feature_id=self.feature_id)
+
+        self.assertEqual(res, {'message': 'Done'})
+        votes = progress.ProgressVote.query(
+            progress.ProgressVote.feature_id == self.feature_id
+        ).fetch()
+        self.assertEqual(len(votes), 1)
+        self.assertEqual(votes[0].progress_item_name, 'Spec link')
+        self.assertEqual(votes[0].state, progress.ProgressVote.VERIFIED)
+        self.assertIsNone(votes[0].feedback)
+        testing_config.sign_out()
+
+    def test_post___anon_forbidden(self):
+        """Anonymous users are rejected with 403."""
+        import werkzeug.exceptions
+
+        testing_config.sign_out()
+        with test_app.test_request_context(
+            self.request_path,
+            json={
+                'progress_item_name': 'Spec link',
+                'state': progress.ProgressVote.VERIFIED,
+            },
+        ):
+            with self.assertRaises(werkzeug.exceptions.Forbidden):
+                self.handler.do_post(feature_id=self.feature_id)

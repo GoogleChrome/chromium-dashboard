@@ -849,6 +849,40 @@ paths:
                 additionalProperties: true
         '404':
           description: Feature not found based on given ID.
+    post:
+      summary: Set a user's vote value for a progress item on the specified feature.
+      operationId: setProgressVote
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostProgressVoteRequest'
+      responses:
+        '200':
+          description: Progress vote set successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
+        '400':
+          description: Invalid request parameters.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '403':
+          description: User does not have permission.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '404':
+          description: Feature not found based on given ID.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
   /features/{feature_id}/{stage_id}/{gate_id}/intent:
     parameters:
       - name: feature_id
@@ -1423,6 +1457,21 @@ components:
           type: integer
           description: The vote value to set. E.g., 2 to request a review, 5 to approve.
       required:
+        - state
+    PostProgressVoteRequest:
+      type: object
+      properties:
+        progress_item_name:
+          type: string
+          description: The name of the progress item being reviewed.
+        state:
+          type: integer
+          description: The vote value to set (1=NEEDS_REVIEW, 2=VERIFIED, 3=NA, 4=NEEDS_WORK).
+        feedback:
+          type: string
+          description: Optional feedback from the reviewer.
+      required:
+        - progress_item_name
         - state
     Gate:
       type: object

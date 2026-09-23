@@ -15,6 +15,8 @@
 
 """Defines models and detectors for evaluating feature progress items."""
 
+import datetime
+
 from google.cloud import ndb  # type: ignore
 
 from internals import core_enums
@@ -44,6 +46,51 @@ class ProgressVote(ndb.Model):
     feedback = ndb.StringProperty()
     set_on = ndb.DateTimeProperty(required=True)
     set_by = ndb.StringProperty(required=True)
+
+    @classmethod
+    def is_valid_state(cls, new_state: int) -> bool:
+        """Return true if new_state is valid."""
+        return new_state in cls.VOTE_VALUES
+
+
+def set_progress_vote(
+    feature_id: int,
+    progress_item_name: str,
+    state: int,
+    set_by: str,
+    feedback: str | None = None,
+) -> ProgressVote:
+    """Store a ProgressVote in ndb, overwriting any existing vote for (feature_id, progress_item_name)."""
+    if not ProgressVote.is_valid_state(state):
+        raise ValueError('Invalid progress vote state')
+
+    now = datetime.datetime.now()
+    existing_votes: list[ProgressVote] = ProgressVote.query(
+        ProgressVote.feature_id == feature_id,
+        ProgressVote.progress_item_name == progress_item_name,
+    ).fetch()
+
+    if existing_votes:
+        vote = existing_votes[0]
+        vote.state = state
+        vote.feedback = feedback
+        vote.set_on = now
+        vote.set_by = set_by
+        vote.put()
+        for extra_vote in existing_votes[1:]:
+            extra_vote.key.delete()
+        return vote
+
+    vote = ProgressVote(
+        feature_id=feature_id,
+        progress_item_name=progress_item_name,
+        state=state,
+        feedback=feedback,
+        set_on=now,
+        set_by=set_by,
+    )
+    vote.put()
+    return vote
 
 
 def review_is_done(status):

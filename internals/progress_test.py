@@ -69,6 +69,36 @@ class ProgressVoteTest(testing_config.CustomTestCase):
                 set_by='reviewer@example.com',
             )
 
+    def test_set_progress_vote_creates_and_overwrites(self):
+        """set_progress_vote creates a ProgressVote and overwrites matching (feature_id, progress_item_name)."""
+        vote_1 = progress.set_progress_vote(
+            feature_id=12345,
+            progress_item_name='Explainer',
+            state=progress.ProgressVote.NEEDS_WORK,
+            set_by='reviewer1@example.com',
+            feedback='Needs more detail',
+        )
+        all_votes = progress.ProgressVote.query().fetch()
+        self.assertEqual(len(all_votes), 1)
+        self.assertEqual(all_votes[0].state, progress.ProgressVote.NEEDS_WORK)
+        self.assertEqual(all_votes[0].feedback, 'Needs more detail')
+        self.assertEqual(all_votes[0].set_by, 'reviewer1@example.com')
+
+        # Overwrite the same (feature_id, progress_item_name)
+        vote_2 = progress.set_progress_vote(
+            feature_id=12345,
+            progress_item_name='Explainer',
+            state=progress.ProgressVote.VERIFIED,
+            set_by='reviewer2@example.com',
+            feedback='Looks great now',
+        )
+        all_votes = progress.ProgressVote.query().fetch()
+        self.assertEqual(len(all_votes), 1)
+        self.assertEqual(vote_1.key, vote_2.key)
+        self.assertEqual(all_votes[0].state, progress.ProgressVote.VERIFIED)
+        self.assertEqual(all_votes[0].feedback, 'Looks great now')
+        self.assertEqual(all_votes[0].set_by, 'reviewer2@example.com')
+
 
 class ProgressDetectorsTest(testing_config.CustomTestCase):
     """Tests for ProgressDetectors."""
