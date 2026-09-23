@@ -1,6 +1,10 @@
 {
   "page_title": "Notas de versão do Chrome {milestone}",
   "preview_badge": "Prévia",
+  "scheduled_stable_release": "Lançamento estável programado: {date}",
+  "currently_on_beta": "(Atualmente no canal Beta)",
+  "currently_on_dev": "(Atualmente no canal Dev, chega ao Beta em {date})",
+  "currently_on_dev_and_beta": "(Atualmente nos canais Dev e Beta)",
   "jump_placeholder": "Ir para a versão do Chrome",
   "jump_aria": "Ir para a versão do Chrome",
   "prev_milestone_aria": "Versão anterior: Chrome {milestone}",

@@ -1,6 +1,10 @@
 {
   "page_title": "Chrome {milestone} Versionshinweise",
   "preview_badge": "Vorschau",
+  "scheduled_stable_release": "Geplante stabile Veröffentlichung: {date}",
+  "currently_on_beta": "(Derzeit im Beta-Kanal)",
+  "currently_on_dev": "(Derzeit im Dev-Kanal, erreicht den Beta-Kanal am {date})",
+  "currently_on_dev_and_beta": "(Derzeit im Dev- und Beta-Kanal)",
   "jump_placeholder": "Zu Chrome-Meilenstein springen",
   "jump_aria": "Zu Chrome-Meilenstein springen",
   "prev_milestone_aria": "Vorheriger Meilenstein: Chrome {milestone}",

@@ -1,6 +1,10 @@
 {
   "page_title": "Chrome {milestone} リリースノート",
   "preview_badge": "プレビュー",
+  "scheduled_stable_release": "安定版のリリース予定日: {date}",
+  "currently_on_beta": "(現在 Beta チャンネル)",
+  "currently_on_dev": "(現在 Dev チャンネル、{date}に Beta に到達)",
+  "currently_on_dev_and_beta": "(現在 Dev および Beta チャンネル)",
   "jump_placeholder": "Chrome のマイルストーンにジャンプ",
   "jump_aria": "Chrome のマイルストーンにジャンプ",
   "prev_milestone_aria": "前のマイルストーン: Chrome {milestone}",

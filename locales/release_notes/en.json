@@ -1,6 +1,10 @@
 {
   "page_title": "Chrome {milestone} Release Notes",
   "preview_badge": "Preview",
+  "scheduled_stable_release": "Scheduled Stable Release {date}",
+  "currently_on_beta": "(Currently on Beta channel)",
+  "currently_on_dev": "(Currently on Dev channel, reaches Beta on {date})",
+  "currently_on_dev_and_beta": "(Currently on Dev and Beta channels)",
   "jump_placeholder": "Jump to Chrome milestone",
   "jump_aria": "Jump to Chrome milestone",
   "prev_milestone_aria": "Previous milestone: Chrome {milestone}",
