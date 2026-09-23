@@ -636,6 +636,13 @@ export const GATE_APPROVED_REVIEW_STATES: number[] = [
   VOTE_NA_VERIFIED,
 ];
 
+export const PROGRESS_VOTE_STATE = {
+  NEEDS_REVIEW: 1,
+  VERIFIED: 2,
+  NA: 3,
+  NEEDS_WORK: 4,
+};
+
 export const GATE_TEAM_ORDER = [
   'Privacy',
   'WP Security',
