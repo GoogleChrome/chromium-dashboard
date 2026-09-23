@@ -75,6 +75,7 @@ chromestatus_openapi/models/patch_gate_request.py
 chromestatus_openapi/models/pending_suggestions_count_response.py
 chromestatus_openapi/models/permissions_response.py
 chromestatus_openapi/models/post_intent_request.py
+chromestatus_openapi/models/post_progress_vote_request.py
 chromestatus_openapi/models/post_settings_request.py
 chromestatus_openapi/models/post_stars_request.py
 chromestatus_openapi/models/post_vote_request.py
