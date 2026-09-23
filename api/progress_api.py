@@ -15,25 +15,42 @@
 
 """API endpoint for retrieving the progress of feature implementation processes."""
 
+import datetime
+
 from framework import basehandlers
 from internals import progress, stage_helpers
 
 
 class ProgressAPI(basehandlers.APIHandler):
-    """Progress is either a boolean value when the checkmark should be shown,
-    or a string that starts with "http:" or "https:" that contain details about
-    the progress of a feature so far
-    """  # noqa: D205, D415
+    """Progress returns a dictionary mapping progress item names to vote status objects."""
 
     def do_get(self, **kwargs):
         """Return the progress of the feature."""
         fe = self.get_specified_feature(**kwargs)
-        stages = stage_helpers.get_feature_stages(fe.key.integer_id())
-        progress_so_far = {}
+        feature_id = fe.key.integer_id()
+        stages = stage_helpers.get_feature_stages(feature_id)
+        now_iso = datetime.datetime.now().isoformat()
+        progress_so_far: dict[str, dict[str, int | str]] = {}
         for progress_item, detector in list(
             progress.PROGRESS_DETECTORS.items()
         ):
             detected = detector(fe, stages)
             if detected:
-                progress_so_far[progress_item] = str(detected)
+                progress_so_far[progress_item] = {
+                    'state': progress.ProgressVote.VERIFIED,
+                    'set_on': now_iso,
+                    'set_by': 'ChromeStatus',
+                }
+
+        votes: list[progress.ProgressVote] = progress.ProgressVote.query(
+            progress.ProgressVote.feature_id == feature_id
+        ).fetch()
+        for vote in votes:
+            progress_so_far[vote.progress_item_name] = {
+                'state': vote.state,
+                'feedback': vote.feedback,
+                'set_on': vote.set_on.isoformat(),
+                'set_by': vote.set_by,
+            }
+
         return progress_so_far

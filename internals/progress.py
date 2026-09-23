@@ -13,10 +13,37 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Defines detectors for evaluating feature progress items."""
+"""Defines models and detectors for evaluating feature progress items."""
+
+from google.cloud import ndb  # type: ignore
 
 from internals import core_enums
 from internals.metrics_models import WebDXFeatureObserver
+
+
+class ProgressVote(ndb.Model):
+    """One reviewer's vote on what the state of a progress item should be."""
+
+    NEEDS_REVIEW = 1
+    VERIFIED = 2
+    NA = 3
+    NEEDS_WORK = 4
+    VOTE_VALUES = {
+        NEEDS_REVIEW: 'needs_review',
+        VERIFIED: 'verified',
+        NA: 'na',
+        NEEDS_WORK: 'needs_work',
+    }
+
+    feature_id = ndb.IntegerProperty(required=True)
+    progress_item_name = ndb.StringProperty(required=True)
+    state = ndb.IntegerProperty(
+        required=True,
+        choices=[NEEDS_REVIEW, VERIFIED, NA, NEEDS_WORK],
+    )
+    feedback = ndb.StringProperty()
+    set_on = ndb.DateTimeProperty(required=True)
+    set_by = ndb.StringProperty(required=True)
 
 
 def review_is_done(status):

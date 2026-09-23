@@ -14,6 +14,10 @@
 
 """Tests for the progress module, verifying progress detectors and review completion logic."""
 
+import datetime
+
+from google.cloud import ndb  # type: ignore
+
 import testing_config  # Must be imported before the module under test.
 from internals import (
     core_enums,
@@ -22,6 +26,48 @@ from internals import (
     stage_helpers,
 )
 from internals.metrics_models import WebDXFeatureObserver
+
+
+class ProgressVoteTest(testing_config.CustomTestCase):
+    """Tests for ProgressVote NDB model."""
+
+    def tearDown(self):
+        """Clean up the test environment."""
+        for entity in progress.ProgressVote.query().fetch():
+            entity.key.delete()
+
+    def test_create_progress_vote(self):
+        """We can create and store a valid ProgressVote."""
+        now = datetime.datetime(2026, 9, 23, 0, 0, 0)
+        vote = progress.ProgressVote(
+            feature_id=12345,
+            progress_item_name='Explainer',
+            state=progress.ProgressVote.VERIFIED,
+            feedback='Looks good',
+            set_on=now,
+            set_by='reviewer@example.com',
+        )
+        vote.put()
+
+        fetched = vote.key.get()
+        self.assertEqual(fetched.feature_id, 12345)
+        self.assertEqual(fetched.progress_item_name, 'Explainer')
+        self.assertEqual(fetched.state, progress.ProgressVote.VERIFIED)
+        self.assertEqual(fetched.feedback, 'Looks good')
+        self.assertEqual(fetched.set_on, now)
+        self.assertEqual(fetched.set_by, 'reviewer@example.com')
+
+    def test_progress_vote_invalid_state(self):
+        """ProgressVote rejects invalid state values."""
+        with self.assertRaises(ndb.exceptions.BadValueError):
+            progress.ProgressVote(
+                feature_id=12345,
+                progress_item_name='Explainer',
+                state=999,
+                feedback='Bad state',
+                set_on=datetime.datetime(2026, 9, 23, 0, 0, 0),
+                set_by='reviewer@example.com',
+            )
 
 
 class ProgressDetectorsTest(testing_config.CustomTestCase):

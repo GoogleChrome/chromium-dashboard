@@ -15,13 +15,18 @@
 
 """Tests for the progress_api module, verifying the retrieval of feature progress."""
 
+import datetime
+from unittest import mock
+
 import flask
 
 import testing_config  # Must be imported before the module under test.
 from api import progress_api
-from internals import core_enums, core_models
+from internals import core_enums, core_models, progress
 
 test_app = flask.Flask(__name__)
+
+FAKE_NOW = datetime.datetime(2026, 9, 23, 12, 0, 0)
 
 
 class ProgressAPITest(testing_config.CustomTestCase):
@@ -70,25 +75,83 @@ class ProgressAPITest(testing_config.CustomTestCase):
     def tearDown(self):
         """Clean up the test environment."""
         self.feature_1.key.delete()
+        for stage in self.stages:
+            stage.key.delete()
+        for vote in progress.ProgressVote.query().fetch():
+            vote.key.delete()
 
-    def test_get___feature_progress(self):
+    @mock.patch('api.progress_api.datetime')
+    def test_get___feature_progress(self, mock_datetime):
         """We can get progress of a feature."""
+        mock_datetime.datetime.now.return_value = FAKE_NOW
+        expected_detected_vote = {
+            'state': progress.ProgressVote.VERIFIED,
+            'set_on': FAKE_NOW.isoformat(),
+            'set_by': 'ChromeStatus',
+        }
+
         with test_app.test_request_context(self.request_path):
             actual = self.handler.do_get(feature_id=self.feature_id)
 
         self.assertEqual(
             {
-                'Code in Chromium': 'True',
-                'Draft API spec': 'fake spec link',
-                'Estimated target milestone': 'True',
-                'Final target milestone': 'True',
-                'Intent to Prototype email': 'https://example.com/prototype',
-                'Intent to Experiment email': 'https://example.com/ot',
-                'Ready for Developer Testing email': 'https://example.com/ready_for_trial',
-                'Intent to Ship email': 'https://example.com/ship',
-                'Spec link': 'fake spec link',
-                'Updated target milestone': 'True',
-                'Web developer signals': 'True',
+                'Code in Chromium': expected_detected_vote,
+                'Draft API spec': expected_detected_vote,
+                'Estimated target milestone': expected_detected_vote,
+                'Final target milestone': expected_detected_vote,
+                'Intent to Prototype email': expected_detected_vote,
+                'Intent to Experiment email': expected_detected_vote,
+                'Ready for Developer Testing email': expected_detected_vote,
+                'Intent to Ship email': expected_detected_vote,
+                'Spec link': expected_detected_vote,
+                'Updated target milestone': expected_detected_vote,
+                'Web developer signals': expected_detected_vote,
             },
             actual,
+        )
+
+    @mock.patch('api.progress_api.datetime')
+    def test_get___progress_votes_overwrite_detected(self, mock_datetime):
+        """Stored ProgressVote entities overwrite detected progress items."""
+        mock_datetime.datetime.now.return_value = FAKE_NOW
+        vote_time = datetime.datetime(2026, 9, 23, 15, 30, 0)
+        vote_1 = progress.ProgressVote(
+            feature_id=self.feature_id,
+            progress_item_name='Spec link',
+            state=progress.ProgressVote.NEEDS_WORK,
+            feedback='Spec link is broken',
+            set_on=vote_time,
+            set_by='reviewer@example.com',
+        )
+        vote_1.put()
+        vote_2 = progress.ProgressVote(
+            feature_id=self.feature_id,
+            progress_item_name='Explainer',
+            state=progress.ProgressVote.VERIFIED,
+            feedback='Explainer verified manually',
+            set_on=vote_time,
+            set_by='reviewer@example.com',
+        )
+        vote_2.put()
+
+        with test_app.test_request_context(self.request_path):
+            actual = self.handler.do_get(feature_id=self.feature_id)
+
+        self.assertEqual(
+            actual['Spec link'],
+            {
+                'state': progress.ProgressVote.NEEDS_WORK,
+                'feedback': 'Spec link is broken',
+                'set_on': vote_time.isoformat(),
+                'set_by': 'reviewer@example.com',
+            },
+        )
+        self.assertEqual(
+            actual['Explainer'],
+            {
+                'state': progress.ProgressVote.VERIFIED,
+                'feedback': 'Explainer verified manually',
+                'set_on': vote_time.isoformat(),
+                'set_by': 'reviewer@example.com',
+            },
         )
