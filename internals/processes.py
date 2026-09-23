@@ -24,7 +24,7 @@ from internals.review_models import Gate
 
 @dataclass
 class Action:
-    """Dataclass for Action."""
+    """Dataclass for Action, such as requesting a review or OT."""
 
     name: str
     url: str
@@ -34,10 +34,12 @@ class Action:
 
 @dataclass
 class ProgressItem:
-    """Dataclass for ProgressItem."""
+    """Dataclass for ProgressItem that has details of a prerequisite."""
 
     name: str
     field: str | None = None
+    description: str | None = None
+    criteria: str | None = None
 
 
 # Note: A new feature always starts with intent_stage == INTENT_NONE
@@ -46,7 +48,7 @@ class ProgressItem:
 # a form that sets intent_stage.
 @dataclass
 class ProcessStage:
-    """Dataclass for ProcessStage."""
+    """Dataclass for ProcessStage that describes one major step in a process."""
 
     name: str
     description: str
@@ -60,7 +62,7 @@ class ProcessStage:
 
 @dataclass
 class Process:
-    """Dataclass for Process."""
+    """Dataclass for Process that describes all stages for a given feature type."""
 
     name: str
     description: str
@@ -89,14 +91,102 @@ INTENT_EMAIL_URL_NO_APPROVALS = '/feature/{feature_id}/stage/{stage_id}/intent'
 LAUNCH_BUG_TEMPLATE_URL = '/admin/features/launch/{feature_id}?launch=1'
 # TODO(jrobbins): Creation of the launch bug has been a TODO for 5 years.
 
+# Metadata progress items
+PI_FEATURE_NAME = ProgressItem(
+    'Feature name',
+    'name',
+    'Feature name is clear, accurate, and not a placeholder',
+    (
+        'Not a bug number, internal codename, or "TBD". '
+        'Matches the intent email subject.'
+    ),
+)
+
+PI_SUMMARY = ProgressItem(
+    'Summary',
+    'summary',
+    'Summary is complete, developer-facing, and ≥ 100 characters',
+    (
+        'Explains what the feature does, why it matters, and how developers use it. '
+        'Not a copy of the spec title.<br>'
+        '<br>'
+        'Note: The summary should use the present tense for these descriptions '
+        '(e.g., "we launch") instead of the future tense. Since these notes are '
+        'published at the time of shipment, they should reflect how the product works '
+        'at the point of release.'
+    ),
+)
+
+PI_SUMMARY_POLICY = ProgressItem(
+    'Policy in summary',
+    'summary',
+    'If enterprise policy applies, policy name is stated in the summary',
+    (
+        'Required when the feature has an enterprise escape-hatch policy. '
+        'Name must match the policy registry.'
+    ),
+)
+
+PI_CATEGORY = ProgressItem(
+    'Category',
+    'category',
+    'Feature category is correctly set (e.g. CSS, JavaScript, Web APIs)',
+    (
+        'Must match the nature of the feature. Wrong category routes the feature '
+        'into the wrong blog section.'
+    ),
+)
+
+PI_FEATURE_TYPE = ProgressItem(
+    'Feature type',
+    'feature_type',
+    'Feature type matches the feature description',
+    'Drives which stages and gates apply. Cannot be changed after creation.',
+)
+
+PI_OWNER_EMAILS = ProgressItem(
+    'Owner emails',
+    'owner_emails',
+    'At least one feature owner email is present and valid',
+    (
+        'Non-empty, valid email format, not a departed owner. '
+        'Update if the owner has left.'
+    ),
+)
+
 
 PI_INITIAL_PUBLIC_PROPOSAL = ProgressItem(
     'Initial public proposal', 'initial_public_proposal_url'
 )
 PI_MOTIVATION = ProgressItem('Motivation', 'motivation')
 PI_EXPLAINER = ProgressItem('Explainer', 'explainer_links')
-PI_WEB_FEATURE = ProgressItem('Web feature', 'web_feature')
-PI_TRACKING_BUG = ProgressItem('Tracking bug URL', 'bug_url')
+
+PI_WEB_FEATURE = ProgressItem(
+    'Web feature',
+    'web_feature',
+    'Web Feature ID (WebDX / web-features ID) is set or confirmed N/A',
+    (
+        'If a matching WebDX web-features ID exists (e.g. "fetch", "grid"), '
+        'it must be set. If no web-features entry exists yet, note this. '
+        'Enables Baseline status linking on webstatus.dev, MDN, and Can I Use.'
+    ),
+)
+
+PI_TRACKING_BUG = ProgressItem(
+    'Tracking bug URL',
+    'bug_url',
+    'Chromium tracking bug URL is present and resolves (HTTP 200)',
+    'bugs.chromium.org URL pattern. Must open and reflect current status.',
+)
+
+nPI_BLINK_COMPONENTS = ProgressItem(
+    'Blink components',
+    'blink_components',
+    'Blink component is not a generic catch-all (e.g. not just "Blink")',
+    (
+        'Drives reviewer notifications. Verify it maps to the correct owning team.'
+    ),
+)
 
 PI_SPEC_LINK = ProgressItem('Spec link', 'spec_link')
 PI_SPEC_MENTOR = ProgressItem('Spec mentor', 'spec_mentors')
@@ -190,6 +280,16 @@ PI_ENTERPRISE_POLICIES = ProgressItem(
 )  # noqa: E501
 
 
+PI_GROUP_METADATA: list[ProgressItem] = [
+    PI_FEATURE_NAME,
+    PI_SUMMARY,
+    PI_CATEGORY,
+    PI_FEATURE_TYPE,
+    PI_OWNER_EMAILS,
+    PI_WEB_FEATURE,
+    PI_SUMMARY_POLICY,
+]
+
 # This is a stage that can be inserted in the stages of any non-enterprise
 # features that are marked as breaking changes.
 FEATURE_ROLLOUT_STAGE = ProcessStage(
@@ -217,7 +317,8 @@ BLINK_PROCESS_STAGES = [
         'Start incubating',
         'Create an initial WebStatus feature entry and kick off standards '
         'incubation (WICG) to share ideas.',
-        [
+        PI_GROUP_METADATA
+        + [
             PI_INITIAL_PUBLIC_PROPOSAL,
             PI_MOTIVATION,
             PI_EXPLAINER,
@@ -373,18 +474,7 @@ BLINK_PROCESS_STAGES = [
             Action(
                 'Review data quality',
                 INTENT_EMAIL_URL,  # TODO(jrobbins) checklist URL
-                [
-                    PI_INITIAL_PUBLIC_PROPOSAL.name,
-                    PI_MOTIVATION.name,
-                    PI_EXPLAINER.name,
-                    PI_SPEC_LINK.name,
-                    PI_WEB_FEATURE.name,
-                    PI_TRACKING_BUG.name,
-                    PI_FINCH_FEATURE_OR_JUSTIFY.name,
-                    PI_UPDATED_VENDOR_SIGNALS.name,
-                    PI_TAG_ADDRESSED.name,
-                    PI_UPDATED_TARGET_MILESTONE.name,
-                ],
+                [pi.name for pi in PI_GROUP_METADATA],
                 [core_enums.GATE_DQ_SHIP],
             ),
             Action(
@@ -441,7 +531,8 @@ BLINK_FAST_TRACK_STAGES = [
         'Start prototyping',
         'Write up use cases and scenarios, start coding as a '
         'runtime enabled feature.',
-        [
+        PI_GROUP_METADATA
+        + [
             PI_SPEC_LINK,
             PI_CODE_IN_CHROMIUM,
             PI_WEB_FEATURE,
@@ -549,13 +640,7 @@ BLINK_FAST_TRACK_STAGES = [
             Action(
                 'Review data quality',
                 INTENT_EMAIL_URL,  # TODO(jrobbins) checklist URL
-                [
-                    PI_TRACKING_BUG.name,
-                    PI_SPEC_LINK.name,
-                    PI_WEB_FEATURE.name,
-                    PI_FINCH_FEATURE_OR_JUSTIFY.name,
-                    PI_UPDATED_TARGET_MILESTONE.name,
-                ],
+                [pi.name for pi in PI_GROUP_METADATA],
                 [core_enums.GATE_DQ_SHIP],
             ),
             Action(
@@ -606,7 +691,8 @@ PSA_ONLY_STAGES = [
     ProcessStage(
         'Implement',
         'Check code into Chromium under a flag.',
-        [PI_SPEC_LINK, PI_CODE_IN_CHROMIUM, PI_WEB_FEATURE, PI_TRACKING_BUG],
+        PI_GROUP_METADATA
+        + [PI_SPEC_LINK, PI_CODE_IN_CHROMIUM, PI_WEB_FEATURE, PI_TRACKING_BUG],
         [],
         [],
         core_enums.INTENT_NONE,
@@ -650,6 +736,12 @@ PSA_ONLY_STAGES = [
         ],
         [
             Action(
+                'Review data quality',
+                INTENT_EMAIL_URL,  # TODO(jrobbins) checklist URL
+                [pi.name for pi in PI_GROUP_METADATA],
+                [core_enums.GATE_DQ_SHIP],
+            ),
+            Action(
                 'Draft Web-Facing Change PSA email',
                 INTENT_EMAIL_URL_NO_APPROVALS,  # noqa: E501
                 [
@@ -659,7 +751,7 @@ PSA_ONLY_STAGES = [
                     PI_UPDATED_TARGET_MILESTONE.name,
                 ],
                 [],
-            )
+            ),
         ],
         [approval_defs.ShipApproval],
         core_enums.INTENT_EXPERIMENT,
@@ -698,7 +790,8 @@ DEPRECATION_STAGES = [
         'Create an initial WebStatus feature entry to deprecate '
         'an existing feature, including motivation and impact. '
         'Then, get approval for your deprecation plans.',
-        [
+        PI_GROUP_METADATA
+        + [
             PI_EXISTING_FEATURE,
             PI_MOTIVATION,
             PI_TRACKING_BUG,
@@ -707,11 +800,7 @@ DEPRECATION_STAGES = [
             Action(
                 'Review data quality',
                 INTENT_EMAIL_URL,  # TODO(jrobbins): checklist page URL
-                [
-                    PI_TRACKING_BUG.name,
-                    PI_MOTIVATION.name,
-                    PI_TRACKING_BUG.name,
-                ],
+                [pi.name for pi in PI_GROUP_METADATA],
                 [core_enums.GATE_DQ_PLAN],
             ),
             Action(

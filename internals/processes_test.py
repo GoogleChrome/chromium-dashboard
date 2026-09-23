@@ -46,7 +46,9 @@ BAKE_APPROVAL_DEF_DICT = collections.OrderedDict(
     ]
 )
 
-PI_COLD_DOUGH = processes.ProgressItem('Cold dough', 'dough')
+PI_COLD_DOUGH = processes.ProgressItem(
+    'Cold dough', 'dough', 'Moist and plyable', 'No longer sticky'
+)
 PI_LOAF = processes.ProgressItem('A loaf', None)
 PI_DIRTY_PAN = processes.ProgressItem('A dirty pan', None)
 
@@ -72,7 +74,7 @@ class HelperFunctionsTest(testing_config.CustomTestCase):
                         processes.Action(
                             'Share kneading video',
                             'https://example.com',
-                            [],
+                            [PI_COLD_DOUGH.name],
                             [],
                         )
                     ],
@@ -102,13 +104,18 @@ class HelperFunctionsTest(testing_config.CustomTestCase):
                     'name': 'Make dough',
                     'description': 'Mix it and knead',
                     'progress_items': [
-                        {'name': 'Cold dough', 'field': 'dough'}
+                        {
+                            'name': 'Cold dough',
+                            'field': 'dough',
+                            'description': 'Moist and plyable',
+                            'criteria': 'No longer sticky',
+                        },
                     ],
                     'actions': [
                         {
                             'name': 'Share kneading video',
                             'url': 'https://example.com',
-                            'prerequisites': [],
+                            'prerequisites': ['Cold dough'],
                             'gate_types': [],
                         }
                     ],
@@ -121,8 +128,18 @@ class HelperFunctionsTest(testing_config.CustomTestCase):
                     'name': 'Bake it',
                     'description': 'Heat at 375 for 40 minutes',
                     'progress_items': [
-                        {'name': 'A loaf', 'field': None},
-                        {'name': 'A dirty pan', 'field': None},
+                        {
+                            'name': 'A loaf',
+                            'field': None,
+                            'description': None,
+                            'criteria': None,
+                        },
+                        {
+                            'name': 'A dirty pan',
+                            'field': None,
+                            'description': None,
+                            'criteria': None,
+                        },
                     ],
                     'actions': [],
                     'approvals': [BAKE_APPROVAL_DEF_DICT],
@@ -137,6 +154,7 @@ class HelperFunctionsTest(testing_config.CustomTestCase):
         self.assertEqual(
             expected['stages'][1]['approvals'], actual['stages'][1]['approvals']
         )
+        self.maxDiff = None
         self.assertEqual(expected, actual)
 
 

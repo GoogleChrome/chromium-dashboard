@@ -61,6 +61,8 @@ interface Vote {
 export interface ProgressItem {
   name: string;
   field?: string;
+  description?: string;
+  criteria?: string;
   stage: ProcessStage | null;
 }
 

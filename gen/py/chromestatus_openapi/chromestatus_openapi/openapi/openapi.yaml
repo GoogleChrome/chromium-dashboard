@@ -2121,9 +2121,13 @@ components:
         stages:
         - progress_items:
           - field: field
+            criteria: criteria
             name: name
+            description: description
           - field: field
+            criteria: criteria
             name: name
+            description: description
           incoming_stage: 5
           stage_type: 7
           approvals:
@@ -2167,9 +2171,13 @@ components:
             url: url
         - progress_items:
           - field: field
+            criteria: criteria
             name: name
+            description: description
           - field: field
+            criteria: criteria
             name: name
+            description: description
           incoming_stage: 5
           stage_type: 7
           approvals:
@@ -2234,9 +2242,13 @@ components:
       example:
         progress_items:
         - field: field
+          criteria: criteria
           name: name
+          description: description
         - field: field
+          criteria: criteria
           name: name
+          description: description
         incoming_stage: 5
         stage_type: 7
         approvals:
@@ -2315,13 +2327,21 @@ components:
     ProgressItem:
       example:
         field: field
+        criteria: criteria
         name: name
+        description: description
       properties:
         name:
           title: name
           type: string
         field:
           title: field
+          type: string
+        description:
+          title: description
+          type: string
+        criteria:
+          title: criteria
           type: string
       title: ProgressItem
       type: object
