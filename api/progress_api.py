@@ -19,7 +19,7 @@ import datetime
 
 from chromestatus_openapi.models import SuccessMessage
 
-from framework import basehandlers
+from framework import basehandlers, permissions
 from internals import progress, stage_helpers
 
 
@@ -87,7 +87,6 @@ class ProgressAPI(basehandlers.APIHandler):
         new_state=None,
     ) -> None:
         """Abort the request if the user lacks permission to set this vote."""
-        if not user:
+        if not permissions.can_edit_any_feature(user):
             self.abort(403, 'User lacks permission to vote')
-        # TODO(jrobbins): Check permissions and call self.abort(403) if denied.
         return

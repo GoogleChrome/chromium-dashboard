@@ -22,7 +22,7 @@ import flask
 
 import testing_config  # Must be imported before the module under test.
 from api import progress_api
-from internals import core_enums, core_models, progress
+from internals import core_enums, core_models, progress, user_models
 
 test_app = flask.Flask(__name__)
 
@@ -47,6 +47,11 @@ class ProgressAPITest(testing_config.CustomTestCase):
         )
         self.feature_1.put()
         self.feature_id = self.feature_1.key.integer_id()
+
+        self.editor_user = user_models.AppUser(
+            email='reviewer@example.com', is_site_editor=True
+        )
+        self.editor_user.put()
 
         stage_types = [110, 120, 130, 140, 150, 151, 160]
         self.stages: list[core_models.Stage] = []
@@ -75,6 +80,7 @@ class ProgressAPITest(testing_config.CustomTestCase):
     def tearDown(self):
         """Clean up the test environment."""
         self.feature_1.key.delete()
+        self.editor_user.key.delete()
         for stage in self.stages:
             stage.key.delete()
         for vote in progress.ProgressVote.query().fetch():
@@ -213,3 +219,19 @@ class ProgressAPITest(testing_config.CustomTestCase):
         ):
             with self.assertRaises(werkzeug.exceptions.Forbidden):
                 self.handler.do_post(feature_id=self.feature_id)
+
+    def test_post___non_editor_forbidden(self):
+        """Signed-in users without can_edit_any_feature permission are rejected with 403."""
+        import werkzeug.exceptions
+
+        testing_config.sign_in('regular@example.com', 222)
+        with test_app.test_request_context(
+            self.request_path,
+            json={
+                'progress_item_name': 'Spec link',
+                'state': progress.ProgressVote.VERIFIED,
+            },
+        ):
+            with self.assertRaises(werkzeug.exceptions.Forbidden):
+                self.handler.do_post(feature_id=self.feature_id)
+        testing_config.sign_out()
