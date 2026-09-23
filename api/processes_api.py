@@ -13,14 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""API endpoints for retrieving the status and progress of feature implementation processes."""
+"""API endpoint for retrieving the status of feature implementation processes."""
 
 import dataclasses
 
 from chromestatus_openapi.models import Process
 
 from framework import basehandlers
-from internals import core_enums, processes, stage_helpers
+from internals import core_enums, processes
 
 
 class ProcessesAPI(basehandlers.APIHandler):
@@ -48,23 +48,3 @@ class ProcessesAPI(basehandlers.APIHandler):
             result['stages'][-1]['incoming_stage'] = core_enums.INTENT_ROLLOUT
 
         return result
-
-
-class ProgressAPI(basehandlers.APIHandler):
-    """Progress is either a boolean value when the checkmark should be shown,
-    or a string that starts with "http:" or "https:" that contain details about
-    the progress of a feature so far
-    """  # noqa: D205, D415
-
-    def do_get(self, **kwargs):
-        """Return the progress of the feature."""
-        fe = self.get_specified_feature(**kwargs)
-        stages = stage_helpers.get_feature_stages(fe.key.integer_id())
-        progress_so_far = {}
-        for progress_item, detector in list(
-            processes.PROGRESS_DETECTORS.items()
-        ):
-            detected = detector(fe, stages)
-            if detected:
-                progress_so_far[progress_item] = str(detected)
-        return progress_so_far

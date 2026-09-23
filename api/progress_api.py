@@ -1,0 +1,39 @@
+# -*- coding: utf-8 -*-
+# Copyright 2022 Google Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License")
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+"""API endpoint for retrieving the progress of feature implementation processes."""
+
+from framework import basehandlers
+from internals import progress, stage_helpers
+
+
+class ProgressAPI(basehandlers.APIHandler):
+    """Progress is either a boolean value when the checkmark should be shown,
+    or a string that starts with "http:" or "https:" that contain details about
+    the progress of a feature so far
+    """  # noqa: D205, D415
+
+    def do_get(self, **kwargs):
+        """Return the progress of the feature."""
+        fe = self.get_specified_feature(**kwargs)
+        stages = stage_helpers.get_feature_stages(fe.key.integer_id())
+        progress_so_far = {}
+        for progress_item, detector in list(
+            progress.PROGRESS_DETECTORS.items()
+        ):
+            detected = detector(fe, stages)
+            if detected:
+                progress_so_far[progress_item] = str(detected)
+        return progress_so_far
