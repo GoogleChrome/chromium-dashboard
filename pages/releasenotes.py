@@ -14,10 +14,12 @@
 
 """Handler for displaying release notes via Server-Side Rendering (SSR)."""
 
+import datetime
 import logging
 import urllib.parse
 from typing import Any
 
+import babel.dates
 import flask
 
 import settings
@@ -54,6 +56,27 @@ EXTERNAL_RELEASE_NOTES_URL_TEMPLATE: str = (
 EXTERNAL_RELEASE_NOTES_ARCHIVE_URL: str = (
     'https://developer.chrome.com/release-notes'
 )
+
+
+def format_stable_release_date(
+    raw_date: str | None,
+    lang: l10n_models.SupportedLanguage,
+) -> str | None:
+    """Formats an ISO date string into a localized human-readable date string."""
+    if not raw_date or not isinstance(raw_date, str):
+        return None
+    try:
+        parsed_date = datetime.datetime.fromisoformat(raw_date).date()
+    except ValueError:
+        try:
+            parsed_date = datetime.date.fromisoformat(raw_date[:10])
+        except ValueError:
+            return raw_date
+
+    babel_locale = lang.value.replace('-', '_')
+    return babel.dates.format_date(
+        parsed_date, format='long', locale=babel_locale
+    )
 
 
 class ReleaseNotesHandler(basehandlers.FlaskHandler):
@@ -123,6 +146,54 @@ class ReleaseNotesHandler(basehandlers.FlaskHandler):
         )
         current_lang = l10n_helpers.resolve_supported_language(raw_lang)
         translations = l10n_helpers.get_release_notes_translations(current_lang)
+
+        release_info: dict[str, Any]
+        if settings.PLAYWRIGHT_MODE:
+            release_info = {
+                'stable_date': '2026-09-01T00:00:00',
+                'earliest_beta': '2026-08-05T00:00:00',
+                'mstone': milestone,
+                'version': milestone,
+            }
+        else:
+            try:
+                release_info = fetchchannels.fetch_chrome_release_info(
+                    milestone
+                )
+            except Exception as e:
+                logging.warning(
+                    'Could not fetch release info for milestone %d: %s',
+                    milestone,
+                    e,
+                )
+                release_info = {}
+
+        raw_stable_date = (
+            release_info.get('stable_date')
+            if isinstance(release_info, dict)
+            else None
+        )
+        formatted_stable_date = format_stable_release_date(
+            raw_stable_date if isinstance(raw_stable_date, str) else None,
+            current_lang,
+        )
+
+        raw_earliest_beta = (
+            release_info.get('earliest_beta')
+            if isinstance(release_info, dict)
+            else None
+        )
+        formatted_earliest_beta = format_stable_release_date(
+            raw_earliest_beta if isinstance(raw_earliest_beta, str) else None,
+            current_lang,
+        )
+
+        beta_milestone = fetchchannels.get_current_beta_milestone()
+        dev_milestone = fetchchannels.get_current_channel_milestone(
+            fetchchannels.Channel.DEV
+        )
+        is_on_beta = beta_milestone > 0 and milestone == beta_milestone
+        is_on_dev = dev_milestone > 0 and milestone == dev_milestone
 
         release_note_features = (
             feature_helpers.get_developer_release_notes_features(milestone)
@@ -197,6 +268,10 @@ class ReleaseNotesHandler(basehandlers.FlaskHandler):
             milestone=milestone,
             prev_milestone=prev_milestone,
             next_milestone=next_milestone,
+            stable_date=formatted_stable_date,
+            earliest_beta_date=formatted_earliest_beta,
+            is_on_beta=is_on_beta,
+            is_on_dev=is_on_dev,
         )
         supported_languages = l10n_helpers.get_supported_languages(
             l10n_helpers.RELEASE_NOTES_TRANSLATIONS
@@ -224,6 +299,10 @@ class ReleaseNotesHandler(basehandlers.FlaskHandler):
         return {
             'milestone': milestone,
             'stable_milestone': stable_milestone,
+            'stable_date': formatted_stable_date,
+            'earliest_beta': formatted_earliest_beta,
+            'is_on_beta': is_on_beta,
+            'is_on_dev': is_on_dev,
             'prev_milestone': prev_milestone,
             'next_milestone': next_milestone,
             'is_min_ssr_milestone': (

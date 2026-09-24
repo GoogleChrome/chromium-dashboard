@@ -12,7 +12,7 @@ class Action(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, name=None, url=None, prerequisites=None):  # noqa: E501
+    def __init__(self, name=None, url=None, prerequisites=None, gate_types=None):  # noqa: E501
         """Action - a model defined in OpenAPI
 
         :param name: The name of this Action.  # noqa: E501
@@ -21,22 +21,27 @@ class Action(Model):
         :type url: str
         :param prerequisites: The prerequisites of this Action.  # noqa: E501
         :type prerequisites: List[str]
+        :param gate_types: The gate_types of this Action.  # noqa: E501
+        :type gate_types: List[int]
         """
         self.openapi_types = {
             'name': str,
             'url': str,
-            'prerequisites': List[str]
+            'prerequisites': List[str],
+            'gate_types': List[int]
         }
 
         self.attribute_map = {
             'name': 'name',
             'url': 'url',
-            'prerequisites': 'prerequisites'
+            'prerequisites': 'prerequisites',
+            'gate_types': 'gate_types'
         }
 
         self._name = name
         self._url = url
         self._prerequisites = prerequisites
+        self._gate_types = gate_types
 
     @classmethod
     def from_dict(cls, dikt) -> 'Action':
@@ -111,3 +116,24 @@ class Action(Model):
         """
 
         self._prerequisites = prerequisites
+
+    @property
+    def gate_types(self) -> List[int]:
+        """Gets the gate_types of this Action.
+
+
+        :return: The gate_types of this Action.
+        :rtype: List[int]
+        """
+        return self._gate_types
+
+    @gate_types.setter
+    def gate_types(self, gate_types: List[int]):
+        """Sets the gate_types of this Action.
+
+
+        :param gate_types: The gate_types of this Action.
+        :type gate_types: List[int]
+        """
+
+        self._gate_types = gate_types

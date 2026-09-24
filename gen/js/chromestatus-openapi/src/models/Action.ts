@@ -37,6 +37,12 @@ export interface Action {
      * @memberof Action
      */
     prerequisites?: Array<string>;
+    /**
+     * 
+     * @type {Array<number>}
+     * @memberof Action
+     */
+    gate_types?: Array<number>;
 }
 
 /**
@@ -59,6 +65,7 @@ export function ActionFromJSONTyped(json: any, ignoreDiscriminator: boolean): Ac
         'name': json['name'] == null ? undefined : json['name'],
         'url': json['url'] == null ? undefined : json['url'],
         'prerequisites': json['prerequisites'] == null ? undefined : json['prerequisites'],
+        'gate_types': json['gate_types'] == null ? undefined : json['gate_types'],
     };
 }
 
@@ -71,6 +78,7 @@ export function ActionToJSON(value?: Action | null): any {
         'name': value['name'],
         'url': value['url'],
         'prerequisites': value['prerequisites'],
+        'gate_types': value['gate_types'],
     };
 }
 

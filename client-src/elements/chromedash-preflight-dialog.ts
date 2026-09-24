@@ -19,6 +19,7 @@ import './chromedash-callout.js';
 import {
   GATE_TEAM_ORDER,
   GATE_FINISHED_REVIEW_STATES,
+  PROGRESS_VOTE_STATE,
 } from './form-field-enums.js';
 import {findFirstFeatureStage} from './utils.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
@@ -32,11 +33,20 @@ import {
   ProgressItem,
 } from './chromedash-gate-column.js';
 
+export interface ProgressVoteValue {
+  state: number;
+  feedback?: string;
+  set_on: string;
+  set_by: string;
+}
+
+export type ProgressDict = Record<string, ProgressVoteValue> | ProgressItem;
+
 let preflightDialogEl;
 
 export async function openPreflightDialog(
   feature: Feature,
-  progress: ProgressItem,
+  progress: ProgressDict,
   process: Process,
   action: Action,
   stage: StageDict,
@@ -61,9 +71,21 @@ export async function openPreflightDialog(
   );
 }
 
-export function somePendingPrereqs(action: Action, progress: ProgressItem) {
+export function isPrereqDone(
+  itemName: string,
+  progress: ProgressDict
+): boolean {
+  const vote = progress?.[itemName] as ProgressVoteValue | undefined;
+  return (
+    vote != null &&
+    (vote.state === PROGRESS_VOTE_STATE.VERIFIED ||
+      vote.state === PROGRESS_VOTE_STATE.NA)
+  );
+}
+
+export function somePendingPrereqs(action: Action, progress: ProgressDict) {
   return action.prerequisites.some(
-    itemName => !progress.hasOwnProperty(itemName)
+    itemName => !isPrereqDone(itemName, progress)
   );
 }
 
@@ -92,7 +114,7 @@ export class ChromedashPreflightDialog extends LitElement {
   @state()
   private _featureGates!: GateDict[];
   @state()
-  private _progress!: ProgressItem;
+  private _progress!: ProgressDict;
   @state()
   private _process!: Process;
   @state()
@@ -138,7 +160,7 @@ export class ChromedashPreflightDialog extends LitElement {
 
   openWithContext(
     feature: Feature,
-    progress: ProgressItem,
+    progress: ProgressDict,
     process: Process,
     action: Action,
     stage: StageDict,
@@ -219,7 +241,7 @@ export class ChromedashPreflightDialog extends LitElement {
     }
     const prereqItems: ProgressItem[] = [];
     for (const itemName of this._action.prerequisites || []) {
-      if (!this._progress.hasOwnProperty(itemName)) {
+      if (!isPrereqDone(itemName, this._progress)) {
         prereqItems.push(this.makePrereqItem(itemName));
       }
     }

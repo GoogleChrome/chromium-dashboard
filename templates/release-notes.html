@@ -385,6 +385,12 @@
     }
   }
 
+  #subheader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--content-padding-quarter);
+  }
+
   .page-title-row {
     display: flex;
     align-items: center;
@@ -393,6 +399,11 @@
 
   .page-title-row h1 {
     text-wrap: balance;
+    margin: 0;
+  }
+
+  .release-date-subtitle {
+    color: var(--unimportant-text-color);
     margin: 0;
   }
 
@@ -417,11 +428,14 @@
 {% endblock %}
 
 {% block subheader %}
-<div id="subheader" class="actionlinks">
+<div id="subheader" class="actionlinks" lang="{{ current_lang }}">
   <div class="actionlinks page-title-row">
     <h1 id="page-title">{{ ui.page_title }}</h1>
     <span class="preview-badge" role="status">{{ ui.preview_badge }}</span>
   </div>
+  {% if ui.scheduled_stable_release or ui.channel_status %}
+  <p class="actionlinks release-date-subtitle">{{ ui.scheduled_stable_release }}{% if ui.scheduled_stable_release and ui.channel_status %} {% endif %}{{ ui.channel_status }}</p>
+  {% endif %}
 </div>
 {% endblock %}
 
