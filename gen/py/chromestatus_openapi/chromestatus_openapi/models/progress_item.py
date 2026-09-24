@@ -12,26 +12,36 @@ class ProgressItem(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, name=None, field=None):  # noqa: E501
+    def __init__(self, name=None, field=None, description=None, criteria=None):  # noqa: E501
         """ProgressItem - a model defined in OpenAPI
 
         :param name: The name of this ProgressItem.  # noqa: E501
         :type name: str
         :param field: The field of this ProgressItem.  # noqa: E501
         :type field: str
+        :param description: The description of this ProgressItem.  # noqa: E501
+        :type description: str
+        :param criteria: The criteria of this ProgressItem.  # noqa: E501
+        :type criteria: str
         """
         self.openapi_types = {
             'name': str,
-            'field': str
+            'field': str,
+            'description': str,
+            'criteria': str
         }
 
         self.attribute_map = {
             'name': 'name',
-            'field': 'field'
+            'field': 'field',
+            'description': 'description',
+            'criteria': 'criteria'
         }
 
         self._name = name
         self._field = field
+        self._description = description
+        self._criteria = criteria
 
     @classmethod
     def from_dict(cls, dikt) -> 'ProgressItem':
@@ -85,3 +95,45 @@ class ProgressItem(Model):
         """
 
         self._field = field
+
+    @property
+    def description(self) -> str:
+        """Gets the description of this ProgressItem.
+
+
+        :return: The description of this ProgressItem.
+        :rtype: str
+        """
+        return self._description
+
+    @description.setter
+    def description(self, description: str):
+        """Sets the description of this ProgressItem.
+
+
+        :param description: The description of this ProgressItem.
+        :type description: str
+        """
+
+        self._description = description
+
+    @property
+    def criteria(self) -> str:
+        """Gets the criteria of this ProgressItem.
+
+
+        :return: The criteria of this ProgressItem.
+        :rtype: str
+        """
+        return self._criteria
+
+    @criteria.setter
+    def criteria(self, criteria: str):
+        """Sets the criteria of this ProgressItem.
+
+
+        :param criteria: The criteria of this ProgressItem.
+        :type criteria: str
+        """
+
+        self._criteria = criteria

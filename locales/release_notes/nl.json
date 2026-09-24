@@ -1,6 +1,10 @@
 {
   "page_title": "Releaseopmerkingen voor Chrome {milestone}",
   "preview_badge": "Voorbeeld",
+  "scheduled_stable_release": "Geplande stabiele release {date}",
+  "currently_on_beta": "(Momenteel in het bètakanaal)",
+  "currently_on_dev": "(Momenteel in het dev-kanaal, bereikt bèta op {date})",
+  "currently_on_dev_and_beta": "(Momenteel in het dev- en bètakanaal)",
   "jump_placeholder": "Naar Chrome-mijlpaal gaan",
   "jump_aria": "Naar Chrome-mijlpaal gaan",
   "prev_milestone_aria": "Vorige mijlpaal: Chrome {milestone}",

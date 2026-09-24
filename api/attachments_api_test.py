@@ -179,6 +179,20 @@ class AttachmentServingTest(testing_config.CustomTestCase):
         self.assertEqual(content, self.content)
         self.assertEqual(headers['Content-Type'], 'text/plain')
 
+    def test_get_template_data__found_confidential(self):
+        """We can fetch an attachment even from a confidential feature."""
+        testing_config.sign_out()
+        self.feature.confidential = True
+        self.feature.put()
+        base = settings.SITE_URL
+        with test_app.test_request_context(self.request_path, base_url=base):
+            content, headers = self.handler.get_template_data(
+                feature_id=self.feature_id, attachment_id=self.attachment_id
+            )
+
+        self.assertEqual(content, self.content)
+        self.assertEqual(headers['Content-Type'], 'text/plain')
+
 
 class RoundTripTest(testing_config.CustomTestCase):
     """Tests for attachment round trips."""
