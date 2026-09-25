@@ -69,6 +69,7 @@ src/models/PatchGateRequest.ts
 src/models/PendingSuggestionsCountResponse.ts
 src/models/PermissionsResponse.ts
 src/models/PostIntentRequest.ts
+src/models/PostProgressVoteRequest.ts
 src/models/PostSettingsRequest.ts
 src/models/PostStarsRequest.ts
 src/models/PostVoteRequest.ts
