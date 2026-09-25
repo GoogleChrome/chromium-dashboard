@@ -118,3 +118,6 @@ if [[ "$SKIP_ISSUE" != "true" ]]; then
     echo "Could not find an open release issue to close."
   fi
 fi
+
+# Prune oldest inactive versions to retain 50 versions per service after deployment.
+"$DIR/prune-versions"
