@@ -11,11 +11,18 @@
   /* ==========================================================================
      Layout & Milestone Navigation
      ========================================================================== */
+  /* Layout containment for top navigation to prevent un-upgraded custom element CLS */
+  chromedash-header:not(:defined) {
+    display: block;
+    min-height: 56px;
+  }
+
   #release-notes-container {
     padding-bottom: var(--content-padding-large);
   }
 
   .nav-strip {
+
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -58,10 +65,28 @@
   .stepper-btn:focus-visible,
   .milestone-input:focus-visible,
   .milestone-input:focus,
+  .language-picker:focus-visible,
+  .language-picker:focus,
   .feature-card:target {
     outline: 2px solid var(--primary-button-background);
     outline-offset: 2px;
   }
+
+  .language-picker-container {
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .language-picker {
+    padding: var(--content-padding-quarter) var(--content-padding-half);
+    border-radius: var(--border-radius);
+    border: var(--default-border);
+    background-color: var(--card-background);
+    color: var(--default-color);
+    font-size: var(--button-font-size);
+    cursor: pointer;
+  }
+
 
   /* ==========================================================================
      Archival Notice Banner
@@ -253,6 +278,27 @@
     margin-bottom: var(--content-padding-quarter);
   }
 
+  .feature-links-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--content-padding-quarter) var(--content-padding-half);
+    border-top: var(--default-border);
+    padding-top: var(--content-padding-half);
+    margin-top: auto;
+    font-size: var(--button-font-size);
+  }
+
+  .feature-links-bar a {
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  .link-separator {
+    color: var(--card-border);
+    user-select: none;
+  }
+
   .feature-doc-links {
     display: flex;
     flex-direction: column;
@@ -260,6 +306,7 @@
     border-top: var(--default-border);
     padding-top: var(--content-padding-half);
   }
+
 
   .feature-doc-links a {
     display: inline-flex;
@@ -337,36 +384,80 @@
       width: 100%;
     }
   }
+
+  #subheader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--content-padding-quarter);
+  }
+
+  .page-title-row {
+    display: flex;
+    align-items: center;
+    gap: var(--content-padding-half);
+  }
+
+  .page-title-row h1 {
+    text-wrap: balance;
+    margin: 0;
+  }
+
+  .release-date-subtitle {
+    color: var(--unimportant-text-color);
+    margin: 0;
+  }
+
+  .preview-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--sl-font-size-2x-small);
+    font-weight: var(--sl-font-weight-semibold);
+    line-height: 1;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: var(--content-padding-quarter) var(--content-padding-half);
+    border-radius: var(--pill-border-radius);
+    background-color: var(--sl-color-neutral-100);
+    color: var(--sl-color-neutral-700);
+    border: 1px solid var(--sl-color-neutral-300);
+    user-select: none;
+    vertical-align: middle;
+  }
 </style>
 {% endblock %}
 
 {% block subheader %}
-<div id="subheader" class="actionlinks">
-  <div class="actionlinks">
-    <h1 id="page-title" style="text-wrap: balance;">Chrome {{ milestone }} Release Notes</h1>
+<div id="subheader" class="actionlinks" lang="{{ current_lang }}">
+  <div class="actionlinks page-title-row">
+    <h1 id="page-title">{{ ui.page_title }}</h1>
+    <span class="preview-badge" role="status">{{ ui.preview_badge }}</span>
   </div>
+  {% if ui.scheduled_stable_release or ui.channel_status %}
+  <p class="actionlinks release-date-subtitle">{{ ui.scheduled_stable_release }}{% if ui.scheduled_stable_release and ui.channel_status %} {% endif %}{{ ui.channel_status }}</p>
+  {% endif %}
 </div>
 {% endblock %}
 
 {% block content %}
-<main id="release-notes-container" aria-labelledby="page-title">
+<main id="release-notes-container" aria-labelledby="page-title" lang="{{ current_lang }}" data-page-lang="{{ current_lang }}">
   {# Modern Milestone Navigation Strip #}
   <nav class="nav-strip" aria-label="Milestone navigation">
     <div>
       {% if prev_milestone %}
-        <a href="/release-notes/{{ prev_milestone }}" class="button stepper-btn" id="prev-milestone-btn" aria-label="Previous milestone: Chrome {{ prev_milestone }}">
+        <a href="/release-notes/{{ prev_milestone }}{% if current_lang != 'en' %}?hl={{ current_lang }}{% endif %}" class="button stepper-btn" id="prev-milestone-btn" aria-label="{{ ui.prev_milestone_aria }}">
           <span aria-hidden="true">‹</span> Chrome {{ prev_milestone }}
         </a>
       {% endif %}
     </div>
 
     <search class="milestone-jump-box">
-      <label for="milestone-input" class="sr-only">Jump to Chrome milestone</label>
+      <label for="milestone-input" class="sr-only">{{ ui.jump_aria }}</label>
       <input 
         type="text" 
         id="milestone-input" 
         list="milestones-datalist" 
-        placeholder="e.g. Chrome {{ stable_milestone }}" 
+        placeholder="{{ ui.jump_placeholder }}" 
         value="Chrome {{ milestone }}"
         enterkeyhint="go"
         autocomplete="off"
@@ -379,9 +470,24 @@
       </datalist>
     </search>
 
-    <div>
+    <div style="display: inline-flex; align-items: center; gap: var(--content-padding-half);">
+      {% if supported_languages %}
+        <div class="language-picker-container">
+          <label for="language-select" class="sr-only">{{ ui.language_selector_aria }}</label>
+          <select id="language-select" class="language-picker" aria-label="{{ ui.language_selector_aria }}">
+            {% for lang in supported_languages %}
+              <option value="{{ lang.code }}" {% if lang.code == current_lang %}selected{% endif %}>
+                {{ lang.display_name }}
+              </option>
+            {% endfor %}
+          </select>
+
+        </div>
+      {% endif %}
+
+
       {% if next_milestone %}
-        <a href="/release-notes/{{ next_milestone }}" class="button stepper-btn" id="next-milestone-btn" aria-label="Next milestone: Chrome {{ next_milestone }}">
+        <a href="/release-notes/{{ next_milestone }}{% if current_lang != 'en' %}?hl={{ current_lang }}{% endif %}" class="button stepper-btn" id="next-milestone-btn" aria-label="{{ ui.next_milestone_aria }}">
           Chrome {{ next_milestone }} <span aria-hidden="true">›</span>
         </a>
       {% endif %}
@@ -390,11 +496,11 @@
 
   {# Archival Notice for Cutoff Milestone #}
   {% if is_min_ssr_milestone %}
-    <aside class="archival-notice-banner" role="note" aria-label="Historical release notes notice">
+    <aside class="archival-notice-banner" role="note" aria-label="{{ ui.archival_banner }}">
       <div class="archival-notice-body">
         <span class="archival-notice-icon" aria-hidden="true">🏛️</span>
         <div class="archival-notice-text">
-          ChromeStatus release notes begin with <strong>Chrome {{ min_ssr_milestone }}</strong>. Earlier milestones are available in the archive.
+          {{ ui.archival_banner }}
         </div>
       </div>
       <div class="archival-notice-actions">
@@ -403,17 +509,17 @@
           target="_blank" 
           rel="noopener noreferrer" 
           class="button archival-action-btn"
-          aria-label="Browse Chrome for Developers archive (opens in new window)"
+          aria-label="{{ ui.browse_archive_btn }} {{ ui.external_window_sr }}"
         >
-          <span>Browse Archive</span>
+          <span>{{ ui.browse_archive_btn }}</span>
           <span aria-hidden="true" class="external-icon">↗</span>
-          <span class="sr-only">(opens in new window)</span>
+          <span class="sr-only">{{ ui.external_window_sr }}</span>
         </a>
       </div>
     </aside>
   {% endif %}
 
-  {# Category-Grouped Feature Grid #}
+  {# 1. Web Platform Features Grouped by Category #}
   {% if features_by_category %}
     {% for category_name, category_features in features_by_category.items() %}
       {% set category_slug = category_name | lower | replace(' ', '-') | replace('/', '-') %}
@@ -425,20 +531,29 @@
               <div>
                 <h3 class="feature-title">
                   <a class="feature-name" href="/feature/{{ feature.id }}">{{ feature.name }}</a>
-                  <a class="heading-anchor-link" href="#feature-{{ feature.id }}" aria-label="Copy link to {{ feature.name }}" title="Copy link to section" data-anchor="#feature-{{ feature.id }}">
+                  <a class="heading-anchor-link" href="#feature-{{ feature.id }}" aria-label="{{ ui.copy_link_aria(feature.name) }}" title="Copy link to section" data-anchor="#feature-{{ feature.id }}">
                     <span aria-hidden="true">#</span>
-                    <span class="anchor-tooltip" role="status" aria-live="polite">Link copied!</span>
+                    <span class="anchor-tooltip" role="status" aria-live="polite">{{ ui.link_copied_tooltip }}</span>
                   </a>
                 </h3>
-                <div class="feature-summary">{{ feature.formatted_summary | safe }}</div>
+                <div class="feature-summary" lang="{{ feature.summary_lang }}" data-summary-lang="{{ feature.summary_lang }}">{{ feature.formatted_summary | safe }}</div>
               </div>
-              {% if feature.doc_links %}
-                <div class="feature-doc-links" aria-label="Documentation links">
-                  {% for link in feature.doc_links %}
-                    <a href="{{ link }}" target="_blank" rel="noopener noreferrer" title="{{ link }}">
-                      <span class="doc-link-text">{{ link }}</span>
-                      <span aria-hidden="true" class="external-icon">↗</span>
-                      <span class="sr-only">(opens in new window)</span>
+              {% if feature.links %}
+                <div class="feature-links-bar" aria-label="Feature metadata and resources">
+                  {% for link in feature.links %}
+                    {% if not loop.first %}
+                      <span class="link-separator" aria-hidden="true">|</span>
+                    {% endif %}
+                    <a 
+                      href="{{ link.url }}" 
+                      {% if not link.url.startswith('/') and not link.url.startswith('#') %}target="_blank" rel="noopener noreferrer"{% endif %}
+                      title="{{ link.url }}"
+                    >
+                      <span class="doc-link-text">{{ link.title or link.type }}</span>
+                      {% if not link.url.startswith('/') and not link.url.startswith('#') %}
+                        <span aria-hidden="true" class="external-icon">↗</span>
+                        <span class="sr-only">{{ ui.external_window_sr }}</span>
+                      {% endif %}
                     </a>
                   {% endfor %}
                 </div>
@@ -448,16 +563,107 @@
         </div>
       </section>
     {% endfor %}
-  {% else %}
-    <section class="empty-state" aria-labelledby="empty-state-title">
-      <h2 id="empty-state-title" class="empty-state-heading">No release notes features available for Chrome {{ milestone }}.</h2>
-      <p class="empty-state-desc">Features targeting Chrome {{ milestone }} may be in development or scheduled for upcoming releases.</p>
-      <div class="empty-state-actions">
-        <a href="/roadmap" class="button">View Chrome Roadmap</a>
-        <a href="/features#milestone={{ milestone }}" class="button">Search Features</a>
+  {% endif %}
+
+  {# 2. New Origin Trials Section #}
+  {% if origin_trials %}
+    <section class="category-section" id="origin-trials" aria-labelledby="category-origin-trials">
+      <h2 class="category-title" id="category-origin-trials">{{ ui.origin_trials_heading }}</h2>
+      <div class="feature-grid">
+        {% for feature in origin_trials %}
+          <article class="feature-card" id="feature-{{ feature.id }}">
+            <div>
+              <h3 class="feature-title">
+                <a class="feature-name" href="/feature/{{ feature.id }}">{{ feature.name }}</a>
+                <a class="heading-anchor-link" href="#feature-{{ feature.id }}" aria-label="{{ ui.copy_link_aria(feature.name) }}" title="Copy link to section" data-anchor="#feature-{{ feature.id }}">
+                  <span aria-hidden="true">#</span>
+                  <span class="anchor-tooltip" role="status" aria-live="polite">{{ ui.link_copied_tooltip }}</span>
+                </a>
+              </h3>
+              <div class="feature-summary" lang="{{ feature.summary_lang }}" data-summary-lang="{{ feature.summary_lang }}">{{ feature.formatted_summary | safe }}</div>
+            </div>
+            {% if feature.links %}
+              <div class="feature-links-bar" aria-label="Feature metadata and resources">
+                {% for link in feature.links %}
+                  {% if not loop.first %}
+                    <span class="link-separator" aria-hidden="true">|</span>
+                  {% endif %}
+                  <a 
+                    href="{{ link.url }}" 
+                    {% if not link.url.startswith('/') and not link.url.startswith('#') %}target="_blank" rel="noopener noreferrer"{% endif %}
+                    title="{{ link.url }}"
+                  >
+                    <span class="doc-link-text">{{ link.title or link.type }}</span>
+                    {% if not link.url.startswith('/') and not link.url.startswith('#') %}
+                      <span aria-hidden="true" class="external-icon">↗</span>
+                      <span class="sr-only">{{ ui.external_window_sr }}</span>
+                    {% endif %}
+                  </a>
+                {% endfor %}
+              </div>
+            {% endif %}
+          </article>
+        {% endfor %}
       </div>
     </section>
   {% endif %}
+
+  {# 3. Deprecations and Removals Section #}
+  {% if deprecations_and_removals %}
+    <section class="category-section" id="deprecations-and-removals" aria-labelledby="category-deprecations-and-removals">
+      <h2 class="category-title" id="category-deprecations-and-removals">{{ ui.deprecations_heading }}</h2>
+      <div class="feature-grid">
+        {% for feature in deprecations_and_removals %}
+          <article class="feature-card" id="feature-{{ feature.id }}">
+            <div>
+              <h3 class="feature-title">
+                <a class="feature-name" href="/feature/{{ feature.id }}">{{ feature.name }}</a>
+                <a class="heading-anchor-link" href="#feature-{{ feature.id }}" aria-label="{{ ui.copy_link_aria(feature.name) }}" title="Copy link to section" data-anchor="#feature-{{ feature.id }}">
+                  <span aria-hidden="true">#</span>
+                  <span class="anchor-tooltip" role="status" aria-live="polite">{{ ui.link_copied_tooltip }}</span>
+                </a>
+              </h3>
+              <div class="feature-summary" lang="{{ feature.summary_lang }}" data-summary-lang="{{ feature.summary_lang }}">{{ feature.formatted_summary | safe }}</div>
+            </div>
+            {% if feature.links %}
+              <div class="feature-links-bar" aria-label="Feature metadata and resources">
+                {% for link in feature.links %}
+                  {% if not loop.first %}
+                    <span class="link-separator" aria-hidden="true">|</span>
+                  {% endif %}
+                  <a 
+                    href="{{ link.url }}" 
+                    {% if not link.url.startswith('/') and not link.url.startswith('#') %}target="_blank" rel="noopener noreferrer"{% endif %}
+                    title="{{ link.url }}"
+                  >
+                    <span class="doc-link-text">{{ link.title or link.type }}</span>
+                    {% if not link.url.startswith('/') and not link.url.startswith('#') %}
+                      <span aria-hidden="true" class="external-icon">↗</span>
+                      <span class="sr-only">{{ ui.external_window_sr }}</span>
+                    {% endif %}
+                  </a>
+                {% endfor %}
+              </div>
+            {% endif %}
+          </article>
+        {% endfor %}
+      </div>
+    </section>
+  {% endif %}
+
+  {# 4. Fallback Empty State if total_features_count is 0 #}
+
+  {% if total_features_count == 0 %}
+    <section class="empty-state" aria-labelledby="empty-state-title">
+      <h2 id="empty-state-title" class="empty-state-heading">{{ ui.empty_state_heading }}</h2>
+      <p class="empty-state-desc">{{ ui.empty_state_desc }}</p>
+      <div class="empty-state-actions">
+        <a href="/roadmap" class="button">{{ ui.view_roadmap_btn }}</a>
+        <a href="/features#milestone={{ milestone }}" class="button">{{ ui.search_features_btn }}</a>
+      </div>
+    </section>
+  {% endif %}
+
 </main>
 {% endblock %}
 
@@ -468,6 +674,7 @@
   const currentMilestone = {{ milestone }};
   const minMilestone = {{ min_dropdown_milestone }};
   const maxMilestone = {{ max_dropdown_milestone }};
+  const currentLang = '{{ current_lang }}';
   const milestoneInput = document.getElementById('milestone-input');
   const releaseContainer = document.getElementById('release-notes-container');
 
@@ -477,8 +684,11 @@
     if (match) {
       const m = parseInt(match[0], 10);
       if (!isNaN(m) && m >= minMilestone && m <= maxMilestone && m !== currentMilestone) {
-        const targetUrl = new URL(`/release-notes/${m}`, window.location.origin);
-        window.location.assign(targetUrl.href);
+        let targetUrl = `/release-notes/${m}`;
+        if (currentLang && currentLang !== 'en') {
+          targetUrl += `?hl=${encodeURIComponent(currentLang)}`;
+        }
+        window.location.assign(targetUrl);
       }
     }
   }
@@ -500,7 +710,23 @@
     });
   }
 
+  const langSelect = document.getElementById('language-select');
+  if (langSelect) {
+    langSelect.addEventListener('change', () => {
+      const url = new URL(window.location.href);
+      if (langSelect.value === 'en') {
+        url.searchParams.delete('hl');
+      } else {
+        url.searchParams.set('hl', langSelect.value);
+      }
+      window.location.assign(url.href);
+    });
+  }
+
+
+
   // Delegated Heading Anchor Link Management (Clipboard copy & smooth scroll)
+
   if (releaseContainer) {
     releaseContainer.addEventListener('click', async (e) => {
       const link = e.target.closest('.heading-anchor-link');
@@ -532,3 +758,4 @@
   }
 </script>
 {% endblock %}
+

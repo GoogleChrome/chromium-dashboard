@@ -75,6 +75,7 @@ chromestatus_openapi/models/patch_gate_request.py
 chromestatus_openapi/models/pending_suggestions_count_response.py
 chromestatus_openapi/models/permissions_response.py
 chromestatus_openapi/models/post_intent_request.py
+chromestatus_openapi/models/post_progress_vote_request.py
 chromestatus_openapi/models/post_settings_request.py
 chromestatus_openapi/models/post_stars_request.py
 chromestatus_openapi/models/post_vote_request.py
@@ -83,6 +84,7 @@ chromestatus_openapi/models/process_stage.py
 chromestatus_openapi/models/progress_item.py
 chromestatus_openapi/models/reject_unneeded_get_request.py
 chromestatus_openapi/models/release_note_feature.py
+chromestatus_openapi/models/release_note_link.py
 chromestatus_openapi/models/release_notes_l10n_item.py
 chromestatus_openapi/models/release_notes_l10n_response.py
 chromestatus_openapi/models/release_notes_response.py
@@ -98,6 +100,7 @@ chromestatus_openapi/models/summary_suggestion.py
 chromestatus_openapi/models/summary_suggestion_list_response.py
 chromestatus_openapi/models/summary_suggestion_patch_request.py
 chromestatus_openapi/models/summary_suggestion_response.py
+chromestatus_openapi/models/summary_suggestion_trigger_request.py
 chromestatus_openapi/models/survey_answers.py
 chromestatus_openapi/models/token_refresh_response.py
 chromestatus_openapi/models/user_permissions.py

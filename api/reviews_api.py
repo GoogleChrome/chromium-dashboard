@@ -132,7 +132,11 @@ class VotesAPI(basehandlers.APIHandler):
         if is_requesting_review and is_editor:
             return
 
-        if is_approving and is_editor and self_certify.is_eligible(gate):
+        if (
+            is_approving
+            and is_editor
+            and self_certify.is_eligible(gate, feature=feature)
+        ):
             return
 
         if is_approver:
@@ -167,7 +171,9 @@ class GatesAPI(basehandlers.APIHandler):
         feature_id = fe.key.integer_id()
         gates: list[Gate] = Gate.query(Gate.feature_id == feature_id).fetch()
 
-        dicts = [converters.gate_value_to_json_dict(g) for g in gates]
+        dicts = [
+            converters.gate_value_to_json_dict(g, feature=fe) for g in gates
+        ]
         for g in dicts:
             approvers = approval_defs.get_approvers(g['gate_type'])
             g['possible_assignee_emails'] = approvers

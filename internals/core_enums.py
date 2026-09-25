@@ -408,6 +408,9 @@ GATE_TESTING_SHIP = 74
 GATE_TESTING_PLAN = 75
 GATE_ADOPTION_SHIP = 84
 GATE_ADOPTION_PLAN = 85
+GATE_DQ_SHIP = 94
+GATE_DQ_PLAN = 95
+
 
 # List of (stage type, gate type) for each feature type.
 STAGES_AND_GATES_BY_FEATURE_TYPE: dict[int, list[tuple[int, list[int]]]] = {
@@ -1085,3 +1088,35 @@ class MilestoneCurationStatus(StrEnum):
     PENDING = 'PENDING'
     IN_REVIEW = 'IN_REVIEW'
     COMPLETED = 'COMPLETED'
+
+
+class ReleaseNoteMilestoneClassification(StrEnum):
+    """Milestone launch classification constants for developer release notes."""
+
+    SHIPPING = 'SHIPPING'
+    ORIGIN_TRIAL = 'ORIGIN_TRIAL'
+    DEPRECATION = 'DEPRECATION'
+    REMOVAL = 'REMOVAL'
+
+
+class ReleaseNoteLinkType(StrEnum):
+    """Link classification constants for developer release notes resources."""
+
+    BUG = 'BUG'
+    CHROMESTATUS = 'CHROMESTATUS'
+    SPEC = 'SPEC'
+    ORIGIN_TRIAL = 'ORIGIN_TRIAL'
+    DOC = 'DOC'
+    EXPLAINER = 'EXPLAINER'
+    DEMO = 'DEMO'
+    OTHER = 'OTHER'
+
+
+RELEASE_NOTE_LINK_DEFAULT_TITLES: dict[ReleaseNoteLinkType, str] = {
+    ReleaseNoteLinkType.ORIGIN_TRIAL: 'Origin Trial',
+    ReleaseNoteLinkType.BUG: 'Tracking bug',
+    ReleaseNoteLinkType.CHROMESTATUS: 'ChromeStatus.com entry',
+    ReleaseNoteLinkType.SPEC: 'Spec',
+    ReleaseNoteLinkType.EXPLAINER: 'Explainer',
+    ReleaseNoteLinkType.DEMO: 'Demo',
+}

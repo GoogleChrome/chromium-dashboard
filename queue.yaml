@@ -8,3 +8,12 @@ queue:
   # bucket_size: 40
   # max_concurrent_requests: 5
 # total_storage_limit: 120M
+- name: gen-summaries-queue
+  rate: 5/s
+  max_concurrent_requests: 5
+  retry_parameters:
+    task_retry_limit: 3
+    task_age_limit: 1d
+    min_backoff_seconds: 10
+    max_backoff_seconds: 300
+    max_doublings: 4

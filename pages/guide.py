@@ -22,7 +22,7 @@ from google.cloud import ndb
 import settings
 
 # Appengine imports.
-from framework import basehandlers, permissions, rediscache
+from framework import basehandlers, permissions
 from internals import (
     core_enums,
     notifier_helpers,
@@ -129,10 +129,6 @@ class FeatureCreateHandler(basehandlers.FlaskHandler):
             feature_entry, [], is_update=False
         )
 
-        # Remove all feature-related cache.
-        rediscache.delete_keys_with_prefix(FeatureEntry.DEFAULT_CACHE_KEY)
-        rediscache.delete_keys_with_prefix(FeatureEntry.SEARCH_CACHE_KEY)
-
         redirect_url = '/feature/' + str(key.integer_id())
         return self.redirect(redirect_url)
 
@@ -230,9 +226,6 @@ class EnterpriseFeatureCreateHandler(FeatureCreateHandler):
 
         # Write each Stage and Gate entity for the given feature.
         self.write_gates_and_stages_for_feature(key.integer_id(), feature_type)
-
-        # Remove all feature-related cache.
-        rediscache.delete_keys_with_prefix(FeatureEntry.DEFAULT_CACHE_KEY)
 
         redirect_url = '/guide/editall/' + str(key.integer_id()) + '#rollout1'
         return self.redirect(redirect_url)

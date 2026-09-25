@@ -41,6 +41,7 @@ from api import (
     origin_trials_api,
     permissions_api,
     processes_api,
+    progress_api,
     releasenotes_api,
     review_latency_api,
     reviews_api,
@@ -179,7 +180,7 @@ api_routes: list[Route] = [
     ),
     Route(
         f'{API_BASE}/features/<int:feature_id>/progress',
-        processes_api.ProgressAPI,
+        progress_api.ProgressAPI,
     ),
     Route(f'{API_BASE}/features/<int:feature_id>/stages', stages_api.StagesAPI),
     Route(
@@ -533,6 +534,10 @@ internals_routes: list[Route] = [
     Route(
         '/tasks/generate-wpt-coverage-analysis',
         gemini_helpers.GenerateWPTCoverageEvalReportHandler,
+    ),
+    Route(
+        '/tasks/generate-summary',
+        gemini_helpers.GenerateSummaryHandler,
     ),
     # OT process reminder emails
     Route(

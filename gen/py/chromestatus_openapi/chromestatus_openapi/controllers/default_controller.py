@@ -35,6 +35,7 @@ from chromestatus_openapi.models.patch_gate_request import PatchGateRequest  # n
 from chromestatus_openapi.models.pending_suggestions_count_response import PendingSuggestionsCountResponse  # noqa: E501
 from chromestatus_openapi.models.permissions_response import PermissionsResponse  # noqa: E501
 from chromestatus_openapi.models.post_intent_request import PostIntentRequest  # noqa: E501
+from chromestatus_openapi.models.post_progress_vote_request import PostProgressVoteRequest  # noqa: E501
 from chromestatus_openapi.models.post_settings_request import PostSettingsRequest  # noqa: E501
 from chromestatus_openapi.models.post_vote_request import PostVoteRequest  # noqa: E501
 from chromestatus_openapi.models.process import Process  # noqa: E501
@@ -49,6 +50,7 @@ from chromestatus_openapi.models.success_message import SuccessMessage  # noqa: 
 from chromestatus_openapi.models.summary_suggestion_list_response import SummarySuggestionListResponse  # noqa: E501
 from chromestatus_openapi.models.summary_suggestion_patch_request import SummarySuggestionPatchRequest  # noqa: E501
 from chromestatus_openapi.models.summary_suggestion_response import SummarySuggestionResponse  # noqa: E501
+from chromestatus_openapi.models.summary_suggestion_trigger_request import SummarySuggestionTriggerRequest  # noqa: E501
 from chromestatus_openapi import util
 
 
@@ -712,6 +714,23 @@ def set_assignees_for_gate(feature_id, gate_id, patch_gate_request):  # noqa: E5
     return 'do some magic!'
 
 
+def set_progress_vote(feature_id, post_progress_vote_request):  # noqa: E501
+    """Set a user&#39;s vote value for a progress item on the specified feature.
+
+     # noqa: E501
+
+    :param feature_id: Feature ID
+    :type feature_id: int
+    :param post_progress_vote_request: 
+    :type post_progress_vote_request: dict | bytes
+
+    :rtype: Union[SuccessMessage, Tuple[SuccessMessage, int], Tuple[SuccessMessage, int, Dict[str, str]]
+    """
+    if connexion.request.is_json:
+        post_progress_vote_request = PostProgressVoteRequest.from_dict(connexion.request.get_json())  # noqa: E501
+    return 'do some magic!'
+
+
 def set_star(set_star_request):  # noqa: E501
     """Set or clear a star on the specified feature
 
@@ -758,6 +777,23 @@ def set_vote_for_feature_and_gate(feature_id, gate_id, post_vote_request):  # no
     """
     if connexion.request.is_json:
         post_vote_request = PostVoteRequest.from_dict(connexion.request.get_json())  # noqa: E501
+    return 'do some magic!'
+
+
+def trigger_summary_generation(feature_id, summary_suggestion_trigger_request=None):  # noqa: E501
+    """Enqueue AI summary generation task for a feature
+
+    Enqueues an asynchronous background Cloud Task to generate an AI release notes summary. Verifies feature edit permissions (owner, editor, admin) before enqueuing. # noqa: E501
+
+    :param feature_id: Feature ID (positive integer)
+    :type feature_id: int
+    :param summary_suggestion_trigger_request: 
+    :type summary_suggestion_trigger_request: dict | bytes
+
+    :rtype: Union[SuccessMessage, Tuple[SuccessMessage, int], Tuple[SuccessMessage, int, Dict[str, str]]
+    """
+    if connexion.request.is_json:
+        summary_suggestion_trigger_request = SummarySuggestionTriggerRequest.from_dict(connexion.request.get_json())  # noqa: E501
     return 'do some magic!'
 
 

@@ -429,3 +429,52 @@ export async function setupFakeNow(
     Date.now = () => __DateNow() + __DateNowOffset;
   }`);
 }
+
+/**
+ * Injects a PerformanceObserver into the page before document load to track
+ * Cumulative Layout Shift (CLS) during SSR rendering and client-side hydration.
+ *
+ * Call before `page.goto()`.
+ *
+ * @param {import('@playwright/test').Page} page
+ */
+export async function trackCumulativeLayoutShift(page) {
+  await page.addInitScript(() => {
+    window['__clsScore'] = 0;
+    try {
+      const observer = new PerformanceObserver(entryList => {
+        for (const entry of entryList.getEntries()) {
+          // Ignore layout shifts caused by user input (hadRecentInput)
+          if (!(/** @type {any} */ (entry).hadRecentInput)) {
+            window['__clsScore'] += /** @type {any} */ (entry).value;
+          }
+        }
+      });
+      observer.observe({type: 'layout-shift', buffered: true});
+    } catch {
+      // PerformanceObserver layout-shift not supported in some environments
+    }
+  });
+}
+
+/**
+ * Retrieves the recorded Cumulative Layout Shift (CLS) score from the page.
+ *
+ * @param {import('@playwright/test').Page} page
+ * @returns {Promise<number>}
+ */
+export async function getCumulativeLayoutShift(page) {
+  const cls = await page.evaluate(() => window['__clsScore'] || 0);
+  return Number(cls);
+}
+
+/**
+ * Asserts that the cumulative layout shift on the page is below the given threshold.
+ *
+ * @param {import('@playwright/test').Page} page
+ * @param {number} [maxAllowedCLS=0.05]
+ */
+export async function expectZeroLayoutShift(page, maxAllowedCLS = 0.05) {
+  const cls = await getCumulativeLayoutShift(page);
+  expect(cls).toBeLessThanOrEqual(maxAllowedCLS);
+}

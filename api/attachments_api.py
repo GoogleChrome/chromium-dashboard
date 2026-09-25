@@ -74,8 +74,10 @@ class AttachmentServing(basehandlers.FlaskHandler):
 
     def get_template_data(self, **kwargs):
         """Serve the attachment data, or redirect to a cookieless domain."""
-        feature = self.get_specified_feature(**kwargs)
-        feature_id = feature.key.integer_id()
+        # Don't fetch the feature entry or do a permission check because
+        # attachments are served from a no-cookie domain so every request
+        # is anonymous.
+        feature_id = kwargs.get('feature_id')
         is_thumb = 'thumbnail' in kwargs
         attachment_id = kwargs.get('attachment_id')
         attachment = attachments.get_attachment(feature_id, attachment_id)

@@ -1,5 +1,6 @@
 .gitignore
 .npmignore
+.openapi-generator-ignore
 README.md
 package.json
 src/apis/DefaultApi.ts
@@ -65,9 +66,10 @@ src/models/OutstandingReview.ts
 src/models/OwnersAndSubscribersOfComponent.ts
 src/models/PatchCommentRequest.ts
 src/models/PatchGateRequest.ts
-src/models/PendingCountResponse.ts
+src/models/PendingSuggestionsCountResponse.ts
 src/models/PermissionsResponse.ts
 src/models/PostIntentRequest.ts
+src/models/PostProgressVoteRequest.ts
 src/models/PostSettingsRequest.ts
 src/models/PostStarsRequest.ts
 src/models/PostVoteRequest.ts
@@ -76,6 +78,7 @@ src/models/ProcessStage.ts
 src/models/ProgressItem.ts
 src/models/RejectUnneededGetRequest.ts
 src/models/ReleaseNoteFeature.ts
+src/models/ReleaseNoteLink.ts
 src/models/ReleaseNotesL10nItem.ts
 src/models/ReleaseNotesL10nResponse.ts
 src/models/ReleaseNotesResponse.ts
@@ -91,6 +94,7 @@ src/models/SummarySuggestion.ts
 src/models/SummarySuggestionListResponse.ts
 src/models/SummarySuggestionPatchRequest.ts
 src/models/SummarySuggestionResponse.ts
+src/models/SummarySuggestionTriggerRequest.ts
 src/models/SurveyAnswers.ts
 src/models/TokenRefreshResponse.ts
 src/models/UserPermissions.ts

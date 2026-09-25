@@ -6,6 +6,8 @@ import {
   login,
   logout,
   createNewFeature,
+  trackCumulativeLayoutShift,
+  expectZeroLayoutShift,
 } from './test_utils';
 
 const AXE_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'best-practice'];
@@ -53,9 +55,8 @@ async function withShippedFeature(page, milestone, testFn) {
     if (featureId) {
       await page
         .evaluate(async id => {
-          // @ts-ignore
-          if (window.csClient)
-            await window.csClient.doDelete(`/features/${id}`);
+          const client = window['csClient'];
+          if (client) await client.doDelete(`/features/${id}`);
         }, featureId)
         .catch(() => {});
     }
@@ -76,68 +77,51 @@ test.describe('Release Notes SSR Page', () => {
   test('should render milestone navigation strip with accessible steppers and jump box', async ({
     page,
   }) => {
-    await page.goto('/release-notes/151', {timeout: 30000});
+    await trackCumulativeLayoutShift(page);
+    await page.goto('/release-notes/152', {timeout: 30000});
 
     const pageHeading = page.getByRole('heading', {
-      name: 'Chrome 151 Release Notes',
+      name: 'Chrome 152 Release Notes',
     });
     await expect(pageHeading).toBeVisible();
 
     const prevStepper = page.getByRole('link', {
-      name: /Previous milestone: Chrome 150/i,
+      name: /Previous milestone: Chrome 151/i,
     });
     const nextStepper = page.getByRole('link', {
-      name: /Next milestone: Chrome 152/i,
+      name: /Next milestone: Chrome 153/i,
     });
 
     await expect(prevStepper).toBeVisible();
     await expect(nextStepper).toBeVisible();
 
-    await expect(prevStepper).toHaveAttribute('href', '/release-notes/150');
-    await expect(nextStepper).toHaveAttribute('href', '/release-notes/152');
+    await expect(prevStepper).toHaveAttribute('href', '/release-notes/151');
+    await expect(nextStepper).toHaveAttribute('href', '/release-notes/153');
 
     const jumpInput = page.getByLabel('Jump to Chrome milestone');
     await expect(jumpInput).toBeVisible();
     await expect(jumpInput).toHaveAttribute('list', 'milestones-datalist');
-    await expect(jumpInput).toHaveValue('Chrome 151');
+    await expect(jumpInput).toHaveValue('Chrome 152');
 
-    // Verify datalist option exists for milestone 151
-    const option151 = page
+    // Verify datalist option exists for milestone 152
+    const option152 = page
       .locator('#milestones-datalist')
-      .locator('option[value="Chrome 151"]');
-    await expect(option151).toBeAttached();
+      .locator('option[value="Chrome 152"]');
+    await expect(option152).toBeAttached();
+
+    await expectZeroLayoutShift(page);
   });
 
   test('should navigate to another milestone when typing milestone number and pressing Enter', async ({
     page,
   }) => {
-    await page.goto('/release-notes/151', {timeout: 30000});
+    await page.goto('/release-notes/152', {timeout: 30000});
 
     const jumpInput = page.getByLabel('Jump to Chrome milestone');
     await expect(jumpInput).toBeVisible();
 
     // Type milestone number and press Enter
-    await jumpInput.fill('152');
-    await jumpInput.press('Enter');
-
-    await expect(page).toHaveURL(/\/release-notes\/152/);
-    const newHeading = page.getByRole('heading', {
-      name: 'Chrome 152 Release Notes',
-    });
-    await expect(newHeading).toBeVisible();
-    await expect(jumpInput).toHaveValue('Chrome 152');
-  });
-
-  test('should navigate to another milestone on jump box change event', async ({
-    page,
-  }) => {
-    await page.goto('/release-notes/151', {timeout: 30000});
-
-    const jumpInput = page.getByLabel('Jump to Chrome milestone');
-    await expect(jumpInput).toBeVisible();
-
-    // Select/fill formatted milestone string and press Enter to trigger change
-    await jumpInput.fill('Chrome 153');
+    await jumpInput.fill('153');
     await jumpInput.press('Enter');
 
     await expect(page).toHaveURL(/\/release-notes\/153/);
@@ -148,10 +132,30 @@ test.describe('Release Notes SSR Page', () => {
     await expect(jumpInput).toHaveValue('Chrome 153');
   });
 
+  test('should navigate to another milestone on jump box change event', async ({
+    page,
+  }) => {
+    await page.goto('/release-notes/152', {timeout: 30000});
+
+    const jumpInput = page.getByLabel('Jump to Chrome milestone');
+    await expect(jumpInput).toBeVisible();
+
+    // Select/fill formatted milestone string and press Enter to trigger change
+    await jumpInput.fill('Chrome 154');
+    await jumpInput.press('Enter');
+
+    await expect(page).toHaveURL(/\/release-notes\/154/);
+    const newHeading = page.getByRole('heading', {
+      name: 'Chrome 154 Release Notes',
+    });
+    await expect(newHeading).toBeVisible();
+    await expect(jumpInput).toHaveValue('Chrome 154');
+  });
+
   test('should not navigate when typing numbers below minimum milestone threshold (< 124)', async ({
     page,
   }) => {
-    await page.goto('/release-notes/151', {timeout: 30000});
+    await page.goto('/release-notes/152', {timeout: 30000});
 
     const jumpInput = page.getByLabel('Jump to Chrome milestone');
     await expect(jumpInput).toBeVisible();
@@ -159,37 +163,37 @@ test.describe('Release Notes SSR Page', () => {
     // Type single leading digit '1' and press Enter - should not navigate
     await jumpInput.fill('1');
     await jumpInput.press('Enter');
-    await expect(page).toHaveURL(/\/release-notes\/151/);
+    await expect(page).toHaveURL(/\/release-notes\/152/);
 
     // Type '12' and press Enter - should not navigate
     await jumpInput.fill('12');
     await jumpInput.press('Enter');
-    await expect(page).toHaveURL(/\/release-notes\/151/);
+    await expect(page).toHaveURL(/\/release-notes\/152/);
   });
 
   test('should navigate to next milestone when clicking the next stepper button', async ({
     page,
   }) => {
-    await page.goto('/release-notes/151', {timeout: 30000});
+    await page.goto('/release-notes/152', {timeout: 30000});
 
     const nextStepper = page.getByRole('link', {
-      name: /Next milestone: Chrome 152/i,
+      name: /Next milestone: Chrome 153/i,
     });
     await expect(nextStepper).toBeVisible();
 
     await nextStepper.click();
-    await expect(page).toHaveURL(/\/release-notes\/152/);
+    await expect(page).toHaveURL(/\/release-notes\/153/);
 
     const newHeading = page.getByRole('heading', {
-      name: 'Chrome 152 Release Notes',
+      name: 'Chrome 153 Release Notes',
     });
     await expect(newHeading).toBeVisible();
   });
 
-  test('should render archival notice banner on cutoff milestone 151', async ({
+  test('should render archival notice banner on cutoff milestone 152', async ({
     page,
   }) => {
-    await page.goto('/release-notes/151', {timeout: 30000});
+    await page.goto('/release-notes/152', {timeout: 30000});
 
     const archivalBanner = page.getByRole('note');
     await expect(archivalBanner).toBeVisible();
@@ -205,11 +209,12 @@ test.describe('Release Notes SSR Page', () => {
   test('should render populated release notes page with feature cards', async ({
     page,
   }) => {
-    await withShippedFeature(page, 151, async featureId => {
-      await page.goto('/release-notes/151', {timeout: 30000});
+    await withShippedFeature(page, 152, async featureId => {
+      await trackCumulativeLayoutShift(page);
+      await page.goto('/release-notes/152', {timeout: 30000});
 
       const pageHeading = page.getByRole('heading', {
-        name: 'Chrome 151 Release Notes',
+        name: 'Chrome 152 Release Notes',
       });
       await expect(pageHeading).toBeVisible();
 
@@ -220,6 +225,16 @@ test.describe('Release Notes SSR Page', () => {
       // Verify feature title permalink
       const titleLink = featureCard.locator('.feature-name');
       await expect(titleLink).toHaveAttribute('href', `/feature/${featureId}`);
+
+      // Verify metadata links bar
+      const linksBar = featureCard.locator('.feature-links-bar');
+      await expect(linksBar).toBeVisible();
+      const entryLink = linksBar.getByRole('link', {
+        name: 'ChromeStatus.com entry',
+      });
+      await expect(entryLink).toHaveAttribute('href', `/feature/${featureId}`);
+
+      await expectZeroLayoutShift(page);
     });
   });
 
@@ -236,8 +251,8 @@ test.describe('Release Notes SSR Page', () => {
       }
     }
 
-    await withShippedFeature(page, 151, async featureId => {
-      await page.goto('/release-notes/151', {timeout: 30000});
+    await withShippedFeature(page, 152, async featureId => {
+      await page.goto('/release-notes/152', {timeout: 30000});
 
       const featureCard = page.locator(`#feature-${featureId}`);
       await expect(featureCard).toBeVisible({timeout: 20000});
@@ -263,7 +278,7 @@ test.describe('Release Notes SSR Page', () => {
   test('should render external links with target=_blank and rel=noopener', async ({
     page,
   }) => {
-    await page.goto('/release-notes/151', {timeout: 30000});
+    await page.goto('/release-notes/152', {timeout: 30000});
 
     const archiveLink = page.getByRole('link', {
       name: /archive/i,
@@ -287,10 +302,10 @@ test.describe('Release Notes SSR Page', () => {
   test('should render empty state with roadmap action buttons on unpopulated milestone', async ({
     page,
   }) => {
-    await page.goto('/release-notes/152', {timeout: 30000});
+    await page.goto('/release-notes/153', {timeout: 30000});
 
     const emptyHeading = page.getByRole('heading', {
-      name: /No release notes features available for Chrome 152/i,
+      name: /No release notes features available for Chrome 153/i,
     });
     await expect(emptyHeading).toBeVisible();
 
@@ -301,20 +316,20 @@ test.describe('Release Notes SSR Page', () => {
     await expect(roadmapLink).toHaveAttribute('href', '/roadmap');
   });
 
-  test('should perform HTTP 302 redirect for historical milestones prior to M151 cutoff', async ({
+  test('should perform HTTP 302 redirect for historical milestones prior to M152 cutoff', async ({
     page,
   }) => {
-    await page.goto('/release-notes/150', {timeout: 30000});
-    await expect(page).toHaveURL(/developer\.chrome\.com\/release-notes\/150/);
+    await page.goto('/release-notes/151', {timeout: 30000});
+    await expect(page).toHaveURL(/developer\.chrome\.com\/release-notes\/151/);
   });
 
   test('should pass automated WCAG 2.1 AA and Best Practice Axe audit on empty state', async ({
     page,
   }) => {
-    await page.goto('/release-notes/152', {timeout: 30000});
+    await page.goto('/release-notes/153', {timeout: 30000});
     await expect(
       page.getByRole('heading', {
-        name: /No release notes features available for Chrome 152/i,
+        name: /No release notes features available for Chrome 153/i,
       })
     ).toBeVisible();
 
@@ -337,10 +352,10 @@ test.describe('Release Notes SSR Page', () => {
   test('should pass automated WCAG 2.1 AA and Best Practice Axe audit on populated state', async ({
     page,
   }) => {
-    await withShippedFeature(page, 151, async featureId => {
-      await page.goto('/release-notes/151', {timeout: 30000});
+    await withShippedFeature(page, 152, async featureId => {
+      await page.goto('/release-notes/152', {timeout: 30000});
       await expect(
-        page.getByRole('heading', {name: 'Chrome 151 Release Notes'})
+        page.getByRole('heading', {name: 'Chrome 152 Release Notes'})
       ).toBeVisible();
       await expect(page.locator(`#feature-${featureId}`)).toBeVisible({
         timeout: 20000,
@@ -366,14 +381,14 @@ test.describe('Release Notes SSR Page', () => {
   test('should support keyboard navigation and valid tabindex order', async ({
     page,
   }) => {
-    await page.goto('/release-notes/151', {timeout: 30000});
+    await page.goto('/release-notes/152', {timeout: 30000});
 
     const prevStepper = page.getByRole('link', {
-      name: /Previous milestone: Chrome 150/i,
+      name: /Previous milestone: Chrome 151/i,
     });
     const milestoneInput = page.getByLabel('Jump to Chrome milestone');
     const nextStepper = page.getByRole('link', {
-      name: /Next milestone: Chrome 152/i,
+      name: /Next milestone: Chrome 153/i,
     });
 
     // Previous stepper button is focusable
@@ -384,6 +399,11 @@ test.describe('Release Notes SSR Page', () => {
     await page.keyboard.press('Tab');
     await expect(milestoneInput).toBeFocused();
 
+    // Tab to language selector dropdown
+    const langSelect = page.locator('#language-select');
+    await page.keyboard.press('Tab');
+    await expect(langSelect).toBeFocused();
+
     // Tab to next stepper button
     await page.keyboard.press('Tab');
     await expect(nextStepper).toBeFocused();
@@ -392,14 +412,14 @@ test.describe('Release Notes SSR Page', () => {
   test('should pass automated a11y checks during interactive input typing and button focus states', async ({
     page,
   }) => {
-    await page.goto('/release-notes/151', {timeout: 30000});
+    await page.goto('/release-notes/152', {timeout: 30000});
 
     const milestoneInput = page.getByLabel('Jump to Chrome milestone');
     const prevStepper = page.getByRole('link', {
-      name: /Previous milestone: Chrome 150/i,
+      name: /Previous milestone: Chrome 151/i,
     });
     const nextStepper = page.getByRole('link', {
-      name: /Next milestone: Chrome 152/i,
+      name: /Next milestone: Chrome 153/i,
     });
 
     // 1. Check stepper button accessibility labels
@@ -430,11 +450,69 @@ test.describe('Release Notes SSR Page', () => {
     await nextStepper.focus();
     await expect(nextStepper).toBeFocused();
     await page.keyboard.press('Enter');
-    await expect(page).toHaveURL(/\/release-notes\/152/);
+    await expect(page).toHaveURL(/\/release-notes\/153/);
     await expect(
       page.getByRole('heading', {
-        name: 'Chrome 152 Release Notes',
+        name: 'Chrome 153 Release Notes',
       })
     ).toBeVisible();
+  });
+
+  test('should render localized Japanese release notes with ?hl=ja', async ({
+    page,
+  }) => {
+    await withShippedFeature(page, 152, async () => {
+      await trackCumulativeLayoutShift(page);
+      await page.goto('/release-notes/152?hl=ja', {timeout: 30000});
+
+      const pageHeading = page.getByRole('heading', {
+        name: 'Chrome 152 リリースノート',
+      });
+      await expect(pageHeading).toBeVisible();
+
+      // Assert root container has data-page-lang="ja" and lang="ja"
+      const container = page.locator('#release-notes-container');
+      await expect(container).toHaveAttribute('data-page-lang', 'ja');
+      await expect(container).toHaveAttribute('lang', 'ja');
+
+      // Assert that category heading is localized to Japanese (e.g. その他 or CSS)
+      const categoryHeading = page.locator('.category-title');
+      await expect(categoryHeading.first()).toBeVisible();
+
+      // Assert that feature summaries are localized to Japanese and zero 'en' summaries leaked
+      const featureSummaries = page.locator('.feature-summary');
+      const summaryCount = await featureSummaries.count();
+      if (summaryCount > 0) {
+        await expect(
+          page.locator('.feature-summary[data-summary-lang="en"]')
+        ).toHaveCount(0);
+        await expect(
+          page.locator('.feature-summary[data-summary-lang="ja"]')
+        ).toHaveCount(summaryCount);
+      }
+
+      await expectZeroLayoutShift(page);
+    });
+  });
+
+  test('should change language using language selector dropdown', async ({
+    page,
+  }) => {
+    await page.goto('/release-notes/152', {timeout: 30000});
+
+    const langSelect = page.locator('#language-select');
+    await expect(langSelect).toBeVisible();
+
+    await langSelect.selectOption('es');
+    await expect(page).toHaveURL(/\/release-notes\/152\?hl=es/);
+
+    const spanishHeading = page.getByRole('heading', {
+      name: 'Notas de la versión de Chrome 152',
+    });
+    await expect(spanishHeading).toBeVisible();
+    await expect(page.locator('#release-notes-container')).toHaveAttribute(
+      'data-page-lang',
+      'es'
+    );
   });
 });

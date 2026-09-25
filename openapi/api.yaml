@@ -849,6 +849,40 @@ paths:
                 additionalProperties: true
         '404':
           description: Feature not found based on given ID.
+    post:
+      summary: Set a user's vote value for a progress item on the specified feature.
+      operationId: setProgressVote
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostProgressVoteRequest'
+      responses:
+        '200':
+          description: Progress vote set successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
+        '400':
+          description: Invalid request parameters.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '403':
+          description: User does not have permission.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '404':
+          description: Feature not found based on given ID.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
   /features/{feature_id}/{stage_id}/{gate_id}/intent:
     parameters:
       - name: feature_id
@@ -1102,6 +1136,49 @@ paths:
                 $ref: '#/components/schemas/ErrorMessage'
         '404':
           description: Feature or suggestion not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+    post:
+      summary: Enqueue AI summary generation task for a feature
+      description: >-
+        Enqueues an asynchronous background Cloud Task to generate an AI release notes summary.
+        Verifies feature edit permissions (owner, editor, admin) before enqueuing.
+      operationId: triggerSummaryGeneration
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SummarySuggestionTriggerRequest'
+      responses:
+        '200':
+          description: Success - Task enqueued
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
+        '400':
+          description: Bad Request - Invalid feature_id parameter or non-boolean force parameter
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '401':
+          description: Unauthorized - Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '403':
+          description: Forbidden - Insufficient edit permissions for this feature
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '404':
+          description: Feature not found or marked soft-deleted
           content:
             application/json:
               schema:
@@ -1381,6 +1458,21 @@ components:
           description: The vote value to set. E.g., 2 to request a review, 5 to approve.
       required:
         - state
+    PostProgressVoteRequest:
+      type: object
+      properties:
+        progress_item_name:
+          type: string
+          description: The name of the progress item being reviewed.
+        state:
+          type: integer
+          description: The vote value to set (1=NEEDS_REVIEW, 2=VERIFIED, 3=NA, 4=NEEDS_WORK).
+        feedback:
+          type: string
+          description: Optional feedback from the reviewer.
+      required:
+        - progress_item_name
+        - state
     Gate:
       type: object
       properties:
@@ -1543,6 +1635,10 @@ components:
           type: string
         field:
           type: string
+        description:
+          type: string
+        criteria:
+          type: string
     Action:
       type: object
       properties:
@@ -1554,6 +1650,10 @@ components:
           type: array
           items:
             type: string
+        gate_types:
+          type: array
+          items:
+            type: integer
     GateInfo:
       type: object
       properties:
@@ -2524,6 +2624,14 @@ components:
             Expected current version_token of the suggestion being patched for Optimistic Concurrency Control (OCC).
             Must match the server's current version_token, otherwise the server rejects the request with HTTP 409 Conflict.
             (TODO: Migrate to standard HTTP ETag / If-Match headers if the repo adopts header-based OCC across REST endpoints.)
+    SummarySuggestionTriggerRequest:
+      type: object
+      description: Optional payload for triggering AI summary generation.
+      properties:
+        force:
+          type: boolean
+          default: false
+          description: Whether to bypass cached feature fingerprint checks and force LLM generation.
     SummarySuggestionListResponse:
       type: object
       description: Paginated response containing a list of pending AI summary suggestions for the review queue.
@@ -2602,6 +2710,33 @@ components:
           items:
             type: string
           description: Updated list of assigned curator email addresses.
+    ReleaseNoteLink:
+      type: object
+      description: Structured reference link for a release note feature.
+      required:
+        - url
+        - type
+      properties:
+        url:
+          type: string
+          description: Target URL of the resource.
+        type:
+          type: string
+          enum:
+            - BUG
+            - CHROMESTATUS
+            - SPEC
+            - ORIGIN_TRIAL
+            - DOC
+            - EXPLAINER
+            - DEMO
+            - OTHER
+          description: Semantic classification of the feature reference link.
+        title:
+          type: string
+          nullable: true
+          description: Optional human-readable display label (e.g. 'Tracking bug #40146374', 'Spec', 'Origin Trial').
+
     ReleaseNoteFeature:
       type: object
       description: Individual feature entry formatted for public release notes.
@@ -2646,7 +2781,23 @@ components:
             - AI_APPLIED: The active summary text was generated by AI and explicitly approved by an editor (SummarySuggestion.status == APPLIED).
             - HUMAN: The active summary text was manually authored by a human developer or editor.
             Note: Unapproved draft suggestions sitting in state PENDING do not alter the active summary text or its provenance until approved.
+        milestone_classification:
+          type: string
+          enum:
+            - SHIPPING
+            - ORIGIN_TRIAL
+            - DEPRECATION
+            - REMOVAL
+          default: SHIPPING
+          description: Launch status classification of this feature in the target milestone.
+        links:
+          type: array
+          items:
+            $ref: '#/components/schemas/ReleaseNoteLink'
+          description: Structured list of categorized resource and reference links.
     ReleaseNotesResponse:
+
+
       type: object
       description: Public release notes payload containing categorized features for a milestone.
       required:

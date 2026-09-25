@@ -31,6 +31,18 @@ export interface ProgressItem {
      * @memberof ProgressItem
      */
     field?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ProgressItem
+     */
+    description?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ProgressItem
+     */
+    criteria?: string;
 }
 
 /**
@@ -52,6 +64,8 @@ export function ProgressItemFromJSONTyped(json: any, ignoreDiscriminator: boolea
         
         'name': json['name'] == null ? undefined : json['name'],
         'field': json['field'] == null ? undefined : json['field'],
+        'description': json['description'] == null ? undefined : json['description'],
+        'criteria': json['criteria'] == null ? undefined : json['criteria'],
     };
 }
 
@@ -63,6 +77,8 @@ export function ProgressItemToJSON(value?: ProgressItem | null): any {
         
         'name': value['name'],
         'field': value['field'],
+        'description': value['description'],
+        'criteria': value['criteria'],
     };
 }
 
