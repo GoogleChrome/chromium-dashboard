@@ -52,7 +52,7 @@ class ProcessStage:
 
     name: str
     description: str
-    # progress_items are defined on the stage that has the releant fields.
+    # progress_items are defined on the stage that has the relevant fields.
     progress_items: list[ProgressItem]
     # action prerequisites may reference a PI defined in any stage.
     actions: list[Action]
