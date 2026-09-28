@@ -47,6 +47,7 @@ import type {
   PendingSuggestionsCountResponse,
   PermissionsResponse,
   PostIntentRequest,
+  PostProgressVoteRequest,
   PostSettingsRequest,
   PostVoteRequest,
   Process,
@@ -128,6 +129,8 @@ import {
     PermissionsResponseToJSON,
     PostIntentRequestFromJSON,
     PostIntentRequestToJSON,
+    PostProgressVoteRequestFromJSON,
+    PostProgressVoteRequestToJSON,
     PostSettingsRequestFromJSON,
     PostSettingsRequestToJSON,
     PostVoteRequestFromJSON,
@@ -317,6 +320,11 @@ export interface SetAssigneesForGateRequest {
     featureId: number;
     gateId: number;
     patchGateRequest: PatchGateRequest;
+}
+
+export interface SetProgressVoteRequest {
+    featureId: number;
+    postProgressVoteRequest: PostProgressVoteRequest;
 }
 
 export interface SetStarOperationRequest {
@@ -1079,6 +1087,22 @@ export interface DefaultApiInterface {
      * Set the assignees for a gate.
      */
     setAssigneesForGate(requestParameters: SetAssigneesForGateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SuccessMessage>;
+
+    /**
+     * 
+     * @summary Set a user\'s vote value for a progress item on the specified feature.
+     * @param {number} featureId Feature ID
+     * @param {PostProgressVoteRequest} postProgressVoteRequest 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApiInterface
+     */
+    setProgressVoteRaw(requestParameters: SetProgressVoteRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SuccessMessage>>;
+
+    /**
+     * Set a user\'s vote value for a progress item on the specified feature.
+     */
+    setProgressVote(requestParameters: SetProgressVoteRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SuccessMessage>;
 
     /**
      * 
@@ -2834,6 +2858,49 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
      */
     async setAssigneesForGate(requestParameters: SetAssigneesForGateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SuccessMessage> {
         const response = await this.setAssigneesForGateRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Set a user\'s vote value for a progress item on the specified feature.
+     */
+    async setProgressVoteRaw(requestParameters: SetProgressVoteRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SuccessMessage>> {
+        if (requestParameters['featureId'] == null) {
+            throw new runtime.RequiredError(
+                'featureId',
+                'Required parameter "featureId" was null or undefined when calling setProgressVote().'
+            );
+        }
+
+        if (requestParameters['postProgressVoteRequest'] == null) {
+            throw new runtime.RequiredError(
+                'postProgressVoteRequest',
+                'Required parameter "postProgressVoteRequest" was null or undefined when calling setProgressVote().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        const response = await this.request({
+            path: `/features/{feature_id}/progress`.replace(`{${"feature_id"}}`, encodeURIComponent(String(requestParameters['featureId']))),
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: PostProgressVoteRequestToJSON(requestParameters['postProgressVoteRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => SuccessMessageFromJSON(jsonValue));
+    }
+
+    /**
+     * Set a user\'s vote value for a progress item on the specified feature.
+     */
+    async setProgressVote(requestParameters: SetProgressVoteRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SuccessMessage> {
+        const response = await this.setProgressVoteRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
