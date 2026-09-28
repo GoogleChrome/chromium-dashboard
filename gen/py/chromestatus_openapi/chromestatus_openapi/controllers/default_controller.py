@@ -35,6 +35,7 @@ from chromestatus_openapi.models.patch_gate_request import PatchGateRequest  # n
 from chromestatus_openapi.models.pending_suggestions_count_response import PendingSuggestionsCountResponse  # noqa: E501
 from chromestatus_openapi.models.permissions_response import PermissionsResponse  # noqa: E501
 from chromestatus_openapi.models.post_intent_request import PostIntentRequest  # noqa: E501
+from chromestatus_openapi.models.post_progress_vote_request import PostProgressVoteRequest  # noqa: E501
 from chromestatus_openapi.models.post_settings_request import PostSettingsRequest  # noqa: E501
 from chromestatus_openapi.models.post_vote_request import PostVoteRequest  # noqa: E501
 from chromestatus_openapi.models.process import Process  # noqa: E501
@@ -710,6 +711,23 @@ def set_assignees_for_gate(feature_id, gate_id, patch_gate_request):  # noqa: E5
     """
     if connexion.request.is_json:
         patch_gate_request = PatchGateRequest.from_dict(connexion.request.get_json())  # noqa: E501
+    return 'do some magic!'
+
+
+def set_progress_vote(feature_id, post_progress_vote_request):  # noqa: E501
+    """Set a user&#39;s vote value for a progress item on the specified feature.
+
+     # noqa: E501
+
+    :param feature_id: Feature ID
+    :type feature_id: int
+    :param post_progress_vote_request: 
+    :type post_progress_vote_request: dict | bytes
+
+    :rtype: Union[SuccessMessage, Tuple[SuccessMessage, int], Tuple[SuccessMessage, int, Dict[str, str]]
+    """
+    if connexion.request.is_json:
+        post_progress_vote_request = PostProgressVoteRequest.from_dict(connexion.request.get_json())  # noqa: E501
     return 'do some magic!'
 
 

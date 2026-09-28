@@ -1,0 +1,94 @@
+#!/usr/bin/env bash
+# Prunes oldest inactive App Engine versions to keep total version count below a threshold.
+set -euo pipefail
+
+APP_NAME="${1:-${APP_NAME:-}}"
+MAX_VERSIONS="${MAX_VERSIONS_PER_SERVICE:-50}"
+SERVICES="${SERVICES:-default notifier}"
+
+usage() {
+  echo "Usage: $0 [project-id]"
+  echo "  project-id : Optional GCP project ID (defaults to \$APP_NAME)"
+  echo "Environment variables:"
+  echo "  APP_NAME                 : Target GCP project (e.g. cr-status-staging, cr-status)"
+  echo "  MAX_VERSIONS_PER_SERVICE : Max versions to retain per service (default: 50)"
+  echo "  SERVICES                 : Space-separated list of services to prune (default: 'default notifier')"
+}
+
+if [[ -z "${APP_NAME}" ]]; then
+  echo "Error: Project ID not specified and APP_NAME environment variable is not set." >&2
+  usage >&2
+  exit 1
+fi
+
+prune_service_versions() {
+  local service="$1"
+  local target_max="$2"
+
+  echo "Checking version count for service \"${service}\" in project \"${APP_NAME}\"..."
+  local total_output
+  total_output=$(gcloud app versions list \
+    --project="${APP_NAME}" \
+    --service="${service}" \
+    --format="value(id)")
+
+  local all_versions=()
+  if [[ -n "${total_output}" ]]; then
+    readarray -t all_versions <<< "${total_output}"
+  fi
+
+  local total_count="${#all_versions[@]}"
+  echo "Service \"${service}\" currently has ${total_count} version(s)."
+
+  if (( total_count <= target_max )); then
+    echo "Version count (${total_count}) is already at or below target threshold (${target_max}). No pruning needed."
+    return 0
+  fi
+
+  local excess=$(( total_count - target_max ))
+  echo "Target is ${target_max} builds. Need to prune ${excess} oldest inactive version(s)..."
+
+  local inactive_output
+  inactive_output=$(gcloud app versions list \
+    --project="${APP_NAME}" \
+    --service="${service}" \
+    --filter="traffic_split=0" \
+    --sort-by="version.createTime" \
+    --format="value(id)")
+
+  local inactive_versions=()
+  if [[ -n "${inactive_output}" ]]; then
+    readarray -t inactive_versions <<< "${inactive_output}"
+  fi
+
+  if (( ${#inactive_versions[@]} == 0 )); then
+    echo "WARNING: No inactive versions found with traffic_split=0 for service \"${service}\". Cannot prune." >&2
+    return 0
+  fi
+
+  local num_to_delete=$(( excess < ${#inactive_versions[@]} ? excess : ${#inactive_versions[@]} ))
+  local versions_to_delete=("${inactive_versions[@]:0:num_to_delete}")
+
+  echo "Deleting ${#versions_to_delete[@]} oldest inactive version(s) for service \"${service}\"..."
+  local delete_failed=0
+  for ((i = 0; i < ${#versions_to_delete[@]}; i += 25)); do
+    local batch=("${versions_to_delete[@]:i:25}")
+    if ! gcloud app versions delete "${batch[@]}" \
+      --service="${service}" \
+      --project="${APP_NAME}" \
+      --quiet; then
+      echo "WARNING: Failed to delete batch: ${batch[*]}" >&2
+      delete_failed=1
+    fi
+  done
+
+  if (( delete_failed )); then
+    echo "WARNING: Some versions could not be deleted for service \"${service}\"." >&2
+  else
+    echo "Pruning complete for service \"${service}\"."
+  fi
+}
+
+for svc in ${SERVICES}; do
+  prune_service_versions "${svc}" "${MAX_VERSIONS}"
+done

@@ -63,6 +63,7 @@ export * from './PatchGateRequest';
 export * from './PendingSuggestionsCountResponse';
 export * from './PermissionsResponse';
 export * from './PostIntentRequest';
+export * from './PostProgressVoteRequest';
 export * from './PostSettingsRequest';
 export * from './PostStarsRequest';
 export * from './PostVoteRequest';

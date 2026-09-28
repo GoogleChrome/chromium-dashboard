@@ -723,6 +723,50 @@ paths:
           description: Feature not found based on given ID.
       summary: Get the progress for a feature
       x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+    post:
+      operationId: set_progress_vote
+      parameters:
+      - description: Feature ID
+        explode: false
+        in: path
+        name: feature_id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostProgressVoteRequest'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
+          description: Progress vote set successfully
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: Invalid request parameters.
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: User does not have permission.
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: Feature not found based on given ID.
+      summary: Set a user's vote value for a progress item on the specified feature.
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
   /features/{feature_id}/stages/{stage_id}/addXfnGates:
     post:
       operationId: add_xfn_gates_to_stage
@@ -1719,6 +1763,29 @@ components:
       required:
       - state
       title: PostVoteRequest
+      type: object
+    PostProgressVoteRequest:
+      example:
+        feedback: feedback
+        progress_item_name: progress_item_name
+        state: 0
+      properties:
+        progress_item_name:
+          description: The name of the progress item being reviewed.
+          title: progress_item_name
+          type: string
+        state:
+          description: "The vote value to set (1=NEEDS_REVIEW, 2=VERIFIED, 3=NA, 4=NEEDS_WORK)."
+          title: state
+          type: integer
+        feedback:
+          description: Optional feedback from the reviewer.
+          title: feedback
+          type: string
+      required:
+      - progress_item_name
+      - state
+      title: PostProgressVoteRequest
       type: object
     Gate:
       example:
