@@ -42,7 +42,7 @@ test('navigate to SSR feature detail page and take snapshot', async ({
   const container = page.locator('#feature-detail-container');
   await expect(container).toBeVisible({timeout: 20000});
 
-  if (!await isMobile(page)) {
+  if (!(await isMobile(page))) {
     // On desktop, we can verify the account indicator is visible in the header.
     const accountIndicator = page.getByTestId('account-indicator');
     try {
