@@ -229,8 +229,10 @@ export class ChromedashPreflightDialog extends LitElement {
       return nothing;
     }
 
-    const isMetadataField =
-      pi.field === 'web_feature' || pi.field === 'bug_url';
+    const isMetadataField = FLAT_METADATA_FIELDS.sections.some(
+      section =>
+        pi.field !== undefined && section.fields.includes(pi.field)
+    );
     const pathSegment =
       !isMetadataField && stage && feStage
         ? `${stage.outgoing_stage}/${feStage.id}`
@@ -247,7 +249,6 @@ export class ChromedashPreflightDialog extends LitElement {
     `;
   }
 
-<<<<<< HEAD
   renderStageTable(stage: ProcessStage, prereqItems: ProgressItem[]) {
     if (prereqItems.length === 0) {
       return nothing;
@@ -273,7 +274,7 @@ export class ChromedashPreflightDialog extends LitElement {
                   ${isApproved ? 'Verified' : 'Pending'}
                 </span>
               </td>
-              <td>${item.name}</td>
+              <td>${item.description || item.name}</td>
               <td>${this.renderEditLink(stage, feStage, item)}</td>
             </tr>
           `;
@@ -282,6 +283,7 @@ export class ChromedashPreflightDialog extends LitElement {
     `;
   }
 
+  // TODO(@@@) not just pending gates, all gates with states
   renderPendingGatesTable(pendingGates: GateDict[]) {
     if (pendingGates.length === 0) {
       return nothing;
@@ -309,30 +311,6 @@ export class ChromedashPreflightDialog extends LitElement {
         )}
       </table>
     `;
-=======
-  makePrereqItem(itemName): ProgressItem {
-    let prereq: ProgressItem = {name: 'TBD', stage: null};
-    for (const s of this._process.stages || []) {
-      for (const pi of s.progress_items) {
-        if (itemName == pi.name) {
-          prereq = {...pi, stage: s};
-        }
-      }
-    }
-    // For metadata, use stage:null
-    const isMetadata = FLAT_METADATA_FIELDS.sections.some(
-      section =>
-        prereq.field !== undefined && section.fields.includes(prereq.field)
-    );
-    if (isMetadata) {
-      prereq.stage = null;
-    }
-
-    if (prereq !== null) {
-      return prereq;
-    }
-    throw new Error('prerequiste is not a defined progress item: ' + itemName);
->>>>>>> main
   }
 
   renderDialogContent() {
@@ -344,6 +322,8 @@ export class ChromedashPreflightDialog extends LitElement {
     const seenPrereqs = new Set<string>();
     const stageTables = (this._process?.stages || []).map(s => {
       const stagePrereqs = (s.progress_items || []).filter(pi => {
+        // Note that metadata-related PIs are associated with the
+        // first stage in the process.
         if (prereqNames.has(pi.name) && !seenPrereqs.has(pi.name)) {
           seenPrereqs.add(pi.name);
           return true;
@@ -356,8 +336,9 @@ export class ChromedashPreflightDialog extends LitElement {
     const pendingGates = findPendingGates(this._featureGates, this._feStage);
 
     return html`
-      Before you ${this._action.name}, it is strongly recommended that you do
-      the following: ${stageTables}
+    Each item below should be marked "Verified" or "N/a".  Before continuing,
+    edit any fields related to items "Pending" or "Needs work".
+      ${stageTables}
       ${this.renderPendingGatesTable(pendingGates)}
 
       <sl-button
@@ -377,7 +358,7 @@ export class ChromedashPreflightDialog extends LitElement {
     return html`
       <sl-dialog
         class="missing-prereqs"
-        label="Missing Prerequisites"
+        label="Checklist: ${this._action?.name}"
         style="--width:fit-content"
       >
         ${this.renderDialogContent()}
