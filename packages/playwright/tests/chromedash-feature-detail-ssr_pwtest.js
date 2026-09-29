@@ -1,3 +1,5 @@
+import {isMobile} from './test_utils';
+
 // @ts-check
 import {test, expect} from '@playwright/test';
 import {
@@ -39,6 +41,17 @@ test('navigate to SSR feature detail page and take snapshot', async ({
   // Wait for the SSR page container to be fully visible and rendered.
   const container = page.locator('#feature-detail-container');
   await expect(container).toBeVisible({timeout: 20000});
+
+  if (!await isMobile(page)) {
+    // On desktop, we can verify the account indicator is visible in the header.
+    const accountIndicator = page.getByTestId('account-indicator');
+    try {
+      await expect(accountIndicator).toBeVisible({timeout: 10000});
+    } catch {
+      console.log('Account indicator not found immediately.');
+      await expect(accountIndicator).toBeVisible({timeout: 10000});
+    }
+  }
 
   // 4. Sanitize dynamic timestamps (Created / Updated / Accurate as of) to prevent snapshot flakes.
   await page.evaluate(() => {
