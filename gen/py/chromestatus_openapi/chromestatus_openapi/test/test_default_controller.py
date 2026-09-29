@@ -34,6 +34,7 @@ from chromestatus_openapi.models.patch_gate_request import PatchGateRequest  # n
 from chromestatus_openapi.models.pending_suggestions_count_response import PendingSuggestionsCountResponse  # noqa: E501
 from chromestatus_openapi.models.permissions_response import PermissionsResponse  # noqa: E501
 from chromestatus_openapi.models.post_intent_request import PostIntentRequest  # noqa: E501
+from chromestatus_openapi.models.post_progress_vote_request import PostProgressVoteRequest  # noqa: E501
 from chromestatus_openapi.models.post_settings_request import PostSettingsRequest  # noqa: E501
 from chromestatus_openapi.models.post_vote_request import PostVoteRequest  # noqa: E501
 from chromestatus_openapi.models.process import Process  # noqa: E501
@@ -822,6 +823,25 @@ class TestDefaultController(BaseTestCase):
             method='PATCH',
             headers=headers,
             data=json.dumps(patch_gate_request),
+            content_type='application/json')
+        self.assert200(response,
+                       'Response body is : ' + response.data.decode('utf-8'))
+
+    def test_set_progress_vote(self):
+        """Test case for set_progress_vote
+
+        Set a user's vote value for a progress item on the specified feature.
+        """
+        post_progress_vote_request = {"feedback":"feedback","progress_item_name":"progress_item_name","state":0}
+        headers = { 
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+        }
+        response = self.client.open(
+            '/api/v0/features/{feature_id}/progress'.format(feature_id=56),
+            method='POST',
+            headers=headers,
+            data=json.dumps(post_progress_vote_request),
             content_type='application/json')
         self.assert200(response,
                        'Response body is : ' + response.data.decode('utf-8'))
