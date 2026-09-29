@@ -21,6 +21,7 @@ import {
   GATE_FINISHED_REVIEW_STATES,
   PROGRESS_VOTE_STATE,
 } from './form-field-enums.js';
+import {FLAT_METADATA_FIELDS} from './form-definition.js';
 import {findFirstFeatureStage} from './utils.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {customElement, state} from 'lit/decorators.js';
@@ -246,6 +247,7 @@ export class ChromedashPreflightDialog extends LitElement {
     `;
   }
 
+<<<<<< HEAD
   renderStageTable(stage: ProcessStage, prereqItems: ProgressItem[]) {
     if (prereqItems.length === 0) {
       return nothing;
@@ -268,7 +270,7 @@ export class ChromedashPreflightDialog extends LitElement {
             <tr class=${isApproved ? 'done' : 'pending'}>
               <td>
                 <span class="status ${isApproved ? 'approved' : 'pending'}">
-                  ${isApproved ? 'Approved' : 'Pending'}
+                  ${isApproved ? 'Verified' : 'Pending'}
                 </span>
               </td>
               <td>${item.name}</td>
@@ -307,6 +309,30 @@ export class ChromedashPreflightDialog extends LitElement {
         )}
       </table>
     `;
+=======
+  makePrereqItem(itemName): ProgressItem {
+    let prereq: ProgressItem = {name: 'TBD', stage: null};
+    for (const s of this._process.stages || []) {
+      for (const pi of s.progress_items) {
+        if (itemName == pi.name) {
+          prereq = {...pi, stage: s};
+        }
+      }
+    }
+    // For metadata, use stage:null
+    const isMetadata = FLAT_METADATA_FIELDS.sections.some(
+      section =>
+        prereq.field !== undefined && section.fields.includes(prereq.field)
+    );
+    if (isMetadata) {
+      prereq.stage = null;
+    }
+
+    if (prereq !== null) {
+      return prereq;
+    }
+    throw new Error('prerequiste is not a defined progress item: ' + itemName);
+>>>>>>> main
   }
 
   renderDialogContent() {

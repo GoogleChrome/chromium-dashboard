@@ -16,6 +16,7 @@
 
 import {assert, fixture} from '@open-wc/testing';
 import {html} from 'lit';
+import sinon from 'sinon';
 import {ChromedashFeatureDetail} from './chromedash-feature-detail.js';
 import {
   GATE_PREPARING,
@@ -81,5 +82,68 @@ describe('chromedash-feature-detail', () => {
     assert.isFalse(component.hasMixedGates(stageActive));
     assert.isTrue(component.hasMixedGates(stageMixed));
     assert.isFalse(component.hasMixedGates(stageResolved));
+  });
+
+  it('scrolls the stage <sl-details> into view in initializeGateColumn', async () => {
+    const originalSearch = window.location.search;
+    window.history.replaceState({}, '', '?gate=99');
+    const scrollSpy = sinon.spy(Element.prototype, 'scrollIntoView');
+
+    try {
+      const featureWithStages = {
+        id: 123456789,
+        is_enterprise_feature: false,
+        stages: [
+          {id: 10, stage_type: 110, extensions: []},
+          {id: 20, stage_type: 160, extensions: []},
+        ],
+      };
+      const process = {
+        stages: [
+          {
+            stage_type: 110,
+            name: 'Start incubating',
+            description: 'desc 1',
+            actions: [],
+          },
+          {
+            stage_type: 160,
+            name: 'Prepare to ship',
+            description: 'desc 2',
+            actions: [],
+          },
+        ],
+      };
+      const testGates = [
+        {
+          id: 99,
+          stage_id: 20,
+          state: GATE_REVIEW_REQUESTED,
+          team_name: 'API Owners',
+        },
+      ];
+
+      const component: ChromedashFeatureDetail = (await fixture(
+        html`<chromedash-feature-detail
+          .feature=${featureWithStages}
+          .process=${process}
+          .gates=${testGates}
+        ></chromedash-feature-detail>`
+      )) as ChromedashFeatureDetail;
+
+      await component.updateComplete;
+
+      const stageDetails = component.renderRoot.querySelector('#stage-20');
+      assert.exists(stageDetails);
+      assert.isTrue(scrollSpy.calledOnce);
+      assert.strictEqual(scrollSpy.firstCall.thisValue, stageDetails);
+    } finally {
+      scrollSpy.restore();
+      window.history.replaceState(
+        {},
+        '',
+        originalSearch || window.location.pathname
+      );
+    }
   });
 });
