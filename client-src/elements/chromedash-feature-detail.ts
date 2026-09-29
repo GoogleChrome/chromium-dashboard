@@ -289,6 +289,10 @@ export class ChromedashFeatureDetail extends LitElement {
     }
     let stage = foundStages[0];
     this.openStage = stage.id;
+    this.updateComplete.then(() => {
+      const details = this.renderRoot.querySelector(`#stage-${this.openStage}`);
+      details?.scrollIntoView({behavior: 'smooth'});
+    });
 
     // Make sure to use the extension stage if an extension gate is being referenced.
     if (gate.gate_type === GATE_TYPES.API_EXTEND_ORIGIN_TRIAL) {
@@ -490,10 +494,12 @@ export class ChromedashFeatureDetail extends LitElement {
     content: TemplateResult,
     isActive: boolean = false,
     defaultOpen: boolean = false,
-    isStage: boolean = true
+    isStage: boolean = true,
+    stageId: number = 0
   ) {
     return html`
       <sl-details
+        id=${stageId ? `stage-${stageId}` : nothing}
         summary=${summary}
         @sl-after-show=${this.updateCollapsed}
         @sl-after-hide=${this.updateCollapsed}
@@ -721,7 +727,14 @@ export class ChromedashFeatureDetail extends LitElement {
       feStage.id == this.openStage ||
       this.hasActiveGates(feStage) ||
       this.hasMixedGates(feStage);
-    return this.renderSection(name, content, isActive, defaultOpen);
+    return this.renderSection(
+      name,
+      content,
+      isActive,
+      defaultOpen,
+      /* isStage=*/ true,
+      feStage.id
+    );
   }
 
   renderEditButton(feStage: StageDict, processStage: any) {
