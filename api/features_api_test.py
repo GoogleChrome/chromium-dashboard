@@ -1699,7 +1699,7 @@ class FeaturesAPITest(testing_config.CustomTestCase):
             Gate.feature_id == new_feature.key.integer_id()
         ).fetch()
         self.assertEqual(len(stages), 6)
-        self.assertEqual(len(gates), 12)
+        self.assertEqual(len(gates), 13)
 
     def test_post__no_permissions(self):
         """403 Forbidden if the user does not have feature create access."""

@@ -71,6 +71,8 @@ TESTING_APPROVERS = [
 ADOPTION_APPROVERS = [
     'rachelandrew@google.com',
 ]
+DQ_APPROVERS = IN_NDB
+
 
 DEFAULT_SLO_LIMIT = 5  # Five weekdays in the Pacific timezone.
 DEFAULT_SLO_RESOLVE_LIMIT = 10  # Ten weekdays in the Pacific timezone.
@@ -271,6 +273,24 @@ AdoptionPlanApproval = GateInfo(
     team_name='Adoption',
 )
 
+DataQualityShipApproval = GateInfo(
+    'Data Quality Ship Review',
+    'Data Quality Review',
+    core_enums.GATE_DQ_SHIP,
+    ONE_LGTM,
+    approvers=DQ_APPROVERS,
+    team_name='Data Quality',
+)
+
+DataQualityPlanApproval = GateInfo(
+    'Data Quality Deprecation Plan Review',
+    'Data Quality Deprecation Plan Review',
+    core_enums.GATE_DQ_PLAN,
+    ONE_LGTM,
+    approvers=DQ_APPROVERS,
+    team_name='Data Quality',
+)
+
 
 APPROVAL_FIELDS_BY_ID = {
     afd.gate_type: afd
@@ -293,6 +313,8 @@ APPROVAL_FIELDS_BY_ID = {
         TestingPlanApproval,
         AdoptionShipApproval,
         AdoptionPlanApproval,
+        DataQualityShipApproval,
+        DataQualityPlanApproval,
     ]
 }
 
