@@ -539,7 +539,7 @@ BLINK_PROCESS_STAGES = [
                 'Draft Intent to Extend Experiment email',
                 INTENT_EMAIL_URL,
                 [],
-                [],
+                [core_enums.GATE_API_EXTEND_ORIGIN_TRIAL],
             )
         ],
         [approval_defs.ExtendExperimentApproval],
@@ -699,7 +699,7 @@ BLINK_FAST_TRACK_STAGES = [
                 'Draft Intent to Extend Experiment email',
                 INTENT_EMAIL_URL,
                 [],
-                [],
+                [core_enums.GATE_API_EXTEND_ORIGIN_TRIAL],
             )
         ],
         [approval_defs.ExtendExperimentApproval],
@@ -964,7 +964,7 @@ DEPRECATION_STAGES = [
                 'Draft Intent to Extend Deprecation Trial email',
                 INTENT_EMAIL_URL,
                 [],
-                [],
+                [core_enums.GATE_API_EXTEND_ORIGIN_TRIAL],
             )
         ],
         [approval_defs.ExtendExperimentApproval],

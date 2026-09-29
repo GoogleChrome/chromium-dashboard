@@ -19,6 +19,7 @@ import collections
 import testing_config  # Must be imported before the module under test.
 from internals import (
     approval_defs,
+    core_enums,
     core_models,
     processes,
 )
@@ -194,6 +195,36 @@ class ProcessesWellFormedTest(testing_config.CustomTestCase):
     def test_ENTERPRISE_PROCESS(self):
         """Prerequisites in NTERPRISE_PROCESS are defined and actionable."""
         self.verify_references_to_prerequisites(processes.ENTERPRISE_PROCESS)
+
+    def test_extension_actions_are_associated_with_extension_gate(self):
+        """Extension email actions are displayed in the API owners gate."""
+        process_and_stage_types = [
+            (
+                processes.BLINK_LAUNCH_PROCESS,
+                core_enums.STAGE_BLINK_EXTEND_ORIGIN_TRIAL,
+            ),
+            (
+                processes.BLINK_FAST_TRACK_PROCESS,
+                core_enums.STAGE_FAST_EXTEND_ORIGIN_TRIAL,
+            ),
+            (
+                processes.DEPRECATION_PROCESS,
+                core_enums.STAGE_DEP_EXTEND_DEPRECATION_TRIAL,
+            ),
+        ]
+
+        for process, stage_type in process_and_stage_types:
+            with self.subTest(process=process.name):
+                stage = next(
+                    stage
+                    for stage in process.stages
+                    if stage.stage_type == stage_type
+                )
+                self.assertEqual(1, len(stage.actions))
+                self.assertIn(
+                    core_enums.GATE_API_EXTEND_ORIGIN_TRIAL,
+                    stage.actions[0].gate_types,
+                )
 
 
 class WriteGatesAndStagesForFeatureTest(testing_config.CustomTestCase):
