@@ -419,7 +419,7 @@ export class ChromedashPreflightDialog extends LitElement {
         target="_blank"
         size="small"
         @click=${this.handleProceed}
-        >Proceed anyway
+        >Proceed with email
       </sl-button>
       <sl-button size="small" variant="warning" @click=${this.handleCancel}
         >Don't draft email yet</sl-button
