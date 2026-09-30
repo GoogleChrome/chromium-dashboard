@@ -158,7 +158,7 @@ export class ChromedashPreflightDialog extends LitElement {
         }
 
         .data-table td:first-child {
-          width: 10em;
+          width: 12em;
         }
 
         .data-table td:last-child {
