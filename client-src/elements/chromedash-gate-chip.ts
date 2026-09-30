@@ -109,7 +109,6 @@ export function gateStateDisplayInfo(state: number): GateDisplayInfo {
   return {stateName, className, statusIconName, abbrev};
 }
 
-
 @customElement('chromedash-gate-chip')
 class ChromedashGateChip extends LitElement {
   @property({type: Object})
@@ -258,9 +257,9 @@ class ChromedashGateChip extends LitElement {
       return nothing;
     }
     const teamName = this.gate.team_name;
-    const {
-      stateName, className, statusIconName, abbrev
-    } = gateStateDisplayInfo(this.gate.state);
+    const {stateName, className, statusIconName, abbrev} = gateStateDisplayInfo(
+      this.gate.state
+    );
 
     const selected = this.gate.id == this.selectedGateId ? 'selected' : '';
     let statusIcon = html`<b class="abbrev" slot="prefix">${abbrev}</b>`;

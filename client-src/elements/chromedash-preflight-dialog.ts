@@ -96,8 +96,9 @@ export function somePendingGates(featureGates: GateDict[], feStage: StageDict) {
 
 export function findOtherGates(featureGates: GateDict[], feStage: StageDict) {
   const gatesForStage = featureGates.filter(g => g.stage_id == feStage.id);
-  const otherGates = gatesForStage.filter(g =>
-    g.team_name != 'API Owners' && g.team_name != 'Data Quality');
+  const otherGates = gatesForStage.filter(
+    g => g.team_name != 'API Owners' && g.team_name != 'Data Quality'
+  );
   return otherGates;
 }
 
@@ -173,11 +174,11 @@ export class ChromedashPreflightDialog extends LitElement {
         }
 
         .status.not_applicable,
-      .status.na_self-certified,
-      .status.na_self-certified_then_verified {
-      background: var(--gate-not-applicable-background);
+        .status.na_self-certified,
+        .status.na_self-certified_then_verified {
+          background: var(--gate-not-applicable-background);
           color: var(--gate-not-applicable-color);
-      }
+        }
 
         .status.preparing {
           background: var(--gate-preparing-background);
@@ -268,8 +269,7 @@ export class ChromedashPreflightDialog extends LitElement {
     }
 
     const isMetadataField = FLAT_METADATA_FIELDS.sections.some(
-      section =>
-        pi.field !== undefined && section.fields.includes(pi.field)
+      section => pi.field !== undefined && section.fields.includes(pi.field)
     );
     const pathSegment =
       !isMetadataField && stage && feStage
@@ -322,9 +322,8 @@ export class ChromedashPreflightDialog extends LitElement {
   }
 
   renderGateState(state: number) {
-    let {
-      stateName, className, statusIconName, abbrev
-    } = gateStateDisplayInfo(state);
+    let {stateName, className, statusIconName, abbrev} =
+      gateStateDisplayInfo(state);
 
     if (stateName === 'Preparing') {
       stateName = 'Not started';
@@ -332,7 +331,7 @@ export class ChromedashPreflightDialog extends LitElement {
     }
 
     return html`
-    <span class="status ${className}" title="${stateName}">${abbrev}</span>
+      <span class="status ${className}" title="${stateName}">${abbrev}</span>
     `;
   }
 
@@ -386,10 +385,8 @@ export class ChromedashPreflightDialog extends LitElement {
     const otherGates = findOtherGates(this._featureGates, this._feStage);
 
     return html`
-    Please address any relevant "Not started" or "Needs work" items before
-    requesting review.
-      ${stageTables}
-      ${this.renderGatesTable(otherGates)}
+      Please address any relevant "Not started" or "Needs work" items before
+      requesting review. ${stageTables} ${this.renderGatesTable(otherGates)}
 
       <sl-button
         href="${this._url}"
