@@ -34,8 +34,8 @@ from internals.processes import (
     PI_FINCH_FEATURE_OR_JUSTIFY,
     PI_FIREFOX_VIEWS,
     PI_INITIAL_PUBLIC_PROPOSAL,
+    PI_INTEROP_RISKS,
     PI_MOTIVATION,
-    PI_PRI_REVIEW,
     PI_ROLLOUT_DETAILS,
     PI_ROLLOUT_IMPACT,
     PI_ROLLOUT_MILESTONE,
@@ -43,7 +43,6 @@ from internals.processes import (
     PI_ROLLOUT_STAGE_PLAN,
     PI_SAFARI_VIEWS,
     PI_SAMPLES,
-    PI_SEC_REVIEW,
     PI_SPEC_LINK,
     PI_SPEC_MENTOR,
     PI_TAG_ADDRESSED,
@@ -181,22 +180,6 @@ def _detect_tracking_bug_url(
     return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
 
 
-def _detect_security_review_issues_addressed(
-    fe: FeatureEntry, _: dict[int, list[Stage]]
-) -> ProgressDetectorResult:
-    if not review_is_done(fe.security_review_status):
-        return ProgressDetectorResult(ProgressVote.NOT_STARTED)
-    return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
-
-
-def _detect_privacy_review_issues_addressed(
-    fe: FeatureEntry, _: dict[int, list[Stage]]
-) -> ProgressDetectorResult:
-    if not review_is_done(fe.privacy_review_status):
-        return ProgressDetectorResult(ProgressVote.NOT_STARTED)
-    return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
-
-
 def _detect_samples(
     fe: FeatureEntry, _: dict[int, list[Stage]]
 ) -> ProgressDetectorResult:
@@ -265,6 +248,14 @@ def _detect_safari_views(
     fe: FeatureEntry, _: dict[int, list[Stage]]
 ) -> ProgressDetectorResult:
     if fe.safari_views == core_enums.NO_PUBLIC_SIGNALS:
+        return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+    return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
+
+
+def _detect_interop_risks(
+    fe: FeatureEntry, _: dict[int, list[Stage]]
+) -> ProgressDetectorResult:
+    if not fe.interop_compat_risks:
         return ProgressDetectorResult(ProgressVote.NOT_STARTED)
     return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
 
@@ -424,8 +415,6 @@ PROGRESS_DETECTORS: dict[
     PI_EXPLAINER.name: _detect_explainer,
     PI_WEB_FEATURE.name: _detect_web_feature,
     PI_TRACKING_BUG.name: _detect_tracking_bug_url,
-    PI_SEC_REVIEW.name: _detect_security_review_issues_addressed,
-    PI_PRI_REVIEW.name: _detect_privacy_review_issues_addressed,
     PI_SAMPLES.name: _detect_samples,
     PI_DOC_LINKS.name: _detect_doc_links,
     PI_SPEC_LINK.name: _detect_spec_link,
@@ -435,6 +424,7 @@ PROGRESS_DETECTORS: dict[
     PI_WEB_DEV_VIEWS.name: _detect_web_dev_views,
     PI_FIREFOX_VIEWS.name: _detect_firefox_views,
     PI_SAFARI_VIEWS.name: _detect_safari_views,
+    PI_INTEROP_RISKS.name: _detect_interop_risks,
     PI_DESKTOP_MILESTONE.name: _detect_desktop_milestone,
     PI_ANDROID_MILESTONE.name: _detect_android_milestone,
     PI_WEBVIEW_MILESTONE.name: _detect_webview_milestone,

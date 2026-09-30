@@ -244,11 +244,6 @@ PI_SAMPLES = ProgressItem(
     ),
 )
 
-PI_SEC_REVIEW = ProgressItem('Security review issues addressed')
-PI_PRI_REVIEW = ProgressItem('Privacy review issues addressed')
-# TODO(jrobbins): needs detector.
-PI_EXTERNAL_REVIEWS = ProgressItem('External reviews')
-
 PI_TAG_REQUESTED = ProgressItem(
     'TAG review requested',
     'tag_review',
@@ -263,7 +258,10 @@ PI_DOC_LINKS = ProgressItem('Doc links', 'doc_links')
 
 
 PI_TAG_ADDRESSED = ProgressItem(
-    'TAG review issues addressed', 'tag_review_status'
+    'TAG review issues addressed',
+    'tag_review_status',
+    'TAG review status indicates issues were addressed or N/a.',
+    'TAG review status indicates issues were addressed or N/a.',
 )
 
 PI_FIREFOX_VIEWS = ProgressItem(
@@ -472,9 +470,6 @@ BLINK_PROCESS_STAGES = [
         'Request feedback from browser vendors.',
         [
             PI_SAMPLES,
-            PI_SEC_REVIEW,
-            PI_PRI_REVIEW,
-            PI_EXTERNAL_REVIEWS,
             PI_FIREFOX_VIEWS,
             PI_SAFARI_VIEWS,
             PI_INTEROP_RISKS,

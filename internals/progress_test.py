@@ -193,42 +193,6 @@ class ProgressDetectorsTest(testing_config.CustomTestCase):
             NEEDS_REVIEW,
         )
 
-    def test_security_review_completed(self):
-        """Test security review completed."""
-        self.assertEqual(
-            progress._detect_security_review_issues_addressed(
-                self.feature_1, self.stages_dict
-            ),
-            NOT_STARTED,
-        )
-        self.feature_1.security_review_status = (
-            core_enums.REVIEW_ISSUES_ADDRESSED
-        )
-        self.assertEqual(
-            progress._detect_security_review_issues_addressed(
-                self.feature_1, self.stages_dict
-            ),
-            NEEDS_REVIEW,
-        )
-
-    def test_privacy_review_completed(self):
-        """Test privacy review completed."""
-        self.assertEqual(
-            progress._detect_privacy_review_issues_addressed(
-                self.feature_1, self.stages_dict
-            ),
-            NOT_STARTED,
-        )
-        self.feature_1.privacy_review_status = (
-            core_enums.REVIEW_ISSUES_ADDRESSED
-        )
-        self.assertEqual(
-            progress._detect_privacy_review_issues_addressed(
-                self.feature_1, self.stages_dict
-            ),
-            NEEDS_REVIEW,
-        )
-
     def test_samples(self):
         """Test samples."""
         self.assertEqual(
@@ -318,6 +282,18 @@ class ProgressDetectorsTest(testing_config.CustomTestCase):
         self.feature_1.safari_views = core_enums.PUBLIC_SUPPORT
         self.assertEqual(
             progress._detect_safari_views(self.feature_1, self.stages_dict),
+            NEEDS_REVIEW,
+        )
+
+    def test_interop_risks(self):
+        """Test interop risks."""
+        self.assertEqual(
+            progress._detect_interop_risks(self.feature_1, self.stages_dict),
+            NOT_STARTED,
+        )
+        self.feature_1.interop_compat_risks = 'Some interop risks'
+        self.assertEqual(
+            progress._detect_interop_risks(self.feature_1, self.stages_dict),
             NEEDS_REVIEW,
         )
 
