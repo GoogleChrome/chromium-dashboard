@@ -101,8 +101,8 @@ class ProgressVoteTest(testing_config.CustomTestCase):
 
 
 NOT_STARTED = progress.ProgressDetectorResult(progress.ProgressVote.NOT_STARTED)
-NEEDS_REVIEW = progress.ProgressDetectorResult(
-    progress.ProgressVote.NEEDS_REVIEW
+READY_FOR_REVIEW = progress.ProgressDetectorResult(
+    progress.ProgressVote.READY_FOR_REVIEW
 )
 
 
@@ -161,7 +161,7 @@ class ProgressDetectorsTest(testing_config.CustomTestCase):
             progress._detect_initial_public_proposal(
                 self.feature_1, self.stages_dict
             ),
-            NEEDS_REVIEW,
+            READY_FOR_REVIEW,
         )
 
     def test_explainer(self):
@@ -173,7 +173,7 @@ class ProgressDetectorsTest(testing_config.CustomTestCase):
         self.feature_1.explainer_links = ['http://example.com']
         self.assertEqual(
             progress._detect_explainer(self.feature_1, self.stages_dict),
-            NEEDS_REVIEW,
+            READY_FOR_REVIEW,
         )
 
     def test_web__faeture(self):
@@ -190,7 +190,7 @@ class ProgressDetectorsTest(testing_config.CustomTestCase):
         self.feature_1.web_feature = 'array'
         self.assertEqual(
             progress._detect_web_feature(self.feature_1, self.stages_dict),
-            NEEDS_REVIEW,
+            READY_FOR_REVIEW,
         )
 
     def test_samples(self):
@@ -202,7 +202,7 @@ class ProgressDetectorsTest(testing_config.CustomTestCase):
         self.feature_1.sample_links = ['http://example.com']
         self.assertEqual(
             progress._detect_samples(self.feature_1, self.stages_dict),
-            NEEDS_REVIEW,
+            READY_FOR_REVIEW,
         )
 
     def test_doc_links(self):
@@ -214,7 +214,7 @@ class ProgressDetectorsTest(testing_config.CustomTestCase):
         self.feature_1.doc_links = ['http://example.com']
         self.assertEqual(
             progress._detect_doc_links(self.feature_1, self.stages_dict),
-            NEEDS_REVIEW,
+            READY_FOR_REVIEW,
         )
 
     def test_tag_review_requested(self):
@@ -230,7 +230,7 @@ class ProgressDetectorsTest(testing_config.CustomTestCase):
             progress._detect_tag_review_requested(
                 self.feature_1, self.stages_dict
             ),
-            NEEDS_REVIEW,
+            READY_FOR_REVIEW,
         )
 
     def test_tag_review_completed(self):
@@ -246,7 +246,7 @@ class ProgressDetectorsTest(testing_config.CustomTestCase):
             progress._detect_tag_review_issues_addressed(
                 self.feature_1, self.stages_dict
             ),
-            NEEDS_REVIEW,
+            READY_FOR_REVIEW,
         )
 
     def test_web_dev_views(self):
@@ -258,7 +258,7 @@ class ProgressDetectorsTest(testing_config.CustomTestCase):
         self.feature_1.web_dev_views = core_enums.PUBLIC_SUPPORT
         self.assertEqual(
             progress._detect_web_dev_views(self.feature_1, self.stages_dict),
-            NEEDS_REVIEW,
+            READY_FOR_REVIEW,
         )
 
     def test_firefox_views(self):
@@ -270,7 +270,7 @@ class ProgressDetectorsTest(testing_config.CustomTestCase):
         self.feature_1.ff_views = core_enums.PUBLIC_SUPPORT
         self.assertEqual(
             progress._detect_firefox_views(self.feature_1, self.stages_dict),
-            NEEDS_REVIEW,
+            READY_FOR_REVIEW,
         )
 
     def test_safari_views(self):
@@ -282,7 +282,7 @@ class ProgressDetectorsTest(testing_config.CustomTestCase):
         self.feature_1.safari_views = core_enums.PUBLIC_SUPPORT
         self.assertEqual(
             progress._detect_safari_views(self.feature_1, self.stages_dict),
-            NEEDS_REVIEW,
+            READY_FOR_REVIEW,
         )
 
     def test_interop_risks(self):
@@ -294,7 +294,7 @@ class ProgressDetectorsTest(testing_config.CustomTestCase):
         self.feature_1.interop_compat_risks = 'Some interop risks'
         self.assertEqual(
             progress._detect_interop_risks(self.feature_1, self.stages_dict),
-            NEEDS_REVIEW,
+            READY_FOR_REVIEW,
         )
 
     def test_desktop_milestone(self):
@@ -311,7 +311,7 @@ class ProgressDetectorsTest(testing_config.CustomTestCase):
             progress._detect_desktop_milestone(
                 self.feature_1, self.stages_dict
             ),
-            NEEDS_REVIEW,
+            READY_FOR_REVIEW,
         )
 
     def test_android_milestone(self):
@@ -328,7 +328,7 @@ class ProgressDetectorsTest(testing_config.CustomTestCase):
             progress._detect_android_milestone(
                 self.feature_1, self.stages_dict
             ),
-            NEEDS_REVIEW,
+            READY_FOR_REVIEW,
         )
         self.stages_dict[160][0].milestones = core_models.MilestoneSet(
             desktop_first=100
@@ -337,7 +337,7 @@ class ProgressDetectorsTest(testing_config.CustomTestCase):
             progress._detect_android_milestone(
                 self.feature_1, self.stages_dict
             ),
-            NEEDS_REVIEW,
+            READY_FOR_REVIEW,
         )
 
     def test_webview_milestone(self):
@@ -354,7 +354,7 @@ class ProgressDetectorsTest(testing_config.CustomTestCase):
             progress._detect_webview_milestone(
                 self.feature_1, self.stages_dict
             ),
-            NEEDS_REVIEW,
+            READY_FOR_REVIEW,
         )
         self.stages_dict[160][0].milestones = core_models.MilestoneSet(
             desktop_first=100
@@ -363,7 +363,7 @@ class ProgressDetectorsTest(testing_config.CustomTestCase):
             progress._detect_webview_milestone(
                 self.feature_1, self.stages_dict
             ),
-            NEEDS_REVIEW,
+            READY_FOR_REVIEW,
         )
 
     def test_motivation(self):
@@ -375,7 +375,7 @@ class ProgressDetectorsTest(testing_config.CustomTestCase):
         self.feature_1.motivation = 'test motivation'
         self.assertEqual(
             progress._detect_motivation(self.feature_1, self.stages_dict),
-            NEEDS_REVIEW,
+            READY_FOR_REVIEW,
         )
 
     def test_code_removed(self):
@@ -387,7 +387,7 @@ class ProgressDetectorsTest(testing_config.CustomTestCase):
         self.feature_1.impl_status_chrome = core_enums.REMOVED
         self.assertEqual(
             progress._detect_code_removed(self.feature_1, self.stages_dict),
-            NEEDS_REVIEW,
+            READY_FOR_REVIEW,
         )
 
     def test_rollout_impact(self):
@@ -395,12 +395,12 @@ class ProgressDetectorsTest(testing_config.CustomTestCase):
         # There is always a value for this
         self.assertEqual(
             progress._detect_rollout_impact(self.feature_1, self.stages_dict),
-            NEEDS_REVIEW,
+            READY_FOR_REVIEW,
         )
         self.stages_dict[1061][0].rollout_impact = 1
         self.assertEqual(
             progress._detect_rollout_impact(self.feature_1, self.stages_dict),
-            NEEDS_REVIEW,
+            READY_FOR_REVIEW,
         )
 
     def test_rollout_milestone(self):
@@ -416,7 +416,7 @@ class ProgressDetectorsTest(testing_config.CustomTestCase):
             progress._detect_rollout_milestone(
                 self.feature_1, self.stages_dict
             ),
-            NEEDS_REVIEW,
+            READY_FOR_REVIEW,
         )
 
     def test_rollout_platforms(self):
@@ -432,7 +432,7 @@ class ProgressDetectorsTest(testing_config.CustomTestCase):
             progress._detect_rollout_platforms(
                 self.feature_1, self.stages_dict
             ),
-            NEEDS_REVIEW,
+            READY_FOR_REVIEW,
         )
 
     def test_rollout_stage_plan(self):
@@ -448,7 +448,7 @@ class ProgressDetectorsTest(testing_config.CustomTestCase):
             progress._detect_rollout_stage_plan(
                 self.feature_1, self.stages_dict
             ),
-            NEEDS_REVIEW,
+            READY_FOR_REVIEW,
         )
 
     def test_rollout_details(self):
@@ -460,7 +460,7 @@ class ProgressDetectorsTest(testing_config.CustomTestCase):
         self.stages_dict[1061][0].rollout_details = 'Details'
         self.assertEqual(
             progress._detect_rollout_details(self.feature_1, self.stages_dict),
-            NEEDS_REVIEW,
+            READY_FOR_REVIEW,
         )
 
     def test_enterprise_policies(self):
@@ -476,5 +476,5 @@ class ProgressDetectorsTest(testing_config.CustomTestCase):
             progress._detect_enterprise_policies(
                 self.feature_1, self.stages_dict
             ),
-            NEEDS_REVIEW,
+            READY_FOR_REVIEW,
         )

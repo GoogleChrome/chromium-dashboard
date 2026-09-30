@@ -1466,7 +1466,7 @@ components:
           description: The name of the progress item being reviewed.
         state:
           type: integer
-          description: The vote value to set (1=NEEDS_REVIEW, 2=VERIFIED, 3=NA, 4=NEEDS_WORK).
+          description: The vote value to set (1=READY_FOR_REVIEW, 2=VERIFIED, 3=NA, 4=NEEDS_WORK).
         feedback:
           type: string
           description: Optional feedback from the reviewer.

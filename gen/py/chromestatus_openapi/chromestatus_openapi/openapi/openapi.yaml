@@ -1775,7 +1775,7 @@ components:
           title: progress_item_name
           type: string
         state:
-          description: "The vote value to set (1=NEEDS_REVIEW, 2=VERIFIED, 3=NA, 4=NEEDS_WORK)."
+          description: "The vote value to set (1=READY_FOR_REVIEW, 2=VERIFIED, 3=NA, 4=NEEDS_WORK)."
           title: state
           type: integer
         feedback:

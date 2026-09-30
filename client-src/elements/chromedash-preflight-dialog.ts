@@ -72,7 +72,7 @@ export async function openPreflightDialog(
   );
 }
 
-export function isPrereqDone(
+export function isPrereqReady(
   itemName: string,
   progress: ProgressDict
 ): boolean {
@@ -86,7 +86,7 @@ export function isPrereqDone(
 
 export function somePendingPrereqs(action: Action, progress: ProgressDict) {
   return action.prerequisites.some(
-    itemName => !isPrereqDone(itemName, progress)
+    itemName => !isPrereqReady(itemName, progress)
   );
 }
 
@@ -297,7 +297,7 @@ export class ChromedashPreflightDialog extends LitElement {
     let statusText = 'Not started';
     if (vote) {
       switch (vote.state) {
-        case PROGRESS_VOTE_STATE.NEEDS_REVIEW:
+        case PROGRESS_VOTE_STATE.READY_FOR_REVIEW:
           statusClass = 'pending';
           statusText = 'Ready for review';
           break;

@@ -51,7 +51,7 @@ describe('preflight functions', () => {
       assert.isFalse(somePendingPrereqs(action, progress));
     });
 
-    it('returns true when a prerequisite is NEEDS_WORK or NEEDS_REVIEW', () => {
+    it('returns true when a prerequisite is NEEDS_WORK or READY_FOR_REVIEW', () => {
       const progressNeedsWork = {
         Explainer: {
           state: PROGRESS_VOTE_STATE.VERIFIED,
@@ -67,9 +67,9 @@ describe('preflight functions', () => {
       };
       assert.isTrue(somePendingPrereqs(action, progressNeedsWork));
 
-      const progressNeedsReview = {
+      const progressReadyForReview = {
         Explainer: {
-          state: PROGRESS_VOTE_STATE.NEEDS_REVIEW,
+          state: PROGRESS_VOTE_STATE.READY_FOR_REVIEW,
           set_on: '2026-09-23T00:00:00',
           set_by: 'reviewer@example.com',
         },
@@ -79,7 +79,7 @@ describe('preflight functions', () => {
           set_by: 'ChromeStatus',
         },
       };
-      assert.isTrue(somePendingPrereqs(action, progressNeedsReview));
+      assert.isTrue(somePendingPrereqs(action, progressReadyForReview));
     });
 
     it('returns true when a prerequisite is missing from progress', () => {

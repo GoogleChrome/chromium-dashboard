@@ -78,7 +78,7 @@ class PostProgressVoteRequest(Model):
     def state(self) -> int:
         """Gets the state of this PostProgressVoteRequest.
 
-        The vote value to set (1=NEEDS_REVIEW, 2=VERIFIED, 3=NA, 4=NEEDS_WORK).  # noqa: E501
+        The vote value to set (1=READY_FOR_REVIEW, 2=VERIFIED, 3=NA, 4=NEEDS_WORK).  # noqa: E501
 
         :return: The state of this PostProgressVoteRequest.
         :rtype: int
@@ -89,7 +89,7 @@ class PostProgressVoteRequest(Model):
     def state(self, state: int):
         """Sets the state of this PostProgressVoteRequest.
 
-        The vote value to set (1=NEEDS_REVIEW, 2=VERIFIED, 3=NA, 4=NEEDS_WORK).  # noqa: E501
+        The vote value to set (1=READY_FOR_REVIEW, 2=VERIFIED, 3=NA, 4=NEEDS_WORK).  # noqa: E501
 
         :param state: The state of this PostProgressVoteRequest.
         :type state: int

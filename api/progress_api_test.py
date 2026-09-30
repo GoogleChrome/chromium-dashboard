@@ -91,7 +91,7 @@ class ProgressAPITest(testing_config.CustomTestCase):
         """We can get progress of a feature."""
         mock_datetime.datetime.now.return_value = FAKE_NOW
         expected_detected_vote = {
-            'state': progress.ProgressVote.NEEDS_REVIEW,
+            'state': progress.ProgressVote.READY_FOR_REVIEW,
             'set_on': FAKE_NOW.isoformat(),
             'set_by': 'ChromeStatus',
         }

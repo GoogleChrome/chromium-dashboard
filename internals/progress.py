@@ -58,12 +58,12 @@ class ProgressVote(ndb.Model):
     """One reviewer's vote on what the state of a progress item should be."""
 
     NOT_STARTED = 0  # User has not entered enough values to evaluate.
-    NEEDS_REVIEW = 1  # Values are ready human or AI review.
+    READY_FOR_REVIEW = 1  # Values are ready human or AI review.
     VERIFIED = 2
     NA = 3
     NEEDS_WORK = 4
     VOTE_VALUES = {
-        NEEDS_REVIEW: 'needs_review',
+        READY_FOR_REVIEW: 'ready_for_review',
         VERIFIED: 'verified',
         NA: 'na',
         NEEDS_WORK: 'needs_work',
@@ -73,7 +73,7 @@ class ProgressVote(ndb.Model):
     progress_item_name = ndb.StringProperty(required=True)
     state = ndb.IntegerProperty(
         required=True,
-        choices=[NEEDS_REVIEW, VERIFIED, NA, NEEDS_WORK],
+        choices=[READY_FOR_REVIEW, VERIFIED, NA, NEEDS_WORK],
     )
     feedback = ndb.StringProperty()
     set_on = ndb.DateTimeProperty(required=True)
@@ -150,7 +150,7 @@ def _detect_initial_public_proposal(
 ) -> ProgressDetectorResult:
     if not fe.initial_public_proposal_url:
         return ProgressDetectorResult(ProgressVote.NOT_STARTED)
-    return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
+    return ProgressDetectorResult(ProgressVote.READY_FOR_REVIEW)
 
 
 def _detect_explainer(
@@ -158,7 +158,7 @@ def _detect_explainer(
 ) -> ProgressDetectorResult:
     if not fe.explainer_links or not fe.explainer_links[0]:
         return ProgressDetectorResult(ProgressVote.NOT_STARTED)
-    return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
+    return ProgressDetectorResult(ProgressVote.READY_FOR_REVIEW)
 
 
 def _detect_web_feature(
@@ -169,7 +169,7 @@ def _detect_web_feature(
         or fe.web_feature == WebDXFeatureObserver.MISSING_FEATURE_ID
     ):
         return ProgressDetectorResult(ProgressVote.NOT_STARTED)
-    return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
+    return ProgressDetectorResult(ProgressVote.READY_FOR_REVIEW)
 
 
 def _detect_tracking_bug_url(
@@ -177,7 +177,7 @@ def _detect_tracking_bug_url(
 ) -> ProgressDetectorResult:
     if not fe.bug_url:
         return ProgressDetectorResult(ProgressVote.NOT_STARTED)
-    return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
+    return ProgressDetectorResult(ProgressVote.READY_FOR_REVIEW)
 
 
 def _detect_samples(
@@ -185,7 +185,7 @@ def _detect_samples(
 ) -> ProgressDetectorResult:
     if not fe.sample_links or not fe.sample_links[0]:
         return ProgressDetectorResult(ProgressVote.NOT_STARTED)
-    return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
+    return ProgressDetectorResult(ProgressVote.READY_FOR_REVIEW)
 
 
 def _detect_doc_links(
@@ -193,7 +193,7 @@ def _detect_doc_links(
 ) -> ProgressDetectorResult:
     if not fe.doc_links or not fe.doc_links[0]:
         return ProgressDetectorResult(ProgressVote.NOT_STARTED)
-    return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
+    return ProgressDetectorResult(ProgressVote.READY_FOR_REVIEW)
 
 
 def _detect_spec_link(
@@ -201,7 +201,7 @@ def _detect_spec_link(
 ) -> ProgressDetectorResult:
     if not fe.spec_link:
         return ProgressDetectorResult(ProgressVote.NOT_STARTED)
-    return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
+    return ProgressDetectorResult(ProgressVote.READY_FOR_REVIEW)
 
 
 def _detect_spec_mentor(
@@ -209,7 +209,7 @@ def _detect_spec_mentor(
 ) -> ProgressDetectorResult:
     if not fe.spec_mentor_emails:
         return ProgressDetectorResult(ProgressVote.NOT_STARTED)
-    return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
+    return ProgressDetectorResult(ProgressVote.READY_FOR_REVIEW)
 
 
 def _detect_tag_review_requested(
@@ -217,7 +217,7 @@ def _detect_tag_review_requested(
 ) -> ProgressDetectorResult:
     if not fe.tag_review:
         return ProgressDetectorResult(ProgressVote.NOT_STARTED)
-    return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
+    return ProgressDetectorResult(ProgressVote.READY_FOR_REVIEW)
 
 
 def _detect_tag_review_issues_addressed(
@@ -225,7 +225,7 @@ def _detect_tag_review_issues_addressed(
 ) -> ProgressDetectorResult:
     if not review_is_done(fe.tag_review_status):
         return ProgressDetectorResult(ProgressVote.NOT_STARTED)
-    return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
+    return ProgressDetectorResult(ProgressVote.READY_FOR_REVIEW)
 
 
 def _detect_web_dev_views(
@@ -233,7 +233,7 @@ def _detect_web_dev_views(
 ) -> ProgressDetectorResult:
     if not fe.web_dev_views or fe.web_dev_views == core_enums.DEV_NO_SIGNALS:
         return ProgressDetectorResult(ProgressVote.NOT_STARTED)
-    return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
+    return ProgressDetectorResult(ProgressVote.READY_FOR_REVIEW)
 
 
 def _detect_firefox_views(
@@ -241,7 +241,7 @@ def _detect_firefox_views(
 ) -> ProgressDetectorResult:
     if fe.ff_views == core_enums.NO_PUBLIC_SIGNALS:
         return ProgressDetectorResult(ProgressVote.NOT_STARTED)
-    return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
+    return ProgressDetectorResult(ProgressVote.READY_FOR_REVIEW)
 
 
 def _detect_safari_views(
@@ -249,7 +249,7 @@ def _detect_safari_views(
 ) -> ProgressDetectorResult:
     if fe.safari_views == core_enums.NO_PUBLIC_SIGNALS:
         return ProgressDetectorResult(ProgressVote.NOT_STARTED)
-    return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
+    return ProgressDetectorResult(ProgressVote.READY_FOR_REVIEW)
 
 
 def _detect_interop_risks(
@@ -257,7 +257,7 @@ def _detect_interop_risks(
 ) -> ProgressDetectorResult:
     if not fe.interop_compat_risks:
         return ProgressDetectorResult(ProgressVote.NOT_STARTED)
-    return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
+    return ProgressDetectorResult(ProgressVote.READY_FOR_REVIEW)
 
 
 def _detect_desktop_milestone(
@@ -270,7 +270,7 @@ def _detect_desktop_milestone(
         or not stages[stage_type][0].milestones.desktop_first
     ):
         return ProgressDetectorResult(ProgressVote.NOT_STARTED)
-    return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
+    return ProgressDetectorResult(ProgressVote.READY_FOR_REVIEW)
 
 
 def _detect_android_milestone(
@@ -286,7 +286,7 @@ def _detect_android_milestone(
         )
     ):
         return ProgressDetectorResult(ProgressVote.NOT_STARTED)
-    return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
+    return ProgressDetectorResult(ProgressVote.READY_FOR_REVIEW)
 
 
 def _detect_webview_milestone(
@@ -302,7 +302,7 @@ def _detect_webview_milestone(
         )
     ):
         return ProgressDetectorResult(ProgressVote.NOT_STARTED)
-    return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
+    return ProgressDetectorResult(ProgressVote.READY_FOR_REVIEW)
 
 
 def _detect_finch_feature_name_or_non_finch_justification(
@@ -310,7 +310,7 @@ def _detect_finch_feature_name_or_non_finch_justification(
 ) -> ProgressDetectorResult:
     if not fe.finch_name and not fe.non_finch_justification:
         return ProgressDetectorResult(ProgressVote.NOT_STARTED)
-    return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
+    return ProgressDetectorResult(ProgressVote.READY_FOR_REVIEW)
 
 
 def _detect_motivation(
@@ -318,7 +318,7 @@ def _detect_motivation(
 ) -> ProgressDetectorResult:
     if not fe.motivation:
         return ProgressDetectorResult(ProgressVote.NOT_STARTED)
-    return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
+    return ProgressDetectorResult(ProgressVote.READY_FOR_REVIEW)
 
 
 def _detect_code_removed(
@@ -326,7 +326,7 @@ def _detect_code_removed(
 ) -> ProgressDetectorResult:
     if fe.impl_status_chrome != core_enums.REMOVED:
         return ProgressDetectorResult(ProgressVote.NOT_STARTED)
-    return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
+    return ProgressDetectorResult(ProgressVote.READY_FOR_REVIEW)
 
 
 def _detect_rollout_impact(
@@ -339,7 +339,7 @@ def _detect_rollout_impact(
         or not stages[stage_type][0].rollout_impact
     ):
         return ProgressDetectorResult(ProgressVote.NOT_STARTED)
-    return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
+    return ProgressDetectorResult(ProgressVote.READY_FOR_REVIEW)
 
 
 def _detect_rollout_milestone(
@@ -352,7 +352,7 @@ def _detect_rollout_milestone(
         or not stages[stage_type][0].rollout_milestone
     ):
         return ProgressDetectorResult(ProgressVote.NOT_STARTED)
-    return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
+    return ProgressDetectorResult(ProgressVote.READY_FOR_REVIEW)
 
 
 def _detect_rollout_platforms(
@@ -365,7 +365,7 @@ def _detect_rollout_platforms(
         or not stages[stage_type][0].rollout_platforms
     ):
         return ProgressDetectorResult(ProgressVote.NOT_STARTED)
-    return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
+    return ProgressDetectorResult(ProgressVote.READY_FOR_REVIEW)
 
 
 def _detect_rollout_details(
@@ -378,7 +378,7 @@ def _detect_rollout_details(
         or not stages[stage_type][0].rollout_details
     ):
         return ProgressDetectorResult(ProgressVote.NOT_STARTED)
-    return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
+    return ProgressDetectorResult(ProgressVote.READY_FOR_REVIEW)
 
 
 def _detect_rollout_stage_plan(
@@ -391,7 +391,7 @@ def _detect_rollout_stage_plan(
         or not stages[stage_type][0].rollout_stage_plan
     ):
         return ProgressDetectorResult(ProgressVote.NOT_STARTED)
-    return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
+    return ProgressDetectorResult(ProgressVote.READY_FOR_REVIEW)
 
 
 def _detect_enterprise_policies(
@@ -404,7 +404,7 @@ def _detect_enterprise_policies(
         or not stages[stage_type][0].enterprise_policies
     ):
         return ProgressDetectorResult(ProgressVote.NOT_STARTED)
-    return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
+    return ProgressDetectorResult(ProgressVote.READY_FOR_REVIEW)
 
 
 PROGRESS_DETECTORS: dict[

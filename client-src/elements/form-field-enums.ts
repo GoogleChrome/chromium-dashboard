@@ -639,7 +639,7 @@ export const GATE_APPROVED_REVIEW_STATES: number[] = [
 ];
 
 export const PROGRESS_VOTE_STATE = {
-  NEEDS_REVIEW: 1,
+  READY_FOR_REVIEW: 1,
   VERIFIED: 2,
   NA: 3,
   NEEDS_WORK: 4,
