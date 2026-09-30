@@ -121,140 +121,140 @@ class ProgressDetectorResult:
 def _detect_initial_public_proposal(
     f: FeatureEntry, _: dict[int, list[Stage]]
 ) -> ProgressDetectorResult:
-    if f.initial_public_proposal_url:
-        return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
-    return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+    if not f.initial_public_proposal_url:
+        return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+    return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
 
 
 def _detect_explainer(
     f: FeatureEntry, _: dict[int, list[Stage]]
 ) -> ProgressDetectorResult:
-    if f.explainer_links and f.explainer_links[0]:
-        return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
-    return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+    if not f.explainer_links or not f.explainer_links[0]:
+        return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+    return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
 
 
 def _detect_web_feature(
     f: FeatureEntry, _: dict[int, list[Stage]]
 ) -> ProgressDetectorResult:
     if (
-        f.web_feature
-        and f.web_feature != WebDXFeatureObserver.MISSING_FEATURE_ID
+        not f.web_feature
+        or f.web_feature == WebDXFeatureObserver.MISSING_FEATURE_ID
     ):
-        return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
-    return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+        return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+    return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
 
 
 def _detect_tracking_bug_url(
     f: FeatureEntry, _: dict[int, list[Stage]]
 ) -> ProgressDetectorResult:
-    if f.bug_url:
-        return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
-    return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+    if not f.bug_url:
+        return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+    return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
 
 
 def _detect_security_review_issues_addressed(
     f: FeatureEntry, _: dict[int, list[Stage]]
 ) -> ProgressDetectorResult:
-    if review_is_done(f.security_review_status):
-        return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
-    return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+    if not review_is_done(f.security_review_status):
+        return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+    return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
 
 
 def _detect_privacy_review_issues_addressed(
     f: FeatureEntry, _: dict[int, list[Stage]]
 ) -> ProgressDetectorResult:
-    if review_is_done(f.privacy_review_status):
-        return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
-    return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+    if not review_is_done(f.privacy_review_status):
+        return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+    return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
 
 
 def _detect_samples(
     f: FeatureEntry, _: dict[int, list[Stage]]
 ) -> ProgressDetectorResult:
-    if f.sample_links and f.sample_links[0]:
-        return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
-    return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+    if not f.sample_links or not f.sample_links[0]:
+        return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+    return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
 
 
 def _detect_doc_links(
     f: FeatureEntry, _: dict[int, list[Stage]]
 ) -> ProgressDetectorResult:
-    if f.doc_links and f.doc_links[0]:
-        return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
-    return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+    if not f.doc_links or not f.doc_links[0]:
+        return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+    return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
 
 
 def _detect_spec_link(
     f: FeatureEntry, _: dict[int, list[Stage]]
 ) -> ProgressDetectorResult:
-    if f.spec_link:
-        return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
-    return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+    if not f.spec_link:
+        return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+    return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
 
 
 def _detect_draft_api_spec(
     f: FeatureEntry, _: dict[int, list[Stage]]
 ) -> ProgressDetectorResult:
-    if f.spec_link:
-        return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
-    return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+    if not f.spec_link:
+        return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+    return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
 
 
 def _detect_api_spec(
     f: FeatureEntry, _: dict[int, list[Stage]]
 ) -> ProgressDetectorResult:
-    if f.api_spec:
-        return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
-    return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+    if not f.api_spec:
+        return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+    return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
 
 
 def _detect_spec_mentor(
     f: FeatureEntry, _: dict[int, list[Stage]]
 ) -> ProgressDetectorResult:
-    if f.spec_mentor_emails:
-        return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
-    return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+    if not f.spec_mentor_emails:
+        return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+    return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
 
 
 def _detect_tag_review_requested(
     f: FeatureEntry, _: dict[int, list[Stage]]
 ) -> ProgressDetectorResult:
-    if f.tag_review:
-        return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
-    return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+    if not f.tag_review:
+        return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+    return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
 
 
 def _detect_tag_review_issues_addressed(
     f: FeatureEntry, _: dict[int, list[Stage]]
 ) -> ProgressDetectorResult:
-    if review_is_done(f.tag_review_status):
-        return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
-    return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+    if not review_is_done(f.tag_review_status):
+        return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+    return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
 
 
 def _detect_web_dev_views(
     f: FeatureEntry, _: dict[int, list[Stage]]
 ) -> ProgressDetectorResult:
-    if f.web_dev_views and f.web_dev_views != core_enums.DEV_NO_SIGNALS:
-        return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
-    return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+    if not f.web_dev_views or f.web_dev_views == core_enums.DEV_NO_SIGNALS:
+        return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+    return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
 
 
 def _detect_firefox_views(
     f: FeatureEntry, _: dict[int, list[Stage]]
 ) -> ProgressDetectorResult:
-    if f.ff_views != core_enums.NO_PUBLIC_SIGNALS:
-        return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
-    return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+    if f.ff_views == core_enums.NO_PUBLIC_SIGNALS:
+        return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+    return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
 
 
 def _detect_safari_views(
     f: FeatureEntry, _: dict[int, list[Stage]]
 ) -> ProgressDetectorResult:
-    if f.safari_views != core_enums.NO_PUBLIC_SIGNALS:
-        return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
-    return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+    if f.safari_views == core_enums.NO_PUBLIC_SIGNALS:
+        return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+    return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
 
 
 def _detect_desktop_milestone(
@@ -262,12 +262,12 @@ def _detect_desktop_milestone(
 ) -> ProgressDetectorResult:
     stage_type = core_enums.STAGE_TYPES_SHIPPING[f.feature_type]
     if (
-        stage_type
-        and stages[stage_type][0].milestones
-        and stages[stage_type][0].milestones.desktop_first
+        not stage_type
+        or not stages[stage_type][0].milestones
+        or not stages[stage_type][0].milestones.desktop_first
     ):
-        return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
-    return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+        return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+    return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
 
 
 def _detect_android_milestone(
@@ -275,15 +275,15 @@ def _detect_android_milestone(
 ) -> ProgressDetectorResult:
     stage_type = core_enums.STAGE_TYPES_SHIPPING[f.feature_type]
     if (
-        stage_type
-        and stages[stage_type][0].milestones
-        and (
-            stages[stage_type][0].milestones.android_first
-            or stages[stage_type][0].milestones.desktop_first
+        not stage_type
+        or not stages[stage_type][0].milestones
+        or (
+            not stages[stage_type][0].milestones.android_first
+            and not stages[stage_type][0].milestones.desktop_first
         )
     ):
-        return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
-    return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+        return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+    return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
 
 
 def _detect_webview_milestone(
@@ -291,39 +291,39 @@ def _detect_webview_milestone(
 ) -> ProgressDetectorResult:
     stage_type = core_enums.STAGE_TYPES_SHIPPING[f.feature_type]
     if (
-        stage_type
-        and stages[stage_type][0].milestones
-        and (
-            stages[stage_type][0].milestones.webview_first
-            or stages[stage_type][0].milestones.desktop_first
+        not stage_type
+        or not stages[stage_type][0].milestones
+        or (
+            not stages[stage_type][0].milestones.webview_first
+            and not stages[stage_type][0].milestones.desktop_first
         )
     ):
-        return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
-    return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+        return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+    return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
 
 
 def _detect_finch_feature_name_or_non_finch_justification(
     f: FeatureEntry, _: dict[int, list[Stage]]
 ) -> ProgressDetectorResult:
-    if f.finch_name or f.non_finch_justification:
-        return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
-    return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+    if not f.finch_name and not f.non_finch_justification:
+        return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+    return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
 
 
 def _detect_motivation(
     f: FeatureEntry, _: dict[int, list[Stage]]
 ) -> ProgressDetectorResult:
-    if f.motivation:
-        return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
-    return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+    if not f.motivation:
+        return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+    return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
 
 
 def _detect_code_removed(
     f: FeatureEntry, _: dict[int, list[Stage]]
 ) -> ProgressDetectorResult:
-    if f.impl_status_chrome == core_enums.REMOVED:
-        return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
-    return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+    if f.impl_status_chrome != core_enums.REMOVED:
+        return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+    return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
 
 
 def _detect_rollout_impact(
@@ -331,12 +331,12 @@ def _detect_rollout_impact(
 ) -> ProgressDetectorResult:
     stage_type = core_enums.STAGE_TYPES_ROLLOUT[f.feature_type]
     if (
-        stage_type
-        and stages[stage_type]
-        and stages[stage_type][0].rollout_impact
+        not stage_type
+        or not stages[stage_type]
+        or not stages[stage_type][0].rollout_impact
     ):
-        return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
-    return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+        return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+    return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
 
 
 def _detect_rollout_milestone(
@@ -344,12 +344,12 @@ def _detect_rollout_milestone(
 ) -> ProgressDetectorResult:
     stage_type = core_enums.STAGE_TYPES_ROLLOUT[f.feature_type]
     if (
-        stage_type
-        and stages[stage_type]
-        and stages[stage_type][0].rollout_milestone
+        not stage_type
+        or not stages[stage_type]
+        or not stages[stage_type][0].rollout_milestone
     ):
-        return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
-    return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+        return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+    return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
 
 
 def _detect_rollout_platforms(
@@ -357,12 +357,12 @@ def _detect_rollout_platforms(
 ) -> ProgressDetectorResult:
     stage_type = core_enums.STAGE_TYPES_ROLLOUT[f.feature_type]
     if (
-        stage_type
-        and stages[stage_type]
-        and stages[stage_type][0].rollout_platforms
+        not stage_type
+        or not stages[stage_type]
+        or not stages[stage_type][0].rollout_platforms
     ):
-        return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
-    return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+        return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+    return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
 
 
 def _detect_rollout_details(
@@ -370,12 +370,12 @@ def _detect_rollout_details(
 ) -> ProgressDetectorResult:
     stage_type = core_enums.STAGE_TYPES_ROLLOUT[f.feature_type]
     if (
-        stage_type
-        and stages[stage_type]
-        and stages[stage_type][0].rollout_details
+        not stage_type
+        or not stages[stage_type]
+        or not stages[stage_type][0].rollout_details
     ):
-        return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
-    return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+        return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+    return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
 
 
 def _detect_rollout_stage_plan(
@@ -383,12 +383,12 @@ def _detect_rollout_stage_plan(
 ) -> ProgressDetectorResult:
     stage_type = core_enums.STAGE_TYPES_ROLLOUT[f.feature_type]
     if (
-        stage_type
-        and stages[stage_type]
-        and stages[stage_type][0].rollout_stage_plan
+        not stage_type
+        or not stages[stage_type]
+        or not stages[stage_type][0].rollout_stage_plan
     ):
-        return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
-    return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+        return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+    return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
 
 
 def _detect_enterprise_policies(
@@ -396,12 +396,12 @@ def _detect_enterprise_policies(
 ) -> ProgressDetectorResult:
     stage_type = core_enums.STAGE_TYPES_ROLLOUT[f.feature_type]
     if (
-        stage_type
-        and stages[stage_type]
-        and stages[stage_type][0].enterprise_policies
+        not stage_type
+        or not stages[stage_type]
+        or not stages[stage_type][0].enterprise_policies
     ):
-        return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
-    return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+        return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+    return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
 
 
 PROGRESS_DETECTORS: dict[
