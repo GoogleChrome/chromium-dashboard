@@ -432,13 +432,24 @@ class LinkFormattingHelpersTest(testing_config.CustomTestCase):
     def test_format_origin_trial_url(self):
         """It generates canonical origin trial view URLs from OT IDs or stage IDs."""
         self.assertEqual(
-            '/origintrials#/view_trial/4199606652522987521',
+            'https://origintrials-staging.corp.google.com/origintrials#/view_trial/4199606652522987521',
             link_helpers.format_origin_trial_url(
                 origin_trial_id='4199606652522987521'
             ),
         )
         self.assertEqual(
-            '/origintrials#/view_trial/105',
+            'https://origintrials-staging.corp.google.com/origintrials#/view_trial/105',
             link_helpers.format_origin_trial_url(stage_id=105),
         )
+        with mock.patch('settings.PROD', True):
+            self.assertEqual(
+                'https://developer.chrome.com/origintrials#/view_trial/4199606652522987521',
+                link_helpers.format_origin_trial_url(
+                    origin_trial_id='4199606652522987521'
+                ),
+            )
+            self.assertEqual(
+                'https://developer.chrome.com/origintrials#/view_trial/105',
+                link_helpers.format_origin_trial_url(stage_id=105),
+            )
         self.assertIsNone(link_helpers.format_origin_trial_url())
