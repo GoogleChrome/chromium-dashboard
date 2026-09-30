@@ -26,7 +26,7 @@ import {findFirstFeatureStage} from './utils.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {customElement, state} from 'lit/decorators.js';
 import {Feature, StageDict} from '../js-src/cs-client.js';
-import {GateDict} from './chromedash-gate-chip.js';
+import {GateDict, gateStateDisplayInfo} from './chromedash-gate-chip.js';
 import {
   Action,
   Process,
@@ -94,9 +94,15 @@ export function somePendingGates(featureGates: GateDict[], feStage: StageDict) {
   return findPendingGates(featureGates, feStage).length > 0;
 }
 
-export function findPendingGates(featureGates: GateDict[], feStage: StageDict) {
+export function findOtherGates(featureGates: GateDict[], feStage: StageDict) {
   const gatesForStage = featureGates.filter(g => g.stage_id == feStage.id);
-  const otherGates = gatesForStage.filter(g => g.team_name != 'API Owners');
+  const otherGates = gatesForStage.filter(g =>
+    g.team_name != 'API Owners' && g.team_name != 'Data Quality');
+  return otherGates;
+}
+
+export function findPendingGates(featureGates: GateDict[], feStage: StageDict) {
+  const otherGates = findOtherGates(featureGates, feStage);
   const pendingGates = otherGates.filter(
     g => !GATE_FINISHED_REVIEW_STATES.includes(g.state)
   );
@@ -151,7 +157,7 @@ export class ChromedashPreflightDialog extends LitElement {
         }
 
         .data-table td:first-child {
-          width: 7em;
+          width: 10em;
         }
 
         .data-table td:last-child {
@@ -166,14 +172,46 @@ export class ChromedashPreflightDialog extends LitElement {
           font-size: 0.9em;
         }
 
+        .status.not_applicable,
+      .status.na_self-certified,
+      .status.na_self-certified_then_verified {
+      background: var(--gate-not-applicable-background);
+          color: var(--gate-not-applicable-color);
+      }
+
+        .status.preparing {
+          background: var(--gate-preparing-background);
+          color: var(--gate-preparing-color);
+        }
+
+        .status.pending {
+          background: var(--gate-pending-background);
+          color: var(--gate-pending-color);
+        }
+
+        .status.needs_work {
+          background: var(--gate-needs-work-background);
+          color: var(--gate-needs-work-color);
+        }
+
         .status.approved {
           background: var(--gate-approved-background);
           color: var(--gate-approved-color);
         }
 
-        .status.pending {
-          background: var(--sl-color-neutral-200);
-          color: var(--sl-color-neutral-700);
+        .status.denied {
+          background: var(--gate-denied-background);
+          color: var(--gate-denied-color);
+        }
+
+        .status.internal_review {
+          background: var(--gate-pending-background);
+          color: var(--gate-pending-color);
+        }
+
+        .status.na_requested {
+          background: var(--gate-pending-background);
+          color: var(--gate-pending-color);
         }
 
         sl-button {
@@ -266,12 +304,12 @@ export class ChromedashPreflightDialog extends LitElement {
       <h3>${stage.name}</h3>
       <table class="data-table">
         ${prereqItems.map(item => {
-          const isApproved = this._progress.hasOwnProperty(item.name);
+          const isVerified = this._progress.hasOwnProperty(item.name);
           return html`
-            <tr class=${isApproved ? 'done' : 'pending'}>
+            <tr>
               <td>
-                <span class="status ${isApproved ? 'approved' : 'pending'}">
-                  ${isApproved ? 'Verified' : 'Pending'}
+                <span class="status ${isVerified ? 'approved' : 'preparing'}">
+                  ${isVerified ? 'Verified' : 'Not started'}
                 </span>
               </td>
               <td>${item.description || item.name}</td>
@@ -283,21 +321,33 @@ export class ChromedashPreflightDialog extends LitElement {
     `;
   }
 
-  // TODO(@@@) not just pending gates, all gates with states
-  renderPendingGatesTable(pendingGates: GateDict[]) {
-    if (pendingGates.length === 0) {
+  renderGateState(state: number) {
+    let {
+      stateName, className, statusIconName, abbrev
+    } = gateStateDisplayInfo(state);
+
+    if (stateName === 'Preparing') {
+      stateName = 'Not started';
+      abbrev = 'Not started';
+    }
+
+    return html`
+    <span class="status ${className}" title="${stateName}">${abbrev}</span>
+    `;
+  }
+
+  renderGatesTable(otherGates: GateDict[]) {
+    if (otherGates.length === 0) {
       return nothing;
     }
 
     return html`
-      <h3>Pending gates</h3>
+      <h3>Other gates</h3>
       <table class="data-table">
-        ${pendingGates.map(
+        ${otherGates.map(
           g => html`
-            <tr class="pending">
-              <td>
-                <span class="status pending">Pending</span>
-              </td>
+            <tr>
+              <td>${this.renderGateState(g.state)}</td>
               <td>${g.team_name}</td>
               <td>
                 <a
@@ -333,13 +383,13 @@ export class ChromedashPreflightDialog extends LitElement {
       return this.renderStageTable(s, stagePrereqs);
     });
 
-    const pendingGates = findPendingGates(this._featureGates, this._feStage);
+    const otherGates = findOtherGates(this._featureGates, this._feStage);
 
     return html`
-    Each item below should be marked "Verified" or "N/a".  Before continuing,
-    edit any fields related to items "Pending" or "Needs work".
+    Please address any relevant "Not started" or "Needs work" items before
+    requesting review.
       ${stageTables}
-      ${this.renderPendingGatesTable(pendingGates)}
+      ${this.renderGatesTable(otherGates)}
 
       <sl-button
         href="${this._url}"

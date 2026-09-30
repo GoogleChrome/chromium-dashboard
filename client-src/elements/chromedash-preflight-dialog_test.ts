@@ -190,7 +190,7 @@ describe('preflight functions', () => {
 
     const feStage = {id: 20, stage_type: 120, intent_stage: 2} as StageDict;
 
-    it('renders 3-column tables per stage with rows and Pending gates table below', async () => {
+    it('renders 3-column tables per stage with rows and Other gates table below', async () => {
       const component = await fixture<ChromedashPreflightDialog>(
         html`<chromedash-preflight-dialog></chromedash-preflight-dialog>`
       );
@@ -224,7 +224,7 @@ describe('preflight functions', () => {
       assert.deepEqual(headers, [
         'Start incubating',
         'Start prototyping',
-        'Pending gates',
+        'Other gates',
       ]);
 
       const tables = component.shadowRoot!.querySelectorAll('table.data-table');
@@ -236,7 +236,7 @@ describe('preflight functions', () => {
 
       const row0Cells = stage1Rows[0].querySelectorAll('td');
       assert.equal(row0Cells.length, 3);
-      assert.equal(row0Cells[0].textContent?.trim(), 'Approved');
+      assert.equal(row0Cells[0].textContent?.trim(), 'Verified');
       assert.isNotNull(row0Cells[0].querySelector('.status.approved'));
       assert.equal(row0Cells[1].textContent?.trim(), 'Motivation');
       assert.equal(
@@ -245,8 +245,8 @@ describe('preflight functions', () => {
       );
 
       const row1Cells = stage1Rows[1].querySelectorAll('td');
-      assert.equal(row1Cells[0].textContent?.trim(), 'Pending');
-      assert.isNotNull(row1Cells[0].querySelector('.status.pending'));
+      assert.equal(row1Cells[0].textContent?.trim(), 'Not started');
+      assert.isNotNull(row1Cells[0].querySelector('.status.preparing'));
       assert.equal(row1Cells[1].textContent?.trim(), 'Explainer');
       assert.equal(
         row1Cells[2].querySelector('a')?.getAttribute('href'),
@@ -254,19 +254,19 @@ describe('preflight functions', () => {
       );
 
       const row2Cells = stage1Rows[2].querySelectorAll('td');
-      assert.equal(row2Cells[0].textContent?.trim(), 'Pending');
+      assert.equal(row2Cells[0].textContent?.trim(), 'Not started');
       assert.equal(row2Cells[1].textContent?.trim(), 'Tracking bug URL');
       assert.equal(
         row2Cells[2].querySelector('a')?.getAttribute('href'),
         '/guide/stage/123456/metadata#id_bug_url'
       );
 
-      // Table 1: Start prototyping (Spec link=Approved with edit link, Draft API spec=Pending with no edit link)
+      // Table 1: Start prototyping (Spec link=Verified with edit link, Draft API spec=Pending with no edit link)
       const stage2Rows = tables[1].querySelectorAll('tr');
       assert.equal(stage2Rows.length, 2);
       assert.equal(
         stage2Rows[0].querySelectorAll('td')[0].textContent?.trim(),
-        'Approved'
+        'Verified'
       );
       assert.equal(
         stage2Rows[0].querySelectorAll('td')[1].textContent?.trim(),
@@ -277,12 +277,12 @@ describe('preflight functions', () => {
       );
       assert.isNull(stage2Rows[1].querySelectorAll('td')[2].querySelector('a'));
 
-      // Table 2: Pending gates
+      // Table 2: Other gates
       const gateRows = tables[2].querySelectorAll('tr');
       assert.equal(gateRows.length, 1);
       const gateCells = gateRows[0].querySelectorAll('td');
       assert.equal(gateCells.length, 3);
-      assert.equal(gateCells[0].textContent?.trim(), 'Pending');
+      assert.equal(gateCells[0].textContent?.trim(), 'Needs work');
       assert.equal(gateCells[1].textContent?.trim(), 'Privacy');
       assert.equal(
         gateCells[2].querySelector('a')?.textContent?.trim(),
@@ -294,7 +294,7 @@ describe('preflight functions', () => {
       );
     });
 
-    it('omits Pending gates table when there are no pending gates', async () => {
+    it('omits other gates table when there are no other gates', async () => {
       const component = await fixture<ChromedashPreflightDialog>(
         html`<chromedash-preflight-dialog></chromedash-preflight-dialog>`
       );
