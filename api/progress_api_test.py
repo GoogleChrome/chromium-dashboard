@@ -101,13 +101,12 @@ class ProgressAPITest(testing_config.CustomTestCase):
 
         self.assertEqual(
             {
-                'Code in Chromium': expected_detected_vote,
                 'Draft API spec': expected_detected_vote,
-                'Estimated target milestone': expected_detected_vote,
-                'Final target milestone': expected_detected_vote,
                 'Spec link': expected_detected_vote,
-                'Updated target milestone': expected_detected_vote,
-                'Web developer signals': expected_detected_vote,
+                'Updated android milestone': expected_detected_vote,
+                'Updated desktop milestone': expected_detected_vote,
+                'Updated webview milestone': expected_detected_vote,
+                'Web developer views': expected_detected_vote,
             },
             actual,
         )

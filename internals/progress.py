@@ -233,7 +233,7 @@ def _detect_tag_review_issues_addressed(
     return ProgressDetectorResult(ProgressVote.NOT_STARTED)
 
 
-def _detect_web_developer_signals(
+def _detect_web_dev_views(
     f: FeatureEntry, _: dict[int, list[Stage]]
 ) -> ProgressDetectorResult:
     if f.web_dev_views and f.web_dev_views != core_enums.DEV_NO_SIGNALS:
@@ -241,40 +241,23 @@ def _detect_web_developer_signals(
     return ProgressDetectorResult(ProgressVote.NOT_STARTED)
 
 
-def _detect_vendor_signals(
+def _detect_firefox_views(
     f: FeatureEntry, _: dict[int, list[Stage]]
 ) -> ProgressDetectorResult:
-    if (
-        f.ff_views != core_enums.NO_PUBLIC_SIGNALS
-        or f.safari_views != core_enums.NO_PUBLIC_SIGNALS
-    ):
+    if f.ff_views != core_enums.NO_PUBLIC_SIGNALS:
         return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
     return ProgressDetectorResult(ProgressVote.NOT_STARTED)
 
 
-def _detect_updated_vendor_signals(
+def _detect_safari_views(
     f: FeatureEntry, _: dict[int, list[Stage]]
 ) -> ProgressDetectorResult:
-    if (
-        f.ff_views != core_enums.NO_PUBLIC_SIGNALS
-        or f.safari_views != core_enums.NO_PUBLIC_SIGNALS
-    ):
+    if f.safari_views != core_enums.NO_PUBLIC_SIGNALS:
         return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
     return ProgressDetectorResult(ProgressVote.NOT_STARTED)
 
 
-def _detect_final_vendor_signals(
-    f: FeatureEntry, _: dict[int, list[Stage]]
-) -> ProgressDetectorResult:
-    if (
-        f.ff_views != core_enums.NO_PUBLIC_SIGNALS
-        or f.safari_views != core_enums.NO_PUBLIC_SIGNALS
-    ):
-        return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
-    return ProgressDetectorResult(ProgressVote.NOT_STARTED)
-
-
-def _detect_estimated_target_milestone(
+def _detect_desktop_milestone(
     f: FeatureEntry, stages: dict[int, list[Stage]]
 ) -> ProgressDetectorResult:
     stage_type = core_enums.STAGE_TYPES_SHIPPING[f.feature_type]
@@ -287,27 +270,33 @@ def _detect_estimated_target_milestone(
     return ProgressDetectorResult(ProgressVote.NOT_STARTED)
 
 
-def _detect_updated_target_milestone(
+def _detect_android_milestone(
     f: FeatureEntry, stages: dict[int, list[Stage]]
 ) -> ProgressDetectorResult:
     stage_type = core_enums.STAGE_TYPES_SHIPPING[f.feature_type]
     if (
         stage_type
         and stages[stage_type][0].milestones
-        and stages[stage_type][0].milestones.desktop_first
+        and (
+            stages[stage_type][0].milestones.android_first
+            or stages[stage_type][0].milestones.desktop_first
+        )
     ):
         return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
     return ProgressDetectorResult(ProgressVote.NOT_STARTED)
 
 
-def _detect_final_target_milestone(
+def _detect_webview_milestone(
     f: FeatureEntry, stages: dict[int, list[Stage]]
 ) -> ProgressDetectorResult:
     stage_type = core_enums.STAGE_TYPES_SHIPPING[f.feature_type]
     if (
         stage_type
         and stages[stage_type][0].milestones
-        and stages[stage_type][0].milestones.desktop_first
+        and (
+            stages[stage_type][0].milestones.webview_first
+            or stages[stage_type][0].milestones.desktop_first
+        )
     ):
         return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
     return ProgressDetectorResult(ProgressVote.NOT_STARTED)
@@ -317,19 +306,6 @@ def _detect_finch_feature_name_or_non_finch_justification(
     f: FeatureEntry, _: dict[int, list[Stage]]
 ) -> ProgressDetectorResult:
     if f.finch_name or f.non_finch_justification:
-        return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
-    return ProgressDetectorResult(ProgressVote.NOT_STARTED)
-
-
-def _detect_code_in_chromium(
-    f: FeatureEntry, _: dict[int, list[Stage]]
-) -> ProgressDetectorResult:
-    if f.impl_status_chrome in (
-        core_enums.IN_DEVELOPMENT,
-        core_enums.BEHIND_A_FLAG,
-        core_enums.ENABLED_BY_DEFAULT,
-        core_enums.ORIGIN_TRIAL,
-    ):
         return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
     return ProgressDetectorResult(ProgressVote.NOT_STARTED)
 
@@ -446,17 +422,15 @@ PROGRESS_DETECTORS: dict[
     PI_SPEC_MENTOR.name: _detect_spec_mentor,
     PI_TAG_REQUESTED.name: _detect_tag_review_requested,
     PI_TAG_ADDRESSED.name: _detect_tag_review_issues_addressed,
-    'Web developer signals': _detect_web_developer_signals,
-    'Vendor signals': _detect_vendor_signals,
-    'Updated vendor signals': _detect_updated_vendor_signals,
-    'Final vendor signals': _detect_final_vendor_signals,
-    'Estimated target milestone': _detect_estimated_target_milestone,
-    'Updated target milestone': _detect_updated_target_milestone,
-    'Final target milestone': _detect_final_target_milestone,
+    PI_WEB_DEV_VIEWS.name: _detect_web_dev_views,
+    PI_FIREFOX_VIEWS.name: _detect_firefox_views,
+    PI_SAFARI_VIEWS.name: _detect_safari_views,
+    PI_DESKTOP_MILESTONE.name: _detect_desktop_milestone,
+    PI_ANDROID_MILESTONE.name: _detect_android_milestone,
+    PI_WEBVIEW_MILESTONE.name: _detect_webview_milestone,
     PI_FINCH_FEATURE_OR_JUSTIFY.name: (
         _detect_finch_feature_name_or_non_finch_justification
     ),
-    'Code in Chromium': _detect_code_in_chromium,
     PI_MOTIVATION.name: _detect_motivation,
     PI_CODE_REMOVED.name: _detect_code_removed,
     PI_ROLLOUT_IMPACT.name: _detect_rollout_impact,

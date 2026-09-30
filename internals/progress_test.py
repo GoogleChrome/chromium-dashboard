@@ -285,60 +285,108 @@ class ProgressDetectorsTest(testing_config.CustomTestCase):
             NEEDS_REVIEW,
         )
 
-    def test_web_dev_signals(self):
-        """Test web dev signals."""
+    def test_web_dev_views(self):
+        """Test web dev views."""
         self.assertEqual(
-            progress._detect_web_developer_signals(
-                self.feature_1, self.stages_dict
-            ),
+            progress._detect_web_dev_views(self.feature_1, self.stages_dict),
             NOT_STARTED,
         )
         self.feature_1.web_dev_views = core_enums.PUBLIC_SUPPORT
         self.assertEqual(
-            progress._detect_web_developer_signals(
-                self.feature_1, self.stages_dict
-            ),
+            progress._detect_web_dev_views(self.feature_1, self.stages_dict),
             NEEDS_REVIEW,
         )
 
-    def test_vendor_signals(self):
-        """Test vendor signals."""
+    def test_firefox_views(self):
+        """Test firefox views."""
         self.assertEqual(
-            progress._detect_vendor_signals(self.feature_1, self.stages_dict),
+            progress._detect_firefox_views(self.feature_1, self.stages_dict),
             NOT_STARTED,
         )
         self.feature_1.ff_views = core_enums.PUBLIC_SUPPORT
         self.assertEqual(
-            progress._detect_vendor_signals(self.feature_1, self.stages_dict),
+            progress._detect_firefox_views(self.feature_1, self.stages_dict),
             NEEDS_REVIEW,
         )
 
-    def test_estimated_target_milestone(self):
-        """Test estimated target milestone."""
+    def test_safari_views(self):
+        """Test safari views."""
+        self.assertEqual(
+            progress._detect_safari_views(self.feature_1, self.stages_dict),
+            NOT_STARTED,
+        )
+        self.feature_1.safari_views = core_enums.PUBLIC_SUPPORT
+        self.assertEqual(
+            progress._detect_safari_views(self.feature_1, self.stages_dict),
+            NEEDS_REVIEW,
+        )
+
+    def test_desktop_milestone(self):
+        """Test desktop milestone."""
         self.stages_dict[160][0].milestones = core_models.MilestoneSet()
         self.assertEqual(
-            progress._detect_estimated_target_milestone(
+            progress._detect_desktop_milestone(
                 self.feature_1, self.stages_dict
             ),
             NOT_STARTED,
         )
         self.stages_dict[160][0].milestones.desktop_first = 99
         self.assertEqual(
-            progress._detect_estimated_target_milestone(
+            progress._detect_desktop_milestone(
                 self.feature_1, self.stages_dict
             ),
             NEEDS_REVIEW,
         )
 
-    def test_code_in_chromium(self):
-        """Test code in chromium."""
+    def test_android_milestone(self):
+        """Test android milestone."""
+        self.stages_dict[160][0].milestones = core_models.MilestoneSet()
         self.assertEqual(
-            progress._detect_code_in_chromium(self.feature_1, self.stages_dict),
+            progress._detect_android_milestone(
+                self.feature_1, self.stages_dict
+            ),
             NOT_STARTED,
         )
-        self.feature_1.impl_status_chrome = core_enums.ENABLED_BY_DEFAULT
+        self.stages_dict[160][0].milestones.android_first = 99
         self.assertEqual(
-            progress._detect_code_in_chromium(self.feature_1, self.stages_dict),
+            progress._detect_android_milestone(
+                self.feature_1, self.stages_dict
+            ),
+            NEEDS_REVIEW,
+        )
+        self.stages_dict[160][0].milestones = core_models.MilestoneSet(
+            desktop_first=100
+        )
+        self.assertEqual(
+            progress._detect_android_milestone(
+                self.feature_1, self.stages_dict
+            ),
+            NEEDS_REVIEW,
+        )
+
+    def test_webview_milestone(self):
+        """Test webview milestone."""
+        self.stages_dict[160][0].milestones = core_models.MilestoneSet()
+        self.assertEqual(
+            progress._detect_webview_milestone(
+                self.feature_1, self.stages_dict
+            ),
+            NOT_STARTED,
+        )
+        self.stages_dict[160][0].milestones.webview_first = 99
+        self.assertEqual(
+            progress._detect_webview_milestone(
+                self.feature_1, self.stages_dict
+            ),
+            NEEDS_REVIEW,
+        )
+        self.stages_dict[160][0].milestones = core_models.MilestoneSet(
+            desktop_first=100
+        )
+        self.assertEqual(
+            progress._detect_webview_milestone(
+                self.feature_1, self.stages_dict
+            ),
             NEEDS_REVIEW,
         )
 
