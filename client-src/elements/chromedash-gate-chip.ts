@@ -89,6 +89,26 @@ export interface GateDict {
   };
 }
 
+export interface GateDisplayInfo {
+  stateName: string;
+  className: string;
+  statusIconName: string;
+  abbrev: string;
+}
+
+export function gateStateDisplayInfo(state: number): GateDisplayInfo {
+  const stateName = GATE_STATE_TO_NAME[state];
+  const className = stateName
+    .toLowerCase()
+    .replaceAll(' ', '_')
+    .replaceAll('(', '')
+    .replaceAll(')', '')
+    .replaceAll('/', '');
+  const statusIconName = GATE_STATE_TO_ICON[state];
+  const abbrev = GATE_STATE_TO_ABBREV[state] || stateName;
+  return {stateName, className, statusIconName, abbrev};
+}
+
 @customElement('chromedash-gate-chip')
 class ChromedashGateChip extends LitElement {
   @property({type: Object})
@@ -237,17 +257,11 @@ class ChromedashGateChip extends LitElement {
       return nothing;
     }
     const teamName = this.gate.team_name;
-    const stateName = GATE_STATE_TO_NAME[this.gate.state];
-    const className = stateName
-      .toLowerCase()
-      .replaceAll(' ', '_')
-      .replaceAll('(', '')
-      .replaceAll(')', '')
-      .replaceAll('/', '');
-    const selected = this.gate.id == this.selectedGateId ? 'selected' : '';
+    const {stateName, className, statusIconName, abbrev} = gateStateDisplayInfo(
+      this.gate.state
+    );
 
-    const statusIconName = GATE_STATE_TO_ICON[this.gate.state];
-    const abbrev = GATE_STATE_TO_ABBREV[this.gate.state] || stateName;
+    const selected = this.gate.id == this.selectedGateId ? 'selected' : '';
     let statusIcon = html`<b class="abbrev" slot="prefix">${abbrev}</b>`;
     if (statusIconName) {
       statusIcon = html`

@@ -26,7 +26,7 @@ import {findFirstFeatureStage} from './utils.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {customElement, state} from 'lit/decorators.js';
 import {Feature, StageDict} from '../js-src/cs-client.js';
-import {GateDict} from './chromedash-gate-chip.js';
+import {GateDict, gateStateDisplayInfo} from './chromedash-gate-chip.js';
 import {
   Action,
   Process,
@@ -94,9 +94,16 @@ export function somePendingGates(featureGates: GateDict[], feStage: StageDict) {
   return findPendingGates(featureGates, feStage).length > 0;
 }
 
-export function findPendingGates(featureGates: GateDict[], feStage: StageDict) {
+export function findOtherGates(featureGates: GateDict[], feStage: StageDict) {
   const gatesForStage = featureGates.filter(g => g.stage_id == feStage.id);
-  const otherGates = gatesForStage.filter(g => g.team_name != 'API Owners');
+  const otherGates = gatesForStage.filter(
+    g => g.team_name != 'API Owners' && g.team_name != 'Data Quality'
+  );
+  return otherGates;
+}
+
+export function findPendingGates(featureGates: GateDict[], feStage: StageDict) {
+  const otherGates = findOtherGates(featureGates, feStage);
   const pendingGates = otherGates.filter(
     g => !GATE_FINISHED_REVIEW_STATES.includes(g.state)
   );
@@ -131,24 +138,81 @@ export class ChromedashPreflightDialog extends LitElement {
     return [
       ...SHARED_STYLES,
       css`
-        li {
-          margin-top: 0.5em;
+        h3 {
+          margin: var(--content-padding) 0 var(--content-padding-quarter) 0;
+          font-size: 16px;
+          font-weight: 500;
         }
 
-        .missing-prereqs-list {
-          padding-bottom: 1em;
+        .data-table {
+          margin-bottom: var(--content-padding-half);
         }
 
-        .edit-progress-item {
-          visibility: hidden;
-          margin-left: var(--content-padding-half);
+        .data-table tr:first-child td {
+          border-top: none;
         }
 
-        .active .edit-progress-item,
-        .missing-prereqs .edit-progress-item,
-        .pending:hover .edit-progress-item,
-        .done:hover .edit-progress-item {
-          visibility: visible;
+        .data-table td {
+          vertical-align: middle;
+          padding: 0 var(content-padding);
+        }
+
+        .data-table td:first-child {
+          width: 10em;
+        }
+
+        .data-table td:last-child {
+          width: 4em;
+          text-align: right;
+        }
+
+        .status {
+          display: inline-block;
+          padding: 2px 8px;
+          border-radius: var(--pill-border-radius);
+          font-size: 0.9em;
+        }
+
+        .status.not_applicable,
+        .status.na_self-certified,
+        .status.na_self-certified_then_verified {
+          background: var(--gate-not-applicable-background);
+          color: var(--gate-not-applicable-color);
+        }
+
+        .status.preparing {
+          background: var(--gate-preparing-background);
+          color: var(--gate-preparing-color);
+        }
+
+        .status.pending {
+          background: var(--gate-pending-background);
+          color: var(--gate-pending-color);
+        }
+
+        .status.needs_work {
+          background: var(--gate-needs-work-background);
+          color: var(--gate-needs-work-color);
+        }
+
+        .status.approved {
+          background: var(--gate-approved-background);
+          color: var(--gate-approved-color);
+        }
+
+        .status.denied {
+          background: var(--gate-denied-background);
+          color: var(--gate-denied-color);
+        }
+
+        .status.internal_review {
+          background: var(--gate-pending-background);
+          color: var(--gate-pending-color);
+        }
+
+        .status.na_requested {
+          background: var(--gate-pending-background);
+          color: var(--gate-pending-color);
         }
 
         sl-button {
@@ -204,8 +268,13 @@ export class ChromedashPreflightDialog extends LitElement {
       return nothing;
     }
 
+    const isMetadataField = FLAT_METADATA_FIELDS.sections.some(
+      section => pi.field !== undefined && section.fields.includes(pi.field)
+    );
     const pathSegment =
-      stage && feStage ? `${stage.outgoing_stage}/${feStage.id}` : 'metadata';
+      !isMetadataField && stage && feStage
+        ? `${stage.outgoing_stage}/${feStage.id}`
+        : 'metadata';
 
     return html`
       <a
@@ -218,77 +287,106 @@ export class ChromedashPreflightDialog extends LitElement {
     `;
   }
 
-  makePrereqItem(itemName): ProgressItem {
-    let prereq: ProgressItem = {name: 'TBD', stage: null};
-    for (const s of this._process.stages || []) {
-      for (const pi of s.progress_items) {
-        if (itemName == pi.name) {
-          prereq = {...pi, stage: s};
-        }
-      }
+  renderStageTable(stage: ProcessStage, prereqItems: ProgressItem[]) {
+    if (prereqItems.length === 0) {
+      return nothing;
     }
-    // For metadata, use stage:null
-    const isMetadata = FLAT_METADATA_FIELDS.sections.some(
-      section =>
-        prereq.field !== undefined && section.fields.includes(prereq.field)
-    );
-    if (isMetadata) {
-      prereq.stage = null;
+    const feStage =
+      stage.outgoing_stage !== undefined
+        ? findFirstFeatureStage(
+            stage.outgoing_stage,
+            this._stage,
+            this._feature
+          )
+        : null;
+
+    return html`
+      <h3>${stage.name}</h3>
+      <table class="data-table">
+        ${prereqItems.map(item => {
+          const isVerified = this._progress.hasOwnProperty(item.name);
+          return html`
+            <tr>
+              <td>
+                <span class="status ${isVerified ? 'approved' : 'preparing'}">
+                  ${isVerified ? 'Verified' : 'Not started'}
+                </span>
+              </td>
+              <td>${item.description || item.name}</td>
+              <td>${this.renderEditLink(stage, feStage, item)}</td>
+            </tr>
+          `;
+        })}
+      </table>
+    `;
+  }
+
+  renderGateState(state: number) {
+    let {stateName, className, statusIconName, abbrev} =
+      gateStateDisplayInfo(state);
+
+    if (stateName === 'Preparing') {
+      stateName = 'Not started';
+      abbrev = 'Not started';
     }
 
-    if (prereq !== null) {
-      return prereq;
+    return html`
+      <span class="status ${className}" title="${stateName}">${abbrev}</span>
+    `;
+  }
+
+  renderGatesTable(otherGates: GateDict[]) {
+    if (otherGates.length === 0) {
+      return nothing;
     }
-    throw new Error('prerequiste is not a defined progress item: ' + itemName);
+
+    return html`
+      <h3>Other gates</h3>
+      <table class="data-table">
+        ${otherGates.map(
+          g => html`
+            <tr>
+              <td>${this.renderGateState(g.state)}</td>
+              <td>${g.team_name}</td>
+              <td>
+                <a
+                  href="/feature/${this._feature.id}?gate=${g.id}"
+                  @click=${this.hide}
+                  >View</a
+                >
+              </td>
+            </tr>
+          `
+        )}
+      </table>
+    `;
   }
 
   renderDialogContent() {
     if (this._feature == null) {
       return nothing;
     }
-    const prereqItems: ProgressItem[] = [];
-    for (const itemName of this._action.prerequisites || []) {
-      if (!isPrereqDone(itemName, this._progress)) {
-        prereqItems.push(this.makePrereqItem(itemName));
-      }
-    }
-    const pendingGates = findPendingGates(this._featureGates, this._feStage);
+
+    const prereqNames = new Set(this._action.prerequisites || []);
+    const seenPrereqs = new Set<string>();
+    const stageTables = (this._process?.stages || []).map(s => {
+      const stagePrereqs = (s.progress_items || []).filter(pi => {
+        // Note that metadata-related PIs are associated with the
+        // first stage in the process.
+        if (prereqNames.has(pi.name) && !seenPrereqs.has(pi.name)) {
+          seenPrereqs.add(pi.name);
+          return true;
+        }
+        return false;
+      });
+      return this.renderStageTable(s, stagePrereqs);
+    });
+
+    const otherGates = findOtherGates(this._featureGates, this._feStage);
 
     return html`
-      Before you ${this._action.name}, it is strongly recommended that you do
-      the following:
-      <ul class="missing-prereqs-list">
-        ${prereqItems.map(
-          item =>
-            html` <li class="pending">
-              ${item.stage?.name || 'Metadata'}: ${item.name}
-              ${this.renderEditLink(
-                item.stage,
-                item.stage?.outgoing_stage !== undefined
-                  ? findFirstFeatureStage(
-                      item.stage.outgoing_stage,
-                      this._stage,
-                      this._feature
-                    )
-                  : null,
-                item
-              )}
-            </li>`
-        )}
-        ${pendingGates.map(
-          g => html`
-            <li class="pending">
-              Get approval or NA from the
-              <a
-                href="/feature/${this._feature.id}?gate=${g.id}"
-                @click=${this.hide}
-                >${g.team_name}</a
-              >
-              team
-            </li>
-          `
-        )}
-      </ul>
+      Please address any relevant "Not started" or "Needs work" items before
+      requesting review. ${stageTables} ${this.renderGatesTable(otherGates)}
 
       <sl-button
         href="${this._url}"
@@ -307,7 +405,7 @@ export class ChromedashPreflightDialog extends LitElement {
     return html`
       <sl-dialog
         class="missing-prereqs"
-        label="Missing Prerequisites"
+        label="Checklist: ${this._action?.name}"
         style="--width:fit-content"
       >
         ${this.renderDialogContent()}

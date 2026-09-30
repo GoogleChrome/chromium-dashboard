@@ -159,9 +159,18 @@ PI_OWNER_EMAILS = ProgressItem(
 
 
 PI_INITIAL_PUBLIC_PROPOSAL = ProgressItem(
-    'Initial public proposal', 'initial_public_proposal_url'
+    'Initial public proposal',
+    'initial_public_proposal_url',
+    'Link to an initial public proposal in the relevant incubation venue.',
+    '',
 )
-PI_MOTIVATION = ProgressItem('Motivation', 'motivation')
+
+PI_MOTIVATION = ProgressItem(
+    'Motivation',
+    'motivation',
+    'Motivation summarizes the reasons we want to add/modify/remove behavior',
+    'https://www.chromium.org/blink/launching-features/#incubation-venue',
+)
 
 PI_EXPLAINER = ProgressItem(
     'Explainer',
