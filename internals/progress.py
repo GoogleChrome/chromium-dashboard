@@ -24,7 +24,35 @@ from google.cloud import ndb  # type: ignore
 from internals import core_enums
 from internals.core_models import FeatureEntry, Stage
 from internals.metrics_models import WebDXFeatureObserver
-from internals.processes import *
+from internals.processes import (
+    PI_ANDROID_MILESTONE,
+    PI_CODE_REMOVED,
+    PI_DESKTOP_MILESTONE,
+    PI_DOC_LINKS,
+    PI_ENTERPRISE_POLICIES,
+    PI_EXPLAINER,
+    PI_FINCH_FEATURE_OR_JUSTIFY,
+    PI_FIREFOX_VIEWS,
+    PI_INITIAL_PUBLIC_PROPOSAL,
+    PI_MOTIVATION,
+    PI_PRI_REVIEW,
+    PI_ROLLOUT_DETAILS,
+    PI_ROLLOUT_IMPACT,
+    PI_ROLLOUT_MILESTONE,
+    PI_ROLLOUT_PLATFORMS,
+    PI_ROLLOUT_STAGE_PLAN,
+    PI_SAFARI_VIEWS,
+    PI_SAMPLES,
+    PI_SEC_REVIEW,
+    PI_SPEC_LINK,
+    PI_SPEC_MENTOR,
+    PI_TAG_ADDRESSED,
+    PI_TAG_REQUESTED,
+    PI_TRACKING_BUG,
+    PI_WEB_DEV_VIEWS,
+    PI_WEB_FEATURE,
+    PI_WEBVIEW_MILESTONE,
+)
 
 
 class ProgressVote(ndb.Model):

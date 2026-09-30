@@ -195,9 +195,17 @@ describe('preflight functions', () => {
         html`<chromedash-preflight-dialog></chromedash-preflight-dialog>`
       );
       const progress = {
-        Motivation: 'true',
-        'Spec link': 'https://example.com/spec',
-      } as unknown as ProgressItem;
+        Motivation: {
+          state: PROGRESS_VOTE_STATE.VERIFIED,
+          set_on: '2026-09-23T00:00:00',
+          set_by: 'ChromeStatus',
+        },
+        'Spec link': {
+          state: PROGRESS_VOTE_STATE.VERIFIED,
+          set_on: '2026-09-23T00:00:00',
+          set_by: 'ChromeStatus',
+        },
+      };
       const privacyGate = {
         id: 501,
         team_name: 'Privacy',
