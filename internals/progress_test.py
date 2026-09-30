@@ -100,6 +100,12 @@ class ProgressVoteTest(testing_config.CustomTestCase):
         self.assertEqual(all_votes[0].set_by, 'reviewer2@example.com')
 
 
+NOT_STARTED = progress.ProgressDetectorResult(progress.ProgressVote.NOT_STARTED)
+NEEDS_REVIEW = progress.ProgressDetectorResult(
+    progress.ProgressVote.NEEDS_REVIEW
+)
+
+
 class ProgressDetectorsTest(testing_config.CustomTestCase):
     """Tests for ProgressDetectors."""
 
@@ -144,193 +150,307 @@ class ProgressDetectorsTest(testing_config.CustomTestCase):
 
     def test_initial_public_proposal_url(self):
         """Test initial public proposal url."""
-        detector = progress.PROGRESS_DETECTORS['Initial public proposal']
-        self.assertFalse(detector(self.feature_1, self.stages_dict))
+        self.assertEqual(
+            progress._detect_initial_public_proposal(
+                self.feature_1, self.stages_dict
+            ),
+            NOT_STARTED,
+        )
         self.feature_1.initial_public_proposal_url = 'http://example.com'
-        self.assertTrue(detector(self.feature_1, self.stages_dict))
+        self.assertEqual(
+            progress._detect_initial_public_proposal(
+                self.feature_1, self.stages_dict
+            ),
+            NEEDS_REVIEW,
+        )
 
     def test_explainer(self):
         """Test explainer."""
-        detector = progress.PROGRESS_DETECTORS['Explainer']
-        self.assertFalse(detector(self.feature_1, self.stages_dict))
+        self.assertEqual(
+            progress._detect_explainer(self.feature_1, self.stages_dict),
+            NOT_STARTED,
+        )
         self.feature_1.explainer_links = ['http://example.com']
-        self.assertTrue(detector(self.feature_1, self.stages_dict))
+        self.assertEqual(
+            progress._detect_explainer(self.feature_1, self.stages_dict),
+            NEEDS_REVIEW,
+        )
 
     def test_web__faeture(self):
         """Test web  faeture."""
-        detector = progress.PROGRESS_DETECTORS['Web feature']
-        self.assertFalse(detector(self.feature_1, self.stages_dict))
+        self.assertEqual(
+            progress._detect_web_feature(self.feature_1, self.stages_dict),
+            NOT_STARTED,
+        )
         self.feature_1.web_feature = WebDXFeatureObserver.MISSING_FEATURE_ID
-        self.assertFalse(detector(self.feature_1, self.stages_dict))
+        self.assertEqual(
+            progress._detect_web_feature(self.feature_1, self.stages_dict),
+            NOT_STARTED,
+        )
         self.feature_1.web_feature = 'array'
-        self.assertTrue(detector(self.feature_1, self.stages_dict))
+        self.assertEqual(
+            progress._detect_web_feature(self.feature_1, self.stages_dict),
+            NEEDS_REVIEW,
+        )
 
     def test_security_review_completed(self):
         """Test security review completed."""
-        detector = progress.PROGRESS_DETECTORS[
-            'Security review issues addressed'
-        ]
-        self.assertFalse(detector(self.feature_1, self.stages_dict))
+        self.assertEqual(
+            progress._detect_security_review_issues_addressed(
+                self.feature_1, self.stages_dict
+            ),
+            NOT_STARTED,
+        )
         self.feature_1.security_review_status = (
             core_enums.REVIEW_ISSUES_ADDRESSED
         )
-        self.assertTrue(detector(self.feature_1, self.stages_dict))
+        self.assertEqual(
+            progress._detect_security_review_issues_addressed(
+                self.feature_1, self.stages_dict
+            ),
+            NEEDS_REVIEW,
+        )
 
     def test_privacy_review_completed(self):
         """Test privacy review completed."""
-        detector = progress.PROGRESS_DETECTORS[
-            'Privacy review issues addressed'
-        ]
-        self.assertFalse(detector(self.feature_1, self.stages_dict))
+        self.assertEqual(
+            progress._detect_privacy_review_issues_addressed(
+                self.feature_1, self.stages_dict
+            ),
+            NOT_STARTED,
+        )
         self.feature_1.privacy_review_status = (
             core_enums.REVIEW_ISSUES_ADDRESSED
         )
-        self.assertTrue(detector(self.feature_1, self.stages_dict))
-
-    def test_intent_to_prototype_email(self):
-        """Test intent to prototype email."""
-        detector = progress.PROGRESS_DETECTORS['Intent to Prototype email']
-        self.assertFalse(detector(self.feature_1, self.stages_dict))
-        self.stages_dict[120][
-            0
-        ].intent_thread_url = 'http://example.com/prototype'
-        self.assertTrue(detector(self.feature_1, self.stages_dict))
-
-    def test_intent_to_ship_email(self):
-        """Test intent to ship email."""
-        detector = progress.PROGRESS_DETECTORS['Intent to Ship email']
-        self.assertFalse(detector(self.feature_1, self.stages_dict))
-        self.stages_dict[160][0].intent_thread_url = 'http://example.com/ship'
-        self.assertTrue(detector(self.feature_1, self.stages_dict))
-
-    def test_ready_for_trial_email(self):
-        """Test ready for trial email."""
-        detector = progress.PROGRESS_DETECTORS[
-            'Ready for Developer Testing email'
-        ]
-        self.assertFalse(detector(self.feature_1, self.stages_dict))
-        self.stages_dict[130][
-            0
-        ].announcement_url = 'http://example.com/trial_ready'
-        self.assertTrue(detector(self.feature_1, self.stages_dict))
-
-    def test_intent_to_experiment_email(self):
-        """Test intent to experiment email."""
-        detector = progress.PROGRESS_DETECTORS['Intent to Experiment email']
-        self.assertFalse(detector(self.feature_1, self.stages_dict))
-        self.stages_dict[150][0].intent_thread_url = 'http://example.com/ot'
-        self.assertTrue(detector(self.feature_1, self.stages_dict))
+        self.assertEqual(
+            progress._detect_privacy_review_issues_addressed(
+                self.feature_1, self.stages_dict
+            ),
+            NEEDS_REVIEW,
+        )
 
     def test_samples(self):
         """Test samples."""
-        detector = progress.PROGRESS_DETECTORS['Samples']
-        self.assertFalse(detector(self.feature_1, self.stages_dict))
+        self.assertEqual(
+            progress._detect_samples(self.feature_1, self.stages_dict),
+            NOT_STARTED,
+        )
         self.feature_1.sample_links = ['http://example.com']
-        self.assertTrue(detector(self.feature_1, self.stages_dict))
+        self.assertEqual(
+            progress._detect_samples(self.feature_1, self.stages_dict),
+            NEEDS_REVIEW,
+        )
 
     def test_doc_links(self):
         """Test doc links."""
-        detector = progress.PROGRESS_DETECTORS['Doc links']
-        self.assertFalse(detector(self.feature_1, self.stages_dict))
+        self.assertEqual(
+            progress._detect_doc_links(self.feature_1, self.stages_dict),
+            NOT_STARTED,
+        )
         self.feature_1.doc_links = ['http://example.com']
-        self.assertTrue(detector(self.feature_1, self.stages_dict))
+        self.assertEqual(
+            progress._detect_doc_links(self.feature_1, self.stages_dict),
+            NEEDS_REVIEW,
+        )
 
     def test_tag_review_requested(self):
         """Test tag review requested."""
-        detector = progress.PROGRESS_DETECTORS['TAG review requested']
-        self.assertFalse(detector(self.feature_1, self.stages_dict))
+        self.assertEqual(
+            progress._detect_tag_review_requested(
+                self.feature_1, self.stages_dict
+            ),
+            NOT_STARTED,
+        )
         self.feature_1.tag_review = 'http://example.com'
-        self.assertTrue(detector(self.feature_1, self.stages_dict))
+        self.assertEqual(
+            progress._detect_tag_review_requested(
+                self.feature_1, self.stages_dict
+            ),
+            NEEDS_REVIEW,
+        )
 
     def test_tag_review_completed(self):
         """Test tag review completed."""
-        detector = progress.PROGRESS_DETECTORS['TAG review issues addressed']
-        self.assertFalse(detector(self.feature_1, self.stages_dict))
+        self.assertEqual(
+            progress._detect_tag_review_issues_addressed(
+                self.feature_1, self.stages_dict
+            ),
+            NOT_STARTED,
+        )
         self.feature_1.tag_review_status = core_enums.REVIEW_ISSUES_ADDRESSED
-        self.assertTrue(detector(self.feature_1, self.stages_dict))
+        self.assertEqual(
+            progress._detect_tag_review_issues_addressed(
+                self.feature_1, self.stages_dict
+            ),
+            NEEDS_REVIEW,
+        )
 
     def test_web_dev_signals(self):
         """Test web dev signals."""
-        detector = progress.PROGRESS_DETECTORS['Web developer signals']
-        self.assertFalse(detector(self.feature_1, self.stages_dict))
+        self.assertEqual(
+            progress._detect_web_developer_signals(
+                self.feature_1, self.stages_dict
+            ),
+            NOT_STARTED,
+        )
         self.feature_1.web_dev_views = core_enums.PUBLIC_SUPPORT
-        self.assertTrue(detector(self.feature_1, self.stages_dict))
+        self.assertEqual(
+            progress._detect_web_developer_signals(
+                self.feature_1, self.stages_dict
+            ),
+            NEEDS_REVIEW,
+        )
 
     def test_vendor_signals(self):
         """Test vendor signals."""
-        detector = progress.PROGRESS_DETECTORS['Vendor signals']
-        self.assertFalse(detector(self.feature_1, self.stages_dict))
+        self.assertEqual(
+            progress._detect_vendor_signals(self.feature_1, self.stages_dict),
+            NOT_STARTED,
+        )
         self.feature_1.ff_views = core_enums.PUBLIC_SUPPORT
-        self.assertTrue(detector(self.feature_1, self.stages_dict))
+        self.assertEqual(
+            progress._detect_vendor_signals(self.feature_1, self.stages_dict),
+            NEEDS_REVIEW,
+        )
 
     def test_estimated_target_milestone(self):
         """Test estimated target milestone."""
-        detector = progress.PROGRESS_DETECTORS['Estimated target milestone']
         self.stages_dict[160][0].milestones = core_models.MilestoneSet()
-        self.assertFalse(detector(self.feature_1, self.stages_dict))
+        self.assertEqual(
+            progress._detect_estimated_target_milestone(
+                self.feature_1, self.stages_dict
+            ),
+            NOT_STARTED,
+        )
         self.stages_dict[160][0].milestones.desktop_first = 99
-        self.assertTrue(detector(self.feature_1, self.stages_dict))
+        self.assertEqual(
+            progress._detect_estimated_target_milestone(
+                self.feature_1, self.stages_dict
+            ),
+            NEEDS_REVIEW,
+        )
 
     def test_code_in_chromium(self):
         """Test code in chromium."""
-        detector = progress.PROGRESS_DETECTORS['Code in Chromium']
-        self.assertFalse(detector(self.feature_1, self.stages_dict))
+        self.assertEqual(
+            progress._detect_code_in_chromium(self.feature_1, self.stages_dict),
+            NOT_STARTED,
+        )
         self.feature_1.impl_status_chrome = core_enums.ENABLED_BY_DEFAULT
-        self.assertTrue(detector(self.feature_1, self.stages_dict))
+        self.assertEqual(
+            progress._detect_code_in_chromium(self.feature_1, self.stages_dict),
+            NEEDS_REVIEW,
+        )
 
     def test_motivation(self):
         """Test motivation."""
-        detector = progress.PROGRESS_DETECTORS['Motivation']
-        self.assertFalse(detector(self.feature_1, self.stages_dict))
+        self.assertEqual(
+            progress._detect_motivation(self.feature_1, self.stages_dict),
+            NOT_STARTED,
+        )
         self.feature_1.motivation = 'test motivation'
-        self.assertTrue(detector(self.feature_1, self.stages_dict))
+        self.assertEqual(
+            progress._detect_motivation(self.feature_1, self.stages_dict),
+            NEEDS_REVIEW,
+        )
 
     def test_code_removed(self):
         """Test code removed."""
-        detector = progress.PROGRESS_DETECTORS['Code removed']
-        self.assertFalse(detector(self.feature_1, self.stages_dict))
+        self.assertEqual(
+            progress._detect_code_removed(self.feature_1, self.stages_dict),
+            NOT_STARTED,
+        )
         self.feature_1.impl_status_chrome = core_enums.REMOVED
-        self.assertTrue(detector(self.feature_1, self.stages_dict))
+        self.assertEqual(
+            progress._detect_code_removed(self.feature_1, self.stages_dict),
+            NEEDS_REVIEW,
+        )
 
     def test_rollout_impact(self):
         """Test rollout impact."""
-        detector = progress.PROGRESS_DETECTORS['Rollout impact']
         # There is always a value for this
-        self.assertTrue(detector(self.feature_1, self.stages_dict))
+        self.assertEqual(
+            progress._detect_rollout_impact(self.feature_1, self.stages_dict),
+            NEEDS_REVIEW,
+        )
         self.stages_dict[1061][0].rollout_impact = 1
-        self.assertTrue(detector(self.feature_1, self.stages_dict))
+        self.assertEqual(
+            progress._detect_rollout_impact(self.feature_1, self.stages_dict),
+            NEEDS_REVIEW,
+        )
 
     def test_rollout_milestone(self):
         """Test rollout milestone."""
-        detector = progress.PROGRESS_DETECTORS['Rollout milestone']
-        self.assertFalse(detector(self.feature_1, self.stages_dict))
+        self.assertEqual(
+            progress._detect_rollout_milestone(
+                self.feature_1, self.stages_dict
+            ),
+            NOT_STARTED,
+        )
         self.stages_dict[1061][0].rollout_milestone = 99
-        self.assertTrue(detector(self.feature_1, self.stages_dict))
+        self.assertEqual(
+            progress._detect_rollout_milestone(
+                self.feature_1, self.stages_dict
+            ),
+            NEEDS_REVIEW,
+        )
 
     def test_rollout_platforms(self):
         """Test rollout platforms."""
-        detector = progress.PROGRESS_DETECTORS['Rollout platforms']
-        self.assertFalse(detector(self.feature_1, self.stages_dict))
+        self.assertEqual(
+            progress._detect_rollout_platforms(
+                self.feature_1, self.stages_dict
+            ),
+            NOT_STARTED,
+        )
         self.stages_dict[1061][0].rollout_platforms = ['iOS', 'Android']
-        self.assertTrue(detector(self.feature_1, self.stages_dict))
+        self.assertEqual(
+            progress._detect_rollout_platforms(
+                self.feature_1, self.stages_dict
+            ),
+            NEEDS_REVIEW,
+        )
 
     def test_rollout_stage_plan(self):
         """Test rollout stage plan."""
-        detector = progress.PROGRESS_DETECTORS['Rollout stage plan']
-        self.assertFalse(detector(self.feature_1, self.stages_dict))
+        self.assertEqual(
+            progress._detect_rollout_stage_plan(
+                self.feature_1, self.stages_dict
+            ),
+            NOT_STARTED,
+        )
         self.stages_dict[1061][0].rollout_stage_plan = 1
-        self.assertTrue(detector(self.feature_1, self.stages_dict))
+        self.assertEqual(
+            progress._detect_rollout_stage_plan(
+                self.feature_1, self.stages_dict
+            ),
+            NEEDS_REVIEW,
+        )
 
     def test_rollout_details(self):
         """Test rollout details."""
-        detector = progress.PROGRESS_DETECTORS['Rollout details']
-        self.assertFalse(detector(self.feature_1, self.stages_dict))
+        self.assertEqual(
+            progress._detect_rollout_details(self.feature_1, self.stages_dict),
+            NOT_STARTED,
+        )
         self.stages_dict[1061][0].rollout_details = 'Details'
-        self.assertTrue(detector(self.feature_1, self.stages_dict))
+        self.assertEqual(
+            progress._detect_rollout_details(self.feature_1, self.stages_dict),
+            NEEDS_REVIEW,
+        )
 
     def test_enterprise_policies(self):
         """Test enterprise policies."""
-        detector = progress.PROGRESS_DETECTORS['Enterprise policies']
-        self.assertFalse(detector(self.feature_1, self.stages_dict))
+        self.assertEqual(
+            progress._detect_enterprise_policies(
+                self.feature_1, self.stages_dict
+            ),
+            NOT_STARTED,
+        )
         self.stages_dict[1061][0].enterprise_policies = ['Policy1', 'Policy2']
-        self.assertTrue(detector(self.feature_1, self.stages_dict))
+        self.assertEqual(
+            progress._detect_enterprise_policies(
+                self.feature_1, self.stages_dict
+            ),
+            NEEDS_REVIEW,
+        )

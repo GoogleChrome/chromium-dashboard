@@ -91,7 +91,7 @@ class ProgressAPITest(testing_config.CustomTestCase):
         """We can get progress of a feature."""
         mock_datetime.datetime.now.return_value = FAKE_NOW
         expected_detected_vote = {
-            'state': progress.ProgressVote.VERIFIED,
+            'state': progress.ProgressVote.NEEDS_REVIEW,
             'set_on': FAKE_NOW.isoformat(),
             'set_by': 'ChromeStatus',
         }
@@ -105,15 +105,37 @@ class ProgressAPITest(testing_config.CustomTestCase):
                 'Draft API spec': expected_detected_vote,
                 'Estimated target milestone': expected_detected_vote,
                 'Final target milestone': expected_detected_vote,
-                'Intent to Prototype email': expected_detected_vote,
-                'Intent to Experiment email': expected_detected_vote,
-                'Ready for Developer Testing email': expected_detected_vote,
-                'Intent to Ship email': expected_detected_vote,
                 'Spec link': expected_detected_vote,
                 'Updated target milestone': expected_detected_vote,
                 'Web developer signals': expected_detected_vote,
             },
             actual,
+        )
+
+    @mock.patch('api.progress_api.datetime')
+    def test_get___detector_feedback(self, mock_datetime):
+        """When a detector returns feedback, it is included in the response."""
+        mock_datetime.datetime.now.return_value = FAKE_NOW
+        fake_detector = mock.MagicMock(
+            return_value=progress.ProgressDetectorResult(
+                progress.ProgressVote.NEEDS_WORK, 'Missing details'
+            )
+        )
+        with mock.patch.dict(
+            progress.PROGRESS_DETECTORS,
+            {'Spec link': fake_detector},
+        ):
+            with test_app.test_request_context(self.request_path):
+                actual = self.handler.do_get(feature_id=self.feature_id)
+
+        self.assertEqual(
+            actual['Spec link'],
+            {
+                'state': progress.ProgressVote.NEEDS_WORK,
+                'feedback': 'Missing details',
+                'set_on': FAKE_NOW.isoformat(),
+                'set_by': 'ChromeStatus',
+            },
         )
 
     @mock.patch('api.progress_api.datetime')

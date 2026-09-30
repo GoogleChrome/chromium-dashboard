@@ -16,17 +16,22 @@
 """Defines models and detectors for evaluating feature progress items."""
 
 import datetime
+from collections.abc import Callable
+from dataclasses import dataclass
 
 from google.cloud import ndb  # type: ignore
 
 from internals import core_enums
+from internals.core_models import FeatureEntry, Stage
 from internals.metrics_models import WebDXFeatureObserver
+from internals.processes import *
 
 
 class ProgressVote(ndb.Model):
     """One reviewer's vote on what the state of a progress item should be."""
 
-    NEEDS_REVIEW = 1
+    NOT_STARTED = 0  # User has not entered enough values to evaluate.
+    NEEDS_REVIEW = 1  # Values are ready human or AI review.
     VERIFIED = 2
     NA = 3
     NEEDS_WORK = 4
@@ -105,147 +110,359 @@ def review_is_done(status):
     return status in (core_enums.REVIEW_ISSUES_ADDRESSED, core_enums.REVIEW_NA)
 
 
-# These functions return a true value when the checkmark should be shown.
-# If they return a string, and it starts with "http:" or "https:", it will
-# be used as a link URL.
-PROGRESS_DETECTORS = {
-    'Initial public proposal': lambda f, _: f.initial_public_proposal_url,
-    'Explainer': lambda f, _: f.explainer_links and f.explainer_links[0],
-    'Web feature': lambda f, _: (
+@dataclass(frozen=True)
+class ProgressDetectorResult:
+    """Represents the output of a progress detector."""
+
+    state: int
+    feedback: str | None = None
+
+
+def _detect_initial_public_proposal(
+    f: FeatureEntry, _: dict[int, list[Stage]]
+) -> ProgressDetectorResult:
+    if f.initial_public_proposal_url:
+        return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
+    return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+
+
+def _detect_explainer(
+    f: FeatureEntry, _: dict[int, list[Stage]]
+) -> ProgressDetectorResult:
+    if f.explainer_links and f.explainer_links[0]:
+        return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
+    return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+
+
+def _detect_web_feature(
+    f: FeatureEntry, _: dict[int, list[Stage]]
+) -> ProgressDetectorResult:
+    if (
         f.web_feature
         and f.web_feature != WebDXFeatureObserver.MISSING_FEATURE_ID
-    ),  # noqa: E501
-    'Tracking bug URL': lambda f, _: f.bug_url,
-    'Security review issues addressed': lambda f, _: review_is_done(
-        f.security_review_status
-    ),
-    'Privacy review issues addressed': lambda f, _: review_is_done(
-        f.privacy_review_status
-    ),
-    'Intent to Prototype email': lambda f, stages: (
-        core_enums.STAGE_TYPES_PROTOTYPE[f.feature_type]
-        and stages[core_enums.STAGE_TYPES_PROTOTYPE[f.feature_type]][
-            0
-        ].intent_thread_url
-    ),
-    'Intent to Ship email': lambda f, stages: (
-        core_enums.STAGE_TYPES_SHIPPING[f.feature_type]
-        and stages[core_enums.STAGE_TYPES_SHIPPING[f.feature_type]][
-            0
-        ].intent_thread_url
-    ),
-    'Ready for Developer Testing email': lambda f, stages: (
-        core_enums.STAGE_TYPES_DEV_TRIAL[f.feature_type]
-        and stages[core_enums.STAGE_TYPES_DEV_TRIAL[f.feature_type]][
-            0
-        ].announcement_url
-    ),
-    'Intent to Experiment email': lambda f, stages: (
-        core_enums.STAGE_TYPES_ORIGIN_TRIAL[f.feature_type]
-        and stages[core_enums.STAGE_TYPES_ORIGIN_TRIAL[f.feature_type]][
-            0
-        ].intent_thread_url
-    ),
-    'Samples': lambda f, _: f.sample_links and f.sample_links[0],
-    'Doc links': lambda f, _: f.doc_links and f.doc_links[0],
-    'Spec link': lambda f, _: f.spec_link,
-    'Draft API spec': lambda f, _: f.spec_link,
-    'API spec': lambda f, _: f.api_spec,
-    'Spec mentor': lambda f, _: f.spec_mentor_emails,
-    'TAG review requested': lambda f, _: f.tag_review,
-    'TAG review issues addressed': lambda f, _: review_is_done(
-        f.tag_review_status
-    ),
-    'Web developer signals': lambda f, _: bool(
-        f.web_dev_views and f.web_dev_views != core_enums.DEV_NO_SIGNALS
-    ),
-    'Vendor signals': lambda f, _: bool(
+    ):
+        return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
+    return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+
+
+def _detect_tracking_bug_url(
+    f: FeatureEntry, _: dict[int, list[Stage]]
+) -> ProgressDetectorResult:
+    if f.bug_url:
+        return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
+    return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+
+
+def _detect_security_review_issues_addressed(
+    f: FeatureEntry, _: dict[int, list[Stage]]
+) -> ProgressDetectorResult:
+    if review_is_done(f.security_review_status):
+        return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
+    return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+
+
+def _detect_privacy_review_issues_addressed(
+    f: FeatureEntry, _: dict[int, list[Stage]]
+) -> ProgressDetectorResult:
+    if review_is_done(f.privacy_review_status):
+        return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
+    return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+
+
+def _detect_samples(
+    f: FeatureEntry, _: dict[int, list[Stage]]
+) -> ProgressDetectorResult:
+    if f.sample_links and f.sample_links[0]:
+        return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
+    return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+
+
+def _detect_doc_links(
+    f: FeatureEntry, _: dict[int, list[Stage]]
+) -> ProgressDetectorResult:
+    if f.doc_links and f.doc_links[0]:
+        return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
+    return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+
+
+def _detect_spec_link(
+    f: FeatureEntry, _: dict[int, list[Stage]]
+) -> ProgressDetectorResult:
+    if f.spec_link:
+        return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
+    return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+
+
+def _detect_draft_api_spec(
+    f: FeatureEntry, _: dict[int, list[Stage]]
+) -> ProgressDetectorResult:
+    if f.spec_link:
+        return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
+    return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+
+
+def _detect_api_spec(
+    f: FeatureEntry, _: dict[int, list[Stage]]
+) -> ProgressDetectorResult:
+    if f.api_spec:
+        return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
+    return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+
+
+def _detect_spec_mentor(
+    f: FeatureEntry, _: dict[int, list[Stage]]
+) -> ProgressDetectorResult:
+    if f.spec_mentor_emails:
+        return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
+    return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+
+
+def _detect_tag_review_requested(
+    f: FeatureEntry, _: dict[int, list[Stage]]
+) -> ProgressDetectorResult:
+    if f.tag_review:
+        return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
+    return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+
+
+def _detect_tag_review_issues_addressed(
+    f: FeatureEntry, _: dict[int, list[Stage]]
+) -> ProgressDetectorResult:
+    if review_is_done(f.tag_review_status):
+        return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
+    return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+
+
+def _detect_web_developer_signals(
+    f: FeatureEntry, _: dict[int, list[Stage]]
+) -> ProgressDetectorResult:
+    if f.web_dev_views and f.web_dev_views != core_enums.DEV_NO_SIGNALS:
+        return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
+    return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+
+
+def _detect_vendor_signals(
+    f: FeatureEntry, _: dict[int, list[Stage]]
+) -> ProgressDetectorResult:
+    if (
         f.ff_views != core_enums.NO_PUBLIC_SIGNALS
         or f.safari_views != core_enums.NO_PUBLIC_SIGNALS
-    ),
-    'Updated vendor signals': lambda f, _: bool(
+    ):
+        return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
+    return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+
+
+def _detect_updated_vendor_signals(
+    f: FeatureEntry, _: dict[int, list[Stage]]
+) -> ProgressDetectorResult:
+    if (
         f.ff_views != core_enums.NO_PUBLIC_SIGNALS
         or f.safari_views != core_enums.NO_PUBLIC_SIGNALS
-    ),
-    'Final vendor signals': lambda f, _: bool(
+    ):
+        return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
+    return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+
+
+def _detect_final_vendor_signals(
+    f: FeatureEntry, _: dict[int, list[Stage]]
+) -> ProgressDetectorResult:
+    if (
         f.ff_views != core_enums.NO_PUBLIC_SIGNALS
         or f.safari_views != core_enums.NO_PUBLIC_SIGNALS
+    ):
+        return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
+    return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+
+
+def _detect_estimated_target_milestone(
+    f: FeatureEntry, stages: dict[int, list[Stage]]
+) -> ProgressDetectorResult:
+    stage_type = core_enums.STAGE_TYPES_SHIPPING[f.feature_type]
+    if (
+        stage_type
+        and stages[stage_type][0].milestones
+        and stages[stage_type][0].milestones.desktop_first
+    ):
+        return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
+    return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+
+
+def _detect_updated_target_milestone(
+    f: FeatureEntry, stages: dict[int, list[Stage]]
+) -> ProgressDetectorResult:
+    stage_type = core_enums.STAGE_TYPES_SHIPPING[f.feature_type]
+    if (
+        stage_type
+        and stages[stage_type][0].milestones
+        and stages[stage_type][0].milestones.desktop_first
+    ):
+        return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
+    return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+
+
+def _detect_final_target_milestone(
+    f: FeatureEntry, stages: dict[int, list[Stage]]
+) -> ProgressDetectorResult:
+    stage_type = core_enums.STAGE_TYPES_SHIPPING[f.feature_type]
+    if (
+        stage_type
+        and stages[stage_type][0].milestones
+        and stages[stage_type][0].milestones.desktop_first
+    ):
+        return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
+    return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+
+
+def _detect_finch_feature_name_or_non_finch_justification(
+    f: FeatureEntry, _: dict[int, list[Stage]]
+) -> ProgressDetectorResult:
+    if f.finch_name or f.non_finch_justification:
+        return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
+    return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+
+
+def _detect_code_in_chromium(
+    f: FeatureEntry, _: dict[int, list[Stage]]
+) -> ProgressDetectorResult:
+    if f.impl_status_chrome in (
+        core_enums.IN_DEVELOPMENT,
+        core_enums.BEHIND_A_FLAG,
+        core_enums.ENABLED_BY_DEFAULT,
+        core_enums.ORIGIN_TRIAL,
+    ):
+        return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
+    return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+
+
+def _detect_motivation(
+    f: FeatureEntry, _: dict[int, list[Stage]]
+) -> ProgressDetectorResult:
+    if f.motivation:
+        return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
+    return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+
+
+def _detect_code_removed(
+    f: FeatureEntry, _: dict[int, list[Stage]]
+) -> ProgressDetectorResult:
+    if f.impl_status_chrome == core_enums.REMOVED:
+        return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
+    return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+
+
+def _detect_rollout_impact(
+    f: FeatureEntry, stages: dict[int, list[Stage]]
+) -> ProgressDetectorResult:
+    stage_type = core_enums.STAGE_TYPES_ROLLOUT[f.feature_type]
+    if (
+        stage_type
+        and stages[stage_type]
+        and stages[stage_type][0].rollout_impact
+    ):
+        return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
+    return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+
+
+def _detect_rollout_milestone(
+    f: FeatureEntry, stages: dict[int, list[Stage]]
+) -> ProgressDetectorResult:
+    stage_type = core_enums.STAGE_TYPES_ROLLOUT[f.feature_type]
+    if (
+        stage_type
+        and stages[stage_type]
+        and stages[stage_type][0].rollout_milestone
+    ):
+        return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
+    return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+
+
+def _detect_rollout_platforms(
+    f: FeatureEntry, stages: dict[int, list[Stage]]
+) -> ProgressDetectorResult:
+    stage_type = core_enums.STAGE_TYPES_ROLLOUT[f.feature_type]
+    if (
+        stage_type
+        and stages[stage_type]
+        and stages[stage_type][0].rollout_platforms
+    ):
+        return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
+    return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+
+
+def _detect_rollout_details(
+    f: FeatureEntry, stages: dict[int, list[Stage]]
+) -> ProgressDetectorResult:
+    stage_type = core_enums.STAGE_TYPES_ROLLOUT[f.feature_type]
+    if (
+        stage_type
+        and stages[stage_type]
+        and stages[stage_type][0].rollout_details
+    ):
+        return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
+    return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+
+
+def _detect_rollout_stage_plan(
+    f: FeatureEntry, stages: dict[int, list[Stage]]
+) -> ProgressDetectorResult:
+    stage_type = core_enums.STAGE_TYPES_ROLLOUT[f.feature_type]
+    if (
+        stage_type
+        and stages[stage_type]
+        and stages[stage_type][0].rollout_stage_plan
+    ):
+        return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
+    return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+
+
+def _detect_enterprise_policies(
+    f: FeatureEntry, stages: dict[int, list[Stage]]
+) -> ProgressDetectorResult:
+    stage_type = core_enums.STAGE_TYPES_ROLLOUT[f.feature_type]
+    if (
+        stage_type
+        and stages[stage_type]
+        and stages[stage_type][0].enterprise_policies
+    ):
+        return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
+    return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+
+
+PROGRESS_DETECTORS: dict[
+    str,
+    Callable[[FeatureEntry, dict[int, list[Stage]]], ProgressDetectorResult],
+] = {
+    PI_INITIAL_PUBLIC_PROPOSAL.name: _detect_initial_public_proposal,
+    PI_EXPLAINER.name: _detect_explainer,
+    PI_WEB_FEATURE.name: _detect_web_feature,
+    PI_TRACKING_BUG.name: _detect_tracking_bug_url,
+    PI_SEC_REVIEW.name: _detect_security_review_issues_addressed,
+    PI_PRI_REVIEW.name: _detect_privacy_review_issues_addressed,
+    PI_SAMPLES.name: _detect_samples,
+    PI_DOC_LINKS.name: _detect_doc_links,
+    PI_SPEC_LINK.name: _detect_spec_link,
+    PI_DRAFT_API_SPEC.name: _detect_draft_api_spec,
+    'API spec': _detect_api_spec,
+    PI_SPEC_MENTOR.name: _detect_spec_mentor,
+    PI_TAG_REQUESTED.name: _detect_tag_review_requested,
+    PI_TAG_ADDRESSED.name: _detect_tag_review_issues_addressed,
+    'Web developer signals': _detect_web_developer_signals,
+    'Vendor signals': _detect_vendor_signals,
+    'Updated vendor signals': _detect_updated_vendor_signals,
+    'Final vendor signals': _detect_final_vendor_signals,
+    'Estimated target milestone': _detect_estimated_target_milestone,
+    'Updated target milestone': _detect_updated_target_milestone,
+    'Final target milestone': _detect_final_target_milestone,
+    PI_FINCH_FEATURE_OR_JUSTIFY.name: (
+        _detect_finch_feature_name_or_non_finch_justification
     ),
-    'Estimated target milestone': lambda f, stages: bool(
-        core_enums.STAGE_TYPES_SHIPPING[f.feature_type]
-        and stages[core_enums.STAGE_TYPES_SHIPPING[f.feature_type]][
-            0
-        ].milestones  # noqa: E501
-        and stages[core_enums.STAGE_TYPES_SHIPPING[f.feature_type]][
-            0
-        ].milestones.desktop_first
-    ),
-    'Updated target milestone': lambda f, stages: bool(
-        core_enums.STAGE_TYPES_SHIPPING[f.feature_type]
-        and stages[core_enums.STAGE_TYPES_SHIPPING[f.feature_type]][
-            0
-        ].milestones  # noqa: E501
-        and stages[core_enums.STAGE_TYPES_SHIPPING[f.feature_type]][
-            0
-        ].milestones.desktop_first
-    ),
-    'Final target milestone': lambda f, stages: bool(
-        core_enums.STAGE_TYPES_SHIPPING[f.feature_type]
-        and stages[core_enums.STAGE_TYPES_SHIPPING[f.feature_type]][
-            0
-        ].milestones  # noqa: E501
-        and stages[core_enums.STAGE_TYPES_SHIPPING[f.feature_type]][
-            0
-        ].milestones.desktop_first
-    ),
-    'Finch feature name or non-finch justification': lambda f, stages: bool(
-        f.finch_name or f.non_finch_justification
-    ),
-    'Code in Chromium': lambda f, _: (
-        f.impl_status_chrome
-        in (
-            core_enums.IN_DEVELOPMENT,
-            core_enums.BEHIND_A_FLAG,
-            core_enums.ENABLED_BY_DEFAULT,
-            core_enums.ORIGIN_TRIAL,
-        )
-    ),
-    'Motivation': lambda f, _: bool(f.motivation),
-    'Code removed': lambda f, _: f.impl_status_chrome == core_enums.REMOVED,
-    'Rollout impact': lambda f, stages: (
-        stages[core_enums.STAGE_TYPES_ROLLOUT[f.feature_type]]
-        and stages[core_enums.STAGE_TYPES_ROLLOUT[f.feature_type]][
-            0
-        ].rollout_impact
-    ),
-    'Rollout milestone': lambda f, stages: (
-        stages[core_enums.STAGE_TYPES_ROLLOUT[f.feature_type]]
-        and stages[core_enums.STAGE_TYPES_ROLLOUT[f.feature_type]][
-            0
-        ].rollout_milestone
-    ),
-    'Rollout platforms': lambda f, stages: (
-        stages[core_enums.STAGE_TYPES_ROLLOUT[f.feature_type]]
-        and stages[core_enums.STAGE_TYPES_ROLLOUT[f.feature_type]][
-            0
-        ].rollout_platforms
-    ),
-    'Rollout details': lambda f, stages: (
-        stages[core_enums.STAGE_TYPES_ROLLOUT[f.feature_type]]
-        and stages[core_enums.STAGE_TYPES_ROLLOUT[f.feature_type]][
-            0
-        ].rollout_details
-    ),
-    'Rollout stage plan': lambda f, stages: (
-        stages[core_enums.STAGE_TYPES_ROLLOUT[f.feature_type]]
-        and stages[core_enums.STAGE_TYPES_ROLLOUT[f.feature_type]][
-            0
-        ].rollout_stage_plan
-    ),
-    'Enterprise policies': lambda f, stages: (
-        stages[core_enums.STAGE_TYPES_ROLLOUT[f.feature_type]]
-        and stages[core_enums.STAGE_TYPES_ROLLOUT[f.feature_type]][
-            0
-        ].enterprise_policies
-    ),
+    'Code in Chromium': _detect_code_in_chromium,
+    PI_MOTIVATION.name: _detect_motivation,
+    PI_CODE_REMOVED.name: _detect_code_removed,
+    PI_ROLLOUT_IMPACT.name: _detect_rollout_impact,
+    PI_ROLLOUT_MILESTONE.name: _detect_rollout_milestone,
+    PI_ROLLOUT_PLATFORMS.name: _detect_rollout_platforms,
+    PI_ROLLOUT_DETAILS.name: _detect_rollout_details,
+    PI_ROLLOUT_STAGE_PLAN.name: _detect_rollout_stage_plan,
+    PI_ENTERPRISE_POLICIES.name: _detect_enterprise_policies,
 }
