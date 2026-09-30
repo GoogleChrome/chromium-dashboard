@@ -17,6 +17,7 @@
 
 from dataclasses import asdict, dataclass
 
+import settings
 from internals import approval_defs, core_enums
 from internals.core_models import Stage
 from internals.review_models import Gate
@@ -548,7 +549,7 @@ BLINK_PROCESS_STAGES = [
                 'Draft Intent to Extend Experiment email',
                 INTENT_EMAIL_URL,
                 [],
-                [],
+                [core_enums.GATE_API_EXTEND_ORIGIN_TRIAL],
             )
         ],
         [approval_defs.ExtendExperimentApproval],
@@ -708,7 +709,7 @@ BLINK_FAST_TRACK_STAGES = [
                 'Draft Intent to Extend Experiment email',
                 INTENT_EMAIL_URL,
                 [],
-                [],
+                [core_enums.GATE_API_EXTEND_ORIGIN_TRIAL],
             )
         ],
         [approval_defs.ExtendExperimentApproval],
@@ -973,7 +974,7 @@ DEPRECATION_STAGES = [
                 'Draft Intent to Extend Deprecation Trial email',
                 INTENT_EMAIL_URL,
                 [],
-                [],
+                [core_enums.GATE_API_EXTEND_ORIGIN_TRIAL],
             )
         ],
         [approval_defs.ExtendExperimentApproval],
@@ -1088,6 +1089,13 @@ def write_gates_and_stages_for_feature(
             stage_type
             == core_enums.STAGE_TYPES_EXTEND_ORIGIN_TRIAL[feature_type]
         ):
+            continue
+
+        # Don't create DQ gates on prod until we are ready to launch that.
+        if settings.PROD and stage_type in [
+            core_enums.GATE_DQ_PLAN,
+            core_enums.GATE_DQ_SHIP,
+        ]:
             continue
 
         stage = Stage(feature_id=feature_id, stage_type=stage_type)
