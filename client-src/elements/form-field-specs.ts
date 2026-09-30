@@ -82,7 +82,8 @@ export type FieldValueGetter = {
 };
 
 type CheckResult =
-  undefined | {message?: string; warning?: string; error?: string};
+  | undefined
+  | {message?: string; warning?: string; error?: string};
 
 export type CheckFunction = (
   fieldValue: string,
@@ -2388,6 +2389,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     label: 'Web Platform Tests',
     usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
     help_text: html` Is this feature fully tested in Web Platform Tests?`,
+    check: (_value, getFieldValue) => checkWptDescriptionLink(getFieldValue),
   },
 
   wpt_descr: {
@@ -2395,6 +2397,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     required: false,
     label: 'Web Platform Tests or other automated test description',
     usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
+    check: (_value, getFieldValue) => checkWptDescriptionLink(getFieldValue),
     help_text: html` Please link to the
       <a target="_blank" href="https://wpt.fyi/results">results on wpt.fyi</a>.
       If any part of the feature is not tested by web-platform-tests, please
@@ -3148,6 +3151,30 @@ function checkMilestoneRanges(ranges, getFieldValue) {
     }
     if (result) return result;
   }
+}
+
+const ANY_URL_REGEX = /https?:\/\/\S+/i;
+const WPT_FYI_URL_REGEX = /https?:\/\/(www\.)?wpt\.fyi\/\S+/i;
+
+export function checkWptDescriptionLink(getFieldValue: FieldValueGetter) {
+  if (!getFieldValue('wpt')) {
+    return undefined;
+  }
+  const descr = String(getFieldValue('wpt_descr') || '');
+  if (WPT_FYI_URL_REGEX.test(descr)) {
+    return undefined;
+  }
+  if (ANY_URL_REGEX.test(descr)) {
+    return {
+      warning: `Consider linking to the test results on
+      https://wpt.fyi, so that reviewers can find them.`,
+    };
+  }
+  return {
+    error: `Since this feature is fully tested by web-platform-tests,
+    please link to the test results on https://wpt.fyi in the
+    description field, so that reviewers can find them.`,
+  };
 }
 
 function checkFeatureNameAndType(getFieldValue: FieldValueGetter) {
