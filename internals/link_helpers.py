@@ -491,8 +491,13 @@ def format_origin_trial_url(
     origin_trial_id: str | None = None,
     stage_id: int | str | None = None,
 ) -> str | None:
-    """Constructs the canonical relative URL to view/register for an origin trial."""
+    """Constructs the canonical URL to view/register for an origin trial."""
     ot_id = origin_trial_id or (str(stage_id) if stage_id else None)
     if not ot_id:
         return None
-    return f'/origintrials#/view_trial/{ot_id}'
+    domain = (
+        'https://developer.chrome.com'
+        if settings.PROD
+        else 'https://origintrials-staging.corp.google.com'
+    )
+    return f'{domain}/origintrials#/view_trial/{ot_id}'

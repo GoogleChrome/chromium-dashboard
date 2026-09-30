@@ -2291,7 +2291,7 @@ class DeveloperReleaseNotesFeaturesTest(testing_config.CustomTestCase):
         )
         ot_link = ot_dict['links'][0]
         self.assertEqual(
-            '/origintrials#/view_trial/4199606652522987521',
+            'https://origintrials-staging.corp.google.com/origintrials#/view_trial/4199606652522987521',
             ot_link['url'],
         )
         self.assertEqual(
