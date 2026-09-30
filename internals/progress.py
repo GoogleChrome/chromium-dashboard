@@ -193,22 +193,6 @@ def _detect_spec_link(
     return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
 
 
-def _detect_draft_api_spec(
-    fe: FeatureEntry, _: dict[int, list[Stage]]
-) -> ProgressDetectorResult:
-    if not fe.spec_link:
-        return ProgressDetectorResult(ProgressVote.NOT_STARTED)
-    return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
-
-
-def _detect_api_spec(
-    fe: FeatureEntry, _: dict[int, list[Stage]]
-) -> ProgressDetectorResult:
-    if not fe.api_spec:
-        return ProgressDetectorResult(ProgressVote.NOT_STARTED)
-    return ProgressDetectorResult(ProgressVote.NEEDS_REVIEW)
-
-
 def _detect_spec_mentor(
     fe: FeatureEntry, _: dict[int, list[Stage]]
 ) -> ProgressDetectorResult:
@@ -417,8 +401,6 @@ PROGRESS_DETECTORS: dict[
     PI_SAMPLES.name: _detect_samples,
     PI_DOC_LINKS.name: _detect_doc_links,
     PI_SPEC_LINK.name: _detect_spec_link,
-    PI_DRAFT_API_SPEC.name: _detect_draft_api_spec,
-    'API spec': _detect_api_spec,
     PI_SPEC_MENTOR.name: _detect_spec_mentor,
     PI_TAG_REQUESTED.name: _detect_tag_review_requested,
     PI_TAG_ADDRESSED.name: _detect_tag_review_issues_addressed,

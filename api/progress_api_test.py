@@ -101,7 +101,6 @@ class ProgressAPITest(testing_config.CustomTestCase):
 
         self.assertEqual(
             {
-                'Draft API spec': expected_detected_vote,
                 'Spec link': expected_detected_vote,
                 'Updated android milestone': expected_detected_vote,
                 'Updated desktop milestone': expected_detected_vote,
