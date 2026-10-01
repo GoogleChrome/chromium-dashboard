@@ -233,7 +233,6 @@ PI_SPEC_MATURITY = ProgressItem(
 )
 
 PI_SPEC_MENTOR = ProgressItem('Spec mentor', 'spec_mentors')
-PI_DRAFT_API_SPEC = ProgressItem('Draft API spec')
 
 PI_SAMPLES = ProgressItem(
     'Samples',
@@ -244,12 +243,6 @@ PI_SAMPLES = ProgressItem(
         "or MDN 'Examples' section."
     ),
 )
-
-PI_DRAFT_API_OVERVIEW = ProgressItem('Draft API overview (may be on MDN)')
-PI_SEC_REVIEW = ProgressItem('Security review issues addressed')
-PI_PRI_REVIEW = ProgressItem('Privacy review issues addressed')
-# TODO(jrobbins): needs detector.
-PI_EXTERNAL_REVIEWS = ProgressItem('External reviews')
 
 PI_TAG_REQUESTED = ProgressItem(
     'TAG review requested',
@@ -265,7 +258,10 @@ PI_DOC_LINKS = ProgressItem('Doc links', 'doc_links')
 
 
 PI_TAG_ADDRESSED = ProgressItem(
-    'TAG review issues addressed', 'tag_review_status'
+    'TAG review issues addressed',
+    'tag_review_status',
+    'TAG review status indicates issues were addressed or N/a.',
+    'TAG review status indicates issues were addressed or N/a.',
 )
 
 PI_FIREFOX_VIEWS = ProgressItem(
@@ -448,7 +444,6 @@ BLINK_PROCESS_STAGES = [
             PI_SPEC_LINK,
             PI_SPEC_MENTOR,
             PI_SPEC_MATURITY,
-            PI_DRAFT_API_SPEC,
         ],
         [
             Action(
@@ -475,10 +470,6 @@ BLINK_PROCESS_STAGES = [
         'Request feedback from browser vendors.',
         [
             PI_SAMPLES,
-            PI_DRAFT_API_OVERVIEW,
-            PI_SEC_REVIEW,
-            PI_PRI_REVIEW,
-            PI_EXTERNAL_REVIEWS,
             PI_FIREFOX_VIEWS,
             PI_SAFARI_VIEWS,
             PI_INTEROP_RISKS,
@@ -656,7 +647,6 @@ BLINK_FAST_TRACK_STAGES = [
         'Act on feedback from partners and web developers.',
         [
             PI_SAMPLES,
-            PI_DRAFT_API_OVERVIEW,
             PI_FINCH_FEATURE_OR_JUSTIFY,
             PI_FIREFOX_VIEWS,
             PI_SAFARI_VIEWS,

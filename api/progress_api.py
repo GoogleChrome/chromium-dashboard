@@ -37,12 +37,16 @@ class ProgressAPI(basehandlers.APIHandler):
             progress.PROGRESS_DETECTORS.items()
         ):
             detected = detector(fe, stages)
-            if detected:
+            if detected.state != progress.ProgressVote.NOT_STARTED:
                 progress_so_far[progress_item] = {
-                    'state': progress.ProgressVote.VERIFIED,
+                    'state': detected.state,
                     'set_on': now_iso,
                     'set_by': 'ChromeStatus',
                 }
+                if detected.feedback:
+                    progress_so_far[progress_item]['feedback'] = (
+                        detected.feedback
+                    )
 
         votes: list[progress.ProgressVote] = progress.ProgressVote.query(
             progress.ProgressVote.feature_id == feature_id
