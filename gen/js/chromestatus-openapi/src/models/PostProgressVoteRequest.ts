@@ -26,7 +26,7 @@ export interface PostProgressVoteRequest {
      */
     progress_item_name: string;
     /**
-     * The vote value to set (1=NEEDS_REVIEW, 2=VERIFIED, 3=NA, 4=NEEDS_WORK).
+     * The vote value to set (1=READY_FOR_REVIEW, 2=VERIFIED, 3=NA, 4=NEEDS_WORK).
      * @type {number}
      * @memberof PostProgressVoteRequest
      */

@@ -73,7 +73,7 @@ export async function openPreflightDialog(
   });
 }
 
-export function isPrereqDone(
+export function isPrereqReady(
   itemName: string,
   progress: ProgressDict
 ): boolean {
@@ -87,7 +87,7 @@ export function isPrereqDone(
 
 export function somePendingPrereqs(action: Action, progress: ProgressDict) {
   return action.prerequisites.some(
-    itemName => !isPrereqDone(itemName, progress)
+    itemName => !isPrereqReady(itemName, progress)
   );
 }
 
@@ -161,7 +161,7 @@ export class ChromedashPreflightDialog extends LitElement {
         }
 
         .data-table td:first-child {
-          width: 10em;
+          width: 12em;
         }
 
         .data-table td:last-child {
@@ -292,6 +292,45 @@ export class ChromedashPreflightDialog extends LitElement {
     `;
   }
 
+  renderStageRow(
+    stage: ProcessStage,
+    feStage: StageDict | null,
+    item: ProgressItem
+  ) {
+    const vote = this._progress?.[item.name] as ProgressVoteValue | undefined;
+    let statusClass = 'preparing';
+    let statusText = 'Not started';
+    if (vote) {
+      switch (vote.state) {
+        case PROGRESS_VOTE_STATE.READY_FOR_REVIEW:
+          statusClass = 'pending';
+          statusText = 'Ready for review';
+          break;
+        case PROGRESS_VOTE_STATE.VERIFIED:
+          statusClass = 'approved';
+          statusText = 'Verified';
+          break;
+        case PROGRESS_VOTE_STATE.NA:
+          statusClass = 'not_applicable';
+          statusText = 'N/A';
+          break;
+        case PROGRESS_VOTE_STATE.NEEDS_WORK:
+          statusClass = 'needs_work';
+          statusText = 'Needs work';
+          break;
+      }
+    }
+    return html`
+      <tr>
+        <td>
+          <span class="status ${statusClass}">${statusText}</span>
+        </td>
+        <td>${item.description || item.name}</td>
+        <td>${this.renderEditLink(stage, feStage, item)}</td>
+      </tr>
+    `;
+  }
+
   renderStageTable(stage: ProcessStage, prereqItems: ProgressItem[]) {
     if (prereqItems.length === 0) {
       return nothing;
@@ -308,20 +347,7 @@ export class ChromedashPreflightDialog extends LitElement {
     return html`
       <h3>${stage.name}</h3>
       <table class="data-table">
-        ${prereqItems.map(item => {
-          const isVerified = this._progress.hasOwnProperty(item.name);
-          return html`
-            <tr>
-              <td>
-                <span class="status ${isVerified ? 'approved' : 'preparing'}">
-                  ${isVerified ? 'Verified' : 'Not started'}
-                </span>
-              </td>
-              <td>${item.description || item.name}</td>
-              <td>${this.renderEditLink(stage, feStage, item)}</td>
-            </tr>
-          `;
-        })}
+        ${prereqItems.map(item => this.renderStageRow(stage, feStage, item))}
       </table>
     `;
   }
