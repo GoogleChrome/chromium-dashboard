@@ -342,7 +342,7 @@ describe('preflight functions', () => {
 
       const buttons = component.shadowRoot!.querySelectorAll('sl-button');
       const proceedButton = buttons[0] as HTMLElement;
-      assert.include(proceedButton.textContent, 'Proceed anyway');
+      assert.include(proceedButton.textContent, 'Proceed');
 
       proceedButton.click();
       assert.isTrue(hideSpy.calledOnce);
@@ -371,7 +371,7 @@ describe('preflight functions', () => {
 
       const buttons = component.shadowRoot!.querySelectorAll('sl-button');
       const cancelButton = buttons[1] as HTMLElement;
-      assert.include(cancelButton.textContent, "Don't draft email yet");
+      assert.include(cancelButton.textContent, 'Cancel');
 
       cancelButton.click();
       assert.isTrue(hideSpy.calledOnce);

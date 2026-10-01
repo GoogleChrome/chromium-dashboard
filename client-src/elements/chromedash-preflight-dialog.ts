@@ -393,11 +393,9 @@ export class ChromedashPreflightDialog extends LitElement {
       Please address any relevant "Not started" or "Needs work" items before
       requesting review. ${stageTables} ${this.renderGatesTable(otherGates)}
 
-      <sl-button size="small" @click=${this.handleProceed}
-        >Proceed anyway
-      </sl-button>
+      <sl-button size="small" @click=${this.handleProceed}>Proceed</sl-button>
       <sl-button size="small" variant="warning" @click=${this.handleCancel}
-        >Don't draft email yet</sl-button
+        >Cancel</sl-button
       >
     `;
   }

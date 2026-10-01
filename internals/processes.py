@@ -22,8 +22,8 @@ from internals import approval_defs, core_enums
 from internals.core_models import Stage
 from internals.review_models import Gate
 
-
 REQUEST_REVIEW_ACTION_URL = 'request review'
+
 
 @dataclass
 class Action:
