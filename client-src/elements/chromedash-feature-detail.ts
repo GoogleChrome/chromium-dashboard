@@ -643,9 +643,13 @@ export class ChromedashFeatureDetail extends LitElement {
           action,
           stage,
           feStage,
-          gatesForStage,
-          url
-        );
+          gatesForStage
+        ).then(shouldProceed => {
+          if (shouldProceed) {
+            const draftWindow = window.open(url, '_blank');
+            draftWindow?.focus();
+          }
+        });
         return;
       } else {
         // Act like user clicked left button to go to the draft email window.
