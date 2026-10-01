@@ -82,7 +82,8 @@ export type FieldValueGetter = {
 };
 
 type CheckResult =
-  undefined | {message?: string; warning?: string; error?: string};
+  | undefined
+  | {message?: string; warning?: string; error?: string};
 
 export type CheckFunction = (
   fieldValue: string,
@@ -801,6 +802,22 @@ export const ALL_FIELDS: Record<string, Field> = {
       >
         Removal guidelines</a
       >.`,
+  },
+
+  dep_plan_milestone_desktop_start: {
+    type: 'input',
+    attrs: MILESTONE_NUMBER_FIELD_ATTRS,
+    required: false,
+    label: 'Deprecation start milestone',
+    usage: {
+      [FeatureType.Deprecation]: new Set<UsageType>([
+        UsageType.DeprecateAndRemove,
+      ]),
+    },
+    help_text: html` Milestone in which the deprecation begins, e.g. when
+    deprecation console warnings appear and the deprecation is announced, even
+    if the removal happens in a later milestone. This is used to list the
+    deprecation on the roadmap separately from the removal.`,
   },
 
   initial_public_proposal_url: {

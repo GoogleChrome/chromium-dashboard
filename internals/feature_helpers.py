@@ -530,6 +530,16 @@ def get_in_milestone(
         )
         android_only_shipping_future = q.fetch_async()
 
+        # Deprecation plan stages with a matching deprecation start
+        # milestone.  These list the deprecation itself on the roadmap,
+        # separately from the later removal.
+        q = Stage.query(
+            Stage.milestones.desktop_first == milestone,
+            Stage.archived == False,  # noqa: E712
+            Stage.stage_type == core_enums.STAGE_DEP_PLAN,
+        )
+        dep_plan_future = q.fetch_async()
+
         # Origin trial stages (Desktop) in this milestone.
         q = Stage.query(
             Stage.milestones.desktop_first == milestone,
@@ -620,6 +630,7 @@ def get_in_milestone(
         shipping_stages_by_fid = organize_all_stages_by_feature(
             desktop_shipping_future.result()
             + android_only_shipping_future.result()
+            + dep_plan_future.result()
         )
         origin_trial_stages_by_fid = organize_all_stages_by_feature(
             desktop_origin_trial_future.result()

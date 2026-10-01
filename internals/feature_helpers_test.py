@@ -448,6 +448,31 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
         cached_result = rediscache.get(cache_key)
         self.assertEqual(cached_result, actual)
 
+    def test_get_in_milestone__deprecation_plan(self):
+        """A deprecation is listed separately from its later removal."""
+        self.feature_4.impl_status_chrome = 5
+        # Set the deprecation plan milestone to 1.
+        self.fe_4_stages_dict[410][0].milestones = MilestoneSet(desktop_first=1)
+        # Set the removal (shipping) milestone to 5.
+        self.fe_4_stages_dict[460][0].milestones = MilestoneSet(desktop_first=5)
+        self.feature_4.put()
+        self.fe_4_stages_dict[410][0].put()
+        self.fe_4_stages_dict[460][0].put()
+
+        # The deprecation appears in the deprecation plan milestone.
+        actual = feature_helpers.get_in_milestone(milestone=1)
+        deprecated = [f['name'] for f in actual['Deprecated']]
+        self.assertEqual(['feature d'], deprecated)
+        dep_plan_stage_id = self.fe_4_stages_dict[410][0].key.integer_id()
+        self.assertEqual(
+            [dep_plan_stage_id], actual['Deprecated'][0]['roadmap_stage_ids']
+        )
+
+        # The removal also appears in the removal milestone.
+        actual = feature_helpers.get_in_milestone(milestone=5)
+        deprecated = [f['name'] for f in actual['Deprecated']]
+        self.assertEqual(['feature d'], deprecated)
+
     def test_get_in_milestone__archived(self):
         """Archived stages should not be included."""
         self.feature_1.impl_status_chrome = 5
