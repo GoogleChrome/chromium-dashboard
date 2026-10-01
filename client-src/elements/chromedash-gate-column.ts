@@ -101,6 +101,8 @@ export interface Process {
   stages: ProcessStage[];
 }
 
+const REQUEST_REVIEW_ACTION_URL = 'request review';
+
 @customElement('chromedash-gate-column')
 export class ChromedashGateColumn extends LitElement {
   voteSelectRef = createRef<HTMLSelectElement>();
@@ -522,6 +524,19 @@ export class ChromedashGateColumn extends LitElement {
     );
   }
 
+  executeAction(url: string) {
+    if (url === REQUEST_REVIEW_ACTION_URL) {
+      this.handleFullReviewRequest();
+    } else {
+      // Act like user clicked left button to go to the draft email window.
+      // Use setTimeout() to prevent safari from blocking the new tab.
+      setTimeout(() => {
+        const draftWindow = window.open(url, '_blank');
+        draftWindow!.focus();
+      });
+    }
+  }
+
   renderAction(processStage, action) {
     const label = action.name;
     const url = action.url
@@ -541,17 +556,13 @@ export class ChromedashGateColumn extends LitElement {
           action,
           processStage,
           this.stage,
-          this.featureGates,
-          url
+          this.featureGates
+        ).then(shouldProceed =>
+          shouldProceed ? this.executeAction(url) : null
         );
         return;
       } else {
-        // Act like user clicked left button to go to the draft email window.
-        // Use setTimeout() to prevent safari from blocking the new tab.
-        setTimeout(() => {
-          const draftWindow = window.open(url, '_blank');
-          draftWindow!.focus();
-        });
+        this.executeAction(url);
       }
     };
 

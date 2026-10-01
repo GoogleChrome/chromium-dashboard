@@ -23,12 +23,14 @@ from internals.core_models import Stage
 from internals.review_models import Gate
 
 
+REQUEST_REVIEW_ACTION_URL = 'request review'
+
 @dataclass
 class Action:
     """Dataclass for Action, such as requesting a review or OT."""
 
     name: str
-    url: str
+    url: str  # Or, special value REQUEST_REVIEW_ACTION_URL
     prerequisites: list[str]
     gate_types: list[int]
 
@@ -571,7 +573,7 @@ BLINK_PROCESS_STAGES = [
         [
             Action(
                 'Review data quality',
-                INTENT_EMAIL_URL,  # TODO(jrobbins) checklist URL
+                REQUEST_REVIEW_ACTION_URL,
                 [pi.name for pi in DQ_CHECKLIST_BLINK],
                 [core_enums.GATE_DQ_SHIP],
             ),
@@ -730,7 +732,7 @@ BLINK_FAST_TRACK_STAGES = [
         [
             Action(
                 'Review data quality',
-                INTENT_EMAIL_URL,  # TODO(jrobbins) checklist URL
+                REQUEST_REVIEW_ACTION_URL,
                 [pi.name for pi in DQ_CHECKLIST_FAST],
                 [core_enums.GATE_DQ_SHIP],
             ),
@@ -831,7 +833,7 @@ PSA_ONLY_STAGES = [
         [
             Action(
                 'Review data quality',
-                INTENT_EMAIL_URL,  # TODO(jrobbins) checklist URL
+                REQUEST_REVIEW_ACTION_URL,
                 [pi.name for pi in DQ_CHECKLIST_PSA],
                 [core_enums.GATE_DQ_SHIP],
             ),
@@ -890,7 +892,7 @@ DEPRECATION_STAGES = [
         [
             Action(
                 'Review data quality',
-                INTENT_EMAIL_URL,  # TODO(jrobbins): checklist page URL
+                REQUEST_REVIEW_ACTION_URL,
                 [pi.name for pi in PI_GROUP_METADATA],  # TODO(jrobbins): more
                 [core_enums.GATE_DQ_PLAN],
             ),

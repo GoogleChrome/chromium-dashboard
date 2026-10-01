@@ -16,6 +16,7 @@
 
 import {assert, fixture} from '@open-wc/testing';
 import {html} from 'lit';
+import sinon from 'sinon';
 import '@shoelace-style/shoelace/dist/components/dialog/dialog.js';
 import {Feature, StageDict} from '../js-src/cs-client.js';
 import {PROGRESS_VOTE_STATE, VOTE_OPTIONS} from './form-field-enums.js';
@@ -23,6 +24,7 @@ import {GateDict} from './chromedash-gate-chip.js';
 import {
   ChromedashPreflightDialog,
   findPendingGates,
+  openPreflightDialog,
   somePendingPrereqs,
 } from './chromedash-preflight-dialog.js';
 import {Action, Process, ProgressItem} from './chromedash-gate-column.js';
@@ -213,7 +215,7 @@ describe('preflight functions', () => {
         feStage,
         feStage,
         [privacyGate],
-        '/feature/123456/gate/99/intent'
+        () => {}
       );
       await component.updateComplete;
 
@@ -308,7 +310,7 @@ describe('preflight functions', () => {
         feStage,
         feStage,
         [],
-        '/feature/123456/gate/99/intent'
+        () => {}
       );
       await component.updateComplete;
 
@@ -316,6 +318,87 @@ describe('preflight functions', () => {
         component.shadowRoot!.querySelectorAll('h3')
       ).map(h => h.textContent?.trim());
       assert.deepEqual(headers, ['Start incubating', 'Start prototyping']);
+    });
+
+    it('resolves with true and hides dialog when Proceed is clicked', async () => {
+      const component = await fixture<ChromedashPreflightDialog>(
+        html`<chromedash-preflight-dialog></chromedash-preflight-dialog>`
+      );
+      const progress = {} as ProgressItem;
+      const resolveStub = sinon.stub();
+      const hideSpy = sinon.spy(component, 'hide');
+
+      component.openWithContext(
+        feature,
+        progress,
+        process,
+        action,
+        feStage,
+        feStage,
+        [],
+        resolveStub
+      );
+      await component.updateComplete;
+
+      const buttons = component.shadowRoot!.querySelectorAll('sl-button');
+      const proceedButton = buttons[0] as HTMLElement;
+      assert.include(proceedButton.textContent, 'Proceed anyway');
+
+      proceedButton.click();
+      assert.isTrue(hideSpy.calledOnce);
+      assert.isTrue(resolveStub.calledOnceWithExactly(true));
+    });
+
+    it('resolves with false and hides dialog when Cancel is clicked', async () => {
+      const component = await fixture<ChromedashPreflightDialog>(
+        html`<chromedash-preflight-dialog></chromedash-preflight-dialog>`
+      );
+      const progress = {} as ProgressItem;
+      const resolveStub = sinon.stub();
+      const hideSpy = sinon.spy(component, 'hide');
+
+      component.openWithContext(
+        feature,
+        progress,
+        process,
+        action,
+        feStage,
+        feStage,
+        [],
+        resolveStub
+      );
+      await component.updateComplete;
+
+      const buttons = component.shadowRoot!.querySelectorAll('sl-button');
+      const cancelButton = buttons[1] as HTMLElement;
+      assert.include(cancelButton.textContent, "Don't draft email yet");
+
+      cancelButton.click();
+      assert.isTrue(hideSpy.calledOnce);
+      assert.isTrue(resolveStub.calledOnceWithExactly(false));
+    });
+
+    it('openPreflightDialog returns a promise that resolves when user acts', async () => {
+      const progress = {} as ProgressItem;
+      const dialogPromise = openPreflightDialog(
+        feature,
+        progress,
+        process,
+        action,
+        feStage,
+        feStage,
+        []
+      );
+
+      const dialogEl = document.querySelector(
+        'chromedash-preflight-dialog'
+      ) as ChromedashPreflightDialog;
+      assert.exists(dialogEl);
+      await dialogEl.updateComplete;
+
+      dialogEl.handleProceed();
+      const result = await dialogPromise;
+      assert.isTrue(result);
     });
   });
 });

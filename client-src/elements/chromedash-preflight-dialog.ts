@@ -52,24 +52,25 @@ export async function openPreflightDialog(
   action: Action,
   stage: StageDict,
   feStage: StageDict,
-  featureGates: GateDict[],
-  url: string
+  featureGates: GateDict[]
 ) {
   if (!preflightDialogEl) {
     preflightDialogEl = document.createElement('chromedash-preflight-dialog');
     document.body.appendChild(preflightDialogEl);
     await preflightDialogEl.updateComplete;
   }
-  preflightDialogEl.openWithContext(
-    feature,
-    progress,
-    process,
-    action,
-    stage,
-    feStage,
-    featureGates,
-    url
-  );
+  return new Promise(resolve => {
+    preflightDialogEl.openWithContext(
+      feature,
+      progress,
+      process,
+      action,
+      stage,
+      feStage,
+      featureGates,
+      resolve
+    );
+  });
 }
 
 export function isPrereqDone(
@@ -132,7 +133,9 @@ export class ChromedashPreflightDialog extends LitElement {
   @state()
   private _feStage!: StageDict;
   @state()
-  private _url!: string;
+  private _resolve: (value?: boolean) => void = () => {
+    console.log('Missing resolve action');
+  };
 
   static get styles() {
     return [
@@ -231,7 +234,7 @@ export class ChromedashPreflightDialog extends LitElement {
     stage: StageDict,
     feStage: StageDict,
     featureGates: GateDict[],
-    url: string
+    resolve: (value?: boolean) => void
   ) {
     this._feature = feature;
     this._progress = progress;
@@ -240,7 +243,7 @@ export class ChromedashPreflightDialog extends LitElement {
     this._stage = stage;
     this._feStage = feStage;
     this._featureGates = featureGates;
-    this._url = url;
+    this._resolve = resolve;
     this.renderRoot.querySelector('sl-dialog')?.show();
   }
 
@@ -250,12 +253,14 @@ export class ChromedashPreflightDialog extends LitElement {
 
   handleCancel() {
     this.hide();
+    this._resolve(false);
   }
 
   handleProceed() {
     // The button opens a new tab due to the href and target attrs.
     // Also, close this dialog, so it is gone when the user returns.
     this.hide();
+    this._resolve(true);
   }
 
   renderEditLink(
@@ -388,11 +393,7 @@ export class ChromedashPreflightDialog extends LitElement {
       Please address any relevant "Not started" or "Needs work" items before
       requesting review. ${stageTables} ${this.renderGatesTable(otherGates)}
 
-      <sl-button
-        href="${this._url}"
-        target="_blank"
-        size="small"
-        @click=${this.handleProceed}
+      <sl-button size="small" @click=${this.handleProceed}
         >Proceed anyway
       </sl-button>
       <sl-button size="small" variant="warning" @click=${this.handleCancel}
