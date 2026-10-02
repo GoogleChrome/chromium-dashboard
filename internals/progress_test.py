@@ -378,18 +378,6 @@ class ProgressDetectorsTest(testing_config.CustomTestCase):
             READY_FOR_REVIEW,
         )
 
-    def test_code_removed(self):
-        """Test code removed."""
-        self.assertEqual(
-            progress._detect_code_removed(self.feature_1, self.stages_dict),
-            NOT_STARTED,
-        )
-        self.feature_1.impl_status_chrome = core_enums.REMOVED
-        self.assertEqual(
-            progress._detect_code_removed(self.feature_1, self.stages_dict),
-            READY_FOR_REVIEW,
-        )
-
     def test_rollout_impact(self):
         """Test rollout impact."""
         # There is always a value for this
@@ -476,5 +464,80 @@ class ProgressDetectorsTest(testing_config.CustomTestCase):
             progress._detect_enterprise_policies(
                 self.feature_1, self.stages_dict
             ),
+            READY_FOR_REVIEW,
+        )
+
+    def test_debuggability(self):
+        """Test debuggability."""
+        self.assertEqual(
+            progress._detetect_debuggability(self.feature_1, self.stages_dict),
+            NOT_STARTED,
+        )
+        self.feature_1.debuggability = 'DevTools console warning'
+        self.assertEqual(
+            progress._detetect_debuggability(self.feature_1, self.stages_dict),
+            READY_FOR_REVIEW,
+        )
+
+    def test_feature_name(self):
+        """Test feature name."""
+        self.feature_1.name = ''
+        self.assertEqual(
+            progress._detect_feature_name(self.feature_1, self.stages_dict),
+            NOT_STARTED,
+        )
+        self.feature_1.name = 'feature one'
+        self.assertEqual(
+            progress._detect_feature_name(self.feature_1, self.stages_dict),
+            READY_FOR_REVIEW,
+        )
+
+    def test_feature_name_dep(self):
+        """Test feature name dep."""
+        self.feature_1.name = ''
+        self.assertEqual(
+            progress._detect_feature_name_dep(self.feature_1, self.stages_dict),
+            NOT_STARTED,
+        )
+        self.feature_1.name = 'Deprecate feature one'
+        self.assertEqual(
+            progress._detect_feature_name_dep(self.feature_1, self.stages_dict),
+            READY_FOR_REVIEW,
+        )
+
+    def test_owner_emails(self):
+        """Test owner emails."""
+        self.assertEqual(
+            progress._detect_owner_emails(self.feature_1, self.stages_dict),
+            NOT_STARTED,
+        )
+        self.feature_1.owner_emails = ['owner@example.com']
+        self.assertEqual(
+            progress._detect_owner_emails(self.feature_1, self.stages_dict),
+            READY_FOR_REVIEW,
+        )
+
+    def test_summary(self):
+        """Test summary."""
+        self.feature_1.summary = ''
+        self.assertEqual(
+            progress._detect_summary(self.feature_1, self.stages_dict),
+            NOT_STARTED,
+        )
+        self.feature_1.summary = 'sum'
+        self.assertEqual(
+            progress._detect_summary(self.feature_1, self.stages_dict),
+            READY_FOR_REVIEW,
+        )
+
+    def test_measurement(self):
+        """Test measurement."""
+        self.assertEqual(
+            progress._detect_measurement(self.feature_1, self.stages_dict),
+            NOT_STARTED,
+        )
+        self.feature_1.measurement = 'UseCounter'
+        self.assertEqual(
+            progress._detect_measurement(self.feature_1, self.stages_dict),
             READY_FOR_REVIEW,
         )

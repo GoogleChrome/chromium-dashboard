@@ -99,9 +99,17 @@ class ProgressAPITest(testing_config.CustomTestCase):
         with test_app.test_request_context(self.request_path):
             actual = self.handler.do_get(feature_id=self.feature_id)
 
+        self.maxDiff = None
         self.assertEqual(
             {
+                'Feature name': expected_detected_vote,
+                'Feature name dep': expected_detected_vote,
+                'Owner emails': expected_detected_vote,
+                'Policy in summary': expected_detected_vote,
+                'Policy in summary dep': expected_detected_vote,
                 'Spec link': expected_detected_vote,
+                'Summary dep alternatives': expected_detected_vote,
+                'Summary dep timeline': expected_detected_vote,
                 'Updated android milestone': expected_detected_vote,
                 'Updated desktop milestone': expected_detected_vote,
                 'Updated webview milestone': expected_detected_vote,

@@ -26,19 +26,20 @@ from internals.core_models import FeatureEntry, Stage
 from internals.metrics_models import WebDXFeatureObserver
 from internals.processes import (
     PI_ANDROID_MILESTONE,
-    PI_CODE_REMOVED,
+    PI_DEP_CONSOLE_WARNING,
     PI_DESKTOP_MILESTONE,
-    PI_DOC_LINKS_OUTREACH,
     PI_DOC_LINKS_AUTOMATION,
+    PI_DOC_LINKS_OUTREACH,
     PI_ENTERPRISE_POLICIES,
     PI_EXPLAINER,
+    PI_FEATURE_NAME,
+    PI_FEATURE_NAME_DEP,
     PI_FINCH_FEATURE_OR_JUSTIFY,
-    PI_DEP_CONSOLE_WARNING,
     PI_FIREFOX_VIEWS,
-    PI_USECOUNTER_DEP,
     PI_INITIAL_PUBLIC_PROPOSAL,
     PI_INTEROP_RISKS,
     PI_MOTIVATION,
+    PI_OWNER_EMAILS,
     PI_ROLLOUT_DETAILS,
     PI_ROLLOUT_IMPACT,
     PI_ROLLOUT_MILESTONE,
@@ -48,9 +49,14 @@ from internals.processes import (
     PI_SAMPLES,
     PI_SPEC_LINK,
     PI_SPEC_MENTOR,
+    PI_SUMMARY_DEP_ALTERNATIVES,
+    PI_SUMMARY_DEP_TIMELINE,
+    PI_SUMMARY_POLICY,
+    PI_SUMMARY_POLICY_DEP,
     PI_TAG_ADDRESSED,
     PI_TAG_REQUESTED,
     PI_TRACKING_BUG,
+    PI_USECOUNTER_DEP,
     PI_WEB_DEV_VIEWS,
     PI_WEB_FEATURE,
     PI_WEBVIEW_MILESTONE,
@@ -324,14 +330,6 @@ def _detect_motivation(
     return ProgressDetectorResult(ProgressVote.READY_FOR_REVIEW)
 
 
-def _detect_code_removed(
-    fe: FeatureEntry, _: dict[int, list[Stage]]
-) -> ProgressDetectorResult:
-    if fe.impl_status_chrome != core_enums.REMOVED:
-        return ProgressDetectorResult(ProgressVote.NOT_STARTED)
-    return ProgressDetectorResult(ProgressVote.READY_FOR_REVIEW)
-
-
 def _detect_rollout_impact(
     fe: FeatureEntry, stages: dict[int, list[Stage]]
 ) -> ProgressDetectorResult:
@@ -410,37 +408,94 @@ def _detect_enterprise_policies(
     return ProgressDetectorResult(ProgressVote.READY_FOR_REVIEW)
 
 
+def _detetect_debuggability(
+    fe: FeatureEntry, _: dict[int, list[Stage]]
+) -> ProgressDetectorResult:
+    if not fe.debuggability:
+        return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+    return ProgressDetectorResult(ProgressVote.READY_FOR_REVIEW)
+
+
+def _detect_feature_name(
+    fe: FeatureEntry, _: dict[int, list[Stage]]
+) -> ProgressDetectorResult:
+    if not fe.name:
+        return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+    return ProgressDetectorResult(ProgressVote.READY_FOR_REVIEW)
+
+
+def _detect_feature_name_dep(
+    fe: FeatureEntry, _: dict[int, list[Stage]]
+) -> ProgressDetectorResult:
+    if not fe.name:
+        return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+    # @@@ NEEDS WORK if no "Remove" or "Deprecate"
+    return ProgressDetectorResult(ProgressVote.READY_FOR_REVIEW)
+
+
+def _detect_owner_emails(
+    fe: FeatureEntry, _: dict[int, list[Stage]]
+) -> ProgressDetectorResult:
+    if not fe.owner_emails:
+        return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+    return ProgressDetectorResult(ProgressVote.READY_FOR_REVIEW)
+
+
+def _detect_summary(
+    fe: FeatureEntry, _: dict[int, list[Stage]]
+) -> ProgressDetectorResult:
+    if not fe.summary:
+        return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+    return ProgressDetectorResult(ProgressVote.READY_FOR_REVIEW)
+
+
+def _detect_measurement(
+    fe: FeatureEntry, _: dict[int, list[Stage]]
+) -> ProgressDetectorResult:
+    if not fe.measurement:
+        return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+    return ProgressDetectorResult(ProgressVote.READY_FOR_REVIEW)
+
+
 PROGRESS_DETECTORS: dict[
     str,
     Callable[[FeatureEntry, dict[int, list[Stage]]], ProgressDetectorResult],
 ] = {
-    PI_INITIAL_PUBLIC_PROPOSAL.name: _detect_initial_public_proposal,
-    PI_EXPLAINER.name: _detect_explainer,
-    PI_WEB_FEATURE.name: _detect_web_feature,
-    PI_TRACKING_BUG.name: _detect_tracking_bug_url,
-    PI_SAMPLES.name: _detect_samples,
+    PI_ANDROID_MILESTONE.name: _detect_android_milestone,
+    PI_DEP_CONSOLE_WARNING.name: _detetect_debuggability,
+    PI_DESKTOP_MILESTONE.name: _detect_desktop_milestone,
     PI_DOC_LINKS_AUTOMATION.name: _detect_doc_links,
     PI_DOC_LINKS_OUTREACH.name: _detect_doc_links,
-    PI_SPEC_LINK.name: _detect_spec_link,
-    PI_SPEC_MENTOR.name: _detect_spec_mentor,
-    PI_TAG_REQUESTED.name: _detect_tag_review_requested,
-    PI_TAG_ADDRESSED.name: _detect_tag_review_issues_addressed,
-    PI_WEB_DEV_VIEWS.name: _detect_web_dev_views,
-    PI_FIREFOX_VIEWS.name: _detect_firefox_views,
-    PI_SAFARI_VIEWS.name: _detect_safari_views,
-    PI_INTEROP_RISKS.name: _detect_interop_risks,
-    PI_DESKTOP_MILESTONE.name: _detect_desktop_milestone,
-    PI_ANDROID_MILESTONE.name: _detect_android_milestone,
-    PI_WEBVIEW_MILESTONE.name: _detect_webview_milestone,
+    PI_ENTERPRISE_POLICIES.name: _detect_enterprise_policies,
+    PI_EXPLAINER.name: _detect_explainer,
+    PI_FEATURE_NAME.name: _detect_feature_name,
+    PI_FEATURE_NAME_DEP.name: _detect_feature_name_dep,
     PI_FINCH_FEATURE_OR_JUSTIFY.name: (
         _detect_finch_feature_name_or_non_finch_justification
     ),
+    PI_FIREFOX_VIEWS.name: _detect_firefox_views,
+    PI_INITIAL_PUBLIC_PROPOSAL.name: _detect_initial_public_proposal,
+    PI_INTEROP_RISKS.name: _detect_interop_risks,
     PI_MOTIVATION.name: _detect_motivation,
-    PI_CODE_REMOVED.name: _detect_code_removed,
+    PI_OWNER_EMAILS.name: _detect_owner_emails,
+    PI_ROLLOUT_DETAILS.name: _detect_rollout_details,
     PI_ROLLOUT_IMPACT.name: _detect_rollout_impact,
     PI_ROLLOUT_MILESTONE.name: _detect_rollout_milestone,
     PI_ROLLOUT_PLATFORMS.name: _detect_rollout_platforms,
-    PI_ROLLOUT_DETAILS.name: _detect_rollout_details,
     PI_ROLLOUT_STAGE_PLAN.name: _detect_rollout_stage_plan,
-    PI_ENTERPRISE_POLICIES.name: _detect_enterprise_policies,
+    PI_SAFARI_VIEWS.name: _detect_safari_views,
+    PI_SAMPLES.name: _detect_samples,
+    PI_SPEC_LINK.name: _detect_spec_link,
+    PI_SPEC_MENTOR.name: _detect_spec_mentor,
+    PI_SUMMARY_DEP_ALTERNATIVES.name: _detect_summary,
+    PI_SUMMARY_DEP_TIMELINE.name: _detect_summary,
+    PI_SUMMARY_POLICY.name: _detect_summary,
+    PI_SUMMARY_POLICY_DEP.name: _detect_summary,
+    PI_TAG_ADDRESSED.name: _detect_tag_review_issues_addressed,
+    PI_TAG_REQUESTED.name: _detect_tag_review_requested,
+    PI_TRACKING_BUG.name: _detect_tracking_bug_url,
+    PI_USECOUNTER_DEP.name: _detect_measurement,
+    PI_WEBVIEW_MILESTONE.name: _detect_webview_milestone,
+    PI_WEB_DEV_VIEWS.name: _detect_web_dev_views,
+    PI_WEB_FEATURE.name: _detect_web_feature,
 }
