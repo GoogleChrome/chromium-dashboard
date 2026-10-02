@@ -204,6 +204,7 @@ export class ChromedashSurveyQuestions extends LitElement {
           )}
         </ol>
       </div>
+      <p class="instructions"></p>
     `;
   }
 
@@ -311,6 +312,7 @@ export class ChromedashSurveyQuestions extends LitElement {
           )}
         </ol>
       </div>
+      <p class="instructions"></p>
     `;
   }
 
@@ -388,7 +390,8 @@ export class ChromedashSurveyQuestions extends LitElement {
               : nothing
           }
         </ol>
-      </div>
+       </div>
+       <p class="instructions"></p>
     `;
   }
 
@@ -412,7 +415,9 @@ export class ChromedashSurveyQuestions extends LitElement {
       return this.renderAdoptionForm();
     }
     const questionnaireText = GATE_QUESTIONNAIRES[this.gate.gate_type];
-    if (!questionnaireText) return html`No questions`;
+    if (!questionnaireText) return html`
+       <p class="instructions">No questions</p>
+   `;
     const markup =
       typeof questionnaireText == 'string'
         ? autolink(questionnaireText)
