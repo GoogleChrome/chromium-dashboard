@@ -29,11 +29,15 @@ import {SHARED_STYLES} from '../css/shared-css.js';
 import {Feature, StageDict, User} from '../js-src/cs-client.js';
 import {GateDict} from './chromedash-gate-chip.js';
 import {FEATURE_TYPES, GATE_TYPES} from './form-field-enums.js';
-import {Action, ProcessStage, Process, ProgressItem} from './chromedash-gate-column.js';
-import {findProcessStage,   parseRawQuery,
-  showToastMessage,
-} from './utils.js';
-import {openPreflightDialog,
+import {
+  Action,
+  ProcessStage,
+  Process,
+  ProgressItem,
+} from './chromedash-gate-column.js';
+import {findProcessStage, parseRawQuery, showToastMessage} from './utils.js';
+import {
+  openPreflightDialog,
   ProgressVoteValue,
   findOtherGates,
 } from './chromedash-preflight-dialog.js';
@@ -49,6 +53,28 @@ export class ChromedashChecklistSummary extends LitElement {
           border-radius: var(--border-radius);
           background: var(--accordion-background);
           margin-bottom: var(--content-padding-large);
+        }
+        #strip-chart {
+          display: flex;
+          padding: 1px;
+          border: var(--default-border);
+        }
+        #strip-chart > div {
+          flex: 1;
+          height: 20px;
+          border-right: 1px solid white;
+        }
+        #strip-chart .verified {
+          background: var(--sl-color-green-500);
+        }
+        #strip-chart .ready {
+          background: var(--sl-color-blue-500);
+        }
+        #strip-chart .needs-work {
+          background: var(--sl-color-orange-500);
+        }
+        #strip-chart .preparing {
+          background: var(--sl-color-neutral-300);
         }
       `,
     ];
@@ -71,19 +97,17 @@ export class ChromedashChecklistSummary extends LitElement {
   @state()
   loading = true;
 
-
   fetchData() {
-      Promise.all([window.csClient.getGates(this.feature.id)])
-        .then(([gatesRes]) => {
-          this.featureGates = gatesRes.gates;
-        })
-        .catch(() => {
-          showToastMessage(
-            'Some errors occurred. Please refresh the page or try again later.'
-          );
-        });
-    };
-
+    Promise.all([window.csClient.getGates(this.feature.id)])
+      .then(([gatesRes]) => {
+        this.featureGates = gatesRes.gates;
+      })
+      .catch(() => {
+        showToastMessage(
+          'Some errors occurred. Please refresh the page or try again later.'
+        );
+      });
+  }
 
   handleViewChecklist(processStage, action) {
     openPreflightDialog(
@@ -98,13 +122,12 @@ export class ChromedashChecklistSummary extends LitElement {
   }
 
   countPrereqs(action, states: number[]) {
-    const matching = action.prerequisites.filter(
-      itemName => {
-        const vote = this.progress?.[itemName] as ProgressVoteValue | undefined;
-        return (vote ? states.includes(vote.state) :
-          states.includes(PROGRESS_VOTE_STATE.NOT_STARTED)
-        );
-      });
+    const matching = action.prerequisites.filter(itemName => {
+      const vote = this.progress?.[itemName] as ProgressVoteValue | undefined;
+      return vote
+        ? states.includes(vote.state)
+        : states.includes(PROGRESS_VOTE_STATE.NOT_STARTED);
+    });
     return matching.length;
   }
 
@@ -114,8 +137,18 @@ export class ChromedashChecklistSummary extends LitElement {
     return matching.length;
   }
 
-  renderStripChart(numVerified, numReady, numNeedsWork, numPreparing) {
-    return html`[][][][][][]`;
+  renderStripChart(
+    numVerified: number,
+    numReady: number,
+    numNeedsWork: number,
+    numPreparing: number
+  ) {
+    return html`
+      ${Array(numVerified).fill(html`<div class="verified"></div>`)}
+      ${Array(numReady).fill(html`<div class="ready"></div>`)}
+      ${Array(numNeedsWork).fill(html`<div class="needs-work"></div>`)}
+      ${Array(numPreparing).fill(html`<div class="preparing"></div>`)}
+    `;
   }
 
   renderLegend(numVerified, numReady, numNeedsWork, numPreparing) {
@@ -136,31 +169,40 @@ export class ChromedashChecklistSummary extends LitElement {
   }
 
   renderChecklistSummary(processStage, action) {
-    const numVerified = this.countPrereqs(
-      action, [PROGRESS_VOTE_STATE.VERIFIED, PROGRESS_VOTE_STATE.NA]) +
-      this.countGates(GATE_APPROVED_REVIEW_STATES);
-    const numReady = this.countPrereqs(
-      action, [PROGRESS_VOTE_STATE.READY_FOR_REVIEW]) +
-      this.countGates([GATE_REVIEW_REQUESTED, GATE_NA_REQUESTED, VOTE_OPTIONS.REVIEW_STARTED[0], VOTE_OPTIONS.INTERNAL_REVIEW[0]]);
-    const numNeedsWork = this.countPrereqs(
-      action, [PROGRESS_VOTE_STATE.NEEDS_WORK]) +
+    const numVerified =
+      this.countPrereqs(action, [
+        PROGRESS_VOTE_STATE.VERIFIED,
+        PROGRESS_VOTE_STATE.NA,
+      ]) + this.countGates(GATE_APPROVED_REVIEW_STATES);
+    const numReady =
+      this.countPrereqs(action, [PROGRESS_VOTE_STATE.READY_FOR_REVIEW]) +
+      this.countGates([
+        GATE_REVIEW_REQUESTED,
+        GATE_NA_REQUESTED,
+        VOTE_OPTIONS.REVIEW_STARTED[0],
+        VOTE_OPTIONS.INTERNAL_REVIEW[0],
+      ]);
+    const numNeedsWork =
+      this.countPrereqs(action, [PROGRESS_VOTE_STATE.NEEDS_WORK]) +
       this.countGates([VOTE_OPTIONS.NEEDS_WORK[0]]);
-    const numPreparing = this.countPrereqs(
-      action, [PROGRESS_VOTE_STATE.NOT_STARTED]) +
+    const numPreparing =
+      this.countPrereqs(action, [PROGRESS_VOTE_STATE.NOT_STARTED]) +
       this.countGates([GATE_PREPARING]);
 
     return html`
-    <div class="bubble">
-    <div id="strip-chart">
-      ${this.renderStripChart(numVerified, numReady, numNeedsWork, numPreparing)}
-    </div>
-    <div id="legend">
-      ${this.renderLegend(numVerified, numReady, numNeedsWork, numPreparing)}
-    </div>
-    <sl-button size=small
-    @click=${() => this.handleViewChecklist(processStage, action)}
-    >View checklist</sl-button>
-    </div>
+      <div class="bubble">
+        <div id="strip-chart">
+          ${this.renderStripChart(numVerified, numReady, numNeedsWork, numPreparing)}
+        </div>
+        <div id="legend">
+          ${this.renderLegend(numVerified, numReady, numNeedsWork, numPreparing)}
+        </div>
+        <sl-button
+          size="small"
+          @click=${() => this.handleViewChecklist(processStage, action)}
+          >View checklist</sl-button
+        >
+      </div>
     `;
   }
 
@@ -172,8 +214,10 @@ export class ChromedashChecklistSummary extends LitElement {
       this.fetchData();
       return html`${nothing}`;
     }
-    if (this.gate?.gate_type !== GATE_TYPES.DQ_PLAN &&
-      this.gate?.gate_type !== GATE_TYPES.DQ_SHIP) {
+    if (
+      this.gate?.gate_type !== GATE_TYPES.DQ_PLAN &&
+      this.gate?.gate_type !== GATE_TYPES.DQ_SHIP
+    ) {
       return html`${nothing}`;
     }
 
@@ -184,7 +228,6 @@ export class ChromedashChecklistSummary extends LitElement {
     if (relevantActions.length == 0) {
       return html`${nothing}`;
     }
-
 
     return html`
       <h2>Checklist summary</h2>
