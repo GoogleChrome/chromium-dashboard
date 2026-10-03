@@ -444,6 +444,8 @@ def get_approvers(gate_type) -> list[str]:
 
 def fields_approvable_by(user):
     """Return a set of field IDs that the user is allowed to approve."""
+    if not user:
+        return set()
     if permissions.can_admin_site(user):
         return set(APPROVAL_FIELDS_BY_ID.keys())
 

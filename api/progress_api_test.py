@@ -22,7 +22,14 @@ import flask
 
 import testing_config  # Must be imported before the module under test.
 from api import progress_api
-from internals import core_enums, core_models, progress, user_models
+from framework import permissions
+from internals import (
+    approval_defs,
+    core_enums,
+    core_models,
+    progress,
+    user_models,
+)
 
 test_app = flask.Flask(__name__)
 
@@ -225,6 +232,48 @@ class ProgressAPITest(testing_config.CustomTestCase):
         self.assertIsNone(votes[0].feedback)
         testing_config.sign_out()
 
+    def test_post___release_notes_reviewer_allowed(self):
+        """Users with can_review_release_notes permission can set a progress vote."""
+        reviewer_email = permissions.RELEASE_NOTE_REVIEWERS[0]
+        testing_config.sign_in(reviewer_email, 112)
+        with test_app.test_request_context(
+            self.request_path,
+            json={
+                'progress_item_name': 'Spec link',
+                'state': progress.ProgressVote.VERIFIED,
+            },
+        ):
+            res = self.handler.do_post(feature_id=self.feature_id)
+
+        self.assertEqual(res, {'message': 'Done'})
+        votes = progress.ProgressVote.query(
+            progress.ProgressVote.feature_id == self.feature_id
+        ).fetch()
+        self.assertEqual(len(votes), 1)
+        self.assertEqual(votes[0].set_by, reviewer_email)
+        testing_config.sign_out()
+
+    def test_post___gate_approver_allowed(self):
+        """Users who can approve any gate can set a progress vote."""
+        approver_email = approval_defs.ADOPTION_APPROVERS[0]
+        testing_config.sign_in(approver_email, 113)
+        with test_app.test_request_context(
+            self.request_path,
+            json={
+                'progress_item_name': 'Spec link',
+                'state': progress.ProgressVote.VERIFIED,
+            },
+        ):
+            res = self.handler.do_post(feature_id=self.feature_id)
+
+        self.assertEqual(res, {'message': 'Done'})
+        votes = progress.ProgressVote.query(
+            progress.ProgressVote.feature_id == self.feature_id
+        ).fetch()
+        self.assertEqual(len(votes), 1)
+        self.assertEqual(votes[0].set_by, approver_email)
+        testing_config.sign_out()
+
     def test_post___anon_forbidden(self):
         """Anonymous users are rejected with 403."""
         import werkzeug.exceptions
@@ -241,17 +290,18 @@ class ProgressAPITest(testing_config.CustomTestCase):
                 self.handler.do_post(feature_id=self.feature_id)
 
     def test_post___non_editor_forbidden(self):
-        """Signed-in users without can_edit_any_feature permission are rejected with 403."""
+        """Signed-in users without editor or reviewer permissions are rejected with 403."""
         import werkzeug.exceptions
 
-        testing_config.sign_in('regular@example.com', 222)
-        with test_app.test_request_context(
-            self.request_path,
-            json={
-                'progress_item_name': 'Spec link',
-                'state': progress.ProgressVote.VERIFIED,
-            },
-        ):
-            with self.assertRaises(werkzeug.exceptions.Forbidden):
-                self.handler.do_post(feature_id=self.feature_id)
+        for email in ('regular@example.com', 'feature_owner@example.com'):
+            testing_config.sign_in(email, 222)
+            with test_app.test_request_context(
+                self.request_path,
+                json={
+                    'progress_item_name': 'Spec link',
+                    'state': progress.ProgressVote.VERIFIED,
+                },
+            ):
+                with self.assertRaises(werkzeug.exceptions.Forbidden):
+                    self.handler.do_post(feature_id=self.feature_id)
         testing_config.sign_out()
