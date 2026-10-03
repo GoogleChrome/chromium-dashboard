@@ -102,6 +102,13 @@ class ProgressAPITest(testing_config.CustomTestCase):
         self.maxDiff = None
         self.assertEqual(
             {
+                'Blink components': {
+                    'state': progress.ProgressVote.NEEDS_WORK,
+                    'feedback': 'Please choose a specific component',
+                    'set_on': FAKE_NOW.isoformat(),
+                    'set_by': 'ChromeStatus',
+                },
+                'Category': expected_detected_vote,
                 'Feature name': expected_detected_vote,
                 'Feature name dep': {
                     'state': progress.ProgressVote.NEEDS_WORK,
@@ -118,6 +125,7 @@ class ProgressAPITest(testing_config.CustomTestCase):
                     'set_on': FAKE_NOW.isoformat(),
                     'set_by': 'ChromeStatus',
                 },
+                'Summary': expected_detected_vote,
                 'Summary dep alternatives': expected_detected_vote,
                 'Summary dep timeline': expected_detected_vote,
                 'Updated android milestone': expected_detected_vote,

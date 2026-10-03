@@ -666,3 +666,43 @@ class ProgressDetectorsTest(testing_config.CustomTestCase):
             progress._detect_measurement(self.feature_1, self.stages_dict),
             READY_FOR_REVIEW,
         )
+
+    def test_spec_maturity(self):
+        """Test spec maturity."""
+        self.assertEqual(
+            progress._detect_spec_maturity(self.feature_1, self.stages_dict),
+            NOT_STARTED,
+        )
+        self.feature_1.standard_maturity = core_enums.WORKING_DRAFT
+        self.assertEqual(
+            progress._detect_spec_maturity(self.feature_1, self.stages_dict),
+            READY_FOR_REVIEW,
+        )
+
+    def test_blink_components(self):
+        """Test blink components."""
+        self.feature_1.blink_components = []
+        self.assertEqual(
+            progress._detect_blink_components(self.feature_1, self.stages_dict),
+            NOT_STARTED,
+        )
+        self.feature_1.blink_components = ['Blink']
+        self.assertEqual(
+            progress._detect_blink_components(self.feature_1, self.stages_dict),
+            progress.ProgressDetectorResult(
+                progress.ProgressVote.NEEDS_WORK,
+                'Please choose a specific component',
+            ),
+        )
+        self.feature_1.blink_components = ['Blink>CSS']
+        self.assertEqual(
+            progress._detect_blink_components(self.feature_1, self.stages_dict),
+            READY_FOR_REVIEW,
+        )
+
+    def test_always_ready_for_review(self):
+        """Test always ready for review."""
+        self.assertEqual(
+            progress._always_ready_for_review(self.feature_1, self.stages_dict),
+            READY_FOR_REVIEW,
+        )
