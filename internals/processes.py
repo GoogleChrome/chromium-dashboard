@@ -514,7 +514,7 @@ PI_GROUP_DOCS = PI_GROUP_DOCS_PSA + PI_GROUP_DOCS_DEP
 # checklit criteria are incorporated into the API Owners OT gate.  However,
 # we might choose to add a DQ gate there in the future.
 
-DQ_CHECKLIST_BLINK_SHIP = (
+DQ_CHECKLIST_BLINK_SHIP: list[ProgressItem] = (
     PI_GROUP_METADATA
     + PI_GROUP_STANDARDS
     + PI_GROUP_DEVS
@@ -522,7 +522,7 @@ DQ_CHECKLIST_BLINK_SHIP = (
     + PI_GROUP_INTEROP
     + PI_GROUP_DOCS
 )
-DQ_CHECKLIST_FAST_SHIP = (
+DQ_CHECKLIST_FAST_SHIP: list[ProgressItem] = (
     PI_GROUP_METADATA
     + PI_GROUP_STANDARDS
     + PI_GROUP_DEVS
@@ -530,7 +530,7 @@ DQ_CHECKLIST_FAST_SHIP = (
     + PI_GROUP_INTEROP
     + PI_GROUP_DOCS
 )
-DQ_CHECKLIST_PSA_SHIP = (
+DQ_CHECKLIST_PSA_SHIP: list[ProgressItem] = (
     PI_GROUP_METADATA
     + PI_GROUP_STANDARDS_PSA
     + PI_GROUP_MILESTONES
@@ -538,7 +538,7 @@ DQ_CHECKLIST_PSA_SHIP = (
     + PI_GROUP_DOCS_PSA
 )
 
-DQ_CHECKLIST_DEP_PLAN = (
+DQ_CHECKLIST_DEP_PLAN: list[ProgressItem] = (
     PI_GROUP_METADATA_DEP
     + PI_GROUP_STANDARDS_DEP
     + PI_GROUP_DEVS_DEP
@@ -548,10 +548,11 @@ DQ_CHECKLIST_DEP_PLAN = (
     + PI_GROUP_DOCS_DEP
 )
 
-DQ_CHECKLIST_DEP_SHIP = {
+DQ_CHECKLIST_DEP_SHIP: list[ProgressItem] = (
     # TODO(jrobbins):
     # Even though there is no API Owners gate there, we could add a DQ gate.
-}
+    []
+)
 
 
 # This is a stage that can be inserted in the stages of any non-enterprise
