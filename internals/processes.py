@@ -107,6 +107,19 @@ PI_FEATURE_NAME = ProgressItem(
     ),
 )
 
+PI_FEATURE_NAME_DEP = ProgressItem(
+    'Feature name dep',
+    'name',
+    (
+        'The name should start with some combination of "Deprecate" or "Remove" '
+        'and then clearly name the feature that is being deprecated.'
+    ),
+    (
+        'Not a bug number, internal codename, or "TBD". '
+        'Matches the intent email subject.'
+    ),
+)
+
 PI_SUMMARY = ProgressItem(
     'Summary',
     'summary',
@@ -122,6 +135,29 @@ PI_SUMMARY = ProgressItem(
     ),
 )
 
+PI_SUMMARY_DEP_TIMELINE = ProgressItem(
+    'Summary dep timeline',
+    'summary',
+    'Summary clearly states the reason for deprecation and the timeline.',
+    (
+        'Must explain why the feature is being deprecated and when developers '
+        'should expect removal.'
+    ),
+)
+
+PI_SUMMARY_DEP_ALTERNATIVES = ProgressItem(
+    'Summary dep alternatives',
+    'summary',
+    (
+        'Alternative APIs or migration path is documented in the summary and/or '
+        'linked doc.'
+    ),
+    (
+        'Developers must be able to find what to use instead. Link to MDN, '
+        'web.dev, or an explainer.'
+    ),
+)
+
 PI_SUMMARY_POLICY = ProgressItem(
     'Policy in summary',
     'summary',
@@ -129,6 +165,16 @@ PI_SUMMARY_POLICY = ProgressItem(
     (
         'Required when the feature has an enterprise escape-hatch policy. '
         'Name must match the policy registry.'
+    ),
+)
+
+PI_SUMMARY_POLICY_DEP = ProgressItem(
+    'Policy in summary dep',
+    'summary',
+    'Enterprise escape-hatch policy is named in the summary (if applicable)',
+    (
+        'If an enterprise policy allows deferral of the deprecation, its exact '
+        'name must appear in the summary ≥ 3 milestones before stable.'
     ),
 )
 
@@ -256,7 +302,28 @@ PI_TAG_REQUESTED = ProgressItem(
     ),
 )
 
-PI_DOC_LINKS = ProgressItem('Doc links', 'doc_links')
+PI_DOC_LINKS_OUTREACH = ProgressItem(
+    'Doc links outreach',
+    'doc_links',
+    (
+        'For high-impact features: DevRel / developer outreach is confirmed: '
+        'e.g., blog post, I/O talk, or Chrome Developers article'
+    ),
+    (
+        'For high-impact features: confirm at least one external communication '
+        'is planned or published.'
+    ),
+)
+
+PI_DOC_LINKS_AUTOMATION = ProgressItem(
+    'Doc links automation',
+    'doc_links',
+    'WebDriver / automation API impact is assessed and documented',
+    (
+        'If the feature changes observable browser automation behavior, the '
+        'impact must be communicated.'
+    ),
+)
 
 
 PI_TAG_ADDRESSED = ProgressItem(
@@ -336,8 +403,35 @@ PI_WEBVIEW_MILESTONE = ProgressItem(
 )
 
 PI_FINCH_FEATURE_OR_JUSTIFY = ProgressItem(
-    'Finch feature name or non-finch justification', 'finch_name'
+    'Finch feature name or non-finch justification',
+    'finch_name',
+    'Finch flag name is documented, or non-Finch rollout is explicitly justified',
+    (
+        'If using Finch: flag name is recorded. If not: justification must be '
+        'present in the justification text field.'
+    ),
 )
+
+PI_DEP_CONSOLE_WARNING = ProgressItem(
+    'Deprecation console warning',
+    'debuggability',
+    'Deprecation console warning is implemented in Chrome DevTools',
+    (
+        'Warning must point to the chromestatus entry or documentation page. '
+        'Verify in a Dev channel build.'
+    ),
+)
+
+PI_USECOUNTER_DEP = ProgressItem(
+    'UseCounter for deprecation',
+    'measurement',
+    'Usage data (UseCounter / UMA) confirms low-enough usage to proceed',
+    (
+        'Features with > 0.1% page load usage require additional scrutiny '
+        'and broader communication.'
+    ),
+)
+
 
 PI_CODE_REMOVED = ProgressItem('Code removed')
 
@@ -355,20 +449,45 @@ PI_GROUP_METADATA: list[ProgressItem] = [
     PI_FEATURE_NAME,
     PI_SUMMARY,
     PI_CATEGORY,
-    PI_FEATURE_TYPE,
+    # PI_FEATURE_TYPE,  # Needed?
     PI_OWNER_EMAILS,
     PI_BLINK_COMPONENTS,
     PI_WEB_FEATURE,
     PI_SUMMARY_POLICY,
     PI_TRACKING_BUG,
 ]
-PI_GROUP_STANDARDS_PSA: list[ProgressItem] = [
+PI_GROUP_METADATA_DEP: list[ProgressItem] = [
+    PI_FEATURE_NAME_DEP,
+    PI_SUMMARY_DEP_TIMELINE,
+    PI_SUMMARY_DEP_ALTERNATIVES,
+    PI_SUMMARY_POLICY_DEP,
+    PI_CATEGORY,
+    # PI_FEATURE_TYPE,  # Needed?
+    PI_OWNER_EMAILS,
+    PI_BLINK_COMPONENTS,
+    PI_WEB_FEATURE,
+    PI_SUMMARY_POLICY,
+    PI_TRACKING_BUG,
+]
+PI_GROUP_STANDARDS_DEP: list[ProgressItem] = [
     PI_SPEC_LINK,
-    PI_SPEC_MATURITY,
     PI_EXPLAINER,
+]
+PI_GROUP_STANDARDS_PSA: list[ProgressItem] = PI_GROUP_STANDARDS_DEP + [
+    PI_SPEC_MATURITY,
 ]
 PI_GROUP_STANDARDS: list[ProgressItem] = PI_GROUP_STANDARDS_PSA + [
     PI_TAG_REQUESTED,
+]
+PI_GROUP_DEVS: list[ProgressItem] = [
+    PI_FINCH_FEATURE_OR_JUSTIFY,
+]
+PI_GROUP_DEVS_DEP: list[ProgressItem] = [
+    # TODO(jrobbins): Finch, etc. comes at a later stage, so this needs to be
+    # checked later or the field needs to move to the plan stage.
+    # PI_FINCH_FEATURE_OR_JUSTIFY,
+    # PI_DEP_CONSOLE_WARNING,
+    # PI_USECOUNTER_DEP,
 ]
 PI_GROUP_MILESTONES: list[ProgressItem] = [
     PI_DESKTOP_MILESTONE,
@@ -381,29 +500,58 @@ PI_GROUP_INTEROP: list[ProgressItem] = [
     PI_INTEROP_RISKS,
     PI_WEB_DEV_VIEWS,
 ]
-PI_GROUP_DOCS: list[ProgressItem] = [
+PI_GROUP_DOCS_PSA: list[ProgressItem] = [
     PI_SAMPLES,
 ]
-DQ_CHECKLIST_BLINK = (
+PI_GROUP_DOCS_DEP: list[ProgressItem] = [
+    PI_DOC_LINKS_OUTREACH,
+    PI_DOC_LINKS_AUTOMATION,
+]
+PI_GROUP_DOCS = PI_GROUP_DOCS_PSA + PI_GROUP_DOCS_DEP
+
+
+# Note: There are currently no DQ gates for the origin trial stage, instead
+# checklit criteria are incorporated into the API Owners OT gate.  However,
+# we might choose to add a DQ gate there in the future.
+
+DQ_CHECKLIST_BLINK_SHIP: list[ProgressItem] = (
     PI_GROUP_METADATA
     + PI_GROUP_STANDARDS
+    + PI_GROUP_DEVS
     + PI_GROUP_MILESTONES
     + PI_GROUP_INTEROP
     + PI_GROUP_DOCS
 )
-DQ_CHECKLIST_FAST = (
+DQ_CHECKLIST_FAST_SHIP: list[ProgressItem] = (
     PI_GROUP_METADATA
     + PI_GROUP_STANDARDS
+    + PI_GROUP_DEVS
     + PI_GROUP_MILESTONES
     + PI_GROUP_INTEROP
     + PI_GROUP_DOCS
 )
-DQ_CHECKLIST_PSA = (
+DQ_CHECKLIST_PSA_SHIP: list[ProgressItem] = (
     PI_GROUP_METADATA
     + PI_GROUP_STANDARDS_PSA
     + PI_GROUP_MILESTONES
     + PI_GROUP_INTEROP
-    + PI_GROUP_DOCS
+    + PI_GROUP_DOCS_PSA
+)
+
+DQ_CHECKLIST_DEP_PLAN: list[ProgressItem] = (
+    PI_GROUP_METADATA_DEP
+    + PI_GROUP_STANDARDS_DEP
+    + PI_GROUP_DEVS_DEP
+    # TODO(jrobbins): Milestones come later in the process.
+    # + PI_GROUP_MILESTONES
+    + PI_GROUP_INTEROP
+    + PI_GROUP_DOCS_DEP
+)
+
+DQ_CHECKLIST_DEP_SHIP: list[ProgressItem] = (
+    # TODO(jrobbins):
+    # Even though there is no API Owners gate there, we could add a DQ gate.
+    []
 )
 
 
@@ -471,6 +619,8 @@ BLINK_PROCESS_STAGES = [
         'Provide sample code. '
         'Request feedback from browser vendors.',
         [
+            PI_DOC_LINKS_OUTREACH,
+            PI_DOC_LINKS_AUTOMATION,
             PI_SAMPLES,
             PI_FIREFOX_VIEWS,
             PI_SAFARI_VIEWS,
@@ -524,6 +674,11 @@ BLINK_PROCESS_STAGES = [
                     PI_MOTIVATION.name,
                     PI_EXPLAINER.name,
                     PI_SPEC_LINK.name,
+                    PI_FIREFOX_VIEWS.name,
+                    PI_SAFARI_VIEWS.name,
+                    PI_INTEROP_RISKS.name,
+                    PI_WEB_DEV_VIEWS.name,
+                    PI_FINCH_FEATURE_OR_JUSTIFY.name,
                 ],
                 [core_enums.GATE_API_ORIGIN_TRIAL],
             )
@@ -565,7 +720,7 @@ BLINK_PROCESS_STAGES = [
             Action(
                 'Review data quality',
                 REQUEST_REVIEW_ACTION_URL,
-                [pi.name for pi in DQ_CHECKLIST_BLINK],
+                [pi.name for pi in DQ_CHECKLIST_BLINK_SHIP],
                 [core_enums.GATE_DQ_SHIP],
             ),
             Action(
@@ -648,6 +803,8 @@ BLINK_FAST_TRACK_STAGES = [
         'Provide sample code. '
         'Act on feedback from partners and web developers.',
         [
+            PI_DOC_LINKS_OUTREACH,
+            PI_DOC_LINKS_AUTOMATION,
             PI_SAMPLES,
             PI_FINCH_FEATURE_OR_JUSTIFY,
             PI_FIREFOX_VIEWS,
@@ -683,6 +840,11 @@ BLINK_FAST_TRACK_STAGES = [
                 [
                     PI_TRACKING_BUG.name,
                     PI_SPEC_LINK.name,
+                    PI_FIREFOX_VIEWS.name,
+                    PI_SAFARI_VIEWS.name,
+                    PI_INTEROP_RISKS.name,
+                    PI_WEB_DEV_VIEWS.name,
+                    PI_FINCH_FEATURE_OR_JUSTIFY.name,
                 ],
                 [core_enums.GATE_API_ORIGIN_TRIAL],
             )
@@ -723,7 +885,7 @@ BLINK_FAST_TRACK_STAGES = [
             Action(
                 'Review data quality',
                 REQUEST_REVIEW_ACTION_URL,
-                [pi.name for pi in DQ_CHECKLIST_FAST],
+                [pi.name for pi in DQ_CHECKLIST_FAST_SHIP],
                 [core_enums.GATE_DQ_SHIP],
             ),
             Action(
@@ -824,7 +986,7 @@ PSA_ONLY_STAGES = [
             Action(
                 'Review data quality',
                 REQUEST_REVIEW_ACTION_URL,
-                [pi.name for pi in DQ_CHECKLIST_PSA],
+                [pi.name for pi in DQ_CHECKLIST_PSA_SHIP],
                 [core_enums.GATE_DQ_SHIP],
             ),
             Action(
@@ -873,17 +1035,23 @@ DEPRECATION_STAGES = [
         'Create an initial WebStatus feature entry to deprecate '
         'an existing feature, including motivation and impact. '
         'Then, get approval for your deprecation plans.',
-        PI_GROUP_METADATA
+        PI_GROUP_METADATA_DEP
         + [
+            PI_DOC_LINKS_OUTREACH,
+            PI_DOC_LINKS_AUTOMATION,
             PI_MOTIVATION,
             PI_SPEC_LINK,
             PI_EXPLAINER,
+            PI_FIREFOX_VIEWS,
+            PI_SAFARI_VIEWS,
+            PI_INTEROP_RISKS,
+            PI_WEB_DEV_VIEWS,
         ],
         [
             Action(
                 'Review data quality',
                 REQUEST_REVIEW_ACTION_URL,
-                [pi.name for pi in PI_GROUP_METADATA],  # TODO(jrobbins): more
+                [pi.name for pi in DQ_CHECKLIST_DEP_PLAN],
                 [core_enums.GATE_DQ_PLAN],
             ),
             Action(
@@ -907,10 +1075,6 @@ DEPRECATION_STAGES = [
         'Dev trial of deprecation',
         'Publicize deprecation and address risks. ',
         [
-            PI_FIREFOX_VIEWS,
-            PI_SAFARI_VIEWS,
-            PI_INTEROP_RISKS,
-            PI_WEB_DEV_VIEWS,
             PI_FINCH_FEATURE_OR_JUSTIFY,
         ],
         [
