@@ -18,7 +18,7 @@ import {assert, fixture} from '@open-wc/testing';
 import {html} from 'lit';
 import sinon from 'sinon';
 import '@shoelace-style/shoelace/dist/components/dialog/dialog.js';
-import {Feature, StageDict} from '../js-src/cs-client.js';
+import {Feature, StageDict, User} from '../js-src/cs-client.js';
 import {PROGRESS_VOTE_STATE, VOTE_OPTIONS} from './form-field-enums.js';
 import {GateDict} from './chromedash-gate-chip.js';
 import {
@@ -192,6 +192,19 @@ describe('preflight functions', () => {
 
     const feStage = {id: 20, stage_type: 120, intent_stage: 2} as StageDict;
 
+    const baseUser: User = {
+      id: 1,
+      can_create_feature: true,
+      can_edit_all: false,
+      can_review_release_notes: false,
+      can_comment: true,
+      is_admin: false,
+      email: 'user@example.com',
+      is_site_editor: false,
+      approvable_gate_types: [],
+      editable_features: [],
+    };
+
     it('renders 3-column tables per stage with rows and Other gates table below', async () => {
       const component = await fixture<ChromedashPreflightDialog>(
         html`<chromedash-preflight-dialog></chromedash-preflight-dialog>`
@@ -216,6 +229,7 @@ describe('preflight functions', () => {
       } as GateDict;
 
       component.openWithContext(
+        baseUser,
         feature,
         progress,
         process,
@@ -311,6 +325,7 @@ describe('preflight functions', () => {
       const progress = {} as ProgressItem;
 
       component.openWithContext(
+        baseUser,
         feature,
         progress,
         process,
@@ -337,6 +352,7 @@ describe('preflight functions', () => {
       const hideSpy = sinon.spy(component, 'hide');
 
       component.openWithContext(
+        baseUser,
         feature,
         progress,
         process,
@@ -366,6 +382,7 @@ describe('preflight functions', () => {
       const hideSpy = sinon.spy(component, 'hide');
 
       component.openWithContext(
+        baseUser,
         feature,
         progress,
         process,
@@ -389,6 +406,7 @@ describe('preflight functions', () => {
     it('openPreflightDialog returns a promise that resolves when user acts', async () => {
       const progress = {} as ProgressItem;
       const dialogPromise = openPreflightDialog(
+        baseUser,
         feature,
         progress,
         process,
@@ -407,6 +425,84 @@ describe('preflight functions', () => {
       dialogEl.handleProceed();
       const result = await dialogPromise;
       assert.isTrue(result);
+    });
+
+    describe('userCanVote', () => {
+      const progress = {} as ProgressItem;
+
+      it('returns false when user is undefined or lacks permissions', async () => {
+        const component = await fixture<ChromedashPreflightDialog>(
+          html`<chromedash-preflight-dialog></chromedash-preflight-dialog>`
+        );
+        assert.isFalse(component.userCanVote());
+
+        component.openWithContext(
+          baseUser,
+          feature,
+          progress,
+          process,
+          action,
+          feStage,
+          feStage,
+          [],
+          () => {}
+        );
+        assert.isFalse(component.userCanVote());
+      });
+
+      it('returns true when user can_edit_all is true', async () => {
+        const component = await fixture<ChromedashPreflightDialog>(
+          html`<chromedash-preflight-dialog></chromedash-preflight-dialog>`
+        );
+        component.openWithContext(
+          {...baseUser, can_edit_all: true},
+          feature,
+          progress,
+          process,
+          action,
+          feStage,
+          feStage,
+          [],
+          () => {}
+        );
+        assert.isTrue(component.userCanVote());
+      });
+
+      it('returns true when user can_review_release_notes is true', async () => {
+        const component = await fixture<ChromedashPreflightDialog>(
+          html`<chromedash-preflight-dialog></chromedash-preflight-dialog>`
+        );
+        component.openWithContext(
+          {...baseUser, can_review_release_notes: true},
+          feature,
+          progress,
+          process,
+          action,
+          feStage,
+          feStage,
+          [],
+          () => {}
+        );
+        assert.isTrue(component.userCanVote());
+      });
+
+      it('returns true when user has approvable_gate_types', async () => {
+        const component = await fixture<ChromedashPreflightDialog>(
+          html`<chromedash-preflight-dialog></chromedash-preflight-dialog>`
+        );
+        component.openWithContext(
+          {...baseUser, approvable_gate_types: [1]},
+          feature,
+          progress,
+          process,
+          action,
+          feStage,
+          feStage,
+          [],
+          () => {}
+        );
+        assert.isTrue(component.userCanVote());
+      });
     });
   });
 });
