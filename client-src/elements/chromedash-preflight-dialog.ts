@@ -151,7 +151,9 @@ export class ChromedashPreflightDialog extends LitElement {
           margin-bottom: var(--content-padding-half);
         }
 
-        .data-table tr:first-child td {
+        .data-table tr:first-child td,
+        .data-table tr.feedback td,
+        .data-table tr.criteria td {
           border-top: none;
         }
 
@@ -292,7 +294,7 @@ export class ChromedashPreflightDialog extends LitElement {
     `;
   }
 
-  renderStageRow(
+  renderProgressItem(
     stage: ProcessStage,
     feStage: StageDict | null,
     item: ProgressItem
@@ -320,6 +322,24 @@ export class ChromedashPreflightDialog extends LitElement {
           break;
       }
     }
+    const feedbackRow = vote?.feedback
+      ? html`
+          <tr class="feedback">
+            <td>Feedback:</td>
+            <td>${vote.feedback}</td>
+            <td></td>
+          </tr>
+        `
+      : nothing;
+    const criteriaRow = item.criteria
+      ? html`
+          <tr class="criteria">
+            <td>Criteria:</td>
+            <td>${item.criteria}</td>
+            <td></td>
+          </tr>
+        `
+      : nothing;
     return html`
       <tr>
         <td>
@@ -328,6 +348,7 @@ export class ChromedashPreflightDialog extends LitElement {
         <td>${item.description || item.name}</td>
         <td>${this.renderEditLink(stage, feStage, item)}</td>
       </tr>
+      ${feedbackRow} ${criteriaRow}
     `;
   }
 
@@ -347,7 +368,9 @@ export class ChromedashPreflightDialog extends LitElement {
     return html`
       <h3>${stage.name}</h3>
       <table class="data-table">
-        ${prereqItems.map(item => this.renderStageRow(stage, feStage, item))}
+        ${prereqItems.map(item =>
+          this.renderProgressItem(stage, feStage, item)
+        )}
       </table>
     `;
   }

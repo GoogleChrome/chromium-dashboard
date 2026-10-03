@@ -304,6 +304,86 @@ describe('preflight functions', () => {
       );
     });
 
+    it('renders feedback and criteria rows when present', async () => {
+      const component = await fixture<ChromedashPreflightDialog>(
+        html`<chromedash-preflight-dialog></chromedash-preflight-dialog>`
+      );
+      const processWithCriteria = {
+        ...process,
+        stages: [
+          {
+            name: 'Start incubating',
+            outgoing_stage: 1,
+            progress_items: [
+              {name: 'Motivation', field: 'motivation'},
+              {
+                name: 'Explainer',
+                field: 'explainer_links',
+                criteria: 'Must include use cases and sample code.',
+              },
+              {name: 'Tracking bug URL', field: 'bug_url'},
+            ],
+          },
+        ],
+      } as unknown as Process;
+      const progress = {
+        Explainer: {
+          state: PROGRESS_VOTE_STATE.NEEDS_WORK,
+          feedback: 'Please add more details about the API.',
+          set_on: '2026-09-23T00:00:00',
+          set_by: 'reviewer@example.com',
+        },
+      };
+
+      component.openWithContext(
+        feature,
+        progress,
+        processWithCriteria,
+        action,
+        feStage,
+        feStage,
+        [],
+        () => {}
+      );
+      await component.updateComplete;
+
+      const tables = component.shadowRoot!.querySelectorAll('table.data-table');
+      const stage1Rows = tables[0].querySelectorAll('tr');
+      // 3 items + 1 feedback row + 1 criteria row for Explainer = 5 rows
+      assert.equal(stage1Rows.length, 5);
+
+      const explainerRowCells = stage1Rows[1].querySelectorAll('td');
+      assert.equal(explainerRowCells[0].textContent?.trim(), 'Needs work');
+      assert.isNotNull(
+        explainerRowCells[0].querySelector('.status.needs_work')
+      );
+      assert.equal(explainerRowCells[1].textContent?.trim(), 'Explainer');
+
+      const feedbackRow = stage1Rows[2];
+      assert.isTrue(feedbackRow.classList.contains('feedback'));
+      const feedbackCells = feedbackRow.querySelectorAll('td');
+      assert.equal(feedbackCells.length, 3);
+      assert.equal(feedbackCells[0].textContent?.trim(), 'Feedback:');
+      assert.equal(
+        feedbackCells[1].textContent?.trim(),
+        'Please add more details about the API.'
+      );
+      assert.equal(feedbackCells[2].textContent?.trim(), '');
+      assert.equal(getComputedStyle(feedbackCells[0]).borderTopStyle, 'none');
+
+      const criteriaRow = stage1Rows[3];
+      assert.isTrue(criteriaRow.classList.contains('criteria'));
+      const criteriaCells = criteriaRow.querySelectorAll('td');
+      assert.equal(criteriaCells.length, 3);
+      assert.equal(criteriaCells[0].textContent?.trim(), 'Criteria:');
+      assert.equal(
+        criteriaCells[1].textContent?.trim(),
+        'Must include use cases and sample code.'
+      );
+      assert.equal(criteriaCells[2].textContent?.trim(), '');
+      assert.equal(getComputedStyle(criteriaCells[0]).borderTopStyle, 'none');
+    });
+
     it('omits other gates table when there are no other gates', async () => {
       const component = await fixture<ChromedashPreflightDialog>(
         html`<chromedash-preflight-dialog></chromedash-preflight-dialog>`
