@@ -759,13 +759,13 @@ export const ALL_FIELDS: Record<string, Field> = {
       ]),
     },
     help_text: html` Explain why the web needs this change. It may be useful to
-      describe what web developers are forced to do without it. When possible,
-      add links to your explainer (under
+      describe what web developers are forced to do without it. Write in a
+      matter-of-fact manner and in the present tense. When possible, add links
+      to your explainer (under
       <a href="#id_explainer_links">Explainer link(s)</a>) backing up your
       claims. <br /><br />
-      This text is sometimes included with the summary in the beta post,
-      enterprise release notes and other external documents. Write in a
-      matter-of-fact manner and in the present tense.
+      This text is not included in the beta post or release notes, so you may
+      need to include the gist of the motivation in the summary field.
       <br /><br />
       <a
         target="_blank"
@@ -788,11 +788,10 @@ export const ALL_FIELDS: Record<string, Field> = {
     },
     help_text: html` Deprecations and removals must have strong reasons, backed
       up by measurements. There must be clear and actionable paths forward for
-      developers.
+      developers. Write in a matter-of-fact manner and in the present tense.
       <br /><br />
-      This text is sometimes included with the summary in the beta post,
-      enterprise release notes and other external documents. Write in a
-      matter-of-fact manner and in the present tense.
+      This text is not included in the beta post or release notes, so you must
+      include the gist of the motivation in the summary field.
       <br /><br />
       Please see
       <a

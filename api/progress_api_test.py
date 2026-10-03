@@ -99,13 +99,44 @@ class ProgressAPITest(testing_config.CustomTestCase):
         with test_app.test_request_context(self.request_path):
             actual = self.handler.do_get(feature_id=self.feature_id)
 
+        self.maxDiff = None
         self.assertEqual(
             {
-                'Spec link': expected_detected_vote,
+                'Blink components': {
+                    'state': progress.ProgressVote.NEEDS_WORK,
+                    'feedback': 'Please choose a specific component',
+                    'set_on': FAKE_NOW.isoformat(),
+                    'set_by': 'ChromeStatus',
+                },
+                'Category': expected_detected_vote,
+                'Feature name': expected_detected_vote,
+                'Feature name dep': {
+                    'state': progress.ProgressVote.NEEDS_WORK,
+                    'feedback': 'Needs "Deprecation" or "Remove"',
+                    'set_on': FAKE_NOW.isoformat(),
+                    'set_by': 'ChromeStatus',
+                },
+                'Owner emails': expected_detected_vote,
+                'Policy in summary': expected_detected_vote,
+                'Policy in summary dep': expected_detected_vote,
+                'Spec link': {
+                    'state': progress.ProgressVote.NEEDS_WORK,
+                    'feedback': 'Not a URL',
+                    'set_on': FAKE_NOW.isoformat(),
+                    'set_by': 'ChromeStatus',
+                },
+                'Summary': expected_detected_vote,
+                'Summary dep alternatives': expected_detected_vote,
+                'Summary dep timeline': expected_detected_vote,
                 'Updated android milestone': expected_detected_vote,
                 'Updated desktop milestone': expected_detected_vote,
                 'Updated webview milestone': expected_detected_vote,
-                'Web developer views': expected_detected_vote,
+                'Web developer views': {
+                    'state': progress.ProgressVote.NEEDS_WORK,
+                    'feedback': 'Views link is not a URL',
+                    'set_on': FAKE_NOW.isoformat(),
+                    'set_by': 'ChromeStatus',
+                },
             },
             actual,
         )

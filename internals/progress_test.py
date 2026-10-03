@@ -156,6 +156,15 @@ class ProgressDetectorsTest(testing_config.CustomTestCase):
             ),
             NOT_STARTED,
         )
+        self.feature_1.initial_public_proposal_url = 'not a url'
+        self.assertEqual(
+            progress._detect_initial_public_proposal(
+                self.feature_1, self.stages_dict
+            ),
+            progress.ProgressDetectorResult(
+                progress.ProgressVote.NEEDS_WORK, 'Not a URL'
+            ),
+        )
         self.feature_1.initial_public_proposal_url = 'http://example.com'
         self.assertEqual(
             progress._detect_initial_public_proposal(
@@ -193,11 +202,37 @@ class ProgressDetectorsTest(testing_config.CustomTestCase):
             READY_FOR_REVIEW,
         )
 
+    def test_tracking_bug_url(self):
+        """Test tracking bug url."""
+        self.assertEqual(
+            progress._detect_tracking_bug_url(self.feature_1, self.stages_dict),
+            NOT_STARTED,
+        )
+        self.feature_1.bug_url = 'not a url'
+        self.assertEqual(
+            progress._detect_tracking_bug_url(self.feature_1, self.stages_dict),
+            progress.ProgressDetectorResult(
+                progress.ProgressVote.NEEDS_WORK, 'Not a URL'
+            ),
+        )
+        self.feature_1.bug_url = 'http://example.com'
+        self.assertEqual(
+            progress._detect_tracking_bug_url(self.feature_1, self.stages_dict),
+            READY_FOR_REVIEW,
+        )
+
     def test_samples(self):
         """Test samples."""
         self.assertEqual(
             progress._detect_samples(self.feature_1, self.stages_dict),
             NOT_STARTED,
+        )
+        self.feature_1.sample_links = ['http://example.com', 'not a url']
+        self.assertEqual(
+            progress._detect_samples(self.feature_1, self.stages_dict),
+            progress.ProgressDetectorResult(
+                progress.ProgressVote.NEEDS_WORK, 'Not a URL'
+            ),
         )
         self.feature_1.sample_links = ['http://example.com']
         self.assertEqual(
@@ -211,9 +246,35 @@ class ProgressDetectorsTest(testing_config.CustomTestCase):
             progress._detect_doc_links(self.feature_1, self.stages_dict),
             NOT_STARTED,
         )
+        self.feature_1.doc_links = ['http://example.com', 'not a url']
+        self.assertEqual(
+            progress._detect_doc_links(self.feature_1, self.stages_dict),
+            progress.ProgressDetectorResult(
+                progress.ProgressVote.NEEDS_WORK, 'Not a URL'
+            ),
+        )
         self.feature_1.doc_links = ['http://example.com']
         self.assertEqual(
             progress._detect_doc_links(self.feature_1, self.stages_dict),
+            READY_FOR_REVIEW,
+        )
+
+    def test_spec_link(self):
+        """Test spec link."""
+        self.assertEqual(
+            progress._detect_spec_link(self.feature_1, self.stages_dict),
+            NOT_STARTED,
+        )
+        self.feature_1.spec_link = 'not a url'
+        self.assertEqual(
+            progress._detect_spec_link(self.feature_1, self.stages_dict),
+            progress.ProgressDetectorResult(
+                progress.ProgressVote.NEEDS_WORK, 'Not a URL'
+            ),
+        )
+        self.feature_1.spec_link = 'http://example.com'
+        self.assertEqual(
+            progress._detect_spec_link(self.feature_1, self.stages_dict),
             READY_FOR_REVIEW,
         )
 
@@ -224,6 +285,15 @@ class ProgressDetectorsTest(testing_config.CustomTestCase):
                 self.feature_1, self.stages_dict
             ),
             NOT_STARTED,
+        )
+        self.feature_1.tag_review = 'not a url'
+        self.assertEqual(
+            progress._detect_tag_review_requested(
+                self.feature_1, self.stages_dict
+            ),
+            progress.ProgressDetectorResult(
+                progress.ProgressVote.NEEDS_WORK, 'Not a URL'
+            ),
         )
         self.feature_1.tag_review = 'http://example.com'
         self.assertEqual(
@@ -258,6 +328,20 @@ class ProgressDetectorsTest(testing_config.CustomTestCase):
         self.feature_1.web_dev_views = core_enums.PUBLIC_SUPPORT
         self.assertEqual(
             progress._detect_web_dev_views(self.feature_1, self.stages_dict),
+            progress.ProgressDetectorResult(
+                progress.ProgressVote.NEEDS_WORK, 'Views link is not a URL'
+            ),
+        )
+        self.feature_1.web_dev_views_link = 'not a url'
+        self.assertEqual(
+            progress._detect_web_dev_views(self.feature_1, self.stages_dict),
+            progress.ProgressDetectorResult(
+                progress.ProgressVote.NEEDS_WORK, 'Views link is not a URL'
+            ),
+        )
+        self.feature_1.web_dev_views_link = 'http://example.com'
+        self.assertEqual(
+            progress._detect_web_dev_views(self.feature_1, self.stages_dict),
             READY_FOR_REVIEW,
         )
 
@@ -270,6 +354,20 @@ class ProgressDetectorsTest(testing_config.CustomTestCase):
         self.feature_1.ff_views = core_enums.PUBLIC_SUPPORT
         self.assertEqual(
             progress._detect_firefox_views(self.feature_1, self.stages_dict),
+            progress.ProgressDetectorResult(
+                progress.ProgressVote.NEEDS_WORK, 'Views link is not a URL'
+            ),
+        )
+        self.feature_1.ff_views_link = 'not a url'
+        self.assertEqual(
+            progress._detect_firefox_views(self.feature_1, self.stages_dict),
+            progress.ProgressDetectorResult(
+                progress.ProgressVote.NEEDS_WORK, 'Views link is not a URL'
+            ),
+        )
+        self.feature_1.ff_views_link = 'http://example.com'
+        self.assertEqual(
+            progress._detect_firefox_views(self.feature_1, self.stages_dict),
             READY_FOR_REVIEW,
         )
 
@@ -280,6 +378,20 @@ class ProgressDetectorsTest(testing_config.CustomTestCase):
             NOT_STARTED,
         )
         self.feature_1.safari_views = core_enums.PUBLIC_SUPPORT
+        self.assertEqual(
+            progress._detect_safari_views(self.feature_1, self.stages_dict),
+            progress.ProgressDetectorResult(
+                progress.ProgressVote.NEEDS_WORK, 'Views link is not a URL'
+            ),
+        )
+        self.feature_1.safari_views_link = 'not a url'
+        self.assertEqual(
+            progress._detect_safari_views(self.feature_1, self.stages_dict),
+            progress.ProgressDetectorResult(
+                progress.ProgressVote.NEEDS_WORK, 'Views link is not a URL'
+            ),
+        )
+        self.feature_1.safari_views_link = 'http://example.com'
         self.assertEqual(
             progress._detect_safari_views(self.feature_1, self.stages_dict),
             READY_FOR_REVIEW,
@@ -378,18 +490,6 @@ class ProgressDetectorsTest(testing_config.CustomTestCase):
             READY_FOR_REVIEW,
         )
 
-    def test_code_removed(self):
-        """Test code removed."""
-        self.assertEqual(
-            progress._detect_code_removed(self.feature_1, self.stages_dict),
-            NOT_STARTED,
-        )
-        self.feature_1.impl_status_chrome = core_enums.REMOVED
-        self.assertEqual(
-            progress._detect_code_removed(self.feature_1, self.stages_dict),
-            READY_FOR_REVIEW,
-        )
-
     def test_rollout_impact(self):
         """Test rollout impact."""
         # There is always a value for this
@@ -476,5 +576,133 @@ class ProgressDetectorsTest(testing_config.CustomTestCase):
             progress._detect_enterprise_policies(
                 self.feature_1, self.stages_dict
             ),
+            READY_FOR_REVIEW,
+        )
+
+    def test_debuggability(self):
+        """Test debuggability."""
+        self.assertEqual(
+            progress._detetect_debuggability(self.feature_1, self.stages_dict),
+            NOT_STARTED,
+        )
+        self.feature_1.debuggability = 'DevTools console warning'
+        self.assertEqual(
+            progress._detetect_debuggability(self.feature_1, self.stages_dict),
+            READY_FOR_REVIEW,
+        )
+
+    def test_feature_name(self):
+        """Test feature name."""
+        self.feature_1.name = ''
+        self.assertEqual(
+            progress._detect_feature_name(self.feature_1, self.stages_dict),
+            NOT_STARTED,
+        )
+        self.feature_1.name = 'feature one'
+        self.assertEqual(
+            progress._detect_feature_name(self.feature_1, self.stages_dict),
+            READY_FOR_REVIEW,
+        )
+
+    def test_feature_name_dep(self):
+        """Test feature name dep."""
+        self.feature_1.name = ''
+        self.assertEqual(
+            progress._detect_feature_name_dep(self.feature_1, self.stages_dict),
+            NOT_STARTED,
+        )
+        self.feature_1.name = 'feature one'
+        self.assertEqual(
+            progress._detect_feature_name_dep(self.feature_1, self.stages_dict),
+            progress.ProgressDetectorResult(
+                progress.ProgressVote.NEEDS_WORK,
+                'Needs "Deprecation" or "Remove"',
+            ),
+        )
+        self.feature_1.name = 'Deprecate feature one'
+        self.assertEqual(
+            progress._detect_feature_name_dep(self.feature_1, self.stages_dict),
+            READY_FOR_REVIEW,
+        )
+        self.feature_1.name = 'Remove feature one'
+        self.assertEqual(
+            progress._detect_feature_name_dep(self.feature_1, self.stages_dict),
+            READY_FOR_REVIEW,
+        )
+
+    def test_owner_emails(self):
+        """Test owner emails."""
+        self.assertEqual(
+            progress._detect_owner_emails(self.feature_1, self.stages_dict),
+            NOT_STARTED,
+        )
+        self.feature_1.owner_emails = ['owner@example.com']
+        self.assertEqual(
+            progress._detect_owner_emails(self.feature_1, self.stages_dict),
+            READY_FOR_REVIEW,
+        )
+
+    def test_summary(self):
+        """Test summary."""
+        self.feature_1.summary = ''
+        self.assertEqual(
+            progress._detect_summary(self.feature_1, self.stages_dict),
+            NOT_STARTED,
+        )
+        self.feature_1.summary = 'sum'
+        self.assertEqual(
+            progress._detect_summary(self.feature_1, self.stages_dict),
+            READY_FOR_REVIEW,
+        )
+
+    def test_measurement(self):
+        """Test measurement."""
+        self.assertEqual(
+            progress._detect_measurement(self.feature_1, self.stages_dict),
+            NOT_STARTED,
+        )
+        self.feature_1.measurement = 'UseCounter'
+        self.assertEqual(
+            progress._detect_measurement(self.feature_1, self.stages_dict),
+            READY_FOR_REVIEW,
+        )
+
+    def test_spec_maturity(self):
+        """Test spec maturity."""
+        self.assertEqual(
+            progress._detect_spec_maturity(self.feature_1, self.stages_dict),
+            NOT_STARTED,
+        )
+        self.feature_1.standard_maturity = core_enums.WORKING_DRAFT
+        self.assertEqual(
+            progress._detect_spec_maturity(self.feature_1, self.stages_dict),
+            READY_FOR_REVIEW,
+        )
+
+    def test_blink_components(self):
+        """Test blink components."""
+        self.feature_1.blink_components = []
+        self.assertEqual(
+            progress._detect_blink_components(self.feature_1, self.stages_dict),
+            NOT_STARTED,
+        )
+        self.feature_1.blink_components = ['Blink']
+        self.assertEqual(
+            progress._detect_blink_components(self.feature_1, self.stages_dict),
+            progress.ProgressDetectorResult(
+                progress.ProgressVote.NEEDS_WORK,
+                'Please choose a specific component',
+            ),
+        )
+        self.feature_1.blink_components = ['Blink>CSS']
+        self.assertEqual(
+            progress._detect_blink_components(self.feature_1, self.stages_dict),
+            READY_FOR_REVIEW,
+        )
+
+    def test_always_ready_for_review(self):
+        """Test always ready for review."""
+        self.assertEqual(
+            progress._always_ready_for_review(self.feature_1, self.stages_dict),
             READY_FOR_REVIEW,
         )
