@@ -61,6 +61,7 @@ from internals.processes import (
     PI_WEB_FEATURE,
     PI_WEBVIEW_MILESTONE,
 )
+from internals.search_fulltext import WORD_RE
 
 
 class ProgressVote(ndb.Model):
@@ -159,6 +160,8 @@ def _detect_initial_public_proposal(
 ) -> ProgressDetectorResult:
     if not fe.initial_public_proposal_url:
         return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+    if not fe.initial_public_proposal_url.startswith('http'):
+        return ProgressDetectorResult(ProgressVote.NEEDS_WORK, 'Not a URL')
     return ProgressDetectorResult(ProgressVote.READY_FOR_REVIEW)
 
 
@@ -186,6 +189,8 @@ def _detect_tracking_bug_url(
 ) -> ProgressDetectorResult:
     if not fe.bug_url:
         return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+    if not fe.bug_url.startswith('http'):
+        return ProgressDetectorResult(ProgressVote.NEEDS_WORK, 'Not a URL')
     return ProgressDetectorResult(ProgressVote.READY_FOR_REVIEW)
 
 
@@ -194,6 +199,9 @@ def _detect_samples(
 ) -> ProgressDetectorResult:
     if not fe.sample_links or not fe.sample_links[0]:
         return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+    for url in fe.sample_links:
+        if not url.startswith('http'):
+            return ProgressDetectorResult(ProgressVote.NEEDS_WORK, 'Not a URL')
     return ProgressDetectorResult(ProgressVote.READY_FOR_REVIEW)
 
 
@@ -202,6 +210,9 @@ def _detect_doc_links(
 ) -> ProgressDetectorResult:
     if not fe.doc_links or not fe.doc_links[0]:
         return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+    for url in fe.doc_links:
+        if not url.startswith('http'):
+            return ProgressDetectorResult(ProgressVote.NEEDS_WORK, 'Not a URL')
     return ProgressDetectorResult(ProgressVote.READY_FOR_REVIEW)
 
 
@@ -210,6 +221,8 @@ def _detect_spec_link(
 ) -> ProgressDetectorResult:
     if not fe.spec_link:
         return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+    if not fe.spec_link.startswith('http'):
+        return ProgressDetectorResult(ProgressVote.NEEDS_WORK, 'Not a URL')
     return ProgressDetectorResult(ProgressVote.READY_FOR_REVIEW)
 
 
@@ -226,6 +239,8 @@ def _detect_tag_review_requested(
 ) -> ProgressDetectorResult:
     if not fe.tag_review:
         return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+    if not fe.tag_review.startswith('http'):
+        return ProgressDetectorResult(ProgressVote.NEEDS_WORK, 'Not a URL')
     return ProgressDetectorResult(ProgressVote.READY_FOR_REVIEW)
 
 
@@ -242,6 +257,12 @@ def _detect_web_dev_views(
 ) -> ProgressDetectorResult:
     if not fe.web_dev_views or fe.web_dev_views == core_enums.DEV_NO_SIGNALS:
         return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+    if not fe.web_dev_views_link or not fe.web_dev_views_link.startswith(
+        'http'
+    ):
+        return ProgressDetectorResult(
+            ProgressVote.NEEDS_WORK, 'Views link is not a URL'
+        )
     return ProgressDetectorResult(ProgressVote.READY_FOR_REVIEW)
 
 
@@ -250,6 +271,10 @@ def _detect_firefox_views(
 ) -> ProgressDetectorResult:
     if fe.ff_views == core_enums.NO_PUBLIC_SIGNALS:
         return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+    if not fe.ff_views_link or not fe.ff_views_link.startswith('http'):
+        return ProgressDetectorResult(
+            ProgressVote.NEEDS_WORK, 'Views link is not a URL'
+        )
     return ProgressDetectorResult(ProgressVote.READY_FOR_REVIEW)
 
 
@@ -258,6 +283,10 @@ def _detect_safari_views(
 ) -> ProgressDetectorResult:
     if fe.safari_views == core_enums.NO_PUBLIC_SIGNALS:
         return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+    if not fe.safari_views_link or not fe.safari_views_link.startswith('http'):
+        return ProgressDetectorResult(
+            ProgressVote.NEEDS_WORK, 'Views link is not a URL'
+        )
     return ProgressDetectorResult(ProgressVote.READY_FOR_REVIEW)
 
 
@@ -429,7 +458,12 @@ def _detect_feature_name_dep(
 ) -> ProgressDetectorResult:
     if not fe.name:
         return ProgressDetectorResult(ProgressVote.NOT_STARTED)
-    # @@@ NEEDS WORK if no "Remove" or "Deprecate"
+    lower_name = fe.name.lower().replace("'", '')
+    words = WORD_RE.findall(lower_name)
+    if 'remove' not in words and 'deprecate' not in words:
+        return ProgressDetectorResult(
+            ProgressVote.NEEDS_WORK, 'Needs "Deprecation" or "Remove"'
+        )
     return ProgressDetectorResult(ProgressVote.READY_FOR_REVIEW)
 
 

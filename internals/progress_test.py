@@ -156,6 +156,15 @@ class ProgressDetectorsTest(testing_config.CustomTestCase):
             ),
             NOT_STARTED,
         )
+        self.feature_1.initial_public_proposal_url = 'not a url'
+        self.assertEqual(
+            progress._detect_initial_public_proposal(
+                self.feature_1, self.stages_dict
+            ),
+            progress.ProgressDetectorResult(
+                progress.ProgressVote.NEEDS_WORK, 'Not a URL'
+            ),
+        )
         self.feature_1.initial_public_proposal_url = 'http://example.com'
         self.assertEqual(
             progress._detect_initial_public_proposal(
@@ -193,11 +202,37 @@ class ProgressDetectorsTest(testing_config.CustomTestCase):
             READY_FOR_REVIEW,
         )
 
+    def test_tracking_bug_url(self):
+        """Test tracking bug url."""
+        self.assertEqual(
+            progress._detect_tracking_bug_url(self.feature_1, self.stages_dict),
+            NOT_STARTED,
+        )
+        self.feature_1.bug_url = 'not a url'
+        self.assertEqual(
+            progress._detect_tracking_bug_url(self.feature_1, self.stages_dict),
+            progress.ProgressDetectorResult(
+                progress.ProgressVote.NEEDS_WORK, 'Not a URL'
+            ),
+        )
+        self.feature_1.bug_url = 'http://example.com'
+        self.assertEqual(
+            progress._detect_tracking_bug_url(self.feature_1, self.stages_dict),
+            READY_FOR_REVIEW,
+        )
+
     def test_samples(self):
         """Test samples."""
         self.assertEqual(
             progress._detect_samples(self.feature_1, self.stages_dict),
             NOT_STARTED,
+        )
+        self.feature_1.sample_links = ['http://example.com', 'not a url']
+        self.assertEqual(
+            progress._detect_samples(self.feature_1, self.stages_dict),
+            progress.ProgressDetectorResult(
+                progress.ProgressVote.NEEDS_WORK, 'Not a URL'
+            ),
         )
         self.feature_1.sample_links = ['http://example.com']
         self.assertEqual(
@@ -211,9 +246,35 @@ class ProgressDetectorsTest(testing_config.CustomTestCase):
             progress._detect_doc_links(self.feature_1, self.stages_dict),
             NOT_STARTED,
         )
+        self.feature_1.doc_links = ['http://example.com', 'not a url']
+        self.assertEqual(
+            progress._detect_doc_links(self.feature_1, self.stages_dict),
+            progress.ProgressDetectorResult(
+                progress.ProgressVote.NEEDS_WORK, 'Not a URL'
+            ),
+        )
         self.feature_1.doc_links = ['http://example.com']
         self.assertEqual(
             progress._detect_doc_links(self.feature_1, self.stages_dict),
+            READY_FOR_REVIEW,
+        )
+
+    def test_spec_link(self):
+        """Test spec link."""
+        self.assertEqual(
+            progress._detect_spec_link(self.feature_1, self.stages_dict),
+            NOT_STARTED,
+        )
+        self.feature_1.spec_link = 'not a url'
+        self.assertEqual(
+            progress._detect_spec_link(self.feature_1, self.stages_dict),
+            progress.ProgressDetectorResult(
+                progress.ProgressVote.NEEDS_WORK, 'Not a URL'
+            ),
+        )
+        self.feature_1.spec_link = 'http://example.com'
+        self.assertEqual(
+            progress._detect_spec_link(self.feature_1, self.stages_dict),
             READY_FOR_REVIEW,
         )
 
@@ -224,6 +285,15 @@ class ProgressDetectorsTest(testing_config.CustomTestCase):
                 self.feature_1, self.stages_dict
             ),
             NOT_STARTED,
+        )
+        self.feature_1.tag_review = 'not a url'
+        self.assertEqual(
+            progress._detect_tag_review_requested(
+                self.feature_1, self.stages_dict
+            ),
+            progress.ProgressDetectorResult(
+                progress.ProgressVote.NEEDS_WORK, 'Not a URL'
+            ),
         )
         self.feature_1.tag_review = 'http://example.com'
         self.assertEqual(
@@ -258,6 +328,20 @@ class ProgressDetectorsTest(testing_config.CustomTestCase):
         self.feature_1.web_dev_views = core_enums.PUBLIC_SUPPORT
         self.assertEqual(
             progress._detect_web_dev_views(self.feature_1, self.stages_dict),
+            progress.ProgressDetectorResult(
+                progress.ProgressVote.NEEDS_WORK, 'Views link is not a URL'
+            ),
+        )
+        self.feature_1.web_dev_views_link = 'not a url'
+        self.assertEqual(
+            progress._detect_web_dev_views(self.feature_1, self.stages_dict),
+            progress.ProgressDetectorResult(
+                progress.ProgressVote.NEEDS_WORK, 'Views link is not a URL'
+            ),
+        )
+        self.feature_1.web_dev_views_link = 'http://example.com'
+        self.assertEqual(
+            progress._detect_web_dev_views(self.feature_1, self.stages_dict),
             READY_FOR_REVIEW,
         )
 
@@ -270,6 +354,20 @@ class ProgressDetectorsTest(testing_config.CustomTestCase):
         self.feature_1.ff_views = core_enums.PUBLIC_SUPPORT
         self.assertEqual(
             progress._detect_firefox_views(self.feature_1, self.stages_dict),
+            progress.ProgressDetectorResult(
+                progress.ProgressVote.NEEDS_WORK, 'Views link is not a URL'
+            ),
+        )
+        self.feature_1.ff_views_link = 'not a url'
+        self.assertEqual(
+            progress._detect_firefox_views(self.feature_1, self.stages_dict),
+            progress.ProgressDetectorResult(
+                progress.ProgressVote.NEEDS_WORK, 'Views link is not a URL'
+            ),
+        )
+        self.feature_1.ff_views_link = 'http://example.com'
+        self.assertEqual(
+            progress._detect_firefox_views(self.feature_1, self.stages_dict),
             READY_FOR_REVIEW,
         )
 
@@ -280,6 +378,20 @@ class ProgressDetectorsTest(testing_config.CustomTestCase):
             NOT_STARTED,
         )
         self.feature_1.safari_views = core_enums.PUBLIC_SUPPORT
+        self.assertEqual(
+            progress._detect_safari_views(self.feature_1, self.stages_dict),
+            progress.ProgressDetectorResult(
+                progress.ProgressVote.NEEDS_WORK, 'Views link is not a URL'
+            ),
+        )
+        self.feature_1.safari_views_link = 'not a url'
+        self.assertEqual(
+            progress._detect_safari_views(self.feature_1, self.stages_dict),
+            progress.ProgressDetectorResult(
+                progress.ProgressVote.NEEDS_WORK, 'Views link is not a URL'
+            ),
+        )
+        self.feature_1.safari_views_link = 'http://example.com'
         self.assertEqual(
             progress._detect_safari_views(self.feature_1, self.stages_dict),
             READY_FOR_REVIEW,
@@ -499,7 +611,20 @@ class ProgressDetectorsTest(testing_config.CustomTestCase):
             progress._detect_feature_name_dep(self.feature_1, self.stages_dict),
             NOT_STARTED,
         )
+        self.feature_1.name = 'feature one'
+        self.assertEqual(
+            progress._detect_feature_name_dep(self.feature_1, self.stages_dict),
+            progress.ProgressDetectorResult(
+                progress.ProgressVote.NEEDS_WORK,
+                'Needs "Deprecation" or "Remove"',
+            ),
+        )
         self.feature_1.name = 'Deprecate feature one'
+        self.assertEqual(
+            progress._detect_feature_name_dep(self.feature_1, self.stages_dict),
+            READY_FOR_REVIEW,
+        )
+        self.feature_1.name = 'Remove feature one'
         self.assertEqual(
             progress._detect_feature_name_dep(self.feature_1, self.stages_dict),
             READY_FOR_REVIEW,
