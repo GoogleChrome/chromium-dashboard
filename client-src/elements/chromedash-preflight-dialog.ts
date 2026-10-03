@@ -133,6 +133,8 @@ export class ChromedashPreflightDialog extends LitElement {
   @state()
   private _feStage!: StageDict;
   @state()
+  private _expandedItems = new Set<string>();
+  @state()
   private _resolve: (value?: boolean) => void = () => {
     console.log('Missing resolve action');
   };
@@ -155,13 +157,47 @@ export class ChromedashPreflightDialog extends LitElement {
           border-top: none;
         }
 
+        .data-table tr.feedback td,
+        .data-table tr.criteria td {
+          border-top: none;
+          animation: revealRow 200ms ease-out;
+        }
+
+        @keyframes revealRow {
+          from {
+            opacity: 0;
+            transform: translateY(-4px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
         .data-table td {
           vertical-align: middle;
           padding: 0 var(content-padding);
         }
 
         .data-table td:first-child {
+          width: 1em;
+        }
+
+        .data-table td:first-child sl-icon {
+          cursor: pointer;
+          transition: transform 200ms ease-in-out;
+        }
+
+        .data-table td:first-child sl-icon.expanded {
+          transform: rotate(90deg);
+        }
+
+        .data-table td:nth-child(2) {
           width: 12em;
+        }
+
+        .data-table td:nth-child(3) {
+          width: 35em;
         }
 
         .data-table td:last-child {
@@ -243,8 +279,23 @@ export class ChromedashPreflightDialog extends LitElement {
     this._stage = stage;
     this._feStage = feStage;
     this._featureGates = featureGates;
+    this._expandedItems = new Set(
+      Object.entries(progress || {})
+        .filter(([_, vote]) => Boolean((vote as ProgressVoteValue)?.feedback))
+        .map(([itemName]) => itemName)
+    );
     this._resolve = resolve;
     this.renderRoot.querySelector('sl-dialog')?.show();
+  }
+
+  toggleExpanded(itemName: string) {
+    const next = new Set(this._expandedItems);
+    if (next.has(itemName)) {
+      next.delete(itemName);
+    } else {
+      next.add(itemName);
+    }
+    this._expandedItems = next;
   }
 
   hide() {
@@ -292,11 +343,12 @@ export class ChromedashPreflightDialog extends LitElement {
     `;
   }
 
-  renderStageRow(
+  renderProgressItem(
     stage: ProcessStage,
     feStage: StageDict | null,
     item: ProgressItem
   ) {
+    const isExpanded = this._expandedItems.has(item.name);
     const vote = this._progress?.[item.name] as ProgressVoteValue | undefined;
     let statusClass = 'preparing';
     let statusText = 'Not started';
@@ -320,14 +372,44 @@ export class ChromedashPreflightDialog extends LitElement {
           break;
       }
     }
+    const feedbackRow =
+      isExpanded && vote?.feedback
+        ? html`
+            <tr class="feedback">
+              <td></td>
+              <td>Feedback:</td>
+              <td>${vote.feedback}</td>
+              <td></td>
+            </tr>
+          `
+        : nothing;
+    const criteriaRow =
+      isExpanded && item.criteria
+        ? html`
+            <tr class="criteria">
+              <td></td>
+              <td>Criteria:</td>
+              <td>${item.criteria}</td>
+              <td></td>
+            </tr>
+          `
+        : nothing;
     return html`
       <tr>
+        <td>
+          <sl-icon
+            name="caret-right-fill"
+            class="${isExpanded ? 'expanded' : ''}"
+            @click=${() => this.toggleExpanded(item.name)}
+          ></sl-icon>
+        </td>
         <td>
           <span class="status ${statusClass}">${statusText}</span>
         </td>
         <td>${item.description || item.name}</td>
         <td>${this.renderEditLink(stage, feStage, item)}</td>
       </tr>
+      ${feedbackRow} ${criteriaRow}
     `;
   }
 
@@ -347,7 +429,9 @@ export class ChromedashPreflightDialog extends LitElement {
     return html`
       <h3>${stage.name}</h3>
       <table class="data-table">
-        ${prereqItems.map(item => this.renderStageRow(stage, feStage, item))}
+        ${prereqItems.map(item =>
+          this.renderProgressItem(stage, feStage, item)
+        )}
       </table>
     `;
   }
@@ -377,6 +461,7 @@ export class ChromedashPreflightDialog extends LitElement {
         ${otherGates.map(
           g => html`
             <tr>
+              <td></td>
               <td>${this.renderGateState(g.state)}</td>
               <td>${g.team_name}</td>
               <td>
