@@ -26,6 +26,8 @@ from internals.core_models import FeatureEntry, Stage
 from internals.metrics_models import WebDXFeatureObserver
 from internals.processes import (
     PI_ANDROID_MILESTONE,
+    PI_BLINK_COMPONENTS,
+    PI_CATEGORY,
     PI_DEP_CONSOLE_WARNING,
     PI_DESKTOP_MILESTONE,
     PI_DOC_LINKS_AUTOMATION,
@@ -48,7 +50,9 @@ from internals.processes import (
     PI_SAFARI_VIEWS,
     PI_SAMPLES,
     PI_SPEC_LINK,
+    PI_SPEC_MATURITY,
     PI_SPEC_MENTOR,
+    PI_SUMMARY,
     PI_SUMMARY_DEP_ALTERNATIVES,
     PI_SUMMARY_DEP_TIMELINE,
     PI_SUMMARY_POLICY,
@@ -223,6 +227,14 @@ def _detect_spec_link(
         return ProgressDetectorResult(ProgressVote.NOT_STARTED)
     if not fe.spec_link.startswith('http'):
         return ProgressDetectorResult(ProgressVote.NEEDS_WORK, 'Not a URL')
+    return ProgressDetectorResult(ProgressVote.READY_FOR_REVIEW)
+
+
+def _detect_spec_maturity(
+    fe: FeatureEntry, _: dict[int, list[Stage]]
+) -> ProgressDetectorResult:
+    if not fe.standard_maturity or fe.standard_maturity == core_enums.UNSET_STD:
+        return ProgressDetectorResult(ProgressVote.NOT_STARTED)
     return ProgressDetectorResult(ProgressVote.READY_FOR_REVIEW)
 
 
@@ -467,6 +479,18 @@ def _detect_feature_name_dep(
     return ProgressDetectorResult(ProgressVote.READY_FOR_REVIEW)
 
 
+def _detect_blink_components(
+    fe: FeatureEntry, _: dict[int, list[Stage]]
+) -> ProgressDetectorResult:
+    if not fe.blink_components:
+        return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+    if fe.blink_components[0] == 'Blink':
+        return ProgressDetectorResult(
+            ProgressVote.NEEDS_WORK, 'Please choose a specific component'
+        )
+    return ProgressDetectorResult(ProgressVote.READY_FOR_REVIEW)
+
+
 def _detect_owner_emails(
     fe: FeatureEntry, _: dict[int, list[Stage]]
 ) -> ProgressDetectorResult:
@@ -491,11 +515,19 @@ def _detect_measurement(
     return ProgressDetectorResult(ProgressVote.READY_FOR_REVIEW)
 
 
+def _always_ready_for_review(
+    fe: FeatureEntry, _: dict[int, list[Stage]]
+) -> ProgressDetectorResult:
+    return ProgressDetectorResult(ProgressVote.READY_FOR_REVIEW)
+
+
 PROGRESS_DETECTORS: dict[
     str,
     Callable[[FeatureEntry, dict[int, list[Stage]]], ProgressDetectorResult],
 ] = {
     PI_ANDROID_MILESTONE.name: _detect_android_milestone,
+    PI_BLINK_COMPONENTS.name: _detect_blink_components,
+    PI_CATEGORY.name: _always_ready_for_review,
     PI_DEP_CONSOLE_WARNING.name: _detetect_debuggability,
     PI_DESKTOP_MILESTONE.name: _detect_desktop_milestone,
     PI_DOC_LINKS_AUTOMATION.name: _detect_doc_links,
@@ -520,7 +552,9 @@ PROGRESS_DETECTORS: dict[
     PI_SAFARI_VIEWS.name: _detect_safari_views,
     PI_SAMPLES.name: _detect_samples,
     PI_SPEC_LINK.name: _detect_spec_link,
+    PI_SPEC_MATURITY.name: _detect_spec_maturity,
     PI_SPEC_MENTOR.name: _detect_spec_mentor,
+    PI_SUMMARY.name: _detect_summary,
     PI_SUMMARY_DEP_ALTERNATIVES.name: _detect_summary,
     PI_SUMMARY_DEP_TIMELINE.name: _detect_summary,
     PI_SUMMARY_POLICY.name: _detect_summary,
