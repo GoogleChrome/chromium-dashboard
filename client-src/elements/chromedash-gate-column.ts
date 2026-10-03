@@ -1176,6 +1176,16 @@ export class ChromedashGateColumn extends LitElement {
         ${this.loading ? this.renderVotesSkeleton() : this.renderVotes()}
       </div>
 
+      <chromedash-checklist-summary
+        .loading=${this.loading}
+        .user=${this.user}
+        .feature=${this.feature}
+        .stage=${this.stage}
+        .gate=${this.gate}
+        .process=${this.process}
+        .progress=${this.progress}
+        .featureGates=${this.featureGates}
+      ></chromedash-checklist-summary>
       <chromedash-survey-questions
         .loading=${this.loading}
         .user=${this.user}
