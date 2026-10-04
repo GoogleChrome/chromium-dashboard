@@ -502,6 +502,9 @@ export class ChromedashPreflightDialog extends LitElement {
   ) {
     const isExpanded = this._expandedItems.has(item.name);
     const vote = this._progress?.[item.name] as ProgressVoteValue | undefined;
+    const showValueRow =
+      isExpanded ||
+      (this.canVote() && vote?.state === PROGRESS_VOTE_STATE.READY_FOR_REVIEW);
     const statusRow = html`
       <tr>
         <td>
@@ -516,12 +519,12 @@ export class ChromedashPreflightDialog extends LitElement {
         </td>
         <td>${item.description || item.name}</td>
         <td>
-          ${isExpanded ? nothing : this.renderEditLink(stage, feStage, item)}
+          ${showValueRow ? nothing : this.renderEditLink(stage, feStage, item)}
         </td>
       </tr>
     `;
     let valueRow = html`${nothing}`;
-    if (isExpanded && item.field) {
+    if (item.field && showValueRow) {
       const fieldDisplayName = makeDisplaySpec(item.field)[1];
       valueRow = html`
         <tr class="feature-values">

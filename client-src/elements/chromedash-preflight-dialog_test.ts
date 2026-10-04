@@ -798,6 +798,9 @@ describe('preflight functions', () => {
         await component.updateComplete;
 
         assert.isEmpty(component.shadowRoot!.querySelectorAll('sl-select'));
+        assert.isEmpty(
+          component.shadowRoot!.querySelectorAll('tr.feature-values')
+        );
 
         const stage1Rows = component
           .shadowRoot!.querySelectorAll('table.data-table')[0]
@@ -826,7 +829,7 @@ describe('preflight functions', () => {
         assert.deepEqual(buttons, ['Proceed', 'Cancel']);
       });
 
-      it('renders sl-select menus and a disabled Save button when user can vote', async () => {
+      it('renders sl-select menus, value row for READY_FOR_REVIEW items, and a disabled Save button when user can vote', async () => {
         const component = await fixture<ChromedashPreflightDialog>(
           html`<chromedash-preflight-dialog></chromedash-preflight-dialog>`
         );
@@ -871,6 +874,36 @@ describe('preflight functions', () => {
 
         const options = selects[0].querySelectorAll('sl-option');
         assert.equal(options.length, 5);
+
+        // Explainer is READY_FOR_REVIEW and user can vote, so its valueRow is shown
+        // (and Edit link moves to valueRow) even though Explainer is not expanded.
+        const stage1Rows = component
+          .shadowRoot!.querySelectorAll('table.data-table')[0]
+          .querySelectorAll('tr');
+        // 3 status rows + 1 value row for Explainer = 4 rows (no feedback row since not expanded).
+        assert.equal(stage1Rows.length, 4);
+        assert.isNotNull(
+          stage1Rows[0].querySelectorAll('td')[3].querySelector('a')
+        );
+        assert.isFalse(
+          stage1Rows[1].querySelector('sl-icon')!.classList.contains('expanded')
+        );
+        assert.isNull(
+          stage1Rows[1].querySelectorAll('td')[3].querySelector('a')
+        );
+        assert.isTrue(stage1Rows[2].classList.contains('feature-values'));
+        assert.equal(
+          stage1Rows[2].querySelectorAll('td')[1].textContent?.trim(),
+          'Explainer link(s):'
+        );
+        assert.equal(
+          stage1Rows[2]
+            .querySelectorAll('td')[3]
+            .querySelector('a')
+            ?.getAttribute('href'),
+          '/guide/stage/123456/1/10#id_explainer_links'
+        );
+        assert.isEmpty(component.shadowRoot!.querySelectorAll('tr.feedback'));
 
         const buttons = component.shadowRoot!.querySelectorAll('sl-button');
         assert.equal(buttons.length, 3);
