@@ -18,7 +18,15 @@ import {assert, fixture} from '@open-wc/testing';
 import {html} from 'lit';
 import sinon from 'sinon';
 import '@shoelace-style/shoelace/dist/components/dialog/dialog.js';
-import {Feature, StageDict, User} from '../js-src/cs-client.js';
+import '@shoelace-style/shoelace/dist/components/select/select.js';
+import '@shoelace-style/shoelace/dist/components/option/option.js';
+import {SlSelect} from '@shoelace-style/shoelace';
+import {
+  ChromeStatusClient,
+  Feature,
+  StageDict,
+  User,
+} from '../js-src/cs-client.js';
 import {PROGRESS_VOTE_STATE, VOTE_OPTIONS} from './form-field-enums.js';
 import {GateDict} from './chromedash-gate-chip.js';
 import {
@@ -633,6 +641,275 @@ describe('preflight functions', () => {
           () => {}
         );
         assert.isTrue(component.userCanVote());
+      });
+    });
+
+    describe('voting UI and saving', () => {
+      const voterUser: User = {
+        ...baseUser,
+        can_edit_all: true,
+      };
+
+      beforeEach(() => {
+        window.csClient = new ChromeStatusClient('fake_token', 1);
+      });
+
+      it('renders status chips for all vote states and hides Save button when user cannot vote', async () => {
+        const component = await fixture<ChromedashPreflightDialog>(
+          html`<chromedash-preflight-dialog></chromedash-preflight-dialog>`
+        );
+        const progress = {
+          Motivation: {
+            state: PROGRESS_VOTE_STATE.READY_FOR_REVIEW,
+            set_on: '2026-09-23T00:00:00',
+            set_by: 'ChromeStatus',
+          },
+          Explainer: {
+            state: PROGRESS_VOTE_STATE.NA,
+            set_on: '2026-09-23T00:00:00',
+            set_by: 'reviewer@example.com',
+          },
+          'Tracking bug URL': {
+            state: PROGRESS_VOTE_STATE.NEEDS_WORK,
+            set_on: '2026-09-23T00:00:00',
+            set_by: 'reviewer@example.com',
+          },
+          'Spec link': {
+            state: PROGRESS_VOTE_STATE.VERIFIED,
+            set_on: '2026-09-23T00:00:00',
+            set_by: 'reviewer@example.com',
+          },
+        };
+
+        component.openWithContext(
+          baseUser,
+          feature,
+          progress,
+          process,
+          action,
+          feStage,
+          feStage,
+          [],
+          () => {}
+        );
+        await component.updateComplete;
+
+        assert.isEmpty(component.shadowRoot!.querySelectorAll('sl-select'));
+
+        const stage1Rows = component
+          .shadowRoot!.querySelectorAll('table.data-table')[0]
+          .querySelectorAll('tr');
+        assert.equal(
+          stage1Rows[0].querySelectorAll('td')[1].textContent?.trim(),
+          'Ready for review'
+        );
+        assert.isNotNull(
+          stage1Rows[0].querySelector('.status.ready_for_review')
+        );
+        assert.equal(
+          stage1Rows[1].querySelectorAll('td')[1].textContent?.trim(),
+          'N/A'
+        );
+        assert.isNotNull(stage1Rows[1].querySelector('.status.na'));
+        assert.equal(
+          stage1Rows[2].querySelectorAll('td')[1].textContent?.trim(),
+          'Needs work'
+        );
+        assert.isNotNull(stage1Rows[2].querySelector('.status.needs_work'));
+
+        const buttons = Array.from(
+          component.shadowRoot!.querySelectorAll('sl-button')
+        ).map(b => b.textContent?.trim());
+        assert.deepEqual(buttons, ['Proceed', 'Cancel']);
+      });
+
+      it('renders sl-select menus and a disabled Save button when user can vote', async () => {
+        const component = await fixture<ChromedashPreflightDialog>(
+          html`<chromedash-preflight-dialog></chromedash-preflight-dialog>`
+        );
+        const progress = {
+          Motivation: {
+            state: PROGRESS_VOTE_STATE.VERIFIED,
+            set_on: '2026-09-23T00:00:00',
+            set_by: 'reviewer@example.com',
+          },
+          Explainer: {
+            state: PROGRESS_VOTE_STATE.READY_FOR_REVIEW,
+            set_on: '2026-09-23T00:00:00',
+            set_by: 'ChromeStatus',
+          },
+        };
+
+        component.openWithContext(
+          voterUser,
+          feature,
+          progress,
+          process,
+          action,
+          feStage,
+          feStage,
+          [],
+          () => {}
+        );
+        await component.updateComplete;
+
+        const selects =
+          component.shadowRoot!.querySelectorAll<SlSelect>('sl-select');
+        assert.equal(selects.length, 5);
+        assert.equal(selects[0].dataset.pi, 'Motivation');
+        assert.equal(Number(selects[0].value), PROGRESS_VOTE_STATE.VERIFIED);
+        assert.equal(selects[1].dataset.pi, 'Explainer');
+        assert.equal(
+          Number(selects[1].value),
+          PROGRESS_VOTE_STATE.READY_FOR_REVIEW
+        );
+        assert.equal(selects[2].dataset.pi, 'Tracking bug URL');
+        assert.equal(Number(selects[2].value), PROGRESS_VOTE_STATE.NOT_STARTED);
+
+        const options = selects[0].querySelectorAll('sl-option');
+        assert.equal(options.length, 5);
+
+        const buttons = component.shadowRoot!.querySelectorAll('sl-button');
+        assert.equal(buttons.length, 3);
+        const saveButton = buttons[2];
+        assert.equal(saveButton.textContent?.trim(), 'Save');
+        assert.isTrue(saveButton.hasAttribute('disabled'));
+      });
+
+      it('enables Save button when a status menu changes and resets when reopened', async () => {
+        const component = await fixture<ChromedashPreflightDialog>(
+          html`<chromedash-preflight-dialog></chromedash-preflight-dialog>`
+        );
+        const progress = {} as ProgressItem;
+
+        component.openWithContext(
+          voterUser,
+          feature,
+          progress,
+          process,
+          action,
+          feStage,
+          feStage,
+          [],
+          () => {}
+        );
+        await component.updateComplete;
+
+        const explainerSelect = component.shadowRoot!.querySelector<SlSelect>(
+          'sl-select[data-pi="Explainer"]'
+        )!;
+        const getSaveButton = () =>
+          component.shadowRoot!.querySelectorAll('sl-button')[2];
+
+        assert.isTrue(getSaveButton().hasAttribute('disabled'));
+
+        explainerSelect.value = String(PROGRESS_VOTE_STATE.VERIFIED);
+        explainerSelect.dispatchEvent(new CustomEvent('sl-change'));
+        await component.updateComplete;
+
+        assert.isFalse(getSaveButton().hasAttribute('disabled'));
+
+        // Reopening resets dirty state and disables Save again.
+        component.openWithContext(
+          voterUser,
+          feature,
+          progress,
+          process,
+          action,
+          feStage,
+          feStage,
+          [],
+          () => {}
+        );
+        await component.updateComplete;
+        assert.isTrue(getSaveButton().hasAttribute('disabled'));
+      });
+
+      it('posts only touched votes, disables controls while saving, and closes dialog on Save', async () => {
+        let resolvePost!: (value?: unknown) => void;
+        const postStub = sinon
+          .stub(window.csClient, 'postFeatureProgressVote')
+          .returns(
+            new Promise(resolve => {
+              resolvePost = resolve;
+            })
+          );
+
+        const component = await fixture<ChromedashPreflightDialog>(
+          html`<chromedash-preflight-dialog></chromedash-preflight-dialog>`
+        );
+        const progress = {
+          Motivation: {
+            state: PROGRESS_VOTE_STATE.READY_FOR_REVIEW,
+            set_on: '2026-09-23T00:00:00',
+            set_by: 'ChromeStatus',
+          },
+        };
+        const resolveDialogStub = sinon.stub();
+        const hideSpy = sinon.spy(component, 'hide');
+
+        component.openWithContext(
+          voterUser,
+          feature,
+          progress,
+          process,
+          action,
+          feStage,
+          feStage,
+          [],
+          resolveDialogStub
+        );
+        await component.updateComplete;
+
+        const explainerSelect = component.shadowRoot!.querySelector<SlSelect>(
+          'sl-select[data-pi="Explainer"]'
+        )!;
+        const specLinkSelect = component.shadowRoot!.querySelector<SlSelect>(
+          'sl-select[data-pi="Spec link"]'
+        )!;
+
+        explainerSelect.value = String(PROGRESS_VOTE_STATE.VERIFIED);
+        explainerSelect.dispatchEvent(new CustomEvent('sl-change'));
+        specLinkSelect.value = String(PROGRESS_VOTE_STATE.NEEDS_WORK);
+        specLinkSelect.dispatchEvent(new CustomEvent('sl-change'));
+        await component.updateComplete;
+
+        const getSaveButton = () =>
+          component.shadowRoot!.querySelectorAll('sl-button')[2];
+        getSaveButton().click();
+        await component.updateComplete;
+
+        // While saving, button shows Saving... and controls are disabled.
+        assert.equal(getSaveButton().textContent?.trim(), 'Saving...');
+        assert.isTrue(getSaveButton().hasAttribute('disabled'));
+        assert.isTrue(explainerSelect.disabled);
+
+        // Only the two touched items are posted.
+        assert.isTrue(postStub.calledTwice);
+        assert.isTrue(
+          postStub.calledWithExactly(
+            123456,
+            'Explainer',
+            PROGRESS_VOTE_STATE.VERIFIED,
+            ''
+          )
+        );
+        assert.isTrue(
+          postStub.calledWithExactly(
+            123456,
+            'Spec link',
+            PROGRESS_VOTE_STATE.NEEDS_WORK,
+            ''
+          )
+        );
+
+        resolvePost({message: 'Done'});
+        await new Promise(resolve => setTimeout(resolve, 0));
+        await component.updateComplete;
+
+        assert.isTrue(hideSpy.calledOnce);
+        assert.isTrue(resolveDialogStub.calledOnceWithExactly(false));
+        assert.equal(getSaveButton().textContent?.trim(), 'Save');
       });
     });
   });

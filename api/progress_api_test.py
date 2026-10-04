@@ -261,6 +261,23 @@ class ProgressAPITest(testing_config.CustomTestCase):
         self.assertEqual(votes[0].progress_item_name, 'Spec link')
         self.assertEqual(votes[0].state, progress.ProgressVote.VERIFIED)
         self.assertIsNone(votes[0].feedback)
+
+        # Setting state to NOT_STARTED with empty feedback deletes the existing vote.
+        with test_app.test_request_context(
+            self.request_path,
+            json={
+                'progress_item_name': 'Spec link',
+                'state': progress.ProgressVote.NOT_STARTED,
+                'feedback': '',
+            },
+        ):
+            res = self.handler.do_post(feature_id=self.feature_id)
+
+        self.assertEqual(res, {'message': 'Done'})
+        votes = progress.ProgressVote.query(
+            progress.ProgressVote.feature_id == self.feature_id
+        ).fetch()
+        self.assertEqual(len(votes), 0)
         testing_config.sign_out()
 
     def test_post___release_notes_reviewer_allowed(self):

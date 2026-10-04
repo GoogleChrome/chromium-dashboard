@@ -106,7 +106,7 @@ def set_progress_vote(
     state: int,
     set_by: str,
     feedback: str | None = None,
-) -> ProgressVote:
+) -> ProgressVote | None:
     """Store a ProgressVote in ndb, overwriting any existing vote for (feature_id, progress_item_name)."""
     if not ProgressVote.is_valid_state(state):
         raise ValueError('Invalid progress vote state')
