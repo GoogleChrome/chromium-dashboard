@@ -205,7 +205,7 @@ describe('preflight functions', () => {
       editable_features: [],
     };
 
-    it('renders 3-column tables per stage with rows and Other gates table below', async () => {
+    it('renders 4-column tables per stage with rows and Other gates table below', async () => {
       const component = await fixture<ChromedashPreflightDialog>(
         html`<chromedash-preflight-dialog></chromedash-preflight-dialog>`
       );
@@ -259,29 +259,38 @@ describe('preflight functions', () => {
       assert.equal(stage1Rows.length, 3);
 
       const row0Cells = stage1Rows[0].querySelectorAll('td');
-      assert.equal(row0Cells.length, 3);
-      assert.equal(row0Cells[0].textContent?.trim(), 'Verified');
-      assert.isNotNull(row0Cells[0].querySelector('.status.approved'));
-      assert.equal(row0Cells[1].textContent?.trim(), 'Motivation');
+      assert.equal(row0Cells.length, 4);
+      assert.isNotNull(
+        row0Cells[0].querySelector('sl-icon[name="caret-right-fill"]')
+      );
+      assert.equal(row0Cells[1].textContent?.trim(), 'Verified');
+      assert.isNotNull(row0Cells[1].querySelector('.status.approved'));
+      assert.equal(row0Cells[2].textContent?.trim(), 'Motivation');
       assert.equal(
-        row0Cells[2].querySelector('a')?.getAttribute('href'),
+        row0Cells[3].querySelector('a')?.getAttribute('href'),
         '/guide/stage/123456/1/10#id_motivation'
       );
 
       const row1Cells = stage1Rows[1].querySelectorAll('td');
-      assert.equal(row1Cells[0].textContent?.trim(), 'Not started');
-      assert.isNotNull(row1Cells[0].querySelector('.status.preparing'));
-      assert.equal(row1Cells[1].textContent?.trim(), 'Explainer');
+      assert.isNotNull(
+        row1Cells[0].querySelector('sl-icon[name="caret-right-fill"]')
+      );
+      assert.equal(row1Cells[1].textContent?.trim(), 'Not started');
+      assert.isNotNull(row1Cells[1].querySelector('.status.preparing'));
+      assert.equal(row1Cells[2].textContent?.trim(), 'Explainer');
       assert.equal(
-        row1Cells[2].querySelector('a')?.getAttribute('href'),
+        row1Cells[3].querySelector('a')?.getAttribute('href'),
         '/guide/stage/123456/1/10#id_explainer_links'
       );
 
       const row2Cells = stage1Rows[2].querySelectorAll('td');
-      assert.equal(row2Cells[0].textContent?.trim(), 'Not started');
-      assert.equal(row2Cells[1].textContent?.trim(), 'Tracking bug URL');
+      assert.isNotNull(
+        row2Cells[0].querySelector('sl-icon[name="caret-right-fill"]')
+      );
+      assert.equal(row2Cells[1].textContent?.trim(), 'Not started');
+      assert.equal(row2Cells[2].textContent?.trim(), 'Tracking bug URL');
       assert.equal(
-        row2Cells[2].querySelector('a')?.getAttribute('href'),
+        row2Cells[3].querySelector('a')?.getAttribute('href'),
         '/guide/stage/123456/metadata#id_bug_url'
       );
 
@@ -289,32 +298,153 @@ describe('preflight functions', () => {
       const stage2Rows = tables[1].querySelectorAll('tr');
       assert.equal(stage2Rows.length, 2);
       assert.equal(
-        stage2Rows[0].querySelectorAll('td')[0].textContent?.trim(),
+        stage2Rows[0].querySelectorAll('td')[1].textContent?.trim(),
         'Verified'
       );
       assert.equal(
-        stage2Rows[0].querySelectorAll('td')[1].textContent?.trim(),
+        stage2Rows[0].querySelectorAll('td')[2].textContent?.trim(),
         'Spec link'
       );
       assert.isNotNull(
-        stage2Rows[0].querySelectorAll('td')[2].querySelector('a')
+        stage2Rows[0].querySelectorAll('td')[3].querySelector('a')
       );
-      assert.isNull(stage2Rows[1].querySelectorAll('td')[2].querySelector('a'));
+      assert.isNull(stage2Rows[1].querySelectorAll('td')[3].querySelector('a'));
 
       // Table 2: Other gates
       const gateRows = tables[2].querySelectorAll('tr');
       assert.equal(gateRows.length, 1);
       const gateCells = gateRows[0].querySelectorAll('td');
-      assert.equal(gateCells.length, 3);
-      assert.equal(gateCells[0].textContent?.trim(), 'Needs work');
-      assert.equal(gateCells[1].textContent?.trim(), 'Privacy');
+      assert.equal(gateCells.length, 4);
+      assert.equal(gateCells[0].textContent?.trim(), '');
+      assert.equal(gateCells[1].textContent?.trim(), 'Needs work');
+      assert.equal(gateCells[2].textContent?.trim(), 'Privacy');
       assert.equal(
-        gateCells[2].querySelector('a')?.textContent?.trim(),
+        gateCells[3].querySelector('a')?.textContent?.trim(),
         'View'
       );
       assert.equal(
-        gateCells[2].querySelector('a')?.getAttribute('href'),
+        gateCells[3].querySelector('a')?.getAttribute('href'),
         '/feature/123456?gate=501'
+      );
+    });
+
+    it('initially expands items with feedback and toggles expansion on caret click', async () => {
+      const component = await fixture<ChromedashPreflightDialog>(
+        html`<chromedash-preflight-dialog></chromedash-preflight-dialog>`
+      );
+      const processWithCriteria = {
+        ...process,
+        stages: [
+          {
+            name: 'Start incubating',
+            outgoing_stage: 1,
+            progress_items: [
+              {
+                name: 'Motivation',
+                field: 'motivation',
+                criteria: 'Summarizes the reasons.',
+              },
+              {
+                name: 'Explainer',
+                field: 'explainer_links',
+                criteria: 'Must include use cases and sample code.',
+              },
+              {name: 'Tracking bug URL', field: 'bug_url'},
+            ],
+          },
+        ],
+      } as unknown as Process;
+      const progress = {
+        Explainer: {
+          state: PROGRESS_VOTE_STATE.NEEDS_WORK,
+          feedback: 'Please add more details about the API.',
+          set_on: '2026-09-23T00:00:00',
+          set_by: 'reviewer@example.com',
+        },
+      };
+
+      component.openWithContext(
+        feature,
+        progress,
+        processWithCriteria,
+        action,
+        feStage,
+        feStage,
+        [],
+        () => {}
+      );
+      await component.updateComplete;
+
+      const tables = component.shadowRoot!.querySelectorAll('table.data-table');
+      let stage1Rows = tables[0].querySelectorAll('tr');
+      // Motivation has no feedback so its criteria row is hidden.
+      // Explainer has feedback so its feedback and criteria rows are visible.
+      // 3 items + 1 feedback row + 1 criteria row for Explainer = 5 rows.
+      assert.equal(stage1Rows.length, 5);
+
+      const motivationCaret = stage1Rows[0].querySelector(
+        'sl-icon'
+      ) as HTMLElement;
+      assert.isFalse(motivationCaret.classList.contains('expanded'));
+
+      const explainerRowCells = stage1Rows[1].querySelectorAll('td');
+      const explainerCaret = explainerRowCells[0].querySelector(
+        'sl-icon'
+      ) as HTMLElement;
+      assert.isTrue(explainerCaret.classList.contains('expanded'));
+      assert.equal(explainerRowCells[1].textContent?.trim(), 'Needs work');
+      assert.isNotNull(
+        explainerRowCells[1].querySelector('.status.needs_work')
+      );
+      assert.equal(explainerRowCells[2].textContent?.trim(), 'Explainer');
+
+      const feedbackRow = stage1Rows[2];
+      assert.isTrue(feedbackRow.classList.contains('feedback'));
+      const feedbackCells = feedbackRow.querySelectorAll('td');
+      assert.equal(feedbackCells.length, 4);
+      assert.equal(feedbackCells[0].textContent?.trim(), '');
+      assert.equal(feedbackCells[1].textContent?.trim(), 'Feedback:');
+      assert.equal(
+        feedbackCells[2].textContent?.trim(),
+        'Please add more details about the API.'
+      );
+      assert.equal(feedbackCells[3].textContent?.trim(), '');
+      assert.equal(getComputedStyle(feedbackCells[0]).borderTopStyle, 'none');
+
+      const criteriaRow = stage1Rows[3];
+      assert.isTrue(criteriaRow.classList.contains('criteria'));
+      const criteriaCells = criteriaRow.querySelectorAll('td');
+      assert.equal(criteriaCells.length, 4);
+      assert.equal(criteriaCells[0].textContent?.trim(), '');
+      assert.equal(criteriaCells[1].textContent?.trim(), 'Criteria:');
+      assert.equal(
+        criteriaCells[2].textContent?.trim(),
+        'Must include use cases and sample code.'
+      );
+      assert.equal(criteriaCells[3].textContent?.trim(), '');
+      assert.equal(getComputedStyle(criteriaCells[0]).borderTopStyle, 'none');
+
+      // Click Explainer caret to collapse it.
+      explainerCaret.click();
+      await component.updateComplete;
+      stage1Rows = tables[0].querySelectorAll('tr');
+      assert.equal(stage1Rows.length, 3);
+      assert.isFalse(
+        stage1Rows[1].querySelector('sl-icon')!.classList.contains('expanded')
+      );
+
+      // Click Motivation caret to expand it.
+      motivationCaret.click();
+      await component.updateComplete;
+      stage1Rows = tables[0].querySelectorAll('tr');
+      assert.equal(stage1Rows.length, 4);
+      assert.isTrue(
+        stage1Rows[0].querySelector('sl-icon')!.classList.contains('expanded')
+      );
+      assert.isTrue(stage1Rows[1].classList.contains('criteria'));
+      assert.equal(
+        stage1Rows[1].querySelectorAll('td')[2].textContent?.trim(),
+        'Summarizes the reasons.'
       );
     });
 
