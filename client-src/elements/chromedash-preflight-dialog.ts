@@ -294,7 +294,6 @@ export class ChromedashPreflightDialog extends LitElement {
     this.renderRoot.querySelector('sl-dialog')?.show();
   }
 
-
   userCanVote() {
     if (this._user?.can_edit_all) {
       return true;
