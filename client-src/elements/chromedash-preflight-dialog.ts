@@ -307,6 +307,15 @@ export class ChromedashPreflightDialog extends LitElement {
     this.renderRoot.querySelector('sl-dialog')?.show();
   }
 
+  _fireEvent(eventName, detail) {
+    const event = new CustomEvent(eventName, {
+      bubbles: true,
+      composed: true,
+      detail,
+    });
+    this.dispatchEvent(event);
+  }
+
   userCanVote() {
     if (this._user?.can_edit_all) {
       return true;
@@ -404,18 +413,33 @@ export class ChromedashPreflightDialog extends LitElement {
   handleStatusMenuChange(e) {
     this._touched.add(e.target.dataset.pi);
     this._dirty = true;
+    if (e.target?.value == PROGRESS_VOTE_STATE.NEEDS_WORK) {
+      const itemName: string = e.target?.dataset['pi'] || '';
+      const isExpanded = this._expandedItems.has(itemName);
+      if (!isExpanded) {
+        this.toggleExpanded(itemName);
+      }
+    }
+  }
+
+  handleFeedbackChange(e) {
+    this._touched.add(e.target.dataset.pi);
+    this._dirty = true;
   }
 
   handleSave() {
     this._saving = true;
     const promises: Promise<any>[] = [];
     for (const prereq of this._touched) {
-      const select = this.renderRoot.querySelector<SlSelect>(
-        `sl-select[data-pi="${prereq}"]`
+      const stateEl = this.renderRoot.querySelector<SlSelect>(
+        `.state-widget[data-pi="${prereq}"]`
       );
-      if (select) {
-        const voteState = parseInt(select.value as string);
-        const feedback = ''; // TODO(jrobbins): Add feedback.
+      const feedbackEl = this.renderRoot.querySelector<SlInput>(
+        `.feedback-widget[data-pi="${prereq}"]`
+      );
+      if (stateEl) {
+        const voteState = parseInt(stateEl.value as string);
+        const feedback = feedbackEl ? feedbackEl.value.trim() : '';
         promises.push(
           window.csClient.postFeatureProgressVote(
             this._feature.id,
@@ -429,6 +453,7 @@ export class ChromedashPreflightDialog extends LitElement {
     Promise.all(promises).then(() => {
       this._saving = false;
       this.handleCancel();
+      this._fireEvent('refetch-needed', {});
     });
   }
 
@@ -437,6 +462,7 @@ export class ChromedashPreflightDialog extends LitElement {
     return html`
       <sl-select
         value=${state}
+        class="state-widget"
         size="small"
         data-pi=${item.name}
         ?disabled=${this._saving}
@@ -464,13 +490,21 @@ export class ChromedashPreflightDialog extends LitElement {
   ) {
     const isExpanded = this._expandedItems.has(item.name);
     const vote = this._progress?.[item.name] as ProgressVoteValue | undefined;
+    const feedbackWidget = html` <sl-input
+      class="feedback-widget"
+      size="small"
+      data-pi=${item.name}
+      @sl-change="${this.handleFeedbackChange}"
+      value=${vote?.feedback || ''}
+    ></sl-input>`;
+
     const feedbackRow =
-      isExpanded && vote?.feedback
+      isExpanded && (vote?.feedback || this.userCanVote())
         ? html`
             <tr class="feedback">
               <td></td>
               <td>Feedback:</td>
-              <td>${vote.feedback}</td>
+              <td>${this.userCanVote() ? feedbackWidget : vote?.feedback}</td>
               <td></td>
             </tr>
           `

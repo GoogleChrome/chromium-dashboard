@@ -18,9 +18,10 @@ import {assert, fixture} from '@open-wc/testing';
 import {html} from 'lit';
 import sinon from 'sinon';
 import '@shoelace-style/shoelace/dist/components/dialog/dialog.js';
+import '@shoelace-style/shoelace/dist/components/input/input.js';
 import '@shoelace-style/shoelace/dist/components/select/select.js';
 import '@shoelace-style/shoelace/dist/components/option/option.js';
-import {SlSelect} from '@shoelace-style/shoelace';
+import {SlInput, SlSelect} from '@shoelace-style/shoelace';
 import {
   ChromeStatusClient,
   Feature,
@@ -825,7 +826,178 @@ describe('preflight functions', () => {
         assert.isTrue(getSaveButton().hasAttribute('disabled'));
       });
 
-      it('posts only touched votes, disables controls while saving, and closes dialog on Save', async () => {
+      it('renders feedback sl-input for voters when expanded even without existing feedback', async () => {
+        const component = await fixture<ChromedashPreflightDialog>(
+          html`<chromedash-preflight-dialog></chromedash-preflight-dialog>`
+        );
+        const progress = {
+          Explainer: {
+            state: PROGRESS_VOTE_STATE.NEEDS_WORK,
+            feedback: 'Existing feedback',
+            set_on: '2026-09-23T00:00:00',
+            set_by: 'reviewer@example.com',
+          },
+        };
+
+        component.openWithContext(
+          voterUser,
+          feature,
+          progress,
+          process,
+          action,
+          feStage,
+          feStage,
+          [],
+          () => {}
+        );
+        await component.updateComplete;
+
+        // Explainer has existing feedback, so it starts expanded with sl-input populated.
+        const explainerInput = component.shadowRoot!.querySelector<SlInput>(
+          '.feedback-widget[data-pi="Explainer"]'
+        );
+        assert.isNotNull(explainerInput);
+        assert.equal(explainerInput!.value, 'Existing feedback');
+
+        // Motivation has no existing feedback and starts collapsed.
+        assert.isNull(
+          component.shadowRoot!.querySelector(
+            '.feedback-widget[data-pi="Motivation"]'
+          )
+        );
+
+        // Expanding Motivation renders an empty feedback sl-input for voters.
+        const stage1Rows = component
+          .shadowRoot!.querySelectorAll('table.data-table')[0]
+          .querySelectorAll('tr');
+        const motivationCaret = stage1Rows[0].querySelector(
+          'sl-icon'
+        ) as HTMLElement;
+        motivationCaret.click();
+        await component.updateComplete;
+
+        const motivationInput = component.shadowRoot!.querySelector<SlInput>(
+          '.feedback-widget[data-pi="Motivation"]'
+        );
+        assert.isNotNull(motivationInput);
+        assert.equal(motivationInput!.value, '');
+      });
+
+      it('auto-expands item when status menu changes to NEEDS_WORK', async () => {
+        const component = await fixture<ChromedashPreflightDialog>(
+          html`<chromedash-preflight-dialog></chromedash-preflight-dialog>`
+        );
+        const progress = {} as ProgressItem;
+
+        component.openWithContext(
+          voterUser,
+          feature,
+          progress,
+          process,
+          action,
+          feStage,
+          feStage,
+          [],
+          () => {}
+        );
+        await component.updateComplete;
+
+        const explainerSelect = component.shadowRoot!.querySelector<SlSelect>(
+          '.state-widget[data-pi="Explainer"]'
+        )!;
+        assert.isNull(
+          component.shadowRoot!.querySelector(
+            '.feedback-widget[data-pi="Explainer"]'
+          )
+        );
+
+        // Selecting VERIFIED does not auto-expand.
+        explainerSelect.value = String(PROGRESS_VOTE_STATE.VERIFIED);
+        explainerSelect.dispatchEvent(new CustomEvent('sl-change'));
+        await component.updateComplete;
+        assert.isNull(
+          component.shadowRoot!.querySelector(
+            '.feedback-widget[data-pi="Explainer"]'
+          )
+        );
+
+        // Selecting NEEDS_WORK auto-expands the item and reveals the feedback input.
+        explainerSelect.value = String(PROGRESS_VOTE_STATE.NEEDS_WORK);
+        explainerSelect.dispatchEvent(new CustomEvent('sl-change'));
+        await component.updateComplete;
+        assert.isNotNull(
+          component.shadowRoot!.querySelector(
+            '.feedback-widget[data-pi="Explainer"]'
+          )
+        );
+
+        // Dispatching NEEDS_WORK again when already expanded keeps it expanded.
+        explainerSelect.dispatchEvent(new CustomEvent('sl-change'));
+        await component.updateComplete;
+        assert.isNotNull(
+          component.shadowRoot!.querySelector(
+            '.feedback-widget[data-pi="Explainer"]'
+          )
+        );
+      });
+
+      it('enables Save button and marks item touched when feedback input changes', async () => {
+        const postStub = sinon
+          .stub(window.csClient, 'postFeatureProgressVote')
+          .resolves({message: 'Done'});
+
+        const component = await fixture<ChromedashPreflightDialog>(
+          html`<chromedash-preflight-dialog></chromedash-preflight-dialog>`
+        );
+        const progress = {
+          Explainer: {
+            state: PROGRESS_VOTE_STATE.NEEDS_WORK,
+            feedback: 'Initial feedback',
+            set_on: '2026-09-23T00:00:00',
+            set_by: 'reviewer@example.com',
+          },
+        };
+
+        component.openWithContext(
+          voterUser,
+          feature,
+          progress,
+          process,
+          action,
+          feStage,
+          feStage,
+          [],
+          () => {}
+        );
+        await component.updateComplete;
+
+        const getSaveButton = () =>
+          component.shadowRoot!.querySelectorAll('sl-button')[2];
+        assert.isTrue(getSaveButton().hasAttribute('disabled'));
+
+        const explainerFeedback = component.shadowRoot!.querySelector<SlInput>(
+          '.feedback-widget[data-pi="Explainer"]'
+        )!;
+        explainerFeedback.value = '  Updated feedback text  ';
+        explainerFeedback.dispatchEvent(new CustomEvent('sl-change'));
+        await component.updateComplete;
+
+        assert.isFalse(getSaveButton().hasAttribute('disabled'));
+
+        getSaveButton().click();
+        await component.updateComplete;
+
+        assert.isTrue(
+          postStub.calledOnceWithExactly(
+            123456,
+            'Explainer',
+            PROGRESS_VOTE_STATE.NEEDS_WORK,
+            'Updated feedback text'
+          )
+        );
+      });
+
+      it('posts only touched votes, disables controls while saving, fires refetch-needed, and closes dialog on Save', async () => {
         let resolvePost!: (value?: unknown) => void;
         const postStub = sinon
           .stub(window.csClient, 'postFeatureProgressVote')
@@ -847,6 +1019,8 @@ describe('preflight functions', () => {
         };
         const resolveDialogStub = sinon.stub();
         const hideSpy = sinon.spy(component, 'hide');
+        const refetchSpy = sinon.spy();
+        component.addEventListener('refetch-needed', refetchSpy);
 
         component.openWithContext(
           voterUser,
@@ -862,16 +1036,24 @@ describe('preflight functions', () => {
         await component.updateComplete;
 
         const explainerSelect = component.shadowRoot!.querySelector<SlSelect>(
-          'sl-select[data-pi="Explainer"]'
+          '.state-widget[data-pi="Explainer"]'
         )!;
         const specLinkSelect = component.shadowRoot!.querySelector<SlSelect>(
-          'sl-select[data-pi="Spec link"]'
+          '.state-widget[data-pi="Spec link"]'
         )!;
 
         explainerSelect.value = String(PROGRESS_VOTE_STATE.VERIFIED);
         explainerSelect.dispatchEvent(new CustomEvent('sl-change'));
         specLinkSelect.value = String(PROGRESS_VOTE_STATE.NEEDS_WORK);
         specLinkSelect.dispatchEvent(new CustomEvent('sl-change'));
+        await component.updateComplete;
+
+        // Spec link auto-expanded on NEEDS_WORK; enter feedback with whitespace.
+        const specLinkFeedback = component.shadowRoot!.querySelector<SlInput>(
+          '.feedback-widget[data-pi="Spec link"]'
+        )!;
+        specLinkFeedback.value = '  Please fix broken anchor  ';
+        specLinkFeedback.dispatchEvent(new CustomEvent('sl-change'));
         await component.updateComplete;
 
         const getSaveButton = () =>
@@ -899,7 +1081,7 @@ describe('preflight functions', () => {
             123456,
             'Spec link',
             PROGRESS_VOTE_STATE.NEEDS_WORK,
-            ''
+            'Please fix broken anchor'
           )
         );
 
@@ -909,6 +1091,7 @@ describe('preflight functions', () => {
 
         assert.isTrue(hideSpy.calledOnce);
         assert.isTrue(resolveDialogStub.calledOnceWithExactly(false));
+        assert.isTrue(refetchSpy.calledOnce);
         assert.equal(getSaveButton().textContent?.trim(), 'Save');
       });
     });
