@@ -387,15 +387,17 @@ describe('preflight functions', () => {
 
       const tables = component.shadowRoot!.querySelectorAll('table.data-table');
       let stage1Rows = tables[0].querySelectorAll('tr');
-      // Motivation has no feedback so its criteria row is hidden.
-      // Explainer has feedback so its feedback and criteria rows are visible.
-      // 3 items + 1 feedback row + 1 criteria row for Explainer = 5 rows.
-      assert.equal(stage1Rows.length, 5);
+      // Motivation has no feedback so its value and criteria rows are hidden.
+      // Explainer has feedback so its value, feedback, and criteria rows are visible.
+      // 3 items + 1 value row + 1 feedback row + 1 criteria row for Explainer = 6 rows.
+      assert.equal(stage1Rows.length, 6);
 
-      const motivationCaret = stage1Rows[0].querySelector(
+      const motivationRowCells = stage1Rows[0].querySelectorAll('td');
+      const motivationCaret = motivationRowCells[0].querySelector(
         'sl-icon'
       ) as HTMLElement;
       assert.isFalse(motivationCaret.classList.contains('expanded'));
+      assert.isNotNull(motivationRowCells[3].querySelector('a'));
 
       const explainerRowCells = stage1Rows[1].querySelectorAll('td');
       const explainerCaret = explainerRowCells[0].querySelector(
@@ -407,8 +409,26 @@ describe('preflight functions', () => {
         explainerRowCells[1].querySelector('.status.needs_work')
       );
       assert.equal(explainerRowCells[2].textContent?.trim(), 'Explainer');
+      // Edit link moves from statusRow to valueRow when expanded.
+      assert.isNull(explainerRowCells[3].querySelector('a'));
 
-      const feedbackRow = stage1Rows[2];
+      const valueRow = stage1Rows[2];
+      assert.isTrue(valueRow.classList.contains('feature-values'));
+      const valueCells = valueRow.querySelectorAll('td');
+      assert.equal(valueCells.length, 4);
+      assert.equal(valueCells[0].textContent?.trim(), '');
+      assert.equal(valueCells[1].textContent?.trim(), 'Explainer link(s):');
+      assert.equal(
+        valueCells[2].textContent?.trim(),
+        'No information provided yet'
+      );
+      assert.equal(
+        valueCells[3].querySelector('a')?.getAttribute('href'),
+        '/guide/stage/123456/1/10#id_explainer_links'
+      );
+      assert.equal(getComputedStyle(valueCells[0]).borderTopStyle, 'none');
+
+      const feedbackRow = stage1Rows[3];
       assert.isTrue(feedbackRow.classList.contains('feedback'));
       const feedbackCells = feedbackRow.querySelectorAll('td');
       assert.equal(feedbackCells.length, 4);
@@ -421,7 +441,7 @@ describe('preflight functions', () => {
       assert.equal(feedbackCells[3].textContent?.trim(), '');
       assert.equal(getComputedStyle(feedbackCells[0]).borderTopStyle, 'none');
 
-      const criteriaRow = stage1Rows[3];
+      const criteriaRow = stage1Rows[4];
       assert.isTrue(criteriaRow.classList.contains('criteria'));
       const criteriaCells = criteriaRow.querySelectorAll('td');
       assert.equal(criteriaCells.length, 4);
@@ -442,18 +462,30 @@ describe('preflight functions', () => {
       assert.isFalse(
         stage1Rows[1].querySelector('sl-icon')!.classList.contains('expanded')
       );
+      assert.isNotNull(
+        stage1Rows[1].querySelectorAll('td')[3].querySelector('a')
+      );
 
       // Click Motivation caret to expand it.
       motivationCaret.click();
       await component.updateComplete;
       stage1Rows = tables[0].querySelectorAll('tr');
-      assert.equal(stage1Rows.length, 4);
+      assert.equal(stage1Rows.length, 5);
       assert.isTrue(
         stage1Rows[0].querySelector('sl-icon')!.classList.contains('expanded')
       );
-      assert.isTrue(stage1Rows[1].classList.contains('criteria'));
+      assert.isNull(stage1Rows[0].querySelectorAll('td')[3].querySelector('a'));
+      assert.isTrue(stage1Rows[1].classList.contains('feature-values'));
       assert.equal(
-        stage1Rows[1].querySelectorAll('td')[2].textContent?.trim(),
+        stage1Rows[1].querySelectorAll('td')[1].textContent?.trim(),
+        'Motivation:'
+      );
+      assert.isNotNull(
+        stage1Rows[1].querySelectorAll('td')[3].querySelector('a')
+      );
+      assert.isTrue(stage1Rows[2].classList.contains('criteria'));
+      assert.equal(
+        stage1Rows[2].querySelectorAll('td')[2].textContent?.trim(),
         'Summarizes the reasons.'
       );
     });
@@ -900,6 +932,10 @@ describe('preflight functions', () => {
         const component = await fixture<ChromedashPreflightDialog>(
           html`<chromedash-preflight-dialog></chromedash-preflight-dialog>`
         );
+        const featureWithValues = {
+          ...feature,
+          explainer_links: ['https://example.com/explainer'],
+        } as unknown as Feature;
         const progress = {
           Explainer: {
             state: PROGRESS_VOTE_STATE.NEEDS_WORK,
@@ -911,7 +947,7 @@ describe('preflight functions', () => {
 
         component.openWithContext(
           voterUser,
-          feature,
+          featureWithValues,
           progress,
           process,
           action,
@@ -923,16 +959,24 @@ describe('preflight functions', () => {
         await component.updateComplete;
 
         // Explainer has existing feedback and field="explainer_links", so it starts expanded
-        // with a feature-values row and a populated feedback sl-input.
-        const valueRows =
+        // with a feature-values row rendering the explainer link and a populated feedback sl-input.
+        let valueRows =
           component.shadowRoot!.querySelectorAll('tr.feature-values');
         assert.equal(valueRows.length, 1);
         const valueCells = valueRows[0].querySelectorAll('td');
         assert.equal(valueCells.length, 4);
         assert.equal(valueCells[0].textContent?.trim(), '');
-        assert.equal(valueCells[1].textContent?.trim(), 'explainer_links:');
-        assert.equal(valueCells[2].textContent?.trim(), 'Value goes here');
-        assert.equal(valueCells[3].textContent?.trim(), '');
+        assert.equal(valueCells[1].textContent?.trim(), 'Explainer link(s):');
+        const linkEl = valueCells[2].querySelector('chromedash-link');
+        assert.isNotNull(linkEl);
+        assert.equal(
+          linkEl!.getAttribute('href'),
+          'https://example.com/explainer'
+        );
+        assert.equal(
+          valueCells[3].querySelector('a')?.getAttribute('href'),
+          '/guide/stage/123456/1/10#id_explainer_links'
+        );
         assert.equal(getComputedStyle(valueCells[0]).borderTopStyle, 'none');
 
         const explainerInput = component.shadowRoot!.querySelector<SlInput>(
@@ -948,7 +992,8 @@ describe('preflight functions', () => {
           )
         );
 
-        // Expanding Motivation renders its feature-values row and an empty feedback sl-input.
+        // Expanding Motivation (which has no value on featureWithValues) renders its
+        // feature-values row with "No information provided yet" and an empty feedback sl-input.
         const tables =
           component.shadowRoot!.querySelectorAll('table.data-table');
         const stage1Rows = tables[0].querySelectorAll('tr');
@@ -963,9 +1008,20 @@ describe('preflight functions', () => {
         );
         assert.isNotNull(motivationInput);
         assert.equal(motivationInput!.value, '');
+        valueRows = component.shadowRoot!.querySelectorAll('tr.feature-values');
+        assert.equal(valueRows.length, 2);
+        const motivationValueCells = valueRows[0].querySelectorAll('td');
         assert.equal(
-          component.shadowRoot!.querySelectorAll('tr.feature-values').length,
-          2
+          motivationValueCells[1].textContent?.trim(),
+          'Motivation:'
+        );
+        assert.equal(
+          motivationValueCells[2].textContent?.trim(),
+          'No information provided yet'
+        );
+        assert.equal(
+          motivationValueCells[3].querySelector('a')?.getAttribute('href'),
+          '/guide/stage/123456/1/10#id_motivation'
         );
 
         // Expanding "Draft API spec" (which has no field) renders feedback sl-input

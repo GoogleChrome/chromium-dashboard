@@ -23,6 +23,7 @@ import {
   PROGRESS_VOTE_STATE,
   PROGRESS_VOTE_STATE_NAMES,
 } from './form-field-enums.js';
+import {makeDisplaySpec} from './form-field-specs.js';
 import {FLAT_METADATA_FIELDS} from './form-definition.js';
 import {findFirstFeatureStage, userCanEdit} from './utils.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
@@ -35,6 +36,7 @@ import {
   ProcessStage,
   ProgressItem,
 } from './chromedash-gate-column.js';
+import {renderValue} from './chromedash-feature-detail.js';
 
 export interface ProgressVoteValue {
   state: number;
@@ -513,21 +515,23 @@ export class ChromedashPreflightDialog extends LitElement {
           ${this.canVote() ? this.renderStatusMenu(item, vote) : this.renderStatusChip(vote)}
         </td>
         <td>${item.description || item.name}</td>
-        <td>${this.renderEditLink(stage, feStage, item)}</td>
+        <td>
+          ${isExpanded ? nothing : this.renderEditLink(stage, feStage, item)}
+        </td>
       </tr>
     `;
-
-    const valueRow =
-      isExpanded && item.field && this.canVote()
-        ? html`
-            <tr class="feature-values">
-              <td></td>
-              <td>${item.field}:</td>
-              <td>Value goes here</td>
-              <td></td>
-            </tr>
-          `
-        : nothing;
+    let valueRow = html`${nothing}`;
+    if (isExpanded && item.field) {
+      const fieldDisplayName = makeDisplaySpec(item.field)[1];
+      valueRow = html`
+        <tr class="feature-values">
+          <td></td>
+          <td>${fieldDisplayName}:</td>
+          <td>${renderValue(feStage, this._feature, item.field)}</td>
+          <td>${this.renderEditLink(stage, feStage, item)}</td>
+        </tr>
+      `;
+    }
 
     const feedbackWidget = html` <sl-input
       class="feedback-widget"

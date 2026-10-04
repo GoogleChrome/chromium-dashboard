@@ -40,7 +40,7 @@ import {
   STAGE_SHORT_NAMES,
   STAGE_TYPES_ORIGIN_TRIAL,
 } from './form-field-enums.js';
-import {makeDisplaySpecs} from './form-field-specs.js';
+import {makeDisplaySpec, makeDisplaySpecs} from './form-field-specs.js';
 import {
   getFieldValueFromFeature,
   hasFieldValue,
@@ -97,6 +97,64 @@ export const DETAILS_STYLES = [
 ];
 
 const LONG_TEXT = 60;
+
+export function renderText(
+  value: any,
+  isMarkdown: boolean = false,
+  featureLinks: FeatureLink[] = []
+): TemplateResult {
+  value = String(value);
+  const markup: TemplateResult[] = autolink(value, featureLinks, isMarkdown);
+  if (isMarkdown) {
+    return html`${markup}`;
+  }
+  if (value.length > LONG_TEXT || value.includes('\n')) {
+    return html`<span class="longtext">${markup}</span>`;
+  }
+  return html`<span class="text">${markup}</span>`;
+}
+
+export function renderUrl(
+  value: string,
+  featureLinks: FeatureLink[] = []
+): TemplateResult {
+  if (value.startsWith('http')) {
+    return html`<chromedash-link
+      href=${value}
+      class="url ${value.length > LONG_TEXT ? 'longurl' : ''}"
+      .featureLinks=${featureLinks}
+    ></chromedash-link>`;
+  }
+  return renderText(value, false, featureLinks);
+}
+
+export function renderValue(
+  feStage: StageDict | null,
+  feature: Feature,
+  fieldId: string,
+  featureLinks: FeatureLink[] = []
+): TemplateResult {
+  const [, , fieldType, , alwaysMarkdown] = makeDisplaySpec(fieldId);
+  const value = getFieldValueFromFeature(fieldId, feStage, feature);
+  if (!isDefinedValue(value)) {
+    return html`<i>No information provided yet</i>`;
+  }
+  const isMarkdown =
+    (feature.markdown_fields || []).includes(fieldId) ||
+    Boolean(alwaysMarkdown);
+  if (fieldType == 'checkbox') {
+    return renderText(value ? 'True' : 'False', false, featureLinks);
+  } else if (fieldType == 'url') {
+    return renderUrl(value, featureLinks);
+  } else if (fieldType == 'multi-url') {
+    return html`
+      <ul class="inline-list">
+        ${value.map(url => html`<li>${renderUrl(url, featureLinks)}</li>`)}
+      </ul>
+    `;
+  }
+  return renderText(value, isMarkdown, featureLinks);
+}
 
 export class ChromedashFeatureDetail extends LitElement {
   @property({type: String})
@@ -372,62 +430,13 @@ export class ChromedashFeatureDetail extends LitElement {
     `;
   }
 
-  renderText(value: any, isMarkdown: boolean = false): TemplateResult {
-    value = String(value);
-    const markup: TemplateResult[] = autolink(
-      value,
-      this.featureLinks,
-      isMarkdown
-    );
-    if (isMarkdown) {
-      return html`${markup}`;
-    }
-    if (value.length > LONG_TEXT || value.includes('\n')) {
-      return html`<span class="longtext">${markup}</span>`;
-    }
-    return html`<span class="text">${markup}</span>`;
-  }
-
-  renderUrl(value: string) {
-    if (value.startsWith('http')) {
-      return html`<chromedash-link
-        href=${value}
-        class="url ${value.length > LONG_TEXT ? 'longurl' : ''}"
-        .featureLinks=${this.featureLinks}
-      ></chromedash-link>`;
-    }
-    return this.renderText(value);
-  }
-
-  renderValue(
-    fieldType: string,
-    value: any,
-    isMarkdown: boolean
-  ): TemplateResult {
-    if (fieldType == 'checkbox') {
-      return this.renderText(value ? 'True' : 'False');
-    } else if (fieldType == 'url') {
-      return this.renderUrl(value);
-    } else if (fieldType == 'multi-url') {
-      return html`
-        <ul class="inline-list">
-          ${value.map(url => html`<li>${this.renderUrl(url)}</li>`)}
-        </ul>
-      `;
-    }
-    return this.renderText(value, isMarkdown);
-  }
-
   renderField(fieldDef: any[], feStage: StageDict) {
-    const [fieldId, fieldDisplayName, fieldType, deprecated, alwaysMarkdown] =
-      fieldDef;
+    const [fieldId, fieldDisplayName, , deprecated] = fieldDef;
     const value = getFieldValueFromFeature(fieldId, feStage, this.feature);
     const isDefined = isDefinedValue(value);
     if (!isDefined && deprecated) {
       return nothing;
     }
-    const isMarkdown =
-      (this.feature.markdown_fields || []).includes(fieldId) || alwaysMarkdown;
 
     const icon = isDefined
       ? html`<sl-icon library="material" name="check_circle_20px"></sl-icon>`
@@ -435,13 +444,7 @@ export class ChromedashFeatureDetail extends LitElement {
 
     return html`
       <dt id=${fieldId}>${icon} ${fieldDisplayName}</dt>
-      <dd>
-        ${
-          isDefined
-            ? this.renderValue(fieldType, value, isMarkdown)
-            : html`<i>No information provided yet</i>`
-        }
-      </dd>
+      <dd>${renderValue(feStage, this.feature, fieldId, this.featureLinks)}</dd>
     `;
   }
 
