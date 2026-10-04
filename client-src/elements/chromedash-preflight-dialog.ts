@@ -24,7 +24,7 @@ import {
   PROGRESS_VOTE_STATE_NAMES,
 } from './form-field-enums.js';
 import {FLAT_METADATA_FIELDS} from './form-definition.js';
-import {findFirstFeatureStage} from './utils.js';
+import {findFirstFeatureStage, userCanEdit} from './utils.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {customElement, state} from 'lit/decorators.js';
 import {Feature, StageDict, User} from '../js-src/cs-client.js';
@@ -168,6 +168,8 @@ export class ChromedashPreflightDialog extends LitElement {
           border-top: none;
         }
 
+        .data-table tr.feature-value td,
+        .data-table tr.feature-values td,
         .data-table tr.feedback td,
         .data-table tr.criteria td {
           border-top: none;
@@ -316,7 +318,7 @@ export class ChromedashPreflightDialog extends LitElement {
     this.dispatchEvent(event);
   }
 
-  userCanVote() {
+  canVote() {
     if (this._user?.can_edit_all) {
       return true;
     }
@@ -327,6 +329,10 @@ export class ChromedashPreflightDialog extends LitElement {
       return true;
     }
     return false;
+  }
+
+  canEdit(): boolean {
+    return userCanEdit(this._user, this._feature?.id);
   }
 
   toggleExpanded(itemName: string) {
@@ -362,6 +368,10 @@ export class ChromedashPreflightDialog extends LitElement {
   ) {
     // This function only renders links for progress items that have a field.
     if (!pi.field) {
+      return nothing;
+    }
+
+    if (!this.canEdit()) {
       return nothing;
     }
 
@@ -490,6 +500,35 @@ export class ChromedashPreflightDialog extends LitElement {
   ) {
     const isExpanded = this._expandedItems.has(item.name);
     const vote = this._progress?.[item.name] as ProgressVoteValue | undefined;
+    const statusRow = html`
+      <tr>
+        <td>
+          <sl-icon
+            name="caret-right-fill"
+            class="${isExpanded ? 'expanded' : ''}"
+            @click=${() => this.toggleExpanded(item.name)}
+          ></sl-icon>
+        </td>
+        <td>
+          ${this.canVote() ? this.renderStatusMenu(item, vote) : this.renderStatusChip(vote)}
+        </td>
+        <td>${item.description || item.name}</td>
+        <td>${this.renderEditLink(stage, feStage, item)}</td>
+      </tr>
+    `;
+
+    const valueRow =
+      isExpanded && item.field && this.canVote()
+        ? html`
+            <tr class="feature-values">
+              <td></td>
+              <td>${item.field}:</td>
+              <td>Value goes here</td>
+              <td></td>
+            </tr>
+          `
+        : nothing;
+
     const feedbackWidget = html` <sl-input
       class="feedback-widget"
       size="small"
@@ -499,12 +538,12 @@ export class ChromedashPreflightDialog extends LitElement {
     ></sl-input>`;
 
     const feedbackRow =
-      isExpanded && (vote?.feedback || this.userCanVote())
+      isExpanded && (vote?.feedback || this.canVote())
         ? html`
             <tr class="feedback">
               <td></td>
               <td>Feedback:</td>
-              <td>${this.userCanVote() ? feedbackWidget : vote?.feedback}</td>
+              <td>${this.canVote() ? feedbackWidget : vote?.feedback}</td>
               <td></td>
             </tr>
           `
@@ -520,23 +559,7 @@ export class ChromedashPreflightDialog extends LitElement {
             </tr>
           `
         : nothing;
-    return html`
-      <tr>
-        <td>
-          <sl-icon
-            name="caret-right-fill"
-            class="${isExpanded ? 'expanded' : ''}"
-            @click=${() => this.toggleExpanded(item.name)}
-          ></sl-icon>
-        </td>
-        <td>
-          ${this.userCanVote() ? this.renderStatusMenu(item, vote) : this.renderStatusChip(vote)}
-        </td>
-        <td>${item.description || item.name}</td>
-        <td>${this.renderEditLink(stage, feStage, item)}</td>
-      </tr>
-      ${feedbackRow} ${criteriaRow}
-    `;
+    return html` ${statusRow} ${valueRow} ${feedbackRow} ${criteriaRow} `;
   }
 
   renderStageTable(stage: ProcessStage, prereqItems: ProgressItem[]) {
@@ -644,7 +667,7 @@ export class ChromedashPreflightDialog extends LitElement {
       <sl-button size="small" variant="warning" @click=${this.handleCancel}
         >Cancel</sl-button
       >
-      ${this.userCanVote() ? saveButton : nothing}
+      ${this.canVote() ? saveButton : nothing}
     `;
   }
 

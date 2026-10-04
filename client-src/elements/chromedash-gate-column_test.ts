@@ -194,7 +194,7 @@ describe('chromedash-gate-column', () => {
         ) as ChromedashPreflightDialog;
         assert.exists(dialogEl);
         await dialogEl.updateComplete;
-        assert.isTrue(dialogEl.userCanVote());
+        assert.isTrue(dialogEl.canVote());
 
         dialogEl.handleProceed();
         await new Promise(resolve => setTimeout(resolve, 0));

@@ -331,6 +331,6 @@ describe('chromedash-checklist-summary', () => {
     ) as ChromedashPreflightDialog;
     assert.exists(dialogEl);
     await dialogEl.updateComplete;
-    assert.isTrue(dialogEl.userCanVote());
+    assert.isTrue(dialogEl.canVote());
   });
 });
