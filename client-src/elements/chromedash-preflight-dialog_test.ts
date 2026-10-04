@@ -364,6 +364,7 @@ describe('preflight functions', () => {
       };
 
       component.openWithContext(
+        baseUser,
         feature,
         progress,
         processWithCriteria,
