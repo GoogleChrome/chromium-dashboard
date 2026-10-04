@@ -264,7 +264,7 @@ describe('preflight functions', () => {
         row0Cells[0].querySelector('sl-icon[name="caret-right-fill"]')
       );
       assert.equal(row0Cells[1].textContent?.trim(), 'Verified');
-      assert.isNotNull(row0Cells[1].querySelector('.status.approved'));
+      assert.isNotNull(row0Cells[1].querySelector('.status.verified'));
       assert.equal(row0Cells[2].textContent?.trim(), 'Motivation');
       assert.equal(
         row0Cells[3].querySelector('a')?.getAttribute('href'),
@@ -276,7 +276,7 @@ describe('preflight functions', () => {
         row1Cells[0].querySelector('sl-icon[name="caret-right-fill"]')
       );
       assert.equal(row1Cells[1].textContent?.trim(), 'Not started');
-      assert.isNotNull(row1Cells[1].querySelector('.status.preparing'));
+      assert.isNotNull(row1Cells[1].querySelector('.status.not_started'));
       assert.equal(row1Cells[2].textContent?.trim(), 'Explainer');
       assert.equal(
         row1Cells[3].querySelector('a')?.getAttribute('href'),

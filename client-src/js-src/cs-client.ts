@@ -887,6 +887,18 @@ export class ChromeStatusClient {
   async getFeatureProgress(featureId: number): Promise<unknown> {
     return this.doGet(`/features/${featureId}/progress`);
   }
+  async postFeatureProgressVote(
+    featureId: number,
+    progressItemName: string,
+    state: number,
+    feedback: string
+  ): Promise<unknown> {
+    return this.doPost(`/features/${featureId}/progress`, {
+      progress_item_name: progressItemName,
+      state: state,
+      feedback: feedback,
+    });
+  }
 
   // Blinkcomponents API
   async getBlinkComponents(): Promise<unknown> {

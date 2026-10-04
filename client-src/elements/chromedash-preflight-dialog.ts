@@ -15,11 +15,13 @@
  */
 
 import {LitElement, css, html, nothing} from 'lit';
+import {SlInput, SlSelect} from '@shoelace-style/shoelace';
 import './chromedash-callout.js';
 import {
   GATE_TEAM_ORDER,
   GATE_FINISHED_REVIEW_STATES,
   PROGRESS_VOTE_STATE,
+  PROGRESS_VOTE_STATE_NAMES,
 } from './form-field-enums.js';
 import {FLAT_METADATA_FIELDS} from './form-definition.js';
 import {findFirstFeatureStage} from './utils.js';
@@ -142,6 +144,11 @@ export class ChromedashPreflightDialog extends LitElement {
   private _resolve: (value?: boolean) => void = () => {
     console.log('Missing resolve action');
   };
+  @state()
+  private _dirty = false;
+  @state()
+  private _saving = false;
+  private _touched = new Set<string>();
 
   static get styles() {
     return [
@@ -197,11 +204,11 @@ export class ChromedashPreflightDialog extends LitElement {
         }
 
         .data-table td:nth-child(2) {
-          width: 12em;
+          width: 14em;
         }
 
         .data-table td:nth-child(3) {
-          width: 35em;
+          width: 40em;
         }
 
         .data-table td:last-child {
@@ -216,6 +223,7 @@ export class ChromedashPreflightDialog extends LitElement {
           font-size: 0.9em;
         }
 
+        .status.na,
         .status.not_applicable,
         .status.na_self-certified,
         .status.na_self-certified_then_verified {
@@ -223,12 +231,14 @@ export class ChromedashPreflightDialog extends LitElement {
           color: var(--gate-not-applicable-color);
         }
 
-        .status.preparing {
+        .status.preparing,
+        .status.not_started {
           background: var(--gate-preparing-background);
           color: var(--gate-preparing-color);
         }
 
-        .status.pending {
+        .status.pending,
+        .status.ready_for_review {
           background: var(--gate-pending-background);
           color: var(--gate-pending-color);
         }
@@ -238,7 +248,8 @@ export class ChromedashPreflightDialog extends LitElement {
           color: var(--gate-needs-work-color);
         }
 
-        .status.approved {
+        .status.approved,
+        .status.verified {
           background: var(--gate-approved-background);
           color: var(--gate-approved-color);
         }
@@ -291,6 +302,8 @@ export class ChromedashPreflightDialog extends LitElement {
         .map(([itemName]) => itemName)
     );
     this._resolve = resolve;
+    this._dirty = false;
+    this._touched = new Set();
     this.renderRoot.querySelector('sl-dialog')?.show();
   }
 
@@ -362,6 +375,88 @@ export class ChromedashPreflightDialog extends LitElement {
     `;
   }
 
+  renderStatusChip(vote) {
+    let statusClass = 'not_started';
+    let statusText = 'Not started';
+    if (vote) {
+      switch (vote.state) {
+        case PROGRESS_VOTE_STATE.READY_FOR_REVIEW:
+          statusClass = 'ready_for_review';
+          statusText = PROGRESS_VOTE_STATE_NAMES.READY_FOR_REVIEW;
+          break;
+        case PROGRESS_VOTE_STATE.VERIFIED:
+          statusClass = 'verified';
+          statusText = PROGRESS_VOTE_STATE_NAMES.VERIFIED;
+          break;
+        case PROGRESS_VOTE_STATE.NA:
+          statusClass = 'na';
+          statusText = PROGRESS_VOTE_STATE_NAMES.NA;
+          break;
+        case PROGRESS_VOTE_STATE.NEEDS_WORK:
+          statusClass = 'needs_work';
+          statusText = PROGRESS_VOTE_STATE_NAMES.NEEDS_WORK;
+          break;
+      }
+    }
+    return html` <span class="status ${statusClass}">${statusText}</span> `;
+  }
+
+  handleStatusMenuChange(e) {
+    this._touched.add(e.target.dataset.pi);
+    this._dirty = true;
+  }
+
+  handleSave() {
+    this._saving = true;
+    const promises: Promise<any>[] = [];
+    for (const prereq of this._touched) {
+      const select = this.renderRoot.querySelector<SlSelect>(
+        `sl-select[data-pi="${prereq}"]`
+      );
+      if (select) {
+        const voteState = parseInt(select.value as string);
+        const feedback = ''; // TODO(jrobbins): Add feedback.
+        promises.push(
+          window.csClient.postFeatureProgressVote(
+            this._feature.id,
+            prereq,
+            voteState,
+            feedback
+          )
+        );
+      }
+    }
+    Promise.all(promises).then(() => {
+      this._saving = false;
+      this.handleCancel();
+    });
+  }
+
+  renderStatusMenu(item, vote) {
+    const state = vote?.state || PROGRESS_VOTE_STATE.NOT_STARTED;
+    return html`
+      <sl-select
+        value=${state}
+        size="small"
+        data-pi=${item.name}
+        ?disabled=${this._saving}
+        @sl-change="${this.handleStatusMenuChange}"
+      >
+        <sl-option value=${PROGRESS_VOTE_STATE.NOT_STARTED}
+          >Not Started</sl-option
+        >
+        <sl-option value=${PROGRESS_VOTE_STATE.READY_FOR_REVIEW}
+          >Ready for review</sl-option
+        >
+        <sl-option value=${PROGRESS_VOTE_STATE.NEEDS_WORK}
+          >Needs work</sl-option
+        >
+        <sl-option value=${PROGRESS_VOTE_STATE.VERIFIED}>Verified</sl-option>
+        <sl-option value=${PROGRESS_VOTE_STATE.NA}>N/A</sl-option>
+      </sl-select>
+    `;
+  }
+
   renderProgressItem(
     stage: ProcessStage,
     feStage: StageDict | null,
@@ -369,28 +464,6 @@ export class ChromedashPreflightDialog extends LitElement {
   ) {
     const isExpanded = this._expandedItems.has(item.name);
     const vote = this._progress?.[item.name] as ProgressVoteValue | undefined;
-    let statusClass = 'preparing';
-    let statusText = 'Not started';
-    if (vote) {
-      switch (vote.state) {
-        case PROGRESS_VOTE_STATE.READY_FOR_REVIEW:
-          statusClass = 'pending';
-          statusText = 'Ready for review';
-          break;
-        case PROGRESS_VOTE_STATE.VERIFIED:
-          statusClass = 'approved';
-          statusText = 'Verified';
-          break;
-        case PROGRESS_VOTE_STATE.NA:
-          statusClass = 'not_applicable';
-          statusText = 'N/A';
-          break;
-        case PROGRESS_VOTE_STATE.NEEDS_WORK:
-          statusClass = 'needs_work';
-          statusText = 'Needs work';
-          break;
-      }
-    }
     const feedbackRow =
       isExpanded && vote?.feedback
         ? html`
@@ -423,7 +496,7 @@ export class ChromedashPreflightDialog extends LitElement {
           ></sl-icon>
         </td>
         <td>
-          <span class="status ${statusClass}">${statusText}</span>
+          ${this.userCanVote() ? this.renderStatusMenu(item, vote) : this.renderStatusChip(vote)}
         </td>
         <td>${item.description || item.name}</td>
         <td>${this.renderEditLink(stage, feStage, item)}</td>
@@ -518,7 +591,17 @@ export class ChromedashPreflightDialog extends LitElement {
     });
 
     const otherGates = findOtherGates(this._featureGates, this._feStage);
+    const saveText = this._saving ? 'Saving...' : 'Save';
 
+    const saveButton = html`
+      <sl-button
+        size="small"
+        @click=${this.handleSave}
+        variant="primary"
+        ?disabled=${this._saving || !this._dirty}
+        >${saveText}
+      </sl-button>
+    `;
     return html`
       Please address any relevant "Not started" or "Needs work" items before
       requesting review. ${stageTables} ${this.renderGatesTable(otherGates)}
@@ -527,6 +610,7 @@ export class ChromedashPreflightDialog extends LitElement {
       <sl-button size="small" variant="warning" @click=${this.handleCancel}
         >Cancel</sl-button
       >
+      ${this.userCanVote() ? saveButton : nothing}
     `;
   }
 
