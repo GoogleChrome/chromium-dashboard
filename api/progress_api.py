@@ -20,7 +20,7 @@ import datetime
 from chromestatus_openapi.models import SuccessMessage
 
 from framework import basehandlers, permissions
-from internals import progress, stage_helpers
+from internals import approval_defs, progress, stage_helpers
 
 
 class ProgressAPI(basehandlers.APIHandler):
@@ -72,7 +72,7 @@ class ProgressAPI(basehandlers.APIHandler):
         )
         feedback = self.get_param('feedback', required=False)
 
-        self.require_permissions(user, fe, progress_item_name, new_state)
+        self.require_permissions(user)
 
         progress.set_progress_vote(
             feature_id,
@@ -83,14 +83,13 @@ class ProgressAPI(basehandlers.APIHandler):
         )
         return SuccessMessage(message='Done').to_dict()
 
-    def require_permissions(
-        self,
-        user=None,
-        feature=None,
-        progress_item_name=None,
-        new_state=None,
-    ) -> None:
+    def require_permissions(self, user) -> None:
         """Abort the request if the user lacks permission to set this vote."""
-        if not permissions.can_edit_any_feature(user):
-            self.abort(403, 'User lacks permission to vote')
-        return
+        if permissions.can_edit_any_feature(user):
+            return
+        if permissions.can_review_release_notes(user):
+            return
+        if bool(approval_defs.fields_approvable_by(user)):
+            return
+
+        self.abort(403, 'User lacks permission to vote')

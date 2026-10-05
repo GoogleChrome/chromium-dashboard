@@ -28,7 +28,12 @@ import {
   PROGRESS_VOTE_STATE,
   VOTE_OPTIONS,
 } from './form-field-enums.js';
-import {ChromeStatusClient, Feature, StageDict} from '../js-src/cs-client.js';
+import {
+  ChromeStatusClient,
+  Feature,
+  StageDict,
+  User,
+} from '../js-src/cs-client.js';
 import {GateDict} from './chromedash-gate-chip.js';
 import {Process, ProcessStage, ProgressItem} from './chromedash-gate-column.js';
 
@@ -297,9 +302,11 @@ describe('chromedash-checklist-summary', () => {
   });
 
   it('opens the preflight dialog when View checklist button is clicked', async () => {
+    const user = {can_edit_all: true} as unknown as User;
     const component = await fixture<ChromedashChecklistSummary>(
       html`<chromedash-checklist-summary
         .loading=${false}
+        .user=${user}
         .feature=${feature}
         .stage=${stage}
         .gate=${dqShipGate}
@@ -323,5 +330,7 @@ describe('chromedash-checklist-summary', () => {
       'chromedash-preflight-dialog'
     ) as ChromedashPreflightDialog;
     assert.exists(dialogEl);
+    await dialogEl.updateComplete;
+    assert.isTrue(dialogEl.userCanVote());
   });
 });

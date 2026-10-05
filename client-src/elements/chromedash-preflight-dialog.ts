@@ -25,7 +25,7 @@ import {FLAT_METADATA_FIELDS} from './form-definition.js';
 import {findFirstFeatureStage} from './utils.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {customElement, state} from 'lit/decorators.js';
-import {Feature, StageDict} from '../js-src/cs-client.js';
+import {Feature, StageDict, User} from '../js-src/cs-client.js';
 import {GateDict, gateStateDisplayInfo} from './chromedash-gate-chip.js';
 import {
   Action,
@@ -46,6 +46,7 @@ export type ProgressDict = Record<string, ProgressVoteValue> | ProgressItem;
 let preflightDialogEl;
 
 export async function openPreflightDialog(
+  user: User,
   feature: Feature,
   progress: ProgressDict,
   process: Process,
@@ -61,6 +62,7 @@ export async function openPreflightDialog(
   }
   return new Promise(resolve => {
     preflightDialogEl.openWithContext(
+      user,
       feature,
       progress,
       process,
@@ -118,6 +120,8 @@ export function findPendingGates(featureGates: GateDict[], feStage: StageDict) {
 
 @customElement('chromedash-preflight-dialog')
 export class ChromedashPreflightDialog extends LitElement {
+  @state()
+  private _user?: User;
   @state()
   private _feature!: Feature;
   @state()
@@ -263,6 +267,7 @@ export class ChromedashPreflightDialog extends LitElement {
   }
 
   openWithContext(
+    user: User,
     feature: Feature,
     progress: ProgressDict,
     process: Process,
@@ -272,6 +277,7 @@ export class ChromedashPreflightDialog extends LitElement {
     featureGates: GateDict[],
     resolve: (value?: boolean) => void
   ) {
+    this._user = user;
     this._feature = feature;
     this._progress = progress;
     this._process = process;
@@ -286,6 +292,19 @@ export class ChromedashPreflightDialog extends LitElement {
     );
     this._resolve = resolve;
     this.renderRoot.querySelector('sl-dialog')?.show();
+  }
+
+  userCanVote() {
+    if (this._user?.can_edit_all) {
+      return true;
+    }
+    if (this._user?.can_review_release_notes) {
+      return true;
+    }
+    if ((this._user?.approvable_gate_types || []).length > 0) {
+      return true;
+    }
+    return false;
   }
 
   toggleExpanded(itemName: string) {

@@ -26,7 +26,12 @@ import {
 } from './chromedash-gate-column.js';
 import {ChromedashPreflightDialog} from './chromedash-preflight-dialog.js';
 import {PROGRESS_VOTE_STATE} from './form-field-enums.js';
-import {ChromeStatusClient, Feature, StageDict} from '../js-src/cs-client.js';
+import {
+  ChromeStatusClient,
+  Feature,
+  StageDict,
+  User,
+} from '../js-src/cs-client.js';
 import {GateDict} from './chromedash-gate-chip.js';
 import sinon from 'sinon';
 
@@ -163,6 +168,7 @@ describe('chromedash-gate-column', () => {
       const component = await fixture<ChromedashGateColumn>(
         html`<chromedash-gate-column></chromedash-gate-column>`
       );
+      component.user = {can_edit_all: true} as unknown as User;
       component.feature = feature;
       component.stage = stage;
       component.gate = gate;
@@ -188,6 +194,7 @@ describe('chromedash-gate-column', () => {
         ) as ChromedashPreflightDialog;
         assert.exists(dialogEl);
         await dialogEl.updateComplete;
+        assert.isTrue(dialogEl.userCanVote());
 
         dialogEl.handleProceed();
         await new Promise(resolve => setTimeout(resolve, 0));

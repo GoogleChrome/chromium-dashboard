@@ -550,6 +550,7 @@ export class ChromedashGateColumn extends LitElement {
       ) {
         // Open the dialog.
         openPreflightDialog(
+          this.user,
           this.feature,
           this.progress,
           this.process,

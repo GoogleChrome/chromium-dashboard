@@ -111,6 +111,7 @@ export class ChromedashChecklistSummary extends LitElement {
 
   handleViewChecklist(processStage, action) {
     openPreflightDialog(
+      this.user,
       this.feature,
       this.progress,
       this.process,
