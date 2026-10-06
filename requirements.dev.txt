@@ -4,7 +4,7 @@
 #
 #    pip-compile --output-file=requirements.dev.txt requirements.dev.in
 #
-ast-serialize==0.8.0
+ast-serialize==0.12.1
     # via mypy
 build==1.5.0
     # via pip-tools
@@ -24,9 +24,9 @@ gunicorn==26.2.0
     # via -r requirements.dev.in
 iniconfig==2.3.0
     # via pytest
-librt==0.15.0
+librt==0.16.0
     # via mypy
-mypy==2.3.1
+mypy==2.4.0
     # via -r requirements.dev.in
 mypy-extensions==1.1.0
     # via mypy
