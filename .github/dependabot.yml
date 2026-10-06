@@ -12,6 +12,8 @@ updates:
     commit-message:
       # Prefix all commit messages with "npm"
       prefix: "npm"
+    cooldown:
+      default-days: 21 
   - package-ecosystem: "docker"
     directory: "/"
     schedule:
@@ -36,3 +38,5 @@ updates:
     commit-message:
       # Prefix all commit messages with "pip"
       prefix: "pip"
+    cooldown:
+      default-days: 14 
