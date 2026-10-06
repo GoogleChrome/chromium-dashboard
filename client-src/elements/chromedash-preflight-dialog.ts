@@ -106,6 +106,11 @@ export function findOtherGates(featureGates: GateDict[], feStage: StageDict) {
   const otherGates = gatesForStage.filter(
     g => g.team_name != 'API Owners' && g.team_name != 'Data Quality'
   );
+  otherGates.sort(
+    (g1, g2) =>
+      GATE_TEAM_ORDER.indexOf(g1.team_name) -
+      GATE_TEAM_ORDER.indexOf(g2.team_name)
+  );
   return otherGates;
 }
 
@@ -113,11 +118,6 @@ export function findPendingGates(featureGates: GateDict[], feStage: StageDict) {
   const otherGates = findOtherGates(featureGates, feStage);
   const pendingGates = otherGates.filter(
     g => !GATE_FINISHED_REVIEW_STATES.includes(g.state)
-  );
-  pendingGates.sort(
-    (g1, g2) =>
-      GATE_TEAM_ORDER.indexOf(g1.team_name) -
-      GATE_TEAM_ORDER.indexOf(g2.team_name)
   );
   return pendingGates;
 }
