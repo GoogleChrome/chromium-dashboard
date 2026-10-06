@@ -63,7 +63,7 @@ types-protobuf==7.35.1.20260906
     # via -r requirements.dev.in
 types-pyopenssl==24.1.0.20240722
     # via types-redis
-types-pytz==2026.3.1.20260727
+types-pytz==2026.4.0.20260926
     # via -r requirements.dev.in
 types-redis==4.6.0.20241004
     # via -r requirements.dev.in
