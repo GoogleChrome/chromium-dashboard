@@ -99,6 +99,40 @@ class ProgressVoteTest(testing_config.CustomTestCase):
         self.assertEqual(all_votes[0].feedback, 'Looks great now')
         self.assertEqual(all_votes[0].set_by, 'reviewer2@example.com')
 
+    def test_is_valid_state(self):
+        """is_valid_state returns True for all defined VOTE_VALUES and False otherwise."""
+        for valid_state in (
+            progress.ProgressVote.NOT_STARTED,
+            progress.ProgressVote.READY_FOR_REVIEW,
+            progress.ProgressVote.VERIFIED,
+            progress.ProgressVote.NA,
+            progress.ProgressVote.NEEDS_WORK,
+        ):
+            self.assertTrue(progress.ProgressVote.is_valid_state(valid_state))
+        self.assertFalse(progress.ProgressVote.is_valid_state(-1))
+        self.assertFalse(progress.ProgressVote.is_valid_state(999))
+
+    def test_set_progress_vote_not_started_deletes_existing(self):
+        """Setting state to NOT_STARTED with no feedback deletes existing votes and returns None."""
+        progress.set_progress_vote(
+            feature_id=12345,
+            progress_item_name='Explainer',
+            state=progress.ProgressVote.VERIFIED,
+            set_by='reviewer1@example.com',
+            feedback='Looks good',
+        )
+        self.assertEqual(len(progress.ProgressVote.query().fetch()), 1)
+
+        result = progress.set_progress_vote(
+            feature_id=12345,
+            progress_item_name='Explainer',
+            state=progress.ProgressVote.NOT_STARTED,
+            set_by='reviewer2@example.com',
+            feedback='',
+        )
+        self.assertIsNone(result)
+        self.assertEqual(len(progress.ProgressVote.query().fetch()), 0)
+
 
 NOT_STARTED = progress.ProgressDetectorResult(progress.ProgressVote.NOT_STARTED)
 READY_FOR_REVIEW = progress.ProgressDetectorResult(

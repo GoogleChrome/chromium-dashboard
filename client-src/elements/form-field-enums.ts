@@ -646,6 +646,14 @@ export const PROGRESS_VOTE_STATE = {
   NEEDS_WORK: 4,
 };
 
+export const PROGRESS_VOTE_STATE_NAMES = {
+  NOT_STARTED: 'Not started',
+  READY_FOR_REVIEW: 'Ready for review',
+  NEEDS_WORK: 'Needs work',
+  VERIFIED: 'Verified',
+  NA: 'N/A',
+};
+
 export const GATE_TEAM_ORDER = [
   'Privacy',
   'WP Security',

@@ -155,3 +155,60 @@ describe('ChromeStatusClient - Summary Suggestions API', () => {
     });
   });
 });
+
+describe('ChromeStatusClient - Progress API', () => {
+  let sandbox: sinon.SinonSandbox;
+  let client: ChromeStatusClient;
+
+  beforeEach(() => {
+    sandbox = sinon.createSandbox();
+    client = new ChromeStatusClient('test_token', 9999999999);
+  });
+
+  afterEach(() => {
+    sandbox.restore();
+  });
+
+  describe('getFeatureProgress', () => {
+    it('calls doGet with the expected path', async () => {
+      const mockResponse = {
+        Explainer: {
+          state: 2,
+          set_on: '2026-09-23T00:00:00',
+          set_by: 'reviewer@example.com',
+        },
+      };
+      const doGetStub = sandbox.stub(client, 'doGet').resolves(mockResponse);
+
+      const result = await client.getFeatureProgress(123456);
+
+      assert.deepEqual(result, mockResponse);
+      assert.isTrue(
+        doGetStub.calledOnceWithExactly('/features/123456/progress')
+      );
+    });
+  });
+
+  describe('postFeatureProgressVote', () => {
+    it('calls doPost with the expected path and payload', async () => {
+      const mockResponse = {message: 'Done'};
+      const doPostStub = sandbox.stub(client, 'doPost').resolves(mockResponse);
+
+      const result = await client.postFeatureProgressVote(
+        123456,
+        'Explainer',
+        2,
+        'Looks good'
+      );
+
+      assert.deepEqual(result, mockResponse);
+      assert.isTrue(
+        doPostStub.calledOnceWithExactly('/features/123456/progress', {
+          progress_item_name: 'Explainer',
+          state: 2,
+          feedback: 'Looks good',
+        })
+      );
+    });
+  });
+});

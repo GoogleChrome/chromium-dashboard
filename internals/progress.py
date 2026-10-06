@@ -77,6 +77,7 @@ class ProgressVote(ndb.Model):
     NA = 3
     NEEDS_WORK = 4
     VOTE_VALUES = {
+        NOT_STARTED: 'not_started',
         READY_FOR_REVIEW: 'ready_for_review',
         VERIFIED: 'verified',
         NA: 'na',
@@ -105,7 +106,7 @@ def set_progress_vote(
     state: int,
     set_by: str,
     feedback: str | None = None,
-) -> ProgressVote:
+) -> ProgressVote | None:
     """Store a ProgressVote in ndb, overwriting any existing vote for (feature_id, progress_item_name)."""
     if not ProgressVote.is_valid_state(state):
         raise ValueError('Invalid progress vote state')
@@ -115,6 +116,11 @@ def set_progress_vote(
         ProgressVote.feature_id == feature_id,
         ProgressVote.progress_item_name == progress_item_name,
     ).fetch()
+
+    if existing_votes and state == ProgressVote.NOT_STARTED and not feedback:
+        for unwanted_vote in existing_votes:
+            unwanted_vote.key.delete()
+        return None
 
     if existing_votes:
         vote = existing_votes[0]
