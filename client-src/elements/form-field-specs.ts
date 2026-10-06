@@ -2983,8 +2983,8 @@ function makeHumanReadable(fieldName: string) {
 }
 
 // Return an array of field info
-function makeDisplaySpec(fieldName: string) {
-  const fieldProps = ALL_FIELDS[fieldName];
+export function makeDisplaySpec(fieldName: string) {
+  const fieldProps = ALL_FIELDS[fieldName] || {};
   const displayName =
     fieldProps.label || fieldProps.displayLabel || makeHumanReadable(fieldName);
   const fieldType = categorizeFieldType(fieldProps);

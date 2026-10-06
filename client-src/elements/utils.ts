@@ -164,7 +164,7 @@ export function unambiguousStageName(
 
 /* Get the value of a stage field using a form-specific name */
 export function getStageValue(
-  stage: StageDict | undefined,
+  stage: StageDict | null | undefined,
   fieldName: string
 ): any {
   if (!stage) return undefined;
@@ -256,7 +256,7 @@ export function hasFieldValue(fieldName, feStage, feature) {
  */
 export function getFieldValueFromFeature(
   fieldName: string,
-  feStage: StageDict,
+  feStage: StageDict | null | undefined,
   feature: Feature
 ) {
   if (STAGE_SPECIFIC_FIELDS.has(fieldName)) {
