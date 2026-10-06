@@ -21,6 +21,8 @@ updates:
     commit-message:
       # Prefix all commit messages with "docker"
       prefix: "docker"
+    cooldown:
+      default-days: 7 
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
@@ -31,6 +33,8 @@ updates:
     commit-message:
       # Prefix all commit messages with "gh-actions"
       prefix: "gh-actions"
+    cooldown:
+      default-days: 7 
   - package-ecosystem: "pip"
     directory: "/"
     schedule:
