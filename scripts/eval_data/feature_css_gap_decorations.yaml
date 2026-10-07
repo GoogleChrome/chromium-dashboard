@@ -1,0 +1,31 @@
+name: CSS Gap Decorations
+summary: >
+  CSS Gap Decorations introduces CSS properties to draw styled rules and visual dividers
+  between row and column gaps in CSS Grid, Flexbox, and multi-column layouts without requiring
+  extra DOM wrapper elements or border hacks.
+shipped_milestone: 151
+spec_link: https://drafts.csswg.org/css-gaps-1/
+doc_links:
+  - https://developer.chrome.com/blog/css-gap-decorations
+search_tags:
+  - css
+  - grid
+  - flexbox
+  - gap
+  - rule
+standard_maturity: 2
+category: 1
+gold_devrel_summary: >
+  CSS Gap Decorations allows developers to add styling rules directly between row and column gaps
+  in Grid, Flexbox, and multi-column layouts. Using the new `rule`, `row-rule`, and `column-rule`
+  properties, you can easily customize divider lines without adding redundant wrapper elements.
+expected_entities:
+  - rule
+  - row-rule
+  - column-rule
+  - grid
+  - flexbox
+  - gap
+min_words: 30
+max_words: 80
+min_score_threshold: 0.75
