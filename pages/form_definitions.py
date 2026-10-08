@@ -295,6 +295,7 @@ DEPRECATION_PLAN_FIELDS: FormDef = {
                 'explainer_links',
                 'spec_link',
                 'intent_to_deprecate_url',
+                'dep_plan_milestone_desktop_start',
             ],
         },
     ],
