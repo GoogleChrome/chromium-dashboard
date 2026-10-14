@@ -2298,3 +2298,28 @@ class DeveloperReleaseNotesFeaturesTest(testing_config.CustomTestCase):
             core_enums.ReleaseNoteLinkType.ORIGIN_TRIAL, ot_link['type']
         )
         self.assertEqual('Origin Trial', ot_link['title'])
+
+    def test_get_developer_release_notes_features__behind_a_flag_excluded(
+        self,
+    ):
+        """It excludes features that are in developer trial (BEHIND_A_FLAG) in the milestone."""
+        dt_feature = FeatureEntry(
+            id=104,
+            name='Sample Dev Trial Feature',
+            summary='Dev trial summary',
+            category=1,
+            impl_status_chrome=core_enums.BEHIND_A_FLAG,
+            owner_emails=['owner@example.com'],
+            feature_type=core_enums.FEATURE_TYPE_INCUBATE_ID,
+        )
+        dt_feature.put()
+        stage_dt = Stage(
+            feature_id=104,
+            stage_type=core_enums.STAGE_BLINK_DEV_TRIAL,
+            milestones=MilestoneSet(desktop_first=132),
+        )
+        stage_dt.put()
+
+        features = feature_helpers.get_developer_release_notes_features(132)
+        feature_ids = [f['id'] for f in features]
+        self.assertEqual([101], feature_ids)
