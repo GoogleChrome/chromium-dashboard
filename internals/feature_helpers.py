@@ -232,7 +232,10 @@ def get_developer_release_notes_features(
 
     origin_trial_urls: dict[int, str] = {}
     for reason, feature_dicts in milestone_data.items():
-        if reason == core_enums.IMPLEMENTATION_STATUS[core_enums.BEHIND_A_FLAG]:
+        if reason in (
+            core_enums.IMPLEMENTATION_STATUS[core_enums.BEHIND_A_FLAG],
+            core_enums.ROLLOUT_SECTION,
+        ):
             continue
         for fdict in feature_dicts:
             fid = fdict.get('id')
