@@ -1,6 +1,7 @@
 {
   "page_title": "Chrome {milestone} 发布说明",
   "preview_badge": "预览",
+  "pending_review": "待审核",
   "scheduled_stable_release": "计划的稳定版发布日期：{date}",
   "currently_on_beta": "（目前在 Beta 渠道）",
   "currently_on_dev": "（目前在 Dev 渠道，将于 {date}进入 Beta 渠道）",
