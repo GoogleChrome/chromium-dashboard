@@ -11,6 +11,17 @@ export GAE_ENV='localdev'
 export DATASTORE_EMULATOR_HOST=${DATASTORE_EMULATOR_HOST:-'localhost:15606'}
 
 
+# Make sure the app secrets exist before starting multiple gunicorn workers.
+# Otherwise, on an empty datastore, each worker can concurrently create its
+# own session secret, which makes session cookies signed by one worker invalid
+# on the others (users appear to be randomly signed out).
+python3 -c "
+from google.cloud import ndb
+from framework import secrets
+with ndb.Client().context():
+    secrets.get_session_secret()
+"
+
 gunicorn --bind :7777 --workers 4 main:app --timeout 120
 
 
