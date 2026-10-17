@@ -104,6 +104,10 @@ ALL_FIELDS: dict[str, FieldSpec] = {
         'type': 'textarea',
         'label': 'Motivation',
     },
+    'dep_plan_milestone_desktop_start': {
+        'type': 'input',
+        'label': 'Deprecation start milestone',
+    },
     'initial_public_proposal_url': {
         'type': 'input',
         'label': 'Initial public proposal URL',
