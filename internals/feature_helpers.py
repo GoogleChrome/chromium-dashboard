@@ -27,7 +27,7 @@ from google.cloud import ndb  # type: ignore
 import settings
 from api import converters
 from framework import permissions, rediscache, users
-from framework.utils import chunk_list, get_current_milestone_info
+from framework.utils import get_current_milestone_info
 from internals import core_enums, link_helpers
 from internals.core_models import (
     FeatureEntry,
@@ -400,16 +400,10 @@ def get_features_in_release_notes(
     # qualified the features to be considered.
     prefetched_stages: list[Stage] = []
     if feature_ids:
-        stage_futures = [
-            Stage.query(
-                Stage.feature_id.IN(id_chunk),
-                Stage.archived == False,  # noqa: E712
-            ).fetch_async()
-            for id_chunk in chunk_list(feature_ids, 30)
-        ]
-        for stage_future in stage_futures:
-            prefetched_stages.extend(stage_future.get_result())
-        prefetched_stages.sort(key=lambda s: s.key.integer_id())
+        prefetched_stages = Stage.query(
+            Stage.feature_id.IN(feature_ids),
+            Stage.archived == False,  # noqa: E712
+        ).fetch()
     prefetched_stages_dict = organize_all_stages_by_feature(prefetched_stages)
     logging.info(
         'prefetched %r stages for %r features',
