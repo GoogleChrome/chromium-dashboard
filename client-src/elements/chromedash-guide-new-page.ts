@@ -92,6 +92,8 @@ export class ChromedashGuideNewPage extends LitElement {
       this.handleFormSubmit(event, hiddenTokenField);
     });
 
+    this.maybeMakeWebFeatureRequired();
+    this.maybeMakeEnterpriseFeatureCategoriesRequired();
     setupScrollToHash(this);
   }
 
@@ -122,6 +124,7 @@ export class ChromedashGuideNewPage extends LitElement {
         );
       })
       .catch(() => {
+        this.submitting = false;
         showToastMessage(
           'Some errors occurred. Please refresh the page or try again later.'
         );
@@ -255,19 +258,29 @@ export class ChromedashGuideNewPage extends LitElement {
       ? ENTERPRISE_NEW_FEATURE_FORM_FIELDS
       : NEW_FEATURE_FORM_FIELDS;
 
+    let nextFieldIndex = 0;
     const renderFormField = (field, className?) => {
       const fieldProps = ALL_FIELDS[field];
       const featureJSONKey = fieldProps.name || field;
       const initialValue = this.isEnterpriseFeature
         ? (fieldProps.enterprise_initial ?? fieldProps.initial)
         : fieldProps.initial;
-      const value = newFeatureInitialValues[field] ?? initialValue;
-      const index = this.fieldValues.length;
-      this.fieldValues.push({
-        name: featureJSONKey,
-        touched: true, // Submit everything
-        value,
-      });
+      let value = newFeatureInitialValues[field] ?? initialValue;
+      const index = nextFieldIndex++;
+      if (
+        index >= this.fieldValues.length ||
+        this.fieldValues[index].name !== featureJSONKey
+      ) {
+        this.fieldValues[index] = {
+          name: featureJSONKey,
+          touched: true, // Submit everything
+          value,
+        };
+      } else if (field === 'owner' && !this.fieldValues[index].value && value) {
+        this.fieldValues[index].value = value;
+      } else {
+        value = this.fieldValues[index].value;
+      }
 
       return html`
         <chromedash-form-field
@@ -283,6 +296,17 @@ export class ChromedashGuideNewPage extends LitElement {
       `;
     };
 
+    const extraFields = !this.isEnterpriseFeature
+      ? renderFormField('feature_type_radio_group', 'choices')
+      : nothing;
+    const mainFields = formFields.map(field =>
+      renderFormField(
+        field,
+        field === 'enterprise_product_category' ? 'choices' : null
+      )
+    );
+    this.fieldValues.length = nextFieldIndex;
+
     const submitLabel = this.submitting
       ? 'Submitting...'
       : this.isEnterpriseFeature
@@ -293,18 +317,7 @@ export class ChromedashGuideNewPage extends LitElement {
         <form>
           <input type="hidden" name="token" />
           <chromedash-form-table ${ref(this.registerHandlers)}>
-            ${this.renderWarnings()}
-            ${
-              !this.isEnterpriseFeature
-                ? renderFormField('feature_type_radio_group', 'choices')
-                : nothing
-            }
-            ${formFields.map(field =>
-              renderFormField(
-                field,
-                field === 'enterprise_product_category' ? 'choices' : null
-              )
-            )}
+            ${this.renderWarnings()} ${extraFields} ${mainFields}
           </chromedash-form-table>
           <input
             type="submit"

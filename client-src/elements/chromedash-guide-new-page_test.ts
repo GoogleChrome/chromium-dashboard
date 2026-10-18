@@ -142,4 +142,63 @@ describe('chromedash-guide-new-page', () => {
     createFeatureStub.restore();
     navigateStub.restore();
   });
+
+  it('resets submitting on error and does not duplicate fieldValues on re-render', async () => {
+    const userEmail = 'user@gmail.com';
+    const component = await fixture<ChromedashGuideNewPage>(
+      html`<chromedash-guide-new-page .userEmail=${userEmail}>
+      </chromedash-guide-new-page>`
+    );
+    await component.updateComplete;
+
+    const initialLength = component.fieldValues.length;
+    const createFeatureStub = sinon
+      .stub(window.csClient, 'createFeature')
+      .returns(Promise.reject(new Error('Create failed')));
+
+    const fakeEvent = {preventDefault: sinon.spy()};
+    const hiddenTokenField = component.renderRoot.querySelector(
+      'input[name="token"]'
+    );
+    component.handleFormSubmit(fakeEvent, hiddenTokenField);
+    await component.updateComplete;
+    assert.equal(component.fieldValues.length, initialLength);
+
+    await new Promise(resolve => setTimeout(resolve, 0));
+    assert.isFalse(component.submitting);
+
+    createFeatureStub.restore();
+  });
+
+  it('populates owner when userEmail arrives after initial render and updates fieldValues when isEnterpriseFeature changes', async () => {
+    const component = await fixture<ChromedashGuideNewPage>(
+      html`<chromedash-guide-new-page></chromedash-guide-new-page>`
+    );
+    await component.updateComplete;
+
+    const ownerFieldBefore = component.fieldValues.find(
+      fv => fv.name === 'owner_emails'
+    );
+    assert.exists(ownerFieldBefore);
+    assert.isEmpty(ownerFieldBefore.value);
+
+    // Simulate userEmail arriving asynchronously
+    component.userEmail = 'late-user@chromium.org';
+    await component.updateComplete;
+
+    const ownerFieldAfter = component.fieldValues.find(
+      fv => fv.name === 'owner_emails'
+    );
+    assert.equal(ownerFieldAfter?.value, 'late-user@chromium.org');
+
+    // Switching to enterprise feature should re-align and truncate fieldValues
+    const nonEnterpriseLength = component.fieldValues.length;
+    component.isEnterpriseFeature = true;
+    await component.updateComplete;
+
+    assert.isBelow(component.fieldValues.length, nonEnterpriseLength);
+    assert.isUndefined(
+      component.fieldValues.find(fv => fv.name === 'feature_type')
+    );
+  });
 });
