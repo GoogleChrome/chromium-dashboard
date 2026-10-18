@@ -213,6 +213,11 @@ const OT_MILESTONE_DESKTOP_RANGE: MilestoneRange = {
   later: 'ot_milestone_desktop_end',
 };
 
+const OT_CREATION_MILESTONE_DESKTOP_RANGE: MilestoneRange = {
+  earlier: 'ot_creation__milestone_desktop_first',
+  later: 'ot_creation__milestone_desktop_last',
+};
+
 const OT_MILESTONE_ANDROID_RANGE: MilestoneRange = {
   earlier: 'ot_milestone_android_start',
   later: 'ot_milestone_android_end',
@@ -225,6 +230,13 @@ const OT_MILESTONE_WEBVIEW_RANGE: MilestoneRange = {
 
 const OT_ALL_SHIPPED_MILESTONE_DESKTOP_RANGE: MilestoneRange = {
   earlier: 'ot_milestone_desktop_start',
+  allLater: 'shipped_milestone',
+  warning:
+    'Origin trial starting milestone should be before all feature shipping milestones.',
+};
+
+const OT_CREATION_ALL_SHIPPED_MILESTONE_DESKTOP_RANGE: MilestoneRange = {
+  earlier: 'ot_creation__milestone_desktop_first',
   allLater: 'shipped_milestone',
   warning:
     'Origin trial starting milestone should be before all feature shipping milestones.',
@@ -574,6 +586,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     type: 'radios',
     name: 'enterprise_product_category',
     choices: ENTERPRISE_PRODUCT_CATEGORY,
+    initial: ENTERPRISE_PRODUCT_CATEGORY.CHROME_BROWSER_UPDATE[0],
     label: 'Enterprise product category',
     usage: {},
     help_text: html` Select the appropriate category.`,
@@ -599,6 +612,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     name: 'feature_type',
     type: 'radios',
     choices: FEATURE_TYPES_WITHOUT_ENTERPRISE,
+    initial: FEATURE_TYPES_WITHOUT_ENTERPRISE.FEATURE_TYPE_INCUBATE_ID[0],
     label: 'Feature type',
     usage: {},
     help_text: html`If all goes well, how will developers experience the change
@@ -615,7 +629,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     type: 'select',
     computedChoices(formattedFeature) {
       const result: Record<string, [number, string]> = {};
-      for (const stage of formattedFeature.stages) {
+      for (const stage of formattedFeature?.stages || []) {
         const name = unambiguousStageName(stage, formattedFeature);
         if (name) {
           result[stage.id] = [stage.id, name];
@@ -2100,6 +2114,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     type: 'radios',
     label: 'Use counter type',
     choices: WEBFEATURE_USE_COUNTER_TYPES,
+    initial: WEBFEATURE_USE_COUNTER_TYPES.WEBFEATURE[0],
     usage: {},
     help_text: html`Which type of use counter the feature is using. This can be
     determined by which file the use counter is defined in.`,
@@ -2185,7 +2200,10 @@ export const ALL_FIELDS: Record<string, Field> = {
     feature.`,
     check: (_value, getFieldValue) =>
       checkMilestoneRanges(
-        [OT_MILESTONE_DESKTOP_RANGE, OT_ALL_SHIPPED_MILESTONE_DESKTOP_RANGE],
+        [
+          OT_CREATION_MILESTONE_DESKTOP_RANGE,
+          OT_CREATION_ALL_SHIPPED_MILESTONE_DESKTOP_RANGE,
+        ],
         getFieldValue
       ),
   },
@@ -2199,7 +2217,10 @@ export const ALL_FIELDS: Record<string, Field> = {
     help_text: html` Last milestone that will support an origin trial of this
     feature.`,
     check: (_value, getFieldValue) =>
-      checkMilestoneRanges([OT_MILESTONE_DESKTOP_RANGE], getFieldValue),
+      checkMilestoneRanges(
+        [OT_CREATION_MILESTONE_DESKTOP_RANGE],
+        getFieldValue
+      ),
   },
 
   ot_creation__bypass_file_checks: {
@@ -2926,7 +2947,6 @@ export const ALL_FIELDS: Record<string, Field> = {
   rollout_stage_plan: {
     type: 'select',
     choices: ROLLOUT_STAGE_PLAN_CATEGORIES,
-    initial: ROLLOUT_STAGE_PLAN_CATEGORIES.ROLLOUT_STAGE_PLAN_SLOW[0],
     required: true,
     label: 'Rollout plan',
     usage: {},
@@ -2980,7 +3000,7 @@ function categorizeFieldType(field: Field) {
 
 // Return a field name with underscored replaced and first character capitalized
 function makeHumanReadable(fieldName: string) {
-  fieldName = fieldName.replace('_', ' ');
+  fieldName = fieldName.replaceAll('_', ' ');
   return fieldName.charAt(0).toUpperCase() + fieldName.slice(1);
 }
 
@@ -3008,7 +3028,7 @@ function findMinMilestone(
   let minMilestone = Infinity;
   // Iterate through all stages that are in stageTypes.
   const feature = getFieldValue.feature;
-  for (const stage of feature.stages) {
+  for (const stage of feature?.stages || []) {
     if (stageTypes.has(stage.stage_type)) {
       const milestone = getFieldValue(fieldName, stage);
       if (milestone != null && milestone !== '') {
@@ -3029,7 +3049,7 @@ function findMaxMilestone(
   let maxMilestone = -Infinity;
   // Iterate through all stages that are in stageTypes.
   const feature = getFieldValue.feature;
-  for (const stage of feature.stages) {
+  for (const stage of feature?.stages || []) {
     if (stageTypes.has(stage.stage_type)) {
       const milestone = getFieldValue(fieldName, stage);
       if (milestone != null && milestone !== '') {
@@ -3196,7 +3216,10 @@ function checkFeatureNameAndType(getFieldValue: FieldValueGetter) {
   }
 }
 
-async function checkFirstEnterpriseNotice(value: string, initialValue: string) {
+export async function checkFirstEnterpriseNotice(
+  value: string,
+  initialValue: string
+) {
   if (!value) {
     return undefined;
   }
@@ -3206,7 +3229,7 @@ async function checkFirstEnterpriseNotice(value: string, initialValue: string) {
   const previousChannelStableDate = initialValue
     ? await window.csClient
         .getSpecifiedChannels(initialValue, initialValue)
-        .then(channels => channels[value]?.stable_date)
+        .then(channels => channels[initialValue]?.stable_date)
     : undefined;
 
   if (!newChannelStableDate) {
@@ -3228,7 +3251,10 @@ async function checkFirstEnterpriseNotice(value: string, initialValue: string) {
   return undefined;
 }
 
-async function checkExtensionMilestoneIsValid(value: string) {
+export async function checkExtensionMilestoneIsValid(value: string) {
+  if (!value) {
+    return undefined;
+  }
   if (typeof value == 'number' && isNaN(value)) {
     return {error: 'Invalid milestone format.'};
   }
@@ -3242,12 +3268,16 @@ async function checkExtensionMilestoneIsValid(value: string) {
   if (intValue >= 1000) {
     return {error: 'Milestone is too distant.'};
   }
-  const resp = await fetch(
-    'https://chromiumdash.appspot.com/fetch_milestone_schedule'
-  );
-  const json = await resp.json();
-  if (parseInt(json.mstones[0].mstone) > intValue) {
-    return {error: 'End milestone cannot be in the past.'};
+  try {
+    const resp = await fetch(
+      'https://chromiumdash.appspot.com/fetch_milestone_schedule'
+    );
+    const json = await resp.json();
+    if (parseInt(json.mstones[0].mstone) > intValue) {
+      return {error: 'End milestone cannot be in the past.'};
+    }
+  } catch {
+    return undefined;
   }
   // TODO(DanielRyanSmith): Check that the extension milestone comes after
   // OT end milestone and all previous extension end milestones.
