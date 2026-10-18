@@ -60,11 +60,11 @@ export class ChromedashSurveyQuestions extends LitElement {
 
   @property({type: Object})
   user!: User;
-  @state()
+  @property({attribute: false})
   feature!: Feature;
-  @state()
+  @property({attribute: false})
   gate!: GateDict;
-  @state()
+  @property({type: Boolean})
   loading = true;
 
   _fireEvent(eventName, detail) {
@@ -81,7 +81,7 @@ export class ChromedashSurveyQuestions extends LitElement {
     return (
       this.user &&
       (this.user.can_edit_all ||
-        this.user.editable_features.includes(this.feature.id))
+        this.user.editable_features?.includes(this.feature?.id))
     );
   }
 
@@ -127,14 +127,14 @@ export class ChromedashSurveyQuestions extends LitElement {
   }
 
   renderStringField(name: string, desc: TemplateResult): TemplateResult {
-    const value: string = this.gate.survey_answers?.[name];
+    const value: string = this.gate.survey_answers?.[name] || '';
     return html`
       <li class="question">
         ${desc}
         <sl-input
           name="${name}"
           size="small"
-          value=${value}
+          .value=${value}
           ?disabled=${!this.canEditSurvey()}
           @sl-change=${e => this.handleFieldChange(name, e.target?.value)}
           @keyup=${e => this.handleFieldKeyup(name, e.target?.value)}
@@ -144,7 +144,7 @@ export class ChromedashSurveyQuestions extends LitElement {
   }
 
   renderTextField(name: string, desc: TemplateResult): TemplateResult {
-    const value: string = this.gate.survey_answers?.[name];
+    const value: string = this.gate.survey_answers?.[name] || '';
     return html`
       <li class="question">
         ${desc}
@@ -153,7 +153,7 @@ export class ChromedashSurveyQuestions extends LitElement {
           size="small"
           rows="2"
           resize="auto"
-          value=${value}
+          .value=${value}
           ?disabled=${!this.canEditSurvey()}
           @sl-change=${e => this.handleFieldChange(name, e.target?.value)}
           @keyup=${e => this.handleFieldKeyup(name, e.target?.value)}
@@ -396,6 +396,9 @@ export class ChromedashSurveyQuestions extends LitElement {
   }
 
   renderQuestionnaire(): TemplateResult {
+    if (!this.gate) {
+      return html` <p class="instructions">No questions</p> `;
+    }
     if (
       this.gate.gate_type === GATE_TYPES.PRIVACY_ORIGIN_TRIAL ||
       this.gate.gate_type === GATE_TYPES.PRIVACY_SHIP

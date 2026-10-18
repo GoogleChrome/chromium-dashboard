@@ -21,8 +21,6 @@ import {customElement, property} from 'lit/decorators.js';
 import {StageDict} from '../js-src/cs-client.js';
 
 let dialogEl;
-let currentFeatureId;
-let currentStageId;
 
 export const dialogTypes = {
   CREATION: 1,
@@ -32,30 +30,24 @@ export const dialogTypes = {
 };
 
 export async function openPrereqsDialog(featureId, stage, dialogType) {
-  if (
-    !dialogEl ||
-    currentFeatureId !== featureId ||
-    currentStageId !== stage.id
-  ) {
+  if (!dialogEl) {
     dialogEl = document.createElement('chromedash-ot-prereqs-dialog');
-    dialogEl.featureId = featureId;
-    dialogEl.stage = stage;
-    dialogEl.dialogType = dialogType;
     document.body.appendChild(dialogEl);
-    await dialogEl.updateComplete;
   }
-  currentFeatureId = featureId;
-  currentStageId = stage.id;
+  dialogEl.featureId = featureId;
+  dialogEl.stage = stage;
+  dialogEl.dialogType = dialogType;
+  await dialogEl.updateComplete;
   dialogEl.show();
 }
 
 export async function openInfoDialog(dialogType) {
   if (!dialogEl) {
     dialogEl = document.createElement('chromedash-ot-prereqs-dialog');
-    dialogEl.dialogType = dialogType;
     document.body.appendChild(dialogEl);
-    await dialogEl.updateComplete;
   }
+  dialogEl.dialogType = dialogType;
+  await dialogEl.updateComplete;
   dialogEl.show();
 }
 
@@ -65,22 +57,15 @@ export async function openFinalizeExtensionDialog(
   milestone,
   dialogType
 ) {
-  if (
-    !dialogEl ||
-    currentFeatureId !== featureId ||
-    currentStageId !== stage.id
-  ) {
+  if (!dialogEl) {
     dialogEl = document.createElement('chromedash-ot-prereqs-dialog');
-    dialogEl.featureId = featureId;
-    dialogEl.stage = stage;
-    dialogEl.dialogType = dialogType;
-    dialogEl.milestone = milestone;
     document.body.appendChild(dialogEl);
-    await dialogEl.updateComplete;
   }
+  dialogEl.featureId = featureId;
+  dialogEl.stage = stage;
   dialogEl.dialogType = dialogType;
-  currentFeatureId = featureId;
-  currentStageId = stage.id;
+  dialogEl.milestone = milestone;
+  await dialogEl.updateComplete;
   dialogEl.show();
 }
 
@@ -162,7 +147,7 @@ class ChromedashOTPrereqsDialog extends LitElement {
   }
 
   renderFinalizeExtensionDialog() {
-    if (!this.stage.intent_thread_url) {
+    if (!this.stage?.intent_thread_url) {
       return this.renderThreadMissingDialog();
     }
     return html` <sl-dialog label="Finalize trial extension">

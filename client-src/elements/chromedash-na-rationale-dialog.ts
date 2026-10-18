@@ -55,6 +55,9 @@ export class ChromedashNaRationaleDialog extends LitElement {
   openOn(gate, resolve) {
     this.gate = gate;
     this.resolve = resolve;
+    if (this.rationaleRef.value) {
+      this.rationaleRef.value.value = '';
+    }
     this.rationaleDialogRef.value?.show();
   }
 

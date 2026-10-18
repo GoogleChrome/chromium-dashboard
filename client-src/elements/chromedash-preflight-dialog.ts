@@ -25,7 +25,7 @@ import {
 } from './form-field-enums.js';
 import {makeDisplaySpec} from './form-field-specs.js';
 import {FLAT_METADATA_FIELDS} from './form-definition.js';
-import {findFirstFeatureStage, userCanEdit} from './utils.js';
+import {findFirstFeatureStage, showToastMessage, userCanEdit} from './utils.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {customElement, state} from 'lit/decorators.js';
 import {Feature, StageDict, User} from '../js-src/cs-client.js';
@@ -151,6 +151,7 @@ export class ChromedashPreflightDialog extends LitElement {
   @state()
   private _saving = false;
   private _touched = new Set<string>();
+  private _editedFeedback = new Map<string, string>();
 
   static get styles() {
     return [
@@ -191,7 +192,7 @@ export class ChromedashPreflightDialog extends LitElement {
 
         .data-table td {
           vertical-align: middle;
-          padding: 0 var(content-padding);
+          padding: 0 var(--content-padding);
         }
 
         .data-table td:first-child {
@@ -308,6 +309,7 @@ export class ChromedashPreflightDialog extends LitElement {
     this._resolve = resolve;
     this._dirty = false;
     this._touched = new Set();
+    this._editedFeedback = new Map();
     this.renderRoot.querySelector('sl-dialog')?.show();
   }
 
@@ -435,7 +437,9 @@ export class ChromedashPreflightDialog extends LitElement {
   }
 
   handleFeedbackChange(e) {
-    this._touched.add(e.target.dataset.pi);
+    const itemName = e.target.dataset.pi;
+    this._touched.add(itemName);
+    this._editedFeedback.set(itemName, e.target.value);
     this._dirty = true;
   }
 
@@ -451,7 +455,12 @@ export class ChromedashPreflightDialog extends LitElement {
       );
       if (stateEl) {
         const voteState = parseInt(stateEl.value as string);
-        const feedback = feedbackEl ? feedbackEl.value.trim() : '';
+        const existingFeedback =
+          (this._progress?.[prereq] as ProgressVoteValue | undefined)
+            ?.feedback || '';
+        const feedback = feedbackEl
+          ? feedbackEl.value.trim()
+          : (this._editedFeedback.get(prereq) ?? existingFeedback).trim();
         promises.push(
           window.csClient.postFeatureProgressVote(
             this._feature.id,
@@ -462,11 +471,19 @@ export class ChromedashPreflightDialog extends LitElement {
         );
       }
     }
-    Promise.all(promises).then(() => {
-      this._saving = false;
-      this.handleCancel();
-      this._fireEvent('refetch-needed', {});
-    });
+    Promise.all(promises)
+      .then(() => {
+        this.handleCancel();
+        this._fireEvent('refetch-needed', {});
+      })
+      .catch(() => {
+        showToastMessage(
+          'Some errors occurred. Please refresh the page or try again later.'
+        );
+      })
+      .finally(() => {
+        this._saving = false;
+      });
   }
 
   renderStatusMenu(item, vote) {
@@ -536,12 +553,14 @@ export class ChromedashPreflightDialog extends LitElement {
       `;
     }
 
+    const currentFeedback =
+      this._editedFeedback.get(item.name) ?? vote?.feedback ?? '';
     const feedbackWidget = html` <sl-input
       class="feedback-widget"
       size="small"
       data-pi=${item.name}
       @sl-change="${this.handleFeedbackChange}"
-      value=${vote?.feedback || ''}
+      value=${currentFeedback}
     ></sl-input>`;
 
     const feedbackRow =

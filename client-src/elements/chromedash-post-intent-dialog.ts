@@ -33,12 +33,12 @@ export async function openPostIntentDialog(
   if (!dialogEl) {
     dialogEl = document.createElement('chromedash-post-intent-dialog');
     document.body.appendChild(dialogEl);
-    dialogEl.featureId = featureId;
-    dialogEl.stageId = stageId;
-    dialogEl.gateId = gateId;
-    dialogEl.ownerEmails = ownerEmails;
-    await dialogEl.updateComplete;
   }
+  dialogEl.featureId = featureId;
+  dialogEl.stageId = stageId;
+  dialogEl.gateId = gateId;
+  dialogEl.ownerEmails = ownerEmails;
+  await dialogEl.updateComplete;
   dialogEl.show();
 }
 
@@ -122,10 +122,14 @@ class ChromedashPostIntentDialog extends LitElement {
     if (submitButton) {
       submitButton.setAttribute('disabled', '');
     }
+    const ccEmails = (ccEmailsInput.value || '')
+      .split(',')
+      .map(email => email.trim())
+      .filter(Boolean);
     window.csClient
       .postIntentToBlinkDev(this.featureId, this.stageId, {
         gate_id: this.gateId,
-        intent_cc_emails: ccEmailsInput?.value?.split(','),
+        intent_cc_emails: ccEmails,
       })
       .then(() => {
         showToastMessage(

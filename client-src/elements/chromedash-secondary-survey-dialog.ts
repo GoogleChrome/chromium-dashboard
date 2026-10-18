@@ -89,11 +89,21 @@ export class ChromedashSecondarySurveyDialog extends LitElement {
   }
 
   show() {
-    this.renderRoot.querySelector('sl-dialog')?.show();
+    const coverage = this.renderRoot.querySelector<SlRadioGroup>('#coverage');
+    if (coverage) coverage.value = '';
+    const perfTests =
+      this.renderRoot.querySelector<SlTextarea>('#performance_tests');
+    if (perfTests) perfTests.value = '';
+    const automation =
+      this.renderRoot.querySelector<SlRadioGroup>('#automation');
+    if (automation) automation.value = '';
+    const impact = this.renderRoot.querySelector<SlTextarea>('#impact');
+    if (impact) impact.value = '';
+    this.renderRoot.querySelector('sl-dialog')?.show?.();
   }
 
   hide() {
-    this.renderRoot.querySelector('sl-dialog')?.hide();
+    this.renderRoot.querySelector('sl-dialog')?.hide?.();
   }
 
   generateTestingComment() {

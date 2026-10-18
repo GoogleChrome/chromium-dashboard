@@ -45,7 +45,7 @@ class ChromedashIntentPreviewPage extends LitElement {
   @state()
   gate!: GateDict;
   @state()
-  loading = false;
+  loading = true;
   @state()
   subject = '';
   @state()
@@ -91,6 +91,9 @@ class ChromedashIntentPreviewPage extends LitElement {
   }
 
   fetchData() {
+    this.loading = true;
+    this.stage = undefined!;
+    this.gate = undefined!;
     Promise.all([
       window.csClient.getFeature(this.featureId),
       // TODO(DanielRyanSmith): only fetch a single gate based on given ID.
@@ -116,13 +119,16 @@ class ChromedashIntentPreviewPage extends LitElement {
             }
             // Check if gate matches an extension stage.
             if (!this.stage) {
-              const extensionStage = stage.extensions.find(
+              const extensionStage = stage.extensions?.find(
                 e => e.id === this.gate.stage_id
               );
               if (extensionStage) {
                 this.stage = extensionStage;
               }
             }
+          }
+          if (!this.stage) {
+            throw new Error('Invalid gate ID');
           }
           // If the component is supplied a stage ID, find the matching stage.
         } else if (this.stageId) {
@@ -227,7 +233,6 @@ class ChromedashIntentPreviewPage extends LitElement {
         <section>
           <h3 class="inline">Send this text for your "Intent to ..." email</h3>
           <input
-            ref()
             id="post-intent-button"
             class="button inline"
             type="submit"

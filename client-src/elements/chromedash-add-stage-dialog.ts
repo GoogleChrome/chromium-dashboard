@@ -20,26 +20,20 @@ import {CREATEABLE_STAGES, FORMS_BY_STAGE_TYPE} from './form-definition.js';
 import {customElement, property, query} from 'lit/decorators.js';
 
 let addStageDialogEl;
-let currentFeatureId;
 
 export async function openAddStageDialog(
   featureId,
   featureType,
   onSubmitCustomHandler?
 ) {
-  if (
-    !addStageDialogEl ||
-    currentFeatureId !== featureId ||
-    onSubmitCustomHandler !== addStageDialogEl.onSubmitCustomHandler
-  ) {
+  if (!addStageDialogEl) {
     addStageDialogEl = document.createElement('chromedash-add-stage-dialog');
-    addStageDialogEl.featureId = featureId;
-    addStageDialogEl.featureType = featureType;
-    addStageDialogEl.onSubmitCustomHandler = onSubmitCustomHandler;
     document.body.appendChild(addStageDialogEl);
-    await addStageDialogEl.updateComplete;
   }
-  currentFeatureId = featureId;
+  addStageDialogEl.featureId = featureId;
+  addStageDialogEl.featureType = featureType;
+  addStageDialogEl.onSubmitCustomHandler = onSubmitCustomHandler || null;
+  await addStageDialogEl.updateComplete;
   addStageDialogEl.show();
 }
 
@@ -78,6 +72,10 @@ class ChromedashAddStageDialog extends LitElement {
   }
 
   show() {
+    this.canSubmit = false;
+    if (this.stageCreateSelect) {
+      this.stageCreateSelect.value = '0';
+    }
     this.dialog.show();
   }
 
@@ -120,7 +118,7 @@ class ChromedashAddStageDialog extends LitElement {
   }
 
   checkCanSubmit() {
-    this.canSubmit = this.getStageSelectValue() !== 0;
+    this.canSubmit = Number(this.getStageSelectValue()) !== 0;
   }
 
   renderStageSelect() {

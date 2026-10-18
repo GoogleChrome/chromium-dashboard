@@ -144,6 +144,14 @@ describe('chromedash-survey-questions', () => {
     assert.instanceOf(checkbox2, SlCheckbox);
     assert.isFalse(checkbox2.checked);
     assert.isTrue(checkbox2.disabled);
+    const launchInput = component.shadowRoot!.querySelector(
+      '[name=launch_or_contact]'
+    ) as any;
+    assert.equal(launchInput.value, '');
+    const explanationTextarea = component.shadowRoot!.querySelector(
+      '[name=explanation]'
+    ) as any;
+    assert.equal(explanationTextarea.value, '');
   });
 
   it('displays the privacy surveys even when nothing has been entered', async () => {
@@ -170,6 +178,14 @@ describe('chromedash-survey-questions', () => {
     assert.instanceOf(checkbox2, SlCheckbox);
     assert.isFalse(checkbox2.checked);
     assert.isTrue(checkbox2.disabled);
+    const launchInput = component.shadowRoot!.querySelector(
+      '[name=launch_or_contact]'
+    ) as any;
+    assert.equal(launchInput.value, '');
+    const explanationTextarea = component.shadowRoot!.querySelector(
+      '[name=explanation]'
+    ) as any;
+    assert.equal(explanationTextarea.value, '');
   });
 
   it('displays disabled widgets to non-editors', async () => {
@@ -195,6 +211,14 @@ describe('chromedash-survey-questions', () => {
     assert.instanceOf(checkbox2, SlCheckbox);
     assert.isFalse(checkbox2.checked);
     assert.isTrue(checkbox2.disabled);
+    const launchInput = component.shadowRoot!.querySelector(
+      '[name=launch_or_contact]'
+    ) as any;
+    assert.equal(launchInput.value, '');
+    const explanationTextarea = component.shadowRoot!.querySelector(
+      '[name=explanation]'
+    ) as any;
+    assert.equal(explanationTextarea.value, '');
   });
 
   it('displays enabled widgets to feature editors', async () => {

@@ -1245,6 +1245,61 @@ describe('preflight functions', () => {
         );
       });
 
+      it('preserves feedback when row is collapsed before clicking Save', async () => {
+        const postStub = sinon
+          .stub(window.csClient, 'postFeatureProgressVote')
+          .resolves({message: 'Done'});
+
+        const component = await fixture<ChromedashPreflightDialog>(
+          html`<chromedash-preflight-dialog></chromedash-preflight-dialog>`
+        );
+        const progress = {
+          Explainer: {
+            state: PROGRESS_VOTE_STATE.NEEDS_WORK,
+            feedback: 'Existing feedback',
+            set_on: '2026-09-23T00:00:00',
+            set_by: 'reviewer@example.com',
+          },
+        };
+
+        component.openWithContext(
+          voterUser,
+          feature,
+          progress,
+          process,
+          action,
+          feStage,
+          feStage,
+          [],
+          () => {}
+        );
+        await component.updateComplete;
+
+        const explainerSelect = component.shadowRoot!.querySelector<SlSelect>(
+          '.state-widget[data-pi="Explainer"]'
+        )!;
+        explainerSelect.value = String(PROGRESS_VOTE_STATE.VERIFIED);
+        explainerSelect.dispatchEvent(new CustomEvent('sl-change'));
+
+        // Collapse the row so .feedback-widget is removed from DOM
+        component.toggleExpanded('Explainer');
+        await component.updateComplete;
+
+        const getSaveButton = () =>
+          component.shadowRoot!.querySelectorAll('sl-button')[2];
+        getSaveButton().click();
+        await component.updateComplete;
+
+        assert.isTrue(
+          postStub.calledOnceWithExactly(
+            123456,
+            'Explainer',
+            PROGRESS_VOTE_STATE.VERIFIED,
+            'Existing feedback'
+          )
+        );
+      });
+
       it('posts only touched votes, disables controls while saving, fires refetch-needed, and closes dialog on Save', async () => {
         let resolvePost!: (value?: unknown) => void;
         const postStub = sinon

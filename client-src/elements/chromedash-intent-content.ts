@@ -126,7 +126,7 @@ export class ChromedashIntentContent extends LitElement {
           }
 
           :required {
-            border: 1px solid $chromium-color-dark;
+            border: 1px solid var(--chromium-color-dark);
           }
 
           .interacted:valid {
@@ -134,7 +134,7 @@ export class ChromedashIntentContent extends LitElement {
           }
 
           .interacted:invalid {
-            border: 1px solid $invalid-color;
+            border: 1px solid var(--invalid-color);
           }
 
           input:not([type='submit']):not([type='search']) {
