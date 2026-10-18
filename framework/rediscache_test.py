@@ -70,6 +70,14 @@ class RedisCacheFunctionTests(testing_config.CustomTestCase):
         rediscache.set_multi({KEY_5: '222'}, 3600)
         self.assertEqual({KEY_5: '222'}, rediscache.get_multi([KEY_5]))
 
+        rediscache.set_multi({KEY_2: 'a', KEY_3: 'b'}, time=0)
+        self.assertEqual(
+            {KEY_2: 'a', KEY_3: 'b'}, rediscache.get_multi([KEY_2, KEY_3])
+        )
+
+        # Empty dict is a no-op.
+        rediscache.set_multi({})
+
     def test_delete(self):
         """Test delete."""
         rediscache.set(KEY_6, '606')
