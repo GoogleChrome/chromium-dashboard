@@ -833,7 +833,9 @@ def get_feature_names_by_ids(
                 if f is not None and f.get('id')
             }
 
-    needed_ids = [fid for fid in feature_ids if fid not in result_dict]
+    needed_ids = list(
+        dict.fromkeys(fid for fid in feature_ids if fid not in result_dict)
+    )
 
     if needed_ids:
         # Create ndb.Key objects for the batch operation
@@ -894,7 +896,9 @@ def get_by_ids(
                 if f is not None and f.get('id')
             }
 
-    needed_ids = [fid for fid in feature_ids if fid not in result_dict]
+    needed_ids = list(
+        dict.fromkeys(fid for fid in feature_ids if fid not in result_dict)
+    )
 
     if needed_ids:
         # Create ndb.Key objects for the batch operation

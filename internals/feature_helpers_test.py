@@ -320,6 +320,17 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
         self.assertEqual(4, len(actual))
         self.assertEqual(1, mock_stage_query.call_count)
 
+        # Duplicate feature IDs do not cause duplicate stage entries.
+        rediscache.flushall()
+        dup_actual = feature_helpers.get_by_ids(
+            [
+                self.feature_1.key.integer_id(),
+                self.feature_1.key.integer_id(),
+            ]
+        )
+        self.assertEqual(2, len(dup_actual))
+        self.assertEqual(6, len(dup_actual[0]['stages']))
+
     def test_get_feature_names_by_ids__empty(self):
         """A request to load zero feature name returns zero results."""
         actual = feature_helpers.get_feature_names_by_ids([])
