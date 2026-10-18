@@ -269,6 +269,10 @@ class GetApproversTest(testing_config.CustomTestCase):
         user3 = testing_config.Blank(email=lambda: 'ndb_approver@example.com')
         self.assertEqual(approval_defs.fields_approvable_by(user3), {3})
 
+        # Also works when rediscache.get_multi returns None (e.g., DEV_MODE).
+        with mock.patch('framework.rediscache.get_multi', return_value=None):
+            self.assertEqual(approval_defs.fields_approvable_by(user2), {2})
+
     @mock.patch(
         'internals.approval_defs.APPROVAL_FIELDS_BY_ID', MOCK_APPROVALS_BY_ID
     )

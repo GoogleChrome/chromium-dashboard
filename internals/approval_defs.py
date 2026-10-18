@@ -415,6 +415,23 @@ def auto_assign_reviewer(gate):
         gate.put()
 
 
+def _fetch_and_cache_approvers(gate_type, afd, cache_key: str) -> list[str]:
+    """Fetch approvers from NDB or OWNERS URL and store them in rediscache."""
+    if afd.approvers == IN_NDB:
+        gate_def = GateDef.get_gate_def(gate_type)
+        owners = gate_def.approvers
+    elif isinstance(afd.approvers, str):
+        # afd.approvers can be either a hard-coded list of approver emails
+        # or it can be a URL of an OWNERS file.  Right now we only use the
+        # URL approach, but both are supported.
+        owners = fetch_owners(afd.approvers)
+    else:
+        owners = afd.approvers
+
+    rediscache.set(cache_key, owners, time=CACHE_EXPIRATION)
+    return owners
+
+
 def get_approvers(gate_type) -> list[str]:
     """Return a list of email addresses of users allowed to approve."""
     if gate_type not in APPROVAL_FIELDS_BY_ID:
@@ -429,19 +446,7 @@ def get_approvers(gate_type) -> list[str]:
     if cached_approvers is not None:
         return cached_approvers
 
-    if afd.approvers == IN_NDB:
-        gate_def = GateDef.get_gate_def(gate_type)
-        owners = gate_def.approvers
-    elif isinstance(afd.approvers, str):
-        # afd.approvers can be either a hard-coded list of approver emails
-        # or it can be a URL of an OWNERS file.  Right now we only use the
-        # URL approach, but both are supported.
-        owners = fetch_owners(afd.approvers)
-    else:
-        owners = afd.approvers
-
-    rediscache.set(cache_key, owners, time=CACHE_EXPIRATION)
-    return owners
+    return _fetch_and_cache_approvers(gate_type, afd, cache_key)
 
 
 def fields_approvable_by(user):
@@ -464,11 +469,14 @@ def fields_approvable_by(user):
             non_static_gate_types.append(gate_type)
             cache_keys.append('%s|%s' % (APPROVERS_CACHE_KEY, gate_type))
 
-    cached_by_key = rediscache.get_multi(cache_keys) if cache_keys else {}
+    cached_by_key = (
+        (rediscache.get_multi(cache_keys) or {}) if cache_keys else {}
+    )
     for gate_type, cache_key in zip(non_static_gate_types, cache_keys):
         approvers = cached_by_key.get(cache_key)
         if approvers is None:
-            approvers = get_approvers(gate_type)
+            afd = APPROVAL_FIELDS_BY_ID[gate_type]
+            approvers = _fetch_and_cache_approvers(gate_type, afd, cache_key)
         if email in approvers:
             approvable_ids.add(gate_type)
 
