@@ -37,6 +37,8 @@ class SecretsFunctionsTest(testing_config.CustomTestCase):
         self.original_ot_api_key = secrets.settings.OT_API_KEY
         self.original_unit_test_mode = secrets.settings.UNIT_TEST_MODE
         self.original_dev_mode = secrets.settings.DEV_MODE
+        self.original_xsrf_secret = secrets._xsrf_secret
+        self.original_session_secret = secrets._session_secret
 
         # Reset cache and flags before each test
         secrets.settings.GITHUB_TOKEN = None
@@ -44,6 +46,8 @@ class SecretsFunctionsTest(testing_config.CustomTestCase):
         secrets.settings.OT_API_KEY = None
         secrets.settings.UNIT_TEST_MODE = False
         secrets.settings.DEV_MODE = False
+        secrets._xsrf_secret = None
+        secrets._session_secret = None
 
     def tearDown(self):
         """Clean up the test environment."""
@@ -54,6 +58,8 @@ class SecretsFunctionsTest(testing_config.CustomTestCase):
         secrets.settings.OT_API_KEY = self.original_ot_api_key
         secrets.settings.UNIT_TEST_MODE = self.original_unit_test_mode
         secrets.settings.DEV_MODE = self.original_dev_mode
+        secrets._xsrf_secret = self.original_xsrf_secret
+        secrets._session_secret = self.original_session_secret
 
     def test_make_random_key__long(self):
         """The random keys have the desired length."""
@@ -67,19 +73,31 @@ class SecretsFunctionsTest(testing_config.CustomTestCase):
             key_set.add(secrets.make_random_key())
         self.assertEqual(1000, len(key_set))
 
-    def test_get_xsrf_secret(self):
-        """We can get this secret, and it is the same for repeated calls."""
+    @mock.patch.object(
+        secrets.Secrets,
+        '_get_or_make_singleton',
+        wraps=secrets.Secrets._get_or_make_singleton,
+    )
+    def test_get_xsrf_secret(self, mock_get_singleton):
+        """We can get this secret, and it is cached for repeated calls."""
         s1 = secrets.get_xsrf_secret()
         s2 = secrets.get_xsrf_secret()
         self.assertIsNotNone(s1)
         self.assertEqual(s1, s2)
+        mock_get_singleton.assert_called_once()
 
-    def test_get_session_secret(self):
-        """We can get this secret, and it is the same for repeated calls."""
+    @mock.patch.object(
+        secrets.Secrets,
+        '_get_or_make_singleton',
+        wraps=secrets.Secrets._get_or_make_singleton,
+    )
+    def test_get_session_secret(self, mock_get_singleton):
+        """We can get this secret, and it is cached for repeated calls."""
         s1 = secrets.get_session_secret()
         s2 = secrets.get_session_secret()
         self.assertIsNotNone(s1)
         self.assertEqual(s1, s2)
+        mock_get_singleton.assert_called_once()
 
     @mock.patch('google.cloud.secretmanager.SecretManagerServiceClient')
     @mock.patch('builtins.open')
