@@ -420,12 +420,14 @@ def get_approvers(gate_type) -> list[str]:
     if gate_type not in APPROVAL_FIELDS_BY_ID:
         return []
 
+    afd = APPROVAL_FIELDS_BY_ID[gate_type]
+    if isinstance(afd.approvers, list):
+        return list(afd.approvers)
+
     cache_key = '%s|%s' % (APPROVERS_CACHE_KEY, gate_type)
     cached_approvers = rediscache.get(cache_key)
-    if cached_approvers:
+    if cached_approvers is not None:
         return cached_approvers
-
-    afd = APPROVAL_FIELDS_BY_ID[gate_type]
 
     if afd.approvers == IN_NDB:
         gate_def = GateDef.get_gate_def(gate_type)
@@ -450,11 +452,26 @@ def fields_approvable_by(user):
         return set(APPROVAL_FIELDS_BY_ID.keys())
 
     email = user.email()
-    approvable_ids = {
-        gate_type
-        for gate_type in APPROVAL_FIELDS_BY_ID
-        if email in get_approvers(gate_type)
-    }
+    approvable_ids = set()
+    non_static_gate_types = []
+    cache_keys = []
+
+    for gate_type, afd in APPROVAL_FIELDS_BY_ID.items():
+        if isinstance(afd.approvers, list):
+            if email in afd.approvers:
+                approvable_ids.add(gate_type)
+        else:
+            non_static_gate_types.append(gate_type)
+            cache_keys.append('%s|%s' % (APPROVERS_CACHE_KEY, gate_type))
+
+    cached_by_key = rediscache.get_multi(cache_keys) if cache_keys else {}
+    for gate_type, cache_key in zip(non_static_gate_types, cache_keys):
+        approvers = cached_by_key.get(cache_key)
+        if approvers is None:
+            approvers = get_approvers(gate_type)
+        if email in approvers:
+            approvable_ids.add(gate_type)
+
     return approvable_ids
 
 
