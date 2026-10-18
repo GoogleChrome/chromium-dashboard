@@ -143,10 +143,10 @@ def can_create_feature(user: User) -> bool:
     if not user:
         return False
 
-    if can_admin_site(user):
+    if user.email().endswith(REGISTERED_USER_ORGANIZATIONS):
         return True
 
-    if user.email().endswith(REGISTERED_USER_ORGANIZATIONS):
+    if can_admin_site(user):
         return True
 
     app_user = AppUser.get_app_user(user.email())
