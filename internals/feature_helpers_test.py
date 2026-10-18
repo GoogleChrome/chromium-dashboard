@@ -2348,3 +2348,18 @@ class DeveloperReleaseNotesFeaturesTest(testing_config.CustomTestCase):
         features = feature_helpers.get_developer_release_notes_features(132)
         feature_ids = [f['id'] for f in features]
         self.assertEqual([101], feature_ids)
+
+    def test_get_entries_by_id_async_and_get_future_results(self):
+        """It fetches FeatureEntry entities via get_multi_async and sorts by name."""
+        self.assertIsNone(feature_helpers.get_entries_by_id_async([]))
+        self.assertEqual([], feature_helpers.get_future_results(None))
+
+        FeatureEntry(
+            id=102, name='Zeta Feature', summary='sum', category=1
+        ).put()
+        futures = feature_helpers.get_entries_by_id_async([102, 999999, 101])
+        results = feature_helpers.get_future_results(futures)
+        self.assertEqual(
+            ['CSS Anchor Positioning', 'Zeta Feature'],
+            [f.name for f in results],
+        )

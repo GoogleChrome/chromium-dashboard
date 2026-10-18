@@ -27,7 +27,7 @@ from google.cloud import ndb  # type: ignore
 import settings
 from api import converters
 from framework import permissions, rediscache, users
-from framework.utils import get_current_milestone_info
+from framework.utils import chunk_list, get_current_milestone_info
 from internals import core_enums, link_helpers
 from internals.core_models import (
     FeatureEntry,
@@ -146,22 +146,23 @@ def filter_confidential(feature_list: list[FeatureEntry]) -> list[FeatureEntry]:
     return [f for f in feature_list if permissions.can_view_feature(user, f)]
 
 
-def get_entries_by_id_async(ids) -> Future | None:
+def get_entries_by_id_async(ids) -> list[Future] | None:
     """Asynchronously fetches FeatureEntry objects by their IDs."""
     if ids:
-        q = FeatureEntry.query(
-            FeatureEntry.key.IN([ndb.Key('FeatureEntry', id) for id in ids])
-        )
-        q = q.order(FeatureEntry.name)
-        return q.fetch_async()
+        return ndb.get_multi_async([ndb.Key('FeatureEntry', id) for id in ids])
     return None
 
 
-def get_future_results(async_features: Future | None) -> list[FeatureEntry]:
-    """Retrieve the results from a Future containing a list of FeatureEntries."""
-    if async_features is None:
+def get_future_results(
+    async_features: list[Future] | None,
+) -> list[FeatureEntry]:
+    """Retrieve the results from a Future list containing FeatureEntries."""
+    if not async_features:
         return []
-    return async_features.result()
+    features = [f.result() for f in async_features]
+    valid_features = [f for f in features if f is not None]
+    valid_features.sort(key=lambda f: f.name or '')
+    return valid_features
 
 
 def _filter_out_wp_features_lacking_enterprise_approval(
@@ -399,10 +400,16 @@ def get_features_in_release_notes(
     # qualified the features to be considered.
     prefetched_stages: list[Stage] = []
     if feature_ids:
-        prefetched_stages = Stage.query(
-            Stage.feature_id.IN(feature_ids),
-            Stage.archived == False,  # noqa: E712
-        ).fetch()
+        stage_futures = [
+            Stage.query(
+                Stage.feature_id.IN(id_chunk),
+                Stage.archived == False,  # noqa: E712
+            ).fetch_async()
+            for id_chunk in chunk_list(feature_ids, 30)
+        ]
+        for stage_future in stage_futures:
+            prefetched_stages.extend(stage_future.get_result())
+        prefetched_stages.sort(key=lambda s: s.key.integer_id())
     prefetched_stages_dict = organize_all_stages_by_feature(prefetched_stages)
     logging.info(
         'prefetched %r stages for %r features',

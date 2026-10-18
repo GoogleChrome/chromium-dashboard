@@ -24,7 +24,7 @@ from chromestatus_openapi.models.gate_latency import GateLatency
 from chromestatus_openapi.models.review_latency import ReviewLatency
 from google.cloud import ndb  # type: ignore
 
-from framework import basehandlers, permissions
+from framework import basehandlers, permissions, utils
 from internals import slo
 from internals.core_models import FeatureEntry
 from internals.review_models import Gate
@@ -67,12 +67,17 @@ class ReviewLatencyAPI(basehandlers.APIHandler):
         today = today or datetime.today()
         start_date = today - timedelta(days=90)
         gates_in_range = Gate.query(Gate.requested_on >= start_date).fetch()
-        feature_ids = {g.feature_id for g in gates_in_range}
+        feature_ids = list({g.feature_id for g in gates_in_range})
         if not feature_ids:
             return []
-        gates_on_those_features = Gate.query(
-            Gate.feature_id.IN(feature_ids)
-        ).fetch()
+        gate_futures = [
+            Gate.query(Gate.feature_id.IN(id_chunk)).fetch_async()
+            for id_chunk in utils.chunk_list(feature_ids, 30)
+        ]
+        gates_on_those_features: list[Gate] = []
+        for gate_future in gate_futures:
+            gates_on_those_features.extend(gate_future.get_result())
+        gates_on_those_features.sort(key=lambda g: g.key.integer_id())
         return gates_on_those_features
 
     def organize_gates_by_feature_id(
@@ -86,17 +91,12 @@ class ReviewLatencyAPI(basehandlers.APIHandler):
 
     def get_features_by_id(
         self, feature_ids: Iterable[int]
-    ) -> dict[int, FeatureEntry]:
-        """Retrieve features by ID and return them in a dict."""
+    ) -> list[FeatureEntry]:
+        """Retrieve features by ID and return them in a list."""
         if not feature_ids:
-            return {}  # We cannot pass an empty list to IN().
-        query = FeatureEntry.query(
-            FeatureEntry.key.IN(
-                [ndb.Key('FeatureEntry', id) for id in feature_ids]
-            )
-        )
-        features = query.fetch()
-        return features
+            return []
+        keys = [ndb.Key('FeatureEntry', id) for id in sorted(feature_ids)]
+        return [f for f in ndb.get_multi(keys) if f is not None]
 
     def earliest_request(self, feature_gates: list[Gate]) -> datetime:
         """Return the time of the earliest reivew request among the given gates."""
