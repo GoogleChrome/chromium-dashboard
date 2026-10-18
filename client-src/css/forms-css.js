@@ -20,8 +20,9 @@ import {VARS} from './_vars-css.js';
 export const FORM_STYLES = [
   VARS,
   css`
-    table tr[hidden] th, table tr[hidden] td {
-        padding: 0;
+    table tr[hidden] th,
+    table tr[hidden] td {
+      padding: 0;
     }
 
     table th {
@@ -44,8 +45,10 @@ export const FORM_STYLES = [
       margin-top: 2px;
     }
 
-    table input[type="text"], table input[type="url"],
-    table input[type="email"], table textarea {
+    table input[type='text'],
+    table input[type='url'],
+    table input[type='email'],
+    table textarea {
       width: 100%;
       font: var(--form-element-font);
     }
@@ -55,7 +58,7 @@ export const FORM_STYLES = [
     }
 
     table:required {
-      border: 1px solid $chromium-color-dark;
+      border: 1px solid var(--chromium-color-dark);
     }
 
     table .interacted:valid {
@@ -63,52 +66,59 @@ export const FORM_STYLES = [
     }
 
     table .interacted:invalid {
-      border: 1px solid $invalid-color;
+      border: 1px solid var(--invalid-color);
     }
 
-    table input:not([type="submit"]):not([type="search"]) {
+    table input:not([type='submit']):not([type='search']) {
       outline: 1px dotted var(--error-border-color);
-      background-color: #FFEDF5;
+      background-color: #ffedf5;
     }
 
-    input, textarea {
+    input,
+    textarea {
       padding: 7px;
     }
 
-    form[name="feature_form"] h3 {
+    form[name='feature_form'] h3 {
       margin: var(--content-padding-half) 0;
     }
-    form[name="feature_form"] input[type="submit"] {
+    form[name='feature_form'] input[type='submit'] {
       margin-top: var(--content-padding);
     }
 
-    form[name="feature_form"] .stage_form {
+    form[name='feature_form'] .stage_form {
       margin-bottom: 2em;
     }
 
-    form section.flat_form + h3, .final_buttons {
+    form section.flat_form + h3,
+    .final_buttons {
       margin-top: 2em;
     }
 
     .fade-in {
-      animation:fadeIn 0.5s linear;
+      animation: fadeIn 0.5s linear;
     }
 
     @keyframes fadeIn {
       0% {
-        opacity:0
+        opacity: 0;
       }
       100% {
-        opacity:1;
+        opacity: 1;
       }
     }
 
-    #metadata, .stage_form, .flat_form, .final_buttons {
+    #metadata,
+    .stage_form,
+    .flat_form,
+    .final_buttons {
       max-width: 67em;
       padding: 1em;
     }
 
-    #metadata, .stage_form, .flat_form {
+    #metadata,
+    .stage_form,
+    .flat_form {
       color: #444;
       background: white;
       border: 1px solid #ccc;
@@ -125,13 +135,12 @@ export const FORM_STYLES = [
 
     sl-input[invalid]::part(input),
     sl-checkbox[invalid]::part(input),
-    chromedash-textarea[invalid]::part(textarea)
-    {
+    chromedash-textarea[invalid]::part(textarea) {
       outline: 1px dotted red;
-      background-color: #FFEDF5;
+      background-color: #ffedf5;
     }
 
-    sl-select[size="small"] sl-menu-item::part(base) {
+    sl-select[size='small'] sl-menu-item::part(base) {
       font-size: var(--sl-font-size-x-small);
       padding: 0px;
     }
@@ -241,7 +250,8 @@ export const FORM_STYLES = [
     chromedash-form-field td.extrahelp {
       padding-left: 2em;
     }
-    chromedash-form-field .extrahelp > span, chromedash-form-field .webdx > span {
+    chromedash-form-field .extrahelp > span,
+    chromedash-form-field .webdx > span {
       margin: 0;
     }
 
@@ -313,4 +323,5 @@ export const FORM_STYLES = [
     .choices p {
       margin: 0.5em 1.5em 1em;
     }
-  `];
+  `,
+];

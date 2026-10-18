@@ -49,8 +49,8 @@ export class Metric {
     if (Metric.supportsPerfMark) {
       // Note: this assumes the user has made only one measurement for the given
       // name. Return the first one found.
-      const entry = performance.getEntriesByName(this.name)[0];
-      if (entry && entry.entryType !== 'measure') {
+      const entry = performance.getEntriesByName(this.name, 'measure')[0];
+      if (entry && entry.entryType === 'measure') {
         duration = entry.duration;
       }
     }

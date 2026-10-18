@@ -359,7 +359,12 @@ export function setupScrollToHash(pageElement) {
   // Note that this function is bound to the pageElement for a page.
   const scrollToElement = hash => {
     if (hash) {
-      const el = pageElement.shadowRoot.querySelector(hash);
+      let el: any = null;
+      try {
+        el = pageElement.shadowRoot.querySelector(hash);
+      } catch {
+        return;
+      }
       if (el) {
         // Focus on the element, if possible.
         // Note: focus() must be called before scrollToView().
@@ -561,7 +566,7 @@ export function updateURLParams(key, val) {
 export function formatURLParams(key, val) {
   // Update the query param object.
   const rawQuery = parseRawQuery(window.location.search);
-  rawQuery[key] = encodeURIComponent(val);
+  rawQuery[key] = val.toString();
 
   // Assemble the new URL.
   const newURL = getNewLocation(rawQuery, window.location);
@@ -725,7 +730,7 @@ export function formatFeatureChanges(
  */
 export function handleSaveChangesResponse(response) {
   const app = document.querySelector('chromedash-app');
-  (app as any).setUnsavedChanges(response !== '');
+  (app as any)?.setUnsavedChanges(response !== '');
 }
 
 export function extensionMilestoneIsValid(value, currentMilestone) {
@@ -961,7 +966,7 @@ export async function findClosestShippingDate(
     if (latestMilestone === latestStableVersion) {
       closestShippingDate = channels['stable']?.final_beta || '';
       hasShipped = true;
-    } else {
+    } else if (latestMilestone > 0) {
       closestShippingDate = await fetchClosestShippingDate(latestMilestone);
       hasShipped = true;
     }

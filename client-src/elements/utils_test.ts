@@ -20,15 +20,18 @@ import {
   autolink,
   findClosestShippingDate,
   formatFeatureChanges,
+  formatURLParams,
   getDisabledHelpText,
   getFeatureOutdatedBanner,
   isVerifiedWithinGracePeriod,
   parseRawTimestamp,
   maybeAlertOnLateChange,
 } from './utils.js';
-import {assert} from '@open-wc/testing';
+import {assert, fixture} from '@open-wc/testing';
 import {OT_SETUP_STATUS_OPTIONS} from './form-field-enums.js';
 import {Channels, Feature} from '../js-src/cs-client.js';
+import './chromedash-toast.js';
+import {Metric} from '../js-src/metric.js';
 
 const compareAutolinkResult = (result, expected) => {
   assert.equal(result.length, expected.length);
@@ -548,7 +551,7 @@ describe('isVerifiedWithinGracePeriod', () => {
       assert.deepEqual(result, {
         closestShippingDate: '',
         isUpcoming: false,
-        hasShipped: true,
+        hasShipped: false,
       });
     });
 
@@ -1126,5 +1129,71 @@ describe('maybeAlertOnLateChange', () => {
     ];
     maybeAlertOnLateChange(feature as any, fieldValues as any, 126);
     assert.isTrue(alertStub.calledOnce);
+  });
+});
+
+describe('formatURLParams', () => {
+  it('encodes query param values once without double-encoding', () => {
+    const url = formatURLParams('q', 'category="Web Components"');
+    assert.equal(url.searchParams.get('q'), 'category="Web Components"');
+    assert.notInclude(url.search, '%25');
+  });
+});
+
+describe('chromedash-toast', () => {
+  it('replaces actionHandler instead of stacking listeners on #action', async () => {
+    const toast = await fixture<any>(
+      html`<chromedash-toast></chromedash-toast>`
+    );
+    const handler1 = sinon.spy();
+    const handler2 = sinon.spy();
+
+    toast.showMessage('First', 'Undo', handler1, -1);
+    toast.open = false;
+    toast.showMessage('Second', 'Retry', handler2, -1);
+    await toast.updateComplete;
+
+    const actionLink = toast.shadowRoot.querySelector('#action') as HTMLElement;
+    actionLink.click();
+    assert.isFalse(handler1.called);
+    assert.isTrue(handler2.calledOnce);
+
+    actionLink.click();
+    assert.isTrue(handler2.calledOnce);
+  });
+
+  it('reveals queued message via fallback timeout when transitionend does not fire', async () => {
+    const toast = await fixture<any>(
+      html`<chromedash-toast></chromedash-toast>`
+    );
+    const clock = sinon.useFakeTimers();
+    try {
+      toast.showMessage('First', '', null, -1);
+      assert.isTrue(toast.open);
+
+      toast.showMessage('Second', '', null, -1);
+      assert.isFalse(toast.open);
+      assert.isTrue(toast.waitingForTransition);
+
+      clock.tick(400);
+      assert.isFalse(toast.waitingForTransition);
+      assert.isTrue(toast.open);
+      assert.equal(toast.msg, 'Second');
+    } finally {
+      clock.restore();
+    }
+  });
+});
+
+describe('Metric', () => {
+  it('records a performance measure between start and end marks and reads its duration', () => {
+    const metricName = `test_metric_${Date.now()}`;
+    const m = new Metric(metricName);
+    m.start();
+    m.end();
+
+    const measures = performance.getEntriesByName(metricName, 'measure');
+    assert.equal(measures.length, 1);
+    assert.isAtLeast(m.duration, 0);
   });
 });

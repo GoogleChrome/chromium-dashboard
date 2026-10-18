@@ -419,14 +419,14 @@ export class ChromedashApp extends LitElement {
     page('/guide/new', ctx => {
       if (!this.setupNewPage(ctx, 'chromedash-guide-new-page')) return;
       if (ctx.querystring.search('loginStatus=False') == -1) {
-        this.pageComponent.userEmail = this.user.email;
+        this.pageComponent.userEmail = this.user?.email;
       }
     });
     page('/guide/enterprise/new', ctx => {
       if (!this.setupNewPage(ctx, 'chromedash-guide-new-page')) return;
 
       if (ctx.querystring.search('loginStatus=False') == -1) {
-        this.pageComponent.userEmail = this.user.email;
+        this.pageComponent.userEmail = this.user?.email;
       }
       this.pageComponent.isEnterpriseFeature = true;
     });
@@ -457,33 +457,44 @@ export class ChromedashApp extends LitElement {
         this.pageComponent.appTitle = this.appTitle;
       }
     );
-    page('/feature/:featureId(\\d+)/gate/:gateId(\\d+/intent)', ctx => {
+    page('/feature/:featureId(\\d+)/gate/:gateId(\\d+)/intent', ctx => {
       if (!this.setupNewPage(ctx, 'chromedash-intent-preview-page')) return;
       this.pageComponent.featureId = parseInt(ctx.params.featureId);
       this.pageComponent.gateId = parseInt(ctx.params.gateId);
       this.pageComponent.appTitle = this.appTitle;
       this.hideSidebar();
     });
-    page('/feature/:featureId(\\d+)/stage/:stageId(\\d+/intent)', ctx => {
+    page('/feature/:featureId(\\d+)/stage/:stageId(\\d+)/intent', ctx => {
       if (!this.setupNewPage(ctx, 'chromedash-intent-preview-page')) return;
       this.pageComponent.featureId = parseInt(ctx.params.featureId);
       this.pageComponent.stageId = parseInt(ctx.params.stageId);
       this.pageComponent.appTitle = this.appTitle;
       this.hideSidebar();
     });
+    page(
+      '/feature/:featureId(\\d+)/stage/:stageId(\\d+)/gate/:gateId(\\d+)/intent',
+      ctx => {
+        if (!this.setupNewPage(ctx, 'chromedash-intent-preview-page')) return;
+        this.pageComponent.featureId = parseInt(ctx.params.featureId);
+        this.pageComponent.stageId = parseInt(ctx.params.stageId);
+        this.pageComponent.gateId = parseInt(ctx.params.gateId);
+        this.pageComponent.appTitle = this.appTitle;
+        this.hideSidebar();
+      }
+    );
     page('/ot_creation_request/:featureId(\\d+)/:stageId(\\d+)', ctx => {
       if (!this.setupNewPage(ctx, 'chromedash-ot-creation-page')) return;
       this.pageComponent.featureId = parseInt(ctx.params.featureId);
       this.pageComponent.stageId = parseInt(ctx.params.stageId);
       this.pageComponent.appTitle = this.appTitle;
-      this.pageComponent.userEmail = this.user.email;
+      this.pageComponent.userEmail = this.user?.email;
     });
     page('/ot_extension_request/:featureId(\\d+)/:stageId(\\d+)', ctx => {
       if (!this.setupNewPage(ctx, 'chromedash-ot-extension-page')) return;
       this.pageComponent.featureId = parseInt(ctx.params.featureId);
       this.pageComponent.stageId = parseInt(ctx.params.stageId);
       this.pageComponent.appTitle = this.appTitle;
-      this.pageComponent.userEmail = this.user.email;
+      this.pageComponent.userEmail = this.user?.email;
     });
     page('/guide/stage/:featureId(\\d+)/metadata', ctx => {
       if (!this.setupNewPage(ctx, 'chromedash-guide-metadata-page')) return;
@@ -562,6 +573,7 @@ export class ChromedashApp extends LitElement {
     page('/enterprise', ctx => {
       if (!this.setupNewPage(ctx, 'chromedash-enterprise-page', true)) return;
       this.pageComponent.user = this.user;
+      this.pageComponent.rawQuery = parseRawQuery(ctx.querystring);
     });
     page('/admin/blink', ctx => {
       this.pageComponent = document.createElement(
@@ -607,13 +619,17 @@ export class ChromedashApp extends LitElement {
   hideSidebar() {
     this.sidebarHidden = true;
     this.selectedGateId = 0;
-    this.pageComponent.selectedGateId = 0;
+    if (this.pageComponent) {
+      this.pageComponent.selectedGateId = 0;
+    }
   }
 
   showGateColumn(feature, stageId, gate) {
     this.gateColumnRef.value?.setContext(feature, stageId, gate);
     this.selectedGateId = gate.id;
-    this.pageComponent.selectedGateId = gate.id;
+    if (this.pageComponent) {
+      this.pageComponent.selectedGateId = gate.id;
+    }
     this.showSidebar();
   }
 

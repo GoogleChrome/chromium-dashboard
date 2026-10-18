@@ -184,7 +184,7 @@ export class ChromedashHeader extends LitElement {
   initializeGoogleSignIn() {
     google.accounts.id.initialize({
       client_id: this.googleSignInClientId,
-      callback: this.handleCredentialResponse,
+      callback: this.handleCredentialResponse.bind(this),
       use_fedcm_for_prompt: true,
     });
     google.accounts.id.prompt();
@@ -287,7 +287,7 @@ export class ChromedashHeader extends LitElement {
       this.isCurrentPage('/guide/enterprise/new');
     return html`
       ${
-        this.user
+        this.user && this.user.email
           ? html`
               ${
                 this.user.can_create_feature && !alreadyOnNew

@@ -162,7 +162,7 @@ export class ChromedashDrawer extends LitElement {
   initializeGoogleSignIn() {
     google.accounts.id.initialize({
       client_id: this.googleSignInClientId,
-      callback: this.handleCredentialResponse,
+      callback: this.handleCredentialResponse.bind(this),
     });
     google.accounts.id.prompt();
 

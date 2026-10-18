@@ -37,6 +37,8 @@ class ChromedashToast extends LitElement {
   @property({type: Boolean})
   waitingForTransition = false;
 
+  actionHandler: (() => void) | null = null;
+
   static get styles() {
     return [
       ...SHARED_STYLES,
@@ -95,20 +97,7 @@ class ChromedashToast extends LitElement {
 
     this.msg = msg;
     this.actionLabel = optAction;
-
-    if (optTapHandler) {
-      const action = this.shadowRoot!.querySelector('#action');
-      if (action) {
-        action.addEventListener(
-          'click',
-          e => {
-            e.preventDefault();
-            optTapHandler();
-          },
-          {once: true}
-        );
-      }
-    }
+    this.actionHandler = optTapHandler || null;
 
     if (this.open) {
       // triggers the previous toast to slide out
@@ -119,16 +108,24 @@ class ChromedashToast extends LitElement {
       }
       // Don't show the new toast until the transition is over
       // (wait for the previous toast to be completely gone)
-      this.addEventListener(
-        'transitionend',
-        () => {
-          this.show(optDuration);
-          this.waitingForTransition = false;
-        },
-        {once: true}
-      );
+      const onTransitionDone = () => {
+        if (!this.waitingForTransition) return;
+        this.waitingForTransition = false;
+        this.show(optDuration);
+      };
+      this.addEventListener('transitionend', onTransitionDone, {once: true});
+      window.setTimeout(onTransitionDone, 400);
     } else {
       this.show(optDuration);
+    }
+  }
+
+  _handleActionClick(e: Event) {
+    e.preventDefault();
+    if (this.actionHandler) {
+      const handler = this.actionHandler;
+      this.actionHandler = null;
+      handler();
     }
   }
 
@@ -145,7 +142,9 @@ class ChromedashToast extends LitElement {
   render() {
     return html`
       <span id="msg">${this.msg}</span>
-      <a href="#" id="action">${this.actionLabel}</a>
+      <a href="#" id="action" @click=${this._handleActionClick}
+        >${this.actionLabel}</a
+      >
     `;
   }
 }
