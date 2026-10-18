@@ -160,7 +160,7 @@ class ChromedashFeatureRow extends LitElement {
     const activeGates = featureGates.filter(g => this.isActiveGate(g));
     const activeStageIds = new Set(activeGates.map(g => g.stage_id));
     const activeStagesAndTheirGates: ActiveStagesAndGates[] = [];
-    for (const stage of feature.stages) {
+    for (const stage of feature.stages || []) {
       if (activeStageIds.has(stage.id)) {
         activeStagesAndTheirGates.push({
           stage: stage,

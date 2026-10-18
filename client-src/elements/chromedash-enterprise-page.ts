@@ -28,7 +28,8 @@ export class ChromedashEnterprisePage extends ChromedashAllFeaturesPage {
         ?canEdit=${this.user && this.user.can_edit_all}
         .starredFeatures=${this.starredFeatures}
         @star-toggle-event=${this.handleStarToggle}
-        num="100"
+        .start=${this.start}
+        .num=${this.num}
         alwaysOfferPagination
         columns="normal"
       >

@@ -92,6 +92,8 @@ export class ChromedashFeatureTable extends LitElement {
         this.reloading = false;
       })
       .catch(() => {
+        this.loading = false;
+        this.reloading = false;
         showToastMessage(
           'Some errors occurred. Please refresh the page or try again later.'
         );
@@ -119,6 +121,8 @@ export class ChromedashFeatureTable extends LitElement {
         this.gates = gatesByFID;
       })
       .catch(() => {
+        this.loading = false;
+        this.reloading = false;
         showToastMessage(
           'Some errors occurred. Please refresh the page or try again later.'
         );

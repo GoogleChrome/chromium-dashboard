@@ -423,10 +423,16 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
         this.channels = channels;
         const queryParams = parseRawQuery(window.location.search);
         if (milestoneQueryParamKey in queryParams) {
-          this.selectedMilestone = parseInt(
+          const parsedMilestone = parseInt(
             queryParams[milestoneQueryParamKey],
             10
           );
+          if (!Number.isNaN(parsedMilestone)) {
+            this.selectedMilestone = parsedMilestone;
+          } else {
+            this.selectedMilestone = this.channels.stable.version;
+            updateURLParams(milestoneQueryParamKey, this.selectedMilestone);
+          }
         } else {
           this.selectedMilestone = this.channels.stable.version;
           updateURLParams(milestoneQueryParamKey, this.selectedMilestone);
@@ -621,6 +627,16 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
     const newEditing = new Set(this.editingFeatureIds);
     newEditing.delete(featureId);
     this.editingFeatureIds = newEditing;
+
+    const newPreviewing = new Set(this.previewingIds);
+    newPreviewing.delete(featureId);
+    const feature = this.features.find(f => f.id === featureId);
+    for (const s of feature?.stages || []) {
+      if (s.id) {
+        newPreviewing.delete(s.id);
+      }
+    }
+    this.previewingIds = newPreviewing;
   }
 
   nowString() {
@@ -648,8 +664,12 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
       originalValue: string | string[] | number | boolean | undefined,
       stage?: StageDict
     ) => {
-      const value = el?.tagName === 'SL-CHECKBOX' ? el?.checked : el?.value;
-      if (value !== undefined && '' + value != '' + originalValue) {
+      const isCheckbox = el?.tagName === 'SL-CHECKBOX';
+      const value = isCheckbox ? el?.checked : el?.value;
+      const normalizedOriginal = isCheckbox
+        ? Boolean(originalValue)
+        : (originalValue ?? '');
+      if (value !== undefined && '' + value != '' + normalizedOriginal) {
         fieldValues.push({name, value, touched: true, stageId: stage?.id});
       }
     };
@@ -716,20 +736,17 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
     const submitBody = formatFeatureChanges(fieldValues, f.id);
     window.csClient
       .updateFeature(submitBody)
-      .then(resp => {
-        window.csClient.getFeature(f.id).then(resp2 => {
-          this.replaceOneFeature(
-            this.convertFeatureShippingStagesToRolloutStages(resp2 as Feature)
-          );
-        });
+      .then(() => window.csClient.getFeature(f.id))
+      .then(resp2 => {
+        this.replaceOneFeature(
+          this.convertFeatureShippingStagesToRolloutStages(resp2 as Feature)
+        );
+        this.cancel(f.id);
       })
       .catch(() => {
         showToastMessage(
           'Some errors occurred. Please refresh the page or try again later.'
         );
-      })
-      .finally(() => {
-        this.cancel(f.id);
       });
   }
 
@@ -1049,7 +1066,9 @@ export class ChromedashEnterpriseReleaseNotesPage extends LitElement {
           class="${
             shouldDisplayStageTitleInBold(
               s.rollout_milestone,
-              f.stages.map(s => s.rollout_milestone).sort()
+              f.stages
+                .map(s => s.rollout_milestone)
+                .sort((a, b) => Number(a) - Number(b))
             )
               ? 'bold'
               : ''
