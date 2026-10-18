@@ -463,9 +463,7 @@ def _get_features_for_page(
     else:
         features_on_page = feature_helpers.get_by_ids(paginated_id_list)
 
-    logging.info(
-        'features_on_page is %r', [f['name'] for f in features_on_page]
-    )
+    logging.info('features_on_page count is %d', len(features_on_page))
     return features_on_page
 
 
