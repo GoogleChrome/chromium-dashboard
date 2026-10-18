@@ -214,10 +214,6 @@ def stage_to_json_dict(
     stage: Stage, feature_type: int | None = None
 ) -> StageDict:
     """Convert a stage entity into a JSON dict."""
-    # Get feature type if not supplied.
-    if feature_type is None:
-        f = FeatureEntry.get_by_id(stage.feature_id)
-        feature_type = f.feature_type
     milestones: MilestoneSet = stage.milestones or MilestoneSet()
 
     d: StageDict = {
