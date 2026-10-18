@@ -479,6 +479,29 @@ class VotesAPITest(testing_config.CustomTestCase):
         self.vote_1_1.put()
         self.handler.check_voting_rules(self.gate_1, Vote.NA_VERIFIED)
 
+    @mock.patch('internals.notifier_helpers.notify_approvers_of_reviews')
+    @mock.patch('internals.approval_defs.get_approvers')
+    def test_post__request_review_reuses_gate(
+        self, mock_get_approvers, mock_notifier
+    ):
+        """do_post passes the loaded Gate to set_vote without a second Gate.get_by_id."""
+        mock_get_approvers.return_value = ['reviewer1@example.com']
+        testing_config.sign_in('owner1@example.com', 123567890)
+
+        params = {'state': Vote.REVIEW_REQUESTED}
+        with mock.patch.object(
+            Gate, 'get_by_id', wraps=Gate.get_by_id
+        ) as mock_gate_get:
+            with test_app.test_request_context(self.request_path, json=params):
+                actual = self.handler.do_post(
+                    feature_id=self.feature_id, gate_id=self.gate_1_id
+                )
+
+        self.assertEqual(actual, {'message': 'Done'})
+        self.assertEqual(1, mock_gate_get.call_count)
+        updated_gate = Gate.get_by_id(self.gate_1_id)
+        self.assertEqual(Vote.REVIEW_REQUESTED, updated_gate.state)
+
 
 class GatesAPITest(testing_config.CustomTestCase):
     """Tests for GatesAPI."""
