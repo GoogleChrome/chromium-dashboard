@@ -303,6 +303,23 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
         self.assertEqual('feature c', actual[2]['name'])
         self.assertEqual('feature b', actual[3]['name'])
 
+    def test_get_by_ids__batches_stage_queries(self):
+        """Stage queries are batched in chunks of up to 30 feature IDs."""
+        with mock.patch.object(
+            Stage, 'query', wraps=Stage.query
+        ) as mock_stage_query:
+            actual = feature_helpers.get_by_ids(
+                [
+                    self.feature_1.key.integer_id(),
+                    self.feature_2.key.integer_id(),
+                    self.feature_3.key.integer_id(),
+                    self.feature_4.key.integer_id(),
+                ]
+            )
+
+        self.assertEqual(4, len(actual))
+        self.assertEqual(1, mock_stage_query.call_count)
+
     def test_get_feature_names_by_ids__empty(self):
         """A request to load zero feature name returns zero results."""
         actual = feature_helpers.get_feature_names_by_ids([])

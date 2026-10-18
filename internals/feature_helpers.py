@@ -27,7 +27,7 @@ from google.cloud import ndb  # type: ignore
 import settings
 from api import converters
 from framework import permissions, rediscache, users
-from framework.utils import get_current_milestone_info
+from framework.utils import chunk_list, get_current_milestone_info
 from internals import core_enums, link_helpers
 from internals.core_models import (
     FeatureEntry,
@@ -905,10 +905,10 @@ def get_by_ids(
             needed_keys
         )  # noqa: E501
         stages_futures: list[ndb.Future] = []
-        for f_id in needed_ids:
+        for id_chunk in chunk_list(needed_ids, 30):
             stages_futures.append(
                 Stage.query(
-                    Stage.feature_id == f_id,
+                    Stage.feature_id.IN(id_chunk),
                     Stage.archived == False,  # noqa: E712
                 ).fetch_async()
             )
@@ -916,6 +916,7 @@ def get_by_ids(
         stages_list: list[Stage] = []
         for stages_future in stages_futures:
             stages_list.extend(stages_future.get_result())
+        stages_list.sort(key=lambda s: s.key.integer_id())
         stages_dict = organize_all_stages_by_feature(stages_list)
 
         unformatted_features = [
