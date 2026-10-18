@@ -154,7 +154,35 @@ describe('chromedash-checklist-summary', () => {
     assert.isNotNull(component.shadowRoot!.querySelector('.bubble'));
   });
 
-  it('renders nothing for non-DQ gates', async () => {
+  it('refetches gates after loading resets and does not infinite-loop if getGates returns empty array', async () => {
+    getGatesStub.resolves({gates: []});
+    const component = await fixture<ChromedashChecklistSummary>(
+      html`<chromedash-checklist-summary
+        .loading=${false}
+        .feature=${feature}
+        .stage=${stage}
+        .gate=${dqShipGate}
+        .process=${process}
+        .progress=${{} as ProgressItem}
+        .featureGates=${[]}
+      ></chromedash-checklist-summary>`
+    );
+    await component.updateComplete;
+    assert.equal(getGatesStub.callCount, 1);
+
+    // Simulate parent setContext setting loading=true and clearing featureGates, then finishing loading
+    component.loading = true;
+    component.featureGates = [];
+    await component.updateComplete;
+
+    getGatesStub.resolves({gates: [dqShipGate]});
+    component.loading = false;
+    await component.updateComplete;
+
+    assert.equal(getGatesStub.callCount, 2);
+  });
+
+  it('renders nothing for non-DQ gates and does not fetch gates', async () => {
     const component = await fixture<ChromedashChecklistSummary>(
       html`<chromedash-checklist-summary
         .loading=${false}
@@ -163,10 +191,11 @@ describe('chromedash-checklist-summary', () => {
         .gate=${nonDqGate}
         .process=${process}
         .progress=${{} as ProgressItem}
-        .featureGates=${[nonDqGate]}
+        .featureGates=${[]}
       ></chromedash-checklist-summary>`
     );
 
+    assert.isFalse(getGatesStub.called);
     assert.isNull(component.shadowRoot!.querySelector('h2'));
     assert.isNull(component.shadowRoot!.querySelector('.bubble'));
   });

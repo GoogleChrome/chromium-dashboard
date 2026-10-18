@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {LitElement, css, html} from 'lit';
+import {LitElement, PropertyValues, css, html} from 'lit';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {customElement, property, state} from 'lit/decorators.js';
 import {GateDict} from './chromedash-gate-chip.js';
@@ -73,15 +73,23 @@ export class ChromedashReviewStatusIcon extends LitElement {
     ];
   }
 
-  connectedCallback() {
-    super.connectedCallback();
-    this.fetchData();
+  willUpdate(changedProperties: PropertyValues) {
+    if (changedProperties.has('feature')) {
+      this.fetchData();
+    }
   }
 
   fetchData() {
     this.gates = [];
-    window.csClient?.getGates(this.feature?.id).then(gatesRes => {
-      let featureGates = gatesRes.gates;
+    if (!this.feature?.id) {
+      return;
+    }
+    const featureId = this.feature.id;
+    window.csClient?.getGates(featureId).then(gatesRes => {
+      if (this.feature?.id !== featureId) {
+        return;
+      }
+      const featureGates = gatesRes.gates;
       this.gates = featureGates.filter(g =>
         this.feature.roadmap_stage_ids?.includes(g.stage_id)
       );
