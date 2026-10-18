@@ -141,3 +141,19 @@ class AppUserTest(testing_config.CustomTestCase):
         # Deleting the AppUser invalidates the cache entry again.
         app_user.delete()
         self.assertIsNone(user_models.AppUser.get_app_user(email))
+
+    def test_get_app_user__case_insensitive_cache_invalidation(self):
+        """Cache invalidation in put/delete normalizes email case."""
+        self.assertIsNone(
+            user_models.AppUser.get_app_user('MixedCase@Example.com')
+        )
+        app_user = user_models.AppUser(
+            email='mixedcase@example.com', is_admin=True
+        )
+        app_user.put()
+        found = user_models.AppUser.get_app_user('mixedcase@example.com')
+        self.assertIsNotNone(found)
+        app_user.delete()
+        self.assertIsNone(
+            user_models.AppUser.get_app_user('MixedCase@Example.com')
+        )
