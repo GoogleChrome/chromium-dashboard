@@ -186,6 +186,16 @@
     gap: var(--content-padding-quarter);
   }
 
+  .pending-review-chip {
+    display: inline-block;
+    font-size: var(--button-small-font-size);
+    padding: var(--content-padding-quarter) var(--content-padding-half);
+    margin-bottom: var(--content-padding-quarter);
+    border-radius: var(--pill-border-radius);
+    background: var(--gate-needs-work-background);
+    color: var(--gate-needs-work-color);
+  }
+
   /* ==========================================================================
      Heading Anchor Copy Links & Tooltips
      ========================================================================== */
@@ -529,6 +539,9 @@
           {% for feature in category_features %}
             <article class="feature-card" id="feature-{{ feature.id }}">
               <div>
+                {% if feature.is_pending_review %}
+                  <span class="pending-review-chip">{{ ui.pending_review }}</span>
+                {% endif %}
                 <h3 class="feature-title">
                   <a class="feature-name" href="/feature/{{ feature.id }}">{{ feature.name }}</a>
                   <a class="heading-anchor-link" href="#feature-{{ feature.id }}" aria-label="{{ ui.copy_link_aria(feature.name) }}" title="Copy link to section" data-anchor="#feature-{{ feature.id }}">
@@ -573,6 +586,9 @@
         {% for feature in origin_trials %}
           <article class="feature-card" id="feature-{{ feature.id }}">
             <div>
+              {% if feature.is_pending_review %}
+                <span class="pending-review-chip">{{ ui.pending_review }}</span>
+              {% endif %}
               <h3 class="feature-title">
                 <a class="feature-name" href="/feature/{{ feature.id }}">{{ feature.name }}</a>
                 <a class="heading-anchor-link" href="#feature-{{ feature.id }}" aria-label="{{ ui.copy_link_aria(feature.name) }}" title="Copy link to section" data-anchor="#feature-{{ feature.id }}">
@@ -616,6 +632,9 @@
         {% for feature in deprecations_and_removals %}
           <article class="feature-card" id="feature-{{ feature.id }}">
             <div>
+              {% if feature.is_pending_review %}
+                <span class="pending-review-chip">{{ ui.pending_review }}</span>
+              {% endif %}
               <h3 class="feature-title">
                 <a class="feature-name" href="/feature/{{ feature.id }}">{{ feature.name }}</a>
                 <a class="heading-anchor-link" href="#feature-{{ feature.id }}" aria-label="{{ ui.copy_link_aria(feature.name) }}" title="Copy link to section" data-anchor="#feature-{{ feature.id }}">
