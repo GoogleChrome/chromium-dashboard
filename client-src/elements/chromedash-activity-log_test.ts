@@ -205,6 +205,24 @@ describe('chromedash-activity', () => {
     const dateObj = new Date(dateStr!);
     assert.isFalse(isNaN(dateObj.getTime()));
   });
+
+  it('renders an activity when amendments is undefined', async () => {
+    const actWithoutAmendments = {
+      comment_id: 5,
+      author: 'non-admin@google.com',
+      created: '2022-08-30 12:34:45.567',
+      content: 'no amendments array',
+    } as any;
+    const component = await fixture(
+      html`<chromedash-activity
+        .user=${nonAdminUser}
+        .featureId=${featureOne}
+        .activity=${actWithoutAmendments}
+      ></chromedash-activity>`
+    );
+    const commentDiv = component.shadowRoot!.querySelector('.comment');
+    assert.include(commentDiv!.innerHTML, 'no amendments array');
+  });
 });
 
 describe('chromedash-activity-log', () => {

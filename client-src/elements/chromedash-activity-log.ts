@@ -18,7 +18,12 @@ import {LitElement, css, html, nothing} from 'lit';
 import {property, state} from 'lit/decorators.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {User} from '../js-src/cs-client.js';
-import {autolink, renderAbsoluteDate, renderRelativeDate} from './utils.js';
+import {
+  autolink,
+  renderAbsoluteDate,
+  renderRelativeDate,
+  showToastMessage,
+} from './utils.js';
 
 interface Amendment {
   field_name: string;
@@ -204,7 +209,7 @@ export class ChromedashActivity extends LitElement {
           </span>
         </div>
         <div id="amendments">
-          ${this.activity.amendments.map(
+          ${(this.activity.amendments || []).map(
             a => html`
               <chromedash-amendment .amendment=${a}></chromedash-amendment>
             `
@@ -220,21 +225,27 @@ export class ChromedashActivity extends LitElement {
 
   // Handle deleting or undeleting a comment.
   async handleDelete(isUndelete) {
-    let resp;
-    if (isUndelete) {
-      resp = await window.csClient.undeleteComment(
-        this.featureId,
-        this.activity.comment_id
+    try {
+      let resp;
+      if (isUndelete) {
+        resp = await window.csClient.undeleteComment(
+          this.featureId,
+          this.activity.comment_id
+        );
+      } else {
+        resp = await window.csClient.deleteComment(
+          this.featureId,
+          this.activity.comment_id
+        );
+      }
+      if (resp && resp.message === 'Done') {
+        this.activity.deleted_by = isUndelete ? null : this.user.email;
+        this.requestUpdate();
+      }
+    } catch {
+      showToastMessage(
+        'Some errors occurred. Please refresh the page or try again later.'
       );
-    } else {
-      resp = await window.csClient.deleteComment(
-        this.featureId,
-        this.activity.comment_id
-      );
-    }
-    if (resp && resp.message === 'Done') {
-      this.activity.deleted_by = isUndelete ? null : this.user.email;
-      this.requestUpdate();
     }
   }
 }

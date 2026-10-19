@@ -416,4 +416,28 @@ describe('chromedash-feature-page', () => {
     );
     assert.exists(oudated);
   });
+
+  it('shows toast message when refetch fails', async () => {
+    const featureId = 123456;
+    window.csClient.getFeature.withArgs(featureId).returns(validFeaturePromise);
+
+    const component = await fixture<ChromedashFeaturePage>(
+      html`<chromedash-feature-page .featureId=${featureId}>
+      </chromedash-feature-page>`
+    );
+    await component.updateComplete;
+
+    window.csClient.getFeature
+      .withArgs(featureId)
+      .returns(Promise.reject(new Error('Refetch failed')));
+    component.refetch();
+    await new Promise(r => setTimeout(r, 0));
+
+    const toastEl = document.querySelector('chromedash-toast');
+    const toastMsgSpan = toastEl?.shadowRoot?.querySelector('span#msg');
+    assert.include(
+      toastMsgSpan?.innerHTML,
+      'Some errors occurred. Please refresh the page or try again later.'
+    );
+  });
 });

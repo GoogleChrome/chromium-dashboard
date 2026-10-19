@@ -289,6 +289,10 @@ export class ChromedashFeatureDetail extends LitElement {
     this.initializeGateColumn();
   }
 
+  firstUpdated() {
+    this.updateCollapsed();
+  }
+
   initializeExtensionDialog(rawQuery: Record<string, string>) {
     if (!('initiateExtension' in rawQuery)) {
       return;
@@ -304,7 +308,7 @@ export class ChromedashFeatureDetail extends LitElement {
     }
     let extensionStage;
     for (const stage of this.feature.stages) {
-      const foundStage = stage.extensions.find(
+      const foundStage = stage.extensions?.find(
         s => s.id === extensionGate.stage_id
       );
       if (foundStage) {
@@ -338,7 +342,8 @@ export class ChromedashFeatureDetail extends LitElement {
 
     const foundStages = this.feature.stages.filter(s => {
       return (
-        s.id === gate.stage_id || s.extensions.some(e => e.id === gate.stage_id)
+        s.id === gate.stage_id ||
+        s.extensions?.some(e => e.id === gate.stage_id)
       );
     });
 
@@ -354,7 +359,10 @@ export class ChromedashFeatureDetail extends LitElement {
 
     // Make sure to use the extension stage if an extension gate is being referenced.
     if (gate.gate_type === GATE_TYPES.API_EXTEND_ORIGIN_TRIAL) {
-      stage = stage.extensions.find(e => e.id === gate.stage_id)!;
+      const extStage = stage.extensions?.find(e => e.id === gate.stage_id);
+      if (extStage) {
+        stage = extStage;
+      }
     }
 
     this._fireEvent('show-gate-column', {
@@ -601,11 +609,16 @@ export class ChromedashFeatureDetail extends LitElement {
     return gatesForStage.map(g => this.renderGateChip(feStage, g));
   }
 
+  getStageLevelActions(stage: any): any[] {
+    return (stage?.actions || []).filter(act => act.url !== 'request review');
+  }
+
   hasStageActions(stage: any, feStage: StageDict) {
+    const stageActions = this.getStageLevelActions(stage);
     // TODO(DanielRyanSmith): This can be removed once PSA ship stages have
     // their API owners gate removed.
     if (
-      stage?.actions?.length > 0 &&
+      stageActions.length > 0 &&
       this.feature.feature_type_int ===
         FEATURE_TYPES.FEATURE_TYPE_CODE_CHANGE_ID[0]
     ) {
@@ -618,7 +631,7 @@ export class ChromedashFeatureDetail extends LitElement {
     );
     // If there are actions to be displayed for this stage, and
     // these actions are not displayed at the gate-level, return true.
-    if (stage?.actions?.length > 0 && !hasOwnersGate) {
+    if (stageActions.length > 0 && !hasOwnersGate) {
       return true;
     }
     return false;
@@ -671,7 +684,9 @@ export class ChromedashFeatureDetail extends LitElement {
       return nothing;
     }
     return html`
-      ${stage.actions.map(act => this.renderStageAction(act, stage, feStage))}
+      ${this.getStageLevelActions(stage).map(act =>
+        this.renderStageAction(act, stage, feStage)
+      )}
     `;
   }
 
@@ -703,12 +718,13 @@ export class ChromedashFeatureDetail extends LitElement {
     const trialButton = this.renderOriginTrialButton(feStage);
     const registrantsDashboardButton =
       this.renderRegistrantsDashboardButton(feStage);
-    const extensionGateChips = feStage.extensions?.map(extension => {
-      return html` <div class="gates">
-        ${STAGE_SHORT_NAMES[extension.stage_type]}:
-        ${this.renderGateChips(extension)}
-      </div>`;
-    });
+    const extensionGateChips =
+      feStage.extensions?.map(extension => {
+        return html` <div class="gates">
+          ${STAGE_SHORT_NAMES[extension.stage_type]}:
+          ${this.renderGateChips(extension)}
+        </div>`;
+      }) || [];
     // Gates should only be prefixed with stage name if gates from multiple stages are displayed.
     let gatesPrefix = '';
     if (extensionGateChips.length > 0) {
@@ -795,6 +811,7 @@ export class ChromedashFeatureDetail extends LitElement {
     );
     const originTrialNotCreatedYet = !feStage.origin_trial_id;
     if (
+      !this.canEdit ||
       userCannotViewOTControls ||
       isNotOriginTrialStage ||
       originTrialNotCreatedYet
@@ -803,7 +820,7 @@ export class ChromedashFeatureDetail extends LitElement {
     }
 
     // Add button to finalize an extension if the extension has been approved.
-    const extensionReadyForFinalize = feStage.extensions.find(e => {
+    const extensionReadyForFinalize = feStage.extensions?.find(e => {
       const extensionGate: GateDict | undefined = this.gates.find(
         g => g.stage_id === e.id
       );
@@ -864,7 +881,7 @@ export class ChromedashFeatureDetail extends LitElement {
       this.user &&
       (this.user.email.endsWith('@chromium.org') ||
         this.user.email.endsWith('@google.com'));
-    if (!canSeeOTControls) {
+    if (!canSeeOTControls || !this.canEdit) {
       return nothing;
     }
 
