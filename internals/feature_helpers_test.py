@@ -2132,6 +2132,8 @@ class DeveloperReleaseNotesFeaturesTest(testing_config.CustomTestCase):
             fe.key.delete()
         for s in Stage.query():
             s.key.delete()
+        for g in Gate.query():
+            g.key.delete()
         for s in FeatureSummarySuggestion.query():
             s.key.delete()
 
@@ -2298,3 +2300,82 @@ class DeveloperReleaseNotesFeaturesTest(testing_config.CustomTestCase):
             core_enums.ReleaseNoteLinkType.ORIGIN_TRIAL, ot_link['type']
         )
         self.assertEqual('Origin Trial', ot_link['title'])
+
+    def test_get_developer_release_notes_features__behind_a_flag_excluded(
+        self,
+    ):
+        """It excludes features that are in developer trial (BEHIND_A_FLAG) in the milestone."""
+        dt_feature = FeatureEntry(
+            id=104,
+            name='Sample Dev Trial Feature',
+            summary='Dev trial summary',
+            category=1,
+            impl_status_chrome=core_enums.BEHIND_A_FLAG,
+            owner_emails=['owner@example.com'],
+            feature_type=core_enums.FEATURE_TYPE_INCUBATE_ID,
+        )
+        dt_feature.put()
+        stage_dt = Stage(
+            feature_id=104,
+            stage_type=core_enums.STAGE_BLINK_DEV_TRIAL,
+            milestones=MilestoneSet(desktop_first=132),
+        )
+        stage_dt.put()
+
+        features = feature_helpers.get_developer_release_notes_features(132)
+        feature_ids = [f['id'] for f in features]
+        self.assertEqual([101], feature_ids)
+
+    def test_get_developer_release_notes_features__rollout_section_excluded(
+        self,
+    ):
+        """It excludes features that are in ROLLOUT_SECTION in the milestone."""
+        rollout_feature = FeatureEntry(
+            id=105,
+            name='Sample Rollout Feature',
+            summary='Rollout summary',
+            category=1,
+            impl_status_chrome=core_enums.ENABLED_BY_DEFAULT,
+            owner_emails=['owner@example.com'],
+            feature_type=core_enums.FEATURE_TYPE_INCUBATE_ID,
+        )
+        rollout_feature.put()
+        stage_rollout = Stage(
+            feature_id=105,
+            stage_type=core_enums.STAGE_ENT_ROLLOUT,
+            rollout_milestone=132,
+        )
+        stage_rollout.put()
+
+        features = feature_helpers.get_developer_release_notes_features(132)
+        feature_ids = [f['id'] for f in features]
+        self.assertEqual([101], feature_ids)
+
+    def test_get_developer_release_notes_features__pending_review_gates(self):
+        """It sets is_pending_review=True when a stage gate is not in Gate.APPROVED_STATES."""
+        gate = Gate(
+            feature_id=101,
+            stage_id=self.stage_1.key.integer_id(),
+            gate_type=core_enums.GATE_API_SHIP,
+            state=Gate.PREPARING,
+        )
+        gate.put()
+
+        features = feature_helpers.get_developer_release_notes_features(132)
+        self.assertEqual(1, len(features))
+        self.assertTrue(features[0]['is_pending_review'])
+
+    def test_get_developer_release_notes_features__all_approved_gates(self):
+        """It sets is_pending_review=False when all stage gates are in Gate.APPROVED_STATES."""
+        for idx, state in enumerate(Gate.APPROVED_STATES):
+            gate = Gate(
+                feature_id=101,
+                stage_id=self.stage_1.key.integer_id(),
+                gate_type=core_enums.GATE_API_SHIP + idx,
+                state=state,
+            )
+            gate.put()
+
+        features = feature_helpers.get_developer_release_notes_features(132)
+        self.assertEqual(1, len(features))
+        self.assertFalse(features[0]['is_pending_review'])
