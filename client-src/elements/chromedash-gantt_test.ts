@@ -154,4 +154,27 @@ describe('chromedash-gantt', () => {
     assert.notInclude(webViewChart?.innerHTML, 'Dev Trial');
     assert.notInclude(webViewChart?.innerHTML, 'Origin Trial: 100 to 103');
   });
+
+  it('omits platform rows with no milestones and handles missing extensions array', async () => {
+    const featureWithDesktopOnly = {
+      ...validFeature,
+      stages: [
+        {
+          id: 1,
+          stage_type: 150,
+          intent_stage: 2,
+          desktop_first: 100,
+          desktop_last: 102,
+        },
+      ],
+    };
+    const component: ChromedashGantt = await fixture(
+      html`<chromedash-gantt
+        .feature=${featureWithDesktopOnly}
+      ></chromedash-gantt>`
+    );
+    await component.updateComplete;
+    assert.exists(component.renderRoot.querySelector('#desktop-chart'));
+    assert.isNull(component.renderRoot.querySelector('#ios-chart'));
+  });
 });
