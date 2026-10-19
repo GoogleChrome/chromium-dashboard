@@ -117,18 +117,24 @@ export class ChromedashAdminFeatureLinksPage extends LitElement {
                     : nothing
                 }
               </div>
-              <a
-                href=${`/feature/${sample.feature_ids}`}
-                target="_blank"
-                rel="noopener"
-              >
-                <sl-icon
-                  library="material"
-                  name="link"
-                  slot="prefix"
-                  title="linked feature"
-                ></sl-icon>
-              </a>
+              <div>
+                ${(sample.feature_ids || []).map(
+                  featureId => html`
+                    <a
+                      href=${`/feature/${featureId}`}
+                      target="_blank"
+                      rel="noopener"
+                    >
+                      <sl-icon
+                        library="material"
+                        name="link"
+                        slot="prefix"
+                        title="linked feature"
+                      ></sl-icon>
+                    </a>
+                  `
+                )}
+              </div>
             </div>
           `
         )}
@@ -137,6 +143,9 @@ export class ChromedashAdminFeatureLinksPage extends LitElement {
   }
 
   renderComponents() {
+    if (!this.featureLinksSummary) {
+      return nothing;
+    }
     return html`
       <div class="feature-links-summary">
         <sl-details summary="Link Summary" open>
