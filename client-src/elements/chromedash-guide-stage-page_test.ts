@@ -190,5 +190,47 @@ describe('chromedash-guide-stage-page', () => {
       form.innerHTML,
       'This feature already has implementation status'
     );
+
+    const initialLength = (component as ChromedashGuideStagePage).fieldValues
+      .length;
+    (component as ChromedashGuideStagePage).submitting = true;
+    await (component as ChromedashGuideStagePage).updateComplete;
+    assert.equal(
+      (component as ChromedashGuideStagePage).fieldValues.length,
+      initialLength
+    );
+  });
+
+  it('handles missing matching gate in getGates without crashing', async () => {
+    const stageId = 10;
+    const featureId = 123456;
+    window.csClient.getFeature.withArgs(featureId).returns(validFeaturePromise);
+    window.csClient.getStage
+      .withArgs(featureId, stageId)
+      .returns(validStagePromise);
+    const getGatesStub = sinon
+      .stub(window.csClient, 'getGates')
+      .resolves({gates: [{id: 99, stage_id: 999} as any], possible_owners: {}});
+
+    const component = await fixture<ChromedashGuideStagePage>(
+      html`<chromedash-guide-stage-page
+        .stageId=${stageId}
+        .featureId=${featureId}
+      >
+      </chromedash-guide-stage-page>`
+    );
+    await component.updateComplete;
+
+    assert.isFalse(component.loading);
+    assert.isUndefined(component.gateId);
+
+    // Stage-specific field 'shipped_milestone' is populated from stage.desktop_first
+    const shippedField = component.fieldValues.find(
+      fv => fv.name === 'shipped_milestone'
+    );
+    assert.exists(shippedField);
+    assert.equal(shippedField.value, 100);
+
+    getGatesStub.restore();
   });
 });

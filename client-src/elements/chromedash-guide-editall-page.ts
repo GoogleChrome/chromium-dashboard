@@ -88,10 +88,9 @@ export class ChromedashGuideEditallPage extends LitElement {
   loading = true;
   @state()
   submitting = false;
-  @state()
   previousStageTypeRendered = 0;
-  @state()
   sameTypeRendered = 0;
+  nextFieldIndex = 0;
   @state()
   fieldValues: FieldInfo[] & {feature?: Feature} = [];
   @state()
@@ -116,6 +115,7 @@ export class ChromedashGuideEditallPage extends LitElement {
       window.csClient.getChannels(),
     ])
       .then(async ([feature, channels]) => {
+        this.fieldValues = [];
         this.feature = feature;
         this.currentBetaMilestone = Number(channels.beta.mstone);
         if (this.feature.name) {
@@ -194,6 +194,7 @@ export class ChromedashGuideEditallPage extends LitElement {
     // The field has been updated, so it is considered touched.
     this.fieldValues[index].touched = true;
     this.fieldValues[index].value = value;
+    this.fieldValues[index].isMarkdown = event.detail.isMarkdown;
   }
 
   getNextPage() {
@@ -321,7 +322,7 @@ export class ChromedashGuideEditallPage extends LitElement {
       ) {
         return nothing;
       }
-      let value = formattedFeature[field];
+      let value = formattedFeature[field] ?? formattedFeature[featureJSONKey];
       let stageId = null;
       if (STAGE_SPECIFIC_FIELDS.has(featureJSONKey)) {
         value = getStageValue(feStage, featureJSONKey);
@@ -332,13 +333,17 @@ export class ChromedashGuideEditallPage extends LitElement {
         // This is to avoid repeated fields on the edit-all page.
         return nothing;
       }
-      const index = this.fieldValues.length;
-      this.fieldValues.push({
-        name: featureJSONKey,
-        touched: false,
-        value,
-        stageId,
-      });
+      const index = this.nextFieldIndex++;
+      if (index >= this.fieldValues.length) {
+        this.fieldValues.push({
+          name: featureJSONKey,
+          touched: false,
+          value,
+          stageId,
+        });
+      } else {
+        value = this.fieldValues[index].value;
+      }
       featureFieldsDisplayed.add(featureJSONKey);
 
       return html`
@@ -394,6 +399,9 @@ export class ChromedashGuideEditallPage extends LitElement {
    * @return {Array} formsToRender, All HTML elements to render in the form.
    */
   getForms(formattedFeature, feStages) {
+    this.previousStageTypeRendered = 0;
+    this.sameTypeRendered = 0;
+    this.nextFieldIndex = 0;
     // All features display the metadata section.
     let fieldsOnly = flattenSections(
       formattedFeature.is_enterprise_feature
@@ -492,6 +500,7 @@ export class ChromedashGuideEditallPage extends LitElement {
       })
       .then(() => window.csClient.getFeature(this.featureId))
       .then(feature => {
+        this.fieldValues = [];
         this.feature = feature;
       })
       .catch(() => {
@@ -508,6 +517,7 @@ export class ChromedashGuideEditallPage extends LitElement {
       .deleteStage(this.featureId, stage.id)
       .then(() => window.csClient.getFeature(this.featureId))
       .then(feature => {
+        this.fieldValues = [];
         this.feature = feature;
       })
       .catch(() => {
