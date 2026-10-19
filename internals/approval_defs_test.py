@@ -212,9 +212,17 @@ class GetApproversTest(testing_config.CustomTestCase):
     @mock.patch('internals.approval_defs.fetch_owners')
     def test__hard_coded(self, mock_fetch_owner):
         """Some approvals may have a hard-coded list of appovers."""
-        actual = approval_defs.get_approvers(1)
+        with mock.patch(
+            'framework.rediscache.get', wraps=rediscache.get
+        ) as mock_redis_get:
+            actual = approval_defs.get_approvers(1)
+            mock_redis_get.assert_not_called()
         mock_fetch_owner.assert_not_called()
         self.assertEqual(actual, ['approver@example.com'])
+        actual.append('mutated@example.com')
+        self.assertEqual(
+            approval_defs.get_approvers(1), ['approver@example.com']
+        )
 
     @mock.patch(
         'internals.approval_defs.APPROVAL_FIELDS_BY_ID', MOCK_APPROVALS_BY_ID
