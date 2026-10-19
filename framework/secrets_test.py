@@ -82,7 +82,9 @@ class SecretsFunctionsTest(testing_config.CustomTestCase):
         """We can get this secret, and it is cached for repeated calls."""
         s1 = secrets.get_xsrf_secret()
         s2 = secrets.get_xsrf_secret()
+        session = secrets.get_session_secret()
         self.assertIsNotNone(s1)
+        self.assertIsNotNone(session)
         self.assertEqual(s1, s2)
         mock_get_singleton.assert_called_once()
 
@@ -95,7 +97,9 @@ class SecretsFunctionsTest(testing_config.CustomTestCase):
         """We can get this secret, and it is cached for repeated calls."""
         s1 = secrets.get_session_secret()
         s2 = secrets.get_session_secret()
+        xsrf = secrets.get_xsrf_secret()
         self.assertIsNotNone(s1)
+        self.assertIsNotNone(xsrf)
         self.assertEqual(s1, s2)
         mock_get_singleton.assert_called_once()
 
