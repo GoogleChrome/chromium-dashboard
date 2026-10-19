@@ -19,6 +19,8 @@ Verifies the access control logic across different user roles
 (admin, editor, owner, etc.) and feature visibility states.
 """
 
+from unittest import mock
+
 import werkzeug.exceptions  # Flask HTTP stuff.
 
 import testing_config  # Must be imported before the module under test.
@@ -299,10 +301,16 @@ class PermissionFunctionTests(testing_config.CustomTestCase):
 
     def test_can_create_feature__registered_orgs(self):
         """Users from any registered org domain can create features."""
-        for domain in permissions.REGISTERED_USER_ORGANIZATIONS:
-            testing_config.sign_in(f'user{domain}', 123)
-            user = users.get_current_user()
-            self.assertTrue(permissions.can_create_feature(user))
+        with mock.patch.object(
+            user_models.AppUser,
+            'get_app_user',
+            wraps=user_models.AppUser.get_app_user,
+        ) as mock_get_app_user:
+            for domain in permissions.REGISTERED_USER_ORGANIZATIONS:
+                testing_config.sign_in(f'user{domain}', 123)
+                user = users.get_current_user()
+                self.assertTrue(permissions.can_create_feature(user))
+            mock_get_app_user.assert_not_called()
 
     def test_can_create_feature__unregistered_orgs(self):
         """Unregistered users from non-whitelisted orgs cannot create features."""
