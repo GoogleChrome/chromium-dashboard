@@ -12,6 +12,10 @@ import {
 
 const AXE_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'best-practice'];
 
+// Each milestone/language change is a full server-side render, so allow more
+// time than the default 5s expect timeout for the navigation to complete.
+const NAV_TIMEOUT = 20000;
+
 /**
  * Shared helper to create a feature in the Datastore emulator,
  * assign its shipped milestone, run test assertions, and ensure clean teardown.
@@ -124,7 +128,9 @@ test.describe('Release Notes SSR Page', () => {
     await jumpInput.fill('153');
     await jumpInput.press('Enter');
 
-    await expect(page).toHaveURL(/\/release-notes\/153/);
+    await expect(page).toHaveURL(/\/release-notes\/153/, {
+      timeout: NAV_TIMEOUT,
+    });
     const newHeading = page.getByRole('heading', {
       name: 'Chrome 153 Release Notes',
     });
@@ -144,7 +150,9 @@ test.describe('Release Notes SSR Page', () => {
     await jumpInput.fill('Chrome 154');
     await jumpInput.press('Enter');
 
-    await expect(page).toHaveURL(/\/release-notes\/154/);
+    await expect(page).toHaveURL(/\/release-notes\/154/, {
+      timeout: NAV_TIMEOUT,
+    });
     const newHeading = page.getByRole('heading', {
       name: 'Chrome 154 Release Notes',
     });
@@ -182,7 +190,9 @@ test.describe('Release Notes SSR Page', () => {
     await expect(nextStepper).toBeVisible();
 
     await nextStepper.click();
-    await expect(page).toHaveURL(/\/release-notes\/153/);
+    await expect(page).toHaveURL(/\/release-notes\/153/, {
+      timeout: NAV_TIMEOUT,
+    });
 
     const newHeading = page.getByRole('heading', {
       name: 'Chrome 153 Release Notes',
@@ -319,8 +329,16 @@ test.describe('Release Notes SSR Page', () => {
   test('should perform HTTP 302 redirect for historical milestones prior to M152 cutoff', async ({
     page,
   }) => {
-    await page.goto('/release-notes/151', {timeout: 30000});
-    await expect(page).toHaveURL(/developer\.chrome\.com\/release-notes\/151/);
+    // Inspect the redirect response directly instead of following it, so the
+    // test does not depend on loading the external developer.chrome.com site.
+    const response = await page.request.get('/release-notes/151', {
+      maxRedirects: 0,
+      timeout: 30000,
+    });
+    expect(response.status()).toBe(302);
+    expect(response.headers()['location']).toBe(
+      'https://developer.chrome.com/release-notes/151'
+    );
   });
 
   test('should pass automated WCAG 2.1 AA and Best Practice Axe audit on empty state', async ({
@@ -450,7 +468,9 @@ test.describe('Release Notes SSR Page', () => {
     await nextStepper.focus();
     await expect(nextStepper).toBeFocused();
     await page.keyboard.press('Enter');
-    await expect(page).toHaveURL(/\/release-notes\/153/);
+    await expect(page).toHaveURL(/\/release-notes\/153/, {
+      timeout: NAV_TIMEOUT,
+    });
     await expect(
       page.getByRole('heading', {
         name: 'Chrome 153 Release Notes',
@@ -504,7 +524,9 @@ test.describe('Release Notes SSR Page', () => {
     await expect(langSelect).toBeVisible();
 
     await langSelect.selectOption('es');
-    await expect(page).toHaveURL(/\/release-notes\/152\?hl=es/);
+    await expect(page).toHaveURL(/\/release-notes\/152\?hl=es/, {
+      timeout: NAV_TIMEOUT,
+    });
 
     const spanishHeading = page.getByRole('heading', {
       name: 'Notas de la versión de Chrome 152',
