@@ -582,7 +582,8 @@ class StagesAPITest(testing_config.CustomTestCase):
             400, description='Stage type not specified.'
         )
 
-    def test_post__valid(self):
+    @mock.patch('framework.rediscache.delete_keys_with_prefix')
+    def test_post__valid(self, mock_dkwp):
         """A valid POST request should create a new stage."""
         testing_config.sign_in('feature_owner@example.com', 123)
         json = {
@@ -601,6 +602,7 @@ class StagesAPITest(testing_config.CustomTestCase):
         stage: Stage | None = Stage.get_by_id(stage_id)
         self.assertIsNotNone(stage)
         self.assertEqual(stage.stage_type, 151)
+        mock_dkwp.assert_called_once_with(FeatureEntry.SEARCH_CACHE_KEY)
 
     def test_post__gate_created(self):
         """A Gate entity is created when a gated stage is created."""
