@@ -123,7 +123,7 @@ export function findFirstFeatureStage(
   currentStage: StageDict,
   fe: Feature
 ): StageDict | null {
-  if (desiredStageType === currentStage.stage_stage) {
+  if (desiredStageType === currentStage.stage_type) {
     return currentStage;
   }
   return (

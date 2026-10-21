@@ -218,6 +218,7 @@ describe('preflight functions', () => {
       stages: [
         {
           name: 'Start incubating',
+          stage_type: 110,
           progress_items: [
             {name: 'Motivation', field: 'motivation'},
             {name: 'Explainer', field: 'explainer_links'},
@@ -226,6 +227,7 @@ describe('preflight functions', () => {
         },
         {
           name: 'Start prototyping',
+          stage_type: 120,
           progress_items: [
             {name: 'Spec link', field: 'spec_link'},
             {name: 'Draft API spec'},
@@ -233,6 +235,7 @@ describe('preflight functions', () => {
         },
         {
           name: 'Evaluate readiness to ship',
+          stage_type: 140,
           progress_items: [{name: 'Doc links', field: 'doc_links'}],
         },
       ],
@@ -250,7 +253,7 @@ describe('preflight functions', () => {
       ],
     } as Action;
 
-    const feStage = {id: 20, stage_type: 120, intent_stage: 2} as StageDict;
+    const feStage = {id: 20, stage_type: 120} as StageDict;
 
     const baseUser: User = {
       id: 1,
@@ -328,7 +331,7 @@ describe('preflight functions', () => {
       assert.equal(row0Cells[2].textContent?.trim(), 'Motivation');
       assert.equal(
         row0Cells[3].querySelector('a')?.getAttribute('href'),
-        '/guide/stage/123456/1/10#id_motivation'
+        '/guide/stage/123456/10#id_motivation'
       );
 
       const row1Cells = stage1Rows[1].querySelectorAll('td');
@@ -340,7 +343,7 @@ describe('preflight functions', () => {
       assert.equal(row1Cells[2].textContent?.trim(), 'Explainer');
       assert.equal(
         row1Cells[3].querySelector('a')?.getAttribute('href'),
-        '/guide/stage/123456/1/10#id_explainer_links'
+        '/guide/stage/123456/10#id_explainer_links'
       );
 
       const row2Cells = stage1Rows[2].querySelectorAll('td');
@@ -397,6 +400,7 @@ describe('preflight functions', () => {
         stages: [
           {
             name: 'Start incubating',
+            stage_type: 110,
             progress_items: [
               {
                 name: 'Motivation',
@@ -474,7 +478,7 @@ describe('preflight functions', () => {
       );
       assert.equal(
         valueCells[3].querySelector('a')?.getAttribute('href'),
-        '/guide/stage/123456/1/10#id_explainer_links'
+        '/guide/stage/123456/10#id_explainer_links'
       );
       assert.equal(getComputedStyle(valueCells[0]).borderTopStyle, 'none');
 
@@ -951,7 +955,7 @@ describe('preflight functions', () => {
             .querySelectorAll('td')[3]
             .querySelector('a')
             ?.getAttribute('href'),
-          '/guide/stage/123456/1/10#id_explainer_links'
+          '/guide/stage/123456/10#id_explainer_links'
         );
         assert.isEmpty(component.shadowRoot!.querySelectorAll('tr.feedback'));
 
@@ -1058,7 +1062,7 @@ describe('preflight functions', () => {
         );
         assert.equal(
           valueCells[3].querySelector('a')?.getAttribute('href'),
-          '/guide/stage/123456/1/10#id_explainer_links'
+          '/guide/stage/123456/10#id_explainer_links'
         );
         assert.equal(getComputedStyle(valueCells[0]).borderTopStyle, 'none');
 
@@ -1104,7 +1108,7 @@ describe('preflight functions', () => {
         );
         assert.equal(
           motivationValueCells[3].querySelector('a')?.getAttribute('href'),
-          '/guide/stage/123456/1/10#id_motivation'
+          '/guide/stage/123456/10#id_motivation'
         );
 
         // Expanding "Draft API spec" (which has no field) renders feedback sl-input
