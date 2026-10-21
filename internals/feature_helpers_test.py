@@ -2379,3 +2379,40 @@ class DeveloperReleaseNotesFeaturesTest(testing_config.CustomTestCase):
         features = feature_helpers.get_developer_release_notes_features(132)
         self.assertEqual(1, len(features))
         self.assertFalse(features[0]['is_pending_review'])
+
+    def test_get_developer_release_notes_features__psa_ignores_api_ship_gate(
+        self,
+    ):
+        """It ignores unapproved GATE_API_SHIP on PSA features, but counts XFN gates."""
+        self.feature_1.feature_type = core_enums.FEATURE_TYPE_CODE_CHANGE_ID
+        self.feature_1.put()
+        self.stage_1.stage_type = core_enums.STAGE_PSA_SHIPPING
+        self.stage_1.put()
+        rediscache.delete_keys_with_prefix(FeatureEntry.SEARCH_CACHE_KEY)
+
+        api_gate = Gate(
+            feature_id=101,
+            stage_id=self.stage_1.key.integer_id(),
+            gate_type=core_enums.GATE_API_SHIP,
+            state=Gate.PREPARING,
+        )
+        api_gate.put()
+        privacy_gate = Gate(
+            feature_id=101,
+            stage_id=self.stage_1.key.integer_id(),
+            gate_type=core_enums.GATE_PRIVACY_SHIP,
+            state=Vote.APPROVED,
+        )
+        privacy_gate.put()
+
+        features = feature_helpers.get_developer_release_notes_features(132)
+        self.assertEqual(1, len(features))
+        self.assertFalse(features[0]['is_pending_review'])
+
+        # If a non-API-Owners gate on a PSA feature is unapproved, it is still pending review.
+        privacy_gate.state = Gate.PREPARING
+        privacy_gate.put()
+
+        features = feature_helpers.get_developer_release_notes_features(132)
+        self.assertEqual(1, len(features))
+        self.assertTrue(features[0]['is_pending_review'])
