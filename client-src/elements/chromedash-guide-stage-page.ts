@@ -53,8 +53,6 @@ export class ChromedashGuideStagePage extends LitElement {
   stageId = 0;
   @property({attribute: false})
   featureId = 0;
-  @property({attribute: false})
-  intentStage = 0;
   @property({type: String})
   appTitle = '';
   @state()

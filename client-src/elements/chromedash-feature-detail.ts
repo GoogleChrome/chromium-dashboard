@@ -751,9 +751,7 @@ export class ChromedashFeatureDetail extends LitElement {
     }
     return html` <sl-button
       size="small"
-      href="/guide/stage/${
-        this.feature.id
-      }/${processStage.outgoing_stage}/${feStage.id}"
+      href="/guide/stage/${this.feature.id}/${feStage.id}"
       >Edit fields</sl-button
     >`;
   }

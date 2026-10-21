@@ -88,7 +88,6 @@ describe('chromedash-checklist-summary', () => {
 
   const processStage = {
     name: 'Prepare to ship',
-    outgoing_stage: 3,
     stage_type: 160,
     actions: [action],
     progress_items: [

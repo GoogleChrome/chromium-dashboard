@@ -218,7 +218,6 @@ describe('preflight functions', () => {
       stages: [
         {
           name: 'Start incubating',
-          outgoing_stage: 1,
           progress_items: [
             {name: 'Motivation', field: 'motivation'},
             {name: 'Explainer', field: 'explainer_links'},
@@ -227,7 +226,6 @@ describe('preflight functions', () => {
         },
         {
           name: 'Start prototyping',
-          outgoing_stage: 2,
           progress_items: [
             {name: 'Spec link', field: 'spec_link'},
             {name: 'Draft API spec'},
@@ -235,7 +233,6 @@ describe('preflight functions', () => {
         },
         {
           name: 'Evaluate readiness to ship',
-          outgoing_stage: 3,
           progress_items: [{name: 'Doc links', field: 'doc_links'}],
         },
       ],
@@ -400,7 +397,6 @@ describe('preflight functions', () => {
         stages: [
           {
             name: 'Start incubating',
-            outgoing_stage: 1,
             progress_items: [
               {
                 name: 'Motivation',

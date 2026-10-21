@@ -113,7 +113,6 @@ describe('chromedash-gate-column', () => {
     const gate = {id: 99, stage_id: 20} as unknown as GateDict;
     const processStage = {
       name: 'Prepare to ship',
-      outgoing_stage: 3,
       progress_items: [{name: 'Explainer', field: 'explainer_links'}],
     } as unknown as ProcessStage;
     const process = {
