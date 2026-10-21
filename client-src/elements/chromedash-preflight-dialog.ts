@@ -25,7 +25,7 @@ import {
 } from './form-field-enums.js';
 import {makeDisplaySpec} from './form-field-specs.js';
 import {FLAT_METADATA_FIELDS} from './form-definition.js';
-import {findFirstFeatureStage, userCanEdit} from './utils.js';
+import {findFirstFeatureStage, renderValue, userCanEdit} from './utils.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {customElement, state} from 'lit/decorators.js';
 import {Feature, StageDict, User} from '../js-src/cs-client.js';
@@ -36,7 +36,6 @@ import {
   ProcessStage,
   ProgressItem,
 } from './chromedash-gate-column.js';
-import {renderValue} from './chromedash-feature-detail.js';
 
 export interface ProgressVoteValue {
   state: number;

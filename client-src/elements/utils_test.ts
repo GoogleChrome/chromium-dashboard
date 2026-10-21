@@ -25,10 +25,11 @@ import {
   isVerifiedWithinGracePeriod,
   parseRawTimestamp,
   maybeAlertOnLateChange,
+  renderValue,
 } from './utils.js';
-import {assert} from '@open-wc/testing';
+import {assert, fixture} from '@open-wc/testing';
 import {OT_SETUP_STATUS_OPTIONS} from './form-field-enums.js';
-import {Channels, Feature} from '../js-src/cs-client.js';
+import {Channels, Feature, StageDict} from '../js-src/cs-client.js';
 
 const compareAutolinkResult = (result, expected) => {
   assert.equal(result.length, expected.length);
@@ -1126,5 +1127,93 @@ describe('maybeAlertOnLateChange', () => {
     ];
     maybeAlertOnLateChange(feature as any, fieldValues as any, 126);
     assert.isTrue(alertStub.calledOnce);
+  });
+});
+
+describe('renderValue', () => {
+  const feStage = {id: 10} as StageDict;
+  const feature = {
+    id: 123456789,
+    is_enterprise_feature: false,
+    stages: [],
+  };
+
+  it('renders placeholder when field value is not defined', async () => {
+    const el = await fixture<HTMLElement>(
+      html`<div>
+        ${renderValue(feStage, feature as unknown as Feature, 'motivation')}
+      </div>`
+    );
+    assert.isNotNull(el.querySelector('i'));
+    assert.equal(el.textContent?.trim(), 'No information provided yet');
+  });
+
+  it('renders checkbox values as True or False', async () => {
+    const featureWithCheckbox = {
+      ...feature,
+      browsers: {chrome: {prefixed: true}},
+    } as unknown as Feature;
+    const el = await fixture<HTMLElement>(
+      html`<div>${renderValue(feStage, featureWithCheckbox, 'prefixed')}</div>`
+    );
+    assert.equal(el.querySelector('span.text')?.textContent?.trim(), 'True');
+  });
+
+  it('renders url and multi-url fields as chromedash-link elements', async () => {
+    const featureWithUrls = {
+      ...feature,
+      standards: {spec: 'https://example.com/spec'},
+      explainer_links: [
+        'https://example.com/explainer-1',
+        'https://example.com/explainer-2',
+      ],
+    } as unknown as Feature;
+
+    const specEl = await fixture<HTMLElement>(
+      html`<div>${renderValue(feStage, featureWithUrls, 'spec_link')}</div>`
+    );
+    const specLink = specEl.querySelector('chromedash-link');
+    assert.isNotNull(specLink);
+    assert.equal(specLink!.getAttribute('href'), 'https://example.com/spec');
+
+    const explainersEl = await fixture<HTMLElement>(
+      html`<div>
+        ${renderValue(feStage, featureWithUrls, 'explainer_links')}
+      </div>`
+    );
+    const listItems = explainersEl.querySelectorAll(
+      'ul.inline-list li chromedash-link'
+    );
+    assert.equal(listItems.length, 2);
+    assert.equal(
+      listItems[0].getAttribute('href'),
+      'https://example.com/explainer-1'
+    );
+    assert.equal(
+      listItems[1].getAttribute('href'),
+      'https://example.com/explainer-2'
+    );
+  });
+
+  it('renders text and markdown fields appropriately', async () => {
+    const featureWithText = {
+      ...feature,
+      motivation: 'Short text',
+      summary: '**Bold summary**',
+      markdown_fields: ['summary'],
+    } as unknown as Feature;
+
+    const textEl = await fixture<HTMLElement>(
+      html`<div>${renderValue(feStage, featureWithText, 'motivation')}</div>`
+    );
+    assert.equal(
+      textEl.querySelector('span.text')?.textContent?.trim(),
+      'Short text'
+    );
+
+    const mdEl = await fixture<HTMLElement>(
+      html`<div>${renderValue(feStage, featureWithText, 'summary')}</div>`
+    );
+    assert.equal(mdEl.querySelector('strong')?.textContent, 'Bold summary');
   });
 });

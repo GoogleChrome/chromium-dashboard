@@ -28,7 +28,7 @@ import {
   User,
 } from '../js-src/cs-client.js';
 import {markupAutolinks} from './autolink.js';
-import {FORMS_BY_STAGE_TYPE, FormattedFeature} from './form-definition.js';
+import {FormattedFeature, unambiguousStageName} from './form-definition.js';
 import {
   ENTERPRISE_FEATURE_CATEGORIES_DISPLAYNAME,
   ENTERPRISE_IMPACT_DISPLAYNAME,
@@ -44,6 +44,9 @@ import {
   STAGE_TYPES_ORIGIN_TRIAL,
   STAGE_TYPES_SHIPPING,
 } from './form-field-enums.js';
+import {makeDisplaySpec} from './form-field-specs.js';
+
+export {unambiguousStageName};
 
 let toastEl;
 
@@ -129,37 +132,6 @@ export function findFirstFeatureStage(
   return (
     fe.stages.find(feStage => intentStage === feStage.intent_stage) || null
   );
-}
-
-/**
- * Returns `stage`'s name, using either its `display_name` or a counter to disambiguate from other
- * stages of the same type within `feature`.
- */
-export function unambiguousStageName(
-  stage: StageDict,
-  feature: Feature | FormattedFeature
-): string | undefined {
-  const processStageName = FORMS_BY_STAGE_TYPE[stage.stage_type]?.name;
-  if (!processStageName) {
-    console.error(
-      `Unexpected stage type ${stage.stage_type} in stage ${stage.id}.`
-    );
-    return undefined;
-  }
-  if (stage.display_name) {
-    return `${processStageName}: ${stage.display_name}`;
-  }
-
-  // Count the stages of the same type that appear before this one. This is O(n^2) when it's used to
-  // number every stage, but the total number of stages is generally <20.
-  const index = feature.stages
-    .filter(s => s.stage_type === stage.stage_type)
-    .findIndex(s => s.id === stage.id);
-  if (index > 0) {
-    return `${processStageName} ${index + 1}`;
-  }
-  // Ignore if the stage wasn't found.
-  return processStageName;
 }
 
 /* Get the value of a stage field using a form-specific name */
@@ -342,6 +314,66 @@ export function getFieldValueFromFeature(
     return undefined;
   }
   return value;
+}
+
+const LONG_TEXT = 60;
+
+export function renderText(
+  value: any,
+  isMarkdown: boolean = false,
+  featureLinks: FeatureLink[] = []
+): TemplateResult {
+  value = String(value);
+  const markup: TemplateResult[] = autolink(value, featureLinks, isMarkdown);
+  if (isMarkdown) {
+    return html`${markup}`;
+  }
+  if (value.length > LONG_TEXT || value.includes('\n')) {
+    return html`<span class="longtext">${markup}</span>`;
+  }
+  return html`<span class="text">${markup}</span>`;
+}
+
+export function renderUrl(
+  value: string,
+  featureLinks: FeatureLink[] = []
+): TemplateResult {
+  if (value.startsWith('http')) {
+    return html`<chromedash-link
+      href=${value}
+      class="url ${value.length > LONG_TEXT ? 'longurl' : ''}"
+      .featureLinks=${featureLinks}
+    ></chromedash-link>`;
+  }
+  return renderText(value, false, featureLinks);
+}
+
+export function renderValue(
+  feStage: StageDict | null,
+  feature: Feature,
+  fieldId: string,
+  featureLinks: FeatureLink[] = []
+): TemplateResult {
+  const [, , fieldType, , alwaysMarkdown] = makeDisplaySpec(fieldId);
+  const value = getFieldValueFromFeature(fieldId, feStage, feature);
+  if (!isDefinedValue(value)) {
+    return html`<i>No information provided yet</i>`;
+  }
+  const isMarkdown =
+    (feature.markdown_fields || []).includes(fieldId) ||
+    Boolean(alwaysMarkdown);
+  if (fieldType == 'checkbox') {
+    return renderText(value ? 'True' : 'False', false, featureLinks);
+  } else if (fieldType == 'url') {
+    return renderUrl(value, featureLinks);
+  } else if (fieldType == 'multi-url') {
+    return html`
+      <ul class="inline-list">
+        ${value.map(url => html`<li>${renderUrl(url, featureLinks)}</li>`)}
+      </ul>
+    `;
+  }
+  return renderText(value, isMarkdown, featureLinks);
 }
 
 /* Given a stage form definition, return a flat array of the fields associated with the stage. */

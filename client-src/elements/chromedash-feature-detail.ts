@@ -40,11 +40,15 @@ import {
   STAGE_SHORT_NAMES,
   STAGE_TYPES_ORIGIN_TRIAL,
 } from './form-field-enums.js';
-import {makeDisplaySpec, makeDisplaySpecs} from './form-field-specs.js';
+import {makeDisplaySpecs} from './form-field-specs.js';
 import {
+  findProcessStage,
+  flattenSections,
   getFieldValueFromFeature,
   hasFieldValue,
   isDefinedValue,
+  parseRawQuery,
+  renderValue,
 } from './utils.js';
 
 import {property, state} from 'lit/decorators.js';
@@ -64,12 +68,6 @@ import {
   GATE_TYPES,
   STAGE_PSA_SHIPPING,
 } from './form-field-enums.js';
-import {
-  autolink,
-  findProcessStage,
-  flattenSections,
-  parseRawQuery,
-} from './utils.js';
 
 export const DETAILS_STYLES = [
   css`
@@ -95,66 +93,6 @@ export const DETAILS_STYLES = [
     }
   `,
 ];
-
-const LONG_TEXT = 60;
-
-export function renderText(
-  value: any,
-  isMarkdown: boolean = false,
-  featureLinks: FeatureLink[] = []
-): TemplateResult {
-  value = String(value);
-  const markup: TemplateResult[] = autolink(value, featureLinks, isMarkdown);
-  if (isMarkdown) {
-    return html`${markup}`;
-  }
-  if (value.length > LONG_TEXT || value.includes('\n')) {
-    return html`<span class="longtext">${markup}</span>`;
-  }
-  return html`<span class="text">${markup}</span>`;
-}
-
-export function renderUrl(
-  value: string,
-  featureLinks: FeatureLink[] = []
-): TemplateResult {
-  if (value.startsWith('http')) {
-    return html`<chromedash-link
-      href=${value}
-      class="url ${value.length > LONG_TEXT ? 'longurl' : ''}"
-      .featureLinks=${featureLinks}
-    ></chromedash-link>`;
-  }
-  return renderText(value, false, featureLinks);
-}
-
-export function renderValue(
-  feStage: StageDict | null,
-  feature: Feature,
-  fieldId: string,
-  featureLinks: FeatureLink[] = []
-): TemplateResult {
-  const [, , fieldType, , alwaysMarkdown] = makeDisplaySpec(fieldId);
-  const value = getFieldValueFromFeature(fieldId, feStage, feature);
-  if (!isDefinedValue(value)) {
-    return html`<i>No information provided yet</i>`;
-  }
-  const isMarkdown =
-    (feature.markdown_fields || []).includes(fieldId) ||
-    Boolean(alwaysMarkdown);
-  if (fieldType == 'checkbox') {
-    return renderText(value ? 'True' : 'False', false, featureLinks);
-  } else if (fieldType == 'url') {
-    return renderUrl(value, featureLinks);
-  } else if (fieldType == 'multi-url') {
-    return html`
-      <ul class="inline-list">
-        ${value.map(url => html`<li>${renderUrl(url, featureLinks)}</li>`)}
-      </ul>
-    `;
-  }
-  return renderText(value, isMarkdown, featureLinks);
-}
 
 export class ChromedashFeatureDetail extends LitElement {
   @property({type: String})
