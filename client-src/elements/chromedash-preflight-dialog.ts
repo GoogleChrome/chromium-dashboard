@@ -141,8 +141,6 @@ export class ChromedashPreflightDialog extends LitElement {
   @state()
   private _feStage!: StageDict;
   @state()
-  private _expandedItems = new Set<string>();
-  @state()
   private _resolve: (value?: boolean) => void = () => {
     console.log('Missing resolve action');
   };
@@ -166,8 +164,30 @@ export class ChromedashPreflightDialog extends LitElement {
           margin-bottom: var(--content-padding-half);
         }
 
-        .data-table tr:first-child td {
+        .data-table tbody:first-of-type tr:first-child td {
           border-top: none;
+        }
+
+        .data-table tr.feature-values,
+        .data-table tr.feedback,
+        .data-table tr.criteria {
+          display: none;
+        }
+
+        .data-table tr.feature-values.always-show,
+        .data-table tbody:has(details[open]) tr {
+          display: table-row;
+        }
+
+        .data-table
+          tbody:has(tr.feature-values.always-show)
+          tr:first-child
+          .edit-progress-item,
+        .data-table
+          tbody:has(details[open])
+          tr:first-child
+          .edit-progress-item {
+          display: none;
         }
 
         .data-table tr.feature-value td,
@@ -198,12 +218,17 @@ export class ChromedashPreflightDialog extends LitElement {
           width: 1em;
         }
 
-        .data-table td:first-child sl-icon {
-          cursor: pointer;
+        .data-table td:first-child details {
+          padding: 0;
+        }
+
+        .data-table td:first-child details summary {
+          list-style-type: disclosure-closed;
           transition: transform 200ms ease-in-out;
         }
 
-        .data-table td:first-child sl-icon.expanded {
+        .data-table td:first-child details[open] summary {
+          margin-bottom: 0;
           transform: rotate(90deg);
         }
 
@@ -300,14 +325,16 @@ export class ChromedashPreflightDialog extends LitElement {
     this._stage = stage;
     this._feStage = feStage;
     this._featureGates = featureGates;
-    this._expandedItems = new Set(
-      Object.entries(progress || {})
-        .filter(([_, vote]) => Boolean((vote as ProgressVoteValue)?.feedback))
-        .map(([itemName]) => itemName)
-    );
     this._resolve = resolve;
     this._dirty = false;
     this._touched = new Set();
+    this.renderRoot
+      .querySelectorAll<HTMLDetailsElement>('details[data-pi]')
+      .forEach(detailsEl => {
+        const itemName = detailsEl.dataset.pi || '';
+        const vote = progress?.[itemName] as ProgressVoteValue | undefined;
+        detailsEl.open = Boolean(vote?.feedback);
+      });
     this.renderRoot.querySelector('sl-dialog')?.show();
   }
 
@@ -335,16 +362,6 @@ export class ChromedashPreflightDialog extends LitElement {
 
   canEdit(): boolean {
     return userCanEdit(this._user, this._feature?.id);
-  }
-
-  toggleExpanded(itemName: string) {
-    const next = new Set(this._expandedItems);
-    if (next.has(itemName)) {
-      next.delete(itemName);
-    } else {
-      next.add(itemName);
-    }
-    this._expandedItems = next;
   }
 
   hide() {
@@ -425,9 +442,11 @@ export class ChromedashPreflightDialog extends LitElement {
     this._dirty = true;
     if (e.target?.value == PROGRESS_VOTE_STATE.NEEDS_WORK) {
       const itemName: string = e.target?.dataset['pi'] || '';
-      const isExpanded = this._expandedItems.has(itemName);
-      if (!isExpanded) {
-        this.toggleExpanded(itemName);
+      const detailsEl = this.renderRoot.querySelector<HTMLDetailsElement>(
+        `details[data-pi="${itemName}"]`
+      );
+      if (detailsEl) {
+        detailsEl.open = true;
       }
     }
   }
@@ -498,34 +517,28 @@ export class ChromedashPreflightDialog extends LitElement {
     feStage: StageDict | null,
     item: ProgressItem
   ) {
-    const isExpanded = this._expandedItems.has(item.name);
     const vote = this._progress?.[item.name] as ProgressVoteValue | undefined;
-    const showValueRow =
-      isExpanded ||
-      (this.canVote() && vote?.state === PROGRESS_VOTE_STATE.READY_FOR_REVIEW);
+    const alwaysShowValueRow =
+      this.canVote() && vote?.state === PROGRESS_VOTE_STATE.READY_FOR_REVIEW;
     const statusRow = html`
       <tr>
         <td>
-          <sl-icon
-            name="caret-right-fill"
-            class="${isExpanded ? 'expanded' : ''}"
-            @click=${() => this.toggleExpanded(item.name)}
-          ></sl-icon>
+          <details data-pi=${item.name} ?open=${Boolean(vote?.feedback)}>
+            <summary aria-label="Toggle details for ${item.name}"></summary>
+          </details>
         </td>
         <td>
           ${this.canVote() ? this.renderStatusMenu(item, vote) : this.renderStatusChip(vote)}
         </td>
         <td>${item.description || item.name}</td>
-        <td>
-          ${showValueRow ? nothing : this.renderEditLink(stage, feStage, item)}
-        </td>
+        <td>${this.renderEditLink(stage, feStage, item)}</td>
       </tr>
     `;
     let valueRow = html`${nothing}`;
-    if (item.field && showValueRow) {
+    if (item.field) {
       const fieldDisplayName = makeDisplaySpec(item.field)[1];
       valueRow = html`
-        <tr class="feature-values">
+        <tr class="feature-values ${alwaysShowValueRow ? 'always-show' : ''}">
           <td></td>
           <td>${fieldDisplayName}:</td>
           <td>${renderValue(feStage, this._feature, item.field)}</td>
@@ -543,7 +556,7 @@ export class ChromedashPreflightDialog extends LitElement {
     ></sl-input>`;
 
     const feedbackRow =
-      isExpanded && (vote?.feedback || this.canVote())
+      vote?.feedback || this.canVote()
         ? html`
             <tr class="feedback">
               <td></td>
@@ -553,18 +566,21 @@ export class ChromedashPreflightDialog extends LitElement {
             </tr>
           `
         : nothing;
-    const criteriaRow =
-      isExpanded && item.criteria
-        ? html`
-            <tr class="criteria">
-              <td></td>
-              <td>Criteria:</td>
-              <td>${item.criteria}</td>
-              <td></td>
-            </tr>
-          `
-        : nothing;
-    return html` ${statusRow} ${valueRow} ${feedbackRow} ${criteriaRow} `;
+    const criteriaRow = item.criteria
+      ? html`
+          <tr class="criteria">
+            <td></td>
+            <td>Criteria:</td>
+            <td>${item.criteria}</td>
+            <td></td>
+          </tr>
+        `
+      : nothing;
+    return html`
+      <tbody>
+        ${statusRow} ${valueRow} ${feedbackRow} ${criteriaRow}
+      </tbody>
+    `;
   }
 
   renderStageTable(stage: ProcessStage, prereqItems: ProgressItem[]) {
