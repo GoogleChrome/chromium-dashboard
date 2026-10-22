@@ -133,6 +133,57 @@ class ProgressVoteTest(testing_config.CustomTestCase):
         self.assertIsNone(result)
         self.assertEqual(len(progress.ProgressVote.query().fetch()), 0)
 
+    def test_set_progress_vote_not_started_no_existing(self):
+        """Setting state to NOT_STARTED with no feedback when no vote exists returns None and stores nothing."""
+        result = progress.set_progress_vote(
+            feature_id=12345,
+            progress_item_name='Explainer',
+            state=progress.ProgressVote.NOT_STARTED,
+            set_by='reviewer1@example.com',
+            feedback='',
+        )
+        self.assertIsNone(result)
+        self.assertEqual(len(progress.ProgressVote.query().fetch()), 0)
+
+    def test_set_progress_vote_not_started_with_feedback(self):
+        """Setting state to NOT_STARTED with feedback creates or updates a ProgressVote."""
+        vote_1 = progress.set_progress_vote(
+            feature_id=12345,
+            progress_item_name='Explainer',
+            state=progress.ProgressVote.NOT_STARTED,
+            set_by='reviewer1@example.com',
+            feedback='Waiting on initial draft',
+        )
+        self.assertIsNotNone(vote_1)
+        all_votes = progress.ProgressVote.query().fetch()
+        self.assertEqual(len(all_votes), 1)
+        self.assertEqual(all_votes[0].state, progress.ProgressVote.NOT_STARTED)
+        self.assertEqual(all_votes[0].feedback, 'Waiting on initial draft')
+        self.assertEqual(all_votes[0].set_by, 'reviewer1@example.com')
+
+        # Overwriting an existing vote with NOT_STARTED and feedback preserves the entity.
+        progress.set_progress_vote(
+            feature_id=12345,
+            progress_item_name='Explainer',
+            state=progress.ProgressVote.VERIFIED,
+            set_by='reviewer1@example.com',
+            feedback='Looks good',
+        )
+        vote_2 = progress.set_progress_vote(
+            feature_id=12345,
+            progress_item_name='Explainer',
+            state=progress.ProgressVote.NOT_STARTED,
+            set_by='reviewer2@example.com',
+            feedback='Link was removed',
+        )
+        self.assertIsNotNone(vote_2)
+        all_votes = progress.ProgressVote.query().fetch()
+        self.assertEqual(len(all_votes), 1)
+        self.assertEqual(vote_1.key, vote_2.key)
+        self.assertEqual(all_votes[0].state, progress.ProgressVote.NOT_STARTED)
+        self.assertEqual(all_votes[0].feedback, 'Link was removed')
+        self.assertEqual(all_votes[0].set_by, 'reviewer2@example.com')
+
 
 NOT_STARTED = progress.ProgressDetectorResult(progress.ProgressVote.NOT_STARTED)
 READY_FOR_REVIEW = progress.ProgressDetectorResult(
