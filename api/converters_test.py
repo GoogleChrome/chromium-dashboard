@@ -528,6 +528,19 @@ class FeatureConvertersTest(testing_config.CustomTestCase):
         with self.assertRaises(Exception):
             converters.feature_entry_to_json_verbose(empty_fe)
 
+    def test_stage_to_json_dict__no_feature_lookup(self):
+        """stage_to_json_dict does not fetch FeatureEntry when feature_type is omitted."""
+        stage = Stage(id=999, feature_id=999999, stage_type=110)
+        with mock.patch.object(
+            FeatureEntry, 'get_by_id', wraps=FeatureEntry.get_by_id
+        ) as mock_fe_get:
+            result = converters.stage_to_json_dict(stage)
+
+        mock_fe_get.assert_not_called()
+        self.assertEqual(999, result['id'])
+        self.assertEqual(999999, result['feature_id'])
+        self.assertEqual(110, result['stage_type'])
+
 
 class VoteConvertersTest(testing_config.CustomTestCase):
     """Tests for vote converters."""
