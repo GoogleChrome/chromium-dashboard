@@ -147,9 +147,33 @@ export class ChromedashGuideNewPage extends LitElement {
         break;
       }
     }
-    webFeatureField.forceRequired =
-      featureType == FEATURE_TYPES.FEATURE_TYPE_INCUBATE_ID[0] ||
-      featureType == FEATURE_TYPES.FEATURE_TYPE_EXISTING_ID[0];
+    if (featureType == FEATURE_TYPES.FEATURE_TYPE_CODE_CHANGE_ID[0]) {
+      webFeatureField.style.display = 'none';
+      webFeatureField.forceRequired = false;
+      webFeatureField.value = '';
+      const webFeatureIndex = this.fieldValues.findIndex(
+        fv => fv.name === 'web_feature'
+      );
+      if (webFeatureIndex !== -1) {
+        this.fieldValues.splice(webFeatureIndex, 1);
+      }
+    } else {
+      webFeatureField.style.display = '';
+      webFeatureField.forceRequired =
+        featureType == FEATURE_TYPES.FEATURE_TYPE_INCUBATE_ID[0] ||
+        featureType == FEATURE_TYPES.FEATURE_TYPE_EXISTING_ID[0];
+      const webFeatureIndex = this.fieldValues.findIndex(
+        fv => fv.name === 'web_feature'
+      );
+      if (webFeatureIndex === -1) {
+        webFeatureField.index = this.fieldValues.length;
+        this.fieldValues.push({
+          name: 'web_feature',
+          touched: true,
+          value: undefined,
+        });
+      }
+    }
   }
 
   maybeMakeEnterpriseFeatureCategoriesRequired() {

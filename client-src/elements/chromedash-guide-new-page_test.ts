@@ -17,6 +17,8 @@
 import {html} from 'lit';
 import {assert, fixture} from '@open-wc/testing';
 import {ChromedashGuideNewPage} from './chromedash-guide-new-page.js';
+import {ChromedashFormField} from './chromedash-form-field.js';
+import {FEATURE_TYPES} from './form-field-enums.js';
 import {ChromeStatusClient} from '../js-src/cs-client.js';
 import sinon from 'sinon';
 
@@ -141,5 +143,67 @@ describe('chromedash-guide-new-page', () => {
 
     createFeatureStub.restore();
     navigateStub.restore();
+  });
+
+  it('maybeMakeWebFeatureRequired hides web_feature and removes its value for code change features', async () => {
+    const component = await fixture<ChromedashGuideNewPage>(
+      html`<chromedash-guide-new-page .userEmail=${'user@gmail.com'}>
+      </chromedash-guide-new-page>`
+    );
+    await component.updateComplete;
+
+    const webFeatureField =
+      component.shadowRoot?.querySelector<ChromedashFormField>(
+        'chromedash-form-field[name="web_feature"]'
+      )!;
+    assert.exists(webFeatureField);
+
+    const featureTypeIndex = component.fieldValues.findIndex(
+      fv => fv.name === 'feature_type'
+    );
+    const webFeatureIndex = component.fieldValues.findIndex(
+      fv => fv.name === 'web_feature'
+    );
+    assert.notEqual(featureTypeIndex, -1);
+    assert.notEqual(webFeatureIndex, -1);
+
+    // Simulate user typing a web_feature value.
+    component.handleFormFieldUpdate({
+      detail: {value: 'grid', index: webFeatureIndex},
+    });
+    assert.equal(component.fieldValues[webFeatureIndex].value, 'grid');
+    assert.isTrue(webFeatureField.forceRequired);
+
+    // Switch feature_type to FEATURE_TYPE_CODE_CHANGE_ID.
+    component.handleFormFieldUpdate({
+      detail: {
+        value: FEATURE_TYPES.FEATURE_TYPE_CODE_CHANGE_ID[0],
+        index: featureTypeIndex,
+      },
+    });
+
+    assert.equal(webFeatureField.style.display, 'none');
+    assert.isFalse(webFeatureField.forceRequired);
+    assert.equal(webFeatureField.value, '');
+    assert.equal(
+      component.fieldValues.findIndex(fv => fv.name === 'web_feature'),
+      -1
+    );
+
+    // Switch feature_type to FEATURE_TYPE_INCUBATE_ID and verify restoration.
+    component.handleFormFieldUpdate({
+      detail: {
+        value: FEATURE_TYPES.FEATURE_TYPE_INCUBATE_ID[0],
+        index: featureTypeIndex,
+      },
+    });
+
+    assert.equal(webFeatureField.style.display, '');
+    assert.isTrue(webFeatureField.forceRequired);
+    const restoredIndex = component.fieldValues.findIndex(
+      fv => fv.name === 'web_feature'
+    );
+    assert.notEqual(restoredIndex, -1);
+    assert.isUndefined(component.fieldValues[restoredIndex].value);
   });
 });
