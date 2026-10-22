@@ -282,12 +282,14 @@ export class ChromedashGateColumn extends LitElement {
   refetch() {
     const featureId = this.feature.id;
     Promise.all([
+      window.csClient.getFeatureProgress(featureId),
       window.csClient.getGates(featureId),
       window.csClient.getVotes(featureId, null),
       // TODO(jrobbins): Include activities for this gate
       window.csClient.getComments(featureId, this.gate.id),
     ])
-      .then(([gatesRes, votesRes, commentRes]) => {
+      .then(([progress, gatesRes, votesRes, commentRes]) => {
+        this.progress = progress;
         for (const g of gatesRes.gates) {
           if (g.id == this.gate.id) this.gate = g;
         }

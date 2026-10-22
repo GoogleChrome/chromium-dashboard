@@ -60,6 +60,82 @@ describe('chromedash-gate-column', () => {
     assert.instanceOf(component, ChromedashGateColumn);
   });
 
+  describe('refetch', () => {
+    it('reloads progress, gates, votes, and comments for the current gate', async () => {
+      const component = await fixture<ChromedashGateColumn>(
+        html`<chromedash-gate-column></chromedash-gate-column>`
+      );
+      component.feature = {id: 123456} as unknown as Feature;
+      component.gate = {id: 99, state: 1} as unknown as GateDict;
+      component.progress = {} as unknown as ProgressItem;
+      component.needsSave = true;
+
+      const updatedProgress = {
+        Explainer: {
+          state: PROGRESS_VOTE_STATE.VERIFIED,
+          set_on: '2026-09-23T00:00:00',
+          set_by: 'reviewer@example.com',
+        },
+      } as unknown as ProgressItem;
+      const updatedGate = {id: 99, state: 2} as unknown as GateDict;
+      const otherGate = {id: 100, state: 3} as unknown as GateDict;
+      const matchingVote = {
+        feature_id: 123456,
+        gate_id: 99,
+        state: 2,
+        set_on: new Date(),
+        set_by: 'reviewer@example.com',
+      };
+      const otherVote = {
+        feature_id: 123456,
+        gate_id: 100,
+        state: 3,
+        set_on: new Date(),
+        set_by: 'other@example.com',
+      };
+
+      const getFeatureProgressStub = sinon
+        .stub(window.csClient, 'getFeatureProgress')
+        .resolves(updatedProgress);
+      const getGatesStub = sinon
+        .stub(window.csClient, 'getGates')
+        .resolves({gates: [otherGate, updatedGate]});
+      (window.csClient.getVotes as sinon.SinonStub).resolves({
+        votes: [matchingVote, otherVote],
+      });
+      (window.csClient.getComments as sinon.SinonStub).resolves({
+        comments: ['Looks good'],
+      });
+
+      try {
+        component.refetch();
+        await new Promise(resolve => setTimeout(resolve, 0));
+
+        assert.isTrue(getFeatureProgressStub.calledOnceWithExactly(123456));
+        assert.isTrue(getGatesStub.calledOnceWithExactly(123456));
+        assert.isTrue(
+          (window.csClient.getVotes as sinon.SinonStub).calledOnceWithExactly(
+            123456,
+            null
+          )
+        );
+        assert.isTrue(
+          (
+            window.csClient.getComments as sinon.SinonStub
+          ).calledOnceWithExactly(123456, 99)
+        );
+        assert.deepEqual(component.progress, updatedProgress);
+        assert.deepEqual(component.gate, updatedGate);
+        assert.deepEqual(component.votes, [matchingVote]);
+        assert.deepEqual(component.comments, ['Looks good']);
+        assert.isFalse(component.needsSave);
+      } finally {
+        getFeatureProgressStub.restore();
+        getGatesStub.restore();
+      }
+    });
+  });
+
   describe('executeAction', () => {
     it('calls handleFullReviewRequest when url is "request review"', async () => {
       const component = await fixture<ChromedashGateColumn>(

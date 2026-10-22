@@ -29,6 +29,7 @@ import {findFirstFeatureStage, userCanEdit} from './utils.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {customElement, state} from 'lit/decorators.js';
 import {Feature, StageDict, User} from '../js-src/cs-client.js';
+import {type ChromedashApp} from './chromedash-app.js';
 import {GateDict, gateStateDisplayInfo} from './chromedash-gate-chip.js';
 import {
   Action,
@@ -488,7 +489,11 @@ export class ChromedashPreflightDialog extends LitElement {
     Promise.all(promises).then(() => {
       this._saving = false;
       this.handleCancel();
-      this._fireEvent('refetch-needed', {});
+      const app: ChromedashApp | null =
+        document.querySelector<ChromedashApp>('chromedash-app');
+      if (app) {
+        app.refetch();
+      }
     });
   }
 
