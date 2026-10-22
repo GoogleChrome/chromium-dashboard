@@ -272,6 +272,12 @@ def get_developer_release_notes_features(
     # Batch fetch FeatureEntry entities (prevents N+1 query loop)
     feature_keys = [ndb.Key(FeatureEntry, fid) for fid in seen_ids]
     raw_features = ndb.get_multi(feature_keys)
+    raw_features = [fe for fe in raw_features if fe]
+    psa_feature_ids = set(
+        fe.key.integer_id()
+        for fe in raw_features
+        if fe.feature_type == core_enums.FEATURE_TYPE_CODE_CHANGE_ID
+    )
     feature_entries = filter_unlisted(filter_confidential(raw_features))
     feature_entries.sort(key=lambda f: f.name or '')
 
@@ -303,6 +309,11 @@ def get_developer_release_notes_features(
         ]
         for fut in gate_futures:
             for gate in fut.get_result():
+                if (
+                    gate.gate_type == core_enums.GATE_API_SHIP
+                    and gate.feature_id in psa_feature_ids
+                ):
+                    continue  # We don't count API Owners gate on PSAs.
                 if gate.state not in Gate.APPROVED_STATES:
                     unapproved_stage_ids.add(gate.stage_id)
 
