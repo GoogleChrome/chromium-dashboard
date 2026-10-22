@@ -145,7 +145,7 @@ describe('chromedash-guide-new-page', () => {
     navigateStub.restore();
   });
 
-  it('maybeMakeWebFeatureRequired hides web_feature and removes its value for code change features', async () => {
+  it('maybeMakeWebFeatureRequired hides web_feature for code change features and filters it on submit', async () => {
     const component = await fixture<ChromedashGuideNewPage>(
       html`<chromedash-guide-new-page .userEmail=${'user@gmail.com'}>
       </chromedash-guide-new-page>`
@@ -184,11 +184,8 @@ describe('chromedash-guide-new-page', () => {
 
     assert.equal(webFeatureField.style.display, 'none');
     assert.isFalse(webFeatureField.forceRequired);
-    assert.equal(webFeatureField.value, '');
-    assert.equal(
-      component.fieldValues.findIndex(fv => fv.name === 'web_feature'),
-      -1
-    );
+    // Value remains in fieldValues while editing in case user unhides the field.
+    assert.equal(component.fieldValues[webFeatureIndex].value, 'grid');
 
     // Switch feature_type to FEATURE_TYPE_INCUBATE_ID and verify restoration.
     component.handleFormFieldUpdate({
@@ -200,10 +197,42 @@ describe('chromedash-guide-new-page', () => {
 
     assert.equal(webFeatureField.style.display, '');
     assert.isTrue(webFeatureField.forceRequired);
-    const restoredIndex = component.fieldValues.findIndex(
-      fv => fv.name === 'web_feature'
+    assert.equal(component.fieldValues[webFeatureIndex].value, 'grid');
+
+    // Switch back to FEATURE_TYPE_CODE_CHANGE_ID and submit the form.
+    component.handleFormFieldUpdate({
+      detail: {
+        value: FEATURE_TYPES.FEATURE_TYPE_CODE_CHANGE_ID[0],
+        index: featureTypeIndex,
+      },
+    });
+
+    const navigateStub = sinon.stub(component, 'navigate');
+    const createFeatureStub = sinon.stub(window.csClient, 'createFeature');
+    createFeatureStub.returns(Promise.resolve({feature_id: 12345}));
+
+    const fakeEvent = {preventDefault: sinon.spy()};
+    const hiddenTokenField = component.renderRoot.querySelector(
+      'input[name="token"]'
     );
-    assert.notEqual(restoredIndex, -1);
-    assert.isUndefined(component.fieldValues[restoredIndex].value);
+    component.handleFormSubmit(fakeEvent, hiddenTokenField);
+
+    assert.equal(
+      component.fieldValues.findIndex(fv => fv.name === 'web_feature'),
+      -1
+    );
+    assert.isTrue(createFeatureStub.calledOnce);
+    assert.equal(
+      createFeatureStub.firstCall.args[0].feature_type,
+      FEATURE_TYPES.FEATURE_TYPE_CODE_CHANGE_ID[0]
+    );
+    assert.notProperty(createFeatureStub.firstCall.args[0], 'web_feature');
+
+    await new Promise(resolve => setTimeout(resolve, 0));
+
+    assert.isTrue(navigateStub.calledOnceWith('/feature/12345'));
+
+    createFeatureStub.restore();
+    navigateStub.restore();
   });
 });
