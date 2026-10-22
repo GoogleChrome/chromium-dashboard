@@ -272,6 +272,7 @@ def get_developer_release_notes_features(
     # Batch fetch FeatureEntry entities (prevents N+1 query loop)
     feature_keys = [ndb.Key(FeatureEntry, fid) for fid in seen_ids]
     raw_features = ndb.get_multi(feature_keys)
+    raw_features = [fe for fe in raw_features if fe]
     psa_feature_ids = set(
         fe.key.integer_id()
         for fe in raw_features
