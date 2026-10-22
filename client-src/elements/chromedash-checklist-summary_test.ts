@@ -88,7 +88,6 @@ describe('chromedash-checklist-summary', () => {
 
   const processStage = {
     name: 'Prepare to ship',
-    outgoing_stage: 3,
     stage_type: 160,
     actions: [action],
     progress_items: [
@@ -331,6 +330,11 @@ describe('chromedash-checklist-summary', () => {
     ) as ChromedashPreflightDialog;
     assert.exists(dialogEl);
     await dialogEl.updateComplete;
+    await dialogEl.updateComplete;
     assert.isTrue(dialogEl.canVote());
+    const buttons = Array.from(
+      dialogEl.shadowRoot!.querySelectorAll('sl-button')
+    ).map(b => b.textContent?.trim());
+    assert.deepEqual(buttons, ['Cancel', 'Save']);
   });
 });

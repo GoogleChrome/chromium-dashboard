@@ -226,9 +226,6 @@ def stage_to_json_dict(
         'feature_id': stage.feature_id,
         'stage_type': stage.stage_type,
         'display_name': stage.display_name,
-        'intent_stage': core_enums.INTENT_STAGES_BY_STAGE_TYPE.get(
-            stage.stage_type, core_enums.INTENT_NONE
-        ),
         'pm_emails': stage.pm_emails,
         'tl_emails': stage.tl_emails,
         'ux_emails': stage.ux_emails,

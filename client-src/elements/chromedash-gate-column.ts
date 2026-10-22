@@ -89,9 +89,7 @@ export interface ProcessStage {
   progress_items: ProgressItem[];
   actions: Action[];
   approvals: ApprovalFieldDef[]; // Assuming ApprovalFieldDef is defined somewhere
-  incoming_stage: number;
-  outgoing_stage: number;
-  stage_type?: number;
+  stage_type: number;
 }
 
 export interface Process {
