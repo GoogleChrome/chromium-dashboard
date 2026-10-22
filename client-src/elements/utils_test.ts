@@ -735,7 +735,6 @@ describe('isVerifiedWithinGracePeriod', () => {
           feature_id: 1001,
           stage_type: 150,
           display_name: 'Prototype Stage',
-          intent_stage: 2,
           intent_thread_url: 'https://example.com/intent-to-prototype',
           announcement_url: 'https://example.com/prototype-announced',
           origin_trial_id: 'OT_TestFeature_123',

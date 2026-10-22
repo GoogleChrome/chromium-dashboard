@@ -45,6 +45,5 @@ class ProcessesAPI(basehandlers.APIHandler):
             result['stages'].insert(
                 -1, dataclasses.asdict(processes.FEATURE_ROLLOUT_STAGE)
             )  # noqa: E501
-            result['stages'][-1]['incoming_stage'] = core_enums.INTENT_ROLLOUT
 
         return result

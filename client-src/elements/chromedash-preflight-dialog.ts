@@ -398,9 +398,7 @@ export class ChromedashPreflightDialog extends LitElement {
       section => pi.field !== undefined && section.fields.includes(pi.field)
     );
     const pathSegment =
-      !isMetadataField && stage && feStage
-        ? `${stage.outgoing_stage}/${feStage.id}`
-        : 'metadata';
+      !isMetadataField && stage && feStage ? `${feStage.id}` : 'metadata';
 
     return html`
       <a
@@ -589,14 +587,11 @@ export class ChromedashPreflightDialog extends LitElement {
     if (prereqItems.length === 0) {
       return nothing;
     }
-    const feStage =
-      stage.outgoing_stage !== undefined
-        ? findFirstFeatureStage(
-            stage.outgoing_stage,
-            this._stage,
-            this._feature
-          )
-        : null;
+    const feStage = findFirstFeatureStage(
+      stage.stage_type,
+      this._stage,
+      this._feature
+    );
 
     return html`
       <h3>${stage.name}</h3>
