@@ -1358,7 +1358,7 @@ describe('preflight functions', () => {
         );
       });
 
-      it('posts only touched votes, disables controls while saving, fires refetch-needed, and closes dialog on Save', async () => {
+      it('posts only touched votes, disables controls while saving, calls app.refetch(), and closes dialog on Save', async () => {
         let resolvePost!: (value?: unknown) => void;
         const postStub = sinon
           .stub(window.csClient, 'postFeatureProgressVote')
@@ -1381,80 +1381,88 @@ describe('preflight functions', () => {
         const resolveDialogStub = sinon.stub();
         const hideSpy = sinon.spy(component, 'hide');
         const refetchSpy = sinon.spy();
-        component.addEventListener('refetch-needed', refetchSpy);
-
-        component.openWithContext(
-          voterUser,
-          feature,
-          progress,
-          process,
-          action,
-          feStage,
-          feStage,
-          [],
-          resolveDialogStub,
-          true
+        const fakeApp = Object.assign(
+          document.createElement('chromedash-app'),
+          {refetch: refetchSpy}
         );
-        await component.updateComplete;
+        document.body.appendChild(fakeApp);
 
-        const explainerSelect = component.shadowRoot!.querySelector<SlSelect>(
-          '.state-widget[data-pi="Explainer"]'
-        )!;
-        const specLinkSelect = component.shadowRoot!.querySelector<SlSelect>(
-          '.state-widget[data-pi="Spec link"]'
-        )!;
+        try {
+          component.openWithContext(
+            voterUser,
+            feature,
+            progress,
+            process,
+            action,
+            feStage,
+            feStage,
+            [],
+            resolveDialogStub,
+            true
+          );
+          await component.updateComplete;
 
-        explainerSelect.value = String(PROGRESS_VOTE_STATE.VERIFIED);
-        explainerSelect.dispatchEvent(new CustomEvent('sl-change'));
-        specLinkSelect.value = String(PROGRESS_VOTE_STATE.NEEDS_WORK);
-        specLinkSelect.dispatchEvent(new CustomEvent('sl-change'));
-        await component.updateComplete;
+          const explainerSelect = component.shadowRoot!.querySelector<SlSelect>(
+            '.state-widget[data-pi="Explainer"]'
+          )!;
+          const specLinkSelect = component.shadowRoot!.querySelector<SlSelect>(
+            '.state-widget[data-pi="Spec link"]'
+          )!;
 
-        // Spec link auto-expanded on NEEDS_WORK; enter feedback with whitespace.
-        const specLinkFeedback = component.shadowRoot!.querySelector<SlInput>(
-          '.feedback-widget[data-pi="Spec link"]'
-        )!;
-        specLinkFeedback.value = '  Please fix broken anchor  ';
-        specLinkFeedback.dispatchEvent(new CustomEvent('sl-change'));
-        await component.updateComplete;
+          explainerSelect.value = String(PROGRESS_VOTE_STATE.VERIFIED);
+          explainerSelect.dispatchEvent(new CustomEvent('sl-change'));
+          specLinkSelect.value = String(PROGRESS_VOTE_STATE.NEEDS_WORK);
+          specLinkSelect.dispatchEvent(new CustomEvent('sl-change'));
+          await component.updateComplete;
 
-        const getSaveButton = () =>
-          component.shadowRoot!.querySelectorAll('sl-button')[2];
-        getSaveButton().click();
-        await component.updateComplete;
+          // Spec link auto-expanded on NEEDS_WORK; enter feedback with whitespace.
+          const specLinkFeedback = component.shadowRoot!.querySelector<SlInput>(
+            '.feedback-widget[data-pi="Spec link"]'
+          )!;
+          specLinkFeedback.value = '  Please fix broken anchor  ';
+          specLinkFeedback.dispatchEvent(new CustomEvent('sl-change'));
+          await component.updateComplete;
 
-        // While saving, button shows Saving... and controls are disabled.
-        assert.equal(getSaveButton().textContent?.trim(), 'Saving...');
-        assert.isTrue(getSaveButton().hasAttribute('disabled'));
-        assert.isTrue(explainerSelect.disabled);
+          const getSaveButton = () =>
+            component.shadowRoot!.querySelectorAll('sl-button')[2];
+          getSaveButton().click();
+          await component.updateComplete;
 
-        // Only the two touched items are posted.
-        assert.isTrue(postStub.calledTwice);
-        assert.isTrue(
-          postStub.calledWithExactly(
-            123456,
-            'Explainer',
-            PROGRESS_VOTE_STATE.VERIFIED,
-            ''
-          )
-        );
-        assert.isTrue(
-          postStub.calledWithExactly(
-            123456,
-            'Spec link',
-            PROGRESS_VOTE_STATE.NEEDS_WORK,
-            'Please fix broken anchor'
-          )
-        );
+          // While saving, button shows Saving... and controls are disabled.
+          assert.equal(getSaveButton().textContent?.trim(), 'Saving...');
+          assert.isTrue(getSaveButton().hasAttribute('disabled'));
+          assert.isTrue(explainerSelect.disabled);
 
-        resolvePost({message: 'Done'});
-        await new Promise(resolve => setTimeout(resolve, 0));
-        await component.updateComplete;
+          // Only the two touched items are posted.
+          assert.isTrue(postStub.calledTwice);
+          assert.isTrue(
+            postStub.calledWithExactly(
+              123456,
+              'Explainer',
+              PROGRESS_VOTE_STATE.VERIFIED,
+              ''
+            )
+          );
+          assert.isTrue(
+            postStub.calledWithExactly(
+              123456,
+              'Spec link',
+              PROGRESS_VOTE_STATE.NEEDS_WORK,
+              'Please fix broken anchor'
+            )
+          );
 
-        assert.isTrue(hideSpy.calledOnce);
-        assert.isTrue(resolveDialogStub.calledOnceWithExactly(false));
-        assert.isTrue(refetchSpy.calledOnce);
-        assert.equal(getSaveButton().textContent?.trim(), 'Save');
+          resolvePost({message: 'Done'});
+          await new Promise(resolve => setTimeout(resolve, 0));
+          await component.updateComplete;
+
+          assert.isTrue(hideSpy.calledOnce);
+          assert.isTrue(resolveDialogStub.calledOnceWithExactly(false));
+          assert.isTrue(refetchSpy.calledOnce);
+          assert.equal(getSaveButton().textContent?.trim(), 'Save');
+        } finally {
+          fakeApp.remove();
+        }
       });
     });
   });
