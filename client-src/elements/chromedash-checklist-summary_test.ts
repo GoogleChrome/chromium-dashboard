@@ -330,6 +330,11 @@ describe('chromedash-checklist-summary', () => {
     ) as ChromedashPreflightDialog;
     assert.exists(dialogEl);
     await dialogEl.updateComplete;
+    await dialogEl.updateComplete;
     assert.isTrue(dialogEl.canVote());
+    const buttons = Array.from(
+      dialogEl.shadowRoot!.querySelectorAll('sl-button')
+    ).map(b => b.textContent?.trim());
+    assert.deepEqual(buttons, ['Cancel', 'Save']);
   });
 });

@@ -57,7 +57,8 @@ export async function openPreflightDialog(
   action: Action,
   stage: StageDict,
   feStage: StageDict,
-  featureGates: GateDict[]
+  featureGates: GateDict[],
+  showProceed: boolean = true
 ) {
   if (!preflightDialogEl) {
     preflightDialogEl = document.createElement('chromedash-preflight-dialog');
@@ -74,7 +75,8 @@ export async function openPreflightDialog(
       stage,
       feStage,
       featureGates,
-      resolve
+      resolve,
+      showProceed
     );
   });
 }
@@ -144,6 +146,8 @@ export class ChromedashPreflightDialog extends LitElement {
   private _resolve: (value?: boolean) => void = () => {
     console.log('Missing resolve action');
   };
+  @state()
+  private _showProceed = true;
   @state()
   private _dirty = false;
   @state()
@@ -315,7 +319,8 @@ export class ChromedashPreflightDialog extends LitElement {
     stage: StageDict,
     feStage: StageDict,
     featureGates: GateDict[],
-    resolve: (value?: boolean) => void
+    resolve: (value?: boolean) => void,
+    showProceed: boolean
   ) {
     this._user = user;
     this._feature = feature;
@@ -326,6 +331,7 @@ export class ChromedashPreflightDialog extends LitElement {
     this._feStage = feStage;
     this._featureGates = featureGates;
     this._resolve = resolve;
+    this._showProceed = showProceed;
     this._dirty = false;
     this._touched = new Set();
     this.renderRoot
@@ -680,8 +686,13 @@ export class ChromedashPreflightDialog extends LitElement {
     return html`
       Please address any relevant "Not started" or "Needs work" items before
       requesting review. ${stageTables} ${this.renderGatesTable(otherGates)}
-
-      <sl-button size="small" @click=${this.handleProceed}>Proceed</sl-button>
+      ${
+        this._showProceed
+          ? html` <sl-button size="small" @click=${this.handleProceed}
+              >Proceed</sl-button
+            >`
+          : nothing
+      }
       <sl-button size="small" variant="warning" @click=${this.handleCancel}
         >Cancel</sl-button
       >

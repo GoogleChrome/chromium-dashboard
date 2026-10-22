@@ -300,7 +300,8 @@ describe('preflight functions', () => {
         feStage,
         feStage,
         [privacyGate],
-        () => {}
+        () => {},
+        true
       );
       await component.updateComplete;
 
@@ -450,7 +451,8 @@ describe('preflight functions', () => {
         feStage,
         feStage,
         [],
-        () => {}
+        () => {},
+        true
       );
       await component.updateComplete;
 
@@ -582,7 +584,8 @@ describe('preflight functions', () => {
         feStage,
         feStage,
         [],
-        () => {}
+        () => {},
+        true
       );
       await component.updateComplete;
       assert.isFalse(motivationDetails.open);
@@ -606,7 +609,8 @@ describe('preflight functions', () => {
         feStage,
         feStage,
         [],
-        () => {}
+        () => {},
+        true
       );
       await component.updateComplete;
 
@@ -633,7 +637,8 @@ describe('preflight functions', () => {
         feStage,
         feStage,
         [],
-        resolveStub
+        resolveStub,
+        true
       );
       await component.updateComplete;
 
@@ -663,7 +668,8 @@ describe('preflight functions', () => {
         feStage,
         feStage,
         [],
-        resolveStub
+        resolveStub,
+        true
       );
       await component.updateComplete;
 
@@ -674,6 +680,32 @@ describe('preflight functions', () => {
       cancelButton.click();
       assert.isTrue(hideSpy.calledOnce);
       assert.isTrue(resolveStub.calledOnceWithExactly(false));
+    });
+
+    it('omits Proceed button when showProceed is false', async () => {
+      const component = await fixture<ChromedashPreflightDialog>(
+        html`<chromedash-preflight-dialog></chromedash-preflight-dialog>`
+      );
+      const progress = {} as ProgressItem;
+
+      component.openWithContext(
+        baseUser,
+        feature,
+        progress,
+        process,
+        action,
+        feStage,
+        feStage,
+        [],
+        () => {},
+        false
+      );
+      await component.updateComplete;
+
+      const buttons = Array.from(
+        component.shadowRoot!.querySelectorAll('sl-button')
+      ).map(b => b.textContent?.trim());
+      assert.deepEqual(buttons, ['Cancel']);
     });
 
     it('openPreflightDialog returns a promise that resolves when user acts', async () => {
@@ -718,7 +750,8 @@ describe('preflight functions', () => {
           feStage,
           feStage,
           [],
-          () => {}
+          () => {},
+          true
         );
         assert.isFalse(component.canVote());
       });
@@ -736,7 +769,8 @@ describe('preflight functions', () => {
           feStage,
           feStage,
           [],
-          () => {}
+          () => {},
+          true
         );
         assert.isTrue(component.canVote());
       });
@@ -754,7 +788,8 @@ describe('preflight functions', () => {
           feStage,
           feStage,
           [],
-          () => {}
+          () => {},
+          true
         );
         assert.isTrue(component.canVote());
       });
@@ -772,7 +807,8 @@ describe('preflight functions', () => {
           feStage,
           feStage,
           [],
-          () => {}
+          () => {},
+          true
         );
         assert.isTrue(component.canVote());
       });
@@ -796,7 +832,8 @@ describe('preflight functions', () => {
           feStage,
           feStage,
           [],
-          () => {}
+          () => {},
+          true
         );
         await component.updateComplete;
 
@@ -819,7 +856,8 @@ describe('preflight functions', () => {
           feStage,
           feStage,
           [],
-          () => {}
+          () => {},
+          true
         );
         await component.updateComplete;
 
@@ -842,7 +880,8 @@ describe('preflight functions', () => {
           feStage,
           feStage,
           [],
-          () => {}
+          () => {},
+          true
         );
         assert.isTrue(component.canEdit());
       });
@@ -894,7 +933,8 @@ describe('preflight functions', () => {
           feStage,
           feStage,
           [],
-          () => {}
+          () => {},
+          true
         );
         await component.updateComplete;
 
@@ -960,7 +1000,8 @@ describe('preflight functions', () => {
           feStage,
           feStage,
           [],
-          () => {}
+          () => {},
+          true
         );
         await component.updateComplete;
 
@@ -1048,7 +1089,8 @@ describe('preflight functions', () => {
           feStage,
           feStage,
           [],
-          () => {}
+          () => {},
+          true
         );
         await component.updateComplete;
 
@@ -1076,7 +1118,8 @@ describe('preflight functions', () => {
           feStage,
           feStage,
           [],
-          () => {}
+          () => {},
+          true
         );
         await component.updateComplete;
         assert.isTrue(getSaveButton().hasAttribute('disabled'));
@@ -1108,7 +1151,8 @@ describe('preflight functions', () => {
           feStage,
           feStage,
           [],
-          () => {}
+          () => {},
+          true
         );
         await component.updateComplete;
 
@@ -1212,7 +1256,8 @@ describe('preflight functions', () => {
           feStage,
           feStage,
           [],
-          () => {}
+          () => {},
+          true
         );
         await component.updateComplete;
 
@@ -1282,7 +1327,8 @@ describe('preflight functions', () => {
           feStage,
           feStage,
           [],
-          () => {}
+          () => {},
+          true
         );
         await component.updateComplete;
 
@@ -1346,7 +1392,8 @@ describe('preflight functions', () => {
           feStage,
           feStage,
           [],
-          resolveDialogStub
+          resolveDialogStub,
+          true
         );
         await component.updateComplete;
 
