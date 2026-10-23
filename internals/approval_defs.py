@@ -25,7 +25,6 @@ import datetime
 import json
 import logging
 from dataclasses import dataclass
-from typing import Optional
 
 import requests
 
@@ -469,12 +468,14 @@ def set_vote(
     new_state: int,
     set_by_email: str,
     gate_id: int | None = None,
+    gate: Gate | None = None,
 ) -> int | None:
     """Add or update an approval value and return new approval state if
     changed.
     """  # noqa: D205
-    gate: Optional[Gate] = None
-    if gate_id is None and gate_type is not None:
+    if gate is not None:
+        gate_id = gate.key.integer_id()
+    elif gate_id is None and gate_type is not None:
         gate = get_gate_by_type(feature_id, gate_type)
         # If a vote is being set, a corresponding gate should already exist.
         if not gate:
@@ -512,7 +513,9 @@ def set_vote(
         new_vote.put()
 
     if gate:
-        votes = Vote.get_votes(gate_id=gate.key.integer_id())
+        votes = Vote.get_votes(
+            feature_id=feature_id, gate_id=gate.key.integer_id()
+        )
         # Check for double votes that could arise from a race condition.
         double_votes = [
             v for v in votes if v.set_by == set_by_email and v.set_on < now
