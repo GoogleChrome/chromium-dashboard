@@ -117,27 +117,32 @@ class AppUser(ndb.Model):
     def put(self, **kwargs):
         """When we update an AppUser, also delete in rediscache."""
         key = super(AppUser, self).put(**kwargs)  # noqa: F841
-        cache_key = 'user|%s' % self.email
+        cache_key = 'user|%s' % self.email.lower()
         rediscache.delete(cache_key)
 
     def delete(self, **kwargs):
         """When we delete an AppUser, also delete in rediscache."""
         key = super(AppUser, self).key.delete(**kwargs)  # noqa: F841
-        cache_key = 'user|%s' % self.email
+        cache_key = 'user|%s' % self.email.lower()
         rediscache.delete(cache_key)
+
+    _NO_APP_USER = 'NO_APP_USER'
 
     @classmethod
     def get_app_user(cls, email: str) -> Optional[AppUser]:
         """Return the AppUser for the specified user, or None."""
-        cache_key = 'user|%s' % email
+        cache_key = 'user|%s' % email.lower()
         cached_app_user = rediscache.get(cache_key)
-        if cached_app_user:
+        if cached_app_user is not None:
+            if cached_app_user == cls._NO_APP_USER:
+                return None
             return cached_app_user
 
         query = cls.query()
         query = query.filter(cls.email == email)
         found_app_user: Optional[AppUser] = query.get()
         if found_app_user is None:
+            rediscache.set(cache_key, cls._NO_APP_USER)
             return None
         rediscache.set(cache_key, found_app_user)
         return found_app_user
