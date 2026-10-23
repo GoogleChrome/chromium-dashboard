@@ -989,6 +989,16 @@ describe('preflight functions', () => {
             set_on: '2026-09-23T00:00:00',
             set_by: 'ChromeStatus',
           },
+          'Spec link': {
+            state: PROGRESS_VOTE_STATE.NEEDS_WORK,
+            set_on: '2026-09-23T00:00:00',
+            set_by: 'reviewer@example.com',
+          },
+          'Draft API spec': {
+            state: PROGRESS_VOTE_STATE.NA,
+            set_on: '2026-09-23T00:00:00',
+            set_by: 'reviewer@example.com',
+          },
         };
 
         component.openWithContext(
@@ -1010,13 +1020,22 @@ describe('preflight functions', () => {
         assert.equal(selects.length, 5);
         assert.equal(selects[0].dataset.pi, 'Motivation');
         assert.equal(Number(selects[0].value), PROGRESS_VOTE_STATE.VERIFIED);
+        assert.isTrue(selects[0].classList.contains('verified'));
         assert.equal(selects[1].dataset.pi, 'Explainer');
         assert.equal(
           Number(selects[1].value),
           PROGRESS_VOTE_STATE.READY_FOR_REVIEW
         );
+        assert.isTrue(selects[1].classList.contains('ready_for_review'));
         assert.equal(selects[2].dataset.pi, 'Tracking bug URL');
         assert.equal(Number(selects[2].value), PROGRESS_VOTE_STATE.NOT_STARTED);
+        assert.isTrue(selects[2].classList.contains('not_started'));
+        assert.equal(selects[3].dataset.pi, 'Spec link');
+        assert.equal(Number(selects[3].value), PROGRESS_VOTE_STATE.NEEDS_WORK);
+        assert.isTrue(selects[3].classList.contains('needs_work'));
+        assert.equal(selects[4].dataset.pi, 'Draft API spec');
+        assert.equal(Number(selects[4].value), PROGRESS_VOTE_STATE.NA);
+        assert.isTrue(selects[4].classList.contains('na'));
 
         const options = selects[0].querySelectorAll('sl-option');
         assert.equal(options.length, 5);
@@ -1101,12 +1120,14 @@ describe('preflight functions', () => {
           component.shadowRoot!.querySelectorAll('sl-button')[2];
 
         assert.isTrue(getSaveButton().hasAttribute('disabled'));
+        assert.isTrue(explainerSelect.classList.contains('not_started'));
 
         explainerSelect.value = String(PROGRESS_VOTE_STATE.VERIFIED);
         explainerSelect.dispatchEvent(new CustomEvent('sl-change'));
         await component.updateComplete;
 
         assert.isFalse(getSaveButton().hasAttribute('disabled'));
+        assert.isTrue(explainerSelect.classList.contains('verified'));
 
         // Reopening resets dirty state and disables Save again.
         component.openWithContext(
@@ -1123,6 +1144,7 @@ describe('preflight functions', () => {
         );
         await component.updateComplete;
         assert.isTrue(getSaveButton().hasAttribute('disabled'));
+        assert.isTrue(explainerSelect.classList.contains('not_started'));
       });
 
       it('renders feature-values row and feedback sl-input for voters when expanded', async () => {
