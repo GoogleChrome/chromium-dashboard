@@ -601,6 +601,23 @@ class GatesAPITest(testing_config.CustomTestCase):
             with self.assertRaises(werkzeug.exceptions.Forbidden):
                 self.handler.do_get(feature_id=self.feature_id)
 
+    @mock.patch('framework.rediscache.delete_keys_with_prefix')
+    @mock.patch('internals.approval_defs.get_approvers')
+    def test_do_post__invalidates_search_cache(
+        self, mock_get_approvers, mock_dkwp
+    ):
+        """Updating gate assignees invalidates the search cache."""
+        mock_get_approvers.return_value = ['reviewer1@example.com']
+        testing_config.sign_in('reviewer1@example.com', 123567890)
+        params = {'assignees': ['reviewer1@example.com']}
+        with test_app.test_request_context(self.request_path, json=params):
+            self.handler.do_post(
+                feature_id=self.feature_id, gate_id=self.gate_1_id
+            )
+        mock_dkwp.assert_called_once_with(
+            core_models.FeatureEntry.SEARCH_CACHE_KEY
+        )
+
 
 class XfnGatesAPITest(testing_config.CustomTestCase):
     """Tests for XfnGatesAPI."""

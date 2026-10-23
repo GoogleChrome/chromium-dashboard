@@ -631,12 +631,16 @@ class IntentEmailHandlerTest(testing_config.CustomTestCase):
 
     def test_process_post_data__new_thread(self):
         """When we detect a new thread, we record it as the intent thread."""
-        with test_app.test_request_context(
-            self.request_path, json=self.review_json_data
-        ):
-            actual = self.handler.process_post_data()
+        with mock.patch(
+            'framework.rediscache.delete_keys_with_prefix'
+        ) as mock_dkwp:
+            with test_app.test_request_context(
+                self.request_path, json=self.review_json_data
+            ):
+                actual = self.handler.process_post_data()
 
         self.assertEqual(actual, {'message': 'Done'})
+        mock_dkwp.assert_called_with(FeatureEntry.SEARCH_CACHE_KEY)
 
         created_votes = list(Vote.query().fetch(None))
         self.assertEqual(1, len(created_votes))
@@ -803,12 +807,16 @@ class IntentEmailHandlerTest(testing_config.CustomTestCase):
         self.stages_dict[160][0].intent_thread_url = self.thread_url
         self.stages_dict[160][0].put()
 
-        with test_app.test_request_context(
-            self.request_path, json=self.lgtm_json_data
-        ):
-            actual = self.handler.process_post_data()
+        with mock.patch(
+            'framework.rediscache.delete_keys_with_prefix'
+        ) as mock_dkwp:
+            with test_app.test_request_context(
+                self.request_path, json=self.lgtm_json_data
+            ):
+                actual = self.handler.process_post_data()
 
         self.assertEqual(actual, {'message': 'Done'})
+        mock_dkwp.assert_called_with(FeatureEntry.SEARCH_CACHE_KEY)
 
         created_votes: list[Vote] = Vote.query().fetch()
         self.assertEqual(1, len(created_votes))

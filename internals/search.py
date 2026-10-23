@@ -434,12 +434,8 @@ def make_cache_key(
     )
 
 
-def is_cacheable(user_query: str, name_only: bool):
+def is_cacheable(user_query: str, name_only: bool = True):
     """Return True if this user query can be stored and viewed by other users."""
-    if not name_only:
-        logging.info('Search query not cached: could be large')
-        return False
-
     if ':me' in user_query:
         logging.info('Search query not cached: personalized')
         return False
@@ -456,6 +452,21 @@ def is_cacheable(user_query: str, name_only: bool):
     return True
 
 
+def _get_features_for_page(
+    paginated_id_list: list[int], name_only: bool
+) -> list[dict[str, Any]]:
+    """Fetch feature dictionaries for the given paginated list of IDs."""
+    if name_only:
+        features_on_page = feature_helpers.get_feature_names_by_ids(
+            paginated_id_list
+        )  # noqa: E501
+    else:
+        features_on_page = feature_helpers.get_by_ids(paginated_id_list)
+
+    logging.info('features_on_page count is %d', len(features_on_page))
+    return features_on_page
+
+
 def process_query_using_cache(
     user_query: str,
     sort_spec: str | None = None,
@@ -469,25 +480,30 @@ def process_query_using_cache(
 ) -> tuple[list[dict[str, Any]], int]:
     """Process a user query, utilizing Redis cache if possible."""
     num = min(num, MAX_RESULTS_PER_PAGE)
-    cache_key = make_cache_key(
-        user_query,
-        sort_spec,
-        show_unlisted,
-        show_deleted,
-        show_enterprise,
-        start,
-        num,
-        name_only,
-    )
-    if is_cacheable(user_query, name_only):
+    cacheable = is_cacheable(user_query, name_only)
+    cache_key = None
+    if cacheable:
+        cache_key = make_cache_key(
+            user_query,
+            sort_spec,
+            show_unlisted,
+            show_deleted,
+            show_enterprise,
+            start,
+            num,
+            name_only,
+        )
         logging.info('Checking cache at %r', cache_key)
         cached_result = rediscache.get(cache_key)
         if cached_result is not None:
             logging.info('Found cached search result for %r', cache_key)
-            return cached_result
+            if name_only:
+                return cached_result
+            cached_ids, total_count = cached_result
+            return _get_features_for_page(cached_ids, False), total_count
 
     logging.info('Computing search result')
-    computed_result = process_query(
+    paginated_id_list, total_count = _process_query_ids(
         user_query,
         sort_spec=sort_spec,
         show_unlisted=show_unlisted,
@@ -496,12 +512,16 @@ def process_query_using_cache(
         start=start,
         num=num,
         context=context,
-        name_only=name_only,
     )
+    features_on_page = _get_features_for_page(paginated_id_list, name_only)
+    computed_result = (features_on_page, total_count)
 
-    if is_cacheable(user_query, name_only):
+    if cacheable and cache_key:
         logging.info('Storing search result in cache: %r', cache_key)
-        rediscache.set(cache_key, computed_result, SEARCH_CACHE_TTL)
+        to_cache = (
+            computed_result if name_only else (paginated_id_list, total_count)
+        )
+        rediscache.set(cache_key, to_cache, SEARCH_CACHE_TTL)
 
     return computed_result
 
@@ -518,6 +538,31 @@ def process_query(
     name_only=False,
 ) -> tuple[list[dict[str, Any]], int]:
     """Parse the user's query, run it, and return a list of features."""
+    paginated_id_list, total_count = _process_query_ids(
+        user_query,
+        sort_spec=sort_spec,
+        show_unlisted=show_unlisted,
+        show_deleted=show_deleted,
+        show_enterprise=show_enterprise,
+        start=start,
+        num=num,
+        context=context,
+    )
+    features_on_page = _get_features_for_page(paginated_id_list, name_only)
+    return features_on_page, total_count
+
+
+def _process_query_ids(
+    user_query: str,
+    sort_spec: str | None = None,
+    show_unlisted=False,
+    show_deleted=False,
+    show_enterprise=False,
+    start=0,
+    num=DEFAULT_RESULTS_PER_PAGE,
+    context: Optional[QueryContext] = None,
+) -> tuple[list[int], int]:
+    """Parse the user's query, run it, and return paginated feature IDs and total count."""
     if context is None:
         context = QueryContext.current()
 
@@ -639,19 +684,7 @@ def process_query(
 
     # 5. Paginate
     paginated_id_list = sorted_id_list[start : start + num]
-
-    # 6. Fetch the actual issues that have those IDs in the sorted results.
-    if name_only:
-        features_on_page = feature_helpers.get_feature_names_by_ids(
-            paginated_id_list
-        )  # noqa: E501
-    else:
-        features_on_page = feature_helpers.get_by_ids(paginated_id_list)
-
-    logging.info(
-        'features_on_page is %r', [f['name'] for f in features_on_page]
-    )
-    return features_on_page, total_count
+    return paginated_id_list, total_count
 
 
 def create_future_operations_from_queries(terms, context: QueryContext):
