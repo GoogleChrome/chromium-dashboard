@@ -260,30 +260,40 @@ export class ChromedashPreflightDialog extends LitElement {
         .status.na,
         .status.not_applicable,
         .status.na_self-certified,
-        .status.na_self-certified_then_verified {
+        .status.na_self-certified_then_verified,
+        sl-select.na::part(combobox),
+        sl-select.na::part(display-input) {
           background: var(--gate-not-applicable-background);
           color: var(--gate-not-applicable-color);
         }
 
         .status.preparing,
-        .status.not_started {
+        .status.not_started,
+        sl-select.not_started::part(combobox),
+        sl-select.not_started::part(display-input) {
           background: var(--gate-preparing-background);
           color: var(--gate-preparing-color);
         }
 
         .status.pending,
-        .status.ready_for_review {
+        .status.ready_for_review,
+        sl-select.ready_for_review::part(combobox),
+        sl-select.ready_for_review::part(display-input) {
           background: var(--gate-pending-background);
           color: var(--gate-pending-color);
         }
 
-        .status.needs_work {
+        .status.needs_work,
+        sl-select.needs_work::part(combobox),
+        sl-select.needs_work::part(display-input) {
           background: var(--gate-needs-work-background);
           color: var(--gate-needs-work-color);
         }
 
         .status.approved,
-        .status.verified {
+        .status.verified,
+        sl-select.verified::part(combobox),
+        sl-select.verified::part(display-input) {
           background: var(--gate-approved-background);
           color: var(--gate-approved-color);
         }
@@ -418,35 +428,39 @@ export class ChromedashPreflightDialog extends LitElement {
     `;
   }
 
-  renderStatusChip(vote) {
+  getStatusInfo(state?: number) {
     let statusClass = 'not_started';
     let statusText = 'Not started';
-    if (vote) {
-      switch (vote.state) {
-        case PROGRESS_VOTE_STATE.READY_FOR_REVIEW:
-          statusClass = 'ready_for_review';
-          statusText = PROGRESS_VOTE_STATE_NAMES.READY_FOR_REVIEW;
-          break;
-        case PROGRESS_VOTE_STATE.VERIFIED:
-          statusClass = 'verified';
-          statusText = PROGRESS_VOTE_STATE_NAMES.VERIFIED;
-          break;
-        case PROGRESS_VOTE_STATE.NA:
-          statusClass = 'na';
-          statusText = PROGRESS_VOTE_STATE_NAMES.NA;
-          break;
-        case PROGRESS_VOTE_STATE.NEEDS_WORK:
-          statusClass = 'needs_work';
-          statusText = PROGRESS_VOTE_STATE_NAMES.NEEDS_WORK;
-          break;
-      }
+    switch (state) {
+      case PROGRESS_VOTE_STATE.READY_FOR_REVIEW:
+        statusClass = 'ready_for_review';
+        statusText = PROGRESS_VOTE_STATE_NAMES.READY_FOR_REVIEW;
+        break;
+      case PROGRESS_VOTE_STATE.VERIFIED:
+        statusClass = 'verified';
+        statusText = PROGRESS_VOTE_STATE_NAMES.VERIFIED;
+        break;
+      case PROGRESS_VOTE_STATE.NA:
+        statusClass = 'na';
+        statusText = PROGRESS_VOTE_STATE_NAMES.NA;
+        break;
+      case PROGRESS_VOTE_STATE.NEEDS_WORK:
+        statusClass = 'needs_work';
+        statusText = PROGRESS_VOTE_STATE_NAMES.NEEDS_WORK;
+        break;
     }
+    return {statusClass, statusText};
+  }
+
+  renderStatusChip(vote) {
+    const {statusClass, statusText} = this.getStatusInfo(vote?.state);
     return html` <span class="status ${statusClass}">${statusText}</span> `;
   }
 
   handleStatusMenuChange(e) {
     this._touched.add(e.target.dataset.pi);
     this._dirty = true;
+    this.requestUpdate();
     if (e.target?.value == PROGRESS_VOTE_STATE.NEEDS_WORK) {
       const itemName: string = e.target?.dataset['pi'] || '';
       const detailsEl = this.renderRoot.querySelector<HTMLDetailsElement>(
@@ -498,11 +512,18 @@ export class ChromedashPreflightDialog extends LitElement {
   }
 
   renderStatusMenu(item, vote) {
-    const state = vote?.state || PROGRESS_VOTE_STATE.NOT_STARTED;
+    const stateEl = this.renderRoot.querySelector<SlSelect>(
+      `.state-widget[data-pi="${item.name}"]`
+    );
+    const state =
+      this._touched.has(item.name) && stateEl
+        ? parseInt(stateEl.value as string)
+        : vote?.state || PROGRESS_VOTE_STATE.NOT_STARTED;
+    const {statusClass} = this.getStatusInfo(state);
     return html`
       <sl-select
         value=${state}
-        class="state-widget"
+        class="state-widget ${statusClass}"
         size="small"
         data-pi=${item.name}
         ?disabled=${this._saving}
