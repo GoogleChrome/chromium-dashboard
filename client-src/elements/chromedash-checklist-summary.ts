@@ -97,6 +97,26 @@ export class ChromedashChecklistSummary extends LitElement {
   @state()
   loading = true;
 
+  hasChecklist(): boolean {
+    return (
+      this.gate?.gate_type === GATE_TYPES.DQ_PLAN ||
+      this.gate?.gate_type === GATE_TYPES.DQ_SHIP
+    );
+  }
+
+  override willUpdate() {
+    if (!this.hasChecklist()) {
+      return;
+    }
+
+    if (
+      !this.loading &&
+      (!this.featureGates || this.featureGates.length === 0)
+    ) {
+      this.fetchData();
+    }
+  }
+
   fetchData() {
     this.loading = true;
     Promise.all([window.csClient.getGates(this.feature.id)])
@@ -236,16 +256,8 @@ export class ChromedashChecklistSummary extends LitElement {
   }
 
   render(): TemplateResult {
-    const hasChecklist =
-      this.gate?.gate_type === GATE_TYPES.DQ_PLAN ||
-      this.gate?.gate_type === GATE_TYPES.DQ_SHIP;
-
-    if (!hasChecklist) {
+    if (!this.hasChecklist()) {
       return html`${nothing}`;
-    }
-
-    if (!this.featureGates || this.featureGates.length === 0) {
-      this.fetchData();
     }
 
     return html`
