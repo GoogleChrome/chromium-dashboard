@@ -225,12 +225,12 @@ export class ChromedashStaleFeaturesPage extends LitElement {
       const valB = b[this._sortColumn];
 
       let comparison = 0;
-      if (typeof valA === 'string' && typeof valB === 'string') {
+      if (this._sortColumn === 'accurate_as_of') {
+        comparison = new Date(valA).getTime() - new Date(valB).getTime();
+      } else if (typeof valA === 'string' && typeof valB === 'string') {
         comparison = valA.localeCompare(valB);
       } else if (typeof valA === 'number' && typeof valB === 'number') {
         comparison = valA - valB;
-      } else if (this._sortColumn === 'accurate_as_of') {
-        comparison = new Date(valA).getTime() - new Date(valB).getTime();
       }
 
       return this._sortDirection === 'asc' ? comparison : -comparison;

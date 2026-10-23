@@ -21,7 +21,6 @@ import {LAYOUT_CSS} from '../css/_layout-css.js';
 import {customElement, property, query} from 'lit/decorators.js';
 import '../js-src/openapi-client.js';
 import {DefaultApiInterface, ComponentsUser} from 'chromestatus-openapi';
-import {get} from 'http';
 
 @customElement('chromedash-admin-blink-component-listing')
 export class ChromedashAdminBlinkComponentListing extends LitElement {
