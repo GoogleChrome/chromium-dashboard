@@ -70,6 +70,33 @@ describe('chromedash-form-field', () => {
     assert.include(renderElement.innerHTML, 'checked');
   });
 
+  it('allows unchecking a checkbox that has initial: true', async () => {
+    const component = await fixture<ChromedashFormField>(
+      html` <chromedash-form-field name="confidential">
+      </chromedash-form-field>`
+    );
+    assert.equal(component.getValue(), true);
+
+    component.handleFieldUpdated({target: {checked: false}});
+    await component.updateComplete;
+
+    assert.equal(component.getValue(), false);
+    const checkbox = component.renderRoot.querySelector('sl-checkbox')!;
+    assert.isFalse(checkbox.hasAttribute('checked'));
+  });
+
+  it('renders a required select field with initial value 0', async () => {
+    const component = await fixture<ChromedashFormField>(
+      html` <chromedash-form-field name="rollout_plan" forceRequired>
+      </chromedash-form-field>`
+    );
+    assert.equal(component.getValue(), 0);
+    const slSelect = component.renderRoot.querySelector('sl-select') as any;
+    assert.exists(slSelect);
+    assert.isTrue(slSelect.hasAttribute('required'));
+    assert.equal(slSelect.getAttribute('value'), '0');
+  });
+
   it('renders a select type of field', async () => {
     const component = await fixture(
       html` <chromedash-form-field name="category" value="0">
@@ -225,7 +252,7 @@ describe('chromedash-form-field', () => {
     assert.include(renderElement.innerHTML, 'Rollout platforms');
     assert.include(renderElement.innerHTML, 'sl-select');
     assert.include(renderElement.innerHTML, 'multiple');
-    assert.include(renderElement.innerHTML, 'cleareable');
+    assert.include(renderElement.innerHTML, 'clearable');
   });
 
   it('skips unused obsolete multiselect choices', async () => {
@@ -302,6 +329,21 @@ describe('chromedash-form-field', () => {
         {text: 'Origin trial: Display name', value: '2'},
         {text: 'Origin trial 2', value: '3'},
         {text: 'Prepare to ship', value: '4'},
+      ]);
+
+      // Updating feature stages dynamically updates computedChoices.
+      component.feature = {
+        stages: [{id: 1, stage_type: STAGE_BLINK_INCUBATE}],
+      } as any;
+      await component.updateComplete;
+      const updatedOptions = Array.from(
+        component.renderRoot.querySelectorAll('sl-option')
+      ).map(option => ({
+        text: option.textContent!.trim(),
+        value: option.value,
+      }));
+      assert.deepEqual(updatedOptions, [
+        {text: 'Identify the need', value: '1'},
       ]);
     });
   });

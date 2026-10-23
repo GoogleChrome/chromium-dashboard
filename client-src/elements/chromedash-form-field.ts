@@ -144,13 +144,16 @@ export class ChromedashFormField extends LitElement {
   getValue() {
     // value can be a js or python boolean value converted to a string
     // or the initial value specified in form-field-spec
-    // If value is falsy, it will be replaced by the initial value, if any.
+    // If value is not set, it will be replaced by the initial value, if any.
     const useEnterpriseDefault =
       this.forEnterprise && this.fieldProps.enterprise_initial !== undefined;
     const initialValue = useEnterpriseDefault
       ? this.fieldProps.enterprise_initial
       : this.fieldProps.initial;
-    return !this.value && initialValue ? initialValue : this.value;
+    return (this.value === '' || this.value == null) &&
+      initialValue !== undefined
+      ? initialValue
+      : this.value;
   }
 
   connectedCallback() {
@@ -187,6 +190,18 @@ export class ChromedashFormField extends LitElement {
     }
   }
 
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    const app: ChromedashApp | null = document.querySelector('chromedash-app');
+    const list = app?.pageComponent?.allFormFieldComponentsList;
+    if (list) {
+      const idx = list.indexOf(this);
+      if (idx !== -1) {
+        list.splice(idx, 1);
+      }
+    }
+  }
+
   fetchChoices(fetchPromise, errorMessage) {
     this.loading = true;
     fetchPromise
@@ -195,14 +210,26 @@ export class ChromedashFormField extends LitElement {
         this.loading = false;
       })
       .catch(() => {
+        this.loading = false;
         showToastMessage(errorMessage);
       });
   }
 
   willUpdate(changedProperties: PropertyValues) {
     super.willUpdate(changedProperties);
+    if (
+      !this.fieldProps ||
+      changedProperties.has('name') ||
+      changedProperties.has('feature')
+    ) {
+      this.fieldProps = resolveFieldForFeature(
+        ALL_FIELDS[this.name] || {},
+        this.feature
+      );
+    }
     if (!this.hasUpdated) {
-      this.initialValue = JSON.parse(JSON.stringify(this.value));
+      this.initialValue =
+        this.value !== undefined ? JSON.parse(JSON.stringify(this.value)) : '';
     }
   }
 
@@ -423,6 +450,7 @@ export class ChromedashFormField extends LitElement {
           value="${fieldValue}"
           size="small"
           hoist
+          ?required=${isRequired}
           ?disabled=${fieldDisabled || this.disabled || this.loading}
           @sl-change="${this.handleFieldUpdated}"
         >
@@ -434,7 +462,11 @@ export class ChromedashFormField extends LitElement {
         </sl-select>
       `;
     } else if (type === 'multiselect') {
-      const valueArray: string[] = fieldValue.split(',');
+      const valueArray: string[] = Array.isArray(fieldValue)
+        ? fieldValue.map(String)
+        : fieldValue
+          ? String(fieldValue).split(',')
+          : [];
       const availableOptions = Object.values(choices).filter(
         ([value, label, obsolete]) =>
           !obsolete || valueArray.includes('' + value)
@@ -447,7 +479,7 @@ export class ChromedashFormField extends LitElement {
           size="small"
           hoist
           multiple
-          cleareable
+          clearable
           ?required=${isRequired}
           ?disabled=${fieldDisabled || this.disabled || this.loading}
           @sl-change="${this.handleFieldUpdated}"
@@ -516,7 +548,11 @@ export class ChromedashFormField extends LitElement {
               id="id_${this.name}_${value}"
               name="${fieldName}"
               value="${value}"
-              .checked="${value === Number(fieldValue)}"
+              .checked="${
+                fieldValue !== '' &&
+                fieldValue != null &&
+                value === Number(fieldValue)
+              }"
               type="radio"
               required
               @change=${this.handleFieldUpdated}
@@ -759,8 +795,8 @@ function getFieldValueWithStage(
     typeof stageOrId === 'object'
       ? stageOrId
       : stageId != null
-        ? feature.stages.find(s => s.id == stageId)
-        : feature.stages[0];
+        ? feature.stages?.find(s => s.id == stageId)
+        : feature.stages?.[0];
   if (!feStage) {
     return null;
   }

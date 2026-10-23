@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
-import {LitElement, css, html, nothing} from 'lit';
+import {LitElement, PropertyValues, html, nothing} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
 import {createRef, ref, Ref} from 'lit/directives/ref.js';
 import {styleMap} from 'lit-html/directives/style-map.js';
 import {ChromedashTextarea} from './chromedash-textarea.js';
 import {URL_REGEX} from './form-field-specs.js';
+import {showToastMessage} from './utils.js';
 
 const DEFAULT_PLACEHOLDER = 'https://...\nhttps://...';
 const DEFAULT_SPLIT_PATTERN = String.raw`\s+`;
@@ -30,9 +31,9 @@ export class ChromedashAttachments extends LitElement {
   fileInputRef: Ref<HTMLInputElement> = createRef();
 
   @property({type: String})
-  name;
+  name = '';
   @property({type: String})
-  value;
+  value = '';
   @property({type: String})
   pattern;
   @property({type: String})
@@ -40,7 +41,7 @@ export class ChromedashAttachments extends LitElement {
   @property({type: String})
   chromedash_split_pattern = DEFAULT_SPLIT_PATTERN;
   @property({type: Number})
-  featureId;
+  featureId = 0;
 
   // Note: Form element components cannot have their own styles.
 
@@ -68,8 +69,13 @@ export class ChromedashAttachments extends LitElement {
       window.csClient
         .addAttachment(this.featureId, inputEl.name, file)
         .then(resp => {
-          this.value += '\n' + resp.attachment_url;
+          this.value = this.value
+            ? `${this.value}\n${resp.attachment_url}`
+            : resp.attachment_url;
           this.dispatchEvent(new CustomEvent('sl-change'));
+        })
+        .catch(() => {
+          showToastMessage('Error uploading image. Please try again.');
         });
     }
   }
@@ -158,11 +164,13 @@ export class ChromedashAttachments extends LitElement {
     `;
   }
 
-  firstUpdated() {
+  firstUpdated(changedProperties: PropertyValues) {
+    super.firstUpdated(changedProperties);
     this.validate();
   }
 
-  updated() {
+  updated(changedProperties: PropertyValues) {
+    super.updated(changedProperties);
     this.validate();
   }
 }
