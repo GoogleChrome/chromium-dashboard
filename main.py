@@ -330,10 +330,6 @@ spa_page_routes = [
         },
     ),
     Route(
-        '/guide/stage/<int:feature_id>/<int:intent_stage>/<int:stage_id>',
-        defaults={'require_edit_feature': True},
-    ),
-    Route(
         '/guide/stage/<int:feature_id>/<int:stage_id>',
         defaults={'require_edit_feature': True},
     ),

@@ -1617,14 +1617,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Action'
-        approvals:
-          type: array
-          items:
-            $ref: '#/components/schemas/GateInfo'
-        incoming_stage:
-          type: integer
-        outgoing_stage:
-          type: integer
         stage_type:
           type: integer
           nullable: true

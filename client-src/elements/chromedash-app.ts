@@ -448,15 +448,6 @@ export class ChromedashApp extends LitElement {
       this.pageComponent.stageId = parseInt(ctx.params.stageId);
       this.pageComponent.appTitle = this.appTitle;
     });
-    page(
-      '/guide/stage/:featureId(\\d+)/:intentStage(\\d+)/:stageId(\\d+)',
-      ctx => {
-        if (!this.setupNewPage(ctx, 'chromedash-guide-stage-page')) return;
-        this.pageComponent.featureId = parseInt(ctx.params.featureId);
-        this.pageComponent.stageId = parseInt(ctx.params.stageId);
-        this.pageComponent.appTitle = this.appTitle;
-      }
-    );
     page('/feature/:featureId(\\d+)/gate/:gateId(\\d+/intent)', ctx => {
       if (!this.setupNewPage(ctx, 'chromedash-intent-preview-page')) return;
       this.pageComponent.featureId = parseInt(ctx.params.featureId);

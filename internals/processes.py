@@ -18,7 +18,7 @@
 from dataclasses import asdict, dataclass
 
 import settings
-from internals import approval_defs, core_enums
+from internals import core_enums
 from internals.core_models import Stage
 from internals.review_models import Gate
 
@@ -59,9 +59,6 @@ class ProcessStage:
     progress_items: list[ProgressItem]
     # action prerequisites may reference a PI defined in any stage.
     actions: list[Action]
-    approvals: list[approval_defs.GateInfo]
-    incoming_stage: int
-    outgoing_stage: int
     stage_type: int | None
 
 
@@ -562,9 +559,6 @@ FEATURE_ROLLOUT_STAGE = ProcessStage(
     '',
     [],
     [],
-    [],
-    core_enums.INTENT_SHIP,
-    core_enums.INTENT_ROLLOUT,
     stage_type=core_enums.STAGE_ENT_ROLLOUT,
 )
 
@@ -581,9 +575,6 @@ BLINK_PROCESS_STAGES = [
             PI_EXPLAINER,
         ],
         [],
-        [],
-        core_enums.INTENT_NONE,
-        core_enums.INTENT_INCUBATE,
         stage_type=core_enums.STAGE_BLINK_INCUBATE,
     ),
     ProcessStage(
@@ -608,9 +599,6 @@ BLINK_PROCESS_STAGES = [
                 [core_enums.GATE_API_PROTOTYPE],
             )
         ],
-        [approval_defs.PrototypeApproval],
-        core_enums.INTENT_INCUBATE,
-        core_enums.INTENT_IMPLEMENT,
         stage_type=core_enums.STAGE_BLINK_PROTOTYPE,
     ),
     ProcessStage(
@@ -642,9 +630,6 @@ BLINK_PROCESS_STAGES = [
                 [],
             )
         ],
-        [],
-        core_enums.INTENT_IMPLEMENT,
-        core_enums.INTENT_EXPERIMENT,
         stage_type=core_enums.STAGE_BLINK_DEV_TRIAL,
     ),
     ProcessStage(
@@ -654,9 +639,6 @@ BLINK_PROCESS_STAGES = [
             PI_TAG_REQUESTED,
         ],
         [],
-        [],
-        core_enums.INTENT_EXPERIMENT,
-        core_enums.INTENT_IMPLEMENT_SHIP,
         stage_type=core_enums.STAGE_BLINK_EVAL_READINESS,
     ),
     ProcessStage(
@@ -683,9 +665,6 @@ BLINK_PROCESS_STAGES = [
                 [core_enums.GATE_API_ORIGIN_TRIAL],
             )
         ],
-        [approval_defs.ExperimentApproval],
-        core_enums.INTENT_IMPLEMENT_SHIP,
-        core_enums.INTENT_ORIGIN_TRIAL,
         stage_type=core_enums.STAGE_BLINK_ORIGIN_TRIAL,
     ),
     ProcessStage(
@@ -700,9 +679,6 @@ BLINK_PROCESS_STAGES = [
                 [core_enums.GATE_API_EXTEND_ORIGIN_TRIAL],
             )
         ],
-        [approval_defs.ExtendExperimentApproval],
-        core_enums.INTENT_ORIGIN_TRIAL,
-        core_enums.INTENT_EXTEND_ORIGIN_TRIAL,
         stage_type=core_enums.STAGE_BLINK_EXTEND_ORIGIN_TRIAL,
     ),
     ProcessStage(
@@ -744,9 +720,6 @@ BLINK_PROCESS_STAGES = [
                 [core_enums.GATE_API_SHIP],
             ),
         ],
-        [approval_defs.ShipApproval],
-        core_enums.INTENT_IMPLEMENT_SHIP,
-        core_enums.INTENT_SHIP,
         stage_type=core_enums.STAGE_BLINK_SHIPPING,
     ),
     ProcessStage(
@@ -755,9 +728,6 @@ BLINK_PROCESS_STAGES = [
         'actually ships.',
         [],
         [],
-        [],
-        core_enums.INTENT_SHIP,
-        core_enums.INTENT_SHIPPED,
         stage_type=None,
     ),
     FEATURE_ROLLOUT_STAGE,
@@ -792,9 +762,6 @@ BLINK_FAST_TRACK_STAGES = [
                 [core_enums.GATE_API_PROTOTYPE],
             )
         ],
-        [approval_defs.PrototypeApproval],
-        core_enums.INTENT_NONE,
-        core_enums.INTENT_IMPLEMENT,
         stage_type=core_enums.STAGE_FAST_PROTOTYPE,
     ),
     ProcessStage(
@@ -823,9 +790,6 @@ BLINK_FAST_TRACK_STAGES = [
                 [],
             )
         ],
-        [],
-        core_enums.INTENT_IMPLEMENT,
-        core_enums.INTENT_EXPERIMENT,
         stage_type=core_enums.STAGE_FAST_DEV_TRIAL,
     ),
     ProcessStage(
@@ -849,9 +813,6 @@ BLINK_FAST_TRACK_STAGES = [
                 [core_enums.GATE_API_ORIGIN_TRIAL],
             )
         ],
-        [approval_defs.ExperimentApproval],
-        core_enums.INTENT_EXPERIMENT,
-        core_enums.INTENT_ORIGIN_TRIAL,
         stage_type=core_enums.STAGE_FAST_ORIGIN_TRIAL,
     ),
     ProcessStage(
@@ -866,9 +827,6 @@ BLINK_FAST_TRACK_STAGES = [
                 [core_enums.GATE_API_EXTEND_ORIGIN_TRIAL],
             )
         ],
-        [approval_defs.ExtendExperimentApproval],
-        core_enums.INTENT_ORIGIN_TRIAL,
-        core_enums.INTENT_EXTEND_ORIGIN_TRIAL,
         stage_type=core_enums.STAGE_FAST_EXTEND_ORIGIN_TRIAL,
     ),
     ProcessStage(
@@ -901,9 +859,6 @@ BLINK_FAST_TRACK_STAGES = [
                 [core_enums.GATE_API_SHIP],
             ),
         ],
-        [approval_defs.ShipApproval],
-        core_enums.INTENT_EXPERIMENT,
-        core_enums.INTENT_SHIP,
         stage_type=core_enums.STAGE_FAST_SHIPPING,
     ),
     ProcessStage(
@@ -912,9 +867,6 @@ BLINK_FAST_TRACK_STAGES = [
         'actually ships.',
         [],
         [],
-        [],
-        core_enums.INTENT_SHIP,
-        core_enums.INTENT_SHIPPED,
         stage_type=None,
     ),
     FEATURE_ROLLOUT_STAGE,
@@ -940,9 +892,6 @@ PSA_ONLY_STAGES = [
             PI_SPEC_MATURITY,
         ],
         [],
-        [],
-        core_enums.INTENT_NONE,
-        core_enums.INTENT_IMPLEMENT,
         stage_type=core_enums.STAGE_PSA_IMPLEMENT,
     ),
     ProcessStage(
@@ -968,9 +917,6 @@ PSA_ONLY_STAGES = [
                 [],
             )
         ],
-        [],
-        core_enums.INTENT_IMPLEMENT,
-        core_enums.INTENT_EXPERIMENT,
         stage_type=core_enums.STAGE_PSA_DEV_TRIAL,
     ),
     ProcessStage(
@@ -1001,9 +947,6 @@ PSA_ONLY_STAGES = [
                 [],
             ),
         ],
-        [approval_defs.ShipApproval],
-        core_enums.INTENT_EXPERIMENT,
-        core_enums.INTENT_SHIP,
         stage_type=core_enums.STAGE_PSA_SHIPPING,
     ),
     ProcessStage(
@@ -1012,9 +955,6 @@ PSA_ONLY_STAGES = [
         'actually ships.',
         [],
         [],
-        [],
-        core_enums.INTENT_SHIP,
-        core_enums.INTENT_SHIPPED,
         stage_type=None,
     ),
     FEATURE_ROLLOUT_STAGE,
@@ -1065,9 +1005,6 @@ DEPRECATION_STAGES = [
                 [core_enums.GATE_API_PLAN],
             ),
         ],
-        [approval_defs.PrototypeApproval],
-        core_enums.INTENT_NONE,
-        core_enums.INTENT_IMPLEMENT,
         stage_type=core_enums.STAGE_DEP_PLAN,
     ),
     # TODO(cwilso): Work out additional steps for flag defaulting to disabled.
@@ -1092,9 +1029,6 @@ DEPRECATION_STAGES = [
                 [],
             )
         ],
-        [],
-        core_enums.INTENT_IMPLEMENT,
-        core_enums.INTENT_EXPERIMENT,
         stage_type=core_enums.STAGE_DEP_DEV_TRIAL,
     ),
     ProcessStage(
@@ -1116,9 +1050,6 @@ DEPRECATION_STAGES = [
                 [core_enums.GATE_API_ORIGIN_TRIAL],
             )
         ],
-        [approval_defs.ExperimentApproval],
-        core_enums.INTENT_EXPERIMENT,
-        core_enums.INTENT_ORIGIN_TRIAL,
         stage_type=core_enums.STAGE_DEP_DEPRECATION_TRIAL,
     ),
     ProcessStage(
@@ -1133,9 +1064,6 @@ DEPRECATION_STAGES = [
                 [core_enums.GATE_API_EXTEND_ORIGIN_TRIAL],
             )
         ],
-        [approval_defs.ExtendExperimentApproval],
-        core_enums.INTENT_ORIGIN_TRIAL,
-        core_enums.INTENT_EXTEND_ORIGIN_TRIAL,
         stage_type=core_enums.STAGE_DEP_EXTEND_DEPRECATION_TRIAL,
     ),
     ProcessStage(
@@ -1150,9 +1078,6 @@ DEPRECATION_STAGES = [
             # There is no I2S for deprecations because it all happens during planning.
             # And thre is no API Owner gate on this stage.
         ],
-        [approval_defs.ShipApproval],
-        core_enums.INTENT_EXPERIMENT,
-        core_enums.INTENT_SHIP,
         stage_type=core_enums.STAGE_DEP_SHIPPING,
     ),
     ProcessStage(
@@ -1177,9 +1102,6 @@ DEPRECATION_STAGES = [
                 [],
             ),
         ],
-        [],
-        core_enums.INTENT_SHIP,
-        core_enums.INTENT_REMOVED,
         stage_type=core_enums.STAGE_DEP_REMOVE_CODE,
     ),
     FEATURE_ROLLOUT_STAGE,
@@ -1192,9 +1114,6 @@ ENTERPRISE_STAGES = [
         '',
         [],
         [],
-        [],
-        core_enums.INTENT_NONE,
-        core_enums.INTENT_ROLLOUT,
         stage_type=core_enums.STAGE_ENT_ROLLOUT,
     ),
 ]

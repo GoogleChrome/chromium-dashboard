@@ -218,7 +218,7 @@ describe('preflight functions', () => {
       stages: [
         {
           name: 'Start incubating',
-          outgoing_stage: 1,
+          stage_type: 110,
           progress_items: [
             {name: 'Motivation', field: 'motivation'},
             {name: 'Explainer', field: 'explainer_links'},
@@ -227,7 +227,7 @@ describe('preflight functions', () => {
         },
         {
           name: 'Start prototyping',
-          outgoing_stage: 2,
+          stage_type: 120,
           progress_items: [
             {name: 'Spec link', field: 'spec_link'},
             {name: 'Draft API spec'},
@@ -235,7 +235,7 @@ describe('preflight functions', () => {
         },
         {
           name: 'Evaluate readiness to ship',
-          outgoing_stage: 3,
+          stage_type: 140,
           progress_items: [{name: 'Doc links', field: 'doc_links'}],
         },
       ],
@@ -253,7 +253,7 @@ describe('preflight functions', () => {
       ],
     } as Action;
 
-    const feStage = {id: 20, stage_type: 120, intent_stage: 2} as StageDict;
+    const feStage = {id: 20, stage_type: 120} as StageDict;
 
     const baseUser: User = {
       id: 1,
@@ -300,7 +300,8 @@ describe('preflight functions', () => {
         feStage,
         feStage,
         [privacyGate],
-        () => {}
+        () => {},
+        true
       );
       await component.updateComplete;
 
@@ -338,7 +339,7 @@ describe('preflight functions', () => {
       assert.equal(row0Cells[2].textContent?.trim(), 'Motivation');
       assert.equal(
         row0Cells[3].querySelector('a')?.getAttribute('href'),
-        '/guide/stage/123456/1/10#id_motivation'
+        '/guide/stage/123456/10#id_motivation'
       );
 
       const row1Cells = stage1StatusRows[1].querySelectorAll('td');
@@ -352,7 +353,7 @@ describe('preflight functions', () => {
       assert.equal(row1Cells[2].textContent?.trim(), 'Explainer');
       assert.equal(
         row1Cells[3].querySelector('a')?.getAttribute('href'),
-        '/guide/stage/123456/1/10#id_explainer_links'
+        '/guide/stage/123456/10#id_explainer_links'
       );
 
       const row2Cells = stage1StatusRows[2].querySelectorAll('td');
@@ -415,7 +416,7 @@ describe('preflight functions', () => {
         stages: [
           {
             name: 'Start incubating',
-            outgoing_stage: 1,
+            stage_type: 110,
             progress_items: [
               {
                 name: 'Motivation',
@@ -450,7 +451,8 @@ describe('preflight functions', () => {
         feStage,
         feStage,
         [],
-        () => {}
+        () => {},
+        true
       );
       await component.updateComplete;
 
@@ -509,7 +511,7 @@ describe('preflight functions', () => {
       );
       assert.equal(
         valueCells[3].querySelector('a')?.getAttribute('href'),
-        '/guide/stage/123456/1/10#id_explainer_links'
+        '/guide/stage/123456/10#id_explainer_links'
       );
       assert.equal(getComputedStyle(valueCells[0]).borderTopStyle, 'none');
 
@@ -582,7 +584,8 @@ describe('preflight functions', () => {
         feStage,
         feStage,
         [],
-        () => {}
+        () => {},
+        true
       );
       await component.updateComplete;
       assert.isFalse(motivationDetails.open);
@@ -606,7 +609,8 @@ describe('preflight functions', () => {
         feStage,
         feStage,
         [],
-        () => {}
+        () => {},
+        true
       );
       await component.updateComplete;
 
@@ -633,7 +637,8 @@ describe('preflight functions', () => {
         feStage,
         feStage,
         [],
-        resolveStub
+        resolveStub,
+        true
       );
       await component.updateComplete;
 
@@ -663,7 +668,8 @@ describe('preflight functions', () => {
         feStage,
         feStage,
         [],
-        resolveStub
+        resolveStub,
+        true
       );
       await component.updateComplete;
 
@@ -674,6 +680,32 @@ describe('preflight functions', () => {
       cancelButton.click();
       assert.isTrue(hideSpy.calledOnce);
       assert.isTrue(resolveStub.calledOnceWithExactly(false));
+    });
+
+    it('omits Proceed button when showProceed is false', async () => {
+      const component = await fixture<ChromedashPreflightDialog>(
+        html`<chromedash-preflight-dialog></chromedash-preflight-dialog>`
+      );
+      const progress = {} as ProgressItem;
+
+      component.openWithContext(
+        baseUser,
+        feature,
+        progress,
+        process,
+        action,
+        feStage,
+        feStage,
+        [],
+        () => {},
+        false
+      );
+      await component.updateComplete;
+
+      const buttons = Array.from(
+        component.shadowRoot!.querySelectorAll('sl-button')
+      ).map(b => b.textContent?.trim());
+      assert.deepEqual(buttons, ['Cancel']);
     });
 
     it('openPreflightDialog returns a promise that resolves when user acts', async () => {
@@ -718,7 +750,8 @@ describe('preflight functions', () => {
           feStage,
           feStage,
           [],
-          () => {}
+          () => {},
+          true
         );
         assert.isFalse(component.canVote());
       });
@@ -736,7 +769,8 @@ describe('preflight functions', () => {
           feStage,
           feStage,
           [],
-          () => {}
+          () => {},
+          true
         );
         assert.isTrue(component.canVote());
       });
@@ -754,7 +788,8 @@ describe('preflight functions', () => {
           feStage,
           feStage,
           [],
-          () => {}
+          () => {},
+          true
         );
         assert.isTrue(component.canVote());
       });
@@ -772,7 +807,8 @@ describe('preflight functions', () => {
           feStage,
           feStage,
           [],
-          () => {}
+          () => {},
+          true
         );
         assert.isTrue(component.canVote());
       });
@@ -796,7 +832,8 @@ describe('preflight functions', () => {
           feStage,
           feStage,
           [],
-          () => {}
+          () => {},
+          true
         );
         await component.updateComplete;
 
@@ -819,7 +856,8 @@ describe('preflight functions', () => {
           feStage,
           feStage,
           [],
-          () => {}
+          () => {},
+          true
         );
         await component.updateComplete;
 
@@ -842,7 +880,8 @@ describe('preflight functions', () => {
           feStage,
           feStage,
           [],
-          () => {}
+          () => {},
+          true
         );
         assert.isTrue(component.canEdit());
       });
@@ -894,7 +933,8 @@ describe('preflight functions', () => {
           feStage,
           feStage,
           [],
-          () => {}
+          () => {},
+          true
         );
         await component.updateComplete;
 
@@ -960,7 +1000,8 @@ describe('preflight functions', () => {
           feStage,
           feStage,
           [],
-          () => {}
+          () => {},
+          true
         );
         await component.updateComplete;
 
@@ -1018,7 +1059,7 @@ describe('preflight functions', () => {
             .querySelectorAll('td')[3]
             .querySelector('a')
             ?.getAttribute('href'),
-          '/guide/stage/123456/1/10#id_explainer_links'
+          '/guide/stage/123456/10#id_explainer_links'
         );
         for (const fbRow of component.shadowRoot!.querySelectorAll(
           'tr.feedback'
@@ -1048,7 +1089,8 @@ describe('preflight functions', () => {
           feStage,
           feStage,
           [],
-          () => {}
+          () => {},
+          true
         );
         await component.updateComplete;
 
@@ -1076,7 +1118,8 @@ describe('preflight functions', () => {
           feStage,
           feStage,
           [],
-          () => {}
+          () => {},
+          true
         );
         await component.updateComplete;
         assert.isTrue(getSaveButton().hasAttribute('disabled'));
@@ -1108,7 +1151,8 @@ describe('preflight functions', () => {
           feStage,
           feStage,
           [],
-          () => {}
+          () => {},
+          true
         );
         await component.updateComplete;
 
@@ -1132,7 +1176,7 @@ describe('preflight functions', () => {
         );
         assert.equal(
           valueCells[3].querySelector('a')?.getAttribute('href'),
-          '/guide/stage/123456/1/10#id_explainer_links'
+          '/guide/stage/123456/10#id_explainer_links'
         );
         assert.equal(getComputedStyle(valueCells[0]).borderTopStyle, 'none');
 
@@ -1175,7 +1219,7 @@ describe('preflight functions', () => {
         );
         assert.equal(
           motivationValueCells[3].querySelector('a')?.getAttribute('href'),
-          '/guide/stage/123456/1/10#id_motivation'
+          '/guide/stage/123456/10#id_motivation'
         );
 
         // Expanding "Draft API spec" (which has no field) reveals its feedback row
@@ -1212,7 +1256,8 @@ describe('preflight functions', () => {
           feStage,
           feStage,
           [],
-          () => {}
+          () => {},
+          true
         );
         await component.updateComplete;
 
@@ -1282,7 +1327,8 @@ describe('preflight functions', () => {
           feStage,
           feStage,
           [],
-          () => {}
+          () => {},
+          true
         );
         await component.updateComplete;
 
@@ -1312,7 +1358,7 @@ describe('preflight functions', () => {
         );
       });
 
-      it('posts only touched votes, disables controls while saving, fires refetch-needed, and closes dialog on Save', async () => {
+      it('posts only touched votes, disables controls while saving, calls app.refetch(), and closes dialog on Save', async () => {
         let resolvePost!: (value?: unknown) => void;
         const postStub = sinon
           .stub(window.csClient, 'postFeatureProgressVote')
@@ -1335,79 +1381,88 @@ describe('preflight functions', () => {
         const resolveDialogStub = sinon.stub();
         const hideSpy = sinon.spy(component, 'hide');
         const refetchSpy = sinon.spy();
-        component.addEventListener('refetch-needed', refetchSpy);
-
-        component.openWithContext(
-          voterUser,
-          feature,
-          progress,
-          process,
-          action,
-          feStage,
-          feStage,
-          [],
-          resolveDialogStub
+        const fakeApp = Object.assign(
+          document.createElement('chromedash-app'),
+          {refetch: refetchSpy}
         );
-        await component.updateComplete;
+        document.body.appendChild(fakeApp);
 
-        const explainerSelect = component.shadowRoot!.querySelector<SlSelect>(
-          '.state-widget[data-pi="Explainer"]'
-        )!;
-        const specLinkSelect = component.shadowRoot!.querySelector<SlSelect>(
-          '.state-widget[data-pi="Spec link"]'
-        )!;
+        try {
+          component.openWithContext(
+            voterUser,
+            feature,
+            progress,
+            process,
+            action,
+            feStage,
+            feStage,
+            [],
+            resolveDialogStub,
+            true
+          );
+          await component.updateComplete;
 
-        explainerSelect.value = String(PROGRESS_VOTE_STATE.VERIFIED);
-        explainerSelect.dispatchEvent(new CustomEvent('sl-change'));
-        specLinkSelect.value = String(PROGRESS_VOTE_STATE.NEEDS_WORK);
-        specLinkSelect.dispatchEvent(new CustomEvent('sl-change'));
-        await component.updateComplete;
+          const explainerSelect = component.shadowRoot!.querySelector<SlSelect>(
+            '.state-widget[data-pi="Explainer"]'
+          )!;
+          const specLinkSelect = component.shadowRoot!.querySelector<SlSelect>(
+            '.state-widget[data-pi="Spec link"]'
+          )!;
 
-        // Spec link auto-expanded on NEEDS_WORK; enter feedback with whitespace.
-        const specLinkFeedback = component.shadowRoot!.querySelector<SlInput>(
-          '.feedback-widget[data-pi="Spec link"]'
-        )!;
-        specLinkFeedback.value = '  Please fix broken anchor  ';
-        specLinkFeedback.dispatchEvent(new CustomEvent('sl-change'));
-        await component.updateComplete;
+          explainerSelect.value = String(PROGRESS_VOTE_STATE.VERIFIED);
+          explainerSelect.dispatchEvent(new CustomEvent('sl-change'));
+          specLinkSelect.value = String(PROGRESS_VOTE_STATE.NEEDS_WORK);
+          specLinkSelect.dispatchEvent(new CustomEvent('sl-change'));
+          await component.updateComplete;
 
-        const getSaveButton = () =>
-          component.shadowRoot!.querySelectorAll('sl-button')[2];
-        getSaveButton().click();
-        await component.updateComplete;
+          // Spec link auto-expanded on NEEDS_WORK; enter feedback with whitespace.
+          const specLinkFeedback = component.shadowRoot!.querySelector<SlInput>(
+            '.feedback-widget[data-pi="Spec link"]'
+          )!;
+          specLinkFeedback.value = '  Please fix broken anchor  ';
+          specLinkFeedback.dispatchEvent(new CustomEvent('sl-change'));
+          await component.updateComplete;
 
-        // While saving, button shows Saving... and controls are disabled.
-        assert.equal(getSaveButton().textContent?.trim(), 'Saving...');
-        assert.isTrue(getSaveButton().hasAttribute('disabled'));
-        assert.isTrue(explainerSelect.disabled);
+          const getSaveButton = () =>
+            component.shadowRoot!.querySelectorAll('sl-button')[2];
+          getSaveButton().click();
+          await component.updateComplete;
 
-        // Only the two touched items are posted.
-        assert.isTrue(postStub.calledTwice);
-        assert.isTrue(
-          postStub.calledWithExactly(
-            123456,
-            'Explainer',
-            PROGRESS_VOTE_STATE.VERIFIED,
-            ''
-          )
-        );
-        assert.isTrue(
-          postStub.calledWithExactly(
-            123456,
-            'Spec link',
-            PROGRESS_VOTE_STATE.NEEDS_WORK,
-            'Please fix broken anchor'
-          )
-        );
+          // While saving, button shows Saving... and controls are disabled.
+          assert.equal(getSaveButton().textContent?.trim(), 'Saving...');
+          assert.isTrue(getSaveButton().hasAttribute('disabled'));
+          assert.isTrue(explainerSelect.disabled);
 
-        resolvePost({message: 'Done'});
-        await new Promise(resolve => setTimeout(resolve, 0));
-        await component.updateComplete;
+          // Only the two touched items are posted.
+          assert.isTrue(postStub.calledTwice);
+          assert.isTrue(
+            postStub.calledWithExactly(
+              123456,
+              'Explainer',
+              PROGRESS_VOTE_STATE.VERIFIED,
+              ''
+            )
+          );
+          assert.isTrue(
+            postStub.calledWithExactly(
+              123456,
+              'Spec link',
+              PROGRESS_VOTE_STATE.NEEDS_WORK,
+              'Please fix broken anchor'
+            )
+          );
 
-        assert.isTrue(hideSpy.calledOnce);
-        assert.isTrue(resolveDialogStub.calledOnceWithExactly(false));
-        assert.isTrue(refetchSpy.calledOnce);
-        assert.equal(getSaveButton().textContent?.trim(), 'Save');
+          resolvePost({message: 'Done'});
+          await new Promise(resolve => setTimeout(resolve, 0));
+          await component.updateComplete;
+
+          assert.isTrue(hideSpy.calledOnce);
+          assert.isTrue(resolveDialogStub.calledOnceWithExactly(false));
+          assert.isTrue(refetchSpy.calledOnce);
+          assert.equal(getSaveButton().textContent?.trim(), 'Save');
+        } finally {
+          fakeApp.remove();
+        }
       });
     });
   });

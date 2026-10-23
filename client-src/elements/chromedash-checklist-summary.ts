@@ -118,7 +118,8 @@ export class ChromedashChecklistSummary extends LitElement {
       action,
       processStage,
       this.stage,
-      this.featureGates
+      this.featureGates,
+      false
     );
   }
 

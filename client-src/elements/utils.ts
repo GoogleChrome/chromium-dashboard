@@ -122,15 +122,15 @@ export function shouldShowDisplayNameField(
 
 /* Given a process stage, find the first feature entry stage of the same type. */
 export function findFirstFeatureStage(
-  intentStage: number,
+  desiredStageType: number,
   currentStage: StageDict,
   fe: Feature
 ): StageDict | null {
-  if (intentStage === currentStage.intent_stage) {
+  if (desiredStageType === currentStage.stage_type) {
     return currentStage;
   }
   return (
-    fe.stages.find(feStage => intentStage === feStage.intent_stage) || null
+    fe.stages.find(feStage => desiredStageType === feStage.stage_type) || null
   );
 }
 

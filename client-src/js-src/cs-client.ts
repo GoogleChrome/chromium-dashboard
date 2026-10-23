@@ -50,7 +50,6 @@ export interface StageDict {
   feature_id: number;
   stage_type: number;
   display_name: string;
-  intent_stage: number;
   intent_thread_url?: string;
   announcement_url?: string;
   origin_trial_id?: string;

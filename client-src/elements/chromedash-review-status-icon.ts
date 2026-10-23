@@ -88,12 +88,27 @@ export class ChromedashReviewStatusIcon extends LitElement {
     });
   }
 
+  // Ignore API Owners gate on PSA features since it is not required
+  // and it is hidden on the feature detail page.
+  // TODO(DanielRyanSmith): This conditional can be removed once PSA
+  // shipping stages no longer have API owner gates.
+  isIgnoredGate(gate: GateDict): boolean {
+    return (
+      gate.team_name === 'API Owners' &&
+      this.feature?.feature_type_int ===
+        FEATURE_TYPES.FEATURE_TYPE_CODE_CHANGE_ID[0]
+    );
+  }
+
   calcStatus(): {status: statusEnum; targetGateId: number | undefined} {
     let status: statusEnum = 'Not started';
     let targetGateId: number | undefined = undefined;
     let apiOwnersGateId: number | undefined = undefined;
 
     for (const g of this.gates) {
+      if (this.isIgnoredGate(g)) {
+        continue;
+      }
       // If any gate has started, the review icon moves out of the
       // default 'Not stated'.
       if (g.state !== GATE_PREPARING) {
@@ -123,23 +138,12 @@ export class ChromedashReviewStatusIcon extends LitElement {
           g.state === VOTE_OPTIONS['APPROVED'][0] ||
           g.state === VOTE_OPTIONS['NA'][0] ||
           g.state === VOTE_NA_SELF ||
-          g.state === VOTE_NA_VERIFIED
+          g.state === VOTE_NA_VERIFIED ||
+          this.isIgnoredGate(g)
       )
     ) {
       status = 'Approved';
       targetGateId = apiOwnersGateId;
-    }
-
-    // Assume that PSA features are approved even if not started,
-    // since they do not require obtaining approvals.
-    // TODO(DanielRyanSmith): This conditional can be removed once PSA
-    // shipping stages no longer have API owner gates.
-    if (
-      this.feature?.feature_type_int ===
-      FEATURE_TYPES.FEATURE_TYPE_CODE_CHANGE_ID[0]
-    ) {
-      status = 'Approved';
-      targetGateId = undefined;
     }
 
     // If any gate needs work, the icon needs work and links to that gate.
