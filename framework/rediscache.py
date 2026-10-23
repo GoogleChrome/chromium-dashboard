@@ -101,12 +101,15 @@ def set_multi(entries, time=86400):
 
     ``time`` sets the expire time for this key, in seconds.
     """
-    if redis_client is None:
+    if redis_client is None or not entries:
         return
 
     if time:
-        for key in entries:
-            set(key, entries[key], time)
+        with redis_client.pipeline(transaction=False) as pipe:
+            for key, value in entries.items():
+                cache_key = add_gae_prefix(key)
+                pipe.set(cache_key, pickle.dumps(value), ex=time)
+            pipe.execute()
         return
 
     data_entries = {}
@@ -142,8 +145,8 @@ def delete_keys_with_prefix(prefix: str):
         pos, keys = redis_client.scan(cursor=pos, match=prefix)
         target.extend(keys)
 
-    for key in target:
-        redis_client.delete(key)
+    if target:
+        redis_client.delete(*target)
 
 
 def flushall():

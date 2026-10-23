@@ -18,6 +18,8 @@ Tests basic caching operations (set, get, multi-get, delete) using
 the fake Redis client.
 """
 
+from unittest import mock
+
 import testing_config  # Must be imported before the module under test.
 from framework import rediscache
 
@@ -67,8 +69,28 @@ class RedisCacheFunctionTests(testing_config.CustomTestCase):
             rediscache.get_multi([KEY_2, KEY_3, KEY_5]),
         )
 
-        rediscache.set_multi({KEY_5: '222'}, 3600)
+        with mock.patch.object(
+            rediscache.redis_client,
+            'pipeline',
+            wraps=rediscache.redis_client.pipeline,
+        ) as mock_pipeline:
+            rediscache.set_multi({KEY_5: '222'}, 3600)
+            mock_pipeline.assert_called_once_with(transaction=False)
         self.assertEqual({KEY_5: '222'}, rediscache.get_multi([KEY_5]))
+
+        rediscache.set_multi({KEY_2: 'a', KEY_3: 'b'}, time=0)
+        self.assertEqual(
+            {KEY_2: 'a', KEY_3: 'b'}, rediscache.get_multi([KEY_2, KEY_3])
+        )
+
+        # Empty dict is a no-op.
+        with mock.patch.object(
+            rediscache.redis_client,
+            'pipeline',
+            wraps=rediscache.redis_client.pipeline,
+        ) as mock_pipeline:
+            rediscache.set_multi({})
+            mock_pipeline.assert_not_called()
 
     def test_delete(self):
         """Test delete."""
@@ -86,7 +108,19 @@ class RedisCacheFunctionTests(testing_config.CustomTestCase):
         rediscache.set('random_key1', '404')
         self.assertEqual('1', rediscache.get(KEY_1))
 
-        rediscache.delete_keys_with_prefix('cache_key')
+        with mock.patch.object(
+            rediscache.redis_client,
+            'delete',
+            wraps=rediscache.redis_client.delete,
+        ) as mock_delete:
+            rediscache.delete_keys_with_prefix('cache_key')
+            mock_delete.assert_called_once()
+            self.assertEqual(17, len(mock_delete.call_args.args))
+
+            # Prefix with no matching keys does not call delete().
+            mock_delete.reset_mock()
+            rediscache.delete_keys_with_prefix('nonexistent_prefix')
+            mock_delete.assert_not_called()
 
         self.assertEqual(None, rediscache.get(KEY_1))
         self.assertEqual(None, rediscache.get(KEY_2))
