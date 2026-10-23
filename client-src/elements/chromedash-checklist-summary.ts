@@ -102,7 +102,7 @@ export class ChromedashChecklistSummary extends LitElement {
     Promise.all([window.csClient.getGates(this.feature.id)])
       .then(([gatesRes]) => {
         this.featureGates = gatesRes.gates;
-      this.loading = false;
+        this.loading = false;
       })
       .catch(() => {
         showToastMessage(
@@ -230,13 +230,15 @@ export class ChromedashChecklistSummary extends LitElement {
     if (relevantActions.length == 0) {
       return html`${nothing}`;
     }
-    return relevantActions.map(act => this.renderChecklistSummary(processStage, act));
+    return relevantActions.map(act =>
+      this.renderChecklistSummary(processStage, act)
+    );
   }
 
   render(): TemplateResult {
-    const hasChecklist = (
+    const hasChecklist =
       this.gate?.gate_type === GATE_TYPES.DQ_PLAN ||
-        this.gate?.gate_type === GATE_TYPES.DQ_SHIP);
+      this.gate?.gate_type === GATE_TYPES.DQ_SHIP;
 
     if (!hasChecklist) {
       return html`${nothing}`;
@@ -248,9 +250,7 @@ export class ChromedashChecklistSummary extends LitElement {
 
     return html`
       <h2>Checklist summary</h2>
-      ${this.loading ?
-        this.renderSkeleton()
-        : this.renderChecklists()}
+      ${this.loading ? this.renderSkeleton() : this.renderChecklists()}
     `;
   }
 }
