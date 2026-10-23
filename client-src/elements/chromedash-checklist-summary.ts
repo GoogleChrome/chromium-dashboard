@@ -98,9 +98,11 @@ export class ChromedashChecklistSummary extends LitElement {
   loading = true;
 
   fetchData() {
+    this.loading = true;
     Promise.all([window.csClient.getGates(this.feature.id)])
       .then(([gatesRes]) => {
         this.featureGates = gatesRes.gates;
+      this.loading = false;
       })
       .catch(() => {
         showToastMessage(
@@ -208,21 +210,19 @@ export class ChromedashChecklistSummary extends LitElement {
     `;
   }
 
-  render(): TemplateResult {
-    if (this.loading) {
-      return html`${nothing}`;
-    }
-    if (!this.featureGates || this.featureGates.length === 0) {
-      this.fetchData();
-      return html`${nothing}`;
-    }
-    if (
-      this.gate?.gate_type !== GATE_TYPES.DQ_PLAN &&
-      this.gate?.gate_type !== GATE_TYPES.DQ_SHIP
-    ) {
-      return html`${nothing}`;
-    }
+  renderSkeleton() {
+    return html`
+      <div class="bubble">
+        <h3><sl-skeleton effect="sheen"></sl-skeleton></h3>
+        <p>
+          <sl-skeleton effect="sheen"></sl-skeleton>
+          <sl-skeleton effect="sheen"></sl-skeleton>
+        </p>
+      </div>
+    `;
+  }
 
+  renderChecklists() {
     const processStage = findProcessStage(this.stage, this.process);
     const relevantActions = (processStage?.actions || []).filter(act =>
       act.gate_types.includes(this.gate.gate_type)
@@ -230,10 +230,27 @@ export class ChromedashChecklistSummary extends LitElement {
     if (relevantActions.length == 0) {
       return html`${nothing}`;
     }
+    return relevantActions.map(act => this.renderChecklistSummary(processStage, act));
+  }
+
+  render(): TemplateResult {
+    const hasChecklist = (
+      this.gate?.gate_type === GATE_TYPES.DQ_PLAN ||
+        this.gate?.gate_type === GATE_TYPES.DQ_SHIP);
+
+    if (!hasChecklist) {
+      return html`${nothing}`;
+    }
+
+    if (!this.featureGates || this.featureGates.length === 0) {
+      this.fetchData();
+    }
 
     return html`
       <h2>Checklist summary</h2>
-      ${relevantActions.map(act => this.renderChecklistSummary(processStage, act))}
+      ${this.loading ?
+        this.renderSkeleton()
+        : this.renderChecklists()}
     `;
   }
 }
