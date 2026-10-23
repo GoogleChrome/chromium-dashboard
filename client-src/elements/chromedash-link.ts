@@ -36,6 +36,9 @@ const LINK_TYPE_WEBKIT_BUG = 'webkit_bug';
 const LINK_TYPE_SPECS = 'specs';
 
 function _formatLongText(text, maxLength = 50) {
+  if (!text) {
+    return '';
+  }
   if (text.length > maxLength) {
     return (
       text.substring(0, 35) +
@@ -148,7 +151,11 @@ function enhanceChromeStatusLink(featureLink, text?) {
 
 function enhanceGithubIssueLink(featureLink, text?) {
   function _formatISOTime(dateString) {
-    return _dateTimeFormat.format(new Date(dateString));
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) {
+      return '';
+    }
+    return _dateTimeFormat.format(date);
   }
   const information = featureLink.information;
   const assignee = information.assignee_login;
@@ -186,10 +193,12 @@ function enhanceGithubIssueLink(featureLink, text?) {
   if (stateVariant === undefined) {
     if (state === 'open') {
       const age = Date.now() - createdAt.getTime();
-      stateDescription = html`Opened
-        <sl-relative-time date=${createdAt.toISOString()}
-          >on ${_dateTimeFormat.format(createdAt)}</sl-relative-time
-        >`;
+      stateDescription = !isNaN(createdAt.getTime())
+        ? html`Opened
+            <sl-relative-time date=${createdAt.toISOString()}
+              >on ${_dateTimeFormat.format(createdAt)}</sl-relative-time
+            >`
+        : html`Opened`;
       const week = 7 * 24 * 60 * 60 * 1000;
       stateVariant = 'success';
       if (externalReviewer) {
@@ -595,7 +604,7 @@ export class ChromedashLink extends LitElement {
       changedProperties.has('href') ||
       changedProperties.has('featureLinks')
     ) {
-      this._featureLink = this.featureLinks.find(fe => fe.url === this.href);
+      this._featureLink = this.featureLinks?.find(fe => fe.url === this.href);
     }
   }
 
