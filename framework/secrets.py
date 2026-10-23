@@ -85,16 +85,28 @@ class Secrets(ndb.Model):
         return singleton
 
 
+_xsrf_secret: str | None = None
+_session_secret: str | None = None
+
+
 def get_xsrf_secret():
     """Return the xsrf secret key."""
-    singleton = Secrets._get_or_make_singleton()
-    return singleton.xsrf_secret
+    global _xsrf_secret, _session_secret
+    if _xsrf_secret is None:
+        singleton = Secrets._get_or_make_singleton()
+        _xsrf_secret = singleton.xsrf_secret
+        _session_secret = singleton.session_secret
+    return _xsrf_secret
 
 
 def get_session_secret():
     """Return the session secret key."""
-    singleton = Secrets._get_or_make_singleton()
-    return singleton.session_secret
+    global _xsrf_secret, _session_secret
+    if _session_secret is None:
+        singleton = Secrets._get_or_make_singleton()
+        _xsrf_secret = singleton.xsrf_secret
+        _session_secret = singleton.session_secret
+    return _session_secret
 
 
 GITHUB_API_NAME = 'github'
