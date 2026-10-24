@@ -139,7 +139,7 @@ describe('chromedash-checklist-summary', () => {
     assert.notExists(component.shadowRoot!.querySelector('#strip-chart'));
   });
 
-  it('fetches gates when featureGates is empty, sets loading state, and renders once loaded', async () => {
+  it('fetches gates when featureGates is empty, sets loadingGates state, and renders once loaded', async () => {
     let resolveGates!: (value: {gates: GateDict[]}) => void;
     getGatesStub.returns(
       new Promise(resolve => {
@@ -159,19 +159,21 @@ describe('chromedash-checklist-summary', () => {
       ></chromedash-checklist-summary>`
     );
 
-    // Initially fetchData() sets loading = true and renders the skeleton.
+    // Initially fetchData() sets loadingGates = true (leaving loading = false) and renders the skeleton.
     assert.isTrue(getGatesStub.calledOnceWithExactly(123456));
-    assert.isTrue(component.loading);
+    assert.isFalse(component.loading);
+    assert.isTrue(component.loadingGates);
     assert.exists(component.shadowRoot!.querySelector('h2'));
     assert.lengthOf(component.shadowRoot!.querySelectorAll('sl-skeleton'), 3);
     assert.notExists(component.shadowRoot!.querySelector('#strip-chart'));
 
-    // Once getGates resolves, loading becomes false and the checklist renders.
+    // Once getGates resolves, loadingGates becomes false and the checklist renders.
     resolveGates({gates: [dqShipGate]});
     await new Promise(resolve => setTimeout(resolve, 0));
     await component.updateComplete;
 
     assert.isFalse(component.loading);
+    assert.isFalse(component.loadingGates);
     assert.lengthOf(component.shadowRoot!.querySelectorAll('sl-skeleton'), 0);
     assert.exists(component.shadowRoot!.querySelector('.bubble'));
     assert.exists(component.shadowRoot!.querySelector('#strip-chart'));
@@ -196,7 +198,8 @@ describe('chromedash-checklist-summary', () => {
     await new Promise(resolve => setTimeout(resolve, 0));
     await component.updateComplete;
 
-    assert.isTrue(component.loading);
+    assert.isFalse(component.loading);
+    assert.isTrue(component.loadingGates);
     const toastEl = document.querySelector('chromedash-toast');
     const toastMsgSpan = toastEl?.shadowRoot?.querySelector('span#msg');
     assert.include(

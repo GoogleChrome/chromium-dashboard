@@ -96,6 +96,8 @@ export class ChromedashChecklistSummary extends LitElement {
   progress!: ProgressItem;
   @state()
   loading = true;
+  @state()
+  loadingGates = false;
 
   hasChecklist(): boolean {
     return (
@@ -110,7 +112,7 @@ export class ChromedashChecklistSummary extends LitElement {
     }
 
     if (
-      !this.loading &&
+      !this.loadingGates &&
       (!this.featureGates || this.featureGates.length === 0)
     ) {
       this.fetchData();
@@ -118,11 +120,11 @@ export class ChromedashChecklistSummary extends LitElement {
   }
 
   fetchData() {
-    this.loading = true;
+    this.loadingGates = true;
     Promise.all([window.csClient.getGates(this.feature.id)])
       .then(([gatesRes]) => {
         this.featureGates = gatesRes.gates;
-        this.loading = false;
+        this.loadingGates = false;
       })
       .catch(() => {
         showToastMessage(
@@ -262,7 +264,11 @@ export class ChromedashChecklistSummary extends LitElement {
 
     return html`
       <h2>Checklist summary</h2>
-      ${this.loading ? this.renderSkeleton() : this.renderChecklists()}
+      ${
+        this.loading || this.loadingGates
+          ? this.renderSkeleton()
+          : this.renderChecklists()
+      }
     `;
   }
 }
