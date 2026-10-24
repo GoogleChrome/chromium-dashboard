@@ -96,11 +96,35 @@ export class ChromedashChecklistSummary extends LitElement {
   progress!: ProgressItem;
   @state()
   loading = true;
+  @state()
+  loadingGates = false;
+
+  hasChecklist(): boolean {
+    return (
+      this.gate?.gate_type === GATE_TYPES.DQ_PLAN ||
+      this.gate?.gate_type === GATE_TYPES.DQ_SHIP
+    );
+  }
+
+  override willUpdate() {
+    if (!this.hasChecklist()) {
+      return;
+    }
+
+    if (
+      !this.loadingGates &&
+      (!this.featureGates || this.featureGates.length === 0)
+    ) {
+      this.fetchData();
+    }
+  }
 
   fetchData() {
+    this.loadingGates = true;
     Promise.all([window.csClient.getGates(this.feature.id)])
       .then(([gatesRes]) => {
         this.featureGates = gatesRes.gates;
+        this.loadingGates = false;
       })
       .catch(() => {
         showToastMessage(
@@ -208,21 +232,19 @@ export class ChromedashChecklistSummary extends LitElement {
     `;
   }
 
-  render(): TemplateResult {
-    if (this.loading) {
-      return html`${nothing}`;
-    }
-    if (!this.featureGates || this.featureGates.length === 0) {
-      this.fetchData();
-      return html`${nothing}`;
-    }
-    if (
-      this.gate?.gate_type !== GATE_TYPES.DQ_PLAN &&
-      this.gate?.gate_type !== GATE_TYPES.DQ_SHIP
-    ) {
-      return html`${nothing}`;
-    }
+  renderSkeleton() {
+    return html`
+      <div class="bubble">
+        <h3><sl-skeleton effect="sheen"></sl-skeleton></h3>
+        <p>
+          <sl-skeleton effect="sheen"></sl-skeleton>
+          <sl-skeleton effect="sheen"></sl-skeleton>
+        </p>
+      </div>
+    `;
+  }
 
+  renderChecklists() {
     const processStage = findProcessStage(this.stage, this.process);
     const relevantActions = (processStage?.actions || []).filter(act =>
       act.gate_types.includes(this.gate.gate_type)
@@ -230,10 +252,23 @@ export class ChromedashChecklistSummary extends LitElement {
     if (relevantActions.length == 0) {
       return html`${nothing}`;
     }
+    return relevantActions.map(act =>
+      this.renderChecklistSummary(processStage, act)
+    );
+  }
+
+  render(): TemplateResult {
+    if (!this.hasChecklist()) {
+      return html`${nothing}`;
+    }
 
     return html`
       <h2>Checklist summary</h2>
-      ${relevantActions.map(act => this.renderChecklistSummary(processStage, act))}
+      ${
+        this.loading || this.loadingGates
+          ? this.renderSkeleton()
+          : this.renderChecklists()
+      }
     `;
   }
 }
