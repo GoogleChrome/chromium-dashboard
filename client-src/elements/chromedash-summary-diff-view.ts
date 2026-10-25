@@ -153,8 +153,19 @@ export class ChromedashSummaryDiffView extends LitElement {
     ];
   }
 
+  private _togglingEditInternally = false;
+
   override willUpdate(changedProperties: PropertyValues) {
-    if (changedProperties.has('suggestedSummary') && !this.isEditing) {
+    const exitedEditingExternally =
+      changedProperties.has('isEditing') &&
+      !this.isEditing &&
+      !this._togglingEditInternally;
+    this._togglingEditInternally = false;
+
+    if (
+      (changedProperties.has('suggestedSummary') && !this.isEditing) ||
+      exitedEditingExternally
+    ) {
       this.editBuffer = this.suggestedSummary;
     }
   }
@@ -163,6 +174,7 @@ export class ChromedashSummaryDiffView extends LitElement {
     if (this.isEditing && this.textareaEl) {
       this.editBuffer = this.textareaEl.value;
     }
+    this._togglingEditInternally = true;
     this.isEditing = !this.isEditing;
     this.dispatchEvent(
       new CustomEvent('summary-edit-toggle', {
@@ -214,7 +226,7 @@ export class ChromedashSummaryDiffView extends LitElement {
   }
 
   private _renderSuggestedSummaryColumn() {
-    const displayText = this.editBuffer || this.suggestedSummary;
+    const displayText = this.editBuffer;
 
     return html`
       <div

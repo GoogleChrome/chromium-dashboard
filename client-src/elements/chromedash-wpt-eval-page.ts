@@ -332,6 +332,7 @@ export class ChromedashWPTEvalPage extends LitElement {
 
   private _pollIntervalId: number | null = null;
   private _cooldownIntervalId: number | null = null;
+  private _reportChangedTimeoutId: number | null = null;
   private _previousReportContent: string | null = null;
 
   async fetchData() {
@@ -358,6 +359,12 @@ export class ChromedashWPTEvalPage extends LitElement {
   }
 
   willUpdate(changedProperties: Map<string | symbol, unknown>) {
+    if (
+      changedProperties.has('featureId') &&
+      changedProperties.get('featureId') !== undefined
+    ) {
+      this.fetchData();
+    }
     if (changedProperties.has('feature') && this.feature) {
       const currentReport = this.feature.ai_test_eval_report || null;
 
@@ -365,12 +372,14 @@ export class ChromedashWPTEvalPage extends LitElement {
       if (currentReport && currentReport !== this._previousReportContent) {
         this._reportContentChanged = true;
 
-        // 2. Schedule the reset.
-        // This is safe because it happens in a macro-task (setTimeout),
-        // after the current render is finished.
-        setTimeout(() => {
+        // 2. Schedule the reset after the fade-in animation finishes.
+        if (this._reportChangedTimeoutId) {
+          window.clearTimeout(this._reportChangedTimeoutId);
+        }
+        this._reportChangedTimeoutId = window.setTimeout(() => {
           this._reportContentChanged = false;
-        }, 100);
+          this._reportChangedTimeoutId = null;
+        }, 1300);
       }
       this._previousReportContent = currentReport;
     }
@@ -385,6 +394,10 @@ export class ChromedashWPTEvalPage extends LitElement {
     super.disconnectedCallback();
     this.stopPolling();
     this.stopCooldownTimer();
+    if (this._reportChangedTimeoutId) {
+      window.clearTimeout(this._reportChangedTimeoutId);
+      this._reportChangedTimeoutId = null;
+    }
   }
 
   checkRequirements() {
@@ -499,6 +512,7 @@ export class ChromedashWPTEvalPage extends LitElement {
       if (!this.isConnected) return;
     } catch (e) {
       if (!this.isConnected) return;
+      this.stopPolling();
       showToastMessage('Failed to generate report. Please try again later.');
       this.fetchData();
     }

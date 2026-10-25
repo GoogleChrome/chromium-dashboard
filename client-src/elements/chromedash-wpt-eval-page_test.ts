@@ -778,6 +778,47 @@ describe('chromedash-wpt-eval-page', () => {
       // Should NOT show skeletons anymore
       expect(el.shadowRoot!.querySelector('sl-skeleton')).to.not.exist;
     });
+
+    it('stops polling and refetches data if generateWPTCoverageEvaluation fails', async () => {
+      csClientStub.getFeature.resolves(mockFeatureV1);
+      csClientStub.generateWPTCoverageEvaluation.rejects(
+        new Error('Generate failed')
+      );
+
+      const el = await fixture<ChromedashWPTEvalPage>(
+        html`<chromedash-wpt-eval-page
+          .featureId=${99}
+        ></chromedash-wpt-eval-page>`
+      );
+      await el.updateComplete;
+
+      const stopPollingSpy = sinon.spy(el, 'stopPolling');
+      const button = el.shadowRoot!.querySelector(
+        '.generate-button'
+      ) as HTMLElement;
+      button.click();
+      await nextFrame();
+      await el.updateComplete;
+
+      expect(stopPollingSpy.calledOnce).to.be.true;
+      expect(csClientStub.getFeature.calledTwice).to.be.true;
+    });
+
+    it('refetches data when featureId changes after initial render', async () => {
+      csClientStub.getFeature.resolves(mockFeatureV1);
+      const el = await fixture<ChromedashWPTEvalPage>(
+        html`<chromedash-wpt-eval-page
+          .featureId=${100}
+        ></chromedash-wpt-eval-page>`
+      );
+      await el.updateComplete;
+      expect(csClientStub.getFeature.calledOnceWith(100)).to.be.true;
+
+      el.featureId = 200;
+      await el.updateComplete;
+      expect(csClientStub.getFeature.calledTwice).to.be.true;
+      expect(csClientStub.getFeature.secondCall.calledWith(200)).to.be.true;
+    });
   });
 
   describe('Cooldown Logic', () => {
