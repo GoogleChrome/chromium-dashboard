@@ -1,6 +1,7 @@
 {
   "page_title": "Notas de la versión de Chrome {milestone}",
   "preview_badge": "Vista previa",
+  "pending_review": "Revisión pendiente",
   "scheduled_stable_release": "Lanzamiento estable programado: {date}",
   "currently_on_beta": "(Actualmente en el canal Beta)",
   "currently_on_dev": "(Actualmente en el canal Dev, llega a Beta el {date})",

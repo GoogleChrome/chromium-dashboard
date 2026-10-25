@@ -4,12 +4,10 @@ from typing import List, Dict  # noqa: F401
 
 from chromestatus_openapi.models.base_model import Model
 from chromestatus_openapi.models.action import Action
-from chromestatus_openapi.models.gate_info import GateInfo
 from chromestatus_openapi.models.progress_item import ProgressItem
 from chromestatus_openapi import util
 
 from chromestatus_openapi.models.action import Action  # noqa: E501
-from chromestatus_openapi.models.gate_info import GateInfo  # noqa: E501
 from chromestatus_openapi.models.progress_item import ProgressItem  # noqa: E501
 
 class ProcessStage(Model):
@@ -18,7 +16,7 @@ class ProcessStage(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, name=None, description=None, progress_items=None, actions=None, approvals=None, incoming_stage=None, outgoing_stage=None, stage_type=None):  # noqa: E501
+    def __init__(self, name=None, description=None, progress_items=None, actions=None, stage_type=None):  # noqa: E501
         """ProcessStage - a model defined in OpenAPI
 
         :param name: The name of this ProcessStage.  # noqa: E501
@@ -29,12 +27,6 @@ class ProcessStage(Model):
         :type progress_items: List[ProgressItem]
         :param actions: The actions of this ProcessStage.  # noqa: E501
         :type actions: List[Action]
-        :param approvals: The approvals of this ProcessStage.  # noqa: E501
-        :type approvals: List[GateInfo]
-        :param incoming_stage: The incoming_stage of this ProcessStage.  # noqa: E501
-        :type incoming_stage: int
-        :param outgoing_stage: The outgoing_stage of this ProcessStage.  # noqa: E501
-        :type outgoing_stage: int
         :param stage_type: The stage_type of this ProcessStage.  # noqa: E501
         :type stage_type: int
         """
@@ -43,9 +35,6 @@ class ProcessStage(Model):
             'description': str,
             'progress_items': List[ProgressItem],
             'actions': List[Action],
-            'approvals': List[GateInfo],
-            'incoming_stage': int,
-            'outgoing_stage': int,
             'stage_type': int
         }
 
@@ -54,9 +43,6 @@ class ProcessStage(Model):
             'description': 'description',
             'progress_items': 'progress_items',
             'actions': 'actions',
-            'approvals': 'approvals',
-            'incoming_stage': 'incoming_stage',
-            'outgoing_stage': 'outgoing_stage',
             'stage_type': 'stage_type'
         }
 
@@ -64,9 +50,6 @@ class ProcessStage(Model):
         self._description = description
         self._progress_items = progress_items
         self._actions = actions
-        self._approvals = approvals
-        self._incoming_stage = incoming_stage
-        self._outgoing_stage = outgoing_stage
         self._stage_type = stage_type
 
     @classmethod
@@ -163,69 +146,6 @@ class ProcessStage(Model):
         """
 
         self._actions = actions
-
-    @property
-    def approvals(self) -> List[GateInfo]:
-        """Gets the approvals of this ProcessStage.
-
-
-        :return: The approvals of this ProcessStage.
-        :rtype: List[GateInfo]
-        """
-        return self._approvals
-
-    @approvals.setter
-    def approvals(self, approvals: List[GateInfo]):
-        """Sets the approvals of this ProcessStage.
-
-
-        :param approvals: The approvals of this ProcessStage.
-        :type approvals: List[GateInfo]
-        """
-
-        self._approvals = approvals
-
-    @property
-    def incoming_stage(self) -> int:
-        """Gets the incoming_stage of this ProcessStage.
-
-
-        :return: The incoming_stage of this ProcessStage.
-        :rtype: int
-        """
-        return self._incoming_stage
-
-    @incoming_stage.setter
-    def incoming_stage(self, incoming_stage: int):
-        """Sets the incoming_stage of this ProcessStage.
-
-
-        :param incoming_stage: The incoming_stage of this ProcessStage.
-        :type incoming_stage: int
-        """
-
-        self._incoming_stage = incoming_stage
-
-    @property
-    def outgoing_stage(self) -> int:
-        """Gets the outgoing_stage of this ProcessStage.
-
-
-        :return: The outgoing_stage of this ProcessStage.
-        :rtype: int
-        """
-        return self._outgoing_stage
-
-    @outgoing_stage.setter
-    def outgoing_stage(self, outgoing_stage: int):
-        """Sets the outgoing_stage of this ProcessStage.
-
-
-        :param outgoing_stage: The outgoing_stage of this ProcessStage.
-        :type outgoing_stage: int
-        """
-
-        self._outgoing_stage = outgoing_stage
 
     @property
     def stage_type(self) -> int:

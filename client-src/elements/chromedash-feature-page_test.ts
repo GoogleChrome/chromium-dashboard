@@ -40,7 +40,6 @@ describe('chromedash-feature-page', () => {
         name: 'stage one',
         description: 'a description',
         progress_items: [],
-        outgoing_stage: 1,
         actions: [],
       },
     ],

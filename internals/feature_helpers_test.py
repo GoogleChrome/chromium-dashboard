@@ -2132,6 +2132,8 @@ class DeveloperReleaseNotesFeaturesTest(testing_config.CustomTestCase):
             fe.key.delete()
         for s in Stage.query():
             s.key.delete()
+        for g in Gate.query():
+            g.key.delete()
         for s in FeatureSummarySuggestion.query():
             s.key.delete()
 
@@ -2348,6 +2350,72 @@ class DeveloperReleaseNotesFeaturesTest(testing_config.CustomTestCase):
         features = feature_helpers.get_developer_release_notes_features(132)
         feature_ids = [f['id'] for f in features]
         self.assertEqual([101], feature_ids)
+
+    def test_get_developer_release_notes_features__pending_review_gates(self):
+        """It sets is_pending_review=True when a stage gate is not in Gate.APPROVED_STATES."""
+        gate = Gate(
+            feature_id=101,
+            stage_id=self.stage_1.key.integer_id(),
+            gate_type=core_enums.GATE_API_SHIP,
+            state=Gate.PREPARING,
+        )
+        gate.put()
+
+        features = feature_helpers.get_developer_release_notes_features(132)
+        self.assertEqual(1, len(features))
+        self.assertTrue(features[0]['is_pending_review'])
+
+    def test_get_developer_release_notes_features__all_approved_gates(self):
+        """It sets is_pending_review=False when all stage gates are in Gate.APPROVED_STATES."""
+        for idx, state in enumerate(Gate.APPROVED_STATES):
+            gate = Gate(
+                feature_id=101,
+                stage_id=self.stage_1.key.integer_id(),
+                gate_type=core_enums.GATE_API_SHIP + idx,
+                state=state,
+            )
+            gate.put()
+
+        features = feature_helpers.get_developer_release_notes_features(132)
+        self.assertEqual(1, len(features))
+        self.assertFalse(features[0]['is_pending_review'])
+
+    def test_get_developer_release_notes_features__psa_ignores_api_ship_gate(
+        self,
+    ):
+        """It ignores unapproved GATE_API_SHIP on PSA features, but counts XFN gates."""
+        self.feature_1.feature_type = core_enums.FEATURE_TYPE_CODE_CHANGE_ID
+        self.feature_1.put()
+        self.stage_1.stage_type = core_enums.STAGE_PSA_SHIPPING
+        self.stage_1.put()
+        rediscache.delete_keys_with_prefix(FeatureEntry.SEARCH_CACHE_KEY)
+
+        api_gate = Gate(
+            feature_id=101,
+            stage_id=self.stage_1.key.integer_id(),
+            gate_type=core_enums.GATE_API_SHIP,
+            state=Gate.PREPARING,
+        )
+        api_gate.put()
+        privacy_gate = Gate(
+            feature_id=101,
+            stage_id=self.stage_1.key.integer_id(),
+            gate_type=core_enums.GATE_PRIVACY_SHIP,
+            state=Vote.APPROVED,
+        )
+        privacy_gate.put()
+
+        features = feature_helpers.get_developer_release_notes_features(132)
+        self.assertEqual(1, len(features))
+        self.assertFalse(features[0]['is_pending_review'])
+
+        # If a non-API-Owners gate on a PSA feature is unapproved, it is still pending review.
+        privacy_gate.state = Gate.PREPARING
+        privacy_gate.put()
+
+        features = feature_helpers.get_developer_release_notes_features(132)
+        self.assertEqual(1, len(features))
+        self.assertTrue(features[0]['is_pending_review'])
 
     def test_get_entries_by_id_async_and_get_future_results(self):
         """It fetches FeatureEntry entities via get_multi_async and sorts by name."""
