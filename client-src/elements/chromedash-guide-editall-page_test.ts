@@ -317,7 +317,7 @@ describe('chromedash-guide-editall-page', () => {
     assert.isTrue(component.fieldValues[0].isMarkdown);
   });
 
-  it('populates fields where form field name differs from featureJSONKey and resets fieldValues on stage add/delete', async () => {
+  it('populates fields where form field name differs from featureJSONKey and preserves dirty edits on stage add/delete', async () => {
     const featureId = 123456;
     window.csClient.getFeature.withArgs(featureId).returns(validFeaturePromise);
     window.csClient.getChannels.returns(validChannelsPromise);
@@ -341,18 +341,32 @@ describe('chromedash-guide-editall-page', () => {
     });
     assert.isTrue(component.fieldValues[0].touched);
 
-    // Deleting a rollout stage should reset fieldValues and re-populate from fresh feature
+    // Deleting a rollout stage should remove that stage's fields while preserving dirty edits on remaining fields
     const deleteStageStub = sinon
       .stub(window.csClient, 'deleteStage')
       .resolves({});
+    const featureAfterDelete = {
+      ...(await validFeaturePromise),
+      stages: [
+        {id: 1, stage_type: 110, intent_stage: 1},
+        {id: 2, stage_type: 160, intent_stage: 2},
+        {id: 3, stage_type: 160, intent_stage: 2},
+        {id: 5, stage_type: 1061, intent_stage: 1},
+      ],
+    };
+    window.csClient.getFeature
+      .withArgs(featureId)
+      .resolves(featureAfterDelete as any);
     sinon.stub(window, 'confirm').returns(true);
 
     component.deleteStage({id: 4, stage_type: 1061} as any);
     await new Promise(resolve => setTimeout(resolve, 0));
     await component.updateComplete;
 
-    assert.equal(component.fieldValues.length, initialLength);
-    assert.isFalse(component.fieldValues[0].touched);
+    assert.isBelow(component.fieldValues.length, initialLength);
+    assert.isUndefined(component.fieldValues.find(fv => fv.stageId === 4));
+    assert.isTrue(component.fieldValues[0].touched);
+    assert.equal(component.fieldValues[0].value, 'dirty val');
 
     deleteStageStub.restore();
     (window.confirm as any).restore();

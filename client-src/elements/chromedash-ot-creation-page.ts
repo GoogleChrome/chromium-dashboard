@@ -367,18 +367,16 @@ export class ChromedashOTCreationPage extends LitElement {
   async handleFormSubmit(e) {
     e.preventDefault();
     // If registration approvals is not enabled, ignore all fields related to that setting.
-    if (!this.showApprovalsFields) {
-      this.fieldValues.forEach(fieldInfo => {
-        if (fieldInfo.isApprovalsField) {
-          fieldInfo.touched = false;
-        }
-      });
-    }
+    this.fieldValues.forEach(fieldInfo => {
+      if (fieldInfo.isApprovalsField) {
+        fieldInfo.touched = this.showApprovalsFields;
+      }
+    });
     const useCounterField = this.fieldValues.find(
       fv => fv.name === 'ot_webfeature_use_counter'
     );
-    if (this.isDeprecationTrial) {
-      useCounterField!.touched = false;
+    if (useCounterField) {
+      useCounterField.touched = !this.isDeprecationTrial;
     }
 
     const featureSubmitBody = formatFeatureChanges(

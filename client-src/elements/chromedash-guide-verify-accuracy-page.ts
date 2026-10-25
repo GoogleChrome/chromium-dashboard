@@ -214,9 +214,11 @@ export class ChromedashGuideVerifyAccuracyPage extends LitElement {
     const formFieldEls = stageFields.map(field => {
       const featureJSONKey = ALL_FIELDS[field].name || field;
       let value = formattedFeature[field] ?? formattedFeature[featureJSONKey];
+      let stageId = undefined;
 
       if (STAGE_SPECIFIC_FIELDS.has(featureJSONKey)) {
         value = getStageValue(feStage, featureJSONKey);
+        stageId = feStage.id;
       } else if (this.sameTypeRendered > 1) {
         // Don't render fields that are not stage-specific if this is
         // a stage type that is already being rendered.
@@ -235,7 +237,7 @@ export class ChromedashGuideVerifyAccuracyPage extends LitElement {
           name: featureJSONKey,
           touched,
           value,
-          stageId: feStage.id,
+          stageId,
         });
       } else {
         value = this.fieldValues[index].value;
@@ -245,7 +247,7 @@ export class ChromedashGuideVerifyAccuracyPage extends LitElement {
         <chromedash-form-field
           name=${field}
           index=${index}
-          stageId=${feStage.id ?? 0}
+          stageId=${stageId ?? 0}
           value=${value}
           disabledReason="${getDisabledHelpText(field, feStage)}"
           .fieldValues=${this.fieldValues}
