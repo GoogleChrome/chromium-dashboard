@@ -89,9 +89,7 @@ export interface ProcessStage {
   progress_items: ProgressItem[];
   actions: Action[];
   approvals: ApprovalFieldDef[]; // Assuming ApprovalFieldDef is defined somewhere
-  incoming_stage: number;
-  outgoing_stage: number;
-  stage_type?: number;
+  stage_type: number;
 }
 
 export interface Process {
@@ -295,13 +293,19 @@ export class ChromedashGateColumn extends LitElement {
       return;
     }
     const featureId = this.feature.id;
+    const gateId = this.gate.id;
     Promise.all([
+      window.csClient.getFeatureProgress(featureId),
       window.csClient.getGates(featureId),
       window.csClient.getVotes(featureId, null),
       // TODO(jrobbins): Include activities for this gate
-      window.csClient.getComments(featureId, this.gate.id),
+      window.csClient.getComments(featureId, gateId),
     ])
-      .then(([gatesRes, votesRes, commentRes]) => {
+      .then(([progress, gatesRes, votesRes, commentRes]) => {
+        if (this.gate?.id !== gateId || this.feature?.id !== featureId) {
+          return;
+        }
+        this.progress = progress;
         this.featureGates = gatesRes.gates;
         for (const g of gatesRes.gates) {
           if (g.id == this.gate.id) this.gate = g;

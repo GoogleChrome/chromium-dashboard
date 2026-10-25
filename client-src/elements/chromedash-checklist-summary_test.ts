@@ -20,6 +20,7 @@ import sinon from 'sinon';
 import '@shoelace-style/shoelace/dist/components/dialog/dialog.js';
 import {ChromedashChecklistSummary} from './chromedash-checklist-summary.js';
 import {ChromedashPreflightDialog} from './chromedash-preflight-dialog.js';
+import './chromedash-toast.js';
 import {
   GATE_NA_REQUESTED,
   GATE_PREPARING,
@@ -88,7 +89,6 @@ describe('chromedash-checklist-summary', () => {
 
   const processStage = {
     name: 'Prepare to ship',
-    outgoing_stage: 3,
     stage_type: 160,
     actions: [action],
     progress_items: [
@@ -117,7 +117,7 @@ describe('chromedash-checklist-summary', () => {
     getGatesStub.restore();
   });
 
-  it('renders nothing while loading', async () => {
+  it('renders skeleton while loading', async () => {
     const component = await fixture<ChromedashChecklistSummary>(
       html`<chromedash-checklist-summary
         .loading=${true}
@@ -130,11 +130,23 @@ describe('chromedash-checklist-summary', () => {
     );
     assert.exists(component);
     assert.instanceOf(component, ChromedashChecklistSummary);
-    assert.isNull(component.shadowRoot!.querySelector('h2'));
-    assert.isNull(component.shadowRoot!.querySelector('.bubble'));
+    const header = component.shadowRoot!.querySelector('h2');
+    assert.exists(header);
+    assert.equal(header.textContent?.trim(), 'Checklist summary');
+    const bubble = component.shadowRoot!.querySelector('.bubble');
+    assert.exists(bubble);
+    assert.lengthOf(bubble.querySelectorAll('sl-skeleton'), 3);
+    assert.notExists(component.shadowRoot!.querySelector('#strip-chart'));
   });
 
-  it('fetches gates when featureGates is empty and renders once loaded', async () => {
+  it('fetches gates when featureGates is empty, sets loadingGates state, and renders once loaded', async () => {
+    let resolveGates!: (value: {gates: GateDict[]}) => void;
+    getGatesStub.returns(
+      new Promise(resolve => {
+        resolveGates = resolve;
+      })
+    );
+
     const component = await fixture<ChromedashChecklistSummary>(
       html`<chromedash-checklist-summary
         .loading=${false}
@@ -147,11 +159,53 @@ describe('chromedash-checklist-summary', () => {
       ></chromedash-checklist-summary>`
     );
 
+    // Initially fetchData() sets loadingGates = true (leaving loading = false) and renders the skeleton.
     assert.isTrue(getGatesStub.calledOnceWithExactly(123456));
+    assert.isFalse(component.loading);
+    assert.isTrue(component.loadingGates);
+    assert.exists(component.shadowRoot!.querySelector('h2'));
+    assert.lengthOf(component.shadowRoot!.querySelectorAll('sl-skeleton'), 3);
+    assert.notExists(component.shadowRoot!.querySelector('#strip-chart'));
+
+    // Once getGates resolves, loadingGates becomes false and the checklist renders.
+    resolveGates({gates: [dqShipGate]});
+    await new Promise(resolve => setTimeout(resolve, 0));
     await component.updateComplete;
 
-    assert.isNotNull(component.shadowRoot!.querySelector('h2'));
-    assert.isNotNull(component.shadowRoot!.querySelector('.bubble'));
+    assert.isFalse(component.loading);
+    assert.isFalse(component.loadingGates);
+    assert.lengthOf(component.shadowRoot!.querySelectorAll('sl-skeleton'), 0);
+    assert.exists(component.shadowRoot!.querySelector('.bubble'));
+    assert.exists(component.shadowRoot!.querySelector('#strip-chart'));
+  });
+
+  it('shows a toast message when fetching gates fails', async () => {
+    await fixture(html`<chromedash-toast></chromedash-toast>`);
+    getGatesStub.rejects(new Error('Failed to fetch gates'));
+
+    const component = await fixture<ChromedashChecklistSummary>(
+      html`<chromedash-checklist-summary
+        .loading=${false}
+        .feature=${feature}
+        .stage=${stage}
+        .gate=${dqShipGate}
+        .process=${process}
+        .progress=${{} as ProgressItem}
+        .featureGates=${[]}
+      ></chromedash-checklist-summary>`
+    );
+
+    await new Promise(resolve => setTimeout(resolve, 0));
+    await component.updateComplete;
+
+    assert.isFalse(component.loading);
+    assert.isTrue(component.loadingGates);
+    const toastEl = document.querySelector('chromedash-toast');
+    const toastMsgSpan = toastEl?.shadowRoot?.querySelector('span#msg');
+    assert.include(
+      toastMsgSpan?.innerHTML,
+      'Some errors occurred. Please refresh the page or try again later.'
+    );
   });
 
   it('refetches gates after loading resets and does not infinite-loop if getGates returns empty array', async () => {
@@ -167,6 +221,7 @@ describe('chromedash-checklist-summary', () => {
         .featureGates=${[]}
       ></chromedash-checklist-summary>`
     );
+    await new Promise(resolve => setTimeout(resolve, 0));
     await component.updateComplete;
     assert.equal(getGatesStub.callCount, 1);
 
@@ -182,7 +237,7 @@ describe('chromedash-checklist-summary', () => {
     assert.equal(getGatesStub.callCount, 2);
   });
 
-  it('renders nothing for non-DQ gates and does not fetch gates', async () => {
+  it('renders nothing and does not fetch gates for non-DQ gates', async () => {
     const component = await fixture<ChromedashChecklistSummary>(
       html`<chromedash-checklist-summary
         .loading=${false}
@@ -196,11 +251,11 @@ describe('chromedash-checklist-summary', () => {
     );
 
     assert.isFalse(getGatesStub.called);
-    assert.isNull(component.shadowRoot!.querySelector('h2'));
-    assert.isNull(component.shadowRoot!.querySelector('.bubble'));
+    assert.notExists(component.shadowRoot!.querySelector('h2'));
+    assert.notExists(component.shadowRoot!.querySelector('.bubble'));
   });
 
-  it('renders nothing when processStage has no matching actions for the gate type', async () => {
+  it('renders heading without bubbles when processStage has no matching actions for the gate type', async () => {
     const component = await fixture<ChromedashChecklistSummary>(
       html`<chromedash-checklist-summary
         .loading=${false}
@@ -213,8 +268,10 @@ describe('chromedash-checklist-summary', () => {
       ></chromedash-checklist-summary>`
     );
 
-    assert.isNull(component.shadowRoot!.querySelector('h2'));
-    assert.isNull(component.shadowRoot!.querySelector('.bubble'));
+    const header = component.shadowRoot!.querySelector('h2');
+    assert.exists(header);
+    assert.equal(header.textContent?.trim(), 'Checklist summary');
+    assert.notExists(component.shadowRoot!.querySelector('.bubble'));
   });
 
   it('counts prerequisites and other gates and renders strip chart and legend', async () => {
@@ -360,6 +417,11 @@ describe('chromedash-checklist-summary', () => {
     ) as ChromedashPreflightDialog;
     assert.exists(dialogEl);
     await dialogEl.updateComplete;
+    await dialogEl.updateComplete;
     assert.isTrue(dialogEl.canVote());
+    const buttons = Array.from(
+      dialogEl.shadowRoot!.querySelectorAll('sl-button')
+    ).map(b => b.textContent?.trim());
+    assert.deepEqual(buttons, ['Cancel', 'Save']);
   });
 });

@@ -88,7 +88,7 @@ class ProgressVote(ndb.Model):
     progress_item_name = ndb.StringProperty(required=True)
     state = ndb.IntegerProperty(
         required=True,
-        choices=[READY_FOR_REVIEW, VERIFIED, NA, NEEDS_WORK],
+        choices=[NOT_STARTED, READY_FOR_REVIEW, VERIFIED, NA, NEEDS_WORK],
     )
     feedback = ndb.StringProperty()
     set_on = ndb.DateTimeProperty(required=True)
@@ -117,9 +117,10 @@ def set_progress_vote(
         ProgressVote.progress_item_name == progress_item_name,
     ).fetch()
 
-    if existing_votes and state == ProgressVote.NOT_STARTED and not feedback:
-        for unwanted_vote in existing_votes:
-            unwanted_vote.key.delete()
+    if state == ProgressVote.NOT_STARTED and not feedback:
+        if existing_votes:
+            for unwanted_vote in existing_votes:
+                unwanted_vote.key.delete()
         return None
 
     if existing_votes:
