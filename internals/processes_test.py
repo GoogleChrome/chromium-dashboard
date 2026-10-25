@@ -79,9 +79,6 @@ class HelperFunctionsTest(testing_config.CustomTestCase):
                             [],
                         )
                     ],
-                    [],
-                    0,
-                    1,
                     STAGE_BAKE_DOUGH,
                 ),
                 processes.ProcessStage(
@@ -89,9 +86,6 @@ class HelperFunctionsTest(testing_config.CustomTestCase):
                     'Heat at 375 for 40 minutes',
                     [PI_LOAF, PI_DIRTY_PAN],
                     [],
-                    [BakeGateInfo],
-                    1,
-                    2,
                     STAGE_BAKE_BAKE,
                 ),
             ],
@@ -120,9 +114,6 @@ class HelperFunctionsTest(testing_config.CustomTestCase):
                             'gate_types': [],
                         }
                     ],
-                    'approvals': [],
-                    'incoming_stage': 0,
-                    'outgoing_stage': 1,
                     'stage_type': 110,
                 },
                 {
@@ -143,18 +134,12 @@ class HelperFunctionsTest(testing_config.CustomTestCase):
                         },
                     ],
                     'actions': [],
-                    'approvals': [BAKE_APPROVAL_DEF_DICT],
-                    'incoming_stage': 1,
-                    'outgoing_stage': 2,
                     'stage_type': 120,
                 },
             ],
         }
         actual = processes.process_to_dict(process)
 
-        self.assertEqual(
-            expected['stages'][1]['approvals'], actual['stages'][1]['approvals']
-        )
         self.maxDiff = None
         self.assertEqual(expected, actual)
 
