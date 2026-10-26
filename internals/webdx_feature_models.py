@@ -15,16 +15,24 @@
 """Defines NDB models for storing and retrieving Webdx feature IDs."""
 
 from google.cloud import ndb  # type: ignore
+from webstatus_openapi import Feature as WSFeature
+
+
+class WebdxFeatureInfo(ndb.Model):
+    feature_id = ndb.StringProperty(required=True)
+    status = ndb.StringProperty(required=True)
 
 
 class WebdxFeatures(ndb.Model):
-    """A singleton model to store Webdx feature IDs"""  # noqa: D415
+    """A singleton model to store Webdx feature infos"""  # noqa: D415
 
+    # TODO(jrobbins): Remove feature_ids after prod users all use feature_infos.
     feature_ids = ndb.StringProperty(repeated=True)
+    feature_infos = ndb.StructuredProperty(WebdxFeatureInfo, repeated=True)
 
     @classmethod
-    def get_webdx_feature_id_list(cls):
-        """Retrieves the list of stored Webdx feature IDs."""
+    def get_singleton(cls):
+        """Retrieves the singleton entity that has all Webdx feature info."""
         fetch_results = cls.query().fetch(1)
         if not fetch_results:
             return None
@@ -32,11 +40,18 @@ class WebdxFeatures(ndb.Model):
         return fetch_results[0]
 
     @classmethod
-    def store_webdx_feature_id_list(cls, new_list: list[str]):
+    def store_webdx_feature_infos(cls, new_list: list[WSFeature]):
         """Stores a new list of Webdx feature IDs, updating or creating as needed."""
-        webdx_features = WebdxFeatures.get_webdx_feature_id_list()
-        if not webdx_features:
-            webdx_features = WebdxFeatures(feature_ids=new_list)
+        id_list = [wsf.feature_id for wsf in new_list]
+        infos_list = [
+            WebdxFeatureInfo(feature_id=wsf.feature_id, status=wsf.baseline.status)
+            for wsf in new_list]
+        singleton = WebdxFeatures.get_singleton()
+        if not singleton:
+            singleton = WebdxFeatures(
+                feature_ids=id_list,
+                feature_infos=infos_list)
         else:
-            webdx_features.feature_ids = new_list
-        webdx_features.put()
+            singleton.feature_ids = id_list
+            singleton.feature_infos = infos_list
+        singleton.put()

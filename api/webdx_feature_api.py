@@ -27,10 +27,11 @@ class WebFeatureIDsAPI(basehandlers.APIHandler):
 
     def do_get(self, **kwargs):
         """Returns a sorted list of WebDX feature IDs."""
-        singleton: WebdxFeatures | None = (
-            WebdxFeatures.get_webdx_feature_id_list()
-        )
-        web_feature_ids = sorted(singleton.feature_ids if singleton else [])
+        web_feature_ids = []
+        singleton: WebdxFeatures | None = WebdxFeatures.get_singleton()
+        if singleton:
+            web_feature_ids = [info.feature_id for info in singleton.feature_infos]
+        web_feature_ids = sorted(web_feature_ids)
         return web_feature_ids
 
 

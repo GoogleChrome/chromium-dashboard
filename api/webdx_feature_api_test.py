@@ -23,7 +23,7 @@ import flask
 import testing_config
 from api.webdx_feature_api import WebdxFeatureAPI, WebFeatureIDsAPI
 from internals.metrics_models import WebDXFeatureObserver
-from internals.webdx_feature_models import WebdxFeatures
+from internals.webdx_feature_models import WebdxFeatureInfo, WebdxFeatures
 
 test_app = flask.Flask(__name__)
 
@@ -36,13 +36,17 @@ class WebFeatureIDsAPITest(testing_config.CustomTestCase):
         self.handler = WebFeatureIDsAPI()
         self.request_path = '/api/v0/web_feature_ids'
 
-    @mock.patch(
-        'internals.webdx_feature_models.WebdxFeatures.get_webdx_feature_id_list'
-    )
+    @mock.patch('internals.webdx_feature_models.WebdxFeatures.get_singleton')
     def test_do_get__success(self, mock_call):
         """If we previously got some feature IDs, return them sorted."""
         mock_call.return_value = WebdxFeatures(
-            feature_ids=['code', 'article', 'details', 'blockquote']
+            feature_ids=['code', 'article', 'details', 'blockquote'],
+            feature_infos=[
+                WebdxFeatureInfo(feature_id='code', status='widely'),
+                WebdxFeatureInfo(feature_id='article', status='widely'),
+                WebdxFeatureInfo(feature_id='details', status='newly'),
+                WebdxFeatureInfo(feature_id='blockquote', status='limited'),
+            ],
         )
 
         with test_app.test_request_context(self.request_path):
@@ -50,9 +54,7 @@ class WebFeatureIDsAPITest(testing_config.CustomTestCase):
 
         self.assertEqual(actual, ['article', 'blockquote', 'code', 'details'])
 
-    @mock.patch(
-        'internals.webdx_feature_models.WebdxFeatures.get_webdx_feature_id_list'
-    )
+    @mock.patch('internals.webdx_feature_models.WebdxFeatures.get_singleton')
     def test_do_get__no_known_ids(self, mock_call):
         """If the cron never ran, we return an empty list."""
         mock_call.return_value = None
