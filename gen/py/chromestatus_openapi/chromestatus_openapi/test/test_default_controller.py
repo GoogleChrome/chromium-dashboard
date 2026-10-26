@@ -2,6 +2,55 @@ import unittest
 
 from flask import json
 
+from chromestatus_openapi.models.account_response import AccountResponse  # noqa: E501
+from chromestatus_openapi.models.activity import Activity  # noqa: E501
+from chromestatus_openapi.models.add_attachment_response import AddAttachmentResponse  # noqa: E501
+from chromestatus_openapi.models.comments_request import CommentsRequest  # noqa: E501
+from chromestatus_openapi.models.component_users_request import ComponentUsersRequest  # noqa: E501
+from chromestatus_openapi.models.components_users_response import ComponentsUsersResponse  # noqa: E501
+from chromestatus_openapi.models.create_account_request import CreateAccountRequest  # noqa: E501
+from chromestatus_openapi.models.create_origin_trial_request import CreateOriginTrialRequest  # noqa: E501
+from chromestatus_openapi.models.delete_account200_response import DeleteAccount200Response  # noqa: E501
+from chromestatus_openapi.models.dismiss_cue_request import DismissCueRequest  # noqa: E501
+from chromestatus_openapi.models.error_message import ErrorMessage  # noqa: E501
+from chromestatus_openapi.models.external_reviews_response import ExternalReviewsResponse  # noqa: E501
+from chromestatus_openapi.models.feature_latency import FeatureLatency  # noqa: E501
+from chromestatus_openapi.models.feature_links_response import FeatureLinksResponse  # noqa: E501
+from chromestatus_openapi.models.feature_links_sample import FeatureLinksSample  # noqa: E501
+from chromestatus_openapi.models.feature_links_summary_response import FeatureLinksSummaryResponse  # noqa: E501
+from chromestatus_openapi.models.get_comments_response import GetCommentsResponse  # noqa: E501
+from chromestatus_openapi.models.get_dismissed_cues400_response import GetDismissedCues400Response  # noqa: E501
+from chromestatus_openapi.models.get_gate_response import GetGateResponse  # noqa: E501
+from chromestatus_openapi.models.get_intent_response import GetIntentResponse  # noqa: E501
+from chromestatus_openapi.models.get_origin_trials_response import GetOriginTrialsResponse  # noqa: E501
+from chromestatus_openapi.models.get_settings_response import GetSettingsResponse  # noqa: E501
+from chromestatus_openapi.models.get_stars_response import GetStarsResponse  # noqa: E501
+from chromestatus_openapi.models.get_votes_response import GetVotesResponse  # noqa: E501
+from chromestatus_openapi.models.message_response import MessageResponse  # noqa: E501
+from chromestatus_openapi.models.milestone_curation_patch_request import MilestoneCurationPatchRequest  # noqa: E501
+from chromestatus_openapi.models.milestone_curation_response import MilestoneCurationResponse  # noqa: E501
+from chromestatus_openapi.models.patch_comment_request import PatchCommentRequest  # noqa: E501
+from chromestatus_openapi.models.patch_gate_request import PatchGateRequest  # noqa: E501
+from chromestatus_openapi.models.pending_suggestions_count_response import PendingSuggestionsCountResponse  # noqa: E501
+from chromestatus_openapi.models.permissions_response import PermissionsResponse  # noqa: E501
+from chromestatus_openapi.models.post_intent_request import PostIntentRequest  # noqa: E501
+from chromestatus_openapi.models.post_progress_vote_request import PostProgressVoteRequest  # noqa: E501
+from chromestatus_openapi.models.post_settings_request import PostSettingsRequest  # noqa: E501
+from chromestatus_openapi.models.post_vote_request import PostVoteRequest  # noqa: E501
+from chromestatus_openapi.models.process import Process  # noqa: E501
+from chromestatus_openapi.models.reject_unneeded_get_request import RejectUnneededGetRequest  # noqa: E501
+from chromestatus_openapi.models.release_notes_l10n_response import ReleaseNotesL10nResponse  # noqa: E501
+from chromestatus_openapi.models.release_notes_response import ReleaseNotesResponse  # noqa: E501
+from chromestatus_openapi.models.review_latency import ReviewLatency  # noqa: E501
+from chromestatus_openapi.models.set_star_request import SetStarRequest  # noqa: E501
+from chromestatus_openapi.models.sign_in_request import SignInRequest  # noqa: E501
+from chromestatus_openapi.models.spec_mentor import SpecMentor  # noqa: E501
+from chromestatus_openapi.models.success_message import SuccessMessage  # noqa: E501
+from chromestatus_openapi.models.summary_suggestion_list_response import SummarySuggestionListResponse  # noqa: E501
+from chromestatus_openapi.models.summary_suggestion_patch_request import SummarySuggestionPatchRequest  # noqa: E501
+from chromestatus_openapi.models.summary_suggestion_response import SummarySuggestionResponse  # noqa: E501
+from chromestatus_openapi.models.summary_suggestion_trigger_request import SummarySuggestionTriggerRequest  # noqa: E501
+from chromestatus_openapi.models.web_feature_infos_response import WebFeatureInfosResponse  # noqa: E501
 from chromestatus_openapi.test import BaseTestCase
 
 
@@ -39,7 +88,7 @@ class TestDefaultController(BaseTestCase):
             'Content-Type': 'application/json',
         }
         response = self.client.open(
-            '/api/v0/features/<int:feature_id>/approvals/comments'.format(),
+            '/api/v0/features/<int:feature_id>/approvals/comments'.format(feature_id=56),
             method='POST',
             headers=headers,
             data=json.dumps(comments_request),
@@ -58,7 +107,7 @@ class TestDefaultController(BaseTestCase):
             'Content-Type': 'application/json',
         }
         response = self.client.open(
-            '/api/v0/features/<int:feature_id>/approvals/<int:gate_id>/comments'.format(),
+            '/api/v0/features/<int:feature_id>/approvals/<int:gate_id>/comments'.format(feature_id=56, gate_id=56),
             method='POST',
             headers=headers,
             data=json.dumps(comments_request),
@@ -230,7 +279,7 @@ class TestDefaultController(BaseTestCase):
             'Accept': 'application/json',
         }
         response = self.client.open(
-            '/api/v0/features/<int:feature_id>/approvals/comments'.format(),
+            '/api/v0/features/<int:feature_id>/approvals/comments'.format(feature_id=56),
             method='GET',
             headers=headers)
         self.assert200(response,
@@ -297,7 +346,7 @@ class TestDefaultController(BaseTestCase):
             'Accept': 'application/json',
         }
         response = self.client.open(
-            '/api/v0/features/<int:feature_id>/approvals/<int:gate_id>/comments'.format(),
+            '/api/v0/features/<int:feature_id>/approvals/<int:gate_id>/comments'.format(feature_id=56, gate_id=56),
             method='GET',
             headers=headers)
         self.assert200(response,
@@ -576,6 +625,21 @@ class TestDefaultController(BaseTestCase):
         }
         response = self.client.open(
             '/api/v0/web_feature_ids',
+            method='GET',
+            headers=headers)
+        self.assert200(response,
+                       'Response body is : ' + response.data.decode('utf-8'))
+
+    def test_get_web_feature_infos(self):
+        """Test case for get_web_feature_infos
+
+        Get Baseline web feature infos
+        """
+        headers = { 
+            'Accept': 'application/json',
+        }
+        response = self.client.open(
+            '/api/v0/web_feature_infos',
             method='GET',
             headers=headers)
         self.assert200(response,
@@ -885,7 +949,7 @@ class TestDefaultController(BaseTestCase):
             'Content-Type': 'application/json',
         }
         response = self.client.open(
-            '/api/v0/features/<int:feature_id>/approvals/comments'.format(),
+            '/api/v0/features/<int:feature_id>/approvals/comments'.format(feature_id=56),
             method='PATCH',
             headers=headers,
             data=json.dumps(patch_comment_request),
