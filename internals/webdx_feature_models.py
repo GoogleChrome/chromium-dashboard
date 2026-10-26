@@ -19,6 +19,7 @@ from webstatus_openapi import Feature as WSFeature
 
 
 class WebdxFeatureInfo(ndb.Model):
+    """A sub-model to store info on one web-feature."""
     feature_id = ndb.StringProperty(required=True)
     status = ndb.StringProperty(required=True)
 
