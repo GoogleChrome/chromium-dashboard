@@ -1042,6 +1042,17 @@ paths:
                 type: array
                 items:
                   type: string
+  /web_feature_infos:
+    get:
+      summary: Get Baseline web feature infos
+      operationId: getWebFeatureInfos
+      responses:
+        '200':
+          description: List the Web Feature Infos.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WebFeatureInfosResponse'
   /releasenotes/l10n:
     get:
       summary: Get release notes for a milestone range (localized)
@@ -2350,6 +2361,20 @@ components:
           type: string
         count:
           type: integer
+    WebFeatureInfosResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/WebFeatureInfo'
+    WebFeatureInfo:
+      type: object
+      properties:
+        feature_id:
+          type: string
+        status:
+          type: string
     PermissionsResponse:
       type: object
       properties:

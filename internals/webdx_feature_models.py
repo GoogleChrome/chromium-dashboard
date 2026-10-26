@@ -44,7 +44,9 @@ class WebdxFeatures(ndb.Model):
         """Stores a new list of Webdx feature IDs, updating or creating as needed."""
         id_list = [wsf.feature_id for wsf in new_list]
         infos_list = [
-            WebdxFeatureInfo(feature_id=wsf.feature_id, status=wsf.baseline.status)
+            WebdxFeatureInfo(
+                feature_id=wsf.feature_id,
+                status=wsf.baseline.status if wsf.baseline else 'none')
             for wsf in new_list]
         singleton = WebdxFeatures.get_singleton()
         if not singleton:
