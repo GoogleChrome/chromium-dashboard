@@ -20,6 +20,7 @@ from webstatus_openapi import Feature as WSFeature
 
 class WebdxFeatureInfo(ndb.Model):
     """A sub-model to store info on one web-feature."""
+
     feature_id = ndb.StringProperty(required=True)
     status = ndb.StringProperty(required=True)
 
@@ -47,13 +48,15 @@ class WebdxFeatures(ndb.Model):
         infos_list = [
             WebdxFeatureInfo(
                 feature_id=wsf.feature_id,
-                status=wsf.baseline.status if wsf.baseline else 'none')
-            for wsf in new_list]
+                status=wsf.baseline.status if wsf.baseline else 'none',
+            )
+            for wsf in new_list
+        ]
         singleton = WebdxFeatures.get_singleton()
         if not singleton:
             singleton = WebdxFeatures(
-                feature_ids=id_list,
-                feature_infos=infos_list)
+                feature_ids=id_list, feature_infos=infos_list
+            )
         else:
             singleton.feature_ids = id_list
             singleton.feature_infos = infos_list
