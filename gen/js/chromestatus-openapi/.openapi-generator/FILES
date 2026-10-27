@@ -100,6 +100,8 @@ src/models/TokenRefreshResponse.ts
 src/models/UserPermissions.ts
 src/models/VerifyContinuityIssueResponse.ts
 src/models/Vote.ts
+src/models/WebFeatureInfo.ts
+src/models/WebFeatureInfosResponse.ts
 src/models/index.ts
 src/runtime.ts
 tsconfig.esm.json

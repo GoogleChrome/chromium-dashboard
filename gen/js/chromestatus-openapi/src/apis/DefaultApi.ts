@@ -63,6 +63,7 @@ import type {
   SummarySuggestionPatchRequest,
   SummarySuggestionResponse,
   SummarySuggestionTriggerRequest,
+  WebFeatureInfosResponse,
 } from '../models/index';
 import {
     AccountResponseFromJSON,
@@ -161,6 +162,8 @@ import {
     SummarySuggestionResponseToJSON,
     SummarySuggestionTriggerRequestFromJSON,
     SummarySuggestionTriggerRequestToJSON,
+    WebFeatureInfosResponseFromJSON,
+    WebFeatureInfosResponseToJSON,
 } from '../models/index';
 
 export interface AddAttachmentRequest {
@@ -905,6 +908,20 @@ export interface DefaultApiInterface {
      * Get Baseline web feature IDs
      */
     getWebFeatureIds(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<string>>;
+
+    /**
+     * 
+     * @summary Get Baseline web feature infos
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApiInterface
+     */
+    getWebFeatureInfosRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<WebFeatureInfosResponse>>;
+
+    /**
+     * Get Baseline web feature infos
+     */
+    getWebFeatureInfos(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<WebFeatureInfosResponse>;
 
     /**
      * 
@@ -2443,6 +2460,32 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
      */
     async getWebFeatureIds(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<string>> {
         const response = await this.getWebFeatureIdsRaw(initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Get Baseline web feature infos
+     */
+    async getWebFeatureInfosRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<WebFeatureInfosResponse>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/web_feature_infos`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => WebFeatureInfosResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Get Baseline web feature infos
+     */
+    async getWebFeatureInfos(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<WebFeatureInfosResponse> {
+        const response = await this.getWebFeatureInfosRaw(initOverrides);
         return await response.value();
     }
 
