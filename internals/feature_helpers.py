@@ -384,6 +384,9 @@ def get_features_in_release_notes(
     cached_features = rediscache.get(cache_key)
     if cached_features:
         logging.info('Returned cached features')
+        # The cached list is shared by all users, so user-specific
+        # visibility filters must be applied after reading it.
+        cached_features = filter_unlisted_formatted(cached_features)
         cached_features = filter_confidential_formatted(cached_features)
         cached_features = filter_unpublished_formatted(cached_features)
         return cached_features
@@ -448,7 +451,7 @@ def get_features_in_release_notes(
     )
     features: list[FeatureEntry] = get_future_results(features_future)
     features = _filter_out_wp_features_lacking_enterprise_approval(features)
-    formatted_features = []
+    formatted_features: list[dict[str, Any]] = []
     for fe in features:
         formatted_feature = converters.feature_entry_to_json_verbose(
             fe,
@@ -459,7 +462,7 @@ def get_features_in_release_notes(
 
     formatted_features = [
         f
-        for f in filter_unlisted_formatted(formatted_features)
+        for f in formatted_features
         if (
             f['first_enterprise_notification_milestone'] is None
             or f['first_enterprise_notification_milestone']
@@ -468,8 +471,11 @@ def get_features_in_release_notes(
     ]
     logging.info('finished filtering')
 
+    # Cache the list before applying any user-specific filters so that the
+    # cached value does not depend on which user happened to populate it.
     rediscache.set(cache_key, formatted_features)
     logging.info('finished storing in cache')
+    formatted_features = filter_unlisted_formatted(formatted_features)
     formatted_features = filter_confidential_formatted(formatted_features)
     formatted_features = filter_unpublished_formatted(formatted_features)
     return formatted_features
@@ -993,6 +999,30 @@ def get_by_ids(
     return filter_confidential_formatted(result_list)
 
 
+def _mark_first_of_section(feature_list: list[dict]) -> list[dict]:
+    """Return feature_list with 'first_of_section' set on each section's head.
+
+    Sections are runs of consecutive features that share the same Chrome
+    implementation status.  Dicts whose marker needs to change are copied
+    rather than modified in place, because the input dicts may be shared
+    with a cached list.
+    """
+    result: list[dict] = []
+    prev_status = None
+    for i, f in enumerate(feature_list):
+        status = f['browsers']['chrome']['status']['val']
+        is_first = i == 0 or status != prev_status
+        prev_status = status
+        if is_first != bool(f.get('first_of_section')):
+            f = dict(f)
+            if is_first:
+                f['first_of_section'] = True
+            else:
+                del f['first_of_section']
+        result.append(f)
+    return result
+
+
 def get_features_by_impl_status(
     limit: int | None = None,
     update_cache: bool = False,  # noqa: E501
@@ -1005,11 +1035,12 @@ def get_features_by_impl_status(
     procesing a POST to edit data.  For editing use case, load the
     data from NDB directly.
     """
-    cache_key = '%s|%s|%s|%s' % (
+    # The cached list includes unlisted features and is shared by all users.
+    # User-specific filtering is done after reading from the cache.
+    cache_key = '%s|%s|%s' % (
         FeatureEntry.SEARCH_CACHE_KEY,
         'impl_order',
         limit,
-        show_unlisted,
     )
 
     feature_list = rediscache.get(cache_key)
@@ -1050,14 +1081,16 @@ def get_features_by_impl_status(
                     )
                     for f in section
                 ]
-                section[0]['first_of_section'] = True
-                if not show_unlisted:
-                    section = filter_unlisted_formatted(section)
                 feature_list.extend(section)
 
+        feature_list = _mark_first_of_section(feature_list)
         rediscache.set(cache_key, feature_list)
 
-    return filter_confidential_formatted(feature_list)
+    if not show_unlisted:
+        feature_list = filter_unlisted_formatted(feature_list)
+    feature_list = filter_confidential_formatted(feature_list)
+    # Filtering may have removed the head of a section, so recompute markers.
+    return _mark_first_of_section(feature_list)
 
 
 def _map_relevant_milestones(
