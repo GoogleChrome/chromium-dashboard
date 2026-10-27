@@ -22,6 +22,7 @@ import werkzeug.exceptions  # Flask HTTP stuff.
 
 import testing_config  # Must be imported before the module under test.
 from api import reviews_api
+from framework import cache_invalidation
 from internals import approval_defs, core_enums, core_models
 from internals.review_models import Gate, SurveyAnswers, Vote
 
@@ -342,6 +343,29 @@ class VotesAPITest(testing_config.CustomTestCase):
             self.gate_1,
             Vote.REVIEW_REQUESTED,
             'owner1@example.com',
+        )
+
+    @mock.patch('framework.rediscache.delete_keys_with_prefix')
+    @mock.patch('internals.notifier_helpers.notify_approvers_of_reviews')
+    @mock.patch('internals.approval_defs.get_approvers')
+    def test_post__request_review_flushes_cache_once(
+        self, mock_get_approvers, mock_notifier, mock_dkwp
+    ):
+        """A vote writes several entities but flushes search results once."""
+        mock_get_approvers.return_value = ['reviewer1@example.com']
+        mock_dkwp.return_value = 0
+        testing_config.sign_in('owner1@example.com', 123567890)
+
+        params = {'state': Vote.REVIEW_REQUESTED}
+        with test_app.test_request_context(self.request_path, json=params):
+            with cache_invalidation.batch():  # As in a real request.
+                self.handler.do_post(
+                    feature_id=self.feature_id, gate_id=self.gate_1_id
+                )
+
+        # The Vote, Gate, and FeatureEntry writes cause a single flush.
+        mock_dkwp.assert_called_once_with(
+            core_models.FeatureEntry.SEARCH_CACHE_KEY
         )
 
     @mock.patch('internals.notifier_helpers.notify_subscribers_of_vote_changes')

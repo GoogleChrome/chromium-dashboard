@@ -17,16 +17,19 @@
 from __future__ import annotations
 
 import datetime
+from unittest import mock
 
 from google.cloud import ndb  # type: ignore
 
 import testing_config  # Must be imported before the module under test.
+from framework import cache_invalidation, rediscache
 from internals import core_enums
 from internals.core_models import (
     FeatureEntry,
     FeatureSummaryProgressStep,
     FeatureSummarySuggestion,
     MilestoneCuration,
+    Stage,
 )
 
 
@@ -175,3 +178,150 @@ class MilestoneCurationTest(testing_config.CustomTestCase):
         self.assertEqual(retrieved.milestone, 135)
         self.assertEqual(retrieved.curator_emails, ['curator@google.com'])
         self.assertEqual(retrieved.status, 'IN_REVIEW')
+
+
+class CacheInvalidationHooksTest(testing_config.CustomTestCase):
+    """Tests that FeatureEntry and Stage writes invalidate the right caches."""
+
+    def setUp(self):
+        """Create a feature and populate its cache entries."""
+        self.feature = FeatureEntry(
+            name='Cache Test Feature', summary='sum', category=1
+        )
+        self.feature.put()
+        self.feature_id = self.feature.key.integer_id()
+        self.entry_key = FeatureEntry.feature_cache_key(
+            FeatureEntry.DEFAULT_CACHE_KEY, self.feature_id
+        )
+        self.name_key = FeatureEntry.feature_cache_key(
+            FeatureEntry.FEATURE_NAME_CACHE_KEY, self.feature_id
+        )
+        self.search_key = f'{FeatureEntry.SEARCH_CACHE_KEY}|test_query'
+        self.other_entry_key = FeatureEntry.feature_cache_key(
+            FeatureEntry.DEFAULT_CACHE_KEY, self.feature_id + 1
+        )
+        self.populate_caches()
+
+    def tearDown(self):
+        """Clean up entities and cache."""
+        for stage in Stage.query():
+            stage.key.delete()
+        for fe in FeatureEntry.query():
+            fe.key.delete()
+        rediscache.flushall()
+
+    def populate_caches(self):
+        """Store an entry for each kind of feature cache."""
+        for key in (
+            self.entry_key,
+            self.name_key,
+            self.search_key,
+            self.other_entry_key,
+        ):
+            rediscache.set(key, 'cached')
+
+    def assertCached(self, *keys):
+        """Assert that each key is still in the cache."""
+        for key in keys:
+            self.assertEqual('cached', rediscache.get(key), key)
+
+    def assertNotCached(self, *keys):
+        """Assert that each key was removed from the cache."""
+        for key in keys:
+            self.assertIsNone(rediscache.get(key), key)
+
+    def test_feature_put(self):
+        """Saving a feature invalidates its entry, name, and searches."""
+        self.feature.summary = 'new summary'
+        self.feature.put()
+
+        self.assertNotCached(self.entry_key, self.name_key, self.search_key)
+        self.assertCached(self.other_entry_key)
+
+    def test_feature_put_multi(self):
+        """ndb.put_multi() of features also invalidates their caches."""
+        self.feature.summary = 'new summary'
+        ndb.put_multi([self.feature])
+
+        self.assertNotCached(self.entry_key, self.name_key, self.search_key)
+        self.assertCached(self.other_entry_key)
+
+    def test_feature_delete(self):
+        """Deleting a feature invalidates its entry, name, and searches."""
+        self.feature.key.delete()
+
+        self.assertNotCached(self.entry_key, self.name_key, self.search_key)
+        self.assertCached(self.other_entry_key)
+
+    def test_stage_put(self):
+        """Saving a stage invalidates its feature's entry and searches."""
+        Stage(feature_id=self.feature_id, stage_type=110).put()
+
+        self.assertNotCached(self.entry_key, self.search_key)
+        # A feature's cached name does not depend on its stages.
+        self.assertCached(self.name_key, self.other_entry_key)
+
+    def test_stage_put_multi(self):
+        """ndb.put_multi() of stages also invalidates the caches."""
+        ndb.put_multi(
+            [
+                Stage(feature_id=self.feature_id, stage_type=110),
+                Stage(feature_id=self.feature_id, stage_type=120),
+            ]
+        )
+
+        self.assertNotCached(self.entry_key, self.search_key)
+        self.assertCached(self.name_key, self.other_entry_key)
+
+    def test_stage_delete(self):
+        """Deleting a stage invalidates its feature's entry and searches."""
+        stage_key = Stage(feature_id=self.feature_id, stage_type=110).put()
+        self.populate_caches()
+
+        ndb.delete_multi([stage_key])
+
+        self.assertNotCached(self.entry_key, self.search_key)
+        self.assertCached(self.name_key, self.other_entry_key)
+
+    def test_stage_put_in_transaction__committed(self):
+        """A committed transaction invalidates the caches."""
+
+        @ndb.transactional()
+        def write_stage():
+            Stage(feature_id=self.feature_id, stage_type=110).put()
+
+        write_stage()
+
+        self.assertNotCached(self.entry_key, self.search_key)
+
+    def test_stage_put_in_transaction__rolled_back(self):
+        """A rolled-back transaction does not invalidate the caches."""
+
+        @ndb.transactional(retries=0)
+        def write_stage_then_fail():
+            Stage(feature_id=self.feature_id, stage_type=110).put()
+            raise ValueError('boom')
+
+        with self.assertRaises(ValueError):
+            write_stage_then_fail()
+
+        self.assertCached(self.entry_key, self.search_key)
+
+    @mock.patch('framework.rediscache.delete_keys_with_prefix')
+    def test_many_writes_in_a_batch_flush_once(self, mock_dkwp):
+        """Writes inside a batch flush the search cache only once."""
+        mock_dkwp.return_value = 0
+        with cache_invalidation.batch():
+            self.feature.put()
+            ndb.put_multi(
+                [
+                    Stage(feature_id=self.feature_id, stage_type=110),
+                    Stage(feature_id=self.feature_id, stage_type=120),
+                ]
+            )
+            self.feature.put()
+            mock_dkwp.assert_not_called()
+
+        mock_dkwp.assert_called_once_with(FeatureEntry.SEARCH_CACHE_KEY)
+        self.assertNotCached(self.entry_key, self.name_key)
+        self.assertCached(self.other_entry_key)
