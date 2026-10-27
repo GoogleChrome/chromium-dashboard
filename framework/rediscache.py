@@ -105,8 +105,11 @@ def set_multi(entries, time=86400):
         return
 
     if time:
+        # Send all SETs in one round trip instead of one per key.
+        pipe = redis_client.pipeline(transaction=False)
         for key in entries:
-            set(key, entries[key], time)
+            pipe.set(add_gae_prefix(key), pickle.dumps(entries[key]), ex=time)
+        pipe.execute()
         return
 
     data_entries = {}
@@ -128,22 +131,41 @@ def delete(key):
     redis_client.delete(cache_key)
 
 
-def delete_keys_with_prefix(prefix: str):
-    """Delete all keys matching a prefix."""
-    pattern = prefix + '|*'
-    if redis_client is None:
+def delete_multi(keys) -> None:
+    """Delete several keys in one round trip, https://redis.io/commands/unlink/."""
+    if redis_client is None or not keys:
         return
 
-    prefix = add_gae_prefix(pattern)
-    # https://redis.io/commands/scan/
-    pos, keys = redis_client.scan(cursor=0, match=prefix)
-    target = keys
-    while pos != 0:
-        pos, keys = redis_client.scan(cursor=pos, match=prefix)
-        target.extend(keys)
+    redis_client.unlink(*[add_gae_prefix(k) for k in keys])
 
-    for key in target:
-        redis_client.delete(key)
+
+# Number of keys SCAN examines per call. SCAN applies MATCH only after
+# examining keys, so a full iteration always walks the entire keyspace
+# (including keys from other GAE versions), and the number of round trips
+# is roughly (total keys / SCAN_COUNT). The server default is 10.
+SCAN_COUNT = 1000
+# Maximum number of keys passed to a single UNLINK command.
+DELETE_BATCH_SIZE = 1000
+
+
+def delete_keys_with_prefix(prefix: str) -> int:
+    """Delete all keys matching a prefix.
+
+    Returns the number of keys deleted.
+    """
+    pattern = prefix + '|*'
+    if redis_client is None:
+        return 0
+
+    pattern = add_gae_prefix(pattern)
+    # https://redis.io/commands/scan/
+    target = list(redis_client.scan_iter(match=pattern, count=SCAN_COUNT))
+
+    # UNLINK frees memory in a background thread and accepts many keys,
+    # so each batch costs a single round trip.
+    for i in range(0, len(target), DELETE_BATCH_SIZE):
+        redis_client.unlink(*target[i : i + DELETE_BATCH_SIZE])
+    return len(target)
 
 
 def flushall():
