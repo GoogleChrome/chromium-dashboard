@@ -73,7 +73,7 @@
     "@web/test-runner": "^1.0.0",
     "@web/test-runner-playwright": "^1.0.0",
     "@web/test-runner-puppeteer": "^1.0.1",
-    "acorn": ">=8.18.0",
+    "acorn": ">=8.19.0",
     "color-string": ">=2.1.4",
     "dot-prop": ">=10.2.0",
     "eslint": "^10.11.0",
