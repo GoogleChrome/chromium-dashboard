@@ -25,12 +25,12 @@ and relationships to other data entities.
 from __future__ import annotations
 
 import datetime
-from typing import Any, Optional
+from typing import Optional
 
 from google.cloud import ndb  # type: ignore
 
 import settings
-from framework import rediscache
+from framework import cache_invalidation
 from internals import core_enums
 
 
@@ -290,23 +290,58 @@ class FeatureEntry(ndb.Model):
         """Feature cache key."""
         return '%s|%s' % (cache_key, feature_id)
 
-    def put(self, **kwargs) -> Any:
-        """Save the entity."""
-        key = super(FeatureEntry, self).put(**kwargs)
-        # Invalidate rediscache for the individual feature view.
-        cache_key = FeatureEntry.feature_cache_key(
-            FeatureEntry.DEFAULT_CACHE_KEY, self.key.integer_id()
-        )
-        rediscache.delete(cache_key)
+    @classmethod
+    def invalidate_feature_cache(
+        cls, feature_id: int | None, include_name: bool = True
+    ) -> None:
+        """Invalidate one feature's cached data and all search results.
 
-        # Invalidate rediscache for the individual feature name.
-        cache_key = FeatureEntry.feature_cache_key(
-            FeatureEntry.FEATURE_NAME_CACHE_KEY, self.key.integer_id()
+        Inside a request, the deletion is deferred until the request ends.
+        """
+        keys = []
+        if feature_id is not None:
+            # Cached data for the individual feature view.
+            keys.append(
+                cls.feature_cache_key(cls.DEFAULT_CACHE_KEY, feature_id)
+            )
+            if include_name:
+                # Cached data for the individual feature name.
+                keys.append(
+                    cls.feature_cache_key(
+                        cls.FEATURE_NAME_CACHE_KEY, feature_id
+                    )
+                )
+        cache_invalidation.invalidate(
+            keys=keys, prefixes=[cls.SEARCH_CACHE_KEY]
         )
-        rediscache.delete(cache_key)
-        rediscache.delete_keys_with_prefix(FeatureEntry.SEARCH_CACHE_KEY)
 
-        return key
+    @classmethod
+    def invalidate_search_cache(cls) -> None:
+        """Invalidate all cached search results and feature lists.
+
+        Inside a request, the deletion is deferred until the request ends.
+        """
+        cache_invalidation.invalidate(prefixes=[cls.SEARCH_CACHE_KEY])
+
+    # These hooks also run for ndb.put_multi() and ndb.delete_multi(). Using
+    # call_on_commit() means that writes inside a transaction only invalidate
+    # the cache once the transaction commits, and never if it rolls back.
+    def _post_put_hook(self, future) -> None:
+        """Invalidate cached data that depends on this feature."""
+        if future.exception() is None:
+            feature_id = self.key.integer_id()
+            ndb.get_context().call_on_commit(
+                lambda: FeatureEntry.invalidate_feature_cache(feature_id)
+            )
+
+    @classmethod
+    def _post_delete_hook(cls, key, future) -> None:
+        """Invalidate cached data that depended on the deleted feature."""
+        if future.exception() is None:
+            feature_id = key.integer_id()
+            ndb.get_context().call_on_commit(
+                lambda: FeatureEntry.invalidate_feature_cache(feature_id)
+            )
 
     # Note: get_in_milestone will be in a new file legacy_queries.py.
 
@@ -444,6 +479,29 @@ class Stage(ndb.Model):
 
     archived = ndb.BooleanProperty(default=False)
     created = ndb.DateTimeProperty(auto_now_add=True)
+
+    # A stage is part of its feature's cached data, but not its cached name.
+    def _post_put_hook(self, future) -> None:
+        """Invalidate cached data that depends on this stage."""
+        if future.exception() is None:
+            feature_id = self.feature_id
+            ndb.get_context().call_on_commit(
+                lambda: FeatureEntry.invalidate_feature_cache(
+                    feature_id, include_name=False
+                )
+            )
+
+    @classmethod
+    def _pre_delete_hook(cls, key) -> None:
+        """Invalidate cached data that depends on the stage being deleted."""
+        # The feature ID is only available before the stage is deleted.
+        stage = key.get()
+        feature_id = stage.feature_id if stage else None
+        ndb.get_context().call_on_commit(
+            lambda: FeatureEntry.invalidate_feature_cache(
+                feature_id, include_name=False
+            )
+        )
 
 
 class FeatureSummarySuggestion(ndb.Model):
