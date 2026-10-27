@@ -34,7 +34,15 @@ from google.cloud import ndb  # type: ignore
 
 import settings
 from api import api_specs
-from framework import csp, permissions, secrets, users, utils, xsrf
+from framework import (
+    cache_invalidation,
+    csp,
+    permissions,
+    secrets,
+    users,
+    utils,
+    xsrf,
+)
 from internals import approval_defs, core_enums, notifier_helpers, user_models
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
 from internals.data_types import CHANGED_FIELDS_LIST_TYPE
@@ -961,6 +969,8 @@ def FlaskApplication(import_name, routes, pattern_base='', debug=False):
         import_name, template_folder=settings.get_flask_template_path()
     )
     app.original_wsgi_app = app.wsgi_app  # Only for unit tests.
+    # Flush cache invalidations once per request, after all writes.
+    app.wsgi_app = cache_invalidation.wsgi_middleware(app.wsgi_app)
     app.wsgi_app = ndb_wsgi_middleware(app.wsgi_app)  # For Cloud NDB Context
     # For GAE legacy libraries
     app.wsgi_app = google.appengine.api.wrap_wsgi_app(app.wsgi_app)
