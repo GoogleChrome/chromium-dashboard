@@ -50,10 +50,12 @@ class WebdxFeatures(ndb.Model):
             status = 'none'
             if wsf.baseline and wsf.baseline.status:
                 status = wsf.baseline.status
-            info_list.append(WebdxFeatureInfo(
-                feature_id=wsf.feature_id,
-                status=status,
-            ))
+            info_list.append(
+                WebdxFeatureInfo(
+                    feature_id=wsf.feature_id,
+                    status=status,
+                )
+            )
         singleton = WebdxFeatures.get_singleton()
         if not singleton:
             singleton = WebdxFeatures(
