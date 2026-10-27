@@ -3551,6 +3551,8 @@ components:
             $ref: '#/components/schemas/WebFeatureInfo'
           title: data
           type: array
+      required:
+      - data
       title: WebFeatureInfosResponse
       type: object
     WebFeatureInfo:
@@ -3564,6 +3566,9 @@ components:
         status:
           title: status
           type: string
+      required:
+      - feature_id
+      - status
       title: WebFeatureInfo
       type: object
     PermissionsResponse:

@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Defines NDB models for storing and retrieving Webdx feature IDs."""
+"""Defines NDB models for storing and retrieving Webdx feature Infos."""
 
 from google.cloud import ndb  # type: ignore
 from webstatus_openapi import Feature as WSFeature
@@ -43,21 +43,23 @@ class WebdxFeatures(ndb.Model):
 
     @classmethod
     def store_webdx_feature_infos(cls, new_list: list[WSFeature]):
-        """Stores a new list of Webdx feature IDs, updating or creating as needed."""
+        """Stores a new list of Webdx feature infos, updating or creating as needed."""
         id_list = [wsf.feature_id for wsf in new_list]
-        infos_list = [
-            WebdxFeatureInfo(
+        info_list: list[WebdxFeatureInfo] = []
+        for wsf in new_list:
+            status = 'none'
+            if wsf.baseline and wsf.baseline.status:
+                status = wsf.baseline.status
+            info_list.append(WebdxFeatureInfo(
                 feature_id=wsf.feature_id,
-                status=wsf.baseline.status if wsf.baseline else 'none',
-            )
-            for wsf in new_list
-        ]
+                status=status,
+            ))
         singleton = WebdxFeatures.get_singleton()
         if not singleton:
             singleton = WebdxFeatures(
-                feature_ids=id_list, feature_infos=infos_list
+                feature_ids=id_list, feature_infos=info_list
             )
         else:
             singleton.feature_ids = id_list
-            singleton.feature_infos = infos_list
+            singleton.feature_infos = info_list
         singleton.put()

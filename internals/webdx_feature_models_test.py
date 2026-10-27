@@ -65,17 +65,26 @@ class WebdxFeaturesTest(testing_config.CustomTestCase):
             name='Bar',
             baseline=None,
         )
-        WebdxFeatures.store_webdx_feature_infos([ws_feature_1, ws_feature_2])
+        ws_feature_3 = WSFeature(
+            feature_id='baz',
+            name='Baz',
+            baseline=BaselineInfo(status=None),
+        )
+        WebdxFeatures.store_webdx_feature_infos(
+            [ws_feature_1, ws_feature_2, ws_feature_3]
+        )
 
         result = WebdxFeatures.query().fetch()
         self.assertIsNotNone(result)
         self.assertEqual(len(result), 1)
-        self.assertEqual(result[0].feature_ids, ['foo', 'bar'])
-        self.assertEqual(len(result[0].feature_infos), 2)
+        self.assertEqual(result[0].feature_ids, ['foo', 'bar', 'baz'])
+        self.assertEqual(len(result[0].feature_infos), 3)
         self.assertEqual(result[0].feature_infos[0].feature_id, 'foo')
         self.assertEqual(result[0].feature_infos[0].status, 'widely')
         self.assertEqual(result[0].feature_infos[1].feature_id, 'bar')
         self.assertEqual(result[0].feature_infos[1].status, 'none')
+        self.assertEqual(result[0].feature_infos[2].feature_id, 'baz')
+        self.assertEqual(result[0].feature_infos[2].status, 'none')
 
     def test_store_webdx_feature_infos__success_from_empty(self):
         """Tests storing a new list when no feature infos exist."""

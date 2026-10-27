@@ -2368,6 +2368,8 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/WebFeatureInfo'
+      required:
+        - data
     WebFeatureInfo:
       type: object
       properties:
@@ -2375,6 +2377,9 @@ components:
           type: string
         status:
           type: string
+      required:
+        - feature_id
+        - status
     PermissionsResponse:
       type: object
       properties:

@@ -24,19 +24,21 @@ export interface WebFeatureInfo {
      * @type {string}
      * @memberof WebFeatureInfo
      */
-    feature_id?: string;
+    feature_id: string;
     /**
      * 
      * @type {string}
      * @memberof WebFeatureInfo
      */
-    status?: string;
+    status: string;
 }
 
 /**
  * Check if a given object implements the WebFeatureInfo interface.
  */
 export function instanceOfWebFeatureInfo(value: object): value is WebFeatureInfo {
+    if (!('feature_id' in value) || value['feature_id'] === undefined) return false;
+    if (!('status' in value) || value['status'] === undefined) return false;
     return true;
 }
 
@@ -50,8 +52,8 @@ export function WebFeatureInfoFromJSONTyped(json: any, ignoreDiscriminator: bool
     }
     return {
         
-        'feature_id': json['feature_id'] == null ? undefined : json['feature_id'],
-        'status': json['status'] == null ? undefined : json['status'],
+        'feature_id': json['feature_id'],
+        'status': json['status'],
     };
 }
 

@@ -62,6 +62,8 @@ class WebFeatureInfo(Model):
         :param feature_id: The feature_id of this WebFeatureInfo.
         :type feature_id: str
         """
+        if feature_id is None:
+            raise ValueError("Invalid value for `feature_id`, must not be `None`")  # noqa: E501
 
         self._feature_id = feature_id
 
@@ -83,5 +85,7 @@ class WebFeatureInfo(Model):
         :param status: The status of this WebFeatureInfo.
         :type status: str
         """
+        if status is None:
+            raise ValueError("Invalid value for `status`, must not be `None`")  # noqa: E501
 
         self._status = status

@@ -59,5 +59,7 @@ class WebFeatureInfosResponse(Model):
         :param data: The data of this WebFeatureInfosResponse.
         :type data: List[WebFeatureInfo]
         """
+        if data is None:
+            raise ValueError("Invalid value for `data`, must not be `None`")  # noqa: E501
 
         self._data = data

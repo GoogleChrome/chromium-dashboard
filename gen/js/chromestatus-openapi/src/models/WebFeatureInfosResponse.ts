@@ -31,13 +31,14 @@ export interface WebFeatureInfosResponse {
      * @type {Array<WebFeatureInfo>}
      * @memberof WebFeatureInfosResponse
      */
-    data?: Array<WebFeatureInfo>;
+    data: Array<WebFeatureInfo>;
 }
 
 /**
  * Check if a given object implements the WebFeatureInfosResponse interface.
  */
 export function instanceOfWebFeatureInfosResponse(value: object): value is WebFeatureInfosResponse {
+    if (!('data' in value) || value['data'] === undefined) return false;
     return true;
 }
 
@@ -51,7 +52,7 @@ export function WebFeatureInfosResponseFromJSONTyped(json: any, ignoreDiscrimina
     }
     return {
         
-        'data': json['data'] == null ? undefined : ((json['data'] as Array<any>).map(WebFeatureInfoFromJSON)),
+        'data': ((json['data'] as Array<any>).map(WebFeatureInfoFromJSON)),
     };
 }
 
@@ -61,7 +62,7 @@ export function WebFeatureInfosResponseToJSON(value?: WebFeatureInfosResponse | 
     }
     return {
         
-        'data': value['data'] == null ? undefined : ((value['data'] as Array<any>).map(WebFeatureInfoToJSON)),
+        'data': ((value['data'] as Array<any>).map(WebFeatureInfoToJSON)),
     };
 }
 
