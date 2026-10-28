@@ -37,7 +37,7 @@ packaging==26.3
     #   wheel
 pathspec==1.1.1
     # via mypy
-pip-tools==7.6.1
+pip-tools==7.6.2
     # via -r requirements.dev.in
 pluggy==1.6.0
     # via pytest
