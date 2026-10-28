@@ -207,14 +207,14 @@ PI_INITIAL_PUBLIC_PROPOSAL = ProgressItem(
     'Initial public proposal',
     'initial_public_proposal_url',
     'Link to an initial public proposal in the relevant incubation venue.',
-    '',
+    'https://www.chromium.org/blink/launching-features/#incubation-venue',
 )
 
 PI_MOTIVATION = ProgressItem(
     'Motivation',
     'motivation',
     'Motivation summarizes the reasons we want to add/modify/remove behavior',
-    'https://www.chromium.org/blink/launching-features/#incubation-venue',
+    '',
 )
 
 PI_EXPLAINER = ProgressItem(
@@ -277,8 +277,6 @@ PI_SPEC_MATURITY = ProgressItem(
     ),
 )
 
-PI_SPEC_MENTOR = ProgressItem('Spec mentor', 'spec_mentors')
-
 PI_SAMPLES = ProgressItem(
     'Samples',
     'sample_links',
@@ -321,7 +319,6 @@ PI_DOC_LINKS_AUTOMATION = ProgressItem(
         'impact must be communicated.'
     ),
 )
-
 
 PI_TAG_ADDRESSED = ProgressItem(
     'TAG review issues addressed',
@@ -480,11 +477,9 @@ PI_GROUP_DEVS: list[ProgressItem] = [
     PI_FINCH_FEATURE_OR_JUSTIFY,
 ]
 PI_GROUP_DEVS_DEP: list[ProgressItem] = [
-    # TODO(jrobbins): Finch, etc. comes at a later stage, so this needs to be
-    # checked later or the field needs to move to the plan stage.
-    # PI_FINCH_FEATURE_OR_JUSTIFY,
-    # PI_DEP_CONSOLE_WARNING,
-    # PI_USECOUNTER_DEP,
+    PI_FINCH_FEATURE_OR_JUSTIFY,
+    PI_DEP_CONSOLE_WARNING,
+    PI_USECOUNTER_DEP,
 ]
 PI_GROUP_MILESTONES: list[ProgressItem] = [
     PI_DESKTOP_MILESTONE,
@@ -538,17 +533,17 @@ DQ_CHECKLIST_PSA_SHIP: list[ProgressItem] = (
 DQ_CHECKLIST_DEP_PLAN: list[ProgressItem] = (
     PI_GROUP_METADATA_DEP
     + PI_GROUP_STANDARDS_DEP
-    + PI_GROUP_DEVS_DEP
-    # TODO(jrobbins): Milestones come later in the process.
-    # + PI_GROUP_MILESTONES
     + PI_GROUP_INTEROP
     + PI_GROUP_DOCS_DEP
 )
 
 DQ_CHECKLIST_DEP_SHIP: list[ProgressItem] = (
-    # TODO(jrobbins):
-    # Even though there is no API Owners gate there, we could add a DQ gate.
-    []
+    PI_GROUP_METADATA_DEP
+    + PI_GROUP_STANDARDS_DEP
+    + PI_GROUP_DEVS_DEP
+    + PI_GROUP_MILESTONES
+    + PI_GROUP_INTEROP
+    + PI_GROUP_DOCS_DEP
 )
 
 
@@ -583,7 +578,6 @@ BLINK_PROCESS_STAGES = [
         'Start prototyping code in a public repo.',
         [
             PI_SPEC_LINK,
-            PI_SPEC_MENTOR,
             PI_SPEC_MATURITY,
         ],
         [
@@ -1011,9 +1005,7 @@ DEPRECATION_STAGES = [
     ProcessStage(
         'Dev trial of deprecation',
         'Publicize deprecation and address risks. ',
-        [
-            PI_FINCH_FEATURE_OR_JUSTIFY,
-        ],
+        PI_GROUP_DEVS_DEP,
         [
             Action(
                 'Draft Ready for Developer Testing email',
@@ -1071,12 +1063,16 @@ DEPRECATION_STAGES = [
         'Lock in shipping milestone. '
         'Finalize docs and announcements before disabling feature by default. '
         'If there were changes since your plan approvals, get approvals again.',
-        [
-            PI_DESKTOP_MILESTONE,
-        ],
+        PI_GROUP_MILESTONES,
         [
             # There is no I2S for deprecations because it all happens during planning.
             # And thre is no API Owner gate on this stage.
+            Action(
+                'Review data quality',
+                REQUEST_REVIEW_ACTION_URL,
+                [pi.name for pi in DQ_CHECKLIST_DEP_SHIP],
+                [core_enums.GATE_DQ_SHIP],
+            ),
         ],
         stage_type=core_enums.STAGE_DEP_SHIPPING,
     ),

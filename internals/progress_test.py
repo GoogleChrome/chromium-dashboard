@@ -455,6 +455,19 @@ class ProgressDetectorsTest(testing_config.CustomTestCase):
             progress._detect_firefox_views(self.feature_1, self.stages_dict),
             READY_FOR_REVIEW,
         )
+        self.feature_1.ff_views = core_enums.SIGNALS_NA
+        self.feature_1.ff_views_link = None
+        self.assertEqual(
+            progress._detect_firefox_views(self.feature_1, self.stages_dict),
+            progress.ProgressDetectorResult(
+                progress.ProgressVote.NEEDS_WORK, 'N/a views require notes'
+            ),
+        )
+        self.feature_1.ff_views_notes = 'Chrome-specific feature'
+        self.assertEqual(
+            progress._detect_firefox_views(self.feature_1, self.stages_dict),
+            READY_FOR_REVIEW,
+        )
 
     def test_safari_views(self):
         """Test safari views."""
@@ -477,6 +490,19 @@ class ProgressDetectorsTest(testing_config.CustomTestCase):
             ),
         )
         self.feature_1.safari_views_link = 'http://example.com'
+        self.assertEqual(
+            progress._detect_safari_views(self.feature_1, self.stages_dict),
+            READY_FOR_REVIEW,
+        )
+        self.feature_1.safari_views = core_enums.SIGNALS_NA
+        self.feature_1.safari_views_link = None
+        self.assertEqual(
+            progress._detect_safari_views(self.feature_1, self.stages_dict),
+            progress.ProgressDetectorResult(
+                progress.ProgressVote.NEEDS_WORK, 'N/a views require notes'
+            ),
+        )
+        self.feature_1.safari_views_notes = 'Chrome-specific feature'
         self.assertEqual(
             progress._detect_safari_views(self.feature_1, self.stages_dict),
             READY_FOR_REVIEW,
@@ -563,11 +589,46 @@ class ProgressDetectorsTest(testing_config.CustomTestCase):
             READY_FOR_REVIEW,
         )
 
+    def test_detect_shortlinks(self):
+        """Test _detect_shortlinks helper."""
+        self.assertIsNone(progress._detect_shortlinks('Normal public text'))
+        self.assertIsNone(progress._detect_shortlinks('Short go/abc or b/1234'))
+        self.assertEqual(
+            progress._detect_shortlinks('See go/my-design-doc for details'),
+            progress.ProgressDetectorResult(
+                progress.ProgressVote.NEEDS_WORK,
+                "Please avoid shortlink: 'go/my-design-doc'",
+            ),
+        )
+        self.assertEqual(
+            progress._detect_shortlinks('Tracked in b/12345678'),
+            progress.ProgressDetectorResult(
+                progress.ProgressVote.NEEDS_WORK,
+                "Please avoid shortlink: 'b/12345678'",
+            ),
+        )
+
     def test_motivation(self):
         """Test motivation."""
         self.assertEqual(
             progress._detect_motivation(self.feature_1, self.stages_dict),
             NOT_STARTED,
+        )
+        self.feature_1.motivation = 'See go/internal-doc for motivation'
+        self.assertEqual(
+            progress._detect_motivation(self.feature_1, self.stages_dict),
+            progress.ProgressDetectorResult(
+                progress.ProgressVote.NEEDS_WORK,
+                "Please avoid shortlink: 'go/internal-doc'",
+            ),
+        )
+        self.feature_1.motivation = 'See b/12345678 for motivation'
+        self.assertEqual(
+            progress._detect_motivation(self.feature_1, self.stages_dict),
+            progress.ProgressDetectorResult(
+                progress.ProgressVote.NEEDS_WORK,
+                "Please avoid shortlink: 'b/12345678'",
+            ),
         )
         self.feature_1.motivation = 'test motivation'
         self.assertEqual(
@@ -737,6 +798,49 @@ class ProgressDetectorsTest(testing_config.CustomTestCase):
         self.feature_1.summary = 'sum'
         self.assertEqual(
             progress._detect_summary(self.feature_1, self.stages_dict),
+            progress.ProgressDetectorResult(
+                progress.ProgressVote.NEEDS_WORK, 'Summary is too short'
+            ),
+        )
+        self.feature_1.summary = 'A' * 100 + ' see go/internal-doc'
+        self.assertEqual(
+            progress._detect_summary(self.feature_1, self.stages_dict),
+            progress.ProgressDetectorResult(
+                progress.ProgressVote.NEEDS_WORK,
+                "Please avoid shortlink: 'go/internal-doc'",
+            ),
+        )
+        self.feature_1.summary = 'A' * 100 + ' see b/12345678'
+        self.assertEqual(
+            progress._detect_summary(self.feature_1, self.stages_dict),
+            progress.ProgressDetectorResult(
+                progress.ProgressVote.NEEDS_WORK,
+                "Please avoid shortlink: 'b/12345678'",
+            ),
+        )
+        self.feature_1.summary = 'A' * 100
+        self.assertEqual(
+            progress._detect_summary(self.feature_1, self.stages_dict),
+            READY_FOR_REVIEW,
+        )
+
+    def test_summary_alt(self):
+        """Test summary alternatives detector."""
+        self.feature_1.summary = ''
+        self.assertEqual(
+            progress._detect_summary_alt(self.feature_1, self.stages_dict),
+            NOT_STARTED,
+        )
+        self.feature_1.summary = 'Use the new API instead'
+        self.assertEqual(
+            progress._detect_summary_alt(self.feature_1, self.stages_dict),
+            progress.ProgressDetectorResult(
+                progress.ProgressVote.NEEDS_WORK, 'Should link to alternatives'
+            ),
+        )
+        self.feature_1.summary = 'Use https://example.com/new-api instead'
+        self.assertEqual(
+            progress._detect_summary_alt(self.feature_1, self.stages_dict),
             READY_FOR_REVIEW,
         )
 
