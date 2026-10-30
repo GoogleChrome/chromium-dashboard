@@ -14,7 +14,14 @@
  * limitations under the License.
  */
 
-import {LitElement, TemplateResult, css, html, nothing} from 'lit';
+import {
+  LitElement,
+  PropertyValues,
+  TemplateResult,
+  css,
+  html,
+  nothing,
+} from 'lit';
 import {customElement, property, state} from 'lit/decorators.js';
 import {
   GATE_TEAM_ORDER,
@@ -82,19 +89,19 @@ export class ChromedashChecklistSummary extends LitElement {
 
   @property({type: Object})
   user!: User;
-  @state()
+  @property({attribute: false})
   feature!: Feature;
-  @state()
+  @property({attribute: false})
   featureGates!: GateDict[];
-  @state()
+  @property({attribute: false})
   stage!: StageDict;
-  @state()
+  @property({attribute: false})
   gate!: GateDict;
-  @state()
+  @property({attribute: false})
   process!: Process;
-  @state()
+  @property({attribute: false})
   progress!: ProgressItem;
-  @state()
+  @property({type: Boolean})
   loading = true;
   @state()
   loadingGates = false;
@@ -106,27 +113,62 @@ export class ChromedashChecklistSummary extends LitElement {
     );
   }
 
-  override willUpdate() {
+  private _fetchedForFeatureId?: number;
+
+  override willUpdate(changedProperties: PropertyValues) {
+    const featureChanged =
+      changedProperties.has('feature') &&
+      this.feature?.id !== this._fetchedForFeatureId;
+    const gateChanged =
+      changedProperties.has('gate') &&
+      changedProperties.get('gate') !== undefined &&
+      this.gate?.id !== (changedProperties.get('gate') as GateDict)?.id;
+    if (
+      featureChanged ||
+      gateChanged ||
+      (changedProperties.has('loading') && this.loading)
+    ) {
+      if (!changedProperties.has('featureGates')) {
+        this.featureGates = [];
+      }
+      this._fetchedForFeatureId = undefined;
+      this.loadingGates = false;
+    }
+
     if (!this.hasChecklist()) {
       return;
     }
 
     if (
+      !this.loading &&
       !this.loadingGates &&
-      (!this.featureGates || this.featureGates.length === 0)
+      this.feature?.id &&
+      (!this.featureGates || this.featureGates.length === 0) &&
+      this._fetchedForFeatureId !== this.feature.id
     ) {
+      this._fetchedForFeatureId = this.feature.id;
       this.fetchData();
     }
   }
 
   fetchData() {
+    if (!this.feature?.id) {
+      return;
+    }
+    const featureId = this.feature.id;
     this.loadingGates = true;
-    Promise.all([window.csClient.getGates(this.feature.id)])
+    Promise.all([window.csClient.getGates(featureId)])
       .then(([gatesRes]) => {
+        if (this.feature?.id !== featureId) {
+          return;
+        }
         this.featureGates = gatesRes.gates;
         this.loadingGates = false;
       })
       .catch(() => {
+        if (this.feature?.id === featureId) {
+          this._fetchedForFeatureId = undefined;
+        }
         showToastMessage(
           'Some errors occurred. Please refresh the page or try again later.'
         );

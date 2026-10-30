@@ -321,4 +321,110 @@ describe('chromedash-gate-column', () => {
       }
     });
   });
+
+  describe('postComment and setContext', () => {
+    it('does not set submittingComment or call API when commentText is empty', async () => {
+      const component = await fixture<ChromedashGateColumn>(
+        html`<chromedash-gate-column></chromedash-gate-column>`
+      );
+      const postCommentStub = sinon.stub(window.csClient, 'postComment');
+      try {
+        await component.postComment('');
+        assert.isFalse(component.submittingComment);
+        assert.isFalse(component.submittingVote);
+        assert.isFalse(postCommentStub.called);
+      } finally {
+        postCommentStub.restore();
+      }
+    });
+
+    it('ignores stale setContext responses when switched to a newer gate', async () => {
+      const component = await fixture<ChromedashGateColumn>(
+        html`<chromedash-gate-column></chromedash-gate-column>`
+      );
+      const feature = {id: 123456} as unknown as Feature;
+      const gate1 = {
+        id: 10,
+        stage_id: 20,
+        team_name: 'Gate 1',
+        assignee_emails: [],
+      } as unknown as GateDict;
+      const gate2 = {
+        id: 20,
+        stage_id: 20,
+        team_name: 'Gate 2',
+        assignee_emails: [],
+      } as unknown as GateDict;
+
+      let resolveComments1!: (val: any) => void;
+      const comments1Promise = new Promise(r => {
+        resolveComments1 = r;
+      });
+
+      sinon.stub(window.csClient, 'getFeatureProgress').resolves({});
+      (window.csClient.getFeatureProcess as sinon.SinonStub).resolves({
+        stages: [],
+      });
+      sinon.stub(window.csClient, 'getStage').resolves({id: 20});
+      (window.csClient.getVotes as sinon.SinonStub).resolves({votes: []});
+      (window.csClient.getComments as sinon.SinonStub)
+        .withArgs(123456, 10)
+        .returns(comments1Promise);
+      (window.csClient.getComments as sinon.SinonStub)
+        .withArgs(123456, 20)
+        .resolves({comments: ['gate 2 comment']});
+
+      component.setContext(feature, 20, gate1);
+      component.setContext(feature, 20, gate2);
+      await new Promise(r => setTimeout(r, 0));
+
+      assert.deepEqual(component.comments, ['gate 2 comment']);
+
+      resolveComments1({comments: ['stale gate 1 comment']});
+      await new Promise(r => setTimeout(r, 0));
+
+      assert.deepEqual(component.comments, ['gate 2 comment']);
+    });
+
+    it('clears featureGates in setContext and updates featureGates in refetch', async () => {
+      const component = await fixture<ChromedashGateColumn>(
+        html`<chromedash-gate-column></chromedash-gate-column>`
+      );
+      const feature = {id: 123456} as unknown as Feature;
+      const gate1 = {
+        id: 10,
+        stage_id: 20,
+        team_name: 'Gate 1',
+        assignee_emails: [],
+      } as unknown as GateDict;
+      const gate2 = {
+        id: 20,
+        stage_id: 20,
+        team_name: 'Gate 2',
+        assignee_emails: [],
+      } as unknown as GateDict;
+
+      component.featureGates = [gate1];
+      sinon.stub(window.csClient, 'getFeatureProgress').resolves({});
+      (window.csClient.getFeatureProcess as sinon.SinonStub).resolves({
+        stages: [],
+      });
+      sinon.stub(window.csClient, 'getStage').resolves({id: 20});
+      (window.csClient.getVotes as sinon.SinonStub).resolves({votes: []});
+      (window.csClient.getComments as sinon.SinonStub).resolves({comments: []});
+      const getGatesStub = sinon
+        .stub(window.csClient, 'getGates')
+        .resolves({gates: [gate1, gate2]});
+
+      component.setContext(feature, 20, gate1);
+      assert.deepEqual(component.featureGates, []);
+      await new Promise(r => setTimeout(r, 0));
+
+      component.refetch();
+      await new Promise(r => setTimeout(r, 0));
+      assert.deepEqual(component.featureGates, [gate1, gate2]);
+
+      getGatesStub.restore();
+    });
+  });
 });

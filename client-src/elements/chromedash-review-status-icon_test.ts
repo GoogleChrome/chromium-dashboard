@@ -306,4 +306,28 @@ describe('chromedash-review-status-icon', () => {
     const link = component.shadowRoot!.querySelector('a');
     assert.isNull(link, 'should not have a link for PSA features');
   });
+
+  it('refetches gates when feature property changes', async () => {
+    getGatesStub
+      .withArgs(FEATURE.id)
+      .resolves({gates: [GATE_API_PREPARING]})
+      .withArgs(999999)
+      .resolves({gates: [GATE_API_APPROVED]});
+
+    const component = await fixture<ChromedashReviewStatusIcon>(COMPONENT_HTML);
+    let icon = component.shadowRoot!.querySelector('sl-icon');
+    assert.equal(icon!.getAttribute('name'), 'arrow_circle_right_20px');
+
+    component.feature = {
+      id: 999999,
+      roadmap_stage_ids: [57463],
+      feature_type_int: 0,
+    };
+    await component.updateComplete;
+    await new Promise(r => setTimeout(r, 0));
+    await component.updateComplete;
+
+    icon = component.shadowRoot!.querySelector('sl-icon');
+    assert.equal(icon!.getAttribute('name'), 'check_circle_filled_20px');
+  });
 });
