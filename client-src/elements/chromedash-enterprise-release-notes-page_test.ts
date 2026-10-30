@@ -674,4 +674,55 @@ describe('chromedash-enterprise-release-notes-page', () => {
       assert.notExists(nameElAfter);
   });
 
+  it('clears previewingIds when cancel is called', async () => {
+    const component = await fixture<ChromedashEnterpriseReleaseNotesPage>(html`
+      <chromedash-enterprise-release-notes-page
+        .user=${adminUser}
+      ></chromedash-enterprise-release-notes-page>
+    `);
+    component.startEditing(4);
+    component.previewingIds = new Set([4, 5, 6, 3]);
+    component.cancel(4);
+    assert.isFalse(component.editingFeatureIds.has(4));
+    assert.isFalse(component.previewingIds.has(4));
+    assert.isFalse(component.previewingIds.has(5));
+    assert.isFalse(component.previewingIds.has(6));
+    assert.isTrue(component.previewingIds.has(3));
+  });
+
+  it('does not submit untouched undefined checkboxes in save and keeps editing state on error', async () => {
+    const component = await fixture<ChromedashEnterpriseReleaseNotesPage>(html`
+      <chromedash-enterprise-release-notes-page
+        .user=${adminUser}
+      ></chromedash-enterprise-release-notes-page>
+    `);
+    const updateStub = sinon
+      .stub(window.csClient, 'updateFeature')
+      .rejects(new Error('Save failed'));
+
+    const firstNote = component.shadowRoot!.querySelector('.feature')!;
+    const editButton = firstNote.querySelector<SlButton>('.edit-button')!;
+    editButton.click();
+    await component.updateComplete;
+
+    const editedFeatureId = Array.from(component.editingFeatureIds)[0];
+    const saveButton = firstNote.querySelector<SlButton>('.save-button')!;
+    saveButton.click();
+    await new Promise(r => setTimeout(r, 0));
+
+    assert.isTrue(updateStub.calledOnce);
+    const submitBody = updateStub.firstCall.args[0];
+    assert.notProperty(submitBody.feature_changes, 'confidential');
+    assert.notProperty(
+      submitBody.feature_changes,
+      'is_releasenotes_content_reviewed'
+    );
+    assert.notProperty(
+      submitBody.feature_changes,
+      'is_releasenotes_publish_ready'
+    );
+    assert.isTrue(component.editingFeatureIds.has(editedFeatureId));
+
+    updateStub.restore();
+  });
 });

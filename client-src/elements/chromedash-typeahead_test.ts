@@ -144,6 +144,13 @@ describe('chromedash-typeahead', () => {
     assert.isTrue(component.shouldShowCandidate(candidate2, 'path.dot.'));
     assert.isFalse(component.shouldShowCandidate(candidate2, 'th'));
     assert.isFalse(component.shouldShowCandidate(candidate2, 'th.dot'));
+
+    const candidate3 = {
+      name: 'category:"Web Components"',
+      doc: 'Feature category',
+    };
+    assert.isTrue(component.shouldShowCandidate(candidate3, 'category:w'));
+    assert.isTrue(component.shouldShowCandidate(candidate3, 'category:"w'));
   });
 
   it('detects when user is still entering keyword', async () => {
@@ -215,6 +222,29 @@ describe('chromedash-typeahead-dropdown', () => {
 
     component.resetSelection();
     assert.equal(null, component.getCurrentItem());
+  });
+
+  it('selects the first visible item on ArrowDown when invisible item is initial selection', async () => {
+    const component = await fixture<ChromedashTypeaheadDropdown>(html`
+      <chromedash-typeahead-dropdown>
+        <sl-input slot="trigger"> </sl-input>
+        <sl-menu>
+          <chromedash-typeahead-invisible-item></chromedash-typeahead-invisible-item>
+          <chromedash-typeahead-item
+            id="item0"
+            value="aaa"
+            doc="Docs about aaa"
+          ></chromedash-typeahead-item>
+        </sl-menu>
+      </chromedash-typeahead-dropdown>
+    `);
+    const item0 = component.querySelector<SlMenuItem>('#item0');
+    assert.isUndefined(component.getCurrentItem());
+
+    await component.handleTriggerKeyDown(
+      new KeyboardEvent('keydown', {key: 'ArrowDown'})
+    );
+    assert.equal(component.getCurrentItem(), item0);
   });
 });
 
