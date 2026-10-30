@@ -212,9 +212,17 @@ class GetApproversTest(testing_config.CustomTestCase):
     @mock.patch('internals.approval_defs.fetch_owners')
     def test__hard_coded(self, mock_fetch_owner):
         """Some approvals may have a hard-coded list of appovers."""
-        actual = approval_defs.get_approvers(1)
+        with mock.patch(
+            'framework.rediscache.get', wraps=rediscache.get
+        ) as mock_redis_get:
+            actual = approval_defs.get_approvers(1)
+            mock_redis_get.assert_not_called()
         mock_fetch_owner.assert_not_called()
         self.assertEqual(actual, ['approver@example.com'])
+        actual.append('mutated@example.com')
+        self.assertEqual(
+            approval_defs.get_approvers(1), ['approver@example.com']
+        )
 
     @mock.patch(
         'internals.approval_defs.APPROVAL_FIELDS_BY_ID', MOCK_APPROVALS_BY_ID
@@ -233,13 +241,45 @@ class GetApproversTest(testing_config.CustomTestCase):
     @mock.patch('internals.approval_defs.fetch_owners')
     def test__ndb_new(self, mock_fetch_owner):
         """Some approvals will have approvers in NDB, but they are not found."""
-        actual = approval_defs.get_approvers(3)
+        with mock.patch.object(
+            GateDef, 'get_gate_def', wraps=GateDef.get_gate_def
+        ) as mock_get_gate_def:
+            actual = approval_defs.get_approvers(3)
+            again = approval_defs.get_approvers(3)
+            # Empty list [] should be cached and not re-query NDB.
+            mock_get_gate_def.assert_called_once_with(3)
         mock_fetch_owner.assert_not_called()
         self.assertEqual(actual, [])
+        self.assertEqual(again, [])
         updated_gate_defs = GateDef.query().fetch()
         self.assertEqual(1, len(updated_gate_defs))
         self.assertEqual(3, updated_gate_defs[0].gate_type)
         self.assertEqual([], updated_gate_defs[0].approvers)
+
+    @mock.patch(
+        'internals.approval_defs.APPROVAL_FIELDS_BY_ID', MOCK_APPROVALS_BY_ID
+    )
+    @mock.patch('internals.approval_defs.fetch_owners')
+    def test__fields_approvable_by(self, mock_fetch_owner):
+        """fields_approvable_by batches Redis lookups and checks static lists."""
+        mock_fetch_owner.return_value = ['owner@example.com']
+        gate_def_3 = GateDef(
+            gate_type=3, approvers=['ndb_approver@example.com']
+        )
+        gate_def_3.put()
+
+        user1 = testing_config.Blank(email=lambda: 'approver@example.com')
+        self.assertEqual(approval_defs.fields_approvable_by(user1), {1})
+
+        user2 = testing_config.Blank(email=lambda: 'owner@example.com')
+        self.assertEqual(approval_defs.fields_approvable_by(user2), {2})
+
+        user3 = testing_config.Blank(email=lambda: 'ndb_approver@example.com')
+        self.assertEqual(approval_defs.fields_approvable_by(user3), {3})
+
+        # Also works when rediscache.get_multi returns None (e.g., DEV_MODE).
+        with mock.patch('framework.rediscache.get_multi', return_value=None):
+            self.assertEqual(approval_defs.fields_approvable_by(user2), {2})
 
     @mock.patch(
         'internals.approval_defs.APPROVAL_FIELDS_BY_ID', MOCK_APPROVALS_BY_ID
