@@ -22,7 +22,7 @@ import time
 from typing import Optional
 
 import settings
-from framework import basehandlers, permissions, users
+from framework import basehandlers, permissions, rediscache, users
 from internals import approval_defs, core_enums, notifier_helpers, slo
 from internals.core_models import FeatureEntry, Stage
 from internals.review_models import Activity, Gate, Vote
@@ -421,6 +421,12 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
         stage.intent_thread_url = thread_url
         stage.intent_subject_line = subject
         stage.put()
+        rediscache.delete(
+            FeatureEntry.feature_cache_key(
+                FeatureEntry.DEFAULT_CACHE_KEY, stage.feature_id
+            )
+        )
+        rediscache.delete_keys_with_prefix(FeatureEntry.SEARCH_CACHE_KEY)
         logging.info(
             f'Set intent_thread_url to {thread_url} '
             f'and intent_subject_line to {subject}'
@@ -455,6 +461,12 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
                 from_addr,
                 gate.key.integer_id(),
             )
+            rediscache.delete(
+                FeatureEntry.feature_cache_key(
+                    FeatureEntry.DEFAULT_CACHE_KEY, feature_id
+                )
+            )
+            rediscache.delete_keys_with_prefix(FeatureEntry.SEARCH_CACHE_KEY)
             recently_approved = (
                 old_gate_state not in Gate.APPROVED_STATES
                 and new_gate_state in Gate.APPROVED_STATES
@@ -475,6 +487,14 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
                     Vote.REVIEW_REQUESTED,
                     from_addr,
                     gate.key.integer_id(),
+                )
+                rediscache.delete(
+                    FeatureEntry.feature_cache_key(
+                        FeatureEntry.DEFAULT_CACHE_KEY, feature_id
+                    )
+                )
+                rediscache.delete_keys_with_prefix(
+                    FeatureEntry.SEARCH_CACHE_KEY
                 )
 
     def record_slo(self, feature, gate_info, from_addr, is_new_thread) -> None:

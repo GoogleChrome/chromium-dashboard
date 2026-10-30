@@ -110,6 +110,7 @@ class StagesAPI(basehandlers.EntitiesAPIHandler):
             FeatureEntry.DEFAULT_CACHE_KEY, feature_id
         )
         rediscache.delete(lookup_key)
+        rediscache.delete_keys_with_prefix(FeatureEntry.SEARCH_CACHE_KEY)
 
         # Return  the newly created stage ID.
         return {'message': 'Stage created.', 'stage_id': stage.key.integer_id()}

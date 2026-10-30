@@ -30,7 +30,13 @@ from chromestatus_openapi.models import (
 )
 
 import settings
-from framework import basehandlers, origin_trials_client, permissions, utils
+from framework import (
+    basehandlers,
+    origin_trials_client,
+    permissions,
+    rediscache,
+    utils,
+)
 from internals import core_enums, notifier_helpers
 from internals.core_models import FeatureEntry, Stage
 from internals.review_models import Gate
@@ -359,6 +365,12 @@ class OriginTrialsAPI(basehandlers.EntitiesAPIHandler):
         # Flag OT stage as ready to be created.
         ot_stage.ot_setup_status = core_enums.OT_READY_FOR_CREATION
         ot_stage.put()
+        rediscache.delete(
+            FeatureEntry.feature_cache_key(
+                FeatureEntry.DEFAULT_CACHE_KEY, fe.key.integer_id()
+            )
+        )
+        rediscache.delete_keys_with_prefix(FeatureEntry.SEARCH_CACHE_KEY)
         return SuccessMessage(
             message='Origin trial creation request submitted.'
         ).to_dict()  # noqa: E501
@@ -433,6 +445,12 @@ class OriginTrialsAPI(basehandlers.EntitiesAPIHandler):
         # This extension has been processed and action is no longer needed.
         extension_stage.ot_action_requested = False
         extension_stage.put()
+        rediscache.delete(
+            FeatureEntry.feature_cache_key(
+                FeatureEntry.DEFAULT_CACHE_KEY, fe.key.integer_id()
+            )
+        )
+        rediscache.delete_keys_with_prefix(FeatureEntry.SEARCH_CACHE_KEY)
 
         notifier_helpers.send_trial_extended_notification(
             ot_stage, extension_stage
