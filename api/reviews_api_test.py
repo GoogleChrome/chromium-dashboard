@@ -479,6 +479,54 @@ class VotesAPITest(testing_config.CustomTestCase):
         self.vote_1_1.put()
         self.handler.check_voting_rules(self.gate_1, Vote.NA_VERIFIED)
 
+    def test_check_voting_rules__existing_votes_skips_query(self):
+        """Passing existing_votes to check_voting_rules skips Vote.get_votes."""
+        with mock.patch.object(
+            Vote, 'get_votes', wraps=Vote.get_votes
+        ) as mock_get_votes:
+            with self.assertRaises(werkzeug.exceptions.BadRequest):
+                self.handler.check_voting_rules(
+                    self.gate_1,
+                    Vote.NA_VERIFIED,
+                    existing_votes=[self.vote_1_1],
+                )
+            self.vote_1_1.state = Vote.NA_SELF
+            self.handler.check_voting_rules(
+                self.gate_1,
+                Vote.NA_VERIFIED,
+                existing_votes=[self.vote_1_1],
+            )
+            mock_get_votes.assert_not_called()
+
+    @mock.patch('internals.notifier_helpers.notify_approvers_of_reviews')
+    @mock.patch('internals.approval_defs.get_approvers')
+    def test_post__request_review_reuses_gate(
+        self, mock_get_approvers, mock_notifier
+    ):
+        """do_post passes the loaded Gate to set_vote without a second Gate.get_by_id."""
+        mock_get_approvers.return_value = ['reviewer1@example.com']
+        testing_config.sign_in('owner1@example.com', 123567890)
+
+        params = {'state': Vote.REVIEW_REQUESTED}
+        with (
+            mock.patch.object(
+                Gate, 'get_by_id', wraps=Gate.get_by_id
+            ) as mock_gate_get,
+            mock.patch.object(
+                Vote, 'get_votes', wraps=Vote.get_votes
+            ) as mock_get_votes,
+        ):
+            with test_app.test_request_context(self.request_path, json=params):
+                actual = self.handler.do_post(
+                    feature_id=self.feature_id, gate_id=self.gate_1_id
+                )
+
+        self.assertEqual(actual, {'message': 'Done'})
+        self.assertEqual(1, mock_gate_get.call_count)
+        self.assertEqual(3, mock_get_votes.call_count)
+        updated_gate = Gate.get_by_id(self.gate_1_id)
+        self.assertEqual(Vote.REVIEW_REQUESTED, updated_gate.state)
+
 
 class GatesAPITest(testing_config.CustomTestCase):
     """Tests for GatesAPI."""
