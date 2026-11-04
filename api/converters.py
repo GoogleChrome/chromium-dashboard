@@ -171,7 +171,7 @@ def _prep_stage_info(
     ot_stage_indexes: dict[int, int] = {}
     extension_stages: list[StageDict] = []
     for s in stages:
-        stage_dict = stage_to_json_dict(s, fe.feature_type)
+        stage_dict = stage_to_json_dict(s)
         # Keep major stages for referencing additional fields.
         if s.stage_type == proto_type:
             stage_info['proto'] = s
@@ -210,9 +210,7 @@ def _prep_stage_info(
     return stage_info
 
 
-def stage_to_json_dict(
-    stage: Stage, feature_type: int | None = None
-) -> StageDict:
+def stage_to_json_dict(stage: Stage) -> StageDict:
     """Convert a stage entity into a JSON dict."""
     milestones: MilestoneSet = stage.milestones or MilestoneSet()
 

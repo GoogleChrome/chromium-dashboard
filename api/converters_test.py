@@ -529,7 +529,7 @@ class FeatureConvertersTest(testing_config.CustomTestCase):
             converters.feature_entry_to_json_verbose(empty_fe)
 
     def test_stage_to_json_dict__no_feature_lookup(self):
-        """stage_to_json_dict does not fetch FeatureEntry when feature_type is omitted."""
+        """stage_to_json_dict converts a stage without fetching its FeatureEntry."""
         stage = Stage(id=999, feature_id=999999, stage_type=110)
         with mock.patch.object(
             FeatureEntry, 'get_by_id', wraps=FeatureEntry.get_by_id
