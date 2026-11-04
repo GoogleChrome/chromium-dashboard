@@ -16,6 +16,7 @@
 """Defines models and detectors for evaluating feature progress items."""
 
 import datetime
+import re
 from collections.abc import Callable
 from dataclasses import dataclass
 
@@ -51,7 +52,6 @@ from internals.processes import (
     PI_SAMPLES,
     PI_SPEC_LINK,
     PI_SPEC_MATURITY,
-    PI_SPEC_MENTOR,
     PI_SUMMARY,
     PI_SUMMARY_DEP_ALTERNATIVES,
     PI_SUMMARY_DEP_TIMELINE,
@@ -88,7 +88,7 @@ class ProgressVote(ndb.Model):
     progress_item_name = ndb.StringProperty(required=True)
     state = ndb.IntegerProperty(
         required=True,
-        choices=[READY_FOR_REVIEW, VERIFIED, NA, NEEDS_WORK],
+        choices=[NOT_STARTED, READY_FOR_REVIEW, VERIFIED, NA, NEEDS_WORK],
     )
     feedback = ndb.StringProperty()
     set_on = ndb.DateTimeProperty(required=True)
@@ -117,9 +117,10 @@ def set_progress_vote(
         ProgressVote.progress_item_name == progress_item_name,
     ).fetch()
 
-    if existing_votes and state == ProgressVote.NOT_STARTED and not feedback:
-        for unwanted_vote in existing_votes:
-            unwanted_vote.key.delete()
+    if state == ProgressVote.NOT_STARTED and not feedback:
+        if existing_votes:
+            for unwanted_vote in existing_votes:
+                unwanted_vote.key.delete()
         return None
 
     if existing_votes:
@@ -163,6 +164,20 @@ class ProgressDetectorResult:
 
     state: int
     feedback: str | None = None
+
+
+GO_LINK = re.compile(r'\bgo/[\S]{6,100}\b')
+B_LINK = re.compile(r'\bb/\d{5,10}\b')
+
+
+def _detect_shortlinks(s: str) -> ProgressDetectorResult | None:
+    """Check for shortlinks that outsiders would not be able to click."""
+    matches = GO_LINK.findall(s) or B_LINK.findall(s)
+    if matches:
+        return ProgressDetectorResult(
+            ProgressVote.NEEDS_WORK, 'Please avoid shortlink: %r' % matches[0]
+        )
+    return None
 
 
 def _detect_initial_public_proposal(
@@ -244,14 +259,6 @@ def _detect_spec_maturity(
     return ProgressDetectorResult(ProgressVote.READY_FOR_REVIEW)
 
 
-def _detect_spec_mentor(
-    fe: FeatureEntry, _: dict[int, list[Stage]]
-) -> ProgressDetectorResult:
-    if not fe.spec_mentor_emails:
-        return ProgressDetectorResult(ProgressVote.NOT_STARTED)
-    return ProgressDetectorResult(ProgressVote.READY_FOR_REVIEW)
-
-
 def _detect_tag_review_requested(
     fe: FeatureEntry, _: dict[int, list[Stage]]
 ) -> ProgressDetectorResult:
@@ -289,10 +296,17 @@ def _detect_firefox_views(
 ) -> ProgressDetectorResult:
     if fe.ff_views == core_enums.NO_PUBLIC_SIGNALS:
         return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+    if fe.ff_views == core_enums.SIGNALS_NA:
+        if not fe.ff_views_notes:
+            return ProgressDetectorResult(
+                ProgressVote.NEEDS_WORK, 'N/a views require notes'
+            )
+        return ProgressDetectorResult(ProgressVote.READY_FOR_REVIEW)
     if not fe.ff_views_link or not fe.ff_views_link.startswith('http'):
         return ProgressDetectorResult(
             ProgressVote.NEEDS_WORK, 'Views link is not a URL'
         )
+
     return ProgressDetectorResult(ProgressVote.READY_FOR_REVIEW)
 
 
@@ -301,6 +315,12 @@ def _detect_safari_views(
 ) -> ProgressDetectorResult:
     if fe.safari_views == core_enums.NO_PUBLIC_SIGNALS:
         return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+    if fe.safari_views == core_enums.SIGNALS_NA:
+        if not fe.safari_views_notes:
+            return ProgressDetectorResult(
+                ProgressVote.NEEDS_WORK, 'N/a views require notes'
+            )
+        return ProgressDetectorResult(ProgressVote.READY_FOR_REVIEW)
     if not fe.safari_views_link or not fe.safari_views_link.startswith('http'):
         return ProgressDetectorResult(
             ProgressVote.NEEDS_WORK, 'Views link is not a URL'
@@ -374,6 +394,8 @@ def _detect_motivation(
 ) -> ProgressDetectorResult:
     if not fe.motivation:
         return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+    if nw := _detect_shortlinks(fe.motivation):
+        return nw
     return ProgressDetectorResult(ProgressVote.READY_FOR_REVIEW)
 
 
@@ -510,6 +532,24 @@ def _detect_summary(
 ) -> ProgressDetectorResult:
     if not fe.summary:
         return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+    if len(fe.summary) < 100:
+        return ProgressDetectorResult(
+            ProgressVote.NEEDS_WORK, 'Summary is too short'
+        )
+    if nw := _detect_shortlinks(fe.summary):
+        return nw
+    return ProgressDetectorResult(ProgressVote.READY_FOR_REVIEW)
+
+
+def _detect_summary_alt(
+    fe: FeatureEntry, _: dict[int, list[Stage]]
+) -> ProgressDetectorResult:
+    if not fe.summary:
+        return ProgressDetectorResult(ProgressVote.NOT_STARTED)
+    if 'http' not in fe.summary:
+        return ProgressDetectorResult(
+            ProgressVote.NEEDS_WORK, 'Should link to alternatives'
+        )
     return ProgressDetectorResult(ProgressVote.READY_FOR_REVIEW)
 
 
@@ -559,9 +599,8 @@ PROGRESS_DETECTORS: dict[
     PI_SAMPLES.name: _detect_samples,
     PI_SPEC_LINK.name: _detect_spec_link,
     PI_SPEC_MATURITY.name: _detect_spec_maturity,
-    PI_SPEC_MENTOR.name: _detect_spec_mentor,
     PI_SUMMARY.name: _detect_summary,
-    PI_SUMMARY_DEP_ALTERNATIVES.name: _detect_summary,
+    PI_SUMMARY_DEP_ALTERNATIVES.name: _detect_summary_alt,
     PI_SUMMARY_DEP_TIMELINE.name: _detect_summary,
     PI_SUMMARY_POLICY.name: _detect_summary,
     PI_SUMMARY_POLICY_DEP.name: _detect_summary,

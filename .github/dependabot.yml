@@ -13,7 +13,7 @@ updates:
       # Prefix all commit messages with "npm"
       prefix: "npm"
     cooldown:
-      default-days: 21 
+      default-days: 21
   - package-ecosystem: "docker"
     directory: "/"
     schedule:
@@ -22,19 +22,19 @@ updates:
       # Prefix all commit messages with "docker"
       prefix: "docker"
     cooldown:
-      default-days: 7 
+      default-days: 7
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "weekly"
     groups:
       actions-org:
-        patterns: ["actions/*"]
+        patterns: ["*"]
     commit-message:
       # Prefix all commit messages with "gh-actions"
       prefix: "gh-actions"
     cooldown:
-      default-days: 7 
+      default-days: 7
   - package-ecosystem: "pip"
     directory: "/"
     schedule:
@@ -43,4 +43,4 @@ updates:
       # Prefix all commit messages with "pip"
       prefix: "pip"
     cooldown:
-      default-days: 14 
+      default-days: 14

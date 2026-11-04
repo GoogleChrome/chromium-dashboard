@@ -1,6 +1,7 @@
 {
   "page_title": "Catatan Rilis Chrome {milestone}",
   "preview_badge": "Pratinjau",
+  "pending_review": "Menunggu peninjauan",
   "scheduled_stable_release": "Rilis Stabil Terjadwal {date}",
   "currently_on_beta": "(Saat ini di saluran Beta)",
   "currently_on_dev": "(Saat ini di saluran Dev, mencapai Beta pada {date})",

@@ -53,7 +53,7 @@ test('edit origin trial stage', async ({page}) => {
   await expect(editFieldsButton).toBeVisible();
   await editFieldsButton.click();
 
-  await page.waitForURL('**/guide/stage/*/*/*');
+  await page.waitForURL('**/guide/stage/*/*');
 
   // Find the desktop start milestone field
   const originTrialDesktopInput = page.locator(
@@ -116,7 +116,7 @@ test('edit origin trial stage', async ({page}) => {
   await expect(editFieldsButton2).toBeVisible();
   await editFieldsButton2.click();
 
-  await page.waitForURL('**/guide/stage/*/*/*');
+  await page.waitForURL('**/guide/stage/*/*');
 
   // Find the desktop end milestone field
   const originTrial2DesktopInput = page.locator(

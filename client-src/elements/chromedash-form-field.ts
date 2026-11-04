@@ -40,9 +40,11 @@ import {
   showToastMessage,
 } from './utils.js';
 import {Feature, StageDict} from '../js-src/cs-client.js';
+import {WebFeatureInfo, WebFeatureInfosResponse} from 'chromestatus-openapi';
 import {FormattedFeature} from './form-definition.js';
 import {
   ALL_INTENT_USAGE_BY_FEATURE_TYPE,
+  FEATURE_TYPES,
   UsageType,
 } from './form-field-enums.js';
 
@@ -137,6 +139,8 @@ export class ChromedashFormField extends LitElement {
   @state()
   fetchedChoices: Record<string, [string, string]> = {}; // just for the blink component & web features select field
   @state()
+  webFeatureInfos: WebFeatureInfo[] = [];
+  @state()
   checkMessage: TemplateResult | string = '';
   @state()
   fieldProps;
@@ -173,15 +177,18 @@ export class ChromedashFormField extends LitElement {
       );
     } else if (this.name === 'web_feature') {
       this.fetchChoices(
-        window.csClient.getWebFeatureIDs().then((feature_ids: string[]) => {
-          let choices = {
-            missing_feature: ['Missing feature', 'Missing feature'],
-          };
-          for (let id of feature_ids) {
-            choices[id] = [id, id];
-          }
-          return choices;
-        }),
+        window.csClient
+          .getWebFeatureInfos()
+          .then((res: WebFeatureInfosResponse) => {
+            this.webFeatureInfos = res?.data || [];
+            const choices: Record<string, [string, string]> = {
+              missing_feature: ['Missing feature', 'Missing feature'],
+            };
+            for (const info of this.webFeatureInfos) {
+              choices[info.feature_id] = [info.feature_id, info.feature_id];
+            }
+            return choices;
+          }),
         'Error fetching Web feature IDs. Please refresh the page or try again later.'
       );
     }
@@ -247,6 +254,28 @@ export class ChromedashFormField extends LitElement {
     }
 
     return true;
+  }
+
+  getFeatureType(): number {
+    if (this.feature?.feature_type_int !== undefined) {
+      return this.feature.feature_type_int;
+    }
+    const fieldValue = getFieldValueWithStage(
+      'feature_type',
+      undefined,
+      this.fieldValues || []
+    );
+    return Number(fieldValue || FEATURE_TYPES.FEATURE_TYPE_INCUBATE_ID[0]);
+  }
+
+  shouldDisplayWidelySupportedWarning(): boolean {
+    const selectedInfo = this.webFeatureInfos.find(
+      info => info.feature_id === this.value
+    );
+    if (selectedInfo?.status !== 'widely') {
+      return false;
+    }
+    return this.getFeatureType() === FEATURE_TYPES.FEATURE_TYPE_INCUBATE_ID[0];
   }
 
   // Must render to light DOM, so sl-form-fields work as intended.
@@ -689,6 +718,18 @@ export class ChromedashFormField extends LitElement {
                   in webstatus.dev
                 </td>
               </tr>
+              ${
+                this.shouldDisplayWidelySupportedWarning()
+                  ? html`
+                      <tr>
+                        <td colspan="2" class="webdx">
+                          This web feature is already widely supported, are you
+                          sure that you are incubating a change to it?
+                        </td>
+                      </tr>
+                    `
+                  : nothing
+              }
             `
           : nothing
       }
