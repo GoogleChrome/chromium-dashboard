@@ -269,9 +269,28 @@ describe('chromedash-review-status-icon', () => {
     assert.equal(icon.getAttribute('name'), 'block_20px');
   });
 
-  it('renders "approved" for a PSA feature even if gates are not started', async () => {
+  it('renders an arrow for a PSA feature when XFN gates are PREPARING', async () => {
     getGatesStub.returns(
       Promise.resolve({gates: [GATE_API_PREPARING, GATE_PRIVACY_PREPARING]})
+    );
+    const component = await fixture(COMPONENT_HTML_PSA);
+    assert.exists(component);
+    assert.instanceOf(component, ChromedashReviewStatusIcon);
+    const icon = component.shadowRoot!.querySelector('sl-icon');
+    assert.exists(icon);
+    assert.equal(icon.getAttribute('name'), 'arrow_circle_right_20px');
+  });
+
+  it('renders "approved" for a PSA feature when XFN gates are approved even if API Owners gate is not started', async () => {
+    getGatesStub.returns(
+      Promise.resolve({
+        gates: [
+          GATE_API_PREPARING,
+          GATE_PRIVACY_NA_SELF,
+          GATE_PRIVACY_NA_VERIFIED,
+          GATE_SECURITY_NA,
+        ],
+      })
     );
     const component = await fixture(COMPONENT_HTML_PSA);
     assert.exists(component);
@@ -281,7 +300,7 @@ describe('chromedash-review-status-icon', () => {
     assert.equal(
       icon.getAttribute('name'),
       'check_circle_filled_20px',
-      'PSA feature should be approved by default'
+      'PSA feature should be approved when XFN gates are approved'
     );
     // Check that there is no link, because targetGateId is set to undefined.
     const link = component.shadowRoot!.querySelector('a');

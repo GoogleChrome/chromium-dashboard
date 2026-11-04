@@ -451,3 +451,42 @@ class ReleaseNotesHandlerTest(testing_config.CustomTestCase):
                 ' and Beta channels)',
                 html_str,
             )
+
+    def test_render_template__pending_review_chip(self):
+        """It renders the Pending review chip above h3 when feature.is_pending_review is True."""
+        self.mock_features[0]['is_pending_review'] = True
+        self.mock_features[1]['is_pending_review'] = False
+
+        with test_app.test_request_context('/release-notes/152'):
+            data = self.handler.get_template_data(milestone=152)
+            html_str = flask.render_template('release-notes.html', **data)
+
+            self.assertEqual(
+                1,
+                html_str.count(
+                    '<span class="pending-review-chip">Pending review</span>'
+                ),
+            )
+            chip_idx = html_str.index(
+                '<span class="pending-review-chip">Pending review</span>'
+            )
+            h3_idx = html_str.index('Sample CSS Feature')
+            self.assertLess(chip_idx, h3_idx)
+
+    def test_render_template__pending_review_chip_localized(self):
+        """It renders the localized Pending review chip when ?hl=ja is provided."""
+        self.mock_features[0]['is_pending_review'] = True
+
+        with (
+            test_app.test_request_context('/release-notes/152?hl=ja'),
+            mock.patch(
+                'internals.releasenotes_l10n_helpers.merge_translations',
+                side_effect=lambda features, _lang: features,
+            ),
+        ):
+            data = self.handler.get_template_data(milestone=152)
+            html_str = flask.render_template('release-notes.html', **data)
+            self.assertIn(
+                '<span class="pending-review-chip">レビュー待ち</span>',
+                html_str,
+            )

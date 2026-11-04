@@ -218,7 +218,7 @@ describe('preflight functions', () => {
       stages: [
         {
           name: 'Start incubating',
-          outgoing_stage: 1,
+          stage_type: 110,
           progress_items: [
             {name: 'Motivation', field: 'motivation'},
             {name: 'Explainer', field: 'explainer_links'},
@@ -227,7 +227,7 @@ describe('preflight functions', () => {
         },
         {
           name: 'Start prototyping',
-          outgoing_stage: 2,
+          stage_type: 120,
           progress_items: [
             {name: 'Spec link', field: 'spec_link'},
             {name: 'Draft API spec'},
@@ -235,7 +235,7 @@ describe('preflight functions', () => {
         },
         {
           name: 'Evaluate readiness to ship',
-          outgoing_stage: 3,
+          stage_type: 140,
           progress_items: [{name: 'Doc links', field: 'doc_links'}],
         },
       ],
@@ -253,7 +253,7 @@ describe('preflight functions', () => {
       ],
     } as Action;
 
-    const feStage = {id: 20, stage_type: 120, intent_stage: 2} as StageDict;
+    const feStage = {id: 20, stage_type: 120} as StageDict;
 
     const baseUser: User = {
       id: 1,
@@ -300,7 +300,8 @@ describe('preflight functions', () => {
         feStage,
         feStage,
         [privacyGate],
-        () => {}
+        () => {},
+        true
       );
       await component.updateComplete;
 
@@ -318,37 +319,48 @@ describe('preflight functions', () => {
       assert.equal(tables.length, 3);
 
       // Table 0: Start incubating (Motivation=Approved, Explainer=Pending, Tracking bug URL=Pending)
-      const stage1Rows = tables[0].querySelectorAll('tr');
-      assert.equal(stage1Rows.length, 3);
+      const stage1StatusRows = tables[0].querySelectorAll(
+        'tbody > tr:first-child'
+      );
+      assert.equal(stage1StatusRows.length, 3);
+      for (const valRow of tables[0].querySelectorAll('tr.feature-values')) {
+        assert.equal(getComputedStyle(valRow).display, 'none');
+      }
 
-      const row0Cells = stage1Rows[0].querySelectorAll('td');
+      const row0Cells = stage1StatusRows[0].querySelectorAll('td');
       assert.equal(row0Cells.length, 4);
       assert.isNotNull(
-        row0Cells[0].querySelector('sl-icon[name="caret-right-fill"]')
+        row0Cells[0].querySelector(
+          'details > summary[aria-label="Toggle details for Motivation"]'
+        )
       );
       assert.equal(row0Cells[1].textContent?.trim(), 'Verified');
       assert.isNotNull(row0Cells[1].querySelector('.status.verified'));
       assert.equal(row0Cells[2].textContent?.trim(), 'Motivation');
       assert.equal(
         row0Cells[3].querySelector('a')?.getAttribute('href'),
-        '/guide/stage/123456/1/10#id_motivation'
+        '/guide/stage/123456/10#id_motivation'
       );
 
-      const row1Cells = stage1Rows[1].querySelectorAll('td');
+      const row1Cells = stage1StatusRows[1].querySelectorAll('td');
       assert.isNotNull(
-        row1Cells[0].querySelector('sl-icon[name="caret-right-fill"]')
+        row1Cells[0].querySelector(
+          'details > summary[aria-label="Toggle details for Explainer"]'
+        )
       );
       assert.equal(row1Cells[1].textContent?.trim(), 'Not started');
       assert.isNotNull(row1Cells[1].querySelector('.status.not_started'));
       assert.equal(row1Cells[2].textContent?.trim(), 'Explainer');
       assert.equal(
         row1Cells[3].querySelector('a')?.getAttribute('href'),
-        '/guide/stage/123456/1/10#id_explainer_links'
+        '/guide/stage/123456/10#id_explainer_links'
       );
 
-      const row2Cells = stage1Rows[2].querySelectorAll('td');
+      const row2Cells = stage1StatusRows[2].querySelectorAll('td');
       assert.isNotNull(
-        row2Cells[0].querySelector('sl-icon[name="caret-right-fill"]')
+        row2Cells[0].querySelector(
+          'details > summary[aria-label="Toggle details for Tracking bug URL"]'
+        )
       );
       assert.equal(row2Cells[1].textContent?.trim(), 'Not started');
       assert.equal(row2Cells[2].textContent?.trim(), 'Tracking bug URL');
@@ -358,20 +370,24 @@ describe('preflight functions', () => {
       );
 
       // Table 1: Start prototyping (Spec link=Verified with edit link, Draft API spec=Pending with no edit link)
-      const stage2Rows = tables[1].querySelectorAll('tr');
-      assert.equal(stage2Rows.length, 2);
+      const stage2StatusRows = tables[1].querySelectorAll(
+        'tbody > tr:first-child'
+      );
+      assert.equal(stage2StatusRows.length, 2);
       assert.equal(
-        stage2Rows[0].querySelectorAll('td')[1].textContent?.trim(),
+        stage2StatusRows[0].querySelectorAll('td')[1].textContent?.trim(),
         'Verified'
       );
       assert.equal(
-        stage2Rows[0].querySelectorAll('td')[2].textContent?.trim(),
+        stage2StatusRows[0].querySelectorAll('td')[2].textContent?.trim(),
         'Spec link'
       );
       assert.isNotNull(
-        stage2Rows[0].querySelectorAll('td')[3].querySelector('a')
+        stage2StatusRows[0].querySelectorAll('td')[3].querySelector('a')
       );
-      assert.isNull(stage2Rows[1].querySelectorAll('td')[3].querySelector('a'));
+      assert.isNull(
+        stage2StatusRows[1].querySelectorAll('td')[3].querySelector('a')
+      );
 
       // Table 2: Other gates
       const gateRows = tables[2].querySelectorAll('tr');
@@ -391,7 +407,7 @@ describe('preflight functions', () => {
       );
     });
 
-    it('initially expands items with feedback and toggles expansion on caret click', async () => {
+    it('always renders detail rows and controls their visibility via <details> and CSS', async () => {
       const component = await fixture<ChromedashPreflightDialog>(
         html`<chromedash-preflight-dialog></chromedash-preflight-dialog>`
       );
@@ -400,7 +416,7 @@ describe('preflight functions', () => {
         stages: [
           {
             name: 'Start incubating',
-            outgoing_stage: 1,
+            stage_type: 110,
             progress_items: [
               {
                 name: 'Motivation',
@@ -435,39 +451,56 @@ describe('preflight functions', () => {
         feStage,
         feStage,
         [],
-        () => {}
+        () => {},
+        true
       );
       await component.updateComplete;
 
       const tables = component.shadowRoot!.querySelectorAll('table.data-table');
-      let stage1Rows = tables[0].querySelectorAll('tr');
-      // Motivation has no feedback so its value and criteria rows are hidden.
-      // Explainer has feedback so its value, feedback, and criteria rows are visible.
-      // 3 items + 1 value row + 1 feedback row + 1 criteria row for Explainer = 6 rows.
-      assert.equal(stage1Rows.length, 6);
+      const tbodies = tables[0].querySelectorAll('tbody');
+      assert.equal(tbodies.length, 3);
 
-      const motivationRowCells = stage1Rows[0].querySelectorAll('td');
-      const motivationCaret = motivationRowCells[0].querySelector(
-        'sl-icon'
+      // Motivation (tbody 0): main row + feature-values + criteria = 3 rows; starts collapsed.
+      const motivationRows = tbodies[0].querySelectorAll('tr');
+      assert.equal(motivationRows.length, 3);
+      const motivationRowCells = motivationRows[0].querySelectorAll('td');
+      const motivationDetails = motivationRowCells[0].querySelector(
+        'details'
+      ) as HTMLDetailsElement;
+      assert.isFalse(motivationDetails.open);
+      const motivationStatusEditLink = motivationRowCells[3].querySelector(
+        'a'
       ) as HTMLElement;
-      assert.isFalse(motivationCaret.classList.contains('expanded'));
-      assert.isNotNull(motivationRowCells[3].querySelector('a'));
+      assert.isNotNull(motivationStatusEditLink);
+      assert.notEqual(
+        getComputedStyle(motivationStatusEditLink).display,
+        'none'
+      );
+      assert.equal(getComputedStyle(motivationRows[1]).display, 'none');
+      assert.equal(getComputedStyle(motivationRows[2]).display, 'none');
 
-      const explainerRowCells = stage1Rows[1].querySelectorAll('td');
-      const explainerCaret = explainerRowCells[0].querySelector(
-        'sl-icon'
-      ) as HTMLElement;
-      assert.isTrue(explainerCaret.classList.contains('expanded'));
+      // Explainer (tbody 1): main row + feature-values + feedback + criteria = 4 rows; starts expanded.
+      const explainerRows = tbodies[1].querySelectorAll('tr');
+      assert.equal(explainerRows.length, 4);
+      const explainerRowCells = explainerRows[0].querySelectorAll('td');
+      const explainerDetails = explainerRowCells[0].querySelector(
+        'details'
+      ) as HTMLDetailsElement;
+      assert.isTrue(explainerDetails.open);
       assert.equal(explainerRowCells[1].textContent?.trim(), 'Needs work');
       assert.isNotNull(
         explainerRowCells[1].querySelector('.status.needs_work')
       );
       assert.equal(explainerRowCells[2].textContent?.trim(), 'Explainer');
-      // Edit link moves from statusRow to valueRow when expanded.
-      assert.isNull(explainerRowCells[3].querySelector('a'));
+      // Edit link on statusRow is hidden via CSS when expanded.
+      const explainerStatusEditLink = explainerRowCells[3].querySelector(
+        'a'
+      ) as HTMLElement;
+      assert.equal(getComputedStyle(explainerStatusEditLink).display, 'none');
 
-      const valueRow = stage1Rows[2];
+      const valueRow = explainerRows[1];
       assert.isTrue(valueRow.classList.contains('feature-values'));
+      assert.equal(getComputedStyle(valueRow).display, 'table-row');
       const valueCells = valueRow.querySelectorAll('td');
       assert.equal(valueCells.length, 4);
       assert.equal(valueCells[0].textContent?.trim(), '');
@@ -478,12 +511,13 @@ describe('preflight functions', () => {
       );
       assert.equal(
         valueCells[3].querySelector('a')?.getAttribute('href'),
-        '/guide/stage/123456/1/10#id_explainer_links'
+        '/guide/stage/123456/10#id_explainer_links'
       );
       assert.equal(getComputedStyle(valueCells[0]).borderTopStyle, 'none');
 
-      const feedbackRow = stage1Rows[3];
+      const feedbackRow = explainerRows[2];
       assert.isTrue(feedbackRow.classList.contains('feedback'));
+      assert.equal(getComputedStyle(feedbackRow).display, 'table-row');
       const feedbackCells = feedbackRow.querySelectorAll('td');
       assert.equal(feedbackCells.length, 4);
       assert.equal(feedbackCells[0].textContent?.trim(), '');
@@ -495,8 +529,9 @@ describe('preflight functions', () => {
       assert.equal(feedbackCells[3].textContent?.trim(), '');
       assert.equal(getComputedStyle(feedbackCells[0]).borderTopStyle, 'none');
 
-      const criteriaRow = stage1Rows[4];
+      const criteriaRow = explainerRows[3];
       assert.isTrue(criteriaRow.classList.contains('criteria'));
+      assert.equal(getComputedStyle(criteriaRow).display, 'table-row');
       const criteriaCells = criteriaRow.querySelectorAll('td');
       assert.equal(criteriaCells.length, 4);
       assert.equal(criteriaCells[0].textContent?.trim(), '');
@@ -508,40 +543,55 @@ describe('preflight functions', () => {
       assert.equal(criteriaCells[3].textContent?.trim(), '');
       assert.equal(getComputedStyle(criteriaCells[0]).borderTopStyle, 'none');
 
-      // Click Explainer caret to collapse it.
-      explainerCaret.click();
-      await component.updateComplete;
-      stage1Rows = tables[0].querySelectorAll('tr');
-      assert.equal(stage1Rows.length, 3);
-      assert.isFalse(
-        stage1Rows[1].querySelector('sl-icon')!.classList.contains('expanded')
-      );
-      assert.isNotNull(
-        stage1Rows[1].querySelectorAll('td')[3].querySelector('a')
+      // Click Explainer summary to collapse it.
+      explainerDetails.querySelector('summary')!.click();
+      assert.isFalse(explainerDetails.open);
+      assert.equal(getComputedStyle(valueRow).display, 'none');
+      assert.equal(getComputedStyle(feedbackRow).display, 'none');
+      assert.equal(getComputedStyle(criteriaRow).display, 'none');
+      assert.notEqual(
+        getComputedStyle(explainerStatusEditLink).display,
+        'none'
       );
 
-      // Click Motivation caret to expand it.
-      motivationCaret.click();
-      await component.updateComplete;
-      stage1Rows = tables[0].querySelectorAll('tr');
-      assert.equal(stage1Rows.length, 5);
-      assert.isTrue(
-        stage1Rows[0].querySelector('sl-icon')!.classList.contains('expanded')
-      );
-      assert.isNull(stage1Rows[0].querySelectorAll('td')[3].querySelector('a'));
-      assert.isTrue(stage1Rows[1].classList.contains('feature-values'));
+      // Click Motivation summary to expand it.
+      motivationDetails.querySelector('summary')!.click();
+      assert.isTrue(motivationDetails.open);
+      assert.equal(getComputedStyle(motivationStatusEditLink).display, 'none');
+      assert.isTrue(motivationRows[1].classList.contains('feature-values'));
+      assert.equal(getComputedStyle(motivationRows[1]).display, 'table-row');
       assert.equal(
-        stage1Rows[1].querySelectorAll('td')[1].textContent?.trim(),
+        motivationRows[1].querySelectorAll('td')[1].textContent?.trim(),
         'Motivation:'
       );
       assert.isNotNull(
-        stage1Rows[1].querySelectorAll('td')[3].querySelector('a')
+        motivationRows[1].querySelectorAll('td')[3].querySelector('a')
       );
-      assert.isTrue(stage1Rows[2].classList.contains('criteria'));
+      assert.isTrue(motivationRows[2].classList.contains('criteria'));
+      assert.equal(getComputedStyle(motivationRows[2]).display, 'table-row');
       assert.equal(
-        stage1Rows[2].querySelectorAll('td')[2].textContent?.trim(),
+        motivationRows[2].querySelectorAll('td')[2].textContent?.trim(),
         'Summarizes the reasons.'
       );
+
+      // Re-opening with context resets manual toggles back to match feedback presence.
+      component.openWithContext(
+        baseUser,
+        feature,
+        progress,
+        processWithCriteria,
+        action,
+        feStage,
+        feStage,
+        [],
+        () => {},
+        true
+      );
+      await component.updateComplete;
+      assert.isFalse(motivationDetails.open);
+      assert.equal(getComputedStyle(motivationRows[1]).display, 'none');
+      assert.isTrue(explainerDetails.open);
+      assert.equal(getComputedStyle(valueRow).display, 'table-row');
     });
 
     it('omits other gates table when there are no other gates', async () => {
@@ -559,7 +609,8 @@ describe('preflight functions', () => {
         feStage,
         feStage,
         [],
-        () => {}
+        () => {},
+        true
       );
       await component.updateComplete;
 
@@ -586,7 +637,8 @@ describe('preflight functions', () => {
         feStage,
         feStage,
         [],
-        resolveStub
+        resolveStub,
+        true
       );
       await component.updateComplete;
 
@@ -616,7 +668,8 @@ describe('preflight functions', () => {
         feStage,
         feStage,
         [],
-        resolveStub
+        resolveStub,
+        true
       );
       await component.updateComplete;
 
@@ -627,6 +680,32 @@ describe('preflight functions', () => {
       cancelButton.click();
       assert.isTrue(hideSpy.calledOnce);
       assert.isTrue(resolveStub.calledOnceWithExactly(false));
+    });
+
+    it('omits Proceed button when showProceed is false', async () => {
+      const component = await fixture<ChromedashPreflightDialog>(
+        html`<chromedash-preflight-dialog></chromedash-preflight-dialog>`
+      );
+      const progress = {} as ProgressItem;
+
+      component.openWithContext(
+        baseUser,
+        feature,
+        progress,
+        process,
+        action,
+        feStage,
+        feStage,
+        [],
+        () => {},
+        false
+      );
+      await component.updateComplete;
+
+      const buttons = Array.from(
+        component.shadowRoot!.querySelectorAll('sl-button')
+      ).map(b => b.textContent?.trim());
+      assert.deepEqual(buttons, ['Cancel']);
     });
 
     it('openPreflightDialog returns a promise that resolves when user acts', async () => {
@@ -671,7 +750,8 @@ describe('preflight functions', () => {
           feStage,
           feStage,
           [],
-          () => {}
+          () => {},
+          true
         );
         assert.isFalse(component.canVote());
       });
@@ -689,7 +769,8 @@ describe('preflight functions', () => {
           feStage,
           feStage,
           [],
-          () => {}
+          () => {},
+          true
         );
         assert.isTrue(component.canVote());
       });
@@ -707,7 +788,8 @@ describe('preflight functions', () => {
           feStage,
           feStage,
           [],
-          () => {}
+          () => {},
+          true
         );
         assert.isTrue(component.canVote());
       });
@@ -725,7 +807,8 @@ describe('preflight functions', () => {
           feStage,
           feStage,
           [],
-          () => {}
+          () => {},
+          true
         );
         assert.isTrue(component.canVote());
       });
@@ -749,7 +832,8 @@ describe('preflight functions', () => {
           feStage,
           feStage,
           [],
-          () => {}
+          () => {},
+          true
         );
         await component.updateComplete;
 
@@ -772,7 +856,8 @@ describe('preflight functions', () => {
           feStage,
           feStage,
           [],
-          () => {}
+          () => {},
+          true
         );
         await component.updateComplete;
 
@@ -795,7 +880,8 @@ describe('preflight functions', () => {
           feStage,
           feStage,
           [],
-          () => {}
+          () => {},
+          true
         );
         assert.isTrue(component.canEdit());
       });
@@ -847,35 +933,40 @@ describe('preflight functions', () => {
           feStage,
           feStage,
           [],
-          () => {}
+          () => {},
+          true
         );
         await component.updateComplete;
 
         assert.isEmpty(component.shadowRoot!.querySelectorAll('sl-select'));
-        assert.isEmpty(
-          component.shadowRoot!.querySelectorAll('tr.feature-values')
-        );
+        for (const valRow of component.shadowRoot!.querySelectorAll(
+          'tr.feature-values'
+        )) {
+          assert.equal(getComputedStyle(valRow).display, 'none');
+        }
 
-        const stage1Rows = component
+        const stage1StatusRows = component
           .shadowRoot!.querySelectorAll('table.data-table')[0]
-          .querySelectorAll('tr');
+          .querySelectorAll('tbody > tr:first-child');
         assert.equal(
-          stage1Rows[0].querySelectorAll('td')[1].textContent?.trim(),
+          stage1StatusRows[0].querySelectorAll('td')[1].textContent?.trim(),
           'Ready for review'
         );
         assert.isNotNull(
-          stage1Rows[0].querySelector('.status.ready_for_review')
+          stage1StatusRows[0].querySelector('.status.ready_for_review')
         );
         assert.equal(
-          stage1Rows[1].querySelectorAll('td')[1].textContent?.trim(),
+          stage1StatusRows[1].querySelectorAll('td')[1].textContent?.trim(),
           'N/A'
         );
-        assert.isNotNull(stage1Rows[1].querySelector('.status.na'));
+        assert.isNotNull(stage1StatusRows[1].querySelector('.status.na'));
         assert.equal(
-          stage1Rows[2].querySelectorAll('td')[1].textContent?.trim(),
+          stage1StatusRows[2].querySelectorAll('td')[1].textContent?.trim(),
           'Needs work'
         );
-        assert.isNotNull(stage1Rows[2].querySelector('.status.needs_work'));
+        assert.isNotNull(
+          stage1StatusRows[2].querySelector('.status.needs_work')
+        );
 
         const buttons = Array.from(
           component.shadowRoot!.querySelectorAll('sl-button')
@@ -898,6 +989,16 @@ describe('preflight functions', () => {
             set_on: '2026-09-23T00:00:00',
             set_by: 'ChromeStatus',
           },
+          'Spec link': {
+            state: PROGRESS_VOTE_STATE.NEEDS_WORK,
+            set_on: '2026-09-23T00:00:00',
+            set_by: 'reviewer@example.com',
+          },
+          'Draft API spec': {
+            state: PROGRESS_VOTE_STATE.NA,
+            set_on: '2026-09-23T00:00:00',
+            set_by: 'reviewer@example.com',
+          },
         };
 
         component.openWithContext(
@@ -909,7 +1010,8 @@ describe('preflight functions', () => {
           feStage,
           feStage,
           [],
-          () => {}
+          () => {},
+          true
         );
         await component.updateComplete;
 
@@ -918,46 +1020,71 @@ describe('preflight functions', () => {
         assert.equal(selects.length, 5);
         assert.equal(selects[0].dataset.pi, 'Motivation');
         assert.equal(Number(selects[0].value), PROGRESS_VOTE_STATE.VERIFIED);
+        assert.isTrue(selects[0].classList.contains('verified'));
         assert.equal(selects[1].dataset.pi, 'Explainer');
         assert.equal(
           Number(selects[1].value),
           PROGRESS_VOTE_STATE.READY_FOR_REVIEW
         );
+        assert.isTrue(selects[1].classList.contains('ready_for_review'));
         assert.equal(selects[2].dataset.pi, 'Tracking bug URL');
         assert.equal(Number(selects[2].value), PROGRESS_VOTE_STATE.NOT_STARTED);
+        assert.isTrue(selects[2].classList.contains('not_started'));
+        assert.equal(selects[3].dataset.pi, 'Spec link');
+        assert.equal(Number(selects[3].value), PROGRESS_VOTE_STATE.NEEDS_WORK);
+        assert.isTrue(selects[3].classList.contains('needs_work'));
+        assert.equal(selects[4].dataset.pi, 'Draft API spec');
+        assert.equal(Number(selects[4].value), PROGRESS_VOTE_STATE.NA);
+        assert.isTrue(selects[4].classList.contains('na'));
 
         const options = selects[0].querySelectorAll('sl-option');
         assert.equal(options.length, 5);
 
         // Explainer is READY_FOR_REVIEW and user can vote, so its valueRow is shown
-        // (and Edit link moves to valueRow) even though Explainer is not expanded.
-        const stage1Rows = component
+        // (and Edit link on statusRow is hidden) even though Explainer is not expanded.
+        const tbodies = component
           .shadowRoot!.querySelectorAll('table.data-table')[0]
-          .querySelectorAll('tr');
-        // 3 status rows + 1 value row for Explainer = 4 rows (no feedback row since not expanded).
-        assert.equal(stage1Rows.length, 4);
-        assert.isNotNull(
-          stage1Rows[0].querySelectorAll('td')[3].querySelector('a')
-        );
-        assert.isFalse(
-          stage1Rows[1].querySelector('sl-icon')!.classList.contains('expanded')
-        );
-        assert.isNull(
-          stage1Rows[1].querySelectorAll('td')[3].querySelector('a')
-        );
-        assert.isTrue(stage1Rows[2].classList.contains('feature-values'));
+          .querySelectorAll('tbody');
+        assert.equal(tbodies.length, 3);
+        const motivationEditLink = tbodies[0]
+          .querySelector('tr:first-child')!
+          .querySelectorAll('td')[3]
+          .querySelector('a') as HTMLElement;
+        assert.notEqual(getComputedStyle(motivationEditLink).display, 'none');
         assert.equal(
-          stage1Rows[2].querySelectorAll('td')[1].textContent?.trim(),
+          getComputedStyle(tbodies[0].querySelector('tr.feature-values')!)
+            .display,
+          'none'
+        );
+
+        const explainerDetails = tbodies[1].querySelector(
+          'details'
+        ) as HTMLDetailsElement;
+        assert.isFalse(explainerDetails.open);
+        const explainerStatusEditLink = tbodies[1]
+          .querySelector('tr:first-child')!
+          .querySelectorAll('td')[3]
+          .querySelector('a') as HTMLElement;
+        assert.equal(getComputedStyle(explainerStatusEditLink).display, 'none');
+        const explainerValueRow =
+          tbodies[1].querySelector('tr.feature-values')!;
+        assert.equal(getComputedStyle(explainerValueRow).display, 'table-row');
+        assert.equal(
+          explainerValueRow.querySelectorAll('td')[1].textContent?.trim(),
           'Explainer link(s):'
         );
         assert.equal(
-          stage1Rows[2]
+          explainerValueRow
             .querySelectorAll('td')[3]
             .querySelector('a')
             ?.getAttribute('href'),
-          '/guide/stage/123456/1/10#id_explainer_links'
+          '/guide/stage/123456/10#id_explainer_links'
         );
-        assert.isEmpty(component.shadowRoot!.querySelectorAll('tr.feedback'));
+        for (const fbRow of component.shadowRoot!.querySelectorAll(
+          'tr.feedback'
+        )) {
+          assert.equal(getComputedStyle(fbRow).display, 'none');
+        }
 
         const buttons = component.shadowRoot!.querySelectorAll('sl-button');
         assert.equal(buttons.length, 3);
@@ -981,7 +1108,8 @@ describe('preflight functions', () => {
           feStage,
           feStage,
           [],
-          () => {}
+          () => {},
+          true
         );
         await component.updateComplete;
 
@@ -992,12 +1120,14 @@ describe('preflight functions', () => {
           component.shadowRoot!.querySelectorAll('sl-button')[2];
 
         assert.isTrue(getSaveButton().hasAttribute('disabled'));
+        assert.isTrue(explainerSelect.classList.contains('not_started'));
 
         explainerSelect.value = String(PROGRESS_VOTE_STATE.VERIFIED);
         explainerSelect.dispatchEvent(new CustomEvent('sl-change'));
         await component.updateComplete;
 
         assert.isFalse(getSaveButton().hasAttribute('disabled'));
+        assert.isTrue(explainerSelect.classList.contains('verified'));
 
         // Reopening resets dirty state and disables Save again.
         component.openWithContext(
@@ -1009,10 +1139,12 @@ describe('preflight functions', () => {
           feStage,
           feStage,
           [],
-          () => {}
+          () => {},
+          true
         );
         await component.updateComplete;
         assert.isTrue(getSaveButton().hasAttribute('disabled'));
+        assert.isTrue(explainerSelect.classList.contains('not_started'));
       });
 
       it('renders feature-values row and feedback sl-input for voters when expanded', async () => {
@@ -1041,16 +1173,20 @@ describe('preflight functions', () => {
           feStage,
           feStage,
           [],
-          () => {}
+          () => {},
+          true
         );
         await component.updateComplete;
 
         // Explainer has existing feedback and field="explainer_links", so it starts expanded
         // with a feature-values row rendering the explainer link and a populated feedback sl-input.
-        let valueRows =
-          component.shadowRoot!.querySelectorAll('tr.feature-values');
-        assert.equal(valueRows.length, 1);
-        const valueCells = valueRows[0].querySelectorAll('td');
+        const tables =
+          component.shadowRoot!.querySelectorAll('table.data-table');
+        const stage1Tbodies = tables[0].querySelectorAll('tbody');
+        const explainerValueRow =
+          stage1Tbodies[1].querySelector('tr.feature-values')!;
+        assert.equal(getComputedStyle(explainerValueRow).display, 'table-row');
+        const valueCells = explainerValueRow.querySelectorAll('td');
         assert.equal(valueCells.length, 4);
         assert.equal(valueCells[0].textContent?.trim(), '');
         assert.equal(valueCells[1].textContent?.trim(), 'Explainer link(s):');
@@ -1062,7 +1198,7 @@ describe('preflight functions', () => {
         );
         assert.equal(
           valueCells[3].querySelector('a')?.getAttribute('href'),
-          '/guide/stage/123456/1/10#id_explainer_links'
+          '/guide/stage/123456/10#id_explainer_links'
         );
         assert.equal(getComputedStyle(valueCells[0]).borderTopStyle, 'none');
 
@@ -1072,32 +1208,29 @@ describe('preflight functions', () => {
         assert.isNotNull(explainerInput);
         assert.equal(explainerInput!.value, 'Existing feedback');
 
-        // Motivation has no existing feedback and starts collapsed.
-        assert.isNull(
-          component.shadowRoot!.querySelector(
-            '.feedback-widget[data-pi="Motivation"]'
-          )
-        );
+        // Motivation has no existing feedback and starts collapsed (rows hidden via CSS).
+        const motivationValueRow =
+          stage1Tbodies[0].querySelector('tr.feature-values')!;
+        const motivationFeedbackRow =
+          stage1Tbodies[0].querySelector('tr.feedback')!;
+        assert.equal(getComputedStyle(motivationValueRow).display, 'none');
+        assert.equal(getComputedStyle(motivationFeedbackRow).display, 'none');
 
-        // Expanding Motivation (which has no value on featureWithValues) renders its
-        // feature-values row with "No information provided yet" and an empty feedback sl-input.
-        const tables =
-          component.shadowRoot!.querySelectorAll('table.data-table');
-        const stage1Rows = tables[0].querySelectorAll('tr');
-        const motivationCaret = stage1Rows[0].querySelector(
-          'sl-icon'
-        ) as HTMLElement;
-        motivationCaret.click();
-        await component.updateComplete;
+        // Expanding Motivation reveals its feature-values row with "No information provided yet"
+        // and its empty feedback sl-input.
+        stage1Tbodies[0].querySelector('summary')!.click();
+        assert.equal(getComputedStyle(motivationValueRow).display, 'table-row');
+        assert.equal(
+          getComputedStyle(motivationFeedbackRow).display,
+          'table-row'
+        );
 
         const motivationInput = component.shadowRoot!.querySelector<SlInput>(
           '.feedback-widget[data-pi="Motivation"]'
         );
         assert.isNotNull(motivationInput);
         assert.equal(motivationInput!.value, '');
-        valueRows = component.shadowRoot!.querySelectorAll('tr.feature-values');
-        assert.equal(valueRows.length, 2);
-        const motivationValueCells = valueRows[0].querySelectorAll('td');
+        const motivationValueCells = motivationValueRow.querySelectorAll('td');
         assert.equal(
           motivationValueCells[1].textContent?.trim(),
           'Motivation:'
@@ -1108,26 +1241,25 @@ describe('preflight functions', () => {
         );
         assert.equal(
           motivationValueCells[3].querySelector('a')?.getAttribute('href'),
-          '/guide/stage/123456/1/10#id_motivation'
+          '/guide/stage/123456/10#id_motivation'
         );
 
-        // Expanding "Draft API spec" (which has no field) renders feedback sl-input
-        // without adding another feature-values row.
-        const stage2Rows = tables[1].querySelectorAll('tr');
-        const draftSpecCaret = stage2Rows[1].querySelector(
-          'sl-icon'
-        ) as HTMLElement;
-        draftSpecCaret.click();
-        await component.updateComplete;
-
+        // Expanding "Draft API spec" (which has no field) reveals its feedback row
+        // and has no feature-values row.
+        const stage2Tbodies = tables[1].querySelectorAll('tbody');
+        assert.isNull(stage2Tbodies[1].querySelector('tr.feature-values'));
+        const draftSpecFeedbackRow =
+          stage2Tbodies[1].querySelector('tr.feedback')!;
+        assert.equal(getComputedStyle(draftSpecFeedbackRow).display, 'none');
+        stage2Tbodies[1].querySelector('summary')!.click();
+        assert.equal(
+          getComputedStyle(draftSpecFeedbackRow).display,
+          'table-row'
+        );
         assert.isNotNull(
           component.shadowRoot!.querySelector(
             '.feedback-widget[data-pi="Draft API spec"]'
           )
-        );
-        assert.equal(
-          component.shadowRoot!.querySelectorAll('tr.feature-values').length,
-          2
         );
       });
 
@@ -1146,46 +1278,48 @@ describe('preflight functions', () => {
           feStage,
           feStage,
           [],
-          () => {}
+          () => {},
+          true
         );
         await component.updateComplete;
 
         const explainerSelect = component.shadowRoot!.querySelector<SlSelect>(
           '.state-widget[data-pi="Explainer"]'
         )!;
-        assert.isNull(
-          component.shadowRoot!.querySelector(
-            '.feedback-widget[data-pi="Explainer"]'
-          )
-        );
+        const explainerDetails =
+          component.shadowRoot!.querySelector<HTMLDetailsElement>(
+            'details[data-pi="Explainer"]'
+          )!;
+        const explainerFeedbackRow = explainerDetails
+          .closest('tbody')!
+          .querySelector('tr.feedback')!;
+        assert.isFalse(explainerDetails.open);
+        assert.equal(getComputedStyle(explainerFeedbackRow).display, 'none');
 
         // Selecting VERIFIED does not auto-expand.
         explainerSelect.value = String(PROGRESS_VOTE_STATE.VERIFIED);
         explainerSelect.dispatchEvent(new CustomEvent('sl-change'));
         await component.updateComplete;
-        assert.isNull(
-          component.shadowRoot!.querySelector(
-            '.feedback-widget[data-pi="Explainer"]'
-          )
-        );
+        assert.isFalse(explainerDetails.open);
+        assert.equal(getComputedStyle(explainerFeedbackRow).display, 'none');
 
-        // Selecting NEEDS_WORK auto-expands the item and reveals the feedback input.
+        // Selecting NEEDS_WORK auto-expands the item and reveals the feedback row.
         explainerSelect.value = String(PROGRESS_VOTE_STATE.NEEDS_WORK);
         explainerSelect.dispatchEvent(new CustomEvent('sl-change'));
         await component.updateComplete;
-        assert.isNotNull(
-          component.shadowRoot!.querySelector(
-            '.feedback-widget[data-pi="Explainer"]'
-          )
+        assert.isTrue(explainerDetails.open);
+        assert.equal(
+          getComputedStyle(explainerFeedbackRow).display,
+          'table-row'
         );
 
         // Dispatching NEEDS_WORK again when already expanded keeps it expanded.
         explainerSelect.dispatchEvent(new CustomEvent('sl-change'));
         await component.updateComplete;
-        assert.isNotNull(
-          component.shadowRoot!.querySelector(
-            '.feedback-widget[data-pi="Explainer"]'
-          )
+        assert.isTrue(explainerDetails.open);
+        assert.equal(
+          getComputedStyle(explainerFeedbackRow).display,
+          'table-row'
         );
       });
 
@@ -1215,7 +1349,8 @@ describe('preflight functions', () => {
           feStage,
           feStage,
           [],
-          () => {}
+          () => {},
+          true
         );
         await component.updateComplete;
 
@@ -1245,7 +1380,7 @@ describe('preflight functions', () => {
         );
       });
 
-      it('posts only touched votes, disables controls while saving, fires refetch-needed, and closes dialog on Save', async () => {
+      it('posts only touched votes, disables controls while saving, calls app.refetch(), and closes dialog on Save', async () => {
         let resolvePost!: (value?: unknown) => void;
         const postStub = sinon
           .stub(window.csClient, 'postFeatureProgressVote')
@@ -1268,79 +1403,88 @@ describe('preflight functions', () => {
         const resolveDialogStub = sinon.stub();
         const hideSpy = sinon.spy(component, 'hide');
         const refetchSpy = sinon.spy();
-        component.addEventListener('refetch-needed', refetchSpy);
-
-        component.openWithContext(
-          voterUser,
-          feature,
-          progress,
-          process,
-          action,
-          feStage,
-          feStage,
-          [],
-          resolveDialogStub
+        const fakeApp = Object.assign(
+          document.createElement('chromedash-app'),
+          {refetch: refetchSpy}
         );
-        await component.updateComplete;
+        document.body.appendChild(fakeApp);
 
-        const explainerSelect = component.shadowRoot!.querySelector<SlSelect>(
-          '.state-widget[data-pi="Explainer"]'
-        )!;
-        const specLinkSelect = component.shadowRoot!.querySelector<SlSelect>(
-          '.state-widget[data-pi="Spec link"]'
-        )!;
+        try {
+          component.openWithContext(
+            voterUser,
+            feature,
+            progress,
+            process,
+            action,
+            feStage,
+            feStage,
+            [],
+            resolveDialogStub,
+            true
+          );
+          await component.updateComplete;
 
-        explainerSelect.value = String(PROGRESS_VOTE_STATE.VERIFIED);
-        explainerSelect.dispatchEvent(new CustomEvent('sl-change'));
-        specLinkSelect.value = String(PROGRESS_VOTE_STATE.NEEDS_WORK);
-        specLinkSelect.dispatchEvent(new CustomEvent('sl-change'));
-        await component.updateComplete;
+          const explainerSelect = component.shadowRoot!.querySelector<SlSelect>(
+            '.state-widget[data-pi="Explainer"]'
+          )!;
+          const specLinkSelect = component.shadowRoot!.querySelector<SlSelect>(
+            '.state-widget[data-pi="Spec link"]'
+          )!;
 
-        // Spec link auto-expanded on NEEDS_WORK; enter feedback with whitespace.
-        const specLinkFeedback = component.shadowRoot!.querySelector<SlInput>(
-          '.feedback-widget[data-pi="Spec link"]'
-        )!;
-        specLinkFeedback.value = '  Please fix broken anchor  ';
-        specLinkFeedback.dispatchEvent(new CustomEvent('sl-change'));
-        await component.updateComplete;
+          explainerSelect.value = String(PROGRESS_VOTE_STATE.VERIFIED);
+          explainerSelect.dispatchEvent(new CustomEvent('sl-change'));
+          specLinkSelect.value = String(PROGRESS_VOTE_STATE.NEEDS_WORK);
+          specLinkSelect.dispatchEvent(new CustomEvent('sl-change'));
+          await component.updateComplete;
 
-        const getSaveButton = () =>
-          component.shadowRoot!.querySelectorAll('sl-button')[2];
-        getSaveButton().click();
-        await component.updateComplete;
+          // Spec link auto-expanded on NEEDS_WORK; enter feedback with whitespace.
+          const specLinkFeedback = component.shadowRoot!.querySelector<SlInput>(
+            '.feedback-widget[data-pi="Spec link"]'
+          )!;
+          specLinkFeedback.value = '  Please fix broken anchor  ';
+          specLinkFeedback.dispatchEvent(new CustomEvent('sl-change'));
+          await component.updateComplete;
 
-        // While saving, button shows Saving... and controls are disabled.
-        assert.equal(getSaveButton().textContent?.trim(), 'Saving...');
-        assert.isTrue(getSaveButton().hasAttribute('disabled'));
-        assert.isTrue(explainerSelect.disabled);
+          const getSaveButton = () =>
+            component.shadowRoot!.querySelectorAll('sl-button')[2];
+          getSaveButton().click();
+          await component.updateComplete;
 
-        // Only the two touched items are posted.
-        assert.isTrue(postStub.calledTwice);
-        assert.isTrue(
-          postStub.calledWithExactly(
-            123456,
-            'Explainer',
-            PROGRESS_VOTE_STATE.VERIFIED,
-            ''
-          )
-        );
-        assert.isTrue(
-          postStub.calledWithExactly(
-            123456,
-            'Spec link',
-            PROGRESS_VOTE_STATE.NEEDS_WORK,
-            'Please fix broken anchor'
-          )
-        );
+          // While saving, button shows Saving... and controls are disabled.
+          assert.equal(getSaveButton().textContent?.trim(), 'Saving...');
+          assert.isTrue(getSaveButton().hasAttribute('disabled'));
+          assert.isTrue(explainerSelect.disabled);
 
-        resolvePost({message: 'Done'});
-        await new Promise(resolve => setTimeout(resolve, 0));
-        await component.updateComplete;
+          // Only the two touched items are posted.
+          assert.isTrue(postStub.calledTwice);
+          assert.isTrue(
+            postStub.calledWithExactly(
+              123456,
+              'Explainer',
+              PROGRESS_VOTE_STATE.VERIFIED,
+              ''
+            )
+          );
+          assert.isTrue(
+            postStub.calledWithExactly(
+              123456,
+              'Spec link',
+              PROGRESS_VOTE_STATE.NEEDS_WORK,
+              'Please fix broken anchor'
+            )
+          );
 
-        assert.isTrue(hideSpy.calledOnce);
-        assert.isTrue(resolveDialogStub.calledOnceWithExactly(false));
-        assert.isTrue(refetchSpy.calledOnce);
-        assert.equal(getSaveButton().textContent?.trim(), 'Save');
+          resolvePost({message: 'Done'});
+          await new Promise(resolve => setTimeout(resolve, 0));
+          await component.updateComplete;
+
+          assert.isTrue(hideSpy.calledOnce);
+          assert.isTrue(resolveDialogStub.calledOnceWithExactly(false));
+          assert.isTrue(refetchSpy.calledOnce);
+          assert.equal(getSaveButton().textContent?.trim(), 'Save');
+        } finally {
+          fakeApp.remove();
+        }
       });
     });
   });

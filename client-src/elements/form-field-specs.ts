@@ -16,7 +16,7 @@
 
 import {html, TemplateResult} from 'lit';
 import {Feature, StageDict} from '../js-src/cs-client.js';
-import {FormattedFeature} from './form-definition.js';
+import {FormattedFeature, unambiguousStageName} from './form-definition.js';
 import {
   ALL_FEATURE_TYPE_DEPRECATION_INTENTS,
   ALL_FEATURE_TYPE_EXISTING_INTENTS,
@@ -46,7 +46,6 @@ import {
   WEB_DEV_VIEWS,
   WEBFEATURE_USE_COUNTER_TYPES,
 } from './form-field-enums.js';
-import {unambiguousStageName} from './utils.js';
 
 interface FieldAttrs {
   title?: string;

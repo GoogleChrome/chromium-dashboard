@@ -18,6 +18,7 @@ import {
   MessageResponse,
   SummarySuggestionPatchRequest,
   SummarySuggestionResponse,
+  WebFeatureInfosResponse,
 } from 'chromestatus-openapi';
 
 export interface FeatureLink {
@@ -50,7 +51,6 @@ export interface StageDict {
   feature_id: number;
   stage_type: number;
   display_name: string;
-  intent_stage: number;
   intent_thread_url?: string;
   announcement_url?: string;
   origin_trial_id?: string;
@@ -908,6 +908,10 @@ export class ChromeStatusClient {
   // Web Features API
   async getWebFeatureIDs(): Promise<unknown> {
     return this.doGet('/web_feature_ids');
+  }
+
+  async getWebFeatureInfos(): Promise<WebFeatureInfosResponse> {
+    return this.doGet('/web_feature_infos') as Promise<WebFeatureInfosResponse>;
   }
 
   // Webdx Feature UseCounter enums

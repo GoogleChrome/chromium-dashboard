@@ -1036,11 +1036,8 @@ class FetchWebdxFeatureId(FlaskHandler):
                 )
                 return 'Running FetchWebdxFeatureId() job failed.'
 
-        feature_ids_list = [
-            feature_data.feature_id for feature_data in all_data_list
-        ]
-        WebdxFeatures.store_webdx_feature_id_list(feature_ids_list)
-        return f'{len(feature_ids_list)} feature ids are successfully stored.'
+        WebdxFeatures.store_webdx_feature_infos(all_data_list)
+        return f'{len(all_data_list)} feature ids are successfully stored.'
 
 
 class SendManualOTCreatedEmail(FlaskHandler):

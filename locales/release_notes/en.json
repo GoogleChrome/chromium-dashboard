@@ -1,6 +1,7 @@
 {
   "page_title": "Chrome {milestone} Release Notes",
   "preview_badge": "Preview",
+  "pending_review": "Pending review",
   "scheduled_stable_release": "Scheduled Stable Release {date}",
   "currently_on_beta": "(Currently on Beta channel)",
   "currently_on_dev": "(Currently on Dev channel, reaches Beta on {date})",
