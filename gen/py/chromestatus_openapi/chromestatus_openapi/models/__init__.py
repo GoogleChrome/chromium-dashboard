@@ -94,3 +94,5 @@ from chromestatus_openapi.models.token_refresh_response import TokenRefreshRespo
 from chromestatus_openapi.models.user_permissions import UserPermissions
 from chromestatus_openapi.models.verify_continuity_issue_response import VerifyContinuityIssueResponse
 from chromestatus_openapi.models.vote import Vote
+from chromestatus_openapi.models.web_feature_info import WebFeatureInfo
+from chromestatus_openapi.models.web_feature_infos_response import WebFeatureInfosResponse

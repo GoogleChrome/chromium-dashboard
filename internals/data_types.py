@@ -36,7 +36,6 @@ class StageDict(TypedDict):
     feature_id: int
     stage_type: int
     display_name: str
-    intent_stage: int
     intent_thread_url: str | None
 
     # Dev trial specific fields.

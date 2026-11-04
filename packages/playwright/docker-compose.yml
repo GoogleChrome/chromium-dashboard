@@ -79,6 +79,10 @@ services:
       - SERVER_SOFTWARE=Development
       - DATASTORE_PROJECT_ID=cr-status-staging
       - DATASTORE_EMULATOR_HOST=localhost:15607
+      # Enables server-side test stubs (e.g., Chrome channel/milestone data)
+      # so the app does not make live, uncached requests to external services
+      # like Omaha and chromiumdash during tests.
+      - PLAYWRIGHT_MODE=true
   debugapp:
     <<: *myapp
     command: bash -c "source cs-env/bin/activate; env && whoami && npm run debug-app"

@@ -1,6 +1,7 @@
 {
   "page_title": "Chrome {milestone} リリースノート",
   "preview_badge": "プレビュー",
+  "pending_review": "レビュー待ち",
   "scheduled_stable_release": "安定版のリリース予定日: {date}",
   "currently_on_beta": "(現在 Beta チャンネル)",
   "currently_on_dev": "(現在 Dev チャンネル、{date}に Beta に到達)",

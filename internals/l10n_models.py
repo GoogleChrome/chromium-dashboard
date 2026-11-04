@@ -119,6 +119,7 @@ class ReleaseNotesKey(StrEnum):
     # UI Strings
     PAGE_TITLE = 'page_title'
     PREVIEW_BADGE = 'preview_badge'
+    PENDING_REVIEW = 'pending_review'
     SCHEDULED_STABLE_RELEASE = 'scheduled_stable_release'
     CURRENTLY_ON_BETA = 'currently_on_beta'
     CURRENTLY_ON_DEV = 'currently_on_dev'
@@ -217,6 +218,7 @@ class ReleaseNoteFeatureDict(TypedDict, total=False):
     category_name: str
     milestone_classification: int
     links: list[ReleaseNoteLinkItem]
+    is_pending_review: bool
 
 
 @dataclasses.dataclass(frozen=True)
@@ -226,6 +228,7 @@ class ReleaseNotesTranslations:
     # UI Strings
     page_title: str
     preview_badge: str
+    pending_review: str
     scheduled_stable_release: str
     currently_on_beta: str
     currently_on_dev: str
@@ -394,6 +397,7 @@ class ReleaseNotesTranslations:
         return {
             'page_title': self.page_title.format(milestone=milestone),
             'preview_badge': self.preview_badge,
+            'pending_review': self.pending_review,
             'scheduled_stable_release': (
                 self.scheduled_stable_release.format(date=stable_date)
                 if stable_date

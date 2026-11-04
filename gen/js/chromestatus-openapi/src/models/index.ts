@@ -94,3 +94,5 @@ export * from './TokenRefreshResponse';
 export * from './UserPermissions';
 export * from './VerifyContinuityIssueResponse';
 export * from './Vote';
+export * from './WebFeatureInfo';
+export * from './WebFeatureInfosResponse';
