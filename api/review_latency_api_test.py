@@ -161,3 +161,13 @@ class ReviewLatencyAPITest(testing_config.CustomTestCase):
             },
         ]
         self.assertEqual(expected, actual)
+
+    def test_get_features_by_id__empty_and_missing(self):
+        """get_features_by_id handles empty iterables and missing IDs."""
+        self.assertEqual([], self.handler.get_features_by_id([]))
+        features = self.handler.get_features_by_id(
+            [self.fe_2_id, 999999, self.fe_1_id]
+        )
+        self.assertEqual(
+            [self.fe_1_id, self.fe_2_id], [f.key.integer_id() for f in features]
+        )

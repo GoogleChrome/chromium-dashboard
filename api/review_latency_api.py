@@ -86,17 +86,12 @@ class ReviewLatencyAPI(basehandlers.APIHandler):
 
     def get_features_by_id(
         self, feature_ids: Iterable[int]
-    ) -> dict[int, FeatureEntry]:
-        """Retrieve features by ID and return them in a dict."""
+    ) -> list[FeatureEntry]:
+        """Retrieve features by ID and return them in a list."""
         if not feature_ids:
-            return {}  # We cannot pass an empty list to IN().
-        query = FeatureEntry.query(
-            FeatureEntry.key.IN(
-                [ndb.Key('FeatureEntry', id) for id in feature_ids]
-            )
-        )
-        features = query.fetch()
-        return features
+            return []
+        keys = [ndb.Key('FeatureEntry', id) for id in sorted(feature_ids)]
+        return [f for f in ndb.get_multi(keys) if f is not None]
 
     def earliest_request(self, feature_gates: list[Gate]) -> datetime:
         """Return the time of the earliest reivew request among the given gates."""

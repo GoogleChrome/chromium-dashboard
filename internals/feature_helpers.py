@@ -146,22 +146,23 @@ def filter_confidential(feature_list: list[FeatureEntry]) -> list[FeatureEntry]:
     return [f for f in feature_list if permissions.can_view_feature(user, f)]
 
 
-def get_entries_by_id_async(ids) -> Future | None:
+def get_entries_by_id_async(ids) -> list[Future] | None:
     """Asynchronously fetches FeatureEntry objects by their IDs."""
     if ids:
-        q = FeatureEntry.query(
-            FeatureEntry.key.IN([ndb.Key('FeatureEntry', id) for id in ids])
-        )
-        q = q.order(FeatureEntry.name)
-        return q.fetch_async()
+        return ndb.get_multi_async([ndb.Key('FeatureEntry', id) for id in ids])
     return None
 
 
-def get_future_results(async_features: Future | None) -> list[FeatureEntry]:
-    """Retrieve the results from a Future containing a list of FeatureEntries."""
-    if async_features is None:
+def get_future_results(
+    async_features: list[Future] | None,
+) -> list[FeatureEntry]:
+    """Retrieve the results from a Future list containing FeatureEntries."""
+    if not async_features:
         return []
-    return async_features.result()
+    features = [f.result() for f in async_features]
+    valid_features = [f for f in features if f is not None]
+    valid_features.sort(key=lambda f: f.name or '')
+    return valid_features
 
 
 def _filter_out_wp_features_lacking_enterprise_approval(
