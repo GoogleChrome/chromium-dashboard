@@ -116,3 +116,45 @@ class UserPrefTest(testing_config.CustomTestCase):
         user_prefs = user_models.UserPref.get_prefs_for_emails(emails)
         self.assertEqual(100, len(user_prefs))
         self.assertEqual('user_0@example.com', user_prefs[0].email)
+
+
+class AppUserTest(testing_config.CustomTestCase):
+    """Tests for the AppUser model and caching."""
+
+    def test_get_app_user__negative_cache_and_invalidation(self):
+        """Non-existent AppUser lookups are cached and invalidated on put()."""
+        email = 'regular_user@example.com'
+        with mock.patch.object(
+            user_models.AppUser, 'query', wraps=user_models.AppUser.query
+        ) as mock_query:
+            self.assertIsNone(user_models.AppUser.get_app_user(email))
+            self.assertIsNone(user_models.AppUser.get_app_user(email))
+            mock_query.assert_called_once()
+
+        # Creating the AppUser invalidates the negative cache entry.
+        app_user = user_models.AppUser(email=email, is_admin=True)
+        app_user.put()
+        found = user_models.AppUser.get_app_user(email)
+        self.assertIsNotNone(found)
+        self.assertTrue(found.is_admin)
+
+        # Deleting the AppUser invalidates the cache entry again.
+        app_user.delete()
+        self.assertIsNone(user_models.AppUser.get_app_user(email))
+
+    def test_get_app_user__different_casing_does_not_poison_cache(self):
+        """A negative lookup with different casing does not mask an existing AppUser."""
+        app_user = user_models.AppUser(
+            email='mixedcase@example.com', is_admin=True
+        )
+        app_user.put()
+        self.assertIsNone(
+            user_models.AppUser.get_app_user('MixedCase@Example.com')
+        )
+        found = user_models.AppUser.get_app_user('mixedcase@example.com')
+        self.assertIsNotNone(found)
+        self.assertTrue(found.is_admin)
+        app_user.delete()
+        self.assertIsNone(
+            user_models.AppUser.get_app_user('mixedcase@example.com')
+        )
