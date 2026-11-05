@@ -263,6 +263,9 @@ api_routes: list[Route] = [
     ),
     # This is for the menu of web feature IDs.
     Route(f'{API_BASE}/web_feature_ids', webdx_feature_api.WebFeatureIDsAPI),
+    Route(
+        f'{API_BASE}/web_feature_infos', webdx_feature_api.WebFeatureInfosAPI
+    ),
     # This is for the menu of webdx use counters.
     Route(f'{API_BASE}/webdxfeatures', webdx_feature_api.WebdxFeatureAPI),
     Route(

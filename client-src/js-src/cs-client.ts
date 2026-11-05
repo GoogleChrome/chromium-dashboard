@@ -18,6 +18,7 @@ import {
   MessageResponse,
   SummarySuggestionPatchRequest,
   SummarySuggestionResponse,
+  WebFeatureInfosResponse,
 } from 'chromestatus-openapi';
 
 export interface FeatureLink {
@@ -907,6 +908,10 @@ export class ChromeStatusClient {
   // Web Features API
   async getWebFeatureIDs(): Promise<unknown> {
     return this.doGet('/web_feature_ids');
+  }
+
+  async getWebFeatureInfos(): Promise<WebFeatureInfosResponse> {
+    return this.doGet('/web_feature_infos') as Promise<WebFeatureInfosResponse>;
   }
 
   // Webdx Feature UseCounter enums

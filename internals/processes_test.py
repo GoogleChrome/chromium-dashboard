@@ -211,6 +211,56 @@ class ProcessesWellFormedTest(testing_config.CustomTestCase):
                     stage.actions[0].gate_types,
                 )
 
+    def test_deprecation_dq_actions(self):
+        """Deprecation plan and shipping stages have DQ review actions with expected checklists."""
+        plan_stage = next(
+            stage
+            for stage in processes.DEPRECATION_PROCESS.stages
+            if stage.stage_type == core_enums.STAGE_DEP_PLAN
+        )
+        plan_dq_actions = [
+            action
+            for action in plan_stage.actions
+            if core_enums.GATE_DQ_PLAN in action.gate_types
+        ]
+        self.assertEqual(1, len(plan_dq_actions))
+        self.assertEqual(
+            [pi.name for pi in processes.DQ_CHECKLIST_DEP_PLAN],
+            plan_dq_actions[0].prerequisites,
+        )
+        for dev_pi in processes.PI_GROUP_DEVS_DEP:
+            self.assertNotIn(dev_pi, processes.DQ_CHECKLIST_DEP_PLAN)
+
+        ship_stage = next(
+            stage
+            for stage in processes.DEPRECATION_PROCESS.stages
+            if stage.stage_type == core_enums.STAGE_DEP_SHIPPING
+        )
+        ship_dq_actions = [
+            action
+            for action in ship_stage.actions
+            if core_enums.GATE_DQ_SHIP in action.gate_types
+        ]
+        self.assertEqual(1, len(ship_dq_actions))
+        self.assertEqual(
+            [pi.name for pi in processes.DQ_CHECKLIST_DEP_SHIP],
+            ship_dq_actions[0].prerequisites,
+        )
+        for dev_pi in processes.PI_GROUP_DEVS_DEP:
+            self.assertIn(dev_pi, processes.DQ_CHECKLIST_DEP_SHIP)
+        for milestone_pi in processes.PI_GROUP_MILESTONES:
+            self.assertIn(milestone_pi, processes.DQ_CHECKLIST_DEP_SHIP)
+
+    def test_progress_items_have_detectors(self):
+        """Every ProgressItem with a field across all processes has a detector in PROGRESS_DETECTORS."""
+        from internals import progress
+
+        for process in processes.ALL_PROCESSES.values():
+            for stage in process.stages:
+                for pi in stage.progress_items:
+                    if pi.field:
+                        self.assertIn(pi.name, progress.PROGRESS_DETECTORS)
+
 
 class WriteGatesAndStagesForFeatureTest(testing_config.CustomTestCase):
     """Tests for write_gates_and_stages_for_feature."""

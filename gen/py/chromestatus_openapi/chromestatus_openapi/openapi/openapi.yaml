@@ -1659,6 +1659,18 @@ paths:
           description: List the Web Feature IDs.
       summary: Get Baseline web feature IDs
       x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+  /web_feature_infos:
+    get:
+      operationId: get_web_feature_infos
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WebFeatureInfosResponse'
+          description: List the Web Feature Infos.
+      summary: Get Baseline web feature infos
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
 components:
   parameters:
     startAtParam:
@@ -3525,6 +3537,39 @@ components:
           title: count
           type: integer
       title: CounterEntry
+      type: object
+    WebFeatureInfosResponse:
+      example:
+        data:
+        - feature_id: feature_id
+          status: status
+        - feature_id: feature_id
+          status: status
+      properties:
+        data:
+          items:
+            $ref: '#/components/schemas/WebFeatureInfo'
+          title: data
+          type: array
+      required:
+      - data
+      title: WebFeatureInfosResponse
+      type: object
+    WebFeatureInfo:
+      example:
+        feature_id: feature_id
+        status: status
+      properties:
+        feature_id:
+          title: feature_id
+          type: string
+        status:
+          title: status
+          type: string
+      required:
+      - feature_id
+      - status
+      title: WebFeatureInfo
       type: object
     PermissionsResponse:
       example:
