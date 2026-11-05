@@ -51,6 +51,7 @@ from chromestatus_openapi.models.summary_suggestion_list_response import Summary
 from chromestatus_openapi.models.summary_suggestion_patch_request import SummarySuggestionPatchRequest  # noqa: E501
 from chromestatus_openapi.models.summary_suggestion_response import SummarySuggestionResponse  # noqa: E501
 from chromestatus_openapi.models.summary_suggestion_trigger_request import SummarySuggestionTriggerRequest  # noqa: E501
+from chromestatus_openapi.models.web_feature_infos_response import WebFeatureInfosResponse  # noqa: E501
 from chromestatus_openapi import util
 
 
@@ -541,6 +542,17 @@ def get_web_feature_ids():  # noqa: E501
 
 
     :rtype: Union[List[str], Tuple[List[str], int], Tuple[List[str], int, Dict[str, str]]
+    """
+    return 'do some magic!'
+
+
+def get_web_feature_infos():  # noqa: E501
+    """Get Baseline web feature infos
+
+     # noqa: E501
+
+
+    :rtype: Union[WebFeatureInfosResponse, Tuple[WebFeatureInfosResponse, int], Tuple[WebFeatureInfosResponse, int, Dict[str, str]]
     """
     return 'do some magic!'
 

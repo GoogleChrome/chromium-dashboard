@@ -134,49 +134,32 @@ export async function login(page) {
   // can occur in Chrome when not logged in.
   acceptAlertDialogs(page);
 
+  // Sign in through the dev-mode endpoint before loading any page.  The
+  // browser context shares cookies with page.request.
+  // Clicking the dev-mode sign-in button on a loaded page is racy: the page's
+  // in-flight API requests can finish after the sign-in request, and since
+  // every API response re-sends the session cookie, they can overwrite the new
+  // signed-in session with the old signed-out one.
+  const loginResponse = await page.request.post('/dev/mock_login');
+  expect(loginResponse.ok()).toBeTruthy();
+
   await page.goto('/', {timeout: 20000});
   await page.waitForURL('**/roadmap', {timeout: 20000});
 
   await expect(page).toHaveTitle(/Chrome Status/);
 
-  // Check whether we are already or still logged in.
-  // We use the presence of the 'dev-mode-sign-in-button' as the definitive
-  // indicator of "Not Logged In" because the Account Indicator layout varies.
-  const loginButton = page.getByTestId('dev-mode-sign-in-button');
-
-  if (await loginButton.isHidden()) {
-    // If the login button is hidden, we assume we are logged in.
-    return;
-  }
-
-  // Expect login button to be present now.
-  await expect(loginButton).toBeVisible();
-
-  // Click login and wait for the page reload that the button triggers.
-  // We cannot use waitForURL because the URL might be the same.
-  // Waiting for 'domcontentloaded' ensures the reload has actually happened.
-  await Promise.all([
-    page.waitForEvent('domcontentloaded'),
-    loginButton.click(),
-  ]);
-
   // Validate successful login.
-  await expect(page).toHaveTitle(/Chrome Status/);
-
   if (await isMobile(page)) {
     // On mobile, the account indicator is hidden inside the drawer.
-    // Verifying that the login button is GONE is sufficient proof of login.
-    await expect(loginButton).not.toBeVisible();
+    // The 'create-feature-button' in the drawer is only rendered for
+    // signed-in users.
+    await expect(page.getByTestId('create-feature-button')).toBeAttached({
+      timeout: 10000,
+    });
   } else {
     // On desktop, we can verify the account indicator is visible in the header.
     const accountIndicator = page.getByTestId('account-indicator');
-    try {
-      await expect(accountIndicator).toBeVisible({timeout: 10000});
-    } catch {
-      console.log('Account indicator not found immediately. Reloading...');
-      await page.reload();
-      await expect(accountIndicator).toBeVisible({timeout: 10000});
-    }
+    await expect(accountIndicator).toBeVisible({timeout: 10000});
   }
 }
 

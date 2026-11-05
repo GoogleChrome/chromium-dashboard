@@ -17,6 +17,8 @@
 import {html} from 'lit';
 import {assert, fixture} from '@open-wc/testing';
 import {ChromedashGuideNewPage} from './chromedash-guide-new-page.js';
+import {ChromedashFormField} from './chromedash-form-field.js';
+import {FEATURE_TYPES} from './form-field-enums.js';
 import {ChromeStatusClient} from '../js-src/cs-client.js';
 import sinon from 'sinon';
 
@@ -138,6 +140,97 @@ describe('chromedash-guide-new-page', () => {
     assert.isTrue(
       navigateStub.calledOnceWith('/guide/editall/54321#id_rollout_milestone')
     );
+
+    createFeatureStub.restore();
+    navigateStub.restore();
+  });
+
+  it('maybeMakeWebFeatureRequired hides web_feature for code change features and filters it on submit', async () => {
+    const component = await fixture<ChromedashGuideNewPage>(
+      html`<chromedash-guide-new-page .userEmail=${'user@gmail.com'}>
+      </chromedash-guide-new-page>`
+    );
+    await component.updateComplete;
+
+    const webFeatureField =
+      component.shadowRoot?.querySelector<ChromedashFormField>(
+        'chromedash-form-field[name="web_feature"]'
+      )!;
+    assert.exists(webFeatureField);
+
+    const featureTypeIndex = component.fieldValues.findIndex(
+      fv => fv.name === 'feature_type'
+    );
+    const webFeatureIndex = component.fieldValues.findIndex(
+      fv => fv.name === 'web_feature'
+    );
+    assert.notEqual(featureTypeIndex, -1);
+    assert.notEqual(webFeatureIndex, -1);
+
+    // Simulate user typing a web_feature value.
+    component.handleFormFieldUpdate({
+      detail: {value: 'grid', index: webFeatureIndex},
+    });
+    assert.equal(component.fieldValues[webFeatureIndex].value, 'grid');
+    assert.isTrue(webFeatureField.forceRequired);
+
+    // Switch feature_type to FEATURE_TYPE_CODE_CHANGE_ID.
+    component.handleFormFieldUpdate({
+      detail: {
+        value: FEATURE_TYPES.FEATURE_TYPE_CODE_CHANGE_ID[0],
+        index: featureTypeIndex,
+      },
+    });
+
+    assert.equal(webFeatureField.style.display, 'none');
+    assert.isFalse(webFeatureField.forceRequired);
+    // Value remains in fieldValues while editing in case user unhides the field.
+    assert.equal(component.fieldValues[webFeatureIndex].value, 'grid');
+
+    // Switch feature_type to FEATURE_TYPE_INCUBATE_ID and verify restoration.
+    component.handleFormFieldUpdate({
+      detail: {
+        value: FEATURE_TYPES.FEATURE_TYPE_INCUBATE_ID[0],
+        index: featureTypeIndex,
+      },
+    });
+
+    assert.equal(webFeatureField.style.display, '');
+    assert.isTrue(webFeatureField.forceRequired);
+    assert.equal(component.fieldValues[webFeatureIndex].value, 'grid');
+
+    // Switch back to FEATURE_TYPE_CODE_CHANGE_ID and submit the form.
+    component.handleFormFieldUpdate({
+      detail: {
+        value: FEATURE_TYPES.FEATURE_TYPE_CODE_CHANGE_ID[0],
+        index: featureTypeIndex,
+      },
+    });
+
+    const navigateStub = sinon.stub(component, 'navigate');
+    const createFeatureStub = sinon.stub(window.csClient, 'createFeature');
+    createFeatureStub.returns(Promise.resolve({feature_id: 12345}));
+
+    const fakeEvent = {preventDefault: sinon.spy()};
+    const hiddenTokenField = component.renderRoot.querySelector(
+      'input[name="token"]'
+    );
+    component.handleFormSubmit(fakeEvent, hiddenTokenField);
+
+    assert.equal(
+      component.fieldValues.findIndex(fv => fv.name === 'web_feature'),
+      -1
+    );
+    assert.isTrue(createFeatureStub.calledOnce);
+    assert.equal(
+      createFeatureStub.firstCall.args[0].feature_type,
+      FEATURE_TYPES.FEATURE_TYPE_CODE_CHANGE_ID[0]
+    );
+    assert.notProperty(createFeatureStub.firstCall.args[0], 'web_feature');
+
+    await new Promise(resolve => setTimeout(resolve, 0));
+
+    assert.isTrue(navigateStub.calledOnceWith('/feature/12345'));
 
     createFeatureStub.restore();
     navigateStub.restore();
