@@ -2389,6 +2389,22 @@ export const ALL_FIELDS: Record<string, Field> = {
     check: (_value, getFieldValue) => checkWptDescriptionLink(getFieldValue),
   },
 
+  wpt_tests: {
+    type: 'multidatalist',
+    choices: undefined, // this gets replaced in chromedash-form-
+    label: 'Web Platform Test list',
+    usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
+    help_text: html` Select the relevant Web Platform Tests.`,
+  },
+
+  wpt_tree: {
+    type: 'tree',
+    choices: undefined, // this gets replaced in chromedash-form-
+    label: 'Web Platform Test tree',
+    usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
+    help_text: html` Select the relevant Web Platform Tests.`,
+  },
+
   wpt_descr: {
     type: 'textarea',
     required: false,
