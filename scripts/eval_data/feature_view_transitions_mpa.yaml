@@ -1,0 +1,29 @@
+name: Cross-Document View Transitions
+summary: >
+  Cross-document view transitions allow same-origin multi-page applications (MPAs) to create
+  smooth animated transitions between distinct HTML page navigations using CSS declarative rules
+  instead of requiring client-side single-page application routers.
+shipped_milestone: 148
+spec_link: https://drafts.csswg.org/css-view-transitions-2/
+doc_links:
+  - https://developer.chrome.com/docs/web-platform/view-transitions/same-document
+search_tags:
+  - transitions
+  - animation
+  - navigation
+  - mpa
+standard_maturity: 2
+category: 1
+gold_devrel_summary: >
+  Cross-document view transitions enable seamless animated transitions between distinct pages on same-origin
+  multi-page websites. By defining `@view-transition { navigation: auto; }` in CSS, shared elements animate smoothly
+  across page navigations without requiring single-page application client routing.
+expected_entities:
+  - view-transition
+  - navigation
+  - animation
+  - same-origin
+  - transition
+min_words: 30
+max_words: 80
+min_score_threshold: 0.75
