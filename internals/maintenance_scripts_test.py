@@ -1325,6 +1325,7 @@ class FetchWebdxFeatureIdTest(testing_config.CustomTestCase):
         feature_page_1 = FeaturePage.from_dict(feature_page_dict)
         feature_page_2 = FeaturePage.from_dict(feature_page_dict)
         feature_page_2.data[0].feature_id = 'bar'
+        feature_page_2.data[0].baseline.status = 'widely'
         feature_page_2.metadata.next_page_token = ''
         mock_list_features.side_effect = [feature_page_1, feature_page_2]
 
@@ -1335,6 +1336,11 @@ class FetchWebdxFeatureIdTest(testing_config.CustomTestCase):
         self.assertEqual(len(expected.feature_ids), 2)
         self.assertEqual(expected.feature_ids[0], 'foo')
         self.assertEqual(expected.feature_ids[1], 'bar')
+        self.assertEqual(len(expected.feature_infos), 2)
+        self.assertEqual(expected.feature_infos[0].feature_id, 'foo')
+        self.assertEqual(expected.feature_infos[0].status, 'newly')
+        self.assertEqual(expected.feature_infos[1].feature_id, 'bar')
+        self.assertEqual(expected.feature_infos[1].status, 'widely')
 
     @mock.patch('webstatus_openapi.DefaultApi.list_features')
     def test_fetch_webdx_feature_ids__exceptions(self, mock_list_features):

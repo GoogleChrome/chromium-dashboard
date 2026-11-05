@@ -97,20 +97,32 @@ export class ChromedashGuideNewPage extends LitElement {
 
   handleFormSubmit(event, hiddenTokenField) {
     event.preventDefault();
-    const changesBody = formatFeatureChanges(this.fieldValues, this.featureId);
-    const createBody = changesBody.feature_changes;
+    let featureType: number | string =
+      FEATURE_TYPES.FEATURE_TYPE_INCUBATE_ID[0];
     if (this.isEnterpriseFeature) {
-      createBody.feature_type = FEATURE_TYPES.FEATURE_TYPE_ENTERPRISE_ID[0];
+      featureType = FEATURE_TYPES.FEATURE_TYPE_ENTERPRISE_ID[0];
     } else {
       const selectedRadio = this.shadowRoot?.querySelector<HTMLInputElement>(
         'input[name="feature_type"]:checked'
       );
       if (selectedRadio) {
-        createBody.feature_type = selectedRadio.value;
-      } else {
-        createBody.feature_type = FEATURE_TYPES.FEATURE_TYPE_INCUBATE_ID[0];
+        featureType = Number(selectedRadio.value);
+      }
+      for (const fv of this.fieldValues) {
+        if (fv.name == 'feature_type' && fv.value !== undefined) {
+          featureType = fv.value;
+          break;
+        }
       }
     }
+    if (featureType == FEATURE_TYPES.FEATURE_TYPE_CODE_CHANGE_ID[0]) {
+      this.fieldValues = this.fieldValues.filter(
+        fv => fv.name !== 'web_feature'
+      );
+    }
+    const changesBody = formatFeatureChanges(this.fieldValues, this.featureId);
+    const createBody = changesBody.feature_changes;
+    createBody.feature_type = featureType;
     this.submitting = true;
     window.csClient
       .createFeature(createBody)
@@ -147,9 +159,15 @@ export class ChromedashGuideNewPage extends LitElement {
         break;
       }
     }
-    webFeatureField.forceRequired =
-      featureType == FEATURE_TYPES.FEATURE_TYPE_INCUBATE_ID[0] ||
-      featureType == FEATURE_TYPES.FEATURE_TYPE_EXISTING_ID[0];
+    if (featureType == FEATURE_TYPES.FEATURE_TYPE_CODE_CHANGE_ID[0]) {
+      webFeatureField.style.display = 'none';
+      webFeatureField.forceRequired = false;
+    } else {
+      webFeatureField.style.display = '';
+      webFeatureField.forceRequired =
+        featureType == FEATURE_TYPES.FEATURE_TYPE_INCUBATE_ID[0] ||
+        featureType == FEATURE_TYPES.FEATURE_TYPE_EXISTING_ID[0];
+    }
   }
 
   maybeMakeEnterpriseFeatureCategoriesRequired() {

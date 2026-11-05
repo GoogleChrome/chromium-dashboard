@@ -29,6 +29,22 @@ test('add an origin trial stage', async ({page}) => {
   const addStageButton = page.getByText('Add stage');
   await addStageButton.click();
 
+  // Wait for the sl-dialog open animation to finish.  While the dialog panel
+  // is scaling from 0.8 to 1, its CSS transform makes it the containing block
+  // for the hoisted dropdown, which mispositions the option list near the
+  // top-left of the viewport once the animation ends.
+  await page.waitForFunction(() => {
+    const dialog = document
+      .querySelector('chromedash-add-stage-dialog')
+      ?.shadowRoot?.querySelector('sl-dialog[open]');
+    const panel = dialog?.shadowRoot?.querySelector('[part~="panel"]');
+    return (
+      !!panel &&
+      !panel.closest('[hidden]') &&
+      panel.getAnimations().length === 0
+    );
+  });
+
   // Select stage to create.
   const stageSelect = page.locator('sl-select#stage_create_select');
 

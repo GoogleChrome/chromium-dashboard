@@ -25,10 +25,11 @@ import {
 } from './form-field-enums.js';
 import {makeDisplaySpec} from './form-field-specs.js';
 import {FLAT_METADATA_FIELDS} from './form-definition.js';
-import {findFirstFeatureStage, userCanEdit} from './utils.js';
+import {findFirstFeatureStage, renderValue, userCanEdit} from './utils.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {customElement, state} from 'lit/decorators.js';
 import {Feature, StageDict, User} from '../js-src/cs-client.js';
+import {type ChromedashApp} from './chromedash-app.js';
 import {GateDict, gateStateDisplayInfo} from './chromedash-gate-chip.js';
 import {
   Action,
@@ -36,7 +37,6 @@ import {
   ProcessStage,
   ProgressItem,
 } from './chromedash-gate-column.js';
-import {renderValue} from './chromedash-feature-detail.js';
 
 export interface ProgressVoteValue {
   state: number;
@@ -57,7 +57,8 @@ export async function openPreflightDialog(
   action: Action,
   stage: StageDict,
   feStage: StageDict,
-  featureGates: GateDict[]
+  featureGates: GateDict[],
+  showProceed: boolean = true
 ) {
   if (!preflightDialogEl) {
     preflightDialogEl = document.createElement('chromedash-preflight-dialog');
@@ -74,7 +75,8 @@ export async function openPreflightDialog(
       stage,
       feStage,
       featureGates,
-      resolve
+      resolve,
+      showProceed
     );
   });
 }
@@ -141,11 +143,11 @@ export class ChromedashPreflightDialog extends LitElement {
   @state()
   private _feStage!: StageDict;
   @state()
-  private _expandedItems = new Set<string>();
-  @state()
   private _resolve: (value?: boolean) => void = () => {
     console.log('Missing resolve action');
   };
+  @state()
+  private _showProceed = true;
   @state()
   private _dirty = false;
   @state()
@@ -166,8 +168,30 @@ export class ChromedashPreflightDialog extends LitElement {
           margin-bottom: var(--content-padding-half);
         }
 
-        .data-table tr:first-child td {
+        .data-table tbody:first-of-type tr:first-child td {
           border-top: none;
+        }
+
+        .data-table tr.feature-values,
+        .data-table tr.feedback,
+        .data-table tr.criteria {
+          display: none;
+        }
+
+        .data-table tr.feature-values.always-show,
+        .data-table tbody:has(details[open]) tr {
+          display: table-row;
+        }
+
+        .data-table
+          tbody:has(tr.feature-values.always-show)
+          tr:first-child
+          .edit-progress-item,
+        .data-table
+          tbody:has(details[open])
+          tr:first-child
+          .edit-progress-item {
+          display: none;
         }
 
         .data-table tr.feature-value td,
@@ -198,12 +222,17 @@ export class ChromedashPreflightDialog extends LitElement {
           width: 1em;
         }
 
-        .data-table td:first-child sl-icon {
-          cursor: pointer;
+        .data-table td:first-child details {
+          padding: 0;
+        }
+
+        .data-table td:first-child details summary {
+          list-style-type: disclosure-closed;
           transition: transform 200ms ease-in-out;
         }
 
-        .data-table td:first-child sl-icon.expanded {
+        .data-table td:first-child details[open] summary {
+          margin-bottom: 0;
           transform: rotate(90deg);
         }
 
@@ -230,30 +259,40 @@ export class ChromedashPreflightDialog extends LitElement {
         .status.na,
         .status.not_applicable,
         .status.na_self-certified,
-        .status.na_self-certified_then_verified {
+        .status.na_self-certified_then_verified,
+        sl-select.na::part(combobox),
+        sl-select.na::part(display-input) {
           background: var(--gate-not-applicable-background);
           color: var(--gate-not-applicable-color);
         }
 
         .status.preparing,
-        .status.not_started {
+        .status.not_started,
+        sl-select.not_started::part(combobox),
+        sl-select.not_started::part(display-input) {
           background: var(--gate-preparing-background);
           color: var(--gate-preparing-color);
         }
 
         .status.pending,
-        .status.ready_for_review {
+        .status.ready_for_review,
+        sl-select.ready_for_review::part(combobox),
+        sl-select.ready_for_review::part(display-input) {
           background: var(--gate-pending-background);
           color: var(--gate-pending-color);
         }
 
-        .status.needs_work {
+        .status.needs_work,
+        sl-select.needs_work::part(combobox),
+        sl-select.needs_work::part(display-input) {
           background: var(--gate-needs-work-background);
           color: var(--gate-needs-work-color);
         }
 
         .status.approved,
-        .status.verified {
+        .status.verified,
+        sl-select.verified::part(combobox),
+        sl-select.verified::part(display-input) {
           background: var(--gate-approved-background);
           color: var(--gate-approved-color);
         }
@@ -290,7 +329,8 @@ export class ChromedashPreflightDialog extends LitElement {
     stage: StageDict,
     feStage: StageDict,
     featureGates: GateDict[],
-    resolve: (value?: boolean) => void
+    resolve: (value?: boolean) => void,
+    showProceed: boolean
   ) {
     this._user = user;
     this._feature = feature;
@@ -300,14 +340,17 @@ export class ChromedashPreflightDialog extends LitElement {
     this._stage = stage;
     this._feStage = feStage;
     this._featureGates = featureGates;
-    this._expandedItems = new Set(
-      Object.entries(progress || {})
-        .filter(([_, vote]) => Boolean((vote as ProgressVoteValue)?.feedback))
-        .map(([itemName]) => itemName)
-    );
     this._resolve = resolve;
+    this._showProceed = showProceed;
     this._dirty = false;
     this._touched = new Set();
+    this.renderRoot
+      .querySelectorAll<HTMLDetailsElement>('details[data-pi]')
+      .forEach(detailsEl => {
+        const itemName = detailsEl.dataset.pi || '';
+        const vote = progress?.[itemName] as ProgressVoteValue | undefined;
+        detailsEl.open = Boolean(vote?.feedback);
+      });
     this.renderRoot.querySelector('sl-dialog')?.show();
   }
 
@@ -335,16 +378,6 @@ export class ChromedashPreflightDialog extends LitElement {
 
   canEdit(): boolean {
     return userCanEdit(this._user, this._feature?.id);
-  }
-
-  toggleExpanded(itemName: string) {
-    const next = new Set(this._expandedItems);
-    if (next.has(itemName)) {
-      next.delete(itemName);
-    } else {
-      next.add(itemName);
-    }
-    this._expandedItems = next;
   }
 
   hide() {
@@ -381,9 +414,7 @@ export class ChromedashPreflightDialog extends LitElement {
       section => pi.field !== undefined && section.fields.includes(pi.field)
     );
     const pathSegment =
-      !isMetadataField && stage && feStage
-        ? `${stage.outgoing_stage}/${feStage.id}`
-        : 'metadata';
+      !isMetadataField && stage && feStage ? `${feStage.id}` : 'metadata';
 
     return html`
       <a
@@ -396,40 +427,46 @@ export class ChromedashPreflightDialog extends LitElement {
     `;
   }
 
-  renderStatusChip(vote) {
+  getStatusInfo(state?: number) {
     let statusClass = 'not_started';
     let statusText = 'Not started';
-    if (vote) {
-      switch (vote.state) {
-        case PROGRESS_VOTE_STATE.READY_FOR_REVIEW:
-          statusClass = 'ready_for_review';
-          statusText = PROGRESS_VOTE_STATE_NAMES.READY_FOR_REVIEW;
-          break;
-        case PROGRESS_VOTE_STATE.VERIFIED:
-          statusClass = 'verified';
-          statusText = PROGRESS_VOTE_STATE_NAMES.VERIFIED;
-          break;
-        case PROGRESS_VOTE_STATE.NA:
-          statusClass = 'na';
-          statusText = PROGRESS_VOTE_STATE_NAMES.NA;
-          break;
-        case PROGRESS_VOTE_STATE.NEEDS_WORK:
-          statusClass = 'needs_work';
-          statusText = PROGRESS_VOTE_STATE_NAMES.NEEDS_WORK;
-          break;
-      }
+    switch (state) {
+      case PROGRESS_VOTE_STATE.READY_FOR_REVIEW:
+        statusClass = 'ready_for_review';
+        statusText = PROGRESS_VOTE_STATE_NAMES.READY_FOR_REVIEW;
+        break;
+      case PROGRESS_VOTE_STATE.VERIFIED:
+        statusClass = 'verified';
+        statusText = PROGRESS_VOTE_STATE_NAMES.VERIFIED;
+        break;
+      case PROGRESS_VOTE_STATE.NA:
+        statusClass = 'na';
+        statusText = PROGRESS_VOTE_STATE_NAMES.NA;
+        break;
+      case PROGRESS_VOTE_STATE.NEEDS_WORK:
+        statusClass = 'needs_work';
+        statusText = PROGRESS_VOTE_STATE_NAMES.NEEDS_WORK;
+        break;
     }
+    return {statusClass, statusText};
+  }
+
+  renderStatusChip(vote) {
+    const {statusClass, statusText} = this.getStatusInfo(vote?.state);
     return html` <span class="status ${statusClass}">${statusText}</span> `;
   }
 
   handleStatusMenuChange(e) {
     this._touched.add(e.target.dataset.pi);
     this._dirty = true;
+    this.requestUpdate();
     if (e.target?.value == PROGRESS_VOTE_STATE.NEEDS_WORK) {
       const itemName: string = e.target?.dataset['pi'] || '';
-      const isExpanded = this._expandedItems.has(itemName);
-      if (!isExpanded) {
-        this.toggleExpanded(itemName);
+      const detailsEl = this.renderRoot.querySelector<HTMLDetailsElement>(
+        `details[data-pi="${itemName}"]`
+      );
+      if (detailsEl) {
+        detailsEl.open = true;
       }
     }
   }
@@ -465,16 +502,27 @@ export class ChromedashPreflightDialog extends LitElement {
     Promise.all(promises).then(() => {
       this._saving = false;
       this.handleCancel();
-      this._fireEvent('refetch-needed', {});
+      const app: ChromedashApp | null =
+        document.querySelector<ChromedashApp>('chromedash-app');
+      if (app) {
+        app.refetch();
+      }
     });
   }
 
   renderStatusMenu(item, vote) {
-    const state = vote?.state || PROGRESS_VOTE_STATE.NOT_STARTED;
+    const stateEl = this.renderRoot.querySelector<SlSelect>(
+      `.state-widget[data-pi="${item.name}"]`
+    );
+    const state =
+      this._touched.has(item.name) && stateEl
+        ? parseInt(stateEl.value as string)
+        : vote?.state || PROGRESS_VOTE_STATE.NOT_STARTED;
+    const {statusClass} = this.getStatusInfo(state);
     return html`
       <sl-select
         value=${state}
-        class="state-widget"
+        class="state-widget ${statusClass}"
         size="small"
         data-pi=${item.name}
         ?disabled=${this._saving}
@@ -500,34 +548,28 @@ export class ChromedashPreflightDialog extends LitElement {
     feStage: StageDict | null,
     item: ProgressItem
   ) {
-    const isExpanded = this._expandedItems.has(item.name);
     const vote = this._progress?.[item.name] as ProgressVoteValue | undefined;
-    const showValueRow =
-      isExpanded ||
-      (this.canVote() && vote?.state === PROGRESS_VOTE_STATE.READY_FOR_REVIEW);
+    const alwaysShowValueRow =
+      this.canVote() && vote?.state === PROGRESS_VOTE_STATE.READY_FOR_REVIEW;
     const statusRow = html`
       <tr>
         <td>
-          <sl-icon
-            name="caret-right-fill"
-            class="${isExpanded ? 'expanded' : ''}"
-            @click=${() => this.toggleExpanded(item.name)}
-          ></sl-icon>
+          <details data-pi=${item.name} ?open=${Boolean(vote?.feedback)}>
+            <summary aria-label="Toggle details for ${item.name}"></summary>
+          </details>
         </td>
         <td>
           ${this.canVote() ? this.renderStatusMenu(item, vote) : this.renderStatusChip(vote)}
         </td>
         <td>${item.description || item.name}</td>
-        <td>
-          ${showValueRow ? nothing : this.renderEditLink(stage, feStage, item)}
-        </td>
+        <td>${this.renderEditLink(stage, feStage, item)}</td>
       </tr>
     `;
     let valueRow = html`${nothing}`;
-    if (item.field && showValueRow) {
+    if (item.field) {
       const fieldDisplayName = makeDisplaySpec(item.field)[1];
       valueRow = html`
-        <tr class="feature-values">
+        <tr class="feature-values ${alwaysShowValueRow ? 'always-show' : ''}">
           <td></td>
           <td>${fieldDisplayName}:</td>
           <td>${renderValue(feStage, this._feature, item.field)}</td>
@@ -545,7 +587,7 @@ export class ChromedashPreflightDialog extends LitElement {
     ></sl-input>`;
 
     const feedbackRow =
-      isExpanded && (vote?.feedback || this.canVote())
+      vote?.feedback || this.canVote()
         ? html`
             <tr class="feedback">
               <td></td>
@@ -555,32 +597,32 @@ export class ChromedashPreflightDialog extends LitElement {
             </tr>
           `
         : nothing;
-    const criteriaRow =
-      isExpanded && item.criteria
-        ? html`
-            <tr class="criteria">
-              <td></td>
-              <td>Criteria:</td>
-              <td>${item.criteria}</td>
-              <td></td>
-            </tr>
-          `
-        : nothing;
-    return html` ${statusRow} ${valueRow} ${feedbackRow} ${criteriaRow} `;
+    const criteriaRow = item.criteria
+      ? html`
+          <tr class="criteria">
+            <td></td>
+            <td>Criteria:</td>
+            <td>${item.criteria}</td>
+            <td></td>
+          </tr>
+        `
+      : nothing;
+    return html`
+      <tbody>
+        ${statusRow} ${valueRow} ${feedbackRow} ${criteriaRow}
+      </tbody>
+    `;
   }
 
   renderStageTable(stage: ProcessStage, prereqItems: ProgressItem[]) {
     if (prereqItems.length === 0) {
       return nothing;
     }
-    const feStage =
-      stage.outgoing_stage !== undefined
-        ? findFirstFeatureStage(
-            stage.outgoing_stage,
-            this._stage,
-            this._feature
-          )
-        : null;
+    const feStage = findFirstFeatureStage(
+      stage.stage_type,
+      this._stage,
+      this._feature
+    );
 
     return html`
       <h3>${stage.name}</h3>
@@ -669,8 +711,13 @@ export class ChromedashPreflightDialog extends LitElement {
     return html`
       Please address any relevant "Not started" or "Needs work" items before
       requesting review. ${stageTables} ${this.renderGatesTable(otherGates)}
-
-      <sl-button size="small" @click=${this.handleProceed}>Proceed</sl-button>
+      ${
+        this._showProceed
+          ? html` <sl-button size="small" @click=${this.handleProceed}
+              >Proceed</sl-button
+            >`
+          : nothing
+      }
       <sl-button size="small" variant="warning" @click=${this.handleCancel}
         >Cancel</sl-button
       >

@@ -438,6 +438,7 @@ class ReleaseNotesL10nTest(unittest.TestCase):
             stable_date='September 1, 2026',
         )
         self.assertEqual(en_ui['page_title'], 'Chrome 151 Release Notes')
+        self.assertEqual(en_ui['pending_review'], 'Pending review')
         self.assertEqual(
             en_ui['scheduled_stable_release'],
             'Scheduled Stable Release September 1, 2026',
@@ -461,6 +462,7 @@ class ReleaseNotesL10nTest(unittest.TestCase):
             stable_date='2026年9月1日',
         )
         self.assertEqual(ja_ui['page_title'], 'Chrome 151 リリースノート')
+        self.assertEqual(ja_ui['pending_review'], 'レビュー待ち')
         self.assertEqual(
             ja_ui['scheduled_stable_release'],
             '安定版のリリース予定日: 2026年9月1日',
