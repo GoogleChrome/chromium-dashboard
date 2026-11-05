@@ -231,6 +231,7 @@ def get_developer_release_notes_features(
     deprecation_fids: set[int] = set()
 
     origin_trial_urls: dict[int, str] = {}
+    stage_ids_by_fid: dict[int, set[int]] = {}
     for reason, feature_dicts in milestone_data.items():
         if reason in (
             core_enums.IMPLEMENTATION_STATUS[core_enums.BEHIND_A_FLAG],
@@ -242,14 +243,17 @@ def get_developer_release_notes_features(
             if not fid:
                 continue
             seen_ids.add(fid)
+            stage_ids = fdict.get('roadmap_stage_ids') or []
+            if not stage_ids and fdict.get('stage_id'):
+                stage_ids = [fdict['stage_id']]
+            stage_ids_by_fid.setdefault(fid, set()).update(stage_ids)
             if (
                 reason
                 == core_enums.IMPLEMENTATION_STATUS[core_enums.ORIGIN_TRIAL]
             ):
                 origin_trial_fids.add(fid)
                 ot_id = fdict.get('origin_trial_id')
-                stage_ids = fdict.get('roadmap_stage_ids')
-                stage_id = stage_ids[0] if stage_ids else fdict.get('stage_id')
+                stage_id = stage_ids[0] if stage_ids else None
                 trial_url = format_origin_trial_url(
                     origin_trial_id=ot_id, stage_id=stage_id
                 )
@@ -268,6 +272,12 @@ def get_developer_release_notes_features(
     # Batch fetch FeatureEntry entities (prevents N+1 query loop)
     feature_keys = [ndb.Key(FeatureEntry, fid) for fid in seen_ids]
     raw_features = ndb.get_multi(feature_keys)
+    raw_features = [fe for fe in raw_features if fe]
+    psa_feature_ids = set(
+        fe.key.integer_id()
+        for fe in raw_features
+        if fe.feature_type == core_enums.FEATURE_TYPE_CODE_CHANGE_ID
+    )
     feature_entries = filter_unlisted(filter_confidential(raw_features))
     feature_entries.sort(key=lambda f: f.name or '')
 
@@ -282,6 +292,30 @@ def get_developer_release_notes_features(
         for s in suggestions
         if s and s.status == core_enums.SummarySuggestionStatus.APPLIED
     }
+
+    all_stage_ids = [
+        sid
+        for fid in valid_fids
+        for sid in stage_ids_by_fid.get(fid, set())
+        if sid
+    ]
+    unapproved_stage_ids: set[int] = set()
+    if all_stage_ids:
+        gate_futures = [
+            Gate.query(
+                Gate.stage_id.IN(all_stage_ids[i : i + 30])
+            ).fetch_async()
+            for i in range(0, len(all_stage_ids), 30)
+        ]
+        for fut in gate_futures:
+            for gate in fut.get_result():
+                if (
+                    gate.gate_type == core_enums.GATE_API_SHIP
+                    and gate.feature_id in psa_feature_ids
+                ):
+                    continue  # We don't count API Owners gate on PSAs.
+                if gate.state not in Gate.APPROVED_STATES:
+                    unapproved_stage_ids.add(gate.stage_id)
 
     formatted_features = []
     for fe in feature_entries:
@@ -314,6 +348,9 @@ def get_developer_release_notes_features(
             applied_suggestion=applied_suggestion,
             milestone_classification=milestone_classification,
             origin_trial_url=ot_url,
+        )
+        rn_dict['is_pending_review'] = bool(
+            stage_ids_by_fid.get(fid, set()) & unapproved_stage_ids
         )
 
         formatted_features.append(rn_dict)

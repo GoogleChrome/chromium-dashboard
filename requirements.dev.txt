@@ -37,7 +37,7 @@ packaging==26.3
     #   wheel
 pathspec==1.1.1
     # via mypy
-pip-tools==7.6.1
+pip-tools==7.6.2
     # via -r requirements.dev.in
 pluggy==1.6.0
     # via pytest
@@ -55,7 +55,7 @@ pytest==9.1.1
     #   pytest-xdist
 pytest-xdist==3.8.0
     # via -r requirements.dev.in
-ruff==0.16.10
+ruff==0.17.1
     # via -r requirements.dev.in
 types-cffi==2.0.0.20260518
     # via types-pyopenssl
@@ -63,13 +63,13 @@ types-protobuf==7.35.1.20260906
     # via -r requirements.dev.in
 types-pyopenssl==24.1.0.20240722
     # via types-redis
-types-pytz==2026.4.0.20260926
+types-pytz==2026.5.0.20261006
     # via -r requirements.dev.in
 types-redis==4.6.0.20241004
     # via -r requirements.dev.in
-types-requests==2.33.0.20260906
+types-requests==2.33.0.20261006
     # via -r requirements.dev.in
-types-setuptools==84.0.0.20260812
+types-setuptools==84.0.0.20261006
     # via
     #   -r requirements.dev.in
     #   types-cffi

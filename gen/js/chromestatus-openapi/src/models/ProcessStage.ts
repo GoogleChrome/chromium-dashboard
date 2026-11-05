@@ -25,12 +25,6 @@ import {
     ProgressItemFromJSONTyped,
     ProgressItemToJSON,
 } from './ProgressItem';
-import type { GateInfo } from './GateInfo';
-import {
-    GateInfoFromJSON,
-    GateInfoFromJSONTyped,
-    GateInfoToJSON,
-} from './GateInfo';
 
 /**
  * 
@@ -64,24 +58,6 @@ export interface ProcessStage {
     actions?: Array<Action>;
     /**
      * 
-     * @type {Array<GateInfo>}
-     * @memberof ProcessStage
-     */
-    approvals?: Array<GateInfo>;
-    /**
-     * 
-     * @type {number}
-     * @memberof ProcessStage
-     */
-    incoming_stage?: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof ProcessStage
-     */
-    outgoing_stage?: number;
-    /**
-     * 
      * @type {number}
      * @memberof ProcessStage
      */
@@ -109,9 +85,6 @@ export function ProcessStageFromJSONTyped(json: any, ignoreDiscriminator: boolea
         'description': json['description'] == null ? undefined : json['description'],
         'progress_items': json['progress_items'] == null ? undefined : ((json['progress_items'] as Array<any>).map(ProgressItemFromJSON)),
         'actions': json['actions'] == null ? undefined : ((json['actions'] as Array<any>).map(ActionFromJSON)),
-        'approvals': json['approvals'] == null ? undefined : ((json['approvals'] as Array<any>).map(GateInfoFromJSON)),
-        'incoming_stage': json['incoming_stage'] == null ? undefined : json['incoming_stage'],
-        'outgoing_stage': json['outgoing_stage'] == null ? undefined : json['outgoing_stage'],
         'stage_type': json['stage_type'] == null ? undefined : json['stage_type'],
     };
 }
@@ -126,9 +99,6 @@ export function ProcessStageToJSON(value?: ProcessStage | null): any {
         'description': value['description'],
         'progress_items': value['progress_items'] == null ? undefined : ((value['progress_items'] as Array<any>).map(ProgressItemToJSON)),
         'actions': value['actions'] == null ? undefined : ((value['actions'] as Array<any>).map(ActionToJSON)),
-        'approvals': value['approvals'] == null ? undefined : ((value['approvals'] as Array<any>).map(GateInfoToJSON)),
-        'incoming_stage': value['incoming_stage'],
-        'outgoing_stage': value['outgoing_stage'],
         'stage_type': value['stage_type'],
     };
 }

@@ -18,7 +18,7 @@
 from dataclasses import asdict, dataclass
 
 import settings
-from internals import approval_defs, core_enums
+from internals import core_enums
 from internals.core_models import Stage
 from internals.review_models import Gate
 
@@ -59,9 +59,6 @@ class ProcessStage:
     progress_items: list[ProgressItem]
     # action prerequisites may reference a PI defined in any stage.
     actions: list[Action]
-    approvals: list[approval_defs.GateInfo]
-    incoming_stage: int
-    outgoing_stage: int
     stage_type: int | None
 
 
@@ -210,14 +207,14 @@ PI_INITIAL_PUBLIC_PROPOSAL = ProgressItem(
     'Initial public proposal',
     'initial_public_proposal_url',
     'Link to an initial public proposal in the relevant incubation venue.',
-    '',
+    'https://www.chromium.org/blink/launching-features/#incubation-venue',
 )
 
 PI_MOTIVATION = ProgressItem(
     'Motivation',
     'motivation',
     'Motivation summarizes the reasons we want to add/modify/remove behavior',
-    'https://www.chromium.org/blink/launching-features/#incubation-venue',
+    '',
 )
 
 PI_EXPLAINER = ProgressItem(
@@ -280,8 +277,6 @@ PI_SPEC_MATURITY = ProgressItem(
     ),
 )
 
-PI_SPEC_MENTOR = ProgressItem('Spec mentor', 'spec_mentors')
-
 PI_SAMPLES = ProgressItem(
     'Samples',
     'sample_links',
@@ -324,7 +319,6 @@ PI_DOC_LINKS_AUTOMATION = ProgressItem(
         'impact must be communicated.'
     ),
 )
-
 
 PI_TAG_ADDRESSED = ProgressItem(
     'TAG review issues addressed',
@@ -483,11 +477,9 @@ PI_GROUP_DEVS: list[ProgressItem] = [
     PI_FINCH_FEATURE_OR_JUSTIFY,
 ]
 PI_GROUP_DEVS_DEP: list[ProgressItem] = [
-    # TODO(jrobbins): Finch, etc. comes at a later stage, so this needs to be
-    # checked later or the field needs to move to the plan stage.
-    # PI_FINCH_FEATURE_OR_JUSTIFY,
-    # PI_DEP_CONSOLE_WARNING,
-    # PI_USECOUNTER_DEP,
+    PI_FINCH_FEATURE_OR_JUSTIFY,
+    PI_DEP_CONSOLE_WARNING,
+    PI_USECOUNTER_DEP,
 ]
 PI_GROUP_MILESTONES: list[ProgressItem] = [
     PI_DESKTOP_MILESTONE,
@@ -541,17 +533,17 @@ DQ_CHECKLIST_PSA_SHIP: list[ProgressItem] = (
 DQ_CHECKLIST_DEP_PLAN: list[ProgressItem] = (
     PI_GROUP_METADATA_DEP
     + PI_GROUP_STANDARDS_DEP
-    + PI_GROUP_DEVS_DEP
-    # TODO(jrobbins): Milestones come later in the process.
-    # + PI_GROUP_MILESTONES
     + PI_GROUP_INTEROP
     + PI_GROUP_DOCS_DEP
 )
 
 DQ_CHECKLIST_DEP_SHIP: list[ProgressItem] = (
-    # TODO(jrobbins):
-    # Even though there is no API Owners gate there, we could add a DQ gate.
-    []
+    PI_GROUP_METADATA_DEP
+    + PI_GROUP_STANDARDS_DEP
+    + PI_GROUP_DEVS_DEP
+    + PI_GROUP_MILESTONES
+    + PI_GROUP_INTEROP
+    + PI_GROUP_DOCS_DEP
 )
 
 
@@ -562,9 +554,6 @@ FEATURE_ROLLOUT_STAGE = ProcessStage(
     '',
     [],
     [],
-    [],
-    core_enums.INTENT_SHIP,
-    core_enums.INTENT_ROLLOUT,
     stage_type=core_enums.STAGE_ENT_ROLLOUT,
 )
 
@@ -581,9 +570,6 @@ BLINK_PROCESS_STAGES = [
             PI_EXPLAINER,
         ],
         [],
-        [],
-        core_enums.INTENT_NONE,
-        core_enums.INTENT_INCUBATE,
         stage_type=core_enums.STAGE_BLINK_INCUBATE,
     ),
     ProcessStage(
@@ -592,7 +578,6 @@ BLINK_PROCESS_STAGES = [
         'Start prototyping code in a public repo.',
         [
             PI_SPEC_LINK,
-            PI_SPEC_MENTOR,
             PI_SPEC_MATURITY,
         ],
         [
@@ -608,9 +593,6 @@ BLINK_PROCESS_STAGES = [
                 [core_enums.GATE_API_PROTOTYPE],
             )
         ],
-        [approval_defs.PrototypeApproval],
-        core_enums.INTENT_INCUBATE,
-        core_enums.INTENT_IMPLEMENT,
         stage_type=core_enums.STAGE_BLINK_PROTOTYPE,
     ),
     ProcessStage(
@@ -642,9 +624,6 @@ BLINK_PROCESS_STAGES = [
                 [],
             )
         ],
-        [],
-        core_enums.INTENT_IMPLEMENT,
-        core_enums.INTENT_EXPERIMENT,
         stage_type=core_enums.STAGE_BLINK_DEV_TRIAL,
     ),
     ProcessStage(
@@ -654,9 +633,6 @@ BLINK_PROCESS_STAGES = [
             PI_TAG_REQUESTED,
         ],
         [],
-        [],
-        core_enums.INTENT_EXPERIMENT,
-        core_enums.INTENT_IMPLEMENT_SHIP,
         stage_type=core_enums.STAGE_BLINK_EVAL_READINESS,
     ),
     ProcessStage(
@@ -683,9 +659,6 @@ BLINK_PROCESS_STAGES = [
                 [core_enums.GATE_API_ORIGIN_TRIAL],
             )
         ],
-        [approval_defs.ExperimentApproval],
-        core_enums.INTENT_IMPLEMENT_SHIP,
-        core_enums.INTENT_ORIGIN_TRIAL,
         stage_type=core_enums.STAGE_BLINK_ORIGIN_TRIAL,
     ),
     ProcessStage(
@@ -700,9 +673,6 @@ BLINK_PROCESS_STAGES = [
                 [core_enums.GATE_API_EXTEND_ORIGIN_TRIAL],
             )
         ],
-        [approval_defs.ExtendExperimentApproval],
-        core_enums.INTENT_ORIGIN_TRIAL,
-        core_enums.INTENT_EXTEND_ORIGIN_TRIAL,
         stage_type=core_enums.STAGE_BLINK_EXTEND_ORIGIN_TRIAL,
     ),
     ProcessStage(
@@ -744,9 +714,6 @@ BLINK_PROCESS_STAGES = [
                 [core_enums.GATE_API_SHIP],
             ),
         ],
-        [approval_defs.ShipApproval],
-        core_enums.INTENT_IMPLEMENT_SHIP,
-        core_enums.INTENT_SHIP,
         stage_type=core_enums.STAGE_BLINK_SHIPPING,
     ),
     ProcessStage(
@@ -755,9 +722,6 @@ BLINK_PROCESS_STAGES = [
         'actually ships.',
         [],
         [],
-        [],
-        core_enums.INTENT_SHIP,
-        core_enums.INTENT_SHIPPED,
         stage_type=None,
     ),
     FEATURE_ROLLOUT_STAGE,
@@ -792,9 +756,6 @@ BLINK_FAST_TRACK_STAGES = [
                 [core_enums.GATE_API_PROTOTYPE],
             )
         ],
-        [approval_defs.PrototypeApproval],
-        core_enums.INTENT_NONE,
-        core_enums.INTENT_IMPLEMENT,
         stage_type=core_enums.STAGE_FAST_PROTOTYPE,
     ),
     ProcessStage(
@@ -823,9 +784,6 @@ BLINK_FAST_TRACK_STAGES = [
                 [],
             )
         ],
-        [],
-        core_enums.INTENT_IMPLEMENT,
-        core_enums.INTENT_EXPERIMENT,
         stage_type=core_enums.STAGE_FAST_DEV_TRIAL,
     ),
     ProcessStage(
@@ -849,9 +807,6 @@ BLINK_FAST_TRACK_STAGES = [
                 [core_enums.GATE_API_ORIGIN_TRIAL],
             )
         ],
-        [approval_defs.ExperimentApproval],
-        core_enums.INTENT_EXPERIMENT,
-        core_enums.INTENT_ORIGIN_TRIAL,
         stage_type=core_enums.STAGE_FAST_ORIGIN_TRIAL,
     ),
     ProcessStage(
@@ -866,9 +821,6 @@ BLINK_FAST_TRACK_STAGES = [
                 [core_enums.GATE_API_EXTEND_ORIGIN_TRIAL],
             )
         ],
-        [approval_defs.ExtendExperimentApproval],
-        core_enums.INTENT_ORIGIN_TRIAL,
-        core_enums.INTENT_EXTEND_ORIGIN_TRIAL,
         stage_type=core_enums.STAGE_FAST_EXTEND_ORIGIN_TRIAL,
     ),
     ProcessStage(
@@ -901,9 +853,6 @@ BLINK_FAST_TRACK_STAGES = [
                 [core_enums.GATE_API_SHIP],
             ),
         ],
-        [approval_defs.ShipApproval],
-        core_enums.INTENT_EXPERIMENT,
-        core_enums.INTENT_SHIP,
         stage_type=core_enums.STAGE_FAST_SHIPPING,
     ),
     ProcessStage(
@@ -912,9 +861,6 @@ BLINK_FAST_TRACK_STAGES = [
         'actually ships.',
         [],
         [],
-        [],
-        core_enums.INTENT_SHIP,
-        core_enums.INTENT_SHIPPED,
         stage_type=None,
     ),
     FEATURE_ROLLOUT_STAGE,
@@ -940,9 +886,6 @@ PSA_ONLY_STAGES = [
             PI_SPEC_MATURITY,
         ],
         [],
-        [],
-        core_enums.INTENT_NONE,
-        core_enums.INTENT_IMPLEMENT,
         stage_type=core_enums.STAGE_PSA_IMPLEMENT,
     ),
     ProcessStage(
@@ -968,9 +911,6 @@ PSA_ONLY_STAGES = [
                 [],
             )
         ],
-        [],
-        core_enums.INTENT_IMPLEMENT,
-        core_enums.INTENT_EXPERIMENT,
         stage_type=core_enums.STAGE_PSA_DEV_TRIAL,
     ),
     ProcessStage(
@@ -1001,9 +941,6 @@ PSA_ONLY_STAGES = [
                 [],
             ),
         ],
-        [approval_defs.ShipApproval],
-        core_enums.INTENT_EXPERIMENT,
-        core_enums.INTENT_SHIP,
         stage_type=core_enums.STAGE_PSA_SHIPPING,
     ),
     ProcessStage(
@@ -1012,9 +949,6 @@ PSA_ONLY_STAGES = [
         'actually ships.',
         [],
         [],
-        [],
-        core_enums.INTENT_SHIP,
-        core_enums.INTENT_SHIPPED,
         stage_type=None,
     ),
     FEATURE_ROLLOUT_STAGE,
@@ -1065,18 +999,13 @@ DEPRECATION_STAGES = [
                 [core_enums.GATE_API_PLAN],
             ),
         ],
-        [approval_defs.PrototypeApproval],
-        core_enums.INTENT_NONE,
-        core_enums.INTENT_IMPLEMENT,
         stage_type=core_enums.STAGE_DEP_PLAN,
     ),
     # TODO(cwilso): Work out additional steps for flag defaulting to disabled.
     ProcessStage(
         'Dev trial of deprecation',
         'Publicize deprecation and address risks. ',
-        [
-            PI_FINCH_FEATURE_OR_JUSTIFY,
-        ],
+        PI_GROUP_DEVS_DEP,
         [
             Action(
                 'Draft Ready for Developer Testing email',
@@ -1092,9 +1021,6 @@ DEPRECATION_STAGES = [
                 [],
             )
         ],
-        [],
-        core_enums.INTENT_IMPLEMENT,
-        core_enums.INTENT_EXPERIMENT,
         stage_type=core_enums.STAGE_DEP_DEV_TRIAL,
     ),
     ProcessStage(
@@ -1116,9 +1042,6 @@ DEPRECATION_STAGES = [
                 [core_enums.GATE_API_ORIGIN_TRIAL],
             )
         ],
-        [approval_defs.ExperimentApproval],
-        core_enums.INTENT_EXPERIMENT,
-        core_enums.INTENT_ORIGIN_TRIAL,
         stage_type=core_enums.STAGE_DEP_DEPRECATION_TRIAL,
     ),
     ProcessStage(
@@ -1133,9 +1056,6 @@ DEPRECATION_STAGES = [
                 [core_enums.GATE_API_EXTEND_ORIGIN_TRIAL],
             )
         ],
-        [approval_defs.ExtendExperimentApproval],
-        core_enums.INTENT_ORIGIN_TRIAL,
-        core_enums.INTENT_EXTEND_ORIGIN_TRIAL,
         stage_type=core_enums.STAGE_DEP_EXTEND_DEPRECATION_TRIAL,
     ),
     ProcessStage(
@@ -1143,16 +1063,17 @@ DEPRECATION_STAGES = [
         'Lock in shipping milestone. '
         'Finalize docs and announcements before disabling feature by default. '
         'If there were changes since your plan approvals, get approvals again.',
-        [
-            PI_DESKTOP_MILESTONE,
-        ],
+        PI_GROUP_MILESTONES,
         [
             # There is no I2S for deprecations because it all happens during planning.
             # And thre is no API Owner gate on this stage.
+            Action(
+                'Review data quality',
+                REQUEST_REVIEW_ACTION_URL,
+                [pi.name for pi in DQ_CHECKLIST_DEP_SHIP],
+                [core_enums.GATE_DQ_SHIP],
+            ),
         ],
-        [approval_defs.ShipApproval],
-        core_enums.INTENT_EXPERIMENT,
-        core_enums.INTENT_SHIP,
         stage_type=core_enums.STAGE_DEP_SHIPPING,
     ),
     ProcessStage(
@@ -1177,9 +1098,6 @@ DEPRECATION_STAGES = [
                 [],
             ),
         ],
-        [],
-        core_enums.INTENT_SHIP,
-        core_enums.INTENT_REMOVED,
         stage_type=core_enums.STAGE_DEP_REMOVE_CODE,
     ),
     FEATURE_ROLLOUT_STAGE,
@@ -1192,9 +1110,6 @@ ENTERPRISE_STAGES = [
         '',
         [],
         [],
-        [],
-        core_enums.INTENT_NONE,
-        core_enums.INTENT_ROLLOUT,
         stage_type=core_enums.STAGE_ENT_ROLLOUT,
     ),
 ]

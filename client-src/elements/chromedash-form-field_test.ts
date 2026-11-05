@@ -119,8 +119,13 @@ describe('chromedash-form-field', () => {
 
   it('renders Web Feature ID field with a link', async () => {
     window.csClient = new ChromeStatusClient('fake_token', 1);
-    const webdxFeaturesStub = sinon.stub(window.csClient, 'getWebdxFeatures');
-    webdxFeaturesStub.returns(Promise.resolve({}));
+    const webFeatureInfosStub = sinon.stub(
+      window.csClient,
+      'getWebFeatureInfos'
+    );
+    webFeatureInfosStub.returns(
+      Promise.resolve({data: [{feature_id: 'hwb', status: 'newly'}]})
+    );
 
     const component = await fixture(
       html` <chromedash-form-field name="web_feature" value="hwb">
@@ -135,6 +140,74 @@ describe('chromedash-form-field', () => {
     assert.include(renderElement.innerHTML, 'Web Feature ID');
     assert.include(renderElement.innerHTML, 'input');
     assert.include(renderElement.innerHTML, 'class="webdx"');
+    assert.notInclude(
+      renderElement.innerText,
+      'This web feature is already widely supported, are you sure that you are incubating a change to it?'
+    );
+  });
+
+  it('renders warning when Web Feature ID is widely supported and feature is a new incubation', async () => {
+    window.csClient = new ChromeStatusClient('fake_token', 1);
+    const webFeatureInfosStub = sinon.stub(
+      window.csClient,
+      'getWebFeatureInfos'
+    );
+    webFeatureInfosStub.returns(
+      Promise.resolve({data: [{feature_id: 'hwb', status: 'widely'}]})
+    );
+
+    const formattedFeature = {
+      id: 12345,
+      feature_type_int: 0,
+    };
+    const component = await fixture(
+      html` <chromedash-form-field
+        name="web_feature"
+        value="hwb"
+        .feature=${formattedFeature}
+      >
+      </chromedash-form-field>`
+    );
+    assert.exists(component);
+    assert.instanceOf(component, ChromedashFormField);
+
+    const renderElement = component.renderRoot as HTMLElement;
+    assert.include(
+      renderElement.innerText,
+      'This web feature is already widely supported, are you sure that you are incubating a change to it?'
+    );
+  });
+
+  it('does not render widely supported warning when feature is not a new incubation', async () => {
+    window.csClient = new ChromeStatusClient('fake_token', 1);
+    const webFeatureInfosStub = sinon.stub(
+      window.csClient,
+      'getWebFeatureInfos'
+    );
+    webFeatureInfosStub.returns(
+      Promise.resolve({data: [{feature_id: 'hwb', status: 'widely'}]})
+    );
+
+    const formattedFeature = {
+      id: 12345,
+      feature_type_int: 1,
+    };
+    const component = await fixture(
+      html` <chromedash-form-field
+        name="web_feature"
+        value="hwb"
+        .feature=${formattedFeature}
+      >
+      </chromedash-form-field>`
+    );
+    assert.exists(component);
+    assert.instanceOf(component, ChromedashFormField);
+
+    const renderElement = component.renderRoot as HTMLElement;
+    assert.notInclude(
+      renderElement.innerText,
+      'This web feature is already widely supported, are you sure that you are incubating a change to it?'
+    );
   });
 
   it('renders a textarea type of field', async () => {

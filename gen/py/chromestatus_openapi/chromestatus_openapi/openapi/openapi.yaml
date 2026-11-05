@@ -1659,6 +1659,18 @@ paths:
           description: List the Web Feature IDs.
       summary: Get Baseline web feature IDs
       x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+  /web_feature_infos:
+    get:
+      operationId: get_web_feature_infos
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WebFeatureInfosResponse'
+          description: List the Web Feature Infos.
+      summary: Get Baseline web feature infos
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
 components:
   parameters:
     startAtParam:
@@ -2129,29 +2141,8 @@ components:
             criteria: criteria
             name: name
             description: description
-          incoming_stage: 5
-          stage_type: 7
-          approvals:
-          - gate_type: 6
-            name: name
-            slo_initial_response: 1
-            description: description
-            rule: rule
-            approvers: approvers
-            escalation_email: escalation_email
-            team_name: team_name
-            slo_resolve: 5
-          - gate_type: 6
-            name: name
-            slo_initial_response: 1
-            description: description
-            rule: rule
-            approvers: approvers
-            escalation_email: escalation_email
-            team_name: team_name
-            slo_resolve: 5
+          stage_type: 6
           name: name
-          outgoing_stage: 2
           description: description
           actions:
           - prerequisites:
@@ -2179,29 +2170,8 @@ components:
             criteria: criteria
             name: name
             description: description
-          incoming_stage: 5
-          stage_type: 7
-          approvals:
-          - gate_type: 6
-            name: name
-            slo_initial_response: 1
-            description: description
-            rule: rule
-            approvers: approvers
-            escalation_email: escalation_email
-            team_name: team_name
-            slo_resolve: 5
-          - gate_type: 6
-            name: name
-            slo_initial_response: 1
-            description: description
-            rule: rule
-            approvers: approvers
-            escalation_email: escalation_email
-            team_name: team_name
-            slo_resolve: 5
+          stage_type: 6
           name: name
-          outgoing_stage: 2
           description: description
           actions:
           - prerequisites:
@@ -2250,29 +2220,8 @@ components:
           criteria: criteria
           name: name
           description: description
-        incoming_stage: 5
-        stage_type: 7
-        approvals:
-        - gate_type: 6
-          name: name
-          slo_initial_response: 1
-          description: description
-          rule: rule
-          approvers: approvers
-          escalation_email: escalation_email
-          team_name: team_name
-          slo_resolve: 5
-        - gate_type: 6
-          name: name
-          slo_initial_response: 1
-          description: description
-          rule: rule
-          approvers: approvers
-          escalation_email: escalation_email
-          team_name: team_name
-          slo_resolve: 5
+        stage_type: 6
         name: name
-        outgoing_stage: 2
         description: description
         actions:
         - prerequisites:
@@ -2308,17 +2257,6 @@ components:
             $ref: '#/components/schemas/Action'
           title: actions
           type: array
-        approvals:
-          items:
-            $ref: '#/components/schemas/GateInfo'
-          title: approvals
-          type: array
-        incoming_stage:
-          title: incoming_stage
-          type: integer
-        outgoing_stage:
-          title: outgoing_stage
-          type: integer
         stage_type:
           nullable: true
           title: stage_type
@@ -2376,52 +2314,32 @@ components:
       title: Action
       type: object
     GateInfo:
-      example:
-        gate_type: 6
-        name: name
-        slo_initial_response: 1
-        description: description
-        rule: rule
-        approvers: approvers
-        escalation_email: escalation_email
-        team_name: team_name
-        slo_resolve: 5
       properties:
         name:
-          title: name
           type: string
         description:
-          title: description
           type: string
         gate_type:
-          title: gate_type
           type: integer
         rule:
-          title: rule
           type: string
         approvers:
           description: A list of approvers. A single string can also be accepted and
             will be treated as a list containing that string.
-          title: approvers
           type: string
         team_name:
-          title: team_name
           type: string
         escalation_email:
           nullable: true
-          title: escalation_email
           type: string
         slo_initial_response:
           default: 5
           description: DEFAULT_SLO_LIMIT is 5 in approval_defs.py
-          title: slo_initial_response
           type: integer
         slo_resolve:
           default: 10
           description: DEFAULT_SLO_RESOLVE_LIMIT is 10 in approval_defs.py
-          title: slo_resolve
           type: integer
-      title: GateInfo
       type: object
     Amendment:
       example:
@@ -3619,6 +3537,39 @@ components:
           title: count
           type: integer
       title: CounterEntry
+      type: object
+    WebFeatureInfosResponse:
+      example:
+        data:
+        - feature_id: feature_id
+          status: status
+        - feature_id: feature_id
+          status: status
+      properties:
+        data:
+          items:
+            $ref: '#/components/schemas/WebFeatureInfo'
+          title: data
+          type: array
+      required:
+      - data
+      title: WebFeatureInfosResponse
+      type: object
+    WebFeatureInfo:
+      example:
+        feature_id: feature_id
+        status: status
+      properties:
+        feature_id:
+          title: feature_id
+          type: string
+        status:
+          title: status
+          type: string
+      required:
+      - feature_id
+      - status
+      title: WebFeatureInfo
       type: object
     PermissionsResponse:
       example:

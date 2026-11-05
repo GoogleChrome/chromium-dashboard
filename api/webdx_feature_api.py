@@ -17,6 +17,8 @@
 import logging
 from collections import OrderedDict
 
+from chromestatus_openapi.models import WebFeatureInfo, WebFeatureInfosResponse
+
 from framework import basehandlers
 from internals.metrics_models import WebDXFeatureObserver
 from internals.webdx_feature_models import WebdxFeatures
@@ -27,11 +29,27 @@ class WebFeatureIDsAPI(basehandlers.APIHandler):
 
     def do_get(self, **kwargs):
         """Returns a sorted list of WebDX feature IDs."""
-        singleton: WebdxFeatures | None = (
-            WebdxFeatures.get_webdx_feature_id_list()
-        )
+        singleton: WebdxFeatures | None = WebdxFeatures.get_singleton()
         web_feature_ids = sorted(singleton.feature_ids if singleton else [])
         return web_feature_ids
+
+
+class WebFeatureInfosAPI(basehandlers.APIHandler):
+    """The web feature infos that populates a datalist menu for web_feature."""
+
+    def do_get(self, **kwargs) -> WebFeatureInfosResponse:
+        """Returns a sorted list of WebDX feature infos."""
+        web_feature_infos: list[WebFeatureInfo] = []
+        singleton: WebdxFeatures | None = WebdxFeatures.get_singleton()
+        if singleton:
+            web_feature_infos = [
+                WebFeatureInfo(feature_id=info.feature_id, status=info.status)
+                for info in singleton.feature_infos
+            ]
+        web_feature_infos = sorted(
+            web_feature_infos, key=lambda info: info.feature_id
+        )
+        return WebFeatureInfosResponse(data=web_feature_infos)
 
 
 # TODO(jrobbins): Move the ot_webfeature_use_counter form field to a shipping

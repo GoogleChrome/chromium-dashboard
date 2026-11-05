@@ -124,17 +124,42 @@ class ProgressAPITest(testing_config.CustomTestCase):
                     'set_by': 'ChromeStatus',
                 },
                 'Owner emails': expected_detected_vote,
-                'Policy in summary': expected_detected_vote,
-                'Policy in summary dep': expected_detected_vote,
+                'Policy in summary': {
+                    'state': progress.ProgressVote.NEEDS_WORK,
+                    'feedback': 'Summary is too short',
+                    'set_on': FAKE_NOW.isoformat(),
+                    'set_by': 'ChromeStatus',
+                },
+                'Policy in summary dep': {
+                    'state': progress.ProgressVote.NEEDS_WORK,
+                    'feedback': 'Summary is too short',
+                    'set_on': FAKE_NOW.isoformat(),
+                    'set_by': 'ChromeStatus',
+                },
                 'Spec link': {
                     'state': progress.ProgressVote.NEEDS_WORK,
                     'feedback': 'Not a URL',
                     'set_on': FAKE_NOW.isoformat(),
                     'set_by': 'ChromeStatus',
                 },
-                'Summary': expected_detected_vote,
-                'Summary dep alternatives': expected_detected_vote,
-                'Summary dep timeline': expected_detected_vote,
+                'Summary': {
+                    'state': progress.ProgressVote.NEEDS_WORK,
+                    'feedback': 'Summary is too short',
+                    'set_on': FAKE_NOW.isoformat(),
+                    'set_by': 'ChromeStatus',
+                },
+                'Summary dep alternatives': {
+                    'state': progress.ProgressVote.NEEDS_WORK,
+                    'feedback': 'Should link to alternatives',
+                    'set_on': FAKE_NOW.isoformat(),
+                    'set_by': 'ChromeStatus',
+                },
+                'Summary dep timeline': {
+                    'state': progress.ProgressVote.NEEDS_WORK,
+                    'feedback': 'Summary is too short',
+                    'set_on': FAKE_NOW.isoformat(),
+                    'set_by': 'ChromeStatus',
+                },
                 'Updated android milestone': expected_detected_vote,
                 'Updated desktop milestone': expected_detected_vote,
                 'Updated webview milestone': expected_detected_vote,
@@ -278,6 +303,43 @@ class ProgressAPITest(testing_config.CustomTestCase):
             progress.ProgressVote.feature_id == self.feature_id
         ).fetch()
         self.assertEqual(len(votes), 0)
+
+        # Setting state to NOT_STARTED with empty feedback when no vote exists stores nothing.
+        with test_app.test_request_context(
+            self.request_path,
+            json={
+                'progress_item_name': 'Spec link',
+                'state': progress.ProgressVote.NOT_STARTED,
+                'feedback': '',
+            },
+        ):
+            res = self.handler.do_post(feature_id=self.feature_id)
+
+        self.assertEqual(res, {'message': 'Done'})
+        votes = progress.ProgressVote.query(
+            progress.ProgressVote.feature_id == self.feature_id
+        ).fetch()
+        self.assertEqual(len(votes), 0)
+
+        # Setting state to NOT_STARTED with feedback stores the vote.
+        with test_app.test_request_context(
+            self.request_path,
+            json={
+                'progress_item_name': 'Spec link',
+                'state': progress.ProgressVote.NOT_STARTED,
+                'feedback': 'Still waiting on spec URL',
+            },
+        ):
+            res = self.handler.do_post(feature_id=self.feature_id)
+
+        self.assertEqual(res, {'message': 'Done'})
+        votes = progress.ProgressVote.query(
+            progress.ProgressVote.feature_id == self.feature_id
+        ).fetch()
+        self.assertEqual(len(votes), 1)
+        self.assertEqual(votes[0].progress_item_name, 'Spec link')
+        self.assertEqual(votes[0].state, progress.ProgressVote.NOT_STARTED)
+        self.assertEqual(votes[0].feedback, 'Still waiting on spec URL')
         testing_config.sign_out()
 
     def test_post___release_notes_reviewer_allowed(self):

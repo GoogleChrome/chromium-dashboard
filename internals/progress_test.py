@@ -133,6 +133,57 @@ class ProgressVoteTest(testing_config.CustomTestCase):
         self.assertIsNone(result)
         self.assertEqual(len(progress.ProgressVote.query().fetch()), 0)
 
+    def test_set_progress_vote_not_started_no_existing(self):
+        """Setting state to NOT_STARTED with no feedback when no vote exists returns None and stores nothing."""
+        result = progress.set_progress_vote(
+            feature_id=12345,
+            progress_item_name='Explainer',
+            state=progress.ProgressVote.NOT_STARTED,
+            set_by='reviewer1@example.com',
+            feedback='',
+        )
+        self.assertIsNone(result)
+        self.assertEqual(len(progress.ProgressVote.query().fetch()), 0)
+
+    def test_set_progress_vote_not_started_with_feedback(self):
+        """Setting state to NOT_STARTED with feedback creates or updates a ProgressVote."""
+        vote_1 = progress.set_progress_vote(
+            feature_id=12345,
+            progress_item_name='Explainer',
+            state=progress.ProgressVote.NOT_STARTED,
+            set_by='reviewer1@example.com',
+            feedback='Waiting on initial draft',
+        )
+        self.assertIsNotNone(vote_1)
+        all_votes = progress.ProgressVote.query().fetch()
+        self.assertEqual(len(all_votes), 1)
+        self.assertEqual(all_votes[0].state, progress.ProgressVote.NOT_STARTED)
+        self.assertEqual(all_votes[0].feedback, 'Waiting on initial draft')
+        self.assertEqual(all_votes[0].set_by, 'reviewer1@example.com')
+
+        # Overwriting an existing vote with NOT_STARTED and feedback preserves the entity.
+        progress.set_progress_vote(
+            feature_id=12345,
+            progress_item_name='Explainer',
+            state=progress.ProgressVote.VERIFIED,
+            set_by='reviewer1@example.com',
+            feedback='Looks good',
+        )
+        vote_2 = progress.set_progress_vote(
+            feature_id=12345,
+            progress_item_name='Explainer',
+            state=progress.ProgressVote.NOT_STARTED,
+            set_by='reviewer2@example.com',
+            feedback='Link was removed',
+        )
+        self.assertIsNotNone(vote_2)
+        all_votes = progress.ProgressVote.query().fetch()
+        self.assertEqual(len(all_votes), 1)
+        self.assertEqual(vote_1.key, vote_2.key)
+        self.assertEqual(all_votes[0].state, progress.ProgressVote.NOT_STARTED)
+        self.assertEqual(all_votes[0].feedback, 'Link was removed')
+        self.assertEqual(all_votes[0].set_by, 'reviewer2@example.com')
+
 
 NOT_STARTED = progress.ProgressDetectorResult(progress.ProgressVote.NOT_STARTED)
 READY_FOR_REVIEW = progress.ProgressDetectorResult(
@@ -404,6 +455,19 @@ class ProgressDetectorsTest(testing_config.CustomTestCase):
             progress._detect_firefox_views(self.feature_1, self.stages_dict),
             READY_FOR_REVIEW,
         )
+        self.feature_1.ff_views = core_enums.SIGNALS_NA
+        self.feature_1.ff_views_link = None
+        self.assertEqual(
+            progress._detect_firefox_views(self.feature_1, self.stages_dict),
+            progress.ProgressDetectorResult(
+                progress.ProgressVote.NEEDS_WORK, 'N/a views require notes'
+            ),
+        )
+        self.feature_1.ff_views_notes = 'Chrome-specific feature'
+        self.assertEqual(
+            progress._detect_firefox_views(self.feature_1, self.stages_dict),
+            READY_FOR_REVIEW,
+        )
 
     def test_safari_views(self):
         """Test safari views."""
@@ -426,6 +490,19 @@ class ProgressDetectorsTest(testing_config.CustomTestCase):
             ),
         )
         self.feature_1.safari_views_link = 'http://example.com'
+        self.assertEqual(
+            progress._detect_safari_views(self.feature_1, self.stages_dict),
+            READY_FOR_REVIEW,
+        )
+        self.feature_1.safari_views = core_enums.SIGNALS_NA
+        self.feature_1.safari_views_link = None
+        self.assertEqual(
+            progress._detect_safari_views(self.feature_1, self.stages_dict),
+            progress.ProgressDetectorResult(
+                progress.ProgressVote.NEEDS_WORK, 'N/a views require notes'
+            ),
+        )
+        self.feature_1.safari_views_notes = 'Chrome-specific feature'
         self.assertEqual(
             progress._detect_safari_views(self.feature_1, self.stages_dict),
             READY_FOR_REVIEW,
@@ -512,11 +589,46 @@ class ProgressDetectorsTest(testing_config.CustomTestCase):
             READY_FOR_REVIEW,
         )
 
+    def test_detect_shortlinks(self):
+        """Test _detect_shortlinks helper."""
+        self.assertIsNone(progress._detect_shortlinks('Normal public text'))
+        self.assertIsNone(progress._detect_shortlinks('Short go/abc or b/1234'))
+        self.assertEqual(
+            progress._detect_shortlinks('See go/my-design-doc for details'),
+            progress.ProgressDetectorResult(
+                progress.ProgressVote.NEEDS_WORK,
+                "Please avoid shortlink: 'go/my-design-doc'",
+            ),
+        )
+        self.assertEqual(
+            progress._detect_shortlinks('Tracked in b/12345678'),
+            progress.ProgressDetectorResult(
+                progress.ProgressVote.NEEDS_WORK,
+                "Please avoid shortlink: 'b/12345678'",
+            ),
+        )
+
     def test_motivation(self):
         """Test motivation."""
         self.assertEqual(
             progress._detect_motivation(self.feature_1, self.stages_dict),
             NOT_STARTED,
+        )
+        self.feature_1.motivation = 'See go/internal-doc for motivation'
+        self.assertEqual(
+            progress._detect_motivation(self.feature_1, self.stages_dict),
+            progress.ProgressDetectorResult(
+                progress.ProgressVote.NEEDS_WORK,
+                "Please avoid shortlink: 'go/internal-doc'",
+            ),
+        )
+        self.feature_1.motivation = 'See b/12345678 for motivation'
+        self.assertEqual(
+            progress._detect_motivation(self.feature_1, self.stages_dict),
+            progress.ProgressDetectorResult(
+                progress.ProgressVote.NEEDS_WORK,
+                "Please avoid shortlink: 'b/12345678'",
+            ),
         )
         self.feature_1.motivation = 'test motivation'
         self.assertEqual(
@@ -686,6 +798,49 @@ class ProgressDetectorsTest(testing_config.CustomTestCase):
         self.feature_1.summary = 'sum'
         self.assertEqual(
             progress._detect_summary(self.feature_1, self.stages_dict),
+            progress.ProgressDetectorResult(
+                progress.ProgressVote.NEEDS_WORK, 'Summary is too short'
+            ),
+        )
+        self.feature_1.summary = 'A' * 100 + ' see go/internal-doc'
+        self.assertEqual(
+            progress._detect_summary(self.feature_1, self.stages_dict),
+            progress.ProgressDetectorResult(
+                progress.ProgressVote.NEEDS_WORK,
+                "Please avoid shortlink: 'go/internal-doc'",
+            ),
+        )
+        self.feature_1.summary = 'A' * 100 + ' see b/12345678'
+        self.assertEqual(
+            progress._detect_summary(self.feature_1, self.stages_dict),
+            progress.ProgressDetectorResult(
+                progress.ProgressVote.NEEDS_WORK,
+                "Please avoid shortlink: 'b/12345678'",
+            ),
+        )
+        self.feature_1.summary = 'A' * 100
+        self.assertEqual(
+            progress._detect_summary(self.feature_1, self.stages_dict),
+            READY_FOR_REVIEW,
+        )
+
+    def test_summary_alt(self):
+        """Test summary alternatives detector."""
+        self.feature_1.summary = ''
+        self.assertEqual(
+            progress._detect_summary_alt(self.feature_1, self.stages_dict),
+            NOT_STARTED,
+        )
+        self.feature_1.summary = 'Use the new API instead'
+        self.assertEqual(
+            progress._detect_summary_alt(self.feature_1, self.stages_dict),
+            progress.ProgressDetectorResult(
+                progress.ProgressVote.NEEDS_WORK, 'Should link to alternatives'
+            ),
+        )
+        self.feature_1.summary = 'Use https://example.com/new-api instead'
+        self.assertEqual(
+            progress._detect_summary_alt(self.feature_1, self.stages_dict),
             READY_FOR_REVIEW,
         )
 

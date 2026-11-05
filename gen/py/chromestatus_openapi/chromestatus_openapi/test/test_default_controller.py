@@ -50,6 +50,7 @@ from chromestatus_openapi.models.summary_suggestion_list_response import Summary
 from chromestatus_openapi.models.summary_suggestion_patch_request import SummarySuggestionPatchRequest  # noqa: E501
 from chromestatus_openapi.models.summary_suggestion_response import SummarySuggestionResponse  # noqa: E501
 from chromestatus_openapi.models.summary_suggestion_trigger_request import SummarySuggestionTriggerRequest  # noqa: E501
+from chromestatus_openapi.models.web_feature_infos_response import WebFeatureInfosResponse  # noqa: E501
 from chromestatus_openapi.test import BaseTestCase
 
 
@@ -624,6 +625,21 @@ class TestDefaultController(BaseTestCase):
         }
         response = self.client.open(
             '/api/v0/web_feature_ids',
+            method='GET',
+            headers=headers)
+        self.assert200(response,
+                       'Response body is : ' + response.data.decode('utf-8'))
+
+    def test_get_web_feature_infos(self):
+        """Test case for get_web_feature_infos
+
+        Get Baseline web feature infos
+        """
+        headers = { 
+            'Accept': 'application/json',
+        }
+        response = self.client.open(
+            '/api/v0/web_feature_infos',
             method='GET',
             headers=headers)
         self.assert200(response,
