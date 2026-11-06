@@ -1,0 +1,16 @@
+# Passed to openapi-generator via --ignore-file-override for the generated
+# Python packages under gen/py/.
+#
+# These files are never used: the packages are installed with
+# `pip install -e` from the root requirements.txt, which reads setup.py.
+# Generating them only creates stale dependency pins that Dependabot flags,
+# and regenerating reverts any fixes it makes.
+requirements.txt
+test-requirements.txt
+tox.ini
+Dockerfile
+.dockerignore
+.travis.yml
+.gitlab-ci.yml
+.github/**
+git_push.sh
