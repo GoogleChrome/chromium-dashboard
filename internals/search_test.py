@@ -602,6 +602,7 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
         self.assertTrue(search.is_cacheable('', True))
         self.assertTrue(search.is_cacheable('canvas', True))
         self.assertTrue(search.is_cacheable('feature_type=4', True))
+        self.assertTrue(search.is_cacheable('canvas', False))
 
         self.assertFalse(search.is_cacheable('starred-by:me', True))
         self.assertFalse(search.is_cacheable('owner:me', True))
@@ -611,7 +612,40 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
         self.assertFalse(search.is_cacheable('is:recently-reviewed', True))
         self.assertFalse(search.is_cacheable('created.when<now', True))
         self.assertFalse(search.is_cacheable('shipping>current_stable', True))
-        self.assertFalse(search.is_cacheable('canvas', False))
+        self.assertFalse(search.is_cacheable('owner:me', False))
+
+    @mock.patch('internals.search._process_query_ids')
+    @mock.patch('internals.feature_helpers.get_by_ids')
+    def test_process_query_using_cache__full_results(
+        self, mock_get_by_ids, mock_process_ids
+    ):
+        """Full search queries cache the ID list and reuse it on cache hit."""
+        mock_process_ids.return_value = ([10, 20], 2)
+        mock_get_by_ids.return_value = [
+            {'id': 10, 'name': 'feature 10'},
+            {'id': 20, 'name': 'feature 20'},
+        ]
+
+        res1, count1 = search.process_query_using_cache(
+            'canvas', name_only=False
+        )
+        res2, count2 = search.process_query_using_cache(
+            'canvas', name_only=False
+        )
+
+        self.assertEqual(count1, 2)
+        self.assertEqual(count2, 2)
+        self.assertEqual(res1, res2)
+        mock_process_ids.assert_called_once()
+        self.assertEqual(mock_get_by_ids.call_count, 2)
+
+    @mock.patch('internals.search.make_cache_key')
+    def test_process_query_using_cache__uncacheable_skips_make_key(
+        self, mock_make_key
+    ):
+        """Uncacheable queries do not compute a cache key."""
+        search.process_query_using_cache('owner:me', name_only=False)
+        mock_make_key.assert_not_called()
 
     @mock.patch('internals.search.process_pending_approval_me_query')
     @mock.patch('internals.search.process_pending_review_me_query')

@@ -30,7 +30,7 @@ from google.cloud import ndb
 from google.cloud.ndb.tasklets import Future  # for type checking only
 
 from api import converters
-from framework import basehandlers, permissions
+from framework import basehandlers, permissions, rediscache
 from framework.users import User
 from framework.utils import chunk_list
 from internals import approval_defs, core_enums, notifier_helpers, self_certify
@@ -216,6 +216,7 @@ class GatesAPI(basehandlers.APIHandler):
 
         if changes:
             gate.put()
+            rediscache.delete_keys_with_prefix(FeatureEntry.SEARCH_CACHE_KEY)
 
         # Callers don't use the JSON response for this API call.
         message = 'Changed: %s' % (', '.join(changes) or None)

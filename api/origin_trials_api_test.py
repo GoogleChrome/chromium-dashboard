@@ -993,11 +993,15 @@ bool FeatureHasExpiryGracePeriod(blink::mojom::OriginTrialFeature feature) {
         request_path = (
             f'{self.feature_1_id}/{self.ot_stage_1.key.integer_id()}/create'
         )
-        with test_app.test_request_context(request_path, json=body):
-            response = self.handler.do_post(
-                feature_id=self.feature_1_id,
-                stage_id=self.ot_stage_1.key.integer_id(),
-            )
+        with mock.patch(
+            'framework.rediscache.delete_keys_with_prefix'
+        ) as mock_dkwp:
+            with test_app.test_request_context(request_path, json=body):
+                response = self.handler.do_post(
+                    feature_id=self.feature_1_id,
+                    stage_id=self.ot_stage_1.key.integer_id(),
+                )
+            mock_dkwp.assert_called_once_with(FeatureEntry.SEARCH_CACHE_KEY)
         self.assertEqual(
             response, {'message': 'Origin trial creation request submitted.'}
         )
@@ -1024,3 +1028,21 @@ bool FeatureHasExpiryGracePeriod(blink::mojom::OriginTrialFeature feature) {
         self.assertEqual(self.ot_stage_1.ot_use_counter_bucket_number, 6)
         # Stage should be marked as "Ready for creation"
         self.assertEqual(self.ot_stage_1.ot_setup_status, 2)
+
+    @mock.patch('internals.notifier_helpers.send_trial_extended_notification')
+    @mock.patch('framework.origin_trials_client.extend_origin_trial')
+    @mock.patch('framework.rediscache.delete_keys_with_prefix')
+    def test_patch__valid(self, mock_dkwp, mock_extend, mock_send_notification):
+        """A valid OT extension request extends the trial and invalidates cache."""
+        testing_config.sign_in('owner@example.com', 1234567890)
+        with test_app.test_request_context(self.request_path, json={}):
+            response = self.handler.do_patch(
+                feature_id=self.feature_1_id,
+                extension_stage_id=self.extension_stage_1.key.integer_id(),
+            )
+        self.assertEqual(
+            response, {'message': 'Origin trial extended successfully.'}
+        )
+        mock_extend.assert_called_once()
+        mock_send_notification.assert_called_once()
+        mock_dkwp.assert_called_once_with(FeatureEntry.SEARCH_CACHE_KEY)
