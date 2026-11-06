@@ -70,4 +70,31 @@ describe('chromedash-admin-blink-page', () => {
       component.shadowRoot!.querySelector('#component-count');
     assert.exists(subheaderCountEl);
   });
+
+  it('prevents duplicate owner_ids and keeps subscriber when only removing owner role', async () => {
+    const response: ComponentsUsersResponse = {
+      users: [{id: 1, name: 'user1', email: 'user1@example.com'}],
+      components: [
+        {id: '0', name: 'component0', subscriber_ids: [1], owner_ids: [1]},
+      ],
+    };
+    csOpenApiClientStub = sinon.createStubInstance(DefaultApi);
+    csOpenApiClientStub.listComponentUsers.resolves(response);
+    window.csOpenApiClient = csOpenApiClientStub;
+
+    const component = await fixture<ChromedashAdminBlinkPage>(
+      html`<chromedash-admin-blink-page></chromedash-admin-blink-page>`
+    );
+
+    component._addComponentUserListener({
+      detail: {index: 0, userId: 1, toggleAsOwner: true, isError: false},
+    });
+    assert.deepEqual(component.components![0].owner_ids, [1]);
+
+    component._removeComponentUserListener({
+      detail: {index: 0, userId: 1, toggleAsOwner: true, isError: false},
+    });
+    assert.deepEqual(component.components![0].owner_ids, []);
+    assert.deepEqual(component.components![0].subscriber_ids, [1]);
+  });
 });
