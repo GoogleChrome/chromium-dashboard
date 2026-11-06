@@ -213,5 +213,23 @@ describe('chromedash-textarea', () => {
       assert.exists(boldWord);
       assert.equal(boldWord.innerText, 'markdown');
     });
+
+    it('preserves the inner textarea element when toggling preview', async () => {
+      const component = await fixture<ChromedashTextarea>(
+        html`<chromedash-textarea
+          value="Some **markdown**"
+          offermarkdown
+          ismarkdown
+        ></chromedash-textarea>`
+      );
+      await component.updateComplete;
+      const textareaBefore = component.renderRoot.querySelector('textarea');
+      assert.exists(textareaBefore);
+
+      component.showPreview = true;
+      await component.updateComplete;
+      const textareaAfter = component.renderRoot.querySelector('textarea');
+      assert.strictEqual(textareaBefore, textareaAfter);
+    });
   });
 });
