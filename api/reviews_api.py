@@ -61,16 +61,15 @@ class VotesAPI(basehandlers.APIHandler):
         gate_id = gate.key.integer_id()
         new_state = self.get_int_param('state', validator=Vote.is_valid_state)
 
-        old_votes = Vote.get_votes(
-            feature_id=feature_id, gate_id=gate_id, set_by=user.email()
-        )
+        existing_votes = Vote.get_votes(feature_id=feature_id, gate_id=gate_id)
+        old_votes = [v for v in existing_votes if v.set_by == user.email()]
         old_state = old_votes[0].state if old_votes else Vote.NO_RESPONSE
         self.require_permissions(user, fe, gate, new_state)
-        self.check_voting_rules(gate, new_state)
+        self.check_voting_rules(gate, new_state, existing_votes=existing_votes)
 
         old_gate_state = gate.state
         new_gate_state = approval_defs.set_vote(
-            feature_id, None, new_state, user.email(), gate_id
+            feature_id, None, new_state, user.email(), gate_id, gate=gate
         )
         fe.updated = datetime.now()
         fe.put()
@@ -147,14 +146,26 @@ class VotesAPI(basehandlers.APIHandler):
         else:
             self.abort(403, msg='User is not an approver')
 
-    def check_voting_rules(self, gate, new_state):
+    def check_voting_rules(
+        self,
+        gate,
+        new_state,
+        existing_votes: list[Vote] | None = None,
+    ):
         """Abort the request if the user casts a vote that we cannot accept."""
         if new_state == Vote.NA_VERIFIED:
-            existing_na_votes = Vote.get_votes(
-                feature_id=gate.feature_id,
-                gate_id=gate.key.integer_id(),
-                states=[Vote.NA_SELF, Vote.NA_VERIFIED],
-            )
+            if existing_votes is not None:
+                existing_na_votes = [
+                    v
+                    for v in existing_votes
+                    if v.state in (Vote.NA_SELF, Vote.NA_VERIFIED)
+                ]
+            else:
+                existing_na_votes = Vote.get_votes(
+                    feature_id=gate.feature_id,
+                    gate_id=gate.key.integer_id(),
+                    states=[Vote.NA_SELF, Vote.NA_VERIFIED],
+                )
             if not existing_na_votes:
                 self.abort(
                     400,
