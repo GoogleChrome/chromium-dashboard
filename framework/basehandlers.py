@@ -35,7 +35,7 @@ from google.cloud import ndb  # type: ignore
 import settings
 from api import api_specs
 from framework import csp, permissions, secrets, users, utils, xsrf
-from internals import approval_defs, core_enums, notifier_helpers, user_models
+from internals import core_enums, notifier_helpers, user_models
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
 from internals.data_types import CHANGED_FIELDS_LIST_TYPE
 from internals.review_models import Gate
@@ -654,8 +654,6 @@ class FlaskHandler(BaseHandler):
 
         user = self.get_current_user()
         if user:
-            gate_type = approval_defs.ShipApproval.gate_type
-            approvers = approval_defs.get_approvers(gate_type)  # noqa: F841
             user_pref = user_models.UserPref.get_signed_in_user_pref()
             common_data['user'] = {
                 'can_create_feature': permissions.can_create_feature(user),
