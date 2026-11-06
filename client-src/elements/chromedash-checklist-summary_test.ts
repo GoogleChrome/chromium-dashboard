@@ -208,6 +208,35 @@ describe('chromedash-checklist-summary', () => {
     );
   });
 
+  it('refetches gates after loading resets and does not infinite-loop if getGates returns empty array', async () => {
+    getGatesStub.resolves({gates: []});
+    const component = await fixture<ChromedashChecklistSummary>(
+      html`<chromedash-checklist-summary
+        .loading=${false}
+        .feature=${feature}
+        .stage=${stage}
+        .gate=${dqShipGate}
+        .process=${process}
+        .progress=${{} as ProgressItem}
+        .featureGates=${[]}
+      ></chromedash-checklist-summary>`
+    );
+    await new Promise(resolve => setTimeout(resolve, 0));
+    await component.updateComplete;
+    assert.equal(getGatesStub.callCount, 1);
+
+    // Simulate parent setContext setting loading=true and clearing featureGates, then finishing loading
+    component.loading = true;
+    component.featureGates = [];
+    await component.updateComplete;
+
+    getGatesStub.resolves({gates: [dqShipGate]});
+    component.loading = false;
+    await component.updateComplete;
+
+    assert.equal(getGatesStub.callCount, 2);
+  });
+
   it('renders nothing and does not fetch gates for non-DQ gates', async () => {
     const component = await fixture<ChromedashChecklistSummary>(
       html`<chromedash-checklist-summary

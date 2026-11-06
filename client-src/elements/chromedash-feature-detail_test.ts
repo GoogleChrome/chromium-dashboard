@@ -84,6 +84,35 @@ describe('chromedash-feature-detail', () => {
     assert.isFalse(component.hasMixedGates(stageResolved));
   });
 
+  it('excludes gate-only request review actions from stage-level actions', async () => {
+    const component: ChromedashFeatureDetail = (await fixture(
+      html`<chromedash-feature-detail
+        .feature=${feature}
+        .gates=${[]}
+      ></chromedash-feature-detail>`
+    )) as ChromedashFeatureDetail;
+
+    const stageWithOnlyReviewAction = {
+      actions: [{name: 'Review data quality', url: 'request review'}],
+    };
+    assert.isFalse(
+      component.hasStageActions(stageWithOnlyReviewAction, {id: 10} as any)
+    );
+
+    const stageWithIntentAction = {
+      actions: [
+        {name: 'Review data quality', url: 'request review'},
+        {
+          name: 'Draft Intent to Ship email',
+          url: '/feature/{feature_id}/gate/{gate_id}/intent',
+        },
+      ],
+    };
+    assert.isTrue(
+      component.hasStageActions(stageWithIntentAction, {id: 10} as any)
+    );
+  });
+
   it('scrolls the stage <sl-details> into view in initializeGateColumn', async () => {
     const originalSearch = window.location.search;
     window.history.replaceState({}, '', '?gate=99');
