@@ -370,4 +370,35 @@ describe('chromedash-summary-review-dialog', () => {
 
     assert.isTrue(applySpy.calledOnce);
   });
+
+  it('resets transient edit and error states when featureId changes', async () => {
+    const el = await fixture<ChromedashSummaryReviewDialog>(
+      html`<chromedash-summary-review-dialog
+        .featureId=${101}
+        .currentSummary=${'Old summary'}
+        .suggestion=${mockSuggestion}
+      ></chromedash-summary-review-dialog>`
+    );
+
+    el.isEditing = true;
+    el.editedSummary = 'Draft for feature 101';
+    el.newerSuggestionAvailable = true;
+    el.occConflict = true;
+    el.errorMessage = 'Conflict error';
+    await el.updateComplete;
+
+    el.featureId = 202;
+    el.suggestion = {
+      ...mockSuggestion,
+      feature_id: 202,
+      suggested_summary: 'Summary for feature 202',
+    };
+    await el.updateComplete;
+
+    assert.isFalse(el.isEditing);
+    assert.isFalse(el.newerSuggestionAvailable);
+    assert.isFalse(el.occConflict);
+    assert.isNull(el.errorMessage);
+    assert.equal(el.editedSummary, 'Summary for feature 202');
+  });
 });
