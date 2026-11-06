@@ -15,7 +15,7 @@
  */
 
 import {assert, fixture} from '@open-wc/testing';
-import {html} from 'lit';
+import {html, nothing} from 'lit';
 import {ReleaseInfo, Feature} from '../js-src/cs-client.js';
 import {
   ChromedashRoadmapMilestoneCard,
@@ -590,6 +590,21 @@ describe('chromedash-roadmap-milestone-card', () => {
         deprecationItems[0].textContent,
         'Deprecation Trial Feature'
       );
+    });
+
+    it('gracefully handles null or invalid dates in _computeDate and _computeDaysUntil', async () => {
+      const el = await fixture<ChromedashRoadmapMilestoneCard>(
+        html`<chromedash-roadmap-milestone-card
+          .templateContent=${templateContent}
+          .channel=${channel}
+          .stableMilestone=${stableMilestone}
+        ></chromedash-roadmap-milestone-card>`
+      );
+      assert.equal(el._computeDate(null), '');
+      assert.equal(el._computeDate(undefined), '');
+      assert.equal(el._computeDate('2Next-release-TBD'), '');
+      assert.equal(el._computeDaysUntil(null), nothing);
+      assert.equal(el._computeDaysUntil(undefined), nothing);
     });
   });
 });

@@ -75,11 +75,17 @@ export class ChromedashRoadmapMilestoneCard extends LitElement {
   }
 
   _computeDate(dateStr, addYear = false) {
+    if (!dateStr) {
+      return '';
+    }
     const opts: Intl.DateTimeFormatOptions = {month: 'short', day: 'numeric'};
     if (addYear) {
       opts.year = 'numeric';
     }
     const date = new Date(dateStr);
+    if (isNaN(date.getTime())) {
+      return '';
+    }
     return new Intl.DateTimeFormat('en-US', opts).format(date);
   }
 
@@ -138,6 +144,9 @@ export class ChromedashRoadmapMilestoneCard extends LitElement {
   }
 
   _computeDaysUntil(dateStr) {
+    if (!dateStr) {
+      return nothing;
+    }
     const date = new Date(dateStr);
     if (isNaN(date.getTime())) {
       return nothing;
