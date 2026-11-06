@@ -88,9 +88,7 @@ export class ChromedashGuideEditallPage extends LitElement {
   loading = true;
   @state()
   submitting = false;
-  @state()
   previousStageTypeRendered = 0;
-  @state()
   sameTypeRendered = 0;
   @state()
   fieldValues: FieldInfo[] & {feature?: Feature} = [];
@@ -116,6 +114,7 @@ export class ChromedashGuideEditallPage extends LitElement {
       window.csClient.getChannels(),
     ])
       .then(async ([feature, channels]) => {
+        this.fieldValues = [];
         this.feature = feature;
         this.currentBetaMilestone = Number(channels.beta.mstone);
         if (this.feature.name) {
@@ -194,6 +193,7 @@ export class ChromedashGuideEditallPage extends LitElement {
     // The field has been updated, so it is considered touched.
     this.fieldValues[index].touched = true;
     this.fieldValues[index].value = value;
+    this.fieldValues[index].isMarkdown = event.detail.isMarkdown;
   }
 
   getNextPage() {
@@ -291,7 +291,8 @@ export class ChromedashGuideEditallPage extends LitElement {
     sectionBaseName,
     feStage,
     stageFields,
-    featureFieldsDisplayed: Set<string>
+    featureFieldsDisplayed: Set<string>,
+    previousFieldValues: FieldInfo[] = []
   ) {
     if (!stageFields) return nothing;
 
@@ -321,7 +322,7 @@ export class ChromedashGuideEditallPage extends LitElement {
       ) {
         return nothing;
       }
-      let value = formattedFeature[field];
+      let value = formattedFeature[field] ?? formattedFeature[featureJSONKey];
       let stageId = null;
       if (STAGE_SPECIFIC_FIELDS.has(featureJSONKey)) {
         value = getStageValue(feStage, featureJSONKey);
@@ -333,12 +334,25 @@ export class ChromedashGuideEditallPage extends LitElement {
         return nothing;
       }
       const index = this.fieldValues.length;
-      this.fieldValues.push({
-        name: featureJSONKey,
-        touched: false,
-        value,
-        stageId,
-      });
+      const existingIdx = previousFieldValues.findIndex(
+        fv => fv.name === featureJSONKey && fv.stageId === stageId
+      );
+      if (existingIdx !== -1) {
+        const [existingField] = previousFieldValues.splice(existingIdx, 1);
+        if (existingField.touched) {
+          value = existingField.value;
+        } else {
+          existingField.value = value;
+        }
+        this.fieldValues.push(existingField);
+      } else {
+        this.fieldValues.push({
+          name: featureJSONKey,
+          touched: false,
+          value,
+          stageId,
+        });
+      }
       featureFieldsDisplayed.add(featureJSONKey);
 
       return html`
@@ -394,6 +408,10 @@ export class ChromedashGuideEditallPage extends LitElement {
    * @return {Array} formsToRender, All HTML elements to render in the form.
    */
   getForms(formattedFeature, feStages) {
+    this.previousStageTypeRendered = 0;
+    this.sameTypeRendered = 0;
+    const previousFieldValues = [...this.fieldValues];
+    this.fieldValues.length = 0;
     // All features display the metadata section.
     let fieldsOnly = flattenSections(
       formattedFeature.is_enterprise_feature
@@ -410,7 +428,8 @@ export class ChromedashGuideEditallPage extends LitElement {
         FLAT_METADATA_FIELDS.name,
         {id: -1},
         fieldsOnly,
-        featureFieldsDisplayed
+        featureFieldsDisplayed,
+        previousFieldValues
       ),
     ];
 
@@ -439,7 +458,8 @@ export class ChromedashGuideEditallPage extends LitElement {
           stageForm.name,
           feStage,
           fieldsOnly,
-          featureFieldsDisplayed
+          featureFieldsDisplayed,
+          previousFieldValues
         )
       );
 
@@ -458,7 +478,8 @@ export class ChromedashGuideEditallPage extends LitElement {
             sectionName,
             extensionStage,
             fieldsOnly,
-            featureFieldsDisplayed
+            featureFieldsDisplayed,
+            previousFieldValues
           )
         );
       });

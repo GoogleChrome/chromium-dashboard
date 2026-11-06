@@ -52,6 +52,7 @@ export class ChromedashGuideMetadataPage extends LitElement {
   feature!: Feature;
   @state()
   loading = true;
+  nextFieldIndex = 0;
   @state()
   fieldValues: FieldInfo[] & {feature?: Feature} = [];
   @state()
@@ -69,6 +70,7 @@ export class ChromedashGuideMetadataPage extends LitElement {
       fetchCurrentBetaMilestone(),
     ])
       .then(([feature, betaMilestone]) => {
+        this.fieldValues = [];
         this.feature = feature;
         this.currentBetaMilestone = betaMilestone;
         if (this.feature.name) {
@@ -205,10 +207,14 @@ export class ChromedashGuideMetadataPage extends LitElement {
   renderFields(formattedFeature, section) {
     return section.fields.map(field => {
       const featureJSONKey = ALL_FIELDS[field].name || field;
-      const value = formattedFeature[featureJSONKey];
+      let value = formattedFeature[field] ?? formattedFeature[featureJSONKey];
       // Add the field to this component's stage before creating the field component.
-      const index = this.fieldValues.length;
-      this.fieldValues.push({name: featureJSONKey, touched: false, value});
+      const index = this.nextFieldIndex++;
+      if (index >= this.fieldValues.length) {
+        this.fieldValues.push({name: featureJSONKey, touched: false, value});
+      } else {
+        value = this.fieldValues[index].value;
+      }
 
       return html`
         <chromedash-form-field
@@ -228,6 +234,7 @@ export class ChromedashGuideMetadataPage extends LitElement {
   }
 
   renderSections(formattedFeature, sections) {
+    this.nextFieldIndex = 0;
     return sections.map(section => {
       return html`
         <h3>${section.name}</h3>

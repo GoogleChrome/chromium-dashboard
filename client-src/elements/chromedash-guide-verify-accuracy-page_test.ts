@@ -55,6 +55,7 @@ describe('chromedash-guide-verify-accuracy-page', () => {
         id: 2,
         stage_type: 160,
         intent_stage: 2,
+        desktop_first: 135,
       },
       {
         id: 3,
@@ -244,6 +245,7 @@ describe('chromedash-guide-verify-accuracy-page', () => {
       detail: {
         index: 1,
         value: 'new value',
+        isMarkdown: true,
       },
     });
     field.dispatchEvent(event);
@@ -251,5 +253,25 @@ describe('chromedash-guide-verify-accuracy-page', () => {
     // Check component state
     assert.equal(component.fieldValues[1].value, 'new value');
     assert.isTrue(component.fieldValues[1].touched);
+    assert.isTrue(component.fieldValues[1].isMarkdown);
+
+    const initialLength = component.fieldValues.length;
+    component.submitting = true;
+    await component.updateComplete;
+    assert.equal(component.fieldValues.length, initialLength);
+
+    // Stage-specific field 'shipped_milestone' should populate from stage (135)
+    // and pass stageId to chromedash-form-field.
+    const desktopFirstField = component.fieldValues.find(
+      fv => fv.name === 'shipped_milestone' && fv.stageId === 2
+    );
+    assert.exists(desktopFirstField);
+    assert.equal(desktopFirstField.value, 135);
+
+    const shippedFormFieldEl = component.renderRoot.querySelector(
+      'chromedash-form-field[name="shipped_milestone"]'
+    ) as any;
+    assert.exists(shippedFormFieldEl);
+    assert.equal(shippedFormFieldEl.stageId, 2);
   });
 });

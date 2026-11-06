@@ -143,33 +143,39 @@ export class ChromedashOTCreationPage extends LitElement {
       window.csClient.getFeature(this.featureId),
       window.csClient.getStage(this.featureId, this.stageId),
       window.csClient.getGates(this.featureId),
-    ]).then(([feature, stage, gatesRes]) => {
-      this.feature = feature;
-      this.stage = stage;
+    ])
+      .then(([feature, stage, gatesRes]) => {
+        this.feature = feature;
+        this.stage = stage;
 
-      // Redirect if stage creation form has already been submitted.
-      if (
-        this.stage.ot_setup_status &&
-        this.stage.ot_setup_status !== OT_SETUP_STATUS_OPTIONS.OT_NOT_CREATED
-      ) {
-        window.location.href = `/feature/${this.featureId}`;
-      }
-      // Check that necessary approvals have been obtained.
-      const relevantGates = gatesRes.gates.filter(
-        g => g.stage_id === this.stage.id
-      );
-      relevantGates.forEach(g => {
-        if (!GATE_APPROVED_REVIEW_STATES.includes(g.state)) {
-          // Redirect if approvals have not been obtained.
+        // Redirect if stage creation form has already been submitted.
+        if (
+          this.stage.ot_setup_status &&
+          this.stage.ot_setup_status !== OT_SETUP_STATUS_OPTIONS.OT_NOT_CREATED
+        ) {
           window.location.href = `/feature/${this.featureId}`;
         }
+        // Check that necessary approvals have been obtained.
+        const relevantGates = gatesRes.gates.filter(
+          g => g.stage_id === this.stage.id
+        );
+        relevantGates.forEach(g => {
+          if (!GATE_APPROVED_REVIEW_STATES.includes(g.state)) {
+            // Redirect if approvals have not been obtained.
+            window.location.href = `/feature/${this.featureId}`;
+          }
+        });
+        if (this.feature.name) {
+          document.title = `${this.feature.name} - ${this.appTitle}`;
+        }
+        this.setFieldValues();
+        this.loading = false;
+      })
+      .catch(() => {
+        showToastMessage(
+          'Some errors occurred. Please refresh the page or try again later.'
+        );
       });
-      if (this.feature.name) {
-        document.title = `${this.feature.name} - ${this.appTitle}`;
-      }
-      this.setFieldValues();
-      this.loading = false;
-    });
   }
 
   // Add the togglable registration approvals fields to the fieldValues array.
@@ -186,28 +192,31 @@ export class ChromedashOTCreationPage extends LitElement {
       {
         name: 'ot_approval_buganizer_component',
         touched: true,
-        value: '',
+        value:
+          getStageValue(this.stage, 'ot_approval_buganizer_component') || '',
         stageId: this.stage.id,
         isApprovalsField: true,
       },
       {
         name: 'ot_approval_buganizer_custom_field_id',
         touched: true,
-        value: '',
+        value:
+          getStageValue(this.stage, 'ot_approval_buganizer_custom_field_id') ||
+          '',
         stageId: this.stage.id,
         isApprovalsField: true,
       },
       {
         name: 'ot_approval_group_email',
         touched: true,
-        value: '',
+        value: getStageValue(this.stage, 'ot_approval_group_email') || '',
         stageId: this.stage.id,
         isApprovalsField: true,
       },
       {
         name: 'ot_approval_criteria_url',
         touched: true,
-        value: '',
+        value: getStageValue(this.stage, 'ot_approval_criteria_url') || '',
         stageId: this.stage.id,
         isApprovalsField: true,
       }
@@ -254,6 +263,8 @@ export class ChromedashOTCreationPage extends LitElement {
         // Display registration approvals fields by default if the value is checked already.
       } else if (featureJSONKey === 'ot_require_approvals') {
         this.showApprovalsFields = !!value;
+      } else if (featureJSONKey === 'ot_is_deprecation_trial') {
+        this.isDeprecationTrial = !!value;
       }
 
       // Add the field to this component's stage before creating the field component.
@@ -356,18 +367,16 @@ export class ChromedashOTCreationPage extends LitElement {
   async handleFormSubmit(e) {
     e.preventDefault();
     // If registration approvals is not enabled, ignore all fields related to that setting.
-    if (!this.showApprovalsFields) {
-      this.fieldValues.forEach(fieldInfo => {
-        if (fieldInfo.isApprovalsField) {
-          fieldInfo.touched = false;
-        }
-      });
-    }
+    this.fieldValues.forEach(fieldInfo => {
+      if (fieldInfo.isApprovalsField) {
+        fieldInfo.touched = this.showApprovalsFields;
+      }
+    });
     const useCounterField = this.fieldValues.find(
       fv => fv.name === 'ot_webfeature_use_counter'
     );
-    if (this.isDeprecationTrial) {
-      useCounterField!.touched = false;
+    if (useCounterField) {
+      useCounterField.touched = !this.isDeprecationTrial;
     }
 
     const featureSubmitBody = formatFeatureChanges(
@@ -377,7 +386,10 @@ export class ChromedashOTCreationPage extends LitElement {
     // We only need the single stage changes.
     const stageSubmitBody = featureSubmitBody.stages[0];
 
-    if ('ot_webfeature_use_counter' in stageSubmitBody) {
+    if (
+      'ot_webfeature_use_counter' in stageSubmitBody &&
+      stageSubmitBody.ot_webfeature_use_counter.value
+    ) {
       // Add on the appropriate use counter prefix.
       let useCounterPrefix = '';
       if (this.webfeatureUseCounterType === USE_COUNTER_TYPE_WEBDXFEATURE) {
@@ -387,7 +399,10 @@ export class ChromedashOTCreationPage extends LitElement {
       ) {
         useCounterPrefix = 'CSSSampleId::';
       }
-      stageSubmitBody.ot_webfeature_use_counter.value = `${useCounterPrefix}${stageSubmitBody.ot_webfeature_use_counter.value}`;
+      const rawValue = String(stageSubmitBody.ot_webfeature_use_counter.value);
+      if (useCounterPrefix && !rawValue.startsWith(useCounterPrefix)) {
+        stageSubmitBody.ot_webfeature_use_counter.value = `${useCounterPrefix}${rawValue}`;
+      }
     }
 
     this.submitting = true;
@@ -407,6 +422,12 @@ export class ChromedashOTCreationPage extends LitElement {
             window.location.href = `/feature/${this.featureId}`;
           }, 1000);
         }
+      })
+      .catch(() => {
+        this.submitting = false;
+        showToastMessage(
+          'Some errors occurred. Please refresh the page or try again later.'
+        );
       });
   }
 
@@ -490,10 +511,12 @@ export class ChromedashOTCreationPage extends LitElement {
         <chromedash-form-field
           name=${fieldInfo.name}
           index=${i}
+          stageId=${this.stage.id}
           value=${fieldInfo.value}
           disabledReason="${getDisabledHelpText(fieldInfo.name, this.stage)}"
           .checkMessage=${fieldInfo.checkMessage}
           .fieldValues=${this.fieldValues}
+          .feature=${this.feature}
           ?shouldFadeIn=${shouldFadeIn}
           @form-field-update="${this.handleFormFieldUpdate}"
         >
