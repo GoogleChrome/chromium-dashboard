@@ -126,18 +126,23 @@ class AppUser(ndb.Model):
         cache_key = 'user|%s' % self.email
         rediscache.delete(cache_key)
 
+    _NO_APP_USER = 'NO_APP_USER'
+
     @classmethod
     def get_app_user(cls, email: str) -> Optional[AppUser]:
         """Return the AppUser for the specified user, or None."""
         cache_key = 'user|%s' % email
         cached_app_user = rediscache.get(cache_key)
-        if cached_app_user:
+        if cached_app_user is not None:
+            if cached_app_user == cls._NO_APP_USER:
+                return None
             return cached_app_user
 
         query = cls.query()
         query = query.filter(cls.email == email)
         found_app_user: Optional[AppUser] = query.get()
         if found_app_user is None:
+            rediscache.set(cache_key, cls._NO_APP_USER)
             return None
         rediscache.set(cache_key, found_app_user)
         return found_app_user
