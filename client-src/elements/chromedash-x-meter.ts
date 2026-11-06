@@ -69,7 +69,7 @@ class ChromedashXMeter extends LitElement {
         <div id="track">
           <div
             id="indicator"
-            style="width: ${(this.value / this.max) * 100}%"
+            style="width: ${this.max > 0 ? (this.value / this.max) * 100 : 0}%"
           ></div>
         </div>
       </a>

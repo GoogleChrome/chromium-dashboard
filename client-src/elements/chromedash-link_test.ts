@@ -37,6 +37,21 @@ it('shows a plain link for non-cached links', async () => {
   );
 });
 
+it('shows a plain link when featureLinks is undefined', async () => {
+  const el = await fixture(
+    html`<chromedash-link
+      href="https://github.com/GoogleChrome/chromium-dashboard/issues/3007"
+      >Content</chromedash-link
+    >`
+  );
+  expect(el).shadowDom.to.equal(
+    `<a href="https://github.com/GoogleChrome/chromium-dashboard/issues/3007"
+        rel="noopener noreferrer"
+        target="_blank"><slot>...</slot></a>`,
+    {ignoreChildren: ['slot']}
+  );
+});
+
 it('wraps the text in sl-tag when requested', async () => {
   const el = await fixture(
     html`<chromedash-link
