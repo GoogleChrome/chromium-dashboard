@@ -23,7 +23,9 @@ import {
   enumLabelToFeatureKey,
   fetchWebFeatureChoices,
   shouldDisplayFeatureLink,
+  shouldDisplayWidelySupportedWarning,
 } from './chromedash-form-field.js';
+import type {WebFeatureInfo} from 'chromestatus-openapi';
 import {
   NEW_FEATURE_FORM_FIELDS,
   ENTERPRISE_NEW_FEATURE_FORM_FIELDS,
@@ -67,6 +69,13 @@ export class ChromedashGuideNewPage extends LitElement {
         .process-notice p + p {
           margin-top: var(--content-padding-half);
         }
+        #web_feature_row sl-select,
+        #web_feature_row sl-input {
+          margin: 6px 10px;
+        }
+        input[type='submit'] {
+          margin: var(--content-padding) 0;
+        }
       `,
     ];
   }
@@ -90,6 +99,8 @@ export class ChromedashGuideNewPage extends LitElement {
   @state()
   proposedWebFeature = '';
   @state()
+  webFeatureInfos: WebFeatureInfo[] = [];
+  @state()
   webFeatureChoices: Record<string, [string, string]> = {};
   @state()
   loadingWebFeatures = false;
@@ -104,7 +115,8 @@ export class ChromedashGuideNewPage extends LitElement {
   fetchWebFeatures() {
     this.loadingWebFeatures = true;
     fetchWebFeatureChoices()
-      .then(({choices}) => {
+      .then(({webFeatureInfos, choices}) => {
+        this.webFeatureInfos = webFeatureInfos;
         this.webFeatureChoices = choices;
         this.loadingWebFeatures = false;
       })
@@ -135,24 +147,94 @@ export class ChromedashGuideNewPage extends LitElement {
   handleFormSubmit(event, hiddenTokenField?) {
     void hiddenTokenField;
     event.preventDefault();
-    let featureType: number | string =
-      FEATURE_TYPES.FEATURE_TYPE_INCUBATE_ID[0];
-    if (this.isEnterpriseFeature) {
-      featureType = FEATURE_TYPES.FEATURE_TYPE_ENTERPRISE_ID[0];
-    } else {
-      const selectedRadio = this.shadowRoot?.querySelector<HTMLInputElement>(
-        'input[name="feature_type"]:checked'
-      );
-      if (selectedRadio) {
-        featureType = Number(selectedRadio.value);
+
+    const form =
+      (event.target as HTMLElement)?.closest('form') ||
+      this.shadowRoot?.querySelector('form');
+    if (
+      form &&
+      typeof form.checkValidity === 'function' &&
+      !form.checkValidity()
+    ) {
+      if (typeof form.reportValidity === 'function') {
+        form.reportValidity();
       }
-      for (const fv of this.fieldValues) {
-        if (fv.name == 'feature_type' && fv.value !== undefined) {
-          featureType = fv.value;
-          break;
+      return;
+    }
+
+    const formControls = this.shadowRoot?.querySelectorAll<
+      HTMLElement & {
+        disabled?: boolean;
+        checkValidity?: () => boolean;
+        reportValidity?: () => boolean;
+      }
+    >(
+      'sl-input, sl-select, sl-textarea, chromedash-textarea, input, select, textarea'
+    );
+    let hasInvalid = false;
+    for (const control of formControls || []) {
+      if (control.disabled || control.closest('[style*="display: none"]')) {
+        continue;
+      }
+      if (
+        typeof control.checkValidity === 'function' &&
+        !control.checkValidity()
+      ) {
+        if (!hasInvalid) {
+          if (typeof control.reportValidity === 'function') {
+            control.reportValidity();
+          }
+          hasInvalid = true;
         }
       }
     }
+    if (hasInvalid) {
+      return;
+    }
+
+    const featureType = this.getFeatureType();
+    if (
+      !this.isEnterpriseFeature &&
+      featureType !== FEATURE_TYPES.FEATURE_TYPE_CODE_CHANGE_ID[0]
+    ) {
+      const webFeatureVal =
+        this.webFeatureMode === 'existing'
+          ? this.selectedWebFeature
+          : this.proposedWebFeature;
+      if (!webFeatureVal) {
+        const webFeatureControl = this.shadowRoot?.querySelector<
+          HTMLElement & {reportValidity?: () => boolean}
+        >('#id_web_feature');
+        if (
+          webFeatureControl &&
+          typeof webFeatureControl.reportValidity === 'function'
+        ) {
+          webFeatureControl.reportValidity();
+        }
+        return;
+      }
+    }
+
+    if (!this.isEnterpriseFeature && this.webFeatureMode === 'propose') {
+      const explainerFv = this.fieldValues.find(
+        fv => fv.name === 'explainer_links'
+      );
+      if (!explainerFv?.value) {
+        const explainerControl = this.shadowRoot?.querySelector<
+          HTMLElement & {reportValidity?: () => boolean}
+        >('chromedash-form-field[name="explainer_links"]');
+        if (explainerControl) {
+          const textarea = explainerControl.querySelector<
+            HTMLElement & {reportValidity?: () => boolean}
+          >('chromedash-textarea');
+          if (textarea && typeof textarea.reportValidity === 'function') {
+            textarea.reportValidity();
+          }
+        }
+        return;
+      }
+    }
+
     if (featureType == FEATURE_TYPES.FEATURE_TYPE_CODE_CHANGE_ID[0]) {
       this.fieldValues = this.fieldValues.filter(
         fv => fv.name !== 'web_feature'
@@ -188,6 +270,36 @@ export class ChromedashGuideNewPage extends LitElement {
     navigate(url);
   }
 
+  getFeatureType(): number {
+    if (this.isEnterpriseFeature) {
+      return FEATURE_TYPES.FEATURE_TYPE_ENTERPRISE_ID[0];
+    }
+    for (const fv of this.fieldValues) {
+      if (
+        fv.name === 'feature_type' &&
+        fv.value !== undefined &&
+        fv.value !== ''
+      ) {
+        return Number(fv.value);
+      }
+    }
+    const selectedRadio = this.shadowRoot?.querySelector<HTMLInputElement>(
+      'input[name="feature_type"]:checked'
+    );
+    if (selectedRadio) {
+      return Number(selectedRadio.value);
+    }
+    return FEATURE_TYPES.FEATURE_TYPE_INCUBATE_ID[0];
+  }
+
+  shouldDisplayWidelySupportedWarning(): boolean {
+    return shouldDisplayWidelySupportedWarning(
+      this.webFeatureInfos,
+      this.selectedWebFeature,
+      this.getFeatureType()
+    );
+  }
+
   maybeMakeWebFeatureRequired() {
     const webFeatureRow =
       this.shadowRoot?.querySelector<HTMLElement>('#web_feature_row');
@@ -197,13 +309,7 @@ export class ChromedashGuideNewPage extends LitElement {
     if (!webFeatureRow) {
       return;
     }
-    let featureType = FEATURE_TYPES.FEATURE_TYPE_INCUBATE_ID[0];
-    for (const fv of this.fieldValues) {
-      if (fv.name == 'feature_type' && fv.value !== undefined) {
-        featureType = fv.value;
-        break;
-      }
-    }
+    const featureType = this.getFeatureType();
     if (featureType == FEATURE_TYPES.FEATURE_TYPE_CODE_CHANGE_ID[0]) {
       webFeatureRow.style.display = 'none';
       if (webFeatureHeaderRow) {
@@ -251,6 +357,7 @@ export class ChromedashGuideNewPage extends LitElement {
     this.fieldValues[index].isMarkdown = event.detail.isMarkdown;
     this.maybeMakeWebFeatureRequired();
     this.maybeMakeEnterpriseFeatureCategoriesRequired();
+    this.requestUpdate();
   }
 
   handleWebFeatureModeChange(mode: 'existing' | 'propose') {
@@ -293,13 +400,19 @@ export class ChromedashGuideNewPage extends LitElement {
     }
   }
 
-  renderFormField(field: string, className?: string | null) {
+  renderFormField(
+    field: string,
+    className?: string | null,
+    forceRequired = false
+  ) {
     const fieldProps = ALL_FIELDS[field];
     const featureJSONKey = fieldProps.name || field;
     const newFeatureInitialValues: Record<string, string | number | undefined> =
       {
         owner: this.userEmail,
         shipping_year: new Date().getFullYear(),
+        feature_type: FEATURE_TYPES.FEATURE_TYPE_INCUBATE_ID[0],
+        feature_type_radio_group: FEATURE_TYPES.FEATURE_TYPE_INCUBATE_ID[0],
       };
     const initialValue = this.isEnterpriseFeature
       ? (fieldProps.enterprise_initial ?? fieldProps.initial)
@@ -326,6 +439,7 @@ export class ChromedashGuideNewPage extends LitElement {
         disabledReason="${getDisabledHelpText(field)}"
         .fieldValues=${this.fieldValues}
         ?forEnterprise=${this.isEnterpriseFeature}
+        ?forceRequired=${forceRequired}
         @form-field-update="${this.handleFormFieldUpdate}"
         class="${className || ''}"
       ></chromedash-form-field>
@@ -353,7 +467,7 @@ export class ChromedashGuideNewPage extends LitElement {
       </tr>
       <tr id="web_feature_row">
         <td>
-          <div style="margin-bottom: var(--content-padding-half)">
+          <div style="margin: var(--content-padding-half)">
             <label style="margin-right: 1em">
               <input
                 type="radio"
@@ -386,6 +500,7 @@ export class ChromedashGuideNewPage extends LitElement {
                     id="id_web_feature"
                     size="small"
                     hoist
+                    required
                     .value=${this.selectedWebFeature}
                     ?disabled=${this.loadingWebFeatures}
                     @sl-change=${this.handleSelectWebFeature}
@@ -402,7 +517,7 @@ export class ChromedashGuideNewPage extends LitElement {
                       this.selectedWebFeature
                     )
                       ? html`
-                          <p>
+                          <p style="margin: var(--content-padding-half)">
                             See web feature
                             <a
                               href="https://webstatus.dev/features/${enumLabelToFeatureKey(
@@ -417,6 +532,16 @@ export class ChromedashGuideNewPage extends LitElement {
                         `
                       : nothing
                   }
+                  ${
+                    this.shouldDisplayWidelySupportedWarning()
+                      ? html`
+                          <p style="margin: var(--content-padding-half)">
+                            This web feature is already widely supported, are
+                            you sure that you are incubating a change to it?
+                          </p>
+                        `
+                      : nothing
+                  }
                 `
               : html`
                   <sl-input
@@ -424,12 +549,12 @@ export class ChromedashGuideNewPage extends LitElement {
                     id="id_web_feature"
                     size="small"
                     autocomplete="off"
+                    required
                     .value=${this.proposedWebFeature}
                     @sl-change=${this.handleInputWebFeature}
                     @sl-input=${this.handleInputWebFeature}
                   >
                   </sl-input>
-                  ${this.renderFormField('explainer_links')}
                 `
           }
         </td>
@@ -437,6 +562,11 @@ export class ChromedashGuideNewPage extends LitElement {
           <span class="helptext"> ${ALL_FIELDS['web_feature'].help_text} </span>
         </td>
       </tr>
+      ${
+        this.webFeatureMode === 'propose'
+          ? this.renderFormField('explainer_links', null, true)
+          : nothing
+      }
     `;
   }
 
@@ -531,6 +661,7 @@ export class ChromedashGuideNewPage extends LitElement {
             type="submit"
             class="primary"
             value=${submitLabel}
+            style="margin: var(--content-padding) 0;"
             ?disabled=${this.submitting}
           />
         </form>

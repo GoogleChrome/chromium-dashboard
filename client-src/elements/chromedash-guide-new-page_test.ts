@@ -37,6 +37,24 @@ describe('chromedash-guide-new-page', () => {
     window.csClient.getWebFeatureInfos.restore();
   });
 
+  function populateRequiredFields(component: ChromedashGuideNewPage) {
+    const controls = component.shadowRoot?.querySelectorAll<
+      HTMLElement & {value?: unknown; required?: boolean}
+    >('sl-input, sl-select, chromedash-textarea, input, select, textarea');
+    for (const control of controls || []) {
+      if (control.required && !control.value) {
+        control.value = 'dummy value';
+      }
+    }
+    for (const fv of component.fieldValues) {
+      if (!fv.value) {
+        fv.value = 'dummy value';
+      }
+    }
+    component.selectedWebFeature = 'grid';
+    component.proposedWebFeature = 'grid';
+  }
+
   it('renders with fake data', async () => {
     const userEmail = 'user@gmail.com';
     const component = await fixture(
@@ -73,11 +91,19 @@ describe('chromedash-guide-new-page', () => {
     );
     assert.include(featureTypeFormField.outerHTML, 'Feature removal');
 
+    // feature_type field value is initialized to 0
+    const featureTypeFv = component.fieldValues.find(
+      fv => fv.name === 'feature_type'
+    );
+    assert.exists(featureTypeFv);
+    assert.equal(featureTypeFv!.value, 0);
+
     // submit button exists
-    const submitButton = component.renderRoot.querySelector(
+    const submitButton = component.renderRoot.querySelector<HTMLInputElement>(
       'input[type="submit"]'
     );
     assert.exists(submitButton);
+    assert.include(submitButton!.style.margin, 'var(--content-padding)');
   });
 
   it('handleFormSubmit redirects to feature page (non-enterprise)', async () => {
@@ -87,6 +113,7 @@ describe('chromedash-guide-new-page', () => {
       </chromedash-guide-new-page>`
     );
     await component.updateComplete;
+    populateRequiredFields(component);
 
     const navigateStub = sinon.stub(component, 'navigate');
     const createFeatureStub = sinon.stub(window.csClient, 'createFeature');
@@ -122,6 +149,7 @@ describe('chromedash-guide-new-page', () => {
       </chromedash-guide-new-page>`
     );
     await component.updateComplete;
+    populateRequiredFields(component);
 
     const navigateStub = sinon.stub(component, 'navigate');
     const createFeatureStub = sinon.stub(window.csClient, 'createFeature');
@@ -204,6 +232,8 @@ describe('chromedash-guide-new-page', () => {
       },
     });
 
+    populateRequiredFields(component);
+
     const navigateStub = sinon.stub(component, 'navigate');
     const createFeatureStub = sinon.stub(window.csClient, 'createFeature');
     createFeatureStub.returns(Promise.resolve({feature_id: 12345}));
@@ -251,10 +281,11 @@ describe('chromedash-guide-new-page', () => {
     assert.isTrue(existingRadio!.checked);
     assert.isFalse(proposeRadio!.checked);
 
-    const selectEl = component.shadowRoot?.querySelector(
+    const selectEl = component.shadowRoot?.querySelector<HTMLElement>(
       'sl-select[name="web_feature"]'
     );
     assert.exists(selectEl);
+    assert.isTrue(selectEl!.hasAttribute('required'));
 
     // Explainer links field should not be present in existing mode.
     const explainerField = component.shadowRoot?.querySelector(
@@ -293,16 +324,19 @@ describe('chromedash-guide-new-page', () => {
     component.handleWebFeatureModeChange('propose');
     await component.updateComplete;
 
-    const inputEl = component.shadowRoot?.querySelector(
+    const inputEl = component.shadowRoot?.querySelector<HTMLElement>(
       'sl-input[name="web_feature"]'
     );
     assert.exists(inputEl);
+    assert.isTrue(inputEl!.hasAttribute('required'));
 
-    // Explainer links should now be rendered below the input.
+    // Explainer links should now be rendered across the full table rather than inside the td.
     const explainerField = component.shadowRoot?.querySelector(
       'chromedash-form-field[name="explainer_links"]'
     );
     assert.exists(explainerField);
+    assert.notEqual(explainerField!.parentElement?.tagName.toLowerCase(), 'td');
+    assert.isTrue(explainerField!.hasAttribute('forcerequired'));
 
     // Webstatus link should NOT be present.
     const webstatusLink = component.shadowRoot?.querySelector(
@@ -332,6 +366,12 @@ describe('chromedash-guide-new-page', () => {
         index: explainerIndex,
       },
     });
+
+    populateRequiredFields(component);
+    component.proposedWebFeature = 'proposed-feature-id';
+    component.setWebFeatureValue('proposed-feature-id');
+    component.fieldValues[explainerIndex].value =
+      'https://github.com/example/explainer';
 
     const createFeatureStub = sinon.stub(window.csClient, 'createFeature');
     createFeatureStub.returns(Promise.resolve({feature_id: 12345}));
@@ -367,5 +407,149 @@ describe('chromedash-guide-new-page', () => {
     const webFeatureRow =
       component.shadowRoot?.querySelector('#web_feature_row');
     assert.isNull(webFeatureRow);
+  });
+
+  it('renders widely supported warning in existing mode when feature_type is incubate', async () => {
+    const component = await fixture<ChromedashGuideNewPage>(
+      html`<chromedash-guide-new-page .userEmail=${'user@gmail.com'}>
+      </chromedash-guide-new-page>`
+    );
+    await component.updateComplete;
+
+    component.webFeatureInfos = [
+      {feature_id: 'grid', status: 'widely'},
+      {feature_id: 'subgrid', status: 'limited'},
+    ];
+    component.webFeatureChoices = {
+      grid: ['grid', 'grid'],
+      subgrid: ['subgrid', 'subgrid'],
+    };
+    await component.updateComplete;
+
+    // Select 'subgrid' (not widely supported)
+    component.handleSelectWebFeature({
+      target: {value: 'subgrid'},
+    } as unknown as Event);
+    await component.updateComplete;
+
+    assert.isFalse(component.shouldDisplayWidelySupportedWarning());
+    assert.notInclude(
+      component.shadowRoot?.innerHTML || '',
+      'This web feature is already widely supported'
+    );
+
+    // Select 'grid' (widely supported) while feature_type is 0 (New or changed feature)
+    component.handleSelectWebFeature({
+      target: {value: 'grid'},
+    } as unknown as Event);
+    await component.updateComplete;
+
+    assert.isTrue(component.shouldDisplayWidelySupportedWarning());
+    assert.include(
+      component.shadowRoot?.innerHTML || '',
+      'This web feature is already widely supported, are you sure that you are incubating a change to it?'
+    );
+
+    // Change feature_type to 1 (Existing feature implementation)
+    const featureTypeIndex = component.fieldValues.findIndex(
+      fv => fv.name === 'feature_type'
+    );
+    assert.notEqual(featureTypeIndex, -1);
+    component.handleFormFieldUpdate({
+      detail: {value: 1, index: featureTypeIndex},
+    });
+    await component.updateComplete;
+
+    assert.isFalse(component.shouldDisplayWidelySupportedWarning());
+    assert.notInclude(
+      component.shadowRoot?.innerHTML || '',
+      'This web feature is already widely supported'
+    );
+  });
+
+  it('blocks submission when in existing mode and web_feature is empty', async () => {
+    const component = await fixture<ChromedashGuideNewPage>(
+      html`<chromedash-guide-new-page .userEmail=${'user@gmail.com'}>
+      </chromedash-guide-new-page>`
+    );
+    await component.updateComplete;
+
+    populateRequiredFields(component);
+    // Explicitly clear web_feature in existing mode
+    component.selectedWebFeature = '';
+    component.setWebFeatureValue('');
+    const selectEl = component.shadowRoot?.querySelector<HTMLSelectElement>(
+      'sl-select[name="web_feature"]'
+    );
+    if (selectEl) {
+      selectEl.value = '';
+    }
+
+    const createFeatureStub = sinon.stub(window.csClient, 'createFeature');
+    const fakeEvent = {preventDefault: sinon.spy()};
+    const hiddenTokenField = component.renderRoot.querySelector(
+      'input[name="token"]'
+    );
+    component.handleFormSubmit(fakeEvent, hiddenTokenField);
+
+    assert.isFalse(createFeatureStub.called);
+    createFeatureStub.restore();
+  });
+
+  it('blocks submission when in propose mode and explainer_links is empty', async () => {
+    const component = await fixture<ChromedashGuideNewPage>(
+      html`<chromedash-guide-new-page .userEmail=${'user@gmail.com'}>
+      </chromedash-guide-new-page>`
+    );
+    await component.updateComplete;
+
+    populateRequiredFields(component);
+    component.handleWebFeatureModeChange('propose');
+    await component.updateComplete;
+
+    component.proposedWebFeature = 'proposed-id';
+    component.setWebFeatureValue('proposed-id');
+    const explainerIdx = component.fieldValues.findIndex(
+      fv => fv.name === 'explainer_links'
+    );
+    if (explainerIdx !== -1) {
+      component.fieldValues[explainerIdx].value = '';
+    }
+
+    const createFeatureStub = sinon.stub(window.csClient, 'createFeature');
+    const fakeEvent = {preventDefault: sinon.spy()};
+    const hiddenTokenField = component.renderRoot.querySelector(
+      'input[name="token"]'
+    );
+    component.handleFormSubmit(fakeEvent, hiddenTokenField);
+
+    assert.isFalse(createFeatureStub.called);
+    createFeatureStub.restore();
+  });
+
+  it('blocks submission when a required field like name is empty', async () => {
+    const component = await fixture<ChromedashGuideNewPage>(
+      html`<chromedash-guide-new-page .userEmail=${'user@gmail.com'}>
+      </chromedash-guide-new-page>`
+    );
+    await component.updateComplete;
+
+    populateRequiredFields(component);
+    const nameInput = component.shadowRoot?.querySelector<HTMLInputElement>(
+      'sl-input[name="name"]'
+    );
+    if (nameInput) {
+      nameInput.value = '';
+    }
+
+    const createFeatureStub = sinon.stub(window.csClient, 'createFeature');
+    const fakeEvent = {preventDefault: sinon.spy()};
+    const hiddenTokenField = component.renderRoot.querySelector(
+      'input[name="token"]'
+    );
+    component.handleFormSubmit(fakeEvent, hiddenTokenField);
+
+    assert.isFalse(createFeatureStub.called);
+    createFeatureStub.restore();
   });
 });

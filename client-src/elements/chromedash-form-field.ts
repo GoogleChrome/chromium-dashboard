@@ -252,13 +252,11 @@ export class ChromedashFormField extends LitElement {
   }
 
   shouldDisplayWidelySupportedWarning(): boolean {
-    const selectedInfo = this.webFeatureInfos.find(
-      info => info.feature_id === this.value
+    return shouldDisplayWidelySupportedWarning(
+      this.webFeatureInfos,
+      this.value,
+      this.getFeatureType()
     );
-    if (selectedInfo?.status !== 'widely') {
-      return false;
-    }
-    return this.getFeatureType() === FEATURE_TYPES.FEATURE_TYPE_INCUBATE_ID[0];
   }
 
   // Must render to light DOM, so sl-form-fields work as intended.
@@ -727,9 +725,7 @@ export async function fetchWebFeatureChoices(): Promise<{
   const res: WebFeatureInfosResponse =
     await window.csClient.getWebFeatureInfos();
   const webFeatureInfos = res?.data || [];
-  const choices: Record<string, [string, string]> = {
-    missing_feature: ['Missing feature', 'Missing feature'],
-  };
+  const choices: Record<string, [string, string]> = {};
   for (const info of webFeatureInfos) {
     choices[info.feature_id] = [info.feature_id, info.feature_id];
   }
@@ -751,6 +747,20 @@ export function shouldDisplayFeatureLink(
   }
 
   return true;
+}
+
+export function shouldDisplayWidelySupportedWarning(
+  webFeatureInfos: WebFeatureInfo[],
+  featureValue: string,
+  featureType: number
+): boolean {
+  const selectedInfo = webFeatureInfos.find(
+    info => info.feature_id === featureValue
+  );
+  if (selectedInfo?.status !== 'widely') {
+    return false;
+  }
+  return featureType === FEATURE_TYPES.FEATURE_TYPE_INCUBATE_ID[0];
 }
 
 /**

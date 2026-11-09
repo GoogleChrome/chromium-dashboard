@@ -577,6 +577,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     type: 'select',
     disabled: true,
     choices: FEATURE_TYPES,
+    initial: FEATURE_TYPES.FEATURE_TYPE_INCUBATE_ID[0],
     label: 'Feature type',
     usage: {},
     help_text: html` Feature type chosen at time of creation.
@@ -593,6 +594,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     name: 'feature_type',
     type: 'radios',
     choices: FEATURE_TYPES_WITHOUT_ENTERPRISE,
+    initial: FEATURE_TYPES.FEATURE_TYPE_INCUBATE_ID[0],
     label: 'Feature type',
     usage: {},
     help_text: html`If all goes well, how will developers experience the change

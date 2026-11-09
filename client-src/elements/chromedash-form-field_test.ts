@@ -20,6 +20,7 @@ import {html, render} from 'lit';
 import {
   ChromedashFormField,
   enumLabelToFeatureKey,
+  fetchWebFeatureChoices,
 } from './chromedash-form-field.js';
 import {
   ALL_INTENT_USAGE_BY_FEATURE_TYPE,
@@ -515,6 +516,36 @@ describe('chromedash-form-field', () => {
       render(result, container);
       // An empty lit-html template renders as a comment block.
       assert.equal(container.innerHTML.trim(), '<!---->');
+    });
+  });
+
+  describe('fetchWebFeatureChoices', () => {
+    it('fetches feature choices and does not include "Missing feature"', async () => {
+      window.csClient = new ChromeStatusClient('fake_token', 1);
+      const getWebFeatureInfosStub = sinon.stub(
+        window.csClient,
+        'getWebFeatureInfos'
+      );
+      getWebFeatureInfosStub.resolves({
+        data: [
+          {feature_id: 'grid', status: 'widely'},
+          {feature_id: 'flexbox', status: 'widely'},
+        ],
+      });
+
+      const {webFeatureInfos, choices} = await fetchWebFeatureChoices();
+      assert.lengthOf(webFeatureInfos, 2);
+      assert.deepEqual(choices, {
+        grid: ['grid', 'grid'],
+        flexbox: ['flexbox', 'flexbox'],
+      });
+      assert.notProperty(choices, 'missing_feature');
+      assert.notInclude(
+        Object.values(choices).map(c => c[0]),
+        'Missing feature'
+      );
+
+      getWebFeatureInfosStub.restore();
     });
   });
 });
