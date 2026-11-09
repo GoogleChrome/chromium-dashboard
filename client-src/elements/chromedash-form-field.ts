@@ -177,18 +177,10 @@ export class ChromedashFormField extends LitElement {
       );
     } else if (this.name === 'web_feature') {
       this.fetchChoices(
-        window.csClient
-          .getWebFeatureInfos()
-          .then((res: WebFeatureInfosResponse) => {
-            this.webFeatureInfos = res?.data || [];
-            const choices: Record<string, [string, string]> = {
-              missing_feature: ['Missing feature', 'Missing feature'],
-            };
-            for (const info of this.webFeatureInfos) {
-              choices[info.feature_id] = [info.feature_id, info.feature_id];
-            }
-            return choices;
-          }),
+        fetchWebFeatureChoices().then(({webFeatureInfos, choices}) => {
+          this.webFeatureInfos = webFeatureInfos;
+          return choices;
+        }),
         'Error fetching Web feature IDs. Please refresh the page or try again later.'
       );
     }
@@ -209,7 +201,8 @@ export class ChromedashFormField extends LitElement {
   willUpdate(changedProperties: PropertyValues) {
     super.willUpdate(changedProperties);
     if (!this.hasUpdated) {
-      this.initialValue = JSON.parse(JSON.stringify(this.value));
+      this.initialValue =
+        this.value !== undefined ? JSON.parse(JSON.stringify(this.value)) : '';
     }
   }
 
@@ -243,17 +236,7 @@ export class ChromedashFormField extends LitElement {
   }
 
   shouldDisplayFeatureLink(field_name: string, feature_value: string) {
-    if (field_name !== 'web_feature') {
-      return false;
-    }
-    if (!feature_value) {
-      return false;
-    }
-    if (feature_value === 'Missing feature' || feature_value == 'TBD') {
-      return false;
-    }
-
-    return true;
+    return shouldDisplayFeatureLink(field_name, feature_value);
   }
 
   getFeatureType(): number {
@@ -735,6 +718,39 @@ export class ChromedashFormField extends LitElement {
       }
     `;
   }
+}
+
+export async function fetchWebFeatureChoices(): Promise<{
+  webFeatureInfos: WebFeatureInfo[];
+  choices: Record<string, [string, string]>;
+}> {
+  const res: WebFeatureInfosResponse =
+    await window.csClient.getWebFeatureInfos();
+  const webFeatureInfos = res?.data || [];
+  const choices: Record<string, [string, string]> = {
+    missing_feature: ['Missing feature', 'Missing feature'],
+  };
+  for (const info of webFeatureInfos) {
+    choices[info.feature_id] = [info.feature_id, info.feature_id];
+  }
+  return {webFeatureInfos, choices};
+}
+
+export function shouldDisplayFeatureLink(
+  fieldName: string,
+  featureValue: string
+): boolean {
+  if (fieldName !== 'web_feature') {
+    return false;
+  }
+  if (!featureValue) {
+    return false;
+  }
+  if (featureValue === 'Missing feature' || featureValue === 'TBD') {
+    return false;
+  }
+
+  return true;
 }
 
 /**

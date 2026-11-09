@@ -551,12 +551,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     help_text: html` Select the web feature this belongs to in the
       <a href="https://github.com/web-platform-dx/web-features" target="_blank"
         >web-features project</a
-      >. If your feature is not listed,
-      <a
-        href="https://github.com/web-platform-dx/web-features/issues/new?template=new-feature.yml"
-        target="_blank"
-        >propose a new web feature ID</a
-      >, then return to this tab and choose "Missing feature".`,
+      >.`,
   },
 
   category: {

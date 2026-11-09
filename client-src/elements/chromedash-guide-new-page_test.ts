@@ -17,7 +17,6 @@
 import {html} from 'lit';
 import {assert, fixture} from '@open-wc/testing';
 import {ChromedashGuideNewPage} from './chromedash-guide-new-page.js';
-import {ChromedashFormField} from './chromedash-form-field.js';
 import {FEATURE_TYPES} from './form-field-enums.js';
 import {ChromeStatusClient} from '../js-src/cs-client.js';
 import sinon from 'sinon';
@@ -27,10 +26,15 @@ describe('chromedash-guide-new-page', () => {
     window.csClient = new ChromeStatusClient('fake_token', 1);
     sinon.stub(window.csClient, 'getBlinkComponents');
     window.csClient.getBlinkComponents.returns(Promise.resolve({}));
+    sinon.stub(window.csClient, 'getWebFeatureInfos');
+    window.csClient.getWebFeatureInfos.returns(
+      Promise.resolve({data: [{feature_id: 'grid', status: 'newly'}]})
+    );
   });
 
   afterEach(() => {
     window.csClient.getBlinkComponents.restore();
+    window.csClient.getWebFeatureInfos.restore();
   });
 
   it('renders with fake data', async () => {
@@ -152,11 +156,9 @@ describe('chromedash-guide-new-page', () => {
     );
     await component.updateComplete;
 
-    const webFeatureField =
-      component.shadowRoot?.querySelector<ChromedashFormField>(
-        'chromedash-form-field[name="web_feature"]'
-      )!;
-    assert.exists(webFeatureField);
+    const webFeatureRow =
+      component.shadowRoot!.querySelector<HTMLElement>('#web_feature_row');
+    assert.exists(webFeatureRow);
 
     const featureTypeIndex = component.fieldValues.findIndex(
       fv => fv.name === 'feature_type'
@@ -167,12 +169,9 @@ describe('chromedash-guide-new-page', () => {
     assert.notEqual(featureTypeIndex, -1);
     assert.notEqual(webFeatureIndex, -1);
 
-    // Simulate user typing a web_feature value.
-    component.handleFormFieldUpdate({
-      detail: {value: 'grid', index: webFeatureIndex},
-    });
+    // Simulate user choosing a web_feature value.
+    component.setWebFeatureValue('grid');
     assert.equal(component.fieldValues[webFeatureIndex].value, 'grid');
-    assert.isTrue(webFeatureField.forceRequired);
 
     // Switch feature_type to FEATURE_TYPE_CODE_CHANGE_ID.
     component.handleFormFieldUpdate({
@@ -182,8 +181,7 @@ describe('chromedash-guide-new-page', () => {
       },
     });
 
-    assert.equal(webFeatureField.style.display, 'none');
-    assert.isFalse(webFeatureField.forceRequired);
+    assert.equal(webFeatureRow.style.display, 'none');
     // Value remains in fieldValues while editing in case user unhides the field.
     assert.equal(component.fieldValues[webFeatureIndex].value, 'grid');
 
@@ -195,8 +193,7 @@ describe('chromedash-guide-new-page', () => {
       },
     });
 
-    assert.equal(webFeatureField.style.display, '');
-    assert.isTrue(webFeatureField.forceRequired);
+    assert.equal(webFeatureRow.style.display, '');
     assert.equal(component.fieldValues[webFeatureIndex].value, 'grid');
 
     // Switch back to FEATURE_TYPE_CODE_CHANGE_ID and submit the form.
@@ -234,5 +231,141 @@ describe('chromedash-guide-new-page', () => {
 
     createFeatureStub.restore();
     navigateStub.restore();
+  });
+
+  it('renders web-feature radio buttons and selects existing web-feature', async () => {
+    const component = await fixture<ChromedashGuideNewPage>(
+      html`<chromedash-guide-new-page .userEmail=${'user@gmail.com'}>
+      </chromedash-guide-new-page>`
+    );
+    await component.updateComplete;
+
+    const existingRadio = component.shadowRoot!.querySelector<HTMLInputElement>(
+      '#web_feature_mode_existing'
+    );
+    const proposeRadio = component.shadowRoot!.querySelector<HTMLInputElement>(
+      '#web_feature_mode_propose'
+    );
+    assert.exists(existingRadio);
+    assert.exists(proposeRadio);
+    assert.isTrue(existingRadio!.checked);
+    assert.isFalse(proposeRadio!.checked);
+
+    const selectEl = component.shadowRoot?.querySelector(
+      'sl-select[name="web_feature"]'
+    );
+    assert.exists(selectEl);
+
+    // Explainer links field should not be present in existing mode.
+    const explainerField = component.shadowRoot?.querySelector(
+      'chromedash-form-field[name="explainer_links"]'
+    );
+    assert.isNull(explainerField);
+
+    // Simulate selecting a feature.
+    component.handleSelectWebFeature({
+      target: {value: 'grid'},
+    } as unknown as Event);
+    await component.updateComplete;
+
+    const webFeatureFv = component.fieldValues.find(
+      fv => fv.name === 'web_feature'
+    );
+    assert.exists(webFeatureFv);
+    assert.equal(webFeatureFv?.value, 'grid');
+
+    // Link to webstatus.dev should be rendered.
+    const webstatusLink = component.shadowRoot?.querySelector(
+      'a[href="https://webstatus.dev/features/grid"]'
+    );
+    assert.exists(webstatusLink);
+    assert.include(webstatusLink!.textContent!, 'grid');
+  });
+
+  it('switches to propose web-feature mode and submits proposed value and explainer links', async () => {
+    const component = await fixture<ChromedashGuideNewPage>(
+      html`<chromedash-guide-new-page .userEmail=${'user@gmail.com'}>
+      </chromedash-guide-new-page>`
+    );
+    await component.updateComplete;
+
+    // Switch to propose mode.
+    component.handleWebFeatureModeChange('propose');
+    await component.updateComplete;
+
+    const inputEl = component.shadowRoot?.querySelector(
+      'sl-input[name="web_feature"]'
+    );
+    assert.exists(inputEl);
+
+    // Explainer links should now be rendered below the input.
+    const explainerField = component.shadowRoot?.querySelector(
+      'chromedash-form-field[name="explainer_links"]'
+    );
+    assert.exists(explainerField);
+
+    // Webstatus link should NOT be present.
+    const webstatusLink = component.shadowRoot?.querySelector(
+      'a[href*="webstatus.dev"]'
+    );
+    assert.isNull(webstatusLink);
+
+    // Simulate typing a proposed web_feature.
+    component.handleInputWebFeature({
+      target: {value: 'proposed-feature-id'},
+    } as unknown as Event);
+
+    const webFeatureFv = component.fieldValues.find(
+      fv => fv.name === 'web_feature'
+    );
+    assert.exists(webFeatureFv);
+    assert.equal(webFeatureFv?.value, 'proposed-feature-id');
+
+    // Simulate filling out explainer links.
+    const explainerIndex = component.fieldValues.findIndex(
+      fv => fv.name === 'explainer_links'
+    );
+    assert.notEqual(explainerIndex, -1);
+    component.handleFormFieldUpdate({
+      detail: {
+        value: 'https://github.com/example/explainer',
+        index: explainerIndex,
+      },
+    });
+
+    const createFeatureStub = sinon.stub(window.csClient, 'createFeature');
+    createFeatureStub.returns(Promise.resolve({feature_id: 12345}));
+    sinon.stub(component, 'navigate');
+
+    const fakeEvent = {preventDefault: sinon.spy()};
+    const hiddenTokenField = component.renderRoot.querySelector(
+      'input[name="token"]'
+    );
+    component.handleFormSubmit(fakeEvent, hiddenTokenField);
+
+    assert.isTrue(createFeatureStub.calledOnce);
+    const submitArg = createFeatureStub.firstCall.args[0];
+    assert.equal(submitArg.web_feature, 'proposed-feature-id');
+    assert.equal(
+      submitArg.explainer_links,
+      'https://github.com/example/explainer'
+    );
+
+    createFeatureStub.restore();
+  });
+
+  it('does not render web_feature for enterprise features', async () => {
+    const component = await fixture<ChromedashGuideNewPage>(
+      html`<chromedash-guide-new-page
+        .userEmail=${'user@gmail.com'}
+        .isEnterpriseFeature=${true}
+      >
+      </chromedash-guide-new-page>`
+    );
+    await component.updateComplete;
+
+    const webFeatureRow =
+      component.shadowRoot?.querySelector('#web_feature_row');
+    assert.isNull(webFeatureRow);
   });
 });

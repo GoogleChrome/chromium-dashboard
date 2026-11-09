@@ -70,6 +70,16 @@ describe('chromedash-form-field', () => {
     assert.include(renderElement.innerHTML, 'checked');
   });
 
+  it('handles undefined value without throwing in willUpdate', async () => {
+    const component = await fixture<ChromedashFormField>(
+      html` <chromedash-form-field name="explainer_links" .value=${undefined}>
+      </chromedash-form-field>`
+    );
+    assert.exists(component);
+    assert.instanceOf(component, ChromedashFormField);
+    assert.equal(component.initialValue, '');
+  });
+
   it('renders a select type of field', async () => {
     const component = await fixture(
       html` <chromedash-form-field name="category" value="0">
