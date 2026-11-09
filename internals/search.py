@@ -434,7 +434,7 @@ def make_cache_key(
     )
 
 
-def is_cacheable(user_query: str, name_only: bool = True):
+def is_cacheable(user_query: str) -> bool:
     """Return True if this user query can be stored and viewed by other users."""
     if ':me' in user_query:
         logging.info('Search query not cached: personalized')
@@ -480,7 +480,7 @@ def process_query_using_cache(
 ) -> tuple[list[dict[str, Any]], int]:
     """Process a user query, utilizing Redis cache if possible."""
     num = min(num, MAX_RESULTS_PER_PAGE)
-    cacheable = is_cacheable(user_query, name_only)
+    cacheable = is_cacheable(user_query)
     cache_key = None
     if cacheable:
         cache_key = make_cache_key(
