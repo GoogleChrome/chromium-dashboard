@@ -69,10 +69,11 @@ export class ChromedashGuideStagePage extends LitElement {
   loading = true;
   @state()
   submitting = false;
+  nextFieldIndex = 0;
   @state()
   fieldValues: FieldInfo[] & {feature?: Feature} = [];
   @state()
-  gateId!: number;
+  gateId?: number;
   @state()
   currentBetaMilestone = 0;
 
@@ -113,12 +114,13 @@ export class ChromedashGuideStagePage extends LitElement {
       fetchCurrentBetaMilestone(),
     ])
       .then(([feature, stage, gates, betaMilestone]) => {
+        this.fieldValues = [];
         this.feature = feature;
         this.stage = stage;
         this.currentBetaMilestone = betaMilestone;
 
         if (gates) {
-          this.gateId = gates.gates.find(g => g.stage_id === this.stageId).id;
+          this.gateId = gates.gates.find(g => g.stage_id === this.stageId)?.id;
         }
 
         if (this.feature.name) {
@@ -274,7 +276,7 @@ export class ChromedashGuideStagePage extends LitElement {
         return nothing;
       }
       const featureJSONKey = ALL_FIELDS[field].name || field;
-      let value = formattedFeature[featureJSONKey];
+      let value = formattedFeature[field] ?? formattedFeature[featureJSONKey];
       // The stage ID is only defined for the form field if it is a stage-specific field.
       let stageId = undefined;
       if (STAGE_SPECIFIC_FIELDS.has(featureJSONKey)) {
@@ -283,13 +285,17 @@ export class ChromedashGuideStagePage extends LitElement {
       }
 
       // Add the field to this component's stage before creating the field component.
-      const index = this.fieldValues.length;
-      this.fieldValues.push({
-        name: featureJSONKey,
-        touched: false,
-        value,
-        stageId,
-      });
+      const index = this.nextFieldIndex++;
+      if (index >= this.fieldValues.length) {
+        this.fieldValues.push({
+          name: featureJSONKey,
+          touched: false,
+          value,
+          stageId,
+        });
+      } else {
+        value = this.fieldValues[index].value;
+      }
 
       return html`
         <chromedash-form-field
@@ -309,6 +315,7 @@ export class ChromedashGuideStagePage extends LitElement {
   }
 
   renderSections(formattedFeature, stageSections) {
+    this.nextFieldIndex = 0;
     const formSections: (typeof nothing | TemplateResult)[] = [];
 
     stageSections.forEach(section => {
