@@ -15,12 +15,88 @@
  */
 
 import {assert} from '@open-wc/testing';
-import {checkWptDescriptionLink, FieldValueGetter} from './form-field-specs.js';
+import sinon from 'sinon';
+import {ChromeStatusClient} from '../js-src/cs-client.js';
+import {STAGE_SPECIFIC_FIELDS} from './form-field-enums.js';
+import {
+  ALL_FIELDS,
+  checkExtensionMilestoneIsValid,
+  checkFirstEnterpriseNotice,
+  checkWptDescriptionLink,
+  FieldValueGetter,
+  makeDisplaySpec,
+} from './form-field-specs.js';
 
 function makeGetFieldValue(values: Record<string, unknown>): FieldValueGetter {
   const getFieldValue = (fieldName: string) => values[fieldName];
   return getFieldValue as unknown as FieldValueGetter;
 }
+
+describe('form-field-specs and enums', () => {
+  it('includes intent_to_deprecate_url in STAGE_SPECIFIC_FIELDS', () => {
+    assert.isTrue(STAGE_SPECIFIC_FIELDS.has('intent_to_deprecate_url'));
+  });
+
+  it('replaces all underscores in makeDisplaySpec fallback label', () => {
+    const spec = makeDisplaySpec('some_custom_field_name');
+    assert.equal(spec[1], 'Some custom field name');
+  });
+
+  it('validates ot_creation milestone ranges using ot_creation field names', () => {
+    const getFieldValue = makeGetFieldValue({
+      ot_creation__milestone_desktop_first: 130,
+      ot_creation__milestone_desktop_last: 125,
+    });
+    const checkFn = ALL_FIELDS.ot_creation__milestone_desktop_first
+      .check as Function;
+    const result = checkFn('130', getFieldValue, '');
+    assert.isDefined(result?.error);
+  });
+});
+
+describe('checkFirstEnterpriseNotice', () => {
+  let getSpecifiedChannelsStub: sinon.SinonStub;
+
+  beforeEach(() => {
+    window.csClient = new ChromeStatusClient('fake_token', 1);
+    getSpecifiedChannelsStub = sinon.stub(
+      window.csClient,
+      'getSpecifiedChannels'
+    );
+  });
+
+  afterEach(() => {
+    getSpecifiedChannelsStub.restore();
+  });
+
+  it('warns when initialValue milestone was already released and value is changed', async () => {
+    getSpecifiedChannelsStub.withArgs('140', '140').resolves({
+      '140': {stable_date: '2099-01-01T00:00:00'},
+    });
+    getSpecifiedChannelsStub.withArgs('120', '120').resolves({
+      '120': {stable_date: '2024-01-01T00:00:00'},
+    });
+
+    const result = await checkFirstEnterpriseNotice('140', '120');
+    assert.include(
+      result?.warning,
+      'Feature was already shown in milestone 120'
+    );
+  });
+});
+
+describe('checkExtensionMilestoneIsValid', () => {
+  it('returns undefined immediately when value is empty without fetching', async () => {
+    const fetchSpy = sinon.spy(window, 'fetch');
+    try {
+      const result = await checkExtensionMilestoneIsValid('');
+      assert.isUndefined(result);
+      assert.isFalse(fetchSpy.called);
+    } finally {
+      fetchSpy.restore();
+    }
+  });
+});
 
 describe('checkWptDescriptionLink', () => {
   it('returns nothing when wpt is not checked', () => {

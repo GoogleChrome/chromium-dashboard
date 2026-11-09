@@ -93,10 +93,12 @@ export class ChromedashTextarea extends SlTextarea {
   }
 
   firstUpdated() {
+    super.firstUpdated();
     this.validate();
   }
 
-  updated() {
+  updated(changedProperties) {
+    super.updated(changedProperties);
     if (!this.input) {
       return;
     }
@@ -125,18 +127,20 @@ export class ChromedashTextarea extends SlTextarea {
     // Since this class subclasses SlTextarea, we need to render (but
     // not display) the content from that class, otherwise there will
     // be errors in validation code.
-    const preview = html`
-      <div style="display:none">${editor}</div>
-      <div
-        id="preview"
-        style="border:var(--card-border); padding:0 var(--content-padding); min-height:14em; background:var(--table-alternate-background)"
-      >
-        ${autolink(this.value, [], true)}
-      </div>
-    `;
-
     return html`
-      ${this.showPreview ? preview : editor}
+      <div style=${this.showPreview ? 'display:none' : ''}>${editor}</div>
+      ${
+        this.showPreview
+          ? html`
+              <div
+                id="preview"
+                style="border:var(--card-border); padding:0 var(--content-padding); min-height:14em; background:var(--table-alternate-background)"
+              >
+                ${autolink(this.value, [], true)}
+              </div>
+            `
+          : nothing
+      }
       <sl-checkbox
         id="use-markdown"
         name="${this.name}_is_markdown"

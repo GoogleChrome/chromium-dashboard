@@ -16,6 +16,8 @@
 
 import {html} from 'lit';
 import {assert, fixture} from '@open-wc/testing';
+import sinon from 'sinon';
+import {ChromeStatusClient} from '../js-src/cs-client.js';
 import {ChromedashAttachments} from './chromedash-attachments.js';
 import {ChromedashTextarea} from './chromedash-textarea.js';
 
@@ -76,5 +78,37 @@ describe('chromedash-attachments', () => {
       component.renderRoot.querySelector('img');
     assert.exists(imgElement);
     assert.equal(imgElement.getAttribute('src'), url + '/thumbnail');
+  });
+
+  it('sets value cleanly when uploading to an empty field and appends on subsequent uploads', async () => {
+    window.csClient = new ChromeStatusClient('fake_token', 1);
+    const addAttachmentStub = sinon.stub(window.csClient, 'addAttachment');
+    addAttachmentStub
+      .onFirstCall()
+      .resolves({attachment_url: 'https://chromestatus.com/attachment/1'});
+    addAttachmentStub
+      .onSecondCall()
+      .resolves({attachment_url: 'https://chromestatus.com/attachment/2'});
+
+    const component: ChromedashAttachments = await fixture(
+      html`<chromedash-attachments featureId="1234"></chromedash-attachments>`
+    );
+    const fakeFile = new File(['abc'], 'test.png', {type: 'image/png'});
+    const fakeEvent = {
+      target: {name: 'screenshots', files: [fakeFile]},
+    } as unknown as Event;
+
+    component.handleFileSelected(fakeEvent);
+    await new Promise(resolve => setTimeout(resolve, 0));
+    assert.equal(component.value, 'https://chromestatus.com/attachment/1');
+
+    component.handleFileSelected(fakeEvent);
+    await new Promise(resolve => setTimeout(resolve, 0));
+    assert.equal(
+      component.value,
+      'https://chromestatus.com/attachment/1\nhttps://chromestatus.com/attachment/2'
+    );
+
+    addAttachmentStub.restore();
   });
 });
