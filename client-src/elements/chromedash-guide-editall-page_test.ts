@@ -86,6 +86,7 @@ describe('chromedash-guide-editall-page', () => {
       status: {text: "Editor's Draft", val: 4},
     },
     tags: ['tag_one'],
+    feature_notes: 'some feature notes',
   });
 
   const validChannelsPromise = Promise.resolve({
@@ -283,6 +284,92 @@ describe('chromedash-guide-editall-page', () => {
       featureFieldInSecondSection,
       'Feature-level field should NOT be in the second section'
     );
+  });
+
+  it('preserves fieldValues length across re-renders and saves isMarkdown', async () => {
+    const featureId = 123456;
+    window.csClient.getFeature.withArgs(featureId).returns(validFeaturePromise);
+    window.csClient.getChannels.returns(validChannelsPromise);
+
+    const component = await fixture<ChromedashGuideEditallPage>(
+      html`<chromedash-guide-editall-page .featureId=${featureId}>
+      </chromedash-guide-editall-page>`
+    );
+    await component.updateComplete;
+
+    const initialLength = component.fieldValues.length;
+    assert.isAbove(initialLength, 0);
+
+    // Simulate field update with isMarkdown
+    component.handleFormFieldUpdate({
+      detail: {index: 0, value: 'updated val', isMarkdown: true},
+    });
+    assert.isTrue(component.fieldValues[0].touched);
+    assert.equal(component.fieldValues[0].value, 'updated val');
+    assert.isTrue(component.fieldValues[0].isMarkdown);
+
+    // Trigger a re-render (e.g. submitting state change)
+    component.submitting = true;
+    await component.updateComplete;
+
+    assert.equal(component.fieldValues.length, initialLength);
+    assert.equal(component.fieldValues[0].value, 'updated val');
+    assert.isTrue(component.fieldValues[0].isMarkdown);
+  });
+
+  it('populates fields where form field name differs from featureJSONKey and preserves dirty edits on stage add/delete', async () => {
+    const featureId = 123456;
+    window.csClient.getFeature.withArgs(featureId).returns(validFeaturePromise);
+    window.csClient.getChannels.returns(validChannelsPromise);
+
+    const component = await fixture<ChromedashGuideEditallPage>(
+      html`<chromedash-guide-editall-page .featureId=${featureId}>
+      </chromedash-guide-editall-page>`
+    );
+    await component.updateComplete;
+
+    // 'comments' maps to featureJSONKey 'feature_notes', which is stored on feature.feature_notes
+    const notesField = component.fieldValues.find(
+      fv => fv.name === 'feature_notes'
+    );
+    assert.exists(notesField);
+    assert.equal(notesField.value, 'some feature notes');
+
+    const initialLength = component.fieldValues.length;
+    component.handleFormFieldUpdate({
+      detail: {index: 0, value: 'dirty val', isMarkdown: false},
+    });
+    assert.isTrue(component.fieldValues[0].touched);
+
+    // Deleting a rollout stage should remove that stage's fields while preserving dirty edits on remaining fields
+    const deleteStageStub = sinon
+      .stub(window.csClient, 'deleteStage')
+      .resolves({});
+    const featureAfterDelete = {
+      ...(await validFeaturePromise),
+      stages: [
+        {id: 1, stage_type: 110, intent_stage: 1},
+        {id: 2, stage_type: 160, intent_stage: 2},
+        {id: 3, stage_type: 160, intent_stage: 2},
+        {id: 5, stage_type: 1061, intent_stage: 1},
+      ],
+    };
+    window.csClient.getFeature
+      .withArgs(featureId)
+      .resolves(featureAfterDelete as any);
+    sinon.stub(window, 'confirm').returns(true);
+
+    component.deleteStage({id: 4, stage_type: 1061} as any);
+    await new Promise(resolve => setTimeout(resolve, 0));
+    await component.updateComplete;
+
+    assert.isBelow(component.fieldValues.length, initialLength);
+    assert.isUndefined(component.fieldValues.find(fv => fv.stageId === 4));
+    assert.isTrue(component.fieldValues[0].touched);
+    assert.equal(component.fieldValues[0].value, 'dirty val');
+
+    deleteStageStub.restore();
+    (window.confirm as any).restore();
   });
 
   // TODO: make this work
