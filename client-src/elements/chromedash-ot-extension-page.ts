@@ -40,23 +40,6 @@ export class ChromedashOTExtensionPage extends LitElement {
     return [...SHARED_STYLES, ...FORM_STYLES, css``];
   }
 
-  static get properties() {
-    return {
-      stageId: {type: Number},
-      featureId: {type: Number},
-      userEmail: {type: String},
-      feature: {type: Object},
-      loading: {type: Boolean},
-      appTitle: {type: String},
-      fieldValues: {type: Array},
-      // The most recent Chrome milestone.
-      currentMilestone: {type: Number},
-      // A reference of end dates for an origin trial based on the milestone.
-      // (key=milestone, value=date origin trial will end)
-      endMilestoneDateValues: {type: Object},
-    };
-  }
-
   @property({type: Number})
   stageId = 0;
   @property({type: Number})
@@ -133,14 +116,22 @@ export class ChromedashOTExtensionPage extends LitElement {
       return;
     }
     if (!(milestone in this.endMilestoneDateValues)) {
-      // Origin trials  will end on the late stable date of (milestone + 2).
-      const milestonePlusTwo = parseInt(milestone) + 2;
-      const resp = await fetch(
-        `https://chromiumdash.appspot.com/fetch_milestone_schedule?mstone=${milestonePlusTwo}`
-      );
-      const respJson = await resp.json();
-      // Keep a reference of milestone dates to avoid extra requests.
-      this.endMilestoneDateValues[milestone] = respJson.mstones[0].stable_date;
+      try {
+        // Origin trials  will end on the late stable date of (milestone + 2).
+        const milestonePlusTwo = parseInt(milestone) + 2;
+        const resp = await fetch(
+          `https://chromiumdash.appspot.com/fetch_milestone_schedule?mstone=${milestonePlusTwo}`
+        );
+        const respJson = await resp.json();
+        const stableDate = respJson?.mstones?.[0]?.stable_date;
+        if (!stableDate) {
+          return;
+        }
+        // Keep a reference of milestone dates to avoid extra requests.
+        this.endMilestoneDateValues[milestone] = stableDate;
+      } catch {
+        return;
+      }
     }
     this.updateMilestoneDate(milestone);
   }
@@ -158,6 +149,7 @@ export class ChromedashOTExtensionPage extends LitElement {
         if (this.feature.name) {
           document.title = `${this.feature.name} - ${this.appTitle}`;
         }
+        this.setFieldValues();
         this.loading = false;
       })
       .catch(() => {
@@ -170,8 +162,12 @@ export class ChromedashOTExtensionPage extends LitElement {
     fetch('https://chromiumdash.appspot.com/fetch_milestone_schedule')
       .then(resp => resp.json())
       .then(scheduleInfo => {
-        this.currentMilestone = parseInt(scheduleInfo.mstones[0].mstone);
-      });
+        const mstone = parseInt(scheduleInfo?.mstones?.[0]?.mstone);
+        if (!Number.isNaN(mstone)) {
+          this.currentMilestone = mstone;
+        }
+      })
+      .catch(() => {});
   }
 
   disconnectedCallback() {
@@ -313,17 +309,23 @@ export class ChromedashOTExtensionPage extends LitElement {
     });
   }
 
-  renderFields(section) {
-    const fields = section.fields.map(field => {
+  setFieldValues() {
+    const section = ORIGIN_TRIAL_EXTENSION_FIELDS.sections[0];
+    this.fieldValues = section.fields.map(field => {
       const featureJSONKey = ALL_FIELDS[field].name || field;
-      // Add the field to this component's stage before creating the field component.
-      const index = this.fieldValues.length;
-      this.fieldValues.push({
+      return {
         name: featureJSONKey,
         touched: true,
         value: null,
         stageId: this.stage.id,
-      });
+      };
+    });
+    this.addDefaultRequestFields();
+  }
+
+  renderFields(section) {
+    return section.fields.map((field, index) => {
+      const featureJSONKey = ALL_FIELDS[field].name || field;
 
       // Add the extra elements to display milestone date information.
       let milestoneInfoText = html``;
@@ -343,19 +345,17 @@ export class ChromedashOTExtensionPage extends LitElement {
         <chromedash-form-field
           name=${featureJSONKey}
           index=${index}
+          value=${this.fieldValues[index]?.value}
           disabledReason="${getDisabledHelpText(field, this.stage)}"
           .fieldValues=${this.fieldValues}
+          .feature=${this.feature}
+          stageId=${this.stage.id}
           @form-field-update="${this.handleFormFieldUpdate}"
         >
         </chromedash-form-field>
         ${milestoneInfoText}
       `;
     });
-
-    // Add additional default hidden fields.
-    this.addDefaultRequestFields();
-
-    return fields;
   }
 
   renderForm() {
