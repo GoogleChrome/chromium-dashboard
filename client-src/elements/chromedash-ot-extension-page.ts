@@ -117,7 +117,7 @@ export class ChromedashOTExtensionPage extends LitElement {
     }
     if (!(milestone in this.endMilestoneDateValues)) {
       try {
-        // Origin trials  will end on the late stable date of (milestone + 2).
+        // Origin trials will end on the late stable date of (milestone + 2).
         const milestonePlusTwo = parseInt(milestone) + 2;
         const resp = await fetch(
           `https://chromiumdash.appspot.com/fetch_milestone_schedule?mstone=${milestonePlusTwo}`
