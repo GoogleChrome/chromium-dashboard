@@ -727,9 +727,9 @@ class GatesBatchAPITest(testing_config.CustomTestCase):
         self.assertEqual('API Owners', gate_1a_dict['team_name'])
         # Unlike GatesAPI, approvers are not looked up.
         mock_get_approvers.assert_not_called()
-        self.assertTrue(
-            all(g.get('possible_assignee_emails') is None for g in gates)
-        )
+        for g in gates:
+            self.assertIn('possible_assignee_emails', g)
+            self.assertIsNone(g['possible_assignee_emails'])
 
     def test_do_get__empty_missing_and_duplicate_ids(self):
         """Empty input, unknown features and repeated IDs are handled."""
@@ -747,6 +747,22 @@ class GatesBatchAPITest(testing_config.CustomTestCase):
         """Non-integer feature IDs are rejected."""
         with self.assertRaises(werkzeug.exceptions.BadRequest):
             self.get_gates(f'{self.feature_1_id},abc')
+
+    def test_do_get__missing_param(self):
+        """The feature_ids parameter is required."""
+        with test_app.test_request_context(self.request_path):
+            with self.assertRaises(werkzeug.exceptions.BadRequest):
+                self.handler.do_get()
+
+    def test_do_get__out_of_range_ids(self):
+        """IDs that cannot be Datastore keys get a 400, not a 500."""
+        for bad_id in ['0', '00', '-0', '-1', str(2**63), str(2**64)]:
+            with self.subTest(bad_id=bad_id):
+                with self.assertRaises(werkzeug.exceptions.BadRequest):
+                    self.get_gates(f'{self.feature_1_id},{bad_id}')
+
+        # The largest valid ID is accepted.
+        self.assertEqual([], self.get_gates(str(2**63 - 1)))
 
     def test_do_get__too_many_ids(self):
         """More than MAX_FEATURE_IDS feature IDs are rejected."""
@@ -785,13 +801,26 @@ class GatesBatchAPITest(testing_config.CustomTestCase):
         )
 
     def test_do_get__deleted_feature(self):
-        """Gates of deleted features are not returned to non-editors."""
+        """Gates of deleted features are only returned to editors."""
         self.feature_1.deleted = True
         self.feature_1.put()
-        testing_config.sign_out()
+        both = f'{self.feature_1_id},{self.feature_2_id}'
 
-        gates = self.get_gates(f'{self.feature_1_id},{self.feature_2_id}')
+        testing_config.sign_out()
+        gates = self.get_gates(both)
         self.assertEqual({self.feature_2_id}, {g['feature_id'] for g in gates})
+
+        testing_config.sign_in('someone@example.com', 111)
+        gates = self.get_gates(both)
+        self.assertEqual({self.feature_2_id}, {g['feature_id'] for g in gates})
+
+        # The owner can still edit the deleted feature, so they see its gates.
+        testing_config.sign_in('owner1@example.com', 222)
+        gates = self.get_gates(both)
+        self.assertEqual(
+            {self.feature_1_id, self.feature_2_id},
+            {g['feature_id'] for g in gates},
+        )
 
 
 class XfnGatesAPITest(testing_config.CustomTestCase):

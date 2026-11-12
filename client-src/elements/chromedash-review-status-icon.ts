@@ -86,7 +86,9 @@ export class ChromedashReviewStatusIcon extends LitElement {
   }
 
   willUpdate(changedProperties: PropertyValues<this>) {
-    if (changedProperties.has('featureGates') && this.featureGates) {
+    const inputsChanged =
+      changedProperties.has('featureGates') || changedProperties.has('feature');
+    if (inputsChanged && this.featureGates) {
       this.gates = this.filterRoadmapGates(this.featureGates);
     }
   }

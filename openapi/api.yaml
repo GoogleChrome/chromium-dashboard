@@ -205,7 +205,9 @@ paths:
             maxItems: 100
             items:
               type: integer
-          description: Comma-separated feature IDs. At most 100 are allowed.
+          description: >-
+            Comma-separated feature IDs (positive 64-bit integers).
+            At most 100 are allowed. An empty value returns no gates.
       responses:
         '200':
           description: The gates of the requested features. List can be empty.
@@ -214,7 +216,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/GetGateResponse'
         '400':
-          description: feature_ids is malformed or has more than 100 IDs.
+          description: >-
+            feature_ids is missing or malformed, has an ID that is not a
+            positive 64-bit integer, or has more than 100 IDs.
           content:
             application/json:
               schema:

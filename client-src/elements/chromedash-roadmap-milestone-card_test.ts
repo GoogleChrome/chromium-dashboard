@@ -613,6 +613,7 @@ describe('chromedash-roadmap-milestone-card', () => {
   describe('gate loading', () => {
     let getGatesForFeaturesStub: sinon.SinonStub;
     let getGatesStub: sinon.SinonStub;
+    let originalCsClient: ChromeStatusClient;
 
     const gatesChannel = (): ReleaseInfo => ({
       version: 108,
@@ -627,6 +628,7 @@ describe('chromedash-roadmap-milestone-card', () => {
     });
 
     beforeEach(() => {
+      originalCsClient = window.csClient;
       window.csClient = new ChromeStatusClient('fake_token', 1);
       getGatesForFeaturesStub = sinon.stub(
         window.csClient,
@@ -638,6 +640,7 @@ describe('chromedash-roadmap-milestone-card', () => {
     afterEach(() => {
       getGatesForFeaturesStub.restore();
       getGatesStub.restore();
+      window.csClient = originalCsClient;
     });
 
     it('loads gates for all features with one request', async () => {
@@ -681,8 +684,48 @@ describe('chromedash-roadmap-milestone-card', () => {
       });
     });
 
-    it('leaves icons blank if loading gates fails', async () => {
-      getGatesForFeaturesStub.rejects(new Error('network error'));
+    it('handles a failed request and leaves icons blank', async () => {
+      let unhandledRejection = false;
+      const onUnhandledRejection = () => {
+        unhandledRejection = true;
+      };
+      window.addEventListener('unhandledrejection', onUnhandledRejection);
+      try {
+        getGatesForFeaturesStub.rejects(new Error('network error'));
+        const el = await fixture<ChromedashRoadmapMilestoneCard>(
+          html`<chromedash-roadmap-milestone-card
+            .templateContent=${templateContent}
+            .channel=${gatesChannel()}
+            .stableMilestone=${stableMilestone}
+          ></chromedash-roadmap-milestone-card>`
+        );
+        // Wait for the rejected request to settle and the card to update.
+        await getGatesForFeaturesStub.firstCall.returnValue.catch(() => {});
+        await new Promise(resolve => setTimeout(resolve, 50));
+        await el.updateComplete;
+
+        assert.isFalse(unhandledRejection, 'the failure should be caught');
+        assert.equal(el.gatesByFeatureId.size, 0);
+        assert.isTrue(getGatesStub.notCalled);
+        const icons = [
+          ...el.shadowRoot!.querySelectorAll('chromedash-review-status-icon'),
+        ] as ChromedashReviewStatusIcon[];
+        assert.equal(icons.length, 3);
+        for (const icon of icons) {
+          await icon.updateComplete;
+          const slIcon = icon.shadowRoot!.querySelector('sl-icon');
+          assert.exists(slIcon);
+          assert.isNull(slIcon!.getAttribute('name'));
+        }
+      } finally {
+        window.removeEventListener('unhandledrejection', onUnhandledRejection);
+      }
+    });
+
+    it('drops gates from a previous channel', async () => {
+      getGatesForFeaturesStub.onFirstCall().resolves({
+        gates: [{id: 1, feature_id: 2001, stage_id: 31, state: 4}],
+      });
       const el = await fixture<ChromedashRoadmapMilestoneCard>(
         html`<chromedash-roadmap-milestone-card
           .templateContent=${templateContent}
@@ -691,13 +734,12 @@ describe('chromedash-roadmap-milestone-card', () => {
         ></chromedash-roadmap-milestone-card>`
       );
       await el.updateComplete;
+      assert.equal(el.gatesByFeatureId.size, 1);
 
-      assert.isTrue(getGatesStub.notCalled);
-      const icons = [
-        ...el.shadowRoot!.querySelectorAll('chromedash-review-status-icon'),
-      ] as ChromedashReviewStatusIcon[];
-      assert.equal(icons.length, 3);
-      assert.isTrue(icons.every(icon => icon.featureGates?.length === 0));
+      el.channel = {version: 109, features: {}};
+      await el.updateComplete;
+      assert.equal(el.gatesByFeatureId.size, 0);
+      assert.isTrue(getGatesForFeaturesStub.calledOnce);
     });
 
     it('makes no request for a milestone without features', async () => {

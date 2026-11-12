@@ -660,7 +660,7 @@ export interface DefaultApiInterface {
     /**
      * Returns the gates of each requested feature that the user can view. Features that do not exist or that the user cannot view are skipped. possible_assignee_emails is not computed and is null.
      * @summary Get the gates of several features
-     * @param {Array<number>} featureIds Comma-separated feature IDs. At most 100 are allowed.
+     * @param {Array<number>} featureIds Comma-separated feature IDs (positive 64-bit integers). At most 100 are allowed. An empty value returns no gates.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof DefaultApiInterface

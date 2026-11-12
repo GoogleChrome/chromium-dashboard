@@ -1008,7 +1008,8 @@ paths:
         is not computed and is null.
       operationId: get_gates_for_features
       parameters:
-      - description: Comma-separated feature IDs. At most 100 are allowed.
+      - description: Comma-separated feature IDs (positive 64-bit integers). At most
+          100 are allowed. An empty value returns no gates.
         explode: false
         in: query
         name: feature_ids
@@ -1031,7 +1032,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorMessage'
-          description: feature_ids is malformed or has more than 100 IDs.
+          description: "feature_ids is missing or malformed, has an ID that is not\
+            \ a positive 64-bit integer, or has more than 100 IDs."
       summary: Get the gates of several features
       x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
   /gates/pending:

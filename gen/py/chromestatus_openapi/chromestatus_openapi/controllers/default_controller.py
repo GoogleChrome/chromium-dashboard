@@ -332,7 +332,7 @@ def get_gates_for_features(feature_ids):  # noqa: E501
 
     Returns the gates of each requested feature that the user can view. Features that do not exist or that the user cannot view are skipped. possible_assignee_emails is not computed and is null. # noqa: E501
 
-    :param feature_ids: Comma-separated feature IDs. At most 100 are allowed.
+    :param feature_ids: Comma-separated feature IDs (positive 64-bit integers). At most 100 are allowed. An empty value returns no gates.
     :type feature_ids: List[int]
 
     :rtype: Union[GetGateResponse, Tuple[GetGateResponse, int], Tuple[GetGateResponse, int, Dict[str, str]]

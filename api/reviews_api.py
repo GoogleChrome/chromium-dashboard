@@ -261,16 +261,22 @@ class GatesBatchAPI(basehandlers.APIHandler):
     # Keeps the request line well under gunicorn's 4094-byte limit,
     # since feature IDs are 16 digits long.
     MAX_FEATURE_IDS = 100
+    # Datastore integer IDs must be positive 64-bit integers.
+    MAX_DATASTORE_ID = 2**63 - 1
 
     def get_feature_ids(self) -> list[int]:
         """Parse the comma-separated feature_ids query parameter."""
-        raw_ids = self.request.args.get('feature_ids', '')
+        if 'feature_ids' not in self.request.args:
+            self.abort(400, msg='Missing parameter feature_ids')
+        raw_ids = self.request.args['feature_ids']
         try:
             feature_ids = [
                 int(fid) for fid in raw_ids.split(',') if fid.strip()
             ]
         except ValueError:
             self.abort(400, msg='feature_ids must be comma-separated integers')
+        if any(not 1 <= fid <= self.MAX_DATASTORE_ID for fid in feature_ids):
+            self.abort(400, msg='feature_ids must be positive 64-bit integers')
         # Remove duplicates while keeping the requested order.
         feature_ids = list(dict.fromkeys(feature_ids))
         if len(feature_ids) > self.MAX_FEATURE_IDS:

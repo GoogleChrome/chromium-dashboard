@@ -345,4 +345,25 @@ describe('chromedash-review-status-icon', () => {
     );
     assert.isTrue(getGatesStub.notCalled);
   });
+
+  it('re-filters parent gates when the feature changes', async () => {
+    const component = (await fixture(
+      html`<chromedash-review-status-icon
+        .feature=${FEATURE}
+        .featureGates=${[GATE_SECURITY_DENIED]}
+      ></chromedash-review-status-icon>`
+    )) as ChromedashReviewStatusIcon;
+    assert.equal(
+      component.shadowRoot!.querySelector('sl-icon')!.getAttribute('name'),
+      'block_20px'
+    );
+
+    // Same gates, but none are on this feature's roadmap stages.
+    component.feature = {...FEATURE, roadmap_stage_ids: [999999]};
+    await component.updateComplete;
+    assert.isNull(
+      component.shadowRoot!.querySelector('sl-icon')!.getAttribute('name')
+    );
+    assert.isTrue(getGatesStub.notCalled);
+  });
 });
