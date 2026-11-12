@@ -650,6 +650,150 @@ class GatesAPITest(testing_config.CustomTestCase):
                 self.handler.do_get(feature_id=self.feature_id)
 
 
+class GatesBatchAPITest(testing_config.CustomTestCase):
+    """Tests for GatesBatchAPI."""
+
+    def setUp(self):
+        """Set up the test environment."""
+        self.feature_1 = core_models.FeatureEntry(
+            name='feature one',
+            summary='sum',
+            category=1,
+            owner_emails=['owner1@example.com'],
+        )
+        self.feature_1.put()
+        self.feature_1_id = self.feature_1.key.integer_id()
+        self.feature_2 = core_models.FeatureEntry(
+            name='feature two',
+            summary='sum',
+            category=1,
+            owner_emails=['owner1@example.com'],
+        )
+        self.feature_2.put()
+        self.feature_2_id = self.feature_2.key.integer_id()
+
+        self.gate_1a = Gate(
+            feature_id=self.feature_1_id, stage_id=1, gate_type=1, state=Vote.NA
+        )
+        self.gate_1a.put()
+        self.gate_1b = Gate(
+            feature_id=self.feature_1_id,
+            stage_id=1,
+            gate_type=2,
+            state=Vote.APPROVED,
+        )
+        self.gate_1b.put()
+        self.gate_2a = Gate(
+            feature_id=self.feature_2_id,
+            stage_id=2,
+            gate_type=1,
+            state=Vote.REVIEW_REQUESTED,
+        )
+        self.gate_2a.put()
+
+        self.handler = reviews_api.GatesBatchAPI()
+        self.request_path = '/api/v0/gates'
+
+    def get_gates(self, feature_ids: str) -> list[dict]:
+        """Call the handler with the given feature_ids query parameter."""
+        path = f'{self.request_path}?feature_ids={feature_ids}'
+        with test_app.test_request_context(path):
+            return self.handler.do_get()['gates']
+
+    @mock.patch('internals.approval_defs.get_approvers')
+    def test_do_get__gates_of_all_features(self, mock_get_approvers):
+        """It returns the gates of every requested feature in one response."""
+        gates = self.get_gates(f'{self.feature_1_id},{self.feature_2_id}')
+
+        self.assertCountEqual(
+            [
+                (self.feature_1_id, self.gate_1a.key.integer_id(), Vote.NA),
+                (
+                    self.feature_1_id,
+                    self.gate_1b.key.integer_id(),
+                    Vote.APPROVED,
+                ),
+                (
+                    self.feature_2_id,
+                    self.gate_2a.key.integer_id(),
+                    Vote.REVIEW_REQUESTED,
+                ),
+            ],
+            [(g['feature_id'], g['id'], g['state']) for g in gates],
+        )
+        gate_1a_dict = next(
+            g for g in gates if g['id'] == self.gate_1a.key.integer_id()
+        )
+        self.assertEqual('API Owners', gate_1a_dict['team_name'])
+        # Unlike GatesAPI, approvers are not looked up.
+        mock_get_approvers.assert_not_called()
+        self.assertTrue(
+            all(g.get('possible_assignee_emails') is None for g in gates)
+        )
+
+    def test_do_get__empty_missing_and_duplicate_ids(self):
+        """Empty input, unknown features and repeated IDs are handled."""
+        self.assertEqual([], self.get_gates(''))
+        self.assertEqual([], self.get_gates('999999'))
+
+        gates = self.get_gates(
+            f'{self.feature_2_id},999999,{self.feature_2_id}, {self.feature_2_id}'
+        )
+        self.assertEqual(
+            [self.gate_2a.key.integer_id()], [g['id'] for g in gates]
+        )
+
+    def test_do_get__malformed_ids(self):
+        """Non-integer feature IDs are rejected."""
+        with self.assertRaises(werkzeug.exceptions.BadRequest):
+            self.get_gates(f'{self.feature_1_id},abc')
+
+    def test_do_get__too_many_ids(self):
+        """More than MAX_FEATURE_IDS feature IDs are rejected."""
+        max_ids = reviews_api.GatesBatchAPI.MAX_FEATURE_IDS
+        # IDs far above any that the test datastore assigns.
+        first_id = 10**12
+        allowed = ','.join(str(i) for i in range(first_id, first_id + max_ids))
+        self.assertEqual([], self.get_gates(allowed))
+
+        too_many = ','.join(
+            str(i) for i in range(first_id, first_id + max_ids + 1)
+        )
+        with self.assertRaises(werkzeug.exceptions.BadRequest):
+            self.get_gates(too_many)
+
+    def test_do_get__confidential_feature(self):
+        """Gates of confidential features are only returned to viewers."""
+        self.feature_2.confidential = True
+        self.feature_2.put()
+        both = f'{self.feature_1_id},{self.feature_2_id}'
+
+        testing_config.sign_out()
+        self.assertEqual(
+            {self.feature_1_id}, {g['feature_id'] for g in self.get_gates(both)}
+        )
+
+        testing_config.sign_in('someone@example.com', 111)
+        self.assertEqual(
+            {self.feature_1_id}, {g['feature_id'] for g in self.get_gates(both)}
+        )
+
+        testing_config.sign_in('owner1@example.com', 222)
+        self.assertEqual(
+            {self.feature_1_id, self.feature_2_id},
+            {g['feature_id'] for g in self.get_gates(both)},
+        )
+
+    def test_do_get__deleted_feature(self):
+        """Gates of deleted features are not returned to non-editors."""
+        self.feature_1.deleted = True
+        self.feature_1.put()
+        testing_config.sign_out()
+
+        gates = self.get_gates(f'{self.feature_1_id},{self.feature_2_id}')
+        self.assertEqual({self.feature_2_id}, {g['feature_id'] for g in gates})
+
+
 class XfnGatesAPITest(testing_config.CustomTestCase):
     """Tests for XfnGatesAPI."""
 

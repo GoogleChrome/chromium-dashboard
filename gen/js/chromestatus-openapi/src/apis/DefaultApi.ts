@@ -244,6 +244,10 @@ export interface GetGatesForFeatureRequest {
     featureId: number;
 }
 
+export interface GetGatesForFeaturesRequest {
+    featureIds: Array<number>;
+}
+
 export interface GetIntentBodyRequest {
     featureId: number;
     stageId: number;
@@ -652,6 +656,22 @@ export interface DefaultApiInterface {
      * Get all gates for a feature
      */
     getGatesForFeature(requestParameters: GetGatesForFeatureRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GetGateResponse>;
+
+    /**
+     * Returns the gates of each requested feature that the user can view. Features that do not exist or that the user cannot view are skipped. possible_assignee_emails is not computed and is null.
+     * @summary Get the gates of several features
+     * @param {Array<number>} featureIds Comma-separated feature IDs. At most 100 are allowed.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApiInterface
+     */
+    getGatesForFeaturesRaw(requestParameters: GetGatesForFeaturesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GetGateResponse>>;
+
+    /**
+     * Returns the gates of each requested feature that the user can view. Features that do not exist or that the user cannot view are skipped. possible_assignee_emails is not computed and is null.
+     * Get the gates of several features
+     */
+    getGatesForFeatures(requestParameters: GetGatesForFeaturesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GetGateResponse>;
 
     /**
      * 
@@ -1903,6 +1923,45 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
      */
     async getGatesForFeature(requestParameters: GetGatesForFeatureRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GetGateResponse> {
         const response = await this.getGatesForFeatureRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Returns the gates of each requested feature that the user can view. Features that do not exist or that the user cannot view are skipped. possible_assignee_emails is not computed and is null.
+     * Get the gates of several features
+     */
+    async getGatesForFeaturesRaw(requestParameters: GetGatesForFeaturesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GetGateResponse>> {
+        if (requestParameters['featureIds'] == null) {
+            throw new runtime.RequiredError(
+                'featureIds',
+                'Required parameter "featureIds" was null or undefined when calling getGatesForFeatures().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        if (requestParameters['featureIds'] != null) {
+            queryParameters['feature_ids'] = requestParameters['featureIds']!.join(runtime.COLLECTION_FORMATS["csv"]);
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/gates`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => GetGateResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Returns the gates of each requested feature that the user can view. Features that do not exist or that the user cannot view are skipped. possible_assignee_emails is not computed and is null.
+     * Get the gates of several features
+     */
+    async getGatesForFeatures(requestParameters: GetGatesForFeaturesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GetGateResponse> {
+        const response = await this.getGatesForFeaturesRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

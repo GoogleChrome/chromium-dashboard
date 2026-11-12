@@ -1001,6 +1001,39 @@ paths:
           description: Feature or stage not found based on given ID.
       summary: Submit an intent to be posted on blink-dev
       x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+  /gates:
+    get:
+      description: Returns the gates of each requested feature that the user can view.
+        Features that do not exist or that the user cannot view are skipped. possible_assignee_emails
+        is not computed and is null.
+      operationId: get_gates_for_features
+      parameters:
+      - description: Comma-separated feature IDs. At most 100 are allowed.
+        explode: false
+        in: query
+        name: feature_ids
+        required: true
+        schema:
+          items:
+            type: integer
+          maxItems: 100
+          type: array
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetGateResponse'
+          description: The gates of the requested features. List can be empty.
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: feature_ids is malformed or has more than 100 IDs.
+      summary: Get the gates of several features
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
   /gates/pending:
     get:
       operationId: get_pending_gates

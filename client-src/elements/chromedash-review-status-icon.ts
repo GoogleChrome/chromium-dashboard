@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {LitElement, css, html} from 'lit';
+import {LitElement, PropertyValues, css, html} from 'lit';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {customElement, property, state} from 'lit/decorators.js';
 import {GateDict} from './chromedash-gate-chip.js';
@@ -41,6 +41,11 @@ const STATUS_TO_ICON_NAME: Record<statusEnum, string> = {
 export class ChromedashReviewStatusIcon extends LitElement {
   @property({type: Object})
   feature!: {id: number; feature_type_int: number; roadmap_stage_ids: number[]};
+
+  // All gates of the feature, when a parent element already loaded them.
+  // If this is left undefined, this element fetches the gates itself.
+  @property({attribute: false})
+  featureGates?: GateDict[];
 
   @state()
   gates: GateDict[] = [];
@@ -75,16 +80,27 @@ export class ChromedashReviewStatusIcon extends LitElement {
 
   connectedCallback() {
     super.connectedCallback();
-    this.fetchData();
+    if (this.featureGates === undefined) {
+      this.fetchData();
+    }
+  }
+
+  willUpdate(changedProperties: PropertyValues<this>) {
+    if (changedProperties.has('featureGates') && this.featureGates) {
+      this.gates = this.filterRoadmapGates(this.featureGates);
+    }
+  }
+
+  filterRoadmapGates(featureGates: GateDict[]): GateDict[] {
+    return featureGates.filter(g =>
+      this.feature?.roadmap_stage_ids?.includes(g.stage_id)
+    );
   }
 
   fetchData() {
     this.gates = [];
     window.csClient?.getGates(this.feature?.id).then(gatesRes => {
-      let featureGates = gatesRes.gates;
-      this.gates = featureGates.filter(g =>
-        this.feature.roadmap_stage_ids?.includes(g.stage_id)
-      );
+      this.gates = this.filterRoadmapGates(gatesRes.gates);
     });
   }
 

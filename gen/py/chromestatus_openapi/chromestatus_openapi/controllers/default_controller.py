@@ -327,6 +327,19 @@ def get_gates_for_feature(feature_id):  # noqa: E501
     return 'do some magic!'
 
 
+def get_gates_for_features(feature_ids):  # noqa: E501
+    """Get the gates of several features
+
+    Returns the gates of each requested feature that the user can view. Features that do not exist or that the user cannot view are skipped. possible_assignee_emails is not computed and is null. # noqa: E501
+
+    :param feature_ids: Comma-separated feature IDs. At most 100 are allowed.
+    :type feature_ids: List[int]
+
+    :rtype: Union[GetGateResponse, Tuple[GetGateResponse, int], Tuple[GetGateResponse, int, Dict[str, str]]
+    """
+    return 'do some magic!'
+
+
 def get_intent_body(feature_id, stage_id, gate_id):  # noqa: E501
     """Get the HTML body of an intent draft
 

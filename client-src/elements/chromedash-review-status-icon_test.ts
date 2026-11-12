@@ -18,6 +18,7 @@ import {html} from 'lit';
 import {assert, fixture} from '@open-wc/testing';
 import {ChromedashReviewStatusIcon} from './chromedash-review-status-icon.js';
 import {ChromeStatusClient} from '../js-src/cs-client.js';
+import {GateDict} from './chromedash-gate-chip.js';
 import sinon from 'sinon';
 import {
   GATE_PREPARING,
@@ -305,5 +306,43 @@ describe('chromedash-review-status-icon', () => {
     // Check that there is no link, because targetGateId is set to undefined.
     const link = component.shadowRoot!.querySelector('a');
     assert.isNull(link, 'should not have a link for PSA features');
+  });
+
+  it('uses gates passed in by a parent instead of fetching them', async () => {
+    const component = await fixture(
+      html`<chromedash-review-status-icon
+        .feature=${FEATURE}
+        .featureGates=${[GATE_WRONG_STAGE, GATE_SECURITY_DENIED]}
+      ></chromedash-review-status-icon>`
+    );
+    assert.isTrue(getGatesStub.notCalled);
+    const icon = component.shadowRoot!.querySelector('sl-icon');
+    assert.exists(icon);
+    assert.equal(icon.getAttribute('name'), 'block_20px');
+  });
+
+  it('waits for gates from a parent when given an empty list', async () => {
+    const component = (await fixture(
+      html`<chromedash-review-status-icon
+        .feature=${FEATURE}
+        .featureGates=${[]}
+      ></chromedash-review-status-icon>`
+    )) as ChromedashReviewStatusIcon;
+    assert.isTrue(getGatesStub.notCalled);
+    assert.isNull(
+      component.shadowRoot!.querySelector('sl-icon')!.getAttribute('name')
+    );
+
+    // When the parent's gates arrive, the icon updates.
+    component.featureGates = [
+      GATE_API_PREPARING,
+      GATE_PRIVACY_PREPARING,
+    ] as GateDict[];
+    await component.updateComplete;
+    assert.equal(
+      component.shadowRoot!.querySelector('sl-icon')!.getAttribute('name'),
+      'arrow_circle_right_20px'
+    );
+    assert.isTrue(getGatesStub.notCalled);
   });
 });
