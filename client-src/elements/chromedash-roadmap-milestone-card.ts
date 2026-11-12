@@ -79,6 +79,10 @@ export class ChromedashRoadmapMilestoneCard extends LitElement {
    * instead of one request per feature's review status icon.
    */
   fetchGates() {
+    // Drop gates loaded for a previous channel.
+    if (this.gatesByFeatureId.size > 0) {
+      this.gatesByFeatureId = new Map();
+    }
     const featureIds = this._objKeys(this.channel?.features).flatMap(
       shippingType =>
         (this.channel?.features[shippingType] || []).map(f => f.id)
