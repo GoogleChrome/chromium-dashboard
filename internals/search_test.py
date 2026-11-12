@@ -19,7 +19,8 @@ import testing_config  # isort: split
 import datetime
 from unittest import mock
 
-from internals import core_enums, notifier, search
+from framework import rediscache
+from internals import core_enums, notifier, search, search_queries
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
 from internals.review_models import Gate, Vote
 from internals.search_queries import Interval
@@ -922,3 +923,139 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
         """Query terms that are not valid, give warnings."""
         self.assertEqual(search.process_query('any:thing e=lse'), ([], 0))
         self.assertEqual(2, len(mock_warn.mock_calls))
+
+    def test_process_query__base_ids_cached_and_reused(self):
+        """The scope and sort-order ID lists are cached and reused."""
+        first = search.process_query('')
+
+        self.assertCountEqual(
+            [
+                self.featureentry_1.key.integer_id(),
+                self.featureentry_2.key.integer_id(),
+            ],
+            rediscache.get(
+                search.BASE_IDS_CACHE_KEY
+                + '|scope=deleted_unlisted_enterprise=false'
+            ),
+        )
+        self.assertEqual(
+            4,
+            len(
+                rediscache.get(
+                    search.BASE_IDS_CACHE_KEY + '|order=-created.when'
+                )
+            ),
+        )
+
+        with (
+            mock.patch.object(
+                search,
+                'process_exclude_deleted_unlisted_enterprise_query',
+                wraps=search.process_exclude_deleted_unlisted_enterprise_query,
+            ) as mock_scope_query,
+            mock.patch.object(
+                search_queries,
+                'total_order_query_async',
+                wraps=search_queries.total_order_query_async,
+            ) as mock_order_query,
+        ):
+            second = search.process_query('')
+            sorted_by_name = search.process_query('', sort_spec='name')
+
+        self.assertEqual(first, second)
+        mock_scope_query.assert_not_called()
+        # Only the new sort spec needed a query.
+        mock_order_query.assert_called_once_with('name')
+        self.assertEqual(
+            ['feature 1', 'feature 2'], [f['name'] for f in sorted_by_name[0]]
+        )
+
+    def test_process_query__base_ids_flushed_on_feature_write(self):
+        """Writing a FeatureEntry clears the cached ID lists."""
+        actual, total_count = search.process_query('')
+        self.assertEqual(2, total_count)
+
+        new_feature = FeatureEntry(
+            name='feature 5', summary='sum', category=1, impl_status_chrome=3
+        )
+        new_feature.put()
+
+        actual, total_count = search.process_query('')
+        self.assertEqual(3, total_count)
+        # The default sort is newest first, so the new feature leads.
+        self.assertEqual('feature 5', actual[0]['name'])
+
+    def test_process_query__show_flags_use_separate_scope_caches(self):
+        """Each combination of show_* flags is cached separately."""
+        self.assertEqual(2, search.process_query('')[1])
+        self.assertEqual(3, search.process_query('', show_unlisted=True)[1])
+        self.assertEqual(3, search.process_query('', show_enterprise=True)[1])
+        # Repeat them so they are served from the cache.
+        self.assertEqual(2, search.process_query('')[1])
+        self.assertEqual(3, search.process_query('', show_unlisted=True)[1])
+        self.assertEqual(3, search.process_query('', show_enterprise=True)[1])
+
+    def test_process_query__joined_sort_not_cached(self):
+        """Sorts on joined models are recomputed every time."""
+        search.process_query('', sort_spec='gate.requested_on')
+        self.assertIsNone(
+            rediscache.get(
+                search.BASE_IDS_CACHE_KEY + '|order=gate.requested_on'
+            )
+        )
+
+    def test_process_query__confidential_ids_cached(self):
+        """The confidential ID list is cached but filtered for each user."""
+        confidential_feature = FeatureEntry(
+            name='confidential feature',
+            summary='sum',
+            category=1,
+            confidential=True,
+            owner_emails=['owner@example.com'],
+        )
+        confidential_feature.put()
+        query = 'name="confidential feature"'
+
+        testing_config.sign_in('regular@example.com', 123456)
+        self.assertEqual(([], 0), search.process_query(query))
+        self.assertEqual(
+            [confidential_feature.key.integer_id()],
+            rediscache.get(search.BASE_IDS_CACHE_KEY + '|confidential'),
+        )
+
+        # The owner still sees the feature when the list comes from the cache.
+        testing_config.sign_in('owner@example.com', 123456)
+        actual, total_count = search.process_query(query)
+        self.assertEqual(1, total_count)
+        self.assertEqual('confidential feature', actual[0]['name'])
+
+        # A user who cannot view it still cannot, from the cache.
+        testing_config.sign_in('regular@example.com', 123456)
+        self.assertEqual(([], 0), search.process_query(query))
+
+    def test_fetch_all_feature_ids_set__cached(self):
+        """All feature IDs are cached and refreshed after a feature write."""
+        expected = {
+            self.featureentry_1.key.integer_id(),
+            self.featureentry_2.key.integer_id(),
+            self.featureentry_3.key.integer_id(),
+            self.featureentry_4.key.integer_id(),
+        }
+        self.assertEqual(expected, search.fetch_all_feature_ids_set())
+
+        with mock.patch.object(
+            FeatureEntry, 'query', wraps=FeatureEntry.query
+        ) as mock_query:
+            result = search.fetch_all_feature_ids_set()
+        mock_query.assert_not_called()
+        self.assertEqual(expected, result)
+        # Callers may modify the returned set without changing the cache.
+        result.clear()
+        self.assertEqual(expected, search.fetch_all_feature_ids_set())
+
+        new_feature = FeatureEntry(name='feature 5', summary='sum', category=1)
+        new_feature.put()
+        self.assertEqual(
+            expected | {new_feature.key.integer_id()},
+            search.fetch_all_feature_ids_set(),
+        )
