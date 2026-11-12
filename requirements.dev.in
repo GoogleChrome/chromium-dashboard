@@ -2,13 +2,13 @@
 # Compile into locked requirements.dev.txt via:
 #   pip-compile requirements.dev.in -o requirements.dev.txt
 
-coverage==7.16.2
+coverage==7.17.0
 gunicorn==26.2.0
 mypy==2.3.1
 pip-tools>=7.6.2
 pytest==9.1.1
 pytest-xdist==3.8.0
-ruff==0.17.1
+ruff==0.17.3
 types-protobuf
 types-pytz
 types-redis
