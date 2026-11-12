@@ -212,3 +212,60 @@ describe('ChromeStatusClient - Progress API', () => {
     });
   });
 });
+
+describe('ChromeStatusClient - getGatesForFeatures', () => {
+  let sandbox: sinon.SinonSandbox;
+  let client: ChromeStatusClient;
+
+  beforeEach(() => {
+    sandbox = sinon.createSandbox();
+    client = new ChromeStatusClient('test_token', 9999999999);
+  });
+
+  afterEach(() => {
+    sandbox.restore();
+  });
+
+  it('requests all feature IDs at once and returns the gates', async () => {
+    const gate = {id: 7, feature_id: 1};
+    const doGetStub = sandbox.stub(client, 'doGet').resolves({gates: [gate]});
+
+    const result = await client.getGatesForFeatures([1, 2, 1, 3]);
+
+    assert.isTrue(doGetStub.calledOnceWith('/gates?feature_ids=1,2,3'));
+    assert.deepEqual(result, {gates: [gate]});
+  });
+
+  it('splits large requests into batches and merges the gates', async () => {
+    const featureIds = Array.from({length: 250}, (_, i) => i + 1);
+    const doGetStub = sandbox.stub(client, 'doGet');
+    doGetStub.onCall(0).resolves({gates: [{id: 1}]});
+    doGetStub.onCall(1).resolves({gates: [{id: 2}]});
+    doGetStub.onCall(2).resolves({gates: []});
+
+    const result = await client.getGatesForFeatures(featureIds);
+
+    assert.equal(doGetStub.callCount, 3);
+    const requestedIds = doGetStub
+      .getCalls()
+      .map(call => (call.args[0] as string).split('=')[1].split(','));
+    assert.deepEqual(
+      requestedIds.map(ids => ids.length),
+      [100, 100, 50]
+    );
+    assert.deepEqual(requestedIds.flat().map(Number), featureIds);
+    assert.deepEqual(
+      result.gates.map(g => g.id),
+      [1, 2]
+    );
+  });
+
+  it('makes no request when there are no feature IDs', async () => {
+    const doGetStub = sandbox.stub(client, 'doGet');
+
+    const result = await client.getGatesForFeatures([]);
+
+    assert.isTrue(doGetStub.notCalled);
+    assert.deepEqual(result, {gates: []});
+  });
+});

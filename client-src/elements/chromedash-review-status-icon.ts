@@ -42,6 +42,11 @@ export class ChromedashReviewStatusIcon extends LitElement {
   @property({type: Object})
   feature!: {id: number; feature_type_int: number; roadmap_stage_ids: number[]};
 
+  // All gates of the feature, when a parent element already loaded them.
+  // If this is left undefined, this element fetches the gates itself.
+  @property({attribute: false})
+  featureGates?: GateDict[];
+
   @state()
   gates: GateDict[] = [];
 
@@ -73,13 +78,29 @@ export class ChromedashReviewStatusIcon extends LitElement {
     ];
   }
 
-  willUpdate(changedProperties: PropertyValues) {
+  willUpdate(changedProperties: PropertyValues<this>) {
+    if (this.featureGates !== undefined) {
+      // A parent element supplied the gates, so just filter them.
+      if (
+        changedProperties.has('featureGates') ||
+        changedProperties.has('feature')
+      ) {
+        this.gates = this.filterRoadmapGates(this.featureGates);
+      }
+      return;
+    }
     if (
       changedProperties.has('feature') &&
-      this.feature?.id !== (changedProperties.get('feature') as any)?.id
+      this.feature?.id !== changedProperties.get('feature')?.id
     ) {
       this.fetchData();
     }
+  }
+
+  filterRoadmapGates(featureGates: GateDict[]): GateDict[] {
+    return featureGates.filter(g =>
+      this.feature?.roadmap_stage_ids?.includes(g.stage_id)
+    );
   }
 
   fetchData() {
@@ -92,10 +113,7 @@ export class ChromedashReviewStatusIcon extends LitElement {
       if (this.feature?.id !== featureId) {
         return;
       }
-      const featureGates = gatesRes.gates;
-      this.gates = featureGates.filter(g =>
-        this.feature.roadmap_stage_ids?.includes(g.stage_id)
-      );
+      this.gates = this.filterRoadmapGates(gatesRes.gates);
     });
   }
 
