@@ -146,6 +146,10 @@ export class ChromedashTypeahead extends LitElement {
     const lowerDoc = candidate.doc.toLowerCase();
     return (
       lowerName.split(/\s+/).some(w => w.startsWith(prefix)) ||
+      lowerName
+        .replaceAll('"', '')
+        .split(/\s+/)
+        .some(w => w.startsWith(prefix)) ||
       lowerDoc.split(/\s+/).some(w => w.startsWith(prefix)) ||
       lowerName.split(/\W+/).some(w => w.startsWith(prefix)) ||
       lowerDoc.split(/\W+/).some(w => w.startsWith(prefix))
@@ -374,7 +378,7 @@ export class ChromedashTypeaheadDropdown extends SlDropdown {
     if (menuItems.length === 0) {
       return;
     }
-    const currentItem = menu.getCurrentItem();
+    const currentItem = this.getCurrentItem();
 
     // Handle menu selection keys.
     if (['Enter'].includes(event.key)) {
@@ -406,7 +410,7 @@ export class ChromedashTypeaheadDropdown extends SlDropdown {
         }
       } else {
         if (event.key === 'ArrowDown') {
-          this.setCurrentItem(menuItems[1]);
+          this.setCurrentItem(menuItems[0]);
         }
         if (event.key === 'ArrowUp') {
           this.setCurrentItem(menuItems[menuItems.length - 1]);
