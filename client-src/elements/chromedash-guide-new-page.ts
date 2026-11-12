@@ -69,9 +69,37 @@ export class ChromedashGuideNewPage extends LitElement {
         .process-notice p + p {
           margin-top: var(--content-padding-half);
         }
-        #web_feature_row sl-select,
-        #web_feature_row sl-input {
-          margin: 6px 10px;
+        #web_feature_header_row th,
+        #web_feature_row td {
+          text-align: left;
+          vertical-align: top;
+        }
+        #web_feature_header_row th {
+          padding: 12px 10px 5px 0;
+        }
+        #web_feature_header_row .form-field-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          width: 100%;
+        }
+        #web_feature_row td {
+          padding: 6px 10px;
+        }
+        #web_feature_row td:first-of-type {
+          width: 60%;
+          max-width: 35em;
+        }
+        #web_feature_row .helptext {
+          display: block;
+          font-size: small;
+          margin-top: 2px;
+        }
+        #web_feature_row .helptext > *:first-child {
+          margin-top: 0;
+        }
+        #web_feature_row .helptext > *:last-child {
+          margin-bottom: 0;
         }
         input[type='submit'] {
           margin: var(--content-padding) 0;
@@ -144,55 +172,104 @@ export class ChromedashGuideNewPage extends LitElement {
     setupScrollToHash(this);
   }
 
+  reportControlValidity(
+    control: HTMLElement & {reportValidity?: () => boolean}
+  ) {
+    const displayInput =
+      control.tagName.toLowerCase() === 'sl-select'
+        ? control.shadowRoot?.querySelector<HTMLInputElement>(
+            '.select__display-input'
+          )
+        : null;
+    if (displayInput) {
+      displayInput.setCustomValidity('Please fill out this field.');
+      displayInput.reportValidity();
+      displayInput.setCustomValidity('');
+      return;
+    }
+    control.reportValidity?.();
+  }
+
   handleFormSubmit(event, hiddenTokenField?) {
     void hiddenTokenField;
     event.preventDefault();
 
-    const form =
-      (event.target as HTMLElement)?.closest('form') ||
-      this.shadowRoot?.querySelector('form');
+    const featureType = this.getFeatureType();
     if (
-      form &&
-      typeof form.checkValidity === 'function' &&
-      !form.checkValidity()
+      !this.isEnterpriseFeature &&
+      featureType !== FEATURE_TYPES.FEATURE_TYPE_CODE_CHANGE_ID[0]
     ) {
-      if (typeof form.reportValidity === 'function') {
-        form.reportValidity();
+      if (this.webFeatureMode === 'propose') {
+        const inputEl = this.shadowRoot?.querySelector<HTMLInputElement>(
+          'sl-input[name="web_feature"]'
+        );
+        if (!this.proposedWebFeature && inputEl?.value) {
+          this.proposedWebFeature = inputEl.value;
+        }
+        if (this.proposedWebFeature) {
+          this.setWebFeatureValue(this.proposedWebFeature);
+        }
+      } else {
+        const selectEl = this.shadowRoot?.querySelector<HTMLSelectElement>(
+          'sl-select[name="web_feature"]'
+        );
+        if (!this.selectedWebFeature && selectEl?.value) {
+          this.selectedWebFeature = selectEl.value;
+        }
+        if (this.selectedWebFeature) {
+          this.setWebFeatureValue(this.selectedWebFeature);
+        }
       }
-      return;
+    }
+
+    if (!this.isEnterpriseFeature && this.webFeatureMode === 'propose') {
+      const explainerFv = this.fieldValues.find(
+        fv => fv.name === 'explainer_links'
+      );
+      const textarea = this.shadowRoot?.querySelector<
+        HTMLElement & {value?: string}
+      >('chromedash-form-field[name="explainer_links"] chromedash-textarea');
+      if (explainerFv && !explainerFv.value && textarea?.value) {
+        explainerFv.value = textarea.value;
+        explainerFv.touched = true;
+      }
     }
 
     const formControls = this.shadowRoot?.querySelectorAll<
       HTMLElement & {
         disabled?: boolean;
+        required?: boolean;
+        value?: string;
         checkValidity?: () => boolean;
         reportValidity?: () => boolean;
       }
     >(
       'sl-input, sl-select, sl-textarea, chromedash-textarea, input, select, textarea'
     );
-    let hasInvalid = false;
     for (const control of formControls || []) {
-      if (control.disabled || control.closest('[style*="display: none"]')) {
+      if (
+        control.disabled ||
+        control.id === 'id_web_feature' ||
+        control.closest('[style*="display: none"]')
+      ) {
         continue;
       }
-      if (
-        typeof control.checkValidity === 'function' &&
-        !control.checkValidity()
-      ) {
-        if (!hasInvalid) {
-          if (typeof control.reportValidity === 'function') {
-            control.reportValidity();
-          }
-          hasInvalid = true;
-        }
+      const isRequired =
+        control.hasAttribute('required') || Boolean(control.required);
+      const isValueEmpty =
+        control.value === '' ||
+        control.value === undefined ||
+        control.value === null;
+      const isValid =
+        typeof control.checkValidity === 'function'
+          ? control.checkValidity()
+          : true;
+      if ((isRequired && isValueEmpty) || !isValid) {
+        this.reportControlValidity(control);
+        return;
       }
     }
-    if (hasInvalid) {
-      return;
-    }
 
-    const featureType = this.getFeatureType();
     if (
       !this.isEnterpriseFeature &&
       featureType !== FEATURE_TYPES.FEATURE_TYPE_CODE_CHANGE_ID[0]
@@ -202,14 +279,10 @@ export class ChromedashGuideNewPage extends LitElement {
           ? this.selectedWebFeature
           : this.proposedWebFeature;
       if (!webFeatureVal) {
-        const webFeatureControl = this.shadowRoot?.querySelector<
-          HTMLElement & {reportValidity?: () => boolean}
-        >('#id_web_feature');
-        if (
-          webFeatureControl &&
-          typeof webFeatureControl.reportValidity === 'function'
-        ) {
-          webFeatureControl.reportValidity();
+        const webFeatureControl =
+          this.shadowRoot?.querySelector<HTMLElement>('#id_web_feature');
+        if (webFeatureControl) {
+          this.reportControlValidity(webFeatureControl);
         }
         return;
       }
@@ -220,16 +293,11 @@ export class ChromedashGuideNewPage extends LitElement {
         fv => fv.name === 'explainer_links'
       );
       if (!explainerFv?.value) {
-        const explainerControl = this.shadowRoot?.querySelector<
-          HTMLElement & {reportValidity?: () => boolean}
-        >('chromedash-form-field[name="explainer_links"]');
-        if (explainerControl) {
-          const textarea = explainerControl.querySelector<
-            HTMLElement & {reportValidity?: () => boolean}
-          >('chromedash-textarea');
-          if (textarea && typeof textarea.reportValidity === 'function') {
-            textarea.reportValidity();
-          }
+        const textarea = this.shadowRoot?.querySelector<HTMLElement>(
+          'chromedash-form-field[name="explainer_links"] chromedash-textarea'
+        );
+        if (textarea) {
+          this.reportControlValidity(textarea);
         }
         return;
       }
@@ -259,6 +327,7 @@ export class ChromedashGuideNewPage extends LitElement {
         );
       })
       .catch(() => {
+        this.submitting = false;
         showToastMessage(
           'Some errors occurred. Please refresh the page or try again later.'
         );
@@ -309,17 +378,21 @@ export class ChromedashGuideNewPage extends LitElement {
     if (!webFeatureRow) {
       return;
     }
-    const featureType = this.getFeatureType();
-    if (featureType == FEATURE_TYPES.FEATURE_TYPE_CODE_CHANGE_ID[0]) {
-      webFeatureRow.style.display = 'none';
-      if (webFeatureHeaderRow) {
-        webFeatureHeaderRow.style.display = 'none';
-      }
-    } else {
-      webFeatureRow.style.display = '';
-      if (webFeatureHeaderRow) {
-        webFeatureHeaderRow.style.display = '';
-      }
+    const isCodeChange =
+      this.getFeatureType() == FEATURE_TYPES.FEATURE_TYPE_CODE_CHANGE_ID[0];
+    const display = isCodeChange ? 'none' : '';
+    webFeatureRow.style.display = display;
+    if (webFeatureHeaderRow) {
+      webFeatureHeaderRow.style.display = display;
+    }
+    const webFeatureControl = this.shadowRoot?.querySelector<
+      HTMLElement & {required?: boolean; disabled?: boolean}
+    >('#id_web_feature');
+    if (webFeatureControl) {
+      webFeatureControl.required = !isCodeChange;
+      webFeatureControl.disabled =
+        isCodeChange ||
+        (this.webFeatureMode === 'existing' && this.loadingWebFeatures);
     }
   }
 
@@ -360,7 +433,43 @@ export class ChromedashGuideNewPage extends LitElement {
     this.requestUpdate();
   }
 
+  deactivateFormControl(
+    control:
+      | (HTMLElement & {
+          required?: boolean;
+          disabled?: boolean;
+          formControlController?: {
+            form?: HTMLFormElement;
+            handleFormSubmit?: EventListener;
+          };
+        })
+      | null
+      | undefined
+  ) {
+    if (!control) {
+      return;
+    }
+    control.required = false;
+    control.disabled = true;
+    const fcc = control.formControlController;
+    if (fcc?.form && fcc.handleFormSubmit) {
+      fcc.form.removeEventListener('submit', fcc.handleFormSubmit);
+    }
+  }
+
   handleWebFeatureModeChange(mode: 'existing' | 'propose') {
+    if (this.webFeatureMode !== mode) {
+      this.deactivateFormControl(
+        this.shadowRoot?.querySelector<HTMLElement>('#id_web_feature')
+      );
+      if (mode === 'existing') {
+        this.deactivateFormControl(
+          this.shadowRoot?.querySelector<HTMLElement>(
+            'chromedash-form-field[name="explainer_links"] chromedash-textarea'
+          )
+        );
+      }
+    }
     this.webFeatureMode = mode;
     if (mode === 'existing') {
       this.setWebFeatureValue(this.selectedWebFeature);
@@ -374,16 +483,14 @@ export class ChromedashGuideNewPage extends LitElement {
 
   handleSelectWebFeature(e: Event) {
     const target = e.target as HTMLSelectElement;
-    const value = target.value || '';
-    this.selectedWebFeature = value;
-    this.setWebFeatureValue(value);
+    this.selectedWebFeature = target.value || '';
+    this.setWebFeatureValue(this.selectedWebFeature);
   }
 
   handleInputWebFeature(e: Event) {
     const target = e.target as HTMLInputElement;
-    const value = target.value || '';
-    this.proposedWebFeature = value;
-    this.setWebFeatureValue(value);
+    this.proposedWebFeature = target.value || '';
+    this.setWebFeatureValue(this.proposedWebFeature);
   }
 
   setWebFeatureValue(value: string) {
@@ -418,7 +525,7 @@ export class ChromedashGuideNewPage extends LitElement {
       ? (fieldProps.enterprise_initial ?? fieldProps.initial)
       : fieldProps.initial;
     let fvIndex = this.fieldValues.findIndex(fv => fv.name === featureJSONKey);
-    let value: unknown;
+    let value: string | number | boolean | undefined;
     if (fvIndex === -1) {
       value = newFeatureInitialValues[field] ?? initialValue ?? '';
       fvIndex = this.fieldValues.length;
@@ -428,17 +535,20 @@ export class ChromedashGuideNewPage extends LitElement {
         value,
       });
     } else {
-      value = this.fieldValues[fvIndex].value;
+      value = this.fieldValues[fvIndex].value as
+        string | number | boolean | undefined;
     }
 
     return html`
       <chromedash-form-field
         name=${field}
         index=${fvIndex}
+        value=${String(value ?? '')}
         .value=${value}
         disabledReason="${getDisabledHelpText(field)}"
         .fieldValues=${this.fieldValues}
         ?forEnterprise=${this.isEnterpriseFeature}
+        .forceRequired=${forceRequired}
         ?forceRequired=${forceRequired}
         @form-field-update="${this.handleFormFieldUpdate}"
         class="${className || ''}"
@@ -467,7 +577,7 @@ export class ChromedashGuideNewPage extends LitElement {
       </tr>
       <tr id="web_feature_row">
         <td>
-          <div style="margin: var(--content-padding-half)">
+          <div style="margin-bottom: var(--content-padding-half)">
             <label style="margin-right: 1em">
               <input
                 type="radio"
@@ -536,8 +646,7 @@ export class ChromedashGuideNewPage extends LitElement {
                     this.shouldDisplayWidelySupportedWarning()
                       ? html`
                           <p style="margin: var(--content-padding-half)">
-                            This web feature is already widely supported, are
-                            you sure that you are incubating a change to it?
+                            ${'This web feature is already widely supported, are you sure that you are incubating a change to it?'}
                           </p>
                         `
                       : nothing
@@ -559,7 +668,13 @@ export class ChromedashGuideNewPage extends LitElement {
           }
         </td>
         <td>
-          <span class="helptext"> ${ALL_FIELDS['web_feature'].help_text} </span>
+          <span class="helptext">
+            ${
+              this.webFeatureMode === 'propose'
+                ? 'Enter a proposed web-feature ID consisting of lowercase letters and dashes.'
+                : ALL_FIELDS['web_feature'].help_text
+            }
+          </span>
         </td>
       </tr>
       ${

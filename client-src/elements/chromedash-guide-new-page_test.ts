@@ -39,15 +39,38 @@ describe('chromedash-guide-new-page', () => {
 
   function populateRequiredFields(component: ChromedashGuideNewPage) {
     const controls = component.shadowRoot?.querySelectorAll<
-      HTMLElement & {value?: unknown; required?: boolean}
-    >('sl-input, sl-select, chromedash-textarea, input, select, textarea');
+      HTMLElement & {
+        value?: unknown;
+        required?: boolean;
+        checked?: boolean;
+        input?: HTMLInputElement | HTMLTextAreaElement;
+      }
+    >(
+      'sl-input, sl-select, sl-textarea, chromedash-textarea, input, select, textarea'
+    );
     for (const control of controls || []) {
-      if (control.required && !control.value) {
+      if (
+        control.tagName.toLowerCase() === 'input' &&
+        (control as HTMLInputElement).type === 'radio'
+      ) {
+        const radio = control as HTMLInputElement;
+        if (radio.value === '0') {
+          radio.checked = true;
+        }
+      } else if (control.tagName.toLowerCase() === 'sl-select') {
+        control.value = 'grid';
+      } else if (
+        (control.hasAttribute('required') || Boolean(control.required)) &&
+        !control.value
+      ) {
         control.value = 'dummy value';
+        if (control.input) {
+          control.input.value = 'dummy value';
+        }
       }
     }
     for (const fv of component.fieldValues) {
-      if (!fv.value) {
+      if (fv.value === '' || fv.value === undefined || fv.value === null) {
         fv.value = 'dummy value';
       }
     }
@@ -311,6 +334,12 @@ describe('chromedash-guide-new-page', () => {
     );
     assert.exists(webstatusLink);
     assert.include(webstatusLink!.textContent!, 'grid');
+
+    const helpTextEl = component.shadowRoot?.querySelector(
+      '#web_feature_row .helptext'
+    );
+    assert.exists(helpTextEl);
+    assert.include(helpTextEl!.textContent!, 'web-features project');
   });
 
   it('switches to propose web-feature mode and submits proposed value and explainer links', async () => {
@@ -323,6 +352,15 @@ describe('chromedash-guide-new-page', () => {
     // Switch to propose mode.
     component.handleWebFeatureModeChange('propose');
     await component.updateComplete;
+
+    const helpTextEl = component.shadowRoot?.querySelector(
+      '#web_feature_row .helptext'
+    );
+    assert.exists(helpTextEl);
+    assert.include(
+      helpTextEl!.textContent!,
+      'Enter a proposed web-feature ID consisting of lowercase letters and dashes.'
+    );
 
     const inputEl = component.shadowRoot?.querySelector<HTMLElement>(
       'sl-input[name="web_feature"]'
@@ -370,18 +408,31 @@ describe('chromedash-guide-new-page', () => {
     populateRequiredFields(component);
     component.proposedWebFeature = 'proposed-feature-id';
     component.setWebFeatureValue('proposed-feature-id');
+    const webFeatureInput =
+      component.shadowRoot?.querySelector<HTMLInputElement>(
+        'sl-input[name="web_feature"]'
+      );
+    if (webFeatureInput) {
+      webFeatureInput.value = 'proposed-feature-id';
+    }
     component.fieldValues[explainerIndex].value =
       'https://github.com/example/explainer';
+    const explainerControl = component.shadowRoot?.querySelector(
+      'chromedash-form-field[name="explainer_links"]'
+    );
+    const textarea = explainerControl?.querySelector<HTMLTextAreaElement>(
+      'chromedash-textarea'
+    );
+    if (textarea) {
+      textarea.value = 'https://github.com/example/explainer';
+    }
 
     const createFeatureStub = sinon.stub(window.csClient, 'createFeature');
     createFeatureStub.returns(Promise.resolve({feature_id: 12345}));
     sinon.stub(component, 'navigate');
 
-    const fakeEvent = {preventDefault: sinon.spy()};
-    const hiddenTokenField = component.renderRoot.querySelector(
-      'input[name="token"]'
-    );
-    component.handleFormSubmit(fakeEvent, hiddenTokenField);
+    const form = component.shadowRoot!.querySelector('form')!;
+    form.dispatchEvent(new Event('submit', {bubbles: true, cancelable: true}));
 
     assert.isTrue(createFeatureStub.calledOnce);
     const submitArg = createFeatureStub.firstCall.args[0];
@@ -486,6 +537,7 @@ describe('chromedash-guide-new-page', () => {
     }
 
     const createFeatureStub = sinon.stub(window.csClient, 'createFeature');
+    const reportValiditySpy = sinon.spy(component, 'reportControlValidity');
     const fakeEvent = {preventDefault: sinon.spy()};
     const hiddenTokenField = component.renderRoot.querySelector(
       'input[name="token"]'
@@ -493,6 +545,7 @@ describe('chromedash-guide-new-page', () => {
     component.handleFormSubmit(fakeEvent, hiddenTokenField);
 
     assert.isFalse(createFeatureStub.called);
+    assert.isTrue(reportValiditySpy.called);
     createFeatureStub.restore();
   });
 
@@ -517,6 +570,7 @@ describe('chromedash-guide-new-page', () => {
     }
 
     const createFeatureStub = sinon.stub(window.csClient, 'createFeature');
+    const reportValiditySpy = sinon.spy(component, 'reportControlValidity');
     const fakeEvent = {preventDefault: sinon.spy()};
     const hiddenTokenField = component.renderRoot.querySelector(
       'input[name="token"]'
@@ -524,6 +578,7 @@ describe('chromedash-guide-new-page', () => {
     component.handleFormSubmit(fakeEvent, hiddenTokenField);
 
     assert.isFalse(createFeatureStub.called);
+    assert.isTrue(reportValiditySpy.called);
     createFeatureStub.restore();
   });
 
