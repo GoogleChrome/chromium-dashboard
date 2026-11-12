@@ -19,6 +19,8 @@ import testing_config  # isort: split
 import datetime
 from unittest import mock
 
+from google.cloud import ndb
+
 from framework import rediscache
 from internals import core_enums, notifier, search, search_queries
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
@@ -1004,34 +1006,46 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
             )
         )
 
-    def test_process_query__confidential_ids_cached(self):
-        """The confidential ID list is cached but filtered for each user."""
-        confidential_feature = FeatureEntry(
-            name='confidential feature',
-            summary='sum',
-            category=1,
-            confidential=True,
-            owner_emails=['owner@example.com'],
-        )
-        confidential_feature.put()
-        query = 'name="confidential feature"'
-
+    def test_process_query__confidential_ids_not_cached(self):
+        """Confidential IDs are always queried, even with stale cached lists."""
         testing_config.sign_in('regular@example.com', 123456)
-        self.assertEqual(([], 0), search.process_query(query))
-        self.assertEqual(
-            [confidential_feature.key.integer_id()],
-            rediscache.get(search.BASE_IDS_CACHE_KEY + '|confidential'),
+        actual, total_count = search.process_query('')
+        self.assertEqual(2, total_count)
+        self.assertIsNone(
+            rediscache.get(search.BASE_IDS_CACHE_KEY + '|confidential')
         )
 
-        # The owner still sees the feature when the list comes from the cache.
-        testing_config.sign_in('owner@example.com', 123456)
-        actual, total_count = search.process_query(query)
+        # Make feature 1 confidential without clearing the search cache, as
+        # if the flush were missed. The cached scope list still includes it.
+        self.featureentry_1.confidential = True
+        ndb.put_multi([self.featureentry_1])
+        self.assertIn(
+            self.featureentry_1.key.integer_id(),
+            rediscache.get(
+                search.BASE_IDS_CACHE_KEY
+                + '|scope=deleted_unlisted_enterprise=false'
+            ),
+        )
+
+        # A user who cannot view it does not see it.
+        actual, total_count = search.process_query('')
         self.assertEqual(1, total_count)
-        self.assertEqual('confidential feature', actual[0]['name'])
+        self.assertEqual(['feature 2'], [f['name'] for f in actual])
 
-        # A user who cannot view it still cannot, from the cache.
-        testing_config.sign_in('regular@example.com', 123456)
-        self.assertEqual(([], 0), search.process_query(query))
+        # The owner still does.
+        testing_config.sign_in('owner@example.com', 123456)
+        actual, total_count = search.process_query('')
+        self.assertEqual(2, total_count)
+
+    def test_process_query__base_ids_cache_ttl(self):
+        """Cached ID lists expire after BASE_IDS_CACHE_TTL."""
+        search.process_query('')
+        cache_key = rediscache.add_gae_prefix(
+            search.BASE_IDS_CACHE_KEY + '|order=-created.when'
+        )
+        ttl = rediscache.redis_client.ttl(cache_key)
+        self.assertTrue(0 < ttl <= search.BASE_IDS_CACHE_TTL)
+        self.assertEqual(30 * 60, search.BASE_IDS_CACHE_TTL)
 
     def test_fetch_all_feature_ids_set__cached(self):
         """All feature IDs are cached and refreshed after a feature write."""

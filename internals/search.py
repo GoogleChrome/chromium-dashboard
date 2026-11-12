@@ -42,10 +42,14 @@ DEFAULT_RESULTS_PER_PAGE = 100
 MAX_RESULTS_PER_PAGE = 1000
 SEARCH_CACHE_TTL = 60 * 60  # One hour
 # Feature ID lists that every search needs and that are the same for every
-# user (search scope, confidential features, all features, and sort orders).
-# They live under the search cache prefix, so any search cache flush also
-# clears them.
+# user (search scope, all features, and sort orders). They live under the
+# search cache prefix, so any search cache flush also clears them. The
+# shorter TTL limits how long a list can stay stale if a write is missed or
+# races with a search that is filling the cache. Confidential feature IDs
+# are deliberately not cached, because a stale list could show a newly
+# confidential feature to users who cannot view it.
 BASE_IDS_CACHE_KEY = FeatureEntry.SEARCH_CACHE_KEY + '|base_ids'
+BASE_IDS_CACHE_TTL = 30 * 60  # 30 minutes
 
 
 def _get_cached_base_ids(name: str) -> list[int] | None:
@@ -59,7 +63,7 @@ def _get_cached_base_ids(name: str) -> list[int] | None:
 def _set_cached_base_ids(name: str, feature_ids: Iterable[int]) -> None:
     """Cache a list of feature IDs that does not depend on the user."""
     rediscache.set(
-        f'{BASE_IDS_CACHE_KEY}|{name}', list(feature_ids), SEARCH_CACHE_TTL
+        f'{BASE_IDS_CACHE_KEY}|{name}', list(feature_ids), BASE_IDS_CACHE_TTL
     )
 
 
@@ -602,14 +606,11 @@ def process_query(
         or permissions.can_admin_site(user)
     )
 
-    cached_confidential_ids = None
     if not can_view_all_confidential:
-        cached_confidential_ids = _get_cached_base_ids('confidential')
-        if cached_confidential_ids is None:
-            logging.info('creating parallel queries for confidential features')
-            confidential_future_ops = create_future_operations_from_queries(
-                [('', 'confidential', '=', 'true', None)], context
-            )
+        logging.info('creating parallel queries for confidential features')
+        confidential_future_ops = create_future_operations_from_queries(
+            [('', 'confidential', '=', 'true', None)], context
+        )
 
     # 2d. Create a parallel query for total sort order, unless it is cached.
     # Sorts on joined models (e.g., gate.requested_on) are not cached.
@@ -653,14 +654,8 @@ def process_query(
 
     # 3c. Filter out confidential features that the user cannot view.
     if not can_view_all_confidential:
-        if cached_confidential_ids is not None:
-            confidential_ids = set(cached_confidential_ids)
-        else:
-            confidential_clauses = process_and_operations(
-                confidential_future_ops
-            )
-            confidential_ids = process_or_operations(confidential_clauses)
-            _set_cached_base_ids('confidential', confidential_ids)
+        confidential_clauses = process_and_operations(confidential_future_ops)
+        confidential_ids = process_or_operations(confidential_clauses)
         confidential_results = result_id_set.intersection(confidential_ids)
 
         if confidential_results:
