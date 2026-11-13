@@ -614,7 +614,9 @@ def process_query(
 
     # 2d. Create a parallel query for total sort order, unless it is cached.
     # Sorts on joined models (e.g., gate.requested_on) are not cached.
-    order_cache_name = 'order=' + sort_spec
+    # Sort field names are case-insensitive, so normalize the cache key to
+    # avoid storing a separate copy for each capitalization.
+    order_cache_name = 'order=' + sort_spec.lower()
     is_cacheable_order = search_queries.is_feature_entry_sort(sort_spec)
     cached_order_ids = (
         _get_cached_base_ids(order_cache_name) if is_cacheable_order else None
