@@ -192,7 +192,7 @@ export class ChromedashGantt extends LitElement {
     );
     const otEndMilestones: (number | undefined)[] = otStages.map(s => {
       let maxEnd = s[`${platformParam}_last`];
-      for (const e of s.extensions) {
+      for (const e of s.extensions || []) {
         // Extensions only have "desktop_last" milestone values.
         if (e.desktop_last && !maxEnd) {
           maxEnd = e.desktop_last;
@@ -229,7 +229,8 @@ export class ChromedashGantt extends LitElement {
         const shippingIndex = sortedMilestones.indexOf(
           Math.min(...validShipMilestones)
         );
-        devTrialMilestoneLast = sortedMilestones[shippingIndex - 1];
+        devTrialMilestoneLast =
+          shippingIndex > 0 ? sortedMilestones[shippingIndex - 1] : dtMilestone;
       }
       dtChartRows.push(
         this.renderChartRow(
@@ -280,6 +281,14 @@ export class ChromedashGantt extends LitElement {
         )
       );
       currentRow++;
+    }
+
+    if (
+      dtChartRows.length === 0 &&
+      otChartRows.length === 0 &&
+      shipChartRows.length === 0
+    ) {
+      return nothing;
     }
 
     return html`
