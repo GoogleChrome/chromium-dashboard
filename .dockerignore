@@ -8,3 +8,7 @@ playwright/.cache/
 coverage
 
 __pycache__
+build
+static/dist
+gen/js/*/dist
+gen/js/*/node_modules

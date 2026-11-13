@@ -235,7 +235,11 @@ export class ChromedashGuideNewPage extends LitElement {
       }
     }
 
-    if (!this.isEnterpriseFeature && this.webFeatureMode === 'propose') {
+    if (
+      !this.isEnterpriseFeature &&
+      featureType !== FEATURE_TYPES.FEATURE_TYPE_CODE_CHANGE_ID[0] &&
+      this.webFeatureMode === 'propose'
+    ) {
       const explainerFv = this.fieldValues.find(
         fv => fv.name === 'explainer_links'
       );
@@ -317,7 +321,11 @@ export class ChromedashGuideNewPage extends LitElement {
       }
     }
 
-    if (!this.isEnterpriseFeature && this.webFeatureMode === 'propose') {
+    if (
+      !this.isEnterpriseFeature &&
+      featureType !== FEATURE_TYPES.FEATURE_TYPE_CODE_CHANGE_ID[0] &&
+      this.webFeatureMode === 'propose'
+    ) {
       const explainerFv = this.fieldValues.find(
         fv => fv.name === 'explainer_links'
       );
@@ -338,7 +346,7 @@ export class ChromedashGuideNewPage extends LitElement {
 
     if (featureType == FEATURE_TYPES.FEATURE_TYPE_CODE_CHANGE_ID[0]) {
       this.fieldValues = this.fieldValues.filter(
-        fv => fv.name !== 'web_feature'
+        fv => fv.name !== 'web_feature' && fv.name !== 'explainer_links'
       );
     }
     if (this.webFeatureMode === 'existing') {
@@ -402,6 +410,10 @@ export class ChromedashGuideNewPage extends LitElement {
     );
   }
 
+  updated() {
+    this.maybeMakeWebFeatureRequired();
+  }
+
   maybeMakeWebFeatureRequired() {
     const webFeatureRow =
       this.shadowRoot?.querySelector<HTMLElement>('#web_feature_row');
@@ -426,6 +438,22 @@ export class ChromedashGuideNewPage extends LitElement {
       webFeatureControl.disabled =
         isCodeChange ||
         (this.webFeatureMode === 'existing' && this.loadingWebFeatures);
+    }
+    const explainerLinksField =
+      this.shadowRoot?.querySelector<ChromedashFormField>(
+        'chromedash-form-field[name="explainer_links"]'
+      );
+    if (explainerLinksField) {
+      explainerLinksField.style.display = display;
+      explainerLinksField.forceRequired = !isCodeChange;
+      explainerLinksField.disabled = isCodeChange;
+      const explainerTextarea = explainerLinksField.querySelector<
+        HTMLElement & {required?: boolean; disabled?: boolean}
+      >('chromedash-textarea');
+      if (explainerTextarea) {
+        explainerTextarea.required = !isCodeChange;
+        explainerTextarea.disabled = isCodeChange;
+      }
     }
   }
 
@@ -758,7 +786,8 @@ export class ChromedashGuideNewPage extends LitElement {
           ? this.renderFormField(
               'explainer_links',
               null,
-              true,
+              this.getFeatureType() !==
+                FEATURE_TYPES.FEATURE_TYPE_CODE_CHANGE_ID[0],
               previousFieldValues
             )
           : nothing
