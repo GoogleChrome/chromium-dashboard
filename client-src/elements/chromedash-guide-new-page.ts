@@ -177,6 +177,8 @@ export class ChromedashGuideNewPage extends LitElement {
       this.handleFormSubmit(event, hiddenTokenField);
     });
 
+    this.maybeMakeWebFeatureRequired();
+    this.maybeMakeEnterpriseFeatureCategoriesRequired();
     setupScrollToHash(this);
   }
 
@@ -521,7 +523,8 @@ export class ChromedashGuideNewPage extends LitElement {
   renderFormField(
     field: string,
     className?: string | null,
-    forceRequired = false
+    forceRequired = false,
+    previousFieldValues?: FieldInfo[]
   ) {
     const fieldProps = ALL_FIELDS[field];
     const featureJSONKey = fieldProps.name || field;
@@ -535,19 +538,40 @@ export class ChromedashGuideNewPage extends LitElement {
     const initialValue = this.isEnterpriseFeature
       ? (fieldProps.enterprise_initial ?? fieldProps.initial)
       : fieldProps.initial;
-    let fvIndex = this.fieldValues.findIndex(fv => fv.name === featureJSONKey);
-    let value: string | number | boolean | undefined;
-    if (fvIndex === -1) {
-      value = newFeatureInitialValues[field] ?? initialValue ?? '';
+    let value: string | number | boolean | undefined =
+      newFeatureInitialValues[field] ?? initialValue ?? '';
+    let fvIndex: number;
+    if (previousFieldValues) {
       fvIndex = this.fieldValues.length;
-      this.fieldValues.push({
-        name: featureJSONKey,
-        touched: true, // Submit everything
-        value,
-      });
+      const existingField = previousFieldValues.find(
+        fv => fv.name === featureJSONKey
+      );
+      if (!existingField) {
+        this.fieldValues.push({
+          name: featureJSONKey,
+          touched: true, // Submit everything
+          value,
+        });
+      } else if (field === 'owner' && !existingField.value && value) {
+        existingField.value = value;
+        this.fieldValues.push(existingField);
+      } else {
+        value = existingField.value as string | number | boolean | undefined;
+        this.fieldValues.push(existingField);
+      }
     } else {
-      value = this.fieldValues[fvIndex].value as
-        string | number | boolean | undefined;
+      fvIndex = this.fieldValues.findIndex(fv => fv.name === featureJSONKey);
+      if (fvIndex === -1) {
+        fvIndex = this.fieldValues.length;
+        this.fieldValues.push({
+          name: featureJSONKey,
+          touched: true, // Submit everything
+          value,
+        });
+      } else {
+        value = this.fieldValues[fvIndex].value as
+          string | number | boolean | undefined;
+      }
     }
 
     return html`
@@ -567,7 +591,7 @@ export class ChromedashGuideNewPage extends LitElement {
     `;
   }
 
-  maybeRenderWebFeatureId() {
+  maybeRenderWebFeatureId(previousFieldValues?: FieldInfo[]) {
     if (this.isEnterpriseFeature) {
       return nothing;
     }
@@ -693,7 +717,12 @@ export class ChromedashGuideNewPage extends LitElement {
       </tr>
       ${
         this.webFeatureMode === 'propose'
-          ? this.renderFormField('explainer_links', null, true)
+          ? this.renderFormField(
+              'explainer_links',
+              null,
+              true,
+              previousFieldValues
+            )
           : nothing
       }
     `;
@@ -756,11 +785,31 @@ export class ChromedashGuideNewPage extends LitElement {
   }
 
   renderForm() {
+    const previousFieldValues = [...this.fieldValues];
+    this.fieldValues.length = 0;
     this.fieldValues.feature = this.feature;
 
     const formFields = this.isEnterpriseFeature
       ? ENTERPRISE_NEW_FEATURE_FORM_FIELDS
       : NEW_FEATURE_FORM_FIELDS;
+
+    const extraFields = !this.isEnterpriseFeature
+      ? this.renderFormField(
+          'feature_type_radio_group',
+          'choices',
+          false,
+          previousFieldValues
+        )
+      : nothing;
+    const mainFields = formFields.map(field =>
+      this.renderFormField(
+        field,
+        field === 'enterprise_product_category' ? 'choices' : null,
+        false,
+        previousFieldValues
+      )
+    );
+    const webFeatureFields = this.maybeRenderWebFeatureId(previousFieldValues);
 
     const submitLabel = this.submitting
       ? 'Submitting...'
@@ -772,19 +821,8 @@ export class ChromedashGuideNewPage extends LitElement {
         <form>
           <input type="hidden" name="token" />
           <chromedash-form-table ${ref(this.registerHandlers)}>
-            ${this.renderWarnings()}
-            ${
-              !this.isEnterpriseFeature
-                ? this.renderFormField('feature_type_radio_group', 'choices')
-                : nothing
-            }
-            ${formFields.map(field =>
-              this.renderFormField(
-                field,
-                field === 'enterprise_product_category' ? 'choices' : null
-              )
-            )}
-            ${this.maybeRenderWebFeatureId()}
+            ${this.renderWarnings()} ${extraFields} ${mainFields}
+            ${webFeatureFields}
           </chromedash-form-table>
           <input
             type="submit"

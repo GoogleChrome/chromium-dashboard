@@ -65,10 +65,9 @@ export class ChromedashGuideVerifyAccuracyPage extends LitElement {
   fieldValues: FieldInfo[] & {feature?: Feature} = [];
   @state()
   loading = true;
-  @state()
   previousStageTypeRendered = 0;
-  @state()
   sameTypeRendered = 0;
+  nextFieldIndex = 0;
   @state()
   submitting = false;
 
@@ -82,6 +81,7 @@ export class ChromedashGuideVerifyAccuracyPage extends LitElement {
     window.csClient
       .getFeature(this.featureId)
       .then(feature => {
+        this.fieldValues = [];
         this.feature = feature;
         if (this.feature.name) {
           document.title = `${this.feature.name} - ${this.appTitle}`;
@@ -152,6 +152,7 @@ export class ChromedashGuideVerifyAccuracyPage extends LitElement {
     // The field has been updated, so it is considered touched.
     this.fieldValues[index].touched = true;
     this.fieldValues[index].value = value;
+    this.fieldValues[index].isMarkdown = event.detail.isMarkdown;
   }
 
   renderSkeletons() {
@@ -211,11 +212,13 @@ export class ChromedashGuideVerifyAccuracyPage extends LitElement {
     }
 
     const formFieldEls = stageFields.map(field => {
-      let value = formattedFeature[field];
       const featureJSONKey = ALL_FIELDS[field].name || field;
+      let value = formattedFeature[field] ?? formattedFeature[featureJSONKey];
+      let stageId = undefined;
 
-      if (STAGE_SPECIFIC_FIELDS.has(field)) {
+      if (STAGE_SPECIFIC_FIELDS.has(featureJSONKey)) {
         value = getStageValue(feStage, featureJSONKey);
+        stageId = feStage.id;
       } else if (this.sameTypeRendered > 1) {
         // Don't render fields that are not stage-specific if this is
         // a stage type that is already being rendered.
@@ -224,22 +227,27 @@ export class ChromedashGuideVerifyAccuracyPage extends LitElement {
       }
 
       // Add the field to this component's stage before creating the field component.
-      const index = this.fieldValues.length;
+      const index = this.nextFieldIndex++;
       let touched = false;
       if (featureJSONKey === 'accurate_as_of') {
         touched = true;
       }
-      this.fieldValues.push({
-        name: featureJSONKey,
-        touched,
-        value,
-        stageId: feStage.id,
-      });
+      if (index >= this.fieldValues.length) {
+        this.fieldValues.push({
+          name: featureJSONKey,
+          touched,
+          value,
+          stageId,
+        });
+      } else {
+        value = this.fieldValues[index].value;
+      }
 
       return html`
         <chromedash-form-field
           name=${field}
           index=${index}
+          stageId=${stageId ?? 0}
           value=${value}
           disabledReason="${getDisabledHelpText(field, feStage)}"
           .fieldValues=${this.fieldValues}
@@ -268,6 +276,9 @@ export class ChromedashGuideVerifyAccuracyPage extends LitElement {
    * @return {Array} formsToRender, All HTML elements to render in the form.
    */
   getForms(formattedFeature, feStages) {
+    this.previousStageTypeRendered = 0;
+    this.sameTypeRendered = 0;
+    this.nextFieldIndex = 0;
     // All features display the metadata section.
     let fieldsOnly = flattenSections(VERIFY_ACCURACY_METADATA_FIELDS);
     const formsToRender = [
