@@ -145,6 +145,7 @@ const LOCALHOST_REGEX: string = String.raw`(localhost|127\.0\.0\.1)`;
 const DOMAIN_REGEX: string =
   '(' + DOMAIN_NAME_REGEX + '|' + LOCALHOST_REGEX + ')';
 const FINCH_NAMES_REGEX = String.raw`[\-_a-zA-Z0-9,]*`;
+export const WEB_FEATURE_REGEX = String.raw`[\-a-z0-9]*[a-z][\-a-z0-9]*`;
 
 const EMAIL_ADDRESS_REGEX: string = USER_REGEX + '@' + DOMAIN_NAME_REGEX;
 const GOOGLE_EMAIL_ADDRESS_REGEX: string = `${USER_REGEX}@google.com`;
@@ -558,7 +559,12 @@ export const ALL_FIELDS: Record<string, Field> = {
     required: false,
     choices: undefined, // this gets replaced in chromedash-form-field via an web features api
     label: 'Web Feature ID',
-    attrs: {placeholder: 'Please select a Web feature ID'},
+    attrs: {
+      placeholder: 'Please select a Web feature ID',
+      pattern: `(proposed/)?${WEB_FEATURE_REGEX}`,
+      title:
+        'Enter a web-feature ID consisting of lowercase letters, digits, and dashes, with at least one letter.',
+    },
     usage: ALL_INTENT_USAGE_BY_FEATURE_TYPE,
     help_text: html` Select the web feature this belongs to in the
       <a href="https://github.com/web-platform-dx/web-features" target="_blank"

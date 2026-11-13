@@ -32,7 +32,7 @@ import {
 } from './form-definition.js';
 import {FEATURE_TYPES, ENTERPRISE_IMPACT} from './form-field-enums.js';
 
-import {ALL_FIELDS} from './form-field-specs.js';
+import {ALL_FIELDS, WEB_FEATURE_REGEX} from './form-field-specs.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {FORM_STYLES} from '../css/forms-css.js';
 import {
@@ -263,6 +263,7 @@ export class ChromedashGuideNewPage extends LitElement {
       if (
         control.disabled ||
         control.id === 'id_web_feature' ||
+        control.id === 'id_explainer_links' ||
         control.closest('[style*="display: none"]')
       ) {
         continue;
@@ -291,9 +292,24 @@ export class ChromedashGuideNewPage extends LitElement {
         this.webFeatureMode === 'existing'
           ? this.selectedWebFeature
           : this.proposedWebFeature;
-      if (!webFeatureVal) {
-        const webFeatureControl =
-          this.shadowRoot?.querySelector<HTMLElement>('#id_web_feature');
+      const isExistingChoice =
+        this.webFeatureMode === 'propose' &&
+        this.isExistingWebFeature(webFeatureVal);
+      const webFeatureControl = this.shadowRoot?.querySelector<
+        HTMLElement & {setCustomValidity?: (msg: string) => void}
+      >('#id_web_feature');
+      if (this.webFeatureMode === 'propose' && webFeatureControl) {
+        webFeatureControl.setCustomValidity?.(
+          isExistingChoice
+            ? 'This web-feature ID already exists. Please choose it from the existing list.'
+            : ''
+        );
+      }
+      const isInvalidProposed =
+        this.webFeatureMode === 'propose' &&
+        (!new RegExp(`^(?:${WEB_FEATURE_REGEX})$`, 'v').test(webFeatureVal) ||
+          isExistingChoice);
+      if (!webFeatureVal || isInvalidProposed) {
         if (webFeatureControl) {
           this.reportControlValidity(webFeatureControl);
         }
@@ -305,10 +321,14 @@ export class ChromedashGuideNewPage extends LitElement {
       const explainerFv = this.fieldValues.find(
         fv => fv.name === 'explainer_links'
       );
-      if (!explainerFv?.value) {
-        const textarea = this.shadowRoot?.querySelector<HTMLElement>(
-          'chromedash-form-field[name="explainer_links"] chromedash-textarea'
-        );
+      const textarea = this.shadowRoot?.querySelector<
+        HTMLElement & {checkValidity?: () => boolean}
+      >('chromedash-form-field[name="explainer_links"] chromedash-textarea');
+      const isExplainerValid =
+        typeof textarea?.checkValidity === 'function'
+          ? textarea.checkValidity()
+          : true;
+      if (!explainerFv?.value || !isExplainerValid) {
         if (textarea) {
           this.reportControlValidity(textarea);
         }
@@ -494,6 +514,15 @@ export class ChromedashGuideNewPage extends LitElement {
     }
   }
 
+  isExistingWebFeature(value: string): boolean {
+    if (!value) {
+      return false;
+    }
+    return Object.values(this.webFeatureChoices).some(
+      ([choiceVal]) => choiceVal === value
+    );
+  }
+
   handleSelectWebFeature(e: Event) {
     const target = e.target as HTMLSelectElement;
     this.selectedWebFeature = target.value || '';
@@ -501,9 +530,16 @@ export class ChromedashGuideNewPage extends LitElement {
   }
 
   handleInputWebFeature(e: Event) {
-    const target = e.target as HTMLInputElement;
+    const target = e.target as HTMLInputElement & {
+      setCustomValidity?: (msg: string) => void;
+    };
     this.proposedWebFeature = target.value || '';
     this.setWebFeatureValue(this.proposedWebFeature);
+    target.setCustomValidity?.(
+      this.isExistingWebFeature(this.proposedWebFeature)
+        ? 'This web-feature ID already exists. Please choose it from the existing list.'
+        : ''
+    );
   }
 
   setWebFeatureValue(value: string) {
@@ -696,6 +732,8 @@ export class ChromedashGuideNewPage extends LitElement {
                       size="small"
                       autocomplete="off"
                       required
+                      pattern=${WEB_FEATURE_REGEX}
+                      title=${ALL_FIELDS['web_feature'].attrs?.title || ''}
                       .value=${this.proposedWebFeature}
                       @sl-change=${this.handleInputWebFeature}
                       @sl-input=${this.handleInputWebFeature}

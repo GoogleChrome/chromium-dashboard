@@ -30,6 +30,7 @@ import {
   STAGE_BLINK_SHIPPING,
 } from './form-field-enums.js';
 import {ChromeStatusClient} from '../js-src/cs-client.js';
+import {WEB_FEATURE_REGEX} from './form-field-specs.js';
 import sinon from 'sinon';
 
 describe('chromedash-form-field', () => {
@@ -177,6 +178,24 @@ describe('chromedash-form-field', () => {
     const renderElement = component.renderRoot as HTMLElement;
     assert.include(renderElement.innerHTML, 'Web Feature ID');
     assert.include(renderElement.innerHTML, 'input');
+    const inputEl = renderElement.querySelector<HTMLInputElement>(
+      'input#id_web_feature'
+    );
+    assert.exists(inputEl);
+    assert.equal(
+      inputEl?.getAttribute('pattern'),
+      `(proposed/)?${WEB_FEATURE_REGEX}`
+    );
+    assert.isTrue(inputEl!.checkValidity());
+    inputEl!.value = 'proposed/hwb';
+    assert.isTrue(inputEl!.checkValidity());
+    inputEl!.value = 'other/hwb';
+    assert.isFalse(inputEl!.checkValidity());
+    inputEl!.value = '123';
+    assert.isFalse(inputEl!.checkValidity());
+    assert.isNotEmpty(inputEl!.validationMessage);
+    inputEl!.value = 'hwb';
+    assert.isTrue(inputEl!.checkValidity());
     assert.include(renderElement.innerHTML, 'class="webdx"');
     assert.notInclude(
       renderElement.innerText,
