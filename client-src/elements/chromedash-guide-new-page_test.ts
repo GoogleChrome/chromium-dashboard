@@ -247,15 +247,38 @@ describe('chromedash-guide-new-page', () => {
     assert.equal(webFeatureRow.style.display, '');
     assert.equal(component.fieldValues[webFeatureIndex].value, 'grid');
 
-    // Switch back to FEATURE_TYPE_CODE_CHANGE_ID and submit the form.
+    // Switch back to FEATURE_TYPE_CODE_CHANGE_ID in propose mode and submit the form.
+    component.handleWebFeatureModeChange('propose');
+    await component.updateComplete;
+
     component.handleFormFieldUpdate({
       detail: {
         value: FEATURE_TYPES.FEATURE_TYPE_CODE_CHANGE_ID[0],
         index: featureTypeIndex,
       },
     });
+    await component.updateComplete;
+
+    const explainerField = component.shadowRoot!.querySelector<HTMLElement>(
+      'chromedash-form-field[name="explainer_links"]'
+    );
+    assert.exists(explainerField);
+    assert.equal(explainerField!.style.display, 'none');
 
     populateRequiredFields(component);
+    // Leave proposed web_feature and explainer_links empty while in code-change mode.
+    component.proposedWebFeature = '';
+    const explainerIndex = component.fieldValues.findIndex(
+      fv => fv.name === 'explainer_links'
+    );
+    if (explainerIndex !== -1) {
+      component.fieldValues[explainerIndex].value = '';
+    }
+    const explainerTextarea =
+      explainerField!.querySelector<HTMLTextAreaElement>('chromedash-textarea');
+    if (explainerTextarea) {
+      explainerTextarea.value = '';
+    }
 
     const navigateStub = sinon.stub(component, 'navigate');
     const createFeatureStub = sinon.stub(window.csClient, 'createFeature');
@@ -271,12 +294,17 @@ describe('chromedash-guide-new-page', () => {
       component.fieldValues.findIndex(fv => fv.name === 'web_feature'),
       -1
     );
+    assert.equal(
+      component.fieldValues.findIndex(fv => fv.name === 'explainer_links'),
+      -1
+    );
     assert.isTrue(createFeatureStub.calledOnce);
     assert.equal(
       createFeatureStub.firstCall.args[0].feature_type,
       FEATURE_TYPES.FEATURE_TYPE_CODE_CHANGE_ID[0]
     );
     assert.notProperty(createFeatureStub.firstCall.args[0], 'web_feature');
+    assert.notProperty(createFeatureStub.firstCall.args[0], 'explainer_links');
 
     await new Promise(resolve => setTimeout(resolve, 0));
 
