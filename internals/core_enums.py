@@ -533,8 +533,8 @@ STAGES_AND_GATES_BY_FEATURE_TYPE: dict[int, list[tuple[int, list[int]]]] = {
 GATE_PHASE_IN: dict[int, int] = {
     GATE_ADOPTION_SHIP: 150,
     GATE_ADOPTION_PLAN: 150,
-    GATE_DQ_SHIP: 156,
-    GATE_DQ_PLAN: 156,
+    GATE_DQ_SHIP: 161,
+    GATE_DQ_PLAN: 161,
 }
 
 # Plan stage types for every feature type that has plan.

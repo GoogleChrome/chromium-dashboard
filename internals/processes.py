@@ -1162,13 +1162,6 @@ def write_gates_and_stages_for_feature(
         ):
             continue
 
-        # Don't create DQ gates on prod until we are ready to launch that.
-        if settings.PROD and stage_type in [
-            core_enums.GATE_DQ_PLAN,
-            core_enums.GATE_DQ_SHIP,
-        ]:
-            continue
-
         stage = Stage(feature_id=feature_id, stage_type=stage_type)
         stage.put()
         # Stages can have zero or more gates.
