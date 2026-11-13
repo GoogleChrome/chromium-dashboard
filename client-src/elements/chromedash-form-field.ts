@@ -752,7 +752,7 @@ export class ChromedashFormField extends LitElement {
               ? html`
                   <tr>
                     <td colspan="2" class="webdx">
-                      See web this feature
+                      See this web feature
                       <a
                         href="https://github.com/web-platform-dx/web-features/blob/main/features/draft/${
                           this.value

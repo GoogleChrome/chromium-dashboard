@@ -262,7 +262,7 @@ describe('chromedash-form-field', () => {
       </chromedash-form-field>`
     );
     const renderElement = component.renderRoot as HTMLElement;
-    assert.include(renderElement.innerText, 'See web this feature');
+    assert.include(renderElement.innerText, 'See this web feature');
     assert.include(renderElement.innerText, 'in the web-features repo.');
     const link = renderElement.querySelector(
       'a[href="https://github.com/web-platform-dx/web-features/blob/main/features/draft/proposed/my-new-feature.yml"]'
