@@ -19,8 +19,6 @@ import testing_config  # isort: split
 import datetime
 from unittest import mock
 
-from google.cloud import ndb
-
 from framework import rediscache
 from internals import core_enums, notifier, search, search_queries
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
@@ -1008,26 +1006,25 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
 
     def test_process_query__confidential_ids_not_cached(self):
         """Confidential IDs are always queried, even with stale cached lists."""
+        scope_name = 'scope=deleted_unlisted_enterprise=false'
         testing_config.sign_in('regular@example.com', 123456)
         actual, total_count = search.process_query('')
         self.assertEqual(2, total_count)
         self.assertIsNone(
             rediscache.get(search.BASE_IDS_CACHE_KEY + '|confidential')
         )
-
-        # Make feature 1 confidential without clearing the search cache, as
-        # if the flush were missed. The cached scope list still includes it.
-        self.featureentry_1.confidential = True
-        ndb.put_multi([self.featureentry_1])
-        self.assertIn(
-            self.featureentry_1.key.integer_id(),
-            rediscache.get(
-                search.BASE_IDS_CACHE_KEY
-                + '|scope=deleted_unlisted_enterprise=false'
-            ),
+        stale_scope_ids = rediscache.get(
+            search.BASE_IDS_CACHE_KEY + '|' + scope_name
         )
+        self.assertIn(self.featureentry_1.key.integer_id(), stale_scope_ids)
 
-        # A user who cannot view it does not see it.
+        # Make feature 1 confidential, then put the pre-write scope list back,
+        # as if the flush had been missed or raced with a cache fill.
+        self.featureentry_1.confidential = True
+        self.featureentry_1.put()
+        search._set_cached_base_ids(scope_name, stale_scope_ids)
+
+        # A user who cannot view it does not see it or count it.
         actual, total_count = search.process_query('')
         self.assertEqual(1, total_count)
         self.assertEqual(['feature 2'], [f['name'] for f in actual])
@@ -1036,6 +1033,22 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
         testing_config.sign_in('owner@example.com', 123456)
         actual, total_count = search.process_query('')
         self.assertEqual(2, total_count)
+
+    def test_process_query__sort_cache_key_ignores_case(self):
+        """Capitalization variants of a sort share one cached order list."""
+        lower = search.process_query('', sort_spec='-created.when')
+        mixed = search.process_query('', sort_spec='-Created.When')
+        upper = search.process_query('', sort_spec='-CREATED.WHEN')
+
+        self.assertEqual(lower, mixed)
+        self.assertEqual(lower, upper)
+        self.assertIsNotNone(
+            rediscache.get(search.BASE_IDS_CACHE_KEY + '|order=-created.when')
+        )
+        order_keys = rediscache.redis_client.keys(
+            rediscache.add_gae_prefix(search.BASE_IDS_CACHE_KEY + '|order=*')
+        )
+        self.assertEqual(1, len(order_keys))
 
     def test_process_query__base_ids_cache_ttl(self):
         """Cached ID lists expire after BASE_IDS_CACHE_TTL."""
