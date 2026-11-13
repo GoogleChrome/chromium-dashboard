@@ -17,7 +17,6 @@
 
 from dataclasses import asdict, dataclass
 
-import settings
 from internals import core_enums
 from internals.core_models import Stage
 from internals.review_models import Gate
