@@ -14,9 +14,6 @@ src/models/Amendment.ts
 src/models/ArrayFieldInfoValue.ts
 src/models/BooleanFieldInfoValue.ts
 src/models/CommentsRequest.ts
-src/models/ComponentUsersRequest.ts
-src/models/ComponentsUser.ts
-src/models/ComponentsUsersResponse.ts
 src/models/CounterEntry.ts
 src/models/CreateAccountRequest.ts
 src/models/CreateLaunchIssueRequest.ts
@@ -63,7 +60,6 @@ src/models/MilestoneCurationResponse.ts
 src/models/MilestoneSetField.ts
 src/models/OriginTrialsInfo.ts
 src/models/OutstandingReview.ts
-src/models/OwnersAndSubscribersOfComponent.ts
 src/models/PatchCommentRequest.ts
 src/models/PatchGateRequest.ts
 src/models/PendingSuggestionsCountResponse.ts
