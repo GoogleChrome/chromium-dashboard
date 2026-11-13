@@ -684,34 +684,52 @@ export class ChromedashFormField extends LitElement {
       }
       ${
         this.shouldDisplayFeatureLink(this.name, this.value)
-          ? html`
-              <tr>
-                <td colspan="2" class="webdx">
-                  See web feature
-                  <a
-                    href="https://webstatus.dev/features/${enumLabelToFeatureKey(
-                      this.value
-                    )}"
-                    target="_blank"
-                  >
-                    ${this.value}
-                  </a>
-                  in webstatus.dev
-                </td>
-              </tr>
-              ${
-                this.shouldDisplayWidelySupportedWarning()
-                  ? html`
-                      <tr>
-                        <td colspan="2" class="webdx">
-                          This web feature is already widely supported, are you
-                          sure that you are incubating a change to it?
-                        </td>
-                      </tr>
-                    `
-                  : nothing
-              }
-            `
+          ? !this.value.includes('/')
+            ? html`
+                <tr>
+                  <td colspan="2" class="webdx">
+                    See web feature
+                    <a
+                      href="https://webstatus.dev/features/${enumLabelToFeatureKey(
+                        this.value
+                      )}"
+                      target="_blank"
+                    >
+                      ${this.value}
+                    </a>
+                    in webstatus.dev
+                  </td>
+                </tr>
+                ${
+                  this.shouldDisplayWidelySupportedWarning()
+                    ? html`
+                        <tr>
+                          <td colspan="2" class="webdx">
+                            This web feature is already widely supported, are
+                            you sure that you are incubating a change to it?
+                          </td>
+                        </tr>
+                      `
+                    : nothing
+                }
+              `
+            : this.value.startsWith('proposed/')
+              ? html`
+                  <tr>
+                    <td colspan="2" class="webdx">
+                      See web this feature
+                      <a
+                        href="https://github.com/web-platform-dx/web-features/blob/main/features/draft/${
+                          this.value
+                        }.yml"
+                        target="_blank"
+                        >definition</a
+                      >
+                      in the web-features repo.
+                    </td>
+                  </tr>
+                `
+              : nothing
           : nothing
       }
     `;

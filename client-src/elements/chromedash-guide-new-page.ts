@@ -101,6 +101,14 @@ export class ChromedashGuideNewPage extends LitElement {
         #web_feature_row .helptext > *:last-child {
           margin-bottom: 0;
         }
+        #propose_web_feature_wrapper {
+          display: flex;
+          align-items: center;
+          gap: 4px;
+        }
+        #propose_web_feature_wrapper sl-input {
+          flex: 1;
+        }
         input[type='submit'] {
           margin: var(--content-padding) 0;
         }
@@ -207,7 +215,10 @@ export class ChromedashGuideNewPage extends LitElement {
           this.proposedWebFeature = inputEl.value;
         }
         if (this.proposedWebFeature) {
-          this.setWebFeatureValue(this.proposedWebFeature);
+          const proposedValue = this.proposedWebFeature.startsWith('proposed/')
+            ? this.proposedWebFeature
+            : `proposed/${this.proposedWebFeature}`;
+          this.setWebFeatureValue(proposedValue);
         }
       } else {
         const selectEl = this.shadowRoot?.querySelector<HTMLSelectElement>(
@@ -653,17 +664,20 @@ export class ChromedashGuideNewPage extends LitElement {
                   }
                 `
               : html`
-                  <sl-input
-                    name="web_feature"
-                    id="id_web_feature"
-                    size="small"
-                    autocomplete="off"
-                    required
-                    .value=${this.proposedWebFeature}
-                    @sl-change=${this.handleInputWebFeature}
-                    @sl-input=${this.handleInputWebFeature}
-                  >
-                  </sl-input>
+                  <div id="propose_web_feature_wrapper">
+                    <span>proposed/</span>
+                    <sl-input
+                      name="web_feature"
+                      id="id_web_feature"
+                      size="small"
+                      autocomplete="off"
+                      required
+                      .value=${this.proposedWebFeature}
+                      @sl-change=${this.handleInputWebFeature}
+                      @sl-input=${this.handleInputWebFeature}
+                    >
+                    </sl-input>
+                  </div>
                 `
           }
         </td>

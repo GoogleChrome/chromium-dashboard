@@ -367,6 +367,7 @@ describe('chromedash-guide-new-page', () => {
     );
     assert.exists(inputEl);
     assert.isTrue(inputEl!.hasAttribute('required'));
+    assert.equal(inputEl!.previousElementSibling?.textContent, 'proposed/');
 
     // Explainer links should now be rendered across the full table rather than inside the td.
     const explainerField = component.shadowRoot?.querySelector(
@@ -436,7 +437,7 @@ describe('chromedash-guide-new-page', () => {
 
     assert.isTrue(createFeatureStub.calledOnce);
     const submitArg = createFeatureStub.firstCall.args[0];
-    assert.equal(submitArg.web_feature, 'proposed-feature-id');
+    assert.equal(submitArg.web_feature, 'proposed/proposed-feature-id');
     assert.equal(
       submitArg.explainer_links,
       'https://github.com/example/explainer'

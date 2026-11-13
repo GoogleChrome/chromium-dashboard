@@ -221,6 +221,46 @@ describe('chromedash-form-field', () => {
     );
   });
 
+  it('renders draft definition link when Web Feature ID starts with proposed/', async () => {
+    window.csClient = new ChromeStatusClient('fake_token', 1);
+    sinon
+      .stub(window.csClient, 'getWebFeatureInfos')
+      .returns(Promise.resolve({data: []}));
+
+    const component = await fixture<ChromedashFormField>(
+      html` <chromedash-form-field
+        name="web_feature"
+        value="proposed/my-new-feature"
+      >
+      </chromedash-form-field>`
+    );
+    const renderElement = component.renderRoot as HTMLElement;
+    assert.include(renderElement.innerText, 'See web this feature');
+    assert.include(renderElement.innerText, 'in the web-features repo.');
+    const link = renderElement.querySelector(
+      'a[href="https://github.com/web-platform-dx/web-features/blob/main/features/draft/proposed/my-new-feature.yml"]'
+    );
+    assert.exists(link);
+    assert.equal(link?.textContent?.trim(), 'definition');
+  });
+
+  it('does not render a link when Web Feature ID has a slash but does not start with proposed/', async () => {
+    window.csClient = new ChromeStatusClient('fake_token', 1);
+    sinon
+      .stub(window.csClient, 'getWebFeatureInfos')
+      .returns(Promise.resolve({data: []}));
+
+    const component = await fixture<ChromedashFormField>(
+      html` <chromedash-form-field
+        name="web_feature"
+        value="other/my-new-feature"
+      >
+      </chromedash-form-field>`
+    );
+    const renderElement = component.renderRoot as HTMLElement;
+    assert.isNull(renderElement.querySelector('.webdx'));
+  });
+
   it('renders a textarea type of field', async () => {
     const component = await fixture(
       html` <chromedash-form-field name="summary" value="">
