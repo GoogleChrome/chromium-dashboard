@@ -7,8 +7,6 @@ from chromestatus_openapi.models.account_response import AccountResponse  # noqa
 from chromestatus_openapi.models.activity import Activity  # noqa: E501
 from chromestatus_openapi.models.add_attachment_response import AddAttachmentResponse  # noqa: E501
 from chromestatus_openapi.models.comments_request import CommentsRequest  # noqa: E501
-from chromestatus_openapi.models.component_users_request import ComponentUsersRequest  # noqa: E501
-from chromestatus_openapi.models.components_users_response import ComponentsUsersResponse  # noqa: E501
 from chromestatus_openapi.models.create_account_request import CreateAccountRequest  # noqa: E501
 from chromestatus_openapi.models.create_origin_trial_request import CreateOriginTrialRequest  # noqa: E501
 from chromestatus_openapi.models.delete_account200_response import DeleteAccount200Response  # noqa: E501
@@ -103,25 +101,6 @@ def add_gate_comment(feature_id, gate_id, comments_request=None):  # noqa: E501
     """
     if connexion.request.is_json:
         comments_request = CommentsRequest.from_dict(connexion.request.get_json())  # noqa: E501
-    return 'do some magic!'
-
-
-def add_user_to_component(component_id, user_id, component_users_request=None):  # noqa: E501
-    """Add a user to a component
-
-     # noqa: E501
-
-    :param component_id: Component ID
-    :type component_id: int
-    :param user_id: User ID
-    :type user_id: int
-    :param component_users_request: 
-    :type component_users_request: dict | bytes
-
-    :rtype: Union[None, Tuple[None, int], Tuple[None, int, Dict[str, str]]
-    """
-    if connexion.request.is_json:
-        component_users_request = ComponentUsersRequest.from_dict(connexion.request.get_json())  # noqa: E501
     return 'do some magic!'
 
 
@@ -557,17 +536,6 @@ def get_web_feature_infos():  # noqa: E501
     return 'do some magic!'
 
 
-def list_component_users():  # noqa: E501
-    """List all components and possible users
-
-     # noqa: E501
-
-
-    :rtype: Union[ComponentsUsersResponse, Tuple[ComponentsUsersResponse, int], Tuple[ComponentsUsersResponse, int, Dict[str, str]]
-    """
-    return 'do some magic!'
-
-
 def list_external_reviews(review_group):  # noqa: E501
     """List features whose external reviews are incomplete
 
@@ -685,25 +653,6 @@ def reject_get_requests_logout():  # noqa: E501
 
     :rtype: Union[None, Tuple[None, int], Tuple[None, int, Dict[str, str]]
     """
-    return 'do some magic!'
-
-
-def remove_user_from_component(component_id, user_id, component_users_request=None):  # noqa: E501
-    """Remove a user from a component
-
-     # noqa: E501
-
-    :param component_id: Component ID
-    :type component_id: int
-    :param user_id: User ID
-    :type user_id: int
-    :param component_users_request: 
-    :type component_users_request: dict | bytes
-
-    :rtype: Union[None, Tuple[None, int], Tuple[None, int, Dict[str, str]]
-    """
-    if connexion.request.is_json:
-        component_users_request = ComponentUsersRequest.from_dict(connexion.request.get_json())  # noqa: E501
     return 'do some magic!'
 
 

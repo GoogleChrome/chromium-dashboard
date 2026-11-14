@@ -57,8 +57,6 @@ registerIconLibrary('material', {
 });
 
 // Chromedash components and LitCSS
-import './elements/chromedash-admin-blink-component-listing';
-import './elements/chromedash-admin-blink-page';
 import './elements/chromedash-admin-feature-links-page';
 import './elements/chromedash-all-features-page';
 import './elements/chromedash-activity-page';

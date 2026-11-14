@@ -20,9 +20,6 @@ chromestatus_openapi/models/array_field_info_value.py
 chromestatus_openapi/models/base_model.py
 chromestatus_openapi/models/boolean_field_info_value.py
 chromestatus_openapi/models/comments_request.py
-chromestatus_openapi/models/component_users_request.py
-chromestatus_openapi/models/components_user.py
-chromestatus_openapi/models/components_users_response.py
 chromestatus_openapi/models/counter_entry.py
 chromestatus_openapi/models/create_account_request.py
 chromestatus_openapi/models/create_launch_issue_request.py
@@ -69,7 +66,6 @@ chromestatus_openapi/models/milestone_curation_response.py
 chromestatus_openapi/models/milestone_set_field.py
 chromestatus_openapi/models/origin_trials_info.py
 chromestatus_openapi/models/outstanding_review.py
-chromestatus_openapi/models/owners_and_subscribers_of_component.py
 chromestatus_openapi/models/patch_comment_request.py
 chromestatus_openapi/models/patch_gate_request.py
 chromestatus_openapi/models/pending_suggestions_count_response.py

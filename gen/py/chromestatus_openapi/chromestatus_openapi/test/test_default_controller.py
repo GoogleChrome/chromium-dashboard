@@ -6,8 +6,6 @@ from chromestatus_openapi.models.account_response import AccountResponse  # noqa
 from chromestatus_openapi.models.activity import Activity  # noqa: E501
 from chromestatus_openapi.models.add_attachment_response import AddAttachmentResponse  # noqa: E501
 from chromestatus_openapi.models.comments_request import CommentsRequest  # noqa: E501
-from chromestatus_openapi.models.component_users_request import ComponentUsersRequest  # noqa: E501
-from chromestatus_openapi.models.components_users_response import ComponentsUsersResponse  # noqa: E501
 from chromestatus_openapi.models.create_account_request import CreateAccountRequest  # noqa: E501
 from chromestatus_openapi.models.create_origin_trial_request import CreateOriginTrialRequest  # noqa: E501
 from chromestatus_openapi.models.delete_account200_response import DeleteAccount200Response  # noqa: E501
@@ -111,25 +109,6 @@ class TestDefaultController(BaseTestCase):
             method='POST',
             headers=headers,
             data=json.dumps(comments_request),
-            content_type='application/json')
-        self.assert200(response,
-                       'Response body is : ' + response.data.decode('utf-8'))
-
-    def test_add_user_to_component(self):
-        """Test case for add_user_to_component
-
-        Add a user to a component
-        """
-        component_users_request = {"owner":True}
-        headers = { 
-            'Content-Type': 'application/json',
-            'XsrfToken': 'special-key',
-        }
-        response = self.client.open(
-            '/api/v0/components/{component_id}/users/{user_id}'.format(component_id=56, user_id=56),
-            method='PUT',
-            headers=headers,
-            data=json.dumps(component_users_request),
             content_type='application/json')
         self.assert200(response,
                        'Response body is : ' + response.data.decode('utf-8'))
@@ -645,22 +624,6 @@ class TestDefaultController(BaseTestCase):
         self.assert200(response,
                        'Response body is : ' + response.data.decode('utf-8'))
 
-    def test_list_component_users(self):
-        """Test case for list_component_users
-
-        List all components and possible users
-        """
-        headers = { 
-            'Accept': 'application/json',
-            'XsrfToken': 'special-key',
-        }
-        response = self.client.open(
-            '/api/v0/componentsusers',
-            method='GET',
-            headers=headers)
-        self.assert200(response,
-                       'Response body is : ' + response.data.decode('utf-8'))
-
     def test_list_external_reviews(self):
         """Test case for list_external_reviews
 
@@ -802,25 +765,6 @@ class TestDefaultController(BaseTestCase):
             '/api/v0/logout',
             method='GET',
             headers=headers)
-        self.assert200(response,
-                       'Response body is : ' + response.data.decode('utf-8'))
-
-    def test_remove_user_from_component(self):
-        """Test case for remove_user_from_component
-
-        Remove a user from a component
-        """
-        component_users_request = {"owner":True}
-        headers = { 
-            'Content-Type': 'application/json',
-            'XsrfToken': 'special-key',
-        }
-        response = self.client.open(
-            '/api/v0/components/{component_id}/users/{user_id}'.format(component_id=56, user_id=56),
-            method='DELETE',
-            headers=headers,
-            data=json.dumps(component_users_request),
-            content_type='application/json')
         self.assert200(response,
                        'Response body is : ' + response.data.decode('utf-8'))
 
