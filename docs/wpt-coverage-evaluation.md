@@ -46,6 +46,11 @@ URLs.
     `utils.reformat_wpt_fyi_url`.
     * **Fallback:** If an `.html` file fetch fails, it attempts to fetch the
     equivalent `.js` file before giving up.
+    * **Empty/Failed File Exclusion:** Files that return HTTP 404, error responses,
+    or empty/whitespace-only content are automatically skipped from `test_contents`
+    and recorded in `failed_fetches` to prevent corrupting LLM evaluation prompts.
+    A warning caveat is appended to the report listing any failed file paths.
+    If no valid test files can be fetched at all, the pipeline fails fast with a `PipelineError`.
 
 ### 2. Branching Logic
 Once files are fetched, the pipeline determines the strategy based on the

@@ -83,6 +83,19 @@ class WPTContents:
     test_to_dependencies_map: dict[Path, set[Path]] = field(
         default_factory=dict
     )
+    failed_fetches: list[Path] = field(default_factory=list)
+
+
+def format_failed_fetches_caveat(failed_fetches: list[Path]) -> str:
+    """Formats an alert caveat noting files whose contents failed to fetch."""
+    if not failed_fetches:
+        return ''
+    file_list = '\n'.join(f'- `{p}`' for p in sorted(failed_fetches))
+    return (
+        f'\n\n> [!WARNING]\n'
+        f'> **Failed to fetch the contents of {len(failed_fetches)} files:**\n'
+        f'{file_list}'
+    )
 
 
 class PipelineError(Exception):
@@ -464,6 +477,7 @@ async def get_mixed_wpt_contents_async(
 
     test_contents: dict[Path, str] = {}
     dependency_contents: dict[Path, str] = {}
+    failed_fetches: list[Path] = []
 
     # Adjacency list to track the dependency graph: Parent -> Set of Children
     dependency_graph: dict[Path, set[Path]] = {}
@@ -534,7 +548,8 @@ async def get_mixed_wpt_contents_async(
         processing_queue = []
 
         for fpath, content in results:
-            if content is None:
+            if content is None or not content.strip():
+                failed_fetches.append(fpath)
                 continue
 
             # Sort into the correct bucket
@@ -602,10 +617,16 @@ async def get_mixed_wpt_contents_async(
 
         test_to_dependencies_map[test_path] = relevant_deps
 
+    if initial_paths and not test_contents:
+        raise PipelineError(
+            'Failed to fetch the contents of any valid test files.'
+        )
+
     return WPTContents(
         test_contents=test_contents,
         dependency_contents=dependency_contents,
         test_to_dependencies_map=test_to_dependencies_map,
+        failed_fetches=failed_fetches,
     )
 
 
