@@ -148,101 +148,12 @@ class AppUser(ndb.Model):
         return found_app_user
 
 
-def list_with_component(items, component):
-    """Return a list of keys that match the given component's ID."""
-    return [x for x in items if x.id() == component.key.integer_id()]
-
-
-def list_without_component(items, component):
-    """Return a list of keys that do not match the given component's ID."""
-    return [x for x in items if x.id() != component.key.integer_id()]
-
-
-class FeatureOwner(ndb.Model):
-    """Describes subscribers of a web platform feature."""
-
-    created = ndb.DateTimeProperty(auto_now_add=True)
-    updated = ndb.DateTimeProperty(auto_now=True)
-    name = ndb.StringProperty(required=True)
-    email = ndb.StringProperty(required=True)
-    twitter = ndb.StringProperty()
-    blink_components = ndb.KeyProperty(repeated=True)
-    primary_blink_components = ndb.KeyProperty(repeated=True)
-    watching_all_features = ndb.BooleanProperty(default=False)
-
-    def add_to_component_subscribers(self, component_id):
-        """Adds the user to the list of Blink component subscribers."""
-        c = BlinkComponent.get_by_id(component_id)
-        if c:
-            # Add the user if they're not already in the list.
-            if not len(list_with_component(self.blink_components, c)):
-                self.blink_components.append(c.key)
-                return self.put()
-        return None
-
-    def remove_from_component_subscribers(
-        self, component_id, remove_as_owner=False
-    ):
-        """Removes the user from the list of Blink component subscribers or as
-        the owner of the component.
-        """  # noqa: D205
-        c = BlinkComponent.get_by_id(component_id)
-        if c:
-            if remove_as_owner:
-                self.primary_blink_components = list_without_component(
-                    self.primary_blink_components, c
-                )
-            else:
-                self.blink_components = list_without_component(
-                    self.blink_components, c
-                )
-                self.primary_blink_components = list_without_component(
-                    self.primary_blink_components, c
-                )
-            return self.put()
-        return None
-
-    def add_as_component_owner(self, component_id):
-        """Adds the user as the Blink component owner."""
-        c = BlinkComponent.get_by_id(component_id)
-        if c:
-            # Update both the primary list and blink components subscribers if the
-            # user is not already in them.
-            self.add_to_component_subscribers(component_id)
-            if not len(list_with_component(self.primary_blink_components, c)):
-                self.primary_blink_components.append(c.key)
-            return self.put()
-        return None
-
-    def remove_as_component_owner(self, component_id):
-        """Removes the user as an owner of the given component."""
-        return self.remove_from_component_subscribers(
-            component_id, remove_as_owner=True
-        )
-
-
 class BlinkComponent(ndb.Model):
     """A Blink component tracked in the issue tracker."""
 
     name = ndb.StringProperty(required=True, default=settings.DEFAULT_COMPONENT)
     created = ndb.DateTimeProperty(auto_now_add=True)
     updated = ndb.DateTimeProperty(auto_now=True)
-
-    @property
-    def subscribers(self):
-        """Returns a list of FeatureOwner objects who subscribe to this component."""
-        q = FeatureOwner.query(FeatureOwner.blink_components == self.key)
-        q = q.order(FeatureOwner.name)
-        return q.fetch(None)
-
-    @property
-    def owners(self):
-        """Returns a list of FeatureOwner objects who own this component."""
-        q = FeatureOwner.query(
-            FeatureOwner.primary_blink_components == self.key
-        )
-        q = q.order(FeatureOwner.name)
-        return q.fetch(None)
 
     @classmethod
     def fetch_all_components(self, update_cache=False):
