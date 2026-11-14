@@ -14,6 +14,7 @@
 
 """Unit tests for the gemini_helpers module."""
 
+import os
 from unittest import mock
 
 from google.cloud import ndb
@@ -96,6 +97,108 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
             self.feature.ai_test_eval_report,
         )
         mock_generate.assert_called_once()
+
+    def test_normalize_spec_url__standard_url(self):
+        """Verifies standard spec URLs are trimmed correctly."""
+        self.assertEqual(
+            gemini_helpers.normalize_spec_url('  https://w3c.github.io/spec/  '),
+            'https://w3c.github.io/spec/',
+        )
+        self.assertEqual(gemini_helpers.normalize_spec_url(None), '')
+        self.assertEqual(gemini_helpers.normalize_spec_url(''), '')
+
+    def test_normalize_spec_url__github_pr_canonicalization(self):
+        """Verifies GitHub pull request URLs are normalized to the files diff view."""
+        self.assertEqual(
+            gemini_helpers.normalize_spec_url(
+                'https://github.com/w3c/csswg-drafts/pull/1234'
+            ),
+            'https://github.com/w3c/csswg-drafts/pull/1234/files',
+        )
+        self.assertEqual(
+            gemini_helpers.normalize_spec_url(
+                'https://github.com/w3c/csswg-drafts/pull/1234/commits'
+            ),
+            'https://github.com/w3c/csswg-drafts/pull/1234/files',
+        )
+        self.assertEqual(
+            gemini_helpers.normalize_spec_url(
+                'https://github.com/w3c/csswg-drafts/pull/1234#issuecomment-9999'
+            ),
+            'https://github.com/w3c/csswg-drafts/pull/1234/files',
+        )
+
+    def test_normalize_spec_url__strips_comment_anchors(self):
+        """Verifies non-PR URLs have issue comment anchor hashes removed."""
+        self.assertEqual(
+            gemini_helpers.normalize_spec_url(
+                'https://example.com/spec#issuecomment-123'
+            ),
+            'https://example.com/spec',
+        )
+
+    def test_normalize_explainer_urls__deduplication(self):
+        """Verifies duplicate and blank explainer links are removed while preserving order."""
+        raw_links = [
+            'https://example.com/explainer1',
+            '  https://example.com/explainer2  ',
+            'https://example.com/explainer1',
+            '',
+            '   ',
+            'https://example.com/explainer3',
+        ]
+        expected = [
+            'https://example.com/explainer1',
+            'https://example.com/explainer2',
+            'https://example.com/explainer3',
+        ]
+        self.assertEqual(
+            gemini_helpers.normalize_explainer_urls(raw_links), expected
+        )
+        self.assertEqual(gemini_helpers.normalize_explainer_urls(None), [])
+
+    @mock.patch('framework.gemini_helpers.settings')
+    def test_ensure_wpt_config_environment(self, mock_settings):
+        """Verifies environment variables are primed for deterministic generation."""
+        mock_settings.GEMINI_API_KEY = 'test_api_key'
+        mock_settings.WPT_COVERAGE_TEMPERATURE = 0.0
+
+        gemini_helpers._ensure_wpt_config_environment()
+
+        self.assertEqual(os.environ.get('GEMINI_API_KEY'), 'test_api_key')
+        self.assertEqual(os.environ.get('WPT_COVERAGE_TEMPERATURE'), '0.0')
+
+    @mock.patch('framework.gemini_helpers.generate_audit_report')
+    @mock.patch('framework.gemini_helpers.settings')
+    def test_run_pipeline__normalizes_inputs(
+        self, mock_settings, mock_generate
+    ):
+        """Pipeline normalizes spec URL and deduplicates explainer links before calling generator."""
+        mock_settings.GEMINI_API_KEY = 'fake_key'
+        mock_settings.WPT_COVERAGE_TEMPERATURE = 0.0
+        self.feature.spec_link = (
+            'https://github.com/w3c/spec/pull/42#issuecomment-100'
+        )
+        self.feature.wpt_descr = 'https://wpt.fyi/results/test'
+        self.feature.explainer_links = [
+            'https://example.com/exp1',
+            'https://example.com/exp1',
+        ]
+
+        mock_generate.return_value = '# Report'
+        self.mock_extract_urls.return_value = ['https://wpt.fyi/url1']
+
+        result = gemini_helpers.run_wpt_test_eval_pipeline(
+            self.feature, include_explainer=True
+        )
+
+        self.assertEqual(result, core_enums.AITestEvaluationStatus.COMPLETE)
+        mock_generate.assert_called_once_with(
+            feature_id=str(self.feature.key.id()),
+            provider='gemini',
+            api_key='fake_key',
+            explainer_urls=['https://example.com/exp1'],
+        )
 
 
 class GenerateWPTCoverageEvalReportHandlerTest(testing_config.CustomTestCase):
