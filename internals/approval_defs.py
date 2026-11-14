@@ -69,6 +69,7 @@ TESTING_APPROVERS = [
 ]
 ADOPTION_APPROVERS = [
     'rachelandrew@google.com',
+    'jlwagner@google.com',
 ]
 DQ_APPROVERS = IN_NDB
 
