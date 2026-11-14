@@ -186,7 +186,6 @@ export const NEW_FEATURE_FORM_FIELDS = [
   'cc_recipients',
   'blink_components',
   'category',
-  'web_feature',
 ];
 
 export const ENTERPRISE_NEW_FEATURE_FORM_FIELDS = [

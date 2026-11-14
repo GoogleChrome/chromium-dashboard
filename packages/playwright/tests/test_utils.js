@@ -291,17 +291,33 @@ export async function enterBlinkComponent(page) {
  * @return {Promise<void>} A promise that resolves once the web feature id is entered.
  */
 export async function enterWebFeatureId(page) {
-  const webFeatureIdInputWrapper = page.getByTestId('web_feature_wrapper');
-  await expect(webFeatureIdInputWrapper).toBeVisible();
+  const webFeatureSelect = page.locator('sl-select#id_web_feature');
+  await webFeatureSelect.scrollIntoViewIfNeeded();
+  await expect(webFeatureSelect).toBeVisible();
 
-  const webFeatureIdInput = webFeatureIdInputWrapper.locator('input');
-  await webFeatureIdInput.fill('hwb');
+  const hwbOption = webFeatureSelect.locator('sl-option[value="hwb"]');
+  await expect(hwbOption).toBeAttached({timeout: 20000});
 
-  // Verify the value
-  await expect(webFeatureIdInput).toHaveValue('hwb');
+  const selectOpenedPromise = webFeatureSelect.evaluate(
+    node =>
+      new Promise(resolve =>
+        node.addEventListener('sl-after-show', resolve, {once: true})
+      )
+  );
+  await webFeatureSelect.click();
+  await selectOpenedPromise;
 
-  // TODO(kyleju): assert that the link to webstatus.dev is present.
-  // It is missing in the current test setup.
+  await expect(hwbOption).toBeVisible();
+  const selectClosedPromise = webFeatureSelect.evaluate(
+    node =>
+      new Promise(resolve =>
+        node.addEventListener('sl-after-hide', resolve, {once: true})
+      )
+  );
+  await hwbOption.click();
+  await selectClosedPromise;
+
+  await expect(webFeatureSelect).toHaveJSProperty('value', 'hwb');
 }
 
 /**

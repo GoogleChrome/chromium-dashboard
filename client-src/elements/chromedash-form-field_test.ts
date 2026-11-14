@@ -20,6 +20,7 @@ import {html, render} from 'lit';
 import {
   ChromedashFormField,
   enumLabelToFeatureKey,
+  fetchWebFeatureChoices,
 } from './chromedash-form-field.js';
 import {
   ALL_INTENT_USAGE_BY_FEATURE_TYPE,
@@ -68,6 +69,16 @@ describe('chromedash-form-field', () => {
     assert.include(renderElement.innerHTML, 'Confidential');
     assert.include(renderElement.innerHTML, 'sl-checkbox');
     assert.include(renderElement.innerHTML, 'checked');
+  });
+
+  it('handles undefined value without throwing in willUpdate', async () => {
+    const component = await fixture<ChromedashFormField>(
+      html` <chromedash-form-field name="explainer_links" .value=${undefined}>
+      </chromedash-form-field>`
+    );
+    assert.exists(component);
+    assert.instanceOf(component, ChromedashFormField);
+    assert.equal(component.initialValue, '');
   });
 
   it('allows unchecking a checkbox that has initial: true', async () => {
@@ -235,6 +246,46 @@ describe('chromedash-form-field', () => {
       renderElement.innerText,
       'This web feature is already widely supported, are you sure that you are incubating a change to it?'
     );
+  });
+
+  it('renders draft definition link when Web Feature ID starts with proposed/', async () => {
+    window.csClient = new ChromeStatusClient('fake_token', 1);
+    sinon
+      .stub(window.csClient, 'getWebFeatureInfos')
+      .returns(Promise.resolve({data: []}));
+
+    const component = await fixture<ChromedashFormField>(
+      html` <chromedash-form-field
+        name="web_feature"
+        value="proposed/my-new-feature"
+      >
+      </chromedash-form-field>`
+    );
+    const renderElement = component.renderRoot as HTMLElement;
+    assert.include(renderElement.innerText, 'See this web feature');
+    assert.include(renderElement.innerText, 'in the web-features repo.');
+    const link = renderElement.querySelector(
+      'a[href="https://github.com/web-platform-dx/web-features/blob/main/features/draft/proposed/my-new-feature.yml"]'
+    );
+    assert.exists(link);
+    assert.equal(link?.textContent?.trim(), 'definition');
+  });
+
+  it('does not render a link when Web Feature ID has a slash but does not start with proposed/', async () => {
+    window.csClient = new ChromeStatusClient('fake_token', 1);
+    sinon
+      .stub(window.csClient, 'getWebFeatureInfos')
+      .returns(Promise.resolve({data: []}));
+
+    const component = await fixture<ChromedashFormField>(
+      html` <chromedash-form-field
+        name="web_feature"
+        value="other/my-new-feature"
+      >
+      </chromedash-form-field>`
+    );
+    const renderElement = component.renderRoot as HTMLElement;
+    assert.isNull(renderElement.querySelector('.webdx'));
   });
 
   it('renders a textarea type of field', async () => {
@@ -547,6 +598,36 @@ describe('chromedash-form-field', () => {
       render(result, container);
       // An empty lit-html template renders as a comment block.
       assert.equal(container.innerHTML.trim(), '<!---->');
+    });
+  });
+
+  describe('fetchWebFeatureChoices', () => {
+    it('fetches feature choices and does not include "Missing feature"', async () => {
+      window.csClient = new ChromeStatusClient('fake_token', 1);
+      const getWebFeatureInfosStub = sinon.stub(
+        window.csClient,
+        'getWebFeatureInfos'
+      );
+      getWebFeatureInfosStub.resolves({
+        data: [
+          {feature_id: 'grid', status: 'widely'},
+          {feature_id: 'flexbox', status: 'widely'},
+        ],
+      });
+
+      const {webFeatureInfos, choices} = await fetchWebFeatureChoices();
+      assert.lengthOf(webFeatureInfos, 2);
+      assert.deepEqual(choices, {
+        grid: ['grid', 'grid'],
+        flexbox: ['flexbox', 'flexbox'],
+      });
+      assert.notProperty(choices, 'missing_feature');
+      assert.notInclude(
+        Object.values(choices).map(c => c[0]),
+        'Missing feature'
+      );
+
+      getWebFeatureInfosStub.restore();
     });
   });
 });
