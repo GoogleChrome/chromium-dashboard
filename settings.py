@@ -107,6 +107,16 @@ OT_DATA_ACCESS_ADMIN_GROUP_NAME: str | None = None
 SUMMARY_GENERATOR_MODEL: str = os.environ.get(
     'SUMMARY_GENERATOR_MODEL', 'gemini-3.1-pro-preview'
 )
+WPT_COVERAGE_PRIMARY_MODEL: str = os.environ.get(
+    'WPT_COVERAGE_PRIMARY_MODEL', 'gemini-3.1-pro-preview'
+)
+WPT_COVERAGE_FALLBACK_MODELS: list[str] = [
+    model.strip()
+    for model in os.environ.get(
+        'WPT_COVERAGE_FALLBACK_MODELS', 'gemini-3-flash-preview'
+    ).split(',')
+    if model.strip()
+]
 
 # Dummy data for local OT support emails.
 DEV_MODE_OT_SUPPORT_EMAILS = 'user1@gmail.com,user2@gmail.com'
