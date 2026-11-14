@@ -154,18 +154,18 @@ openapi: openapi-backend openapi-frontend
 openapi-webstatus:
 	. cs-env/bin/activate && \
 	rm -rf gen/py/webstatus_openapi && \
-	npx openapi-generator-cli generate --reserved-words-mappings field=field -i https://raw.githubusercontent.com/GoogleChrome/webstatus.dev/e2ee5bab74d5f96fb7fdaea5744d1b9f2b934593/openapi/backend/openapi.yaml -g python -o gen/py/webstatus_openapi --additional-properties=packageName=webstatus_openapi && \
+	npx openapi-generator-cli generate --reserved-words-mappings field=field -i https://raw.githubusercontent.com/GoogleChrome/webstatus.dev/e2ee5bab74d5f96fb7fdaea5744d1b9f2b934593/openapi/backend/openapi.yaml -g python -o gen/py/webstatus_openapi --additional-properties=packageName=webstatus_openapi --ignore-file-override openapi/py-generator-ignore && \
 	pip install -r requirements.txt
 
 openapi-frontend:
-	rm -rf gen/js/chromestatus-openapi && \
-	npx openapi-generator-cli generate --reserved-words-mappings field=field -i openapi/api.yaml -g typescript-fetch -o gen/js/chromestatus-openapi --config openapi/js-config.yaml && \
+	rm -rf gen/js/chromestatus-openapi/src && \
+	npx openapi-generator-cli generate --reserved-words-mappings field=field -i openapi/api.yaml -g typescript-fetch -o gen/js/chromestatus-openapi --config openapi/js-config.yaml --ignore-file-override openapi/js-generator-ignore && \
 	npm install
 
 openapi-backend:
 	. cs-env/bin/activate && \
 	rm -rf gen/py/chromestatus_openapi && \
-	npx openapi-generator-cli generate --reserved-words-mappings field=field -i openapi/api.yaml -g python-flask -o gen/py/chromestatus_openapi --additional-properties=packageName=chromestatus_openapi && \
+	npx openapi-generator-cli generate --reserved-words-mappings field=field -i openapi/api.yaml -g python-flask -o gen/py/chromestatus_openapi --additional-properties=packageName=chromestatus_openapi --ignore-file-override openapi/py-generator-ignore && \
 	pip install -r requirements.txt
 
 openapi-validate:

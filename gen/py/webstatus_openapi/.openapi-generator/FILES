@@ -1,8 +1,5 @@
-.github/workflows/python.yml
 .gitignore
-.gitlab-ci.yml
 .openapi-generator-ignore
-.travis.yml
 README.md
 docs/BaselineInfo.md
 docs/BasicErrorModel.md
@@ -34,12 +31,9 @@ docs/WPTFeatureData.md
 docs/WPTMetricView.md
 docs/WPTRunMetric.md
 docs/WPTRunMetricsPage.md
-git_push.sh
 pyproject.toml
-requirements.txt
 setup.cfg
 setup.py
-test-requirements.txt
 test/__init__.py
 test/test_baseline_info.py
 test/test_basic_error_model.py
@@ -71,7 +65,6 @@ test/test_wpt_feature_data.py
 test/test_wpt_metric_view.py
 test/test_wpt_run_metric.py
 test/test_wpt_run_metrics_page.py
-tox.ini
 webstatus_openapi/__init__.py
 webstatus_openapi/api/__init__.py
 webstatus_openapi/api/default_api.py
