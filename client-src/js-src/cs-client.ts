@@ -625,6 +625,31 @@ export class ChromeStatusClient {
     }>;
   }
 
+  // Must match GatesBatchAPI.MAX_FEATURE_IDS on the server.
+  static readonly MAX_GATES_BATCH_SIZE = 100;
+
+  /**
+   * Get the gates of several features in as few requests as possible.
+   * Features that the user cannot view are left out by the server.
+   */
+  async getGatesForFeatures(
+    featureIds: number[]
+  ): Promise<{gates: GateDict[]}> {
+    const uniqueIds = [...new Set(featureIds)];
+    const batchSize = ChromeStatusClient.MAX_GATES_BATCH_SIZE;
+    const requests: Promise<{gates: GateDict[]}>[] = [];
+    for (let i = 0; i < uniqueIds.length; i += batchSize) {
+      const batch = uniqueIds.slice(i, i + batchSize);
+      requests.push(
+        this.doGet(`/gates?feature_ids=${batch.join(',')}`) as Promise<{
+          gates: GateDict[];
+        }>
+      );
+    }
+    const responses = await Promise.all(requests);
+    return {gates: responses.flatMap(res => res.gates)};
+  }
+
   getPendingGates(): Promise<{gates: GateDict[]}> {
     return this.doGet('/gates/pending') as Promise<{gates: GateDict[]}>;
   }

@@ -161,6 +161,7 @@ api_routes: list[Route] = [
         f'{API_BASE}/features/<int:feature_id>/gates/<int:gate_id>',
         reviews_api.GatesAPI,
     ),
+    Route(f'{API_BASE}/gates', reviews_api.GatesBatchAPI),
     Route(f'{API_BASE}/gates/pending', reviews_api.PendingGatesAPI),
     Route(
         f'{API_BASE}/features/<int:feature_id>/approvals/comments',

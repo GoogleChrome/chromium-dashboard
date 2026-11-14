@@ -367,6 +367,23 @@ class TestDefaultController(BaseTestCase):
         self.assert200(response,
                        'Response body is : ' + response.data.decode('utf-8'))
 
+    def test_get_gates_for_features(self):
+        """Test case for get_gates_for_features
+
+        Get the gates of several features
+        """
+        query_string = [('feature_ids', [56])]
+        headers = { 
+            'Accept': 'application/json',
+        }
+        response = self.client.open(
+            '/api/v0/gates',
+            method='GET',
+            headers=headers,
+            query_string=query_string)
+        self.assert200(response,
+                       'Response body is : ' + response.data.decode('utf-8'))
+
     def test_get_intent_body(self):
         """Test case for get_intent_body
 
