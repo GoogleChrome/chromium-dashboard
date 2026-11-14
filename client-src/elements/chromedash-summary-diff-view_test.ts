@@ -159,4 +159,41 @@ describe('chromedash-summary-diff-view', () => {
     assert.notInclude(contentHtml, 'onerror');
     assert.notInclude(contentHtml, 'href="javascript:');
   });
+
+  it('syncs editBuffer with suggestedSummary when exiting edit mode externally', async () => {
+    const el = await fixture<ChromedashSummaryDiffView>(
+      html`<chromedash-summary-diff-view
+        .isEditing=${true}
+        .suggestedSummary=${'Initial summary'}
+      ></chromedash-summary-diff-view>`
+    );
+
+    el.editBuffer = 'User draft';
+    el.suggestedSummary = 'Newest server summary';
+    el.isEditing = false;
+    await el.updateComplete;
+
+    assert.equal(el.editBuffer, 'Newest server summary');
+    const columns = el.shadowRoot!.querySelectorAll('.column-card');
+    assert.include(columns[1].textContent, 'Newest server summary');
+  });
+
+  it('preserves editBuffer when toggling to Preview via toggleEdit()', async () => {
+    const el = await fixture<ChromedashSummaryDiffView>(
+      html`<chromedash-summary-diff-view
+        .isEditing=${true}
+        .suggestedSummary=${'Initial summary'}
+      ></chromedash-summary-diff-view>`
+    );
+
+    const textarea = el.shadowRoot!.querySelector('sl-textarea')!;
+    textarea.value = 'User edited preview text';
+    await el.toggleEdit();
+    await el.updateComplete;
+
+    assert.isFalse(el.isEditing);
+    assert.equal(el.editBuffer, 'User edited preview text');
+    const columns = el.shadowRoot!.querySelectorAll('.column-card');
+    assert.include(columns[1].textContent, 'User edited preview text');
+  });
 });
