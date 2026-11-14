@@ -846,6 +846,70 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
         # Clean up cache
         rediscache.delete(cache_key)
 
+    def _setup_unlisted_release_notes_features(self):
+        """Make features a and b release notes items, with a unlisted."""
+        self._create_wp_stages_and_gates()
+        self.unlisted_owner_email = 'unlisted_owner@example.com'
+        self.other_user_email = 'other_user@example.com'
+        self.feature_1.enterprise_impact = core_enums.ENTERPRISE_IMPACT_LOW
+        self.feature_1.is_releasenotes_publish_ready = True
+        self.feature_1.unlisted = True
+        self.feature_1.owner_emails = [self.unlisted_owner_email]
+        self.feature_1.put()
+        self.feature_2.enterprise_impact = core_enums.ENTERPRISE_IMPACT_LOW
+        self.feature_2.is_releasenotes_publish_ready = True
+        self.feature_2.put()
+
+    def test_get_features_in_release_notes__unlisted_not_leaked(self):
+        """An owner populating the cache does not leak unlisted features."""
+        self._setup_unlisted_release_notes_features()
+
+        testing_config.sign_in(self.unlisted_owner_email, 111)
+        features = feature_helpers.get_features_in_release_notes(milestone=1)
+        self.assertEqual(
+            ['feature a', 'feature b'], [f['name'] for f in features]
+        )
+
+        testing_config.sign_in(self.other_user_email, 222)
+        features = feature_helpers.get_features_in_release_notes(milestone=1)
+        self.assertEqual(['feature b'], [f['name'] for f in features])
+
+        testing_config.sign_out()
+        features = feature_helpers.get_features_in_release_notes(milestone=1)
+        self.assertEqual(['feature b'], [f['name'] for f in features])
+
+    def test_get_features_in_release_notes__unlisted_visible_to_owner(self):
+        """An unrelated user populating the cache does not hide from owners."""
+        self._setup_unlisted_release_notes_features()
+
+        testing_config.sign_in(self.other_user_email, 222)
+        features = feature_helpers.get_features_in_release_notes(milestone=1)
+        self.assertEqual(['feature b'], [f['name'] for f in features])
+
+        testing_config.sign_in(self.unlisted_owner_email, 111)
+        features = feature_helpers.get_features_in_release_notes(milestone=1)
+        self.assertEqual(
+            ['feature a', 'feature b'], [f['name'] for f in features]
+        )
+
+    def test_get_features_for_l10n_extraction__unlisted_not_leaked(self):
+        """l10n extraction does not leak unlisted features via the cache."""
+        self._setup_unlisted_release_notes_features()
+        self.feature_1.is_releasenotes_content_reviewed = True
+        self.feature_1.put()
+        self.feature_2.is_releasenotes_content_reviewed = True
+        self.feature_2.put()
+
+        testing_config.sign_in(self.unlisted_owner_email, 111)
+        features = feature_helpers.get_features_for_l10n_extraction(1, 2)
+        self.assertEqual(
+            ['feature a', 'feature b'], [f['name'] for f in features]
+        )
+
+        testing_config.sign_out()
+        features = feature_helpers.get_features_for_l10n_extraction(1, 2)
+        self.assertEqual(['feature b'], [f['name'] for f in features])
+
     def test_get_features_for_l10n_extraction(self):
         """We can retrieve l10n extraction data with filtered fields.
 
@@ -1096,11 +1160,10 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
         )
         self.assertEqual('feature a', features[2]['name'])
         self.assertEqual('feature b', features[3]['name'])
-        cache_key = '%s|%s|%s|%s' % (
+        cache_key = '%s|%s|%s' % (
             FeatureEntry.SEARCH_CACHE_KEY,
             'impl_order',
             None,
-            False,
         )
         self.assertEqual(features, rediscache.get(cache_key))
 
@@ -1118,6 +1181,109 @@ class FeatureHelpersTest(testing_config.CustomTestCase):
         )
         self.assertEqual('feature a', features[1]['name'])
         self.assertEqual('feature b', features[2]['name'])
+
+    def _make_feature_3_unlisted(self):
+        """Make feature c, the head of its impl_status section, unlisted."""
+        self.unlisted_owner_email = 'unlisted_owner@example.com'
+        self.other_user_email = 'other_user@example.com'
+        self.feature_3.unlisted = True
+        self.feature_3.owner_emails = [self.unlisted_owner_email]
+        self.feature_3.put()
+
+    def test_get_features_by_impl_status__unlisted_not_leaked(self):
+        """An owner populating the cache does not leak unlisted features."""
+        self._make_feature_3_unlisted()
+
+        testing_config.sign_in(self.unlisted_owner_email, 111)
+        features = feature_helpers.get_features_by_impl_status()
+        self.assertEqual(
+            ['feature c', 'feature d', 'feature a', 'feature b'],
+            [f['name'] for f in features],
+        )
+
+        testing_config.sign_in(self.other_user_email, 222)
+        features = feature_helpers.get_features_by_impl_status()
+        self.assertEqual(
+            ['feature d', 'feature a', 'feature b'],
+            [f['name'] for f in features],
+        )
+
+        testing_config.sign_out()
+        features = feature_helpers.get_features_by_impl_status()
+        self.assertEqual(
+            ['feature d', 'feature a', 'feature b'],
+            [f['name'] for f in features],
+        )
+
+    def test_get_features_by_impl_status__unlisted_visible_to_owner(self):
+        """An unrelated user populating the cache does not hide from owners."""
+        self._make_feature_3_unlisted()
+
+        testing_config.sign_in(self.other_user_email, 222)
+        features = feature_helpers.get_features_by_impl_status()
+        self.assertEqual(
+            ['feature d', 'feature a', 'feature b'],
+            [f['name'] for f in features],
+        )
+
+        testing_config.sign_in(self.unlisted_owner_email, 111)
+        features = feature_helpers.get_features_by_impl_status()
+        self.assertEqual(
+            ['feature c', 'feature d', 'feature a', 'feature b'],
+            [f['name'] for f in features],
+        )
+
+        # Users who can see all unlisted features share the same cache.
+        testing_config.sign_in(self.other_user_email, 222)
+        features = feature_helpers.get_features_by_impl_status(
+            show_unlisted=True
+        )
+        self.assertEqual(
+            ['feature c', 'feature d', 'feature a', 'feature b'],
+            [f['name'] for f in features],
+        )
+
+    def test_get_features_by_impl_status__first_of_section_after_filter(self):
+        """first_of_section is correct when a section head is filtered out."""
+        self._make_feature_3_unlisted()
+
+        testing_config.sign_in(self.other_user_email, 222)
+        features = feature_helpers.get_features_by_impl_status()
+        self.assertEqual(
+            [('feature d', True), ('feature a', True), ('feature b', True)],
+            [(f['name'], f.get('first_of_section', False)) for f in features],
+        )
+
+        # The cached list is not modified by per-user filtering.
+        cache_key = '%s|%s|%s' % (
+            FeatureEntry.SEARCH_CACHE_KEY,
+            'impl_order',
+            None,
+        )
+        self.assertEqual(
+            [
+                ('feature c', True),
+                ('feature d', False),
+                ('feature a', True),
+                ('feature b', True),
+            ],
+            [
+                (f['name'], f.get('first_of_section', False))
+                for f in rediscache.get(cache_key)
+            ],
+        )
+
+        testing_config.sign_in(self.unlisted_owner_email, 111)
+        features = feature_helpers.get_features_by_impl_status()
+        self.assertEqual(
+            [
+                ('feature c', True),
+                ('feature d', False),
+                ('feature a', True),
+                ('feature b', True),
+            ],
+            [(f['name'], f.get('first_of_section', False)) for f in features],
+        )
 
     @mock.patch('internals.feature_helpers.get_current_milestone_info')
     @mock.patch('internals.feature_helpers.datetime')
