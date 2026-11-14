@@ -141,7 +141,10 @@ export class ChromedashAdminBlinkPage extends LitElement {
         e.detail.userId,
       ];
     }
-    if (e.detail.toggleAsOwner) {
+    if (
+      e.detail.toggleAsOwner &&
+      !component.owner_ids?.includes(e.detail.userId)
+    ) {
       component.owner_ids = [...(component.owner_ids ?? []), e.detail.userId];
     }
     showToastMessage(
@@ -160,11 +163,15 @@ export class ChromedashAdminBlinkPage extends LitElement {
       return;
     }
 
-    component.subscriber_ids = component.subscriber_ids!.filter(
-      currentUserId => e.detail.userId !== currentUserId
-    );
     if (e.detail.toggleAsOwner) {
-      component.owner_ids = component.owner_ids!.filter(
+      component.owner_ids = (component.owner_ids ?? []).filter(
+        currentUserId => e.detail.userId !== currentUserId
+      );
+    } else {
+      component.subscriber_ids = (component.subscriber_ids ?? []).filter(
+        currentUserId => e.detail.userId !== currentUserId
+      );
+      component.owner_ids = (component.owner_ids ?? []).filter(
         currentUserId => e.detail.userId !== currentUserId
       );
     }

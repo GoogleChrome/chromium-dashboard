@@ -71,6 +71,18 @@ describe('chromedash-bulk-edit-page', () => {
     assert.equal(component.chromestatusUrlIndex, 1);
   });
 
+  it('parses file content with www.chromestatus.com URLs', async () => {
+    const component = await fixture<ChromedashBulkEditPage>(
+      html`<chromedash-bulk-edit-page></chromedash-bulk-edit-page>`
+    );
+    const csvWithWww = `web-features,chromestatus\naccent-color,https://www.chromestatus.com/feature/4752739957473280\n`;
+    component.parseFileContent(csvWithWww);
+    assert.equal(component.featureIdIndex, 0);
+    assert.equal(component.chromestatusUrlIndex, 1);
+    assert.equal(component.items.length, 1);
+    assert.equal(component.items[0].csFid, 4752739957473280);
+  });
+
   it('renders preview immediately', async () => {
     const component = await fixture(
       html`<chromedash-bulk-edit-page></chromedash-bulk-edit-page>`
