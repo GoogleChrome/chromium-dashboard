@@ -915,6 +915,78 @@ class AsyncUtilsGitHubTests(unittest.IsolatedAsyncioTestCase):
             {Path('shared.js')},
         )  # noqa: E501
 
+    @mock.patch('framework.utils._fetch_dir_listing')
+    @mock.patch('framework.utils._fetch_file_content')
+    async def test_get_mixed_wpt_contents_async__skips_none_and_whitespace(
+        self, mock_fetch_content, mock_fetch_dir
+    ):
+        """Should exclude None and whitespace-only content and track in failed_fetches."""
+        dir_urls = ['https://wpt.fyi/results/dir1']
+        file_urls = []
+        settings.GITHUB_TOKEN = 'token'
+
+        mock_fetch_dir.return_value = [
+            (Path('a.html'), 'http://dl/a.html'),
+            (Path('b.html'), 'http://dl/b.html'),
+            (Path('c.html'), 'http://dl/c.html'),
+        ]
+
+        def side_effect(url):
+            if url == 'http://dl/a.html':
+                return None
+            if url == 'http://dl/b.html':
+                return '   \n\t'
+            if url == 'http://dl/c.html':
+                return 'console.log("valid test");'
+            return None
+
+        mock_fetch_content.side_effect = side_effect
+
+        result = await utils.get_mixed_wpt_contents_async(dir_urls, file_urls)
+
+        self.assertNotIn(Path('a.html'), result.test_contents)
+        self.assertNotIn(Path('b.html'), result.test_contents)
+        self.assertIn(Path('c.html'), result.test_contents)
+        self.assertEqual(
+            result.test_contents[Path('c.html')], 'console.log("valid test");'
+        )
+        self.assertEqual(
+            result.failed_fetches, [Path('a.html'), Path('b.html')]
+        )
+
+        caveat = utils.format_failed_fetches_caveat(result.failed_fetches)
+        self.assertIn('Failed to fetch the contents of 2 files:', caveat)
+        self.assertIn('`a.html`', caveat)
+        self.assertIn('`b.html`', caveat)
+
+    @mock.patch('framework.utils._fetch_dir_listing')
+    @mock.patch('framework.utils._fetch_file_content')
+    async def test_get_mixed_wpt_contents_async__all_files_fail(
+        self, mock_fetch_content, mock_fetch_dir
+    ):
+        """Should raise PipelineError if all requested test files fail to fetch."""
+        dir_urls = ['https://wpt.fyi/results/dir1']
+        file_urls = []
+        settings.GITHUB_TOKEN = 'token'
+
+        mock_fetch_dir.return_value = [
+            (Path('a.html'), 'http://dl/a.html'),
+            (Path('b.html'), 'http://dl/b.html'),
+        ]
+        mock_fetch_content.return_value = None
+
+        with self.assertRaises(utils.PipelineError) as cm:
+            await utils.get_mixed_wpt_contents_async(dir_urls, file_urls)
+
+        self.assertIn(
+            'Failed to fetch the contents of any valid test files.',
+            str(cm.exception),
+        )
+
+    def test_format_failed_fetches_caveat__empty_list(self):
+        """Empty failed_fetches list should return an empty string."""
+        self.assertEqual('', utils.format_failed_fetches_caveat([]))
+
 
 class MarkdownConvertersTest(unittest.TestCase):
     """Tests for safe_plain_text_to_markdown."""
