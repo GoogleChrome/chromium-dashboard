@@ -18,6 +18,11 @@ import {LitElement, TemplateResult, css, html, nothing} from 'lit';
 import {createRef, ref} from 'lit/directives/ref.js';
 import './chromedash-activity-log.js';
 import './chromedash-survey-questions.js';
+import {
+  stageTypeToIntentSubject,
+  shouldOfferIntentDialog,
+  openIntentDialog,
+} from './chromedash-intent-dialog.js';
 import {openNaRationaleDialog} from './chromedash-na-rationale-dialog.js';
 import {maybeOpenCertifyDialog} from './chromedash-self-certify-dialog.js';
 import {maybeOpenSecondarySurveyDialog} from './chromedash-secondary-survey-dialog.js';
@@ -838,6 +843,24 @@ export class ChromedashGateColumn extends LitElement {
     return nothing;
   }
 
+  renderReviewTools() {
+    if (!this.loading && shouldOfferIntentDialog(this.gate)) {
+      const subject = stageTypeToIntentSubject(this.stage.stage_type);
+      return html`
+        <div class="review-tools">
+          <sl-button
+            variant="primary"
+            size="small"
+            @click=${() => openIntentDialog(this.feature, this.stage, this.gate)}
+          >
+            View ${subject}</sl-button
+          >
+        </div>
+      `;
+    }
+    return nothing;
+  }
+
   renderVotesSkeleton() {
     return html`
       <table>
@@ -1171,7 +1194,7 @@ export class ChromedashGateColumn extends LitElement {
         ${this.renderGateRationale()}
       </div>
 
-      ${this.renderWarnings()}
+      ${this.renderWarnings()} ${this.renderReviewTools()}
 
       <div id="votes-area">
         ${this.loading ? this.renderVotesSkeleton() : this.renderVotes()}
