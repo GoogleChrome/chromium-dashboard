@@ -53,8 +53,9 @@ class Metadata:
             Ref: https://ogp.me/#metadata
         og_type: Open Graph category type (default: OpenGraphType.WEBSITE).
             Ref: https://ogp.me/#types
-        schema_type: Schema.org entity type (default: SchemaType.WEB_PAGE).
-            Ref: https://schema.org/WebPage
+        og_image_width: Width in pixels for social preview cards (og:image:width).
+        og_image_height: Height in pixels for social preview cards (og:image:height).
+        twitter_card: Twitter card display type (e.g. 'summary_large_image').
     """
 
     canonical_url: str | None = None
@@ -63,6 +64,9 @@ class Metadata:
     site_logo_url: str | None = None
     og_type: OpenGraphType | str = OpenGraphType.WEBSITE
     schema_type: SchemaType | str = SchemaType.WEB_PAGE
+    og_image_width: int | None = None
+    og_image_height: int | None = None
+    twitter_card: str | None = None
 
     def to_dict(self) -> dict[str, Any]:
         """Export non-None metadata fields as a template context dictionary."""

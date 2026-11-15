@@ -291,8 +291,11 @@ class ReleaseNotesHandler(basehandlers.FlaskHandler):
                 f'shipped in Google Chrome {milestone}.'
             ),
             site_logo_url=urllib.parse.urljoin(
-                settings.SITE_URL, settings.SITE_LOGO_PATH
+                settings.SITE_URL, settings.RELEASE_NOTES_OG_IMAGE_PATH
             ),
+            og_image_width=1200,
+            og_image_height=630,
+            twitter_card='summary_large_image',
             schema_type=seo.SchemaType.ITEM_PAGE,
         )
 
