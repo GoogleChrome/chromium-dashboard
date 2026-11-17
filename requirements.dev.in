@@ -12,6 +12,6 @@ ruff==0.17.3
 types-protobuf
 types-pytz
 types-redis
-types-requests==2.33.0.20261006
+types-requests==2.33.0.20261030
 types-setuptools
 urllib3==2.7.0
