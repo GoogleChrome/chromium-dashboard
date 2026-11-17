@@ -16,6 +16,7 @@
 
 import {html, nothing} from 'lit';
 import {assert, fixture} from '@open-wc/testing';
+import '@shoelace-style/shoelace/dist/components/details/details.js';
 import '@shoelace-style/shoelace/dist/components/dialog/dialog.js';
 import sinon from 'sinon';
 import {ChromeStatusClient, Feature, StageDict} from '../js-src/cs-client.js';
@@ -191,7 +192,7 @@ describe('chromedash-intent-dialog', () => {
       explainer_links: ['https://example.com/explainer'],
       browsers: {
         chrome: {
-          owners: ['owner@example.com'],
+          owners: ['owner@example.com', 'owner2@example.com'],
           bug: 'https://crbug.com/123456',
           blink_components: ['Blink>DOM'],
         },
@@ -231,7 +232,22 @@ describe('chromedash-intent-dialog', () => {
       const dialog = component.shadowRoot!.querySelector('sl-dialog');
       assert.exists(dialog);
       assert.equal(dialog!.getAttribute('label'), 'Intent to Ship');
-      assert.equal(dialog!.getAttribute('style'), '--width:fit-content');
+
+      // When viewport is not narrow (> 860px), sl-dialog::part(base) right inset is --sidebar-space (410px)
+      // so the panel centers over the drawer and #content-component-wrapper and does not overlap #content-sidebar-space.
+      const basePart =
+        dialog!.shadowRoot?.querySelector<HTMLElement>('[part~="base"]');
+      const panelPart =
+        dialog!.shadowRoot?.querySelector<HTMLElement>('[part~="panel"]');
+      assert.exists(basePart);
+      assert.exists(panelPart);
+      if (window.innerWidth > 860) {
+        assert.equal(getComputedStyle(basePart!).right, '410px');
+        const rect = panelPart!.getBoundingClientRect();
+        assert.isAtMost(rect.right, window.innerWidth - 410);
+      } else {
+        assert.equal(getComputedStyle(basePart!).right, '0px');
+      }
 
       const northwest = dialog!.querySelector('#northwest');
       const northeast = dialog!.querySelector('#northeast');
@@ -244,7 +260,10 @@ describe('chromedash-intent-dialog', () => {
       assert.exists(northwest!.querySelector('table.data-table'));
       assert.isNull(northwest!.querySelector('dl'));
       assert.include(northwest!.textContent, 'Feature X');
-      assert.include(northwest!.textContent, 'owner@example.com');
+      const ownerItems = Array.from(
+        northwest!.querySelectorAll('tr#owner ul.inline-list li')
+      ).map(li => li.textContent?.trim());
+      assert.deepEqual(ownerItems, ['owner@example.com', 'owner2@example.com']);
       const explainerLink = northwest!.querySelector<HTMLAnchorElement>(
         'tr#explainer_links td:nth-child(2) a'
       );
@@ -321,7 +340,7 @@ describe('chromedash-intent-dialog', () => {
         assert.isTrue(el.hasAttribute('open'));
       }
 
-      dialog!.dispatchEvent(new CustomEvent('sl-hide', {bubbles: true}));
+      component.hide();
       assert.isUndefined(parseRawQuery(window.location.search).dialog);
     });
 
@@ -365,29 +384,56 @@ describe('chromedash-intent-dialog', () => {
       assert.include(central.textContent, 'Strong developer demand');
     });
 
-    it('switches to showing grid areas one after the other when content width is too narrow', async () => {
+    it('wraps northwest and northeast vertically when content width is too narrow', async () => {
       const component = await fixture<ChromedashIntentDialog>(
         html`<chromedash-intent-dialog></chromedash-intent-dialog>`
       );
-      component.openWithContext(feature, stage, gate);
+
+      // At laptop dialog content width, #northwest and #northeast fit side-by-side even with long URLs.
+      const featureWithLongUrls = {
+        ...feature,
+        explainer_links: [
+          'https://docs.google.com/document/d/1234567890abcdefghijklmnopqrstuvwxyz/edit',
+        ],
+        browsers: {
+          ...feature.browsers,
+          chrome: {
+            ...feature.browsers.chrome,
+            bug: 'https://issues.chromium.org/issues/401234567890/something-very-long',
+          },
+        },
+      } as unknown as Feature;
+      component.openWithContext(featureWithLongUrls, stage, gate);
       await component.updateComplete;
       await new Promise(resolve => requestAnimationFrame(resolve));
 
       const gridEl =
         component.shadowRoot!.querySelector<HTMLElement>('#content-grid')!;
       assert.exists(gridEl);
-
-      // Constrain width so two columns cannot fit without horizontal overflow.
-      gridEl.style.width = '200px';
-      component.checkGridOverflow();
-
-      assert.isTrue(gridEl.classList.contains('narrow'));
       const northwest = gridEl.querySelector<HTMLElement>('#northwest')!;
       const northeast = gridEl.querySelector<HTMLElement>('#northeast')!;
       const central = gridEl.querySelector<HTMLElement>('#central')!;
-      assert.equal(getComputedStyle(northwest).gridColumnStart, '1');
-      assert.equal(getComputedStyle(northeast).gridColumnStart, '1');
-      assert.equal(getComputedStyle(central).gridColumnStart, '1');
+
+      // Simulate laptop dialog content width (~1000px).
+      gridEl.style.width = '1000px';
+
+      const nwWideRect = northwest.getBoundingClientRect();
+      const neWideRect = northeast.getBoundingClientRect();
+      const centralWideRect = central.getBoundingClientRect();
+      assert.equal(nwWideRect.top, neWideRect.top);
+      assert.isAbove(neWideRect.left, nwWideRect.left);
+      assert.isAtLeast(centralWideRect.top, nwWideRect.bottom);
+
+      // Constrain width so two columns wrap one after the other in pure CSS.
+      gridEl.style.width = '500px';
+
+      const nwNarrowRect = northwest.getBoundingClientRect();
+      const neNarrowRect = northeast.getBoundingClientRect();
+      const centralNarrowRect = central.getBoundingClientRect();
+      assert.equal(nwNarrowRect.left, neNarrowRect.left);
+      assert.equal(nwNarrowRect.left, centralNarrowRect.left);
+      assert.isAtLeast(neNarrowRect.top, nwNarrowRect.bottom);
+      assert.isAtLeast(centralNarrowRect.top, neNarrowRect.bottom);
     });
 
     it('openIntentDialog mounts dialog and opens with context', async () => {

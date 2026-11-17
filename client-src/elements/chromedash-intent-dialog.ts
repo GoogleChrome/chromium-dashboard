@@ -281,62 +281,64 @@ export class ChromedashIntentDialog extends LitElement {
   @state()
   gate!: GateDict;
 
-  private resizeObserver?: ResizeObserver;
-  private lastNarrowClientWidth = 0;
-  private lastNarrowWindowWidth = 0;
-
   static get styles() {
     return [
       ...SHARED_STYLES,
       css`
+        sl-dialog::part(base) {
+          right: calc(
+            var(--sidebar-space, 410px) +
+              max(
+                0px,
+                (
+                    100vw -
+                      210px - var(--max-content-width, 860px) - var(
+                        --sidebar-space,
+                        410px
+                      )
+                  ) /
+                  2
+              )
+          );
+        }
+
+        sl-dialog::part(panel) {
+          max-width: min(
+            calc(300px + var(--max-content-width, 860px)),
+            calc(100% - var(--content-padding))
+          );
+          max-height: calc(100vh - 2 * var(--content-padding));
+        }
+
         #content-grid {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
+          display: flex;
+          flex-wrap: wrap;
           gap: var(--content-padding);
         }
 
-        #northwest {
-          grid-row: 1;
-          grid-column: 1;
-        }
-
+        #northwest,
         #northeast {
-          grid-row: 1;
-          grid-column: 2;
+          flex: 1 1 min-content;
+          max-width: 100%;
         }
 
         #central {
-          grid-row: 2;
-          grid-column: 1 / -1;
+          flex: 1 1 100%;
+          max-width: 100%;
         }
 
-        #content-grid.narrow {
-          grid-template-columns: 1fr;
-        }
-
-        #content-grid.narrow #northwest,
-        #content-grid.narrow #northeast,
-        #content-grid.narrow #central {
-          grid-row: auto;
-          grid-column: 1;
-        }
-
-        @media only screen and (max-width: 700px) {
-          #content-grid {
-            grid-template-columns: 1fr;
+        @media only screen and (max-width: 860px) {
+          sl-dialog::part(base) {
+            right: 0;
           }
 
-          #northwest,
-          #northeast,
-          #central {
-            grid-row: auto;
-            grid-column: 1;
+          sl-dialog::part(panel) {
+            max-width: calc(100vw - 2 * var(--content-padding));
           }
         }
 
         .card {
           background: var(--card-background);
-          max-width: var(--max-content-width);
           padding: 16px;
         }
 
@@ -383,60 +385,6 @@ export class ChromedashIntentDialog extends LitElement {
         }
       `,
     ];
-  }
-
-  connectedCallback() {
-    super.connectedCallback();
-    this.resizeObserver = new ResizeObserver(() => {
-      this.checkGridOverflow();
-    });
-    window.addEventListener('resize', this.handleWindowResize);
-  }
-
-  disconnectedCallback() {
-    super.disconnectedCallback();
-    this.resizeObserver?.disconnect();
-    window.removeEventListener('resize', this.handleWindowResize);
-  }
-
-  protected updated() {
-    const gridEl = this.renderRoot.querySelector<HTMLElement>('#content-grid');
-    if (gridEl && this.resizeObserver) {
-      this.resizeObserver.observe(gridEl);
-    }
-    this.lastNarrowClientWidth = 0;
-    this.lastNarrowWindowWidth = 0;
-    this.checkGridOverflow();
-  }
-
-  private handleWindowResize = () => {
-    this.checkGridOverflow();
-  };
-
-  checkGridOverflow() {
-    const gridEl = this.renderRoot.querySelector<HTMLElement>('#content-grid');
-    if (!gridEl || gridEl.clientWidth === 0) {
-      return;
-    }
-
-    if (gridEl.classList.contains('narrow')) {
-      if (
-        window.innerWidth <= this.lastNarrowWindowWidth &&
-        gridEl.clientWidth <= this.lastNarrowClientWidth
-      ) {
-        return;
-      }
-      gridEl.classList.remove('narrow');
-    }
-
-    if (gridEl.scrollWidth > gridEl.clientWidth) {
-      gridEl.classList.add('narrow');
-      this.lastNarrowClientWidth = gridEl.clientWidth;
-      this.lastNarrowWindowWidth = window.innerWidth;
-    } else {
-      this.lastNarrowClientWidth = 0;
-      this.lastNarrowWindowWidth = 0;
-    }
   }
 
   openWithContext(feature: Feature, stage: StageDict, gate: GateDict) {
@@ -539,6 +487,13 @@ export class ChromedashIntentDialog extends LitElement {
               </li>
             `
           )}
+        </ul>
+      `;
+    }
+    if (Array.isArray(value)) {
+      return html`
+        <ul class="inline-list">
+          ${value.map(item => html`<li>${item}</li>`)}
         </ul>
       `;
     }
