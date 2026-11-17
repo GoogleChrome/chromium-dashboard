@@ -49,7 +49,7 @@ pyproject-hooks==1.2.0
     # via
     #   build
     #   pip-tools
-pytest==9.1.1
+pytest==9.2.0
     # via
     #   -r requirements.dev.in
     #   pytest-xdist
