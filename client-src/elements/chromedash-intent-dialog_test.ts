@@ -328,7 +328,7 @@ describe('chromedash-intent-dialog', () => {
         central!.querySelectorAll<HTMLElement>('sl-details')
       );
       const summaries = detailsEls.map(el => el.getAttribute('summary'));
-      // 'Details' is omitted because all of its fields ('motivation?', 'dev_trial_instructions?') are undefined.
+      // 'Details' is omitted because all of its fields ('motivation?', 'devtrial_instructions?') are undefined.
       assert.deepEqual(summaries, [
         'Spec and TAG',
         'Risks',
@@ -340,8 +340,15 @@ describe('chromedash-intent-dialog', () => {
         assert.isTrue(el.hasAttribute('open'));
       }
 
-      component.hide();
+      // Bubbling sl-hide from a child <sl-details> should not clear ?dialog=intent.
+      detailsEls[0].dispatchEvent(new CustomEvent('sl-hide', {bubbles: true}));
+      assert.equal(parseRawQuery(window.location.search).dialog, 'intent');
+
+      // sl-hide originating on <sl-dialog> itself clears ?dialog=intent.
+      dialog!.dispatchEvent(new CustomEvent('sl-hide', {bubbles: true}));
       assert.isUndefined(parseRawQuery(window.location.search).dialog);
+
+      component.hide();
     });
 
     it('filters central groups by intent type and renders defined optional fields', async () => {
@@ -351,7 +358,10 @@ describe('chromedash-intent-dialog', () => {
       const featureWithOptionals = {
         ...feature,
         motivation: 'Strong developer demand',
+        devtrial_instructions: 'https://example.com/devtrial-howto',
         launch_bug_url: 'https://crbug.com/999999',
+        initial_public_proposal_url: 'javascript:alert(1)',
+        explainer_links: ['https://example.com/explainer', 'N/A', null],
       } as unknown as Feature;
       const prototypeStage = {
         id: 10,
@@ -361,6 +371,7 @@ describe('chromedash-intent-dialog', () => {
       component.openWithContext(featureWithOptionals, prototypeStage, gate);
       await component.updateComplete;
 
+      const northwest = component.shadowRoot!.querySelector('#northwest')!;
       const northeast = component.shadowRoot!.querySelector('#northeast')!;
       const central = component.shadowRoot!.querySelector('#central')!;
 
@@ -373,6 +384,22 @@ describe('chromedash-intent-dialog', () => {
         'https://crbug.com/999999'
       );
 
+      // Non-http(s) URLs render as plain text rather than clickable anchors.
+      const proposalCell = northeast.querySelector(
+        'tr#initial_public_proposal_url td:nth-child(2)'
+      );
+      assert.exists(proposalCell);
+      assert.isNull(proposalCell!.querySelector('a'));
+      assert.equal(proposalCell!.textContent, 'javascript:alert(1)');
+
+      const explainerItems = Array.from(
+        northwest.querySelectorAll('tr#explainer_links ul.inline-list li')
+      );
+      assert.equal(explainerItems.length, 2);
+      assert.exists(explainerItems[0].querySelector('a'));
+      assert.isNull(explainerItems[1].querySelector('a'));
+      assert.equal(explainerItems[1].textContent, 'N/A');
+
       const detailsEls = Array.from(
         central.querySelectorAll<HTMLElement>('sl-details')
       );
@@ -382,6 +409,119 @@ describe('chromedash-intent-dialog', () => {
       );
       assert.exists(central.querySelector('dt#motivation'));
       assert.include(central.textContent, 'Strong developer demand');
+      assert.exists(central.querySelector('dt#devtrial_instructions'));
+      const devtrialLink = central.querySelector('chromedash-link');
+      assert.exists(devtrialLink);
+      assert.equal(
+        devtrialLink!.getAttribute('href'),
+        'https://example.com/devtrial-howto'
+      );
+
+      component.hide();
+    });
+
+    it('resolves stage-specific milestone and origin trial fields from their owning stages', async () => {
+      const component = await fixture<ChromedashIntentDialog>(
+        html`<chromedash-intent-dialog></chromedash-intent-dialog>`
+      );
+      const dtStage = {
+        id: 11,
+        stage_type: enums.STAGE_BLINK_DEV_TRIAL,
+        desktop_first: 130,
+      } as unknown as StageDict;
+      const otExtStage = {
+        id: 16,
+        stage_type: enums.STAGE_BLINK_EXTEND_ORIGIN_TRIAL,
+        ot_stage_id: 15,
+        desktop_last: 136,
+        intent_thread_url: 'https://example.com/extend-thread',
+      } as unknown as StageDict;
+      const otStage = {
+        id: 15,
+        stage_type: enums.STAGE_BLINK_ORIGIN_TRIAL,
+        desktop_first: 132,
+        desktop_last: 134,
+        experiment_goals: 'Validate API ergonomics',
+        experiment_risks: 'Potential API surface changes',
+        extensions: [otExtStage],
+      } as unknown as StageDict;
+      const shipStage = {
+        id: 20,
+        stage_type: enums.STAGE_BLINK_SHIPPING,
+        desktop_first: 137,
+        intent_thread_url: 'https://example.com/ship-thread',
+      } as unknown as StageDict;
+      const rolloutStage = {
+        id: 25,
+        stage_type: enums.STAGE_ENT_ROLLOUT,
+        desktop_first: 138,
+      } as unknown as StageDict;
+
+      const multiStageFeature = {
+        ...feature,
+        stages: [dtStage, otStage, shipStage, rolloutStage],
+      } as unknown as Feature;
+
+      // 1. Open Intent to Ship: each milestone row reads from its own stage.
+      component.openWithContext(multiStageFeature, shipStage, gate);
+      await component.updateComplete;
+
+      const northeast = component.shadowRoot!.querySelector('#northeast')!;
+      assert.equal(
+        northeast
+          .querySelector('tr#dt_milestone_desktop_start td:nth-child(2)')
+          ?.textContent?.trim(),
+        '130'
+      );
+      assert.equal(
+        northeast
+          .querySelector('tr#ot_milestone_desktop_start td:nth-child(2)')
+          ?.textContent?.trim(),
+        '132'
+      );
+      assert.equal(
+        northeast
+          .querySelector('tr#ot_milestone_desktop_end td:nth-child(2)')
+          ?.textContent?.trim(),
+        '136 (extended from 134)'
+      );
+      assert.equal(
+        northeast
+          .querySelector('tr#shipped_milestone td:nth-child(2)')
+          ?.textContent?.trim(),
+        '137'
+      );
+      assert.equal(
+        northeast
+          .querySelector('tr#rollout_milestone td:nth-child(2)')
+          ?.textContent?.trim(),
+        '138'
+      );
+
+      // 2. Open Intent to Extend Experiment: experiment_goals and experiment_risks read from parent OT stage,
+      // while intent_thread_url reads from the extension stage itself.
+      const extendGate = {
+        id: 100,
+        gate_type: enums.GATE_TYPES.API_EXTEND_ORIGIN_TRIAL,
+        state: enums.GATE_REVIEW_REQUESTED,
+      } as unknown as GateDict;
+      component.openWithContext(multiStageFeature, otExtStage, extendGate);
+      await component.updateComplete;
+
+      const northwest = component.shadowRoot!.querySelector('#northwest')!;
+      const central = component.shadowRoot!.querySelector('#central')!;
+      const extThreadLink = northwest.querySelector<HTMLAnchorElement>(
+        'tr#intent_thread_url td:nth-child(2) a'
+      );
+      assert.exists(extThreadLink);
+      assert.equal(
+        extThreadLink!.getAttribute('href'),
+        'https://example.com/extend-thread'
+      );
+      assert.include(central.textContent, 'Validate API ergonomics');
+      assert.include(central.textContent, 'Potential API surface changes');
+
+      component.hide();
     });
 
     it('wraps northwest and northeast vertically when content width is too narrow', async () => {
@@ -434,6 +574,8 @@ describe('chromedash-intent-dialog', () => {
       assert.equal(nwNarrowRect.left, centralNarrowRect.left);
       assert.isAtLeast(neNarrowRect.top, nwNarrowRect.bottom);
       assert.isAtLeast(centralNarrowRect.top, neNarrowRect.bottom);
+
+      component.hide();
     });
 
     it('openIntentDialog mounts dialog and opens with context', async () => {

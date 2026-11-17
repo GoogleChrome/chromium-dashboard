@@ -148,7 +148,7 @@ const CENTRAL_FIELDS = [
   {
     group: 'Details',
     intents: ALL_EXCEPT_OT,
-    fields: ['motivation?', 'dev_trial_instructions?'],
+    fields: ['motivation?', 'devtrial_instructions?'],
   },
 
   {
@@ -229,14 +229,93 @@ interface FieldGroup {
   fields: string[];
 }
 
-function makeIntentDisplaySpecs(fieldNames: string[]) {
+const OT_STAGE_FIELDS = new Set<string>([
+  ...enums.OT_MILESTONE_START_FIELDS,
+  'ot_milestone_desktop_end',
+  'ot_milestone_android_end',
+  'ot_milestone_webview_end',
+  'experiment_goals',
+  'experiment_risks',
+]);
+
+const ROLLOUT_STAGE_TYPES = new Set<number>([enums.STAGE_ENT_ROLLOUT]);
+
+function isSafeHttpUrl(url: unknown): url is string {
+  return typeof url === 'string' && /^https?:\/\//i.test(url);
+}
+
+function findStageByTypes(
+  stageTypes: Set<number>,
+  currentStage: StageDict | undefined,
+  feature: Feature | undefined
+): StageDict | null {
+  if (currentStage && stageTypes.has(currentStage.stage_type)) {
+    return currentStage;
+  }
+  return (
+    feature?.stages?.find(stage => stageTypes.has(stage.stage_type)) ?? null
+  );
+}
+
+function getStageForField(
+  fieldId: string,
+  currentStage: StageDict | undefined,
+  feature: Feature | undefined
+): StageDict | null {
+  if (enums.DT_MILESTONE_FIELDS.has(fieldId)) {
+    return findStageByTypes(enums.STAGE_TYPES_DEV_TRIAL, currentStage, feature);
+  }
+  if (OT_STAGE_FIELDS.has(fieldId)) {
+    if (
+      currentStage &&
+      enums.STAGE_TYPES_ORIGIN_TRIAL.has(currentStage.stage_type)
+    ) {
+      return currentStage;
+    }
+    if (
+      currentStage &&
+      enums.OT_EXTENSION_STAGE_TYPES.has(currentStage.stage_type)
+    ) {
+      const parentOtStage = feature?.stages?.find(
+        stage =>
+          stage.id === currentStage.ot_stage_id ||
+          stage.extensions?.some(ext => ext.id === currentStage.id)
+      );
+      if (parentOtStage) {
+        return parentOtStage;
+      }
+    }
+    return findStageByTypes(
+      enums.STAGE_TYPES_ORIGIN_TRIAL,
+      currentStage,
+      feature
+    );
+  }
+  if (enums.SHIPPED_MILESTONE_FIELDS.has(fieldId)) {
+    return findStageByTypes(enums.STAGE_TYPES_SHIPPING, currentStage, feature);
+  }
+  if (fieldId === 'rollout_milestone') {
+    return findStageByTypes(ROLLOUT_STAGE_TYPES, currentStage, feature);
+  }
+  return currentStage ?? null;
+}
+
+type DisplaySpec = [
+  string,
+  string,
+  string,
+  boolean | undefined,
+  boolean | undefined,
+];
+
+function makeIntentDisplaySpecs(fieldNames: string[]): DisplaySpec[] {
   const cleanNames = fieldNames.map(name =>
     name.endsWith('?') ? name.slice(0, -1) : name
   );
-  const specs = makeDisplaySpecs(cleanNames);
+  const specs = makeDisplaySpecs(cleanNames) as DisplaySpec[];
   return specs.map((spec, i) => {
     if (fieldNames[i].endsWith('?')) {
-      const copy = [...spec];
+      const copy: DisplaySpec = [...spec];
       copy[3] = true;
       return copy;
     }
@@ -368,7 +447,7 @@ export class ChromedashIntentDialog extends LitElement {
 
         .url-link {
           display: block;
-          max-width: 20em;
+          max-width: 15em;
           overflow: hidden;
           text-overflow: ellipsis;
           white-space: nowrap;
@@ -392,12 +471,12 @@ export class ChromedashIntentDialog extends LitElement {
     this.stage = stage;
     this.gate = gate;
     updateURLParams('dialog', 'intent');
-    this.renderRoot.querySelector('sl-dialog')?.show();
+    void this.renderRoot.querySelector('sl-dialog')?.show();
   }
 
   hide() {
     clearURLParams('dialog');
-    this.renderRoot.querySelector('sl-dialog')?.hide();
+    void this.renderRoot.querySelector('sl-dialog')?.hide();
   }
 
   handleHide(e: Event) {
@@ -407,9 +486,10 @@ export class ChromedashIntentDialog extends LitElement {
     clearURLParams('dialog');
   }
 
-  renderField(fieldDef: any[], feStage: StageDict) {
+  renderField(fieldDef: DisplaySpec) {
     const [fieldId, fieldDisplayName, , deprecated] = fieldDef;
-    const value = getFieldValueFromFeature(fieldId, feStage, this.feature);
+    const fieldStage = getStageForField(fieldId, this.stage, this.feature);
+    const value = getFieldValueFromFeature(fieldId, fieldStage, this.feature);
     const isDefined = isDefinedValue(value);
     if (!isDefined && deprecated) {
       return nothing;
@@ -417,7 +497,7 @@ export class ChromedashIntentDialog extends LitElement {
 
     return html`
       <dt id=${fieldId}>${fieldDisplayName}</dt>
-      <dd>${renderValue(feStage, this.feature, fieldId)}</dd>
+      <dd>${renderValue(fieldStage, this.feature, fieldId)}</dd>
     `;
   }
 
@@ -440,7 +520,7 @@ export class ChromedashIntentDialog extends LitElement {
     if (fieldItems.every(item => typeof item === 'string')) {
       const fields = makeIntentDisplaySpecs(fieldItems as string[]);
       const renderedFields = fields
-        .map(fieldDef => this.renderField(fieldDef, feStage))
+        .map(fieldDef => this.renderField(fieldDef))
         .filter(rendered => rendered !== nothing);
       if (renderedFields.length === 0) {
         return nothing;
@@ -452,7 +532,7 @@ export class ChromedashIntentDialog extends LitElement {
       ${fieldItems.map(item => {
         if (typeof item === 'string') {
           const [fieldDef] = makeIntentDisplaySpecs([item]);
-          const rendered = this.renderField(fieldDef, feStage);
+          const rendered = this.renderField(fieldDef);
           return rendered === nothing ? nothing : html`<dl>${rendered}</dl>`;
         }
         return this.renderFieldGroup(item, feStage);
@@ -460,32 +540,47 @@ export class ChromedashIntentDialog extends LitElement {
     `;
   }
 
-  renderTableValue(fieldDef: any[], feStage: StageDict) {
+  renderTableValue(fieldDef: DisplaySpec, fieldStage: StageDict | null) {
     const [fieldId, , fieldType] = fieldDef;
-    const value = getFieldValueFromFeature(fieldId, feStage, this.feature);
+    const value = getFieldValueFromFeature(fieldId, fieldStage, this.feature);
     if (!isDefinedValue(value)) {
       return html`<i>None</i>`;
     }
     if (fieldType === 'url' || fieldId.endsWith('_url')) {
-      return html`<a
-        class="url-link"
-        href=${value}
-        target="_blank"
-        rel="noopener"
-        >${value}</a
-      >`;
+      if (isSafeHttpUrl(value)) {
+        return html`<a
+          class="url-link"
+          href=${value}
+          target="_blank"
+          rel="noopener"
+          >${value}</a
+        >`;
+      }
+      return html`<span class="text">${String(value)}</span>`;
     }
     if (fieldType === 'multi-url') {
+      const entries = (Array.isArray(value) ? value : [value]).filter(item =>
+        isDefinedValue(item)
+      );
+      if (entries.length === 0) {
+        return html`<i>None</i>`;
+      }
       return html`
         <ul class="inline-list">
-          ${value.map(
-            url => html`
-              <li>
-                <a class="url-link" href=${url} target="_blank" rel="noopener"
-                  >${url}</a
-                >
-              </li>
-            `
+          ${entries.map(url =>
+            isSafeHttpUrl(url)
+              ? html`
+                  <li>
+                    <a
+                      class="url-link"
+                      href=${url}
+                      target="_blank"
+                      rel="noopener"
+                      >${url}</a
+                    >
+                  </li>
+                `
+              : html`<li>${String(url)}</li>`
           )}
         </ul>
       `;
@@ -497,12 +592,13 @@ export class ChromedashIntentDialog extends LitElement {
         </ul>
       `;
     }
-    return renderValue(feStage, this.feature, fieldId);
+    return renderValue(fieldStage, this.feature, fieldId);
   }
 
-  renderTableRow(fieldDef: any[], feStage: StageDict) {
+  renderTableRow(fieldDef: DisplaySpec) {
     const [fieldId, fieldDisplayName, , deprecated] = fieldDef;
-    const value = getFieldValueFromFeature(fieldId, feStage, this.feature);
+    const fieldStage = getStageForField(fieldId, this.stage, this.feature);
+    const value = getFieldValueFromFeature(fieldId, fieldStage, this.feature);
     const isDefined = isDefinedValue(value);
     if (!isDefined && deprecated) {
       return nothing;
@@ -511,16 +607,16 @@ export class ChromedashIntentDialog extends LitElement {
     return html`
       <tr id=${fieldId}>
         <td>${fieldDisplayName}</td>
-        <td>${this.renderTableValue(fieldDef, feStage)}</td>
+        <td>${this.renderTableValue(fieldDef, fieldStage)}</td>
       </tr>
     `;
   }
 
-  renderSectionTable(fieldNames: string[], feStage: StageDict) {
+  renderSectionTable(fieldNames: string[]) {
     const fields = makeIntentDisplaySpecs(fieldNames);
     return html`
       <table class="data-table">
-        ${fields.map(fieldDef => this.renderTableRow(fieldDef, feStage))}
+        ${fields.map(fieldDef => this.renderTableRow(fieldDef))}
       </table>
     `;
   }
@@ -532,10 +628,10 @@ export class ChromedashIntentDialog extends LitElement {
     return html`
       <div id="content-grid">
         <section id="northwest" class="card">
-          ${this.renderSectionTable(NORTHWEST_FIELDS, this.stage)}
+          ${this.renderSectionTable(NORTHWEST_FIELDS)}
         </section>
         <section id="northeast" class="card">
-          ${this.renderSectionTable(NORTHEAST_FIELDS, this.stage)}
+          ${this.renderSectionTable(NORTHEAST_FIELDS)}
         </section>
         <section id="central" class="card">
           ${this.renderSectionFields(CENTRAL_FIELDS, this.stage)}
