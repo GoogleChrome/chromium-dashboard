@@ -365,7 +365,7 @@ class ProgressAPITest(testing_config.CustomTestCase):
 
     def test_post___gate_approver_allowed(self):
         """Users who can approve any gate can set a progress vote."""
-        approver_email = approval_defs.ADOPTION_APPROVERS[0]
+        approver_email = approval_defs.TESTING_APPROVERS[0]
         testing_config.sign_in(approver_email, 113)
         with test_app.test_request_context(
             self.request_path,
