@@ -554,14 +554,6 @@ export class ChromedashApp extends LitElement {
       if (!this.setupNewPage(ctx, 'chromedash-enterprise-page', true)) return;
       this.pageComponent.user = this.user;
     });
-    page('/admin/blink', ctx => {
-      this.pageComponent = document.createElement(
-        'chromedash-admin-blink-page'
-      );
-      this.pageComponent.user = this.user;
-      this.currentPage = ctx.path;
-      this.hideSidebar();
-    });
     page('/admin/feature_links', ctx => {
       if (!this.setupNewPage(ctx, 'chromedash-admin-feature-links-page'))
         return;
