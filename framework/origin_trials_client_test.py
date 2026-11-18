@@ -119,14 +119,21 @@ class OriginTrialsClientTest(testing_config.CustomTestCase):
         # GET request should not be executed with no API key.
         mock_requests_get.assert_not_called()
 
+    @mock.patch(
+        'framework.origin_trials_client._get_ot_access_token',
+        return_value='access_token',
+    )
     @mock.patch('requests.get')
     def test_get_trials_list__with_api_key(
         self,
         mock_requests_get,
+        mock_get_ot_access_token,
     ):
         """If an API key is available, GET should return a list of trials."""
         mock_requests_get.return_value = mock.MagicMock(
-            status_code=200, json=lambda: self.mock_list_trials_json
+            status_code=200,
+            is_redirect=False,
+            json=lambda: self.mock_list_trials_json,
         )
         settings.OT_API_KEY = 'api_key_value'
 
@@ -155,6 +162,76 @@ class OriginTrialsClientTest(testing_config.CustomTestCase):
         self.assertEqual(trials_list, expected)
 
         mock_requests_get.assert_called_once()
+        mock_get_ot_access_token.assert_called_once()
+        self.assertEqual(
+            mock_requests_get.call_args.kwargs['headers'],
+            {'Authorization': 'Bearer access_token'},
+        )
+
+    @mock.patch(
+        'framework.origin_trials_client._get_ot_access_token',
+        return_value='access_token',
+    )
+    @mock.patch('requests.get')
+    def test_get_trials_list__no_trials(
+        self, mock_requests_get, mock_get_ot_access_token
+    ):
+        """An empty JSON object (no 'trials' key) returns an empty list."""
+        mock_requests_get.return_value = mock.MagicMock(
+            status_code=200, is_redirect=False, json=lambda: {}
+        )
+        settings.OT_API_KEY = 'api_key_value'
+
+        self.assertEqual(origin_trials_client.get_trials_list(), [])
+
+    @mock.patch(
+        'framework.origin_trials_client._get_ot_access_token',
+        return_value='access_token',
+    )
+    @mock.patch('requests.get')
+    def test_get_trials_list__redirect_not_followed(
+        self, mock_requests_get, mock_get_ot_access_token
+    ):
+        """A redirect (e.g. to a login page) raises without leaking the key."""
+        response = requests.Response()
+        response.status_code = 302
+        response.headers['Location'] = (
+            'https://login.example.com/signin?'
+            'd=https%3A%2F%2Fexample.com%2Fv1%2Ftrials%3Fkey%3Dapi_key_value'
+        )
+        mock_requests_get.return_value = response
+        settings.OT_API_KEY = 'api_key_value'
+
+        with self.assertLogs(level='ERROR') as logs:
+            with self.assertRaises(requests.exceptions.HTTPError):
+                origin_trials_client.get_trials_list()
+        self.assertEqual(
+            mock_requests_get.call_args.kwargs['allow_redirects'], False
+        )
+        self.assertIn('https://login.example.com/signin', logs.output[0])
+        self.assertNotIn('api_key_value', logs.output[0])
+
+    @mock.patch(
+        'framework.origin_trials_client._get_ot_access_token',
+        return_value='access_token',
+    )
+    @mock.patch('requests.get')
+    def test_get_trials_list__non_json_response(
+        self, mock_requests_get, mock_get_ot_access_token
+    ):
+        """A 2xx response with a non-JSON body logs details and re-raises."""
+        response = requests.Response()
+        response.status_code = 200
+        response._content = b'<html>Sign in</html>'
+        response.headers['Content-Type'] = 'text/html'
+        mock_requests_get.return_value = response
+        settings.OT_API_KEY = 'api_key_value'
+
+        with self.assertLogs(level='ERROR') as logs:
+            with self.assertRaises(requests.exceptions.JSONDecodeError):
+                origin_trials_client.get_trials_list()
+        self.assertIn('text/html', logs.output[0])
+        self.assertNotIn('Sign in', logs.output[0])
 
     @mock.patch('requests.post')
     def test_extend_origin_trial__no_api_key(self, mock_requests_post):
