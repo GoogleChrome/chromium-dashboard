@@ -14,9 +14,11 @@
 
 """Unit tests for the gemini_helpers module."""
 
+import urllib.error
 from unittest import mock
 
 from google.cloud import ndb
+from google.genai import errors
 
 import testing_config  # isort: skip  # Must be imported before other project modules.
 
@@ -52,8 +54,10 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
     @mock.patch('framework.gemini_helpers.generate_audit_report')
     @mock.patch('framework.gemini_helpers.settings')
     def test_run_pipeline__success(self, mock_settings, mock_generate):
-        """Pipeline runs successfully and returns COMPLETE status, saving the report."""
+        """Pipeline runs successfully with primary model, saving the report."""
         mock_settings.GEMINI_API_KEY = 'fake_api_key'
+        mock_settings.WPT_COVERAGE_PRIMARY_MODEL = 'gemini-3.1-pro-preview'
+        mock_settings.WPT_COVERAGE_FALLBACK_MODELS = ['gemini-3-flash-preview']
         self.feature.spec_link = 'https://spec.example.com'
         self.feature.wpt_descr = 'https://wpt.fyi/results/test'
         self.feature.explainer_links = ['https://explainer.example.com']
@@ -71,31 +75,197 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
         mock_generate.assert_called_once_with(
             feature_id=str(self.feature.key.id()),
             provider='gemini',
+            model='gemini-3.1-pro-preview',
             api_key='fake_api_key',
             explainer_urls=['https://explainer.example.com'],
         )
 
     @mock.patch('framework.gemini_helpers.generate_audit_report')
     @mock.patch('framework.gemini_helpers.settings')
-    def test_run_pipeline__generate_audit_report_exception(
+    def test_run_pipeline__fallback_on_503(self, mock_settings, mock_generate):
+        """Pipeline falls back to secondary model when primary fails with HTTP 503."""
+        mock_settings.GEMINI_API_KEY = 'fake_api_key'
+        mock_settings.WPT_COVERAGE_PRIMARY_MODEL = 'gemini-3.1-pro-preview'
+        mock_settings.WPT_COVERAGE_FALLBACK_MODELS = ['gemini-3-flash-preview']
+        self.feature.spec_link = 'https://spec.example.com'
+        self.feature.wpt_descr = 'https://wpt.fyi/results/test'
+        self.feature.explainer_links = []
+        self.mock_extract_urls.return_value = ['https://wpt.fyi/url1']
+
+        err_503 = errors.ServerError(
+            503, {'error': {'code': 503, 'message': 'Service Unavailable'}}
+        )
+        mock_report = '# Fallback Coverage Report'
+        mock_generate.side_effect = [err_503, mock_report]
+
+        result = gemini_helpers.run_wpt_test_eval_pipeline(self.feature)
+
+        self.assertEqual(result, core_enums.AITestEvaluationStatus.COMPLETE)
+        self.assertEqual(self.feature.ai_test_eval_report, mock_report)
+        self.assertEqual(mock_generate.call_count, 2)
+        mock_generate.assert_has_calls(
+            [
+                mock.call(
+                    feature_id=str(self.feature.key.id()),
+                    provider='gemini',
+                    model='gemini-3.1-pro-preview',
+                    api_key='fake_api_key',
+                    explainer_urls=[],
+                ),
+                mock.call(
+                    feature_id=str(self.feature.key.id()),
+                    provider='gemini',
+                    model='gemini-3-flash-preview',
+                    api_key='fake_api_key',
+                    explainer_urls=[],
+                ),
+            ]
+        )
+
+    @mock.patch('framework.gemini_helpers.generate_audit_report')
+    @mock.patch('framework.gemini_helpers.settings')
+    def test_run_pipeline__fallback_on_empty_response(
         self, mock_settings, mock_generate
     ):
-        """Pipeline fails if generate_audit_report raises an exception."""
+        """Pipeline falls back when primary model produces an empty response."""
         mock_settings.GEMINI_API_KEY = 'fake_api_key'
+        mock_settings.WPT_COVERAGE_PRIMARY_MODEL = 'gemini-3.1-pro-preview'
+        mock_settings.WPT_COVERAGE_FALLBACK_MODELS = ['gemini-3-flash-preview']
+        self.feature.spec_link = 'https://spec.example.com'
+        self.feature.wpt_descr = 'https://wpt.fyi/results/test'
+        self.feature.explainer_links = []
+        self.mock_extract_urls.return_value = ['https://wpt.fyi/url1']
+
+        mock_report = '# Fallback Generated Report'
+        mock_generate.side_effect = ['', mock_report]
+
+        result = gemini_helpers.run_wpt_test_eval_pipeline(self.feature)
+
+        self.assertEqual(result, core_enums.AITestEvaluationStatus.COMPLETE)
+        self.assertEqual(self.feature.ai_test_eval_report, mock_report)
+        self.assertEqual(mock_generate.call_count, 2)
+
+    @mock.patch('framework.gemini_helpers.generate_audit_report')
+    @mock.patch('framework.gemini_helpers.settings')
+    def test_run_pipeline__fallback_on_workflow_error(
+        self, mock_settings, mock_generate
+    ):
+        """Pipeline falls back when upstream raises report not generated error."""
+        mock_settings.GEMINI_API_KEY = 'fake_api_key'
+        mock_settings.WPT_COVERAGE_PRIMARY_MODEL = 'gemini-3.1-pro-preview'
+        mock_settings.WPT_COVERAGE_FALLBACK_MODELS = ['gemini-3-flash-preview']
+        self.feature.spec_link = 'https://spec.example.com'
+        self.feature.wpt_descr = 'https://wpt.fyi/results/test'
+        self.feature.explainer_links = []
+        self.mock_extract_urls.return_value = ['https://wpt.fyi/url1']
+
+        workflow_err = Exception('WorkflowError: Markdown report was not generated.')
+        mock_report = '# Generated On Fallback'
+        mock_generate.side_effect = [workflow_err, mock_report]
+
+        result = gemini_helpers.run_wpt_test_eval_pipeline(self.feature)
+
+        self.assertEqual(result, core_enums.AITestEvaluationStatus.COMPLETE)
+        self.assertEqual(self.feature.ai_test_eval_report, mock_report)
+        self.assertEqual(mock_generate.call_count, 2)
+
+    @mock.patch('framework.gemini_helpers.generate_audit_report')
+    @mock.patch('framework.gemini_helpers.settings')
+    def test_run_pipeline__all_fallbacks_fail(
+        self, mock_settings, mock_generate
+    ):
+        """Pipeline marks FAILED if both primary and all fallbacks fail."""
+        mock_settings.GEMINI_API_KEY = 'fake_api_key'
+        mock_settings.WPT_COVERAGE_PRIMARY_MODEL = 'gemini-3.1-pro-preview'
+        mock_settings.WPT_COVERAGE_FALLBACK_MODELS = ['gemini-3-flash-preview']
         self.feature.spec_link = 'https://spec.example.com'
         self.feature.wpt_descr = 'https://wpt.fyi/results/test'
         self.mock_extract_urls.return_value = ['https://wpt.fyi/url1']
 
-        mock_generate.side_effect = Exception('Upstream API Failure')
+        err_503 = errors.ServerError(
+            503, {'error': {'code': 503, 'message': 'Service Unavailable'}}
+        )
+        mock_generate.side_effect = [err_503, err_503]
 
         result = gemini_helpers.run_wpt_test_eval_pipeline(self.feature)
 
         self.assertEqual(result, core_enums.AITestEvaluationStatus.FAILED)
         self.assertIn(
-            'Failed to generate WPT coverage report: Upstream API Failure',
+            'Failed to generate WPT coverage report',
             self.feature.ai_test_eval_report,
         )
+        self.assertEqual(mock_generate.call_count, 2)
+
+    @mock.patch('framework.gemini_helpers.generate_audit_report')
+    @mock.patch('framework.gemini_helpers.settings')
+    def test_run_pipeline__non_fallback_error_fails_immediately(
+        self, mock_settings, mock_generate
+    ):
+        """Pipeline does not attempt fallback for non-transient, deterministic errors."""
+        mock_settings.GEMINI_API_KEY = 'fake_api_key'
+        mock_settings.WPT_COVERAGE_PRIMARY_MODEL = 'gemini-3.1-pro-preview'
+        mock_settings.WPT_COVERAGE_FALLBACK_MODELS = ['gemini-3-flash-preview']
+        self.feature.spec_link = 'https://spec.example.com'
+        self.feature.wpt_descr = 'https://wpt.fyi/results/test'
+        self.mock_extract_urls.return_value = ['https://wpt.fyi/url1']
+
+        mock_generate.side_effect = ValueError('Invalid schema encountered')
+
+        result = gemini_helpers.run_wpt_test_eval_pipeline(self.feature)
+
+        self.assertEqual(result, core_enums.AITestEvaluationStatus.FAILED)
+        self.assertIn(
+            'Failed to generate WPT coverage report: Invalid schema encountered',
+            self.feature.ai_test_eval_report,
+        )
+        # Should NOT have fallen back to secondary model
         mock_generate.assert_called_once()
+
+    def test_is_fallback_eligible_error(self):
+        """Tests that _is_fallback_eligible_error accurately classifies fallback errors."""
+        # 503 ServerError
+        err_503 = errors.ServerError(
+            503, {'error': {'code': 503, 'message': 'Service Unavailable'}}
+        )
+        self.assertTrue(gemini_helpers._is_fallback_eligible_error(err_503))
+
+        # 504 Gateway Timeout
+        err_504 = urllib.error.HTTPError(
+            'https://example.com', 504, 'Gateway Timeout', {}, None
+        )
+        self.assertTrue(gemini_helpers._is_fallback_eligible_error(err_504))
+
+        # Transient network TimeoutError
+        self.assertTrue(
+            gemini_helpers._is_fallback_eligible_error(TimeoutError('Timed out'))
+        )
+
+        # Upstream lack of response / WorkflowError
+        self.assertTrue(
+            gemini_helpers._is_fallback_eligible_error(
+                Exception('Markdown report was not generated.')
+            )
+        )
+        self.assertTrue(
+            gemini_helpers._is_fallback_eligible_error(
+                Exception('Model produced an empty response.')
+            )
+        )
+        self.assertTrue(
+            gemini_helpers._is_fallback_eligible_error(
+                Exception('503 Service Unavailable')
+            )
+        )
+
+        # Permanent / non-transient errors
+        self.assertFalse(
+            gemini_helpers._is_fallback_eligible_error(ValueError('Bad input'))
+        )
+        self.assertFalse(
+            gemini_helpers._is_fallback_eligible_error(
+                KeyError('Missing required field')
+            )
+        )
 
 
 class GenerateWPTCoverageEvalReportHandlerTest(testing_config.CustomTestCase):

@@ -25,6 +25,7 @@ from google.cloud import ndb
 from wptgen import generate_audit_report
 
 import settings
+from ai import errors as ai_errors
 from ai.progress_reporter import DatastoreProgressReporter, FeatureSummaryInput
 from ai.summary_generator import GeminiSummaryGenerator
 from framework import (
@@ -38,6 +39,31 @@ from internals.core_models import (
     FeatureSummaryProgressStep,
     FeatureSummarySuggestion,
 )
+
+
+def _is_fallback_eligible_error(e: Exception) -> bool:
+    """Determine whether an error qualifies for falling back to an alternate model.
+
+    Fallback is allowed for:
+    - 503 / 5xx server errors or transient network issues (via ai.errors).
+    - Lack of LLM response (WorkflowError indicating report was not generated,
+      or empty responses).
+    """
+    status_code = ai_errors.get_error_code(e)
+    if status_code in (503, 504) or (
+        status_code is not None and 500 <= status_code < 600
+    ):
+        return True
+    if ai_errors.is_transient_error(e):
+        return True
+
+    err_str = str(e).lower()
+    if 'report was not generated' in err_str or 'no response' in err_str:
+        return True
+    if '503' in err_str or 'unavailable' in err_str:
+        return True
+
+    return False
 
 
 def run_wpt_test_eval_pipeline(
@@ -73,15 +99,59 @@ def run_wpt_test_eval_pipeline(
         if settings.GEMINI_API_KEY:
             os.environ['GEMINI_API_KEY'] = settings.GEMINI_API_KEY
 
-        # Call the programmatic wpt-gen API
-        report_markdown = generate_audit_report(
-            feature_id=str(feature.key.id()),
-            provider='gemini',
-            api_key=settings.GEMINI_API_KEY,
-            explainer_urls=explainer_urls,
+        models_to_try = [settings.WPT_COVERAGE_PRIMARY_MODEL] + [
+            m
+            for m in settings.WPT_COVERAGE_FALLBACK_MODELS
+            if m != settings.WPT_COVERAGE_PRIMARY_MODEL
+        ]
+
+        last_error: Exception | None = None
+        for idx, model_name in enumerate(models_to_try):
+            try:
+                logging.info(
+                    f'Generating WPT coverage report for feature {feature.key.id()} '
+                    f'using model {model_name}'
+                )
+                report_markdown = generate_audit_report(
+                    feature_id=str(feature.key.id()),
+                    provider='gemini',
+                    model=model_name,
+                    api_key=settings.GEMINI_API_KEY,
+                    explainer_urls=explainer_urls,
+                )
+                if not report_markdown or not report_markdown.strip():
+                    raise RuntimeError(
+                        f'Model {model_name} produced an empty response.'
+                    )
+
+                feature.ai_test_eval_report = report_markdown
+                if idx > 0:
+                    logging.info(
+                        f'Successfully generated WPT coverage report for feature '
+                        f'{feature.key.id()} using fallback model {model_name}.'
+                    )
+                return core_enums.AITestEvaluationStatus.COMPLETE
+            except utils.PipelineError:
+                raise
+            except Exception as e:
+                last_error = e
+                has_next_model = idx + 1 < len(models_to_try)
+                if has_next_model and _is_fallback_eligible_error(e):
+                    next_model = models_to_try[idx + 1]
+                    logging.warning(
+                        f'WPT coverage generation for feature {feature.key.id()} failed '
+                        f'with model {model_name} ({e}). Falling back to {next_model}...'
+                    )
+                    continue
+                logging.error(
+                    f'WPT coverage generation failed with model {model_name}: {e}'
+                )
+                break
+
+        feature.ai_test_eval_report = (
+            f'Failed to generate WPT coverage report: {last_error}'
         )
-        feature.ai_test_eval_report = report_markdown
-        return core_enums.AITestEvaluationStatus.COMPLETE
+        return core_enums.AITestEvaluationStatus.FAILED
     except utils.PipelineError as e:
         feature.ai_test_eval_report = str(e)
         return core_enums.AITestEvaluationStatus.FAILED

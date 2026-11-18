@@ -101,8 +101,10 @@ step-by-step.
 The system is tuned to balance App Engine limits against LLM generation time.
 These constants are defined in `framework/gemini_client.py`.
 
-### Gemini Model
-* **Model:** `gemini-3.1-pro-preview` (Hardcoded as `GEMINI_MODEL`).
+### Gemini Models & Fallback Chain
+* **Primary Model:** `gemini-3.1-pro-preview` (configurable via `WPT_COVERAGE_PRIMARY_MODEL` in `settings.py`).
+* **Fallback Models:** `gemini-3-flash-preview` (configurable via `WPT_COVERAGE_FALLBACK_MODELS` in `settings.py`).
+* **Fallback Behavior:** If report generation fails due to a lack of LLM response (empty response or upstream `WorkflowError`) or receives a transient HTTP 503 / 5xx server error, the pipeline automatically falls back to the configured fallback models before terminating. Deterministic validation failures (e.g. invalid URLs or missing specs) fail immediately without fallback.
 
 ### Timeout Strategy
 To prevent "Task Deadline Exceeded" errors in Cloud Tasks, the system uses a
