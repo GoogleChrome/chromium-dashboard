@@ -19,7 +19,9 @@ Provides utilities to evaluate WPT test coverage using Gemini.
 
 import logging
 import os
+import re
 from datetime import datetime
+from urllib.parse import urlparse, urlunparse
 
 from google.cloud import ndb
 from wptgen import generate_audit_report
@@ -39,6 +41,59 @@ from internals.core_models import (
     FeatureSummarySuggestion,
 )
 
+GITHUB_PR_PATTERN = re.compile(
+    r'^https?://github\.com/([^/]+)/([^/]+)/pull/(\d+)(?:/.*)?$'
+)
+
+
+def normalize_spec_url(url: str | None) -> str:
+    """Normalizes and cleans specification URLs for deterministic parsing.
+
+    Removes trailing whitespace, trims tracking queries, and standardizes GitHub
+    pull request URLs (e.g. converting comment or commit links into canonical
+    pull request /files diff URLs to focus requirement extraction on spec changes).
+    """
+    if not url:
+        return ''
+    cleaned = url.strip()
+    pr_match = GITHUB_PR_PATTERN.match(cleaned)
+    if pr_match:
+        org, repo, pr_num = pr_match.groups()
+        return f'https://github.com/{org}/{repo}/pull/{pr_num}/files'
+
+    parsed = urlparse(cleaned)
+    if parsed.fragment and (
+        'issuecomment-' in parsed.fragment or 'discussion_r' in parsed.fragment
+    ):
+        cleaned = urlunparse(parsed._replace(fragment=''))
+    return cleaned
+
+
+def normalize_explainer_urls(urls: list[str] | None) -> list[str]:
+    """Deduplicates and cleans explainer URLs while preserving order."""
+    if not urls:
+        return []
+    seen = set()
+    normalized = []
+    for raw in urls:
+        if not raw:
+            continue
+        cleaned = raw.strip()
+        if cleaned and cleaned not in seen:
+            seen.add(cleaned)
+            normalized.append(cleaned)
+    return normalized
+
+
+def _ensure_wpt_config_environment() -> None:
+    """Ensures environment and configuration are primed for deterministic generation."""
+    if settings.GEMINI_API_KEY:
+        os.environ['GEMINI_API_KEY'] = settings.GEMINI_API_KEY
+    if hasattr(settings, 'WPT_COVERAGE_TEMPERATURE'):
+        os.environ['WPT_COVERAGE_TEMPERATURE'] = str(
+            settings.WPT_COVERAGE_TEMPERATURE
+        )
+
 
 def run_wpt_test_eval_pipeline(
     feature: FeatureEntry,
@@ -57,7 +112,8 @@ def run_wpt_test_eval_pipeline(
       AITestEvaluationStatus indicating success or failure.
     """
     try:
-        if not feature.spec_link:
+        clean_spec = normalize_spec_url(feature.spec_link)
+        if not clean_spec:
             raise utils.PipelineError('No spec URL provided.')
 
         test_locations = utils.extract_wpt_fyi_results_urls(feature.wpt_descr)
@@ -67,11 +123,13 @@ def run_wpt_test_eval_pipeline(
             )  # noqa: E501
 
         # Determine explainer_urls. Passing [] forces wpt-gen to ignore explainers.
-        explainer_urls = feature.explainer_links if include_explainer else []
+        explainer_urls = (
+            normalize_explainer_urls(feature.explainer_links)
+            if include_explainer
+            else []
+        )
 
-        # Ensure GEMINI_API_KEY is explicitly exposed in the OS environment for the SDK
-        if settings.GEMINI_API_KEY:
-            os.environ['GEMINI_API_KEY'] = settings.GEMINI_API_KEY
+        _ensure_wpt_config_environment()
 
         # Call the programmatic wpt-gen API
         report_markdown = generate_audit_report(
