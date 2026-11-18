@@ -233,6 +233,9 @@ export class ChromedashGateColumn extends LitElement {
     this.loading = true;
     this.feature = feature;
     this.gate = gate;
+    this.featureGates = [];
+    this.votes = [];
+    this.comments = [];
     const featureId = this.feature.id;
     Promise.all([
       window.csClient.getFeatureProgress(featureId),
@@ -242,6 +245,9 @@ export class ChromedashGateColumn extends LitElement {
       window.csClient.getComments(featureId, gate.id),
     ])
       .then(([progress, process, stage, votesRes, commentRes]) => {
+        if (this.gate?.id !== gate.id || this.feature?.id !== featureId) {
+          return;
+        }
         this.progress = progress;
         this.process = process;
         this.stage = stage;
@@ -255,6 +261,9 @@ export class ChromedashGateColumn extends LitElement {
         this.loading = false;
       })
       .catch(() => {
+        if (this.gate?.id !== gate.id || this.feature?.id !== featureId) {
+          return;
+        }
         showToastMessage(
           'Some errors occurred. Please refresh the page or try again later.'
         );
@@ -285,16 +294,24 @@ export class ChromedashGateColumn extends LitElement {
 
   /* Reload all data for the currently displayed items. */
   refetch() {
+    if (!this.feature || !this.gate) {
+      return;
+    }
     const featureId = this.feature.id;
+    const gateId = this.gate.id;
     Promise.all([
       window.csClient.getFeatureProgress(featureId),
       window.csClient.getGates(featureId),
       window.csClient.getVotes(featureId, null),
       // TODO(jrobbins): Include activities for this gate
-      window.csClient.getComments(featureId, this.gate.id),
+      window.csClient.getComments(featureId, gateId),
     ])
       .then(([progress, gatesRes, votesRes, commentRes]) => {
+        if (this.gate?.id !== gateId || this.feature?.id !== featureId) {
+          return;
+        }
         this.progress = progress;
+        this.featureGates = gatesRes.gates;
         for (const g of gatesRes.gates) {
           if (g.id == this.gate.id) this.gate = g;
         }
@@ -337,26 +354,27 @@ export class ChromedashGateColumn extends LitElement {
   }
 
   async postComment(commentText, postToThreadType = 0) {
-    this.submittingVote = true;
-    if (commentText != '') {
-      await window.csClient
-        .postComment(
-          this.feature.id,
-          this.gate.id,
-          commentText,
-          Number(postToThreadType)
-        )
-        .then(() => {
-          this.reloadComments();
-          this.submittingVote = false;
-        })
-        .catch(() => {
-          showToastMessage(
-            'Some errors occurred. Please refresh the page or try again later.'
-          );
-          this.submittingVote = false;
-        });
+    if (!commentText) {
+      return;
     }
+    this.submittingComment = true;
+    await window.csClient
+      .postComment(
+        this.feature.id,
+        this.gate.id,
+        commentText,
+        Number(postToThreadType)
+      )
+      .then(() => {
+        this.reloadComments();
+        this.submittingComment = false;
+      })
+      .catch(() => {
+        showToastMessage(
+          'Some errors occurred. Please refresh the page or try again later.'
+        );
+        this.submittingComment = false;
+      });
   }
 
   handleSelectChanged() {
@@ -365,21 +383,21 @@ export class ChromedashGateColumn extends LitElement {
   }
 
   saveVote() {
-    this.submittingComment = true;
+    this.submittingVote = true;
     const vote = Number(this.voteSelectRef.value!.value);
     window.csClient
       .setVote(this.feature.id, this.gate.id, vote)
       .then(() => {
         this.needsSave = false;
         this.showSaved = true;
-        this.submittingComment = false;
+        this.submittingVote = false;
         this._fireEvent('refetch-needed', {});
       })
       .catch(() => {
         showToastMessage(
           'Some errors occurred. Please refresh the page or try again later.'
         );
-        this.submittingComment = false;
+        this.submittingVote = false;
       });
   }
 
@@ -537,7 +555,7 @@ export class ChromedashGateColumn extends LitElement {
       // Use setTimeout() to prevent safari from blocking the new tab.
       setTimeout(() => {
         const draftWindow = window.open(url, '_blank');
-        draftWindow!.focus();
+        draftWindow?.focus();
       });
     }
   }
@@ -936,7 +954,7 @@ export class ChromedashGateColumn extends LitElement {
         size="small"
         variant="primary"
         @click=${this.handleSave}
-        ?disabled=${this.submittingComment}
+        ?disabled=${this.submittingVote}
         >Save</sl-button
       >
     `;
@@ -1103,7 +1121,7 @@ export class ChromedashGateColumn extends LitElement {
       <sl-button
         variant="primary"
         @click=${this.handlePost}
-        ?disabled=${!this.needsPost || this.submittingVote}
+        ?disabled=${!this.needsPost || this.submittingComment}
         size="small"
         >Post</sl-button
       >
@@ -1141,7 +1159,7 @@ export class ChromedashGateColumn extends LitElement {
         resize="auto"
         ${ref(this.commentAreaRef)}
         @sl-change=${this.checkNeedsPost}
-        @keypress=${this.checkNeedsPost}
+        @sl-input=${this.checkNeedsPost}
         placeholder="Add a comment"
       ></sl-textarea>
       <div id="controls">${postButton} ${postToThreadCheckbox}</div>
