@@ -51,7 +51,7 @@ import {
 
 import {customElement, property, state} from 'lit/decorators.js';
 import {SHARED_STYLES} from '../css/shared-css.js';
-import {Feature, StageDict, User} from '../js-src/cs-client.js';
+import {Feature, FeatureLink, StageDict, User} from '../js-src/cs-client.js';
 import {GateDict} from './chromedash-gate-chip.js';
 
 interface Vote {
@@ -209,6 +209,8 @@ export class ChromedashGateColumn extends LitElement {
   @state()
   gate!: GateDict;
   @state()
+  featureLinks: FeatureLink[] = [];
+  @state()
   progress!: ProgressItem;
   @state()
   process!: Process;
@@ -229,10 +231,11 @@ export class ChromedashGateColumn extends LitElement {
   @state()
   loading = true;
 
-  setContext(feature, stageId, gate) {
+  setContext(feature, stageId, gate, featureLinks: FeatureLink[] = []) {
     this.loading = true;
     this.feature = feature;
     this.gate = gate;
+    this.featureLinks = featureLinks;
     this.featureGates = [];
     this.votes = [];
     this.comments = [];
@@ -869,7 +872,13 @@ export class ChromedashGateColumn extends LitElement {
           <sl-button
             variant="primary"
             size="small"
-            @click=${() => openIntentDialog(this.feature, this.stage, this.gate)}
+            @click=${() =>
+              openIntentDialog(
+                this.feature,
+                this.stage,
+                this.gate,
+                this.featureLinks
+              )}
           >
             View ${subject}</sl-button
           >

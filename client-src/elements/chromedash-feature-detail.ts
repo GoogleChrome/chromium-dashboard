@@ -237,7 +237,7 @@ export class ChromedashFeatureDetail extends LitElement {
     gate: GateDict
   ) {
     if (rawQuery['dialog'] === 'intent' && shouldOfferIntentDialog(gate)) {
-      openIntentDialog(this.feature, stage, gate);
+      openIntentDialog(this.feature, stage, gate, this.featureLinks);
     }
   }
 
@@ -313,6 +313,7 @@ export class ChromedashFeatureDetail extends LitElement {
       feature: this.feature,
       stage: stage,
       gate: gate,
+      featureLinks: this.featureLinks,
     });
     this.initializeExtensionDialog(rawQuery);
     this.initializeIntentDialog(rawQuery, stage, gate);
@@ -512,6 +513,7 @@ export class ChromedashFeatureDetail extends LitElement {
         .feature=${this.feature}
         .stage=${feStage}
         .gate=${gate}
+        .featureLinks=${this.featureLinks}
         selectedGateId=${this.selectedGateId}
       >
       </chromedash-gate-chip>
