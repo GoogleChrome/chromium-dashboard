@@ -38,6 +38,9 @@ import {clearURLParams, parseRawQuery} from './utils.js';
 describe('chromedash-intent-dialog', () => {
   beforeEach(() => {
     window.csClient = new ChromeStatusClient('fake_token', 1);
+    sinon
+      .stub(window.csClient, 'getFeatureLinks')
+      .resolves({data: [], has_stale_links: false});
     clearURLParams('dialog');
   });
 
@@ -633,6 +636,9 @@ describe('chromedash-intent-dialog', () => {
       assert.deepEqual(dialogEl.stage, stage);
       assert.deepEqual(dialogEl.gate, gate);
       assert.deepEqual(dialogEl.featureLinks, featureLinks);
+      const getFeatureLinksStub = window.csClient
+        .getFeatureLinks as sinon.SinonStub;
+      assert.isFalse(getFeatureLinksStub.called);
       const specLink = dialogEl.shadowRoot!.querySelector(
         'tr#spec_link td:nth-child(2) chromedash-link'
       ) as HTMLElement & {featureLinks?: FeatureLink[]};
@@ -642,6 +648,37 @@ describe('chromedash-intent-dialog', () => {
 
       dialogEl.hide();
       assert.isUndefined(parseRawQuery(window.location.search).dialog);
+    });
+
+    it('fetches featureLinks when opened without them', async () => {
+      const fetchedLinks = [
+        {url: 'https://example.com/spec', type: 'spec', information: {}},
+      ] as unknown as FeatureLink[];
+      const getFeatureLinksStub = window.csClient
+        .getFeatureLinks as sinon.SinonStub;
+      getFeatureLinksStub.resolves({
+        data: fetchedLinks,
+        has_stale_links: false,
+      });
+
+      const component = await fixture<ChromedashIntentDialog>(
+        html`<chromedash-intent-dialog></chromedash-intent-dialog>`
+      );
+      component.openWithContext(feature, stage, gate);
+      await component.updateComplete;
+      // Wait for getFeatureLinks promise microtask to settle and re-render.
+      await new Promise(resolve => setTimeout(resolve, 0));
+      await component.updateComplete;
+
+      assert.isTrue(getFeatureLinksStub.calledOnceWith(feature.id));
+      assert.deepEqual(component.featureLinks, fetchedLinks);
+      const specLink = component.shadowRoot!.querySelector(
+        'tr#spec_link td:nth-child(2) chromedash-link'
+      ) as HTMLElement & {featureLinks?: FeatureLink[]};
+      assert.exists(specLink);
+      assert.deepEqual(specLink.featureLinks, fetchedLinks);
+
+      component.hide();
     });
   });
 });

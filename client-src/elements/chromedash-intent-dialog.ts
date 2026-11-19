@@ -468,6 +468,20 @@ export class ChromedashIntentDialog extends LitElement {
     this.featureLinks = featureLinks;
     updateURLParams('dialog', 'intent');
     void this.renderRoot.querySelector('sl-dialog')?.show();
+
+    if (featureLinks.length === 0 && feature?.id && window.csClient) {
+      const featureId = feature.id;
+      window.csClient
+        .getFeatureLinks(featureId)
+        .then(res => {
+          if (this.feature?.id === featureId && res?.data) {
+            this.featureLinks = res.data;
+          }
+        })
+        .catch(() => {
+          // Links still render as plain anchors if enrichment fails.
+        });
+    }
   }
 
   hide() {
