@@ -143,7 +143,13 @@ const ALL_SHIPPING = new Set([
   IntentDraftTypeEnum.DEPRECATE,
 ]);
 
-const CENTRAL_FIELDS = [
+interface FieldGroup {
+  group: string;
+  intents: Set<IntentDraftTypeEnum>;
+  fields: string[];
+}
+
+const CENTRAL_FIELDS: (string | FieldGroup)[] = [
   'summary',
   {
     group: 'Details',
@@ -223,12 +229,6 @@ const CENTRAL_FIELDS = [
   },
 ];
 
-interface FieldGroup {
-  group: string;
-  intents: Set<IntentDraftTypeEnum>;
-  fields: string[];
-}
-
 const OT_STAGE_FIELDS = new Set<string>([
   ...enums.OT_MILESTONE_START_FIELDS,
   'ot_milestone_desktop_end',
@@ -253,7 +253,7 @@ function findStageByTypes(
     return currentStage;
   }
   return (
-    feature?.stages?.find(stage => stageTypes.has(stage.stage_type)) ?? null
+    feature?.stages?.findLast(stage => stageTypes.has(stage.stage_type)) ?? null
   );
 }
 
@@ -370,11 +370,10 @@ export class ChromedashIntentDialog extends LitElement {
               max(
                 0px,
                 (
-                    100vw -
-                      210px - var(--max-content-width, 860px) - var(
-                        --sidebar-space,
-                        410px
-                      )
+                    100vw - var(--content-margin-left, 210px) - var(
+                        --max-content-width,
+                        860px
+                      ) - var(--sidebar-space, 410px)
                   ) /
                   2
               )
@@ -551,6 +550,7 @@ export class ChromedashIntentDialog extends LitElement {
         return html`<a
           class="url-link"
           href=${value}
+          title=${value}
           target="_blank"
           rel="noopener"
           >${value}</a
@@ -574,6 +574,7 @@ export class ChromedashIntentDialog extends LitElement {
                     <a
                       class="url-link"
                       href=${url}
+                      title=${url}
                       target="_blank"
                       rel="noopener"
                       >${url}</a

@@ -242,9 +242,30 @@ describe('chromedash-intent-dialog', () => {
       assert.exists(basePart);
       assert.exists(panelPart);
       if (window.innerWidth > 860) {
-        assert.equal(getComputedStyle(basePart!).right, '410px');
+        const expectedRightOpen =
+          410 + Math.max(0, (window.innerWidth - 210 - 860 - 410) / 2);
+        assert.equal(
+          getComputedStyle(basePart!).right,
+          `${expectedRightOpen}px`
+        );
         const rect = panelPart!.getBoundingClientRect();
-        assert.isAtMost(rect.right, window.innerWidth - 410);
+        assert.isAtMost(rect.right, window.innerWidth - expectedRightOpen);
+
+        // When the nav drawer is closed (--content-margin-left: 20px),
+        // the right inset shifts left to keep clear of #content-sidebar-space.
+        component.style.setProperty('--content-margin-left', '20px');
+        const expectedRightClosed =
+          410 + Math.max(0, (window.innerWidth - 20 - 860 - 410) / 2);
+        assert.equal(
+          getComputedStyle(basePart!).right,
+          `${expectedRightClosed}px`
+        );
+        const closedRect = panelPart!.getBoundingClientRect();
+        assert.isAtMost(
+          closedRect.right,
+          window.innerWidth - expectedRightClosed
+        );
+        component.style.removeProperty('--content-margin-left');
       } else {
         assert.equal(getComputedStyle(basePart!).right, '0px');
       }
@@ -272,6 +293,10 @@ describe('chromedash-intent-dialog', () => {
         explainerLink!.getAttribute('href'),
         'https://example.com/explainer'
       );
+      assert.equal(
+        explainerLink!.getAttribute('title'),
+        'https://example.com/explainer'
+      );
       assert.equal(explainerLink!.textContent, 'https://example.com/explainer');
       const explainerList = northwest!.querySelector<HTMLElement>(
         'tr#explainer_links ul.inline-list'
@@ -283,6 +308,7 @@ describe('chromedash-intent-dialog', () => {
       );
       assert.exists(specLink);
       assert.equal(specLink!.getAttribute('href'), 'https://example.com/spec');
+      assert.equal(specLink!.getAttribute('title'), 'https://example.com/spec');
       assert.equal(specLink!.textContent, 'https://example.com/spec');
       assert.equal(getComputedStyle(specLink!).textOverflow, 'ellipsis');
       const intentThreadLink = northwest!.querySelector<HTMLAnchorElement>(
@@ -445,6 +471,11 @@ describe('chromedash-intent-dialog', () => {
         experiment_risks: 'Potential API surface changes',
         extensions: [otExtStage],
       } as unknown as StageDict;
+      const earlierShipStage = {
+        id: 19,
+        stage_type: enums.STAGE_BLINK_SHIPPING,
+        desktop_first: 133,
+      } as unknown as StageDict;
       const shipStage = {
         id: 20,
         stage_type: enums.STAGE_BLINK_SHIPPING,
@@ -459,7 +490,7 @@ describe('chromedash-intent-dialog', () => {
 
       const multiStageFeature = {
         ...feature,
-        stages: [dtStage, otStage, shipStage, rolloutStage],
+        stages: [dtStage, otStage, earlierShipStage, shipStage, rolloutStage],
       } as unknown as Feature;
 
       // 1. Open Intent to Ship: each milestone row reads from its own stage.
@@ -520,6 +551,13 @@ describe('chromedash-intent-dialog', () => {
       );
       assert.include(central.textContent, 'Validate API ergonomics');
       assert.include(central.textContent, 'Potential API surface changes');
+      // Picks the latest matching shipping stage (137, not 133).
+      assert.equal(
+        northeast
+          .querySelector('tr#shipped_milestone td:nth-child(2)')
+          ?.textContent?.trim(),
+        '137'
+      );
 
       component.hide();
     });
