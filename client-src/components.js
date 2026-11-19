@@ -86,6 +86,7 @@ import './elements/chromedash-guide-metadata-page';
 import './elements/chromedash-guide-verify-accuracy-page';
 import './elements/chromedash-header';
 import './elements/chromedash-intent-content';
+import './elements/chromedash-intent-dialog';
 import './elements/chromedash-intent-preview-page';
 import './elements/chromedash-login-required-page';
 import './elements/chromedash-ot-creation-page';

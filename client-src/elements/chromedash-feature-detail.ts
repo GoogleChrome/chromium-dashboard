@@ -22,6 +22,10 @@ import {
   openPrereqsDialog,
 } from './chromedash-ot-prereqs-dialog.js';
 import {
+  openIntentDialog,
+  shouldOfferIntentDialog,
+} from './chromedash-intent-dialog.js';
+import {
   openPreflightDialog,
   somePendingGates,
   somePendingPrereqs,
@@ -227,6 +231,16 @@ export class ChromedashFeatureDetail extends LitElement {
     this.initializeGateColumn();
   }
 
+  initializeIntentDialog(
+    rawQuery: Record<string, string>,
+    stage: StageDict,
+    gate: GateDict
+  ) {
+    if (rawQuery['dialog'] === 'intent' && shouldOfferIntentDialog(gate)) {
+      openIntentDialog(this.feature, stage, gate);
+    }
+  }
+
   initializeExtensionDialog(rawQuery: Record<string, string>) {
     if (!('initiateExtension' in rawQuery)) {
       return;
@@ -301,6 +315,7 @@ export class ChromedashFeatureDetail extends LitElement {
       gate: gate,
     });
     this.initializeExtensionDialog(rawQuery);
+    this.initializeIntentDialog(rawQuery, stage, gate);
   }
 
   isAnyCollapsed() {

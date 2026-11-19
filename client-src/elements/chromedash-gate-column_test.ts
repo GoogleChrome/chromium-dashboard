@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {html} from 'lit';
+import {html, nothing} from 'lit';
 import {assert, fixture} from '@open-wc/testing';
 import '@shoelace-style/shoelace/dist/components/dialog/dialog.js';
 import {
@@ -25,7 +25,14 @@ import {
   ProgressItem,
 } from './chromedash-gate-column.js';
 import {ChromedashPreflightDialog} from './chromedash-preflight-dialog.js';
-import {PROGRESS_VOTE_STATE} from './form-field-enums.js';
+import {ChromedashIntentDialog} from './chromedash-intent-dialog.js';
+import {
+  GATE_PREPARING,
+  GATE_REVIEW_REQUESTED,
+  GATE_TYPES,
+  PROGRESS_VOTE_STATE,
+  STAGE_BLINK_SHIPPING,
+} from './form-field-enums.js';
 import {
   ChromeStatusClient,
   Feature,
@@ -319,6 +326,89 @@ describe('chromedash-gate-column', () => {
         getGatesStub.restore();
         executeActionStub.restore();
       }
+    });
+  });
+
+  describe('renderReviewTools', () => {
+    const feature = {id: 123456} as unknown as Feature;
+    const stage = {
+      id: 20,
+      stage_type: STAGE_BLINK_SHIPPING,
+    } as unknown as StageDict;
+    const process = {stages: []} as unknown as Process;
+    const apiGate = {
+      id: 99,
+      stage_id: 20,
+      gate_type: GATE_TYPES.API_SHIP,
+      state: GATE_REVIEW_REQUESTED,
+      assignee_emails: [],
+    } as unknown as GateDict;
+
+    it('returns nothing when loading is true', async () => {
+      const component = await fixture<ChromedashGateColumn>(
+        html`<chromedash-gate-column></chromedash-gate-column>`
+      );
+      component.loading = true;
+      component.feature = feature;
+      component.stage = stage;
+      component.process = process;
+      component.gate = apiGate;
+
+      assert.equal(component.renderReviewTools(), nothing);
+    });
+
+    it('returns nothing when gate is in PREPARING state or is not an intent gate', async () => {
+      const component = await fixture<ChromedashGateColumn>(
+        html`<chromedash-gate-column></chromedash-gate-column>`
+      );
+      component.feature = feature;
+      component.stage = stage;
+      component.process = process;
+      component.gate = {
+        ...apiGate,
+        state: GATE_PREPARING,
+      } as unknown as GateDict;
+      component.loading = false;
+
+      assert.equal(component.renderReviewTools(), nothing);
+
+      component.gate = {
+        ...apiGate,
+        gate_type: GATE_TYPES.PRIVACY_SHIP,
+      } as unknown as GateDict;
+      assert.equal(component.renderReviewTools(), nothing);
+    });
+
+    it('renders View button with intent subject and opens intent dialog on click', async () => {
+      const component = await fixture<ChromedashGateColumn>(
+        html`<chromedash-gate-column></chromedash-gate-column>`
+      );
+      component.feature = feature;
+      component.stage = stage;
+      component.process = process;
+      component.gate = apiGate;
+      component.loading = false;
+
+      const reviewToolsEl = await fixture<HTMLElement>(
+        html`${component.renderReviewTools()}`
+      );
+      const button = reviewToolsEl.querySelector('sl-button') as HTMLElement;
+      assert.exists(button);
+      assert.equal(button.textContent?.trim(), 'View Intent to Ship');
+
+      button.click();
+      await new Promise(resolve => setTimeout(resolve, 0));
+
+      const dialogEl = document.querySelector(
+        'chromedash-intent-dialog'
+      ) as ChromedashIntentDialog;
+      assert.exists(dialogEl);
+      await dialogEl.updateComplete;
+
+      assert.deepEqual(dialogEl.feature, feature);
+      assert.deepEqual(dialogEl.stage, stage);
+      assert.deepEqual(dialogEl.gate, apiGate);
+      dialogEl.hide();
     });
   });
 
