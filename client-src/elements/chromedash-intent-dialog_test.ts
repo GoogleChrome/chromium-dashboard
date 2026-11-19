@@ -241,43 +241,6 @@ describe('chromedash-intent-dialog', () => {
       assert.exists(dialog);
       assert.equal(dialog!.getAttribute('label'), 'Intent to Ship');
 
-      // When viewport is not narrow (> 860px), sl-dialog::part(base) right inset is --sidebar-space (410px)
-      // so the panel centers over the drawer and #content-component-wrapper and does not overlap #content-sidebar-space.
-      const basePart =
-        dialog!.shadowRoot?.querySelector<HTMLElement>('[part~="base"]');
-      const panelPart =
-        dialog!.shadowRoot?.querySelector<HTMLElement>('[part~="panel"]');
-      assert.exists(basePart);
-      assert.exists(panelPart);
-      if (window.innerWidth > 860) {
-        const expectedRightOpen =
-          410 + Math.max(0, (window.innerWidth - 210 - 860 - 410) / 2);
-        assert.equal(
-          getComputedStyle(basePart!).right,
-          `${expectedRightOpen}px`
-        );
-        const rect = panelPart!.getBoundingClientRect();
-        assert.isAtMost(rect.right, window.innerWidth - expectedRightOpen);
-
-        // When the nav drawer is closed (--content-margin-left: 20px),
-        // the right inset shifts left to keep clear of #content-sidebar-space.
-        component.style.setProperty('--content-margin-left', '20px');
-        const expectedRightClosed =
-          410 + Math.max(0, (window.innerWidth - 20 - 860 - 410) / 2);
-        assert.equal(
-          getComputedStyle(basePart!).right,
-          `${expectedRightClosed}px`
-        );
-        const closedRect = panelPart!.getBoundingClientRect();
-        assert.isAtMost(
-          closedRect.right,
-          window.innerWidth - expectedRightClosed
-        );
-        component.style.removeProperty('--content-margin-left');
-      } else {
-        assert.equal(getComputedStyle(basePart!).right, '0px');
-      }
-
       const northwest = dialog!.querySelector('#northwest');
       const northeast = dialog!.querySelector('#northeast');
       const central = dialog!.querySelector('#central');

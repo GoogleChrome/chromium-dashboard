@@ -663,22 +663,11 @@ export class ChromedashApp extends LitElement {
     return nothing;
   }
 
-  getContentMarginLeft(): string {
-    if (!isMobile() && this.drawerOpen) {
-      return `${DRAWER_WIDTH_PX + 10}px`;
-    }
-    return '20px';
-  }
-
-  updated() {
-    document.documentElement.style.setProperty(
-      '--content-margin-left',
-      this.getContentMarginLeft()
-    );
-  }
-
   render() {
-    const styleMargin = {'margin-left': this.getContentMarginLeft()};
+    let styleMargin = {'margin-left': '20px'};
+    if (!isMobile() && this.drawerOpen) {
+      styleMargin = {'margin-left': DRAWER_WIDTH_PX + 10 + 'px'};
+    }
 
     // The <slot> below is for the Google sign-in button, this is because
     // Google Identity Services Library cannot find elements in a shadow DOM,

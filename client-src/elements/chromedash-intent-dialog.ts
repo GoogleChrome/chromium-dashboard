@@ -363,30 +363,6 @@ export class ChromedashIntentDialog extends LitElement {
     return [
       ...SHARED_STYLES,
       css`
-        sl-dialog::part(base) {
-          right: calc(
-            var(--sidebar-space, 410px) +
-              max(
-                0px,
-                (
-                    100vw - var(--content-margin-left, 210px) - var(
-                        --max-content-width,
-                        860px
-                      ) - var(--sidebar-space, 410px)
-                  ) /
-                  2
-              )
-          );
-        }
-
-        sl-dialog::part(panel) {
-          max-width: min(
-            calc(300px + var(--max-content-width, 860px)),
-            calc(100% - var(--content-padding))
-          );
-          max-height: calc(100vh - 2 * var(--content-padding));
-        }
-
         #content-grid {
           display: flex;
           flex-wrap: wrap;
@@ -402,16 +378,6 @@ export class ChromedashIntentDialog extends LitElement {
         #central {
           flex: 1 1 100%;
           max-width: 100%;
-        }
-
-        @media only screen and (max-width: 860px) {
-          sl-dialog::part(base) {
-            right: 0;
-          }
-
-          sl-dialog::part(panel) {
-            max-width: calc(100vw - 2 * var(--content-padding));
-          }
         }
 
         .card {
