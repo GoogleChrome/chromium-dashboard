@@ -26,7 +26,7 @@ import {
 } from './utils.js';
 import * as enums from './form-field-enums.js';
 import {makeDisplaySpecs} from './form-field-specs.js';
-import {Feature, StageDict} from '../js-src/cs-client.js';
+import {Feature, FeatureLink, StageDict} from '../js-src/cs-client.js';
 import {type GateDict} from './chromedash-gate-chip.js';
 
 let intentDialogEl;
@@ -240,10 +240,6 @@ const OT_STAGE_FIELDS = new Set<string>([
 
 const ROLLOUT_STAGE_TYPES = new Set<number>([enums.STAGE_ENT_ROLLOUT]);
 
-function isSafeHttpUrl(url: unknown): url is string {
-  return typeof url === 'string' && /^https?:\/\//i.test(url);
-}
-
 function findStageByTypes(
   stageTypes: Set<number>,
   currentStage: StageDict | undefined,
@@ -341,14 +337,15 @@ export function shouldOfferIntentDialog(gate: {
 export async function openIntentDialog(
   feature: Feature,
   stage: StageDict,
-  gate: GateDict
+  gate: GateDict,
+  featureLinks: FeatureLink[] = []
 ) {
   if (!intentDialogEl || !intentDialogEl.isConnected) {
     intentDialogEl = document.createElement('chromedash-intent-dialog');
     document.body.appendChild(intentDialogEl);
     await intentDialogEl.updateComplete;
   }
-  intentDialogEl.openWithContext(feature, stage, gate);
+  intentDialogEl.openWithContext(feature, stage, gate, featureLinks);
 }
 
 @customElement('chromedash-intent-dialog')
@@ -359,6 +356,8 @@ export class ChromedashIntentDialog extends LitElement {
   stage!: StageDict;
   @state()
   gate!: GateDict;
+  @state()
+  featureLinks: FeatureLink[] = [];
 
   static get styles() {
     return [
@@ -444,14 +443,6 @@ export class ChromedashIntentDialog extends LitElement {
           padding: 0;
         }
 
-        .url-link {
-          display: block;
-          max-width: 15em;
-          overflow: hidden;
-          text-overflow: ellipsis;
-          white-space: nowrap;
-        }
-
         .longtext {
           display: block;
           white-space: pre-wrap;
@@ -465,10 +456,16 @@ export class ChromedashIntentDialog extends LitElement {
     ];
   }
 
-  openWithContext(feature: Feature, stage: StageDict, gate: GateDict) {
+  openWithContext(
+    feature: Feature,
+    stage: StageDict,
+    gate: GateDict,
+    featureLinks: FeatureLink[] = []
+  ) {
     this.feature = feature;
     this.stage = stage;
     this.gate = gate;
+    this.featureLinks = featureLinks;
     updateURLParams('dialog', 'intent');
     void this.renderRoot.querySelector('sl-dialog')?.show();
   }
@@ -496,7 +493,9 @@ export class ChromedashIntentDialog extends LitElement {
 
     return html`
       <dt id=${fieldId}>${fieldDisplayName}</dt>
-      <dd>${renderValue(fieldStage, this.feature, fieldId)}</dd>
+      <dd>
+        ${renderValue(fieldStage, this.feature, fieldId, this.featureLinks)}
+      </dd>
     `;
   }
 
@@ -539,63 +538,6 @@ export class ChromedashIntentDialog extends LitElement {
     `;
   }
 
-  renderTableValue(fieldDef: DisplaySpec, fieldStage: StageDict | null) {
-    const [fieldId, , fieldType] = fieldDef;
-    const value = getFieldValueFromFeature(fieldId, fieldStage, this.feature);
-    if (!isDefinedValue(value)) {
-      return html`<i>None</i>`;
-    }
-    if (fieldType === 'url' || fieldId.endsWith('_url')) {
-      if (isSafeHttpUrl(value)) {
-        return html`<a
-          class="url-link"
-          href=${value}
-          title=${value}
-          target="_blank"
-          rel="noopener"
-          >${value}</a
-        >`;
-      }
-      return html`<span class="text">${String(value)}</span>`;
-    }
-    if (fieldType === 'multi-url') {
-      const entries = (Array.isArray(value) ? value : [value]).filter(item =>
-        isDefinedValue(item)
-      );
-      if (entries.length === 0) {
-        return html`<i>None</i>`;
-      }
-      return html`
-        <ul class="inline-list">
-          ${entries.map(url =>
-            isSafeHttpUrl(url)
-              ? html`
-                  <li>
-                    <a
-                      class="url-link"
-                      href=${url}
-                      title=${url}
-                      target="_blank"
-                      rel="noopener"
-                      >${url}</a
-                    >
-                  </li>
-                `
-              : html`<li>${String(url)}</li>`
-          )}
-        </ul>
-      `;
-    }
-    if (Array.isArray(value)) {
-      return html`
-        <ul class="inline-list">
-          ${value.map(item => html`<li>${item}</li>`)}
-        </ul>
-      `;
-    }
-    return renderValue(fieldStage, this.feature, fieldId);
-  }
-
   renderTableRow(fieldDef: DisplaySpec) {
     const [fieldId, fieldDisplayName, , deprecated] = fieldDef;
     const fieldStage = getStageForField(fieldId, this.stage, this.feature);
@@ -608,7 +550,9 @@ export class ChromedashIntentDialog extends LitElement {
     return html`
       <tr id=${fieldId}>
         <td>${fieldDisplayName}</td>
-        <td>${this.renderTableValue(fieldDef, fieldStage)}</td>
+        <td>
+          ${renderValue(fieldStage, this.feature, fieldId, this.featureLinks)}
+        </td>
       </tr>
     `;
   }

@@ -18,7 +18,7 @@ import {LitElement, css, html, nothing} from 'lit';
 import {SHARED_STYLES} from '../css/shared-css.js';
 import {updateURLParams} from './utils.js';
 import {customElement, property} from 'lit/decorators.js';
-import {Feature, StageDict} from '../js-src/cs-client.js';
+import {Feature, FeatureLink, StageDict} from '../js-src/cs-client.js';
 
 const GATE_STATE_TO_NAME = {
   0: 'Preparing', // PREPARING
@@ -117,6 +117,8 @@ class ChromedashGateChip extends LitElement {
   stage!: StageDict;
   @property({type: Object})
   gate!: GateDict;
+  @property({type: Array})
+  featureLinks: FeatureLink[] = [];
   @property({type: Number})
   selectedGateId = 0;
 
@@ -249,6 +251,7 @@ class ChromedashGateChip extends LitElement {
       feature: this.feature,
       stage: this.stage,
       gate: this.gate,
+      featureLinks: this.featureLinks,
     });
   }
 

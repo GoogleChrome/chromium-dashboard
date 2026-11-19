@@ -593,15 +593,20 @@ export class ChromedashApp extends LitElement {
     this.pageComponent.selectedGateId = 0;
   }
 
-  showGateColumn(feature, stageId, gate) {
-    this.gateColumnRef.value?.setContext(feature, stageId, gate);
+  showGateColumn(feature, stageId, gate, featureLinks = []) {
+    this.gateColumnRef.value?.setContext(feature, stageId, gate, featureLinks);
     this.selectedGateId = gate.id;
     this.pageComponent.selectedGateId = gate.id;
     this.showSidebar();
   }
 
   handleShowGateColumn(e) {
-    this.showGateColumn(e.detail.feature, e.detail.stage.id, e.detail.gate);
+    this.showGateColumn(
+      e.detail.feature,
+      e.detail.stage.id,
+      e.detail.gate,
+      e.detail.featureLinks
+    );
   }
 
   handleShowDrawer() {

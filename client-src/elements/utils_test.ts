@@ -1215,4 +1215,52 @@ describe('renderValue', () => {
     );
     assert.equal(mdEl.querySelector('strong')?.textContent, 'Bold summary');
   });
+
+  it('filters null and empty entries in multi-url fields', async () => {
+    const featureWithSparseUrls = {
+      ...feature,
+      explainer_links: ['https://example.com/explainer-1', null, '', undefined],
+    } as unknown as Feature;
+
+    const el = await fixture<HTMLElement>(
+      html`<div>
+        ${renderValue(feStage, featureWithSparseUrls, 'explainer_links')}
+      </div>`
+    );
+    const links = el.querySelectorAll('ul.inline-list li chromedash-link');
+    assert.equal(links.length, 1);
+    assert.equal(
+      links[0].getAttribute('href'),
+      'https://example.com/explainer-1'
+    );
+
+    const featureWithOnlyEmptyUrls = {
+      ...feature,
+      explainer_links: [null, ''],
+    } as unknown as Feature;
+    const emptyEl = await fixture<HTMLElement>(
+      html`<div>
+        ${renderValue(feStage, featureWithOnlyEmptyUrls, 'explainer_links')}
+      </div>`
+    );
+    assert.isNotNull(emptyEl.querySelector('i'));
+    assert.equal(emptyEl.textContent?.trim(), 'No information provided yet');
+  });
+
+  it('joins array text values with a comma and space', async () => {
+    const featureWithOwners = {
+      ...feature,
+      browsers: {
+        chrome: {owners: ['owner1@example.com', 'owner2@example.com']},
+      },
+    } as unknown as Feature;
+
+    const el = await fixture<HTMLElement>(
+      html`<div>${renderValue(feStage, featureWithOwners, 'owner')}</div>`
+    );
+    assert.equal(
+      el.textContent?.trim(),
+      'owner1@example.com, owner2@example.com'
+    );
+  });
 });

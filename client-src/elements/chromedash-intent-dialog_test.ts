@@ -19,7 +19,12 @@ import {assert, fixture} from '@open-wc/testing';
 import '@shoelace-style/shoelace/dist/components/details/details.js';
 import '@shoelace-style/shoelace/dist/components/dialog/dialog.js';
 import sinon from 'sinon';
-import {ChromeStatusClient, Feature, StageDict} from '../js-src/cs-client.js';
+import {
+  ChromeStatusClient,
+  Feature,
+  FeatureLink,
+  StageDict,
+} from '../js-src/cs-client.js';
 import {GateDict} from './chromedash-gate-chip.js';
 import * as enums from './form-field-enums.js';
 import {
@@ -281,46 +286,36 @@ describe('chromedash-intent-dialog', () => {
       assert.exists(northwest!.querySelector('table.data-table'));
       assert.isNull(northwest!.querySelector('dl'));
       assert.include(northwest!.textContent, 'Feature X');
-      const ownerItems = Array.from(
-        northwest!.querySelectorAll('tr#owner ul.inline-list li')
-      ).map(li => li.textContent?.trim());
-      assert.deepEqual(ownerItems, ['owner@example.com', 'owner2@example.com']);
-      const explainerLink = northwest!.querySelector<HTMLAnchorElement>(
-        'tr#explainer_links td:nth-child(2) a'
+      const ownerCell = northwest!.querySelector('tr#owner td:nth-child(2)');
+      assert.exists(ownerCell);
+      assert.equal(
+        ownerCell!.textContent?.trim(),
+        'owner@example.com, owner2@example.com'
+      );
+      const explainerLink = northwest!.querySelector(
+        'tr#explainer_links td:nth-child(2) chromedash-link'
       );
       assert.exists(explainerLink);
       assert.equal(
         explainerLink!.getAttribute('href'),
         'https://example.com/explainer'
       );
-      assert.equal(
-        explainerLink!.getAttribute('title'),
-        'https://example.com/explainer'
-      );
-      assert.equal(explainerLink!.textContent, 'https://example.com/explainer');
       const explainerList = northwest!.querySelector<HTMLElement>(
         'tr#explainer_links ul.inline-list'
       );
       assert.exists(explainerList);
       assert.equal(getComputedStyle(explainerList!).listStyleType, 'none');
-      const specLink = northwest!.querySelector<HTMLAnchorElement>(
-        'tr#spec_link td:nth-child(2) a'
+      const specLink = northwest!.querySelector(
+        'tr#spec_link td:nth-child(2) chromedash-link'
       );
       assert.exists(specLink);
       assert.equal(specLink!.getAttribute('href'), 'https://example.com/spec');
-      assert.equal(specLink!.getAttribute('title'), 'https://example.com/spec');
-      assert.equal(specLink!.textContent, 'https://example.com/spec');
-      assert.equal(getComputedStyle(specLink!).textOverflow, 'ellipsis');
-      const intentThreadLink = northwest!.querySelector<HTMLAnchorElement>(
-        'tr#intent_thread_url td:nth-child(2) a'
+      const intentThreadLink = northwest!.querySelector(
+        'tr#intent_thread_url td:nth-child(2) chromedash-link'
       );
       assert.exists(intentThreadLink);
       assert.equal(
         intentThreadLink!.getAttribute('href'),
-        'https://example.com/intent-thread'
-      );
-      assert.equal(
-        intentThreadLink!.textContent,
         'https://example.com/intent-thread'
       );
       const webFeatureCell = northwest!.querySelector(
@@ -328,22 +323,27 @@ describe('chromedash-intent-dialog', () => {
       );
       assert.exists(webFeatureCell);
       assert.exists(webFeatureCell!.querySelector('i'));
-      assert.equal(webFeatureCell!.textContent, 'None');
+      assert.equal(
+        webFeatureCell!.textContent?.trim(),
+        'No information provided yet'
+      );
 
       assert.exists(northeast!.querySelector('table.data-table'));
       assert.isNull(northeast!.querySelector('dl'));
-      const bugLink = northeast!.querySelector<HTMLAnchorElement>(
-        'tr#bug_url td:nth-child(2) a'
+      const bugLink = northeast!.querySelector(
+        'tr#bug_url td:nth-child(2) chromedash-link'
       );
       assert.exists(bugLink);
       assert.equal(bugLink!.getAttribute('href'), 'https://crbug.com/123456');
-      assert.equal(bugLink!.textContent, 'https://crbug.com/123456');
       const dtDesktopCell = northeast!.querySelector(
         'tr#dt_milestone_desktop_start td:nth-child(2)'
       );
       assert.exists(dtDesktopCell);
       assert.exists(dtDesktopCell!.querySelector('i'));
-      assert.equal(dtDesktopCell!.textContent, 'None');
+      assert.equal(
+        dtDesktopCell!.textContent?.trim(),
+        'No information provided yet'
+      );
       // Optional fields ending with '?' are omitted when undefined.
       assert.isNull(northeast!.querySelector('tr#launch_bug_url'));
       assert.isNull(northeast!.querySelector('tr#dt_milestone_android_start'));
@@ -401,8 +401,8 @@ describe('chromedash-intent-dialog', () => {
       const northeast = component.shadowRoot!.querySelector('#northeast')!;
       const central = component.shadowRoot!.querySelector('#central')!;
 
-      const launchBugLink = northeast.querySelector<HTMLAnchorElement>(
-        'tr#launch_bug_url td:nth-child(2) a'
+      const launchBugLink = northeast.querySelector(
+        'tr#launch_bug_url td:nth-child(2) chromedash-link'
       );
       assert.exists(launchBugLink);
       assert.equal(
@@ -410,20 +410,21 @@ describe('chromedash-intent-dialog', () => {
         'https://crbug.com/999999'
       );
 
-      // Non-http(s) URLs render as plain text rather than clickable anchors.
+      // Non-http(s) URLs render as plain text rather than clickable links.
       const proposalCell = northeast.querySelector(
         'tr#initial_public_proposal_url td:nth-child(2)'
       );
       assert.exists(proposalCell);
+      assert.isNull(proposalCell!.querySelector('chromedash-link'));
       assert.isNull(proposalCell!.querySelector('a'));
-      assert.equal(proposalCell!.textContent, 'javascript:alert(1)');
+      assert.equal(proposalCell!.textContent?.trim(), 'javascript:alert(1)');
 
       const explainerItems = Array.from(
         northwest.querySelectorAll('tr#explainer_links ul.inline-list li')
       );
       assert.equal(explainerItems.length, 2);
-      assert.exists(explainerItems[0].querySelector('a'));
-      assert.isNull(explainerItems[1].querySelector('a'));
+      assert.exists(explainerItems[0].querySelector('chromedash-link'));
+      assert.isNull(explainerItems[1].querySelector('chromedash-link'));
       assert.equal(explainerItems[1].textContent, 'N/A');
 
       const detailsEls = Array.from(
@@ -541,8 +542,8 @@ describe('chromedash-intent-dialog', () => {
 
       const northwest = component.shadowRoot!.querySelector('#northwest')!;
       const central = component.shadowRoot!.querySelector('#central')!;
-      const extThreadLink = northwest.querySelector<HTMLAnchorElement>(
-        'tr#intent_thread_url td:nth-child(2) a'
+      const extThreadLink = northwest.querySelector(
+        'tr#intent_thread_url td:nth-child(2) chromedash-link'
       );
       assert.exists(extThreadLink);
       assert.equal(
@@ -617,7 +618,10 @@ describe('chromedash-intent-dialog', () => {
     });
 
     it('openIntentDialog mounts dialog and opens with context', async () => {
-      await openIntentDialog(feature, stage, gate);
+      const featureLinks = [
+        {url: 'https://example.com/spec', type: 'spec', information: {}},
+      ] as unknown as FeatureLink[];
+      await openIntentDialog(feature, stage, gate, featureLinks);
 
       const dialogEl = document.querySelector(
         'chromedash-intent-dialog'
@@ -628,6 +632,12 @@ describe('chromedash-intent-dialog', () => {
       assert.deepEqual(dialogEl.feature, feature);
       assert.deepEqual(dialogEl.stage, stage);
       assert.deepEqual(dialogEl.gate, gate);
+      assert.deepEqual(dialogEl.featureLinks, featureLinks);
+      const specLink = dialogEl.shadowRoot!.querySelector(
+        'tr#spec_link td:nth-child(2) chromedash-link'
+      ) as HTMLElement & {featureLinks?: FeatureLink[]};
+      assert.exists(specLink);
+      assert.deepEqual(specLink.featureLinks, featureLinks);
       assert.equal(parseRawQuery(window.location.search).dialog, 'intent');
 
       dialogEl.hide();
