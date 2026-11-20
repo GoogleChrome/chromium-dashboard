@@ -31,8 +31,6 @@ from internals.core_models import FeatureEntry, MilestoneSet, Stage
 from internals.review_models import Gate, Vote
 from internals.user_models import (
     AppUser,
-    BlinkComponent,
-    FeatureOwner,
     UserPref,
 )
 
@@ -54,7 +52,7 @@ class EmailFormattingTest(testing_config.CustomTestCase):
             summary='sum',
             owner_emails=['feature_owner@example.com'],
             # ot_milestone_desktop_start=100,
-            editor_emails=['feature_editor@example.com', 'owner_1@example.com'],
+            editor_emails=['feature_editor@example.com'],
             cc_emails=['cc@example.com'],
             category=1,
             devrel_emails=['devrel1@gmail.com'],
@@ -84,20 +82,6 @@ class EmailFormattingTest(testing_config.CustomTestCase):
             self.fe_1.key.integer_id()
         )
 
-        self.component_1 = BlinkComponent(name='Blink')
-        self.component_1.put()
-        self.component_owner_1 = FeatureOwner(
-            name='owner_1',
-            email='owner_1@example.com',
-            primary_blink_components=[self.component_1.key],
-        )
-        self.component_owner_1.put()
-        self.watcher_1 = FeatureOwner(
-            name='watcher_1',
-            email='watcher_1@example.com',
-            watching_all_features=True,
-        )
-        self.watcher_1.put()
         self.changes = [
             dict(
                 prop_name='test_prop',
@@ -109,7 +93,7 @@ class EmailFormattingTest(testing_config.CustomTestCase):
             name='feature two',
             summary='sum',
             owner_emails=['feature_owner@example.com'],
-            editor_emails=['feature_editor@example.com', 'owner_1@example.com'],
+            editor_emails=['feature_editor@example.com'],
             category=1,
             creator_email='creator2@example.com',
             updater_email='editor2@example.com',
@@ -289,13 +273,13 @@ class EmailFormattingTest(testing_config.CustomTestCase):
 
         # Adding some users builds up a bigger reason dictionary.
         notifier.accumulate_reasons(
-            addr_reasons, [self.component_owner_1.email], 'a reason'
+            addr_reasons, ['owner_1@example.com'], 'a reason'
         )
         self.assertEqual({'owner_1@example.com': ['a reason']}, addr_reasons)
 
         notifier.accumulate_reasons(
             addr_reasons,
-            [self.component_owner_1.email, self.watcher_1.email],
+            ['owner_1@example.com', 'watcher_1@example.com'],
             'another reason',
         )
         self.assertEqual(
@@ -465,19 +449,17 @@ class EmailFormattingTest(testing_config.CustomTestCase):
 
     @mock.patch('internals.notifier.format_email_body')
     def test_make_feature_changes_email__new(self, mock_f_e_b):
-        """We send email to component owners and subscribers for new features."""
+        """We send email to feature owners, editors, etc. for new features."""
         mock_f_e_b.return_value = 'mock body html'
         actual_tasks = notifier.make_feature_changes_email(
             self.fe_1, is_update=False, changes=[]
         )
-        self.assertEqual(6, len(actual_tasks))
+        self.assertEqual(4, len(actual_tasks))
         (
             feature_cc_task,
             devrel_task,
             feature_editor_task,
             feature_owner_task,
-            component_owner_task,
-            watcher_task,
         ) = actual_tasks
 
         # Notification to feature owner.
@@ -521,28 +503,6 @@ class EmailFormattingTest(testing_config.CustomTestCase):
         )
         self.assertEqual('cc@example.com', feature_cc_task['to'])
 
-        # Notification to component owner.
-        self.assertEqual(
-            'new feature: feature one', component_owner_task['subject']
-        )  # noqa: E501
-        self.assertIn('mock body html', component_owner_task['html'])
-        # Component owner is also a feature editor and should have both reasons.
-        self.assertIn(
-            "<li>You are an owner of this feature's component</li>\n"
-            '<li>You are listed as an editor of this feature</li>',
-            component_owner_task['html'],
-        )
-        self.assertEqual('owner_1@example.com', component_owner_task['to'])
-
-        # Notification to feature change watcher.
-        self.assertEqual('new feature: feature one', watcher_task['subject'])
-        self.assertIn('mock body html', watcher_task['html'])
-        self.assertIn(
-            '<li>You are watching all feature changes</li>',
-            watcher_task['html'],
-        )
-        self.assertEqual('watcher_1@example.com', watcher_task['to'])
-
         mock_f_e_b.assert_called_once_with(
             'new-feature-email.html',
             self.fe_1,
@@ -552,19 +512,17 @@ class EmailFormattingTest(testing_config.CustomTestCase):
 
     @mock.patch('internals.notifier.format_email_body')
     def test_make_feature_changes_email__update(self, mock_f_e_b):
-        """We send email to component owners and subscribers for edits."""
+        """We send email to feature owners, editors, etc. for edits."""
         mock_f_e_b.return_value = 'mock body html'
         actual_tasks = notifier.make_feature_changes_email(
             self.fe_1, True, self.changes
         )
-        self.assertEqual(6, len(actual_tasks))
+        self.assertEqual(4, len(actual_tasks))
         (
             feature_cc_task,
             devrel_task,
             feature_editor_task,
             feature_owner_task,
-            component_owner_task,
-            watcher_task,
         ) = actual_tasks
 
         # Notification to feature owner.
@@ -609,30 +567,6 @@ class EmailFormattingTest(testing_config.CustomTestCase):
             "<li>You are CC'd on this feature</li>", feature_cc_task['html']
         )
         self.assertEqual('cc@example.com', feature_cc_task['to'])
-
-        # Notification to component owner.
-        self.assertEqual(
-            'updated feature: feature one', component_owner_task['subject']
-        )
-        self.assertIn('mock body html', component_owner_task['html'])
-        # Component owner is also a feature editor and should have both reasons.
-        self.assertIn(
-            "<li>You are an owner of this feature's component</li>\n"
-            '<li>You are listed as an editor of this feature</li>',
-            component_owner_task['html'],
-        )
-        self.assertEqual('owner_1@example.com', component_owner_task['to'])
-
-        # Notification to feature change watcher.
-        self.assertEqual(
-            'updated feature: feature one', watcher_task['subject']
-        )
-        self.assertIn('mock body html', watcher_task['html'])
-        self.assertIn(
-            '<li>You are watching all feature changes</li>',
-            watcher_task['html'],
-        )
-        self.assertEqual('watcher_1@example.com', watcher_task['to'])
 
         mock_f_e_b.assert_called_once_with(
             'update-feature-email.html',
@@ -651,15 +585,13 @@ class EmailFormattingTest(testing_config.CustomTestCase):
         actual_tasks = notifier.make_feature_changes_email(
             self.fe_1, True, self.changes
         )
-        self.assertEqual(7, len(actual_tasks))
+        self.assertEqual(5, len(actual_tasks))
         (
             feature_cc_task,
             devrel_task,
             feature_editor_task,
             feature_owner_task,
-            component_owner_task,
             starrer_task,
-            watcher_task,
         ) = actual_tasks
 
         # Notification to feature owner.
@@ -705,19 +637,6 @@ class EmailFormattingTest(testing_config.CustomTestCase):
         )
         self.assertEqual('cc@example.com', feature_cc_task['to'])
 
-        # Notification to component owner.
-        self.assertEqual(
-            'updated feature: feature one', component_owner_task['subject']
-        )
-        self.assertIn('mock body html', component_owner_task['html'])
-        # Component owner is also a feature editor and should have both reasons.
-        self.assertIn(
-            "<li>You are an owner of this feature's component</li>\n"
-            '<li>You are listed as an editor of this feature</li>',
-            component_owner_task['html'],
-        )
-        self.assertEqual('owner_1@example.com', component_owner_task['to'])
-
         # Notification to feature starrer.
         self.assertEqual(
             'updated feature: feature one', starrer_task['subject']
@@ -725,17 +644,6 @@ class EmailFormattingTest(testing_config.CustomTestCase):
         self.assertIn('mock body html', starrer_task['html'])
         self.assertIn('<li>You starred this feature</li>', starrer_task['html'])
         self.assertEqual('starrer_1@example.com', starrer_task['to'])
-
-        # Notification to feature change watcher.
-        self.assertEqual(
-            'updated feature: feature one', watcher_task['subject']
-        )
-        self.assertIn('mock body html', watcher_task['html'])
-        self.assertIn(
-            '<li>You are watching all feature changes</li>',
-            watcher_task['html'],
-        )
-        self.assertEqual('watcher_1@example.com', watcher_task['to'])
 
         mock_f_e_b.assert_called_once_with(
             'update-feature-email.html',
@@ -758,20 +666,16 @@ class EmailFormattingTest(testing_config.CustomTestCase):
         actual_tasks = notifier.make_feature_changes_email(
             self.fe_2, True, self.changes
         )
-        self.assertEqual(4, len(actual_tasks))
+        self.assertEqual(2, len(actual_tasks))
         # Note: There is no starrer_task.
         (
             feature_editor_task,
             feature_owner_task,
-            component_owner_task,
-            watcher_task,
         ) = actual_tasks
         self.assertEqual(
             'feature_editor@example.com', feature_editor_task['to']
         )
         self.assertEqual('feature_owner@example.com', feature_owner_task['to'])
-        self.assertEqual('owner_1@example.com', component_owner_task['to'])
-        self.assertEqual('watcher_1@example.com', watcher_task['to'])
         mock_f_e_b.assert_called_once_with(
             'update-feature-email.html',
             self.fe_2,
