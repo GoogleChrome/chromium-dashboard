@@ -23,7 +23,7 @@ import werkzeug.exceptions  # Flask HTTP stuff.
 
 import testing_config  # Must be imported before the module under test.
 from api import features_api
-from framework import rediscache
+from framework import cache_invalidation, rediscache
 from internals import core_enums, user_models
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
 from internals.data_types import CHANGED_FIELDS_LIST_TYPE
@@ -774,6 +774,47 @@ class FeaturesAPITest(testing_config.CustomTestCase):
         # Updater email field should be changed even with only stage changes.
         self.assertIsNotNone(self.feature_1.updated)
         self.assertEqual(self.feature_1.updater_email, 'admin@example.com')
+
+    @mock.patch('framework.rediscache.delete_keys_with_prefix')
+    def test_patch__stage_changes_flush_cache_once(self, mock_dkwp):
+        """Feature and stage edits in one PATCH flush search results once."""
+        testing_config.sign_in('admin@example.com', 123567890)
+        mock_dkwp.return_value = 0
+        entry_key = FeatureEntry.feature_cache_key(
+            FeatureEntry.DEFAULT_CACHE_KEY, self.feature_1_id
+        )
+        rediscache.set(entry_key, 'cached')
+        valid_request_body = {
+            'feature_changes': {
+                'id': self.feature_1_id,
+                'summary': 'An updated summary',
+            },
+            'stages': [
+                {
+                    'id': self.ship_stage_1_id,
+                    'intent_thread_url': {
+                        'form_field_name': 'shipped_milestone',
+                        'value': 'https://example.com/intent',
+                    },
+                },
+                {
+                    'id': self.enterprise_stage.key.integer_id(),
+                    'desktop_first': {
+                        'form_field_name': 'rollout_milestone',
+                        'value': 105,
+                    },
+                },
+            ],
+        }
+        request_path = f'{self.request_path}/update'
+        with test_app.test_request_context(
+            request_path, json=valid_request_body
+        ):
+            with cache_invalidation.batch():  # As in a real request.
+                self.handler.do_patch()
+
+        mock_dkwp.assert_called_once_with(FeatureEntry.SEARCH_CACHE_KEY)
+        self.assertIsNone(rediscache.get(entry_key))
 
     def test_patch__milestone_changes(self):
         """Valid PATCH updates milestone fields on stage entities."""
@@ -1700,6 +1741,46 @@ class FeaturesAPITest(testing_config.CustomTestCase):
         ).fetch()
         self.assertEqual(len(stages), 6)
         self.assertEqual(len(gates), 13)
+
+    @mock.patch('framework.rediscache.delete_keys_with_prefix')
+    def test_post__flushes_cache_once_after_all_writes(self, mock_dkwp):
+        """Creating a feature flushes search results once, after all writes."""
+        testing_config.sign_in('admin@example.com', 123567890)
+        stage_counts_at_flush = []
+
+        def record_flush(prefix):
+            stage_counts_at_flush.append(Stage.query().count())
+            return 0
+
+        mock_dkwp.side_effect = record_flush
+        valid_request_body = {
+            'name': 'A name',
+            'summary': 'A summary',
+            'owner_emails': 'user@example.com',
+            'category': 2,
+            'feature_type': 0,
+            'impl_status_chrome': 3,
+            'standard_maturity': 2,
+            'ff_views': 1,
+            'safari_views': 1,
+            'web_dev_views': 1,
+        }
+
+        request_path = f'{self.request_path}/create'
+        with test_app.test_request_context(
+            request_path, json=valid_request_body
+        ):
+            with cache_invalidation.batch():  # As in a real request.
+                response = self.handler.do_post()
+
+        # The feature, its 6 stages, and its 13 gates cause a single flush.
+        mock_dkwp.assert_called_once_with(FeatureEntry.SEARCH_CACHE_KEY)
+        # The flush happened after the new stages were written.
+        new_stages = Stage.query(
+            Stage.feature_id == response['feature_id']
+        ).count()
+        self.assertEqual(6, new_stages)
+        self.assertEqual([Stage.query().count()], stage_counts_at_flush)
 
     def test_post__no_permissions(self):
         """403 Forbidden if the user does not have feature create access."""

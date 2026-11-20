@@ -25,6 +25,8 @@ from typing import Optional
 
 from google.cloud import ndb  # type: ignore
 
+from internals.core_models import FeatureEntry
+
 
 class OwnersFile(ndb.Model):
     """Describes the properties to store raw API_OWNERS content."""
@@ -170,6 +172,23 @@ class Vote(ndb.Model):
         """Return true if new_state is valid."""
         return new_state in cls.VOTE_VALUES
 
+    # Votes affect cached search results (e.g., sorting by review date),
+    # but not the cached data for individual features.
+    def _post_put_hook(self, future) -> None:
+        """Invalidate cached search results that depend on votes."""
+        if future.exception() is None:
+            ndb.get_context().call_on_commit(
+                FeatureEntry.invalidate_search_cache
+            )
+
+    @classmethod
+    def _post_delete_hook(cls, key, future) -> None:
+        """Invalidate cached search results that depend on votes."""
+        if future.exception() is None:
+            ndb.get_context().call_on_commit(
+                FeatureEntry.invalidate_search_cache
+            )
+
     # Note: set_vote() moved to approval_defs.py
 
 
@@ -258,6 +277,23 @@ class Gate(ndb.Model):
         for gate in gates:
             gates_dict[gate.gate_type].append(gate)
         return gates_dict
+
+    # Gates affect cached search results and release notes (e.g., enterprise
+    # approvals), but not the cached data for individual features.
+    def _post_put_hook(self, future) -> None:
+        """Invalidate cached search results that depend on gates."""
+        if future.exception() is None:
+            ndb.get_context().call_on_commit(
+                FeatureEntry.invalidate_search_cache
+            )
+
+    @classmethod
+    def _post_delete_hook(cls, key, future) -> None:
+        """Invalidate cached search results that depend on gates."""
+        if future.exception() is None:
+            ndb.get_context().call_on_commit(
+                FeatureEntry.invalidate_search_cache
+            )
 
 
 class Amendment(ndb.Model):

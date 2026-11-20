@@ -23,6 +23,7 @@ import werkzeug.exceptions
 
 import testing_config  # Must be imported before the module under test.
 from api import stages_api
+from framework import cache_invalidation
 from internals import core_enums
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
 from internals.review_models import Activity, Gate
@@ -732,6 +733,7 @@ class StagesAPITest(testing_config.CustomTestCase):
         # OT is flagged for automated creation process.
         self.stage_1.ot_setup_status = core_enums.OT_READY_FOR_CREATION
         self.stage_1.put()
+        mock_dkwp.reset_mock()  # Ignore flushes from test setup.
         mock_abort.side_effect = werkzeug.exceptions.BadRequest
         with test_app.test_request_context(
             f'{self.request_path}1/stages/10', json=json
@@ -762,6 +764,7 @@ class StagesAPITest(testing_config.CustomTestCase):
         # OT is flagged for automated creation process.
         self.stage_1.ot_setup_status = core_enums.OT_READY_FOR_CREATION
         self.stage_1.put()
+        mock_dkwp.reset_mock()  # Ignore flushes from test setup.
         mock_abort.side_effect = werkzeug.exceptions.BadRequest
         with test_app.test_request_context(
             f'{self.request_path}1/stages/10', json=json
@@ -775,12 +778,10 @@ class StagesAPITest(testing_config.CustomTestCase):
         mock_dkwp.assert_not_called()
 
     def assert_cache_was_flushed(self, mock_dkwp):
-        """Check that the appropriate caches were flushed."""
-        expected_calls = [
-            mock.call(FeatureEntry.DEFAULT_CACHE_KEY),
-            mock.call(FeatureEntry.SEARCH_CACHE_KEY),
-        ]
-        mock_dkwp.assert_has_calls(expected_calls)
+        """Check that the request flushed search results exactly once."""
+        # Only the modified feature's cache entry is deleted, not every
+        # feature's, and search results are flushed once per request.
+        mock_dkwp.assert_called_once_with(FeatureEntry.SEARCH_CACHE_KEY)
 
     @mock.patch('framework.rediscache.delete_keys_with_prefix')
     def test_patch__valid(self, mock_dkwp):
@@ -804,7 +805,9 @@ class StagesAPITest(testing_config.CustomTestCase):
         with test_app.test_request_context(
             f'{self.request_path}1/stages/10', json=json
         ):
-            actual = self.handler.do_patch(feature_id=1, stage_id=10)
+            mock_dkwp.reset_mock()  # Ignore flushes from test setup.
+            with cache_invalidation.batch():  # As in a real request.
+                actual = self.handler.do_patch(feature_id=1, stage_id=10)
         self.assertEqual(actual['message'], 'Stage values updated.')
         stage = self.stage_1
         self.assertEqual(stage.experiment_risks, 'No risks.')
@@ -860,7 +863,9 @@ class StagesAPITest(testing_config.CustomTestCase):
         with test_app.test_request_context(
             f'{self.request_path}1/stages/10', json=json
         ):
-            actual = self.handler.do_patch(feature_id=1, stage_id=10)
+            mock_dkwp.reset_mock()  # Ignore flushes from test setup.
+            with cache_invalidation.batch():  # As in a real request.
+                actual = self.handler.do_patch(feature_id=1, stage_id=10)
         self.assertEqual(actual['message'], 'Stage values updated.')
         stage = self.stage_1
         self.assertEqual(stage.ot_chromium_trial_name, 'Some name')
@@ -897,7 +902,9 @@ class StagesAPITest(testing_config.CustomTestCase):
         with test_app.test_request_context(
             f'{self.request_path}1/stages/10', json=json
         ):
-            actual = self.handler.do_patch(feature_id=1, stage_id=10)
+            mock_dkwp.reset_mock()  # Ignore flushes from test setup.
+            with cache_invalidation.batch():  # As in a real request.
+                actual = self.handler.do_patch(feature_id=1, stage_id=10)
         self.assertEqual(actual['message'], 'Stage values updated.')
         stage = self.stage_1
         self.assertEqual(stage.ot_chromium_trial_name, 'reason')
@@ -937,7 +944,9 @@ class StagesAPITest(testing_config.CustomTestCase):
         with test_app.test_request_context(
             f'{self.request_path}1/stages/10', json=json
         ):
-            actual = self.handler.do_patch(feature_id=1, stage_id=10)
+            mock_dkwp.reset_mock()  # Ignore flushes from test setup.
+            with cache_invalidation.batch():  # As in a real request.
+                actual = self.handler.do_patch(feature_id=1, stage_id=10)
         self.assertEqual(actual['message'], 'Stage values updated.')
         stage = self.stage_1
         self.assertEqual(stage.ot_action_requested, True)
@@ -969,7 +978,9 @@ class StagesAPITest(testing_config.CustomTestCase):
         with test_app.test_request_context(
             f'{self.request_path}1/stages/10', json=json
         ):
-            actual = self.handler.do_patch(feature_id=1, stage_id=10)
+            mock_dkwp.reset_mock()  # Ignore flushes from test setup.
+            with cache_invalidation.batch():  # As in a real request.
+                actual = self.handler.do_patch(feature_id=1, stage_id=10)
         self.assertEqual(actual['message'], 'Stage values updated.')
         stage = self.stage_1
         self.assertEqual(stage.ot_action_requested, True)
