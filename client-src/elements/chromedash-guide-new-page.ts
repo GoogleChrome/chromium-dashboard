@@ -18,7 +18,14 @@ import {LitElement, css, html, nothing} from 'lit';
 import {ref} from 'lit/directives/ref.js';
 import './chromedash-form-table.js';
 import './chromedash-form-field.js';
-import {type ChromedashFormField} from './chromedash-form-field.js';
+import {
+  type ChromedashFormField,
+  enumLabelToFeatureKey,
+  fetchWebFeatureChoices,
+  shouldDisplayFeatureLink,
+  shouldDisplayWidelySupportedWarning,
+} from './chromedash-form-field.js';
+import type {WebFeatureInfo} from 'chromestatus-openapi';
 import {
   NEW_FEATURE_FORM_FIELDS,
   ENTERPRISE_NEW_FEATURE_FORM_FIELDS,
@@ -62,6 +69,49 @@ export class ChromedashGuideNewPage extends LitElement {
         .process-notice p + p {
           margin-top: var(--content-padding-half);
         }
+        #web_feature_header_row th,
+        #web_feature_row td {
+          text-align: left;
+          vertical-align: top;
+        }
+        #web_feature_header_row th {
+          padding: 12px 10px 5px 0;
+        }
+        #web_feature_header_row .form-field-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          width: 100%;
+        }
+        #web_feature_row td {
+          padding: 6px 10px;
+        }
+        #web_feature_row td:first-of-type {
+          width: 60%;
+          max-width: 35em;
+        }
+        #web_feature_row .helptext {
+          display: block;
+          font-size: small;
+          margin-top: 2px;
+        }
+        #web_feature_row .helptext > *:first-child {
+          margin-top: 0;
+        }
+        #web_feature_row .helptext > *:last-child {
+          margin-bottom: 0;
+        }
+        #propose_web_feature_wrapper {
+          display: flex;
+          align-items: center;
+          gap: 4px;
+        }
+        #propose_web_feature_wrapper sl-input {
+          flex: 1;
+        }
+        input[type='submit'] {
+          margin: var(--content-padding) 0;
+        }
       `,
     ];
   }
@@ -78,6 +128,41 @@ export class ChromedashGuideNewPage extends LitElement {
   fieldValues: FieldInfo[] & {feature?: Feature} = [];
   @property({type: Boolean})
   submitting = false;
+  @state()
+  webFeatureMode: 'existing' | 'propose' = 'existing';
+  @state()
+  selectedWebFeature = '';
+  @state()
+  proposedWebFeature = '';
+  @state()
+  webFeatureInfos: WebFeatureInfo[] = [];
+  @state()
+  webFeatureChoices: Record<string, [string, string]> = {};
+  @state()
+  loadingWebFeatures = false;
+
+  connectedCallback() {
+    super.connectedCallback();
+    if (!this.isEnterpriseFeature) {
+      this.fetchWebFeatures();
+    }
+  }
+
+  fetchWebFeatures() {
+    this.loadingWebFeatures = true;
+    fetchWebFeatureChoices()
+      .then(({webFeatureInfos, choices}) => {
+        this.webFeatureInfos = webFeatureInfos;
+        this.webFeatureChoices = choices;
+        this.loadingWebFeatures = false;
+      })
+      .catch(() => {
+        showToastMessage(
+          'Error fetching Web feature IDs. Please refresh the page or try again later.'
+        );
+        this.loadingWebFeatures = false;
+      });
+  }
 
   /* Add the form's event listener after Shoelace event listeners are attached
    * see more at https://github.com/GoogleChrome/chromium-dashboard/issues/2014 */
@@ -97,29 +182,156 @@ export class ChromedashGuideNewPage extends LitElement {
     setupScrollToHash(this);
   }
 
-  handleFormSubmit(event, hiddenTokenField) {
+  reportControlValidity(
+    control: HTMLElement & {reportValidity?: () => boolean}
+  ) {
+    const displayInput =
+      control.tagName.toLowerCase() === 'sl-select'
+        ? control.shadowRoot?.querySelector<HTMLInputElement>(
+            '.select__display-input'
+          )
+        : null;
+    if (displayInput) {
+      displayInput.setCustomValidity('Please fill out this field.');
+      displayInput.reportValidity();
+      displayInput.setCustomValidity('');
+      return;
+    }
+    control.reportValidity?.();
+  }
+
+  handleFormSubmit(event, hiddenTokenField?) {
+    void hiddenTokenField;
     event.preventDefault();
-    let featureType: number | string =
-      FEATURE_TYPES.FEATURE_TYPE_INCUBATE_ID[0];
-    if (this.isEnterpriseFeature) {
-      featureType = FEATURE_TYPES.FEATURE_TYPE_ENTERPRISE_ID[0];
-    } else {
-      const selectedRadio = this.shadowRoot?.querySelector<HTMLInputElement>(
-        'input[name="feature_type"]:checked'
-      );
-      if (selectedRadio) {
-        featureType = Number(selectedRadio.value);
-      }
-      for (const fv of this.fieldValues) {
-        if (fv.name == 'feature_type' && fv.value !== undefined) {
-          featureType = fv.value;
-          break;
+
+    const featureType = this.getFeatureType();
+    if (
+      !this.isEnterpriseFeature &&
+      featureType !== FEATURE_TYPES.FEATURE_TYPE_CODE_CHANGE_ID[0]
+    ) {
+      if (this.webFeatureMode === 'propose') {
+        const inputEl = this.shadowRoot?.querySelector<HTMLInputElement>(
+          'sl-input[name="web_feature"]'
+        );
+        if (!this.proposedWebFeature && inputEl?.value) {
+          this.proposedWebFeature = inputEl.value;
+        }
+        if (this.proposedWebFeature) {
+          const proposedValue = this.proposedWebFeature.startsWith('proposed/')
+            ? this.proposedWebFeature
+            : `proposed/${this.proposedWebFeature}`;
+          this.setWebFeatureValue(proposedValue);
+        }
+      } else {
+        const selectEl = this.shadowRoot?.querySelector<HTMLSelectElement>(
+          'sl-select[name="web_feature"]'
+        );
+        if (!this.selectedWebFeature && selectEl?.value) {
+          this.selectedWebFeature = selectEl.value;
+        }
+        if (this.selectedWebFeature) {
+          this.setWebFeatureValue(this.selectedWebFeature);
         }
       }
     }
+
+    if (
+      !this.isEnterpriseFeature &&
+      featureType !== FEATURE_TYPES.FEATURE_TYPE_CODE_CHANGE_ID[0] &&
+      this.webFeatureMode === 'propose'
+    ) {
+      const explainerFv = this.fieldValues.find(
+        fv => fv.name === 'explainer_links'
+      );
+      const textarea = this.shadowRoot?.querySelector<
+        HTMLElement & {value?: string}
+      >('chromedash-form-field[name="explainer_links"] chromedash-textarea');
+      if (explainerFv && !explainerFv.value && textarea?.value) {
+        explainerFv.value = textarea.value;
+        explainerFv.touched = true;
+      }
+    }
+
+    const formControls = this.shadowRoot?.querySelectorAll<
+      HTMLElement & {
+        disabled?: boolean;
+        required?: boolean;
+        value?: string;
+        checkValidity?: () => boolean;
+        reportValidity?: () => boolean;
+      }
+    >(
+      'sl-input, sl-select, sl-textarea, chromedash-textarea, input, select, textarea'
+    );
+    for (const control of formControls || []) {
+      if (
+        control.disabled ||
+        control.id === 'id_web_feature' ||
+        control.closest('[style*="display: none"]')
+      ) {
+        continue;
+      }
+      const isRequired =
+        control.hasAttribute('required') || Boolean(control.required);
+      const isValueEmpty =
+        control.value === '' ||
+        control.value === undefined ||
+        control.value === null;
+      const isValid =
+        typeof control.checkValidity === 'function'
+          ? control.checkValidity()
+          : true;
+      if ((isRequired && isValueEmpty) || !isValid) {
+        this.reportControlValidity(control);
+        return;
+      }
+    }
+
+    if (
+      !this.isEnterpriseFeature &&
+      featureType !== FEATURE_TYPES.FEATURE_TYPE_CODE_CHANGE_ID[0]
+    ) {
+      const webFeatureVal =
+        this.webFeatureMode === 'existing'
+          ? this.selectedWebFeature
+          : this.proposedWebFeature;
+      if (!webFeatureVal) {
+        const webFeatureControl =
+          this.shadowRoot?.querySelector<HTMLElement>('#id_web_feature');
+        if (webFeatureControl) {
+          this.reportControlValidity(webFeatureControl);
+        }
+        return;
+      }
+    }
+
+    if (
+      !this.isEnterpriseFeature &&
+      featureType !== FEATURE_TYPES.FEATURE_TYPE_CODE_CHANGE_ID[0] &&
+      this.webFeatureMode === 'propose'
+    ) {
+      const explainerFv = this.fieldValues.find(
+        fv => fv.name === 'explainer_links'
+      );
+      if (!explainerFv?.value) {
+        const textarea = this.shadowRoot?.querySelector<HTMLElement>(
+          'chromedash-form-field[name="explainer_links"] chromedash-textarea'
+        );
+        if (textarea) {
+          this.reportControlValidity(textarea);
+        }
+        return;
+      }
+    }
+
     if (featureType == FEATURE_TYPES.FEATURE_TYPE_CODE_CHANGE_ID[0]) {
       this.fieldValues = this.fieldValues.filter(
-        fv => fv.name !== 'web_feature'
+        fv => fv.name !== 'web_feature' && fv.name !== 'explainer_links'
+      );
+    }
+    if (this.webFeatureMode === 'existing') {
+      this.fieldValues = this.fieldValues.filter(
+        fv => fv.name !== 'explainer_links'
       );
     }
     const changesBody = formatFeatureChanges(this.fieldValues, this.featureId);
@@ -148,28 +360,80 @@ export class ChromedashGuideNewPage extends LitElement {
     navigate(url);
   }
 
-  maybeMakeWebFeatureRequired() {
-    const webFeatureField = this.shadowRoot?.querySelector<ChromedashFormField>(
-      'chromedash-form-field[name="web_feature"]'
-    );
-    if (!webFeatureField) {
-      return;
+  getFeatureType(): number {
+    if (this.isEnterpriseFeature) {
+      return FEATURE_TYPES.FEATURE_TYPE_ENTERPRISE_ID[0];
     }
-    let featureType = FEATURE_TYPES.FEATURE_TYPE_INCUBATE_ID[0];
     for (const fv of this.fieldValues) {
-      if (fv.name == 'feature_type' && fv.value !== undefined) {
-        featureType = fv.value;
-        break;
+      if (
+        fv.name === 'feature_type' &&
+        fv.value !== undefined &&
+        fv.value !== ''
+      ) {
+        return Number(fv.value);
       }
     }
-    if (featureType == FEATURE_TYPES.FEATURE_TYPE_CODE_CHANGE_ID[0]) {
-      webFeatureField.style.display = 'none';
-      webFeatureField.forceRequired = false;
-    } else {
-      webFeatureField.style.display = '';
-      webFeatureField.forceRequired =
-        featureType == FEATURE_TYPES.FEATURE_TYPE_INCUBATE_ID[0] ||
-        featureType == FEATURE_TYPES.FEATURE_TYPE_EXISTING_ID[0];
+    const selectedRadio = this.shadowRoot?.querySelector<HTMLInputElement>(
+      'input[name="feature_type"]:checked'
+    );
+    if (selectedRadio) {
+      return Number(selectedRadio.value);
+    }
+    return FEATURE_TYPES.FEATURE_TYPE_INCUBATE_ID[0];
+  }
+
+  shouldDisplayWidelySupportedWarning(): boolean {
+    return shouldDisplayWidelySupportedWarning(
+      this.webFeatureInfos,
+      this.selectedWebFeature,
+      this.getFeatureType()
+    );
+  }
+
+  updated() {
+    this.maybeMakeWebFeatureRequired();
+  }
+
+  maybeMakeWebFeatureRequired() {
+    const webFeatureRow =
+      this.shadowRoot?.querySelector<HTMLElement>('#web_feature_row');
+    const webFeatureHeaderRow = this.shadowRoot?.querySelector<HTMLElement>(
+      '#web_feature_header_row'
+    );
+    if (!webFeatureRow) {
+      return;
+    }
+    const isCodeChange =
+      this.getFeatureType() == FEATURE_TYPES.FEATURE_TYPE_CODE_CHANGE_ID[0];
+    const display = isCodeChange ? 'none' : '';
+    webFeatureRow.style.display = display;
+    if (webFeatureHeaderRow) {
+      webFeatureHeaderRow.style.display = display;
+    }
+    const webFeatureControl = this.shadowRoot?.querySelector<
+      HTMLElement & {required?: boolean; disabled?: boolean}
+    >('#id_web_feature');
+    if (webFeatureControl) {
+      webFeatureControl.required = !isCodeChange;
+      webFeatureControl.disabled =
+        isCodeChange ||
+        (this.webFeatureMode === 'existing' && this.loadingWebFeatures);
+    }
+    const explainerLinksField =
+      this.shadowRoot?.querySelector<ChromedashFormField>(
+        'chromedash-form-field[name="explainer_links"]'
+      );
+    if (explainerLinksField) {
+      explainerLinksField.style.display = display;
+      explainerLinksField.forceRequired = !isCodeChange;
+      explainerLinksField.disabled = isCodeChange;
+      const explainerTextarea = explainerLinksField.querySelector<
+        HTMLElement & {required?: boolean; disabled?: boolean}
+      >('chromedash-textarea');
+      if (explainerTextarea) {
+        explainerTextarea.required = !isCodeChange;
+        explainerTextarea.disabled = isCodeChange;
+      }
     }
   }
 
@@ -207,6 +471,290 @@ export class ChromedashGuideNewPage extends LitElement {
     this.fieldValues[index].isMarkdown = event.detail.isMarkdown;
     this.maybeMakeWebFeatureRequired();
     this.maybeMakeEnterpriseFeatureCategoriesRequired();
+    this.requestUpdate();
+  }
+
+  deactivateFormControl(
+    control:
+      | (HTMLElement & {
+          required?: boolean;
+          disabled?: boolean;
+          formControlController?: {
+            form?: HTMLFormElement;
+            handleFormSubmit?: EventListener;
+          };
+        })
+      | null
+      | undefined
+  ) {
+    if (!control) {
+      return;
+    }
+    control.required = false;
+    control.disabled = true;
+    const fcc = control.formControlController;
+    if (fcc?.form && fcc.handleFormSubmit) {
+      fcc.form.removeEventListener('submit', fcc.handleFormSubmit);
+    }
+  }
+
+  handleWebFeatureModeChange(mode: 'existing' | 'propose') {
+    if (this.webFeatureMode !== mode) {
+      this.deactivateFormControl(
+        this.shadowRoot?.querySelector<HTMLElement>('#id_web_feature')
+      );
+      if (mode === 'existing') {
+        this.deactivateFormControl(
+          this.shadowRoot?.querySelector<HTMLElement>(
+            'chromedash-form-field[name="explainer_links"] chromedash-textarea'
+          )
+        );
+      }
+    }
+    this.webFeatureMode = mode;
+    if (mode === 'existing') {
+      this.setWebFeatureValue(this.selectedWebFeature);
+      this.fieldValues = this.fieldValues.filter(
+        fv => fv.name !== 'explainer_links'
+      );
+    } else {
+      this.setWebFeatureValue(this.proposedWebFeature);
+    }
+  }
+
+  handleSelectWebFeature(e: Event) {
+    const target = e.target as HTMLSelectElement;
+    this.selectedWebFeature = target.value || '';
+    this.setWebFeatureValue(this.selectedWebFeature);
+  }
+
+  handleInputWebFeature(e: Event) {
+    const target = e.target as HTMLInputElement;
+    this.proposedWebFeature = target.value || '';
+    this.setWebFeatureValue(this.proposedWebFeature);
+  }
+
+  setWebFeatureValue(value: string) {
+    const fv = this.fieldValues.find(f => f.name === 'web_feature');
+    if (fv) {
+      fv.value = value;
+      fv.touched = true;
+    } else {
+      this.fieldValues.push({
+        name: 'web_feature',
+        touched: true,
+        value,
+      });
+    }
+  }
+
+  renderFormField(
+    field: string,
+    className?: string | null,
+    forceRequired = false,
+    previousFieldValues?: FieldInfo[]
+  ) {
+    const fieldProps = ALL_FIELDS[field];
+    const featureJSONKey = fieldProps.name || field;
+    const newFeatureInitialValues: Record<string, string | number | undefined> =
+      {
+        owner: this.userEmail,
+        shipping_year: new Date().getFullYear(),
+        feature_type: FEATURE_TYPES.FEATURE_TYPE_INCUBATE_ID[0],
+        feature_type_radio_group: FEATURE_TYPES.FEATURE_TYPE_INCUBATE_ID[0],
+      };
+    const initialValue = this.isEnterpriseFeature
+      ? (fieldProps.enterprise_initial ?? fieldProps.initial)
+      : fieldProps.initial;
+    let value: string | number | boolean | undefined =
+      newFeatureInitialValues[field] ?? initialValue ?? '';
+    let fvIndex: number;
+    if (previousFieldValues) {
+      fvIndex = this.fieldValues.length;
+      const existingField = previousFieldValues.find(
+        fv => fv.name === featureJSONKey
+      );
+      if (!existingField) {
+        this.fieldValues.push({
+          name: featureJSONKey,
+          touched: true, // Submit everything
+          value,
+        });
+      } else if (field === 'owner' && !existingField.value && value) {
+        existingField.value = value;
+        this.fieldValues.push(existingField);
+      } else {
+        value = existingField.value as string | number | boolean | undefined;
+        this.fieldValues.push(existingField);
+      }
+    } else {
+      fvIndex = this.fieldValues.findIndex(fv => fv.name === featureJSONKey);
+      if (fvIndex === -1) {
+        fvIndex = this.fieldValues.length;
+        this.fieldValues.push({
+          name: featureJSONKey,
+          touched: true, // Submit everything
+          value,
+        });
+      } else {
+        value = this.fieldValues[fvIndex].value as
+          string | number | boolean | undefined;
+      }
+    }
+
+    return html`
+      <chromedash-form-field
+        name=${field}
+        index=${fvIndex}
+        value=${String(value ?? '')}
+        .value=${value}
+        disabledReason="${getDisabledHelpText(field)}"
+        .fieldValues=${this.fieldValues}
+        ?forEnterprise=${this.isEnterpriseFeature}
+        .forceRequired=${forceRequired}
+        ?forceRequired=${forceRequired}
+        @form-field-update="${this.handleFormFieldUpdate}"
+        class="${className || ''}"
+      ></chromedash-form-field>
+    `;
+  }
+
+  maybeRenderWebFeatureId(previousFieldValues?: FieldInfo[]) {
+    if (this.isEnterpriseFeature) {
+      return nothing;
+    }
+
+    this.setWebFeatureValue(
+      this.webFeatureMode === 'existing'
+        ? this.selectedWebFeature
+        : this.proposedWebFeature
+    );
+
+    return html`
+      <tr id="web_feature_header_row">
+        <th class="form-field-header" colspan="2">
+          <div>
+            <b>${ALL_FIELDS['web_feature'].label || 'Web Feature ID'}:</b>
+          </div>
+        </th>
+      </tr>
+      <tr id="web_feature_row">
+        <td>
+          <div style="margin-bottom: var(--content-padding-half)">
+            <label style="margin-right: 1em">
+              <input
+                type="radio"
+                name="web_feature_mode"
+                id="web_feature_mode_existing"
+                value="existing"
+                .checked=${this.webFeatureMode === 'existing'}
+                @change=${() => this.handleWebFeatureModeChange('existing')}
+              />
+              Choose existing web-feature
+            </label>
+            <label>
+              <input
+                type="radio"
+                name="web_feature_mode"
+                id="web_feature_mode_propose"
+                value="propose"
+                .checked=${this.webFeatureMode === 'propose'}
+                @change=${() => this.handleWebFeatureModeChange('propose')}
+              />
+              Propose web-feature
+            </label>
+          </div>
+
+          ${
+            this.webFeatureMode === 'existing'
+              ? html`
+                  <sl-select
+                    name="web_feature"
+                    id="id_web_feature"
+                    size="small"
+                    hoist
+                    required
+                    .value=${this.selectedWebFeature}
+                    ?disabled=${this.loadingWebFeatures}
+                    @sl-change=${this.handleSelectWebFeature}
+                  >
+                    ${Object.values(this.webFeatureChoices).map(
+                      ([value, label]) => html`
+                        <sl-option value="${value}"> ${label} </sl-option>
+                      `
+                    )}
+                  </sl-select>
+                  ${
+                    shouldDisplayFeatureLink(
+                      'web_feature',
+                      this.selectedWebFeature
+                    )
+                      ? html`
+                          <p style="margin: var(--content-padding-half)">
+                            See web feature
+                            <a
+                              href="https://webstatus.dev/features/${enumLabelToFeatureKey(
+                                this.selectedWebFeature
+                              )}"
+                              target="_blank"
+                            >
+                              ${this.selectedWebFeature}
+                            </a>
+                            in webstatus.dev
+                          </p>
+                        `
+                      : nothing
+                  }
+                  ${
+                    this.shouldDisplayWidelySupportedWarning()
+                      ? html`
+                          <p style="margin: var(--content-padding-half)">
+                            ${'This web feature is already widely supported, are you sure that you are incubating a change to it?'}
+                          </p>
+                        `
+                      : nothing
+                  }
+                `
+              : html`
+                  <div id="propose_web_feature_wrapper">
+                    <span>proposed/</span>
+                    <sl-input
+                      name="web_feature"
+                      id="id_web_feature"
+                      size="small"
+                      autocomplete="off"
+                      required
+                      .value=${this.proposedWebFeature}
+                      @sl-change=${this.handleInputWebFeature}
+                      @sl-input=${this.handleInputWebFeature}
+                    >
+                    </sl-input>
+                  </div>
+                `
+          }
+        </td>
+        <td>
+          <span class="helptext">
+            ${
+              this.webFeatureMode === 'propose'
+                ? 'Enter a proposed web-feature ID consisting of lowercase letters and dashes.'
+                : ALL_FIELDS['web_feature'].help_text
+            }
+          </span>
+        </td>
+      </tr>
+      ${
+        this.webFeatureMode === 'propose'
+          ? this.renderFormField(
+              'explainer_links',
+              null,
+              this.getFeatureType() !==
+                FEATURE_TYPES.FEATURE_TYPE_CODE_CHANGE_ID[0],
+              previousFieldValues
+            )
+          : nothing
+      }
+    `;
   }
 
   renderSubHeader() {
@@ -266,10 +814,6 @@ export class ChromedashGuideNewPage extends LitElement {
   }
 
   renderForm() {
-    const newFeatureInitialValues = {
-      owner: this.userEmail,
-      shipping_year: new Date().getFullYear(),
-    };
     const previousFieldValues = [...this.fieldValues];
     this.fieldValues.length = 0;
     this.fieldValues.feature = this.feature;
@@ -278,56 +822,23 @@ export class ChromedashGuideNewPage extends LitElement {
       ? ENTERPRISE_NEW_FEATURE_FORM_FIELDS
       : NEW_FEATURE_FORM_FIELDS;
 
-    let nextFieldIndex = 0;
-    const renderFormField = (field, className?) => {
-      const fieldProps = ALL_FIELDS[field];
-      const featureJSONKey = fieldProps.name || field;
-      const initialValue = this.isEnterpriseFeature
-        ? (fieldProps.enterprise_initial ?? fieldProps.initial)
-        : fieldProps.initial;
-      let value = newFeatureInitialValues[field] ?? initialValue;
-      const index = nextFieldIndex++;
-      const existingField = previousFieldValues.find(
-        fv => fv.name === featureJSONKey
-      );
-      if (!existingField) {
-        this.fieldValues.push({
-          name: featureJSONKey,
-          touched: true, // Submit everything
-          value,
-        });
-      } else if (field === 'owner' && !existingField.value && value) {
-        existingField.value = value;
-        this.fieldValues.push(existingField);
-      } else {
-        value = existingField.value;
-        this.fieldValues.push(existingField);
-      }
-
-      return html`
-        <chromedash-form-field
-          name=${field}
-          index=${index}
-          value=${value}
-          disabledReason="${getDisabledHelpText(field)}"
-          .fieldValues=${this.fieldValues}
-          ?forEnterprise=${this.isEnterpriseFeature}
-          @form-field-update="${this.handleFormFieldUpdate}"
-          class="${className || ''}"
-        ></chromedash-form-field>
-      `;
-    };
-
     const extraFields = !this.isEnterpriseFeature
-      ? renderFormField('feature_type_radio_group', 'choices')
+      ? this.renderFormField(
+          'feature_type_radio_group',
+          'choices',
+          false,
+          previousFieldValues
+        )
       : nothing;
     const mainFields = formFields.map(field =>
-      renderFormField(
+      this.renderFormField(
         field,
-        field === 'enterprise_product_category' ? 'choices' : null
+        field === 'enterprise_product_category' ? 'choices' : null,
+        false,
+        previousFieldValues
       )
     );
-    this.fieldValues.length = nextFieldIndex;
+    const webFeatureFields = this.maybeRenderWebFeatureId(previousFieldValues);
 
     const submitLabel = this.submitting
       ? 'Submitting...'
@@ -340,11 +851,13 @@ export class ChromedashGuideNewPage extends LitElement {
           <input type="hidden" name="token" />
           <chromedash-form-table ${ref(this.registerHandlers)}>
             ${this.renderWarnings()} ${extraFields} ${mainFields}
+            ${webFeatureFields}
           </chromedash-form-table>
           <input
             type="submit"
             class="primary"
             value=${submitLabel}
+            style="margin: var(--content-padding) 0;"
             ?disabled=${this.submitting}
           />
         </form>
