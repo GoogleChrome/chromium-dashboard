@@ -146,6 +146,10 @@ const DOMAIN_REGEX: string =
   '(' + DOMAIN_NAME_REGEX + '|' + LOCALHOST_REGEX + ')';
 const FINCH_NAMES_REGEX = String.raw`[\-_a-zA-Z0-9,]*`;
 export const WEB_FEATURE_REGEX = String.raw`[\-a-z0-9]*[a-z][\-a-z0-9]*`;
+export const WEB_FEATURE_FIELD_REGEX =
+  String.raw`(proposed/)?` +
+  WEB_FEATURE_REGEX +
+  String.raw`|[mM][iI][sS][sS][iI][nN][gG] [fF][eE][aA][tT][uU][rR][eE]|[nN]/[aA]`;
 
 const EMAIL_ADDRESS_REGEX: string = USER_REGEX + '@' + DOMAIN_NAME_REGEX;
 const GOOGLE_EMAIL_ADDRESS_REGEX: string = `${USER_REGEX}@google.com`;
@@ -561,7 +565,7 @@ export const ALL_FIELDS: Record<string, Field> = {
     label: 'Web Feature ID',
     attrs: {
       placeholder: 'Please select a Web feature ID',
-      pattern: `(proposed/)?${WEB_FEATURE_REGEX}`,
+      pattern: WEB_FEATURE_FIELD_REGEX,
       title:
         'Enter a web-feature ID consisting of lowercase letters, digits, and dashes, with at least one letter.',
     },

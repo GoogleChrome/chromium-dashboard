@@ -795,7 +795,11 @@ export function shouldDisplayFeatureLink(
   if (!featureValue) {
     return false;
   }
-  if (featureValue === 'Missing feature' || featureValue === 'TBD') {
+  if (
+    featureValue.toLowerCase() === 'missing feature' ||
+    featureValue === 'TBD' ||
+    featureValue.toLowerCase() === 'n/a'
+  ) {
     return false;
   }
 

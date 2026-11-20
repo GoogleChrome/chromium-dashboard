@@ -714,6 +714,7 @@ export class ChromedashGuideNewPage extends LitElement {
                     ?disabled=${this.loadingWebFeatures}
                     @sl-change=${this.handleSelectWebFeature}
                   >
+                    <sl-option value="N/A">N/A (Rare)</sl-option>
                     ${Object.values(this.webFeatureChoices).map(
                       ([value, label]) => html`
                         <sl-option value="${value}"> ${label} </sl-option>

@@ -340,17 +340,36 @@ describe('chromedash-guide-new-page', () => {
     assert.isTrue(existingRadio!.checked);
     assert.isFalse(proposeRadio!.checked);
 
-    const selectEl = component.shadowRoot?.querySelector<HTMLElement>(
+    const selectEl = component.shadowRoot?.querySelector<HTMLSelectElement>(
       'sl-select[name="web_feature"]'
     );
     assert.exists(selectEl);
     assert.isTrue(selectEl!.hasAttribute('required'));
+    assert.equal(selectEl!.value, '');
+
+    const options = selectEl!.querySelectorAll('sl-option');
+    assert.isAtLeast(options.length, 1);
+    assert.equal(options[0].getAttribute('value'), 'N/A');
+    assert.equal(options[0].textContent?.trim(), 'N/A (Rare)');
 
     // Explainer links field should not be present in existing mode.
     const explainerField = component.shadowRoot?.querySelector(
       'chromedash-form-field[name="explainer_links"]'
     );
     assert.isNull(explainerField);
+
+    // Selecting N/A should set web_feature to N/A without showing a webstatus.dev link.
+    component.handleSelectWebFeature({
+      target: {value: 'N/A'},
+    } as unknown as Event);
+    await component.updateComplete;
+    assert.equal(
+      component.fieldValues.find(fv => fv.name === 'web_feature')?.value,
+      'N/A'
+    );
+    assert.isNull(
+      component.shadowRoot?.querySelector('a[href*="webstatus.dev"]')
+    );
 
     // Simulate selecting a feature.
     component.handleSelectWebFeature({

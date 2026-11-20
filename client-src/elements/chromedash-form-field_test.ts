@@ -30,7 +30,7 @@ import {
   STAGE_BLINK_SHIPPING,
 } from './form-field-enums.js';
 import {ChromeStatusClient} from '../js-src/cs-client.js';
-import {WEB_FEATURE_REGEX} from './form-field-specs.js';
+import {WEB_FEATURE_FIELD_REGEX} from './form-field-specs.js';
 import sinon from 'sinon';
 
 describe('chromedash-form-field', () => {
@@ -182,13 +182,24 @@ describe('chromedash-form-field', () => {
       'input#id_web_feature'
     );
     assert.exists(inputEl);
-    assert.equal(
-      inputEl?.getAttribute('pattern'),
-      `(proposed/)?${WEB_FEATURE_REGEX}`
-    );
+    assert.equal(inputEl?.getAttribute('pattern'), WEB_FEATURE_FIELD_REGEX);
     assert.isTrue(inputEl!.checkValidity());
     inputEl!.value = 'proposed/hwb';
     assert.isTrue(inputEl!.checkValidity());
+    inputEl!.value = 'Missing feature';
+    assert.isTrue(inputEl!.checkValidity());
+    inputEl!.value = 'missing feature';
+    assert.isTrue(inputEl!.checkValidity());
+    inputEl!.value = 'MISSING FEATURE';
+    assert.isTrue(inputEl!.checkValidity());
+    inputEl!.value = 'N/A';
+    assert.isTrue(inputEl!.checkValidity());
+    inputEl!.value = 'n/a';
+    assert.isTrue(inputEl!.checkValidity());
+    inputEl!.value = 'N/a';
+    assert.isTrue(inputEl!.checkValidity());
+    inputEl!.value = 'proposed/N/A';
+    assert.isFalse(inputEl!.checkValidity());
     inputEl!.value = 'other/hwb';
     assert.isFalse(inputEl!.checkValidity());
     inputEl!.value = '123';
