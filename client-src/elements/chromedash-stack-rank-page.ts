@@ -110,7 +110,9 @@ export class ChromedashStackRankPage extends LitElement {
     const property = this.viewList.find(
       item => item.property_name === inputValue
     );
-    window.location.href = `/metrics/${this.type}/timeline/${this.view}/${property.bucket_id}`;
+    if (property) {
+      window.location.href = `/metrics/${this.type}/timeline/${this.view}/${property.bucket_id}`;
+    }
   }
 
   renderSubheader() {

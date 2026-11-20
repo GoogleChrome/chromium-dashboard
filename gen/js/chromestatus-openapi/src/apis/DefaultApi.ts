@@ -19,8 +19,6 @@ import type {
   Activity,
   AddAttachmentResponse,
   CommentsRequest,
-  ComponentUsersRequest,
-  ComponentsUsersResponse,
   CreateAccountRequest,
   CreateOriginTrialRequest,
   DeleteAccount200Response,
@@ -74,10 +72,6 @@ import {
     AddAttachmentResponseToJSON,
     CommentsRequestFromJSON,
     CommentsRequestToJSON,
-    ComponentUsersRequestFromJSON,
-    ComponentUsersRequestToJSON,
-    ComponentsUsersResponseFromJSON,
-    ComponentsUsersResponseToJSON,
     CreateAccountRequestFromJSON,
     CreateAccountRequestToJSON,
     CreateOriginTrialRequestFromJSON,
@@ -180,12 +174,6 @@ export interface AddGateCommentRequest {
     featureId: number;
     gateId: number;
     commentsRequest?: CommentsRequest;
-}
-
-export interface AddUserToComponentRequest {
-    componentId: number;
-    userId: number;
-    componentUsersRequest?: ComponentUsersRequest;
 }
 
 export interface AddXfnGatesToStageRequest {
@@ -313,12 +301,6 @@ export interface PostIntentToBlinkDevRequest {
     postIntentRequest?: PostIntentRequest;
 }
 
-export interface RemoveUserFromComponentRequest {
-    componentId: number;
-    userId: number;
-    componentUsersRequest?: ComponentUsersRequest;
-}
-
 export interface SetAssigneesForGateRequest {
     featureId: number;
     gateId: number;
@@ -419,23 +401,6 @@ export interface DefaultApiInterface {
      * Add a comment to a specific gate
      */
     addGateComment(requestParameters: AddGateCommentRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SuccessMessage>;
-
-    /**
-     * 
-     * @summary Add a user to a component
-     * @param {number} componentId Component ID
-     * @param {number} userId User ID
-     * @param {ComponentUsersRequest} [componentUsersRequest] 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof DefaultApiInterface
-     */
-    addUserToComponentRaw(requestParameters: AddUserToComponentRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>>;
-
-    /**
-     * Add a user to a component
-     */
-    addUserToComponent(requestParameters: AddUserToComponentRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
 
     /**
      * 
@@ -925,20 +890,6 @@ export interface DefaultApiInterface {
 
     /**
      * 
-     * @summary List all components and possible users
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof DefaultApiInterface
-     */
-    listComponentUsersRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ComponentsUsersResponse>>;
-
-    /**
-     * List all components and possible users
-     */
-    listComponentUsers(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ComponentsUsersResponse>;
-
-    /**
-     * 
      * @summary List features whose external reviews are incomplete
      * @param {'tag' | 'gecko' | 'webkit'} reviewGroup Which review group to focus on:  * &#x60;tag&#x60; - The W3C TAG  * &#x60;gecko&#x60; - The rendering engine that powers Mozilla Firefox  * &#x60;webkit&#x60; - The rendering engine that powers Apple Safari 
      * @param {*} [options] Override http request option.
@@ -1070,23 +1021,6 @@ export interface DefaultApiInterface {
      * reject unneeded GET request without triggering Error Reporting
      */
     rejectGetRequestsLogout(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
-
-    /**
-     * 
-     * @summary Remove a user from a component
-     * @param {number} componentId Component ID
-     * @param {number} userId User ID
-     * @param {ComponentUsersRequest} [componentUsersRequest] 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof DefaultApiInterface
-     */
-    removeUserFromComponentRaw(requestParameters: RemoveUserFromComponentRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>>;
-
-    /**
-     * Remove a user from a component
-     */
-    removeUserFromComponent(requestParameters: RemoveUserFromComponentRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
 
     /**
      * 
@@ -1371,52 +1305,6 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
     async addGateComment(requestParameters: AddGateCommentRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SuccessMessage> {
         const response = await this.addGateCommentRaw(requestParameters, initOverrides);
         return await response.value();
-    }
-
-    /**
-     * Add a user to a component
-     */
-    async addUserToComponentRaw(requestParameters: AddUserToComponentRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
-        if (requestParameters['componentId'] == null) {
-            throw new runtime.RequiredError(
-                'componentId',
-                'Required parameter "componentId" was null or undefined when calling addUserToComponent().'
-            );
-        }
-
-        if (requestParameters['userId'] == null) {
-            throw new runtime.RequiredError(
-                'userId',
-                'Required parameter "userId" was null or undefined when calling addUserToComponent().'
-            );
-        }
-
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        headerParameters['Content-Type'] = 'application/json';
-
-        if (this.configuration && this.configuration.apiKey) {
-            headerParameters["X-Xsrf-Token"] = await this.configuration.apiKey("X-Xsrf-Token"); // XsrfToken authentication
-        }
-
-        const response = await this.request({
-            path: `/components/{componentId}/users/{userId}`.replace(`{${"componentId"}}`, encodeURIComponent(String(requestParameters['componentId']))).replace(`{${"userId"}}`, encodeURIComponent(String(requestParameters['userId']))),
-            method: 'PUT',
-            headers: headerParameters,
-            query: queryParameters,
-            body: ComponentUsersRequestToJSON(requestParameters['componentUsersRequest']),
-        }, initOverrides);
-
-        return new runtime.VoidApiResponse(response);
-    }
-
-    /**
-     * Add a user to a component
-     */
-    async addUserToComponent(requestParameters: AddUserToComponentRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
-        await this.addUserToComponentRaw(requestParameters, initOverrides);
     }
 
     /**
@@ -2490,36 +2378,6 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
     }
 
     /**
-     * List all components and possible users
-     */
-    async listComponentUsersRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ComponentsUsersResponse>> {
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        if (this.configuration && this.configuration.apiKey) {
-            headerParameters["X-Xsrf-Token"] = await this.configuration.apiKey("X-Xsrf-Token"); // XsrfToken authentication
-        }
-
-        const response = await this.request({
-            path: `/componentsusers`,
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters,
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => ComponentsUsersResponseFromJSON(jsonValue));
-    }
-
-    /**
-     * List all components and possible users
-     */
-    async listComponentUsers(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ComponentsUsersResponse> {
-        const response = await this.listComponentUsersRaw(initOverrides);
-        return await response.value();
-    }
-
-    /**
      * List features whose external reviews are incomplete
      */
     async listExternalReviewsRaw(requestParameters: ListExternalReviewsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ExternalReviewsResponse>> {
@@ -2806,52 +2664,6 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
      */
     async rejectGetRequestsLogout(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
         await this.rejectGetRequestsLogoutRaw(initOverrides);
-    }
-
-    /**
-     * Remove a user from a component
-     */
-    async removeUserFromComponentRaw(requestParameters: RemoveUserFromComponentRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
-        if (requestParameters['componentId'] == null) {
-            throw new runtime.RequiredError(
-                'componentId',
-                'Required parameter "componentId" was null or undefined when calling removeUserFromComponent().'
-            );
-        }
-
-        if (requestParameters['userId'] == null) {
-            throw new runtime.RequiredError(
-                'userId',
-                'Required parameter "userId" was null or undefined when calling removeUserFromComponent().'
-            );
-        }
-
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        headerParameters['Content-Type'] = 'application/json';
-
-        if (this.configuration && this.configuration.apiKey) {
-            headerParameters["X-Xsrf-Token"] = await this.configuration.apiKey("X-Xsrf-Token"); // XsrfToken authentication
-        }
-
-        const response = await this.request({
-            path: `/components/{componentId}/users/{userId}`.replace(`{${"componentId"}}`, encodeURIComponent(String(requestParameters['componentId']))).replace(`{${"userId"}}`, encodeURIComponent(String(requestParameters['userId']))),
-            method: 'DELETE',
-            headers: headerParameters,
-            query: queryParameters,
-            body: ComponentUsersRequestToJSON(requestParameters['componentUsersRequest']),
-        }, initOverrides);
-
-        return new runtime.VoidApiResponse(response);
-    }
-
-    /**
-     * Remove a user from a component
-     */
-    async removeUserFromComponent(requestParameters: RemoveUserFromComponentRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
-        await this.removeUserFromComponentRaw(requestParameters, initOverrides);
     }
 
     /**

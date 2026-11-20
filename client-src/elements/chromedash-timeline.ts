@@ -407,6 +407,7 @@ ORDER BY date DESC, client`;
 
 // Capitalizes the first letter of a word.
 function capitalize(word) {
+  if (!word) return '';
   const letters = word.split('');
   letters[0] = letters[0].toUpperCase();
   return letters.join('');

@@ -22,6 +22,7 @@ import logging
 from dataclasses import asdict
 from datetime import datetime, timezone
 from typing import Any, NotRequired, TypedDict
+from urllib.parse import urlsplit
 
 import google.auth
 import requests
@@ -111,22 +112,55 @@ def get_trials_list() -> list[dict[str, Any]]:
     if key is None:
         return []
 
+    # Authenticate as the app's service account. Requests that carry only an
+    # API key may be redirected to a sign-in page instead of being served.
+    headers: dict[str, str] = {}
+    if not settings.DEV_MODE:
+        headers['Authorization'] = f'Bearer {_get_ot_access_token()}'
+
     try:
+        # Never follow redirects: the API key is in the query string, and a
+        # redirect (e.g. to a sign-in page) would forward it elsewhere and
+        # return an HTML page with a 200 status.
         response = requests.get(
             f'{settings.OT_API_URL}/v1/trials',
             params={'prettyPrint': 'false', 'key': key},
+            headers=headers,
+            allow_redirects=False,
         )
         response.raise_for_status()
     except requests.exceptions.RequestException as e:
         logging.exception('Failed to get response from origin trials API.')
         raise e
 
-    response_json = response.json()
+    if response.is_redirect:
+        location = urlsplit(response.headers.get('Location', ''))
+        msg = (
+            'Origin trials API request was redirected '
+            f'(status={response.status_code}) to '
+            f'{location.scheme}://{location.netloc}{location.path}. '
+            'The caller is likely being sent to a login page.'
+        )
+        logging.error(msg)
+        raise requests.exceptions.HTTPError(msg, response=response)
 
+    try:
+        response_json = response.json()
+    except requests.exceptions.JSONDecodeError as e:
+        logging.error(
+            'Origin trials API returned a non-JSON response. '
+            f'status={response.status_code} '
+            f'content_type={response.headers.get("Content-Type")!r} '
+            f'bytes={len(response.content)}'
+        )
+        raise e
+
+    # Proto3 JSON omits empty repeated fields, so 'trials' is absent when
+    # there are no trials.
     trials_list = [
         asdict(OriginTrialInfo(api_trial))
-        for api_trial in response_json['trials']
-        if api_trial['isPublic']
+        for api_trial in response_json.get('trials', [])
+        if api_trial.get('isPublic')
     ]
     return trials_list
 
