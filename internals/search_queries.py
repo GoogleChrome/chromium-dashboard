@@ -206,6 +206,15 @@ def handle_can_edit_me_query_async() -> list[int] | Future:
     return keys_promise
 
 
+def is_feature_entry_sort(sort_spec: str) -> bool:
+    """Return True if sort_spec sorts directly on a FeatureEntry property.
+
+    Sorts on joined models (e.g., gate.requested_on) return False.
+    """
+    field = SORTABLE_FIELDS.get(sort_spec.removeprefix('-').lower())
+    return field is not None and not callable(field)
+
+
 def total_order_query_async(sort_spec: str) -> list[int] | Future:
     """Create a query promise for all FeatureEntry IDs sorted by sort_spec."""
     # TODO(jrobbins): Support multi-column sort.
