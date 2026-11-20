@@ -197,7 +197,9 @@ class ChromedashStackRank extends LitElement {
   sort(e) {
     e.preventDefault();
 
-    const parts = e.target.dataset.order.split('-');
+    const target = e.target?.closest?.('[data-order]') || e.target;
+    if (!target?.dataset?.order) return;
+    const parts = target.dataset.order.split('-');
     this.sortType = parts[0];
     this.sortReverse = Boolean(parts[1]);
 

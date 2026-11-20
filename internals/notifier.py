@@ -206,7 +206,7 @@ IWA_RULE_ADDRS = ['iwa-dev@chromium.org']
 POST_BETA_RULE_REASON = (
     'Published aspects of this feature entry changed after it started beta'
 )
-POST_BETA_RULE_ADDRS = ['rachelandrew@google.com']
+POST_BETA_RULE_ADDRS = ['rachelandrew@google.com', 'jlwagner@google.com']
 ENTERPRISE_LATE_RULE_REASON = (
     'Published aspects of this feature entry changed after it was first '
     'included in release notes'
