@@ -331,6 +331,7 @@ class MilestoneSet(ndb.Model):  # copy from milestone fields of Feature
         'dt_milestone_android_start': 'android_first',
         'dt_milestone_ios_start': 'ios_first',
         'dt_milestone_webview_start': 'webview_first',
+        'dep_plan_milestone_desktop_start': 'desktop_first',
         'rollout_milestone': 'desktop_first',
     }
 
