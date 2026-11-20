@@ -114,13 +114,18 @@ class BaseHandler(flask.views.MethodView):
 
     def get_json_param_dict(self) -> dict:
         """Return the JSON content in the body of the request."""
-        return self.request.get_json(force=True, silent=True) or {}
+        parsed = self.request.get_json(force=True, silent=True)
+        if parsed is None:
+            return {}
+        if not isinstance(parsed, dict):
+            self.abort(400, msg='Expected a JSON object')
+        return parsed
 
     def get_param(
         self, name, default=None, required=True, validator=None, allowed=None
     ):
         """Get the specified JSON parameter."""
-        json_body = self.request.get_json(force=True, silent=True) or {}
+        json_body = self.get_json_param_dict()
         val = json_body.get(name, default)
         if required and val is None:
             self.abort(400, msg='Missing parameter %r' % name)
@@ -152,14 +157,21 @@ class BaseHandler(flask.views.MethodView):
             self.abort(400, msg='Parameter %r was not a bool' % name)
         return val
 
-    def _extract_id_param(self, kwargs, name: str) -> int | None:
-        """Extracts a required integer ID from kwargs."""
-        val = kwargs.get(name) or flask.request.args.get(name)
+    def _extract_id_param(self, kwargs, name: str) -> int:
+        """Extracts a required positive integer ID from kwargs."""
+        val = kwargs.get(name)
+        if val is None:
+            val = flask.request.args.get(name)
         if val is not None:
             try:
-                return int(val)
+                id_val = int(val)
             except ValueError:
                 self.abort(400, msg=f"Parameter '{name}' was not an int")
+            if id_val <= 0:
+                self.abort(
+                    400, msg=f"Parameter '{name}' must be a positive int"
+                )
+            return id_val
         else:
             self.abort(400, msg=f"Missing parameter '{name}'")
 
@@ -301,7 +313,7 @@ class APIHandler(BaseHandler):
     def post(self, *args, **kwargs):
         """Handle an incoming HTTP POST request."""
         logging.info('Starting to handle POST')
-        json_body = self.request.get_json(force=True, silent=True) or {}
+        json_body = self.get_json_param_dict()
         logging.info('POST data is:')
         for k, v in json_body.items():
             logging.info('%r: %s', k, repr(v)[: settings.MAX_LOG_LINE])
