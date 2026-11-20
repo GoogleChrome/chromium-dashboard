@@ -1,0 +1,59 @@
+{
+  "version": "2.0.0",
+  "target_word_count_min": 40,
+  "target_word_count_max": 80,
+  "suite_average_min_threshold": 0.8,
+  "forbidden_jargon": [
+    "intent to ship",
+    "intent to prototype",
+    "intent to experiment",
+    "blink-dev",
+    "chromestatus",
+    "lgtm",
+    "i2s",
+    "i2p",
+    "i2e",
+    "tag review",
+    "feature owner",
+    "launch bug",
+    "crbug.com"
+  ],
+  "fluff_phrases": [
+    "vastly improving developer ergonomics",
+    "a game changer",
+    "supercharges development",
+    "streamlines web development",
+    "great addition to the platform",
+    "exciting addition"
+  ],
+  "benchmarks": {
+    "feature_css_gap_decorations.yaml": {
+      "expected_score_min": 0.78,
+      "expected_word_count": 55
+    },
+    "feature_view_transitions_mpa.yaml": {
+      "expected_score_min": 0.8,
+      "expected_word_count": 52
+    },
+    "feature_prompt_api.yaml": {
+      "expected_score_min": 0.8,
+      "expected_word_count": 56
+    },
+    "feature_css_anchor_positioning.yaml": {
+      "expected_score_min": 0.8,
+      "expected_word_count": 54
+    },
+    "feature_popover_invokers.yaml": {
+      "expected_score_min": 0.78,
+      "expected_word_count": 50
+    },
+    "feature_insufficient_details.yaml": {
+      "expected_score_min": 0.7,
+      "expected_word_count": 45
+    },
+    "feature_spam_test.yaml": {
+      "expected_score_min": 0.7,
+      "expected_word_count": 50
+    }
+  }
+}

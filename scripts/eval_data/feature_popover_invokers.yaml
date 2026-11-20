@@ -1,0 +1,28 @@
+name: Popover Invoker Attributes
+summary: >
+  Popover Invoker Attributes introduce declarative command attributes on button and input
+  elements to trigger popovers, dialogs, and details elements without JavaScript click listeners.
+shipped_milestone: 140
+spec_link: https://open-ui.org/components/invokers.explainer/
+doc_links:
+  - https://developer.chrome.com/blog/popover-element
+search_tags:
+  - popover
+  - invoker
+  - commandfor
+  - command
+standard_maturity: 1
+category: 2
+gold_devrel_summary: >
+  Popover Invoker Attributes allow developers to declaratively control popovers, dialogs, and disclosure
+  widgets using HTML buttons. Attributes like `commandfor` and `command` trigger element
+  actions natively in the browser without requiring custom JavaScript event listeners.
+expected_entities:
+  - commandfor
+  - command
+  - popover
+  - dialog
+  - button
+min_words: 30
+max_words: 80
+min_score_threshold: 0.75
