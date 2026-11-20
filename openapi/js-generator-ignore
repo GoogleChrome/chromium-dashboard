@@ -1,0 +1,9 @@
+# Passed to openapi-generator via --ignore-file-override for
+# gen/js/chromestatus-openapi.
+#
+# The package is an npm workspace of the root package.json, so these files
+# are maintained by hand (and by Dependabot). The generator would otherwise
+# reset them to its own outdated TypeScript version and compiler settings.
+package.json
+tsconfig.json
+tsconfig.esm.json
