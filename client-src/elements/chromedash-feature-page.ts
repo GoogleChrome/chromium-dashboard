@@ -263,12 +263,15 @@ export class ChromedashFeaturePage extends LitElement {
           url: url,
         })
         .then(() => {
-          ga('send', 'social', {
-            socialNetwork: 'web',
-            socialAction: 'share',
-            socialTarget: url,
-          });
-        });
+          if (typeof ga === 'function') {
+            ga('send', 'social', {
+              socialNetwork: 'web',
+              socialAction: 'share',
+              socialTarget: url,
+            });
+          }
+        })
+        .catch(() => {});
     }
   }
 
@@ -371,10 +374,7 @@ export class ChromedashFeaturePage extends LitElement {
   }
 
   pairedUserCanEdit() {
-    return (
-      this.paired_user?.can_edit_all ||
-      this.paired_user?.editable_features.includes(this.featureId)
-    );
+    return userCanEdit(this.paired_user, this.featureId);
   }
 
   renderSubHeader() {
@@ -481,8 +481,8 @@ export class ChromedashFeaturePage extends LitElement {
     if (!canEdit && this.pairedUserCanEdit()) {
       warnings.push(html`
         <div id="switch_to_edit" class="warning">
-          User ${this.user.email} cannot edit this feature or request reviews.
-          But, ${this.paired_user.email} can do that.
+          User ${this.user?.email} cannot edit this feature or request reviews.
+          But, ${this.paired_user?.email} can do that.
           <br />
           To switch users: sign out and then sign in again.
         </div>
@@ -494,8 +494,8 @@ export class ChromedashFeaturePage extends LitElement {
     ) {
       warnings.push(html`
         <div id="switch_to_review" class="warning">
-          User ${this.user.email} cannot review this feature. But,
-          ${this.paired_user.email} can do that.
+          User ${this.user?.email} cannot review this feature. But,
+          ${this.paired_user?.email} can do that.
           <br />
           To switch users: sign out and then sign in again.
         </div>

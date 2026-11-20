@@ -97,7 +97,7 @@ export interface GateDisplayInfo {
 }
 
 export function gateStateDisplayInfo(state: number): GateDisplayInfo {
-  const stateName = GATE_STATE_TO_NAME[state];
+  const stateName = GATE_STATE_TO_NAME[state] || `State ${state}`;
   const className = stateName
     .toLowerCase()
     .replaceAll(' ', '_')

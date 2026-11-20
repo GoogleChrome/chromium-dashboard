@@ -41,4 +41,19 @@ describe('chromedash-settings-page', () => {
     assert.exists(component);
     assert.instanceOf(component, ChromedashActivityPage);
   });
+
+  it('reloads comments without throwing when commentAreaRef is unmounted (logged-out user)', async () => {
+    getCommentsStub.resolves({comments: [{comment_id: 1, content: 'hello'}]});
+    const component = await fixture<ChromedashActivityPage>(
+      html`<chromedash-activity-page .featureId=${123456}>
+      </chromedash-activity-page>`
+    );
+    await component.updateComplete;
+
+    // For a logged-out user, user is null so sl-textarea is not rendered
+    assert.isUndefined(component.commentAreaRef.value);
+    component.reloadComments();
+    await new Promise(r => setTimeout(r, 0));
+    assert.equal(component.comments.length, 1);
+  });
 });
