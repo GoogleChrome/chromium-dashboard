@@ -44,29 +44,6 @@ API_OWNERS_URL = (
     'https://chromium.googlesource.com/chromium/src/+/'
     'main/third_party/blink/API_OWNERS?format=TEXT'
 )
-# Approvers for all non-API-Owners gates are stored in NDB (GateDef).
-# Historical lists kept temporarily for reference:
-# ENTERPRISE_APPROVERS = [
-#     'mhoste@google.com',
-#     'angelaweber@google.com',
-#     'davidayad@google.com',
-#     'nsamarakkody@google.com',
-#     'pastarmovj@google.com',
-#     'aaudi@google.com',
-#     'kimreardon@google.com',
-#     'elmirakalali@google.com',
-#     'carolinasaluz@google.com',
-#     'crushworth@google.com',
-#     'sirishsingh@google.com',
-# ]
-# TESTING_APPROVERS = [
-#     'sadapala@google.com',
-#     'santhoshkumarm@google.com',
-#     'rnanjappan@google.com',
-#     'karala@google.com',
-#     'aichein@google.com',
-# ]
-
 
 DEFAULT_SLO_LIMIT = 5  # Five weekdays in the Pacific timezone.
 DEFAULT_SLO_RESOLVE_LIMIT = 10  # Ten weekdays in the Pacific timezone.
