@@ -36,11 +36,15 @@ class GatesAdminAPI(basehandlers.APIHandler):
     """Site-admin API for listing gate definitions and editing approvers."""
 
     def _build_gate_def_admin(
-        self, gate_type: int, afd: approval_defs.GateInfo
+        self,
+        gate_type: int,
+        afd: approval_defs.GateInfo,
+        gate_def: GateDef | None = None,
     ) -> GateDefAdmin:
         """Build a GateDefAdmin model for a single gate type."""
         if afd.approvers == approval_defs.IN_NDB:
-            gate_def = GateDef.get_gate_def(gate_type)
+            if gate_def is None:
+                gate_def = GateDef.get_gate_def(gate_type)
             approvers = list(gate_def.approvers)
             is_editable = True
             approvers_url = None
@@ -71,6 +75,8 @@ class GatesAdminAPI(basehandlers.APIHandler):
     @permissions.require_admin_site
     def do_get(self, **kwargs):
         """Return all gate definitions and their current approvers."""
+        if kwargs.get('id') is not None:
+            self.abort(405, msg='Method not allowed')
         gates = [
             self._build_gate_def_admin(gate_type, afd)
             for gate_type, afd in approval_defs.APPROVAL_FIELDS_BY_ID.items()
@@ -121,4 +127,6 @@ class GatesAdminAPI(basehandlers.APIHandler):
         cache_key = '%s|%s' % (approval_defs.APPROVERS_CACHE_KEY, gate_type)
         rediscache.delete(cache_key)
 
-        return self._build_gate_def_admin(gate_type, afd).to_dict()
+        return self._build_gate_def_admin(
+            gate_type, afd, gate_def=gate_def
+        ).to_dict()

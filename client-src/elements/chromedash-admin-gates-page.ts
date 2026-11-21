@@ -106,6 +106,10 @@ export class ChromedashAdminGatesPage extends LitElement {
   }
 
   async fetchData() {
+    if (this.user && !this.user.is_admin) {
+      this.loading = false;
+      return;
+    }
     this.loading = true;
     try {
       const response = await this._client.getGateDefs();
@@ -181,7 +185,9 @@ export class ChromedashAdminGatesPage extends LitElement {
       this.gates = this.gates.map(g =>
         g.gate_type === updated.gate_type ? updated : g
       );
-      this.editedApproversText = updated.approvers.join('\n');
+      if (this.selectedGateType === updated.gate_type) {
+        this.editedApproversText = updated.approvers.join('\n');
+      }
       showToastMessage(`Saved reviewers for ${updated.name}.`);
     } catch {
       showToastMessage(
@@ -307,6 +313,7 @@ export class ChromedashAdminGatesPage extends LitElement {
         <sl-select
           id="gate-select"
           label="Gate type"
+          ?disabled=${this.saving}
           .value=${
             this.selectedGateType !== null ? String(this.selectedGateType) : ''
           }

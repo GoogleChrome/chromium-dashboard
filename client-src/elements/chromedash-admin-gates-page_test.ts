@@ -148,6 +148,7 @@ describe('chromedash-admin-gates-page', () => {
     );
     await el.updateComplete;
 
+    assert.isFalse(getGateDefsStub.called);
     assert.include(
       el.shadowRoot!.textContent || '',
       'You must be a site admin'

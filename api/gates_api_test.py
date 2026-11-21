@@ -40,6 +40,8 @@ class GatesAdminAPITest(testing_config.CustomTestCase):
             email='user@example.com', is_admin=False
         )
         self.normal_user.put()
+        for gate_def in GateDef.query():
+            gate_def.key.delete()
         self.handler = gates_api.GatesAdminAPI()
         self._clear_cache()
 
@@ -120,6 +122,15 @@ class GatesAdminAPITest(testing_config.CustomTestCase):
             api_ship_gate['approvers_url'], approval_defs.API_OWNERS_URL
         )
         self.assertEqual(api_ship_gate['approvers'], ['example@chromium.org'])
+
+    def test_get__with_id_method_not_allowed(self):
+        """GET on /api/v0/gates/<id> is rejected with 405."""
+        testing_config.sign_in('admin@example.com', 1)
+        with test_app.test_request_context(
+            f'/api/v0/gates/{core_enums.GATE_PRIVACY_SHIP}'
+        ):
+            with self.assertRaises(werkzeug.exceptions.MethodNotAllowed):
+                self.handler.do_get(id=core_enums.GATE_PRIVACY_SHIP)
 
     def test_patch__anon_forbidden(self):
         """Anonymous users cannot PATCH gate definitions."""
