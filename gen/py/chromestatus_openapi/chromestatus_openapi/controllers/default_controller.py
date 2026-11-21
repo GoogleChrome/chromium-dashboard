@@ -17,8 +17,10 @@ from chromestatus_openapi.models.feature_latency import FeatureLatency  # noqa: 
 from chromestatus_openapi.models.feature_links_response import FeatureLinksResponse  # noqa: E501
 from chromestatus_openapi.models.feature_links_sample import FeatureLinksSample  # noqa: E501
 from chromestatus_openapi.models.feature_links_summary_response import FeatureLinksSummaryResponse  # noqa: E501
+from chromestatus_openapi.models.gate_def_admin import GateDefAdmin  # noqa: E501
 from chromestatus_openapi.models.get_comments_response import GetCommentsResponse  # noqa: E501
 from chromestatus_openapi.models.get_dismissed_cues400_response import GetDismissedCues400Response  # noqa: E501
+from chromestatus_openapi.models.get_gate_defs_response import GetGateDefsResponse  # noqa: E501
 from chromestatus_openapi.models.get_gate_response import GetGateResponse  # noqa: E501
 from chromestatus_openapi.models.get_intent_response import GetIntentResponse  # noqa: E501
 from chromestatus_openapi.models.get_origin_trials_response import GetOriginTrialsResponse  # noqa: E501
@@ -49,6 +51,7 @@ from chromestatus_openapi.models.summary_suggestion_list_response import Summary
 from chromestatus_openapi.models.summary_suggestion_patch_request import SummarySuggestionPatchRequest  # noqa: E501
 from chromestatus_openapi.models.summary_suggestion_response import SummarySuggestionResponse  # noqa: E501
 from chromestatus_openapi.models.summary_suggestion_trigger_request import SummarySuggestionTriggerRequest  # noqa: E501
+from chromestatus_openapi.models.update_gate_def_request import UpdateGateDefRequest  # noqa: E501
 from chromestatus_openapi.models.web_feature_infos_response import WebFeatureInfosResponse  # noqa: E501
 from chromestatus_openapi import util
 
@@ -289,6 +292,17 @@ def get_gate_comments(feature_id, gate_id):  # noqa: E501
     :type gate_id: int
 
     :rtype: Union[List[Activity], Tuple[List[Activity], int], Tuple[List[Activity], int, Dict[str, str]]
+    """
+    return 'do some magic!'
+
+
+def get_gate_defs():  # noqa: E501
+    """Get all gate definitions and their approvers (admin only)
+
+     # noqa: E501
+
+
+    :rtype: Union[GetGateDefsResponse, Tuple[GetGateDefsResponse, int], Tuple[GetGateDefsResponse, int, Dict[str, str]]
     """
     return 'do some magic!'
 
@@ -772,6 +786,23 @@ def update_feature_comment(feature_id, patch_comment_request):  # noqa: E501
     """
     if connexion.request.is_json:
         patch_comment_request = PatchCommentRequest.from_dict(connexion.request.get_json())  # noqa: E501
+    return 'do some magic!'
+
+
+def update_gate_def(id, update_gate_def_request):  # noqa: E501
+    """Update the approvers for a gate definition (admin only)
+
+     # noqa: E501
+
+    :param id: The gate type ID.
+    :type id: int
+    :param update_gate_def_request: 
+    :type update_gate_def_request: dict | bytes
+
+    :rtype: Union[GateDefAdmin, Tuple[GateDefAdmin, int], Tuple[GateDefAdmin, int, Dict[str, str]]
+    """
+    if connexion.request.is_json:
+        update_gate_def_request = UpdateGateDefRequest.from_dict(connexion.request.get_json())  # noqa: E501
     return 'do some magic!'
 
 

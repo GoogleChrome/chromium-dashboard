@@ -394,6 +394,7 @@ export class ChromedashDrawer extends LitElement {
       <hr />
       <div class="section-header">Admin</div>
       ${this.renderNavItem('/admin/users/new', 'Users')}
+      ${this.renderNavItem('/admin/gates', 'Gates')}
       ${this.renderNavItem('/admin/ot_requests', 'OT requests')}
       ${this.renderNavItem('/admin/bulk_edit', 'Bulk edit')}
       ${this.renderNavItem('/admin/feature_links', 'Feature links')}

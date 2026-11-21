@@ -22,7 +22,7 @@ import werkzeug.exceptions  # Flask HTTP stuff.
 
 import testing_config  # Must be imported before the module under test.
 from api import reviews_api
-from internals import approval_defs, core_enums, core_models
+from internals import core_enums, core_models
 from internals.review_models import Gate, SurveyAnswers, Vote
 
 test_app = flask.Flask(__name__)
@@ -739,7 +739,7 @@ class XfnGatesAPITest(testing_config.CustomTestCase):
     @mock.patch('api.reviews_api.XfnGatesAPI.create_xfn_gates')
     def test_do_post__reviewers_allowed(self, mock_create):
         """Handler accepts users who can review any gate."""
-        testing_config.sign_in(approval_defs.ENTERPRISE_APPROVERS[0], 123567890)
+        testing_config.sign_in('example@chromium.org', 123567890)
         mock_create.return_value = 222
         with test_app.test_request_context(self.request_path):
             actual = self.handler.do_post(

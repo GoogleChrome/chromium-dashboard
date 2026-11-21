@@ -923,6 +923,24 @@ paths:
           description: Feature or stage not found based on given ID.
       summary: Submit an intent to be posted on blink-dev
       x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+  /gates:
+    get:
+      operationId: get_gate_defs
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetGateDefsResponse'
+          description: A list of all gate definitions and their approvers.
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: User does not have admin permission.
+      summary: Get all gate definitions and their approvers (admin only)
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
   /gates/pending:
     get:
       operationId: get_pending_gates
@@ -934,6 +952,53 @@ paths:
                 $ref: '#/components/schemas/GetGateResponse'
           description: A list of all pending gates.
       summary: Get all pending gates
+      x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
+  /gates/{id}:
+    patch:
+      operationId: update_gate_def
+      parameters:
+      - description: The gate type ID.
+        explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateGateDefRequest'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GateDefAdmin'
+          description: Updated gate definition.
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: Invalid request or gate approvers cannot be edited.
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: User does not have admin permission.
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+          description: Gate type not found.
+      security:
+      - XsrfToken: []
+      summary: Update the approvers for a gate definition (admin only)
       x-openapi-router-controller: chromestatus_openapi.controllers.default_controller
   /login:
     get:
@@ -4204,6 +4269,134 @@ components:
       - features
       - milestone
       title: ReleaseNotesResponse
+      type: object
+    GateDefAdmin:
+      description: Administrative representation of a review gate definition and its
+        approvers.
+      example:
+        gate_type: 0
+        name: name
+        approvers_url: approvers_url
+        rotation_url: rotation_url
+        slo_initial_response: 6
+        description: description
+        rule: rule
+        approvers:
+        - approvers
+        - approvers
+        is_editable: true
+        escalation_email: escalation_email
+        team_name: team_name
+        slo_resolve: 1
+      properties:
+        gate_type:
+          title: gate_type
+          type: integer
+        name:
+          title: name
+          type: string
+        description:
+          title: description
+          type: string
+        team_name:
+          title: team_name
+          type: string
+        rule:
+          title: rule
+          type: string
+        approvers:
+          items:
+            type: string
+          title: approvers
+          type: array
+        is_editable:
+          title: is_editable
+          type: boolean
+        approvers_url:
+          nullable: true
+          title: approvers_url
+          type: string
+        escalation_email:
+          nullable: true
+          title: escalation_email
+          type: string
+        rotation_url:
+          nullable: true
+          title: rotation_url
+          type: string
+        slo_initial_response:
+          title: slo_initial_response
+          type: integer
+        slo_resolve:
+          title: slo_resolve
+          type: integer
+      required:
+      - approvers
+      - description
+      - gate_type
+      - is_editable
+      - name
+      - rule
+      - slo_initial_response
+      - slo_resolve
+      - team_name
+      title: GateDefAdmin
+      type: object
+    GetGateDefsResponse:
+      example:
+        gates:
+        - gate_type: 0
+          name: name
+          approvers_url: approvers_url
+          rotation_url: rotation_url
+          slo_initial_response: 6
+          description: description
+          rule: rule
+          approvers:
+          - approvers
+          - approvers
+          is_editable: true
+          escalation_email: escalation_email
+          team_name: team_name
+          slo_resolve: 1
+        - gate_type: 0
+          name: name
+          approvers_url: approvers_url
+          rotation_url: rotation_url
+          slo_initial_response: 6
+          description: description
+          rule: rule
+          approvers:
+          - approvers
+          - approvers
+          is_editable: true
+          escalation_email: escalation_email
+          team_name: team_name
+          slo_resolve: 1
+      properties:
+        gates:
+          items:
+            $ref: '#/components/schemas/GateDefAdmin'
+          title: gates
+          type: array
+      required:
+      - gates
+      title: GetGateDefsResponse
+      type: object
+    UpdateGateDefRequest:
+      example:
+        approvers:
+        - approvers
+        - approvers
+      properties:
+        approvers:
+          items:
+            type: string
+          title: approvers
+          type: array
+      required:
+      - approvers
+      title: UpdateGateDefRequest
       type: object
     addAttachment_request:
       properties:
