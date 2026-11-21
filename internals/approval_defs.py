@@ -44,31 +44,28 @@ API_OWNERS_URL = (
     'https://chromium.googlesource.com/chromium/src/+/'
     'main/third_party/blink/API_OWNERS?format=TEXT'
 )
-PRIVACY_APPROVERS = IN_NDB
-SECURITY_APPROVERS = IN_NDB
-ENTERPRISE_APPROVERS = [
-    'mhoste@google.com',
-    'angelaweber@google.com',
-    'davidayad@google.com',
-    'nsamarakkody@google.com',
-    'pastarmovj@google.com',
-    'aaudi@google.com',
-    'kimreardon@google.com',
-    'elmirakalali@google.com',
-    'carolinasaluz@google.com',
-    'crushworth@google.com',
-    'sirishsingh@google.com',
-]
-DEBUGGABILITY_APPROVERS = IN_NDB
-TESTING_APPROVERS = [
-    'sadapala@google.com',
-    'santhoshkumarm@google.com',
-    'rnanjappan@google.com',
-    'karala@google.com',
-    'aichein@google.com',
-]
-ADOPTION_APPROVERS = IN_NDB
-DQ_APPROVERS = IN_NDB
+# Approvers for all non-API-Owners gates are stored in NDB (GateDef).
+# Historical lists kept temporarily for reference:
+# ENTERPRISE_APPROVERS = [
+#     'mhoste@google.com',
+#     'angelaweber@google.com',
+#     'davidayad@google.com',
+#     'nsamarakkody@google.com',
+#     'pastarmovj@google.com',
+#     'aaudi@google.com',
+#     'kimreardon@google.com',
+#     'elmirakalali@google.com',
+#     'carolinasaluz@google.com',
+#     'crushworth@google.com',
+#     'sirishsingh@google.com',
+# ]
+# TESTING_APPROVERS = [
+#     'sadapala@google.com',
+#     'santhoshkumarm@google.com',
+#     'rnanjappan@google.com',
+#     'karala@google.com',
+#     'aichein@google.com',
+# ]
 
 
 DEFAULT_SLO_LIMIT = 5  # Five weekdays in the Pacific timezone.
@@ -83,8 +80,8 @@ class GateInfo:
     description: str
     gate_type: int
     rule: str
-    approvers: str | list[str]
     team_name: str
+    approvers: str | list[str] = IN_NDB
     escalation_email: str | None = None
     slo_initial_response: int = DEFAULT_SLO_LIMIT
     slo_resolve: int = DEFAULT_SLO_RESOLVE_LIMIT
@@ -143,7 +140,6 @@ PrivacyOriginTrialApproval = GateInfo(
     'Privacy OT Review',
     core_enums.GATE_PRIVACY_ORIGIN_TRIAL,
     ONE_LGTM,
-    approvers=PRIVACY_APPROVERS,
     team_name='Privacy',
     escalation_email='chrome-privacy-owp-rotation@google.com',
     slo_initial_response=6,
@@ -154,7 +150,6 @@ PrivacyShipApproval = GateInfo(
     'Privacy Ship Review',
     core_enums.GATE_PRIVACY_SHIP,
     ONE_LGTM,
-    approvers=PRIVACY_APPROVERS,
     team_name='Privacy',
     escalation_email='chrome-privacy-owp-rotation@google.com',
     slo_initial_response=6,
@@ -167,7 +162,6 @@ SecurityOriginTrialApproval = GateInfo(
     'Security OT Review',
     core_enums.GATE_SECURITY_ORIGIN_TRIAL,
     ONE_LGTM,
-    approvers=SECURITY_APPROVERS,
     team_name='WP Security',
     slo_initial_response=6,
 )
@@ -177,7 +171,6 @@ SecurityShipApproval = GateInfo(
     'Security Ship Review',
     core_enums.GATE_SECURITY_SHIP,
     ONE_LGTM,
-    approvers=SECURITY_APPROVERS,
     team_name='WP Security',
     slo_initial_response=6,
 )
@@ -189,7 +182,6 @@ EnterpriseShipApproval = GateInfo(
     'Enterprise Ship Review',
     core_enums.GATE_ENTERPRISE_SHIP,
     ONE_LGTM,
-    approvers=ENTERPRISE_APPROVERS,
     team_name='Enterprise',
 )
 
@@ -200,7 +192,6 @@ EnterprisePlanApproval = GateInfo(
     'Enterprise Deprecation Plan Review',
     core_enums.GATE_ENTERPRISE_PLAN,
     ONE_LGTM,
-    approvers=ENTERPRISE_APPROVERS,
     team_name='Enterprise',
 )
 
@@ -209,7 +200,6 @@ DebuggabilityOriginTrialApproval = GateInfo(
     'Debuggability OT Review',
     core_enums.GATE_DEBUGGABILITY_ORIGIN_TRIAL,
     ONE_LGTM,
-    approvers=DEBUGGABILITY_APPROVERS,
     team_name='Debuggability',
     escalation_email='devtools-dev@chromium.org',
 )
@@ -219,7 +209,6 @@ DebuggabilityShipApproval = GateInfo(
     'Debuggability Ship Review',
     core_enums.GATE_DEBUGGABILITY_SHIP,
     ONE_LGTM,
-    approvers=DEBUGGABILITY_APPROVERS,
     team_name='Debuggability',
     escalation_email='devtools-dev@chromium.org',
 )
@@ -229,7 +218,6 @@ DebuggabilityPlanApproval = GateInfo(
     'Debuggability Deprecation Plan Review',
     core_enums.GATE_DEBUGGABILITY_PLAN,
     ONE_LGTM,
-    approvers=DEBUGGABILITY_APPROVERS,
     team_name='Debuggability',
     escalation_email='devtools-dev@chromium.org',
 )
@@ -239,7 +227,6 @@ TestingShipApproval = GateInfo(
     'Testing Ship Review',
     core_enums.GATE_TESTING_SHIP,
     ONE_LGTM,
-    approvers=TESTING_APPROVERS,
     team_name='Testing',
 )
 
@@ -248,7 +235,6 @@ TestingPlanApproval = GateInfo(
     'Testing Deprecation Plan Review',
     core_enums.GATE_TESTING_PLAN,
     ONE_LGTM,
-    approvers=TESTING_APPROVERS,
     team_name='Testing',
 )
 
@@ -257,7 +243,6 @@ AdoptionShipApproval = GateInfo(
     'Adoption Ship Review',
     core_enums.GATE_ADOPTION_SHIP,
     ONE_LGTM,
-    approvers=ADOPTION_APPROVERS,
     team_name='Adoption',
 )
 
@@ -266,7 +251,6 @@ AdoptionPlanApproval = GateInfo(
     'Adoption Deprecation Plan Review',
     core_enums.GATE_ADOPTION_PLAN,
     ONE_LGTM,
-    approvers=ADOPTION_APPROVERS,
     team_name='Adoption',
 )
 
@@ -275,7 +259,6 @@ DataQualityShipApproval = GateInfo(
     'Data Quality Review',
     core_enums.GATE_DQ_SHIP,
     ONE_LGTM,
-    approvers=DQ_APPROVERS,
     team_name='Data Quality',
 )
 
@@ -284,7 +267,6 @@ DataQualityPlanApproval = GateInfo(
     'Data Quality Deprecation Plan Review',
     core_enums.GATE_DQ_PLAN,
     ONE_LGTM,
-    approvers=DQ_APPROVERS,
     team_name='Data Quality',
 )
 

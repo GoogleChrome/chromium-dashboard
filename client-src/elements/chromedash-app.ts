@@ -554,6 +554,10 @@ export class ChromedashApp extends LitElement {
       if (!this.setupNewPage(ctx, 'chromedash-enterprise-page', true)) return;
       this.pageComponent.user = this.user;
     });
+    page('/admin/gates', ctx => {
+      if (!this.setupNewPage(ctx, 'chromedash-admin-gates-page')) return;
+      this.pageComponent.user = this.user;
+    });
     page('/admin/feature_links', ctx => {
       if (!this.setupNewPage(ctx, 'chromedash-admin-feature-links-page'))
         return;

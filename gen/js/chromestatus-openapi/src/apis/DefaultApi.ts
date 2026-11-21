@@ -29,8 +29,10 @@ import type {
   FeatureLinksResponse,
   FeatureLinksSample,
   FeatureLinksSummaryResponse,
+  GateDefAdmin,
   GetCommentsResponse,
   GetDismissedCues400Response,
+  GetGateDefsResponse,
   GetGateResponse,
   GetIntentResponse,
   GetOriginTrialsResponse,
@@ -61,6 +63,7 @@ import type {
   SummarySuggestionPatchRequest,
   SummarySuggestionResponse,
   SummarySuggestionTriggerRequest,
+  UpdateGateDefRequest,
   WebFeatureInfosResponse,
 } from '../models/index';
 import {
@@ -92,10 +95,14 @@ import {
     FeatureLinksSampleToJSON,
     FeatureLinksSummaryResponseFromJSON,
     FeatureLinksSummaryResponseToJSON,
+    GateDefAdminFromJSON,
+    GateDefAdminToJSON,
     GetCommentsResponseFromJSON,
     GetCommentsResponseToJSON,
     GetDismissedCues400ResponseFromJSON,
     GetDismissedCues400ResponseToJSON,
+    GetGateDefsResponseFromJSON,
+    GetGateDefsResponseToJSON,
     GetGateResponseFromJSON,
     GetGateResponseToJSON,
     GetIntentResponseFromJSON,
@@ -156,6 +163,8 @@ import {
     SummarySuggestionResponseToJSON,
     SummarySuggestionTriggerRequestFromJSON,
     SummarySuggestionTriggerRequestToJSON,
+    UpdateGateDefRequestFromJSON,
+    UpdateGateDefRequestToJSON,
     WebFeatureInfosResponseFromJSON,
     WebFeatureInfosResponseToJSON,
 } from '../models/index';
@@ -334,6 +343,11 @@ export interface TriggerSummaryGenerationRequest {
 export interface UpdateFeatureCommentRequest {
     featureId: number;
     patchCommentRequest: PatchCommentRequest;
+}
+
+export interface UpdateGateDefOperationRequest {
+    id: number;
+    updateGateDefRequest: UpdateGateDefRequest;
 }
 
 export interface UpdateMilestoneCurationRequest {
@@ -602,6 +616,20 @@ export interface DefaultApiInterface {
      * Get all comments for a given gate
      */
     getGateComments(requestParameters: GetGateCommentsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<Activity>>;
+
+    /**
+     * 
+     * @summary Get all gate definitions and their approvers (admin only)
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApiInterface
+     */
+    getGateDefsRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GetGateDefsResponse>>;
+
+    /**
+     * Get all gate definitions and their approvers (admin only)
+     */
+    getGateDefs(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GetGateDefsResponse>;
 
     /**
      * 
@@ -1134,6 +1162,22 @@ export interface DefaultApiInterface {
      * Update a comment on a feature
      */
     updateFeatureComment(requestParameters: UpdateFeatureCommentRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SuccessMessage>;
+
+    /**
+     * 
+     * @summary Update the approvers for a gate definition (admin only)
+     * @param {number} id The gate type ID.
+     * @param {UpdateGateDefRequest} updateGateDefRequest 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApiInterface
+     */
+    updateGateDefRaw(requestParameters: UpdateGateDefOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GateDefAdmin>>;
+
+    /**
+     * Update the approvers for a gate definition (admin only)
+     */
+    updateGateDef(requestParameters: UpdateGateDefOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GateDefAdmin>;
 
     /**
      * 
@@ -1758,6 +1802,32 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
      */
     async getGateComments(requestParameters: GetGateCommentsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<Activity>> {
         const response = await this.getGateCommentsRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Get all gate definitions and their approvers (admin only)
+     */
+    async getGateDefsRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GetGateDefsResponse>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/gates`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => GetGateDefsResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Get all gate definitions and their approvers (admin only)
+     */
+    async getGateDefs(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GetGateDefsResponse> {
+        const response = await this.getGateDefsRaw(initOverrides);
         return await response.value();
     }
 
@@ -2959,6 +3029,53 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
      */
     async updateFeatureComment(requestParameters: UpdateFeatureCommentRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SuccessMessage> {
         const response = await this.updateFeatureCommentRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Update the approvers for a gate definition (admin only)
+     */
+    async updateGateDefRaw(requestParameters: UpdateGateDefOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GateDefAdmin>> {
+        if (requestParameters['id'] == null) {
+            throw new runtime.RequiredError(
+                'id',
+                'Required parameter "id" was null or undefined when calling updateGateDef().'
+            );
+        }
+
+        if (requestParameters['updateGateDefRequest'] == null) {
+            throw new runtime.RequiredError(
+                'updateGateDefRequest',
+                'Required parameter "updateGateDefRequest" was null or undefined when calling updateGateDef().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.apiKey) {
+            headerParameters["X-Xsrf-Token"] = await this.configuration.apiKey("X-Xsrf-Token"); // XsrfToken authentication
+        }
+
+        const response = await this.request({
+            path: `/gates/{id}`.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters['id']))),
+            method: 'PATCH',
+            headers: headerParameters,
+            query: queryParameters,
+            body: UpdateGateDefRequestToJSON(requestParameters['updateGateDefRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => GateDefAdminFromJSON(jsonValue));
+    }
+
+    /**
+     * Update the approvers for a gate definition (admin only)
+     */
+    async updateGateDef(requestParameters: UpdateGateDefOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GateDefAdmin> {
+        const response = await this.updateGateDefRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

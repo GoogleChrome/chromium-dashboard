@@ -855,8 +855,9 @@ class IntentEmailHandlerTest(testing_config.CustomTestCase):
         self.handler.record_slo(self.feature_1, appr_field, 'from_addr', False)
         mock_info.assert_called_once_with(f'Ambiguous gates: {self.feature_id}')
 
+    @mock.patch('internals.approval_defs.get_approvers')
     @mock.patch('internals.slo.now_utc')
-    def test_record_slo__normal(self, mock_now):
+    def test_record_slo__normal(self, mock_now, mock_get_approvers):
         """If an approver posted, count that as an initial response."""
         mock_now.return_value = datetime.datetime.now()
         appr_field = approval_defs.TestingShipApproval
@@ -866,14 +867,18 @@ class IntentEmailHandlerTest(testing_config.CustomTestCase):
         ).get()
         gate.requested_on = mock_now.return_value
         gate.put()
-        from_addr = approval_defs.TESTING_APPROVERS[0]
+        from_addr = 'approver@example.com'
+        mock_get_approvers.return_value = [from_addr]
 
         self.handler.record_slo(self.feature_1, appr_field, from_addr, False)
 
         revised_gate = Gate.get_by_id(gate.key.integer_id())
         self.assertEqual(mock_now.return_value, revised_gate.responded_on)
 
-    def test_record_slo__initial_request_from_approver(self):
+    @mock.patch('internals.approval_defs.get_approvers')
+    def test_record_slo__initial_request_from_approver(
+        self, mock_get_approvers
+    ):
         """If a approver themselves requests review, it's not a response."""
         appr_field = approval_defs.TestingShipApproval
         gate = Gate(
@@ -884,7 +889,8 @@ class IntentEmailHandlerTest(testing_config.CustomTestCase):
         )
         gate.requested_on = datetime.datetime.now()
         gate.put()
-        from_addr = approval_defs.TESTING_APPROVERS[0]
+        from_addr = 'approver@example.com'
+        mock_get_approvers.return_value = [from_addr]
 
         self.handler.record_slo(self.feature_1, appr_field, from_addr, True)
 

@@ -30,6 +30,7 @@ from api import (
     feature_links_api,
     featurelist_api,
     features_api,
+    gates_api,
     intents_api,
     login_api,
     logout_api,
@@ -159,6 +160,8 @@ api_routes: list[Route] = [
         f'{API_BASE}/features/<int:feature_id>/gates/<int:gate_id>',
         reviews_api.GatesAPI,
     ),
+    Route(f'{API_BASE}/gates', gates_api.GatesAdminAPI),
+    Route(f'{API_BASE}/gates/<int:id>', gates_api.GatesAdminAPI),
     Route(f'{API_BASE}/gates/pending', reviews_api.PendingGatesAPI),
     Route(
         f'{API_BASE}/features/<int:feature_id>/approvals/comments',
@@ -387,6 +390,10 @@ spa_page_routes = [
         defaults={'require_signin': True, 'is_enterprise_page': True},
     ),
     # Admin pages
+    Route(
+        '/admin/gates',
+        defaults={'require_admin_site': True, 'require_signin': True},
+    ),
     Route(
         '/admin/feature_links',
         defaults={'require_admin_site': True, 'require_signin': True},

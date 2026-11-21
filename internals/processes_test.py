@@ -29,8 +29,8 @@ BakeGateInfo = approval_defs.GateInfo(
     'The head chef must approve of you using the oven',
     9,
     approval_defs.ONE_LGTM,
-    ['chef@example.com'],
-    'Chef',
+    team_name='Chef',
+    approvers=['chef@example.com'],
 )
 
 BAKE_APPROVAL_DEF_DICT = collections.OrderedDict(

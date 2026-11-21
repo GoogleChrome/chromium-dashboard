@@ -186,6 +186,67 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorMessage'
+  /gates:
+    get:
+      summary: Get all gate definitions and their approvers (admin only)
+      operationId: getGateDefs
+      responses:
+        '200':
+          description: A list of all gate definitions and their approvers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetGateDefsResponse'
+        '403':
+          description: User does not have admin permission.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+  /gates/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+        description: The gate type ID.
+    patch:
+      summary: Update the approvers for a gate definition (admin only)
+      operationId: updateGateDef
+      security:
+        - XsrfToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateGateDefRequest'
+      responses:
+        '200':
+          description: Updated gate definition.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GateDefAdmin'
+        '400':
+          description: Invalid request or gate approvers cannot be edited.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '403':
+          description: User does not have admin permission.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '404':
+          description: Gate type not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
   /gates/pending:
     get:
       summary: Get all pending gates
@@ -2722,3 +2783,64 @@ components:
           items:
             $ref: '#/components/schemas/ReleaseNoteFeature'
           description: List of curated feature release notes for the milestone.
+    GateDefAdmin:
+      type: object
+      description: Administrative representation of a review gate definition and its approvers.
+      required:
+        - gate_type
+        - name
+        - description
+        - team_name
+        - rule
+        - approvers
+        - is_editable
+        - slo_initial_response
+        - slo_resolve
+      properties:
+        gate_type:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+        team_name:
+          type: string
+        rule:
+          type: string
+        approvers:
+          type: array
+          items:
+            type: string
+        is_editable:
+          type: boolean
+        approvers_url:
+          type: string
+          nullable: true
+        escalation_email:
+          type: string
+          nullable: true
+        rotation_url:
+          type: string
+          nullable: true
+        slo_initial_response:
+          type: integer
+        slo_resolve:
+          type: integer
+    GetGateDefsResponse:
+      type: object
+      required:
+        - gates
+      properties:
+        gates:
+          type: array
+          items:
+            $ref: '#/components/schemas/GateDefAdmin'
+    UpdateGateDefRequest:
+      type: object
+      required:
+        - approvers
+      properties:
+        approvers:
+          type: array
+          items:
+            type: string
