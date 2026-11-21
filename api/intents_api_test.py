@@ -121,20 +121,25 @@ class IntentsAPITest(testing_config.CustomTestCase):
     def test_get__bad_feature_id(self):
         """404 returned when feature is not found."""
         testing_config.sign_in('owner@example.com', 1234567890)
-        request_path = f'features/-1/{self.ot_stage_1.key.integer_id()}/intent'
+        request_path = (
+            f'features/999999/{self.ot_stage_1.key.integer_id()}/intent'
+        )
         with test_app.test_request_context(request_path, method='GET'):
             with self.assertRaises(werkzeug.exceptions.NotFound):
-                self.handler.do_post(
-                    feature_id=-1, stage_id=self.ot_stage_1.key.integer_id()
+                self.handler.do_get(
+                    feature_id=999999,
+                    stage_id=self.ot_stage_1.key.integer_id(),
                 )
 
     def test_get__bad_stage_id(self):
         """404 returned when stage is not found."""
         testing_config.sign_in('owner@example.com', 1234567890)
-        request_path = f'features/{self.feature_1_id}/-1/intent'
+        request_path = f'features/{self.feature_1_id}/999999/intent'
         with test_app.test_request_context(request_path, method='GET'):
             with self.assertRaises(werkzeug.exceptions.NotFound):
-                self.handler.do_post(feature_id=self.feature_1_id, stage_id=-1)
+                self.handler.do_get(
+                    feature_id=self.feature_1_id, stage_id=999999
+                )
 
     @mock.patch('framework.cloud_tasks_helpers.enqueue_task')
     def test_post__valid(self, mock_enqueue_cloud_task):
@@ -275,24 +280,29 @@ class IntentsAPITest(testing_config.CustomTestCase):
     def test_post__bad_feature_id(self):
         """404 returned when feature is not found."""
         testing_config.sign_in('owner@example.com', 1234567890)
-        request_path = f'features/-1/{self.ot_stage_1.key.integer_id()}/intent'
+        request_path = (
+            f'features/999999/{self.ot_stage_1.key.integer_id()}/intent'
+        )
         with test_app.test_request_context(
             request_path, method='POST', json={}
         ):
             with self.assertRaises(werkzeug.exceptions.NotFound):
                 self.handler.do_post(
-                    feature_id=-1, stage_id=self.ot_stage_1.key.integer_id()
+                    feature_id=999999,
+                    stage_id=self.ot_stage_1.key.integer_id(),
                 )
 
     def test_post__bad_stage_id(self):
         """404 returned when stage is not found."""
         testing_config.sign_in('owner@example.com', 1234567890)
-        request_path = f'features/{self.feature_1_id}/-1/intent'
+        request_path = f'features/{self.feature_1_id}/999999/intent'
         with test_app.test_request_context(
             request_path, method='POST', json={}
         ):
             with self.assertRaises(werkzeug.exceptions.NotFound):
-                self.handler.do_post(feature_id=self.feature_1_id, stage_id=-1)
+                self.handler.do_post(
+                    feature_id=self.feature_1_id, stage_id=999999
+                )
 
     def test_compute_subject_prefix__incubate_new_feature(self):
         """We offer users the correct subject line for each intent stage."""

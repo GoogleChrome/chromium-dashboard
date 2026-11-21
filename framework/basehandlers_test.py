@@ -273,6 +273,28 @@ class BaseHandlerTests(testing_config.CustomTestCase):
         actual = self.handler.get_current_user()
         self.assertEqual('test@example.com', actual.email())
 
+    def test_get_json_param_dict__valid(self):
+        """We can get a JSON dict, or empty dict when body is missing."""
+        with test_app.test_request_context('/test', json={'x': 1}):
+            self.assertEqual({'x': 1}, self.handler.get_json_param_dict())
+
+        with test_app.test_request_context('/test'):
+            self.assertEqual({}, self.handler.get_json_param_dict())
+
+    @mock.patch('framework.basehandlers.BaseHandler.abort')
+    def test_get_json_param_dict__not_dict(self, mock_abort):
+        """If the parsed JSON body is not a dict, we abort with 400."""
+        mock_abort.side_effect = werkzeug.exceptions.BadRequest
+
+        for bad_json in ([1, 2], [], 'a string', 123, False):
+            mock_abort.reset_mock()
+            with test_app.test_request_context('/test', json=bad_json):
+                with self.assertRaises(werkzeug.exceptions.BadRequest):
+                    self.handler.get_json_param_dict()
+            mock_abort.assert_called_once_with(
+                400, msg='Expected a JSON object'
+            )
+
     def test_get_param__simple(self):
         """We can simply get a JSON parameter, with defaults."""
         with test_app.test_request_context('/test', json={'x': 1}):
@@ -390,6 +412,31 @@ class BaseHandlerTests(testing_config.CustomTestCase):
                 self.handler.get_bool_param('foo')
             mock_abort.assert_called_once_with(
                 400, msg="Parameter 'foo' was not a bool"
+            )
+
+    @mock.patch('framework.basehandlers.BaseHandler.abort')
+    def test_extract_id_param__non_positive(self, mock_abort):
+        """Reject zero or negative ID values with a 400."""
+        mock_abort.side_effect = werkzeug.exceptions.BadRequest
+
+        for bad_id in (0, -1, -999, '0', '-5'):
+            mock_abort.reset_mock()
+            with test_app.test_request_context('/test'):
+                with self.assertRaises(werkzeug.exceptions.BadRequest):
+                    self.handler._extract_id_param(
+                        {'feature_id': bad_id}, 'feature_id'
+                    )
+            mock_abort.assert_called_once_with(
+                400, msg="Parameter 'feature_id' must be a positive int"
+            )
+
+        for bad_query in ('/test?feature_id=0', '/test?feature_id=-1'):
+            mock_abort.reset_mock()
+            with test_app.test_request_context(bad_query):
+                with self.assertRaises(werkzeug.exceptions.BadRequest):
+                    self.handler._extract_id_param({}, 'feature_id')
+            mock_abort.assert_called_once_with(
+                400, msg="Parameter 'feature_id' must be a positive int"
             )
 
     @mock.patch('framework.basehandlers.BaseHandler.abort')
