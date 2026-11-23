@@ -880,6 +880,53 @@ class FeaturesAPITest(testing_config.CustomTestCase):
             with self.assertRaises(werkzeug.exceptions.Forbidden):
                 self.handler.do_patch(feature_id=self.feature_1_id)
 
+    def test_patch__malformed_body(self):
+        """PATCH requests with a missing or malformed body get a 400."""
+        testing_config.sign_in('admin@example.com', 123567890)
+        request_path = f'{self.request_path}/update'
+        bad_bodies = [
+            {},
+            {'stages': []},
+            {'feature_changes': 'not a dict', 'stages': []},
+            {'feature_changes': {'id': self.feature_1_id}, 'stages': 'nope'},
+            {'feature_changes': {'id': self.feature_1_id}, 'stages': [1]},
+        ]
+        for body in bad_bodies:
+            with self.subTest(body=body):
+                with test_app.test_request_context(request_path, json=body):
+                    with self.assertRaises(werkzeug.exceptions.BadRequest):
+                        self.handler.do_patch()
+
+        # Malformed JSON is rejected rather than treated as an empty body.
+        with test_app.test_request_context(
+            request_path,
+            data='{"feature_changes": ',
+            content_type='application/json',
+        ):
+            with self.assertRaises(werkzeug.exceptions.BadRequest):
+                self.handler.do_patch()
+
+    def test_patch__invalid_ids(self):
+        """PATCH requests with feature or stage IDs that are not valid get a 400."""
+        testing_config.sign_in('admin@example.com', 123567890)
+        request_path = f'{self.request_path}/update'
+        for bad_id in ([1], {}, True, 3.9, 'abc', 0, -1, 2**63):
+            with self.subTest(bad_id=bad_id):
+                body = {'feature_changes': {'id': bad_id}, 'stages': []}
+                with test_app.test_request_context(request_path, json=body):
+                    with self.assertRaises(werkzeug.exceptions.BadRequest):
+                        self.handler.do_patch()
+
+                body = {
+                    'feature_changes': {'id': self.feature_1_id},
+                    'stages': [{'id': bad_id}],
+                }
+                with test_app.test_request_context(request_path, json=body):
+                    with self.assertRaises(werkzeug.exceptions.BadRequest):
+                        self.handler.do_patch()
+        # Nothing was changed.
+        self.assertIsNone(self.feature_1.updater_email)
+
     def test_patch__invalid_fields(self):
         """PATCH request does not attempt to update invalid fields."""
         # Signed-in user with permissions.

@@ -566,6 +566,32 @@ class StagesAPITest(testing_config.CustomTestCase):
             404, description='FeatureEntry 3001 not found.'
         )
 
+    def test_post__invalid_feature_id(self):
+        """Feature IDs that can never exist in Datastore get a 400."""
+        testing_config.sign_in('feature_owner@example.com', 123)
+        json = {'stage_type': {'form_field_name': 'stage_type', 'value': 151}}
+        for bad_id in (0, 2**63):
+            with self.subTest(feature_id=bad_id):
+                with test_app.test_request_context(
+                    f'{self.request_path}{bad_id}/stages', json=json
+                ):
+                    with self.assertRaises(werkzeug.exceptions.BadRequest):
+                        self.handler.do_post(feature_id=bad_id)
+
+    @mock.patch('framework.rediscache.delete_keys_with_prefix')
+    def test_patch__invalid_stage_id(self, mock_dkwp):
+        """Stage IDs that can never exist in Datastore get a 400."""
+        testing_config.sign_in('feature_owner@example.com', 123)
+        json = {'intent_thread_url': 'https://example.com/different'}
+        for bad_id in (0, 2**63):
+            with self.subTest(stage_id=bad_id):
+                with test_app.test_request_context(
+                    f'{self.request_path}1/stages/{bad_id}', json=json
+                ):
+                    with self.assertRaises(werkzeug.exceptions.BadRequest):
+                        self.handler.do_patch(feature_id=1, stage_id=bad_id)
+        mock_dkwp.assert_not_called()
+
     @mock.patch('flask.abort')
     def test_post__no_stage_type(self, mock_abort):
         """Raises 404 if no stage type was given."""

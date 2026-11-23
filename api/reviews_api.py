@@ -204,7 +204,7 @@ class GatesAPI(basehandlers.APIHandler):
         """Set the assignees for a gate."""
         user: User = self.get_current_user(required=True)
         fe, gate = self.get_specified_feature_and_gate(**kwargs)
-        request = PatchGateRequest.from_dict(self.request.json)
+        request = PatchGateRequest.from_dict(self.get_json_param_dict())
         changes: list[str] = []
         new_assignees = request.assignees
         new_answers = request.survey_answers

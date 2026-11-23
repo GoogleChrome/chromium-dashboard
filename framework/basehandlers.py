@@ -28,6 +28,7 @@ import flask
 import flask.views
 import google.appengine.api
 import werkzeug.exceptions
+import werkzeug.routing
 from flask import render_template, session
 from flask_cors import CORS
 from google.cloud import ndb  # type: ignore
@@ -54,8 +55,26 @@ URL_RE = re.compile(
 )
 ALLOWED_SCHEMES = [None, 'http', 'https']
 
+# Datastore integer IDs and integer properties are signed 64-bit values.
+# Larger numbers make NDB raise ValueError when it serializes the key.
+MAX_INT64 = 2**63 - 1
+
 # Generic type variable for our model entities.
 M = TypeVar('M', bound=ndb.Model)
+
+
+class Int64Converter(werkzeug.routing.IntegerConverter):
+    """Flask's <int:...> URL converter, capped at MAX_INT64.
+
+    Datastore cannot store a larger integer as an ID or a property value, so
+    such URLs do not match any route and get a 404, the same as negative
+    numbers and non-digits already do.
+    """
+
+    def __init__(self, url_map, *args, **kwargs):
+        """Default the max value to MAX_INT64."""
+        kwargs.setdefault('max', MAX_INT64)
+        super().__init__(url_map, *args, **kwargs)
 
 
 class BaseHandler(flask.views.MethodView):
@@ -112,10 +131,18 @@ class BaseHandler(flask.views.MethodView):
             self.abort(403, msg='User must be signed in')
         return current_user
 
-    def get_json_param_dict(self) -> dict:
-        """Return the JSON content in the body of the request."""
+    def get_json_param_dict(self) -> dict[str, Any]:
+        """Return the JSON object in the body of the request.
+
+        Returns {} if there is no body, or if the body is not JSON (e.g., a
+        multipart file upload). Aborts with 400 if a JSON request body is
+        malformed or is valid JSON that is not an object.
+        """
+        # Our JS client sends a JSON content type even when there is no body.
+        if not self.request.get_data(cache=True).strip():
+            return {}
         parsed = self.request.get_json(force=True, silent=True)
-        if parsed is None:
+        if parsed is None and not self.request.is_json:
             return {}
         if not isinstance(parsed, dict):
             self.abort(400, msg='Expected a JSON object')
@@ -146,7 +173,7 @@ class BaseHandler(flask.views.MethodView):
             validator=validator,
             allowed=allowed,
         )
-        if val and type(val) != int:  # noqa: E721
+        if val is not None and type(val) is not int:
             self.abort(400, msg='Parameter %r was not an int' % name)
         return val
 
@@ -157,23 +184,33 @@ class BaseHandler(flask.views.MethodView):
             self.abort(400, msg='Parameter %r was not a bool' % name)
         return val
 
+    def parse_id(self, val: Any, name: str) -> int:
+        """Return val as a valid NDB integer ID, or abort with a 400.
+
+        Accepts an int or a numeric string, e.g., from a URL, a query string,
+        or a JSON request body.
+        """
+        # bool is a subclass of int, and int() would silently truncate floats.
+        if isinstance(val, (bool, float)):
+            self.abort(400, msg=f"Parameter '{name}' was not an int")
+        try:
+            id_val = int(val)
+        except (TypeError, ValueError):
+            self.abort(400, msg=f"Parameter '{name}' was not an int")
+        if id_val <= 0:
+            self.abort(400, msg=f"Parameter '{name}' must be a positive int")
+        if id_val > MAX_INT64:
+            self.abort(400, msg=f"Parameter '{name}' is out of range")
+        return id_val
+
     def _extract_id_param(self, kwargs, name: str) -> int:
-        """Extracts a required positive integer ID from kwargs."""
+        """Extracts a required positive integer ID from kwargs or query string."""
         val = kwargs.get(name)
         if val is None:
             val = flask.request.args.get(name)
-        if val is not None:
-            try:
-                id_val = int(val)
-            except ValueError:
-                self.abort(400, msg=f"Parameter '{name}' was not an int")
-            if id_val <= 0:
-                self.abort(
-                    400, msg=f"Parameter '{name}' must be a positive int"
-                )
-            return id_val
-        else:
+        if val is None:
             self.abort(400, msg=f"Missing parameter '{name}'")
+        return self.parse_id(val, name)
 
     def get_specified_feature(self, **kwargs) -> FeatureEntry:
         """Get the feature specified in the feature_id parameter."""
@@ -266,9 +303,15 @@ class BaseHandler(flask.views.MethodView):
         entity_name = entity_model.__name__
         if entity_id is None:
             self.abort(400, msg=f'No {entity_name} ID specified.')
+        # bool is a subclass of int, and int() would silently truncate floats.
+        if isinstance(entity_id, (bool, float)):
+            self.abort(400, msg=f'Invalid {entity_name} ID: {entity_id}.')
         try:
             entity_id = int(entity_id)
         except Exception:
+            self.abort(400, msg=f'Invalid {entity_name} ID: {entity_id}.')
+        # NDB raises an exception for IDs that are not in this range.
+        if not 0 < entity_id <= MAX_INT64:
             self.abort(400, msg=f'Invalid {entity_name} ID: {entity_id}.')
 
         entity = entity_model.get_by_id(entity_id)
@@ -333,6 +376,7 @@ class APIHandler(BaseHandler):
         """Handle an incoming HTTP PUT request."""
         logging.info('Starting to handle PUT')
         self.require_signed_in_and_xsrf_token()
+        self.get_json_param_dict()  # Reject bodies that are not JSON objects.
         headers = self.get_headers()
         handler_data = self.do_put(*args, **kwargs)
         logging.info('do_put completed')
@@ -342,6 +386,7 @@ class APIHandler(BaseHandler):
         """Handle an incoming HTTP PATCH request."""
         logging.info('Starting to handle PATCH')
         self.require_signed_in_and_xsrf_token()
+        self.get_json_param_dict()  # Reject bodies that are not JSON objects.
         headers = self.get_headers()
         handler_data = self.do_patch(*args, **kwargs)
         logging.info('do_patch completed')
@@ -981,6 +1026,10 @@ def FlaskApplication(import_name, routes, pattern_base='', debug=False):
         with client.context():
             app.secret_key = secrets.get_session_secret()  # For flask.session
     app.permanent_session_lifetime = xsrf.REFRESH_TOKEN_TIMEOUT_SEC
+
+    # Make every <int:...> URL part reject numbers that overflow int64.
+    # This must be registered before any routes are added.
+    app.url_map.converters['int'] = Int64Converter
 
     for i, route in enumerate(routes):
         classname = route.handler_class.__name__

@@ -169,12 +169,19 @@ class CommentsAPI(basehandlers.APIHandler):
 
     def do_patch(self, **kwargs) -> dict[str, str]:
         """Patch a comment."""
-        patch_request = PatchCommentRequest.from_dict(self.request.json)
-        comment: Activity = Activity.get_by_id(patch_request.comment_id)
+        body = self.get_json_param_dict()
+        if body.get('commentId') is None:
+            self.abort(400, msg="Missing parameter 'commentId'")
+        comment_id = self.parse_id(body['commentId'], 'commentId')
+        patch_request = PatchCommentRequest.from_dict(body)
+        comment: Activity | None = Activity.get_by_id(comment_id)
+        if not comment:
+            self.abort(404, msg='Comment not found')
 
         user = self.get_current_user(required=True)
-        if not permissions.can_admin_site(user) and (
-            comment and user.email() != comment.author
+        if (
+            not permissions.can_admin_site(user)
+            and user.email() != comment.author
         ):
             self.abort(403, msg='User does not have comment edit permissions')
 

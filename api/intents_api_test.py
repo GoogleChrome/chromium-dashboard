@@ -177,6 +177,25 @@ class IntentsAPITest(testing_config.CustomTestCase):
         )
 
     @mock.patch('framework.cloud_tasks_helpers.enqueue_task')
+    def test_post__invalid_gate_id(self, mock_enqueue_cloud_task):
+        """A gate_id that is not a valid ID gets a 400 rather than a crash."""
+        testing_config.sign_in('owner@example.com', 1234567890)
+        request_path = (
+            f'features/{self.feature_1_id}/'
+            f'{self.extension_stage_1.key.integer_id()}/intent'
+        )
+        for bad_id in ([1], True, 3.9, 'abc', -1, 2**63):
+            with self.subTest(gate_id=bad_id):
+                body = {'gate_id': bad_id, 'intent_cc_emails': []}
+                with test_app.test_request_context(request_path, json=body):
+                    with self.assertRaises(werkzeug.exceptions.BadRequest):
+                        self.handler.do_post(
+                            feature_id=self.feature_1_id,
+                            stage_id=self.extension_stage_1.key.integer_id(),
+                        )
+        mock_enqueue_cloud_task.assert_not_called()
+
+    @mock.patch('framework.cloud_tasks_helpers.enqueue_task')
     def test_post__valid_ot(self, mock_enqueue_cloud_task):
         """A valid POST request will create a new notification task for OT
         stages.

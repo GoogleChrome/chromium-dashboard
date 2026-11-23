@@ -306,6 +306,45 @@ class CommentsAPITest(testing_config.CustomTestCase):
             with self.assertRaises(werkzeug.exceptions.Forbidden):
                 self.handler.do_patch(feature_id=self.feature_id)
 
+    def test_patch__invalid_comment_id(self):
+        """Handler rejects requests that lack a valid commentId with a 400."""
+        testing_config.sign_in('owner1@example.com', 123567890)
+        bad_params = [
+            {},
+            {'commentId': None},
+            {'commentId': 'abc'},
+            {'commentId': [1]},
+            {'commentId': True},
+            {'commentId': 0},
+            {'commentId': 2**63},
+        ]
+        for params in bad_params:
+            with self.subTest(params=params):
+                with test_app.test_request_context(
+                    self.request_path, json=params
+                ):
+                    with self.assertRaises(werkzeug.exceptions.BadRequest):
+                        self.handler.do_patch(feature_id=self.feature_id)
+
+    def test_patch__non_object_body(self):
+        """Handler rejects JSON bodies that are not objects with a 400."""
+        testing_config.sign_in('owner1@example.com', 123567890)
+        for body in (['commentId'], [1, 2]):
+            with self.subTest(body=body):
+                with test_app.test_request_context(
+                    self.request_path, json=body
+                ):
+                    with self.assertRaises(werkzeug.exceptions.BadRequest):
+                        self.handler.do_patch(feature_id=self.feature_id)
+
+    def test_patch__comment_not_found(self):
+        """Handler responds 404 for a comment that does not exist."""
+        testing_config.sign_in('owner1@example.com', 123567890)
+        params = {'commentId': 999999, 'isUndelete': False}
+        with test_app.test_request_context(self.request_path, json=params):
+            with self.assertRaises(werkzeug.exceptions.NotFound):
+                self.handler.do_patch(feature_id=self.feature_id)
+
     def test_patch__delete_comment(self):
         """Handler marks a comment as deleted as requested by authorized user."""
         self.act_1_1.put()

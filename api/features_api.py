@@ -307,7 +307,7 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
             # Check if valid ID is provided and fetch stage if it exists.
             if 'id' not in change_info:
                 self.abort(400, msg='Missing stage ID in stage updates')
-            id = change_info['id']
+            id = self.parse_id(change_info['id'], 'id')
             logging.info('Updating stage %r', id)
             stage = Stage.get_by_id(id)
             if not stage:
@@ -556,13 +556,19 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
     def do_patch(self, **kwargs) -> flask.Response | dict[str, str]:
         """Handle PATCH requests to update fields in a single feature."""
         body = self.get_json_param_dict()
+        feature_changes = body.get('feature_changes')
+        if not isinstance(feature_changes, dict):
+            self.abort(400, msg='Missing or invalid feature_changes')
+        stage_changes = body.get('stages', [])
+        if not isinstance(stage_changes, list) or not all(
+            isinstance(change_info, dict) for change_info in stage_changes
+        ):
+            self.abort(400, msg='Invalid stages')
 
         # Check if valid ID is provided and fetch feature if it exists.
-        if 'id' not in body['feature_changes']:
+        if 'id' not in feature_changes:
             self.abort(400, msg='Missing feature ID in feature updates')
-        fe = self.get_specified_feature(
-            feature_id=body['feature_changes']['id']
-        )
+        fe = self.get_specified_feature(feature_id=feature_changes['id'])
         feature_id = fe.key.integer_id()
 
         # Validate the user has edit permissions and redirect if needed.
@@ -571,11 +577,11 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
             return redirect_resp
 
         changed_fields: CHANGED_FIELDS_LIST_TYPE = []
-        stage_ids = [s['id'] for s in body['stages'] if 'id' in s]
+        stage_ids = [
+            self.parse_id(s['id'], 'id') for s in stage_changes if 'id' in s
+        ]
         updated_stages, ship_milestones_were_updated = (
-            self._patch_update_stages(
-                feature_id, body['stages'], changed_fields
-            )
+            self._patch_update_stages(feature_id, stage_changes, changed_fields)
         )
         # Reset outstanding notifications if the user updated any ship/rollout milestones.
         if ship_milestones_were_updated:
@@ -584,7 +590,7 @@ class FeaturesAPI(basehandlers.EntitiesAPIHandler):
 
         self._patch_update_feature(
             fe,
-            body['feature_changes'],
+            feature_changes,
             updated_stages,
             changed_fields,
             stage_ids,

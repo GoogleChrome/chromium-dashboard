@@ -155,7 +155,8 @@ class IntentsAPI(basehandlers.APIHandler):
         # Add gate to Chromestatus URL query string if it is found.
         gate: Gate | None = None
         if parsed_args.gate_id:
-            gate = Gate.get_by_id(parsed_args.gate_id)
+            gate_id = self.parse_id(parsed_args.gate_id, 'gate_id')
+            gate = Gate.get_by_id(gate_id)
         if gate:
             default_url += f'?gate={parsed_args.gate_id}'
 
