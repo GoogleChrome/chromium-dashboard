@@ -43,6 +43,28 @@ class SEOMetadataTest(testing_config.CustomTestCase):
         )
         self.assertEqual(seo.OpenGraphType.WEBSITE, metadata.og_type)
         self.assertEqual(seo.SchemaType.WEB_PAGE, metadata.schema_type)
+        self.assertIsNone(metadata.og_image_width)
+        self.assertIsNone(metadata.og_image_height)
+        self.assertIsNone(metadata.twitter_card)
+
+    def test_social_image_and_twitter_card_fields(self):
+        """It accepts og_image_width, og_image_height, and twitter_card fields."""
+        metadata = seo.Metadata(
+            canonical_url='https://chromestatus.com/release-notes/152',
+            site_logo_url='https://chromestatus.com/static/img/chrome_release_notes_og.png',
+            og_image_width=1200,
+            og_image_height=630,
+            twitter_card='summary_large_image',
+        )
+
+        self.assertEqual(1200, metadata.og_image_width)
+        self.assertEqual(630, metadata.og_image_height)
+        self.assertEqual('summary_large_image', metadata.twitter_card)
+
+        d = metadata.to_dict()
+        self.assertEqual(1200, d['og_image_width'])
+        self.assertEqual(630, d['og_image_height'])
+        self.assertEqual('summary_large_image', d['twitter_card'])
 
     def test_strenum_custom_values(self):
         """It accepts explicit StrEnum members for og_type and schema_type."""
@@ -69,5 +91,8 @@ class SEOMetadataTest(testing_config.CustomTestCase):
         self.assertIn('seo_title', d)
         self.assertIn('seo_description', d)
         self.assertNotIn('site_logo_url', d)
+        self.assertNotIn('og_image_width', d)
+        self.assertNotIn('og_image_height', d)
+        self.assertNotIn('twitter_card', d)
         self.assertEqual('website', d['og_type'])
         self.assertEqual('WebPage', d['schema_type'])

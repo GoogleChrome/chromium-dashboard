@@ -190,6 +190,13 @@ class ReleaseNotesHandlerTest(testing_config.CustomTestCase):
             self.assertEqual(
                 'Chrome 152 Release Notes', data['seo']['seo_title']
             )
+            self.assertEqual(
+                'http://127.0.0.1:7777/static/img/chrome_release_notes_og.png',
+                data['seo']['site_logo_url'],
+            )
+            self.assertEqual(1200, data['seo']['og_image_width'])
+            self.assertEqual(630, data['seo']['og_image_height'])
+            self.assertEqual('summary_large_image', data['seo']['twitter_card'])
 
     def test_get_template_data__m124_to_m151_redirect(self):
         """It returns an HTTP 302 redirect to developer.chrome.com/release-notes/<milestone> for 124 <= m < 152."""

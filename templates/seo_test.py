@@ -47,11 +47,14 @@ class SEOSubTemplatesTest(testing_config.CustomTestCase):
     def _get_meta_content(
         self, html_str: str, property_name: str
     ) -> str | None:
-        """Helper to extract <meta property="..."> content attribute."""
+        """Helper to extract <meta property="..."> or <meta name="..."> content attribute."""
         parser = SEOHTMLParser()
         parser.feed(html_str)
         for tag, attrs in parser.tags:
-            if tag == 'meta' and attrs.get('property') == property_name:
+            if tag == 'meta' and (
+                attrs.get('property') == property_name
+                or attrs.get('name') == property_name
+            ):
                 return attrs.get('content')
         return None
 
@@ -61,7 +64,10 @@ class SEOSubTemplatesTest(testing_config.CustomTestCase):
             canonical_url='https://chromestatus.com/feature/123',
             seo_title='Custom Title',
             seo_description='Custom Description',
-            site_logo_url='https://chromestatus.com/static/img/crstatus_192.png',
+            site_logo_url='https://chromestatus.com/static/img/chrome_release_notes_og.png',
+            og_image_width=1200,
+            og_image_height=630,
+            twitter_card='summary_large_image',
         )
         with test_app.test_request_context('/'):
             html_str = flask.render_template(
@@ -74,9 +80,27 @@ class SEOSubTemplatesTest(testing_config.CustomTestCase):
                 'https://chromestatus.com/feature/123',
                 self._get_meta_content(html_str, 'og:url'),
             )
+            self.assertEqual(
+                'https://chromestatus.com/static/img/chrome_release_notes_og.png',
+                self._get_meta_content(html_str, 'og:image'),
+            )
+            self.assertEqual(
+                '1200', self._get_meta_content(html_str, 'og:image:width')
+            )
+            self.assertEqual(
+                '630', self._get_meta_content(html_str, 'og:image:height')
+            )
+            self.assertEqual(
+                'summary_large_image',
+                self._get_meta_content(html_str, 'twitter:card'),
+            )
+            self.assertEqual(
+                'https://chromestatus.com/static/img/chrome_release_notes_og.png',
+                self._get_meta_content(html_str, 'twitter:image'),
+            )
 
     def test_open_graph_fallbacks(self):
-        """It falls back to page_title when seo.seo_title is omitted."""
+        """It falls back to page_title and default twitter:card when seo is omitted."""
         with test_app.test_request_context('/'):
             html_str = flask.render_template(
                 'seo/_open_graph.html', page_title='Page Title Fallback'
@@ -85,6 +109,13 @@ class SEOSubTemplatesTest(testing_config.CustomTestCase):
                 'Page Title Fallback',
                 self._get_meta_content(html_str, 'og:title'),
             )
+            self.assertEqual(
+                'summary_large_image',
+                self._get_meta_content(html_str, 'twitter:card'),
+            )
+            self.assertIsNone(self._get_meta_content(html_str, 'og:image:width'))
+            self.assertIsNone(self._get_meta_content(html_str, 'og:image:height'))
+            self.assertIsNone(self._get_meta_content(html_str, 'twitter:image'))
 
     def test_json_ld_sub_template(self):
         """It renders Schema.org JSON-LD structured data on custom inputs."""

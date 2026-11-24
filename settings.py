@@ -43,6 +43,9 @@ DEFAULT_ENTERPRISE_COMPONENT = 'Enterprise'
 # Default site logo / OpenGraph icon path.
 SITE_LOGO_PATH = '/static/img/crstatus_192.png'
 
+# Release notes OpenGraph social sharing image path.
+RELEASE_NOTES_OG_IMAGE_PATH = '/static/img/chrome_release_notes_og.png'
+
 # Enable to activate the automated OT creation process
 AUTOMATED_OT_CREATION = True
 
