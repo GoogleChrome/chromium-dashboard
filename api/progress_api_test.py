@@ -24,7 +24,6 @@ import testing_config  # Must be imported before the module under test.
 from api import progress_api
 from framework import permissions
 from internals import (
-    approval_defs,
     core_enums,
     core_models,
     progress,
@@ -365,7 +364,7 @@ class ProgressAPITest(testing_config.CustomTestCase):
 
     def test_post___gate_approver_allowed(self):
         """Users who can approve any gate can set a progress vote."""
-        approver_email = approval_defs.TESTING_APPROVERS[0]
+        approver_email = 'example@chromium.org'
         testing_config.sign_in(approver_email, 113)
         with test_app.test_request_context(
             self.request_path,

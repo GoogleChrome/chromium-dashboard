@@ -22,9 +22,10 @@ from google.cloud import ndb  # type: ignore
 
 import settings
 import testing_config  # Must be imported before the module under test.
-from internals import core_enums, reminders
+from framework import rediscache
+from internals import approval_defs, core_enums, reminders
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
-from internals.review_models import Gate, Vote
+from internals.review_models import Gate, GateDef, Vote
 from internals.user_models import UserPref
 
 test_app = flask.Flask(
@@ -606,6 +607,18 @@ class SLOOverdueHandlerTest(testing_config.CustomTestCase):
             state=Gate.PREPARING,
         )
         self.gate_1.put()
+        self.gate_def = GateDef(
+            gate_type=core_enums.GATE_ENTERPRISE_SHIP,
+            approvers=['reviewer1@example.com', 'reviewer2@example.com'],
+        )
+        self.gate_def.put()
+        rediscache.delete(
+            '%s|%s'
+            % (
+                approval_defs.APPROVERS_CACHE_KEY,
+                core_enums.GATE_ENTERPRISE_SHIP,
+            )
+        )
         self.handler = reminders.SLOOverdueHandler()
         self.request_date = datetime(2023, 7, 7, 12, 30, 0)  # Fri, July 7, 2023
         self.day_1 = datetime(2023, 7, 10, 12, 30, 0)  # This Mon
@@ -623,10 +636,17 @@ class SLOOverdueHandlerTest(testing_config.CustomTestCase):
 
     def tearDown(self) -> None:
         """Clean up the test environment."""
-        kinds: list[ndb.Model] = [FeatureEntry, Stage, Gate]
+        kinds: list[ndb.Model] = [FeatureEntry, Stage, Gate, GateDef]
         for kind in kinds:
             for entity in kind.query():
                 entity.key.delete()
+        rediscache.delete(
+            '%s|%s'
+            % (
+                approval_defs.APPROVERS_CACHE_KEY,
+                core_enums.GATE_ENTERPRISE_SHIP,
+            )
+        )
 
     def test_get_template_data__no_reviews_pending(self):
         """The only gate is still PREPARING, so it's review can't be late."""
@@ -664,19 +684,10 @@ class SLOOverdueHandlerTest(testing_config.CustomTestCase):
             actual = self.handler.get_template_data()
 
         expected_message = (
-            '11 email(s) sent or logged.\n'
+            '2 email(s) sent or logged.\n'
             'Recipients:\n'
-            'aaudi@google.com\n'
-            'angelaweber@google.com\n'
-            'carolinasaluz@google.com\n'
-            'crushworth@google.com\n'
-            'davidayad@google.com\n'
-            'elmirakalali@google.com\n'
-            'kimreardon@google.com\n'
-            'mhoste@google.com\n'
-            'nsamarakkody@google.com\n'
-            'pastarmovj@google.com\n'
-            'sirishsingh@google.com'
+            'reviewer1@example.com\n'
+            'reviewer2@example.com'
         )
         expected = {'message': expected_message}
         self.assertEqual(actual, expected)
@@ -744,19 +755,10 @@ class SLOOverdueHandlerTest(testing_config.CustomTestCase):
             actual = self.handler.get_template_data()
 
         expected_message = (
-            '11 email(s) sent or logged.\n'
+            '2 email(s) sent or logged.\n'
             'Recipients:\n'
-            'aaudi@google.com\n'
-            'angelaweber@google.com\n'
-            'carolinasaluz@google.com\n'
-            'crushworth@google.com\n'
-            'davidayad@google.com\n'
-            'elmirakalali@google.com\n'
-            'kimreardon@google.com\n'
-            'mhoste@google.com\n'
-            'nsamarakkody@google.com\n'
-            'pastarmovj@google.com\n'
-            'sirishsingh@google.com'
+            'reviewer1@example.com\n'
+            'reviewer2@example.com'
         )
         expected = {'message': expected_message}
         self.assertEqual(actual, expected)
@@ -766,7 +768,7 @@ class SLOOverdueHandlerTest(testing_config.CustomTestCase):
         """Overdue for initial response. Notify assigned and others."""
         self.gate_1.state = Vote.REVIEW_REQUESTED
         self.gate_1.assignee_emails = [
-            'mhoste@google.com',
+            'reviewer1@example.com',
             'a_assignee@example.com',
         ]
         self.gate_1.requested_on = self.request_date
@@ -777,20 +779,11 @@ class SLOOverdueHandlerTest(testing_config.CustomTestCase):
             actual = self.handler.get_template_data()
 
         expected_message = (
-            '12 email(s) sent or logged.\n'
+            '3 email(s) sent or logged.\n'
             'Recipients:\n'
             'a_assignee@example.com\n'
-            'aaudi@google.com\n'
-            'angelaweber@google.com\n'
-            'carolinasaluz@google.com\n'
-            'crushworth@google.com\n'
-            'davidayad@google.com\n'
-            'elmirakalali@google.com\n'
-            'kimreardon@google.com\n'
-            'mhoste@google.com\n'
-            'nsamarakkody@google.com\n'
-            'pastarmovj@google.com\n'
-            'sirishsingh@google.com'
+            'reviewer1@example.com\n'
+            'reviewer2@example.com'
         )
         expected = {'message': expected_message}
         self.assertEqual(actual, expected)
@@ -807,19 +800,10 @@ class SLOOverdueHandlerTest(testing_config.CustomTestCase):
             actual = self.handler.get_template_data()
 
         expected_message = (
-            '11 email(s) sent or logged.\n'
+            '2 email(s) sent or logged.\n'
             'Recipients:\n'
-            'aaudi@google.com\n'
-            'angelaweber@google.com\n'
-            'carolinasaluz@google.com\n'
-            'crushworth@google.com\n'
-            'davidayad@google.com\n'
-            'elmirakalali@google.com\n'
-            'kimreardon@google.com\n'
-            'mhoste@google.com\n'
-            'nsamarakkody@google.com\n'
-            'pastarmovj@google.com\n'
-            'sirishsingh@google.com'
+            'reviewer1@example.com\n'
+            'reviewer2@example.com'
         )
         expected = {'message': expected_message}
         self.assertEqual(actual, expected)
@@ -836,19 +820,10 @@ class SLOOverdueHandlerTest(testing_config.CustomTestCase):
             actual = self.handler.get_template_data()
 
         expected_message = (
-            '11 email(s) sent or logged.\n'
+            '2 email(s) sent or logged.\n'
             'Recipients:\n'
-            'aaudi@google.com\n'
-            'angelaweber@google.com\n'
-            'carolinasaluz@google.com\n'
-            'crushworth@google.com\n'
-            'davidayad@google.com\n'
-            'elmirakalali@google.com\n'
-            'kimreardon@google.com\n'
-            'mhoste@google.com\n'
-            'nsamarakkody@google.com\n'
-            'pastarmovj@google.com\n'
-            'sirishsingh@google.com'
+            'reviewer1@example.com\n'
+            'reviewer2@example.com'
         )
         expected = {'message': expected_message}
         self.assertEqual(actual, expected)
@@ -924,7 +899,7 @@ class SLOOverdueHandlerTest(testing_config.CustomTestCase):
                 True,
             )
 
-        self.assertEqual(13, len(actual))
+        self.assertEqual(4, len(actual))
         task = actual[0]
         self.assertEqual('a_assignee@example.com', task['to'])
         self.assertEqual(
@@ -976,7 +951,7 @@ class SLOOverdueHandlerTest(testing_config.CustomTestCase):
                 False,
             )
 
-        self.assertEqual(13, len(actual))
+        self.assertEqual(4, len(actual))
         task = actual[0]
         self.assertEqual('a_assignee@example.com', task['to'])
         self.assertEqual(

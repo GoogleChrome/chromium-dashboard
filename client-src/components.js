@@ -58,6 +58,7 @@ registerIconLibrary('material', {
 
 // Chromedash components and LitCSS
 import './elements/chromedash-admin-feature-links-page';
+import './elements/chromedash-admin-gates-page';
 import './elements/chromedash-all-features-page';
 import './elements/chromedash-activity-page';
 import './elements/chromedash-activity-log';

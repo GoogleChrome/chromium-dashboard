@@ -16,8 +16,10 @@ from chromestatus_openapi.models.feature_latency import FeatureLatency  # noqa: 
 from chromestatus_openapi.models.feature_links_response import FeatureLinksResponse  # noqa: E501
 from chromestatus_openapi.models.feature_links_sample import FeatureLinksSample  # noqa: E501
 from chromestatus_openapi.models.feature_links_summary_response import FeatureLinksSummaryResponse  # noqa: E501
+from chromestatus_openapi.models.gate_def_admin import GateDefAdmin  # noqa: E501
 from chromestatus_openapi.models.get_comments_response import GetCommentsResponse  # noqa: E501
 from chromestatus_openapi.models.get_dismissed_cues400_response import GetDismissedCues400Response  # noqa: E501
+from chromestatus_openapi.models.get_gate_defs_response import GetGateDefsResponse  # noqa: E501
 from chromestatus_openapi.models.get_gate_response import GetGateResponse  # noqa: E501
 from chromestatus_openapi.models.get_intent_response import GetIntentResponse  # noqa: E501
 from chromestatus_openapi.models.get_origin_trials_response import GetOriginTrialsResponse  # noqa: E501
@@ -48,6 +50,7 @@ from chromestatus_openapi.models.summary_suggestion_list_response import Summary
 from chromestatus_openapi.models.summary_suggestion_patch_request import SummarySuggestionPatchRequest  # noqa: E501
 from chromestatus_openapi.models.summary_suggestion_response import SummarySuggestionResponse  # noqa: E501
 from chromestatus_openapi.models.summary_suggestion_trigger_request import SummarySuggestionTriggerRequest  # noqa: E501
+from chromestatus_openapi.models.update_gate_def_request import UpdateGateDefRequest  # noqa: E501
 from chromestatus_openapi.models.web_feature_infos_response import WebFeatureInfosResponse  # noqa: E501
 from chromestatus_openapi.test import BaseTestCase
 
@@ -326,6 +329,21 @@ class TestDefaultController(BaseTestCase):
         }
         response = self.client.open(
             '/api/v0/features/<int:feature_id>/approvals/<int:gate_id>/comments'.format(feature_id=56, gate_id=56),
+            method='GET',
+            headers=headers)
+        self.assert200(response,
+                       'Response body is : ' + response.data.decode('utf-8'))
+
+    def test_get_gate_defs(self):
+        """Test case for get_gate_defs
+
+        Get all gate definitions and their approvers (admin only)
+        """
+        headers = { 
+            'Accept': 'application/json',
+        }
+        response = self.client.open(
+            '/api/v0/gates',
             method='GET',
             headers=headers)
         self.assert200(response,
@@ -897,6 +915,26 @@ class TestDefaultController(BaseTestCase):
             method='PATCH',
             headers=headers,
             data=json.dumps(patch_comment_request),
+            content_type='application/json')
+        self.assert200(response,
+                       'Response body is : ' + response.data.decode('utf-8'))
+
+    def test_update_gate_def(self):
+        """Test case for update_gate_def
+
+        Update the approvers for a gate definition (admin only)
+        """
+        update_gate_def_request = {"approvers":["approvers","approvers"]}
+        headers = { 
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'XsrfToken': 'special-key',
+        }
+        response = self.client.open(
+            '/api/v0/gates/{id}'.format(id=56),
+            method='PATCH',
+            headers=headers,
+            data=json.dumps(update_gate_def_request),
             content_type='application/json')
         self.assert200(response,
                        'Response body is : ' + response.data.decode('utf-8'))

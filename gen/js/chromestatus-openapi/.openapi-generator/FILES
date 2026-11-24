@@ -29,10 +29,12 @@ src/models/FeatureLinksSample.ts
 src/models/FeatureLinksSummaryResponse.ts
 src/models/FieldInfo.ts
 src/models/Gate.ts
+src/models/GateDefAdmin.ts
 src/models/GateInfo.ts
 src/models/GateLatency.ts
 src/models/GetCommentsResponse.ts
 src/models/GetDismissedCues400Response.ts
+src/models/GetGateDefsResponse.ts
 src/models/GetGateResponse.ts
 src/models/GetIntentResponse.ts
 src/models/GetOriginTrialsResponse.ts
@@ -93,6 +95,7 @@ src/models/SummarySuggestionResponse.ts
 src/models/SummarySuggestionTriggerRequest.ts
 src/models/SurveyAnswers.ts
 src/models/TokenRefreshResponse.ts
+src/models/UpdateGateDefRequest.ts
 src/models/UserPermissions.ts
 src/models/VerifyContinuityIssueResponse.ts
 src/models/Vote.ts
