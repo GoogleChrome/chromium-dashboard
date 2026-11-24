@@ -51,7 +51,15 @@ fi
 
 if [[ "$QUIET" == "true" || ${REPLY:-} =~ ^[Yy]$ ]]; then
   for SERVICE in $SERVICES; do
-    gcloud app --project="$APP_NAME" services set-traffic "$SERVICE" --splits "${VERSION}=1" --quiet
+    # Migrate the default service gradually: it enables warmup requests, so App
+    # Engine warms up instances of the new version before shifting traffic and
+    # requests don't stall on ~1 minute cold starts. notifier has no warmup
+    # requests, so it is switched immediately.
+    MIGRATE_FLAG=""
+    if [[ "$SERVICE" == "default" ]]; then
+      MIGRATE_FLAG="--migrate"
+    fi
+    gcloud app --project="$APP_NAME" services set-traffic "$SERVICE" --splits "${VERSION}=1" $MIGRATE_FLAG --quiet
   done
   echo "Staging traffic migrated to version ${VERSION}."
 else
