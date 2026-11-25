@@ -120,6 +120,11 @@ export class ChromedashSummaryReviewDialog extends LitElement {
   }
 
   show() {
+    this.editedSummary = this.suggestion?.suggested_summary || '';
+    this.isEditing = false;
+    this.newerSuggestionAvailable = false;
+    this.occConflict = false;
+    this.errorMessage = null;
     this.dialogEl?.show();
   }
 
@@ -128,6 +133,14 @@ export class ChromedashSummaryReviewDialog extends LitElement {
   }
 
   override willUpdate(changedProperties: PropertyValues) {
+    if (changedProperties.has('featureId')) {
+      this.editedSummary = this.suggestion?.suggested_summary || '';
+      this.isEditing = false;
+      this.newerSuggestionAvailable = false;
+      this.occConflict = false;
+      this.errorMessage = null;
+      return;
+    }
     if (changedProperties.has('suggestion')) {
       const newSuggested = this.suggestion?.suggested_summary || '';
       if (this.isEditing && this.editedSummary !== newSuggested) {
