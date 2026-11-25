@@ -71,6 +71,16 @@ class StarsAPITest(testing_config.CustomTestCase):
             with self.assertRaises(werkzeug.exceptions.BadRequest):
                 self.handler.do_post()
 
+        # Values that are not valid IDs get a 400 rather than an exception.
+        for bad_id in ([], {}, False, True, 3.9, 0, -1, 2**63):
+            with self.subTest(featureId=bad_id):
+                params = {'featureId': bad_id}
+                with test_app.test_request_context(
+                    self.request_path, json=params
+                ):
+                    with self.assertRaises(werkzeug.exceptions.BadRequest):
+                        self.handler.do_post()
+
     def test_post__feature_id_not_found(self):
         """We reject star requests for features that don't exist."""
         params = {'featureId': 999}

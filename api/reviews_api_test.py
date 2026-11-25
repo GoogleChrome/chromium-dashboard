@@ -579,6 +579,17 @@ class GatesAPITest(testing_config.CustomTestCase):
         self.handler = reviews_api.GatesAPI()
         self.request_path = '/api/v0/features/%d/gates' % self.feature_id
 
+    def test_do_patch__non_object_body(self):
+        """A JSON body that is not an object gets a 400 rather than a crash."""
+        testing_config.sign_in('owner1@example.com', 123567890)
+        with test_app.test_request_context(
+            self.request_path, method='PATCH', json=['assignees']
+        ):
+            with self.assertRaises(werkzeug.exceptions.BadRequest):
+                self.handler.do_patch(
+                    feature_id=self.feature_id, gate_id=self.gate_1_id
+                )
+
     @mock.patch('internals.approval_defs.get_approvers')
     def test_do_get__success(self, mock_get_approvers):
         """Handler retrieves all gates associated with a given feature."""

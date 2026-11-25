@@ -15,6 +15,7 @@
 """Tests for the basehandlers module, verifying request handling, permissions, and responses."""
 
 import testing_config  # isort: skip  # Must be imported before the module under test.
+import io
 import json
 from unittest import mock
 
@@ -295,6 +296,46 @@ class BaseHandlerTests(testing_config.CustomTestCase):
                 400, msg='Expected a JSON object'
             )
 
+    def test_get_json_param_dict__no_json_body(self):
+        """An empty body or a body that is not JSON gives an empty dict."""
+        # Our JS client sends a JSON content type even when there is no body.
+        with test_app.test_request_context(
+            '/test', method='POST', content_type='application/json'
+        ):
+            self.assertEqual({}, self.handler.get_json_param_dict())
+
+        # Multipart file uploads are not JSON.
+        upload = {'uploaded-file': (io.BytesIO(b'file data'), 'a.txt')}
+        with test_app.test_request_context('/test', method='POST', data=upload):
+            self.assertEqual({}, self.handler.get_json_param_dict())
+            self.assertIn('uploaded-file', flask.request.files)
+
+        # A JSON object sent with another content type is still parsed.
+        with test_app.test_request_context(
+            '/test', method='POST', data='{"x": 1}', content_type='text/plain'
+        ):
+            self.assertEqual({'x': 1}, self.handler.get_json_param_dict())
+
+    @mock.patch('framework.basehandlers.BaseHandler.abort')
+    def test_get_json_param_dict__malformed(self, mock_abort):
+        """A JSON request body that does not parse to an object gets a 400."""
+        mock_abort.side_effect = werkzeug.exceptions.BadRequest
+
+        for body in ('{"x": 1', 'not json', 'null'):
+            with self.subTest(body=body):
+                mock_abort.reset_mock()
+                with test_app.test_request_context(
+                    '/test',
+                    method='POST',
+                    data=body,
+                    content_type='application/json',
+                ):
+                    with self.assertRaises(werkzeug.exceptions.BadRequest):
+                        self.handler.get_json_param_dict()
+                mock_abort.assert_called_once_with(
+                    400, msg='Expected a JSON object'
+                )
+
     def test_get_param__simple(self):
         """We can simply get a JSON parameter, with defaults."""
         with test_app.test_request_context('/test', json={'x': 1}):
@@ -392,6 +433,23 @@ class BaseHandlerTests(testing_config.CustomTestCase):
             )
 
     @mock.patch('framework.basehandlers.BaseHandler.abort')
+    def test_get_int_param__falsy_non_int(self, mock_abort):
+        """Empty values that are not ints are rejected too."""
+        mock_abort.side_effect = werkzeug.exceptions.BadRequest
+
+        for bad_val in ([], {}, False, '', 0.0):
+            with self.subTest(val=bad_val):
+                mock_abort.reset_mock()
+                with test_app.test_request_context(
+                    '/test', json={'x': bad_val}
+                ):
+                    with self.assertRaises(werkzeug.exceptions.BadRequest):
+                        self.handler.get_int_param('x')
+                mock_abort.assert_called_once_with(
+                    400, msg="Parameter 'x' was not an int"
+                )
+
+    @mock.patch('framework.basehandlers.BaseHandler.abort')
     def test_get_bool_param(self, mock_abort):
         """We can get a bool, or abort."""
         mock_abort.side_effect = werkzeug.exceptions.BadRequest
@@ -438,6 +496,77 @@ class BaseHandlerTests(testing_config.CustomTestCase):
             mock_abort.assert_called_once_with(
                 400, msg="Parameter 'feature_id' must be a positive int"
             )
+
+    def test_extract_id_param__valid(self):
+        """Valid IDs come from kwargs, or else from the query string."""
+        with test_app.test_request_context('/test?feature_id=7'):
+            for val, expected in (
+                (5, 5),
+                ('5', 5),
+                (basehandlers.MAX_INT64, basehandlers.MAX_INT64),
+            ):
+                with self.subTest(val=val):
+                    self.assertEqual(
+                        expected,
+                        self.handler._extract_id_param(
+                            {'feature_id': val}, 'feature_id'
+                        ),
+                    )
+            self.assertEqual(
+                7, self.handler._extract_id_param({}, 'feature_id')
+            )
+
+    @mock.patch('framework.basehandlers.BaseHandler.abort')
+    def test_extract_id_param__kwarg_takes_precedence(self, mock_abort):
+        """An invalid kwarg is rejected even if the query string has an ID."""
+        mock_abort.side_effect = werkzeug.exceptions.BadRequest
+
+        with test_app.test_request_context('/test?feature_id=7'):
+            with self.assertRaises(werkzeug.exceptions.BadRequest):
+                self.handler._extract_id_param({'feature_id': 0}, 'feature_id')
+        mock_abort.assert_called_once_with(
+            400, msg="Parameter 'feature_id' must be a positive int"
+        )
+
+    @mock.patch('framework.basehandlers.BaseHandler.abort')
+    def test_extract_id_param__not_int(self, mock_abort):
+        """Reject values that are not ints, such as JSON lists and objects."""
+        mock_abort.side_effect = werkzeug.exceptions.BadRequest
+
+        for bad_id in ([], {}, [1], True, False, 3.9, 'abc', ''):
+            with self.subTest(bad_id=bad_id):
+                mock_abort.reset_mock()
+                with test_app.test_request_context('/test'):
+                    with self.assertRaises(werkzeug.exceptions.BadRequest):
+                        self.handler._extract_id_param(
+                            {'feature_id': bad_id}, 'feature_id'
+                        )
+                mock_abort.assert_called_once_with(
+                    400, msg="Parameter 'feature_id' was not an int"
+                )
+
+    @mock.patch('framework.basehandlers.BaseHandler.abort')
+    def test_extract_id_param__too_large(self, mock_abort):
+        """Reject IDs that do not fit in a 64-bit Datastore key."""
+        mock_abort.side_effect = werkzeug.exceptions.BadRequest
+        too_large = basehandlers.MAX_INT64 + 1
+
+        with test_app.test_request_context('/test'):
+            with self.assertRaises(werkzeug.exceptions.BadRequest):
+                self.handler._extract_id_param(
+                    {'feature_id': too_large}, 'feature_id'
+                )
+        mock_abort.assert_called_once_with(
+            400, msg="Parameter 'feature_id' is out of range"
+        )
+
+        mock_abort.reset_mock()
+        with test_app.test_request_context(f'/test?feature_id={too_large}'):
+            with self.assertRaises(werkzeug.exceptions.BadRequest):
+                self.handler._extract_id_param({}, 'feature_id')
+        mock_abort.assert_called_once_with(
+            400, msg="Parameter 'feature_id' is out of range"
+        )
 
     @mock.patch('framework.basehandlers.BaseHandler.abort')
     def test_get_specified_feature__missing(self, mock_abort):
@@ -647,6 +776,20 @@ class BaseHandlerTests(testing_config.CustomTestCase):
             404, msg=f'FeatureEntry {non_existent_id} not found.'
         )
 
+    @mock.patch('framework.basehandlers.BaseHandler.abort')
+    def test_get_validated_entity__out_of_range(self, mock_abort):
+        """Should abort with 400 for IDs that can never exist in Datastore."""
+        mock_abort.side_effect = werkzeug.exceptions.BadRequest
+
+        for bad_id in (0, -1, basehandlers.MAX_INT64 + 1, True, 3.9):
+            with self.subTest(bad_id=bad_id):
+                mock_abort.reset_mock()
+                with self.assertRaises(werkzeug.exceptions.BadRequest):
+                    self.handler.get_validated_entity(bad_id, FeatureEntry)
+                mock_abort.assert_called_once_with(
+                    400, msg=f'Invalid FeatureEntry ID: {bad_id}.'
+                )
+
 
 class APIHandlerTests(testing_config.CustomTestCase):
     """Tests for APIHandler."""
@@ -747,6 +890,24 @@ class APIHandlerTests(testing_config.CustomTestCase):
         """If a subclass has do_delete(), delete() should return a JSON response."""
         self.handler = TestableAPIHandler()
         self.check_http_method_handler(self.handler.delete, 'done delete')
+
+    def test_non_object_body(self):
+        """post(), put(), and patch() reject JSON bodies that are not objects."""
+        self.handler = TestableAPIHandler()
+        for method in ('post', 'put', 'patch'):
+            with self.subTest(method=method):
+                with mock.patch.object(self.handler, f'do_{method}') as mock_do:
+                    with test_app.test_request_context(
+                        '/path', method=method.upper(), json=[1, 2]
+                    ):
+                        with self.assertRaises(
+                            werkzeug.exceptions.BadRequest
+                        ) as cm:
+                            getattr(self.handler, method)()
+                mock_do.assert_not_called()
+                self.assertEqual(
+                    'Expected a JSON object', cm.exception.description
+                )
 
     def test_get_valid_methods__minimal(self):
         """It should return a list of HTTP verb names that have do_* methods."""
@@ -1679,6 +1840,23 @@ class GetSPATemplateDataTests(testing_config.CustomTestCase):
 
 class FlaskApplicationTests(testing_config.CustomTestCase):
     """Tests for the Flask application configuration."""
+
+    def test_int_converter__rejects_int64_overflow(self):
+        """URL integers that overflow int64 do not match any route."""
+        app = basehandlers.FlaskApplication(
+            __name__, [Route('/f/<int:feature_id>', TestableAPIHandler)]
+        )
+        adapter = app.url_map.bind('localhost')
+        max_id = basehandlers.MAX_INT64
+
+        _, args = adapter.match(f'/f/{max_id}')
+        self.assertEqual({'feature_id': max_id}, args)
+
+        # As before, negative numbers and non-digits do not match either.
+        for path in (f'/f/{max_id + 1}', '/f/-1', '/f/abc'):
+            with self.subTest(path=path):
+                with self.assertRaises(werkzeug.exceptions.NotFound):
+                    adapter.match(path)
 
     def test_cors_with_allow_origin(self):
         """If the request hits a /data path, they get '*'."""

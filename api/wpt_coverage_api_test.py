@@ -146,6 +146,31 @@ class WPTCoverageAPITest(testing_config.CustomTestCase):
 
         mock_enqueue.assert_not_called()
 
+    @mock.patch('framework.cloud_tasks_helpers.enqueue_task')
+    def test_do_post__invalid_feature_id(self, mock_enqueue):
+        """Feature IDs that can never exist in Datastore get a 400."""
+        for bad_id in (0, 2**63):
+            with self.subTest(feature_id=bad_id):
+                with test_app.test_request_context(
+                    f'/api/v0/features/{bad_id}/wpt-coverage-analysis',
+                    method='POST',
+                ):
+                    with self.assertRaises(werkzeug.exceptions.BadRequest):
+                        self.handler.do_post(feature_id=bad_id)
+
+        mock_enqueue.assert_not_called()
+
+    def test_do_delete__invalid_feature_id(self):
+        """Feature IDs that can never exist in Datastore get a 400."""
+        for bad_id in (0, 2**63):
+            with self.subTest(feature_id=bad_id):
+                with test_app.test_request_context(
+                    f'/api/v0/features/{bad_id}/wpt-coverage-analysis',
+                    method='DELETE',
+                ):
+                    with self.assertRaises(werkzeug.exceptions.BadRequest):
+                        self.handler.do_delete(feature_id=bad_id)
+
     @mock.patch('framework.permissions.is_google_or_chromium_account')
     @mock.patch('framework.cloud_tasks_helpers.enqueue_task')
     @mock.patch('framework.permissions.can_edit_feature')
