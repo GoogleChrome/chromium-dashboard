@@ -31,7 +31,7 @@ type Item = {
 
 const WEB_FEATURE_ID_RE = new RegExp('^[a-z0-9]+(-[a-z0-9]+)*$');
 const CHROMESTATUS_URL_RE = new RegExp(
-  'https://(wwww.)?chromestatus.com/feature/(?<id>[0-9]+)'
+  'https://(www\\.)?chromestatus\\.com/feature/(?<id>[0-9]+)'
 );
 
 @customElement('chromedash-bulk-edit-page')
@@ -209,8 +209,8 @@ export class ChromedashBulkEditPage extends LitElement {
     };
     return window.csClient
       .updateFeature(submitBody)
-      .then(resp => {
-        this.fetchFeature(item);
+      .then(() => {
+        return this.fetchFeature(item);
       })
       .catch(() => {
         showToastMessage(
