@@ -92,7 +92,9 @@ export class ChromedashActivityPage extends LitElement {
 
   reloadComments() {
     const commentArea = this.commentAreaRef.value;
-    commentArea!.value = '';
+    if (commentArea) {
+      commentArea.value = '';
+    }
     this.needsPost = false;
     Promise.all([window.csClient.getComments(this.featureId, null)])
       .then(([commentRes]) => {
@@ -115,7 +117,7 @@ export class ChromedashActivityPage extends LitElement {
 
   handlePost() {
     const commentArea = this.commentAreaRef.value;
-    const commentText = commentArea!.value.trim();
+    const commentText = commentArea?.value.trim() || '';
     if (commentText != '') {
       window.csClient
         .postComment(this.featureId, null, commentText, 0)
@@ -159,7 +161,7 @@ export class ChromedashActivityPage extends LitElement {
         resize="auto"
         ${ref(this.commentAreaRef)}
         @sl-change=${this.checkNeedsPost}
-        @keypress=${this.checkNeedsPost}
+        @sl-input=${this.checkNeedsPost}
         placeholder="Add a comment"
       ></sl-textarea>
       <div class="instructions">
