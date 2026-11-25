@@ -581,8 +581,10 @@ export class ChromedashFeatureDetail extends LitElement {
     return gatesForStage.map(g => this.renderGateChip(feStage, g));
   }
 
+  // Actions with gate_types are shown on those gates in the gate column, so
+  // only actions that are not tied to any gate belong at the stage level.
   getStageLevelActions(stage: any): any[] {
-    return (stage?.actions || []).filter(act => act.url !== 'request review');
+    return (stage?.actions || []).filter(act => !act.gate_types?.length);
   }
 
   hasStageActions(stage: any, feStage: StageDict) {
@@ -772,6 +774,8 @@ export class ChromedashFeatureDetail extends LitElement {
     // Don't render an extension request button if this is not an OT stage,
     // or the user does not have access to submit an extension request,
     // or the OT stage has not been created in the OT Console yet.
+    // Like trial creation, any Google or Chromium account may request an
+    // extension (see StagesAPI._validate_edit_permissions).
     const userCannotViewOTControls =
       !this.user ||
       (!this.user.email.endsWith('@chromium.org') &&
@@ -781,7 +785,6 @@ export class ChromedashFeatureDetail extends LitElement {
     );
     const originTrialNotCreatedYet = !feStage.origin_trial_id;
     if (
-      !this.canEdit ||
       userCannotViewOTControls ||
       isNotOriginTrialStage ||
       originTrialNotCreatedYet
@@ -801,6 +804,11 @@ export class ChromedashFeatureDetail extends LitElement {
       );
     });
     if (extensionReadyForFinalize) {
+      // Finalizing an extension requires edit access to the feature
+      // (see OriginTrialsAPI.do_patch).
+      if (!this.canEdit) {
+        return this.renderDisabledExtensionButton();
+      }
       return this.renderFinalizeExtensionButton(extensionReadyForFinalize);
     }
 
@@ -851,7 +859,9 @@ export class ChromedashFeatureDetail extends LitElement {
       this.user &&
       (this.user.email.endsWith('@chromium.org') ||
         this.user.email.endsWith('@google.com'));
-    if (!canSeeOTControls || !this.canEdit) {
+    // Any Google or Chromium account may request trial creation, even without
+    // edit access to the feature (see OriginTrialsAPI.check_post_permissions).
+    if (!canSeeOTControls) {
       return nothing;
     }
 
@@ -885,7 +895,7 @@ export class ChromedashFeatureDetail extends LitElement {
         >
       </sl-tooltip>`;
     }
-    // Display the creation request button if user has edit access.
+    // Display the creation request button.
     return html` <sl-button
       size="small"
       variant="primary"
