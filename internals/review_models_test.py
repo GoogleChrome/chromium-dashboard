@@ -16,9 +16,12 @@
 
 import datetime
 
+from google.cloud import ndb  # type: ignore
+
 import testing_config  # Must be imported before the module under test.
+from framework import rediscache
 from internals.core_models import FeatureEntry
-from internals.review_models import Activity, OwnersFile
+from internals.review_models import Activity, Gate, OwnersFile, Vote
 
 
 class ActivityTest(testing_config.CustomTestCase):
@@ -117,6 +120,87 @@ class GateTest(testing_config.CustomTestCase):
 
     # TODO(jrobbins): Add tests for get_feature_gates.
     pass
+
+
+class GateAndVoteCacheInvalidationTest(testing_config.CustomTestCase):
+    """Tests that Gate and Vote writes invalidate cached search results."""
+
+    def setUp(self):
+        """Populate feature and search cache entries."""
+        self.feature_id = 12345
+        self.entry_key = FeatureEntry.feature_cache_key(
+            FeatureEntry.DEFAULT_CACHE_KEY, self.feature_id
+        )
+        self.name_key = FeatureEntry.feature_cache_key(
+            FeatureEntry.FEATURE_NAME_CACHE_KEY, self.feature_id
+        )
+        self.search_key = f'{FeatureEntry.SEARCH_CACHE_KEY}|test_query'
+        for key in (self.entry_key, self.name_key, self.search_key):
+            rediscache.set(key, 'cached')
+
+    def tearDown(self):
+        """Clean up entities and cache."""
+        for gate in Gate.query():
+            gate.key.delete()
+        for vote in Vote.query():
+            vote.key.delete()
+        rediscache.flushall()
+
+    def make_gate(self):
+        """Return an unsaved Gate."""
+        return Gate(
+            feature_id=self.feature_id,
+            stage_id=1,
+            gate_type=1,
+            state=Gate.PREPARING,
+        )
+
+    def make_vote(self):
+        """Return an unsaved Vote."""
+        return Vote(
+            feature_id=self.feature_id,
+            gate_id=2,
+            gate_type=1,
+            state=Vote.APPROVED,
+            set_on=datetime.datetime.now(),
+            set_by='reviewer@example.com',
+        )
+
+    def assert_only_search_invalidated(self):
+        """Search results are invalidated; per-feature caches are kept."""
+        self.assertIsNone(rediscache.get(self.search_key))
+        # Cached feature data does not include gates or votes.
+        self.assertEqual('cached', rediscache.get(self.entry_key))
+        self.assertEqual('cached', rediscache.get(self.name_key))
+
+    def test_gate_put(self):
+        """Saving a gate invalidates search results only."""
+        self.make_gate().put()
+        self.assert_only_search_invalidated()
+
+    def test_gate_put_multi(self):
+        """ndb.put_multi() of gates invalidates search results only."""
+        ndb.put_multi([self.make_gate(), self.make_gate()])
+        self.assert_only_search_invalidated()
+
+    def test_gate_delete(self):
+        """Deleting a gate invalidates search results only."""
+        key = self.make_gate().put()
+        rediscache.set(self.search_key, 'cached')
+        key.delete()
+        self.assert_only_search_invalidated()
+
+    def test_vote_put(self):
+        """Saving a vote invalidates search results only."""
+        self.make_vote().put()
+        self.assert_only_search_invalidated()
+
+    def test_vote_delete(self):
+        """Deleting a vote invalidates search results only."""
+        key = self.make_vote().put()
+        rediscache.set(self.search_key, 'cached')
+        key.delete()
+        self.assert_only_search_invalidated()
 
 
 class OwnersFileTest(testing_config.CustomTestCase):
