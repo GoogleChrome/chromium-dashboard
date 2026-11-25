@@ -38,8 +38,6 @@ from internals.data_types import StageDict
 from internals.review_models import Gate
 from internals.user_models import (
     AppUser,
-    BlinkComponent,
-    FeatureOwner,
     UserPref,
 )
 
@@ -206,7 +204,7 @@ IWA_RULE_ADDRS = ['iwa-dev@chromium.org']
 POST_BETA_RULE_REASON = (
     'Published aspects of this feature entry changed after it started beta'
 )
-POST_BETA_RULE_ADDRS = ['rachelandrew@google.com']
+POST_BETA_RULE_ADDRS = ['rachelandrew@google.com', 'jlwagner@google.com']
 ENTERPRISE_LATE_RULE_REASON = (
     'Published aspects of this feature entry changed after it was first '
     'included in release notes'
@@ -448,10 +446,6 @@ def make_feature_changes_email(
     """Return a list of task dicts to notify users of feature changes."""
     if changes is None:
         changes = []
-    watchers: list[FeatureOwner] = FeatureOwner.query(
-        FeatureOwner.watching_all_features == True  # noqa: E712
-    ).fetch(None)
-    watcher_emails: list[str] = [watcher.email for watcher in watchers]
 
     if is_update:
         subject = 'updated feature: %s' % fe.name
@@ -469,33 +463,7 @@ def make_feature_changes_email(
     addr_reasons: dict[str, list[str]] = collections.defaultdict(list)
 
     add_core_receivers(fe, addr_reasons)
-    accumulate_reasons(
-        addr_reasons, watcher_emails, 'You are watching all feature changes'
-    )
 
-    # There will always be at least one component.
-    for component_name in fe.blink_components:
-        component = BlinkComponent.get_by_name(component_name)
-        if not component:
-            logging.warning(
-                'Blink component "%s" not found.'
-                'Not sending email to subscribers' % component_name
-            )
-            continue
-        owner_emails: list[str] = [owner.email for owner in component.owners]
-        subscriber_emails: list[str] = [
-            sub.email for sub in component.subscribers
-        ]
-        accumulate_reasons(
-            addr_reasons,
-            owner_emails,
-            "You are an owner of this feature's component",
-        )
-        accumulate_reasons(
-            addr_reasons,
-            subscriber_emails,
-            "You subscribe to this feature's component",
-        )
     starrers = FeatureStar.get_feature_starrers(fe.key.integer_id())
     starrer_emails: list[str] = [user.email for user in starrers]
     accumulate_reasons(addr_reasons, starrer_emails, 'You starred this feature')

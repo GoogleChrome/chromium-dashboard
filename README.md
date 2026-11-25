@@ -135,10 +135,6 @@ Note: *Only developers with access to the cr-status-staging GCP project will be 
 
 Chromestatus currently gets the list of Blink components from the file `hack_components.py`.
 
-#### Seed the blink component owners
-
-Visit http://localhost:7777/admin/blink/populate_blink to see the list of Blink component owners.
-
 #### Debugging / settings
 
 [`settings.py`](https://github.com/GoogleChrome/chromium-dashboard/blob/master/settings.py) contains a list

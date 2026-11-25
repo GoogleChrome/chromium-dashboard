@@ -185,25 +185,31 @@ export class ChromedashRoadmap extends LitElement {
       ? GAPPED_CHANNEL_TYPES
       : DEFAULT_CHANNEL_TYPES;
     const promises = this.shownChannelNames.map(channelType =>
-      window.csClient.getFeaturesInMilestone(channels[channelType].version)
+      window.csClient.getFeaturesInMilestone(channels[channelType]?.version)
     );
-    Promise.all(promises).then(allRes => {
-      allRes.map((res, idx) => {
-        Object.keys(res).forEach(status => {
-          res[status].sort(compareFeatures);
+    return Promise.all(promises)
+      .then(allRes => {
+        allRes.map((res, idx) => {
+          Object.keys(res).forEach(status => {
+            res[status].sort(compareFeatures);
+          });
+          channels[this.shownChannelNames[idx]].features = res;
         });
-        channels[this.shownChannelNames[idx]].features = res;
-      });
-      this.channels = channels;
+        this.channels = channels;
 
-      this.fetchNextBatch(channels['beta'].version, true);
-      this.fetchPreviousBatch(channels['stable'].version);
-      const colIndex = this.numColumns > 0 ? this.numColumns - 1 : 0;
-      const channelName = this.shownChannelNames[colIndex];
-      if (channelName && channels[channelName]) {
-        this.lastMilestoneVisible = channels[channelName].version;
-      }
-    });
+        this.fetchNextBatch(channels['beta'].version, true);
+        this.fetchPreviousBatch(channels['stable'].version);
+        const colIndex = this.numColumns > 0 ? this.numColumns - 1 : 0;
+        const channelName = this.shownChannelNames[colIndex];
+        if (channelName && channels[channelName]) {
+          this.lastMilestoneVisible = channels[channelName].version;
+        }
+      })
+      .catch(() => {
+        showToastMessage(
+          'Some errors occurred. Please refresh the page or try again later.'
+        );
+      });
   }
 
   fetchNextBatch(nextVersion, firstTime = false) {
@@ -232,15 +238,17 @@ export class ChromedashRoadmap extends LitElement {
     milestonePromise
       .then(newMilestonesInfo => {
         // Then fetch features for each milestone
-        Promise.all(featurePromises).then(allRes => {
+        return Promise.all(featurePromises).then(allRes => {
           allRes.map((res, idx) => {
             Object.keys(res).forEach(status => {
               res[status].sort(compareFeatures);
             });
             // attach each milestone's feature response to the milestone object
             const version = versions[idx];
-            newMilestonesInfo[version].features = res;
-            newMilestonesInfo[version].version = version;
+            if (newMilestonesInfo?.[version]) {
+              newMilestonesInfo[version].features = res;
+              newMilestonesInfo[version].version = version;
+            }
 
             // update the properties to render the latest milestone cards
             this.milestoneInfo = Object.assign(
@@ -286,8 +294,10 @@ export class ChromedashRoadmap extends LitElement {
           features[status].sort(compareFeatures);
         });
         // attach the milestone's feature response to the milestone object
-        newMilestonesInfo[versionToFetch].features = features;
-        newMilestonesInfo[versionToFetch].version = versionToFetch;
+        if (newMilestonesInfo?.[versionToFetch]) {
+          newMilestonesInfo[versionToFetch].features = features;
+          newMilestonesInfo[versionToFetch].version = versionToFetch;
+        }
 
         // update the properties to render the newly fetched milestones
         this.milestoneInfo = Object.assign(

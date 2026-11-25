@@ -98,4 +98,24 @@ describe('chromedash-enterprise-page', () => {
       'Enterprise features and breaking changes'
     );
   });
+
+  it('passes start and num pagination properties to feature table', async () => {
+    searchFeaturesStub.returns(
+      Promise.resolve({
+        total_count: 150,
+        features: [{id: 123456, name: 'feature one'}],
+      })
+    );
+    const component = await fixture<ChromedashEnterprisePage>(
+      html`<chromedash-enterprise-page
+        .rawQuery=${{start: '50', num: '25'}}
+      ></chromedash-enterprise-page>`
+    );
+    const featureTableEl = component.shadowRoot!.querySelector(
+      'chromedash-feature-table'
+    ) as any;
+    assert.exists(featureTableEl);
+    assert.equal(featureTableEl.start, 50);
+    assert.equal(featureTableEl.num, 25);
+  });
 });

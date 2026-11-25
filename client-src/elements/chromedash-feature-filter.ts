@@ -79,7 +79,7 @@ class ChromedashFeatureFilter extends LitElement {
     if (e.key === '/' && !inInputContext) {
       e.preventDefault();
       e.stopPropagation();
-      (this.typeaheadRef?.value as ChromedashTypeahead).focus();
+      this.typeaheadRef.value?.focus();
     }
   };
 

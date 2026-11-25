@@ -24,8 +24,6 @@ from api import (
     blink_components_api,
     channels_api,
     comments_api,
-    component_users,
-    components_users,
     cues_api,
     external_reviews_api,
     feature_latency_api,
@@ -223,11 +221,6 @@ api_routes: list[Route] = [
     Route(
         f'{API_BASE}/blinkcomponents', blink_components_api.BlinkComponentsAPI
     ),
-    Route(f'{API_BASE}/componentsusers', components_users.ComponentsUsersAPI),
-    Route(
-        f'{API_BASE}/components/<int:component_id>/users/<int:user_id>',
-        component_users.ComponentUsersAPI,
-    ),
     Route(
         f'{API_BASE}/external_reviews/<string:review_group>',
         external_reviews_api.ExternalReviewsAPI,
@@ -394,10 +387,6 @@ spa_page_routes = [
         defaults={'require_signin': True, 'is_enterprise_page': True},
     ),
     # Admin pages
-    Route(
-        '/admin/blink',
-        defaults={'require_admin_site': True, 'require_signin': True},
-    ),
     Route(
         '/admin/feature_links',
         defaults={'require_admin_site': True, 'require_signin': True},
