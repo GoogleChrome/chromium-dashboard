@@ -255,6 +255,66 @@ class GatesAPI(basehandlers.APIHandler):
                 self.abort(400, 'Assignee is not a reviewer')
 
 
+class GatesBatchAPI(basehandlers.APIHandler):
+    """Get the gates for several features in one request."""
+
+    # Keeps the request line well under gunicorn's 4094-byte limit,
+    # since feature IDs are 16 digits long.
+    MAX_FEATURE_IDS = 100
+    # Datastore integer IDs must be positive 64-bit integers.
+    MAX_DATASTORE_ID = 2**63 - 1
+
+    def get_feature_ids(self) -> list[int]:
+        """Parse the comma-separated feature_ids query parameter."""
+        if 'feature_ids' not in self.request.args:
+            self.abort(400, msg='Missing parameter feature_ids')
+        raw_ids = self.request.args['feature_ids']
+        try:
+            feature_ids = [
+                int(fid) for fid in raw_ids.split(',') if fid.strip()
+            ]
+        except ValueError:
+            self.abort(400, msg='feature_ids must be comma-separated integers')
+        if any(not 1 <= fid <= self.MAX_DATASTORE_ID for fid in feature_ids):
+            self.abort(400, msg='feature_ids must be positive 64-bit integers')
+        # Remove duplicates while keeping the requested order.
+        feature_ids = list(dict.fromkeys(feature_ids))
+        if len(feature_ids) > self.MAX_FEATURE_IDS:
+            self.abort(
+                400,
+                msg=f'At most {self.MAX_FEATURE_IDS} feature_ids are allowed',
+            )
+        return feature_ids
+
+    def do_get(self, **kwargs) -> dict[str, Any]:
+        """Return the gates of each requested feature that the user can view.
+
+        Features that do not exist or that the user cannot view are skipped.
+        Unlike GatesAPI, possible_assignee_emails is not computed (null).
+        """
+        feature_ids = self.get_feature_ids()
+        user = self.get_current_user()
+        features: list[FeatureEntry | None] = ndb.get_multi(
+            [ndb.Key('FeatureEntry', fid) for fid in feature_ids]
+        )
+        viewable_features = [
+            fe
+            for fe in features
+            if fe is not None and permissions.can_view_feature(user, fe)
+        ]
+        gate_futures = [
+            Gate.query(Gate.feature_id == fe.key.integer_id()).fetch_async()
+            for fe in viewable_features
+        ]
+        dicts = []
+        for fe, gate_future in zip(viewable_features, gate_futures):
+            for gate in gate_future.get_result():
+                dicts.append(
+                    converters.gate_value_to_json_dict(gate, feature=fe)
+                )
+        return GetGateResponse.from_dict({'gates': dicts}).to_dict()
+
+
 class PendingGatesAPI(basehandlers.APIHandler):
     """API for fetching gates pending the current user's approval."""
 

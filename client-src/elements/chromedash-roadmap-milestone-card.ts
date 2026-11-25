@@ -15,11 +15,12 @@
  */
 
 import {SlPopup} from '@shoelace-style/shoelace';
-import {LitElement, TemplateResult, html, nothing} from 'lit';
+import {LitElement, PropertyValues, TemplateResult, html, nothing} from 'lit';
 import {customElement, property, state} from 'lit/decorators.js';
 import {createRef, ref} from 'lit/directives/ref.js';
 import {ROADMAP_MILESTONE_CARD_CSS} from '../css/elements/chromedash-roadmap-milestone-card-css.js';
 import {Feature, ReleaseInfo} from '../js-src/cs-client.js';
+import {GateDict} from './chromedash-gate-chip.js';
 import {isVerifiedWithinGracePeriod} from './utils.js';
 import './chromedash-review-status-icon.js';
 import {FEATURE_TYPES} from './form-field-enums.js';
@@ -29,6 +30,9 @@ const DEPRECATED_STATUS = ['Deprecated', 'No longer pursuing'];
 const ORIGIN_TRIAL = ['Origin trial'];
 const DEPRECATION_TRIAL = ['Deprecation trial'];
 const NO_FEATURE_STRING = 'NO FEATURES ARE PLANNED FOR THIS MILESTONE YET';
+// Passed to review status icons until gates load, so that they do not each
+// fetch their own gates.
+const NO_GATES: GateDict[] = [];
 
 export interface TemplateContent {
   channelLabel: string;
@@ -60,6 +64,52 @@ export class ChromedashRoadmapMilestoneCard extends LitElement {
   stableMilestone!: number;
   @state()
   currentDate: number = Date.now();
+  // Gates of the features in this milestone, keyed by feature ID.
+  @state()
+  gatesByFeatureId = new Map<number, GateDict[]>();
+
+  willUpdate(changedProperties: PropertyValues<this>) {
+    if (changedProperties.has('channel')) {
+      this.fetchGates();
+    }
+  }
+
+  /**
+   * Load the gates of every feature in this milestone with one request,
+   * instead of one request per feature's review status icon.
+   */
+  fetchGates() {
+    // Drop gates loaded for a previous channel.
+    if (this.gatesByFeatureId.size > 0) {
+      this.gatesByFeatureId = new Map();
+    }
+    const featureIds = this._objKeys(this.channel?.features).flatMap(
+      shippingType =>
+        (this.channel?.features[shippingType] || []).map(f => f.id)
+    );
+    if (featureIds.length === 0) {
+      return;
+    }
+    const requestedChannel = this.channel;
+    window.csClient
+      ?.getGatesForFeatures(featureIds)
+      .then(res => {
+        // Ignore a stale response if the channel changed meanwhile.
+        if (this.channel !== requestedChannel) {
+          return;
+        }
+        const gatesByFeatureId = new Map<number, GateDict[]>();
+        for (const gate of res.gates) {
+          const featureGates = gatesByFeatureId.get(gate.feature_id) || [];
+          featureGates.push(gate);
+          gatesByFeatureId.set(gate.feature_id, featureGates);
+        }
+        this.gatesByFeatureId = gatesByFeatureId;
+      })
+      .catch(() => {
+        // Review status icons are informational; leave them blank.
+      });
+  }
 
   /**
    *  Returns the number of days between a and b.
@@ -314,6 +364,7 @@ export class ChromedashRoadmapMilestoneCard extends LitElement {
       >
         <chromedash-review-status-icon
           .feature=${f}
+          .featureGates=${this.gatesByFeatureId.get(f.id) || NO_GATES}
         ></chromedash-review-status-icon>
         <span>
           <a
