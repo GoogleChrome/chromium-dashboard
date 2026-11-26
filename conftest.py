@@ -74,6 +74,7 @@ def pytest_configure(config):
 
         # Store the process reference in the pytest config so we can kill it later  # noqa: E501
         config.worker_emulator_proc = proc
+        config.worker_emulator_port = port
 
         # Poll the emulator until it returns a 200 OK, indicating it is ready to accept traffic  # noqa: E501
         for _ in range(30):
@@ -94,6 +95,14 @@ def pytest_unconfigure(config):
     """  # noqa: E501
     proc = getattr(config, 'worker_emulator_proc', None)
     if proc:
+        # `proc` is the gcloud wrapper. Terminating it does not stop the Java
+        # emulator that it launched, so ask the emulator to shut down first.
+        port = getattr(config, 'worker_emulator_port', None)
+        if port:
+            try:
+                requests.post(f'http://localhost:{port}/shutdown', timeout=5)
+            except Exception:
+                pass
         proc.terminate()
         proc.wait()
 
