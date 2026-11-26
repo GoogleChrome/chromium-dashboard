@@ -1,0 +1,11 @@
+# Configuration for WPT-Gen in chromium-dashboard
+# Enforces deterministic, consistent report generation across all environments.
+
+default_provider: gemini
+temperature: 0.0
+audit_partition_size: 40
+
+providers:
+  gemini:
+    default_model: gemini-3.1-pro-preview
+    temperature: 0.0

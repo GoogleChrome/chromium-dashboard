@@ -101,8 +101,10 @@ step-by-step.
 The system is tuned to balance App Engine limits against LLM generation time.
 These constants are defined in `framework/gemini_client.py`.
 
-### Gemini Model
-* **Model:** `gemini-3.1-pro-preview` (Hardcoded as `GEMINI_MODEL`).
+### Gemini Model & Determinism Configuration
+* **Model:** `gemini-3.1-pro-preview`.
+* **Temperature:** `0.0` (configured in `wpt-gen.yml` and `settings.WPT_COVERAGE_TEMPERATURE`). Enforces deterministic decoding across requirements extraction and audit phases to prevent categorization flips (e.g., flipping between Covered and Partially Covered) and ensure consistent test suggestions across subsequent runs.
+* **Input Normalization:** Pre-processes specification links (normalizing GitHub pull requests to canonical diff views and stripping tracking/anchor noise) and deduplicates explainer links to eliminate input ambiguity.
 
 ### Timeout Strategy
 To prevent "Task Deadline Exceeded" errors in Cloud Tasks, the system uses a
