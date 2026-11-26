@@ -19,7 +19,8 @@ import testing_config  # isort: split
 import datetime
 from unittest import mock
 
-from internals import core_enums, notifier, search
+from framework import rediscache
+from internals import core_enums, notifier, search, search_queries
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
 from internals.review_models import Gate, Vote
 from internals.search_queries import Interval
@@ -922,3 +923,166 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
         """Query terms that are not valid, give warnings."""
         self.assertEqual(search.process_query('any:thing e=lse'), ([], 0))
         self.assertEqual(2, len(mock_warn.mock_calls))
+
+    def test_process_query__base_ids_cached_and_reused(self):
+        """The scope and sort-order ID lists are cached and reused."""
+        first = search.process_query('')
+
+        self.assertCountEqual(
+            [
+                self.featureentry_1.key.integer_id(),
+                self.featureentry_2.key.integer_id(),
+            ],
+            rediscache.get(
+                search.BASE_IDS_CACHE_KEY
+                + '|scope=deleted_unlisted_enterprise=false'
+            ),
+        )
+        self.assertEqual(
+            4,
+            len(
+                rediscache.get(
+                    search.BASE_IDS_CACHE_KEY + '|order=-created.when'
+                )
+            ),
+        )
+
+        with (
+            mock.patch.object(
+                search,
+                'process_exclude_deleted_unlisted_enterprise_query',
+                wraps=search.process_exclude_deleted_unlisted_enterprise_query,
+            ) as mock_scope_query,
+            mock.patch.object(
+                search_queries,
+                'total_order_query_async',
+                wraps=search_queries.total_order_query_async,
+            ) as mock_order_query,
+        ):
+            second = search.process_query('')
+            sorted_by_name = search.process_query('', sort_spec='name')
+
+        self.assertEqual(first, second)
+        mock_scope_query.assert_not_called()
+        # Only the new sort spec needed a query.
+        mock_order_query.assert_called_once_with('name')
+        self.assertEqual(
+            ['feature 1', 'feature 2'], [f['name'] for f in sorted_by_name[0]]
+        )
+
+    def test_process_query__base_ids_flushed_on_feature_write(self):
+        """Writing a FeatureEntry clears the cached ID lists."""
+        actual, total_count = search.process_query('')
+        self.assertEqual(2, total_count)
+
+        new_feature = FeatureEntry(
+            name='feature 5', summary='sum', category=1, impl_status_chrome=3
+        )
+        new_feature.put()
+
+        actual, total_count = search.process_query('')
+        self.assertEqual(3, total_count)
+        # The default sort is newest first, so the new feature leads.
+        self.assertEqual('feature 5', actual[0]['name'])
+
+    def test_process_query__show_flags_use_separate_scope_caches(self):
+        """Each combination of show_* flags is cached separately."""
+        self.assertEqual(2, search.process_query('')[1])
+        self.assertEqual(3, search.process_query('', show_unlisted=True)[1])
+        self.assertEqual(3, search.process_query('', show_enterprise=True)[1])
+        # Repeat them so they are served from the cache.
+        self.assertEqual(2, search.process_query('')[1])
+        self.assertEqual(3, search.process_query('', show_unlisted=True)[1])
+        self.assertEqual(3, search.process_query('', show_enterprise=True)[1])
+
+    def test_process_query__joined_sort_not_cached(self):
+        """Sorts on joined models are recomputed every time."""
+        search.process_query('', sort_spec='gate.requested_on')
+        self.assertIsNone(
+            rediscache.get(
+                search.BASE_IDS_CACHE_KEY + '|order=gate.requested_on'
+            )
+        )
+
+    def test_process_query__confidential_ids_not_cached(self):
+        """Confidential IDs are always queried, even with stale cached lists."""
+        scope_name = 'scope=deleted_unlisted_enterprise=false'
+        testing_config.sign_in('regular@example.com', 123456)
+        actual, total_count = search.process_query('')
+        self.assertEqual(2, total_count)
+        self.assertIsNone(
+            rediscache.get(search.BASE_IDS_CACHE_KEY + '|confidential')
+        )
+        stale_scope_ids = rediscache.get(
+            search.BASE_IDS_CACHE_KEY + '|' + scope_name
+        )
+        self.assertIn(self.featureentry_1.key.integer_id(), stale_scope_ids)
+
+        # Make feature 1 confidential, then put the pre-write scope list back,
+        # as if the flush had been missed or raced with a cache fill.
+        self.featureentry_1.confidential = True
+        self.featureentry_1.put()
+        search._set_cached_base_ids(scope_name, stale_scope_ids)
+
+        # A user who cannot view it does not see it or count it.
+        actual, total_count = search.process_query('')
+        self.assertEqual(1, total_count)
+        self.assertEqual(['feature 2'], [f['name'] for f in actual])
+
+        # The owner still does.
+        testing_config.sign_in('owner@example.com', 123456)
+        actual, total_count = search.process_query('')
+        self.assertEqual(2, total_count)
+
+    def test_process_query__sort_cache_key_ignores_case(self):
+        """Capitalization variants of a sort share one cached order list."""
+        lower = search.process_query('', sort_spec='-created.when')
+        mixed = search.process_query('', sort_spec='-Created.When')
+        upper = search.process_query('', sort_spec='-CREATED.WHEN')
+
+        self.assertEqual(lower, mixed)
+        self.assertEqual(lower, upper)
+        self.assertIsNotNone(
+            rediscache.get(search.BASE_IDS_CACHE_KEY + '|order=-created.when')
+        )
+        order_keys = rediscache.redis_client.keys(
+            rediscache.add_gae_prefix(search.BASE_IDS_CACHE_KEY + '|order=*')
+        )
+        self.assertEqual(1, len(order_keys))
+
+    def test_process_query__base_ids_cache_ttl(self):
+        """Cached ID lists expire after BASE_IDS_CACHE_TTL."""
+        search.process_query('')
+        cache_key = rediscache.add_gae_prefix(
+            search.BASE_IDS_CACHE_KEY + '|order=-created.when'
+        )
+        ttl = rediscache.redis_client.ttl(cache_key)
+        self.assertTrue(0 < ttl <= search.BASE_IDS_CACHE_TTL)
+        self.assertEqual(30 * 60, search.BASE_IDS_CACHE_TTL)
+
+    def test_fetch_all_feature_ids_set__cached(self):
+        """All feature IDs are cached and refreshed after a feature write."""
+        expected = {
+            self.featureentry_1.key.integer_id(),
+            self.featureentry_2.key.integer_id(),
+            self.featureentry_3.key.integer_id(),
+            self.featureentry_4.key.integer_id(),
+        }
+        self.assertEqual(expected, search.fetch_all_feature_ids_set())
+
+        with mock.patch.object(
+            FeatureEntry, 'query', wraps=FeatureEntry.query
+        ) as mock_query:
+            result = search.fetch_all_feature_ids_set()
+        mock_query.assert_not_called()
+        self.assertEqual(expected, result)
+        # Callers may modify the returned set without changing the cache.
+        result.clear()
+        self.assertEqual(expected, search.fetch_all_feature_ids_set())
+
+        new_feature = FeatureEntry(name='feature 5', summary='sum', category=1)
+        new_feature.put()
+        self.assertEqual(
+            expected | {new_feature.key.integer_id()},
+            search.fetch_all_feature_ids_set(),
+        )

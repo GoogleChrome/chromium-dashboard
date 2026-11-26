@@ -402,6 +402,20 @@ class SearchFeaturesTest(testing_config.CustomTestCase):
         actual = search._resolve_promise_to_id_list(future)
         self.assertEqual([self.feature_1_id, self.feature_2_id], actual)
 
+    def test_is_feature_entry_sort(self):
+        """Only sorts directly on FeatureEntry properties qualify."""
+        self.assertTrue(search_queries.is_feature_entry_sort('name'))
+        self.assertTrue(search_queries.is_feature_entry_sort('-created.when'))
+        self.assertTrue(search_queries.is_feature_entry_sort('-Updated.When'))
+        self.assertFalse(
+            search_queries.is_feature_entry_sort('gate.requested_on')
+        )
+        self.assertFalse(
+            search_queries.is_feature_entry_sort('-gate.reviewed_on')
+        )
+        self.assertFalse(search_queries.is_feature_entry_sort('not_a_field'))
+        self.assertFalse(search_queries.is_feature_entry_sort(''))
+
     def test_stage_fields_have_join_conditions(self):
         """Every STAGE_QUERIABLE_FIELDS has a STAGE_TYPES_BY_QUERY_FIELD entry."""
         self.assertCountEqual(
