@@ -15,12 +15,16 @@
  */
 
 import {assert, fixture} from '@open-wc/testing';
+import '@shoelace-style/shoelace/dist/components/dialog/dialog.js';
 import {html} from 'lit';
 import sinon from 'sinon';
 import {ChromedashFeatureDetail} from './chromedash-feature-detail.js';
+import {ChromedashIntentDialog} from './chromedash-intent-dialog.js';
 import {
   GATE_PREPARING,
   GATE_REVIEW_REQUESTED,
+  GATE_TYPES,
+  STAGE_BLINK_SHIPPING,
   VOTE_OPTIONS,
 } from './form-field-enums.js';
 
@@ -139,6 +143,74 @@ describe('chromedash-feature-detail', () => {
       assert.strictEqual(scrollSpy.firstCall.thisValue, stageDetails);
     } finally {
       scrollSpy.restore();
+      window.history.replaceState(
+        {},
+        '',
+        originalSearch || window.location.pathname
+      );
+    }
+  });
+
+  it('opens the intent dialog in initializeIntentDialog when dialog=intent param is present', async () => {
+    const originalSearch = window.location.search;
+    window.history.replaceState({}, '', '?gate=99&dialog=intent');
+
+    try {
+      const featureWithStages = {
+        id: 123456789,
+        is_enterprise_feature: false,
+        stages: [
+          {id: 10, stage_type: 110, extensions: []},
+          {id: 20, stage_type: STAGE_BLINK_SHIPPING, extensions: []},
+        ],
+      };
+      const process = {
+        stages: [
+          {
+            stage_type: 110,
+            name: 'Start incubating',
+            description: 'desc 1',
+            actions: [],
+          },
+          {
+            stage_type: STAGE_BLINK_SHIPPING,
+            name: 'Prepare to ship',
+            description: 'desc 2',
+            actions: [],
+          },
+        ],
+      };
+      const testGates = [
+        {
+          id: 99,
+          stage_id: 20,
+          gate_type: GATE_TYPES.API_SHIP,
+          state: GATE_REVIEW_REQUESTED,
+          team_name: 'API Owners',
+        },
+      ];
+
+      await fixture(
+        html`<chromedash-feature-detail
+          .feature=${featureWithStages}
+          .process=${process}
+          .gates=${testGates}
+        ></chromedash-feature-detail>`
+      );
+
+      await new Promise(resolve => setTimeout(resolve, 0));
+
+      const dialogEl = document.querySelector(
+        'chromedash-intent-dialog'
+      ) as ChromedashIntentDialog;
+      assert.exists(dialogEl);
+      await dialogEl.updateComplete;
+
+      assert.deepEqual(dialogEl.feature, featureWithStages as any);
+      assert.deepEqual(dialogEl.stage, featureWithStages.stages[1] as any);
+      assert.deepEqual(dialogEl.gate, testGates[0] as any);
+      dialogEl.hide();
+    } finally {
       window.history.replaceState(
         {},
         '',
