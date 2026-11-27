@@ -323,7 +323,7 @@ export function renderText(
   isMarkdown: boolean = false,
   featureLinks: FeatureLink[] = []
 ): TemplateResult {
-  value = String(value);
+  value = Array.isArray(value) ? value.join(', ') : String(value);
   const markup: TemplateResult[] = autolink(value, featureLinks, isMarkdown);
   if (isMarkdown) {
     return html`${markup}`;
@@ -367,9 +367,15 @@ export function renderValue(
   } else if (fieldType == 'url') {
     return renderUrl(value, featureLinks);
   } else if (fieldType == 'multi-url') {
+    const entries = (Array.isArray(value) ? value : [value]).filter(item =>
+      isDefinedValue(item)
+    );
+    if (entries.length === 0) {
+      return html`<i>No information provided yet</i>`;
+    }
     return html`
       <ul class="inline-list">
-        ${value.map(url => html`<li>${renderUrl(url, featureLinks)}</li>`)}
+        ${entries.map(url => html`<li>${renderUrl(url, featureLinks)}</li>`)}
       </ul>
     `;
   }
