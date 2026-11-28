@@ -15,6 +15,13 @@
 """Helper functions for interacting with Gemini AI models.
 
 Provides utilities to evaluate WPT test coverage using Gemini.
+
+Note: `wptgen` and `ai.summary_generator` are imported lazily inside the
+functions that use them. They pull in large AI SDKs (anthropic, openai,
+google-genai, google-adk, fastapi), and this module is imported by `main.py`,
+so importing them at module level added several seconds of import time and
+significant memory to every gunicorn worker on every App Engine instance,
+even though they are only needed by two Cloud Task handlers.
 """
 
 import logging
@@ -22,11 +29,9 @@ import os
 from datetime import datetime
 
 from google.cloud import ndb
-from wptgen import generate_audit_report
 
 import settings
 from ai.progress_reporter import DatastoreProgressReporter, FeatureSummaryInput
-from ai.summary_generator import GeminiSummaryGenerator
 from framework import (
     basehandlers,
     feature_fingerprint,
@@ -73,7 +78,9 @@ def run_wpt_test_eval_pipeline(
         if settings.GEMINI_API_KEY:
             os.environ['GEMINI_API_KEY'] = settings.GEMINI_API_KEY
 
-        # Call the programmatic wpt-gen API
+        # Call the programmatic wpt-gen API. Imported lazily (see module docstring).
+        from wptgen import generate_audit_report
+
         report_markdown = generate_audit_report(
             feature_id=str(feature.key.id()),
             provider='gemini',
@@ -186,6 +193,9 @@ class GenerateSummaryHandler(basehandlers.FlaskHandler):
 
         # Clear historical progress timeline steps.
         FeatureSummaryProgressStep.clear_timeline(feature_id, keep_count=0)
+
+        # Imported lazily (see module docstring).
+        from ai.summary_generator import GeminiSummaryGenerator
 
         reporter = DatastoreProgressReporter(feature_id)
         feature_input = FeatureSummaryInput.from_feature(feature)

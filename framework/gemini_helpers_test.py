@@ -14,6 +14,9 @@
 
 """Unit tests for the gemini_helpers module."""
 
+import subprocess
+import sys
+from pathlib import Path
 from unittest import mock
 
 from google.cloud import ndb
@@ -49,7 +52,7 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
         ).start()
         self.addCleanup(mock.patch.stopall)
 
-    @mock.patch('framework.gemini_helpers.generate_audit_report')
+    @mock.patch('wptgen.generate_audit_report')
     @mock.patch('framework.gemini_helpers.settings')
     def test_run_pipeline__success(self, mock_settings, mock_generate):
         """Pipeline runs successfully and returns COMPLETE status, saving the report."""
@@ -75,7 +78,7 @@ class GeminiHelpersTest(testing_config.CustomTestCase):
             explainer_urls=['https://explainer.example.com'],
         )
 
-    @mock.patch('framework.gemini_helpers.generate_audit_report')
+    @mock.patch('wptgen.generate_audit_report')
     @mock.patch('framework.gemini_helpers.settings')
     def test_run_pipeline__generate_audit_report_exception(
         self, mock_settings, mock_generate
@@ -230,7 +233,7 @@ class GenerateSummaryHandlerTest(testing_config.CustomTestCase):
         if steps:
             ndb.delete_multi(steps)
 
-    @mock.patch('framework.gemini_helpers.GeminiSummaryGenerator')
+    @mock.patch('ai.summary_generator.GeminiSummaryGenerator')
     def test_process_post_data__success(self, mock_generator_cls):
         """Tests successful generation and Datastore persistence."""
         mock_generator = mock.MagicMock()
@@ -269,7 +272,7 @@ class GenerateSummaryHandlerTest(testing_config.CustomTestCase):
             feature_fingerprint.compute_feature_fingerprint(self.feature),
         )
 
-    @mock.patch('framework.gemini_helpers.GeminiSummaryGenerator')
+    @mock.patch('ai.summary_generator.GeminiSummaryGenerator')
     def test_process_post_data__deleted_feature_skipped(
         self, mock_generator_cls
     ):
@@ -283,7 +286,7 @@ class GenerateSummaryHandlerTest(testing_config.CustomTestCase):
         self.assertIn('deleted', response['message'])
         mock_generator_cls.assert_not_called()
 
-    @mock.patch('framework.gemini_helpers.GeminiSummaryGenerator')
+    @mock.patch('ai.summary_generator.GeminiSummaryGenerator')
     def test_process_post_data__deduplication_skipped(self, mock_generator_cls):
         """Tests that matching source_fingerprint skips execution when force=False."""
         fingerprint = feature_fingerprint.compute_feature_fingerprint(
@@ -303,7 +306,7 @@ class GenerateSummaryHandlerTest(testing_config.CustomTestCase):
         self.assertTrue(response.get('skipped'))
         mock_generator_cls.assert_not_called()
 
-    @mock.patch('framework.gemini_helpers.GeminiSummaryGenerator')
+    @mock.patch('ai.summary_generator.GeminiSummaryGenerator')
     def test_process_post_data__force_regenerates(self, mock_generator_cls):
         """Tests that force=True regenerates even if source_fingerprint matches."""
         fingerprint = feature_fingerprint.compute_feature_fingerprint(
@@ -334,7 +337,7 @@ class GenerateSummaryHandlerTest(testing_config.CustomTestCase):
         self.assertEqual(response['suggested_summary'], 'Regenerated summary.')
         mock_generator.generate_summary.assert_called_once()
 
-    @mock.patch('framework.gemini_helpers.GeminiSummaryGenerator')
+    @mock.patch('ai.summary_generator.GeminiSummaryGenerator')
     def test_process_post_data__generation_error(self, mock_generator_cls):
         """Tests that generation errors update suggestion status to FAILED."""
         mock_generator = mock.MagicMock()
@@ -352,4 +355,40 @@ class GenerateSummaryHandlerTest(testing_config.CustomTestCase):
         self.assertIsNotNone(suggestion)
         self.assertEqual(
             suggestion.status, core_enums.SummarySuggestionStatus.UNKNOWN
+        )
+
+
+class GeminiHelpersImportTest(testing_config.CustomTestCase):
+    """Guards against heavy AI SDKs being loaded at app startup."""
+
+    # Modules that are only needed by the AI Cloud Task handlers and are
+    # expensive to import (CPU time and memory in every gunicorn worker).
+    HEAVY_MODULES = (
+        'wptgen',
+        'ai.summary_generator',
+        'google.adk',
+        'anthropic',
+        'openai',
+    )
+
+    def test_import__does_not_load_heavy_ai_modules(self):
+        """Importing gemini_helpers must not import the AI SDKs eagerly."""
+        code = (
+            'import sys, testing_config\n'
+            'from framework import gemini_helpers\n'
+            f'heavy = {self.HEAVY_MODULES!r}\n'
+            'print(",".join(m for m in heavy if m in sys.modules))\n'
+        )
+        result = subprocess.run(
+            [sys.executable, '-c', code],
+            capture_output=True,
+            text=True,
+            cwd=str(Path(__file__).resolve().parent.parent),
+            check=True,
+        )
+        loaded = result.stdout.strip().splitlines()[-1:] or ['']
+        self.assertEqual(
+            '',
+            loaded[0],
+            f'Heavy AI modules were imported at module load: {loaded[0]}',
         )
