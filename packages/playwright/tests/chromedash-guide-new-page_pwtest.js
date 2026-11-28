@@ -130,21 +130,11 @@ test('enter web feature id', async ({page}) => {
   await gotoNewFeaturePage(page);
 
   // Scroll to web feature id field.
-  const webFeatureIdField = page.locator(
-    'chromedash-form-field[name=web_feature]'
-  );
-  await webFeatureIdField.scrollIntoViewIfNeeded();
-  await expect(webFeatureIdField).toBeVisible();
-
-  // Explicitly wait for the datalist to populate with options.
-  // The browser will not paint the arrow until these exist.
-  const datalistOptions = webFeatureIdField.locator(
-    'datalist#web_feature_list option'
-  );
-  await expect(datalistOptions.first()).toBeAttached({timeout: 20000});
+  const webFeatureRow = page.locator('#web_feature_row');
+  await webFeatureRow.scrollIntoViewIfNeeded();
+  await expect(webFeatureRow).toBeVisible();
 
   await enterWebFeatureId(page);
-  await webFeatureIdField.click();
 
   await expectScreenshot(page, 'feature-id');
 });

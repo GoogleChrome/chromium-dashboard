@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {TemplateResult, html, nothing} from 'lit';
+import {html, nothing} from 'lit';
 import SlTextarea from '@shoelace-style/shoelace/dist/components/textarea/textarea.js';
 import {customElement, property, state} from 'lit/decorators.js';
 import {autolink} from './utils.js';
@@ -81,14 +81,42 @@ export class ChromedashTextarea extends SlTextarea {
   }
 
   validate() {
-    if (this.input === null) {
+    if (!this.input) {
       return;
     }
     const invalidMsg = this.customCheckValidity(this.input.value)
       ? ''
       : 'invalid';
-    if (this.setCustomValidity) {
-      this.setCustomValidity(invalidMsg);
+    this.setCustomValidity(invalidMsg);
+  }
+
+  syncInput(): boolean {
+    if (!this.input) {
+      return false;
+    }
+    if (this.value && this.input.value !== this.value) {
+      this.input.value = this.value;
+    }
+    return true;
+  }
+
+  checkValidity(): boolean {
+    if (!this.syncInput()) {
+      return !this.required || Boolean(this.value);
+    }
+    return (!this.required || Boolean(this.value)) && super.checkValidity();
+  }
+
+  reportValidity(): boolean {
+    if (!this.syncInput()) {
+      return !this.required || Boolean(this.value);
+    }
+    return super.reportValidity();
+  }
+
+  setCustomValidity(message: string): void {
+    if (this.input) {
+      super.setCustomValidity(message);
     }
   }
 

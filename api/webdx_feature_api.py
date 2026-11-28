@@ -19,6 +19,7 @@ from collections import OrderedDict
 
 from chromestatus_openapi.models import WebFeatureInfo, WebFeatureInfosResponse
 
+import settings
 from framework import basehandlers
 from internals.metrics_models import WebDXFeatureObserver
 from internals.webdx_feature_models import WebdxFeatures
@@ -45,6 +46,10 @@ class WebFeatureInfosAPI(basehandlers.APIHandler):
             web_feature_infos = [
                 WebFeatureInfo(feature_id=info.feature_id, status=info.status)
                 for info in singleton.feature_infos
+            ]
+        elif settings.DEV_MODE or settings.PLAYWRIGHT_MODE:
+            web_feature_infos = [
+                WebFeatureInfo(feature_id='hwb', status='limited'),
             ]
         web_feature_infos = sorted(
             web_feature_infos, key=lambda info: info.feature_id

@@ -180,18 +180,10 @@ export class ChromedashFormField extends LitElement {
       );
     } else if (this.name === 'web_feature') {
       this.fetchChoices(
-        window.csClient
-          .getWebFeatureInfos()
-          .then((res: WebFeatureInfosResponse) => {
-            this.webFeatureInfos = res?.data || [];
-            const choices: Record<string, [string, string]> = {
-              missing_feature: ['Missing feature', 'Missing feature'],
-            };
-            for (const info of this.webFeatureInfos) {
-              choices[info.feature_id] = [info.feature_id, info.feature_id];
-            }
-            return choices;
-          }),
+        fetchWebFeatureChoices().then(({webFeatureInfos, choices}) => {
+          this.webFeatureInfos = webFeatureInfos;
+          return choices;
+        }),
         'Error fetching Web feature IDs. Please refresh the page or try again later.'
       );
     }
@@ -270,17 +262,7 @@ export class ChromedashFormField extends LitElement {
   }
 
   shouldDisplayFeatureLink(field_name: string, feature_value: string) {
-    if (field_name !== 'web_feature') {
-      return false;
-    }
-    if (!feature_value) {
-      return false;
-    }
-    if (feature_value === 'Missing feature' || feature_value == 'TBD') {
-      return false;
-    }
-
-    return true;
+    return shouldDisplayFeatureLink(field_name, feature_value);
   }
 
   getFeatureType(): number {
@@ -296,13 +278,11 @@ export class ChromedashFormField extends LitElement {
   }
 
   shouldDisplayWidelySupportedWarning(): boolean {
-    const selectedInfo = this.webFeatureInfos.find(
-      info => info.feature_id === this.value
+    return shouldDisplayWidelySupportedWarning(
+      this.webFeatureInfos,
+      this.value,
+      this.getFeatureType()
     );
-    if (selectedInfo?.status !== 'widely') {
-      return false;
-    }
-    return this.getFeatureType() === FEATURE_TYPES.FEATURE_TYPE_INCUBATE_ID[0];
   }
 
   // Must render to light DOM, so sl-form-fields work as intended.
@@ -739,38 +719,101 @@ export class ChromedashFormField extends LitElement {
       }
       ${
         this.shouldDisplayFeatureLink(this.name, this.value)
-          ? html`
-              <tr>
-                <td colspan="2" class="webdx">
-                  See web feature
-                  <a
-                    href="https://webstatus.dev/features/${enumLabelToFeatureKey(
-                      this.value
-                    )}"
-                    target="_blank"
-                  >
-                    ${this.value}
-                  </a>
-                  in webstatus.dev
-                </td>
-              </tr>
-              ${
-                this.shouldDisplayWidelySupportedWarning()
-                  ? html`
-                      <tr>
-                        <td colspan="2" class="webdx">
-                          This web feature is already widely supported, are you
-                          sure that you are incubating a change to it?
-                        </td>
-                      </tr>
-                    `
-                  : nothing
-              }
-            `
+          ? !this.value.includes('/')
+            ? html`
+                <tr>
+                  <td colspan="2" class="webdx">
+                    See web feature
+                    <a
+                      href="https://webstatus.dev/features/${enumLabelToFeatureKey(
+                        this.value
+                      )}"
+                      target="_blank"
+                    >
+                      ${this.value}
+                    </a>
+                    in webstatus.dev
+                  </td>
+                </tr>
+                ${
+                  this.shouldDisplayWidelySupportedWarning()
+                    ? html`
+                        <tr>
+                          <td colspan="2" class="webdx">
+                            This web feature is already widely supported, are
+                            you sure that you are incubating a change to it?
+                          </td>
+                        </tr>
+                      `
+                    : nothing
+                }
+              `
+            : this.value.startsWith('proposed/')
+              ? html`
+                  <tr>
+                    <td colspan="2" class="webdx">
+                      See this web feature
+                      <a
+                        href="https://github.com/web-platform-dx/web-features/blob/main/features/draft/${
+                          this.value
+                        }.yml"
+                        target="_blank"
+                        >definition</a
+                      >
+                      in the web-features repo.
+                    </td>
+                  </tr>
+                `
+              : nothing
           : nothing
       }
     `;
   }
+}
+
+export async function fetchWebFeatureChoices(): Promise<{
+  webFeatureInfos: WebFeatureInfo[];
+  choices: Record<string, [string, string]>;
+}> {
+  const res: WebFeatureInfosResponse =
+    await window.csClient.getWebFeatureInfos();
+  const webFeatureInfos = res?.data || [];
+  const choices: Record<string, [string, string]> = {};
+  for (const info of webFeatureInfos) {
+    choices[info.feature_id] = [info.feature_id, info.feature_id];
+  }
+  return {webFeatureInfos, choices};
+}
+
+export function shouldDisplayFeatureLink(
+  fieldName: string,
+  featureValue: string
+): boolean {
+  if (fieldName !== 'web_feature') {
+    return false;
+  }
+  if (!featureValue) {
+    return false;
+  }
+  if (featureValue === 'Missing feature' || featureValue === 'TBD') {
+    return false;
+  }
+
+  return true;
+}
+
+export function shouldDisplayWidelySupportedWarning(
+  webFeatureInfos: WebFeatureInfo[],
+  featureValue: string,
+  featureType: number
+): boolean {
+  const selectedInfo = webFeatureInfos.find(
+    info => info.feature_id === featureValue
+  );
+  if (selectedInfo?.status !== 'widely') {
+    return false;
+  }
+  return featureType === FEATURE_TYPES.FEATURE_TYPE_INCUBATE_ID[0];
 }
 
 /**
