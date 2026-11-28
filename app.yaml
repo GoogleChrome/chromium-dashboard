@@ -4,9 +4,16 @@ runtime: python313
 service: default
 instance_class: F4_1G
 
+# Keep two warm idle instances for bursts, but cap how much idle capacity is
+# kept (and billed): App Engine does not bill idle instances beyond
+# max_idle_instances. A 1s pending-latency threshold avoids starting a new
+# instance (which takes a while to warm up) for every brief queue.
+# max_instances is intentionally unset: production bursts have needed 60+
+# active instances, and a hard cap would queue or fail requests.
 automatic_scaling:
   min_idle_instances: 2
-  max_pending_latency: 0.2s
+  max_idle_instances: 4
+  max_pending_latency: 1s
 
 # Use a long HTTP cache expiration time for css and JS, but also
 # include the GAE version number as a query string parameter so that on
