@@ -16,8 +16,10 @@
 
 import {html} from 'lit';
 import {assert, fixture} from '@open-wc/testing';
+import '@shoelace-style/shoelace/dist/components/input/input.js';
 import {ChromedashGuideNewPage} from './chromedash-guide-new-page.js';
 import {FEATURE_TYPES} from './form-field-enums.js';
+import {WEB_FEATURE_REGEX} from './form-field-specs.js';
 import {ChromeStatusClient} from '../js-src/cs-client.js';
 import sinon from 'sinon';
 
@@ -63,19 +65,25 @@ describe('chromedash-guide-new-page', () => {
         (control.hasAttribute('required') || Boolean(control.required)) &&
         !control.value
       ) {
-        control.value = 'dummy value';
+        const val =
+          control.getAttribute('type') === 'number' ? '2026' : 'dummy value';
+        control.value = val;
         if (control.input) {
-          control.input.value = 'dummy value';
+          control.input.value = val;
         }
       }
     }
     for (const fv of component.fieldValues) {
-      if (fv.value === '' || fv.value === undefined || fv.value === null) {
+      if (
+        (fv.value === '' || fv.value === undefined || fv.value === null) &&
+        fv.name !== 'editor_emails' &&
+        fv.name !== 'cc_emails'
+      ) {
         fv.value = 'dummy value';
       }
     }
     component.selectedWebFeature = 'grid';
-    component.proposedWebFeature = 'grid';
+    component.proposedWebFeature = 'proposed-grid';
   }
 
   it('renders with fake data', async () => {
@@ -332,17 +340,36 @@ describe('chromedash-guide-new-page', () => {
     assert.isTrue(existingRadio!.checked);
     assert.isFalse(proposeRadio!.checked);
 
-    const selectEl = component.shadowRoot?.querySelector<HTMLElement>(
+    const selectEl = component.shadowRoot?.querySelector<HTMLSelectElement>(
       'sl-select[name="web_feature"]'
     );
     assert.exists(selectEl);
     assert.isTrue(selectEl!.hasAttribute('required'));
+    assert.equal(selectEl!.value, '');
+
+    const options = selectEl!.querySelectorAll('sl-option');
+    assert.isAtLeast(options.length, 1);
+    assert.equal(options[0].getAttribute('value'), 'N/A');
+    assert.equal(options[0].textContent?.trim(), 'N/A (Rare)');
 
     // Explainer links field should not be present in existing mode.
     const explainerField = component.shadowRoot?.querySelector(
       'chromedash-form-field[name="explainer_links"]'
     );
     assert.isNull(explainerField);
+
+    // Selecting N/A should set web_feature to N/A without showing a webstatus.dev link.
+    component.handleSelectWebFeature({
+      target: {value: 'N/A'},
+    } as unknown as Event);
+    await component.updateComplete;
+    assert.equal(
+      component.fieldValues.find(fv => fv.name === 'web_feature')?.value,
+      'N/A'
+    );
+    assert.isNull(
+      component.shadowRoot?.querySelector('a[href*="webstatus.dev"]')
+    );
 
     // Simulate selecting a feature.
     component.handleSelectWebFeature({
@@ -395,6 +422,7 @@ describe('chromedash-guide-new-page', () => {
     );
     assert.exists(inputEl);
     assert.isTrue(inputEl!.hasAttribute('required'));
+    assert.equal(inputEl!.getAttribute('pattern'), WEB_FEATURE_REGEX);
     assert.equal(inputEl!.previousElementSibling?.textContent, 'proposed/');
 
     // Explainer links should now be rendered across the full table rather than inside the td.
@@ -575,6 +603,72 @@ describe('chromedash-guide-new-page', () => {
 
     assert.isFalse(createFeatureStub.called);
     assert.isTrue(reportValiditySpy.called);
+    createFeatureStub.restore();
+  });
+
+  it('blocks submission when in propose mode and web_feature does not match WEB_FEATURE_REGEX', async () => {
+    const component = await fixture<ChromedashGuideNewPage>(
+      html`<chromedash-guide-new-page .userEmail=${'user@gmail.com'}>
+      </chromedash-guide-new-page>`
+    );
+    await component.updateComplete;
+
+    populateRequiredFields(component);
+    component.handleWebFeatureModeChange('propose');
+    await component.updateComplete;
+
+    const inputEl = component.shadowRoot?.querySelector<
+      HTMLElement & {
+        value: string;
+        checkValidity: () => boolean;
+        validationMessage: string;
+        updateComplete: Promise<boolean>;
+      }
+    >('sl-input[name="web_feature"]');
+    assert.exists(inputEl);
+
+    const createFeatureStub = sinon.stub(window.csClient, 'createFeature');
+    const reportValiditySpy = sinon.spy(component, 'reportControlValidity');
+    const fakeEvent = {preventDefault: sinon.spy()};
+    const hiddenTokenField = component.renderRoot.querySelector(
+      'input[name="token"]'
+    );
+
+    // Reject uppercase/invalid characters
+    component.proposedWebFeature = 'Invalid_Feature_ID!';
+    component.setWebFeatureValue('Invalid_Feature_ID!');
+    await component.updateComplete;
+    await inputEl!.updateComplete;
+    assert.isFalse(inputEl!.checkValidity());
+    assert.isNotEmpty(inputEl!.validationMessage);
+
+    component.handleFormSubmit(fakeEvent, hiddenTokenField);
+    assert.isFalse(createFeatureStub.called);
+    assert.isTrue(reportValiditySpy.calledOnce);
+
+    // Reject digits/dashes without at least one [a-z]
+    component.proposedWebFeature = '123-456';
+    component.setWebFeatureValue('123-456');
+    await component.updateComplete;
+    await inputEl!.updateComplete;
+    assert.isFalse(inputEl!.checkValidity());
+
+    component.handleFormSubmit(fakeEvent, hiddenTokenField);
+    assert.isFalse(createFeatureStub.called);
+    assert.isTrue(reportValiditySpy.calledTwice);
+
+    // Reject predefined values that already exist in sl-select
+    component.proposedWebFeature = 'grid';
+    component.setWebFeatureValue('grid');
+    await component.updateComplete;
+    await inputEl!.updateComplete;
+
+    component.handleFormSubmit(fakeEvent, hiddenTokenField);
+    assert.isFalse(createFeatureStub.called);
+    assert.isTrue(reportValiditySpy.calledThrice);
+    assert.isFalse(inputEl!.checkValidity());
+    assert.include(inputEl!.validationMessage, 'already exists');
+
     createFeatureStub.restore();
   });
 
