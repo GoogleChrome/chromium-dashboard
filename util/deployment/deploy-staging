@@ -66,5 +66,8 @@ else
   echo "Staging traffic migration skipped."
 fi
 
-# Prune oldest inactive versions to retain 50 versions per service after deployment.
-"$DIR/prune-versions"
+# Prune oldest inactive versions after deployment. Staging is deployed on every
+# merge, so it keeps fewer versions than production: old versions can still be
+# reached through version-specific URLs, and each request to one cold-starts an
+# instance.
+MAX_VERSIONS_PER_SERVICE="${MAX_VERSIONS_PER_SERVICE:-10}" "$DIR/prune-versions"

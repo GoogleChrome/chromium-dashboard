@@ -4,9 +4,15 @@ runtime: python313
 service: default
 instance_class: F4_1G
 
+# Staging receives very little traffic, so unlike production it does not keep
+# warm idle instances around. Instances start on demand (the first request
+# after an idle period may be slow), idle capacity is capped, and a hard limit
+# prevents crawlers or test bursts from scaling staging up like production.
 automatic_scaling:
-  min_idle_instances: 2
-  max_pending_latency: 0.2s
+  min_idle_instances: 0
+  max_idle_instances: 1
+  max_pending_latency: automatic
+  max_instances: 5
 
 # Use a long HTTP cache expiration time for css and JS, but also
 # include the GAE version number as a query string parameter so that on
